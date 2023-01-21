@@ -13,19 +13,16 @@ import { createTheme, ThemeProvider } from '@mui/material/styles';
 
 const theme = createTheme();
 
-const RegisterScreen = ({ onRegister, gotoLogin }) => {
+const RegisterScreen = ({ onRegister, gotoLogin, errorMessage }) => {
     const handleSubmit = (event) => {
         event.preventDefault();
         const data = new FormData(event.currentTarget);
-
-        if (data.password1 !== data.password2) {
-            return;
+        if (data.get('password1') === data.get('password2')) {
+            onRegister({
+                email: data.get('email'),
+                password: data.get('password1'),
+            });
         }
-
-        onRegister({
-            email: data.get('email'),
-            password: data.get('password1'),
-        });
     };
 
     return (
@@ -74,6 +71,11 @@ const RegisterScreen = ({ onRegister, gotoLogin }) => {
                             type="password"
                             id="password2"
                         />
+                        {
+                            errorMessage && <Typography color="red">
+                                {errorMessage}
+                            </Typography>
+                        }
                         <Button
                             type="submit"
                             fullWidth

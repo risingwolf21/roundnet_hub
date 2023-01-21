@@ -16,6 +16,11 @@ const AuthGate = ({ dispatch, user, children }) => {
     const [register, setRegister] = useState(false);
     const [forgotPassword, setForgotPassword] = useState(false);
 
+    const switchPage = (onChange) => {
+        setErrorMessage("");
+        onChange();
+    }
+
     const onLogin = (data) => {
         const email = data.email;
         const password = data.password;
@@ -24,7 +29,6 @@ const AuthGate = ({ dispatch, user, children }) => {
         firebase.auth().signInWithEmailAndPassword(email, password)
             .then((userCredentials) => {
                 const user = userCredentials.user;
-                console.log("logged in " + user.email);
                 dispatch(authentication_changed(user));
             })
             .catch((error) => {
@@ -41,7 +45,6 @@ const AuthGate = ({ dispatch, user, children }) => {
         firebase.auth().createUserWithEmailAndPassword(email, password)
             .then((userCredentials) => {
                 const user = userCredentials.user;
-                console.log("registered in " + user.email);
                 dispatch(authentication_changed(user));
             })
             .catch((error) => {
@@ -60,11 +63,11 @@ const AuthGate = ({ dispatch, user, children }) => {
 
     if (!user) {
         if (register) {
-            return <RegisterScreen onRegister={onRegister} gotoLogin={() => setRegister(false)} />
+            return <RegisterScreen onRegister={onRegister} gotoLogin={() => switchPage(setRegister(false))} errorMessage={errorMessage} />
         } else if (forgotPassword) {
-            return <ForgotPasswordScreen onForgotPassword={onForgotPassword} gotoLogin={() => setForgotPassword(false)} />
+            return <ForgotPasswordScreen onForgotPassword={onForgotPassword} gotoLogin={() => switchPage(setForgotPassword(false))} errorMessage={errorMessage} />
         } else {
-            return <LoginScreen onLogin={onLogin} errorMessage={errorMessage} gotoRegister={() => setRegister(true)} gotoForgotPassword={() => setForgotPassword(true)} />
+            return <LoginScreen onLogin={onLogin} gotoRegister={() => switchPage(setRegister(true))} gotoForgotPassword={() => switchPage(setForgotPassword(true))} errorMessage={errorMessage} />
         }
     }
     else {

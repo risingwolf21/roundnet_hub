@@ -13,7 +13,7 @@ import { createTheme, ThemeProvider } from '@mui/material/styles';
 
 const theme = createTheme();
 
-const ForgotPasswordScreen = ({ onForgotPassword, gotoLogin }) => {
+const ForgotPasswordScreen = ({ onForgotPassword, gotoLogin, errorMessage }) => {
     const handleSubmit = (event) => {
         event.preventDefault();
         const data = new FormData(event.currentTarget);
@@ -48,6 +48,11 @@ const ForgotPasswordScreen = ({ onForgotPassword, gotoLogin }) => {
                             autoComplete="email"
                             autoFocus
                         />
+                        {
+                            errorMessage && <Typography color="red">
+                                {errorMessage}
+                            </Typography>
+                        }
                         <Button
                             type="submit"
                             fullWidth
