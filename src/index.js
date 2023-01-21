@@ -5,7 +5,9 @@ import * as serviceWorker from './serviceWorker';
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/auth';
 import 'firebase/compat/firestore';
-import Root from './Root';
+import { Provider } from 'react-redux';
+import AuthGate from "./AuthGate";
+import App from "./App";
 
 firebase.initializeApp({
   apiKey: process.env.REACT_APP_apiKey,
@@ -19,9 +21,13 @@ firebase.initializeApp({
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
-    <React.StrictMode>
-        <Root store={store} />
-    </React.StrictMode>
+  <React.StrictMode>
+    <Provider store={store}>
+      <AuthGate>
+        <App />
+      </AuthGate>
+    </Provider>
+  </React.StrictMode>
 );
 
 // unregister() to register() below. Note this comes with some pitfalls.

@@ -1,16 +1,17 @@
-import { EXAMPLE_ACTION_NAME } from "../actions/names";
+import { AUTHENTICATION_CHANGED } from "../actions/names";
 
 
 const DEFAULT_STATE = {
-    test: 1
+    user: null
 };
 
 export default (state = DEFAULT_STATE, action) => {
     switch (action.type) {
-        case EXAMPLE_ACTION_NAME: {
+        case AUTHENTICATION_CHANGED: {
+            console.log(action);
             return {
                 ...state,
-                test: action.payload
+                user: action.payload
             }
         }
         default: {

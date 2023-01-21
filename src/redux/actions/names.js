@@ -1,4 +1,5 @@
 export const EXAMPLE_ACTION_NAME = "EXAMPLE_ACTION_NAME";
+export const AUTHENTICATION_CHANGED = "AUTHENTICATION_CHANGED";
 
 export const pending = (name) => {
     return name + "_PENDING";

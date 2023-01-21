@@ -1,22 +1,18 @@
+import { Button } from "@mui/material";
+import { connect } from "react-redux";
+import { authentication_changed } from "./redux/actions";
 
-function App() {
+const App = ({ dispatch }) => {
   return (
     <div className="App">
       <header className="App-header">
         <p>
           Edit <code>src/App.js</code> and save to reload.
         </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
+        <Button variant="contained" sx={{ mt: 3, mb: 2 }} onClick={() => dispatch(authentication_changed(null))}>Logout</Button>
       </header>
     </div>
   );
 }
 
-export default App;
+export default connect()(App);
