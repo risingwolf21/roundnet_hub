@@ -5,7 +5,7 @@ const DEFAULT_STATE = {
     user: null
 };
 
-export default (state = DEFAULT_STATE, action) => {
+const application = (state = DEFAULT_STATE, action) => {
     switch (action.type) {
         case AUTHENTICATION_CHANGED: {
             console.log(action);
@@ -19,3 +19,4 @@ export default (state = DEFAULT_STATE, action) => {
         }
     }
 }
+export default application;

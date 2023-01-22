@@ -1,3 +1,4 @@
+import * as React from 'react';
 import { Button } from "@mui/material";
 import { connect } from "react-redux";
 import { authentication_changed } from "./redux/actions";
