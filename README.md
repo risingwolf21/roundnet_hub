@@ -1,4 +1,6 @@
-# Getting Started with Create React App
+# Roundnet Karlsruhe App
+
+[![Production deploy](https://github.com/risingwolf21/roundnet_karlsruhe_app/actions/workflows/firebase-hosting-merge.yml/badge.svg)](https://github.com/risingwolf21/roundnet_karlsruhe_app/actions/workflows/firebase-hosting-merge.yml) [![Build](https://github.com/risingwolf21/roundnet_karlsruhe_app/actions/workflows/firebase-hosting-pull-request.yml/badge.svg)](https://github.com/risingwolf21/roundnet_karlsruhe_app/actions/workflows/firebase-hosting-pull-request.yml)
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
