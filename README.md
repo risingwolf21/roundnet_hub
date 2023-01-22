@@ -1,7 +1,7 @@
 # Roundnet Karlsruhe App
 
 [![Production deployment](https://github.com/risingwolf21/roundnet_karlsruhe_app/actions/workflows/firebase_deployment.yml/badge.svg)](https://github.com/risingwolf21/roundnet_karlsruhe_app/actions/workflows/firebase_deployment.yml)
-[![Building](https://github.com/risingwolf21/roundnet_karlsruhe_app/actions/workflows/react_build.yml/badge.svg)](https://github.com/risingwolf21/roundnet_karlsruhe_app/actions/workflows/react_build.yml)
+[![Building](https://github.com/risingwolf21/roundnet_karlsruhe_app/actions/workflows/react_build.yml/badge.svg?branch=master)](https://github.com/risingwolf21/roundnet_karlsruhe_app/actions/workflows/react_build.yml)
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
