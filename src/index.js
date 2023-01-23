@@ -2,12 +2,14 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import store from "./redux/store";
 import * as serviceWorker from './serviceWorker';
-import firebase from 'firebase/compat/app';
 import 'firebase/compat/auth';
 import 'firebase/compat/firestore';
 import { Provider } from 'react-redux';
 import AuthGate from "./AuthGate";
 import App from "./App";
+import firebase from "firebase/compat/app";
+import { ThemeProvider } from '@emotion/react';
+import { appTheme } from './themes/theme';
 
 firebase.initializeApp({
   apiKey: process.env.REACT_APP_apiKey,
@@ -22,11 +24,13 @@ firebase.initializeApp({
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <React.StrictMode>
-    <Provider store={store}>
-      <AuthGate>
-        <App />
-      </AuthGate>
-    </Provider>
+    <ThemeProvider theme={appTheme}>
+      <Provider store={store}>
+        <AuthGate>
+          <App />
+        </AuthGate>
+      </Provider>
+    </ThemeProvider>
   </React.StrictMode>
 );
 
