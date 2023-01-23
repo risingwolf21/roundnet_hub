@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { Box, Button } from "@mui/material";
+import { Box } from "@mui/material";
 import CustomAppBar from "./components/AppBar";
 import CustomDrawer from './components/Drawer';
 import { connect } from "react-redux";

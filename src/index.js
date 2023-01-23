@@ -8,8 +8,6 @@ import { Provider } from 'react-redux';
 import AuthGate from "./AuthGate";
 import App from "./App";
 import firebase from "firebase/compat/app";
-import { ThemeProvider } from '@emotion/react';
-import { appTheme } from './themes/theme';
 
 firebase.initializeApp({
   apiKey: process.env.REACT_APP_apiKey,
