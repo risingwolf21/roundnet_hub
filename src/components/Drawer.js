@@ -44,7 +44,7 @@ const CustomDrawer = ({ dispatch }) => {
                 </List>
             </Box>
         </Drawer>
-    </Box >
+    </Box>
 }
 
 export default CustomDrawer;

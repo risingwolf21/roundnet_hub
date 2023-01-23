@@ -7,7 +7,7 @@ import { Button } from "@mui/material";
 const CustomAppBar = ({ logout }) => {
     return (
         <Box sx={{ flexGrow: 1 }}>
-            <AppBar position="fixed" style={{ background: "#b91033" }} sx={{ zIndex: (theme) => theme.zIndex.drawer + 1 }}>
+            <AppBar position="fixed" sx={{ zIndex: (theme) => theme.zIndex.drawer + 1, background: "primary" }}>
                 <Toolbar>
                     <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
                         Roundnet Karlsruhe

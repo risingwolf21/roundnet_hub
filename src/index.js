@@ -24,13 +24,13 @@ firebase.initializeApp({
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <React.StrictMode>
-    <ThemeProvider theme={appTheme}>
+    {/* <ThemeProvider theme={appTheme}> */}
       <Provider store={store}>
         <AuthGate>
           <App />
         </AuthGate>
       </Provider>
-    </ThemeProvider>
+    {/* </ThemeProvider> */}
   </React.StrictMode>
 );
 
