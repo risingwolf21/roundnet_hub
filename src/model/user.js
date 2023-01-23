@@ -22,3 +22,5 @@ class User {
         return User(json["UID"], json["displayName"], json["email"], json["verified"], json["isAdmin"]);
     }
 }
+
+export default User;
