@@ -2,7 +2,6 @@ import * as React from 'react';
 import { authentication_changed } from "./redux/actions";
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/auth';
-import 'firebase/compat/firestore';
 import { connect } from "react-redux";
 import { createStructuredSelector } from "reselect";
 import LoginScreen from "./components/LoginScreen";
