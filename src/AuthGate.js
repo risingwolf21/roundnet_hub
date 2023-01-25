@@ -9,6 +9,7 @@ import { useState } from "react";
 import RegisterScreen from "./components/RegisterScreen";
 import ForgotPasswordScreen from "./components/ForgotPasswordScreen";
 import { compose } from "redux";
+import { Box, Container } from '@mui/material';
 
 const AuthGate = ({ dispatch, user, children }) => {
 
@@ -62,13 +63,23 @@ const AuthGate = ({ dispatch, user, children }) => {
     }
 
     if (!user) {
-        if (register) {
-            return <RegisterScreen onRegister={onRegister} gotoLogin={() => switchPage(setRegister(false))} errorMessage={errorMessage} />
-        } else if (forgotPassword) {
-            return <ForgotPasswordScreen onForgotPassword={onForgotPassword} gotoLogin={() => switchPage(setForgotPassword(false))} errorMessage={errorMessage} />
-        } else {
-            return <LoginScreen onLogin={onLogin} gotoRegister={() => switchPage(setRegister(true))} gotoForgotPassword={() => switchPage(setForgotPassword(true))} errorMessage={errorMessage} />
-        }
+        return <Box sx={{
+            mb: 2,
+            display: "flex",
+            flexDirection: "column",
+            height: 700,
+            overflow: "hidden",
+            overflowY: "scroll",
+            // justifyContent="flex-end" # DO NOT USE THIS WITH 'scroll'
+        }}>
+            <Container>
+                {
+                    register ? <RegisterScreen onRegister={onRegister} gotoLogin={() => switchPage(setRegister(false))} errorMessage={errorMessage} />
+                        : forgotPassword ? <ForgotPasswordScreen onForgotPassword={onForgotPassword} gotoLogin={() => switchPage(setForgotPassword(false))} errorMessage={errorMessage} />
+                            : <LoginScreen onLogin={onLogin} gotoRegister={() => switchPage(setRegister(true))} gotoForgotPassword={() => switchPage(setForgotPassword(true))} errorMessage={errorMessage} />
+                }
+            </Container>
+        </Box>
     }
     else {
         return children;
