@@ -22,8 +22,8 @@ import { useTheme } from '@mui/material/styles';
 const DrinkCheckList = ({ dispatch, drinks }) => {
     const theme = useTheme();
 
-    return <Paper elevation={3} sx={{ display: "inline-block" }}>
-        <Grid>
+    return <Paper elevation={3} sx={{ display: "inline-block", width: "100%" }}>
+        {/* <Grid>
             {
                 isLoaded(drinks) && drinks.map(drink => {
                     return <Card sx={{ display: 'flex' }}>
@@ -58,7 +58,7 @@ const DrinkCheckList = ({ dispatch, drinks }) => {
                     </Card>
                 })
             }
-        </Grid>
+        </Grid> */}
         <List>
             {
                 isLoaded(drinks) && drinks.map(drink => <ListItem divider secondaryAction={

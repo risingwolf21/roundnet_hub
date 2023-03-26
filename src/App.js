@@ -16,7 +16,7 @@ const App = ({ }) => {
     <Toolbar />
     <Grid 
       container
-      sx={{ my: 2 }}
+      width="100%"
       direction="column"
       alignItems="center"
       justifyContent="center">
