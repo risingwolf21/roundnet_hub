@@ -1,5 +1,5 @@
 import React from 'react';
-import ReactDOM from 'react-dom/client';
+import ReactDOM from 'react-dom';
 import store from "./redux/store";
 import * as serviceWorker from './serviceWorker';
 import 'firebase/compat/auth';
@@ -35,8 +35,7 @@ const rrfProps = {
   createFirestoreInstance // <- needed if using firestore
 };
 
-const root = ReactDOM.createRoot(document.getElementById('root'));
-root.render(
+ReactDOM.render(
   <React.StrictMode>
     {/* <ThemeProvider theme={appTheme}> */}
     <Provider store={store}>
@@ -46,8 +45,9 @@ root.render(
         </AuthGate>
       </ReactReduxFirebaseProvider>
     </Provider>
-  </React.StrictMode>
-);
+  </React.StrictMode>,
+  document.getElementById('root')
+)
 
 // unregister() to register() below. Note this comes with some pitfalls.
 // Learn more about service workers: https://bit.ly/CRA-PWA
