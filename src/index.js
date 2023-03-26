@@ -1,36 +1,53 @@
 import React from 'react';
-import ReactDOM from 'react-dom/client';
+import ReactDOM from 'react-dom';
 import store from "./redux/store";
 import * as serviceWorker from './serviceWorker';
 import 'firebase/compat/auth';
 import 'firebase/compat/firestore';
 import { Provider } from 'react-redux';
-import AuthGate from "./AuthGate";
 import App from "./App";
-import firebase from "firebase/compat/app";
+import firebase from 'firebase/compat/app';
+import { ReactReduxFirebaseProvider } from 'react-redux-firebase';
+import { createFirestoreInstance } from 'redux-firestore';
+import AuthGate from './AuthGate';
 
-firebase.initializeApp({
+const fbConfig = {
   apiKey: process.env.REACT_APP_apiKey,
   authDomain: process.env.REACT_APP_authDomain,
-  databaseURL: process.env.REACT_APP_databaseURL,
   projectId: process.env.REACT_APP_projectId,
   storageBucket: process.env.REACT_APP_storageBucket,
   messagingSenderId: process.env.REACT_APP_messagingSenderId,
   appId: process.env.REACT_APP_appId,
-});
+};
 
-const root = ReactDOM.createRoot(document.getElementById('root'));
-root.render(
+const rrfConfig = {
+  userProfile: 'users',
+  useFirestoreForProfile: true // Firestore for Profile instead of Realtime DB
+}
+
+firebase.initializeApp(fbConfig);
+firebase.firestore();
+
+const rrfProps = {
+  firebase,
+  config: rrfConfig,
+  dispatch: store.dispatch,
+  createFirestoreInstance // <- needed if using firestore
+};
+
+ReactDOM.render(
   <React.StrictMode>
     {/* <ThemeProvider theme={appTheme}> */}
-      <Provider store={store}>
+    <Provider store={store}>
+      <ReactReduxFirebaseProvider {...rrfProps}>
         <AuthGate>
           <App />
         </AuthGate>
-      </Provider>
-    {/* </ThemeProvider> */}
-  </React.StrictMode>
-);
+      </ReactReduxFirebaseProvider>
+    </Provider>
+  </React.StrictMode>,
+  document.getElementById('root')
+)
 
 // unregister() to register() below. Note this comes with some pitfalls.
 // Learn more about service workers: https://bit.ly/CRA-PWA

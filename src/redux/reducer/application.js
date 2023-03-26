@@ -1,8 +1,9 @@
-import { AUTHENTICATION_CHANGED } from "../actions/names";
+import { AUTHENTICATION_CHANGED, DRINKS_CHANGED } from "../actions/names";
 
 
 const DEFAULT_STATE = {
-    user: null
+    user: null,
+    drinks: []
 };
 
 const application = (state = DEFAULT_STATE, action) => {
@@ -12,6 +13,13 @@ const application = (state = DEFAULT_STATE, action) => {
             return {
                 ...state,
                 user: action.payload
+            }
+        }
+        case DRINKS_CHANGED: {
+            console.log(action.payload);
+            return {
+                ...state,
+                drinks: action.payload
             }
         }
         default: {

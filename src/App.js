@@ -1,16 +1,24 @@
 import * as React from 'react';
-import { Box } from "@mui/material";
+import { Container, Grid, Toolbar } from "@mui/material";
 import CustomAppBar from "./components/AppBar";
-import CustomDrawer from './components/Drawer';
-import { connect } from "react-redux";
-import { logout } from "./redux/actions";
+import DrinkCheckList from './components/DrinkCheckList';
+import { useFirebase } from 'react-redux-firebase';
 
-const App = ({ dispatch }) => {
-  return <Box>
-    <CustomAppBar logout={() => dispatch(logout())} />
+const App = () => {
+  const firebase = useFirebase();
 
-    <CustomDrawer dispatch={dispatch} />
-  </Box>
+  return <Container>
+    <CustomAppBar logout={() => firebase.logout()} />
+    <Toolbar />
+    <Grid 
+      container
+      width="100%"
+      direction="column"
+      alignItems="center"
+      justifyContent="center">
+      <DrinkCheckList />
+    </Grid>
+  </Container>
 }
 
-export default connect()(App);
+export default App;
