@@ -1,5 +1,5 @@
 import { useSelector } from "react-redux";
-import { isEmpty, isLoaded, useFirebase } from "react-redux-firebase";
+import { isEmpty, isLoaded } from "react-redux-firebase";
 import AuthScreen from "./components/AuthScreen";
 
 const AuthGate = ({ children }) => {
