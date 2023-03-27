@@ -1,0 +1,66 @@
+import { Fab, Grid, Paper } from "@mui/material";
+import { connect } from "react-redux";
+import { compose } from "redux";
+import { firestoreConnect, isLoaded, useFirebase, useFirestore } from "react-redux-firebase";
+import DrinkItem from "./DrinkItem";
+import { useState } from "react";
+import CheckIcon from '@mui/icons-material/Check';
+
+const DrinkList = ({ dispatch, drinks, profile, auth }) => {
+
+    const firestore = useFirestore();
+
+    const [addedDrinks, setAddedDrinks] = useState({});
+
+    const confirmDrinks = () => {
+
+        firestore.add("history", addedDrinks);
+        firestore.add(`users/${auth.uid}/history`, addedDrinks);
+
+        setAddedDrinks({});
+    }
+
+    const onAddDrinkClick = (drink) => {
+        var temp = addedDrinks;
+        if (drink.id in temp) {
+            temp[drink.id].count = temp[drink.id].count + 1;
+        } else {
+            temp[drink.id] = { count: 1, item: drink };
+        }
+        setAddedDrinks({ ...temp });
+    }
+
+    const onRemoveDrinkClick = (drink) => {
+        var temp = addedDrinks;
+        if (drink.id in temp) {
+            temp[drink.id].count = temp[drink.id].count - 1 > 0 ? temp[drink.id].count - 1 : 0;
+        }
+        setAddedDrinks({ ...temp });
+    }
+
+    return (<Grid
+        container
+        width="100%"
+        direction="column"
+        alignItems="center"
+        justifyContent="center">
+        <Grid>
+            {
+                isLoaded(drinks) && drinks.map(drink => <DrinkItem drink={drink} count={addedDrinks[drink.id]?.count} onAddClick={() => onAddDrinkClick(drink)} onMinusClick={() => onRemoveDrinkClick(drink)} />)
+            }
+        </Grid>
+        <Fab variant="extended" sx={{ position: "absolute", bottom: 24, right: 24, background: "#66bb6a" }} onClick={confirmDrinks}>
+            <CheckIcon sx={{ mr: 1 }} />
+            Bestätigen
+        </Fab>
+    </Grid>);
+}
+
+export default compose(
+    firestoreConnect(() => ['drinks']),
+    connect((state) => ({
+        drinks: state.firestore.ordered.drinks,
+        profile: state.firebase.profile,
+        auth: state.firebase.auth
+    }))
+)(DrinkList);

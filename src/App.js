@@ -1,7 +1,7 @@
 import * as React from 'react';
-import { Container, Grid, Toolbar } from "@mui/material";
+import { Container, Toolbar } from "@mui/material";
 import CustomAppBar from "./components/AppBar";
-import DrinkCheckList from './components/DrinkCheckList';
+import DrinkList from './components/DrinkList';
 import { useFirebase } from 'react-redux-firebase';
 
 const App = () => {
@@ -10,14 +10,7 @@ const App = () => {
   return <Container>
     <CustomAppBar logout={() => firebase.logout()} />
     <Toolbar />
-    <Grid 
-      container
-      width="100%"
-      direction="column"
-      alignItems="center"
-      justifyContent="center">
-      <DrinkCheckList />
-    </Grid>
+    <DrinkList />
   </Container>
 }
 
