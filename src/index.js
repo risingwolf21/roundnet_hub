@@ -10,6 +10,7 @@ import firebase from 'firebase/compat/app';
 import { ReactReduxFirebaseProvider } from 'react-redux-firebase';
 import { createFirestoreInstance } from 'redux-firestore';
 import AuthGate from './AuthGate';
+import "./global.css";
 
 const fbConfig = {
   apiKey: process.env.REACT_APP_apiKey,

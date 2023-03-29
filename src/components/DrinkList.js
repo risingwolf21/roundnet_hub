@@ -5,6 +5,7 @@ import { firestoreConnect, isLoaded, useFirebase, useFirestore } from "react-red
 import DrinkItem from "./DrinkItem";
 import { useState } from "react";
 import CheckIcon from '@mui/icons-material/Check';
+import BottomInformation from "./BottomInformation";
 
 const DrinkList = ({ dispatch, drinks, profile, auth }) => {
 
@@ -13,10 +14,9 @@ const DrinkList = ({ dispatch, drinks, profile, auth }) => {
     const [addedDrinks, setAddedDrinks] = useState({});
 
     const confirmDrinks = () => {
-
-        firestore.add("history", addedDrinks);
-        firestore.add(`users/${auth.uid}/history`, addedDrinks);
-
+        firestore.add("history", addedDrinks).then((result) => {
+            firestore.set(`users/${auth.uid}/history/${result.id}`, addedDrinks);
+        });
         setAddedDrinks({});
     }
 
@@ -49,10 +49,14 @@ const DrinkList = ({ dispatch, drinks, profile, auth }) => {
                 isLoaded(drinks) && drinks.map(drink => <DrinkItem drink={drink} count={addedDrinks[drink.id]?.count} onAddClick={() => onAddDrinkClick(drink)} onMinusClick={() => onRemoveDrinkClick(drink)} />)
             }
         </Grid>
-        <Fab variant="extended" sx={{ position: "absolute", bottom: 24, right: 24, background: "#66bb6a" }} onClick={confirmDrinks}>
-            <CheckIcon sx={{ mr: 1 }} />
-            Bestätigen
-        </Fab>
+        <Grid sx={{ position: "absolute", bottom: 0, right: 0, left: 0 }}>
+            <Grid>
+                <Fab sx={{ background: "#66bb6a", position: "absolute", right: 0 }} onClick={confirmDrinks}>
+                    <CheckIcon sx={{color: "white"}} />
+                </Fab>
+            </Grid>
+            <BottomInformation />
+        </Grid>
     </Grid>);
 }
 
