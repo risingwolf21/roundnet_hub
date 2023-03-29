@@ -43,20 +43,17 @@ const DrinkList = ({ dispatch, drinks, profile, auth }) => {
         width="100%"
         direction="column"
         alignItems="center"
-        justifyContent="center">
-        <Grid>
+        justifyContent="center"
+        sx={{ paddingTop: 2 }}>
+        <Grid container width="100%" direction="column" alignItems="center" justifyContent="center" paddingLeft={2} paddingRight={2}>
             {
                 isLoaded(drinks) && drinks.map(drink => <DrinkItem drink={drink} count={addedDrinks[drink.id]?.count} onAddClick={() => onAddDrinkClick(drink)} onMinusClick={() => onRemoveDrinkClick(drink)} />)
             }
         </Grid>
-        <Grid sx={{ position: "absolute", bottom: 0, right: 0, left: 0 }}>
-            <Grid>
-                <Fab sx={{ background: "#66bb6a", position: "absolute", right: 0 }} onClick={confirmDrinks}>
-                    <CheckIcon sx={{color: "white"}} />
-                </Fab>
-            </Grid>
-            <BottomInformation />
-        </Grid>
+        <BottomInformation totalPrice={Object.values(addedDrinks).reduce((prev, res) => prev + (res.item.price * res.count), 0)} />
+        <Fab sx={{ background: "#66bb6a", position: "absolute", right: "8px", bottom: "64px" }} onClick={confirmDrinks}>
+            <CheckIcon sx={{ color: "white" }} />
+        </Fab>
     </Grid>);
 }
 
