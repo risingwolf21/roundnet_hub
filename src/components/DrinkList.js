@@ -1,7 +1,7 @@
-import { Fab, Grid, Paper } from "@mui/material";
+import { Fab, Grid } from "@mui/material";
 import { connect } from "react-redux";
 import { compose } from "redux";
-import { firestoreConnect, isLoaded, useFirebase, useFirestore } from "react-redux-firebase";
+import { firestoreConnect, isLoaded, useFirestore } from "react-redux-firebase";
 import DrinkItem from "./DrinkItem";
 import { useState } from "react";
 import CheckIcon from '@mui/icons-material/Check';
