@@ -1,9 +1,27 @@
-import { Divider, List, ListItem, ListItemIcon, ListItemText, SwipeableDrawer } from "@mui/material";
+import { Divider, List, ListItem, ListItemIcon, ListItemText, SwipeableDrawer, Toolbar } from "@mui/material";
 import React from "react";
 import InboxIcon from '@mui/icons-material/Inbox';
 import MailIcon from '@mui/icons-material/Mail';
+import { useNavigate } from "react-router-dom";
 
-const SideBar = ({ open, onClose, onOpen }) => {
+const SCREENS = [
+    {
+        label: "Zusammenfassung",
+        key: "history"
+    },
+    {
+        label: "Benutzer",
+        key: "user"
+    },
+    {
+        label: "Getränke",
+        key: "drinks"
+    }
+];
+
+const SideBar = ({ open, onClose, onOpen, onClick }) => {
+
+    let navigate = useNavigate();
 
     const iOS = typeof navigator !== 'undefined' && /iPad|iPhone|iPod/.test(navigator.userAgent);
 
@@ -15,23 +33,13 @@ const SideBar = ({ open, onClose, onOpen }) => {
                 onKeyDown={onClose}
             >
                 <List>
-                    {["Inbox", "Starred", "Send email", "Drafts"].map((text, index) => (
-                        <ListItem button key={text}>
+                    <Toolbar/>
+                    {SCREENS.map((item, index) => (
+                        <ListItem button key={item} onClick={() => navigate(item.key)}>
                             <ListItemIcon>
                                 {index % 2 === 0 ? <InboxIcon /> : <MailIcon />}
                             </ListItemIcon>
-                            <ListItemText primary={text} />
-                        </ListItem>
-                    ))}
-                </List>
-                <Divider />
-                <List>
-                    {["All mail", "Trash", "Spam"].map((text, index) => (
-                        <ListItem button key={text}>
-                            <ListItemIcon>
-                                {index % 2 === 0 ? <InboxIcon /> : <MailIcon />}
-                            </ListItemIcon>
-                            <ListItemText primary={text} />
+                            <ListItemText primary={item.label} />
                         </ListItem>
                     ))}
                 </List>

@@ -5,12 +5,13 @@ import * as serviceWorker from './serviceWorker';
 import 'firebase/compat/auth';
 import 'firebase/compat/firestore';
 import { Provider } from 'react-redux';
-import App from "./App";
 import firebase from 'firebase/compat/app';
 import { ReactReduxFirebaseProvider } from 'react-redux-firebase';
 import { createFirestoreInstance } from 'redux-firestore';
-import AuthGate from './AuthGate';
 import "./global.css";
+import Routing from './Routing';
+import App from './App';
+import AuthGate from './AuthGate';
 
 const fbConfig = {
   apiKey: process.env.REACT_APP_apiKey,
