@@ -24,7 +24,15 @@ const fbConfig = {
 
 const rrfConfig = {
   userProfile: 'users',
-  useFirestoreForProfile: true // Firestore for Profile instead of Realtime DB
+  useFirestoreForProfile: true, // Firestore for Profile instead of Realtime DB
+  profileFactory: (userData, profileData, firebase) => { // how profiles are stored in database
+    const { user } = userData
+    return {
+      email: user.email,
+      displayName: user.displayName,
+      role: "user",
+    }
+  }
 }
 
 firebase.initializeApp(fbConfig);

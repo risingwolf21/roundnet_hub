@@ -2,20 +2,26 @@ import { Divider, List, ListItem, ListItemIcon, ListItemText, SwipeableDrawer, T
 import React from "react";
 import InboxIcon from '@mui/icons-material/Inbox';
 import MailIcon from '@mui/icons-material/Mail';
+import AccountIcon from '@mui/icons-material/AccountBox';
+import LiquorIcon from '@mui/icons-material/Liquor';
+import HistoryIcon from '@mui/icons-material/History';
 import { useNavigate } from "react-router-dom";
 
 const SCREENS = [
     {
-        label: "Zusammenfassung",
-        key: "history"
+        label: "Verlauf",
+        key: "history",
+        icon: <HistoryIcon />
     },
     {
         label: "Benutzer",
-        key: "user"
+        key: "user",
+        icon: <AccountIcon />
     },
     {
         label: "Getränke",
-        key: "drinks"
+        key: "drinks",
+        icon: <LiquorIcon />
     }
 ];
 
@@ -29,15 +35,16 @@ const SideBar = ({ open, onClose, onOpen, onClick }) => {
         return (
             <div
                 role="presentation"
+                style={{width: "250px"}}
                 onClick={onClose}
                 onKeyDown={onClose}
             >
                 <List>
-                    <Toolbar/>
+                    <Toolbar />
                     {SCREENS.map((item, index) => (
-                        <ListItem button key={item} onClick={() => navigate(item.key)}>
+                        <ListItem button key={item} divider onClick={() => navigate(item.key)}>
                             <ListItemIcon>
-                                {index % 2 === 0 ? <InboxIcon /> : <MailIcon />}
+                                {item.icon}
                             </ListItemIcon>
                             <ListItemText primary={item.label} />
                         </ListItem>

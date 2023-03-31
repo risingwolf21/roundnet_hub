@@ -20,7 +20,10 @@ const RegisterScreen = ({ onRegister, gotoLogin, errorMessage }) => {
         if (data.get('password1') === data.get('password2')) {
             onRegister({
                 email: data.get('email'),
-                password: data.get('password1'),
+                password: data.get('password1')
+            }, {
+                username: data.get('username'),
+                email: data.get('email')
             });
         }
     };
@@ -48,9 +51,17 @@ const RegisterScreen = ({ onRegister, gotoLogin, errorMessage }) => {
                             required
                             fullWidth
                             id="email"
-                            label="Email Address"
+                            label="Email Addresse"
                             name="email"
                             autoComplete="email"
+                            autoFocus
+                        />
+                        <TextField
+                            margin="normal"
+                            required
+                            fullWidth
+                            id="username"
+                            label="Name"
                             autoFocus
                         />
                         <TextField
