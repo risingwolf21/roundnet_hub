@@ -21,8 +21,9 @@ const AuthScreen = () => {
         });
     }
 
-    const onRegister = (credentials, profile) => {
-        firebase.createUser(credentials, profile).catch((error) => {
+    const onRegister = ({ email, password, displayName }) => {
+        console.log(email, password, displayName);
+        firebase.createUser({ email, password }, { displayName, email }).catch((error) => {
             setErrorMessage(error.message);
         });
     }

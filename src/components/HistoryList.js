@@ -38,7 +38,7 @@ const HistoryList = ({ authId, history }) => {
         sx={{ overflow: "auto" }}>
         {
 
-            isLoaded(history) ? <>
+            isLoaded(history) ? history ? <>
                 <Grid width="100%">
                     {
                         Object.values(history).sort((a, b) => b.date - a.date).map(x => <HistoryItem item={x} />)
@@ -49,6 +49,7 @@ const HistoryList = ({ authId, history }) => {
                     <BottomInformation title={"Zusammenfassung"} totalPrice={Object.values(history).flatMap(x => x.drinks).reduce((prev, res) => prev + (res.price * res.count), 0) + "€"} />
                 }
             </>
+                : <h1>No data found</h1>
                 : <CircularProgress />
         }
     </Grid>

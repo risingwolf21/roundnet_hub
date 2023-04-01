@@ -1,39 +1,60 @@
-import { Fab, Grid, Input, TextField } from "@mui/material";
+import { Checkbox, Fab, FormControlLabel, Grid, TextField } from "@mui/material";
 import { connect } from "react-redux";
 import { compose } from "redux";
 import CheckIcon from '@mui/icons-material/Check';
-import { useFirebase } from "react-redux-firebase";
+import { isLoaded, useFirebase } from "react-redux-firebase";
+import { Box } from "@mui/system";
 
 
 const UserScreen = ({ auth, profile }) => {
 
     const firebase = useFirebase();
 
-    const updateProfile = () => {
-        firebase.updateProfile({ role: "admin" });
-    }
+    const handleSubmit = (event) => {
+        event.preventDefault();
+        const data = new FormData(event.currentTarget);
+        var displayName = data.get('displayName');
+        if (displayName !== profile.displayName) {
+
+            firebase.updateProfile({ displayName: displayName });
+            firebase.updateAuth({ displayName: displayName });
+        }
+    };
 
     return <Grid
         width="100%"
         sx={{ paddingLeft: 2, paddingRight: 2 }}>
-        <TextField
-            fullWidth
-            id="filled-disabled"
-            variant="filled"
-            defaultValue={auth.displayName ? auth.displayName : ""}
-            label="Name"
-            margin="normal" />
-        <TextField
-            fullWidth
-            disabled
-            id="filled-disabled"
-            variant="filled"
-            defaultValue={auth.email}
-            label="Email"
-            margin="normal" />
-        <Fab sx={{ background: "#66bb6a", position: "absolute", right: "8px", bottom: "64px" }} onClick={updateProfile}>
-            <CheckIcon sx={{ color: "white" }} />
-        </Fab>
+        {
+            isLoaded(profile) && <>
+                <Box component="form" onSubmit={handleSubmit} noValidate>
+                    <TextField
+                        fullWidth
+                        id="displayName"
+                        name="displayName"
+                        variant="filled"
+                        defaultValue={profile.displayName}
+                        label="Name"
+                        margin="normal" />
+                    <TextField
+                        fullWidth
+                        disabled
+                        id="filled-disabled"
+                        variant="filled"
+                        defaultValue={auth.email}
+                        label="Email"
+                        margin="normal" />
+                    {
+                        profile.role === "admin" && <FormControlLabel
+                            control={<Checkbox checked={profile.role === "admin"} disabled />}
+                            label="Adminrechte"
+                        />
+                    }
+                    <Fab sx={{ background: "#66bb6a", position: "absolute", right: "8px", bottom: "64px" }} type="submit">
+                        <CheckIcon sx={{ color: "white" }} />
+                    </Fab>
+                </Box>
+            </>
+        }
     </Grid >
 }
 export default compose(

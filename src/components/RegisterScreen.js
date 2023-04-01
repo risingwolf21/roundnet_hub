@@ -20,10 +20,8 @@ const RegisterScreen = ({ onRegister, gotoLogin, errorMessage }) => {
         if (data.get('password1') === data.get('password2')) {
             onRegister({
                 email: data.get('email'),
-                password: data.get('password1')
-            }, {
-                username: data.get('username'),
-                email: data.get('email')
+                password: data.get('password1'),
+                displayName: data.get('username'),
             });
         }
     };
@@ -61,6 +59,7 @@ const RegisterScreen = ({ onRegister, gotoLogin, errorMessage }) => {
                             required
                             fullWidth
                             id="username"
+                            name="username"
                             label="Name"
                             autoFocus
                         />

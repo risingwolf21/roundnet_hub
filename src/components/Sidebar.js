@@ -1,7 +1,5 @@
-import { Divider, List, ListItem, ListItemIcon, ListItemText, SwipeableDrawer, Toolbar } from "@mui/material";
+import { List, ListItem, ListItemIcon, ListItemText, SwipeableDrawer, Toolbar } from "@mui/material";
 import React from "react";
-import InboxIcon from '@mui/icons-material/Inbox';
-import MailIcon from '@mui/icons-material/Mail';
 import AccountIcon from '@mui/icons-material/AccountBox';
 import LiquorIcon from '@mui/icons-material/Liquor';
 import HistoryIcon from '@mui/icons-material/History';
@@ -42,7 +40,7 @@ const SideBar = ({ open, onClose, onOpen, onClick }) => {
                 <List>
                     <Toolbar />
                     {SCREENS.map((item, index) => (
-                        <ListItem button key={item} divider onClick={() => navigate(item.key)}>
+                        <ListItem button key={item.key} divider onClick={() => navigate(item.key)}>
                             <ListItemIcon>
                                 {item.icon}
                             </ListItemIcon>

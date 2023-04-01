@@ -9,7 +9,6 @@ import firebase from 'firebase/compat/app';
 import { ReactReduxFirebaseProvider } from 'react-redux-firebase';
 import { createFirestoreInstance } from 'redux-firestore';
 import "./global.css";
-import Routing from './Routing';
 import App from './App';
 import AuthGate from './AuthGate';
 
@@ -29,7 +28,7 @@ const rrfConfig = {
     const { user } = userData
     return {
       email: user.email,
-      displayName: user.displayName,
+      displayName: profileData.displayName,
       role: "user",
     }
   }
