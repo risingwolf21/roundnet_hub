@@ -5,12 +5,12 @@ import * as serviceWorker from './serviceWorker';
 import 'firebase/compat/auth';
 import 'firebase/compat/firestore';
 import { Provider } from 'react-redux';
-import App from "./App";
 import firebase from 'firebase/compat/app';
 import { ReactReduxFirebaseProvider } from 'react-redux-firebase';
 import { createFirestoreInstance } from 'redux-firestore';
-import AuthGate from './AuthGate';
 import "./global.css";
+import App from './App';
+import AuthGate from './AuthGate';
 
 const fbConfig = {
   apiKey: process.env.REACT_APP_apiKey,
@@ -23,7 +23,15 @@ const fbConfig = {
 
 const rrfConfig = {
   userProfile: 'users',
-  useFirestoreForProfile: true // Firestore for Profile instead of Realtime DB
+  useFirestoreForProfile: true, // Firestore for Profile instead of Realtime DB
+  profileFactory: (userData, profileData, firebase) => { // how profiles are stored in database
+    const { user } = userData
+    return {
+      email: user.email,
+      displayName: profileData.displayName,
+      role: "user",
+    }
+  }
 }
 
 firebase.initializeApp(fbConfig);

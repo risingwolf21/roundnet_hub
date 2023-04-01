@@ -14,8 +14,9 @@ const DrinkList = ({ dispatch, drinks, profile, auth }) => {
     const [addedDrinks, setAddedDrinks] = useState({});
 
     const confirmDrinks = () => {
-        firestore.add("history", addedDrinks).then((result) => {
-            firestore.set(`users/${auth.uid}/history/${result.id}`, addedDrinks);
+        let data = { date: Date.now(), drinks: Object.values(addedDrinks) };
+        firestore.add("history", data).then((result) => {
+            firestore.set(`users/${auth.uid}/history/${result.id}`, data);
         });
         setAddedDrinks({});
     }
@@ -25,7 +26,7 @@ const DrinkList = ({ dispatch, drinks, profile, auth }) => {
         if (drink.id in temp) {
             temp[drink.id].count = temp[drink.id].count + 1;
         } else {
-            temp[drink.id] = { count: 1, item: drink };
+            temp[drink.id] = { count: 1, ...drink };
         }
         setAddedDrinks({ ...temp });
     }
@@ -33,7 +34,11 @@ const DrinkList = ({ dispatch, drinks, profile, auth }) => {
     const onRemoveDrinkClick = (drink) => {
         var temp = addedDrinks;
         if (drink.id in temp) {
-            temp[drink.id].count = temp[drink.id].count - 1 > 0 ? temp[drink.id].count - 1 : 0;
+            if (temp[drink.id].count - 1 === 0) {
+                delete temp[drink.id];
+            } else {
+                temp[drink.id].count = temp[drink.id].count - 1;
+            }
         }
         setAddedDrinks({ ...temp });
     }
@@ -50,7 +55,7 @@ const DrinkList = ({ dispatch, drinks, profile, auth }) => {
                 isLoaded(drinks) && drinks.map(drink => <DrinkItem drink={drink} count={addedDrinks[drink.id]?.count} onAddClick={() => onAddDrinkClick(drink)} onMinusClick={() => onRemoveDrinkClick(drink)} />)
             }
         </Grid>
-        <BottomInformation totalPrice={Object.values(addedDrinks).reduce((prev, res) => prev + (res.item.price * res.count), 0)} />
+        <BottomInformation title={"Gesamtpreis"} totalPrice={Object.values(addedDrinks).reduce((prev, res) => prev + (res.price * res.count), 0) + " €"} />
         <Fab sx={{ background: "#66bb6a", position: "absolute", right: "8px", bottom: "64px" }} onClick={confirmDrinks}>
             <CheckIcon sx={{ color: "white" }} />
         </Fab>

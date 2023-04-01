@@ -21,6 +21,7 @@ const RegisterScreen = ({ onRegister, gotoLogin, errorMessage }) => {
             onRegister({
                 email: data.get('email'),
                 password: data.get('password1'),
+                displayName: data.get('username'),
             });
         }
     };
@@ -48,9 +49,18 @@ const RegisterScreen = ({ onRegister, gotoLogin, errorMessage }) => {
                             required
                             fullWidth
                             id="email"
-                            label="Email Address"
+                            label="Email Addresse"
                             name="email"
                             autoComplete="email"
+                            autoFocus
+                        />
+                        <TextField
+                            margin="normal"
+                            required
+                            fullWidth
+                            id="username"
+                            name="username"
+                            label="Name"
                             autoFocus
                         />
                         <TextField
