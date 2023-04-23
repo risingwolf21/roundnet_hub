@@ -6,6 +6,7 @@ import DrinkItem from "./DrinkItem";
 import { useState } from "react";
 import CheckIcon from '@mui/icons-material/Check';
 import BottomInformation from "./BottomInformation";
+import { DRINK_OPEN } from "../constants";
 
 const DrinkList = ({ dispatch, drinks, profile, auth }) => {
 
@@ -26,7 +27,7 @@ const DrinkList = ({ dispatch, drinks, profile, auth }) => {
         if (drink.id in temp) {
             temp[drink.id].count = temp[drink.id].count + 1;
         } else {
-            temp[drink.id] = { count: 1, ...drink };
+            temp[drink.id] = { count: 1, state: DRINK_OPEN, ...drink };
         }
         setAddedDrinks({ ...temp });
     }
