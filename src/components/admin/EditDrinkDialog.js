@@ -77,7 +77,7 @@ const EditDrinkDialog = ({ drink, onDrinkEditFinished, open, handleClose }) => {
                 <ListItem>
                     <ListItemAvatar>
                         <Avatar>
-                            <img src={logoUrl} width={40} height={40} />
+                            <img src={logoUrl} alt="logo" width={40} height={40} />
                         </Avatar>
                     </ListItemAvatar>
                     <ListItemText>

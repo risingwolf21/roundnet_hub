@@ -1,9 +1,8 @@
-import { Avatar, Box, Fab, Grid, IconButton, ListItem, ListItemAvatar, ListItemSecondaryAction, ListItemText, Paper } from "@mui/material";
+import { Avatar, Fab, Grid, IconButton, ListItem, ListItemAvatar, ListItemSecondaryAction, ListItemText, Paper } from "@mui/material";
 import { connect } from "react-redux";
 import { compose } from "redux";
 import { firestoreConnect, isLoaded, useFirestore } from "react-redux-firebase";
 import AddIcon from '@mui/icons-material/Add';
-import logo from '../../images/coca_cola_logo.svg';
 import EditIcon from '@mui/icons-material/Edit';
 import EditDrinkDialog from "./EditDrinkDialog";
 import LocalDrinkIcon from '@mui/icons-material/LocalDrink';
