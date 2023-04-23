@@ -1,9 +1,11 @@
-import { List, ListItem, ListItemIcon, ListItemText, SwipeableDrawer, Toolbar } from "@mui/material";
+import { Divider, List, ListItem, ListItemIcon, ListItemText, ListSubheader, SwipeableDrawer, Toolbar } from "@mui/material";
 import React from "react";
 import AccountIcon from '@mui/icons-material/AccountBox';
 import LiquorIcon from '@mui/icons-material/Liquor';
 import HistoryIcon from '@mui/icons-material/History';
 import { useNavigate } from "react-router-dom";
+import { compose } from "redux";
+import { connect } from "react-redux";
 
 const SCREENS = [
     {
@@ -23,7 +25,15 @@ const SCREENS = [
     }
 ];
 
-const SideBar = ({ open, onClose, onOpen, onClick }) => {
+const ADMIN_SCREENS = [
+    {
+        label: "Getränke - Admin",
+        key: "drinks-admin",
+        icon: <LiquorIcon />
+    }
+]
+
+const SideBar = ({ open, onClose, onOpen, profile, auth }) => {
 
     let navigate = useNavigate();
 
@@ -33,7 +43,7 @@ const SideBar = ({ open, onClose, onOpen, onClick }) => {
         return (
             <div
                 role="presentation"
-                style={{width: "250px"}}
+                style={{ width: "250px" }}
                 onClick={onClose}
                 onKeyDown={onClose}
             >
@@ -47,6 +57,23 @@ const SideBar = ({ open, onClose, onOpen, onClick }) => {
                             <ListItemText primary={item.label} />
                         </ListItem>
                     ))}
+
+                    {
+                        profile.role === "admin" && <>
+                            <Divider/>
+                            <ListSubheader>Admin Optionen</ListSubheader>
+                            {
+                                ADMIN_SCREENS.map((item, index) => (
+                                    <ListItem button key={item.key} divider onClick={() => navigate(item.key)}>
+                                        <ListItemIcon>
+                                            {item.icon}
+                                        </ListItemIcon>
+                                        <ListItemText primary={item.label} />
+                                    </ListItem>
+                                ))
+                            }
+                        </>
+                    }
                 </List>
             </div>
         );
@@ -63,5 +90,9 @@ const SideBar = ({ open, onClose, onOpen, onClick }) => {
     </SwipeableDrawer>
 
 }
-
-export default SideBar;
+export default compose(
+    connect((state) => ({
+        profile: state.firebase.profile,
+        auth: state.firebase.auth
+    }))
+)(SideBar);
