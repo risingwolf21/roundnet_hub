@@ -1,8 +1,9 @@
 import { connect } from "react-redux";
 import { compose } from "redux";
 import { firestoreConnect, isLoaded } from "react-redux-firebase";
-import { Box, Button, CircularProgress, Grid, List, ListItem, ListItemAvatar, ListItemSecondaryAction, ListItemText, Typography } from "@mui/material";
+import { Box, Button, CircularProgress, Divider, Grid, List, ListItem, ListItemAvatar, ListItemSecondaryAction, ListItemText, Typography } from "@mui/material";
 import { HISTORY_ITEM_NOT_PAID } from "../constants";
+import _, { parseInt } from "lodash";
 
 const userHistory = 'userHistory';
 
@@ -28,24 +29,50 @@ const PayDrinksScreen = ({ history, auth }) => {
         </Grid>
     }
 
+    console.log(_.chain(Object.values(history)
+        .flatMap(x => x.drinks))
+        // Group the elements of Array based on `color` property
+        .groupBy("name")
+        // `key` is group's name (color), `value` is the array of objects
+        .map((value, key) => ({ name: key, count: value.reduce((prev, curr) => prev + curr.count, 0), priceSingle: value[0]?.price ?? "NaN", priceTotal: value.reduce((prev, curr) => prev + curr.count, 0) * value[0]?.price ?? 0, drinks: value }))
+        .value())
+
     return (
         <Box>
             <List>
                 {
-                    history && Object.values(history)
-                        .flatMap(x => x.drinks)
+                    history && _.chain(Object.values(history)
+                        .flatMap(x => x.drinks))
+                        // Group the elements of Array based on `color` property
+                        .groupBy("name")
+                        // `key` is group's name (color), `value` is the array of objects
+                        .map((value, key) => ({ name: key, count: value.reduce((prev, curr) => prev + curr.count, 0), priceSingle: value[0]?.price ?? "NaN", priceTotal: value.reduce((prev, curr) => prev + (curr.count * curr.price), 0), drinks: value }))
+                        .value()
                         .map(x => <ListItem>
                             <ListItemAvatar>
                                 <Typography>{x.count + " x"}</Typography>
                             </ListItemAvatar>
-                            <ListItemText primary={x.name} secondary={x.price + " €"} />
+                            <ListItemText primary={x.name} secondary={x.priceSingle + " €"} />
                             <ListItemSecondaryAction>
-                                <Typography>{x.count * x.price} €</Typography>
+                                <Typography>{x.count * x.priceTotal} €</Typography>
                             </ListItemSecondaryAction>
                         </ListItem>)
                 }
+                <Divider />
+                <ListItem>
+                    <ListItemText primary={"Gesamtkosten"} />
+                    <ListItemSecondaryAction>
+                        <Typography>
+                            {
+                                Object.values(history)
+                                    .flatMap(x => x.drinks)
+                                    .reduce((prev, curr) => prev + (curr.count * curr.price), 0)
+                            } €
+                        </Typography>
+                    </ListItemSecondaryAction>
+                </ListItem>
             </List>
-            <Box sx={{ position: "absolute", bottom: 0, left: 0, right: 0, textAlign: "center", pl: 2, pr: 2, pb: 2 }}>
+            <Box sx={{ position: "fixed", bottom: 0, left: 0, right: 0, textAlign: "center", pl: 2, pr: 2, pb: 2 }}>
                 <Button onClick={payOnClick} variant="contained" fullWidth sx={{ borderRadius: "50px !important", fontSize: "16px", fontFamily: "sans-serif", lineSpacing: "24px" }}>
                     Bezahlen
                 </Button>
