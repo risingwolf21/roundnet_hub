@@ -6,7 +6,7 @@ import DrinkItem from "./DrinkItem";
 import { useState } from "react";
 import CheckIcon from '@mui/icons-material/Check';
 import BottomInformation from "./BottomInformation";
-import { DRINK_OPEN } from "../constants";
+import { DRINK_OPEN, HISTORY_ITEM_NOT_PAID } from "../constants";
 
 const DrinkList = ({ dispatch, drinks, profile, auth }) => {
 
@@ -15,7 +15,7 @@ const DrinkList = ({ dispatch, drinks, profile, auth }) => {
     const [addedDrinks, setAddedDrinks] = useState({});
 
     const confirmDrinks = () => {
-        let data = { date: Date.now(), drinks: Object.values(addedDrinks) };
+        let data = { date: Date.now(), state: HISTORY_ITEM_NOT_PAID, drinks: Object.values(addedDrinks) };
         firestore.add("history", data).then((result) => {
             firestore.set(`users/${auth.uid}/history/${result.id}`, data);
         });

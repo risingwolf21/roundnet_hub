@@ -1,9 +1,12 @@
-import React, { useRef, useState } from "react";
-import { AppBar, Avatar, Button, Dialog, IconButton, ListItem, ListItemAvatar, ListItemSecondaryAction, ListItemText, Slide, TextField, Toolbar, Typography } from "@mui/material"
+import React, { useEffect, useRef, useState } from "react";
+import { AppBar, Avatar, Button, Dialog, IconButton, List, ListItem, ListItemAvatar, ListItemSecondaryAction, ListItemText, Slide, TextField, Toolbar, Typography } from "@mui/material"
 import CloseIcon from '@mui/icons-material/Close';
 import { Box } from "@mui/system";
 import Checkbox from '@mui/material/Checkbox';
 import ReplayIcon from '@mui/icons-material/Replay';
+import LocalDrinkIcon from '@mui/icons-material/LocalDrink';
+import EuroIcon from '@mui/icons-material/Euro';
+import FormatSizeIcon from '@mui/icons-material/FormatSize';
 
 const Transition = React.forwardRef(function Transition(props, ref) {
     return <Slide direction="up" ref={ref} {...props} />;
@@ -11,9 +14,14 @@ const Transition = React.forwardRef(function Transition(props, ref) {
 
 const EditDrinkDialog = ({ drink, onDrinkEditFinished, open, handleClose }) => {
 
-    const [logoUrl, setLogoUrl] = useState(drink?.logoUrl ?? "");
-    const [activeDrink, setActiveDrink] = useState(drink?.active ?? false);
-    const valueRef = useRef('')
+    useEffect(() => {
+        setLogoUrl(drink.imageUrl ?? "");
+        setActiveDrink(drink.active ?? false);
+    }, [drink]);
+
+    const [logoUrl, setLogoUrl] = useState();
+    const [activeDrink, setActiveDrink] = useState();
+    const valueRef = useRef('');
 
     const handleSubmit = (event) => {
         event.preventDefault();
@@ -47,44 +55,66 @@ const EditDrinkDialog = ({ drink, onDrinkEditFinished, open, handleClose }) => {
                         <CloseIcon />
                     </IconButton>
                     <Typography sx={{ ml: 2, flex: 1 }} variant="h6" component="div">
-                        Getränk {drink ? "bearbeiten" : "erstellen"}
+                        Getränk {drink.id ? "bearbeiten" : "erstellen"}
                     </Typography>
                     <Button autoFocus color="inherit" type="submit">
                         Speichern
                     </Button>
                 </Toolbar>
             </AppBar>
-            <Box sx={{ padding: 2, listStyleType: "none" }}>
-                <TextField
-                    margin="normal"
-                    required
-                    fullWidth
-                    id="name"
-                    label="Name"
-                    name="name"
-                    defaultValue={drink?.name ? drink.name : ""}
-                />
-                <TextField
-                    margin="normal"
-                    required
-                    fullWidth
-                    id="price"
-                    label="Preis"
-                    name="price"
-                    type={"number"}
-                    defaultValue={drink?.price ? drink.price : 0}
-                />
+            <List>
                 <ListItem>
                     <ListItemAvatar>
                         <Avatar>
-                            <img src={logoUrl} alt="logo" width={40} height={40} />
+                            <FormatSizeIcon />
                         </Avatar>
                     </ListItemAvatar>
                     <ListItemText>
                         <TextField
                             margin="normal"
                             required
-                            sx={{ width: "98%" }}
+                            fullWidth
+                            id="name"
+                            label="Name"
+                            name="name"
+                            defaultValue={drink?.name ? drink.name : ""}
+                        />
+                    </ListItemText>
+                </ListItem>
+                <ListItem>
+                    <ListItemAvatar>
+                        <Avatar>
+                            <EuroIcon />
+                        </Avatar>
+                    </ListItemAvatar>
+                    <ListItemText>
+                        <TextField
+                            margin="normal"
+                            required
+                            fullWidth
+                            id="price"
+                            label="Preis"
+                            name="price"
+                            type={"number"}
+                            defaultValue={drink?.price ? drink.price : 0}
+                        />
+                    </ListItemText>
+                </ListItem>
+                <ListItem>
+                    <ListItemAvatar>
+                        <Avatar>
+                            {
+                                drink.imageUrl
+                                    ? <img src={drink.imageUrl} alt="logo" width={40} height={40} />
+                                    : <LocalDrinkIcon />
+                            }
+                        </Avatar>
+                    </ListItemAvatar>
+                    <ListItemText>
+                        <TextField
+                            margin="normal"
+                            required
+                            sx={{ width: "95%" }}
                             id="logo"
                             label="Logo URL"
                             name="logo"
@@ -106,7 +136,7 @@ const EditDrinkDialog = ({ drink, onDrinkEditFinished, open, handleClose }) => {
                         <Typography>Aktiv</Typography>
                     </ListItemText>
                 </ListItem>
-            </Box>
+            </List>
         </Box>
     </Dialog>
 }

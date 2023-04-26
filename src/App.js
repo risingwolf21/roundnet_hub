@@ -9,11 +9,16 @@ import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import PageNotFound from './components/PageNotFound';
 import HistoryScreen from './components/HistoryScreen';
 import AdminDrinkList from './components/admin/AdminDrinkList';
+import PayDrinksScreen from './components/PayDrinksScreen';
+import { compose } from 'redux';
+import { connect } from 'react-redux';
 
-const App = () => {
+const App = ({auth}) => {
   const firebase = useFirebase();
 
   const [drawerOpen, setDrawerOpen] = React.useState(false);
+
+  console.log(auth.uid);
 
   return <Grid>
     <CustomAppBar logout={() => firebase.logout()} handleMenuClick={(val) => setDrawerOpen(val)} drawerOpen={drawerOpen} />
@@ -24,12 +29,16 @@ const App = () => {
         <Route path="/drinks" element={<DrinkList />} />
         <Route path='/drinks-admin' element={<AdminDrinkList />} />
         <Route path="/user" element={<UserScreen />} />
-        <Route path="/history" element={<HistoryScreen />} />
+        <Route path="/history" element={<HistoryScreen auth={auth} />} />
+        <Route path="/pay" element={<PayDrinksScreen auth={auth} />} />
         <Route path="*" element={<PageNotFound />} />
       </Routes>
       <SideBar open={drawerOpen} onClose={() => setDrawerOpen(false)} onOpen={() => setDrawerOpen(true)} />
     </BrowserRouter>
   </Grid>
 }
-
-export default App;
+export default compose(
+  connect((state) => ({
+    auth: state.firebase.auth
+  }))
+)(App);
