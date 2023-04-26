@@ -1,7 +1,7 @@
 import { connect } from "react-redux";
 import { compose } from "redux";
 import { firestoreConnect, isLoaded } from "react-redux-firebase";
-import { Box, Button, CircularProgress, Grid, List, ListItem, ListItemAvatar, ListItemSecondaryAction, ListItemText, ListSubheader, Typography } from "@mui/material";
+import { Box, Button, CircularProgress, Grid, List, ListItem, ListItemAvatar, ListItemSecondaryAction, ListItemText, Typography } from "@mui/material";
 import { HISTORY_ITEM_NOT_PAID } from "../constants";
 
 const userHistory = 'userHistory';
