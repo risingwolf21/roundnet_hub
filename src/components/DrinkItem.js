@@ -1,5 +1,4 @@
 import { Avatar, Badge, Box, IconButton, ListItem, ListItemAvatar, ListItemText, Paper } from '@mui/material';
-import logo from '../images/coca_cola_logo.svg';
 import AddIcon from '@mui/icons-material/Add';
 import RemoveIcon from '@mui/icons-material/Remove';
 import LocalDrinkIcon from '@mui/icons-material/LocalDrink';
