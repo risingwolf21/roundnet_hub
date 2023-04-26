@@ -3,6 +3,7 @@ import React from "react";
 import AccountIcon from '@mui/icons-material/AccountBox';
 import LiquorIcon from '@mui/icons-material/Liquor';
 import HistoryIcon from '@mui/icons-material/History';
+import PaymentIcon from '@mui/icons-material/Payment';
 import { useNavigate } from "react-router-dom";
 import { compose } from "redux";
 import { connect } from "react-redux";
@@ -22,6 +23,11 @@ const SCREENS = [
         label: "Getränke",
         key: "drinks",
         icon: <LiquorIcon />
+    },
+    {
+        label: "Bezahlen",
+        key: "pay",
+        icon: <PaymentIcon />
     }
 ];
 
