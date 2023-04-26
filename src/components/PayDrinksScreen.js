@@ -1,7 +1,7 @@
 import { connect } from "react-redux";
 import { compose } from "redux";
 import { firestoreConnect, isLoaded } from "react-redux-firebase";
-import { Box, Button, CircularProgress, Grid, List, ListItem, ListItemText } from "@mui/material";
+import { Box, Button, CircularProgress, Grid, List, ListItem, ListItemAvatar, ListItemSecondaryAction, ListItemText, ListSubheader, Typography } from "@mui/material";
 import { HISTORY_ITEM_NOT_PAID } from "../constants";
 
 const userHistory = 'userHistory';
@@ -32,7 +32,17 @@ const PayDrinksScreen = ({ history, auth }) => {
         <Box>
             <List>
                 {
-                    history && Object.values(history).map(x => <ListItem><ListItemText primary={x.name}/></ListItem>)
+                    history && Object.values(history)
+                        .flatMap(x => x.drinks)
+                        .map(x => <ListItem>
+                            <ListItemAvatar>
+                                <Typography>{x.count + " x"}</Typography>
+                            </ListItemAvatar>
+                            <ListItemText primary={x.name} secondary={x.price + " €"} />
+                            <ListItemSecondaryAction>
+                                <Typography>{x.count * x.price} €</Typography>
+                            </ListItemSecondaryAction>
+                        </ListItem>)
                 }
             </List>
             <Box sx={{ position: "absolute", bottom: 0, left: 0, right: 0, textAlign: "center", pl: 2, pr: 2, pb: 2 }}>
