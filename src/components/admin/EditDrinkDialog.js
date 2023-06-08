@@ -15,8 +15,8 @@ const Transition = React.forwardRef(function Transition(props, ref) {
 const EditDrinkDialog = ({ drink, onDrinkEditFinished, open, handleClose }) => {
 
     useEffect(() => {
-        setLogoUrl(drink.imageUrl ?? "");
-        setActiveDrink(drink.active ?? false);
+        setLogoUrl(drink?.imageUrl ?? "");
+        setActiveDrink(drink?.active ?? false);
     }, [drink]);
 
     const [logoUrl, setLogoUrl] = useState();
@@ -55,7 +55,7 @@ const EditDrinkDialog = ({ drink, onDrinkEditFinished, open, handleClose }) => {
                         <CloseIcon />
                     </IconButton>
                     <Typography sx={{ ml: 2, flex: 1 }} variant="h6" component="div">
-                        Getränk {drink.id ? "bearbeiten" : "erstellen"}
+                        Getränk {drink?.id ? "bearbeiten" : "erstellen"}
                     </Typography>
                     <Button autoFocus color="inherit" type="submit">
                         Speichern
