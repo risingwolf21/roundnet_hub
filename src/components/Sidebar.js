@@ -36,6 +36,11 @@ const ADMIN_SCREENS = [
         label: "Getränke - Admin",
         key: "drinks-admin",
         icon: <LiquorIcon />
+    },
+    {
+        label: "Offene Zahlungen - Admin",
+        key: "payments-admin",
+        icon: <PaymentIcon />
     }
 ]
 

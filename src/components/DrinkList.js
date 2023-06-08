@@ -18,6 +18,9 @@ const DrinkList = ({ dispatch, drinks, profile, auth }) => {
         let data = { date: Date.now(), state: HISTORY_ITEM_NOT_PAID, drinks: Object.values(addedDrinks) };
         firestore.add("history", data).then((result) => {
             firestore.set(`users/${auth.uid}/history/${result.id}`, data);
+            Object.values(addedDrinks).forEach(drink => {
+                firestore.update(`drinks/${drink.id}`, { stock: (drink?.stock - drink.count) ?? 0 });
+            });
         });
         setAddedDrinks({});
     }
