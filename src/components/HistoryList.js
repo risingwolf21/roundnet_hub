@@ -8,7 +8,7 @@ import BottomInformation from "./BottomInformation";
 const userHistory = 'userHistory';
 
 const HistoryItem = ({ item }) => {
-    return <Box container sx={{ width: "100%" }}>
+    return <Box sx={{ width: "100%" }}>
         <Paper key={item} sx={{ margin: 2, padding: 1 }}>
             <Box sx={{ width: "100%" }}>
                 <Typography typography="h6" fontWeight={"bold"}>{moment(new Date(item.date)).format("DD MMMM yyyy HH:mm")}</Typography>

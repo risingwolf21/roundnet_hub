@@ -104,7 +104,7 @@ const EditDrinkDialog = ({ drink, onDrinkEditFinished, open, handleClose }) => {
                     <ListItemAvatar>
                         <Avatar>
                             {
-                                drink.imageUrl
+                                drink?.imageUrl
                                     ? <img src={drink.imageUrl} alt="logo" width={40} height={40} />
                                     : <LocalDrinkIcon />
                             }

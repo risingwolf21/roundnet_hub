@@ -19,8 +19,6 @@ const App = ({auth}) => {
 
   const [drawerOpen, setDrawerOpen] = React.useState(false);
 
-  console.log(auth.uid);
-
   return <Grid>
     <CustomAppBar logout={() => firebase.logout()} handleMenuClick={(val) => setDrawerOpen(val)} drawerOpen={drawerOpen} />
     <Toolbar />

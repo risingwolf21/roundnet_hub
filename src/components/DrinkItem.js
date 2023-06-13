@@ -4,8 +4,14 @@ import RemoveIcon from '@mui/icons-material/Remove';
 import LocalDrinkIcon from '@mui/icons-material/LocalDrink';
 import { isNumber } from 'lodash';
 
-const DrinkItem = ({ drink, count, onAddClick, onMinusClick }) => {
+const StockIndicator = ({stock}) => {
+    if (!stock || !isNumber(stock) || stock <= 0) {
+        return <></>;
+    }
+    return <LinearProgress variant='determinate' value={stock} />
+}
 
+const DrinkItem = ({ drink, count, onAddClick, onMinusClick }) => {
     return <Badge sx={{ marginBottom: 2, width: "100%", "& .MuiBadge-badge": { fontSize: 14 } }} key={drink} color="secondary" badgeContent={count ?? 0}>
         <Paper sx={{ width: "100%" }}>
             <Box sx={{ display: "flex", flexDirection: "row", justifyContent: "space-between" }}>
@@ -32,10 +38,8 @@ const DrinkItem = ({ drink, count, onAddClick, onMinusClick }) => {
                     </IconButton>
                 </Box>
             </Box>
-            {
-                (drink.stock && isNumber(parseInt(drink.stock))) && <LinearProgress variant='determinate' value={drink.stock} />
-            }
-        </Paper>
+            <StockIndicator stock={drink?.stock}/>
+        </Paper> 
     </Badge>
 }
 
