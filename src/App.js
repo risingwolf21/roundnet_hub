@@ -12,6 +12,7 @@ import AdminDrinkList from './components/admin/AdminDrinkList';
 import PayDrinksScreen from './components/PayDrinksScreen';
 import { compose } from 'redux';
 import { connect } from 'react-redux';
+import PaymentsPendingAdmin from './components/admin/PaymentsPendingAdmin';
 
 const App = ({auth}) => {
   const firebase = useFirebase();
@@ -31,6 +32,7 @@ const App = ({auth}) => {
         <Route path="/user" element={<UserScreen />} />
         <Route path="/history" element={<HistoryScreen auth={auth} />} />
         <Route path="/pay" element={<PayDrinksScreen auth={auth} />} />
+        <Route path='/payments-admin' element={<PaymentsPendingAdmin auth={auth} />} />
         <Route path="*" element={<PageNotFound />} />
       </Routes>
       <SideBar open={drawerOpen} onClose={() => setDrawerOpen(false)} onOpen={() => setDrawerOpen(true)} />

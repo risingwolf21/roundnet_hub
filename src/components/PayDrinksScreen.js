@@ -1,19 +1,48 @@
 import { connect } from "react-redux";
 import { compose } from "redux";
-import { firestoreConnect, isLoaded } from "react-redux-firebase";
+import { firestoreConnect, isLoaded, useFirestore } from "react-redux-firebase";
 import { Box, Button, CircularProgress, Divider, Grid, List, ListItem, ListItemAvatar, ListItemSecondaryAction, ListItemText, Typography } from "@mui/material";
 import { HISTORY_ITEM_NOT_PAID } from "../constants";
-import _, { parseInt } from "lodash";
+import _ from "lodash";
 
 const userHistory = 'userHistory';
+const pendingPayment = 'pendingPayment';
 
-const PayDrinksScreen = ({ history, auth }) => {
+const PaymentInProgress = ({ pendingPayment }) => {
+    return <Grid
+        container
+        spacing={0}
+        direction="column"
+        alignItems="center"
+        justifyContent="center"
+        style={{ minHeight: '100vh' }}
+    >
+        <Typography>Aktive ausstehende Zahlung</Typography>
+        <Typography>{JSON.stringify(pendingPayment)}</Typography>
+    </Grid>
+}
+
+const PayDrinksScreen = ({ history, auth, pendingPayment }) => {
+
+    const firestore = useFirestore();
 
     const payOnClick = () => {
+
+        firestore.set(`payments/${auth.uid}`, { 
+            userId: auth.uid, 
+            displayName: auth.displayName,
+            email: auth.email,
+            amountToPay: totalAmountToPay() 
+        });
+
         // Just add the amount you want to request to the end of your link. For example, use PayPal.Me/DiaRusso/25 to request 25.00 USD. The request will be made in your default currency, which you can change at any time in your PayPal Account settings.
         //You can request a specific currency by adding its code to the amount. To ask for Australian Dollars, for example, you would use PayPal.Me/DiaRusso/25AUD.  
-        const newWindow = window.open("https://www.paypal.me/karlwolf2706/2EUR", '_blank', 'noopener,noreferrer')
-        if (newWindow) newWindow.opener = null
+        // const newWindow = window.open("https://www.paypal.me/karlwolf2706/2EUR", '_blank', 'noopener,noreferrer')
+        // if (newWindow) newWindow.opener = null
+    }
+
+    if (isLoaded(pendingPayment) && pendingPayment) {
+        return <PaymentInProgress pendingPayment={pendingPayment} />
     }
 
     if (!isLoaded(history)) {
@@ -29,13 +58,11 @@ const PayDrinksScreen = ({ history, auth }) => {
         </Grid>
     }
 
-    console.log(_.chain(Object.values(history)
-        .flatMap(x => x.drinks))
-        // Group the elements of Array based on `color` property
-        .groupBy("name")
-        // `key` is group's name (color), `value` is the array of objects
-        .map((value, key) => ({ name: key, count: value.reduce((prev, curr) => prev + curr.count, 0), priceSingle: value[0]?.price ?? "NaN", priceTotal: value.reduce((prev, curr) => prev + curr.count, 0) * value[0]?.price ?? 0, drinks: value }))
-        .value())
+    const totalAmountToPay = () => {
+        return Object.values(history)
+            .flatMap(x => x.drinks)
+            .reduce((prev, curr) => prev + (curr.count * curr.price), 0);
+    }
 
     return (
         <Box>
@@ -43,9 +70,9 @@ const PayDrinksScreen = ({ history, auth }) => {
                 {
                     history && _.chain(Object.values(history)
                         .flatMap(x => x.drinks))
-                        // Group the elements of Array based on `color` property
+                        // Group the elements of Array based on `name` property
                         .groupBy("name")
-                        // `key` is group's name (color), `value` is the array of objects
+                        // `key` is group's name (name), `value` is the array of objects
                         .map((value, key) => ({ name: key, count: value.reduce((prev, curr) => prev + curr.count, 0), priceSingle: value[0]?.price ?? "NaN", priceTotal: value.reduce((prev, curr) => prev + (curr.count * curr.price), 0), drinks: value }))
                         .value()
                         .map(x => <ListItem>
@@ -54,7 +81,7 @@ const PayDrinksScreen = ({ history, auth }) => {
                             </ListItemAvatar>
                             <ListItemText primary={x.name} secondary={x.priceSingle + " €"} />
                             <ListItemSecondaryAction>
-                                <Typography>{x.count * x.priceTotal} €</Typography>
+                                <Typography>{x.priceTotal} €</Typography>
                             </ListItemSecondaryAction>
                         </ListItem>)
                 }
@@ -63,11 +90,7 @@ const PayDrinksScreen = ({ history, auth }) => {
                     <ListItemText primary={"Gesamtkosten"} />
                     <ListItemSecondaryAction>
                         <Typography>
-                            {
-                                Object.values(history)
-                                    .flatMap(x => x.drinks)
-                                    .reduce((prev, curr) => prev + (curr.count * curr.price), 0)
-                            } €
+                            {totalAmountToPay()} €
                         </Typography>
                     </ListItemSecondaryAction>
                 </ListItem>
@@ -86,9 +109,15 @@ export default compose(
             collection: `users/${props.auth.uid}/history`,
             where: ["state", "==", HISTORY_ITEM_NOT_PAID],
             storeAs: userHistory
+        },
+        {
+            collection: `payments`,
+            doc: props.auth.uid,
+            storeAs: pendingPayment
         }
     ]),
     connect(({ firestore: { data } }, props) => ({
-        history: data.userHistory
+        history: data.userHistory,
+        pendingPayment: data.pendingPayment
     }))
 )(PayDrinksScreen)
