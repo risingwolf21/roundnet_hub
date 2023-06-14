@@ -1,4 +1,4 @@
-import { Avatar, Fab, Grid, IconButton, ListItem, ListItemAvatar, ListItemSecondaryAction, ListItemText, Paper } from "@mui/material";
+import { Avatar, Badge, Fab, Grid, IconButton, ListItem, ListItemAvatar, ListItemSecondaryAction, ListItemText, Paper } from "@mui/material";
 import { connect } from "react-redux";
 import { compose } from "redux";
 import { firestoreConnect, isLoaded, useFirestore } from "react-redux-firebase";
@@ -13,13 +13,15 @@ const AdminDrinkItem = ({ drink, onEditClick }) => {
     return <Paper sx={{ width: "100%", marginBottom: 2, listStyleType: "none" }}>
         <ListItem>
             <ListItemAvatar>
-                <Avatar>
-                    {
-                        drink?.imageUrl
-                            ? <img src={drink.imageUrl} alt="logo" width={40} height={40} />
-                            : <LocalDrinkIcon />
-                    }
-                </Avatar>
+                <Badge color={drink?.active ? "success" : "warning"} variant="dot">
+                    <Avatar>
+                        {
+                            drink?.imageUrl
+                                ? <img src={drink.imageUrl} alt="logo" width={40} height={40} />
+                                : <LocalDrinkIcon />
+                        }
+                    </Avatar>
+                </Badge>
             </ListItemAvatar>
             <ListItemText primary={drink.name} secondary={drink.price + " €"} />
             <ListItemSecondaryAction>
@@ -66,7 +68,7 @@ const AdminDrinkList = ({ dispatch, drinks, profile, auth }) => {
                 isLoaded(drinks) && drinks.map(drink => <AdminDrinkItem drink={drink} onEditClick={() => selectDrink(drink)} />)
             }
         </Grid>
-        <Fab sx={{ background: "#66bb6a", position: "absolute", right: "8px", bottom: "64px" }} onClick={() => selectDrink(EMPTY_DRINK)}>
+        <Fab sx={{ background: "#66bb6a", position: "absolute", right: "8px", bottom: "8px" }} onClick={() => selectDrink(EMPTY_DRINK)}>
             <AddIcon sx={{ color: "white" }} />
         </Fab>
         <EditDrinkDialog drink={selectedDrink} open={open} handleClose={() => setOpen(false)} onDrinkEditFinished={onDrinkEditFinished} />

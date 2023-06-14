@@ -2,7 +2,7 @@ import { connect } from "react-redux";
 import { compose } from "redux";
 import { firestoreConnect, isLoaded, useFirestore } from "react-redux-firebase";
 import { Box, Button, CircularProgress, Divider, Grid, List, ListItem, ListItemAvatar, ListItemSecondaryAction, ListItemText, Typography } from "@mui/material";
-import { HISTORY_ITEM_NOT_PAID, HISTORY_ITEM_PAY_IN_PROGRESS } from "../constants";
+import { HISTORY_ITEM_NOT_PAID, HISTORY_ITEM_PAY_IN_PROGRESS, PAYPAL_ME_ADDRESS } from "../constants";
 import _ from "lodash";
 
 const userDrinks = 'userDrinks';
@@ -18,7 +18,10 @@ const PaymentInProgress = ({ pendingPayment }) => {
         style={{ minHeight: '100vh' }}
     >
         <Typography>Aktive ausstehende Zahlung</Typography>
-        <Typography>{JSON.stringify(pendingPayment)}</Typography>
+        <Button variant="contained" sx={{ marginTop: 2, borderRadius: "50px !important", fontSize: "16px", fontFamily: "sans-serif", lineSpacing: "24px" }} onClick={() => {
+            const newWindow = window.open(`https://www.paypal.me/${PAYPAL_ME_ADDRESS}/${pendingPayment.amountToPay}EUR`, '_blank', 'noopener,noreferrer')
+            if (newWindow) newWindow.opener = null
+        }}>Mit Paypal bezahlen</Button>
     </Grid>
 }
 
