@@ -7,4 +7,4 @@ export const HISTORY_ITEM_PAID = "HISTORY_ITEM_PAID";
 export const HISTORY_ITEM_PAY_IN_PROGRESS = "HISTORY_ITEM_PAY_IN_PROGRESS";
 
 
-export const PAYPAL_ME_ADDRESS = process.env.PAYPAL_ME_LINK;
+export const PAYPAL_ME_ADDRESS = process.env.REACT_APP_paypalMeLink;
