@@ -9,14 +9,12 @@ const DEFAULT_STATE = {
 const application = (state = DEFAULT_STATE, action) => {
     switch (action.type) {
         case AUTHENTICATION_CHANGED: {
-            console.log(action);
             return {
                 ...state,
                 user: action.payload
             }
         }
         case DRINKS_CHANGED: {
-            console.log(action.payload);
             return {
                 ...state,
                 drinks: action.payload

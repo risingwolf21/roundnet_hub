@@ -1,6 +1,6 @@
 import { Box, Button, CircularProgress, Dialog, DialogActions, DialogContent, DialogTitle, Grid, IconButton, List, ListItem, ListItemAvatar, ListItemText, Typography } from "@mui/material";
 import { connect } from "react-redux";
-import { firestoreConnect, isLoaded } from "react-redux-firebase"
+import { firestoreConnect, isLoaded, useFirestore } from "react-redux-firebase"
 import { compose } from "redux"
 import CheckIcon from "@mui/icons-material/Check"
 import { useState } from "react";
@@ -11,6 +11,8 @@ const PaymentsPendingAdmin = ({ pendingPayments, auth }) => {
 
     const [open, setOpen] = useState(false);
     const [currentPayment, setPayment] = useState({});
+
+    const firestore = useFirestore();
 
     if (!isLoaded(pendingPayments)) {
         return <Grid
@@ -31,14 +33,30 @@ const PaymentsPendingAdmin = ({ pendingPayments, auth }) => {
     }
 
     const confirmPayment = (payment) => {
-        setOpen(false);
+        firestore.collection(`users/${payment.userId}/drinks`).onSnapshot((snapshot) => {
+            const postData = [];
+            snapshot.forEach((doc) => postData.push({...doc.data(), id: doc.id}));
+            const functions = []
+            for (let [k, post] of Object.entries(postData)) {
+                firestore.add(`users/${payment.userId}/history`, post)
+                firestore.delete(`users/${payment.userId}/drinks/${post.id}`)
+            }
+            functions.push(firestore.delete(`payments/${payment.userId}`));
+            functions.push(firestore.add(`paymentHistory`, payment));
+
+            Promise.all(functions).then(result => {
+                setOpen(false);
+            }).catch(error => {
+                console.log(error);
+            });
+        })
     }
 
     return <Box>
         <List>
             {
                 pendingPayments && Object.values(pendingPayments).map(x => {
-                    return <Box sx={{ display: "flex", flexDirection: "row", justifyContent: "space-between" }}>
+                    return <Box key={x.email} sx={{ display: "flex", flexDirection: "row", justifyContent: "space-between" }}>
                         <ListItem>
                             <ListItemText primary={x.displayName ?? x.email} secondary={x.displayName ? "Benutzername" : "Email"} />
                             <ListItemAvatar>
@@ -46,8 +64,8 @@ const PaymentsPendingAdmin = ({ pendingPayments, auth }) => {
                             </ListItemAvatar>
                         </ListItem>
                         <Box sx={{ display: "flex", flexDirection: "row" }}>
-                            <IconButton disableRipple>
-                                <CheckIcon onClick={() => selectedPayment(x)} fontSize={"large"} />
+                            <IconButton disableRipple onClick={() => selectedPayment(x)}>
+                                <CheckIcon fontSize={"large"} />
                             </IconButton>
                         </Box>
                     </Box>

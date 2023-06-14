@@ -11,6 +11,8 @@ import { createFirestoreInstance } from 'redux-firestore';
 import "./global.css";
 import App from './App';
 import AuthGate from './AuthGate';
+import { ThemeProvider } from '@mui/material';
+import { mainTheme } from './themes';
 
 const fbConfig = {
   apiKey: process.env.REACT_APP_apiKey,
@@ -46,14 +48,15 @@ const rrfProps = {
 
 ReactDOM.render(
   <React.StrictMode>
-    {/* <ThemeProvider theme={appTheme}> */}
-    <Provider store={store}>
-      <ReactReduxFirebaseProvider {...rrfProps}>
-        <AuthGate>
-          <App />
-        </AuthGate>
-      </ReactReduxFirebaseProvider>
-    </Provider>
+    <ThemeProvider theme={mainTheme}>
+      <Provider store={store}>
+        <ReactReduxFirebaseProvider {...rrfProps}>
+          <AuthGate>
+            <App />
+          </AuthGate>
+        </ReactReduxFirebaseProvider>
+      </Provider>
+    </ThemeProvider>
   </React.StrictMode>,
   document.getElementById('root')
 )
