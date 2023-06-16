@@ -12,7 +12,7 @@ const StockIndicator = ({stock}) => {
 }
 
 const DrinkItem = ({ drink, count, onAddClick, onMinusClick }) => {
-    return <Badge key={drink} sx={{ marginBottom: 2, width: "100%", "& .MuiBadge-badge": { fontSize: 14 } }} color="secondary" badgeContent={count ?? 0}>
+    return <Badge sx={{ marginBottom: 2, width: "100%", "& .MuiBadge-badge": { fontSize: 14 } }} color="secondary" badgeContent={count ?? 0}>
         <Paper sx={{ width: "100%" }}>
             <Box sx={{ display: "flex", flexDirection: "row", justifyContent: "space-between" }}>
                 <ListItem>
