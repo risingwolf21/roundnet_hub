@@ -38,18 +38,17 @@ const PaymentsPendingAdmin = ({ pendingPayments, auth }) => {
             snapshot.forEach((doc) => postData.push({...doc.data(), id: doc.id}));
             const functions = []
             for (let [k, post] of Object.entries(postData)) {
-                firestore.add(`users/${payment.userId}/history`, post)
-                firestore.delete(`users/${payment.userId}/drinks/${post.id}`)
+                functions.push(firestore.delete(`users/${payment.userId}/drinks/${post.id}`));
             }
             functions.push(firestore.delete(`payments/${payment.userId}`));
-            functions.push(firestore.add(`paymentHistory`, payment));
+            functions.push(firestore.add(`users/${payment.userId}/paymentHistory`, payment));
 
             Promise.all(functions).then(result => {
                 setOpen(false);
             }).catch(error => {
                 console.log(error);
             });
-        })
+        });
     }
 
     return <Box>

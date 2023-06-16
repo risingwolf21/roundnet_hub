@@ -1,4 +1,4 @@
-import { Avatar, Badge, Fab, Grid, IconButton, ListItem, ListItemAvatar, ListItemSecondaryAction, ListItemText, Paper } from "@mui/material";
+import { Avatar, Badge, Box, Fab, Grid, IconButton, ListItem, ListItemAvatar, ListItemSecondaryAction, ListItemText, Paper } from "@mui/material";
 import { connect } from "react-redux";
 import { compose } from "redux";
 import { firestoreConnect, isLoaded, useFirestore } from "react-redux-firebase";
@@ -67,8 +67,9 @@ const AdminDrinkList = ({ dispatch, drinks, profile, auth }) => {
             {
                 isLoaded(drinks) && drinks.map(drink => <AdminDrinkItem drink={drink} onEditClick={() => selectDrink(drink)} />)
             }
+            <Box height={"64px"} width={"100%"} />
         </Grid>
-        <Fab sx={{ background: "#66bb6a", position: "absolute", right: "8px", bottom: "8px" }} onClick={() => selectDrink(EMPTY_DRINK)}>
+        <Fab sx={{ background: "#66bb6a", position: "fixed", right: "8px", bottom: "8px" }} onClick={() => selectDrink(EMPTY_DRINK)}>
             <AddIcon sx={{ color: "white" }} />
         </Fab>
         <EditDrinkDialog drink={selectedDrink} open={open} handleClose={() => setOpen(false)} onDrinkEditFinished={onDrinkEditFinished} />
