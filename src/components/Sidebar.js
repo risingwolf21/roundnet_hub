@@ -4,6 +4,7 @@ import AccountIcon from '@mui/icons-material/AccountBox';
 import LiquorIcon from '@mui/icons-material/Liquor';
 import HistoryIcon from '@mui/icons-material/History';
 import PaymentIcon from '@mui/icons-material/Payment';
+import PeopleIcon from '@mui/icons-material/People';
 import { useNavigate } from "react-router-dom";
 import { compose } from "redux";
 import { connect } from "react-redux";
@@ -41,6 +42,11 @@ const ADMIN_SCREENS = [
         label: "Offene Zahlungen - Admin",
         key: "payments-admin",
         icon: <PaymentIcon />
+    },
+    {
+        label: "Benutzer - Admin",
+        key: "users-admin",
+        icon: <PeopleIcon />
     }
 ]
 
