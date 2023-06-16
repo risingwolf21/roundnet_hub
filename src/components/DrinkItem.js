@@ -12,7 +12,7 @@ const StockIndicator = ({stock}) => {
 }
 
 const DrinkItem = ({ drink, count, onAddClick, onMinusClick }) => {
-    return <Badge sx={{ marginBottom: 2, width: "100%", "& .MuiBadge-badge": { fontSize: 14 } }} key={drink} color="secondary" badgeContent={count ?? 0}>
+    return <Badge key={drink} sx={{ marginBottom: 2, width: "100%", "& .MuiBadge-badge": { fontSize: 14 } }} color="secondary" badgeContent={count ?? 0}>
         <Paper sx={{ width: "100%" }}>
             <Box sx={{ display: "flex", flexDirection: "row", justifyContent: "space-between" }}>
                 <ListItem>
@@ -29,12 +29,12 @@ const DrinkItem = ({ drink, count, onAddClick, onMinusClick }) => {
                 </ListItem>
                 <Box sx={{ display: "flex", flexDirection: "row" }}>
                     {
-                        (count > 0) && <IconButton disableRipple>
-                            <RemoveIcon onClick={onMinusClick} fontSize={"large"} />
+                        (count > 0) && <IconButton disableRipple onClick={onMinusClick}>
+                            <RemoveIcon fontSize={"large"} />
                         </IconButton>
                     }
-                    <IconButton disableRipple>
-                        <AddIcon onClick={onAddClick} fontSize={"large"} />
+                    <IconButton disableRipple onClick={onAddClick} >
+                        <AddIcon fontSize={"large"} />
                     </IconButton>
                 </Box>
             </Box>

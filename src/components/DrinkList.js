@@ -6,7 +6,9 @@ import DrinkItem from "./DrinkItem";
 import { useState } from "react";
 import CheckIcon from '@mui/icons-material/Check';
 import BottomInformation from "./BottomInformation";
-import { DRINK_OPEN, HISTORY_ITEM_NOT_PAID } from "../constants";
+import { HISTORY_ITEM_NOT_PAID } from "../constants";
+
+const drinks = "drinks";
 
 const DrinkList = ({ dispatch, drinks, profile, auth }) => {
 
@@ -16,13 +18,23 @@ const DrinkList = ({ dispatch, drinks, profile, auth }) => {
 
     const confirmDrinks = () => {
         let data = { date: Date.now(), state: HISTORY_ITEM_NOT_PAID, drinks: Object.values(addedDrinks) };
-        firestore.add("history", data).then((result) => {
-            firestore.add(`users/${auth.uid}/drinks`, data).then((result) => console.log("Result: " + JSON.stringify(result)), (reject) => console.log("Reject: " + JSON.stringify(reject)));
-            Object.values(addedDrinks).forEach(drink => {
-                firestore.update(`drinks/${drink.id}`, { stock: (drink?.stock - drink.count) ?? 0 });
+
+        firestore.add(`users/${auth.uid}/drinks`, data)
+            .then((onfulfilled) => {
+                console.log("Result: " + JSON.stringify(onfulfilled));
+
+                firestore.add("history", data)
+
+                Object.values(addedDrinks).forEach(drink => {
+                    firestore.update(`drinks/${drink.id}`, { stock: (drink?.stock - drink.count) ?? 0 });
+                });
+
+                setAddedDrinks({});
+            }, (onrejected) => {
+                console.log("Reject: " + JSON.stringify(onrejected));
+            }).catch((error) => {
+
             });
-        });
-        setAddedDrinks({});
     }
 
     const onAddDrinkClick = (drink) => {
@@ -54,20 +66,26 @@ const DrinkList = ({ dispatch, drinks, profile, auth }) => {
         alignItems="center"
         justifyContent="center"
         sx={{ paddingTop: 2 }}>
-        <Grid container width="100%" direction="column" alignItems="center" justifyContent="center" paddingLeft={2} paddingRight={2}>
+        <Grid container sx={{ overflowY: "scroll", }} width="100%" direction="row" alignItems="center" justifyContent="center" maxHeight={"calc(100vh - 128px)"} paddingLeft={2} paddingRight={2}>
             {
                 isLoaded(drinks) && drinks.map(drink => <DrinkItem drink={drink} count={addedDrinks[drink.id]?.count} onAddClick={() => onAddDrinkClick(drink)} onMinusClick={() => onRemoveDrinkClick(drink)} />)
             }
         </Grid>
         <BottomInformation title={"Gesamtpreis"} totalPrice={Object.values(addedDrinks).reduce((prev, res) => prev + (res.price * res.count), 0) + " €"} />
-        <Fab sx={{ background: "#66bb6a", position: "absolute", right: "8px", bottom: "64px" }} onClick={confirmDrinks}>
+        <Fab sx={{ background: "#66bb6a", position: "absolute", right: "16px", bottom: "72px" }} onClick={confirmDrinks}>
             <CheckIcon sx={{ color: "white" }} />
         </Fab>
     </Grid>);
 }
 
 export default compose(
-    firestoreConnect(() => ['drinks']),
+    firestoreConnect((props) => [
+        {
+            collection: `drinks`,
+            where: ["active", "==", true],
+            storeAs: drinks
+        }
+    ]),
     connect((state) => ({
         drinks: state.firestore.ordered.drinks,
         profile: state.firebase.profile,

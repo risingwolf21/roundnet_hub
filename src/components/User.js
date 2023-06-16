@@ -49,7 +49,7 @@ const UserScreen = ({ auth, profile }) => {
                             label="Adminrechte"
                         />
                     }
-                    <Fab sx={{ background: "#66bb6a", position: "absolute", right: "8px", bottom: "64px" }} type="submit">
+                    <Fab sx={{ background: "#66bb6a", position: "absolute", right: "16px", bottom: "16px" }} type="submit">
                         <CheckIcon sx={{ color: "white" }} />
                     </Fab>
                 </Box>
