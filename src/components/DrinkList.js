@@ -106,7 +106,7 @@ const enhance = compose(
         loadDrinks: (props) => (path, where, storeAs) => props.firestore.get({ collection: path, where, storeAs })
     }),
     lifecycle({
-        componentDidUpdate() {
+        componentDidMount() {
             this.props.loadDrinks(
                 "drinks",
                 ["active", "==", true],
