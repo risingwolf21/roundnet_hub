@@ -1,9 +1,9 @@
-import { Fab, Grid } from "@mui/material";
+import { Box, Fab, Grid } from "@mui/material";
 import { connect } from "react-redux";
 import { compose } from "redux";
 import { firestoreConnect, isLoaded, useFirestore } from "react-redux-firebase";
 import DrinkItem from "./DrinkItem";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import CheckIcon from '@mui/icons-material/Check';
 import BottomInformation from "./BottomInformation";
 import { HISTORY_ITEM_NOT_PAID } from "../constants";
@@ -11,6 +11,10 @@ import { HISTORY_ITEM_NOT_PAID } from "../constants";
 const drinks = "drinks";
 
 const DrinkList = ({ dispatch, drinks, profile, auth }) => {
+
+    useEffect(() => {
+
+    }, []);
 
     const firestore = useFirestore();
 
@@ -66,13 +70,14 @@ const DrinkList = ({ dispatch, drinks, profile, auth }) => {
         alignItems="center"
         justifyContent="center"
         sx={{ paddingTop: 2 }}>
-        <Grid container sx={{ overflowY: "scroll", }} width="100%" direction="row" alignItems="center" justifyContent="center" maxHeight={"calc(100vh - 128px)"} paddingLeft={2} paddingRight={2}>
+        <Grid container sx={{ overflowY: "scroll", }} width="100%" direction="row" alignItems="center" justifyContent="center" paddingLeft={2} paddingRight={2}>
             {
                 isLoaded(drinks) && drinks.map(drink => <DrinkItem drink={drink} count={addedDrinks[drink.id]?.count} onAddClick={() => onAddDrinkClick(drink)} onMinusClick={() => onRemoveDrinkClick(drink)} />)
             }
+            <Box height={"128px"} width={"100%"}/>
         </Grid>
         <BottomInformation title={"Gesamtpreis"} totalPrice={Object.values(addedDrinks).reduce((prev, res) => prev + (res.price * res.count), 0) + " €"} />
-        <Fab sx={{ background: "#66bb6a", position: "absolute", right: "16px", bottom: "72px" }} onClick={confirmDrinks}>
+        <Fab sx={{ background: "#66bb6a", position: "fixed", right: "16px", bottom: "72px" }} onClick={confirmDrinks}>
             <CheckIcon sx={{ color: "white" }} />
         </Fab>
     </Grid>);
