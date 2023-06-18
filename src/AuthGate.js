@@ -3,9 +3,20 @@ import { isEmpty, isLoaded } from "react-redux-firebase";
 import AuthScreen from "./components/AuthScreen";
 import { CircularProgress, Grid, Toolbar } from "@mui/material";
 import CustomAppBar from "./components/AppBar";
+import { setUser } from "@sentry/react";
+import { useEffect } from "react";
 
 const AuthGate = ({ children }) => {
     const auth = useSelector(state => state.firebase.auth)
+
+    useEffect(() => {
+        if (!isLoaded(auth))
+            return;
+        if (isEmpty(auth))
+            setUser(null);
+        else
+            setUser({ email: auth.email, id: auth.uid, username: auth.displayName });
+    }, [auth]);
 
     if (!isLoaded(auth)) {
         return <Grid>
