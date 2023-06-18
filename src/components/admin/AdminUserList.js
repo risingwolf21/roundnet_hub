@@ -1,8 +1,7 @@
 import { Grid, ListItem, ListItemText, Paper } from "@mui/material";
 import { connect } from "react-redux";
 import { compose } from "redux";
-import { firestoreConnect, isLoaded, withFirestore } from "react-redux-firebase";
-import { lifecycle, withHandlers } from "recompose";
+import { firestoreConnect, isLoaded } from "react-redux-firebase";
 
 const AdminUserItem = ({ user, onEditClick }) => {
     return <Paper sx={{ width: "100%", marginBottom: 2, listStyleType: "none" }}>

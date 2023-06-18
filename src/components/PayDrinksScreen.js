@@ -1,12 +1,11 @@
 import { connect } from "react-redux";
 import { compose } from "redux";
-import { firestoreConnect, isLoaded, useFirestore, withFirestore } from "react-redux-firebase";
+import { firestoreConnect, isLoaded, useFirestore } from "react-redux-firebase";
 import { Alert, Box, Button, CircularProgress, Divider, Grid, List, ListItem, ListItemAvatar, ListItemSecondaryAction, ListItemText, Snackbar, Typography } from "@mui/material";
 import { HISTORY_ITEM_PAY_IN_PROGRESS, PAYPAL_ME_ADDRESS } from "../constants";
 import _ from "lodash";
 import { useState } from "react";
 import { captureException } from "@sentry/react";
-import { lifecycle, withHandlers } from "recompose";
 
 const userDrinks = 'userDrinks';
 const pendingPayment = 'pendingPayment';

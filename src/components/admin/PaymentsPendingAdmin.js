@@ -1,6 +1,6 @@
 import { Box, Button, CircularProgress, Dialog, DialogActions, DialogContent, DialogTitle, Grid, IconButton, List, ListItem, ListItemAvatar, ListItemSecondaryAction, ListItemText, Typography } from "@mui/material";
 import { connect } from "react-redux";
-import { firestoreConnect, isLoaded, useFirestore, withFirestore } from "react-redux-firebase"
+import { isLoaded, useFirestore, withFirestore } from "react-redux-firebase"
 import { compose } from "redux"
 import CheckIcon from "@mui/icons-material/Check"
 import { useState } from "react";

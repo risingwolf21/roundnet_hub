@@ -2,7 +2,6 @@ import { Divider, List, ListItem, ListItemIcon, ListItemText, ListSubheader, Swi
 import React from "react";
 import AccountIcon from '@mui/icons-material/AccountBox';
 import LiquorIcon from '@mui/icons-material/Liquor';
-import HistoryIcon from '@mui/icons-material/History';
 import PaymentIcon from '@mui/icons-material/Payment';
 import PeopleIcon from '@mui/icons-material/People';
 import { useNavigate } from "react-router-dom";
@@ -58,8 +57,7 @@ const SideBar = ({ open, onClose, onOpen, profile, auth }) => {
                 role="presentation"
                 style={{ width: "250px" }}
                 onClick={onClose}
-                onKeyDown={onClose}
-            >
+                onKeyDown={onClose}>
                 <List>
                     <Toolbar />
                     {SCREENS.map((item, index) => (

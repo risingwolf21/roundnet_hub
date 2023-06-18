@@ -154,7 +154,7 @@ const enhance = compose(
         updateStocks: (props) => (drinks) => {
             let promises = [];
             Object.values(drinks).forEach(drink => {
-                if ((drink?.stock - drink.count) ?? 0 > 0)
+                if ((drink?.stock - drink.count) > 0)
                     promises.push(props.firestore.update(`drinks/${drink.id}`, { stock: (drink?.stock - drink.count) ?? 0 }));
             });
             return Promise.all(promises)
