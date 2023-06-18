@@ -6,6 +6,7 @@ import { HISTORY_ITEM_PAY_IN_PROGRESS, PAYPAL_ME_ADDRESS } from "../constants";
 import _ from "lodash";
 import { useState } from "react";
 import { captureException } from "@sentry/react";
+import EuroIcon from '@mui/icons-material/Euro';
 
 const userDrinks = 'userDrinks';
 const pendingPayment = 'pendingPayment';
@@ -20,16 +21,16 @@ const PaymentInProgress = ({ pendingPayment }) => {
         style={{ minHeight: '100vh' }}
     >
         <Typography>Aktive ausstehende Zahlung</Typography>
-        <Button variant="contained" sx={{ marginTop: 2, borderRadius: "50px !important", fontSize: "16px", fontFamily: "sans-serif", lineSpacing: "24px" }} onClick={() => {
-            const newWindow = window.open(`https://www.paypal.me/${PAYPAL_ME_ADDRESS}/${pendingPayment.amountToPay}EUR`, '_blank', 'noopener,noreferrer')
-            if (newWindow) newWindow.opener = null
-        }}>Mit Paypal bezahlen</Button>
+        <Button variant="contained" sx={{ marginTop: 2, borderRadius: "50px !important", fontSize: "16px", fontFamily: "sans-serif", lineSpacing: "24px" }}
+            onClick={() => {
+                const newWindow = window.open(`https://www.paypal.me/${PAYPAL_ME_ADDRESS}/${pendingPayment.amountToPay}EUR`, '_blank', 'noopener,noreferrer')
+                if (newWindow) newWindow.opener = null
+            }}>Mit Paypal bezahlen</Button>
     </Grid>
 }
 
 const SUCCESS_MESSAGE_INFO = { message: "Zahlung erfolgreich angefragt! Jetzt auf Paypal senden", severity: "success" };
 const ERROR_MESSAGE_INFO = { message: "Es ist ein Fehler aufgetreten, versuche es bitte erneut!", severity: "error" };
-
 
 const PayDrinksScreen = ({ drinks, auth, pendingPayment }) => {
 
@@ -74,15 +75,6 @@ const PayDrinksScreen = ({ drinks, auth, pendingPayment }) => {
         if (result === null) {
             setLoading(false);
         }
-
-        // Just add the amount you want to request to the end of your link. For example, use PayPal.Me/DiaRusso/25 to request 25.00 USD. The request will be made in your default currency, which you can change at any time in your PayPal Account settings.
-        //You can request a specific currency by adding its code to the amount. To ask for Australian Dollars, for example, you would use PayPal.Me/DiaRusso/25AUD.  
-        // const newWindow = window.open("https://www.paypal.me/karlwolf2706/2EUR", '_blank', 'noopener,noreferrer')
-        // if (newWindow) newWindow.opener = null
-    }
-
-    if (isLoaded(pendingPayment) && pendingPayment) {
-        return <PaymentInProgress pendingPayment={pendingPayment} />
     }
 
     if (isLoaded(drinks) && (!drinks || drinks.length < 1)) {
@@ -97,7 +89,7 @@ const PayDrinksScreen = ({ drinks, auth, pendingPayment }) => {
         </Grid>
     }
 
-    if (!isLoaded(drinks)) {
+    if (!isLoaded(drinks) || !isLoaded(pendingPayment)) {
         return <Grid
             container
             spacing={0}
@@ -149,18 +141,27 @@ const PayDrinksScreen = ({ drinks, auth, pendingPayment }) => {
                     </ListItemSecondaryAction>
                 </ListItem>
             </List>
-            <Box sx={{ position: "fixed", bottom: 0, left: 0, right: 0, textAlign: "center", pl: 2, pr: 2, pb: 2 }}>
-                <Button onClick={payOnClick} variant="contained" fullWidth sx={{ borderRadius: "50px !important", fontSize: "16px", fontFamily: "sans-serif", lineSpacing: "24px" }}>
-                    {
-                        loading ? <CircularProgress color="secondary" /> : "Bezahlen"
-                    }
-                </Button>
+            <Box sx={{ position: "fixed", bottom: 0, left: 0, right: 0, flexDirection: "column", justifyContent: "end", display: "flex", textAlign: "center", pl: 2, pr: 2, pb: 2 }}>
+                <Snackbar sx={{ position: "unset" }} open={alertOpen} autoHideDuration={4000} onClose={() => setAlertOpen(false)}>
+                    <Alert onClose={() => setAlertOpen(false)} severity={alertInfo.severity} sx={{ width: '100%' }}>
+                        {alertInfo.message}
+                    </Alert>
+                </Snackbar>
+                {
+                    !pendingPayment ?
+                        <Button onClick={payOnClick} variant="contained" fullWidth sx={{ borderRadius: "50px !important", fontSize: "16px", fontFamily: "sans-serif", lineSpacing: "24px" }}>
+                            {
+                                loading ? <CircularProgress color="secondary" /> : "Bezahlen"
+                            }
+                        </Button> :
+                        <Button variant="contained" fullWidth sx={{ marginTop: 2, borderRadius: "50px !important", fontSize: "16px", fontFamily: "sans-serif", lineSpacing: "24px" }}
+                            onClick={() => {
+                                const newWindow = window.open(`https://www.paypal.me/${PAYPAL_ME_ADDRESS}/${pendingPayment.amountToPay}EUR`, '_blank', 'noopener,noreferrer')
+                                if (newWindow) newWindow.opener = null
+                            }}
+                            startIcon={<EuroIcon />}>Mit Paypal bezahlen</Button>
+                }
             </Box>
-            <Snackbar sx={{ position: "fixed", right: "16px", bottom: alertInfo.severity === "success" ? "16px" : "72px" }} open={alertOpen} autoHideDuration={4000} onClose={() => setAlertOpen(false)}>
-                <Alert onClose={() => setAlertOpen(false)} severity={alertInfo.severity} sx={{ width: '100%' }}>
-                    {alertInfo.message}
-                </Alert>
-            </Snackbar>
         </Box>
     );
 }

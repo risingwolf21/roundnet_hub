@@ -1,16 +1,17 @@
-import { Avatar, Badge, Box, Fab, Grid, IconButton, ListItem, ListItemAvatar, ListItemSecondaryAction, ListItemText, Paper } from "@mui/material";
+import { Avatar, Badge, Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, Fab, Grid, IconButton, ListItem, ListItemAvatar, ListItemSecondaryAction, ListItemText, Paper, Typography } from "@mui/material";
 import { connect } from "react-redux";
 import { compose } from "redux";
 import { isLoaded, useFirestore, withFirestore } from "react-redux-firebase";
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/Delete';
 import EditDrinkDialog from "./EditDrinkDialog";
 import LocalDrinkIcon from '@mui/icons-material/LocalDrink';
 import { useState } from "react";
 import _ from "lodash";
 import { lifecycle, withHandlers } from "recompose";
 
-const AdminDrinkItem = ({ drink, onEditClick }) => {
+const AdminDrinkItem = ({ drink, onEditClick, onDeleteClick }) => {
     return <Paper sx={{ width: "100%", marginBottom: 2, listStyleType: "none" }}>
         <ListItem>
             <ListItemAvatar>
@@ -26,8 +27,11 @@ const AdminDrinkItem = ({ drink, onEditClick }) => {
             </ListItemAvatar>
             <ListItemText primary={drink.name} secondary={drink.price + " €"} />
             <ListItemSecondaryAction>
-                <IconButton disableRipple onClick={onEditClick}>
+                <IconButton onClick={onEditClick}>
                     <EditIcon fontSize={"medium"} />
+                </IconButton>
+                <IconButton onClick={onDeleteClick}>
+                    <DeleteIcon fontSize={"medium"} />
                 </IconButton>
             </ListItemSecondaryAction>
         </ListItem>
@@ -39,12 +43,23 @@ const EMPTY_DRINK = { "imageUrl": "", name: "", price: 0, active: false };
 const AdminDrinkList = ({ dispatch, drinks, profile, auth }) => {
 
     const [open, setOpen] = useState(false);
+    const [deleteOpen, setDeleteOpen] = useState(false);
     const [selectedDrink, setSelectedDrink] = useState();
     const firestore = useFirestore();
 
     const selectDrink = (drink) => {
         setSelectedDrink(drink);
         setOpen(true);
+    }
+
+    const deleteDrink = (drink) => {
+        setSelectedDrink(drink);
+        setDeleteOpen(true);
+    }
+
+    const onDeleteDrink = (drink) => {
+        firestore.delete(`drinks/${drink.id}`);
+        setDeleteOpen(false);
     }
 
     const onDrinkEditFinished = (drink) => {
@@ -69,15 +84,32 @@ const AdminDrinkList = ({ dispatch, drinks, profile, auth }) => {
                 isLoaded(drinks) && drinks.map((drink, index) => <AdminDrinkItem
                     key={"drink" + index}
                     drink={drink}
-                    onEditClick={() => selectDrink(drink)} />)
+                    onEditClick={() => selectDrink(drink)}
+                    onDeleteClick={() => deleteDrink(drink)} />)
             }
             <Box height={"64px"} width={"100%"} />
         </Grid>
-        <Fab sx={{ background: "#66bb6a", position: "fixed", right: "8px", bottom: "8px" }} onClick={() => selectDrink(EMPTY_DRINK)}>
+        <Fab sx={{ background: "#66bb6a", position: "fixed", right: "16px", bottom: "16px" }} onClick={() => selectDrink(EMPTY_DRINK)}>
             <AddIcon sx={{ color: "white" }} />
         </Fab>
         <EditDrinkDialog drink={selectedDrink} open={open} handleClose={() => setOpen(false)} onDrinkEditFinished={onDrinkEditFinished} />
-    </Grid>);
+        <Dialog open={deleteOpen} onClose={() => setDeleteOpen(false)}>
+            <DialogTitle>Getränk löschen</DialogTitle>
+            <DialogContent>
+                <Typography>
+                    Möchtest du dieses Getränk wirklich löschen?
+                    Alle Nutzer mit offenen Getränken von diesem Typen werden diese in Ihrer Historie sehen und weiterhin zahlen müssen.
+                    Eintragen lassen sich diese Getränke jedoch nicht mehr.
+                </Typography>
+            </DialogContent>
+            <DialogActions>
+                <Button onClick={() => setDeleteOpen(false)}>Abbrechen</Button>
+                <Button onClick={() => onDeleteDrink(selectedDrink)} autoFocus>
+                    Bestätigen
+                </Button>
+            </DialogActions>
+        </Dialog>
+    </Grid >);
 }
 
 const enhance = compose(
