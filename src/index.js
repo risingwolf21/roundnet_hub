@@ -13,6 +13,20 @@ import App from './App';
 import AuthGate from './AuthGate';
 import { ThemeProvider } from '@mui/material';
 import { mainTheme } from './themes';
+import * as Sentry from "@sentry/react";
+
+Sentry.init({
+  dsn: "https://a06f63fae5ab4ce4ac291d0d6fb4e989@o4505379650666496.ingest.sentry.io/4505379651649536",
+  integrations: [
+    new Sentry.BrowserTracing({
+      // Set `tracePropagationTargets` to control for which URLs distributed tracing should be enabled
+      tracePropagationTargets: ["localhost", /^https:\/\/roundnet-karlsruher\.web.app/],
+    }),
+    new Sentry.Replay(),
+  ],
+  // Performance Monitoring
+  tracesSampleRate: 1.0, // Capture 100% of the transactions, reduce in production!
+});
 
 const fbConfig = {
   apiKey: process.env.REACT_APP_apiKey,

@@ -6,6 +6,7 @@ import Checkbox from '@mui/material/Checkbox';
 import ReplayIcon from '@mui/icons-material/Replay';
 import LocalDrinkIcon from '@mui/icons-material/LocalDrink';
 import EuroIcon from '@mui/icons-material/Euro';
+import InventoryIcon from '@mui/icons-material/Inventory';
 import FormatSizeIcon from '@mui/icons-material/FormatSize';
 
 const Transition = React.forwardRef(function Transition(props, ref) {
@@ -27,13 +28,14 @@ const EditDrinkDialog = ({ drink, onDrinkEditFinished, open, handleClose }) => {
         event.preventDefault();
         const data = new FormData(event.currentTarget);
 
-        if (data.get("name") && data.get("price")) {
+        if (data.get("name") && data.get("price") && data.get("stock")) {
             let newDrink = {
                 id: drink.id,
                 name: data.get("name"),
-                price: data.get("price"),
+                price: Number.parseFloat(data.get("price")),
                 imageUrl: logoUrl ?? "",
                 active: activeDrink,
+                stock: Number.parseFloat(data.get("stock"))
             };
             onDrinkEditFinished(newDrink);
         }
@@ -103,6 +105,25 @@ const EditDrinkDialog = ({ drink, onDrinkEditFinished, open, handleClose }) => {
                 <ListItem>
                     <ListItemAvatar>
                         <Avatar>
+                            <InventoryIcon />
+                        </Avatar>
+                    </ListItemAvatar>
+                    <ListItemText>
+                        <TextField
+                            margin="normal"
+                            required
+                            fullWidth
+                            id="stock"
+                            label="Anzahl"
+                            name="stock"
+                            type={"number"}
+                            defaultValue={drink?.stock ? drink.stock : 0}
+                        />
+                    </ListItemText>
+                </ListItem>
+                <ListItem>
+                    <ListItemAvatar>
+                        <Avatar>
                             {
                                 drink?.imageUrl
                                     ? <img src={drink.imageUrl} alt="logo" width={40} height={40} />
@@ -128,7 +149,7 @@ const EditDrinkDialog = ({ drink, onDrinkEditFinished, open, handleClose }) => {
                         </IconButton>
                     </ListItemSecondaryAction>
                 </ListItem>
-                <ListItem onClick={() => setActiveDrink(!activeDrink)} focusRipple>
+                <ListItem onClick={() => setActiveDrink(!activeDrink)}>
                     <ListItemAvatar>
                         <Checkbox checked={activeDrink} />
                     </ListItemAvatar>

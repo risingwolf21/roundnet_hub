@@ -1,4 +1,4 @@
-import { Box, Button, CircularProgress, Dialog, DialogActions, DialogContent, DialogTitle, Grid, IconButton, List, ListItem, ListItemAvatar, ListItemText, Typography } from "@mui/material";
+import { Box, Button, CircularProgress, Dialog, DialogActions, DialogContent, DialogTitle, Grid, IconButton, List, ListItem, ListItemAvatar, ListItemSecondaryAction, ListItemText, Typography } from "@mui/material";
 import { connect } from "react-redux";
 import { firestoreConnect, isLoaded, useFirestore, withFirestore } from "react-redux-firebase"
 import { compose } from "redux"
@@ -16,7 +16,6 @@ const PaymentsPendingAdmin = ({ pendingPayments, auth }) => {
     const firestore = useFirestore();
 
     if (!isLoaded(pendingPayments)) {
-        console.log("Payments loading...")
         return <Grid
             container
             spacing={0}
@@ -28,8 +27,6 @@ const PaymentsPendingAdmin = ({ pendingPayments, auth }) => {
             <CircularProgress />
         </Grid>
     }
-
-    console.log("Payments loaded")
 
     const selectedPayment = (payment) => {
         setPayment(payment);
@@ -59,20 +56,29 @@ const PaymentsPendingAdmin = ({ pendingPayments, auth }) => {
         <List>
             {
                 pendingPayments && Object.values(pendingPayments).map(x => {
-                    return <Box key={x.email} sx={{ display: "flex", flexDirection: "row", justifyContent: "space-between" }}>
-                        <ListItem>
-                            <ListItemText primary={x.displayName ?? x.email} secondary={x.displayName ? "Benutzername" : "Email"} />
-                            <ListItemAvatar>
-                                <Typography fontWeight={"bold"}>{x.amountToPay} €</Typography>
-                            </ListItemAvatar>
-                        </ListItem>
-                        <Box sx={{ display: "flex", flexDirection: "row" }}>
-                            <IconButton disableRipple onClick={() => selectedPayment(x)}>
-                                <CheckIcon fontSize={"large"} />
+                    return <ListItem key={x.email}>
+                        <ListItemAvatar>
+                            <Typography fontWeight={"bold"}>{x.amountToPay} €</Typography>
+                        </ListItemAvatar>
+                        <ListItemText primary={x.displayName ?? x.email} secondary={x.displayName ? "Benutzername" : "Email"} />
+                        <ListItemSecondaryAction >
+                            <IconButton onClick={() => selectedPayment(x)}>
+                                <CheckIcon />
                             </IconButton>
-                        </Box>
-                    </Box>
+                        </ListItemSecondaryAction>
+                    </ListItem>
                 })
+            }
+            {
+                pendingPayments.length < 1 && <Grid
+                    container
+                    spacing={0}
+                    direction="column"
+                    alignItems="center"
+                    justifyContent="center"
+                    style={{ minHeight: '100vh' }}>
+                    <Typography>Keine aktiven Zahlungen gefunden</Typography>
+                </Grid>
             }
         </List>
         <Dialog open={open} onClose={() => setOpen(false)} title="Zahlung bestätigen">
@@ -81,7 +87,7 @@ const PaymentsPendingAdmin = ({ pendingPayments, auth }) => {
             </DialogTitle>
             <DialogContent>
                 <Typography>
-                    Mit der Bestätigung dieses Dialogs bestätigst du, dass
+                    Hiermit bestätigst du, dass
                 </Typography>
                 <Typography fontWeight={"bold"}>
                     {`${currentPayment.displayName}`}

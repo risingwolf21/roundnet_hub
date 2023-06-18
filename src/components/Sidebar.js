@@ -1,4 +1,4 @@
-import { Divider, List, ListItem, ListItemIcon, ListItemText, ListSubheader, SwipeableDrawer, Toolbar } from "@mui/material";
+import { Divider, List, ListItem, ListItemIcon, ListItemText, ListSubheader, SwipeableDrawer, Toolbar, useTheme } from "@mui/material";
 import React from "react";
 import AccountIcon from '@mui/icons-material/AccountBox';
 import LiquorIcon from '@mui/icons-material/Liquor';
@@ -10,11 +10,6 @@ import { compose } from "redux";
 import { connect } from "react-redux";
 
 const SCREENS = [
-    {
-        label: "Verlauf",
-        key: "history",
-        icon: <HistoryIcon />
-    },
     {
         label: "Benutzer",
         key: "user",
@@ -53,6 +48,7 @@ const ADMIN_SCREENS = [
 const SideBar = ({ open, onClose, onOpen, profile, auth }) => {
 
     let navigate = useNavigate();
+    let theme = useTheme();
 
     const iOS = typeof navigator !== 'undefined' && /iPad|iPhone|iPod/.test(navigator.userAgent);
 
@@ -67,25 +63,25 @@ const SideBar = ({ open, onClose, onOpen, profile, auth }) => {
                 <List>
                     <Toolbar />
                     {SCREENS.map((item, index) => (
-                        <ListItem button key={item.key} divider onClick={() => navigate(item.key)}>
-                            <ListItemIcon>
+                        <ListItem button key={item.key} divider onClick={() => navigate(item.key)} >
+                            <ListItemIcon sx={{ color: window?.location?.pathname === ("/" + item.key) ? theme.palette.secondary.main : "primary" }} >
                                 {item.icon}
                             </ListItemIcon>
-                            <ListItemText primary={item.label} />
+                            <ListItemText primary={item.label} sx={{ color: window?.location?.pathname === ("/" + item.key) ? theme.palette.secondary.main : "primary" }} />
                         </ListItem>
                     ))}
 
                     {
                         profile.role === "admin" && <>
-                            <Divider/>
+                            <Divider />
                             <ListSubheader>Admin Optionen</ListSubheader>
                             {
                                 ADMIN_SCREENS.map((item, index) => (
                                     <ListItem button key={item.key} divider onClick={() => navigate(item.key)}>
-                                        <ListItemIcon>
+                                        <ListItemIcon sx={{ color: window?.location?.pathname === ("/" + item.key) ? theme.palette.secondary.main : "primary" }}>
                                             {item.icon}
                                         </ListItemIcon>
-                                        <ListItemText primary={item.label} />
+                                        <ListItemText primary={item.label} sx={{ color: window?.location?.pathname === ("/" + item.key) ? theme.palette.secondary.main : "primary" }} />
                                     </ListItem>
                                 ))
                             }

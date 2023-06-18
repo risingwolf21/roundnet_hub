@@ -1,48 +1,85 @@
-import { Alert, Box, Fab, Grid, Snackbar } from "@mui/material";
+import { Alert, Box, CircularProgress, Fab, Grid, Snackbar } from "@mui/material";
 import { connect } from "react-redux";
 import { compose } from "redux";
-import { firestoreConnect, isLoaded, useFirestore, withFirestore } from "react-redux-firebase";
+import { isLoaded, useFirestore, withFirestore } from "react-redux-firebase";
 import DrinkItem from "./DrinkItem";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import CheckIcon from '@mui/icons-material/Check';
 import BottomInformation from "./BottomInformation";
 import { HISTORY_ITEM_NOT_PAID } from "../constants";
 import { lifecycle, withHandlers } from "recompose";
+import { captureException } from "@sentry/react";
 
 const drinks = "drinks";
+const SUCCESS_MESSAGE_INFO = { message: "Getränke erfolgreich gebucht!", severity: "success" };
+const ERROR_MESSAGE_INFO = { message: "Es ist ein Fehler aufgetreten, versuche es bitte erneut!", severity: "error" };
 
-const DrinkList = ({ dispatch, drinks, profile, auth }) => {
+const DrinkList = ({ dispatch, drinks, profile, auth, addDrinks, addToHistory, updateStocks }) => {
 
     const firestore = useFirestore();
 
     const [addedDrinks, setAddedDrinks] = useState({});
+    const [loading, setLoading] = useState(false);
     const [successMessageOpen, setSuccessMessageOpen] = useState(false);
+    const [alertInfo, setAlertInfo] = useState(SUCCESS_MESSAGE_INFO)
 
     const handleClose = (event, reason) => {
         if (reason === 'clickaway') {
             return;
         }
-
         setSuccessMessageOpen(false);
     };
 
-    const confirmDrinks = () => {
+    const confirmDrinksDialog = (message) => {
+        setAlertInfo(message);
+        setSuccessMessageOpen(true);
+        setLoading(false);
+    }
+
+    const confirmDrinks = async () => {
+        setLoading(true);
         let data = { date: Date.now(), state: HISTORY_ITEM_NOT_PAID, drinks: Object.values(addedDrinks) };
-
-        firestore.add(`users/${auth.uid}/drinks`, data)
-            .then((onfulfilled) => {
-                firestore.add(`users/${auth.uid}/history`, data);
-                Object.values(addedDrinks).forEach(drink => {
-                    firestore.update(`drinks/${drink.id}`, { stock: (drink?.stock - drink.count) ?? 0 });
+        let drinks = await addDrinks(auth.uid, data)
+            .catch(error => {
+                captureException(error, (scope) => {
+                    scope.clear();
+                    scope.setExtra("path", `users/${auth.uid}/drinks`);
+                    scope.setExtra("data", JSON.stringify(data));
+                    return scope;
                 });
-
-                setAddedDrinks({});
-                setSuccessMessageOpen(true);
-            }, (onrejected) => {
-                console.log("Reject: " + JSON.stringify(onrejected));
-            }).catch((error) => {
-
+                return null;
             });
+        let history = await addToHistory(auth.uid, data)
+            .catch(error => {
+                captureException(error, (scope) => {
+                    scope.clear();
+                    scope.setExtra("path", `users/${auth.uid}/history`);
+                    scope.setExtra("data", JSON.stringify(data));
+                    return scope;
+                });
+                return null;
+            });
+
+        if ((drinks.path && !(await firestore.get(drinks.path)).exists) || (history.path && !(await firestore.get(history.path)).exists)) {
+            firestore.delete(history.path);
+            firestore.delete(drinks.path);
+
+            confirmDrinksDialog(ERROR_MESSAGE_INFO);
+            return;
+        }
+
+        updateStocks(addedDrinks).catch(error => {
+            captureException(error, (scope) => {
+                scope.clear();
+                scope.setExtra("data", JSON.stringify(data));
+                return scope;
+            });
+            confirmDrinksDialog(ERROR_MESSAGE_INFO);
+            return null;
+        });
+
+        setAddedDrinks({});
+        confirmDrinksDialog(SUCCESS_MESSAGE_INFO);
     }
 
     const onAddDrinkClick = (drink) => {
@@ -79,19 +116,23 @@ const DrinkList = ({ dispatch, drinks, profile, auth }) => {
             }
             <Box height={"128px"} width={"100%"} />
         </Grid>
-        <BottomInformation title={"Gesamtpreis"} totalPrice={Object.values(addedDrinks).reduce((prev, res) => prev + (res.price * res.count), 0) + " €"} />
         {
-            Object.values(addedDrinks).length > 0 && <Fab sx={{ background: "#66bb6a", position: "fixed", right: "16px", bottom: "72px" }} onClick={confirmDrinks}>
-                <CheckIcon sx={{ color: "white" }} />
-            </Fab>
+            Object.values(addedDrinks).length > 0 && <>
+                <BottomInformation title={"Gesamtpreis"} totalPrice={Object.values(addedDrinks).reduce((prev, res) => prev + (res.price * res.count), 0) + " €"} />
+                <Fab sx={{ background: "#66bb6a", position: "fixed", right: "16px", bottom: "72px" }} onClick={confirmDrinks}>
+                    {
+                        loading ? <CircularProgress /> : <CheckIcon sx={{ color: "white" }} />
+                    }
+                </Fab>
+            </>
         }
 
-        <Snackbar sx={{ position: "fixed", right: "16px", bottom: "72px" }} open={successMessageOpen} autoHideDuration={4000} onClose={handleClose}>
-            <Alert onClose={handleClose} severity="success" sx={{ width: '100%' }}>
-                Getränke erfolgreich gebucht!
+        <Snackbar sx={{ position: "fixed", right: "16px", bottom: alertInfo.severity === "success" ? "16px" : "72px" }} open={successMessageOpen} autoHideDuration={1000} onClose={handleClose}>
+            <Alert onClose={handleClose} severity={alertInfo.severity} sx={{ width: '100%' }}>
+                {alertInfo.message}
             </Alert>
         </Snackbar>
-    </Grid>);
+    </Grid >);
 }
 
 const listeners = [{
@@ -103,7 +144,21 @@ const listeners = [{
 const enhance = compose(
     withFirestore,
     withHandlers({
-        loadDrinks: (props) => (path, where, storeAs) => props.firestore.get({ collection: path, where, storeAs })
+        loadDrinks: (props) => (path, where, storeAs) => props.firestore.get({ collection: path, where, storeAs }),
+        addDrinks: (props) => (uid, drinks) => {
+            return props.firestore.add({ collection: `users/${uid}/drinks` }, drinks);
+        },
+        addToHistory: (props) => (uid, drinks) => {
+            return props.firestore.add({ collection: `users/${uid}/history` }, drinks);
+        },
+        updateStocks: (props) => (drinks) => {
+            let promises = [];
+            Object.values(drinks).forEach(drink => {
+                if ((drink?.stock - drink.count) ?? 0 > 0)
+                    promises.push(props.firestore.update(`drinks/${drink.id}`, { stock: (drink?.stock - drink.count) ?? 0 }));
+            });
+            return Promise.all(promises)
+        }
     }),
     lifecycle({
         componentDidMount() {

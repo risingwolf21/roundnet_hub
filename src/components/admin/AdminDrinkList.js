@@ -1,13 +1,14 @@
 import { Avatar, Badge, Box, Fab, Grid, IconButton, ListItem, ListItemAvatar, ListItemSecondaryAction, ListItemText, Paper } from "@mui/material";
 import { connect } from "react-redux";
 import { compose } from "redux";
-import { firestoreConnect, isLoaded, useFirestore } from "react-redux-firebase";
+import { isLoaded, useFirestore, withFirestore } from "react-redux-firebase";
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
 import EditDrinkDialog from "./EditDrinkDialog";
 import LocalDrinkIcon from '@mui/icons-material/LocalDrink';
 import { useState } from "react";
 import _ from "lodash";
+import { lifecycle, withHandlers } from "recompose";
 
 const AdminDrinkItem = ({ drink, onEditClick }) => {
     return <Paper sx={{ width: "100%", marginBottom: 2, listStyleType: "none" }}>
@@ -25,8 +26,8 @@ const AdminDrinkItem = ({ drink, onEditClick }) => {
             </ListItemAvatar>
             <ListItemText primary={drink.name} secondary={drink.price + " €"} />
             <ListItemSecondaryAction>
-                <IconButton disableRipple>
-                    <EditIcon onClick={onEditClick} fontSize={"medium"} />
+                <IconButton disableRipple onClick={onEditClick}>
+                    <EditIcon fontSize={"medium"} />
                 </IconButton>
             </ListItemSecondaryAction>
         </ListItem>
@@ -65,7 +66,10 @@ const AdminDrinkList = ({ dispatch, drinks, profile, auth }) => {
         sx={{ paddingTop: 2 }}>
         <Grid container width="100%" direction="column" alignItems="center" justifyContent="center" paddingLeft={2} paddingRight={2}>
             {
-                isLoaded(drinks) && drinks.map(drink => <AdminDrinkItem drink={drink} onEditClick={() => selectDrink(drink)} />)
+                isLoaded(drinks) && drinks.map((drink, index) => <AdminDrinkItem
+                    key={"drink" + index}
+                    drink={drink}
+                    onEditClick={() => selectDrink(drink)} />)
             }
             <Box height={"64px"} width={"100%"} />
         </Grid>
@@ -76,11 +80,25 @@ const AdminDrinkList = ({ dispatch, drinks, profile, auth }) => {
     </Grid>);
 }
 
-export default compose(
-    firestoreConnect(() => ['drinks']),
+const enhance = compose(
+    withFirestore,
+    withHandlers({
+        loadDrinks: (props) => (path) => props.firestore.get({ collection: path }),
+    }),
+    lifecycle({
+        componentDidMount() {
+            this.props.loadDrinks("drinks");
+            this.props.firestore.setListener("drinks");
+        },
+        componentWillUnmount() {
+            this.props.firestore.unsetListener("drinks");
+        }
+    }),
     connect((state) => ({
         drinks: state.firestore.ordered.drinks,
         profile: state.firebase.profile,
         auth: state.firebase.auth
     }))
-)(AdminDrinkList);
+);
+
+export default enhance(AdminDrinkList);
