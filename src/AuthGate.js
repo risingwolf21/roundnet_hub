@@ -3,7 +3,7 @@ import { isEmpty, isLoaded } from "react-redux-firebase";
 import AuthScreen from "./components/AuthScreen";
 import { CircularProgress, Grid, Toolbar } from "@mui/material";
 import CustomAppBar from "./components/AppBar";
-import { setUser } from "@sentry/react";
+import { setUser, withProfiler } from "@sentry/react";
 import { useEffect } from "react";
 
 const AuthGate = ({ children }) => {
@@ -39,4 +39,4 @@ const AuthGate = ({ children }) => {
     }
 }
 
-export default AuthGate;
+export default withProfiler(AuthGate);

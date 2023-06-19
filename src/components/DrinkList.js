@@ -14,7 +14,7 @@ const drinks = "drinks";
 const SUCCESS_MESSAGE_INFO = { message: "Getränke erfolgreich gebucht!", severity: "success" };
 const ERROR_MESSAGE_INFO = { message: "Es ist ein Fehler aufgetreten, versuche es bitte erneut!", severity: "error" };
 
-const DrinkList = ({ dispatch, drinks, profile, auth, addDrinks, addToHistory, updateStocks }) => {
+const DrinkList = ({ dispatch, drinks, profile, auth, addDrinks, addToHistory, updateStocks, updateCurrentPayment, revertCurrentPayment }) => {
 
     const firestore = useFirestore();
 
@@ -59,10 +59,24 @@ const DrinkList = ({ dispatch, drinks, profile, auth, addDrinks, addToHistory, u
                 });
                 return null;
             });
+        let payment = await updateCurrentPayment(auth, Object.values(addedDrinks))
+            .catch(error => {
+                captureException(error, (scope) => {
+                    scope.clear();
+                    scope.setExtra("path", `payment/${auth.uid}`);
+                    scope.setExtra("data", JSON.stringify(Object.values(addedDrinks)));
+                    return scope;
+                });
+                return null;
+            });
 
-        if ((drinks.path && !(await firestore.get(drinks.path)).exists) || (history.path && !(await firestore.get(history.path)).exists)) {
-            firestore.delete(history.path);
-            firestore.delete(drinks.path);
+
+        if ((drinks?.path && !(await firestore.get(drinks.path)).exists) || (history?.path && !(await firestore.get(history.path)).exists) || payment === null || !history?.path || !drinks?.path) {
+            if (history?.path)
+                firestore.delete(history.path);
+            if (drinks?.path)
+                firestore.delete(drinks.path);
+            revertCurrentPayment(auth, Object.values(addedDrinks));
 
             confirmDrinksDialog(ERROR_MESSAGE_INFO);
             return;
@@ -150,6 +164,25 @@ const enhance = compose(
         },
         addToHistory: (props) => (uid, drinks) => {
             return props.firestore.add({ collection: `users/${uid}/history` }, drinks);
+        },
+        revertCurrentPayment: (props) => (auth, drinks) => {
+            let amount = drinks.reduce((prev, curr) => prev + (curr.count * curr.price), 0);
+            let updateAmount = props.firestore.update({ collection: `payments`, doc: auth.uid },
+                {
+                    amountToPay: props.firestore.FieldValue.increment(amount * -1),
+                });
+            return updateAmount;
+        },
+        updateCurrentPayment: (props) => (auth, drinks) => {
+            let amount = drinks.reduce((prev, curr) => prev + (curr.count * curr.price), 0);
+            let updateAmount = props.firestore.set({ collection: `payments`, doc: auth.uid },
+                {
+                    amountToPay: props.firestore.FieldValue.increment(amount),
+                    displayName: auth.displayName,
+                    email: auth.email,
+                    userId: auth.uid
+                }, { merge: true });
+            return updateAmount;
         },
         updateStocks: (props) => (drinks) => {
             let promises = [];

@@ -156,7 +156,7 @@ const PayDrinksScreen = ({ drinks, auth, pendingPayment }) => {
                         </Button> :
                         <Button variant="contained" fullWidth sx={{ marginTop: 2, borderRadius: "50px !important", fontSize: "16px", fontFamily: "sans-serif", lineSpacing: "24px" }}
                             onClick={() => {
-                                const newWindow = window.open(`https://www.paypal.me/${PAYPAL_ME_ADDRESS}/${pendingPayment.amountToPay}EUR`, '_blank', 'noopener,noreferrer')
+                                const newWindow = window.open(`https://www.paypal.me/${PAYPAL_ME_ADDRESS}/${totalAmountToPay()}EUR`, '_blank', 'noopener,noreferrer')
                                 if (newWindow) newWindow.opener = null
                             }}
                             startIcon={<EuroIcon />}>Mit Paypal bezahlen</Button>
