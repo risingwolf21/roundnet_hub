@@ -9,6 +9,7 @@ import BottomInformation from "./BottomInformation";
 import { HISTORY_ITEM_NOT_PAID } from "../constants";
 import { lifecycle, withHandlers } from "recompose";
 import { captureException } from "@sentry/react";
+import { FirebaseError } from "firebase/app";
 
 const drinks = "drinks";
 const SUCCESS_MESSAGE_INFO = { message: "Getränke erfolgreich gebucht!", severity: "success" };
@@ -59,24 +60,22 @@ const DrinkList = ({ dispatch, drinks, profile, auth, addDrinks, addToHistory, u
                 });
                 return null;
             });
-        let payment = await updateCurrentPayment(auth, Object.values(addedDrinks))
-            .catch(error => {
-                captureException(error, (scope) => {
-                    scope.clear();
-                    scope.setExtra("path", `payment/${auth.uid}`);
-                    scope.setExtra("data", JSON.stringify(Object.values(addedDrinks)));
-                    return scope;
-                });
-                return null;
-            });
 
 
-        if ((drinks?.path && !(await firestore.get(drinks.path)).exists) || (history?.path && !(await firestore.get(history.path)).exists) || payment === null || !history?.path || !drinks?.path) {
+        if ((drinks?.path && !(await firestore.get(drinks.path)).exists) || (history?.path && !(await firestore.get(history.path)).exists)) {
             if (history?.path)
                 firestore.delete(history.path);
             if (drinks?.path)
                 firestore.delete(drinks.path);
-            revertCurrentPayment(auth, Object.values(addedDrinks));
+
+            console.log("Could not add to drinks or history");
+
+            captureException(new FirebaseError("Missing document needs to be reverted", "Could not add to drinks or history"), (scope) => {
+                scope.clear();
+                scope.setExtra("historyPath", history?.path);
+                scope.setExtra("drinksPath", drinks?.path);
+                return scope;
+            });
 
             confirmDrinksDialog(ERROR_MESSAGE_INFO);
             return;

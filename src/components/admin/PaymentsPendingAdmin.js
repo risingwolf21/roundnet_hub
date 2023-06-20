@@ -22,8 +22,7 @@ const PaymentsPendingAdmin = ({ pendingPayments, auth }) => {
             direction="column"
             alignItems="center"
             justifyContent="center"
-            style={{ minHeight: '100vh' }}
-        >
+            style={{ minHeight: '100vh' }}>
             <CircularProgress />
         </Grid>
     }
