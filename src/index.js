@@ -27,6 +27,7 @@ Sentry.init({
 });
 
 const fbConfig = {
+  databaseURL: "https://roundnet-karlsruhe-default-rtdb.europe-west1.firebasedatabase.app",
   apiKey: process.env.REACT_APP_apiKey,
   authDomain: process.env.REACT_APP_authDomain,
   projectId: process.env.REACT_APP_projectId,
@@ -51,7 +52,9 @@ const rrfConfig = {
 }
 
 firebase.initializeApp(fbConfig);
-firebase.firestore();
+const db = firebase.firestore();
+db.settings({ experimentalAutoDetectLongPolling: true });
+db.enablePersistence();
 
 const rrfProps = {
   firebase,
