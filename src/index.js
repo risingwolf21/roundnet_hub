@@ -19,16 +19,15 @@ Sentry.init({
   dsn: "https://a06f63fae5ab4ce4ac291d0d6fb4e989@o4505379650666496.ingest.sentry.io/4505379651649536",
   integrations: [
     new Sentry.BrowserTracing({
-      // Set `tracePropagationTargets` to control for which URLs distributed tracing should be enabled
       tracePropagationTargets: ["localhost", /^https:\/\/roundnet-karlsruher\.web.app/],
     }),
     new Sentry.Replay(),
   ],
-  // Performance Monitoring
-  tracesSampleRate: 1.0, // Capture 100% of the transactions, reduce in production!
+  tracesSampleRate: process.env.NODE_ENV === "production" ? 0.2 : 1.0,
 });
 
 const fbConfig = {
+  databaseURL: "https://roundnet-karlsruhe-default-rtdb.europe-west1.firebasedatabase.app",
   apiKey: process.env.REACT_APP_apiKey,
   authDomain: process.env.REACT_APP_authDomain,
   projectId: process.env.REACT_APP_projectId,
@@ -40,6 +39,8 @@ const fbConfig = {
 const rrfConfig = {
   userProfile: 'users',
   useFirestoreForProfile: true, // Firestore for Profile instead of Realtime DB
+  logErrors: true,
+  enableLogging: true,
   profileFactory: (userData, profileData, firebase) => { // how profiles are stored in database
     const { user } = userData
     return {
@@ -51,7 +52,9 @@ const rrfConfig = {
 }
 
 firebase.initializeApp(fbConfig);
-firebase.firestore();
+const db = firebase.firestore();
+db.settings({ experimentalAutoDetectLongPolling: true });
+db.enablePersistence();
 
 const rrfProps = {
   firebase,
