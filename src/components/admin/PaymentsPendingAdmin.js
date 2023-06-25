@@ -1,6 +1,6 @@
 import { Box, Button, CircularProgress, Dialog, DialogActions, DialogContent, DialogTitle, Grid, IconButton, List, ListItem, ListItemAvatar, ListItemSecondaryAction, ListItemText, Typography } from "@mui/material";
 import { connect } from "react-redux";
-import { isLoaded, useFirestore, withFirestore } from "react-redux-firebase"
+import { firestoreConnect, isLoaded, useFirestore, withFirestore } from "react-redux-firebase"
 import { compose } from "redux"
 import CheckIcon from "@mui/icons-material/Check"
 import { useState } from "react";
@@ -33,21 +33,13 @@ const PaymentsPendingAdmin = ({ pendingPayments, auth }) => {
     }
 
     const confirmPayment = (payment) => {
-        firestore.collection(`users/${payment.userId}/drinks`).onSnapshot((snapshot) => {
-            const postData = [];
-            snapshot.forEach((doc) => postData.push({ ...doc.data(), id: doc.id }));
-            const functions = []
-            for (let [k, post] of Object.entries(postData)) {
-                functions.push(firestore.delete(`users/${payment.userId}/drinks/${post.id}`));
-            }
-            functions.push(firestore.delete(`payments/${payment.userId}`));
-            functions.push(firestore.add(`users/${payment.userId}/paymentHistory`, payment));
-
-            Promise.all(functions).then(result => {
-                setOpen(false);
-            }).catch(error => {
-                console.log(error);
-            });
+        firestore.collection(`users/${payment.userId}/drinks`).get().then((snapshot) => {
+            snapshot.docs.reduce((prev, curr) => [curr.id, ...prev], []).forEach(x => {
+                firestore.delete(`users/${auth.uid}/drinks/${x}`)
+            });            
+            firestore.delete(`payments/${payment.userId}`);
+            firestore.add(`users/${payment.userId}/paymentHistory`, payment);
+            setOpen(false);
         });
     }
 
@@ -120,6 +112,20 @@ const listener = {
     storeAs: pendingPayments
 }
 
+// export default compose(
+//     firestoreConnect((props) => [
+//         {
+//             collection: `payments`,
+//             storeAs: pendingPayments
+//         }
+//     ]),
+//     connect((state) => ({
+//         pendingPayments: state.firestore.ordered.pendingPayments,
+//         profile: state.firebase.profile,
+//         auth: state.firebase.auth
+//     }))
+// )(PaymentsPendingAdmin);
+
 const enhance = compose(
     withFirestore,
     withHandlers({
@@ -132,9 +138,6 @@ const enhance = compose(
                 pendingPayments
             );
             this.props.firestore.setListener(listener);
-        },
-        componentWillUnmount() {
-            this.props.firestore.unsetListener(listener);
         }
     }),
     connect((state) => ({

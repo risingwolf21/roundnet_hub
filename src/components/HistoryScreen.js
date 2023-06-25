@@ -1,7 +1,7 @@
 import { Box, CircularProgress, Grid, ListItem, ListItemAvatar, ListItemSecondaryAction, ListItemText, Paper, Toolbar, Typography } from "@mui/material"
 import moment from "moment/moment";
 import { connect } from "react-redux"
-import { isLoaded, withFirestore } from "react-redux-firebase"
+import { firestoreConnect, isLoaded, withFirestore } from "react-redux-firebase"
 import { compose } from "redux";
 import BottomInformation from "./BottomInformation";
 import { lifecycle, withHandlers } from "recompose";
@@ -63,6 +63,21 @@ const listener = (uid) => {
     };
 }
 
+// export default compose(
+//     firestoreConnect((props) => [
+//         {
+//             collection: `users/${props.auth.uid}/history`,
+//             where: ["active", "==", true],
+//             storeAs: userHistory
+//         }
+//     ]),
+//     connect((state) => ({
+//         userHistory: state.firestore.ordered.userHistory,
+//         profile: state.firebase.profile,
+//         auth: state.firebase.auth
+//     }))
+// )(HistoryScreen);
+
 const enhance = compose(
     withFirestore,
     withHandlers({
@@ -72,9 +87,6 @@ const enhance = compose(
         componentDidMount() {
             this.props.loadPayments(listener(this.props.auth.uid));
             this.props.firestore.setListener(listener(this.props.auth.uid));
-        },
-        componentWillUnmount() {
-            this.props.firestore.unsetListener(listener(this.props.auth.uid));
         }
     }),
     connect((state) => ({

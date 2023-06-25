@@ -38,6 +38,8 @@ const fbConfig = {
 const rrfConfig = {
   userProfile: 'users',
   useFirestoreForProfile: true, // Firestore for Profile instead of Realtime DB
+  logErrors: true,
+  enableLogging: true,
   profileFactory: (userData, profileData, firebase) => { // how profiles are stored in database
     const { user } = userData
     return {

@@ -1,21 +1,27 @@
 import { Alert, Box, CircularProgress, Fab, Grid, Snackbar } from "@mui/material";
 import { connect } from "react-redux";
 import { compose } from "redux";
-import { isLoaded, useFirestore, withFirestore } from "react-redux-firebase";
+import { firestoreConnect, isLoaded, useFirestore, withFirestore } from "react-redux-firebase";
 import DrinkItem from "./DrinkItem";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import CheckIcon from '@mui/icons-material/Check';
 import BottomInformation from "./BottomInformation";
 import { HISTORY_ITEM_NOT_PAID } from "../constants";
 import { lifecycle, withHandlers } from "recompose";
 import { captureException } from "@sentry/react";
 import { FirebaseError } from "firebase/app";
+import { CardTravel } from "@mui/icons-material";
 
 const drinks = "drinks";
+const payment = "payment";
 const SUCCESS_MESSAGE_INFO = { message: "Getränke erfolgreich gebucht!", severity: "success" };
 const ERROR_MESSAGE_INFO = { message: "Es ist ein Fehler aufgetreten, versuche es bitte erneut!", severity: "error" };
 
-const DrinkList = ({ dispatch, drinks, profile, auth, addDrinks, addToHistory, updateStocks, updateCurrentPayment, revertCurrentPayment }) => {
+const DrinkList = ({ dispatch, drinks, profile, auth, payment, updateStocks }) => {
+
+    useEffect(() => {
+
+    }, [payment])
 
     const firestore = useFirestore();
 
@@ -40,59 +46,35 @@ const DrinkList = ({ dispatch, drinks, profile, auth, addDrinks, addToHistory, u
     const confirmDrinks = async () => {
         setLoading(true);
         let data = { date: Date.now(), state: HISTORY_ITEM_NOT_PAID, drinks: Object.values(addedDrinks) };
-        let drinks = await addDrinks(auth.uid, data)
-            .catch(error => {
-                captureException(error, (scope) => {
-                    scope.clear();
-                    scope.setExtra("path", `users/${auth.uid}/drinks`);
-                    scope.setExtra("data", JSON.stringify(data));
-                    return scope;
-                });
-                return null;
-            });
-        let history = await addToHistory(auth.uid, data)
-            .catch(error => {
-                captureException(error, (scope) => {
-                    scope.clear();
-                    scope.setExtra("path", `users/${auth.uid}/history`);
-                    scope.setExtra("data", JSON.stringify(data));
-                    return scope;
-                });
-                return null;
-            });
 
+        try {
+            let result1 = await firestore.add({ collection: `users/${auth.uid}/drinks` }, data);
+            let result2 = await firestore.add({ collection: `users/${auth.uid}/history` }, data);
 
-        if ((drinks?.path && !(await firestore.get(drinks.path)).exists) || (history?.path && !(await firestore.get(history.path)).exists)) {
-            if (history?.path)
-                firestore.delete(history.path);
-            if (drinks?.path)
-                firestore.delete(drinks.path);
+            if (!(await firestore.get(result1.path)).exists || !(await firestore.get(result2.path)).exists) {
+                if(result1?.path)
+                    await firestore.delete(result1.path);
+                if(result2?.path)
+                    await firestore.delete(result2.path);
+                throw Error("Could not add to /drinks or /history")
+            }
 
-            console.log("Could not add to drinks or history");
+            await updateStocks(addedDrinks)
 
-            captureException(new FirebaseError("Missing document needs to be reverted", "Could not add to drinks or history"), (scope) => {
-                scope.clear();
-                scope.setExtra("historyPath", history?.path);
-                scope.setExtra("drinksPath", drinks?.path);
-                return scope;
-            });
-
-            confirmDrinksDialog(ERROR_MESSAGE_INFO);
-            return;
+            setLoading(false);
+            setAddedDrinks({});
+            confirmDrinksDialog(SUCCESS_MESSAGE_INFO);
         }
-
-        updateStocks(addedDrinks).catch(error => {
+        catch (error) {
+            setLoading(false);
+            confirmDrinksDialog(ERROR_MESSAGE_INFO);
             captureException(error, (scope) => {
                 scope.clear();
+                scope.setExtra("path", `users/${auth.uid}`);
                 scope.setExtra("data", JSON.stringify(data));
                 return scope;
             });
-            confirmDrinksDialog(ERROR_MESSAGE_INFO);
-            return null;
-        });
-
-        setAddedDrinks({});
-        confirmDrinksDialog(SUCCESS_MESSAGE_INFO);
+        }
     }
 
     const onAddDrinkClick = (drink) => {
@@ -140,7 +122,7 @@ const DrinkList = ({ dispatch, drinks, profile, auth, addDrinks, addToHistory, u
             </>
         }
 
-        <Snackbar sx={{ position: "fixed", right: "16px", bottom: alertInfo.severity === "success" ? "16px" : "72px" }} open={successMessageOpen} autoHideDuration={1000} onClose={handleClose}>
+        <Snackbar sx={{ position: "fixed", right: "16px", bottom: alertInfo.severity === "success" ? "16px" : "72px" }} open={successMessageOpen} autoHideDuration={1500} onClose={handleClose}>
             <Alert onClose={handleClose} severity={alertInfo.severity} sx={{ width: '100%' }}>
                 {alertInfo.message}
             </Alert>
@@ -148,40 +130,35 @@ const DrinkList = ({ dispatch, drinks, profile, auth, addDrinks, addToHistory, u
     </Grid >);
 }
 
-const listeners = [{
-    collection: "drinks",
-    where: ["active", "==", true],
-    storeAs: drinks
-}]
+// export default compose(
+//     firestoreConnect((props) => [
+//         {
+//             collection: `drinks`,
+//             where: ["active", "==", true],
+//             storeAs: drinks
+//         },
+//         {
+//             collection: `payments`,
+//             where: ["uid", "==", props.auth.uid],
+//             storeAs: payment
+//         }
+//     ]),
+//     connect((state) => ({
+//         drinks: state.firestore.ordered.drinks,
+//         payment: state.firestore.ordered.payment,
+//         profile: state.firebase.profile,
+//         auth: state.firebase.auth
+//     }))
+// )(DrinkList);
 
 const enhance = compose(
     withFirestore,
     withHandlers({
-        loadDrinks: (props) => (path, where, storeAs) => props.firestore.get({ collection: path, where, storeAs }),
         addDrinks: (props) => (uid, drinks) => {
             return props.firestore.add({ collection: `users/${uid}/drinks` }, drinks);
         },
         addToHistory: (props) => (uid, drinks) => {
             return props.firestore.add({ collection: `users/${uid}/history` }, drinks);
-        },
-        revertCurrentPayment: (props) => (auth, drinks) => {
-            let amount = drinks.reduce((prev, curr) => prev + (curr.count * curr.price), 0);
-            let updateAmount = props.firestore.update({ collection: `payments`, doc: auth.uid },
-                {
-                    amountToPay: props.firestore.FieldValue.increment(amount * -1),
-                });
-            return updateAmount;
-        },
-        updateCurrentPayment: (props) => (auth, drinks) => {
-            let amount = drinks.reduce((prev, curr) => prev + (curr.count * curr.price), 0);
-            let updateAmount = props.firestore.set({ collection: `payments`, doc: auth.uid },
-                {
-                    amountToPay: props.firestore.FieldValue.increment(amount),
-                    displayName: auth.displayName,
-                    email: auth.email,
-                    userId: auth.uid
-                }, { merge: true });
-            return updateAmount;
         },
         updateStocks: (props) => (drinks) => {
             let promises = [];
@@ -194,15 +171,14 @@ const enhance = compose(
     }),
     lifecycle({
         componentDidMount() {
-            this.props.loadDrinks(
-                "drinks",
-                ["active", "==", true],
-                drinks
+            this.props.firestore.get(
+                {
+                    collection: "drinks",
+                    where: ["active", "==", true],
+                    storeAs: drinks
+                }
             );
-            this.props.firestore.setListeners(listeners);
-        },
-        componentWillUnmount() {
-            this.props.firestore.unsetListeners(listeners)
+            this.props.firestore.setListener("drinks");
         }
     }),
     connect((state) => ({

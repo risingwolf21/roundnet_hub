@@ -1,12 +1,13 @@
 import { connect } from "react-redux";
 import { compose } from "redux";
-import { firestoreConnect, isLoaded, useFirestore } from "react-redux-firebase";
+import { firestoreConnect, isLoaded, useFirestore, withFirestore } from "react-redux-firebase";
 import { Alert, Box, Button, CircularProgress, Divider, Grid, List, ListItem, ListItemAvatar, ListItemSecondaryAction, ListItemText, Snackbar, Typography } from "@mui/material";
 import { HISTORY_ITEM_PAY_IN_PROGRESS, PAYPAL_ME_ADDRESS } from "../constants";
 import _ from "lodash";
 import { useState } from "react";
 import { captureException } from "@sentry/react";
 import EuroIcon from '@mui/icons-material/Euro';
+import { lifecycle, withHandlers } from "recompose";
 
 const userDrinks = 'userDrinks';
 const drinksInPayment = 'drinksInPayment';
@@ -62,7 +63,7 @@ const PayDrinksButton = ({ paypalActive, drinks, auth }) => {
     }
 
     return <Box sx={{ position: "fixed", bottom: 0, left: 0, right: 0, flexDirection: "column", justifyContent: "end", display: "flex", textAlign: "center", pl: 2, pr: 2, pb: 2 }}>
-        <Snackbar sx={{ position: "unset" }} open={alertOpen} autoHideDuration={4000} onClose={() => setAlertOpen(false)}>
+        <Snackbar sx={{ position: "unset" }} open={alertOpen} autoHideDuration={1500} onClose={() => setAlertOpen(false)}>
             <Alert onClose={() => setAlertOpen(false)} severity={alertInfo.severity} sx={{ width: '100%' }}>
                 {alertInfo.message}
             </Alert>
@@ -137,7 +138,7 @@ const PayDrinksScreen = ({ drinks, auth, pendingPayment, drinksInPayment }) => {
         </Grid>
     }
 
-    if (!isLoaded(drinks) || !isLoaded(pendingPayment) || !isLoaded(drinksInPayment)) {
+    if (!isLoaded(drinks) || !isLoaded(pendingPayment)) {
         return <Grid
             container
             spacing={0}
@@ -150,10 +151,8 @@ const PayDrinksScreen = ({ drinks, auth, pendingPayment, drinksInPayment }) => {
         </Grid>
     }
 
-    console.log(drinksInPayment);
-
     const drinkItems = () => {
-        if(drinksInPayment){
+        if (drinksInPayment) {
             return Object.values(drinksInPayment).length > 0 ? drinksInPayment : drinks;
         }
         return drinks;
@@ -166,7 +165,7 @@ const PayDrinksScreen = ({ drinks, auth, pendingPayment, drinksInPayment }) => {
             <PayDrinksButton
                 auth={auth}
                 drinks={drinkItems()}
-                paypalActive={drinksInPayment ? true : false} />
+                paypalActive={drinksInPayment && Object.values(drinksInPayment).length > 0 ? true : false} />
         </Box>
     );
 }

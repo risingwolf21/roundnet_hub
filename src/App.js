@@ -26,7 +26,7 @@ const App = ({auth}) => {
     <BrowserRouter>
       <Routes>
         <Route path='/' element={<Navigate replace to={"/drinks"} />} />
-        <Route path="/drinks" element={<DrinkList />} />
+        <Route path="/drinks" element={<DrinkList auth={auth} />} />
         <Route path='/drinks-admin' element={<AdminDrinkList />} />
         <Route path="/user" element={<UserScreen />} />
         <Route path="/history" element={<HistoryScreen auth={auth} />} />
