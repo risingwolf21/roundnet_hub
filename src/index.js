@@ -27,7 +27,6 @@ Sentry.init({
 });
 
 const fbConfig = {
-  databaseURL: "https://roundnet-karlsruhe-default-rtdb.europe-west1.firebasedatabase.app",
   apiKey: process.env.REACT_APP_apiKey,
   authDomain: process.env.REACT_APP_authDomain,
   projectId: process.env.REACT_APP_projectId,
@@ -39,8 +38,6 @@ const fbConfig = {
 const rrfConfig = {
   userProfile: 'users',
   useFirestoreForProfile: true, // Firestore for Profile instead of Realtime DB
-  logErrors: true,
-  enableLogging: true,
   profileFactory: (userData, profileData, firebase) => { // how profiles are stored in database
     const { user } = userData
     return {
@@ -52,9 +49,7 @@ const rrfConfig = {
 }
 
 firebase.initializeApp(fbConfig);
-const db = firebase.firestore();
-db.settings({ experimentalAutoDetectLongPolling: true });
-db.enablePersistence();
+firebase.firestore();
 
 const rrfProps = {
   firebase,
