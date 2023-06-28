@@ -1,6 +1,6 @@
 import { connect } from "react-redux";
 import { compose } from "redux";
-import { firestoreConnect, isLoaded, useFirestore, withFirestore } from "react-redux-firebase";
+import { firestoreConnect, isLoaded, useFirestore } from "react-redux-firebase";
 import { Alert, Box, Button, CircularProgress, Collapse, Dialog, DialogActions, DialogContent, DialogTitle, Divider, Grid, IconButton, List, ListItem, ListItemAvatar, ListItemButton, ListItemSecondaryAction, ListItemText, Snackbar, Typography } from "@mui/material";
 import { HISTORY_ITEM_NOT_PAID, HISTORY_ITEM_PAY_IN_PROGRESS, PAYPAL_ME_ADDRESS } from "../constants";
 import _ from "lodash";
@@ -9,8 +9,7 @@ import { captureException } from "@sentry/react";
 import EuroIcon from '@mui/icons-material/Euro';
 import ExpandLess from '@mui/icons-material/ExpandLess';
 import ExpandMore from '@mui/icons-material/ExpandMore';
-import { lifecycle, withHandlers } from "recompose";
-import { Add, Info, Warning } from "@mui/icons-material";
+import { Add, Warning } from "@mui/icons-material";
 
 const userDrinks = 'userDrinks';
 const drinksInPayment = 'drinksInPayment';
@@ -210,7 +209,7 @@ const PayDrinksSummary = ({ drinks, unpaidDrinks, auth }) => {
             </DialogTitle>
             <DialogContent>
                 <Typography>
-                    {unpaidDrinks && `Es ${Object.entries(unpaidDrinks).length == 1 ? "wird " + Object.entries(unpaidDrinks).length + " Getränk" : "werden " + Object.entries(unpaidDrinks).length + " Getränke "}
+                    {unpaidDrinks && `Es ${Object.entries(unpaidDrinks).length === 1 ? "wird " + Object.entries(unpaidDrinks).length + " Getränk" : "werden " + Object.entries(unpaidDrinks).length + " Getränke "}
                      mit einem Gesamtpreis von ${totalAmountToPay(unpaidDrinks)} € deiner aktuellen Rechnung hinzugefügt`}
                 </Typography>
             </DialogContent>
