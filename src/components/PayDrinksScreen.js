@@ -40,13 +40,15 @@ const PayDrinksButton = ({ paypalActive, drinks, auth }) => {
             updatingDrinks.push(promise);
         }
 
-        let result = await Promise.all(updatingDrinks).then((v) => {
-            firestore.set(`payments/${auth.uid}`, {
-                userId: auth.uid,
-                displayName: auth.displayName,
-                email: auth.email,
-                amountToPay: totalAmountToPay(drinks)
-            }).catch(error => {
+        await Promise.all(updatingDrinks).then((v) => {
+            try {
+                firestore.set(`payments/${auth.uid}`, {
+                    userId: auth.uid,
+                    displayName: auth?.displayName ?? auth.email,
+                    email: auth.email,
+                    amountToPay: totalAmountToPay(drinks)
+                });
+            } catch (error) {
                 setAlertInfo(ERROR_MESSAGE_INFO);
                 captureException(error, (scope) => {
                     scope.clear();
@@ -55,7 +57,16 @@ const PayDrinksButton = ({ paypalActive, drinks, auth }) => {
                     return scope;
                 });
                 return null;
-            })
+            }
+        }).catch(error => {
+            setAlertInfo(ERROR_MESSAGE_INFO);
+            captureException(error, (scope) => {
+                scope.clear();
+                scope.setExtra("path", `payments/${auth.uid}`);
+                scope.setExtra("data", JSON.stringify(updatingDrinks));
+                return scope;
+            });
+            return null;
         });
 
         setAlertOpen(true);
