@@ -36,7 +36,7 @@ const PaymentsPendingAdmin = ({ pendingPayments, auth }) => {
         firestore.collection(`users/${payment.userId}/drinks`).get().then((snapshot) => {
             snapshot.docs.reduce((prev, curr) => [curr.id, ...prev], []).forEach(x => {
                 firestore.delete(`users/${auth.uid}/drinks/${x}`)
-            });            
+            });
             firestore.delete(`payments/${payment.userId}`);
             firestore.add(`users/${payment.userId}/paymentHistory`, payment);
             setOpen(false);
@@ -44,34 +44,42 @@ const PaymentsPendingAdmin = ({ pendingPayments, auth }) => {
     }
 
     return <Box>
-        <List>
-            {
-                pendingPayments && Object.values(pendingPayments).map(x => {
-                    return <ListItem key={x.email}>
-                        <ListItemAvatar>
-                            <Typography fontWeight={"bold"}>{x.amountToPay} €</Typography>
-                        </ListItemAvatar>
-                        <ListItemText primary={x.displayName ?? x.email} secondary={x.displayName ? "Benutzername" : "Email"} />
-                        <ListItemSecondaryAction >
-                            <IconButton onClick={() => selectedPayment(x)}>
-                                <CheckIcon />
-                            </IconButton>
-                        </ListItemSecondaryAction>
-                    </ListItem>
-                })
-            }
-            {
-                pendingPayments.length < 1 && <Grid
-                    container
-                    spacing={0}
-                    direction="column"
-                    alignItems="center"
-                    justifyContent="center"
-                    style={{ minHeight: '100vh' }}>
-                    <Typography>Keine aktiven Zahlungen gefunden</Typography>
-                </Grid>
-            }
-        </List>
+        {
+            pendingPayments.length > 0 && <List>
+                {
+                    Object.values(pendingPayments).map(x => {
+                        return <ListItem key={x.email}>
+                            <ListItemAvatar>
+                                <Typography fontWeight={"bold"}>{x.amountToPay} €</Typography>
+                            </ListItemAvatar>
+                            <ListItemText primary={x.displayName ?? x.email} secondary={x.displayName ? "Benutzername" : "Email"} />
+                            <ListItemSecondaryAction >
+                                <IconButton onClick={() => selectedPayment(x)}>
+                                    <CheckIcon />
+                                </IconButton>
+                            </ListItemSecondaryAction>
+                        </ListItem>
+                    })
+                }
+            </List>
+        }
+        {
+            pendingPayments.length < 1 && <Grid
+                container
+                spacing={0}
+                direction="column"
+                alignItems="center"
+                justifyContent="center"
+                style={{ minHeight: '100vh' }}>
+                <Typography>Keine aktiven Zahlungen gefunden</Typography>
+            </Grid>
+        }
+        <Box sx={{ position: "fixed", bottom: 0, left: 0, right: 0, flexDirection: "column", justifyContent: "end", display: "flex", textAlign: "center", pl: 2, pr: 2, pb: 2 }}>
+            <Button variant="contained" fullWidth sx={{ marginTop: 2, borderRadius: "50px !important", fontSize: "16px", fontFamily: "sans-serif", lineSpacing: "24px" }}
+                onClick={() => {
+
+                }}>Zahlungen anfordern</Button>
+        </Box>
         <Dialog open={open} onClose={() => setOpen(false)} title="Zahlung bestätigen">
             <DialogTitle id="alert-dialog-title">
                 {"Zahlung bestätigen"}
