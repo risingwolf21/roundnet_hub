@@ -1,16 +1,20 @@
 import { connect } from "react-redux";
 import { compose } from "redux";
 import { firestoreConnect, isLoaded, useFirestore, withFirestore } from "react-redux-firebase";
-import { Alert, Box, Button, CircularProgress, Divider, Grid, List, ListItem, ListItemAvatar, ListItemSecondaryAction, ListItemText, Snackbar, Typography } from "@mui/material";
-import { HISTORY_ITEM_PAY_IN_PROGRESS, PAYPAL_ME_ADDRESS } from "../constants";
+import { Alert, Box, Button, CircularProgress, Collapse, Dialog, DialogActions, DialogContent, DialogTitle, Divider, Grid, IconButton, List, ListItem, ListItemAvatar, ListItemButton, ListItemSecondaryAction, ListItemText, Snackbar, Typography } from "@mui/material";
+import { HISTORY_ITEM_NOT_PAID, HISTORY_ITEM_PAY_IN_PROGRESS, PAYPAL_ME_ADDRESS } from "../constants";
 import _ from "lodash";
 import { useState } from "react";
 import { captureException } from "@sentry/react";
 import EuroIcon from '@mui/icons-material/Euro';
+import ExpandLess from '@mui/icons-material/ExpandLess';
+import ExpandMore from '@mui/icons-material/ExpandMore';
 import { lifecycle, withHandlers } from "recompose";
+import { Add, Info, Warning } from "@mui/icons-material";
 
 const userDrinks = 'userDrinks';
 const drinksInPayment = 'drinksInPayment';
+const drinksUnpaid = 'drinksUnpaid';
 const pendingPayment = 'pendingPayment';
 
 const totalAmountToPay = (drinks) => {
@@ -33,32 +37,14 @@ const PayDrinksButton = ({ paypalActive, drinks, auth }) => {
 
         await new Promise(resolve => setTimeout(resolve, 1000));
 
-        let updatingDrinks = [];
-
-        for (let [k, _] of Object.entries(drinks)) {
-            const promise = firestore.update(`users/${auth.uid}/drinks/${k}`, { state: HISTORY_ITEM_PAY_IN_PROGRESS });
-            updatingDrinks.push(promise);
-        }
-
-        await Promise.all(updatingDrinks).then((v) => {
-            try {
-                firestore.set(`payments/${auth.uid}`, {
-                    userId: auth.uid,
-                    displayName: auth?.displayName ?? auth.email,
-                    email: auth.email,
-                    amountToPay: totalAmountToPay(drinks)
-                });
-            } catch (error) {
-                setAlertInfo(ERROR_MESSAGE_INFO);
-                captureException(error, (scope) => {
-                    scope.clear();
-                    scope.setExtra("path", `payments/${auth.uid}`);
-                    scope.setExtra("data", JSON.stringify(updatingDrinks));
-                    return scope;
-                });
-                return null;
-            }
-        }).catch(error => {
+        try {
+            firestore.set(`payments/${auth.uid}`, {
+                userId: auth.uid,
+                displayName: auth?.displayName ?? auth.email,
+                email: auth.email,
+                amountToPay: totalAmountToPay(drinks)
+            });
+        } catch (error) {
             setAlertInfo(ERROR_MESSAGE_INFO);
             captureException(error, (scope) => {
                 scope.clear();
@@ -67,7 +53,24 @@ const PayDrinksButton = ({ paypalActive, drinks, auth }) => {
                 return scope;
             });
             return null;
-        });
+        }
+
+        let updatingDrinks = [];
+
+        for (let [k, v] of Object.entries(drinks)) {
+            firestore.update(`users/${auth.uid}/drinks/${k}`, { state: HISTORY_ITEM_PAY_IN_PROGRESS })
+                .catch(error => {
+                    setAlertInfo(ERROR_MESSAGE_INFO);
+                    captureException(error, (scope) => {
+                        scope.clear();
+                        scope.setExtra("path", `users/${auth.uid}/drinks/${k}`);
+                        scope.setExtra("data", JSON.stringify(v));
+                        return scope;
+                    });
+                });
+        }
+
+        await firestore.waitForPendingWrites();
 
         setAlertOpen(true);
         setLoading(false);
@@ -98,7 +101,39 @@ const PayDrinksButton = ({ paypalActive, drinks, auth }) => {
     </Box>
 }
 
-const PayDrinksSummary = ({ drinks }) => {
+const PayDrinksSummary = ({ drinks, unpaidDrinks, auth }) => {
+
+    const firestore = useFirestore();
+    const [unpaidDrinksOpen, setUnpaidDrinksOpen] = useState(false);
+    const [dialogAddDrinksOpen, setDialogAddDrinksOpen] = useState(false);
+    const [dialogAddDrinksLoading, setDialogAddDrinksLoading] = useState(false);
+
+    const handleOpenUnpaidDrinksClick = () => {
+        setUnpaidDrinksOpen(!unpaidDrinksOpen);
+    }
+
+    const addUnpaidDrinksToPayment = async () => {
+        setDialogAddDrinksLoading(true);
+
+        for (let [k, v] of Object.entries(unpaidDrinks)) {
+            firestore.update(`users/${auth.uid}/drinks/${k}`, { state: HISTORY_ITEM_PAY_IN_PROGRESS })
+                .catch(error => {
+                    captureException(error, (scope) => {
+                        scope.clear();
+                        scope.setExtra("path", `users/${auth.uid}/drinks/${k}`);
+                        scope.setExtra("data", JSON.stringify(v));
+                        return scope;
+                    });
+                });
+        }
+        firestore.update(`payments/${auth.uid}`, {
+            amountToPay: firestore.FieldValue.increment(totalAmountToPay(unpaidDrinks))
+        });
+
+        setDialogAddDrinksLoading(false);
+        setDialogAddDrinksOpen(false);
+    }
+
     return <Box>
         <List>
             {
@@ -121,23 +156,98 @@ const PayDrinksSummary = ({ drinks }) => {
             }
             <Divider />
             <ListItem>
-                <ListItemText primary={"Gesamtkosten"} />
+                <ListItemText primaryTypographyProps={{ fontWeight: "bold" }} primary={"Gesamtkosten"} />
                 <ListItemSecondaryAction>
-                    <Typography>
+                    <Typography sx={{ fontWeight: "bold" }}>
                         {totalAmountToPay(drinks)} €
                     </Typography>
                 </ListItemSecondaryAction>
             </ListItem>
+            {
+                (unpaidDrinks && Object.entries(unpaidDrinks).length > 0) && <>
+                    <ListItemButton onClick={handleOpenUnpaidDrinksClick}>
+                        <ListItemText primary={"Offene Getränke"} />
+                        {unpaidDrinksOpen ? <ExpandLess /> : <ExpandMore />}
+                    </ListItemButton>
+                    <Collapse in={unpaidDrinksOpen} timeout="auto" unmountOnExit>
+                        <List component="div" disablePadding>
+                            {
+                                unpaidDrinks && [<ListItem>
+                                    <ListItemAvatar>
+                                        <Warning color="warning" />
+                                    </ListItemAvatar>
+                                    <ListItemText primary={"Diese Getränke sind in der aktuellen Zahlung noch nicht enthalten."} />
+                                    <ListItemSecondaryAction>
+                                        <IconButton onClick={() => setDialogAddDrinksOpen(true)}>
+                                            <Add />
+                                        </IconButton>
+                                    </ListItemSecondaryAction>
+                                </ListItem>, <Divider />].concat(_.chain(Object.values(unpaidDrinks)
+                                    .flatMap(x => x.drinks))
+                                    // Group the elements of Array based on `name` property
+                                    .groupBy("name")
+                                    // `key` is group's name (name), `value` is the array of objects
+                                    .map((value, key) => ({ name: key, count: value.reduce((prev, curr) => prev + curr.count, 0), priceSingle: value[0]?.price ?? "NaN", priceTotal: value.reduce((prev, curr) => prev + (curr.count * curr.price), 0), drinks: value }))
+                                    .value()
+                                    .map((x, index) => <ListItem key={"drinks" + index}>
+                                        <ListItemAvatar>
+                                            <Typography>{x.count + " x"}</Typography>
+                                        </ListItemAvatar>
+                                        <ListItemText primary={x.name} secondary={x.priceSingle + " €"} />
+                                        <ListItemSecondaryAction>
+                                            <Typography>{x.priceTotal} €</Typography>
+                                        </ListItemSecondaryAction>
+                                    </ListItem>))
+                            }
+                        </List>
+                    </Collapse>
+                </>
+            }
         </List>
+        <Dialog open={dialogAddDrinksOpen} onClose={() => setDialogAddDrinksOpen(false)} title="Getränke hinzufügen">
+            <DialogTitle id="alert-dialog-title">
+                {"Getränke hinzufügen"}
+            </DialogTitle>
+            <DialogContent>
+                <Typography>
+                    {unpaidDrinks && `Es ${Object.entries(unpaidDrinks).length == 1 ? "wird " + Object.entries(unpaidDrinks).length + " Getränk" : "werden " + Object.entries(unpaidDrinks).length + " Getränke "}
+                     mit einem Gesamtpreis von ${totalAmountToPay(unpaidDrinks)} € deiner aktuellen Rechnung hinzugefügt`}
+                </Typography>
+            </DialogContent>
+            {
+                dialogAddDrinksLoading ?
+                    <CircularProgress />
+                    :
+                    <DialogActions>
+                        <Button onClick={() => setDialogAddDrinksOpen(false)}>Abbrechen</Button>
+                        <Button onClick={addUnpaidDrinksToPayment} autoFocus>
+                            Bestätigen
+                        </Button>
+                    </DialogActions>
+            }
+        </Dialog>
     </Box>
 }
 
 const SUCCESS_MESSAGE_INFO = { message: "Zahlung erfolgreich angefragt! Jetzt auf Paypal senden", severity: "success" };
 const ERROR_MESSAGE_INFO = { message: "Es ist ein Fehler aufgetreten, versuche es bitte erneut!", severity: "error" };
 
-const PayDrinksScreen = ({ drinks, auth, pendingPayment, drinksInPayment }) => {
+const PayDrinksScreen = ({ drinks, auth, pendingPayment, drinksInPayment, drinksUnpaid }) => {
 
-    if (isLoaded(drinks) && (!drinks || drinks.length < 1)) {
+
+    if (!isLoaded(drinksUnpaid, pendingPayment, drinks, drinksInPayment)) {
+        return <Grid
+            container
+            spacing={0}
+            direction="column"
+            alignItems="center"
+            justifyContent="center"
+            style={{ minHeight: '100vh' }}>
+            <CircularProgress />
+        </Grid>
+    }
+
+    if (!drinks || drinks.length < 1) {
         return <Grid
             container
             spacing={0}
@@ -146,19 +256,6 @@ const PayDrinksScreen = ({ drinks, auth, pendingPayment, drinksInPayment }) => {
             justifyContent="center"
             style={{ minHeight: '100vh' }}>
             <Typography>Keine offenen Getränke gefunden</Typography>
-        </Grid>
-    }
-
-    if (!isLoaded(drinks) || !isLoaded(pendingPayment)) {
-        return <Grid
-            container
-            spacing={0}
-            direction="column"
-            alignItems="center"
-            justifyContent="center"
-            style={{ minHeight: '100vh' }}
-        >
-            <CircularProgress />
         </Grid>
     }
 
@@ -171,8 +268,7 @@ const PayDrinksScreen = ({ drinks, auth, pendingPayment, drinksInPayment }) => {
 
     return (
         <Box>
-            <PayDrinksSummary
-                drinks={drinkItems()} />
+            <PayDrinksSummary drinks={drinkItems()} unpaidDrinks={drinksUnpaid} auth={auth} />
             <PayDrinksButton
                 auth={auth}
                 drinks={drinkItems()}
@@ -193,6 +289,11 @@ export default compose(
             storeAs: drinksInPayment
         },
         {
+            collection: `users/${props.auth.uid}/drinks`,
+            where: [["state", "==", HISTORY_ITEM_NOT_PAID]],
+            storeAs: drinksUnpaid
+        },
+        {
             collection: `payments`,
             doc: props.auth.uid,
             storeAs: pendingPayment
@@ -201,6 +302,7 @@ export default compose(
     connect(({ firestore: { data } }, props) => ({
         drinks: data.userDrinks,
         drinksInPayment: data.drinksInPayment,
+        drinksUnpaid: data.drinksUnpaid,
         pendingPayment: data.pendingPayment
     }))
 )(PayDrinksScreen)
