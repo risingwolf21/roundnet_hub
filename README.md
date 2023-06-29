@@ -90,5 +90,5 @@ This section has moved here: [https://facebook.github.io/create-react-app/docs/t
 [Mui]: https://img.shields.io/badge/Material%20UI-007FFF?style=for-the-badge&logo=mui&logoColor=white
 [Mui-url]: https://mui.com/
 [issues-shield]: https://img.shields.io/github/issues/othneildrew/Best-README-Template.svg?style=for-the-badge
-[issues-url]: https://github.com/othneildrew/Best-README-Template/issues
+[issues-url]: https://github.com/risingwolf21/roundnet_karlsruhe_app/issues
 
