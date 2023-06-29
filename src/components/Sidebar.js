@@ -88,7 +88,7 @@ const SideBar = ({ open, onClose, onOpen, profile, auth }) => {
                 style={{ width: "250px" }}
                 onClick={onClose}
                 onKeyDown={onClose}>
-                <Box sx={{ justifyContent: "space-between", display: "flex", flexDirection: "column", height: "100vh" }}>
+                <Box >
                     <List>
                         <Toolbar />
                         {SCREENS.map((item, index) => (
@@ -118,12 +118,15 @@ const SideBar = ({ open, onClose, onOpen, profile, auth }) => {
                         }
                     </List>
                     {
-                        !isAppInstalled && <ListItem key={"installApp"} onClick={promptToInstall}>
-                            <ListItemIcon>
-                                <Download />
-                            </ListItemIcon>
-                            <ListItemText primary={"Als App Installieren"} />
-                        </ListItem>
+                        !isAppInstalled && <Box  sx={{ position: "fixed", bottom: 0, left: 0, width: "250px" }}>
+                            <Divider/>
+                            <ListItem key={"installApp"} onClick={promptToInstall}>
+                                <ListItemIcon>
+                                    <Download />
+                                </ListItemIcon>
+                                <ListItemText primary={"Als App Installieren"} />
+                            </ListItem>
+                        </Box>
                     }
                 </Box>
             </div>
