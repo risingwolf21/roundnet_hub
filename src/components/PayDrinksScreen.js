@@ -154,7 +154,7 @@ const PayDrinksSummary = ({ drinks, unpaidDrinks, auth }) => {
                     </ListItem>)
             }
             <Divider />
-            <ListItem>
+            <ListItem key={"totalAmount"}>
                 <ListItemText primaryTypographyProps={{ fontWeight: "bold" }} primary={"Gesamtkosten"} />
                 <ListItemSecondaryAction>
                     <Typography sx={{ fontWeight: "bold" }}>
@@ -164,14 +164,14 @@ const PayDrinksSummary = ({ drinks, unpaidDrinks, auth }) => {
             </ListItem>
             {
                 (unpaidDrinks && Object.entries(unpaidDrinks).length > 0) && <>
-                    <ListItemButton onClick={handleOpenUnpaidDrinksClick}>
+                    <ListItemButton key={"unpaidDrink"} onClick={handleOpenUnpaidDrinksClick}>
                         <ListItemText primary={"Offene Getränke"} />
                         {unpaidDrinksOpen ? <ExpandLess /> : <ExpandMore />}
                     </ListItemButton>
                     <Collapse in={unpaidDrinksOpen} timeout="auto" unmountOnExit>
                         <List component="div" disablePadding>
                             {
-                                unpaidDrinks && [<ListItem>
+                                unpaidDrinks && [<ListItem key={"warning"}>
                                     <ListItemAvatar>
                                         <Warning color="warning" />
                                     </ListItemAvatar>
@@ -188,7 +188,7 @@ const PayDrinksSummary = ({ drinks, unpaidDrinks, auth }) => {
                                     // `key` is group's name (name), `value` is the array of objects
                                     .map((value, key) => ({ name: key, count: value.reduce((prev, curr) => prev + curr.count, 0), priceSingle: value[0]?.price ?? "NaN", priceTotal: value.reduce((prev, curr) => prev + (curr.count * curr.price), 0), drinks: value }))
                                     .value()
-                                    .map((x, index) => <ListItem key={"drinks" + index}>
+                                    .map((x, index) => <ListItem key={"unpaidDrinks" + index}>
                                         <ListItemAvatar>
                                             <Typography>{x.count + " x"}</Typography>
                                         </ListItemAvatar>

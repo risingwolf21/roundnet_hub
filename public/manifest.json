@@ -20,6 +20,12 @@
       "purpose": "any maskable"
     }
   ],
+  "related_applications": [
+    {
+      "platform": "webapp",
+      "url": "https://roundnet-karlsruhe.web.app/manifest.json"
+    }
+  ],
   "display": "standalone",
   "start_url": "./",
   "theme_color": "#0e876c",
