@@ -1,13 +1,20 @@
 # Roundnet Karlsruhe App
-
 [![Production deployment](https://github.com/risingwolf21/roundnet_karlsruhe_app/actions/workflows/firebase_deployment.yml/badge.svg)](https://github.com/risingwolf21/roundnet_karlsruhe_app/actions/workflows/firebase_deployment.yml)
 [![Building](https://github.com/risingwolf21/roundnet_karlsruhe_app/actions/workflows/react_build.yml/badge.svg?branch=master)](https://github.com/risingwolf21/roundnet_karlsruhe_app/actions/workflows/react_build.yml)
+<br/>
+[![Issues][issues-shield]][issues-url]
+[![React][React.js]][React-url]
+[![MUI][Mui]][Mui-url]
 
 ## Hosting
 
 [https://roundnet-karlsruhe.web.app/](https://roundnet-karlsruhe.web.app/)
 
 ## Release
+
+To create a release you need to push a commit to the `production` branch. <br/>
+To prevent any unwanted releases, the pipeline only gets triggered when you merge via a Pull-Request.
+To create one, follow the link bellow:
 
 [Create new release](https://github.com/risingwolf21/roundnet_karlsruhe_app/compare/production...master)
 
@@ -77,3 +84,11 @@ This section has moved here: [https://facebook.github.io/create-react-app/docs/d
 ### `npm run build` fails to minify
 
 This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+
+[React.js]: https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB
+[React-url]: https://reactjs.org/
+[Mui]: https://img.shields.io/badge/Material%20UI-007FFF?style=for-the-badge&logo=mui&logoColor=white
+[Mui-url]: https://mui.com/
+[issues-shield]: https://img.shields.io/github/issues/othneildrew/Best-README-Template.svg?style=for-the-badge
+[issues-url]: https://github.com/othneildrew/Best-README-Template/issues
+
