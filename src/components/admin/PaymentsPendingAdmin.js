@@ -6,16 +6,9 @@ import CheckIcon from "@mui/icons-material/Check"
 import { useState } from "react";
 import { lifecycle, withHandlers } from "recompose";
 import { HISTORY_ITEM_NOT_PAID, HISTORY_ITEM_PAY_IN_PROGRESS } from "../../constants";
+import { totalAmountToPay } from '../../utils';
 
 const pendingPayments = "pendingPayments";
-
-const totalAmountToPay = (drinks) => {
-    if (!drinks)
-        return 0;
-    return Object.values(drinks)
-        .flatMap(x => x.drinks)
-        .reduce((prev, curr) => prev + (curr.count * curr.price), 0);
-}
 
 const PaymentsPendingAdmin = ({ pendingPayments, auth }) => {
 

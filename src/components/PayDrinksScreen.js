@@ -10,19 +10,12 @@ import EuroIcon from '@mui/icons-material/Euro';
 import ExpandLess from '@mui/icons-material/ExpandLess';
 import ExpandMore from '@mui/icons-material/ExpandMore';
 import { Add, Warning } from "@mui/icons-material";
+import { totalAmountToPay } from '../utils';
 
 const userDrinks = 'userDrinks';
 const drinksInPayment = 'drinksInPayment';
 const drinksUnpaid = 'drinksUnpaid';
 const pendingPayment = 'pendingPayment';
-
-const totalAmountToPay = (drinks) => {
-    if (!drinks)
-        return 0;
-    return Object.values(drinks)
-        .flatMap(x => x.drinks)
-        .reduce((prev, curr) => prev + (curr.count * curr.price), 0);
-}
 
 const PayDrinksButton = ({ paypalActive, drinks, auth }) => {
 
