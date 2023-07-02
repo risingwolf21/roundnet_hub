@@ -38,6 +38,9 @@ const fbConfig = {
 const rrfConfig = {
   userProfile: 'users',
   useFirestoreForProfile: true, // Firestore for Profile instead of Realtime DB
+  profileParamsToPopulate: [
+    { child: 'role', root: 'roles' }, // populates user's role with matching role object from roles
+  ],
   profileFactory: (userData, profileData, firebase) => { // how profiles are stored in database
     const { user } = userData
     return {

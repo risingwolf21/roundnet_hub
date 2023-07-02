@@ -1,7 +1,7 @@
 import { Alert, Box, CircularProgress, Fab, Grid, Snackbar } from "@mui/material";
 import { connect } from "react-redux";
 import { compose } from "redux";
-import { firestoreConnect, isLoaded, useFirestore, withFirestore } from "react-redux-firebase";
+import { isLoaded, useFirestore, withFirestore } from "react-redux-firebase";
 import DrinkItem from "./DrinkItem";
 import { useEffect, useState } from "react";
 import CheckIcon from '@mui/icons-material/Check';
@@ -9,11 +9,8 @@ import BottomInformation from "./BottomInformation";
 import { HISTORY_ITEM_NOT_PAID } from "../constants";
 import { lifecycle, withHandlers } from "recompose";
 import { captureException } from "@sentry/react";
-import { FirebaseError } from "firebase/app";
-import { CardTravel } from "@mui/icons-material";
 
 const drinks = "drinks";
-const payment = "payment";
 const SUCCESS_MESSAGE_INFO = { message: "Getränke erfolgreich gebucht!", severity: "success" };
 const ERROR_MESSAGE_INFO = { message: "Es ist ein Fehler aufgetreten, versuche es bitte erneut!", severity: "error" };
 

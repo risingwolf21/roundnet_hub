@@ -1,7 +1,7 @@
 import { Box, CircularProgress, Grid, ListItem, ListItemAvatar, ListItemSecondaryAction, ListItemText, Paper, Toolbar, Typography } from "@mui/material"
 import moment from "moment/moment";
 import { connect } from "react-redux"
-import { firestoreConnect, isLoaded, withFirestore } from "react-redux-firebase"
+import { isLoaded, withFirestore } from "react-redux-firebase"
 import { compose } from "redux";
 import BottomInformation from "./BottomInformation";
 import { lifecycle, withHandlers } from "recompose";

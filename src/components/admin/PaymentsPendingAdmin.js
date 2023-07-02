@@ -5,12 +5,22 @@ import { compose } from "redux"
 import CheckIcon from "@mui/icons-material/Check"
 import { useState } from "react";
 import { lifecycle, withHandlers } from "recompose";
+import { HISTORY_ITEM_NOT_PAID, HISTORY_ITEM_PAY_IN_PROGRESS } from "../../constants";
 
 const pendingPayments = "pendingPayments";
+
+const totalAmountToPay = (drinks) => {
+    if (!drinks)
+        return 0;
+    return Object.values(drinks)
+        .flatMap(x => x.drinks)
+        .reduce((prev, curr) => prev + (curr.count * curr.price), 0);
+}
 
 const PaymentsPendingAdmin = ({ pendingPayments, auth }) => {
 
     const [open, setOpen] = useState(false);
+    const [paymentEveryoneLoading, setPaymentEveryoneLoading] = useState(false);
     const [currentPayment, setPayment] = useState({});
 
     const firestore = useFirestore();
@@ -30,6 +40,29 @@ const PaymentsPendingAdmin = ({ pendingPayments, auth }) => {
     const selectedPayment = (payment) => {
         setPayment(payment);
         setOpen(true);
+    }
+
+    const startPaymentsForEveryone = () => {
+        setPaymentEveryoneLoading(true);
+        firestore.collection("users").get().then(result => {
+            result.docs.forEach(user => {
+                if (user.id === "Ym0OlVXoISbSNWrukaEsSjiDF9k2") {
+                    firestore.collection(`users/${user.id}/drinks`).get().then(drinks => {
+                        let filteredDrinks = drinks.docs.filter(x => x.data().state === HISTORY_ITEM_NOT_PAID);
+                        filteredDrinks.forEach(drink => {
+                            firestore.update(`users/${user.id}/drinks/${drink.id}`, { state: HISTORY_ITEM_PAY_IN_PROGRESS })
+                        });
+                        firestore.update(`payments/${user.id}`, {
+                            email: user.data().email,
+                            userId: user.id,
+                            displayName: user.data()?.displayName ?? user.data().email,
+                            amountToPay: firestore.FieldValue.increment(totalAmountToPay(filteredDrinks.map(x => x.data())))
+                        });
+                    });
+                }
+            });
+            setPaymentEveryoneLoading(false);
+        });
     }
 
     const confirmPayment = (payment) => {
@@ -76,9 +109,11 @@ const PaymentsPendingAdmin = ({ pendingPayments, auth }) => {
         }
         <Box sx={{ position: "fixed", bottom: 0, left: 0, right: 0, flexDirection: "column", justifyContent: "end", display: "flex", textAlign: "center", pl: 2, pr: 2, pb: 2 }}>
             <Button variant="contained" fullWidth sx={{ marginTop: 2, borderRadius: "50px !important", fontSize: "16px", fontFamily: "sans-serif", lineSpacing: "24px" }}
-                onClick={() => {
-
-                }}>Zahlungen anfordern</Button>
+                onClick={startPaymentsForEveryone}>
+                {
+                    paymentEveryoneLoading ? <CircularProgress /> : "Zahlungen anfordern"
+                }
+            </Button>
         </Box>
         <Dialog open={open} onClose={() => setOpen(false)} title="Zahlung bestätigen">
             <DialogTitle id="alert-dialog-title">
@@ -153,6 +188,6 @@ const enhance = compose(
         profile: state.firebase.profile,
         auth: state.firebase.auth
     }))
-);
+)
 
 export default enhance(PaymentsPendingAdmin)
