@@ -56,7 +56,7 @@ const DrinkList = ({ dispatch, drinks, profile, auth, payment, updateStocks }) =
                 throw Error("Could not add to /drinks or /history")
             }
 
-            await updateStocks(addedDrinks)
+            await updateStocks(addedDrinks);
 
             setLoading(false);
             setAddedDrinks({});

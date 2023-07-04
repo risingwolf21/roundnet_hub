@@ -7,6 +7,7 @@ import { useState } from "react";
 import { lifecycle, withHandlers } from "recompose";
 import { HISTORY_ITEM_NOT_PAID, HISTORY_ITEM_PAY_IN_PROGRESS } from "../../constants";
 import { totalAmountToPay } from '../../utils';
+import AddPaymentsForEveryoneDialog from "./AddPaymentsForEveryoneDialog";
 
 const pendingPayments = "pendingPayments";
 
@@ -14,6 +15,7 @@ const PaymentsPendingAdmin = ({ pendingPayments, auth }) => {
 
     const [open, setOpen] = useState(false);
     const [paymentEveryoneLoading, setPaymentEveryoneLoading] = useState(false);
+    const [paymentEveryoneDialog, setPaymentEveryoneDialog] = useState(false);
     const [currentPayment, setPayment] = useState({});
 
     const firestore = useFirestore();
@@ -35,27 +37,27 @@ const PaymentsPendingAdmin = ({ pendingPayments, auth }) => {
         setOpen(true);
     }
 
-    const startPaymentsForEveryone = () => {
-        setPaymentEveryoneLoading(true);
-        firestore.collection("users").get().then(result => {
-            result.docs.forEach(user => {
-                if (user.id === "Ym0OlVXoISbSNWrukaEsSjiDF9k2") {
-                    firestore.collection(`users/${user.id}/drinks`).get().then(drinks => {
-                        let filteredDrinks = drinks.docs.filter(x => x.data().state === HISTORY_ITEM_NOT_PAID);
-                        filteredDrinks.forEach(drink => {
-                            firestore.update(`users/${user.id}/drinks/${drink.id}`, { state: HISTORY_ITEM_PAY_IN_PROGRESS })
-                        });
-                        firestore.update(`payments/${user.id}`, {
-                            email: user.data().email,
-                            userId: user.id,
-                            displayName: user.data()?.displayName ?? user.data().email,
-                            amountToPay: firestore.FieldValue.increment(totalAmountToPay(filteredDrinks.map(x => x.data())))
-                        });
-                    });
-                }
+    const onUsersSelected = (users) => {
+        setPaymentEveryoneDialog(false);
+        users.forEach(user => {
+            firestore.collection(`users/${user.id}/drinks`).get().then(async drinks => {
+                let filteredDrinks = drinks.docs.filter(x => x.data().state === HISTORY_ITEM_NOT_PAID);
+                filteredDrinks.forEach(drink => {
+                    firestore.update(`users/${user.id}/drinks/${drink.id}`, { state: HISTORY_ITEM_PAY_IN_PROGRESS })
+                });
+
+                firestore.set(`payments/${user.id}`, {
+                    email: user.email,
+                    userId: user.id,
+                    displayName: user?.displayName ?? user.email,
+                    amountToPay: firestore.FieldValue.increment(totalAmountToPay(filteredDrinks.map(x => x.data())))
+                }, { merge: true });
             });
-            setPaymentEveryoneLoading(false);
         });
+    }
+
+    const startPaymentsForEveryone = () => {
+        setPaymentEveryoneDialog(true);
     }
 
     const confirmPayment = (payment) => {
@@ -108,6 +110,7 @@ const PaymentsPendingAdmin = ({ pendingPayments, auth }) => {
                 }
             </Button>
         </Box>
+        <AddPaymentsForEveryoneDialog open={paymentEveryoneDialog} handleClose={() => setPaymentEveryoneDialog(false)} onUsersSelected={onUsersSelected} />
         <Dialog open={open} onClose={() => setOpen(false)} title="Zahlung bestätigen">
             <DialogTitle id="alert-dialog-title">
                 {"Zahlung bestätigen"}
