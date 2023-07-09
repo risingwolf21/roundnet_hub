@@ -8,6 +8,7 @@ import EuroIcon from '@mui/icons-material/Euro';
 import InventoryIcon from '@mui/icons-material/Inventory';
 import FormatSizeIcon from '@mui/icons-material/FormatSize';
 import CropImageDialog from "../CropImageDialog";
+import { useFirebase } from "react-redux-firebase";
 
 const Transition = React.forwardRef(function Transition(props, ref) {
     return <Slide direction="up" ref={ref} {...props} />;
@@ -20,13 +21,14 @@ const EditDrinkDialog = ({ drink, onDrinkEditFinished, open, handleClose }) => {
     }, [drink]);
 
     // image cropping
+    const firebase = useFirebase();
     const [selectedImage, setSelectedImage] = useState(null);
     const [croppedImage, setCroppedImage] = useState(null);
 
     const [cropImageDialogOpen, setCropImageDialogOpen] = useState(false);
     const [activeDrink, setActiveDrink] = useState();
 
-    const handleSubmit = (event) => {
+    const handleSubmit = async (event) => {
         event.preventDefault();
         const data = new FormData(event.currentTarget);
 
@@ -39,6 +41,7 @@ const EditDrinkDialog = ({ drink, onDrinkEditFinished, open, handleClose }) => {
                 active: activeDrink,
                 stock: Number.parseFloat(data.get("stock"))
             };
+            await firebase.uploadFile("drinks", croppedImage, "uploadedFiles");
             onDrinkEditFinished(newDrink);
         }
     };
