@@ -9,6 +9,7 @@ import BottomInformation from "./BottomInformation";
 import { HISTORY_ITEM_NOT_PAID } from "../constants";
 import { lifecycle, withHandlers } from "recompose";
 import { captureException } from "@sentry/react";
+import { supabase } from "../supabaseClient";
 
 const drinks = "drinks";
 const SUCCESS_MESSAGE_INFO = { message: "Getränke erfolgreich gebucht!", severity: "success" };
@@ -16,9 +17,17 @@ const ERROR_MESSAGE_INFO = { message: "Es ist ein Fehler aufgetreten, versuche e
 
 const DrinkList = ({ dispatch, drinks, profile, auth, payment, updateStocks }) => {
 
+    let drinksSubscription = null;
+    
     useEffect(() => {
-
-    }, [payment])
+        if(!drinksSubscription)
+            drinksSubscription = supabase
+                .from("drinks")
+                .on("*", (payload) => {
+                  dispatch(drinks_changed(payload));
+                })
+                .subscribe();
+    }, []);
 
     const firestore = useFirestore();
 
