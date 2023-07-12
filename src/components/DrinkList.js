@@ -14,7 +14,7 @@ const drinks = "drinks";
 const SUCCESS_MESSAGE_INFO = { message: "Getränke erfolgreich gebucht!", severity: "success" };
 const ERROR_MESSAGE_INFO = { message: "Es ist ein Fehler aufgetreten, versuche es bitte erneut!", severity: "error" };
 
-const DrinkList = ({ dispatch, drinks, profile, auth, payment, updateStocks }) => {
+const DrinkList = ({ dispatch, drinks, auth, user, payment, updateStocks }) => {
 
     useEffect(() => {
 
@@ -127,27 +127,6 @@ const DrinkList = ({ dispatch, drinks, profile, auth, payment, updateStocks }) =
     </Grid >);
 }
 
-// export default compose(
-//     firestoreConnect((props) => [
-//         {
-//             collection: `drinks`,
-//             where: ["active", "==", true],
-//             storeAs: drinks
-//         },
-//         {
-//             collection: `payments`,
-//             where: ["uid", "==", props.auth.uid],
-//             storeAs: payment
-//         }
-//     ]),
-//     connect((state) => ({
-//         drinks: state.firestore.ordered.drinks,
-//         payment: state.firestore.ordered.payment,
-//         profile: state.firebase.profile,
-//         auth: state.firebase.auth
-//     }))
-// )(DrinkList);
-
 const enhance = compose(
     withFirestore,
     withHandlers({
@@ -180,7 +159,7 @@ const enhance = compose(
     }),
     connect((state) => ({
         drinks: state.firestore.ordered.drinks,
-        profile: state.firebase.profile,
+        user: state.application.user,
         auth: state.firebase.auth
     }))
 );

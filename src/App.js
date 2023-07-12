@@ -16,7 +16,7 @@ import PaymentsPendingAdmin from './components/admin/PaymentsPendingAdmin';
 import AdminUserList from './components/admin/AdminUserList';
 import { supabase } from './supabaseClient';
 
-const App = ({auth}) => {
+const App = ({ auth, dispatch }) => {
 
   const [drawerOpen, setDrawerOpen] = React.useState(false);
 
@@ -41,6 +41,7 @@ const App = ({auth}) => {
 }
 export default compose(
   connect((state) => ({
-    auth: state.firebase.auth
+    auth: state.firebase.auth,
+    user: state.application.user
   }))
 )(App);

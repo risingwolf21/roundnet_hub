@@ -26,14 +26,16 @@ const AuthScreen = () => {
             email: credentials.email,
             password: credentials.password
         });
-        setErrorMessage(error.message);
+        if (error)
+            setErrorMessage(error);
     }
 
     const onForgotPassword = async (email) => {
         const { data, error } = await supabase.auth.resetPasswordForEmail({
             email
         });
-        setErrorMessage(error.message);
+        if (error)
+            setErrorMessage(error);
     }
 
     const onRegister = async ({ email, password, displayName }) => {
@@ -47,7 +49,9 @@ const AuthScreen = () => {
                 }
             }
         });
-        setErrorMessage(error);
+        let { writingError } = await supabase.from("users").upsert({ email, displayName, userId: data.user.id, role: 2 })
+        if (error)
+            setErrorMessage(error);
     }
 
     if (currentScreen === "register") {
