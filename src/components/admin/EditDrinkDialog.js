@@ -9,6 +9,8 @@ import InventoryIcon from '@mui/icons-material/Inventory';
 import FormatSizeIcon from '@mui/icons-material/FormatSize';
 import CropImageDialog from "../CropImageDialog";
 import { useFirebase } from "react-redux-firebase";
+import { ref, uploadBytes, getStorage } from "firebase/storage";
+import { v4 } from "uuid";
 
 const Transition = React.forwardRef(function Transition(props, ref) {
     return <Slide direction="up" ref={ref} {...props} />;
@@ -21,7 +23,8 @@ const EditDrinkDialog = ({ drink, onDrinkEditFinished, open, handleClose }) => {
     }, [drink]);
 
     // image cropping
-    const firebase = useFirebase();
+    const storage = getStorage();
+    const [imageName, setImageName] = useState("");
     const [selectedImage, setSelectedImage] = useState(null);
     const [croppedImage, setCroppedImage] = useState(null);
 
@@ -41,7 +44,8 @@ const EditDrinkDialog = ({ drink, onDrinkEditFinished, open, handleClose }) => {
                 active: activeDrink,
                 stock: Number.parseFloat(data.get("stock"))
             };
-            await firebase.uploadFile("drinks", croppedImage, "uploadedFiles");
+            const imageRef = ref(storage, `images/${croppedImage.name + v4()}`)
+            await uploadBytes(imageRef, croppedImage).then(res => console.log(res));
             onDrinkEditFinished(newDrink);
         }
     };
@@ -144,7 +148,7 @@ const EditDrinkDialog = ({ drink, onDrinkEditFinished, open, handleClose }) => {
                                     if (!event.target.files || event.target.files.length === 0)
                                         return;
                                     let imageDataUrl = await readFile(event.target.files[0]);
-                                    setSelectedImage(imageDataUrl)
+                                    setSelectedImage(imageDataUrl);
                                     setCropImageDialogOpen(true);
                                 }} />
                             </Button>
