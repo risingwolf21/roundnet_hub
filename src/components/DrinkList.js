@@ -1,35 +1,41 @@
 import { Alert, Box, CircularProgress, Fab, Grid, Snackbar } from "@mui/material";
 import { connect } from "react-redux";
 import { compose } from "redux";
-import { isLoaded, useFirestore, withFirestore } from "react-redux-firebase";
 import DrinkItem from "./DrinkItem";
 import { useEffect, useState } from "react";
 import CheckIcon from '@mui/icons-material/Check';
 import BottomInformation from "./BottomInformation";
-import { HISTORY_ITEM_NOT_PAID } from "../constants";
-import { lifecycle, withHandlers } from "recompose";
+import { NOT_PAID } from "../constants";
 import { captureException } from "@sentry/react";
 import { supabase } from "../supabaseClient";
+import { drink_deleted, drink_updated, drinks_changed } from "../redux/actions";
 
-const drinks = "drinks";
 const SUCCESS_MESSAGE_INFO = { message: "Getränke erfolgreich gebucht!", severity: "success" };
 const ERROR_MESSAGE_INFO = { message: "Es ist ein Fehler aufgetreten, versuche es bitte erneut!", severity: "error" };
 
-const DrinkList = ({ dispatch, drinks, auth, user, payment, updateStocks }) => {
+const DrinkList = ({ dispatch, drinks, user }) => {
 
-    let drinksSubscription = null;
-    
     useEffect(() => {
-        if(!drinksSubscription)
-            drinksSubscription = supabase
-                .from("drinks")
-                .on("*", (payload) => {
-                  dispatch(drinks_changed(payload));
-                })
-                .subscribe();
-    }, []);
+        supabase
+            .from('drinks')
+            .select()
+            .then((res) => dispatch(drinks_changed(res.data)))
 
-    const firestore = useFirestore();
+        supabase
+            .channel('any')
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'drinks' }, payload => {
+                switch (payload.eventType) {
+                    case "DELETE":
+                        dispatch(drink_deleted(payload.old.id));
+                        break;
+                    case "UPDATE":
+                    case "INSERT":
+                        dispatch(drink_updated(payload.new))
+                        break;
+                }
+            })
+            .subscribe();
+    }, [dispatch]);
 
     const [addedDrinks, setAddedDrinks] = useState({});
     const [loading, setLoading] = useState(false);
@@ -51,21 +57,23 @@ const DrinkList = ({ dispatch, drinks, auth, user, payment, updateStocks }) => {
 
     const confirmDrinks = async () => {
         setLoading(true);
-        let data = { date: Date.now(), state: HISTORY_ITEM_NOT_PAID, drinks: Object.values(addedDrinks) };
+        let data = { date: Date.now(), state: NOT_PAID, drinks: Object.values(addedDrinks) };
 
         try {
-            let result1 = await firestore.add({ collection: `users/${auth.uid}/drinks` }, data);
-            let result2 = await firestore.add({ collection: `users/${auth.uid}/history` }, data);
+            const { data, error } = await supabase.from("history").insert(
+                Object.values(addedDrinks).map(drink => {
+                    return {
+                        user_id: user.userId,
+                        drink_id: drink.id,
+                        count: drink.count,
+                        state: NOT_PAID
+                    }
+                })
+            );
+            if (error)
+                throw Error(error.message);
 
-            if (!(await firestore.get(result1.path)).exists || !(await firestore.get(result2.path)).exists) {
-                if(result1?.path)
-                    await firestore.delete(result1.path);
-                if(result2?.path)
-                    await firestore.delete(result2.path);
-                throw Error("Could not add to /drinks or /history")
-            }
-
-            await updateStocks(addedDrinks);
+            // TODO: update stocks
 
             setLoading(false);
             setAddedDrinks({});
@@ -73,10 +81,9 @@ const DrinkList = ({ dispatch, drinks, auth, user, payment, updateStocks }) => {
         }
         catch (error) {
             setLoading(false);
-            confirmDrinksDialog(ERROR_MESSAGE_INFO);
+            confirmDrinksDialog({ message: error.message, severity: "error" });
             captureException(error, (scope) => {
                 scope.clear();
-                scope.setExtra("path", `users/${auth.uid}`);
                 scope.setExtra("data", JSON.stringify(data));
                 return scope;
             });
@@ -113,7 +120,7 @@ const DrinkList = ({ dispatch, drinks, auth, user, payment, updateStocks }) => {
         justifyContent="center">
         <Grid container sx={{ overflowY: "scroll", }} width="100%" direction="row" alignItems="center" justifyContent="center" paddingTop={2} paddingLeft={2} paddingRight={2}>
             {
-                isLoaded(drinks) && drinks.map((drink, index) => <DrinkItem key={"Drink" + index} drink={drink} count={addedDrinks[drink.id]?.count} onAddClick={() => onAddDrinkClick(drink)} onMinusClick={() => onRemoveDrinkClick(drink)} />)
+                drinks.map((drink, index) => <DrinkItem key={"Drink" + index} drink={drink} count={addedDrinks[drink.id]?.count} onAddClick={() => onAddDrinkClick(drink)} onMinusClick={() => onRemoveDrinkClick(drink)} />)
             }
             <Box height={"128px"} width={"100%"} />
         </Grid>
@@ -137,37 +144,8 @@ const DrinkList = ({ dispatch, drinks, auth, user, payment, updateStocks }) => {
 }
 
 const enhance = compose(
-    withFirestore,
-    withHandlers({
-        addDrinks: (props) => (uid, drinks) => {
-            return props.firestore.add({ collection: `users/${uid}/drinks` }, drinks);
-        },
-        addToHistory: (props) => (uid, drinks) => {
-            return props.firestore.add({ collection: `users/${uid}/history` }, drinks);
-        },
-        updateStocks: (props) => (drinks) => {
-            let promises = [];
-            Object.values(drinks).forEach(drink => {
-                if ((drink?.stock - drink.count) > 0)
-                    promises.push(props.firestore.update(`drinks/${drink.id}`, { stock: (drink?.stock - drink.count) ?? 0 }));
-            });
-            return Promise.all(promises)
-        }
-    }),
-    lifecycle({
-        componentDidMount() {
-            this.props.firestore.get(
-                {
-                    collection: "drinks",
-                    where: ["active", "==", true],
-                    storeAs: drinks
-                }
-            );
-            this.props.firestore.setListener("drinks");
-        }
-    }),
     connect((state) => ({
-        drinks: state.firestore.ordered.drinks,
+        drinks: state.drinkList.drinks,
         user: state.application.user,
         auth: state.firebase.auth
     }))

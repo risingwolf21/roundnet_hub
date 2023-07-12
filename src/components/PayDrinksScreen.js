@@ -2,7 +2,7 @@ import { connect } from "react-redux";
 import { compose } from "redux";
 import { firestoreConnect, isLoaded, useFirestore } from "react-redux-firebase";
 import { Alert, Box, Button, CircularProgress, Collapse, Dialog, DialogActions, DialogContent, DialogTitle, Divider, Grid, IconButton, List, ListItem, ListItemAvatar, ListItemButton, ListItemSecondaryAction, ListItemText, Snackbar, Typography } from "@mui/material";
-import { HISTORY_ITEM_NOT_PAID, HISTORY_ITEM_PAY_IN_PROGRESS, PAYPAL_ME_ADDRESS } from "../constants";
+import { NOT_PAID, IN_PROGRESS, PAYPAL_ME_ADDRESS } from "../constants";
 import _ from "lodash";
 import { useState } from "react";
 import { captureException } from "@sentry/react";
@@ -50,7 +50,7 @@ const PayDrinksButton = ({ paypalActive, drinks, auth }) => {
         let updatingDrinks = [];
 
         for (let [k, v] of Object.entries(drinks)) {
-            firestore.update(`users/${auth.uid}/drinks/${k}`, { state: HISTORY_ITEM_PAY_IN_PROGRESS })
+            firestore.update(`users/${auth.uid}/drinks/${k}`, { state: IN_PROGRESS })
                 .catch(error => {
                     setAlertInfo(ERROR_MESSAGE_INFO);
                     captureException(error, (scope) => {
@@ -108,7 +108,7 @@ const PayDrinksSummary = ({ drinks, unpaidDrinks, auth }) => {
         setDialogAddDrinksLoading(true);
 
         for (let [k, v] of Object.entries(unpaidDrinks)) {
-            firestore.update(`users/${auth.uid}/drinks/${k}`, { state: HISTORY_ITEM_PAY_IN_PROGRESS })
+            firestore.update(`users/${auth.uid}/drinks/${k}`, { state: IN_PROGRESS })
                 .catch(error => {
                     captureException(error, (scope) => {
                         scope.clear();
@@ -277,12 +277,12 @@ export default compose(
         },
         {
             collection: `users/${props.auth.uid}/drinks`,
-            where: [["state", "==", HISTORY_ITEM_PAY_IN_PROGRESS]],
+            where: [["state", "==", IN_PROGRESS]],
             storeAs: drinksInPayment
         },
         {
             collection: `users/${props.auth.uid}/drinks`,
-            where: [["state", "==", HISTORY_ITEM_NOT_PAID]],
+            where: [["state", "==", NOT_PAID]],
             storeAs: drinksUnpaid
         },
         {

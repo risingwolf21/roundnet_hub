@@ -10,15 +10,41 @@ import React from "react";
 import { authentication_changed } from "./redux/actions";
 
 const AuthGate = ({ children, user, dispatch }) => {
-    const auth = useSelector(state => state.firebase.auth)
-
     React.useEffect(() => {
         supabase.auth.getSession().then(({ data: { session } }) => {
-            dispatch(authentication_changed(session?.user));
+            if (!session || !session.user) {
+                dispatch(authentication_changed(session?.user))
+                return;
+            }
+            supabase
+                .from('users')
+                .select("*")
+                .eq("userId", session.user.id)
+                .then((res) => {
+                    if (res.data.length == 1) {
+                        dispatch(authentication_changed({ ...session?.user, userId: res.data[0].id, role: res.data[0].role }))
+                    }
+                });
+
+
+            supabase
+                .channel('any')
+                .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'users', filter: `userId=eq.${session.user.id}` }, payload => {
+                    dispatch(authentication_changed({ ...session?.user, userId: payload.new.id, role: payload.new.role }))
+                })
+                .subscribe();
         });
 
         supabase.auth.onAuthStateChange((_event, session) => {
-            dispatch(authentication_changed(session?.user));
+            supabase
+                .from('users')
+                .select("*")
+                .eq("userId", session?.user?.id)
+                .then((res) => {
+                    if (res.data.length == 1 && session && session.user) {
+                        dispatch(authentication_changed({ ...session?.user, userId: res.data[0].id, role: res.data[0].role }))
+                    }
+                })
             if (!session || !session.user)
                 setUser(null);
             else

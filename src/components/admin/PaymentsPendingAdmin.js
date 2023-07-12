@@ -5,7 +5,7 @@ import { compose } from "redux"
 import CheckIcon from "@mui/icons-material/Check"
 import { useState } from "react";
 import { lifecycle, withHandlers } from "recompose";
-import { HISTORY_ITEM_NOT_PAID, HISTORY_ITEM_PAY_IN_PROGRESS } from "../../constants";
+import { NOT_PAID, IN_PROGRESS } from "../../constants";
 import { totalAmountToPay } from '../../utils';
 import AddPaymentsForEveryoneDialog from "./AddPaymentsForEveryoneDialog";
 
@@ -41,9 +41,9 @@ const PaymentsPendingAdmin = ({ pendingPayments, auth }) => {
         setPaymentEveryoneDialog(false);
         users.forEach(user => {
             firestore.collection(`users/${user.id}/drinks`).get().then(async drinks => {
-                let filteredDrinks = drinks.docs.filter(x => x.data().state === HISTORY_ITEM_NOT_PAID);
+                let filteredDrinks = drinks.docs.filter(x => x.data().state === NOT_PAID);
                 filteredDrinks.forEach(drink => {
-                    firestore.update(`users/${user.id}/drinks/${drink.id}`, { state: HISTORY_ITEM_PAY_IN_PROGRESS })
+                    firestore.update(`users/${user.id}/drinks/${drink.id}`, { state: IN_PROGRESS })
                 });
 
                 firestore.set(`payments/${user.id}`, {

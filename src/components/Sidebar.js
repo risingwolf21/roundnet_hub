@@ -47,7 +47,7 @@ const ADMIN_SCREENS = [
     }
 ]
 
-const SideBar = ({ open, onClose, onOpen, profile, auth }) => {
+const SideBar = ({ open, onClose, onOpen, user }) => {
 
     let navigate = useNavigate();
     let theme = useTheme();
@@ -74,11 +74,11 @@ const SideBar = ({ open, onClose, onOpen, profile, auth }) => {
                         ))}
 
                         {
-                            profile.role !== "user" && <>
+                            user.role !== "user" && <>
                                 <Divider />
                                 <ListSubheader>Admin Optionen</ListSubheader>
                                 {
-                                    ADMIN_SCREENS.filter(x => x.role === profile.role || profile.role === "admin").map((item, index) => (
+                                    ADMIN_SCREENS.filter(x => x.role === user.role || user.role === "admin").map((item, index) => (
                                         <ListItem button key={item.key} divider onClick={() => navigate(item.key)}>
                                             <ListItemIcon sx={{ color: window?.location?.pathname === ("/" + item.key) ? theme.palette.secondary.main : "primary" }}>
                                                 {item.icon}
@@ -108,7 +108,6 @@ const SideBar = ({ open, onClose, onOpen, profile, auth }) => {
 }
 export default compose(
     connect((state) => ({
-        profile: state.firebase.profile,
-        auth: state.firebase.auth
+        user: state.application.user
     }))
 )(SideBar);

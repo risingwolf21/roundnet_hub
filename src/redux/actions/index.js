@@ -1,4 +1,4 @@
-import { AUTHENTICATION_CHANGED, DRINKS_CHANGED, USERS_CHANGED } from "./names"
+import { AUTHENTICATION_CHANGED, DRINKS_CHANGED, DRINK_DELETED, DRINK_UPDATED, USERS_CHANGED } from "./names"
 import User from "../../model/user";
 import Drink from "../../model/drink";
 
@@ -23,10 +23,24 @@ const users_changed = (users) => {
     }
 }
 
-const drinks_changed = (drinks) => {
+export const drinks_changed = (drinks) => {
     return {
         type: DRINKS_CHANGED,
         payload: drinks
+    }
+}
+
+export const drink_updated = (drink) => {
+    return {
+        type: DRINK_UPDATED,
+        payload: drink
+    }
+}
+
+export const drink_deleted = (id) => {
+    return {
+        type: DRINK_DELETED,
+        payload: id
     }
 }
 

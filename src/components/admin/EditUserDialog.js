@@ -3,7 +3,7 @@ import { AppBar, Avatar, Button, Collapse, Dialog, DialogActions, DialogContent,
 import { Box } from "@mui/system";
 import { AccountCircle, Close, Email, ExpandLess, ExpandMore, ManageAccounts } from "@mui/icons-material";
 import { useFirestore } from "react-redux-firebase";
-import { HISTORY_ITEM_PAID } from "../../constants";
+import { PAID } from "../../constants";
 
 const Transition = React.forwardRef(function Transition(props, ref) {
     return <Slide direction="up" ref={ref} {...props} />;
@@ -21,7 +21,7 @@ const EditUserDialog = ({ user, open, handleClose, onUserEditFinished, deleteUse
         setRole(user.role);
         firestore.collection(`users/${user.id}/drinks`).get().then(doc => {
             let openAmount = doc.docs.map(x => x.data())
-                .filter(x => x.state !== HISTORY_ITEM_PAID)
+                .filter(x => x.state !== PAID)
                 .flatMap(x => x.drinks)
                 .reduce((prev, curr) => prev + (curr.count * curr.price), 0);
             setUserInfo({ openAmount: openAmount })

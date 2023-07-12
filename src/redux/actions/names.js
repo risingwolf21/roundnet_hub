@@ -2,6 +2,8 @@ export const EXAMPLE_ACTION_NAME = "EXAMPLE_ACTION_NAME";
 export const AUTHENTICATION_CHANGED = "AUTHENTICATION_CHANGED";
 export const USERS_CHANGED = "USERS_CHANGED";
 export const DRINKS_CHANGED = "DRINKS_CHANGED";
+export const DRINK_UPDATED = "DRINK_UPDATED";
+export const DRINK_DELETED = "DRINK_DELETED";
 
 export const pending = (name) => {
     return name + "_PENDING";
