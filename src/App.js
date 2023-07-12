@@ -14,14 +14,14 @@ import { compose } from 'redux';
 import { connect } from 'react-redux';
 import PaymentsPendingAdmin from './components/admin/PaymentsPendingAdmin';
 import AdminUserList from './components/admin/AdminUserList';
+import { supabase } from './supabaseClient';
 
 const App = ({auth}) => {
-  const firebase = useFirebase();
 
   const [drawerOpen, setDrawerOpen] = React.useState(false);
 
   return <Grid>
-    <CustomAppBar logout={() => firebase.logout()} handleMenuClick={(val) => setDrawerOpen(val)} drawerOpen={drawerOpen} />
+    <CustomAppBar logout={async () => await supabase.auth.signOut()} handleMenuClick={(val) => setDrawerOpen(val)} drawerOpen={drawerOpen} />
     <Toolbar />
     <BrowserRouter>
       <Routes>

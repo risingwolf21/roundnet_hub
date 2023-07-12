@@ -1,30 +1,53 @@
-import { useState } from "react"
-import { useFirebase } from "react-redux-firebase";
+import { useEffect, useState } from "react"
 import ForgotPasswordScreen from "./ForgotPasswordScreen";
 import LoginScreen from "./LoginScreen";
 import RegisterScreen from "./RegisterScreen";
+import { supabase } from "../supabaseClient";
 
 const AuthScreen = () => {
-    const firebase = useFirebase();
     const [currentScreen, setCurrentScreen] = useState("login");
     const [errorMessage, setErrorMessage] = useState("");
 
-    const onLogin = (credentials) => {
-        firebase.login(credentials).catch((error) => {
-            setErrorMessage(error.message);
+    useEffect(() => {
+        supabase.auth.onAuthStateChange(async (event, session) => {
+            if (event === "PASSWORD_RECOVERY") {
+                const newPassword = prompt("What would you like your new password to be?");
+                const { data, error } = await supabase.auth
+                    .updateUser({ password: newPassword })
+
+                if (data) alert("Password updated successfully!")
+                if (error) alert("There was an error updating your password.")
+            }
+        })
+    }, [])
+
+    const onLogin = async (credentials) => {
+        const { data, error } = await supabase.auth.signInWithPassword({
+            email: credentials.email,
+            password: credentials.password
         });
+        setErrorMessage(error.message);
     }
 
-    const onForgotPassword = (email) => {
-        firebase.resetPassword(email).catch((error) => {
-            setErrorMessage(error.message);
+    const onForgotPassword = async (email) => {
+        const { data, error } = await supabase.auth.resetPasswordForEmail({
+            email
         });
+        setErrorMessage(error.message);
     }
 
-    const onRegister = ({ email, password, displayName }) => {
-        firebase.createUser({ email, password }, { displayName, email }).catch((error) => {
-            setErrorMessage(error.message);
+    const onRegister = async ({ email, password, displayName }) => {
+        const { data, error } = await supabase.auth.signUp({
+            email: email,
+            password: password,
+            options: {
+                data: {
+                    displayName,
+                    email
+                }
+            }
         });
+        setErrorMessage(error);
     }
 
     if (currentScreen === "register") {
