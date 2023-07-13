@@ -1,7 +1,6 @@
 import { Avatar, Badge, Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, Fab, Grid, IconButton, ListItem, ListItemAvatar, ListItemSecondaryAction, ListItemText, Paper, Typography } from "@mui/material";
 import { connect } from "react-redux";
 import { compose } from "redux";
-import { isLoaded, useFirestore, withFirestore } from "react-redux-firebase";
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -40,12 +39,13 @@ const AdminDrinkItem = ({ drink, onEditClick, onDeleteClick }) => {
 
 const EMPTY_DRINK = { "imageUrl": "", name: "", price: 0, active: false };
 
-const AdminDrinkList = ({ dispatch, drinks, profile, auth }) => {
+const AdminDrinkList = ({ dispatch, user }) => {
+
+    const { drinks, loading, updateDrink, deleteDrink, addDrink } = useAdminDrinks();
 
     const [open, setOpen] = useState(false);
     const [deleteOpen, setDeleteOpen] = useState(false);
     const [selectedDrink, setSelectedDrink] = useState();
-    const firestore = useFirestore();
 
     const selectDrink = (drink) => {
         setSelectedDrink(drink);
@@ -58,17 +58,16 @@ const AdminDrinkList = ({ dispatch, drinks, profile, auth }) => {
     }
 
     const onDeleteDrink = (drink) => {
-        firestore.delete(`drinks/${drink.id}`);
+        deleteDrink(drink.id);
         setDeleteOpen(false);
     }
 
     const onDrinkEditFinished = (drink) => {
         if (drink.id) {
-            firestore.update(`drinks/${drink.id}`, _.omit(drink, ["id"]));
+            updateDrink(drink);
         } else {
-            firestore.add("drinks", _.omit(drink, ["id"]));
+            addDrink(_.omit(drink, ["id"]));
         }
-
         setOpen(false);
     }
 
@@ -81,7 +80,7 @@ const AdminDrinkList = ({ dispatch, drinks, profile, auth }) => {
         sx={{ paddingTop: 2 }}>
         <Grid container width="100%" direction="column" alignItems="center" justifyContent="center" paddingLeft={2} paddingRight={2}>
             {
-                isLoaded(drinks) && drinks.map((drink, index) => <AdminDrinkItem
+                !loading && drinks.map((drink, index) => <AdminDrinkItem
                     key={"drink" + index}
                     drink={drink}
                     onEditClick={() => selectDrink(drink)}
@@ -113,23 +112,8 @@ const AdminDrinkList = ({ dispatch, drinks, profile, auth }) => {
 }
 
 const enhance = compose(
-    withFirestore,
-    withHandlers({
-        loadDrinks: (props) => (path) => props.firestore.get({ collection: path }),
-    }),
-    lifecycle({
-        componentDidMount() {
-            this.props.loadDrinks("drinks");
-            this.props.firestore.setListener("drinks");
-        },
-        componentWillUnmount() {
-            this.props.firestore.unsetListener("drinks");
-        }
-    }),
     connect((state) => ({
-        drinks: state.firestore.ordered.drinks,
-        profile: state.firebase.profile,
-        auth: state.firebase.auth
+        user: state.application.user
     }))
 );
 
