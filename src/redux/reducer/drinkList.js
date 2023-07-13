@@ -1,7 +1,10 @@
-import { DRINKS_CHANGED, DRINK_DELETED, DRINK_UPDATED } from "../actions/names";
+import { DRINKS_CHANGED, DRINK_DELETED, DRINK_UPDATED, DRINKS_IN_PAYMENT_CHANGED } from "../actions/names";
 
 const DEFAULT_STATE = {
-    drinks: []
+    drinks: [],
+    userUnPaidDrinks: [],
+    userPaidDrinks: [],
+    userInPaymentDrinks: []
 };
 
 const drinkList = (state = DEFAULT_STATE, action) => {
@@ -33,6 +36,12 @@ const drinkList = (state = DEFAULT_STATE, action) => {
             return {
                 ...state,
                 drinks: newDrinks
+            }
+        }
+        case DRINKS_IN_PAYMENT_CHANGED: {
+            return {
+                ...state,
+                userInPaymentDrinks: action.payload
             }
         }
         default: {

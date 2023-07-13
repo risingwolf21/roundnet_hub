@@ -63,21 +63,6 @@ const listener = (uid) => {
     };
 }
 
-// export default compose(
-//     firestoreConnect((props) => [
-//         {
-//             collection: `users/${props.auth.uid}/history`,
-//             where: ["active", "==", true],
-//             storeAs: userHistory
-//         }
-//     ]),
-//     connect((state) => ({
-//         userHistory: state.firestore.ordered.userHistory,
-//         profile: state.firebase.profile,
-//         auth: state.firebase.auth
-//     }))
-// )(HistoryScreen);
-
 const enhance = compose(
     withFirestore,
     withHandlers({

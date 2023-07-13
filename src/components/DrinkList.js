@@ -9,6 +9,7 @@ import { NOT_PAID } from "../constants";
 import { captureException } from "@sentry/react";
 import { supabase } from "../supabaseClient";
 import { drink_deleted, drink_updated, drinks_changed } from "../redux/actions";
+import { drinks_initial_load, drinks_subscription } from "../utils/subscriptions";
 
 const SUCCESS_MESSAGE_INFO = { message: "Getränke erfolgreich gebucht!", severity: "success" };
 const ERROR_MESSAGE_INFO = { message: "Es ist ein Fehler aufgetreten, versuche es bitte erneut!", severity: "error" };
@@ -16,25 +17,19 @@ const ERROR_MESSAGE_INFO = { message: "Es ist ein Fehler aufgetreten, versuche e
 const DrinkList = ({ dispatch, drinks, user }) => {
 
     useEffect(() => {
-        supabase
-            .from('drinks')
-            .select()
-            .then((res) => dispatch(drinks_changed(res.data)))
+        drinks_initial_load((res) => dispatch(drinks_changed(res.data)))
 
-        supabase
-            .channel('any')
-            .on('postgres_changes', { event: '*', schema: 'public', table: 'drinks' }, payload => {
-                switch (payload.eventType) {
-                    case "DELETE":
-                        dispatch(drink_deleted(payload.old.id));
-                        break;
-                    case "UPDATE":
-                    case "INSERT":
-                        dispatch(drink_updated(payload.new))
-                        break;
-                }
-            })
-            .subscribe();
+        drinks_subscription(payload => {
+            switch (payload.eventType) {
+                case "DELETE":
+                    dispatch(drink_deleted(payload.old.id));
+                    break;
+                case "UPDATE":
+                case "INSERT":
+                    dispatch(drink_updated(payload.new))
+                    break;
+            }
+        });
     }, [dispatch]);
 
     const [addedDrinks, setAddedDrinks] = useState({});

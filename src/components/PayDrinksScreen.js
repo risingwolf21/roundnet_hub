@@ -11,6 +11,7 @@ import ExpandLess from '@mui/icons-material/ExpandLess';
 import ExpandMore from '@mui/icons-material/ExpandMore';
 import { Add, Warning } from "@mui/icons-material";
 import { totalAmountToPay } from '../utils';
+import { user_in_payment_drinks } from "../redux/actions";
 
 const userDrinks = 'userDrinks';
 const drinksInPayment = 'drinksInPayment';
@@ -224,7 +225,17 @@ const PayDrinksSummary = ({ drinks, unpaidDrinks, auth }) => {
 const SUCCESS_MESSAGE_INFO = { message: "Zahlung erfolgreich angefragt! Jetzt auf Paypal senden", severity: "success" };
 const ERROR_MESSAGE_INFO = { message: "Es ist ein Fehler aufgetreten, versuche es bitte erneut!", severity: "error" };
 
-const PayDrinksScreen = ({ drinks, auth, pendingPayment, drinksInPayment, drinksUnpaid }) => {
+const PayDrinksScreen = ({ dispatch, user, drinks, auth, pendingPayment, drinksInPayment, drinksUnpaid }) => {
+
+    useEffect(() => {
+        supabase
+            .from('history')
+            .select()
+            .eq('userId', user.userId)
+            .eq('state', IN_PROGRESS)
+            .then((res) => dispatch(user_in_payment_drinks(res.data)))
+
+    }, [dispatch]);
 
 
     if (!isLoaded(drinksUnpaid, pendingPayment, drinks, drinksInPayment)) {
@@ -298,28 +309,3 @@ export default compose(
         pendingPayment: data.pendingPayment
     }))
 )(PayDrinksScreen)
-
-// const enhance = compose(
-//     withFirestore,
-//     withHandlers({
-//         loadUserDrinks: (props) => (collection) => props.firestore.get({ collection, storeAs: userDrinks }),
-//         loadPayment: (props) => (docId) => props.firestore.get({ collection: "payments", doc: docId, storeAs: pendingPayment }),
-//     }),
-//     lifecycle({
-//         componentDidMount() {
-//             this.props.loadUserDrinks(`users/${this.props.auth.uid}/drinks`);
-//             this.props.loadPayment(this.props.auth.uid);
-
-//             this.props.firestore.setListeners([`users/${this.props.auth.uid}/drinks`, `payments/${this.props.auth.uid}`])
-//         },
-//         componentWillUnmount() {
-//             this.props.firestore.unsetListeners([`users/${this.props.auth.uid}/drinks`, `payments/${this.props.auth.uid}`])
-//         }
-//     }),
-//     connect((state) => ({
-//         drinks: state.firestore.ordered.userDrinks,
-//         pendingPayment: state.firestore.ordered.pendingPayment
-//     }))
-// )
-
-// export default enhance(PayDrinksScreen)
