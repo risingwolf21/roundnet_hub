@@ -16,21 +16,7 @@ const ERROR_MESSAGE_INFO = { message: "Es ist ein Fehler aufgetreten, versuche e
 
 const DrinkList = ({ dispatch, drinks, user }) => {
 
-    useEffect(() => {
-        drinks_initial_load((res) => dispatch(drinks_changed(res.data)))
-
-        drinks_subscription(payload => {
-            switch (payload.eventType) {
-                case "DELETE":
-                    dispatch(drink_deleted(payload.old.id));
-                    break;
-                case "UPDATE":
-                case "INSERT":
-                    dispatch(drink_updated(payload.new))
-                    break;
-            }
-        });
-    }, [dispatch]);
+    const isLoading = useAllDrinks(dispatch);
 
     const [addedDrinks, setAddedDrinks] = useState({});
     const [loading, setLoading] = useState(false);
