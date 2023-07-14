@@ -1,6 +1,3 @@
-import { connect } from "react-redux";
-import { compose } from "redux";
-import { firestoreConnect, isLoaded, useFirestore } from "react-redux-firebase";
 import { Alert, Box, Button, CircularProgress, Collapse, Dialog, DialogActions, DialogContent, DialogTitle, Divider, Grid, IconButton, List, ListItem, ListItemAvatar, ListItemButton, ListItemSecondaryAction, ListItemText, Snackbar, Typography } from "@mui/material";
 import { NOT_PAID, IN_PROGRESS, PAYPAL_ME_ADDRESS } from "../constants";
 import _ from "lodash";
@@ -11,16 +8,14 @@ import ExpandLess from '@mui/icons-material/ExpandLess';
 import ExpandMore from '@mui/icons-material/ExpandMore';
 import { Add, Warning } from "@mui/icons-material";
 import { totalAmountToPay } from '../utils';
-import { user_in_payment_drinks } from "../redux/actions";
+import { supabase } from "../supabaseClient";
+import { useAuth } from "../hooks/useAuth";
+import { useRealtime } from "../hooks/useRealtime";
 
-const userDrinks = 'userDrinks';
-const drinksInPayment = 'drinksInPayment';
-const drinksUnpaid = 'drinksUnpaid';
-const pendingPayment = 'pendingPayment';
+const PayDrinksButton = ({ paypalActive, drinks }) => {
 
-const PayDrinksButton = ({ paypalActive, drinks, auth }) => {
+    const { user } = useAuth();
 
-    const firestore = useFirestore();
     const [loading, setLoading] = useState(false);
     const [alertInfo, setAlertInfo] = useState(SUCCESS_MESSAGE_INFO)
     const [alertOpen, setAlertOpen] = useState(false);
@@ -31,39 +26,33 @@ const PayDrinksButton = ({ paypalActive, drinks, auth }) => {
         await new Promise(resolve => setTimeout(resolve, 1000));
 
         try {
-            firestore.set(`payments/${auth.uid}`, {
-                userId: auth.uid,
-                displayName: auth?.displayName ?? auth.email,
-                email: auth.email,
-                amountToPay: totalAmountToPay(drinks)
-            });
+            let { writingError } = await supabase.from("payments").upsert(
+                {
+                    email: user.email,
+                    displayName: user.displayName,
+                    userId: user.userId,
+                    amountToPay: totalAmountToPay(drinks)
+                })
+
+            let { updatingError } = await supabase.from("drinks").upsert(
+                Object.entries(drinks).map((k, v) => { return { id: k, state: IN_PROGRESS } })
+            );
+
+            if (updatingError)
+                throw new Error(updatingError)
+            if (writingError)
+                throw new Error(writingError)
+
         } catch (error) {
             setAlertInfo(ERROR_MESSAGE_INFO);
             captureException(error, (scope) => {
                 scope.clear();
-                scope.setExtra("path", `payments/${auth.uid}`);
-                scope.setExtra("data", JSON.stringify(updatingDrinks));
+                scope.setExtra("path", `payments/${user.userId}`);
+                scope.setExtra("data", JSON.stringify(drinks));
                 return scope;
             });
             return null;
         }
-
-        let updatingDrinks = [];
-
-        for (let [k, v] of Object.entries(drinks)) {
-            firestore.update(`users/${auth.uid}/drinks/${k}`, { state: IN_PROGRESS })
-                .catch(error => {
-                    setAlertInfo(ERROR_MESSAGE_INFO);
-                    captureException(error, (scope) => {
-                        scope.clear();
-                        scope.setExtra("path", `users/${auth.uid}/drinks/${k}`);
-                        scope.setExtra("data", JSON.stringify(v));
-                        return scope;
-                    });
-                });
-        }
-
-        await firestore.waitForPendingWrites();
 
         setAlertOpen(true);
         setLoading(false);
@@ -94,9 +83,8 @@ const PayDrinksButton = ({ paypalActive, drinks, auth }) => {
     </Box>
 }
 
-const PayDrinksSummary = ({ drinks, unpaidDrinks, auth }) => {
+const PayDrinksSummary = ({ drinks, unpaidDrinks }) => {
 
-    const firestore = useFirestore();
     const [unpaidDrinksOpen, setUnpaidDrinksOpen] = useState(false);
     const [dialogAddDrinksOpen, setDialogAddDrinksOpen] = useState(false);
     const [dialogAddDrinksLoading, setDialogAddDrinksLoading] = useState(false);
@@ -108,20 +96,20 @@ const PayDrinksSummary = ({ drinks, unpaidDrinks, auth }) => {
     const addUnpaidDrinksToPayment = async () => {
         setDialogAddDrinksLoading(true);
 
-        for (let [k, v] of Object.entries(unpaidDrinks)) {
-            firestore.update(`users/${auth.uid}/drinks/${k}`, { state: IN_PROGRESS })
-                .catch(error => {
-                    captureException(error, (scope) => {
-                        scope.clear();
-                        scope.setExtra("path", `users/${auth.uid}/drinks/${k}`);
-                        scope.setExtra("data", JSON.stringify(v));
-                        return scope;
-                    });
-                });
-        }
-        firestore.update(`payments/${auth.uid}`, {
-            amountToPay: firestore.FieldValue.increment(totalAmountToPay(unpaidDrinks))
-        });
+        // for (let [k, v] of Object.entries(unpaidDrinks)) {
+        //     firestore.update(`users/${auth.uid}/drinks/${k}`, { state: IN_PROGRESS })
+        //         .catch(error => {
+        //             captureException(error, (scope) => {
+        //                 scope.clear();
+        //                 scope.setExtra("path", `users/${auth.uid}/drinks/${k}`);
+        //                 scope.setExtra("data", JSON.stringify(v));
+        //                 return scope;
+        //             });
+        //         });
+        // }
+        // firestore.update(`payments/${auth.uid}`, {
+        //     amountToPay: firestore.FieldValue.increment(totalAmountToPay(unpaidDrinks))
+        // });
 
         setDialogAddDrinksLoading(false);
         setDialogAddDrinksOpen(false);
@@ -225,30 +213,39 @@ const PayDrinksSummary = ({ drinks, unpaidDrinks, auth }) => {
 const SUCCESS_MESSAGE_INFO = { message: "Zahlung erfolgreich angefragt! Jetzt auf Paypal senden", severity: "success" };
 const ERROR_MESSAGE_INFO = { message: "Es ist ein Fehler aufgetreten, versuche es bitte erneut!", severity: "error" };
 
-const PayDrinksScreen = ({ dispatch, user, drinks, auth, pendingPayment, drinksInPayment, drinksUnpaid }) => {
+const PayDrinksScreen = () => {
 
-    useEffect(() => {
-        supabase
-            .from('history')
-            .select()
-            .eq('userId', user.userId)
-            .eq('state', IN_PROGRESS)
-            .then((res) => dispatch(user_in_payment_drinks(res.data)))
+    const { user } = useAuth();
 
-    }, [dispatch]);
+    const [{ data: unpaidDrinks }] = useRealtime(
+        'history',
+        {
+            select: {
+                columns: '*',
+                filter: (query) => query.eq('state', NOT_PAID).eq('userId', user.id),
+            }
+        },
+        (data, payload) => data.id === payload.id);
 
+    const [{ data: drinks }] = useRealtime(
+        'history',
+        {
+            select: {
+                columns: '*',
+                filter: (query) => query.eq('userId', user.id),
+            }
+        },
+        (data, payload) => data.id === payload.id);
 
-    if (!isLoaded(drinksUnpaid, pendingPayment, drinks, drinksInPayment)) {
-        return <Grid
-            container
-            spacing={0}
-            direction="column"
-            alignItems="center"
-            justifyContent="center"
-            style={{ minHeight: '100vh' }}>
-            <CircularProgress />
-        </Grid>
-    }
+    const [{ data: inPaymentDrinks }] = useRealtime(
+        'history',
+        {
+            select: {
+                columns: '*',
+                filter: (query) => query.eq('state', IN_PROGRESS).eq('userId', user.id),
+            }
+        },
+        (data, payload) => data.id === payload.id);
 
     if (!drinks || drinks.length < 1) {
         return <Grid
@@ -263,49 +260,20 @@ const PayDrinksScreen = ({ dispatch, user, drinks, auth, pendingPayment, drinksI
     }
 
     const drinkItems = () => {
-        if (drinksInPayment) {
-            return Object.values(drinksInPayment).length > 0 ? drinksInPayment : drinks;
+        if (inPaymentDrinks) {
+            return Object.values(inPaymentDrinks).length > 0 ? inPaymentDrinks : drinks;
         }
         return drinks;
     }
 
     return (
         <Box>
-            <PayDrinksSummary drinks={drinkItems()} unpaidDrinks={drinksUnpaid} auth={auth} />
+            <PayDrinksSummary drinks={drinkItems()} unpaidDrinks={unpaidDrinks} user={user} />
             <PayDrinksButton
-                auth={auth}
                 drinks={drinkItems()}
-                paypalActive={drinksInPayment && Object.values(drinksInPayment).length > 0 ? true : false} />
+                paypalActive={inPaymentDrinks && Object.values(inPaymentDrinks).length > 0 ? true : false} />
         </Box>
     );
 }
 
-export default compose(
-    firestoreConnect((props) => [
-        {
-            collection: `users/${props.auth.uid}/drinks`,
-            storeAs: userDrinks
-        },
-        {
-            collection: `users/${props.auth.uid}/drinks`,
-            where: [["state", "==", IN_PROGRESS]],
-            storeAs: drinksInPayment
-        },
-        {
-            collection: `users/${props.auth.uid}/drinks`,
-            where: [["state", "==", NOT_PAID]],
-            storeAs: drinksUnpaid
-        },
-        {
-            collection: `payments`,
-            doc: props.auth.uid,
-            storeAs: pendingPayment
-        }
-    ]),
-    connect(({ firestore: { data } }, props) => ({
-        drinks: data.userDrinks,
-        drinksInPayment: data.drinksInPayment,
-        drinksUnpaid: data.drinksUnpaid,
-        pendingPayment: data.pendingPayment
-    }))
-)(PayDrinksScreen)
+export default PayDrinksScreen;

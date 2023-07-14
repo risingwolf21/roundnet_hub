@@ -1,23 +1,26 @@
 import { Checkbox, Fab, FormControlLabel, Grid, TextField } from "@mui/material";
-import { connect } from "react-redux";
-import { compose } from "redux";
 import CheckIcon from '@mui/icons-material/Check';
-import { isLoaded, useFirebase } from "react-redux-firebase";
 import { Box } from "@mui/system";
+import { useAuth } from "../hooks/useAuth";
+import { useClient } from "react-supabase";
 
 
-const UserScreen = ({ auth, profile }) => {
+const UserScreen = () => {
 
-    const firebase = useFirebase();
+    const { user } = useAuth();
+    const client = useClient();
 
-    const handleSubmit = (event) => {
+    const handleSubmit = async (event) => {
         event.preventDefault();
         const data = new FormData(event.currentTarget);
         var displayName = data.get('displayName');
-        if (displayName !== profile.displayName) {
+        if (displayName !== user["user_metadata"].displayName) {
+            let { writingError } = await client.from("users").update({ displayName }).eq("userId", user["user_metadata"].userId)
+            const { error } = await client.auth.updateUser({
+                data: { displayName }
+            });
 
-            firebase.updateProfile({ displayName: displayName });
-            firebase.updateAuth({ displayName: displayName });
+            console.log(writingError, error)
         }
     };
 
@@ -25,14 +28,14 @@ const UserScreen = ({ auth, profile }) => {
         width="100%"
         sx={{ paddingLeft: 2, paddingRight: 2 }}>
         {
-            isLoaded(profile) && <>
+            user["user_metadata"] && <>
                 <Box component="form" onSubmit={handleSubmit} noValidate>
                     <TextField
                         fullWidth
                         id="displayName"
                         name="displayName"
                         variant="filled"
-                        defaultValue={profile.displayName}
+                        defaultValue={user["user_metadata"].displayName}
                         label="Name"
                         margin="normal" />
                     <TextField
@@ -40,12 +43,12 @@ const UserScreen = ({ auth, profile }) => {
                         disabled
                         id="filled-disabled"
                         variant="filled"
-                        defaultValue={auth.email}
+                        defaultValue={user.email}
                         label="Email"
                         margin="normal" />
                     {
-                        profile.role === "admin" && <FormControlLabel
-                            control={<Checkbox checked={profile.role === "admin"} disabled />}
+                        user["user_metadata"].role === "admin" && <FormControlLabel
+                            control={<Checkbox checked={user["user_metadata"].role === "admin"} disabled />}
                             label="Adminrechte"
                         />
                     }
@@ -57,9 +60,4 @@ const UserScreen = ({ auth, profile }) => {
         }
     </Grid >
 }
-export default compose(
-    connect((state) => ({
-        profile: state.firebase.profile,
-        auth: state.firebase.auth
-    }))
-)(UserScreen);
+export default UserScreen;

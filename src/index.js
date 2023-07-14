@@ -14,6 +14,8 @@ import AuthGate from './AuthGate';
 import { ThemeProvider } from '@mui/material';
 import { mainTheme } from './themes';
 import * as Sentry from "@sentry/react";
+import { supabase } from './supabaseClient';
+import { Provider as SupabaseProvider } from "react-supabase"
 
 Sentry.init({
   dsn: "https://a06f63fae5ab4ce4ac291d0d6fb4e989@o4505379650666496.ingest.sentry.io/4505379651649536",
@@ -64,9 +66,11 @@ root.render(
     <ThemeProvider theme={mainTheme}>
       <Provider store={store}>
         <ReactReduxFirebaseProvider {...rrfProps}>
-          <AuthGate>
-            <App />
-          </AuthGate>
+          <SupabaseProvider value={supabase}>
+            <AuthGate>
+              <App />
+            </AuthGate>
+          </SupabaseProvider>
         </ReactReduxFirebaseProvider>
       </Provider>
     </ThemeProvider>

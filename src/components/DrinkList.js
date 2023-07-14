@@ -1,27 +1,37 @@
 import { Alert, Box, CircularProgress, Fab, Grid, Snackbar } from "@mui/material";
-import { connect } from "react-redux";
-import { compose } from "redux";
 import DrinkItem from "./DrinkItem";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import CheckIcon from '@mui/icons-material/Check';
 import BottomInformation from "./BottomInformation";
 import { NOT_PAID } from "../constants";
 import { captureException } from "@sentry/react";
 import { supabase } from "../supabaseClient";
-import { drink_deleted, drink_updated, drinks_changed } from "../redux/actions";
-import { drinks_initial_load, drinks_subscription } from "../utils/subscriptions";
+import { useRealtime } from "../hooks/useRealtime";
+import { Loading } from "./Loading";
+import { Error } from "./Error";
+import { useAuth } from "../hooks/useAuth";
 
 const SUCCESS_MESSAGE_INFO = { message: "Getränke erfolgreich gebucht!", severity: "success" };
 const ERROR_MESSAGE_INFO = { message: "Es ist ein Fehler aufgetreten, versuche es bitte erneut!", severity: "error" };
 
-const DrinkList = ({ dispatch, drinks, user }) => {
+const DrinkList = () => {
 
-    const isLoading = useAllDrinks(dispatch);
+    const { user } = useAuth();
+
+    const [{ data: drinks, error, fetching }] = useRealtime(
+        'drinks',
+        {
+            select: {
+                columns: 'id, name, price, stock, imageUrl, active',
+                filter: (query) => query.eq('active', true),
+            }
+        },
+        (data, payload) => data.id === payload.id);
 
     const [addedDrinks, setAddedDrinks] = useState({});
     const [loading, setLoading] = useState(false);
     const [successMessageOpen, setSuccessMessageOpen] = useState(false);
-    const [alertInfo, setAlertInfo] = useState(SUCCESS_MESSAGE_INFO)
+    const [alertInfo, setAlertInfo] = useState(SUCCESS_MESSAGE_INFO);
 
     const handleClose = (event, reason) => {
         if (reason === 'clickaway') {
@@ -41,7 +51,7 @@ const DrinkList = ({ dispatch, drinks, user }) => {
         let data = { date: Date.now(), state: NOT_PAID, drinks: Object.values(addedDrinks) };
 
         try {
-            const { data, error } = await supabase.from("history").insert(
+            const { error } = await supabase.from("history").insert(
                 Object.values(addedDrinks).map(drink => {
                     return {
                         user_id: user.userId,
@@ -62,7 +72,7 @@ const DrinkList = ({ dispatch, drinks, user }) => {
         }
         catch (error) {
             setLoading(false);
-            confirmDrinksDialog({ message: error.message, severity: "error" });
+            confirmDrinksDialog(ERROR_MESSAGE_INFO);
             captureException(error, (scope) => {
                 scope.clear();
                 scope.setExtra("data", JSON.stringify(data));
@@ -93,6 +103,11 @@ const DrinkList = ({ dispatch, drinks, user }) => {
         setAddedDrinks({ ...temp });
     }
 
+    if (fetching)
+        return <Loading />
+    if (error)
+        return <Error message={error} />
+
     return (<Grid
         container
         width="100%"
@@ -101,7 +116,7 @@ const DrinkList = ({ dispatch, drinks, user }) => {
         justifyContent="center">
         <Grid container sx={{ overflowY: "scroll", }} width="100%" direction="row" alignItems="center" justifyContent="center" paddingTop={2} paddingLeft={2} paddingRight={2}>
             {
-                drinks.map((drink, index) => <DrinkItem key={"Drink" + index} drink={drink} count={addedDrinks[drink.id]?.count} onAddClick={() => onAddDrinkClick(drink)} onMinusClick={() => onRemoveDrinkClick(drink)} />)
+                drinks && drinks.map((drink, index) => <DrinkItem key={"Drink" + index} drink={drink} count={addedDrinks[drink.id]?.count} onAddClick={() => onAddDrinkClick(drink)} onMinusClick={() => onRemoveDrinkClick(drink)} />)
             }
             <Box height={"128px"} width={"100%"} />
         </Grid>
@@ -124,11 +139,4 @@ const DrinkList = ({ dispatch, drinks, user }) => {
     </Grid >);
 }
 
-const enhance = compose(
-    connect((state) => ({
-        drinks: state.drinkList.drinks,
-        user: state.application.user,
-        auth: state.firebase.auth
-    }))
-);
-export default enhance(DrinkList);
+export default DrinkList;

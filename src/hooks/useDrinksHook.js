@@ -1,7 +1,10 @@
 import { useState, useEffect } from 'react';
 import { supabase } from "../supabaseClient";
+import { useSubscription } from './useSubscription';
 
-export const useAllDrinks = ({ dispatch }) => {
+export const useRealtime = () => {
+
+    const [drinks, setDrinks] = useState([])
     const [loading, setIsLoading] = useState(false);
 
     useEffect(() => {
@@ -9,26 +12,38 @@ export const useAllDrinks = ({ dispatch }) => {
         supabase
             .from('drinks')
             .select()
+            .eq('active', true)
             .then(res => {
-                dispatch(drinks_changed(res.data));
+                setDrinks(res.data)
                 setIsLoading(false);
             });
+    }, []);
 
-        supabase
-            .channel('any')
-            .on('postgres_changes', { event: '*', schema: 'public', table: 'drinks' }, payload => {
-                switch (payload.eventType) {
-                    case "DELETE":
-                        dispatch(drink_deleted(payload.old.id));
-                        break;
-                    case "UPDATE":
-                    case "INSERT":
-                        dispatch(drink_updated(payload.new))
-                        break;
+    useSubscription({ event: '*', schema: 'public', table: 'drinks' }, payload => {
+        switch (payload.eventType) {
+            case "DELETE":
+                {
+                    const i = drinks.findIndex(x => x.id === payload.old.id);
+                    const newDrinks = [...drinks];
+                    if (i > -1)
+                        newDrinks.splice(i, 1);
+                    setDrinks(newDrinks);
                 }
-            })
-            .subscribe();
+                break;
+            case "UPDATE":
+            case "INSERT":
+                const i = drinks.findIndex(x => x.id === payload.new.id);
+                const newDrinks = [...drinks];
+                if (i > -1) {
+                    newDrinks[i] = payload.new;
+                } else if (payload.new.active) {
+                    newDrinks.push(payload.new);
+                }
+                setDrinks(newDrinks.filter(x => x.active));
+                break;
+            default:
+        }
     });
 
-    return loading;
+    return { loadingDrinks: loading, drinks };
 }

@@ -1,6 +1,4 @@
 import { AUTHENTICATION_CHANGED, DRINKS_CHANGED, DRINK_DELETED, DRINK_UPDATED, USERS_CHANGED, DRINKS_IN_PAYMENT_CHANGED } from "./names"
-import User from "../../model/user";
-import Drink from "../../model/drink";
 
 export const authentication_changed = (user) => {
     return {

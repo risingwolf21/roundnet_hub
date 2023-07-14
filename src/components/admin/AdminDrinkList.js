@@ -8,7 +8,10 @@ import EditDrinkDialog from "./EditDrinkDialog";
 import LocalDrinkIcon from '@mui/icons-material/LocalDrink';
 import { useState } from "react";
 import _ from "lodash";
-import { lifecycle, withHandlers } from "recompose";
+import { useAdminDrinks } from "../../hooks/useAdminDrinksHook";
+import { Error } from "../Error";
+import { useRealtime } from "../../hooks/useRealtime";
+import { Loading } from "../Loading";
 
 const AdminDrinkItem = ({ drink, onEditClick, onDeleteClick }) => {
     return <Paper sx={{ width: "100%", marginBottom: 2, listStyleType: "none" }}>
@@ -41,7 +44,16 @@ const EMPTY_DRINK = { "imageUrl": "", name: "", price: 0, active: false };
 
 const AdminDrinkList = ({ dispatch, user }) => {
 
-    const { drinks, loading, updateDrink, deleteDrink, addDrink } = useAdminDrinks();
+    const [{ data: drinks, error, fetching }, execute] = useRealtime(
+        'drinks',
+        {
+            select: {
+                columns: 'id, name, price, stock, imageUrl, active',
+            }
+        },
+        (data, payload) => data.id === payload.id);
+
+    const { updateDrink, deleteDrink, addDrink } = useAdminDrinks();
 
     const [open, setOpen] = useState(false);
     const [deleteOpen, setDeleteOpen] = useState(false);
@@ -52,7 +64,7 @@ const AdminDrinkList = ({ dispatch, user }) => {
         setOpen(true);
     }
 
-    const deleteDrink = (drink) => {
+    const deleteDrinkDialog = (drink) => {
         setSelectedDrink(drink);
         setDeleteOpen(true);
     }
@@ -71,6 +83,11 @@ const AdminDrinkList = ({ dispatch, user }) => {
         setOpen(false);
     }
 
+    if (fetching)
+        return <Loading />
+    if (error)
+        return <Error message={error} />
+
     return (<Grid
         container
         width="100%"
@@ -80,11 +97,11 @@ const AdminDrinkList = ({ dispatch, user }) => {
         sx={{ paddingTop: 2 }}>
         <Grid container width="100%" direction="column" alignItems="center" justifyContent="center" paddingLeft={2} paddingRight={2}>
             {
-                !loading && drinks.map((drink, index) => <AdminDrinkItem
+                drinks && drinks.map((drink, index) => <AdminDrinkItem
                     key={"drink" + index}
                     drink={drink}
                     onEditClick={() => selectDrink(drink)}
-                    onDeleteClick={() => deleteDrink(drink)} />)
+                    onDeleteClick={() => deleteDrinkDialog(drink)} />)
             }
             <Box height={"64px"} width={"100%"} />
         </Grid>

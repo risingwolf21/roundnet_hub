@@ -5,8 +5,7 @@ import LiquorIcon from '@mui/icons-material/Liquor';
 import PaymentIcon from '@mui/icons-material/Payment';
 import PeopleIcon from '@mui/icons-material/People';
 import { useNavigate } from "react-router-dom";
-import { compose } from "redux";
-import { connect } from "react-redux";
+import { useAuth } from "../hooks/useAuth";
 
 const SCREENS = [
     {
@@ -47,9 +46,10 @@ const ADMIN_SCREENS = [
     }
 ]
 
-const SideBar = ({ open, onClose, onOpen, user }) => {
+const SideBar = ({ open, onClose, onOpen }) => {
 
     let navigate = useNavigate();
+    const { user } = useAuth();
     let theme = useTheme();
 
     const iOS = typeof navigator !== 'undefined' && /iPad|iPhone|iPod/.test(navigator.userAgent);
@@ -106,8 +106,4 @@ const SideBar = ({ open, onClose, onOpen, user }) => {
     </SwipeableDrawer>
 
 }
-export default compose(
-    connect((state) => ({
-        user: state.application.user
-    }))
-)(SideBar);
+export default SideBar;
