@@ -26,9 +26,13 @@ export const useSelect = (table, config) => {
             .from(table)
             .select(config.columns ?? "*", config.options ?? {})
 
-        const { count, data, error } = await (config.filter
+        const filteredSource = config.filter
             ? config.filter(source)
-            : source)
+            : source
+
+        const { count, data, error } = await (config.order
+            ? config.order(filteredSource)
+            : filteredSource)
 
         if (isMounted.current)
             setState({ count, data, error, stale: false, fetching: false })

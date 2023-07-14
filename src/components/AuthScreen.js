@@ -9,12 +9,20 @@ const AuthScreen = () => {
     const [errorMessage, setErrorMessage] = useState("");
 
     const onLogin = async (credentials) => {
-        const { error } = await supabase.auth.signInWithPassword({
+        const { data, error } = await supabase.auth.signInWithPassword({
             email: credentials.email,
             password: credentials.password
         });
         if (error)
             setErrorMessage(error.message);
+        else
+            supabase.from("users").select().eq("userId", data.user.id).then(async res => {
+                if (res.data.length === 1) {
+                    await supabase.auth.updateUser({
+                        data: { role: res.data[0].role }
+                    });
+                }
+            })
     }
 
     const onRegister = async ({ email, password, displayName }) => {

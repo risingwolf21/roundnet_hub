@@ -21,6 +21,18 @@ const AuthGate = ({ children }) => {
     useAuthStateChange((event, session) => {
         setUser({ email: session?.user?.email ?? null, id: session?.user?.id ?? null });
         setState({ session, user: session?.user ?? null })
+        if (session?.user) {
+            client.from("users").select().eq("userId", session.user.id).then(res => {
+                if (res.data.length === 1) {
+                    setState({
+                        user: { 
+                            ...session?.user ?? null,
+                            role: res.data[0].role
+                        }
+                    });
+                }
+            })
+        }
     });
 
     if (state.user) {
