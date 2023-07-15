@@ -22,12 +22,12 @@ const AuthGate = ({ children }) => {
         setUser({ email: session?.user?.email ?? null, id: session?.user?.id ?? null });
         setState({ session, user: session?.user ?? null })
         if (session?.user) {
-            client.from("users").select().eq("userId", session.user.id).then(res => {
-                if (res.data.length === 1) {
+            client.from("user").select().eq("userId", session.user.id).then(res => {
+                if (res && res.data && res.data.length === 1) {
                     setState({
                         user: { 
                             ...session?.user ?? null,
-                            role: res.data[0].role
+                            role: res.data[0].role,
                         }
                     });
                 }

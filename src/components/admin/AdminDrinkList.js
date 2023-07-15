@@ -1,6 +1,4 @@
 import { Avatar, Badge, Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, Fab, Grid, IconButton, ListItem, ListItemAvatar, ListItemSecondaryAction, ListItemText, Paper, Typography } from "@mui/material";
-import { connect } from "react-redux";
-import { compose } from "redux";
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -42,13 +40,13 @@ const AdminDrinkItem = ({ drink, onEditClick, onDeleteClick }) => {
 
 const EMPTY_DRINK = { "imageUrl": "", name: "", price: 0, active: false };
 
-const AdminDrinkList = ({ dispatch, user }) => {
+const AdminDrinkList = () => {
 
     const [{ data: drinks, error, fetching }, execute] = useRealtime(
-        'drinks',
+        'drink',
         {
             select: {
-                columns: 'id, name, price, stock, imageUrl, active',
+                columns: '*',
             }
         },
         (data, payload) => data.id === payload.id);
@@ -128,10 +126,4 @@ const AdminDrinkList = ({ dispatch, user }) => {
     </Grid >);
 }
 
-const enhance = compose(
-    connect((state) => ({
-        user: state.application.user
-    }))
-);
-
-export default enhance(AdminDrinkList);
+export default AdminDrinkList;

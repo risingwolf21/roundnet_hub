@@ -34,7 +34,7 @@ const PayDrinksButton = ({ paypalActive, drinks }) => {
                     amountToPay: totalAmountToPay(drinks)
                 })
 
-            let { updatingError } = await supabase.from("drinks").upsert(
+            let { updatingError } = await supabase.from("drink").upsert(
                 Object.entries(drinks).map((k, v) => { return { id: k, state: IN_PROGRESS } })
             );
 

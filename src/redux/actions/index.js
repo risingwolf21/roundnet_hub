@@ -14,13 +14,6 @@ export const logout = () => {
     };
 }
 
-const users_changed = (users) => {
-    return {
-        type: USERS_CHANGED,
-        payload: users
-    }
-}
-
 export const drinks_changed = (drinks) => {
     return {
         type: DRINKS_CHANGED,

@@ -14,6 +14,11 @@ const SCREENS = [
         icon: <AccountIcon />
     },
     {
+        label: "History",
+        key: "history",
+        icon: <AccountIcon />
+    },
+    {
         label: "Getränke",
         key: "drinks",
         icon: <LiquorIcon />
@@ -41,6 +46,12 @@ const ADMIN_SCREENS = [
     {
         label: "Benutzer - Admin",
         key: "users-admin",
+        icon: <PeopleIcon />,
+        role: "admin"
+    },
+    {
+        label: "Verlauf - Admin",
+        key: "history-admin",
         icon: <PeopleIcon />,
         role: "admin"
     }

@@ -12,6 +12,7 @@ import PayDrinksScreen from './components/PayDrinksScreen';
 import PaymentsPendingAdmin from './components/admin/PaymentsPendingAdmin';
 import AdminUserList from './components/admin/AdminUserList';
 import { supabase } from './supabaseClient';
+import AdminHistoryScreen from './components/admin/AdminHistoryScreen';
 
 const App = () => {
 
@@ -27,6 +28,7 @@ const App = () => {
         <Route path='/drinks-admin' element={<AdminDrinkList />} />
         <Route path="/user" element={<UserScreen />} />
         <Route path="/history" element={<HistoryScreen />} />
+        <Route path="/history-admin" element={<AdminHistoryScreen />} />
         <Route path="/pay" element={<PayDrinksScreen />} />
         <Route path='/payments-admin' element={<PaymentsPendingAdmin />} />
         <Route path='/users-admin' element={<AdminUserList />} />

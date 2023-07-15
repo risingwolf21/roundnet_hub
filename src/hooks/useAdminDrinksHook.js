@@ -4,21 +4,21 @@ export const useAdminDrinks = () => {
 
     const updateDrink = async (drink) => {
         await supabase
-            .from('drinks')
+            .from('drink')
             .update(drink)
             .eq('id', drink.id);
     }
 
     const deleteDrink = async (id) => {
         await supabase
-            .from('drinks')
+            .from('drink')
             .delete()
             .eq('id', id);
     }
 
     const addDrink = async (drink) => {
         await supabase
-            .from('drinks')
+            .from('drink')
             .insert(drink);
     }
 

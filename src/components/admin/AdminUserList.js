@@ -36,16 +36,14 @@ const AdminUserList = () => {
     const client = useClient();
 
     const [{ data: users, fetching, error }] = useRealtime(
-        'users',
+        'user',
         {
             select: {
-                columns: 'id, userId, displayName, email, role',
+                columns: '*',
                 order: (query) => query.order("displayName", { ascending: true })
             }
         },
         (data, payload) => data.id === payload.id);
-
-    console.log(users)
 
     const editUser = (user) => {
         setCurrentUser(user);
@@ -58,7 +56,7 @@ const AdminUserList = () => {
 
     const onUserEditFinished = async (result) => {
 
-        await client.from("users").update({ displayName: result.displayName, role: result.role }).eq("userId", result.userId);
+        await client.from("user").update({ displayName: result.displayName, role: result.role }).eq("userId", result.userId);
         await client.auth.admin.updateUserById(
             result.userId,
             { user_metadata: { displayName: result.displayName, role: result.role } }

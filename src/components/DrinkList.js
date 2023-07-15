@@ -18,8 +18,10 @@ const DrinkList = () => {
 
     const { user } = useAuth();
 
+    console.log(user)
+
     const [{ data: drinks, error, fetching }] = useRealtime(
-        'drinks',
+        'drink',
         {
             select: {
                 columns: 'id, name, price, stock, imageUrl, active',
@@ -54,7 +56,7 @@ const DrinkList = () => {
             const { error } = await supabase.from("history").insert(
                 Object.values(addedDrinks).map(drink => {
                     return {
-                        user_id: user.userId,
+                        user_id: user.id,
                         drink_id: drink.id,
                         count: drink.count,
                         state: NOT_PAID
