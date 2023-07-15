@@ -1,4 +1,4 @@
-import { Box, Grid, ListItem, ListItemAvatar, ListItemSecondaryAction, ListItemText, Paper, Toolbar, Typography } from "@mui/material"
+import { Box, Grid, List, ListItem, ListItemAvatar, ListItemSecondaryAction, ListItemText, ListSubheader, Paper, Toolbar, Typography } from "@mui/material"
 import moment from "moment/moment";
 import { useRealtime } from "../../hooks/useRealtime";
 import { Loading } from "../Loading";
@@ -6,8 +6,7 @@ import { Error } from "../Error";
 import _ from "lodash";
 
 const AdminHistoryItem = ({ items, header }) => {
-    return <Box sx={{ margin: 2, listStyleType: "none" }}>
-        <Typography typography="h6" fontWeight={"bold"}>{header}</Typography>
+    return <List dense component={"div"} disablePadding subheader={<ListSubheader component="div" id="nested-list-subheader">{header}</ListSubheader>}>
         {
             items.map(item => <ListItem dense key={"sublist"}>
                 <ListItemAvatar>
@@ -19,7 +18,7 @@ const AdminHistoryItem = ({ items, header }) => {
                 </ListItemSecondaryAction>
             </ListItem>)
         }
-    </Box>
+    </List>
 }
 
 const groupBy = (items, getter) => items.reduce(
@@ -49,9 +48,6 @@ const AdminHistoryScreen = () => {
     if (error)
         return <Error message={error} />
 
-    if (history)
-        console.log(Object.entries(groupBy(history, x => moment(new Date(x.created_at)).format("DD MMMM yyyy"))))
-
     return <Grid
         container
         width="100%"
@@ -62,13 +58,12 @@ const AdminHistoryScreen = () => {
         {
 
             history && <>
-                <Grid width="100%">
+                <List sx={{ width: "100%" }} >
                     {
                         Object.entries(groupBy(history, x => moment(new Date(x.created_at)).format("DD MMMM yyyy")))
                             .map((x) => <AdminHistoryItem key={x[0]} items={x[1]} header={x[0]} />)
                     }
-                    <Toolbar />
-                </Grid>
+                </List>
             </>
         }
     </Grid>
