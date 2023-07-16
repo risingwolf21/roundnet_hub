@@ -18,8 +18,6 @@ const DrinkList = () => {
 
     const { user } = useAuth();
 
-    console.log(user)
-
     const [{ data: drinks, error, fetching }] = useRealtime(
         'drink',
         {

@@ -4,6 +4,7 @@ import { useRealtime } from "../../hooks/useRealtime";
 import { Loading } from "../Loading";
 import { Error } from "../Error";
 import _ from "lodash";
+import { groupBy } from "../../utils";
 
 const AdminHistoryItem = ({ items, header }) => {
     return <List dense component={"div"} disablePadding subheader={<ListSubheader component="div" id="nested-list-subheader">{header}</ListSubheader>}>
@@ -20,17 +21,6 @@ const AdminHistoryItem = ({ items, header }) => {
         }
     </List>
 }
-
-const groupBy = (items, getter) => items.reduce(
-    (result, item) => ({
-        ...result,
-        [getter(item)]: [
-            ...(result[getter(item)] || []),
-            item,
-        ],
-    }),
-    {},
-);
 
 const AdminHistoryScreen = () => {
 

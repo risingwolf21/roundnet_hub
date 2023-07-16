@@ -15,9 +15,9 @@ const HistoryItem = ({ item }) => {
                         <ListItemAvatar>
                             <Typography>{item.count} x</Typography>
                         </ListItemAvatar>
-                        <ListItemText primary={item.drinks.name} secondary={item.drinks.price + " €"} />
+                        <ListItemText primary={item.drink.name} secondary={item.drink.price + " €"} />
                         <ListItemSecondaryAction>
-                            <Typography fontWeight={"bold"}>{(item.drinks.price * item.count)} €</Typography>
+                            <Typography fontWeight={"bold"}>{(item.drink.price * item.count)} €</Typography>
                         </ListItemSecondaryAction>
                     </ListItem>
             </Box>
@@ -33,7 +33,7 @@ const HistoryScreen = () => {
         'history',
         {
             select: {
-                columns: 'count, state, created_at, drinks ( name, price, stock )',
+                columns: 'count, state, created_at, drink ( name, price, stock )',
                 filter: (query) => query.eq('user_id', user.id),
             }
         },
@@ -61,7 +61,7 @@ const HistoryScreen = () => {
                     <Toolbar />
                 </Grid>
                 {
-                    <BottomInformation title={"Zusammenfassung"} totalPrice={Object.values(history).reduce((prev, res) => prev + (res.drinks.price * res.count), 0) + " €"} />
+                    <BottomInformation title={"Zusammenfassung"} totalPrice={Object.values(history).reduce((prev, res) => prev + (res.drink.price * res.count), 0) + " €"} />
                 }
             </>
         }

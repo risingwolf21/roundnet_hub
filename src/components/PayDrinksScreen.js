@@ -7,10 +7,12 @@ import EuroIcon from '@mui/icons-material/Euro';
 import ExpandLess from '@mui/icons-material/ExpandLess';
 import ExpandMore from '@mui/icons-material/ExpandMore';
 import { Add, Warning } from "@mui/icons-material";
-import { totalAmountToPay } from '../utils';
+import { groupBy, totalAmountToPay } from '../utils';
 import { supabase } from "../supabaseClient";
 import { useAuth } from "../hooks/useAuth";
 import { useRealtime } from "../hooks/useRealtime";
+import { useClient } from "react-supabase";
+import { Error } from "./Error";
 
 const PayDrinksButton = ({ paypalActive, drinks }) => {
 
@@ -26,28 +28,28 @@ const PayDrinksButton = ({ paypalActive, drinks }) => {
         await new Promise(resolve => setTimeout(resolve, 1000));
 
         try {
-            let { writingError } = await supabase.from("payments").upsert(
-                {
-                    email: user.email,
-                    displayName: user.displayName,
-                    userId: user.userId,
-                    amountToPay: totalAmountToPay(drinks)
-                })
+            // let { writingError } = await supabase.from("payments").upsert(
+            //     {
+            //         userId: user.id,
+            //         amountToPay: totalAmountToPay(drinks)
+            //     })
 
-            let { updatingError } = await supabase.from("drink").upsert(
-                Object.entries(drinks).map((k, v) => { return { id: k, state: IN_PROGRESS } })
-            );
+            let { updatingError } = await supabase.from("drink").update(
+                Object.values(drinks).map((value) => ({ id: value.id, state: IN_PROGRESS }))
+            )
+
+            console.log(updatingError)
 
             if (updatingError)
                 throw new Error(updatingError)
-            if (writingError)
-                throw new Error(writingError)
+            // if (writingError)
+            //     throw new Error(writingError)
 
         } catch (error) {
             setAlertInfo(ERROR_MESSAGE_INFO);
             captureException(error, (scope) => {
                 scope.clear();
-                scope.setExtra("path", `payments/${user.userId}`);
+                scope.setExtra("path", `payments/${user.id}`);
                 scope.setExtra("data", JSON.stringify(drinks));
                 return scope;
             });
@@ -83,11 +85,12 @@ const PayDrinksButton = ({ paypalActive, drinks }) => {
     </Box>
 }
 
-const PayDrinksSummary = ({ drinks, unpaidDrinks }) => {
+const PayDrinksSummary = ({ inPaymentDrinks, unpaidDrinks }) => {
 
     const [unpaidDrinksOpen, setUnpaidDrinksOpen] = useState(false);
     const [dialogAddDrinksOpen, setDialogAddDrinksOpen] = useState(false);
     const [dialogAddDrinksLoading, setDialogAddDrinksLoading] = useState(false);
+    const client = useClient();
 
     const handleOpenUnpaidDrinksClick = () => {
         setUnpaidDrinksOpen(!unpaidDrinksOpen);
@@ -95,6 +98,10 @@ const PayDrinksSummary = ({ drinks, unpaidDrinks }) => {
 
     const addUnpaidDrinksToPayment = async () => {
         setDialogAddDrinksLoading(true);
+
+        let { updatingError } = await supabase.from("history").upsert(
+            Object.values(unpaidDrinks).map((value) => ({ id: value.id, state: IN_PROGRESS }))
+        )
 
         // for (let [k, v] of Object.entries(unpaidDrinks)) {
         //     firestore.update(`users/${auth.uid}/drinks/${k}`, { state: IN_PROGRESS })
@@ -118,13 +125,15 @@ const PayDrinksSummary = ({ drinks, unpaidDrinks }) => {
     return <Box>
         <List>
             {
-                drinks && _.chain(Object.values(drinks)
-                    .flatMap(x => x.drinks))
-                    // Group the elements of Array based on `name` property
-                    .groupBy("name")
-                    // `key` is group's name (name), `value` is the array of objects
-                    .map((value, key) => ({ name: key, count: value.reduce((prev, curr) => prev + curr.count, 0), priceSingle: value[0]?.price ?? "NaN", priceTotal: value.reduce((prev, curr) => prev + (curr.count * curr.price), 0), drinks: value }))
-                    .value()
+                inPaymentDrinks && Object.entries(groupBy(inPaymentDrinks, x => x.drink?.name))
+                    .map((value) => {
+                        return {
+                            name: value[0],
+                            count: value[1].reduce((prev, curr) => prev + curr.count, 0),
+                            priceSingle: value[1][0]?.drink?.price ?? "NaN",
+                            priceTotal: value[1].reduce((prev, curr) => prev + (curr.count * curr.drink?.price ?? 0), 0),
+                        }
+                    })
                     .map((x, index) => <ListItem key={"drinks" + index}>
                         <ListItemAvatar>
                             <Typography>{x.count + " x"}</Typography>
@@ -136,14 +145,17 @@ const PayDrinksSummary = ({ drinks, unpaidDrinks }) => {
                     </ListItem>)
             }
             <Divider />
-            <ListItem key={"totalAmount"}>
-                <ListItemText primaryTypographyProps={{ fontWeight: "bold" }} primary={"Gesamtkosten"} />
-                <ListItemSecondaryAction>
-                    <Typography sx={{ fontWeight: "bold" }}>
-                        {totalAmountToPay(drinks)} €
-                    </Typography>
-                </ListItemSecondaryAction>
-            </ListItem>
+            {
+                inPaymentDrinks &&
+                <ListItem key={"totalAmount"}>
+                    <ListItemText primaryTypographyProps={{ fontWeight: "bold" }} primary={"Gesamtkosten"} />
+                    <ListItemSecondaryAction>
+                        <Typography sx={{ fontWeight: "bold" }}>
+                            {totalAmountToPay(Object.values(inPaymentDrinks).map(x => ({ count: x.count, price: x.drink?.price ?? 0 })))} €
+                        </Typography>
+                    </ListItemSecondaryAction>
+                </ListItem>
+            }
             {
                 (unpaidDrinks && Object.entries(unpaidDrinks).length > 0) && <>
                     <ListItemButton key={"unpaidDrink"} onClick={handleOpenUnpaidDrinksClick}>
@@ -163,13 +175,15 @@ const PayDrinksSummary = ({ drinks, unpaidDrinks }) => {
                                             <Add />
                                         </IconButton>
                                     </ListItemSecondaryAction>
-                                </ListItem>, <Divider />].concat(_.chain(Object.values(unpaidDrinks)
-                                    .flatMap(x => x.drinks))
-                                    // Group the elements of Array based on `name` property
-                                    .groupBy("name")
-                                    // `key` is group's name (name), `value` is the array of objects
-                                    .map((value, key) => ({ name: key, count: value.reduce((prev, curr) => prev + curr.count, 0), priceSingle: value[0]?.price ?? "NaN", priceTotal: value.reduce((prev, curr) => prev + (curr.count * curr.price), 0), drinks: value }))
-                                    .value()
+                                </ListItem>, <Divider />].concat(Object.entries(groupBy(unpaidDrinks, x => x.drink.name))
+                                    .map((value) => {
+                                        return {
+                                            name: value[0],
+                                            count: value[1].reduce((prev, curr) => prev + curr.count, 0),
+                                            priceSingle: value[1][0]?.drink?.price ?? "NaN",
+                                            priceTotal: value[1].reduce((prev, curr) => prev + (curr.count * curr.drink.price), 0),
+                                        }
+                                    })
                                     .map((x, index) => <ListItem key={"unpaidDrinks" + index}>
                                         <ListItemAvatar>
                                             <Typography>{x.count + " x"}</Typography>
@@ -192,7 +206,7 @@ const PayDrinksSummary = ({ drinks, unpaidDrinks }) => {
             <DialogContent>
                 <Typography>
                     {unpaidDrinks && `Es ${Object.entries(unpaidDrinks).length === 1 ? "wird " + Object.entries(unpaidDrinks).length + " Getränk" : "werden " + Object.entries(unpaidDrinks).length + " Getränke "}
-                     mit einem Gesamtpreis von ${totalAmountToPay(unpaidDrinks)} € deiner aktuellen Rechnung hinzugefügt`}
+                     mit einem Gesamtpreis von ${totalAmountToPay(Object.values(unpaidDrinks).map(x => ({ count: x.count, price: x.drink.price })))} € deiner aktuellen Rechnung hinzugefügt`}
                 </Typography>
             </DialogContent>
             {
@@ -221,18 +235,8 @@ const PayDrinksScreen = () => {
         'history',
         {
             select: {
-                columns: '*',
-                filter: (query) => query.eq('state', NOT_PAID).eq('userId', user.id),
-            }
-        },
-        (data, payload) => data.id === payload.id);
-
-    const [{ data: drinks }] = useRealtime(
-        'history',
-        {
-            select: {
-                columns: '*',
-                filter: (query) => query.eq('userId', user.id),
+                columns: 'id, count, created_at, state, user_id, drink ( name, price )',
+                filter: (query) => query.eq('state', NOT_PAID).eq('user_id', user.id),
             }
         },
         (data, payload) => data.id === payload.id);
@@ -241,34 +245,26 @@ const PayDrinksScreen = () => {
         'history',
         {
             select: {
-                columns: '*',
-                filter: (query) => query.eq('state', IN_PROGRESS).eq('userId', user.id),
+                columns: 'id, count, created_at, state, user_id, drink ( name, price )',
+                filter: (query) => query.eq('state', IN_PROGRESS).eq('user_id', user.id),
             }
         },
         (data, payload) => data.id === payload.id);
 
-    if (!drinks || drinks.length < 1) {
-        return <Grid
-            container
-            spacing={0}
-            direction="column"
-            alignItems="center"
-            justifyContent="center"
-            style={{ minHeight: '100vh' }}>
-            <Typography>Keine offenen Getränke gefunden</Typography>
-        </Grid>
+    if ((!inPaymentDrinks || inPaymentDrinks.length < 1) && (!unpaidDrinks || unpaidDrinks.length < 1)) {
+        return <Error message={"Keine offenen Getränke gefunden"} />
     }
 
     const drinkItems = () => {
         if (inPaymentDrinks) {
-            return Object.values(inPaymentDrinks).length > 0 ? inPaymentDrinks : drinks;
+            return Object.values(inPaymentDrinks).length > 0 ? inPaymentDrinks : unpaidDrinks;
         }
-        return drinks;
+        return unpaidDrinks;
     }
 
     return (
         <Box>
-            <PayDrinksSummary drinks={drinkItems()} unpaidDrinks={unpaidDrinks} user={user} />
+            <PayDrinksSummary inPaymentDrinks={inPaymentDrinks} unpaidDrinks={unpaidDrinks} user={user} />
             <PayDrinksButton
                 drinks={drinkItems()}
                 paypalActive={inPaymentDrinks && Object.values(inPaymentDrinks).length > 0 ? true : false} />
