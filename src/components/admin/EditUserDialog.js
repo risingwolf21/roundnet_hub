@@ -4,6 +4,7 @@ import { Box } from "@mui/system";
 import { AccountCircle, Close, Email, ExpandLess, ExpandMore, ManageAccounts } from "@mui/icons-material";
 import { useFirestore } from "react-redux-firebase";
 import { PAID } from "../../constants";
+import { useClient } from "react-supabase";
 
 const Transition = React.forwardRef(function Transition(props, ref) {
     return <Slide direction="up" ref={ref} {...props} />;
@@ -15,18 +16,16 @@ const EditUserDialog = ({ user, open, handleClose, onUserEditFinished, deleteUse
     const [role, setRole] = useState(user.role);
     const [deleteUserOpen, setDeleteUserOpen] = useState(false);
     const [userInfo, setUserInfo] = useState({ openAmount: 0 })
-    const firestore = useFirestore();
+    const client = useClient();
 
     useEffect(() => {
         setRole(user.role);
-        firestore.collection(`users/${user.id}/drinks`).get().then(doc => {
-            let openAmount = doc.docs.map(x => x.data())
-                .filter(x => x.state !== PAID)
-                .flatMap(x => x.drinks)
-                .reduce((prev, curr) => prev + (curr.count * curr.price), 0);
-            setUserInfo({ openAmount: openAmount })
+        client.from("history").select("*, drink ( price, name )").neq("state", PAID).then(result => {
+            if (!result.data)
+                return;
+            setUserInfo({ openAmount: result.data.reduce((prev, curr) => prev + (curr.count * curr.drink.price), 0) })
         });
-    }, [user, firestore]);
+    }, [user, client]);
 
     const handleSubmit = (event) => {
         event.preventDefault();

@@ -1,36 +1,43 @@
 import { Box, Button, CircularProgress, Dialog, DialogActions, DialogContent, DialogTitle, Grid, IconButton, List, ListItem, ListItemAvatar, ListItemSecondaryAction, ListItemText, Typography } from "@mui/material";
-import { connect } from "react-redux";
-import { isLoaded, useFirestore, withFirestore } from "react-redux-firebase"
-import { compose } from "redux"
+import { useFirestore } from "react-redux-firebase"
 import CheckIcon from "@mui/icons-material/Check"
 import { useState } from "react";
-import { lifecycle, withHandlers } from "recompose";
 import { NOT_PAID, IN_PROGRESS } from "../../constants";
 import { totalAmountToPay } from '../../utils';
 import AddPaymentsForEveryoneDialog from "./AddPaymentsForEveryoneDialog";
+import { useRealtime } from "../../hooks/useRealtime";
+import { Loading } from "../Loading";
+import { useAuth } from "../../hooks/useAuth";
+import { Error } from "../Error";
+import { useClient } from "react-supabase";
 
-const pendingPayments = "pendingPayments";
 
-const PaymentsPendingAdmin = ({ pendingPayments, auth }) => {
+const PaymentsPendingAdmin = ({ auth }) => {
 
     const [open, setOpen] = useState(false);
     const [paymentEveryoneLoading, setPaymentEveryoneLoading] = useState(false);
     const [paymentEveryoneDialog, setPaymentEveryoneDialog] = useState(false);
     const [currentPayment, setPayment] = useState({});
+    const { user } = useAuth();
+    const client = useClient();
+
+    const [{ data: payments, error, fetching }] = useRealtime(
+        "payments",
+        {
+            select: {
+                columns: 'id, created_at, amount_to_pay, user (userId, displayName, email )'
+            }
+        },
+        (data, payload) => data.id === payload.id
+    );
 
     const firestore = useFirestore();
 
-    if (!isLoaded(pendingPayments)) {
-        return <Grid
-            container
-            spacing={0}
-            direction="column"
-            alignItems="center"
-            justifyContent="center"
-            style={{ minHeight: '100vh' }}>
-            <CircularProgress />
-        </Grid>
-    }
+    if (fetching)
+        return <Loading />
+
+    if (error)
+        return <Error message={error} />
 
     const selectedPayment = (payment) => {
         setPayment(payment);
@@ -39,20 +46,38 @@ const PaymentsPendingAdmin = ({ pendingPayments, auth }) => {
 
     const onUsersSelected = (users) => {
         setPaymentEveryoneDialog(false);
-        users.forEach(user => {
-            firestore.collection(`users/${user.id}/drinks`).get().then(async drinks => {
-                let filteredDrinks = drinks.docs.filter(x => x.data().state === NOT_PAID);
-                filteredDrinks.forEach(drink => {
-                    firestore.update(`users/${user.id}/drinks/${drink.id}`, { state: IN_PROGRESS })
-                });
+        users.forEach(async user => {
 
-                firestore.set(`payments/${user.id}`, {
-                    email: user.email,
-                    userId: user.id,
-                    displayName: user?.displayName ?? user.email,
-                    amountToPay: firestore.FieldValue.increment(totalAmountToPay(filteredDrinks.map(x => x.data())))
-                }, { merge: true });
-            });
+            const { data, error: updatingError } = await client.from("history")
+                .update({ state: IN_PROGRESS })
+                .eq("user_id", user.userId)
+                .eq("state", NOT_PAID)
+                .select("count, drink (name, price)");
+
+            const { data: currentPayment } = await client.from("payments")
+                .eq("user_id", user.userId)
+                .select();
+
+            if (!currentPayment)
+                return;
+
+            const { error: updateError } = await client.from("payments")
+                .update({ amountToPay: currentPayment.amountToPay + data.reduce((prev, curr) => prev + (curr.count * curr.drink.price), 0) })
+                .eq("user_id", user.userId);
+
+            // firestore.collection(`users/${user.id}/drinks`).get().then(async drinks => {
+            //     let filteredDrinks = drinks.docs.filter(x => x.data().state === NOT_PAID);
+            //     filteredDrinks.forEach(drink => {
+            //         firestore.update(`users/${user.id}/drinks/${drink.id}`, { state: IN_PROGRESS })
+            //     });
+
+            //     firestore.set(`payments/${user.id}`, {
+            //         email: user.email,
+            //         userId: user.id,
+            //         displayName: user?.displayName ?? user.email,
+            //         amountToPay: firestore.FieldValue.increment(totalAmountToPay(filteredDrinks.map(x => x.data())))
+            //     }, { merge: true });
+            // });
         });
     }
 
@@ -73,14 +98,14 @@ const PaymentsPendingAdmin = ({ pendingPayments, auth }) => {
 
     return <Box>
         {
-            pendingPayments.length > 0 && <List>
+            payments && <List>
                 {
-                    Object.values(pendingPayments).map(x => {
-                        return <ListItem key={x.email}>
+                    Object.values(payments).map(x => {
+                        return <ListItem key={x.user.email}>
                             <ListItemAvatar>
                                 <Typography fontWeight={"bold"}>{x.amountToPay} €</Typography>
                             </ListItemAvatar>
-                            <ListItemText primary={x.displayName ?? x.email} secondary={x.displayName ? "Benutzername" : "Email"} />
+                            <ListItemText primary={x.user.displayName ?? x.user.email} secondary={x.user.displayName ? "Benutzername" : "Email"} />
                             <ListItemSecondaryAction >
                                 <IconButton onClick={() => selectedPayment(x)}>
                                     <CheckIcon />
@@ -92,7 +117,7 @@ const PaymentsPendingAdmin = ({ pendingPayments, auth }) => {
             </List>
         }
         {
-            pendingPayments.length < 1 && <Grid
+            payments?.length < 1 && <Grid
                 container
                 spacing={0}
                 direction="column"
@@ -146,44 +171,4 @@ const PaymentsPendingAdmin = ({ pendingPayments, auth }) => {
 
 }
 
-const listener = {
-    collection: "payments",
-    storeAs: pendingPayments
-}
-
-// export default compose(
-//     firestoreConnect((props) => [
-//         {
-//             collection: `payments`,
-//             storeAs: pendingPayments
-//         }
-//     ]),
-//     connect((state) => ({
-//         pendingPayments: state.firestore.ordered.pendingPayments,
-//         profile: state.firebase.profile,
-//         auth: state.firebase.auth
-//     }))
-// )(PaymentsPendingAdmin);
-
-const enhance = compose(
-    withFirestore,
-    withHandlers({
-        loadPayments: (props) => (collection, storeAs) => props.firestore.get({ collection, storeAs })
-    }),
-    lifecycle({
-        componentDidMount() {
-            this.props.loadPayments(
-                "payments",
-                pendingPayments
-            );
-            this.props.firestore.setListener(listener);
-        }
-    }),
-    connect((state) => ({
-        pendingPayments: state.firestore.ordered.pendingPayments,
-        profile: state.firebase.profile,
-        auth: state.firebase.auth
-    }))
-)
-
-export default enhance(PaymentsPendingAdmin)
+export default PaymentsPendingAdmin

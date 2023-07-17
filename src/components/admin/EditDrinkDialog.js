@@ -8,9 +8,8 @@ import EuroIcon from '@mui/icons-material/Euro';
 import InventoryIcon from '@mui/icons-material/Inventory';
 import FormatSizeIcon from '@mui/icons-material/FormatSize';
 import CropImageDialog from "../CropImageDialog";
-import { useFirebase } from "react-redux-firebase";
-import { ref, uploadBytes, getStorage } from "firebase/storage";
-import { v4 } from "uuid";
+import { useClient } from "react-supabase";
+import { uuid } from "@supabase/gotrue-js/dist/module/lib/helpers";
 
 const Transition = React.forwardRef(function Transition(props, ref) {
     return <Slide direction="up" ref={ref} {...props} />;
@@ -23,8 +22,7 @@ const EditDrinkDialog = ({ drink, onDrinkEditFinished, open, handleClose }) => {
     }, [drink]);
 
     // image cropping
-    const storage = getStorage();
-    const [imageName, setImageName] = useState("");
+    const client = useClient();
     const [selectedImage, setSelectedImage] = useState(null);
     const [croppedImage, setCroppedImage] = useState(null);
 
@@ -44,8 +42,26 @@ const EditDrinkDialog = ({ drink, onDrinkEditFinished, open, handleClose }) => {
                 active: activeDrink,
                 stock: Number.parseFloat(data.get("stock"))
             };
-            const imageRef = ref(storage, `images/${croppedImage.name + v4()}`)
-            await uploadBytes(imageRef, croppedImage).then(res => console.log(res));
+
+            var fileName = uuid() + ".jpg";
+
+            var fileToUpload = fetch(croppedImage).then(res => res.blob()).then(blob => new File([blob], fileName, { type: "image/jpeg", lastModified: new Date() }))
+
+            const { data: uploadData, error } = await client
+                .storage
+                .from('drink')
+                .upload(`avatars/${fileName}`, fileToUpload, {
+                    cacheControl: '3600',
+                    upsert: true
+                });
+
+            if (uploadData && uploadData.path) {
+                const { error } = await client.from("drink").update({ imageUrl: uploadData.path }).eq("id", drink.id)
+                console.log(error, uploadData.path)
+            }
+
+            setCroppedImage(null);
+            setSelectedImage(null);
             onDrinkEditFinished(newDrink);
         }
     };

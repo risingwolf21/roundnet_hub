@@ -4,15 +4,24 @@ import React, { useState } from "react";
 import { connect } from "react-redux";
 import { isLoaded, withFirestore } from "react-redux-firebase";
 import { compose, lifecycle, withHandlers } from "recompose";
+import { useRealtime } from "../../hooks/useRealtime";
+import { Loading } from "../Loading";
+import { Error } from "../Error";
 
 const Transition = React.forwardRef(function Transition(props, ref) {
     return <Slide direction="up" ref={ref} {...props} />;
 });
 
-const users = "users";
-
-const AddPaymentsForEveryoneDialog = ({ open, handleClose, users, onUsersSelected }) => {
+const AddPaymentsForEveryoneDialog = ({ open, handleClose, onUsersSelected }) => {
     const [selectedUsers, setSelectedUsers] = useState([]);
+    const [{ data: users, error, fetching }] = useRealtime(
+        'user',
+        {
+            select: {
+                columns: '*',
+            }
+        },
+        (data, payload) => data.userId === payload.userId);
 
     const handleUserClick = (user) => {
         if (!selectedUsers.includes(user)) {
@@ -25,6 +34,12 @@ const AddPaymentsForEveryoneDialog = ({ open, handleClose, users, onUsersSelecte
     const handleSubmit = () => {
         onUsersSelected(selectedUsers);
     }
+
+    if (fetching)
+        return <Loading />
+
+    if (error)
+        return <Error message={error} />
 
     return <Dialog
         fullScreen
@@ -50,7 +65,7 @@ const AddPaymentsForEveryoneDialog = ({ open, handleClose, users, onUsersSelecte
                 </Toolbar>
             </AppBar>
             {
-                isLoaded(users) && users && <List>
+                users && <List>
                     {
                         users.map((user, index) => {
                             const labelId = `checkbox-list-label-${index}`;
@@ -69,35 +84,8 @@ const AddPaymentsForEveryoneDialog = ({ open, handleClose, users, onUsersSelecte
                     }
                 </List>
             }
-            {
-                !isLoaded(users) && <Grid
-                    container
-                    width="100%"
-                    direction="column"
-                    alignItems="center"
-                    justifyContent="center"
-                    sx={{ overflow: "auto" }}>
-                    <CircularProgress />
-                </Grid>
-            }
         </Box>
     </Dialog>
 }
 
-const enhance = compose(
-    withFirestore,
-    withHandlers({
-        loadUsers: (props) => () => props.firestore.get({ collection: "users", storeAs: users })
-    }),
-    lifecycle({
-        componentDidMount() {
-            this.props.loadUsers();
-            this.props.firestore.setListener("users");
-        }
-    }),
-    connect((state) => ({
-        users: state.firestore.ordered.users,
-    }))
-);
-
-export default enhance(AddPaymentsForEveryoneDialog);
+export default AddPaymentsForEveryoneDialog;

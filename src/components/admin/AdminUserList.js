@@ -6,6 +6,7 @@ import { useRealtime } from "../../hooks/useRealtime";
 import { useClient } from "react-supabase";
 import { Loading } from "../Loading";
 import { Error } from "../Error";
+import { createClient } from "@supabase/supabase-js";
 
 const AdminUserItem = ({ user, onEditClick }) => {
     return <Paper sx={{ width: "100%", marginBottom: 2, listStyleType: "none" }}>
@@ -50,8 +51,17 @@ const AdminUserList = () => {
         setEditUserOpen(true);
     }
 
-    const deleteUser = (user) => {
-
+    const deleteUser = async (user) => {
+        //TODO: create admin client to successfully remove users
+        return;
+        // const supabase = createClient(process.env.REACT_APP_supabaseUrl, process.env.REACT_APP_supabaseAdminKey, {
+        //     auth: {
+        //         autoRefreshToken: false,
+        //         persistSession: false
+        //     }
+        // })
+        // const { data, error } = await supabase.auth.admin.deleteUser(user.userId);
+        // const { data: d1, error: e1 } = await client.from("user").delete().eq("userId", user.userId);
     }
 
     const onUserEditFinished = async (result) => {
