@@ -1,8 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import store from "./redux/store";
 import * as serviceWorkerRegistration from './serviceWorkerRegistration';
-import { Provider } from 'react-redux';
 import "./global.css";
 import App from './App';
 import AuthGate from './AuthGate';
@@ -27,13 +25,11 @@ const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <React.StrictMode>
     <ThemeProvider theme={mainTheme}>
-      <Provider store={store}>
-          <SupabaseProvider value={supabase}>
-            <AuthGate>
-              <App />
-            </AuthGate>
-          </SupabaseProvider>
-      </Provider>
+      <SupabaseProvider value={supabase}>
+        <AuthGate>
+          <App />
+        </AuthGate>
+      </SupabaseProvider>
     </ThemeProvider>
   </React.StrictMode>
 );

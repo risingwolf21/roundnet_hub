@@ -1,8 +1,6 @@
 import { Close } from "@mui/icons-material";
 import { AppBar, Box, Button, Checkbox, CircularProgress, Dialog, Grid, IconButton, List, ListItemButton, ListItemIcon, ListItemText, Slide, Toolbar, Typography } from "@mui/material";
 import React, { useState } from "react";
-import { connect } from "react-redux";
-import { compose, lifecycle, withHandlers } from "recompose";
 import { useRealtime } from "../../hooks/useRealtime";
 import { Loading } from "../Loading";
 import { Error } from "../Error";
