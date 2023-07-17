@@ -2,7 +2,6 @@ import React, { useEffect, useState } from "react";
 import { AppBar, Avatar, Button, Collapse, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, List, ListItem, ListItemAvatar, ListItemButton, ListItemSecondaryAction, ListItemText, Radio, Slide, TextField, Toolbar, Typography } from "@mui/material"
 import { Box } from "@mui/system";
 import { AccountCircle, Close, Email, ExpandLess, ExpandMore, ManageAccounts } from "@mui/icons-material";
-import { useFirestore } from "react-redux-firebase";
 import { PAID } from "../../constants";
 import { useClient } from "react-supabase";
 

@@ -2,12 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import store from "./redux/store";
 import * as serviceWorkerRegistration from './serviceWorkerRegistration';
-import 'firebase/compat/auth';
-import 'firebase/compat/firestore';
 import { Provider } from 'react-redux';
-import firebase from 'firebase/compat/app';
-import { ReactReduxFirebaseProvider } from 'react-redux-firebase';
-import { createFirestoreInstance } from 'redux-firestore';
 import "./global.css";
 import App from './App';
 import AuthGate from './AuthGate';
@@ -28,50 +23,16 @@ Sentry.init({
   tracesSampleRate: process.env.NODE_ENV === "production" ? 0.2 : 1.0,
 });
 
-const fbConfig = {
-  apiKey: process.env.REACT_APP_apiKey,
-  authDomain: process.env.REACT_APP_authDomain,
-  projectId: process.env.REACT_APP_projectId,
-  storageBucket: process.env.REACT_APP_storageBucket,
-  messagingSenderId: process.env.REACT_APP_messagingSenderId,
-  appId: process.env.REACT_APP_appId,
-};
-
-const rrfConfig = {
-  userProfile: 'users',
-  useFirestoreForProfile: true, // Firestore for Profile instead of Realtime DB
-  profileFactory: (userData, profileData, firebase) => { // how profiles are stored in database
-    const { user } = userData
-    return {
-      email: user.email,
-      displayName: profileData.displayName,
-      role: "user",
-    }
-  }
-}
-
-firebase.initializeApp(fbConfig);
-firebase.firestore();
-
-const rrfProps = {
-  firebase,
-  config: rrfConfig,
-  dispatch: store.dispatch,
-  createFirestoreInstance // <- needed if using firestore
-};
-
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <React.StrictMode>
     <ThemeProvider theme={mainTheme}>
       <Provider store={store}>
-        <ReactReduxFirebaseProvider {...rrfProps}>
           <SupabaseProvider value={supabase}>
             <AuthGate>
               <App />
             </AuthGate>
           </SupabaseProvider>
-        </ReactReduxFirebaseProvider>
       </Provider>
     </ThemeProvider>
   </React.StrictMode>

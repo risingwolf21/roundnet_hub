@@ -91,6 +91,7 @@ const PayDrinksSummary = ({ inPaymentDrinks, unpaidDrinks }) => {
     const [dialogAddDrinksOpen, setDialogAddDrinksOpen] = useState(false);
     const [dialogAddDrinksLoading, setDialogAddDrinksLoading] = useState(false);
     const client = useClient();
+    const { user } = useAuth();
 
     const handleOpenUnpaidDrinksClick = () => {
         setUnpaidDrinksOpen(!unpaidDrinksOpen);
@@ -99,21 +100,20 @@ const PayDrinksSummary = ({ inPaymentDrinks, unpaidDrinks }) => {
     const addUnpaidDrinksToPayment = async () => {
         setDialogAddDrinksLoading(true);
 
-        let { updatingError } = await supabase.from("history").upsert(
+        let { updatingError } = await client.from("history").upsert(
             Object.values(unpaidDrinks).map((value) => ({ id: value.id, state: IN_PROGRESS }))
         )
 
-        // for (let [k, v] of Object.entries(unpaidDrinks)) {
-        //     firestore.update(`users/${auth.uid}/drinks/${k}`, { state: IN_PROGRESS })
-        //         .catch(error => {
-        //             captureException(error, (scope) => {
-        //                 scope.clear();
-        //                 scope.setExtra("path", `users/${auth.uid}/drinks/${k}`);
-        //                 scope.setExtra("data", JSON.stringify(v));
-        //                 return scope;
-        //             });
-        //         });
-        // }
+        if (updatingError) {
+            captureException(updatingError, (scope) => {
+                scope.clear();
+                scope.setExtra("path", `history/${user.userId}`);
+                scope.setExtra("data", JSON.stringify(unpaidDrinks));
+                return scope;
+            });
+        }
+
+        // TODO: update payment
         // firestore.update(`payments/${auth.uid}`, {
         //     amountToPay: firestore.FieldValue.increment(totalAmountToPay(unpaidDrinks))
         // });

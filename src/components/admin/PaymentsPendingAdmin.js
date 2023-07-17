@@ -1,9 +1,7 @@
 import { Box, Button, CircularProgress, Dialog, DialogActions, DialogContent, DialogTitle, Grid, IconButton, List, ListItem, ListItemAvatar, ListItemSecondaryAction, ListItemText, Typography } from "@mui/material";
-import { useFirestore } from "react-redux-firebase"
 import CheckIcon from "@mui/icons-material/Check"
 import { useState } from "react";
 import { NOT_PAID, IN_PROGRESS } from "../../constants";
-import { totalAmountToPay } from '../../utils';
 import AddPaymentsForEveryoneDialog from "./AddPaymentsForEveryoneDialog";
 import { useRealtime } from "../../hooks/useRealtime";
 import { Loading } from "../Loading";
@@ -30,8 +28,6 @@ const PaymentsPendingAdmin = ({ auth }) => {
         },
         (data, payload) => data.id === payload.id
     );
-
-    const firestore = useFirestore();
 
     if (fetching)
         return <Loading />
@@ -86,14 +82,17 @@ const PaymentsPendingAdmin = ({ auth }) => {
     }
 
     const confirmPayment = (payment) => {
-        firestore.collection(`users/${payment.userId}/drinks`).get().then((snapshot) => {
-            snapshot.docs.reduce((prev, curr) => [curr.id, ...prev], []).forEach(x => {
-                firestore.delete(`users/${auth.uid}/drinks/${x}`)
-            });
-            firestore.delete(`payments/${payment.userId}`);
-            firestore.add(`users/${payment.userId}/paymentHistory`, payment);
+        const {error} = client.from("payments").delete().eq("user_id", user.userId).then(res => {
             setOpen(false);
         });
+        // firestore.collection(`users/${payment.userId}/drinks`).get().then((snapshot) => {
+        //     snapshot.docs.reduce((prev, curr) => [curr.id, ...prev], []).forEach(x => {
+        //         firestore.delete(`users/${auth.uid}/drinks/${x}`)
+        //     });
+        //     firestore.delete(`payments/${payment.userId}`);
+        //     firestore.add(`users/${payment.userId}/paymentHistory`, payment);
+        //     setOpen(false);
+        // });
     }
 
     return <Box>
