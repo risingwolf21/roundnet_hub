@@ -5,11 +5,11 @@ import CheckIcon from '@mui/icons-material/Check';
 import BottomInformation from "./BottomInformation";
 import { NOT_PAID } from "../constants";
 import { captureException } from "@sentry/react";
-import { supabase } from "../supabaseClient";
 import { useRealtime } from "../hooks/useRealtime";
 import { Loading } from "./Loading";
 import { Error } from "./Error";
 import { useAuth } from "../hooks/useAuth";
+import { useClient } from "react-supabase";
 
 const SUCCESS_MESSAGE_INFO = { message: "Getränke erfolgreich gebucht!", severity: "success" };
 const ERROR_MESSAGE_INFO = { message: "Es ist ein Fehler aufgetreten, versuche es bitte erneut!", severity: "error" };
@@ -17,6 +17,7 @@ const ERROR_MESSAGE_INFO = { message: "Es ist ein Fehler aufgetreten, versuche e
 const DrinkList = () => {
 
     const { user } = useAuth();
+    const client = useClient();
 
     const [{ data: drinks, error, fetching }] = useRealtime(
         'drink',
@@ -51,7 +52,7 @@ const DrinkList = () => {
         let data = { date: Date.now(), state: NOT_PAID, drinks: Object.values(addedDrinks) };
 
         try {
-            const { error } = await supabase.from("history").insert(
+            const { error } = await client.from("history").insert(
                 Object.values(addedDrinks).map(drink => {
                     return {
                         user_id: user.id,
@@ -64,7 +65,15 @@ const DrinkList = () => {
             if (error)
                 throw Error(error.message);
 
-            // TODO: update stocks
+            Object.values(addedDrinks).forEach(async drink => {
+                const { error } = await client.rpc("increment_stock",
+                    {
+                        rowid: drink.id,
+                        amount: drink.count,
+                    });
+                if (error)
+                    throw Error(error.message);
+            })
 
             setLoading(false);
             setAddedDrinks({});
