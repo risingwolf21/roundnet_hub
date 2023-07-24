@@ -251,6 +251,16 @@ const PayDrinksScreen = () => {
         },
         (data, payload) => data.id === payload.id);
 
+    const [{ data: payment }] = useRealtime(
+        'payments',
+        {
+            select: {
+                columns: 'id, user_id, amountToPay, state',
+                filter: (query) => query.select().eq("user_id", user.id).limit(1).single()
+            }
+        },
+        (data, payload) => data.id === payload.id);
+
     if ((!inPaymentDrinks || inPaymentDrinks.length < 1) && (!unpaidDrinks || unpaidDrinks.length < 1)) {
         return <Error message={"Keine offenen Getränke gefunden"} />
     }
@@ -267,7 +277,7 @@ const PayDrinksScreen = () => {
             <PayDrinksSummary inPaymentDrinks={inPaymentDrinks} unpaidDrinks={unpaidDrinks} user={user} />
             <PayDrinksButton
                 drinks={drinkItems()}
-                paypalActive={inPaymentDrinks && Object.values(inPaymentDrinks).length > 0 ? true : false} />
+                paypalActive={payment ? true : false} />
         </Box>
     );
 }

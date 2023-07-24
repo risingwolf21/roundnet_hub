@@ -3,13 +3,14 @@ import DrinkItem from "./DrinkItem";
 import { useState } from "react";
 import CheckIcon from '@mui/icons-material/Check';
 import BottomInformation from "./BottomInformation";
-import { NOT_PAID } from "../constants";
+import { NOT_PAID, OPEN } from "../constants";
 import { captureException } from "@sentry/react";
 import { useRealtime } from "../hooks/useRealtime";
 import { Loading } from "./Loading";
 import { Error } from "./Error";
 import { useAuth } from "../hooks/useAuth";
 import { useClient } from "react-supabase";
+import { totalAmountToPay } from "../utils";
 
 const SUCCESS_MESSAGE_INFO = { message: "Getränke erfolgreich gebucht!", severity: "success" };
 const ERROR_MESSAGE_INFO = { message: "Es ist ein Fehler aufgetreten, versuche es bitte erneut!", severity: "error" };
@@ -25,6 +26,16 @@ const DrinkList = () => {
             select: {
                 columns: 'id, name, price, stock, imageUrl, active',
                 filter: (query) => query.eq('active', true),
+            }
+        },
+        (data, payload) => data.id === payload.id);
+
+    const [{ data: payment }] = useRealtime(
+        'payments',
+        {
+            select: {
+                columns: 'id, userId, state',
+                filter: (query) => query.eq("userId", user.id)
             }
         },
         (data, payload) => data.id === payload.id);
@@ -52,13 +63,29 @@ const DrinkList = () => {
         let data = { date: Date.now(), state: NOT_PAID, drinks: Object.values(addedDrinks) };
 
         try {
+            let paymentId = "";
+            if (!payment && payment.length != 1) {
+                const { data, error } = await client.from("payments").insert({
+                    userId: user.id,
+                    state: OPEN
+                });
+                if (error)
+                    throw new Error(error.message);
+                paymentId = data.id;
+            } else {
+                if(!paymentId){
+                    throw new Error("Payment Id is null");
+                }
+                paymentId = payment[0].id;
+            }
+
             const { error } = await client.from("history").insert(
                 Object.values(addedDrinks).map(drink => {
                     return {
                         user_id: user.id,
                         drink_id: drink.id,
                         count: drink.count,
-                        state: NOT_PAID
+                        payment: paymentId
                     }
                 })
             );
@@ -73,7 +100,7 @@ const DrinkList = () => {
                     });
                 if (error)
                     throw Error(error.message);
-            })
+            });
 
             setLoading(false);
             setAddedDrinks({});
@@ -81,7 +108,7 @@ const DrinkList = () => {
         }
         catch (error) {
             setLoading(false);
-            confirmDrinksDialog(ERROR_MESSAGE_INFO);
+            confirmDrinksDialog({ message: error.message, severity: "error" });
             captureException(error, (scope) => {
                 scope.clear();
                 scope.setExtra("data", JSON.stringify(data));

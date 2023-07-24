@@ -6,5 +6,8 @@ export const NOT_PAID = "NOT_PAID";
 export const PAID = "PAID";
 export const IN_PROGRESS = "IN_PROGRESS";
 
+export const OPEN = "OPEN";
+export const FULFILLED = "FULFILLED";
+
 
 export const PAYPAL_ME_ADDRESS = process.env.REACT_APP_paypalMeLink;

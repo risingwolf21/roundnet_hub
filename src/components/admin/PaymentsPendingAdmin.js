@@ -59,7 +59,7 @@ const PaymentsPendingAdmin = ({ auth }) => {
 
             const { error: updateError } = await client.from("payments")
                 .update({ amountToPay: currentPayment.amountToPay + data.reduce((prev, curr) => prev + (curr.count * curr.drink.price), 0) })
-                .eq("user_id", user.userId);
+                .eq("userId", user.userId);
 
             // firestore.collection(`users/${user.id}/drinks`).get().then(async drinks => {
             //     let filteredDrinks = drinks.docs.filter(x => x.data().state === NOT_PAID);
@@ -82,7 +82,7 @@ const PaymentsPendingAdmin = ({ auth }) => {
     }
 
     const confirmPayment = (payment) => {
-        const {error} = client.from("payments").delete().eq("user_id", user.userId).then(res => {
+        client.from("payments").delete().eq("userId", user.userId).then(res => {
             setOpen(false);
         });
         // firestore.collection(`users/${payment.userId}/drinks`).get().then((snapshot) => {
