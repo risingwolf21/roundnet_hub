@@ -52,9 +52,12 @@ const PaymentsPendingAdmin = () => {
 
             console.log(data)
 
-            const { data: currentPayment } = await client.from("payments")
-                .select()
-                .eq("user_id", user.userId);
+            if (!currentPayment)
+                return;
+
+            const { error: updateError } = await client.from("payments")
+                .update({ amountToPay: currentPayment.amountToPay + data.reduce((prev, curr) => prev + (curr.count * curr.drink.price), 0) })
+                .eq("userId", user.userId);
 
             if (currentPayment) {
                 const { error: updateError } = await client.from("payments")
@@ -90,7 +93,7 @@ const PaymentsPendingAdmin = () => {
     }
 
     const confirmPayment = (payment) => {
-        const { error } = client.from("payments").delete().eq("user_id", user.userId).then(res => {
+        client.from("payments").delete().eq("userId", user.userId).then(res => {
             setOpen(false);
         });
         // firestore.collection(`users/${payment.userId}/drinks`).get().then((snapshot) => {
