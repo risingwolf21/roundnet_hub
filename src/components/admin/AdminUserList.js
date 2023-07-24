@@ -7,6 +7,8 @@ import { useClient } from "react-supabase";
 import { Loading } from "../Loading";
 import { Error } from "../Error";
 import { createClient } from "@supabase/supabase-js";
+import { supabase_admin } from "../../supabaseClient";
+import { captureException } from "@sentry/react";
 
 const AdminUserItem = ({ user, onEditClick }) => {
     return <Paper sx={{ width: "100%", marginBottom: 2, listStyleType: "none" }}>
@@ -52,16 +54,24 @@ const AdminUserList = () => {
     }
 
     const deleteUser = async (user) => {
-        //TODO: create admin client to successfully remove users
-        return;
-        // const supabase = createClient(process.env.REACT_APP_supabaseUrl, process.env.REACT_APP_supabaseAdminKey, {
-        //     auth: {
-        //         autoRefreshToken: false,
-        //         persistSession: false
-        //     }
-        // })
-        // const { data, error } = await supabase.auth.admin.deleteUser(user.userId);
-        // const { data: d1, error: e1 } = await client.from("user").delete().eq("userId", user.userId);
+        const { data, error } = await supabase_admin.auth.admin.deleteUser(user.userId);
+        const { data: d1, error: e1 } = await client.from("user").delete().eq("userId", user.userId);
+        setEditUserOpen(false);
+
+        if (error) {
+            captureException(error, (scope) => {
+                scope.clear();
+                scope.setExtra("user", JSON.stringify(user));
+                return scope;
+            });
+        }
+        if (e1) {
+            captureException(e1, (scope) => {
+                scope.clear();
+                scope.setExtra("user", JSON.stringify(user));
+                return scope;
+            });
+        }
     }
 
     const onUserEditFinished = async (result) => {

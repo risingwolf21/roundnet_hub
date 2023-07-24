@@ -19,7 +19,7 @@ const EditUserDialog = ({ user, open, handleClose, onUserEditFinished, deleteUse
 
     useEffect(() => {
         setRole(user.role);
-        client.from("history").select("*, drink ( price, name )").neq("state", PAID).then(result => {
+        client.from("history").select("*, drink ( price, name )").eq("user_id", user.userId).neq("state", PAID).then(result => {
             if (!result.data)
                 return;
             setUserInfo({ openAmount: result.data.reduce((prev, curr) => prev + (curr.count * curr.drink.price), 0) })

@@ -39,7 +39,7 @@ const AuthScreen = () => {
         });
 
         let { updatingUserError } = await supabase.auth.updateUser({ data: { userId: data.user.id } })
-        let { writingError } = await supabase.from("users").upsert({ email, displayName, userId: data.user.id, role: "user" })
+        let { writingError } = await supabase.from("user").upsert({ email, displayName, userId: data.user.id, role: "user" })
 
         if (error)
             setErrorMessage(error.message);

@@ -10,7 +10,7 @@ import { Error } from "../Error";
 import { useClient } from "react-supabase";
 
 
-const PaymentsPendingAdmin = ({ auth }) => {
+const PaymentsPendingAdmin = () => {
 
     const [open, setOpen] = useState(false);
     const [paymentEveryoneLoading, setPaymentEveryoneLoading] = useState(false);
@@ -23,11 +23,11 @@ const PaymentsPendingAdmin = ({ auth }) => {
         "payments",
         {
             select: {
-                columns: 'id, created_at, amount_to_pay, user (userId, displayName, email )'
+                columns: 'id, created_at, amountToPay, user (userId, displayName, email)',
+                filter: (query) => query
             }
         },
-        (data, payload) => data.id === payload.id
-    );
+        (data, payload) => data.id === payload.id);
 
     if (fetching)
         return <Loading />
@@ -50,16 +50,24 @@ const PaymentsPendingAdmin = ({ auth }) => {
                 .eq("state", NOT_PAID)
                 .select("count, drink (name, price)");
 
+            console.log(data)
+
             const { data: currentPayment } = await client.from("payments")
-                .eq("user_id", user.userId)
-                .select();
-
-            if (!currentPayment)
-                return;
-
-            const { error: updateError } = await client.from("payments")
-                .update({ amountToPay: currentPayment.amountToPay + data.reduce((prev, curr) => prev + (curr.count * curr.drink.price), 0) })
+                .select()
                 .eq("user_id", user.userId);
+
+            if (currentPayment) {
+                const { error: updateError } = await client.from("payments")
+                    .update({ amountToPay: currentPayment.amountToPay + data.reduce((prev, curr) => prev + (curr.count * curr.drink.price), 0) })
+                    .eq("user_id", user.userId);
+            } else {
+                let { writingError } = await client.from("payments").insert(
+                    {
+                        user_id: user.id,
+                        amountToPay: data.reduce((prev, curr) => prev + (curr.count * curr.drink.price), 0)
+                    })
+                console.log(writingError);
+            }
 
             // firestore.collection(`users/${user.id}/drinks`).get().then(async drinks => {
             //     let filteredDrinks = drinks.docs.filter(x => x.data().state === NOT_PAID);
@@ -82,7 +90,7 @@ const PaymentsPendingAdmin = ({ auth }) => {
     }
 
     const confirmPayment = (payment) => {
-        const {error} = client.from("payments").delete().eq("user_id", user.userId).then(res => {
+        const { error } = client.from("payments").delete().eq("user_id", user.userId).then(res => {
             setOpen(false);
         });
         // firestore.collection(`users/${payment.userId}/drinks`).get().then((snapshot) => {
