@@ -63,44 +63,35 @@ const DrinkList = () => {
         let data = { date: Date.now(), state: NOT_PAID, drinks: Object.values(addedDrinks) };
 
         try {
-            let paymentId = "";
-            if (!payment && payment.length != 1) {
+            let paymentId;
+            if (!payment || payment.length < 1) {
                 const { data, error } = await client.from("payments").insert({
                     userId: user.id,
                     state: OPEN
-                });
+                }).select().single();
                 if (error)
-                    throw new Error(error.message);
+                    throw Error(error);
                 paymentId = data.id;
             } else {
-                if(!paymentId){
-                    throw new Error("Payment Id is null");
-                }
-                paymentId = payment[0].id;
+                paymentId = payment[0]?.id;
             }
+
+            if (!paymentId)
+                throw Error("Payment ID could not be found")
 
             const { error } = await client.from("history").insert(
                 Object.values(addedDrinks).map(drink => {
                     return {
-                        user_id: user.id,
-                        drink_id: drink.id,
+                        user: user.id,
+                        drink: drink.id,
                         count: drink.count,
-                        payment: paymentId
+                        payment: paymentId,
+                        amount: drink.count * drink.price
                     }
                 })
             );
             if (error)
-                throw Error(error.message);
-
-            Object.values(addedDrinks).forEach(async drink => {
-                const { error } = await client.rpc("increment_stock",
-                    {
-                        rowid: drink.id,
-                        amount: drink.count,
-                    });
-                if (error)
-                    throw Error(error.message);
-            });
+                throw Error(error);
 
             setLoading(false);
             setAddedDrinks({});
@@ -108,7 +99,7 @@ const DrinkList = () => {
         }
         catch (error) {
             setLoading(false);
-            confirmDrinksDialog({ message: error.message, severity: "error" });
+            confirmDrinksDialog({ message: error, severity: "error" });
             captureException(error, (scope) => {
                 scope.clear();
                 scope.setExtra("data", JSON.stringify(data));
