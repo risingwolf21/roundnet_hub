@@ -6,7 +6,6 @@ import { useRealtime } from "../../hooks/useRealtime";
 import { useClient } from "react-supabase";
 import { Loading } from "../Loading";
 import { Error } from "../Error";
-import { createClient } from "@supabase/supabase-js";
 import { supabase_admin } from "../../supabaseClient";
 import { captureException } from "@sentry/react";
 
