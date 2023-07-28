@@ -1,4 +1,4 @@
-import { Box, Button, CircularProgress, Dialog, DialogActions, DialogContent, DialogTitle, Grid, IconButton, List, ListItem, ListItemAvatar, ListItemSecondaryAction, ListItemText, Typography } from "@mui/material";
+import { Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, Grid, IconButton, List, ListItem, ListItemAvatar, ListItemSecondaryAction, ListItemText, Typography } from "@mui/material";
 import CheckIcon from "@mui/icons-material/Check"
 import { useState } from "react";
 import { OPEN } from "../../constants";
@@ -24,7 +24,7 @@ const PaymentsPendingAdmin = () => {
                 filter: (query) => query.eq("state", OPEN)
             }
         },
-        (data, payload) => data.id === payload.id);
+        (data, payload) => data.id === payload.id, false);
 
     if (fetching)
         return <Loading />

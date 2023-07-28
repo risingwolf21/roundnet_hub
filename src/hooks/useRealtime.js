@@ -9,7 +9,7 @@ export const initialState = {
     fetching: false,
 }
 
-export const useRealtime = (table, config, compareFn) => {
+export const useRealtime = (table, config, compareFn, subscriptionUpdates = true) => {
     if (table === '*')
         throw Error('Must specify table or row. Cannot listen for all database changes.')
 
@@ -18,11 +18,17 @@ export const useRealtime = (table, config, compareFn) => {
 
     useSubscription({
         table,
-    }, (payload) => dispatch({ type: 'SUBSCRIPTION', payload }));
+    }, (payload) => {
+        if (subscriptionUpdates) {
+            dispatch({ type: 'SUBSCRIPTION', payload });
+        } else {
+            execute();
+        }
+    });
 
     useEffect(() => {
         dispatch({ type: 'FETCH', payload: result })
-    }, [result])
+    }, [result]);
 
     return [state, execute]
 }
@@ -55,6 +61,7 @@ const reducer = (compareFn) => (state, action) => {
                     const index = data.findIndex((x) =>
                         compareFn(x, action.payload.new),
                     )
+                    console.log("UPDATE: ", action.payload.new)
                     return {
                         ...state,
                         data: [

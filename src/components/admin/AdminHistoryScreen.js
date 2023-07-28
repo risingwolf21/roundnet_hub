@@ -1,9 +1,8 @@
-import { Box, Grid, List, ListItem, ListItemAvatar, ListItemSecondaryAction, ListItemText, ListSubheader, Paper, Toolbar, Typography } from "@mui/material"
+import { Grid, List, ListItem, ListItemAvatar, ListItemSecondaryAction, ListItemText, ListSubheader, Typography } from "@mui/material"
 import moment from "moment/moment";
 import { useRealtime } from "../../hooks/useRealtime";
 import { Loading } from "../Loading";
 import { Error } from "../Error";
-import _ from "lodash";
 import { groupBy } from "../../utils";
 
 const AdminHistoryItem = ({ items, header }) => {
@@ -28,7 +27,7 @@ const AdminHistoryScreen = () => {
         'history',
         {
             select: {
-                columns: 'count, state, created_at, drink ( name, price, stock ), user ( displayName )'
+                columns: 'count, created_at, drink ( name, price, stock ), user ( displayName )'
             }
         },
         (data, payload) => data.id === payload.id);

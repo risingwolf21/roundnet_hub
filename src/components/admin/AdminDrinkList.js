@@ -42,7 +42,7 @@ const EMPTY_DRINK = { "imageUrl": "", name: "", price: 0, active: false };
 
 const AdminDrinkList = () => {
 
-    const [{ data: drinks, error, fetching }, execute] = useRealtime(
+    const [{ data: drinks, error, fetching }] = useRealtime(
         'drink',
         {
             select: {
