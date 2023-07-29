@@ -1,35 +1,47 @@
-import { Box, CircularProgress, Grid, ListItem, ListItemAvatar, ListItemSecondaryAction, ListItemText, Paper, Toolbar, Typography } from "@mui/material"
+import { Grid, List, ListItem, ListItemAvatar, ListItemSecondaryAction, ListItemText, ListSubheader, Typography } from "@mui/material"
 import moment from "moment/moment";
-import { connect } from "react-redux"
-import { firestoreConnect, isLoaded, withFirestore } from "react-redux-firebase"
-import { compose } from "redux";
 import BottomInformation from "./BottomInformation";
-import { lifecycle, withHandlers } from "recompose";
+import { useAuth } from "../hooks/useAuth";
+import { useRealtime } from "../hooks/useRealtime";
+import { Loading } from "./Loading";
+import { Error } from "./Error";
+import { groupBy } from "../utils";
 
-const userHistory = 'userHistory';
-
-const HistoryItem = ({ item }) => {
-    return <Box sx={{ width: "100%" }}>
-        <Paper key={item} sx={{ margin: 2, padding: 1 }}>
-            <Box sx={{ width: "100%", listStyleType: "none" }}>
-                <Typography typography="h6" fontWeight={"bold"}>{moment(new Date(item.date)).format("DD MMMM yyyy HH:mm")}</Typography>
-                {
-                    item.drinks.map((x, index) => <ListItem key={"sublist" + index}>
-                        <ListItemAvatar>
-                            <Typography>{x.count} x</Typography>
-                        </ListItemAvatar>
-                        <ListItemText primary={x.name} secondary={x.price + " €"} />
-                        <ListItemSecondaryAction>
-                            <Typography fontWeight={"bold"}>{(x.price * x.count)} €</Typography>
-                        </ListItemSecondaryAction>
-                    </ListItem>)
-                }
-            </Box>
-        </Paper>
-    </Box>
+const HistoryItem = ({ items, header }) => {
+    return <List dense component={"div"} disablePadding subheader={<ListSubheader component="div" id="nested-list-subheader">{header}</ListSubheader>}>
+        {
+            items.map((item, index) => <ListItem dense key={"sublist" + index}>
+                <ListItemAvatar>
+                    <Typography>{item.count} x</Typography>
+                </ListItemAvatar>
+                <ListItemText primary={item.drink.name} secondary={moment(new Date(item.created_at)).format("HH:mm")} />
+                <ListItemSecondaryAction>
+                    <Typography>{item.amount} €</Typography>
+                </ListItemSecondaryAction>
+            </ListItem>)
+        }
+    </List>
 }
 
-const HistoryScreen = ({ history }) => {
+const HistoryScreen = () => {
+
+    const { user } = useAuth();
+
+    const [{ data: history, error, fetching }] = useRealtime(
+        'history',
+        {
+            select: {
+                columns: 'count, amount, created_at, drink ( name, price, stock )',
+                filter: (query) => query.eq('user', user.id),
+            }
+        },
+        (data, payload) => data.id === payload.id);
+
+    if (fetching)
+        return <Loading />
+    if (error)
+        return <Error message={error.message} />
+
     return <Grid
         container
         width="100%"
@@ -39,59 +51,14 @@ const HistoryScreen = ({ history }) => {
         sx={{ overflow: "auto" }}>
         {
 
-            isLoaded(history) ? history ? <>
-                <Grid width="100%">
-                    {
-                        Object.values(history).sort((a, b) => b.date - a.date).map((x, index) => <HistoryItem key={index} item={x} />)
-                    }
-                    <Toolbar />
-                </Grid>
+            history && <List sx={{ width: "100%" }} >
                 {
-                    <BottomInformation title={"Zusammenfassung"} totalPrice={Object.values(history).flatMap(x => x.drinks).reduce((prev, res) => prev + (res.price * res.count), 0) + "€"} />
+                    Object.entries(groupBy(history, x => moment(new Date(x.created_at)).format("DD MMMM yyyy")))
+                        .map((x) => <HistoryItem key={x[0]} items={x[1]} header={x[0]} />)
                 }
-            </>
-                : <h1>No data found</h1>
-                : <CircularProgress />
+            </List>
         }
     </Grid>
 }
 
-const listener = (uid) => {
-    return {
-        collection: `users/${uid}/history`,
-        storeAs: userHistory
-    };
-}
-
-// export default compose(
-//     firestoreConnect((props) => [
-//         {
-//             collection: `users/${props.auth.uid}/history`,
-//             where: ["active", "==", true],
-//             storeAs: userHistory
-//         }
-//     ]),
-//     connect((state) => ({
-//         userHistory: state.firestore.ordered.userHistory,
-//         profile: state.firebase.profile,
-//         auth: state.firebase.auth
-//     }))
-// )(HistoryScreen);
-
-const enhance = compose(
-    withFirestore,
-    withHandlers({
-        loadPayments: (props) => ({ collection, storeAs }) => props.firestore.get({ collection, storeAs })
-    }),
-    lifecycle({
-        componentDidMount() {
-            this.props.loadPayments(listener(this.props.auth.uid));
-            this.props.firestore.setListener(listener(this.props.auth.uid));
-        }
-    }),
-    connect((state) => ({
-        history: state.firestore.ordered.userHistory
-    }))
-);
-
-export default enhance(HistoryScreen)
+export default HistoryScreen

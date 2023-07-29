@@ -1,31 +1,36 @@
-import { Box, Button, CircularProgress, Dialog, DialogActions, DialogContent, DialogTitle, Grid, IconButton, List, ListItem, ListItemAvatar, ListItemSecondaryAction, ListItemText, Typography } from "@mui/material";
-import { connect } from "react-redux";
-import { isLoaded, useFirestore, withFirestore } from "react-redux-firebase"
-import { compose } from "redux"
+import { Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, Grid, IconButton, List, ListItem, ListItemAvatar, ListItemSecondaryAction, ListItemText, Typography } from "@mui/material";
 import CheckIcon from "@mui/icons-material/Check"
 import { useState } from "react";
-import { lifecycle, withHandlers } from "recompose";
+import { OPEN } from "../../constants";
+import { useRealtime } from "../../hooks/useRealtime";
+import { Loading } from "../Loading";
+import { useAuth } from "../../hooks/useAuth";
+import { Error } from "../Error";
+import { useClient } from "react-supabase";
 
-const pendingPayments = "pendingPayments";
 
-const PaymentsPendingAdmin = ({ pendingPayments, auth }) => {
+const PaymentsPendingAdmin = () => {
 
     const [open, setOpen] = useState(false);
     const [currentPayment, setPayment] = useState({});
+    const { user } = useAuth();
+    const client = useClient();
 
-    const firestore = useFirestore();
+    const [{ data: payments, error, fetching }] = useRealtime(
+        "payments",
+        {
+            select: {
+                columns: 'id, created_at, user (userId, displayName, email), history (*)',
+                filter: (query) => query.eq("state", OPEN)
+            }
+        },
+        (data, payload) => data.id === payload.id, false);
 
-    if (!isLoaded(pendingPayments)) {
-        return <Grid
-            container
-            spacing={0}
-            direction="column"
-            alignItems="center"
-            justifyContent="center"
-            style={{ minHeight: '100vh' }}>
-            <CircularProgress />
-        </Grid>
-    }
+    if (fetching)
+        return <Loading />
+
+    if (error)
+        return <Error message={error} />
 
     const selectedPayment = (payment) => {
         setPayment(payment);
@@ -33,26 +38,21 @@ const PaymentsPendingAdmin = ({ pendingPayments, auth }) => {
     }
 
     const confirmPayment = (payment) => {
-        firestore.collection(`users/${payment.userId}/drinks`).get().then((snapshot) => {
-            snapshot.docs.reduce((prev, curr) => [curr.id, ...prev], []).forEach(x => {
-                firestore.delete(`users/${auth.uid}/drinks/${x}`)
-            });
-            firestore.delete(`payments/${payment.userId}`);
-            firestore.add(`users/${payment.userId}/paymentHistory`, payment);
+        client.from("payments").delete().eq("userId", user.userId).then(res => {
             setOpen(false);
         });
     }
 
     return <Box>
         {
-            pendingPayments.length > 0 && <List>
+            payments && <List>
                 {
-                    Object.values(pendingPayments).map(x => {
-                        return <ListItem key={x.email}>
+                    Object.values(payments).map(x => {
+                        return <ListItem key={x.user.email}>
                             <ListItemAvatar>
-                                <Typography fontWeight={"bold"}>{x.amountToPay} €</Typography>
+                                <Typography fontWeight={"bold"}>{x.history.reduce((prev, curr) => prev + curr.amount, 0)} €</Typography>
                             </ListItemAvatar>
-                            <ListItemText primary={x.displayName ?? x.email} secondary={x.displayName ? "Benutzername" : "Email"} />
+                            <ListItemText primary={x.user?.displayName ?? x.user.email} secondary={x.user.displayName ? "Benutzername" : "Email"} />
                             <ListItemSecondaryAction >
                                 <IconButton onClick={() => selectedPayment(x)}>
                                     <CheckIcon />
@@ -64,7 +64,7 @@ const PaymentsPendingAdmin = ({ pendingPayments, auth }) => {
             </List>
         }
         {
-            pendingPayments.length < 1 && <Grid
+            payments?.length < 1 && <Grid
                 container
                 spacing={0}
                 direction="column"
@@ -74,12 +74,6 @@ const PaymentsPendingAdmin = ({ pendingPayments, auth }) => {
                 <Typography>Keine aktiven Zahlungen gefunden</Typography>
             </Grid>
         }
-        <Box sx={{ position: "fixed", bottom: 0, left: 0, right: 0, flexDirection: "column", justifyContent: "end", display: "flex", textAlign: "center", pl: 2, pr: 2, pb: 2 }}>
-            <Button variant="contained" fullWidth sx={{ marginTop: 2, borderRadius: "50px !important", fontSize: "16px", fontFamily: "sans-serif", lineSpacing: "24px" }}
-                onClick={() => {
-
-                }}>Zahlungen anfordern</Button>
-        </Box>
         <Dialog open={open} onClose={() => setOpen(false)} title="Zahlung bestätigen">
             <DialogTitle id="alert-dialog-title">
                 {"Zahlung bestätigen"}
@@ -115,44 +109,4 @@ const PaymentsPendingAdmin = ({ pendingPayments, auth }) => {
 
 }
 
-const listener = {
-    collection: "payments",
-    storeAs: pendingPayments
-}
-
-// export default compose(
-//     firestoreConnect((props) => [
-//         {
-//             collection: `payments`,
-//             storeAs: pendingPayments
-//         }
-//     ]),
-//     connect((state) => ({
-//         pendingPayments: state.firestore.ordered.pendingPayments,
-//         profile: state.firebase.profile,
-//         auth: state.firebase.auth
-//     }))
-// )(PaymentsPendingAdmin);
-
-const enhance = compose(
-    withFirestore,
-    withHandlers({
-        loadPayments: (props) => (collection, storeAs) => props.firestore.get({ collection, storeAs })
-    }),
-    lifecycle({
-        componentDidMount() {
-            this.props.loadPayments(
-                "payments",
-                pendingPayments
-            );
-            this.props.firestore.setListener(listener);
-        }
-    }),
-    connect((state) => ({
-        pendingPayments: state.firestore.ordered.pendingPayments,
-        profile: state.firebase.profile,
-        auth: state.firebase.auth
-    }))
-);
-
-export default enhance(PaymentsPendingAdmin)
+export default PaymentsPendingAdmin

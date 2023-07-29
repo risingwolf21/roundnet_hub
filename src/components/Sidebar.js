@@ -1,19 +1,21 @@
 import { Box, Divider, List, ListItem, ListItemIcon, ListItemText, ListSubheader, SwipeableDrawer, Toolbar, useTheme } from "@mui/material";
-import React, { useState } from "react";
+import React from "react";
 import AccountIcon from '@mui/icons-material/AccountBox';
 import LiquorIcon from '@mui/icons-material/Liquor';
 import PaymentIcon from '@mui/icons-material/Payment';
 import PeopleIcon from '@mui/icons-material/People';
 import { useNavigate } from "react-router-dom";
-import { compose } from "redux";
-import { connect } from "react-redux";
-import { useAddToHomescreenPrompt } from "../AddToHomeScreen";
-import { Download } from "@mui/icons-material";
+import { useAuth } from "../hooks/useAuth";
 
 const SCREENS = [
     {
         label: "Benutzer",
         key: "user",
+        icon: <AccountIcon />
+    },
+    {
+        label: "History",
+        key: "history",
         icon: <AccountIcon />
     },
     {
@@ -46,38 +48,20 @@ const ADMIN_SCREENS = [
         key: "users-admin",
         icon: <PeopleIcon />,
         role: "admin"
+    },
+    {
+        label: "Verlauf - Admin",
+        key: "history-admin",
+        icon: <PeopleIcon />,
+        role: "admin"
     }
 ]
 
-const SideBar = ({ open, onClose, onOpen, profile, auth }) => {
+const SideBar = ({ open, onClose, onOpen }) => {
 
     let navigate = useNavigate();
+    const { user } = useAuth();
     let theme = useTheme();
-
-    const [_, promptToInstall] = useAddToHomescreenPrompt();
-    const [isAppInstalled, setIsAppInstalled] = useState(false);
-
-    React.useEffect(() => {
-        isPWAInstalled();
-    }, []);
-
-    const isPWAInstalled = async () => {
-        if ("getInstalledRelatedApps" in window.navigator) {
-            const relatedApps = await navigator.getInstalledRelatedApps();
-            let installed = false;
-            relatedApps.forEach((app) => {
-                //if your PWA exists in the array it is installed
-                console.log(app.platform, app.url);
-                console.log("current : " + window.location.href)
-                if (
-                    app.url === window.location.href
-                ) {
-                    installed = true;
-                }
-            });
-            setIsAppInstalled(installed);
-        }
-    };
 
     const iOS = typeof navigator !== 'undefined' && /iPad|iPhone|iPod/.test(navigator.userAgent);
 
@@ -101,11 +85,11 @@ const SideBar = ({ open, onClose, onOpen, profile, auth }) => {
                         ))}
 
                         {
-                            profile.role !== "user" && <>
+                            user.role !== "user" && <>
                                 <Divider />
                                 <ListSubheader>Admin Optionen</ListSubheader>
                                 {
-                                    ADMIN_SCREENS.filter(x => x.role === profile.role || profile.role === "admin").map((item, index) => (
+                                    ADMIN_SCREENS.filter(x => x.role === user.role || user.role === "admin").map((item, index) => (
                                         <ListItem button key={item.key} divider onClick={() => navigate(item.key)}>
                                             <ListItemIcon sx={{ color: window?.location?.pathname === ("/" + item.key) ? theme.palette.secondary.main : "primary" }}>
                                                 {item.icon}
@@ -117,17 +101,6 @@ const SideBar = ({ open, onClose, onOpen, profile, auth }) => {
                             </>
                         }
                     </List>
-                    {
-                        !isAppInstalled && <Box  sx={{ position: "fixed", bottom: 0, left: 0, width: "250px" }}>
-                            <Divider/>
-                            <ListItem key={"installApp"} onClick={promptToInstall}>
-                                <ListItemIcon>
-                                    <Download />
-                                </ListItemIcon>
-                                <ListItemText primary={"Als App Installieren"} />
-                            </ListItem>
-                        </Box>
-                    }
                 </Box>
             </div>
         );
@@ -144,9 +117,4 @@ const SideBar = ({ open, onClose, onOpen, profile, auth }) => {
     </SwipeableDrawer>
 
 }
-export default compose(
-    connect((state) => ({
-        profile: state.firebase.profile,
-        auth: state.firebase.auth
-    }))
-)(SideBar);
+export default SideBar;

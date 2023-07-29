@@ -1,7 +1,6 @@
 # Roundnet Karlsruhe App
 [![Production](https://github.com/risingwolf21/roundnet_karlsruhe_app/actions/workflows/firebase_deployment.yml/badge.svg)](https://github.com/risingwolf21/roundnet_karlsruhe_app/actions/workflows/firebase_deployment.yml)
 [![Build](https://github.com/risingwolf21/roundnet_karlsruhe_app/actions/workflows/react_build.yml/badge.svg?branch=master)](https://github.com/risingwolf21/roundnet_karlsruhe_app/actions/workflows/react_build.yml)
-<br/>
 [![Issues][issues-shield]][issues-url]
 [![React][React.js]][React-url]
 [![MUI][Mui]][Mui-url]

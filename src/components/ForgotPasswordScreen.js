@@ -10,15 +10,44 @@ import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
+import { supabase } from '../supabaseClient';
+import ResetPassword from './ResetPassword';
 
 const theme = createTheme();
 
-const ForgotPasswordScreen = ({ onForgotPassword, gotoLogin, errorMessage }) => {
-    const handleSubmit = (event) => {
+const ForgotPasswordScreen = ({ gotoLogin }) => {
+
+    const [errorMessage, setErrorMessage] = React.useState("");
+    const [inputNewPassword, setInputNewPassword] = React.useState(false);
+
+    supabase.auth.onAuthStateChange(async (event, session) => {
+        if (event === "PASSWORD_RECOVERY") {
+            console.log(event)
+            setInputNewPassword(true);
+        }
+    });
+
+    const updatePassword = async (password) => {
+        const { data, error } = await supabase.auth
+            .updateUser({ password: password })
+
+        if (data)
+            setInputNewPassword(false);
+        if (error)
+            alert("There was an error updating your password.")
+    }
+
+    const handleSubmit = async (event) => {
         event.preventDefault();
         const data = new FormData(event.currentTarget);
-        onForgotPassword(data.get("email"));
+        if (!data.get("email"))
+            return
+        const { error } = await supabase.auth.resetPasswordForEmail(data.get("email"));
+        if (error) setErrorMessage(error);
     };
+
+    if (inputNewPassword)
+        return <ResetPassword resetPassword={updatePassword} />
 
     return (
         <ThemeProvider theme={theme}>
@@ -46,8 +75,7 @@ const ForgotPasswordScreen = ({ onForgotPassword, gotoLogin, errorMessage }) => 
                             label="Email Address"
                             name="email"
                             autoComplete="email"
-                            autoFocus
-                        />
+                            autoFocus />
                         {
                             errorMessage && <Typography color="red">
                                 {errorMessage}
@@ -57,8 +85,7 @@ const ForgotPasswordScreen = ({ onForgotPassword, gotoLogin, errorMessage }) => 
                             type="submit"
                             fullWidth
                             variant="contained"
-                            sx={{ mt: 3, mb: 2 }}
-                        >
+                            sx={{ mt: 3, mb: 2 }}>
                             Submit
                         </Button>
                         <Grid container>
