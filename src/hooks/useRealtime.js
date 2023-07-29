@@ -51,7 +51,9 @@ const reducer = (compareFn) => (state, action) => {
                         old,
                     }
                 case 'UPDATE': {
-                    const data = old ?? []
+                    let data = old ?? []
+                    if (!Array.isArray(data))
+                        data = [old]
                     const index = data.findIndex((x) =>
                         compareFn(x, action.payload.new),
                     )
