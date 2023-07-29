@@ -42,11 +42,11 @@ const AuthScreen = () => {
         let { writingError } = await supabase.from("user").upsert({ email, displayName, userId: data.user.id, role: "user" })
 
         if (error)
-            setErrorMessage(error.message);
+            setErrorMessage(JSON.stringify(error));
         if (updatingUserError)
-            setErrorMessage(updatingUserError);
+            setErrorMessage(JSON.stringify(updatingUserError));
         if (writingError)
-            setErrorMessage(writingError);
+            setErrorMessage(JSON.stringify(writingError));
     }
 
     if (currentScreen === "register") {

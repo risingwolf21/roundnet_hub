@@ -10,11 +10,11 @@ import { groupBy } from "../utils";
 const HistoryItem = ({ items, header }) => {
     return <List dense component={"div"} disablePadding subheader={<ListSubheader component="div" id="nested-list-subheader">{header}</ListSubheader>}>
         {
-            items.map((item,index) => <ListItem dense key={"sublist"+index}>
+            items.map((item, index) => <ListItem dense key={"sublist" + index}>
                 <ListItemAvatar>
                     <Typography>{item.count} x</Typography>
                 </ListItemAvatar>
-                <ListItemText primary={item.drink.name} />
+                <ListItemText primary={item.drink.name} secondary={moment(new Date(item.created_at)).format("HH:mm")} />
                 <ListItemSecondaryAction>
                     <Typography>{item.amount} €</Typography>
                 </ListItemSecondaryAction>
@@ -51,17 +51,12 @@ const HistoryScreen = () => {
         sx={{ overflow: "auto" }}>
         {
 
-            history && <>
-                <List sx={{ width: "100%" }} >
-                    {
-                        Object.entries(groupBy(history, x => moment(new Date(x.created_at)).format("DD MMMM yyyy")))
-                            .map((x) => <HistoryItem key={x[0]} items={x[1]} header={x[0]} />)
-                    }
-                </List>
+            history && <List sx={{ width: "100%" }} >
                 {
-                    <BottomInformation title={"Zusammenfassung"} totalPrice={Object.values(history).reduce((prev, res) => prev + (res.drink.price * res.count), 0) + " €"} />
+                    Object.entries(groupBy(history, x => moment(new Date(x.created_at)).format("DD MMMM yyyy")))
+                        .map((x) => <HistoryItem key={x[0]} items={x[1]} header={x[0]} />)
                 }
-            </>
+            </List>
         }
     </Grid>
 }

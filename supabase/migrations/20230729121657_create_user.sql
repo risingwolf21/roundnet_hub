@@ -1,6 +1,6 @@
 create table public.user (
     created_at timestamp with time zone null default now(),
-    displayName text null,
+    "displayName" text null,
     email text null,
     role text not null default 'user' :: text,
     "userId" text not null default '' :: text

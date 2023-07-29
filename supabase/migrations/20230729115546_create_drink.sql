@@ -3,7 +3,7 @@ create table drink (
     name text null,
     price real null default '0',
     stock bigint null,
-    imageUrl text null,
+    "imageUrl" text null,
     active boolean not null default false,
     constraint drinks_pkey primary key (id)
 )
