@@ -6,14 +6,15 @@ import { groupBy, totalAmountToPay } from '../utils';
 import { useAuth } from "../hooks/useAuth";
 import { useRealtime } from "../hooks/useRealtime";
 import { Error } from "./Error";
+import { Loading } from "./Loading";
 
-const PayDrinksButton = ({ payment }) => {
+const PayDrinksButton = ({ amountToPay }) => {
 
     const [alertInfo] = useState(SUCCESS_MESSAGE_INFO)
     const [alertOpen, setAlertOpen] = useState(false);
 
     const onPayClick = () => {
-        const newWindow = window.open(`https://www.paypal.me/${PAYPAL_ME_ADDRESS}/${payment.amountToPay}EUR`, '_blank', 'noopener,noreferrer')
+        const newWindow = window.open(`https://www.paypal.me/${PAYPAL_ME_ADDRESS}/${amountToPay}EUR`, '_blank', 'noopener,noreferrer')
         if (newWindow) newWindow.opener = null
     }
 
@@ -39,7 +40,7 @@ const PayDrinksSummary = ({ drinks }) => {
                             name: value[0],
                             count: value[1].reduce((prev, curr) => prev + curr.count, 0),
                             priceSingle: value[1][0]?.drink?.price ?? "NaN",
-                            priceTotal: value[1].reduce((prev, curr) => prev + (curr.count * curr.drink?.price ?? 0), 0),
+                            priceTotal: value[1].reduce((prev, curr) => prev + (curr.amount), 0),
                         }
                     })
                     .map((x, index) => <ListItem key={"drinks" + index}>
@@ -75,25 +76,21 @@ const PayDrinksScreen = () => {
 
     const { user } = useAuth();
 
-    const [{ data: drinks }] = useRealtime(
+    const [{ data: drinks, error: drinksError, fetching: drinksFetching }] = useRealtime(
         'history',
         {
             select: {
-                columns: 'id, count, created_at, user, drink ( name, price ), payment(*)',
+                columns: 'id, count, created_at, user, amount, drink ( name, price ), payment (*)',
                 filter: (query) => query.eq('payment.state', OPEN).eq('user', user.id),
             }
         },
         (data, payload) => data.id === payload.id, true);
 
-    const [{ data: payment }] = useRealtime(
-        'payments',
-        {
-            select: {
-                columns: 'id, userId, amountToPay, state',
-                filter: (query) => query.select().eq("userId", user.id).limit(1).single()
-            }
-        },
-        (data, payload) => data.id === payload.id);
+    if (drinksError)
+        return <Error message={drinksError} />
+
+    if (drinksFetching)
+        return <Loading />
 
     if (!drinks || drinks.length < 1) {
         return <Error message={"Keine offenen Getränke gefunden"} />
@@ -102,7 +99,7 @@ const PayDrinksScreen = () => {
     return (
         <Box>
             <PayDrinksSummary drinks={drinks} user={user} />
-            <PayDrinksButton drinks={drinks} payment={payment} />
+            <PayDrinksButton amountToPay={drinks.reduce((prev, curr) => prev + curr.amount, 0)} />
         </Box>
     );
 }

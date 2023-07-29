@@ -19,7 +19,7 @@ const App = () => {
   const [drawerOpen, setDrawerOpen] = React.useState(false);
 
   return <Grid>
-    <CustomAppBar logout={async () => await supabase.auth.signOut()} handleMenuClick={(val) => setDrawerOpen(val)} drawerOpen={drawerOpen} />
+    <CustomAppBar logout={() => supabase.auth.signOut()} handleMenuClick={(val) => setDrawerOpen(val)} drawerOpen={drawerOpen} />
     <Toolbar />
     <BrowserRouter>
       <Routes>

@@ -63,7 +63,6 @@ const reducer = (compareFn) => (state, action) => {
                     const index = data.findIndex((x) =>
                         compareFn(x, action.payload.new),
                     )
-                    console.log("UPDATE: ", action.payload.new)
                     return {
                         ...state,
                         data: [

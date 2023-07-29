@@ -20,7 +20,7 @@ const PaymentsPendingAdmin = () => {
         "payments",
         {
             select: {
-                columns: 'id, created_at, amountToPay, user (userId, displayName, email)',
+                columns: 'id, created_at, user (userId, displayName, email), history (*)',
                 filter: (query) => query.eq("state", OPEN)
             }
         },
@@ -50,7 +50,7 @@ const PaymentsPendingAdmin = () => {
                     Object.values(payments).map(x => {
                         return <ListItem key={x.user.email}>
                             <ListItemAvatar>
-                                <Typography fontWeight={"bold"}>{x.amountToPay} €</Typography>
+                                <Typography fontWeight={"bold"}>{x.history.reduce((prev, curr) => prev + curr.amount, 0)} €</Typography>
                             </ListItemAvatar>
                             <ListItemText primary={x.user?.displayName ?? x.user.email} secondary={x.user.displayName ? "Benutzername" : "Email"} />
                             <ListItemSecondaryAction >
