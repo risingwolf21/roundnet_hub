@@ -15,6 +15,19 @@ const Transition = React.forwardRef(function Transition(props, ref) {
     return <Slide direction="up" ref={ref} {...props} />;
 });
 
+const dataURLtoFile = (dataurl, filename) => {
+    var arr = dataurl.split(','),
+        mime = arr[0].match(/:(.*?);/)[1],
+        bstr = atob(arr[arr.length - 1]),
+        n = bstr.length,
+        u8arr = new Uint8Array(n);
+    while (n--) {
+        u8arr[n] = bstr.charCodeAt(n);
+    }
+    return new File([u8arr], filename, { type: mime });
+}
+
+
 const EditDrinkDialog = ({ drink, onDrinkEditFinished, open, handleClose }) => {
 
     useEffect(() => {
@@ -43,21 +56,21 @@ const EditDrinkDialog = ({ drink, onDrinkEditFinished, open, handleClose }) => {
                 stock: Number.parseFloat(data.get("stock"))
             };
 
-            var fileName = uuid() + ".jpg";
+            if (croppedImage) {
+                var fileName = uuid() + ".jpg";
 
-            var fileToUpload = fetch(croppedImage).then(res => res.blob()).then(blob => new File([blob], fileName, { type: "image/jpeg", lastModified: new Date() }))
+                const { data: uploadData, error } = await client
+                    .storage
+                    .from('drink')
+                    .upload(`avatars/${fileName}`, dataURLtoFile(croppedImage, fileName), {
+                        cacheControl: '3600',
+                        upsert: true
+                    });
 
-            const { data: uploadData, error } = await client
-                .storage
-                .from('drink')
-                .upload(`avatars/${fileName}`, fileToUpload, {
-                    cacheControl: '3600',
-                    upsert: true
-                });
-
-            if (uploadData && uploadData.path) {
-                const { error } = await client.from("drink").update({ imageUrl: uploadData.path }).eq("id", drink.id)
-                console.log(error, uploadData.path)
+                if (!error && uploadData && uploadData.path) {
+                    const { data } = client.storage.from('drink').getPublicUrl(uploadData.path)
+                    newDrink.imageUrl = data.publicUrl;
+                }
             }
 
             setCroppedImage(null);
@@ -153,7 +166,10 @@ const EditDrinkDialog = ({ drink, onDrinkEditFinished, open, handleClose }) => {
                                 {
                                     croppedImage
                                         ? <img src={croppedImage} alt="logo" width={40} height={40} />
-                                        : <LocalDrinkIcon />
+                                        :
+                                        drink?.imageUrl
+                                            ? <img src={drink.imageUrl} alt="logo" width={40} height={40} />
+                                            : <LocalDrinkIcon />
                                 }
                             </Avatar>
                         </ListItemAvatar>

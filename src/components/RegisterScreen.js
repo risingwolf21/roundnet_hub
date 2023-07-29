@@ -10,8 +10,8 @@ import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
+import Logo from "../images/Karlsruher_Kojoten_Logo.svg";
 
-const theme = createTheme();
 
 const RegisterScreen = ({ onRegister, gotoLogin, errorMessage }) => {
     const handleSubmit = (event) => {
@@ -27,84 +27,84 @@ const RegisterScreen = ({ onRegister, gotoLogin, errorMessage }) => {
     };
 
     return (
-        <ThemeProvider theme={theme}>
-            <Container component="main" maxWidth="xs">
-                <CssBaseline />
-                <Box
-                    sx={{
-                        marginTop: 8,
-                        display: 'flex',
-                        flexDirection: 'column',
-                        alignItems: 'center',
-                    }}>
-                    <Avatar sx={{ m: 1, bgcolor: 'secondary.main' }}>
-                        <LockOutlinedIcon />
-                    </Avatar>
-                    <Typography component="h1" variant="h5">
-                        Register
-                    </Typography>
-                    <Box component="form" onSubmit={handleSubmit} noValidate sx={{ mt: 1 }}>
-                        <TextField
-                            margin="normal"
-                            required
-                            fullWidth
-                            id="email"
-                            label="Email Addresse"
-                            name="email"
-                            autoComplete="email"
-                            autoFocus
-                        />
-                        <TextField
-                            margin="normal"
-                            required
-                            fullWidth
-                            id="username"
-                            name="username"
-                            label="Name"
-                            autoFocus
-                        />
-                        <TextField
-                            margin="normal"
-                            required
-                            fullWidth
-                            name="password1"
-                            label="Password"
-                            type="password"
-                            id="password1"
-                        />
-                        <TextField
-                            margin="normal"
-                            required
-                            fullWidth
-                            name="password2"
-                            label="Password"
-                            type="password"
-                            id="password2"
-                        />
-                        {
-                            errorMessage && <Typography color="red">
-                                {errorMessage}
-                            </Typography>
-                        }
-                        <Button
-                            type="submit"
-                            fullWidth
-                            variant="contained"
-                            sx={{ mt: 3, mb: 2 }}
-                        >
-                            Register
-                        </Button>
-                        <Grid container>
-                            <Grid item xs>
-                                <Link href="#" variant="body2" onClick={() => gotoLogin()}>
-                                    Already have an account? Sign in here!
-                                </Link>
-                            </Grid>
+        <Container component="main" maxWidth="xs">
+            <CssBaseline />
+            <Box
+                sx={{
+                    marginTop: 8,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                }}>
+                <img src={Logo} width={150} />
+                <Typography component="h1" variant="h5">
+                    Registerierung
+                </Typography>
+                <Box component="form" onSubmit={handleSubmit} noValidate sx={{ mt: 1 }}>
+                    <TextField
+                        margin="normal"
+                        required
+                        color='secondary'
+                        fullWidth
+                        id="email"
+                        label="Email Addresse"
+                        name="email"
+                        autoComplete="email"
+                        autoFocus
+                    />
+                    <TextField
+                        margin="normal"
+                        required
+                        fullWidth
+                        id="username"
+                        name="username"
+                        label="Name"
+                        color='secondary'
+                    />
+                    <TextField
+                        margin="normal"
+                        required
+                        color='secondary'
+                        fullWidth
+                        name="password1"
+                        label="Password"
+                        type="password"
+                        id="password1"
+                    />
+                    <TextField
+                        margin="normal"
+                        required
+                        color='secondary'
+                        fullWidth
+                        name="password2"
+                        label="Password"
+                        type="password"
+                        id="password2"
+                    />
+                    {
+                        errorMessage && <Typography color="red">
+                            {errorMessage}
+                        </Typography>
+                    }
+                    <Button
+                        type="submit"
+                        fullWidth
+                        color='secondary'
+                        variant="contained"
+                        sx={{ mt: 3, mb: 2 }}
+                    >
+                        Registrieren
+                    </Button>
+                    <Grid container>
+                        <Grid item xs>
+                            <Link href="#" variant="body2" onClick={() => gotoLogin()}>
+                                Already have an account? Sign in here!
+                            </Link>
                         </Grid>
-                    </Box>
+                    </Grid>
                 </Box>
-            </Container>
-        </ThemeProvider>
+            </Box>
+        </Container>
     );
 }
 export default RegisterScreen;

@@ -33,8 +33,8 @@ const HistoryScreen = () => {
         'history',
         {
             select: {
-                columns: 'count, state, created_at, drink ( name, price, stock )',
-                filter: (query) => query.eq('user_id', user.id),
+                columns: 'count, created_at, drink ( name, price, stock )',
+                filter: (query) => query.eq('user', user.id),
             }
         },
         (data, payload) => data.id === payload.id);
@@ -42,7 +42,7 @@ const HistoryScreen = () => {
     if (fetching)
         return <Loading />
     if (error)
-        return <Error message={error} />
+        return <Error message={error.message} />
 
     return <Grid
         container

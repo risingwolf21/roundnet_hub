@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { AppBar, Avatar, Button, Collapse, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, List, ListItem, ListItemAvatar, ListItemButton, ListItemSecondaryAction, ListItemText, Radio, Slide, TextField, Toolbar, Typography } from "@mui/material"
 import { Box } from "@mui/system";
 import { AccountCircle, Close, Email, ExpandLess, ExpandMore, ManageAccounts } from "@mui/icons-material";
-import { PAID } from "../../constants";
+import { OPEN, PAID } from "../../constants";
 import { useClient } from "react-supabase";
 
 const Transition = React.forwardRef(function Transition(props, ref) {
@@ -19,7 +19,7 @@ const EditUserDialog = ({ user, open, handleClose, onUserEditFinished, deleteUse
 
     useEffect(() => {
         setRole(user.role);
-        client.from("history").select("*, drink ( price, name )").eq("user_id", user.userId).neq("state", PAID).then(result => {
+        client.from("history").select("*, drink ( price, name ), payment(*)").eq("user ", user.userId).eq("payment.state", OPEN).then(result => {
             if (!result.data)
                 return;
             setUserInfo({ openAmount: result.data.reduce((prev, curr) => prev + (curr.count * curr.drink.price), 0) })
