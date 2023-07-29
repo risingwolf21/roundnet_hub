@@ -1,31 +1,48 @@
 import { Alert, Box, CircularProgress, Fab, Grid, Snackbar } from "@mui/material";
-import { connect } from "react-redux";
-import { compose } from "redux";
-import { isLoaded, useFirestore, withFirestore } from "react-redux-firebase";
 import DrinkItem from "./DrinkItem";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import CheckIcon from '@mui/icons-material/Check';
 import BottomInformation from "./BottomInformation";
-import { HISTORY_ITEM_NOT_PAID } from "../constants";
-import { lifecycle, withHandlers } from "recompose";
+import { NOT_PAID, OPEN } from "../constants";
 import { captureException } from "@sentry/react";
+import { useRealtime } from "../hooks/useRealtime";
+import { Loading } from "./Loading";
+import { Error } from "./Error";
+import { useAuth } from "../hooks/useAuth";
+import { useClient } from "react-supabase";
 
-const drinks = "drinks";
 const SUCCESS_MESSAGE_INFO = { message: "Getränke erfolgreich gebucht!", severity: "success" };
-const ERROR_MESSAGE_INFO = { message: "Es ist ein Fehler aufgetreten, versuche es bitte erneut!", severity: "error" };
+// const ERROR_MESSAGE_INFO = { message: "Es ist ein Fehler aufgetreten, versuche es bitte erneut!", severity: "error" };
 
-const DrinkList = ({ dispatch, drinks, profile, auth, payment, updateStocks }) => {
+const DrinkList = () => {
 
-    useEffect(() => {
+    const { user } = useAuth();
+    const client = useClient();
 
-    }, [payment])
+    const [{ data: drinks, error, fetching }] = useRealtime(
+        'drink',
+        {
+            select: {
+                columns: 'id, name, price, stock, imageUrl, active',
+                filter: (query) => query.eq('active', true),
+            }
+        },
+        (data, payload) => data.id === payload.id);
 
-    const firestore = useFirestore();
+    const [{ data: payment }] = useRealtime(
+        'payments',
+        {
+            select: {
+                columns: 'id, userId, state',
+                filter: (query) => query.eq("userId", user.id)
+            }
+        },
+        (data, payload) => data.id === payload.id);
 
     const [addedDrinks, setAddedDrinks] = useState({});
     const [loading, setLoading] = useState(false);
     const [successMessageOpen, setSuccessMessageOpen] = useState(false);
-    const [alertInfo, setAlertInfo] = useState(SUCCESS_MESSAGE_INFO)
+    const [alertInfo, setAlertInfo] = useState(SUCCESS_MESSAGE_INFO);
 
     const handleClose = (event, reason) => {
         if (reason === 'clickaway') {
@@ -42,21 +59,38 @@ const DrinkList = ({ dispatch, drinks, profile, auth, payment, updateStocks }) =
 
     const confirmDrinks = async () => {
         setLoading(true);
-        let data = { date: Date.now(), state: HISTORY_ITEM_NOT_PAID, drinks: Object.values(addedDrinks) };
+        let data = { date: Date.now(), state: NOT_PAID, drinks: Object.values(addedDrinks) };
 
         try {
-            let result1 = await firestore.add({ collection: `users/${auth.uid}/drinks` }, data);
-            let result2 = await firestore.add({ collection: `users/${auth.uid}/history` }, data);
-
-            if (!(await firestore.get(result1.path)).exists || !(await firestore.get(result2.path)).exists) {
-                if(result1?.path)
-                    await firestore.delete(result1.path);
-                if(result2?.path)
-                    await firestore.delete(result2.path);
-                throw Error("Could not add to /drinks or /history")
+            let paymentId;
+            if (!payment || payment.length < 1) {
+                const { data, error } = await client.from("payments").insert({
+                    userId: user.id,
+                    state: OPEN
+                }).select().single();
+                if (error)
+                    throw Error(error);
+                paymentId = data.id;
+            } else {
+                paymentId = payment[0]?.id;
             }
 
-            await updateStocks(addedDrinks);
+            if (!paymentId)
+                throw Error("Payment ID could not be found")
+
+            const { error } = await client.from("history").insert(
+                Object.values(addedDrinks).map(drink => {
+                    return {
+                        user: user.id,
+                        drink: drink.id,
+                        count: drink.count,
+                        payment: paymentId,
+                        amount: drink.count * drink.price
+                    }
+                })
+            );
+            if (error)
+                throw Error(error);
 
             setLoading(false);
             setAddedDrinks({});
@@ -64,10 +98,9 @@ const DrinkList = ({ dispatch, drinks, profile, auth, payment, updateStocks }) =
         }
         catch (error) {
             setLoading(false);
-            confirmDrinksDialog(ERROR_MESSAGE_INFO);
+            confirmDrinksDialog({ message: error, severity: "error" });
             captureException(error, (scope) => {
                 scope.clear();
-                scope.setExtra("path", `users/${auth.uid}`);
                 scope.setExtra("data", JSON.stringify(data));
                 return scope;
             });
@@ -96,6 +129,11 @@ const DrinkList = ({ dispatch, drinks, profile, auth, payment, updateStocks }) =
         setAddedDrinks({ ...temp });
     }
 
+    if (fetching)
+        return <Loading />
+    if (error)
+        return <Error message={error} />
+
     return (<Grid
         container
         width="100%"
@@ -104,7 +142,7 @@ const DrinkList = ({ dispatch, drinks, profile, auth, payment, updateStocks }) =
         justifyContent="center">
         <Grid container sx={{ overflowY: "scroll", }} width="100%" direction="row" alignItems="center" justifyContent="center" paddingTop={2} paddingLeft={2} paddingRight={2}>
             {
-                isLoaded(drinks) && drinks.map((drink, index) => <DrinkItem key={"Drink" + index} drink={drink} count={addedDrinks[drink.id]?.count} onAddClick={() => onAddDrinkClick(drink)} onMinusClick={() => onRemoveDrinkClick(drink)} />)
+                drinks && drinks.map((drink, index) => <DrinkItem key={"Drink" + index} drink={drink} count={addedDrinks[drink.id]?.count} onAddClick={() => onAddDrinkClick(drink)} onMinusClick={() => onRemoveDrinkClick(drink)} />)
             }
             <Box height={"128px"} width={"100%"} />
         </Grid>
@@ -127,61 +165,4 @@ const DrinkList = ({ dispatch, drinks, profile, auth, payment, updateStocks }) =
     </Grid >);
 }
 
-// export default compose(
-//     firestoreConnect((props) => [
-//         {
-//             collection: `drinks`,
-//             where: ["active", "==", true],
-//             storeAs: drinks
-//         },
-//         {
-//             collection: `payments`,
-//             where: ["uid", "==", props.auth.uid],
-//             storeAs: payment
-//         }
-//     ]),
-//     connect((state) => ({
-//         drinks: state.firestore.ordered.drinks,
-//         payment: state.firestore.ordered.payment,
-//         profile: state.firebase.profile,
-//         auth: state.firebase.auth
-//     }))
-// )(DrinkList);
-
-const enhance = compose(
-    withFirestore,
-    withHandlers({
-        addDrinks: (props) => (uid, drinks) => {
-            return props.firestore.add({ collection: `users/${uid}/drinks` }, drinks);
-        },
-        addToHistory: (props) => (uid, drinks) => {
-            return props.firestore.add({ collection: `users/${uid}/history` }, drinks);
-        },
-        updateStocks: (props) => (drinks) => {
-            let promises = [];
-            Object.values(drinks).forEach(drink => {
-                if ((drink?.stock - drink.count) > 0)
-                    promises.push(props.firestore.update(`drinks/${drink.id}`, { stock: (drink?.stock - drink.count) ?? 0 }));
-            });
-            return Promise.all(promises)
-        }
-    }),
-    lifecycle({
-        componentDidMount() {
-            this.props.firestore.get(
-                {
-                    collection: "drinks",
-                    where: ["active", "==", true],
-                    storeAs: drinks
-                }
-            );
-            this.props.firestore.setListener("drinks");
-        }
-    }),
-    connect((state) => ({
-        drinks: state.firestore.ordered.drinks,
-        profile: state.firebase.profile,
-        auth: state.firebase.auth
-    }))
-);
-export default enhance(DrinkList);
+export default DrinkList;

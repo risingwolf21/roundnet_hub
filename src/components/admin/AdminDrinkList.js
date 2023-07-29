@@ -1,7 +1,4 @@
-import { Avatar, Badge, Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, Fab, Grid, IconButton, ListItem, ListItemAvatar, ListItemSecondaryAction, ListItemText, Paper, Typography } from "@mui/material";
-import { connect } from "react-redux";
-import { compose } from "redux";
-import { isLoaded, useFirestore, withFirestore } from "react-redux-firebase";
+import { Avatar, Badge, Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, Fab, Grid, IconButton, List, ListItem, ListItemAvatar, ListItemSecondaryAction, ListItemText, ListSubheader, Paper, Typography } from "@mui/material";
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -9,7 +6,10 @@ import EditDrinkDialog from "./EditDrinkDialog";
 import LocalDrinkIcon from '@mui/icons-material/LocalDrink';
 import { useState } from "react";
 import _ from "lodash";
-import { lifecycle, withHandlers } from "recompose";
+import { useAdminDrinks } from "../../hooks/useAdminDrinksHook";
+import { Error } from "../Error";
+import { useRealtime } from "../../hooks/useRealtime";
+import { Loading } from "../Loading";
 
 const AdminDrinkItem = ({ drink, onEditClick, onDeleteClick }) => {
     return <Paper sx={{ width: "100%", marginBottom: 2, listStyleType: "none" }}>
@@ -40,37 +40,74 @@ const AdminDrinkItem = ({ drink, onEditClick, onDeleteClick }) => {
 
 const EMPTY_DRINK = { "imageUrl": "", name: "", price: 0, active: false };
 
-const AdminDrinkList = ({ dispatch, drinks, profile, auth }) => {
+const AdminDrinkList = () => {
+
+    const [{ data: drinks, error, fetching }] = useRealtime(
+        'drink',
+        {
+            select: {
+                columns: '*',
+                filter: (query) => query.eq("deleted", false)
+            }
+        },
+        (data, payload) => data.id === payload.id);
+
+    const [{ data: drinksHistory }] = useRealtime(
+        'drink',
+        {
+            select: {
+                columns: '*'
+            }
+        },
+        (data, payload) => data.id === payload.id);
+
+    const { updateDrink, deleteDrink, addDrink } = useAdminDrinks();
 
     const [open, setOpen] = useState(false);
     const [deleteOpen, setDeleteOpen] = useState(false);
     const [selectedDrink, setSelectedDrink] = useState();
-    const firestore = useFirestore();
 
     const selectDrink = (drink) => {
         setSelectedDrink(drink);
         setOpen(true);
     }
 
-    const deleteDrink = (drink) => {
+    const deleteDrinkDialog = (drink) => {
         setSelectedDrink(drink);
         setDeleteOpen(true);
     }
 
     const onDeleteDrink = (drink) => {
-        firestore.delete(`drinks/${drink.id}`);
+        deleteDrink(drink.id);
         setDeleteOpen(false);
+    }
+
+    const getDrinksHistory = (drink) => {
+        if (!drink || !drink.previousDrink) return [];
+
+        let prev = drinksHistory.find(x => x.id === drink.previousDrink);
+
+        return [prev, ...getDrinksHistory(prev)]
     }
 
     const onDrinkEditFinished = (drink) => {
         if (drink.id) {
-            firestore.update(`drinks/${drink.id}`, _.omit(drink, ["id"]));
+            if (drink.name !== selectedDrink.name || drink.price !== selectedDrink.price) {
+                addDrink(_.omit({ ...drink, previousDrink: selectedDrink.id }, ["id"]));
+                updateDrink({ ...selectedDrink, deleted: true, active: false });
+            } else {
+                updateDrink(drink);
+            }
         } else {
-            firestore.add("drinks", _.omit(drink, ["id"]));
+            addDrink(_.omit(drink, ["id"]));
         }
-
         setOpen(false);
     }
+
+    if (fetching)
+        return <Loading />
+    if (error)
+        return <Error message={error} />
 
     return (<Grid
         container
@@ -81,18 +118,19 @@ const AdminDrinkList = ({ dispatch, drinks, profile, auth }) => {
         sx={{ paddingTop: 2 }}>
         <Grid container width="100%" direction="column" alignItems="center" justifyContent="center" paddingLeft={2} paddingRight={2}>
             {
-                isLoaded(drinks) && drinks.map((drink, index) => <AdminDrinkItem
+                drinks && drinks.map((drink, index) => <AdminDrinkItem
                     key={"drink" + index}
                     drink={drink}
+                    drinkHistory={getDrinksHistory(drink)}
                     onEditClick={() => selectDrink(drink)}
-                    onDeleteClick={() => deleteDrink(drink)} />)
+                    onDeleteClick={() => deleteDrinkDialog(drink)} />)
             }
             <Box height={"64px"} width={"100%"} />
         </Grid>
         <Fab sx={{ background: "#66bb6a", position: "fixed", right: "16px", bottom: "16px" }} onClick={() => selectDrink(EMPTY_DRINK)}>
             <AddIcon sx={{ color: "white" }} />
         </Fab>
-        <EditDrinkDialog drink={selectedDrink} open={open} handleClose={() => setOpen(false)} onDrinkEditFinished={onDrinkEditFinished} />
+        <EditDrinkDialog drink={selectedDrink} drinkHistory={getDrinksHistory(selectedDrink)} open={open} handleClose={() => setOpen(false)} onDrinkEditFinished={onDrinkEditFinished} />
         <Dialog open={deleteOpen} onClose={() => setDeleteOpen(false)}>
             <DialogTitle>Getränk löschen</DialogTitle>
             <DialogContent>
@@ -112,25 +150,4 @@ const AdminDrinkList = ({ dispatch, drinks, profile, auth }) => {
     </Grid >);
 }
 
-const enhance = compose(
-    withFirestore,
-    withHandlers({
-        loadDrinks: (props) => (path) => props.firestore.get({ collection: path }),
-    }),
-    lifecycle({
-        componentDidMount() {
-            this.props.loadDrinks("drinks");
-            this.props.firestore.setListener("drinks");
-        },
-        componentWillUnmount() {
-            this.props.firestore.unsetListener("drinks");
-        }
-    }),
-    connect((state) => ({
-        drinks: state.firestore.ordered.drinks,
-        profile: state.firebase.profile,
-        auth: state.firebase.auth
-    }))
-);
-
-export default enhance(AdminDrinkList);
+export default AdminDrinkList;

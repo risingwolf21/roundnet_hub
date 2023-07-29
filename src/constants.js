@@ -2,9 +2,12 @@ export const DRINK_OPEN = "DRINK_OPEN";
 export const DRINK_PAYMENT_PENDING = "DRINK_PAYMENT_PENDING";
 export const DRINK_PAYED_OFF = "DRINK_PAYED_OFF";
 
-export const HISTORY_ITEM_NOT_PAID = "HISTORY_ITEM_NOT_PAID";
-export const HISTORY_ITEM_PAID = "HISTORY_ITEM_PAID";
-export const HISTORY_ITEM_PAY_IN_PROGRESS = "HISTORY_ITEM_PAY_IN_PROGRESS";
+export const NOT_PAID = "NOT_PAID";
+export const PAID = "PAID";
+export const IN_PROGRESS = "IN_PROGRESS";
+
+export const OPEN = "OPEN";
+export const FULFILLED = "FULFILLED";
 
 
 export const PAYPAL_ME_ADDRESS = process.env.REACT_APP_paypalMeLink;

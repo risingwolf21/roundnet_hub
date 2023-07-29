@@ -1,42 +1,46 @@
-import { useSelector } from "react-redux";
-import { isEmpty, isLoaded } from "react-redux-firebase";
 import AuthScreen from "./components/AuthScreen";
-import { CircularProgress, Grid, Toolbar } from "@mui/material";
-import CustomAppBar from "./components/AppBar";
-import { setUser, withProfiler } from "@sentry/react";
-import { useEffect } from "react";
+import { setUser } from "@sentry/react";
+import React, { createContext, useEffect, useState } from "react";
+import { useAuthStateChange } from "./hooks/useAuthStateChange";
+import { useClient } from "react-supabase";
+
+const initialState = { session: null, user: null }
+export const AuthContext = createContext(initialState)
 
 const AuthGate = ({ children }) => {
-    const auth = useSelector(state => state.firebase.auth)
+
+    const client = useClient()
+    const [state, setState] = useState(initialState)
 
     useEffect(() => {
-        if (!isLoaded(auth))
-            return;
-        if (isEmpty(auth))
-            setUser(null);
-        else
-            setUser({ email: auth.email, id: auth.uid, username: auth.displayName });
-    }, [auth]);
+        const session = client.auth.getSession()
+        setUser({ email: session?.user?.email ?? null, id: session?.user?.id ?? null });
+        setState({ session, user: session?.user ?? null })
+    }, [client.auth]);
 
-    if (!isLoaded(auth)) {
-        return <Grid>
-            <CustomAppBar logout={() => { }} drawerOpen={false} handleMenuClick={() => { }} />
-            <Toolbar />
-            <Grid
-                container
-                spacing={0}
-                direction="column"
-                alignItems="center"
-                justifyContent="center"
-                style={{ minHeight: '100vh' }}>
-                <CircularProgress />
-            </Grid>
-        </Grid>
-    } else if (!isEmpty(auth)) {
-        return children;
+    useAuthStateChange((event, session) => {
+        setUser({ email: session?.user?.email ?? null, id: session?.user?.id ?? null });
+        setState({ session, user: session?.user ?? null })
+        if (session?.user) {
+            client.from("user").select().eq("userId", session.user.id).then(res => {
+                if (res && res.data && res.data.length === 1) {
+                    setState({
+                        user: { 
+                            ...session?.user ?? null,
+                            role: res.data[0].role,
+                        }
+                    });
+                }
+            })
+        }
+    });
+
+    if (state.user) {
+        return <AuthContext.Provider value={state}>
+            {children}
+        </AuthContext.Provider>
     } else {
         return <AuthScreen />
     }
 }
-
-export default withProfiler(AuthGate);
+export default AuthGate;

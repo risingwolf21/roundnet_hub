@@ -26,7 +26,7 @@ const CropImageDialog = ({ open, handleClose, selectedImage, onImageCropFinished
     // image cropping
     const [crop, setCrop] = useState({ x: 0, y: 0 })
     const [zoom, setZoom] = useState(1);
-    const [rotation, setRotation] = useState(0);
+    const [rotation] = useState(0);
     const [croppedAreaPixels, setCroppedAreaPixels] = useState(null)
 
     const onCropComplete = (croppedArea, croppedAreaPixels) => {
@@ -131,14 +131,14 @@ async function getCroppedImg(
     )
 
     // As Base64 string
-    // return croppedCanvas.toDataURL('image/jpeg');
+    return croppedCanvas.toDataURL('image/jpeg');
 
     // As a blob
-    return new Promise((resolve, reject) => {
-        croppedCanvas.toBlob((file) => {
-            resolve(URL.createObjectURL(file))
-        }, 'image/jpeg')
-    })
+    // return new Promise((resolve, reject) => {
+    //     croppedCanvas.toBlob((file) => {
+    //         resolve(URL.createObjectURL(file))
+    //     }, 'image/jpeg')
+    // })
 }
 
 const createImage = (url) =>

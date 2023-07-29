@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { AppBar, Avatar, Button, Dialog, IconButton, List, ListItem, ListItemAvatar, ListItemSecondaryAction, ListItemText, Slide, TextField, Toolbar, Typography } from "@mui/material"
+import { AppBar, Avatar, Button, Dialog, IconButton, List, ListItem, ListItemAvatar, ListItemSecondaryAction, ListItemText, ListSubheader, Slide, TextField, Toolbar, Typography } from "@mui/material"
 import CloseIcon from '@mui/icons-material/Close';
 import { Box } from "@mui/system";
 import Checkbox from '@mui/material/Checkbox';
@@ -8,23 +8,48 @@ import EuroIcon from '@mui/icons-material/Euro';
 import InventoryIcon from '@mui/icons-material/Inventory';
 import FormatSizeIcon from '@mui/icons-material/FormatSize';
 import CropImageDialog from "../CropImageDialog";
-import { useFirebase } from "react-redux-firebase";
-import { ref, uploadBytes, getStorage } from "firebase/storage";
-import { v4 } from "uuid";
+import { useClient } from "react-supabase";
+import { uuid } from "@supabase/gotrue-js/dist/module/lib/helpers";
+import { Check } from "@mui/icons-material";
 
 const Transition = React.forwardRef(function Transition(props, ref) {
     return <Slide direction="up" ref={ref} {...props} />;
 });
 
-const EditDrinkDialog = ({ drink, onDrinkEditFinished, open, handleClose }) => {
+const difference = (obj1, obj2) => {
+    let keys = [];
+    Object.keys(obj1).forEach(key => {
+        if (obj1[key] !== obj2[key]) {
+            keys.push({
+                old: obj1[key],
+                new: obj2[key]
+            });
+        }
+    });
+    return keys;
+};
+
+const dataURLtoFile = (dataurl, filename) => {
+    var arr = dataurl.split(','),
+        mime = arr[0].match(/:(.*?);/)[1],
+        bstr = atob(arr[arr.length - 1]),
+        n = bstr.length,
+        u8arr = new Uint8Array(n);
+    while (n--) {
+        u8arr[n] = bstr.charCodeAt(n);
+    }
+    return new File([u8arr], filename, { type: mime });
+}
+
+
+const EditDrinkDialog = ({ drink, onDrinkEditFinished, open, handleClose, drinkHistory }) => {
 
     useEffect(() => {
         setActiveDrink(drink?.active ?? false);
     }, [drink]);
 
     // image cropping
-    const storage = getStorage();
-    const [imageName, setImageName] = useState("");
+    const client = useClient();
     const [selectedImage, setSelectedImage] = useState(null);
     const [croppedImage, setCroppedImage] = useState(null);
 
@@ -44,8 +69,26 @@ const EditDrinkDialog = ({ drink, onDrinkEditFinished, open, handleClose }) => {
                 active: activeDrink,
                 stock: Number.parseFloat(data.get("stock"))
             };
-            const imageRef = ref(storage, `images/${croppedImage.name + v4()}`)
-            await uploadBytes(imageRef, croppedImage).then(res => console.log(res));
+
+            if (croppedImage) {
+                var fileName = uuid() + ".jpg";
+
+                const { data: uploadData, error } = await client
+                    .storage
+                    .from('drink')
+                    .upload(`avatars/${fileName}`, dataURLtoFile(croppedImage, fileName), {
+                        cacheControl: '3600',
+                        upsert: true
+                    });
+
+                if (!error && uploadData && uploadData.path) {
+                    const { data } = client.storage.from('drink').getPublicUrl(uploadData.path)
+                    newDrink.imageUrl = data.publicUrl;
+                }
+            }
+
+            setCroppedImage(null);
+            setSelectedImage(null);
             onDrinkEditFinished(newDrink);
         }
     };
@@ -137,7 +180,10 @@ const EditDrinkDialog = ({ drink, onDrinkEditFinished, open, handleClose }) => {
                                 {
                                     croppedImage
                                         ? <img src={croppedImage} alt="logo" width={40} height={40} />
-                                        : <LocalDrinkIcon />
+                                        :
+                                        drink?.imageUrl
+                                            ? <img src={drink.imageUrl} alt="logo" width={40} height={40} />
+                                            : <LocalDrinkIcon />
                                 }
                             </Avatar>
                         </ListItemAvatar>
@@ -162,6 +208,20 @@ const EditDrinkDialog = ({ drink, onDrinkEditFinished, open, handleClose }) => {
                             <Typography>Aktiv</Typography>
                         </ListItemText>
                     </ListItem>
+                    <List subheader={<ListSubheader component="div" id="nested-list-subheader">Verlauf</ListSubheader>}>
+                        {
+                            drinkHistory && [drink, ...drinkHistory].sort((a, b) => b.id - a.id).map((x, index) => {
+                                return <ListItem key={"drinkHistory" + index}>
+                                    <ListItemAvatar>
+                                        {
+                                            index === 0 && <Check/> 
+                                        }
+                                    </ListItemAvatar>
+                                    <ListItemText primary={x.name} secondary={x.price + " €"} />
+                                </ListItem>
+                            })
+                        }
+                    </List>
                 </List>
             </Box>
         </Dialog>

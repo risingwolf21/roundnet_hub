@@ -5,13 +5,17 @@ import LiquorIcon from '@mui/icons-material/Liquor';
 import PaymentIcon from '@mui/icons-material/Payment';
 import PeopleIcon from '@mui/icons-material/People';
 import { useNavigate } from "react-router-dom";
-import { compose } from "redux";
-import { connect } from "react-redux";
+import { useAuth } from "../hooks/useAuth";
 
 const SCREENS = [
     {
         label: "Benutzer",
         key: "user",
+        icon: <AccountIcon />
+    },
+    {
+        label: "History",
+        key: "history",
         icon: <AccountIcon />
     },
     {
@@ -44,12 +48,19 @@ const ADMIN_SCREENS = [
         key: "users-admin",
         icon: <PeopleIcon />,
         role: "admin"
+    },
+    {
+        label: "Verlauf - Admin",
+        key: "history-admin",
+        icon: <PeopleIcon />,
+        role: "admin"
     }
 ]
 
-const SideBar = ({ open, onClose, onOpen, profile, auth }) => {
+const SideBar = ({ open, onClose, onOpen }) => {
 
     let navigate = useNavigate();
+    const { user } = useAuth();
     let theme = useTheme();
 
     const iOS = typeof navigator !== 'undefined' && /iPad|iPhone|iPod/.test(navigator.userAgent);
@@ -74,11 +85,11 @@ const SideBar = ({ open, onClose, onOpen, profile, auth }) => {
                         ))}
 
                         {
-                            profile.role !== "user" && <>
+                            user.role !== "user" && <>
                                 <Divider />
                                 <ListSubheader>Admin Optionen</ListSubheader>
                                 {
-                                    ADMIN_SCREENS.filter(x => x.role === profile.role || profile.role === "admin").map((item, index) => (
+                                    ADMIN_SCREENS.filter(x => x.role === user.role || user.role === "admin").map((item, index) => (
                                         <ListItem button key={item.key} divider onClick={() => navigate(item.key)}>
                                             <ListItemIcon sx={{ color: window?.location?.pathname === ("/" + item.key) ? theme.palette.secondary.main : "primary" }}>
                                                 {item.icon}
@@ -106,9 +117,4 @@ const SideBar = ({ open, onClose, onOpen, profile, auth }) => {
     </SwipeableDrawer>
 
 }
-export default compose(
-    connect((state) => ({
-        profile: state.firebase.profile,
-        auth: state.firebase.auth
-    }))
-)(SideBar);
+export default SideBar;
