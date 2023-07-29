@@ -1,4 +1,4 @@
-import { Avatar, Badge, Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, Fab, Grid, IconButton, ListItem, ListItemAvatar, ListItemSecondaryAction, ListItemText, Paper, Typography } from "@mui/material";
+import { Avatar, Badge, Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, Fab, Grid, IconButton, List, ListItem, ListItemAvatar, ListItemSecondaryAction, ListItemText, ListSubheader, Paper, Typography } from "@mui/material";
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -47,6 +47,16 @@ const AdminDrinkList = () => {
         {
             select: {
                 columns: '*',
+                filter: (query) => query.eq("deleted", false)
+            }
+        },
+        (data, payload) => data.id === payload.id);
+
+    const [{ data: drinksHistory }] = useRealtime(
+        'drink',
+        {
+            select: {
+                columns: '*'
             }
         },
         (data, payload) => data.id === payload.id);
@@ -72,9 +82,22 @@ const AdminDrinkList = () => {
         setDeleteOpen(false);
     }
 
+    const getDrinksHistory = (drink) => {
+        if (!drink || !drink.previousDrink) return [];
+
+        let prev = drinksHistory.find(x => x.id === drink.previousDrink);
+
+        return [prev, ...getDrinksHistory(prev)]
+    }
+
     const onDrinkEditFinished = (drink) => {
         if (drink.id) {
-            updateDrink(drink);
+            if (drink.name !== selectedDrink.name || drink.price !== selectedDrink.price) {
+                addDrink(_.omit({ ...drink, previousDrink: selectedDrink.id }, ["id"]));
+                updateDrink({ ...selectedDrink, deleted: true, active: false });
+            } else {
+                updateDrink(drink);
+            }
         } else {
             addDrink(_.omit(drink, ["id"]));
         }
@@ -98,6 +121,7 @@ const AdminDrinkList = () => {
                 drinks && drinks.map((drink, index) => <AdminDrinkItem
                     key={"drink" + index}
                     drink={drink}
+                    drinkHistory={getDrinksHistory(drink)}
                     onEditClick={() => selectDrink(drink)}
                     onDeleteClick={() => deleteDrinkDialog(drink)} />)
             }
@@ -106,7 +130,7 @@ const AdminDrinkList = () => {
         <Fab sx={{ background: "#66bb6a", position: "fixed", right: "16px", bottom: "16px" }} onClick={() => selectDrink(EMPTY_DRINK)}>
             <AddIcon sx={{ color: "white" }} />
         </Fab>
-        <EditDrinkDialog drink={selectedDrink} open={open} handleClose={() => setOpen(false)} onDrinkEditFinished={onDrinkEditFinished} />
+        <EditDrinkDialog drink={selectedDrink} drinkHistory={getDrinksHistory(selectedDrink)} open={open} handleClose={() => setOpen(false)} onDrinkEditFinished={onDrinkEditFinished} />
         <Dialog open={deleteOpen} onClose={() => setDeleteOpen(false)}>
             <DialogTitle>Getränk löschen</DialogTitle>
             <DialogContent>

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { AppBar, Avatar, Button, Dialog, IconButton, List, ListItem, ListItemAvatar, ListItemSecondaryAction, ListItemText, Slide, TextField, Toolbar, Typography } from "@mui/material"
+import { AppBar, Avatar, Button, Dialog, IconButton, List, ListItem, ListItemAvatar, ListItemSecondaryAction, ListItemText, ListSubheader, Slide, TextField, Toolbar, Typography } from "@mui/material"
 import CloseIcon from '@mui/icons-material/Close';
 import { Box } from "@mui/system";
 import Checkbox from '@mui/material/Checkbox';
@@ -10,10 +10,24 @@ import FormatSizeIcon from '@mui/icons-material/FormatSize';
 import CropImageDialog from "../CropImageDialog";
 import { useClient } from "react-supabase";
 import { uuid } from "@supabase/gotrue-js/dist/module/lib/helpers";
+import { Check } from "@mui/icons-material";
 
 const Transition = React.forwardRef(function Transition(props, ref) {
     return <Slide direction="up" ref={ref} {...props} />;
 });
+
+const difference = (obj1, obj2) => {
+    let keys = [];
+    Object.keys(obj1).forEach(key => {
+        if (obj1[key] !== obj2[key]) {
+            keys.push({
+                old: obj1[key],
+                new: obj2[key]
+            });
+        }
+    });
+    return keys;
+};
 
 const dataURLtoFile = (dataurl, filename) => {
     var arr = dataurl.split(','),
@@ -28,7 +42,7 @@ const dataURLtoFile = (dataurl, filename) => {
 }
 
 
-const EditDrinkDialog = ({ drink, onDrinkEditFinished, open, handleClose }) => {
+const EditDrinkDialog = ({ drink, onDrinkEditFinished, open, handleClose, drinkHistory }) => {
 
     useEffect(() => {
         setActiveDrink(drink?.active ?? false);
@@ -194,6 +208,20 @@ const EditDrinkDialog = ({ drink, onDrinkEditFinished, open, handleClose }) => {
                             <Typography>Aktiv</Typography>
                         </ListItemText>
                     </ListItem>
+                    <List subheader={<ListSubheader component="div" id="nested-list-subheader">Verlauf</ListSubheader>}>
+                        {
+                            drinkHistory && [drink, ...drinkHistory].sort((a, b) => b.id - a.id).map((x, index) => {
+                                return <ListItem key={"drinkHistory" + index}>
+                                    <ListItemAvatar>
+                                        {
+                                            index === 0 && <Check/> 
+                                        }
+                                    </ListItemAvatar>
+                                    <ListItemText primary={x.name} secondary={x.price + " €"} />
+                                </ListItem>
+                            })
+                        }
+                    </List>
                 </List>
             </Box>
         </Dialog>
