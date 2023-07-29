@@ -210,7 +210,7 @@ const EditDrinkDialog = ({ drink, onDrinkEditFinished, open, handleClose, drinkH
                     </ListItem>
                     <List subheader={<ListSubheader component="div" id="nested-list-subheader">Verlauf</ListSubheader>}>
                         {
-                            drinkHistory && [drink, ...drinkHistory].sort((a, b) => b.id - a.id).map((x, index) => {
+                            drinkHistory && drink && [drink, ...drinkHistory].sort((a, b) => b.id - a.id).map((x, index) => {
                                 return <ListItem key={"drinkHistory" + index}>
                                     <ListItemAvatar>
                                         {
