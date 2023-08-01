@@ -34,6 +34,7 @@ const PaymentsPendingAdmin = () => {
 
     const selectedPayment = (payment) => {
         setPayment(payment);
+        console.log(payment);
         setOpen(true);
     }
 
@@ -83,16 +84,16 @@ const PaymentsPendingAdmin = () => {
                     Hiermit bestätigst du, dass
                 </Typography>
                 <Typography fontWeight={"bold"}>
-                    {`${currentPayment.displayName}`}
+                    {`${currentPayment?.user?.displayName}`}
                 </Typography>
                 <Typography fontWeight={"bold"}>
-                    {`${currentPayment.email}`}
+                    {`${currentPayment?.user?.email}`}
                 </Typography>
                 <Typography>
                     eine Zahlung in Höhe von
                 </Typography>
                 <Typography fontWeight={"bold"}>
-                    {`${currentPayment.amountToPay} €`}
+                    {`${currentPayment?.history?.reduce((prev, curr) => prev + curr.amount, 0)} €`}
                 </Typography>
                 <Typography>
                     getätigt hat.
