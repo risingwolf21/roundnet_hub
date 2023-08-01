@@ -38,7 +38,7 @@ const PaymentsPendingAdmin = () => {
     }
 
     const confirmPayment = (payment) => {
-        client.from("payments").delete().eq("userId", user.userId).then(res => {
+        client.from("payments").delete().eq("userId", payment?.user?.userId).then(res => {
             setOpen(false);
         });
     }
