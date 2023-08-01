@@ -34,7 +34,6 @@ const PaymentsPendingAdmin = () => {
 
     const selectedPayment = (payment) => {
         setPayment(payment);
-        console.log(payment);
         setOpen(true);
     }
 
