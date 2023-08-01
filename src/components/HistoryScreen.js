@@ -1,6 +1,5 @@
 import { Grid, List, ListItem, ListItemAvatar, ListItemSecondaryAction, ListItemText, ListSubheader, Typography } from "@mui/material"
 import moment from "moment/moment";
-import BottomInformation from "./BottomInformation";
 import { useAuth } from "../hooks/useAuth";
 import { useRealtime } from "../hooks/useRealtime";
 import { Loading } from "./Loading";

@@ -83,7 +83,7 @@ const AdminDrinkList = () => {
     }
 
     const getDrinksHistory = (drink) => {
-        if (!drink || !drink.previousDrink) return [];
+        if (!drink || !drinksHistory || !drink.previousDrink) return [];
 
         let prev = drinksHistory.find(x => x.id === drink.previousDrink);
 

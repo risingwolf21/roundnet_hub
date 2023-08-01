@@ -3,7 +3,7 @@ import { useClient } from 'react-supabase'
 
 export const useSubscription = (config, callback) => {
 
-    const client = useClient()
+    const client = useClient();
 
     useEffect(() => {
         let subscription = client
@@ -13,5 +13,5 @@ export const useSubscription = (config, callback) => {
         return () => {
             subscription.unsubscribe()
         }
-    }, [callback, client, config])
+    }, [callback, client, config]);
 }
