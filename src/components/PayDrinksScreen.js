@@ -80,8 +80,8 @@ const PayDrinksScreen = () => {
         'history',
         {
             select: {
-                columns: 'id, count, created_at, user, amount, drink ( name, price ), payment (*)',
-                filter: (query) => query.eq('payment.state', OPEN).eq('user', user.id),
+                columns: 'id, count, created_at, user, amount, drink ( name, price ), payments ( state )',
+                filter: (query) => query.eq('payments.state', OPEN).not("payments", "is", null).eq('user', user.id),
             }
         },
         (data, payload) => data.id === payload.id, true);

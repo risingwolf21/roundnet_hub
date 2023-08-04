@@ -1,6 +1,6 @@
 import { Alert, Box, CircularProgress, Fab, Grid, Snackbar } from "@mui/material";
 import DrinkItem from "./DrinkItem";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import CheckIcon from '@mui/icons-material/Check';
 import BottomInformation from "./BottomInformation";
 import { NOT_PAID, OPEN } from "../constants";
@@ -10,6 +10,8 @@ import { Loading } from "./Loading";
 import { Error } from "./Error";
 import { useAuth } from "../hooks/useAuth";
 import { useClient } from "react-supabase";
+import { fetchActiveDrinksAsync, onSubscriptionChange } from "../redux/drinkListReducer";
+import { useDispatch, useSelector } from "react-redux";
 
 const SUCCESS_MESSAGE_INFO = { message: "Getränke erfolgreich gebucht!", severity: "success" };
 // const ERROR_MESSAGE_INFO = { message: "Es ist ein Fehler aufgetreten, versuche es bitte erneut!", severity: "error" };
@@ -17,24 +19,21 @@ const SUCCESS_MESSAGE_INFO = { message: "Getränke erfolgreich gebucht!", severi
 const DrinkList = () => {
 
     const { user } = useAuth();
+    const dispatch = useDispatch();
     const client = useClient();
+    
+    const { activeDrinks: drinks, loading: fetching, error } = useSelector((state) => state.drinks);
 
-    const [{ data: drinks, error, fetching }] = useRealtime(
-        'drink',
-        {
-            select: {
-                columns: 'id, name, price, stock, imageUrl, active',
-                filter: (query) => query.eq('active', true),
-            }
-        },
-        (data, payload) => data.id === payload.id);
+    useEffect(() => {
+        dispatch(fetchActiveDrinksAsync(client));
+    }, [dispatch]);
 
     const [{ data: payment }] = useRealtime(
         'payments',
         {
             select: {
                 columns: 'id, userId, state',
-                filter: (query) => query.eq("userId", user.id)
+                filter: (query) => query.eq("userId", user.id).eq("state", OPEN)
             }
         },
         (data, payload) => data.id === payload.id);

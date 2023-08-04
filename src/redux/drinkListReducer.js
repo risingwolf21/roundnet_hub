@@ -3,47 +3,46 @@ import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
 export const drinkListReducer = createSlice({
   name: 'drinkList',
   initialState: {
-    items: [],
+    activeDrinks: [],
     status: "idle",
-    error: null
+    error: null,
+    loading: false
   },
   reducers: {
-    onFetch: (state, action) => {
-      state.items = action.payload.data
+    onDrinkUpdate: (state, action) => {
+      console.log("onUpdate", action);
+      state.activeDrinks[action.payload.old.id] = action.payload.new;
     },
-    onDelete: (state, action) => {
-      // state.items = action.payload
+    onDrinkDelete: (state, payload) => {
+      console.log("onDelete", payload);
     },
-    onInsert: (state, action) => {
-      // state.items = action.payload
-    },
-    onUpdate: (state, action) => {
-      // state.items = action.payload
+    onDrinkInsert: (state, payload) => {
+      console.log("OnInsert", payload);
     },
   },
   extraReducers(builder) {
     builder
-      .addCase(fetchDrinkListAsync.pending, (state, action) => {
-        state.status = 'loading'
+      .addCase(fetchActiveDrinksAsync.pending, (state, action) => {
+        state.loading = true;
       })
-      .addCase(fetchDrinkListAsync.fulfilled, (state, action) => {
-        state.status = 'succeeded'
-        // Add any fetched posts to the array
-        state.items = action.payload
+      .addCase(fetchActiveDrinksAsync.fulfilled, (state, action) => {
+        state.loading = false;
+        state.error = '';
+
+        state.activeDrinks = action.payload
       })
-      .addCase(fetchDrinkListAsync.rejected, (state, action) => {
-        state.status = 'failed'
-        state.error = action.error.message
+      .addCase(fetchActiveDrinksAsync.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.error.message;
       })
   }
 });
 
-export const fetchDrinkListAsync = createAsyncThunk("drink", async (client) => {
+export const fetchActiveDrinksAsync = createAsyncThunk("drink", async (client) => {
   const response = await client.from("drink").select("id, name, price, stock, imageUrl, active").eq("active", true)
   return response.data;
 });
 
-// Action creators are generated for each case reducer function
-export const { onFetch, onDelete, onUpdate, onInsert } = drinkListReducer.actions
+export const { onDrinkUpdate, onDrinkDelete, onDrinkInsert } = drinkListReducer.actions;
 
 export default drinkListReducer.reducer
