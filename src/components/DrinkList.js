@@ -1,20 +1,17 @@
 import { Alert, Box, CircularProgress, Fab, Grid, Snackbar } from "@mui/material";
 import DrinkItem from "./DrinkItem";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import CheckIcon from '@mui/icons-material/Check';
 import BottomInformation from "./BottomInformation";
 import { NOT_PAID, OPEN } from "../constants";
 import { captureException } from "@sentry/react";
-import { useRealtime } from "../hooks/useRealtime";
 import { Loading } from "./Loading";
 import { Error } from "./Error";
 import { useAuth } from "../hooks/useAuth";
 import { useClient } from "react-supabase";
-import { fetchDrinksAsync, onDrinkDelete, onDrinkInsert, onDrinkUpdate, onSubscriptionChange } from "../redux/drinkListReducer";
-import { useDispatch, useSelector } from "react-redux";
+import { useSelector } from "react-redux";
 
 const SUCCESS_MESSAGE_INFO = { message: "Getränke erfolgreich gebucht!", severity: "success" };
-// const ERROR_MESSAGE_INFO = { message: "Es ist ein Fehler aufgetreten, versuche es bitte erneut!", severity: "error" };
 
 const DrinkList = () => {
 
@@ -48,7 +45,7 @@ const DrinkList = () => {
 
         try {
             let paymentId;
-            if (!payment || payment.state != OPEN) {
+            if (!payment || payment.state !== OPEN) {
                 const { data, error } = await client.from("payments").insert({
                     userId: user.id,
                     state: OPEN

@@ -16,19 +16,6 @@ const Transition = React.forwardRef(function Transition(props, ref) {
     return <Slide direction="up" ref={ref} {...props} />;
 });
 
-const difference = (obj1, obj2) => {
-    let keys = [];
-    Object.keys(obj1).forEach(key => {
-        if (obj1[key] !== obj2[key]) {
-            keys.push({
-                old: obj1[key],
-                new: obj2[key]
-            });
-        }
-    });
-    return keys;
-};
-
 const dataURLtoFile = (dataurl, filename) => {
     var arr = dataurl.split(','),
         mime = arr[0].match(/:(.*?);/)[1],
@@ -46,7 +33,6 @@ const EditDrinkDialog = ({ drink, onDrinkEditFinished, open, handleClose, drinkH
 
     useEffect(() => {
         setActiveDrink(drink?.active ?? false);
-        console.log(drinkHistory)
     }, [drink]);
 
     // image cropping

@@ -1,6 +1,5 @@
-import { Alert, Box, Button, Divider, List, ListItem, ListItemAvatar, ListItemSecondaryAction, ListItemText, Snackbar, Typography } from "@mui/material";
+import { Box, Button, Divider, List, ListItem, ListItemAvatar, ListItemSecondaryAction, ListItemText, Typography } from "@mui/material";
 import { PAYPAL_ME_ADDRESS, OPEN } from "../constants";
-import { useState } from "react";
 import EuroIcon from '@mui/icons-material/Euro';
 import { groupBy, totalAmountToPay } from '../utils';
 import { useAuth } from "../hooks/useAuth";

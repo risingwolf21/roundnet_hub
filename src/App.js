@@ -4,7 +4,7 @@ import CustomAppBar from "./components/AppBar";
 import DrinkList from './components/DrinkList';
 import SideBar from './components/Sidebar';
 import UserScreen from './components/User';
-import { BrowserRouter, Navigate, Route, Routes, useActionData } from 'react-router-dom';
+import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import PageNotFound from './components/PageNotFound';
 import HistoryScreen from './components/HistoryScreen';
 import AdminDrinkList from './components/admin/AdminDrinkList';
@@ -32,7 +32,7 @@ const App = () => {
     dispatch(fetchPaymentAsync({ client, user }));
     dispatch(fetchHistoryAsync({ client, user }));
     dispatch(fetchDrinksAsync(client));
-  }, []);
+  }, [client, user, dispatch]);
 
   return <Grid>
     <CustomAppBar logout={() => supabase.auth.signOut()} handleMenuClick={(val) => setDrawerOpen(val)} drawerOpen={drawerOpen} />

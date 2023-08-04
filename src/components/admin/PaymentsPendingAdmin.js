@@ -4,7 +4,6 @@ import { useState } from "react";
 import { FULFILLED, OPEN } from "../../constants";
 import { useRealtime } from "../../hooks/useRealtime";
 import { Loading } from "../Loading";
-import { useAuth } from "../../hooks/useAuth";
 import { Error } from "../Error";
 import { useClient } from "react-supabase";
 
@@ -13,7 +12,6 @@ const PaymentsPendingAdmin = () => {
 
     const [open, setOpen] = useState(false);
     const [currentPayment, setPayment] = useState({});
-    const { user } = useAuth();
     const client = useClient();
 
     const [{ data: payments, error, fetching }] = useRealtime(

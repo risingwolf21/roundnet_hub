@@ -1,7 +1,7 @@
 import { useClient } from "react-supabase";
 import { onDrinkDelete, onDrinkInsert, onDrinkUpdate } from "../redux/drinkListReducer";
 import { useEffect } from "react";
-import { connect, useDispatch } from "react-redux";
+import { connect } from "react-redux";
 import { onHistoryDelete, onHistoryInsert, onHistoryUpdate } from "../redux/historyReducer";
 
 const SubscriptionHandler = ({ children, dispatch }) => {
@@ -23,7 +23,7 @@ const SubscriptionHandler = ({ children, dispatch }) => {
         return () => {
             subscription.unsubscribe();
         }
-    }, []);
+    }, [client, dispatch]);
 
     return children;
 }
