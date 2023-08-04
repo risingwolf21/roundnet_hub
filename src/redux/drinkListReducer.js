@@ -1,45 +1,55 @@
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
+import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+
+const compareDrinkFn = (x, y) => {
+  return x.id === y.id;
+}
 
 export const drinkListReducer = createSlice({
   name: 'drinkList',
   initialState: {
-    activeDrinks: [],
+    items: [],
     status: "idle",
     error: null,
     loading: false
   },
   reducers: {
     onDrinkUpdate: (state, action) => {
-      console.log("onUpdate", action);
-      state.activeDrinks[action.payload.old.id] = action.payload.new;
+      const index = state.items.findIndex((x) =>
+        x.id === action.payload.new.id,
+      )
+      state.items = [
+        ...state.items.slice(0, index),
+        action.payload.new,
+        ...state.items.slice(index + 1)
+      ]
     },
-    onDrinkDelete: (state, payload) => {
-      console.log("onDelete", payload);
+    onDrinkDelete: (state, action) => {
+      state.items = state.items.filter(x => !compareDrinkFn(x, action.payload.old))
     },
-    onDrinkInsert: (state, payload) => {
-      console.log("OnInsert", payload);
+    onDrinkInsert: (state, action) => {
+      state.items = [...(state.items ?? []), action.payload.new]
     },
   },
   extraReducers(builder) {
     builder
-      .addCase(fetchActiveDrinksAsync.pending, (state, action) => {
+      .addCase(fetchDrinksAsync.pending, (state, action) => {
         state.loading = true;
       })
-      .addCase(fetchActiveDrinksAsync.fulfilled, (state, action) => {
+      .addCase(fetchDrinksAsync.fulfilled, (state, action) => {
         state.loading = false;
         state.error = '';
 
-        state.activeDrinks = action.payload
+        state.items = action.payload
       })
-      .addCase(fetchActiveDrinksAsync.rejected, (state, action) => {
+      .addCase(fetchDrinksAsync.rejected, (state, action) => {
         state.loading = false;
         state.error = action.error.message;
       })
   }
 });
 
-export const fetchActiveDrinksAsync = createAsyncThunk("drink", async (client) => {
-  const response = await client.from("drink").select("id, name, price, stock, imageUrl, active").eq("active", true)
+export const fetchDrinksAsync = createAsyncThunk("drink", async (client) => {
+  const response = await client.from("drink").select("id, name, price, stock, imageUrl, active")
   return response.data;
 });
 

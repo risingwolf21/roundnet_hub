@@ -1,30 +1,31 @@
 import { useClient } from "react-supabase";
 import { onDrinkDelete, onDrinkInsert, onDrinkUpdate } from "../redux/drinkListReducer";
 import { useEffect } from "react";
-import { useDispatch } from "react-redux";
+import { connect, useDispatch } from "react-redux";
+import { onHistoryDelete, onHistoryInsert, onHistoryUpdate } from "../redux/historyReducer";
 
-const SubscriptionHandler = ({ children }) => {
+const SubscriptionHandler = ({ children, dispatch }) => {
 
     const client = useClient();
-    const dispatch = useDispatch();
 
     useEffect(() => {
-        console.log("adding subscription")
         let subscription = client
-            .channel("any")
-            .on('postgres_changes', { event: 'DELETE', schema: "public", table: "drink" }, (payload) => dispatch(onDrinkDelete(payload)))
-            .on('postgres_changes', { event: 'INSERT', schema: "public", table: "drink" }, (payload) => dispatch(onDrinkInsert(payload)))
-            .on('postgres_changes', { event: 'UPDATE', schema: "public", table: "drink" }, (payload) => dispatch(onDrinkUpdate(payload)))
-            .subscribe();
+            .channel('any')
+            .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'drink' }, payload => dispatch(onDrinkUpdate(payload)))
+            .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'drink' }, payload => dispatch(onDrinkDelete(payload)))
+            .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'drink' }, payload => dispatch(onDrinkInsert(payload)))
+
+            .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'history' }, payload => dispatch(onHistoryUpdate(payload)))
+            .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'history' }, payload => dispatch(onHistoryDelete(payload)))
+            .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'history' }, payload => dispatch(onHistoryInsert(payload)))
+            .subscribe(x => console.log(x), x => console.log(x));
 
         return () => {
-            console.log("deleting subscription")
-
             subscription.unsubscribe();
         }
-    }, [dispatch]);
+    }, []);
 
     return children;
 }
 
-export default SubscriptionHandler;
+export default connect()(SubscriptionHandler);

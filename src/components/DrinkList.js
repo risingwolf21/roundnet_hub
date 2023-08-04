@@ -10,7 +10,7 @@ import { Loading } from "./Loading";
 import { Error } from "./Error";
 import { useAuth } from "../hooks/useAuth";
 import { useClient } from "react-supabase";
-import { fetchActiveDrinksAsync, onSubscriptionChange } from "../redux/drinkListReducer";
+import { fetchDrinksAsync, onDrinkDelete, onDrinkInsert, onDrinkUpdate, onSubscriptionChange } from "../redux/drinkListReducer";
 import { useDispatch, useSelector } from "react-redux";
 
 const SUCCESS_MESSAGE_INFO = { message: "Getränke erfolgreich gebucht!", severity: "success" };
@@ -19,24 +19,10 @@ const SUCCESS_MESSAGE_INFO = { message: "Getränke erfolgreich gebucht!", severi
 const DrinkList = () => {
 
     const { user } = useAuth();
-    const dispatch = useDispatch();
     const client = useClient();
-    
-    const { activeDrinks: drinks, loading: fetching, error } = useSelector((state) => state.drinks);
 
-    useEffect(() => {
-        dispatch(fetchActiveDrinksAsync(client));
-    }, [dispatch]);
-
-    const [{ data: payment }] = useRealtime(
-        'payments',
-        {
-            select: {
-                columns: 'id, userId, state',
-                filter: (query) => query.eq("userId", user.id).eq("state", OPEN)
-            }
-        },
-        (data, payload) => data.id === payload.id);
+    const { items: drinks, loading: fetching, error } = useSelector((state) => state.drinks);
+    const { payment } = useSelector((state) => state.payment);
 
     const [addedDrinks, setAddedDrinks] = useState({});
     const [loading, setLoading] = useState(false);
@@ -62,7 +48,7 @@ const DrinkList = () => {
 
         try {
             let paymentId;
-            if (!payment || payment.length < 1) {
+            if (!payment || payment.state != OPEN) {
                 const { data, error } = await client.from("payments").insert({
                     userId: user.id,
                     state: OPEN
@@ -71,7 +57,7 @@ const DrinkList = () => {
                     throw Error(error);
                 paymentId = data.id;
             } else {
-                paymentId = payment[0]?.id;
+                paymentId = payment?.id;
             }
 
             if (!paymentId)

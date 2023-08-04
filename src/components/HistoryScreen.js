@@ -5,6 +5,9 @@ import { useRealtime } from "../hooks/useRealtime";
 import { Loading } from "./Loading";
 import { Error } from "./Error";
 import { groupBy } from "../utils";
+import { useSelector } from "react-redux";
+import { useState } from "react";
+import { useEffect } from "react";
 
 const HistoryItem = ({ items, header }) => {
     return <List dense component={"div"} disablePadding subheader={<ListSubheader component="div" id="nested-list-subheader">{header}</ListSubheader>}>
@@ -13,9 +16,9 @@ const HistoryItem = ({ items, header }) => {
                 <ListItemAvatar>
                     <Typography>{item.count} x</Typography>
                 </ListItemAvatar>
-                <ListItemText primary={item.drink.name} secondary={moment(new Date(item.created_at)).format("HH:mm")} />
+                <ListItemText primary={item.drink?.name} secondary={moment(new Date(item.created_at)).format("HH:mm")} />
                 <ListItemSecondaryAction>
-                    <Typography>{item.amount} €</Typography>
+                    <Typography>{item.count * item.drink?.price} €</Typography>
                 </ListItemSecondaryAction>
             </ListItem>)
         }
@@ -23,23 +26,25 @@ const HistoryItem = ({ items, header }) => {
 }
 
 const HistoryScreen = () => {
+    const { items: history, loading, error } = useSelector((state) => state.history);
+    const { items: drinks } = useSelector((state) => state.drinks);
 
-    const { user } = useAuth();
+    const [historyItems, setHistoryItems] = useState([]);
 
-    const [{ data: history, error, fetching }] = useRealtime(
-        'history',
-        {
-            select: {
-                columns: 'count, amount, created_at, drink ( name, price, stock )',
-                filter: (query) => query.eq('user', user.id),
+    useEffect(() => {
+        let mappedEntries = history.map(x => {
+            return {
+                ...x,
+                drink: drinks.find(y => y.id === x.drinkId)
             }
-        },
-        (data, payload) => data.id === payload.id);
+        });
+        setHistoryItems(mappedEntries);
+    }, [history, drinks]);
 
-    if (fetching)
+    if (loading)
         return <Loading />
     if (error)
-        return <Error message={error.message} />
+        return <Error message={error} />
 
     return <Grid
         container
@@ -49,11 +54,15 @@ const HistoryScreen = () => {
         justifyContent="center"
         sx={{ overflow: "auto" }}>
         {
-
-            history && <List sx={{ width: "100%" }} >
+            historyItems && <List sx={{ width: "100%" }} >
                 {
-                    Object.entries(groupBy(history, x => moment(new Date(x.created_at)).format("DD MMMM yyyy")))
+                    Object.entries(groupBy(historyItems.filter(x => x.drink), x => moment(new Date(x.created_at)).format("DD MMMM yyyy")))
                         .map((x) => <HistoryItem key={x[0]} items={x[1]} header={x[0]} />)
+                }
+                {
+                    historyItems.filter(x => !x.drink).length > 1 && <ListItem>
+                        <ListItemText>Es gibt {historyItems.filter(x => x.drink).length} Einträge bei welchen eine Zuweisung nicht geschehen konnte. Bitte wende dich an den Administrator!</ListItemText>
+                    </ListItem>
                 }
             </List>
         }

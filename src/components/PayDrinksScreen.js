@@ -10,20 +10,12 @@ import { Loading } from "./Loading";
 
 const PayDrinksButton = ({ amountToPay }) => {
 
-    const [alertInfo] = useState(SUCCESS_MESSAGE_INFO)
-    const [alertOpen, setAlertOpen] = useState(false);
-
     const onPayClick = () => {
         const newWindow = window.open(`https://www.paypal.me/${PAYPAL_ME_ADDRESS}/${amountToPay}EUR`, '_blank', 'noopener,noreferrer')
         if (newWindow) newWindow.opener = null
     }
 
     return <Box sx={{ position: "fixed", bottom: 0, left: 0, right: 0, flexDirection: "column", justifyContent: "end", display: "flex", textAlign: "center", pl: 2, pr: 2, pb: 2 }}>
-        <Snackbar sx={{ position: "unset" }} open={alertOpen} autoHideDuration={1500} onClose={() => setAlertOpen(false)}>
-            <Alert onClose={() => setAlertOpen(false)} severity={alertInfo.severity} sx={{ width: '100%' }}>
-                {alertInfo.message}
-            </Alert>
-        </Snackbar>
         <Button variant="contained" fullWidth sx={{ marginTop: 2, borderRadius: "50px !important", fontSize: "16px", fontFamily: "sans-serif", lineSpacing: "24px" }}
             onClick={onPayClick}
             startIcon={<EuroIcon />}>Mit Paypal bezahlen</Button>
@@ -68,9 +60,6 @@ const PayDrinksSummary = ({ drinks }) => {
         </List>
     </Box>
 }
-
-const SUCCESS_MESSAGE_INFO = { message: "Zahlung erfolgreich angefragt! Jetzt auf Paypal senden", severity: "success" };
-//const ERROR_MESSAGE_INFO = { message: "Es ist ein Fehler aufgetreten, versuche es bitte erneut!", severity: "error" };
 
 const PayDrinksScreen = () => {
 
