@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { Grid, Toolbar } from "@mui/material";
+import { AppBar, Box, Grid, Tabs, Toolbar } from "@mui/material";
 import CustomAppBar from "./components/AppBar";
 import DrinkList from './components/DrinkList';
 import SideBar from './components/Sidebar';
@@ -35,23 +35,27 @@ const App = () => {
   }, [client, user, dispatch]);
 
   return <Grid>
-    <CustomAppBar logout={() => supabase.auth.signOut()} handleMenuClick={(val) => setDrawerOpen(val)} drawerOpen={drawerOpen} />
-    <Toolbar />
     <BrowserRouter>
-      <Routes>
-        <Route path='/' element={<Navigate replace to={"/drinks"} />} />
-        <Route path="/drinks" element={<DrinkList />} />
-        <Route path='/drinks-admin' element={<AdminDrinkList />} />
-        <Route path="/user" element={<UserScreen />} />
-        <Route path="/history" element={<HistoryScreen />} />
-        <Route path="/history-admin" element={<AdminHistoryScreen />} />
-        <Route path="/pay" element={<PayDrinksScreen />} />
-        <Route path='/payments-admin' element={<PaymentsPendingAdmin />} />
-        <Route path='/users-admin' element={<AdminUserList />} />
-        <Route path="*" element={<PageNotFound />} />
-      </Routes>
+      <CustomAppBar logout={() => supabase.auth.signOut()} handleMenuClick={(val) => setDrawerOpen(val)} drawerOpen={drawerOpen} />
+      <main style={{ display: "block" }}>
+        <Routes>
+          <Route path='/' element={<Navigate replace to={"/drinks"} />} />
+          <Route path="/drinks" element={<DrinkList />} />
+          <Route path="/user" element={<UserScreen />} />
+          <Route path="/history" element={<HistoryScreen />} />
+          <Route path="/pay" element={<PayDrinksScreen />} />
+          <Route path="*" element={<PageNotFound />} />
+
+          {/* ADMIN SCREENS */}
+          <Route path='/users-admin' element={<AdminUserList />} />
+          <Route path="/history-admin" element={<AdminHistoryScreen />} />
+          <Route path='/payments-admin' element={<PaymentsPendingAdmin />} />
+          <Route path='/drinks-admin' element={<AdminDrinkList />} />
+        </Routes>
+      </main>
       <SideBar open={drawerOpen} onClose={() => setDrawerOpen(false)} onOpen={() => setDrawerOpen(true)} />
     </BrowserRouter>
-  </Grid>
+
+  </Grid >
 }
 export default App;
