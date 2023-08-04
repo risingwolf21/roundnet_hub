@@ -46,6 +46,7 @@ const EditDrinkDialog = ({ drink, onDrinkEditFinished, open, handleClose, drinkH
 
     useEffect(() => {
         setActiveDrink(drink?.active ?? false);
+        console.log(drinkHistory)
     }, [drink]);
 
     // image cropping

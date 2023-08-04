@@ -49,7 +49,7 @@ export const drinkListReducer = createSlice({
 });
 
 export const fetchDrinksAsync = createAsyncThunk("drink", async (client) => {
-  const response = await client.from("drink").select("id, name, price, stock, imageUrl, active")
+  const response = await client.from("drink").select("id, name, price, stock, imageUrl, active, deleted, previousDrink")
   return response.data;
 });
 
