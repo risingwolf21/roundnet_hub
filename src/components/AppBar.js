@@ -6,6 +6,7 @@ import { Button, IconButton, Tab, Tabs } from "@mui/material";
 import MenuIcon from '@mui/icons-material/Menu';
 import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
+import { Close } from '@mui/icons-material';
 
 const CustomAppBar = ({ logout, drawerOpen, handleMenuClick }) => {
     let navigate = useNavigate();
@@ -23,7 +24,7 @@ const CustomAppBar = ({ logout, drawerOpen, handleMenuClick }) => {
         }
     ];
 
-    const [tab, setTab] = useState(0);
+    const [tab, setTab] = useState(tabs.findIndex(x => "/" + x.path === window?.location?.pathname));
 
     const handleChange = (event, newValue) => {
         setTab(newValue);
@@ -39,7 +40,9 @@ const CustomAppBar = ({ logout, drawerOpen, handleMenuClick }) => {
                     onClick={() => drawerOpen ? handleMenuClick(false) : handleMenuClick(true)}
                     edge="start"
                     sx={{ mr: 2 }}>
-                    <MenuIcon />
+                    {
+                        drawerOpen ? <Close /> : <MenuIcon />
+                    }
                 </IconButton>
                 <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
                     Roundnet Karlsruhe

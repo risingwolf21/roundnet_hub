@@ -20,6 +20,8 @@ import { fetchDrinksAsync } from './redux/drinkListReducer';
 import { useClient } from 'react-supabase';
 import { useAuth } from './hooks/useAuth';
 import { fetchHistoryAsync } from './redux/historyReducer';
+import { fetchEventsAsync } from './redux/eventReducer';
+import EventScreen from './components/training/EventScreen';
 
 const App = () => {
 
@@ -32,28 +34,30 @@ const App = () => {
     dispatch(fetchPaymentAsync({ client, user }));
     dispatch(fetchHistoryAsync({ client, user }));
     dispatch(fetchDrinksAsync(client));
+    dispatch(fetchEventsAsync(client));
   }, [client, user, dispatch]);
 
   return <Grid>
     <BrowserRouter>
-      <CustomAppBar logout={() => supabase.auth.signOut()} handleMenuClick={(val) => setDrawerOpen(val)} drawerOpen={drawerOpen} />
-      <main style={{ display: "block" }}>
-        <Routes>
-          <Route path='/' element={<Navigate replace to={"/drinks"} />} />
-          <Route path="/drinks" element={<DrinkList />} />
-          <Route path="/user" element={<UserScreen />} />
-          <Route path="/history" element={<HistoryScreen />} />
-          <Route path="/pay" element={<PayDrinksScreen />} />
-          <Route path="*" element={<PageNotFound />} />
-
-          {/* ADMIN SCREENS */}
-          <Route path='/users-admin' element={<AdminUserList />} />
-          <Route path="/history-admin" element={<AdminHistoryScreen />} />
-          <Route path='/payments-admin' element={<PaymentsPendingAdmin />} />
-          <Route path='/drinks-admin' element={<AdminDrinkList />} />
-        </Routes>
-      </main>
       <SideBar open={drawerOpen} onClose={() => setDrawerOpen(false)} onOpen={() => setDrawerOpen(true)} />
+      <CustomAppBar logout={() => supabase.auth.signOut()} handleMenuClick={(val) => setDrawerOpen(val)} drawerOpen={drawerOpen} />
+      <Toolbar />
+      <Tabs />
+      <Routes>
+        <Route path='/' element={<Navigate replace to={"/drinks"} />} />
+        <Route path="/drinks" element={<DrinkList />} />
+        <Route path="/user" element={<UserScreen />} />
+        <Route path="/history" element={<HistoryScreen />} />
+        <Route path="/payments" element={<PayDrinksScreen />} />
+        <Route path="/training" element={<EventScreen />} />
+        <Route path="*" element={<PageNotFound />} />
+
+        {/* ADMIN SCREENS */}
+        <Route path='/admin/users' element={<AdminUserList />} />
+        <Route path="/admin/drinks/history" element={<AdminHistoryScreen />} />
+        <Route path='/admin/drinks/payments' element={<PaymentsPendingAdmin />} />
+        <Route path='/admin/drinks' element={<AdminDrinkList />} />
+      </Routes>
     </BrowserRouter>
 
   </Grid >

@@ -1,4 +1,4 @@
-import { Box, Divider, List, ListItem, ListItemIcon, ListItemText, ListSubheader, SwipeableDrawer, Toolbar, useTheme } from "@mui/material";
+import { Box, Divider, List, ListItem, ListItemIcon, ListItemText, ListSubheader, SwipeableDrawer, Tabs, Toolbar, useTheme } from "@mui/material";
 import React from "react";
 import AccountIcon from '@mui/icons-material/AccountBox';
 import LiquorIcon from '@mui/icons-material/Liquor';
@@ -15,7 +15,7 @@ const SCREENS = [
     },
     {
         label: "History",
-        key: "history",
+        key: "drinks/history",
         icon: <AccountIcon />
     },
     {
@@ -25,7 +25,7 @@ const SCREENS = [
     },
     {
         label: "Bezahlen",
-        key: "pay",
+        key: "drinks/payments",
         icon: <PaymentIcon />
     }
 ];
@@ -33,25 +33,25 @@ const SCREENS = [
 const ADMIN_SCREENS = [
     {
         label: "Getränke - Admin",
-        key: "drinks-admin",
+        key: "admin/drinks",
         icon: <LiquorIcon />,
         role: "procure"
     },
     {
         label: "Offene Zahlungen - Admin",
-        key: "payments-admin",
+        key: "admin/drinks/payments",
         icon: <PaymentIcon />,
         role: "finance"
     },
     {
         label: "Benutzer - Admin",
-        key: "users-admin",
+        key: "admin/users",
         icon: <PeopleIcon />,
         role: "admin"
     },
     {
         label: "Verlauf - Admin",
-        key: "history-admin",
+        key: "admin/drinks/history",
         icon: <PeopleIcon />,
         role: "admin"
     }
@@ -72,9 +72,10 @@ const SideBar = ({ open, onClose, onOpen }) => {
                 style={{ width: "250px" }}
                 onClick={onClose}
                 onKeyDown={onClose}>
-                <Box >
+                <Box>
                     <List>
                         <Toolbar />
+                        <Tabs />
                         {SCREENS.map((item, index) => (
                             <ListItem button key={item.key} divider onClick={() => navigate(item.key)} >
                                 <ListItemIcon sx={{ color: window?.location?.pathname === ("/" + item.key) ? theme.palette.secondary.main : "primary" }} >
@@ -107,7 +108,7 @@ const SideBar = ({ open, onClose, onOpen }) => {
     };
 
     return <SwipeableDrawer
-        anchor={"left"}
+        anchor="left"
         open={open}
         onClose={onClose}
         onOpen={onOpen}
