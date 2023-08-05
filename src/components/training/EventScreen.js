@@ -5,7 +5,7 @@ import { Loading } from "../Loading";
 import { Error } from "../Error";
 
 const EventItem = ({ event }) => {
-    return <Paper sx={{ width: "100%" }}>
+    return <Paper sx={{ width: "100%", borderLeft: "4px solid red" }}>
         <Box sx={{ display: "flex", flexDirection: "row", justifyContent: "space-between" }}>
             <ListItem sx={{ paddingLeft: 1 }}>
                 <ListItemAvatar>
