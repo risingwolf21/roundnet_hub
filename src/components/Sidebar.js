@@ -75,7 +75,6 @@ const SideBar = ({ open, onClose, onOpen }) => {
                 <Box>
                     <List>
                         <Toolbar />
-                        <Tabs />
                         {SCREENS.map((item, index) => (
                             <ListItem button key={item.key} divider onClick={() => navigate(item.key)} >
                                 <ListItemIcon sx={{ color: window?.location?.pathname === ("/" + item.key) ? theme.palette.secondary.main : "primary" }} >
