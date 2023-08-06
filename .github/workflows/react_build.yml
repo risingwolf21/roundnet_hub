@@ -20,5 +20,10 @@ jobs:
       - name: Test
         run: yarn test
 
+      - name: Write commit Version to file
+        run: |
+          touch src/git_commit.txt
+          echo ${GITHUB_SHA} >> src/git_commit.txt
+
       - name: Build
         run: yarn build --openssl-legacy-provider

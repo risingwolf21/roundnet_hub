@@ -71,7 +71,7 @@ const SideBar = ({ open, onClose, onOpen }) => {
         fetch(raw)
             .then(r => r.text())
             .then(text => {
-                setVersion(text);
+                setVersion(text.slice(0, 7));
             });
     }, [raw]);
 
