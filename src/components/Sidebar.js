@@ -15,7 +15,7 @@ const SCREENS = [
     },
     {
         label: "History",
-        key: "drinks/history",
+        key: "history",
         icon: <AccountIcon />
     },
     {
@@ -25,7 +25,7 @@ const SCREENS = [
     },
     {
         label: "Bezahlen",
-        key: "drinks/payments",
+        key: "payments",
         icon: <PaymentIcon />
     }
 ];

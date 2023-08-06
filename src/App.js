@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { AppBar, Box, Grid, Tabs, Toolbar } from "@mui/material";
+import { AppBar, Box, Grid, Tab, Tabs, Toolbar } from "@mui/material";
 import CustomAppBar from "./components/AppBar";
 import DrinkList from './components/DrinkList';
 import SideBar from './components/Sidebar';
@@ -42,7 +42,7 @@ const App = () => {
       <SideBar open={drawerOpen} onClose={() => setDrawerOpen(false)} onOpen={() => setDrawerOpen(true)} />
       <CustomAppBar logout={() => supabase.auth.signOut()} handleMenuClick={(val) => setDrawerOpen(val)} drawerOpen={drawerOpen} />
       <Toolbar />
-      <Tabs />
+      <Tabs value={0}><Tab /></Tabs>
       <Routes>
         <Route path='/' element={<Navigate replace to={"/drinks"} />} />
         <Route path="/drinks" element={<DrinkList />} />

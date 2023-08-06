@@ -49,7 +49,6 @@ export const historyReducer = createSlice({
 
 export const fetchHistoryAsync = createAsyncThunk("history", async ({ client, user }) => {
     const response = await client.from("history").select("count, amount, created_at, drinkId: drink").eq('user', user.id);
-    console.log(response.data)
     return response.data;
 });
 
