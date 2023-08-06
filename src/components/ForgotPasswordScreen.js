@@ -12,6 +12,8 @@ import Container from '@mui/material/Container';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import { supabase } from '../supabaseClient';
 import ResetPassword from './ResetPassword';
+import Logo from "../images/Karlsruher_Kojoten_Logo.svg";
+import { Alert, Snackbar } from '@mui/material';
 
 const theme = createTheme();
 
@@ -19,6 +21,7 @@ const ForgotPasswordScreen = ({ gotoLogin }) => {
 
     const [errorMessage, setErrorMessage] = React.useState("");
     const [inputNewPassword, setInputNewPassword] = React.useState(false);
+    const [successMessageOpen, setSuccessMessageOpen] = React.useState(false);
 
     supabase.auth.onAuthStateChange(async (event, session) => {
         if (event === "PASSWORD_RECOVERY") {
@@ -43,7 +46,17 @@ const ForgotPasswordScreen = ({ gotoLogin }) => {
         if (!data.get("email"))
             return
         const { error } = await supabase.auth.resetPasswordForEmail(data.get("email"));
-        if (error) setErrorMessage(error);
+        if (error)
+            setErrorMessage(error);
+        else
+            setSuccessMessageOpen(true)
+    };
+
+    const handleClose = (event, reason) => {
+        if (reason === 'clickaway') {
+            return;
+        }
+        setSuccessMessageOpen(false);
     };
 
     if (inputNewPassword)
@@ -60,35 +73,15 @@ const ForgotPasswordScreen = ({ gotoLogin }) => {
                         flexDirection: 'column',
                         alignItems: 'center',
                     }}>
-                    <Avatar sx={{ m: 1, bgcolor: 'secondary.main' }}>
-                        <LockOutlinedIcon />
-                    </Avatar>
+                    <img src={Logo} alt='Logo' width={150} />
                     <Typography component="h1" variant="h5">
-                        Forgot password
+                        Passowort vergessen?
                     </Typography>
                     <Box component="form" onSubmit={handleSubmit} noValidate sx={{ mt: 1 }}>
-                        <TextField
-                            margin="normal"
-                            required
-                            fullWidth
-                            id="email"
-                            label="Email Address"
-                            name="email"
-                            autoComplete="email"
-                            autoFocus />
-                        {
-                            errorMessage && <Typography color="red">
-                                {errorMessage}
-                            </Typography>
-                        }
-                        <Button
-                            type="submit"
-                            fullWidth
-                            variant="contained"
-                            sx={{ mt: 3, mb: 2 }}>
-                            Submit
-                        </Button>
-                        <Grid container>
+                        <Typography component="h1" variant="h5" textAlign="center">
+                            Bitte melde dich bei deinem Administrator
+                        </Typography>
+                        <Grid container textAlign={"center"}>
                             <Grid item xs>
                                 <Link href="#" variant="body2" onClick={() => gotoLogin()}>
                                     Already have an account? Sign in here!
@@ -97,6 +90,11 @@ const ForgotPasswordScreen = ({ gotoLogin }) => {
                         </Grid>
                     </Box>
                 </Box>
+                <Snackbar sx={{ position: "fixed", right: "16px", bottom: "16px" }} open={successMessageOpen} autoHideDuration={1500} onClose={handleClose}>
+                    <Alert onClose={handleClose} severity={"success"} sx={{ width: '100%' }}>
+                        Passwort zurücksetzen erfolgreich angefragt. Bitt überprüfe deine Emails
+                    </Alert>
+                </Snackbar>
             </Container>
         </ThemeProvider>
     );

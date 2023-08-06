@@ -43,14 +43,15 @@ const App = () => {
       <Routes>
         <Route path='/' element={<Navigate replace to={"/drinks"} />} />
         <Route path="/drinks" element={<DrinkList />} />
-        <Route path='/drinks-admin' element={<AdminDrinkList />} />
         <Route path="/user" element={<UserScreen />} />
         <Route path="/history" element={<HistoryScreen />} />
+        <Route path="/payments" element={<PayDrinksScreen />} />
+        <Route path="*" element={<PageNotFound />} />
+        
+        <Route path='/drinks-admin' element={<AdminDrinkList />} />
         <Route path="/history-admin" element={<AdminHistoryScreen />} />
-        <Route path="/pay" element={<PayDrinksScreen />} />
         <Route path='/payments-admin' element={<PaymentsPendingAdmin />} />
         <Route path='/users-admin' element={<AdminUserList />} />
-        <Route path="*" element={<PageNotFound />} />
       </Routes>
     </BrowserRouter>
   </Grid>
