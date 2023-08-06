@@ -11,10 +11,7 @@ import CropImageDialog from "../CropImageDialog";
 import { useClient } from "react-supabase";
 import { uuid } from "@supabase/gotrue-js/dist/module/lib/helpers";
 import { Check } from "@mui/icons-material";
-
-const Transition = React.forwardRef(function Transition(props, ref) {
-    return <Slide direction="up" ref={ref} {...props} />;
-});
+import { SlideUpTransition } from "../../utils";
 
 const dataURLtoFile = (dataurl, filename) => {
     var arr = dataurl.split(','),
@@ -85,7 +82,7 @@ const EditDrinkDialog = ({ drink, onDrinkEditFinished, open, handleClose, drinkH
             fullScreen
             open={open}
             onClose={handleClose}
-            TransitionComponent={Transition}>
+            TransitionComponent={SlideUpTransition}>
             <Box component="form" onSubmit={handleSubmit} noValidate>
                 <AppBar sx={{ position: "relative" }}>
                     <Toolbar>
