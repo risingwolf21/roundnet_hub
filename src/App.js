@@ -40,8 +40,6 @@ const App = () => {
     <BrowserRouter>
       <SideBar open={drawerOpen} onClose={() => setDrawerOpen(false)} onOpen={() => setDrawerOpen(true)} />
       <CustomAppBar logout={() => supabase.auth.signOut()} handleMenuClick={(val) => setDrawerOpen(val)} drawerOpen={drawerOpen} />
-      <Toolbar />
-      <Tabs value={0}><Tab /></Tabs>
       <Routes>
         <Route path='/' element={<Navigate replace to={"/drinks"} />} />
         <Route path="/drinks" element={<DrinkList />} />
@@ -54,7 +52,6 @@ const App = () => {
         <Route path='/users-admin' element={<AdminUserList />} />
         <Route path="*" element={<PageNotFound />} />
       </Routes>
-      <SideBar open={drawerOpen} onClose={() => setDrawerOpen(false)} onOpen={() => setDrawerOpen(true)} />
     </BrowserRouter>
   </Grid>
 }
