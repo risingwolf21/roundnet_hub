@@ -1,4 +1,4 @@
-import { Avatar, Badge, Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, Fab, Grid, IconButton, List, ListItem, ListItemAvatar, ListItemSecondaryAction, ListItemText, ListSubheader, Paper, Typography } from "@mui/material";
+import { Avatar, Badge, Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, Fab, Grid, IconButton, ListItem, ListItemAvatar, ListItemSecondaryAction, ListItemText, Paper, Typography } from "@mui/material";
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -8,8 +8,8 @@ import { useState } from "react";
 import _ from "lodash";
 import { useAdminDrinks } from "../../hooks/useAdminDrinksHook";
 import { Error } from "../Error";
-import { useRealtime } from "../../hooks/useRealtime";
 import { Loading } from "../Loading";
+import { useSelector } from "react-redux";
 
 const AdminDrinkItem = ({ drink, onEditClick, onDeleteClick }) => {
     return <Paper sx={{ width: "100%", marginBottom: 2, listStyleType: "none" }}>
@@ -42,24 +42,7 @@ const EMPTY_DRINK = { "imageUrl": "", name: "", price: 0, active: false };
 
 const AdminDrinkList = () => {
 
-    const [{ data: drinks, error, fetching }] = useRealtime(
-        'drink',
-        {
-            select: {
-                columns: '*',
-                filter: (query) => query.eq("deleted", false)
-            }
-        },
-        (data, payload) => data.id === payload.id);
-
-    const [{ data: drinksHistory }] = useRealtime(
-        'drink',
-        {
-            select: {
-                columns: '*'
-            }
-        },
-        (data, payload) => data.id === payload.id);
+    const { items: drinks, error, loading } = useSelector((state) => state.drinks);
 
     const { updateDrink, deleteDrink, addDrink } = useAdminDrinks();
 
@@ -83,9 +66,9 @@ const AdminDrinkList = () => {
     }
 
     const getDrinksHistory = (drink) => {
-        if (!drink || !drinksHistory || !drink.previousDrink) return [];
+        if (!drink || !drinks || !drink.previousDrink) return [];
 
-        let prev = drinksHistory.find(x => x.id === drink.previousDrink);
+        let prev = drinks.filter(x => x.deleted).find(x => x.id === drink.previousDrink);
 
         return [prev, ...getDrinksHistory(prev)]
     }
@@ -104,7 +87,7 @@ const AdminDrinkList = () => {
         setOpen(false);
     }
 
-    if (fetching)
+    if (loading)
         return <Loading />
     if (error)
         return <Error message={error} />
@@ -118,7 +101,7 @@ const AdminDrinkList = () => {
         sx={{ paddingTop: 2 }}>
         <Grid container width="100%" direction="column" alignItems="center" justifyContent="center" paddingLeft={2} paddingRight={2}>
             {
-                drinks && drinks.map((drink, index) => <AdminDrinkItem
+                drinks && drinks.filter(x => !x.deleted).map((drink, index) => <AdminDrinkItem
                     key={"drink" + index}
                     drink={drink}
                     drinkHistory={getDrinksHistory(drink)}

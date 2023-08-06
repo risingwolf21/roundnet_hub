@@ -1,19 +1,16 @@
 import { Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, Grid, IconButton, List, ListItem, ListItemAvatar, ListItemSecondaryAction, ListItemText, Typography } from "@mui/material";
 import CheckIcon from "@mui/icons-material/Check"
 import { useState } from "react";
-import { OPEN } from "../../constants";
+import { FULFILLED, OPEN } from "../../constants";
 import { useRealtime } from "../../hooks/useRealtime";
 import { Loading } from "../Loading";
-import { useAuth } from "../../hooks/useAuth";
 import { Error } from "../Error";
 import { useClient } from "react-supabase";
-
 
 const PaymentsPendingAdmin = () => {
 
     const [open, setOpen] = useState(false);
     const [currentPayment, setPayment] = useState({});
-    const { user } = useAuth();
     const client = useClient();
 
     const [{ data: payments, error, fetching }] = useRealtime(
@@ -38,7 +35,7 @@ const PaymentsPendingAdmin = () => {
     }
 
     const confirmPayment = (payment) => {
-        client.from("payments").delete().eq("userId", payment?.user?.userId).then(res => {
+        client.from("payments").update({ state: FULFILLED }).eq("userId", payment?.user?.userId).then(res => {
             setOpen(false);
         });
     }

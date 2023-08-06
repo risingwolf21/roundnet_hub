@@ -5,39 +5,21 @@ import CheckIcon from '@mui/icons-material/Check';
 import BottomInformation from "./BottomInformation";
 import { NOT_PAID, OPEN } from "../constants";
 import { captureException } from "@sentry/react";
-import { useRealtime } from "../hooks/useRealtime";
 import { Loading } from "./Loading";
 import { Error } from "./Error";
 import { useAuth } from "../hooks/useAuth";
 import { useClient } from "react-supabase";
+import { useSelector } from "react-redux";
 
 const SUCCESS_MESSAGE_INFO = { message: "Getränke erfolgreich gebucht!", severity: "success" };
-// const ERROR_MESSAGE_INFO = { message: "Es ist ein Fehler aufgetreten, versuche es bitte erneut!", severity: "error" };
 
 const DrinkList = () => {
 
     const { user } = useAuth();
     const client = useClient();
 
-    const [{ data: drinks, error, fetching }] = useRealtime(
-        'drink',
-        {
-            select: {
-                columns: 'id, name, price, stock, imageUrl, active',
-                filter: (query) => query.eq('active', true),
-            }
-        },
-        (data, payload) => data.id === payload.id);
-
-    const [{ data: payment }] = useRealtime(
-        'payments',
-        {
-            select: {
-                columns: 'id, userId, state',
-                filter: (query) => query.eq("userId", user.id)
-            }
-        },
-        (data, payload) => data.id === payload.id);
+    const { items: drinks, loading: fetching, error } = useSelector((state) => state.drinks);
+    const { payment } = useSelector((state) => state.payment);
 
     const [addedDrinks, setAddedDrinks] = useState({});
     const [loading, setLoading] = useState(false);
@@ -63,7 +45,7 @@ const DrinkList = () => {
 
         try {
             let paymentId;
-            if (!payment || payment.length < 1) {
+            if (!payment || payment.state !== OPEN) {
                 const { data, error } = await client.from("payments").insert({
                     userId: user.id,
                     state: OPEN
@@ -72,7 +54,7 @@ const DrinkList = () => {
                     throw Error(error);
                 paymentId = data.id;
             } else {
-                paymentId = payment[0]?.id;
+                paymentId = payment?.id;
             }
 
             if (!paymentId)
@@ -142,7 +124,7 @@ const DrinkList = () => {
         justifyContent="center">
         <Grid container sx={{ overflowY: "scroll", }} width="100%" direction="row" alignItems="center" justifyContent="center" paddingTop={2} paddingLeft={2} paddingRight={2}>
             {
-                drinks && drinks.map((drink, index) => <DrinkItem key={"Drink" + index} drink={drink} count={addedDrinks[drink.id]?.count} onAddClick={() => onAddDrinkClick(drink)} onMinusClick={() => onRemoveDrinkClick(drink)} />)
+                drinks && drinks.filter(x => !x.deleted && x.active).map((drink, index) => <DrinkItem key={"Drink" + index} drink={drink} count={addedDrinks[drink.id]?.count} onAddClick={() => onAddDrinkClick(drink)} onMinusClick={() => onRemoveDrinkClick(drink)} />)
             }
             <Box height={"128px"} width={"100%"} />
         </Grid>

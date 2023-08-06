@@ -53,8 +53,9 @@ const AdminUserList = () => {
     }
 
     const deleteUser = async (user) => {
-        const { data, error } = await supabase_admin.auth.admin.deleteUser(user.userId);
-        const { data: d1, error: e1 } = await client.from("user").delete().eq("userId", user.userId);
+        const { error } = await supabase_admin.auth.admin.deleteUser(user.userId);
+        const { error: e2 } = await client.from("payments").delete().eq("userId", user.userId)
+        const { error: e1 } = await client.from("user").delete().eq("userId", user.userId);
         setEditUserOpen(false);
 
         if (error) {

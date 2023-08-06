@@ -25,7 +25,7 @@ const SCREENS = [
     },
     {
         label: "Bezahlen",
-        key: "pay",
+        key: "payments",
         icon: <PaymentIcon />
     }
 ];

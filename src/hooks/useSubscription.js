@@ -7,8 +7,8 @@ export const useSubscription = (config, callback) => {
 
     useEffect(() => {
         let subscription = client
-            .channel("any")
-            .on('postgres_changes', { event: config.event ?? '*', schema: "public", table: config.table ?? "*" }, callback)
+            .channel("*")
+            .on('*', { event: config.event ?? '*', table: config.table ?? "*" }, callback)
             .subscribe()
         return () => {
             subscription.unsubscribe()
