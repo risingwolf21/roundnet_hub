@@ -3,6 +3,7 @@ import drinkListReducer from './drinkListReducer'
 import paymentReducer from './paymentReducer'
 import historyReducer from './historyReducer'
 import eventReducer from './eventReducer'
+import applicationReducer from './applicationReducer'
 
 export default configureStore({
     reducer: {
@@ -10,5 +11,6 @@ export default configureStore({
         payment: paymentReducer,
         history: historyReducer,
         events: eventReducer,
+        application: applicationReducer,
     },
 })

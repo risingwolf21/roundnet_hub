@@ -7,9 +7,11 @@ import MenuIcon from '@mui/icons-material/Menu';
 import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 import { Close } from '@mui/icons-material';
+import { useSelector } from 'react-redux';
 
 const CustomAppBar = ({ logout, drawerOpen, handleMenuClick }) => {
     let navigate = useNavigate();
+    const { mode } = useSelector((state) => state.application);
 
     const tabs = [
         {
@@ -41,7 +43,7 @@ const CustomAppBar = ({ logout, drawerOpen, handleMenuClick }) => {
                     edge="start"
                     sx={{ mr: 2 }}>
                     {
-                        drawerOpen ? <Close /> : <MenuIcon />
+                        mode === "drinks" && (drawerOpen ? <Close /> : <MenuIcon />)
                     }
                 </IconButton>
                 <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
@@ -51,12 +53,12 @@ const CustomAppBar = ({ logout, drawerOpen, handleMenuClick }) => {
                     window?.location?.pathname === "/user" && <Button color="inherit" onClick={logout}>Logout</Button>
                 }
             </Toolbar>
-            <Tabs variant='fullWidth' indicatorColor="secondary" textColor='inherit'
+            {/* <Tabs variant='fullWidth' indicatorColor="secondary" textColor='inherit'
                 value={tab} onChange={handleChange} TabIndicatorProps={{ sx: { height: 3 } }}>
                 {
                     tabs.map(x => <Tab label={x.label} id={`full-width-tab-${x.index}`} />)
                 }
-            </Tabs>
+            </Tabs> */}
         </AppBar>
     </>
 }

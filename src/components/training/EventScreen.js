@@ -1,13 +1,16 @@
 import { Alert, Avatar, Box, CircularProgress, Fab, Grid, IconButton, ListItem, ListItemAvatar, ListItemText, Paper, Snackbar, Typography } from "@mui/material";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import moment from "moment";
 import { Loading } from "../Loading";
 import { Error } from "../Error";
+import EventInformation from "./EventInformation";
+import { useState } from "react";
+import { selectEvent } from "../../redux/eventReducer";
 
-const EventItem = ({ event }) => {
+const EventItem = ({ event, onClick }) => {
     return <Paper sx={{ width: "100%", borderLeft: "4px solid red" }}>
         <Box sx={{ display: "flex", flexDirection: "row", justifyContent: "space-between" }}>
-            <ListItem sx={{ paddingLeft: 1 }}>
+            <ListItem sx={{ paddingLeft: 1 }} onClick={onClick}>
                 <ListItemAvatar>
                     <Box sx={{ display: "flex", flexDirection: "column", justifyContent: "center" }}>
                         <Typography fontSize={12} textAlign={"center"}>
@@ -33,6 +36,9 @@ const EventItem = ({ event }) => {
 
 const EventScreen = () => {
 
+    const dispatch = useDispatch();
+    const [eventInfoOpen, setEventInfoOpen] = useState(false);
+
     const { items: events, loading, error } = useSelector((state) => state.events);
 
     if (loading)
@@ -48,10 +54,14 @@ const EventScreen = () => {
         justifyContent="center">
         <Grid container sx={{ overflowY: "scroll", background: "#eee" }} width="100%" direction="row" alignItems="center" justifyContent="center" paddingTop={2} paddingLeft={2} paddingRight={2}>
             {
-                events && events.map((event, index) => <EventItem key={"Drink" + index} event={event} />)
+                events && events.map((event, index) => <EventItem key={"Drink" + index} event={event} onClick={() => {
+                    dispatch(selectEvent(event));
+                    setEventInfoOpen(true);
+                }} />)
             }
             <Box height={"128px"} width={"100%"} />
         </Grid>
+        <EventInformation open={eventInfoOpen} handleClose={() => setEventInfoOpen(false)} />
     </Grid >);
 }
 
