@@ -44,9 +44,10 @@
     "workbox-streams": "^6.6.0"
   },
   "scripts": {
-    "start": "react-app-env start",
-    "start-prod": "react-app-env start --env-file=production.env",
-    "build": "react-app-env build",
+    "start": "react-app-env --env-file=staging.env start",
+    "start-production": "react-app-env start --env-file=production.env",
+    "build-staging": "react-app-env --env-file=staging.env build",
+    "build-production": "react-app-env --env-file=production.env build",
     "test": "react-app-env test",
     "eject": "react-app-env eject"
   },

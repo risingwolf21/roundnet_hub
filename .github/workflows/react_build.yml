@@ -21,7 +21,7 @@ jobs:
         run: yarn test
 
       - name: Build
-        run: yarn build --openssl-legacy-provider
+        run: yarn run build-staging
 
       - name: Deploying to Staging Environment
         uses: FirebaseExtended/action-hosting-deploy@v0
