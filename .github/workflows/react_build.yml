@@ -30,4 +30,4 @@ jobs:
           firebaseServiceAccount: '${{ secrets.FIREBASE_SERVICE_ACCOUNT_ROUNDNET_KARLSRUHE }}'
           channelId: live
           projectId: roundnet-karlsruhe
-          target: staging-roundnet-karlsruhe
+          target: "staging-roundnet-karlsruhe"
