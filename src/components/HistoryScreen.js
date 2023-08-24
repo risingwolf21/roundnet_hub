@@ -52,9 +52,6 @@ const InfiniteScrollList = ({ children, fetch, error, loading, endReached }) => 
         <List>
             {children}
         </List>
-        <div style={{ display: "flex", width: "100%", alignItems: "center" }}>
-            {loading && <CircularProgress />}
-        </div>
         {
             <Snackbar sx={{ position: "absolute", right: "16px", bottom: "16px" }} open={snackbarOpen} onClose={handleClose}>
                 <Alert onClose={handleClose} severity={"error"} sx={{ width: '100%' }}>
@@ -90,8 +87,10 @@ const HistoryScreen = () => {
         direction="column"
         alignItems="center"
         justifyContent="center"
-        maxHeight={"100%"}
         sx={{ overflow: "auto" }}>
+        {
+            loading && <LinearProgress style={{ position: "fixed", left: 0, top: 56, right: 0 }} />
+        }
         <InfiniteScrollList fetch={(page) => dispatch(fetchHistoryAsync({ client, user, page }))} error={error} loading={loading} endReached={endReached}>
             {
                 Object.entries(groupBy(historyItems.filter(x => x.drink), x => moment(new Date(x.created_at)).format("DD MMMM yyyy")))
