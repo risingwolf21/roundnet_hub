@@ -19,8 +19,6 @@ const UserScreen = () => {
             const { error } = await client.auth.updateUser({
                 data: { displayName }
             });
-
-            console.log(writingError, error)
         }
     };
 

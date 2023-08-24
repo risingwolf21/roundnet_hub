@@ -1,11 +1,15 @@
-import { Grid, List, ListItem, ListItemAvatar, ListItemSecondaryAction, ListItemText, ListSubheader, Typography } from "@mui/material"
+import { Alert, CircularProgress, Grid, LinearProgress, List, ListItem, ListItemAvatar, ListItemSecondaryAction, ListItemText, ListSubheader, Snackbar, Typography } from "@mui/material"
 import moment from "moment/moment";
 import { Loading } from "./Loading";
 import { Error } from "./Error";
 import { groupBy } from "../utils";
-import { useSelector } from "react-redux";
-import { useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { Component, useState } from "react";
 import { useEffect } from "react";
+import { fetchHistoryAsync } from "../redux/historyReducer";
+import { useClient } from "react-supabase";
+import { useAuth } from "../hooks/useAuth";
+import { debounce, isUndefined } from "lodash";
 
 const HistoryItem = ({ items, header }) => {
     return <List dense component={"div"} disablePadding subheader={<ListSubheader component="div" id="nested-list-subheader">{header}</ListSubheader>}>
@@ -23,29 +27,62 @@ const HistoryItem = ({ items, header }) => {
     </List>
 }
 
-const HistoryScreen = () => {
-    const { items: history, loading, error } = useSelector((state) => state.history);
-    const { items: drinks } = useSelector((state) => state.drinks);
+const InfiniteScrollList = ({ children, fetch, error, loading, endReached }) => {
 
-    console.log(history)
+    const [snackbarOpen, setSnackbarOpen] = useState(isUndefined(error));
+
+    const handleClose = (event, reason) => {
+        if (reason === 'clickaway') {
+            return;
+        }
+        setSnackbarOpen(false);
+    };
+
+    useEffect(() => {
+        let pagesCounter = 1
+        window.onscroll = debounce(() => {
+            if ((window.innerHeight + document.documentElement.scrollTop).toFixed(0) === document.documentElement.offsetHeight.toFixed(0) || loading || endReached) {
+                fetch(pagesCounter)
+                pagesCounter++
+            }
+        }, 100);
+    }, []);
+
+    return <div style={{ width: "100%" }}>
+        <List>
+            {children}
+        </List>
+        <div style={{ display: "flex", width: "100%", alignItems: "center" }}>
+            {loading && <CircularProgress />}
+        </div>
+        {
+            <Snackbar sx={{ position: "absolute", right: "16px", bottom: "16px" }} open={snackbarOpen} onClose={handleClose}>
+                <Alert onClose={handleClose} severity={"error"} sx={{ width: '100%' }}>
+                    {error}
+                </Alert>
+            </Snackbar>
+        }
+    </div>
+}
+
+const HistoryScreen = () => {
+    const { items: history, loading, error, endReached } = useSelector((state) => state.history);
+    const { items: drinks } = useSelector((state) => state.drinks);
+    const dispatch = useDispatch();
+    const client = useClient();
+    const { user } = useAuth();
 
     const [historyItems, setHistoryItems] = useState([]);
 
     useEffect(() => {
-        let mappedEntries = history.map(x => {
+        let mappedEntries = history?.map(x => {
             return {
                 ...x,
                 drink: drinks.find(y => y.id === x.drinkId)
             }
         });
-        console.log(mappedEntries)
         setHistoryItems(mappedEntries);
     }, [history, drinks]);
-
-    if (loading)
-        return <Loading />
-    if (error)
-        return <Error message={error} />
 
     return <Grid
         container
@@ -53,20 +90,14 @@ const HistoryScreen = () => {
         direction="column"
         alignItems="center"
         justifyContent="center"
+        maxHeight={"100%"}
         sx={{ overflow: "auto" }}>
-        {
-            historyItems && <List sx={{ width: "100%" }} >
-                {
-                    Object.entries(groupBy(historyItems.filter(x => x.drink), x => moment(new Date(x.created_at)).format("DD MMMM yyyy")))
-                        .map((x) => <HistoryItem key={x[0]} items={x[1]} header={x[0]} />)
-                }
-                {
-                    historyItems.filter(x => !x.drink).length > 1 && <ListItem>
-                        <ListItemText>Es gibt {historyItems.filter(x => x.drink).length} Einträge bei welchen eine Zuweisung nicht geschehen konnte. Bitte wende dich an den Administrator!</ListItemText>
-                    </ListItem>
-                }
-            </List>
-        }
+        <InfiniteScrollList fetch={(page) => dispatch(fetchHistoryAsync({ client, user, page }))} error={error} loading={loading} endReached={endReached}>
+            {
+                Object.entries(groupBy(historyItems.filter(x => x.drink), x => moment(new Date(x.created_at)).format("DD MMMM yyyy")))
+                    .map((x) => <HistoryItem key={x[0]} items={x[1]} header={x[0]} />)
+            }
+        </InfiniteScrollList>
     </Grid>
 }
 
