@@ -3,16 +3,18 @@ import { SlideUpTransition } from "../../utils";
 import { ArrowBack, CalendarMonth, Check, CheckCircle, CheckCircleOutline, Close, DoNotDisturb, HelpOutline, Pending, RemoveCircleOutline } from "@mui/icons-material";
 import { useSelector } from "react-redux";
 import moment from "moment";
-import { useEffect } from "react";
+import { useNavigate } from 'react-router-dom';
 
-const EventInformation = ({ open, handleClose }) => {
+const EventInformation = ({ handleClose }) => {
+
+    const navigate = useNavigate();
 
     const { selectedEvent } = useSelector((state) => state.events);
 
     return <Dialog
         fullScreen
-        open={open}
-        onClose={handleClose}
+        open={true}
+        onClose={() => navigate("/training")}
         TransitionComponent={SlideUpTransition}>
         <Box>
             <AppBar sx={{ position: "relative" }}>
@@ -20,7 +22,7 @@ const EventInformation = ({ open, handleClose }) => {
                     <IconButton
                         edge="start"
                         color="inherit"
-                        onClick={handleClose}
+                        onClick={() => navigate("/training")}
                         aria-label="close">
                         <ArrowBack />
                     </IconButton>

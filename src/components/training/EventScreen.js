@@ -1,11 +1,13 @@
-import { Alert, Avatar, Box, CircularProgress, Fab, Grid, IconButton, ListItem, ListItemAvatar, ListItemText, Paper, Snackbar, Typography } from "@mui/material";
+import { Alert, Avatar, Box, CircularProgress, Fab, Grid, IconButton, LinearProgress, ListItem, ListItemAvatar, ListItemText, Paper, Snackbar, Typography } from "@mui/material";
 import { useDispatch, useSelector } from "react-redux";
 import moment from "moment";
 import { Loading } from "../Loading";
 import { Error } from "../Error";
-import EventInformation from "./EventInformation";
+import { useNavigate } from 'react-router-dom';
 import { useState } from "react";
 import { selectEvent } from "../../redux/eventReducer";
+import AddIcon from '@mui/icons-material/Add';
+import { useAuth } from "../../hooks/useAuth";
 
 const EventItem = ({ event, onClick }) => {
     return <Paper sx={{ width: "100%", borderLeft: "4px solid red" }}>
@@ -37,12 +39,11 @@ const EventItem = ({ event, onClick }) => {
 const EventScreen = () => {
 
     const dispatch = useDispatch();
-    const [eventInfoOpen, setEventInfoOpen] = useState(false);
+    const navigate = useNavigate();
 
     const { items: events, loading, error } = useSelector((state) => state.events);
+    const { user } = useAuth();
 
-    if (loading)
-        return <Loading />
     if (error)
         return <Error message={error} />
 
@@ -52,16 +53,26 @@ const EventScreen = () => {
         direction="column"
         alignItems="center"
         justifyContent="center">
+        {
+            loading && <LinearProgress sx={{ position: "fixed", top: 56, left: 0, right: 0 }} />
+        }
         <Grid container sx={{ overflowY: "scroll", background: "#eee" }} width="100%" direction="row" alignItems="center" justifyContent="center" paddingTop={2} paddingLeft={2} paddingRight={2}>
             {
                 events && events.map((event, index) => <EventItem key={"Drink" + index} event={event} onClick={() => {
                     dispatch(selectEvent(event));
-                    setEventInfoOpen(true);
+                    navigate("event")
                 }} />)
             }
             <Box height={"128px"} width={"100%"} />
         </Grid>
-        <EventInformation open={eventInfoOpen} handleClose={() => setEventInfoOpen(false)} />
+        {
+            user?.role === "admin" && <Fab sx={{ background: "#66bb6a", position: "fixed", right: "16px", bottom: "76px" }}
+                onClick={() => navigate("create")}>
+                {
+                    <AddIcon sx={{ color: "white" }} />
+                }
+            </Fab>
+        }
     </Grid >);
 }
 
