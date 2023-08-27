@@ -1,13 +1,13 @@
-import { AppBar, Box, Button, Dialog, IconButton, Toolbar, Typography, Grid, TextField, ListItem, ListItemAvatar, ListItemText, DialogTitle, DialogContent, FormControl, InputLabel, Select, OutlinedInput, FormControlLabel, RadioGroup, Radio, Divider, Checkbox, DialogActions } from "@mui/material"
+import { AppBar, Box, Button, Dialog, IconButton, Toolbar, Typography, Grid, TextField, ListItem, ListItemAvatar, ListItemText, DialogTitle, DialogContent, FormControl, InputLabel, Select, OutlinedInput, FormControlLabel, RadioGroup, Radio, Divider, Checkbox, DialogActions, List, InputAdornment } from "@mui/material"
 import { SlideUpTransition } from "../../utils"
-import { CalendarMonth, Close, LockClockOutlined, Map } from "@mui/icons-material";
+import { AccessTime, Article, CalendarMonth, Close, Event, LockClockOutlined, Map, Update } from "@mui/icons-material";
 import { useNavigate } from 'react-router-dom';
 import { DatePicker, DateTimePicker } from "@mui/x-date-pickers";
 import { useState } from "react";
 import moment, { isDate, now } from "moment";
 import { FORTNIGHTLY, MONTHLY, WEEKLY } from "../../constants";
 import EventRepeatIcon from '@mui/icons-material/EventRepeat';
-import { isBoolean, isNull } from "lodash";
+import { isBoolean, isNull, toInteger } from "lodash";
 import { useClient } from "react-supabase";
 
 const CreateEvent = ({ }) => {
@@ -21,6 +21,7 @@ const CreateEvent = ({ }) => {
     const [stopRepeatDialogOpen, setStopRepeatDialogOpen] = useState(false);
     const [repeatDialogOpen, setRepeatDialogOpen] = useState(false);
     const [repeat, setRepeat] = useState(WEEKLY);
+    const [meetingTime, setMeetingTime] = useState(0);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -29,6 +30,7 @@ const CreateEvent = ({ }) => {
             title: data.get("eventTitle"),
             description: data.get("eventDescription"),
             startingDateTime: startDateTime.format("yyyy-MM-DD HH:mm:ss"),
+            meetingDateTime: startDateTime.add(meetingTime, "minutes").format("yyyy-MM-DD HH:mm:ss"),
             recurring: repeat,
             location: data.get("eventPlace"),
         }
@@ -40,6 +42,13 @@ const CreateEvent = ({ }) => {
             setRepeatDialogOpen(false);
         }
     };
+
+    const handleMeetingTimeChange = (event) => {
+        event.preventDefault();
+        if (event.target.value < 60) {
+            setMeetingTime(toInteger(event.target.value));
+        }
+    }
 
     return <Dialog
         fullScreen
@@ -64,52 +73,54 @@ const CreateEvent = ({ }) => {
                     </Button>
                 </Toolbar>
             </AppBar>
-            <Grid
-                container
-                p={2}
-                pt={0}>
-                <TextField
-                    fullWidth
-                    id="eventTitle"
-                    name="eventTitle"
-                    variant="filled"
-                    label="Event-Titel"
-                    margin="normal" />
-                <TextField
-                    fullWidth
-                    id="eventDescription"
-                    name="eventDescription"
-                    variant="filled"
-                    label="Beschreibung"
-                    margin="normal" />
+            <List>
+                <ListItem sx={{ pt: 0, pb: 0 }}>
+                    <TextField
+                        fullWidth
+                        id="eventTitle"
+                        name="eventTitle"
+                        variant="standard"
+                        label="Event-Titel"
+                        InputProps={{ startAdornment: (<InputAdornment position="start"><Event /></InputAdornment>) }}
+                        margin="normal" />
+                </ListItem>
+                <ListItem sx={{ pt: 0, pb: 0 }}>
+                    <TextField
+                        fullWidth
+                        id="eventDescription"
+                        name="eventDescription"
+                        variant="standard"
+                        label="Beschreibung"
+                        InputProps={{ startAdornment: (<InputAdornment position="start"><Article /></InputAdornment>) }}
+                        margin="normal" />
+                </ListItem>
 
-                <ListItem sx={{ pl: 0, pr: 0 }}>
+                <Divider />
+
+                <ListItem sx={{ pt: 0, pb: 0 }}>
                     <ListItemAvatar>
-                        <LockClockOutlined />
+                        <AccessTime />
                     </ListItemAvatar>
 
                     <DateTimePicker sx={{ mt: 2, mb: 2, width: "100%" }} label="Startzeit" onChange={(val) => setStartDateTime(val)} defaultValue={startDateTime} />
                 </ListItem>
 
-                <Divider />
+                <ListItem sx={{ pt: 0, pb: 0 }}>
+                    <ListItemAvatar />
 
-                <ListItem sx={{ pl: 0, pr: 0 }} onClick={() => setRepeatDialogOpen(true)}>
-                    <ListItemAvatar>
-                        <EventRepeatIcon />
-                    </ListItemAvatar>
-                    <ListItemText primary={"Wiederholung"} secondary={repeat} />
+                    <TextField
+                        fullWidth
+                        type="number"
+                        id="meetingTime"
+                        name="meetingTime"
+                        variant="standard"
+                        value={meetingTime}
+                        onChange={handleMeetingTimeChange}
+                        label="Treffpunkt vor Training (Minuten)"
+                        margin="normal" />
                 </ListItem>
 
-                <ListItem sx={{ pl: 0, pr: 0 }} onClick={() => setStopRepeatDialogOpen(true)}>
-                    <ListItemAvatar>
-                        <EventRepeatIcon />
-                    </ListItemAvatar>
-                    <ListItemText primary={"Wiederholung stoppen"} secondary={moment(stopRepeatDateTime).format("DD MMMM yyyy")} />
-                </ListItem>
-
-                <Divider />
-
-                <ListItem sx={{ pl: 0, pr: 0 }}>
+                <ListItem>
                     <ListItemAvatar>
                         <Map />
                     </ListItemAvatar>
@@ -118,12 +129,26 @@ const CreateEvent = ({ }) => {
                         fullWidth
                         id="eventPlace"
                         name="eventPlace"
-                        variant="outlined"
+                        variant="standard"
                         label="Ort"
                         margin="normal" />
                 </ListItem>
 
-            </Grid>
+                <Divider />
+
+                <ListItem onClick={() => setRepeatDialogOpen(true)}>
+                    <ListItemAvatar>
+                        <EventRepeatIcon />
+                    </ListItemAvatar>
+                    <ListItemText primary={"Wiederholung"} secondary={repeat} />
+                </ListItem>
+
+                <ListItem onClick={() => setStopRepeatDialogOpen(true)}>
+                    <ListItemAvatar />
+                    <ListItemText primary={"Wiederholung stoppen"} secondary={moment(stopRepeatDateTime).format("DD MMMM yyyy")} />
+                </ListItem>
+
+            </List>
         </Box>
         <Dialog open={repeatDialogOpen} onClose={() => setRepeatDialogOpen(false)}>
             <DialogTitle>Wiederholung</DialogTitle>

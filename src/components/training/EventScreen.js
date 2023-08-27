@@ -10,7 +10,7 @@ import AddIcon from '@mui/icons-material/Add';
 import { useAuth } from "../../hooks/useAuth";
 
 const EventItem = ({ event, onClick }) => {
-    return <Paper sx={{ width: "100%", borderLeft: "4px solid red" }}>
+    return <Paper sx={{ width: "100%", borderLeft: "4px solid red", mb: 1 }}>
         <Box sx={{ display: "flex", flexDirection: "row", justifyContent: "space-between" }}>
             <ListItem sx={{ paddingLeft: 1 }} onClick={onClick}>
                 <ListItemAvatar>
@@ -63,7 +63,6 @@ const EventScreen = () => {
                     navigate("event")
                 }} />)
             }
-            <Box height={"128px"} width={"100%"} />
         </Grid>
         {
             user?.role === "admin" && <Fab sx={{ background: "#66bb6a", position: "fixed", right: "16px", bottom: "76px" }}
