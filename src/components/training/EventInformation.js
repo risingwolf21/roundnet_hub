@@ -4,8 +4,9 @@ import { ArrowBack, CalendarMonth, Check, CheckCircle, CheckCircleOutline, Close
 import { useSelector } from "react-redux";
 import moment from "moment";
 import { useNavigate } from 'react-router-dom';
+import { withTranslation } from "react-i18next";
 
-const EventInformation = ({ handleClose }) => {
+const EventInformation = ({ handleClose, t }) => {
 
     const navigate = useNavigate();
 
@@ -26,6 +27,7 @@ const EventInformation = ({ handleClose }) => {
                         aria-label="close">
                         <ArrowBack />
                     </IconButton>
+                    <Typography>{t("TEST")}</Typography>
                 </Toolbar>
             </AppBar>
 
@@ -70,4 +72,4 @@ const EventInformation = ({ handleClose }) => {
     </Dialog>
 }
 
-export default EventInformation;
+export default withTranslation()(EventInformation);
