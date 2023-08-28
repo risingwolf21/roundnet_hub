@@ -3,15 +3,19 @@ import { createSlice } from '@reduxjs/toolkit';
 export const applicationReducer = createSlice({
     name: 'application',
     initialState: {
-        user: {}
+        user: {},
+        mode: "drinks"
     },
     reducers: {
         onUserChange: (state, action) => {
             state.user = action.payload
         },
+        onModeChange: (state, action) => {
+            state.mode = action.payload
+        },
     }
 });
 
-export const { onUserChange } = applicationReducer.actions;
+export const { onUserChange, onModeChange } = applicationReducer.actions;
 
 export default applicationReducer.reducer

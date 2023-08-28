@@ -147,7 +147,7 @@ const DrinkList = () => {
             </>
         }
 
-        <Snackbar sx={{ position: "fixed", right: "16px", bottom: alertInfo.severity === "success" ? "16px" : "72px" }} open={successMessageOpen} autoHideDuration={1500} onClose={handleClose}>
+        <Snackbar sx={{ position: "fixed", right: "16px", bottom: "72px" }} open={successMessageOpen} autoHideDuration={1500} onClose={handleClose}>
             <Alert onClose={handleClose} severity={alertInfo.severity} sx={{ width: '100%' }}>
                 {alertInfo.message}
             </Alert>

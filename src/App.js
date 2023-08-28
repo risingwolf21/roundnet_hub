@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { AppBar, Box, Grid, Tab, Tabs, Toolbar } from "@mui/material";
+import { AppBar, BottomNavigation, Box, Grid, Tab, Tabs, Toolbar } from "@mui/material";
 import CustomAppBar from "./components/AppBar";
 import DrinkList from './components/DrinkList';
 import SideBar from './components/Sidebar';
@@ -20,6 +20,8 @@ import { fetchDrinksAsync } from './redux/drinkListReducer';
 import { useClient } from 'react-supabase';
 import { useAuth } from './hooks/useAuth';
 import { fetchHistoryAsync } from './redux/historyReducer';
+import Browse from './components/Browse';
+import CustomBottomNavigation from './components/BottomNavigation';
 
 const App = () => {
 
@@ -34,24 +36,27 @@ const App = () => {
     dispatch(fetchDrinksAsync(client));
   }, [client, user, dispatch]);
 
-  return <Grid>
-    <CustomAppBar logout={() => supabase.auth.signOut()} handleMenuClick={(val) => setDrawerOpen(val)} drawerOpen={drawerOpen} />
-    <Toolbar />
+  return <Grid maxHeight={"100vh"}>
     <BrowserRouter>
+      <CustomAppBar logout={() => supabase.auth.signOut()} handleMenuClick={(val) => setDrawerOpen(val)} drawerOpen={drawerOpen} />
+      <Toolbar />
       <SideBar open={drawerOpen} onClose={() => setDrawerOpen(false)} onOpen={() => setDrawerOpen(true)} />
       <Routes>
         <Route path='/' element={<Navigate replace to={"/drinks"} />} />
+        <Route path='/browse' element={<Browse />} />
         <Route path="/drinks" element={<DrinkList />} />
         <Route path="/user" element={<UserScreen />} />
         <Route path="/history" element={<HistoryScreen />} />
         <Route path="/payments" element={<PayDrinksScreen />} />
         <Route path="*" element={<PageNotFound />} />
-        
+
         <Route path='/drinks-admin' element={<AdminDrinkList />} />
         <Route path="/history-admin" element={<AdminHistoryScreen />} />
         <Route path='/payments-admin' element={<PaymentsPendingAdmin />} />
         <Route path='/users-admin' element={<AdminUserList />} />
       </Routes>
+      <div style={{ width: "100%", height: "56px" }} />
+      <CustomBottomNavigation />
     </BrowserRouter>
   </Grid>
 }

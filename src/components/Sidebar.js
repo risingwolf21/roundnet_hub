@@ -82,7 +82,7 @@ const SideBar = ({ open, onClose, onOpen }) => {
                 style={{ width: "250px" }}
                 onClick={onClose}
                 onKeyDown={onClose}>
-                <Box >
+                <Box>
                     <List>
                         <Toolbar />
                         {SCREENS.map((item, index) => (
