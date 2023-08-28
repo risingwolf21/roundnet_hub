@@ -21,7 +21,6 @@ const DrinkItem = ({ drink, count, onAddClick, onMinusClick }) => {
                         ? <img src={drink.imageUrl} alt="logo" width={40} height={40} />
                         : <LocalDrinkIcon />
                 }
-                <CircularProgress variant="determinate" value={40} sx={{ width: 45, height: 45, position: "fixed" }} />
             </Avatar>
         </ListItemAvatar>
         <ListItemText primary={drink.name} secondary={drink.price + " €"} />
@@ -30,9 +29,7 @@ const DrinkItem = ({ drink, count, onAddClick, onMinusClick }) => {
                 {
                     (count > 0) && <>
                         <IconButton disableRipple onClick={() => onMinusClick(drink)}>
-                            {
-                                count <= 1 ? <Delete fontSize="inherit" sx={{ fontSize: "28px" }} /> : <RemoveIcon fontSize="inherit" sx={{ fontSize: "28px" }} />
-                            }
+                            <RemoveIcon fontSize="inherit" sx={{ fontSize: "28px" }} />
                         </IconButton>
                         <Typography sx={{ p: 1, fontSize: "20px", color: "rgba(0,0,0,0.54)" }}>{count}</Typography>
                     </>
