@@ -49,6 +49,7 @@ const App = () => {
         mode === "drinks" && <SideBar open={drawerOpen} onClose={() => setDrawerOpen(false)} onOpen={() => setDrawerOpen(true)} />
       }
       <CustomAppBar logout={() => supabase.auth.signOut()} handleMenuClick={(val) => setDrawerOpen(val)} drawerOpen={drawerOpen} />
+      <Toolbar />
       <Routes>
         <Route path='/' element={<Navigate replace to={"/drinks"} />} />
         <Route path='/browse' element={<Browse />} />
