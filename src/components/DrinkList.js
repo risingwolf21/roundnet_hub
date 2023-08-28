@@ -1,4 +1,4 @@
-import { Alert, Box, CircularProgress, Fab, Grid, Snackbar } from "@mui/material";
+import { Alert, Box, CircularProgress, Fab, Grid, LinearProgress, Snackbar } from "@mui/material";
 import DrinkItem from "./DrinkItem";
 import { useState } from "react";
 import CheckIcon from '@mui/icons-material/Check';
@@ -111,8 +111,6 @@ const DrinkList = () => {
         setAddedDrinks({ ...temp });
     }
 
-    if (fetching)
-        return <Loading />
     if (error)
         return <Error message={error} />
 
@@ -122,9 +120,10 @@ const DrinkList = () => {
         direction="column"
         alignItems="center"
         justifyContent="center">
+        {fetching && <LinearProgress style={{ position: "fixed", left: 0, right: 0, top: 56 }} />}
         <Grid container sx={{ overflowY: "scroll", }} width="100%" direction="row" alignItems="center" justifyContent="center" paddingTop={2} paddingLeft={2} paddingRight={2}>
             {
-                drinks && drinks.filter(x => !x.deleted).map((drink, index) => <DrinkItem key={"Drink" + index} drink={drink} count={addedDrinks[drink.id]?.count} onAddClick={() => onAddDrinkClick(drink)} onMinusClick={() => onRemoveDrinkClick(drink)} />)
+                drinks && drinks.filter(x => !x.deleted && x.active).map((drink, index) => <DrinkItem key={"Drink" + index} drink={drink} count={addedDrinks[drink.id]?.count} onAddClick={() => onAddDrinkClick(drink)} onMinusClick={() => onRemoveDrinkClick(drink)} />)
             }
             <Box height={"128px"} width={"100%"} />
         </Grid>

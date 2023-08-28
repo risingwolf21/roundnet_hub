@@ -51,7 +51,7 @@ const PayDrinksSummary = ({ drinks }) => {
                     <ListItemText primaryTypographyProps={{ fontWeight: "bold" }} primary={"Gesamtkosten"} />
                     <ListItemSecondaryAction>
                         <Typography sx={{ fontWeight: "bold" }}>
-                            {totalAmountToPay(Object.values(drinks).map(x => ({ count: x.count, price: x.drink?.price ?? 0 })))} €
+                            {drinks.reduce((prev, curr) => prev + curr.amount, 0)} €
                         </Typography>
                     </ListItemSecondaryAction>
                 </ListItem>
