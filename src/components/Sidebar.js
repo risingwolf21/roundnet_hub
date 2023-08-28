@@ -73,8 +73,6 @@ const SideBar = ({ open, onClose, onOpen }) => {
                 onClick={onClose}
                 onKeyDown={onClose}>
                 <Box>
-                    <Toolbar />
-                    <TextField variant="filled" placeholder="asdf" fullWidth />
                     <List>
                         <Toolbar />
                         {SCREENS.map((item, index) => (

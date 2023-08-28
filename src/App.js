@@ -25,6 +25,7 @@ import EventScreen from './components/training/EventScreen';
 import CustomBottomNavigation from './components/BottomNavigation';
 import EventInformation from './components/training/EventInformation';
 import CreateEvent from './components/training/CreateEvent';
+import Browse from './components/Browse';
 
 const App = () => {
 
@@ -52,6 +53,7 @@ const App = () => {
       {/* <Tabs value={0}><Tab /></Tabs> */}
       <Routes>
         <Route path='/' element={<Navigate replace to={"/drinks"} />} />
+        <Route path='/browse' element={<Browse />} />
         <Route path="/drinks" element={<DrinkList />} />
         <Route path="/user" element={<UserScreen />} />
         <Route path="/history" element={<HistoryScreen />} />
