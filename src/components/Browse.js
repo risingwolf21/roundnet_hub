@@ -10,28 +10,32 @@ const entries = [
         navigateTo: "/admin/drinks/payments",
         icon: <Euro />,
         secondaryIcon: <AdminPanelSettings sx={{ color: "rgba(0,0,0,0.54)" }} />,
-        role: "finance"
+        role: "finance",
+        avatarColor: "#88AEBF"
     },
     {
         title: "Getränke verwalten",
         navigateTo: "/admin/drinks",
         icon: <Liquor />,
         secondaryIcon: <AdminPanelSettings sx={{ color: "rgba(0,0,0,0.54)" }} />,
-        role: "procure"
+        role: "procure",
+        avatarColor: "#88AEBF"
     },
     {
         title: "Benutzer verwalten",
         navigateTo: "/admin/users",
         icon: <Group />,
         secondaryIcon: <AdminPanelSettings sx={{ color: "rgba(0,0,0,0.54)" }} />,
-        role: "admin"
+        role: "admin",
+        avatarColor: "#88AEBF"
     },
     {
         title: "Verlauf",
         navigateTo: "/admin/drinks/history",
         icon: <History />,
         secondaryIcon: <AdminPanelSettings sx={{ color: "rgba(0,0,0,0.54)" }} />,
-        role: "admin"
+        role: "admin",
+        avatarColor: "#88AEBF"
     }
 ]
 
@@ -46,23 +50,26 @@ const Browse = () => {
                 {
                     title: "Account",
                     navigateTo: "/user",
-                    icon: <AccountCircle />
+                    icon: <AccountCircle />,
+                    avatarColor: "#88AEBF"
                 },
                 {
                     title: "Payment",
                     navigateTo: "/payments",
-                    icon: <Euro />
+                    icon: <Euro />,
+                    avatarColor: "#88AEBF"
                 },
                 {
                     title: "History",
                     navigateTo: "/history",
-                    icon: <History />
+                    icon: <History />,
+                    avatarColor: "#88AEBF"
                 },
                 ...entries.filter(x => x.role === user.role || user.role === "admin"),
             ].map(x => {
                 return <ListItem onClick={() => navigate(x.navigateTo)} focusRipple sx={{ mt: 1 }}>
                     <ListItemAvatar>
-                        <Avatar sx={{ width: 40, height: 40 }}>
+                        <Avatar sx={{ background: x.avatarColor, width: 40, height: 40 }}>
                             {x.icon}
                         </Avatar>
                     </ListItemAvatar>

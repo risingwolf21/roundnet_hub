@@ -50,10 +50,10 @@ const App = () => {
         <Route path="/payments" element={<PayDrinksScreen />} />
         <Route path="*" element={<PageNotFound />} />
 
-        <Route path='/drinks-admin' element={<AdminDrinkList />} />
-        <Route path="/history-admin" element={<AdminHistoryScreen />} />
-        <Route path='/payments-admin' element={<PaymentsPendingAdmin />} />
-        <Route path='/users-admin' element={<AdminUserList />} />
+        <Route path='/admin/drinks' element={<AdminDrinkList />} />
+        <Route path="/admin/drinks/history" element={<AdminHistoryScreen />} />
+        <Route path='/admin/drinks/payments' element={<PaymentsPendingAdmin />} />
+        <Route path='/admin/users' element={<AdminUserList />} />
       </Routes>
       <div style={{ width: "100%", height: "56px" }} />
       <CustomBottomNavigation />
