@@ -1,4 +1,4 @@
-import { Box, Divider, List, ListItem, ListItemIcon, ListItemText, ListSubheader, SwipeableDrawer, Tabs, Toolbar, useTheme } from "@mui/material";
+import { Box, Divider, List, ListItem, ListItemIcon, ListItemText, ListSubheader, SwipeableDrawer, Tabs, TextField, Toolbar, useTheme } from "@mui/material";
 import React from "react";
 import AccountIcon from '@mui/icons-material/AccountBox';
 import LiquorIcon from '@mui/icons-material/Liquor';
@@ -73,6 +73,8 @@ const SideBar = ({ open, onClose, onOpen }) => {
                 onClick={onClose}
                 onKeyDown={onClose}>
                 <Box>
+                    <Toolbar />
+                    <TextField variant="filled" placeholder="asdf" fullWidth />
                     <List>
                         <Toolbar />
                         {SCREENS.map((item, index) => (

@@ -35,7 +35,7 @@ export const eventReducer = createSlice({
 });
 
 export const fetchEventsAsync = createAsyncThunk("events", async (client) => {
-  const response = await client.from("events").select("*")
+  const response = await client.from("events").select("*, attendance: event_attendance_user_mapping ( state , user ( displayName, userId )  )")
   return response.data;
 });
 

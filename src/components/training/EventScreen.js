@@ -4,11 +4,11 @@ import moment from "moment";
 import { Loading } from "../Loading";
 import { Error } from "../Error";
 import EventInformation from "./EventInformation";
-import { useState } from "react";
+import React, { useState } from "react";
 import { selectEvent } from "../../redux/eventReducer";
 
 const EventItem = ({ event, onClick }) => {
-    return <Paper sx={{ width: "100%", borderLeft: "4px solid red" }}>
+    return <Paper sx={{ width: "100%", borderLeft: "4px solid red", marginBottom: 1 }}>
         <Box sx={{ display: "flex", flexDirection: "row", justifyContent: "space-between" }}>
             <ListItem sx={{ paddingLeft: 1 }} onClick={onClick}>
                 <ListItemAvatar>
@@ -27,8 +27,17 @@ const EventItem = ({ event, onClick }) => {
                 </ListItemAvatar>
                 <ListItemText
                     sx={{ paddingLeft: 2 }}
-                    primary={event.title}
-                    secondary={moment(new Date(event.meetingDateTime)).format("dddd [at] HH:mm")} />
+                    primary={<React.Fragment>
+                        <Typography fontWeight={"bold"}>{event.title}</Typography>
+                    </React.Fragment>}
+                    secondary={<React.Fragment>
+                        <Typography fontSize={14}>
+                            {moment(new Date(event.meetingDateTime)).format("dddd [at] HH:mm")}
+                        </Typography>
+                        <Typography fontSize={14}>
+                            Roundnet Karlsruhe
+                        </Typography>
+                    </React.Fragment>} />
             </ListItem>
         </Box>
     </Paper>

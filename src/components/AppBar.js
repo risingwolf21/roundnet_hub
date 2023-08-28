@@ -36,16 +36,18 @@ const CustomAppBar = ({ logout, drawerOpen, handleMenuClick }) => {
     return <>
         <AppBar position="fixed" sx={{ zIndex: (theme) => theme.zIndex.drawer + 1, background: "primary" }}>
             <Toolbar>
-                <IconButton
-                    color="inherit"
-                    aria-label="open drawer"
-                    onClick={() => drawerOpen ? handleMenuClick(false) : handleMenuClick(true)}
-                    edge="start"
-                    sx={{ mr: 2 }}>
-                    {
-                        mode === "drinks" && (drawerOpen ? <Close /> : <MenuIcon />)
-                    }
-                </IconButton>
+                {
+                    mode === "drinks" && <IconButton
+                        color="inherit"
+                        aria-label="open drawer"
+                        onClick={() => drawerOpen ? handleMenuClick(false) : handleMenuClick(true)}
+                        edge="start"
+                        sx={{ mr: 2 }}>
+                        {
+                            drawerOpen ? <Close /> : <MenuIcon />
+                        }
+                    </IconButton>
+                }
                 <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
                     Roundnet Karlsruhe
                 </Typography>
