@@ -1,4 +1,4 @@
-import { CalendarToday, Liquor } from "@mui/icons-material"
+import { CalendarToday, Liquor, List } from "@mui/icons-material"
 import { BottomNavigation, BottomNavigationAction, Paper } from "@mui/material"
 import { useState } from "react";
 import { useDispatch } from "react-redux";
@@ -22,6 +22,12 @@ const CustomBottomNavigation = () => {
             path: "training",
             index: 1,
             icon: <CalendarToday />
+        },
+        {
+            label: "Browse",
+            path: "browse",
+            index: 2,
+            icon: <List />
         }
     ];
 
@@ -29,12 +35,12 @@ const CustomBottomNavigation = () => {
 
     const handleChange = (event, newValue) => {
         setTab(newValue);
-        navigate(tabs[newValue].path);
+        navigate(tabs[newValue].path, { replace: true });
         dispatch(onModeChange(tabs[newValue].path));
     }
 
     return <Paper sx={{ position: "fixed", bottom: 0, left: 0, right: 0 }} elevation={3}>
-        <BottomNavigation 
+        <BottomNavigation
             showLabels
             value={tab}
             onChange={handleChange}>

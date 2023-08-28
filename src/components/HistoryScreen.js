@@ -27,8 +27,6 @@ const HistoryScreen = () => {
     const { items: history, loading, error } = useSelector((state) => state.history);
     const { items: drinks } = useSelector((state) => state.drinks);
 
-    console.log(history)
-
     const [historyItems, setHistoryItems] = useState([]);
 
     useEffect(() => {
@@ -38,7 +36,6 @@ const HistoryScreen = () => {
                 drink: drinks.find(y => y.id === x.drinkId)
             }
         });
-        console.log(mappedEntries)
         setHistoryItems(mappedEntries);
     }, [history, drinks]);
 
