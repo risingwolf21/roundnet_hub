@@ -23,6 +23,8 @@ import { fetchHistoryAsync } from './redux/historyReducer';
 import { fetchEventsAsync } from './redux/eventReducer';
 import EventScreen from './components/training/EventScreen';
 import CustomBottomNavigation from './components/BottomNavigation';
+import EventInformation from './components/training/EventInformation';
+import CreateEvent from './components/training/CreateEvent';
 
 const App = () => {
 
@@ -55,6 +57,8 @@ const App = () => {
         <Route path="/history" element={<HistoryScreen />} />
         <Route path="/payments" element={<PayDrinksScreen />} />
         <Route path="/training" element={<EventScreen />} />
+        <Route path="/training/event" element={<EventInformation />} />
+        <Route path="/training/create" element={<CreateEvent />} />
         <Route path="*" element={<PageNotFound />} />
 
         {/* ADMIN SCREENS */}

@@ -3,14 +3,16 @@ import { SlideUpTransition } from "../../utils";
 import { ArrowBack, CalendarMonth, Check, CheckCircle, CheckCircleOutline, Close, DoNotDisturb, HelpOutline, Pending, RemoveCircleOutline } from "@mui/icons-material";
 import { useSelector } from "react-redux";
 import moment from "moment";
-import { useEffect } from "react";
+import { useNavigate } from 'react-router-dom';
+import { withTranslation } from "react-i18next";
 import { useState } from "react";
 import { ATTENDING, DECLINED, UNANSWERED } from "../../constants";
-import { useNavigate } from "react-router-dom";
 import { useClient } from "react-supabase";
 import { useAuth } from "../../hooks/useAuth";
 
-const EventInformation = ({ open, handleClose }) => {
+const EventInformation = ({ handleClose, t }) => {
+
+    const navigate = useNavigate();
 
     const { selectedEvent } = useSelector((state) => state.events);
     const client = useClient();
@@ -36,8 +38,8 @@ const EventInformation = ({ open, handleClose }) => {
 
     return <Dialog
         fullScreen
-        open={open}
-        onClose={handleClose}
+        open={true}
+        onClose={() => navigate("/training")}
         TransitionComponent={SlideUpTransition}>
         <Box>
             <AppBar sx={{ position: "relative" }}>
@@ -45,10 +47,11 @@ const EventInformation = ({ open, handleClose }) => {
                     <IconButton
                         edge="start"
                         color="inherit"
-                        onClick={handleClose}
+                        onClick={() => navigate("/training")}
                         aria-label="close">
                         <ArrowBack />
                     </IconButton>
+                    <Typography>{t("TEST")}</Typography>
                 </Toolbar>
             </AppBar>
 
@@ -94,4 +97,4 @@ const EventInformation = ({ open, handleClose }) => {
     </Dialog>
 }
 
-export default EventInformation;
+export default withTranslation()(EventInformation);

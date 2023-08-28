@@ -13,5 +13,8 @@ export const UNANSWERED = "UNANSWERED";
 export const ATTENDING = "ATTENDING";
 export const DECLINED = "DECLINED";
 
+export const WEEKLY = "WEEKLY";
+export const FORTNIGHTLY = "FORTNIGHTLY";
+export const MONTHLY = "MONTHLY";
 
 export const PAYPAL_ME_ADDRESS = process.env.REACT_APP_paypalMeLink;
