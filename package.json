@@ -14,6 +14,7 @@
     "@testing-library/jest-dom": "^5.16.5",
     "@testing-library/react": "^14.0.0",
     "@testing-library/user-event": "^14.4.3",
+    "firebase-tools": "^12.4.7",
     "lodash": "^4.17.21",
     "lodash.debounce": "^4.0.8",
     "moment": "^2.29.4",
@@ -43,12 +44,13 @@
     "workbox-strategies": "^6.6.0",
     "workbox-streams": "^6.6.0"
   },
-  "scripts": {
-    "start": "react-app-env start",
-    "start-prod": "react-app-env start --env-file=production.env",
-    "build": "react-app-env build",
-    "test": "react-app-env test",
-    "eject": "react-app-env eject"
+ "scripts": {
+    "start": "react-app-env --env-file=staging.env start",
+    "start-production": "react-app-env start --env-file=production.env",
+    "build-staging": "react-app-env --env-file=staging.env build",
+    "build-production": "react-app-env --env-file=production.env build",
+    "test": "react-app-env --env-file=staging.env test",
+    "eject": "react-app-env --env-file=staging.env eject"
   },
   "eslintConfig": {
     "extends": [
