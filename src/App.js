@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { AppBar, BottomNavigation, Box, Grid, Tab, Tabs, Toolbar } from "@mui/material";
+import { AppBar, BottomNavigation, Box, Grid, Tab, Tabs, Toolbar, Typography, Button } from "@mui/material";
 import CustomAppBar from "./components/AppBar";
 import DrinkList from './components/DrinkList';
 import SideBar from './components/Sidebar';
@@ -22,10 +22,12 @@ import { useAuth } from './hooks/useAuth';
 import { fetchHistoryAsync } from './redux/historyReducer';
 import Browse from './components/Browse';
 import CustomBottomNavigation from './components/BottomNavigation';
+import { useServiceWorker } from './hooks/useServiceWorker';
 
 const App = () => {
 
   const [drawerOpen, setDrawerOpen] = React.useState(false);
+  const { waitingWorker, showReload, reloadPage } = useServiceWorker();
   const dispatch = useDispatch();
   const client = useClient();
   const { user } = useAuth();
@@ -35,6 +37,13 @@ const App = () => {
     dispatch(fetchHistoryAsync({ client, user }));
     dispatch(fetchDrinksAsync(client));
   }, [client, user, dispatch]);
+
+  if (showReload && waitingWorker) {
+    return <Grid>
+      <Typography>Update available</Typography>
+      <Button onClick={() => reloadPage()}>Update</Button>
+    </Grid>
+  }
 
   return <Grid maxHeight={"100vh"}>
     <BrowserRouter>
