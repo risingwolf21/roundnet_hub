@@ -1,4 +1,5 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import { DRINK_DELETED, DRINK_INSERTED, DRINK_UPDATED } from './names';
 
 const compareDrinkFn = (x, y) => {
   return x.id === y.id;
@@ -12,26 +13,25 @@ export const drinkListReducer = createSlice({
     error: null,
     loading: false
   },
-  reducers: {
-    onDrinkUpdate: (state, action) => {
-      const index = state.items.findIndex((x) =>
-        x.id === action.payload.new.id,
-      )
-      state.items = [
-        ...state.items.slice(0, index),
-        action.payload.new,
-        ...state.items.slice(index + 1)
-      ]
-    },
-    onDrinkDelete: (state, action) => {
-      state.items = state.items.filter(x => !compareDrinkFn(x, action.payload.old))
-    },
-    onDrinkInsert: (state, action) => {
-      state.items = [...(state.items ?? []), action.payload.new]
-    },
-  },
   extraReducers(builder) {
     builder
+      .addCase(DRINK_UPDATED, (state, action) => {
+        const index = state.items.findIndex((x) =>
+          x.id === action.payload.new.id,
+        )
+        state.items = [
+          ...state.items.slice(0, index),
+          action.payload.new,
+          ...state.items.slice(index + 1)
+        ]
+      })
+      .addCase(DRINK_DELETED, (state, action) => {
+        state.items = state.items.filter(x => !compareDrinkFn(x, action.payload.old))
+      })
+      .addCase(DRINK_INSERTED, (state, action) => {
+        state.items = [...(state.items ?? []), action.payload.new]
+      })
+
       .addCase(fetchDrinksAsync.pending, (state, action) => {
         state.loading = true;
       })
@@ -53,6 +53,5 @@ export const fetchDrinksAsync = createAsyncThunk("drink", async (client) => {
   return response.data;
 });
 
-export const { onDrinkUpdate, onDrinkDelete, onDrinkInsert } = drinkListReducer.actions;
 
 export default drinkListReducer.reducer

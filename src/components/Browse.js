@@ -1,8 +1,7 @@
 import { AccountCircle, AdminPanelSettings, Euro, Group, History, Liquor } from "@mui/icons-material";
-import { Avatar, List, ListItem, ListItemAvatar, ListItemSecondaryAction, ListItemText } from "@mui/material";
+import { Avatar, List, ListItem, ListItemAvatar, ListItemSecondaryAction, ListItemText, Menu, Toolbar, Typography } from "@mui/material";
 import { useNavigate } from "react-router";
 import { useAuth } from "../hooks/useAuth";
-import { useEffect } from "react";
 
 const entries = [
     {
