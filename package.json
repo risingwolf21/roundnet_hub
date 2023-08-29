@@ -44,7 +44,7 @@
     "workbox-strategies": "^6.6.0",
     "workbox-streams": "^6.6.0"
   },
- "scripts": {
+  "scripts": {
     "start": "react-app-env --env-file=staging.env start",
     "start-production": "react-app-env start --env-file=production.env",
     "build-staging": "react-app-env --env-file=staging.env build",
@@ -72,6 +72,6 @@
   },
   "devDependencies": {
     "react-app-env": "^1.2.3",
-    "supabase": "^1.82.6"
+    "supabase": "^1.88.0"
   }
 }
