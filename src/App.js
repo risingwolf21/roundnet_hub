@@ -48,10 +48,10 @@ const App = () => {
 
   return <Grid maxHeight={"100vh"}>
     <BrowserRouter>
-      <CustomAppBar logout={() => supabase.auth.signOut()} handleMenuClick={(val) => setDrawerOpen(val)} drawerOpen={drawerOpen} />
-      <Toolbar />
       {
         !appUpdateAvailable && <>
+          <CustomAppBar logout={() => supabase.auth.signOut()} handleMenuClick={(val) => setDrawerOpen(val)} drawerOpen={drawerOpen} />
+          <Toolbar />
           <SideBar open={drawerOpen} onClose={() => setDrawerOpen(false)} onOpen={() => setDrawerOpen(true)} />
           <Routes>
             <Route path='/' element={<Navigate replace to={"/drinks"} />} />
