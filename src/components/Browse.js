@@ -2,8 +2,6 @@ import { AccountCircle, AdminPanelSettings, Euro, Group, History, Liquor } from 
 import { Avatar, List, ListItem, ListItemAvatar, ListItemSecondaryAction, ListItemText } from "@mui/material";
 import { useNavigate } from "react-router";
 import { useAuth } from "../hooks/useAuth";
-import raw from '../git_commit.txt';
-import { useState, useEffect } from "react";
 
 const entries = [
     {
@@ -44,15 +42,6 @@ const Browse = () => {
 
     const navigate = useNavigate();
     const { user } = useAuth();
-    const [version, setVersion] = useState("");
-
-    useEffect(() => {
-        fetch(raw)
-            .then(r => r.text())
-            .then(text => {
-                setVersion(text.slice(0, 7));
-            });
-    }, []);
 
     return <List>
         {
