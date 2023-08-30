@@ -3,7 +3,7 @@ import { Avatar, List, ListItem, ListItemAvatar, ListItemSecondaryAction, ListIt
 import { useNavigate } from "react-router";
 import { useAuth } from "../hooks/useAuth";
 import raw from '../git_commit.txt';
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 const entries = [
     {
