@@ -21,7 +21,7 @@ jobs:
         run: yarn test
 
       - name: Write commit Version to file
-        run: echo ${{GITHUB_SHA}} >> src/git_commit.txt
+        run: echo "$GITHUB_SHA" >> src/git_commit.txt
 
       - name: Build
         run: yarn run build-staging
