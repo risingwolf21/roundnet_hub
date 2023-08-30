@@ -93,6 +93,7 @@ const Browse = () => {
                     </ListItem>
                 }),
                 <ListItem>
+                    <ListItemAvatar />
                     <ListItemText primary={version} secondary={"Version"} />
                 </ListItem>
             ]
