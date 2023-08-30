@@ -59,7 +59,7 @@ function registerValidSW(swUrl, config) {
 
       setInterval(() => {
         registration.update();
-        console.log('Checked for update...');
+        console.debug('Checked for update...');
       }, 1000 * 60 * 1);
 
       registration.onupdatefound = () => {

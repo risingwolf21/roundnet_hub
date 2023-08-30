@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { AppBar, BottomNavigation, Box, Grid, Tab, Tabs, Toolbar, Typography, Button } from "@mui/material";
+import { Grid, Toolbar } from "@mui/material";
 import CustomAppBar from "./components/AppBar";
 import DrinkList from './components/DrinkList';
 import SideBar from './components/Sidebar';
@@ -44,7 +44,7 @@ const App = () => {
 
   useEffect(() => {
     dispatch(onAppUpdateAvailableChange(showReload && waitingWorker));
-  }, [waitingWorker, showReload, reloadPage]);
+  }, [waitingWorker, showReload, reloadPage, dispatch]);
 
   return <Grid maxHeight={"100vh"}>
     <BrowserRouter>

@@ -1,5 +1,5 @@
 import { AccountCircle, AdminPanelSettings, Euro, Group, History, Liquor } from "@mui/icons-material";
-import { Avatar, List, ListItem, ListItemAvatar, ListItemSecondaryAction, ListItemText, Menu, Toolbar, Typography } from "@mui/material";
+import { Avatar, List, ListItem, ListItemAvatar, ListItemSecondaryAction, ListItemText } from "@mui/material";
 import { useNavigate } from "react-router";
 import { useAuth } from "../hooks/useAuth";
 import raw from '../git_commit.txt';
@@ -52,51 +52,45 @@ const Browse = () => {
             .then(text => {
                 setVersion(text.slice(0, 7));
             });
-    }, [raw]);
+    }, []);
 
     return <List>
         {
             [
-                ...[
+                {
+                    title: "Account",
+                    navigateTo: "/user",
+                    icon: <AccountCircle />,
+                    avatarColor: "#88AEBF"
+                },
+                {
+                    title: "Payment",
+                    navigateTo: "/payments",
+                    icon: <Euro />,
+                    avatarColor: "#88AEBF"
+                },
+                {
+                    title: "History",
+                    navigateTo: "/history",
+                    icon: <History />,
+                    avatarColor: "#88AEBF"
+                },
+                ...entries.filter(x => x.role === user.role || user.role === "admin"),
+            ].map(x => {
+                return <ListItem onClick={() => navigate(x.navigateTo)} focusRipple sx={{ mt: 1 }}>
+                    <ListItemAvatar>
+                        <Avatar sx={{ background: x.avatarColor, width: 40, height: 40 }}>
+                            {x.icon}
+                        </Avatar>
+                    </ListItemAvatar>
+                    <ListItemText primary={x.title} />
                     {
-                        title: "Account",
-                        navigateTo: "/user",
-                        icon: <AccountCircle />,
-                        avatarColor: "#88AEBF"
-                    },
-                    {
-                        title: "Payment",
-                        navigateTo: "/payments",
-                        icon: <Euro />,
-                        avatarColor: "#88AEBF"
-                    },
-                    {
-                        title: "History",
-                        navigateTo: "/history",
-                        icon: <History />,
-                        avatarColor: "#88AEBF"
-                    },
-                    ...entries.filter(x => x.role === user.role || user.role === "admin"),
-                ].map(x => {
-                    return <ListItem onClick={() => navigate(x.navigateTo)} focusRipple sx={{ mt: 1 }}>
-                        <ListItemAvatar>
-                            <Avatar sx={{ background: x.avatarColor, width: 40, height: 40 }}>
-                                {x.icon}
-                            </Avatar>
-                        </ListItemAvatar>
-                        <ListItemText primary={x.title} />
-                        {
-                            x.secondaryIcon && <ListItemSecondaryAction>
-                                {x.secondaryIcon}
-                            </ListItemSecondaryAction>
-                        }
-                    </ListItem>
-                }),
-                <ListItem>
-                    <ListItemAvatar />
-                    <ListItemText primary={version} secondary={"Version"} />
+                        x.secondaryIcon && <ListItemSecondaryAction>
+                            {x.secondaryIcon}
+                        </ListItemSecondaryAction>
+                    }
                 </ListItem>
-            ]
+            })
         }
     </List>
 }
