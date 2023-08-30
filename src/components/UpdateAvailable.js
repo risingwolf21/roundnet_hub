@@ -19,7 +19,7 @@ const UpdateAvailable = ({ update }) => {
             style={{ minHeight: '100vh' }}>
             <Info fontSize="large" sx={{ color: "primary" }} />
             <Typography sx={{ mt: 2, wordWrap: "normal", textAlign: "center", color: "primary", padding: 2 }}>Es ist ein Update für diese App vorhanden. Bitte aktualisiere die Seite</Typography>
-            <Button variant="contained" startIcon={<Refresh />} onClick={update}></Button>
+            <Button variant="contained" startIcon={<Refresh />} onClick={update}>Update</Button>
         </Grid>
     </Grid>
 }
