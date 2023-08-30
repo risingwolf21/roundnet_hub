@@ -4,7 +4,8 @@ export const applicationReducer = createSlice({
     name: 'application',
     initialState: {
         user: {},
-        mode: "drinks"
+        mode: "drinks",
+        appUpdateAvailable: false
     },
     reducers: {
         onUserChange: (state, action) => {
@@ -13,9 +14,12 @@ export const applicationReducer = createSlice({
         onModeChange: (state, action) => {
             state.mode = action.payload
         },
+        onAppUpdateAvailableChange: (state, action) => {
+            state.appUpdateAvailable = action.payload
+        },
     }
 });
 
-export const { onUserChange, onModeChange } = applicationReducer.actions;
+export const { onUserChange, onModeChange, onAppUpdateAvailableChange } = applicationReducer.actions;
 
 export default applicationReducer.reducer
