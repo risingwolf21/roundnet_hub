@@ -19,6 +19,20 @@
     -->
   <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
 
+  <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
+  <script>
+    window.OneSignalDeferred = window.OneSignalDeferred || [];
+    OneSignalDeferred.push(function(OneSignal) {
+      OneSignal.init({
+        appId: "a66ef7ea-b977-4fc4-9678-cb2bbf4fdba9",
+        safari_web_id: "web.onesignal.auto.1b5e3a9a-fd8d-4cbc-b150-cc0a98b0f0fe",
+        notifyButton: {
+          enable: true,
+        },
+      });
+    });
+  </script>
+
   <!--
       Notice the use of %PUBLIC_URL% in the tags above.
       It will be replaced with the URL of the `public` folder during the build.
