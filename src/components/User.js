@@ -1,4 +1,4 @@
-import { Checkbox, Fab, FormControlLabel, Grid, TextField } from "@mui/material";
+import { Button, Checkbox, Fab, FormControlLabel, Grid, TextField } from "@mui/material";
 import CheckIcon from '@mui/icons-material/Check';
 import { Box } from "@mui/system";
 import { useAuth } from "../hooks/useAuth";
@@ -19,8 +19,6 @@ const UserScreen = () => {
             const { error } = await client.auth.updateUser({
                 data: { displayName }
             });
-
-            console.log(writingError, error)
         }
     };
 
@@ -52,10 +50,13 @@ const UserScreen = () => {
                             label="Adminrechte"
                         />
                     }
-                    <Fab sx={{ background: "#66bb6a", position: "fixed", right: "16px", bottom: "16px" }} type="submit">
+                    <Fab sx={{ background: "#66bb6a", position: "fixed", right: "16px", bottom: "16px", bottom: "72px" }} type="submit">
                         <CheckIcon sx={{ color: "white" }} />
                     </Fab>
                 </Box>
+                <Button fullWidth variant="contained" color="error" onClick={() => client.auth.signOut()}>
+                    Logout
+                </Button>
             </>
         }
     </Grid >

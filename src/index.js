@@ -13,16 +13,18 @@ import SubscriptionHandler from './components/SubscriptionHandler';
 import { Provider } from 'react-redux';
 import store from './redux/store';
 
-Sentry.init({
-  dsn: "https://a06f63fae5ab4ce4ac291d0d6fb4e989@o4505379650666496.ingest.sentry.io/4505379651649536",
-  integrations: [
-    new Sentry.BrowserTracing({
-      tracePropagationTargets: ["localhost", /^https:\/\/roundnet-karlsruher\.web.app/],
-    }),
-    new Sentry.Replay(),
-  ],
-  tracesSampleRate: process.env.NODE_ENV === "production" ? 0.2 : 1.0,
-});
+if (process.env.NODE_ENV === "production") {
+  Sentry.init({
+    dsn: "https://a06f63fae5ab4ce4ac291d0d6fb4e989@o4505379650666496.ingest.sentry.io/4505379651649536",
+    integrations: [
+      new Sentry.BrowserTracing({
+        tracePropagationTargets: [/^https:\/\/roundnet-karlsruhe\.web.app/,/^https:\/\/staging-roundnet-karlsruhe\.web.app/],
+      }),
+      new Sentry.Replay(),
+    ],
+    tracesSampleRate: 0.2,
+  });
+}
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(

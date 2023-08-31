@@ -1,7 +1,7 @@
 import { Box, Button, Divider, List, ListItem, ListItemAvatar, ListItemSecondaryAction, ListItemText, Typography } from "@mui/material";
 import { PAYPAL_ME_ADDRESS, OPEN } from "../constants";
 import EuroIcon from '@mui/icons-material/Euro';
-import { groupBy, totalAmountToPay } from '../utils';
+import { groupBy } from '../utils';
 import { useAuth } from "../hooks/useAuth";
 import { useRealtime } from "../hooks/useRealtime";
 import { Error } from "./Error";
@@ -14,7 +14,7 @@ const PayDrinksButton = ({ amountToPay }) => {
         if (newWindow) newWindow.opener = null
     }
 
-    return <Box sx={{ position: "fixed", bottom: 0, left: 0, right: 0, flexDirection: "column", justifyContent: "end", display: "flex", textAlign: "center", pl: 2, pr: 2, pb: 2 }}>
+    return <Box sx={{ position: "fixed", bottom: "60px", left: 0, right: 0, flexDirection: "column", justifyContent: "end", display: "flex", textAlign: "center", pl: 2, pr: 2, pb: 2 }}>
         <Button variant="contained" fullWidth sx={{ marginTop: 2, borderRadius: "50px !important", fontSize: "16px", fontFamily: "sans-serif", lineSpacing: "24px" }}
             onClick={onPayClick}
             startIcon={<EuroIcon />}>Mit Paypal bezahlen</Button>
@@ -51,7 +51,7 @@ const PayDrinksSummary = ({ drinks }) => {
                     <ListItemText primaryTypographyProps={{ fontWeight: "bold" }} primary={"Gesamtkosten"} />
                     <ListItemSecondaryAction>
                         <Typography sx={{ fontWeight: "bold" }}>
-                            {totalAmountToPay(Object.values(drinks).map(x => ({ count: x.count, price: x.drink?.price ?? 0 })))} €
+                            {drinks.reduce((prev, curr) => prev + curr.amount, 0)} €
                         </Typography>
                     </ListItemSecondaryAction>
                 </ListItem>
