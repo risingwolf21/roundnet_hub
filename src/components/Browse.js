@@ -66,7 +66,7 @@ const Browse = () => {
                 },
                 ...entries.filter(x => x.role === user.role || user.role === "admin"),
             ].map(x => {
-                return <ListItem onClick={() => navigate(x.navigateTo)} focusRipple sx={{ mt: 1 }}>
+                return <ListItem key={x.title} onClick={() => navigate(x.navigateTo)} sx={{ mt: 1 }}>
                     <ListItemAvatar>
                         <Avatar sx={{ background: x.avatarColor, width: 40, height: 40 }}>
                             {x.icon}

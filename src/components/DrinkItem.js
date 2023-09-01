@@ -13,7 +13,7 @@ const StockIndicator = ({ stock }) => {
 }
 
 const DrinkItem = ({ drink, count, onAddClick, onMinusClick }) => {
-    return <ListItem onClick={() => onAddClick(drink)}>
+    return <ListItem key={drink.id} onClick={() => onAddClick(drink)}>
         <ListItemAvatar>
             <Avatar>
                 {

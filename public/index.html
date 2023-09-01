@@ -19,17 +19,52 @@
     -->
   <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
 
-  <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
+  <script src="https://cdn.onesignal.com/sdks/OneSignalSDK.js" async=""></script>
   <script>
-    window.OneSignalDeferred = window.OneSignalDeferred || [];
-    OneSignalDeferred.push(function(OneSignal) {
-      OneSignal.init({
-        appId: "a66ef7ea-b977-4fc4-9678-cb2bbf4fdba9",
-        safari_web_id: "web.onesignal.auto.1b5e3a9a-fd8d-4cbc-b150-cc0a98b0f0fe",
-        notifyButton: {
-          enable: true,
-        },
-      });
+    window.OneSignal = window.OneSignal || [];
+    window.OneSignal.push(() => {
+      window.OneSignal.init(
+        {
+          appId: "a66ef7ea-b977-4fc4-9678-cb2bbf4fdba9",
+          safari_web_id: "web.onesignal.auto.1b5e3a9a-fd8d-4cbc-b150-cc0a98b0f0fe",
+          notifyButton: {
+            enable: true,
+          },
+          allowLocalhostAsSecureOrigin: true,
+          promptOptions: {
+            slidedown: {
+              enabled: true,
+              actionMessage: "We'd like to show you notifications for the latest news and updates about the following categories.",
+              acceptButtonText: "OMG YEEEEESS!",
+              cancelButtonText: "NAHHH",
+              categories: {
+                tags: [
+                  {
+                    tag: "react",
+                    label: "ReactJS",
+                  },
+                  {
+                    tag: "angular",
+                    label: "Angular",
+                  },
+                  {
+                    tag: "vue",
+                    label: "VueJS",
+                  },
+                  {
+                    tag: "js",
+                    label: "JavaScript",
+                  }
+                ]
+              }
+            }
+          },
+          welcomeNotification: {
+            "title": "One Signal",
+            "message": "Thanks for subscribing!",
+          }
+        }
+      );
     });
   </script>
 

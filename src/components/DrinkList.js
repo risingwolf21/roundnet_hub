@@ -1,16 +1,14 @@
-import { Alert, Avatar, Box, CircularProgress, Divider, Fab, Grid, IconButton, LinearProgress, List, ListItem, ListItemAvatar, ListItemSecondaryAction, ListItemText, Snackbar, Typography } from "@mui/material";
+import { Alert, CircularProgress, Divider, Fab, Grid, List, LinearProgress, Snackbar } from "@mui/material";
 import DrinkItem from "./DrinkItem";
 import { useState } from "react";
 import CheckIcon from '@mui/icons-material/Check';
 import BottomInformation from "./BottomInformation";
 import { NOT_PAID, OPEN } from "../constants";
 import { captureException } from "@sentry/react";
-import { Loading } from "./Loading";
 import { Error } from "./Error";
 import { useAuth } from "../hooks/useAuth";
 import { useClient } from "react-supabase";
 import { useSelector } from "react-redux";
-import { Add, Delete, LocalDrink, Remove } from "@mui/icons-material";
 
 const SUCCESS_MESSAGE_INFO = { message: "Getränke erfolgreich gebucht!", severity: "success" };
 
@@ -125,14 +123,14 @@ const DrinkList = () => {
         <List sx={{ width: "100%" }}>
             {
                 drinks && drinks.filter(x => !x.deleted && x.active).map((drink, index) => {
-                    return <>
+                    return <div key={drink.id + "div"}>
                         <DrinkItem
                             drink={drink}
                             onAddClick={() => onAddDrinkClick(drink)}
                             onMinusClick={() => onRemoveDrinkClick(drink)}
                             count={addedDrinks[drink.id]?.count ?? 0} />
                         <Divider />
-                    </>
+                    </div>
                 })
             }
         </List>

@@ -22,6 +22,7 @@
     "react-dom": "^18.2.0",
     "react-easy-crop": "^5.0.0",
     "react-mobile-cropper": "^0.10.0",
+    "react-onesignal": "^3.0.0",
     "react-redux": "^8.1.2",
     "react-router-dom": "^6.10.0",
     "react-scripts": "^5.0.1",
@@ -50,7 +51,10 @@
     "build-staging": "react-app-env --env-file=staging.env build",
     "build-production": "react-app-env --env-file=production.env build",
     "test": "react-app-env --env-file=staging.env test",
-    "eject": "react-app-env --env-file=staging.env eject"
+    "eject": "react-app-env --env-file=staging.env eject",
+    "function-deploy-all": "npx supabase functions deploy --project-ref xibmjvkjkdxdbmreicps",
+    "functions-event-creation": "npx supabase functions deploy event-creation --project-ref xibmjvkjkdxdbmreicps",
+    "function-event-notification": "npx supabase functions deploy event_notifications --project-ref xibmjvkjkdxdbmreicps"
   },
   "eslintConfig": {
     "extends": [

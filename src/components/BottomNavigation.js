@@ -39,7 +39,7 @@ const CustomBottomNavigation = () => {
             value={tab}
             onChange={handleChange}>
             {
-                tabs.map(x => <BottomNavigationAction label={x.label} icon={x.icon} />)
+                tabs.map(x => <BottomNavigationAction key={x.label} label={x.label} icon={x.icon} />)
             }
         </BottomNavigation>
     </Paper>

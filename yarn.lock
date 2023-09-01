@@ -10775,6 +10775,11 @@ react-mobile-cropper@^0.10.0:
     react-advanced-cropper "~0.19.3"
     tslib "^2.4.0"
 
+react-onesignal@^3.0.0:
+  version "3.0.0"
+  resolved "https://registry.yarnpkg.com/react-onesignal/-/react-onesignal-3.0.0.tgz#c7bd593d23139ccd046c3afd959c6a866b7e6551"
+  integrity sha512-q1wTrQ7jbDeVmaaoXZ1OKqGo9bhzH9JGewBEK0/iDH2HULj4Kt+oeUyhvNqYzRoP2e0hbCGDZCNY/29hon4TUA==
+
 react-redux@^8.1.2:
   version "8.1.2"
   resolved "https://registry.npmjs.org/react-redux/-/react-redux-8.1.2.tgz"

@@ -15,10 +15,12 @@ serve(async (req) => {
   try {
     const { record } = await req.json()
 
+    console.log(record);
+
     // Build OneSignal notification object
     const notification = new OneSignal.Notification()
     notification.app_id = _OnesignalAppId_
-    notification.include_external_user_ids = [record.user_id]
+    notification.include_external_user_ids = [record.key]
     notification.contents = {
       en: `You just got notified!`,
     }

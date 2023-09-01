@@ -31,7 +31,8 @@ export function register(config) {
 
     window.addEventListener('load', () => {
       const swUrl = `${process.env.PUBLIC_URL}/service-worker.js`;
-
+      registerValidSW(swUrl, config);
+      return;
       if (isLocalhost) {
         // This is running on localhost. Let's check if a service worker still exists or not.
         checkValidServiceWorker(swUrl, config);
@@ -53,13 +54,14 @@ export function register(config) {
 }
 
 function registerValidSW(swUrl, config) {
+  console.log("registerValidSW", swUrl, config)
   navigator.serviceWorker
     .register(swUrl)
     .then((registration) => {
 
       setInterval(() => {
         registration.update();
-        console.debug('Checked for update...');
+        console.log('Checked for update...');
       }, 1000 * 60 * 1);
 
       registration.onupdatefound = () => {
@@ -114,6 +116,7 @@ function checkValidServiceWorker(swUrl, config) {
         response.status === 404 ||
         (contentType != null && contentType.indexOf('javascript') === -1)
       ) {
+        console.log("No service worker found. Probably a different app. Reload the page.")
         // No service worker found. Probably a different app. Reload the page.
         navigator.serviceWorker.ready.then((registration) => {
           registration.unregister().then(() => {
