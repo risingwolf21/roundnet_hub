@@ -1,4 +1,4 @@
-import { CalendarToday, Liquor, List } from "@mui/icons-material"
+import { Liquor, List } from "@mui/icons-material"
 import { BottomNavigation, BottomNavigationAction, Paper } from "@mui/material"
 import { useState } from "react";
 import { useDispatch } from "react-redux";

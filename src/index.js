@@ -12,6 +12,7 @@ import { Provider as SupabaseProvider } from "react-supabase"
 import SubscriptionHandler from './components/SubscriptionHandler';
 import { Provider } from 'react-redux';
 import store from './redux/store';
+import OneSignal from "react-onesignal";
 
 if (process.env.NODE_ENV === "production") {
   Sentry.init({
@@ -25,6 +26,17 @@ if (process.env.NODE_ENV === "production") {
     tracesSampleRate: 0.2,
   });
 }
+
+OneSignal.init(
+  {
+    appId: "a66ef7ea-b977-4fc4-9678-cb2bbf4fdba9",
+    safari_web_id: "web.onesignal.auto.1b5e3a9a-fd8d-4cbc-b150-cc0a98b0f0fe",
+    notifyButton: {
+      enable: true,
+    },
+    allowLocalhostAsSecureOrigin: true,
+  }
+);
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(

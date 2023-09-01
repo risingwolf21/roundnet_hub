@@ -1,9 +1,8 @@
-import { Avatar, Badge, Box, CircularProgress, IconButton, LinearProgress, ListItem, ListItemAvatar, ListItemSecondaryAction, ListItemText, Paper, Typography } from '@mui/material';
+import { Avatar, Box, IconButton, LinearProgress, ListItem, ListItemAvatar, ListItemSecondaryAction, ListItemText, Typography } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import RemoveIcon from '@mui/icons-material/Remove';
 import LocalDrinkIcon from '@mui/icons-material/LocalDrink';
 import { isNumber } from 'lodash';
-import { Delete } from '@mui/icons-material';
 
 const StockIndicator = ({ stock }) => {
     if (!stock || !isNumber(stock) || stock <= 0) {
