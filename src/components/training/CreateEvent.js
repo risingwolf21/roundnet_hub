@@ -1,16 +1,16 @@
-import { AppBar, Box, Button, Dialog, IconButton, Toolbar, Typography, Grid, TextField, ListItem, ListItemAvatar, ListItemText, DialogTitle, DialogContent, FormControl, InputLabel, Select, OutlinedInput, FormControlLabel, RadioGroup, Radio, Divider, Checkbox, DialogActions, List, InputAdornment } from "@mui/material"
+import { AppBar, Box, Button, Dialog, IconButton, Toolbar, Typography, TextField, ListItem, ListItemAvatar, ListItemText, DialogTitle, DialogContent, FormControl, FormControlLabel, RadioGroup, Radio, Divider, Checkbox, DialogActions, List, InputAdornment } from "@mui/material"
 import { SlideUpTransition } from "../../utils"
-import { AccessTime, Article, CalendarMonth, Close, Event, LockClockOutlined, Map, Update } from "@mui/icons-material";
+import { AccessTime, Article, Close, Event, Map } from "@mui/icons-material";
 import { useNavigate } from 'react-router-dom';
 import { DatePicker, DateTimePicker } from "@mui/x-date-pickers";
 import { useState } from "react";
-import moment, { isDate, now } from "moment";
+import moment from "moment";
 import { FORTNIGHTLY, MONTHLY, WEEKLY } from "../../constants";
 import EventRepeatIcon from '@mui/icons-material/EventRepeat';
-import { isBoolean, isNull, toInteger } from "lodash";
+import { toInteger } from "lodash";
 import { useClient } from "react-supabase";
 
-const CreateEvent = ({ }) => {
+const CreateEvent = () => {
 
     const navigate = useNavigate();
     const client = useClient();
@@ -36,12 +36,6 @@ const CreateEvent = ({ }) => {
         }
         await client.from("events").insert(event);
     }
-
-    const handleRepeatClose = (event, reason) => {
-        if (reason !== 'backdropClick') {
-            setRepeatDialogOpen(false);
-        }
-    };
 
     const handleMeetingTimeChange = (event) => {
         event.preventDefault();

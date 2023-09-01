@@ -1,4 +1,4 @@
-import { CalendarToday, Liquor, List } from "@mui/icons-material"
+import { Liquor, List, CalendarToday } from "@mui/icons-material"
 import { BottomNavigation, BottomNavigationAction, Paper } from "@mui/material"
 import { useState } from "react";
 import { useDispatch } from "react-redux";
@@ -45,7 +45,7 @@ const CustomBottomNavigation = () => {
             value={tab}
             onChange={handleChange}>
             {
-                tabs.map(x => <BottomNavigationAction label={x.label} icon={x.icon} />)
+                tabs.map(x => <BottomNavigationAction key={x.label} label={x.label} icon={x.icon} />)
             }
         </BottomNavigation>
     </Paper>

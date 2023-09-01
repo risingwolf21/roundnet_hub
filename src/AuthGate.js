@@ -1,6 +1,6 @@
 import AuthScreen from "./components/AuthScreen";
 import { setUser } from "@sentry/react";
-import React, { createContext, useEffect, useState } from "react";
+import React, { createContext, useState } from "react";
 import { useAuthStateChange } from "./hooks/useAuthStateChange";
 import { useClient } from "react-supabase";
 import { useDispatch } from "react-redux";
@@ -14,12 +14,6 @@ const AuthGate = ({ children }) => {
     const client = useClient();
     const dispatch = useDispatch();
     const [state, setState] = useState(initialState)
-
-    useEffect(() => {
-        const session = client.auth.getSession()
-        setUser({ email: session?.user?.email ?? null, id: session?.user?.id ?? null });
-        setState({ session, user: session?.user ?? null })
-    }, [client.auth]);
 
     useAuthStateChange((event, session) => {
         setUser({ email: session?.user?.email ?? null, id: session?.user?.id ?? null });

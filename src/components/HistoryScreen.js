@@ -4,7 +4,7 @@ import { Loading } from "./Loading";
 import { Error } from "./Error";
 import { groupBy } from "../utils";
 import { useDispatch, useSelector } from "react-redux";
-import { Component, useState } from "react";
+import { Component, useRef, useState } from "react";
 import { useEffect } from "react";
 import { fetchHistoryAsync } from "../redux/historyReducer";
 import { useClient } from "react-supabase";
@@ -27,9 +27,10 @@ const HistoryItem = ({ items, header }) => {
     </List>
 }
 
-const InfiniteScrollList = ({ children, fetch, error, loading, endReached }) => {
+export const InfiniteScrollList = ({ children, fetch, error, loading, endReached }) => {
 
     const [snackbarOpen, setSnackbarOpen] = useState(isUndefined(error));
+    const observerTarget = useRef(null);
 
     const handleClose = (event, reason) => {
         if (reason === 'clickaway') {
@@ -40,17 +41,31 @@ const InfiniteScrollList = ({ children, fetch, error, loading, endReached }) => 
 
     useEffect(() => {
         let pagesCounter = 1
-        window.onscroll = debounce(() => {
-            if ((window.innerHeight + document.documentElement.scrollTop).toFixed(0) === document.documentElement.offsetHeight.toFixed(0) || loading || endReached) {
-                fetch(pagesCounter)
-                pagesCounter++
+        const observer = new IntersectionObserver(
+            entries => {
+                if (entries[0].isIntersecting && !endReached && !loading) {
+                    fetch(pagesCounter)
+                    pagesCounter++
+                }
+            },
+            { threshold: 1 }
+        );
+
+        if (observerTarget.current) {
+            observer.observe(observerTarget.current);
+        }
+
+        return () => {
+            if (observerTarget.current) {
+                observer.unobserve(observerTarget.current);
             }
-        }, 100);
-    }, []);
+        };
+    }, [observerTarget]);
 
     return <div style={{ width: "100%" }}>
-        <List>
+        <List sx={{ overflowY: "auto" }}>
             {children}
+            <div ref={observerTarget}></div>
         </List>
         {
             <Snackbar sx={{ position: "absolute", right: "16px", bottom: "16px" }} open={snackbarOpen} onClose={handleClose}>

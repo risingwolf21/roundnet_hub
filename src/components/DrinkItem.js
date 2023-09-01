@@ -1,4 +1,4 @@
-import { Avatar, Badge, Box, CircularProgress, IconButton, LinearProgress, ListItem, ListItemAvatar, ListItemSecondaryAction, ListItemText, Paper, Typography } from '@mui/material';
+import { Avatar, Box, IconButton, LinearProgress, ListItem, ListItemAvatar, ListItemSecondaryAction, ListItemText, Typography } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import RemoveIcon from '@mui/icons-material/Remove';
 import LocalDrinkIcon from '@mui/icons-material/LocalDrink';
@@ -13,8 +13,8 @@ const StockIndicator = ({ stock }) => {
 }
 
 const DrinkItem = ({ drink, count, onAddClick, onMinusClick }) => {
-    return <ListItem onClick={() => onAddClick(drink)}>
-        <ListItemAvatar sx={{ width: 45, height: 45 }}>
+    return <ListItem key={drink.id} onClick={() => onAddClick(drink)}>
+        <ListItemAvatar>
             <Avatar>
                 {
                     drink.imageUrl

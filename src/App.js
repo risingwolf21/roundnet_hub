@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { AppBar, Box, Grid, Tab, Tabs, Toolbar } from "@mui/material";
+import { Grid, Toolbar } from "@mui/material";
 import CustomAppBar from "./components/AppBar";
 import DrinkList from './components/DrinkList';
 import SideBar from './components/Sidebar';
@@ -20,21 +20,26 @@ import { fetchDrinksAsync } from './redux/drinkListReducer';
 import { useClient } from 'react-supabase';
 import { useAuth } from './hooks/useAuth';
 import { fetchHistoryAsync } from './redux/historyReducer';
-import { fetchEventsAsync } from './redux/eventReducer';
-import EventScreen from './components/training/EventScreen';
-import CustomBottomNavigation from './components/BottomNavigation';
-import EventInformation from './components/training/EventInformation';
-import CreateEvent from './components/training/CreateEvent';
 import Browse from './components/Browse';
+import CreateEvent from './components/training/CreateEvent';
+import EventScreen from './components/training/EventScreen';
+import EventInformation from './components/training/EventInformation';
+import CustomBottomNavigation from './components/BottomNavigation';
+import { useServiceWorker } from './hooks/useServiceWorker';
+import { onAppUpdateAvailableChange } from './redux/applicationReducer';
+import UpdateAvailable from './components/UpdateAvailable';
+import { fetchEventsAsync } from './redux/eventReducer';
 
 const App = () => {
 
   const [drawerOpen, setDrawerOpen] = React.useState(false);
+  const { waitingWorker, showReload, reloadPage } = useServiceWorker();
   const dispatch = useDispatch();
   const client = useClient();
   const { user } = useAuth();
 
   const { mode } = useSelector((state) => state.application);
+  const { appUpdateAvailable } = useSelector((state) => state.application);
 
   useEffect(() => {
     dispatch(fetchPaymentAsync({ client, user }));
@@ -43,34 +48,41 @@ const App = () => {
     dispatch(fetchEventsAsync(client));
   }, [client, user, dispatch]);
 
-  return <Grid>
+  useEffect(() => {
+    dispatch(onAppUpdateAvailableChange(showReload && waitingWorker));
+  }, [waitingWorker, showReload, reloadPage, dispatch]);
+
+  return <Grid maxHeight={"100vh"}>
     <BrowserRouter>
       {
-        mode === "drinks" && <SideBar open={drawerOpen} onClose={() => setDrawerOpen(false)} onOpen={() => setDrawerOpen(true)} />
+        !appUpdateAvailable && <>
+          <CustomAppBar logout={() => supabase.auth.signOut()} handleMenuClick={(val) => setDrawerOpen(val)} drawerOpen={drawerOpen} />
+          <Toolbar />
+          <SideBar open={drawerOpen} onClose={() => setDrawerOpen(false)} onOpen={() => setDrawerOpen(true)} />
+          <Routes>
+            <Route path='/' element={<Navigate replace to={"/drinks"} />} />
+            <Route path='/browse' element={<Browse />} />
+            <Route path="/drinks" element={<DrinkList />} />
+            <Route path="/user" element={<UserScreen />} />
+            <Route path="/history" element={<HistoryScreen />} />
+            <Route path="/payments" element={<PayDrinksScreen />} />
+            <Route path="/training" element={<EventScreen />} />
+            <Route path="/training/event" element={<EventInformation />} />
+            <Route path="/training/create" element={<CreateEvent />} />
+            <Route path="*" element={<PageNotFound />} />
+
+            <Route path='/admin/drinks' element={<AdminDrinkList />} />
+            <Route path="/admin/drinks/history" element={<AdminHistoryScreen />} />
+            <Route path='/admin/drinks/payments' element={<PaymentsPendingAdmin />} />
+            <Route path='/admin/users' element={<AdminUserList />} />
+          </Routes>
+          <div style={{ width: "100%", height: "56px" }} />
+          <CustomBottomNavigation />
+        </>
       }
-      <CustomAppBar logout={() => supabase.auth.signOut()} handleMenuClick={(val) => setDrawerOpen(val)} drawerOpen={drawerOpen} />
-      <Toolbar />
-      <Routes>
-        <Route path='/' element={<Navigate replace to={"/drinks"} />} />
-        <Route path='/browse' element={<Browse />} />
-        <Route path="/drinks" element={<DrinkList />} />
-        <Route path="/user" element={<UserScreen />} />
-        <Route path="/history" element={<HistoryScreen />} />
-        <Route path="/payments" element={<PayDrinksScreen />} />
-        <Route path="/training" element={<EventScreen />} />
-        <Route path="/training/event" element={<EventInformation />} />
-        <Route path="/training/create" element={<CreateEvent />} />
-        <Route path="*" element={<PageNotFound />} />
-
-        {/* ADMIN SCREENS */}
-        <Route path='/admin/users' element={<AdminUserList />} />
-        <Route path="/admin/drinks/history" element={<AdminHistoryScreen />} />
-        <Route path='/admin/drinks/payments' element={<PaymentsPendingAdmin />} />
-        <Route path='/admin/drinks' element={<AdminDrinkList />} />
-      </Routes>
-
-      <CustomBottomNavigation />
-
+      {
+        appUpdateAvailable && <UpdateAvailable update={reloadPage} />
+      }
     </BrowserRouter>
 
   </Grid >

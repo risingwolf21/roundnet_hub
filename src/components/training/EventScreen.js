@@ -1,10 +1,9 @@
-import { Alert, Avatar, Box, CircularProgress, Fab, Grid, IconButton, LinearProgress, ListItem, ListItemAvatar, ListItemText, Paper, Snackbar, Typography } from "@mui/material";
+import { Box, Fab, Grid, LinearProgress, ListItem, ListItemAvatar, ListItemText, Paper, Typography } from "@mui/material";
 import { useDispatch, useSelector } from "react-redux";
 import moment from "moment";
-import { Loading } from "../Loading";
 import { Error } from "../Error";
 import { useNavigate } from 'react-router-dom';
-import React, { useState } from "react";
+import React from "react";
 import { selectEvent } from "../../redux/eventReducer";
 import AddIcon from '@mui/icons-material/Add';
 import { useAuth } from "../../hooks/useAuth";
@@ -65,7 +64,7 @@ const EventScreen = () => {
         {
             loading && <LinearProgress sx={{ position: "fixed", top: 56, left: 0, right: 0 }} />
         }
-        <Grid container sx={{ overflowY: "scroll", background: "#eee" }} width="100%" direction="row" alignItems="center" justifyContent="center" paddingTop={2} paddingLeft={2} paddingRight={2}>
+        <Grid container sx={{ overflowY: "scroll", background: "#eee", pl: 2, pr: 2, pt: 2, justifyContent: "center", alignItems: "center" }} width="100%" direction="row">
             {
                 events && events.map((event, index) => <EventItem key={"Drink" + index} event={event} onClick={() => {
                     dispatch(selectEvent(event));

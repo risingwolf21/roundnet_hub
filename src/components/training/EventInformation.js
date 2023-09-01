@@ -1,6 +1,6 @@
 import { AppBar, Box, Button, Container, Dialog, Divider, IconButton, ListItem, ListItemAvatar, ListItemText, Toolbar, Typography } from "@mui/material"
 import { SlideUpTransition } from "../../utils";
-import { ArrowBack, CalendarMonth, Check, CheckCircle, CheckCircleOutline, Close, DoNotDisturb, HelpOutline, Pending, RemoveCircleOutline } from "@mui/icons-material";
+import { ArrowBack, CalendarMonth, CheckCircleOutline, Close, HelpOutline, RemoveCircleOutline } from "@mui/icons-material";
 import { useSelector } from "react-redux";
 import moment from "moment";
 import { useNavigate } from 'react-router-dom';

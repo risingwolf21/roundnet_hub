@@ -4,37 +4,116 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.7.1'
 import { serve } from 'https://deno.land/std@0.177.0/http/server.ts'
 
-serve(async (_req) => {
-  try {
+serve(async (req: Request) => {
+	try {
 
-    const supabaseClient = createClient(
-      // Supabase API URL - env var exported by default.
-      Deno.env.get('SUPABASE_URL') ?? '',
-      // Supabase API ANON KEY - env var exported by default.
-      Deno.env.get('SUPABASE_ANON_KEY') ?? ''
-    )
+		const supabaseClient = createClient(
+			// Supabase API URL - env var exported by default.
+			Deno.env.get('SUPABASE_URL') ?? '',
+			// Supabase API ANON KEY - env var exported by default.
+			Deno.env.get('SUPABASE_ANON_KEY') ?? '',
+			{
+				global: {
+					headers: {
+						Authorization: req.headers.get('Authorization')!
+					}
+				},
+				auth: {
+					persistSession: false
+				}
+			},
+		);
 
-    const { data, error } = supabaseClient.from('distinct_event')
-      .select();
+		const { data, error } = await supabaseClient.from('distinct_event')
+			.select();
 
-    // Encode the result as pretty printed JSON
-    const body = JSON.stringify(
-      data
-    )
+		if (error) throw error
 
-    console.log("Body: ", body, error);
+		data.forEach(async (event) => {
+			switch (event.recurring) {
+				case "FORTNIGHTLY":
+				case "WEEKLY": {
+					let daysToAdd = event.recurring === "WEEKLY" ? 7 : 14;
+					let newStartingDateTime = new Date(event.startingDateTime);
+					newStartingDateTime.setDate(newStartingDateTime.getDate() + daysToAdd);
 
-    // Return the response with the correct content type header
-    return new Response(body, {
-      status: 200,
-      headers: {
-        'Content-Type': 'application/json; charset=utf-8',
-      },
-    })
-  } catch (err) {
-    console.error(err)
-    return new Response(String(err?.message ?? err), { status: 500 })
-  }
+					let newEvent = {
+						title: event.title,
+						recurring: event.recurring,
+						description: event.description,
+						startingDateTime: newStartingDateTime,
+						location: event.location,
+						"end_at": event["end_at"],
+						key: event.key,
+					};
+
+					if (event.meetingDateTime) {
+						let newMeetingDateTime = new Date(event.meetingDateTime);
+						newMeetingDateTime.setDate(newMeetingDateTime.getDate() + daysToAdd);
+						newEvent.meetingDateTime = newMeetingDateTime;
+					}
+
+					let maximumStartTime = new Date(event.startingDateTime);
+					maximumStartTime.setMonth(newStartingDateTime.getMonth() + 1);
+
+					if ((!event["end_at"] || newStartingDateTime < new Date(event["end_at"])) && newStartingDateTime <= maximumStartTime) {
+						console.log("Inserting new Event", event);
+						await supabaseClient.from("events").insert(newEvent);
+					} else {
+						console.log(`New event was not added to database. Either newStartingDateTime(${newStartingDateTime}) exeeded end_at (${event["end_at"]}) or maximumStartTime (${maximumStartTime})`)
+					}
+
+					break;
+				}
+				case "MONTHLY": {
+					let newStartingDateTime = new Date(event.startingDateTime);
+					newStartingDateTime.setMonth(newStartingDateTime.getMonth() + 1);
+
+					let newEvent = {
+						title: event.title,
+						recurring: event.recurring,
+						description: event.description,
+						startingDateTime: newStartingDateTime,
+						location: event.location,
+						"end_at": event["end_at"],
+						key: event.key,
+					};
+
+					if (event.meetingDateTime) {
+						let newMeetingDateTime = new Date(event.meetingDateTime);
+						newMeetingDateTime.setMonth(newMeetingDateTime.getMonth() + 1);
+						newEvent.meetingDateTime = newMeetingDateTime;
+					}
+
+					let maximumStartTime = new Date(event.startingDateTime);
+					maximumStartTime.setMonth(newStartingDateTime.getMonth() + 1);
+
+					if ((!event["end_at"] || newStartingDateTime < new Date(event["end_at"])) && newStartingDateTime <= maximumStartTime) {
+						console.log("Inserting new Event", event);
+						await supabaseClient.from("events").insert(newEvent);
+					} else {
+						console.log(`New event was not added to database. Either newStartingDateTime(${newStartingDateTime}) exeeded end_at (${event["end_at"]}) or maximumStartTime (${maximumStartTime})`)
+					}
+
+					break;
+				}
+				default:
+				case "NONE":
+					break;
+			}
+
+		});
+
+		// Return the response with the correct content type header
+		return new Response({
+			status: 200,
+			headers: {
+				'Content-Type': 'application/json; charset=utf-8',
+			},
+		})
+	} catch (error) {
+		return new Response(JSON.stringify({ error: error.message }), { status: 500 })
+	}
 })
 
 // To invoke:

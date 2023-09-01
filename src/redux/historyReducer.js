@@ -1,4 +1,6 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import { fetchDrinksAsync } from './drinkListReducer';
+import { DRINK_DELETED, DRINK_INSERTED, DRINK_UPDATED } from './names';
 
 const compareHistoryFn = (x, y) => {
     return x.id === y.id;
@@ -8,6 +10,7 @@ export const historyReducer = createSlice({
     name: 'history',
     initialState: {
         items: [],
+        drinks: [],
         endReached: false,
         error: null,
         loading: false
@@ -28,10 +31,48 @@ export const historyReducer = createSlice({
         },
         onHistoryInsert: (state, action) => {
             state.items = [...(state.items ?? []), action.payload.new]
-        },
+        }
     },
     extraReducers(builder) {
         builder
+            /**
+             * Drinks realtime updating
+             */
+            .addCase(DRINK_UPDATED, (state, action) => {
+                const index = state.drinks.findIndex((x) =>
+                    x.id === action.payload.new.id,
+                )
+                state.drinks = [
+                    ...state.drinks.slice(0, index),
+                    action.payload.new,
+                    ...state.drinks.slice(index + 1)
+                ]
+            })
+            .addCase(DRINK_DELETED, (state, action) => {
+                state.drinks = state.drinks.filter(x => x.id !== action.payload.old)
+            })
+            .addCase(DRINK_INSERTED, (state, action) => {
+                state.drinks = [...(state.drinks ?? []), action.payload.new]
+            })
+            /**
+             * Drinks initial loading
+             */
+            .addCase(fetchDrinksAsync.pending, (state, action) => {
+                state.loading = true;
+            })
+            .addCase(fetchDrinksAsync.fulfilled, (state, action) => {
+                state.loading = false;
+                state.error = '';
+
+                state.drinks = action.payload
+            })
+            .addCase(fetchDrinksAsync.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.error.message;
+            })
+            /**
+             * History initial loading
+             */
             .addCase(fetchHistoryAsync.pending, (state, action) => {
                 state.loading = true;
             })
@@ -39,7 +80,7 @@ export const historyReducer = createSlice({
                 state.loading = false;
                 state.error = '';
 
-                if (action.payload.entries.length < 1) {
+                if (action.payload.entries && action.payload.entries.length < 1) {
                     state.endReached = true
                 }
                 else {

@@ -1,9 +1,5 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 
-const compareDrinkFn = (x, y) => {
-  return x.id === y.id;
-}
-
 export const eventReducer = createSlice({
   name: 'events',
   initialState: {
@@ -30,6 +26,7 @@ export const eventReducer = createSlice({
       .addCase(fetchEventsAsync.rejected, (state, action) => {
         state.loading = false;
         state.error = action.error.message;
+        state.items = [];
       })
   }
 });
