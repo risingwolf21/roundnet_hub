@@ -29,14 +29,14 @@ if (process.env.NODE_ENV === "production") {
 
 OneSignal.init(
   {
-    appId: "a66ef7ea-b977-4fc4-9678-cb2bbf4fdba9",
-    safari_web_id: "web.onesignal.auto.1b5e3a9a-fd8d-4cbc-b150-cc0a98b0f0fe",
+    appId: process.env.REACT_APP_oneSignalAppId,
+    safari_web_id: process.env.REACT_APP_oneSignalSafariWebId,
     notifyButton: {
       enable: true,
     },
-    allowLocalhostAsSecureOrigin: true,
   }
 );
+
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
