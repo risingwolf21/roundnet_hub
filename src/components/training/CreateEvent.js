@@ -112,19 +112,19 @@ const CreateEvent = ({ t }) => {
                         <AccessTime />
                     </ListItemAvatar>
 
-                    <DatePicker sx={{ width: "100%" }} label="Datum" onChange={(val) => setStartDate(val)} defaultValue={startDate} />
+                    <DatePicker sx={{ width: "100%" }} label="Datum" disablePast format="DD MMMM YYYY" onChange={(val) => setStartDate(val)} defaultValue={startDate} />
                 </ListItem>
 
                 <ListItem sx={{ pt: 0, pb: 0, mb: 2 }}>
                     <ListItemAvatar />
 
-                    <TimePicker sx={{ width: "100%" }} views={['hours', 'minutes']} label="Startzeit" onChange={(val) => setStartTime(val)} defaultValue={startTime} />
+                    <TimePicker sx={{ width: "100%" }} views={['hours', 'minutes']} ampm={false} label="Startzeit" onChange={(val) => setStartTime(val)} defaultValue={startTime} />
                 </ListItem>
 
                 <ListItem sx={{ pt: 0, pb: 0 }}>
                     <ListItemAvatar />
 
-                    <TimePicker sx={{ width: "100%" }} views={['hours', 'minutes']} label="Treffpunkt" onChange={(val) => setMeetingTime(val)} defaultValue={meetingTime} />
+                    <TimePicker sx={{ width: "100%" }} views={['hours', 'minutes']} ampm={false} label="Treffpunkt" onChange={(val) => setMeetingTime(val)} defaultValue={meetingTime} />
                 </ListItem>
 
                 <ListItem sx={{ pt: 0, pb: 0 }}>
