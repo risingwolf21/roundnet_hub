@@ -1,4 +1,4 @@
-import { Box, Divider, Fab, Grid, IconButton, LinearProgress, List, ListItem, ListItemAvatar, ListItemSecondaryAction, ListItemText, Paper, Typography } from "@mui/material";
+import { Box, Divider, Fab, Grid, IconButton, LinearProgress, List, ListItem, ListItemAvatar, ListItemSecondaryAction, ListItemText, Typography } from "@mui/material";
 import { useDispatch, useSelector } from "react-redux";
 import moment from "moment";
 import { Error } from "../Error";
@@ -10,6 +10,8 @@ import { useAuth } from "../../hooks/useAuth";
 import { ThumbDownAlt, ThumbDownOffAlt, ThumbUpAlt, ThumbUpOffAlt } from "@mui/icons-material";
 import { ATTENDING, DECLINED } from "../../constants";
 import { useClient } from "react-supabase";
+import EventInformation from "./EventInformation";
+import { useState } from "react";
 
 const EventItem = ({ event, onClick, attendEvent, declineEvent }) => {
 
@@ -58,6 +60,7 @@ const EventScreen = () => {
     const { items: events, loading, error } = useSelector((state) => state.events);
     const { user } = useAuth();
     const client = useClient();
+    const [eventInfoOpen, setEventInfoOpen] = useState(false);
 
     if (error)
         return <Error message={error} />
@@ -96,7 +99,7 @@ const EventScreen = () => {
                         declineEvent={() => declineEvent(event.id)}
                         onClick={() => {
                             dispatch(selectEvent({ event, userId: user.id }));
-                            navigate("event")
+                            setEventInfoOpen(true)
                         }} />
                     <Divider />
                 </div>)
@@ -110,6 +113,7 @@ const EventScreen = () => {
                 }
             </Fab>
         }
+        <EventInformation open={eventInfoOpen} handleClose={() => setEventInfoOpen(false)} attendEvent={attendEvent} declineEvent={declineEvent} />
     </Grid >);
 }
 

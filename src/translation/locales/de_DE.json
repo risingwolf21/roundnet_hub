@@ -15,8 +15,8 @@
     },
     "events": {
         "creation": {
-            "meetingTimeBeforeStartTime": "Die Treffpunktzeit darf nicht vor der Startzeit liegen",
-            "titleEmpty": "Der Titel des Events darf nicht leer sein",
+            "meetingTimeBeforeStartTime": "Die Treffpunktzeit darf nicht nach der Startzeit liegen",
+            "titleTooShort": "Der Titel des Events muss aus mindestens 6 Zeichen bestehen",
             "descriptionEmpty": "Die Beschreibung des Events darf nicht leer sein"
         }
     }

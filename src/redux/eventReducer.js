@@ -11,7 +11,6 @@ export const eventReducer = createSlice({
   },
   reducers: {
     selectEvent: (state, action) => {
-      console.log(action.payload)
       state.selectedEvent = {
         ...action.payload.event,
         currentUserAttendanceState: action.payload.event?.attendance?.find(x => x.user.userId === action.payload.userId)?.state ?? UNANSWERED

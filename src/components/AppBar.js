@@ -1,11 +1,9 @@
 import AppBar from '@mui/material/AppBar';
-import Box from '@mui/material/Box';
 import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
-import { Button, IconButton } from "@mui/material";
+import { IconButton } from "@mui/material";
 import MenuIcon from '@mui/icons-material/Menu';
-import { useLocation, useNavigate } from 'react-router-dom';
-import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { AccountCircle, ArrowBack, Close } from '@mui/icons-material';
 import { useSelector } from 'react-redux';
 

@@ -3,42 +3,21 @@ import { SlideUpTransition } from "../../utils";
 import { ArrowBack, CalendarMonth, CheckCircleOutline, Close, HelpOutline, RemoveCircleOutline } from "@mui/icons-material";
 import { useSelector } from "react-redux";
 import moment from "moment";
-import { useNavigate } from 'react-router-dom';
 import { useState } from "react";
 import { ATTENDING, DECLINED, UNANSWERED } from "../../constants";
-import { useClient } from "react-supabase";
-import { useAuth } from "../../hooks/useAuth";
+import EventAttendanceDialog from "./EventAttendanceDialog";
 
-const EventInformation = () => {
-
-    const navigate = useNavigate();
+const EventInformation = ({ open, handleClose, attendEvent, declineEvent }) => {
 
     const { selectedEvent } = useSelector((state) => state.events);
-    const client = useClient();
-    const { user } = useAuth();
 
-    const [attendanceState, setAttendanceState] = useState(selectedEvent.currentUserAttendanceState ?? UNANSWERED);
-
-    const attendEvent = () => {
-        client.from("event_attendance_user_mapping").upsert({
-            user: user.id,
-            event: selectedEvent.id,
-            state: ATTENDING
-        }).then(value => setAttendanceState(ATTENDING))
-    }
-
-    const declineEvent = () => {
-        client.from("event_attendance_user_mapping").upsert({
-            user: user.id,
-            event: selectedEvent.id,
-            state: DECLINED
-        }).then(value => setAttendanceState(DECLINED))
-    }
+    const [attendanceState, setAttendanceState] = useState(selectedEvent?.currentUserAttendanceState ?? UNANSWERED);
+    const [eventAttendanceOpen, setEventAttendanceOpen] = useState(false);
 
     return <Dialog
         fullScreen
-        open={true}
-        onClose={() => navigate("/training", { replace: true })}
+        open={open}
+        onClose={handleClose}
         TransitionComponent={SlideUpTransition}>
         <Box>
             <AppBar sx={{ position: "relative" }}>
@@ -46,20 +25,19 @@ const EventInformation = () => {
                     <IconButton
                         edge="start"
                         color="inherit"
-                        onClick={() => navigate("/training", { replace: true })}
+                        onClick={handleClose}
                         aria-label="close">
                         <ArrowBack />
                     </IconButton>
                 </Toolbar>
             </AppBar>
-
             <Box pl={2} pt={2}>
                 <Typography variant="h5" fontWeight={"bold"}>{selectedEvent?.title}</Typography>
                 <ListItem sx={{ '&.MuiListItem-root': { paddingLeft: 0 } }}>
                     <ListItemAvatar>
                         <CalendarMonth />
                     </ListItemAvatar>
-                    <ListItemText>{moment(new Date(selectedEvent?.meetingDateTime)).format("DD-MM-yyyy [at] HH:mm")}</ListItemText>
+                    <ListItemText>{moment(new Date(selectedEvent?.meetingDateTime)).format("DD.MM.yyyy [um] HH:mm")}</ListItemText>
                 </ListItem>
                 <Typography variant="h6" fontWeight="bold">Beschreibung</Typography>
                 <Typography pb={2}>{selectedEvent?.description}</Typography>
@@ -71,19 +49,19 @@ const EventInformation = () => {
                 </Box>
                 <Divider />
                 <Typography pt={2} variant="h6" fontWeight="bold">Teilnehmer</Typography>
-                <ListItem sx={{ '&.MuiListItem-root': { paddingLeft: 0 } }}>
+                <ListItem sx={{ '&.MuiListItem-root': { paddingLeft: 0 } }} onClick={() => setEventAttendanceOpen(true)}>
                     <ListItemAvatar>
                         <CheckCircleOutline color="success" />
                     </ListItemAvatar>
                     <ListItemText>{selectedEvent?.attendance?.filter(x => x.state === ATTENDING).length ?? 0} zusagen</ListItemText>
                 </ListItem>
-                <ListItem sx={{ '&.MuiListItem-root': { paddingLeft: 0 } }}>
+                <ListItem sx={{ '&.MuiListItem-root': { paddingLeft: 0 } }} onClick={() => setEventAttendanceOpen(true)}>
                     <ListItemAvatar>
                         <HelpOutline color="warning" />
                     </ListItemAvatar>
                     <ListItemText>0 unbeantwortet</ListItemText>
                 </ListItem>
-                <ListItem sx={{ '&.MuiListItem-root': { paddingLeft: 0 } }}>
+                <ListItem sx={{ '&.MuiListItem-root': { paddingLeft: 0 } }} onClick={() => setEventAttendanceOpen(true)}>
                     <ListItemAvatar>
                         <RemoveCircleOutline color="error" />
                     </ListItemAvatar>
@@ -91,6 +69,7 @@ const EventInformation = () => {
                 </ListItem>
                 <Divider />
             </Box>
+            <EventAttendanceDialog open={eventAttendanceOpen} handleClose={() => setEventAttendanceOpen(false)} event={selectedEvent} />
         </Box>
     </Dialog>
 }

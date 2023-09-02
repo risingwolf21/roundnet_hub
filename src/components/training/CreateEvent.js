@@ -40,14 +40,14 @@ const CreateEvent = ({ t }) => {
                 recurring: repeat,
                 location: data.get("eventPlace"),
             }
-            if (data.get("eventTitle").length)
-                throw new Error(t("event.creation.titleEmpty"))
-            
-            if (data.get("eventDescription").length)
-                throw new Error(t("event.creation.descriptionEmpty"))
+            if (data.get("eventTitle").length < 6)
+                throw new Error(t("events.creation.titleTooShort"))
 
-            if (meetingDateTime < startingDateTime)
-                throw new Error(t("event.creation.meetingTimeBeforeStartTime"))
+            if (data.get("eventDescription").length < 1)
+                throw new Error(t("events.creation.descriptionEmpty"))
+
+            if (meetingDateTime > startingDateTime)
+                throw new Error(t("events.creation.meetingTimeBeforeStartTime"))
 
             const { error } = await client.from("events").insert(event);
 
