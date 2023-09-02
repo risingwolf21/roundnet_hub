@@ -31,14 +31,14 @@ const EventItem = ({ event, onClick, attendEvent, declineEvent }) => {
         <ListItemText primary={event.title} secondary={moment(new Date(event.meetingDateTime)).format("dddd [at] HH:mm")} />
         <ListItemSecondaryAction>
             <Box sx={{ display: "flex", flexDirection: "row" }}>
-                <IconButton onClick={attendEvent}>
+                <IconButton onClick={declineEvent}>
                     {
                         event.userAttendance === DECLINED
                             ? <ThumbDownAlt fontSize="inherit" sx={{ fontSize: "28px", color: "red" }} />
                             : <ThumbDownOffAlt fontSize="inherit" sx={{ fontSize: "28px" }} />
                     }
                 </IconButton>
-                <IconButton onClick={declineEvent}>
+                <IconButton onClick={attendEvent}>
                     {
                         event.userAttendance === ATTENDING
                             ? <ThumbUpAlt fontSize="inherit" sx={{ fontSize: "28px", color: "green" }} />
@@ -62,16 +62,16 @@ const EventScreen = () => {
     if (error)
         return <Error message={error} />
 
-    const attendEvent = (eventId) => {
-        client.from("event_attendance_user_mapping").upsert({
+    const attendEvent = async (eventId) => {
+        await client.from("event_attendance_user_mapping").upsert({
             user: user.id,
             event: eventId,
             state: ATTENDING
         });
     }
 
-    const declineEvent = (eventId) => {
-        client.from("event_attendance_user_mapping").upsert({
+    const declineEvent = async (eventId) => {
+        await client.from("event_attendance_user_mapping").upsert({
             user: user.id,
             event: eventId,
             state: DECLINED
