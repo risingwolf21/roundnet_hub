@@ -17,7 +17,7 @@ const EventInformation = () => {
     const client = useClient();
     const { user } = useAuth();
 
-    const [attendanceState, setAttendanceState] = useState(UNANSWERED);
+    const [attendanceState, setAttendanceState] = useState(selectedEvent.currentUserAttendanceState ?? UNANSWERED);
 
     const attendEvent = () => {
         client.from("event_attendance_user_mapping").upsert({

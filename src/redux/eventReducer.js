@@ -1,4 +1,5 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import { UNANSWERED } from '../constants';
 
 export const eventReducer = createSlice({
   name: 'events',
@@ -10,7 +11,11 @@ export const eventReducer = createSlice({
   },
   reducers: {
     selectEvent: (state, action) => {
-      state.selectedEvent = action.payload
+      console.log(action.payload)
+      state.selectedEvent = {
+        ...action.payload.event,
+        currentUserAttendanceState: action.payload.event?.attendance?.find(x => x.user.userId === action.payload.userId)?.state ?? UNANSWERED
+      }
     }
   },
   extraReducers(builder) {
@@ -31,9 +36,15 @@ export const eventReducer = createSlice({
   }
 });
 
-export const fetchEventsAsync = createAsyncThunk("events", async (client) => {
-  const response = await client.from("events").select("*, attendance: event_attendance_user_mapping ( state , user ( displayName, userId )  )")
-  return response.data;
+export const fetchEventsAsync = createAsyncThunk("events", async ({ client, user }) => {
+  const attendanceFromUser = await client.from("event_attendance_user_mapping").select("user(userId), event (id), state").eq("user.userId", user.id);
+  const response = await client.from("events").select("*, attendance: event_attendance_user_mapping ( state , user ( displayName, userId )  )");
+  return response.data.map(x => {
+    return {
+      ...x,
+      userAttendance: attendanceFromUser.data?.find(y => y.event.id === x.id)?.state ?? UNANSWERED
+    }
+  });
 });
 
 export const { selectEvent } = eventReducer.actions;

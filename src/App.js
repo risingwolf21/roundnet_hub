@@ -45,7 +45,7 @@ const App = () => {
     dispatch(fetchPaymentAsync({ client, user }));
     dispatch(fetchHistoryAsync({ client, user }));
     dispatch(fetchDrinksAsync(client));
-    dispatch(fetchEventsAsync(client));
+    dispatch(fetchEventsAsync({ client, user }));
   }, [client, user, dispatch]);
 
   useEffect(() => {

@@ -3,10 +3,13 @@ import { useEffect } from "react";
 import { connect } from "react-redux";
 import { onHistoryDelete, onHistoryInsert, onHistoryUpdate } from "../redux/historyReducer";
 import { drinkDeleted, drinkInserted, drinkUpdated } from "../redux";
+import { fetchEventsAsync } from "../redux/eventReducer";
+import { useAuth } from "../hooks/useAuth";
 
 const SubscriptionHandler = ({ children, dispatch }) => {
 
     const client = useClient();
+    const { user } = useAuth();
 
     useEffect(() => {
         let subscription = client
@@ -18,6 +21,10 @@ const SubscriptionHandler = ({ children, dispatch }) => {
             .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'history' }, payload => dispatch(onHistoryUpdate(payload)))
             .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'history' }, payload => dispatch(onHistoryDelete(payload)))
             .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'history' }, payload => dispatch(onHistoryInsert(payload)))
+
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'events' }, payload => dispatch(fetchEventsAsync({ client, user })))
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'event_attendance_user_mapping' }, payload => dispatch(fetchEventsAsync({ client, user })))
+
             .subscribe(x => console.log(x), x => console.log(x));
 
         return () => {
