@@ -4,13 +4,12 @@ import { ArrowBack, CalendarMonth, CheckCircleOutline, Close, HelpOutline, Remov
 import { useSelector } from "react-redux";
 import moment from "moment";
 import { useNavigate } from 'react-router-dom';
-import { withTranslation } from "react-i18next";
 import { useState } from "react";
 import { ATTENDING, DECLINED, UNANSWERED } from "../../constants";
 import { useClient } from "react-supabase";
 import { useAuth } from "../../hooks/useAuth";
 
-const EventInformation = ({ handleClose, t }) => {
+const EventInformation = () => {
 
     const navigate = useNavigate();
 
@@ -39,7 +38,7 @@ const EventInformation = ({ handleClose, t }) => {
     return <Dialog
         fullScreen
         open={true}
-        onClose={() => navigate("/training")}
+        onClose={() => navigate("/training", { replace: true })}
         TransitionComponent={SlideUpTransition}>
         <Box>
             <AppBar sx={{ position: "relative" }}>
@@ -47,11 +46,10 @@ const EventInformation = ({ handleClose, t }) => {
                     <IconButton
                         edge="start"
                         color="inherit"
-                        onClick={() => navigate("/training")}
+                        onClick={() => navigate("/training", { replace: true })}
                         aria-label="close">
                         <ArrowBack />
                     </IconButton>
-                    <Typography>{t("TEST")}</Typography>
                 </Toolbar>
             </AppBar>
 
@@ -77,7 +75,7 @@ const EventInformation = ({ handleClose, t }) => {
                     <ListItemAvatar>
                         <CheckCircleOutline color="success" />
                     </ListItemAvatar>
-                    <ListItemText>{selectedEvent.attendance.filter(x => x.state === ATTENDING).length} zusagen</ListItemText>
+                    <ListItemText>{selectedEvent?.attendance?.filter(x => x.state === ATTENDING).length ?? 0} zusagen</ListItemText>
                 </ListItem>
                 <ListItem sx={{ '&.MuiListItem-root': { paddingLeft: 0 } }}>
                     <ListItemAvatar>
@@ -89,7 +87,7 @@ const EventInformation = ({ handleClose, t }) => {
                     <ListItemAvatar>
                         <RemoveCircleOutline color="error" />
                     </ListItemAvatar>
-                    <ListItemText>{selectedEvent.attendance.filter(x => x.state === DECLINED).length} absagen</ListItemText>
+                    <ListItemText>{selectedEvent?.attendance?.filter(x => x.state === DECLINED).length ?? 0} absagen</ListItemText>
                 </ListItem>
                 <Divider />
             </Box>
@@ -97,4 +95,4 @@ const EventInformation = ({ handleClose, t }) => {
     </Dialog>
 }
 
-export default withTranslation()(EventInformation);
+export default EventInformation;

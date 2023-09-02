@@ -29,6 +29,8 @@ import { useServiceWorker } from './hooks/useServiceWorker';
 import { onAppUpdateAvailableChange } from './redux/applicationReducer';
 import UpdateAvailable from './components/UpdateAvailable';
 import { fetchEventsAsync } from './redux/eventReducer';
+import i18n from './translation/i18n';
+import { useTranslation } from 'react-i18next';
 
 const App = () => {
 
@@ -37,8 +39,6 @@ const App = () => {
   const dispatch = useDispatch();
   const client = useClient();
   const { user } = useAuth();
-
-  const { mode } = useSelector((state) => state.application);
   const { appUpdateAvailable } = useSelector((state) => state.application);
 
   useEffect(() => {

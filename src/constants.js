@@ -13,6 +13,7 @@ export const UNANSWERED = "UNANSWERED";
 export const ATTENDING = "ATTENDING";
 export const DECLINED = "DECLINED";
 
+export const NON_REPEAT = "NON_REPEAT";
 export const WEEKLY = "WEEKLY";
 export const FORTNIGHTLY = "FORTNIGHTLY";
 export const MONTHLY = "MONTHLY";

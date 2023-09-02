@@ -15,6 +15,7 @@ import SubscriptionHandler from './components/SubscriptionHandler';
 import { Provider } from 'react-redux';
 import store from './redux/store';
 import OneSignal from "react-onesignal";
+import "./translation/i18n";
 
 if (process.env.NODE_ENV === "production") {
   Sentry.init({

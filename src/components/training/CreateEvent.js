@@ -1,53 +1,69 @@
-import { AppBar, Box, Button, Dialog, IconButton, Toolbar, Typography, TextField, ListItem, ListItemAvatar, ListItemText, DialogTitle, DialogContent, FormControl, FormControlLabel, RadioGroup, Radio, Divider, Checkbox, DialogActions, List, InputAdornment } from "@mui/material"
+import { AppBar, Box, Button, Dialog, IconButton, Toolbar, Typography, TextField, ListItem, ListItemAvatar, ListItemText, DialogTitle, DialogContent, FormControl, FormControlLabel, RadioGroup, Radio, Divider, Checkbox, DialogActions, List, InputAdornment, Snackbar, Alert } from "@mui/material"
 import { SlideUpTransition } from "../../utils"
 import { AccessTime, Article, Close, Event, Map } from "@mui/icons-material";
 import { useNavigate } from 'react-router-dom';
-import { DatePicker, DateTimePicker } from "@mui/x-date-pickers";
+import { DatePicker } from "@mui/x-date-pickers";
+import { TimePicker } from '@mui/x-date-pickers/TimePicker';
 import { useState } from "react";
 import moment from "moment";
-import { FORTNIGHTLY, MONTHLY, WEEKLY } from "../../constants";
+import { FORTNIGHTLY, MONTHLY, NON_REPEAT, WEEKLY } from "../../constants";
 import EventRepeatIcon from '@mui/icons-material/EventRepeat';
-import { toInteger } from "lodash";
 import { useClient } from "react-supabase";
+import { withTranslation } from 'react-i18next';
 
-const CreateEvent = () => {
+const CreateEvent = ({ t }) => {
 
     const navigate = useNavigate();
     const client = useClient();
 
-    const [startDateTime, setStartDateTime] = useState(moment());
+    const [startDate, setStartDate] = useState(moment());
+    const [startTime, setStartTime] = useState(moment());
+    const [meetingTime, setMeetingTime] = useState(moment());
     const [stopRepeatDateTime, setStopRepeatDateTime] = useState(moment());
     const [stopRepeatDisabled, setStopRepeatDisabled] = useState(true);
     const [stopRepeatDialogOpen, setStopRepeatDialogOpen] = useState(false);
     const [repeatDialogOpen, setRepeatDialogOpen] = useState(false);
     const [repeat, setRepeat] = useState(WEEKLY);
-    const [meetingTime, setMeetingTime] = useState(0);
+    const [errorSnackbar, setErrorSnackbar] = useState({ open: false, message: "" })
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        const data = new FormData(e.currentTarget);
-        let event = {
-            title: data.get("eventTitle"),
-            description: data.get("eventDescription"),
-            startingDateTime: startDateTime.format("yyyy-MM-DD HH:mm:ss"),
-            meetingDateTime: startDateTime.add(meetingTime, "minutes").format("yyyy-MM-DD HH:mm:ss"),
-            recurring: repeat,
-            location: data.get("eventPlace"),
-        }
-        await client.from("events").insert(event);
-    }
+        try {
+            const data = new FormData(e.currentTarget);
+            let startingDateTime = startDate.format("yyyy-MM-DD") + " " + startTime.format("HH:mm:ss");
+            let meetingDateTime = startDate.format("yyyy-MM-DD") + " " + meetingTime.format("HH:mm:ss");
+            let event = {
+                title: data.get("eventTitle"),
+                description: data.get("eventDescription"),
+                startingDateTime: startingDateTime,
+                meetingDateTime: meetingDateTime,
+                recurring: repeat,
+                location: data.get("eventPlace"),
+            }
+            if (data.get("eventTitle").length)
+                throw new Error(t("event.creation.titleEmpty"))
+            
+            if (data.get("eventDescription").length)
+                throw new Error(t("event.creation.descriptionEmpty"))
 
-    const handleMeetingTimeChange = (event) => {
-        event.preventDefault();
-        if (event.target.value < 60) {
-            setMeetingTime(toInteger(event.target.value));
+            if (meetingDateTime < startingDateTime)
+                throw new Error(t("event.creation.meetingTimeBeforeStartTime"))
+
+            const { error } = await client.from("events").insert(event);
+
+            if (error) throw error;
+
+            navigate("/training", { replace: true });
+            setErrorSnackbar({ open: false, message: "" });
+        } catch (error) {
+            setErrorSnackbar({ open: true, message: error.message })
         }
     }
 
     return <Dialog
         fullScreen
         open={true}
-        onClose={() => navigate("/training")}
+        onClose={() => navigate("/training", { replace: true })}
         TransitionComponent={SlideUpTransition}>
         <Box component="form" onSubmit={handleSubmit} noValidate>
             <AppBar sx={{ position: "relative" }}>
@@ -55,7 +71,7 @@ const CreateEvent = () => {
                     <IconButton
                         edge="start"
                         color="inherit"
-                        onClick={() => navigate("/training")}
+                        onClick={() => navigate("/training", { replace: true })}
                         aria-label="close">
                         <Close />
                     </IconButton>
@@ -89,32 +105,29 @@ const CreateEvent = () => {
                         margin="normal" />
                 </ListItem>
 
-                <Divider />
+                <Divider sx={{ mb: 2, mt: 2 }} />
 
-                <ListItem sx={{ pt: 0, pb: 0 }}>
+                <ListItem sx={{ pt: 0, pb: 0, mb: 2 }}>
                     <ListItemAvatar>
                         <AccessTime />
                     </ListItemAvatar>
 
-                    <DateTimePicker sx={{ mt: 2, mb: 2, width: "100%" }} label="Startzeit" onChange={(val) => setStartDateTime(val)} defaultValue={startDateTime} />
+                    <DatePicker sx={{ width: "100%" }} label="Datum" onChange={(val) => setStartDate(val)} defaultValue={startDate} />
+                </ListItem>
+
+                <ListItem sx={{ pt: 0, pb: 0, mb: 2 }}>
+                    <ListItemAvatar />
+
+                    <TimePicker sx={{ width: "100%" }} views={['hours', 'minutes']} label="Startzeit" onChange={(val) => setStartTime(val)} defaultValue={startTime} />
                 </ListItem>
 
                 <ListItem sx={{ pt: 0, pb: 0 }}>
                     <ListItemAvatar />
 
-                    <TextField
-                        fullWidth
-                        type="number"
-                        id="meetingTime"
-                        name="meetingTime"
-                        variant="standard"
-                        value={meetingTime}
-                        onChange={handleMeetingTimeChange}
-                        label="Treffpunkt vor Training (Minuten)"
-                        margin="normal" />
+                    <TimePicker sx={{ width: "100%" }} views={['hours', 'minutes']} label="Treffpunkt" onChange={(val) => setMeetingTime(val)} defaultValue={meetingTime} />
                 </ListItem>
 
-                <ListItem>
+                <ListItem sx={{ pt: 0, pb: 0 }}>
                     <ListItemAvatar>
                         <Map />
                     </ListItemAvatar>
@@ -123,7 +136,7 @@ const CreateEvent = () => {
                         fullWidth
                         id="eventPlace"
                         name="eventPlace"
-                        variant="standard"
+                        variant="outlined"
                         label="Ort"
                         margin="normal" />
                 </ListItem>
@@ -156,6 +169,7 @@ const CreateEvent = () => {
                             setRepeatDialogOpen(false);
                         }}
                         name="radio-buttons-group">
+                        <FormControlLabel value={NON_REPEAT} control={<Radio />} label="Gar nicht" />
                         <FormControlLabel value={WEEKLY} control={<Radio />} label="Wöchentlich" />
                         <FormControlLabel value={FORTNIGHTLY} control={<Radio />} label="Alle 2 Wochen" />
                         <FormControlLabel value={MONTHLY} control={<Radio />} label="Monatlich" />
@@ -168,7 +182,7 @@ const CreateEvent = () => {
             <DialogTitle>Wiederholung</DialogTitle>
             <DialogContent>
 
-                <FormControlLabel control={<Checkbox value={stopRepeatDisabled} onChange={(e) => setStopRepeatDisabled(e.target.checked)} />} label="Niemals" />
+                <FormControlLabel control={<Checkbox checked={stopRepeatDisabled} onChange={(e) => setStopRepeatDisabled(e.target.checked)} />} label="Niemals" />
 
                 <DatePicker sx={{ mt: 2, mb: 2, width: "100%" }} label="Start"
                     onChange={(val) => setStopRepeatDateTime(val)}
@@ -182,7 +196,14 @@ const CreateEvent = () => {
                 <Button onClick={() => setStopRepeatDialogOpen(false)}>Bestätigen</Button>
             </DialogActions>
         </Dialog>
+
+        <Snackbar sx={{ position: "fixed", right: "16px", }} open={errorSnackbar.open} autoHideDuration={1500}>
+            <Alert severity={"error"} sx={{ width: '100%' }}>
+                {errorSnackbar.message}
+            </Alert>
+        </Snackbar>
+
     </Dialog >
 }
 
-export default CreateEvent;
+export default withTranslation()(CreateEvent);

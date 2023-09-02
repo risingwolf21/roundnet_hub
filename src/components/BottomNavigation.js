@@ -4,27 +4,28 @@ import { useState } from "react";
 import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { onModeChange } from "../redux/applicationReducer";
+import { withTranslation } from 'react-i18next';
 
-const CustomBottomNavigation = () => {
+const CustomBottomNavigation = ({ t }) => {
 
     let navigate = useNavigate();
     let dispatch = useDispatch();
 
     const tabs = [
         {
-            label: "Getränke",
+            translationKey: "drinks",
             path: "drinks",
             index: 0,
             icon: <Liquor />
         },
         {
-            label: "Training",
+            translationKey: "training",
             path: "training",
             index: 1,
             icon: <CalendarToday />
         },
         {
-            label: "Browse",
+            translationKey: "browse",
             path: "browse",
             index: 2,
             icon: <List />
@@ -45,10 +46,10 @@ const CustomBottomNavigation = () => {
             value={tab}
             onChange={handleChange}>
             {
-                tabs.map(x => <BottomNavigationAction key={x.label} label={x.label} icon={x.icon} />)
+                tabs.map(x => <BottomNavigationAction key={x.translationKey} label={t("navigation." + x.translationKey)} icon={x.icon} />)
             }
         </BottomNavigation>
     </Paper>
 }
 
-export default CustomBottomNavigation;
+export default withTranslation()(CustomBottomNavigation);
