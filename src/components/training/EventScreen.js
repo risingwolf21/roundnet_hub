@@ -1,10 +1,10 @@
-import { Box, Divider, Fab, Grid, IconButton, LinearProgress, List, ListItem, ListItemAvatar, ListItemSecondaryAction, ListItemText, Typography } from "@mui/material";
+import { Alert, Box, Divider, Fab, Grid, IconButton, LinearProgress, List, ListItem, ListItemAvatar, ListItemSecondaryAction, ListItemText, Snackbar, Typography } from "@mui/material";
 import { useDispatch, useSelector } from "react-redux";
 import moment from "moment";
 import { Error } from "../Error";
 import { useNavigate } from 'react-router-dom';
 import React from "react";
-import { selectEvent } from "../../redux/eventReducer";
+import { fetchEventsAsync, selectEvent } from "../../redux/eventReducer";
 import AddIcon from '@mui/icons-material/Add';
 import { useAuth } from "../../hooks/useAuth";
 import { ThumbDownAlt, ThumbDownOffAlt, ThumbUpAlt, ThumbUpOffAlt } from "@mui/icons-material";
@@ -12,6 +12,7 @@ import { ATTENDING, DECLINED } from "../../constants";
 import { useClient } from "react-supabase";
 import EventInformation from "./EventInformation";
 import { useState } from "react";
+import { useEffect } from "react";
 
 const EventItem = ({ event, onClick, attendEvent, declineEvent }) => {
 
@@ -61,24 +62,31 @@ const EventScreen = () => {
     const { user } = useAuth();
     const client = useClient();
     const [eventInfoOpen, setEventInfoOpen] = useState(false);
+    const [eventUpdateError, setUpdateEventError] = useState("");
+
+    useEffect(() => {
+        dispatch(fetchEventsAsync({ client, user }));
+    }, [dispatch, client, user]);
 
     if (error)
         return <Error message={error} />
 
     const attendEvent = async (eventId) => {
-        await client.from("event_attendance_user_mapping").upsert({
+        const { error } = await client.from("event_attendance_user_mapping").upsert({
             user: user.id,
             event: eventId,
             state: ATTENDING
         });
+        setUpdateEventError(error?.message ?? "");
     }
 
     const declineEvent = async (eventId) => {
-        await client.from("event_attendance_user_mapping").upsert({
+        const { error } = await client.from("event_attendance_user_mapping").upsert({
             user: user.id,
             event: eventId,
             state: DECLINED
         });
+        setUpdateEventError(error?.message ?? "");
     }
 
     return (<Grid
@@ -114,6 +122,12 @@ const EventScreen = () => {
             </Fab>
         }
         <EventInformation open={eventInfoOpen} handleClose={() => setEventInfoOpen(false)} attendEvent={attendEvent} declineEvent={declineEvent} />
+
+        <Snackbar sx={{ position: "fixed", right: "16px", }} open={eventUpdateError !== ""} autoHideDuration={2500}>
+            <Alert severity={"error"} sx={{ width: '100%' }}>
+                {eventUpdateError}
+            </Alert>
+        </Snackbar>
     </Grid >);
 }
 

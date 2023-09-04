@@ -10,8 +10,6 @@ import EventAttendanceDialog from "./EventAttendanceDialog";
 const EventInformation = ({ open, handleClose, attendEvent, declineEvent }) => {
 
     const { selectedEvent } = useSelector((state) => state.events);
-
-    const [attendanceState, setAttendanceState] = useState(selectedEvent?.currentUserAttendanceState ?? UNANSWERED);
     const [eventAttendanceOpen, setEventAttendanceOpen] = useState(false);
 
     return <Dialog
@@ -33,20 +31,25 @@ const EventInformation = ({ open, handleClose, attendEvent, declineEvent }) => {
             </AppBar>
             <Box pl={2} pt={2}>
                 <Typography variant="h5" fontWeight={"bold"}>{selectedEvent?.title}</Typography>
-                <ListItem sx={{ '&.MuiListItem-root': { paddingLeft: 0 } }}>
+                <ListItem sx={{ '&.MuiListItem-root': { pl: 0, pb: 0 } }}>
                     <ListItemAvatar>
                         <CalendarMonth />
                     </ListItemAvatar>
-                    <ListItemText>{moment(new Date(selectedEvent?.meetingDateTime)).format("DD.MM.yyyy [um] HH:mm")}</ListItemText>
+                    <ListItemText primary={moment(new Date(selectedEvent?.startingDateTime)).format("DD.MM.yyyy [um] HH:mm")} secondary={"Startzeit"} />
                 </ListItem>
+                <ListItem sx={{ '&.MuiListItem-root': { pl: 0 } }}>
+                    <ListItemAvatar />
+                    <ListItemText primary={moment(new Date(selectedEvent?.meetingDateTime)).format("DD.MM.yyyy [um] HH:mm")} secondary={"Treffpunkt"} />
+                </ListItem>
+
                 <Typography variant="h6" fontWeight="bold">Beschreibung</Typography>
                 <Typography pb={2}>{selectedEvent?.description}</Typography>
-                <Divider />
+                {/* <Divider />
                 <Box pt={2} pb={2} pr={2} sx={{ flex: 2, flexDirection: "row", display: "flex" }}>
                     <Button variant={attendanceState === ATTENDING ? "contained" : "outlined"} color="success" sx={{ flex: 1 }} onClick={attendEvent} startIcon={<CheckCircleOutline />}>Teilnehmen</Button>
                     <Container sx={{ padding: 0, width: "16px", height: 1 }} />
                     <Button variant={attendanceState === DECLINED ? "contained" : "outlined"} color="error" sx={{ flex: 1 }} onClick={declineEvent} startIcon={<Close />}>Absagen</Button>
-                </Box>
+                </Box> */}
                 <Divider />
                 <Typography pt={2} variant="h6" fontWeight="bold">Teilnehmer</Typography>
                 <ListItem sx={{ '&.MuiListItem-root': { paddingLeft: 0 } }} onClick={() => setEventAttendanceOpen(true)}>

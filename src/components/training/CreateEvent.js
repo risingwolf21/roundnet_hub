@@ -30,8 +30,8 @@ const CreateEvent = ({ t }) => {
         e.preventDefault();
         try {
             const data = new FormData(e.currentTarget);
-            let startingDateTime = startDate.format("yyyy-MM-DD") + " " + startTime.format("HH:mm:ss");
-            let meetingDateTime = startDate.format("yyyy-MM-DD") + " " + meetingTime.format("HH:mm:ss");
+            let startingDateTime = startDate.set(startTime.hour(), "hour").set(startTime.minute(), "minute").set(0, "seconds").format("yyyy-MM-DD HH:mm:ssZ");
+            let meetingDateTime = startDate.set(meetingTime.hour(), "hour").set(meetingTime.minute(), "minute").set(0, "seconds").format("yyyy-MM-DD HH:mm:ssZ");
             let event = {
                 title: data.get("eventTitle"),
                 description: data.get("eventDescription"),
@@ -40,6 +40,7 @@ const CreateEvent = ({ t }) => {
                 recurring: repeat,
                 location: data.get("eventPlace"),
             }
+            console.log(event)
             if (data.get("eventTitle").length < 6)
                 throw new Error(t("events.creation.titleTooShort"))
 
@@ -150,9 +151,9 @@ const CreateEvent = ({ t }) => {
                     <ListItemText primary={"Wiederholung"} secondary={repeat} />
                 </ListItem>
 
-                <ListItem onClick={() => setStopRepeatDialogOpen(true)}>
+                <ListItem disabled={repeat === NON_REPEAT} onClick={() => setStopRepeatDialogOpen(true)}>
                     <ListItemAvatar />
-                    <ListItemText primary={"Wiederholung stoppen"} secondary={moment(stopRepeatDateTime).format("DD MMMM yyyy")} />
+                    <ListItemText primary={"Wiederholung stoppen"} secondary={stopRepeatDisabled ? "Niemals" : moment(stopRepeatDateTime).format("DD MMMM yyyy")} />
                 </ListItem>
 
             </List>

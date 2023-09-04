@@ -64,7 +64,7 @@ const EventAttendanceDialog = ({ open, handleClose, event }) => {
             <TabPanel value={value} index={0} dir={theme.direction}>
                 <List>
                     {
-                        event && event?.attendance?.filter(x => x.state === ATTENDING).map(x => <ListItem>
+                        event && event?.attendance?.filter(x => x.state === ATTENDING).map(x => <ListItem key={x}>
                             <ListItemAvatar>
                                 <Avatar>
                                     <AccountCircle />
@@ -78,7 +78,7 @@ const EventAttendanceDialog = ({ open, handleClose, event }) => {
             <TabPanel value={value} index={1} dir={theme.direction}>
                 <List>
                     {
-                        event && event?.attendance?.filter(x => x.state === DECLINED).map(x => <ListItem>
+                        event && event?.attendance?.filter(x => x.state === DECLINED).map(x => <ListItem key={x}>
                             <ListItemAvatar>
                                 <Avatar>
                                     <AccountCircle />
