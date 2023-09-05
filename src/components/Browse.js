@@ -1,4 +1,4 @@
-import { AccountCircle, AdminPanelSettings, Euro, Group, History, Liquor } from "@mui/icons-material";
+import { AccountCircle, AdminPanelSettings, Euro, Group, History, Liquor, SportsHandball } from "@mui/icons-material";
 import { Avatar, List, ListItem, ListItemAvatar, ListItemSecondaryAction, ListItemText } from "@mui/material";
 import { useNavigate } from "react-router";
 import { useAuth } from "../hooks/useAuth";
@@ -63,6 +63,12 @@ const Browse = ({ t }) => {
                     translationKey: "history",
                     navigateTo: "/history",
                     icon: <History />,
+                    avatarColor: "#88AEBF"
+                },
+                {
+                    translationKey: "training",
+                    navigateTo: "/training",
+                    icon: <SportsHandball />,
                     avatarColor: "#88AEBF"
                 },
                 ...entries.filter(x => x.role === user.role || user.role === "admin"),

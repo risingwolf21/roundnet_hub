@@ -1,15 +1,20 @@
-import { Liquor, List, CalendarToday } from "@mui/icons-material"
+import { Liquor, List, CalendarToday, SportsHandball } from "@mui/icons-material"
 import { BottomNavigation, BottomNavigationAction, Paper } from "@mui/material"
 import { useState } from "react";
 import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { onModeChange } from "../redux/applicationReducer";
 import { withTranslation } from 'react-i18next';
+import { useEffect } from "react";
 
 const CustomBottomNavigation = ({ t }) => {
 
     let navigate = useNavigate();
     let dispatch = useDispatch();
+
+    useEffect(()=>{
+        setTab(tabs.findIndex(x => "/" + x.path === window?.location?.pathname));
+    }, [window]);
 
     const tabs = [
         {
@@ -22,7 +27,7 @@ const CustomBottomNavigation = ({ t }) => {
             translationKey: "training",
             path: "training",
             index: 1,
-            icon: <CalendarToday />
+            icon: <SportsHandball />
         },
         {
             translationKey: "browse",

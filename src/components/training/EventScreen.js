@@ -1,4 +1,4 @@
-import { Alert, Box, Divider, Fab, Grid, IconButton, LinearProgress, List, ListItem, ListItemAvatar, ListItemSecondaryAction, ListItemText, Snackbar, Typography } from "@mui/material";
+import { Alert, Box, CircularProgress, Divider, Fab, Grid, IconButton, LinearProgress, List, ListItem, ListItemAvatar, ListItemSecondaryAction, ListItemText, Snackbar, Typography } from "@mui/material";
 import { useDispatch, useSelector } from "react-redux";
 import moment from "moment";
 import { Error } from "../Error";
@@ -14,7 +14,7 @@ import EventInformation from "./EventInformation";
 import { useState } from "react";
 import { useEffect } from "react";
 
-const EventItem = ({ event, onClick, attendEvent, declineEvent }) => {
+const EventItem = ({ event, onClick, attendEvent, declineEvent, attendanceUpdating }) => {
 
     return <ListItem sx={{ p: 1 }} onClick={onClick}>
         <ListItemAvatar>
@@ -31,24 +31,28 @@ const EventItem = ({ event, onClick, attendEvent, declineEvent }) => {
                 </Typography>
             </Box>
         </ListItemAvatar>
-        <ListItemText primary={event.title} secondary={moment(new Date(event.meetingDateTime)).format("dddd [at] HH:mm")} />
+        <ListItemText primary={event.title} secondary={event.isCancelled ? "Event abgesagt" : moment(new Date(event.meetingDateTime)).format("dddd [at] HH:mm")} />
         <ListItemSecondaryAction>
-            <Box sx={{ display: "flex", flexDirection: "row" }}>
-                <IconButton onClick={declineEvent}>
-                    {
-                        event.userAttendance === DECLINED
-                            ? <ThumbDownAlt fontSize="inherit" sx={{ fontSize: "28px", color: "red" }} />
-                            : <ThumbDownOffAlt fontSize="inherit" sx={{ fontSize: "28px" }} />
-                    }
-                </IconButton>
-                <IconButton onClick={attendEvent}>
-                    {
-                        event.userAttendance === ATTENDING
-                            ? <ThumbUpAlt fontSize="inherit" sx={{ fontSize: "28px", color: "green" }} />
-                            : <ThumbUpOffAlt fontSize="inherit" sx={{ fontSize: "28px" }} />
-                    }
-                </IconButton>
-            </Box>
+            {
+                attendanceUpdating
+                    ? <CircularProgress />
+                    : <Box sx={{ display: "flex", flexDirection: "row" }}>
+                        <IconButton onClick={declineEvent} disabled={event.isCancelled}>
+                            {
+                                event.userAttendance === DECLINED
+                                    ? <ThumbDownAlt fontSize="inherit" sx={{ fontSize: "28px", color: "red" }} />
+                                    : <ThumbDownOffAlt fontSize="inherit" sx={{ fontSize: "28px" }} />
+                            }
+                        </IconButton>
+                        <IconButton onClick={attendEvent} disabled={event.isCancelled}>
+                            {
+                                event.userAttendance === ATTENDING
+                                    ? <ThumbUpAlt fontSize="inherit" sx={{ fontSize: "28px", color: "green" }} />
+                                    : <ThumbUpOffAlt fontSize="inherit" sx={{ fontSize: "28px" }} />
+                            }
+                        </IconButton>
+                    </Box>
+            }
         </ListItemSecondaryAction>
     </ListItem>
 }
@@ -63,6 +67,7 @@ const EventScreen = () => {
     const client = useClient();
     const [eventInfoOpen, setEventInfoOpen] = useState(false);
     const [eventUpdateError, setUpdateEventError] = useState("");
+    const [eventsUpdatingAttendance, setEventsUpdatingAttendance] = useState({});
 
     useEffect(() => {
         dispatch(fetchEventsAsync({ client, user }));
@@ -71,22 +76,15 @@ const EventScreen = () => {
     if (error)
         return <Error message={error} />
 
-    const attendEvent = async (eventId) => {
+    const updateAttendance = async (eventId, state) => {
+        setEventsUpdatingAttendance({ ...eventsUpdatingAttendance, eventId: true });
         const { error } = await client.from("event_attendance_user_mapping").upsert({
             user: user.id,
             event: eventId,
-            state: ATTENDING
+            state: state
         });
         setUpdateEventError(error?.message ?? "");
-    }
-
-    const declineEvent = async (eventId) => {
-        const { error } = await client.from("event_attendance_user_mapping").upsert({
-            user: user.id,
-            event: eventId,
-            state: DECLINED
-        });
-        setUpdateEventError(error?.message ?? "");
+        setEventsUpdatingAttendance({ ...eventsUpdatingAttendance, eventId: false });
     }
 
     return (<Grid
@@ -103,8 +101,9 @@ const EventScreen = () => {
                 events && events.map((event, index) => <div key={"Drink" + index}>
                     <EventItem
                         event={event}
-                        attendEvent={() => attendEvent(event.id)}
-                        declineEvent={() => declineEvent(event.id)}
+                        attendanceUpdating={eventsUpdatingAttendance[event.id]}
+                        attendEvent={() => updateAttendance(event.id, ATTENDING)}
+                        declineEvent={() => updateAttendance(event.id, DECLINED)}
                         onClick={() => {
                             dispatch(selectEvent({ event, userId: user.id }));
                             setEventInfoOpen(true)
@@ -121,7 +120,7 @@ const EventScreen = () => {
                 }
             </Fab>
         }
-        <EventInformation open={eventInfoOpen} handleClose={() => setEventInfoOpen(false)} attendEvent={attendEvent} declineEvent={declineEvent} />
+        <EventInformation open={eventInfoOpen} handleClose={() => setEventInfoOpen(false)} />
 
         <Snackbar sx={{ position: "fixed", right: "16px", }} open={eventUpdateError !== ""} autoHideDuration={2500}>
             <Alert severity={"error"} sx={{ width: '100%' }}>

@@ -4,6 +4,7 @@ import { useState } from "react";
 import { AccountCircle, Close } from "@mui/icons-material";
 import { useTheme } from '@mui/material/styles';
 import { ATTENDING, DECLINED } from "../../constants";
+import { useEffect } from "react";
 
 function TabPanel(props) {
     const { children, value, index, ...other } = props;
@@ -21,10 +22,14 @@ function TabPanel(props) {
     );
 }
 
-const EventAttendanceDialog = ({ open, handleClose, event }) => {
+const EventAttendanceDialog = ({ open, index, handleClose, event }) => {
 
-    const [value, setValue] = useState(0);
+    const [value, setValue] = useState(index ?? 0);
     const theme = useTheme();
+
+    useEffect(() => {
+        setValue(index);
+    }, [index]);
 
     const handleChange = (event, newValue) => {
         setValue(newValue);

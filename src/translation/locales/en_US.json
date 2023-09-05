@@ -3,6 +3,7 @@
         "account": "Account",
         "payment": "Payment",
         "history": "History",
+        "training": "Training",
         "managePayments": "Manage payments",
         "manageDrinks": "Manage drinks",
         "manageUsers": "Manage users",
