@@ -106,7 +106,7 @@ const EventScreen = () => {
                         attendEvent={() => updateAttendance(event.id, ATTENDING)}
                         declineEvent={() => updateAttendance(event.id, DECLINED)}
                         onClick={() => {
-                            dispatch(selectEvent({ event, userId: user.id }));
+                            dispatch(selectEvent(event));
                             setEventInfoOpen(true)
                         }} />
                     <Divider />

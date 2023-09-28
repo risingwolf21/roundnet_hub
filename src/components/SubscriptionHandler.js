@@ -3,7 +3,7 @@ import { useEffect } from "react";
 import { connect } from "react-redux";
 import { onHistoryDelete, onHistoryInsert, onHistoryUpdate } from "../redux/historyReducer";
 import { drinkDeleted, drinkInserted, drinkUpdated } from "../redux";
-import { onEventAttendanceUserDelete, onEventAttendanceUserInsert, onEventAttendanceUserUpdate, onEventDelete, onEventInsert, onEventUpdate } from "../redux/eventReducer";
+import { onEventAttendanceUserDelete, onEventAttendanceUserInsert, onEventAttendanceUserUpdate, onEventCommentDelete, onEventCommentInsert, onEventCommentUpdate, onEventDelete, onEventInsert, onEventUpdate } from "../redux/eventReducer";
 import { useAuth } from "../hooks/useAuth";
 
 const SubscriptionHandler = ({ children, dispatch }) => {
@@ -33,6 +33,10 @@ const SubscriptionHandler = ({ children, dispatch }) => {
             .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'event_attendance_user_mapping', filter: "user=eq." + user.id }, payload => dispatch(onEventAttendanceUserUpdate(payload)))
             .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'event_attendance_user_mapping', filter: "user=eq." + user.id }, payload => dispatch(onEventAttendanceUserDelete(payload)))
             .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'event_attendance_user_mapping', filter: "user=eq." + user.id }, payload => dispatch(onEventAttendanceUserInsert(payload)))
+
+            .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'event_comments' }, payload => dispatch(onEventCommentUpdate(payload)))
+            .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'event_comments' }, payload => dispatch(onEventCommentDelete(payload)))
+            .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'event_comments' }, payload => dispatch(onEventCommentInsert(payload)))
 
             .subscribe(x => console.log(x), x => console.log(x));
 

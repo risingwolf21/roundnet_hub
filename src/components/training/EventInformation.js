@@ -28,7 +28,7 @@ const EventInformation = ({ dispatch, selectedEvent, attendanceLoading, open, ha
         await client.from("events").update({ isCancelled: !selectedEvent.isCancelled }).eq("id", selectedEvent.id);
         setCancelTrainingOpen(false);
     }
-
+    
     if (!selectedEvent)
         return <div />
 
@@ -99,6 +99,13 @@ const EventInformation = ({ dispatch, selectedEvent, attendanceLoading, open, ha
 
                     </ListItemSecondaryAction>
                 </ListItem>
+                <Divider />
+                <Typography pt={2} variant="h6" fontWeight="bold">Kommentare</Typography>
+                {
+                    selectedEvent.comments && selectedEvent.comments.map(x => <ListItem sx={{ '&.MuiListItem-root': { paddingLeft: 0 } }}>
+                        <ListItemText primary={x.comment} secondary={x.user.displayName} />
+                    </ListItem>)
+                }
             </Box>
             <EventAttendanceDialog open={eventAttendanceState.open} index={eventAttendanceState.index} handleClose={() => setEventAttendanceState({ open: false, index: 0 })} event={selectedEvent} />
 
@@ -148,7 +155,7 @@ const EventInformation = ({ dispatch, selectedEvent, attendanceLoading, open, ha
 
 const mapStateToProps = (state) => {
     return {
-        selectedEvent: state.events.selectedEvent,
+        selectedEvent: state.events.items.find(x => x.id === state.events.selectedEvent),
         attendanceLoading: state.events.attendanceLoading
     }
 };

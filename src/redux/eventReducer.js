@@ -20,21 +20,36 @@ export const eventReducer = createSlice({
   },
   reducers: {
     selectEvent: (state, action) => {
-      console.log("selected event", action.payload.event)
-      state.selectedEvent = {
-        ...action.payload.event,
-        currentUserAttendanceState: action.payload.event?.attendance?.find(x => x.user.userId === action.payload.userId)?.state ?? UNANSWERED
-      }
+      state.selectedEvent = action.payload.id;
     },
     editEvent: (state, action) => {
       state.eventToEdit = action.payload;
+    },
+    onEventCommentInsert: (state, action) => {
+      console.log(action.payload.new);
+      let eventIndex = state.items.findIndex(x => x.id === action.payload.new.event);
+      if (eventIndex !== -1) {
+        state.items[eventIndex].comments = [...(state.items[eventIndex].comments ?? []), action.payload.new].sort((a, b) => new Date(a["created_at"]) - new Date(b["created_at"]))
+      }
+    },
+    onEventCommentDelete: (state, action) => {
+      console.log(action.payload);
+
+    },
+    onEventCommentUpdate: (state, action) => {
+      let eventIndex = state.items.findIndex(x => x.id === action.payload.new.event);
+      if (eventIndex !== -1) {
+        let commentIndex = state.items[eventIndex].comments.findIndex(x => x.id === action.payload.new.id);
+        if (commentIndex !== -1) {
+          state.items[eventIndex].comments[commentIndex] = action.payload.new;
+        }
+      }
     },
     onEventUpdate: (state, action) => {
       const index = state.items.findIndex((x) =>
         compareEventsFn(x, action.payload.new),
       )
       let event = state.items[index];
-      state.selectedEvent = Object.assign(state.selectedEvent, action.payload.new);
       state.items = [
         ...state.items.slice(0, index),
         Object.assign(event, action.payload.new),
@@ -120,7 +135,7 @@ export const eventReducer = createSlice({
 export const fetchEventsAsync = createAsyncThunk("events", async ({ client, user, page = 0, count = 20 }) => {
   const attendanceFromUser = await client.from("event_attendance_user_mapping").select("user(userId), event (id), state").eq("user.userId", user.id);
 
-  const response = await client.from("events").select("*, attendance: event_attendance_user_mapping ( state , user ( displayName, userId )  )")
+  const response = await client.from("events").select("*, attendance: event_attendance_user_mapping ( state , user ( displayName, userId )  ), comments: event_comments ( comment, user ( displayName, userId))")
     // get events that are on the same day or later
     .gt("startingDateTime", moment().format("yyyy-MM-DD HH:mm:ssZ"))
     .range(page * count, page * count + count - 1)
@@ -141,6 +156,17 @@ export const fetchEventAttendanceAsync = createAsyncThunk("fetchEventAttendanceA
   return { data: attendance.data, eventId };
 });
 
-export const { selectEvent, onEventDelete, onEventInsert, onEventUpdate, onEventAttendanceUserDelete, onEventAttendanceUserInsert, onEventAttendanceUserUpdate, editEvent } = eventReducer.actions;
+export const {
+  selectEvent,
+  onEventDelete,
+  onEventInsert,
+  onEventUpdate,
+  onEventAttendanceUserDelete,
+  onEventAttendanceUserInsert,
+  onEventAttendanceUserUpdate,
+  editEvent,
+  onEventCommentInsert,
+  onEventCommentDelete,
+  onEventCommentUpdate } = eventReducer.actions;
 
 export default eventReducer.reducer
