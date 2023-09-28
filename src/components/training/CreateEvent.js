@@ -11,7 +11,7 @@ import EventRepeatIcon from '@mui/icons-material/EventRepeat';
 import { useClient } from "react-supabase";
 import { withTranslation } from 'react-i18next';
 import { useEffect } from "react";
-import { connect, useSelector } from "react-redux";
+import { connect } from "react-redux";
 
 const CreateEvent = ({ t, dispatch, eventToEdit }) => {
 

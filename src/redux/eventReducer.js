@@ -15,10 +15,12 @@ export const eventReducer = createSlice({
     error: null,
     loading: false,
     attendanceLoading: false,
-    attendanceError: null
+    attendanceError: null,
+    endReached: false
   },
   reducers: {
     selectEvent: (state, action) => {
+      console.log("selected event", action.payload.event)
       state.selectedEvent = {
         ...action.payload.event,
         currentUserAttendanceState: action.payload.event?.attendance?.find(x => x.user.userId === action.payload.userId)?.state ?? UNANSWERED
@@ -74,7 +76,18 @@ export const eventReducer = createSlice({
       .addCase(fetchEventsAsync.fulfilled, (state, action) => {
         state.loading = false;
         state.error = '';
-        state.items = action.payload
+
+        if (action.payload.entries && action.payload.entries.length < 1) {
+          state.endReached = true
+        } else {
+          state.endReached = false
+        }
+
+        if (action.payload.more) {
+          state.items = [...state.items, ...action.payload.entries];
+        } else {
+          state.items = action.payload.entries;
+        }
       })
       .addCase(fetchEventsAsync.rejected, (state, action) => {
         state.loading = false;
@@ -90,8 +103,9 @@ export const eventReducer = createSlice({
         state.attendanceError = '';
 
         let index = state.items.findIndex(x => x.id === action.payload.eventId);
-        if (index !== -1)
+        if (index !== -1) {
           state.items[index].attendance = action.payload.data;
+        }
       })
       .addCase(fetchEventAttendanceAsync.rejected, (state, action) => {
         state.attendanceLoading = false;
@@ -103,23 +117,27 @@ export const eventReducer = createSlice({
   }
 });
 
-export const fetchEventsAsync = createAsyncThunk("events", async ({ client, user }) => {
+export const fetchEventsAsync = createAsyncThunk("events", async ({ client, user, page = 0, count = 20 }) => {
   const attendanceFromUser = await client.from("event_attendance_user_mapping").select("user(userId), event (id), state").eq("user.userId", user.id);
 
   const response = await client.from("events").select("*, attendance: event_attendance_user_mapping ( state , user ( displayName, userId )  )")
     // get events that are on the same day or later
-    .gt("startingDateTime", moment().format("yyyy-MM-DD HH:mm:ssZ")).order("startingDateTime", { ascending: true });
-  return response.data.map(x => {
-    return {
-      ...x,
-      userAttendance: attendanceFromUser.data?.find(y => y.event.id === x.id)?.state ?? UNANSWERED
-    }
-  });
+    .gt("startingDateTime", moment().format("yyyy-MM-DD HH:mm:ssZ"))
+    .range(page * count, page * count + count - 1)
+    .order("startingDateTime", { ascending: true });
+  return {
+    entries: response.data.map(x => {
+      return {
+        ...x,
+        userAttendance: attendanceFromUser.data?.find(y => y.event.id === x.id)?.state ?? UNANSWERED
+      }
+    }),
+    more: page !== 0
+  }
 });
 
 export const fetchEventAttendanceAsync = createAsyncThunk("fetchEventAttendanceAsync", async ({ client, eventId }) => {
-  const attendance = await client.from("event_attendance_user_mapping").select("user(userId), event (id), state").eq("event.id", eventId);
-
+  const attendance = await client.from("event_attendance_user_mapping").select("user(userId), event, state").eq("event", eventId);
   return { data: attendance.data, eventId };
 });
 

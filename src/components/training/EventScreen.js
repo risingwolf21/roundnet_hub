@@ -13,6 +13,7 @@ import { useClient } from "react-supabase";
 import EventInformation from "./EventInformation";
 import { useState } from "react";
 import { useEffect } from "react";
+import { InfiniteScrollList } from "../HistoryScreen";
 
 const EventItem = ({ event, onClick, attendEvent, declineEvent, attendanceUpdating }) => {
 
@@ -62,7 +63,7 @@ const EventScreen = () => {
     const dispatch = useDispatch();
     const navigate = useNavigate();
 
-    const { items: events, loading, error } = useSelector((state) => state.events);
+    const { items: events, loading, error, endReached } = useSelector((state) => state.events);
     const { user } = useAuth();
     const client = useClient();
     const [eventInfoOpen, setEventInfoOpen] = useState(false);
@@ -96,7 +97,7 @@ const EventScreen = () => {
         {
             loading && <LinearProgress sx={{ position: "fixed", top: 56, left: 0, right: 0 }} />
         }
-        <List sx={{ width: "100%" }}>
+        <InfiniteScrollList fetch={(page) => dispatch(fetchEventsAsync({ client, user, page }))} error={error} loading={loading} endReached={endReached}>
             {
                 events && events.map((event, index) => <div key={"Drink" + index}>
                     <EventItem
@@ -111,7 +112,7 @@ const EventScreen = () => {
                     <Divider />
                 </div>)
             }
-        </List>
+        </InfiniteScrollList>
         {
             user?.role === "admin" && <Fab sx={{ background: "#66bb6a", position: "fixed", right: "16px", bottom: "76px" }}
                 onClick={() => navigate("create")}>

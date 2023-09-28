@@ -1,10 +1,10 @@
-import { AppBar, Box, Button, CircularProgress, Container, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Divider, Fab, IconButton, ListItem, ListItemAvatar, ListItemText, Toolbar, Typography } from "@mui/material"
+import { AppBar, Box, Button, CircularProgress, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Divider, Fab, IconButton, ListItem, ListItemAvatar, ListItemSecondaryAction, ListItemText, Toolbar, Typography } from "@mui/material"
 import { SlideUpTransition } from "../../utils";
-import { ArrowBack, CalendarMonth, CheckCircleOutline, Close, DoNotDisturb, DoNotDisturbOff, Edit, HelpOutline, Info, RemoveCircleOutline, Sledding } from "@mui/icons-material";
+import { ArrowBack, CalendarMonth, CheckCircleOutline, DoNotDisturb, DoNotDisturbOff, Edit, Info, RemoveCircleOutline } from "@mui/icons-material";
 import { connect, useSelector } from "react-redux";
 import moment from "moment";
 import { useState } from "react";
-import { ATTENDING, DECLINED, UNANSWERED } from "../../constants";
+import { ATTENDING, DECLINED } from "../../constants";
 import EventAttendanceDialog from "./EventAttendanceDialog";
 import { useEffect } from "react";
 import { editEvent, fetchEventAttendanceAsync } from "../../redux/eventReducer";
@@ -86,7 +86,7 @@ const EventInformation = ({ dispatch, selectedEvent, attendanceLoading, open, ha
                             attendanceLoading ? <CircularProgress size={"20px"} /> : <CheckCircleOutline color="success" />
                         }
                     </ListItemAvatar>
-                    <ListItemText>{selectedEvent?.attendance?.filter(x => x.state === ATTENDING).length ?? 0} zusagen</ListItemText>
+                    <ListItemText primary={(selectedEvent?.attendance?.filter(x => x.state === ATTENDING).length ?? 0) + " zusagen"} />
                 </ListItem>
                 <ListItem sx={{ '&.MuiListItem-root': { paddingLeft: 0 } }} onClick={() => attendanceLoading ? {} : setEventAttendanceState({ open: true, index: 1 })}>
                     <ListItemAvatar>
@@ -94,7 +94,10 @@ const EventInformation = ({ dispatch, selectedEvent, attendanceLoading, open, ha
                             attendanceLoading ? <CircularProgress size={"20px"} /> : <RemoveCircleOutline color="error" />
                         }
                     </ListItemAvatar>
-                    <ListItemText>{selectedEvent?.attendance?.filter(x => x.state === DECLINED).length ?? 0} absagen</ListItemText>
+                    <ListItemText primary={(selectedEvent?.attendance?.filter(x => x.state === DECLINED).length ?? 0) + " absagen"} />
+                    <ListItemSecondaryAction>
+
+                    </ListItemSecondaryAction>
                 </ListItem>
             </Box>
             <EventAttendanceDialog open={eventAttendanceState.open} index={eventAttendanceState.index} handleClose={() => setEventAttendanceState({ open: false, index: 0 })} event={selectedEvent} />
