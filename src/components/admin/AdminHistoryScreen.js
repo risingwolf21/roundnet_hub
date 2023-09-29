@@ -8,7 +8,7 @@ import { groupBy } from "../../utils";
 const AdminHistoryItem = ({ items, header }) => {
     return <List dense component={"div"} disablePadding subheader={<ListSubheader component="div" id="nested-list-subheader">{header}</ListSubheader>}>
         {
-            items.map(item => <ListItem dense key={"sublist"}>
+            items.map((item,index) => <ListItem dense key={header + index + "sublist"}>
                 <ListItemAvatar>
                     <Typography>{item.count} x</Typography>
                 </ListItemAvatar>

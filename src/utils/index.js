@@ -1,3 +1,6 @@
+import { Slide } from "@mui/material";
+import { forwardRef } from "react";
+
 export const totalAmountToPay = (drinks) => {
     if (!drinks)
         return 0;
@@ -21,3 +24,7 @@ export const groupBy = (items, getter) => items.reduce(
     }),
     {},
 );
+
+export const SlideUpTransition = forwardRef(function Transition(props, ref) {
+    return <Slide direction="up" ref={ref} {...props} />;
+});

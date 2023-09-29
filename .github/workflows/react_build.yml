@@ -20,5 +20,17 @@ jobs:
       - name: Test
         run: yarn test
 
+      - name: Write commit Version to file
+        run: echo "$GITHUB_SHA" >> src/git_commit.txt
+
       - name: Build
-        run: yarn build --openssl-legacy-provider
+        run: yarn run build-staging
+
+      - name: Deploying to Staging Environment
+        uses: FirebaseExtended/action-hosting-deploy@v0
+        with:
+          repoToken: '${{ secrets.GITHUB_TOKEN }}'
+          firebaseServiceAccount: '${{ secrets.FIREBASE_SERVICE_ACCOUNT_ROUNDNET_KARLSRUHE }}'
+          channelId: live
+          projectId: roundnet-karlsruhe
+          target: staging

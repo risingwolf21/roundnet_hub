@@ -7,7 +7,6 @@ import { Loading } from "../Loading";
 import { Error } from "../Error";
 import { useClient } from "react-supabase";
 
-
 const PaymentsPendingAdmin = () => {
 
     const [open, setOpen] = useState(false);

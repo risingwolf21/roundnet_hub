@@ -1,15 +1,15 @@
-import { Alert, Box, CircularProgress, Fab, Grid, Snackbar } from "@mui/material";
+import { Alert, CircularProgress, Divider, Fab, Grid, List, LinearProgress, Snackbar } from "@mui/material";
 import DrinkItem from "./DrinkItem";
 import { useState } from "react";
 import CheckIcon from '@mui/icons-material/Check';
 import BottomInformation from "./BottomInformation";
 import { NOT_PAID, OPEN } from "../constants";
 import { captureException } from "@sentry/react";
-import { Loading } from "./Loading";
 import { Error } from "./Error";
 import { useAuth } from "../hooks/useAuth";
 import { useClient } from "react-supabase";
 import { useSelector } from "react-redux";
+import { Add, Delete, LocalDrink, Remove } from "@mui/icons-material";
 
 const SUCCESS_MESSAGE_INFO = { message: "Getränke erfolgreich gebucht!", severity: "success" };
 
@@ -111,8 +111,6 @@ const DrinkList = () => {
         setAddedDrinks({ ...temp });
     }
 
-    if (fetching)
-        return <Loading />
     if (error)
         return <Error message={error} />
 
@@ -122,12 +120,21 @@ const DrinkList = () => {
         direction="column"
         alignItems="center"
         justifyContent="center">
-        <Grid container sx={{ overflowY: "scroll", }} width="100%" direction="row" alignItems="center" justifyContent="center" paddingTop={2} paddingLeft={2} paddingRight={2}>
+        {fetching && <LinearProgress style={{ position: "fixed", left: 0, right: 0, top: 56 }} />}
+        <List sx={{ width: "100%" }}>
             {
-                drinks && drinks.filter(x => !x.deleted).map((drink, index) => <DrinkItem key={"Drink" + index} drink={drink} count={addedDrinks[drink.id]?.count} onAddClick={() => onAddDrinkClick(drink)} onMinusClick={() => onRemoveDrinkClick(drink)} />)
+                drinks && drinks.filter(x => !x.deleted && x.active).map((drink, index) => {
+                    return <div key={drink.id + "div"}>
+                        <DrinkItem
+                            drink={drink}
+                            onAddClick={() => onAddDrinkClick(drink)}
+                            onMinusClick={() => onRemoveDrinkClick(drink)}
+                            count={addedDrinks[drink.id]?.count ?? 0} />
+                        <Divider />
+                    </div>
+                })
             }
-            <Box height={"128px"} width={"100%"} />
-        </Grid>
+        </List>
         {
             Object.values(addedDrinks).length > 0 && <>
                 <BottomInformation title={"Gesamtpreis"} totalPrice={Object.values(addedDrinks).reduce((prev, res) => prev + (res.price * res.count), 0) + " €"} />
@@ -139,7 +146,7 @@ const DrinkList = () => {
             </>
         }
 
-        <Snackbar sx={{ position: "fixed", right: "16px", bottom: alertInfo.severity === "success" ? "16px" : "72px" }} open={successMessageOpen} autoHideDuration={1500} onClose={handleClose}>
+        <Snackbar sx={{ position: "fixed", right: "16px", bottom: "72px" }} open={successMessageOpen} autoHideDuration={1500} onClose={handleClose}>
             <Alert onClose={handleClose} severity={alertInfo.severity} sx={{ width: '100%' }}>
                 {alertInfo.message}
             </Alert>
