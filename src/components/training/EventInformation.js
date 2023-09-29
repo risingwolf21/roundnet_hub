@@ -1,6 +1,6 @@
-import { AppBar, Box, Button, CircularProgress, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Divider, Fab, IconButton, ListItem, ListItemAvatar, ListItemSecondaryAction, ListItemText, Toolbar, Typography } from "@mui/material"
+import { AppBar, Box, Button, CircularProgress, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Divider, Fab, IconButton, List, ListItem, ListItemAvatar, ListItemSecondaryAction, ListItemText, ListSubheader, Toolbar, Typography } from "@mui/material"
 import { SlideUpTransition } from "../../utils";
-import { ArrowBack, CalendarMonth, CheckCircleOutline, DoNotDisturb, DoNotDisturbOff, Edit, Info, RemoveCircleOutline } from "@mui/icons-material";
+import { ArrowBack, CalendarMonth, CheckCircleOutline, DoNotDisturb, DoNotDisturbOff, Edit, Info, RemoveCircleOutline, ThumbDownAlt, ThumbDownOffAlt, ThumbUpAlt, ThumbUpOffAlt } from "@mui/icons-material";
 import { connect, useSelector } from "react-redux";
 import moment from "moment";
 import { useState } from "react";
@@ -11,7 +11,7 @@ import { editEvent, fetchEventAttendanceAsync } from "../../redux/eventReducer";
 import { useClient } from "react-supabase";
 import { useNavigate } from "react-router-dom";
 
-const EventInformation = ({ dispatch, selectedEvent, attendanceLoading, open, handleClose, attendEvent, declineEvent }) => {
+const EventInformation = ({ dispatch, selectedEventId, events, attendanceLoading, open, handleClose, attendEvent, declineEvent }) => {
 
     const [eventAttendanceState, setEventAttendanceState] = useState({ open: false, index: 0 });
     const [cancelTrainingOpen, setCancelTrainingOpen] = useState(false);
@@ -20,17 +20,26 @@ const EventInformation = ({ dispatch, selectedEvent, attendanceLoading, open, ha
     const { user } = useSelector(state => state.application);
 
     useEffect(() => {
-        if (selectedEvent)
-            dispatch(fetchEventAttendanceAsync({ client, eventId: selectedEvent.id }))
-    }, [selectedEvent, dispatch, client]);
+        if (selectedEventId) {
+            dispatch(fetchEventAttendanceAsync({ client, eventId: selectedEventId }))
+        }
+    }, [selectedEventId, dispatch, client]);
+
+    if (!selectedEventId)
+        return <div />
+
+    const selectedEvent = events.find(x => x.id === selectedEventId);
+
+    if (!selectedEvent)
+        return <div />
+
+    console.log(selectedEvent);
 
     const cancelTraining = async () => {
         await client.from("events").update({ isCancelled: !selectedEvent.isCancelled }).eq("id", selectedEvent.id);
         setCancelTrainingOpen(false);
     }
-    
-    if (!selectedEvent)
-        return <div />
+
 
     return <Dialog
         fullScreen
@@ -79,33 +88,50 @@ const EventInformation = ({ dispatch, selectedEvent, attendanceLoading, open, ha
                     <Button variant={attendanceState === DECLINED ? "contained" : "outlined"} color="error" sx={{ flex: 1 }} onClick={declineEvent} startIcon={<Close />}>Absagen</Button>
                 </Box> */}
                 <Divider />
-                <Typography pt={2} variant="h6" fontWeight="bold">Teilnehmer</Typography>
-                <ListItem sx={{ '&.MuiListItem-root': { paddingLeft: 0 } }} onClick={() => attendanceLoading ? {} : setEventAttendanceState({ open: true, index: 0 })}>
-                    <ListItemAvatar>
-                        {
-                            attendanceLoading ? <CircularProgress size={"20px"} /> : <CheckCircleOutline color="success" />
-                        }
-                    </ListItemAvatar>
-                    <ListItemText primary={(selectedEvent?.attendance?.filter(x => x.state === ATTENDING).length ?? 0) + " zusagen"} />
-                </ListItem>
-                <ListItem sx={{ '&.MuiListItem-root': { paddingLeft: 0 } }} onClick={() => attendanceLoading ? {} : setEventAttendanceState({ open: true, index: 1 })}>
-                    <ListItemAvatar>
-                        {
-                            attendanceLoading ? <CircularProgress size={"20px"} /> : <RemoveCircleOutline color="error" />
-                        }
-                    </ListItemAvatar>
-                    <ListItemText primary={(selectedEvent?.attendance?.filter(x => x.state === DECLINED).length ?? 0) + " absagen"} />
-                    <ListItemSecondaryAction>
-
-                    </ListItemSecondaryAction>
-                </ListItem>
+                <List subheader={<Typography pt={2} variant="h6" fontWeight="bold">Teilnehmer</Typography>}>
+                    <ListItem key={"attendEvent"} sx={{ '&.MuiListItem-root': { paddingLeft: 0 } }} onClick={() => attendanceLoading ? {} : setEventAttendanceState({ open: true, index: 0 })}>
+                        <ListItemAvatar>
+                            {
+                                attendanceLoading ? <CircularProgress size={"20px"} /> : <CheckCircleOutline color="success" />
+                            }
+                        </ListItemAvatar>
+                        <ListItemText primary={(selectedEvent?.attendance?.filter(x => x.state === ATTENDING).length ?? 0) + " zusagen"} />
+                        <ListItemSecondaryAction>
+                            <IconButton onClick={() => attendEvent(selectedEventId)} disabled={selectedEvent.isCancelled}>
+                                {
+                                    selectedEvent.userAttendance === ATTENDING
+                                        ? <ThumbUpAlt fontSize="inherit" sx={{ fontSize: "28px", color: "green" }} />
+                                        : <ThumbUpOffAlt fontSize="inherit" sx={{ fontSize: "28px" }} />
+                                }
+                            </IconButton>
+                        </ListItemSecondaryAction>
+                    </ListItem>
+                    <ListItem key={"declineEvent"} sx={{ '&.MuiListItem-root': { paddingLeft: 0 } }} onClick={() => attendanceLoading ? {} : setEventAttendanceState({ open: true, index: 1 })}>
+                        <ListItemAvatar>
+                            {
+                                attendanceLoading ? <CircularProgress size={"20px"} /> : <RemoveCircleOutline color="error" />
+                            }
+                        </ListItemAvatar>
+                        <ListItemText primary={(selectedEvent?.attendance?.filter(x => x.state === DECLINED).length ?? 0) + " absagen"} />
+                        <ListItemSecondaryAction>
+                            <IconButton onClick={() => declineEvent(selectedEventId)} disabled={selectedEvent.isCancelled}>
+                                {
+                                    selectedEvent.userAttendance === DECLINED
+                                        ? <ThumbDownAlt fontSize="inherit" sx={{ fontSize: "28px", color: "red" }} />
+                                        : <ThumbDownOffAlt fontSize="inherit" sx={{ fontSize: "28px" }} />
+                                }
+                            </IconButton>
+                        </ListItemSecondaryAction>
+                    </ListItem>
+                </List>
                 <Divider />
-                <Typography pt={2} variant="h6" fontWeight="bold">Kommentare</Typography>
-                {
-                    selectedEvent.comments && selectedEvent.comments.map(x => <ListItem sx={{ '&.MuiListItem-root': { paddingLeft: 0 } }}>
-                        <ListItemText primary={x.comment} secondary={x.user.displayName} />
-                    </ListItem>)
-                }
+                <List subheader={<Typography pt={2} variant="h6" fontWeight="bold">Kommentare</Typography>}>
+                    {
+                        selectedEvent.comments && selectedEvent.comments.map((x, index) => <ListItem key={index} sx={{ '&.MuiListItem-root': { paddingLeft: 0 } }}>
+                            <ListItemText primary={x.comment} secondary={x.user.displayName} />
+                        </ListItem>)
+                    }
+                </List>
             </Box>
             <EventAttendanceDialog open={eventAttendanceState.open} index={eventAttendanceState.index} handleClose={() => setEventAttendanceState({ open: false, index: 0 })} event={selectedEvent} />
 
@@ -150,12 +176,13 @@ const EventInformation = ({ dispatch, selectedEvent, attendanceLoading, open, ha
                 </Fab>
             </Box>
         }
-    </Dialog>
+    </Dialog >
 }
 
 const mapStateToProps = (state) => {
     return {
-        selectedEvent: state.events.items.find(x => x.id === state.events.selectedEvent),
+        selectedEventId: state.events.selectedEvent,
+        events: state.events.items,
         attendanceLoading: state.events.attendanceLoading
     }
 };

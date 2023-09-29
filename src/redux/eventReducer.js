@@ -33,8 +33,10 @@ export const eventReducer = createSlice({
       }
     },
     onEventCommentDelete: (state, action) => {
-      console.log(action.payload);
-
+      let eventIndex = state.items.findIndex(x => x.comments.findIndex(y => y.id === action.payload.old.id) !== -1);
+      if (eventIndex !== -1) {
+        state.items[eventIndex.event].comments.filter(x => x.id !== action.payload.old.id)
+      }
     },
     onEventCommentUpdate: (state, action) => {
       let eventIndex = state.items.findIndex(x => x.id === action.payload.new.event);
@@ -66,20 +68,28 @@ export const eventReducer = createSlice({
       let eventIndex = state.items.findIndex(x => x.id === action.payload.new.event);
       if (eventIndex !== -1) {
         state.items[eventIndex].userAttendance = action.payload.new.state;
+        let attendanceIndex = state.items[eventIndex].attendance.findIndex(x => x.userId === action.payload.new.userId);
+        if (attendanceIndex !== -1) {
+          state.items[eventIndex].attendance[attendanceIndex].state = action.payload.new.state;
+        }
       }
     },
     onEventAttendanceUserDelete: (state, action) => {
       let eventIndex = state.items.findIndex(x => x.id === action.payload.old.event);
-
       if (eventIndex !== -1) {
         state.items[eventIndex].userAttendance = UNANSWERED;
+        let attendanceIndex = state.items[eventIndex].attendance.findIndex(x => x.user.userId === action.payload.old.userId);
+        if (attendanceIndex !== -1) {
+          state.items[eventIndex].attendance[attendanceIndex].state = UNANSWERED;
+        }
       }
-
     },
     onEventAttendanceUserInsert: (state, action) => {
       let eventIndex = state.items.findIndex(x => x.id === action.payload.new.event);
       if (eventIndex !== -1) {
+        console.log(action.payload)
         state.items[eventIndex].userAttendance = action.payload.new.state;
+        state.items[eventIndex].attendance = [...(state.items[eventIndex].userAttendance ?? []), action.payload.new];
       }
     },
   },
@@ -135,7 +145,7 @@ export const eventReducer = createSlice({
 export const fetchEventsAsync = createAsyncThunk("events", async ({ client, user, page = 0, count = 20 }) => {
   const attendanceFromUser = await client.from("event_attendance_user_mapping").select("user(userId), event (id), state").eq("user.userId", user.id);
 
-  const response = await client.from("events").select("*, attendance: event_attendance_user_mapping ( state , user ( displayName, userId )  ), comments: event_comments ( comment, user ( displayName, userId))")
+  const response = await client.from("events").select("*, attendance: event_attendance_user_mapping ( state , user(userId, displayName)  ), comments: event_comments ( comment, user ( displayName, userId))")
     // get events that are on the same day or later
     .gt("startingDateTime", moment().format("yyyy-MM-DD HH:mm:ssZ"))
     .range(page * count, page * count + count - 1)
@@ -152,7 +162,7 @@ export const fetchEventsAsync = createAsyncThunk("events", async ({ client, user
 });
 
 export const fetchEventAttendanceAsync = createAsyncThunk("fetchEventAttendanceAsync", async ({ client, eventId }) => {
-  const attendance = await client.from("event_attendance_user_mapping").select("user(userId), event, state").eq("event", eventId);
+  const attendance = await client.from("event_attendance_user_mapping").select("user(userId, displayName), event, state").eq("event", eventId);
   return { data: attendance.data, eventId };
 });
 
