@@ -4,7 +4,7 @@ import React, { createContext, useState } from "react";
 import { useAuthStateChange } from "./hooks/useAuthStateChange";
 import { useClient } from "react-supabase";
 import { useDispatch } from "react-redux";
-import { onUserChange } from "./redux/applicationReducer";
+import { onUserChange } from "./redux/applicationSlice";
 
 const initialState = { session: null, user: null }
 export const AuthContext = createContext(initialState)

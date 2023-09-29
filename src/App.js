@@ -17,12 +17,12 @@ import CustomBottomNavigation from './components/BottomNavigation';
 import Browse from './components/Browse';
 import { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { fetchPaymentAsync } from './redux/paymentReducer';
+import { fetchPaymentAsync } from './redux/paymentSlice';
 import { fetchDrinksAsync } from './redux/drinksSlice';
 import { useClient } from 'react-supabase';
 import { useAuth } from './hooks/useAuth';
 import { fetchHistoryAsync } from './redux/drinksSlice';
-import { onAppUpdateAvailableChange } from './redux/applicationReducer';
+import { onAppUpdateAvailableChange } from './redux/applicationSlice';
 import { useServiceWorker } from './hooks/useServiceWorker';
 
 const App = () => {

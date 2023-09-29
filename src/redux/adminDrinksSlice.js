@@ -15,7 +15,7 @@ export const adminDrinksSlice = createSlice({
     },
     reducers: {
         ...drinksReducer,
-        ...historyReducer,
+        ...historyReducer
     },
     extraReducers(builder) {
         builder
@@ -38,10 +38,11 @@ export const adminDrinksSlice = createSlice({
             /**
              * History initial loading
              */
-            .addCase(fetchHistoryAsync.pending, (state, action) => {
+            .addCase(fetchAdminHistoryAsync.pending, (state, action) => {
                 state.loading = true;
             })
-            .addCase(fetchHistoryAsync.fulfilled, (state, action) => {
+            .addCase(fetchAdminHistoryAsync.fulfilled, (state, action) => {
+                console.log("reducer input", action.payload.entries)
                 state.loading = false;
                 state.historyError = '';
 
@@ -57,8 +58,9 @@ export const adminDrinksSlice = createSlice({
                 } else {
                     state.history = action.payload.entries;
                 }
+                console.log("reducer", state.history)
             })
-            .addCase(fetchHistoryAsync.rejected, (state, action) => {
+            .addCase(fetchAdminHistoryAsync.rejected, (state, action) => {
                 state.loading = false;
                 state.endReached = true;
                 state.historyError = action.error.message;
@@ -71,13 +73,13 @@ export const fetchDrinksAsync = createAsyncThunk("drink", async (client) => {
     return response.data;
 });
 
-export const fetchHistoryAsync = createAsyncThunk("history", async ({ client, user, page = 0, count = 20 }) => {
+export const fetchAdminHistoryAsync = createAsyncThunk("history", async ({ client, page = 0, count = 20 }) => {
     const response = await client
         .from("history")
-        .select("count, amount, created_at, drinkId: drink")
-        .eq('user', user.id)
-        .range(page * count, page * count + count - 1)
-        .order('created_at', { ascending: false });
+        .select("count, amount, created_at, drinkId: drink, user(displayName)")
+        .order('id', { ascending: false })
+        .range(page * count, page * count + count - 1);
+    console.log("fetch", response.data);
     return { entries: response.data, more: page !== 0 };
 });
 
