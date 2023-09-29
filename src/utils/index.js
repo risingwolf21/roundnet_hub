@@ -13,6 +13,9 @@ export const totalAmountToPay = (drinks) => {
         }, 0);
 }
 
+export const compareById = (x, y) => {
+    return x.id === y.id;
+}
 
 export const groupBy = (items, getter) => items.reduce(
     (result, item) => ({

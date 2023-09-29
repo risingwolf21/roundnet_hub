@@ -4,7 +4,7 @@ import { groupBy } from "../utils";
 import { useDispatch, useSelector } from "react-redux";
 import { useRef, useState } from "react";
 import { useEffect } from "react";
-import { fetchHistoryAsync } from "../redux/historyReducer";
+import { fetchHistoryAsync } from "../redux/drinksSlice";
 import { useClient } from "react-supabase";
 import { useAuth } from "../hooks/useAuth";
 import { isUndefined } from "lodash";
@@ -58,7 +58,7 @@ export const InfiniteScrollList = ({ children, fetch, error, loading, endReached
                 observer.unobserve(observerTarget.current);
             }
         };
-    }, [observerTarget]);
+    }, [observerTarget, endReached, loading, fetch]);
 
     return <div style={{ width: "100%" }}>
         <List sx={{ overflowY: "auto" }}>
@@ -76,8 +76,7 @@ export const InfiniteScrollList = ({ children, fetch, error, loading, endReached
 }
 
 const HistoryScreen = () => {
-    const { items: history, loading, error, endReached } = useSelector((state) => state.history);
-    const { items: drinks } = useSelector((state) => state.drinks);
+    const { history, drinks, historyLoading, historyError, historyEndReached } = useSelector((state) => state.drinks);
     const dispatch = useDispatch();
     const client = useClient();
     const { user } = useAuth();
@@ -102,9 +101,9 @@ const HistoryScreen = () => {
         justifyContent="center"
         sx={{ overflow: "auto" }}>
         {
-            loading && <LinearProgress style={{ position: "fixed", left: 0, top: 56, right: 0 }} />
+            historyLoading && <LinearProgress style={{ position: "fixed", left: 0, top: 56, right: 0 }} />
         }
-        <InfiniteScrollList fetch={(page) => dispatch(fetchHistoryAsync({ client, user, page }))} error={error} loading={loading} endReached={endReached}>
+        <InfiniteScrollList fetch={(page) => dispatch(fetchHistoryAsync({ client, user, page }))} error={historyError} loading={historyLoading} endReached={historyEndReached}>
             {
                 Object.entries(groupBy(historyItems.filter(x => x.drink), x => moment(new Date(x.created_at)).format("DD MMMM yyyy")))
                     .map((x) => <HistoryItem key={x[0]} items={x[1]} header={x[0]} />)

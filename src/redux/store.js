@@ -1,14 +1,12 @@
 import { configureStore } from '@reduxjs/toolkit'
-import drinkListReducer from './drinkListReducer'
 import paymentReducer from './paymentReducer'
-import historyReducer from './historyReducer'
 import applicationReducer from './applicationReducer'
+import drinksSlice from './drinksSlice'
 
 export default configureStore({
     reducer: {
-        drinks: drinkListReducer,
+        drinks: drinksSlice,
         payment: paymentReducer,
-        history: historyReducer,
         application: applicationReducer,
     },
 })

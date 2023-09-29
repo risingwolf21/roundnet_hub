@@ -18,10 +18,10 @@ import Browse from './components/Browse';
 import { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchPaymentAsync } from './redux/paymentReducer';
-import { fetchDrinksAsync } from './redux/drinkListReducer';
+import { fetchDrinksAsync } from './redux/drinksSlice';
 import { useClient } from 'react-supabase';
 import { useAuth } from './hooks/useAuth';
-import { fetchHistoryAsync } from './redux/historyReducer';
+import { fetchHistoryAsync } from './redux/drinksSlice';
 import { onAppUpdateAvailableChange } from './redux/applicationReducer';
 import { useServiceWorker } from './hooks/useServiceWorker';
 

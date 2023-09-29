@@ -1,4 +1,4 @@
-import { Liquor, List, CalendarToday, SportsHandball } from "@mui/icons-material"
+import { Liquor, List } from "@mui/icons-material"
 import { BottomNavigation, BottomNavigationAction, Paper } from "@mui/material"
 import { useState } from "react";
 import { useDispatch } from "react-redux";
@@ -11,10 +11,6 @@ const CustomBottomNavigation = ({ t }) => {
 
     let navigate = useNavigate();
     let dispatch = useDispatch();
-
-    useEffect(()=>{
-        setTab(tabs.findIndex(x => "/" + x.path === window?.location?.pathname));
-    }, [window]);
 
     const tabs = [
         {
@@ -36,6 +32,10 @@ const CustomBottomNavigation = ({ t }) => {
             icon: <List />
         }
     ];
+
+    useEffect(()=>{
+        setTab(tabs.findIndex(x => "/" + x.path === window?.location?.pathname));
+    }, [window, tabs]);
 
     const [tab, setTab] = useState(tabs.findIndex(x => "/" + x.path === window?.location?.pathname));
 

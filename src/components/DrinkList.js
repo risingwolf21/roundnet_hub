@@ -9,7 +9,6 @@ import { Error } from "./Error";
 import { useAuth } from "../hooks/useAuth";
 import { useClient } from "react-supabase";
 import { useSelector } from "react-redux";
-import { Add, Delete, LocalDrink, Remove } from "@mui/icons-material";
 
 const SUCCESS_MESSAGE_INFO = { message: "Getränke erfolgreich gebucht!", severity: "success" };
 
@@ -18,7 +17,7 @@ const DrinkList = () => {
     const { user } = useAuth();
     const client = useClient();
 
-    const { items: drinks, loading: fetching, error } = useSelector((state) => state.drinks);
+    const { drinks, drinksFetching, drinksError } = useSelector((state) => state.drinks);
     const { payment } = useSelector((state) => state.payment);
 
     const [addedDrinks, setAddedDrinks] = useState({});
@@ -111,8 +110,8 @@ const DrinkList = () => {
         setAddedDrinks({ ...temp });
     }
 
-    if (error)
-        return <Error message={error} />
+    if (drinksError)
+        return <Error message={drinksError} />
 
     return (<Grid
         container
@@ -120,7 +119,7 @@ const DrinkList = () => {
         direction="column"
         alignItems="center"
         justifyContent="center">
-        {fetching && <LinearProgress style={{ position: "fixed", left: 0, right: 0, top: 56 }} />}
+        {drinksFetching && <LinearProgress style={{ position: "fixed", left: 0, right: 0, top: 56 }} />}
         <List sx={{ width: "100%" }}>
             {
                 drinks && drinks.filter(x => !x.deleted && x.active).map((drink, index) => {
