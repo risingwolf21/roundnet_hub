@@ -2,7 +2,6 @@ import * as React from 'react';
 import { Grid, Toolbar } from "@mui/material";
 import CustomAppBar from "./components/AppBar";
 import DrinkList from './components/DrinkList';
-import SideBar from './components/Sidebar';
 import UserScreen from './components/User';
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import PageNotFound from './components/PageNotFound';
@@ -15,22 +14,18 @@ import { supabase } from './supabaseClient';
 import AdminHistoryScreen from './components/admin/AdminHistoryScreen';
 import { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { fetchPaymentAsync } from './redux/paymentReducer';
-import { fetchDrinksAsync } from './redux/drinkListReducer';
+import { fetchPaymentAsync } from './redux/paymentSlice';
 import { useClient } from 'react-supabase';
 import { useAuth } from './hooks/useAuth';
-import { fetchHistoryAsync } from './redux/historyReducer';
+import { fetchHistoryAsync, fetchDrinksAsync } from './redux/drinksSlice';
 import Browse from './components/Browse';
 import CreateEvent from './components/training/CreateEvent';
 import EventScreen from './components/training/EventScreen';
 import EventInformation from './components/training/EventInformation';
 import CustomBottomNavigation from './components/BottomNavigation';
 import { useServiceWorker } from './hooks/useServiceWorker';
-import { onAppUpdateAvailableChange } from './redux/applicationReducer';
+import { onAppUpdateAvailableChange } from './redux/applicationSlice';
 import UpdateAvailable from './components/UpdateAvailable';
-import { fetchEventsAsync } from './redux/eventReducer';
-import i18n from './translation/i18n';
-import { useTranslation } from 'react-i18next';
 
 const App = () => {
 
@@ -57,7 +52,6 @@ const App = () => {
         !appUpdateAvailable && <>
           <CustomAppBar logout={() => supabase.auth.signOut()} handleMenuClick={(val) => setDrawerOpen(val)} drawerOpen={drawerOpen} />
           <Toolbar />
-          <SideBar open={drawerOpen} onClose={() => setDrawerOpen(false)} onOpen={() => setDrawerOpen(true)} />
           <Routes>
             <Route path='/' element={<Navigate replace to={"/drinks"} />} />
             <Route path='/browse' element={<Browse />} />

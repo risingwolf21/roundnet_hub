@@ -15,8 +15,8 @@ const UserScreen = () => {
         const data = new FormData(event.currentTarget);
         var displayName = data.get('displayName');
         if (displayName !== user["user_metadata"].displayName) {
-            let { writingError } = await client.from("users").update({ displayName }).eq("userId", user["user_metadata"].userId)
-            const { error } = await client.auth.updateUser({
+            await client.from("users").update({ displayName }).eq("userId", user["user_metadata"].userId)
+            await client.auth.updateUser({
                 data: { displayName }
             });
         }
@@ -45,12 +45,12 @@ const UserScreen = () => {
                         label="Email"
                         margin="normal" />
                     {
-                        user["user_metadata"].role === "admin" && <FormControlLabel
+                        user["user_metadata"].role === "admin" && <FormControlLabel key={"adminRights"}
                             control={<Checkbox checked={user["user_metadata"].role === "admin"} disabled />}
                             label="Adminrechte"
                         />
                     }
-                    <Fab sx={{ background: "#66bb6a", position: "fixed", right: "16px", bottom: "16px", bottom: "72px" }} type="submit">
+                    <Fab key={"saveButton"} sx={{ background: "#66bb6a", position: "fixed", right: "16px", bottom: "16px", bottom: "72px" }} type="submit">
                         <CheckIcon sx={{ color: "white" }} />
                     </Fab>
                 </Box>

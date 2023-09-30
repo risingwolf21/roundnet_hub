@@ -5,8 +5,6 @@ import "./global.css";
 import App from './App';
 import AuthGate from './AuthGate';
 import { ThemeProvider } from '@mui/material';
-import { LocalizationProvider } from "@mui/x-date-pickers";
-import { AdapterMoment } from '@mui/x-date-pickers/AdapterMoment';
 import { mainTheme } from './themes';
 import * as Sentry from "@sentry/react";
 import { supabase } from './supabaseClient';
@@ -14,7 +12,6 @@ import { Provider as SupabaseProvider } from "react-supabase"
 import SubscriptionHandler from './components/SubscriptionHandler';
 import { Provider } from 'react-redux';
 import store from './redux/store';
-import OneSignal from "react-onesignal";
 import "./translation/i18n";
 
 if (process.env.NODE_ENV === "production") {
@@ -30,15 +27,6 @@ if (process.env.NODE_ENV === "production") {
   });
 }
 
-OneSignal.init(
-  {
-    appId: process.env.REACT_APP_oneSignalAppId,
-    safari_web_id: process.env.REACT_APP_oneSignalSafariWebId,
-    notifyButton: {
-      enable: true,
-    },
-  }
-);
 
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
@@ -46,7 +34,6 @@ root.render(
   <React.StrictMode>
     <ThemeProvider theme={mainTheme}>
       <Provider store={store}>
-        <LocalizationProvider dateAdapter={AdapterMoment}>
           <SupabaseProvider value={supabase}>
             <AuthGate>
               <SubscriptionHandler>
@@ -54,7 +41,6 @@ root.render(
               </SubscriptionHandler>
             </AuthGate>
           </SupabaseProvider>
-        </LocalizationProvider>
       </Provider>
     </ThemeProvider>
   </React.StrictMode>

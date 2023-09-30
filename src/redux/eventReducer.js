@@ -26,7 +26,6 @@ export const eventReducer = createSlice({
       state.eventToEdit = action.payload;
     },
     onEventCommentInsert: (state, action) => {
-      console.log(action.payload.new);
       let eventIndex = state.items.findIndex(x => x.id === action.payload.new.event);
       if (eventIndex !== -1) {
         state.items[eventIndex].comments = [...(state.items[eventIndex].comments ?? []), action.payload.new].sort((a, b) => new Date(a["created_at"]) - new Date(b["created_at"]))
@@ -87,7 +86,6 @@ export const eventReducer = createSlice({
     onEventAttendanceUserInsert: (state, action) => {
       let eventIndex = state.items.findIndex(x => x.id === action.payload.new.event);
       if (eventIndex !== -1) {
-        console.log(action.payload)
         state.items[eventIndex].userAttendance = action.payload.new.state;
         state.items[eventIndex].attendance = [...(state.items[eventIndex].userAttendance ?? []), action.payload.new];
       }

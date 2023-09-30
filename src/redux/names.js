@@ -1,3 +1,0 @@
-export const DRINK_UPDATED = "DRINK_UPDATED";
-export const DRINK_INSERTED = "DRINK_INSERTED";
-export const DRINK_DELETED = "DRINK_DELETED";

@@ -35,8 +35,6 @@ const EventAttendanceDialog = ({ open, index, handleClose, event }) => {
         setValue(newValue);
     };
 
-    console.log(event.attendance);
-
     return <Dialog
         fullScreen
         open={open}
@@ -77,7 +75,7 @@ const EventAttendanceDialog = ({ open, index, handleClose, event }) => {
                                     <AccountCircle />
                                 </Avatar>
                             </ListItemAvatar>
-                            <ListItemText primary={x.displayName} />
+                            <ListItemText primary={x.user?.displayName} />
                         </ListItem>)
                     }
                 </List>
@@ -91,7 +89,7 @@ const EventAttendanceDialog = ({ open, index, handleClose, event }) => {
                                     <AccountCircle />
                                 </Avatar>
                             </ListItemAvatar>
-                            <ListItemText primary={x.displayName} />
+                            <ListItemText primary={x.user?.displayName} />
                         </ListItem>)
                     }
                 </List>

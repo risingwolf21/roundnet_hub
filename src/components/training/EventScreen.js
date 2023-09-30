@@ -13,7 +13,7 @@ import { useClient } from "react-supabase";
 import EventInformation from "./EventInformation";
 import { useState } from "react";
 import { useEffect } from "react";
-import { InfiniteScrollList } from "../HistoryScreen";
+import { InfiniteScrollList } from "../InfiniteScrollList";
 
 const EventItem = ({ event, onClick, attendEvent, declineEvent, attendanceUpdating }) => {
 

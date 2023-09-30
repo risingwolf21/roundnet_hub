@@ -72,6 +72,13 @@ const AdminUserList = () => {
                 return scope;
             });
         }
+        if (e2) {
+            captureException(e2, (scope) => {
+                scope.clear();
+                scope.setExtra("user", JSON.stringify(user));
+                return scope;
+            });
+        }
     }
 
     const onUserEditFinished = async (result) => {
