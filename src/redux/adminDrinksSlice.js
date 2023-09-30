@@ -42,7 +42,6 @@ export const adminDrinksSlice = createSlice({
                 state.loading = true;
             })
             .addCase(fetchAdminHistoryAsync.fulfilled, (state, action) => {
-                console.log("reducer input", action.payload.entries)
                 state.loading = false;
                 state.historyError = '';
 
@@ -58,7 +57,6 @@ export const adminDrinksSlice = createSlice({
                 } else {
                     state.history = action.payload.entries;
                 }
-                console.log("reducer", state.history)
             })
             .addCase(fetchAdminHistoryAsync.rejected, (state, action) => {
                 state.loading = false;
@@ -79,7 +77,6 @@ export const fetchAdminHistoryAsync = createAsyncThunk("history", async ({ clien
         .select("count, amount, created_at, drinkId: drink, user(displayName)")
         .order('id', { ascending: false })
         .range(page * count, page * count + count - 1);
-    console.log("fetch", response.data);
     return { entries: response.data, more: page !== 0 };
 });
 

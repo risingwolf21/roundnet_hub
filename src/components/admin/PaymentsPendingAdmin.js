@@ -1,4 +1,4 @@
-import { Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, Grid, IconButton, List, ListItem, ListItemAvatar, ListItemSecondaryAction, ListItemText, Typography } from "@mui/material";
+import { Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, Divider, Grid, IconButton, List, ListItem, ListItemAvatar, ListItemSecondaryAction, ListItemText, Typography } from "@mui/material";
 import CheckIcon from "@mui/icons-material/Check"
 import { useState } from "react";
 import { FULFILLED, OPEN } from "../../constants";
@@ -44,8 +44,8 @@ const PaymentsPendingAdmin = () => {
         {
             payments && <List>
                 {
-                    Object.values(payments).map(x => {
-                        return <ListItem key={x.user.email}>
+                    Object.values(payments).map((x, index) => {
+                        return <ListItem key={x.user.email} divider={index < Object.values(payments).length - 1}>
                             <ListItemAvatar>
                                 <Typography fontWeight={"bold"}>{x.history.reduce((prev, curr) => prev + curr.amount, 0)} €</Typography>
                             </ListItemAvatar>

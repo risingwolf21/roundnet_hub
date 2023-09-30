@@ -32,7 +32,6 @@ const AdminHistoryScreen = () => {
     const client = useClient();
 
     useEffect(() => {
-        console.log("fetching")
         dispatch(fetchAdminHistoryAsync({ client }))
     }, []);
 
@@ -43,7 +42,6 @@ const AdminHistoryScreen = () => {
                 drink: drinks.find(y => y.id === x.drinkId)
             }
         });
-        console.log("mapped", mappedEntries)
         setHistoryItems(mappedEntries);
     }, [history, drinks]);
 
