@@ -5,6 +5,7 @@ import { useAuthStateChange } from "./hooks/useAuthStateChange";
 import { useClient } from "react-supabase";
 import { useDispatch } from "react-redux";
 import { onUserChange } from "./redux/applicationSlice";
+import { useNavigate } from "react-router-dom";
 
 const initialState = { session: null, user: null }
 export const AuthContext = createContext(initialState)
@@ -13,7 +14,7 @@ const AuthGate = ({ children }) => {
 
     const client = useClient();
     const dispatch = useDispatch();
-    const [state, setState] = useState(initialState)
+    const [state, setState] = useState(initialState);
 
     useAuthStateChange((event, session) => {
         setUser({ email: session?.user?.email ?? null, id: session?.user?.id ?? null });
@@ -29,15 +30,13 @@ const AuthGate = ({ children }) => {
                     dispatch(onUserChange(user));
                 }
             })
+        } else {
+            dispatch(onUserChange(null));
         }
     });
 
-    if (state.user) {
-        return <AuthContext.Provider value={state}>
-            {children}
-        </AuthContext.Provider>
-    } else {
-        return <AuthScreen />
-    }
+    return <AuthContext.Provider value={state}>
+        {children}
+    </AuthContext.Provider>
 }
 export default AuthGate;

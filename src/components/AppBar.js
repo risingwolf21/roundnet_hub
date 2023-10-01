@@ -6,25 +6,15 @@ import MenuIcon from '@mui/icons-material/Menu';
 import { useNavigate } from 'react-router-dom';
 import { AccountCircle, ArrowBack, Close } from '@mui/icons-material';
 import { useSelector } from 'react-redux';
+import { useAuth } from '../hooks/useAuth';
 
 const CustomAppBar = ({ drawerOpen, handleMenuClick }) => {
     const navigate = useNavigate();
+    const { user } = useAuth();
     const { mode } = useSelector((state) => state.application);
 
     return <AppBar position="fixed" sx={{ zIndex: (theme) => theme.zIndex.drawer + 1, background: "primary" }}>
         <Toolbar>
-            {
-                false && mode === "drinks" && <IconButton
-                    color="inherit"
-                    aria-label="open drawer"
-                    onClick={() => drawerOpen ? handleMenuClick(false) : handleMenuClick(true)}
-                    edge="start"
-                    sx={{ mr: 2 }}>
-                    {
-                        drawerOpen ? <Close /> : <MenuIcon />
-                    }
-                </IconButton>
-            }
             {
                 window.history.state && window.history.state.idx > 0 && <IconButton
                     color="inherit"
@@ -38,9 +28,11 @@ const CustomAppBar = ({ drawerOpen, handleMenuClick }) => {
             <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
                 Roundnet Karlsruhe
             </Typography>
-            <IconButton color="inherit" onClick={() => navigate("/user")}>
-                <AccountCircle />
-            </IconButton>
+            {
+                user?.id && <IconButton color="inherit" onClick={() => navigate("/user")}>
+                    <AccountCircle />
+                </IconButton>
+            }
         </Toolbar>
     </AppBar>
 }

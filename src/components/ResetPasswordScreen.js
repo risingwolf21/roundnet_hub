@@ -1,0 +1,140 @@
+import * as React from 'react';
+import Avatar from '@mui/material/Avatar';
+import Button from '@mui/material/Button';
+import CssBaseline from '@mui/material/CssBaseline';
+import TextField from '@mui/material/TextField';
+import Link from '@mui/material/Link';
+import Grid from '@mui/material/Grid';
+import Box from '@mui/material/Box';
+import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
+import Typography from '@mui/material/Typography';
+import Container from '@mui/material/Container';
+import { createTheme, ThemeProvider } from '@mui/material/styles';
+import { supabase } from '../supabaseClient';
+import ResetPassword from './ResetPassword';
+import Logo from "../images/Karlsruher_Kojoten_Logo.svg";
+import { Alert, Snackbar } from '@mui/material';
+import { useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+
+const theme = createTheme();
+
+const ResetPasswordScreen = () => {
+
+    const [errorMessage, setErrorMessage] = React.useState("");
+    const [accessToken, setAccessToken] = useState("");
+    const [refreshToken, setRefreshToken] = useState("");
+    const [successMessageOpen, setSuccessMessageOpen] = React.useState(false);
+    const [resetPassword, setResetPassword] = useState(false);
+
+    const navigate = useNavigate();
+
+    useEffect(() => {
+        // Get the access token and refresh token from the URL
+        if (typeof window !== "undefined") {
+            const hashParams = new URLSearchParams(window.location.hash.substring(1));
+            setAccessToken(hashParams.get("access_token") || "");
+            setRefreshToken(hashParams.get("refresh_token") || "");
+        }
+    }, []);
+
+    useEffect(() => {
+        // Authenticate the user using the access token and refresh token
+        const getSessionWithTokens = async () => {
+            if (accessToken && refreshToken) {
+                const { data, error } = await supabase.auth.setSession({
+                    access_token: accessToken,
+                    refresh_token: refreshToken,
+                });
+
+                if (error) {
+                    alert(`Error signing in: ${error.message}`);
+                }
+            }
+        };
+
+        // Call this function only when accessToken and refreshToken are available.
+        if (accessToken && refreshToken) {
+            getSessionWithTokens();
+        }
+    }, [accessToken, refreshToken]);
+
+    const handleSubmit = async (event) => {
+        event.preventDefault();
+        const data = new FormData(event.currentTarget);
+
+        if (data.get("password") !== data.get("password1")) {
+            setErrorMessage("Die Passwörter stimmen nicht überein!");
+            return;
+        }
+
+        const { error } = await supabase.auth.updateUser({ password: data.get("password") });
+        if (error)
+            setErrorMessage(error.message);
+        else {
+            setSuccessMessageOpen(true)
+            await new Promise(r => setTimeout(r, 2000));
+            navigate("/drinks", { replace: true });
+        }
+    };
+
+    return (
+        <Container component="main" maxWidth="xs">
+            <CssBaseline />
+            <Box
+                sx={{
+                    marginTop: 8,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                }}>
+                <img src={Logo} alt='Logo' width={150} />
+                <Typography component="h1" variant="h5">
+                    Passwort zurücksetzen
+                </Typography>
+                <Box component="form" onSubmit={handleSubmit} noValidate sx={{ mt: 1 }}>
+                    <TextField
+                        margin="normal"
+                        color='secondary'
+                        required
+                        fullWidth
+                        name="password"
+                        label="Password"
+                        type="password"
+                        id="password"
+                    />
+                    <TextField
+                        margin="normal"
+                        color='secondary'
+                        required
+                        fullWidth
+                        name="password1"
+                        label="Password wiederholen"
+                        type="password"
+                        id="password1"
+                    />
+                    {
+                        errorMessage && <Typography color="red">
+                            {errorMessage}
+                        </Typography>
+                    }
+                    <Button
+                        type="submit"
+                        fullWidth
+                        color='secondary'
+                        variant="contained"
+                        sx={{ mt: 3, mb: 2 }}
+                    >
+                        Passwort ändern
+                    </Button>
+                    <Snackbar sx={{ position: "absolute", right: "16px", bottom: "72px" }} open={successMessageOpen} onClose={() => setSuccessMessageOpen(false)}>
+                        <Alert onClose={() => setSuccessMessageOpen(false)} severity={"success"} sx={{ width: '100%' }}>
+                            Passwort erfolgreich geändert!
+                        </Alert>
+                    </Snackbar>
+                </Box>
+            </Box>
+        </Container>
+    );
+}
+export default ResetPasswordScreen;

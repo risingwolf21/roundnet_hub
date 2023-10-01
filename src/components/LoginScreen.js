@@ -1,4 +1,4 @@
-import * as React from 'react';
+import { useState } from "react"
 import Button from '@mui/material/Button';
 import CssBaseline from '@mui/material/CssBaseline';
 import TextField from '@mui/material/TextField';
@@ -8,8 +8,32 @@ import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
 import Logo from "../images/Karlsruher_Kojoten_Logo.svg";
+import { supabase } from "../supabaseClient";
+import { useNavigate } from "react-router-dom";
 
-const LoginScreen = ({ onLogin, errorMessage, gotoRegister, gotoForgotPassword }) => {
+const LoginScreen = () => {
+
+    const [errorMessage, setErrorMessage] = useState("");
+    const navigate = useNavigate();
+
+    const onLogin = async (credentials) => {
+        const { data, error } = await supabase.auth.signInWithPassword({
+            email: credentials.email,
+            password: credentials.password
+        });
+        if (error)
+            setErrorMessage(error.message);
+        else
+            supabase.from("user").select().eq("userId", data.user.id).then(async res => {
+                if (res.data.length === 1) {
+                    await supabase.auth.updateUser({
+                        data: { role: res.data[0].role }
+                    });
+                    navigate("/drinks", { replace: true })
+                }
+            })
+    }
+
     const handleSubmit = (event) => {
         event.preventDefault();
         const data = new FormData(event.currentTarget);
@@ -72,12 +96,12 @@ const LoginScreen = ({ onLogin, errorMessage, gotoRegister, gotoForgotPassword }
                     </Button>
                     <Grid container>
                         <Grid item xs>
-                            <Link href="#" variant="body2" onClick={() => gotoForgotPassword()}>
+                            <Link href="#" variant="body2" onClick={() => navigate("/forgot-password")}>
                                 Passwort vergessen?
                             </Link>
                         </Grid>
                         <Grid item>
-                            <Link href="#" variant="body2" onClick={() => gotoRegister()}>
+                            <Link href="#" variant="body2" onClick={() => navigate("/register")}>
                                 {"Noch keinen Account?"}
                             </Link>
                         </Grid>

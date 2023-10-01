@@ -26,7 +26,7 @@ const UserScreen = () => {
         width="100%"
         sx={{ paddingLeft: 2, paddingRight: 2 }}>
         {
-            user["user_metadata"] && <>
+            user?.user_metadata && <>
                 <Box component="form" onSubmit={handleSubmit} noValidate>
                     <TextField
                         fullWidth

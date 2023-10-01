@@ -1,4 +1,4 @@
-import * as React from 'react';
+import { useState } from "react";
 import Button from '@mui/material/Button';
 import CssBaseline from '@mui/material/CssBaseline';
 import TextField from '@mui/material/TextField';
@@ -8,8 +8,38 @@ import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
 import Logo from "../images/Karlsruher_Kojoten_Logo.svg";
+import { supabase } from "../supabaseClient";
+import { useNavigate } from "react-router-dom";
 
-const RegisterScreen = ({ onRegister, gotoLogin, errorMessage }) => {
+const RegisterScreen = () => {
+
+    const [errorMessage, setErrorMessage] = useState("");
+    const navigate = useNavigate();
+
+    const onRegister = async ({ email, password, displayName }) => {
+        const { data, error } = await supabase.auth.signUp({
+            email: email,
+            password: password,
+            options: {
+                data: {
+                    displayName,
+                    email,
+                    role: "user",
+                }
+            }
+        });
+
+        let { updatingUserError } = await supabase.auth.updateUser({ data: { userId: data.user.id } })
+        let { writingError } = await supabase.from("user").upsert({ email, displayName, userId: data.user.id, role: "user" })
+
+        if (error)
+            setErrorMessage(JSON.stringify(error));
+        if (updatingUserError)
+            setErrorMessage(JSON.stringify(updatingUserError));
+        if (writingError)
+            setErrorMessage(JSON.stringify(writingError));
+    }
+
     const handleSubmit = (event) => {
         event.preventDefault();
         const data = new FormData(event.currentTarget);
@@ -93,7 +123,7 @@ const RegisterScreen = ({ onRegister, gotoLogin, errorMessage }) => {
                     </Button>
                     <Grid container>
                         <Grid item xs>
-                            <Link href="#" variant="body2" onClick={() => gotoLogin()}>
+                            <Link href="#" variant="body2" onClick={() => navigate("/login")}>
                                 Already have an account? Sign in here!
                             </Link>
                         </Grid>
