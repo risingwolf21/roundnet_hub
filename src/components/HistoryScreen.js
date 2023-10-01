@@ -11,7 +11,7 @@ import { isUndefined } from "lodash";
 import { InfiniteScrollList } from "./InfiniteScrollList";
 
 const HistoryItem = ({ items, header }) => {
-    return <List dense component={"div"} disablePadding subheader={<ListSubheader component="div" id="nested-list-subheader">{header}</ListSubheader>}>
+    return <List dense component={"div"} disablePadding subheader={<ListSubheader sx={{ zIndex: "-1" }} component="div" id="nested-list-subheader">{header}</ListSubheader>}>
         {
             items.map((item, index) => <ListItem dense key={"sublist" + index}>
                 <ListItemAvatar>

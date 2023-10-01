@@ -1,5 +1,5 @@
-import { Grid, ListItem, ListItemAvatar, ListItemText, Paper } from "@mui/material";
-import { AccountCircle, AdminPanelSettings, EuroRounded, Liquor } from "@mui/icons-material";
+import { Grid, IconButton, List, ListItem, ListItemAvatar, ListItemSecondaryAction, ListItemText, Paper } from "@mui/material";
+import { AccountCircle, AdminPanelSettings, Edit, EuroRounded, Liquor } from "@mui/icons-material";
 import EditUserDialog from "./EditUserDialog";
 import { useState } from "react";
 import { useRealtime } from "../../hooks/useRealtime";
@@ -10,25 +10,28 @@ import { supabase_admin } from "../../supabaseClient";
 import { captureException } from "@sentry/react";
 
 const AdminUserItem = ({ user, onEditClick }) => {
-    return <Paper sx={{ width: "100%", marginBottom: 2, listStyleType: "none" }}>
-        <ListItem onClick={onEditClick}>
-            <ListItemAvatar>
-                {
-                    user.role === "user" && <AccountCircle />
-                }
-                {
-                    user.role === "finance" && <EuroRounded />
-                }
-                {
-                    user.role === "procure" && <Liquor />
-                }
-                {
-                    user.role === "admin" && <AdminPanelSettings />
-                }
-            </ListItemAvatar>
-            <ListItemText primary={user.displayName} secondary={user.email} />
-        </ListItem>
-    </Paper>
+    return <ListItem divider>
+        <ListItemAvatar>
+            {
+                user.role === "user" && <AccountCircle />
+            }
+            {
+                user.role === "finance" && <EuroRounded />
+            }
+            {
+                user.role === "procure" && <Liquor />
+            }
+            {
+                user.role === "admin" && <AdminPanelSettings />
+            }
+        </ListItemAvatar>
+        <ListItemText primary={user.displayName} secondary={user.email} />
+        <ListItemSecondaryAction>
+            <IconButton onClick={onEditClick}>
+                <Edit />
+            </IconButton>
+        </ListItemSecondaryAction>
+    </ListItem>
 }
 
 const AdminUserList = () => {
@@ -105,11 +108,11 @@ const AdminUserList = () => {
         alignItems="center"
         justifyContent="center"
         sx={{ paddingTop: 2 }}>
-        <Grid container width="100%" direction="column" alignItems="center" justifyContent="center" paddingLeft={2} paddingRight={2}>
+        <List sx={{ width: "100%" }}>
             {
                 !fetching && users && users.map((user, index) => <AdminUserItem key={"user" + index} user={user} onEditClick={() => editUser(user)} />)
             }
-        </Grid>
+        </List>
         <EditUserDialog
             open={editUserOpen}
             user={currentUser}
