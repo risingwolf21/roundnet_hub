@@ -25,7 +25,7 @@ jobs:
         with:
           path: ${{github.workspace}}/src/git_commit.txt
           contents: |
-            ${{GITHUB_SHA}}
+            ${{github.sha}}
           write-mode: overwrite
 
       - name: Build
