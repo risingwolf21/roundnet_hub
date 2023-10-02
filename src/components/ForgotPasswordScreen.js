@@ -24,7 +24,9 @@ const ForgotPasswordScreen = () => {
         const data = new FormData(event.currentTarget);
 
         if (!data.get("email"))
-            return
+            return;
+
+        console.log("sending email to", window.location.origin + "/reset-password");
         const { error } = await supabase.auth.resetPasswordForEmail(data.get("email"), {
             redirectTo: window.location.origin + "/reset-password"
         });
