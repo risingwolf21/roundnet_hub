@@ -1,17 +1,17 @@
-import { Alert, Grid, LinearProgress, List, ListItem, ListItemAvatar, ListItemSecondaryAction, ListItemText, ListSubheader, Snackbar, Typography } from "@mui/material"
+import { Grid, LinearProgress, List, ListItem, ListItemAvatar, ListItemSecondaryAction, ListItemText, ListSubheader, Typography } from "@mui/material"
 import moment from "moment/moment";
 import { groupBy } from "../utils";
 import { useDispatch, useSelector } from "react-redux";
-import { useRef, useState } from "react";
+import { useState } from "react";
 import { useEffect } from "react";
 import { fetchHistoryAsync } from "../redux/drinksSlice";
 import { useClient } from "react-supabase";
 import { useAuth } from "../hooks/useAuth";
-import { isUndefined } from "lodash";
 import { InfiniteScrollList } from "./InfiniteScrollList";
+import CustomAppBar from "./AppBar";
 
 const HistoryItem = ({ items, header }) => {
-    return <List dense component={"div"} disablePadding subheader={<ListSubheader component="div" id="nested-list-subheader">{header}</ListSubheader>}>
+    return <List dense component={"div"} disablePadding subheader={<ListSubheader sx={{ zIndex: "-1" }} component="div" id="nested-list-subheader">{header}</ListSubheader>}>
         {
             items.map((item, index) => <ListItem dense key={"sublist" + index}>
                 <ListItemAvatar>
@@ -49,8 +49,8 @@ const HistoryScreen = () => {
         width="100%"
         direction="column"
         alignItems="center"
-        justifyContent="center"
-        sx={{ overflow: "auto" }}>
+        justifyContent="center">
+        <CustomAppBar navigateBack={true} />
         {
             historyLoading && <LinearProgress style={{ position: "fixed", left: 0, top: 56, right: 0 }} />
         }

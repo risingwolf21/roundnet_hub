@@ -7,9 +7,10 @@ import { fetchAdminHistoryAsync } from "../../redux/adminDrinksSlice";
 import { useState } from "react";
 import { useEffect } from "react";
 import { useClient } from "react-supabase";
+import CustomAppBar from "../AppBar";
 
 const AdminHistoryItem = ({ items, header }) => {
-    return <List dense component={"div"} disablePadding subheader={<ListSubheader component="div" id="nested-list-subheader">{header}</ListSubheader>}>
+    return <List dense component={"div"} disablePadding subheader={<ListSubheader sx={{ zIndex: "-1" }} component="div" id="nested-list-subheader">{header}</ListSubheader>}>
         {
             items.map((item, index) => <ListItem dense key={header + index + "sublist"}>
                 <ListItemAvatar>
@@ -33,7 +34,7 @@ const AdminHistoryScreen = () => {
 
     useEffect(() => {
         dispatch(fetchAdminHistoryAsync({ client }))
-    }, []);
+    }, [client, dispatch]);
 
     useEffect(() => {
         let mappedEntries = history?.map(x => {
@@ -50,8 +51,8 @@ const AdminHistoryScreen = () => {
         width="100%"
         direction="column"
         alignItems="center"
-        justifyContent="center"
-        sx={{ overflow: "auto" }}>
+        justifyContent="center">
+        <CustomAppBar navigateBack />
         {
             historyLoading && <LinearProgress style={{ position: "fixed", left: 0, top: 56, right: 0 }} />
         }

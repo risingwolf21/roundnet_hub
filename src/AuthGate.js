@@ -5,6 +5,13 @@ import { useAuthStateChange } from "./hooks/useAuthStateChange";
 import { useClient } from "react-supabase";
 import { useDispatch } from "react-redux";
 import { onUserChange } from "./redux/applicationSlice";
+import { useNavigate } from "react-router-dom";
+import LoginScreen from './components/LoginScreen';
+import ForgotPasswordScreen from './components/ForgotPasswordScreen';
+import RegisterScreen from './components/RegisterScreen';
+import ResetPasswordScreen from './components/ResetPasswordScreen';
+import { Route, Routes } from 'react-router-dom';
+
 
 const initialState = { session: null, user: null }
 export const AuthContext = createContext(initialState)
@@ -13,7 +20,8 @@ const AuthGate = ({ children }) => {
 
     const client = useClient();
     const dispatch = useDispatch();
-    const [state, setState] = useState(initialState)
+    const navigate = useNavigate();
+    const [state, setState] = useState(initialState);
 
     useAuthStateChange((event, session) => {
         setUser({ email: session?.user?.email ?? null, id: session?.user?.id ?? null });
@@ -29,15 +37,23 @@ const AuthGate = ({ children }) => {
                     dispatch(onUserChange(user));
                 }
             })
+        } else {
+            setState(null);
+            dispatch(onUserChange(null));
+            navigate("/login", { replace: true });
         }
     });
 
-    if (state.user) {
-        return <AuthContext.Provider value={state}>
-            {children}
-        </AuthContext.Provider>
-    } else {
-        return <AuthScreen />
+    if (!state?.user) {
+        return <Routes>
+            <Route path='/login' element={<LoginScreen />} />
+            <Route path='/register' element={<RegisterScreen />} />
+            <Route path='/forgot-password' element={<ForgotPasswordScreen />} />
+        </Routes>
     }
+
+    return <AuthContext.Provider value={state}>
+        {children}
+    </AuthContext.Provider>
 }
 export default AuthGate;

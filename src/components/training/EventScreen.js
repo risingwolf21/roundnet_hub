@@ -14,6 +14,7 @@ import EventInformation from "./EventInformation";
 import { useState } from "react";
 import { useEffect } from "react";
 import { InfiniteScrollList } from "../InfiniteScrollList";
+import CustomAppBar from "../AppBar";
 
 const EventItem = ({ event, onClick, attendEvent, declineEvent, attendanceUpdating }) => {
 
@@ -60,12 +61,11 @@ const EventItem = ({ event, onClick, attendEvent, declineEvent, attendanceUpdati
 
 const EventScreen = () => {
 
-    const dispatch = useDispatch();
-    const navigate = useNavigate();
-
     const { items: events, loading, error, endReached } = useSelector((state) => state.events);
     const { user } = useAuth();
     const client = useClient();
+    const dispatch = useDispatch();
+    const navigate = useNavigate();
     const [eventInfoOpen, setEventInfoOpen] = useState(false);
     const [eventUpdateError, setUpdateEventError] = useState("");
     const [eventsUpdatingAttendance, setEventsUpdatingAttendance] = useState({});
@@ -94,6 +94,7 @@ const EventScreen = () => {
         direction="column"
         alignItems="center"
         justifyContent="center">
+        <CustomAppBar navigateBack />
         {
             loading && <LinearProgress sx={{ position: "fixed", top: 56, left: 0, right: 0 }} />
         }
@@ -106,8 +107,7 @@ const EventScreen = () => {
                         attendEvent={() => updateAttendance(event.id, ATTENDING)}
                         declineEvent={() => updateAttendance(event.id, DECLINED)}
                         onClick={() => {
-                            dispatch(selectEvent(event));
-                            setEventInfoOpen(true)
+                            navigate("/training/event/" + event.id);
                         }} />
                     <Divider />
                 </div>)

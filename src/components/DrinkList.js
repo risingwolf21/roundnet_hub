@@ -9,6 +9,7 @@ import { Error } from "./Error";
 import { useAuth } from "../hooks/useAuth";
 import { useClient } from "react-supabase";
 import { useSelector } from "react-redux";
+import CustomAppBar from "./AppBar";
 
 const SUCCESS_MESSAGE_INFO = { message: "Getränke erfolgreich gebucht!", severity: "success" };
 
@@ -119,6 +120,7 @@ const DrinkList = () => {
         direction="column"
         alignItems="center"
         justifyContent="center">
+        <CustomAppBar />
         {drinksFetching && <LinearProgress style={{ position: "fixed", left: 0, right: 0, top: 56 }} />}
         <List sx={{ width: "100%" }}>
             {
@@ -136,8 +138,7 @@ const DrinkList = () => {
         </List>
         {
             Object.values(addedDrinks).length > 0 && <>
-                <BottomInformation title={"Gesamtpreis"} totalPrice={Object.values(addedDrinks).reduce((prev, res) => prev + (res.price * res.count), 0) + " €"} />
-                <Fab sx={{ background: "#66bb6a", position: "fixed", right: "16px", bottom: "72px" }} onClick={confirmDrinks}>
+                <Fab sx={{ background: "#66bb6a", position: "fixed", right: "16px", bottom: "56px", mb: "16px" }} onClick={confirmDrinks}>
                     {
                         loading ? <CircularProgress /> : <CheckIcon sx={{ color: "white" }} />
                     }

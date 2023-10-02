@@ -6,27 +6,16 @@ import MenuIcon from '@mui/icons-material/Menu';
 import { useNavigate } from 'react-router-dom';
 import { AccountCircle, ArrowBack, Close } from '@mui/icons-material';
 import { useSelector } from 'react-redux';
+import { useAuth } from '../hooks/useAuth';
 
-const CustomAppBar = ({ drawerOpen, handleMenuClick }) => {
+const CustomAppBar = ({ navigateBack = false, title = "Roundnet Karlsruhe" }) => {
     const navigate = useNavigate();
-    const { mode } = useSelector((state) => state.application);
+    const { user } = useAuth();
 
-    return <AppBar position="fixed" sx={{ zIndex: (theme) => theme.zIndex.drawer + 1, background: "primary" }}>
+    return <AppBar position="sticky" sx={{ zIndex: (theme) => theme.zIndex.drawer + 1, background: "primary" }}>
         <Toolbar>
             {
-                false && mode === "drinks" && <IconButton
-                    color="inherit"
-                    aria-label="open drawer"
-                    onClick={() => drawerOpen ? handleMenuClick(false) : handleMenuClick(true)}
-                    edge="start"
-                    sx={{ mr: 2 }}>
-                    {
-                        drawerOpen ? <Close /> : <MenuIcon />
-                    }
-                </IconButton>
-            }
-            {
-                window.history.state && window.history.state.idx > 0 && <IconButton
+                navigateBack && <IconButton
                     color="inherit"
                     aria-label="open drawer"
                     onClick={() => navigate(-1)}
@@ -36,11 +25,13 @@ const CustomAppBar = ({ drawerOpen, handleMenuClick }) => {
                 </IconButton>
             }
             <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-                Roundnet Karlsruhe
+                {title}
             </Typography>
-            <IconButton color="inherit" onClick={() => navigate("/user")}>
-                <AccountCircle />
-            </IconButton>
+            {
+                user?.id && <IconButton color="inherit" onClick={() => navigate("/user")}>
+                    <AccountCircle />
+                </IconButton>
+            }
         </Toolbar>
     </AppBar>
 }

@@ -34,13 +34,9 @@ root.render(
   <React.StrictMode>
     <ThemeProvider theme={mainTheme}>
       <Provider store={store}>
-          <SupabaseProvider value={supabase}>
-            <AuthGate>
-              <SubscriptionHandler>
-                <App />
-              </SubscriptionHandler>
-            </AuthGate>
-          </SupabaseProvider>
+        <SupabaseProvider value={supabase}>
+          <App />
+        </SupabaseProvider>
       </Provider>
     </ThemeProvider>
   </React.StrictMode>

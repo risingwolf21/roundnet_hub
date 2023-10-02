@@ -9,10 +9,14 @@ import EventAttendanceDialog from "./EventAttendanceDialog";
 import { useEffect, useMemo } from "react";
 import { editEvent, fetchEventAttendanceAsync } from "../../redux/eventReducer";
 import { useClient } from "react-supabase";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { GoogleMap, Marker, useLoadScript } from "@react-google-maps/api";
+import CustomAppBar from "../AppBar";
 
-const EventInformation = ({ dispatch, selectedEventId, events, attendanceLoading, open, handleClose, attendEvent, declineEvent }) => {
+const EventInformation = ({ dispatch, events, attendanceLoading, open, handleClose, attendEvent, declineEvent }) => {
+
+    const { selectedEventId } = useParams();
+    console.log(selectedEventId)
 
     const [eventAttendanceState, setEventAttendanceState] = useState({ open: false, index: 0 });
     const [cancelTrainingOpen, setCancelTrainingOpen] = useState(false);
@@ -32,10 +36,8 @@ const EventInformation = ({ dispatch, selectedEventId, events, attendanceLoading
         }
     }, [selectedEventId, dispatch, client]);
 
-    if (!selectedEventId)
-        return <div />
-
     const selectedEvent = events.find(x => x.id === selectedEventId);
+    console.log(selectedEventId, selectedEvent, events);
 
     if (!selectedEvent)
         return <div />
@@ -52,7 +54,7 @@ const EventInformation = ({ dispatch, selectedEventId, events, attendanceLoading
             user: user.id,
             event: selectedEventId,
             comment: comment,
-            displayName: user?.user_metadata?.displayName
+            displayName: user?.user_metadata?.displayName ?? "Anon"
         }).then(res => {
             setComment("");
         })
@@ -67,26 +69,12 @@ const EventInformation = ({ dispatch, selectedEventId, events, attendanceLoading
         if (newWindow) newWindow.opener = null
     }
 
-    return <Dialog
-        fullScreen
-        open={open}
-        onClose={handleClose}
-        TransitionComponent={SlideUpTransition}>
-        <AppBar sx={{ position: "fixed" }}>
-            <Toolbar>
-                <IconButton
-                    edge="start"
-                    color="inherit"
-                    onClick={handleClose}
-                    sx={{ mr: 2 }}
-                    aria-label="close">
-                    <ArrowBack />
-                </IconButton>
-                <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-                    {selectedEvent?.title}
-                </Typography>
-            </Toolbar>
-        </AppBar>
+    return <Box
+        width="100%"
+        direction="column"
+        alignItems="center"
+        justifyContent="center">
+        <CustomAppBar title={selectedEvent?.title} navigateBack />
         <Box sx={{ justifyContent: "space-between", display: "flex", flexDirection: "column" }}>
             <Toolbar />
             <Box pt={2}>
@@ -262,12 +250,11 @@ const EventInformation = ({ dispatch, selectedEventId, events, attendanceLoading
                 </Fab>
             </Box>
         }
-    </Dialog >
+    </Box>
 }
 
 const mapStateToProps = (state) => {
     return {
-        selectedEventId: state.events.selectedEvent,
         events: state.events.items,
         attendanceLoading: state.events.attendanceLoading
     }
