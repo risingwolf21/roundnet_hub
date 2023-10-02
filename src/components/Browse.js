@@ -1,8 +1,10 @@
-import { AccountCircle, AdminPanelSettings, Euro, Group, History, Liquor } from "@mui/icons-material";
+import { AccountCircle, AdminPanelSettings, Euro, Group, History, Liquor, Info } from "@mui/icons-material";
 import { Avatar, List, ListItem, ListItemAvatar, ListItemSecondaryAction, ListItemText } from "@mui/material";
 import { useNavigate } from "react-router";
 import { useAuth } from "../hooks/useAuth";
 import { withTranslation } from 'react-i18next';
+import { useState, useEffect } from "react";
+import raw from "../git_commit.txt";
 
 const entries = [
     {
@@ -43,6 +45,16 @@ const Browse = ({ t }) => {
 
     const navigate = useNavigate();
     const { user } = useAuth();
+
+    const [version, setVersion] = useState();
+
+    useEffect(() => {
+        fetch(raw)
+            .then(r => r.text())
+            .then(text => {
+                setVersion(text);
+            });
+    })
 
     return <List>
         {
@@ -88,6 +100,14 @@ const Browse = ({ t }) => {
                 </ListItem>
             })
         }
+        <ListItem dense>
+            <ListItemAvatar>
+                <Avatar sx={{ background: "#88AEBF", width: 40, height: 40 }}>
+                    <Info />
+                </Avatar>
+            </ListItemAvatar>
+            <ListItemText primary={version} secondary={"Version"} />
+        </ListItem>
     </List>
 }
 
