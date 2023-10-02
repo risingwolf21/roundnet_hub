@@ -16,7 +16,7 @@ export const InfiniteScrollList = ({ children, fetch, error, loading, endReached
     };
 
     useEffect(() => {
-        let pagesCounter = 1
+        let pagesCounter = 0
         const observer = new IntersectionObserver(
             entries => {
                 if (entries[0].isIntersecting && !endReached && !loading) {
