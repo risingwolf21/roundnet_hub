@@ -23,7 +23,7 @@ jobs:
       - name: Write commit Version to file
         uses: DamianReeves/write-file-action@master
         with:
-          path: ${{GITHUB_WORKSPACE}}/src/git_commit.txt
+          path: ${{github.workspace}}/src/git_commit.txt
           contents: |
             ${{GITHUB_SHA}}
           write-mode: overwrite
