@@ -1,4 +1,4 @@
-import { Avatar, Badge, Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, Fab, Grid, IconButton, ListItem, ListItemAvatar, ListItemSecondaryAction, ListItemText, Paper, Typography } from "@mui/material";
+import { Avatar, Badge, Button, Dialog, DialogActions, DialogContent, DialogTitle, Fab, Grid, IconButton, LinearProgress, List, ListItem, ListItemAvatar, ListItemSecondaryAction, ListItemText, Typography } from "@mui/material";
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -8,41 +8,39 @@ import { useState } from "react";
 import _ from "lodash";
 import { useAdminDrinks } from "../../hooks/useAdminDrinksHook";
 import { Error } from "../Error";
-import { Loading } from "../Loading";
 import { useSelector } from "react-redux";
+import CustomAppBar from "../AppBar";
 
-const AdminDrinkItem = ({ drink, onEditClick, onDeleteClick }) => {
-    return <Paper sx={{ width: "100%", marginBottom: 2, listStyleType: "none" }}>
-        <ListItem>
-            <ListItemAvatar>
-                <Badge color={drink?.active ? "success" : "warning"} variant="dot">
-                    <Avatar>
-                        {
-                            drink?.imageUrl
-                                ? <img src={drink.imageUrl} alt="logo" width={40} height={40} />
-                                : <LocalDrinkIcon />
-                        }
-                    </Avatar>
-                </Badge>
-            </ListItemAvatar>
-            <ListItemText primary={drink.name} secondary={drink.price + " €"} />
-            <ListItemSecondaryAction>
-                <IconButton onClick={onEditClick}>
-                    <EditIcon fontSize={"medium"} />
-                </IconButton>
-                <IconButton onClick={onDeleteClick}>
-                    <DeleteIcon fontSize={"medium"} />
-                </IconButton>
-            </ListItemSecondaryAction>
-        </ListItem>
-    </Paper>
+const AdminDrinkItem = ({ drink, onEditClick, onDeleteClick, divider }) => {
+    return <ListItem divider={true}>
+        <ListItemAvatar>
+            <Badge color={drink?.active ? "success" : "warning"} variant="dot">
+                <Avatar>
+                    {
+                        drink?.imageUrl
+                            ? <img src={drink.imageUrl} alt="logo" width={40} height={40} />
+                            : <LocalDrinkIcon />
+                    }
+                </Avatar>
+            </Badge>
+        </ListItemAvatar>
+        <ListItemText primary={drink.name} secondary={drink.price + " €"} />
+        <ListItemSecondaryAction>
+            <IconButton onClick={onEditClick}>
+                <EditIcon fontSize={"medium"} />
+            </IconButton>
+            <IconButton onClick={onDeleteClick}>
+                <DeleteIcon fontSize={"medium"} />
+            </IconButton>
+        </ListItemSecondaryAction>
+    </ListItem>
 }
 
 const EMPTY_DRINK = { "imageUrl": "", name: "", price: 0, active: false };
 
 const AdminDrinkList = () => {
 
-    const { items: drinks, error, loading } = useSelector((state) => state.drinks);
+    const { drinks, drinksError, drinksLoading } = useSelector((state) => state.adminDrinks);
 
     const { updateDrink, deleteDrink, addDrink } = useAdminDrinks();
 
@@ -87,19 +85,20 @@ const AdminDrinkList = () => {
         setOpen(false);
     }
 
-    if (loading)
-        return <Loading />
-    if (error)
-        return <Error message={error} />
+    if (drinksError)
+        return <Error message={drinksError} />
 
     return (<Grid
         container
         width="100%"
         direction="column"
         alignItems="center"
-        justifyContent="center"
-        sx={{ paddingTop: 2 }}>
-        <Grid container width="100%" direction="column" alignItems="center" justifyContent="center" paddingLeft={2} paddingRight={2}>
+        justifyContent="center">
+        <CustomAppBar navigateBack />
+        {
+            drinksLoading && <LinearProgress style={{ position: "fixed", left: 0, top: 56, right: 0 }} />
+        }
+        <List sx={{ width: "100%", paddingBottom: 12 }}>
             {
                 drinks && drinks.filter(x => !x.deleted).map((drink, index) => <AdminDrinkItem
                     key={"drink" + index}
@@ -108,9 +107,8 @@ const AdminDrinkList = () => {
                     onEditClick={() => selectDrink(drink)}
                     onDeleteClick={() => deleteDrinkDialog(drink)} />)
             }
-            <Box height={"64px"} width={"100%"} />
-        </Grid>
-        <Fab sx={{ background: "#66bb6a", position: "fixed", right: "16px", bottom: "16px" }} onClick={() => selectDrink(EMPTY_DRINK)}>
+        </List>
+        <Fab sx={{ background: "#66bb6a", position: "fixed", right: "16px", bottom: "72px" }} onClick={() => selectDrink(EMPTY_DRINK)}>
             <AddIcon sx={{ color: "white" }} />
         </Fab>
         <EditDrinkDialog drink={selectedDrink} drinkHistory={getDrinksHistory(selectedDrink)} open={open} handleClose={() => setOpen(false)} onDrinkEditFinished={onDrinkEditFinished} />

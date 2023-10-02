@@ -8,11 +8,11 @@ export const applicationReducer = createSlice({
         appUpdateAvailable: false
     },
     reducers: {
-        onUserChange: (state, action) => {
-            state.user = action.payload
-        },
         onModeChange: (state, action) => {
             state.mode = action.payload
+        },
+        onUserChange: (state, action) => {
+            state.user = action.payload
         },
         onAppUpdateAvailableChange: (state, action) => {
             state.appUpdateAvailable = action.payload

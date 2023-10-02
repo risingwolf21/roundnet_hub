@@ -1,0 +1,24 @@
+{
+    "browse": {
+        "account": "Account",
+        "payment": "Payment",
+        "history": "History",
+        "training": "Training",
+        "managePayments": "Manage payments",
+        "manageDrinks": "Manage drinks",
+        "manageUsers": "Manage users",
+        "completeHistory": "Complete history" 
+    },
+    "navigation": {
+        "browse": "Browse",
+        "drinks": "Drinks",
+        "training": "Training"
+    },
+    "events": {
+        "creation": {
+            "meetingTimeBeforeStartTime": "The meetup time can not be after the start time",
+            "titleTooShort": "The title of this event needs at least 6 characters",
+            "descriptionEmpty": "The description of this event can not be empty"
+        }
+    }
+}

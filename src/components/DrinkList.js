@@ -1,16 +1,15 @@
-import { Alert, Avatar, Box, CircularProgress, Divider, Fab, Grid, IconButton, LinearProgress, List, ListItem, ListItemAvatar, ListItemSecondaryAction, ListItemText, Snackbar, Typography } from "@mui/material";
+import { Alert, CircularProgress, Divider, Fab, Grid, List, LinearProgress, Snackbar } from "@mui/material";
 import DrinkItem from "./DrinkItem";
 import { useState } from "react";
 import CheckIcon from '@mui/icons-material/Check';
 import BottomInformation from "./BottomInformation";
 import { NOT_PAID, OPEN } from "../constants";
 import { captureException } from "@sentry/react";
-import { Loading } from "./Loading";
 import { Error } from "./Error";
 import { useAuth } from "../hooks/useAuth";
 import { useClient } from "react-supabase";
 import { useSelector } from "react-redux";
-import { Add, Delete, LocalDrink, Remove } from "@mui/icons-material";
+import CustomAppBar from "./AppBar";
 
 const SUCCESS_MESSAGE_INFO = { message: "Getränke erfolgreich gebucht!", severity: "success" };
 
@@ -19,7 +18,7 @@ const DrinkList = () => {
     const { user } = useAuth();
     const client = useClient();
 
-    const { items: drinks, loading: fetching, error } = useSelector((state) => state.drinks);
+    const { drinks, drinksFetching, drinksError } = useSelector((state) => state.drinks);
     const { payment } = useSelector((state) => state.payment);
 
     const [addedDrinks, setAddedDrinks] = useState({});
@@ -112,8 +111,8 @@ const DrinkList = () => {
         setAddedDrinks({ ...temp });
     }
 
-    if (error)
-        return <Error message={error} />
+    if (drinksError)
+        return <Error message={drinksError} />
 
     return (<Grid
         container
@@ -121,25 +120,25 @@ const DrinkList = () => {
         direction="column"
         alignItems="center"
         justifyContent="center">
-        {fetching && <LinearProgress style={{ position: "fixed", left: 0, right: 0, top: 56 }} />}
+        <CustomAppBar />
+        {drinksFetching && <LinearProgress style={{ position: "fixed", left: 0, right: 0, top: 56 }} />}
         <List sx={{ width: "100%" }}>
             {
                 drinks && drinks.filter(x => !x.deleted && x.active).map((drink, index) => {
-                    return <>
+                    return <div key={drink.id + "div"}>
                         <DrinkItem
                             drink={drink}
                             onAddClick={() => onAddDrinkClick(drink)}
                             onMinusClick={() => onRemoveDrinkClick(drink)}
                             count={addedDrinks[drink.id]?.count ?? 0} />
                         <Divider />
-                    </>
+                    </div>
                 })
             }
         </List>
         {
             Object.values(addedDrinks).length > 0 && <>
-                <BottomInformation title={"Gesamtpreis"} totalPrice={Object.values(addedDrinks).reduce((prev, res) => prev + (res.price * res.count), 0) + " €"} />
-                <Fab sx={{ background: "#66bb6a", position: "fixed", right: "16px", bottom: "72px" }} onClick={confirmDrinks}>
+                <Fab sx={{ background: "#66bb6a", position: "fixed", right: "16px", bottom: "56px", mb: "16px" }} onClick={confirmDrinks}>
                     {
                         loading ? <CircularProgress /> : <CheckIcon sx={{ color: "white" }} />
                     }

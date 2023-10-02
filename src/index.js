@@ -12,13 +12,14 @@ import { Provider as SupabaseProvider } from "react-supabase"
 import SubscriptionHandler from './components/SubscriptionHandler';
 import { Provider } from 'react-redux';
 import store from './redux/store';
+import "./translation/i18n";
 
 if (process.env.NODE_ENV === "production") {
   Sentry.init({
     dsn: "https://a06f63fae5ab4ce4ac291d0d6fb4e989@o4505379650666496.ingest.sentry.io/4505379651649536",
     integrations: [
       new Sentry.BrowserTracing({
-        tracePropagationTargets: [/^https:\/\/roundnet-karlsruhe\.web.app/,/^https:\/\/staging-roundnet-karlsruhe\.web.app/],
+        tracePropagationTargets: [/^https:\/\/roundnet-karlsruhe\.web.app/, /^https:\/\/staging-roundnet-karlsruhe\.web.app/],
       }),
       new Sentry.Replay(),
     ],
@@ -26,17 +27,17 @@ if (process.env.NODE_ENV === "production") {
   });
 }
 
+
+
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <React.StrictMode>
     <ThemeProvider theme={mainTheme}>
       <Provider store={store}>
         <SupabaseProvider value={supabase}>
-          <AuthGate>
-            <SubscriptionHandler>
-              <App />
-            </SubscriptionHandler>
-          </AuthGate>
+          <SubscriptionHandler>
+            <App />
+          </SubscriptionHandler>
         </SupabaseProvider>
       </Provider>
     </ThemeProvider>

@@ -1,29 +1,41 @@
-import { CalendarToday, Liquor, List } from "@mui/icons-material"
+import { Liquor, List } from "@mui/icons-material"
 import { BottomNavigation, BottomNavigationAction, Paper } from "@mui/material"
 import { useState } from "react";
 import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
-import { onModeChange } from "../redux/applicationReducer";
+import { onModeChange } from "../redux/applicationSlice";
+import { withTranslation } from 'react-i18next';
+import { useEffect } from "react";
 
-const CustomBottomNavigation = () => {
+const CustomBottomNavigation = ({ t }) => {
 
     let navigate = useNavigate();
     let dispatch = useDispatch();
 
     const tabs = [
         {
-            label: "Getränke",
+            translationKey: "drinks",
             path: "drinks",
             index: 0,
             icon: <Liquor />
         },
+        // {
+        //     translationKey: "training",
+        //     path: "training",
+        //     index: 1,
+        //     icon: <SportsHandball />
+        // },
         {
-            label: "Browse",
+            translationKey: "browse",
             path: "browse",
             index: 2,
             icon: <List />
         }
     ];
+
+    useEffect(()=>{
+        setTab(tabs.findIndex(x => "/" + x.path === window?.location?.pathname));
+    }, [window, tabs]);
 
     const [tab, setTab] = useState(tabs.findIndex(x => "/" + x.path === window?.location?.pathname));
 
@@ -39,10 +51,10 @@ const CustomBottomNavigation = () => {
             value={tab}
             onChange={handleChange}>
             {
-                tabs.map(x => <BottomNavigationAction label={x.label} icon={x.icon} />)
+                tabs.map(x => <BottomNavigationAction key={x.translationKey} label={t("navigation." + x.translationKey)} icon={x.icon} />)
             }
         </BottomNavigation>
     </Paper>
 }
 
-export default CustomBottomNavigation;
+export default withTranslation()(CustomBottomNavigation);

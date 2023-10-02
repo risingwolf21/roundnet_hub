@@ -44,7 +44,7 @@ serve(async (req: Request) => {
 						startingDateTime: newStartingDateTime,
 						location: event.location,
 						"end_at": event["end_at"],
-						key: event.key
+						key: event.key,
 					};
 
 					if (event.meetingDateTime) {
@@ -66,7 +66,36 @@ serve(async (req: Request) => {
 					break;
 				}
 				case "MONTHLY": {
+					let newStartingDateTime = new Date(event.startingDateTime);
+					newStartingDateTime.setMonth(newStartingDateTime.getMonth() + 1);
 
+					let newEvent = {
+						title: event.title,
+						recurring: event.recurring,
+						description: event.description,
+						startingDateTime: newStartingDateTime,
+						location: event.location,
+						"end_at": event["end_at"],
+						key: event.key,
+					};
+
+					if (event.meetingDateTime) {
+						let newMeetingDateTime = new Date(event.meetingDateTime);
+						newMeetingDateTime.setMonth(newMeetingDateTime.getMonth() + 1);
+						newEvent.meetingDateTime = newMeetingDateTime;
+					}
+
+					let maximumStartTime = new Date(event.startingDateTime);
+					maximumStartTime.setMonth(newStartingDateTime.getMonth() + 1);
+
+					if ((!event["end_at"] || newStartingDateTime < new Date(event["end_at"])) && newStartingDateTime <= maximumStartTime) {
+						console.log("Inserting new Event", event);
+						await supabaseClient.from("events").insert(newEvent);
+					} else {
+						console.log(`New event was not added to database. Either newStartingDateTime(${newStartingDateTime}) exeeded end_at (${event["end_at"]}) or maximumStartTime (${maximumStartTime})`)
+					}
+
+					break;
 				}
 				default:
 				case "NONE":

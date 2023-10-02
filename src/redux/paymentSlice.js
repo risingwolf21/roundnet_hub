@@ -41,7 +41,7 @@ export const paymentReducer = createSlice({
             .addCase(fetchPaymentAsync.fulfilled, (state, action) => {
                 state.loading = false;
                 state.error = '';
-                if (action.payload.length > 0)
+                if (action.payload && action.payload.length > 0)
                     state.payment = action.payload[0]
             })
             .addCase(fetchPaymentAsync.rejected, (state, action) => {

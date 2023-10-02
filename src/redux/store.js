@@ -1,14 +1,16 @@
 import { configureStore } from '@reduxjs/toolkit'
-import drinkListReducer from './drinkListReducer'
-import paymentReducer from './paymentReducer'
-import historyReducer from './historyReducer'
-import applicationReducer from './applicationReducer'
+import paymentSlice from './paymentSlice'
+import applicationSlice from './applicationSlice'
+import drinksSlice from './drinksSlice'
+import adminDrinksSlice from './adminDrinksSlice'
+import adminPaymentsSlice from './adminPaymentsSlice'
 
 export default configureStore({
     reducer: {
-        drinks: drinkListReducer,
-        payment: paymentReducer,
-        history: historyReducer,
-        application: applicationReducer
+        drinks: drinksSlice,
+        payment: paymentSlice,
+        application: applicationSlice,
+        adminDrinks: adminDrinksSlice,
+        adminPayments: adminPaymentsSlice
     },
 })

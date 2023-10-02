@@ -1,0 +1,24 @@
+{
+    "browse": {
+        "account": "Konto",
+        "payment": "Zahlung",
+        "history": "Verlauf",
+        "training": "Training",
+        "managePayments": "Zahlungen verwalten",
+        "manageDrinks": "Getränke verwalten",
+        "manageUsers": "Benutzer verwalten",
+        "completeHistory": "Gesamtverlauf"
+    },
+    "navigation": {
+        "browse": "Browse",
+        "drinks": "Getränke",
+        "training": "Training"
+    },
+    "events": {
+        "creation": {
+            "meetingTimeBeforeStartTime": "Die Treffpunktzeit darf nicht nach der Startzeit liegen",
+            "titleTooShort": "Der Titel des Events muss aus mindestens 6 Zeichen bestehen",
+            "descriptionEmpty": "Die Beschreibung des Events darf nicht leer sein"
+        }
+    }
+}

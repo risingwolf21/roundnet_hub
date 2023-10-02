@@ -1,5 +1,15 @@
 {
-    "deno.enable": true,
-    "deno.lint": true,
-    "deno.unstable": true
+    "files.associations": {
+        "*.react.js": "javascriptreact",
+        "*.stories.js": "javascriptreact",
+        "*.action.js": "javascriptreact",
+        "*.reducer.js": "javascriptreact",
+        "*.styles.js": "javascriptreact",
+        "*.styles.react.js": "javascriptreact",
+        "*.styles.jsx": "javascriptreact",
+        "*.svg.js": "javascriptreact",
+        "*.jsx": "javascriptreact",
+        "*.js": "javascriptreact",
+        ".stylelintrc": "jsonc"
+    }
 }
