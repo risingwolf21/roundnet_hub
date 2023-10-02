@@ -9,17 +9,20 @@ import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
 import { supabase } from '../supabaseClient';
 import Logo from "../images/Karlsruher_Kojoten_Logo.svg";
-import { Alert, Snackbar } from '@mui/material';
+import { Alert, CircularProgress, Snackbar } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
+import { useState } from 'react';
 
 const ForgotPasswordScreen = () => {
 
     const [errorMessage, setErrorMessage] = React.useState("");
+    const [loading, setLoading] = useState(false);
     const [successMessageOpen, setSuccessMessageOpen] = React.useState(false);
 
     const navigate = useNavigate();
 
     const handleSubmit = async (event) => {
+        setLoading(true);
         event.preventDefault();
         const data = new FormData(event.currentTarget);
 
@@ -30,6 +33,7 @@ const ForgotPasswordScreen = () => {
         const { error } = await supabase.auth.resetPasswordForEmail(data.get("email"), {
             redirectTo: window.location.origin + "/reset-password"
         });
+        setLoading(false);
         if (error)
             setErrorMessage(error.message);
         else
@@ -72,9 +76,11 @@ const ForgotPasswordScreen = () => {
                         fullWidth
                         color='secondary'
                         variant="contained"
-                        sx={{ mt: 3, mb: 2 }}
-                    >
-                        Abschicken
+                        disabled={loading}
+                        sx={{ mt: 3, mb: 2 }}>
+                        {
+                            loading ? <CircularProgress /> : "Abschicken"
+                        }
                     </Button>
                     <Snackbar sx={{ position: "absolute", right: "16px", bottom: "16px" }} open={successMessageOpen} onClose={() => setSuccessMessageOpen(false)}>
                         <Alert onClose={() => setSuccessMessageOpen(false)} severity={"success"} sx={{ width: '100%' }}>
