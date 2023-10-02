@@ -1,21 +1,16 @@
 import * as React from 'react';
-import Avatar from '@mui/material/Avatar';
 import Button from '@mui/material/Button';
 import CssBaseline from '@mui/material/CssBaseline';
 import TextField from '@mui/material/TextField';
 import Link from '@mui/material/Link';
 import Grid from '@mui/material/Grid';
 import Box from '@mui/material/Box';
-import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
-import { createTheme, ThemeProvider } from '@mui/material/styles';
 import { supabase } from '../supabaseClient';
 import Logo from "../images/Karlsruher_Kojoten_Logo.svg";
 import { Alert, Snackbar } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
-
-const theme = createTheme();
 
 const ForgotPasswordScreen = () => {
 
@@ -27,10 +22,11 @@ const ForgotPasswordScreen = () => {
     const handleSubmit = async (event) => {
         event.preventDefault();
         const data = new FormData(event.currentTarget);
+
         if (!data.get("email"))
             return
         const { error } = await supabase.auth.resetPasswordForEmail(data.get("email"), {
-            redirectTo: "http://localhost:3000/reset-password"
+            redirectTo: window.location.origin + "/reset-password"
         });
         if (error)
             setErrorMessage(error.message);

@@ -2,7 +2,6 @@ import { Button, Dialog, DialogActions, DialogContent, DialogTitle, Fab, Grid, I
 import CheckIcon from "@mui/icons-material/Check"
 import { useState } from "react";
 import { FULFILLED } from "../../constants";
-import { Loading } from "../Loading";
 import { Error } from "../Error";
 import { useClient } from "react-supabase";
 import { useEffect } from "react";

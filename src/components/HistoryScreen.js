@@ -1,13 +1,12 @@
-import { Alert, Grid, LinearProgress, List, ListItem, ListItemAvatar, ListItemSecondaryAction, ListItemText, ListSubheader, Snackbar, Typography } from "@mui/material"
+import { Grid, LinearProgress, List, ListItem, ListItemAvatar, ListItemSecondaryAction, ListItemText, ListSubheader, Typography } from "@mui/material"
 import moment from "moment/moment";
 import { groupBy } from "../utils";
 import { useDispatch, useSelector } from "react-redux";
-import { useRef, useState } from "react";
+import { useState } from "react";
 import { useEffect } from "react";
 import { fetchHistoryAsync } from "../redux/drinksSlice";
 import { useClient } from "react-supabase";
 import { useAuth } from "../hooks/useAuth";
-import { isUndefined } from "lodash";
 import { InfiniteScrollList } from "./InfiniteScrollList";
 
 const HistoryItem = ({ items, header }) => {

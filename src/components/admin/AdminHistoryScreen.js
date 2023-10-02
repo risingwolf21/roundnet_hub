@@ -33,7 +33,7 @@ const AdminHistoryScreen = () => {
 
     useEffect(() => {
         dispatch(fetchAdminHistoryAsync({ client }))
-    }, []);
+    }, [client, dispatch]);
 
     useEffect(() => {
         let mappedEntries = history?.map(x => {

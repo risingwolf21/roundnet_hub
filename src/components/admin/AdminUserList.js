@@ -1,4 +1,4 @@
-import { Grid, IconButton, List, ListItem, ListItemAvatar, ListItemSecondaryAction, ListItemText, Paper } from "@mui/material";
+import { Grid, IconButton, List, ListItem, ListItemAvatar, ListItemSecondaryAction, ListItemText } from "@mui/material";
 import { AccountCircle, AdminPanelSettings, Edit, EuroRounded, Liquor } from "@mui/icons-material";
 import EditUserDialog from "./EditUserDialog";
 import { useState } from "react";

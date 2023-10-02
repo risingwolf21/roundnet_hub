@@ -1,23 +1,15 @@
 import * as React from 'react';
-import Avatar from '@mui/material/Avatar';
 import Button from '@mui/material/Button';
 import CssBaseline from '@mui/material/CssBaseline';
 import TextField from '@mui/material/TextField';
-import Link from '@mui/material/Link';
-import Grid from '@mui/material/Grid';
 import Box from '@mui/material/Box';
-import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
-import { createTheme, ThemeProvider } from '@mui/material/styles';
 import { supabase } from '../supabaseClient';
-import ResetPassword from './ResetPassword';
 import Logo from "../images/Karlsruher_Kojoten_Logo.svg";
 import { Alert, Snackbar } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
-
-const theme = createTheme();
 
 const ResetPasswordScreen = () => {
 
@@ -25,7 +17,6 @@ const ResetPasswordScreen = () => {
     const [accessToken, setAccessToken] = useState("");
     const [refreshToken, setRefreshToken] = useState("");
     const [successMessageOpen, setSuccessMessageOpen] = React.useState(false);
-    const [resetPassword, setResetPassword] = useState(false);
 
     const navigate = useNavigate();
 
@@ -42,7 +33,7 @@ const ResetPasswordScreen = () => {
         // Authenticate the user using the access token and refresh token
         const getSessionWithTokens = async () => {
             if (accessToken && refreshToken) {
-                const { data, error } = await supabase.auth.setSession({
+                const { error } = await supabase.auth.setSession({
                     access_token: accessToken,
                     refresh_token: refreshToken,
                 });
