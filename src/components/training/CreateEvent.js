@@ -12,6 +12,8 @@ import { useClient } from "react-supabase";
 import { withTranslation } from 'react-i18next';
 import { useEffect } from "react";
 import { connect } from "react-redux";
+import SearchPlacesDialog from "./SearchPlacesDialog";
+import { MapContainer, Popup, TileLayer, Marker, useMap } from "react-leaflet";
 
 const CreateEvent = ({ t, dispatch, eventToEdit }) => {
 
@@ -27,6 +29,8 @@ const CreateEvent = ({ t, dispatch, eventToEdit }) => {
     const [repeatDialogOpen, setRepeatDialogOpen] = useState(false);
     const [repeat, setRepeat] = useState(WEEKLY);
     const [errorSnackbar, setErrorSnackbar] = useState({ open: false, message: "" });
+    const [searchPlacesDialogOpen, setSearchPlacesDialogOpen] = useState(false);
+    const [selectedPlace, setSelectedPlace] = useState({ lat: 49.0226481, lon: 8.416547971872856, name: "MTV Karlsruhe" });
 
     useEffect(() => {
         if (eventToEdit) {
@@ -51,7 +55,7 @@ const CreateEvent = ({ t, dispatch, eventToEdit }) => {
                 startingDateTime: startingDateTime,
                 meetingDateTime: meetingDateTime,
                 recurring: repeat,
-                location: data.get("eventPlace"),
+                place: JSON.stringify(selectedPlace),
                 "end_at": stopRepeatDisabled ? null : stopRepeatDateTime.format("yyyy-MM-DD HH:mm:ssZ")
             }
             if (data.get("eventTitle").length < 6)
@@ -71,8 +75,7 @@ const CreateEvent = ({ t, dispatch, eventToEdit }) => {
             if (eventToEdit) {
                 await client.from("events").update({
                     "end_at": moment().format("yyyy-MM-DD HH:mm:ssZ")
-                })
-                .eq("id", eventToEdit.id)
+                }).eq("id", eventToEdit.id)
             }
 
             navigate("/training", { replace: true });
@@ -82,11 +85,14 @@ const CreateEvent = ({ t, dispatch, eventToEdit }) => {
         }
     }
 
-    return <Dialog
-        fullScreen
-        open={true}
-        onClose={() => navigate("/training", { replace: true })}
-        TransitionComponent={SlideUpTransition}>
+    function SetViewOnClick({ place }) {
+        const map = useMap();
+        map.setView({ lat: place.lat, lng: place.lon }, map.getZoom());
+
+        return null;
+    }
+
+    return <Box>
         <Box component="form" onSubmit={handleSubmit} noValidate>
             <AppBar sx={{ position: "relative" }}>
                 <Toolbar>
@@ -152,19 +158,33 @@ const CreateEvent = ({ t, dispatch, eventToEdit }) => {
                     <TimePicker sx={{ width: "100%" }} views={['hours', 'minutes']} ampm={false} label="Treffpunkt" onChange={(val) => setMeetingTime(val)} value={meetingTime} />
                 </ListItem>
 
-                <ListItem sx={{ pt: 0, pb: 0 }}>
+                <ListItem onClick={() => setSearchPlacesDialogOpen(true)}>
                     <ListItemAvatar>
                         <Map />
                     </ListItemAvatar>
 
-                    <TextField
-                        fullWidth
-                        defaultValue={eventToEdit?.location ?? ""}
-                        id="eventPlace"
-                        name="eventPlace"
-                        variant="outlined"
-                        label="Ort"
-                        margin="normal" />
+                    <ListItemText primary={selectedPlace?.name ?? "Nothing selected"} />
+                </ListItem>
+                <ListItem sx={{ '&.MuiListItem-root': { pb: 1, pt: 0 } }} onClick={() => setSearchPlacesDialogOpen(true)}>
+                    <ListItemAvatar>
+                    </ListItemAvatar>
+                    <ListItemText>
+                        <Box sx={{ width: "100%", height: "150px" }}>
+                            <MapContainer
+                                style={{ width: "100%", height: "150px", borderRadius: "16px", zIndex: -1 }}
+                                center={[selectedPlace.lat, selectedPlace.lon]}
+                                zoom={15}
+                                dragging={false}
+                                doubleClickZoom={false}
+                                scrollWheelZoom={false}
+                                attributionControl={false}
+                                zoomControl={false}>
+                                <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+                                <SetViewOnClick place={selectedPlace} />
+                                <Marker position={[selectedPlace.lat, selectedPlace.lon]} interactive={false} />
+                            </MapContainer>
+                        </Box>
+                    </ListItemText>
                 </ListItem>
 
                 <Divider />
@@ -223,13 +243,24 @@ const CreateEvent = ({ t, dispatch, eventToEdit }) => {
             </DialogActions>
         </Dialog>
 
+        <SearchPlacesDialog
+            open={searchPlacesDialogOpen}
+            handleClose={() => setSearchPlacesDialogOpen(false)}
+            placeSelected={(place) => {
+                setSelectedPlace({
+                    name: place.raw.name,
+                    lat: place.raw.lat,
+                    lon: place.raw.lon
+                });
+                setSearchPlacesDialogOpen(false)
+            }} />
+
         <Snackbar sx={{ position: "fixed", right: "16px", }} open={errorSnackbar.open} autoHideDuration={1500}>
             <Alert severity={"error"} sx={{ width: '100%' }}>
                 {errorSnackbar.message}
             </Alert>
         </Snackbar>
-
-    </Dialog >
+    </Box >
 }
 
 const mapStateToProps = (state) => {

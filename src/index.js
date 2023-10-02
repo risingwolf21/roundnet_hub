@@ -9,10 +9,11 @@ import { mainTheme } from './themes';
 import * as Sentry from "@sentry/react";
 import { supabase } from './supabaseClient';
 import { Provider as SupabaseProvider } from "react-supabase"
-import SubscriptionHandler from './components/SubscriptionHandler';
+import { AdapterMoment } from '@mui/x-date-pickers/AdapterMoment';
 import { Provider } from 'react-redux';
 import store from './redux/store';
 import "./translation/i18n";
+import { LocalizationProvider } from '@mui/x-date-pickers';
 
 if (process.env.NODE_ENV === "production") {
   Sentry.init({
@@ -35,7 +36,9 @@ root.render(
     <ThemeProvider theme={mainTheme}>
       <Provider store={store}>
         <SupabaseProvider value={supabase}>
-          <App />
+          <LocalizationProvider dateAdapter={AdapterMoment}>
+            <App />
+          </LocalizationProvider>
         </SupabaseProvider>
       </Provider>
     </ThemeProvider>

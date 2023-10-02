@@ -94,7 +94,7 @@ const EventScreen = () => {
         direction="column"
         alignItems="center"
         justifyContent="center">
-        <CustomAppBar navigateBack />
+        <CustomAppBar />
         {
             loading && <LinearProgress sx={{ position: "fixed", top: 56, left: 0, right: 0 }} />
         }
@@ -121,7 +121,6 @@ const EventScreen = () => {
                 }
             </Fab>
         }
-        <EventInformation open={eventInfoOpen} handleClose={() => setEventInfoOpen(false)} attendEvent={(id) => updateAttendance(id, ATTENDING)} declineEvent={(id) => updateAttendance(id, DECLINED)} />
 
         <Snackbar sx={{ position: "fixed", right: "16px", }} open={eventUpdateError !== ""} autoHideDuration={2500}>
             <Alert severity={"error"} sx={{ width: '100%' }}>

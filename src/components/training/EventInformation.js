@@ -10,25 +10,21 @@ import { useEffect, useMemo } from "react";
 import { editEvent, fetchEventAttendanceAsync } from "../../redux/eventReducer";
 import { useClient } from "react-supabase";
 import { useNavigate, useParams } from "react-router-dom";
-import { GoogleMap, Marker, useLoadScript } from "@react-google-maps/api";
 import CustomAppBar from "../AppBar";
+import { toInteger } from "lodash";
+import { MapContainer, TileLayer, Marker } from "react-leaflet";
 
 const EventInformation = ({ dispatch, events, attendanceLoading, open, handleClose, attendEvent, declineEvent }) => {
 
     const { selectedEventId } = useParams();
-    console.log(selectedEventId)
 
     const [eventAttendanceState, setEventAttendanceState] = useState({ open: false, index: 0 });
     const [cancelTrainingOpen, setCancelTrainingOpen] = useState(false);
     const [comment, setComment] = useState("");
+    const [selectedEvent, setSelectedEvent] = useState("");
     const client = useClient();
     const navigate = useNavigate();
     const { user } = useSelector(state => state.application);
-
-    const { isLoaded } = useLoadScript({
-        googleMapsApiKey: process.env.REACT_APP_googleApiKey,
-    });
-    const center = useMemo(() => ({ lat: 49.0223252, lng: 8.4151948 }), []);
 
     useEffect(() => {
         if (selectedEventId) {
@@ -36,11 +32,19 @@ const EventInformation = ({ dispatch, events, attendanceLoading, open, handleClo
         }
     }, [selectedEventId, dispatch, client]);
 
-    const selectedEvent = events.find(x => x.id === selectedEventId);
-    console.log(selectedEventId, selectedEvent, events);
+    useEffect(() => {
+        setSelectedEvent(events.find(x => x.id === toInteger(selectedEventId)));
+    }, [events, selectedEventId]);
 
     if (!selectedEvent)
-        return <div />
+        return <Box
+            width="100%"
+            height="100%"
+            direction="column"
+            alignItems="center"
+            justifyContent="center">
+            <Typography>{`Event mit ID ${selectedEventId} nicht gefunden`}</Typography>
+        </Box>
 
     const cancelTraining = async () => {
         await client.from("events").update({ isCancelled: !selectedEvent.isCancelled }).eq("id", selectedEvent.id);
@@ -64,11 +68,6 @@ const EventInformation = ({ dispatch, events, attendanceLoading, open, handleClo
         setComment(event.target.value);
     }
 
-    const onMapClick = () => {
-        const newWindow = window.open(`https://maps.app.goo.gl/Pyto8QWQYojWNvQB6`, '_blank', 'noopener,noreferrer')
-        if (newWindow) newWindow.opener = null
-    }
-
     return <Box
         width="100%"
         direction="column"
@@ -76,8 +75,7 @@ const EventInformation = ({ dispatch, events, attendanceLoading, open, handleClo
         justifyContent="center">
         <CustomAppBar title={selectedEvent?.title} navigateBack />
         <Box sx={{ justifyContent: "space-between", display: "flex", flexDirection: "column" }}>
-            <Toolbar />
-            <Box pt={2}>
+            <Box>
                 <Box pl={2}>
                     {
                         selectedEvent.isCancelled && <ListItem sx={{ '&.MuiListItem-root': { pl: 0, pb: 0 } }}>
@@ -93,43 +91,37 @@ const EventInformation = ({ dispatch, events, attendanceLoading, open, handleClo
                         </ListItemAvatar>
                         <ListItemText primary={moment(new Date(selectedEvent?.startingDateTime)).format("DD.MM.yyyy [um] HH:mm")} secondary={"Startzeit"} />
                     </ListItem>
-                    <ListItem sx={{ '&.MuiListItem-root': { pl: 0 } }}>
+                    <ListItem sx={{ '&.MuiListItem-root': { pl: 0, pt: 0, pb: 0 } }}>
                         <ListItemAvatar />
                         <ListItemText primary={moment(new Date(selectedEvent?.meetingDateTime)).format("DD.MM.yyyy [um] HH:mm")} secondary={"Treffpunkt"} />
                     </ListItem>
+
+                    <Divider />
                     {
-                        isLoaded && <>
-                            <Divider />
-                            <ListItem onClick={onMapClick} sx={{ '&.MuiListItem-root': { pl: 0, pb: 0 } }}>
+                        selectedEvent.place && <>
+                            <ListItem sx={{ '&.MuiListItem-root': { pl: 0, pb: 0, pt: 0 } }}>
                                 <ListItemAvatar>
                                     <Map />
                                 </ListItemAvatar>
-                                <ListItemText primary={"Männerturnverein Karlsruhe 1881 e.V."} secondary={"Kanalweg 1, Karlsruhe"} />
+                                <ListItemText sx={{ whiteSpace: 'normal' }} primary={"Männerturnverein Karlsruhe 1881 e.V."} secondary={"Kanalweg 1, Karlsruhe"} />
                             </ListItem>
-                            <ListItem onClick={onMapClick} sx={{ '&.MuiListItem-root': { pl: 0, pb: 0, pt: 0 } }}>
+                            <ListItem sx={{ '&.MuiListItem-root': { pl: 0, pb: 0, pt: 0 } }}>
                                 <ListItemAvatar>
                                 </ListItemAvatar>
                                 <ListItemText>
-                                    <Box>
-                                        <GoogleMap
-                                            center={center}
+                                    <Box sx={{ width: "100%", height: "150px" }}>
+                                        <MapContainer
+                                            style={{ width: "100%", height: "150px", borderRadius: "16px" }}
+                                            center={[selectedEvent?.place.lat, selectedEvent?.place.lon]}
                                             zoom={15}
-                                            options={{
-                                                panControl: false,
-                                                scrollwheel: false,
-                                                streetViewControl: false,
-                                                zoomControl: false,
-                                                fullscreenControl: false,
-                                                mapTypeControl: false,
-                                                disableDoubleClickZoom: false,
-
-
-                                            }}
-                                            mapContainerStyle={{ width: "100%", height: "200px", borderRadius: "10px" }}
-                                        >
-                                            <Marker position={{ lat: 49.0223252, lng: 8.4151948 }}
-                                                icon={"https://developers.google.com/maps/documentation/javascript/examples/full/images/beachflag.png"} />
-                                        </GoogleMap>
+                                            dragging={false}
+                                            doubleClickZoom={false}
+                                            scrollWheelZoom={false}
+                                            attributionControl={false}
+                                            zoomControl={false}>
+                                            <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+                                            <Marker position={[selectedEvent?.place.lat, selectedEvent?.place.lon]} interactive={false} />
+                                        </MapContainer>
                                     </Box>
                                 </ListItemText>
                             </ListItem>
@@ -137,7 +129,7 @@ const EventInformation = ({ dispatch, events, attendanceLoading, open, handleClo
                     }
 
                     <Typography variant="h6" fontWeight="bold">Beschreibung</Typography>
-                    <Typography pb={2}>{selectedEvent?.description}</Typography>
+                    <Typography pb={1}>{selectedEvent?.description}</Typography>
                     {/* <Divider />
                 <Box pt={2} pb={2} pr={2} sx={{ flex: 2, flexDirection: "row", display: "flex" }}>
                     <Button variant={attendanceState === ATTENDING ? "contained" : "outlined"} color="success" sx={{ flex: 1 }} onClick={attendEvent} startIcon={<CheckCircleOutline />}>Teilnehmen</Button>
@@ -145,7 +137,7 @@ const EventInformation = ({ dispatch, events, attendanceLoading, open, handleClo
                     <Button variant={attendanceState === DECLINED ? "contained" : "outlined"} color="error" sx={{ flex: 1 }} onClick={declineEvent} startIcon={<Close />}>Absagen</Button>
                 </Box> */}
                     <Divider />
-                    <List subheader={<Typography pt={2} variant="h6" fontWeight="bold">Teilnehmer</Typography>}>
+                    <List subheader={<Typography pt={1} variant="h6" fontWeight="bold">Teilnehmer</Typography>}>
                         <ListItem key={"attendEvent"} sx={{ '&.MuiListItem-root': { paddingLeft: 0 } }} onClick={() => attendanceLoading ? {} : setEventAttendanceState({ open: true, index: 0 })}>
                             <ListItemAvatar>
                                 {
@@ -189,22 +181,21 @@ const EventInformation = ({ dispatch, events, attendanceLoading, open, handleClo
                             </ListItem>)
                         }
                     </List>
-                    <Box sx={{ visibility: "hidden" }} p={2}><TextField fullWidth /></Box>
-                </Box>
-                <Box sx={{ position: "fixed", background: "white", bottom: 0, left: 0, right: 0 }} p={2}>
-                    <TextField
-                        fullWidth
-                        value={comment}
-                        placeholder="Write a comment..."
-                        onChange={handleCommentChange}
-                        sx={{ '& fieldset': { borderRadius: "30px" } }}
-                        InputProps={{
-                            endAdornment: <InputAdornment position="end">
-                                <IconButton edge="end" onClick={uploadComment}>
-                                    <Send />
-                                </IconButton>
-                            </InputAdornment>,
-                        }} />
+                    <Box sx={{ pb: 2, pr: 2 }}>
+                        <TextField
+                            fullWidth
+                            value={comment}
+                            placeholder="Write a comment..."
+                            onChange={handleCommentChange}
+                            sx={{ '& fieldset': { borderRadius: "30px" }, '& input': { pt: 1.5, pb: 1.5 } }}
+                            InputProps={{
+                                endAdornment: <InputAdornment position="end">
+                                    <IconButton edge="end" onClick={uploadComment}>
+                                        <Send />
+                                    </IconButton>
+                                </InputAdornment>,
+                            }} />
+                    </Box>
                 </Box>
             </Box>
             <EventAttendanceDialog open={eventAttendanceState.open} index={eventAttendanceState.index} handleClose={() => setEventAttendanceState({ open: false, index: 0 })} event={selectedEvent} />

@@ -152,6 +152,7 @@ export const fetchEventsAsync = createAsyncThunk("events", async ({ client, user
     entries: response.data.map(x => {
       return {
         ...x,
+        place: JSON.parse(x.place),
         userAttendance: attendanceFromUser.data?.find(y => y.event.id === x.id)?.state ?? UNANSWERED
       }
     }),
