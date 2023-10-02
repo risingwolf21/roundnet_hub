@@ -91,10 +91,13 @@ const EventInformation = ({ dispatch, events, attendanceLoading, open, handleClo
                         </ListItemAvatar>
                         <ListItemText primary={moment(new Date(selectedEvent?.startingDateTime)).format("DD.MM.yyyy [um] HH:mm")} secondary={"Startzeit"} />
                     </ListItem>
-                    <ListItem sx={{ '&.MuiListItem-root': { pl: 0, pt: 0, pb: 0 } }}>
-                        <ListItemAvatar />
-                        <ListItemText primary={moment(new Date(selectedEvent?.meetingDateTime)).format("DD.MM.yyyy [um] HH:mm")} secondary={"Treffpunkt"} />
-                    </ListItem>
+                    {
+                        selectedEvent?.startingDateTime !== selectedEvent?.meetingDateTime &&
+                        <ListItem sx={{ '&.MuiListItem-root': { pl: 0, pt: 0, pb: 0 } }}>
+                            <ListItemAvatar />
+                            <ListItemText primary={moment(new Date(selectedEvent?.meetingDateTime)).format("DD.MM.yyyy [um] HH:mm")} secondary={"Treffpunkt"} />
+                        </ListItem>
+                    }
 
                     <Divider />
                     {
@@ -187,6 +190,10 @@ const EventInformation = ({ dispatch, events, attendanceLoading, open, handleClo
                             value={comment}
                             placeholder="Write a comment..."
                             onChange={handleCommentChange}
+                            onKeyDown={(e) => {
+                                if (e.keyCode === 13)
+                                    uploadComment()
+                            }}
                             sx={{ '& fieldset': { borderRadius: "30px" }, '& input': { pt: 1.5, pb: 1.5 } }}
                             InputProps={{
                                 endAdornment: <InputAdornment position="end">
