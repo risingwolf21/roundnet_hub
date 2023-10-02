@@ -51,7 +51,8 @@ const EventInformation = ({ dispatch, selectedEventId, events, attendanceLoading
         await client.from("event_comments").insert({
             user: user.id,
             event: selectedEventId,
-            comment: comment
+            comment: comment,
+            displayName: user?.user_metadata?.displayName
         }).then(res => {
             setComment("");
         })
@@ -193,10 +194,10 @@ const EventInformation = ({ dispatch, selectedEventId, events, attendanceLoading
                         </ListItem>
                     </List>
                     <Divider />
-                    <List subheader={<Typography pt={2} variant="h6" fontWeight="bold">Kommentare</Typography>}>
+                    <List sx={{ marginBottom: 15 }} subheader={<Typography pt={2} variant="h6" fontWeight="bold">Kommentare</Typography>}>
                         {
-                            selectedEvent.comments && selectedEvent.comments.map((x, index) => <ListItem key={index} sx={{ '&.MuiListItem-root': { paddingLeft: 0 } }}>
-                                <ListItemText primary={x.comment} secondary={x.user.displayName} />
+                            selectedEvent.comments && selectedEvent.comments.map((x, index) => <ListItem dense key={index} sx={{ '&.MuiListItem-root': { paddingLeft: 0 } }}>
+                                <ListItemText primary={x.comment} secondary={x.displayName} />
                             </ListItem>)
                         }
                     </List>

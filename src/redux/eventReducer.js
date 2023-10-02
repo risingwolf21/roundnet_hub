@@ -143,7 +143,7 @@ export const eventReducer = createSlice({
 export const fetchEventsAsync = createAsyncThunk("events", async ({ client, user, page = 0, count = 20 }) => {
   const attendanceFromUser = await client.from("event_attendance_user_mapping").select("user(userId), event (id), state").eq("user.userId", user.id);
 
-  const response = await client.from("events").select("*, attendance: event_attendance_user_mapping ( state , user(userId, displayName)  ), comments: event_comments ( comment, user ( displayName, userId))")
+  const response = await client.from("events").select("*, attendance: event_attendance_user_mapping ( state , user(userId, displayName)  ), comments: event_comments ( comment, displayName, user ( displayName, userId))")
     // get events that are on the same day or later
     .gt("startingDateTime", moment().format("yyyy-MM-DD HH:mm:ssZ"))
     .range(page * count, page * count + count - 1)
