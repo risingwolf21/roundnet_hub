@@ -9,6 +9,7 @@ import _ from "lodash";
 import { useAdminDrinks } from "../../hooks/useAdminDrinksHook";
 import { Error } from "../Error";
 import { useSelector } from "react-redux";
+import CustomAppBar from "../AppBar";
 
 const AdminDrinkItem = ({ drink, onEditClick, onDeleteClick, divider }) => {
     return <ListItem divider={true}>
@@ -93,6 +94,7 @@ const AdminDrinkList = () => {
         direction="column"
         alignItems="center"
         justifyContent="center">
+        <CustomAppBar navigateBack />
         {
             drinksLoading && <LinearProgress style={{ position: "fixed", left: 0, top: 56, right: 0 }} />
         }

@@ -24,11 +24,7 @@ import { useAuth } from './hooks/useAuth';
 import { fetchHistoryAsync } from './redux/drinksSlice';
 import { onAppUpdateAvailableChange } from './redux/applicationSlice';
 import { useServiceWorker } from './hooks/useServiceWorker';
-import LoginScreen from './components/LoginScreen';
-import ForgotPasswordScreen from './components/ForgotPasswordScreen';
-import RegisterScreen from './components/RegisterScreen';
-import ProtectedRoute from './components/ProtectedRoute';
-import ResetPassword from './components/ResetPassword';
+import AuthGate from './AuthGate';
 import ResetPasswordScreen from './components/ResetPasswordScreen';
 
 const App = () => {
@@ -52,41 +48,34 @@ const App = () => {
 
   return <Grid maxHeight={"100vh"}>
     <BrowserRouter>
-      {
-        !appUpdateAvailable && <>
-          <CustomAppBar logout={() => supabase.auth.signOut()} handleMenuClick={(val) => setDrawerOpen(val)} drawerOpen={drawerOpen} />
-          <Toolbar />
-          <Routes>
-            <Route path='/' element={<Navigate replace to={"/drinks"} />} />
-            <Route path="*" element={<PageNotFound />} />
+      <AuthGate>
+        {
+          !appUpdateAvailable && <>
+            <Routes>
+              <Route path='/' element={<Navigate replace to={"/drinks"} />} />
+              <Route path="*" element={<Navigate replace to={"/drinks"} />} />
 
-            <Route path='/login' element={<LoginScreen />} />
-            <Route path='/register' element={<RegisterScreen />} />
-            <Route path='/forgot-password' element={<ForgotPasswordScreen />} />
-            <Route path='/reset-password' element={<ResetPasswordScreen />} />
+              <Route path='/reset-password' element={<ResetPasswordScreen />} />
 
-            <Route path='/browse' element={<ProtectedRoute><Browse /></ProtectedRoute>} />
-            <Route path="/drinks" element={<ProtectedRoute><DrinkList /></ProtectedRoute>} />
-            <Route path="/user" element={<ProtectedRoute><UserScreen /></ProtectedRoute>} />
-            <Route path="/history" element={<ProtectedRoute><HistoryScreen /></ProtectedRoute>} />
-            <Route path="/payments" element={<ProtectedRoute><PayDrinksScreen /></ProtectedRoute>} />
+              <Route path='/browse' element={<Browse />} />
+              <Route path="/drinks" element={<DrinkList />} />
+              <Route path="/user" element={<UserScreen />} />
+              <Route path="/history" element={<HistoryScreen />} />
+              <Route path="/payments" element={<PayDrinksScreen />} />
 
-            <Route path='/admin/drinks' element={<ProtectedRoute><AdminDrinkList /></ProtectedRoute>} />
-            <Route path="/admin/drinks/history" element={<ProtectedRoute><AdminHistoryScreen /></ProtectedRoute>} />
-            <Route path='/admin/drinks/payments' element={<ProtectedRoute><PaymentsPendingAdmin /></ProtectedRoute>} />
-            <Route path='/admin/users' element={<ProtectedRoute><AdminUserList /></ProtectedRoute>} />
-          </Routes>
-          {
-            user?.id && <>
-              <div style={{ width: "100%", height: "56px" }} />
-              <CustomBottomNavigation />
-            </>
-          }
-        </>
-      }
-      {
-        appUpdateAvailable && <UpdateAvailable update={reloadPage} />
-      }
+              <Route path='/admin/drinks' element={<AdminDrinkList />} />
+              <Route path="/admin/drinks/history" element={<AdminHistoryScreen />} />
+              <Route path='/admin/drinks/payments' element={<PaymentsPendingAdmin />} />
+              <Route path='/admin/users' element={<AdminUserList />} />
+            </Routes>
+            <div style={{ width: "100%", height: "56px" }} />
+            <CustomBottomNavigation />
+          </>
+        }
+        {
+          appUpdateAvailable && <UpdateAvailable update={reloadPage} />
+        }
+      </AuthGate>
     </BrowserRouter>
 
   </Grid >

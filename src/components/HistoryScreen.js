@@ -8,6 +8,7 @@ import { fetchHistoryAsync } from "../redux/drinksSlice";
 import { useClient } from "react-supabase";
 import { useAuth } from "../hooks/useAuth";
 import { InfiniteScrollList } from "./InfiniteScrollList";
+import CustomAppBar from "./AppBar";
 
 const HistoryItem = ({ items, header }) => {
     return <List dense component={"div"} disablePadding subheader={<ListSubheader sx={{ zIndex: "-1" }} component="div" id="nested-list-subheader">{header}</ListSubheader>}>
@@ -48,8 +49,8 @@ const HistoryScreen = () => {
         width="100%"
         direction="column"
         alignItems="center"
-        justifyContent="center"
-        sx={{ overflow: "auto" }}>
+        justifyContent="center">
+        <CustomAppBar navigateBack={true} />
         {
             historyLoading && <LinearProgress style={{ position: "fixed", left: 0, top: 56, right: 0 }} />
         }

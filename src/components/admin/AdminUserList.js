@@ -8,6 +8,7 @@ import { Loading } from "../Loading";
 import { Error } from "../Error";
 import { supabase_admin } from "../../supabaseClient";
 import { captureException } from "@sentry/react";
+import CustomAppBar from "../AppBar";
 
 const AdminUserItem = ({ user, onEditClick }) => {
     return <ListItem divider>
@@ -106,8 +107,8 @@ const AdminUserList = () => {
         width="100%"
         direction="column"
         alignItems="center"
-        justifyContent="center"
-        sx={{ paddingTop: 2 }}>
+        justifyContent="center">
+        <CustomAppBar navigateBack />
         <List sx={{ width: "100%" }}>
             {
                 !fetching && users && users.map((user, index) => <AdminUserItem key={"user" + index} user={user} onEditClick={() => editUser(user)} />)

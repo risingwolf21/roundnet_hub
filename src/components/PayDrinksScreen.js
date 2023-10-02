@@ -6,6 +6,7 @@ import { useAuth } from "../hooks/useAuth";
 import { useRealtime } from "../hooks/useRealtime";
 import { Error } from "./Error";
 import { Loading } from "./Loading";
+import CustomAppBar from "./AppBar";
 
 const PayDrinksButton = ({ amountToPay }) => {
 
@@ -86,6 +87,7 @@ const PayDrinksScreen = () => {
 
     return (
         <Box>
+            <CustomAppBar navigateBack />
             <PayDrinksSummary drinks={drinks} user={user} />
             <PayDrinksButton amountToPay={drinks.reduce((prev, curr) => prev + curr.amount, 0)} />
         </Box>

@@ -10,6 +10,7 @@ import Logo from "../images/Karlsruher_Kojoten_Logo.svg";
 import { Alert, Snackbar } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
+import CustomAppBar from './AppBar';
 
 const ResetPasswordScreen = () => {
 
@@ -69,7 +70,8 @@ const ResetPasswordScreen = () => {
         }
     };
 
-    return (
+    return (<Box>
+        <CustomAppBar navigateBack />
         <Container component="main" maxWidth="xs">
             <CssBaseline />
             <Box
@@ -126,6 +128,7 @@ const ResetPasswordScreen = () => {
                 </Box>
             </Box>
         </Container>
+    </Box>
     );
 }
 export default ResetPasswordScreen;

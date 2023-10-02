@@ -8,6 +8,7 @@ import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchAdminsPaymentsAsync } from "../../redux/adminPaymentsSlice";
 import { Refresh } from "@mui/icons-material";
+import CustomAppBar from "../AppBar";
 
 const PaymentsPendingAdmin = () => {
 
@@ -42,6 +43,7 @@ const PaymentsPendingAdmin = () => {
         direction="column"
         alignItems="center"
         justifyContent="center">
+        <CustomAppBar navigateBack />
         {
             loading && <LinearProgress style={{ position: "fixed", left: 0, top: 56, right: 0 }} />
         }

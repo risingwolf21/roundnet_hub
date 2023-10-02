@@ -9,6 +9,7 @@ import { Error } from "./Error";
 import { useAuth } from "../hooks/useAuth";
 import { useClient } from "react-supabase";
 import { useSelector } from "react-redux";
+import CustomAppBar from "./AppBar";
 
 const SUCCESS_MESSAGE_INFO = { message: "Getränke erfolgreich gebucht!", severity: "success" };
 
@@ -119,6 +120,7 @@ const DrinkList = () => {
         direction="column"
         alignItems="center"
         justifyContent="center">
+        <CustomAppBar />
         {drinksFetching && <LinearProgress style={{ position: "fixed", left: 0, right: 0, top: 56 }} />}
         <List sx={{ width: "100%" }}>
             {
