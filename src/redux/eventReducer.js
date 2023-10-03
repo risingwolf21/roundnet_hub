@@ -137,6 +137,31 @@ export const eventReducer = createSlice({
         if (index !== -1)
           state.items[index].attendance = [];
       })
+
+      .addCase(fetchSingleEventAsync.pending, (state, action) => {
+        state.loading = true;
+      })
+      .addCase(fetchSingleEventAsync.fulfilled, (state, action) => {
+        state.loading = false;
+        state.error = '';
+
+        console.log(action.payload.data)
+
+        let index = state.items.findIndex(x => x.id === action.payload.eventId);
+        if (index !== -1) {
+          state.items[index] = Object.assign(state.items[index], action.payload.data);
+        } else {
+          state.items = [
+            ...state.items.slice(0, index),
+            action.payload.data,
+            ...state.items.slice(index + 1)
+          ]
+        }
+      })
+      .addCase(fetchSingleEventAsync.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.error.message;
+      })
   }
 });
 
@@ -163,6 +188,20 @@ export const fetchEventsAsync = createAsyncThunk("events", async ({ client, user
 export const fetchEventAttendanceAsync = createAsyncThunk("fetchEventAttendanceAsync", async ({ client, eventId }) => {
   const attendance = await client.from("event_attendance_user_mapping").select("user(userId, displayName), event, state").eq("event", eventId);
   return { data: attendance.data, eventId };
+});
+
+export const fetchSingleEventAsync = createAsyncThunk("fetchSingleEventAsync", async ({ client, eventId }) => {
+  const response = await client.from("events").select("*, attendance: event_attendance_user_mapping ( state , user(userId, displayName)  ), comments: event_comments ( comment, displayName, user ( displayName, userId))")
+    .eq("id", eventId).limit(1);
+  if (response.data.length === 1) {
+    return {
+      data: {
+        ...response.data[0],
+        place: JSON.parse(response.data[0].place)
+      }, eventId
+    }
+  }
+  return { data: response.data, eventId };
 });
 
 export const {

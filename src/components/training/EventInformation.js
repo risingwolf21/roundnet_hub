@@ -1,30 +1,31 @@
-import { AppBar, Box, Button, CircularProgress, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Divider, Fab, IconButton, InputAdornment, List, ListItem, ListItemAvatar, ListItemSecondaryAction, ListItemText, ListSubheader, TextField, Toolbar, Typography } from "@mui/material"
-import { SlideUpTransition } from "../../utils";
-import { ArrowBack, CalendarMonth, CheckCircleOutline, Comment, DoNotDisturb, DoNotDisturbOff, Edit, Info, Map, RemoveCircleOutline, Send, ThumbDownAlt, ThumbDownOffAlt, ThumbUpAlt, ThumbUpOffAlt } from "@mui/icons-material";
+import { AppBar, Box, Button, CircularProgress, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Divider, IconButton, InputAdornment, List, ListItem, ListItemAvatar, ListItemIcon, ListItemSecondaryAction, ListItemText, Menu, MenuItem, TextField, Toolbar, Typography } from "@mui/material"
+import { AccountCircle, ArrowBack, CalendarMonth, CheckCircleOutline, Delete, DoNotDisturb, DoNotDisturbOff, Edit, Info, Map, MoreVert, RemoveCircleOutline, Send, ThumbDownAlt, ThumbDownOffAlt, ThumbUpAlt, ThumbUpOffAlt } from "@mui/icons-material";
 import { connect, useSelector } from "react-redux";
 import moment from "moment";
 import { useState } from "react";
 import { ATTENDING, DECLINED } from "../../constants";
 import EventAttendanceDialog from "./EventAttendanceDialog";
-import { useEffect, useMemo } from "react";
-import { editEvent, fetchEventAttendanceAsync } from "../../redux/eventReducer";
+import { useEffect } from "react";
+import { editEvent, fetchEventAttendanceAsync, fetchSingleEventAsync } from "../../redux/eventReducer";
 import { useClient } from "react-supabase";
 import { useNavigate, useParams } from "react-router-dom";
-import CustomAppBar from "../AppBar";
 import { toInteger } from "lodash";
 import { MapContainer, TileLayer, Marker } from "react-leaflet";
+import { DeleteEventDialog, THIS_AND_FOLLOWING_EVENT, THIS_EVENT } from "../DeleteEventDialog";
 
-const EventInformation = ({ dispatch, events, attendanceLoading, open, handleClose, attendEvent, declineEvent }) => {
+const EventInformation = ({ dispatch, events, attendanceLoading, attendEvent, declineEvent }) => {
 
     const { selectedEventId } = useParams();
 
     const [eventAttendanceState, setEventAttendanceState] = useState({ open: false, index: 0 });
     const [cancelTrainingOpen, setCancelTrainingOpen] = useState(false);
+    const [deleteTrainingOpen, setDeleteTrainingOpen] = useState(false);
     const [comment, setComment] = useState("");
     const [selectedEvent, setSelectedEvent] = useState("");
     const client = useClient();
     const navigate = useNavigate();
     const { user } = useSelector(state => state.application);
+    const [anchorEl, setAnchorEl] = useState(null);
 
     useEffect(() => {
         if (selectedEventId) {
@@ -33,7 +34,12 @@ const EventInformation = ({ dispatch, events, attendanceLoading, open, handleClo
     }, [selectedEventId, dispatch, client]);
 
     useEffect(() => {
-        setSelectedEvent(events.find(x => x.id === toInteger(selectedEventId)));
+        let found = events.find(x => x.id === toInteger(selectedEventId));
+        if (!found) {
+            dispatch(fetchSingleEventAsync({ client, eventId: selectedEventId }));
+        } else {
+            setSelectedEvent(found);
+        }
     }, [events, selectedEventId]);
 
     if (!selectedEvent)
@@ -64,16 +70,99 @@ const EventInformation = ({ dispatch, events, attendanceLoading, open, handleClo
         })
     }
 
+    const deleteEvent = async (value) => {
+        if (value === THIS_EVENT) {
+            await client.from("events").delete().eq("id", selectedEvent.id);
+            navigate("/training", { replace: true });
+        } else if (value === THIS_AND_FOLLOWING_EVENT) {
+            await client.from("events").delete()
+                .eq("key", selectedEvent.key)
+                .gte("startingDateTime", selectedEvent.startingDateTime);
+            await client.from("distinct_event").update({
+                end_at: moment().format("yyyy-MM-DD HH:mm:ssZ")
+            }).eq("key", selectedEvent.key);
+            navigate("/training", { replace: true });
+        }
+    }
+
     const handleCommentChange = (event) => {
         setComment(event.target.value);
     }
+
+    const handleClick = (event) => {
+        setAnchorEl(event.currentTarget);
+    };
+
+    const handleClose = () => {
+        setAnchorEl(null);
+    };
 
     return <Box
         width="100%"
         direction="column"
         alignItems="center"
         justifyContent="center">
-        <CustomAppBar title={selectedEvent?.title} navigateBack />
+        <AppBar position="sticky" sx={{ zIndex: (theme) => theme.zIndex.drawer + 1, background: "primary" }}>
+            <Toolbar>
+                <IconButton
+                    color="inherit"
+                    aria-label="open drawer"
+                    onClick={() => navigate(-1)}
+                    edge="start"
+                    sx={{ mr: 2 }}>
+                    <ArrowBack />
+                </IconButton>
+                <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
+                    {selectedEvent?.title}
+                </Typography>
+                <IconButton color="inherit" onClick={() => navigate("/user")}>
+                    <AccountCircle />
+                </IconButton>
+                {(user?.role === "admin" || user?.role === "trainer") && <>
+                    <IconButton aria-controls="simple-menu" aria-haspopup="true" color="inherit" onClick={handleClick}>
+                        <MoreVert />
+                    </IconButton>
+                    <Menu
+                        id="simple-menu"
+                        anchorEl={anchorEl}
+                        keepMounted
+                        open={Boolean(anchorEl)}
+                        onClose={handleClose}>
+                        <MenuItem onClick={() => {
+                            dispatch(editEvent(selectedEvent));
+                            navigate("/training/create", { replace: true })
+                        }}>
+                            <ListItemIcon>
+                                <Edit />
+                            </ListItemIcon>
+                            <ListItemText primary="Bearbeiten" />
+                        </MenuItem>
+                        <MenuItem onClick={() => {
+                            setCancelTrainingOpen(true);
+                            handleClose();
+                        }}>
+                            <ListItemIcon>
+                                {
+                                    selectedEvent.isCancelled ? <DoNotDisturbOff /> : <DoNotDisturb />
+                                }
+                            </ListItemIcon>
+                            <ListItemText primary={selectedEvent.isCancelled ? "Stattfinden" : "Absagen"} />
+                        </MenuItem>
+                        <MenuItem onClick={() => {
+                            setDeleteTrainingOpen(true);
+                            handleClose();
+                        }}>
+                            <ListItemIcon>
+                                <Delete />
+                            </ListItemIcon>
+                            <ListItemText primary="Löschen" />
+                        </MenuItem>
+                    </Menu>
+                </>
+                }
+            </Toolbar>
+        </AppBar>
+
         <Box sx={{ justifyContent: "space-between", display: "flex", flexDirection: "column" }}>
             <Box>
                 <Box pl={2}>
@@ -102,11 +191,11 @@ const EventInformation = ({ dispatch, events, attendanceLoading, open, handleClo
                     <Divider />
                     {
                         selectedEvent.place && <>
-                            <ListItem sx={{ '&.MuiListItem-root': { pl: 0, pb: 0, pt: 0 } }}>
+                            <ListItem sx={{ '&.MuiListItem-root': { pl: 0, pb: 0 } }}>
                                 <ListItemAvatar>
                                     <Map />
                                 </ListItemAvatar>
-                                <ListItemText sx={{ whiteSpace: 'normal' }} primary={"Männerturnverein Karlsruhe 1881 e.V."} secondary={"Kanalweg 1, Karlsruhe"} />
+                                <ListItemText sx={{ whiteSpace: 'normal' }} primary={selectedEvent.place.name} />
                             </ListItem>
                             <ListItem sx={{ '&.MuiListItem-root': { pl: 0, pb: 0, pt: 0 } }}>
                                 <ListItemAvatar>
@@ -133,12 +222,6 @@ const EventInformation = ({ dispatch, events, attendanceLoading, open, handleClo
 
                     <Typography variant="h6" fontWeight="bold">Beschreibung</Typography>
                     <Typography pb={1}>{selectedEvent?.description}</Typography>
-                    {/* <Divider />
-                <Box pt={2} pb={2} pr={2} sx={{ flex: 2, flexDirection: "row", display: "flex" }}>
-                    <Button variant={attendanceState === ATTENDING ? "contained" : "outlined"} color="success" sx={{ flex: 1 }} onClick={attendEvent} startIcon={<CheckCircleOutline />}>Teilnehmen</Button>
-                    <Container sx={{ padding: 0, width: "16px", height: 1 }} />
-                    <Button variant={attendanceState === DECLINED ? "contained" : "outlined"} color="error" sx={{ flex: 1 }} onClick={declineEvent} startIcon={<Close />}>Absagen</Button>
-                </Box> */}
                     <Divider />
                     <List subheader={<Typography pt={1} variant="h6" fontWeight="bold">Teilnehmer</Typography>}>
                         <ListItem key={"attendEvent"} sx={{ '&.MuiListItem-root': { paddingLeft: 0 } }} onClick={() => attendanceLoading ? {} : setEventAttendanceState({ open: true, index: 0 })}>
@@ -225,30 +308,13 @@ const EventInformation = ({ dispatch, events, attendanceLoading, open, handleClo
                     <Button variant="contained" color="info" onClick={() => setCancelTrainingOpen(false)}>Abbrechen</Button>
                 </DialogActions>
             </Dialog>
-        </Box>
-        {
-            (user?.role === "admin" || user?.role === "trainer") && <Box sx={{ position: "fixed", right: "16px", bottom: "88px" }}>
-                <Fab sx={{ background: "#ed6c02", }}
-                    onClick={() => {
-                        setCancelTrainingOpen(true)
-                    }}>
-                    {
-                        selectedEvent.isCancelled ? <DoNotDisturbOff sx={{ color: "white" }} /> : <DoNotDisturb sx={{ color: "white" }} />
-                    }
-                </Fab>
 
-                <Fab sx={{ background: "#66bb6a", ml: 2 }}
-                    onClick={() => {
-                        dispatch(editEvent(selectedEvent));
-                        navigate("/training/create", { replace: true })
-                    }}>
-                    {
-                        <Edit sx={{ color: "white" }} />
-                    }
-                </Fab>
-            </Box>
-        }
-    </Box>
+            <DeleteEventDialog selectedEvent={selectedEvent} open={deleteTrainingOpen} handleClose={(e) => {
+                deleteEvent(e);
+                setDeleteTrainingOpen(false);
+            }} />
+        </Box>
+    </Box >
 }
 
 const mapStateToProps = (state) => {

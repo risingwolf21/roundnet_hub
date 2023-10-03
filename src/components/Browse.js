@@ -1,4 +1,4 @@
-import { AccountCircle, AdminPanelSettings, Euro, Group, History, Liquor, Info, SportsHandball } from "@mui/icons-material";
+import { AccountCircle, AdminPanelSettings, Euro, Group, History, Liquor, Info, SportsHandball, GroupOutlined } from "@mui/icons-material";
 import { Avatar, List, ListItem, ListItemAvatar, ListItemSecondaryAction, ListItemText, Box } from "@mui/material";
 import { useNavigate } from "react-router";
 import { useAuth } from "../hooks/useAuth";
@@ -38,6 +38,15 @@ const entries = [
         icon: <History />,
         secondaryIcon: <AdminPanelSettings sx={{ color: "rgba(0,0,0,0.54)" }} />,
         role: "admin",
+        avatarColor: "#88AEBF"
+    }
+    ,
+    {
+        translationKey: "Gruppen",
+        navigateTo: "/trainer/groups",
+        icon: <GroupOutlined />,
+        secondaryIcon: <AdminPanelSettings sx={{ color: "rgba(0,0,0,0.54)" }} />,
+        role: "trainer",
         avatarColor: "#88AEBF"
     }
 ]
@@ -104,7 +113,7 @@ const Browse = ({ t }) => {
                         <Info />
                     </Avatar>
                 </ListItemAvatar>
-                <ListItemText primary={version} secondary={"Version"} />
+                <ListItemText sx={{ overflow: "clip" }} primary={version} secondary={"Version"} />
             </ListItem>
         </List>
     </Box>

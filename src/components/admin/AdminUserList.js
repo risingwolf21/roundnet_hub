@@ -45,7 +45,7 @@ const AdminUserList = () => {
         'user',
         {
             select: {
-                columns: '*',
+                columns: '*, groups: group_user_mapping ( group: event_group ( * ) )',
                 order: (query) => query.order("displayName", { ascending: true })
             }
         },

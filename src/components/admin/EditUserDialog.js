@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
-import { AppBar, Avatar, Button, Collapse, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, List, ListItem, ListItemAvatar, ListItemButton, ListItemSecondaryAction, ListItemText, Radio, Slide, TextField, Toolbar, Typography } from "@mui/material"
+import { AppBar, Avatar, Button, Collapse, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, List, ListItem, ListItemAvatar, ListItemButton, ListItemSecondaryAction, ListItemText, ListSubheader, Radio, Slide, TextField, Toolbar, Typography } from "@mui/material"
 import { Box } from "@mui/system";
-import { AccountCircle, Close, Email, ExpandLess, ExpandMore, ManageAccounts } from "@mui/icons-material";
+import { AccountCircle, Close, Email, ExpandLess, ExpandMore, FiberManualRecord, ManageAccounts } from "@mui/icons-material";
 import { OPEN } from "../../constants";
 import { useClient } from "react-supabase";
 
@@ -10,7 +10,7 @@ const Transition = React.forwardRef(function Transition(props, ref) {
 });
 
 const EditUserDialog = ({ user, open, handleClose, onUserEditFinished, deleteUser }) => {
-
+    
     const [userRoleCollapseOpen, setUserCollapseOpen] = useState(false);
     const [role, setRole] = useState(user.role);
     const [deleteUserOpen, setDeleteUserOpen] = useState(false);
@@ -102,6 +102,16 @@ const EditUserDialog = ({ user, open, handleClose, onUserEditFinished, deleteUse
                             />
                         </ListItemText>
                     </ListItem>
+                    <List subheader={<ListSubheader>Gruppen</ListSubheader>}>
+                        {
+                            user?.groups && user.groups.map(x => <ListItem>
+                                <ListItemAvatar>
+                                    <FiberManualRecord sx={{ color: x.group.color }} />
+                                </ListItemAvatar>
+                                <ListItemText primary={x.group?.name} />
+                            </ListItem>)
+                        }
+                    </List>
                     <ListItemButton key={"editUserRole"} onClick={() => setUserCollapseOpen(!userRoleCollapseOpen)}>
                         <ListItemAvatar>
                             <Avatar>

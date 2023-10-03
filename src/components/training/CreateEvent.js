@@ -247,6 +247,7 @@ const CreateEvent = ({ t, dispatch, eventToEdit }) => {
             open={searchPlacesDialogOpen}
             handleClose={() => setSearchPlacesDialogOpen(false)}
             placeSelected={(place) => {
+                console.log(place);
                 setSelectedPlace({
                     name: place.raw.name,
                     lat: place.raw.lat,

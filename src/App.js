@@ -29,6 +29,7 @@ import UpdateAvailable from './components/UpdateAvailable';
 import AuthGate from './AuthGate';
 import ResetPasswordScreen from './components/ResetPasswordScreen';
 import SubscriptionHandler from './components/SubscriptionHandler';
+import ManageGroupsScreen from './components/ManageGroups';
 
 const App = () => {
 
@@ -66,6 +67,8 @@ const App = () => {
                 <Route path="/user" element={<UserScreen />} />
                 <Route path="/history" element={<HistoryScreen />} />
                 <Route path="/payments" element={<PayDrinksScreen />} />
+
+                <Route path="/trainer/groups" element={<ManageGroupsScreen />} />
 
                 <Route path="/training" element={<EventScreen />} />
                 <Route path="/training/event/:selectedEventId" element={<EventInformation />} />
