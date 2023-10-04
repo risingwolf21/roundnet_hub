@@ -7,50 +7,6 @@ import { useState, useEffect } from "react";
 import raw from "../git_commit.txt";
 import CustomAppBar from "./AppBar";
 
-const entries = [
-    {
-        translationKey: "managePayments",
-        navigateTo: "/admin/drinks/payments",
-        icon: <Euro />,
-        secondaryIcon: <AdminPanelSettings sx={{ color: "rgba(0,0,0,0.54)" }} />,
-        role: "finance",
-        avatarColor: "#88AEBF"
-    },
-    {
-        translationKey: "manageDrinks",
-        navigateTo: "/admin/drinks",
-        icon: <Liquor />,
-        secondaryIcon: <AdminPanelSettings sx={{ color: "rgba(0,0,0,0.54)" }} />,
-        role: "procure",
-        avatarColor: "#88AEBF"
-    },
-    {
-        translationKey: "manageUsers",
-        navigateTo: "/admin/users",
-        icon: <Group />,
-        secondaryIcon: <AdminPanelSettings sx={{ color: "rgba(0,0,0,0.54)" }} />,
-        role: "admin",
-        avatarColor: "#88AEBF"
-    },
-    {
-        translationKey: "completeHistory",
-        navigateTo: "/admin/drinks/history",
-        icon: <History />,
-        secondaryIcon: <AdminPanelSettings sx={{ color: "rgba(0,0,0,0.54)" }} />,
-        role: "admin",
-        avatarColor: "#88AEBF"
-    }
-    ,
-    {
-        translationKey: "Gruppen",
-        navigateTo: "/trainer/groups",
-        icon: <GroupOutlined />,
-        secondaryIcon: <AdminPanelSettings sx={{ color: "rgba(0,0,0,0.54)" }} />,
-        role: "trainer",
-        avatarColor: "#88AEBF"
-    }
-]
-
 const Browse = ({ t }) => {
 
     const navigate = useNavigate();
@@ -95,7 +51,6 @@ const Browse = ({ t }) => {
                         icon: <SportsHandball />,
                         avatarColor: "#88AEBF"
                     },
-                    ...entries.filter(x => x.role === user.role || user.role === "admin"),
                 ].map(x => {
                     return <ListItem key={x.translationKey} onClick={() => navigate(x.navigateTo)} sx={{ mt: 1 }}>
                         <ListItemAvatar>

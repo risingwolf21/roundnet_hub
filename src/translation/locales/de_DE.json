@@ -7,12 +7,14 @@
         "managePayments": "Zahlungen verwalten",
         "manageDrinks": "Getränke verwalten",
         "manageUsers": "Benutzer verwalten",
-        "completeHistory": "Gesamtverlauf"
+        "completeHistory": "Gesamtverlauf",
+        "manageGroups": "Gruppen verwalten"
     },
     "navigation": {
         "browse": "Browse",
         "drinks": "Getränke",
-        "training": "Training"
+        "training": "Training",
+        "admin": "Administrator"
     },
     "events": {
         "creation": {

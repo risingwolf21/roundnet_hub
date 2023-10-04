@@ -30,6 +30,7 @@ import AuthGate from './AuthGate';
 import ResetPasswordScreen from './components/ResetPasswordScreen';
 import SubscriptionHandler from './components/SubscriptionHandler';
 import ManageGroupsScreen from './components/ManageGroups';
+import BrowseAdmin from './components/admin/BrowseAdmin';
 
 const App = () => {
 
@@ -63,6 +64,7 @@ const App = () => {
                 <Route path='/reset-password' element={<ResetPasswordScreen />} />
 
                 <Route path='/browse' element={<Browse />} />
+                <Route path='/browse-admin' element={<BrowseAdmin />} />
                 <Route path="/drinks" element={<DrinkList />} />
                 <Route path="/user" element={<UserScreen />} />
                 <Route path="/history" element={<HistoryScreen />} />

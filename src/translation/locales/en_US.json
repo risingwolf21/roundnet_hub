@@ -7,12 +7,14 @@
         "managePayments": "Manage payments",
         "manageDrinks": "Manage drinks",
         "manageUsers": "Manage users",
-        "completeHistory": "Complete history" 
+        "completeHistory": "Complete history",
+        "manageGroups": "Manage groups"
     },
     "navigation": {
         "browse": "Browse",
         "drinks": "Drinks",
-        "training": "Training"
+        "training": "Training",
+        "admin": "Admin"
     },
     "events": {
         "creation": {

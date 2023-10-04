@@ -83,6 +83,6 @@
   },
   "devDependencies": {
     "react-app-env": "^1.2.3",
-    "supabase": "^1.88.0"
+    "supabase": "^1.100.1"
   }
 }
