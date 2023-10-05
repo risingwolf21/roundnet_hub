@@ -7,7 +7,7 @@ import { Close, Remove, Add, LocalDrink } from "@mui/icons-material";
 import { useState } from "react";
 import { SlideUpTransition } from "../utils";
 
-export const EditHistoryEntryDialog = ({ open, handleClose, entry, handleSubmit }) => {
+const EditHistoryEntryDialog = ({ open, handleClose, entry, handleSubmit }) => {
 
     const [newCount, setNewCount] = useState(entry?.count ?? 0);
 
@@ -64,3 +64,4 @@ export const EditHistoryEntryDialog = ({ open, handleClose, entry, handleSubmit 
         </Box>
     </Dialog>
 }
+export default EditHistoryEntryDialog;
