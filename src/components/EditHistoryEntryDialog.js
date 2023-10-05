@@ -17,7 +17,7 @@ const EditHistoryEntryDialog = ({ open, handleClose, entry, handleSubmit }) => {
         onClose={handleClose}
         TransitionComponent={SlideUpTransition}>
         <Box>
-            <AppBar>
+            <AppBar position="sticky" sx={{ zIndex: (theme) => theme.zIndex.drawer + 1, background: "primary" }}>
                 <Toolbar>
                     <IconButton
                         edge="start"
