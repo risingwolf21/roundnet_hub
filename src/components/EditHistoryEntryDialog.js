@@ -1,5 +1,5 @@
 import {
-    Button, AppBar, Toolbar, IconButton, Typography, Button, Box, Dialog, DialogActions, DialogContent,
+    Button, AppBar, Toolbar, IconButton, Typography, Box, Dialog, DialogActions, DialogContent,
     DialogTitle, FormControl, FormControlLabel, Radio, RadioGroup, List, ListItem, ListItemText, ListItemAvatar, Avatar
 } from "@mui/material";
 import { NON_REPEAT } from "../constants";
