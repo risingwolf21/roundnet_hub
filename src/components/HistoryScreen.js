@@ -9,11 +9,12 @@ import { useClient } from "react-supabase";
 import { useAuth } from "../hooks/useAuth";
 import { InfiniteScrollList } from "./InfiniteScrollList";
 import CustomAppBar from "./AppBar";
+import EditHistoryEntryDialog from "./EditHistoryEntryDialog";
 
-const HistoryItem = ({ items, header }) => {
+const HistoryItem = ({ items, header, onClick }) => {
     return <List dense component={"div"} disablePadding subheader={<ListSubheader sx={{ zIndex: "-1" }} component="div" id="nested-list-subheader">{header}</ListSubheader>}>
         {
-            items.map((item, index) => <ListItem dense key={"sublist" + index}>
+            items.map((item, index) => <ListItem dense key={"sublist" + index} onClick={() => onClick(item)}>
                 <ListItemAvatar>
                     <Typography>{item.count} x</Typography>
                 </ListItemAvatar>
@@ -33,6 +34,8 @@ const HistoryScreen = () => {
     const { user } = useAuth();
 
     const [historyItems, setHistoryItems] = useState([]);
+    const [editHistoryEntryOpen, setEditHistoryEntryOpen] = useState(false);
+    const [historyEntryToEdit, setHistoryEntryToEdit] = useState({});
 
     useEffect(() => {
         let mappedEntries = history?.map(x => {
@@ -43,6 +46,18 @@ const HistoryScreen = () => {
         });
         setHistoryItems(mappedEntries);
     }, [history, drinks]);
+
+    const handleEntryUpdate = async (entry) => {
+        setEditHistoryEntryOpen(false);
+        await client.from("history")
+            .update({ count: entry.newCount, amount: entry.newCount * entry.drink.price })
+            .eq("id", entry.id);
+    }
+
+    const handleEntryOnClick = (entry) => {
+        setHistoryEntryToEdit(entry);
+        setEditHistoryEntryOpen(true);
+    }
 
     return <Grid
         container
@@ -57,9 +72,14 @@ const HistoryScreen = () => {
         <InfiniteScrollList fetch={(page) => dispatch(fetchHistoryAsync({ client, user, page }))} error={historyError} loading={historyLoading} endReached={historyEndReached}>
             {
                 Object.entries(groupBy(historyItems.filter(x => x.drink), x => moment(new Date(x.created_at)).format("DD MMMM yyyy")))
-                    .map((x) => <HistoryItem key={x[0]} items={x[1]} header={x[0]} />)
+                    .map((x) => <HistoryItem key={x[0]} items={x[1]} header={x[0]} onClick={handleEntryOnClick} />)
             }
         </InfiniteScrollList>
+        <EditHistoryEntryDialog
+            open={editHistoryEntryOpen}
+            handleClose={() => setEditHistoryEntryOpen(false)}
+            entry={historyEntryToEdit}
+            handleSubmit={(newEntry) => handleEntryUpdate(newEntry)} />
     </Grid>
 }
 
