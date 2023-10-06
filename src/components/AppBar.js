@@ -4,11 +4,11 @@ import Typography from '@mui/material/Typography';
 import { IconButton } from "@mui/material";
 import { useNavigate } from 'react-router-dom';
 import { AccountCircle, ArrowBack } from '@mui/icons-material';
-import { useAuth } from '../hooks/useAuth';
+import { useSelector } from 'react-redux';
 
 const CustomAppBar = ({ navigateBack = false, title = "Roundnet Karlsruhe" }) => {
     const navigate = useNavigate();
-    const { user } = useAuth();
+    const { user } = useSelector(state => state.application);
 
     return <AppBar position="sticky" sx={{ zIndex: (theme) => theme.zIndex.drawer + 1, background: "primary" }}>
         <Toolbar>

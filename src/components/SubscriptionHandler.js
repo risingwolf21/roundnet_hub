@@ -1,14 +1,13 @@
 import { useClient } from "react-supabase";
 import { useEffect } from "react";
-import { connect } from "react-redux";
+import { connect, useSelector } from "react-redux";
 import { onHistoryDelete, onHistoryInsert, onHistoryUpdate, onDrinkDeleted, onDrinkInserted, onDrinkUpdated, onPaymentUpdated, onPaymentDeleted } from "../redux/drinksSlice";
 import { onEventAttendanceUserDelete, onEventAttendanceUserInsert, onEventAttendanceUserUpdate, onEventCommentDelete, onEventCommentInsert, onEventCommentUpdate, onEventDelete, onEventInsert, onEventUpdate } from "../redux/eventReducer";
-import { useAuth } from "../hooks/useAuth";
 
 const SubscriptionHandler = ({ children, dispatch }) => {
 
     const client = useClient();
-    const { user } = useAuth();
+    const { user } = useSelector(state => state.application);
 
     useEffect(() => {
         let subscription = client

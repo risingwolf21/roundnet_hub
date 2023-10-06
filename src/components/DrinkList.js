@@ -5,7 +5,6 @@ import CheckIcon from '@mui/icons-material/Check';
 import { NOT_PAID, OPEN } from "../constants";
 import { captureException } from "@sentry/react";
 import { Error } from "./Error";
-import { useAuth } from "../hooks/useAuth";
 import { useClient } from "react-supabase";
 import { useDispatch, useSelector } from "react-redux";
 import CustomAppBar from "./AppBar";
@@ -15,7 +14,7 @@ const SUCCESS_MESSAGE_INFO = { message: "Getränke erfolgreich gebucht!", severi
 
 const DrinkList = () => {
 
-    const { user } = useAuth();
+    const { user } = useSelector(state => state.application);
     const client = useClient();
     const dispatch = useDispatch();
 

@@ -6,7 +6,6 @@ import { useNavigate } from 'react-router-dom';
 import React from "react";
 import { fetchEventsAsync } from "../../redux/eventReducer";
 import AddIcon from '@mui/icons-material/Add';
-import { useAuth } from "../../hooks/useAuth";
 import { ThumbDownAlt, ThumbDownOffAlt, ThumbUpAlt, ThumbUpOffAlt } from "@mui/icons-material";
 import { ATTENDING, DECLINED } from "../../constants";
 import { useClient } from "react-supabase";
@@ -61,7 +60,7 @@ const EventItem = ({ event, onClick, attendEvent, declineEvent, attendanceUpdati
 const EventScreen = () => {
 
     const { items: events, loading, error, endReached } = useSelector((state) => state.events);
-    const { user } = useAuth();
+    const { user } = useSelector(state => state.application);
     const client = useClient();
     const dispatch = useDispatch();
     const navigate = useNavigate();

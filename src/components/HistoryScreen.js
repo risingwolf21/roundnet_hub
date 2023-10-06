@@ -6,7 +6,6 @@ import { useState } from "react";
 import { useEffect } from "react";
 import { fetchHistoryAsync } from "../redux/drinksSlice";
 import { useClient } from "react-supabase";
-import { useAuth } from "../hooks/useAuth";
 import { InfiniteScrollList } from "./InfiniteScrollList";
 import CustomAppBar from "./AppBar";
 import EditHistoryEntryDialog from "./EditHistoryEntryDialog";
@@ -29,9 +28,9 @@ const HistoryItem = ({ items, header, onClick }) => {
 
 const HistoryScreen = () => {
     const { history, drinks, historyLoading, historyError, historyEndReached } = useSelector((state) => state.drinks);
+    const { user } = useSelector(state => state.application);
     const dispatch = useDispatch();
     const client = useClient();
-    const { user } = useAuth();
 
     const [historyItems, setHistoryItems] = useState([]);
     const [editHistoryEntryOpen, setEditHistoryEntryOpen] = useState(false);

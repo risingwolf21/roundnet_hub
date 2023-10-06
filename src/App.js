@@ -12,7 +12,6 @@ import AdminHistoryScreen from './components/admin/AdminHistoryScreen';
 import { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useClient } from 'react-supabase';
-import { useAuth } from './hooks/useAuth';
 import { fetchHistoryAsync, fetchDrinksAsync, fetchPaymentAsync } from './redux/drinksSlice';
 import Browse from './components/Browse';
 import CreateEvent from './components/training/CreateEvent';
@@ -33,8 +32,7 @@ const App = () => {
   const { waitingWorker, showReload, reloadPage } = useServiceWorker();
   const dispatch = useDispatch();
   const client = useClient();
-  const { user } = useAuth();
-  const { appUpdateAvailable } = useSelector((state) => state.application);
+  const { appUpdateAvailable, user } = useSelector((state) => state.application);
 
   useEffect(() => {
     dispatch(fetchPaymentAsync({ client, user }));

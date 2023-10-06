@@ -2,7 +2,6 @@ import { Box, Button, Divider, List, ListItem, ListItemAvatar, ListItemSecondary
 import { PAYPAL_ME_ADDRESS } from "../constants";
 import EuroIcon from '@mui/icons-material/Euro';
 import { groupBy } from '../utils';
-import { useAuth } from "../hooks/useAuth";
 import { Error } from "./Error";
 import { Loading } from "./Loading";
 import CustomAppBar from "./AppBar";
@@ -66,7 +65,7 @@ const PayDrinksSummary = ({ drinks }) => {
 
 const PayDrinksScreen = () => {
 
-    const { user } = useAuth();
+    const { user } = useSelector(state => state.application);
     const dispatch = useDispatch();
     const client = useClient();
 

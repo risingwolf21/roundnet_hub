@@ -1,13 +1,12 @@
 import { Button, Checkbox, Fab, FormControlLabel, Grid, TextField, Box } from "@mui/material";
 import CheckIcon from '@mui/icons-material/Check';
-import { useAuth } from "../hooks/useAuth";
 import { useClient } from "react-supabase";
 import CustomAppBar from "./AppBar";
-
+import { useSelector } from "react-redux";
 
 const UserScreen = () => {
 
-    const { user } = useAuth();
+    const { user } = useSelector(state => state.application);
     const client = useClient();
 
     const handleSubmit = async (event) => {

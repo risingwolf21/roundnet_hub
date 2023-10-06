@@ -1,12 +1,11 @@
 import { Liquor, List, SportsHandball, AdminPanelSettings } from "@mui/icons-material"
 import { BottomNavigation, BottomNavigationAction, Paper } from "@mui/material"
 import { useState } from "react";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { onModeChange } from "../redux/applicationSlice";
 import { withTranslation } from 'react-i18next';
 import { useEffect } from "react";
-import { useAuth } from "../hooks/useAuth";
 
 const defaultTabs = [
     {
@@ -33,7 +32,7 @@ const CustomBottomNavigation = ({ t }) => {
 
     let navigate = useNavigate();
     let dispatch = useDispatch();
-    const { user } = useAuth();
+    const { user } = useSelector(state => state.application);
     const [tabs, setTabs] = useState(defaultTabs)
 
     useEffect(() => {

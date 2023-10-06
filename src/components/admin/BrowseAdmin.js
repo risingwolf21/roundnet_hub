@@ -2,8 +2,8 @@ import { AdminPanelSettings, Euro, Group, History, Liquor, GroupOutlined } from 
 import { Avatar, List, ListItem, ListItemAvatar, ListItemText, Box } from "@mui/material";
 import { useNavigate } from "react-router";
 import { withTranslation } from 'react-i18next';
-import { useAuth } from "../../hooks/useAuth";
 import CustomAppBar from "../AppBar";
+import { useSelector } from "react-redux";
 
 const entries = [
     {
@@ -51,7 +51,7 @@ const entries = [
 const BrowseAdmin = ({ t }) => {
 
     const navigate = useNavigate();
-    const { user } = useAuth();
+    const { user } = useSelector(state => state.application);
 
     return <Box>
         <CustomAppBar />

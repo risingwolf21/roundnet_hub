@@ -1,14 +1,15 @@
 import { setUser } from "@sentry/react";
-import React, { createContext, useState } from "react";
+import React, { createContext } from "react";
 import { useAuthStateChange } from "./hooks/useAuthStateChange";
 import { useClient } from "react-supabase";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { onUserChange } from "./redux/applicationSlice";
-import { useNavigate } from "react-router-dom";
+import { Navigate, useNavigate } from "react-router-dom";
 import LoginScreen from './components/LoginScreen';
 import ForgotPasswordScreen from './components/ForgotPasswordScreen';
 import RegisterScreen from './components/RegisterScreen';
 import { Route, Routes } from 'react-router-dom';
+import NotVerifiedScreen from "./components/NotVerifiedScreen";
 
 
 const initialState = { session: null, user: null }
@@ -16,33 +17,32 @@ export const AuthContext = createContext(initialState)
 
 const AuthGate = ({ children }) => {
 
+    const { user } = useSelector(state => state.application);
+
     const client = useClient();
     const dispatch = useDispatch();
     const navigate = useNavigate();
-    const [state, setState] = useState(initialState);
 
     useAuthStateChange((event, session) => {
         setUser({ email: session?.user?.email ?? null, id: session?.user?.id ?? null });
-        setState({ session, user: session?.user ?? null })
         if (session?.user) {
-            client.from("user").select().eq("userId", session.user.id).then(res => {
-                if (res && res.data && res.data.length === 1) {
+            client.from("user").select().single().eq("userId", session.user.id).then(res => {
+                if (res && res.data) {
                     let user = {
                         ...session?.user ?? null,
-                        role: res.data[0].role,
+                        role: res.data.role,
+                        verified: res.data.verified
                     }
-                    setState({ user });
                     dispatch(onUserChange(user));
                 }
             })
         } else {
-            setState(null);
             dispatch(onUserChange(null));
             navigate("/login", { replace: true });
         }
     });
 
-    if (!state?.user) {
+    if (!user) {
         return <Routes>
             <Route path='/login' element={<LoginScreen />} />
             <Route path='/register' element={<RegisterScreen />} />
@@ -50,8 +50,18 @@ const AuthGate = ({ children }) => {
         </Routes>
     }
 
-    return <AuthContext.Provider value={state}>
-        {children}
-    </AuthContext.Provider>
+    if (!user.verified) {
+        return <Routes>
+            <Route path='/' element={<Navigate replace to={"/not-verified"} />} />
+            <Route path="*" element={<Navigate replace to={"/not-verified"} />} />
+            <Route path='/not-verified' element={<NotVerifiedScreen />} />
+
+            <Route path='/login' element={<LoginScreen />} />
+            <Route path='/register' element={<RegisterScreen />} />
+            <Route path='/forgot-password' element={<ForgotPasswordScreen />} />
+        </Routes>
+    }
+
+    return children
 }
 export default AuthGate;
