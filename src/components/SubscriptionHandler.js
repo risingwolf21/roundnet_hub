@@ -1,7 +1,7 @@
 import { useClient } from "react-supabase";
 import { useEffect } from "react";
 import { connect } from "react-redux";
-import { onHistoryDelete, onHistoryInsert, onHistoryUpdate, onDrinkDeleted, onDrinkInserted, onDrinkUpdated } from "../redux/drinksSlice";
+import { onHistoryDelete, onHistoryInsert, onHistoryUpdate, onDrinkDeleted, onDrinkInserted, onDrinkUpdated, onPaymentUpdated, onPaymentDeleted } from "../redux/drinksSlice";
 import { onEventAttendanceUserDelete, onEventAttendanceUserInsert, onEventAttendanceUserUpdate, onEventCommentDelete, onEventCommentInsert, onEventCommentUpdate, onEventDelete, onEventInsert, onEventUpdate } from "../redux/eventReducer";
 import { useAuth } from "../hooks/useAuth";
 
@@ -17,9 +17,12 @@ const SubscriptionHandler = ({ children, dispatch }) => {
             .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'drink' }, payload => dispatch(onDrinkDeleted(payload)))
             .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'drink' }, payload => dispatch(onDrinkInserted(payload)))
 
-            .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'history' }, payload => dispatch(onHistoryUpdate(payload)))
-            .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'history' }, payload => dispatch(onHistoryDelete(payload)))
-            .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'history' }, payload => dispatch(onHistoryInsert(payload)))
+            .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'payments', filter: "user=eq." + user.id }, payload => dispatch(onPaymentUpdated(payload)))
+            .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'payments', filter: "user=eq." + user.id }, payload => dispatch(onPaymentDeleted(payload)))
+
+            .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'history', filter: "user=eq." + user.id }, payload => dispatch(onHistoryUpdate(payload)))
+            .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'history', filter: "user=eq." + user.id }, payload => dispatch(onHistoryDelete(payload)))
+            .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'history', filter: "user=eq." + user.id }, payload => dispatch(onHistoryInsert(payload)))
 
             .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'events' }, payload => dispatch(onEventUpdate(payload)))
             .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'events' }, payload => dispatch(onEventDelete(payload)))
@@ -32,13 +35,13 @@ const SubscriptionHandler = ({ children, dispatch }) => {
             .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'event_comments' }, payload => dispatch(onEventCommentUpdate(payload)))
             .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'event_comments' }, payload => dispatch(onEventCommentDelete(payload)))
             .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'event_comments' }, payload => dispatch(onEventCommentInsert(payload)))
-            
+
             .subscribe(x => console.log(x), x => console.log(x));
 
         return () => {
             subscription.unsubscribe();
         }
-    }, [client, dispatch]);
+    }, [client, dispatch, user]);
 
     return children;
 }

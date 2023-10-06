@@ -14,10 +14,9 @@ import { supabase } from './supabaseClient';
 import AdminHistoryScreen from './components/admin/AdminHistoryScreen';
 import { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { fetchPaymentAsync } from './redux/paymentSlice';
 import { useClient } from 'react-supabase';
 import { useAuth } from './hooks/useAuth';
-import { fetchHistoryAsync, fetchDrinksAsync } from './redux/drinksSlice';
+import { fetchHistoryAsync, fetchDrinksAsync, fetchPaymentAsync } from './redux/drinksSlice';
 import Browse from './components/Browse';
 import CreateEvent from './components/training/CreateEvent';
 import EventScreen from './components/training/EventScreen';
@@ -34,7 +33,6 @@ import BrowseAdmin from './components/admin/BrowseAdmin';
 
 const App = () => {
 
-  const [drawerOpen, setDrawerOpen] = React.useState(false);
   const { waitingWorker, showReload, reloadPage } = useServiceWorker();
   const dispatch = useDispatch();
   const client = useClient();

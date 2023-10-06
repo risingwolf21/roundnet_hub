@@ -2,8 +2,6 @@ import { AccountCircle, AdminPanelSettings, Euro, Group, History, Liquor, Info, 
 import { Avatar, List, ListItem, ListItemAvatar, ListItemSecondaryAction, ListItemText, Box } from "@mui/material";
 import { useNavigate } from "react-router";
 import { withTranslation } from 'react-i18next';
-import { useState, useEffect } from "react";
-import raw from "../../git_commit.txt";
 import { useAuth } from "../../hooks/useAuth";
 import CustomAppBar from "../AppBar";
 
@@ -55,17 +53,7 @@ const BrowseAdmin = ({ t }) => {
     const navigate = useNavigate();
     const { user } = useAuth();
 
-    const [version, setVersion] = useState();
-
-    useEffect(() => {
-        fetch(raw)
-            .then(r => r.text())
-            .then(text => {
-                setVersion(text);
-            });
-    })
-
-    return <Box container>
+    return <Box>
         <CustomAppBar />
         <List>
             {

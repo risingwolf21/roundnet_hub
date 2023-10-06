@@ -22,7 +22,7 @@ const Browse = ({ t }) => {
             });
     })
 
-    return <Box container>
+    return <Box>
         <CustomAppBar />
         <List>
             {

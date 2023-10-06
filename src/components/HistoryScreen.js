@@ -47,11 +47,11 @@ const HistoryScreen = () => {
         setHistoryItems(mappedEntries);
     }, [history, drinks]);
 
-    const handleEntryUpdate = async (entry) => {
+    const handleEntryUpdate = async (newEntry) => {
         setEditHistoryEntryOpen(false);
         await client.from("history")
-            .update({ count: entry.newCount, amount: entry.newCount * entry.drink.price })
-            .eq("id", entry.id);
+            .update({ count: newEntry.count, amount: newEntry.newCount * newEntry.drink.price })
+            .eq("id", newEntry.id);
     }
 
     const handleEntryOnClick = (entry) => {

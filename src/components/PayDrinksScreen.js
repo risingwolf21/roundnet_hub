@@ -3,10 +3,13 @@ import { PAYPAL_ME_ADDRESS, OPEN } from "../constants";
 import EuroIcon from '@mui/icons-material/Euro';
 import { groupBy } from '../utils';
 import { useAuth } from "../hooks/useAuth";
-import { useRealtime } from "../hooks/useRealtime";
 import { Error } from "./Error";
 import { Loading } from "./Loading";
 import CustomAppBar from "./AppBar";
+import { useDispatch, useSelector } from "react-redux";
+import { useEffect } from "react";
+import { fetchDrinksToPayAsync, fetchPaymentAsync } from "../redux/drinksSlice";
+import { useClient } from "react-supabase";
 
 const PayDrinksButton = ({ amountToPay }) => {
 
@@ -32,7 +35,7 @@ const PayDrinksSummary = ({ drinks }) => {
                             name: value[0],
                             count: value[1].reduce((prev, curr) => prev + curr.count, 0),
                             priceSingle: value[1][0]?.drink?.price ?? "NaN",
-                            priceTotal: value[1].reduce((prev, curr) => prev + (curr.amount), 0),
+                            priceTotal: value[1].reduce((prev, curr) => prev + (curr.count), 0),
                         }
                     })
                     .map((x, index) => <ListItem key={"drinks" + index}>
@@ -64,32 +67,31 @@ const PayDrinksSummary = ({ drinks }) => {
 const PayDrinksScreen = () => {
 
     const { user } = useAuth();
+    const dispatch = useDispatch();
+    const client = useClient();
 
-    const [{ data: drinks, error: drinksError, fetching: drinksFetching }] = useRealtime(
-        'history',
-        {
-            select: {
-                columns: 'id, count, created_at, user, amount, drink ( name, price ), payments ( state )',
-                filter: (query) => query.eq('payments.state', OPEN).not("payments", "is", null).eq('user', user.id),
-            }
-        },
-        (data, payload) => data.id === payload.id, true);
+    const { paymentHistory, paymentError, paymentLoading } = useSelector(state => state.drinks);
 
-    if (drinksError)
-        return <Error message={drinksError} />
+    useEffect(() => {
+        dispatch(fetchDrinksToPayAsync({ client, user }));
+        dispatch(fetchPaymentAsync({ client, user }));
+    }, [dispatch, user, client]);
 
-    if (drinksFetching)
+    if (paymentError)
+        return <Error message={paymentError} />
+
+    if (paymentLoading)
         return <Loading />
 
-    if (!drinks || drinks.length < 1) {
+    if (!paymentHistory || paymentHistory.length < 1) {
         return <Error message={"Keine offenen Getränke gefunden"} />
     }
 
     return (
         <Box>
             <CustomAppBar navigateBack />
-            <PayDrinksSummary drinks={drinks} user={user} />
-            <PayDrinksButton amountToPay={drinks.reduce((prev, curr) => prev + curr.amount, 0)} />
+            <PayDrinksSummary drinks={paymentHistory} user={user} />
+            <PayDrinksButton amountToPay={paymentHistory.reduce((prev, curr) => prev + curr.amount, 0)} />
         </Box>
     );
 }
