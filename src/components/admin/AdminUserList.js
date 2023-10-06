@@ -1,5 +1,6 @@
-import { Grid, IconButton, List, ListItem, ListItemAvatar, ListItemSecondaryAction, ListItemText } from "@mui/material";
-import { AccountCircle, AdminPanelSettings, Edit, EuroRounded, Liquor } from "@mui/icons-material";
+import { AppBar, Grid, IconButton, InputBase, LinearProgress, List, ListItem, ListItemAvatar, ListItemSecondaryAction, ListItemText, Toolbar, alpha, styled } from "@mui/material";
+import { AccountCircle, AdminPanelSettings, ArrowBack, Edit, EuroRounded, Liquor } from "@mui/icons-material";
+import SearchIcon from "@mui/icons-material/Search";
 import EditUserDialog from "./EditUserDialog";
 import { useState } from "react";
 import { useRealtime } from "../../hooks/useRealtime";
@@ -9,6 +10,49 @@ import { Error } from "../Error";
 import { supabase_admin } from "../../supabaseClient";
 import { captureException } from "@sentry/react";
 import CustomAppBar from "../AppBar";
+import { useDispatch, useSelector } from "react-redux";
+import { useEffect } from "react";
+import { fetchAdminUsersAsync } from "../../redux/adminUserSlice";
+import { useNavigate } from "react-router-dom";
+
+const Search = styled('div')(({ theme }) => ({
+    position: 'relative',
+    borderRadius: theme.shape.borderRadius,
+    backgroundColor: alpha(theme.palette.common.white, 0.15),
+    '&:hover': {
+        backgroundColor: alpha(theme.palette.common.white, 0.25),
+    },
+    marginLeft: 0,
+    width: '100%',
+    [theme.breakpoints.up('sm')]: {
+        marginLeft: theme.spacing(3),
+        width: 'auto',
+    },
+}));
+
+const SearchIconWrapper = styled('div')(({ theme }) => ({
+    padding: theme.spacing(0, 2),
+    height: '100%',
+    position: 'absolute',
+    pointerEvents: 'none',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+}));
+
+const StyledInputBase = styled(InputBase)(({ theme }) => ({
+    color: 'inherit',
+    '& .MuiInputBase-input': {
+        padding: theme.spacing(1, 1, 1, 0),
+        // vertical padding + font size from searchIcon
+        paddingLeft: `calc(1em + ${theme.spacing(4)})`,
+        transition: theme.transitions.create('width'),
+        width: '100%',
+        [theme.breakpoints.up('md')]: {
+            width: '20ch',
+        },
+    },
+}));
 
 const AdminUserItem = ({ user, onEditClick }) => {
     return <ListItem divider>
@@ -39,17 +83,16 @@ const AdminUserList = () => {
 
     const [editUserOpen, setEditUserOpen] = useState(false);
     const [currentUser, setCurrentUser] = useState({});
+    const [searchString, setSearchString] = useState({});
     const client = useClient();
+    const dispatch = useDispatch();
+    const navigate = useNavigate();
 
-    const [{ data: users, fetching, error }] = useRealtime(
-        'user',
-        {
-            select: {
-                columns: '*, groups: group_user_mapping ( group: event_group ( * ) )',
-                order: (query) => query.order("displayName", { ascending: true })
-            }
-        },
-        (data, payload) => data.id === payload.id);
+    useEffect(() => {
+        dispatch(fetchAdminUsersAsync({ client }));
+    }, [dispatch, client]);
+
+    const { users, loading, error } = useSelector(state => state.adminUsers);
 
     const editUser = (user) => {
         setCurrentUser(user);
@@ -96,11 +139,8 @@ const AdminUserList = () => {
         setEditUserOpen(false);
     }
 
-    if (fetching)
-        return <Loading />
-
     if (error)
-        return <Error message={error.message} />
+        return <Error message={error} />
 
     return (<Grid
         container
@@ -108,10 +148,32 @@ const AdminUserList = () => {
         direction="column"
         alignItems="center"
         justifyContent="center">
-        <CustomAppBar navigateBack />
+        <AppBar position="sticky">
+            <Toolbar>
+                <IconButton
+                    size="large"
+                    edge="start"
+                    color="inherit"
+                    onClick={() => navigate(-1)}>
+                    <ArrowBack />
+                </IconButton>
+                <Search>
+                    <SearchIconWrapper>
+                        <SearchIcon />
+                    </SearchIconWrapper>
+                    <StyledInputBase
+                        placeholder="Search…"
+                        onChange={(e) => setSearchString(e.target.value)}
+                        inputProps={{ 'aria-label': 'search' }}
+                    />
+                </Search>
+            </Toolbar>
+        </AppBar>
+        {loading && <LinearProgress style={{ position: "fixed", left: 0, right: 0, top: 56 }} />}
+
         <List sx={{ width: "100%" }}>
             {
-                !fetching && users && users.map((user, index) => <AdminUserItem key={"user" + index} user={user} onEditClick={() => editUser(user)} />)
+                users && users.filter(x => searchString === "" || x.displayName.toLowerCase().includes(searchString.toLowerCase())).map((user, index) => <AdminUserItem key={"user" + index} user={user} onEditClick={() => editUser(user)} />)
             }
         </List>
         <EditUserDialog

@@ -5,6 +5,7 @@ import adminDrinksSlice from './adminDrinksSlice'
 import adminPaymentsSlice from './adminPaymentsSlice'
 import eventReducer from './eventReducer'
 import groupsSlice from './groupsSlice'
+import adminUsersSlice from './adminUserSlice'
 
 export default configureStore({
     reducer: {
@@ -14,5 +15,6 @@ export default configureStore({
         application: applicationSlice,
         adminDrinks: adminDrinksSlice,
         adminPayments: adminPaymentsSlice,
+        adminUsers: adminUsersSlice
     },
 })
