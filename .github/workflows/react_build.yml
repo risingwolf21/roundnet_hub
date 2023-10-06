@@ -1,8 +1,8 @@
 name: Building
 on:
   push:
-    branches-ignore:
-      - production
+    branches:
+      - staging
 jobs:
   build_and_preview:
     runs-on: ubuntu-latest
