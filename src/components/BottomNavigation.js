@@ -1,4 +1,4 @@
-import { Liquor, List, CalendarToday, SportsHandball, AdminPanelSettings } from "@mui/icons-material"
+import { Liquor, List, SportsHandball, AdminPanelSettings } from "@mui/icons-material"
 import { BottomNavigation, BottomNavigationAction, Paper } from "@mui/material"
 import { useState } from "react";
 import { useDispatch } from "react-redux";
@@ -38,7 +38,7 @@ const CustomBottomNavigation = ({ t }) => {
 
     useEffect(() => {
         setTab(tabs.findIndex(x => "/" + x.path === window?.location?.pathname));
-    }, [window]);
+    }, [tabs]);
 
     useEffect(() => {
         if (user.role !== "user") {

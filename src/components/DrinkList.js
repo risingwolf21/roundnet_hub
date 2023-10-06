@@ -2,7 +2,6 @@ import { Alert, CircularProgress, Divider, Fab, Grid, List, LinearProgress, Snac
 import DrinkItem from "./DrinkItem";
 import { useEffect, useState } from "react";
 import CheckIcon from '@mui/icons-material/Check';
-import BottomInformation from "./BottomInformation";
 import { NOT_PAID, OPEN } from "../constants";
 import { captureException } from "@sentry/react";
 import { Error } from "./Error";

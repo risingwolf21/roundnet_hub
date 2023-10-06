@@ -1,16 +1,7 @@
-import { Avatar, Box, IconButton, LinearProgress, ListItem, ListItemAvatar, ListItemSecondaryAction, ListItemText, Typography } from '@mui/material';
+import { Avatar, Box, IconButton, ListItem, ListItemAvatar, ListItemSecondaryAction, ListItemText, Typography } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import RemoveIcon from '@mui/icons-material/Remove';
 import LocalDrinkIcon from '@mui/icons-material/LocalDrink';
-import { isNumber } from 'lodash';
-import { Delete } from '@mui/icons-material';
-
-const StockIndicator = ({ stock }) => {
-    if (!stock || !isNumber(stock) || stock <= 0) {
-        return <></>;
-    }
-    return <LinearProgress variant='determinate' value={stock} />
-}
 
 const DrinkItem = ({ drink, count, onAddClick, onMinusClick }) => {
     return <ListItem key={drink.id} onClick={() => onAddClick(drink)}>

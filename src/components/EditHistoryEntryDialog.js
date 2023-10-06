@@ -1,9 +1,8 @@
 import {
-    Button, AppBar, Toolbar, IconButton, Typography, Box, Dialog, DialogActions, DialogContent,
-    DialogTitle, FormControl, FormControlLabel, Radio, RadioGroup, List, ListItem, ListItemText, ListItemAvatar, Avatar
+    IconButton, Typography, Box, Dialog, DialogActions, DialogContent,
+    DialogTitle, List, ListItem, ListItemText, ListItemAvatar, Avatar, Button
 } from "@mui/material";
-import { NON_REPEAT } from "../constants";
-import { Close, Remove, Add, LocalDrink } from "@mui/icons-material";
+import { Remove, Add, LocalDrink } from "@mui/icons-material";
 import { useEffect, useState } from "react";
 import { SlideUpTransition } from "../utils";
 

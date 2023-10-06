@@ -1,6 +1,6 @@
-import { AppBar, Box, Dialog, IconButton, List, ListItem, ListItemText, TextField, Toolbar, Typography } from "@mui/material";
+import { Box, Dialog, IconButton, List, ListItem, ListItemText, TextField, Toolbar } from "@mui/material";
 import { SlideUpTransition } from "../../utils"
-import { ArrowBack, Close } from "@mui/icons-material";
+import { ArrowBack } from "@mui/icons-material";
 import { useState } from "react";
 import { OpenStreetMapProvider } from 'leaflet-geosearch';
 

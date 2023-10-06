@@ -1,7 +1,6 @@
-import { AccountCircle, AdminPanelSettings, Euro, Group, History, Liquor, Info, SportsHandball, GroupOutlined } from "@mui/icons-material";
-import { Avatar, List, ListItem, ListItemAvatar, ListItemSecondaryAction, ListItemText, Box } from "@mui/material";
+import { AccountCircle, Euro, History, Info, SportsHandball } from "@mui/icons-material";
+import { Avatar, List, ListItem, ListItemAvatar, ListItemText, Box } from "@mui/material";
 import { useNavigate } from "react-router";
-import { useAuth } from "../hooks/useAuth";
 import { withTranslation } from 'react-i18next';
 import { useState, useEffect } from "react";
 import raw from "../git_commit.txt";
@@ -10,8 +9,6 @@ import CustomAppBar from "./AppBar";
 const Browse = ({ t }) => {
 
     const navigate = useNavigate();
-    const { user } = useAuth();
-
     const [version, setVersion] = useState();
 
     useEffect(() => {

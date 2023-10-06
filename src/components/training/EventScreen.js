@@ -1,16 +1,15 @@
-import { Alert, Box, CircularProgress, Divider, Fab, Grid, IconButton, LinearProgress, List, ListItem, ListItemAvatar, ListItemSecondaryAction, ListItemText, Snackbar, Typography } from "@mui/material";
+import { Alert, Box, CircularProgress, Divider, Fab, Grid, IconButton, LinearProgress, ListItem, ListItemAvatar, ListItemSecondaryAction, ListItemText, Snackbar, Typography } from "@mui/material";
 import { useDispatch, useSelector } from "react-redux";
 import moment from "moment";
 import { Error } from "../Error";
 import { useNavigate } from 'react-router-dom';
 import React from "react";
-import { fetchEventsAsync, selectEvent } from "../../redux/eventReducer";
+import { fetchEventsAsync } from "../../redux/eventReducer";
 import AddIcon from '@mui/icons-material/Add';
 import { useAuth } from "../../hooks/useAuth";
 import { ThumbDownAlt, ThumbDownOffAlt, ThumbUpAlt, ThumbUpOffAlt } from "@mui/icons-material";
 import { ATTENDING, DECLINED } from "../../constants";
 import { useClient } from "react-supabase";
-import EventInformation from "./EventInformation";
 import { useState } from "react";
 import { useEffect } from "react";
 import { InfiniteScrollList } from "../InfiniteScrollList";
@@ -66,7 +65,6 @@ const EventScreen = () => {
     const client = useClient();
     const dispatch = useDispatch();
     const navigate = useNavigate();
-    const [eventInfoOpen, setEventInfoOpen] = useState(false);
     const [eventUpdateError, setUpdateEventError] = useState("");
     const [eventsUpdatingAttendance, setEventsUpdatingAttendance] = useState({});
 

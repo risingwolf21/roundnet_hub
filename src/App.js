@@ -1,16 +1,13 @@
 import * as React from 'react';
-import { Grid, Toolbar } from "@mui/material";
-import CustomAppBar from "./components/AppBar";
+import { Grid } from "@mui/material";
 import DrinkList from './components/DrinkList';
 import UserScreen from './components/User';
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
-import PageNotFound from './components/PageNotFound';
 import HistoryScreen from './components/HistoryScreen';
 import AdminDrinkList from './components/admin/AdminDrinkList';
 import PayDrinksScreen from './components/PayDrinksScreen';
 import PaymentsPendingAdmin from './components/admin/PaymentsPendingAdmin';
 import AdminUserList from './components/admin/AdminUserList';
-import { supabase } from './supabaseClient';
 import AdminHistoryScreen from './components/admin/AdminHistoryScreen';
 import { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';

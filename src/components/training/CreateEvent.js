@@ -1,5 +1,4 @@
 import { AppBar, Box, Button, Dialog, IconButton, Toolbar, Typography, TextField, ListItem, ListItemAvatar, ListItemText, DialogTitle, DialogContent, FormControl, FormControlLabel, RadioGroup, Radio, Divider, Checkbox, DialogActions, List, InputAdornment, Snackbar, Alert } from "@mui/material"
-import { SlideUpTransition } from "../../utils"
 import { AccessTime, Article, Close, Event, Map } from "@mui/icons-material";
 import { useNavigate } from 'react-router-dom';
 import { DatePicker } from "@mui/x-date-pickers";
@@ -13,7 +12,7 @@ import { withTranslation } from 'react-i18next';
 import { useEffect } from "react";
 import { connect } from "react-redux";
 import SearchPlacesDialog from "./SearchPlacesDialog";
-import { MapContainer, Popup, TileLayer, Marker, useMap } from "react-leaflet";
+import { MapContainer, TileLayer, Marker, useMap } from "react-leaflet";
 
 const CreateEvent = ({ t, dispatch, eventToEdit }) => {
 

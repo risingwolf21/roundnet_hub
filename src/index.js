@@ -3,7 +3,6 @@ import ReactDOM from 'react-dom/client';
 import * as serviceWorkerRegistration from './serviceWorkerRegistration';
 import "./global.css";
 import App from './App';
-import AuthGate from './AuthGate';
 import { ThemeProvider } from '@mui/material';
 import { mainTheme } from './themes';
 import * as Sentry from "@sentry/react";

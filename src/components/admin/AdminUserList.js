@@ -3,13 +3,10 @@ import { AccountCircle, AdminPanelSettings, ArrowBack, Edit, EuroRounded, Liquor
 import SearchIcon from "@mui/icons-material/Search";
 import EditUserDialog from "./EditUserDialog";
 import { useState } from "react";
-import { useRealtime } from "../../hooks/useRealtime";
 import { useClient } from "react-supabase";
-import { Loading } from "../Loading";
 import { Error } from "../Error";
 import { supabase_admin } from "../../supabaseClient";
 import { captureException } from "@sentry/react";
-import CustomAppBar from "../AppBar";
 import { useDispatch, useSelector } from "react-redux";
 import { useEffect } from "react";
 import { fetchAdminUsersAsync } from "../../redux/adminUserSlice";

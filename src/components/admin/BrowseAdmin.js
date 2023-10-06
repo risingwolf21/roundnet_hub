@@ -1,5 +1,5 @@
-import { AccountCircle, AdminPanelSettings, Euro, Group, History, Liquor, Info, SportsHandball, GroupOutlined } from "@mui/icons-material";
-import { Avatar, List, ListItem, ListItemAvatar, ListItemSecondaryAction, ListItemText, Box } from "@mui/material";
+import { AdminPanelSettings, Euro, Group, History, Liquor, GroupOutlined } from "@mui/icons-material";
+import { Avatar, List, ListItem, ListItemAvatar, ListItemText, Box } from "@mui/material";
 import { useNavigate } from "react-router";
 import { withTranslation } from 'react-i18next';
 import { useAuth } from "../../hooks/useAuth";

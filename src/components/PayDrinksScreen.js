@@ -1,5 +1,5 @@
 import { Box, Button, Divider, List, ListItem, ListItemAvatar, ListItemSecondaryAction, ListItemText, Typography } from "@mui/material";
-import { PAYPAL_ME_ADDRESS, OPEN } from "../constants";
+import { PAYPAL_ME_ADDRESS } from "../constants";
 import EuroIcon from '@mui/icons-material/Euro';
 import { groupBy } from '../utils';
 import { useAuth } from "../hooks/useAuth";

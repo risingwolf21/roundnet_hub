@@ -1,4 +1,3 @@
-import AuthScreen from "./components/AuthScreen";
 import { setUser } from "@sentry/react";
 import React, { createContext, useState } from "react";
 import { useAuthStateChange } from "./hooks/useAuthStateChange";
@@ -9,7 +8,6 @@ import { useNavigate } from "react-router-dom";
 import LoginScreen from './components/LoginScreen';
 import ForgotPasswordScreen from './components/ForgotPasswordScreen';
 import RegisterScreen from './components/RegisterScreen';
-import ResetPasswordScreen from './components/ResetPasswordScreen';
 import { Route, Routes } from 'react-router-dom';
 
 

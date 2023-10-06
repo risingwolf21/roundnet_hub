@@ -2,10 +2,8 @@ import AppBar from '@mui/material/AppBar';
 import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
 import { IconButton } from "@mui/material";
-import MenuIcon from '@mui/icons-material/Menu';
 import { useNavigate } from 'react-router-dom';
-import { AccountCircle, ArrowBack, Close } from '@mui/icons-material';
-import { useSelector } from 'react-redux';
+import { AccountCircle, ArrowBack } from '@mui/icons-material';
 import { useAuth } from '../hooks/useAuth';
 
 const CustomAppBar = ({ navigateBack = false, title = "Roundnet Karlsruhe" }) => {
