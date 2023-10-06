@@ -12,24 +12,23 @@ import PaymentsPendingAdmin from './components/admin/PaymentsPendingAdmin';
 import AdminUserList from './components/admin/AdminUserList';
 import { supabase } from './supabaseClient';
 import AdminHistoryScreen from './components/admin/AdminHistoryScreen';
-import UpdateAvailable from './components/UpdateAvailable';
-import CustomBottomNavigation from './components/BottomNavigation';
-import Browse from './components/Browse';
 import { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { fetchPaymentAsync } from './redux/paymentSlice';
-import { fetchDrinksAsync } from './redux/drinksSlice';
 import { useClient } from 'react-supabase';
 import { useAuth } from './hooks/useAuth';
-import { fetchHistoryAsync } from './redux/drinksSlice';
-import { onAppUpdateAvailableChange } from './redux/applicationSlice';
+import { fetchHistoryAsync, fetchDrinksAsync, fetchPaymentAsync } from './redux/drinksSlice';
+import Browse from './components/Browse';
+import CustomBottomNavigation from './components/BottomNavigation';
 import { useServiceWorker } from './hooks/useServiceWorker';
+import { onAppUpdateAvailableChange } from './redux/applicationSlice';
+import UpdateAvailable from './components/UpdateAvailable';
 import AuthGate from './AuthGate';
 import ResetPasswordScreen from './components/ResetPasswordScreen';
+import SubscriptionHandler from './components/SubscriptionHandler';
+import BrowseAdmin from './components/admin/BrowseAdmin';
 
 const App = () => {
 
-  const [drawerOpen, setDrawerOpen] = React.useState(false);
   const { waitingWorker, showReload, reloadPage } = useServiceWorker();
   const dispatch = useDispatch();
   const client = useClient();
@@ -49,32 +48,35 @@ const App = () => {
   return <Grid maxHeight={"100vh"}>
     <BrowserRouter>
       <AuthGate>
-        {
-          !appUpdateAvailable && <>
-            <Routes>
-              <Route path='/' element={<Navigate replace to={"/drinks"} />} />
-              <Route path="*" element={<Navigate replace to={"/drinks"} />} />
+        <SubscriptionHandler>
+          {
+            !appUpdateAvailable && <>
+              <Routes>
+                <Route path='/' element={<Navigate replace to={"/drinks"} />} />
+                <Route path="*" element={<Navigate replace to={"/drinks"} />} />
 
-              <Route path='/reset-password' element={<ResetPasswordScreen />} />
+                <Route path='/reset-password' element={<ResetPasswordScreen />} />
 
-              <Route path='/browse' element={<Browse />} />
-              <Route path="/drinks" element={<DrinkList />} />
-              <Route path="/user" element={<UserScreen />} />
-              <Route path="/history" element={<HistoryScreen />} />
-              <Route path="/payments" element={<PayDrinksScreen />} />
+                <Route path='/browse' element={<Browse />} />
+                <Route path='/browse-admin' element={<BrowseAdmin />} />
+                <Route path="/drinks" element={<DrinkList />} />
+                <Route path="/user" element={<UserScreen />} />
+                <Route path="/history" element={<HistoryScreen />} />
+                <Route path="/payments" element={<PayDrinksScreen />} />
 
-              <Route path='/admin/drinks' element={<AdminDrinkList />} />
-              <Route path="/admin/drinks/history" element={<AdminHistoryScreen />} />
-              <Route path='/admin/drinks/payments' element={<PaymentsPendingAdmin />} />
-              <Route path='/admin/users' element={<AdminUserList />} />
-            </Routes>
-            <div style={{ width: "100%", height: "56px" }} />
-            <CustomBottomNavigation />
-          </>
-        }
-        {
-          appUpdateAvailable && <UpdateAvailable update={reloadPage} />
-        }
+                <Route path='/admin/drinks' element={<AdminDrinkList />} />
+                <Route path="/admin/drinks/history" element={<AdminHistoryScreen />} />
+                <Route path='/admin/drinks/payments' element={<PaymentsPendingAdmin />} />
+                <Route path='/admin/users' element={<AdminUserList />} />
+              </Routes>
+              <div style={{ width: "100%", height: "56px" }} />
+              <CustomBottomNavigation />
+            </>
+          }
+          {
+            appUpdateAvailable && <UpdateAvailable update={reloadPage} />
+          }
+        </SubscriptionHandler>
       </AuthGate>
     </BrowserRouter>
 

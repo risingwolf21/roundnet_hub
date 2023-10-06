@@ -18,7 +18,7 @@ const AdminHistoryItem = ({ items, header }) => {
                 </ListItemAvatar>
                 <ListItemText primary={item.drink?.name} secondary={item.user?.displayName} />
                 <ListItemSecondaryAction>
-                    <Typography fontWeight={"bold"}>{(item.drink?.price ?? 0 * item.count)} €</Typography>
+                    <Typography fontWeight={"bold"}>{((item.drink?.price ?? 0) * item.count)} €</Typography>
                 </ListItemSecondaryAction>
             </ListItem>)
         }

@@ -1,6 +1,6 @@
 import { Alert, CircularProgress, Divider, Fab, Grid, List, LinearProgress, Snackbar } from "@mui/material";
 import DrinkItem from "./DrinkItem";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import CheckIcon from '@mui/icons-material/Check';
 import BottomInformation from "./BottomInformation";
 import { NOT_PAID, OPEN } from "../constants";
@@ -8,8 +8,9 @@ import { captureException } from "@sentry/react";
 import { Error } from "./Error";
 import { useAuth } from "../hooks/useAuth";
 import { useClient } from "react-supabase";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import CustomAppBar from "./AppBar";
+import { fetchPaymentAsync } from "../redux/drinksSlice";
 
 const SUCCESS_MESSAGE_INFO = { message: "Getränke erfolgreich gebucht!", severity: "success" };
 
@@ -17,14 +18,19 @@ const DrinkList = () => {
 
     const { user } = useAuth();
     const client = useClient();
+    const dispatch = useDispatch();
 
     const { drinks, drinksFetching, drinksError } = useSelector((state) => state.drinks);
-    const { payment } = useSelector((state) => state.payment);
+    const { payment } = useSelector((state) => state.drinks);
 
     const [addedDrinks, setAddedDrinks] = useState({});
     const [loading, setLoading] = useState(false);
     const [successMessageOpen, setSuccessMessageOpen] = useState(false);
     const [alertInfo, setAlertInfo] = useState(SUCCESS_MESSAGE_INFO);
+
+    useEffect(() => {
+        dispatch(fetchPaymentAsync({ client, user }));
+    }, [client, user, dispatch]);
 
     const handleClose = (event, reason) => {
         if (reason === 'clickaway') {
@@ -46,13 +52,19 @@ const DrinkList = () => {
         try {
             let paymentId;
             if (!payment || payment.state !== OPEN) {
-                const { data, error } = await client.from("payments").insert({
-                    userId: user.id,
-                    state: OPEN
-                }).select().single();
-                if (error)
-                    throw Error(error);
-                paymentId = data.id;
+                const { data: paymentUpdate } = await client.from("payments")
+                    .select("*").eq("userId", user.id).eq("state", OPEN).single();
+                if (!paymentUpdate) {
+                    const { data, error } = await client.from("payments").insert({
+                        userId: user.id,
+                        state: OPEN
+                    }).select().single();
+                    if (error)
+                        throw Error(error);
+                    paymentId = data.id;
+                } else {
+                    paymentId = paymentUpdate.id;
+                }
             } else {
                 paymentId = payment?.id;
             }

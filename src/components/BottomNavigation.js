@@ -1,4 +1,4 @@
-import { Liquor, List } from "@mui/icons-material"
+import { Liquor, List, CalendarToday, SportsHandball, AdminPanelSettings } from "@mui/icons-material"
 import { BottomNavigation, BottomNavigationAction, Paper } from "@mui/material"
 import { useState } from "react";
 import { useDispatch } from "react-redux";
@@ -6,36 +6,52 @@ import { useNavigate } from "react-router-dom";
 import { onModeChange } from "../redux/applicationSlice";
 import { withTranslation } from 'react-i18next';
 import { useEffect } from "react";
+import { useAuth } from "../hooks/useAuth";
+
+const defaultTabs = [
+    {
+        translationKey: "drinks",
+        path: "drinks",
+        index: 0,
+        icon: <Liquor />
+    },
+    // {
+    //     translationKey: "training",
+    //     path: "training",
+    //     index: 1,
+    //     icon: <SportsHandball />
+    // },
+    {
+        translationKey: "browse",
+        path: "browse",
+        index: 2,
+        icon: <List />
+    }
+];
 
 const CustomBottomNavigation = ({ t }) => {
 
     let navigate = useNavigate();
     let dispatch = useDispatch();
+    const { user } = useAuth();
+    const [tabs, setTabs] = useState(defaultTabs)
 
-    const tabs = [
-        {
-            translationKey: "drinks",
-            path: "drinks",
-            index: 0,
-            icon: <Liquor />
-        },
-        // {
-        //     translationKey: "training",
-        //     path: "training",
-        //     index: 1,
-        //     icon: <SportsHandball />
-        // },
-        {
-            translationKey: "browse",
-            path: "browse",
-            index: 2,
-            icon: <List />
-        }
-    ];
-
-    useEffect(()=>{
+    useEffect(() => {
         setTab(tabs.findIndex(x => "/" + x.path === window?.location?.pathname));
-    }, [window, tabs]);
+    }, [window]);
+
+    useEffect(() => {
+        if (user.role !== "user") {
+            setTabs([...defaultTabs, {
+                translationKey: "admin",
+                path: "browse-admin",
+                index: 3,
+                icon: <AdminPanelSettings />
+            }])
+        } else {
+            setTabs(defaultTabs);
+        }
+    }, [user]);
 
     const [tab, setTab] = useState(tabs.findIndex(x => "/" + x.path === window?.location?.pathname));
 

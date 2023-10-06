@@ -12,7 +12,8 @@
     "navigation": {
         "browse": "Browse",
         "drinks": "Getränke",
-        "training": "Training"
+        "training": "Training",
+        "admin": "Administrator"
     },
     "events": {
         "creation": {
