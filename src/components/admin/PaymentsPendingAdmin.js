@@ -1,4 +1,4 @@
-import { Button, Dialog, DialogActions, DialogContent, DialogTitle, Fab, Grid, IconButton, LinearProgress, List, ListItem, ListItemAvatar, ListItemSecondaryAction, ListItemText, Typography } from "@mui/material";
+import { AppBar, Button, Dialog, DialogActions, DialogContent, DialogTitle, Fab, Grid, IconButton, LinearProgress, List, ListItem, ListItemAvatar, ListItemSecondaryAction, ListItemText, Toolbar, Typography } from "@mui/material";
 import CheckIcon from "@mui/icons-material/Check"
 import { useState } from "react";
 import { FULFILLED } from "../../constants";
@@ -7,15 +7,19 @@ import { useClient } from "react-supabase";
 import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchAdminsPaymentsAsync } from "../../redux/adminPaymentsSlice";
-import { Refresh } from "@mui/icons-material";
-import CustomAppBar from "../AppBar";
+import { ArrowBack, Refresh } from "@mui/icons-material";
+import SearchIcon from "@mui/icons-material/Search";
+import { Search, SearchIconWrapper, StyledInputBase } from "../SearchBar";
+import { useNavigate } from "react-router-dom";
 
 const PaymentsPendingAdmin = () => {
 
     const [open, setOpen] = useState(false);
     const [currentPayment, setPayment] = useState({});
+    const [searchString, setSearchString] = useState("");
     const client = useClient();
     const dispatch = useDispatch();
+    const navigate = useNavigate();
 
     const { payments, error, loading } = useSelector((state) => state.adminPayments);
 
@@ -43,26 +47,48 @@ const PaymentsPendingAdmin = () => {
         direction="column"
         alignItems="center"
         justifyContent="center">
-        <CustomAppBar navigateBack />
+        <AppBar position="sticky">
+            <Toolbar>
+                <IconButton
+                    size="large"
+                    edge="start"
+                    color="inherit"
+                    onClick={() => navigate(-1)}>
+                    <ArrowBack />
+                </IconButton>
+                <Search>
+                    <SearchIconWrapper>
+                        <SearchIcon />
+                    </SearchIconWrapper>
+                    <StyledInputBase
+                        placeholder="Search…"
+                        onChange={(e) => setSearchString(e.target.value)}
+                        inputProps={{ 'aria-label': 'search' }}
+                    />
+                </Search>
+            </Toolbar>
+        </AppBar>
         {
             loading && <LinearProgress style={{ position: "fixed", left: 0, top: 56, right: 0 }} />
         }
         {
             (payments && payments.length > 1) && <List sx={{ width: "100%", pt: 0 }}>
                 {
-                    Object.values(payments).map((x, index) => {
-                        return <ListItem key={x.user.email} divider={index < Object.values(payments).length - 1}>
-                            <ListItemAvatar>
-                                <Typography fontWeight={"bold"}>{x.history.reduce((prev, curr) => prev + curr.amount, 0)} €</Typography>
-                            </ListItemAvatar>
-                            <ListItemText primary={x.user?.displayName ?? x.user.email} secondary={x.user.displayName ? "Benutzername" : "Email"} />
-                            <ListItemSecondaryAction >
-                                <IconButton onClick={() => selectedPayment(x)}>
-                                    <CheckIcon />
-                                </IconButton>
-                            </ListItemSecondaryAction>
-                        </ListItem>
-                    })
+                    Object.values(payments)
+                        .filter(x => searchString === "" || x.user.displayName.toLowerCase().includes(searchString.toLowerCase()))
+                        .map((x, index) => {
+                            return <ListItem key={x.user.email} divider={index < Object.values(payments).length - 1}>
+                                <ListItemAvatar>
+                                    <Typography fontWeight={"bold"}>{x.history.reduce((prev, curr) => prev + curr.amount, 0)} €</Typography>
+                                </ListItemAvatar>
+                                <ListItemText primary={x.user?.displayName ?? x.user.email} secondary={x.user.displayName ? "Benutzername" : "Email"} />
+                                <ListItemSecondaryAction >
+                                    <IconButton onClick={() => selectedPayment(x)}>
+                                        <CheckIcon />
+                                    </IconButton>
+                                </ListItemSecondaryAction>
+                            </ListItem>
+                        })
                 }
             </List>
         }

@@ -15,7 +15,6 @@ export const adminUsersSlice = createSlice({
             .addCase(fetchAdminUsersAsync.fulfilled, (state, action) => {
                 state.loading = false;
                 state.error = '';
-                console.log(action.payload)
                 state.users = action.payload
             })
             .addCase(fetchAdminUsersAsync.rejected, (state, action) => {
@@ -28,7 +27,6 @@ export const adminUsersSlice = createSlice({
 export const fetchAdminUsersAsync = createAsyncThunk("fetchAdminUsersAsync", async ({ client }) => {
     const response = await client.from("user")
         .select("*, groups: group_user_mapping ( group: event_group ( * ) )")
-    console.log(response.data)
     return response.data;
 });
 

@@ -144,8 +144,6 @@ export const fetchHistoryAsync = createAsyncThunk("history", async ({ client, us
     return { entries: response.data, more: page !== 0 };
 });
 
-console.log(drinksSlice.actions)
-
 export const {
     onHistoryUpdate,
     onHistoryDelete,
