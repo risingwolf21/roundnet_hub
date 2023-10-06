@@ -61,7 +61,6 @@ const AuthGate = ({ children }) => {
             <Route path='/' element={<Navigate replace to={"/not-verified"} />} />
             <Route path="*" element={<Navigate replace to={"/not-verified"} />} />
             <Route path='/not-verified' element={<NotVerifiedScreen />} />
-
             {
                 authenticationRoutes
             }

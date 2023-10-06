@@ -1,5 +1,5 @@
-import { AppBar, Grid, IconButton, InputBase, LinearProgress, List, ListItem, ListItemAvatar, ListItemSecondaryAction, ListItemText, Toolbar, alpha, styled } from "@mui/material";
-import { AccountCircle, AdminPanelSettings, ArrowBack, Edit, EuroRounded, Liquor } from "@mui/icons-material";
+import { AppBar, Box, Checkbox, Chip, Dialog, Grid, IconButton, LinearProgress, List, ListItem, ListItemAvatar, ListItemSecondaryAction, ListItemText, Toolbar, Typography } from "@mui/material";
+import { AccountCircle, AdminPanelSettings, ArrowBack, Close, Edit, EuroRounded, Liquor, Verified } from "@mui/icons-material";
 import SearchIcon from "@mui/icons-material/Search";
 import EditUserDialog from "./EditUserDialog";
 import { useState } from "react";
@@ -12,6 +12,7 @@ import { useEffect } from "react";
 import { fetchAdminUsersAsync } from "../../redux/adminUserSlice";
 import { useNavigate } from "react-router-dom";
 import { Search, SearchIconWrapper, StyledInputBase } from "../SearchBar";
+import { SlideUpTransition } from "../../utils";
 
 const AdminUserItem = ({ user, onEditClick }) => {
     return <ListItem divider>
@@ -43,6 +44,8 @@ const AdminUserList = () => {
     const [editUserOpen, setEditUserOpen] = useState(false);
     const [currentUser, setCurrentUser] = useState({});
     const [searchString, setSearchString] = useState("");
+    const [open, setOpen] = useState(false);
+    const [filter, setFilter] = useState({ showVerifiedUsers: true, showNotVerifiedUsers: true })
     const client = useClient();
     const dispatch = useDispatch();
     const navigate = useNavigate();
@@ -130,6 +133,9 @@ const AdminUserList = () => {
         </AppBar>
         {loading && <LinearProgress style={{ position: "fixed", left: 0, right: 0, top: 56 }} />}
 
+        <Box sx={{ mt: 2, ml: 0.5, mr: 0.5, maxWidth: "100%", overflowX: "auto", display: "flex", flexDirection: "row" }}>
+            <Chip sx={{ ml: 0.5, mr: 0.5 }} icon={<Verified />} label="Is verified" onClick={() => setOpen(true)} variant="outlined" />
+        </Box>
         <List sx={{ width: "100%" }}>
             {
                 users && users.filter(x => searchString === "" || x.displayName.toLowerCase().includes(searchString.toLowerCase())).map((user, index) => <AdminUserItem key={"user" + index} user={user} onEditClick={() => editUser(user)} />)
@@ -141,7 +147,66 @@ const AdminUserList = () => {
             handleClose={() => setEditUserOpen(false)}
             deleteUser={deleteUser}
             onUserEditFinished={onUserEditFinished} />
-    </Grid>);
+
+        <Dialog
+            fullWidth
+            scroll="body"
+            TransitionComponent={SlideUpTransition}
+            sx={{
+                "& .MuiDialog-container": {
+                    "& .MuiPaper-root": {
+                        width: "100%",
+                        maxWidth: "100%",
+                        minHeight: "50%",
+                        position: "fixed",
+                        left: 0,
+                        right: 0,
+                        bottom: 0,
+                        marginLeft: 0,
+                        marginBottom: 0,
+                        marginRight: 0,
+                        borderTopLeftRadius: "24px",
+                        borderTopRightRadius: "24px",
+                        borderBottomRightRadius: 0,
+                        borderBottomLeftRadius: 0
+                    },
+                },
+            }}
+            onClose={() => setOpen(false)}
+            open={open}>
+            <Toolbar sx={{ mt: 1 }}>
+                <IconButton
+                    size="large"
+                    edge="start"
+                    color="inherit"
+                    onClick={() => setOpen(false)}>
+                    <Close />
+                </IconButton>
+                <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>test</Typography>
+            </Toolbar>
+            <List>
+                <ListItem>
+                    <ListItemAvatar>
+                        <Verified />
+                    </ListItemAvatar>
+                    <ListItemText>Verifizierte Nutzer</ListItemText>
+                    <ListItemSecondaryAction>
+                        <Checkbox value={filter.showVerifiedUsers} onChange={(e) => setFilter({ ...filter, showVerifiedUsers: e.target.checked })} />
+                    </ListItemSecondaryAction>
+                </ListItem>
+                <ListItem>
+                    <ListItemAvatar>
+                        <Verified />
+                    </ListItemAvatar>
+                    <ListItemText>Nicht verifizierte Nutzer</ListItemText>
+                    <ListItemSecondaryAction>
+                        <Checkbox value={filter.showNotVerifiedUsers} onChange={(e) => setFilter({ ...filter, showNotVerifiedUsers: e.target.checked })} />
+                    </ListItemSecondaryAction>
+                </ListItem>
+            </List>
+        </Dialog>
+
+    </Grid >);
 }
 
 export default AdminUserList;
