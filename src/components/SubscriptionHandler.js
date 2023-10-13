@@ -12,6 +12,7 @@ const SubscriptionHandler = ({ children, dispatch }) => {
     useEffect(() => {
         let subscription = client
             .channel('any')
+            .on('postgres_changes', { event: '*', schema: 'public', table: '*' }, payload => console.log(payload))
             .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'drink' }, payload => dispatch(onDrinkUpdated(payload)))
             .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'drink' }, payload => dispatch(onDrinkDeleted(payload)))
             .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'drink' }, payload => dispatch(onDrinkInserted(payload)))
@@ -35,7 +36,7 @@ const SubscriptionHandler = ({ children, dispatch }) => {
             .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'event_comments' }, payload => dispatch(onEventCommentDelete(payload)))
             .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'event_comments' }, payload => dispatch(onEventCommentInsert(payload)))
 
-            .subscribe(x => console.log(x), x => console.log(x));
+            .subscribe(x => console.log(x), x => console.error(x));
 
         return () => {
             subscription.unsubscribe();

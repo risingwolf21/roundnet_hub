@@ -131,6 +131,7 @@ export const fetchDrinksToPayAsync = createAsyncThunk("payments/openDrinks", asy
 
 export const fetchDrinksAsync = createAsyncThunk("drink", async (client) => {
     const response = await client.from("drink").select("id, name, price, stock, imageUrl, active, deleted, previousDrink")
+        .order('id', { ascending: false })
     return response.data;
 });
 

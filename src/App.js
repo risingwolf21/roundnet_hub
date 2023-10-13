@@ -19,13 +19,16 @@ import EventScreen from './components/training/EventScreen';
 import EventInformation from './components/training/EventInformation';
 import CustomBottomNavigation from './components/BottomNavigation';
 import { useServiceWorker } from './hooks/useServiceWorker';
-import { onAppUpdateAvailableChange } from './redux/applicationSlice';
+import { onAppUpdateAvailableChange, onAppVersionChange } from './redux/applicationSlice';
 import UpdateAvailable from './components/UpdateAvailable';
 import AuthGate from './AuthGate';
 import ResetPasswordScreen from './components/ResetPasswordScreen';
 import SubscriptionHandler from './components/SubscriptionHandler';
-import ManageGroupsScreen from './components/ManageGroups';
+import ManageGroupsScreen from './components/groups/ManageGroups';
 import BrowseAdmin from './components/admin/BrowseAdmin';
+import raw from "./git_commit.txt";
+import { fetchUserGroupsAsync } from './redux/eventReducer';
+import { GroupInformation } from './components/groups/GroupInformation';
 
 const App = () => {
 
@@ -35,8 +38,17 @@ const App = () => {
   const { appUpdateAvailable, user } = useSelector((state) => state.application);
 
   useEffect(() => {
+    fetch(raw)
+      .then(r => r.text())
+      .then(text => {
+        dispatch(onAppVersionChange(text));
+      });
+  }, [dispatch, raw])
+
+  useEffect(() => {
     dispatch(fetchPaymentAsync({ client, user }));
     dispatch(fetchHistoryAsync({ client, user }));
+    dispatch(fetchUserGroupsAsync({ client, user }));
     dispatch(fetchDrinksAsync(client));
   }, [client, user, dispatch]);
 
@@ -64,6 +76,7 @@ const App = () => {
                 <Route path="/payments" element={<PayDrinksScreen />} />
 
                 <Route path="/trainer/groups" element={<ManageGroupsScreen />} />
+                <Route path="/trainer/groups/:id" element={<GroupInformation />} />
 
                 <Route path="/training" element={<EventScreen />} />
                 <Route path="/training/event/:selectedEventId" element={<EventInformation />} />

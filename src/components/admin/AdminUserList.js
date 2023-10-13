@@ -1,8 +1,8 @@
 import { AppBar, Box, Checkbox, Chip, Dialog, Grid, IconButton, LinearProgress, List, ListItem, ListItemAvatar, ListItemSecondaryAction, ListItemText, Toolbar, Typography } from "@mui/material";
-import { AccountCircle, AdminPanelSettings, ArrowBack, Close, Edit, EuroRounded, Liquor, Verified } from "@mui/icons-material";
+import { AccountCircle, AdminPanelSettings, ArrowBack, Close, Edit, EuroRounded, Liquor, PersonOff, Verified } from "@mui/icons-material";
 import SearchIcon from "@mui/icons-material/Search";
 import EditUserDialog from "./EditUserDialog";
-import { useState } from "react";
+import { Fragment, useState } from "react";
 import { useClient } from "react-supabase";
 import { Error } from "../Error";
 import { supabase_admin } from "../../supabaseClient";
@@ -15,22 +15,31 @@ import { Search, SearchIconWrapper, StyledInputBase } from "../SearchBar";
 import { SlideUpTransition } from "../../utils";
 
 const AdminUserItem = ({ user, onEditClick }) => {
+    let color = "rgba(0, 0, 0, 0.54)";
     return <ListItem divider>
         <ListItemAvatar>
             {
-                user.role === "user" && <AccountCircle />
+                user.role === "user" && <AccountCircle htmlColor={color} />
             }
             {
-                user.role === "finance" && <EuroRounded />
+                user.role === "finance" && <EuroRounded htmlColor={color} />
             }
             {
-                user.role === "procure" && <Liquor />
+                user.role === "procure" && <Liquor htmlColor={color} />
             }
             {
-                user.role === "admin" && <AdminPanelSettings />
+                user.role === "admin" && <AdminPanelSettings htmlColor={color} />
             }
         </ListItemAvatar>
-        <ListItemText primary={user.displayName} secondary={user.email} />
+        <ListItemText primary={<Fragment>
+            <Box sx={{ display: "flex", flexDirection: "row", alignItems: "center" }}>
+                <Typography>{user.displayName}</Typography>
+                {
+                    user.verified && <Verified sx={{ ml: 1, color: "rgba(0, 0, 0, 0.54)" }} fontSize="12px" />
+                }
+            </Box>
+        </Fragment>}
+            secondary={user.email} />
         <ListItemSecondaryAction>
             <IconButton onClick={onEditClick}>
                 <Edit />
@@ -45,7 +54,8 @@ const AdminUserList = () => {
     const [currentUser, setCurrentUser] = useState({});
     const [searchString, setSearchString] = useState("");
     const [open, setOpen] = useState(false);
-    const [filter, setFilter] = useState({ showVerifiedUsers: true, showNotVerifiedUsers: true })
+    const [showVerifiedUsers, setShowVerifiedUsers] = useState(true)
+    const [showNotVerifiedUsers, setShowNotVerifiedUsers] = useState(true)
     const client = useClient();
     const dispatch = useDispatch();
     const navigate = useNavigate();
@@ -91,11 +101,11 @@ const AdminUserList = () => {
     }
 
     const onUserEditFinished = async (result) => {
-
-        await client.from("user").update({ displayName: result.displayName, role: result.role }).eq("userId", result.userId);
+        console.log(result)
+        await client.from("user").update({ displayName: result.displayName, role: result.role, verified: result.verified }).eq("userId", result.userId);
         await client.auth.admin.updateUserById(
             result.userId,
-            { user_metadata: { displayName: result.displayName, role: result.role } }
+            { user_metadata: { displayName: result.displayName, role: result.role, verified: result.verified } }
         );
 
         setEditUserOpen(false);
@@ -134,11 +144,15 @@ const AdminUserList = () => {
         {loading && <LinearProgress style={{ position: "fixed", left: 0, right: 0, top: 56 }} />}
 
         <Box sx={{ mt: 2, ml: 0.5, mr: 0.5, maxWidth: "100%", overflowX: "auto", display: "flex", flexDirection: "row" }}>
-            <Chip sx={{ ml: 0.5, mr: 0.5 }} icon={<Verified />} label="Is verified" onClick={() => setOpen(true)} variant="outlined" />
+            <Chip sx={{ ml: 0.5, mr: 0.5 }} icon={<Verified />} label="Is verified" onClick={() => setShowVerifiedUsers(!showVerifiedUsers)} variant={showVerifiedUsers ? "filled" : "outlined"} />
+            <Chip sx={{ ml: 0.5, mr: 0.5 }} icon={<PersonOff />} label="Not verified" onClick={() => setShowNotVerifiedUsers(!showNotVerifiedUsers)} variant={showNotVerifiedUsers ? "filled" : "outlined"} />
         </Box>
         <List sx={{ width: "100%" }}>
             {
-                users && users.filter(x => searchString === "" || x.displayName.toLowerCase().includes(searchString.toLowerCase())).map((user, index) => <AdminUserItem key={"user" + index} user={user} onEditClick={() => editUser(user)} />)
+                users && users
+                    .filter(x => searchString === "" || x.displayName.toLowerCase().includes(searchString.toLowerCase()))
+                    .filter(x => (showVerifiedUsers && x.verified) || (showNotVerifiedUsers && !x.verified))
+                    .map((user, index) => <AdminUserItem key={"user" + index} user={user} onEditClick={() => editUser(user)} />)
             }
         </List>
         <EditUserDialog
@@ -185,24 +199,7 @@ const AdminUserList = () => {
                 <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>test</Typography>
             </Toolbar>
             <List>
-                <ListItem>
-                    <ListItemAvatar>
-                        <Verified />
-                    </ListItemAvatar>
-                    <ListItemText>Verifizierte Nutzer</ListItemText>
-                    <ListItemSecondaryAction>
-                        <Checkbox value={filter.showVerifiedUsers} onChange={(e) => setFilter({ ...filter, showVerifiedUsers: e.target.checked })} />
-                    </ListItemSecondaryAction>
-                </ListItem>
-                <ListItem>
-                    <ListItemAvatar>
-                        <Verified />
-                    </ListItemAvatar>
-                    <ListItemText>Nicht verifizierte Nutzer</ListItemText>
-                    <ListItemSecondaryAction>
-                        <Checkbox value={filter.showNotVerifiedUsers} onChange={(e) => setFilter({ ...filter, showNotVerifiedUsers: e.target.checked })} />
-                    </ListItemSecondaryAction>
-                </ListItem>
+
             </List>
         </Dialog>
 

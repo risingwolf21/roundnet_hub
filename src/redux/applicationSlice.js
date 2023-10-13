@@ -5,9 +5,13 @@ export const applicationReducer = createSlice({
     initialState: {
         user: {},
         mode: "drinks",
-        appUpdateAvailable: false
+        appUpdateAvailable: false,
+        appVersion: ""
     },
     reducers: {
+        onAppVersionChange: (state, action) => {
+            state.appVersion = action.payload;
+        },
         onModeChange: (state, action) => {
             state.mode = action.payload
         },
@@ -20,6 +24,6 @@ export const applicationReducer = createSlice({
     }
 });
 
-export const { onUserChange, onModeChange, onAppUpdateAvailableChange } = applicationReducer.actions;
+export const { onUserChange, onModeChange, onAppUpdateAvailableChange, onAppVersionChange } = applicationReducer.actions;
 
 export default applicationReducer.reducer
