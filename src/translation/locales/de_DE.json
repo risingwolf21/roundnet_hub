@@ -6,6 +6,7 @@
         "training": "Training",
         "managePayments": "Zahlungen verwalten",
         "manageDrinks": "Getränke verwalten",
+        "manageDrinkStocks": "Getränkevorrat verwalten",
         "manageUsers": "Benutzer verwalten",
         "completeHistory": "Gesamtverlauf",
         "manageGroups": "Gruppen verwalten"
