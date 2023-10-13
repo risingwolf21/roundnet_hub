@@ -2,6 +2,7 @@ import { compareById } from "../../utils"
 
 export const drinksReducer = {
     onDrinkUpdated: (state, action) => {
+        console.log(action)
         const index = state.drinks.findIndex((x) =>
             x.id === action.payload.new.id,
         )

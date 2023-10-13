@@ -1,6 +1,7 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { UNANSWERED } from '../constants';
 import moment from 'moment';
+import _ from "lodash";
 
 const compareEventsFn = (x, y) => {
   return x.id === y.id;
@@ -10,6 +11,7 @@ export const eventReducer = createSlice({
   name: 'events',
   initialState: {
     items: [],
+    userGroups: [],
     selectedEvent: null,
     eventToEdit: null,
     error: null,
@@ -100,6 +102,8 @@ export const eventReducer = createSlice({
         state.loading = false;
         state.error = '';
 
+        console.log(action.payload)
+
         if (action.payload.entries && action.payload.entries.length < 1) {
           state.endReached = true
         } else {
@@ -162,23 +166,31 @@ export const eventReducer = createSlice({
         state.loading = false;
         state.error = action.error.message;
       })
+
+      .addCase(fetchUserGroupsAsync.fulfilled, (state, action) => {
+        state.userGroups = action.payload;
+      })
   }
 });
 
-export const fetchEventsAsync = createAsyncThunk("events", async ({ client, user, page = 0, count = 20 }) => {
-  const attendanceFromUser = await client.from("event_attendance_user_mapping").select("user(userId), event (id), state").eq("user.userId", user.id);
+export const fetchUserGroupsAsync = createAsyncThunk("fetchUserGroupsAsync", async ({ client, user }) => {
+  const response = await client.from("group_user_mapping").select("user(userId), group(*)").eq("user.userId", user.id);
+  return response.data.map(x => x.group);
+});
 
-  const response = await client.from("events").select("*, attendance: event_attendance_user_mapping ( state , user(userId, displayName)  ), comments: event_comments ( comment, displayName, user ( displayName, userId))")
+export const fetchEventsAsync = createAsyncThunk("events", async ({ client, user, userGroups = [], page = 0, count = 20 }) => {
+  const response = await client.from("events").select("*, attendance: event_attendance_user_mapping ( state , user(userId, displayName)  ), comments: event_comments ( comment, displayName, user ( displayName, userId)), groups: event_group(*)")
     // get events that are on the same day or later
     .gt("startingDateTime", moment().format("yyyy-MM-DD HH:mm:ssZ"))
     .range(page * count, page * count + count - 1)
     .order("startingDateTime", { ascending: true });
   return {
-    entries: response.data.map(x => {
+    entries: response.data.filter(x => _.intersection(x.groups.map(y => y.id), userGroups.map(y => y.id)).length > 0).map(x => {
       return {
         ...x,
         place: JSON.parse(x.place),
-        userAttendance: attendanceFromUser.data?.find(y => y.event.id === x.id)?.state ?? UNANSWERED
+        groups: x.groups.map(x => x.group),
+        userAttendance: x.attendance.find(y => y.user.userId === user.id)?.state ?? UNANSWERED
       }
     }),
     more: page !== 0

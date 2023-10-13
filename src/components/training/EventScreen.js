@@ -59,7 +59,7 @@ const EventItem = ({ event, onClick, attendEvent, declineEvent, attendanceUpdati
 
 const EventScreen = () => {
 
-    const { items: events, loading, error, endReached } = useSelector((state) => state.events);
+    const { items: events, userGroups, loading, error, endReached } = useSelector((state) => state.events);
     const { user } = useSelector(state => state.application);
     const client = useClient();
     const dispatch = useDispatch();
@@ -68,8 +68,8 @@ const EventScreen = () => {
     const [eventsUpdatingAttendance, setEventsUpdatingAttendance] = useState({});
 
     useEffect(() => {
-        dispatch(fetchEventsAsync({ client, user }));
-    }, [dispatch, client, user]);
+        dispatch(fetchEventsAsync({ client, user, userGroups }));
+    }, [dispatch, client, user, userGroups]);
 
     if (error)
         return <Error message={error} />
@@ -95,7 +95,7 @@ const EventScreen = () => {
         {
             loading && <LinearProgress sx={{ position: "fixed", top: 56, left: 0, right: 0 }} />
         }
-        <InfiniteScrollList fetch={(page) => dispatch(fetchEventsAsync({ client, user, page }))} error={error} loading={loading} endReached={endReached}>
+        <InfiniteScrollList fetch={(page) => dispatch(fetchEventsAsync({ client, user, userGroups, page }))} error={error} loading={loading} endReached={endReached}>
             {
                 events && events.map((event, index) => <div key={"Drink" + index}>
                     <EventItem

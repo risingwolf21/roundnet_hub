@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
-import { AppBar, Avatar, Button, Collapse, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, List, ListItem, ListItemAvatar, ListItemButton, ListItemSecondaryAction, ListItemText, ListSubheader, Radio, Slide, TextField, Toolbar, Typography } from "@mui/material"
+import { AppBar, Avatar, Button, Checkbox, Collapse, Dialog, DialogActions, DialogContent, DialogTitle, Divider, IconButton, List, ListItem, ListItemAvatar, ListItemButton, ListItemSecondaryAction, ListItemText, ListSubheader, Radio, Slide, TextField, Toolbar, Typography } from "@mui/material"
 import { Box } from "@mui/system";
-import { AccountCircle, Close, Email, ExpandLess, ExpandMore, FiberManualRecord, ManageAccounts } from "@mui/icons-material";
+import { AccountCircle, Close, Email, ExpandLess, ExpandMore, FiberManualRecord, ManageAccounts, Verified } from "@mui/icons-material";
 import { OPEN } from "../../constants";
 import { useClient } from "react-supabase";
 
@@ -10,15 +10,18 @@ const Transition = React.forwardRef(function Transition(props, ref) {
 });
 
 const EditUserDialog = ({ user, open, handleClose, onUserEditFinished, deleteUser }) => {
-    
+
     const [userRoleCollapseOpen, setUserCollapseOpen] = useState(false);
     const [role, setRole] = useState(user.role);
+    const [verified, setVerified] = useState(user?.verified ?? false)
     const [deleteUserOpen, setDeleteUserOpen] = useState(false);
     const [userInfo, setUserInfo] = useState({ openAmount: 0 })
     const client = useClient();
 
     useEffect(() => {
+        console.log(user)
         setRole(user.role);
+        setVerified(user.verified);
         client.from("history").select("*, drink ( price, name ), payment(*)").eq("user ", user.userId).eq("payment.state", OPEN).then(result => {
             if (!result.data)
                 return;
@@ -31,13 +34,12 @@ const EditUserDialog = ({ user, open, handleClose, onUserEditFinished, deleteUse
         setUserCollapseOpen(false);
         const data = new FormData(event.currentTarget);
 
-        if (data.get("displayName") && role) {
-            onUserEditFinished({
-                ...user,
-                displayName: data.get("displayName"),
-                role
-            });
-        }
+        onUserEditFinished({
+            ...user,
+            displayName: data.get("displayName"),
+            role,
+            verified
+        });
     }
 
     return <Dialog
@@ -102,9 +104,21 @@ const EditUserDialog = ({ user, open, handleClose, onUserEditFinished, deleteUse
                             />
                         </ListItemText>
                     </ListItem>
+                    <ListItem key={"verified"}>
+                        <ListItemAvatar>
+                            <Avatar>
+                                <Verified />
+                            </Avatar>
+                        </ListItemAvatar>
+                        <ListItemText primary="Verified" />
+                        <ListItemSecondaryAction>
+                            <Checkbox checked={verified} onChange={(e) => setVerified(e.target.checked)} />
+                        </ListItemSecondaryAction>
+                    </ListItem>
+                    <Divider />
                     <List subheader={<ListSubheader>Gruppen</ListSubheader>}>
                         {
-                            user?.groups && user.groups.map(x => <ListItem>
+                            user?.groups && user.groups.map(x => <ListItem divider>
                                 <ListItemAvatar>
                                     <FiberManualRecord sx={{ color: x.group.color }} />
                                 </ListItemAvatar>
