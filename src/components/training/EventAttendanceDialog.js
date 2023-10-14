@@ -26,7 +26,7 @@ const EventAttendanceDialog = ({ open, index, handleClose, event }) => {
 
     const [value, setValue] = useState(index ?? 0);
     const theme = useTheme();
-
+    
     useEffect(() => {
         setValue(index);
     }, [index]);

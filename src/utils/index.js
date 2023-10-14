@@ -1,4 +1,5 @@
 import { Slide } from "@mui/material";
+import moment from "moment";
 import { forwardRef } from "react";
 
 export const totalAmountToPay = (drinks) => {
@@ -31,3 +32,7 @@ export const groupBy = (items, getter) => (items ?? []).reduce(
 export const SlideUpTransition = forwardRef(function Transition(props, ref) {
     return <Slide direction="up" ref={ref} {...props} />;
 });
+
+export const formatDateToDatabase = (date) => {
+    return moment(date).format("yyyy-MM-DD HH:mm:ssZ")
+}

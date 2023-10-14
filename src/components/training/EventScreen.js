@@ -4,7 +4,7 @@ import moment from "moment";
 import { Error } from "../Error";
 import { useNavigate } from 'react-router-dom';
 import React from "react";
-import { fetchEventsAsync } from "../../redux/eventReducer";
+import { fetchEventsAsync, onEventErrorRead, updateAttendanceAsync } from "../../redux/eventReducer";
 import AddIcon from '@mui/icons-material/Add';
 import { ThumbDownAlt, ThumbDownOffAlt, ThumbUpAlt, ThumbUpOffAlt } from "@mui/icons-material";
 import { ATTENDING, DECLINED } from "../../constants";
@@ -13,6 +13,7 @@ import { useState } from "react";
 import { useEffect } from "react";
 import { InfiniteScrollList } from "../InfiniteScrollList";
 import CustomAppBar from "../AppBar";
+import ReactPullToRefresh from "react-pull-to-refresh";
 
 const EventItem = ({ event, onClick, attendEvent, declineEvent, attendanceUpdating }) => {
 
@@ -64,24 +65,17 @@ const EventScreen = () => {
     const client = useClient();
     const dispatch = useDispatch();
     const navigate = useNavigate();
-    const [eventUpdateError, setUpdateEventError] = useState("");
     const [eventsUpdatingAttendance, setEventsUpdatingAttendance] = useState({});
 
     useEffect(() => {
         dispatch(fetchEventsAsync({ client, user, userGroups }));
     }, [dispatch, client, user, userGroups]);
 
-    if (error)
-        return <Error message={error} />
-
-    const updateAttendance = async (eventId, state) => {
+    const updateAttendance = async (eventId, state, oldState) => {
         setEventsUpdatingAttendance({ ...eventsUpdatingAttendance, eventId: true });
-        const { error } = await client.from("event_attendance_user_mapping").upsert({
-            user: user.id,
-            event: eventId,
-            state: state
-        });
-        setUpdateEventError(error?.message ?? "");
+
+        dispatch(updateAttendanceAsync({ client, user, eventId, state }));
+
         setEventsUpdatingAttendance({ ...eventsUpdatingAttendance, eventId: false });
     }
 
@@ -91,7 +85,7 @@ const EventScreen = () => {
         direction="column"
         alignItems="center"
         justifyContent="center">
-        <CustomAppBar />
+        <CustomAppBar onRefresh={() => dispatch(fetchEventsAsync({ client, user, userGroups }))} />
         {
             loading && <LinearProgress sx={{ position: "fixed", top: 56, left: 0, right: 0 }} />
         }
@@ -101,8 +95,8 @@ const EventScreen = () => {
                     <EventItem
                         event={event}
                         attendanceUpdating={eventsUpdatingAttendance[event.id]}
-                        attendEvent={() => updateAttendance(event.id, ATTENDING)}
-                        declineEvent={() => updateAttendance(event.id, DECLINED)}
+                        attendEvent={() => updateAttendance(event.id, ATTENDING, event.userAttendance)}
+                        declineEvent={() => updateAttendance(event.id, DECLINED, event.userAttendance)}
                         onClick={() => {
                             navigate("/training/event/" + event.id);
                         }} />
@@ -119,9 +113,9 @@ const EventScreen = () => {
             </Fab>
         }
 
-        <Snackbar sx={{ position: "fixed", right: "16px", }} open={eventUpdateError !== ""} autoHideDuration={2500}>
-            <Alert severity={"error"} sx={{ width: '100%' }}>
-                {eventUpdateError}
+        <Snackbar sx={{ position: "fixed", right: "16px", }} open={error !== null} >
+            <Alert severity={"error"} sx={{ width: '100%' }} onClose={() => dispatch(onEventErrorRead())}>
+                {error?.message}
             </Alert>
         </Snackbar>
     </Grid >);

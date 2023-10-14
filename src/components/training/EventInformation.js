@@ -1,19 +1,20 @@
-import { AppBar, Box, Button, CircularProgress, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Divider, IconButton, InputAdornment, List, ListItem, ListItemAvatar, ListItemIcon, ListItemSecondaryAction, ListItemText, Menu, MenuItem, TextField, Toolbar, Typography } from "@mui/material"
-import { AccountCircle, ArrowBack, CalendarMonth, CheckCircleOutline, Delete, DoNotDisturb, DoNotDisturbOff, Edit, Info, Map, MoreVert, RemoveCircleOutline, Send, ThumbDownAlt, ThumbDownOffAlt, ThumbUpAlt, ThumbUpOffAlt } from "@mui/icons-material";
+import { Alert, AppBar, Avatar, Box, Button, CircularProgress, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Divider, IconButton, InputAdornment, List, ListItem, ListItemAvatar, ListItemIcon, ListItemSecondaryAction, ListItemText, Menu, MenuItem, Snackbar, TextField, Toolbar, Typography } from "@mui/material"
+import { AccountCircle, ArrowBack, CalendarMonth, CheckCircleOutline, Delete, DoNotDisturb, DoNotDisturbOff, Edit, Info, Map, MoreVert, Refresh, RemoveCircleOutline, Send, ThumbDownAlt, ThumbDownOffAlt, ThumbUpAlt, ThumbUpOffAlt } from "@mui/icons-material";
 import { connect, useSelector } from "react-redux";
 import moment from "moment";
 import { useState } from "react";
 import { ATTENDING, DECLINED } from "../../constants";
 import EventAttendanceDialog from "./EventAttendanceDialog";
 import { useEffect } from "react";
-import { editEvent, fetchEventAttendanceAsync, fetchSingleEventAsync } from "../../redux/eventReducer";
+import { editEvent, fetchEventAttendanceAsync, fetchSingleEventAsync, onEventErrorRead, updateAttendanceAsync, upsertCommentToEventAsync } from "../../redux/eventReducer";
 import { useClient } from "react-supabase";
 import { useNavigate, useParams } from "react-router-dom";
 import { toInteger } from "lodash";
 import { MapContainer, TileLayer, Marker } from "react-leaflet";
 import { DeleteEventDialog, THIS_AND_FOLLOWING_EVENT, THIS_EVENT } from "../DeleteEventDialog";
+import { Fragment } from "react";
 
-const EventInformation = ({ dispatch, events, attendanceLoading, attendEvent, declineEvent }) => {
+const EventInformation = ({ dispatch, events, attendanceLoading, error }) => {
 
     const { selectedEventId } = useParams();
 
@@ -60,14 +61,8 @@ const EventInformation = ({ dispatch, events, attendanceLoading, attendEvent, de
     const uploadComment = async () => {
         if (!comment)
             return;
-        await client.from("event_comments").insert({
-            user: user.id,
-            event: selectedEventId,
-            comment: comment,
-            displayName: user?.user_metadata?.displayName ?? "Anon"
-        }).then(res => {
-            setComment("");
-        })
+        dispatch(upsertCommentToEventAsync({ client, user, eventId: selectedEventId, comment }));
+        setComment("");
     }
 
     const deleteEvent = async (value) => {
@@ -85,12 +80,8 @@ const EventInformation = ({ dispatch, events, attendanceLoading, attendEvent, de
         }
     }
 
-    const updateAttendance = async (state) => {
-        const { error } = await client.from("event_attendance_user_mapping").upsert({
-            user: user.id,
-            event: selectedEvent.id,
-            state: state
-        });
+    const updateAttendance = async (state, oldState) => {
+        dispatch(updateAttendanceAsync({ client, user, eventId: selectedEventId, state, oldState }));
     }
 
     const handleCommentChange = (event) => {
@@ -125,6 +116,9 @@ const EventInformation = ({ dispatch, events, attendanceLoading, attendEvent, de
                 </Typography>
                 <IconButton color="inherit" onClick={() => navigate("/user")}>
                     <AccountCircle />
+                </IconButton>
+                <IconButton color="inherit" onClick={() => dispatch(fetchSingleEventAsync({ client, eventId: selectedEventId }))}>
+                    <Refresh />
                 </IconButton>
                 {(user?.role === "admin" || user?.role === "trainer") && <>
                     <IconButton aria-controls="simple-menu" aria-haspopup="true" color="inherit" onClick={handleClick}>
@@ -240,7 +234,7 @@ const EventInformation = ({ dispatch, events, attendanceLoading, attendEvent, de
                             </ListItemAvatar>
                             <ListItemText primary={(selectedEvent?.attendance?.filter(x => x.state === ATTENDING).length ?? 0) + " zusagen"} />
                             <ListItemSecondaryAction>
-                                <IconButton onClick={() => updateAttendance(ATTENDING)} disabled={selectedEvent.isCancelled}>
+                                <IconButton onClick={() => updateAttendance(ATTENDING, selectedEvent.userAttendance)} disabled={selectedEvent.isCancelled}>
                                     {
                                         selectedEvent.userAttendance === ATTENDING
                                             ? <ThumbUpAlt fontSize="inherit" sx={{ fontSize: "28px", color: "green" }} />
@@ -257,7 +251,7 @@ const EventInformation = ({ dispatch, events, attendanceLoading, attendEvent, de
                             </ListItemAvatar>
                             <ListItemText primary={(selectedEvent?.attendance?.filter(x => x.state === DECLINED).length ?? 0) + " absagen"} />
                             <ListItemSecondaryAction>
-                                <IconButton onClick={() => updateAttendance(DECLINED)} disabled={selectedEvent.isCancelled}>
+                                <IconButton onClick={() => updateAttendance(DECLINED, selectedEvent.userAttendance)} disabled={selectedEvent.isCancelled}>
                                     {
                                         selectedEvent.userAttendance === DECLINED
                                             ? <ThumbDownAlt fontSize="inherit" sx={{ fontSize: "28px", color: "red" }} />
@@ -270,8 +264,28 @@ const EventInformation = ({ dispatch, events, attendanceLoading, attendEvent, de
                     <Divider />
                     <List sx={{ marginBottom: 15 }} subheader={<Typography pt={2} variant="h6" fontWeight="bold">Kommentare</Typography>}>
                         {
-                            selectedEvent.comments && selectedEvent.comments.map((x, index) => <ListItem dense key={index} sx={{ '&.MuiListItem-root': { paddingLeft: 0 } }}>
-                                <ListItemText primary={x.comment} secondary={x.displayName} />
+                            selectedEvent.comments && selectedEvent.comments.map((x, index) => <ListItem divider dense key={index} sx={{ '&.MuiListItem-root': { paddingLeft: 0 } }}>
+                                <ListItemAvatar>
+                                    <Avatar>
+                                        {
+                                            x.pending
+                                                ? <CircularProgress size={"20px"} />
+                                                : <Typography style={{ fontWeight: "bold" }}>{x.displayName.charAt(0)}</Typography>
+                                        }
+                                    </Avatar>
+                                </ListItemAvatar>
+                                <ListItemText primary={<Fragment>
+                                    <Box sx={{ display: "flex", flexDirection: "row", alignItems: "center" }}>
+                                        <Typography style={{ fontWeight: "bold", fontSize: "11pt" }}>{x.displayName}</Typography>
+                                    </Box>
+                                </Fragment>} secondary={<Fragment>
+                                    <Box sx={{ display: "flex", flexDirection: "row", alignItems: "center" }}>
+                                        <Typography style={{ color: "#000" }}>{x.comment}</Typography>
+                                    </Box>
+                                </Fragment>} />
+                                <ListItemSecondaryAction sx={{ height: "100%" }}>
+                                    <Typography style={{ fontSize: "10pt", color: "rgba(0,0,0,0.6)", marginTop: "8px", alignContent: "baseline" }}>{moment(x.created_at).format("HH:mm")}</Typography>
+                                </ListItemSecondaryAction>
                             </ListItem>)
                         }
                     </List>
@@ -322,12 +336,18 @@ const EventInformation = ({ dispatch, events, attendanceLoading, attendEvent, de
                 setDeleteTrainingOpen(false);
             }} />
         </Box>
+        <Snackbar sx={{ position: "fixed", right: "16px", }} open={error !== null} >
+            <Alert severity={"error"} sx={{ width: '100%' }} onClose={() => dispatch(onEventErrorRead())}>
+                {error?.message}
+            </Alert>
+        </Snackbar>
     </Box >
 }
 
 const mapStateToProps = (state) => {
     return {
         events: state.events.items,
+        error: state.events.error,
         attendanceLoading: state.events.attendanceLoading
     }
 };
