@@ -1,5 +1,5 @@
-import { AppBar, Box, Checkbox, Chip, Dialog, Grid, IconButton, LinearProgress, List, ListItem, ListItemAvatar, ListItemSecondaryAction, ListItemText, Toolbar, Typography } from "@mui/material";
-import { AccountCircle, AdminPanelSettings, ArrowBack, Close, Edit, EuroRounded, Liquor, PersonOff, Verified } from "@mui/icons-material";
+import { AppBar, Badge, Box, Checkbox, Chip, Dialog, Grid, IconButton, LinearProgress, List, ListItem, ListItemAvatar, ListItemSecondaryAction, ListItemText, Toolbar, Typography } from "@mui/material";
+import { AccountCircle, AdminPanelSettings, ArrowBack, Close, Edit, EuroRounded, Liquor, PersonOff, Refresh, Verified } from "@mui/icons-material";
 import SearchIcon from "@mui/icons-material/Search";
 import EditUserDialog from "./EditUserDialog";
 import { Fragment, useState } from "react";
@@ -139,19 +139,23 @@ const AdminUserList = () => {
                         inputProps={{ 'aria-label': 'search' }}
                     />
                 </Search>
+
+                <IconButton color="inherit" onClick={() => dispatch(fetchAdminUsersAsync({ client }))}>
+                    <Refresh />
+                </IconButton>
             </Toolbar>
         </AppBar>
         {loading && <LinearProgress style={{ position: "fixed", left: 0, right: 0, top: 56 }} />}
 
-        <Box sx={{ mt: 2, ml: 0.5, mr: 0.5, maxWidth: "100%", overflowX: "auto", display: "flex", flexDirection: "row" }}>
-            <Chip sx={{ ml: 0.5, mr: 0.5 }} icon={<Verified />} label="Is verified" onClick={() => setShowVerifiedUsers(!showVerifiedUsers)} variant={showVerifiedUsers ? "filled" : "outlined"} />
-            <Chip sx={{ ml: 0.5, mr: 0.5 }} icon={<PersonOff />} label="Not verified" onClick={() => setShowNotVerifiedUsers(!showNotVerifiedUsers)} variant={showNotVerifiedUsers ? "filled" : "outlined"} />
-        </Box>
+        <Badge sx={{ mt: 2 }} color="info" badgeContent={users.filter(x => searchString === "" || x.displayName.toLowerCase().includes(searchString.toLowerCase())).filter(x => !x.verified).length}>
+            <Chip icon={<PersonOff />} label="Not verified" onClick={() => setShowNotVerifiedUsers(!showNotVerifiedUsers)} variant={showNotVerifiedUsers ? "filled" : "outlined"} />
+        </Badge>
+
         <List sx={{ width: "100%" }}>
             {
                 users && users
                     .filter(x => searchString === "" || x.displayName.toLowerCase().includes(searchString.toLowerCase()))
-                    .filter(x => (showVerifiedUsers && x.verified) || (showNotVerifiedUsers && !x.verified))
+                    .filter(x => (showNotVerifiedUsers && !x.verified) || (!showNotVerifiedUsers && x.verified))
                     .map((user, index) => <AdminUserItem key={"user" + index} user={user} onEditClick={() => editUser(user)} />)
             }
         </List>

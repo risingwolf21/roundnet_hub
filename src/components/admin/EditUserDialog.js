@@ -13,7 +13,7 @@ const EditUserDialog = ({ user, open, handleClose, onUserEditFinished, deleteUse
 
     const [userRoleCollapseOpen, setUserCollapseOpen] = useState(false);
     const [role, setRole] = useState(user.role);
-    const [verified, setVerified] = useState(user?.verified ?? false)
+    const [verified, setVerified] = useState(user.verified)
     const [deleteUserOpen, setDeleteUserOpen] = useState(false);
     const [userInfo, setUserInfo] = useState({ openAmount: 0 })
     const client = useClient();

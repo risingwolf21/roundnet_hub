@@ -13,7 +13,6 @@ import { useState } from "react";
 import { useEffect } from "react";
 import { InfiniteScrollList } from "../InfiniteScrollList";
 import CustomAppBar from "../AppBar";
-import ReactPullToRefresh from "react-pull-to-refresh";
 
 const EventItem = ({ event, onClick, attendEvent, declineEvent, attendanceUpdating }) => {
 
