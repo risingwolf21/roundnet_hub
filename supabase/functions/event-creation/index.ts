@@ -24,7 +24,7 @@ serve(async (req: Request) => {
 			},
 		);
 
-		const { data, error } = await supabaseClient.from('distinct_event')
+		const { data, error } = await supabaseClient.from('distinct_event').select("*, groups: event_group (*)")
 			.select();
 
 		if (error) throw error;
@@ -68,15 +68,25 @@ serve(async (req: Request) => {
 			let maximumStartTime = new Date(event.startingDateTime);
 			maximumStartTime.setMonth(newStartingDateTime.getMonth() + 1);
 
+			if (!event.groups || event.groups.length < 1) {
+				console.log("There were no groups found for this event. Can not add new event to database.");
+				return;
+			}
+
 			if ((!event["end_at"] || newStartingDateTime < new Date(event["end_at"])) && newStartingDateTime <= maximumStartTime) {
-				console.log("Inserting new Event", event);
-				await supabaseClient.from("events").insert(newEvent);
+				const { data } = await supabaseClient.from("events").insert(newEvent).select("*");
+				console.log("Inserted event: ", data);
+				event.groups.forEach(async (each) => {
+					console.log("Added new group_event_mapping", { event: data.id, group: each.group });
+					await supabaseClient.from("group_event_mapping").insert({ event: data.id, group: each.group });
+				});
 			} else {
 				console.log(`New event was not added to database. Either newStartingDateTime(${newStartingDateTime}) exeeded end_at (${event["end_at"]}) or maximumStartTime (${maximumStartTime})`)
 			}
 		}
 
 		data.forEach(async (event) => {
+			console.log("Found groups for event: ", event.id, event.groups);
 			switch (event.recurring) {
 				case "FORTNIGHTLY":
 				case "WEEKLY":

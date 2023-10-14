@@ -2,22 +2,13 @@ import { AccountCircle, Euro, History, Info, SportsHandball } from "@mui/icons-m
 import { Avatar, List, ListItem, ListItemAvatar, ListItemText, Box } from "@mui/material";
 import { useNavigate } from "react-router";
 import { withTranslation } from 'react-i18next';
-import { useState, useEffect } from "react";
-import raw from "../git_commit.txt";
 import CustomAppBar from "./AppBar";
+import { useSelector } from "react-redux";
 
 const Browse = ({ t }) => {
 
     const navigate = useNavigate();
-    const [version, setVersion] = useState();
-
-    useEffect(() => {
-        fetch(raw)
-            .then(r => r.text())
-            .then(text => {
-                setVersion(text);
-            });
-    })
+    const appVersion = useSelector(state => state.application.appVersion)
 
     return <Box>
         <CustomAppBar />
@@ -65,7 +56,7 @@ const Browse = ({ t }) => {
                         <Info />
                     </Avatar>
                 </ListItemAvatar>
-                <ListItemText sx={{ overflow: "clip" }} primary={version} secondary={"Version"} />
+                <ListItemText sx={{ overflow: "clip" }} primary={appVersion} secondary={"Version"} />
             </ListItem>
         </List>
     </Box>

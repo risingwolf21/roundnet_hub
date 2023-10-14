@@ -1,4 +1,4 @@
-import { AdminPanelSettings, Euro, Group, History, Liquor, GroupOutlined } from "@mui/icons-material";
+import { AdminPanelSettings, Euro, Group, History, Liquor, GroupOutlined, ShowChart } from "@mui/icons-material";
 import { Avatar, List, ListItem, ListItemAvatar, ListItemText, Box } from "@mui/material";
 import { useNavigate } from "react-router";
 import { withTranslation } from 'react-i18next';
@@ -18,6 +18,22 @@ const entries = [
         translationKey: "manageDrinks",
         navigateTo: "/admin/drinks",
         icon: <Liquor />,
+        secondaryIcon: <AdminPanelSettings sx={{ color: "rgba(0,0,0,0.54)" }} />,
+        role: "procure",
+        avatarColor: "#88AEBF"
+    },
+    {
+        translationKey: "manageDrinkStocks",
+        navigateTo: "/admin/drinks/stocks",
+        icon: <Liquor />,
+        secondaryIcon: <AdminPanelSettings sx={{ color: "rgba(0,0,0,0.54)" }} />,
+        role: "procure",
+        avatarColor: "#88AEBF"
+    },
+    {
+        translationKey: "analyzeDrinkStocks",
+        navigateTo: "/admin/drinks/analyze",
+        icon: <ShowChart />,
         secondaryIcon: <AdminPanelSettings sx={{ color: "rgba(0,0,0,0.54)" }} />,
         role: "procure",
         avatarColor: "#88AEBF"

@@ -6,6 +6,7 @@
         "training": "Training",
         "managePayments": "Manage payments",
         "manageDrinks": "Manage drinks",
+        "manageDrinkStocks": "Manage drinks stock",
         "manageUsers": "Manage users",
         "completeHistory": "Complete history",
         "manageGroups": "Manage groups"

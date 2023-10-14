@@ -11,5 +11,6 @@
         "*.jsx": "javascriptreact",
         "*.js": "javascriptreact",
         ".stylelintrc": "jsonc"
-    }
+    },
+    "emmet.showExpandedAbbreviation": "never"
 }

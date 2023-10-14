@@ -40,7 +40,7 @@ const EventInformation = ({ dispatch, events, attendanceLoading, attendEvent, de
         } else {
             setSelectedEvent(found);
         }
-    }, [events, selectedEventId]);
+    }, [events, selectedEventId, dispatch, client]);
 
     if (!selectedEvent)
         return <Box
@@ -83,6 +83,14 @@ const EventInformation = ({ dispatch, events, attendanceLoading, attendEvent, de
             }).eq("key", selectedEvent.key);
             navigate("/training", { replace: true });
         }
+    }
+
+    const updateAttendance = async (state) => {
+        const { error } = await client.from("event_attendance_user_mapping").upsert({
+            user: user.id,
+            event: selectedEvent.id,
+            state: state
+        });
     }
 
     const handleCommentChange = (event) => {
@@ -232,7 +240,7 @@ const EventInformation = ({ dispatch, events, attendanceLoading, attendEvent, de
                             </ListItemAvatar>
                             <ListItemText primary={(selectedEvent?.attendance?.filter(x => x.state === ATTENDING).length ?? 0) + " zusagen"} />
                             <ListItemSecondaryAction>
-                                <IconButton onClick={() => attendEvent(selectedEventId)} disabled={selectedEvent.isCancelled}>
+                                <IconButton onClick={() => updateAttendance(ATTENDING)} disabled={selectedEvent.isCancelled}>
                                     {
                                         selectedEvent.userAttendance === ATTENDING
                                             ? <ThumbUpAlt fontSize="inherit" sx={{ fontSize: "28px", color: "green" }} />
@@ -249,7 +257,7 @@ const EventInformation = ({ dispatch, events, attendanceLoading, attendEvent, de
                             </ListItemAvatar>
                             <ListItemText primary={(selectedEvent?.attendance?.filter(x => x.state === DECLINED).length ?? 0) + " absagen"} />
                             <ListItemSecondaryAction>
-                                <IconButton onClick={() => declineEvent(selectedEventId)} disabled={selectedEvent.isCancelled}>
+                                <IconButton onClick={() => updateAttendance(DECLINED)} disabled={selectedEvent.isCancelled}>
                                     {
                                         selectedEvent.userAttendance === DECLINED
                                             ? <ThumbDownAlt fontSize="inherit" sx={{ fontSize: "28px", color: "red" }} />

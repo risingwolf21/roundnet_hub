@@ -42,11 +42,17 @@ const AuthGate = ({ children }) => {
         }
     });
 
+    const authenticationRoutes = [
+        <Route path='/login' element={<LoginScreen />} />,
+        <Route path='/register' element={<RegisterScreen />} />,
+        <Route path='/forgot-password' element={<ForgotPasswordScreen />} />
+    ];
+
     if (!user) {
         return <Routes>
-            <Route path='/login' element={<LoginScreen />} />
-            <Route path='/register' element={<RegisterScreen />} />
-            <Route path='/forgot-password' element={<ForgotPasswordScreen />} />
+            {
+                authenticationRoutes
+            }
         </Routes>
     }
 
@@ -55,10 +61,9 @@ const AuthGate = ({ children }) => {
             <Route path='/' element={<Navigate replace to={"/not-verified"} />} />
             <Route path="*" element={<Navigate replace to={"/not-verified"} />} />
             <Route path='/not-verified' element={<NotVerifiedScreen />} />
-
-            <Route path='/login' element={<LoginScreen />} />
-            <Route path='/register' element={<RegisterScreen />} />
-            <Route path='/forgot-password' element={<ForgotPasswordScreen />} />
+            {
+                authenticationRoutes
+            }
         </Routes>
     }
 
