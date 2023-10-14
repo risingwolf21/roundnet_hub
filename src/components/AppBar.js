@@ -3,10 +3,10 @@ import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
 import { IconButton } from "@mui/material";
 import { useNavigate } from 'react-router-dom';
-import { AccountCircle, ArrowBack } from '@mui/icons-material';
+import { AccountCircle, ArrowBack, Refresh } from '@mui/icons-material';
 import { useSelector } from 'react-redux';
 
-const CustomAppBar = ({ navigateBack = false, title = "Roundnet Karlsruhe" }) => {
+const CustomAppBar = ({ navigateBack = false, title = "Roundnet Karlsruhe", onRefresh }) => {
     const navigate = useNavigate();
     const { user } = useSelector(state => state.application);
 
@@ -28,6 +28,11 @@ const CustomAppBar = ({ navigateBack = false, title = "Roundnet Karlsruhe" }) =>
             {
                 user?.id && <IconButton color="inherit" onClick={() => navigate("/user")}>
                     <AccountCircle />
+                </IconButton>
+            }
+            {
+                onRefresh && <IconButton color="inherit" onClick={onRefresh}>
+                    <Refresh />
                 </IconButton>
             }
         </Toolbar>
