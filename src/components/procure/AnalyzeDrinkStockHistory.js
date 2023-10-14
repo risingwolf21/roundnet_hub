@@ -2,11 +2,27 @@ import { Avatar, Grid, LinearProgress, List, ListItem, ListItemAvatar, ListItemT
 import { useSelector } from "react-redux";
 import CustomAppBar from "../AppBar";
 import { LocalDrink } from "@mui/icons-material";
-import { LineChart } from "@mui/x-charts";
+import { LineChart, PieChart } from "@mui/x-charts";
+import { useEffect, useState } from "react";
+import { useClient } from "react-supabase";
+import { groupBy } from "../../utils";
 
 const AnalyzeDrinkStockHistory = () => {
 
-    const { drinks, loading } = useSelector(state => state.adminDrinks);
+    const { drinks, history, loading } = useSelector(state => state.adminDrinks);
+    const [mappedHistory, setMappedHistory] = useState();
+    const client = useClient();
+
+    useEffect(() => {
+        client
+            .from("history")
+            .select("count, amount, created_at, drink (id, name, price, stock), user(displayName)")
+            .order('id', { ascending: false })
+            .then(result => {
+                setMappedHistory(groupBy(result.data, x => x.drink.id))
+                console.log(Object.values(mappedHistory))
+            })
+    }, []);
 
     return <Grid
         container
@@ -16,12 +32,12 @@ const AnalyzeDrinkStockHistory = () => {
         justifyContent="center">
         <CustomAppBar navigateBack />
         {loading && <LinearProgress style={{ position: "fixed", left: 0, right: 0, top: 56 }} />}
-        <List sx={{ width: "100%" }}>
+        {/* <List sx={{ width: "100%" }}>
             {
                 drinks && drinks.filter(x => x.active).map((drink, index) => <>
                     <ListItem key={index}>
                         <ListItemAvatar>
-                            <Avatar>    
+                            <Avatar>
                                 {
                                     drink.imageUrl
                                         ? <img src={drink.imageUrl} alt="logo" width={40} height={40} />
@@ -31,17 +47,28 @@ const AnalyzeDrinkStockHistory = () => {
                         </ListItemAvatar>
                         <ListItemText primary={drink.name} />
                     </ListItem>
-                    <LineChart
-                        height={300}
-                        xAxis={[{ data: [1, 2, 3, 5, 8, 10] }]}
-                        series={[
-                            {
-                                data: [2, 5.5, 2, 8.5, 1.5, 5],
-                            },
-                        ]} />
+                    {
+                        mappedHistory && mappedHistory[drink.id] && <LineChart
+                            height={300}
+                            xAxis={[{ data: mappedHistory[drink.id].map(x => x.stock) }]}
+                            series={[
+                                {
+                                    data: mappedHistory[drink.id].map(x => x.stock),
+                                },
+                            ]} />
+                    }
                 </>)
             }
-        </List>
+        </List> */}
+
+        <PieChart
+            series={[
+                {
+                    data: Object.values(mappedHistory).map((x, index) => { return { id: index, value: x.length, label: x[0].drink.name} })
+                },
+            ]}
+            width={400}
+            height={200} />
 
     </Grid>
 
