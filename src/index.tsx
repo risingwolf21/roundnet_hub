@@ -1,18 +1,40 @@
-import React from 'react';
+import React, { ReactNode, createContext } from 'react';
+import "reflect-metadata";
 import ReactDOM from 'react-dom/client';
+//@ts-ignore
 import * as serviceWorkerRegistration from './serviceWorkerRegistration';
 import "./global.css";
+//@ts-ignore
 import App from './App';
 import { ThemeProvider } from '@mui/material';
+//@ts-ignore
 import { mainTheme } from './themes';
 import * as Sentry from "@sentry/react";
+//@ts-ignore
 import { supabase } from './supabaseClient';
 import { Provider as SupabaseProvider } from "react-supabase"
 import { AdapterMoment } from '@mui/x-date-pickers/AdapterMoment';
 import { Provider } from 'react-redux';
+//@ts-ignore
 import store from './redux/store';
 import "./translation/i18n";
 import { LocalizationProvider } from '@mui/x-date-pickers';
+import { Container } from 'inversify';
+import { EmptyRepository, IEventRepository, SupabaseRepository } from './repository/IEventRepository';
+
+
+type Props = {
+  children: ReactNode,
+  container: Container
+}
+
+export const DependencyContext = createContext<{ container: Container | null }>({ container: null });
+
+const DependencyProvider = ({ container, children }: Props) => {
+  return <DependencyContext.Provider value={{ container: container }}>
+    {children}
+  </DependencyContext.Provider>
+}
 
 if (process.env.NODE_ENV === "production") {
   Sentry.init({
@@ -27,17 +49,23 @@ if (process.env.NODE_ENV === "production") {
   });
 }
 
+// TODO: use Builder Pattern here https://refactoring.guru/design-patterns/builder/typescript/example#lang-features
+const container = new Container();
+container.bind<IEventRepository>("IEventRepository").to(EmptyRepository);
+container.unbind("IEventRepository");
+container.bind<IEventRepository>("IEventRepository").to(SupabaseRepository);
 
-
-const root = ReactDOM.createRoot(document.getElementById('root'));
+const root = ReactDOM.createRoot(document.getElementById('root') as HTMLElement);
 root.render(
   <React.StrictMode>
     <ThemeProvider theme={mainTheme}>
       <Provider store={store}>
         <SupabaseProvider value={supabase}>
-          <LocalizationProvider dateAdapter={AdapterMoment}>
-            <App />
-          </LocalizationProvider>
+          <DependencyProvider container={container}>
+            <LocalizationProvider dateAdapter={AdapterMoment}>
+              <App />
+            </LocalizationProvider>
+          </DependencyProvider>
         </SupabaseProvider>
       </Provider>
     </ThemeProvider>
@@ -48,3 +76,4 @@ root.render(
 // unregister() to register() below. Note this comes with some pitfalls.
 // Learn more about service workers: https://cra.link/PWA
 serviceWorkerRegistration.register();
+

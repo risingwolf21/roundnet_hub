@@ -24,6 +24,7 @@ const AuthGate = ({ children }) => {
     const navigate = useNavigate();
 
     useAuthStateChange((event, session) => {
+        console.log("auth state changed")
         setUser({ email: session?.user?.email ?? null, id: session?.user?.id ?? null });
         if (session?.user) {
             client.from("user").select().single().eq("userId", session.user.id).then(res => {
