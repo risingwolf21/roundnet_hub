@@ -1,13 +1,22 @@
 import { Liquor, List, SportsHandball, AdminPanelSettings } from "@mui/icons-material"
 import { BottomNavigation, BottomNavigationAction, Paper } from "@mui/material"
-import { useState } from "react";
+import { SyntheticEvent, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
+//@ts-ignore
 import { onModeChange } from "../redux/applicationSlice";
 import { withTranslation } from 'react-i18next';
-import { useEffect } from "react";
+import React, { useEffect } from "react";
+import { TFunction } from "i18next";
 
-const defaultTabs = [
+export type Tab = {
+    translationKey: string,
+    path: string,
+    index: number,
+    icon: JSX.Element
+}
+
+const defaultTabs: Tab[] = [
     {
         translationKey: "drinks",
         path: "drinks",
@@ -28,12 +37,12 @@ const defaultTabs = [
     }
 ];
 
-const CustomBottomNavigation = ({ t }) => {
+const CustomBottomNavigation = ({ t }: { t: TFunction }) => {
 
     let navigate = useNavigate();
     let dispatch = useDispatch();
-    const { user } = useSelector(state => state.application);
-    const [tabs, setTabs] = useState(defaultTabs)
+    const { user } = useSelector((state: any) => state.application);
+    const [tabs, setTabs] = useState<Tab[]>(defaultTabs)
 
     useEffect(() => {
         setTab(tabs.findIndex(x => "/" + x.path === window?.location?.pathname));
@@ -52,9 +61,9 @@ const CustomBottomNavigation = ({ t }) => {
         }
     }, [user]);
 
-    const [tab, setTab] = useState(tabs.findIndex(x => "/" + x.path === window?.location?.pathname));
+    const [tab, setTab] = useState<number>(tabs.findIndex(x => "/" + x.path === window?.location?.pathname));
 
-    const handleChange = (event, newValue) => {
+    const handleChange = (e: SyntheticEvent<Element, Event>, newValue: any) => {
         setTab(newValue);
         navigate(tabs[newValue].path, { replace: true });
         dispatch(onModeChange(tabs[newValue].path));

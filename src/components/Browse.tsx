@@ -4,42 +4,46 @@ import { useNavigate } from "react-router";
 import { withTranslation } from 'react-i18next';
 import CustomAppBar from "./AppBar";
 import { useSelector } from "react-redux";
+import { TFunction } from "i18next";
+import React from "react";
 
-const Browse = ({ t }) => {
+const tabs = [
+    {
+        translationKey: "account",
+        navigateTo: "/user",
+        icon: <AccountCircle />,
+        avatarColor: "#88AEBF"
+    },
+    {
+        translationKey: "payment",
+        navigateTo: "/payments",
+        icon: <Euro />,
+        avatarColor: "#88AEBF"
+    },
+    {
+        translationKey: "history",
+        navigateTo: "/history",
+        icon: <History />,
+        avatarColor: "#88AEBF"
+    },
+    {
+        translationKey: "training",
+        navigateTo: "/training",
+        icon: <SportsHandball />,
+        avatarColor: "#88AEBF"
+    },
+]
+
+const Browse = ({ t }: { t: TFunction }) => {
 
     const navigate = useNavigate();
-    const appVersion = useSelector(state => state.application.appVersion)
+    const appVersion = useSelector((state: any) => state.application.appVersion)
 
     return <Box>
         <CustomAppBar />
         <List>
             {
-                [
-                    {
-                        translationKey: "account",
-                        navigateTo: "/user",
-                        icon: <AccountCircle />,
-                        avatarColor: "#88AEBF"
-                    },
-                    {
-                        translationKey: "payment",
-                        navigateTo: "/payments",
-                        icon: <Euro />,
-                        avatarColor: "#88AEBF"
-                    },
-                    {
-                        translationKey: "history",
-                        navigateTo: "/history",
-                        icon: <History />,
-                        avatarColor: "#88AEBF"
-                    },
-                    {
-                        translationKey: "training",
-                        navigateTo: "/training",
-                        icon: <SportsHandball />,
-                        avatarColor: "#88AEBF"
-                    },
-                ].map(x => {
+                tabs.map(x => {
                     return <ListItem key={x.translationKey} onClick={() => navigate(x.navigateTo)} sx={{ mt: 1 }}>
                         <ListItemAvatar>
                             <Avatar sx={{ background: x.avatarColor, width: 40, height: 40 }}>

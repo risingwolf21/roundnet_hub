@@ -1,3 +1,4 @@
+import React from 'react';
 import AppBar from '@mui/material/AppBar';
 import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
@@ -6,11 +7,17 @@ import { useNavigate } from 'react-router-dom';
 import { AccountCircle, ArrowBack, Refresh } from '@mui/icons-material';
 import { useSelector } from 'react-redux';
 
-const CustomAppBar = ({ navigateBack = false, title = "Roundnet Karlsruhe", onRefresh }) => {
-    const navigate = useNavigate();
-    const { user } = useSelector(state => state.application);
+type Props = {
+    navigateBack?: boolean,
+    title?: string,
+    onRefresh?: () => any
+}
 
-    return <AppBar position="sticky" sx={{ zIndex: (theme) => theme.zIndex.drawer + 1, background: "primary" }}>
+const CustomAppBar = ({ navigateBack = false, title = "Roundnet Karlsruhe", onRefresh }: Props) => {
+    const navigate = useNavigate();
+    const { user } = useSelector((state: any) => state.application);
+
+    return (<AppBar position="sticky" sx={{ zIndex: (theme) => theme.zIndex.drawer + 1, background: "primary" }}>
         <Toolbar>
             {
                 navigateBack && <IconButton
@@ -36,7 +43,7 @@ const CustomAppBar = ({ navigateBack = false, title = "Roundnet Karlsruhe", onRe
                 </IconButton>
             }
         </Toolbar>
-    </AppBar>
+    </AppBar>)
 }
 
 export default CustomAppBar;
