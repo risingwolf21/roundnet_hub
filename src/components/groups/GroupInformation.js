@@ -1,11 +1,9 @@
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useParams } from "react-router-dom";
-import { fetchSingleGroupAsync } from "../../redux/groupsSlice";
 import { useClient } from "react-supabase";
-import { AppBar, Divider, Fab, Grid, List, ListItem, ListItemAvatar, ListItemText, Toolbar, Typography } from "@mui/material";
+import { Divider, Fab, Grid, List, ListItem, ListItemAvatar, ListItemText, Typography } from "@mui/material";
 import CustomAppBar from "../AppBar";
-import { Loading } from "../Loading";
 import { toInteger } from "lodash";
 import { AccountCircle, GroupAdd } from "@mui/icons-material";
 import SearchAndSelectUserDialog from "../SearchAndSelectUserDialog";

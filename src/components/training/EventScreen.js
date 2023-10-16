@@ -1,7 +1,6 @@
 import { Alert, Box, CircularProgress, Divider, Fab, Grid, IconButton, LinearProgress, ListItem, ListItemAvatar, ListItemSecondaryAction, ListItemText, Snackbar, Typography } from "@mui/material";
 import { useDispatch, useSelector } from "react-redux";
 import moment from "moment";
-import { Error } from "../Error";
 import { useNavigate } from 'react-router-dom';
 import React from "react";
 import { fetchEventsAsync, onEventErrorRead, updateAttendanceAsync } from "../../redux/eventReducer";

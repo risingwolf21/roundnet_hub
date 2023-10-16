@@ -1,7 +1,6 @@
 import { Slide, SlideProps } from "@mui/material";
-import moment, { Moment, MomentInput } from "moment";
+import moment, { MomentInput } from "moment";
 import { forwardRef } from "react";
-import { Drink, History } from "../types/supabase";
 import React from "react";
 
 export const compareById = (x: any, y: any) => {

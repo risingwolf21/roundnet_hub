@@ -4,9 +4,9 @@ import { Database } from './types/supabase';
 const supabaseUrl = process.env.REACT_APP_supabaseUrl;
 const supabaseAnonKey = process.env.REACT_APP_supabaseAnonKey;
 
-export const supabase = createClient(supabaseUrl ?? "", supabaseAnonKey ?? "")
+export const supabase = createClient<Database>(supabaseUrl ?? "", supabaseAnonKey ?? "")
 
-export const supabase_admin = createClient(supabaseUrl ?? "", "REMOVED_KEY", {
+export const supabase_admin = createClient<Database>(supabaseUrl ?? "", "REMOVED_KEY", {
     auth: {
         autoRefreshToken: false,
         persistSession: false

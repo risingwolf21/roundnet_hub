@@ -23,6 +23,7 @@ import { Container } from 'inversify';
 import { EmptyRepository, IEventRepository, SupabaseRepository } from './repository/IEventRepository';
 import { IAdminDrinksRepository, SupabaseAdminDrinksRepository } from './repository/IAdminDrinksRepository';
 import { SupabaseClient } from '@supabase/supabase-js';
+import { Database } from './types/supabase';
 
 
 type Props = {
@@ -56,7 +57,7 @@ const container = new Container();
 container.bind<IEventRepository>("IEventRepository").to(EmptyRepository);
 container.unbind("IEventRepository");
 container.bind<IEventRepository>("IEventRepository").to(SupabaseRepository);
-container.bind<SupabaseClient>("SupabaseClient").toDynamicValue(() => supabase);
+container.bind<SupabaseClient<Database>>("SupabaseClient").toDynamicValue(() => supabase);
 container.bind<IAdminDrinksRepository>("IAdminDrinksRepository").to(SupabaseAdminDrinksRepository);
 
 export type AppDispatch = typeof store.dispatch

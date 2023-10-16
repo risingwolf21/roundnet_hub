@@ -2,17 +2,26 @@ import { Avatar, Badge, Button, Dialog, DialogActions, DialogContent, DialogTitl
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
+//@ts-ignore
 import EditDrinkDialog from "./EditDrinkDialog";
 import LocalDrinkIcon from '@mui/icons-material/LocalDrink';
-import { useContext, useState } from "react";
+import { useState } from "react";
 import _ from "lodash";
-import { useAdminDrinks } from "../../hooks/useAdminDrinksHook";
 import { Error } from "../Error";
 import { useSelector } from "react-redux";
 import CustomAppBar from "../AppBar";
-import { DependencyContext } from "../..";
+import React from "react";
+import { Drink } from "../../types/supabase";
+import { useDependency } from "../../hooks/useDependency";
+import { IAdminDrinksRepository } from "../../repository/IAdminDrinksRepository";
 
-const AdminDrinkItem = ({ drink, onEditClick, onDeleteClick, divider }) => {
+type AdminDrinkItemProps = {
+    drink: Drink,
+    onEditClick: () => any,
+    onDeleteClick: () => any,
+}
+
+const AdminDrinkItem = ({ drink, onEditClick, onDeleteClick }: AdminDrinkItemProps) => {
     return <ListItem divider={true}>
         <ListItemAvatar>
             <Badge color={drink?.active ? "success" : "warning"} variant="dot">
@@ -37,51 +46,62 @@ const AdminDrinkItem = ({ drink, onEditClick, onDeleteClick, divider }) => {
     </ListItem>
 }
 
-const EMPTY_DRINK = { "imageUrl": "", name: "", price: 0, active: false };
+const EMPTY_DRINK: Drink =
+{
+    imageUrl: "",
+    name: "",
+    price: 0,
+    active: false,
+    deleted: false,
+    id: 0,
+    previousDrink: null,
+    stock: 0
+};
 
 const AdminDrinkList = () => {
 
-    const { drinks, drinksError, drinksLoading } = useSelector((state) => state.adminDrinks);
+    const { drinks, drinksError, drinksLoading } = useSelector((state: any) => state.adminDrinks);
 
-    const { updateDrink, deleteDrink, addDrink } = useAdminDrinks();
+    const repository = useDependency<IAdminDrinksRepository>("IAdminDrinksRepository");
 
     const [open, setOpen] = useState(false);
     const [deleteOpen, setDeleteOpen] = useState(false);
-    const [selectedDrink, setSelectedDrink] = useState();
+    const [selectedDrink, setSelectedDrink] = useState<Drink>();
 
-    const selectDrink = (drink) => {
+    const selectDrink = (drink: Drink) => {
         setSelectedDrink(drink);
         setOpen(true);
     }
 
-    const deleteDrinkDialog = (drink) => {
+    const deleteDrinkDialog = (drink: Drink) => {
         setSelectedDrink(drink);
         setDeleteOpen(true);
     }
 
-    const onDeleteDrink = (drink) => {
-        deleteDrink(drink.id);
+    const onDeleteDrink = (drink: Drink | undefined) => {
+        if (!drink) throw Error({ message: "Could not delete Drink, because it was undefined" });
+        repository?.deleteDrink(drink.id);
         setDeleteOpen(false);
     }
 
-    const getDrinksHistory = (drink) => {
+    const getDrinksHistory = (drink: Drink | undefined): Drink[] => {
         if (!drink || !drinks || !drink.previousDrink) return [];
 
-        let prev = drinks.filter(x => x.deleted).find(x => x.id === drink.previousDrink);
+        let prev: Drink = drinks.filter((x: Drink) => x.deleted).find((x: Drink) => x.id === drink.previousDrink);
 
         return [prev, ...getDrinksHistory(prev)]
     }
 
-    const onDrinkEditFinished = (drink) => {
-        if (drink.id) {
+    const onDrinkEditFinished = (drink: Drink) => {
+        if (drink.id && selectedDrink) {
             if (drink.name !== selectedDrink.name || drink.price !== selectedDrink.price) {
-                addDrink(_.omit({ ...drink, previousDrink: selectedDrink.id }, ["id"]));
-                updateDrink({ ...selectedDrink, deleted: true, active: false });
+                repository?.addDrink(_.omit({ ...drink, previousDrink: selectedDrink.id }));
+                repository?.updateDrink({ ...selectedDrink, deleted: true, active: false });
             } else {
-                updateDrink(drink);
+                repository?.updateDrink(drink);
             }
         } else {
-            addDrink(_.omit(drink, ["id"]));
+            repository?.addDrink(_.omit(drink));
         }
         setOpen(false);
     }
@@ -101,10 +121,9 @@ const AdminDrinkList = () => {
         }
         <List sx={{ width: "100%", paddingBottom: 12 }}>
             {
-                drinks && drinks.filter(x => !x.deleted).map((drink, index) => <AdminDrinkItem
+                drinks && drinks.filter((x: Drink) => !x.deleted).map((drink: Drink, index: number) => <AdminDrinkItem
                     key={"drink" + index}
                     drink={drink}
-                    drinkHistory={getDrinksHistory(drink)}
                     onEditClick={() => selectDrink(drink)}
                     onDeleteClick={() => deleteDrinkDialog(drink)} />)
             }

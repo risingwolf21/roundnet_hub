@@ -11,7 +11,7 @@ import { useNavigate } from "react-router-dom";
 
 const ManageGroupsScreen = () => {
 
-    const { groups, loading, error } = useSelector((state) => state.groups);
+    const { groups, loading } = useSelector((state) => state.groups);
     const client = useClient();
     const dispatch = useDispatch();
     const navigate = useNavigate();
@@ -20,7 +20,7 @@ const ManageGroupsScreen = () => {
 
     useEffect(() => {
         dispatch(fetchGroupsAsync({ client }))
-    }, []);
+    }, [client, dispatch]);
 
     return <Grid
         container

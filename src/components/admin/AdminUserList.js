@@ -1,4 +1,4 @@
-import { AppBar, Badge, Box, Checkbox, Chip, Dialog, Grid, IconButton, LinearProgress, List, ListItem, ListItemAvatar, ListItemSecondaryAction, ListItemText, Toolbar, Typography } from "@mui/material";
+import { AppBar, Badge, Box, Chip, Dialog, Grid, IconButton, LinearProgress, List, ListItem, ListItemAvatar, ListItemSecondaryAction, ListItemText, Toolbar, Typography } from "@mui/material";
 import { AccountCircle, AdminPanelSettings, ArrowBack, Close, Edit, EuroRounded, Liquor, PersonOff, Refresh, Verified } from "@mui/icons-material";
 import SearchIcon from "@mui/icons-material/Search";
 import EditUserDialog from "./EditUserDialog";
@@ -54,7 +54,6 @@ const AdminUserList = () => {
     const [currentUser, setCurrentUser] = useState({});
     const [searchString, setSearchString] = useState("");
     const [open, setOpen] = useState(false);
-    const [showVerifiedUsers, setShowVerifiedUsers] = useState(true)
     const [showNotVerifiedUsers, setShowNotVerifiedUsers] = useState(true)
     const client = useClient();
     const dispatch = useDispatch();

@@ -1,7 +1,7 @@
 import { Grid, LinearProgress, List, ListItem, ListItemAvatar, ListItemSecondaryAction, ListItemText, ListSubheader, Typography } from "@mui/material"
 import moment from "moment/moment";
 import { groupBy } from "../../utils";
-import { useDispatch, useSelector } from "react-redux";
+import { useSelector } from "react-redux";
 import { InfiniteScrollList } from "../InfiniteScrollList";
 import { fetchAdminHistoryAsync } from "../../redux/adminDrinksSlice";
 import { useContext, useState } from "react";

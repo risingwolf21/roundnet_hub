@@ -1,15 +1,13 @@
-import { Avatar, Grid, LinearProgress, List, ListItem, ListItemAvatar, ListItemText } from "@mui/material";
+import { Grid, LinearProgress } from "@mui/material";
 import { useSelector } from "react-redux";
 import CustomAppBar from "../AppBar";
-import { LocalDrink } from "@mui/icons-material";
-import { LineChart, PieChart } from "@mui/x-charts";
 import { useEffect, useState } from "react";
 import { useClient } from "react-supabase";
 import { groupBy } from "../../utils";
 
 const AnalyzeDrinkStockHistory = () => {
 
-    const { drinks, history, loading } = useSelector(state => state.adminDrinks);
+    const { loading } = useSelector(state => state.adminDrinks);
     const [mappedHistory, setMappedHistory] = useState();
     const client = useClient();
 
@@ -20,9 +18,8 @@ const AnalyzeDrinkStockHistory = () => {
             .order('id', { ascending: false })
             .then(result => {
                 setMappedHistory(groupBy(result.data, x => x.drink.id))
-                console.log(Object.values(mappedHistory))
             })
-    }, []);
+    }, [client, mappedHistory]);
 
     return <Grid
         container
@@ -60,15 +57,15 @@ const AnalyzeDrinkStockHistory = () => {
                 </>)
             }
         </List> */}
-
+        {/* 
         <PieChart
             series={[
                 {
-                    data: Object.values(mappedHistory).map((x, index) => { return { id: index, value: x.length, label: x[0].drink.name} })
+                    data: Object.values(mappedHistory).map((x, index) => { return { id: index, value: x.length, label: x[0].drink.name } })
                 },
             ]}
             width={400}
-            height={200} />
+            height={200} /> */}
 
     </Grid>
 
