@@ -1,7 +1,8 @@
 import { Warning } from "@mui/icons-material"
 import { Grid, Typography } from "@mui/material"
+import React from "react"
 
-export const Error = ({ message }) => {
+export const Error = ({ message }: { message: String }) => {
     return <Grid
         container
         spacing={0}

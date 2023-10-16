@@ -1,6 +1,6 @@
-import { Alert, CircularProgress, Divider, Fab, Grid, List, LinearProgress, Snackbar } from "@mui/material";
+import { Alert, CircularProgress, Divider, Fab, Grid, List, LinearProgress, Snackbar, AlertColor, SnackbarCloseReason } from "@mui/material";
 import DrinkItem from "./DrinkItem";
-import { useEffect, useState } from "react";
+import { SyntheticEvent, useEffect, useState } from "react";
 import CheckIcon from '@mui/icons-material/Check';
 import { NOT_PAID, OPEN } from "../constants";
 import { captureException } from "@sentry/react";
@@ -8,20 +8,32 @@ import { Error } from "./Error";
 import { useClient } from "react-supabase";
 import { useDispatch, useSelector } from "react-redux";
 import CustomAppBar from "./AppBar";
+//@ts-ignore
 import { fetchPaymentAsync } from "../redux/drinksSlice";
+import React from "react";
+import { Drink } from "../types/supabase";
 
-const SUCCESS_MESSAGE_INFO = { message: "Getränke erfolgreich gebucht!", severity: "success" };
+const SUCCESS_MESSAGE_INFO: AlertMessage = { message: "Getränke erfolgreich gebucht!", severity: "success" };
+
+type AlertMessage = {
+    message: string,
+    severity: AlertColor
+}
+
+type DrinkCounter = Drink & {
+    count: number
+}
 
 const DrinkList = () => {
 
-    const { user } = useSelector(state => state.application);
+    const { user } = useSelector((state: any) => state.application);
     const client = useClient();
     const dispatch = useDispatch();
 
-    const { drinks, drinksFetching, drinksError } = useSelector((state) => state.drinks);
-    const { payment } = useSelector((state) => state.drinks);
+    const { drinks, drinksFetching, drinksError } = useSelector((state: any) => state.drinks);
+    const { payment } = useSelector((state: any) => state.drinks);
 
-    const [addedDrinks, setAddedDrinks] = useState({});
+    const [addedDrinks, setAddedDrinks] = useState<DrinkCounter[]>([]);
     const [loading, setLoading] = useState(false);
     const [successMessageOpen, setSuccessMessageOpen] = useState(false);
     const [alertInfo, setAlertInfo] = useState(SUCCESS_MESSAGE_INFO);
@@ -30,14 +42,18 @@ const DrinkList = () => {
         dispatch(fetchPaymentAsync({ client, user }));
     }, [client, user, dispatch]);
 
-    const handleClose = (event, reason) => {
+    const handleSnackbarClose = (event: Event | SyntheticEvent<any, Event>, reason: SnackbarCloseReason) => {
         if (reason === 'clickaway') {
             return;
         }
         setSuccessMessageOpen(false);
     };
 
-    const confirmDrinksDialog = (message) => {
+    const handleAlertClose = (event: SyntheticEvent<Element, Event>) => {
+        setSuccessMessageOpen(false);
+    }
+
+    const confirmDrinksDialog = (message: AlertMessage) => {
         setAlertInfo(message);
         setSuccessMessageOpen(true);
         setLoading(false);
@@ -48,7 +64,7 @@ const DrinkList = () => {
         let data = { date: Date.now(), state: NOT_PAID, drinks: Object.values(addedDrinks) };
 
         try {
-            let paymentId;
+            let paymentId: String;
             if (!payment || payment.state !== OPEN) {
                 const { data: paymentUpdate } = await client.from("payments")
                     .select("*").eq("userId", user.id).eq("state", OPEN).single();
@@ -68,29 +84,30 @@ const DrinkList = () => {
             }
 
             if (!paymentId)
-                throw Error("Payment ID could not be found")
+                throw Error({ message: "Payment ID could not be found" })
 
             const { error } = await client.from("history").insert(
-                Object.values(addedDrinks).map(drink => {
+                Object.values(addedDrinks).map((drink) => {
                     return {
                         user: user.id,
                         drink: drink.id,
                         count: drink.count,
                         payment: paymentId,
-                        amount: drink.count * drink.price
+                        amount: drink.count * (drink.price ?? 1)
                     }
                 })
             );
             if (error)
-                throw Error(error);
+                throw error;
 
             setLoading(false);
-            setAddedDrinks({});
+            setAddedDrinks([]);
             confirmDrinksDialog(SUCCESS_MESSAGE_INFO);
         }
-        catch (error) {
+        catch (error: unknown) {
             setLoading(false);
-            confirmDrinksDialog({ message: error, severity: "error" });
+            const message = error instanceof Error ? (error as Error).message : "Unknown error."
+            confirmDrinksDialog({ message, severity: "error" });
             captureException(error, (scope) => {
                 scope.clear();
                 scope.setExtra("data", JSON.stringify(data));
@@ -99,7 +116,7 @@ const DrinkList = () => {
         }
     }
 
-    const onAddDrinkClick = (drink) => {
+    const onAddDrinkClick = (drink: Drink) => {
         var temp = addedDrinks;
         if (drink.id in temp) {
             temp[drink.id].count = temp[drink.id].count + 1;
@@ -109,7 +126,7 @@ const DrinkList = () => {
         setAddedDrinks({ ...temp });
     }
 
-    const onRemoveDrinkClick = (drink) => {
+    const onRemoveDrinkClick = (drink: Drink) => {
         var temp = addedDrinks;
         if (drink.id in temp) {
             if (temp[drink.id].count - 1 === 0) {
@@ -134,8 +151,8 @@ const DrinkList = () => {
         {drinksFetching && <LinearProgress style={{ position: "fixed", left: 0, right: 0, top: 56 }} />}
         <List sx={{ width: "100%" }}>
             {
-                drinks && drinks.filter(x => !x.deleted && x.active).map((drink, index) => {
-                    return <div key={drink.id + "div"}>
+                drinks && drinks.filter((x: Drink) => !x.deleted && x.active).map((drink: Drink, index: number) => {
+                    return <div key={index}>
                         <DrinkItem
                             drink={drink}
                             onAddClick={() => onAddDrinkClick(drink)}
@@ -156,8 +173,8 @@ const DrinkList = () => {
             </>
         }
 
-        <Snackbar sx={{ position: "fixed", right: "16px", bottom: "72px" }} open={successMessageOpen} autoHideDuration={1500} onClose={handleClose}>
-            <Alert onClose={handleClose} severity={alertInfo.severity} sx={{ width: '100%' }}>
+        <Snackbar sx={{ position: "fixed", right: "16px", bottom: "72px" }} open={successMessageOpen} autoHideDuration={1500} onClose={handleSnackbarClose}>
+            <Alert onClose={handleAlertClose} severity={alertInfo.severity} sx={{ width: '100%' }}>
                 {alertInfo.message}
             </Alert>
         </Snackbar>

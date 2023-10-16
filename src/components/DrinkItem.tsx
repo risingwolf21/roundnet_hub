@@ -2,8 +2,17 @@ import { Avatar, Box, IconButton, ListItem, ListItemAvatar, ListItemSecondaryAct
 import AddIcon from '@mui/icons-material/Add';
 import RemoveIcon from '@mui/icons-material/Remove';
 import LocalDrinkIcon from '@mui/icons-material/LocalDrink';
+import React from 'react';
+import { Drink } from '../types/supabase';
 
-const DrinkItem = ({ drink, count, onAddClick, onMinusClick }) => {
+type Props = {
+    drink: Drink,
+    count: number,
+    onAddClick: (drink: Drink) => any,
+    onMinusClick: (drink: Drink) => any
+}
+
+const DrinkItem = ({ drink, count, onAddClick, onMinusClick }: Props) => {
     return <ListItem key={drink.id} onClick={() => onAddClick(drink)}>
         <ListItemAvatar>
             <Avatar>

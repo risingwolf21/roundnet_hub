@@ -101,7 +101,6 @@ const App = () => {
         </SubscriptionHandler>
       </AuthGate>
     </BrowserRouter>
-
   </Grid >
 }
 export default App;
