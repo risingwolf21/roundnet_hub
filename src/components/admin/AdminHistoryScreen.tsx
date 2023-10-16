@@ -4,12 +4,16 @@ import { groupBy } from "../../utils";
 import { useDispatch, useSelector } from "react-redux";
 import { InfiniteScrollList } from "../InfiniteScrollList";
 import { fetchAdminHistoryAsync } from "../../redux/adminDrinksSlice";
-import { useState } from "react";
+import { useContext, useState } from "react";
 import { useEffect } from "react";
 import { useClient } from "react-supabase";
 import CustomAppBar from "../AppBar";
+import { DependencyContext, useAppDispatch } from "../..";
+import React from "react";
+import { FullHistory } from "../../types/supabase";
+import { IAdminDrinksRepository } from "../../repository/IAdminDrinksRepository";
 
-const AdminHistoryItem = ({ items, header }) => {
+const AdminHistoryItem = ({ items, header }: { items: FullHistory[], header: string }) => {
     return <List dense component={"div"} disablePadding subheader={<ListSubheader sx={{ zIndex: "-1" }} component="div" id="nested-list-subheader">{header}</ListSubheader>}>
         {
             items.map((item, index) => <ListItem dense key={header + index + "sublist"}>
@@ -18,7 +22,7 @@ const AdminHistoryItem = ({ items, header }) => {
                 </ListItemAvatar>
                 <ListItemText primary={item.drink?.name} secondary={item.user?.displayName} />
                 <ListItemSecondaryAction>
-                    <Typography fontWeight={"bold"}>{(item.drink?.price ?? 0 * item.count)} €</Typography>
+                    <Typography fontWeight={"bold"}>{(item.drink?.price ?? 0 * (item.count ?? 0))} €</Typography>
                 </ListItemSecondaryAction>
             </ListItem>)
         }
@@ -27,24 +31,31 @@ const AdminHistoryItem = ({ items, header }) => {
 
 const AdminHistoryScreen = () => {
 
-    const { history, drinks, historyLoading, historyError, historyEndReached } = useSelector((state) => state.adminDrinks);
+    const { container } = useContext(DependencyContext);
+
+    const { history, drinks, historyLoading, historyError, historyEndReached } = useSelector((state: any) => state.adminDrinks);
     const [historyItems, setHistoryItems] = useState([]);
-    const dispatch = useDispatch();
+    const dispatch = useAppDispatch();
     const client = useClient();
 
     useEffect(() => {
-        dispatch(fetchAdminHistoryAsync({ client }))
-    }, [client, dispatch]);
+        fetchForPage(0);
+    }, [client, dispatch, container]);
 
     useEffect(() => {
-        let mappedEntries = history?.map(x => {
+        let mappedEntries = history?.map((x: any) => {
             return {
                 ...x,
-                drink: drinks.find(y => y.id === x.drinkId)
+                drink: drinks.find((y: any) => y.id === x.drinkId)
             }
         });
         setHistoryItems(mappedEntries);
     }, [history, drinks]);
+
+    const fetchForPage = (page: number) => {
+        if (container)
+            dispatch(fetchAdminHistoryAsync({ repository: container.get<IAdminDrinksRepository>("IAdminDrinksRepository"), page, count: 20 }))
+    }
 
     return <Grid
         container
@@ -56,10 +67,10 @@ const AdminHistoryScreen = () => {
         {
             historyLoading && <LinearProgress style={{ position: "fixed", left: 0, top: 56, right: 0 }} />
         }
-        <InfiniteScrollList fetch={(page) => dispatch(fetchAdminHistoryAsync({ client, page }))} error={historyError} loading={historyLoading} endReached={historyEndReached}>
+        <InfiniteScrollList fetch={fetchForPage} error={historyError} loading={historyLoading} endReached={historyEndReached}>
             {
-                Object.entries(groupBy(historyItems, x => moment(new Date(x.created_at)).format("DD MMMM yyyy")))
-                    .map((x) => <AdminHistoryItem key={x[0]} items={x[1]} header={x[0]} />)
+                Array.from(groupBy(historyItems, (x: FullHistory) => moment(new Date(x.created_at ?? "")).format("DD MMMM yyyy")))
+                    .map(([key, value]) => <AdminHistoryItem key={key} items={value} header={key} />)
             }
         </InfiniteScrollList>
     </Grid>

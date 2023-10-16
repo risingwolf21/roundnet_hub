@@ -1,13 +1,26 @@
 import { Button, Dialog, DialogActions, DialogContent, DialogTitle, FormControl, FormControlLabel, Radio, RadioGroup } from "@mui/material";
 import { NON_REPEAT } from "../constants";
 import { useState } from "react";
+import React from "react";
+import { Event } from "../types/supabase";
 
 export const THIS_EVENT = "THIS_EVENT";
 export const THIS_AND_FOLLOWING_EVENT = "THIS_AND_FOLLOWING_EVENT";
 
-export const DeleteEventDialog = ({ open, handleClose, selectedEvent }) => {
+export enum DeletionType {
+    ThisEvent,
+    ThisAndFollowingEvents
+}
 
-    const [deletion, setDeletion] = useState(THIS_EVENT);
+type DeleteEventDialogProps = {
+    open: boolean,
+    handleClose: (result: DeletionType | null) => any,
+    selectedEvent: Event
+}
+
+export const DeleteEventDialog = ({ open, handleClose, selectedEvent }: DeleteEventDialogProps) => {
+
+    const [deletion, setDeletion] = useState(DeletionType.ThisEvent);
 
     return <Dialog open={open} onClose={() => handleClose(null)}>
         <DialogTitle>
@@ -23,13 +36,16 @@ export const DeleteEventDialog = ({ open, handleClose, selectedEvent }) => {
                 <FormControl sx={{ m: 1, minWidth: 120 }}>
                     <RadioGroup
                         aria-labelledby="demo-radio-buttons-group-label"
-                        defaultValue={deletion}
+                        value={deletion}
                         onChange={(e) => {
-                            setDeletion(e.target.value);
+                            if (e.target.value === "0")
+                                setDeletion(DeletionType.ThisEvent);
+                            else
+                                setDeletion(DeletionType.ThisAndFollowingEvents);
                         }}
                         name="radio-buttons-group">
-                        <FormControlLabel value={THIS_EVENT} control={<Radio />} label="This event" />
-                        <FormControlLabel value={THIS_AND_FOLLOWING_EVENT} control={<Radio />} label="This and following events" />
+                        <FormControlLabel value={DeletionType.ThisEvent} control={<Radio />} label="This event" />
+                        <FormControlLabel value={DeletionType.ThisAndFollowingEvents} control={<Radio />} label="This and following events" />
                     </RadioGroup>
                 </FormControl>
             </DialogContent>

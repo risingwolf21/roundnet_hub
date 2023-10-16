@@ -31,10 +31,12 @@ import AnalyzeDrinkStockHistory from './components/procure/AnalyzeDrinkStockHist
 import raw from "./git_commit.txt";
 import { fetchUserGroupsAsync } from './redux/eventReducer';
 import { GroupInformation } from './components/groups/GroupInformation';
+import { DependencyContext } from '.';
 
 const App = () => {
 
   const { waitingWorker, showReload, reloadPage } = useServiceWorker();
+  const container = React.useContext(DependencyContext);
   const dispatch = useDispatch();
   const client = useClient();
   const { appUpdateAvailable, user } = useSelector((state) => state.application);

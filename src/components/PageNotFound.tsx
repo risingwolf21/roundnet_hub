@@ -1,5 +1,6 @@
 import { Warning } from "@mui/icons-material";
 import { Grid, Typography } from "@mui/material";
+import React from "react";
 
 const PageNotFound = () => {
     return <Grid

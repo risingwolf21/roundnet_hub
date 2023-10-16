@@ -1,5 +1,6 @@
 import { Warning } from "@mui/icons-material"
 import { Grid, Typography } from "@mui/material"
+import React from "react";
 
 const NotVerifiedScreen = () => {
     return <Grid
@@ -11,7 +12,7 @@ const NotVerifiedScreen = () => {
         style={{ minHeight: '100vh' }}>
         <Warning fontSize="large" sx={{ color: "primary" }} />
         <Typography sx={{ mt: 2, wordWrap: "normal", textAlign: "center", color: "primary", padding: 2 }}>
-        Du bist zur Zeit nicht verifiziert. Bitte melde dich bei deinem Administrator.
+            Du bist zur Zeit nicht verifiziert. Bitte melde dich bei deinem Administrator.
         </Typography>
     </Grid>
 }

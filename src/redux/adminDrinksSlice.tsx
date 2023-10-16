@@ -1,18 +1,37 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+//@ts-ignore
 import { drinksReducer } from './reducer/drinksReducer';
+//@ts-ignore
 import { historyReducer } from './reducer/historyReducer';
+import { Drink, FullHistory } from '../types/supabase';
+import { IAdminDrinksRepository } from '../repository/IAdminDrinksRepository';
+
+type SliceState = {
+    history: FullHistory[],
+    drinks: Drink[],
+    loading: boolean,
+    endReached: boolean,
+    historyEndReached: boolean,
+    historyError: string,
+    historyLoading: boolean,
+    drinksError: string,
+    drinksLoading: boolean
+}
+const initialState = {
+    history: [],
+    drinks: [],
+    loading: false,
+    endReached: false,
+    historyEndReached: false,
+    historyError: '',
+    historyLoading: false,
+    drinksError: '',
+    drinksLoading: false
+} as SliceState;
 
 export const adminDrinksSlice = createSlice({
     name: 'admin-drinks',
-    initialState: {
-        history: [],
-        drinks: [],
-        historyEndReached: false,
-        historyError: null,
-        historyLoading: false,
-        drinksError: null,
-        drinksLoading: false
-    },
+    initialState,
     reducers: {
         ...drinksReducer,
         ...historyReducer
@@ -29,11 +48,11 @@ export const adminDrinksSlice = createSlice({
                 state.loading = false;
                 state.drinksError = '';
 
-                state.drinks = action.payload
+                state.drinks = action.payload ?? []
             })
             .addCase(fetchDrinksAsync.rejected, (state, action) => {
                 state.loading = false;
-                state.drinksError = action.error.message;
+                state.drinksError = action.error?.message ?? '';
             })
             /**
              * History initial loading
@@ -53,31 +72,33 @@ export const adminDrinksSlice = createSlice({
                 }
 
                 if (action.payload.more) {
-                    state.history = [...state.history, ...action.payload.entries];
+                    state.history = [...state.history, ...(action.payload.entries ?? [])];
                 } else {
-                    state.history = action.payload.entries;
+                    state.history = action.payload.entries ?? [];
                 }
             })
             .addCase(fetchAdminHistoryAsync.rejected, (state, action) => {
                 state.loading = false;
                 state.endReached = true;
-                state.historyError = action.error.message;
+                state.historyError = action.error?.message ?? '';
             })
     }
 });
 
-export const fetchDrinksAsync = createAsyncThunk("drink", async (client) => {
-    const response = await client.from("drink").select("id, name, price, stock, imageUrl, active, deleted, previousDrink")
-    return response.data;
+export const fetchDrinksAsync = createAsyncThunk("drink", async (repository: IAdminDrinksRepository) => {
+    const response = await repository.fetchDrinks();
+    return response?.data ?? [];
 });
 
-export const fetchAdminHistoryAsync = createAsyncThunk("history", async ({ client, page = 0, count = 20 }) => {
-    const response = await client
-        .from("history")
-        .select("count, amount, created_at, drinkId: drink, user(displayName)")
-        .order('id', { ascending: false })
-        .range(page * count, page * count + count - 1);
-    return { entries: response.data, more: page !== 0 };
+type Props = {
+    repository: IAdminDrinksRepository,
+    page: number,
+    count: number
+}
+
+export const fetchAdminHistoryAsync = createAsyncThunk("history", async ({ repository, page = 0, count = 20 }: Props) => {
+    const response = await repository.fetchAdminHistory(page, count);
+    return { entries: response?.data ?? [], more: page !== 0 };
 });
 
 export const {

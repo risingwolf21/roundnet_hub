@@ -4,12 +4,13 @@ import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditDrinkDialog from "./EditDrinkDialog";
 import LocalDrinkIcon from '@mui/icons-material/LocalDrink';
-import { useState } from "react";
+import { useContext, useState } from "react";
 import _ from "lodash";
 import { useAdminDrinks } from "../../hooks/useAdminDrinksHook";
 import { Error } from "../Error";
 import { useSelector } from "react-redux";
 import CustomAppBar from "../AppBar";
+import { DependencyContext } from "../..";
 
 const AdminDrinkItem = ({ drink, onEditClick, onDeleteClick, divider }) => {
     return <ListItem divider={true}>

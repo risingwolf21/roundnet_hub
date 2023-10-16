@@ -14,13 +14,15 @@ import * as Sentry from "@sentry/react";
 import { supabase } from './supabaseClient';
 import { Provider as SupabaseProvider } from "react-supabase"
 import { AdapterMoment } from '@mui/x-date-pickers/AdapterMoment';
-import { Provider } from 'react-redux';
+import { Provider, useDispatch } from 'react-redux';
 //@ts-ignore
 import store from './redux/store';
 import "./translation/i18n";
 import { LocalizationProvider } from '@mui/x-date-pickers';
 import { Container } from 'inversify';
 import { EmptyRepository, IEventRepository, SupabaseRepository } from './repository/IEventRepository';
+import { IAdminDrinksRepository, SupabaseAdminDrinksRepository } from './repository/IAdminDrinksRepository';
+import { SupabaseClient } from '@supabase/supabase-js';
 
 
 type Props = {
@@ -54,6 +56,12 @@ const container = new Container();
 container.bind<IEventRepository>("IEventRepository").to(EmptyRepository);
 container.unbind("IEventRepository");
 container.bind<IEventRepository>("IEventRepository").to(SupabaseRepository);
+container.bind<SupabaseClient>("SupabaseClient").toDynamicValue(() => supabase);
+container.bind<IAdminDrinksRepository>("IAdminDrinksRepository").to(SupabaseAdminDrinksRepository);
+
+export type AppDispatch = typeof store.dispatch
+
+export const useAppDispatch = () => useDispatch<AppDispatch>()
 
 const root = ReactDOM.createRoot(document.getElementById('root') as HTMLElement);
 root.render(

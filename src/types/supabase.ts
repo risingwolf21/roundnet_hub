@@ -16,7 +16,9 @@ export type Payment = Database["public"]["Tables"]["payments"]["Row"];
 export type User = Database["public"]["Tables"]["user"]["Row"];
 
 export type FullHistory = History & {
-  drink: Drink
+  drink: Drink,
+  drinkId: string,
+  user: User
 }
 
 export type FullEvent = Event & {
