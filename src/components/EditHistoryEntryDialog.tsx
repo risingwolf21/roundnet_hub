@@ -8,21 +8,26 @@ import { useEffect, useState } from "react";
 import { SlideUpTransition } from "../utils";
 import React from "react";
 import { FullHistory } from "../types/supabase";
+import { FullHistoryUpdate } from "./HistoryScreen";
 
 type Props = {
     open: boolean,
     handleClose: () => any,
-    entry: FullHistory,
-    handleSubmit: (newEntry: FullHistory) => any
+    entry: FullHistory | null,
+    handleSubmit: (newEntry: FullHistoryUpdate) => any
 }
 
 const EditHistoryEntryDialog = ({ open, handleClose, entry, handleSubmit }: Props) => {
 
-    const [newCount, setNewCount] = useState<number>(entry.count ?? 0);
+    const [newCount, setNewCount] = useState<number>(0);
 
     useEffect(() => {
-        setNewCount(entry.count ?? 0);
+        setNewCount(entry?.count ?? 0);
     }, [entry]);
+
+    if (!entry)
+        return;
+
 
     return <Dialog
         fullWidth
@@ -38,7 +43,7 @@ const EditHistoryEntryDialog = ({ open, handleClose, entry, handleSubmit }: Prop
                             <Avatar>
                                 {
                                     entry.drink?.imageUrl
-                                        ? <img src={entry.drink?.imageUrl} alt="logo" width={40} height={40} />
+                                        ? <img src={entry?.drink?.imageUrl} alt="logo" width={40} height={40} />
                                         : <LocalDrink />
                                 }
                             </Avatar>
@@ -63,7 +68,7 @@ const EditHistoryEntryDialog = ({ open, handleClose, entry, handleSubmit }: Prop
         </DialogContent>
         <DialogActions>
             <Button onClick={handleClose}>Abbrechen</Button>
-            <Button onClick={() => handleSubmit({ ...entry, count: newCount })}>Speichern</Button>
+            <Button onClick={() => handleSubmit({ ...entry, count: newCount, newCount })}>Speichern</Button>
         </DialogActions>
     </Dialog>
 }

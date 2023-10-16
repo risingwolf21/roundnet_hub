@@ -7,7 +7,9 @@ import Grid from '@mui/material/Grid';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
+//@ts-ignore
 import { supabase } from '../supabaseClient';
+//@ts-ignore
 import Logo from "../images/Karlsruher_Kojoten_Logo.svg";
 import { Alert, CircularProgress, Snackbar } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
@@ -21,7 +23,7 @@ const ForgotPasswordScreen = () => {
 
     const navigate = useNavigate();
 
-    const handleSubmit = async (event) => {
+    const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
         setLoading(true);
         event.preventDefault();
         const data = new FormData(event.currentTarget);
@@ -29,7 +31,6 @@ const ForgotPasswordScreen = () => {
         if (!data.get("email"))
             return;
 
-        console.log("sending email to", window.location.origin + "/reset-password");
         const { error } = await supabase.auth.resetPasswordForEmail(data.get("email"), {
             redirectTo: window.location.origin + "/reset-password"
         });
@@ -54,7 +55,7 @@ const ForgotPasswordScreen = () => {
                 <Typography component="h1" variant="h5">
                     Passwort zurücksetzen
                 </Typography>
-                <Box component="form" onSubmit={handleSubmit} noValidate sx={{ mt: 1 }}>
+                <Box component="form" onSubmit={(e) => handleSubmit(e)} noValidate sx={{ mt: 1 }}>
                     <TextField
                         margin="normal"
                         color='secondary'

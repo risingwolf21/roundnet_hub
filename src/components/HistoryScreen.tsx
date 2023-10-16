@@ -4,22 +4,36 @@ import { groupBy } from "../utils";
 import { useDispatch, useSelector } from "react-redux";
 import { useState } from "react";
 import { useEffect } from "react";
+//@ts-ignore
 import { fetchHistoryAsync } from "../redux/drinksSlice";
 import { useClient } from "react-supabase";
+//@ts-ignore
 import { InfiniteScrollList } from "./InfiniteScrollList";
 import CustomAppBar from "./AppBar";
 import EditHistoryEntryDialog from "./EditHistoryEntryDialog";
+import React from "react";
+import { Drink, FullHistory } from "../types/supabase";
 
-const HistoryItem = ({ items, header, onClick }) => {
+export type FullHistoryUpdate = FullHistory & {
+    newCount: number
+}
+
+type HistoryItemProps = {
+    header: string
+    items: FullHistory[],
+    onClick: (entry: FullHistory) => any
+}
+
+const HistoryItem = ({ items, header, onClick }: HistoryItemProps) => {
     return <List dense component={"div"} disablePadding subheader={<ListSubheader sx={{ zIndex: "-1" }} component="div" id="nested-list-subheader">{header}</ListSubheader>}>
         {
-            items.map((item, index) => <ListItem dense key={"sublist" + index} onClick={() => onClick(item)}>
+            items.map((item: FullHistory, index: number) => <ListItem dense key={"sublist" + index} onClick={() => onClick(item)}>
                 <ListItemAvatar>
                     <Typography>{item.count} x</Typography>
                 </ListItemAvatar>
-                <ListItemText primary={item.drink?.name} secondary={moment(new Date(item.created_at)).format("HH:mm")} />
+                <ListItemText primary={item.drink?.name} secondary={moment(new Date((item.created_at ?? ""))).format("HH:mm")} />
                 <ListItemSecondaryAction>
-                    <Typography>{item.count * item.drink?.price} €</Typography>
+                    <Typography>{(item.count ?? 0) * (item.drink?.price ?? 1)} €</Typography>
                 </ListItemSecondaryAction>
             </ListItem>)
         }
@@ -27,33 +41,33 @@ const HistoryItem = ({ items, header, onClick }) => {
 }
 
 const HistoryScreen = () => {
-    const { history, drinks, historyLoading, historyError, historyEndReached } = useSelector((state) => state.drinks);
-    const { user } = useSelector(state => state.application);
+    const { history, drinks, historyLoading, historyError, historyEndReached } = useSelector((state: any) => state.drinks);
+    const { user } = useSelector((state: any) => state.application);
     const dispatch = useDispatch();
     const client = useClient();
 
-    const [historyItems, setHistoryItems] = useState([]);
-    const [editHistoryEntryOpen, setEditHistoryEntryOpen] = useState(false);
-    const [historyEntryToEdit, setHistoryEntryToEdit] = useState({});
+    const [historyItems, setHistoryItems] = useState<FullHistory[]>([]);
+    const [editHistoryEntryOpen, setEditHistoryEntryOpen] = useState<boolean>(false);
+    const [historyEntryToEdit, setHistoryEntryToEdit] = useState<FullHistory | null>(null);
 
     useEffect(() => {
-        let mappedEntries = history?.map(x => {
+        let mappedEntries = history?.map((x: any) => {
             return {
                 ...x,
-                drink: drinks.find(y => y.id === x.drinkId)
+                drink: drinks.find((y: any) => y.id === x.drinkId)
             }
         });
         setHistoryItems(mappedEntries);
     }, [history, drinks]);
 
-    const handleEntryUpdate = async (newEntry) => {
+    const handleEntryUpdate = async (newEntry: FullHistory) => {
         setEditHistoryEntryOpen(false);
         await client.from("history")
-            .update({ count: newEntry.count, amount: newEntry.newCount * newEntry.drink.price })
+            .update({ count: newEntry.count, amount: (newEntry.count ?? 0) * (newEntry.drink.price ?? 1) })
             .eq("id", newEntry.id);
     }
 
-    const handleEntryOnClick = (entry) => {
+    const handleEntryOnClick = (entry: FullHistory) => {
         setHistoryEntryToEdit(entry);
         setEditHistoryEntryOpen(true);
     }
@@ -68,10 +82,15 @@ const HistoryScreen = () => {
         {
             historyLoading && <LinearProgress style={{ position: "fixed", left: 0, top: 56, right: 0 }} />
         }
-        <InfiniteScrollList fetch={(page) => dispatch(fetchHistoryAsync({ client, user, page }))} error={historyError} loading={historyLoading} endReached={historyEndReached}>
+        <InfiniteScrollList fetch={(page: number) => dispatch(fetchHistoryAsync({ client, user, page }))} error={historyError} loading={historyLoading} endReached={historyEndReached}>
             {
-                Object.entries(groupBy(historyItems.filter(x => x.drink), x => moment(new Date(x.created_at)).format("DD MMMM yyyy")))
-                    .map((x) => <HistoryItem key={x[0]} items={x[1]} header={x[0]} onClick={handleEntryOnClick} />)
+                Array.from(groupBy(historyItems.filter(x => x.drink), (x: FullHistory) =>
+                    moment(new Date(x.created_at ?? "")).format("DD MMMM yyyy")))
+                    .map(([key, value]) => <HistoryItem
+                        key={key}
+                        items={value}
+                        header={key}
+                        onClick={handleEntryOnClick} />)
             }
         </InfiniteScrollList>
         <EditHistoryEntryDialog

@@ -91,6 +91,7 @@
   },
   "devDependencies": {
     "@babel/plugin-proposal-private-property-in-object": "^7.21.11",
+    "@types/lodash": "^4.14.199",
     "react-app-env": "^1.2.3",
     "supabase": "^1.100.1"
   }
