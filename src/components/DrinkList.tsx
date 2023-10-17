@@ -11,7 +11,9 @@ import CustomAppBar from "./AppBar";
 //@ts-ignore
 import { fetchPaymentAsync } from "../redux/drinksSlice";
 import React from "react";
-import { Drink } from "../types/supabase";
+import { Drink } from "../types/supabaseTypes";
+import { RootState } from "../redux/store";
+import { useAppDispatch } from "..";
 
 const SUCCESS_MESSAGE_INFO: AlertMessage = { message: "Getränke erfolgreich gebucht!", severity: "success" };
 
@@ -26,12 +28,11 @@ type DrinkCounter = Drink & {
 
 const DrinkList = () => {
 
-    const { user } = useSelector((state: any) => state.application);
+    const { user } = useSelector((state: RootState) => state.application);
     const client = useClient();
-    const dispatch = useDispatch();
+    const dispatch = useAppDispatch();
 
-    const { drinks, drinksFetching, drinksError } = useSelector((state: any) => state.drinks);
-    const { payment } = useSelector((state: any) => state.drinks);
+    const { drinks, drinksLoading, drinksError, payment } = useSelector((state: RootState) => state.drinks);
 
     const [addedDrinks, setAddedDrinks] = useState<DrinkCounter[]>([]);
     const [loading, setLoading] = useState(false);
@@ -39,7 +40,7 @@ const DrinkList = () => {
     const [alertInfo, setAlertInfo] = useState(SUCCESS_MESSAGE_INFO);
 
     useEffect(() => {
-        dispatch(fetchPaymentAsync({ client, user }));
+        dispatch(fetchPaymentAsync({ client: client, user: user }));
     }, [client, user, dispatch]);
 
     const handleSnackbarClose = (event: Event | SyntheticEvent<any, Event>, reason: SnackbarCloseReason) => {
@@ -64,13 +65,13 @@ const DrinkList = () => {
         let data = { date: Date.now(), state: NOT_PAID, drinks: Object.values(addedDrinks) };
 
         try {
-            let paymentId: String;
-            if (!payment || payment.state !== OPEN) {
+            let paymentId: number;
+            if (!payment || payment.paymentState !== "Open") {
                 const { data: paymentUpdate } = await client.from("payments")
-                    .select("*").eq("userId", user.id).eq("state", OPEN).single();
+                    .select("*").eq("userId", user.userId).eq("state", OPEN).single();
                 if (!paymentUpdate) {
                     const { data, error } = await client.from("payments").insert({
-                        userId: user.id,
+                        userId: user.userId,
                         state: OPEN
                     }).select().single();
                     if (error)
@@ -89,7 +90,7 @@ const DrinkList = () => {
             const { error } = await client.from("history").insert(
                 Object.values(addedDrinks).map((drink) => {
                     return {
-                        user: user.id,
+                        user: user.userId,
                         drink: drink.id,
                         count: drink.count,
                         payment: paymentId,
@@ -148,7 +149,7 @@ const DrinkList = () => {
         alignItems="center"
         justifyContent="center">
         <CustomAppBar />
-        {drinksFetching && <LinearProgress style={{ position: "fixed", left: 0, right: 0, top: 56 }} />}
+        {drinksLoading && <LinearProgress style={{ position: "fixed", left: 0, right: 0, top: 56 }} />}
         <List sx={{ width: "100%" }}>
             {
                 drinks && drinks.filter((x: Drink) => !x.deleted && x.active).map((drink: Drink, index: number) => {

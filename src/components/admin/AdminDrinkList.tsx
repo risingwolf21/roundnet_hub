@@ -11,7 +11,7 @@ import { Error } from "../Error";
 import { useSelector } from "react-redux";
 import CustomAppBar from "../AppBar";
 import React from "react";
-import { Drink } from "../../types/supabase";
+import { Drink } from "../../types/supabaseTypes";
 import { useDependency } from "../../hooks/useDependency";
 import { IAdminDrinksRepository } from "../../repository/IAdminDrinksRepository";
 

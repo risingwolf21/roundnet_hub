@@ -8,6 +8,7 @@ import { AccountCircle, ArrowBack, Refresh } from '@mui/icons-material';
 import { useSelector } from 'react-redux';
 import { DependencyContext } from '..';
 import { IEventRepository } from '../repository/IEventRepository';
+import { RootState } from '../redux/store';
 
 type Props = {
     navigateBack?: boolean,
@@ -18,7 +19,7 @@ type Props = {
 const CustomAppBar = ({ navigateBack = false, title = "Roundnet Karlsruhe", onRefresh }: Props) => {
     const navigate = useNavigate();
     const { container } = useContext(DependencyContext);
-    const { user } = useSelector((state: any) => state.application);
+    const { user } = useSelector((state: RootState) => state.application);
 
     useEffect(() => {
         if (container)
@@ -41,7 +42,7 @@ const CustomAppBar = ({ navigateBack = false, title = "Roundnet Karlsruhe", onRe
                 {title}
             </Typography>
             {
-                user?.id && <IconButton color="inherit" onClick={() => navigate("/user")}>
+                user?.userId && <IconButton color="inherit" onClick={() => navigate("/user")}>
                     <AccountCircle />
                 </IconButton>
             }

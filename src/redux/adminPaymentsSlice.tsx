@@ -1,16 +1,24 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { OPEN } from '../constants';
+import { Payment, PaymentState } from '../types/supabaseTypes';
+import { SupabaseClient } from '@supabase/supabase-js';
+
+type AdminPaymentsSliceState = {
+    payments: Payment[] | null,
+    loading: boolean,
+    error: string | undefined
+}
+
+const initialState = {
+    payments: [],
+    loading: false,
+    error: undefined
+} as AdminPaymentsSliceState;
 
 export const adminPaymentsSlice = createSlice({
     name: "admin-payments",
-    initialState: {
-        payments: [],
-        loading: false,
-        error: null
-    },
-    reducers: {
-
-    },
+    initialState,
+    reducers: {},
     extraReducers(builder) {
         builder
             .addCase(fetchAdminsPaymentsAsync.pending, (state, action) => {
@@ -24,15 +32,15 @@ export const adminPaymentsSlice = createSlice({
             })
             .addCase(fetchAdminsPaymentsAsync.rejected, (state, action) => {
                 state.loading = false;
-                state.error = action.error.message;
+                state.error = action.error.message?.toString();
             })
     }
 });
 
-export const fetchAdminsPaymentsAsync = createAsyncThunk("admin-payments", async ({ client }) => {
+export const fetchAdminsPaymentsAsync = createAsyncThunk("admin-payments", async ({ client }: { client: SupabaseClient }) => {
     const response = await client.from("payments")
-        .select("id, created_at, user (userId, displayName, email), history (*)")
-        .eq("state", OPEN);
+        .select("id, created_at, paymentState, amountToPay, userId, user (userId, displayName, email), history (*)")
+        .eq("paymentState", "Open");
     return response.data;
 });
 

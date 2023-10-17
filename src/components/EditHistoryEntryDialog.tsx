@@ -7,7 +7,7 @@ import { useEffect, useState } from "react";
 //@ts-ignore
 import { SlideUpTransition } from "../utils";
 import React from "react";
-import { FullHistory } from "../types/supabase";
+import { FullHistory } from "../types/supabaseTypes";
 import { FullHistoryUpdate } from "./HistoryScreen";
 
 type Props = {

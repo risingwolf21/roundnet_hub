@@ -8,6 +8,7 @@ import { onModeChange } from "../redux/applicationSlice";
 import { withTranslation } from 'react-i18next';
 import React, { useEffect } from "react";
 import { TFunction } from "i18next";
+import { RootState } from "../redux/store";
 
 export type Tab = {
     translationKey: string,
@@ -41,7 +42,7 @@ const CustomBottomNavigation = ({ t }: { t: TFunction }) => {
 
     let navigate = useNavigate();
     let dispatch = useDispatch();
-    const { user } = useSelector((state: any) => state.application);
+    const { user } = useSelector((state: RootState) => state.application);
     const [tabs, setTabs] = useState<Tab[]>(defaultTabs)
 
     useEffect(() => {

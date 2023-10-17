@@ -1,4 +1,4 @@
-import { FullEvent, User } from "../types/supabase";
+import { FullEvent, User } from "../types/supabaseTypes";
 import { SupabaseClient } from '@supabase/supabase-js';
 import moment from "moment";
 import { PostgrestError } from '@supabase/supabase-js'

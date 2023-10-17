@@ -1,13 +1,23 @@
 import { createSlice } from '@reduxjs/toolkit';
+import { User } from '../types/supabaseTypes';
+
+type ApplicationSliceState = {
+    user: User,
+    mode: string,
+    appUpdateAvailable: boolean,
+    appVersion: string
+}
+
+const initialState = {
+    user: {},
+    mode: "drinks",
+    appUpdateAvailable: false,
+    appVersion: ""
+} as ApplicationSliceState;
 
 export const applicationReducer = createSlice({
     name: 'application',
-    initialState: {
-        user: {},
-        mode: "drinks",
-        appUpdateAvailable: false,
-        appVersion: ""
-    },
+    initialState,
     reducers: {
         onAppVersionChange: (state, action) => {
             state.appVersion = action.payload;

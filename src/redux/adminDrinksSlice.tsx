@@ -1,12 +1,10 @@
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-//@ts-ignore
-import { drinksReducer } from './reducer/drinksReducer';
+import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 //@ts-ignore
 import { historyReducer } from './reducer/historyReducer';
-import { Drink, FullHistory } from '../types/supabase';
+import { Drink, FullHistory } from '../types/supabaseTypes';
 import { IAdminDrinksRepository } from '../repository/IAdminDrinksRepository';
 
-type SliceState = {
+type AdminDrinkSliceState = {
     history: FullHistory[],
     drinks: Drink[],
     loading: boolean,
@@ -27,13 +25,28 @@ const initialState = {
     historyLoading: false,
     drinksError: '',
     drinksLoading: false
-} as SliceState;
+} as AdminDrinkSliceState;
 
 export const adminDrinksSlice = createSlice({
     name: 'admin-drinks',
     initialState,
     reducers: {
-        ...drinksReducer,
+        onDrinkUpdated: (state: AdminDrinkSliceState, action: PayloadAction<Drink>) => {
+            const index = state.drinks.findIndex((x) =>
+                x.id === action.payload.id,
+            )
+            state.drinks = [
+                ...state.drinks.slice(0, index),
+                action.payload,
+                ...state.drinks.slice(index + 1)
+            ]
+        },
+        onDrinkDeleted: (state: AdminDrinkSliceState, action: PayloadAction<number>) => {
+            state.drinks = state.drinks.filter((x: Drink) => x.id !== action.payload)
+        },
+        onDrinkInserted: (state: AdminDrinkSliceState, action: PayloadAction<Drink>) => {
+            state.drinks = [...(state.drinks ?? []), action.payload]
+        },
         ...historyReducer
     },
     extraReducers(builder) {

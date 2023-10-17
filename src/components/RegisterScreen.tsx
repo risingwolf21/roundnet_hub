@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { FormEvent, useState } from "react";
 import Button from '@mui/material/Button';
 import CssBaseline from '@mui/material/CssBaseline';
 import TextField from '@mui/material/TextField';
@@ -11,12 +11,18 @@ import Logo from "../images/Karlsruher_Kojoten_Logo.svg";
 import { supabase } from "../supabaseClient";
 import { useNavigate } from "react-router-dom";
 
+type RegisterProps = {
+    email: string,
+    password: string,
+    displayName: string
+}
+
 const RegisterScreen = () => {
 
     const [errorMessage, setErrorMessage] = useState("");
     const navigate = useNavigate();
 
-    const onRegister = async ({ email, password, displayName }) => {
+    const onRegister = async ({ email, password, displayName }: RegisterProps) => {
         const { data, error } = await supabase.auth.signUp({
             email: email,
             password: password,
@@ -29,8 +35,12 @@ const RegisterScreen = () => {
             }
         });
 
-        let { updatingUserError } = await supabase.auth.updateUser({ data: { userId: data.user.id } })
-        let { writingError } = await supabase.from("user").upsert({ email, displayName, userId: data.user.id, role: "user" })
+        if (!data || !data.user) {
+            throw Error("Could not sign up user. The result was empty!");
+        }
+
+        let { error: updatingUserError } = await supabase.auth.updateUser({ data: { userId: data.user.id } })
+        let { error: writingError } = await supabase.from("user").upsert({ email, displayName, userId: data.user.id, role: "user" })
 
         if (error)
             setErrorMessage(JSON.stringify(error));
@@ -40,15 +50,15 @@ const RegisterScreen = () => {
             setErrorMessage(JSON.stringify(writingError));
     }
 
-    const handleSubmit = (event) => {
+    const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
         const data = new FormData(event.currentTarget);
-        if (data.get('password1') === data.get('password2')) {
-            onRegister({
-                email: data.get('email'),
-                password: data.get('password1'),
-                displayName: data.get('username'),
-            });
+        const email = data.get('email')?.toString();
+        const password = data.get('password1')?.toString();
+        const password2 = data.get('password2')?.toString();
+        const displayName = data.get('username')?.toString();
+        if (password && password2 && email && displayName && password === password2) {
+            onRegister({ email, password, displayName });
         }
     };
 

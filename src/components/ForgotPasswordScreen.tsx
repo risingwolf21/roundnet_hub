@@ -9,7 +9,6 @@ import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
 //@ts-ignore
 import { supabase } from '../supabaseClient';
-//@ts-ignore
 import Logo from "../images/Karlsruher_Kojoten_Logo.svg";
 import { Alert, CircularProgress, Snackbar } from '@mui/material';
 import { useNavigate } from 'react-router-dom';

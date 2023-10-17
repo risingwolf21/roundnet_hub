@@ -2,7 +2,7 @@ import { Button, Dialog, DialogActions, DialogContent, DialogTitle, FormControl,
 import { NON_REPEAT } from "../constants";
 import { useState } from "react";
 import React from "react";
-import { Event } from "../types/supabase";
+import { Event } from "../types/supabaseTypes";
 
 export const THIS_EVENT = "THIS_EVENT";
 export const THIS_AND_FOLLOWING_EVENT = "THIS_AND_FOLLOWING_EVENT";
@@ -25,13 +25,13 @@ export const DeleteEventDialog = ({ open, handleClose, selectedEvent }: DeleteEv
     return <Dialog open={open} onClose={() => handleClose(null)}>
         <DialogTitle>
             {
-                selectedEvent.recurring === NON_REPEAT
+                selectedEvent.recurrence === "None"
                     ? "Delete event"
                     : "Delete recurring event"
             }
         </DialogTitle>
         {
-            selectedEvent.recurring !== NON_REPEAT &&
+            selectedEvent.recurrence !== "None" &&
             <DialogContent>
                 <FormControl sx={{ m: 1, minWidth: 120 }}>
                     <RadioGroup

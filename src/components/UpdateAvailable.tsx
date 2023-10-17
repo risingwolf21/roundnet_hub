@@ -1,7 +1,8 @@
 import { Info, Refresh } from "@mui/icons-material"
 import { Grid, Typography, AppBar, Toolbar, Button } from "@mui/material"
+import React from "react";
 
-const UpdateAvailable = ({ update }) => {
+const UpdateAvailable = ({ update }: { update: () => void }) => {
     return <Grid>
         <AppBar position="fixed" sx={{ zIndex: (theme) => theme.zIndex.drawer + 1, background: "primary" }}>
             <Toolbar>

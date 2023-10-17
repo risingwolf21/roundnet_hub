@@ -10,7 +10,7 @@ import { useClient } from "react-supabase";
 import CustomAppBar from "../AppBar";
 import { DependencyContext, useAppDispatch } from "../..";
 import React from "react";
-import { FullHistory } from "../../types/supabase";
+import { FullHistory } from "../../types/supabaseTypes";
 import { IAdminDrinksRepository } from "../../repository/IAdminDrinksRepository";
 
 const AdminHistoryItem = ({ items, header }: { items: FullHistory[], header: string }) => {

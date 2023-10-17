@@ -3,7 +3,7 @@ import AddIcon from '@mui/icons-material/Add';
 import RemoveIcon from '@mui/icons-material/Remove';
 import LocalDrinkIcon from '@mui/icons-material/LocalDrink';
 import React from 'react';
-import { Drink } from '../types/supabase';
+import { Drink } from '../types/supabaseTypes';
 
 type Props = {
     drink: Drink,

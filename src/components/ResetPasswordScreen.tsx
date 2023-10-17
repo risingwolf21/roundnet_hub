@@ -51,16 +51,18 @@ const ResetPasswordScreen = () => {
         }
     }, [accessToken, refreshToken]);
 
-    const handleSubmit = async (event) => {
+    const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
         const data = new FormData(event.currentTarget);
+        const password = data.get("password")?.toString();
+        const password1 = data.get("password1")?.toString();
 
-        if (data.get("password") !== data.get("password1")) {
+        if (password !== password1 || !password || password1) {
             setErrorMessage("Die Passwörter stimmen nicht überein!");
             return;
         }
 
-        const { error } = await supabase.auth.updateUser({ password: data.get("password") });
+        const { error } = await supabase.auth.updateUser({ password });
         if (error)
             setErrorMessage(error.message);
         else {

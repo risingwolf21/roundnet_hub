@@ -6,26 +6,6 @@ export type Json =
   | { [key: string]: Json | undefined }
   | Json[]
 
-export type Drink = Database["public"]["Tables"]["drink"]["Row"];
-export type Attendance = Database["public"]["Tables"]["event_attendance_user_mapping"]["Row"];
-export type Comment = Database["public"]["Tables"]["event_comments"]["Row"];
-export type Group = Database["public"]["Tables"]["event_group"]["Row"];
-export type Event = Database["public"]["Tables"]["events"]["Row"];
-export type History = Database["public"]["Tables"]["history"]["Row"];
-export type Payment = Database["public"]["Tables"]["payments"]["Row"];
-export type User = Database["public"]["Tables"]["user"]["Row"];
-
-export type FullHistory = History & {
-  drink: Drink,
-  drinkId: string,
-  user: User
-}
-
-export type FullEvent = Event & {
-  comments: Comment[],
-  attendance: Attendance[]
-}
-
 export interface Database {
   public: {
     Tables: {
@@ -66,19 +46,19 @@ export interface Database {
         Row: {
           created_at: string | null
           event: number
-          state: string
+          state: Database["public"]["Enums"]["EventAttendance"]
           user: string
         }
         Insert: {
           created_at?: string | null
           event: number
-          state?: string
+          state?: Database["public"]["Enums"]["EventAttendance"]
           user: string
         }
         Update: {
           created_at?: string | null
           event?: number
-          state?: string
+          state?: Database["public"]["Enums"]["EventAttendance"]
           user?: string
         }
         Relationships: [
@@ -182,7 +162,7 @@ export interface Database {
           key: string
           meetingDateTime: string | null
           place: Json | null
-          recurring: string | null
+          recurrence: Database["public"]["Enums"]["EventRecurrence"]
           startingDateTime: string | null
           title: string | null
         }
@@ -195,7 +175,7 @@ export interface Database {
           key?: string
           meetingDateTime?: string | null
           place?: Json | null
-          recurring?: string | null
+          recurrence?: Database["public"]["Enums"]["EventRecurrence"]
           startingDateTime?: string | null
           title?: string | null
         }
@@ -208,7 +188,7 @@ export interface Database {
           key?: string
           meetingDateTime?: string | null
           place?: Json | null
-          recurring?: string | null
+          recurrence?: Database["public"]["Enums"]["EventRecurrence"]
           startingDateTime?: string | null
           title?: string | null
         }
@@ -361,21 +341,21 @@ export interface Database {
           amountToPay: number
           created_at: string | null
           id: number
-          state: string
+          paymentState: Database["public"]["Enums"]["PaymentState"]
           userId: string | null
         }
         Insert: {
           amountToPay?: number
           created_at?: string | null
           id?: number
-          state?: string
+          paymentState?: Database["public"]["Enums"]["PaymentState"]
           userId?: string | null
         }
         Update: {
           amountToPay?: number
           created_at?: string | null
           id?: number
-          state?: string
+          paymentState?: Database["public"]["Enums"]["PaymentState"]
           userId?: string | null
         }
         Relationships: [
@@ -392,7 +372,7 @@ export interface Database {
           created_at: string | null
           displayName: string | null
           email: string | null
-          role: string
+          role: Database["public"]["Enums"]["UserRole"]
           userId: string
           verified: boolean
         }
@@ -400,7 +380,7 @@ export interface Database {
           created_at?: string | null
           displayName?: string | null
           email?: string | null
-          role?: string
+          role?: Database["public"]["Enums"]["UserRole"]
           userId?: string
           verified?: boolean
         }
@@ -408,7 +388,7 @@ export interface Database {
           created_at?: string | null
           displayName?: string | null
           email?: string | null
-          role?: string
+          role?: Database["public"]["Enums"]["UserRole"]
           userId?: string
           verified?: boolean
         }
@@ -426,7 +406,7 @@ export interface Database {
           key: string | null
           meetingDateTime: string | null
           place: Json | null
-          recurring: string | null
+          recurrence: Database["public"]["Enums"]["EventRecurrence"] | null
           startingDateTime: string | null
           title: string | null
         }
@@ -437,7 +417,10 @@ export interface Database {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      EventAttendance: "Declined" | "Attending" | "Unanswered"
+      EventRecurrence: "Weekly" | "Fortnightly" | "Monthly" | "None"
+      PaymentState: "Open" | "Fulfilled"
+      UserRole: "user" | "admin" | "procure" | "finance" | "trainer"
     }
     CompositeTypes: {
       [_ in never]: never

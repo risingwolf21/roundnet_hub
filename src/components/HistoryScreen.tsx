@@ -12,7 +12,8 @@ import { InfiniteScrollList } from "./InfiniteScrollList";
 import CustomAppBar from "./AppBar";
 import EditHistoryEntryDialog from "./EditHistoryEntryDialog";
 import React from "react";
-import { Drink, FullHistory } from "../types/supabase";
+import { Drink, FullHistory } from "../types/supabaseTypes";
+import { useAppDispatch } from "..";
 
 export type FullHistoryUpdate = FullHistory & {
     newCount: number
@@ -43,7 +44,7 @@ const HistoryItem = ({ items, header, onClick }: HistoryItemProps) => {
 const HistoryScreen = () => {
     const { history, drinks, historyLoading, historyError, historyEndReached } = useSelector((state: any) => state.drinks);
     const { user } = useSelector((state: any) => state.application);
-    const dispatch = useDispatch();
+    const dispatch = useAppDispatch();
     const client = useClient();
 
     const [historyItems, setHistoryItems] = useState<FullHistory[]>([]);
@@ -82,7 +83,7 @@ const HistoryScreen = () => {
         {
             historyLoading && <LinearProgress style={{ position: "fixed", left: 0, top: 56, right: 0 }} />
         }
-        <InfiniteScrollList fetch={(page: number) => dispatch(fetchHistoryAsync({ client, user, page }))} error={historyError} loading={historyLoading} endReached={historyEndReached}>
+        <InfiniteScrollList fetch={(page: number) => dispatch(fetchHistoryAsync({ client, user, page, count: 20 }))} error={historyError} loading={historyLoading} endReached={historyEndReached}>
             {
                 Array.from(groupBy(historyItems.filter(x => x.drink), (x: FullHistory) =>
                     moment(new Date(x.created_at ?? "")).format("DD MMMM yyyy")))

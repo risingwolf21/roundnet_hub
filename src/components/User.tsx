@@ -3,13 +3,14 @@ import CheckIcon from '@mui/icons-material/Check';
 import { useClient } from "react-supabase";
 import CustomAppBar from "./AppBar";
 import { useSelector } from "react-redux";
+import React, { FormEvent } from "react";
 
 const UserScreen = () => {
 
-    const { user } = useSelector(state => state.application);
+    const { user } = useSelector((state: any) => state.application);
     const client = useClient();
 
-    const handleSubmit = async (event) => {
+    const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
         const data = new FormData(event.currentTarget);
         var displayName = data.get('displayName');
@@ -50,7 +51,7 @@ const UserScreen = () => {
                                 label="Adminrechte"
                             />
                         }
-                        <Fab key={"saveButton"} sx={{ background: "#66bb6a", position: "fixed", right: "16px", bottom: "16px", bottom: "72px" }} type="submit">
+                        <Fab key={"saveButton"} sx={{ background: "#66bb6a", position: "fixed", right: "16px", bottom: "72px" }} type="submit">
                             <CheckIcon sx={{ color: "white" }} />
                         </Fab>
                     </Box>

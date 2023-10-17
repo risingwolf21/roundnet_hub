@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { FormEvent, FormEventHandler, useState } from "react"
 import Button from '@mui/material/Button';
 import CssBaseline from '@mui/material/CssBaseline';
 import TextField from '@mui/material/TextField';
@@ -10,13 +10,19 @@ import Container from '@mui/material/Container';
 import Logo from "../images/Karlsruher_Kojoten_Logo.svg";
 import { supabase } from "../supabaseClient";
 import { useNavigate } from "react-router-dom";
+import React from "react";
+
+type Credentials = {
+    email: string,
+    password: string
+}
 
 const LoginScreen = () => {
 
     const [errorMessage, setErrorMessage] = useState("");
     const navigate = useNavigate();
 
-    const onLogin = async (credentials) => {
+    const onLogin = async (credentials: Credentials) => {
         const { data, error } = await supabase.auth.signInWithPassword({
             email: credentials.email,
             password: credentials.password
@@ -25,7 +31,7 @@ const LoginScreen = () => {
             setErrorMessage(error.message);
         else
             supabase.from("user").select().eq("userId", data.user.id).then(async res => {
-                if (res.data.length === 1) {
+                if (res.data && res.data.length === 1) {
                     await supabase.auth.updateUser({
                         data: { role: res.data[0].role }
                     });
@@ -34,13 +40,16 @@ const LoginScreen = () => {
             })
     }
 
-    const handleSubmit = (event) => {
+    const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
         const data = new FormData(event.currentTarget);
-        onLogin({
-            email: data.get('email'),
-            password: data.get('password'),
-        });
+        const email = data.get("email")?.toString();
+        const password = data.get("password")?.toString();
+        if (email && password) {
+            onLogin({ email, password });
+        } else {
+            setErrorMessage("Email or Password is null.")
+        }
     };
 
     return (
