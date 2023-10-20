@@ -40,7 +40,7 @@ RealtimeChannel.prototype.addBasicSubscriptions = function (dispatch: Dispatch<A
 
         .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'event_comments' }, payload => dispatch(onEventCommentUpdate(payload)))
         .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'event_comments' }, payload => dispatch(onEventCommentDelete(payload)))
-        .on<Comment>('postgres_changes', { event: 'INSERT', schema: 'public', table: 'event_comments' }, payload => dispatch(onEventCommentInsert(payload)));
+        .on<Comment>('postgres_changes', { event: 'INSERT', schema: 'public', table: 'event_comments' }, payload => dispatch(onEventCommentInsert(payload.new)));
 }
 
 RealtimeChannel.prototype.addAdminSubscriptionbs = function (dispatch: Dispatch<AnyAction>, userId: string, active: boolean): RealtimeChannel {
