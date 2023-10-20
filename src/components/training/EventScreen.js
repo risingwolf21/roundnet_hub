@@ -3,7 +3,7 @@ import { useDispatch, useSelector } from "react-redux";
 import moment from "moment";
 import { useNavigate } from 'react-router-dom';
 import React from "react";
-import { fetchEventsAsync, onEventErrorRead, updateAttendanceAsync } from "../../redux/eventReducer";
+import { fetchEventsAsync, onEventErrorRead, updateAttendanceAsync } from "../../redux/eventSlice";
 import AddIcon from '@mui/icons-material/Add';
 import { ThumbDownAlt, ThumbDownOffAlt, ThumbUpAlt, ThumbUpOffAlt } from "@mui/icons-material";
 import { ATTENDING, DECLINED } from "../../constants";

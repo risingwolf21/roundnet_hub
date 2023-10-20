@@ -6,7 +6,7 @@ import { useState } from "react";
 import { ATTENDING, DECLINED } from "../../constants";
 import EventAttendanceDialog from "./EventAttendanceDialog";
 import { useEffect } from "react";
-import { editEvent, fetchEventAttendanceAsync, fetchSingleEventAsync, onEventErrorRead, updateAttendanceAsync, upsertCommentToEventAsync } from "../../redux/eventReducer";
+import { editEvent, fetchEventAttendanceAsync, fetchSingleEventAsync, onEventErrorRead, updateAttendanceAsync, upsertCommentToEventAsync } from "../../redux/eventSlice";
 import { useClient } from "react-supabase";
 import { useNavigate, useParams } from "react-router-dom";
 import { toInteger } from "lodash";

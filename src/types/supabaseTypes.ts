@@ -21,11 +21,39 @@ export type PaymentHistory = History & {
 }
 
 export type FullEvent = Event & {
-    comments: Comment[],
-    attendance: Attendance[]
+    comments: FullComment[],
+    attendance: FullAttendance[],
+    userAttendance: EventAttendance,
+    groups: Group[]
+}
+
+export type FullAttendance = Attendance & {
+    user: User,
+    userId: string
+}
+
+export type SimpleUser = {
+    displayName: string,
+    userId: string,
+    email: string | null
+}
+
+export type FullComment = Modify<Comment, {
+    user: SimpleUser | null,
+    userId: string
+}>
+
+export type UserWithGroups = User & {
+    groups: Group[]
+}
+
+export type GroupWithUsers = Group & {
+    users: SimpleUser[]
 }
 
 export type EventAttendance = Database["public"]["Enums"]["EventAttendance"];
 export type EventRecurrence = Database["public"]["Enums"]["EventRecurrence"];
 export type PaymentState = Database["public"]["Enums"]["PaymentState"];
 export type UserRole = Database["public"]["Enums"]["UserRole"];
+
+type Modify<T, R> = Omit<T, keyof R> & R;

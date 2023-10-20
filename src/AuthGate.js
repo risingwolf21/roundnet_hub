@@ -1,6 +1,5 @@
 import { setUser } from "@sentry/react";
 import React, { createContext } from "react";
-import { useAuthStateChange } from "./hooks/useAuthStateChange";
 import { useClient } from "react-supabase";
 import { useDispatch, useSelector } from "react-redux";
 import { onUserChange } from "./redux/applicationSlice";
@@ -23,25 +22,27 @@ const AuthGate = ({ children }) => {
     const dispatch = useDispatch();
     const navigate = useNavigate();
 
-    useAuthStateChange((event, session) => {
-        console.log("auth state changed")
-        setUser({ email: session?.user?.email ?? null, id: session?.user?.id ?? null });
-        if (session?.user) {
-            client.from("user").select().single().eq("userId", session.user.id).then(res => {
-                if (res && res.data) {
-                    let user = {
-                        ...session?.user ?? null,
-                        role: res.data.role,
-                        verified: res.data.verified
+    useEffect(() => {
+        client.auth.onAuthStateChange((event, session) => {
+            console.log("auth state changed")
+            setUser({ email: session?.user?.email ?? null, id: session?.user?.id ?? null });
+            if (session?.user) {
+                client.from("user").select().single().eq("userId", session.user.id).then(res => {
+                    if (res && res.data) {
+                        let user = {
+                            ...session?.user ?? null,
+                            role: res.data.role,
+                            verified: res.data.verified
+                        }
+                        dispatch(onUserChange(user));
                     }
-                    dispatch(onUserChange(user));
-                }
-            })
-        } else {
-            dispatch(onUserChange(null));
-            navigate("/login", { replace: true });
-        }
-    });
+                })
+            } else {
+                dispatch(onUserChange(null));
+                navigate("/login", { replace: true });
+            }
+        })
+    }, []);
 
     const authenticationRoutes = [
         <Route path='/login' element={<LoginScreen />} />,

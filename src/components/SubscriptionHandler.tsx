@@ -4,11 +4,11 @@ import { connect, useSelector } from "react-redux";
 //@ts-ignore
 import { onHistoryDelete, onHistoryInsert, onHistoryUpdate, onDrinkDeleted, onDrinkInserted, onDrinkUpdated, onPaymentUpdated, onPaymentDeleted } from "../redux/drinksSlice";
 //@ts-ignore
-import { onEventAttendanceUserDelete, onEventAttendanceUserInsert, onEventAttendanceUserUpdate, onEventCommentDelete, onEventCommentInsert, onEventCommentUpdate, onEventDelete, onEventInsert, onEventUpdate } from "../redux/eventReducer";
+import { onEventAttendanceUserDelete, onEventAttendanceUserInsert, onEventAttendanceUserUpdate, onEventCommentDelete, onEventCommentInsert, onEventCommentUpdate, onEventDelete, onEventInsert, onEventUpdate } from "../redux/eventSlice";
 import { useDispatch } from "react-redux";
 import { AnyAction } from "@reduxjs/toolkit";
 import { RealtimeChannel } from "@supabase/supabase-js";
-import { Drink, Payment } from "../types/supabaseTypes";
+import { Comment, Drink, Payment } from "../types/supabaseTypes";
 
 declare module "@supabase/supabase-js" {
     export interface RealtimeChannel {
@@ -40,7 +40,7 @@ RealtimeChannel.prototype.addBasicSubscriptions = function (dispatch: Dispatch<A
 
         .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'event_comments' }, payload => dispatch(onEventCommentUpdate(payload)))
         .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'event_comments' }, payload => dispatch(onEventCommentDelete(payload)))
-        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'event_comments' }, payload => dispatch(onEventCommentInsert(payload)));
+        .on<Comment>('postgres_changes', { event: 'INSERT', schema: 'public', table: 'event_comments' }, payload => dispatch(onEventCommentInsert(payload)));
 }
 
 RealtimeChannel.prototype.addAdminSubscriptionbs = function (dispatch: Dispatch<AnyAction>, userId: string, active: boolean): RealtimeChannel {

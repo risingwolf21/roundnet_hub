@@ -29,7 +29,7 @@ import BrowseAdmin from './components/admin/BrowseAdmin';
 import DrinkStockUpdateScreen from './components/procure/DrinkStockUpdateScreen';
 import AnalyzeDrinkStockHistory from './components/procure/AnalyzeDrinkStockHistory';
 import raw from "./git_commit.txt";
-import { fetchUserGroupsAsync } from './redux/eventReducer';
+import { fetchUserGroupsAsync } from './redux/eventSlice';
 import { GroupInformation } from './components/groups/GroupInformation';
 import { DependencyContext } from '.';
 

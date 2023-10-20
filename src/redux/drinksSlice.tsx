@@ -3,6 +3,7 @@ import { OPEN } from '../constants';
 import { Drink, FullHistory, Payment, PaymentHistory, User } from '../types/supabaseTypes';
 import { compareById } from '../utils';
 import { SupabaseClient } from '@supabase/supabase-js';
+import { ClientUser } from '../types/types';
 
 type DrinksSliceState = {
     history: FullHistory[],
@@ -191,11 +192,6 @@ export const drinksSlice = createSlice({
             })
     }
 });
-
-type ClientUser = {
-    client: SupabaseClient,
-    user: User
-}
 
 export const fetchPaymentAsync = createAsyncThunk("payments", async ({ client, user }: ClientUser) => {
     const response = await client.from("payments").select("*").eq("userId", user.userId).eq("state", OPEN)
