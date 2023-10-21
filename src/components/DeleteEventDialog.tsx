@@ -3,6 +3,7 @@ import { NON_REPEAT } from "../constants";
 import { useState } from "react";
 import React from "react";
 import { Event } from "../types/supabaseTypes";
+import { DeleteEventType } from "./training/EventInformation";
 
 export const THIS_EVENT = "THIS_EVENT";
 export const THIS_AND_FOLLOWING_EVENT = "THIS_AND_FOLLOWING_EVENT";
@@ -14,13 +15,13 @@ export enum DeletionType {
 
 type DeleteEventDialogProps = {
     open: boolean,
-    handleClose: (result: DeletionType | null) => any,
+    handleClose: (result: DeleteEventType | null) => any,
     selectedEvent: Event
 }
 
 export const DeleteEventDialog = ({ open, handleClose, selectedEvent }: DeleteEventDialogProps) => {
 
-    const [deletion, setDeletion] = useState(DeletionType.ThisEvent);
+    const [deletion, setDeletion] = useState<DeleteEventType>("This Event");
 
     return <Dialog open={open} onClose={() => handleClose(null)}>
         <DialogTitle>
@@ -39,9 +40,9 @@ export const DeleteEventDialog = ({ open, handleClose, selectedEvent }: DeleteEv
                         value={deletion}
                         onChange={(e) => {
                             if (e.target.value === "0")
-                                setDeletion(DeletionType.ThisEvent);
+                                setDeletion("This Event");
                             else
-                                setDeletion(DeletionType.ThisAndFollowingEvents);
+                                setDeletion("This and following events");
                         }}
                         name="radio-buttons-group">
                         <FormControlLabel value={DeletionType.ThisEvent} control={<Radio />} label="This event" />

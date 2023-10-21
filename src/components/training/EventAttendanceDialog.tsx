@@ -5,8 +5,10 @@ import { AccountCircle, Close } from "@mui/icons-material";
 import { useTheme } from '@mui/material/styles';
 import { ATTENDING, DECLINED } from "../../constants";
 import { useEffect } from "react";
+import React from "react";
+import { FullEvent } from "../../types/supabaseTypes";
 
-function TabPanel(props) {
+function TabPanel(props: any) {
     const { children, value, index, ...other } = props;
 
     return (
@@ -22,17 +24,24 @@ function TabPanel(props) {
     );
 }
 
-const EventAttendanceDialog = ({ open, index, handleClose, event }) => {
+type EventAttendanceDialogProps = {
+    open: boolean,
+    index: number,
+    handleClose: () => void,
+    event: FullEvent
+}
+
+const EventAttendanceDialog = ({ open, index, handleClose, event }: EventAttendanceDialogProps) => {
 
     const [value, setValue] = useState(index ?? 0);
     const theme = useTheme();
-    
+
     useEffect(() => {
         setValue(index);
     }, [index]);
 
-    const handleChange = (event, newValue) => {
-        setValue(newValue);
+    const handleChange = (event: React.SyntheticEvent<Element, Event>, value: any) => {
+        setValue(value);
     };
 
     return <Dialog
@@ -41,7 +50,7 @@ const EventAttendanceDialog = ({ open, index, handleClose, event }) => {
         onClose={handleClose}
         TransitionComponent={SlideUpTransition}>
         <Box>
-            <AppBar position="static">
+            <AppBar position="sticky">
                 <Toolbar>
                     <IconButton
                         edge="start"
@@ -69,7 +78,7 @@ const EventAttendanceDialog = ({ open, index, handleClose, event }) => {
             <TabPanel value={value} index={0} dir={theme.direction}>
                 <List>
                     {
-                        event && event?.attendance?.filter(x => x.state === ATTENDING).map(x => <ListItem key={x}>
+                        event && event?.attendance?.filter(x => x.state === "Attending").map(x => <ListItem key={x.userId}>
                             <ListItemAvatar>
                                 <Avatar>
                                     <AccountCircle />
@@ -83,7 +92,7 @@ const EventAttendanceDialog = ({ open, index, handleClose, event }) => {
             <TabPanel value={value} index={1} dir={theme.direction}>
                 <List>
                     {
-                        event && event?.attendance?.filter(x => x.state === DECLINED).map(x => <ListItem key={x}>
+                        event && event?.attendance?.filter(x => x.state === "Declined").map(x => <ListItem key={x.userId}>
                             <ListItemAvatar>
                                 <Avatar>
                                     <AccountCircle />

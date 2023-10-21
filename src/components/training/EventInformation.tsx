@@ -2,19 +2,32 @@ import { Alert, AppBar, Avatar, Box, Button, CircularProgress, Dialog, DialogAct
 import { AccountCircle, ArrowBack, CalendarMonth, CheckCircleOutline, Delete, DoNotDisturb, DoNotDisturbOff, Edit, Info, Map, MoreVert, Refresh, RemoveCircleOutline, Send, ThumbDownAlt, ThumbDownOffAlt, ThumbUpAlt, ThumbUpOffAlt } from "@mui/icons-material";
 import { connect, useSelector } from "react-redux";
 import moment from "moment";
-import { useState } from "react";
+import { ChangeEvent, FormEvent, MouseEventHandler, useState } from "react";
 import { ATTENDING, DECLINED } from "../../constants";
 import EventAttendanceDialog from "./EventAttendanceDialog";
 import { useEffect } from "react";
 import { editEvent, fetchEventAttendanceAsync, fetchSingleEventAsync, onEventErrorRead, updateAttendanceAsync, upsertCommentToEventAsync } from "../../redux/eventSlice";
 import { useClient } from "react-supabase";
 import { useNavigate, useParams } from "react-router-dom";
-import { toInteger } from "lodash";
+import { toInteger, toNumber } from "lodash";
 import { MapContainer, TileLayer, Marker } from "react-leaflet";
-import { DeleteEventDialog, THIS_AND_FOLLOWING_EVENT, THIS_EVENT } from "../DeleteEventDialog";
-import { Fragment } from "react";
+import { DeleteEventDialog, DeletionType, THIS_AND_FOLLOWING_EVENT, THIS_EVENT } from "../DeleteEventDialog";
+import React, { Fragment } from "react";
+import { AppDispatch } from "../..";
+import { EventAttendance, FullEvent } from "../../types/supabaseTypes";
+import { RootState } from "../../redux/store";
+import { PlaceType } from "./CreateEvent";
 
-const EventInformation = ({ dispatch, events, attendanceLoading, error }) => {
+type EventInformationProps = {
+    dispatch: AppDispatch,
+    events: FullEvent[],
+    attendanceLoading: boolean,
+    error: string | null
+}
+
+export type DeleteEventType = "This Event" | "This and following events";
+
+const EventInformation = ({ dispatch, events, attendanceLoading, error }: EventInformationProps) => {
 
     const { selectedEventId } = useParams();
 
@@ -22,34 +35,38 @@ const EventInformation = ({ dispatch, events, attendanceLoading, error }) => {
     const [cancelTrainingOpen, setCancelTrainingOpen] = useState(false);
     const [deleteTrainingOpen, setDeleteTrainingOpen] = useState(false);
     const [comment, setComment] = useState("");
-    const [selectedEvent, setSelectedEvent] = useState("");
+    const [selectedEvent, setSelectedEvent] = useState<FullEvent>();
+    const [selectedEventPlace, setSelectedEventPlace] = useState<PlaceType>();
     const client = useClient();
     const navigate = useNavigate();
-    const { user } = useSelector(state => state.application);
-    const [anchorEl, setAnchorEl] = useState(null);
+    const { user } = useSelector((state: RootState) => state.application);
+    const [anchorEl, setAnchorEl] = useState<EventTarget & HTMLAnchorElement | null>(null);
 
     useEffect(() => {
         if (selectedEventId) {
-            dispatch(fetchEventAttendanceAsync({ client, eventId: selectedEventId }))
+            dispatch(fetchEventAttendanceAsync({ client, eventId: toNumber(selectedEventId) }))
         }
     }, [selectedEventId, dispatch, client]);
 
     useEffect(() => {
         let found = events.find(x => x.id === toInteger(selectedEventId));
         if (!found) {
-            dispatch(fetchSingleEventAsync({ client, eventId: selectedEventId }));
+            dispatch(fetchSingleEventAsync({ client, eventId: toNumber(selectedEventId) }));
         } else {
             setSelectedEvent(found);
+            setSelectedEventPlace(JSON.parse(found.place?.toString() ?? "") as PlaceType)
         }
     }, [events, selectedEventId, dispatch, client]);
 
     if (!selectedEvent)
         return <Box
-            width="100%"
-            height="100%"
-            direction="column"
-            alignItems="center"
-            justifyContent="center">
+            sx={{
+                width: "100%",
+                height: "100%",
+                direction: "column",
+                alignItems: "center",
+                justifyContent: "center"
+            }}>
             <Typography>{`Event mit ID ${selectedEventId} nicht gefunden`}</Typography>
         </Box>
 
@@ -61,15 +78,17 @@ const EventInformation = ({ dispatch, events, attendanceLoading, error }) => {
     const uploadComment = async () => {
         if (!comment)
             return;
-        dispatch(upsertCommentToEventAsync({ client, user, eventId: selectedEventId, comment }));
+        dispatch(upsertCommentToEventAsync({ client, user, eventId: toNumber(selectedEventId), comment }));
         setComment("");
     }
 
-    const deleteEvent = async (value) => {
-        if (value === THIS_EVENT) {
+    const deleteEvent = async (value: DeleteEventType | null) => {
+        if (!value) {
+            return;
+        } else if (value === "This Event") {
             await client.from("events").delete().eq("id", selectedEvent.id);
             navigate("/training", { replace: true });
-        } else if (value === THIS_AND_FOLLOWING_EVENT) {
+        } else if (value === "This and following events") {
             await client.from("events").delete()
                 .eq("key", selectedEvent.key)
                 .gte("startingDateTime", selectedEvent.startingDateTime);
@@ -80,15 +99,17 @@ const EventInformation = ({ dispatch, events, attendanceLoading, error }) => {
         }
     }
 
-    const updateAttendance = async (state, oldState) => {
+    const updateAttendance = async (state: EventAttendance, oldState: EventAttendance) => {
+        if (!selectedEventId)
+            return;
         dispatch(updateAttendanceAsync({ client, user, eventId: selectedEventId, state, oldState }));
     }
 
-    const handleCommentChange = (event) => {
+    const handleCommentChange = (event: ChangeEvent<HTMLInputElement>) => {
         setComment(event.target.value);
     }
 
-    const handleClick = (event) => {
+    const handleClick = (event: React.MouseEvent<HTMLAnchorElement>) => {
         setAnchorEl(event.currentTarget);
     };
 
@@ -97,10 +118,12 @@ const EventInformation = ({ dispatch, events, attendanceLoading, error }) => {
     };
 
     return <Box
-        width="100%"
-        direction="column"
-        alignItems="center"
-        justifyContent="center">
+        sx={{
+            width: "100%",
+            direction: "column",
+            alignItems: "center",
+            justifyContent: "center"
+        }}>
         <AppBar position="sticky" sx={{ zIndex: (theme) => theme.zIndex.drawer + 1, background: "primary" }}>
             <Toolbar>
                 <IconButton
@@ -117,11 +140,11 @@ const EventInformation = ({ dispatch, events, attendanceLoading, error }) => {
                 <IconButton color="inherit" onClick={() => navigate("/user")}>
                     <AccountCircle />
                 </IconButton>
-                <IconButton color="inherit" onClick={() => dispatch(fetchSingleEventAsync({ client, eventId: selectedEventId }))}>
+                <IconButton color="inherit" onClick={() => dispatch(fetchSingleEventAsync({ client, eventId: toNumber(selectedEventId) }))}>
                     <Refresh />
                 </IconButton>
                 {(user?.role === "admin" || user?.role === "trainer") && <>
-                    <IconButton aria-controls="simple-menu" aria-haspopup="true" color="inherit" onClick={handleClick}>
+                    <IconButton sx={{ color: "inherit" }} onClick={handleClick}>
                         <MoreVert />
                     </IconButton>
                     <Menu
@@ -180,24 +203,24 @@ const EventInformation = ({ dispatch, events, attendanceLoading, error }) => {
                         <ListItemAvatar>
                             <CalendarMonth />
                         </ListItemAvatar>
-                        <ListItemText primary={moment(new Date(selectedEvent?.startingDateTime)).format("DD.MM.yyyy [um] HH:mm")} secondary={"Startzeit"} />
+                        <ListItemText primary={moment(selectedEvent?.startingDateTime ?? "").format("DD.MM.yyyy [um] HH:mm")} secondary={"Startzeit"} />
                     </ListItem>
                     {
                         selectedEvent?.startingDateTime !== selectedEvent?.meetingDateTime &&
                         <ListItem sx={{ '&.MuiListItem-root': { pl: 0, pt: 0, pb: 0 } }}>
                             <ListItemAvatar />
-                            <ListItemText primary={moment(new Date(selectedEvent?.meetingDateTime)).format("DD.MM.yyyy [um] HH:mm")} secondary={"Treffpunkt"} />
+                            <ListItemText primary={moment(selectedEvent?.meetingDateTime ?? "").format("DD.MM.yyyy [um] HH:mm")} secondary={"Treffpunkt"} />
                         </ListItem>
                     }
 
                     <Divider />
                     {
-                        selectedEvent.place && <>
+                        selectedEventPlace && <>
                             <ListItem sx={{ '&.MuiListItem-root': { pl: 0, pb: 0 } }}>
                                 <ListItemAvatar>
                                     <Map />
                                 </ListItemAvatar>
-                                <ListItemText sx={{ whiteSpace: 'normal' }} primary={selectedEvent.place.name} />
+                                <ListItemText sx={{ whiteSpace: 'normal' }} primary={selectedEventPlace.name} />
                             </ListItem>
                             <ListItem sx={{ '&.MuiListItem-root': { pl: 0, pb: 0, pt: 0 } }}>
                                 <ListItemAvatar>
@@ -206,7 +229,7 @@ const EventInformation = ({ dispatch, events, attendanceLoading, error }) => {
                                     <Box sx={{ width: "100%", height: "150px" }}>
                                         <MapContainer
                                             style={{ width: "100%", height: "150px", borderRadius: "16px" }}
-                                            center={[selectedEvent?.place.lat, selectedEvent?.place.lon]}
+                                            center={[selectedEventPlace.lat, selectedEventPlace.lon]}
                                             zoom={15}
                                             dragging={false}
                                             doubleClickZoom={false}
@@ -214,7 +237,9 @@ const EventInformation = ({ dispatch, events, attendanceLoading, error }) => {
                                             attributionControl={false}
                                             zoomControl={false}>
                                             <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-                                            <Marker position={[selectedEvent?.place.lat, selectedEvent?.place.lon]} interactive={false} />
+                                            <Marker
+                                                position={[selectedEventPlace.lat, selectedEventPlace.lon]}
+                                                interactive={false} />
                                         </MapContainer>
                                     </Box>
                                 </ListItemText>
@@ -232,11 +257,11 @@ const EventInformation = ({ dispatch, events, attendanceLoading, error }) => {
                                     attendanceLoading ? <CircularProgress size={"20px"} /> : <CheckCircleOutline color="success" />
                                 }
                             </ListItemAvatar>
-                            <ListItemText primary={(selectedEvent?.attendance?.filter(x => x.state === ATTENDING).length ?? 0) + " zusagen"} />
+                            <ListItemText primary={(selectedEvent?.attendance?.filter(x => x.state === "Attending").length ?? 0) + " zusagen"} />
                             <ListItemSecondaryAction>
-                                <IconButton onClick={() => updateAttendance(ATTENDING, selectedEvent.userAttendance)} disabled={selectedEvent.isCancelled}>
+                                <IconButton onClick={() => updateAttendance("Attending", selectedEvent.userAttendance)} disabled={selectedEvent.isCancelled}>
                                     {
-                                        selectedEvent.userAttendance === ATTENDING
+                                        selectedEvent.userAttendance === "Attending"
                                             ? <ThumbUpAlt fontSize="inherit" sx={{ fontSize: "28px", color: "green" }} />
                                             : <ThumbUpOffAlt fontSize="inherit" sx={{ fontSize: "28px" }} />
                                     }
@@ -249,11 +274,11 @@ const EventInformation = ({ dispatch, events, attendanceLoading, error }) => {
                                     attendanceLoading ? <CircularProgress size={"20px"} /> : <RemoveCircleOutline color="error" />
                                 }
                             </ListItemAvatar>
-                            <ListItemText primary={(selectedEvent?.attendance?.filter(x => x.state === DECLINED).length ?? 0) + " absagen"} />
+                            <ListItemText primary={(selectedEvent?.attendance?.filter(x => x.state === "Declined").length ?? 0) + " absagen"} />
                             <ListItemSecondaryAction>
-                                <IconButton onClick={() => updateAttendance(DECLINED, selectedEvent.userAttendance)} disabled={selectedEvent.isCancelled}>
+                                <IconButton onClick={() => updateAttendance("Declined", selectedEvent.userAttendance)} disabled={selectedEvent.isCancelled}>
                                     {
-                                        selectedEvent.userAttendance === DECLINED
+                                        selectedEvent.userAttendance === "Declined"
                                             ? <ThumbDownAlt fontSize="inherit" sx={{ fontSize: "28px", color: "red" }} />
                                             : <ThumbDownOffAlt fontSize="inherit" sx={{ fontSize: "28px" }} />
                                     }
@@ -270,7 +295,7 @@ const EventInformation = ({ dispatch, events, attendanceLoading, error }) => {
                                         {
                                             x.pending
                                                 ? <CircularProgress size={"20px"} />
-                                                : <Typography style={{ fontWeight: "bold" }}>{x.displayName.charAt(0)}</Typography>
+                                                : <Typography style={{ fontWeight: "bold" }}>{x.displayName?.charAt(0)}</Typography>
                                         }
                                     </Avatar>
                                 </ListItemAvatar>
@@ -337,14 +362,14 @@ const EventInformation = ({ dispatch, events, attendanceLoading, error }) => {
             }} />
         </Box>
         <Snackbar sx={{ position: "fixed", right: "16px", }} open={error !== null} >
-            <Alert severity={"error"} sx={{ width: '100%' }} onClose={() => dispatch(onEventErrorRead())}>
-                {error?.message}
+            <Alert severity={"error"} sx={{ width: '100%' }} onClose={() => dispatch(onEventErrorRead(null))}>
+                {error}
             </Alert>
         </Snackbar>
     </Box >
 }
 
-const mapStateToProps = (state) => {
+const mapStateToProps = (state: RootState) => {
     return {
         events: state.events.items,
         error: state.events.error,

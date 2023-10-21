@@ -46,7 +46,8 @@ export type SimpleUser = {
 
 export type FullComment = Modify<Comment, {
     user: SimpleUser | null,
-    userId: string
+    userId: string,
+    pending: boolean | null
 }>
 
 export type UserWithGroups = User & {

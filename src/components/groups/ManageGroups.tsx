@@ -2,21 +2,21 @@ import { Grid, LinearProgress, List, ListItem, ListItemAvatar, ListItemText } fr
 import CustomAppBar from "../AppBar"
 import { useDispatch, useSelector } from "react-redux";
 import { FiberManualRecord } from "@mui/icons-material";
-import { useEffect } from "react";
+import React, { useEffect } from "react";
 import { useClient } from "react-supabase";
 import { fetchGroupsAsync } from "../../redux/groupsSlice";
 import SearchAndSelectUserDialog from "../SearchAndSelectUserDialog";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { RootState } from "../../redux/store";
+import { useAppDispatch } from "../..";
 
 const ManageGroupsScreen = () => {
 
-    const { groups, loading } = useSelector((state) => state.groups);
+    const { groups, loading } = useSelector((state: RootState) => state.groups);
     const client = useClient();
-    const dispatch = useDispatch();
+    const dispatch = useAppDispatch();
     const navigate = useNavigate();
-    const [searchUserOpen, setSearchUserOpen] = useState(false);
-    const [selectedGroup, setSelectedGroup] = useState({});
 
     useEffect(() => {
         dispatch(fetchGroupsAsync({ client }))
@@ -42,7 +42,6 @@ const ManageGroupsScreen = () => {
                 </ListItem>)
             }
         </List>
-        <SearchAndSelectUserDialog open={searchUserOpen} handleClose={() => setSearchUserOpen(false)} handleSubmit={() => { }} loading={loading} selectedGroup={selectedGroup} />
     </Grid>
 }
 

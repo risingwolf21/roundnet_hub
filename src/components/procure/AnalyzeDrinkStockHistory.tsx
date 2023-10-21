@@ -1,23 +1,33 @@
 import { Grid, LinearProgress } from "@mui/material";
 import { useSelector } from "react-redux";
 import CustomAppBar from "../AppBar";
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useClient } from "react-supabase";
 import { groupBy } from "../../utils";
+import { RootState } from "../../redux/store";
+
+type DrinkStockType = {
+    count: number,
+    amount: number,
+    created_at: string,
+    drink: { id: number, name: string, price: number, stock: number },
+    user: { displayName: string }
+}
 
 const AnalyzeDrinkStockHistory = () => {
 
-    const { loading } = useSelector(state => state.adminDrinks);
-    const [mappedHistory, setMappedHistory] = useState();
+    const { loading } = useSelector((state: RootState) => state.adminDrinks);
+    const [mappedHistory, setMappedHistory] = useState<Map<string, any[]>>();
     const client = useClient();
 
     useEffect(() => {
         client
             .from("history")
             .select("count, amount, created_at, drink (id, name, price, stock), user(displayName)")
+            .returns<DrinkStockType[]>()
             .order('id', { ascending: false })
             .then(result => {
-                setMappedHistory(groupBy(result.data, x => x.drink.id))
+                setMappedHistory(groupBy(result.data ?? [], x => x.drink.id.toString()))
             })
     }, [client, mappedHistory]);
 

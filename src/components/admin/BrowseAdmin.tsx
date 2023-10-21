@@ -4,6 +4,9 @@ import { useNavigate } from "react-router";
 import { withTranslation } from 'react-i18next';
 import CustomAppBar from "../AppBar";
 import { useSelector } from "react-redux";
+import React from "react";
+import { RootState } from "../../redux/store";
+import { TFunction } from "i18next";
 
 const entries = [
     {
@@ -64,10 +67,10 @@ const entries = [
     }
 ]
 
-const BrowseAdmin = ({ t }) => {
+const BrowseAdmin = ({ t }: { t: TFunction }) => {
 
     const navigate = useNavigate();
-    const { user } = useSelector(state => state.application);
+    const { user } = useSelector((state: RootState) => state.application);
 
     return <Box>
         <CustomAppBar />

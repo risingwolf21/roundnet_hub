@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useParams } from "react-router-dom";
 import { useClient } from "react-supabase";
@@ -8,24 +8,27 @@ import { toInteger } from "lodash";
 import { AccountCircle, GroupAdd } from "@mui/icons-material";
 import SearchAndSelectUserDialog from "../SearchAndSelectUserDialog";
 import { fetchAdminUsersAsync } from "../../redux/adminUserSlice";
+import { RootState } from "../../redux/store";
+import { useAppDispatch } from "../..";
+import { GroupWithUsers, SimpleUser, UserWithGroups } from "../../types/supabaseTypes";
 
 export const GroupInformation = () => {
 
-    const dispatch = useDispatch();
+    const dispatch = useAppDispatch();
     const client = useClient();
     const { id } = useParams();
-    const [selectedGroup, setSelectedGroup] = useState({});
+    const [selectedGroup, setSelectedGroup] = useState<GroupWithUsers | undefined>(undefined);
     const [searchAndSelectUsersOpen, setSearchAndSelectUsersOpen] = useState(false);
 
-    const groups = useSelector(state => state.groups.groups);
-    const { users, loading } = useSelector(state => state.adminUsers);
+    const groups = useSelector((state: RootState) => state.groups.groups);
+    const { users, loading } = useSelector((state: RootState) => state.adminUsers);
 
     useEffect(() => {
         dispatch(fetchAdminUsersAsync({ client }));
     }, [client, dispatch]);
 
     useEffect(() => {
-        setSelectedGroup(groups.find(x => x.id === toInteger(id)));
+        setSelectedGroup(groups?.find(x => x.id === toInteger(id)));
     }, [groups, id]);
 
     return <Grid
@@ -34,7 +37,7 @@ export const GroupInformation = () => {
         direction="column"
         alignItems="center"
         justifyContent="center">
-        <CustomAppBar title={selectedGroup?.name} navigateBack />
+        <CustomAppBar title={selectedGroup?.name ?? ""} navigateBack />
         <List sx={{ width: "100%" }}>
             <Typography pl={2} variant="h6" fontWeight="bold">Beschreibung</Typography>
             <Typography pl={2} pb={1}>{selectedGroup?.description}</Typography>
@@ -55,7 +58,11 @@ export const GroupInformation = () => {
                 <GroupAdd sx={{ color: "white" }} />
             }
         </Fab>
-        <SearchAndSelectUserDialog open={searchAndSelectUsersOpen} handleClose={() => setSearchAndSelectUsersOpen(false)} users={users.filter(x => !selectedGroup?.users?.includes(y => y.userId === x.userId))} loading={loading} />
+        <SearchAndSelectUserDialog
+            open={searchAndSelectUsersOpen}
+            handleClose={() => setSearchAndSelectUsersOpen(false)}
+            users={users.filter((x: UserWithGroups) => !selectedGroup?.users?.some((y: SimpleUser) => y.userId === x.userId) ?? false)}
+            loading={loading} />
     </Grid>
 
 }

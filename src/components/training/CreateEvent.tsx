@@ -1,66 +1,86 @@
 import { AppBar, Box, Button, Dialog, IconButton, Toolbar, Typography, TextField, ListItem, ListItemAvatar, ListItemText, DialogTitle, DialogContent, FormControl, FormControlLabel, RadioGroup, Radio, Divider, Checkbox, DialogActions, List, InputAdornment, Snackbar, Alert } from "@mui/material"
-import { AccessTime, Article, Close, Event, Map } from "@mui/icons-material";
+import { AccessTime, Article, Close, Map } from "@mui/icons-material";
+import EventIcon from "@mui/icons-material/Event";
 import { useNavigate } from 'react-router-dom';
 import { DatePicker } from "@mui/x-date-pickers";
 import { TimePicker } from '@mui/x-date-pickers/TimePicker';
-import { useState } from "react";
-import moment from "moment";
+import { EventHandler, FormEvent, useState } from "react";
+import moment, { Moment } from "moment";
 import { FORTNIGHTLY, MONTHLY, NON_REPEAT, WEEKLY } from "../../constants";
 import EventRepeatIcon from '@mui/icons-material/EventRepeat';
 import { useClient } from "react-supabase";
 import { withTranslation } from 'react-i18next';
-import { useEffect } from "react";
+import React, { useEffect } from "react";
 import { connect } from "react-redux";
 import SearchPlacesDialog from "./SearchPlacesDialog";
 import { MapContainer, TileLayer, Marker, useMap } from "react-leaflet";
+import { TFunction } from "i18next";
+import { AppDispatch } from "../..";
+import { Event, EventRecurrence, FullEvent } from "../../types/supabaseTypes";
+import { RootState } from "../../redux/store";
 
-const CreateEvent = ({ t, dispatch, eventToEdit }) => {
+export type PlaceType = {
+    name: string,
+    lat: number,
+    lon: number
+}
+
+const CreateEvent = ({ t, eventToEdit }: { t: TFunction, eventToEdit: FullEvent | null }) => {
 
     const navigate = useNavigate();
     const client = useClient();
 
-    const [startDate, setStartDate] = useState(moment());
-    const [startTime, setStartTime] = useState(moment());
-    const [meetingTime, setMeetingTime] = useState(moment());
-    const [stopRepeatDateTime, setStopRepeatDateTime] = useState(moment());
+    const [startDate, setStartDate] = useState<Moment | null>(moment());
+    const [startTime, setStartTime] = useState<Moment | null>(moment());
+    const [meetingTime, setMeetingTime] = useState<Moment | null>(moment());
+    const [stopRepeatDateTime, setStopRepeatDateTime] = useState<Moment | null>(moment());
     const [stopRepeatDisabled, setStopRepeatDisabled] = useState(true);
     const [stopRepeatDialogOpen, setStopRepeatDialogOpen] = useState(false);
     const [repeatDialogOpen, setRepeatDialogOpen] = useState(false);
-    const [repeat, setRepeat] = useState(WEEKLY);
+    const [repeat, setRepeat] = useState<EventRecurrence>("None");
     const [errorSnackbar, setErrorSnackbar] = useState({ open: false, message: "" });
     const [searchPlacesDialogOpen, setSearchPlacesDialogOpen] = useState(false);
-    const [selectedPlace, setSelectedPlace] = useState({ lat: 49.0226481, lon: 8.416547971872856, name: "MTV Karlsruhe" });
+    const [selectedPlace, setSelectedPlace] = useState<PlaceType>({ lat: 49.0226481, lon: 8.416547971872856, name: "MTV Karlsruhe" });
 
     useEffect(() => {
         if (eventToEdit) {
             setStartDate(moment(eventToEdit.startingDateTime));
             setStartTime(moment(eventToEdit.startingDateTime));
             setMeetingTime(moment(eventToEdit.meetingDateTime));
-            setStopRepeatDateTime(eventToEdit["end_at"] ?? moment());
+            setStopRepeatDateTime(moment(eventToEdit["end_at"]) ?? moment());
             setStopRepeatDisabled(!eventToEdit["end_at"]);
-            setRepeat(eventToEdit.recurring);
+            setRepeat(eventToEdit.recurrence);
         }
     }, [eventToEdit]);
 
-    const handleSubmit = async (e) => {
+    const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         try {
             const data = new FormData(e.currentTarget);
-            let startingDateTime = startDate.set(startTime.hour(), "hour").set(startTime.minute(), "minute").set(0, "seconds").format("yyyy-MM-DD HH:mm:ssZ");
-            let meetingDateTime = startDate.set(meetingTime.hour(), "hour").set(meetingTime.minute(), "minute").set(0, "seconds").format("yyyy-MM-DD HH:mm:ssZ");
+            if (!startDate || !startTime)
+                throw new Error(t("events.creation.startDateCannotBeNull"))
+            if (!meetingTime)
+                setMeetingTime(startTime);
+            let startingDateTime = startDate.set("hour", startTime.hour()).set("minute", startTime.minute()).set("seconds", 0).format("yyyy-MM-DD HH:mm:ssZ");
+            let meetingDateTime = startDate.set("hour", meetingTime?.hour() ?? 0).set("minute", meetingTime?.minute() ?? 0).set("seconds", 0).format("yyyy-MM-DD HH:mm:ssZ");
+
+            let eventTitle = data.get("eventTitle")?.toString();
+            let eventDescription = data.get("eventDescription")?.toString();
             let event = {
-                title: data.get("eventTitle"),
-                description: data.get("eventDescription"),
+                title: eventTitle,
+                description: eventDescription,
                 startingDateTime: startingDateTime,
                 meetingDateTime: meetingDateTime,
                 recurring: repeat,
                 place: JSON.stringify(selectedPlace),
-                "end_at": stopRepeatDisabled ? null : stopRepeatDateTime.format("yyyy-MM-DD HH:mm:ssZ")
+                "end_at": (stopRepeatDisabled || !stopRepeatDateTime)
+                    ? null
+                    : stopRepeatDateTime.format("yyyy-MM-DD HH:mm:ssZ")
             }
-            if (data.get("eventTitle").length < 6)
+            if (!eventTitle || eventTitle.length < 6)
                 throw new Error(t("events.creation.titleTooShort"))
 
-            if (data.get("eventDescription").length < 1)
+            if (!eventDescription || eventDescription.length < 1)
                 throw new Error(t("events.creation.descriptionEmpty"))
 
             if (meetingDateTime > startingDateTime)
@@ -79,12 +99,13 @@ const CreateEvent = ({ t, dispatch, eventToEdit }) => {
 
             navigate("/training", { replace: true });
             setErrorSnackbar({ open: false, message: "" });
-        } catch (error) {
-            setErrorSnackbar({ open: true, message: error.message })
+        } catch (error: unknown) {
+            const message = error instanceof Error ? (error as Error).message : "Unknown error."
+            setErrorSnackbar({ open: true, message })
         }
     }
 
-    function SetViewOnClick({ place }) {
+    function SetViewOnClick({ place }: { place: PlaceType }) {
         const map = useMap();
         map.setView({ lat: place.lat, lng: place.lon }, map.getZoom());
 
@@ -119,7 +140,7 @@ const CreateEvent = ({ t, dispatch, eventToEdit }) => {
                         name="eventTitle"
                         variant="standard"
                         label="Event-Titel"
-                        InputProps={{ startAdornment: (<InputAdornment position="start"><Event /></InputAdornment>) }}
+                        InputProps={{ startAdornment: (<InputAdornment position="start"><EventIcon /></InputAdornment>) }}
                         margin="normal" />
                 </ListItem>
                 <ListItem sx={{ pt: 0, pb: 0 }}>
@@ -170,17 +191,17 @@ const CreateEvent = ({ t, dispatch, eventToEdit }) => {
                     <ListItemText>
                         <Box sx={{ width: "100%", height: "150px" }}>
                             <MapContainer
-                                style={{ width: "100%", height: "150px", borderRadius: "16px", zIndex: -1 }}
                                 center={[selectedPlace.lat, selectedPlace.lon]}
                                 zoom={15}
                                 dragging={false}
                                 doubleClickZoom={false}
                                 scrollWheelZoom={false}
                                 attributionControl={false}
-                                zoomControl={false}>
+                                zoomControl={false}
+                                style={{ width: "100%", height: "150px", borderRadius: "16px", zIndex: -1 }}>
                                 <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
                                 <SetViewOnClick place={selectedPlace} />
-                                <Marker position={[selectedPlace.lat, selectedPlace.lon]} interactive={false} />
+                                <Marker position={[selectedPlace.lat, selectedPlace.lon]} />
                             </MapContainer>
                         </Box>
                     </ListItemText>
@@ -195,7 +216,7 @@ const CreateEvent = ({ t, dispatch, eventToEdit }) => {
                     <ListItemText primary={"Wiederholung"} secondary={repeat} />
                 </ListItem>
 
-                <ListItem disabled={repeat === NON_REPEAT} onClick={() => setStopRepeatDialogOpen(true)}>
+                <ListItem disabled={repeat === "None"} onClick={() => setStopRepeatDialogOpen(true)}>
                     <ListItemAvatar />
                     <ListItemText primary={"Wiederholung stoppen"} secondary={stopRepeatDisabled ? "Niemals" : moment(stopRepeatDateTime).format("DD MMMM yyyy")} />
                 </ListItem>
@@ -210,14 +231,19 @@ const CreateEvent = ({ t, dispatch, eventToEdit }) => {
                         aria-labelledby="demo-radio-buttons-group-label"
                         defaultValue={repeat}
                         onChange={(e) => {
-                            setRepeat(e.target.value);
+                            setRepeat(e.target.value as EventRecurrence);
                             setRepeatDialogOpen(false);
                         }}
                         name="radio-buttons-group">
-                        <FormControlLabel value={NON_REPEAT} control={<Radio />} label="Gar nicht" />
-                        <FormControlLabel value={WEEKLY} control={<Radio />} label="Wöchentlich" />
-                        <FormControlLabel value={FORTNIGHTLY} control={<Radio />} label="Alle 2 Wochen" />
-                        <FormControlLabel value={MONTHLY} control={<Radio />} label="Monatlich" />
+                        {
+                            Array.from<{ value: EventRecurrence, label: string }>([
+                                { value: "None", label: "Gar nicht" },
+                                { value: "Weekly", label: "Wöchentlich" },
+                                { value: "Fortnightly", label: "Alle 2 Wochen" },
+                                { value: "Monthly", label: "Monatlich" },
+                            ])
+                                .map(item => <FormControlLabel value={item.value} control={<Radio />} label={item.label} />)
+                        }
                     </RadioGroup>
                 </FormControl>
             </DialogContent>
@@ -248,9 +274,9 @@ const CreateEvent = ({ t, dispatch, eventToEdit }) => {
             placeSelected={(place) => {
                 console.log(place);
                 setSelectedPlace({
-                    name: place.raw.name,
-                    lat: place.raw.lat,
-                    lon: place.raw.lon
+                    name: place.name,
+                    lat: place.lat,
+                    lon: place.lon
                 });
                 setSearchPlacesDialogOpen(false)
             }} />
@@ -263,7 +289,7 @@ const CreateEvent = ({ t, dispatch, eventToEdit }) => {
     </Box >
 }
 
-const mapStateToProps = (state) => {
+const mapStateToProps = (state: RootState) => {
     return {
         eventToEdit: state.events.eventToEdit
     }

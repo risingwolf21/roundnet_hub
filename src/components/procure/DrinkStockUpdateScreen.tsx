@@ -2,19 +2,23 @@ import { Avatar, Button, Dialog, DialogActions, DialogContent, DialogContentText
 import CustomAppBar from "../AppBar";
 import { useSelector } from "react-redux";
 import { Edit, LocalDrink } from "@mui/icons-material";
-import { useState } from "react";
+import React, { useState } from "react";
 import { useClient } from "react-supabase";
 import { toInteger } from "lodash";
+import { RootState } from "../../redux/store";
+import { Drink } from "../../types/supabaseTypes";
 
 const DrinkStockUpdateScreen = () => {
 
-    const { drinks, loading } = useSelector(state => state.adminDrinks);
-    const [editDrink, setEditDrink] = useState(null);
+    const { drinks, loading } = useSelector((state: RootState) => state.adminDrinks);
+    const [editDrink, setEditDrink] = useState<Drink | null>(null);
     const [stockToUpdate, setStockToUpdate] = useState(0);
     const client = useClient();
 
     const handleSubmit = async () => {
-        await client.from("drink").update({ stock: editDrink?.stock + toInteger(stockToUpdate) }).eq("id", editDrink.id);
+        if (!editDrink)
+            return;
+        await client.from("drink").update({ stock: editDrink?.stock ?? 0 + toInteger(stockToUpdate) }).eq("id", editDrink.id);
         setEditDrink(null);
         setStockToUpdate(0);
     }
@@ -30,7 +34,7 @@ const DrinkStockUpdateScreen = () => {
 
         <List sx={{ width: "100%" }}>
             {
-                drinks && drinks.filter(x => x.active).map((drink, index) => <ListItem key={index}>
+                drinks && drinks.filter(x => x.active).map((drink: Drink, index: number) => <ListItem key={index}>
                     <ListItemAvatar>
                         <Avatar>
                             {
@@ -50,7 +54,7 @@ const DrinkStockUpdateScreen = () => {
             }
         </List>
 
-        <Dialog open={editDrink !== null} handleClose={() => setEditDrink(null)}>
+        <Dialog open={editDrink !== null} onClose={() => setEditDrink(null)}>
             <DialogTitle>Vorrat ändern</DialogTitle>
             <DialogContent>
                 <DialogContentText>
