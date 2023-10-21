@@ -1,4 +1,4 @@
-import React, { useContext, useEffect } from 'react';
+import React from 'react';
 import AppBar from '@mui/material/AppBar';
 import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
@@ -6,8 +6,6 @@ import { IconButton } from "@mui/material";
 import { useNavigate } from 'react-router-dom';
 import { AccountCircle, ArrowBack, Refresh } from '@mui/icons-material';
 import { useSelector } from 'react-redux';
-import { DependencyContext } from '..';
-import { IEventRepository } from '../repository/IEventRepository';
 import { RootState } from '../redux/store';
 
 type Props = {
@@ -18,13 +16,7 @@ type Props = {
 
 const CustomAppBar = ({ navigateBack = false, title = "Roundnet Karlsruhe", onRefresh }: Props) => {
     const navigate = useNavigate();
-    const { container } = useContext(DependencyContext);
     const { user } = useSelector((state: RootState) => state.application);
-
-    useEffect(() => {
-        if (container)
-            container.get<IEventRepository>("IEventRepository").test();
-    }, [container]);
 
     return (<AppBar position="sticky" sx={{ zIndex: (theme) => theme.zIndex.drawer + 1, background: "primary" }}>
         <Toolbar>

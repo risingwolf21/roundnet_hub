@@ -76,6 +76,7 @@ const EventScreen = () => {
     const [eventsUpdatingAttendance, setEventsUpdatingAttendance] = useState<number[]>([]);
 
     useEffect(() => {
+        console.log("fetching events")
         dispatch(fetchEventsAsync({ client, user, userGroups, page: 0, count: 20 }));
     }, [dispatch, client, user, userGroups]);
 

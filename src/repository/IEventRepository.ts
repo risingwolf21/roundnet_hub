@@ -9,15 +9,11 @@ export type DbResultOk<T> = T extends PromiseLike<{ data: infer U }> ? Exclude<U
 export type DbResultErr = PostgrestError
 
 interface IEventRepository {
-    test(): void
     fetchEvents(client: SupabaseClient, user: User, userGroups: number[], page: number, count: number): Promise<FullEvent[] | null>
 }
 
 @injectable()
 class SupabaseRepository implements IEventRepository {
-    test(): void {
-        console.log("SupabaseRepository")
-    }
     async fetchEvents(client: SupabaseClient, user: User, userGroups: number[], page: number, count: number): Promise<FullEvent[] | null> {
         const query = await client.from("events").select("*, attendance: event_attendance_user_mapping ( state , user(userId, displayName)  ), comments: event_comments ( comment, created_at, displayName, event, user ( displayName, userId)), groups: event_group(*)")
             // get events that are on the same day or later
@@ -33,9 +29,6 @@ class SupabaseRepository implements IEventRepository {
 
 @injectable()
 class EmptyRepository implements IEventRepository {
-    test(): void {
-        console.log("EmptyRepository")
-    }
     fetchEvents(client: SupabaseClient, user: User, userGroups: number[], page: number, count: number): Promise<FullEvent[] | null> {
         return Promise.resolve([]);
     }

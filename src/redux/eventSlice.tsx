@@ -117,6 +117,7 @@ export const eventSlice = createSlice({
       })
       .addCase(fetchEventsAsync.fulfilled, (state: EventSliceState, action) => {
         state.loading = false;
+
         state.error = null;
 
         if (action.payload.entries && action.payload.entries.length < 1) {

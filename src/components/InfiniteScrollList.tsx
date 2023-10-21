@@ -26,6 +26,7 @@ export const InfiniteScrollList = ({ children, fetch, error, loading, endReached
 
     const handleAlertClose = (event: React.SyntheticEvent<Element, Event>) => setSnackbarOpen(false);
 
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     useEffect(() => {
         let pagesCounter = 0
         const observer = new IntersectionObserver(
@@ -38,19 +39,16 @@ export const InfiniteScrollList = ({ children, fetch, error, loading, endReached
             { threshold: 1 }
         );
 
-        let observerRefValue: any = null;
-
         if (observerTarget.current) {
             observer.observe(observerTarget.current);
-            observerRefValue = observerTarget.current;
         }
 
         return () => {
-            if (observerRefValue) {
-                observer.unobserve(observerRefValue);
+            if (observerTarget.current) {
+                observer.unobserve(observerTarget.current);
             }
         };
-    }, [observerTarget, endReached, fetch, loading]);
+    }, [observerTarget]);
 
     return <div style={{ width: "100%" }}>
         <List sx={{ overflowY: "auto" }}>

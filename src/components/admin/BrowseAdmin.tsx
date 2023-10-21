@@ -1,4 +1,4 @@
-import { AdminPanelSettings, Euro, Group, History, Liquor, GroupOutlined, ShowChart } from "@mui/icons-material";
+import { AdminPanelSettings, Euro, Group, History, Liquor, GroupOutlined, ShowChart, LinkOff, Link, RunningWithErrors, CrisisAlert } from "@mui/icons-material";
 import { Avatar, List, ListItem, ListItemAvatar, ListItemText, Box } from "@mui/material";
 import { useNavigate } from "react-router";
 import { withTranslation } from 'react-i18next';
@@ -70,24 +70,41 @@ const entries = [
 const BrowseAdmin = ({ t }: { t: TFunction }) => {
 
     const navigate = useNavigate();
-    const { user } = useSelector((state: RootState) => state.application);
+    const { user, realtimeState } = useSelector((state: RootState) => state.application);
 
     return <Box>
         <CustomAppBar />
         <List>
             {
                 [
-                    ...entries.filter(x => x.role === user.role || user.role === "admin"),
-                ].map(x => {
-                    return <ListItem key={x.translationKey} onClick={() => navigate(x.navigateTo)} sx={{ mt: 1 }}>
+                    ...[
+                        ...entries.filter(x => x.role === user.role || user.role === "admin"),
+                    ].map(x => {
+                        return <ListItem key={x.translationKey} onClick={() => navigate(x.navigateTo)} sx={{ mt: 1 }}>
+                            <ListItemAvatar>
+                                <Avatar sx={{ background: x.avatarColor, width: 40, height: 40 }}>
+                                    {x.icon}
+                                </Avatar>
+                            </ListItemAvatar>
+                            <ListItemText primary={t("browse." + x.translationKey)} />
+                        </ListItem>
+                    }),
+                    <ListItem sx={{ mt: 1 }}>
                         <ListItemAvatar>
-                            <Avatar sx={{ background: x.avatarColor, width: 40, height: 40 }}>
-                                {x.icon}
+                            <Avatar sx={{ background: "#88AEBF", width: 40, height: 40 }}>
+                                {
+                                    {
+                                        'CLOSED': <LinkOff />,
+                                        'SUBSCRIBED': <Link />,
+                                        'TIMED_OUT': <RunningWithErrors />,
+                                        'CHANNEL_ERROR': <CrisisAlert />,
+                                    }[realtimeState]
+                                }
                             </Avatar>
                         </ListItemAvatar>
-                        <ListItemText primary={t("browse." + x.translationKey)} />
+                        <ListItemText primary={realtimeState} secondary={"Realtime connection status"} />
                     </ListItem>
-                })
+                ]
             }
         </List>
     </Box>

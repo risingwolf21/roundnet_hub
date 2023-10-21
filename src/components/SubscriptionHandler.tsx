@@ -6,6 +6,7 @@ import { onEventAttendanceUserDelete, onEventAttendanceUserInsert, onEventAttend
 import { AnyAction } from "@reduxjs/toolkit";
 import { RealtimeChannel } from "@supabase/supabase-js";
 import { Comment, Drink, Payment } from "../types/supabaseTypes";
+import { onRealtimeStateChange } from "../redux/applicationSlice";
 
 declare module "@supabase/supabase-js" {
     export interface RealtimeChannel {
@@ -57,7 +58,7 @@ const SubscriptionHandler = ({ children, dispatch }: { dispatch: Dispatch<AnyAct
 
             .addAdminSubscriptionbs(dispatch, user.id, user.role === "admin")
 
-            .subscribe(x => console.log(x));
+            .subscribe(x => dispatch(onRealtimeStateChange(x)));
 
         return () => {
             subscription.unsubscribe();

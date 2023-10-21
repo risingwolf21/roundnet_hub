@@ -1,18 +1,20 @@
-import { createSlice } from '@reduxjs/toolkit';
+import { PayloadAction, createSlice } from '@reduxjs/toolkit';
 import { User } from '../types/supabaseTypes';
 
 type ApplicationSliceState = {
     user: User,
     mode: string,
     appUpdateAvailable: boolean,
-    appVersion: string
+    appVersion: string,
+    realtimeState: "CLOSED" | "SUBSCRIBED" | "TIMED_OUT" | "CHANNEL_ERROR"
 }
 
 const initialState = {
     user: {},
     mode: "drinks",
     appUpdateAvailable: false,
-    appVersion: ""
+    appVersion: "",
+    realtimeState: "CLOSED"
 } as ApplicationSliceState;
 
 export const applicationReducer = createSlice({
@@ -31,9 +33,12 @@ export const applicationReducer = createSlice({
         onAppUpdateAvailableChange: (state, action) => {
             state.appUpdateAvailable = action.payload
         },
+        onRealtimeStateChange: (state, action: PayloadAction<"CLOSED" | "SUBSCRIBED" | "TIMED_OUT" | "CHANNEL_ERROR">) => {
+            state.realtimeState = action.payload;
+        }
     }
 });
 
-export const { onUserChange, onModeChange, onAppUpdateAvailableChange, onAppVersionChange } = applicationReducer.actions;
+export const { onUserChange, onModeChange, onAppUpdateAvailableChange, onAppVersionChange, onRealtimeStateChange } = applicationReducer.actions;
 
 export default applicationReducer.reducer
