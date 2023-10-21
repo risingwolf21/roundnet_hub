@@ -4,7 +4,7 @@ import { groupBy } from "../../utils";
 import { useSelector } from "react-redux";
 import { InfiniteScrollList } from "../InfiniteScrollList";
 import { fetchAdminHistoryAsync } from "../../redux/adminDrinksSlice";
-import { useContext, useState } from "react";
+import { useCallback, useContext, useState } from "react";
 import { useEffect } from "react";
 import { useClient } from "react-supabase";
 import CustomAppBar from "../AppBar";
@@ -38,9 +38,14 @@ const AdminHistoryScreen = () => {
     const dispatch = useAppDispatch();
     const client = useClient();
 
+    const fetchForPage = useCallback((page: number) => {
+        if (container)
+            dispatch(fetchAdminHistoryAsync({ repository: container.get<IAdminDrinksRepository>("IAdminDrinksRepository"), page, count: 20 }))
+    }, [container, dispatch]);
+
     useEffect(() => {
         fetchForPage(0);
-    }, [client, dispatch, container]);
+    }, [client, fetchForPage]);
 
     useEffect(() => {
         let mappedEntries = history?.map((x: any) => {
@@ -51,11 +56,6 @@ const AdminHistoryScreen = () => {
         });
         setHistoryItems(mappedEntries);
     }, [history, drinks]);
-
-    const fetchForPage = (page: number) => {
-        if (container)
-            dispatch(fetchAdminHistoryAsync({ repository: container.get<IAdminDrinksRepository>("IAdminDrinksRepository"), page, count: 20 }))
-    }
 
     return <Grid
         container

@@ -1,6 +1,5 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
-import { OPEN } from '../constants';
-import { Drink, FullHistory, Payment, PaymentHistory, User } from '../types/supabaseTypes';
+import { Drink, FullHistory, Payment, PaymentHistory, PaymentState, User } from '../types/supabaseTypes';
 import { compareById } from '../utils';
 import { SupabaseClient } from '@supabase/supabase-js';
 import { ClientUser } from '../types/types';
@@ -194,7 +193,7 @@ export const drinksSlice = createSlice({
 });
 
 export const fetchPaymentAsync = createAsyncThunk("payments", async ({ client, user }: ClientUser) => {
-    const response = await client.from("payments").select("*").eq("userId", user.userId).eq("state", OPEN)
+    const response = await client.from("payments").select("*").eq("userId", user.userId).eq("paymentState", "Open" as PaymentState)
     return response.data;
 });
 
@@ -202,7 +201,7 @@ export const fetchDrinksToPayAsync = createAsyncThunk("payments/openDrinks", asy
     const response = await client
         .from("history")
         .select("id, count, created_at, user, amount, drink ( name, price ), payments ( state )")
-        .eq('payments.state', "Open")
+        .eq('payments.paymentState', "Open")
         .not("payments", "is", null)
         .eq('user', user.userId)
         .returns<PaymentHistory[]>();
@@ -220,7 +219,7 @@ export const fetchHistoryAsync = createAsyncThunk("history", async ({ client, us
     const response = await client
         .from("history")
         .select("id, count, amount, created_at, drinkId: drink, drink(*), user: user(*)")
-        .eq('user', user.userId)
+        .eq('user.userId', user.userId)
         .range(page * count, page * count + count - 1)
         .order('created_at', { ascending: false })
         .returns<FullHistory[]>();

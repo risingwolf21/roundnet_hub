@@ -5,14 +5,14 @@ import { groupBy } from '../utils';
 import { Error } from "./Error";
 import { Loading } from "./Loading";
 import CustomAppBar from "./AppBar";
-import { useDispatch, useSelector } from "react-redux";
+import { useSelector } from "react-redux";
 import { useEffect } from "react";
 import { fetchDrinksToPayAsync, fetchPaymentAsync } from "../redux/drinksSlice";
 import { useClient } from "react-supabase";
 import React from "react";
 import { RootState } from "../redux/store";
 import { useAppDispatch } from "..";
-import { Drink, PaymentHistory } from "../types/supabaseTypes";
+import { PaymentHistory } from "../types/supabaseTypes";
 
 const PayDrinksButton = ({ amountToPay }: { amountToPay: number }) => {
 
@@ -76,8 +76,10 @@ const PayDrinksScreen = () => {
     const { paymentHistory, paymentError, paymentLoading } = useSelector((state: RootState) => state.drinks);
 
     useEffect(() => {
-        dispatch(fetchDrinksToPayAsync({ client, user }));
-        dispatch(fetchPaymentAsync({ client, user }));
+        if (user) {
+            dispatch(fetchDrinksToPayAsync({ client, user }));
+            dispatch(fetchPaymentAsync({ client, user }));
+        }
     }, [dispatch, user, client]);
 
     if (paymentError)

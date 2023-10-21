@@ -2,11 +2,10 @@ import { Alert, CircularProgress, Divider, Fab, Grid, List, LinearProgress, Snac
 import DrinkItem from "./DrinkItem";
 import { SyntheticEvent, useEffect, useState } from "react";
 import CheckIcon from '@mui/icons-material/Check';
-import { NOT_PAID, OPEN } from "../constants";
 import { captureException } from "@sentry/react";
 import { Error } from "./Error";
 import { useClient } from "react-supabase";
-import { useDispatch, useSelector } from "react-redux";
+import { useSelector } from "react-redux";
 import CustomAppBar from "./AppBar";
 import { fetchPaymentAsync } from "../redux/drinksSlice";
 import React from "react";
@@ -39,7 +38,9 @@ const DrinkList = () => {
     const [alertInfo, setAlertInfo] = useState(SUCCESS_MESSAGE_INFO);
 
     useEffect(() => {
-        dispatch(fetchPaymentAsync({ client: client, user: user }));
+        if (user) {
+            dispatch(fetchPaymentAsync({ client: client, user: user }));
+        }
     }, [client, user, dispatch]);
 
     const handleSnackbarClose = (event: Event | SyntheticEvent<any, Event>, reason: SnackbarCloseReason) => {
@@ -61,17 +62,17 @@ const DrinkList = () => {
 
     const confirmDrinks = async () => {
         setLoading(true);
-        let data = { date: Date.now(), state: NOT_PAID, drinks: Object.values(addedDrinks) };
+        let data = { date: Date.now(), drinks: Object.values(addedDrinks) };
 
         try {
             let paymentId: number;
             if (!payment || payment.paymentState !== "Open") {
                 const { data: paymentUpdate } = await client.from("payments")
-                    .select("*").eq("userId", user.userId).eq("state", OPEN).single();
+                    .select("*").eq("userId", user.userId).eq("paymentState", "Open").single();
                 if (!paymentUpdate) {
                     const { data, error } = await client.from("payments").insert({
                         userId: user.userId,
-                        state: OPEN
+                        state: "Open"
                     }).select().single();
                     if (error)
                         throw Error(error);
@@ -104,11 +105,11 @@ const DrinkList = () => {
             setAddedDrinks([]);
             confirmDrinksDialog(SUCCESS_MESSAGE_INFO);
         }
-        catch (error: unknown) {
+        catch (error) {
             setLoading(false);
             const message = error instanceof Error ? (error as Error).message : "Unknown error."
             confirmDrinksDialog({ message, severity: "error" });
-            captureException(error, (scope) => {
+            captureException(Error({ message }), (scope) => {
                 scope.clear();
                 scope.setExtra("data", JSON.stringify(data));
                 return scope;

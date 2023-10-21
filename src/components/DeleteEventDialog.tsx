@@ -1,5 +1,4 @@
 import { Button, Dialog, DialogActions, DialogContent, DialogTitle, FormControl, FormControlLabel, Radio, RadioGroup } from "@mui/material";
-import { NON_REPEAT } from "../constants";
 import { useState } from "react";
 import React from "react";
 import { Event } from "../types/supabaseTypes";

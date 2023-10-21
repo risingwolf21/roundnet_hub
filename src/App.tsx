@@ -10,7 +10,7 @@ import PaymentsPendingAdmin from './components/admin/PaymentsPendingAdmin';
 import AdminUserList from './components/admin/AdminUserList';
 import AdminHistoryScreen from './components/admin/AdminHistoryScreen';
 import { useEffect } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import { useSelector } from 'react-redux';
 import { useClient } from 'react-supabase';
 import { fetchHistoryAsync, fetchDrinksAsync, fetchPaymentAsync } from './redux/drinksSlice';
 import Browse from './components/Browse';
@@ -18,6 +18,7 @@ import CreateEvent from './components/training/CreateEvent';
 import EventScreen from './components/training/EventScreen';
 import EventInformation from './components/training/EventInformation';
 import CustomBottomNavigation from './components/BottomNavigation';
+//@ts-ignore
 import { useServiceWorker } from './hooks/useServiceWorker';
 import { onAppUpdateAvailableChange, onAppVersionChange } from './redux/applicationSlice';
 import UpdateAvailable from './components/UpdateAvailable';
@@ -31,13 +32,12 @@ import AnalyzeDrinkStockHistory from './components/procure/AnalyzeDrinkStockHist
 import raw from "./git_commit.txt";
 import { fetchUserGroupsAsync } from './redux/eventSlice';
 import { GroupInformation } from './components/groups/GroupInformation';
-import { DependencyContext, useAppDispatch } from '.';
+import { useAppDispatch } from '.';
 import { RootState } from './redux/store';
 
 const App = () => {
 
   const { waitingWorker, showReload, reloadPage } = useServiceWorker();
-  const container = React.useContext(DependencyContext);
   const dispatch = useAppDispatch();
   const client = useClient();
   const { appUpdateAvailable, user } = useSelector((state: RootState) => state.application);
@@ -48,13 +48,15 @@ const App = () => {
       .then(text => {
         dispatch(onAppVersionChange(text));
       });
-  }, [dispatch, raw])
+  }, [dispatch])
 
   useEffect(() => {
-    dispatch(fetchPaymentAsync({ client, user }));
-    dispatch(fetchHistoryAsync({ client, user, page: 0, count: 20 }));
-    dispatch(fetchUserGroupsAsync({ client, user }));
-    dispatch(fetchDrinksAsync(client));
+    if (user) {
+      dispatch(fetchPaymentAsync({ client, user }));
+      dispatch(fetchHistoryAsync({ client, user, page: 0, count: 20 }));
+      dispatch(fetchUserGroupsAsync({ client, user }));
+      dispatch(fetchDrinksAsync(client));
+    }
   }, [client, user, dispatch]);
 
   useEffect(() => {

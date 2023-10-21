@@ -10,6 +10,7 @@ import RegisterScreen from './components/RegisterScreen';
 import { Route, Routes } from 'react-router-dom';
 import NotVerifiedScreen from "./components/NotVerifiedScreen";
 import { RootState } from "./redux/store";
+import { User } from "./types/supabaseTypes";
 
 
 const initialState = { session: null, user: null }
@@ -31,14 +32,16 @@ const AuthGate = ({ children }: Props) => {
         client.auth.onAuthStateChange((event, session) => {
             console.log("auth state changed")
             setUser({ email: session?.user?.email, id: session?.user?.id });
-            if (session?.user) {
+            if (session && session.user) {
                 client.from("user").select().eq("userId", session.user.id).single().then((res) => {
                     if (res && res.data) {
                         let user = {
-                            ...session?.user ?? null,
+                            userId: session.user.id,
+                            email: session.user.email,
+                            displayName: session.user.user_metadata.displayName,
                             role: res.data.role,
                             verified: res.data.verified
-                        }
+                        } as User;
                         dispatch(onUserChange(user));
                     }
                 })
@@ -47,7 +50,7 @@ const AuthGate = ({ children }: Props) => {
                 navigate("/login", { replace: true });
             }
         })
-    }, []);
+    }, [client, dispatch, navigate]);
 
     const authenticationRoutes = [
         <Route path='/login' element={<LoginScreen />} />,

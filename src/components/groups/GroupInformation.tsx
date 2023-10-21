@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
+import { useSelector } from "react-redux";
 import { useParams } from "react-router-dom";
 import { useClient } from "react-supabase";
 import { Divider, Fab, Grid, List, ListItem, ListItemAvatar, ListItemText, Typography } from "@mui/material";

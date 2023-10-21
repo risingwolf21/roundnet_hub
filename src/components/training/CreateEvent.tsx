@@ -4,9 +4,8 @@ import EventIcon from "@mui/icons-material/Event";
 import { useNavigate } from 'react-router-dom';
 import { DatePicker } from "@mui/x-date-pickers";
 import { TimePicker } from '@mui/x-date-pickers/TimePicker';
-import { EventHandler, FormEvent, useState } from "react";
+import { FormEvent, useState } from "react";
 import moment, { Moment } from "moment";
-import { FORTNIGHTLY, MONTHLY, NON_REPEAT, WEEKLY } from "../../constants";
 import EventRepeatIcon from '@mui/icons-material/EventRepeat';
 import { useClient } from "react-supabase";
 import { withTranslation } from 'react-i18next';
@@ -15,8 +14,7 @@ import { connect } from "react-redux";
 import SearchPlacesDialog from "./SearchPlacesDialog";
 import { MapContainer, TileLayer, Marker, useMap } from "react-leaflet";
 import { TFunction } from "i18next";
-import { AppDispatch } from "../..";
-import { Event, EventRecurrence, FullEvent } from "../../types/supabaseTypes";
+import { EventRecurrence, FullEvent } from "../../types/supabaseTypes";
 import { RootState } from "../../redux/store";
 
 export type PlaceType = {

@@ -3,7 +3,6 @@ import { Dispatch, useEffect } from "react";
 import { connect, useSelector } from "react-redux";
 import { onHistoryDelete, onHistoryInsert, onHistoryUpdate, onDrinkDeleted, onDrinkInserted, onDrinkUpdated, onPaymentUpdated, onPaymentDeleted } from "../redux/drinksSlice";
 import { onEventAttendanceUserDelete, onEventAttendanceUserInsert, onEventAttendanceUserUpdate, onEventCommentDelete, onEventCommentInsert, onEventCommentUpdate, onEventDelete, onEventInsert, onEventUpdate } from "../redux/eventSlice";
-import { useDispatch } from "react-redux";
 import { AnyAction } from "@reduxjs/toolkit";
 import { RealtimeChannel } from "@supabase/supabase-js";
 import { Comment, Drink, Payment } from "../types/supabaseTypes";

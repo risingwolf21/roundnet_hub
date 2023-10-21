@@ -1,5 +1,5 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
-import { Group, GroupWithUsers } from "../types/supabaseTypes";
+import { GroupWithUsers } from "../types/supabaseTypes";
 import { SupabaseClient } from "@supabase/supabase-js";
 
 type GroupSliceState = {

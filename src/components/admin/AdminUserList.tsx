@@ -7,7 +7,7 @@ import { useClient } from "react-supabase";
 import { Error } from "../Error";
 import { supabase_admin } from "../../supabaseClient";
 import { captureException } from "@sentry/react";
-import { useDispatch, useSelector } from "react-redux";
+import { useSelector } from "react-redux";
 import { useEffect } from "react";
 import { fetchAdminUsersAsync } from "../../redux/adminUserSlice";
 import { useNavigate } from "react-router-dom";

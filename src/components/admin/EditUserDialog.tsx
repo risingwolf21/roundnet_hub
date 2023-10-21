@@ -1,11 +1,10 @@
-import React, { FormEvent, FormEventHandler, useEffect, useState } from "react";
-import { AppBar, Avatar, Button, Checkbox, Collapse, Dialog, DialogActions, DialogContent, DialogTitle, Divider, IconButton, List, ListItem, ListItemAvatar, ListItemButton, ListItemSecondaryAction, ListItemText, ListSubheader, Radio, Slide, TextField, Toolbar, Typography } from "@mui/material"
+import React, { FormEvent, useEffect, useState } from "react";
+import { AppBar, Avatar, Button, Checkbox, Collapse, Dialog, DialogActions, DialogContent, DialogTitle, Divider, IconButton, List, ListItem, ListItemAvatar, ListItemButton, ListItemSecondaryAction, ListItemText, ListSubheader, Radio, TextField, Toolbar, Typography } from "@mui/material"
 import { Box } from "@mui/system";
 import { AccountCircle, Close, Email, ExpandLess, ExpandMore, FiberManualRecord, ManageAccounts, Verified } from "@mui/icons-material";
-import { OPEN } from "../../constants";
 import { useClient } from "react-supabase";
 import { SlideUpTransition } from "../../utils";
-import { Group, User, UserRole, UserWithGroups } from "../../types/supabaseTypes";
+import { Group, PaymentState, User, UserRole, UserWithGroups } from "../../types/supabaseTypes";
 
 type EditUserDialogProps = {
     user: UserWithGroups,
@@ -35,7 +34,7 @@ const EditUserDialog = ({ user, open, handleClose, onUserEditFinished, deleteUse
         console.log(user)
         setRole(user.role);
         setVerified(user.verified);
-        client.from("history").select("*, drink ( price, name ), payment(*)").eq("user ", user.userId).eq("payment.state", OPEN).then(result => {
+        client.from("history").select("*, drink ( price, name ), payment(*)").eq("user ", user.userId).eq("payment.state", "Open" as PaymentState).then(result => {
             if (!result.data)
                 return;
             setUserInfo({ openAmount: result.data.reduce((prev, curr) => prev + (curr.count * curr.drink.price), 0) })

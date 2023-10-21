@@ -201,7 +201,7 @@ export const eventSlice = createSlice({
         }
       })
       .addCase(updateAttendanceAsync.fulfilled, (state: EventSliceState, action) => {
-        updateAttendanceRevert(state, "rejected", toInteger(action.meta.arg.eventId), action.meta.arg.user.displayName ?? "Anon",
+        updateAttendanceRevert(state, null, toInteger(action.meta.arg.eventId), action.meta.arg.user.displayName ?? "Anon",
           action.meta.arg.user.userId, action.meta.arg.state)
       })
       .addCase(updateAttendanceAsync.rejected, (state: EventSliceState, action) => {
@@ -237,17 +237,17 @@ export const eventSlice = createSlice({
         }
       })
       .addCase(upsertCommentToEventAsync.fulfilled, (state, action) => {
-        upsertCommentRevertFulFilled(state, action.meta.arg.eventId, action.meta.arg.user.userId, action.meta.arg.comment,
+        upsertCommentRevert(state, action.meta.arg.eventId, action.meta.arg.user.userId, action.meta.arg.comment,
           action.payload.error?.message ?? null);
       })
       .addCase(upsertCommentToEventAsync.rejected, (state, action) => {
-        upsertCommentRevertFulFilled(state, action.meta.arg.eventId, action.meta.arg.user.userId, action.meta.arg.comment,
+        upsertCommentRevert(state, action.meta.arg.eventId, action.meta.arg.user.userId, action.meta.arg.comment,
           "rejected");
       })
   }
 });
 
-const upsertCommentRevertFulFilled = (state: EventSliceState, eventId: number, userId: string,
+const upsertCommentRevert = (state: EventSliceState, eventId: number, userId: string,
   comment: string, error: string | null) => {
   let eventIndex = state.items.findIndex(x => x.id === eventId);
   if (eventIndex === -1)
@@ -304,7 +304,7 @@ export const fetchUserGroupsAsync = createAsyncThunk("fetchUserGroupsAsync", asy
 });
 
 type FetchEventsType = ClientUser & {
-  userGroups: Group[],
+  userGroups: number[],
   page: number,
   count: number
 }
@@ -317,7 +317,7 @@ export const fetchEventsAsync = createAsyncThunk("events", async ({ client, user
     .order("startingDateTime", { ascending: true })
     .returns<FullEvent[]>();
   return {
-    entries: (response.data ?? []).filter(x => _.intersection(x.groups.map(y => y.id), userGroups.map(y => y.id)).length > 0).map<FullEvent>((x: FullEvent) => {
+    entries: (response.data ?? []).filter(x => _.intersection(x.groups.map(y => y.id), userGroups).length > 0).map<FullEvent>((x: FullEvent) => {
       return {
         ...x,
         userAttendance: x.attendance.find(y => y.user.userId === user.userId)?.state ?? "Unanswered"
@@ -352,7 +352,7 @@ export const fetchSingleEventAsync = createAsyncThunk("fetchSingleEventAsync", a
 });
 
 type UpdateAttendanceProps = ClientUser & {
-  eventId: string,
+  eventId: number,
   state: EventAttendance,
   oldState: EventAttendance
 }

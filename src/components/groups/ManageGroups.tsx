@@ -1,12 +1,10 @@
 import { Grid, LinearProgress, List, ListItem, ListItemAvatar, ListItemText } from "@mui/material"
 import CustomAppBar from "../AppBar"
-import { useDispatch, useSelector } from "react-redux";
+import { useSelector } from "react-redux";
 import { FiberManualRecord } from "@mui/icons-material";
 import React, { useEffect } from "react";
 import { useClient } from "react-supabase";
 import { fetchGroupsAsync } from "../../redux/groupsSlice";
-import SearchAndSelectUserDialog from "../SearchAndSelectUserDialog";
-import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { RootState } from "../../redux/store";
 import { useAppDispatch } from "../..";

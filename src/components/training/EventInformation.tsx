@@ -2,8 +2,7 @@ import { Alert, AppBar, Avatar, Box, Button, CircularProgress, Dialog, DialogAct
 import { AccountCircle, ArrowBack, CalendarMonth, CheckCircleOutline, Delete, DoNotDisturb, DoNotDisturbOff, Edit, Info, Map, MoreVert, Refresh, RemoveCircleOutline, Send, ThumbDownAlt, ThumbDownOffAlt, ThumbUpAlt, ThumbUpOffAlt } from "@mui/icons-material";
 import { connect, useSelector } from "react-redux";
 import moment from "moment";
-import { ChangeEvent, FormEvent, MouseEventHandler, useState } from "react";
-import { ATTENDING, DECLINED } from "../../constants";
+import { ChangeEvent, useState } from "react";
 import EventAttendanceDialog from "./EventAttendanceDialog";
 import { useEffect } from "react";
 import { editEvent, fetchEventAttendanceAsync, fetchSingleEventAsync, onEventErrorRead, updateAttendanceAsync, upsertCommentToEventAsync } from "../../redux/eventSlice";
@@ -11,7 +10,7 @@ import { useClient } from "react-supabase";
 import { useNavigate, useParams } from "react-router-dom";
 import { toInteger, toNumber } from "lodash";
 import { MapContainer, TileLayer, Marker } from "react-leaflet";
-import { DeleteEventDialog, DeletionType, THIS_AND_FOLLOWING_EVENT, THIS_EVENT } from "../DeleteEventDialog";
+import { DeleteEventDialog } from "../DeleteEventDialog";
 import React, { Fragment } from "react";
 import { AppDispatch } from "../..";
 import { EventAttendance, FullEvent } from "../../types/supabaseTypes";
@@ -40,7 +39,7 @@ const EventInformation = ({ dispatch, events, attendanceLoading, error }: EventI
     const client = useClient();
     const navigate = useNavigate();
     const { user } = useSelector((state: RootState) => state.application);
-    const [anchorEl, setAnchorEl] = useState<EventTarget & HTMLAnchorElement | null>(null);
+    const [anchorEl, setAnchorEl] = useState<EventTarget & HTMLButtonElement | null>(null);
 
     useEffect(() => {
         if (selectedEventId) {
@@ -102,14 +101,14 @@ const EventInformation = ({ dispatch, events, attendanceLoading, error }: EventI
     const updateAttendance = async (state: EventAttendance, oldState: EventAttendance) => {
         if (!selectedEventId)
             return;
-        dispatch(updateAttendanceAsync({ client, user, eventId: selectedEventId, state, oldState }));
+        dispatch(updateAttendanceAsync({ client, user, eventId: toInteger(selectedEventId), state, oldState }));
     }
 
     const handleCommentChange = (event: ChangeEvent<HTMLInputElement>) => {
         setComment(event.target.value);
     }
 
-    const handleClick = (event: React.MouseEvent<HTMLAnchorElement>) => {
+    const handleClick = (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
         setAnchorEl(event.currentTarget);
     };
 

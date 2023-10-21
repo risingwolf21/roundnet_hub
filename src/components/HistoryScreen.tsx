@@ -1,7 +1,7 @@
 import { Grid, LinearProgress, List, ListItem, ListItemAvatar, ListItemSecondaryAction, ListItemText, ListSubheader, Typography } from "@mui/material"
 import moment from "moment/moment";
 import { groupBy } from "../utils";
-import { useDispatch, useSelector } from "react-redux";
+import { useSelector } from "react-redux";
 import { useState } from "react";
 import { useEffect } from "react";
 import { fetchHistoryAsync } from "../redux/drinksSlice";
@@ -10,7 +10,7 @@ import { InfiniteScrollList } from "./InfiniteScrollList";
 import CustomAppBar from "./AppBar";
 import EditHistoryEntryDialog from "./EditHistoryEntryDialog";
 import React from "react";
-import { Drink, FullHistory } from "../types/supabaseTypes";
+import { FullHistory } from "../types/supabaseTypes";
 import { useAppDispatch } from "..";
 
 export type FullHistoryUpdate = FullHistory & {

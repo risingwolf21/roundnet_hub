@@ -1,11 +1,10 @@
 import { AppBar, Button, Dialog, DialogActions, DialogContent, DialogTitle, Fab, Grid, IconButton, LinearProgress, List, ListItem, ListItemAvatar, ListItemSecondaryAction, ListItemText, Toolbar, Typography } from "@mui/material";
 import CheckIcon from "@mui/icons-material/Check"
 import { useState } from "react";
-import { FULFILLED } from "../../constants";
 import { Error } from "../Error";
 import { useClient } from "react-supabase";
 import { useEffect } from "react";
-import { useDispatch, useSelector } from "react-redux";
+import { useSelector } from "react-redux";
 import { fetchAdminsPaymentsAsync } from "../../redux/adminPaymentsSlice";
 import { ArrowBack, Refresh } from "@mui/icons-material";
 import SearchIcon from "@mui/icons-material/Search";
@@ -14,7 +13,7 @@ import { useNavigate } from "react-router-dom";
 import React from "react";
 import { useAppDispatch } from "../..";
 import { RootState } from "../../redux/store";
-import { Payment, FullPayment } from "../../types/supabaseTypes";
+import { FullPayment, PaymentState } from "../../types/supabaseTypes";
 
 const PaymentsPendingAdmin = () => {
 
@@ -42,7 +41,7 @@ const PaymentsPendingAdmin = () => {
     const confirmPayment = (payment: FullPayment | null) => {
         if (!payment)
             return;
-        client.from("payments").update({ state: FULFILLED }).eq("userId", payment?.user?.userId).then(res => {
+        client.from("payments").update({ state: "Fulfilled" as PaymentState }).eq("userId", payment?.user?.userId).then(res => {
             setOpen(false);
         });
     }

@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { AppBar, Button, Dialog, IconButton, Slide, Toolbar, Typography } from "@mui/material"
+import { AppBar, Button, Dialog, IconButton, Toolbar, Typography } from "@mui/material"
 import CloseIcon from '@mui/icons-material/Close';
 import { Box } from "@mui/system";
 import Cropper from "react-easy-crop";

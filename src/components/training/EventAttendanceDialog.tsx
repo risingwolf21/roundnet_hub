@@ -3,7 +3,6 @@ import { SlideUpTransition } from "../../utils"
 import { useState } from "react";
 import { AccountCircle, Close } from "@mui/icons-material";
 import { useTheme } from '@mui/material/styles';
-import { ATTENDING, DECLINED } from "../../constants";
 import { useEffect } from "react";
 import React from "react";
 import { FullEvent } from "../../types/supabaseTypes";

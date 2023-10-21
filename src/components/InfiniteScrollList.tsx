@@ -38,16 +38,19 @@ export const InfiniteScrollList = ({ children, fetch, error, loading, endReached
             { threshold: 1 }
         );
 
+        let observerRefValue: any = null;
+
         if (observerTarget.current) {
             observer.observe(observerTarget.current);
+            observerRefValue = observerTarget.current;
         }
 
         return () => {
-            if (observerTarget.current) {
-                observer.unobserve(observerTarget.current);
+            if (observerRefValue) {
+                observer.unobserve(observerRefValue);
             }
         };
-    }, [observerTarget]);
+    }, [observerTarget, endReached, fetch, loading]);
 
     return <div style={{ width: "100%" }}>
         <List sx={{ overflowY: "auto" }}>
