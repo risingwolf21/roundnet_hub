@@ -9,16 +9,22 @@ export type History = Database["public"]["Tables"]["history"]["Row"];
 export type Payment = Database["public"]["Tables"]["payments"]["Row"];
 export type User = Database["public"]["Tables"]["user"]["Row"];
 
+export type FullPayment = Payment & {
+    user: User,
+    history: History[]
+}
+
 export type FullHistory = History & {
     drink: Drink,
     drinkId: string,
     user: User
 }
 
-export type PaymentHistory = History & {
+export type PaymentHistory = Modify<History, {
     payment: Payment,
-    drink: Drink
-}
+    drink: Drink | null,
+    drinkId: string
+}>
 
 export type FullEvent = Event & {
     comments: FullComment[],

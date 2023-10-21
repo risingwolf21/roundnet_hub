@@ -2,7 +2,6 @@ import { Avatar, Badge, Button, Dialog, DialogActions, DialogContent, DialogTitl
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
-//@ts-ignore
 import EditDrinkDialog from "./EditDrinkDialog";
 import LocalDrinkIcon from '@mui/icons-material/LocalDrink';
 import { useState } from "react";
@@ -84,8 +83,8 @@ const AdminDrinkList = () => {
         setDeleteOpen(false);
     }
 
-    const getDrinksHistory = (drink: Drink | undefined): Drink[] => {
-        if (!drink || !drinks || !drink.previousDrink) return [];
+    const getDrinksHistory = (drink: Drink): Drink[] => {
+        if (!drinks || !drink.previousDrink) return [];
 
         let prev: Drink = drinks.filter((x: Drink) => x.deleted).find((x: Drink) => x.id === drink.previousDrink);
 
@@ -131,7 +130,14 @@ const AdminDrinkList = () => {
         <Fab sx={{ background: "#66bb6a", position: "fixed", right: "16px", bottom: "72px" }} onClick={() => selectDrink(EMPTY_DRINK)}>
             <AddIcon sx={{ color: "white" }} />
         </Fab>
-        <EditDrinkDialog drink={selectedDrink} drinkHistory={getDrinksHistory(selectedDrink)} open={open} handleClose={() => setOpen(false)} onDrinkEditFinished={onDrinkEditFinished} />
+        {
+            selectedDrink && <EditDrinkDialog
+                drink={selectedDrink}
+                drinkHistory={getDrinksHistory(selectedDrink)}
+                open={open}
+                handleClose={() => setOpen(false)}
+                onDrinkEditFinished={onDrinkEditFinished} />
+        }
         <Dialog open={deleteOpen} onClose={() => setDeleteOpen(false)}>
             <DialogTitle>Getränk löschen</DialogTitle>
             <DialogContent>

@@ -4,18 +4,14 @@ import ReactDOM from 'react-dom/client';
 //@ts-ignore
 import * as serviceWorkerRegistration from './serviceWorkerRegistration';
 import "./global.css";
-//@ts-ignore
 import App from './App';
 import { ThemeProvider } from '@mui/material';
-//@ts-ignore
-import { mainTheme } from './themes';
+import { mainTheme } from './themes/themes';
 import * as Sentry from "@sentry/react";
-//@ts-ignore
 import { supabase } from './supabaseClient';
 import { Provider as SupabaseProvider } from "react-supabase"
 import { AdapterMoment } from '@mui/x-date-pickers/AdapterMoment';
 import { Provider, useDispatch } from 'react-redux';
-//@ts-ignore
 import store from './redux/store';
 import "./translation/i18n";
 import { LocalizationProvider } from '@mui/x-date-pickers';

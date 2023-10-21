@@ -11,17 +11,21 @@ import { ArrowBack, Refresh } from "@mui/icons-material";
 import SearchIcon from "@mui/icons-material/Search";
 import { Search, SearchIconWrapper, StyledInputBase } from "../SearchBar";
 import { useNavigate } from "react-router-dom";
+import React from "react";
+import { useAppDispatch } from "../..";
+import { RootState } from "../../redux/store";
+import { Payment, FullPayment } from "../../types/supabaseTypes";
 
 const PaymentsPendingAdmin = () => {
 
     const [open, setOpen] = useState(false);
-    const [currentPayment, setPayment] = useState({});
+    const [currentPayment, setPayment] = useState<FullPayment | null>(null);
     const [searchString, setSearchString] = useState("");
     const client = useClient();
-    const dispatch = useDispatch();
+    const dispatch = useAppDispatch();
     const navigate = useNavigate();
 
-    const { payments, error, loading } = useSelector((state) => state.adminPayments);
+    const { payments, error, loading } = useSelector((state: RootState) => state.adminPayments);
 
     useEffect(() => {
         dispatch(fetchAdminsPaymentsAsync({ client }));
@@ -30,12 +34,14 @@ const PaymentsPendingAdmin = () => {
     if (error)
         return <Error message={error} />
 
-    const selectedPayment = (payment) => {
+    const selectedPayment = (payment: FullPayment) => {
         setPayment(payment);
         setOpen(true);
     }
 
-    const confirmPayment = (payment) => {
+    const confirmPayment = (payment: FullPayment | null) => {
+        if (!payment)
+            return;
         client.from("payments").update({ state: FULFILLED }).eq("userId", payment?.user?.userId).then(res => {
             setOpen(false);
         });
@@ -75,11 +81,11 @@ const PaymentsPendingAdmin = () => {
             (payments && payments.length > 1) && <List sx={{ width: "100%", pt: 0 }}>
                 {
                     Object.values(payments)
-                        .filter(x => searchString === "" || x.user.displayName.toLowerCase().includes(searchString.toLowerCase()))
+                        .filter(x => searchString === "" || (x.user?.displayName ?? "").toLowerCase().includes(searchString.toLowerCase()))
                         .map((x, index) => {
                             return <ListItem key={x.user.email} divider={index < Object.values(payments).length - 1}>
                                 <ListItemAvatar>
-                                    <Typography fontWeight={"bold"}>{x.history.reduce((prev, curr) => prev + curr.amount, 0)} €</Typography>
+                                    <Typography fontWeight={"bold"}>{x.history.reduce((prev, curr) => prev + (curr.amount ?? 0), 0)} €</Typography>
                                 </ListItemAvatar>
                                 <ListItemText primary={x.user?.displayName ?? x.user.email} secondary={x.user.displayName ? "Benutzername" : "Email"} />
                                 <ListItemSecondaryAction >
@@ -93,7 +99,7 @@ const PaymentsPendingAdmin = () => {
             </List>
         }
         {
-            payments?.length < 1 && <Grid
+            payments && payments.length < 1 && <Grid
                 container
                 spacing={0}
                 direction="column"
@@ -124,7 +130,7 @@ const PaymentsPendingAdmin = () => {
                     eine Zahlung in Höhe von
                 </Typography>
                 <Typography fontWeight={"bold"}>
-                    {`${currentPayment?.history?.reduce((prev, curr) => prev + curr.amount, 0)} €`}
+                    {`${currentPayment?.history?.reduce((prev, curr) => prev + (curr.amount ?? 0), 0)} €`}
                 </Typography>
                 <Typography>
                     getätigt hat.

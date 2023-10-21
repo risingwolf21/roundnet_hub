@@ -1,18 +1,31 @@
-import React, { useEffect, useState } from "react";
+import React, { FormEvent, FormEventHandler, useEffect, useState } from "react";
 import { AppBar, Avatar, Button, Checkbox, Collapse, Dialog, DialogActions, DialogContent, DialogTitle, Divider, IconButton, List, ListItem, ListItemAvatar, ListItemButton, ListItemSecondaryAction, ListItemText, ListSubheader, Radio, Slide, TextField, Toolbar, Typography } from "@mui/material"
 import { Box } from "@mui/system";
 import { AccountCircle, Close, Email, ExpandLess, ExpandMore, FiberManualRecord, ManageAccounts, Verified } from "@mui/icons-material";
 import { OPEN } from "../../constants";
 import { useClient } from "react-supabase";
+import { SlideUpTransition } from "../../utils";
+import { Group, User, UserRole, UserWithGroups } from "../../types/supabaseTypes";
 
-const Transition = React.forwardRef(function Transition(props, ref) {
-    return <Slide direction="up" ref={ref} {...props} />;
-});
+type EditUserDialogProps = {
+    user: UserWithGroups,
+    open: boolean,
+    handleClose: () => void,
+    onUserEditFinished: (user: UserEdited) => void,
+    deleteUser: (user: User) => void
+}
 
-const EditUserDialog = ({ user, open, handleClose, onUserEditFinished, deleteUser }) => {
+export type UserEdited = {
+    displayName: string,
+    verified: boolean,
+    role: UserRole,
+    userId: string
+}
+
+const EditUserDialog = ({ user, open, handleClose, onUserEditFinished, deleteUser }: EditUserDialogProps) => {
 
     const [userRoleCollapseOpen, setUserCollapseOpen] = useState(false);
-    const [role, setRole] = useState(user.role);
+    const [role, setRole] = useState<UserRole>(user.role);
     const [verified, setVerified] = useState(user.verified)
     const [deleteUserOpen, setDeleteUserOpen] = useState(false);
     const [userInfo, setUserInfo] = useState({ openAmount: 0 })
@@ -29,24 +42,24 @@ const EditUserDialog = ({ user, open, handleClose, onUserEditFinished, deleteUse
         });
     }, [user, client]);
 
-    const handleSubmit = (event) => {
+    const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
         setUserCollapseOpen(false);
         const data = new FormData(event.currentTarget);
 
         onUserEditFinished({
-            ...user,
+            userId: user.userId,
             displayName: data.get("displayName"),
             role,
             verified
-        });
+        } as UserEdited);
     }
 
     return <Dialog
         fullScreen
         open={open}
         onClose={handleClose}
-        TransitionComponent={Transition}>
+        TransitionComponent={SlideUpTransition}>
         <Box component="form" onSubmit={handleSubmit} noValidate>
             <AppBar sx={{ position: "relative" }}>
                 <Toolbar>
@@ -118,11 +131,11 @@ const EditUserDialog = ({ user, open, handleClose, onUserEditFinished, deleteUse
                     <Divider />
                     <List subheader={<ListSubheader>Gruppen</ListSubheader>}>
                         {
-                            user?.groups && user.groups.map(x => <ListItem divider>
+                            user?.groups && user.groups.map((x: Group) => <ListItem divider>
                                 <ListItemAvatar>
-                                    <FiberManualRecord sx={{ color: x.group.color }} />
+                                    <FiberManualRecord sx={{ color: x.color }} />
                                 </ListItemAvatar>
-                                <ListItemText primary={x.group?.name} />
+                                <ListItemText primary={x.name} />
                             </ListItem>)
                         }
                     </List>
@@ -140,17 +153,17 @@ const EditUserDialog = ({ user, open, handleClose, onUserEditFinished, deleteUse
                     <Collapse in={userRoleCollapseOpen} timeout="auto" unmountOnExit>
                         <List component="div" disablePadding>
                             {
-                                [
+                                Array.from<{ value: UserRole, display: string }>([
                                     { value: "user", display: "Benutzer" },
                                     { value: "procure", display: "Procure" },
                                     { value: "finance", display: "Finanzen" },
                                     { value: "admin", display: "Administrator" }
-                                ]
+                                ])
                                     .map(x => <ListItem key={x.value} sx={{ pl: 4 }}>
                                         <ListItemAvatar>
                                             <Radio
                                                 checked={role === x.value}
-                                                onChange={(e) => setRole(e.target.value)}
+                                                onChange={(e) => setRole(e.target.value as UserRole)}
                                                 value={x.value}
                                                 name="role-buttons" />
                                         </ListItemAvatar>

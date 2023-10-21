@@ -4,10 +4,8 @@ import { groupBy } from "../utils";
 import { useDispatch, useSelector } from "react-redux";
 import { useState } from "react";
 import { useEffect } from "react";
-//@ts-ignore
 import { fetchHistoryAsync } from "../redux/drinksSlice";
 import { useClient } from "react-supabase";
-//@ts-ignore
 import { InfiniteScrollList } from "./InfiniteScrollList";
 import CustomAppBar from "./AppBar";
 import EditHistoryEntryDialog from "./EditHistoryEntryDialog";

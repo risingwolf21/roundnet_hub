@@ -3,7 +3,6 @@ import { BottomNavigation, BottomNavigationAction, Paper } from "@mui/material"
 import { SyntheticEvent, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
-//@ts-ignore
 import { onModeChange } from "../redux/applicationSlice";
 import { withTranslation } from 'react-i18next';
 import React, { useEffect } from "react";

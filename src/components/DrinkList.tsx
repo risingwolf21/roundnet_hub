@@ -8,7 +8,6 @@ import { Error } from "./Error";
 import { useClient } from "react-supabase";
 import { useDispatch, useSelector } from "react-redux";
 import CustomAppBar from "./AppBar";
-//@ts-ignore
 import { fetchPaymentAsync } from "../redux/drinksSlice";
 import React from "react";
 import { Drink } from "../types/supabaseTypes";

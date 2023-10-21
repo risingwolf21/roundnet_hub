@@ -9,8 +9,12 @@ import { useDispatch, useSelector } from "react-redux";
 import { useEffect } from "react";
 import { fetchDrinksToPayAsync, fetchPaymentAsync } from "../redux/drinksSlice";
 import { useClient } from "react-supabase";
+import React from "react";
+import { RootState } from "../redux/store";
+import { useAppDispatch } from "..";
+import { Drink, PaymentHistory } from "../types/supabaseTypes";
 
-const PayDrinksButton = ({ amountToPay }) => {
+const PayDrinksButton = ({ amountToPay }: { amountToPay: number }) => {
 
     const onPayClick = () => {
         const newWindow = window.open(`https://www.paypal.me/${PAYPAL_ME_ADDRESS}/${amountToPay}EUR`, '_blank', 'noopener,noreferrer')
@@ -24,17 +28,17 @@ const PayDrinksButton = ({ amountToPay }) => {
     </Box>
 }
 
-const PayDrinksSummary = ({ drinks }) => {
+const PayDrinksSummary = ({ paymentHistory }: { paymentHistory: PaymentHistory[] }) => {
     return <Box>
         <List>
             {
-                drinks && Object.entries(groupBy(drinks, x => x.drink?.name))
-                    .map((value) => {
+                paymentHistory && Array.from(groupBy(paymentHistory, x => x.drink?.name ?? ""))
+                    .map(([key, value]) => {
                         return {
-                            name: value[0],
-                            count: value[1].reduce((prev, curr) => prev + curr.count, 0),
-                            priceSingle: value[1][0]?.drink?.price ?? "NaN",
-                            priceTotal: value[1].reduce((prev, curr) => prev + (curr.count), 0),
+                            name: key,
+                            count: value.reduce((prev, curr) => prev + (curr.count ?? 0), 0),
+                            priceSingle: value[0]?.drink?.price ?? "NaN",
+                            priceTotal: value.reduce((prev, curr) => prev + (curr.count ?? 0), 0),
                         }
                     })
                     .map((x, index) => <ListItem key={"drinks" + index}>
@@ -49,12 +53,12 @@ const PayDrinksSummary = ({ drinks }) => {
             }
             <Divider />
             {
-                drinks &&
+                paymentHistory &&
                 <ListItem key={"totalAmount"}>
                     <ListItemText primaryTypographyProps={{ fontWeight: "bold" }} primary={"Gesamtkosten"} />
                     <ListItemSecondaryAction>
                         <Typography sx={{ fontWeight: "bold" }}>
-                            {drinks.reduce((prev, curr) => prev + curr.amount, 0)} €
+                            {paymentHistory.reduce((prev, curr) => prev + (curr.amount ?? 0), 0)} €
                         </Typography>
                     </ListItemSecondaryAction>
                 </ListItem>
@@ -65,11 +69,11 @@ const PayDrinksSummary = ({ drinks }) => {
 
 const PayDrinksScreen = () => {
 
-    const { user } = useSelector(state => state.application);
-    const dispatch = useDispatch();
+    const { user } = useSelector((state: RootState) => state.application);
+    const dispatch = useAppDispatch();
     const client = useClient();
 
-    const { paymentHistory, paymentError, paymentLoading } = useSelector(state => state.drinks);
+    const { paymentHistory, paymentError, paymentLoading } = useSelector((state: RootState) => state.drinks);
 
     useEffect(() => {
         dispatch(fetchDrinksToPayAsync({ client, user }));
@@ -89,8 +93,8 @@ const PayDrinksScreen = () => {
     return (
         <Box>
             <CustomAppBar navigateBack />
-            <PayDrinksSummary drinks={paymentHistory} user={user} />
-            <PayDrinksButton amountToPay={paymentHistory.reduce((prev, curr) => prev + curr.amount, 0)} />
+            <PayDrinksSummary paymentHistory={paymentHistory} />
+            <PayDrinksButton amountToPay={paymentHistory.reduce((prev, curr) => prev + (curr.amount ?? 0), 0)} />
         </Box>
     );
 }

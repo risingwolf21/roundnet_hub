@@ -3,12 +3,23 @@ import { AppBar, Button, Dialog, IconButton, Slide, Toolbar, Typography } from "
 import CloseIcon from '@mui/icons-material/Close';
 import { Box } from "@mui/system";
 import Cropper from "react-easy-crop";
+import { SlideUpTransition } from "../utils";
 
-const Transition = React.forwardRef(function Transition(props, ref) {
-    return <Slide direction="up" ref={ref} {...props} />;
-});
+type CropImageDialogProps = {
+    open: boolean,
+    handleClose: () => void,
+    selectedImage: string,
+    onImageCropFinished: (value: string | null) => void
+}
 
-const CropImageDialog = ({ open, handleClose, selectedImage, onImageCropFinished }) => {
+type CroppedAreaPixels = {
+    width: number,
+    height: number,
+    x: number,
+    y: number
+}
+
+const CropImageDialog = ({ open, handleClose, selectedImage, onImageCropFinished }: CropImageDialogProps) => {
 
     const cropImage = async () => {
         try {
@@ -27,16 +38,16 @@ const CropImageDialog = ({ open, handleClose, selectedImage, onImageCropFinished
     const [crop, setCrop] = useState({ x: 0, y: 0 })
     const [zoom, setZoom] = useState(1);
     const [rotation] = useState(0);
-    const [croppedAreaPixels, setCroppedAreaPixels] = useState(null)
+    const [croppedAreaPixels, setCroppedAreaPixels] = useState<CroppedAreaPixels>({ width: 0, height: 0, x: 0, y: 0 })
 
-    const onCropComplete = (croppedArea, croppedAreaPixels) => {
+    const onCropComplete = (croppedArea: any, croppedAreaPixels: CroppedAreaPixels) => {
         setCroppedAreaPixels(croppedAreaPixels)
     };
 
     return <Dialog fullScreen
         open={open}
         onClose={handleClose}
-        TransitionComponent={Transition}>
+        TransitionComponent={SlideUpTransition}>
         <Box>
             <AppBar sx={{ position: "relative" }}>
                 <Toolbar>
@@ -70,11 +81,11 @@ const CropImageDialog = ({ open, handleClose, selectedImage, onImageCropFinished
 export default CropImageDialog;
 
 async function getCroppedImg(
-    imageSrc,
-    pixelCrop,
+    imageSrc: string,
+    pixelCrop: CroppedAreaPixels,
     rotation = 0,
     flip = { horizontal: false, vertical: false }
-) {
+): Promise<string | null> {
     const image = await createImage(imageSrc)
     const canvas = document.createElement('canvas')
     const ctx = canvas.getContext('2d')
@@ -141,20 +152,21 @@ async function getCroppedImg(
     // })
 }
 
-const createImage = (url) =>
-    new Promise((resolve, reject) => {
+function createImage(url: string): Promise<HTMLImageElement> {
+    return new Promise((resolve, reject) => {
         const image = new Image()
         image.addEventListener('load', () => resolve(image))
         image.addEventListener('error', (error) => reject(error))
         image.setAttribute('crossOrigin', 'anonymous') // needed to avoid cross-origin issues on CodeSandbox
         image.src = url
     })
+}
 
-function getRadianAngle(degreeValue) {
+function getRadianAngle(degreeValue: number) {
     return (degreeValue * Math.PI) / 180
 }
 
-function rotateSize(width, height, rotation) {
+function rotateSize(width: number, height: number, rotation: number) {
     const rotRad = getRadianAngle(rotation)
 
     return {

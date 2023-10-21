@@ -1,9 +1,7 @@
 import { useClient } from "react-supabase";
 import { Dispatch, useEffect } from "react";
 import { connect, useSelector } from "react-redux";
-//@ts-ignore
 import { onHistoryDelete, onHistoryInsert, onHistoryUpdate, onDrinkDeleted, onDrinkInserted, onDrinkUpdated, onPaymentUpdated, onPaymentDeleted } from "../redux/drinksSlice";
-//@ts-ignore
 import { onEventAttendanceUserDelete, onEventAttendanceUserInsert, onEventAttendanceUserUpdate, onEventCommentDelete, onEventCommentInsert, onEventCommentUpdate, onEventDelete, onEventInsert, onEventUpdate } from "../redux/eventSlice";
 import { useDispatch } from "react-redux";
 import { AnyAction } from "@reduxjs/toolkit";

@@ -1,7 +1,7 @@
 import { AppBar, Badge, Box, Chip, Dialog, Grid, IconButton, LinearProgress, List, ListItem, ListItemAvatar, ListItemSecondaryAction, ListItemText, Toolbar, Typography } from "@mui/material";
 import { AccountCircle, AdminPanelSettings, ArrowBack, Close, Edit, EuroRounded, Liquor, PersonOff, Refresh, Verified } from "@mui/icons-material";
 import SearchIcon from "@mui/icons-material/Search";
-import EditUserDialog from "./EditUserDialog";
+import EditUserDialog, { UserEdited } from "./EditUserDialog";
 import { Fragment, useState } from "react";
 import { useClient } from "react-supabase";
 import { Error } from "../Error";
@@ -13,8 +13,12 @@ import { fetchAdminUsersAsync } from "../../redux/adminUserSlice";
 import { useNavigate } from "react-router-dom";
 import { Search, SearchIconWrapper, StyledInputBase } from "../SearchBar";
 import { SlideUpTransition } from "../../utils";
+import React from "react";
+import { User, UserWithGroups } from "../../types/supabaseTypes";
+import { useAppDispatch } from "../..";
+import { RootState } from "../../redux/store";
 
-const AdminUserItem = ({ user, onEditClick }) => {
+const AdminUserItem = ({ user, onEditClick }: { user: User, onEditClick: () => void }) => {
     let color = "rgba(0, 0, 0, 0.54)";
     return <ListItem divider>
         <ListItemAvatar>
@@ -35,7 +39,7 @@ const AdminUserItem = ({ user, onEditClick }) => {
             <Box sx={{ display: "flex", flexDirection: "row", alignItems: "center" }}>
                 <Typography>{user.displayName}</Typography>
                 {
-                    user.verified && <Verified sx={{ ml: 1, color: "rgba(0, 0, 0, 0.54)" }} fontSize="12px" />
+                    user.verified && <Verified sx={{ ml: 1, color: "rgba(0, 0, 0, 0.54)", fontSize: "12px" }} />
                 }
             </Box>
         </Fragment>}
@@ -51,26 +55,26 @@ const AdminUserItem = ({ user, onEditClick }) => {
 const AdminUserList = () => {
 
     const [editUserOpen, setEditUserOpen] = useState(false);
-    const [currentUser, setCurrentUser] = useState({});
+    const [currentUser, setCurrentUser] = useState<UserWithGroups | null>();
     const [searchString, setSearchString] = useState("");
     const [open, setOpen] = useState(false);
     const [showNotVerifiedUsers, setShowNotVerifiedUsers] = useState(true)
     const client = useClient();
-    const dispatch = useDispatch();
+    const dispatch = useAppDispatch();
     const navigate = useNavigate();
 
     useEffect(() => {
         dispatch(fetchAdminUsersAsync({ client }));
     }, [dispatch, client]);
 
-    const { users, loading, error } = useSelector(state => state.adminUsers);
+    const { users, loading, error } = useSelector((state: RootState) => state.adminUsers);
 
-    const editUser = (user) => {
+    const editUser = (user: UserWithGroups) => {
         setCurrentUser(user);
         setEditUserOpen(true);
     }
 
-    const deleteUser = async (user) => {
+    const deleteUser = async (user: User) => {
         const { error } = await supabase_admin.auth.admin.deleteUser(user.userId);
         const { error: e2 } = await client.from("payments").delete().eq("userId", user.userId)
         const { error: e1 } = await client.from("user").delete().eq("userId", user.userId);
@@ -99,7 +103,7 @@ const AdminUserList = () => {
         }
     }
 
-    const onUserEditFinished = async (result) => {
+    const onUserEditFinished = async (result: UserEdited) => {
         console.log(result)
         await client.from("user").update({ displayName: result.displayName, role: result.role, verified: result.verified }).eq("userId", result.userId);
         await client.auth.admin.updateUserById(
@@ -146,24 +150,26 @@ const AdminUserList = () => {
         </AppBar>
         {loading && <LinearProgress style={{ position: "fixed", left: 0, right: 0, top: 56 }} />}
 
-        <Badge sx={{ mt: 2 }} color="info" badgeContent={users.filter(x => searchString === "" || x.displayName.toLowerCase().includes(searchString.toLowerCase())).filter(x => !x.verified).length}>
+        <Badge sx={{ mt: 2 }} color="info" badgeContent={users.filter(x => searchString === "" || x.displayName?.toLowerCase().includes(searchString.toLowerCase())).filter(x => !x.verified).length}>
             <Chip icon={<PersonOff />} label="Not verified" onClick={() => setShowNotVerifiedUsers(!showNotVerifiedUsers)} variant={showNotVerifiedUsers ? "filled" : "outlined"} />
         </Badge>
 
         <List sx={{ width: "100%" }}>
             {
                 users && users
-                    .filter(x => searchString === "" || x.displayName.toLowerCase().includes(searchString.toLowerCase()))
+                    .filter((x: UserWithGroups) => searchString === "" || x.displayName?.toLowerCase().includes(searchString.toLowerCase()))
                     .filter(x => (showNotVerifiedUsers && !x.verified) || (!showNotVerifiedUsers && x.verified))
                     .map((user, index) => <AdminUserItem key={"user" + index} user={user} onEditClick={() => editUser(user)} />)
             }
         </List>
-        <EditUserDialog
-            open={editUserOpen}
-            user={currentUser}
-            handleClose={() => setEditUserOpen(false)}
-            deleteUser={deleteUser}
-            onUserEditFinished={onUserEditFinished} />
+        {
+            currentUser && <EditUserDialog
+                open={editUserOpen}
+                user={currentUser}
+                handleClose={() => setEditUserOpen(false)}
+                deleteUser={deleteUser}
+                onUserEditFinished={onUserEditFinished} />
+        }
 
         <Dialog
             fullWidth

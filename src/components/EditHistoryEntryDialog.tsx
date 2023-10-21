@@ -4,7 +4,6 @@ import {
 } from "@mui/material";
 import { Remove, Add, LocalDrink } from "@mui/icons-material";
 import { useEffect, useState } from "react";
-//@ts-ignore
 import { SlideUpTransition } from "../utils";
 import React from "react";
 import { FullHistory } from "../types/supabaseTypes";

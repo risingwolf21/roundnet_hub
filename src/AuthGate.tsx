@@ -1,5 +1,5 @@
 import { setUser } from "@sentry/react";
-import React, { createContext } from "react";
+import React, { createContext, useEffect } from "react";
 import { useClient } from "react-supabase";
 import { useDispatch, useSelector } from "react-redux";
 import { onUserChange } from "./redux/applicationSlice";
@@ -9,14 +9,19 @@ import ForgotPasswordScreen from './components/ForgotPasswordScreen';
 import RegisterScreen from './components/RegisterScreen';
 import { Route, Routes } from 'react-router-dom';
 import NotVerifiedScreen from "./components/NotVerifiedScreen";
+import { RootState } from "./redux/store";
 
 
 const initialState = { session: null, user: null }
 export const AuthContext = createContext(initialState)
 
-const AuthGate = ({ children }) => {
+type Props = {
+    children: string | JSX.Element | JSX.Element[]
+}
 
-    const { user } = useSelector(state => state.application);
+const AuthGate = ({ children }: Props) => {
+
+    const { user } = useSelector((state: RootState) => state.application);
 
     const client = useClient();
     const dispatch = useDispatch();
@@ -25,9 +30,9 @@ const AuthGate = ({ children }) => {
     useEffect(() => {
         client.auth.onAuthStateChange((event, session) => {
             console.log("auth state changed")
-            setUser({ email: session?.user?.email ?? null, id: session?.user?.id ?? null });
+            setUser({ email: session?.user?.email, id: session?.user?.id });
             if (session?.user) {
-                client.from("user").select().single().eq("userId", session.user.id).then(res => {
+                client.from("user").select().eq("userId", session.user.id).single().then((res) => {
                     if (res && res.data) {
                         let user = {
                             ...session?.user ?? null,

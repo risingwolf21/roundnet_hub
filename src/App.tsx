@@ -31,15 +31,16 @@ import AnalyzeDrinkStockHistory from './components/procure/AnalyzeDrinkStockHist
 import raw from "./git_commit.txt";
 import { fetchUserGroupsAsync } from './redux/eventSlice';
 import { GroupInformation } from './components/groups/GroupInformation';
-import { DependencyContext } from '.';
+import { DependencyContext, useAppDispatch } from '.';
+import { RootState } from './redux/store';
 
 const App = () => {
 
   const { waitingWorker, showReload, reloadPage } = useServiceWorker();
   const container = React.useContext(DependencyContext);
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
   const client = useClient();
-  const { appUpdateAvailable, user } = useSelector((state) => state.application);
+  const { appUpdateAvailable, user } = useSelector((state: RootState) => state.application);
 
   useEffect(() => {
     fetch(raw)
@@ -51,7 +52,7 @@ const App = () => {
 
   useEffect(() => {
     dispatch(fetchPaymentAsync({ client, user }));
-    dispatch(fetchHistoryAsync({ client, user }));
+    dispatch(fetchHistoryAsync({ client, user, page: 0, count: 20 }));
     dispatch(fetchUserGroupsAsync({ client, user }));
     dispatch(fetchDrinksAsync(client));
   }, [client, user, dispatch]);

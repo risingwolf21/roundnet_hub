@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { FormEvent, useEffect, useState } from "react";
 import { AppBar, Avatar, Button, Dialog, IconButton, List, ListItem, ListItemAvatar, ListItemSecondaryAction, ListItemText, ListSubheader, TextField, Toolbar, Typography } from "@mui/material"
 import CloseIcon from '@mui/icons-material/Close';
 import { Box } from "@mui/system";
@@ -12,46 +12,58 @@ import { useClient } from "react-supabase";
 import { uuid } from "@supabase/gotrue-js/dist/module/lib/helpers";
 import { Check } from "@mui/icons-material";
 import { SlideUpTransition } from "../../utils";
+import { Drink } from "../../types/supabaseTypes";
 
-const dataURLtoFile = (dataurl, filename) => {
-    var arr = dataurl.split(','),
-        mime = arr[0].match(/:(.*?);/)[1],
-        bstr = atob(arr[arr.length - 1]),
-        n = bstr.length,
-        u8arr = new Uint8Array(n);
+const dataURLtoFile = (dataurl: string, filename: string): File => {
+    var arr = dataurl.split(',');
+    var mime = ((arr[0] ?? "").match(/:(.*?);/) ?? [])[1] ?? null;
+    var bstr = atob(arr[arr.length - 1]);
+    var n = bstr.length;
+    var u8arr = new Uint8Array(n);
     while (n--) {
         u8arr[n] = bstr.charCodeAt(n);
     }
     return new File([u8arr], filename, { type: mime });
 }
 
+type EditDrinkDialogProps = {
+    drink: Drink,
+    onDrinkEditFinished: (drink: Drink) => void,
+    open: boolean,
+    handleClose: () => void,
+    drinkHistory: Drink[]
+}
 
-const EditDrinkDialog = ({ drink, onDrinkEditFinished, open, handleClose, drinkHistory }) => {
+
+const EditDrinkDialog = ({ drink, onDrinkEditFinished, open, handleClose, drinkHistory }: EditDrinkDialogProps) => {
 
     useEffect(() => {
-        setActiveDrink(drink?.active ?? false);
+        setActiveDrink(drink.active);
     }, [drink]);
 
     // image cropping
     const client = useClient();
-    const [selectedImage, setSelectedImage] = useState(null);
-    const [croppedImage, setCroppedImage] = useState(null);
+    const [selectedImage, setSelectedImage] = useState<string | ArrayBuffer | null>(null);
+    const [croppedImage, setCroppedImage] = useState<string | null>(null);
 
     const [cropImageDialogOpen, setCropImageDialogOpen] = useState(false);
-    const [activeDrink, setActiveDrink] = useState();
+    const [activeDrink, setActiveDrink] = useState<boolean>(false);
 
-    const handleSubmit = async (event) => {
+    const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
         const data = new FormData(event.currentTarget);
+        const price = data.get("price")?.toString();
+        const stock = data.get("stock")?.toString();
+        const name = data.get("name")?.toString();
 
-        if (data.get("name") && data.get("price") && data.get("stock")) {
+        if (name && price && stock) {
             let newDrink = {
                 id: drink.id,
-                name: data.get("name"),
-                price: Number.parseFloat(data.get("price")),
+                name,
+                price: Number.parseFloat(price),
                 imageUrl: "",
                 active: activeDrink,
-                stock: Number.parseFloat(data.get("stock"))
+                stock: Number.parseFloat(stock)
             };
 
             if (croppedImage) {
@@ -73,7 +85,7 @@ const EditDrinkDialog = ({ drink, onDrinkEditFinished, open, handleClose, drinkH
 
             setCroppedImage(null);
             setSelectedImage(null);
-            onDrinkEditFinished(newDrink);
+            onDrinkEditFinished(newDrink as Drink);
         }
     };
 
@@ -198,7 +210,7 @@ const EditDrinkDialog = ({ drink, onDrinkEditFinished, open, handleClose, drinkH
                                 return <ListItem key={"drinkHistory" + index}>
                                     <ListItemAvatar>
                                         {
-                                            index === 0 && <Check/> 
+                                            index === 0 && <Check />
                                         }
                                     </ListItemAvatar>
                                     <ListItemText primary={x.name} secondary={x.price + " €"} />
@@ -209,15 +221,21 @@ const EditDrinkDialog = ({ drink, onDrinkEditFinished, open, handleClose, drinkH
                 </List>
             </Box>
         </Dialog>
-        <CropImageDialog open={cropImageDialogOpen} handleClose={() => setCropImageDialogOpen(false)} selectedImage={selectedImage} onImageCropFinished={(img) => {
-            setCroppedImage(img);
-            setCropImageDialogOpen(false);
-        }} />
+        {
+            (selectedImage && typeof (selectedImage) === "string") && <CropImageDialog
+                open={cropImageDialogOpen}
+                handleClose={() => setCropImageDialogOpen(false)}
+                selectedImage={selectedImage}
+                onImageCropFinished={(img) => {
+                    setCroppedImage(img);
+                    setCropImageDialogOpen(false);
+                }} />
+        }
     </Box>
 }
 export default EditDrinkDialog;
 
-function readFile(file) {
+function readFile(file: Blob): Promise<string | ArrayBuffer | null> {
     return new Promise((resolve) => {
         const reader = new FileReader()
         reader.addEventListener('load', () => resolve(reader.result), false)
