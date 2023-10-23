@@ -21,7 +21,8 @@
         "creation": {
             "meetingTimeBeforeStartTime": "Die Treffpunktzeit darf nicht nach der Startzeit liegen",
             "titleTooShort": "Der Titel des Events muss aus mindestens 6 Zeichen bestehen",
-            "descriptionEmpty": "Die Beschreibung des Events darf nicht leer sein"
+            "descriptionEmpty": "Die Beschreibung des Events darf nicht leer sein",
+            "startDateCannotBeNull": "Die Startzeit des Events darf nicht leer sein"
         }
     }
 }

@@ -1,0 +1,79 @@
+import { ArrowBack } from "@mui/icons-material";
+import SearchIcon from "@mui/icons-material/Search";
+import { AppBar, Box, Checkbox, Dialog, IconButton, LinearProgress, List, ListItem, ListItemIcon, ListItemText, Toolbar, Typography } from "@mui/material";
+import { Search, SearchIconWrapper, StyledInputBase } from "./SearchBar";
+import { useState } from "react";
+import { SlideUpTransition } from "../utils";
+import React from "react";
+import { User } from "../types/supabaseTypes";
+
+type SearchAndSelectUserDialogProps = {
+    open: boolean,
+    handleClose: () => void,
+    users: User[],
+    loading: boolean
+}
+
+const SearchAndSelectUserDialog = ({ open, handleClose, users, loading }: SearchAndSelectUserDialogProps) => {
+
+    const [selectedUsers, setSelectedUsers] = useState<User[]>(Array.from<User>([]));
+
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement>, user: User) => {
+        if (selectedUsers.some((x: User) => x.userId === user.userId)) {
+            setSelectedUsers(selectedUsers.filter(y => y.userId !== user.userId))
+        } else {
+            setSelectedUsers([...selectedUsers, user])
+        }
+    }
+
+    return <Dialog
+        fullScreen
+        open={open}
+        onClose={handleClose}
+        TransitionComponent={SlideUpTransition}>
+        <Box sx={{
+            width: "100%",
+            direction: "column",
+            alignItems: "center",
+            justifyContent: "center"
+        }}>
+            <AppBar position="sticky">
+                <Toolbar>
+                    <IconButton
+                        size="large"
+                        edge="start"
+                        color="inherit"
+                        onClick={handleClose}>
+                        <ArrowBack />
+                    </IconButton>
+                    <Search>
+                        <SearchIconWrapper>
+                            <SearchIcon />
+                        </SearchIconWrapper>
+                        <StyledInputBase
+                            placeholder="Search…"
+                            // onChange={(e) => setSearchString(e.target.value)}
+                            inputProps={{ 'aria-label': 'search' }}
+                        />
+                    </Search>
+                    <Typography sx={{ ml: 2 }}>Speichern</Typography>
+                </Toolbar>
+            </AppBar>
+            {loading && <LinearProgress style={{ position: "fixed", left: 0, right: 0, top: 56 }} />}
+
+            <List sx={{ width: "100%" }}>
+                {
+                    users && users.map((user: User, index: number) => <ListItem key={index}>
+                        <ListItemIcon>
+                            <Checkbox checked={selectedUsers.some((x: User) => x.userId === user.userId)} onChange={e => handleChange(e, user)} />
+                        </ListItemIcon>
+                        <ListItemText>{user.displayName}</ListItemText>
+                    </ListItem>)
+                }
+            </List>
+        </Box>
+
+    </Dialog>
+}
+
+export default SearchAndSelectUserDialog;

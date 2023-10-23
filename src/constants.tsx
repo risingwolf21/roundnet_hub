@@ -1,0 +1,1 @@
+export const PAYPAL_ME_ADDRESS = process.env.REACT_APP_paypalMeLink;
