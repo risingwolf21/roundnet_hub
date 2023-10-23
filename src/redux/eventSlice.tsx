@@ -5,6 +5,8 @@ import { compareById, formatDateToDatabase } from '../utils';
 import { Comment, EventAttendance, FullAttendance, FullComment, FullEvent, Group, User } from '../types/supabaseTypes';
 import { PostgrestError, SupabaseClient } from '@supabase/supabase-js';
 import { ClientUser } from '../types/types';
+import { useDependency } from '../hooks/useDependency';
+import { IEventRepository } from '../repository/IEventRepository';
 
 type EventSliceState = {
   items: FullEvent[] extends infer O ? O : never,
@@ -118,7 +120,10 @@ export const eventSlice = createSlice({
       .addCase(fetchEventsAsync.fulfilled, (state: EventSliceState, action) => {
         state.loading = false;
 
-        state.error = null;
+        if (!action.payload) {
+          state.error = "Payload was undefined";
+          return;
+        }
 
         if (action.payload.entries && action.payload.entries.length < 1) {
           state.endReached = true
@@ -311,12 +316,11 @@ type FetchEventsType = ClientUser & {
 }
 
 export const fetchEventsAsync = createAsyncThunk("events", async ({ client, user, userGroups = [], page = 0, count = 20 }: FetchEventsType) => {
-  const response = await client.from("events").select("*, attendance: event_attendance_user_mapping ( state , user(userId, displayName)  ), comments: event_comments ( comment, created_at, displayName, event, user ( displayName, userId)), groups: event_group(*)")
-    // get events that are on the same day or later
-    .gt("startingDateTime", moment().format("yyyy-MM-DD HH:mm:ssZ"))
-    .range(page * count, page * count + count - 1)
-    .order("startingDateTime", { ascending: true })
-    .returns<FullEvent[]>();
+  let repository = useDependency<IEventRepository>("IEventRepository");
+  if (!repository) {
+    return;
+  }
+  const response = await repository.fetchEvents(client, user, userGroups, page, count);
   return {
     entries: (response.data ?? []).filter(x => _.intersection(x.groups.map(y => y.id), userGroups).length > 0).map<FullEvent>((x: FullEvent) => {
       return {
@@ -328,7 +332,7 @@ export const fetchEventsAsync = createAsyncThunk("events", async ({ client, user
   };
 });
 
-type ClientEventId = { client: SupabaseClient, eventId: number }
+export type ClientEventId = { client: SupabaseClient, eventId: number }
 
 export const fetchEventAttendanceAsync = createAsyncThunk("fetchEventAttendanceAsync", async ({ client, eventId }: ClientEventId) => {
   const attendance = await client.from("event_attendance_user_mapping")

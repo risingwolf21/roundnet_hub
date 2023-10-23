@@ -30,7 +30,6 @@ const AuthGate = ({ children }: Props) => {
 
     useEffect(() => {
         client.auth.onAuthStateChange((event, session) => {
-            console.log("auth state changed")
             setUser({ email: session?.user?.email, id: session?.user?.id });
             if (session && session.user) {
                 client.from("user").select().eq("userId", session.user.id).single().then((res) => {
