@@ -200,7 +200,7 @@ export const fetchPaymentAsync = createAsyncThunk("payments", async ({ client, u
 export const fetchDrinksToPayAsync = createAsyncThunk("payments/openDrinks", async ({ client, user }: ClientUser) => {
     const response = await client
         .from("history")
-        .select("id, count, created_at, user, amount, drink ( name, price ), payments ( state )")
+        .select("id, count, created_at, user, amount, drink ( name, price ), payments ( paymentState )")
         .eq('payments.paymentState', "Open")
         .not("payments", "is", null)
         .eq('user', user.userId)

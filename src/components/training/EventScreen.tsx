@@ -2,13 +2,11 @@ import { Alert, Box, CircularProgress, Divider, Fab, Grid, IconButton, LinearPro
 import { useSelector } from "react-redux";
 import moment from "moment";
 import { useNavigate } from 'react-router-dom';
-import React from "react";
 import { fetchEventsAsync, onEventErrorRead, updateAttendanceAsync } from "../../redux/eventSlice";
 import AddIcon from '@mui/icons-material/Add';
 import { ThumbDownAlt, ThumbDownOffAlt, ThumbUpAlt, ThumbUpOffAlt } from "@mui/icons-material";
 import { useClient } from "react-supabase";
-import { useState } from "react";
-import { useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { InfiniteScrollList } from "../InfiniteScrollList";
 import CustomAppBar from "../AppBar";
 import { EventAttendance, FullEvent } from "../../types/supabaseTypes";
