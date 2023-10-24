@@ -5,7 +5,6 @@ import { compareById, formatDateToDatabase } from '../utils';
 import { Comment, EventAttendance, FullAttendance, FullComment, FullEvent, Group, User } from '../types/supabaseTypes';
 import { PostgrestError, SupabaseClient } from '@supabase/supabase-js';
 import { ClientUser } from '../types/types';
-import { useDependency } from '../hooks/useDependency';
 import { IEventRepository } from '../repository/IEventRepository';
 
 type EventSliceState = {
@@ -312,14 +311,11 @@ export const fetchUserGroupsAsync = createAsyncThunk("fetchUserGroupsAsync", asy
 type FetchEventsType = ClientUser & {
   userGroups: number[],
   page: number,
-  count: number
+  count: number,
+  repository: IEventRepository
 }
 
-export const fetchEventsAsync = createAsyncThunk("events", async ({ client, user, userGroups = [], page = 0, count = 20 }: FetchEventsType) => {
-  let repository = useDependency<IEventRepository>("IEventRepository");
-  if (!repository) {
-    return;
-  }
+export const fetchEventsAsync = createAsyncThunk("events", async ({ client, user, userGroups = [], page = 0, count = 20, repository }: FetchEventsType) => {
   const response = await repository.fetchEvents(client, user, userGroups, page, count);
   return {
     entries: (response.data ?? []).filter(x => _.intersection(x.groups.map(y => y.id), userGroups).length > 0).map<FullEvent>((x: FullEvent) => {

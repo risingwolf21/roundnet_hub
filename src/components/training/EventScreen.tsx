@@ -12,6 +12,8 @@ import CustomAppBar from "../AppBar";
 import { EventAttendance, FullEvent } from "../../types/supabaseTypes";
 import { RootState } from "../../redux/store";
 import { useAppDispatch } from "../..";
+import { useDependency } from "../../hooks/useDependency";
+import { IEventRepository } from "../../repository/IEventRepository";
 
 type EventItemProps = {
     attendanceUpdating: boolean,
@@ -73,10 +75,17 @@ const EventScreen = () => {
     const navigate = useNavigate();
     const [eventsUpdatingAttendance, setEventsUpdatingAttendance] = useState<number[]>([]);
 
+    const repository = useDependency<IEventRepository>("IEventRepository");
+
     useEffect(() => {
-        console.log("fetching events")
-        dispatch(fetchEventsAsync({ client, user, userGroups, page: 0, count: 20 }));
-    }, [dispatch, client, user, userGroups]);
+        if (repository)
+            dispatch(fetchEventsAsync({ client, user, userGroups, page: 0, count: 20, repository }));
+    }, [dispatch, client, user, userGroups, repository]);
+
+    const fetchEvents = (page: number, count: number) => {
+        if (repository)
+            dispatch(fetchEventsAsync({ client, user, userGroups, page, count, repository }));
+    }
 
     const updateAttendance = async (eventId: number, state: EventAttendance, oldState: EventAttendance) => {
         setEventsUpdatingAttendance([...eventsUpdatingAttendance, eventId]);
@@ -92,11 +101,11 @@ const EventScreen = () => {
         direction="column"
         alignItems="center"
         justifyContent="center">
-        <CustomAppBar onRefresh={() => dispatch(fetchEventsAsync({ client, user, userGroups, page: 0, count: 20 }))} />
+        <CustomAppBar onRefresh={() => fetchEvents(0, 20)} />
         {
             loading && <LinearProgress sx={{ position: "fixed", top: 56, left: 0, right: 0 }} />
         }
-        <InfiniteScrollList fetch={(page) => dispatch(fetchEventsAsync({ client, user, userGroups, page, count: 20 }))} error={error ?? ""} loading={loading} endReached={endReached}>
+        <InfiniteScrollList fetch={(page) => fetchEvents(page, 20)} error={error ?? ""} loading={loading} endReached={endReached}>
             {
                 events && events.map((event, index) => <div key={"Drink" + index}>
                     <EventItem
