@@ -33,14 +33,14 @@ const entries = [
         role: "procure",
         avatarColor: "#88AEBF"
     },
-    {
-        translationKey: "analyzeDrinkStocks",
-        navigateTo: "/admin/drinks/analyze",
-        icon: <ShowChart />,
-        secondaryIcon: <AdminPanelSettings sx={{ color: "rgba(0,0,0,0.54)" }} />,
-        role: "procure",
-        avatarColor: "#88AEBF"
-    },
+    // {
+    //     translationKey: "analyzeDrinkStocks",
+    //     navigateTo: "/admin/drinks/analyze",
+    //     icon: <ShowChart />,
+    //     secondaryIcon: <AdminPanelSettings sx={{ color: "rgba(0,0,0,0.54)" }} />,
+    //     role: "procure",
+    //     avatarColor: "#88AEBF"
+    // },
     {
         translationKey: "manageUsers",
         navigateTo: "/admin/users",
@@ -57,14 +57,14 @@ const entries = [
         role: "admin",
         avatarColor: "#88AEBF"
     },
-    {
-        translationKey: "manageGroups",
-        navigateTo: "/trainer/groups",
-        icon: <GroupOutlined />,
-        secondaryIcon: <AdminPanelSettings sx={{ color: "rgba(0,0,0,0.54)" }} />,
-        role: "trainer",
-        avatarColor: "#88AEBF"
-    }
+    // {
+    //     translationKey: "manageGroups",
+    //     navigateTo: "/trainer/groups",
+    //     icon: <GroupOutlined />,
+    //     secondaryIcon: <AdminPanelSettings sx={{ color: "rgba(0,0,0,0.54)" }} />,
+    //     role: "trainer",
+    //     avatarColor: "#88AEBF"
+    // }
 ]
 
 const BrowseAdmin = ({ t }: { t: TFunction }) => {
@@ -89,7 +89,7 @@ const BrowseAdmin = ({ t }: { t: TFunction }) => {
                             <ListItemText primary={t("browse." + x.translationKey)} />
                         </ListItem>
                     }),
-                    <ListItem sx={{ mt: 1 }}>
+                    <ListItem key={"subscriptionStatus"} sx={{ mt: 1 }}>
                         <ListItemAvatar>
                             <Avatar sx={{ background: "#88AEBF", width: 40, height: 40 }}>
                                 {

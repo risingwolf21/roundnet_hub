@@ -10,6 +10,7 @@ import Container from '@mui/material/Container';
 import Logo from "../images/Karlsruher_Kojoten_Logo.svg";
 import { supabase } from "../supabaseClient";
 import { useNavigate } from "react-router-dom";
+import { TABLE_USER } from "../constants";
 
 type RegisterProps = {
     email: string,
@@ -40,7 +41,7 @@ const RegisterScreen = () => {
         }
 
         let { error: updatingUserError } = await supabase.auth.updateUser({ data: { userId: data.user.id } })
-        let { error: writingError } = await supabase.from("user").upsert({ email, displayName, userId: data.user.id, role: "user" })
+        let { error: writingError } = await supabase.from(TABLE_USER).upsert({ email, displayName, userId: data.user.id, role: "user" })
 
         if (error)
             setErrorMessage(JSON.stringify(error));

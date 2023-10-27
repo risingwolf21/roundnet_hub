@@ -5,6 +5,7 @@ import React, { useEffect, useState } from "react";
 import { useClient } from "react-supabase";
 import { groupBy } from "../../utils";
 import { RootState } from "../../redux/store";
+import { TABLE_HISTORY } from "../../constants";
 
 type DrinkStockType = {
     count: number,
@@ -22,7 +23,7 @@ const AnalyzeDrinkStockHistory = () => {
 
     useEffect(() => {
         client
-            .from("history")
+            .from(TABLE_HISTORY)
             .select("count, amount, created_at, drink (id, name, price, stock), user(displayName)")
             .returns<DrinkStockType[]>()
             .order('id', { ascending: false })

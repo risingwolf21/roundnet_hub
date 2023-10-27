@@ -1,6 +1,7 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { UserWithGroups } from '../types/supabaseTypes';
 import { SupabaseClient } from '@supabase/supabase-js';
+import { TABLE_USER } from '../constants';
 
 type AdminUsersSliceState = {
     users: UserWithGroups[],
@@ -52,7 +53,7 @@ export const adminUsersSlice = createSlice({
 });
 
 export const fetchAdminUsersAsync = createAsyncThunk("fetchAdminUsersAsync", async ({ client }: { client: SupabaseClient }) => {
-    const response = await client.from("user")
+    const response = await client.from(TABLE_USER)
         .select("*, groups: group_user_mapping ( group: event_group ( * ) )")
         .returns<UserWithGroups[]>();
     return response.data;

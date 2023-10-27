@@ -11,6 +11,7 @@ import { Route, Routes } from 'react-router-dom';
 import NotVerifiedScreen from "./components/NotVerifiedScreen";
 import { RootState } from "./redux/store";
 import { User } from "./types/supabaseTypes";
+import { TABLE_USER } from "./constants";
 
 
 const initialState = { session: null, user: null }
@@ -32,7 +33,7 @@ const AuthGate = ({ children }: Props) => {
         client.auth.onAuthStateChange((event, session) => {
             setUser({ email: session?.user?.email, id: session?.user?.id });
             if (session && session.user) {
-                client.from("user").select().eq("userId", session.user.id).single().then((res) => {
+                client.from(TABLE_USER).select().eq("userId", session.user.id).single().then((res) => {
                     if (res && res.data) {
                         let user = {
                             userId: session.user.id,

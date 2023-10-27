@@ -14,6 +14,7 @@ import React from "react";
 import { useAppDispatch } from "../..";
 import { RootState } from "../../redux/store";
 import { FullPayment, PaymentState } from "../../types/supabaseTypes";
+import { TABLE_PAYMENTS } from "../../constants";
 
 const PaymentsPendingAdmin = () => {
 
@@ -41,7 +42,7 @@ const PaymentsPendingAdmin = () => {
     const confirmPayment = (payment: FullPayment | null) => {
         if (!payment)
             return;
-        client.from("payments").update({ state: "Fulfilled" as PaymentState }).eq("userId", payment?.user?.userId).then(res => {
+        client.from(TABLE_PAYMENTS).update({ state: "Fulfilled" as PaymentState }).eq("userId", payment?.user?.userId).then(res => {
             setOpen(false);
         });
     }

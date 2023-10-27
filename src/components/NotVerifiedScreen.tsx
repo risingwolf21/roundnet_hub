@@ -1,8 +1,10 @@
 import { Warning } from "@mui/icons-material"
-import { Grid, Typography } from "@mui/material"
+import { Button, Grid, Typography } from "@mui/material"
 import React from "react";
+import { useNavigate } from "react-router";
 
 const NotVerifiedScreen = () => {
+    const navigate = useNavigate();
     return <Grid
         container
         spacing={0}
@@ -14,6 +16,7 @@ const NotVerifiedScreen = () => {
         <Typography sx={{ mt: 2, wordWrap: "normal", textAlign: "center", color: "primary", padding: 2 }}>
             Du bist zur Zeit nicht verifiziert. Bitte melde dich bei deinem Administrator.
         </Typography>
+        <Button variant="contained" onClick={() => navigate("/login", { replace: true })}>Zum Login</Button>
     </Grid>
 }
 

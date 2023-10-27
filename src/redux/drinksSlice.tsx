@@ -3,6 +3,7 @@ import { Drink, FullHistory, Payment, PaymentHistory, PaymentState, User } from 
 import { compareById } from '../utils';
 import { SupabaseClient } from '@supabase/supabase-js';
 import { ClientUser } from '../types/types';
+import { TABLE_DRINK, TABLE_HISTORY, TABLE_PAYMENTS } from '../constants';
 
 type DrinksSliceState = {
     history: FullHistory[],
@@ -193,13 +194,13 @@ export const drinksSlice = createSlice({
 });
 
 export const fetchPaymentAsync = createAsyncThunk("payments", async ({ client, user }: ClientUser) => {
-    const response = await client.from("payments").select("*").eq("userId", user.userId).eq("paymentState", "Open" as PaymentState)
+    const response = await client.from(TABLE_PAYMENTS).select("*").eq("userId", user.userId).eq("paymentState", "Open" as PaymentState)
     return response.data;
 });
 
 export const fetchDrinksToPayAsync = createAsyncThunk("payments/openDrinks", async ({ client, user }: ClientUser) => {
     const response = await client
-        .from("history")
+        .from(TABLE_HISTORY)
         .select("id, count, created_at, user, amount, drink ( name, price ), payments ( paymentState )")
         .eq('payments.paymentState', "Open")
         .not("payments", "is", null)
@@ -209,7 +210,7 @@ export const fetchDrinksToPayAsync = createAsyncThunk("payments/openDrinks", asy
 });
 
 export const fetchDrinksAsync = createAsyncThunk("drink", async (client: SupabaseClient) => {
-    const response = await client.from("drink").select("*")
+    const response = await client.from(TABLE_DRINK).select("*")
         .order('id', { ascending: false })
         .returns<Drink[]>();
     return response.data;
@@ -217,7 +218,7 @@ export const fetchDrinksAsync = createAsyncThunk("drink", async (client: Supabas
 
 export const fetchHistoryAsync = createAsyncThunk("history", async ({ client, user, page = 0, count = 20 }: { client: SupabaseClient, user: User, page: number, count: number }) => {
     const response = await client
-        .from("history")
+        .from(TABLE_HISTORY)
         .select("id, count, amount, created_at, drinkId: drink, drink(*), user: user(*)")
         .eq('user.userId', user.userId)
         .range(page * count, page * count + count - 1)
