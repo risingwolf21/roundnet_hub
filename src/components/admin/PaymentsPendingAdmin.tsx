@@ -83,7 +83,7 @@ const PaymentsPendingAdmin = () => {
                     Object.values(payments)
                         .filter(x => searchString === "" || (x.user?.displayName ?? "").toLowerCase().includes(searchString.toLowerCase()))
                         .map((x, index) => {
-                            return <ListItem key={x.user.email} divider={index < Object.values(payments).length - 1}>
+                            return <ListItem key={x.user.email} divider>
                                 <ListItemAvatar>
                                     <Typography fontWeight={"bold"}>{x.history.reduce((prev, curr) => prev + (curr.amount ?? 0), 0)} €</Typography>
                                 </ListItemAvatar>
@@ -96,6 +96,10 @@ const PaymentsPendingAdmin = () => {
                             </ListItem>
                         })
                 }
+                <ListItem key="spacer" sx={{ visibility: "hidden" }}>
+                    <ListItemAvatar />
+                    <ListItemText primary="Shu shu shu, sha sha sha" secondary="EasterEgg" />
+                </ListItem>
             </List>
         }
         {

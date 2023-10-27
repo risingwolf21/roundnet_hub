@@ -2,8 +2,9 @@ import { Avatar, Box, IconButton, ListItem, ListItemAvatar, ListItemSecondaryAct
 import AddIcon from '@mui/icons-material/Add';
 import RemoveIcon from '@mui/icons-material/Remove';
 import LocalDrinkIcon from '@mui/icons-material/LocalDrink';
-import React from 'react';
+import React, { Fragment } from 'react';
 import { Drink } from '../types/supabaseTypes';
+import { LocalDrink } from '@mui/icons-material';
 
 type Props = {
     drink: Drink,
@@ -38,6 +39,24 @@ const DrinkItem = ({ drink, count, onAddClick, onMinusClick }: Props) => {
                     <AddIcon fontSize="inherit" sx={{ fontSize: "28px" }} />
                 </IconButton>
             </Box>
+        </ListItemSecondaryAction>
+    </ListItem>
+}
+
+export const LoadingDrinkItem = () => {
+    return <ListItem>
+        <ListItemAvatar>
+            <Avatar sx={{ background: "#eee" }}>
+                <LocalDrink sx={{ color: "#eee" }} />
+            </Avatar>
+        </ListItemAvatar>
+        <ListItemText sx={{ paddingRight: "10px" }} primary={<Fragment>
+            <Box sx={{ width: "60%", background: "#eee", height: "15px", borderRadius: "4px" }} />
+        </Fragment>} secondary={<Fragment>
+            <Box sx={{ width: "60%", background: "#eee", height: "12px", borderRadius: "4px", marginTop: 1 }} />
+        </Fragment>} />
+        <ListItemSecondaryAction>
+            <Box sx={{ width: "28px", height: "28px", background: "#eee", margin: "8px", borderRadius: "4px" }} />
         </ListItemSecondaryAction>
     </ListItem>
 }

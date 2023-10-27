@@ -1,6 +1,6 @@
-import { Alert, CircularProgress, Divider, Fab, Grid, List, LinearProgress, Snackbar, AlertColor, SnackbarCloseReason } from "@mui/material";
-import DrinkItem from "./DrinkItem";
-import { SyntheticEvent, useEffect, useState } from "react";
+import { Alert, CircularProgress, Divider, Fab, Grid, List, LinearProgress, Snackbar, AlertColor, SnackbarCloseReason, ListItem, ListItemText, ListItemSecondaryAction, ListItemAvatar, Avatar } from "@mui/material";
+import DrinkItem, { LoadingDrinkItem } from "./DrinkItem";
+import { Fragment, SyntheticEvent, useEffect, useState } from "react";
 import CheckIcon from '@mui/icons-material/Check';
 import { captureException } from "@sentry/react";
 import { Error } from "./Error";
@@ -13,6 +13,8 @@ import { Drink } from "../types/supabaseTypes";
 import { RootState } from "../redux/store";
 import { useAppDispatch } from "..";
 import { TABLE_HISTORY, TABLE_PAYMENTS } from "../constants";
+import { Box } from "@mui/system";
+import { LocalDrink } from "@mui/icons-material";
 
 const SUCCESS_MESSAGE_INFO: AlertMessage = { message: "Getränke erfolgreich gebucht!", severity: "success" };
 

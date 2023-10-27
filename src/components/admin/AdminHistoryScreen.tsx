@@ -33,8 +33,7 @@ const AdminHistoryScreen = () => {
 
     const { container } = useContext(DependencyContext);
 
-    const { history, drinks, historyLoading, historyError, historyEndReached } = useSelector((state: any) => state.adminDrinks);
-    const [historyItems, setHistoryItems] = useState([]);
+    const { history, historyLoading, historyError, historyEndReached } = useSelector((state: any) => state.adminDrinks);
     const dispatch = useAppDispatch();
     const client = useClient();
 
@@ -46,16 +45,6 @@ const AdminHistoryScreen = () => {
     useEffect(() => {
         fetchForPage(0);
     }, [client, fetchForPage]);
-
-    useEffect(() => {
-        let mappedEntries = history?.map((x: any) => {
-            return {
-                ...x,
-                drink: drinks.find((y: any) => y.id === x.drinkId)
-            }
-        });
-        setHistoryItems(mappedEntries);
-    }, [history, drinks]);
 
     return <Grid
         container
@@ -69,7 +58,7 @@ const AdminHistoryScreen = () => {
         }
         <InfiniteScrollList fetch={fetchForPage} error={historyError} loading={historyLoading} endReached={historyEndReached}>
             {
-                Array.from(groupBy(historyItems, (x: FullHistory) => moment(new Date(x.created_at ?? "")).format("DD MMMM yyyy")))
+                Array.from(groupBy(history, (x: FullHistory) => moment(new Date(x.created_at ?? "")).format("DD MMMM yyyy")))
                     .map(([key, value]) => <AdminHistoryItem key={key} items={value} header={key} />)
             }
         </InfiniteScrollList>

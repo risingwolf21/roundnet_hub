@@ -41,6 +41,7 @@ export const fetchAdminsPaymentsAsync = createAsyncThunk("admin-payments", async
     const response = await client.from(TABLE_PAYMENTS)
         .select("id, created_at, paymentState, amountToPay, userId, user (userId, displayName, email), history (*)")
         .eq("paymentState", "Open" as PaymentState)
+        .order("displayName", { foreignTable: "user", ascending: true })
         .returns<FullPayment[]>();
     return response.data;
 });
