@@ -1,0 +1,41 @@
+name: Building
+on:
+  push:
+    branches:
+      - staging
+jobs:
+  build_and_preview:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Set up Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: Install dependencies
+        run: yarn install
+        
+      - name: Test
+        run: yarn test
+
+      - name: Write commit Version to file
+        uses: DamianReeves/write-file-action@master
+        with:
+          path: ${{github.workspace}}/src/git_commit.txt
+          contents: |
+            ${{github.sha}}
+          write-mode: overwrite
+
+      - name: Build
+        run: yarn run build-staging
+
+      - name: Deploying to Staging Environment
+        uses: FirebaseExtended/action-hosting-deploy@v0
+        with:
+          repoToken: '${{ secrets.GITHUB_TOKEN }}'
+          firebaseServiceAccount: '${{ secrets.FIREBASE_SERVICE_ACCOUNT_ROUNDNET_KARLSRUHE }}'
+          channelId: live
+          projectId: roundnet-karlsruhe
+          target: staging
