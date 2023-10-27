@@ -1,4 +1,4 @@
-create table public.user (
+create table public.user_new (
     created_at timestamp with time zone null default now(),
     "displayName" text null,
     email text null,
@@ -7,11 +7,11 @@ create table public.user (
 ) tablespace pg_default;
 
 alter table
-    public.user
+    public.user_new
 add
-    constraint users_pkey primary key ("userId");
+    constraint users_new_pkey primary key ("userId");
 
 alter table
-    public.user
+    public.user_new
 add
-    constraint users_userId_key unique ("userId");
+    constraint users_new_userId_key unique ("userId");

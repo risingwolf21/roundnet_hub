@@ -17,6 +17,7 @@ import React from "react";
 import { User, UserWithGroups } from "../../types/supabaseTypes";
 import { useAppDispatch } from "../..";
 import { RootState } from "../../redux/store";
+import { TABLE_PAYMENTS, TABLE_USER } from "../../constants";
 
 const AdminUserItem = ({ user, onEditClick }: { user: User, onEditClick: () => void }) => {
     let color = "rgba(0, 0, 0, 0.54)";
@@ -76,8 +77,8 @@ const AdminUserList = () => {
 
     const deleteUser = async (user: User) => {
         const { error } = await supabase_admin.auth.admin.deleteUser(user.userId);
-        const { error: e2 } = await client.from("payments").delete().eq("userId", user.userId)
-        const { error: e1 } = await client.from("user").delete().eq("userId", user.userId);
+        const { error: e2 } = await client.from(TABLE_PAYMENTS).delete().eq("userId", user.userId)
+        const { error: e1 } = await client.from(TABLE_USER).delete().eq("userId", user.userId);
         setEditUserOpen(false);
 
         if (error) {
@@ -105,7 +106,7 @@ const AdminUserList = () => {
 
     const onUserEditFinished = async (result: UserEdited) => {
         console.log(result)
-        await client.from("user").update({ displayName: result.displayName, role: result.role, verified: result.verified }).eq("userId", result.userId);
+        await client.from(TABLE_USER).update({ displayName: result.displayName, role: result.role, verified: result.verified }).eq("userId", result.userId);
         await client.auth.admin.updateUserById(
             result.userId,
             { user_metadata: { displayName: result.displayName, role: result.role, verified: result.verified } }

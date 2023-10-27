@@ -11,6 +11,7 @@ import Logo from "../images/Karlsruher_Kojoten_Logo.svg";
 import { supabase } from "../supabaseClient";
 import { useNavigate } from "react-router-dom";
 import React from "react";
+import { TABLE_USER } from "../constants";
 
 type Credentials = {
     email: string,
@@ -30,7 +31,7 @@ const LoginScreen = () => {
         if (error)
             setErrorMessage(error.message);
         else
-            supabase.from("user").select().eq("userId", data.user.id).then(async res => {
+            supabase.from(TABLE_USER).select().eq("userId", data.user.id).then(async res => {
                 if (res.data && res.data.length === 1) {
                     await supabase.auth.updateUser({
                         data: { role: res.data[0].role }

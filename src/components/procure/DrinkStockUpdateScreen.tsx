@@ -7,6 +7,7 @@ import { useClient } from "react-supabase";
 import { toInteger } from "lodash";
 import { RootState } from "../../redux/store";
 import { Drink } from "../../types/supabaseTypes";
+import { TABLE_DRINK } from "../../constants";
 
 const DrinkStockUpdateScreen = () => {
 
@@ -18,7 +19,7 @@ const DrinkStockUpdateScreen = () => {
     const handleSubmit = async () => {
         if (!editDrink)
             return;
-        await client.from("drink").update({ stock: editDrink?.stock ?? 0 + toInteger(stockToUpdate) }).eq("id", editDrink.id);
+        await client.from(TABLE_DRINK).update({ stock: editDrink?.stock ?? 0 + toInteger(stockToUpdate) }).eq("id", editDrink.id);
         setEditDrink(null);
         setStockToUpdate(0);
     }

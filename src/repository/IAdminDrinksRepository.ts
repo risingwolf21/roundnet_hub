@@ -3,6 +3,7 @@ import { injectable, inject } from "inversify";
 import { Drink } from "../types/supabaseTypes";
 import { Database } from "../types/supabase";
 import _ from "lodash";
+import { TABLE_DRINK, TABLE_HISTORY } from "../constants";
 
 export interface IAdminDrinksRepository {
     fetchDrinks(): Promise<PostgrestSingleResponse<any[]> | null>
@@ -24,7 +25,7 @@ export class SupabaseAdminDrinksRepository implements IAdminDrinksRepository {
 
         console.log("Fetching drinks using SupabaseAdminDrinksRepository");
         const query = this.client
-            .from("drink")
+            .from(TABLE_DRINK)
             .select("id, name, price, stock, imageUrl, active, deleted, previousDrink");
 
         return query;
@@ -35,7 +36,7 @@ export class SupabaseAdminDrinksRepository implements IAdminDrinksRepository {
             throw Error("SupabaseClient was undefined.");
 
         const query = this.client
-            .from("history")
+            .from(TABLE_HISTORY)
             .select("count, amount, created_at, drinkId: drink, drink(*), user(*)")
             .order('id', { ascending: false })
             .range(page * count, page * count + count - 1);

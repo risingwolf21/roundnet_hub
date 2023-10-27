@@ -5,6 +5,7 @@ import CustomAppBar from "./AppBar";
 import { useSelector } from "react-redux";
 import React, { FormEvent } from "react";
 import { RootState } from "../redux/store";
+import { TABLE_USER } from "../constants";
 
 const UserScreen = () => {
 
@@ -16,7 +17,7 @@ const UserScreen = () => {
         const data = new FormData(event.currentTarget);
         var displayName = data.get('displayName');
         if (displayName !== user.displayName) {
-            await client.from("users").update({ displayName }).eq("userId", user.userId)
+            await client.from(TABLE_USER).update({ displayName }).eq("userId", user.userId)
             await client.auth.updateUser({
                 data: { displayName }
             });

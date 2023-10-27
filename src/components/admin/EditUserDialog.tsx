@@ -5,6 +5,7 @@ import { AccountCircle, Close, Email, ExpandLess, ExpandMore, FiberManualRecord,
 import { useClient } from "react-supabase";
 import { SlideUpTransition } from "../../utils";
 import { Group, PaymentState, User, UserRole, UserWithGroups } from "../../types/supabaseTypes";
+import { TABLE_HISTORY } from "../../constants";
 
 type EditUserDialogProps = {
     user: UserWithGroups,
@@ -31,10 +32,9 @@ const EditUserDialog = ({ user, open, handleClose, onUserEditFinished, deleteUse
     const client = useClient();
 
     useEffect(() => {
-        console.log(user)
         setRole(user.role);
         setVerified(user.verified);
-        client.from("history").select("*, drink ( price, name ), payment(*)").eq("user ", user.userId).eq("payment.state", "Open" as PaymentState).then(result => {
+        client.from(TABLE_HISTORY).select("*, drink ( price, name ), payment(*)").eq("user ", user.userId).eq("payment.paymentState", "Open" as PaymentState).then(result => {
             if (!result.data)
                 return;
             setUserInfo({ openAmount: result.data.reduce((prev, curr) => prev + (curr.count * curr.drink.price), 0) })

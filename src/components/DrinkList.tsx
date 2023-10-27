@@ -12,6 +12,7 @@ import React from "react";
 import { Drink } from "../types/supabaseTypes";
 import { RootState } from "../redux/store";
 import { useAppDispatch } from "..";
+import { TABLE_HISTORY, TABLE_PAYMENTS } from "../constants";
 
 const SUCCESS_MESSAGE_INFO: AlertMessage = { message: "Getränke erfolgreich gebucht!", severity: "success" };
 
@@ -67,10 +68,10 @@ const DrinkList = () => {
         try {
             let paymentId: number;
             if (!payment || payment.paymentState !== "Open") {
-                const { data: paymentUpdate } = await client.from("payments")
+                const { data: paymentUpdate } = await client.from(TABLE_PAYMENTS)
                     .select("*").eq("userId", user.userId).eq("paymentState", "Open").single();
                 if (!paymentUpdate) {
-                    const { data, error } = await client.from("payments").insert({
+                    const { data, error } = await client.from(TABLE_PAYMENTS).insert({
                         userId: user.userId,
                         state: "Open"
                     }).select().single();
@@ -87,7 +88,7 @@ const DrinkList = () => {
             if (!paymentId)
                 throw Error({ message: "Payment ID could not be found" })
 
-            const { error } = await client.from("history").insert(
+            const { error } = await client.from(TABLE_HISTORY).insert(
                 Object.values(addedDrinks).map((drink) => {
                     return {
                         user: user.userId,

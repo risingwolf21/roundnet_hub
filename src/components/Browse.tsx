@@ -27,12 +27,12 @@ const tabs = [
         icon: <History />,
         avatarColor: "#88AEBF"
     },
-    {
-        translationKey: "training",
-        navigateTo: "/training",
-        icon: <SportsHandball />,
-        avatarColor: "#88AEBF"
-    },
+    // {
+    //     translationKey: "training",
+    //     navigateTo: "/training",
+    //     icon: <SportsHandball />,
+    //     avatarColor: "#88AEBF"
+    // },
 ]
 
 const Browse = ({ t }: { t: TFunction }) => {

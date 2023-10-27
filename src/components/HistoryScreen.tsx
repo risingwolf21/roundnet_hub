@@ -12,6 +12,7 @@ import EditHistoryEntryDialog from "./EditHistoryEntryDialog";
 import React from "react";
 import { FullHistory } from "../types/supabaseTypes";
 import { useAppDispatch } from "..";
+import { TABLE_HISTORY } from "../constants";
 
 export type FullHistoryUpdate = FullHistory & {
     newCount: number
@@ -61,7 +62,7 @@ const HistoryScreen = () => {
 
     const handleEntryUpdate = async (newEntry: FullHistory) => {
         setEditHistoryEntryOpen(false);
-        await client.from("history")
+        await client.from(TABLE_HISTORY)
             .update({ count: newEntry.count, amount: (newEntry.count ?? 0) * (newEntry.drink.price ?? 1) })
             .eq("id", newEntry.id);
     }
