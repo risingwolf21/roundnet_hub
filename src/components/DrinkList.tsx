@@ -75,7 +75,7 @@ const DrinkList = () => {
                 if (!paymentUpdate) {
                     const { data, error } = await client.from(TABLE_PAYMENTS).insert({
                         userId: user.userId,
-                        state: "Open"
+                        paymentState: "Open"
                     }).select().single();
                     if (error)
                         throw Error(error);
