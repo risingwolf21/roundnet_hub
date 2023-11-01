@@ -77,7 +77,7 @@ const PayDrinksScreen = () => {
     const client = useClient();
 
     const { paymentHistory, paymentError, paymentLoading } = useSelector((state: RootState) => state.drinks);
-    useCaptureException(paymentError);
+    useCaptureException(paymentError, "PayDrinksScreen");
 
     useEffect(() => {
         if (user) {

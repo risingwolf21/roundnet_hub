@@ -44,13 +44,12 @@ const HistoryItem = ({ items, header, onClick }: HistoryItemProps) => {
 }
 
 const HistoryScreen = () => {
-    const { history, drinks, historyLoading, historyError, historyEndReached } = useSelector((state: any) => state.drinks);
-    useCaptureException(historyError);
+    const { history, drinks, historyLoading, historyError, historyEndReached } = useSelector((state: RootState) => state.drinks);
+    useCaptureException(historyError, "HistoryScreen");
     const drinksRepository = useDependency<IDrinkRepository>("IDrinkRepository");
     const { user } = useSelector((state: RootState) => state.application);
     const dispatch = useAppDispatch();
-    const client = useClient();
-
+    
     const [historyItems, setHistoryItems] = useState<FullHistory[]>([]);
     const [editHistoryEntryOpen, setEditHistoryEntryOpen] = useState<boolean>(false);
     const [historyEntryToEdit, setHistoryEntryToEdit] = useState<FullHistory | null>(null);
@@ -88,7 +87,7 @@ const HistoryScreen = () => {
             historyLoading && <LinearProgress style={{ position: "fixed", left: 0, top: 56, right: 0 }} />
         }
         <InfiniteScrollList fetch={(page: number) => dispatch(fetchHistoryAsync({ repository: drinksRepository, userId: user.userId, page, count: 20 }))}
-            error={historyError} loading={historyLoading} endReached={historyEndReached}>
+            error={historyError ?? ""} loading={historyLoading} endReached={historyEndReached}>
             {
                 Array.from(groupBy(historyItems.filter(x => x.drink), (x: FullHistory) =>
                     moment(new Date(x.created_at ?? "")).format("DD MMMM yyyy")))

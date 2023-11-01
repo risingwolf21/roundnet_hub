@@ -14,7 +14,7 @@ type InfiniteScrollListProps = {
 
 export const InfiniteScrollList = ({ children, fetch, error, loading, endReached }: InfiniteScrollListProps) => {
 
-    const [snackbarOpen, setSnackbarOpen] = useState(isUndefined(error));
+    const [snackbarOpen, setSnackbarOpen] = useState(error === "");
     const observerTarget = useRef(null);
 
     const handleClose = (event: Event | React.SyntheticEvent<any, Event>, reason: SnackbarCloseReason) => {

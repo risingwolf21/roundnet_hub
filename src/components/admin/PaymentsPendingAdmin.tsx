@@ -27,7 +27,7 @@ const PaymentsPendingAdmin = () => {
     const navigate = useNavigate();
 
     const { payments, error, loading } = useSelector((state: RootState) => state.adminPayments);
-    useCaptureException(error);
+    useCaptureException(error, "PaymentsPendingAdmin");
 
     useEffect(() => {
         dispatch(fetchAdminsPaymentsAsync({ client }));

@@ -32,7 +32,7 @@ const DrinkList = () => {
     const drinksRepository = useDependency<IDrinkRepository>("IDrinkRepository");
 
     const { drinks, drinksLoading, drinksError, payment } = useSelector((state: RootState) => state.drinks);
-    useCaptureException(drinksError);
+    useCaptureException(drinksError, "DrinkList");
 
     const [addedDrinks, setAddedDrinks] = useState<DrinkCounter[]>([]);
     const [loading, setLoading] = useState(false);
