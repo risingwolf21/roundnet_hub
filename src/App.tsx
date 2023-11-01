@@ -34,10 +34,13 @@ import { fetchUserGroupsAsync } from './redux/eventSlice';
 import { useAppDispatch } from '.';
 import { RootState } from './redux/store';
 import GroupInformation from './components/groups/GroupInformation';
+import { useDependency } from './hooks/useDependency';
+import { IDrinkRepository } from './repository/IDrinkRepository';
 
 const App = () => {
 
   const { waitingWorker, showReload, reloadPage } = useServiceWorker();
+  const drinksRepository = useDependency<IDrinkRepository>("IDrinkRepository");
   const dispatch = useAppDispatch();
   const client = useClient();
   const { appUpdateAvailable, user } = useSelector((state: RootState) => state.application);
@@ -52,10 +55,10 @@ const App = () => {
 
   useEffect(() => {
     if (user) {
-      dispatch(fetchPaymentAsync({ client, user }));
-      dispatch(fetchHistoryAsync({ client, user, page: 0, count: 20 }));
+      dispatch(fetchPaymentAsync({ repository: drinksRepository, userId: user.userId }));
+      dispatch(fetchHistoryAsync({ repository: drinksRepository, userId: user.userId, page: 0, count: 20 }));
       dispatch(fetchUserGroupsAsync({ client, user }));
-      dispatch(fetchDrinksAsync(client));
+      dispatch(fetchDrinksAsync(drinksRepository));
     }
   }, [client, user, dispatch]);
 

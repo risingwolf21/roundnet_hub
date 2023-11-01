@@ -4,6 +4,7 @@ import { compareById } from '../utils';
 import { SupabaseClient } from '@supabase/supabase-js';
 import { ClientUser } from '../types/types';
 import { TABLE_DRINK, TABLE_HISTORY, TABLE_PAYMENTS } from '../constants';
+import { IDrinkRepository } from '../repository/IDrinkRepository';
 
 type DrinksSliceState = {
     history: FullHistory[],
@@ -193,39 +194,44 @@ export const drinksSlice = createSlice({
     }
 });
 
-export const fetchPaymentAsync = createAsyncThunk("payments", async ({ client, user }: ClientUser) => {
-    const response = await client.from(TABLE_PAYMENTS).select("*").eq("userId", user.userId).eq("paymentState", "Open" as PaymentState)
-    return response.data;
+type DrinkRepositoryWithUserId = {
+    repository: IDrinkRepository | null,
+    userId: string
+}
+type DrinkRepositoryWithUserIdAndPagination = DrinkRepositoryWithUserId & {
+    count: number,
+    page: number
+}
+
+export const fetchPaymentAsync = createAsyncThunk("payments", async ({ repository, userId }: DrinkRepositoryWithUserId, { rejectWithValue }) => {
+    if (!repository)
+        return rejectWithValue("DrinkRepository was not defined!");
+
+    const response = await repository.fetchCurrentPaymentForUser(userId);
+    return response?.data;
 });
 
-export const fetchDrinksToPayAsync = createAsyncThunk("payments/openDrinks", async ({ client, user }: ClientUser) => {
-    const response = await client
-        .from(TABLE_HISTORY)
-        .select("id, count, created_at, user, amount, drink ( name, price ), payments ( paymentState )")
-        .eq('payments.paymentState', "Open")
-        .not("payments", "is", null)
-        .eq('user', user.userId)
-        .returns<PaymentHistory[]>();
-    return response.data;
+export const fetchDrinksToPayAsync = createAsyncThunk("payments/openDrinks", async ({ repository, userId }: DrinkRepositoryWithUserId, { rejectWithValue }) => {
+    if (!repository)
+        return rejectWithValue("DrinkRepository was not defined!");
+
+    const response = await repository.fetchDrinksToPay(userId);
+    return response?.data ?? [];
 });
 
-export const fetchDrinksAsync = createAsyncThunk("drink", async (client: SupabaseClient) => {
-    const response = await client.from(TABLE_DRINK).select("*")
-        .order('id', { ascending: false })
-        .returns<Drink[]>();
-    return response.data;
+export const fetchDrinksAsync = createAsyncThunk("drink", async (repository: IDrinkRepository | null, { rejectWithValue }) => {
+    if (!repository)
+        return rejectWithValue("DrinkRepository was not defined!");
+    const response = await repository.fetchDrinks();
+    return response?.data ?? [];
 });
 
-export const fetchHistoryAsync = createAsyncThunk("history", async ({ client, user, page = 0, count = 20 }: { client: SupabaseClient, user: User, page: number, count: number }) => {
-    const response = await client
-        .from(TABLE_HISTORY)
-        .select('id, count, amount, created_at, drinkId: drink, drink(*), user(*)')
-        .not("user", "is", null)
-        .eq('user.userId', user.userId)
-        .range(page * count, page * count + count - 1)
-        .order('created_at', { ascending: false })
-        .returns<FullHistory[]>();
-    return { entries: response.data, more: page !== 0 };
+export const fetchHistoryAsync = createAsyncThunk("history", async ({ repository, userId, page = 0, count = 20 }: DrinkRepositoryWithUserIdAndPagination, { rejectWithValue }) => {
+    if (!repository)
+        return rejectWithValue("DrinkRepository was not defined!");
+
+    const response = await repository.fetchHistoryForUser(userId, page, count);
+    return { entries: response?.data ?? [], more: page !== 0 };
 });
 
 export const {

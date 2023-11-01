@@ -14,6 +14,8 @@ import { RootState } from "../redux/store";
 import { useAppDispatch } from "..";
 import { PaymentHistory } from "../types/supabaseTypes";
 import { useCaptureException } from "../hooks/useCaptureException";
+import { useDependency } from "../hooks/useDependency";
+import { IDrinkRepository } from "../repository/IDrinkRepository";
 
 const PayDrinksButton = ({ amountToPay }: { amountToPay: number }) => {
 
@@ -70,6 +72,8 @@ const PayDrinksScreen = () => {
 
     const { user } = useSelector((state: RootState) => state.application);
     const dispatch = useAppDispatch();
+    const drinksRepository = useDependency<IDrinkRepository>("IDrinkRepository");
+
     const client = useClient();
 
     const { paymentHistory, paymentError, paymentLoading } = useSelector((state: RootState) => state.drinks);
@@ -77,8 +81,8 @@ const PayDrinksScreen = () => {
 
     useEffect(() => {
         if (user) {
-            dispatch(fetchDrinksToPayAsync({ client, user }));
-            dispatch(fetchPaymentAsync({ client, user }));
+            dispatch(fetchDrinksToPayAsync({ repository: drinksRepository, userId: user.userId }));
+            dispatch(fetchPaymentAsync({ repository: drinksRepository, userId: user.userId }));
         }
     }, [dispatch, user, client]);
 
