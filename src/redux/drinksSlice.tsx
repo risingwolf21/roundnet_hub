@@ -219,7 +219,8 @@ export const fetchDrinksAsync = createAsyncThunk("drink", async (client: Supabas
 export const fetchHistoryAsync = createAsyncThunk("history", async ({ client, user, page = 0, count = 20 }: { client: SupabaseClient, user: User, page: number, count: number }) => {
     const response = await client
         .from(TABLE_HISTORY)
-        .select("id, count, amount, created_at, drinkId: drink, drink(*), user: user(*)")
+        .select('id, count, amount, created_at, drinkId: drink, drink(*), user(*)')
+        .not("user", "is", null)
         .eq('user.userId', user.userId)
         .range(page * count, page * count + count - 1)
         .order('created_at', { ascending: false })

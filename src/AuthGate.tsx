@@ -45,7 +45,7 @@ const AuthGate = ({ children }: Props) => {
                         dispatch(onUserChange(user));
                     }
                 })
-            } else {
+            } else if (user !== null) {
                 dispatch(onUserChange(null));
                 navigate("/login", { replace: true });
             }

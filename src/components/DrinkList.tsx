@@ -13,6 +13,9 @@ import { Drink } from "../types/supabaseTypes";
 import { RootState } from "../redux/store";
 import { useAppDispatch } from "..";
 import { TABLE_HISTORY, TABLE_PAYMENTS } from "../constants";
+import { Box } from "@mui/system";
+import { LocalDrink } from "@mui/icons-material";
+import { useCaptureException } from "../hooks/useCaptureException";
 
 const SUCCESS_MESSAGE_INFO: AlertMessage = { message: "Getränke erfolgreich gebucht!", severity: "success" };
 
@@ -32,6 +35,7 @@ const DrinkList = () => {
     const dispatch = useAppDispatch();
 
     const { drinks, drinksLoading, drinksError, payment } = useSelector((state: RootState) => state.drinks);
+    useCaptureException(drinksError);
 
     const [addedDrinks, setAddedDrinks] = useState<DrinkCounter[]>([]);
     const [loading, setLoading] = useState(false);

@@ -15,6 +15,7 @@ import { useAppDispatch } from "../..";
 import { RootState } from "../../redux/store";
 import { FullPayment, PaymentState } from "../../types/supabaseTypes";
 import { TABLE_PAYMENTS } from "../../constants";
+import { useCaptureException } from "../../hooks/useCaptureException";
 
 const PaymentsPendingAdmin = () => {
 
@@ -26,6 +27,7 @@ const PaymentsPendingAdmin = () => {
     const navigate = useNavigate();
 
     const { payments, error, loading } = useSelector((state: RootState) => state.adminPayments);
+    useCaptureException(error);
 
     useEffect(() => {
         dispatch(fetchAdminsPaymentsAsync({ client }));
@@ -42,7 +44,7 @@ const PaymentsPendingAdmin = () => {
     const confirmPayment = (payment: FullPayment | null) => {
         if (!payment)
             return;
-        client.from(TABLE_PAYMENTS).update({ state: "Fulfilled" as PaymentState }).eq("userId", payment?.user?.userId).then(res => {
+        client.from(TABLE_PAYMENTS).update({ paymentState: "Fulfilled" as PaymentState }).eq("userId", payment?.user?.userId).then(res => {
             setOpen(false);
         });
     }
