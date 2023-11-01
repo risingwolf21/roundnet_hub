@@ -5,9 +5,10 @@ import React, { useEffect, useState } from "react";
 import { useClient } from "react-supabase";
 import { groupBy } from "../../utils";
 import { RootState } from "../../redux/store";
-import { TABLE_HISTORY } from "../../constants";
+import { useDependency } from "../../hooks/useDependency";
+import { IDrinkRepository } from "../../repository/IDrinkRepository";
 
-type DrinkStockType = {
+export type DrinkStockType = {
     count: number,
     amount: number,
     created_at: string,
@@ -20,16 +21,14 @@ const AnalyzeDrinkStockHistory = () => {
     const { loading } = useSelector((state: RootState) => state.adminDrinks);
     const [mappedHistory, setMappedHistory] = useState<Map<string, any[]>>();
     const client = useClient();
+    const drinksRepository = useDependency<IDrinkRepository>("IDrinkRepository");
 
     useEffect(() => {
-        client
-            .from(TABLE_HISTORY)
-            .select("count, amount, created_at, drink (id, name, price, stock), user(displayName)")
-            .returns<DrinkStockType[]>()
-            .order('id', { ascending: false })
-            .then(result => {
-                setMappedHistory(groupBy(result.data ?? [], x => x.drink.id.toString()))
+        if (drinksRepository) {
+            drinksRepository.fetchHistoryStockType().then(result => {
+                setMappedHistory(groupBy(result?.data ?? [], x => x.drink.id.toString()))
             })
+        }
     }, [client, mappedHistory]);
 
     return <Grid

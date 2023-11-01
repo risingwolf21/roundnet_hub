@@ -1,9 +1,6 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import { Drink, FullHistory, Payment, PaymentHistory, PaymentState, User } from '../types/supabaseTypes';
 import { compareById } from '../utils';
-import { SupabaseClient } from '@supabase/supabase-js';
-import { ClientUser } from '../types/types';
-import { TABLE_DRINK, TABLE_HISTORY, TABLE_PAYMENTS } from '../constants';
 import { IDrinkRepository } from '../repository/IDrinkRepository';
 
 type DrinksSliceState = {
@@ -175,7 +172,6 @@ export const drinksSlice = createSlice({
             .addCase(fetchPaymentAsync.rejected, (state: DrinksSliceState, action) => {
                 state.paymentLoading = false;
                 state.paymentError = action.error.message;
-                console.log(action.error);
             })
 
             .addCase(fetchDrinksToPayAsync.pending, (state: DrinksSliceState, action) => {

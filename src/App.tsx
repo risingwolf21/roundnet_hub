@@ -60,7 +60,7 @@ const App = () => {
       dispatch(fetchUserGroupsAsync({ client, user }));
       dispatch(fetchDrinksAsync(drinksRepository));
     }
-  }, [client, user, dispatch]);
+  }, [client, user, dispatch, drinksRepository]);
 
   useEffect(() => {
     dispatch(onAppUpdateAvailableChange(showReload && waitingWorker));
