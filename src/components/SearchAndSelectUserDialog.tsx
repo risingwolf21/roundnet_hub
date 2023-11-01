@@ -1,6 +1,6 @@
 import { ArrowBack } from "@mui/icons-material";
 import SearchIcon from "@mui/icons-material/Search";
-import { AppBar, Box, Checkbox, Dialog, IconButton, LinearProgress, List, ListItem, ListItemIcon, ListItemText, Toolbar, Typography } from "@mui/material";
+import { AppBar, Box, Button, Checkbox, Dialog, IconButton, LinearProgress, List, ListItem, ListItemIcon, ListItemText, Toolbar, Typography } from "@mui/material";
 import { Search, SearchIconWrapper, StyledInputBase } from "./SearchBar";
 import { useState } from "react";
 import { SlideUpTransition } from "../utils";
@@ -10,13 +10,15 @@ import { User } from "../types/supabaseTypes";
 type SearchAndSelectUserDialogProps = {
     open: boolean,
     handleClose: () => void,
+    handleSubmit: (users: User[]) => void,
     users: User[],
     loading: boolean
 }
 
-const SearchAndSelectUserDialog = ({ open, handleClose, users, loading }: SearchAndSelectUserDialogProps) => {
+const SearchAndSelectUserDialog = ({ open, handleClose, users, loading, handleSubmit }: SearchAndSelectUserDialogProps) => {
 
     const [selectedUsers, setSelectedUsers] = useState<User[]>(Array.from<User>([]));
+    const [searchString, setSearchString] = useState<string>("");
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>, user: User) => {
         if (selectedUsers.some((x: User) => x.userId === user.userId)) {
@@ -31,7 +33,7 @@ const SearchAndSelectUserDialog = ({ open, handleClose, users, loading }: Search
         open={open}
         onClose={handleClose}
         TransitionComponent={SlideUpTransition}>
-        <Box sx={{
+        <Box component="form" onSubmit={() => handleSubmit(selectedUsers)} noValidate sx={{
             width: "100%",
             direction: "column",
             alignItems: "center",
@@ -46,17 +48,19 @@ const SearchAndSelectUserDialog = ({ open, handleClose, users, loading }: Search
                         onClick={handleClose}>
                         <ArrowBack />
                     </IconButton>
-                    <Search>
+                    <Search sx={{ marginRight: 2 }}>
                         <SearchIconWrapper>
                             <SearchIcon />
                         </SearchIconWrapper>
                         <StyledInputBase
                             placeholder="Search…"
-                            // onChange={(e) => setSearchString(e.target.value)}
+                            onChange={(e) => setSearchString(e.target.value)}
                             inputProps={{ 'aria-label': 'search' }}
                         />
                     </Search>
-                    <Typography sx={{ ml: 2 }}>Speichern</Typography>
+                    <Button autoFocus color="inherit" type="submit">
+                        Speichern
+                    </Button>
                 </Toolbar>
             </AppBar>
             {loading && <LinearProgress style={{ position: "fixed", left: 0, right: 0, top: 56 }} />}
@@ -72,7 +76,6 @@ const SearchAndSelectUserDialog = ({ open, handleClose, users, loading }: Search
                 }
             </List>
         </Box>
-
     </Dialog>
 }
 

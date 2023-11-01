@@ -57,20 +57,20 @@ const entries = [
         role: "admin",
         avatarColor: "#88AEBF"
     },
-    // {
-    //     translationKey: "manageGroups",
-    //     navigateTo: "/trainer/groups",
-    //     icon: <GroupOutlined />,
-    //     secondaryIcon: <AdminPanelSettings sx={{ color: "rgba(0,0,0,0.54)" }} />,
-    //     role: "trainer",
-    //     avatarColor: "#88AEBF"
-    // }
+    {
+        translationKey: "manageGroups",
+        navigateTo: "/trainer/groups",
+        icon: <GroupOutlined />,
+        secondaryIcon: <AdminPanelSettings sx={{ color: "rgba(0,0,0,0.54)" }} />,
+        role: "trainer",
+        avatarColor: "#88AEBF"
+    }
 ]
 
 const BrowseAdmin = ({ t }: { t: TFunction }) => {
 
     const navigate = useNavigate();
-    const { user, realtimeState } = useSelector((state: RootState) => state.application);
+    const { user } = useSelector((state: RootState) => state.application);
 
     return <Box>
         <CustomAppBar />
@@ -88,22 +88,7 @@ const BrowseAdmin = ({ t }: { t: TFunction }) => {
                             </ListItemAvatar>
                             <ListItemText primary={t("browse." + x.translationKey)} />
                         </ListItem>
-                    }),
-                    <ListItem key={"subscriptionStatus"} sx={{ mt: 1 }}>
-                        <ListItemAvatar>
-                            <Avatar sx={{ background: "#88AEBF", width: 40, height: 40 }}>
-                                {
-                                    {
-                                        'CLOSED': <LinkOff />,
-                                        'SUBSCRIBED': <Link />,
-                                        'TIMED_OUT': <RunningWithErrors />,
-                                        'CHANNEL_ERROR': <CrisisAlert />,
-                                    }[realtimeState]
-                                }
-                            </Avatar>
-                        </ListItemAvatar>
-                        <ListItemText primary={realtimeState} secondary={"Realtime connection status"} />
-                    </ListItem>
+                    })
                 ]
             }
         </List>

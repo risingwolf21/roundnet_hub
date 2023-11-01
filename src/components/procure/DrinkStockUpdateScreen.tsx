@@ -19,7 +19,8 @@ const DrinkStockUpdateScreen = () => {
     const handleSubmit = async () => {
         if (!editDrink)
             return;
-        await client.from(TABLE_DRINK).update({ stock: editDrink?.stock ?? 0 + toInteger(stockToUpdate) }).eq("id", editDrink.id);
+        const {error}= await client.from(TABLE_DRINK).update({ stock: editDrink?.stock ?? 0 + toInteger(stockToUpdate) }).eq("id", editDrink.id);
+        console.log(error);
         setEditDrink(null);
         setStockToUpdate(0);
     }
@@ -45,7 +46,7 @@ const DrinkStockUpdateScreen = () => {
                             }
                         </Avatar>
                     </ListItemAvatar>
-                    <ListItemText primary={drink.name} />
+                    <ListItemText primary={drink.name} secondary={"Stock: " + drink.stock} />
                     <ListItemSecondaryAction>
                         <IconButton onClick={() => setEditDrink(drink)}>
                             <Edit fontSize="inherit" sx={{ fontSize: "28px" }} />

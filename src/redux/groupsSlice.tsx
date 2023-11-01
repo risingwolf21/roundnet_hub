@@ -57,20 +57,22 @@ const groupsSlice = createSlice({
 
 export const fetchGroupsAsync = createAsyncThunk("fetchGroupsAsync", async ({ client }: { client: SupabaseClient }) => {
     const response = await client.from("event_group")
-        .select("*, users: group_user_mapping ( user ( userId, email, displayName ) )")
-        .returns<GroupWithUsers[]>();
-    return response.data ?? [];
+        .select("*, users: group_user_mapping ( user ( userId, email, displayName ) )");
+
+    return response.data?.map(x => { return { ...x, users: x.users.map((y: any) => y.user) } as GroupWithUsers }) ?? [];
 });
 
 export const fetchSingleGroupAsync = createAsyncThunk("fetchSingleGroupAsync", async ({ client, id }: { client: SupabaseClient, id: number }) => {
     const response = await client.from("event_group")
         .select("*, users: group_user_mapping ( user ( userId, email, displayName ) )")
         .eq("id", id)
-        .returns<GroupWithUsers[]>()
         .single();
 
     return {
-        data: response.data,
+        data: {
+            ...response.data,
+            users: response.data.map((x: any) => x.user)
+        } as GroupWithUsers,
         id
     }
 });

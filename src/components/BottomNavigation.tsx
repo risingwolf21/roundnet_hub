@@ -23,12 +23,12 @@ const defaultTabs: Tab[] = [
         index: 0,
         icon: <Liquor />
     },
-    // {
-    //     translationKey: "training",
-    //     path: "training",
-    //     index: 1,
-    //     icon: <SportsHandball />
-    // },
+    {
+        translationKey: "training",
+        path: "training",
+        index: 1,
+        icon: <SportsHandball />
+    },
     {
         translationKey: "browse",
         path: "browse",

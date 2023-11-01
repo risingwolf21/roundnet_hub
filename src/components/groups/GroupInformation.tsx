@@ -10,9 +10,9 @@ import SearchAndSelectUserDialog from "../SearchAndSelectUserDialog";
 import { fetchAdminUsersAsync } from "../../redux/adminUserSlice";
 import { RootState } from "../../redux/store";
 import { useAppDispatch } from "../..";
-import { GroupWithUsers, SimpleUser, UserWithGroups } from "../../types/supabaseTypes";
+import { GroupWithUsers, SimpleUser, User, UserWithGroups } from "../../types/supabaseTypes";
 
-export const GroupInformation = () => {
+const GroupInformation = () => {
 
     const dispatch = useAppDispatch();
     const client = useClient();
@@ -31,6 +31,10 @@ export const GroupInformation = () => {
         setSelectedGroup(groups?.find(x => x.id === toInteger(id)));
     }, [groups, id]);
 
+    const handleUsersAdded = (users: User[]) => {
+
+    }
+
     return <Grid
         container
         width="100%"
@@ -48,7 +52,7 @@ export const GroupInformation = () => {
                     <ListItemAvatar>
                         <AccountCircle />
                     </ListItemAvatar>
-                    <ListItemText primary={x.displayName} />
+                    <ListItemText primary={x.displayName} secondary="Benutzername" />
                 </ListItem>)
             }
         </List>
@@ -61,8 +65,11 @@ export const GroupInformation = () => {
         <SearchAndSelectUserDialog
             open={searchAndSelectUsersOpen}
             handleClose={() => setSearchAndSelectUsersOpen(false)}
+            handleSubmit={handleUsersAdded}
             users={users.filter((x: UserWithGroups) => !selectedGroup?.users?.some((y: SimpleUser) => y.userId === x.userId) ?? false)}
             loading={loading} />
     </Grid>
 
 }
+
+export default GroupInformation;

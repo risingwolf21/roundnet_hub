@@ -31,9 +31,9 @@ import DrinkStockUpdateScreen from './components/procure/DrinkStockUpdateScreen'
 import AnalyzeDrinkStockHistory from './components/procure/AnalyzeDrinkStockHistory';
 import raw from "./git_commit.txt";
 import { fetchUserGroupsAsync } from './redux/eventSlice';
-import { GroupInformation } from './components/groups/GroupInformation';
 import { useAppDispatch } from '.';
 import { RootState } from './redux/store';
+import GroupInformation from './components/groups/GroupInformation';
 
 const App = () => {
 
@@ -82,18 +82,18 @@ const App = () => {
                 <Route path="/history" element={<HistoryScreen />} />
                 <Route path="/payments" element={<PayDrinksScreen />} />
 
-                {/* <Route path="/trainer/groups" element={<ManageGroupsScreen />} />
+                <Route path="/trainer/groups" element={<ManageGroupsScreen />} />
                 <Route path="/trainer/groups/:id" element={<GroupInformation />} />
 
                 <Route path="/training" element={<EventScreen />} />
                 <Route path="/training/event/:selectedEventId" element={<EventInformation />} />
-                <Route path="/training/create" element={<CreateEvent />} /> */}
+                <Route path="/training/create" element={<CreateEvent />} />
 
                 <Route path='/admin/drinks' element={<AdminDrinkList />} />
                 <Route path="/admin/drinks/history" element={<AdminHistoryScreen />} />
                 <Route path='/admin/drinks/payments' element={<PaymentsPendingAdmin />} />
                 <Route path='/admin/drinks/stocks' element={<DrinkStockUpdateScreen />} />
-                {/* <Route path='/admin/drinks/analyze' element={<AnalyzeDrinkStockHistory />} /> */}
+                <Route path='/admin/drinks/analyze' element={<AnalyzeDrinkStockHistory />} />
                 <Route path='/admin/users' element={<AdminUserList />} />
               </Routes>
               <div style={{ width: "100%", height: "56px" }} />
