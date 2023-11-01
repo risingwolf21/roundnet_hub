@@ -12,9 +12,7 @@ import React from "react";
 import { Drink, DrinkCounter } from "../types/supabaseTypes";
 import { RootState } from "../redux/store";
 import { useAppDispatch } from "..";
-import { TABLE_HISTORY, TABLE_PAYMENTS } from "../constants";
-import { Box } from "@mui/system";
-import { LocalDrink } from "@mui/icons-material";
+import { TABLE_PAYMENTS } from "../constants";
 import { useCaptureException } from "../hooks/useCaptureException";
 import { useDependency } from "../hooks/useDependency";
 import { IDrinkRepository } from "../repository/IDrinkRepository";
@@ -42,10 +40,10 @@ const DrinkList = () => {
     const [alertInfo, setAlertInfo] = useState(SUCCESS_MESSAGE_INFO);
 
     useEffect(() => {
-        if (user) {
+        if (user && drinksRepository) {
             dispatch(fetchPaymentAsync({ repository: drinksRepository, userId: user.userId }));
         }
-    }, [client, user, dispatch]);
+    }, [client, user, dispatch, drinksRepository]);
 
     const handleSnackbarClose = (event: Event | SyntheticEvent<any, Event>, reason: SnackbarCloseReason) => {
         if (reason === 'clickaway') {
@@ -91,19 +89,13 @@ const DrinkList = () => {
             if (!paymentId)
                 throw Error({ message: "Payment ID could not be found" })
 
-            const { error } = await client.from(TABLE_HISTORY).insert(
-                Object.values(addedDrinks).map((drink) => {
-                    return {
-                        user: user.userId,
-                        drink: drink.id,
-                        count: drink.count,
-                        payment: paymentId,
-                        amount: drink.count * (drink.price ?? 1)
-                    }
-                })
-            );
-            if (error)
-                throw error;
+            if (!drinksRepository)
+                throw Error({ message: "IDrinkRepository was not defined!" })
+
+            const result = await drinksRepository.insertHistoryItems(Object.values(addedDrinks), user.userId, paymentId)
+            if (!result || result.error) {
+                throw Error({ message: "Drink could not be added to your history. [" + result?.error + "]" });
+            }
 
             setLoading(false);
             setAddedDrinks([]);
@@ -111,7 +103,7 @@ const DrinkList = () => {
         }
         catch (error) {
             setLoading(false);
-            const message = error instanceof Error ? (error as Error).message : "Unknown error."
+            let message = (error as Error).message;
             confirmDrinksDialog({ message, severity: "error" });
             captureException(Error({ message }), (scope) => {
                 scope.clear();
@@ -178,7 +170,7 @@ const DrinkList = () => {
             </>
         }
 
-        <Snackbar sx={{ position: "fixed", right: "16px", bottom: "72px" }} open={successMessageOpen} autoHideDuration={1500} onClose={handleSnackbarClose}>
+        <Snackbar sx={{ position: "fixed", right: "16px", bottom: "72px" }} open={successMessageOpen} onClose={handleSnackbarClose}>
             <Alert onClose={handleAlertClose} severity={alertInfo.severity} sx={{ width: '100%' }}>
                 {alertInfo.message}
             </Alert>

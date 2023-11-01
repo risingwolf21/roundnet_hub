@@ -12,7 +12,6 @@ import EditHistoryEntryDialog from "./EditHistoryEntryDialog";
 import React from "react";
 import { FullHistory } from "../types/supabaseTypes";
 import { useAppDispatch } from "..";
-import { TABLE_HISTORY } from "../constants";
 import { useCaptureException } from "../hooks/useCaptureException";
 import { useDependency } from "../hooks/useDependency";
 import { IDrinkRepository } from "../repository/IDrinkRepository";

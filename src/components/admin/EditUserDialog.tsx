@@ -4,8 +4,9 @@ import { Box } from "@mui/system";
 import { AccountCircle, Close, Email, ExpandLess, ExpandMore, FiberManualRecord, ManageAccounts, Verified } from "@mui/icons-material";
 import { useClient } from "react-supabase";
 import { SlideUpTransition } from "../../utils";
-import { Group, PaymentState, User, UserRole, UserWithGroups } from "../../types/supabaseTypes";
-import { TABLE_HISTORY } from "../../constants";
+import { Group, User, UserRole, UserWithGroups } from "../../types/supabaseTypes";
+import { useDependency } from "../../hooks/useDependency";
+import { IDrinkRepository } from "../../repository/IDrinkRepository";
 
 type EditUserDialogProps = {
     user: UserWithGroups,
@@ -26,20 +27,23 @@ const EditUserDialog = ({ user, open, handleClose, onUserEditFinished, deleteUse
 
     const [userRoleCollapseOpen, setUserCollapseOpen] = useState(false);
     const [role, setRole] = useState<UserRole>(user.role);
+    const drinksRepository = useDependency<IDrinkRepository>("IDrinkRepository");
     const [verified, setVerified] = useState(user.verified)
     const [deleteUserOpen, setDeleteUserOpen] = useState(false);
     const [userInfo, setUserInfo] = useState({ openAmount: 0 })
     const client = useClient();
 
     useEffect(() => {
+        if (drinksRepository) {
+            drinksRepository.fetchOpenDrinksForUser(user.userId).then(result => {
+                if (result && result.data) {
+                    setUserInfo({ openAmount: result.data.reduce((prev, curr) => prev + (curr.count * curr.drink.price), 0) })
+                }
+            })
+        }
         setRole(user.role);
         setVerified(user.verified);
-        client.from(TABLE_HISTORY).select("*, drink ( price, name ), payment(*)").eq("user ", user.userId).eq("payment.paymentState", "Open" as PaymentState).then(result => {
-            if (!result.data)
-                return;
-            setUserInfo({ openAmount: result.data.reduce((prev, curr) => prev + (curr.count * curr.drink.price), 0) })
-        });
-    }, [user, client]);
+    }, [user, client, drinksRepository]);
 
     const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
