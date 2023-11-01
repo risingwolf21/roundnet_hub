@@ -16,10 +16,11 @@ import store from './redux/store';
 import "./translation/i18n";
 import { LocalizationProvider } from '@mui/x-date-pickers';
 import { Container } from 'inversify';
-import { EmptyRepository, IEventRepository, SupabaseRepository } from './repository/IEventRepository';
+import { IEventRepository, SupabaseRepository } from './repository/IEventRepository';
 import { IAdminDrinksRepository, SupabaseAdminDrinksRepository } from './repository/IAdminDrinksRepository';
 import { SupabaseClient } from '@supabase/supabase-js';
 import { Database } from './types/supabase';
+import { IDrinkRepository, SupabaseDrinkRepository } from './repository/IDrinkRepository';
 
 
 type Props = {
@@ -42,19 +43,17 @@ if (process.env.NODE_ENV === "production") {
       new Sentry.BrowserTracing({
         tracePropagationTargets: [/^https:\/\/roundnet-karlsruhe\.web.app/, /^https:\/\/staging-roundnet-karlsruhe\.web.app/],
       }),
-      new Sentry.Replay(),
     ],
-    tracesSampleRate: 0.2,
+    tracesSampleRate: 1.0,
   });
 }
 
 // TODO: use Builder Pattern here https://refactoring.guru/design-patterns/builder/typescript/example#lang-features
 const container = new Container();
-container.bind<IEventRepository>("IEventRepository").to(EmptyRepository);
-container.unbind("IEventRepository");
 container.bind<IEventRepository>("IEventRepository").to(SupabaseRepository);
 container.bind<SupabaseClient<Database>>("SupabaseClient").toDynamicValue(() => supabase);
 container.bind<IAdminDrinksRepository>("IAdminDrinksRepository").to(SupabaseAdminDrinksRepository);
+container.bind<IDrinkRepository>("IDrinkRepository").to(SupabaseDrinkRepository);
 
 export type AppDispatch = typeof store.dispatch
 

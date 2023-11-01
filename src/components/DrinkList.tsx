@@ -9,13 +9,15 @@ import { useDispatch, useSelector } from "react-redux";
 import CustomAppBar from "./AppBar";
 import { fetchPaymentAsync } from "../redux/drinksSlice";
 import React from "react";
-import { Drink } from "../types/supabaseTypes";
+import { Drink, DrinkCounter } from "../types/supabaseTypes";
 import { RootState } from "../redux/store";
 import { useAppDispatch } from "..";
 import { TABLE_HISTORY, TABLE_PAYMENTS } from "../constants";
 import { Box } from "@mui/system";
 import { LocalDrink } from "@mui/icons-material";
 import { useCaptureException } from "../hooks/useCaptureException";
+import { useDependency } from "../hooks/useDependency";
+import { IDrinkRepository } from "../repository/IDrinkRepository";
 
 const SUCCESS_MESSAGE_INFO: AlertMessage = { message: "Getränke erfolgreich gebucht!", severity: "success" };
 
@@ -24,15 +26,12 @@ type AlertMessage = {
     severity: AlertColor
 }
 
-type DrinkCounter = Drink & {
-    count: number
-}
-
 const DrinkList = () => {
 
     const { user } = useSelector((state: RootState) => state.application);
     const client = useClient();
     const dispatch = useAppDispatch();
+    const drinksRepository = useDependency<IDrinkRepository>("IDrinkRepository");
 
     const { drinks, drinksLoading, drinksError, payment } = useSelector((state: RootState) => state.drinks);
     useCaptureException(drinksError);
@@ -44,7 +43,7 @@ const DrinkList = () => {
 
     useEffect(() => {
         if (user) {
-            dispatch(fetchPaymentAsync({ client: client, user: user }));
+            dispatch(fetchPaymentAsync({ repository: drinksRepository, userId: user.userId }));
         }
     }, [client, user, dispatch]);
 

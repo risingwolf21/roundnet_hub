@@ -4,9 +4,10 @@ import { Drink } from "../types/supabaseTypes";
 import { Database } from "../types/supabase";
 import _ from "lodash";
 import { TABLE_DRINK, TABLE_HISTORY } from "../constants";
+import { SupabaseRepository } from "./Repository";
 
 export interface IAdminDrinksRepository {
-    fetchDrinks(): Promise<PostgrestSingleResponse<any[]> | null>
+    fetchDrinks(): Promise<PostgrestSingleResponse<any[]>>
     fetchAdminHistory(page: number, count: number): Promise<PostgrestSingleResponse<any[]> | null>
     updateDrink(drink: Drink): Promise<void>
     deleteDrink(id: number): Promise<void>
@@ -14,16 +15,12 @@ export interface IAdminDrinksRepository {
 }
 
 @injectable()
-export class SupabaseAdminDrinksRepository implements IAdminDrinksRepository {
+export class SupabaseAdminDrinksRepository extends SupabaseRepository implements IAdminDrinksRepository {
 
-    @inject("SupabaseClient")
-    private client: SupabaseClient<Database> | undefined
-
-    async fetchDrinks(): Promise<PostgrestSingleResponse<any[]> | null> {
+    async fetchDrinks(): Promise<PostgrestSingleResponse<any[]>> {
         if (!this.client)
             throw Error("SupabaseClient was undefined.");
 
-        console.log("Fetching drinks using SupabaseAdminDrinksRepository");
         const query = this.client
             .from(TABLE_DRINK)
             .select("id, name, price, stock, imageUrl, active, deleted, previousDrink");

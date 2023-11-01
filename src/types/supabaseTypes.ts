@@ -9,6 +9,10 @@ export type History = Database["public"]["Tables"]["history"]["Row"];
 export type Payment = Database["public"]["Tables"]["payments"]["Row"];
 export type User = Database["public"]["Tables"]["user"]["Row"];
 
+export type DrinkCounter = Drink & {
+    count: number
+}
+
 export type FullPayment = Payment & {
     user: User,
     history: History[]
