@@ -13,6 +13,7 @@ import React from "react";
 import { FullHistory } from "../types/supabaseTypes";
 import { useAppDispatch } from "..";
 import { TABLE_HISTORY } from "../constants";
+import { useCaptureException } from "../hooks/useCaptureException";
 
 export type FullHistoryUpdate = FullHistory & {
     newCount: number
@@ -42,6 +43,7 @@ const HistoryItem = ({ items, header, onClick }: HistoryItemProps) => {
 
 const HistoryScreen = () => {
     const { history, drinks, historyLoading, historyError, historyEndReached } = useSelector((state: any) => state.drinks);
+    useCaptureException(historyError);
     const { user } = useSelector((state: any) => state.application);
     const dispatch = useAppDispatch();
     const client = useClient();
