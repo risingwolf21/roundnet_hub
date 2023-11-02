@@ -18,6 +18,15 @@ const isLocalhost = Boolean(
   window.location.hostname.match(/^127(?:\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)){3}$/)
 );
 
+export function showNotification() {
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.ready.then(res => {
+      if (res)
+        res.showNotification("asdf")
+    });
+  }
+}
+
 export function register(config) {
   if ('serviceWorker' in navigator) {
     // The URL constructor is available in all browsers that support SW.

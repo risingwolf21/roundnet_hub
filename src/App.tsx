@@ -37,8 +37,11 @@ import GroupInformation from './components/groups/GroupInformation';
 import { useDependency } from './hooks/useDependency';
 import { IDrinkRepository } from './repository/IDrinkRepository';
 import DrinkListScreen from './components/drinkList/DrinkListScreen';
+import { useOneSignalNotifications } from './notifications';
 
 const App = () => {
+
+  useOneSignalNotifications();
 
   const { waitingWorker, showReload, reloadPage } = useServiceWorker();
   const drinksRepository = useDependency<IDrinkRepository>("IDrinkRepository");
