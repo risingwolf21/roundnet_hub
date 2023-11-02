@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { Grid } from "@mui/material";
-import DrinkList from './components/DrinkList';
+import DrinkList from './components/drinkList/DrinkList';
 import UserScreen from './components/User';
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import HistoryScreen from './components/HistoryScreen';
@@ -36,6 +36,7 @@ import { RootState } from './redux/store';
 import GroupInformation from './components/groups/GroupInformation';
 import { useDependency } from './hooks/useDependency';
 import { IDrinkRepository } from './repository/IDrinkRepository';
+import DrinkListScreen from './components/drinkList/DrinkListScreen';
 
 const App = () => {
 
@@ -80,7 +81,7 @@ const App = () => {
 
                 <Route path='/browse' element={<Browse />} />
                 <Route path='/browse-admin' element={<BrowseAdmin />} />
-                <Route path="/drinks" element={<DrinkList />} />
+                <Route path="/drinks" element={<DrinkListScreen />} />
                 <Route path="/user" element={<UserScreen />} />
                 <Route path="/history" element={<HistoryScreen />} />
                 <Route path="/payments" element={<PayDrinksScreen />} />

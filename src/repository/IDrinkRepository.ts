@@ -1,7 +1,7 @@
 import { injectable } from "inversify";
 import { SupabaseRepository } from "./Repository";
 import { PostgrestSingleResponse } from "@supabase/supabase-js";
-import { Drink, DrinkCounter, FullHistory, PaymentHistory, PaymentState } from "../types/supabaseTypes";
+import { Drink, DrinkCounter, FullHistory, Payment, PaymentHistory, PaymentInsert, PaymentState } from "../types/supabaseTypes";
 import { TABLE_DRINK, TABLE_HISTORY, TABLE_PAYMENTS } from "../constants";
 import { DrinkStockType } from "../components/procure/AnalyzeDrinkStockHistory";
 
@@ -10,10 +10,10 @@ export interface IDrinkRepository {
     fetchDrinks(): Promise<PostgrestSingleResponse<Drink[]> | null>
     fetchHistoryForUser(userId: string, page: number, count: number): Promise<PostgrestSingleResponse<FullHistory[]> | null>
     fetchOpenDrinksForUser(userId: string): Promise<PostgrestSingleResponse<any[]> | null>
-    fetchCurrentPaymentForUser(userId: string): Promise<PostgrestSingleResponse<any[]> | null>
+    fetchCurrentPaymentForUser(userId: string): Promise<PostgrestSingleResponse<Payment[]> | null>
     insertHistoryItems(drinks: DrinkCounter[], userId: string, paymentId: number): Promise<PostgrestSingleResponse<any> | null>
     updateHistoryItem(id: number, count: number, amount: number): Promise<PostgrestSingleResponse<any> | null>
-    insertNewPayment(userId: string): Promise<PostgrestSingleResponse<any[]> | null>
+    insertNewPayment(userId: string): Promise<PostgrestSingleResponse<PaymentInsert> | null>
     updateDrinkStock(drinkId: number, stock: number): Promise<PostgrestSingleResponse<any>>
     fetchHistoryStockType(): Promise<PostgrestSingleResponse<any> | null>
 }
@@ -52,7 +52,7 @@ export class SupabaseDrinkRepository extends SupabaseRepository implements IDrin
             .returns<FullHistory[]>();
     }
 
-    async fetchCurrentPaymentForUser(userId: string): Promise<PostgrestSingleResponse<any[]> | null> {
+    async fetchCurrentPaymentForUser(userId: string): Promise<PostgrestSingleResponse<Payment[]> | null> {
         if (!this.client)
             throw Error("SupabaseClient was undefined.");
 
@@ -60,17 +60,23 @@ export class SupabaseDrinkRepository extends SupabaseRepository implements IDrin
             .from(TABLE_PAYMENTS)
             .select("*")
             .eq("userId", userId)
-            .eq("paymentState", "Open");
+            .eq("paymentState", "Open")
+            .returns<Payment[]>();
     }
 
-    async insertNewPayment(userId: string): Promise<PostgrestSingleResponse<any[]> | null> {
+    async insertNewPayment(userId: string): Promise<PostgrestSingleResponse<PaymentInsert> | null> {
         if (!this.client)
             throw Error("SupabaseClient was undefined.");
 
-        return this.client.from(TABLE_PAYMENTS).insert({
-            userId: userId,
-            paymentState: "Open"
-        }).select().single();
+        return this.client
+            .from(TABLE_PAYMENTS)
+            .insert({
+                userId: userId,
+                paymentState: "Open"
+            })
+            .select()
+            .returns<PaymentInsert>()
+            .single();
     }
 
     async fetchOpenDrinksForUser(userId: string): Promise<PostgrestSingleResponse<any[]> | null> {

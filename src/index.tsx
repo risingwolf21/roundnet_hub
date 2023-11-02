@@ -8,7 +8,7 @@ import App from './App';
 import { ThemeProvider } from '@mui/material';
 import { mainTheme } from './themes/themes';
 import * as Sentry from "@sentry/react";
-import { supabase } from './supabaseClient';
+import { supabase } from './components/services/supabase/supabaseClient';
 import { Provider as SupabaseProvider } from "react-supabase"
 import { AdapterMoment } from '@mui/x-date-pickers/AdapterMoment';
 import { Provider, useDispatch } from 'react-redux';

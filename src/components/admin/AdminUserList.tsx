@@ -5,7 +5,7 @@ import EditUserDialog, { UserEdited } from "./EditUserDialog";
 import { Fragment, useState } from "react";
 import { useClient } from "react-supabase";
 import { Error } from "../Error";
-import { supabase_admin } from "../../supabaseClient";
+import { supabase_admin } from "../services/supabase/supabaseClient";
 import { captureException } from "@sentry/react";
 import { useSelector } from "react-redux";
 import { useEffect } from "react";

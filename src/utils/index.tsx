@@ -34,3 +34,10 @@ export class RegistrationError extends Error {
         super(message);
     }
 }
+
+export class MultiplePaymentsError extends Error {
+
+    constructor() {
+        super();
+    }
+}

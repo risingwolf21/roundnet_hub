@@ -8,7 +8,7 @@ import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
 import Logo from "../images/Karlsruher_Kojoten_Logo.svg";
-import { supabase } from "../supabaseClient";
+import { supabase } from "./services/supabase/supabaseClient";
 import { useNavigate } from "react-router-dom";
 import { TABLE_USER } from "../constants";
 import { captureException } from "@sentry/react";

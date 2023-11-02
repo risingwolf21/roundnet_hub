@@ -7,7 +7,7 @@ import Grid from '@mui/material/Grid';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
-import { supabase } from '../supabaseClient';
+import { supabase } from './services/supabase/supabaseClient';
 import Logo from "../images/Karlsruher_Kojoten_Logo.svg";
 import { Alert, CircularProgress, Snackbar } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
