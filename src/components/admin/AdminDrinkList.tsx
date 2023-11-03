@@ -24,7 +24,7 @@ const AdminDrinkItem = ({ drink, onEditClick, onDeleteClick }: AdminDrinkItemPro
     return <ListItem divider={true}>
         <ListItemAvatar>
             <Badge color={drink?.active ? "success" : "warning"} variant="dot">
-                <Avatar>
+                <Avatar sx={{ borderRadius: 2 }}>
                     {
                         drink?.imageUrl
                             ? <img src={drink.imageUrl} alt="logo" width={40} height={40} />
