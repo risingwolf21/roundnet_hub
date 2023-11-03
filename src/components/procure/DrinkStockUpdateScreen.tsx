@@ -39,7 +39,7 @@ const DrinkStockUpdateScreen = () => {
             {
                 drinks && drinks.filter(x => x.active).map((drink: Drink, index: number) => <ListItem key={index}>
                     <ListItemAvatar>
-                        <Avatar>
+                        <Avatar sx={{ borderRadius: 2 }}>
                             {
                                 drink.imageUrl
                                     ? <img src={drink.imageUrl} alt="logo" width={40} height={40} />

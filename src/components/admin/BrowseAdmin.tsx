@@ -84,29 +84,14 @@ const BrowseAdmin = ({ t }: { t: TFunction }) => {
                         return <ListItem key={x.translationKey} onClick={() => navigate(x.navigateTo)} sx={{ mt: 1 }}>
                             <ListItemAvatar>
                                 <Badge color="secondary" variant="dot" badgeContent="  " invisible={(x.translationKey !== "manageUsers" || !hasNotVerifiedUsers)}>
-                                    <Avatar sx={{ background: x.avatarColor, width: 40, height: 40 }}>
+                                    <Avatar sx={{ background: x.avatarColor, width: 40, height: 40, borderRadius: 2 }}>
                                         {x.icon}
                                     </Avatar>
                                 </Badge>
                             </ListItemAvatar>
                             <ListItemText primary={t("browse." + x.translationKey)} />
                         </ListItem>
-                    }),
-                    <ListItem key={"subscriptionStatus"} sx={{ mt: 1 }}>
-                        <ListItemAvatar>
-                            <Avatar sx={{ background: "#88AEBF", width: 40, height: 40 }}>
-                                {
-                                    {
-                                        'CLOSED': <LinkOff />,
-                                        'SUBSCRIBED': <Link />,
-                                        'TIMED_OUT': <RunningWithErrors />,
-                                        'CHANNEL_ERROR': <CrisisAlert />,
-                                    }[realtimeState]
-                                }
-                            </Avatar>
-                        </ListItemAvatar>
-                        <ListItemText primary={realtimeState} secondary={"Realtime connection status"} />
-                    </ListItem>
+                    })
                 ]
             }
         </List>

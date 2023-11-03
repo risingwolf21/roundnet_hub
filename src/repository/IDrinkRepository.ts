@@ -1,7 +1,7 @@
 import { injectable } from "inversify";
 import { SupabaseRepository } from "./Repository";
 import { PostgrestSingleResponse } from "@supabase/supabase-js";
-import { Drink, DrinkCounter, FullHistory, Payment, PaymentHistory, PaymentState } from "../types/supabaseTypes";
+import { Drink, DrinkCounter, FullHistory, Payment, History, PaymentHistory, PaymentState } from "../types/supabaseTypes";
 import { TABLE_DRINK, TABLE_HISTORY, TABLE_PAYMENTS } from "../constants";
 import { DrinkStockType } from "../components/procure/AnalyzeDrinkStockHistory";
 
@@ -9,7 +9,7 @@ export interface IDrinkRepository {
     fetchDrinksToPay(userId: string): Promise<PostgrestSingleResponse<PaymentHistory[]>>
     fetchDrinks(): Promise<PostgrestSingleResponse<Drink[]>>
     fetchHistoryForUser(userId: string, page: number, count: number): Promise<PostgrestSingleResponse<FullHistory[]>>
-    fetchOpenDrinksForUser(userId: string): Promise<PostgrestSingleResponse<any[]>>
+    fetchOpenDrinksForUser(userId: string): Promise<PostgrestSingleResponse<FullHistory[]>>
     fetchCurrentPaymentForUser(userId: string): Promise<PostgrestSingleResponse<Payment[]>>
     insertHistoryItems(drinks: DrinkCounter[], userId: string, paymentId: number): Promise<PostgrestSingleResponse<any>>
     updateHistoryItem(id: number, count: number, amount: number): Promise<PostgrestSingleResponse<any>>
@@ -60,12 +60,13 @@ export class SupabaseDrinkRepository extends SupabaseRepository implements IDrin
         }).select().single();
     }
 
-    async fetchOpenDrinksForUser(userId: string): Promise<PostgrestSingleResponse<any[]>> {
+    async fetchOpenDrinksForUser(userId: string): Promise<PostgrestSingleResponse<FullHistory[]>> {
         const query = this.client
             .from(TABLE_HISTORY)
             .select("*, drink ( price, name ), payment(*)")
             .eq("user ", userId)
-            .eq("payment.paymentState", "Open" as PaymentState);
+            .eq("payment.paymentState", "Open" as PaymentState)
+            .returns<FullHistory[]>();
 
         return query;
     }
