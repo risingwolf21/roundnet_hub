@@ -1,19 +1,18 @@
-import { Alert, CircularProgress, Divider, Fab, Grid, List, LinearProgress, Snackbar, AlertColor, SnackbarCloseReason, ListItem, ListItemText, ListItemSecondaryAction, ListItemAvatar, Avatar } from "@mui/material";
-import DrinkItem, { LoadingDrinkItem } from "./DrinkItem";
-import { Fragment, SyntheticEvent, useEffect, useState } from "react";
+import { Alert, CircularProgress, Divider, Fab, Grid, List, LinearProgress, Snackbar, AlertColor, SnackbarCloseReason } from "@mui/material";
+import DrinkItem from "./DrinkItem";
+import { SyntheticEvent, useEffect, useState } from "react";
 import CheckIcon from '@mui/icons-material/Check';
 import { captureException } from "@sentry/react";
 import { Error } from "./Error";
 import { useClient } from "react-supabase";
-import { useDispatch, useSelector } from "react-redux";
+import { useSelector } from "react-redux";
 import CustomAppBar from "./AppBar";
-import { fetchPaymentAsync } from "../redux/drinksSlice";
+import { fetchDrinksAsync, fetchPaymentAsync } from "../redux/drinksSlice";
 import React from "react";
-import { Drink, DrinkCounter } from "../types/supabaseTypes";
+import { Drink, DrinkCounter, PaymentInsert, User } from "../types/supabaseTypes";
 import { RootState } from "../redux/store";
 import { useAppDispatch } from "..";
 import { TABLE_PAYMENTS } from "../constants";
-import { useCaptureException } from "../hooks/useCaptureException";
 import { useDependency } from "../hooks/useDependency";
 import { IDrinkRepository } from "../repository/IDrinkRepository";
 
@@ -24,15 +23,35 @@ type AlertMessage = {
     severity: AlertColor
 }
 
-const DrinkList = () => {
-
+export const DrinkListProvider = () => {
+    const drinksRepository = useDependency<IDrinkRepository>("IDrinkRepository");
     const { user } = useSelector((state: RootState) => state.application);
+    const { drinks, drinksLoading, drinksError } = useSelector((state: RootState) => state.drinks);
+
+    if (!drinksRepository) {
+        return;
+    }
+
+    return <DrinkList
+        drinksRepository={drinksRepository}
+        user={user}
+        drinks={drinks}
+        drinksError={drinksError ?? ""}
+        drinksLoading={drinksLoading} />
+}
+
+type DrinkListProps = {
+    user: User,
+    drinksRepository: IDrinkRepository,
+    drinks: Drink[],
+    drinksLoading: boolean,
+    drinksError: string,
+}
+
+const DrinkList = ({ user, drinksRepository, drinks, drinksLoading, drinksError }: DrinkListProps) => {
+
     const client = useClient();
     const dispatch = useAppDispatch();
-    const drinksRepository = useDependency<IDrinkRepository>("IDrinkRepository");
-
-    const { drinks, drinksLoading, drinksError, payment } = useSelector((state: RootState) => state.drinks);
-    useCaptureException(drinksError, "DrinkList");
 
     const [addedDrinks, setAddedDrinks] = useState<DrinkCounter[]>([]);
     const [loading, setLoading] = useState(false);
@@ -40,10 +59,9 @@ const DrinkList = () => {
     const [alertInfo, setAlertInfo] = useState(SUCCESS_MESSAGE_INFO);
 
     useEffect(() => {
-        if (user && drinksRepository) {
-            dispatch(fetchPaymentAsync({ repository: drinksRepository, userId: user.userId }));
-        }
-    }, [client, user, dispatch, drinksRepository]);
+        dispatch(fetchDrinksAsync(drinksRepository));
+        dispatch(fetchPaymentAsync({ repository: drinksRepository, userId: user.userId }));
+    }, [user, dispatch, drinksRepository]);
 
     const handleSnackbarClose = (event: Event | SyntheticEvent<any, Event>, reason: SnackbarCloseReason) => {
         if (reason === 'clickaway') {
@@ -68,29 +86,30 @@ const DrinkList = () => {
 
         try {
             let paymentId: number;
-            if (!payment || payment.paymentState !== "Open") {
-                const { data: paymentUpdate } = await client.from(TABLE_PAYMENTS)
-                    .select("*").eq("userId", user.userId).eq("paymentState", "Open").single();
-                if (!paymentUpdate) {
-                    const { data, error } = await client.from(TABLE_PAYMENTS).insert({
-                        userId: user.userId,
-                        paymentState: "Open"
-                    }).select().single();
-                    if (error)
-                        throw Error(error);
-                    paymentId = data.id;
-                } else {
-                    paymentId = paymentUpdate.id;
-                }
+            const { data: currentPayment, error } = await drinksRepository.fetchCurrentPaymentForUser(user.userId);
+
+            if (error) {
+                throw Error(error)
+            }
+
+            if (!currentPayment || currentPayment.length === 0) {
+                const { data, error } = await client.from(TABLE_PAYMENTS).insert<PaymentInsert>({
+                    userId: user.userId,
+                    paymentState: "Open",
+                    amountToPay: Object.values(addedDrinks).reduce((prev, curr) => prev + (curr.count * (curr.price ?? 1)), 0)
+                }).select().single();
+
+                if (error)
+                    throw Error(error);
+                paymentId = data.id;
+            } else if (currentPayment && currentPayment.length > 1) {
+                paymentId = currentPayment[0].id;
             } else {
-                paymentId = payment?.id;
+                paymentId = currentPayment[0].id;
             }
 
             if (!paymentId)
                 throw Error({ message: "Payment ID could not be found" })
-
-            if (!drinksRepository)
-                throw Error({ message: "IDrinkRepository was not defined!" })
 
             const result = await drinksRepository.insertHistoryItems(Object.values(addedDrinks), user.userId, paymentId)
             if (!result || result.error) {
@@ -162,7 +181,7 @@ const DrinkList = () => {
         </List>
         {
             Object.values(addedDrinks).length > 0 && <>
-                <Fab sx={{ background: "#66bb6a", position: "fixed", right: "16px", bottom: "56px", mb: "16px" }} onClick={confirmDrinks}>
+                <Fab sx={{ background: "#66bb6a", position: "fixed", right: "16px", bottom: "56px", mb: "16px" }} disabled={loading} onClick={confirmDrinks}>
                     {
                         loading ? <CircularProgress /> : <CheckIcon sx={{ color: "white" }} />
                     }

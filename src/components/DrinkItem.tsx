@@ -14,7 +14,7 @@ type Props = {
 }
 
 const DrinkItem = ({ drink, count, onAddClick, onMinusClick }: Props) => {
-    return <ListItem key={drink.id} onClick={() => onAddClick(drink)}>
+    return <ListItem key={drink.name ?? "" + drink.id} onClick={() => onAddClick(drink)}>
         <ListItemAvatar>
             <Avatar>
                 {

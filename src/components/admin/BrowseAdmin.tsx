@@ -1,5 +1,5 @@
 import { AdminPanelSettings, Euro, Group, History, Liquor, GroupOutlined, ShowChart, LinkOff, Link, RunningWithErrors, CrisisAlert } from "@mui/icons-material";
-import { Avatar, List, ListItem, ListItemAvatar, ListItemText, Box } from "@mui/material";
+import { Avatar, List, ListItem, ListItemAvatar, ListItemText, Box, Badge } from "@mui/material";
 import { useNavigate } from "react-router";
 import { withTranslation } from 'react-i18next';
 import CustomAppBar from "../AppBar";
@@ -71,6 +71,7 @@ const BrowseAdmin = ({ t }: { t: TFunction }) => {
 
     const navigate = useNavigate();
     const { user, realtimeState } = useSelector((state: RootState) => state.application);
+    const { hasNotVerifiedUsers } = useSelector((state: RootState) => state.adminUsers);
 
     return <Box>
         <CustomAppBar />
@@ -82,9 +83,11 @@ const BrowseAdmin = ({ t }: { t: TFunction }) => {
                     ].map(x => {
                         return <ListItem key={x.translationKey} onClick={() => navigate(x.navigateTo)} sx={{ mt: 1 }}>
                             <ListItemAvatar>
-                                <Avatar sx={{ background: x.avatarColor, width: 40, height: 40 }}>
-                                    {x.icon}
-                                </Avatar>
+                                <Badge color="secondary" variant="dot" badgeContent="  " invisible={(x.translationKey !== "manageUsers" || !hasNotVerifiedUsers)}>
+                                    <Avatar sx={{ background: x.avatarColor, width: 40, height: 40 }}>
+                                        {x.icon}
+                                    </Avatar>
+                                </Badge>
                             </ListItemAvatar>
                             <ListItemText primary={t("browse." + x.translationKey)} />
                         </ListItem>

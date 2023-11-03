@@ -61,7 +61,7 @@ const Browse = ({ t }: { t: TFunction }) => {
                         <Info />
                     </Avatar>
                 </ListItemAvatar>
-                <ListItemText sx={{ overflow: "clip" }} primary={appVersion} secondary={"Version"} />
+                <ListItemText sx={{ overflow: "clip" }} primary={process.env.REACT_APP_VERSION} secondary={"Version"} />
             </ListItem>
         </List>
     </Box>
