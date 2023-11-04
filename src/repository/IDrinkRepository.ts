@@ -13,7 +13,7 @@ export interface IDrinkRepository {
     fetchCurrentPaymentForUser(userId: string): Promise<PostgrestSingleResponse<Payment[]>>
     insertHistoryItems(drinks: DrinkCounter[], userId: string, paymentId: number): Promise<PostgrestSingleResponse<any>>
     updateHistoryItem(id: number, count: number, amount: number): Promise<PostgrestSingleResponse<any>>
-    insertNewPayment(userId: string): Promise<PostgrestSingleResponse<any[]>>
+    insertNewPayment(userId: string): Promise<PostgrestSingleResponse<PaymentInsert>>
     updateDrinkStock(drinkId: number, stock: number): Promise<PostgrestSingleResponse<any>>
     fetchHistoryStockType(): Promise<PostgrestSingleResponse<any>>
 }
@@ -53,11 +53,15 @@ export class SupabaseDrinkRepository extends SupabaseRepository implements IDrin
             .returns<Payment[]>();
     }
 
-    async insertNewPayment(userId: string): Promise<PostgrestSingleResponse<any[]>> {
-        return this.client.from(TABLE_PAYMENTS).insert({
-            userId: userId,
-            paymentState: "Open"
-        }).select().returns<PaymentInsert>().single();
+    async insertNewPayment(userId: string): Promise<PostgrestSingleResponse<PaymentInsert>> {
+        return this.client.from(TABLE_PAYMENTS)
+            .insert({
+                userId: userId,
+                paymentState: "Open"
+            })
+            .select()
+            .returns<PaymentInsert>()
+            .single();
     }
 
     async fetchOpenDrinksForUser(userId: string): Promise<PostgrestSingleResponse<FullHistory[]>> {
@@ -134,7 +138,7 @@ export class EmptyDrinkRepository implements IDrinkRepository {
     updateHistoryItem(id: number, count: number, amount: number): Promise<PostgrestSingleResponse<any>> {
         throw new Error("Method not implemented.");
     }
-    insertNewPayment(userId: string): Promise<PostgrestSingleResponse<any[]>> {
+    insertNewPayment(userId: string): Promise<PostgrestSingleResponse<PaymentInsert>> {
         throw new Error("Method not implemented.");
     }
     updateDrinkStock(drinkId: number, stock: number): Promise<PostgrestSingleResponse<any>> {

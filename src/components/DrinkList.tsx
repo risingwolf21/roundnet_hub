@@ -1,5 +1,4 @@
 import { Alert, CircularProgress, Divider, Fab, Grid, List, LinearProgress, Snackbar, AlertColor, SnackbarCloseReason } from "@mui/material";
-import DrinkItem from "./DrinkItem";
 import { SyntheticEvent, useEffect, useState } from "react";
 import CheckIcon from '@mui/icons-material/Check';
 import { captureException } from "@sentry/react";
@@ -15,6 +14,7 @@ import { useAppDispatch } from "..";
 import { TABLE_PAYMENTS } from "../constants";
 import { useDependency } from "../hooks/useDependency";
 import { IDrinkRepository } from "../repository/IDrinkRepository";
+import DrinkItem from "./drinkList/DrinkItem";
 
 const SUCCESS_MESSAGE_INFO: AlertMessage = { message: "Getränke erfolgreich gebucht!", severity: "success" };
 

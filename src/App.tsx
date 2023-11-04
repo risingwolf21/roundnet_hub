@@ -31,9 +31,9 @@ import AnalyzeDrinkStockHistory from './components/procure/AnalyzeDrinkStockHist
 import raw from "./git_commit.txt";
 import { useAppDispatch } from '.';
 import { RootState } from './redux/store';
-//import { GroupInformation } from './components/groups/GroupInformation';
 import { useDependency } from './hooks/useDependency';
 import { IDrinkRepository } from './repository/IDrinkRepository';
+import GroupInformation from './components/groups/GroupInformation';
 
 const App = () => {
 

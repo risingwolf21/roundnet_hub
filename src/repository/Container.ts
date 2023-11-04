@@ -4,7 +4,7 @@ import { SupabaseClient } from "@supabase/supabase-js";
 import { Database } from "../types/supabase";
 import { IAdminDrinksRepository, SupabaseAdminDrinksRepository } from "./IAdminDrinksRepository";
 import { IDrinkRepository, SupabaseDrinkRepository } from "./IDrinkRepository";
-import { supabase } from "../supabaseClient";
+import { supabase } from "src/components/services/supabase/supabaseClient";
 
 const container = new Container();
 container.bind<SupabaseClient<Database>>("SupabaseClient").toDynamicValue(() => supabase);
