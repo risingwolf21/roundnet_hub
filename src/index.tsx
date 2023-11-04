@@ -16,12 +16,7 @@ import store from './redux/store';
 import "./translation/i18n";
 import { LocalizationProvider } from '@mui/x-date-pickers';
 import { Container } from 'inversify';
-import { IEventRepository, SupabaseRepository } from './repository/IEventRepository';
-import { IAdminDrinksRepository, SupabaseAdminDrinksRepository } from './repository/IAdminDrinksRepository';
-import { SupabaseClient } from '@supabase/supabase-js';
-import { Database } from './types/supabase';
-import { IDrinkRepository, SupabaseDrinkRepository } from './repository/IDrinkRepository';
-
+import container from './repository/Container';
 
 type Props = {
   children: ReactNode,
@@ -47,13 +42,6 @@ if (process.env.NODE_ENV === "production") {
     tracesSampleRate: 1.0,
   });
 }
-
-// TODO: use Builder Pattern here https://refactoring.guru/design-patterns/builder/typescript/example#lang-features
-const container = new Container();
-container.bind<IEventRepository>("IEventRepository").to(SupabaseRepository);
-container.bind<SupabaseClient<Database>>("SupabaseClient").toDynamicValue(() => supabase);
-container.bind<IAdminDrinksRepository>("IAdminDrinksRepository").to(SupabaseAdminDrinksRepository);
-container.bind<IDrinkRepository>("IDrinkRepository").to(SupabaseDrinkRepository);
 
 export type AppDispatch = typeof store.dispatch
 

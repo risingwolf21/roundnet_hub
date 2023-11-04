@@ -41,3 +41,13 @@ export class MultiplePaymentsError extends Error {
         super();
     }
 }
+
+export class FetchingError extends Error {
+
+    private screen: string
+
+    constructor(message: string, screen: string) {
+        super(message);
+        this.screen = screen;
+    }
+}

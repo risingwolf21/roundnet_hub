@@ -12,7 +12,7 @@ import { useClient } from "react-supabase";
 import React from "react";
 import { RootState } from "../redux/store";
 import { useAppDispatch } from "..";
-import { PaymentHistory } from "../types/supabaseTypes";
+import { PaymentHistory, User } from "../types/supabaseTypes";
 import { useCaptureException } from "../hooks/useCaptureException";
 import { useDependency } from "../hooks/useDependency";
 import { IDrinkRepository } from "../repository/IDrinkRepository";
@@ -68,23 +68,38 @@ const PayDrinksSummary = ({ paymentHistory }: { paymentHistory: PaymentHistory[]
     </Box>
 }
 
-const PayDrinksScreen = () => {
-
-    const { user } = useSelector((state: RootState) => state.application);
-    const dispatch = useAppDispatch();
+export const PayDrinksScreenProvider = () => {
     const drinksRepository = useDependency<IDrinkRepository>("IDrinkRepository");
-
-    const client = useClient();
-
+    const { user } = useSelector((state: RootState) => state.application);
     const { paymentHistory, paymentError, paymentLoading } = useSelector((state: RootState) => state.drinks);
-    useCaptureException(paymentError);
+
+    if (!drinksRepository)
+        return;
+
+    return <PayDrinksScreen
+        drinksRepository={drinksRepository}
+        user={user}
+        paymentHistory={paymentHistory ?? []}
+        paymentError={paymentError ?? ""}
+        paymentLoading={paymentLoading} />
+}
+
+type PayDrinksScreenProps = {
+    user: User,
+    paymentHistory: PaymentHistory[],
+    paymentError: string,
+    paymentLoading: boolean,
+    drinksRepository: IDrinkRepository
+}
+
+const PayDrinksScreen = ({ user, drinksRepository, paymentHistory, paymentError, paymentLoading }: PayDrinksScreenProps) => {
+
+    const dispatch = useAppDispatch();
 
     useEffect(() => {
-        if (user) {
-            dispatch(fetchDrinksToPayAsync({ repository: drinksRepository, userId: user.userId }));
-            dispatch(fetchPaymentAsync({ repository: drinksRepository, userId: user.userId }));
-        }
-    }, [dispatch, user, client]);
+        dispatch(fetchDrinksToPayAsync({ repository: drinksRepository, userId: user.userId }));
+        dispatch(fetchPaymentAsync({ repository: drinksRepository, userId: user.userId }));
+    }, [dispatch, user, drinksRepository]);
 
     if (paymentLoading)
         return <Loading />

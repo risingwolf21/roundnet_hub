@@ -191,7 +191,7 @@ export const drinksSlice = createSlice({
 });
 
 type DrinkRepositoryWithUserId = {
-    repository: IDrinkRepository | null,
+    repository: IDrinkRepository,
     userId: string
 }
 type DrinkRepositoryWithUserIdAndPagination = DrinkRepositoryWithUserId & {
@@ -199,33 +199,22 @@ type DrinkRepositoryWithUserIdAndPagination = DrinkRepositoryWithUserId & {
     page: number
 }
 
-export const fetchPaymentAsync = createAsyncThunk("payments", async ({ repository, userId }: DrinkRepositoryWithUserId, { rejectWithValue }) => {
-    if (!repository)
-        return rejectWithValue("DrinkRepository was not defined!");
-
+export const fetchPaymentAsync = createAsyncThunk("payments/forUser", async ({ repository, userId }: DrinkRepositoryWithUserId, { rejectWithValue }) => {
     const response = await repository.fetchCurrentPaymentForUser(userId);
     return response?.data;
 });
 
 export const fetchDrinksToPayAsync = createAsyncThunk("payments/openDrinks", async ({ repository, userId }: DrinkRepositoryWithUserId, { rejectWithValue }) => {
-    if (!repository)
-        return rejectWithValue("DrinkRepository was not defined!");
-
     const response = await repository.fetchDrinksToPay(userId);
     return response?.data ?? [];
 });
 
-export const fetchDrinksAsync = createAsyncThunk("drink", async (repository: IDrinkRepository | null, { rejectWithValue }) => {
-    if (!repository)
-        return rejectWithValue("DrinkRepository was not defined!");
+export const fetchDrinksAsync = createAsyncThunk("drink", async (repository: IDrinkRepository, { rejectWithValue }) => {
     const response = await repository.fetchDrinks();
     return response?.data ?? [];
 });
 
 export const fetchHistoryAsync = createAsyncThunk("history", async ({ repository, userId, page = 0, count = 20 }: DrinkRepositoryWithUserIdAndPagination, { rejectWithValue }) => {
-    if (!repository)
-        return rejectWithValue("DrinkRepository was not defined!");
-
     const response = await repository.fetchHistoryForUser(userId, page, count);
     return { entries: response?.data ?? [], more: page !== 0 };
 });

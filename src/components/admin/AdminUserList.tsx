@@ -59,7 +59,7 @@ const AdminUserList = () => {
     const [currentUser, setCurrentUser] = useState<UserWithGroups | null>();
     const [searchString, setSearchString] = useState("");
     const [open, setOpen] = useState(false);
-    const [showNotVerifiedUsers, setShowNotVerifiedUsers] = useState(true)
+    const [showNotVerifiedUsers, setShowNotVerifiedUsers] = useState(false)
     const client = useClient();
     const dispatch = useAppDispatch();
     const navigate = useNavigate();

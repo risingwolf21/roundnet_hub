@@ -27,8 +27,8 @@ const PaymentsPendingAdmin = () => {
     const navigate = useNavigate();
 
     const { payments, error, loading } = useSelector((state: RootState) => state.adminPayments);
-    useCaptureException(error);
 
+    console.log(payments)
     useEffect(() => {
         dispatch(fetchAdminsPaymentsAsync({ client }));
     }, [client, dispatch]);
@@ -80,7 +80,7 @@ const PaymentsPendingAdmin = () => {
             loading && <LinearProgress style={{ position: "fixed", left: 0, top: 56, right: 0 }} />
         }
         {
-            (payments && payments.length > 1) && <List sx={{ width: "100%", pt: 0 }}>
+            (payments && payments.length > 0) && <List sx={{ width: "100%", pt: 0 }}>
                 {
                     Object.values(payments)
                         .filter(x => searchString === "" || (x.user?.displayName ?? "").toLowerCase().includes(searchString.toLowerCase()))

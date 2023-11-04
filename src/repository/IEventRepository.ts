@@ -10,12 +10,14 @@ export type DbResult<T> = T extends PromiseLike<infer U> ? U : never
 export type DbResultOk<T> = T extends PromiseLike<{ data: infer U }> ? Exclude<U, null> : never
 export type DbResultErr = PostgrestError
 
+export type RepositorySource = "supabase" | "none";
+
 interface IEventRepository {
     fetchEvents(client: SupabaseClient, user: User, userGroups: number[], page: number, count: number): Promise<PostgrestSingleResponse<FullEvent[]>>
 }
 
 @injectable()
-class SupabaseRepository implements IEventRepository {
+class SupabaseEventRepository implements IEventRepository {
     async fetchEvents(client: SupabaseClient, user: User, userGroups: number[], page: number, count: number): Promise<PostgrestSingleResponse<FullEvent[]>> {
         const query = await client.from("events").select("*, attendance: event_attendance_user_mapping ( state , user(userId, displayName)  ), comments: event_comments ( comment, created_at, displayName, event, user ( displayName, userId)), groups: event_group(*)")
             // get events that are on the same day or later
@@ -55,10 +57,10 @@ class SupabaseRepository implements IEventRepository {
 }
 
 @injectable()
-class EmptyRepository implements IEventRepository {
+class EmptyEventRepository implements IEventRepository {
     fetchEvents(client: SupabaseClient, user: User, userGroups: number[], page: number, count: number): Promise<PostgrestSingleResponse<FullEvent[]>> {
-        throw Error("asdf")
+        throw new Error("Method not implemented.");
     }
 }
 
-export { SupabaseRepository, EmptyRepository, IEventRepository }
+export { SupabaseEventRepository, EmptyEventRepository, IEventRepository }

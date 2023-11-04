@@ -114,7 +114,7 @@ const EditDrinkDialog = ({ drink, onDrinkEditFinished, open, handleClose, drinkH
                     </Toolbar>
                 </AppBar>
                 <List>
-                    <ListItem>
+                    <ListItem sx={{ pt: 0, pb: 0 }}>
                         <ListItemAvatar>
                             <Avatar>
                                 <FormatSizeIcon />
@@ -132,7 +132,7 @@ const EditDrinkDialog = ({ drink, onDrinkEditFinished, open, handleClose, drinkH
                             />
                         </ListItemText>
                     </ListItem>
-                    <ListItem>
+                    <ListItem sx={{ pt: 0, pb: 0 }}>
                         <ListItemAvatar>
                             <Avatar>
                                 <EuroIcon />
@@ -151,7 +151,7 @@ const EditDrinkDialog = ({ drink, onDrinkEditFinished, open, handleClose, drinkH
                             />
                         </ListItemText>
                     </ListItem>
-                    <ListItem>
+                    <ListItem sx={{ pt: 0, pb: 0 }}>
                         <ListItemAvatar>
                             <Avatar>
                                 <InventoryIcon />
@@ -172,7 +172,7 @@ const EditDrinkDialog = ({ drink, onDrinkEditFinished, open, handleClose, drinkH
                     </ListItem>
                     <ListItem>
                         <ListItemAvatar>
-                            <Avatar>
+                            <Avatar sx={{ borderRadius: 2 }}>
                                 {
                                     croppedImage
                                         ? <img src={croppedImage} alt="logo" width={40} height={40} />

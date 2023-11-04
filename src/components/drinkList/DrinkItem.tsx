@@ -14,9 +14,9 @@ type Props = {
 }
 
 const DrinkItem = ({ drink, count, onAddClick, onMinusClick }: Props) => {
-    return <ListItem key={drink.id} onClick={() => onAddClick(drink)}>
+    return <ListItem key={drink.name ?? "" + drink.id} onClick={() => onAddClick(drink)}>
         <ListItemAvatar>
-            <Avatar>
+            <Avatar sx={{ borderRadius: 2 }}>
                 {
                     drink.imageUrl
                         ? <img src={drink.imageUrl} alt="logo" width={40} height={40} />

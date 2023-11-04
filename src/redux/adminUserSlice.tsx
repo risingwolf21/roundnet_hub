@@ -1,16 +1,18 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import { UserWithGroups } from '../types/supabaseTypes';
+import { User, UserWithGroups } from '../types/supabaseTypes';
 import { SupabaseClient } from '@supabase/supabase-js';
 import { TABLE_USER } from '../constants';
 
 type AdminUsersSliceState = {
     users: UserWithGroups[],
     loading: boolean,
-    error: string | null
+    error: string | null,
+    hasNotVerifiedUsers: boolean
 }
 
 const initialState = {
     users: [],
+    hasNotVerifiedUsers: false,
     loading: false,
     error: null
 } as AdminUsersSliceState;
@@ -49,6 +51,10 @@ export const adminUsersSlice = createSlice({
                 state.loading = false;
                 state.error = action.error.message ?? "";
             })
+
+            .addCase(fetchNotVerifiedUsersAsync.fulfilled, (state: AdminUsersSliceState, action) => {
+                state.hasNotVerifiedUsers = action.payload.length > 0;
+            })
     }
 });
 
@@ -58,6 +64,14 @@ export const fetchAdminUsersAsync = createAsyncThunk("fetchAdminUsersAsync", asy
         .returns<UserWithGroups[]>();
     return response.data;
 });
+
+export const fetchNotVerifiedUsersAsync = createAsyncThunk("fetchNotVerifiedUsersAsync", async ({ client }: { client: SupabaseClient }) => {
+    const response = await client.from(TABLE_USER)
+        .select("*")
+        .eq("verified", false)
+        .returns<User[]>();
+    return response.data ?? [];
+})
 
 export const { onUserDeleted, onUserInserted, onUserUpdate } = adminUsersSlice.actions;
 
