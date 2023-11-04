@@ -15,13 +15,13 @@ export interface IDrinkRepository {
     updateHistoryItem(id: number, count: number, amount: number): Promise<PostgrestSingleResponse<any>>
     insertNewPayment(userId: string): Promise<PostgrestSingleResponse<PaymentInsert>>
     updateDrinkStock(drinkId: number, stock: number): Promise<PostgrestSingleResponse<any>>
-    fetchHistoryStockType(): Promise<PostgrestSingleResponse<any>>
+    fetchHistoryStockType(): Promise<PostgrestSingleResponse<DrinkStockType[]>>
 }
 
 @injectable()
 export class SupabaseDrinkRepository extends SupabaseRepository implements IDrinkRepository {
 
-    async fetchHistoryStockType(): Promise<PostgrestSingleResponse<any>> {
+    async fetchHistoryStockType(): Promise<PostgrestSingleResponse<DrinkStockType[]>> {
         return this.client
             .from(TABLE_HISTORY)
             .select("count, amount, created_at, drink (id, name, price, stock), user(displayName)")

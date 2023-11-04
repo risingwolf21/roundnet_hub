@@ -1,12 +1,15 @@
-import { Grid, LinearProgress } from "@mui/material";
+import { Box, Card, CardContent, Grid, LinearProgress, Paper, Typography } from "@mui/material";
 import { useSelector } from "react-redux";
 import CustomAppBar from "../AppBar";
 import React, { useEffect, useState } from "react";
 import { useClient } from "react-supabase";
+import { PieChart } from '@mui/x-charts/PieChart';
+import { BarChart } from '@mui/x-charts/BarChart';
 import { groupBy } from "../../utils";
 import { RootState } from "../../redux/store";
 import { useDependency } from "../../hooks/useDependency";
 import { IDrinkRepository } from "../../repository/IDrinkRepository";
+import { AxisConfig, ChartsXAxisProps } from "@mui/x-charts/models/axis";
 
 export type DrinkStockType = {
     count: number,
@@ -16,20 +19,30 @@ export type DrinkStockType = {
     user: { displayName: string }
 }
 
-const AnalyzeDrinkStockHistory = () => {
+type AnalyzeDrinkStockHistoryProps = {
+    drinksRepository: IDrinkRepository,
+    loading: boolean
+}
 
-    const { loading } = useSelector((state: RootState) => state.adminDrinks);
-    const [mappedHistory, setMappedHistory] = useState<Map<string, any[]>>();
-    const client = useClient();
+export const AnalyzeDrinkStockHistoryProvider = () => {
     const drinksRepository = useDependency<IDrinkRepository>("IDrinkRepository");
+    const { loading } = useSelector((state: RootState) => state.adminDrinks);
+
+    if (!drinksRepository)
+        return;
+
+    return <AnalyzeDrinkStockHistory drinksRepository={drinksRepository} loading={loading} />
+}
+
+const AnalyzeDrinkStockHistory = ({ drinksRepository, loading }: AnalyzeDrinkStockHistoryProps) => {
+    const [mappedHistory, setMappedHistory] = useState<Map<string, DrinkStockType[]>>();
+    const [sevenDayHistory, setSevenDayHistory] = useState<Map<string, DrinkStockType[]>>();
 
     useEffect(() => {
-        if (drinksRepository) {
-            drinksRepository.fetchHistoryStockType().then(result => {
-                setMappedHistory(groupBy(result?.data ?? [], x => x.drink.id.toString()))
-            })
-        }
-    }, [client, mappedHistory]);
+        drinksRepository.fetchHistoryStockType().then(result => {
+            setMappedHistory(groupBy(result.data ?? [], x => x.drink.id.toString()))
+        });
+    }, [drinksRepository]);
 
     return <Grid
         container
@@ -67,18 +80,31 @@ const AnalyzeDrinkStockHistory = () => {
                 </>)
             }
         </List> */}
-        {/* 
-        <PieChart
-            series={[
-                {
-                    data: Object.values(mappedHistory).map((x, index) => { return { id: index, value: x.length, label: x[0].drink.name } })
-                },
-            ]}
-            width={400}
-            height={200} /> */}
-
+        <Box sx={{ width: "100%" }}>
+            <Card sx={{ m: 2, borderRadius: 3 }}>
+                <CardContent>
+                    <Typography sx={{ fontSize: 16, pb: 1, fontWeight: "bold" }} gutterBottom>
+                        Getränkenutzung
+                    </Typography>
+                    {
+                        mappedHistory && <PieChart
+                            height={155}
+                            width={300}
+                            series={[
+                                {
+                                    data: [...Array.from(mappedHistory).map((entry) => { return { label: entry[1][0].drink.name, value: entry[1].reduce((prev, curr) => prev + curr.count, 0) ?? 0 } })],
+                                    innerRadius: 15,
+                                    outerRadius: 75,
+                                    paddingAngle: 5,
+                                    cornerRadius: 5,
+                                    cx: 75,
+                                    cy: 75,
+                                }]}
+                        />
+                    }
+                </CardContent>
+            </Card>
+        </Box>
     </Grid>
 
 }
-
-export default AnalyzeDrinkStockHistory;

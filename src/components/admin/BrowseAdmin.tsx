@@ -33,14 +33,14 @@ const entries = [
         role: "procure",
         avatarColor: "#88AEBF"
     },
-    // {
-    //     translationKey: "analyzeDrinkStocks",
-    //     navigateTo: "/admin/drinks/analyze",
-    //     icon: <ShowChart />,
-    //     secondaryIcon: <AdminPanelSettings sx={{ color: "rgba(0,0,0,0.54)" }} />,
-    //     role: "procure",
-    //     avatarColor: "#88AEBF"
-    // },
+    {
+        translationKey: "analyzeDrinkStocks",
+        navigateTo: "/admin/drinks/analyze",
+        icon: <ShowChart />,
+        secondaryIcon: <AdminPanelSettings sx={{ color: "rgba(0,0,0,0.54)" }} />,
+        role: "procure",
+        avatarColor: "#88AEBF"
+    },
     {
         translationKey: "manageUsers",
         navigateTo: "/admin/users",

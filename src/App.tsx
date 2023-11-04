@@ -27,7 +27,7 @@ import SubscriptionHandler from './components/SubscriptionHandler';
 import ManageGroupsScreen from './components/groups/ManageGroups';
 import BrowseAdmin from './components/admin/BrowseAdmin';
 import DrinkStockUpdateScreen from './components/procure/DrinkStockUpdateScreen';
-import AnalyzeDrinkStockHistory from './components/procure/AnalyzeDrinkStockHistory';
+import { AnalyzeDrinkStockHistoryProvider } from './components/procure/AnalyzeDrinkStockHistory';
 import raw from "./git_commit.txt";
 import { useAppDispatch } from '.';
 import { RootState } from './redux/store';
@@ -94,7 +94,7 @@ const App = () => {
                 <Route path="/admin/drinks/history" element={<AdminHistoryScreenProvider />} />
                 <Route path='/admin/drinks/payments' element={<PaymentsPendingAdmin />} />
                 <Route path='/admin/drinks/stocks' element={<DrinkStockUpdateScreen />} />
-                <Route path='/admin/drinks/analyze' element={<AnalyzeDrinkStockHistory />} />
+                <Route path='/admin/drinks/analyze' element={<AnalyzeDrinkStockHistoryProvider />} />
                 <Route path='/admin/users' element={<AdminUserList />} />
               </Routes>
               <div style={{ width: "100%", height: "56px" }} />
