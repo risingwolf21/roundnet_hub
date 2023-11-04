@@ -120,7 +120,7 @@ export const adminDrinksSlice = createSlice({
     }
 });
 
-export const fetchDrinksAsync = createAsyncThunk("drink", async (repository: IAdminDrinksRepository) => {
+export const fetchDrinksAsync = createAsyncThunk("adminDrinks", async (repository: IAdminDrinksRepository) => {
     const response = await repository.fetchDrinks();
     return response?.data ?? [];
 });
@@ -131,7 +131,7 @@ type Props = {
     count: number
 }
 
-export const fetchAdminHistoryAsync = createAsyncThunk("history", async ({ repository, page = 0, count = 20 }: Props) => {
+export const fetchAdminHistoryAsync = createAsyncThunk("adminHistory", async ({ repository, page = 0, count = 20 }: Props) => {
     const response = await repository.fetchAdminHistory(page, count);
     return { entries: response?.data ?? [], more: page !== 0 };
 });

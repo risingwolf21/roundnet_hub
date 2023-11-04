@@ -47,7 +47,7 @@ const Browse = ({ t }: { t: TFunction }) => {
                 tabs.map(x => {
                     return <ListItem key={x.translationKey} onClick={() => navigate(x.navigateTo)} sx={{ mt: 1 }}>
                         <ListItemAvatar>
-                            <Avatar sx={{ background: x.avatarColor, width: 40, height: 40 }}>
+                            <Avatar sx={{ background: x.avatarColor, width: 40, height: 40, borderRadius: 2 }}>
                                 {x.icon}
                             </Avatar>
                         </ListItemAvatar>
@@ -57,11 +57,11 @@ const Browse = ({ t }: { t: TFunction }) => {
             }
             <ListItem dense>
                 <ListItemAvatar>
-                    <Avatar sx={{ background: "#88AEBF", width: 40, height: 40 }}>
+                    <Avatar sx={{ background: "#88AEBF", width: 40, height: 40, borderRadius: 2 }}>
                         <Info />
                     </Avatar>
                 </ListItemAvatar>
-                <ListItemText sx={{ overflow: "clip" }} primary={appVersion} secondary={"Version"} />
+                <ListItemText sx={{ overflow: "clip" }} primary={process.env.REACT_APP_VERSION} secondary={"Version"} />
             </ListItem>
         </List>
     </Box>

@@ -8,9 +8,11 @@ import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
 import Logo from "../images/Karlsruher_Kojoten_Logo.svg";
-import { supabase } from "../supabaseClient";
+import { supabase } from "./services/supabase/supabaseClient";
 import { useNavigate } from "react-router-dom";
 import { TABLE_USER } from "../constants";
+import { captureException } from "@sentry/react";
+import { RegistrationError } from "../utils";
 
 type RegisterProps = {
     email: string,
@@ -37,7 +39,14 @@ const RegisterScreen = () => {
         });
 
         if (!data || !data.user) {
-            throw Error("Could not sign up user. The result was empty!");
+            captureException(new RegistrationError("Could not sign up user. The result was empty!"), (scope) => {
+                scope.clear();
+                scope.setExtra("displayName", displayName);
+                scope.setExtra("email", email);
+                return scope;
+            })
+            setErrorMessage("Could not sign up user. The result was empty!");
+            return;
         }
 
         let { error: updatingUserError } = await supabase.auth.updateUser({ data: { userId: data.user.id } })
@@ -49,6 +58,16 @@ const RegisterScreen = () => {
             setErrorMessage(JSON.stringify(updatingUserError));
         if (writingError)
             setErrorMessage(JSON.stringify(writingError));
+
+        if (error || updatingUserError || writingError) {
+            captureException(new RegistrationError(""), (scope) => {
+                scope.clear();
+                scope.setExtra("signUpError", JSON.stringify(error))
+                scope.setExtra("updatingUserError", JSON.stringify(updatingUserError))
+                scope.setExtra("writingError", JSON.stringify(writingError))
+                return scope;
+            })
+        }
     }
 
     const handleSubmit = (event: FormEvent<HTMLFormElement>) => {

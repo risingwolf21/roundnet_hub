@@ -1,5 +1,4 @@
 import { Alert, CircularProgress, Divider, Fab, Grid, List, LinearProgress, Snackbar, AlertColor, SnackbarCloseReason } from "@mui/material";
-import DrinkItem from "./DrinkItem";
 import { SyntheticEvent, useEffect, useState } from "react";
 import CheckIcon from '@mui/icons-material/Check';
 import { captureException } from "@sentry/react";
@@ -7,12 +6,15 @@ import { Error } from "./Error";
 import { useClient } from "react-supabase";
 import { useSelector } from "react-redux";
 import CustomAppBar from "./AppBar";
-import { fetchPaymentAsync } from "../redux/drinksSlice";
+import { fetchDrinksAsync, fetchPaymentAsync } from "../redux/drinksSlice";
 import React from "react";
-import { Drink } from "../types/supabaseTypes";
+import { Drink, DrinkCounter, PaymentInsert, User } from "../types/supabaseTypes";
 import { RootState } from "../redux/store";
 import { useAppDispatch } from "..";
-import { TABLE_HISTORY, TABLE_PAYMENTS } from "../constants";
+import { TABLE_PAYMENTS } from "../constants";
+import { useDependency } from "../hooks/useDependency";
+import { IDrinkRepository } from "../repository/IDrinkRepository";
+import DrinkItem from "./drinkList/DrinkItem";
 
 const SUCCESS_MESSAGE_INFO: AlertMessage = { message: "Getränke erfolgreich gebucht!", severity: "success" };
 
@@ -21,17 +23,35 @@ type AlertMessage = {
     severity: AlertColor
 }
 
-type DrinkCounter = Drink & {
-    count: number
+export const DrinkListProvider = () => {
+    const drinksRepository = useDependency<IDrinkRepository>("IDrinkRepository");
+    const { user } = useSelector((state: RootState) => state.application);
+    const { drinks, drinksLoading, drinksError } = useSelector((state: RootState) => state.drinks);
+
+    if (!drinksRepository) {
+        return;
+    }
+
+    return <DrinkList
+        drinksRepository={drinksRepository}
+        user={user}
+        drinks={drinks}
+        drinksError={drinksError ?? ""}
+        drinksLoading={drinksLoading} />
 }
 
-const DrinkList = () => {
+type DrinkListProps = {
+    user: User,
+    drinksRepository: IDrinkRepository,
+    drinks: Drink[],
+    drinksLoading: boolean,
+    drinksError: string,
+}
 
-    const { user } = useSelector((state: RootState) => state.application);
+const DrinkList = ({ user, drinksRepository, drinks, drinksLoading, drinksError }: DrinkListProps) => {
+
     const client = useClient();
     const dispatch = useAppDispatch();
-
-    const { drinks, drinksLoading, drinksError, payment } = useSelector((state: RootState) => state.drinks);
 
     const [addedDrinks, setAddedDrinks] = useState<DrinkCounter[]>([]);
     const [loading, setLoading] = useState(false);
@@ -39,10 +59,9 @@ const DrinkList = () => {
     const [alertInfo, setAlertInfo] = useState(SUCCESS_MESSAGE_INFO);
 
     useEffect(() => {
-        if (user) {
-            dispatch(fetchPaymentAsync({ client: client, user: user }));
-        }
-    }, [client, user, dispatch]);
+        dispatch(fetchDrinksAsync(drinksRepository));
+        dispatch(fetchPaymentAsync({ repository: drinksRepository, userId: user.userId }));
+    }, [user, dispatch, drinksRepository]);
 
     const handleSnackbarClose = (event: Event | SyntheticEvent<any, Event>, reason: SnackbarCloseReason) => {
         if (reason === 'clickaway') {
@@ -67,40 +86,35 @@ const DrinkList = () => {
 
         try {
             let paymentId: number;
-            if (!payment || payment.paymentState !== "Open") {
-                const { data: paymentUpdate } = await client.from(TABLE_PAYMENTS)
-                    .select("*").eq("userId", user.userId).eq("paymentState", "Open").single();
-                if (!paymentUpdate) {
-                    const { data, error } = await client.from(TABLE_PAYMENTS).insert({
-                        userId: user.userId,
-                        state: "Open"
-                    }).select().single();
-                    if (error)
-                        throw Error(error);
-                    paymentId = data.id;
-                } else {
-                    paymentId = paymentUpdate.id;
-                }
+            const { data: currentPayment, error } = await drinksRepository.fetchCurrentPaymentForUser(user.userId);
+
+            if (error) {
+                throw Error(error)
+            }
+
+            if (!currentPayment || currentPayment.length === 0) {
+                const { data, error } = await client.from(TABLE_PAYMENTS).insert<PaymentInsert>({
+                    userId: user.userId,
+                    paymentState: "Open",
+                    amountToPay: Object.values(addedDrinks).reduce((prev, curr) => prev + (curr.count * (curr.price ?? 1)), 0)
+                }).select().single();
+
+                if (error)
+                    throw Error(error);
+                paymentId = data.id;
+            } else if (currentPayment && currentPayment.length > 1) {
+                paymentId = currentPayment[0].id;
             } else {
-                paymentId = payment?.id;
+                paymentId = currentPayment[0].id;
             }
 
             if (!paymentId)
                 throw Error({ message: "Payment ID could not be found" })
 
-            const { error } = await client.from(TABLE_HISTORY).insert(
-                Object.values(addedDrinks).map((drink) => {
-                    return {
-                        user: user.userId,
-                        drink: drink.id,
-                        count: drink.count,
-                        payment: paymentId,
-                        amount: drink.count * (drink.price ?? 1)
-                    }
-                })
-            );
-            if (error)
-                throw error;
+            const result = await drinksRepository.insertHistoryItems(Object.values(addedDrinks), user.userId, paymentId)
+            if (!result || result.error) {
+                throw Error({ message: "Drink could not be added to your history. [" + result?.error + "]" });
+            }
 
             setLoading(false);
             setAddedDrinks([]);
@@ -108,7 +122,7 @@ const DrinkList = () => {
         }
         catch (error) {
             setLoading(false);
-            const message = error instanceof Error ? (error as Error).message : "Unknown error."
+            let message = (error as Error).message;
             confirmDrinksDialog({ message, severity: "error" });
             captureException(Error({ message }), (scope) => {
                 scope.clear();
@@ -167,7 +181,7 @@ const DrinkList = () => {
         </List>
         {
             Object.values(addedDrinks).length > 0 && <>
-                <Fab sx={{ background: "#66bb6a", position: "fixed", right: "16px", bottom: "56px", mb: "16px" }} onClick={confirmDrinks}>
+                <Fab sx={{ background: "#66bb6a", position: "fixed", right: "16px", bottom: "56px", mb: "16px" }} disabled={loading} onClick={confirmDrinks}>
                     {
                         loading ? <CircularProgress /> : <CheckIcon sx={{ color: "white" }} />
                     }
@@ -175,7 +189,7 @@ const DrinkList = () => {
             </>
         }
 
-        <Snackbar sx={{ position: "fixed", right: "16px", bottom: "72px" }} open={successMessageOpen} autoHideDuration={1500} onClose={handleSnackbarClose}>
+        <Snackbar sx={{ position: "fixed", right: "16px", bottom: "72px" }} open={successMessageOpen} onClose={handleSnackbarClose}>
             <Alert onClose={handleAlertClose} severity={alertInfo.severity} sx={{ width: '100%' }}>
                 {alertInfo.message}
             </Alert>

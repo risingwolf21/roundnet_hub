@@ -15,6 +15,7 @@ import { useAppDispatch } from "../..";
 import { RootState } from "../../redux/store";
 import { FullPayment, PaymentState } from "../../types/supabaseTypes";
 import { TABLE_PAYMENTS } from "../../constants";
+import { useCaptureException } from "../../hooks/useCaptureException";
 
 const PaymentsPendingAdmin = () => {
 
@@ -27,6 +28,7 @@ const PaymentsPendingAdmin = () => {
 
     const { payments, error, loading } = useSelector((state: RootState) => state.adminPayments);
 
+    console.log(payments)
     useEffect(() => {
         dispatch(fetchAdminsPaymentsAsync({ client }));
     }, [client, dispatch]);
@@ -42,7 +44,7 @@ const PaymentsPendingAdmin = () => {
     const confirmPayment = (payment: FullPayment | null) => {
         if (!payment)
             return;
-        client.from(TABLE_PAYMENTS).update({ state: "Fulfilled" as PaymentState }).eq("userId", payment?.user?.userId).then(res => {
+        client.from(TABLE_PAYMENTS).update({ paymentState: "Fulfilled" as PaymentState }).eq("userId", payment?.user?.userId).then(res => {
             setOpen(false);
         });
     }
@@ -78,12 +80,12 @@ const PaymentsPendingAdmin = () => {
             loading && <LinearProgress style={{ position: "fixed", left: 0, top: 56, right: 0 }} />
         }
         {
-            (payments && payments.length > 1) && <List sx={{ width: "100%", pt: 0 }}>
+            (payments && payments.length > 0) && <List sx={{ width: "100%", pt: 0 }}>
                 {
                     Object.values(payments)
                         .filter(x => searchString === "" || (x.user?.displayName ?? "").toLowerCase().includes(searchString.toLowerCase()))
                         .map((x, index) => {
-                            return <ListItem key={x.user.email} divider={index < Object.values(payments).length - 1}>
+                            return <ListItem key={x.user.email} divider>
                                 <ListItemAvatar>
                                     <Typography fontWeight={"bold"}>{x.history.reduce((prev, curr) => prev + (curr.amount ?? 0), 0)} €</Typography>
                                 </ListItemAvatar>
@@ -96,6 +98,10 @@ const PaymentsPendingAdmin = () => {
                             </ListItem>
                         })
                 }
+                <ListItem key="spacer" sx={{ visibility: "hidden" }}>
+                    <ListItemAvatar />
+                    <ListItemText primary="Shu shu shu, sha sha sha" secondary="EasterEgg" />
+                </ListItem>
             </List>
         }
         {

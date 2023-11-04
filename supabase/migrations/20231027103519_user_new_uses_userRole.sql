@@ -1,1 +1,0 @@
-alter table public.user_new add column role_new "UserRole" not null default 'user';

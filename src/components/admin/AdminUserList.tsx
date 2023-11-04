@@ -5,7 +5,7 @@ import EditUserDialog, { UserEdited } from "./EditUserDialog";
 import { Fragment, useState } from "react";
 import { useClient } from "react-supabase";
 import { Error } from "../Error";
-import { supabase_admin } from "../../supabaseClient";
+import { supabase_admin } from "../services/supabase/supabaseClient";
 import { captureException } from "@sentry/react";
 import { useSelector } from "react-redux";
 import { useEffect } from "react";
@@ -59,7 +59,7 @@ const AdminUserList = () => {
     const [currentUser, setCurrentUser] = useState<UserWithGroups | null>();
     const [searchString, setSearchString] = useState("");
     const [open, setOpen] = useState(false);
-    const [showNotVerifiedUsers, setShowNotVerifiedUsers] = useState(true)
+    const [showNotVerifiedUsers, setShowNotVerifiedUsers] = useState(false)
     const client = useClient();
     const dispatch = useAppDispatch();
     const navigate = useNavigate();

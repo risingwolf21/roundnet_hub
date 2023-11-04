@@ -2,7 +2,7 @@ import { Grid, LinearProgress, List, ListItem, ListItemAvatar, ListItemSecondary
 import moment from "moment/moment";
 import { groupBy } from "../utils";
 import { useSelector } from "react-redux";
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { useEffect } from "react";
 import { fetchHistoryAsync } from "../redux/drinksSlice";
 import { useClient } from "react-supabase";
@@ -12,7 +12,10 @@ import EditHistoryEntryDialog from "./EditHistoryEntryDialog";
 import React from "react";
 import { FullHistory } from "../types/supabaseTypes";
 import { useAppDispatch } from "..";
-import { TABLE_HISTORY } from "../constants";
+import { useCaptureException } from "../hooks/useCaptureException";
+import { useDependency } from "../hooks/useDependency";
+import { IDrinkRepository } from "../repository/IDrinkRepository";
+import { RootState } from "../redux/store";
 
 export type FullHistoryUpdate = FullHistory & {
     newCount: number
@@ -40,11 +43,19 @@ const HistoryItem = ({ items, header, onClick }: HistoryItemProps) => {
     </List>
 }
 
-const HistoryScreen = () => {
-    const { history, drinks, historyLoading, historyError, historyEndReached } = useSelector((state: any) => state.drinks);
-    const { user } = useSelector((state: any) => state.application);
+export const HistoryScreenProvider = () => {
+    const drinksRepository = useDependency<IDrinkRepository>("IDrinkRepository");
+
+    if (!drinksRepository)
+        return;
+
+    return <HistoryScreen drinksRepository={drinksRepository} />
+}
+
+const HistoryScreen = ({ drinksRepository }: { drinksRepository: IDrinkRepository }) => {
+    const { history, drinks, historyLoading, historyError, historyEndReached } = useSelector((state: RootState) => state.drinks);
+    const { user } = useSelector((state: RootState) => state.application);
     const dispatch = useAppDispatch();
-    const client = useClient();
 
     const [historyItems, setHistoryItems] = useState<FullHistory[]>([]);
     const [editHistoryEntryOpen, setEditHistoryEntryOpen] = useState<boolean>(false);
@@ -60,11 +71,17 @@ const HistoryScreen = () => {
         setHistoryItems(mappedEntries);
     }, [history, drinks]);
 
+    useEffect(() => {
+        fetchForPage(0);
+    }, [drinksRepository]);
+
+    const fetchForPage = (page: number) => {
+        dispatch(fetchHistoryAsync({ repository: drinksRepository, userId: user.userId, page, count: 20 }))
+    }
+
     const handleEntryUpdate = async (newEntry: FullHistory) => {
+        await drinksRepository.updateHistoryItem(newEntry.id, newEntry.count ?? 0, (newEntry.count ?? 0) * (newEntry.drink.price ?? 1))
         setEditHistoryEntryOpen(false);
-        await client.from(TABLE_HISTORY)
-            .update({ count: newEntry.count, amount: (newEntry.count ?? 0) * (newEntry.drink.price ?? 1) })
-            .eq("id", newEntry.id);
     }
 
     const handleEntryOnClick = (entry: FullHistory) => {
@@ -82,7 +99,7 @@ const HistoryScreen = () => {
         {
             historyLoading && <LinearProgress style={{ position: "fixed", left: 0, top: 56, right: 0 }} />
         }
-        <InfiniteScrollList fetch={(page: number) => dispatch(fetchHistoryAsync({ client, user, page, count: 20 }))} error={historyError} loading={historyLoading} endReached={historyEndReached}>
+        <InfiniteScrollList fetch={fetchForPage} error={historyError ?? ""} loading={historyLoading} endReached={historyEndReached}>
             {
                 Array.from(groupBy(historyItems.filter(x => x.drink), (x: FullHistory) =>
                     moment(new Date(x.created_at ?? "")).format("DD MMMM yyyy")))
@@ -100,5 +117,3 @@ const HistoryScreen = () => {
             handleSubmit={(newEntry) => handleEntryUpdate(newEntry)} />
     </Grid>
 }
-
-export default HistoryScreen

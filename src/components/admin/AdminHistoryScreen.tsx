@@ -4,14 +4,14 @@ import { groupBy } from "../../utils";
 import { useSelector } from "react-redux";
 import { InfiniteScrollList } from "../InfiniteScrollList";
 import { fetchAdminHistoryAsync } from "../../redux/adminDrinksSlice";
-import { useCallback, useContext, useState } from "react";
-import { useEffect } from "react";
-import { useClient } from "react-supabase";
+import { useCallback, useContext, useDebugValue, useEffect, useState } from "react";
 import CustomAppBar from "../AppBar";
 import { DependencyContext, useAppDispatch } from "../..";
 import React from "react";
 import { FullHistory } from "../../types/supabaseTypes";
 import { IAdminDrinksRepository } from "../../repository/IAdminDrinksRepository";
+import { RootState } from "../../redux/store";
+import { useDependency } from "../../hooks/useDependency";
 
 const AdminHistoryItem = ({ items, header }: { items: FullHistory[], header: string }) => {
     return <List dense component={"div"} disablePadding subheader={<ListSubheader sx={{ zIndex: "-1" }} component="div" id="nested-list-subheader">{header}</ListSubheader>}>
@@ -29,33 +29,27 @@ const AdminHistoryItem = ({ items, header }: { items: FullHistory[], header: str
     </List>
 }
 
-const AdminHistoryScreen = () => {
+export const AdminHistoryScreenProvider = () => {
+    const adminDrinkRepository = useDependency<IAdminDrinksRepository>("IAdminDrinksRepository");
 
-    const { container } = useContext(DependencyContext);
+    if (!adminDrinkRepository)
+        return;
 
-    const { history, drinks, historyLoading, historyError, historyEndReached } = useSelector((state: any) => state.adminDrinks);
-    const [historyItems, setHistoryItems] = useState([]);
+    return <AdminHistoryScreen adminDrinkRepository={adminDrinkRepository} />
+}
+
+const AdminHistoryScreen = ({ adminDrinkRepository }: { adminDrinkRepository: IAdminDrinksRepository }) => {
+
+    const { history, historyLoading, historyError, historyEndReached } = useSelector((state: RootState) => state.adminDrinks);
     const dispatch = useAppDispatch();
-    const client = useClient();
-
-    const fetchForPage = useCallback((page: number) => {
-        if (container)
-            dispatch(fetchAdminHistoryAsync({ repository: container.get<IAdminDrinksRepository>("IAdminDrinksRepository"), page, count: 20 }))
-    }, [container, dispatch]);
 
     useEffect(() => {
         fetchForPage(0);
-    }, [client, fetchForPage]);
+    }, [adminDrinkRepository]);
 
-    useEffect(() => {
-        let mappedEntries = history?.map((x: any) => {
-            return {
-                ...x,
-                drink: drinks.find((y: any) => y.id === x.drinkId)
-            }
-        });
-        setHistoryItems(mappedEntries);
-    }, [history, drinks]);
+    const fetchForPage = (page: number) => {
+        dispatch(fetchAdminHistoryAsync({ repository: adminDrinkRepository, page, count: 20 }))
+    }
 
     return <Grid
         container
@@ -69,11 +63,9 @@ const AdminHistoryScreen = () => {
         }
         <InfiniteScrollList fetch={fetchForPage} error={historyError} loading={historyLoading} endReached={historyEndReached}>
             {
-                Array.from(groupBy(historyItems, (x: FullHistory) => moment(new Date(x.created_at ?? "")).format("DD MMMM yyyy")))
+                Array.from(groupBy(history, (x: FullHistory) => moment(new Date(x.created_at ?? "")).format("DD MMMM yyyy")))
                     .map(([key, value]) => <AdminHistoryItem key={key} items={value} header={key} />)
             }
         </InfiniteScrollList>
     </Grid>
 }
-
-export default AdminHistoryScreen;

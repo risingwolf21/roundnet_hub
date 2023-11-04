@@ -1,5 +1,5 @@
 import { Liquor, List, SportsHandball, AdminPanelSettings } from "@mui/icons-material"
-import { BottomNavigation, BottomNavigationAction, Paper } from "@mui/material"
+import { Badge, BottomNavigation, BottomNavigationAction, Paper } from "@mui/material"
 import { SyntheticEvent, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
@@ -23,12 +23,12 @@ const defaultTabs: Tab[] = [
         index: 0,
         icon: <Liquor />
     },
-    // {
-    //     translationKey: "training",
-    //     path: "training",
-    //     index: 1,
-    //     icon: <SportsHandball />
-    // },
+    {
+        translationKey: "training",
+        path: "training",
+        index: 1,
+        icon: <SportsHandball />
+    },
     {
         translationKey: "browse",
         path: "browse",
@@ -42,6 +42,7 @@ const CustomBottomNavigation = ({ t }: { t: TFunction }) => {
     let navigate = useNavigate();
     let dispatch = useDispatch();
     const { user } = useSelector((state: RootState) => state.application);
+    const { hasNotVerifiedUsers } = useSelector((state: RootState) => state.adminUsers);
     const [tabs, setTabs] = useState<Tab[]>(defaultTabs)
 
     useEffect(() => {
@@ -75,7 +76,14 @@ const CustomBottomNavigation = ({ t }: { t: TFunction }) => {
             value={tab}
             onChange={handleChange}>
             {
-                tabs.map(x => <BottomNavigationAction key={x.translationKey} label={t("navigation." + x.translationKey)} icon={x.icon} />)
+                tabs.map(x => {
+                    return <BottomNavigationAction
+                        key={x.translationKey}
+                        label={t("navigation." + x.translationKey)}
+                        icon={<Badge color="secondary" variant="dot" badgeContent=" " invisible={(x.translationKey !== "admin" || !hasNotVerifiedUsers)}>
+                            {x.icon}
+                        </Badge>} />
+                })
             }
         </BottomNavigation>
     </Paper>

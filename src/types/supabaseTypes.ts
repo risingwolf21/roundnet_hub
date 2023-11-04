@@ -7,7 +7,12 @@ export type Group = Database["public"]["Tables"]["event_group"]["Row"];
 export type Event = Database["public"]["Tables"]["events"]["Row"];
 export type History = Database["public"]["Tables"]["history"]["Row"];
 export type Payment = Database["public"]["Tables"]["payments"]["Row"];
+export type PaymentInsert = Database["public"]["Tables"]["payments"]["Insert"];
 export type User = Database["public"]["Tables"]["user"]["Row"];
+
+export type DrinkCounter = Drink & {
+    count: number
+}
 
 export type FullPayment = Payment & {
     user: User,

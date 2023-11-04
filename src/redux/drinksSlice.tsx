@@ -1,9 +1,7 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import { Drink, FullHistory, Payment, PaymentHistory, PaymentState, User } from '../types/supabaseTypes';
 import { compareById } from '../utils';
-import { SupabaseClient } from '@supabase/supabase-js';
-import { ClientUser } from '../types/types';
-import { TABLE_DRINK, TABLE_HISTORY, TABLE_PAYMENTS } from '../constants';
+import { IDrinkRepository } from '../repository/IDrinkRepository';
 
 type DrinksSliceState = {
     history: FullHistory[],
@@ -174,7 +172,6 @@ export const drinksSlice = createSlice({
             .addCase(fetchPaymentAsync.rejected, (state: DrinksSliceState, action) => {
                 state.paymentLoading = false;
                 state.paymentError = action.error.message;
-                console.log(action.error);
             })
 
             .addCase(fetchDrinksToPayAsync.pending, (state: DrinksSliceState, action) => {
@@ -193,38 +190,33 @@ export const drinksSlice = createSlice({
     }
 });
 
-export const fetchPaymentAsync = createAsyncThunk("payments", async ({ client, user }: ClientUser) => {
-    const response = await client.from(TABLE_PAYMENTS).select("*").eq("userId", user.userId).eq("paymentState", "Open" as PaymentState)
-    return response.data;
+type DrinkRepositoryWithUserId = {
+    repository: IDrinkRepository,
+    userId: string
+}
+type DrinkRepositoryWithUserIdAndPagination = DrinkRepositoryWithUserId & {
+    count: number,
+    page: number
+}
+
+export const fetchPaymentAsync = createAsyncThunk("payments/forUser", async ({ repository, userId }: DrinkRepositoryWithUserId, { rejectWithValue }) => {
+    const response = await repository.fetchCurrentPaymentForUser(userId);
+    return response?.data;
 });
 
-export const fetchDrinksToPayAsync = createAsyncThunk("payments/openDrinks", async ({ client, user }: ClientUser) => {
-    const response = await client
-        .from(TABLE_HISTORY)
-        .select("id, count, created_at, user, amount, drink ( name, price ), payments ( paymentState )")
-        .eq('payments.paymentState', "Open")
-        .not("payments", "is", null)
-        .eq('user', user.userId)
-        .returns<PaymentHistory[]>();
-    return response.data;
+export const fetchDrinksToPayAsync = createAsyncThunk("payments/openDrinks", async ({ repository, userId }: DrinkRepositoryWithUserId, { rejectWithValue }) => {
+    const response = await repository.fetchDrinksToPay(userId);
+    return response?.data ?? [];
 });
 
-export const fetchDrinksAsync = createAsyncThunk("drink", async (client: SupabaseClient) => {
-    const response = await client.from(TABLE_DRINK).select("*")
-        .order('id', { ascending: false })
-        .returns<Drink[]>();
-    return response.data;
+export const fetchDrinksAsync = createAsyncThunk("drink", async (repository: IDrinkRepository, { rejectWithValue }) => {
+    const response = await repository.fetchDrinks();
+    return response?.data ?? [];
 });
 
-export const fetchHistoryAsync = createAsyncThunk("history", async ({ client, user, page = 0, count = 20 }: { client: SupabaseClient, user: User, page: number, count: number }) => {
-    const response = await client
-        .from(TABLE_HISTORY)
-        .select("id, count, amount, created_at, drinkId: drink, drink(*), user: user(*)")
-        .eq('user.userId', user.userId)
-        .range(page * count, page * count + count - 1)
-        .order('created_at', { ascending: false })
-        .returns<FullHistory[]>();
-    return { entries: response.data, more: page !== 0 };
+export const fetchHistoryAsync = createAsyncThunk("history", async ({ repository, userId, page = 0, count = 20 }: DrinkRepositoryWithUserIdAndPagination, { rejectWithValue }) => {
+    const response = await repository.fetchHistoryForUser(userId, page, count);
+    return { entries: response?.data ?? [], more: page !== 0 };
 });
 
 export const {

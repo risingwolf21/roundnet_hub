@@ -4,8 +4,10 @@ import { Box } from "@mui/system";
 import { AccountCircle, Close, Email, ExpandLess, ExpandMore, FiberManualRecord, ManageAccounts, Verified } from "@mui/icons-material";
 import { useClient } from "react-supabase";
 import { SlideUpTransition } from "../../utils";
-import { Group, PaymentState, User, UserRole, UserWithGroups } from "../../types/supabaseTypes";
-import { TABLE_HISTORY } from "../../constants";
+import { FullHistory, Group, History, User, UserRole, UserWithGroups } from "../../types/supabaseTypes";
+import { useDependency } from "../../hooks/useDependency";
+import { IDrinkRepository } from "../../repository/IDrinkRepository";
+import moment from "moment";
 
 type EditUserDialogProps = {
     user: UserWithGroups,
@@ -26,20 +28,25 @@ const EditUserDialog = ({ user, open, handleClose, onUserEditFinished, deleteUse
 
     const [userRoleCollapseOpen, setUserCollapseOpen] = useState(false);
     const [role, setRole] = useState<UserRole>(user.role);
+    const drinksRepository = useDependency<IDrinkRepository>("IDrinkRepository");
     const [verified, setVerified] = useState(user.verified)
     const [deleteUserOpen, setDeleteUserOpen] = useState(false);
-    const [userInfo, setUserInfo] = useState({ openAmount: 0 })
+    const [userInfo, setUserInfo] = useState({ openAmount: 0 });
+    const [drinksForUser, setDrinksForUser] = useState<FullHistory[]>([]);
     const client = useClient();
 
     useEffect(() => {
+        if (drinksRepository) {
+            drinksRepository.fetchOpenDrinksForUser(user.userId).then(result => {
+                if (result && result.data) {
+                    setUserInfo({ openAmount: result.data.reduce((prev, curr) => prev + ((curr?.count ?? 0) * (curr?.drink?.price ?? 1)), 0) })
+                    setDrinksForUser(result.data);
+                }
+            })
+        }
         setRole(user.role);
         setVerified(user.verified);
-        client.from(TABLE_HISTORY).select("*, drink ( price, name ), payment(*)").eq("user ", user.userId).eq("payment.paymentState", "Open" as PaymentState).then(result => {
-            if (!result.data)
-                return;
-            setUserInfo({ openAmount: result.data.reduce((prev, curr) => prev + (curr.count * curr.drink.price), 0) })
-        });
-    }, [user, client]);
+    }, [user, client, drinksRepository]);
 
     const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
@@ -60,7 +67,7 @@ const EditUserDialog = ({ user, open, handleClose, onUserEditFinished, deleteUse
         onClose={handleClose}
         TransitionComponent={SlideUpTransition}>
         <Box component="form" onSubmit={handleSubmit} noValidate>
-            <AppBar sx={{ position: "relative" }}>
+            <AppBar position="sticky">
                 <Toolbar>
                     <IconButton
                         edge="start"
@@ -79,7 +86,7 @@ const EditUserDialog = ({ user, open, handleClose, onUserEditFinished, deleteUse
             </AppBar>
             <Box>
                 <List>
-                    <ListItem key={"displayName"}>
+                    <ListItem key={"displayName"} sx={{ pt: 0, pb: 0 }}>
                         <ListItemAvatar>
                             <Avatar>
                                 <AccountCircle />
@@ -97,7 +104,7 @@ const EditUserDialog = ({ user, open, handleClose, onUserEditFinished, deleteUse
                             />
                         </ListItemText>
                     </ListItem>
-                    <ListItem key={"email"}>
+                    <ListItem key={"email"} sx={{ pt: 0, pb: 0 }}>
                         <ListItemAvatar>
                             <Avatar>
                                 <Email />
@@ -138,6 +145,7 @@ const EditUserDialog = ({ user, open, handleClose, onUserEditFinished, deleteUse
                             </ListItem>)
                         }
                     </List>
+                    <Divider />
                     <ListItemButton key={"editUserRole"} onClick={() => setUserCollapseOpen(!userRoleCollapseOpen)}>
                         <ListItemAvatar>
                             <Avatar>
@@ -171,6 +179,20 @@ const EditUserDialog = ({ user, open, handleClose, onUserEditFinished, deleteUse
                             }
                         </List>
                     </Collapse>
+                    <Divider />
+                    <List subheader={<ListSubheader>Offene Getränke</ListSubheader>}>
+                        {
+                            drinksForUser && drinksForUser.map((x: FullHistory) => <ListItem dense key={x.created_at}>
+                                <ListItemAvatar>
+                                    <Typography>{x.count} x</Typography>
+                                </ListItemAvatar>
+                                <ListItemText primary={x.drink.name} secondary={moment(new Date((x.created_at ?? ""))).format("HH:mm")} />
+                                <ListItemSecondaryAction>
+                                    <Typography>{(x.count ?? 0) * (x.drink?.price ?? 1)} €</Typography>
+                                </ListItemSecondaryAction>
+                            </ListItem>)
+                        }
+                    </List>
                 </List>
                 <Box sx={{ position: "fixed", bottom: 0, left: 0, right: 0, pl: 2, pr: 2, pb: 2 }}>
                     <Button

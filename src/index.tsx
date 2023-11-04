@@ -8,7 +8,7 @@ import App from './App';
 import { ThemeProvider } from '@mui/material';
 import { mainTheme } from './themes/themes';
 import * as Sentry from "@sentry/react";
-import { supabase } from './supabaseClient';
+import { supabase } from './components/services/supabase/supabaseClient';
 import { Provider as SupabaseProvider } from "react-supabase"
 import { AdapterMoment } from '@mui/x-date-pickers/AdapterMoment';
 import { Provider, useDispatch } from 'react-redux';
@@ -16,11 +16,7 @@ import store from './redux/store';
 import "./translation/i18n";
 import { LocalizationProvider } from '@mui/x-date-pickers';
 import { Container } from 'inversify';
-import { EmptyRepository, IEventRepository, SupabaseRepository } from './repository/IEventRepository';
-import { IAdminDrinksRepository, SupabaseAdminDrinksRepository } from './repository/IAdminDrinksRepository';
-import { SupabaseClient } from '@supabase/supabase-js';
-import { Database } from './types/supabase';
-
+import container from './repository/Container';
 
 type Props = {
   children: ReactNode,
@@ -42,19 +38,10 @@ if (process.env.NODE_ENV === "production") {
       new Sentry.BrowserTracing({
         tracePropagationTargets: [/^https:\/\/roundnet-karlsruhe\.web.app/, /^https:\/\/staging-roundnet-karlsruhe\.web.app/],
       }),
-      new Sentry.Replay(),
     ],
-    tracesSampleRate: 0.2,
+    tracesSampleRate: 1.0,
   });
 }
-
-// TODO: use Builder Pattern here https://refactoring.guru/design-patterns/builder/typescript/example#lang-features
-const container = new Container();
-container.bind<IEventRepository>("IEventRepository").to(EmptyRepository);
-container.unbind("IEventRepository");
-container.bind<IEventRepository>("IEventRepository").to(SupabaseRepository);
-container.bind<SupabaseClient<Database>>("SupabaseClient").toDynamicValue(() => supabase);
-container.bind<IAdminDrinksRepository>("IAdminDrinksRepository").to(SupabaseAdminDrinksRepository);
 
 export type AppDispatch = typeof store.dispatch
 

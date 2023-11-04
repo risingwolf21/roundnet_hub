@@ -1,6 +1,6 @@
 {
   "name": "roundnet_karlsruhe_app",
-  "version": "0.1.0",
+  "version": "1.0.2",
   "private": true,
   "dependencies": {
     "@emotion/react": "^11.10.5",
@@ -69,8 +69,7 @@
     "test": "react-app-env --env-file=staging.env test",
     "eject": "react-app-env --env-file=staging.env eject",
     "function-deploy-all": "npx supabase functions deploy --project-ref xibmjvkjkdxdbmreicps",
-    "functions-event-creation": "npx supabase functions deploy event-creation --project-ref xibmjvkjkdxdbmreicps",
-    "function-event-notification": "npx supabase functions deploy event_notifications --project-ref xibmjvkjkdxdbmreicps"
+    "function-deploy-all-prod": "npx supabase functions deploy --project-ref vsuhzabcrnmrljzecxee"
   },
   "eslintConfig": {
     "extends": [

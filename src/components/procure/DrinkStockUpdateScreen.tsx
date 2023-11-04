@@ -7,7 +7,8 @@ import { useClient } from "react-supabase";
 import { toInteger } from "lodash";
 import { RootState } from "../../redux/store";
 import { Drink } from "../../types/supabaseTypes";
-import { TABLE_DRINK } from "../../constants";
+import { useDependency } from "../../hooks/useDependency";
+import { IDrinkRepository } from "../../repository/IDrinkRepository";
 
 const DrinkStockUpdateScreen = () => {
 
@@ -15,11 +16,12 @@ const DrinkStockUpdateScreen = () => {
     const [editDrink, setEditDrink] = useState<Drink | null>(null);
     const [stockToUpdate, setStockToUpdate] = useState(0);
     const client = useClient();
+    const drinksRepository = useDependency<IDrinkRepository>("IDrinkRepository");
 
     const handleSubmit = async () => {
-        if (!editDrink)
+        if (!editDrink || !drinksRepository)
             return;
-        await client.from(TABLE_DRINK).update({ stock: editDrink?.stock ?? 0 + toInteger(stockToUpdate) }).eq("id", editDrink.id);
+        await drinksRepository.updateDrinkStock(editDrink.id, editDrink?.stock ?? 0 + toInteger(stockToUpdate));
         setEditDrink(null);
         setStockToUpdate(0);
     }
@@ -37,7 +39,7 @@ const DrinkStockUpdateScreen = () => {
             {
                 drinks && drinks.filter(x => x.active).map((drink: Drink, index: number) => <ListItem key={index}>
                     <ListItemAvatar>
-                        <Avatar>
+                        <Avatar sx={{ borderRadius: 2 }}>
                             {
                                 drink.imageUrl
                                     ? <img src={drink.imageUrl} alt="logo" width={40} height={40} />
@@ -45,7 +47,7 @@ const DrinkStockUpdateScreen = () => {
                             }
                         </Avatar>
                     </ListItemAvatar>
-                    <ListItemText primary={drink.name} />
+                    <ListItemText primary={drink.name} secondary={"Stock: " + drink.stock} />
                     <ListItemSecondaryAction>
                         <IconButton onClick={() => setEditDrink(drink)}>
                             <Edit fontSize="inherit" sx={{ fontSize: "28px" }} />

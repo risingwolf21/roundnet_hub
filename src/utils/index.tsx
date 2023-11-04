@@ -28,3 +28,26 @@ export const SlideUpTransition = forwardRef(function Transition(props: SlideProp
 export const formatDateToDatabase = (date: MomentInput) => {
     return moment(date).format("yyyy-MM-DD HH:mm:ssZ")
 }
+
+export class RegistrationError extends Error {
+    constructor(message: string) {
+        super(message);
+    }
+}
+
+export class MultiplePaymentsError extends Error {
+
+    constructor() {
+        super();
+    }
+}
+
+export class FetchingError extends Error {
+
+    private screen: string
+
+    constructor(message: string, screen: string) {
+        super(message);
+        this.screen = screen;
+    }
+}
