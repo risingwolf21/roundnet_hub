@@ -28,7 +28,6 @@ import ManageGroupsScreen from './components/groups/ManageGroups';
 import BrowseAdmin from './components/admin/BrowseAdmin';
 import DrinkStockUpdateScreen from './components/procure/DrinkStockUpdateScreen';
 import { AnalyzeDrinkStockHistoryProvider } from './components/procure/AnalyzeDrinkStockHistory';
-import raw from "./git_commit.txt";
 import { useAppDispatch } from '.';
 import { RootState } from './redux/store';
 import { useDependency } from './hooks/useDependency';
@@ -38,27 +37,8 @@ import GroupInformation from './components/groups/GroupInformation';
 const App = () => {
 
   const { waitingWorker, showReload, reloadPage } = useServiceWorker();
-  const drinksRepository = useDependency<IDrinkRepository>("IDrinkRepository");
   const dispatch = useAppDispatch();
-  const client = useClient();
-  const { appUpdateAvailable, user } = useSelector((state: RootState) => state.application);
-
-  useEffect(() => {
-    fetch(raw)
-      .then(r => r.text())
-      .then(text => {
-        dispatch(onAppVersionChange(text));
-      });
-  }, [dispatch])
-
-  // useEffect(() => {
-  //   if (user) {
-  //     dispatch(fetchHistoryAsync({ repository: drinksRepository, userId: user.userId, page: 0, count: 20 }));
-  //     dispatch(fetchPaymentAsync({ repository: drinksRepository, userId: user.userId }));
-  //     dispatch(fetchUserGroupsAsync({ client, user }));
-  //     dispatch(fetchDrinksAsync(drinksRepository));
-  //   }
-  // }, [client, user, dispatch, drinksRepository]);
+  const { appUpdateAvailable } = useSelector((state: RootState) => state.application);
 
   useEffect(() => {
     dispatch(onAppUpdateAvailableChange(showReload && waitingWorker));

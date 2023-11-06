@@ -56,6 +56,8 @@ function registerValidSW(swUrl, config) {
     .register(swUrl)
     .then((registration) => {
 
+      registration.update();
+
       setInterval(() => {
         registration.update();
         console.debug('Checked for update...');

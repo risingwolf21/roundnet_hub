@@ -1,5 +1,5 @@
 import { AdminPanelSettings, Euro, Group, History, Liquor, GroupOutlined, ShowChart, LinkOff, Link, RunningWithErrors, CrisisAlert } from "@mui/icons-material";
-import { Avatar, List, ListItem, ListItemAvatar, ListItemText, Box, Badge } from "@mui/material";
+import { Avatar, List, ListItem, ListItemAvatar, ListItemText, Box, Badge, ListItemButton } from "@mui/material";
 import { useNavigate } from "react-router";
 import { withTranslation } from 'react-i18next';
 import CustomAppBar from "../AppBar";
@@ -77,22 +77,18 @@ const BrowseAdmin = ({ t }: { t: TFunction }) => {
         <CustomAppBar />
         <List>
             {
-                [
-                    ...[
-                        ...entries.filter(x => x.role === user.role || user.role === "admin"),
-                    ].map(x => {
-                        return <ListItem key={x.translationKey} onClick={() => navigate(x.navigateTo)} sx={{ mt: 1 }}>
-                            <ListItemAvatar>
-                                <Badge color="secondary" variant="dot" badgeContent="  " invisible={(x.translationKey !== "manageUsers" || !hasNotVerifiedUsers)}>
-                                    <Avatar sx={{ background: x.avatarColor, width: 40, height: 40, borderRadius: 2 }}>
-                                        {x.icon}
-                                    </Avatar>
-                                </Badge>
-                            </ListItemAvatar>
-                            <ListItemText primary={t("browse." + x.translationKey)} />
-                        </ListItem>
-                    })
-                ]
+                entries.filter(x => x.role === user.role || user.role === "admin").map(x => {
+                    return <ListItemButton key={x.translationKey} onClick={() => navigate(x.navigateTo)} sx={{ mt: 1 }}>
+                        <ListItemAvatar>
+                            <Badge color="secondary" variant="dot" badgeContent="  " invisible={(x.translationKey !== "manageUsers" || !hasNotVerifiedUsers)}>
+                                <Avatar sx={{ background: x.avatarColor, width: 40, height: 40, borderRadius: 2 }}>
+                                    {x.icon}
+                                </Avatar>
+                            </Badge>
+                        </ListItemAvatar>
+                        <ListItemText primary={t("browse." + x.translationKey)} />
+                    </ListItemButton>
+                })
             }
         </List>
     </Box>
