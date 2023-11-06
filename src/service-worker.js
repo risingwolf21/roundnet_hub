@@ -19,6 +19,7 @@ clientsClaim();
 // Their URLs are injected into the manifest variable below.
 // This variable must be present somewhere in your service worker file,
 // even if you decide not to use precaching. See https://cra.link/PWA
+
 precacheAndRoute(self.__WB_MANIFEST);
 
 // Set up App Shell-style routing, so that all navigation requests
@@ -70,3 +71,32 @@ self.addEventListener('message', (event) => {
 });
 
 // Any other custom service worker logic can go here.
+
+// Establish a cache name
+const cacheName = "RoundnetKarlsruhe_cache_" + process.env.REACT_APP_VERSION;
+
+self.addEventListener('fetch', (event) => {
+  // Check if this is a request for an image
+  if (event.request.destination === 'image') {
+    event.respondWith(caches.open(cacheName).then((cache) => {
+      // Go to the cache first
+      return cache.match(event.request.url).then((cachedResponse) => {
+        // Return a cached response if we have one
+        if (cachedResponse) {
+          return cachedResponse;
+        }
+
+        // Otherwise, hit the network
+        return fetch(event.request).then((fetchedResponse) => {
+          // Add the network response to the cache for later visits
+          cache.put(event.request, fetchedResponse.clone());
+
+          // Return the network response
+          return fetchedResponse;
+        });
+      });
+    }));
+  } else {
+    return;
+  }
+});

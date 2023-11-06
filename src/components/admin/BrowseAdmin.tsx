@@ -77,22 +77,18 @@ const BrowseAdmin = ({ t }: { t: TFunction }) => {
         <CustomAppBar />
         <List>
             {
-                [
-                    ...[
-                        ...entries.filter(x => x.role === user.role || user.role === "admin"),
-                    ].map(x => {
-                        return <ListItem key={x.translationKey} onClick={() => navigate(x.navigateTo)} sx={{ mt: 1 }}>
-                            <ListItemAvatar>
-                                <Badge color="secondary" variant="dot" badgeContent="  " invisible={(x.translationKey !== "manageUsers" || !hasNotVerifiedUsers)}>
-                                    <Avatar sx={{ background: x.avatarColor, width: 40, height: 40, borderRadius: 2 }}>
-                                        {x.icon}
-                                    </Avatar>
-                                </Badge>
-                            </ListItemAvatar>
-                            <ListItemText primary={t("browse." + x.translationKey)} />
-                        </ListItem>
-                    })
-                ]
+                entries.filter(x => x.role === user.role || user.role === "admin").map(x => {
+                    return <ListItem key={x.translationKey} onClick={() => navigate(x.navigateTo)} sx={{ mt: 1 }}>
+                        <ListItemAvatar>
+                            <Badge color="secondary" variant="dot" badgeContent="  " invisible={(x.translationKey !== "manageUsers" || !hasNotVerifiedUsers)}>
+                                <Avatar sx={{ background: x.avatarColor, width: 40, height: 40, borderRadius: 2 }}>
+                                    {x.icon}
+                                </Avatar>
+                            </Badge>
+                        </ListItemAvatar>
+                        <ListItemText primary={t("browse." + x.translationKey)} />
+                    </ListItem>
+                })
             }
         </List>
     </Box>

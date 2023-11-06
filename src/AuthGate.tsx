@@ -53,9 +53,9 @@ const AuthGate = ({ children }: Props) => {
     }, [client, dispatch, navigate]);
 
     const authenticationRoutes = [
-        <Route path='/login' element={<LoginScreen />} />,
-        <Route path='/register' element={<RegisterScreen />} />,
-        <Route path='/forgot-password' element={<ForgotPasswordScreen />} />
+        <Route key={"login"} path='/login' element={<LoginScreen />} />,
+        <Route key={"register"} path='/register' element={<RegisterScreen />} />,
+        <Route key={"forgot-password"} path='/forgot-password' element={<ForgotPasswordScreen />} />
     ];
 
     if (!user) {
@@ -68,9 +68,9 @@ const AuthGate = ({ children }: Props) => {
 
     if (!user.verified) {
         return <Routes>
-            <Route path='/' element={<Navigate replace to={"/not-verified"} />} />
-            <Route path="*" element={<Navigate replace to={"/not-verified"} />} />
-            <Route path='/not-verified' element={<NotVerifiedScreen />} />
+            <Route key={"/"} path='/' element={<Navigate replace to={"/not-verified"} />} />
+            <Route key={"*"} path="*" element={<Navigate replace to={"/not-verified"} />} />
+            <Route key={"not-verified"} path='/not-verified' element={<NotVerifiedScreen />} />
             {
                 authenticationRoutes
             }

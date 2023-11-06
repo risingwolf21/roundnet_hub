@@ -28,7 +28,6 @@ const PaymentsPendingAdmin = () => {
 
     const { payments, error, loading } = useSelector((state: RootState) => state.adminPayments);
 
-    console.log(payments)
     useEffect(() => {
         dispatch(fetchAdminsPaymentsAsync({ client }));
     }, [client, dispatch]);
