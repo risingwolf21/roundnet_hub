@@ -1,5 +1,6 @@
 import { useContext, useEffect, useState } from 'react'
 import { DependencyContext } from '..'
+import { captureException } from '@sentry/react';
 
 export function useDependency<T>(name: string) {
     const { container } = useContext(DependencyContext);
@@ -7,7 +8,17 @@ export function useDependency<T>(name: string) {
 
     useEffect(() => {
         if (container) {
-            setDependency(container.get<T>(name));
+            try {
+                setDependency(container.get<T>(name));
+            } catch (error) {
+                let message = (error as Error).message;
+                console.log(message)
+                captureException(new Error(message), (scope) => {
+                    scope.clear();
+                    scope.setExtra("name", name);
+                    return scope;;
+                });
+            }
         }
     }, [container, name]);
 

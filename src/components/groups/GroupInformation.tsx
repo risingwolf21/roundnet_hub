@@ -11,28 +11,45 @@ import { fetchAdminUsersAsync } from "../../redux/adminUserSlice";
 import { RootState } from "../../redux/store";
 import { useAppDispatch } from "../..";
 import { GroupWithUsers, SimpleUser, User, UserWithGroups } from "../../types/supabaseTypes";
+import { useDependency } from "src/hooks/useDependency";
+import { IAdminUsersRepository } from "src/repository/IAdminUsersRepository";
 
-const GroupInformation = () => {
-
-    const dispatch = useAppDispatch();
-    const client = useClient();
+export const GroupInformationProvider = () => {
     const { id } = useParams();
-    const [selectedGroup, setSelectedGroup] = useState<GroupWithUsers | undefined>(undefined);
-    const [searchAndSelectUsersOpen, setSearchAndSelectUsersOpen] = useState(false);
-
     const groups = useSelector((state: RootState) => state.groups.groups);
     const { users, loading } = useSelector((state: RootState) => state.adminUsers);
-
-    useEffect(() => {
-        dispatch(fetchAdminUsersAsync({ client }));
-    }, [client, dispatch]);
+    const [selectedGroup, setSelectedGroup] = useState<GroupWithUsers | undefined>(undefined);
+    const adminUsersRepository = useDependency<IAdminUsersRepository>("IAdminUsersRepository");
 
     useEffect(() => {
         setSelectedGroup(groups?.find(x => x.id === toInteger(id)));
     }, [groups, id]);
 
-    const handleUsersAdded = (users: User[]) => {
+    if (!selectedGroup || !adminUsersRepository)
+        return;
 
+    return <GroupInformation users={users} loading={loading} group={selectedGroup} repository={adminUsersRepository} />
+}
+
+type GroupInformationProps = {
+    users: UserWithGroups[],
+    loading: boolean,
+    group: GroupWithUsers,
+    repository: IAdminUsersRepository
+}
+
+const GroupInformation = ({ users, loading, group, repository }: GroupInformationProps) => {
+
+    const dispatch = useAppDispatch();
+    const client = useClient();
+    const [searchAndSelectUsersOpen, setSearchAndSelectUsersOpen] = useState(false);
+
+    useEffect(() => {
+        dispatch(fetchAdminUsersAsync(repository));
+    }, [client, dispatch]);
+
+    const handleUsersAdded = (users: User[]) => {
+        
     }
 
     return <Grid
@@ -41,14 +58,14 @@ const GroupInformation = () => {
         direction="column"
         alignItems="center"
         justifyContent="center">
-        <CustomAppBar title={selectedGroup?.name ?? ""} navigateBack />
+        <CustomAppBar title={group?.name ?? ""} navigateBack />
         <List sx={{ width: "100%" }}>
             <Typography pl={2} variant="h6" fontWeight="bold">Beschreibung</Typography>
-            <Typography pl={2} pb={1}>{selectedGroup?.description}</Typography>
+            <Typography pl={2} pb={1}>{group?.description}</Typography>
             <Divider />
             <Typography pl={2} pt={1} variant="h6" fontWeight="bold">Mitglieder</Typography>
             {
-                selectedGroup && selectedGroup.users && selectedGroup.users.map((x, index) => <ListItem key={index} divider>
+                group && group.users && group.users.map((x, index) => <ListItem key={index} divider>
                     <ListItemAvatar>
                         <AccountCircle />
                     </ListItemAvatar>
@@ -66,7 +83,7 @@ const GroupInformation = () => {
             open={searchAndSelectUsersOpen}
             handleClose={() => setSearchAndSelectUsersOpen(false)}
             handleSubmit={handleUsersAdded}
-            users={users.filter((x: UserWithGroups) => !selectedGroup?.users?.some((y: SimpleUser) => y.userId === x.userId) ?? false)}
+            users={users.filter((x: UserWithGroups) => !group?.users?.some((y: SimpleUser) => y.userId === x.userId) ?? false)}
             loading={loading} />
     </Grid>
 

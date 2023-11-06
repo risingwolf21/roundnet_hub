@@ -7,19 +7,18 @@ import { HistoryScreenProvider } from './components/HistoryScreen';
 import { AdminDrinkListProvider } from './components/admin/AdminDrinkList';
 import { PayDrinksScreenProvider } from './components/PayDrinksScreen';
 import PaymentsPendingAdmin from './components/admin/PaymentsPendingAdmin';
-import AdminUserList from './components/admin/AdminUserList';
+import { AdminUserListProvider } from './components/admin/AdminUserList';
 import { AdminHistoryScreenProvider } from './components/admin/AdminHistoryScreen';
 import { useEffect } from 'react';
 import { useSelector } from 'react-redux';
-import { useClient } from 'react-supabase';
 import Browse from './components/Browse';
 import CreateEvent from './components/training/CreateEvent';
-import EventScreen from './components/training/EventScreen';
-import EventInformation from './components/training/EventInformation';
+import { EventScreenProvider } from './components/training/EventScreen';
+import EventInformation, { EventInformationProvider } from './components/training/EventInformation';
 import CustomBottomNavigation from './components/BottomNavigation';
 //@ts-ignore
 import { useServiceWorker } from './hooks/useServiceWorker';
-import { onAppUpdateAvailableChange, onAppVersionChange } from './redux/applicationSlice';
+import { onAppUpdateAvailableChange } from './redux/applicationSlice';
 import UpdateAvailable from './components/UpdateAvailable';
 import AuthGate from './AuthGate';
 import ResetPasswordScreen from './components/ResetPasswordScreen';
@@ -30,9 +29,9 @@ import DrinkStockUpdateScreen from './components/procure/DrinkStockUpdateScreen'
 import { AnalyzeDrinkStockHistoryProvider } from './components/procure/AnalyzeDrinkStockHistory';
 import { useAppDispatch } from '.';
 import { RootState } from './redux/store';
-import { useDependency } from './hooks/useDependency';
-import { IDrinkRepository } from './repository/IDrinkRepository';
-import GroupInformation from './components/groups/GroupInformation';
+import { GroupInformationProvider } from './components/groups/GroupInformation';
+import { DrinkListScreenProvider } from './components/drinkList/DrinkListScreen';
+import FeatureNotAvailable from './components/FeatureNotAvailable';
 
 const App = () => {
 
@@ -54,20 +53,22 @@ const App = () => {
                 <Route path='/' element={<Navigate replace to={"/drinks"} />} />
                 <Route path="*" element={<Navigate replace to={"/drinks"} />} />
 
+                <Route path='/feature-not-available' element={<FeatureNotAvailable />} />
+
                 <Route path='/reset-password' element={<ResetPasswordScreen />} />
 
                 <Route path='/browse' element={<Browse />} />
                 <Route path='/browse-admin' element={<BrowseAdmin />} />
-                <Route path="/drinks" element={<DrinkListProvider />} />
+                <Route path="/drinks" element={<DrinkListScreenProvider />} />
                 <Route path="/user" element={<UserScreen />} />
                 <Route path="/history" element={<HistoryScreenProvider />} />
                 <Route path="/payments" element={<PayDrinksScreenProvider />} />
 
                 <Route path="/trainer/groups" element={<ManageGroupsScreen />} />
-                <Route path="/trainer/groups/:id" element={<GroupInformation />} />
+                <Route path="/trainer/groups/:id" element={<GroupInformationProvider />} />
 
-                <Route path="/training" element={<EventScreen />} />
-                <Route path="/training/event/:selectedEventId" element={<EventInformation />} />
+                <Route path="/training" element={<EventScreenProvider />} />
+                <Route path="/training/event/:selectedEventId" element={<EventInformationProvider />} />
                 <Route path="/training/create" element={<CreateEvent />} />
 
                 <Route path='/admin/drinks' element={<AdminDrinkListProvider />} />
@@ -75,7 +76,7 @@ const App = () => {
                 <Route path='/admin/drinks/payments' element={<PaymentsPendingAdmin />} />
                 <Route path='/admin/drinks/stocks' element={<DrinkStockUpdateScreen />} />
                 <Route path='/admin/drinks/analyze' element={<AnalyzeDrinkStockHistoryProvider />} />
-                <Route path='/admin/users' element={<AdminUserList />} />
+                <Route path='/admin/users' element={<AdminUserListProvider />} />
               </Routes>
               <div style={{ width: "100%", height: "56px" }} />
               <CustomBottomNavigation />

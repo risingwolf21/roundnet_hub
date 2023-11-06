@@ -10,6 +10,9 @@ export type Payment = Database["public"]["Tables"]["payments"]["Row"];
 export type PaymentInsert = Database["public"]["Tables"]["payments"]["Insert"];
 export type User = Database["public"]["Tables"]["user"]["Row"];
 
+export type EventAttendanceInsert = Database["public"]["Tables"]["event_attendance_user_mapping"]["Insert"];
+export type EventAttendanceMapping = Database["public"]["Tables"]["event_attendance_user_mapping"]["Row"];
+
 export type DrinkCounter = Drink & {
     count: number
 }

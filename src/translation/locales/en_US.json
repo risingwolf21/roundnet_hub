@@ -24,5 +24,6 @@
             "descriptionEmpty": "The description of this event can not be empty",
             "startDateCannotBeNull": "The startDate of this event can not be empty"
         }
-    }
+    },
+    "feature_not_available": "This feature is not ready yet. Try again later!"
 }

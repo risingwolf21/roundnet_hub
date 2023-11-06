@@ -163,6 +163,10 @@ export const eventSlice = createSlice({
       })
       .addCase(fetchSingleEventAsync.fulfilled, (state: EventSliceState, action) => {
         state.loading = false;
+        if (!action.payload.data) {
+          state.error = "No event with ID [" + action.payload.eventId + "] found!";
+          return;
+        }
         state.error = null;
         let index = state.items.findIndex(x => x.id === toInteger(action.payload.eventId));
         if (index !== -1) {
@@ -300,23 +304,21 @@ const updateAttendanceRevert = (state: EventSliceState, error: string | null, ev
   }
 }
 
-export const fetchUserGroupsAsync = createAsyncThunk("fetchUserGroupsAsync", async ({ client, user }: ClientUser) => {
-  const response = await client.from("group_user_mapping")
-    .select("user(userId), group(*)")
-    .eq("user.userId", user.userId)
-    .returns<{ user: { userId: string }, group: Group }[]>();
+export const fetchUserGroupsAsync = createAsyncThunk("fetchUserGroupsAsync", async ({ repository, user }: { repository: IEventRepository, user: User }) => {
+  const response = await repository.fetchUserGroups(user);
   return (response.data ?? []).map(x => x.group);
 });
 
-type FetchEventsType = ClientUser & {
+type FetchEventsType = {
+  user: User,
   userGroups: number[],
   page: number,
   count: number,
   repository: IEventRepository
 }
 
-export const fetchEventsAsync = createAsyncThunk("events", async ({ client, user, userGroups = [], page = 0, count = 20, repository }: FetchEventsType) => {
-  const response = await repository.fetchEvents(client, user, userGroups, page, count);
+export const fetchEventsAsync = createAsyncThunk("events", async ({ user, userGroups = [], page = 0, count = 20, repository }: FetchEventsType) => {
+  const response = await repository.fetchEvents(user, userGroups, page, count);
   return {
     entries: (response.data ?? []).filter(x => _.intersection(x.groups.map(y => y.id), userGroups).length > 0).map<FullEvent>((x: FullEvent) => {
       return {
@@ -328,54 +330,36 @@ export const fetchEventsAsync = createAsyncThunk("events", async ({ client, user
   };
 });
 
-export type ClientEventId = { client: SupabaseClient, eventId: number }
+export type ClientEventId = { repository: IEventRepository, eventId: number }
 
-export const fetchEventAttendanceAsync = createAsyncThunk("fetchEventAttendanceAsync", async ({ client, eventId }: ClientEventId) => {
-  const attendance = await client.from("event_attendance_user_mapping")
-    .select("user(userId, displayName), event, state")
-    .eq("event", eventId)
-    .returns<FullAttendance[]>()
+export const fetchEventAttendanceAsync = createAsyncThunk("fetchEventAttendanceAsync", async ({ repository, eventId }: ClientEventId) => {
+  const attendance = await repository.fetchEventAttendance(eventId);
   return { data: attendance.data, eventId };
 });
 
-export const fetchSingleEventAsync = createAsyncThunk("fetchSingleEventAsync", async ({ client, eventId }: ClientEventId) => {
-  const response = await client.from("events").select("*, attendance: event_attendance_user_mapping ( state , user(userId, displayName)  ), comments: event_comments ( comment, created_at, displayName, event, user ( displayName, userId))")
-    .eq("id", eventId).limit(1);
-  if (response.data?.length === 1) {
-    return {
-      data: {
-        ...response.data[0],
-        place: JSON.parse(response.data[0].place)
-      }, eventId
-    }
-  }
+export const fetchSingleEventAsync = createAsyncThunk("fetchSingleEventAsync", async ({ repository, eventId }: ClientEventId) => {
+  const response = await repository.fetchSingleEvent(eventId);
   return { data: response.data, eventId };
 });
 
-type UpdateAttendanceProps = ClientUser & {
+type UpdateAttendanceProps = {
+  user: User,
   eventId: number,
   state: EventAttendance,
-  oldState: EventAttendance
+  oldState: EventAttendance,
+  repository: IEventRepository
 }
 
-export const updateAttendanceAsync = createAsyncThunk("updateAttendanceAsync", async ({ client, eventId, user, state, oldState }: UpdateAttendanceProps) => {
-  const response = await client.from("event_attendance_user_mapping").upsert({
-    user: user.userId,
-    event: eventId,
-    state: state
-  }).select().single();
+export const updateAttendanceAsync = createAsyncThunk("updateAttendanceAsync", async ({ repository, eventId, user, state, oldState }: UpdateAttendanceProps) => {
+  const response = await repository.updateAttendance(user.userId, eventId, state);
   return { data: response.data, error: response.error, oldState };
 });
 
-type UpsertCommentProps = { client: SupabaseClient, user: User, eventId: number, comment: string }
+type UpsertCommentProps = { repository: IEventRepository, user: User, eventId: number, comment: string }
 type DataErrorReturned = { data: any | null, error: PostgrestError | null }
-export const upsertCommentToEventAsync = createAsyncThunk("upsertCommentToEventAsync", async ({ client, user, eventId, comment }: UpsertCommentProps) => {
-  const response = await client.from("event_comments").insert({
-    user: user.userId,
-    event: eventId,
-    comment: comment,
-    displayName: user?.displayName ?? "Anon"
-  }).select("*").single<Comment>();
+
+export const upsertCommentToEventAsync = createAsyncThunk("upsertCommentToEventAsync", async ({ repository, user, eventId, comment }: UpsertCommentProps) => {
+  const response = await repository.insertComment(user, eventId, comment);
 
   return { data: response.data, error: response.error } as DataErrorReturned;
 });
