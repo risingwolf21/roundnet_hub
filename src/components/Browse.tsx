@@ -3,10 +3,8 @@ import { Avatar, List, ListItem, ListItemAvatar, ListItemText, Box } from "@mui/
 import { useNavigate } from "react-router";
 import { withTranslation } from 'react-i18next';
 import CustomAppBar from "./AppBar";
-import { useSelector } from "react-redux";
 import { TFunction } from "i18next";
 import React from "react";
-import { RootState } from "../redux/store";
 
 const tabs = [
     {
@@ -38,7 +36,6 @@ const tabs = [
 const Browse = ({ t }: { t: TFunction }) => {
 
     const navigate = useNavigate();
-    const appVersion = useSelector((state: RootState) => state.application.appVersion)
 
     return <Box>
         <CustomAppBar />
@@ -55,7 +52,7 @@ const Browse = ({ t }: { t: TFunction }) => {
                     </ListItem>
                 })
             }
-            <ListItem dense>
+            <ListItem key={"appVersion"} dense>
                 <ListItemAvatar>
                     <Avatar sx={{ background: "#88AEBF", width: 40, height: 40, borderRadius: 2 }}>
                         <Info />

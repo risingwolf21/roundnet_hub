@@ -7,57 +7,56 @@ import EventAttendanceDialog from "./EventAttendanceDialog";
 import { useEffect } from "react";
 import { editEvent, fetchEventAttendanceAsync, fetchSingleEventAsync, onEventErrorRead, updateAttendanceAsync, upsertCommentToEventAsync } from "../../redux/eventSlice";
 import { useClient } from "react-supabase";
-import { useNavigate, useParams } from "react-router-dom";
+import { Navigate, useNavigate, useParams } from "react-router-dom";
 import { toInteger, toNumber } from "lodash";
 import { MapContainer, TileLayer, Marker } from "react-leaflet";
 import { DeleteEventDialog } from "../DeleteEventDialog";
 import React, { Fragment } from "react";
-import { AppDispatch } from "../..";
-import { EventAttendance, FullEvent } from "../../types/supabaseTypes";
+import { AppDispatch, useAppDispatch } from "../..";
+import { EventAttendance, FullEvent, User } from "../../types/supabaseTypes";
 import { RootState } from "../../redux/store";
 import { PlaceType } from "./CreateEvent";
+import { AnyAction, ThunkDispatch } from "@reduxjs/toolkit";
+import { useDependency } from "src/hooks/useDependency";
+import { IEventRepository } from "src/repository/IEventRepository";
 
 type EventInformationProps = {
-    dispatch: AppDispatch,
-    events: FullEvent[],
+    selectedEvent: FullEvent,
     attendanceLoading: boolean,
-    error: string | null
+    error: string | null,
+    user: User,
+    dispatch: ThunkDispatch<RootState, undefined, AnyAction>,
+    selectedEventPlace: PlaceType,
+    repository: IEventRepository
 }
 
 export type DeleteEventType = "This Event" | "This and following events";
 
-const EventInformation = ({ dispatch, events, attendanceLoading, error }: EventInformationProps) => {
-
+export const EventInformationProvider = () => {
+    const { items, error, attendanceLoading } = useSelector((state: RootState) => state.events);
+    const { user } = useSelector((state: RootState) => state.application);
     const { selectedEventId } = useParams();
-
-    const [eventAttendanceState, setEventAttendanceState] = useState({ open: false, index: 0 });
-    const [cancelTrainingOpen, setCancelTrainingOpen] = useState(false);
-    const [deleteTrainingOpen, setDeleteTrainingOpen] = useState(false);
-    const [comment, setComment] = useState("");
+    const dispatch = useAppDispatch();
     const [selectedEvent, setSelectedEvent] = useState<FullEvent>();
     const [selectedEventPlace, setSelectedEventPlace] = useState<PlaceType>();
-    const client = useClient();
-    const navigate = useNavigate();
-    const { user } = useSelector((state: RootState) => state.application);
-    const [anchorEl, setAnchorEl] = useState<EventTarget & HTMLButtonElement | null>(null);
+    const repository = useDependency<IEventRepository>("IEventRepository");
 
     useEffect(() => {
-        if (selectedEventId) {
-            dispatch(fetchEventAttendanceAsync({ client, eventId: toNumber(selectedEventId) }))
-        }
-    }, [selectedEventId, dispatch, client]);
-
-    useEffect(() => {
-        let found = events.find(x => x.id === toInteger(selectedEventId));
+        if (!repository)
+            return;
+        let found = items.find(x => x.id === toInteger(selectedEventId));
         if (!found) {
-            dispatch(fetchSingleEventAsync({ client, eventId: toNumber(selectedEventId) }));
+            dispatch(fetchSingleEventAsync({ repository, eventId: toNumber(selectedEventId) }));
         } else {
             setSelectedEvent(found);
             setSelectedEventPlace(JSON.parse(found.place?.toString() ?? "") as PlaceType)
         }
-    }, [events, selectedEventId, dispatch, client]);
+    }, [items, selectedEventId, dispatch, repository]);
 
-    if (!selectedEvent)
+    if (process.env.REACT_APP_training !== "enabled")
+        return <Navigate to={"/feature-not-available"} />
+
+    if (!selectedEvent || !selectedEventPlace || !repository)
         return <Box
             sx={{
                 width: "100%",
@@ -69,43 +68,60 @@ const EventInformation = ({ dispatch, events, attendanceLoading, error }: EventI
             <Typography>{`Event mit ID ${selectedEventId} nicht gefunden`}</Typography>
         </Box>
 
-    const cancelTraining = async () => {
-        await client.from("events").update({ isCancelled: !selectedEvent.isCancelled }).eq("id", selectedEvent.id);
-        setCancelTrainingOpen(false);
-    }
+    return <EventInformation
+        selectedEvent={selectedEvent}
+        selectedEventPlace={selectedEventPlace}
+        repository={repository}
+        attendanceLoading={attendanceLoading}
+        error={error}
+        user={user}
+        dispatch={dispatch} />
+}
 
-    const uploadComment = async () => {
-        if (!comment)
-            return;
-        dispatch(upsertCommentToEventAsync({ client, user, eventId: toNumber(selectedEventId), comment }));
-        setComment("");
+const EventInformation = ({ dispatch, selectedEvent, attendanceLoading, error, user, selectedEventPlace, repository }: EventInformationProps) => {
+
+    const [eventAttendanceState, setEventAttendanceState] = useState({ open: false, index: 0 });
+    const [cancelTrainingOpen, setCancelTrainingOpen] = useState(false);
+    const [deleteTrainingOpen, setDeleteTrainingOpen] = useState(false);
+    const navigate = useNavigate();
+    const [anchorEl, setAnchorEl] = useState<EventTarget & HTMLButtonElement | null>(null);
+
+    useEffect(() => {
+        dispatch(fetchEventAttendanceAsync({ repository, eventId: selectedEvent.id }))
+    }, [dispatch, repository]);
+
+    const cancelTraining = async () => {
+        await repository.updateCancellationForEvent(selectedEvent.id, !selectedEvent.isCancelled)
+        setCancelTrainingOpen(false);
     }
 
     const deleteEvent = async (value: DeleteEventType | null) => {
         if (!value) {
             return;
         } else if (value === "This Event") {
-            await client.from("events").delete().eq("id", selectedEvent.id);
+            await repository.deleteEvent(selectedEvent.id);
             navigate("/training", { replace: true });
         } else if (value === "This and following events") {
-            await client.from("events").delete()
-                .eq("key", selectedEvent.key)
-                .gte("startingDateTime", selectedEvent.startingDateTime);
-            await client.from("distinct_event").update({
-                end_at: moment().format("yyyy-MM-DD HH:mm:ssZ")
-            }).eq("key", selectedEvent.key);
+            await repository.deleteEventAndUpcomingEvents(selectedEvent.id, selectedEvent.key, selectedEvent.startingDateTime)
             navigate("/training", { replace: true });
         }
     }
 
     const updateAttendance = async (state: EventAttendance, oldState: EventAttendance) => {
-        if (!selectedEventId)
-            return;
-        dispatch(updateAttendanceAsync({ client, user, eventId: toInteger(selectedEventId), state, oldState }));
+        dispatch(updateAttendanceAsync({ repository, user, eventId: selectedEvent.id, state, oldState }));
     }
 
-    const handleCommentChange = (event: ChangeEvent<HTMLInputElement>) => {
-        setComment(event.target.value);
+    const handleCommentSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+        event.preventDefault();
+        const data = new FormData(event.currentTarget);
+
+        const comment = data.get("comment");
+
+        if (!comment)
+            return;
+
+        dispatch(upsertCommentToEventAsync({ repository, user, eventId: selectedEvent.id, comment: comment.toString() }));
+        event.currentTarget.reset();
     }
 
     const handleClick = (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
@@ -139,7 +155,7 @@ const EventInformation = ({ dispatch, events, attendanceLoading, error }: EventI
                 <IconButton color="inherit" onClick={() => navigate("/user")}>
                     <AccountCircle />
                 </IconButton>
-                <IconButton color="inherit" onClick={() => dispatch(fetchSingleEventAsync({ client, eventId: toNumber(selectedEventId) }))}>
+                <IconButton color="inherit" onClick={() => dispatch(fetchSingleEventAsync({ repository, eventId: selectedEvent.id }))}>
                     <Refresh />
                 </IconButton>
                 {(user?.role === "admin" || user?.role === "trainer") && <>
@@ -313,20 +329,15 @@ const EventInformation = ({ dispatch, events, attendanceLoading, error }: EventI
                             </ListItem>)
                         }
                     </List>
-                    <Box sx={{ pb: 2, pr: 2 }}>
+                    <Box component={"form"} onSubmit={handleCommentSubmit} sx={{ pb: 2, pr: 2 }}>
                         <TextField
+                            id="comment"
                             fullWidth
-                            value={comment}
                             placeholder="Write a comment..."
-                            onChange={handleCommentChange}
-                            onKeyDown={(e) => {
-                                if (e.keyCode === 13)
-                                    uploadComment()
-                            }}
                             sx={{ '& fieldset': { borderRadius: "30px" }, '& input': { pt: 1.5, pb: 1.5 } }}
                             InputProps={{
                                 endAdornment: <InputAdornment position="end">
-                                    <IconButton edge="end" onClick={uploadComment}>
+                                    <IconButton edge="end" type="submit">
                                         <Send />
                                     </IconButton>
                                 </InputAdornment>,

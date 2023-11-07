@@ -7,103 +7,80 @@ import { HistoryScreenProvider } from './components/HistoryScreen';
 import { AdminDrinkListProvider } from './components/admin/AdminDrinkList';
 import { PayDrinksScreenProvider } from './components/PayDrinksScreen';
 import PaymentsPendingAdmin from './components/admin/PaymentsPendingAdmin';
-import AdminUserList from './components/admin/AdminUserList';
+import { AdminUserListProvider } from './components/admin/AdminUserList';
 import { AdminHistoryScreenProvider } from './components/admin/AdminHistoryScreen';
 import { useEffect } from 'react';
 import { useSelector } from 'react-redux';
-import { useClient } from 'react-supabase';
 import Browse from './components/Browse';
-import CreateEvent from './components/training/CreateEvent';
-import EventScreen from './components/training/EventScreen';
-import EventInformation from './components/training/EventInformation';
+import CreateEventProvider from './components/training/CreateEvent';
+import { EventScreenProvider } from './components/training/EventScreen';
+import EventInformation, { EventInformationProvider } from './components/training/EventInformation';
 import CustomBottomNavigation from './components/BottomNavigation';
 //@ts-ignore
 import { useServiceWorker } from './hooks/useServiceWorker';
-import { onAppUpdateAvailableChange, onAppVersionChange } from './redux/applicationSlice';
+import { onAppUpdateAvailableChange } from './redux/applicationSlice';
 import UpdateAvailable from './components/UpdateAvailable';
 import AuthGate from './AuthGate';
 import ResetPasswordScreen from './components/ResetPasswordScreen';
 import SubscriptionHandler from './components/SubscriptionHandler';
-import ManageGroupsScreen from './components/groups/ManageGroups';
+import ManageGroupsScreen, { ManageGroupsProvider } from './components/groups/ManageGroups';
 import BrowseAdmin from './components/admin/BrowseAdmin';
 import DrinkStockUpdateScreen from './components/procure/DrinkStockUpdateScreen';
 import { AnalyzeDrinkStockHistoryProvider } from './components/procure/AnalyzeDrinkStockHistory';
-import raw from "./git_commit.txt";
 import { useAppDispatch } from '.';
 import { RootState } from './redux/store';
-import { useDependency } from './hooks/useDependency';
-import { IDrinkRepository } from './repository/IDrinkRepository';
-import GroupInformation from './components/groups/GroupInformation';
+import { GroupInformationProvider } from './components/groups/GroupInformation';
+import { DrinkListScreenProvider } from './components/drinkList/DrinkListScreen';
+import FeatureNotAvailable from './components/FeatureNotAvailable';
 
 const App = () => {
 
   const { waitingWorker, showReload, reloadPage } = useServiceWorker();
-  const drinksRepository = useDependency<IDrinkRepository>("IDrinkRepository");
   const dispatch = useAppDispatch();
-  const client = useClient();
-  const { appUpdateAvailable, user } = useSelector((state: RootState) => state.application);
-
-  useEffect(() => {
-    fetch(raw)
-      .then(r => r.text())
-      .then(text => {
-        dispatch(onAppVersionChange(text));
-      });
-  }, [dispatch])
-
-  // useEffect(() => {
-  //   if (user) {
-  //     dispatch(fetchHistoryAsync({ repository: drinksRepository, userId: user.userId, page: 0, count: 20 }));
-  //     dispatch(fetchPaymentAsync({ repository: drinksRepository, userId: user.userId }));
-  //     dispatch(fetchUserGroupsAsync({ client, user }));
-  //     dispatch(fetchDrinksAsync(drinksRepository));
-  //   }
-  // }, [client, user, dispatch, drinksRepository]);
+  const { appUpdateAvailable } = useSelector((state: RootState) => state.application);
 
   useEffect(() => {
     dispatch(onAppUpdateAvailableChange(showReload && waitingWorker));
   }, [waitingWorker, showReload, reloadPage, dispatch]);
 
+  if (appUpdateAvailable)
+    return <UpdateAvailable update={reloadPage} />
+
   return <Grid maxHeight={"100vh"}>
     <BrowserRouter>
       <AuthGate>
         <SubscriptionHandler>
-          {
-            !appUpdateAvailable && <>
-              <Routes>
-                <Route path='/' element={<Navigate replace to={"/drinks"} />} />
-                <Route path="*" element={<Navigate replace to={"/drinks"} />} />
+          <Routes>
+            <Route path='/' element={<Navigate replace to={"/drinks"} />} />
+            <Route path="*" element={<Navigate replace to={"/drinks"} />} />
 
-                <Route path='/reset-password' element={<ResetPasswordScreen />} />
+            <Route path='/feature-not-available' element={<FeatureNotAvailable />} />
 
-                <Route path='/browse' element={<Browse />} />
-                <Route path='/browse-admin' element={<BrowseAdmin />} />
-                <Route path="/drinks" element={<DrinkListProvider />} />
-                <Route path="/user" element={<UserScreen />} />
-                <Route path="/history" element={<HistoryScreenProvider />} />
-                <Route path="/payments" element={<PayDrinksScreenProvider />} />
+            <Route path='/reset-password' element={<ResetPasswordScreen />} />
 
-                <Route path="/trainer/groups" element={<ManageGroupsScreen />} />
-                <Route path="/trainer/groups/:id" element={<GroupInformation />} />
+            <Route path='/browse' element={<Browse />} />
+            <Route path='/browse-admin' element={<BrowseAdmin />} />
+            <Route path="/drinks" element={<DrinkListScreenProvider />} />
+            <Route path="/user" element={<UserScreen />} />
+            <Route path="/history" element={<HistoryScreenProvider />} />
+            <Route path="/payments" element={<PayDrinksScreenProvider />} />
 
-                <Route path="/training" element={<EventScreen />} />
-                <Route path="/training/event/:selectedEventId" element={<EventInformation />} />
-                <Route path="/training/create" element={<CreateEvent />} />
+            <Route path="/trainer/groups" element={<ManageGroupsProvider />} />
+            <Route path="/trainer/groups/:id" element={<GroupInformationProvider />} />
 
-                <Route path='/admin/drinks' element={<AdminDrinkListProvider />} />
-                <Route path="/admin/drinks/history" element={<AdminHistoryScreenProvider />} />
-                <Route path='/admin/drinks/payments' element={<PaymentsPendingAdmin />} />
-                <Route path='/admin/drinks/stocks' element={<DrinkStockUpdateScreen />} />
-                <Route path='/admin/drinks/analyze' element={<AnalyzeDrinkStockHistoryProvider />} />
-                <Route path='/admin/users' element={<AdminUserList />} />
-              </Routes>
-              <div style={{ width: "100%", height: "56px" }} />
-              <CustomBottomNavigation />
-            </>
-          }
-          {
-            appUpdateAvailable && <UpdateAvailable update={reloadPage} />
-          }
+            <Route path="/training" element={<EventScreenProvider />} />
+            <Route path="/training/event/:selectedEventId" element={<EventInformationProvider />} />
+            <Route path="/training/create" element={<CreateEventProvider />} />
+
+            <Route path='/admin/drinks' element={<AdminDrinkListProvider />} />
+            <Route path="/admin/drinks/history" element={<AdminHistoryScreenProvider />} />
+            <Route path='/admin/drinks/payments' element={<PaymentsPendingAdmin />} />
+            <Route path='/admin/drinks/stocks' element={<DrinkStockUpdateScreen />} />
+            <Route path='/admin/drinks/analyze' element={<AnalyzeDrinkStockHistoryProvider />} />
+            <Route path='/admin/users' element={<AdminUserListProvider />} />
+          </Routes>
+          <div style={{ width: "100%", height: "56px" }} />
+          <CustomBottomNavigation />
         </SubscriptionHandler>
       </AuthGate>
     </BrowserRouter>

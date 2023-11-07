@@ -9,7 +9,8 @@
         "manageDrinkStocks": "Getränkevorrat verwalten",
         "manageUsers": "Benutzer verwalten",
         "completeHistory": "Gesamtverlauf",
-        "manageGroups": "Gruppen verwalten"
+        "manageGroups": "Gruppen verwalten",
+        "analyzeDrinkStocks": "Getränkenutzung analysieren"
     },
     "navigation": {
         "browse": "Browse",
@@ -24,5 +25,6 @@
             "descriptionEmpty": "Die Beschreibung des Events darf nicht leer sein",
             "startDateCannotBeNull": "Die Startzeit des Events darf nicht leer sein"
         }
-    }
+    },
+    "feature_not_available": "Diese Funktion ist noch nicht bereit. Versuche es später erneut!"
 }

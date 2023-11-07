@@ -2,6 +2,7 @@ import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { User, UserWithGroups } from '../types/supabaseTypes';
 import { SupabaseClient } from '@supabase/supabase-js';
 import { TABLE_USER } from '../constants';
+import { IAdminUsersRepository, SupabaseAdminUsersRepository } from 'src/repository/IAdminUsersRepository';
 
 type AdminUsersSliceState = {
     users: UserWithGroups[],
@@ -58,18 +59,13 @@ export const adminUsersSlice = createSlice({
     }
 });
 
-export const fetchAdminUsersAsync = createAsyncThunk("fetchAdminUsersAsync", async ({ client }: { client: SupabaseClient }) => {
-    const response = await client.from(TABLE_USER)
-        .select("*, groups: group_user_mapping ( group: event_group ( * ) )")
-        .returns<UserWithGroups[]>();
-    return response.data;
+export const fetchAdminUsersAsync = createAsyncThunk("fetchAdminUsersAsync", async (repository: IAdminUsersRepository) => {
+    const response = await repository.fetchAllUsersWithGroups();
+    return response.data ?? [];
 });
 
-export const fetchNotVerifiedUsersAsync = createAsyncThunk("fetchNotVerifiedUsersAsync", async ({ client }: { client: SupabaseClient }) => {
-    const response = await client.from(TABLE_USER)
-        .select("*")
-        .eq("verified", false)
-        .returns<User[]>();
+export const fetchNotVerifiedUsersAsync = createAsyncThunk("fetchNotVerifiedUsersAsync", async (repository: IAdminUsersRepository) => {
+    const response = await repository.fetchNotVerifiedUsers();
     return response.data ?? [];
 })
 

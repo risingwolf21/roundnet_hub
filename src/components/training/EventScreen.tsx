@@ -1,7 +1,7 @@
 import { Alert, Box, CircularProgress, Divider, Fab, Grid, IconButton, LinearProgress, ListItem, ListItemAvatar, ListItemSecondaryAction, ListItemText, Snackbar, Typography } from "@mui/material";
 import { useSelector } from "react-redux";
 import moment from "moment";
-import { useNavigate } from 'react-router-dom';
+import { Navigate, useNavigate } from 'react-router-dom';
 import { fetchEventsAsync, onEventErrorRead, updateAttendanceAsync } from "../../redux/eventSlice";
 import AddIcon from '@mui/icons-material/Add';
 import { ThumbDownAlt, ThumbDownOffAlt, ThumbUpAlt, ThumbUpOffAlt } from "@mui/icons-material";
@@ -9,88 +9,63 @@ import { useClient } from "react-supabase";
 import React, { useState, useEffect } from "react";
 import { InfiniteScrollList } from "../InfiniteScrollList";
 import CustomAppBar from "../AppBar";
-import { EventAttendance, FullEvent } from "../../types/supabaseTypes";
+import { EventAttendance, FullEvent, User } from "../../types/supabaseTypes";
 import { RootState } from "../../redux/store";
 import { useAppDispatch } from "../..";
 import { useDependency } from "../../hooks/useDependency";
 import { IEventRepository } from "../../repository/IEventRepository";
+import { EventItem } from "./EventItem";
 
-type EventItemProps = {
-    attendanceUpdating: boolean,
-    event: FullEvent,
-    onClick: () => void,
-    attendEvent: () => void,
-    declineEvent: () => void
-}
-
-const EventItem = ({ event, onClick, attendEvent, declineEvent, attendanceUpdating }: EventItemProps) => {
-
-    return <ListItem sx={{ p: 1 }} onClick={onClick}>
-        <ListItemAvatar>
-            <Box sx={{ display: "flex", flexDirection: "column", justifyContent: "left" }}>
-                <Typography fontSize={10} textAlign={"center"}>
-                    {
-                        moment(event.meetingDateTime).format("MMM").toUpperCase()
-                    }
-                </Typography>
-                <Typography variant="h6" fontWeight={"bold"} textAlign={"center"}>
-                    {
-                        moment(event.meetingDateTime).format("D")
-                    }
-                </Typography>
-            </Box>
-        </ListItemAvatar>
-        <ListItemText primary={event.title} secondary={event.isCancelled ? "Event abgesagt" : moment(event.meetingDateTime).format("dddd [at] HH:mm")} />
-        <ListItemSecondaryAction>
-            {
-                attendanceUpdating
-                    ? <CircularProgress />
-                    : <Box sx={{ display: "flex", flexDirection: "row" }}>
-                        <IconButton onClick={declineEvent} disabled={event.isCancelled}>
-                            {
-                                event.userAttendance === "Declined"
-                                    ? <ThumbDownAlt fontSize="inherit" sx={{ fontSize: "28px", color: "red" }} />
-                                    : <ThumbDownOffAlt fontSize="inherit" sx={{ fontSize: "28px" }} />
-                            }
-                        </IconButton>
-                        <IconButton onClick={attendEvent} disabled={event.isCancelled}>
-                            {
-                                event.userAttendance === "Attending"
-                                    ? <ThumbUpAlt fontSize="inherit" sx={{ fontSize: "28px", color: "green" }} />
-                                    : <ThumbUpOffAlt fontSize="inherit" sx={{ fontSize: "28px" }} />
-                            }
-                        </IconButton>
-                    </Box>
-            }
-        </ListItemSecondaryAction>
-    </ListItem>
-}
-
-const EventScreen = () => {
-
+export const EventScreenProvider = () => {
     const { items: events, userGroups, loading, error, endReached } = useSelector((state: RootState) => state.events);
     const { user } = useSelector((state: RootState) => state.application);
+    const repository = useDependency<IEventRepository>("IEventRepository");
+
+    if (!user || !repository)
+        return;
+
+    if (process.env.REACT_APP_training !== "enabled")
+        return <Navigate to={"/feature-not-available"} />
+    else
+        return <EventScreen
+            events={events}
+            userGroups={userGroups}
+            loading={loading}
+            error={error ?? ""}
+            endReached={endReached}
+            user={user}
+            repository={repository}
+        />
+}
+
+type EventScreenProps = {
+    events: FullEvent[],
+    userGroups: number[],
+    loading: boolean,
+    error: string,
+    endReached: boolean,
+    repository: IEventRepository,
+    user: User
+}
+
+const EventScreen = ({ events, userGroups, loading, error, endReached, repository, user }: EventScreenProps) => {
     const client = useClient();
     const dispatch = useAppDispatch();
     const navigate = useNavigate();
     const [eventsUpdatingAttendance, setEventsUpdatingAttendance] = useState<number[]>([]);
 
-    const repository = useDependency<IEventRepository>("IEventRepository");
-
     useEffect(() => {
-        if (repository)
-            dispatch(fetchEventsAsync({ client, user, userGroups, page: 0, count: 20, repository }));
+        dispatch(fetchEventsAsync({ user, page: 0, count: 20, repository }));
     }, [dispatch, client, user, userGroups, repository]);
 
     const fetchEvents = (page: number, count: number) => {
-        if (repository)
-            dispatch(fetchEventsAsync({ client, user, userGroups, page, count, repository }));
+        dispatch(fetchEventsAsync({ user, page, count, repository }));
     }
 
     const updateAttendance = async (eventId: number, state: EventAttendance, oldState: EventAttendance) => {
         setEventsUpdatingAttendance([...eventsUpdatingAttendance, eventId]);
 
-        dispatch(updateAttendanceAsync({ client, user, eventId, state, oldState }));
+        dispatch(updateAttendanceAsync({ repository, user, eventId, state, oldState }));
 
         setEventsUpdatingAttendance([...eventsUpdatingAttendance.filter(x => x === eventId)]);
     }

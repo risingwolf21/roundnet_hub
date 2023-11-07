@@ -5,7 +5,6 @@ import EditUserDialog, { UserEdited } from "./EditUserDialog";
 import { Fragment, useState } from "react";
 import { useClient } from "react-supabase";
 import { Error } from "../Error";
-import { supabase_admin } from "../services/supabase/supabaseClient";
 import { captureException } from "@sentry/react";
 import { useSelector } from "react-redux";
 import { useEffect } from "react";
@@ -17,7 +16,8 @@ import React from "react";
 import { User, UserWithGroups } from "../../types/supabaseTypes";
 import { useAppDispatch } from "../..";
 import { RootState } from "../../redux/store";
-import { TABLE_PAYMENTS, TABLE_USER } from "../../constants";
+import { IAdminUsersRepository } from "src/repository/IAdminUsersRepository";
+import { useDependency } from "src/hooks/useDependency";
 
 const AdminUserItem = ({ user, onEditClick }: { user: User, onEditClick: () => void }) => {
     let color = "rgba(0, 0, 0, 0.54)";
@@ -53,7 +53,20 @@ const AdminUserItem = ({ user, onEditClick }: { user: User, onEditClick: () => v
     </ListItem>
 }
 
-const AdminUserList = () => {
+export const AdminUserListProvider = () => {
+    const adminUsersRepository = useDependency<IAdminUsersRepository>("IAdminUsersRepository");
+
+    if (!adminUsersRepository)
+        return;
+
+    return <AdminUserList repository={adminUsersRepository} />
+}
+
+type AdminUserListProps = {
+    repository: IAdminUsersRepository,
+}
+
+const AdminUserList = ({ repository }: AdminUserListProps) => {
 
     const [editUserOpen, setEditUserOpen] = useState(false);
     const [currentUser, setCurrentUser] = useState<UserWithGroups | null>();
@@ -65,8 +78,8 @@ const AdminUserList = () => {
     const navigate = useNavigate();
 
     useEffect(() => {
-        dispatch(fetchAdminUsersAsync({ client }));
-    }, [dispatch, client]);
+        dispatch(fetchAdminUsersAsync(repository));
+    }, [dispatch, repository]);
 
     const { users, loading, error } = useSelector((state: RootState) => state.adminUsers);
 
@@ -76,42 +89,11 @@ const AdminUserList = () => {
     }
 
     const deleteUser = async (user: User) => {
-        const { error } = await supabase_admin.auth.admin.deleteUser(user.userId);
-        const { error: e2 } = await client.from(TABLE_PAYMENTS).delete().eq("userId", user.userId)
-        const { error: e1 } = await client.from(TABLE_USER).delete().eq("userId", user.userId);
-        setEditUserOpen(false);
-
-        if (error) {
-            captureException(error, (scope) => {
-                scope.clear();
-                scope.setExtra("user", JSON.stringify(user));
-                return scope;
-            });
-        }
-        if (e1) {
-            captureException(e1, (scope) => {
-                scope.clear();
-                scope.setExtra("user", JSON.stringify(user));
-                return scope;
-            });
-        }
-        if (e2) {
-            captureException(e2, (scope) => {
-                scope.clear();
-                scope.setExtra("user", JSON.stringify(user));
-                return scope;
-            });
-        }
+        await repository.deactivateUser(user);
     }
 
     const onUserEditFinished = async (result: UserEdited) => {
-        console.log(result)
-        await client.from(TABLE_USER).update({ displayName: result.displayName, role: result.role, verified: result.verified }).eq("userId", result.userId);
-        await client.auth.admin.updateUserById(
-            result.userId,
-            { user_metadata: { displayName: result.displayName, role: result.role, verified: result.verified } }
-        );
-
+        await repository.updateUser(result);
         setEditUserOpen(false);
     }
 
@@ -144,7 +126,7 @@ const AdminUserList = () => {
                     />
                 </Search>
 
-                <IconButton color="inherit" onClick={() => dispatch(fetchAdminUsersAsync({ client }))}>
+                <IconButton color="inherit" onClick={() => dispatch(fetchAdminUsersAsync(repository))}>
                     <Refresh />
                 </IconButton>
             </Toolbar>
