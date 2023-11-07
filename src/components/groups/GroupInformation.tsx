@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
-import { useParams } from "react-router-dom";
+import { Navigate, useParams } from "react-router-dom";
 import { useClient } from "react-supabase";
 import { Divider, Fab, Grid, List, ListItem, ListItemAvatar, ListItemText, Typography } from "@mui/material";
 import CustomAppBar from "../AppBar";
@@ -24,6 +24,9 @@ export const GroupInformationProvider = () => {
     useEffect(() => {
         setSelectedGroup(groups?.find(x => x.id === toInteger(id)));
     }, [groups, id]);
+
+    if (process.env.REACT_APP_training !== "enabled")
+        return <Navigate to={"/feature-not-available"} />
 
     if (!selectedGroup || !adminUsersRepository)
         return;

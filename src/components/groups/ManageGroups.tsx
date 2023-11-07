@@ -5,14 +5,35 @@ import { FiberManualRecord } from "@mui/icons-material";
 import React, { useEffect } from "react";
 import { useClient } from "react-supabase";
 import { fetchGroupsAsync } from "../../redux/groupsSlice";
-import { useNavigate } from "react-router-dom";
+import { Navigate, useNavigate } from "react-router-dom";
 import { RootState } from "../../redux/store";
 import { useAppDispatch } from "../..";
+import { GroupWithUsers } from "src/types/supabaseTypes";
+import { SupabaseClient } from "@supabase/supabase-js";
 
-const ManageGroupsScreen = () => {
+export const ManageGroupsProvider = () => {
 
     const { groups, loading } = useSelector((state: RootState) => state.groups);
     const client = useClient();
+
+    if (process.env.REACT_APP_training !== "enabled")
+        return <Navigate to={"/feature-not-available"} />
+
+    return <ManageGroupsScreen
+        groups={groups}
+        loading={loading}
+        client={client} />
+}
+
+type ManageGroupsScreenProps = {
+    groups: GroupWithUsers[],
+    loading: boolean,
+    client: SupabaseClient
+}
+
+const ManageGroupsScreen = ({ groups, loading, client }: ManageGroupsScreenProps) => {
+
+
     const dispatch = useAppDispatch();
     const navigate = useNavigate();
 

@@ -23,7 +23,7 @@ import UpdateAvailable from './components/UpdateAvailable';
 import AuthGate from './AuthGate';
 import ResetPasswordScreen from './components/ResetPasswordScreen';
 import SubscriptionHandler from './components/SubscriptionHandler';
-import ManageGroupsScreen from './components/groups/ManageGroups';
+import ManageGroupsScreen, { ManageGroupsProvider } from './components/groups/ManageGroups';
 import BrowseAdmin from './components/admin/BrowseAdmin';
 import DrinkStockUpdateScreen from './components/procure/DrinkStockUpdateScreen';
 import { AnalyzeDrinkStockHistoryProvider } from './components/procure/AnalyzeDrinkStockHistory';
@@ -43,48 +43,44 @@ const App = () => {
     dispatch(onAppUpdateAvailableChange(showReload && waitingWorker));
   }, [waitingWorker, showReload, reloadPage, dispatch]);
 
+  if (appUpdateAvailable)
+    return <UpdateAvailable update={reloadPage} />
+
   return <Grid maxHeight={"100vh"}>
     <BrowserRouter>
       <AuthGate>
         <SubscriptionHandler>
-          {
-            !appUpdateAvailable && <>
-              <Routes>
-                <Route path='/' element={<Navigate replace to={"/drinks"} />} />
-                <Route path="*" element={<Navigate replace to={"/drinks"} />} />
+          <Routes>
+            <Route path='/' element={<Navigate replace to={"/drinks"} />} />
+            <Route path="*" element={<Navigate replace to={"/drinks"} />} />
 
-                <Route path='/feature-not-available' element={<FeatureNotAvailable />} />
+            <Route path='/feature-not-available' element={<FeatureNotAvailable />} />
 
-                <Route path='/reset-password' element={<ResetPasswordScreen />} />
+            <Route path='/reset-password' element={<ResetPasswordScreen />} />
 
-                <Route path='/browse' element={<Browse />} />
-                <Route path='/browse-admin' element={<BrowseAdmin />} />
-                <Route path="/drinks" element={<DrinkListScreenProvider />} />
-                <Route path="/user" element={<UserScreen />} />
-                <Route path="/history" element={<HistoryScreenProvider />} />
-                <Route path="/payments" element={<PayDrinksScreenProvider />} />
+            <Route path='/browse' element={<Browse />} />
+            <Route path='/browse-admin' element={<BrowseAdmin />} />
+            <Route path="/drinks" element={<DrinkListScreenProvider />} />
+            <Route path="/user" element={<UserScreen />} />
+            <Route path="/history" element={<HistoryScreenProvider />} />
+            <Route path="/payments" element={<PayDrinksScreenProvider />} />
 
-                <Route path="/trainer/groups" element={<ManageGroupsScreen />} />
-                <Route path="/trainer/groups/:id" element={<GroupInformationProvider />} />
+            <Route path="/trainer/groups" element={<ManageGroupsProvider />} />
+            <Route path="/trainer/groups/:id" element={<GroupInformationProvider />} />
 
-                <Route path="/training" element={<EventScreenProvider />} />
-                <Route path="/training/event/:selectedEventId" element={<EventInformationProvider />} />
-                <Route path="/training/create" element={<CreateEvent />} />
+            <Route path="/training" element={<EventScreenProvider />} />
+            <Route path="/training/event/:selectedEventId" element={<EventInformationProvider />} />
+            <Route path="/training/create" element={<CreateEvent />} />
 
-                <Route path='/admin/drinks' element={<AdminDrinkListProvider />} />
-                <Route path="/admin/drinks/history" element={<AdminHistoryScreenProvider />} />
-                <Route path='/admin/drinks/payments' element={<PaymentsPendingAdmin />} />
-                <Route path='/admin/drinks/stocks' element={<DrinkStockUpdateScreen />} />
-                <Route path='/admin/drinks/analyze' element={<AnalyzeDrinkStockHistoryProvider />} />
-                <Route path='/admin/users' element={<AdminUserListProvider />} />
-              </Routes>
-              <div style={{ width: "100%", height: "56px" }} />
-              <CustomBottomNavigation />
-            </>
-          }
-          {
-            appUpdateAvailable && <UpdateAvailable update={reloadPage} />
-          }
+            <Route path='/admin/drinks' element={<AdminDrinkListProvider />} />
+            <Route path="/admin/drinks/history" element={<AdminHistoryScreenProvider />} />
+            <Route path='/admin/drinks/payments' element={<PaymentsPendingAdmin />} />
+            <Route path='/admin/drinks/stocks' element={<DrinkStockUpdateScreen />} />
+            <Route path='/admin/drinks/analyze' element={<AnalyzeDrinkStockHistoryProvider />} />
+            <Route path='/admin/users' element={<AdminUserListProvider />} />
+          </Routes>
+          <div style={{ width: "100%", height: "56px" }} />
+          <CustomBottomNavigation />
         </SubscriptionHandler>
       </AuthGate>
     </BrowserRouter>
