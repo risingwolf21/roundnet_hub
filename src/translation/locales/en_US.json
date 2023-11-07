@@ -9,7 +9,8 @@
         "manageDrinkStocks": "Manage drinks stock",
         "manageUsers": "Manage users",
         "completeHistory": "Complete history",
-        "manageGroups": "Manage groups"
+        "manageGroups": "Manage groups",
+        "analyzeDrinkStocks": "Analyse drink history"
     },
     "navigation": {
         "browse": "Browse",

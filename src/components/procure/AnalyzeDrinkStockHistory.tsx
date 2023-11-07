@@ -88,8 +88,15 @@ const AnalyzeDrinkStockHistory = ({ drinksRepository, loading }: AnalyzeDrinkSto
                     </Typography>
                     {
                         mappedHistory && <PieChart
-                            height={155}
+                            height={175}
                             width={300}
+                            slotProps={{
+                                legend: {
+                                    direction: "column",
+                                    position: { vertical: "top", horizontal: "right" },
+                                    padding: 0
+                                }
+                            }}
                             series={[
                                 {
                                     data: [...Array.from(mappedHistory).map((entry) => { return { label: entry[1][0].drink.name, value: entry[1].reduce((prev, curr) => prev + curr.count, 0) ?? 0 } })],

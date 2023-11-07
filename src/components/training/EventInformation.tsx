@@ -54,7 +54,7 @@ export const EventInformationProvider = () => {
         }
     }, [items, selectedEventId, dispatch, repository]);
 
-    if (!process.env.REACT_APP_TRAINING_AVAILABLE)
+    if (process.env.REACT_APP_training !== "enabled")
         return <Navigate to={"/feature-not-available"} />
 
     if (!selectedEvent || !selectedEventPlace || !repository)

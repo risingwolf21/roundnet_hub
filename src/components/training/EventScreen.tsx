@@ -24,18 +24,18 @@ export const EventScreenProvider = () => {
     if (!user || !repository)
         return;
 
-    if (!process.env.REACT_APP_TRAINING_AVAILABLE)
+    if (process.env.REACT_APP_training !== "enabled")
         return <Navigate to={"/feature-not-available"} />
-
-    return <EventScreen
-        events={events}
-        userGroups={userGroups}
-        loading={loading}
-        error={error ?? ""}
-        endReached={endReached}
-        user={user}
-        repository={repository}
-    />
+    else
+        return <EventScreen
+            events={events}
+            userGroups={userGroups}
+            loading={loading}
+            error={error ?? ""}
+            endReached={endReached}
+            user={user}
+            repository={repository}
+        />
 }
 
 type EventScreenProps = {
@@ -49,7 +49,7 @@ type EventScreenProps = {
 }
 
 const EventScreen = ({ events, userGroups, loading, error, endReached, repository, user }: EventScreenProps) => {
-
+    console.log("event screen")
     const client = useClient();
     const dispatch = useAppDispatch();
     const navigate = useNavigate();
