@@ -115,37 +115,3 @@ export class SupabaseDrinkRepository extends SupabaseRepository implements IDrin
     }
 
 }
-
-export class EmptyDrinkRepository implements IDrinkRepository {
-    fetchDrinksToPay(userId: string): Promise<PostgrestSingleResponse<PaymentHistory[]>> {
-        throw new Error("Method not implemented.");
-    }
-    fetchDrinks(): Promise<PostgrestSingleResponse<{ active: boolean; deleted: boolean; id: number; imageUrl: string | null; name: string | null; previousDrink: number | null; price: number | null; stock: number | null; }[]>> {
-        throw new Error("Method not implemented.");
-    }
-    fetchHistoryForUser(userId: string, page: number, count: number): Promise<PostgrestSingleResponse<FullHistory[]>> {
-        throw new Error("Method not implemented.");
-    }
-    fetchOpenDrinksForUser(userId: string): Promise<PostgrestSingleResponse<any[]>> {
-        throw new Error("Method not implemented.");
-    }
-    fetchCurrentPaymentForUser(userId: string): Promise<PostgrestSingleResponse<any[]>> {
-        throw new Error("Method not implemented.");
-    }
-    insertHistoryItems(drinks: DrinkCounter[], userId: string, paymentId: number): Promise<PostgrestSingleResponse<any>> {
-        throw new Error("Method not implemented.");
-    }
-    updateHistoryItem(id: number, count: number, amount: number): Promise<PostgrestSingleResponse<any>> {
-        throw new Error("Method not implemented.");
-    }
-    insertNewPayment(userId: string): Promise<PostgrestSingleResponse<PaymentInsert>> {
-        throw new Error("Method not implemented.");
-    }
-    updateDrinkStock(drinkId: number, stock: number): Promise<PostgrestSingleResponse<any>> {
-        throw new Error("Method not implemented.");
-    }
-    fetchHistoryStockType(): Promise<PostgrestSingleResponse<any>> {
-        throw new Error("Method not implemented.");
-    }
-
-}

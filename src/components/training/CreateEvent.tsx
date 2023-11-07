@@ -14,8 +14,11 @@ import { connect } from "react-redux";
 import SearchPlacesDialog from "./SearchPlacesDialog";
 import { MapContainer, TileLayer, Marker, useMap } from "react-leaflet";
 import { TFunction } from "i18next";
-import { EventRecurrence, FullEvent } from "../../types/supabaseTypes";
+import { EventInsert, EventRecurrence, FullEvent } from "../../types/supabaseTypes";
 import { RootState } from "../../redux/store";
+import { useDependency } from "src/hooks/useDependency";
+import { IEventRepository } from "src/repository/IEventRepository";
+import { useSelector } from "react-redux";
 
 export type PlaceType = {
     name: string,
@@ -23,7 +26,23 @@ export type PlaceType = {
     lon: number
 }
 
-const CreateEvent = ({ t, eventToEdit }: { t: TFunction, eventToEdit: FullEvent | null }) => {
+const CreateEventProvider = ({ t }: { t: TFunction }) => {
+    const repository = useDependency<IEventRepository>("IEventRepository");
+    const eventToEdit = useSelector((state: RootState) => state.events.eventToEdit);
+
+    if (!repository)
+        return;
+
+    return <CreateEvent t={t} eventToEdit={eventToEdit} repository={repository} />
+}
+
+type CreateEventProps = {
+    t: TFunction,
+    eventToEdit: FullEvent | null,
+    repository: IEventRepository
+}
+
+const CreateEvent = ({ t, eventToEdit, repository }: CreateEventProps) => {
 
     const navigate = useNavigate();
     const client = useClient();
@@ -69,12 +88,13 @@ const CreateEvent = ({ t, eventToEdit }: { t: TFunction, eventToEdit: FullEvent 
                 description: eventDescription,
                 startingDateTime: startingDateTime,
                 meetingDateTime: meetingDateTime,
-                recurring: repeat,
+                recurrence: repeat,
                 place: JSON.stringify(selectedPlace),
                 "end_at": (stopRepeatDisabled || !stopRepeatDateTime)
                     ? null
                     : stopRepeatDateTime.format("yyyy-MM-DD HH:mm:ssZ")
-            }
+            } as EventInsert;
+
             if (!eventTitle || eventTitle.length < 6)
                 throw new Error(t("events.creation.titleTooShort"))
 
@@ -84,15 +104,13 @@ const CreateEvent = ({ t, eventToEdit }: { t: TFunction, eventToEdit: FullEvent 
             if (meetingDateTime > startingDateTime)
                 throw new Error(t("events.creation.meetingTimeBeforeStartTime"))
 
-            const { error } = await client.from("events").insert(event);
+            const { error } = await repository.insertEvent(event)
 
             if (error) throw error;
 
             // update old event to end_at now
             if (eventToEdit) {
-                await client.from("events").update({
-                    "end_at": moment().format("yyyy-MM-DD HH:mm:ssZ")
-                }).eq("id", eventToEdit.id)
+                await repository.updateEndOfOldEvent(eventToEdit.id, moment().format("yyyy-MM-DD HH:mm:ssZ"))
             }
 
             navigate("/training", { replace: true });
@@ -287,10 +305,4 @@ const CreateEvent = ({ t, eventToEdit }: { t: TFunction, eventToEdit: FullEvent 
     </Box >
 }
 
-const mapStateToProps = (state: RootState) => {
-    return {
-        eventToEdit: state.events.eventToEdit
-    }
-}
-
-export default connect(mapStateToProps)(withTranslation()(CreateEvent));
+export default withTranslation()(CreateEventProvider);

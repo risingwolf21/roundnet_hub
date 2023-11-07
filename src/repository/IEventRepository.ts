@@ -1,9 +1,10 @@
-import { EventAttendance, EventAttendanceMapping, FullAttendance, FullEvent, Group, User } from "../types/supabaseTypes";
+import { EventAttendance, EventAttendanceMapping, EventInsert, FullAttendance, FullEvent, Group, User } from "../types/supabaseTypes";
 import { PostgrestSingleResponse } from '@supabase/supabase-js';
 import moment from "moment";
 import { PostgrestError } from '@supabase/supabase-js'
 import { injectable } from "inversify";
 import { SupabaseRepository } from "./Repository";
+import { Json } from "src/types/supabase";
 
 export type DbResult<T> = T extends PromiseLike<infer U> ? U : never
 export type DbResultOk<T> = T extends PromiseLike<{ data: infer U }> ? Exclude<U, null> : never
@@ -12,6 +13,8 @@ export type DbResultErr = PostgrestError
 export type RepositorySource = "supabase" | "none";
 
 interface IEventRepository {
+    insertEvent(event: EventInsert): Promise<PostgrestSingleResponse<null>>
+    updateEndOfOldEvent(eventId: number, end_at: string): Promise<PostgrestSingleResponse<null>>
     fetchEvents(user: User, userGroups: number[], page: number, count: number): Promise<PostgrestSingleResponse<FullEvent[]>>
     updateCancellationForEvent(eventId: number, isCancelled: boolean): Promise<PostgrestSingleResponse<null>>
     deleteEvent(eventId: number): Promise<PostgrestSingleResponse<null>>
@@ -25,6 +28,19 @@ interface IEventRepository {
 
 @injectable()
 class SupabaseEventRepository extends SupabaseRepository implements IEventRepository {
+
+    async updateEndOfOldEvent(eventId: number, end_at: string): Promise<PostgrestSingleResponse<null>> {
+        return this.client
+            .from("events")
+            .update({
+                "end_at": end_at
+            }).eq("id", eventId)
+    }
+
+    async insertEvent(event: EventInsert): Promise<PostgrestSingleResponse<null>> {
+        return this.client.from("events").insert(event);
+    }
+
     async insertComment(user: User, eventId: number, comment: string): Promise<PostgrestSingleResponse<Comment>> {
         return this.client.from("event_comments")
             .insert({
@@ -77,9 +93,11 @@ class SupabaseEventRepository extends SupabaseRepository implements IEventReposi
     }
 
     async fetchEvents(user: User, userGroups: number[], page: number, count: number): Promise<PostgrestSingleResponse<FullEvent[]>> {
-        const query = await this.client.from("events").select("*, attendance: event_attendance_user_mapping ( state , user(userId, displayName)  ), comments: event_comments ( comment, created_at, displayName, event, user ( displayName, userId)), groups: event_group(*)")
+        const query = await this.client.from("events")
+            .select("*, attendance: event_attendance_user_mapping ( state , user(userId, displayName)  ), comments: event_comments ( comment, created_at, displayName, event, user ( displayName, userId))")
             // get events that are on the same day or later
             .gt("startingDateTime", moment().format("yyyy-MM-DD HH:mm:ssZ"))
+            .in("group", userGroups)
             .range(page * count, page * count + count - 1)
             .order("startingDateTime", { ascending: true })
             .returns<FullEvent[]>();
@@ -110,36 +128,4 @@ class SupabaseEventRepository extends SupabaseRepository implements IEventReposi
 
 }
 
-@injectable()
-class EmptyEventRepository implements IEventRepository {
-    fetchUserGroups(user: { created_at: string | null; displayName: string | null; email: string | null; role: "user" | "admin" | "procure" | "finance" | "trainer"; userId: string; verified: boolean; }): Promise<PostgrestSingleResponse<{ user: { userId: string; }; group: { color: string; created_at: string | null; description: string | null; id: number; name: string | null; }; }[]>> {
-        throw new Error("Method not implemented.");
-    }
-    fetchSingleEvent(eventId: number): Promise<PostgrestSingleResponse<FullEvent>> {
-        throw new Error("Method not implemented.");
-    }
-    fetchEvents(user: { created_at: string | null; displayName: string | null; email: string | null; role: "user" | "admin" | "procure" | "finance" | "trainer"; userId: string; verified: boolean; }, userGroups: number[], page: number, count: number): Promise<PostgrestSingleResponse<FullEvent[]>> {
-        throw new Error("Method not implemented.");
-    }
-    updateCancellationForEvent(eventId: number, isCancelled: boolean): Promise<PostgrestSingleResponse<null>> {
-        throw new Error("Method not implemented.");
-    }
-    deleteEvent(eventId: number): Promise<PostgrestSingleResponse<null>> {
-        throw new Error("Method not implemented.");
-    }
-    deleteEventAndUpcomingEvents(eventId: number, key: string, startDateTime: string | null): Promise<void> {
-        throw new Error("Method not implemented.");
-    }
-    updateAttendance(userId: string, eventId: number, state: "Declined" | "Attending" | "Unanswered"): Promise<PostgrestSingleResponse<{ created_at: string | null; event: number; state: "Declined" | "Attending" | "Unanswered"; user: string; }>> {
-        throw new Error("Method not implemented.");
-    }
-    insertComment(user: { created_at: string | null; displayName: string | null; email: string | null; role: "user" | "admin" | "procure" | "finance" | "trainer"; userId: string; verified: boolean; }, eventId: number, comment: string): Promise<PostgrestSingleResponse<Comment>> {
-        throw new Error("Method not implemented.");
-    }
-    fetchEventAttendance(eventId: number): Promise<PostgrestSingleResponse<FullAttendance[]>> {
-        throw new Error("Method not implemented.");
-    }
-
-}
-
-export { SupabaseEventRepository, EmptyEventRepository, IEventRepository }
+export { SupabaseEventRepository, IEventRepository }

@@ -12,7 +12,7 @@ import { AdminHistoryScreenProvider } from './components/admin/AdminHistoryScree
 import { useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import Browse from './components/Browse';
-import CreateEvent from './components/training/CreateEvent';
+import CreateEventProvider from './components/training/CreateEvent';
 import { EventScreenProvider } from './components/training/EventScreen';
 import EventInformation, { EventInformationProvider } from './components/training/EventInformation';
 import CustomBottomNavigation from './components/BottomNavigation';
@@ -70,7 +70,7 @@ const App = () => {
 
             <Route path="/training" element={<EventScreenProvider />} />
             <Route path="/training/event/:selectedEventId" element={<EventInformationProvider />} />
-            <Route path="/training/create" element={<CreateEvent />} />
+            <Route path="/training/create" element={<CreateEventProvider />} />
 
             <Route path='/admin/drinks' element={<AdminDrinkListProvider />} />
             <Route path="/admin/drinks/history" element={<AdminHistoryScreenProvider />} />

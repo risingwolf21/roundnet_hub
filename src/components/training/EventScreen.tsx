@@ -49,20 +49,17 @@ type EventScreenProps = {
 }
 
 const EventScreen = ({ events, userGroups, loading, error, endReached, repository, user }: EventScreenProps) => {
-    console.log("event screen")
     const client = useClient();
     const dispatch = useAppDispatch();
     const navigate = useNavigate();
     const [eventsUpdatingAttendance, setEventsUpdatingAttendance] = useState<number[]>([]);
 
     useEffect(() => {
-        if (repository)
-            dispatch(fetchEventsAsync({ user, userGroups, page: 0, count: 20, repository }));
+        dispatch(fetchEventsAsync({ user, page: 0, count: 20, repository }));
     }, [dispatch, client, user, userGroups, repository]);
 
     const fetchEvents = (page: number, count: number) => {
-        if (repository)
-            dispatch(fetchEventsAsync({ user, userGroups, page, count, repository }));
+        dispatch(fetchEventsAsync({ user, page, count, repository }));
     }
 
     const updateAttendance = async (eventId: number, state: EventAttendance, oldState: EventAttendance) => {

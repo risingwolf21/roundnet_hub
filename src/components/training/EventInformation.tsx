@@ -37,7 +37,6 @@ export const EventInformationProvider = () => {
     const { user } = useSelector((state: RootState) => state.application);
     const { selectedEventId } = useParams();
     const dispatch = useAppDispatch();
-    const client = useClient();
     const [selectedEvent, setSelectedEvent] = useState<FullEvent>();
     const [selectedEventPlace, setSelectedEventPlace] = useState<PlaceType>();
     const repository = useDependency<IEventRepository>("IEventRepository");
@@ -84,13 +83,12 @@ const EventInformation = ({ dispatch, selectedEvent, attendanceLoading, error, u
     const [eventAttendanceState, setEventAttendanceState] = useState({ open: false, index: 0 });
     const [cancelTrainingOpen, setCancelTrainingOpen] = useState(false);
     const [deleteTrainingOpen, setDeleteTrainingOpen] = useState(false);
-    const client = useClient();
     const navigate = useNavigate();
     const [anchorEl, setAnchorEl] = useState<EventTarget & HTMLButtonElement | null>(null);
 
     useEffect(() => {
         dispatch(fetchEventAttendanceAsync({ repository, eventId: selectedEvent.id }))
-    }, [selectedEvent, dispatch, repository]);
+    }, [dispatch, repository]);
 
     const cancelTraining = async () => {
         await repository.updateCancellationForEvent(selectedEvent.id, !selectedEvent.isCancelled)

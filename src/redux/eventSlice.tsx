@@ -311,16 +311,16 @@ export const fetchUserGroupsAsync = createAsyncThunk("fetchUserGroupsAsync", asy
 
 type FetchEventsType = {
   user: User,
-  userGroups: number[],
   page: number,
   count: number,
   repository: IEventRepository
 }
 
-export const fetchEventsAsync = createAsyncThunk("events", async ({ user, userGroups = [], page = 0, count = 20, repository }: FetchEventsType) => {
-  const response = await repository.fetchEvents(user, userGroups, page, count);
+export const fetchEventsAsync = createAsyncThunk("events", async ({ user, page = 0, count = 20, repository }: FetchEventsType) => {
+  const userGroups = await repository.fetchUserGroups(user);
+  const response = await repository.fetchEvents(user, userGroups.data?.map(x => x.group.id) ?? [], page, count);
   return {
-    entries: (response.data ?? []).filter(x => _.intersection(x.groups.map(y => y.id), userGroups).length > 0).map<FullEvent>((x: FullEvent) => {
+    entries: (response.data ?? []).map<FullEvent>((x: FullEvent) => {
       return {
         ...x,
         userAttendance: x.attendance.find(y => y.user.userId === user.userId)?.state ?? "Unanswered"
