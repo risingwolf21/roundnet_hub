@@ -1,4 +1,4 @@
-import { Alert, Box, CircularProgress, Fab, Grid, responsiveFontSizes } from "@mui/material";
+import { Alert, Box, Button, CircularProgress, Fab, Grid, responsiveFontSizes } from "@mui/material";
 import { useEffect, useState } from "react";
 import CheckIcon from '@mui/icons-material/Check';
 import { captureException } from "@sentry/react";
@@ -17,6 +17,7 @@ import { Drink, DrinkCounter, Payment, User } from "src/types/supabaseTypes";
 import { fetchDrinksAsync, fetchPaymentAsync } from "src/redux/drinksSlice";
 import { AlertMessage, AlertSnackbar } from "src/components/AlertSnackbar";
 import { LoadingIndicator } from "src/components/LoadingIndicator";
+import { SwipeableDialog } from "../SwipeableDialog";
 
 const SUCCESS_MESSAGE_INFO: AlertMessage = { message: "Getränke erfolgreich gebucht!", severity: "success" };
 
@@ -82,9 +83,9 @@ const DrinkListScreen = ({ repository, user, drinks, drinksLoading, drinksError 
                     throw Error({ message: "Could not create payment" });
 
                 paymentId = paymentCreation.data.id;
-            } else if (result.data && result.data.length > 0) {
+            } else if (result.data && result.data.length > 1) {
                 paymentId = result.data[0].id;
-                captureException(new MultiplePaymentsError(), (scope) => {
+                captureException(new MultiplePaymentsError("Multiple payments found for user."), (scope) => {
                     scope.clear();
                     scope.setExtra("result", JSON.stringify(result));
                     scope.setExtra("user", JSON.stringify(user));
