@@ -6,11 +6,15 @@ import { useSelector } from "react-redux";
 import React, { FormEvent } from "react";
 import { RootState } from "../redux/store";
 import { TABLE_USER } from "../constants";
+import { AlertSnackbar } from "./AlertSnackbar";
 
 const UserScreen = () => {
 
     const { user } = useSelector((state: RootState) => state.application);
     const client = useClient();
+
+    if (!user)
+        return <AlertSnackbar close={() => { }} alertInfo={{ message: "Fatal error occured. User was null!", severity: "error" }} />
 
     const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();

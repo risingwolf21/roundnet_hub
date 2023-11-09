@@ -1,6 +1,6 @@
 import { Global } from "@emotion/react";
 import { Close } from "@mui/icons-material";
-import { Box, CssBaseline, IconButton, Skeleton, SwipeableDrawer, Toolbar, Typography, styled } from "@mui/material"
+import { Box, CssBaseline, IconButton, SwipeableDrawer, Toolbar, Typography, styled } from "@mui/material"
 import { grey } from "@mui/material/colors";
 import React from "react";
 
@@ -16,23 +16,14 @@ const StyledBox = styled(Box)(({ theme }) => ({
     backgroundColor: theme.palette.mode === 'light' ? '#fff' : grey[800],
 }));
 
-const Puller = styled(Box)(({ theme }) => ({
-    width: 30,
-    height: 6,
-    backgroundColor: theme.palette.mode === 'light' ? grey[300] : grey[900],
-    borderRadius: 3,
-    position: 'absolute',
-    top: 8,
-    left: 'calc(50% - 15px)',
-}));
-
 type SwipeableDialogProps = {
     open: boolean,
     setOpen: (value: boolean) => void,
-    children: any
+    children: any,
+    title: string
 }
 
-export const SwipeableDialog = ({ open, setOpen, children }: SwipeableDialogProps) => {
+export const SwipeableDialog = ({ open, setOpen, children, title = "" }: SwipeableDialogProps) => {
 
     const toggleDrawer = (newOpen: boolean) => () => {
         setOpen(newOpen);
@@ -76,7 +67,7 @@ export const SwipeableDialog = ({ open, setOpen, children }: SwipeableDialogProp
                         <Close />
                     </IconButton>
                     <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-                        asdf
+                        {title}
                     </Typography>
                 </Toolbar>
             </StyledBox>

@@ -1,9 +1,8 @@
-import { Alert, Box, Button, CircularProgress, Fab, Grid, responsiveFontSizes } from "@mui/material";
+import { Box, CircularProgress, Fab } from "@mui/material";
 import { useEffect, useState } from "react";
 import CheckIcon from '@mui/icons-material/Check';
 import { captureException } from "@sentry/react";
 import { Error } from "../Error";
-import { useClient } from "react-supabase";
 import { useSelector } from "react-redux";
 import CustomAppBar from "src/components/AppBar";
 import React from "react";
@@ -13,11 +12,10 @@ import { RootState } from "src/redux/store";
 import { useAppDispatch } from "src";
 import { useDependency } from "src/hooks/useDependency";
 import { IDrinkRepository } from "src/repository/IDrinkRepository";
-import { Drink, DrinkCounter, Payment, User } from "src/types/supabaseTypes";
+import { Drink, DrinkCounter, User } from "src/types/supabaseTypes";
 import { fetchDrinksAsync, fetchPaymentAsync } from "src/redux/drinksSlice";
 import { AlertMessage, AlertSnackbar } from "src/components/AlertSnackbar";
 import { LoadingIndicator } from "src/components/LoadingIndicator";
-import { SwipeableDialog } from "../SwipeableDialog";
 
 const SUCCESS_MESSAGE_INFO: AlertMessage = { message: "Getränke erfolgreich gebucht!", severity: "success" };
 
@@ -76,7 +74,7 @@ const DrinkListScreen = ({ repository, user, drinks, drinksLoading, drinksError 
             if (!result || !result.data) {
                 const paymentCreation = await repository.insertNewPayment(user.userId);
 
-                if (!paymentCreation || paymentCreation && paymentCreation.error)
+                if (!paymentCreation || (paymentCreation && paymentCreation.error))
                     throw Error({ message: paymentCreation?.error?.message ?? "Could not create payment" });
 
                 if (!paymentCreation.data.id)

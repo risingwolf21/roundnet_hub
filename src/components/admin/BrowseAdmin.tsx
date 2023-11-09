@@ -1,5 +1,5 @@
-import { AdminPanelSettings, Euro, Group, History, Liquor, GroupOutlined, ShowChart, LinkOff, Link, RunningWithErrors, CrisisAlert } from "@mui/icons-material";
-import { Avatar, List, ListItem, ListItemAvatar, ListItemText, Box, Badge, ListItemButton } from "@mui/material";
+import { AdminPanelSettings, Euro, Group, History, Liquor, GroupOutlined, ShowChart } from "@mui/icons-material";
+import { Avatar, List, ListItemAvatar, ListItemText, Box, Badge, ListItemButton } from "@mui/material";
 import { useNavigate } from "react-router";
 import { withTranslation } from 'react-i18next';
 import CustomAppBar from "../AppBar";
@@ -7,6 +7,7 @@ import { useSelector } from "react-redux";
 import React from "react";
 import { RootState } from "../../redux/store";
 import { TFunction } from "i18next";
+import { AlertSnackbar } from "../AlertSnackbar";
 
 const entries = [
     {
@@ -72,6 +73,9 @@ const BrowseAdmin = ({ t }: { t: TFunction }) => {
     const navigate = useNavigate();
     const { user } = useSelector((state: RootState) => state.application);
     const { hasNotVerifiedUsers } = useSelector((state: RootState) => state.adminUsers);
+
+    if (!user)
+        return <AlertSnackbar close={() => { }} alertInfo={{ message: "Fatal error occured. User was null!", severity: "error" }} />
 
     return <Box>
         <CustomAppBar />

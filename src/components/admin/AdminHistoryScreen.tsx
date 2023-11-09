@@ -4,14 +4,15 @@ import { groupBy } from "../../utils";
 import { useSelector } from "react-redux";
 import { InfiniteScrollList } from "../InfiniteScrollList";
 import { fetchAdminHistoryAsync } from "../../redux/adminDrinksSlice";
-import { useCallback, useContext, useDebugValue, useEffect, useState } from "react";
+import { useCallback, useEffect } from "react";
 import CustomAppBar from "../AppBar";
-import { DependencyContext, useAppDispatch } from "../..";
+import { useAppDispatch } from "../..";
 import React from "react";
 import { FullHistory } from "../../types/supabaseTypes";
 import { IAdminDrinksRepository } from "../../repository/IAdminDrinksRepository";
 import { RootState } from "../../redux/store";
 import { useDependency } from "../../hooks/useDependency";
+import { AlertSnackbar } from "../AlertSnackbar";
 
 const AdminHistoryItem = ({ items, header }: { items: FullHistory[], header: string }) => {
     return <List dense component={"div"} disablePadding subheader={<ListSubheader sx={{ zIndex: "-1" }} component="div" id="nested-list-subheader">{header}</ListSubheader>}>
@@ -33,7 +34,7 @@ export const AdminHistoryScreenProvider = () => {
     const adminDrinkRepository = useDependency<IAdminDrinksRepository>("IAdminDrinksRepository");
 
     if (!adminDrinkRepository)
-        return;
+        return <AlertSnackbar close={() => { }} alertInfo={{ message: "Fatal error occured. Repository or user was null!", severity: "error" }} />
 
     return <AdminHistoryScreen adminDrinkRepository={adminDrinkRepository} />
 }
@@ -43,13 +44,13 @@ const AdminHistoryScreen = ({ adminDrinkRepository }: { adminDrinkRepository: IA
     const { history, historyLoading, historyError, historyEndReached } = useSelector((state: RootState) => state.adminDrinks);
     const dispatch = useAppDispatch();
 
+    const fetchForPage = useCallback((page: number) => {
+        dispatch(fetchAdminHistoryAsync({ repository: adminDrinkRepository, page, count: 20 }))
+    }, [dispatch, adminDrinkRepository]);
+
     useEffect(() => {
         fetchForPage(0);
-    }, [adminDrinkRepository]);
-
-    const fetchForPage = (page: number) => {
-        dispatch(fetchAdminHistoryAsync({ repository: adminDrinkRepository, page, count: 20 }))
-    }
+    }, [fetchForPage]);
 
     return <Grid
         container

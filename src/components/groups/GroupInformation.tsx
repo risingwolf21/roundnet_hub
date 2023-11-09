@@ -13,6 +13,7 @@ import { useAppDispatch } from "../..";
 import { GroupWithUsers, SimpleUser, User, UserWithGroups } from "../../types/supabaseTypes";
 import { useDependency } from "src/hooks/useDependency";
 import { IAdminUsersRepository } from "src/repository/IAdminUsersRepository";
+import { AlertSnackbar } from "../AlertSnackbar";
 
 export const GroupInformationProvider = () => {
     const { id } = useParams();
@@ -29,7 +30,7 @@ export const GroupInformationProvider = () => {
         return <Navigate to={"/feature-not-available"} />
 
     if (!selectedGroup || !adminUsersRepository)
-        return;
+        return <AlertSnackbar close={() => { }} alertInfo={{ message: "Fatal error occured. Repository or selected group was null!", severity: "error" }} />
 
     return <GroupInformation users={users} loading={loading} group={selectedGroup} repository={adminUsersRepository} />
 }
@@ -49,10 +50,10 @@ const GroupInformation = ({ users, loading, group, repository }: GroupInformatio
 
     useEffect(() => {
         dispatch(fetchAdminUsersAsync(repository));
-    }, [client, dispatch]);
+    }, [client, dispatch, repository]);
 
-    const handleUsersAdded = (users: User[]) => {
-        
+    const handleUsersAdded = async (users: User[]) => {
+        await repository.addUsersToGroup(group, users);
     }
 
     return <Grid

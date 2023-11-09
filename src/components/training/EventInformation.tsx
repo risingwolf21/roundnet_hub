@@ -1,24 +1,24 @@
-import { Alert, AppBar, Avatar, Box, Button, CircularProgress, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Divider, IconButton, InputAdornment, List, ListItem, ListItemAvatar, ListItemIcon, ListItemSecondaryAction, ListItemText, Menu, MenuItem, Snackbar, TextField, Toolbar, Typography } from "@mui/material"
+import { Alert, AppBar, Avatar, Box, Button, Card, CardContent, CircularProgress, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Divider, IconButton, InputAdornment, List, ListItem, ListItemAvatar, ListItemIcon, ListItemSecondaryAction, ListItemText, Menu, MenuItem, Paper, Snackbar, TextField, TextFieldProps, Toolbar, Typography } from "@mui/material"
 import { AccountCircle, ArrowBack, CalendarMonth, CheckCircleOutline, Delete, DoNotDisturb, DoNotDisturbOff, Edit, Info, Map, MoreVert, Refresh, RemoveCircleOutline, Send, ThumbDownAlt, ThumbDownOffAlt, ThumbUpAlt, ThumbUpOffAlt } from "@mui/icons-material";
 import { connect, useSelector } from "react-redux";
 import moment from "moment";
-import { ChangeEvent, useState } from "react";
+import { createRef, useState } from "react";
 import EventAttendanceDialog from "./EventAttendanceDialog";
 import { useEffect } from "react";
 import { editEvent, fetchEventAttendanceAsync, fetchSingleEventAsync, onEventErrorRead, updateAttendanceAsync, upsertCommentToEventAsync } from "../../redux/eventSlice";
-import { useClient } from "react-supabase";
 import { Navigate, useNavigate, useParams } from "react-router-dom";
 import { toInteger, toNumber } from "lodash";
 import { MapContainer, TileLayer, Marker } from "react-leaflet";
 import { DeleteEventDialog } from "../DeleteEventDialog";
 import React, { Fragment } from "react";
-import { AppDispatch, useAppDispatch } from "../..";
+import { useAppDispatch } from "../..";
 import { EventAttendance, FullEvent, User } from "../../types/supabaseTypes";
 import { RootState } from "../../redux/store";
 import { PlaceType } from "./CreateEvent";
 import { AnyAction, ThunkDispatch } from "@reduxjs/toolkit";
 import { useDependency } from "src/hooks/useDependency";
 import { IEventRepository } from "src/repository/IEventRepository";
+import { SwipeableDialog } from "../SwipeableDialog";
 
 type EventInformationProps = {
     selectedEvent: FullEvent,
@@ -56,7 +56,7 @@ export const EventInformationProvider = () => {
     if (process.env.REACT_APP_training !== "enabled")
         return <Navigate to={"/feature-not-available"} />
 
-    if (!selectedEvent || !selectedEventPlace || !repository)
+    if (!selectedEvent || !selectedEventPlace || !repository || !user)
         return <Box
             sx={{
                 width: "100%",
@@ -83,12 +83,14 @@ const EventInformation = ({ dispatch, selectedEvent, attendanceLoading, error, u
     const [eventAttendanceState, setEventAttendanceState] = useState({ open: false, index: 0 });
     const [cancelTrainingOpen, setCancelTrainingOpen] = useState(false);
     const [deleteTrainingOpen, setDeleteTrainingOpen] = useState(false);
+    const [commentsOpen, setCommentsOpen] = useState(false);
     const navigate = useNavigate();
+    const inputRef = createRef<HTMLInputElement>();
     const [anchorEl, setAnchorEl] = useState<EventTarget & HTMLButtonElement | null>(null);
 
     useEffect(() => {
         dispatch(fetchEventAttendanceAsync({ repository, eventId: selectedEvent.id }))
-    }, [dispatch, repository]);
+    }, [dispatch, repository, selectedEvent.id]);
 
     const cancelTraining = async () => {
         await repository.updateCancellationForEvent(selectedEvent.id, !selectedEvent.isCancelled)
@@ -115,8 +117,8 @@ const EventInformation = ({ dispatch, selectedEvent, attendanceLoading, error, u
         event.preventDefault();
         const data = new FormData(event.currentTarget);
 
-        const comment = data.get("comment");
-
+        const comment = data.get("comment")?.toString();
+        console.log(comment)
         if (!comment)
             return;
 
@@ -230,119 +232,162 @@ const EventInformation = ({ dispatch, selectedEvent, attendanceLoading, error, u
 
                     <Divider />
                     {
-                        selectedEventPlace && <>
-                            <ListItem sx={{ '&.MuiListItem-root': { pl: 0, pb: 0 } }}>
-                                <ListItemAvatar>
-                                    <Map />
-                                </ListItemAvatar>
-                                <ListItemText sx={{ whiteSpace: 'normal' }} primary={selectedEventPlace.name} />
-                            </ListItem>
-                            <ListItem sx={{ '&.MuiListItem-root': { pl: 0, pb: 0, pt: 0 } }}>
-                                <ListItemAvatar>
-                                </ListItemAvatar>
-                                <ListItemText>
-                                    <Box sx={{ width: "100%", height: "150px" }}>
-                                        <MapContainer
-                                            style={{ width: "100%", height: "150px", borderRadius: "16px" }}
-                                            center={[selectedEventPlace.lat, selectedEventPlace.lon]}
-                                            zoom={15}
-                                            dragging={false}
-                                            doubleClickZoom={false}
-                                            scrollWheelZoom={false}
-                                            attributionControl={false}
-                                            zoomControl={false}>
-                                            <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-                                            <Marker
-                                                position={[selectedEventPlace.lat, selectedEventPlace.lon]}
-                                                interactive={false} />
-                                        </MapContainer>
-                                    </Box>
-                                </ListItemText>
-                            </ListItem>
-                        </>
+                        selectedEventPlace && <Card sx={{ mr: 1, mt: 2, mb: 2, pb: 0 }} onClick={() => setCommentsOpen(true)}>
+                            <CardContent sx={{ '&.MuiCardContent-root': { paddingBottom: 1 } }}>
+                                <Typography sx={{ fontSize: 16, fontWeight: "bold" }} color="text.secondary" gutterBottom>
+                                    {`Ort - ${selectedEventPlace.name}`}
+                                </Typography>
+                                <Box sx={{ width: "100%", height: "150px", alignSelf: "center" }}>
+                                    <MapContainer
+                                        style={{ width: "100%", height: "125px", borderRadius: "16px" }}
+                                        center={[selectedEventPlace.lat, selectedEventPlace.lon]}
+                                        zoom={15}
+                                        dragging={false}
+                                        doubleClickZoom={false}
+                                        scrollWheelZoom={false}
+                                        attributionControl={false}
+                                        zoomControl={false}>
+                                        <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+                                        <Marker
+                                            position={[selectedEventPlace.lat, selectedEventPlace.lon]}
+                                            interactive={false} />
+                                    </MapContainer>
+                                </Box>
+                            </CardContent>
+                        </Card>
                     }
 
-                    <Typography variant="h6" fontWeight="bold">Beschreibung</Typography>
-                    <Typography pb={1}>{selectedEvent?.description}</Typography>
-                    <Divider />
-                    <List subheader={<Typography pt={1} variant="h6" fontWeight="bold">Teilnehmer</Typography>}>
-                        <ListItem key={"attendEvent"} sx={{ '&.MuiListItem-root': { paddingLeft: 0 } }} onClick={() => attendanceLoading ? {} : setEventAttendanceState({ open: true, index: 0 })}>
-                            <ListItemAvatar>
-                                {
-                                    attendanceLoading ? <CircularProgress size={"20px"} /> : <CheckCircleOutline color="success" />
-                                }
-                            </ListItemAvatar>
-                            <ListItemText primary={(selectedEvent?.attendance?.filter(x => x.state === "Attending").length ?? 0) + " zusagen"} />
-                            <ListItemSecondaryAction>
-                                <IconButton onClick={() => updateAttendance("Attending", selectedEvent.userAttendance)} disabled={selectedEvent.isCancelled}>
-                                    {
-                                        selectedEvent.userAttendance === "Attending"
-                                            ? <ThumbUpAlt fontSize="inherit" sx={{ fontSize: "28px", color: "green" }} />
-                                            : <ThumbUpOffAlt fontSize="inherit" sx={{ fontSize: "28px" }} />
-                                    }
-                                </IconButton>
-                            </ListItemSecondaryAction>
-                        </ListItem>
-                        <ListItem key={"declineEvent"} sx={{ '&.MuiListItem-root': { paddingLeft: 0 } }} onClick={() => attendanceLoading ? {} : setEventAttendanceState({ open: true, index: 1 })}>
-                            <ListItemAvatar>
-                                {
-                                    attendanceLoading ? <CircularProgress size={"20px"} /> : <RemoveCircleOutline color="error" />
-                                }
-                            </ListItemAvatar>
-                            <ListItemText primary={(selectedEvent?.attendance?.filter(x => x.state === "Declined").length ?? 0) + " absagen"} />
-                            <ListItemSecondaryAction>
-                                <IconButton onClick={() => updateAttendance("Declined", selectedEvent.userAttendance)} disabled={selectedEvent.isCancelled}>
-                                    {
-                                        selectedEvent.userAttendance === "Declined"
-                                            ? <ThumbDownAlt fontSize="inherit" sx={{ fontSize: "28px", color: "red" }} />
-                                            : <ThumbDownOffAlt fontSize="inherit" sx={{ fontSize: "28px" }} />
-                                    }
-                                </IconButton>
-                            </ListItemSecondaryAction>
-                        </ListItem>
-                    </List>
-                    <Divider />
-                    <List sx={{ marginBottom: 15 }} subheader={<Typography pt={2} variant="h6" fontWeight="bold">Kommentare</Typography>}>
-                        {
-                            selectedEvent.comments && selectedEvent.comments.map((x, index) => <ListItem divider dense key={index} sx={{ '&.MuiListItem-root': { paddingLeft: 0 } }}>
-                                <ListItemAvatar>
-                                    <Avatar>
+                    <Card sx={{ mr: 1, mt: 2, mb: 2, pb: 0 }} onClick={() => setCommentsOpen(true)}>
+                        <CardContent sx={{ '&.MuiCardContent-root': { paddingBottom: 1 } }}>
+                            <Typography sx={{ fontSize: 16, fontWeight: "bold" }} color="text.secondary" gutterBottom>
+                                Beschreibung
+                            </Typography>
+                            <Typography pb={1}>{selectedEvent?.description}</Typography>
+                        </CardContent>
+                    </Card>
+
+                    <Card sx={{ mr: 1, mt: 2, mb: 2, pb: 0 }} onClick={() => setCommentsOpen(true)}>
+                        <CardContent sx={{ '&.MuiCardContent-root': { paddingBottom: 1 } }}>
+                            <Typography sx={{ fontSize: 16, fontWeight: "bold" }} color="text.secondary" gutterBottom>
+                                Teilnehmer
+                            </Typography>
+                            <List>
+                                <ListItem key={"attendEvent"} sx={{ '&.MuiListItem-root': { paddingLeft: 0 } }} onClick={() => attendanceLoading ? {} : setEventAttendanceState({ open: true, index: 0 })}>
+                                    <ListItemAvatar>
                                         {
-                                            x.pending
-                                                ? <CircularProgress size={"20px"} />
-                                                : <Typography style={{ fontWeight: "bold" }}>{x.displayName?.charAt(0)}</Typography>
+                                            attendanceLoading ? <CircularProgress size={"20px"} /> : <CheckCircleOutline color="success" />
                                         }
+                                    </ListItemAvatar>
+                                    <ListItemText primary={(selectedEvent?.attendance?.filter(x => x.state === "Attending").length ?? 0) + " zusagen"} />
+                                    <ListItemSecondaryAction>
+                                        <IconButton onClick={() => updateAttendance("Attending", selectedEvent.userAttendance)} disabled={selectedEvent.isCancelled}>
+                                            {
+                                                selectedEvent.userAttendance === "Attending"
+                                                    ? <ThumbUpAlt fontSize="inherit" sx={{ fontSize: "28px", color: "green" }} />
+                                                    : <ThumbUpOffAlt fontSize="inherit" sx={{ fontSize: "28px" }} />
+                                            }
+                                        </IconButton>
+                                    </ListItemSecondaryAction>
+                                </ListItem>
+                                <ListItem key={"declineEvent"} sx={{ '&.MuiListItem-root': { paddingLeft: 0 } }} onClick={() => attendanceLoading ? {} : setEventAttendanceState({ open: true, index: 1 })}>
+                                    <ListItemAvatar>
+                                        {
+                                            attendanceLoading ? <CircularProgress size={"20px"} /> : <RemoveCircleOutline color="error" />
+                                        }
+                                    </ListItemAvatar>
+                                    <ListItemText primary={(selectedEvent?.attendance?.filter(x => x.state === "Declined").length ?? 0) + " absagen"} />
+                                    <ListItemSecondaryAction>
+                                        <IconButton onClick={() => updateAttendance("Declined", selectedEvent.userAttendance)} disabled={selectedEvent.isCancelled}>
+                                            {
+                                                selectedEvent.userAttendance === "Declined"
+                                                    ? <ThumbDownAlt fontSize="inherit" sx={{ fontSize: "28px", color: "red" }} />
+                                                    : <ThumbDownOffAlt fontSize="inherit" sx={{ fontSize: "28px" }} />
+                                            }
+                                        </IconButton>
+                                    </ListItemSecondaryAction>
+                                </ListItem>
+                            </List>
+                        </CardContent>
+                    </Card>
+
+                    <Card sx={{ mr: 1, mt: 2, mb: 2, pb: 0 }} onClick={() => setCommentsOpen(true)}>
+                        <CardContent sx={{ '&.MuiCardContent-root': { paddingBottom: 1 } }}>
+                            <Typography sx={{ fontSize: 16, fontWeight: "bold" }} color="text.secondary" gutterBottom>
+                                {`Kommentare ${selectedEvent.comments.length}`}
+                            </Typography>
+                            <ListItem dense sx={{ '&.MuiListItem-root': { paddingLeft: 0 } }}>
+                                <ListItemAvatar>
+                                    <Avatar sx={{ width: 25, height: 25 }}>
+                                        <Typography fontSize={12}>{user.displayName.charAt(0)}</Typography>
                                     </Avatar>
                                 </ListItemAvatar>
-                                <ListItemText primary={<Fragment>
-                                    <Box sx={{ display: "flex", flexDirection: "row", alignItems: "center" }}>
-                                        <Typography style={{ fontWeight: "bold", fontSize: "11pt" }}>{x.displayName}</Typography>
-                                    </Box>
-                                </Fragment>} secondary={<Fragment>
-                                    <Box sx={{ display: "flex", flexDirection: "row", alignItems: "center" }}>
-                                        <Typography style={{ color: "#000" }}>{x.comment}</Typography>
-                                    </Box>
-                                </Fragment>} />
-                                <ListItemSecondaryAction sx={{ height: "100%" }}>
-                                    <Typography style={{ fontSize: "10pt", color: "rgba(0,0,0,0.6)", marginTop: "8px", alignContent: "baseline" }}>{moment(x.created_at).format("HH:mm")}</Typography>
-                                </ListItemSecondaryAction>
-                            </ListItem>)
-                        }
-                    </List>
-                    <Box component={"form"} onSubmit={handleCommentSubmit} sx={{ pb: 2, pr: 2 }}>
-                        <TextField
-                            id="comment"
-                            fullWidth
-                            placeholder="Write a comment..."
-                            sx={{ '& fieldset': { borderRadius: "30px" }, '& input': { pt: 1.5, pb: 1.5 } }}
-                            InputProps={{
-                                endAdornment: <InputAdornment position="end">
-                                    <IconButton edge="end" type="submit">
-                                        <Send />
-                                    </IconButton>
-                                </InputAdornment>,
-                            }} />
-                    </Box>
+                                <ListItemText>
+                                    <TextField
+                                        fullWidth
+                                        disabled
+                                        onClick={() => {
+                                            setCommentsOpen(true);
+                                            inputRef.current?.focus();
+                                        }}
+                                        placeholder="Write a comment..."
+                                        sx={{
+                                            width: "100%", '& fieldset': { borderRadius: "30px" }, '& input': { pt: 0, pb: 0 }, '& .MuiInputBase-input.Mui-disabled': {
+                                                WebkitTextFillColor: "#000000",
+                                            },
+                                        }} />
+                                </ListItemText>
+                            </ListItem>
+                        </CardContent>
+                    </Card>
+
+                    <SwipeableDialog open={commentsOpen} setOpen={setCommentsOpen} title={"Kommentare"}>
+                        <Box sx={{ display: "flex", flexDirection: "column" }}>
+                            <List sx={{ mb: 6 }}>
+                                {
+                                    selectedEvent.comments && selectedEvent.comments.map((x, index) => <ListItem divider dense key={index} sx={{ '&.MuiListItem-root': { paddingLeft: 0 } }}>
+                                        <ListItemAvatar>
+                                            <Avatar>
+                                                {
+                                                    x.pending
+                                                        ? <CircularProgress size={"20px"} />
+                                                        : <Typography style={{ fontWeight: "bold" }}>{x.displayName?.charAt(0)}</Typography>
+                                                }
+                                            </Avatar>
+                                        </ListItemAvatar>
+                                        <ListItemText primary={<Fragment>
+                                            <Box sx={{ display: "flex", flexDirection: "row", alignItems: "center" }}>
+                                                <Typography style={{ fontWeight: "bold", fontSize: "11pt" }}>{x.displayName}</Typography>
+                                            </Box>
+                                        </Fragment>} secondary={<Fragment>
+                                            <Box sx={{ display: "flex", flexDirection: "row", alignItems: "center" }}>
+                                                <Typography style={{ color: "#000" }}>{x.comment}</Typography>
+                                            </Box>
+                                        </Fragment>} />
+                                        <ListItemSecondaryAction sx={{ height: "100%" }}>
+                                            <Typography style={{ fontSize: "10pt", color: "rgba(0,0,0,0.6)", marginTop: "8px", alignContent: "baseline" }}>{moment(x.created_at).format("HH:mm")}</Typography>
+                                        </ListItemSecondaryAction>
+                                    </ListItem>)
+                                }
+                            </List>
+                            <Box sx={{ position: "absolute", background: "#fff", bottom: 0, left: 0, right: 0, p: 2 }} component={"form"} onSubmit={handleCommentSubmit}>
+                                <TextField
+                                    ref={inputRef}
+                                    id="comment"
+                                    name="comment"
+                                    fullWidth
+                                    placeholder="Write a comment..."
+                                    sx={{ '& fieldset': { borderRadius: "30px" }, '& input': { pt: 1.5, pb: 1.5 } }}
+                                    InputProps={{
+                                        endAdornment: <InputAdornment position="end">
+                                            <IconButton edge="end" type="submit">
+                                                <Send />
+                                            </IconButton>
+                                        </InputAdornment>,
+                                    }} />
+                            </Box>
+                        </Box>
+                    </SwipeableDialog>
+
                 </Box>
             </Box>
             <EventAttendanceDialog open={eventAttendanceState.open} index={eventAttendanceState.index} handleClose={() => setEventAttendanceState({ open: false, index: 0 })} event={selectedEvent} />

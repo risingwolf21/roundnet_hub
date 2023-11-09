@@ -50,7 +50,7 @@ const CustomBottomNavigation = ({ t }: { t: TFunction }) => {
     }, [tabs]);
 
     useEffect(() => {
-        if (user.role !== "user") {
+        if (user && user.role !== "user") {
             setTabs([...defaultTabs, {
                 translationKey: "admin",
                 path: "browse-admin",

@@ -1,10 +1,8 @@
-import { Alert, Box, CircularProgress, Divider, Fab, Grid, IconButton, LinearProgress, ListItem, ListItemAvatar, ListItemSecondaryAction, ListItemText, Snackbar, Typography } from "@mui/material";
+import { Alert, Divider, Fab, Grid, LinearProgress, Snackbar } from "@mui/material";
 import { useSelector } from "react-redux";
-import moment from "moment";
 import { Navigate, useNavigate } from 'react-router-dom';
 import { fetchEventsAsync, onEventErrorRead, updateAttendanceAsync } from "../../redux/eventSlice";
 import AddIcon from '@mui/icons-material/Add';
-import { ThumbDownAlt, ThumbDownOffAlt, ThumbUpAlt, ThumbUpOffAlt } from "@mui/icons-material";
 import { useClient } from "react-supabase";
 import React, { useState, useEffect } from "react";
 import { InfiniteScrollList } from "../InfiniteScrollList";
@@ -15,6 +13,7 @@ import { useAppDispatch } from "../..";
 import { useDependency } from "../../hooks/useDependency";
 import { IEventRepository } from "../../repository/IEventRepository";
 import { EventItem } from "./EventItem";
+import { AlertSnackbar } from "../AlertSnackbar";
 
 export const EventScreenProvider = () => {
     const { items: events, userGroups, loading, error, endReached } = useSelector((state: RootState) => state.events);
@@ -22,7 +21,7 @@ export const EventScreenProvider = () => {
     const repository = useDependency<IEventRepository>("IEventRepository");
 
     if (!user || !repository)
-        return;
+        return <AlertSnackbar close={() => { }} alertInfo={{ message: "Fatal error occured. Repository or user was null!", severity: "error" }} />
 
     if (process.env.REACT_APP_training !== "enabled")
         return <Navigate to={"/feature-not-available"} />

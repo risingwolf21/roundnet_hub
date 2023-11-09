@@ -2,7 +2,7 @@ import { PayloadAction, createSlice } from '@reduxjs/toolkit';
 import { User } from '../types/supabaseTypes';
 
 type ApplicationSliceState = {
-    user: User,
+    user: User | null,
     mode: string,
     appUpdateAvailable: boolean,
     appVersion: string,
@@ -10,7 +10,7 @@ type ApplicationSliceState = {
 }
 
 const initialState = {
-    user: {},
+    user: null,
     mode: "drinks",
     appUpdateAvailable: false,
     appVersion: "",

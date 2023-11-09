@@ -7,10 +7,8 @@ import { TimePicker } from '@mui/x-date-pickers/TimePicker';
 import { FormEvent, useState } from "react";
 import moment, { Moment } from "moment";
 import EventRepeatIcon from '@mui/icons-material/EventRepeat';
-import { useClient } from "react-supabase";
 import { withTranslation } from 'react-i18next';
 import React, { useEffect } from "react";
-import { connect } from "react-redux";
 import SearchPlacesDialog from "./SearchPlacesDialog";
 import { MapContainer, TileLayer, Marker, useMap } from "react-leaflet";
 import { TFunction } from "i18next";
@@ -19,6 +17,7 @@ import { RootState } from "../../redux/store";
 import { useDependency } from "src/hooks/useDependency";
 import { IEventRepository } from "src/repository/IEventRepository";
 import { useSelector } from "react-redux";
+import { AlertSnackbar } from "../AlertSnackbar";
 
 export type PlaceType = {
     name: string,
@@ -31,7 +30,7 @@ const CreateEventProvider = ({ t }: { t: TFunction }) => {
     const eventToEdit = useSelector((state: RootState) => state.events.eventToEdit);
 
     if (!repository)
-        return;
+        return <AlertSnackbar close={() => { }} alertInfo={{ message: "Fatal error occured. Repository or user was null!", severity: "error" }} />
 
     return <CreateEvent t={t} eventToEdit={eventToEdit} repository={repository} />
 }
@@ -45,7 +44,6 @@ type CreateEventProps = {
 const CreateEvent = ({ t, eventToEdit, repository }: CreateEventProps) => {
 
     const navigate = useNavigate();
-    const client = useClient();
 
     const [startDate, setStartDate] = useState<Moment | null>(moment());
     const [startTime, setStartTime] = useState<Moment | null>(moment());
