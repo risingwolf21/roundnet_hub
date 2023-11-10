@@ -6,6 +6,7 @@ import { useTheme } from '@mui/material/styles';
 import { useEffect } from "react";
 import React from "react";
 import { FullEvent } from "../../types/supabaseTypes";
+import { SwipeableDialog } from "../SwipeableDialog";
 
 function TabPanel(props: any) {
     const { children, value, index, ...other } = props;
@@ -26,11 +27,11 @@ function TabPanel(props: any) {
 type EventAttendanceDialogProps = {
     open: boolean,
     index: number,
-    handleClose: () => void,
+    setOpen: (value: boolean) => void,
     event: FullEvent
 }
 
-const EventAttendanceDialog = ({ open, index, handleClose, event }: EventAttendanceDialogProps) => {
+const EventAttendanceDialog = ({ open, index, setOpen, event }: EventAttendanceDialogProps) => {
 
     const [value, setValue] = useState(index ?? 0);
     const theme = useTheme();
@@ -43,33 +44,19 @@ const EventAttendanceDialog = ({ open, index, handleClose, event }: EventAttenda
         setValue(value);
     };
 
-    return <Dialog
-        fullScreen
+    return <SwipeableDialog
+        title="Teilnehmer"
         open={open}
-        onClose={handleClose}
-        TransitionComponent={SlideUpTransition}>
-        <Box>
-            <AppBar position="sticky">
-                <Toolbar>
-                    <IconButton
-                        edge="start"
-                        color="inherit"
-                        onClick={handleClose}
-                        sx={{ mr: 2 }}
-                        aria-label="close">
-                        <Close />
-                    </IconButton>
-                    <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-                        Teilnehmer
-                    </Typography>
-                </Toolbar>
+        minHeight={60}
+        setOpen={setOpen}>
+        <Box sx={{ paddingLeft: 0 }}>
+            <AppBar position="sticky" sx={{ '&.MuiAppBar-root': { backgroundColor: "#fff", color: "#000" } }}>
                 <Tabs
                     value={value}
                     onChange={handleChange}
-                    indicatorColor="secondary"
+                    indicatorColor="primary"
                     textColor="inherit"
-                    variant="fullWidth"
-                    aria-label="full width tabs example">
+                    variant="fullWidth">
                     <Tab label="Zusagen" />
                     <Tab label="Absagen" />
                 </Tabs>
@@ -103,7 +90,7 @@ const EventAttendanceDialog = ({ open, index, handleClose, event }: EventAttenda
                 </List>
             </TabPanel>
         </Box>
-    </Dialog>
+    </SwipeableDialog>
 }
 
 export default EventAttendanceDialog;

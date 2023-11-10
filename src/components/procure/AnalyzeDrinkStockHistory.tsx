@@ -1,15 +1,13 @@
-import { Box, Card, CardContent, Grid, LinearProgress, Paper, Typography } from "@mui/material";
+import { Box, Card, CardContent, Grid, LinearProgress, Typography } from "@mui/material";
 import { useSelector } from "react-redux";
 import CustomAppBar from "../AppBar";
 import React, { useEffect, useState } from "react";
-import { useClient } from "react-supabase";
 import { PieChart } from '@mui/x-charts/PieChart';
-import { BarChart } from '@mui/x-charts/BarChart';
 import { groupBy } from "../../utils";
 import { RootState } from "../../redux/store";
 import { useDependency } from "../../hooks/useDependency";
 import { IDrinkRepository } from "../../repository/IDrinkRepository";
-import { AxisConfig, ChartsXAxisProps } from "@mui/x-charts/models/axis";
+import { AlertSnackbar } from "../AlertSnackbar";
 
 export type DrinkStockType = {
     count: number,
@@ -29,14 +27,13 @@ export const AnalyzeDrinkStockHistoryProvider = () => {
     const { loading } = useSelector((state: RootState) => state.adminDrinks);
 
     if (!drinksRepository)
-        return;
+        return <AlertSnackbar close={() => { }} alertInfo={{ message: "Fatal error occured. Repository or user was null!", severity: "error" }} />
 
     return <AnalyzeDrinkStockHistory drinksRepository={drinksRepository} loading={loading} />
 }
 
 const AnalyzeDrinkStockHistory = ({ drinksRepository, loading }: AnalyzeDrinkStockHistoryProps) => {
     const [mappedHistory, setMappedHistory] = useState<Map<string, DrinkStockType[]>>();
-    const [sevenDayHistory, setSevenDayHistory] = useState<Map<string, DrinkStockType[]>>();
 
     useEffect(() => {
         drinksRepository.fetchHistoryStockType().then(result => {
@@ -52,34 +49,6 @@ const AnalyzeDrinkStockHistory = ({ drinksRepository, loading }: AnalyzeDrinkSto
         justifyContent="center">
         <CustomAppBar navigateBack />
         {loading && <LinearProgress style={{ position: "fixed", left: 0, right: 0, top: 56 }} />}
-        {/* <List sx={{ width: "100%" }}>
-            {
-                drinks && drinks.filter(x => x.active).map((drink, index) => <>
-                    <ListItem key={index}>
-                        <ListItemAvatar>
-                            <Avatar>
-                                {
-                                    drink.imageUrl
-                                        ? <img src={drink.imageUrl} alt="logo" width={40} height={40} />
-                                        : <LocalDrink />
-                                }
-                            </Avatar>
-                        </ListItemAvatar>
-                        <ListItemText primary={drink.name} />
-                    </ListItem>
-                    {
-                        mappedHistory && mappedHistory[drink.id] && <LineChart
-                            height={300}
-                            xAxis={[{ data: mappedHistory[drink.id].map(x => x.stock) }]}
-                            series={[
-                                {
-                                    data: mappedHistory[drink.id].map(x => x.stock),
-                                },
-                            ]} />
-                    }
-                </>)
-            }
-        </List> */}
         <Box sx={{ width: "100%" }}>
             <Card sx={{ m: 2, borderRadius: 3 }}>
                 <CardContent>

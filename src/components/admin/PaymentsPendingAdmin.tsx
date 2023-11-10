@@ -1,4 +1,4 @@
-import { AppBar, Button, Dialog, DialogActions, DialogContent, DialogTitle, Fab, Grid, IconButton, LinearProgress, List, ListItem, ListItemAvatar, ListItemSecondaryAction, ListItemText, Toolbar, Typography } from "@mui/material";
+import { AppBar, Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, Fab, Grid, IconButton, LinearProgress, List, ListItem, ListItemAvatar, ListItemSecondaryAction, ListItemText, Toolbar, Typography } from "@mui/material";
 import CheckIcon from "@mui/icons-material/Check"
 import { useState } from "react";
 import { Error } from "../Error";
@@ -16,6 +16,7 @@ import { RootState } from "../../redux/store";
 import { FullPayment, PaymentState } from "../../types/supabaseTypes";
 import { TABLE_PAYMENTS } from "../../constants";
 import { useCaptureException } from "../../hooks/useCaptureException";
+import { SwipeableDialog } from "../SwipeableDialog";
 
 const PaymentsPendingAdmin = () => {
 
@@ -117,11 +118,8 @@ const PaymentsPendingAdmin = () => {
         <Fab sx={{ background: "#66bb6a", position: "fixed", right: "16px", bottom: "72px" }} onClick={() => dispatch(fetchAdminsPaymentsAsync({ client }))}>
             <Refresh sx={{ color: "white" }} />
         </Fab>
-        <Dialog open={open} onClose={() => setOpen(false)} title="Zahlung bestätigen">
-            <DialogTitle id="alert-dialog-title">
-                {"Zahlung bestätigen"}
-            </DialogTitle>
-            <DialogContent>
+        <SwipeableDialog open={open} setOpen={setOpen} title="Zahlung bestätigen">
+            <Box sx={{ justifyContent: "center", alignItems: "center", display: "flex", flexDirection: "column" }}>
                 <Typography>
                     Hiermit bestätigst du, dass
                 </Typography>
@@ -140,14 +138,14 @@ const PaymentsPendingAdmin = () => {
                 <Typography>
                     getätigt hat.
                 </Typography>
-            </DialogContent>
-            <DialogActions>
-                <Button onClick={() => setOpen(false)}>Abbrechen</Button>
-                <Button onClick={() => confirmPayment(currentPayment)} autoFocus>
+            </Box>
+            <Box sx={{ display: "flex", flexDirection: "row", flexGrow: 1, position: "absolute", left: 0, right: 0, bottom: 0 }}>
+                <Button variant="outlined" fullWidth sx={{ ml: 2, mr: 1, mb: 2, borderRadius: "50px !important", fontSize: "16px", fontFamily: "sans-serif", lineSpacing: "24px" }} onClick={() => setOpen(false)}>Abbrechen</Button>
+                <Button variant="contained" fullWidth sx={{ ml: 1, mr: 2, mb: 2, borderRadius: "50px !important", fontSize: "16px", fontFamily: "sans-serif", lineSpacing: "24px" }} onClick={() => confirmPayment(currentPayment)} autoFocus>
                     Bestätigen
                 </Button>
-            </DialogActions>
-        </Dialog>
+            </Box>
+        </SwipeableDialog>
     </Grid>
 
 }

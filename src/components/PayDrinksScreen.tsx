@@ -2,20 +2,18 @@ import { Alert, Box, Button, Divider, List, ListItem, ListItemAvatar, ListItemSe
 import { PAYPAL_ME_ADDRESS } from "../constants";
 import EuroIcon from '@mui/icons-material/Euro';
 import { groupBy } from '../utils';
-import { Error } from "./Error";
 import { Loading } from "./Loading";
 import CustomAppBar from "./AppBar";
 import { useSelector } from "react-redux";
 import { useEffect } from "react";
 import { fetchDrinksToPayAsync, fetchPaymentAsync } from "../redux/drinksSlice";
-import { useClient } from "react-supabase";
 import React from "react";
 import { RootState } from "../redux/store";
 import { useAppDispatch } from "..";
 import { PaymentHistory, User } from "../types/supabaseTypes";
-import { useCaptureException } from "../hooks/useCaptureException";
 import { useDependency } from "../hooks/useDependency";
 import { IDrinkRepository } from "../repository/IDrinkRepository";
+import { AlertSnackbar } from "./AlertSnackbar";
 
 const PayDrinksButton = ({ amountToPay }: { amountToPay: number }) => {
 
@@ -73,8 +71,8 @@ export const PayDrinksScreenProvider = () => {
     const { user } = useSelector((state: RootState) => state.application);
     const { paymentHistory, paymentError, paymentLoading } = useSelector((state: RootState) => state.drinks);
 
-    if (!drinksRepository)
-        return;
+    if (!drinksRepository || !user)
+        return <AlertSnackbar close={() => { }} alertInfo={{ message: "Fatal error occured. Repository or selected group was null!", severity: "error" }} />
 
     return <PayDrinksScreen
         drinksRepository={drinksRepository}

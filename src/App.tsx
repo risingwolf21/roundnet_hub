@@ -1,6 +1,5 @@
 import * as React from 'react';
 import { Grid } from "@mui/material";
-import { DrinkListProvider } from './components/DrinkList';
 import UserScreen from './components/User';
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import { HistoryScreenProvider } from './components/HistoryScreen';

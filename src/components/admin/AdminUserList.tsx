@@ -1,23 +1,21 @@
-import { AppBar, Badge, Box, Chip, Dialog, Grid, IconButton, LinearProgress, List, ListItem, ListItemAvatar, ListItemSecondaryAction, ListItemText, Toolbar, Typography } from "@mui/material";
-import { AccountCircle, AdminPanelSettings, ArrowBack, Close, Edit, EuroRounded, Liquor, PersonOff, Refresh, Verified } from "@mui/icons-material";
+import { AppBar, Badge, Box, Chip, Grid, IconButton, LinearProgress, List, ListItem, ListItemAvatar, ListItemSecondaryAction, ListItemText, Toolbar, Typography } from "@mui/material";
+import { AccountCircle, AdminPanelSettings, ArrowBack, Edit, EuroRounded, Liquor, PersonOff, Refresh, Verified } from "@mui/icons-material";
 import SearchIcon from "@mui/icons-material/Search";
 import EditUserDialog, { UserEdited } from "./EditUserDialog";
 import { Fragment, useState } from "react";
-import { useClient } from "react-supabase";
 import { Error } from "../Error";
-import { captureException } from "@sentry/react";
 import { useSelector } from "react-redux";
 import { useEffect } from "react";
 import { fetchAdminUsersAsync } from "../../redux/adminUserSlice";
 import { useNavigate } from "react-router-dom";
 import { Search, SearchIconWrapper, StyledInputBase } from "../SearchBar";
-import { SlideUpTransition } from "../../utils";
 import React from "react";
 import { User, UserWithGroups } from "../../types/supabaseTypes";
 import { useAppDispatch } from "../..";
 import { RootState } from "../../redux/store";
 import { IAdminUsersRepository } from "src/repository/IAdminUsersRepository";
 import { useDependency } from "src/hooks/useDependency";
+import { AlertSnackbar } from "../AlertSnackbar";
 
 const AdminUserItem = ({ user, onEditClick }: { user: User, onEditClick: () => void }) => {
     let color = "rgba(0, 0, 0, 0.54)";
@@ -57,7 +55,7 @@ export const AdminUserListProvider = () => {
     const adminUsersRepository = useDependency<IAdminUsersRepository>("IAdminUsersRepository");
 
     if (!adminUsersRepository)
-        return;
+        return <AlertSnackbar close={() => { }} alertInfo={{ message: "Fatal error occured. Repository or user was null!", severity: "error" }} />
 
     return <AdminUserList repository={adminUsersRepository} />
 }
@@ -71,9 +69,7 @@ const AdminUserList = ({ repository }: AdminUserListProps) => {
     const [editUserOpen, setEditUserOpen] = useState(false);
     const [currentUser, setCurrentUser] = useState<UserWithGroups | null>();
     const [searchString, setSearchString] = useState("");
-    const [open, setOpen] = useState(false);
     const [showNotVerifiedUsers, setShowNotVerifiedUsers] = useState(false)
-    const client = useClient();
     const dispatch = useAppDispatch();
     const navigate = useNavigate();
 
@@ -153,48 +149,6 @@ const AdminUserList = ({ repository }: AdminUserListProps) => {
                 deleteUser={deleteUser}
                 onUserEditFinished={onUserEditFinished} />
         }
-
-        <Dialog
-            fullWidth
-            scroll="body"
-            TransitionComponent={SlideUpTransition}
-            sx={{
-                "& .MuiDialog-container": {
-                    "& .MuiPaper-root": {
-                        width: "100%",
-                        maxWidth: "100%",
-                        minHeight: "50%",
-                        position: "fixed",
-                        left: 0,
-                        right: 0,
-                        bottom: 0,
-                        marginLeft: 0,
-                        marginBottom: 0,
-                        marginRight: 0,
-                        borderTopLeftRadius: "24px",
-                        borderTopRightRadius: "24px",
-                        borderBottomRightRadius: 0,
-                        borderBottomLeftRadius: 0
-                    },
-                },
-            }}
-            onClose={() => setOpen(false)}
-            open={open}>
-            <Toolbar sx={{ mt: 1 }}>
-                <IconButton
-                    size="large"
-                    edge="start"
-                    color="inherit"
-                    onClick={() => setOpen(false)}>
-                    <Close />
-                </IconButton>
-                <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>test</Typography>
-            </Toolbar>
-            <List>
-
-            </List>
-        </Dialog>
-
     </Grid >);
 }
 

@@ -30,16 +30,11 @@ export const formatDateToDatabase = (date: MomentInput) => {
 }
 
 export class RegistrationError extends Error {
-    constructor(message: string) {
-        super(message);
-    }
+
 }
 
 export class MultiplePaymentsError extends Error {
 
-    constructor() {
-        super();
-    }
 }
 
 export class FetchingError extends Error {

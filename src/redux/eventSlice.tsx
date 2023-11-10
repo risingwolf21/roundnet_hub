@@ -174,7 +174,7 @@ export const eventSlice = createSlice({
         } else {
           state.items = [
             ...state.items.slice(0, index),
-            action.payload.data,
+            action.payload.data as FullEvent,
             ...state.items.slice(index + 1)
           ]
         }
@@ -337,9 +337,14 @@ export const fetchEventAttendanceAsync = createAsyncThunk("fetchEventAttendanceA
   return { data: attendance.data, eventId };
 });
 
-export const fetchSingleEventAsync = createAsyncThunk("fetchSingleEventAsync", async ({ repository, eventId }: ClientEventId) => {
+export const fetchSingleEventAsync = createAsyncThunk("fetchSingleEventAsync", async ({ repository, eventId, userId }: ClientEventId & { userId: string }) => {
   const response = await repository.fetchSingleEvent(eventId);
-  return { data: response.data, eventId };
+  return {
+    data: {
+      ...response.data,
+      userAttendance: response.data?.attendance.find(x => x.user.userId === userId)?.state ?? "Unanswered"
+    }, eventId
+  };
 });
 
 type UpdateAttendanceProps = {

@@ -2,20 +2,19 @@ import { Grid, LinearProgress, List, ListItem, ListItemAvatar, ListItemSecondary
 import moment from "moment/moment";
 import { groupBy } from "../utils";
 import { useSelector } from "react-redux";
-import { useCallback, useState } from "react";
+import { useState } from "react";
 import { useEffect } from "react";
 import { fetchHistoryAsync } from "../redux/drinksSlice";
-import { useClient } from "react-supabase";
 import { InfiniteScrollList } from "./InfiniteScrollList";
 import CustomAppBar from "./AppBar";
 import EditHistoryEntryDialog from "./EditHistoryEntryDialog";
 import React from "react";
-import { FullHistory } from "../types/supabaseTypes";
+import { Drink, FullHistory, User } from "../types/supabaseTypes";
 import { useAppDispatch } from "..";
-import { useCaptureException } from "../hooks/useCaptureException";
 import { useDependency } from "../hooks/useDependency";
 import { IDrinkRepository } from "../repository/IDrinkRepository";
 import { RootState } from "../redux/store";
+import { AlertSnackbar } from "./AlertSnackbar";
 
 export type FullHistoryUpdate = FullHistory & {
     newCount: number
@@ -45,16 +44,33 @@ const HistoryItem = ({ items, header, onClick }: HistoryItemProps) => {
 
 export const HistoryScreenProvider = () => {
     const drinksRepository = useDependency<IDrinkRepository>("IDrinkRepository");
-
-    if (!drinksRepository)
-        return;
-
-    return <HistoryScreen drinksRepository={drinksRepository} />
-}
-
-const HistoryScreen = ({ drinksRepository }: { drinksRepository: IDrinkRepository }) => {
     const { history, drinks, historyLoading, historyError, historyEndReached } = useSelector((state: RootState) => state.drinks);
     const { user } = useSelector((state: RootState) => state.application);
+
+    if (!drinksRepository || !user)
+        return <AlertSnackbar close={() => { }} alertInfo={{ message: "Fatal error occured. Repository or user was null!", severity: "error" }} />
+
+    return <HistoryScreen
+        history={history}
+        drinks={drinks}
+        historyEndReached={historyEndReached}
+        historyError={historyError ?? ""}
+        historyLoading={historyLoading}
+        user={user}
+        drinksRepository={drinksRepository} />
+}
+
+type HistoryScreenProps = {
+    history: FullHistory[],
+    drinks: Drink[],
+    historyLoading: boolean,
+    historyEndReached: boolean,
+    historyError: string,
+    user: User,
+    drinksRepository: IDrinkRepository
+}
+
+const HistoryScreen = ({ drinksRepository, history, drinks, historyLoading, historyError, historyEndReached, user }: HistoryScreenProps) => {
     const dispatch = useAppDispatch();
 
     const [historyItems, setHistoryItems] = useState<FullHistory[]>([]);

@@ -16,6 +16,7 @@ import { IAdminDrinksRepository } from "../../repository/IAdminDrinksRepository"
 import { RootState } from "../../redux/store";
 import { useAppDispatch } from "../..";
 import { fetchDrinksAsync } from "../../redux/adminDrinksSlice";
+import { AlertSnackbar } from "../AlertSnackbar";
 
 type AdminDrinkItemProps = {
     drink: Drink,
@@ -65,7 +66,7 @@ export const AdminDrinkListProvider = () => {
     const repository = useDependency<IAdminDrinksRepository>("IAdminDrinksRepository");
 
     if (!repository)
-        return;
+        return <AlertSnackbar close={() => { }} alertInfo={{ message: "Fatal error occured. Repository or user was null!", severity: "error" }} />
 
     return <AdminDrinkList
         repository={repository}
