@@ -1,4 +1,4 @@
-import { Alert, AppBar, Avatar, Box, Button, Card, CardContent, CircularProgress, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Divider, IconButton, InputAdornment, List, ListItem, ListItemAvatar, ListItemIcon, ListItemSecondaryAction, ListItemText, Menu, MenuItem, Paper, Snackbar, TextField, TextFieldProps, Toolbar, Typography } from "@mui/material"
+import { Alert, AppBar, Avatar, Box, Button, Card, CardContent, CircularProgress, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Divider, IconButton, InputAdornment, List, ListItem, ListItemAvatar, ListItemButton, ListItemIcon, ListItemSecondaryAction, ListItemText, Menu, MenuItem, Paper, Snackbar, TextField, TextFieldProps, Toolbar, Typography } from "@mui/material"
 import { AccountCircle, ArrowBack, CalendarMonth, CheckCircleOutline, Delete, DoNotDisturb, DoNotDisturbOff, Edit, Info, Map, MoreVert, Refresh, RemoveCircleOutline, Send, ThumbDownAlt, ThumbDownOffAlt, ThumbUpAlt, ThumbUpOffAlt } from "@mui/icons-material";
 import { connect, useSelector } from "react-redux";
 import moment from "moment";
@@ -42,11 +42,11 @@ export const EventInformationProvider = () => {
     const repository = useDependency<IEventRepository>("IEventRepository");
 
     useEffect(() => {
-        if (!repository)
+        if (!repository || !user)
             return;
         let found = items.find(x => x.id === toInteger(selectedEventId));
         if (!found) {
-            dispatch(fetchSingleEventAsync({ repository, eventId: toNumber(selectedEventId) }));
+            dispatch(fetchSingleEventAsync({ repository, eventId: toNumber(selectedEventId), userId: user.userId }));
         } else {
             setSelectedEvent(found);
             setSelectedEventPlace(JSON.parse(found.place?.toString() ?? "") as PlaceType)
@@ -94,6 +94,7 @@ const EventInformation = ({ dispatch, selectedEvent, attendanceLoading, error, u
 
     const cancelTraining = async () => {
         await repository.updateCancellationForEvent(selectedEvent.id, !selectedEvent.isCancelled)
+        dispatch(fetchSingleEventAsync({ repository, eventId: selectedEvent.id, userId: user.userId }));
         setCancelTrainingOpen(false);
     }
 
@@ -157,11 +158,11 @@ const EventInformation = ({ dispatch, selectedEvent, attendanceLoading, error, u
                 <IconButton color="inherit" onClick={() => navigate("/user")}>
                     <AccountCircle />
                 </IconButton>
-                <IconButton color="inherit" onClick={() => dispatch(fetchSingleEventAsync({ repository, eventId: selectedEvent.id }))}>
+                <IconButton color="inherit" onClick={() => dispatch(fetchSingleEventAsync({ repository, eventId: selectedEvent.id, userId: user.userId }))}>
                     <Refresh />
                 </IconButton>
                 {(user?.role === "admin" || user?.role === "trainer") && <>
-                    <IconButton sx={{ color: "inherit" }} onClick={handleClick}>
+                    <IconButton sx={{ color: "inherit", pr: 0 }} onClick={handleClick}>
                         <MoreVert />
                     </IconButton>
                     <Menu
@@ -207,32 +208,45 @@ const EventInformation = ({ dispatch, selectedEvent, attendanceLoading, error, u
 
         <Box sx={{ justifyContent: "space-between", display: "flex", flexDirection: "column" }}>
             <Box>
-                <Box pl={2}>
+                <Box pl={1} pr={1}>
                     {
-                        selectedEvent.isCancelled && <ListItem sx={{ '&.MuiListItem-root': { pl: 0, pb: 0 } }}>
-                            <ListItemAvatar>
-                                <Info color="error" />
-                            </ListItemAvatar>
-                            <ListItemText primary={"Dieses Event wurde abgesagt!"} />
-                        </ListItem>
+                        selectedEvent.isCancelled && <Card sx={{ mt: 2, mb: 2, pb: 0, backgroundColor: "rgb(253, 237, 237)" }}>
+                            <CardContent sx={{ '&.MuiCardContent-root': { paddingBottom: 1 } }}>
+                                <Typography sx={{ fontSize: 16, fontWeight: "bold" }} color="rgb(95, 33, 32)" gutterBottom>
+                                    Absage
+                                </Typography>
+                                <ListItem sx={{ '&.MuiListItem-root': { pl: 0, pb: 0 } }}>
+                                    <ListItemAvatar sx={{ justifyContent: "left", alignItems: "center", display: "flex" }}>
+                                        <Info sx={{ color: "#d32f2f" }} />
+                                    </ListItemAvatar>
+                                    <ListItemText primary={"Dieses Event wurde abgesagt!"} primaryTypographyProps={{ color: "rgb(95, 33, 32)" }} />
+                                </ListItem>
+                            </CardContent>
+                        </Card>
                     }
-                    <ListItem sx={{ '&.MuiListItem-root': { pl: 0, pb: 0 } }}>
-                        <ListItemAvatar>
-                            <CalendarMonth />
-                        </ListItemAvatar>
-                        <ListItemText primary={moment(selectedEvent?.startingDateTime ?? "").format("DD.MM.yyyy [um] HH:mm")} secondary={"Startzeit"} />
-                    </ListItem>
-                    {
-                        selectedEvent?.startingDateTime !== selectedEvent?.meetingDateTime &&
-                        <ListItem sx={{ '&.MuiListItem-root': { pl: 0, pt: 0, pb: 0 } }}>
-                            <ListItemAvatar />
-                            <ListItemText primary={moment(selectedEvent?.meetingDateTime ?? "").format("DD.MM.yyyy [um] HH:mm")} secondary={"Treffpunkt"} />
-                        </ListItem>
-                    }
+                    <Card sx={{ mt: 2, mb: 2, pb: 0 }}>
+                        <CardContent sx={{ '&.MuiCardContent-root': { paddingBottom: 1 } }}>
+                            <Typography sx={{ fontSize: 16, fontWeight: "bold" }} color="text.secondary" gutterBottom>
+                                Zeiten
+                            </Typography>
+                            <ListItem sx={{ '&.MuiListItem-root': { pl: 0, pb: 0, pt: 0 } }}>
+                                <ListItemAvatar>
+                                    <CalendarMonth />
+                                </ListItemAvatar>
+                                <ListItemText primary={moment(selectedEvent?.startingDateTime ?? "").format("DD.MM.yyyy [um] HH:mm")} secondary={"Startzeit"} />
+                            </ListItem>
+                            {
+                                selectedEvent?.startingDateTime !== selectedEvent?.meetingDateTime &&
+                                <ListItem sx={{ '&.MuiListItem-root': { pl: 0, pt: 0, pb: 0 } }}>
+                                    <ListItemAvatar />
+                                    <ListItemText primary={moment(selectedEvent?.meetingDateTime ?? "").format("DD.MM.yyyy [um] HH:mm")} secondary={"Treffpunkt"} />
+                                </ListItem>
+                            }
+                        </CardContent>
+                    </Card>
 
-                    <Divider />
                     {
-                        selectedEventPlace && <Card sx={{ mr: 1, mt: 2, mb: 2, pb: 0 }} onClick={() => setCommentsOpen(true)}>
+                        selectedEventPlace && <Card sx={{ mt: 2, mb: 2, pb: 0 }}>
                             <CardContent sx={{ '&.MuiCardContent-root': { paddingBottom: 1 } }}>
                                 <Typography sx={{ fontSize: 16, fontWeight: "bold" }} color="text.secondary" gutterBottom>
                                     {`Ort - ${selectedEventPlace.name}`}
@@ -257,7 +271,7 @@ const EventInformation = ({ dispatch, selectedEvent, attendanceLoading, error, u
                         </Card>
                     }
 
-                    <Card sx={{ mr: 1, mt: 2, mb: 2, pb: 0 }} onClick={() => setCommentsOpen(true)}>
+                    <Card sx={{ mt: 2, mb: 2, pb: 0 }}>
                         <CardContent sx={{ '&.MuiCardContent-root': { paddingBottom: 1 } }}>
                             <Typography sx={{ fontSize: 16, fontWeight: "bold" }} color="text.secondary" gutterBottom>
                                 Beschreibung
@@ -266,7 +280,7 @@ const EventInformation = ({ dispatch, selectedEvent, attendanceLoading, error, u
                         </CardContent>
                     </Card>
 
-                    <Card sx={{ mr: 1, mt: 2, mb: 2, pb: 0 }} onClick={() => setCommentsOpen(true)}>
+                    <Card sx={{ mt: 2, mb: 2, pb: 0 }}>
                         <CardContent sx={{ '&.MuiCardContent-root': { paddingBottom: 1 } }}>
                             <Typography sx={{ fontSize: 16, fontWeight: "bold" }} color="text.secondary" gutterBottom>
                                 Teilnehmer
@@ -289,8 +303,9 @@ const EventInformation = ({ dispatch, selectedEvent, attendanceLoading, error, u
                                         </IconButton>
                                     </ListItemSecondaryAction>
                                 </ListItem>
+                                <Divider />
                                 <ListItem key={"declineEvent"} sx={{ '&.MuiListItem-root': { paddingLeft: 0 } }} onClick={() => attendanceLoading ? {} : setEventAttendanceState({ open: true, index: 1 })}>
-                                    <ListItemAvatar>
+                                    <ListItemAvatar sx={{ justifyContent: "left", alignItems: "center", display: "flex" }}>
                                         {
                                             attendanceLoading ? <CircularProgress size={"20px"} /> : <RemoveCircleOutline color="error" />
                                         }
@@ -310,7 +325,7 @@ const EventInformation = ({ dispatch, selectedEvent, attendanceLoading, error, u
                         </CardContent>
                     </Card>
 
-                    <Card sx={{ mr: 1, mt: 2, mb: 2, pb: 0 }} onClick={() => setCommentsOpen(true)}>
+                    <Card sx={{ mt: 2, mb: 2, pb: 0 }} onClick={() => setCommentsOpen(true)}>
                         <CardContent sx={{ '&.MuiCardContent-root': { paddingBottom: 1 } }}>
                             <Typography sx={{ fontSize: 16, fontWeight: "bold" }} color="text.secondary" gutterBottom>
                                 {`Kommentare ${selectedEvent.comments.length}`}
@@ -340,8 +355,8 @@ const EventInformation = ({ dispatch, selectedEvent, attendanceLoading, error, u
                         </CardContent>
                     </Card>
 
-                    <SwipeableDialog open={commentsOpen} setOpen={setCommentsOpen} title={"Kommentare"}>
-                        <Box sx={{ display: "flex", flexDirection: "column" }}>
+                    <SwipeableDialog open={commentsOpen} setOpen={setCommentsOpen} title={"Kommentare"} minHeight={40}>
+                        <Box sx={{ display: "flex", px: 2, flexDirection: "column" }}>
                             <List sx={{ mb: 6 }}>
                                 {
                                     selectedEvent.comments && selectedEvent.comments.map((x, index) => <ListItem divider dense key={index} sx={{ '&.MuiListItem-root': { paddingLeft: 0 } }}>
@@ -390,7 +405,8 @@ const EventInformation = ({ dispatch, selectedEvent, attendanceLoading, error, u
 
                 </Box>
             </Box>
-            <EventAttendanceDialog open={eventAttendanceState.open} index={eventAttendanceState.index} handleClose={() => setEventAttendanceState({ open: false, index: 0 })} event={selectedEvent} />
+
+            <EventAttendanceDialog open={eventAttendanceState.open} index={eventAttendanceState.index} setOpen={(value) => setEventAttendanceState({ open: value, index: 0 })} event={selectedEvent} />
 
             <Dialog open={cancelTrainingOpen} onClose={() => setCancelTrainingOpen(false)}>
                 <DialogTitle>
@@ -418,7 +434,7 @@ const EventInformation = ({ dispatch, selectedEvent, attendanceLoading, error, u
         </Box>
         <Snackbar sx={{ position: "fixed", right: "16px", }} open={error !== null} >
             <Alert severity={"error"} sx={{ width: '100%' }} onClose={() => dispatch(onEventErrorRead(null))}>
-                {error}
+                asdfasdfasdf
             </Alert>
         </Snackbar>
     </Box >

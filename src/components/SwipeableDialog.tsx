@@ -20,10 +20,11 @@ type SwipeableDialogProps = {
     open: boolean,
     setOpen: (value: boolean) => void,
     children: any,
-    title: string
+    title: string,
+    minHeight?: number
 }
 
-export const SwipeableDialog = ({ open, setOpen, children, title = "" }: SwipeableDialogProps) => {
+export const SwipeableDialog = ({ open, setOpen, children, title = "", minHeight = 40 }: SwipeableDialogProps) => {
 
     const toggleDrawer = (newOpen: boolean) => () => {
         setOpen(newOpen);
@@ -36,6 +37,7 @@ export const SwipeableDialog = ({ open, setOpen, children, title = "" }: Swipeab
                 '.MuiDrawer-root > .MuiPaper-root': {
                     overflow: 'visible',
                     maxHeight: `90%`,
+                    minHeight: `${minHeight}%`,
                     borderTopLeftRadius: 16,
                     borderTopRightRadius: 16,
                 },
@@ -73,8 +75,6 @@ export const SwipeableDialog = ({ open, setOpen, children, title = "" }: Swipeab
             </StyledBox>
             <StyledBox
                 sx={{
-                    px: 2,
-                    pb: 2,
                     height: '100%',
                     overflow: 'auto',
                 }}>
