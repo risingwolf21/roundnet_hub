@@ -1,6 +1,8 @@
 import { Database } from "./supabase";
 
 export type Drink = Database["public"]["Tables"]["drink"]["Row"];
+export type DrinkInsert = Database["public"]["Tables"]["drink"]["Insert"];
+export type DrinkUpdate = Database["public"]["Tables"]["drink"]["Update"];
 export type Attendance = Database["public"]["Tables"]["event_attendance_user_mapping"]["Row"];
 export type Comment = Database["public"]["Tables"]["event_comments"]["Row"];
 export type Group = Database["public"]["Tables"]["event_group"]["Row"];

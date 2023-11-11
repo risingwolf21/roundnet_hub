@@ -47,6 +47,7 @@ const EventAttendanceDialog = ({ open, index, setOpen, event }: EventAttendanceD
         title="Teilnehmer"
         open={open}
         minHeight={60}
+        onClose={() => setOpen(false)}
         setOpen={setOpen}>
         <Box sx={{ paddingLeft: 0 }}>
             <AppBar position="sticky" sx={{ '&.MuiAppBar-root': { backgroundColor: "#fff", color: "#000" } }}>
@@ -63,7 +64,7 @@ const EventAttendanceDialog = ({ open, index, setOpen, event }: EventAttendanceD
             <TabPanel value={value} index={0} dir={theme.direction}>
                 <List>
                     {
-                        event && event?.attendance?.filter(x => x.state === "Attending").map(x => <ListItem key={x.userId}>
+                        event && event?.attendance?.filter(x => x.state === "Attending").map((x, index) => <ListItem key={x.userId + index}>
                             <ListItemAvatar>
                                 <Avatar>
                                     <AccountCircle />
@@ -77,7 +78,7 @@ const EventAttendanceDialog = ({ open, index, setOpen, event }: EventAttendanceD
             <TabPanel value={value} index={1} dir={theme.direction}>
                 <List>
                     {
-                        event && event?.attendance?.filter(x => x.state === "Declined").map(x => <ListItem key={x.userId}>
+                        event && event?.attendance?.filter(x => x.state === "Declined").map((x, index) => <ListItem key={x.userId + index}>
                             <ListItemAvatar>
                                 <Avatar>
                                     <AccountCircle />

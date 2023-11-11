@@ -355,7 +355,7 @@ const EventInformation = ({ dispatch, selectedEvent, attendanceLoading, error, u
                         </CardContent>
                     </Card>
 
-                    <SwipeableDialog open={commentsOpen} setOpen={setCommentsOpen} title={"Kommentare"} minHeight={40}>
+                    <SwipeableDialog open={commentsOpen} onClose={() => setCommentsOpen(false)} setOpen={setCommentsOpen} title={"Kommentare"} minHeight={40}>
                         <Box sx={{ display: "flex", px: 2, flexDirection: "column" }}>
                             <List sx={{ mb: 6 }}>
                                 {
