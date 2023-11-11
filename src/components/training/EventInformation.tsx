@@ -1,5 +1,5 @@
-import { Alert, AppBar, Avatar, Box, Button, Card, CardContent, CircularProgress, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Divider, IconButton, InputAdornment, List, ListItem, ListItemAvatar, ListItemButton, ListItemIcon, ListItemSecondaryAction, ListItemText, Menu, MenuItem, Paper, Snackbar, TextField, TextFieldProps, Toolbar, Typography } from "@mui/material"
-import { AccountCircle, ArrowBack, CalendarMonth, CheckCircleOutline, Delete, DoNotDisturb, DoNotDisturbOff, Edit, Info, Map, MoreVert, Refresh, RemoveCircleOutline, Send, ThumbDownAlt, ThumbDownOffAlt, ThumbUpAlt, ThumbUpOffAlt } from "@mui/icons-material";
+import { Alert, AppBar, Avatar, Box, Button, Card, CardContent, CircularProgress, DialogContent, DialogContentText, Divider, IconButton, InputAdornment, List, ListItem, ListItemAvatar, ListItemIcon, ListItemSecondaryAction, ListItemText, Menu, MenuItem, Snackbar, TextField, Toolbar, Typography } from "@mui/material"
+import { AccountCircle, ArrowBack, CalendarMonth, CheckCircleOutline, Delete, DoNotDisturb, DoNotDisturbOff, Edit, Info, MoreVert, Refresh, RemoveCircleOutline, Send, ThumbDownAlt, ThumbDownOffAlt, ThumbUpAlt, ThumbUpOffAlt } from "@mui/icons-material";
 import { connect, useSelector } from "react-redux";
 import moment from "moment";
 import { createRef, useState } from "react";
@@ -51,7 +51,7 @@ export const EventInformationProvider = () => {
             setSelectedEvent(found);
             setSelectedEventPlace(JSON.parse(found.place?.toString() ?? "") as PlaceType)
         }
-    }, [items, selectedEventId, dispatch, repository]);
+    }, [items, selectedEventId, dispatch, repository, user]);
 
     if (process.env.REACT_APP_training !== "enabled")
         return <Navigate to={"/feature-not-available"} />
@@ -408,10 +408,7 @@ const EventInformation = ({ dispatch, selectedEvent, attendanceLoading, error, u
 
             <EventAttendanceDialog open={eventAttendanceState.open} index={eventAttendanceState.index} setOpen={(value) => setEventAttendanceState({ open: value, index: 0 })} event={selectedEvent} />
 
-            <Dialog open={cancelTrainingOpen} onClose={() => setCancelTrainingOpen(false)}>
-                <DialogTitle>
-                    Training {selectedEvent.isCancelled ? "aktivieren" : "absagen"}
-                </DialogTitle>
+            <SwipeableDialog open={cancelTrainingOpen} setOpen={setCancelTrainingOpen} title={`Training ${selectedEvent.isCancelled ? "aktivieren" : "absagen"}`} onClose={() => setCancelTrainingOpen(false)}>
                 <DialogContent>
                     <DialogContentText>
                         {
@@ -421,13 +418,15 @@ const EventInformation = ({ dispatch, selectedEvent, attendanceLoading, error, u
                         }
                     </DialogContentText>
                 </DialogContent>
-                <DialogActions>
-                    <Button variant="contained" color={selectedEvent.isCancelled ? "success" : "error"} onClick={cancelTraining}>{selectedEvent.isCancelled ? "Aktivieren" : "Absagen"}</Button>
-                    <Button variant="contained" color="info" onClick={() => setCancelTrainingOpen(false)}>Abbrechen</Button>
-                </DialogActions>
-            </Dialog>
+                <Box sx={{ display: "flex", flexDirection: "row", flexGrow: 1, position: "absolute", left: 0, right: 0, bottom: 0 }}>
+                    <Button variant="outlined" fullWidth sx={{ ml: 2, mr: 1, mb: 2, borderRadius: "50px !important", fontSize: "16px", fontFamily: "sans-serif", lineSpacing: "24px" }} onClick={() => setCancelTrainingOpen(false)}>Abbrechen</Button>
+                    <Button variant="contained" fullWidth sx={{ ml: 1, mr: 2, mb: 2, borderRadius: "50px !important", fontSize: "16px", fontFamily: "sans-serif", lineSpacing: "24px" }} onClick={cancelTraining} autoFocus>
+                        Bestätigen
+                    </Button>
+                </Box>
+            </SwipeableDialog>
 
-            <DeleteEventDialog selectedEvent={selectedEvent} open={deleteTrainingOpen} handleClose={(e) => {
+            <DeleteEventDialog selectedEvent={selectedEvent} setOpen={() => setDeleteTrainingOpen(true)} open={deleteTrainingOpen} handleClose={(e) => {
                 deleteEvent(e);
                 setDeleteTrainingOpen(false);
             }} />

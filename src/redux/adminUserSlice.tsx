@@ -1,8 +1,6 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import { User, UserWithGroups } from '../types/supabaseTypes';
-import { SupabaseClient } from '@supabase/supabase-js';
-import { TABLE_USER } from '../constants';
-import { IAdminUsersRepository, SupabaseAdminUsersRepository } from 'src/repository/IAdminUsersRepository';
+import { UserWithGroups } from '../types/supabaseTypes';
+import { IAdminUsersRepository } from 'src/repository/IAdminUsersRepository';
 
 type AdminUsersSliceState = {
     users: UserWithGroups[],

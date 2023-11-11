@@ -128,6 +128,7 @@ const HistoryScreen = ({ drinksRepository, history, drinks, historyLoading, hist
         </InfiniteScrollList>
         <EditHistoryEntryDialog
             open={editHistoryEntryOpen}
+            setOpen={() => setEditHistoryEntryOpen(true)}
             handleClose={() => setEditHistoryEntryOpen(false)}
             entry={historyEntryToEdit}
             handleSubmit={(newEntry) => handleEntryUpdate(newEntry)} />

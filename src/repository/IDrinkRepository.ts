@@ -1,7 +1,7 @@
 import { injectable } from "inversify";
 import { SupabaseRepository } from "./Repository";
 import { PostgrestSingleResponse } from "@supabase/supabase-js";
-import { Drink, DrinkCounter, FullHistory, Payment, History, PaymentInsert, PaymentHistory, PaymentState } from "../types/supabaseTypes";
+import { Drink, DrinkCounter, FullHistory, Payment, PaymentInsert, PaymentHistory, PaymentState } from "../types/supabaseTypes";
 import { TABLE_DRINK, TABLE_HISTORY, TABLE_PAYMENTS } from "../constants";
 import { DrinkStockType } from "../components/procure/AnalyzeDrinkStockHistory";
 

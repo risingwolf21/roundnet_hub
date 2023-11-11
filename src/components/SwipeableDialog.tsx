@@ -19,16 +19,22 @@ const StyledBox = styled(Box)(({ theme }) => ({
 type SwipeableDialogProps = {
     open: boolean,
     setOpen: (value: boolean) => void,
+    onClose?: () => void,
     children: any,
     title: string,
     minHeight?: number
 }
 
-export const SwipeableDialog = ({ open, setOpen, children, title = "", minHeight = 40 }: SwipeableDialogProps) => {
+export const SwipeableDialog = ({ open, setOpen, onClose, children, title = "", minHeight = 40 }: SwipeableDialogProps) => {
 
     const toggleDrawer = (newOpen: boolean) => () => {
         setOpen(newOpen);
     };
+
+    const handleClose = () => {
+        toggleDrawer(false);
+        if (onClose) onClose();
+    }
 
     return <Root>
         <CssBaseline />
@@ -46,7 +52,7 @@ export const SwipeableDialog = ({ open, setOpen, children, title = "", minHeight
         <SwipeableDrawer
             anchor="bottom"
             open={open}
-            onClose={toggleDrawer(false)}
+            onClose={handleClose}
             onOpen={toggleDrawer(true)}
             swipeAreaWidth={drawerBleeding}
             disableSwipeToOpen={true}
@@ -63,7 +69,7 @@ export const SwipeableDialog = ({ open, setOpen, children, title = "", minHeight
                     <IconButton
                         color="inherit"
                         aria-label="open drawer"
-                        onClick={() => setOpen(false)}
+                        onClick={handleClose}
                         edge="start"
                         sx={{ mr: 2 }}>
                         <Close />

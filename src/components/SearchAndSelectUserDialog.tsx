@@ -1,6 +1,6 @@
 import { ArrowBack } from "@mui/icons-material";
 import SearchIcon from "@mui/icons-material/Search";
-import { AppBar, Box, Button, Checkbox, Dialog, IconButton, LinearProgress, List, ListItem, ListItemIcon, ListItemText, Toolbar, Typography } from "@mui/material";
+import { AppBar, Box, Button, Checkbox, Dialog, IconButton, LinearProgress, List, ListItem, ListItemIcon, ListItemText, Toolbar } from "@mui/material";
 import { Search, SearchIconWrapper, StyledInputBase } from "./SearchBar";
 import { useState } from "react";
 import { SlideUpTransition } from "../utils";

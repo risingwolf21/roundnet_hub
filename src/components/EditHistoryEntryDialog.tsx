@@ -1,22 +1,23 @@
 import {
-    IconButton, Typography, Box, Dialog, DialogActions, DialogContent,
-    DialogTitle, List, ListItem, ListItemText, ListItemAvatar, Avatar, Button
+    IconButton, Typography, Box, DialogContent,
+    List, ListItem, ListItemText, ListItemAvatar, Avatar, Button, Divider, ListItemSecondaryAction
 } from "@mui/material";
 import { Remove, Add, LocalDrink } from "@mui/icons-material";
 import { useEffect, useState } from "react";
-import { SlideUpTransition } from "../utils";
 import React from "react";
 import { FullHistory } from "../types/supabaseTypes";
 import { FullHistoryUpdate } from "./HistoryScreen";
+import { SwipeableDialog } from "./SwipeableDialog";
 
 type Props = {
     open: boolean,
+    setOpen: () => void,
     handleClose: () => any,
     entry: FullHistory | null,
     handleSubmit: (newEntry: FullHistoryUpdate) => any
 }
 
-const EditHistoryEntryDialog = ({ open, handleClose, entry, handleSubmit }: Props) => {
+const EditHistoryEntryDialog = ({ open, handleClose, setOpen, entry, handleSubmit }: Props) => {
 
     const [newCount, setNewCount] = useState<number>(0);
 
@@ -28,13 +29,12 @@ const EditHistoryEntryDialog = ({ open, handleClose, entry, handleSubmit }: Prop
         return;
 
 
-    return <Dialog
-        fullWidth
+    return <SwipeableDialog
+        title="Getränk bearbeiten"
         open={open}
-        onClose={handleClose}
-        TransitionComponent={SlideUpTransition}>
-        <DialogTitle>Getränk bearbeiten</DialogTitle>
-        <DialogContent sx={{ pl: 1, pr: 0 }}>
+        setOpen={setOpen}
+        onClose={handleClose}>
+        <DialogContent sx={{ pl: 0, pr: 0 }}>
             <Box sx={{ width: "100%" }}>
                 <List sx={{ width: "100%" }}>
                     <ListItem>
@@ -47,8 +47,8 @@ const EditHistoryEntryDialog = ({ open, handleClose, entry, handleSubmit }: Prop
                                 }
                             </Avatar>
                         </ListItemAvatar>
-                        <ListItemText primary={entry.drink?.name} secondary={(newCount * (entry.drink?.price ?? 1)) + " €"} />
-                        <Box sx={{ display: "flex", flexDirection: "row" }}>
+                        <ListItemText primary={entry.drink?.name} secondary={entry.drink?.price + " €"} />
+                        <Box sx={{ display: "flex", flexDirection: "row" }}> 
                             {
                                 (newCount > 0) && <>
                                     <IconButton disableRipple onClick={() => setNewCount(newCount - 1)}>
@@ -62,13 +62,24 @@ const EditHistoryEntryDialog = ({ open, handleClose, entry, handleSubmit }: Prop
                             </IconButton>
                         </Box>
                     </ListItem>
+                    <Divider />
+                    <ListItem key={"totalAmount"}>
+                        <ListItemText primaryTypographyProps={{ fontWeight: "bold" }} primary={"Gesamtkosten"} />
+                        <ListItemSecondaryAction>
+                            <Typography sx={{ fontWeight: "bold" }}>
+                                {(newCount * (entry.drink?.price ?? 1)) + " €"}
+                            </Typography>
+                        </ListItemSecondaryAction>
+                    </ListItem>
                 </List>
             </Box>
         </DialogContent>
-        <DialogActions>
-            <Button onClick={handleClose}>Abbrechen</Button>
-            <Button onClick={() => handleSubmit({ ...entry, count: newCount, newCount })}>Speichern</Button>
-        </DialogActions>
-    </Dialog>
+        <Box sx={{ display: "flex", flexDirection: "row", flexGrow: 1, position: "absolute", left: 0, right: 0, bottom: 0 }}>
+            <Button variant="outlined" fullWidth sx={{ ml: 2, mr: 1, mb: 2, borderRadius: "50px !important", fontSize: "16px", fontFamily: "sans-serif", lineSpacing: "24px" }} onClick={() => handleSubmit({ ...entry, count: newCount, newCount })}>Abbrechen</Button>
+            <Button variant="contained" fullWidth sx={{ ml: 1, mr: 2, mb: 2, borderRadius: "50px !important", fontSize: "16px", fontFamily: "sans-serif", lineSpacing: "24px" }} onClick={handleClose} autoFocus>
+                Bestätigen
+            </Button>
+        </Box>
+    </SwipeableDialog>
 }
 export default EditHistoryEntryDialog;

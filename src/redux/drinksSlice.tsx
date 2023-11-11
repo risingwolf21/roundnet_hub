@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
-import { Drink, FullHistory, Payment, PaymentHistory, PaymentState, User } from '../types/supabaseTypes';
+import { Drink, FullHistory, Payment, PaymentHistory } from '../types/supabaseTypes';
 import { compareById } from '../utils';
 import { IDrinkRepository } from '../repository/IDrinkRepository';
 

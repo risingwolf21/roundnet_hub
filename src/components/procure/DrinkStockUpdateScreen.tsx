@@ -3,7 +3,6 @@ import CustomAppBar from "../AppBar";
 import { useSelector } from "react-redux";
 import { Edit, LocalDrink } from "@mui/icons-material";
 import React, { useState } from "react";
-import { useClient } from "react-supabase";
 import { toInteger } from "lodash";
 import { RootState } from "../../redux/store";
 import { Drink } from "../../types/supabaseTypes";
@@ -15,7 +14,6 @@ const DrinkStockUpdateScreen = () => {
     const { drinks, loading } = useSelector((state: RootState) => state.adminDrinks);
     const [editDrink, setEditDrink] = useState<Drink | null>(null);
     const [stockToUpdate, setStockToUpdate] = useState(0);
-    const client = useClient();
     const drinksRepository = useDependency<IDrinkRepository>("IDrinkRepository");
 
     const handleSubmit = async () => {

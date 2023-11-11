@@ -1,10 +1,9 @@
 import { createSlice, createAsyncThunk, PayloadAction, ActionReducerMapBuilder } from '@reduxjs/toolkit';
 import moment from 'moment';
-import _, { toInteger } from "lodash";
+import { toInteger } from "lodash";
 import { compareById, formatDateToDatabase } from '../utils';
-import { Comment, EventAttendance, FullAttendance, FullComment, FullEvent, Group, User } from '../types/supabaseTypes';
-import { PostgrestError, SupabaseClient } from '@supabase/supabase-js';
-import { ClientUser } from '../types/types';
+import { Comment, EventAttendance, FullAttendance, FullComment, FullEvent, User } from '../types/supabaseTypes';
+import { PostgrestError } from '@supabase/supabase-js';
 import { IEventRepository } from '../repository/IEventRepository';
 
 type EventSliceState = {

@@ -50,7 +50,7 @@ const AuthGate = ({ children }: Props) => {
                 navigate("/login", { replace: true });
             }
         })
-    }, [client, dispatch, navigate]);
+    }, [client, dispatch, navigate, user]);
 
     const authenticationRoutes = [
         <Route key={"login"} path='/login' element={<LoginScreen />} />,

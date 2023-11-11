@@ -13,7 +13,7 @@ import { useSelector } from 'react-redux';
 import Browse from './components/Browse';
 import CreateEventProvider from './components/training/CreateEvent';
 import { EventScreenProvider } from './components/training/EventScreen';
-import EventInformation, { EventInformationProvider } from './components/training/EventInformation';
+import { EventInformationProvider } from './components/training/EventInformation';
 import CustomBottomNavigation from './components/BottomNavigation';
 //@ts-ignore
 import { useServiceWorker } from './hooks/useServiceWorker';
@@ -22,7 +22,7 @@ import UpdateAvailable from './components/UpdateAvailable';
 import AuthGate from './AuthGate';
 import ResetPasswordScreen from './components/ResetPasswordScreen';
 import SubscriptionHandler from './components/SubscriptionHandler';
-import ManageGroupsScreen, { ManageGroupsProvider } from './components/groups/ManageGroups';
+import { ManageGroupsProvider } from './components/groups/ManageGroups';
 import BrowseAdmin from './components/admin/BrowseAdmin';
 import DrinkStockUpdateScreen from './components/procure/DrinkStockUpdateScreen';
 import { AnalyzeDrinkStockHistoryProvider } from './components/procure/AnalyzeDrinkStockHistory';

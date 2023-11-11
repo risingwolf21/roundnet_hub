@@ -1,7 +1,6 @@
-import { PostgrestSingleResponse, SupabaseClient } from "@supabase/supabase-js";
-import { injectable, inject } from "inversify";
+import { PostgrestSingleResponse } from "@supabase/supabase-js";
+import { injectable } from "inversify";
 import { Drink } from "../types/supabaseTypes";
-import { Database } from "../types/supabase";
 import _ from "lodash";
 import { TABLE_DRINK, TABLE_HISTORY } from "../constants";
 import { SupabaseRepository } from "./Repository";

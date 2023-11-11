@@ -1,8 +1,9 @@
-import { Button, Dialog, DialogActions, DialogContent, DialogTitle, FormControl, FormControlLabel, Radio, RadioGroup } from "@mui/material";
+import { Box, Button, DialogContent, FormControl, FormControlLabel, Radio, RadioGroup } from "@mui/material";
 import { useState } from "react";
 import React from "react";
 import { Event } from "../types/supabaseTypes";
 import { DeleteEventType } from "./training/EventInformation";
+import { SwipeableDialog } from "./SwipeableDialog";
 
 export const THIS_EVENT = "THIS_EVENT";
 export const THIS_AND_FOLLOWING_EVENT = "THIS_AND_FOLLOWING_EVENT";
@@ -14,22 +15,16 @@ export enum DeletionType {
 
 type DeleteEventDialogProps = {
     open: boolean,
+    setOpen: () => void,
     handleClose: (result: DeleteEventType | null) => any,
     selectedEvent: Event
 }
 
-export const DeleteEventDialog = ({ open, handleClose, selectedEvent }: DeleteEventDialogProps) => {
+export const DeleteEventDialog = ({ open, handleClose, setOpen, selectedEvent }: DeleteEventDialogProps) => {
 
     const [deletion, setDeletion] = useState<DeleteEventType>("This Event");
 
-    return <Dialog open={open} onClose={() => handleClose(null)}>
-        <DialogTitle>
-            {
-                selectedEvent.recurrence === "None"
-                    ? "Delete event"
-                    : "Delete recurring event"
-            }
-        </DialogTitle>
+    return <SwipeableDialog open={open} setOpen={setOpen} onClose={() => handleClose(null)} title={selectedEvent.recurrence === "None" ? "Delete event" : "Delete recurring event"}>
         {
             selectedEvent.recurrence !== "None" &&
             <DialogContent>
@@ -37,6 +32,7 @@ export const DeleteEventDialog = ({ open, handleClose, selectedEvent }: DeleteEv
                     <RadioGroup
                         aria-labelledby="demo-radio-buttons-group-label"
                         value={deletion}
+                        defaultValue={deletion}
                         onChange={(e) => {
                             if (e.target.value === "0")
                                 setDeletion("This Event");
@@ -44,15 +40,17 @@ export const DeleteEventDialog = ({ open, handleClose, selectedEvent }: DeleteEv
                                 setDeletion("This and following events");
                         }}
                         name="radio-buttons-group">
-                        <FormControlLabel value={DeletionType.ThisEvent} control={<Radio />} label="This event" />
-                        <FormControlLabel value={DeletionType.ThisAndFollowingEvents} control={<Radio />} label="This and following events" />
+                        <FormControlLabel value={DeletionType.ThisEvent} control={<Radio checked={deletion === "This Event"} />} label="This event" />
+                        <FormControlLabel value={DeletionType.ThisAndFollowingEvents} control={<Radio checked={deletion === "This and following events"} />} label="This and following events" />
                     </RadioGroup>
                 </FormControl>
             </DialogContent>
         }
-        <DialogActions>
-            <Button onClick={() => handleClose(null)}>Cancel</Button>
-            <Button onClick={() => handleClose(deletion)}>Delete</Button>
-        </DialogActions>
-    </Dialog>
+        <Box sx={{ display: "flex", flexDirection: "row", flexGrow: 1, position: "absolute", left: 0, right: 0, bottom: 0 }}>
+            <Button variant="outlined" fullWidth sx={{ ml: 2, mr: 1, mb: 2, borderRadius: "50px !important", fontSize: "16px", fontFamily: "sans-serif", lineSpacing: "24px" }} onClick={() => handleClose(null)}>Abbrechen</Button>
+            <Button variant="contained" fullWidth sx={{ ml: 1, mr: 2, mb: 2, borderRadius: "50px !important", fontSize: "16px", fontFamily: "sans-serif", lineSpacing: "24px" }} onClick={() => handleClose(deletion)} autoFocus>
+                Bestätigen
+            </Button>
+        </Box>
+    </SwipeableDialog>
 }

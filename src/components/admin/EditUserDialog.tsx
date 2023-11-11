@@ -4,7 +4,7 @@ import { Box } from "@mui/system";
 import { AccountCircle, Close, Email, ExpandLess, ExpandMore, FiberManualRecord, ManageAccounts, Verified } from "@mui/icons-material";
 import { useClient } from "react-supabase";
 import { SlideUpTransition } from "../../utils";
-import { FullHistory, Group, History, User, UserRole, UserWithGroups } from "../../types/supabaseTypes";
+import { FullHistory, Group, User, UserRole, UserWithGroups } from "../../types/supabaseTypes";
 import { useDependency } from "../../hooks/useDependency";
 import { IDrinkRepository } from "../../repository/IDrinkRepository";
 import moment from "moment";

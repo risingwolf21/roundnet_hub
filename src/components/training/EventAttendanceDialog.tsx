@@ -1,7 +1,6 @@
-import { AppBar, Avatar, Box, Dialog, IconButton, List, ListItem, ListItemAvatar, ListItemText, Tab, Tabs, Toolbar, Typography } from "@mui/material"
-import { SlideUpTransition } from "../../utils"
+import { AppBar, Avatar, Box, List, ListItem, ListItemAvatar, ListItemText, Tab, Tabs } from "@mui/material"
 import { useState } from "react";
-import { AccountCircle, Close } from "@mui/icons-material";
+import { AccountCircle } from "@mui/icons-material";
 import { useTheme } from '@mui/material/styles';
 import { useEffect } from "react";
 import React from "react";

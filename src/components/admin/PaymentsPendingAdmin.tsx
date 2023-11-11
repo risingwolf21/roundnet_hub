@@ -1,4 +1,4 @@
-import { AppBar, Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, Fab, Grid, IconButton, LinearProgress, List, ListItem, ListItemAvatar, ListItemSecondaryAction, ListItemText, Toolbar, Typography } from "@mui/material";
+import { AppBar, Box, Button, Fab, Grid, IconButton, LinearProgress, List, ListItem, ListItemAvatar, ListItemSecondaryAction, ListItemText, Toolbar, Typography } from "@mui/material";
 import CheckIcon from "@mui/icons-material/Check"
 import { useState } from "react";
 import { Error } from "../Error";
@@ -15,7 +15,6 @@ import { useAppDispatch } from "../..";
 import { RootState } from "../../redux/store";
 import { FullPayment, PaymentState } from "../../types/supabaseTypes";
 import { TABLE_PAYMENTS } from "../../constants";
-import { useCaptureException } from "../../hooks/useCaptureException";
 import { SwipeableDialog } from "../SwipeableDialog";
 
 const PaymentsPendingAdmin = () => {

@@ -4,7 +4,6 @@ import moment from "moment";
 import { PostgrestError } from '@supabase/supabase-js'
 import { injectable } from "inversify";
 import { SupabaseRepository } from "./Repository";
-import { Json } from "src/types/supabase";
 
 export type DbResult<T> = T extends PromiseLike<infer U> ? U : never
 export type DbResultOk<T> = T extends PromiseLike<{ data: infer U }> ? Exclude<U, null> : never

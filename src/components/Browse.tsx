@@ -1,4 +1,4 @@
-import { AccountCircle, Euro, History, Info, SportsHandball } from "@mui/icons-material";
+import { AccountCircle, Euro, History, Info } from "@mui/icons-material";
 import { Avatar, List, ListItem, ListItemAvatar, ListItemText, Box } from "@mui/material";
 import { useNavigate } from "react-router";
 import { withTranslation } from 'react-i18next';
@@ -24,13 +24,7 @@ const tabs = [
         navigateTo: "/history",
         icon: <History />,
         avatarColor: "#88AEBF"
-    },
-    // {
-    //     translationKey: "training",
-    //     navigateTo: "/training",
-    //     icon: <SportsHandball />,
-    //     avatarColor: "#88AEBF"
-    // },
+    }
 ]
 
 const Browse = ({ t }: { t: TFunction }) => {
