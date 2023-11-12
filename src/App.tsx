@@ -31,6 +31,7 @@ import { RootState } from './redux/store';
 import { GroupInformationProvider } from './components/groups/GroupInformation';
 import { DrinkListScreenProvider } from './components/drinkList/DrinkListScreen';
 import FeatureNotAvailable from './components/FeatureNotAvailable';
+import runOneSignal from './notifications';
 
 const App = () => {
 
@@ -42,8 +43,13 @@ const App = () => {
     dispatch(onAppUpdateAvailableChange(showReload && waitingWorker));
   }, [waitingWorker, showReload, reloadPage, dispatch]);
 
+  useEffect(() => {
+    runOneSignal();
+  }, []);
+
   if (appUpdateAvailable)
     return <UpdateAvailable update={reloadPage} />
+
 
   return <Grid maxHeight={"100vh"}>
     <BrowserRouter>
