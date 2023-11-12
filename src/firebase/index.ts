@@ -76,7 +76,7 @@ export const getFirebaseToken = async () => {
             return getOrRegisterServiceWorker().then((serviceWorkerRegistration) => {
                 return Promise.resolve(
                     getToken(messagingResolve, {
-                        vapidKey: process.env.REACT_APP_FB_VAPID_KEY,
+                        vapidKey: process.env.REACT_APP_firebaseVapidKey,
                         serviceWorkerRegistration,
                     })
                 );
