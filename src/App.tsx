@@ -13,7 +13,7 @@ import { useSelector } from 'react-redux';
 import Browse from './components/Browse';
 import CreateEventProvider from './components/training/CreateEvent';
 import { EventScreenProvider } from './components/training/EventScreen';
-import EventInformation, { EventInformationProvider } from './components/training/EventInformation';
+import { EventInformationProvider } from './components/training/EventInformation';
 import CustomBottomNavigation from './components/BottomNavigation';
 //@ts-ignore
 import { useServiceWorker } from './hooks/useServiceWorker';
@@ -22,7 +22,7 @@ import UpdateAvailable from './components/UpdateAvailable';
 import AuthGate from './AuthGate';
 import ResetPasswordScreen from './components/ResetPasswordScreen';
 import SubscriptionHandler from './components/SubscriptionHandler';
-import ManageGroupsScreen, { ManageGroupsProvider } from './components/groups/ManageGroups';
+import { ManageGroupsProvider } from './components/groups/ManageGroups';
 import BrowseAdmin from './components/admin/BrowseAdmin';
 import DrinkStockUpdateScreen from './components/procure/DrinkStockUpdateScreen';
 import { AnalyzeDrinkStockHistoryProvider } from './components/procure/AnalyzeDrinkStockHistory';
@@ -31,7 +31,8 @@ import { RootState } from './redux/store';
 import { GroupInformationProvider } from './components/groups/GroupInformation';
 import { DrinkListScreenProvider } from './components/drinkList/DrinkListScreen';
 import FeatureNotAvailable from './components/FeatureNotAvailable';
-import runOneSignal from './notifications';
+import { getFirebaseToken, messaging, onMessageListener } from './firebase';
+
 
 const App = () => {
 
@@ -44,8 +45,18 @@ const App = () => {
   }, [waitingWorker, showReload, reloadPage, dispatch]);
 
   useEffect(() => {
-    runOneSignal();
+    if (window.Notification?.permission === "granted") {
+      getFirebaseToken().then((firebaseToken: string | undefined) => {
+        if (firebaseToken) {
+          console.log(firebaseToken);
+        }
+      });
+    }
   }, []);
+
+  onMessageListener().then(payload => {
+    console.log(payload);
+  }).catch(err => console.log('failed: ', err));
 
   if (appUpdateAvailable)
     return <UpdateAvailable update={reloadPage} />
