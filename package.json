@@ -1,6 +1,6 @@
 {
   "name": "roundnet_karlsruhe_app",
-  "version": "1.0.6",
+  "version": "1.0.6a1",
   "private": true,
   "dependencies": {
     "@emotion/react": "^11.10.5",
