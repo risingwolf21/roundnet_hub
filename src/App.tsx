@@ -37,11 +37,9 @@ import GroupInformation from './components/groups/GroupInformation';
 import { useDependency } from './hooks/useDependency';
 import { IDrinkRepository } from './repository/IDrinkRepository';
 import DrinkListScreen from './components/drinkList/DrinkListScreen';
-import { useOneSignalNotifications } from './notifications';
+import runOneSignal, { useOneSignalNotifications } from './notifications';
 
 const App = () => {
-
-  useOneSignalNotifications();
 
   const { waitingWorker, showReload, reloadPage } = useServiceWorker();
   const drinksRepository = useDependency<IDrinkRepository>("IDrinkRepository");
@@ -69,6 +67,10 @@ const App = () => {
   useEffect(() => {
     dispatch(onAppUpdateAvailableChange(showReload && waitingWorker));
   }, [waitingWorker, showReload, reloadPage, dispatch]);
+
+  useEffect(() => {
+    runOneSignal();
+  }, []);
 
   return <Grid maxHeight={"100vh"}>
     <BrowserRouter>
