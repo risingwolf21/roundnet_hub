@@ -38,14 +38,14 @@ const RegisterScreen = () => {
             }
         });
 
-        if (!data || !data.user) {
+        if (!data || !data.user || error) {
             captureException(new RegistrationError("Could not sign up user. The result was empty!"), (scope) => {
                 scope.clear();
                 scope.setExtra("displayName", displayName);
                 scope.setExtra("email", email);
                 return scope;
             })
-            setErrorMessage("Could not sign up user. The result was empty!");
+            setErrorMessage("Could not sign up user. The result was empty! [" + error?.message + "]");
             return;
         }
 
@@ -59,7 +59,7 @@ const RegisterScreen = () => {
         if (writingError)
             setErrorMessage(JSON.stringify(writingError));
 
-        if (error || updatingUserError || writingError) {
+        if (error || updatingUserError) {
             captureException(new RegistrationError(""), (scope) => {
                 scope.clear();
                 scope.setExtra("signUpError", JSON.stringify(error))

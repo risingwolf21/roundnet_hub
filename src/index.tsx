@@ -1,8 +1,6 @@
 import React, { ReactNode, createContext } from 'react';
 import "reflect-metadata";
 import ReactDOM from 'react-dom/client';
-//@ts-ignore
-import * as serviceWorkerRegistration from './serviceWorkerRegistration';
 import "./global.css";
 import App from './App';
 import { ThemeProvider } from '@mui/material';
@@ -17,6 +15,7 @@ import "./translation/i18n";
 import { LocalizationProvider } from '@mui/x-date-pickers';
 import { Container } from 'inversify';
 import container from './repository/Container';
+import "./firebase";
 
 type Props = {
   children: ReactNode,
@@ -30,6 +29,8 @@ const DependencyProvider = ({ container, children }: Props) => {
     {children}
   </DependencyContext.Provider>
 }
+
+
 
 if (process.env.NODE_ENV === "production") {
   Sentry.init({
@@ -63,9 +64,3 @@ root.render(
     </ThemeProvider>
   </React.StrictMode>
 );
-
-// If you want your app to work offline and load faster, you can change
-// unregister() to register() below. Note this comes with some pitfalls.
-// Learn more about service workers: https://cra.link/PWA
-serviceWorkerRegistration.register();
-

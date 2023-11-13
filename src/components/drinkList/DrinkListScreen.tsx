@@ -74,7 +74,7 @@ const DrinkListScreen = ({ repository, user, drinks, drinksLoading, drinksError,
         try {
             let paymentId: number;
             const result = await repository.fetchCurrentPaymentForUser(user.userId)
-            if (!result || !result.data) {
+            if (!result || !result.data || result.data.length < 1) {
                 const paymentCreation = await repository.insertNewPayment(user.userId);
 
                 if (!paymentCreation || (paymentCreation && paymentCreation.error))
