@@ -31,6 +31,7 @@ import { RootState } from './redux/store';
 import { GroupInformationProvider } from './components/groups/GroupInformation';
 import { DrinkListScreenProvider } from './components/drinkList/DrinkListScreen';
 import FeatureNotAvailable from './components/FeatureNotAvailable';
+import { getFirebaseToken, onMessageListener } from './firebase';
 
 const App = () => {
 
@@ -41,6 +42,20 @@ const App = () => {
   useEffect(() => {
     dispatch(onAppUpdateAvailableChange(showReload && waitingWorker));
   }, [waitingWorker, showReload, reloadPage, dispatch]);
+
+  useEffect(() => {
+    if (window.Notification?.permission === "granted") {
+      getFirebaseToken().then((firebaseToken: string | undefined) => {
+        if (firebaseToken) {
+          console.log(firebaseToken);
+        }
+      });
+    }
+  }, []);
+
+  onMessageListener().then(payload => {
+    console.log(payload);
+  }).catch(err => console.log('failed: ', err));
 
   if (appUpdateAvailable)
     return <UpdateAvailable update={reloadPage} />
