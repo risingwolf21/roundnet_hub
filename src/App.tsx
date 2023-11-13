@@ -31,8 +31,7 @@ import { RootState } from './redux/store';
 import { GroupInformationProvider } from './components/groups/GroupInformation';
 import { DrinkListScreenProvider } from './components/drinkList/DrinkListScreen';
 import FeatureNotAvailable from './components/FeatureNotAvailable';
-import { getFirebaseToken, messaging, onMessageListener } from './firebase';
-
+import { getFirebaseToken, onMessageListener } from './firebase';
 
 const App = () => {
 
@@ -60,7 +59,6 @@ const App = () => {
 
   if (appUpdateAvailable)
     return <UpdateAvailable update={reloadPage} />
-
 
   return <Grid maxHeight={"100vh"}>
     <BrowserRouter>
