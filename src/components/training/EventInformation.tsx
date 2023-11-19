@@ -355,9 +355,9 @@ const EventInformation = ({ dispatch, selectedEvent, attendanceLoading, error, u
                         </CardContent>
                     </Card>
 
-                    <SwipeableDialog open={commentsOpen} setOpen={setCommentsOpen} title={"Kommentare"} minHeight={40}>
+                    <SwipeableDialog open={commentsOpen} onClose={() => setCommentsOpen(false)} setOpen={setCommentsOpen} title={"Kommentare"} minHeight={40}>
                         <Box sx={{ display: "flex", px: 2, flexDirection: "column" }}>
-                            <List sx={{ mb: 6 }}>
+                            <List sx={{ mb: 8 }}>
                                 {
                                     selectedEvent.comments && selectedEvent.comments.map((x, index) => <ListItem divider dense key={index} sx={{ '&.MuiListItem-root': { paddingLeft: 0 } }}>
                                         <ListItemAvatar>
@@ -369,15 +369,7 @@ const EventInformation = ({ dispatch, selectedEvent, attendanceLoading, error, u
                                                 }
                                             </Avatar>
                                         </ListItemAvatar>
-                                        <ListItemText primary={<Fragment>
-                                            <Box sx={{ display: "flex", flexDirection: "row", alignItems: "center" }}>
-                                                <Typography style={{ fontWeight: "bold", fontSize: "11pt" }}>{x.displayName}</Typography>
-                                            </Box>
-                                        </Fragment>} secondary={<Fragment>
-                                            <Box sx={{ display: "flex", flexDirection: "row", alignItems: "center" }}>
-                                                <Typography style={{ color: "#000" }}>{x.comment}</Typography>
-                                            </Box>
-                                        </Fragment>} />
+                                        <ListItemText primaryTypographyProps={{ fontWeight: "bold", fontSize: "11pt" }} primary={x.displayName} secondary={x.comment} />
                                         <ListItemSecondaryAction sx={{ height: "100%" }}>
                                             <Typography style={{ fontSize: "10pt", color: "rgba(0,0,0,0.6)", marginTop: "8px", alignContent: "baseline" }}>{moment(x.created_at).format("HH:mm")}</Typography>
                                         </ListItemSecondaryAction>
