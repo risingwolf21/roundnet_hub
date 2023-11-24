@@ -60,7 +60,6 @@ const DrinkListScreen = ({ repository, user, drinks, drinksLoading, drinksError,
     }, [drinksError])
 
     useEffect(() => {
-        dispatch(fetchPaymentAsync({ repository, userId: user.userId }));
         dispatch(fetchDrinksAsync(repository));
     }, [user, dispatch, repository]);
 

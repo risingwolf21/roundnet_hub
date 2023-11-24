@@ -4,7 +4,7 @@ import { AccountCircle } from "@mui/icons-material";
 import { useTheme } from '@mui/material/styles';
 import { useEffect } from "react";
 import React from "react";
-import { FullEvent } from "../../types/supabaseTypes";
+import { FullAttendance, FullEvent } from "../../types/supabaseTypes";
 import { SwipeableDialog } from "../SwipeableDialog";
 
 function TabPanel(props: any) {
@@ -64,7 +64,7 @@ const EventAttendanceDialog = ({ open, index, setOpen, event }: EventAttendanceD
             <TabPanel value={value} index={0} dir={theme.direction}>
                 <List>
                     {
-                        event && event?.attendance?.filter(x => x.state === "Attending").map((x, index) => <ListItem key={x.userId + index}>
+                        event && event?.attendance?.filter((x: FullAttendance) => x.state === "Attending").map((x: FullAttendance, index: number) => <ListItem key={x.userId + index}>
                             <ListItemAvatar>
                                 <Avatar>
                                     <AccountCircle />
@@ -78,7 +78,7 @@ const EventAttendanceDialog = ({ open, index, setOpen, event }: EventAttendanceD
             <TabPanel value={value} index={1} dir={theme.direction}>
                 <List>
                     {
-                        event && event?.attendance?.filter(x => x.state === "Declined").map((x, index) => <ListItem key={x.userId + index}>
+                        event && event?.attendance?.filter((x: FullAttendance) => x.state === "Declined").map((x: FullAttendance, index: number) => <ListItem key={x.userId + index}>
                             <ListItemAvatar>
                                 <Avatar>
                                     <AccountCircle />

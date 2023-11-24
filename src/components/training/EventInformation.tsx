@@ -333,7 +333,7 @@ const EventInformation = ({ dispatch, selectedEvent, attendanceLoading, error, u
                             <ListItem dense sx={{ '&.MuiListItem-root': { paddingLeft: 0 } }}>
                                 <ListItemAvatar>
                                     <Avatar sx={{ width: 25, height: 25 }}>
-                                        <Typography fontSize={12}>{user.displayName.charAt(0)}</Typography>
+                                        <Typography fontSize={12}>{user.displayName?.charAt(0)}</Typography>
                                     </Avatar>
                                 </ListItemAvatar>
                                 <ListItemText>

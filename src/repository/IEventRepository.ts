@@ -46,7 +46,7 @@ class SupabaseEventRepository extends SupabaseRepository implements IEventReposi
                 user: user.userId,
                 event: eventId,
                 comment: comment,
-                displayName: user.displayName
+                displayName: user.displayName ?? ""
             })
             .select()
             .single<Comment>();
