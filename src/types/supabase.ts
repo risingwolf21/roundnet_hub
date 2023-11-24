@@ -306,6 +306,57 @@ export interface Database {
           }
         ]
       }
+      key_holders: {
+        Row: {
+          key: number
+          lastUpdate: string | null
+          user: string
+        }
+        Insert: {
+          key: number
+          lastUpdate?: string | null
+          user: string
+        }
+        Update: {
+          key?: number
+          lastUpdate?: string | null
+          user?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "key_holders_key_fkey"
+            columns: ["key"]
+            isOneToOne: false
+            referencedRelation: "keys"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "key_holders_user_fkey"
+            columns: ["user"]
+            isOneToOne: false
+            referencedRelation: "user"
+            referencedColumns: ["userId"]
+          }
+        ]
+      }
+      keys: {
+        Row: {
+          created_at: string
+          id: number
+          name: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: number
+          name?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: number
+          name?: string | null
+        }
+        Relationships: []
+      }
       payments: {
         Row: {
           amountToPay: number

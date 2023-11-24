@@ -32,6 +32,7 @@ import { DrinkListScreenProvider } from './components/drinkList/DrinkListScreen'
 import FeatureNotAvailable from './components/FeatureNotAvailable';
 import { SubscriptionHandler } from './components/SubscriptionHandler';
 import { getFirebaseToken, onMessageListener } from './firebase';
+import { KeyHolderScreenProvider } from './components/KeyHolderScreen';
 
 const App = () => {
 
@@ -78,6 +79,7 @@ const App = () => {
             <Route path="/user" element={<UserScreen />} />
             <Route path="/history" element={<HistoryScreenProvider />} />
             <Route path="/payments" element={<PayDrinksScreenProvider />} />
+            <Route path="/keys" element={<KeyHolderScreenProvider />} />
 
             <Route path="/trainer/groups" element={<ManageGroupsProvider />} />
             <Route path="/trainer/groups/:id" element={<GroupInformationProvider />} />

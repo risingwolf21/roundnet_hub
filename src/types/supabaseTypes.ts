@@ -11,6 +11,8 @@ export type History = Database["public"]["Tables"]["history"]["Row"];
 export type Payment = Database["public"]["Tables"]["payments"]["Row"];
 export type PaymentInsert = Database["public"]["Tables"]["payments"]["Insert"];
 export type User = Database["public"]["Tables"]["user"]["Row"];
+export type KeyHolder = Database["public"]["Tables"]["key_holders"]["Row"];
+export type Key = Database["public"]["Tables"]["keys"]["Row"];
 
 export type EventInsert = Database["public"]["Tables"]["events"]["Insert"];
 
@@ -19,6 +21,12 @@ export type EventAttendanceMapping = Database["public"]["Tables"]["event_attenda
 
 export type DrinkCounter = Drink & {
     count: number
+}
+
+export type FullKeyHolder = {
+    user: User,
+    key: Key,
+    lastUpdate: string | null
 }
 
 export type FullPayment = Payment & {
