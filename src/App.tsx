@@ -58,7 +58,7 @@ const App = () => {
     console.log(payload);
   }).catch(err => console.log('failed: ', err));
 
-  if (appUpdateAvailable || process.env.REACT_APP_VERSION !== "1.0.12")
+  if (appUpdateAvailable)
     return <UpdateAvailable update={updateAssets} />
 
   return <Grid maxHeight={"100vh"}>
