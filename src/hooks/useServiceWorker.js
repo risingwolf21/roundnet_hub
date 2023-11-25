@@ -1,51 +1,56 @@
-import { useState, useCallback, useEffect } from "react";
-import * as serviceWorkerRegistration from "../serviceWorkerRegistration";
+import { useState, createContext, useEffect, useMemo, useContext } from "react";
+import * as serviceWorker from "../serviceWorkerRegistration";
 
-export const useServiceWorker = () => {
-    const [waitingWorker, setWaitingWorker] = useState(null);
-    const [showReload, setShowReload] = useState(false);
-    // called when a service worker
-    // updates. this function is a callback
-    // to the actual service worker
-    // registration onUpdate.
-    const onSWUpdate = useCallback((registration) => {
-        setShowReload(true);
-        setWaitingWorker(registration.waiting);
-    }, []);
-    // simply put, this tells the service
-    // worker to skip the waiting phase and then reloads the page
-    const reloadPage = useCallback(() => {
-        waitingWorker?.postMessage({ type: "SKIP_WAITING" });
-        setShowReload(false);
-        const pageHasAlreadyBeenForceRefreshed = JSON.parse(
-            window.localStorage.getItem(
-                'page-has-been-force-refreshed'
-            ) || 'false'
-        );
-        if (!pageHasAlreadyBeenForceRefreshed) {
-            // Assuming that the user is not on the latest version of the application.
-            // Let's refresh the page immediately.
-            caches.keys().then((names) => {
-                names.forEach((name) => {
-                    caches.delete(name);
-                });
-            });
-            window.localStorage.setItem(
-                'page-has-been-force-refreshed',
-                'true'
-            );
-            return window.location.reload();
-        }
-        window.location.reload();
-    }, [waitingWorker]);
-    // register the service worker
+const ServiceWorkerContext = createContext();
+
+export const ServiceWorkerProvider = ({ children }) => {
+    const [waitingServiceWorker, setWaitingServiceWorker] = useState(null);
+    const [isUpdateAvailable, setUpdateAvailable] = useState(false);
+
     useEffect(() => {
-        // If you want your app to work offline and load faster, you can change
-        // unregister() to register() below. Note this comes with some pitfalls.
-        // Learn more about service workers: https://cra.link/PWA
-        serviceWorkerRegistration.register({
-            onUpdate: onSWUpdate,
+        serviceWorker.register({
+            onUpdate: registration => {
+                setWaitingServiceWorker(registration.waiting);
+                setUpdateAvailable(true);
+            },
+            onWaiting: waiting => {
+                setWaitingServiceWorker(waiting);
+                setUpdateAvailable(true);
+            }
         });
-    }, [onSWUpdate]);
-    return { showReload, waitingWorker, reloadPage };
-};
+    }, []);
+
+    useEffect(() => {
+        // We setup an event listener to automatically reload the page
+        // after the Service Worker has been updated, this will trigger
+        // on all the open tabs of our application, so that we don't leave
+        // any tab in an incosistent state
+        waitingServiceWorker && waitingServiceWorker.addEventListener('statechange', event => {
+            if (event.target.state === 'activated') {
+                window.location.reload();
+            }
+        });
+    }, [waitingServiceWorker]);
+
+    const value = useMemo(() => ({
+        isUpdateAvailable,
+        updateAssets: () => {
+            if (waitingServiceWorker) {
+                // We send the SKIP_WAITING message to tell the Service Worker
+                // to update its cache and flush the old one
+                waitingServiceWorker.postMessage({ type: 'SKIP_WAITING' });
+            }
+        }
+    }), [isUpdateAvailable, waitingServiceWorker]);
+
+    return (
+        <ServiceWorkerContext.Provider value={value}>
+            {children}
+        </ServiceWorkerContext.Provider>
+    );
+}
+
+// With this React Hook we'll be able to access `isUpdateAvailable` and `updateAssets`
+export const useServiceWorker = () => {
+    return useContext(ServiceWorkerContext);
+}

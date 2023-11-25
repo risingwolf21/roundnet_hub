@@ -48,7 +48,6 @@ const EventAttendanceDialog = ({ open, index, setOpen, event }: EventAttendanceD
         open={open}
         onClose={() => setOpen(false)}
         minHeight={60}
-        onClose={() => setOpen(false)}
         setOpen={setOpen}>
         <Box sx={{ paddingLeft: 0 }}>
             <AppBar position="sticky" sx={{ '&.MuiAppBar-root': { backgroundColor: "#fff", color: "#000" } }}>

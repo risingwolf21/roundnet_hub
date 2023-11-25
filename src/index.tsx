@@ -16,6 +16,8 @@ import { LocalizationProvider } from '@mui/x-date-pickers';
 import { Container } from 'inversify';
 import container from './repository/Container';
 import "./firebase";
+//@ts-ignore
+import { ServiceWorkerProvider } from "src/hooks/useServiceWorker";
 
 type Props = {
   children: ReactNode,
@@ -51,16 +53,18 @@ export const useAppDispatch = () => useDispatch<AppDispatch>()
 const root = ReactDOM.createRoot(document.getElementById('root') as HTMLElement);
 root.render(
   <React.StrictMode>
-    <ThemeProvider theme={mainTheme}>
-      <Provider store={store}>
-        <SupabaseProvider value={supabase}>
-          <DependencyProvider container={container}>
-            <LocalizationProvider dateAdapter={AdapterMoment}>
-              <App />
-            </LocalizationProvider>
-          </DependencyProvider>
-        </SupabaseProvider>
-      </Provider>
-    </ThemeProvider>
+    <ServiceWorkerProvider>
+      <ThemeProvider theme={mainTheme}>
+        <Provider store={store}>
+          <SupabaseProvider value={supabase}>
+            <DependencyProvider container={container}>
+              <LocalizationProvider dateAdapter={AdapterMoment}>
+                <App />
+              </LocalizationProvider>
+            </DependencyProvider>
+          </SupabaseProvider>
+        </Provider>
+      </ThemeProvider>
+    </ServiceWorkerProvider>
   </React.StrictMode>
 );

@@ -16,7 +16,7 @@ import { EventScreenProvider } from './components/training/EventScreen';
 import { EventInformationProvider } from './components/training/EventInformation';
 import CustomBottomNavigation from './components/BottomNavigation';
 //@ts-ignore
-import { useServiceWorker } from './hooks/useServiceWorker';
+import { useServiceWorker } from 'src/hooks/useServiceWorker';
 import { onAppUpdateAvailableChange } from './redux/applicationSlice';
 import UpdateAvailable from './components/UpdateAvailable';
 import AuthGate from './AuthGate';
@@ -36,13 +36,13 @@ import { KeyHolderScreenProvider } from './components/KeyHolderScreen';
 
 const App = () => {
 
-  const { waitingWorker, showReload, reloadPage } = useServiceWorker();
+  const { isUpdateAvailable, updateAssets } = useServiceWorker();
   const dispatch = useAppDispatch();
   const { appUpdateAvailable } = useSelector((state: RootState) => state.application);
 
   useEffect(() => {
-    dispatch(onAppUpdateAvailableChange(showReload && waitingWorker));
-  }, [waitingWorker, showReload, reloadPage, dispatch]);
+    dispatch(onAppUpdateAvailableChange(isUpdateAvailable));
+  }, [isUpdateAvailable, dispatch]);
 
   useEffect(() => {
     if (window.Notification?.permission === "granted") {
@@ -59,7 +59,7 @@ const App = () => {
   }).catch(err => console.log('failed: ', err));
 
   if (appUpdateAvailable || process.env.REACT_APP_VERSION !== "1.0.12")
-    return <UpdateAvailable update={reloadPage} />
+    return <UpdateAvailable update={updateAssets} />
 
   return <Grid maxHeight={"100vh"}>
     <BrowserRouter>

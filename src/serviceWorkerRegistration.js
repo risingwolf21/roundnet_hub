@@ -56,7 +56,11 @@ function registerValidSW(swUrl, config) {
     .register(swUrl)
     .then((registration) => {
 
-      registration.update();
+      if (registration.waiting) {
+        if (config && config.onWaiting) {
+          config.onWaiting(registration.waiting);
+        }
+      }
 
       setInterval(() => {
         registration.update();
