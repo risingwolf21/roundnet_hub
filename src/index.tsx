@@ -53,18 +53,16 @@ export const useAppDispatch = () => useDispatch<AppDispatch>()
 const root = ReactDOM.createRoot(document.getElementById('root') as HTMLElement);
 root.render(
   <React.StrictMode>
-    <ServiceWorkerProvider>
-      <ThemeProvider theme={mainTheme}>
-        <Provider store={store}>
-          <SupabaseProvider value={supabase}>
-            <DependencyProvider container={container}>
-              <LocalizationProvider dateAdapter={AdapterMoment}>
-                <App />
-              </LocalizationProvider>
-            </DependencyProvider>
-          </SupabaseProvider>
-        </Provider>
-      </ThemeProvider>
-    </ServiceWorkerProvider>
+    <ThemeProvider theme={mainTheme}>
+      <Provider store={store}>
+        <SupabaseProvider value={supabase}>
+          <DependencyProvider container={container}>
+            <LocalizationProvider dateAdapter={AdapterMoment}>
+              <App />
+            </LocalizationProvider>
+          </DependencyProvider>
+        </SupabaseProvider>
+      </Provider>
+    </ThemeProvider>
   </React.StrictMode>
 );

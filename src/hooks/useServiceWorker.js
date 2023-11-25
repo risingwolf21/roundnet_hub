@@ -3,7 +3,7 @@ import * as serviceWorker from "../serviceWorkerRegistration";
 
 const ServiceWorkerContext = createContext();
 
-export const ServiceWorkerProvider = ({ children }) => {
+export const useServiceWorker = () => {
     const [waitingServiceWorker, setWaitingServiceWorker] = useState(null);
     const [isUpdateAvailable, setUpdateAvailable] = useState(false);
 
@@ -36,23 +36,15 @@ export const ServiceWorkerProvider = ({ children }) => {
     const value = useMemo(() => ({
         isUpdateAvailable,
         updateAssets: () => {
-            setUpdateAvailable(false);
             if (waitingServiceWorker) {
                 // We send the SKIP_WAITING message to tell the Service Worker
                 // to update its cache and flush the old one
                 waitingServiceWorker.postMessage({ type: 'SKIP_WAITING' });
+                setUpdateAvailable(false);
+                window.location.reload();
             }
         }
     }), [isUpdateAvailable, waitingServiceWorker]);
 
-    return (
-        <ServiceWorkerContext.Provider value={value}>
-            {children}
-        </ServiceWorkerContext.Provider>
-    );
-}
-
-// With this React Hook we'll be able to access `isUpdateAvailable` and `updateAssets`
-export const useServiceWorker = () => {
-    return useContext(ServiceWorkerContext);
+    return { isUpdateAvailable: value.isUpdateAvailable, updateAssets: value.updateAssets }
 }
