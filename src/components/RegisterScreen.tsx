@@ -38,7 +38,7 @@ const RegisterScreen = () => {
             }
         });
 
-        if (!data || !data.user || error) {
+        if (!data.user || error) {
             captureException(new RegistrationError("Could not sign up user. The result was empty!"), (scope) => {
                 scope.clear();
                 scope.setExtra("displayName", displayName);
@@ -59,7 +59,7 @@ const RegisterScreen = () => {
         if (writingError)
             setErrorMessage(JSON.stringify(writingError));
 
-        if (error || updatingUserError) {
+        if (error || updatingUserError || writingError) {
             captureException(new RegistrationError(""), (scope) => {
                 scope.clear();
                 scope.setExtra("signUpError", JSON.stringify(error))
