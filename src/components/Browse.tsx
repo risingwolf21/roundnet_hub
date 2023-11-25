@@ -1,4 +1,4 @@
-import { AccountCircle, Euro, History, Info } from "@mui/icons-material";
+import { AccountCircle, Euro, History, Info, Key } from "@mui/icons-material";
 import { Avatar, List, ListItem, ListItemAvatar, ListItemText, Box } from "@mui/material";
 import { useNavigate } from "react-router";
 import { withTranslation } from 'react-i18next';
@@ -23,6 +23,12 @@ const tabs = [
         translationKey: "history",
         navigateTo: "/history",
         icon: <History />,
+        avatarColor: "#88AEBF"
+    },
+    {
+        translationKey: "keys",
+        navigateTo: "/keys",
+        icon: <Key />,
         avatarColor: "#88AEBF"
     }
 ]

@@ -69,7 +69,7 @@ const GroupInformation = ({ users, loading, group, repository }: GroupInformatio
             <Divider />
             <Typography pl={2} pt={1} variant="h6" fontWeight="bold">Mitglieder</Typography>
             {
-                group && group.users && group.users.map((x, index) => <ListItem key={index} divider>
+                group && group.users && group.users.map((x: SimpleUser, index: number) => <ListItem key={index} divider>
                     <ListItemAvatar>
                         <AccountCircle />
                     </ListItemAvatar>

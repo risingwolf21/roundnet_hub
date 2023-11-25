@@ -21,7 +21,6 @@ import { onAppUpdateAvailableChange } from './redux/applicationSlice';
 import UpdateAvailable from './components/UpdateAvailable';
 import AuthGate from './AuthGate';
 import ResetPasswordScreen from './components/ResetPasswordScreen';
-import SubscriptionHandler from './components/SubscriptionHandler';
 import { ManageGroupsProvider } from './components/groups/ManageGroups';
 import BrowseAdmin from './components/admin/BrowseAdmin';
 import DrinkStockUpdateScreen from './components/procure/DrinkStockUpdateScreen';
@@ -31,7 +30,9 @@ import { RootState } from './redux/store';
 import { GroupInformationProvider } from './components/groups/GroupInformation';
 import { DrinkListScreenProvider } from './components/drinkList/DrinkListScreen';
 import FeatureNotAvailable from './components/FeatureNotAvailable';
+import { SubscriptionHandler } from './components/SubscriptionHandler';
 import { getFirebaseToken, onMessageListener } from './firebase';
+import { KeyHolderScreenProvider } from './components/KeyHolderScreen';
 
 const App = () => {
 
@@ -57,7 +58,7 @@ const App = () => {
     console.log(payload);
   }).catch(err => console.log('failed: ', err));
 
-  if (appUpdateAvailable)
+  if (appUpdateAvailable || process.env.REACT_APP_VERSION !== "1.0.12")
     return <UpdateAvailable update={reloadPage} />
 
   return <Grid maxHeight={"100vh"}>
@@ -78,6 +79,7 @@ const App = () => {
             <Route path="/user" element={<UserScreen />} />
             <Route path="/history" element={<HistoryScreenProvider />} />
             <Route path="/payments" element={<PayDrinksScreenProvider />} />
+            <Route path="/keys" element={<KeyHolderScreenProvider />} />
 
             <Route path="/trainer/groups" element={<ManageGroupsProvider />} />
             <Route path="/trainer/groups/:id" element={<GroupInformationProvider />} />

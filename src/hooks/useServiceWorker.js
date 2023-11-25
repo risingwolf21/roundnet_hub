@@ -17,6 +17,25 @@ export const useServiceWorker = () => {
     const reloadPage = useCallback(() => {
         waitingWorker?.postMessage({ type: "SKIP_WAITING" });
         setShowReload(false);
+        const pageHasAlreadyBeenForceRefreshed = JSON.parse(
+            window.localStorage.getItem(
+                'page-has-been-force-refreshed'
+            ) || 'false'
+        );
+        if (!pageHasAlreadyBeenForceRefreshed) {
+            // Assuming that the user is not on the latest version of the application.
+            // Let's refresh the page immediately.
+            caches.keys().then((names) => {
+                names.forEach((name) => {
+                    caches.delete(name);
+                });
+            });
+            window.localStorage.setItem(
+                'page-has-been-force-refreshed',
+                'true'
+            );
+            return window.location.reload();
+        }
         window.location.reload();
     }, [waitingWorker]);
     // register the service worker
