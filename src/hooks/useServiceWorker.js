@@ -27,8 +27,8 @@ export const ServiceWorkerProvider = ({ children }) => {
         // any tab in an incosistent state
         waitingServiceWorker && waitingServiceWorker.addEventListener('statechange', event => {
             if (event.target.state === 'activated') {
-                window.location.reload();
                 setUpdateAvailable(false);
+                window.location.reload();
             }
         });
     }, [waitingServiceWorker]);
@@ -36,6 +36,7 @@ export const ServiceWorkerProvider = ({ children }) => {
     const value = useMemo(() => ({
         isUpdateAvailable,
         updateAssets: () => {
+            setUpdateAvailable(false);
             if (waitingServiceWorker) {
                 // We send the SKIP_WAITING message to tell the Service Worker
                 // to update its cache and flush the old one
