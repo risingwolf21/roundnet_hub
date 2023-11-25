@@ -46,5 +46,5 @@ export const useServiceWorker = () => {
         }
     }), [isUpdateAvailable, waitingServiceWorker]);
 
-    return { isUpdateAvailable: false, updateAssets: value.updateAssets }
+    return { isUpdateAvailable: isUpdateAvailable, updateAssets: value.updateAssets }
 }
