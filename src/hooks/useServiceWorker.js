@@ -28,6 +28,7 @@ export const ServiceWorkerProvider = ({ children }) => {
         waitingServiceWorker && waitingServiceWorker.addEventListener('statechange', event => {
             if (event.target.state === 'activated') {
                 window.location.reload();
+                setUpdateAvailable(false);
             }
         });
     }, [waitingServiceWorker]);
