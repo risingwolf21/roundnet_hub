@@ -17,7 +17,7 @@ import { Container } from 'inversify';
 import container from './repository/Container';
 import "./firebase";
 //@ts-ignore
-import { ServiceWorkerProvider } from "src/hooks/useServiceWorker";
+import "src/apocalypseHandler.js";
 
 type Props = {
   children: ReactNode,
