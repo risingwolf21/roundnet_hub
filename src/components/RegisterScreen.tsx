@@ -116,7 +116,6 @@ const RegisterScreen = () => {
                         label="Email Addresse"
                         name="email"
                         autoComplete="email"
-                        autoFocus
                     />
                     <TextField
                         margin="normal"
