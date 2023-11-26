@@ -34,7 +34,7 @@ const ResetPasswordScreen = () => {
         // Authenticate the user using the access token and refresh token
         const getSessionWithTokens = async () => {
             if (accessToken && refreshToken) {
-                const { error } = await supabase.auth.setSession({
+                const { data, error } = await supabase.auth.setSession({
                     access_token: accessToken,
                     refresh_token: refreshToken,
                 });
@@ -57,7 +57,7 @@ const ResetPasswordScreen = () => {
         const password = data.get("password")?.toString();
         const password1 = data.get("password1")?.toString();
 
-        if (password !== password1 || !password || password1) {
+        if (password !== password1 || !password || !password1) {
             setErrorMessage("Die Passwörter stimmen nicht überein!");
             return;
         }

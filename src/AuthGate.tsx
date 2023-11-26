@@ -12,6 +12,7 @@ import NotVerifiedScreen from "./components/NotVerifiedScreen";
 import { RootState } from "./redux/store";
 import { User } from "./types/supabaseTypes";
 import { TABLE_USER } from "./constants";
+import ResetPasswordScreen from "./components/ResetPasswordScreen";
 
 
 const initialState = { session: null, user: null }
@@ -57,6 +58,7 @@ const AuthGate = ({ children }: Props) => {
         <Route key={"/"} path='/' element={<Navigate replace to={"/login"} />} />,
         <Route key={"*"} path="*" element={<Navigate replace to={"/login"} />} />,
         <Route key={"register"} path='/register' element={<RegisterScreen />} />,
+        <Route key={"reset-password"} path='/reset-password' element={<ResetPasswordScreen />} />,
         <Route key={"forgot-password"} path='/forgot-password' element={<ForgotPasswordScreen />} />
     ];
 
