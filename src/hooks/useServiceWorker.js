@@ -37,11 +37,22 @@ export const useServiceWorker = () => {
         isUpdateAvailable,
         updateAssets: () => {
             if (waitingServiceWorker) {
-                // We send the SKIP_WAITING message to tell the Service Worker
-                // to update its cache and flush the old one
-                waitingServiceWorker.postMessage({ type: 'SKIP_WAITING' });
-                setUpdateAvailable(false);
-                window.location.reload();
+                navigator.serviceWorker.getRegistrations().then((registrations) => {
+                    registrations.forEach((registration) => {
+                        registration.unregister();
+                    });
+                    caches.keys().then((keyList) => {
+                        return Promise.all(
+                            keyList.map((key) => {
+                                return caches.delete(key);
+                            })
+                        );
+                    });
+                    setTimeout(() => {
+                        setUpdateAvailable(false);
+                        window.location.reload();
+                    }, 1000);
+                });
             }
         }
     }), [isUpdateAvailable, waitingServiceWorker]);

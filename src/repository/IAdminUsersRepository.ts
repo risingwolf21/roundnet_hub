@@ -62,3 +62,22 @@ export class SupabaseAdminUsersRepository extends SupabaseRepository implements 
 
 
 }
+
+export class EmptyAdminUsersRepository implements IAdminUsersRepository {
+    addUsersToGroup(group: { color: string; created_at: string | null; description: string | null; id: number; name: string | null; }, users: { created_at: string | null; displayName: string | null; email: string | null; role: "user" | "admin" | "procure" | "finance" | "trainer"; userId: string; verified: boolean; }[]): Promise<PostgrestSingleResponse<null>> {
+        throw new Error("Method not implemented.");
+    }
+    fetchAllUsersWithGroups(): Promise<PostgrestSingleResponse<UserWithGroups[]>> {
+        throw new Error("Method not implemented.");
+    }
+    fetchNotVerifiedUsers(): Promise<PostgrestSingleResponse<{ created_at: string | null; displayName: string | null; email: string | null; role: "user" | "admin" | "procure" | "finance" | "trainer"; userId: string; verified: boolean; }[]>> {
+        throw new Error("Method not implemented.");
+    }
+    updateUser(user: UserEdited): Promise<PostgrestSingleResponse<null>> {
+        throw new Error("Method not implemented.");
+    }
+    deactivateUser(user: { created_at: string | null; displayName: string | null; email: string | null; role: "user" | "admin" | "procure" | "finance" | "trainer"; userId: string; verified: boolean; }): Promise<void> {
+        throw new Error("Method not implemented.");
+    }
+
+}

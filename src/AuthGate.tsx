@@ -58,8 +58,6 @@ const AuthGate = ({ children }: Props) => {
                     }
                 })
             } else if (user !== null) {
-                container.unbind("IAdminDrinksRepository");
-                container.unbind("IAdminUsersRepository");
                 dispatch(onUserChange(null));
                 navigate("/login", { replace: true });
             }
