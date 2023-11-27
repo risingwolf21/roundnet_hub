@@ -16,7 +16,6 @@ export interface IAdminUsersRepository {
 @injectable()
 export class SupabaseAdminUsersRepository extends SupabaseRepository implements IAdminUsersRepository {
 
-
     async deactivateUser(user: User): Promise<void> {
         await this.client
             .from(TABLE_PAYMENTS)

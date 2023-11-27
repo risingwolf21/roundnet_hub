@@ -13,6 +13,10 @@ import { RootState } from "./redux/store";
 import { User } from "./types/supabaseTypes";
 import { TABLE_USER } from "./constants";
 import ResetPasswordScreen from "./components/ResetPasswordScreen";
+import container from "./repository/Container";
+import { IAdminDrinksRepository, SupabaseAdminDrinksRepository } from "./repository/IAdminDrinksRepository";
+import { IAdminUsersRepository, SupabaseAdminUsersRepository } from "./repository/IAdminUsersRepository";
+import { supabaseAdmin } from "./components/services/supabase/supabaseClient";
 
 
 const initialState = { session: null, user: null }
@@ -43,10 +47,19 @@ const AuthGate = ({ children }: Props) => {
                             role: res.data.role,
                             verified: res.data.verified
                         } as User;
+
+                        if (user.role === "admin") {
+                            if (!container.isBound("IAdminDrinksRepository"))
+                                container.bind<IAdminDrinksRepository>("IAdminDrinksRepository").toDynamicValue(() => new SupabaseAdminDrinksRepository(supabaseAdmin)).inSingletonScope()
+                            if (!container.isBound("IAdminUsersRepository"))
+                                container.bind<IAdminUsersRepository>("IAdminUsersRepository").toDynamicValue(() => new SupabaseAdminUsersRepository(supabaseAdmin)).inSingletonScope()
+                        }
                         dispatch(onUserChange(user));
                     }
                 })
             } else if (user !== null) {
+                container.unbind("IAdminDrinksRepository");
+                container.unbind("IAdminUsersRepository");
                 dispatch(onUserChange(null));
                 navigate("/login", { replace: true });
             }
