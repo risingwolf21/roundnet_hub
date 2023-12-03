@@ -13,7 +13,7 @@ import { AppDispatch, useAppDispatch } from "src";
 import { useDependency } from "src/hooks/useDependency";
 import { IDrinkRepository } from "src/repository/IDrinkRepository";
 import { Drink, DrinkCounter, User } from "src/types/supabaseTypes";
-import { fetchDrinksAsync, fetchPaymentAsync } from "src/redux/drinksSlice";
+import { fetchDrinksAsync } from "src/redux/drinksSlice";
 import { AlertMessage, AlertSnackbar } from "src/components/AlertSnackbar";
 import { LoadingIndicator } from "src/components/LoadingIndicator";
 

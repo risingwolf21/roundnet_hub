@@ -31,7 +31,6 @@ import { GroupInformationProvider } from './components/groups/GroupInformation';
 import { DrinkListScreenProvider } from './components/drinkList/DrinkListScreen';
 import FeatureNotAvailable from './components/FeatureNotAvailable';
 import { SubscriptionHandler } from './components/SubscriptionHandler';
-import { getFirebaseToken, onMessageListener } from './firebase';
 import { KeyHolderScreenProvider } from './components/KeyHolderScreen';
 
 const App = () => {
@@ -43,20 +42,6 @@ const App = () => {
   useEffect(() => {
     dispatch(onAppUpdateAvailableChange(isUpdateAvailable));
   }, [isUpdateAvailable, dispatch]);
-
-  useEffect(() => {
-    if (window.Notification?.permission === "granted") {
-      getFirebaseToken().then((firebaseToken: string | undefined) => {
-        if (firebaseToken) {
-          console.log(firebaseToken);
-        }
-      });
-    }
-  }, []);
-
-  onMessageListener().then(payload => {
-    console.log(payload);
-  }).catch(err => console.log('failed: ', err));
 
   if (appUpdateAvailable)
     return <UpdateAvailable update={updateAssets} />

@@ -34,7 +34,7 @@ const ResetPasswordScreen = () => {
         // Authenticate the user using the access token and refresh token
         const getSessionWithTokens = async () => {
             if (accessToken && refreshToken) {
-                const { data, error } = await supabase.auth.setSession({
+                const { error } = await supabase.auth.setSession({
                     access_token: accessToken,
                     refresh_token: refreshToken,
                 });

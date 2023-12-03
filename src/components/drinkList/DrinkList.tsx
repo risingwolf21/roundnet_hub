@@ -2,7 +2,7 @@ import { Avatar, Box, Collapse, Divider, IconButton, List, ListItemAvatar, ListI
 import React, { useState } from "react";
 import { Drink, DrinkCounter } from "src/types/supabaseTypes";
 import DrinkItem from "./DrinkItem";
-import { ExpandLess, ExpandMore, ManageAccounts, Stars } from "@mui/icons-material";
+import { ExpandLess, ExpandMore, Stars } from "@mui/icons-material";
 
 
 type DrinkListProps = {

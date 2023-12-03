@@ -1,8 +1,6 @@
 import { useState, createContext, useEffect, useMemo, useContext } from "react";
 import * as serviceWorker from "../serviceWorkerRegistration";
 
-const ServiceWorkerContext = createContext();
-
 export const useServiceWorker = () => {
     const [waitingServiceWorker, setWaitingServiceWorker] = useState(null);
     const [isUpdateAvailable, setUpdateAvailable] = useState(false);
