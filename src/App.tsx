@@ -32,16 +32,25 @@ import { DrinkListScreenProvider } from './components/drinkList/DrinkListScreen'
 import FeatureNotAvailable from './components/FeatureNotAvailable';
 import { SubscriptionHandler } from './components/SubscriptionHandler';
 import { KeyHolderScreenProvider } from './components/KeyHolderScreen';
+import { fetchAdminUsersAsync } from './redux/adminUserSlice';
+import { useDependency } from './hooks/useDependency';
+import { IAdminUsersRepository } from './repository/IAdminUsersRepository';
 
 const App = () => {
 
   const { isUpdateAvailable, updateAssets } = useServiceWorker();
   const dispatch = useAppDispatch();
+  const repository = useDependency<IAdminUsersRepository>("IAdminUsersRepository");
   const { appUpdateAvailable } = useSelector((state: RootState) => state.application);
 
   useEffect(() => {
     dispatch(onAppUpdateAvailableChange(isUpdateAvailable));
   }, [isUpdateAvailable, dispatch]);
+
+  useEffect(() => {
+    if (repository)
+      dispatch(fetchAdminUsersAsync(repository));
+  }, [dispatch, repository]);
 
   if (appUpdateAvailable)
     return <UpdateAvailable update={updateAssets} />
