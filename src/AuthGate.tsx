@@ -14,7 +14,7 @@ import { User } from "./types/supabaseTypes";
 import { TABLE_USER } from "./constants";
 import ResetPasswordScreen from "./components/ResetPasswordScreen";
 import container from "./repository/Container";
-import { IAdminDrinksRepository, SupabaseAdminDrinksRepository } from "./repository/IAdminDrinksRepository";
+import { EmptyAdminDrinksRepository, IAdminDrinksRepository, SupabaseAdminDrinksRepository } from "./repository/IAdminDrinksRepository";
 import { IAdminUsersRepository, SupabaseAdminUsersRepository } from "./repository/IAdminUsersRepository";
 import { supabaseAdmin } from "./components/services/supabase/supabaseClient";
 

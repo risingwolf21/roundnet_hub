@@ -35,6 +35,7 @@ import { KeyHolderScreenProvider } from './components/KeyHolderScreen';
 import { fetchAdminUsersAsync } from './redux/adminUserSlice';
 import { useDependency } from './hooks/useDependency';
 import { IAdminUsersRepository } from './repository/IAdminUsersRepository';
+import OneSignal from 'react-onesignal';
 
 const App = () => {
 
@@ -46,6 +47,15 @@ const App = () => {
   useEffect(() => {
     dispatch(onAppUpdateAvailableChange(isUpdateAvailable));
   }, [isUpdateAvailable, dispatch]);
+
+  useEffect(() => {
+    OneSignal.init({
+      appId: "29f88fe6-c955-493f-8de5-065263af3e23",
+      allowLocalhostAsSecureOrigin: true,
+    }).then(() => {
+      OneSignal.Slidedown.promptPush();
+    });
+  }, []);
 
   useEffect(() => {
     if (repository)
