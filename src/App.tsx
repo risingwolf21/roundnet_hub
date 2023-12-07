@@ -49,12 +49,14 @@ const App = () => {
   }, [isUpdateAvailable, dispatch]);
 
   useEffect(() => {
-    OneSignal.init({
-      appId: "29f88fe6-c955-493f-8de5-065263af3e23",
-      allowLocalhostAsSecureOrigin: true,
-    }).then(() => {
-      OneSignal.Slidedown.promptPush();
-    });
+    if (process.env.REACT_APP_oneSignalAppId) {
+      OneSignal.init({
+        appId: process.env.REACT_APP_oneSignalAppId,
+        allowLocalhostAsSecureOrigin: true,
+      }).then(() => {
+        OneSignal.Slidedown.promptPush();
+      });
+    }
   }, []);
 
   useEffect(() => {
