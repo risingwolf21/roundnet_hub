@@ -6,6 +6,7 @@ import adminPaymentsSlice from './adminPaymentsSlice'
 import eventSlice from './eventSlice'
 import groupsSlice from './groupsSlice'
 import adminUsersSlice from './adminUserSlice'
+import keysSlice from './keysSlice'
 
 const store = configureStore({
     reducer: {
@@ -13,6 +14,7 @@ const store = configureStore({
         events: eventSlice,
         groups: groupsSlice,
         application: applicationSlice,
+        keys: keysSlice,
         adminDrinks: adminDrinksSlice,
         adminPayments: adminPaymentsSlice,
         adminUsers: adminUsersSlice

@@ -12,6 +12,11 @@ import NotVerifiedScreen from "./components/NotVerifiedScreen";
 import { RootState } from "./redux/store";
 import { User } from "./types/supabaseTypes";
 import { TABLE_USER } from "./constants";
+import ResetPasswordScreen from "./components/ResetPasswordScreen";
+import container from "./repository/Container";
+import { EmptyAdminDrinksRepository, IAdminDrinksRepository, SupabaseAdminDrinksRepository } from "./repository/IAdminDrinksRepository";
+import { IAdminUsersRepository, SupabaseAdminUsersRepository } from "./repository/IAdminUsersRepository";
+import { supabaseAdmin } from "./components/services/supabase/supabaseClient";
 
 
 const initialState = { session: null, user: null }
@@ -42,6 +47,13 @@ const AuthGate = ({ children }: Props) => {
                             role: res.data.role,
                             verified: res.data.verified
                         } as User;
+
+                        if (user.role === "admin") {
+                            if (!container.isBound("IAdminDrinksRepository"))
+                                container.bind<IAdminDrinksRepository>("IAdminDrinksRepository").toDynamicValue(() => new SupabaseAdminDrinksRepository(supabaseAdmin)).inSingletonScope()
+                            if (!container.isBound("IAdminUsersRepository"))
+                                container.bind<IAdminUsersRepository>("IAdminUsersRepository").toDynamicValue(() => new SupabaseAdminUsersRepository(supabaseAdmin)).inSingletonScope()
+                        }
                         dispatch(onUserChange(user));
                     }
                 })
@@ -56,7 +68,10 @@ const AuthGate = ({ children }: Props) => {
         <Route key={"/"} path='/' element={<Navigate replace to={"/login"} />} />,
         <Route key={"*"} path="*" element={<Navigate replace to={"/login"} />} />,
         <Route key={"login"} path='/login' element={<LoginScreen />} />,
+        <Route key={"/"} path='/' element={<Navigate replace to={"/login"} />} />,
+        <Route key={"*"} path="*" element={<Navigate replace to={"/login"} />} />,
         <Route key={"register"} path='/register' element={<RegisterScreen />} />,
+        <Route key={"reset-password"} path='/reset-password' element={<ResetPasswordScreen />} />,
         <Route key={"forgot-password"} path='/forgot-password' element={<ForgotPasswordScreen />} />
     ];
 

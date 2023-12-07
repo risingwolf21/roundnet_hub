@@ -9,11 +9,11 @@ import React from "react";
 import DrinkList from "./DrinkList";
 import { MultiplePaymentsError } from "src/utils";
 import { RootState } from "src/redux/store";
-import { useAppDispatch } from "src";
+import { AppDispatch, useAppDispatch } from "src";
 import { useDependency } from "src/hooks/useDependency";
 import { IDrinkRepository } from "src/repository/IDrinkRepository";
 import { Drink, DrinkCounter, User } from "src/types/supabaseTypes";
-import { fetchDrinksAsync, fetchPaymentAsync } from "src/redux/drinksSlice";
+import { fetchDrinksAsync } from "src/redux/drinksSlice";
 import { AlertMessage, AlertSnackbar } from "src/components/AlertSnackbar";
 import { LoadingIndicator } from "src/components/LoadingIndicator";
 
@@ -23,12 +23,14 @@ export const DrinkListScreenProvider = () => {
     const { user } = useSelector((state: RootState) => state.application);
     const drinksRepository = useDependency<IDrinkRepository>("IDrinkRepository");
     const { drinks, drinksLoading, drinksError } = useSelector((state: RootState) => state.drinks);
+    const dispatch = useAppDispatch();
 
     if (!user || !drinksRepository)
         return <AlertSnackbar close={() => { }} alertInfo={{ message: "Fatal error occured. Repository or user was null!", severity: "error" }} />
 
     return <DrinkListScreen
         repository={drinksRepository}
+        dispatch={dispatch}
         user={user}
         drinks={drinks}
         drinksError={drinksError ?? ""}
@@ -37,14 +39,15 @@ export const DrinkListScreenProvider = () => {
 
 type DrinkListScreenProps = {
     repository: IDrinkRepository,
+    dispatch: AppDispatch,
     user: User,
     drinks: Drink[],
     drinksLoading: boolean,
     drinksError: string
 }
 
-const DrinkListScreen = ({ repository, user, drinks, drinksLoading, drinksError }: DrinkListScreenProps) => {
-    const dispatch = useAppDispatch();
+const DrinkListScreen = ({ repository, user, drinks, drinksLoading, drinksError, dispatch }: DrinkListScreenProps) => {
+
 
     const [addedDrinks, setAddedDrinks] = useState<DrinkCounter[]>([]);
     const [loading, setLoading] = useState(false);
@@ -57,7 +60,6 @@ const DrinkListScreen = ({ repository, user, drinks, drinksLoading, drinksError 
     }, [drinksError])
 
     useEffect(() => {
-        dispatch(fetchPaymentAsync({ repository, userId: user.userId }));
         dispatch(fetchDrinksAsync(repository));
     }, [user, dispatch, repository]);
 

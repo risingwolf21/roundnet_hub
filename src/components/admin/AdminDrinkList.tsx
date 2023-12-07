@@ -58,7 +58,8 @@ const EMPTY_DRINK: Drink =
     deleted: false,
     id: 0,
     previousDrink: null,
-    stock: 0
+    stock: 0,
+    type: "Drink"
 };
 
 export const AdminDrinkListProvider = () => {

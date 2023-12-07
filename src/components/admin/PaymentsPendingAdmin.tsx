@@ -13,7 +13,7 @@ import { useNavigate } from "react-router-dom";
 import React from "react";
 import { useAppDispatch } from "../..";
 import { RootState } from "../../redux/store";
-import { FullPayment, PaymentState } from "../../types/supabaseTypes";
+import { FullPayment, History, PaymentState } from "../../types/supabaseTypes";
 import { TABLE_PAYMENTS } from "../../constants";
 import { SwipeableDialog } from "../SwipeableDialog";
 
@@ -86,7 +86,7 @@ const PaymentsPendingAdmin = () => {
                         .map((x, index) => {
                             return <ListItem key={x.user.email} divider>
                                 <ListItemAvatar>
-                                    <Typography fontWeight={"bold"}>{x.history.reduce((prev, curr) => prev + (curr.amount ?? 0), 0)} €</Typography>
+                                    <Typography fontWeight={"bold"}>{x.history.reduce((prev: number, curr: History) => prev + (curr.amount ?? 0), 0)} €</Typography>
                                 </ListItemAvatar>
                                 <ListItemText primary={x.user?.displayName ?? x.user.email} secondary={x.user.displayName ? "Benutzername" : "Email"} />
                                 <ListItemSecondaryAction >
@@ -132,7 +132,7 @@ const PaymentsPendingAdmin = () => {
                     eine Zahlung in Höhe von
                 </Typography>
                 <Typography fontWeight={"bold"}>
-                    {`${currentPayment?.history?.reduce((prev, curr) => prev + (curr.amount ?? 0), 0)} €`}
+                    {`${currentPayment?.history?.reduce((prev: number, curr: History) => prev + (curr.amount ?? 0), 0)} €`}
                 </Typography>
                 <Typography>
                     getätigt hat.

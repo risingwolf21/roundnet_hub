@@ -16,12 +16,11 @@ import { EventScreenProvider } from './components/training/EventScreen';
 import { EventInformationProvider } from './components/training/EventInformation';
 import CustomBottomNavigation from './components/BottomNavigation';
 //@ts-ignore
-import { useServiceWorker } from './hooks/useServiceWorker';
+import { useServiceWorker } from 'src/hooks/useServiceWorker';
 import { onAppUpdateAvailableChange } from './redux/applicationSlice';
 import UpdateAvailable from './components/UpdateAvailable';
 import AuthGate from './AuthGate';
 import ResetPasswordScreen from './components/ResetPasswordScreen';
-import SubscriptionHandler from './components/SubscriptionHandler';
 import { ManageGroupsProvider } from './components/groups/ManageGroups';
 import BrowseAdmin from './components/admin/BrowseAdmin';
 import DrinkStockUpdateScreen from './components/procure/DrinkStockUpdateScreen';
@@ -31,34 +30,42 @@ import { RootState } from './redux/store';
 import { GroupInformationProvider } from './components/groups/GroupInformation';
 import { DrinkListScreenProvider } from './components/drinkList/DrinkListScreen';
 import FeatureNotAvailable from './components/FeatureNotAvailable';
-import { getFirebaseToken, onMessageListener } from './firebase';
+import { SubscriptionHandler } from './components/SubscriptionHandler';
+import { KeyHolderScreenProvider } from './components/KeyHolderScreen';
+import { fetchAdminUsersAsync } from './redux/adminUserSlice';
+import { useDependency } from './hooks/useDependency';
+import { IAdminUsersRepository } from './repository/IAdminUsersRepository';
+import OneSignal from 'react-onesignal';
 
 const App = () => {
 
-  const { waitingWorker, showReload, reloadPage } = useServiceWorker();
+  const { isUpdateAvailable, updateAssets } = useServiceWorker();
   const dispatch = useAppDispatch();
+  const repository = useDependency<IAdminUsersRepository>("IAdminUsersRepository");
   const { appUpdateAvailable } = useSelector((state: RootState) => state.application);
 
   useEffect(() => {
-    dispatch(onAppUpdateAvailableChange(showReload && waitingWorker));
-  }, [waitingWorker, showReload, reloadPage, dispatch]);
+    dispatch(onAppUpdateAvailableChange(isUpdateAvailable));
+  }, [isUpdateAvailable, dispatch]);
 
   useEffect(() => {
-    if (window.Notification?.permission === "granted") {
-      getFirebaseToken().then((firebaseToken: string | undefined) => {
-        if (firebaseToken) {
-          console.log(firebaseToken);
-        }
+    if (process.env.REACT_APP_oneSignalAppId) {
+      OneSignal.init({
+        appId: process.env.REACT_APP_oneSignalAppId,
+        allowLocalhostAsSecureOrigin: true,
+      }).then(() => {
+        OneSignal.Slidedown.promptPush();
       });
     }
   }, []);
 
-  onMessageListener().then(payload => {
-    console.log(payload);
-  }).catch(err => console.log('failed: ', err));
+  useEffect(() => {
+    if (repository)
+      dispatch(fetchAdminUsersAsync(repository));
+  }, [dispatch, repository]);
 
   if (appUpdateAvailable)
-    return <UpdateAvailable update={reloadPage} />
+    return <UpdateAvailable update={updateAssets} />
 
   return <Grid maxHeight={"100vh"}>
     <BrowserRouter>
@@ -78,6 +85,7 @@ const App = () => {
             <Route path="/user" element={<UserScreen />} />
             <Route path="/history" element={<HistoryScreenProvider />} />
             <Route path="/payments" element={<PayDrinksScreenProvider />} />
+            <Route path="/keys" element={<KeyHolderScreenProvider />} />
 
             <Route path="/trainer/groups" element={<ManageGroupsProvider />} />
             <Route path="/trainer/groups/:id" element={<GroupInformationProvider />} />

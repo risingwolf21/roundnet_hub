@@ -4,6 +4,7 @@
         "payment": "Payment",
         "history": "History",
         "training": "Training",
+        "keys": "Key finder",
         "managePayments": "Manage payments",
         "manageDrinks": "Manage drinks",
         "manageDrinkStocks": "Manage drinks stock",
