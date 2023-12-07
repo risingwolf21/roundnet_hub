@@ -14,6 +14,9 @@ export const useServiceWorker = () => {
             onWaiting: waiting => {
                 setWaitingServiceWorker(waiting);
                 setUpdateAvailable(true);
+            },
+            onSuccess: () => {
+                setUpdateAvailable(false);
             }
         });
     }, []);
@@ -25,7 +28,6 @@ export const useServiceWorker = () => {
         // any tab in an incosistent state
         waitingServiceWorker && waitingServiceWorker.addEventListener('statechange', event => {
             if (event.target.state === 'activated') {
-                setUpdateAvailable(false);
                 window.location.reload();
             }
         });
@@ -47,7 +49,6 @@ export const useServiceWorker = () => {
                         );
                     });
                     setTimeout(() => {
-                        setUpdateAvailable(false);
                         window.location.reload();
                     }, 1000);
                 });
