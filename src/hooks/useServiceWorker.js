@@ -14,6 +14,9 @@ export const useServiceWorker = () => {
             onWaiting: waiting => {
                 setWaitingServiceWorker(waiting);
                 setUpdateAvailable(true);
+            },
+            onSuccess: () => {
+                setUpdateAvailable(false);
             }
         });
     }, []);
@@ -35,21 +38,22 @@ export const useServiceWorker = () => {
         isUpdateAvailable,
         updateAssets: () => {
             if (waitingServiceWorker) {
+                console.log("Uninstalling and deleting all caches regarding the old service worker")
                 navigator.serviceWorker.getRegistrations().then((registrations) => {
-                    registrations.forEach((registration) => {
-                        registration.unregister();
-                    });
-                    caches.keys().then((keyList) => {
-                        return Promise.all(
-                            keyList.map((key) => {
-                                return caches.delete(key);
-                            })
-                        );
-                    });
-                    setTimeout(() => {
-                        setUpdateAvailable(false);
-                        window.location.reload();
-                    }, 1000);
+                    Promise.all(registrations.map((registration) => registration.unregister)).then(() => {
+                        caches.keys().then((keyList) => {
+                            return Promise.all(
+                                keyList.map((key) => {
+                                    return caches.delete(key);
+                                })
+                            );
+                        }).then(()=> {
+                            setTimeout(() => {
+                                setUpdateAvailable(false);
+                                window.location.reload();
+                            }, 1000);
+                        })
+                    })
                 });
             }
         }
