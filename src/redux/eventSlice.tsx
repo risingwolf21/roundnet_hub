@@ -319,10 +319,10 @@ export const fetchEventsAsync = createAsyncThunk("events", async ({ user, page =
   const userGroups = await repository.fetchUserGroups(user);
   const response = await repository.fetchEvents(user, userGroups.data?.map(x => x.group.id) ?? [], page, count);
   return {
-    entries: (response.data ?? []).map<FullEvent>((x: FullEvent) => {
+    entries: (response.data ?? []).map((x: FullEvent) => {
       return {
         ...x,
-        userAttendance: x.attendance.find(y => y.user.userId === user.userId)?.state ?? "Unanswered"
+        userAttendance: (x.attendance.find((y: FullAttendance) => y.user.userId === user.userId)?.state ?? "Unanswered") as EventAttendance
       }
     }),
     more: page !== 0
@@ -341,7 +341,7 @@ export const fetchSingleEventAsync = createAsyncThunk("fetchSingleEventAsync", a
   return {
     data: {
       ...response.data,
-      userAttendance: response.data?.attendance.find(x => x.user.userId === userId)?.state ?? "Unanswered"
+      userAttendance: response.data?.attendance.find((x: FullAttendance) => x.user.userId === userId)?.state ?? "Unanswered"
     }, eventId
   };
 });

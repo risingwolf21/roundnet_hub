@@ -17,9 +17,8 @@ const NotVerifiedScreen = () => {
             style={{ minHeight: '100vh' }}>
             <Warning fontSize="large" sx={{ color: "primary" }} />
             <Typography sx={{ mt: 2, wordWrap: "normal", textAlign: "center", color: "primary", padding: 2 }}>
-                Du bist zur Zeit nicht verifiziert. Bitte melde dich bei deinem Administrator.
+                Du bist zur Zeit nicht verifiziert. Um die Funktionen nutzen zu können, musst du vorher von einem Administrator verifiziert werden.
             </Typography>
-            <Button variant="contained" onClick={() => navigate("/login", { replace: true })}>Zum Login</Button>
         </Grid>
     </Box>
 }

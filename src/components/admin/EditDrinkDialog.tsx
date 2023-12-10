@@ -63,7 +63,8 @@ const EditDrinkDialog = ({ drink, onDrinkEditFinished, open, handleClose, drinkH
                 price: Number.parseFloat(price),
                 imageUrl: "",
                 active: activeDrink,
-                stock: Number.parseFloat(stock)
+                stock: Number.parseFloat(stock),
+                type: drink.type
             };
 
             if (croppedImage) {

@@ -57,7 +57,7 @@ const ResetPasswordScreen = () => {
         const password = data.get("password")?.toString();
         const password1 = data.get("password1")?.toString();
 
-        if (password !== password1 || !password || password1) {
+        if (password !== password1 || !password || !password1) {
             setErrorMessage("Die Passwörter stimmen nicht überein!");
             return;
         }

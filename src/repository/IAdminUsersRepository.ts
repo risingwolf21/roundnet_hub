@@ -16,7 +16,6 @@ export interface IAdminUsersRepository {
 @injectable()
 export class SupabaseAdminUsersRepository extends SupabaseRepository implements IAdminUsersRepository {
 
-
     async deactivateUser(user: User): Promise<void> {
         await this.client
             .from(TABLE_PAYMENTS)
@@ -60,6 +59,24 @@ export class SupabaseAdminUsersRepository extends SupabaseRepository implements 
     async addUsersToGroup(group: Group, users: User[]): Promise<PostgrestSingleResponse<null>> {
         throw new Error("Method not implemented.");
     }
+}
 
+export class EmptyAdminUsersRepository implements IAdminUsersRepository {
+
+    addUsersToGroup(group: Group, users: User[]): Promise<PostgrestSingleResponse<null>> {
+        return Promise.resolve({} as PostgrestSingleResponse<null>);
+    }
+    fetchAllUsersWithGroups(): Promise<PostgrestSingleResponse<UserWithGroups[]>> {
+        return Promise.resolve({} as PostgrestSingleResponse<UserWithGroups[]>)
+    }
+    async fetchNotVerifiedUsers(): Promise<PostgrestSingleResponse<User[]>> {
+        return Promise.resolve({} as PostgrestSingleResponse<User[]>);
+    }
+    updateUser(user: UserEdited): Promise<PostgrestSingleResponse<null>> {
+        return Promise.resolve({} as PostgrestSingleResponse<null>);
+    }
+    deactivateUser(user: User): Promise<void> {
+        return Promise.resolve();
+    }
 
 }

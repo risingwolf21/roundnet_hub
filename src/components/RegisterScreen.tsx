@@ -38,7 +38,7 @@ const RegisterScreen = () => {
             }
         });
 
-        if (!data || !data.user || error) {
+        if (!data.user || error) {
             captureException(new RegistrationError("Could not sign up user. The result was empty!"), (scope) => {
                 scope.clear();
                 scope.setExtra("displayName", displayName);
@@ -59,7 +59,7 @@ const RegisterScreen = () => {
         if (writingError)
             setErrorMessage(JSON.stringify(writingError));
 
-        if (error || updatingUserError) {
+        if (error || updatingUserError || writingError) {
             captureException(new RegistrationError(""), (scope) => {
                 scope.clear();
                 scope.setExtra("signUpError", JSON.stringify(error))
@@ -68,6 +68,8 @@ const RegisterScreen = () => {
                 return scope;
             })
         }
+
+        navigate("/drinks", { replace: true });
     }
 
     const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
@@ -76,9 +78,17 @@ const RegisterScreen = () => {
         const email = data.get('email')?.toString();
         const password = data.get('password1')?.toString();
         const password2 = data.get('password2')?.toString();
-        const displayName = data.get('username')?.toString();
-        if (password && password2 && email && displayName && password === password2) {
-            onRegister({ email, password, displayName });
+        const name = data.get('name')?.toString();
+        const surname = data.get('surname')?.toString();
+
+        if (!password || !password2 || (password !== password2)) {
+            setErrorMessage("Die Passwörter stimmen nicht überein.")
+        } else if (!email || !/^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/.test(email)) {
+            setErrorMessage("Die angegebene Email-Adresse ist nicht korrekt.")
+        } else if (!name || !surname || name.length < 2 || surname.length < 2) {
+            setErrorMessage("Bitte gib deinen Vor-und Nachnamen an.")
+        } else {
+            onRegister({ email, password, displayName: name.trim() + " " + surname.trim() })
         }
     };
 
@@ -106,15 +116,23 @@ const RegisterScreen = () => {
                         label="Email Addresse"
                         name="email"
                         autoComplete="email"
-                        autoFocus
                     />
                     <TextField
                         margin="normal"
                         required
                         fullWidth
-                        id="username"
-                        name="username"
-                        label="Name"
+                        id="name"
+                        name="name"
+                        label="Vorname"
+                        color='secondary'
+                    />
+                    <TextField
+                        margin="normal"
+                        required
+                        fullWidth
+                        id="surname"
+                        name="surname"
+                        label="Nachname"
                         color='secondary'
                     />
                     <TextField

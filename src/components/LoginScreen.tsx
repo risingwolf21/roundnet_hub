@@ -77,7 +77,6 @@ const LoginScreen = () => {
                         label="Email Address"
                         name="email"
                         autoComplete="email"
-                        autoFocus
                     />
                     <TextField
                         margin="normal"
@@ -115,6 +114,9 @@ const LoginScreen = () => {
                                 {"Noch keinen Account?"}
                             </Link>
                         </Grid>
+                    </Grid>
+                    <Grid container sx={{ position: "absolute", left: 0, bottom: 0, right: 0, justifyContent: "center" }}>
+                        <p style={{ color: "#ccc" }}>Version {process.env.REACT_APP_VERSION}</p>
                     </Grid>
                 </Box>
             </Box>
