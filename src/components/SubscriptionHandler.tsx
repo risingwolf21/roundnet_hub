@@ -1,17 +1,39 @@
 import { useClient } from "react-supabase";
-import { useEffect } from "react";
+import { useContext, useEffect } from "react";
 import { useSelector } from "react-redux";
 import { onEventAttendanceUserDelete, onEventAttendanceUserInsert, onEventAttendanceUserUpdate, onEventCommentDelete, onEventCommentInsert, onEventCommentUpdate } from "../redux/eventSlice";
 import { Comment } from "../types/supabaseTypes";
-import { useAppDispatch } from "src";
+import { DependencyContext, useAppDispatch } from "src";
 import { RootState } from "src/redux/store";
+import { fetchAdminUsersAsync } from "src/redux/adminUserSlice";
+import { fetchDrinksAsync } from "src/redux/adminDrinksSlice";
+import { useDependency } from "src/hooks/useDependency";
+import { IAdminUsersRepository } from "src/repository/IAdminUsersRepository";
+import { IAdminDrinksRepository } from "src/repository/IAdminDrinksRepository";
 
 
 export const SubscriptionHandler = ({ children }: { children: any }) => {
 
     const client = useClient();
     const dispatch = useAppDispatch();
+    const { container } = useContext(DependencyContext);
     const { user } = useSelector((state: RootState) => state.application);
+
+    useEffect(() => {
+        if (user && user.role === "admin") {
+            let adminUsersRepository = container?.get<IAdminUsersRepository>("IAdminUsersRepository")
+            if (adminUsersRepository)
+                dispatch(fetchAdminUsersAsync(adminUsersRepository));
+        }
+    }, [dispatch, user]);
+
+    useEffect(() => {
+        if (user && user.role === "admin") {
+            let adminDrinksRepository = container?.get<IAdminDrinksRepository>("IAdminDrinksRepository");
+            if (adminDrinksRepository)
+                dispatch(fetchDrinksAsync(adminDrinksRepository));
+        }
+    }, [dispatch, user]);
 
     useEffect(() => {
         if (!user)

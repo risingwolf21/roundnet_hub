@@ -43,23 +43,12 @@ const App = () => {
 
   const { isUpdateAvailable, updateAssets } = useServiceWorker();
   const dispatch = useAppDispatch();
-  const adminUsersRepository = useDependency<IAdminUsersRepository>("IAdminUsersRepository");
-  const adminDrinksRepository = useDependency<IAdminDrinksRepository>("IAdminDrinksRepository");
   const { appUpdateAvailable } = useSelector((state: RootState) => state.application);
 
   useEffect(() => {
     dispatch(onAppUpdateAvailableChange(isUpdateAvailable));
   }, [isUpdateAvailable, dispatch]);
 
-  useEffect(() => {
-    if (adminUsersRepository)
-      dispatch(fetchAdminUsersAsync(adminUsersRepository));
-  }, [dispatch, adminUsersRepository]);
-
-  useEffect(() => {
-    if (adminDrinksRepository)
-      dispatch(fetchDrinksAsync(adminDrinksRepository));
-  }, [dispatch, adminDrinksRepository]);
 
   useEffect(() => {
     if (process.env.REACT_APP_oneSignalAppId) {
