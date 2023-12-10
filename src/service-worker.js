@@ -70,3 +70,7 @@ self.addEventListener('message', (event) => {
   }
 });
 
+self.addEventListener('install', (event) => {
+  self.skipWaiting();
+});
+
