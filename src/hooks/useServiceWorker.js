@@ -14,9 +14,6 @@ export const useServiceWorker = () => {
             onWaiting: waiting => {
                 setWaitingServiceWorker(waiting);
                 setUpdateAvailable(true);
-            },
-            onSuccess: () => {
-                setUpdateAvailable(false);
             }
         });
     }, []);
