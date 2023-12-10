@@ -14,9 +14,10 @@ import { User } from "./types/supabaseTypes";
 import { TABLE_USER } from "./constants";
 import ResetPasswordScreen from "./components/ResetPasswordScreen";
 import container from "./repository/Container";
-import { IAdminDrinksRepository, SupabaseAdminDrinksRepository } from "./repository/IAdminDrinksRepository";
-import { IAdminUsersRepository, SupabaseAdminUsersRepository } from "./repository/IAdminUsersRepository";
+import { EmptyAdminDrinksRepository, IAdminDrinksRepository, SupabaseAdminDrinksRepository } from "./repository/IAdminDrinksRepository";
+import { EmptyAdminUsersRepository, IAdminUsersRepository, SupabaseAdminUsersRepository } from "./repository/IAdminUsersRepository";
 import { supabaseAdmin } from "./components/services/supabase/supabaseClient";
+import UserScreen from "./components/User";
 
 
 const initialState = { session: null, user: null }
@@ -47,17 +48,37 @@ const AuthGate = ({ children }: Props) => {
                             role: res.data.role,
                             verified: res.data.verified
                         } as User;
+                        if (!container.isBound("IAdminDrinksRepository"))
+                            container.bind<IAdminDrinksRepository>("IAdminDrinksRepository").toDynamicValue(() => {
+                                if (user.role === "admin") {
+                                    return new SupabaseAdminDrinksRepository(supabaseAdmin);
+                                } else {
+                                    return new EmptyAdminDrinksRepository();
+                                }
+                            });
+                        else if (user.role === "admin")
+                            container.rebind<IAdminDrinksRepository>("IAdminDrinksRepository").toDynamicValue(() => new SupabaseAdminDrinksRepository(supabaseAdmin));
 
-                        if (user.role === "admin") {
-                            if (!container.isBound("IAdminDrinksRepository"))
-                                container.bind<IAdminDrinksRepository>("IAdminDrinksRepository").toDynamicValue(() => new SupabaseAdminDrinksRepository(supabaseAdmin)).inSingletonScope()
-                            if (!container.isBound("IAdminUsersRepository"))
-                                container.bind<IAdminUsersRepository>("IAdminUsersRepository").toDynamicValue(() => new SupabaseAdminUsersRepository(supabaseAdmin)).inSingletonScope()
-                        }
+                        if (!container.isBound("IAdminUsersRepository"))
+                            container.bind<IAdminUsersRepository>("IAdminUsersRepository").toDynamicValue(() => {
+                                if (user.role === "admin") {
+                                    return new SupabaseAdminUsersRepository(supabaseAdmin);
+                                } else {
+                                    return new EmptyAdminUsersRepository();
+                                }
+                            });
+                        else if (user.role === "admin")
+                            container.rebind<IAdminUsersRepository>("IAdminUsersRepository").toDynamicValue(() => new SupabaseAdminUsersRepository(supabaseAdmin));
+
                         dispatch(onUserChange(user));
                     }
                 })
             } else if (user !== null) {
+                if (container.isBound("IAdminUsersRepository"))
+                    container.rebind<IAdminUsersRepository>("IAdminUsersRepository").toDynamicValue(() => new EmptyAdminUsersRepository());
+                if (container.isBound("IAdminDrinksRepository"))
+                    container.rebind<IAdminDrinksRepository>("IAdminDrinksRepository").toDynamicValue(() => new EmptyAdminDrinksRepository());
+                
                 dispatch(onUserChange(null));
                 navigate("/login", { replace: true });
             }
@@ -84,9 +105,9 @@ const AuthGate = ({ children }: Props) => {
     if (!user.verified) {
         return <Routes>
             <Route key={"not-verified"} path='/not-verified' element={<NotVerifiedScreen />} />
-            {
-                authenticationRoutes
-            }
+            <Route key={"*"} path="*" element={<Navigate replace to={"/not-verified"} />} />
+            <Route key={"/"} path='/' element={<Navigate replace to={"/not-verified"} />} />
+            <Route path="/user" element={<UserScreen />} />
         </Routes>
     }
 

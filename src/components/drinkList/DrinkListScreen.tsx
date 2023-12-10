@@ -12,10 +12,11 @@ import { RootState } from "src/redux/store";
 import { AppDispatch, useAppDispatch } from "src";
 import { useDependency } from "src/hooks/useDependency";
 import { IDrinkRepository } from "src/repository/IDrinkRepository";
-import { Drink, DrinkCounter, User } from "src/types/supabaseTypes";
-import { fetchDrinksAsync } from "src/redux/drinksSlice";
+import { Drink, DrinkCounter, DrinkInsert, DrinkUpdate, User } from "src/types/supabaseTypes";
+import { fetchDrinksAsync, onDrinkDeleted, onDrinkInserted, onDrinkUpdated } from "src/redux/drinksSlice";
 import { AlertMessage, AlertSnackbar } from "src/components/AlertSnackbar";
 import { LoadingIndicator } from "src/components/LoadingIndicator";
+import { useClient } from "react-supabase";
 
 const SUCCESS_MESSAGE_INFO: AlertMessage = { message: "Getränke erfolgreich gebucht!", severity: "success" };
 
@@ -48,10 +49,21 @@ type DrinkListScreenProps = {
 
 const DrinkListScreen = ({ repository, user, drinks, drinksLoading, drinksError, dispatch }: DrinkListScreenProps) => {
 
-
     const [addedDrinks, setAddedDrinks] = useState<DrinkCounter[]>([]);
     const [loading, setLoading] = useState(false);
     const [alertInfo, setAlertInfo] = useState<AlertMessage | null>(null);
+    const client = useClient();
+
+    useEffect(() => {
+        let subscription = client.channel("public:drink")
+            .on<DrinkUpdate>("postgres_changes", { event: "UPDATE", schema: "public", table: "drink" }, (payload) => dispatch(onDrinkUpdated(payload.new)))
+            .on<DrinkInsert>("postgres_changes", { event: "INSERT", schema: "public", table: "drink" }, (payload) => dispatch(onDrinkInserted(payload.new)))
+            .on("postgres_changes", { event: "DELETE", schema: "public", table: "drink" }, (payload) => dispatch(onDrinkDeleted(payload.old.id)))
+            .subscribe();
+        return () => {
+            subscription.unsubscribe();
+        }
+    }, [client, dispatch]);
 
     useEffect(() => {
         if (drinksError) {

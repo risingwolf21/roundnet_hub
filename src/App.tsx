@@ -35,12 +35,15 @@ import { KeyHolderScreenProvider } from './components/KeyHolderScreen';
 import { fetchAdminUsersAsync } from './redux/adminUserSlice';
 import { useDependency } from './hooks/useDependency';
 import { IAdminUsersRepository } from './repository/IAdminUsersRepository';
+import { IAdminDrinksRepository } from './repository/IAdminDrinksRepository';
+import { fetchDrinksAsync } from './redux/adminDrinksSlice';
 
 const App = () => {
 
   const { isUpdateAvailable, updateAssets } = useServiceWorker();
   const dispatch = useAppDispatch();
-  const repository = useDependency<IAdminUsersRepository>("IAdminUsersRepository");
+  const adminUsersRepository = useDependency<IAdminUsersRepository>("IAdminUsersRepository");
+  const adminDrinksRepository = useDependency<IAdminDrinksRepository>("IAdminDrinksRepository");
   const { appUpdateAvailable } = useSelector((state: RootState) => state.application);
 
   useEffect(() => {
@@ -48,9 +51,14 @@ const App = () => {
   }, [isUpdateAvailable, dispatch]);
 
   useEffect(() => {
-    if (repository)
-      dispatch(fetchAdminUsersAsync(repository));
-  }, [dispatch, repository]);
+    if (adminUsersRepository)
+      dispatch(fetchAdminUsersAsync(adminUsersRepository));
+  }, [dispatch, adminUsersRepository]);
+
+  useEffect(() => {
+    if (adminDrinksRepository)
+      dispatch(fetchDrinksAsync(adminDrinksRepository));
+  }, [dispatch, adminDrinksRepository]);
 
   if (appUpdateAvailable)
     return <UpdateAvailable update={updateAssets} />

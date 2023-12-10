@@ -7905,6 +7905,11 @@ internal-slot@^1.0.3, internal-slot@^1.0.4, internal-slot@^1.0.5:
   resolved "https://registry.npmjs.org/internmap/-/internmap-2.0.3.tgz"
   integrity sha512-5Hh7Y1wQbvY5ooGgPbDaL5iYLAPzMTUrjMulskHLH6wnv/A+1q5rgEaiuqEjB+oxGXIVZs1FF+R/KPN3ZSQYYg==
 
+inversify-dts@^3.0.0:
+  version "3.0.0"
+  resolved "https://registry.yarnpkg.com/inversify-dts/-/inversify-dts-3.0.0.tgz#230aa0e64d97f07a17e2ed4d92c3cec6465429bc"
+  integrity sha512-PZk/8701Nj0uwnRbYQRlPokVltTxLHaYrTSQ7DMpXjS5KZXhhBalq4yv1OAgxyIo9ycVyxJppdy7wNt1/eKaQg==
+
 inversify@^6.0.1:
   version "6.0.2"
   resolved "https://registry.npmjs.org/inversify/-/inversify-6.0.2.tgz"

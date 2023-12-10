@@ -1,4 +1,4 @@
-import { useState, createContext, useEffect, useMemo, useContext } from "react";
+import { useState, useEffect, useMemo } from "react";
 import * as serviceWorker from "../serviceWorkerRegistration";
 
 export const useServiceWorker = () => {
