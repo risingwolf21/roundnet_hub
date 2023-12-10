@@ -37,6 +37,7 @@ import { useDependency } from './hooks/useDependency';
 import { IAdminUsersRepository } from './repository/IAdminUsersRepository';
 import { IAdminDrinksRepository } from './repository/IAdminDrinksRepository';
 import { fetchDrinksAsync } from './redux/adminDrinksSlice';
+import OneSignal from 'react-onesignal';
 
 const App = () => {
 
@@ -59,6 +60,17 @@ const App = () => {
     if (adminDrinksRepository)
       dispatch(fetchDrinksAsync(adminDrinksRepository));
   }, [dispatch, adminDrinksRepository]);
+
+  useEffect(() => {
+    if (process.env.REACT_APP_oneSignalAppId) {
+      OneSignal.init({
+        appId: process.env.REACT_APP_oneSignalAppId,
+        allowLocalhostAsSecureOrigin: true,
+      }).then(() => {
+        OneSignal.Slidedown.promptPush();
+      });
+    }
+  }, []);
 
   if (appUpdateAvailable)
     return <UpdateAvailable update={updateAssets} />

@@ -78,7 +78,7 @@ const AuthGate = ({ children }: Props) => {
                     container.rebind<IAdminUsersRepository>("IAdminUsersRepository").toDynamicValue(() => new EmptyAdminUsersRepository());
                 if (container.isBound("IAdminDrinksRepository"))
                     container.rebind<IAdminDrinksRepository>("IAdminDrinksRepository").toDynamicValue(() => new EmptyAdminDrinksRepository());
-                
+
                 dispatch(onUserChange(null));
                 navigate("/login", { replace: true });
             }
