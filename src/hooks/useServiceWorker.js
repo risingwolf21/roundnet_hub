@@ -37,20 +37,19 @@ export const useServiceWorker = () => {
             if (waitingServiceWorker) {
                 console.log("Uninstalling and deleting all caches regarding the old service worker")
                 navigator.serviceWorker.getRegistrations().then((registrations) => {
-                    Promise.all(registrations.map((registration) => registration.unregister)).then(() => {
-                        caches.keys().then((keyList) => {
-                            return Promise.all(
-                                keyList.map((key) => {
-                                    return caches.delete(key);
-                                })
-                            );
-                        }).then(()=> {
-                            setTimeout(() => {
-                                setUpdateAvailable(false);
-                                window.location.reload();
-                            }, 1000);
-                        })
-                    })
+                    registrations.forEach((registration) => {
+                        registration.unregister();
+                    });
+                    caches.keys().then((keyList) => {
+                        return Promise.all(
+                            keyList.map((key) => {
+                                return caches.delete(key);
+                            })
+                        );
+                    });
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 1000);
                 });
             }
         }
