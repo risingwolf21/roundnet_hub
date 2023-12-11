@@ -49,7 +49,7 @@ const KeyHolderScreen = ({ keysRepository, dispatch, keys, loading, user }: KeyH
 
     const [searchUserOpen, setSearchUserOpen] = useState(false);
     const [selectedUser, setSelectedUser] = useState<User | null>(null);
-    const [selectedKey, setSelectedKey] = useState<Key | null>(null);
+    const [selectedKeyHolder, setSelectedKeyHolder] = useState<FullKeyHolder | null>(null);
 
     useEffect(() => {
         dispatch(fetchKeyssAsync(keysRepository));
@@ -61,18 +61,23 @@ const KeyHolderScreen = ({ keysRepository, dispatch, keys, loading, user }: KeyH
     }
 
     const confirmKeyHandOver = () => {
-        if (!selectedKey || !selectedUser)
+        if (!selectedKeyHolder || !selectedUser)
             return;
-        keysRepository.giveKeyToUser(selectedKey, selectedUser).then((result) => {
+        keysRepository.giveKeyToUser(selectedKeyHolder.key, selectedUser).then((result) => {
             setSelectedUser(null);
-            setSelectedKey(null);
+            setSelectedKeyHolder(null);
             dispatch(fetchKeyssAsync(keysRepository));
         });
     }
 
-    const selectKey = (key: Key) => {
+    const selectKeyToHandOver = (key: FullKeyHolder) => {
         setSearchUserOpen(true);
-        setSelectedKey(key);
+        setSelectedKeyHolder(key);
+    }
+
+    const selectKeyToRecieve = (key: FullKeyHolder) => {
+        setSelectedKeyHolder(key);
+        setSelectedUser(user);
     }
 
     return <Box>
@@ -88,12 +93,18 @@ const KeyHolderScreen = ({ keysRepository, dispatch, keys, loading, user }: KeyH
                     </ListItemAvatar>
                     <ListItemText primary={key.user.displayName} secondary={key.key.name} />
                     {
-                        key.user.userId === user.userId &&
-                        <ListItemSecondaryAction>
-                            <Button color="primary" onClick={() => selectKey(key.key)}>
-                                Abgeben
-                            </Button>
-                        </ListItemSecondaryAction>
+                        key.user.userId === user.userId ?
+                            <ListItemSecondaryAction>
+                                <Button color="primary" onClick={() => selectKeyToHandOver(key)}>
+                                    Abgeben
+                                </Button>
+                            </ListItemSecondaryAction>
+                            :
+                            <ListItemSecondaryAction>
+                                <Button color="primary" onClick={() => selectKeyToRecieve(key)}>
+                                    Annehmen
+                                </Button>
+                            </ListItemSecondaryAction>
                     }
                 </ListItem>)
             }
@@ -101,7 +112,11 @@ const KeyHolderScreen = ({ keysRepository, dispatch, keys, loading, user }: KeyH
         <SearchUserDialog open={searchUserOpen} handleClose={() => setSearchUserOpen(false)} user={user} onUserSelected={userSelected} />
         <SwipeableDialog open={selectedUser !== null} setOpen={() => { }} onClose={() => setSelectedUser(null)} title={"Schlüsselübergabe"}>
             <Typography m={2}>
-                {`Bist du sicher das du den Schlüssel "${selectedKey?.name}" an "${selectedUser?.displayName}" abgeben möchtest?`}
+                {
+                    selectedUser?.userId === user.userId ?
+                        "Hiermit bestätigst du das du den Schlüssel \"" + selectedKeyHolder?.key.name + "\" von \"" + selectedKeyHolder?.user.displayName + "\" erhalten hast!"
+                        : "Bist du sicher das du den Schlüssel \"" + selectedKeyHolder?.key.name + "\" an \"" + selectedUser?.displayName + "\" abgeben möchtest?"
+                }
             </Typography>
             <Box sx={{ display: "flex", flexDirection: "row", flexGrow: 1, position: "absolute", left: 0, right: 0, bottom: 0 }}>
                 <Button variant="outlined" fullWidth sx={{ ml: 2, mr: 1, mb: 2, borderRadius: "50px !important", fontSize: "16px", fontFamily: "sans-serif", lineSpacing: "24px" }} onClick={() => setSelectedUser(null)}>Abbrechen</Button>
