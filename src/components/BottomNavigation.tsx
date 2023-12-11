@@ -80,7 +80,7 @@ const CustomBottomNavigation = ({ t }: { t: TFunction }) => {
                     return <BottomNavigationAction
                         key={x.translationKey}
                         label={t("navigation." + x.translationKey)}
-                        icon={<Badge color="secondary" variant="dot" badgeContent=" " invisible={(x.translationKey !== "admin" || !hasNotVerifiedUsers)}>
+                        icon={<Badge color="secondary" variant="dot" badgeContent=" " invisible={!(x.translationKey === "admin" && hasNotVerifiedUsers)}>
                             {x.icon}
                         </Badge>} />
                 })

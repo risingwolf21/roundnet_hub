@@ -44,15 +44,12 @@ export const adminUsersSlice = createSlice({
             .addCase(fetchAdminUsersAsync.fulfilled, (state: AdminUsersSliceState, action) => {
                 state.loading = false;
                 state.error = '';
-                state.users = action.payload ?? []
+                state.users = action.payload ?? [];
+                state.hasNotVerifiedUsers = (action.payload ?? []).some(x => !x.verified);
             })
             .addCase(fetchAdminUsersAsync.rejected, (state: AdminUsersSliceState, action) => {
                 state.loading = false;
                 state.error = action.error.message ?? "";
-            })
-
-            .addCase(fetchNotVerifiedUsersAsync.fulfilled, (state: AdminUsersSliceState, action) => {
-                state.hasNotVerifiedUsers = action.payload.length > 0;
             })
     }
 });

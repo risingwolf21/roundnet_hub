@@ -44,7 +44,6 @@ export const drinksSlice = createSlice({
     initialState,
     reducers: {
         onDrinkUpdated: (state: DrinksSliceState, action: PayloadAction<any>) => {
-            console.log("onDrinkUpdated", action)
             let drink = action.payload as Drink;
             const index = state.drinks.findIndex((x) =>
                 x.id === drink.id,
@@ -56,11 +55,9 @@ export const drinksSlice = createSlice({
             ]
         },
         onDrinkDeleted: (state: DrinksSliceState, action: PayloadAction<number>) => {
-            console.log("onDrinkDeleted", action)
             state.drinks = state.drinks.filter((x: Drink) => x.id !== action.payload)
         },
         onDrinkInserted: (state: DrinksSliceState, action: PayloadAction<DrinkInsert>) => {
-            console.log("onDrinkInserted", action)
             let newDrink = action.payload as Drink;
             if (newDrink)
                 state.drinks = [...(state.drinks ?? []), newDrink]
