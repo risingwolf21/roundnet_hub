@@ -14,7 +14,6 @@ import CreateEventProvider from './components/training/CreateEvent';
 import { EventScreenProvider } from './components/training/EventScreen';
 import { EventInformationProvider } from './components/training/EventInformation';
 import CustomBottomNavigation from './components/BottomNavigation';
-import { useServiceWorker } from 'src/hooks/useServiceWorker';
 import UpdateAvailable from './components/UpdateAvailable';
 import AuthGate from './AuthGate';
 import ResetPasswordScreen from './components/ResetPasswordScreen';
@@ -29,12 +28,14 @@ import { SubscriptionHandler } from './components/SubscriptionHandler';
 import { KeyHolderScreenProvider } from './components/KeyHolderScreen';
 import OneSignal from 'react-onesignal';
 import { NotificationsScreen } from './components/NotificationsScreen';
+import { useServiceWorker } from './hooks/useServiceWorker';
 
 const App = () => {
 
   const { isUpdateAvailable, updateServiceWorker } = useServiceWorker();
 
   useEffect(() => {
+    console.log(process.env.REACT_APP_oneSignalAppId)
     if (process.env.REACT_APP_oneSignalAppId) {
       OneSignal.init({
         appId: process.env.REACT_APP_oneSignalAppId,
