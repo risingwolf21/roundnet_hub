@@ -18,7 +18,6 @@ import container from './repository/Container';
 import "./firebase";
 //@ts-ignore
 import "src/apocalypseHandler.js";
-import OneSignal from "react-onesignal";
 
 type Props = {
   children: ReactNode,

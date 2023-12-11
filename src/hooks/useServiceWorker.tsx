@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, ChangeEvent } from "react";
+import { useState, useEffect, useMemo } from "react";
 import * as serviceWorker from "../serviceWorkerRegistration";
 
 export type ServiceWorkerConfig = {

@@ -28,6 +28,7 @@ import FeatureNotAvailable from './components/FeatureNotAvailable';
 import { SubscriptionHandler } from './components/SubscriptionHandler';
 import { KeyHolderScreenProvider } from './components/KeyHolderScreen';
 import OneSignal from 'react-onesignal';
+import { NotificationsScreen } from './components/NotificationsScreen';
 
 const App = () => {
 
@@ -66,6 +67,7 @@ const App = () => {
             <Route path="/history" element={<HistoryScreenProvider />} />
             <Route path="/payments" element={<PayDrinksScreenProvider />} />
             <Route path="/keys" element={<KeyHolderScreenProvider />} />
+            <Route path="/notifications" element={<NotificationsScreen />} />
 
             <Route path="/trainer/groups" element={<ManageGroupsProvider />} />
             <Route path="/trainer/groups/:id" element={<GroupInformationProvider />} />

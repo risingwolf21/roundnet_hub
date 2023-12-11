@@ -1,11 +1,9 @@
 import { Warning } from "@mui/icons-material"
-import { Box, Button, Grid, Typography } from "@mui/material"
+import { Box, Grid, Typography } from "@mui/material"
 import React from "react";
-import { useNavigate } from "react-router";
 import CustomAppBar from "./AppBar";
 
 const NotVerifiedScreen = () => {
-    const navigate = useNavigate();
     return <Box>
         <CustomAppBar />
         <Grid

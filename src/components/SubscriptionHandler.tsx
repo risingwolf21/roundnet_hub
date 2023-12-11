@@ -7,7 +7,6 @@ import { DependencyContext, useAppDispatch } from "src";
 import { RootState } from "src/redux/store";
 import { fetchAdminUsersAsync } from "src/redux/adminUserSlice";
 import { fetchDrinksAsync } from "src/redux/adminDrinksSlice";
-import { useDependency } from "src/hooks/useDependency";
 import { IAdminUsersRepository } from "src/repository/IAdminUsersRepository";
 import { IAdminDrinksRepository } from "src/repository/IAdminDrinksRepository";
 
@@ -25,7 +24,7 @@ export const SubscriptionHandler = ({ children }: { children: any }) => {
             if (adminUsersRepository)
                 dispatch(fetchAdminUsersAsync(adminUsersRepository));
         }
-    }, [dispatch, user]);
+    }, [dispatch, user, container]);
 
     useEffect(() => {
         if (user && user.role === "admin") {
@@ -33,7 +32,7 @@ export const SubscriptionHandler = ({ children }: { children: any }) => {
             if (adminDrinksRepository)
                 dispatch(fetchDrinksAsync(adminDrinksRepository));
         }
-    }, [dispatch, user]);
+    }, [dispatch, user, container]);
 
     useEffect(() => {
         if (!user)
