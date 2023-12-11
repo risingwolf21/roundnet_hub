@@ -1,18 +1,38 @@
 import { useClient } from "react-supabase";
-import { useEffect } from "react";
+import { useContext, useEffect } from "react";
 import { useSelector } from "react-redux";
-import { onHistoryDelete, onHistoryInsert, onHistoryUpdate, onDrinkDeleted, onDrinkInserted, onDrinkUpdated, onPaymentUpdated, onPaymentDeleted } from "../redux/drinksSlice";
-import { onEventAttendanceUserDelete, onEventAttendanceUserInsert, onEventAttendanceUserUpdate, onEventCommentDelete, onEventCommentInsert, onEventCommentUpdate, onEventDelete, onEventInsert, onEventUpdate } from "../redux/eventSlice";
-import { Comment, DrinkInsert, DrinkUpdate, Payment } from "../types/supabaseTypes";
-import { useAppDispatch } from "src";
+import { onEventAttendanceUserDelete, onEventAttendanceUserInsert, onEventAttendanceUserUpdate, onEventCommentDelete, onEventCommentInsert, onEventCommentUpdate } from "../redux/eventSlice";
+import { Comment } from "../types/supabaseTypes";
+import { DependencyContext, useAppDispatch } from "src";
 import { RootState } from "src/redux/store";
+import { fetchAdminUsersAsync } from "src/redux/adminUserSlice";
+import { fetchDrinksAsync } from "src/redux/adminDrinksSlice";
+import { IAdminUsersRepository } from "src/repository/IAdminUsersRepository";
+import { IAdminDrinksRepository } from "src/repository/IAdminDrinksRepository";
 
 
 export const SubscriptionHandler = ({ children }: { children: any }) => {
 
     const client = useClient();
     const dispatch = useAppDispatch();
+    const { container } = useContext(DependencyContext);
     const { user } = useSelector((state: RootState) => state.application);
+
+    useEffect(() => {
+        if (user && user.role === "admin") {
+            let adminUsersRepository = container?.get<IAdminUsersRepository>("IAdminUsersRepository")
+            if (adminUsersRepository)
+                dispatch(fetchAdminUsersAsync(adminUsersRepository));
+        }
+    }, [dispatch, user, container]);
+
+    useEffect(() => {
+        if (user && user.role === "admin") {
+            let adminDrinksRepository = container?.get<IAdminDrinksRepository>("IAdminDrinksRepository");
+            if (adminDrinksRepository)
+                dispatch(fetchDrinksAsync(adminDrinksRepository));
+        }
+    }, [dispatch, user, container]);
 
     useEffect(() => {
         if (!user)
@@ -21,20 +41,12 @@ export const SubscriptionHandler = ({ children }: { children: any }) => {
         let subscription = client
             .channel('public:drink')
 
-            .on<DrinkUpdate>("postgres_changes", { event: "UPDATE", schema: "public", table: "drink" }, (payload) => dispatch(onDrinkUpdated(payload.new)))
-            .on<DrinkInsert>("postgres_changes", { event: "INSERT", schema: "public", table: "drink" }, (payload) => dispatch(onDrinkInserted(payload.new)))
-            .on("postgres_changes", { event: "DELETE", schema: "public", table: "drink" }, (payload) => dispatch(onDrinkDeleted(payload.old.id)))
+            // .on<Payment>('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'payments', filter: "user=eq." + userId }, payload => dispatch(onPaymentUpdated(payload.new)))
+            // .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'payments', filter: "user=eq." + userId }, payload => dispatch(onPaymentDeleted(payload.old.id)))
 
-            .on<Payment>('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'payments', filter: "user=eq." + userId }, payload => dispatch(onPaymentUpdated(payload.new)))
-            .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'payments', filter: "user=eq." + userId }, payload => dispatch(onPaymentDeleted(payload.old.id)))
-
-            .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'history', filter: "user=eq." + userId }, payload => dispatch(onHistoryUpdate(payload)))
-            .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'history', filter: "user=eq." + userId }, payload => dispatch(onHistoryDelete(payload)))
-            .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'history', filter: "user=eq." + userId }, payload => dispatch(onHistoryInsert(payload)))
-
-            .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'events' }, payload => dispatch(onEventUpdate(payload)))
-            .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'events' }, payload => dispatch(onEventDelete(payload)))
-            .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'events' }, payload => dispatch(onEventInsert(payload)))
+            // .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'events' }, payload => dispatch(onEventUpdate(payload)))
+            // .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'events' }, payload => dispatch(onEventDelete(payload)))
+            // .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'events' }, payload => dispatch(onEventInsert(payload)))
 
             .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'event_attendance_user_mapping', filter: "user=eq." + userId }, payload => dispatch(onEventAttendanceUserUpdate(payload)))
             .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'event_attendance_user_mapping', filter: "user=eq." + userId }, payload => dispatch(onEventAttendanceUserDelete(payload)))
@@ -44,7 +56,7 @@ export const SubscriptionHandler = ({ children }: { children: any }) => {
             .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'event_comments' }, payload => dispatch(onEventCommentDelete(payload)))
             .on<Comment>('postgres_changes', { event: 'INSERT', schema: 'public', table: 'event_comments' }, payload => dispatch(onEventCommentInsert(payload.new)))
 
-            .subscribe(x => console.log(x));
+            .subscribe();
 
         return () => {
             subscription.unsubscribe();

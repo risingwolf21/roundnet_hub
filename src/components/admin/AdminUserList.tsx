@@ -91,6 +91,7 @@ const AdminUserList = ({ repository }: AdminUserListProps) => {
     const onUserEditFinished = async (result: UserEdited) => {
         await repository.updateUser(result);
         setEditUserOpen(false);
+        dispatch(fetchAdminUsersAsync(repository));
     }
 
     if (error)

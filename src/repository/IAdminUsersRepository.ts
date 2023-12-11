@@ -59,25 +59,24 @@ export class SupabaseAdminUsersRepository extends SupabaseRepository implements 
     async addUsersToGroup(group: Group, users: User[]): Promise<PostgrestSingleResponse<null>> {
         throw new Error("Method not implemented.");
     }
-
-
 }
 
 export class EmptyAdminUsersRepository implements IAdminUsersRepository {
-    addUsersToGroup(group: { color: string; created_at: string | null; description: string | null; id: number; name: string | null; }, users: { created_at: string | null; displayName: string | null; email: string | null; role: "user" | "admin" | "procure" | "finance" | "trainer"; userId: string; verified: boolean; }[]): Promise<PostgrestSingleResponse<null>> {
-        throw new Error("Method not implemented.");
+
+    addUsersToGroup(group: Group, users: User[]): Promise<PostgrestSingleResponse<null>> {
+        return Promise.resolve({} as PostgrestSingleResponse<null>);
     }
     fetchAllUsersWithGroups(): Promise<PostgrestSingleResponse<UserWithGroups[]>> {
-        throw new Error("Method not implemented.");
+        return Promise.resolve({} as PostgrestSingleResponse<UserWithGroups[]>)
     }
-    fetchNotVerifiedUsers(): Promise<PostgrestSingleResponse<{ created_at: string | null; displayName: string | null; email: string | null; role: "user" | "admin" | "procure" | "finance" | "trainer"; userId: string; verified: boolean; }[]>> {
-        throw new Error("Method not implemented.");
+    async fetchNotVerifiedUsers(): Promise<PostgrestSingleResponse<User[]>> {
+        return Promise.resolve({} as PostgrestSingleResponse<User[]>);
     }
     updateUser(user: UserEdited): Promise<PostgrestSingleResponse<null>> {
-        throw new Error("Method not implemented.");
+        return Promise.resolve({} as PostgrestSingleResponse<null>);
     }
-    deactivateUser(user: { created_at: string | null; displayName: string | null; email: string | null; role: "user" | "admin" | "procure" | "finance" | "trainer"; userId: string; verified: boolean; }): Promise<void> {
-        throw new Error("Method not implemented.");
+    deactivateUser(user: User): Promise<void> {
+        return Promise.resolve();
     }
 
 }

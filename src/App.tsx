@@ -9,15 +9,12 @@ import PaymentsPendingAdmin from './components/admin/PaymentsPendingAdmin';
 import { AdminUserListProvider } from './components/admin/AdminUserList';
 import { AdminHistoryScreenProvider } from './components/admin/AdminHistoryScreen';
 import { useEffect } from 'react';
-import { useSelector } from 'react-redux';
 import Browse from './components/Browse';
 import CreateEventProvider from './components/training/CreateEvent';
 import { EventScreenProvider } from './components/training/EventScreen';
 import { EventInformationProvider } from './components/training/EventInformation';
 import CustomBottomNavigation from './components/BottomNavigation';
-//@ts-ignore
 import { useServiceWorker } from 'src/hooks/useServiceWorker';
-import { onAppUpdateAvailableChange } from './redux/applicationSlice';
 import UpdateAvailable from './components/UpdateAvailable';
 import AuthGate from './AuthGate';
 import ResetPasswordScreen from './components/ResetPasswordScreen';
@@ -25,41 +22,31 @@ import { ManageGroupsProvider } from './components/groups/ManageGroups';
 import BrowseAdmin from './components/admin/BrowseAdmin';
 import DrinkStockUpdateScreen from './components/procure/DrinkStockUpdateScreen';
 import { AnalyzeDrinkStockHistoryProvider } from './components/procure/AnalyzeDrinkStockHistory';
-import { useAppDispatch } from '.';
-import { RootState } from './redux/store';
 import { GroupInformationProvider } from './components/groups/GroupInformation';
 import { DrinkListScreenProvider } from './components/drinkList/DrinkListScreen';
 import FeatureNotAvailable from './components/FeatureNotAvailable';
 import { SubscriptionHandler } from './components/SubscriptionHandler';
-import { getFirebaseToken, onMessageListener } from './firebase';
 import { KeyHolderScreenProvider } from './components/KeyHolderScreen';
+import OneSignal from 'react-onesignal';
+import { NotificationsScreen } from './components/NotificationsScreen';
 
 const App = () => {
 
-  const { isUpdateAvailable, updateAssets } = useServiceWorker();
-  const dispatch = useAppDispatch();
-  const { appUpdateAvailable } = useSelector((state: RootState) => state.application);
+  const { isUpdateAvailable, updateServiceWorker } = useServiceWorker();
 
   useEffect(() => {
-    dispatch(onAppUpdateAvailableChange(isUpdateAvailable));
-  }, [isUpdateAvailable, dispatch]);
-
-  useEffect(() => {
-    if (window.Notification?.permission === "granted") {
-      getFirebaseToken().then((firebaseToken: string | undefined) => {
-        if (firebaseToken) {
-          console.log(firebaseToken);
-        }
+    if (process.env.REACT_APP_oneSignalAppId) {
+      OneSignal.init({
+        appId: process.env.REACT_APP_oneSignalAppId,
+        allowLocalhostAsSecureOrigin: true,
+      }).then(() => {
+        OneSignal.Slidedown.promptPush();
       });
     }
   }, []);
 
-  onMessageListener().then(payload => {
-    console.log(payload);
-  }).catch(err => console.log('failed: ', err));
-
-  if (appUpdateAvailable)
-    return <UpdateAvailable update={updateAssets} />
+  if (isUpdateAvailable)
+    return <UpdateAvailable update={updateServiceWorker} />
 
   return <Grid maxHeight={"100vh"}>
     <BrowserRouter>
@@ -80,6 +67,7 @@ const App = () => {
             <Route path="/history" element={<HistoryScreenProvider />} />
             <Route path="/payments" element={<PayDrinksScreenProvider />} />
             <Route path="/keys" element={<KeyHolderScreenProvider />} />
+            <Route path="/notifications" element={<NotificationsScreen />} />
 
             <Route path="/trainer/groups" element={<ManageGroupsProvider />} />
             <Route path="/trainer/groups/:id" element={<GroupInformationProvider />} />

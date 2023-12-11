@@ -4,7 +4,7 @@ import { groupBy } from "../utils";
 import { useSelector } from "react-redux";
 import { useState } from "react";
 import { useEffect } from "react";
-import { fetchHistoryAsync } from "../redux/drinksSlice";
+import { fetchHistoryAsync, onHistoryDelete, onHistoryInsert, onHistoryUpdate } from "../redux/drinksSlice";
 import { InfiniteScrollList } from "./InfiniteScrollList";
 import CustomAppBar from "./AppBar";
 import EditHistoryEntryDialog from "./EditHistoryEntryDialog";
@@ -15,6 +15,7 @@ import { useDependency } from "../hooks/useDependency";
 import { IDrinkRepository } from "../repository/IDrinkRepository";
 import { RootState } from "../redux/store";
 import { AlertSnackbar } from "./AlertSnackbar";
+import { useClient } from "react-supabase";
 
 export type FullHistoryUpdate = FullHistory & {
     newCount: number
@@ -76,6 +77,18 @@ const HistoryScreen = ({ drinksRepository, history, drinks, historyLoading, hist
     const [historyItems, setHistoryItems] = useState<FullHistory[]>([]);
     const [editHistoryEntryOpen, setEditHistoryEntryOpen] = useState<boolean>(false);
     const [historyEntryToEdit, setHistoryEntryToEdit] = useState<FullHistory | null>(null);
+    const client = useClient();
+
+    useEffect(() => {
+        let subscription = client.channel("public:history")
+            .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'history', filter: "user=eq." + user.userId }, payload => dispatch(onHistoryUpdate(payload)))
+            .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'history', filter: "user=eq." + user.userId }, payload => dispatch(onHistoryDelete(payload)))
+            .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'history', filter: "user=eq." + user.userId }, payload => dispatch(onHistoryInsert(payload)))
+            .subscribe();
+        return () => {
+            subscription.unsubscribe();
+        }
+    }, [client, dispatch, user]);
 
     useEffect(() => {
         let mappedEntries = history?.map((x: any) => {
