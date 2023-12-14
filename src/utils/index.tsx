@@ -2,6 +2,7 @@ import { Slide, SlideProps } from "@mui/material";
 import moment, { MomentInput } from "moment";
 import { forwardRef } from "react";
 import React from "react";
+import { ProductType } from "src/types/supabaseTypes";
 
 export const compareById = (x: any, y: any) => {
     return x.id === y.id;
@@ -44,5 +45,13 @@ export class FetchingError extends Error {
     constructor(message: string, screen: string) {
         super(message);
         this.screen = screen;
+    }
+}
+
+export const nameOfProductType = (type: ProductType) => {
+    switch (type) {
+        case "Drink": return "Getränke"
+        case "Special": return "Anderes"
+        case "None": return "Ohne Typ"
     }
 }

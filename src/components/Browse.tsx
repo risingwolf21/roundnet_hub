@@ -31,12 +31,12 @@ const tabs = [
         icon: <Key />,
         avatarColor: "#88AEBF"
     },
-    // {
-    //     translationKey: "notifications",
-    //     navigateTo: "/notifications",
-    //     icon: <Notifications />,
-    //     avatarColor: "#88AEBF"
-    // }
+    {
+        translationKey: "notifications",
+        navigateTo: "/notifications",
+        icon: <Notifications />,
+        avatarColor: "#88AEBF"
+    }
 ]
 
 const Browse = ({ t }: { t: TFunction }) => {

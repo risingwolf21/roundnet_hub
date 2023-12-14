@@ -35,7 +35,6 @@ const App = () => {
   const { isUpdateAvailable, updateServiceWorker } = useServiceWorker();
 
   useEffect(() => {
-    console.log(process.env.REACT_APP_oneSignalAppId)
     if (process.env.REACT_APP_oneSignalAppId) {
       OneSignal.init({
         appId: process.env.REACT_APP_oneSignalAppId,

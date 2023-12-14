@@ -1,4 +1,4 @@
-import { Box, CircularProgress, Fab } from "@mui/material";
+import { Box, Checkbox, CircularProgress, Fab, List, ListItem, ListItemAvatar, ListItemText } from "@mui/material";
 import { useEffect, useState } from "react";
 import CheckIcon from '@mui/icons-material/Check';
 import { captureException } from "@sentry/react";
@@ -7,16 +7,18 @@ import { useSelector } from "react-redux";
 import CustomAppBar from "src/components/AppBar";
 import React from "react";
 import DrinkList from "./DrinkList";
-import { MultiplePaymentsError } from "src/utils";
+import { MultiplePaymentsError, nameOfProductType } from "src/utils";
 import { RootState } from "src/redux/store";
 import { AppDispatch, useAppDispatch } from "src";
 import { useDependency } from "src/hooks/useDependency";
 import { IDrinkRepository } from "src/repository/IDrinkRepository";
-import { Drink, DrinkCounter, DrinkInsert, DrinkUpdate, User } from "src/types/supabaseTypes";
+import { Drink, DrinkCounter, DrinkInsert, DrinkUpdate, ProductType, User } from "src/types/supabaseTypes";
 import { fetchDrinksAsync, onDrinkDeleted, onDrinkInserted, onDrinkUpdated } from "src/redux/drinksSlice";
 import { AlertMessage, AlertSnackbar } from "src/components/AlertSnackbar";
 import { LoadingIndicator } from "src/components/LoadingIndicator";
 import { useClient } from "react-supabase";
+import { Tune } from "@mui/icons-material";
+import { SwipeableDialog } from "../SwipeableDialog";
 
 const SUCCESS_MESSAGE_INFO: AlertMessage = { message: "Getränke erfolgreich gebucht!", severity: "success" };
 
@@ -52,6 +54,8 @@ const DrinkListScreen = ({ repository, user, drinks, drinksLoading, drinksError,
     const [addedDrinks, setAddedDrinks] = useState<DrinkCounter[]>([]);
     const [loading, setLoading] = useState(false);
     const [alertInfo, setAlertInfo] = useState<AlertMessage | null>(null);
+    const [filterDialogOpen, setFilterDialogOpen] = useState(false);
+    const [visibleTypes, setVisibleTypes] = useState<ProductType[]>(["Drink"]);
     const client = useClient();
 
     useEffect(() => {
@@ -157,16 +161,31 @@ const DrinkListScreen = ({ repository, user, drinks, drinksLoading, drinksError,
     return <Box>
         <CustomAppBar />
         <LoadingIndicator loading={drinksLoading} />
-        <DrinkList drinks={drinks} onAddDrinkClick={onAddDrinkClick} onRemoveDrinkClick={onRemoveDrinkClick} addedDrinks={addedDrinks} />
+        <DrinkList drinks={drinks} onAddDrinkClick={onAddDrinkClick} onRemoveDrinkClick={onRemoveDrinkClick} addedDrinks={addedDrinks} visibleTypes={visibleTypes} />
         {
-            Object.values(addedDrinks).length > 0 && <>
-                <Fab sx={{ background: "#66bb6a", position: "fixed", right: "16px", bottom: "56px", mb: "16px" }} onClick={confirmDrinks}>
+            Object.values(addedDrinks).length > 0
+                ? <Fab sx={{ background: "#66bb6a", position: "fixed", right: "16px", bottom: "56px", mb: "16px" }} onClick={confirmDrinks}>
                     {
                         loading ? <CircularProgress /> : <CheckIcon sx={{ color: "white" }} />
                     }
                 </Fab>
-            </>
+                : <Fab sx={{ background: "#66bb6a", position: "fixed", right: "16px", bottom: "56px", mb: "16px" }} onClick={() => setFilterDialogOpen(true)}>
+                    <Tune sx={{ color: "white" }} />
+                </Fab>
         }
+
+        <SwipeableDialog open={filterDialogOpen} setOpen={setFilterDialogOpen} onClose={() => setFilterDialogOpen(false)} title="Filter">
+            <List>
+                {
+                    [...new Set(drinks.map(x => x.type))].sort().map(x => <ListItem divider disabled={x === "Drink"}>
+                        <ListItemAvatar>
+                            <Checkbox disabled={x === "Drink"} checked={visibleTypes.some(y => y === x)} onChange={(e) => setVisibleTypes(e.target.checked ? [...visibleTypes, x] : visibleTypes.filter(y => y !== x))} />
+                        </ListItemAvatar>
+                        <ListItemText primary={nameOfProductType(x)} />
+                    </ListItem>)
+                }
+            </List>
+        </SwipeableDialog>
 
         <AlertSnackbar close={() => setAlertInfo(null)} alertInfo={alertInfo} />
 

@@ -9,28 +9,16 @@ export const NotificationsScreen = () => {
     const [notificationsAllowed, setNotificationsAllowed] = useState(false);
 
     useEffect(() => {
-        let allowed = OneSignal.Notifications.permissionNative === "granted";
-        setNotificationsAllowed(allowed);
+        setNotificationsAllowed(OneSignal.User.PushSubscription.optedIn ?? false);
     }, []);
 
     return <Box>
         <CustomAppBar navigateBack />
         <LoadingIndicator loading={false} />
         <List>
-            {
-                !notificationsAllowed && <ListItemButton onClick={() => OneSignal.Notifications.requestPermission()}>
-                    <ListItemText primary={"Benachrichtigungen aktivieren"} />
-                </ListItemButton>
-            }
-            <ListItem>
-                <ListItemText primary={"Alle Benachrichtigungen"} />
-                <Switch
-                    edge="end"
-                    inputProps={{
-                        'aria-labelledby': 'switch-list-label-wifi',
-                    }}
-                />
-            </ListItem>
+            <ListItemButton onClick={() => OneSignal.Slidedown.promptPush()}>
+                <ListItemText primary={"Benachrichtigungen bearbeiten"} />
+            </ListItemButton>
         </List>
     </Box>
 }
