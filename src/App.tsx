@@ -29,10 +29,13 @@ import { KeyHolderScreenProvider } from './components/KeyHolderScreen';
 import OneSignal from 'react-onesignal';
 import { NotificationsScreen } from './components/NotificationsScreen';
 import { useServiceWorker } from './hooks/useServiceWorker';
+import { useDependency } from './hooks/useDependency';
+import { AbilityTuple, MongoAbility, MongoQuery } from '@casl/ability';
 
 const App = () => {
 
   const { isUpdateAvailable, updateServiceWorker } = useServiceWorker();
+  const ability = useDependency<MongoAbility<AbilityTuple, MongoQuery>>("Ability");
 
   useEffect(() => {
     if (process.env.REACT_APP_oneSignalAppId) {
@@ -77,7 +80,9 @@ const App = () => {
             <Route path="/training/create" element={<CreateEventProvider />} />
 
             <Route path='/admin/drinks' element={<AdminDrinkListProvider />} />
-            <Route path="/admin/drinks/history" element={<AdminHistoryScreenProvider />} />
+            {
+              ability?.can("view", "completeHistory") && <Route path="/admin/drinks/history" element={<AdminHistoryScreenProvider />} />
+            }
             <Route path='/admin/drinks/payments' element={<PaymentsPendingAdmin />} />
             <Route path='/admin/drinks/stocks' element={<DrinkStockUpdateScreen />} />
             <Route path='/admin/drinks/analyze' element={<AnalyzeDrinkStockHistoryProvider />} />

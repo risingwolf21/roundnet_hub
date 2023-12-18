@@ -18,6 +18,7 @@ import { EmptyAdminDrinksRepository, IAdminDrinksRepository, SupabaseAdminDrinks
 import { EmptyAdminUsersRepository, IAdminUsersRepository, SupabaseAdminUsersRepository } from "./repository/IAdminUsersRepository";
 import { supabaseAdmin } from "./components/services/supabase/supabaseClient";
 import UserScreen from "./components/User";
+import { EmptyPermissionService, IPermissionService, SupabasePermissionService, defineAbilityFor } from "./utils/PermissionService";
 
 
 const initialState = { session: null, user: null }
@@ -70,6 +71,8 @@ const AuthGate = ({ children }: Props) => {
                         else if (user.role === "admin")
                             container.rebind<IAdminUsersRepository>("IAdminUsersRepository").toDynamicValue(() => new SupabaseAdminUsersRepository(supabaseAdmin));
 
+                        container.rebind("Ability").toDynamicValue(() => defineAbilityFor(user.permissions ?? []));
+
                         dispatch(onUserChange(user));
                     }
                 })
@@ -78,6 +81,8 @@ const AuthGate = ({ children }: Props) => {
                     container.rebind<IAdminUsersRepository>("IAdminUsersRepository").toDynamicValue(() => new EmptyAdminUsersRepository());
                 if (container.isBound("IAdminDrinksRepository"))
                     container.rebind<IAdminDrinksRepository>("IAdminDrinksRepository").toDynamicValue(() => new EmptyAdminDrinksRepository());
+
+                container.rebind("Ability").toDynamicValue(() => defineAbilityFor([]));
 
                 dispatch(onUserChange(null));
                 navigate("/login", { replace: true });

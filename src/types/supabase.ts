@@ -14,57 +14,54 @@ export interface Database {
           active: boolean
           deleted: boolean
           id: number
-          imageUrl: string | null
-          name: string | null
+          imageUrl: string
+          name: string
           previousDrink: number | null
-          price: number | null
-          stock: number | null
+          price: number
+          stock: number
           type: Database["public"]["Enums"]["ProductType"]
         }
         Insert: {
           active?: boolean
           deleted?: boolean
           id?: number
-          imageUrl?: string | null
-          name?: string | null
+          imageUrl?: string
+          name: string
           previousDrink?: number | null
-          price?: number | null
-          stock?: number | null
+          price?: number
+          stock?: number
           type?: Database["public"]["Enums"]["ProductType"]
         }
         Update: {
           active?: boolean
           deleted?: boolean
           id?: number
-          imageUrl?: string | null
-          name?: string | null
+          imageUrl?: string
+          name?: string
           previousDrink?: number | null
-          price?: number | null
-          stock?: number | null
+          price?: number
+          stock?: number
           type?: Database["public"]["Enums"]["ProductType"]
         }
         Relationships: []
       }
       event_attendance_user_mapping: {
         Row: {
-          created_at: string | null
+          created_at: string
           event: number
-          id: number
-          state: string
+          state: Database["public"]["Enums"]["EventAttendance"]
           user: string
         }
         Insert: {
-          created_at?: string | null
+          created_at?: string
           event: number
-          id?: number
-          state?: string
+          state?: Database["public"]["Enums"]["EventAttendance"]
           user: string
         }
         Update: {
-          created_at?: string | null
+          created_at?: string
           event?: number
-          id?: number
-          state?: string
+          state?: Database["public"]["Enums"]["EventAttendance"]
           user?: string
         }
         Relationships: [
@@ -72,8 +69,22 @@ export interface Database {
             foreignKeyName: "event_attendance_user_mapping_event_fkey"
             columns: ["event"]
             isOneToOne: false
+            referencedRelation: "distinct_event"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "event_attendance_user_mapping_event_fkey"
+            columns: ["event"]
+            isOneToOne: false
             referencedRelation: "events"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "event_attendance_user_mapping_user_fkey"
+            columns: ["user"]
+            isOneToOne: false
+            referencedRelation: "user"
+            referencedColumns: ["userId"]
           }
         ]
       }
@@ -107,6 +118,13 @@ export interface Database {
             foreignKeyName: "event_comments_event_fkey"
             columns: ["event"]
             isOneToOne: false
+            referencedRelation: "distinct_event"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "event_comments_event_fkey"
+            columns: ["event"]
+            isOneToOne: false
             referencedRelation: "events"
             referencedColumns: ["id"]
           },
@@ -122,89 +140,101 @@ export interface Database {
       event_group: {
         Row: {
           color: string
-          created_at: string | null
-          description: string | null
+          created_at: string
+          description: string
           id: number
-          name: string | null
+          name: string
         }
         Insert: {
           color?: string
-          created_at?: string | null
-          description?: string | null
+          created_at?: string
+          description?: string
           id?: number
-          name?: string | null
+          name?: string
         }
         Update: {
           color?: string
-          created_at?: string | null
-          description?: string | null
+          created_at?: string
+          description?: string
           id?: number
-          name?: string | null
+          name?: string
         }
         Relationships: []
       }
       events: {
         Row: {
-          created_at: string | null
-          description: string | null
+          created_at: string
+          description: string
           end_at: string | null
+          group: number | null
           id: number
           isCancelled: boolean
           key: string
-          location: string | null
           meetingDateTime: string | null
           place: Json | null
           recurrence: Database["public"]["Enums"]["EventRecurrence"]
-          startingDateTime: string | null
-          title: string | null
+          startingDateTime: string
+          title: string
         }
         Insert: {
-          created_at?: string | null
-          description?: string | null
+          created_at?: string
+          description?: string
           end_at?: string | null
+          group?: number | null
           id?: number
           isCancelled?: boolean
           key?: string
-          location?: string | null
           meetingDateTime?: string | null
           place?: Json | null
           recurrence?: Database["public"]["Enums"]["EventRecurrence"]
-          startingDateTime?: string | null
-          title?: string | null
+          startingDateTime: string
+          title?: string
         }
         Update: {
-          created_at?: string | null
-          description?: string | null
+          created_at?: string
+          description?: string
           end_at?: string | null
+          group?: number | null
           id?: number
           isCancelled?: boolean
           key?: string
-          location?: string | null
           meetingDateTime?: string | null
           place?: Json | null
           recurrence?: Database["public"]["Enums"]["EventRecurrence"]
-          startingDateTime?: string | null
-          title?: string | null
+          startingDateTime?: string
+          title?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "events_group_fkey"
+            columns: ["group"]
+            isOneToOne: false
+            referencedRelation: "event_group"
+            referencedColumns: ["id"]
+          }
+        ]
       }
       group_event_mapping: {
         Row: {
           event: number
           group: number
-          id: number
         }
         Insert: {
           event: number
           group: number
-          id?: number
         }
         Update: {
           event?: number
           group?: number
-          id?: number
         }
         Relationships: [
+          {
+            foreignKeyName: "group_event_mapping_event_fkey"
+            columns: ["event"]
+            isOneToOne: false
+            referencedRelation: "distinct_event"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "group_event_mapping_event_fkey"
             columns: ["event"]
@@ -221,20 +251,50 @@ export interface Database {
           }
         ]
       }
+      group_subgroup_mapping: {
+        Row: {
+          id: number
+          main_group: number
+          sub_group: number
+        }
+        Insert: {
+          id?: number
+          main_group: number
+          sub_group: number
+        }
+        Update: {
+          id?: number
+          main_group?: number
+          sub_group?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "group_subgroup_mapping_main_group_fkey"
+            columns: ["main_group"]
+            isOneToOne: false
+            referencedRelation: "event_group"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "group_subgroup_mapping_sub_group_fkey"
+            columns: ["sub_group"]
+            isOneToOne: false
+            referencedRelation: "event_group"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
       group_user_mapping: {
         Row: {
           group: number
-          id: number
           user: string
         }
         Insert: {
           group: number
-          id?: number
           user: string
         }
         Update: {
           group?: number
-          id?: number
           user?: string
         }
         Relationships: [
@@ -256,8 +316,8 @@ export interface Database {
       }
       history: {
         Row: {
-          amount: number | null
-          count: number | null
+          amount: number
+          count: number
           created_at: string | null
           drink: number
           id: number
@@ -265,8 +325,8 @@ export interface Database {
           user: string
         }
         Insert: {
-          amount?: number | null
-          count?: number | null
+          amount?: number
+          count: number
           created_at?: string | null
           drink: number
           id?: number
@@ -274,8 +334,8 @@ export interface Database {
           user: string
         }
         Update: {
-          amount?: number | null
-          count?: number | null
+          amount?: number
+          count?: number
           created_at?: string | null
           drink?: number
           id?: number
@@ -363,21 +423,21 @@ export interface Database {
           created_at: string | null
           id: number
           paymentState: Database["public"]["Enums"]["PaymentState"]
-          userId: string | null
+          userId: string
         }
         Insert: {
           amountToPay?: number
           created_at?: string | null
           id?: number
           paymentState?: Database["public"]["Enums"]["PaymentState"]
-          userId?: string | null
+          userId: string
         }
         Update: {
           amountToPay?: number
           created_at?: string | null
           id?: number
           paymentState?: Database["public"]["Enums"]["PaymentState"]
-          userId?: string | null
+          userId?: string
         }
         Relationships: [
           {
@@ -392,24 +452,30 @@ export interface Database {
       user: {
         Row: {
           created_at: string | null
-          displayName: string | null
-          email: string | null
+          disabled: boolean
+          displayName: string
+          email: string
+          permissions: Database["public"]["Enums"]["Permissions"][] | null
           role: Database["public"]["Enums"]["UserRole"]
           userId: string
           verified: boolean
         }
         Insert: {
           created_at?: string | null
-          displayName?: string | null
-          email?: string | null
+          disabled?: boolean
+          displayName?: string
+          email?: string
+          permissions?: Database["public"]["Enums"]["Permissions"][] | null
           role?: Database["public"]["Enums"]["UserRole"]
           userId?: string
           verified?: boolean
         }
         Update: {
           created_at?: string | null
-          displayName?: string | null
-          email?: string | null
+          disabled?: boolean
+          displayName?: string
+          email?: string
+          permissions?: Database["public"]["Enums"]["Permissions"][] | null
           role?: Database["public"]["Enums"]["UserRole"]
           userId?: string
           verified?: boolean
@@ -418,67 +484,54 @@ export interface Database {
       }
     }
     Views: {
-      [_ in never]: never
+      distinct_event: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          end_at: string | null
+          group: number | null
+          id: number | null
+          isCancelled: boolean | null
+          key: string | null
+          meetingDateTime: string | null
+          place: Json | null
+          recurrence: Database["public"]["Enums"]["EventRecurrence"] | null
+          startingDateTime: string | null
+          title: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "events_group_fkey"
+            columns: ["group"]
+            isOneToOne: false
+            referencedRelation: "event_group"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
     }
     Functions: {
-      increment_payment:
-        | {
-            Args: {
-              amount: number
-              rowid: number
-            }
-            Returns: undefined
-          }
-        | {
-            Args: {
-              amount: number
-              rowid: string
-            }
-            Returns: undefined
-          }
-      increment_stock: {
-        Args: {
-          amount: number
-          rowid: number
-        }
-        Returns: undefined
-      }
-      increments:
-        | {
-            Args: Record<PropertyKey, never>
-            Returns: {
-              active: boolean
-              deleted: boolean
-              id: number
-              imageUrl: string | null
-              name: string | null
-              previousDrink: number | null
-              price: number | null
-              stock: number | null
-              type: Database["public"]["Enums"]["ProductType"]
-            }[]
-          }
-        | {
-            Args: {
-              row_id: number
-            }
-            Returns: {
-              active: boolean
-              deleted: boolean
-              id: number
-              imageUrl: string | null
-              name: string | null
-              previousDrink: number | null
-              price: number | null
-              stock: number | null
-              type: Database["public"]["Enums"]["ProductType"]
-            }[]
-          }
+      [_ in never]: never
     }
     Enums: {
       EventAttendance: "Declined" | "Attending" | "Unanswered"
       EventRecurrence: "Weekly" | "Fortnightly" | "Monthly" | "None"
       PaymentState: "Open" | "Fulfilled"
+      Permissions:
+        | "canEditTraining"
+        | "canAddTraining"
+        | "canDeleteTraining"
+        | "canCreateGroup"
+        | "canEditGroup"
+        | "canViewDrinks"
+        | "canAddDrinks"
+        | "canEditDrinks"
+        | "canDeleteDrinks"
+        | "canConfirmPayment"
+        | "canEditUsers"
+        | "canViewUserList"
+        | "canViewCompleteHistory"
+      PermissionsOld: "Admin" | "Tester" | "Finance" | "Trainer" | "Procure"
       ProductType: "Drink" | "Special" | "None"
       UserRole: "user" | "admin" | "procure" | "finance" | "trainer"
     }
@@ -487,3 +540,83 @@ export interface Database {
     }
   }
 }
+
+export type Tables<
+  PublicTableNameOrOptions extends
+    | keyof (Database["public"]["Tables"] & Database["public"]["Views"])
+    | { schema: keyof Database },
+  TableName extends PublicTableNameOrOptions extends { schema: keyof Database }
+    ? keyof (Database[PublicTableNameOrOptions["schema"]]["Tables"] &
+        Database[PublicTableNameOrOptions["schema"]]["Views"])
+    : never = never
+> = PublicTableNameOrOptions extends { schema: keyof Database }
+  ? (Database[PublicTableNameOrOptions["schema"]]["Tables"] &
+      Database[PublicTableNameOrOptions["schema"]]["Views"])[TableName] extends {
+      Row: infer R
+    }
+    ? R
+    : never
+  : PublicTableNameOrOptions extends keyof (Database["public"]["Tables"] &
+      Database["public"]["Views"])
+  ? (Database["public"]["Tables"] &
+      Database["public"]["Views"])[PublicTableNameOrOptions] extends {
+      Row: infer R
+    }
+    ? R
+    : never
+  : never
+
+export type TablesInsert<
+  PublicTableNameOrOptions extends
+    | keyof Database["public"]["Tables"]
+    | { schema: keyof Database },
+  TableName extends PublicTableNameOrOptions extends { schema: keyof Database }
+    ? keyof Database[PublicTableNameOrOptions["schema"]]["Tables"]
+    : never = never
+> = PublicTableNameOrOptions extends { schema: keyof Database }
+  ? Database[PublicTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+      Insert: infer I
+    }
+    ? I
+    : never
+  : PublicTableNameOrOptions extends keyof Database["public"]["Tables"]
+  ? Database["public"]["Tables"][PublicTableNameOrOptions] extends {
+      Insert: infer I
+    }
+    ? I
+    : never
+  : never
+
+export type TablesUpdate<
+  PublicTableNameOrOptions extends
+    | keyof Database["public"]["Tables"]
+    | { schema: keyof Database },
+  TableName extends PublicTableNameOrOptions extends { schema: keyof Database }
+    ? keyof Database[PublicTableNameOrOptions["schema"]]["Tables"]
+    : never = never
+> = PublicTableNameOrOptions extends { schema: keyof Database }
+  ? Database[PublicTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+      Update: infer U
+    }
+    ? U
+    : never
+  : PublicTableNameOrOptions extends keyof Database["public"]["Tables"]
+  ? Database["public"]["Tables"][PublicTableNameOrOptions] extends {
+      Update: infer U
+    }
+    ? U
+    : never
+  : never
+
+export type Enums<
+  PublicEnumNameOrOptions extends
+    | keyof Database["public"]["Enums"]
+    | { schema: keyof Database },
+  EnumName extends PublicEnumNameOrOptions extends { schema: keyof Database }
+    ? keyof Database[PublicEnumNameOrOptions["schema"]]["Enums"]
+    : never = never
+> = PublicEnumNameOrOptions extends { schema: keyof Database }
+  ? Database[PublicEnumNameOrOptions["schema"]]["Enums"][EnumName]
+  : PublicEnumNameOrOptions extends keyof Database["public"]["Enums"]
+  ? Database["public"]["Enums"][PublicEnumNameOrOptions]
+  : never

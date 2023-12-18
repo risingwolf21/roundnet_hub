@@ -19,6 +19,48 @@ To create one, follow the link bellow:
 
 [Create new release](https://github.com/risingwolf21/roundnet_karlsruhe_app/compare/production...master)
 
+# Development
+
+## Supabase Types
+
+To get the database types from the supabase database run the following command:
+
+### Staging
+```
+npx supabase gen types typescript --project-id xibmjvkjkdxdbmreicps > src/types/supabase.ts
+```
+
+### Production
+```
+npx supabase gen types typescript --project-id vsuhzabcrnmrljzecxee > src/types/supabase.ts
+```
+
+## Permissions
+
+### Training
+
+- canEditTraining
+- canAddTraining
+- canDeleteTraining
+- canCreateGroup
+- canEditGroup
+- canAddUserToGroup
+- canRemoveUserFromGroup
+
+### Drinks
+
+- canViewDrinks
+- canAddDrinks (add drinks to history/payment for user)
+- canEditDrinks
+- canDeleteDrinks
+
+### Admin
+
+- canConfirmPayment
+- canEditUsers
+- canViewUserList
+- canViewCompleteHistory
+
 ## Available Scripts
 
 In the project directory, you can run:

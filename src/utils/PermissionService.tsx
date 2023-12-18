@@ -1,50 +1,7 @@
-import { User } from "src/types/supabaseTypes";
+import { Permissions, User } from "src/types/supabaseTypes";
+import { AbilityBuilder, MongoQuery, PureAbility, createMongoAbility } from '@casl/ability';
 
-interface AdminPaymentPermissionService {
-    canViewManagePayments(): boolean;
-
-    canMarkPaymentAsDone(): boolean;
-}
-
-interface AdminDrinkPermissionService {
-    canViewManageDrinks(): boolean;
-
-    canDeleteDrink(): boolean;
-
-    canEditDrink(): boolean;
-
-    canEditDrinkName(): boolean;
-
-    canEditDrinkPrice(): boolean;
-
-    canEditDrinkStock(): boolean;
-
-    canEditDrinkImage(): boolean;
-
-    canEditDrinkActive(): boolean;
-}
-
-interface AdminUserPermissionService {
-
-    canViewUserList(): boolean;
-
-    canEditUser(): boolean;
-
-    canEditUserDisplayName(): boolean;
-
-    canEditUserVerification(): boolean;
-
-    canEditUserRole(): boolean;
-
-    canDeleteUser(): boolean;
-}
-
-interface AdminHistoryPermissionService {
-
-    canViewAdminHistory(): boolean;
-}
-
-interface ApplicationPermissionService {
+export interface IPermissionService {
     canViewDrinks(): boolean;
 
     canViewTraining(): boolean;
@@ -56,91 +13,141 @@ interface ApplicationPermissionService {
     canViewKeyFinder(): boolean;
 
     canViewAccount(): boolean;
+
+    canViewAdminHistory(): boolean;
+
+    canViewUserList(): boolean;
+
+    canEditUser(): boolean;
+
+    canDeleteUser(): boolean;
+
+    canDeleteDrink(): boolean;
+
+    canEditDrink(): boolean;
+
+    canConfirmPayment(): boolean;
 }
 
-class PermissionService implements ApplicationPermissionService, AdminDrinkPermissionService, AdminHistoryPermissionService, AdminPaymentPermissionService, AdminUserPermissionService {
+export class EmptyPermissionService implements IPermissionService {
+    canViewDrinks(): boolean {
+        return false;
+    }
+    canViewTraining(): boolean {
+        return false;
+    }
+    canViewPayment(): boolean {
+        return false;
+    }
+    canViewHistory(): boolean {
+        return false;
+    }
+    canViewKeyFinder(): boolean {
+        return false;
+    }
+    canViewAccount(): boolean {
+        return false;
+    }
+    canViewAdminHistory(): boolean {
+        return false;
+    }
+    canViewUserList(): boolean {
+        return false;
+    }
+    canEditUser(): boolean {
+        return false;
+    }
+    canDeleteUser(): boolean {
+        return false;
+    }
+    canDeleteDrink(): boolean {
+        return false;
+    }
+    canEditDrink(): boolean {
+        return false;
+    }
+    canConfirmPayment(): boolean {
+        return false;
+    }
+
+}
+
+export class SupabasePermissionService implements IPermissionService {
 
     user: User
 
-    constructor(user: User){
+    constructor(user: User) {
         this.user = user;
     }
 
-    canViewManageDrinks(): boolean {
-        throw new Error("Method not implemented.");
+    canViewDrinks(): boolean {
+        return false;
     }
-    canDeleteDrink(): boolean {
-        throw new Error("Method not implemented.");
+    canViewTraining(): boolean {
+        return false;
     }
-    canEditDrink(): boolean {
-        throw new Error("Method not implemented.");
+    canViewPayment(): boolean {
+        return false;
     }
-    canEditDrinkName(): boolean {
-        throw new Error("Method not implemented.");
+    canViewHistory(): boolean {
+        return false;
     }
-    canEditDrinkPrice(): boolean {
-        throw new Error("Method not implemented.");
+    canViewKeyFinder(): boolean {
+        return false;
     }
-    canEditDrinkStock(): boolean {
-        throw new Error("Method not implemented.");
-    }
-    canEditDrinkImage(): boolean {
-        throw new Error("Method not implemented.");
-    }
-    canEditDrinkActive(): boolean {
-        throw new Error("Method not implemented.");
+    canViewAccount(): boolean {
+        return false;
     }
     canViewAdminHistory(): boolean {
-        throw new Error("Method not implemented.");
-    }
-    canViewManagePayments(): boolean {
-        throw new Error("Method not implemented.");
-    }
-    canMarkPaymentAsDone(): boolean {
-        throw new Error("Method not implemented.");
+        return false;
     }
     canViewUserList(): boolean {
-        throw new Error("Method not implemented.");
+        return false;
     }
     canEditUser(): boolean {
-        throw new Error("Method not implemented.");
-    }
-    canEditUserDisplayName(): boolean {
-        throw new Error("Method not implemented.");
-    }
-    canEditUserVerification(): boolean {
-        throw new Error("Method not implemented.");
-    }
-    canEditUserRole(): boolean {
-        throw new Error("Method not implemented.");
+        return false;
     }
     canDeleteUser(): boolean {
-        throw new Error("Method not implemented.");
+        return false;
     }
-    canViewDrinks(): boolean {
-        return true;
+    canDeleteDrink(): boolean {
+        return false;
     }
-
-    canViewTraining(): boolean {
-        return true;
+    canEditDrink(): boolean {
+        return false;
     }
-
-    canViewPayment(): boolean {
-        return true;
+    canConfirmPayment(): boolean {
+        return false;
     }
-
-    canViewHistory(): boolean {
-        return true;
-    }
-
-    canViewKeyFinder(): boolean {
-        return true;
-    }
-
-    canViewAccount(): boolean {
-        return true;
-    }
-
-
 }
 
+export function defineAbilityFor(permissions: Permissions[]) {
+    const { can, cannot, build } = new AbilityBuilder(createMongoAbility);
+
+    if (permissions.includes("canAddDrinks"))
+        can("add", "drinks");
+    if (permissions.includes("canAddTraining"))
+        can("add", "training");
+    if (permissions.includes("canConfirmPayment"))
+        can("confirm", "payments");
+    if (permissions.includes("canCreateGroup"))
+        can("create", "group");
+    if (permissions.includes("canDeleteDrinks"))
+        can("delete", "drinks");
+    if (permissions.includes("canDeleteTraining"))
+        can("delete", "training");
+    if (permissions.includes("canEditDrinks"))
+        can("edit", "drinks");
+    if (permissions.includes("canEditGroup"))
+        can("edit", "group");
+    if (permissions.includes("canEditTraining"))
+        can("edit", "training");
+    if (permissions.includes("canEditUsers"))
+        can("edit", "users");
+    if (permissions.includes("canViewCompleteHistory"))
+        can("view", "completeHistory");
+    if (permissions.includes("canViewDrinks"))
+        can("view", "drinks");
+
+    return build()
+};

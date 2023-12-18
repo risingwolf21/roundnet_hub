@@ -83,5 +83,6 @@ export type EventAttendance = Database["public"]["Enums"]["EventAttendance"];
 export type EventRecurrence = Database["public"]["Enums"]["EventRecurrence"];
 export type PaymentState = Database["public"]["Enums"]["PaymentState"];
 export type UserRole = Database["public"]["Enums"]["UserRole"];
+export type Permissions = Database["public"]["Enums"]["Permissions"];
 
 type Modify<T, R> = Omit<T, keyof R> & R;
