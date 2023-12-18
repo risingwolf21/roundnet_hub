@@ -1,5 +1,5 @@
 import { setUser } from "@sentry/react";
-import React, { createContext, useEffect } from "react";
+import React, { createContext, useEffect, useState } from "react";
 import { useClient } from "react-supabase";
 import { useDispatch, useSelector } from "react-redux";
 import { onUserChange } from "./redux/applicationSlice";
@@ -18,7 +18,7 @@ import { EmptyAdminDrinksRepository, IAdminDrinksRepository, SupabaseAdminDrinks
 import { EmptyAdminUsersRepository, IAdminUsersRepository, SupabaseAdminUsersRepository } from "./repository/IAdminUsersRepository";
 import { supabaseAdmin } from "./components/services/supabase/supabaseClient";
 import UserScreen from "./components/User";
-import { EmptyPermissionService, IPermissionService, SupabasePermissionService, defineAbilityFor } from "./utils/PermissionService";
+import { AbilityContext, defineAbilityFor } from "./utils/PermissionService";
 
 
 const initialState = { session: null, user: null }
@@ -31,6 +31,7 @@ type Props = {
 const AuthGate = ({ children }: Props) => {
 
     const { user } = useSelector((state: RootState) => state.application);
+    const [ability, setAbility] = useState(defineAbilityFor([]));
 
     const client = useClient();
     const dispatch = useDispatch();
@@ -71,7 +72,7 @@ const AuthGate = ({ children }: Props) => {
                         else if (user.role === "admin")
                             container.rebind<IAdminUsersRepository>("IAdminUsersRepository").toDynamicValue(() => new SupabaseAdminUsersRepository(supabaseAdmin));
 
-                        container.rebind("Ability").toDynamicValue(() => defineAbilityFor(user.permissions ?? []));
+                        setAbility(defineAbilityFor(user.permissions ?? []))
 
                         dispatch(onUserChange(user));
                     }
@@ -82,7 +83,7 @@ const AuthGate = ({ children }: Props) => {
                 if (container.isBound("IAdminDrinksRepository"))
                     container.rebind<IAdminDrinksRepository>("IAdminDrinksRepository").toDynamicValue(() => new EmptyAdminDrinksRepository());
 
-                container.rebind("Ability").toDynamicValue(() => defineAbilityFor([]));
+                setAbility(defineAbilityFor([]))
 
                 dispatch(onUserChange(null));
                 navigate("/login", { replace: true });
@@ -118,6 +119,8 @@ const AuthGate = ({ children }: Props) => {
         </Routes>
     }
 
-    return children
+    return <AbilityContext.Provider value={ability}>
+        {children}
+    </AbilityContext.Provider>
 }
 export default AuthGate;

@@ -1,153 +1,53 @@
 import { Permissions, User } from "src/types/supabaseTypes";
-import { AbilityBuilder, MongoQuery, PureAbility, createMongoAbility } from '@casl/ability';
+import { AbilityBuilder, AnyAbility, MongoQuery, PureAbility, SubjectType, createMongoAbility } from '@casl/ability';
+import { createContext } from 'react';
+import { createContextualCan } from '@casl/react';
 
-export interface IPermissionService {
-    canViewDrinks(): boolean;
 
-    canViewTraining(): boolean;
+type Actions = 'use' | 'edit' | 'delete' | 'view'
+export type AbilityType = 'drink' | 'training' | 'payments' | 'user' | 'groups' | 'keyFinder' | 'history' | 'notifications'
+type Ability =
+    | [Actions, AbilityType]
+    | [Actions, AbilityType]
+    | [Actions, AbilityType]
+    | [Actions, AbilityType]
+    | [Actions, AbilityType]
+    | [Actions, AbilityType]
 
-    canViewPayment(): boolean;
+const permissionsArray: Permissions[] = [
+    "use;drink",
+    "edit;drink",
+    "delete;drink",
+    "view;drink",
+    "use;training",
+    "edit;training",
+    "delete;training",
+    "view;training",
+    "edit;groups",
+    "delete;groups",
+    "view;groups",
+    "edit;payments",
+    "edit;user",
+    "view;keyFinder"
+];
 
-    canViewHistory(): boolean;
+export type AppAbility = PureAbility<Ability, MongoQuery>
 
-    canViewKeyFinder(): boolean;
-
-    canViewAccount(): boolean;
-
-    canViewAdminHistory(): boolean;
-
-    canViewUserList(): boolean;
-
-    canEditUser(): boolean;
-
-    canDeleteUser(): boolean;
-
-    canDeleteDrink(): boolean;
-
-    canEditDrink(): boolean;
-
-    canConfirmPayment(): boolean;
-}
-
-export class EmptyPermissionService implements IPermissionService {
-    canViewDrinks(): boolean {
-        return false;
-    }
-    canViewTraining(): boolean {
-        return false;
-    }
-    canViewPayment(): boolean {
-        return false;
-    }
-    canViewHistory(): boolean {
-        return false;
-    }
-    canViewKeyFinder(): boolean {
-        return false;
-    }
-    canViewAccount(): boolean {
-        return false;
-    }
-    canViewAdminHistory(): boolean {
-        return false;
-    }
-    canViewUserList(): boolean {
-        return false;
-    }
-    canEditUser(): boolean {
-        return false;
-    }
-    canDeleteUser(): boolean {
-        return false;
-    }
-    canDeleteDrink(): boolean {
-        return false;
-    }
-    canEditDrink(): boolean {
-        return false;
-    }
-    canConfirmPayment(): boolean {
-        return false;
-    }
-
-}
-
-export class SupabasePermissionService implements IPermissionService {
-
-    user: User
-
-    constructor(user: User) {
-        this.user = user;
-    }
-
-    canViewDrinks(): boolean {
-        return false;
-    }
-    canViewTraining(): boolean {
-        return false;
-    }
-    canViewPayment(): boolean {
-        return false;
-    }
-    canViewHistory(): boolean {
-        return false;
-    }
-    canViewKeyFinder(): boolean {
-        return false;
-    }
-    canViewAccount(): boolean {
-        return false;
-    }
-    canViewAdminHistory(): boolean {
-        return false;
-    }
-    canViewUserList(): boolean {
-        return false;
-    }
-    canEditUser(): boolean {
-        return false;
-    }
-    canDeleteUser(): boolean {
-        return false;
-    }
-    canDeleteDrink(): boolean {
-        return false;
-    }
-    canEditDrink(): boolean {
-        return false;
-    }
-    canConfirmPayment(): boolean {
-        return false;
-    }
-}
+export const AbilityContext = createContext<AppAbility>(new PureAbility());
+export const Can = createContextualCan(AbilityContext.Consumer);
 
 export function defineAbilityFor(permissions: Permissions[]) {
-    const { can, cannot, build } = new AbilityBuilder(createMongoAbility);
+    const { can, cannot, build } = new AbilityBuilder<AppAbility>(createMongoAbility);
 
-    if (permissions.includes("canAddDrinks"))
-        can("add", "drinks");
-    if (permissions.includes("canAddTraining"))
-        can("add", "training");
-    if (permissions.includes("canConfirmPayment"))
-        can("confirm", "payments");
-    if (permissions.includes("canCreateGroup"))
-        can("create", "group");
-    if (permissions.includes("canDeleteDrinks"))
-        can("delete", "drinks");
-    if (permissions.includes("canDeleteTraining"))
-        can("delete", "training");
-    if (permissions.includes("canEditDrinks"))
-        can("edit", "drinks");
-    if (permissions.includes("canEditGroup"))
-        can("edit", "group");
-    if (permissions.includes("canEditTraining"))
-        can("edit", "training");
-    if (permissions.includes("canEditUsers"))
-        can("edit", "users");
-    if (permissions.includes("canViewCompleteHistory"))
-        can("view", "completeHistory");
-    if (permissions.includes("canViewDrinks"))
-        can("view", "drinks");
+    permissionsArray.filter(x => !permissions.includes(x)).forEach(each => {
+        var split = each.split(";");
+        cannot(split[0] as Actions, split[1] as AbilityType);
+    });
+
+    permissions.forEach(each => {
+        var split = each.split(";");
+        can(split[0] as Actions, split[1] as AbilityType);
+    });
 
     return build()
 };
