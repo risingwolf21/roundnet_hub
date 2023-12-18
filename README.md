@@ -37,29 +37,24 @@ npx supabase gen types typescript --project-id vsuhzabcrnmrljzecxee > src/types/
 
 ## Permissions
 
-### Training
+Actions: `use, edit, delete, view`
 
-- canEditTraining
-- canAddTraining
-- canDeleteTraining
-- canCreateGroup
-- canEditGroup
-- canAddUserToGroup
-- canRemoveUserFromGroup
-
-### Drinks
-
-- canViewDrinks
-- canAddDrinks (add drinks to history/payment for user)
-- canEditDrinks
-- canDeleteDrinks
-
-### Admin
-
-- canConfirmPayment
-- canEditUsers
-- canViewUserList
-- canViewCompleteHistory
+| Permission-Name | Beschreibung                                              | admin | finance | procure | trainer | user |
+|-----------------|-----------------------------------------------------------|-------|---------|---------|---------|------|
+| use;drink       | User can buy a drink                                      | ✅     | ✅       | ✅       | ✅       | ✅    |
+| edit;drink      | User can edit drinks                                      | ✅     | ❌       | ✅       | ❌       | ❌    |
+| delete;drink    | User can delete a drink (only deactivates it in database) | ✅     | ❌       | ✅       | ❌       | ❌    |
+| view;drink      | User can see the current drinks and drink list            | ✅     | ✅       | ✅       | ✅       | ✅    |
+| use;training    | User can attend/decline trainings                         | ✅     | ✅       | ✅       | ✅       | ✅    |
+| edit;training   | User can create new training events                       | ✅     | ❌       | ❌       | ✅       | ❌    |
+| delete;training | User can delete events                                    | ✅     | ❌       | ❌       | ✅       | ❌    |
+| view;training   | User can view training events list                        | ✅     | ✅       | ✅       | ✅       | ✅    |
+| edit;groups     | Change users for group or edit group information          | ✅     | ❌       | ❌       | ✅       | ❌    |
+| delete;groups   | Delete a group (could possibile delete events)            | ✅     | ❌       | ❌       | ❌       | ❌    |
+| view;groups     | User can view the groups he is assigned to                | ✅     | ✅       | ✅       | ✅       | ✅    |
+| edit;payments   | User can accept payments                                  | ✅     | ✅       | ❌       | ❌       | ❌    |
+| edit;user       | Edit user information/verification state/permissions      | ✅     | ❌       | ❌       | ❌       | ❌    |
+| view;keyFinder  | User can view key finder                                  | ✅     | ✅       | ✅       | ✅       | ✅    |
 
 ## Available Scripts
 
