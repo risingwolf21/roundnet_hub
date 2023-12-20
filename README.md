@@ -45,16 +45,26 @@ Actions: `use, edit, delete, view`
 | edit;drink      | User can edit drinks                                      | ✅     | ❌       | ✅       | ❌       | ❌    |
 | delete;drink    | User can delete a drink (only deactivates it in database) | ✅     | ❌       | ✅       | ❌       | ❌    |
 | view;drink      | User can see the current drinks and drink list            | ✅     | ✅       | ✅       | ✅       | ✅    |
+||||||||
 | use;training    | User can attend/decline trainings                         | ✅     | ✅       | ✅       | ✅       | ✅    |
 | edit;training   | User can create new training events                       | ✅     | ❌       | ❌       | ✅       | ❌    |
 | delete;training | User can delete events                                    | ✅     | ❌       | ❌       | ✅       | ❌    |
 | view;training   | User can view training events list                        | ✅     | ✅       | ✅       | ✅       | ✅    |
+||||||||
 | edit;groups     | Change users for group or edit group information          | ✅     | ❌       | ❌       | ✅       | ❌    |
 | delete;groups   | Delete a group (could possibile delete events)            | ✅     | ❌       | ❌       | ❌       | ❌    |
 | view;groups     | User can view the groups he is assigned to                | ✅     | ✅       | ✅       | ✅       | ✅    |
+||||||||
 | edit;payments   | User can accept payments                                  | ✅     | ✅       | ❌       | ❌       | ❌    |
+||||||||
+| use;user        | User can edit his own informations                        | ✅     | ✅       | ✅       | ✅       | ✅    |
 | edit;user       | Edit user information/verification state/permissions      | ✅     | ❌       | ❌       | ❌       | ❌    |
+| delete;user     | User can edit his own informations                        | ✅     | ❌       | ❌       | ❌       | ❌    |
+| view;user       | User can view his own informations                        | ✅     | ✅       | ✅       | ✅       | ✅    |
+||||||||
 | view;keyFinder  | User can view key finder                                  | ✅     | ✅       | ✅       | ✅       | ✅    |
+| edit;keyFinder  | User can edit keys                                        | ✅     | ❌       | ❌       | ❌       | ❌    |
+| delete;keyFinder| User can delete keys                                      | ✅     | ❌       | ❌       | ❌       | ❌    |
 
 ## Available Scripts
 
