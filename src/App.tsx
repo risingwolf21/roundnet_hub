@@ -29,14 +29,11 @@ import { KeyHolderScreenProvider } from './components/KeyHolderScreen';
 import OneSignal from 'react-onesignal';
 import { NotificationsScreen } from './components/NotificationsScreen';
 import { useServiceWorker } from './hooks/useServiceWorker';
-import { useDependency } from './hooks/useDependency';
-import { AbilityTuple, MongoAbility, MongoQuery } from '@casl/ability';
 import { Can } from './utils/PermissionService';
 
 const App = () => {
 
   const { isUpdateAvailable, updateServiceWorker } = useServiceWorker();
-  const ability = useDependency<MongoAbility<AbilityTuple, MongoQuery>>("Ability");
 
   useEffect(() => {
     if (process.env.REACT_APP_oneSignalAppId) {
@@ -76,20 +73,14 @@ const App = () => {
             <Route path="/trainer/groups" element={<ManageGroupsProvider />} />
             <Route path="/trainer/groups/:id" element={<GroupInformationProvider />} />
 
-            <Can I="view" an="training">
-              <Route path="/training" element={<EventScreenProvider />} />
-              <Route path="/training/event/:selectedEventId" element={<EventInformationProvider />} />
-            </Can>
-            <Can I="edit" an="training">
-              <Route path="/training/create" element={<CreateEventProvider />} />
-            </Can>
+            <Route path="/training" element={<EventScreenProvider />} />
+            <Route path="/training/event/:selectedEventId" element={<EventInformationProvider />} />
+            <Route path="/training/create" element={<CreateEventProvider />} />
 
             <Route path='/admin/drinks' element={<AdminDrinkListProvider />} />
 
             <Route path="/admin/drinks/history" element={<AdminHistoryScreenProvider />} />
-            <Can I={"edit"} an='payments'>
-              <Route path='/admin/drinks/payments' element={<PaymentsPendingAdmin />} />
-            </Can>
+            <Route path='/admin/drinks/payments' element={<PaymentsPendingAdmin />} />
             <Route path='/admin/drinks/stocks' element={<DrinkStockUpdateScreen />} />
             <Route path='/admin/drinks/analyze' element={<AnalyzeDrinkStockHistoryProvider />} />
             <Route path='/admin/users' element={<AdminUserListProvider />} />

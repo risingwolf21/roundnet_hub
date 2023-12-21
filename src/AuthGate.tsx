@@ -48,7 +48,8 @@ const AuthGate = ({ children }: Props) => {
                             email: session.user.email,
                             displayName: session.user.user_metadata.displayName,
                             role: res.data.role,
-                            verified: res.data.verified
+                            verified: res.data.verified,
+                            permissions: res.data.permissions,
                         } as User;
                         if (!container.isBound("IAdminDrinksRepository"))
                             container.bind<IAdminDrinksRepository>("IAdminDrinksRepository").toDynamicValue(() => {

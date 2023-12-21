@@ -5,37 +5,43 @@ import { withTranslation } from 'react-i18next';
 import CustomAppBar from "./AppBar";
 import { TFunction } from "i18next";
 import React from "react";
+import { AbilityType, Can } from "src/utils/PermissionService";
 
 const tabs = [
     {
         translationKey: "account",
         navigateTo: "/user",
         icon: <AccountCircle />,
-        avatarColor: "#88AEBF"
+        avatarColor: "#88AEBF",
+        ability: "user"
     },
     {
         translationKey: "payment",
         navigateTo: "/payments",
         icon: <Euro />,
-        avatarColor: "#88AEBF"
+        avatarColor: "#88AEBF",
+        ability: "payments"
     },
     {
         translationKey: "history",
         navigateTo: "/history",
         icon: <History />,
-        avatarColor: "#88AEBF"
+        avatarColor: "#88AEBF",
+        ability: "history"
     },
     {
         translationKey: "keys",
         navigateTo: "/keys",
         icon: <Key />,
-        avatarColor: "#88AEBF"
+        avatarColor: "#88AEBF",
+        ability: "keyFinder"
     },
     {
         translationKey: "notifications",
         navigateTo: "/notifications",
         icon: <Notifications />,
-        avatarColor: "#88AEBF"
+        avatarColor: "#88AEBF",
+        ability: "notifications"
     }
 ]
 
@@ -48,14 +54,16 @@ const Browse = ({ t }: { t: TFunction }) => {
         <List>
             {
                 tabs.map(x => {
-                    return <ListItem key={x.translationKey} onClick={() => navigate(x.navigateTo)} sx={{ mt: 1 }}>
-                        <ListItemAvatar>
-                            <Avatar sx={{ background: x.avatarColor, width: 40, height: 40, borderRadius: 2 }}>
-                                {x.icon}
-                            </Avatar>
-                        </ListItemAvatar>
-                        <ListItemText primary={t("browse." + x.translationKey)} />
-                    </ListItem>
+                    return <Can not I="view" an={x.ability as AbilityType}>
+                        <ListItem key={x.translationKey} onClick={() => navigate(x.navigateTo)} sx={{ mt: 1 }}>
+                            <ListItemAvatar>
+                                <Avatar sx={{ background: x.avatarColor, width: 40, height: 40, borderRadius: 2 }}>
+                                    {x.icon}
+                                </Avatar>
+                            </ListItemAvatar>
+                            <ListItemText primary={t("browse." + x.translationKey)} />
+                        </ListItem>
+                    </Can>
                 })
             }
             <ListItem key={"appVersion"} dense>

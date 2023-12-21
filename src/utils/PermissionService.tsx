@@ -44,6 +44,8 @@ export function defineAbilityFor(permissions: Permissions[]) {
         cannot(split[0] as Actions, split[1] as AbilityType);
     });
 
+    console.log(permissions);
+    console.log(permissionsArray.filter(x => !permissions.includes(x)));
     permissions.forEach(each => {
         var split = each.split(";");
         can(split[0] as Actions, split[1] as AbilityType);
