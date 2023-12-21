@@ -47,20 +47,20 @@ export interface Database {
       }
       event_attendance_user_mapping: {
         Row: {
-          created_at: string
           event: number
+          lastUpdate: string
           state: Database["public"]["Enums"]["EventAttendance"]
           user: string
         }
         Insert: {
-          created_at?: string
           event: number
+          lastUpdate?: string
           state?: Database["public"]["Enums"]["EventAttendance"]
           user: string
         }
         Update: {
-          created_at?: string
           event?: number
+          lastUpdate?: string
           state?: Database["public"]["Enums"]["EventAttendance"]
           user?: string
         }
@@ -163,6 +163,7 @@ export interface Database {
       }
       events: {
         Row: {
+          answerDeadline: string | null
           created_at: string
           description: string
           end_at: string | null
@@ -170,6 +171,7 @@ export interface Database {
           id: number
           isCancelled: boolean
           key: string
+          maxAttendees: number
           meetingDateTime: string | null
           place: Json | null
           recurrence: Database["public"]["Enums"]["EventRecurrence"]
@@ -177,6 +179,7 @@ export interface Database {
           title: string
         }
         Insert: {
+          answerDeadline?: string | null
           created_at?: string
           description?: string
           end_at?: string | null
@@ -184,6 +187,7 @@ export interface Database {
           id?: number
           isCancelled?: boolean
           key?: string
+          maxAttendees?: number
           meetingDateTime?: string | null
           place?: Json | null
           recurrence?: Database["public"]["Enums"]["EventRecurrence"]
@@ -191,6 +195,7 @@ export interface Database {
           title?: string
         }
         Update: {
+          answerDeadline?: string | null
           created_at?: string
           description?: string
           end_at?: string | null
@@ -198,6 +203,7 @@ export interface Database {
           id?: number
           isCancelled?: boolean
           key?: string
+          maxAttendees?: number
           meetingDateTime?: string | null
           place?: Json | null
           recurrence?: Database["public"]["Enums"]["EventRecurrence"]
@@ -514,7 +520,7 @@ export interface Database {
       [_ in never]: never
     }
     Enums: {
-      EventAttendance: "Declined" | "Attending" | "Unanswered"
+      EventAttendance: "Declined" | "Attending" | "Unanswered" | "Waiting"
       EventRecurrence: "Weekly" | "Fortnightly" | "Monthly" | "None"
       PaymentState: "Open" | "Fulfilled"
       Permissions:

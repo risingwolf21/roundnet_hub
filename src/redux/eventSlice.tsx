@@ -190,10 +190,10 @@ export const eventSlice = createSlice({
       .addCase(updateAttendanceAsync.pending, (state: EventSliceState, action) => {
         let attendanceEntry = {
           event: toInteger(action.meta.arg.eventId),
-          user: { displayName: action.meta.arg.user.displayName, userId: action.meta.arg.user.userId },
+          user: action.meta.arg.user,
           state: action.meta.arg.state,
-          userId: "",
-          created_at: formatDateToDatabase(moment())
+          userId: action.meta.arg.user.userId,
+          lastUpdate: formatDateToDatabase(moment())
         } as FullAttendance;
         let index = state.items.findIndex(x => x.id === toInteger(action.meta.arg.eventId));
 
@@ -209,12 +209,10 @@ export const eventSlice = createSlice({
         }
       })
       .addCase(updateAttendanceAsync.fulfilled, (state: EventSliceState, action) => {
-        updateAttendanceRevert(state, null, toInteger(action.meta.arg.eventId), action.meta.arg.user.displayName ?? "Anon",
-          action.meta.arg.user.userId, action.meta.arg.state)
+        updateAttendanceRevert(state, null, toInteger(action.meta.arg.eventId), action.meta.arg.user, action.meta.arg.state)
       })
       .addCase(updateAttendanceAsync.rejected, (state: EventSliceState, action) => {
-        updateAttendanceRevert(state, "rejected", toInteger(action.meta.arg.eventId), action.meta.arg.user.displayName ?? "Anon",
-          action.meta.arg.user.userId, action.meta.arg.state)
+        updateAttendanceRevert(state, "rejected", toInteger(action.meta.arg.eventId), action.meta.arg.user, action.meta.arg.state)
       })
 
       .addCase(upsertCommentToEventAsync.pending, (state: EventSliceState, action) => {
@@ -276,24 +274,24 @@ const upsertCommentRevert = (state: EventSliceState, eventId: number, userId: st
   }
 }
 
-const updateAttendanceRevert = (state: EventSliceState, error: string | null, eventId: number, displayName: string, userId: string,
+const updateAttendanceRevert = (state: EventSliceState, error: string | null, eventId: number, user: User,
   oldAttendance: EventAttendance) => {
   // Reset to oldState because there was an error updating
   if (error) {
     state.error = error;
     let attendanceEntry = {
       event: eventId,
-      user: { displayName: displayName, userId: userId },
-      userId: userId,
+      userId: user.userId,
+      user: user,
       state: oldAttendance,
-      created_at: formatDateToDatabase(moment())
+      lastUpdate: formatDateToDatabase(moment())
     } as FullAttendance;
     let index = state.items.findIndex(x => x.id === eventId);
 
     if (index !== -1) {
       state.items[index].userAttendance = oldAttendance;
 
-      let attendanceIndex = state.items[index].attendance.findIndex(x => x.user.userId === userId);
+      let attendanceIndex = state.items[index].attendance.findIndex(x => x.user.userId === user.userId);
       if (attendanceIndex !== -1) {
         state.items[index].attendance[attendanceIndex] = attendanceEntry
       } else {

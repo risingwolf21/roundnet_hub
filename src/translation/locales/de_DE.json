@@ -26,6 +26,11 @@
             "titleTooShort": "Der Titel des Events muss aus mindestens 6 Zeichen bestehen",
             "descriptionEmpty": "Die Beschreibung des Events darf nicht leer sein",
             "startDateCannotBeNull": "Die Startzeit des Events darf nicht leer sein"
+        },
+        "information": {
+            "startTime": "Startet um {{ startTime, HH:mm }}",
+            "startTimeAndEndTime": "Startet um {{ startTime, HH:mm }} und endet um {{ endTime, HH:mm }}",
+            "meetTime": "Treffen: {{ meetTime, ccc. dd.MM 'um' HH:mm }}"
         }
     },
     "feature_not_available": "Diese Funktion ist noch nicht bereit. Versuche es später erneut!"

@@ -53,10 +53,10 @@ export type FullEvent = Event & {
     groups: Group[]
 }
 
-export type FullAttendance = Attendance & {
+export type FullAttendance = Modify<Attendance,{
     user: User,
     userId: string
-}
+}>
 
 export type SimpleUser = {
     displayName: string,

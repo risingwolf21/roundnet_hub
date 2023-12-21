@@ -113,7 +113,7 @@ class SupabaseEventRepository extends SupabaseRepository implements IEventReposi
 
     async fetchEventAttendance(eventId: number): Promise<PostgrestSingleResponse<FullAttendance[]>> {
         return this.client.from("event_attendance_user_mapping")
-            .select("user(userId, displayName), event, state")
+            .select("user(userId, displayName), *")
             .eq("event", eventId)
             .returns<FullAttendance[]>();
     }
