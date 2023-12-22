@@ -30,7 +30,8 @@
         "information": {
             "startTime": "Startet um {{ startTime, HH:mm }}",
             "startTimeAndEndTime": "Startet um {{ startTime, HH:mm }} und endet um {{ endTime, HH:mm }}",
-            "meetTime": "Treffen: {{ meetTime, ccc. dd.MM 'um' HH:mm }}"
+            "meetTime": "Treffen: {{ meetTime, ccc. dd.MM 'um' HH:mm }}",
+            "answerDeadlineExceeded": "Die Anmeldung für dieses Event ist am {{ answerDeadline, dd.MM.yyyy 'um' HH:mm}} verstrichen"
         }
     },
     "feature_not_available": "Diese Funktion ist noch nicht bereit. Versuche es später erneut!"

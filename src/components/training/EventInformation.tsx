@@ -12,7 +12,7 @@ import { MapContainer, TileLayer, Marker } from "react-leaflet";
 import { DeleteEventDialog } from "../DeleteEventDialog";
 import React, { Fragment } from "react";
 import { useAppDispatch } from "../..";
-import { EventAttendance, FullEvent, User } from "../../types/supabaseTypes";
+import { EventAttendance, FullEvent, User, answerDeadlineExpired, maxAttendeesExceeded } from "../../types/supabaseTypes";
 import { RootState } from "../../redux/store";
 import { PlaceType } from "./CreateEvent";
 import { AnyAction, ThunkDispatch } from "@reduxjs/toolkit";
@@ -21,6 +21,7 @@ import { IEventRepository } from "src/repository/IEventRepository";
 import { SwipeableDialog } from "../SwipeableDialog";
 import { TFunction } from "i18next";
 import { useTranslation } from "react-i18next";
+import { format as dateFormat } from "date-fns";
 
 type EventInformationProps = {
     selectedEvent: FullEvent,
@@ -269,7 +270,8 @@ const EventInformation = ({ dispatch, selectedEvent, attendanceLoading, error, u
                     </Card>
 
                     {
-                        selectedEvent.maxAttendees <= selectedEvent.attendance.filter(x => x.state === "Attending").length && selectedEvent.userAttendance !== "Waiting" && <Alert sx={{ mt: 2 }} severity="info">
+                        selectedEvent.maxAttendees <= selectedEvent.attendance.filter(x => x.state === "Attending").length && selectedEvent.userAttendance !== "Waiting" && selectedEvent.userAttendance !== "Attending" &&
+                        <Alert sx={{ mt: 2 }} severity="info">
                             <AlertTitle>Warteliste</AlertTitle>
                             Die maximale Anzahl der Teilnehmer ist erreicht. Du kannst trotzdem der Warteliste beitreten.
                             <Button sx={{ alignContent: "end" }} variant="contained" onClick={() => updateAttendance("Waiting", selectedEvent.userAttendance)}>
@@ -283,6 +285,16 @@ const EventInformation = ({ dispatch, selectedEvent, attendanceLoading, error, u
                             <AlertTitle>Warteliste Platz ({selectedEvent.attendance.filter(x => x.state === "Waiting").sort((a, b) => new Date(b.lastUpdate).getTime() - new Date(a.lastUpdate).getTime()).findIndex(x => x.user.userId === user.userId) + 1}
                                 /{selectedEvent.attendance.filter(x => x.state === "Waiting").length})</AlertTitle>
                             Du bist in der Warteschlange für dieses Event
+                            <Button sx={{ alignContent: "end" }} variant="contained" onClick={() => updateAttendance("Declined", selectedEvent.userAttendance)}>
+                                Verlassen
+                            </Button>
+                        </Alert>
+                    }
+
+                    {
+                        answerDeadlineExpired(selectedEvent) && selectedEvent.answerDeadline && <Alert sx={{ mt: 2 }} severity="info">
+                            <AlertTitle>Anmeldung abgelaufen</AlertTitle>
+                            {t("events.information.answerDeadlineExceeded", { answerDeadline: new Date(selectedEvent.answerDeadline) })}
                         </Alert>
                     }
 
@@ -300,7 +312,7 @@ const EventInformation = ({ dispatch, selectedEvent, attendanceLoading, error, u
                                     </ListItemAvatar>
                                     <ListItemText primary={(selectedEvent.attendance.filter(x => x.state === "Attending").length) + " zusagen"} />
                                     <ListItemSecondaryAction>
-                                        <IconButton onClick={() => updateAttendance("Attending", selectedEvent.userAttendance)} disabled={selectedEvent.isCancelled || selectedEvent.maxAttendees <= selectedEvent.attendance.filter(x => x.state === "Attending").length}>
+                                        <IconButton onClick={() => updateAttendance("Attending", selectedEvent.userAttendance)} disabled={selectedEvent.isCancelled || maxAttendeesExceeded(selectedEvent) || answerDeadlineExpired(selectedEvent)}>
                                             {
                                                 selectedEvent.userAttendance === "Attending"
                                                     ? <ThumbUpAlt fontSize="inherit" sx={{ fontSize: "28px", color: "green" }} />

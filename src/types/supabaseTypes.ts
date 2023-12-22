@@ -1,3 +1,4 @@
+import { isBefore } from "date-fns";
 import { Database } from "src/types/supabase";
 
 export type Drink = Database["public"]["Tables"]["drink"]["Row"];
@@ -53,7 +54,17 @@ export type FullEvent = Event & {
     groups: Group[]
 }
 
-export type FullAttendance = Modify<Attendance,{
+export function answerDeadlineExpired(x: FullEvent) {
+    if (!x.answerDeadline)
+        return false;
+    return isBefore(x.answerDeadline, Date.now());
+}
+
+export function maxAttendeesExceeded(x: FullEvent) {
+    return x.attendance.filter(y => y.state === "Attending").length >= x.maxAttendees;
+}
+
+export type FullAttendance = Modify<Attendance, {
     user: User,
     userId: string
 }>

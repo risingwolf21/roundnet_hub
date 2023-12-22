@@ -2,7 +2,7 @@ import { ThumbDownAlt, ThumbDownOffAlt, ThumbUpAlt, ThumbUpOffAlt } from "@mui/i
 import { Box, CircularProgress, IconButton, ListItem, ListItemAvatar, ListItemSecondaryAction, ListItemText, Typography } from "@mui/material"
 import moment from "moment"
 import React from "react"
-import { FullEvent } from "src/types/supabaseTypes"
+import { FullEvent, answerDeadlineExpired, maxAttendeesExceeded } from "src/types/supabaseTypes"
 
 export type EventItemProps = {
     attendanceUpdating: boolean,
@@ -42,7 +42,7 @@ export const EventItem = ({ event, onClick, attendEvent, declineEvent, attendanc
                                     : <ThumbDownOffAlt fontSize="inherit" sx={{ fontSize: "28px" }} />
                             }
                         </IconButton>
-                        <IconButton onClick={attendEvent} disabled={event.isCancelled}>
+                        <IconButton onClick={attendEvent} disabled={event.isCancelled || answerDeadlineExpired(event) || maxAttendeesExceeded(event)}>
                             {
                                 event.userAttendance === "Attending"
                                     ? <ThumbUpAlt fontSize="inherit" sx={{ fontSize: "28px", color: "green" }} />
