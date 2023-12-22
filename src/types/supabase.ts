@@ -538,6 +538,13 @@ export interface Database {
         | "edit;payments"
         | "edit;user"
         | "view;keyFinder"
+        | "use;user"
+        | "view;user"
+        | "delete;user"
+        | "edit;keyFinder"
+        | "delete;keyFinder"
+        | "view;notifications"
+        | "edit;notifications"
       PermissionsOld: "Admin" | "Tester" | "Finance" | "Trainer" | "Procure"
       PermissionsOld2:
         | "canEditTraining"

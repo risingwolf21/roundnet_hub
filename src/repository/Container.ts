@@ -9,7 +9,7 @@ import { defineAbilityFor } from "src/utils/PermissionService";
 import { AbilityTuple, MongoAbility, MongoQuery } from "@casl/ability";
 
 const container = new Container();
-container.bind<MongoAbility<AbilityTuple, MongoQuery>>("Ability").toDynamicValue(() => defineAbilityFor([]));
+container.bind<MongoAbility<AbilityTuple, MongoQuery>>("Ability").toDynamicValue(() => defineAbilityFor([], null));
 container.bind<SupabaseClient<Database>>("SupabaseClient").toDynamicValue(() => supabase);
 container.bind<IDrinkRepository>("IDrinkRepository").toDynamicValue(() => new SupabaseDrinkRepository(supabase)).inSingletonScope()
 container.bind<IEventRepository>("IEventRepository").toDynamicValue(() => new SupabaseEventRepository(supabase)).inSingletonScope()

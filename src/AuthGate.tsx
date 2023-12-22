@@ -31,7 +31,7 @@ type Props = {
 const AuthGate = ({ children }: Props) => {
 
     const { user } = useSelector((state: RootState) => state.application);
-    const [ability, setAbility] = useState(defineAbilityFor([]));
+    const [ability, setAbility] = useState(defineAbilityFor([], null));
 
     const client = useClient();
     const dispatch = useDispatch();
@@ -73,7 +73,7 @@ const AuthGate = ({ children }: Props) => {
                         else if (user.role === "admin")
                             container.rebind<IAdminUsersRepository>("IAdminUsersRepository").toDynamicValue(() => new SupabaseAdminUsersRepository(supabaseAdmin));
 
-                        setAbility(defineAbilityFor(user.permissions ?? []))
+                        setAbility(defineAbilityFor(user.permissions ?? [], user.role))
 
                         dispatch(onUserChange(user));
                     }
@@ -84,7 +84,7 @@ const AuthGate = ({ children }: Props) => {
                 if (container.isBound("IAdminDrinksRepository"))
                     container.rebind<IAdminDrinksRepository>("IAdminDrinksRepository").toDynamicValue(() => new EmptyAdminDrinksRepository());
 
-                setAbility(defineAbilityFor([]))
+                setAbility(defineAbilityFor([], "user"))
 
                 dispatch(onUserChange(null));
                 navigate("/login", { replace: true });
@@ -103,25 +103,27 @@ const AuthGate = ({ children }: Props) => {
         <Route key={"forgot-password"} path='/forgot-password' element={<ForgotPasswordScreen />} />
     ];
 
+    var result;
+
     if (!user) {
-        return <Routes>
+        result = <Routes>
             {
                 authenticationRoutes
             }
         </Routes>
-    }
-
-    if (!user.verified) {
-        return <Routes>
+    } else if (!user.verified) {
+        result = <Routes>
             <Route key={"not-verified"} path='/not-verified' element={<NotVerifiedScreen />} />
             <Route key={"*"} path="*" element={<Navigate replace to={"/not-verified"} />} />
             <Route key={"/"} path='/' element={<Navigate replace to={"/not-verified"} />} />
             <Route path="/user" element={<UserScreen />} />
         </Routes>
+    } else {
+        result = children;
     }
 
     return <AbilityContext.Provider value={ability}>
-        {children}
+        {result}
     </AbilityContext.Provider>
 }
 export default AuthGate;

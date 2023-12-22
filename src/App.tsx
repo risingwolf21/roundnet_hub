@@ -29,11 +29,16 @@ import { KeyHolderScreenProvider } from './components/KeyHolderScreen';
 import OneSignal from 'react-onesignal';
 import { NotificationsScreen } from './components/NotificationsScreen';
 import { useServiceWorker } from './hooks/useServiceWorker';
-import { Can } from './utils/PermissionService';
+import { AbilityContext, Can } from './utils/PermissionService';
+import { useAbility } from '@casl/react';
 
 const App = () => {
 
   const { isUpdateAvailable, updateServiceWorker } = useServiceWorker();
+  const { can } = React.useContext(AbilityContext);
+  const ability = React.useContext(AbilityContext);
+
+  console.log(ability.relevantRuleFor("view", "history"));
 
   useEffect(() => {
     if (process.env.REACT_APP_oneSignalAppId) {
@@ -73,7 +78,9 @@ const App = () => {
             <Route path="/trainer/groups" element={<ManageGroupsProvider />} />
             <Route path="/trainer/groups/:id" element={<GroupInformationProvider />} />
 
-            <Route path="/training" element={<EventScreenProvider />} />
+            {
+              can("view", "history") && <Route path="/training" element={<EventScreenProvider />} />
+            }
             <Route path="/training/event/:selectedEventId" element={<EventInformationProvider />} />
             <Route path="/training/create" element={<CreateEventProvider />} />
 
