@@ -8,6 +8,19 @@ import React from "react";
 import { RootState } from "../../redux/store";
 import { TFunction } from "i18next";
 import { AlertSnackbar } from "../AlertSnackbar";
+import { Ability, Actions, Can } from "src/utils/PermissionService";
+import { UserRole } from "src/types/supabaseTypes";
+
+type EntryType = {
+    translationKey: string
+    navigateTo: string
+    icon: React.ReactElement
+    secondaryIcon: React.ReactElement
+    role: UserRole
+    avatarColor: string
+    action: Actions
+    ability: Ability[1]
+}
 
 const entries = [
     {
@@ -16,7 +29,9 @@ const entries = [
         icon: <Euro />,
         secondaryIcon: <AdminPanelSettings sx={{ color: "rgba(0,0,0,0.54)" }} />,
         role: "finance",
-        avatarColor: "#88AEBF"
+        avatarColor: "#88AEBF",
+        action: "edit",
+        ability: "payments"
     },
     {
         translationKey: "manageDrinks",
@@ -24,7 +39,9 @@ const entries = [
         icon: <Liquor />,
         secondaryIcon: <AdminPanelSettings sx={{ color: "rgba(0,0,0,0.54)" }} />,
         role: "procure",
-        avatarColor: "#88AEBF"
+        avatarColor: "#88AEBF",
+        action: "edit",
+        ability: "drink"
     },
     {
         translationKey: "manageDrinkStocks",
@@ -32,7 +49,9 @@ const entries = [
         icon: <Liquor />,
         secondaryIcon: <AdminPanelSettings sx={{ color: "rgba(0,0,0,0.54)" }} />,
         role: "procure",
-        avatarColor: "#88AEBF"
+        avatarColor: "#88AEBF",
+        action: "edit",
+        ability: "drink"
     },
     {
         translationKey: "analyzeDrinkStocks",
@@ -40,7 +59,9 @@ const entries = [
         icon: <ShowChart />,
         secondaryIcon: <AdminPanelSettings sx={{ color: "rgba(0,0,0,0.54)" }} />,
         role: "procure",
-        avatarColor: "#88AEBF"
+        avatarColor: "#88AEBF",
+        action: "edit",
+        ability: "drink"
     },
     {
         translationKey: "manageUsers",
@@ -48,7 +69,9 @@ const entries = [
         icon: <Group />,
         secondaryIcon: <AdminPanelSettings sx={{ color: "rgba(0,0,0,0.54)" }} />,
         role: "admin",
-        avatarColor: "#88AEBF"
+        avatarColor: "#88AEBF",
+        action: "edit",
+        ability: "user"
     },
     {
         translationKey: "completeHistory",
@@ -56,7 +79,9 @@ const entries = [
         icon: <History />,
         secondaryIcon: <AdminPanelSettings sx={{ color: "rgba(0,0,0,0.54)" }} />,
         role: "admin",
-        avatarColor: "#88AEBF"
+        avatarColor: "#88AEBF",
+        action: "edit",
+        ability: "history"
     },
     {
         translationKey: "manageGroups",
@@ -64,9 +89,11 @@ const entries = [
         icon: <GroupOutlined />,
         secondaryIcon: <AdminPanelSettings sx={{ color: "rgba(0,0,0,0.54)" }} />,
         role: "trainer",
-        avatarColor: "#88AEBF"
+        avatarColor: "#88AEBF",
+        action: "edit",
+        ability: "groups"
     }
-]
+] as EntryType[];
 
 const BrowseAdmin = ({ t }: { t: TFunction }) => {
 
@@ -82,16 +109,18 @@ const BrowseAdmin = ({ t }: { t: TFunction }) => {
         <List>
             {
                 entries.filter(x => x.role === user.role || user.role === "admin").map(x => {
-                    return <ListItemButton key={x.translationKey} onClick={() => navigate(x.navigateTo)} sx={{ mt: 1 }}>
-                        <ListItemAvatar>
-                            <Badge color="secondary" variant="dot" badgeContent="  " invisible={(x.translationKey !== "manageUsers" || !hasNotVerifiedUsers)}>
-                                <Avatar sx={{ background: x.avatarColor, width: 40, height: 40, borderRadius: 2 }}>
-                                    {x.icon}
-                                </Avatar>
-                            </Badge>
-                        </ListItemAvatar>
-                        <ListItemText primary={t("browse." + x.translationKey)} />
-                    </ListItemButton>
+                    return <Can I={x.action} an={x.ability}>
+                        <ListItemButton key={x.translationKey} onClick={() => navigate(x.navigateTo)} sx={{ mt: 1 }}>
+                            <ListItemAvatar>
+                                <Badge color="secondary" variant="dot" badgeContent="  " invisible={(x.translationKey !== "manageUsers" || !hasNotVerifiedUsers)}>
+                                    <Avatar sx={{ background: x.avatarColor, width: 40, height: 40, borderRadius: 2 }}>
+                                        {x.icon}
+                                    </Avatar>
+                                </Badge>
+                            </ListItemAvatar>
+                            <ListItemText primary={t("browse." + x.translationKey)} />
+                        </ListItemButton>
+                    </Can>
                 })
             }
         </List>

@@ -1,13 +1,14 @@
 import React, { FormEvent, useEffect, useState } from "react";
 import { AppBar, Avatar, Button, Checkbox, Collapse, Dialog, DialogActions, DialogContent, DialogTitle, Divider, IconButton, List, ListItem, ListItemAvatar, ListItemButton, ListItemSecondaryAction, ListItemText, ListSubheader, Radio, TextField, Toolbar, Typography } from "@mui/material"
 import { Box } from "@mui/system";
-import { AccountCircle, Close, Email, ExpandLess, ExpandMore, FiberManualRecord, ManageAccounts, Verified } from "@mui/icons-material";
+import { AccountCircle, Close, Edit, Email, ExpandLess, ExpandMore, FiberManualRecord, ManageAccounts, Verified } from "@mui/icons-material";
 import { useClient } from "react-supabase";
 import { SlideUpTransition } from "../../utils";
-import { FullHistory, Group, User, UserRole, UserWithGroups } from "../../types/supabaseTypes";
+import { FullHistory, Group, Permissions, User, UserRole, UserWithGroups } from "../../types/supabaseTypes";
 import { useDependency } from "../../hooks/useDependency";
 import { IDrinkRepository } from "../../repository/IDrinkRepository";
 import moment from "moment";
+import { UserPermissionsDialog } from "./UserPermissionDialog";
 
 type EditUserDialogProps = {
     user: UserWithGroups,
@@ -21,16 +22,19 @@ export type UserEdited = {
     displayName: string,
     verified: boolean,
     role: UserRole,
-    userId: string
+    userId: string,
+    permissions: Permissions[]
 }
 
 const EditUserDialog = ({ user, open, handleClose, onUserEditFinished, deleteUser }: EditUserDialogProps) => {
 
     const [userRoleCollapseOpen, setUserCollapseOpen] = useState(false);
+    const [editUserPermissionsOpen, setEditUserPermissionsOpen] = useState(false);
     const [role, setRole] = useState<UserRole>(user.role);
     const drinksRepository = useDependency<IDrinkRepository>("IDrinkRepository");
     const [verified, setVerified] = useState(user.verified)
     const [deleteUserOpen, setDeleteUserOpen] = useState(false);
+    const [userPermissions, setUserPermissions] = useState<Permissions[]>([]);
     const [userInfo, setUserInfo] = useState({ openAmount: 0 });
     const [drinksForUser, setDrinksForUser] = useState<FullHistory[]>([]);
     const client = useClient();
@@ -46,6 +50,7 @@ const EditUserDialog = ({ user, open, handleClose, onUserEditFinished, deleteUse
         }
         setRole(user.role);
         setVerified(user.verified);
+        setUserPermissions(user.permissions ?? []);
     }, [user, client, drinksRepository]);
 
     const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
@@ -57,7 +62,8 @@ const EditUserDialog = ({ user, open, handleClose, onUserEditFinished, deleteUse
             userId: user.userId,
             displayName: data.get("displayName"),
             role,
-            verified
+            verified,
+            permissions: userPermissions
         } as UserEdited);
     }
 
@@ -152,9 +158,10 @@ const EditUserDialog = ({ user, open, handleClose, onUserEditFinished, deleteUse
                                 <ManageAccounts />
                             </Avatar>
                         </ListItemAvatar>
-                        <ListItemText secondary={"Rechte"} primary={role} />
-                        <ListItemSecondaryAction>
-                            {userRoleCollapseOpen ? <ExpandLess /> : <ExpandMore />}
+                        <ListItemText secondary={userPermissions.length + " Berechtigungen"} primary={role} />
+                        <ListItemSecondaryAction onClick={() => setEditUserPermissionsOpen(true)}>
+                            {/* {userRoleCollapseOpen ? <ExpandLess /> : <ExpandMore />} */}
+                            <Edit />
                         </ListItemSecondaryAction>
                     </ListItemButton>
                     <Collapse in={userRoleCollapseOpen} timeout="auto" unmountOnExit>
@@ -205,6 +212,14 @@ const EditUserDialog = ({ user, open, handleClose, onUserEditFinished, deleteUse
                 </Box>
             </Box>
         </Box>
+        <UserPermissionsDialog
+            open={editUserPermissionsOpen}
+            handleClose={() => setEditUserPermissionsOpen(false)}
+            handleSubmit={(permissions) => {
+                setUserPermissions(permissions);
+                setEditUserPermissionsOpen(false);
+            }}
+            permissions={user.permissions ?? []} />
         <Dialog open={deleteUserOpen}>
             <DialogTitle>
                 {`Benuter ${user.displayName} löschen?`}

@@ -38,7 +38,7 @@ export class SupabaseAdminUsersRepository extends SupabaseRepository implements 
         }
         return this.client
             .from(TABLE_USER)
-            .update({ displayName: user.displayName, role: user.role, verified: user.verified })
+            .update({ displayName: user.displayName, role: user.role, verified: user.verified, permissions: user.permissions })
             .eq("userId", user.userId);
     }
 

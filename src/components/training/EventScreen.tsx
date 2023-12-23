@@ -14,11 +14,16 @@ import { useDependency } from "../../hooks/useDependency";
 import { IEventRepository } from "../../repository/IEventRepository";
 import { EventItem } from "./EventItem";
 import { AlertSnackbar } from "../AlertSnackbar";
+import { AbilityContext, useAppAbility } from "src/utils/PermissionService";
 
 export const EventScreenProvider = () => {
     const { items: events, userGroups, loading, error, endReached } = useSelector((state: RootState) => state.events);
     const { user } = useSelector((state: RootState) => state.application);
     const repository = useDependency<IEventRepository>("IEventRepository");
+    const { cannot } = useAppAbility();
+
+    if (cannot("view", "training"))
+        return <AlertSnackbar close={() => { }} alertInfo={{ message: "No permission to view this screen", severity: "error" }} />
 
     if (!user || !repository)
         return <AlertSnackbar close={() => { }} alertInfo={{ message: "Fatal error occured. Repository or user was null!", severity: "error" }} />

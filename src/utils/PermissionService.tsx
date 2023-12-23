@@ -1,20 +1,23 @@
 import { Permissions, User, UserRole } from "src/types/supabaseTypes";
 import { AbilityBuilder, AbilityTuple, AnyAbility, MongoAbility, MongoQuery, PureAbility, SubjectType, createMongoAbility } from '@casl/ability';
 import { createContext } from 'react';
-import { createContextualCan } from '@casl/react';
+import { createContextualCan, useAbility } from '@casl/react';
 
 
-type Actions = 'use' | 'edit' | 'delete' | 'view'
-export type AbilityType = 'drink' | 'training' | 'payments' | 'user' | 'groups' | 'keyFinder' | 'history' | 'notifications'
-type Ability =
-    | [Actions, AbilityType]
-    | [Actions, AbilityType]
-    | [Actions, AbilityType]
-    | [Actions, AbilityType]
-    | [Actions, AbilityType]
-    | [Actions, AbilityType]
+export type Actions = 'use' | 'edit' | 'delete' | 'view'
+export type Ability =
+    | [Actions, 'drink']
+    | [Actions, 'training']
+    | [Actions, 'payments']
+    | [Actions, 'user']
+    | [Actions, 'groups']
+    | [Actions, 'keyFinder']
+    | [Actions, 'history']
+    | [Actions, 'notifications']
+    | [Actions, 'browse']
+    | [Actions, 'browseAdmin']
 
-const permissionsArray: Permissions[] = [
+export const allPermissions: Permissions[] = [
     "use;drink",
     "edit;drink",
     "delete;drink",
@@ -36,27 +39,55 @@ const permissionsArray: Permissions[] = [
     "delete;keyFinder"
 ];
 
+export const userPermissions: Permissions[] = [
+    "use;drink",
+    "view;drink",
+    "use;training",
+    "view;training",
+    "view;groups",
+    "use;user",
+    "view;user",
+    "view;keyFinder"
+]
+
+export const financePermissions: Permissions[] = [...userPermissions, "edit;payments"];
+export const procurePermissions: Permissions[] = [...userPermissions, "edit;drink", "delete;drink"];
+export const trainerPermissions: Permissions[] = [...userPermissions, "edit;training", "delete;training", "edit;groups"];
+
 export type AppAbility = PureAbility<Ability, MongoQuery>
 
-export const AbilityContext = createContext<MongoAbility<AbilityTuple, MongoQuery>>(new PureAbility());
+export const AbilityContext = createContext<MongoAbility<Ability, MongoQuery>>((null as unknown) as AppAbility);
 export const Can = createContextualCan(AbilityContext.Consumer);
+export const useAppAbility = () => {
+    const ability = useAbility(AbilityContext);
+
+    ability.can = ability.can.bind(ability);
+    ability.cannot = ability.cannot.bind(ability);
+
+    return ability;
+}
 
 export function defineAbilityFor(permissions: Permissions[], role: UserRole | null) {
     const { can, cannot, rules } = new AbilityBuilder<AppAbility>(createMongoAbility);
 
-
-    permissionsArray.filter(x => !permissions.includes(x)).forEach(each => {
+    allPermissions.filter(x => !permissions.includes(x)).forEach(each => {
         var split = each.split(";");
-        cannot(split[0] as Actions, split[1] as AbilityType);
+        cannot(split[0] as Actions, split[0] as Ability[1]);
     });
 
-    can("view", "payments");
-    can("view", "history");
+    if (role) {
+        can("view", "payments");
+        can("view", "history");
+        can("view", "browse");
+    }
+    if (role !== "user") {
+        can("view", "browseAdmin");
+    }
 
-    // permissions.forEach(each => {
-    //     var split = each.split(";");
-    //     can(split[0] as Actions, split[1] as AbilityType);
-    // });
+    permissions.forEach(each => {
+        var split = each.split(";");
+        can(split[0] as Actions, split[1] as Ability[1]);
+    });
 
-    return createMongoAbility(rules);
+    return createMongoAbility<Ability, MongoQuery>(rules);
 };

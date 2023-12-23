@@ -4,8 +4,16 @@ import { useNavigate } from "react-router";
 import { withTranslation } from 'react-i18next';
 import CustomAppBar from "./AppBar";
 import { TFunction } from "i18next";
-import React from "react";
-import { AbilityType, Can } from "src/utils/PermissionService";
+import React, { ReactElement } from "react";
+import { Ability, Can } from "src/utils/PermissionService";
+
+type TabsType = {
+    translationKey: string
+    navigateTo: string
+    icon: ReactElement
+    avatarColor: string
+    ability: Ability[1]
+}
 
 const tabs = [
     {
@@ -43,7 +51,7 @@ const tabs = [
         avatarColor: "#88AEBF",
         ability: "notifications"
     }
-]
+] as TabsType[];
 
 const Browse = ({ t }: { t: TFunction }) => {
 
@@ -54,7 +62,7 @@ const Browse = ({ t }: { t: TFunction }) => {
         <List>
             {
                 tabs.map(x => {
-                    return <Can I="view" an={x.ability as AbilityType}>
+                    return <Can I="view" an={x.ability}>
                         <ListItem key={x.translationKey} onClick={() => navigate(x.navigateTo)} sx={{ mt: 1 }}>
                             <ListItemAvatar>
                                 <Avatar sx={{ background: x.avatarColor, width: 40, height: 40, borderRadius: 2 }}>

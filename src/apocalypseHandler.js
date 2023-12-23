@@ -1,3 +1,5 @@
+import { captureException } from "@sentry/react";
+
 window.addEventListener('error', async err => {
     // Since we are handling the error here, we must make
     // sure we log it into the console nonetheless, otherwise
@@ -18,6 +20,9 @@ window.addEventListener('error', async err => {
     // want to execute this code here because it would be unreliable
     // https://github.com/facebook/react/issues/12897#issuecomment-410036991
     if (process.env.NODE_ENV !== 'development') {
+        
+        captureException(Error(err));
+
         // We want to run this code only if we detect a new service worker
         // is getting installed or is installed but waiting to be activated.
         // This will make sure we don't run this code on a sane environment

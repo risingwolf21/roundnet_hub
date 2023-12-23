@@ -29,16 +29,12 @@ import { KeyHolderScreenProvider } from './components/KeyHolderScreen';
 import OneSignal from 'react-onesignal';
 import { NotificationsScreen } from './components/NotificationsScreen';
 import { useServiceWorker } from './hooks/useServiceWorker';
-import { AbilityContext, Can } from './utils/PermissionService';
-import { useAbility } from '@casl/react';
+import { useAppAbility } from './utils/PermissionService';
 
 const App = () => {
 
   const { isUpdateAvailable, updateServiceWorker } = useServiceWorker();
-  const { can } = React.useContext(AbilityContext);
-  const ability = React.useContext(AbilityContext);
-
-  console.log(ability.relevantRuleFor("view", "history"));
+  // const { can } = useAppAbility();
 
   useEffect(() => {
     if (process.env.REACT_APP_oneSignalAppId) {
@@ -50,6 +46,8 @@ const App = () => {
       });
     }
   }, []);
+
+  const can = (a: string, b: string) => true
 
   if (isUpdateAvailable)
     return <UpdateAvailable update={updateServiceWorker} />
@@ -75,14 +73,22 @@ const App = () => {
             <Route path="/keys" element={<KeyHolderScreenProvider />} />
             <Route path="/notifications" element={<NotificationsScreen />} />
 
-            <Route path="/trainer/groups" element={<ManageGroupsProvider />} />
-            <Route path="/trainer/groups/:id" element={<GroupInformationProvider />} />
 
             {
-              can("view", "history") && <Route path="/training" element={<EventScreenProvider />} />
+              can("edit", "groups") && <Route path="/trainer/groups" element={<ManageGroupsProvider />} />
             }
-            <Route path="/training/event/:selectedEventId" element={<EventInformationProvider />} />
-            <Route path="/training/create" element={<CreateEventProvider />} />
+            {
+              can("edit", "groups") && <Route path="/trainer/groups/:id" element={<GroupInformationProvider />} />
+            }
+            {
+              can("view", "training") && <Route path="/training" element={<EventScreenProvider />} />
+            }
+            {
+              can("view", "training") && <Route path="/training/event/:selectedEventId" element={<EventInformationProvider />} />
+            }
+            {
+              can("edit", "training") && <Route path="/training/create" element={<CreateEventProvider />} />
+            }
 
             <Route path='/admin/drinks' element={<AdminDrinkListProvider />} />
 

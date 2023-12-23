@@ -8,12 +8,14 @@ import { withTranslation } from 'react-i18next';
 import React, { useEffect } from "react";
 import { TFunction } from "i18next";
 import { RootState } from "../redux/store";
+import { Ability, Can, useAppAbility } from "src/utils/PermissionService";
 
 export type Tab = {
     translationKey: string,
     path: string,
     index: number,
-    icon: JSX.Element
+    icon: JSX.Element,
+    ability: Ability[1]
 }
 
 const defaultTabs: Tab[] = [
@@ -21,19 +23,29 @@ const defaultTabs: Tab[] = [
         translationKey: "drinks",
         path: "drinks",
         index: 0,
-        icon: <Liquor />
+        icon: <Liquor />,
+        ability: "drink"
     },
     {
         translationKey: "training",
         path: "training",
         index: 1,
-        icon: <SportsHandball />
+        icon: <SportsHandball />,
+        ability: "training"
     },
     {
         translationKey: "browse",
         path: "browse",
         index: 2,
-        icon: <List />
+        icon: <List />,
+        ability: "browse"
+    },
+    {
+        translationKey: "admin",
+        path: "browse-admin",
+        index: 3,
+        icon: <AdminPanelSettings />,
+        ability: "browseAdmin"
     }
 ];
 
@@ -41,33 +53,20 @@ const CustomBottomNavigation = ({ t }: { t: TFunction }) => {
 
     let navigate = useNavigate();
     let dispatch = useDispatch();
-    const { user } = useSelector((state: RootState) => state.application);
+    const { can } = useAppAbility();
     const { hasNotVerifiedUsers } = useSelector((state: RootState) => state.adminUsers);
     const [tabs, setTabs] = useState<Tab[]>(defaultTabs)
 
     useEffect(() => {
-        setTab(tabs.findIndex(x => "/" + x.path === window?.location?.pathname));
+        setTab(window?.location?.pathname);
     }, [tabs]);
 
-    useEffect(() => {
-        if (user && user.role !== "user") {
-            setTabs([...defaultTabs, {
-                translationKey: "admin",
-                path: "browse-admin",
-                index: 3,
-                icon: <AdminPanelSettings />
-            }])
-        } else {
-            setTabs(defaultTabs);
-        }
-    }, [user]);
+    const [tab, setTab] = useState<string>(window?.location?.pathname);
 
-    const [tab, setTab] = useState<number>(tabs.findIndex(x => "/" + x.path === window?.location?.pathname));
-
-    const handleChange = (e: SyntheticEvent<Element, Event>, newValue: any) => {
+    const handleChange = (e: SyntheticEvent<Element, Event>, newValue: string) => {
         setTab(newValue);
-        navigate(tabs[newValue].path, { replace: true });
-        dispatch(onModeChange(tabs[newValue].path));
+        navigate(newValue, { replace: true });
+        dispatch(onModeChange(newValue));
     }
 
     return <Paper sx={{ position: "fixed", bottom: 0, left: 0, right: 0 }} elevation={3}>
@@ -76,9 +75,10 @@ const CustomBottomNavigation = ({ t }: { t: TFunction }) => {
             value={tab}
             onChange={handleChange}>
             {
-                tabs.map(x => {
+                defaultTabs.filter(x => can("view", x.ability)).map(x => {
                     return <BottomNavigationAction
-                        key={x.translationKey}
+                        value={x.path}
+                        aria-selected={tab === x.path}
                         label={t("navigation." + x.translationKey)}
                         icon={<Badge color="secondary" variant="dot" badgeContent=" " invisible={!(x.translationKey === "admin" && hasNotVerifiedUsers)}>
                             {x.icon}

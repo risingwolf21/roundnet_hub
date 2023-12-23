@@ -73,7 +73,8 @@ const AuthGate = ({ children }: Props) => {
                         else if (user.role === "admin")
                             container.rebind<IAdminUsersRepository>("IAdminUsersRepository").toDynamicValue(() => new SupabaseAdminUsersRepository(supabaseAdmin));
 
-                        setAbility(defineAbilityFor(user.permissions ?? [], user.role))
+                        var test = defineAbilityFor(user.permissions ?? [], user.role)
+                        setAbility(test)
 
                         dispatch(onUserChange(user));
                     }
@@ -84,7 +85,7 @@ const AuthGate = ({ children }: Props) => {
                 if (container.isBound("IAdminDrinksRepository"))
                     container.rebind<IAdminDrinksRepository>("IAdminDrinksRepository").toDynamicValue(() => new EmptyAdminDrinksRepository());
 
-                setAbility(defineAbilityFor([], "user"))
+                setAbility(defineAbilityFor([], null))
 
                 dispatch(onUserChange(null));
                 navigate("/login", { replace: true });
