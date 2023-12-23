@@ -157,8 +157,6 @@ const EventInformation = ({ dispatch, selectedEvent, attendanceLoading, error, u
 
     }
 
-    console.log(selectedEvent.attendance.filter(x => x.state === "Waiting"))
-
     return <Box
         sx={{
             width: "100%",
@@ -282,9 +280,8 @@ const EventInformation = ({ dispatch, selectedEvent, attendanceLoading, error, u
 
                     {
                         selectedEvent.userAttendance === "Waiting" && <Alert sx={{ mt: 2 }} severity="info">
-                            <AlertTitle>Warteliste Platz ({selectedEvent.attendance.filter(x => x.state === "Waiting").sort((a, b) => new Date(b.lastUpdate).getTime() - new Date(a.lastUpdate).getTime()).findIndex(x => x.user.userId === user.userId) + 1}
-                                /{selectedEvent.attendance.filter(x => x.state === "Waiting").length})</AlertTitle>
-                            Du bist in der Warteschlange für dieses Event
+                            <AlertTitle>{t("events.information.waitingListPlace", { place: selectedEvent.attendance.filter(x => x.state === "Waiting").sort((a, b) => new Date(b.lastUpdate).getTime() - new Date(a.lastUpdate).getTime()).findIndex(x => x.user.userId === user.userId) + 1, waitingListLength: selectedEvent.attendance.filter(x => x.state === "Waiting").length })}</AlertTitle>
+                            {t("events.information.waitingListAccepted")}
                             <Button sx={{ alignContent: "end" }} variant="contained" onClick={() => updateAttendance("Declined", selectedEvent.userAttendance)}>
                                 Verlassen
                             </Button>
@@ -293,7 +290,7 @@ const EventInformation = ({ dispatch, selectedEvent, attendanceLoading, error, u
 
                     {
                         answerDeadlineExpired(selectedEvent) && selectedEvent.answerDeadline && <Alert sx={{ mt: 2 }} severity="info">
-                            <AlertTitle>Anmeldung abgelaufen</AlertTitle>
+                            <AlertTitle>{t("events.information.answerDeadlineExceededTitle")}</AlertTitle>
                             {t("events.information.answerDeadlineExceeded", { answerDeadline: new Date(selectedEvent.answerDeadline) })}
                         </Alert>
                     }

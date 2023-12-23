@@ -25,13 +25,17 @@
             "meetingTimeBeforeStartTime": "The meetup time can not be after the start time",
             "titleTooShort": "The title of this event needs at least 6 characters",
             "descriptionEmpty": "The description of this event can not be empty",
-            "startDateCannotBeNull": "The startDate of this event can not be empty"
+            "startDateCannotBeNull": "The startDate of this event can not be empty",
+            "answerDeadlineBeforeNow": "The answer dead line can not be before now"
         },
         "information": {
             "startTime": "Starts at {{ startTime, HH:mm }}",
             "startTimeAndEndTime": "Starts at {{ startTime, HH:mm }} and ends at {{ endTime, HH:mm }}",
             "meetTime": "Meet: {{ meetTime, ccc. dd.MM 'at' HH:mm }}",
-            "answerDeadlineExceeded": "The registration for this event expired on {{ answerDeadline, MMMM dd, yyyy 'at' HH:mm}}"
+            "answerDeadlineExceeded": "The registration for this event expired on {{ answerDeadline, MMMM dd, yyyy 'at' HH:mm}}",
+            "answerDeadlineExceededTitle": "Registration period expired",
+            "waitingListPlace": "Waitlinglist Place ({{ place }} / {{ waitingListLength }})",
+            "waitingListAccepted": "You are on the waiting list for this event"
         }
     },
     "feature_not_available": "This feature is not ready yet. Try again later!"

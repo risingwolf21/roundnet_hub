@@ -73,7 +73,7 @@ export const UserPermissionsDialog = ({ open, handleClose, handleSubmit, permiss
                     <Typography sx={{ ml: 2, flex: 1 }} variant="h6" component="div">
                         Berechtigungen bearbeiten
                     </Typography>
-                    <Button color="secondary" variant="text" onClick={() => handleSubmit(selectedUserPermissions)}>
+                    <Button sx={{ color: "white" }} onClick={() => handleSubmit(selectedUserPermissions)}>
                         Speichern
                     </Button>
                 </Toolbar>

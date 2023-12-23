@@ -116,59 +116,7 @@ export const mainTheme = createTheme({
                         "minHeight": "1em"
                     }
                 }
-            },
-            "variants": [
-                {
-                    "props": {
-                        "variant": "outlined"
-                    },
-                    "style": {
-                        "color": "#6750a4",
-                        "borderColor": "#7a757f",
-                        "borderWidth": "1px",
-                        "boxShadow": "none",
-                        "&.Mui-disabled": {
-                            "borderColor": "rgba(28, 27, 30, 0.12)",
-                            "color": "rgba(28, 27, 30, 0.38)"
-                        },
-                        "&:hover": {
-                            "backgroundColor": "#eee9f2",
-                            "borderColor": "#787380"
-                        },
-                        "&:focus": {
-                            "backgroundColor": "#e7e1ed",
-                            "borderColor": "#6750a4"
-                        },
-                        "&:active": {
-                            "backgroundColor": "#e7e1ed",
-                            "borderColor": "#787181"
-                        }
-                    }
-                },
-                {
-                    "props": {
-                        "variant": "text"
-                    },
-                    "style": {
-                        "backgroundColor": "transparent",
-                        "color": "#6750a4",
-                        "boxShadow": "none",
-                        "padding": "5px 15px",
-                        "&.Mui-disabled": {
-                            "color": "rgba(28, 27, 30, 0.38)"
-                        },
-                        "&:hover": {
-                            "backgroundColor": "#eee9f2"
-                        },
-                        "&:focus": {
-                            "backgroundColor": "#e7e1ed"
-                        },
-                        "&:active": {
-                            "backgroundColor": "#e7e1ed"
-                        }
-                    }
-                }
-            ]
+            }
         },
         "MuiCard": {
             "styleOverrides": {

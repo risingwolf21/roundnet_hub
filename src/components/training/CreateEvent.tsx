@@ -1,8 +1,8 @@
 import { AppBar, Box, Button, Dialog, IconButton, Toolbar, Typography, TextField, ListItem, ListItemAvatar, ListItemText, DialogTitle, DialogContent, FormControl, FormControlLabel, RadioGroup, Radio, Divider, Checkbox, DialogActions, List, InputAdornment, Snackbar, Alert } from "@mui/material"
-import { AccessTime, Article, Close, Map } from "@mui/icons-material";
+import { AccessTime, Article, Close, Map, People } from "@mui/icons-material";
 import EventIcon from "@mui/icons-material/Event";
 import { useNavigate } from 'react-router-dom';
-import { DatePicker } from "@mui/x-date-pickers";
+import { DatePicker, DateTimePicker } from "@mui/x-date-pickers";
 import { TimePicker } from '@mui/x-date-pickers/TimePicker';
 import { FormEvent, useState } from "react";
 import moment, { Moment } from "moment";
@@ -18,6 +18,8 @@ import { useDependency } from "src/hooks/useDependency";
 import { IEventRepository } from "src/repository/IEventRepository";
 import { useSelector } from "react-redux";
 import { AlertSnackbar } from "../AlertSnackbar";
+import { isBefore } from "date-fns";
+import { toNumber } from "lodash";
 
 export type PlaceType = {
     name: string,
@@ -45,6 +47,10 @@ const CreateEvent = ({ t, eventToEdit, repository }: CreateEventProps) => {
 
     const navigate = useNavigate();
 
+    const [maxAttendees, setMaxAttendees] = useState<number>(-1);
+    const [maxAttendeesEnabled, setMaxAttendeesEnabled] = useState(false);
+    const [answerDeadline, setAnswerDeadline] = useState<Moment | null>();
+    const [answerDeadlineEnabled, setAnswerDeadlineEnabled] = useState(false);
     const [startDate, setStartDate] = useState<Moment | null>(moment());
     const [startTime, setStartTime] = useState<Moment | null>(moment());
     const [meetingTime, setMeetingTime] = useState<Moment | null>(moment());
@@ -65,6 +71,8 @@ const CreateEvent = ({ t, eventToEdit, repository }: CreateEventProps) => {
             setStopRepeatDateTime(moment(eventToEdit["end_at"]) ?? moment());
             setStopRepeatDisabled(!eventToEdit["end_at"]);
             setRepeat(eventToEdit.recurrence);
+            setAnswerDeadline(moment(eventToEdit.answerDeadline));
+            setMaxAttendees(eventToEdit.maxAttendees);
         }
     }, [eventToEdit]);
 
@@ -87,11 +95,16 @@ const CreateEvent = ({ t, eventToEdit, repository }: CreateEventProps) => {
                 startingDateTime: startingDateTime,
                 meetingDateTime: meetingDateTime,
                 recurrence: repeat,
+                maxAttendees: maxAttendeesEnabled ? maxAttendees : -1,
+                answerDeadline: answerDeadlineEnabled ? answerDeadline : null,
                 place: JSON.stringify(selectedPlace),
                 "end_at": (stopRepeatDisabled || !stopRepeatDateTime)
                     ? null
                     : stopRepeatDateTime.format("yyyy-MM-DD HH:mm:ssZ")
             } as EventInsert;
+
+            if (answerDeadline && isBefore(answerDeadline.toDate(), Date.now()))
+                throw new Error(t("events.creation.answerDeadlineBeforeNow"))
 
             if (!eventTitle || eventTitle.length < 6)
                 throw new Error(t("events.creation.titleTooShort"))
@@ -128,7 +141,7 @@ const CreateEvent = ({ t, eventToEdit, repository }: CreateEventProps) => {
 
     return <Box>
         <Box component="form" onSubmit={handleSubmit} noValidate>
-            <AppBar sx={{ position: "relative" }}>
+            <AppBar position="sticky" sx={{ position: "relative" }}>
                 <Toolbar>
                     <IconButton
                         edge="start"
@@ -186,7 +199,7 @@ const CreateEvent = ({ t, eventToEdit, repository }: CreateEventProps) => {
                     <TimePicker sx={{ width: "100%" }} views={['hours', 'minutes']} ampm={false} label="Startzeit" onChange={(val) => setStartTime(val)} value={startTime} />
                 </ListItem>
 
-                <ListItem sx={{ pt: 0, pb: 0 }}>
+                <ListItem sx={{ pt: 0, pb: 0, mb: 2 }}>
                     <ListItemAvatar />
 
                     <TimePicker sx={{ width: "100%" }} views={['hours', 'minutes']} ampm={false} label="Treffpunkt" onChange={(val) => setMeetingTime(val)} value={meetingTime} />
@@ -233,6 +246,37 @@ const CreateEvent = ({ t, eventToEdit, repository }: CreateEventProps) => {
                 <ListItem disabled={repeat === "None"} onClick={() => setStopRepeatDialogOpen(true)}>
                     <ListItemAvatar />
                     <ListItemText primary={"Wiederholung stoppen"} secondary={stopRepeatDisabled ? "Niemals" : moment(stopRepeatDateTime).format("DD MMMM yyyy")} />
+                </ListItem>
+
+                <ListItem sx={{ pt: 0, pb: 0, mb: 2 }}>
+                    <ListItemAvatar>
+                        <Checkbox sx={{ pl: 0 }} checked={answerDeadlineEnabled} onChange={() => setAnswerDeadlineEnabled(!answerDeadlineEnabled)} />
+                    </ListItemAvatar>
+
+                    <DateTimePicker disabled={!answerDeadlineEnabled} sx={{ width: "100%" }} label="Answer deadline" disablePast format="DD MMMM YYYY HH:mm" onChange={(val) => setAnswerDeadline(val)} value={answerDeadline} />
+                </ListItem>
+
+                <ListItem sx={{ pt: 0, pb: 0, mb: 2 }}>
+                    <ListItemAvatar>
+                        <Checkbox sx={{ pl: 0 }} checked={maxAttendeesEnabled} onChange={() => setMaxAttendeesEnabled(!maxAttendeesEnabled)} />
+                    </ListItemAvatar>
+
+                    <TextField
+                        fullWidth
+                        disabled={!maxAttendeesEnabled}
+                        defaultValue={eventToEdit?.maxAttendees ?? ""}
+                        id="maxAttendees"
+                        name="maxAttendees"
+                        variant="outlined"
+                        type="number"
+                        onChange={(event) =>
+                            toNumber(event.target.value) < 0
+                                ? (event.target.value = "0")
+                                : event.target.value
+                        }
+                        inputMode="numeric"
+                        label="Max number of attendees"
+                        margin="normal" />
                 </ListItem>
 
             </List>

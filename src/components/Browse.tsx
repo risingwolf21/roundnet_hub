@@ -62,7 +62,7 @@ const Browse = ({ t }: { t: TFunction }) => {
         <List>
             {
                 tabs.map(x => {
-                    return <Can I="view" an={x.ability}>
+                    return <Can I="view" an={x.ability} key={x.translationKey}>
                         <ListItem key={x.translationKey} onClick={() => navigate(x.navigateTo)} sx={{ mt: 1 }}>
                             <ListItemAvatar>
                                 <Avatar sx={{ background: x.avatarColor, width: 40, height: 40, borderRadius: 2 }}>

@@ -85,7 +85,7 @@ const EditUserDialog = ({ user, open, handleClose, onUserEditFinished, deleteUse
                     <Typography sx={{ ml: 2, flex: 1 }} variant="h6" component="div">
                         Benutzer bearbeiten
                     </Typography>
-                    <Button autoFocus color="inherit" type="submit">
+                    <Button sx={{ color: "white" }} type="submit">
                         Speichern
                     </Button>
                 </Toolbar>
@@ -189,7 +189,7 @@ const EditUserDialog = ({ user, open, handleClose, onUserEditFinished, deleteUse
                     <Divider />
                     <List subheader={<ListSubheader>Offene Getränke</ListSubheader>}>
                         {
-                            drinksForUser && drinksForUser.map((x: FullHistory) => <ListItem dense key={x.created_at}>
+                            drinksForUser && drinksForUser.map((x: FullHistory) => <ListItem dense key={x.id}>
                                 <ListItemAvatar>
                                     <Typography>{x.count} x</Typography>
                                 </ListItemAvatar>

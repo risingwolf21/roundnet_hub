@@ -12,7 +12,6 @@ export function useDependency<T>(name: string) {
                 setDependency(container.get<T>(name));
             } catch (error) {
                 let message = (error as Error).message;
-                console.log(message)
                 captureException(new Error(message), (scope) => {
                     scope.clear();
                     scope.setExtra("name", name);

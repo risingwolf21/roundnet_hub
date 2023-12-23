@@ -1,6 +1,6 @@
 {
   "name": "roundnet_karlsruhe_app",
-  "version": "1.0.19",
+  "version": "1.0.20",
   "private": true,
   "dependencies": {
     "@casl/ability": "^6.5.0",

@@ -25,13 +25,17 @@
             "meetingTimeBeforeStartTime": "Die Treffpunktzeit darf nicht nach der Startzeit liegen",
             "titleTooShort": "Der Titel des Events muss aus mindestens 6 Zeichen bestehen",
             "descriptionEmpty": "Die Beschreibung des Events darf nicht leer sein",
-            "startDateCannotBeNull": "Die Startzeit des Events darf nicht leer sein"
+            "startDateCannotBeNull": "Die Startzeit des Events darf nicht leer sein",
+            "answerDeadlineBeforeNow": "Der Anmeldezeitraum kann nicht vor dem aktuellen Datum sein"
         },
         "information": {
             "startTime": "Startet um {{ startTime, HH:mm }}",
             "startTimeAndEndTime": "Startet um {{ startTime, HH:mm }} und endet um {{ endTime, HH:mm }}",
             "meetTime": "Treffen: {{ meetTime, ccc. dd.MM 'um' HH:mm }}",
-            "answerDeadlineExceeded": "Die Anmeldung für dieses Event ist am {{ answerDeadline, dd.MM.yyyy 'um' HH:mm}} verstrichen"
+            "answerDeadlineExceeded": "Die Anmeldung für dieses Event ist am {{ answerDeadline, dd.MM.yyyy 'um' HH:mm}} verstrichen",
+            "answerDeadlineExceededTitle": "Anmeldezeitraum vorbei",
+            "waitingListPlace": "Warteliste Platz ({{ place }} / {{ waitingListLength }})",
+            "waitingListAccepted": "Du bist auf der Warteliste für dieses Event"
         }
     },
     "feature_not_available": "Diese Funktion ist noch nicht bereit. Versuche es später erneut!"
