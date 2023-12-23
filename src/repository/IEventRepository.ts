@@ -120,7 +120,7 @@ class SupabaseEventRepository extends SupabaseRepository implements IEventReposi
 
     async fetchSingleEvent(eventId: number): Promise<PostgrestSingleResponse<FullEvent>> {
         return this.client.from("events")
-            .select("*, attendance: event_attendance_user_mapping ( state , user(userId, displayName)  ), comments: event_comments ( comment, created_at, displayName, event, user ( displayName, userId))")
+            .select("*, group(*), attendance: event_attendance_user_mapping ( state , user(userId, displayName)  ), comments: event_comments ( comment, created_at, displayName, event, user ( displayName, userId))")
             .eq("id", eventId)
             .single<FullEvent>()
     }

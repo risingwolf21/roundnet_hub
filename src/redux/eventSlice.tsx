@@ -169,7 +169,7 @@ export const eventSlice = createSlice({
         state.error = null;
         let index = state.items.findIndex(x => x.id === toInteger(action.payload.eventId));
         if (index !== -1) {
-          state.items[index] = Object.assign(state.items[index], action.payload.data);
+          state.items[index] = action.payload.data as FullEvent;
         } else {
           state.items = [
             ...state.items.slice(0, index),

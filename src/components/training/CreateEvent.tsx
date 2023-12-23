@@ -1,5 +1,5 @@
-import { AppBar, Box, Button, Dialog, IconButton, Toolbar, Typography, TextField, ListItem, ListItemAvatar, ListItemText, DialogTitle, DialogContent, FormControl, FormControlLabel, RadioGroup, Radio, Divider, Checkbox, DialogActions, List, InputAdornment, Snackbar, Alert } from "@mui/material"
-import { AccessTime, Article, Close, Map, People } from "@mui/icons-material";
+import { AppBar, Box, Button, Dialog, IconButton, Toolbar, Typography, TextField, ListItem, ListItemAvatar, ListItemText, DialogTitle, DialogContent, FormControl, FormControlLabel, RadioGroup, Radio, Divider, Checkbox, DialogActions, List, InputAdornment, Snackbar, Alert, ListItemButton } from "@mui/material"
+import { AccessTime, Article, Close, FiberManualRecord, Map, People } from "@mui/icons-material";
 import EventIcon from "@mui/icons-material/Event";
 import { useNavigate } from 'react-router-dom';
 import { DatePicker, DateTimePicker } from "@mui/x-date-pickers";
@@ -12,7 +12,7 @@ import React, { useEffect } from "react";
 import SearchPlacesDialog from "./SearchPlacesDialog";
 import { MapContainer, TileLayer, Marker, useMap } from "react-leaflet";
 import { TFunction } from "i18next";
-import { EventInsert, EventRecurrence, FullEvent } from "../../types/supabaseTypes";
+import { EventInsert, EventRecurrence, FullEvent, Group } from "../../types/supabaseTypes";
 import { RootState } from "../../redux/store";
 import { useDependency } from "src/hooks/useDependency";
 import { IEventRepository } from "src/repository/IEventRepository";
@@ -20,6 +20,7 @@ import { useSelector } from "react-redux";
 import { AlertSnackbar } from "../AlertSnackbar";
 import { isBefore } from "date-fns";
 import { toNumber } from "lodash";
+import { SelectGroupDialog } from "./SelectGroupDialog";
 
 export type PlaceType = {
     name: string,
@@ -47,6 +48,8 @@ const CreateEvent = ({ t, eventToEdit, repository }: CreateEventProps) => {
 
     const navigate = useNavigate();
 
+    const [group, setGroup] = useState<Group | null>();
+    const [selectGroupOpen, setSelectGroupOpen] = useState(false);
     const [maxAttendees, setMaxAttendees] = useState<number>(-1);
     const [maxAttendeesEnabled, setMaxAttendeesEnabled] = useState(false);
     const [answerDeadline, setAnswerDeadline] = useState<Moment | null>();
@@ -65,6 +68,7 @@ const CreateEvent = ({ t, eventToEdit, repository }: CreateEventProps) => {
 
     useEffect(() => {
         if (eventToEdit) {
+            console.log(eventToEdit)
             setStartDate(moment(eventToEdit.startingDateTime));
             setStartTime(moment(eventToEdit.startingDateTime));
             setMeetingTime(moment(eventToEdit.meetingDateTime));
@@ -73,6 +77,8 @@ const CreateEvent = ({ t, eventToEdit, repository }: CreateEventProps) => {
             setRepeat(eventToEdit.recurrence);
             setAnswerDeadline(moment(eventToEdit.answerDeadline));
             setMaxAttendees(eventToEdit.maxAttendees);
+            setMaxAttendeesEnabled(eventToEdit.maxAttendees > 0);
+            setGroup(eventToEdit.group)
         }
     }, [eventToEdit]);
 
@@ -97,11 +103,15 @@ const CreateEvent = ({ t, eventToEdit, repository }: CreateEventProps) => {
                 recurrence: repeat,
                 maxAttendees: maxAttendeesEnabled ? maxAttendees : -1,
                 answerDeadline: answerDeadlineEnabled ? answerDeadline : null,
+                group: group?.id,
                 place: JSON.stringify(selectedPlace),
                 "end_at": (stopRepeatDisabled || !stopRepeatDateTime)
                     ? null
                     : stopRepeatDateTime.format("yyyy-MM-DD HH:mm:ssZ")
             } as EventInsert;
+
+            if(!group)
+                throw new Error(t("events.creation.noGroupSelected"))
 
             if (answerDeadline && isBefore(answerDeadline.toDate(), Date.now()))
                 throw new Error(t("events.creation.answerDeadlineBeforeNow"))
@@ -182,6 +192,15 @@ const CreateEvent = ({ t, eventToEdit, repository }: CreateEventProps) => {
                         InputProps={{ startAdornment: (<InputAdornment position="start"><Article /></InputAdornment>) }}
                         margin="normal" />
                 </ListItem>
+
+                <ListItemButton onClick={() => setSelectGroupOpen(true)}>
+                    <ListItemAvatar>
+                        {
+                            group && <FiberManualRecord sx={{ color: group.color }} />
+                        }
+                    </ListItemAvatar>
+                    <ListItemText primary={group?.name ?? "Keine Gruppe gewählt"} secondary={group?.description ?? ""} />
+                </ListItemButton>
 
                 <Divider sx={{ mb: 2, mt: 2 }} />
 
@@ -325,6 +344,13 @@ const CreateEvent = ({ t, eventToEdit, repository }: CreateEventProps) => {
                 <Button onClick={() => setStopRepeatDialogOpen(false)}>Bestätigen</Button>
             </DialogActions>
         </Dialog>
+
+        <SelectGroupDialog open={selectGroupOpen}
+            handleClose={() => setSelectGroupOpen(false)}
+            handleSubmit={(group) => {
+                setGroup(group)
+                setSelectGroupOpen(false);
+            }} />
 
         <SearchPlacesDialog
             open={searchPlacesDialogOpen}

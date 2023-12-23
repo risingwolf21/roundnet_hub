@@ -51,7 +51,7 @@ export type FullEvent = Event & {
     comments: FullComment[],
     attendance: FullAttendance[],
     userAttendance: EventAttendance,
-    groups: Group[]
+    group: Group
 }
 
 export function answerDeadlineExpired(x: FullEvent) {

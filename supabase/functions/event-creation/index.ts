@@ -57,13 +57,19 @@ serve(async (req: Request) => {
 				place: event.place,
 				"end_at": event["end_at"],
 				key: event.key,
-				group: event.group
+				group: event.group,
+				maxAttendees: event.maxAttendees
 			};
 
 			if (event.meetingDateTime) {
 				let newMeetingDateTime = addRecurringFrequency(new Date(event.meetingDateTime), event.recurring);
 				if (newMeetingDateTime !== null)
 					newEvent.meetingDateTime = newMeetingDateTime;
+			}
+			if (event.answerDeadline) {
+				let newAnswerDeadline = addRecurringFrequency(new Date(event.answerDeadline), event.recurring);
+				if (newAnswerDeadline !== null)
+					newEvent.answerDeadline = newAnswerDeadline;
 			}
 
 			let maximumStartTime = new Date(event.startingDateTime);

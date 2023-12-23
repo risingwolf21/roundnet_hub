@@ -26,7 +26,8 @@
             "titleTooShort": "Der Titel des Events muss aus mindestens 6 Zeichen bestehen",
             "descriptionEmpty": "Die Beschreibung des Events darf nicht leer sein",
             "startDateCannotBeNull": "Die Startzeit des Events darf nicht leer sein",
-            "answerDeadlineBeforeNow": "Der Anmeldezeitraum kann nicht vor dem aktuellen Datum sein"
+            "answerDeadlineBeforeNow": "Der Anmeldezeitraum kann nicht vor dem aktuellen Datum sein",
+            "noGroupSelected": "Es ist keine Gruppe für dieses Event ausgewählt!"
         },
         "information": {
             "startTime": "Startet um {{ startTime, HH:mm }}",
