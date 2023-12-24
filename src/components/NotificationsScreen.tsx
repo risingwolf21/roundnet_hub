@@ -1,8 +1,8 @@
-import { Box, List, ListItem, ListItemButton, ListItemText, Switch } from "@mui/material"
+import { Box, List, ListItemButton, ListItemText } from "@mui/material"
 import React, { useEffect, useState } from "react"
+import OneSignal from "react-onesignal"
 import CustomAppBar from "./AppBar"
 import { LoadingIndicator } from "./LoadingIndicator"
-import OneSignal from "react-onesignal"
 
 export const NotificationsScreen = () => {
 
@@ -16,7 +16,7 @@ export const NotificationsScreen = () => {
         <CustomAppBar navigateBack />
         <LoadingIndicator loading={false} />
         <List>
-            <ListItemButton onClick={() => OneSignal.Slidedown.promptPush()}>
+            <ListItemButton onClick={() => OneSignal.Slidedown.promptPushCategories()}>
                 <ListItemText primary={"Benachrichtigungen bearbeiten"} />
             </ListItemButton>
         </List>

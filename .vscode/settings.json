@@ -12,5 +12,7 @@
         "*.js": "javascriptreact",
         ".stylelintrc": "jsonc"
     },
-    "emmet.showExpandedAbbreviation": "never"
+    "emmet.showExpandedAbbreviation": "never",
+    "deno.enable": true,
+    "deno.unstable": true,
 }

@@ -1,11 +1,11 @@
 import { AccountCircle, Euro, History, Info, Key, Notifications } from "@mui/icons-material";
-import { Avatar, List, ListItem, ListItemAvatar, ListItemText, Box } from "@mui/material";
-import { useNavigate } from "react-router";
-import { withTranslation } from 'react-i18next';
-import CustomAppBar from "./AppBar";
+import { Avatar, Box, List, ListItem, ListItemAvatar, ListItemText } from "@mui/material";
 import { TFunction } from "i18next";
 import React, { ReactElement } from "react";
-import { Ability, Can } from "src/utils/PermissionService";
+import { withTranslation } from 'react-i18next';
+import { useNavigate } from "react-router";
+import { Ability, can } from "src/utils/PermissionService";
+import CustomAppBar from "./AppBar";
 
 type TabsType = {
     translationKey: string
@@ -61,17 +61,15 @@ const Browse = ({ t }: { t: TFunction }) => {
         <CustomAppBar />
         <List>
             {
-                tabs.map(x => {
-                    return <Can I="view" an={x.ability} key={x.translationKey}>
-                        <ListItem key={x.translationKey} onClick={() => navigate(x.navigateTo)} sx={{ mt: 1 }}>
-                            <ListItemAvatar>
-                                <Avatar sx={{ background: x.avatarColor, width: 40, height: 40, borderRadius: 2 }}>
-                                    {x.icon}
-                                </Avatar>
-                            </ListItemAvatar>
-                            <ListItemText primary={t("browse." + x.translationKey)} />
-                        </ListItem>
-                    </Can>
+                tabs.filter(x => can("view", x.ability)).map(x => {
+                    return <ListItem key={x.translationKey} onClick={() => navigate(x.navigateTo)} sx={{ mt: 1 }}>
+                        <ListItemAvatar>
+                            <Avatar sx={{ background: x.avatarColor, width: 40, height: 40, borderRadius: 2 }}>
+                                {x.icon}
+                            </Avatar>
+                        </ListItemAvatar>
+                        <ListItemText primary={t("browse." + x.translationKey)} />
+                    </ListItem>
                 })
             }
             <ListItem key={"appVersion"} dense>

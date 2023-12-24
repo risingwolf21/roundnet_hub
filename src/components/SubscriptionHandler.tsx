@@ -1,24 +1,63 @@
-import { useClient } from "react-supabase";
 import { useContext, useEffect } from "react";
+import { useTranslation } from "react-i18next";
+import OneSignal from "react-onesignal";
 import { useSelector } from "react-redux";
+import { useClient } from "react-supabase";
+import { DependencyContext, useAppDispatch } from "src";
+import { fetchDrinksAsync } from "src/redux/adminDrinksSlice";
+import { fetchAdminUsersAsync } from "src/redux/adminUserSlice";
+import { RootState } from "src/redux/store";
+import { IAdminDrinksRepository } from "src/repository/IAdminDrinksRepository";
+import { IAdminUsersRepository } from "src/repository/IAdminUsersRepository";
 import { onEventAttendanceUserDelete, onEventAttendanceUserInsert, onEventAttendanceUserUpdate, onEventCommentDelete, onEventCommentInsert, onEventCommentUpdate } from "../redux/eventSlice";
 import { Comment } from "../types/supabaseTypes";
-import { DependencyContext, useAppDispatch } from "src";
-import { RootState } from "src/redux/store";
-import { fetchAdminUsersAsync } from "src/redux/adminUserSlice";
-import { fetchDrinksAsync } from "src/redux/adminDrinksSlice";
-import { useDependency } from "src/hooks/useDependency";
-import { IAdminUsersRepository } from "src/repository/IAdminUsersRepository";
-import { IAdminDrinksRepository } from "src/repository/IAdminDrinksRepository";
-import OneSignal from "react-onesignal";
+import userSegments from "./services/onesignal/userSegments";
 
 
 export const SubscriptionHandler = ({ children }: { children: any }) => {
 
     const client = useClient();
+    const { t } = useTranslation();
     const dispatch = useAppDispatch();
     const { container } = useContext(DependencyContext);
     const { user } = useSelector((state: RootState) => state.application);
+
+    useEffect(() => {
+        if (process.env.REACT_APP_oneSignalAppId) {
+            OneSignal.init({
+                appId: process.env.REACT_APP_oneSignalAppId,
+                allowLocalhostAsSecureOrigin: true,
+                promptOptions: {
+                    slidedown: {
+                        prompts: [
+                            {
+                                type: "category",
+                                autoPrompt: true,
+                                text: {
+                                    actionMessage: t("notification_actionMessage"),
+                                    acceptButton: "Allow",
+                                    cancelButton: "Cancel",
+
+                                    /* CATEGORY SLIDEDOWN SPECIFIC TEXT */
+                                    negativeUpdateButton: "Cancel",
+                                    positiveUpdateButton: "Save Preferences",
+                                    updateMessage: t("notification_updateMessage"),
+                                },
+                                categories: userSegments
+                            }
+                        ]
+                    }
+                }
+            }).then(() => {
+                OneSignal.Slidedown.promptPush();
+            });
+        }
+    }, []);
+
+    useEffect(() => {
+        if (user)
+            OneSignal.login(user.userId)
+    }, [user])
 
     useEffect(() => {
         if (user && user.role === "admin") {

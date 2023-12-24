@@ -177,7 +177,7 @@ const DrinkListScreen = ({ repository, user, drinks, drinksLoading, drinksError,
         <SwipeableDialog open={filterDialogOpen} setOpen={setFilterDialogOpen} onClose={() => setFilterDialogOpen(false)} title="Filter">
             <List>
                 {
-                    [...new Set(drinks.map(x => x.type))].sort().map(x => <ListItem divider disabled={x === "Drink"}>
+                    [...new Set(drinks.map(x => x.type))].sort().map(x => <ListItem key={x} divider disabled={x === "Drink"}>
                         <ListItemAvatar>
                             <Checkbox disabled={x === "Drink"} checked={visibleTypes.some(y => y === x)} onChange={(e) => setVisibleTypes(e.target.checked ? [...visibleTypes, x] : visibleTypes.filter(y => y !== x))} />
                         </ListItemAvatar>

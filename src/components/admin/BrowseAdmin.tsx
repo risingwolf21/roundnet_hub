@@ -1,15 +1,15 @@
-import { AdminPanelSettings, Euro, Group, History, Liquor, GroupOutlined, ShowChart } from "@mui/icons-material";
-import { Avatar, List, ListItemAvatar, ListItemText, Box, Badge, ListItemButton } from "@mui/material";
-import { useNavigate } from "react-router";
-import { withTranslation } from 'react-i18next';
-import CustomAppBar from "../AppBar";
-import { useSelector } from "react-redux";
-import React from "react";
-import { RootState } from "../../redux/store";
+import { AdminPanelSettings, Euro, Group, GroupOutlined, History, Liquor, ShowChart } from "@mui/icons-material";
+import { Avatar, Badge, Box, List, ListItemAvatar, ListItemButton, ListItemText } from "@mui/material";
 import { TFunction } from "i18next";
-import { AlertSnackbar } from "../AlertSnackbar";
-import { Ability, Actions, Can } from "src/utils/PermissionService";
+import React from "react";
+import { withTranslation } from 'react-i18next';
+import { useSelector } from "react-redux";
+import { useNavigate } from "react-router";
 import { UserRole } from "src/types/supabaseTypes";
+import { Ability, Actions, can } from "src/utils/PermissionService";
+import { RootState } from "../../redux/store";
+import { AlertSnackbar } from "../AlertSnackbar";
+import CustomAppBar from "../AppBar";
 
 type EntryType = {
     translationKey: string
@@ -108,9 +108,9 @@ const BrowseAdmin = ({ t }: { t: TFunction }) => {
         <CustomAppBar />
         <List>
             {
-                entries.filter(x => x.role === user.role || user.role === "admin").map(x => {
-                    return <Can I={x.action} an={x.ability}>
-                        <ListItemButton key={x.translationKey} onClick={() => navigate(x.navigateTo)} sx={{ mt: 1 }}>
+                entries.filter(x => x.role === user.role || user.role === "admin")
+                    .filter(x => can(x.action, x.ability)).map(x => {
+                        return <ListItemButton key={x.translationKey} onClick={() => navigate(x.navigateTo)} sx={{ mt: 1 }}>
                             <ListItemAvatar>
                                 <Badge color="secondary" variant="dot" badgeContent="  " invisible={(x.translationKey !== "manageUsers" || !hasNotVerifiedUsers)}>
                                     <Avatar sx={{ background: x.avatarColor, width: 40, height: 40, borderRadius: 2 }}>
@@ -120,8 +120,7 @@ const BrowseAdmin = ({ t }: { t: TFunction }) => {
                             </ListItemAvatar>
                             <ListItemText primary={t("browse." + x.translationKey)} />
                         </ListItemButton>
-                    </Can>
-                })
+                    })
             }
         </List>
     </Box>

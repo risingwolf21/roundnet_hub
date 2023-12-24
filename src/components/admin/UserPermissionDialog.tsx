@@ -1,16 +1,12 @@
-import React, { useState } from "react";
-import { AppBar, Avatar, Button, Chip, Dialog, Divider, Grid, IconButton, List, ListItem, ListItemAvatar, ListItemSecondaryAction, ListItemText, ListSubheader, Table, TableBody, TableCell, TableHead, TableRow, TextField, Toolbar, Typography } from "@mui/material"
+import { AccountCircle, AdminPanelSettings, EuroRounded, Liquor, SportsHandball } from "@mui/icons-material";
 import CloseIcon from '@mui/icons-material/Close';
-import { Box } from "@mui/system";
+import { AppBar, Button, Chip, Dialog, Divider, Grid, IconButton, Table, TableBody, TableCell, TableHead, TableRow, Toolbar, Typography } from "@mui/material";
 import Checkbox from '@mui/material/Checkbox';
-import LocalDrinkIcon from '@mui/icons-material/LocalDrink';
-import EuroIcon from '@mui/icons-material/Euro';
-import InventoryIcon from '@mui/icons-material/Inventory';
-import FormatSizeIcon from '@mui/icons-material/FormatSize';
-import { AccountCircle, AdminPanelSettings, Check, EuroRounded, Liquor, SportsHandball } from "@mui/icons-material";
-import { SlideUpTransition } from "../../utils";
-import { allPermissions, financePermissions, procurePermissions, trainerPermissions, userPermissions } from "src/utils/PermissionService";
+import { Box } from "@mui/system";
+import React, { useState } from "react";
 import { Permissions, UserRole } from "src/types/supabaseTypes";
+import { allPermissions, financePermissions, procurePermissions, trainerPermissions, userPermissions } from "src/utils/PermissionService";
+import { SlideUpTransition } from "../../utils";
 
 type UserPermissionsDialogProps = {
     open: boolean,

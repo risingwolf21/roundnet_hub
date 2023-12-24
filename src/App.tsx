@@ -1,53 +1,37 @@
-import * as React from 'react';
 import { Grid } from "@mui/material";
-import UserScreen from './components/User';
+import * as React from 'react';
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
-import { HistoryScreenProvider } from './components/HistoryScreen';
-import { AdminDrinkListProvider } from './components/admin/AdminDrinkList';
-import { PayDrinksScreenProvider } from './components/PayDrinksScreen';
-import PaymentsPendingAdmin from './components/admin/PaymentsPendingAdmin';
-import { AdminUserListProvider } from './components/admin/AdminUserList';
-import { AdminHistoryScreenProvider } from './components/admin/AdminHistoryScreen';
-import { useEffect } from 'react';
-import Browse from './components/Browse';
-import CreateEventProvider from './components/training/CreateEvent';
-import { EventScreenProvider } from './components/training/EventScreen';
-import { EventInformationProvider } from './components/training/EventInformation';
-import CustomBottomNavigation from './components/BottomNavigation';
-import UpdateAvailable from './components/UpdateAvailable';
 import AuthGate from './AuthGate';
-import ResetPasswordScreen from './components/ResetPasswordScreen';
-import { ManageGroupsProvider } from './components/groups/ManageGroups';
-import BrowseAdmin from './components/admin/BrowseAdmin';
-import DrinkStockUpdateScreen from './components/procure/DrinkStockUpdateScreen';
-import { AnalyzeDrinkStockHistoryProvider } from './components/procure/AnalyzeDrinkStockHistory';
-import { GroupInformationProvider } from './components/groups/GroupInformation';
-import { DrinkListScreenProvider } from './components/drinkList/DrinkListScreen';
+import CustomBottomNavigation from './components/BottomNavigation';
+import Browse from './components/Browse';
 import FeatureNotAvailable from './components/FeatureNotAvailable';
-import { SubscriptionHandler } from './components/SubscriptionHandler';
+import { HistoryScreenProvider } from './components/HistoryScreen';
 import { KeyHolderScreenProvider } from './components/KeyHolderScreen';
-import OneSignal from 'react-onesignal';
 import { NotificationsScreen } from './components/NotificationsScreen';
+import { PayDrinksScreenProvider } from './components/PayDrinksScreen';
+import ResetPasswordScreen from './components/ResetPasswordScreen';
+import { SubscriptionHandler } from './components/SubscriptionHandler';
+import UpdateAvailable from './components/UpdateAvailable';
+import UserScreen from './components/User';
+import { AdminDrinkListProvider } from './components/admin/AdminDrinkList';
+import { AdminHistoryScreenProvider } from './components/admin/AdminHistoryScreen';
+import { AdminUserListProvider } from './components/admin/AdminUserList';
+import BrowseAdmin from './components/admin/BrowseAdmin';
+import PaymentsPendingAdmin from './components/admin/PaymentsPendingAdmin';
+import { DrinkListScreenProvider } from './components/drinkList/DrinkListScreen';
+import { GroupInformationProvider } from './components/groups/GroupInformation';
+import { ManageGroupsProvider } from './components/groups/ManageGroups';
+import { AnalyzeDrinkStockHistoryProvider } from './components/procure/AnalyzeDrinkStockHistory';
+import DrinkStockUpdateScreen from './components/procure/DrinkStockUpdateScreen';
+import CreateEventProvider from './components/training/CreateEvent';
+import { EventInformationProvider } from './components/training/EventInformation';
+import { EventScreenProvider } from './components/training/EventScreen';
 import { useServiceWorker } from './hooks/useServiceWorker';
-import { useAppAbility } from './utils/PermissionService';
+import { can } from "./utils/PermissionService";
 
 const App = () => {
 
   const { isUpdateAvailable, updateServiceWorker } = useServiceWorker();
-  // const { can } = useAppAbility();
-
-  useEffect(() => {
-    if (process.env.REACT_APP_oneSignalAppId) {
-      OneSignal.init({
-        appId: process.env.REACT_APP_oneSignalAppId,
-        allowLocalhostAsSecureOrigin: true,
-      }).then(() => {
-        OneSignal.Slidedown.promptPush();
-      });
-    }
-  }, []);
-
-  const can = (a: string, b: string) => true
 
   if (isUpdateAvailable)
     return <UpdateAvailable update={updateServiceWorker} />
@@ -103,6 +87,6 @@ const App = () => {
         </SubscriptionHandler>
       </AuthGate>
     </BrowserRouter>
-  </Grid >
+  </Grid>
 }
 export default App;

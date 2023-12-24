@@ -1,28 +1,27 @@
+import AddIcon from '@mui/icons-material/Add';
 import { Alert, Divider, Fab, Grid, LinearProgress, Snackbar } from "@mui/material";
+import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { Navigate, useNavigate } from 'react-router-dom';
-import { fetchEventsAsync, onEventErrorRead, updateAttendanceAsync } from "../../redux/eventSlice";
-import AddIcon from '@mui/icons-material/Add';
 import { useClient } from "react-supabase";
-import React, { useState, useEffect } from "react";
-import { InfiniteScrollList } from "../InfiniteScrollList";
-import CustomAppBar from "../AppBar";
-import { EventAttendance, FullEvent, User } from "../../types/supabaseTypes";
-import { RootState } from "../../redux/store";
+import { can } from 'src/utils/PermissionService';
 import { useAppDispatch } from "../..";
 import { useDependency } from "../../hooks/useDependency";
+import { fetchEventsAsync, onEventErrorRead, updateAttendanceAsync } from "../../redux/eventSlice";
+import { RootState } from "../../redux/store";
 import { IEventRepository } from "../../repository/IEventRepository";
-import { EventItem } from "./EventItem";
+import { EventAttendance, FullEvent, User } from "../../types/supabaseTypes";
 import { AlertSnackbar } from "../AlertSnackbar";
-import { AbilityContext, useAppAbility } from "src/utils/PermissionService";
+import CustomAppBar from "../AppBar";
+import { InfiniteScrollList } from "../InfiniteScrollList";
+import { EventItem } from "./EventItem";
 
 export const EventScreenProvider = () => {
     const { items: events, userGroups, loading, error, endReached } = useSelector((state: RootState) => state.events);
     const { user } = useSelector((state: RootState) => state.application);
     const repository = useDependency<IEventRepository>("IEventRepository");
-    const { cannot } = useAppAbility();
 
-    if (cannot("view", "training"))
+    if (!can("view", "training"))
         return <AlertSnackbar close={() => { }} alertInfo={{ message: "No permission to view this screen", severity: "error" }} />
 
     if (!user || !repository)

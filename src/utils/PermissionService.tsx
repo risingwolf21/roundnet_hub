@@ -1,7 +1,5 @@
-import { Permissions, User, UserRole } from "src/types/supabaseTypes";
-import { AbilityBuilder, AbilityTuple, AnyAbility, MongoAbility, MongoQuery, PureAbility, SubjectType, createMongoAbility } from '@casl/ability';
-import { createContext } from 'react';
-import { createContextualCan, useAbility } from '@casl/react';
+import { AbilityBuilder, MongoQuery, PureAbility, createMongoAbility } from '@casl/ability';
+import { Permissions, User } from "src/types/supabaseTypes";
 
 
 export type Actions = 'use' | 'edit' | 'delete' | 'view'
@@ -56,38 +54,29 @@ export const trainerPermissions: Permissions[] = [...userPermissions, "edit;trai
 
 export type AppAbility = PureAbility<Ability, MongoQuery>
 
-export const AbilityContext = createContext<MongoAbility<Ability, MongoQuery>>((null as unknown) as AppAbility);
-export const Can = createContextualCan(AbilityContext.Consumer);
-export const useAppAbility = () => {
-    const ability = useAbility(AbilityContext);
+export const ability = createMongoAbility();
+export const can = (action: Actions, subject: Ability[1]) => ability.can(action, subject);
 
-    ability.can = ability.can.bind(ability);
-    ability.cannot = ability.cannot.bind(ability);
+export function defineRulesFor(user: User | null) {
+    const { can, rules } = new AbilityBuilder<AppAbility>(createMongoAbility);
 
-    return ability;
-}
+    if (!user)
+        return [];
 
-export function defineAbilityFor(permissions: Permissions[], role: UserRole | null) {
-    const { can, cannot, rules } = new AbilityBuilder<AppAbility>(createMongoAbility);
+    can("view", "payments");
+    can("view", "history");
+    can("view", "browse");
+    can("view", "notifications");
 
-    allPermissions.filter(x => !permissions.includes(x)).forEach(each => {
-        var split = each.split(";");
-        cannot(split[0] as Actions, split[0] as Ability[1]);
-    });
-
-    if (role) {
-        can("view", "payments");
-        can("view", "history");
-        can("view", "browse");
-    }
-    if (role !== "user") {
+    if (user.role !== "user") {
         can("view", "browseAdmin");
     }
+    if (user.permissions) {
+        user.permissions.forEach(each => {
+            var split = each.split(";");
+            can(split[0] as Actions, split[1] as Ability[1]);
+        });
+    }
 
-    permissions.forEach(each => {
-        var split = each.split(";");
-        can(split[0] as Actions, split[1] as Ability[1]);
-    });
-
-    return createMongoAbility<Ability, MongoQuery>(rules);
+    return rules;
 };

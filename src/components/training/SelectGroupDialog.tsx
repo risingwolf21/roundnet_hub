@@ -1,21 +1,14 @@
-import React, { useEffect, useState } from "react";
-import { AppBar, Avatar, Button, Chip, Dialog, Divider, Grid, IconButton, List, ListItem, ListItemAvatar, ListItemButton, ListItemSecondaryAction, ListItemText, ListSubheader, Table, TableBody, TableCell, TableHead, TableRow, TextField, Toolbar, Typography } from "@mui/material"
+import { FiberManualRecord } from "@mui/icons-material";
 import CloseIcon from '@mui/icons-material/Close';
+import { AppBar, Dialog, IconButton, List, ListItemAvatar, ListItemButton, ListItemText, Toolbar, Typography } from "@mui/material";
 import { Box } from "@mui/system";
-import Checkbox from '@mui/material/Checkbox';
-import LocalDrinkIcon from '@mui/icons-material/LocalDrink';
-import EuroIcon from '@mui/icons-material/Euro';
-import InventoryIcon from '@mui/icons-material/Inventory';
-import FormatSizeIcon from '@mui/icons-material/FormatSize';
-import { AccountCircle, AdminPanelSettings, Check, EuroRounded, FiberManualRecord, Liquor, SportsHandball } from "@mui/icons-material";
-import { SlideUpTransition } from "../../utils";
-import { allPermissions, financePermissions, procurePermissions, trainerPermissions, userPermissions } from "src/utils/PermissionService";
-import { Group, Permissions, UserRole } from "src/types/supabaseTypes";
-import { useDependency } from "src/hooks/useDependency";
-import { IAdminUsersRepository } from "src/repository/IAdminUsersRepository";
-import { IEventRepository } from "src/repository/IEventRepository";
+import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
+import { useDependency } from "src/hooks/useDependency";
 import { RootState } from "src/redux/store";
+import { IEventRepository } from "src/repository/IEventRepository";
+import { Group } from "src/types/supabaseTypes";
+import { SlideUpTransition } from "../../utils";
 
 type SelectGroupDialogProps = {
     open: boolean,

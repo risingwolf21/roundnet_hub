@@ -1,21 +1,21 @@
-import React, { ReactNode, createContext } from 'react';
-import "reflect-metadata";
-import ReactDOM from 'react-dom/client';
-import "./global.css";
-import App from './App';
 import { ThemeProvider } from '@mui/material';
-import { mainTheme } from './themes/themes';
-import * as Sentry from "@sentry/react";
-import { supabase } from './components/services/supabase/supabaseClient';
-import { Provider as SupabaseProvider } from "react-supabase"
-import { AdapterMoment } from '@mui/x-date-pickers/AdapterMoment';
-import { Provider, useDispatch } from 'react-redux';
-import store from './redux/store';
-import "./translation/i18n";
 import { LocalizationProvider } from '@mui/x-date-pickers';
+import { AdapterMoment } from '@mui/x-date-pickers/AdapterMoment';
+import * as Sentry from "@sentry/react";
 import { Container } from 'inversify';
-import container from './repository/Container';
+import React, { ReactNode, createContext } from 'react';
+import ReactDOM from 'react-dom/client';
+import { Provider, useDispatch } from 'react-redux';
+import { Provider as SupabaseProvider } from "react-supabase";
+import "reflect-metadata";
+import App from './App';
+import { supabase } from './components/services/supabase/supabaseClient';
 import "./firebase";
+import "./global.css";
+import store from './redux/store';
+import container from './repository/Container';
+import { mainTheme } from './themes/themes';
+import "./translation/i18n";
 //@ts-ignore
 import "src/apocalypseHandler.js";
 
@@ -50,17 +50,15 @@ export const useAppDispatch = () => useDispatch<AppDispatch>()
 
 const root = ReactDOM.createRoot(document.getElementById('root') as HTMLElement);
 root.render(
-  <React.StrictMode>
-    <ThemeProvider theme={mainTheme}>
-      <Provider store={store}>
-        <SupabaseProvider value={supabase}>
-          <DependencyProvider container={container}>
-            <LocalizationProvider dateAdapter={AdapterMoment}>
-              <App />
-            </LocalizationProvider>
-          </DependencyProvider>
-        </SupabaseProvider>
-      </Provider>
-    </ThemeProvider>
-  </React.StrictMode>
+  <ThemeProvider theme={mainTheme}>
+    <Provider store={store}>
+      <SupabaseProvider value={supabase}>
+        <DependencyProvider container={container}>
+          <LocalizationProvider dateAdapter={AdapterMoment}>
+            <App />
+          </LocalizationProvider>
+        </DependencyProvider>
+      </SupabaseProvider>
+    </Provider>
+  </ThemeProvider>
 );
