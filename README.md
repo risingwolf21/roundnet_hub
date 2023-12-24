@@ -35,6 +35,12 @@ npx supabase gen types typescript --project-id xibmjvkjkdxdbmreicps > src/types/
 npx supabase gen types typescript --project-id vsuhzabcrnmrljzecxee > src/types/supabase.ts
 ```
 
+## Notifications
+
+| Notification-Tag | Beschreibung                                            |
+|------------------|---------------------------------------------------------|
+| userRegistration | Once a user gets registered and added to the user table |
+
 ## Permissions
 
 Actions: `use, edit, delete, view`
