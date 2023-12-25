@@ -3,15 +3,15 @@ import { useTranslation } from "react-i18next";
 import OneSignal from "react-onesignal";
 import { useSelector } from "react-redux";
 import { useClient } from "react-supabase";
-import { DependencyContext, useAppDispatch } from "src";
+import { DependencyContext } from "src";
 import { fetchDrinksAsync } from "src/redux/adminDrinksSlice";
 import { fetchAdminUsersAsync } from "src/redux/adminUserSlice";
-import { RootState } from "src/redux/store";
+import { RootState, useAppDispatch } from "src/redux/store";
 import { IAdminDrinksRepository } from "src/repository/IAdminDrinksRepository";
 import { IAdminUsersRepository } from "src/repository/IAdminUsersRepository";
 import { onEventAttendanceUserDelete, onEventAttendanceUserInsert, onEventAttendanceUserUpdate, onEventCommentDelete, onEventCommentInsert, onEventCommentUpdate } from "../redux/eventSlice";
 import { Comment } from "../types/supabaseTypes";
-import userSegments from "./services/onesignal/userSegments";
+import { default as userSegments, default as userTags } from "./services/onesignal/userTags";
 
 
 export const SubscriptionHandler = ({ children }: { children: any }) => {
@@ -55,8 +55,15 @@ export const SubscriptionHandler = ({ children }: { children: any }) => {
     }, []);
 
     useEffect(() => {
-        if (user)
-            OneSignal.login(user.userId)
+        if (user) {
+            OneSignal.login(user.userId);
+            const userTagsToAdd: { [key: string]: string } = {};
+            const userTagsToRemove: string[] = [];
+            user.notificationTags.forEach(x => userTagsToAdd[x] = "1")
+            userTags.filter(x => !user.notificationTags.includes(x.tag)).forEach(x => userTagsToRemove.push(x.tag))
+            OneSignal.User.addTags(userTagsToAdd);
+            OneSignal.User.removeTags(userTagsToRemove)
+        }
     }, [user])
 
     useEffect(() => {

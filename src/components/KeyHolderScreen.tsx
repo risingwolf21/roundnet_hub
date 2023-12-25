@@ -1,23 +1,21 @@
-import { useEffect, useState } from "react";
-import { useSelector } from "react-redux";
-import { AppDispatch, useAppDispatch } from "src";
-import { useDependency } from "src/hooks/useDependency";
-import { fetchKeyssAsync } from "src/redux/keysSlice";
-import { RootState } from "src/redux/store";
-import { IKeysRepository } from "src/repository/IKeysRepository";
-import { AlertSnackbar } from "./AlertSnackbar";
-import React from "react";
-import { AppBar, Avatar, Box, Button, Dialog, IconButton, LinearProgress, List, ListItem, ListItemAvatar, ListItemButton, ListItemSecondaryAction, ListItemText, Toolbar, Typography } from "@mui/material";
-import CustomAppBar from "./AppBar";
-import { LoadingIndicator } from "./LoadingIndicator";
+import { ArrowBack } from "@mui/icons-material";
 import KeyIcon from "@mui/icons-material/Key";
 import SearchIcon from "@mui/icons-material/Search";
-import { FullKeyHolder, Key, User } from "src/types/supabaseTypes";
-import { SlideUpTransition } from "src/utils";
-import { ArrowBack } from "@mui/icons-material";
-import { Search, SearchIconWrapper, StyledInputBase } from "./SearchBar";
+import { AppBar, Avatar, Box, Button, Dialog, IconButton, LinearProgress, List, ListItem, ListItemAvatar, ListItemButton, ListItemSecondaryAction, ListItemText, Toolbar, Typography } from "@mui/material";
+import React, { useEffect, useState } from "react";
+import { useSelector } from "react-redux";
 import { useClient } from "react-supabase";
 import { TABLE_USER } from "src/constants";
+import { useDependency } from "src/hooks/useDependency";
+import { fetchKeyssAsync } from "src/redux/keysSlice";
+import { AppDispatch, RootState, useAppDispatch } from "src/redux/store";
+import { IKeysRepository } from "src/repository/IKeysRepository";
+import { FullKeyHolder, User } from "src/types/supabaseTypes";
+import { SlideUpTransition } from "src/utils";
+import { AlertSnackbar } from "./AlertSnackbar";
+import CustomAppBar from "./AppBar";
+import { LoadingIndicator } from "./LoadingIndicator";
+import { Search, SearchIconWrapper, StyledInputBase } from "./SearchBar";
 import { SwipeableDialog } from "./SwipeableDialog";
 
 export const KeyHolderScreenProvider = () => {

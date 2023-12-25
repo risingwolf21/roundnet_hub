@@ -1,24 +1,22 @@
-import { Box, Checkbox, CircularProgress, Fab, List, ListItem, ListItemAvatar, ListItemText } from "@mui/material";
-import { useEffect, useState } from "react";
+import { Tune } from "@mui/icons-material";
 import CheckIcon from '@mui/icons-material/Check';
+import { Box, Checkbox, CircularProgress, Fab, List, ListItem, ListItemAvatar, ListItemText } from "@mui/material";
 import { captureException } from "@sentry/react";
-import { Error } from "../Error";
+import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
+import { useClient } from "react-supabase";
+import { AlertMessage, AlertSnackbar } from "src/components/AlertSnackbar";
 import CustomAppBar from "src/components/AppBar";
-import React from "react";
-import DrinkList from "./DrinkList";
-import { MultiplePaymentsError, nameOfProductType } from "src/utils";
-import { RootState } from "src/redux/store";
-import { AppDispatch, useAppDispatch } from "src";
+import { LoadingIndicator } from "src/components/LoadingIndicator";
 import { useDependency } from "src/hooks/useDependency";
+import { fetchDrinksAsync, onDrinkDeleted, onDrinkInserted, onDrinkUpdated } from "src/redux/drinksSlice";
+import { AppDispatch, RootState, useAppDispatch } from "src/redux/store";
 import { IDrinkRepository } from "src/repository/IDrinkRepository";
 import { Drink, DrinkCounter, DrinkInsert, DrinkUpdate, ProductType, User } from "src/types/supabaseTypes";
-import { fetchDrinksAsync, onDrinkDeleted, onDrinkInserted, onDrinkUpdated } from "src/redux/drinksSlice";
-import { AlertMessage, AlertSnackbar } from "src/components/AlertSnackbar";
-import { LoadingIndicator } from "src/components/LoadingIndicator";
-import { useClient } from "react-supabase";
-import { Tune } from "@mui/icons-material";
+import { MultiplePaymentsError, nameOfProductType } from "src/utils";
+import { Error } from "../Error";
 import { SwipeableDialog } from "../SwipeableDialog";
+import DrinkList from "./DrinkList";
 
 const SUCCESS_MESSAGE_INFO: AlertMessage = { message: "Getränke erfolgreich gebucht!", severity: "success" };
 

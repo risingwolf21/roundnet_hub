@@ -1,21 +1,18 @@
-import { Grid, LinearProgress, List, ListItem, ListItemAvatar, ListItemSecondaryAction, ListItemText, ListSubheader, Typography } from "@mui/material"
+import { Grid, LinearProgress, List, ListItem, ListItemAvatar, ListItemSecondaryAction, ListItemText, ListSubheader, Typography } from "@mui/material";
 import moment from "moment/moment";
-import { groupBy } from "../utils";
+import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
-import { useState } from "react";
-import { useEffect } from "react";
+import { useClient } from "react-supabase";
+import { useDependency } from "../hooks/useDependency";
 import { fetchHistoryAsync, onHistoryDelete, onHistoryInsert, onHistoryUpdate } from "../redux/drinksSlice";
-import { InfiniteScrollList } from "./InfiniteScrollList";
+import { RootState, useAppDispatch } from "../redux/store";
+import { IDrinkRepository } from "../repository/IDrinkRepository";
+import { Drink, FullHistory, User } from "../types/supabaseTypes";
+import { groupBy } from "../utils";
+import { AlertSnackbar } from "./AlertSnackbar";
 import CustomAppBar from "./AppBar";
 import EditHistoryEntryDialog from "./EditHistoryEntryDialog";
-import React from "react";
-import { Drink, FullHistory, User } from "../types/supabaseTypes";
-import { useAppDispatch } from "..";
-import { useDependency } from "../hooks/useDependency";
-import { IDrinkRepository } from "../repository/IDrinkRepository";
-import { RootState } from "../redux/store";
-import { AlertSnackbar } from "./AlertSnackbar";
-import { useClient } from "react-supabase";
+import { InfiniteScrollList } from "./InfiniteScrollList";
 
 export type FullHistoryUpdate = FullHistory & {
     newCount: number

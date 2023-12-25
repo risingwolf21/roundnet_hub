@@ -1,4 +1,5 @@
 import { PayloadAction, createSlice } from '@reduxjs/toolkit';
+import { UserTag } from 'src/components/services/onesignal/userTags';
 import { User } from '../types/supabaseTypes';
 
 type ApplicationSliceState = {
@@ -6,7 +7,8 @@ type ApplicationSliceState = {
     mode: string,
     appUpdateAvailable: boolean,
     appVersion: string,
-    realtimeState: "CLOSED" | "SUBSCRIBED" | "TIMED_OUT" | "CHANNEL_ERROR"
+    realtimeState: "CLOSED" | "SUBSCRIBED" | "TIMED_OUT" | "CHANNEL_ERROR",
+    userTags: UserTag[]
 }
 
 const initialState = {
@@ -14,7 +16,8 @@ const initialState = {
     mode: "drinks",
     appUpdateAvailable: false,
     appVersion: "",
-    realtimeState: "CLOSED"
+    realtimeState: "CLOSED",
+    userTags: []
 } as ApplicationSliceState;
 
 export const applicationReducer = createSlice({
@@ -35,10 +38,13 @@ export const applicationReducer = createSlice({
         },
         onRealtimeStateChange: (state, action: PayloadAction<"CLOSED" | "SUBSCRIBED" | "TIMED_OUT" | "CHANNEL_ERROR">) => {
             state.realtimeState = action.payload;
+        },
+        onUserTagsChange: (state, action: PayloadAction<UserTag[]>) => {
+            state.userTags = action.payload;
         }
     }
 });
 
-export const { onUserChange, onModeChange, onAppUpdateAvailableChange, onAppVersionChange, onRealtimeStateChange } = applicationReducer.actions;
+export const { onUserChange, onModeChange, onAppUpdateAvailableChange, onAppVersionChange, onRealtimeStateChange, onUserTagsChange } = applicationReducer.actions;
 
 export default applicationReducer.reducer

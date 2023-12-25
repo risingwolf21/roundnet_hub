@@ -1,19 +1,18 @@
+import { AccountCircle, GroupAdd } from "@mui/icons-material";
+import { Divider, Fab, Grid, List, ListItem, ListItemAvatar, ListItemText, Typography } from "@mui/material";
+import { toInteger } from "lodash";
 import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { Navigate, useParams } from "react-router-dom";
 import { useClient } from "react-supabase";
-import { Divider, Fab, Grid, List, ListItem, ListItemAvatar, ListItemText, Typography } from "@mui/material";
-import CustomAppBar from "../AppBar";
-import { toInteger } from "lodash";
-import { AccountCircle, GroupAdd } from "@mui/icons-material";
-import SearchAndSelectUserDialog from "../SearchAndSelectUserDialog";
-import { fetchAdminUsersAsync } from "../../redux/adminUserSlice";
-import { RootState } from "../../redux/store";
-import { useAppDispatch } from "../..";
-import { GroupWithUsers, SimpleUser, User, UserWithGroups } from "../../types/supabaseTypes";
 import { useDependency } from "src/hooks/useDependency";
 import { IAdminUsersRepository } from "src/repository/IAdminUsersRepository";
+import { fetchAdminUsersAsync } from "../../redux/adminUserSlice";
+import { RootState, useAppDispatch } from "../../redux/store";
+import { GroupWithUsers, SimpleUser, User, UserWithGroups } from "../../types/supabaseTypes";
 import { AlertSnackbar } from "../AlertSnackbar";
+import CustomAppBar from "../AppBar";
+import SearchAndSelectUserDialog from "../SearchAndSelectUserDialog";
 
 export const GroupInformationProvider = () => {
     const { id } = useParams();

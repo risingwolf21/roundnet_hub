@@ -1,27 +1,23 @@
-import { Alert, AlertTitle, AppBar, Avatar, Box, Button, Card, CardContent, CardHeader, CardMedia, CircularProgress, DialogContent, DialogContentText, Divider, IconButton, InputAdornment, List, ListItem, ListItemAvatar, ListItemIcon, ListItemSecondaryAction, ListItemText, Menu, MenuItem, Snackbar, TextField, Toolbar, Typography } from "@mui/material"
-import { AccountCircle, ArrowBack, CalendarMonth, CheckCircleOutline, Delete, DoNotDisturb, DoNotDisturbOff, Edit, Info, MoreVert, Refresh, RemoveCircleOutline, Send, ThumbDownAlt, ThumbDownOffAlt, ThumbUpAlt, ThumbUpOffAlt } from "@mui/icons-material";
-import { connect, useSelector } from "react-redux";
-import moment from "moment";
-import { createRef, useState } from "react";
-import EventAttendanceDialog from "./EventAttendanceDialog";
-import { useEffect } from "react";
-import { editEvent, fetchEventAttendanceAsync, fetchSingleEventAsync, onEventErrorRead, updateAttendanceAsync, upsertCommentToEventAsync } from "../../redux/eventSlice";
-import { Navigate, useNavigate, useParams } from "react-router-dom";
-import { toInteger, toNumber } from "lodash";
-import { MapContainer, TileLayer, Marker } from "react-leaflet";
-import { DeleteEventDialog } from "../DeleteEventDialog";
-import React, { Fragment } from "react";
-import { useAppDispatch } from "../..";
-import { EventAttendance, FullEvent, User, answerDeadlineExpired, maxAttendeesExceeded } from "../../types/supabaseTypes";
-import { RootState } from "../../redux/store";
-import { PlaceType } from "./CreateEvent";
+import { AccountCircle, ArrowBack, CheckCircleOutline, Delete, DoNotDisturb, DoNotDisturbOff, Edit, MoreVert, Refresh, RemoveCircleOutline, Send, ThumbDownAlt, ThumbDownOffAlt, ThumbUpAlt, ThumbUpOffAlt } from "@mui/icons-material";
+import { Alert, AlertTitle, AppBar, Avatar, Box, Button, Card, CardContent, CardHeader, CardMedia, CircularProgress, DialogContent, DialogContentText, Divider, IconButton, InputAdornment, List, ListItem, ListItemAvatar, ListItemIcon, ListItemSecondaryAction, ListItemText, Menu, MenuItem, Snackbar, TextField, Toolbar, Typography } from "@mui/material";
 import { AnyAction, ThunkDispatch } from "@reduxjs/toolkit";
+import { TFunction } from "i18next";
+import { toInteger, toNumber } from "lodash";
+import moment from "moment";
+import React, { createRef, useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
+import { MapContainer, Marker, TileLayer } from "react-leaflet";
+import { connect, useSelector } from "react-redux";
+import { Navigate, useNavigate, useParams } from "react-router-dom";
 import { useDependency } from "src/hooks/useDependency";
 import { IEventRepository } from "src/repository/IEventRepository";
+import { editEvent, fetchEventAttendanceAsync, fetchSingleEventAsync, onEventErrorRead, updateAttendanceAsync, upsertCommentToEventAsync } from "../../redux/eventSlice";
+import { RootState, useAppDispatch } from "../../redux/store";
+import { EventAttendance, FullEvent, User, answerDeadlineExpired, maxAttendeesExceeded } from "../../types/supabaseTypes";
+import { DeleteEventDialog } from "../DeleteEventDialog";
 import { SwipeableDialog } from "../SwipeableDialog";
-import { TFunction } from "i18next";
-import { useTranslation } from "react-i18next";
-import { format as dateFormat } from "date-fns";
+import { PlaceType } from "./CreateEvent";
+import EventAttendanceDialog from "./EventAttendanceDialog";
 
 type EventInformationProps = {
     selectedEvent: FullEvent,

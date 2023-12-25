@@ -5,7 +5,7 @@ import * as Sentry from "@sentry/react";
 import { Container } from 'inversify';
 import React, { ReactNode, createContext } from 'react';
 import ReactDOM from 'react-dom/client';
-import { Provider, useDispatch } from 'react-redux';
+import { Provider } from 'react-redux';
 import { Provider as SupabaseProvider } from "react-supabase";
 import "reflect-metadata";
 import App from './App';
@@ -43,10 +43,6 @@ if (process.env.NODE_ENV === "production") {
     tracesSampleRate: 1.0,
   });
 }
-
-export type AppDispatch = typeof store.dispatch
-
-export const useAppDispatch = () => useDispatch<AppDispatch>()
 
 const root = ReactDOM.createRoot(document.getElementById('root') as HTMLElement);
 root.render(

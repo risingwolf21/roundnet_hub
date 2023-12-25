@@ -1,18 +1,16 @@
-import { Grid, LinearProgress, List, ListItem, ListItemAvatar, ListItemSecondaryAction, ListItemText, ListSubheader, Typography } from "@mui/material"
+import { Grid, LinearProgress, List, ListItem, ListItemAvatar, ListItemSecondaryAction, ListItemText, ListSubheader, Typography } from "@mui/material";
 import moment from "moment/moment";
-import { groupBy } from "../../utils";
+import React, { useCallback, useEffect } from "react";
 import { useSelector } from "react-redux";
-import { InfiniteScrollList } from "../InfiniteScrollList";
-import { fetchAdminHistoryAsync } from "../../redux/adminDrinksSlice";
-import { useCallback, useEffect } from "react";
-import CustomAppBar from "../AppBar";
-import { useAppDispatch } from "../..";
-import React from "react";
-import { FullHistory } from "../../types/supabaseTypes";
-import { IAdminDrinksRepository } from "../../repository/IAdminDrinksRepository";
-import { RootState } from "../../redux/store";
 import { useDependency } from "../../hooks/useDependency";
+import { fetchAdminHistoryAsync } from "../../redux/adminDrinksSlice";
+import { RootState, useAppDispatch } from "../../redux/store";
+import { IAdminDrinksRepository } from "../../repository/IAdminDrinksRepository";
+import { FullHistory } from "../../types/supabaseTypes";
+import { groupBy } from "../../utils";
 import { AlertSnackbar } from "../AlertSnackbar";
+import CustomAppBar from "../AppBar";
+import { InfiniteScrollList } from "../InfiniteScrollList";
 
 const AdminHistoryItem = ({ items, header }: { items: FullHistory[], header: string }) => {
     return <List dense component={"div"} disablePadding subheader={<ListSubheader sx={{ zIndex: "-1" }} component="div" id="nested-list-subheader">{header}</ListSubheader>}>

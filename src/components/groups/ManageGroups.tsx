@@ -1,15 +1,14 @@
-import { Grid, LinearProgress, List, ListItem, ListItemAvatar, ListItemText } from "@mui/material"
-import CustomAppBar from "../AppBar"
-import { useSelector } from "react-redux";
 import { FiberManualRecord } from "@mui/icons-material";
-import React, { useEffect } from "react";
-import { useClient } from "react-supabase";
-import { fetchGroupsAsync } from "../../redux/groupsSlice";
-import { Navigate, useNavigate } from "react-router-dom";
-import { RootState } from "../../redux/store";
-import { useAppDispatch } from "../..";
-import { GroupWithUsers } from "src/types/supabaseTypes";
+import { Grid, LinearProgress, List, ListItem, ListItemAvatar, ListItemText } from "@mui/material";
 import { SupabaseClient } from "@supabase/supabase-js";
+import React, { useEffect } from "react";
+import { useSelector } from "react-redux";
+import { Navigate, useNavigate } from "react-router-dom";
+import { useClient } from "react-supabase";
+import { GroupWithUsers } from "src/types/supabaseTypes";
+import { fetchGroupsAsync } from "../../redux/groupsSlice";
+import { RootState, useAppDispatch } from "../../redux/store";
+import CustomAppBar from "../AppBar";
 
 export const ManageGroupsProvider = () => {
 

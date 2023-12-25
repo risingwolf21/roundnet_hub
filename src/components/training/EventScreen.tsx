@@ -5,10 +5,9 @@ import { useSelector } from "react-redux";
 import { Navigate, useNavigate } from 'react-router-dom';
 import { useClient } from "react-supabase";
 import { can } from 'src/utils/PermissionService';
-import { useAppDispatch } from "../..";
 import { useDependency } from "../../hooks/useDependency";
-import { fetchEventsAsync, onEventErrorRead, updateAttendanceAsync } from "../../redux/eventSlice";
-import { RootState } from "../../redux/store";
+import { fetchEventsAsync, onEventDelete, onEventErrorRead, onEventInsert, onEventUpdate, updateAttendanceAsync } from "../../redux/eventSlice";
+import { RootState, useAppDispatch } from "../../redux/store";
 import { IEventRepository } from "../../repository/IEventRepository";
 import { EventAttendance, FullEvent, User } from "../../types/supabaseTypes";
 import { AlertSnackbar } from "../AlertSnackbar";
@@ -58,6 +57,17 @@ const EventScreen = ({ events, userGroups, loading, error, endReached, repositor
     const [eventsUpdatingAttendance, setEventsUpdatingAttendance] = useState<number[]>([]);
 
     useEffect(() => {
+        let subscription = client.channel("public:drink")
+            .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'events' }, payload => dispatch(onEventUpdate(payload)))
+            .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'events' }, payload => dispatch(onEventDelete(payload)))
+            .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'events' }, payload => dispatch(onEventInsert(payload)))
+            .subscribe();
+        return () => {
+            subscription.unsubscribe();
+        }
+    }, [client, dispatch]);
+
+    useEffect(() => {
         dispatch(fetchEventsAsync({ user, page: 0, count: 20, repository }));
     }, [dispatch, client, user, userGroups, repository]);
 
@@ -79,7 +89,7 @@ const EventScreen = ({ events, userGroups, loading, error, endReached, repositor
         direction="column"
         alignItems="center"
         justifyContent="center">
-        <CustomAppBar onRefresh={() => fetchEvents(0, 20)} />
+        <CustomAppBar />
         {
             loading && <LinearProgress sx={{ position: "fixed", top: 56, left: 0, right: 0 }} />
         }

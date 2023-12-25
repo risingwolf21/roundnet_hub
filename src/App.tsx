@@ -27,7 +27,6 @@ import CreateEventProvider from './components/training/CreateEvent';
 import { EventInformationProvider } from './components/training/EventInformation';
 import { EventScreenProvider } from './components/training/EventScreen';
 import { useServiceWorker } from './hooks/useServiceWorker';
-import { can } from "./utils/PermissionService";
 
 const App = () => {
 
@@ -57,22 +56,11 @@ const App = () => {
             <Route path="/keys" element={<KeyHolderScreenProvider />} />
             <Route path="/notifications" element={<NotificationsScreen />} />
 
-
-            {
-              can("edit", "groups") && <Route path="/trainer/groups" element={<ManageGroupsProvider />} />
-            }
-            {
-              can("edit", "groups") && <Route path="/trainer/groups/:id" element={<GroupInformationProvider />} />
-            }
-            {
-              can("view", "training") && <Route path="/training" element={<EventScreenProvider />} />
-            }
-            {
-              can("view", "training") && <Route path="/training/event/:selectedEventId" element={<EventInformationProvider />} />
-            }
-            {
-              can("edit", "training") && <Route path="/training/create" element={<CreateEventProvider />} />
-            }
+            <Route path="/trainer/groups" element={<ManageGroupsProvider />} />
+            <Route path="/trainer/groups/:id" element={<GroupInformationProvider />} />
+            <Route path="/training" element={<EventScreenProvider />} />
+            <Route path="/training/event/:selectedEventId" element={<EventInformationProvider />} />
+            <Route path="/training/create" element={<CreateEventProvider />} />
 
             <Route path='/admin/drinks' element={<AdminDrinkListProvider />} />
 

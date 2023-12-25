@@ -1,19 +1,17 @@
-import { Alert, Box, Button, Divider, List, ListItem, ListItemAvatar, ListItemSecondaryAction, ListItemText, Snackbar, Typography } from "@mui/material";
-import { PAYPAL_ME_ADDRESS } from "../constants";
 import EuroIcon from '@mui/icons-material/Euro';
-import { groupBy } from '../utils';
-import { Loading } from "./Loading";
-import CustomAppBar from "./AppBar";
+import { Alert, Box, Button, Divider, List, ListItem, ListItemAvatar, ListItemSecondaryAction, ListItemText, Snackbar, Typography } from "@mui/material";
+import React, { useEffect } from "react";
 import { useSelector } from "react-redux";
-import { useEffect } from "react";
-import { fetchDrinksToPayAsync, fetchPaymentAsync } from "../redux/drinksSlice";
-import React from "react";
-import { RootState } from "../redux/store";
-import { useAppDispatch } from "..";
-import { PaymentHistory, User } from "../types/supabaseTypes";
+import { PAYPAL_ME_ADDRESS } from "../constants";
 import { useDependency } from "../hooks/useDependency";
+import { fetchDrinksToPayAsync, fetchPaymentAsync } from "../redux/drinksSlice";
+import { RootState, useAppDispatch } from "../redux/store";
 import { IDrinkRepository } from "../repository/IDrinkRepository";
+import { PaymentHistory, User } from "../types/supabaseTypes";
+import { groupBy } from '../utils';
 import { AlertSnackbar } from "./AlertSnackbar";
+import CustomAppBar from "./AppBar";
+import { Loading } from "./Loading";
 
 const PayDrinksButton = ({ amountToPay }: { amountToPay: number }) => {
 
