@@ -25,7 +25,7 @@ type EventInformationProps = {
     error: string | null,
     user: User,
     dispatch: ThunkDispatch<RootState, undefined, AnyAction>,
-    selectedEventPlace: PlaceType,
+    selectedEventPlace: PlaceType | null,
     repository: IEventRepository,
     t: TFunction
 }
@@ -39,7 +39,7 @@ export const EventInformationProvider = () => {
     const dispatch = useAppDispatch();
     const { t } = useTranslation();
     const [selectedEvent, setSelectedEvent] = useState<FullEvent>();
-    const [selectedEventPlace, setSelectedEventPlace] = useState<PlaceType>();
+    const [selectedEventPlace, setSelectedEventPlace] = useState<PlaceType | null>(null);
     const repository = useDependency<IEventRepository>("IEventRepository");
 
     useEffect(() => {
@@ -50,14 +50,14 @@ export const EventInformationProvider = () => {
             dispatch(fetchSingleEventAsync({ repository, eventId: toNumber(selectedEventId), userId: user.userId }));
         } else {
             setSelectedEvent(found);
-            setSelectedEventPlace(JSON.parse(found.place?.toString() ?? "") as PlaceType)
+            setSelectedEventPlace(found.place ? JSON.parse(found.place?.toString() ?? "") as PlaceType : null)
         }
     }, [items, selectedEventId, dispatch, repository, user]);
 
     if (process.env.REACT_APP_training !== "enabled")
         return <Navigate to={"/feature-not-available"} />
 
-    if (!selectedEvent || !selectedEventPlace || !repository || !user)
+    if (!selectedEvent || !repository || !user)
         return <Box
             sx={{
                 width: "100%",

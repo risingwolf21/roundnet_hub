@@ -19,17 +19,17 @@ export const EventItem = ({ event, onClick, attendEvent, declineEvent, attendanc
             <Box sx={{ display: "flex", flexDirection: "column", justifyContent: "left" }}>
                 <Typography fontSize={10} textAlign={"center"}>
                     {
-                        moment(event.meetingDateTime).format("MMM").toUpperCase()
+                        moment(event.startingDateTime).format("MMM").toUpperCase()
                     }
                 </Typography>
                 <Typography variant="h6" fontWeight={"bold"} textAlign={"center"}>
                     {
-                        moment(event.meetingDateTime).format("D")
+                        moment(event.startingDateTime).format("D")
                     }
                 </Typography>
             </Box>
         </ListItemAvatar>
-        <ListItemText primary={event.title} secondary={event.isCancelled ? "Event abgesagt" : moment(event.meetingDateTime).format("dddd [at] HH:mm")} />
+        <ListItemText primary={event.title} secondary={event.isCancelled ? "Event abgesagt" : moment(event.startingDateTime).format("dddd [at] HH:mm")} />
         <ListItemSecondaryAction>
             {
                 attendanceUpdating
