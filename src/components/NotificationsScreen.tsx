@@ -1,10 +1,12 @@
 import { Save } from "@mui/icons-material"
 import { Box, Checkbox, Fab, List, ListItemAvatar, ListItemButton, ListItemText } from "@mui/material"
-import { isEqual } from "lodash"
 import React, { useEffect, useState } from "react"
 import OneSignal from "react-onesignal"
 import { useSelector } from "react-redux"
+import { useDependency } from "src/hooks/useDependency"
 import { RootState } from "src/redux/store"
+import { IUserRepository } from "src/repository/IUserRepository"
+import { AlertMessage, AlertSnackbar } from "./AlertSnackbar"
 import CustomAppBar from "./AppBar"
 import { LoadingIndicator } from "./LoadingIndicator"
 import userTags from "./services/onesignal/userTags"
@@ -12,13 +14,19 @@ import userTags from "./services/onesignal/userTags"
 const NotificationsScreen = () => {
 
     const [notificationsAllowed, setNotificationsAllowed] = useState(false);
-    const [notificationTagsChanged, setNotificationTagsChanged] = useState(false);
     const [activeUserTags, setActiveUserTags] = useState<string[]>([]);
+    const [errorMessage, setErrorMessage] = useState<AlertMessage | null>(null);
     const { user } = useSelector((state: RootState) => state.application);
+    const userRepository = useDependency<IUserRepository>("IUserRepository");
 
     useEffect(() => {
         setNotificationsAllowed(OneSignal.User.PushSubscription.optedIn ?? false);
     }, []);
+
+    useEffect(() => {
+        if (user)
+            setActiveUserTags(user.notificationTags);
+    }, [user]);
 
     const handleChange = (tag: string, active: boolean) => {
         if (active) {
@@ -26,11 +34,13 @@ const NotificationsScreen = () => {
         } else {
             setActiveUserTags(activeUserTags.filter(x => x !== tag))
         }
-        setNotificationTagsChanged(!isEqual(activeUserTags.sort(), user?.notificationTags.sort()));
     }
 
     const saveTags = () => {
-
+        if (user && userRepository)
+            userRepository.updateNotificationTags(activeUserTags, user);
+        else
+            setErrorMessage({ message: "Something went wrong trying to update your notification permissions", severity: "warning" });
     }
 
     return <Box>
@@ -46,14 +56,13 @@ const NotificationsScreen = () => {
                 </ListItemButton>)
             }
         </List>
-        {
-            notificationTagsChanged && <Fab sx={{ background: "#66bb6a", position: "fixed", right: "16px", bottom: "76px" }}
-                onClick={() => { }}>
-                {
-                    <Save sx={{ color: "white" }} />
-                }
-            </Fab>
-        }
+        <Fab sx={{ background: "#66bb6a", position: "fixed", right: "16px", bottom: "76px" }}
+            onClick={saveTags}>
+            {
+                <Save sx={{ color: "white" }} />
+            }
+        </Fab>
+        <AlertSnackbar alertInfo={errorMessage} close={null} />
     </Box>
 }
 
