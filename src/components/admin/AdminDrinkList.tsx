@@ -60,7 +60,7 @@ const EMPTY_DRINK: Drink =
     type: "Drink"
 };
 
-export const AdminDrinkListProvider = () => {
+const AdminDrinkListProvider = () => {
     const { drinks, drinksError, drinksLoading } = useSelector((state: RootState) => state.adminDrinks);
     const repository = useDependency<IAdminDrinksRepository>("IAdminDrinksRepository");
 
@@ -185,4 +185,4 @@ const AdminDrinkList = ({ repository, drinks, drinksError, drinksLoading }: Admi
     </Grid >);
 }
 
-export default AdminDrinkList;
+export default AdminDrinkListProvider;

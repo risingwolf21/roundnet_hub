@@ -4,29 +4,31 @@ import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import AuthGate from './AuthGate';
 import CustomBottomNavigation from './components/BottomNavigation';
 import Browse from './components/Browse';
-import FeatureNotAvailable from './components/FeatureNotAvailable';
-import { HistoryScreenProvider } from './components/HistoryScreen';
-import { KeyHolderScreenProvider } from './components/KeyHolderScreen';
-import { NotificationsScreen } from './components/NotificationsScreen';
-import { PayDrinksScreenProvider } from './components/PayDrinksScreen';
-import ResetPasswordScreen from './components/ResetPasswordScreen';
+import { LoadingScreen } from "./components/LoadingScreen";
 import { SubscriptionHandler } from './components/SubscriptionHandler';
 import UpdateAvailable from './components/UpdateAvailable';
 import UserScreen from './components/User';
-import { AdminDrinkListProvider } from './components/admin/AdminDrinkList';
-import { AdminHistoryScreenProvider } from './components/admin/AdminHistoryScreen';
-import { AdminUserListProvider } from './components/admin/AdminUserList';
 import BrowseAdmin from './components/admin/BrowseAdmin';
-import PaymentsPendingAdmin from './components/admin/PaymentsPendingAdmin';
-import { DrinkListScreenProvider } from './components/drinkList/DrinkListScreen';
-import { GroupInformationProvider } from './components/groups/GroupInformation';
-import { ManageGroupsProvider } from './components/groups/ManageGroups';
-import { AnalyzeDrinkStockHistoryProvider } from './components/procure/AnalyzeDrinkStockHistory';
-import DrinkStockUpdateScreen from './components/procure/DrinkStockUpdateScreen';
-import CreateEventProvider from './components/training/CreateEvent';
-import { EventInformationProvider } from './components/training/EventInformation';
-import { EventScreenProvider } from './components/training/EventScreen';
 import { useServiceWorker } from './hooks/useServiceWorker';
+
+const FeatureNotAvailable = React.lazy(() => import('./components/FeatureNotAvailable'));
+const HistoryScreenProvider = React.lazy(() => import('./components/HistoryScreen'));
+const KeyHolderScreenProvider = React.lazy(() => import('./components/KeyHolderScreen'));
+const NotificationsScreen = React.lazy(() => import('./components/NotificationsScreen'));
+const PayDrinksScreenProvider = React.lazy(() => import('./components/PayDrinksScreen'));
+const ResetPasswordScreen = React.lazy(() => import('./components/ResetPasswordScreen'));
+const PaymentsPendingAdmin = React.lazy(() => import('./components/admin/PaymentsPendingAdmin'));
+const DrinkStockUpdateScreen = React.lazy(() => import('./components/procure/DrinkStockUpdateScreen'));
+const CreateEventProvider = React.lazy(() => import('./components/training/CreateEvent'));
+const AdminDrinkListProvider = React.lazy(() => import('./components/admin/AdminDrinkList'));
+const AdminHistoryScreenProvider = React.lazy(() => import('./components/admin/AdminHistoryScreen'));
+const AdminUserListProvider = React.lazy(() => import('./components/admin/AdminUserList'));
+const DrinkListScreenProvider = React.lazy(() => import('./components/drinkList/DrinkListScreen'));
+const GroupInformationProvider = React.lazy(() => import('./components/groups/GroupInformation'));
+const ManageGroupsProvider = React.lazy(() => import('./components/groups/ManageGroups'));
+const AnalyzeDrinkStockHistoryProvider = React.lazy(() => import('./components/procure/AnalyzeDrinkStockHistory'));
+const EventInformationProvider = React.lazy(() => import('./components/training/EventInformation'));
+const EventScreenProvider = React.lazy(() => import('./components/training/EventScreen'));
 
 const App = () => {
 
@@ -39,37 +41,39 @@ const App = () => {
     <BrowserRouter>
       <AuthGate>
         <SubscriptionHandler>
-          <Routes>
-            <Route path='/' element={<Navigate replace to={"/drinks"} />} />
-            <Route path="*" element={<Navigate replace to={"/drinks"} />} />
+          <React.Suspense fallback={<LoadingScreen />}>
+            <Routes>
+              <Route path='/' element={<Navigate replace to={"/drinks"} />} />
+              <Route path="*" element={<Navigate replace to={"/drinks"} />} />
 
-            <Route path='/feature-not-available' element={<FeatureNotAvailable />} />
+              <Route path='/feature-not-available' element={<FeatureNotAvailable />} />
 
-            <Route path='/reset-password' element={<ResetPasswordScreen />} />
+              <Route path='/reset-password' element={<ResetPasswordScreen />} />
 
-            <Route path='/browse' element={<Browse />} />
-            <Route path='/browse-admin' element={<BrowseAdmin />} />
-            <Route path="/drinks" element={<DrinkListScreenProvider />} />
-            <Route path="/user" element={<UserScreen />} />
-            <Route path="/history" element={<HistoryScreenProvider />} />
-            <Route path="/payments" element={<PayDrinksScreenProvider />} />
-            <Route path="/keys" element={<KeyHolderScreenProvider />} />
-            <Route path="/notifications" element={<NotificationsScreen />} />
+              <Route path='/browse' element={<Browse />} />
+              <Route path='/browse-admin' element={<BrowseAdmin />} />
+              <Route path="/drinks" element={<DrinkListScreenProvider />} />
+              <Route path="/user" element={<UserScreen />} />
+              <Route path="/history" element={<HistoryScreenProvider />} />
+              <Route path="/payments" element={<PayDrinksScreenProvider />} />
+              <Route path="/keys" element={<KeyHolderScreenProvider />} />
+              <Route path="/notifications" element={<NotificationsScreen />} />
 
-            <Route path="/trainer/groups" element={<ManageGroupsProvider />} />
-            <Route path="/trainer/groups/:id" element={<GroupInformationProvider />} />
-            <Route path="/training" element={<EventScreenProvider />} />
-            <Route path="/training/event/:selectedEventId" element={<EventInformationProvider />} />
-            <Route path="/training/create" element={<CreateEventProvider />} />
+              <Route path="/trainer/groups" element={<ManageGroupsProvider />} />
+              <Route path="/trainer/groups/:id" element={<GroupInformationProvider />} />
+              <Route path="/training" element={<EventScreenProvider />} />
+              <Route path="/training/event/:selectedEventId" element={<EventInformationProvider />} />
+              <Route path="/training/create" element={<CreateEventProvider />} />
 
-            <Route path='/admin/drinks' element={<AdminDrinkListProvider />} />
+              <Route path='/admin/drinks' element={<AdminDrinkListProvider />} />
 
-            <Route path="/admin/drinks/history" element={<AdminHistoryScreenProvider />} />
-            <Route path='/admin/drinks/payments' element={<PaymentsPendingAdmin />} />
-            <Route path='/admin/drinks/stocks' element={<DrinkStockUpdateScreen />} />
-            <Route path='/admin/drinks/analyze' element={<AnalyzeDrinkStockHistoryProvider />} />
-            <Route path='/admin/users' element={<AdminUserListProvider />} />
-          </Routes>
+              <Route path="/admin/drinks/history" element={<AdminHistoryScreenProvider />} />
+              <Route path='/admin/drinks/payments' element={<PaymentsPendingAdmin />} />
+              <Route path='/admin/drinks/stocks' element={<DrinkStockUpdateScreen />} />
+              <Route path='/admin/drinks/analyze' element={<AnalyzeDrinkStockHistoryProvider />} />
+              <Route path='/admin/users' element={<AdminUserListProvider />} />
+            </Routes>
+          </React.Suspense>
           <div style={{ width: "100%", height: "56px" }} />
           <CustomBottomNavigation />
         </SubscriptionHandler>

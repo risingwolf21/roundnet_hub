@@ -48,7 +48,7 @@ const AdminUserItem = ({ user, onEditClick }: { user: User, onEditClick: () => v
     </ListItem>
 }
 
-export const AdminUserListProvider = () => {
+const AdminUserListProvider = () => {
     const adminUsersRepository = useDependency<IAdminUsersRepository>("IAdminUsersRepository");
 
     if (!adminUsersRepository)
@@ -150,4 +150,4 @@ const AdminUserList = ({ repository }: AdminUserListProps) => {
     </Grid >);
 }
 
-export default AdminUserList;
+export default AdminUserListProvider;

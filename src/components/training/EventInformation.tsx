@@ -7,7 +7,7 @@ import moment from "moment";
 import React, { createRef, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { MapContainer, Marker, TileLayer } from "react-leaflet";
-import { connect, useSelector } from "react-redux";
+import { useSelector } from "react-redux";
 import { Navigate, useNavigate, useParams } from "react-router-dom";
 import { useDependency } from "src/hooks/useDependency";
 import { IEventRepository } from "src/repository/IEventRepository";
@@ -32,7 +32,7 @@ type EventInformationProps = {
 
 export type DeleteEventType = "This Event" | "This and following events";
 
-export const EventInformationProvider = () => {
+const EventInformationProvider = () => {
     const { items, error, attendanceLoading } = useSelector((state: RootState) => state.events);
     const { user } = useSelector((state: RootState) => state.application);
     const { selectedEventId } = useParams();
@@ -442,12 +442,4 @@ const EventInformation = ({ dispatch, selectedEvent, attendanceLoading, error, u
     </Box >
 }
 
-const mapStateToProps = (state: RootState) => {
-    return {
-        events: state.events.items,
-        error: state.events.error,
-        attendanceLoading: state.events.attendanceLoading
-    }
-};
-
-export default connect(mapStateToProps)(EventInformation);
+export default EventInformationProvider;

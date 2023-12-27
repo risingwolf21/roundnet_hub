@@ -18,7 +18,7 @@ import { LoadingIndicator } from "./LoadingIndicator";
 import { Search, SearchIconWrapper, StyledInputBase } from "./SearchBar";
 import { SwipeableDialog } from "./SwipeableDialog";
 
-export const KeyHolderScreenProvider = () => {
+const KeyHolderScreenProvider = () => {
     const { user } = useSelector((state: RootState) => state.application);
     const keysRepository = useDependency<IKeysRepository>("IKeysRepository");
     const dispatch = useAppDispatch();
@@ -191,3 +191,5 @@ const SearchUserDialog = ({ onUserSelected, user, open, handleClose }: { onUserS
 
     </Dialog>
 }
+
+export default KeyHolderScreenProvider;

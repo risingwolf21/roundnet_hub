@@ -10,7 +10,7 @@ import { fetchGroupsAsync } from "../../redux/groupsSlice";
 import { RootState, useAppDispatch } from "../../redux/store";
 import CustomAppBar from "../AppBar";
 
-export const ManageGroupsProvider = () => {
+const ManageGroupsProvider = () => {
 
     const { groups, loading } = useSelector((state: RootState) => state.groups);
     const client = useClient();
@@ -63,4 +63,4 @@ const ManageGroupsScreen = ({ groups, loading, client }: ManageGroupsScreenProps
     </Grid>
 }
 
-export default ManageGroupsScreen;
+export default ManageGroupsProvider;

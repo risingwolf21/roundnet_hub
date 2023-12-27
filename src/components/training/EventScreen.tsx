@@ -15,7 +15,7 @@ import CustomAppBar from "../AppBar";
 import { InfiniteScrollList } from "../InfiniteScrollList";
 import { EventItem } from "./EventItem";
 
-export const EventScreenProvider = () => {
+const EventScreenProvider = () => {
     const { items: events, userGroups, loading, error, endReached } = useSelector((state: RootState) => state.events);
     const { user } = useSelector((state: RootState) => state.application);
     const repository = useDependency<IEventRepository>("IEventRepository");
@@ -127,4 +127,4 @@ const EventScreen = ({ events, userGroups, loading, error, endReached, repositor
     </Grid >);
 }
 
-export default EventScreen;
+export default EventScreenProvider;

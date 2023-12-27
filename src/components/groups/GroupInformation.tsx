@@ -14,7 +14,7 @@ import { AlertSnackbar } from "../AlertSnackbar";
 import CustomAppBar from "../AppBar";
 import SearchAndSelectUserDialog from "../SearchAndSelectUserDialog";
 
-export const GroupInformationProvider = () => {
+const GroupInformationProvider = () => {
     const { id } = useParams();
     const groups = useSelector((state: RootState) => state.groups.groups);
     const { users, loading } = useSelector((state: RootState) => state.adminUsers);
@@ -92,4 +92,4 @@ const GroupInformation = ({ users, loading, group, repository }: GroupInformatio
 
 }
 
-export default GroupInformation;
+export default GroupInformationProvider;

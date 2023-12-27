@@ -9,7 +9,7 @@ import CustomAppBar from "./AppBar"
 import { LoadingIndicator } from "./LoadingIndicator"
 import userTags from "./services/onesignal/userTags"
 
-export const NotificationsScreen = () => {
+const NotificationsScreen = () => {
 
     const [notificationsAllowed, setNotificationsAllowed] = useState(false);
     const [notificationTagsChanged, setNotificationTagsChanged] = useState(false);
@@ -56,3 +56,5 @@ export const NotificationsScreen = () => {
         }
     </Box>
 }
+
+export default NotificationsScreen;

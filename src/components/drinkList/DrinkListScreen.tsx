@@ -20,7 +20,7 @@ import DrinkList from "./DrinkList";
 
 const SUCCESS_MESSAGE_INFO: AlertMessage = { message: "Getränke erfolgreich gebucht!", severity: "success" };
 
-export const DrinkListScreenProvider = () => {
+const DrinkListScreenProvider = () => {
     const { user } = useSelector((state: RootState) => state.application);
     const drinksRepository = useDependency<IDrinkRepository>("IDrinkRepository");
     const { drinks, drinksLoading, drinksError } = useSelector((state: RootState) => state.drinks);
@@ -189,3 +189,5 @@ const DrinkListScreen = ({ repository, user, drinks, drinksLoading, drinksError,
 
     </Box>
 }
+
+export default DrinkListScreenProvider;

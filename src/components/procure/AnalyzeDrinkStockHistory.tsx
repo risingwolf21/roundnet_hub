@@ -1,13 +1,13 @@
 import { Box, Card, CardContent, Grid, LinearProgress, Typography } from "@mui/material";
-import { useSelector } from "react-redux";
-import CustomAppBar from "../AppBar";
-import React, { useEffect, useState } from "react";
 import { PieChart } from '@mui/x-charts/PieChart';
-import { groupBy } from "../../utils";
-import { RootState } from "../../redux/store";
+import React, { useEffect, useState } from "react";
+import { useSelector } from "react-redux";
 import { useDependency } from "../../hooks/useDependency";
+import { RootState } from "../../redux/store";
 import { IDrinkRepository } from "../../repository/IDrinkRepository";
+import { groupBy } from "../../utils";
 import { AlertSnackbar } from "../AlertSnackbar";
+import CustomAppBar from "../AppBar";
 
 export type DrinkStockType = {
     count: number,
@@ -22,7 +22,7 @@ type AnalyzeDrinkStockHistoryProps = {
     loading: boolean
 }
 
-export const AnalyzeDrinkStockHistoryProvider = () => {
+const AnalyzeDrinkStockHistoryProvider = () => {
     const drinksRepository = useDependency<IDrinkRepository>("IDrinkRepository");
     const { loading } = useSelector((state: RootState) => state.adminDrinks);
 
@@ -84,3 +84,5 @@ const AnalyzeDrinkStockHistory = ({ drinksRepository, loading }: AnalyzeDrinkSto
     </Grid>
 
 }
+
+export default AnalyzeDrinkStockHistoryProvider;
