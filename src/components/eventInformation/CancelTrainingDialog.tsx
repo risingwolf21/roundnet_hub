@@ -1,0 +1,51 @@
+import { Box, Button, DialogContent, DialogContentText } from "@mui/material";
+import { SwipeableDialog } from "../SwipeableDialog";
+import React from "react";
+import { FullEvent } from "src/types/supabaseTypes";
+
+type CancelTrainingDialogProps = {
+    cancelTrainingOpen: boolean
+    setCancelTrainingOpen: (value: boolean) => void
+    cancelTraining: () => void
+    selectedEvent: FullEvent
+}
+
+export const CancelTrainingDialog = ({ cancelTrainingOpen, setCancelTrainingOpen, cancelTraining, selectedEvent }: CancelTrainingDialogProps) => {
+    return <SwipeableDialog open={cancelTrainingOpen} setOpen={setCancelTrainingOpen} title={`Training ${selectedEvent.isCancelled ? "aktivieren" : "absagen"}`} onClose={() => setCancelTrainingOpen(false)}>
+        <DialogContent>
+            <DialogContentText>
+                {selectedEvent.isCancelled ? "Möchtest du diese Training aktivieren? Spieler können anschließend dem Training wieder zu und absagen." : "Möchtest du diese Training wirklich absagen? Spieler können zu dem Training weder zu noch absagen."}
+            </DialogContentText>
+        </DialogContent>
+        <Box sx={{
+            display: "flex",
+            flexDirection: "row",
+            flexGrow: 1,
+            position: "absolute",
+            left: 0,
+            right: 0,
+            bottom: 0
+        }}>
+            <Button variant="outlined" fullWidth sx={{
+                ml: 2,
+                mr: 1,
+                mb: 2,
+                borderRadius: "50px !important",
+                fontSize: "16px",
+                fontFamily: "sans-serif",
+                lineSpacing: "24px"
+            }} onClick={() => setCancelTrainingOpen(false)}>Abbrechen</Button>
+            <Button variant="contained" fullWidth sx={{
+                ml: 1,
+                mr: 2,
+                mb: 2,
+                borderRadius: "50px !important",
+                fontSize: "16px",
+                fontFamily: "sans-serif",
+                lineSpacing: "24px"
+            }} onClick={cancelTraining} autoFocus>
+                Bestätigen
+            </Button>
+        </Box>
+    </SwipeableDialog>
+}

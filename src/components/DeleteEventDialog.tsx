@@ -2,8 +2,8 @@ import { Box, Button, DialogContent, FormControl, FormControlLabel, Radio, Radio
 import { useState } from "react";
 import React from "react";
 import { Event } from "../types/supabaseTypes";
-import { DeleteEventType } from "./training/EventInformation";
 import { SwipeableDialog } from "./SwipeableDialog";
+import { DeleteEventType } from "./eventInformation/types";
 
 export const THIS_EVENT = "THIS_EVENT";
 export const THIS_AND_FOLLOWING_EVENT = "THIS_AND_FOLLOWING_EVENT";

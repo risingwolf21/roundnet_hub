@@ -6,6 +6,7 @@ import { useEffect } from "react";
 import React from "react";
 import { FullAttendance, FullEvent } from "../../types/supabaseTypes";
 import { SwipeableDialog } from "../SwipeableDialog";
+import { EventAttendanceDialogProps } from "./types";
 
 function TabPanel(props: any) {
     const { children, value, index, ...other } = props;
@@ -23,12 +24,6 @@ function TabPanel(props: any) {
     );
 }
 
-type EventAttendanceDialogProps = {
-    open: boolean,
-    index: number,
-    setOpen: (value: boolean) => void,
-    event: FullEvent
-}
 
 const EventAttendanceDialog = ({ open, index, setOpen, event }: EventAttendanceDialogProps) => {
 

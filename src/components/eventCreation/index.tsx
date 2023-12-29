@@ -1,5 +1,5 @@
 import { AppBar, Box, Button, Dialog, IconButton, Toolbar, Typography, TextField, ListItem, ListItemAvatar, ListItemText, DialogTitle, DialogContent, FormControl, FormControlLabel, RadioGroup, Radio, Divider, Checkbox, DialogActions, List, InputAdornment, Snackbar, Alert, ListItemButton } from "@mui/material"
-import { AccessTime, Article, Close, FiberManualRecord, Map, People } from "@mui/icons-material";
+import { AccessTime, Article, Close, FiberManualRecord, Map } from "@mui/icons-material";
 import EventIcon from "@mui/icons-material/Event";
 import { useNavigate } from 'react-router-dom';
 import { DatePicker, DateTimePicker } from "@mui/x-date-pickers";
@@ -7,42 +7,14 @@ import { TimePicker } from '@mui/x-date-pickers/TimePicker';
 import { FormEvent, useState } from "react";
 import moment, { Moment } from "moment";
 import EventRepeatIcon from '@mui/icons-material/EventRepeat';
-import { withTranslation } from 'react-i18next';
 import React, { useEffect } from "react";
 import SearchPlacesDialog from "./SearchPlacesDialog";
 import { MapContainer, TileLayer, Marker, useMap } from "react-leaflet";
-import { TFunction } from "i18next";
-import { EventInsert, EventRecurrence, FullEvent, Group } from "../../types/supabaseTypes";
-import { RootState } from "../../redux/store";
-import { useDependency } from "src/hooks/useDependency";
-import { IEventRepository } from "src/repository/IEventRepository";
-import { useSelector } from "react-redux";
-import { AlertSnackbar } from "../AlertSnackbar";
+import { EventInsert, EventRecurrence, Group } from "../../types/supabaseTypes";
 import { isBefore } from "date-fns";
 import { toNumber } from "lodash";
+import { CreateEventProps, PlaceType } from "./types";
 import { SelectGroupDialog } from "./SelectGroupDialog";
-
-export type PlaceType = {
-    name: string,
-    lat: number,
-    lon: number
-}
-
-const CreateEventProvider = ({ t }: { t: TFunction }) => {
-    const repository = useDependency<IEventRepository>("IEventRepository");
-    const eventToEdit = useSelector((state: RootState) => state.events.eventToEdit);
-
-    if (!repository)
-        return <AlertSnackbar close={() => { }} alertInfo={{ message: "Fatal error occured. Repository or user was null!", severity: "error" }} />
-
-    return <CreateEvent t={t} eventToEdit={eventToEdit} repository={repository} />
-}
-
-type CreateEventProps = {
-    t: TFunction,
-    eventToEdit: FullEvent | null,
-    repository: IEventRepository
-}
 
 const CreateEvent = ({ t, eventToEdit, repository }: CreateEventProps) => {
 
@@ -110,7 +82,7 @@ const CreateEvent = ({ t, eventToEdit, repository }: CreateEventProps) => {
                     : stopRepeatDateTime.format("yyyy-MM-DD HH:mm:ssZ")
             } as EventInsert;
 
-            if(!group)
+            if (!group)
                 throw new Error(t("events.creation.noGroupSelected"))
 
             if (answerDeadline && isBefore(answerDeadline.toDate(), Date.now()))
@@ -373,4 +345,4 @@ const CreateEvent = ({ t, eventToEdit, repository }: CreateEventProps) => {
     </Box >
 }
 
-export default withTranslation()(CreateEventProvider);
+export default CreateEvent;

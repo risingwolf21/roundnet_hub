@@ -1,84 +1,17 @@
 import { AccountCircle, ArrowBack, CheckCircleOutline, Delete, DoNotDisturb, DoNotDisturbOff, Edit, MoreVert, Refresh, RemoveCircleOutline, Send, ThumbDownAlt, ThumbDownOffAlt, ThumbUpAlt, ThumbUpOffAlt } from "@mui/icons-material";
-import { Alert, AlertTitle, AppBar, Avatar, Box, Button, Card, CardContent, CardHeader, CardMedia, CircularProgress, DialogContent, DialogContentText, Divider, IconButton, InputAdornment, List, ListItem, ListItemAvatar, ListItemIcon, ListItemSecondaryAction, ListItemText, Menu, MenuItem, Snackbar, TextField, Toolbar, Typography } from "@mui/material";
-import { AnyAction, ThunkDispatch } from "@reduxjs/toolkit";
-import { TFunction } from "i18next";
-import { toInteger, toNumber } from "lodash";
+import { Alert, AlertTitle, AppBar, Avatar, Box, Button, Card, CardContent, CardHeader, CardMedia, CircularProgress, Divider, IconButton, InputAdornment, List, ListItem, ListItemAvatar, ListItemIcon, ListItemSecondaryAction, ListItemText, Menu, MenuItem, Snackbar, TextField, Toolbar, Typography } from "@mui/material";
 import moment from "moment";
 import React, { createRef, useEffect, useState } from "react";
-import { useTranslation } from "react-i18next";
 import { MapContainer, Marker, TileLayer } from "react-leaflet";
-import { useSelector } from "react-redux";
-import { Navigate, useNavigate, useParams } from "react-router-dom";
-import { useDependency } from "src/hooks/useDependency";
-import { IEventRepository } from "src/repository/IEventRepository";
+import { useNavigate } from "react-router-dom";
 import { editEvent, fetchEventAttendanceAsync, fetchSingleEventAsync, onEventErrorRead, updateAttendanceAsync, upsertCommentToEventAsync } from "../../redux/eventSlice";
-import { RootState, useAppDispatch } from "../../redux/store";
-import { EventAttendance, FullEvent, User, answerDeadlineExpired, maxAttendeesExceeded } from "../../types/supabaseTypes";
+import { EventAttendance, answerDeadlineExpired, maxAttendeesExceeded } from "../../types/supabaseTypes";
 import { DeleteEventDialog } from "../DeleteEventDialog";
 import { SwipeableDialog } from "../SwipeableDialog";
-import { PlaceType } from "./CreateEvent";
+import { DeleteEventType, EventInformationProps } from "./types";
 import EventAttendanceDialog from "./EventAttendanceDialog";
-
-type EventInformationProps = {
-    selectedEvent: FullEvent,
-    attendanceLoading: boolean,
-    error: string | null,
-    user: User,
-    dispatch: ThunkDispatch<RootState, undefined, AnyAction>,
-    selectedEventPlace: PlaceType | null,
-    repository: IEventRepository,
-    t: TFunction
-}
-
-export type DeleteEventType = "This Event" | "This and following events";
-
-const EventInformationProvider = () => {
-    const { items, error, attendanceLoading } = useSelector((state: RootState) => state.events);
-    const { user } = useSelector((state: RootState) => state.application);
-    const { selectedEventId } = useParams();
-    const dispatch = useAppDispatch();
-    const { t } = useTranslation();
-    const [selectedEvent, setSelectedEvent] = useState<FullEvent>();
-    const [selectedEventPlace, setSelectedEventPlace] = useState<PlaceType | null>(null);
-    const repository = useDependency<IEventRepository>("IEventRepository");
-
-    useEffect(() => {
-        if (!repository || !user)
-            return;
-        let found = items.find(x => x.id === toInteger(selectedEventId));
-        if (!found) {
-            dispatch(fetchSingleEventAsync({ repository, eventId: toNumber(selectedEventId), userId: user.userId }));
-        } else {
-            setSelectedEvent(found);
-            setSelectedEventPlace(found.place ? JSON.parse(found.place?.toString() ?? "") as PlaceType : null)
-        }
-    }, [items, selectedEventId, dispatch, repository, user]);
-
-    if (process.env.REACT_APP_training !== "enabled")
-        return <Navigate to={"/feature-not-available"} />
-
-    if (!selectedEvent || !repository || !user)
-        return <Box
-            sx={{
-                width: "100%",
-                height: "100%",
-                direction: "column",
-                alignItems: "center",
-                justifyContent: "center"
-            }}>
-            <Typography>{`Event mit ID ${selectedEventId} nicht gefunden`}</Typography>
-        </Box>
-
-    return <EventInformation
-        t={t}
-        selectedEvent={selectedEvent}
-        selectedEventPlace={selectedEventPlace}
-        repository={repository}
-        attendanceLoading={attendanceLoading}
-        error={error}
-        user={user}
-        dispatch={dispatch} />
-}
+import { CancelTrainingDialog } from "./CancelTrainingDialog";
+import { can } from "src/utils/PermissionService";
 
 const EventInformation = ({ dispatch, selectedEvent, attendanceLoading, error, user, selectedEventPlace, repository, t }: EventInformationProps) => {
 
@@ -177,7 +110,7 @@ const EventInformation = ({ dispatch, selectedEvent, attendanceLoading, error, u
                 <IconButton color="inherit" onClick={() => dispatch(fetchSingleEventAsync({ repository, eventId: selectedEvent.id, userId: user.userId }))}>
                     <Refresh />
                 </IconButton>
-                {(user?.role === "admin" || user?.role === "trainer") && <>
+                {(user?.role === "admin" || user?.role === "trainer" || can("edit", "training")) && <>
                     <IconButton sx={{ color: "inherit", pr: 0 }} onClick={handleClick}>
                         <MoreVert />
                     </IconButton>
@@ -409,30 +342,26 @@ const EventInformation = ({ dispatch, selectedEvent, attendanceLoading, error, u
                 </Box>
             </Box>
 
-            <EventAttendanceDialog open={eventAttendanceState.open} index={eventAttendanceState.index} setOpen={(value) => setEventAttendanceState({ open: value, index: 0 })} event={selectedEvent} />
+            <EventAttendanceDialog
+                open={eventAttendanceState.open}
+                index={eventAttendanceState.index}
+                setOpen={(value) => setEventAttendanceState({ open: value, index: 0 })}
+                event={selectedEvent} />
 
-            <SwipeableDialog open={cancelTrainingOpen} setOpen={setCancelTrainingOpen} title={`Training ${selectedEvent.isCancelled ? "aktivieren" : "absagen"}`} onClose={() => setCancelTrainingOpen(false)}>
-                <DialogContent>
-                    <DialogContentText>
-                        {
-                            selectedEvent.isCancelled
-                                ? "Möchtest du diese Training aktivieren? Spieler können anschließend dem Training wieder zu und absagen."
-                                : "Möchtest du diese Training wirklich absagen? Spieler können zu dem Training weder zu noch absagen."
-                        }
-                    </DialogContentText>
-                </DialogContent>
-                <Box sx={{ display: "flex", flexDirection: "row", flexGrow: 1, position: "absolute", left: 0, right: 0, bottom: 0 }}>
-                    <Button variant="outlined" fullWidth sx={{ ml: 2, mr: 1, mb: 2, borderRadius: "50px !important", fontSize: "16px", fontFamily: "sans-serif", lineSpacing: "24px" }} onClick={() => setCancelTrainingOpen(false)}>Abbrechen</Button>
-                    <Button variant="contained" fullWidth sx={{ ml: 1, mr: 2, mb: 2, borderRadius: "50px !important", fontSize: "16px", fontFamily: "sans-serif", lineSpacing: "24px" }} onClick={cancelTraining} autoFocus>
-                        Bestätigen
-                    </Button>
-                </Box>
-            </SwipeableDialog>
+            <CancelTrainingDialog
+                cancelTrainingOpen={cancelTrainingOpen}
+                setCancelTrainingOpen={setCancelTrainingOpen}
+                cancelTraining={cancelTraining}
+                selectedEvent={selectedEvent} />
 
-            <DeleteEventDialog selectedEvent={selectedEvent} setOpen={() => setDeleteTrainingOpen(true)} open={deleteTrainingOpen} handleClose={(e) => {
-                deleteEvent(e);
-                setDeleteTrainingOpen(false);
-            }} />
+            <DeleteEventDialog
+                selectedEvent={selectedEvent}
+                setOpen={() => setDeleteTrainingOpen(true)}
+                open={deleteTrainingOpen}
+                handleClose={(e) => {
+                    deleteEvent(e);
+                    setDeleteTrainingOpen(false);
+                }} />
         </Box>
         <Snackbar sx={{ position: "fixed", right: "16px", }} open={error !== null} >
             <Alert severity={"error"} sx={{ width: '100%' }} onClose={() => dispatch(onEventErrorRead(null))}>
@@ -442,4 +371,4 @@ const EventInformation = ({ dispatch, selectedEvent, attendanceLoading, error, u
     </Box >
 }
 
-export default EventInformationProvider;
+export default EventInformation;

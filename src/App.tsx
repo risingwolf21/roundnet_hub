@@ -20,7 +20,7 @@ const PayDrinksScreenProvider = React.lazy(() => import('./components/PayDrinksS
 const ResetPasswordScreen = React.lazy(() => import('./components/ResetPasswordScreen'));
 const PaymentsPendingAdmin = React.lazy(() => import('./components/admin/PaymentsPendingAdmin'));
 const DrinkStockUpdateScreen = React.lazy(() => import('./components/procure/DrinkStockUpdateScreen'));
-const CreateEventProvider = React.lazy(() => import('./components/training/CreateEvent'));
+const CreateEventProvider = React.lazy(() => import('./components/eventCreation/provider'));
 const AdminDrinkListProvider = React.lazy(() => import('./components/admin/AdminDrinkList'));
 const AdminHistoryScreenProvider = React.lazy(() => import('./components/admin/AdminHistoryScreen'));
 const AdminUserListProvider = React.lazy(() => import('./components/admin/AdminUserList'));
@@ -28,8 +28,8 @@ const DrinkListScreenProvider = React.lazy(() => import('./components/drinkList/
 const GroupInformationProvider = React.lazy(() => import('./components/groups/GroupInformation'));
 const ManageGroupsProvider = React.lazy(() => import('./components/groups/ManageGroups'));
 const AnalyzeDrinkStockHistoryProvider = React.lazy(() => import('./components/procure/AnalyzeDrinkStockHistory'));
-const EventInformationProvider = React.lazy(() => import('./components/training/EventInformation'));
-const EventScreenProvider = React.lazy(() => import('./components/training/EventScreen'));
+const EventInformationProvider = React.lazy(() => import('./components/eventInformation/provider'));
+const EventScreenProvider = React.lazy(() => import('./components/eventList/EventScreen'));
 
 const App = () => {
 
