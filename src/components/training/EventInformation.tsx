@@ -436,7 +436,7 @@ const EventInformation = ({ dispatch, selectedEvent, attendanceLoading, error, u
         </Box>
         <Snackbar sx={{ position: "fixed", right: "16px", }} open={error !== null} >
             <Alert severity={"error"} sx={{ width: '100%' }} onClose={() => dispatch(onEventErrorRead(null))}>
-                asdfasdfasdf
+                {error}
             </Alert>
         </Snackbar>
     </Box >
