@@ -74,7 +74,7 @@ const CreateEvent = ({ t, eventToEdit, repository }: CreateEventProps) => {
                 startingDateTime: startingDateTime,
                 meetingDateTime: meetingDateTime,
                 recurrence: repeat,
-                maxAttendees: maxAttendeesEnabled ? maxAttendees : -1,
+                maxAttendees: maxAttendees > 0 ? maxAttendees : -1,
                 answerDeadline: answerDeadlineEnabled ? answerDeadline : null,
                 group: group?.id,
                 place: JSON.stringify(selectedPlace),
@@ -262,10 +262,12 @@ const CreateEvent = ({ t, eventToEdit, repository }: CreateEventProps) => {
                         name="maxAttendees"
                         variant="outlined"
                         type="number"
-                        onChange={(event) =>
-                            toNumber(event.target.value) < 0
-                                ? (event.target.value = "0")
-                                : event.target.value
+                        onChange={(event) => {
+                            if (toNumber(event.target.value) < 0) {
+                                event.target.value = "0"
+                            }
+                            setMaxAttendees(toNumber(event.target.value))
+                        }
                         }
                         inputMode="numeric"
                         label="Max number of attendees"

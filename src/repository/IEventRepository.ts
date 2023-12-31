@@ -100,11 +100,11 @@ class SupabaseEventRepository extends SupabaseRepository implements IEventReposi
 
     async fetchEvents(user: User, userGroups: number[], page: number, count: number): Promise<PostgrestSingleResponse<FullEvent[]>> {
         const query = await this.client.from("events")
-            .select("*, attendance: event_attendance_user_mapping ( state , user(userId, displayName)  ), comments: event_comments ( comment, created_at, displayName, event, user ( displayName, userId))")
+            .select("*, group: event_group(id, created_at, description, name, color), attendance: event_attendance_user_mapping ( state , user(userId, displayName)  ), comments: event_comments ( comment, created_at, displayName, event, user ( displayName, userId))")
             // get events that are on the same day or later
             .gt("startingDateTime", moment().format("yyyy-MM-DD HH:mm:ssZ"))
             .or(`end_at.is.null,end_at.lt.'${moment().format("yyyy-MM-DD HH:mm:ssZ")}'`)
-            .in("group", userGroups)
+            .in("group.id", userGroups)
             .range(page * count, page * count + count - 1)
             .order("startingDateTime", { ascending: true })
             .returns<FullEvent[]>();

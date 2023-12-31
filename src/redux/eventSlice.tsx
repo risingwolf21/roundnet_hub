@@ -112,7 +112,7 @@ export const eventSlice = createSlice({
   extraReducers(builder: ActionReducerMapBuilder<EventSliceState>) {
     //@ts-ignore
     builder
-      .addCase(fetchEventsAsync.pending, (state: EventSliceState, action) => {
+      .addCase(fetchEventsAsync.pending, (state: EventSliceState, action: any) => {
         state.loading = true;
       })
       .addCase(fetchEventsAsync.fulfilled, (state: EventSliceState, action) => {
