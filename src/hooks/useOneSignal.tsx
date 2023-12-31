@@ -39,6 +39,7 @@ export function useOneSignal() {
                 }
             }
         }).then(() => {
+            setOneSignalInitialized(true);
             OneSignal.Slidedown.promptPush();
         });
     }, []);

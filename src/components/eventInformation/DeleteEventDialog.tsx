@@ -1,24 +1,11 @@
 import { Box, Button, DialogContent, FormControl, FormControlLabel, Radio, RadioGroup } from "@mui/material";
 import { useState } from "react";
 import React from "react";
-import { Event } from "../types/supabaseTypes";
-import { SwipeableDialog } from "./SwipeableDialog";
-import { DeleteEventType } from "./eventInformation/types";
+import { DeleteEventDialogProps, DeleteEventType, DeletionType } from "./types";
+import { SwipeableDialog } from "../SwipeableDialog";
 
 export const THIS_EVENT = "THIS_EVENT";
 export const THIS_AND_FOLLOWING_EVENT = "THIS_AND_FOLLOWING_EVENT";
-
-export enum DeletionType {
-    ThisEvent,
-    ThisAndFollowingEvents
-}
-
-type DeleteEventDialogProps = {
-    open: boolean,
-    setOpen: () => void,
-    handleClose: (result: DeleteEventType | null) => any,
-    selectedEvent: Event
-}
 
 export const DeleteEventDialog = ({ open, handleClose, setOpen, selectedEvent }: DeleteEventDialogProps) => {
 
@@ -47,10 +34,8 @@ export const DeleteEventDialog = ({ open, handleClose, setOpen, selectedEvent }:
             </DialogContent>
         }
         <Box sx={{ display: "flex", flexDirection: "row", flexGrow: 1, position: "absolute", left: 0, right: 0, bottom: 0 }}>
-            <Button variant="outlined" fullWidth sx={{ ml: 2, mr: 1, mb: 2, borderRadius: "50px !important", fontSize: "16px", fontFamily: "sans-serif", lineSpacing: "24px" }} onClick={() => handleClose(null)}>Abbrechen</Button>
-            <Button variant="contained" fullWidth sx={{ ml: 1, mr: 2, mb: 2, borderRadius: "50px !important", fontSize: "16px", fontFamily: "sans-serif", lineSpacing: "24px" }} onClick={() => handleClose(deletion)} autoFocus>
-                Bestätigen
-            </Button>
+            <Button variant="outlined" fullWidth sx={{ ml: 2, mr: 1, mb: 2 }} onClick={() => handleClose(null)}>Abbrechen</Button>
+            <Button variant="contained" fullWidth sx={{ ml: 1, mr: 2, mb: 2 }} onClick={() => handleClose(deletion)}>Bestätigen</Button>
         </Box>
     </SwipeableDialog>
 }

@@ -37,8 +37,15 @@ const NotificationsScreen = () => {
     }
 
     const saveTags = () => {
-        if (user && userRepository)
+        if (user && userRepository){
             userRepository.updateNotificationTags(activeUserTags, user);
+            const userTagsToAdd: { [key: string]: string } = {};
+            const userTagsToRemove: string[] = [];
+            activeUserTags.forEach(x => userTagsToAdd[x] = "1")
+            userTags.filter(x => !activeUserTags.includes(x.tag)).forEach(x => userTagsToRemove.push(x.tag))
+            OneSignal.User.addTags(userTagsToAdd);
+            OneSignal.User.removeTags(userTagsToRemove);
+        }
         else
             setErrorMessage({ message: "Something went wrong trying to update your notification permissions", severity: "warning" });
     }

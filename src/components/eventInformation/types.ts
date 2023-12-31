@@ -30,3 +30,15 @@ export type SelectGroupDialogProps = {
 }
 
 export type DeleteEventType = "This Event" | "This and following events";
+
+export enum DeletionType {
+    ThisEvent,
+    ThisAndFollowingEvents
+}
+
+export type DeleteEventDialogProps = {
+    open: boolean,
+    setOpen: () => void,
+    handleClose: (result: DeleteEventType | null) => any,
+    selectedEvent: FullEvent
+}

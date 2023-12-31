@@ -1,4 +1,4 @@
-import { EventAttendance, EventAttendanceMapping, EventInsert, FullAttendance, FullEvent, Group, User } from "../types/supabaseTypes";
+import { EventAttendance, EventAttendanceMapping, EventInsert, EventUpdate, FullAttendance, FullEvent, Group, User } from "../types/supabaseTypes";
 import { PostgrestSingleResponse } from '@supabase/supabase-js';
 import moment from "moment";
 import { PostgrestError } from '@supabase/supabase-js'
@@ -14,6 +14,7 @@ export type RepositorySource = "supabase" | "none";
 interface IEventRepository {
     insertEvent(event: EventInsert): Promise<PostgrestSingleResponse<null>>
     updateEndOfOldEvent(eventId: number, end_at: string): Promise<PostgrestSingleResponse<null>>
+    updateEvent(eventId: number, event: EventUpdate): Promise<PostgrestSingleResponse<null>>
     fetchEvents(user: User, userGroups: number[], page: number, count: number): Promise<PostgrestSingleResponse<FullEvent[]>>
     updateCancellationForEvent(eventId: number, isCancelled: boolean): Promise<PostgrestSingleResponse<null>>
     deleteEvent(eventId: number): Promise<PostgrestSingleResponse<null>>
@@ -34,6 +35,12 @@ class SupabaseEventRepository extends SupabaseRepository implements IEventReposi
             .update({
                 "end_at": end_at
             }).eq("id", eventId)
+    }
+
+    async updateEvent(eventId: number, event: EventUpdate): Promise<PostgrestSingleResponse<null>> {
+        return this.client
+            .from("events")
+            .update(event).eq("id", eventId)
     }
 
     async insertEvent(event: EventInsert): Promise<PostgrestSingleResponse<null>> {
@@ -96,6 +103,7 @@ class SupabaseEventRepository extends SupabaseRepository implements IEventReposi
             .select("*, attendance: event_attendance_user_mapping ( state , user(userId, displayName)  ), comments: event_comments ( comment, created_at, displayName, event, user ( displayName, userId))")
             // get events that are on the same day or later
             .gt("startingDateTime", moment().format("yyyy-MM-DD HH:mm:ssZ"))
+            .or(`end_at.is.null,end_at.lt.'${moment().format("yyyy-MM-DD HH:mm:ssZ")}'`)
             .in("group", userGroups)
             .range(page * count, page * count + count - 1)
             .order("startingDateTime", { ascending: true })

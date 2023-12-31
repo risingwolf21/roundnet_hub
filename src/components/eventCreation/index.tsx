@@ -48,6 +48,7 @@ const CreateEvent = ({ t, eventToEdit, repository }: CreateEventProps) => {
             setStopRepeatDisabled(!eventToEdit["end_at"]);
             setRepeat(eventToEdit.recurrence);
             setAnswerDeadline(moment(eventToEdit.answerDeadline));
+            setAnswerDeadlineEnabled(eventToEdit.answerDeadline !== null)
             setMaxAttendees(eventToEdit.maxAttendees);
             setMaxAttendeesEnabled(eventToEdit.maxAttendees > 0);
             setGroup(eventToEdit.group)
@@ -82,20 +83,21 @@ const CreateEvent = ({ t, eventToEdit, repository }: CreateEventProps) => {
                     : stopRepeatDateTime.format("yyyy-MM-DD HH:mm:ssZ")
             } as EventInsert;
 
-            if (!group)
+            if (!event.group)
                 throw new Error(t("events.creation.noGroupSelected"))
 
-            if (answerDeadline && isBefore(answerDeadline.toDate(), Date.now()))
+            if (event.answerDeadline && isBefore(new Date(event.answerDeadline), Date.now()))
                 throw new Error(t("events.creation.answerDeadlineBeforeNow"))
 
-            if (!eventTitle || eventTitle.length < 6)
+            if (!event.title || event.title.length < 6)
                 throw new Error(t("events.creation.titleTooShort"))
 
-            if (!eventDescription || eventDescription.length < 1)
+            if (!event.description || event.description.length < 1)
                 throw new Error(t("events.creation.descriptionEmpty"))
 
-            if (meetingDateTime > startingDateTime)
-                throw new Error(t("events.creation.meetingTimeBeforeStartTime"))
+            if (event.meetingDateTime)
+                if (event.meetingDateTime > event.startingDateTime)
+                    throw new Error(t("events.creation.meetingTimeBeforeStartTime"))
 
             const { error } = await repository.insertEvent(event)
 
@@ -249,7 +251,7 @@ const CreateEvent = ({ t, eventToEdit, repository }: CreateEventProps) => {
 
                 <ListItem sx={{ pt: 0, pb: 0, mb: 2 }}>
                     <ListItemAvatar>
-                        <Checkbox sx={{ pl: 0 }} checked={maxAttendeesEnabled} onChange={() => setMaxAttendeesEnabled(!maxAttendeesEnabled)} />
+                        <Checkbox sx={{ pl: 0 }} defaultChecked={maxAttendeesEnabled} checked={maxAttendeesEnabled} onChange={() => setMaxAttendeesEnabled(!maxAttendeesEnabled)} />
                     </ListItemAvatar>
 
                     <TextField

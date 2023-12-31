@@ -6,7 +6,7 @@ import { MapContainer, Marker, TileLayer } from "react-leaflet";
 import { useNavigate } from "react-router-dom";
 import { editEvent, fetchEventAttendanceAsync, fetchSingleEventAsync, onEventErrorRead, updateAttendanceAsync, upsertCommentToEventAsync } from "../../redux/eventSlice";
 import { EventAttendance, answerDeadlineExpired, maxAttendeesExceeded } from "../../types/supabaseTypes";
-import { DeleteEventDialog } from "../DeleteEventDialog";
+import { DeleteEventDialog } from "./DeleteEventDialog";
 import { SwipeableDialog } from "../SwipeableDialog";
 import { DeleteEventType, EventInformationProps } from "./types";
 import EventAttendanceDialog from "./EventAttendanceDialog";

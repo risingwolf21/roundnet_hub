@@ -16,6 +16,7 @@ export type KeyHolder = Database["public"]["Tables"]["key_holders"]["Row"];
 export type Key = Database["public"]["Tables"]["keys"]["Row"];
 
 export type EventInsert = Database["public"]["Tables"]["events"]["Insert"];
+export type EventUpdate = Database["public"]["Tables"]["events"]["Update"];
 
 export type EventAttendanceInsert = Database["public"]["Tables"]["event_attendance_user_mapping"]["Insert"];
 export type EventAttendanceMapping = Database["public"]["Tables"]["event_attendance_user_mapping"]["Row"];

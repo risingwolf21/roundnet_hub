@@ -13,6 +13,6 @@
         ".stylelintrc": "jsonc"
     },
     "emmet.showExpandedAbbreviation": "never",
-    "deno.enable": true,
-    "deno.unstable": true,
+    // "deno.enable": true,
+    // "deno.unstable": true,
 }

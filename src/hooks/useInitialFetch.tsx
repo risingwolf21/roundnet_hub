@@ -19,7 +19,7 @@ export function useInitialFetch() {
             if (adminUsersRepository)
                 dispatch(fetchAdminUsersAsync(adminUsersRepository));
         }
-    }, [dispatch, user]);
+    }, [dispatch, user, container]);
 
     useEffect(() => {
         if (user && user.role === "admin") {
@@ -27,7 +27,7 @@ export function useInitialFetch() {
             if (adminDrinksRepository)
                 dispatch(fetchDrinksAsync(adminDrinksRepository));
         }
-    }, [dispatch, user]);
+    }, [dispatch, user, container]);
 
     // useEffect(() => {
     //     if (!user)
