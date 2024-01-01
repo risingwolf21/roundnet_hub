@@ -13,17 +13,14 @@ const onesignal = new OneSignal.DefaultApi(configuration)
 
 serve(async (req) => {
   try {
-    const { record } = await req.json()
-
-    console.log(record);
+    const { include_aliases, contents } = await req.json()
 
     // Build OneSignal notification object
     const notification = new OneSignal.Notification()
     notification.app_id = _OnesignalAppId_
-    notification.include_external_user_ids = [record.key]
-    notification.contents = {
-      en: `You just got notified!`,
-    }
+    notification.target_channel = "push"
+    notification.include_aliases = include_aliases
+    notification.contents = contents
     const onesignalApiRes = await onesignal.createNotification(notification)
 
     return new Response(JSON.stringify({ onesignalResponse: onesignalApiRes }), {
