@@ -4,6 +4,7 @@ import moment from "moment";
 import { PostgrestError } from '@supabase/supabase-js'
 import { injectable } from "inversify";
 import { SupabaseRepository } from "./Repository";
+import { format } from "date-fns";
 
 export type DbResult<T> = T extends PromiseLike<infer U> ? U : never
 export type DbResultOk<T> = T extends PromiseLike<{ data: infer U }> ? Exclude<U, null> : never
@@ -100,11 +101,11 @@ class SupabaseEventRepository extends SupabaseRepository implements IEventReposi
 
     async fetchEvents(user: User, userGroups: number[], page: number, count: number): Promise<PostgrestSingleResponse<FullEvent[]>> {
         const query = await this.client.from("events")
-            .select("*, group: event_group(id, created_at, description, name, color), attendance: event_attendance_user_mapping ( state , user(userId, displayName)  ), comments: event_comments ( comment, created_at, displayName, event, user ( displayName, userId))")
+            .select("*, fullGroup: event_group(id, created_at, description, name, color), attendance: event_attendance_user_mapping ( state , user(userId, displayName)  ), comments: event_comments ( comment, created_at, displayName, event, user ( displayName, userId))")
             // get events that are on the same day or later
-            .gt("startingDateTime", moment().format("yyyy-MM-DD HH:mm:ssZ"))
-            .or(`end_at.is.null,end_at.lt.'${moment().format("yyyy-MM-DD HH:mm:ssZ")}'`)
-            .in("group.id", userGroups)
+            .gt("startingDateTime", format(new Date(), "yyyy-MM-dd'T'HH:mm:ss.SSSxxx"))
+            .or(`end_at.is.null,end_at.gt.'${format(new Date(), "yyyy-MM-dd'T'HH:mm:ss.SSSxxx")}'`)
+            .in("group", userGroups)
             .range(page * count, page * count + count - 1)
             .order("startingDateTime", { ascending: true })
             .returns<FullEvent[]>();

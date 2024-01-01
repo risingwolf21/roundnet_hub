@@ -51,7 +51,7 @@ const CreateEvent = ({ t, eventToEdit, repository }: CreateEventProps) => {
             setAnswerDeadlineEnabled(eventToEdit.answerDeadline !== null)
             setMaxAttendees(eventToEdit.maxAttendees);
             setMaxAttendeesEnabled(eventToEdit.maxAttendees > 0);
-            setGroup(eventToEdit.group)
+            setGroup(eventToEdit.fullGroup)
         }
     }, [eventToEdit]);
 

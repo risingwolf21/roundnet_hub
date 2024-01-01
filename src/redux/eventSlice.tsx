@@ -64,7 +64,9 @@ export const eventSlice = createSlice({
       }
     },
     onEventUpdate: (state, action) => {
-      const index = state.items.findIndex((x) => compareById(x, action.payload))
+      const index = state.items.findIndex(x => x.id === action.payload.new.id)
+      if (index === -1)
+        return;
       let event = state.items[index];
       state.items = [
         ...state.items.slice(0, index),

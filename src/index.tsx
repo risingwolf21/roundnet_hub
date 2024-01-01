@@ -10,7 +10,6 @@ import { Provider as SupabaseProvider } from "react-supabase";
 import "reflect-metadata";
 import App from './App';
 import { supabase } from './components/services/supabase/supabaseClient';
-import "./firebase";
 import "./global.css";
 import store from './redux/store';
 import container from './repository/Container';

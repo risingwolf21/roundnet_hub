@@ -47,7 +47,7 @@ export const SelectGroupDialog = ({ open, handleClose, handleSubmit }: SelectGro
             <Box>
                 <List>
                     {
-                        groups.map(x => <ListItemButton divider onClick={() => handleSubmit(x)}>
+                        groups.map(x => <ListItemButton key={x.id} divider onClick={() => handleSubmit(x)}>
                             <ListItemAvatar>
                                 <FiberManualRecord sx={{ color: x.color }} />
                             </ListItemAvatar>
