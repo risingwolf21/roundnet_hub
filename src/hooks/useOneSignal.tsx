@@ -3,7 +3,6 @@ import { useTranslation } from 'react-i18next';
 import OneSignal from 'react-onesignal';
 import { useSelector } from 'react-redux';
 import { RootState } from 'src/redux/store';
-import { default as userTags } from "../components/services/onesignal/userTags";
 
 export function useOneSignal() {
     const { t } = useTranslation();
@@ -32,8 +31,7 @@ export function useOneSignal() {
                                 negativeUpdateButton: "Cancel",
                                 positiveUpdateButton: "Save Preferences",
                                 updateMessage: t("notification_updateMessage"),
-                            },
-                            categories: userTags
+                            }
                         }
                     ]
                 }
@@ -47,12 +45,6 @@ export function useOneSignal() {
     useEffect(() => {
         if (user && oneSignalInitialized) {
             OneSignal.login(user.userId);
-            const userTagsToAdd: { [key: string]: string } = {};
-            const userTagsToRemove: string[] = [];
-            user.notificationTags.forEach(x => userTagsToAdd[x] = "1")
-            userTags.filter(x => !user.notificationTags.includes(x.tag)).forEach(x => userTagsToRemove.push(x.tag))
-            OneSignal.User.addTags(userTagsToAdd);
-            OneSignal.User.removeTags(userTagsToRemove)
         }
     }, [user])
 }

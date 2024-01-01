@@ -15,7 +15,6 @@ import { useServiceWorker } from './hooks/useServiceWorker';
 const FeatureNotAvailable = React.lazy(() => import('./components/FeatureNotAvailable'));
 const HistoryScreenProvider = React.lazy(() => import('./components/HistoryScreen'));
 const KeyHolderScreenProvider = React.lazy(() => import('./components/KeyHolderScreen'));
-const NotificationsScreen = React.lazy(() => import('./components/NotificationsScreen'));
 const PayDrinksScreenProvider = React.lazy(() => import('./components/PayDrinksScreen'));
 const ResetPasswordScreen = React.lazy(() => import('./components/ResetPasswordScreen'));
 const PaymentsPendingAdmin = React.lazy(() => import('./components/admin/PaymentsPendingAdmin'));
@@ -60,7 +59,6 @@ const App = () => {
             <Route path="/history" element={<HistoryScreenProvider />} />
             <Route path="/payments" element={<PayDrinksScreenProvider />} />
             <Route path="/keys" element={<KeyHolderScreenProvider />} />
-            <Route path="/notifications" element={<NotificationsScreen />} />
 
             <Route path="/trainer/groups" element={<ManageGroupsProvider />} />
             <Route path="/trainer/groups/:id" element={<GroupInformationProvider />} />
