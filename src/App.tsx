@@ -11,6 +11,7 @@ import BrowseAdmin from './components/admin/BrowseAdmin';
 import { useInitialFetch } from "./hooks/useInitialFetch";
 import { useOneSignal } from "./hooks/useOneSignal";
 import { useServiceWorker } from './hooks/useServiceWorker';
+import ExecuteEdgeFunctions from "./components/admin/ExecuteEdgeFunctions";
 
 const FeatureNotAvailable = React.lazy(() => import('./components/FeatureNotAvailable'));
 const HistoryScreenProvider = React.lazy(() => import('./components/HistoryScreen'));
@@ -23,7 +24,7 @@ const CreateEventProvider = React.lazy(() => import('./components/eventCreation/
 const AdminDrinkListProvider = React.lazy(() => import('./components/admin/AdminDrinkList'));
 const AdminHistoryScreenProvider = React.lazy(() => import('./components/admin/AdminHistoryScreen'));
 const AdminUserListProvider = React.lazy(() => import('./components/admin/AdminUserList'));
-const DrinkListScreenProvider = React.lazy(() => import('./components/drinkList/DrinkListScreen'));
+const DrinkListScreenProvider = React.lazy(() => import('./components/drinkList/provider'));
 const GroupInformationProvider = React.lazy(() => import('./components/groups/GroupInformation'));
 const ManageGroupsProvider = React.lazy(() => import('./components/groups/ManageGroups'));
 const AnalyzeDrinkStockHistoryProvider = React.lazy(() => import('./components/procure/AnalyzeDrinkStockHistory'));
@@ -73,6 +74,7 @@ const App = () => {
             <Route path='/admin/drinks/stocks' element={<DrinkStockUpdateScreen />} />
             <Route path='/admin/drinks/analyze' element={<AnalyzeDrinkStockHistoryProvider />} />
             <Route path='/admin/users' element={<AdminUserListProvider />} />
+            <Route path='/admin/edgeFunctions' element={<ExecuteEdgeFunctions />} />
           </Routes>
         </React.Suspense>
         <div style={{ width: "100%", height: "56px" }} />

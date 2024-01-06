@@ -1,6 +1,6 @@
 import { ThemeProvider } from '@mui/material';
 import { LocalizationProvider } from '@mui/x-date-pickers';
-import { AdapterMoment } from '@mui/x-date-pickers/AdapterMoment';
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import * as Sentry from "@sentry/react";
 import { Container } from 'inversify';
 import React, { ReactNode, createContext } from 'react';
@@ -49,7 +49,7 @@ root.render(
     <Provider store={store}>
       <SupabaseProvider value={supabase}>
         <DependencyProvider container={container}>
-          <LocalizationProvider dateAdapter={AdapterMoment}>
+          <LocalizationProvider dateAdapter={AdapterDayjs}>
             <App />
           </LocalizationProvider>
         </DependencyProvider>

@@ -3,49 +3,19 @@ import CheckIcon from '@mui/icons-material/Check';
 import { Box, Checkbox, CircularProgress, Fab, List, ListItem, ListItemAvatar, ListItemText } from "@mui/material";
 import { captureException } from "@sentry/react";
 import React, { useEffect, useState } from "react";
-import { useSelector } from "react-redux";
 import { useClient } from "react-supabase";
 import { AlertMessage, AlertSnackbar } from "src/components/AlertSnackbar";
 import CustomAppBar from "src/components/AppBar";
 import { LoadingIndicator } from "src/components/LoadingIndicator";
-import { useDependency } from "src/hooks/useDependency";
-import { fetchDrinksAsync, onDrinkDeleted, onDrinkInserted, onDrinkUpdated } from "src/redux/drinksSlice";
-import { AppDispatch, RootState, useAppDispatch } from "src/redux/store";
-import { IDrinkRepository } from "src/repository/IDrinkRepository";
-import { Drink, DrinkCounter, DrinkInsert, DrinkUpdate, ProductType, User } from "src/types/supabaseTypes";
+import { onDrinkDeleted, onDrinkInserted, onDrinkUpdated } from "src/redux/drinksSlice";
+import { Drink, DrinkCounter, DrinkInsert, DrinkUpdate, ProductType } from "src/types/supabaseTypes";
 import { MultiplePaymentsError, nameOfProductType } from "src/utils";
 import { Error } from "../Error";
 import { SwipeableDialog } from "../SwipeableDialog";
 import DrinkList from "./DrinkList";
+import { DrinkListScreenProps } from "./types";
 
 const SUCCESS_MESSAGE_INFO: AlertMessage = { message: "Getränke erfolgreich gebucht!", severity: "success" };
-
-const DrinkListScreenProvider = () => {
-    const { user } = useSelector((state: RootState) => state.application);
-    const drinksRepository = useDependency<IDrinkRepository>("IDrinkRepository");
-    const { drinks, drinksLoading, drinksError } = useSelector((state: RootState) => state.drinks);
-    const dispatch = useAppDispatch();
-
-    if (!user || !drinksRepository)
-        return <AlertSnackbar close={() => { }} alertInfo={{ message: "Fatal error occured. Repository or user was null!", severity: "error" }} />
-
-    return <DrinkListScreen
-        repository={drinksRepository}
-        dispatch={dispatch}
-        user={user}
-        drinks={drinks}
-        drinksError={drinksError ?? ""}
-        drinksLoading={drinksLoading} />
-}
-
-type DrinkListScreenProps = {
-    repository: IDrinkRepository,
-    dispatch: AppDispatch,
-    user: User,
-    drinks: Drink[],
-    drinksLoading: boolean,
-    drinksError: string
-}
 
 const DrinkListScreen = ({ repository, user, drinks, drinksLoading, drinksError, dispatch }: DrinkListScreenProps) => {
 
@@ -53,7 +23,7 @@ const DrinkListScreen = ({ repository, user, drinks, drinksLoading, drinksError,
     const [loading, setLoading] = useState(false);
     const [alertInfo, setAlertInfo] = useState<AlertMessage | null>(null);
     const [filterDialogOpen, setFilterDialogOpen] = useState(false);
-    const [visibleTypes, setVisibleTypes] = useState<ProductType[]>(["Drink"]);
+    const [visibleTypes, setVisibleTypes] = useState<ProductType[]>(localStorage.getItem("visibleTypes")?.split(";") as ProductType[] ?? ["Drink"]);
     const client = useClient();
 
     useEffect(() => {
@@ -71,11 +41,7 @@ const DrinkListScreen = ({ repository, user, drinks, drinksLoading, drinksError,
         if (drinksError) {
             setAlertInfo({ message: drinksError, severity: "error" });
         }
-    }, [drinksError])
-
-    useEffect(() => {
-        dispatch(fetchDrinksAsync(repository));
-    }, [user, dispatch, repository]);
+    }, [drinksError]);
 
     const confirmDrinksDialog = (message: AlertMessage) => {
         setAlertInfo(SUCCESS_MESSAGE_INFO);
@@ -156,6 +122,13 @@ const DrinkListScreen = ({ repository, user, drinks, drinksLoading, drinksError,
         setAddedDrinks({ ...temp });
     }
 
+
+    const changeVisibleTypes = (e: React.ChangeEvent<HTMLInputElement>, x: "Drink" | "Special" | "None") => {
+        let newValue = e.target.checked ? [...visibleTypes, x] : visibleTypes.filter(y => y !== x);
+        setVisibleTypes(newValue);
+        localStorage.setItem("visibleTypes", newValue.join(";"));
+    }
+
     return <Box>
         <CustomAppBar />
         <LoadingIndicator loading={drinksLoading} />
@@ -177,7 +150,7 @@ const DrinkListScreen = ({ repository, user, drinks, drinksLoading, drinksError,
                 {
                     [...new Set(drinks.map(x => x.type))].sort().map(x => <ListItem key={x} divider disabled={x === "Drink"}>
                         <ListItemAvatar>
-                            <Checkbox disabled={x === "Drink"} checked={visibleTypes.some(y => y === x)} onChange={(e) => setVisibleTypes(e.target.checked ? [...visibleTypes, x] : visibleTypes.filter(y => y !== x))} />
+                            <Checkbox disabled={x === "Drink"} checked={visibleTypes.some(y => y === x)} onChange={(e) => changeVisibleTypes(e, x)} />
                         </ListItemAvatar>
                         <ListItemText primary={nameOfProductType(x)} />
                     </ListItem>)
@@ -190,4 +163,4 @@ const DrinkListScreen = ({ repository, user, drinks, drinksLoading, drinksError,
     </Box>
 }
 
-export default DrinkListScreenProvider;
+export default DrinkListScreen;

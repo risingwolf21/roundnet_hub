@@ -5,6 +5,8 @@ import { PostgrestError } from '@supabase/supabase-js'
 import { injectable } from "inversify";
 import { SupabaseRepository } from "./Repository";
 import { format } from "date-fns";
+import { formatDateToDatabase } from "src/utils";
+import dayjs from "dayjs";
 
 export type DbResult<T> = T extends PromiseLike<infer U> ? U : never
 export type DbResultOk<T> = T extends PromiseLike<{ data: infer U }> ? Exclude<U, null> : never
@@ -103,8 +105,8 @@ class SupabaseEventRepository extends SupabaseRepository implements IEventReposi
         const query = await this.client.from("events")
             .select("*, fullGroup: event_group(id, created_at, description, name, color), attendance: event_attendance_user_mapping ( state , user(userId, displayName)  ), comments: event_comments ( comment, created_at, displayName, event, user ( displayName, userId))")
             // get events that are on the same day or later
-            .gt("startingDateTime", format(new Date(), "yyyy-MM-dd'T'HH:mm:ss.SSSxxx"))
-            .or(`end_at.is.null,end_at.gt.'${format(new Date(), "yyyy-MM-dd'T'HH:mm:ss.SSSxxx")}'`)
+            .gt("startingDateTime", formatDateToDatabase(new Date()))
+            .or(`end_at.is.null,end_at.gt.'${formatDateToDatabase(new Date())}'`)
             .in("group", userGroups)
             .range(page * count, page * count + count - 1)
             .order("startingDateTime", { ascending: true })

@@ -12,7 +12,8 @@
         "manageUsers": "Manage users",
         "completeHistory": "Complete history",
         "manageGroups": "Manage groups",
-        "analyzeDrinkStocks": "Analyse drink history"
+        "analyzeDrinkStocks": "Analyse drink history",
+        "executeEdgeFunctions": "Execute edge functions"
     },
     "navigation": {
         "browse": "Browse",

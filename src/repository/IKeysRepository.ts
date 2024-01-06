@@ -25,7 +25,7 @@ export class SupabaseKeysRepository extends SupabaseRepository implements IKeysR
             .from("key_holders")
             .update({
                 user: user.userId,
-                lastUpdate: formatDateToDatabase(moment()),
+                lastUpdate: formatDateToDatabase(new Date()),
             })
             .eq("key", key.id);
 

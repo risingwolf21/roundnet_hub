@@ -36,7 +36,8 @@ const AuthGate = ({ children }: Props) => {
     const navigate = useNavigate();
 
     useEffect(() => {
-        client.auth.onAuthStateChange((event, session) => {
+        const { data } = client.auth.onAuthStateChange((event, session) => {
+            console.log(`Supabase auth event: ${event}`);
             setUser({ email: session?.user?.email, id: session?.user?.id });
             if (session && session.user) {
                 client.from(TABLE_USER).select().eq("userId", session.user.id).single().then((res) => {
@@ -89,6 +90,9 @@ const AuthGate = ({ children }: Props) => {
                 navigate("/login", { replace: true });
             }
         })
+        return () => {
+            data.subscription.unsubscribe();
+        }
     }, [client, dispatch, navigate]);
 
     const authenticationRoutes = [

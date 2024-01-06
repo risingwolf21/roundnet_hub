@@ -1,4 +1,4 @@
-import { AdminPanelSettings, Euro, Group, GroupOutlined, History, Liquor, ShowChart } from "@mui/icons-material";
+import { Euro, Group, GroupOutlined, History, Liquor, ShowChart } from "@mui/icons-material";
 import { Avatar, Badge, Box, List, ListItemAvatar, ListItemButton, ListItemText } from "@mui/material";
 import { TFunction } from "i18next";
 import React from "react";
@@ -15,7 +15,6 @@ type EntryType = {
     translationKey: string
     navigateTo: string
     icon: React.ReactElement
-    secondaryIcon: React.ReactElement
     role: UserRole
     avatarColor: string
     action: Actions
@@ -27,7 +26,6 @@ const entries = [
         translationKey: "managePayments",
         navigateTo: "/admin/drinks/payments",
         icon: <Euro />,
-        secondaryIcon: <AdminPanelSettings sx={{ color: "rgba(0,0,0,0.54)" }} />,
         role: "finance",
         avatarColor: "#88AEBF",
         action: "edit",
@@ -37,7 +35,6 @@ const entries = [
         translationKey: "manageDrinks",
         navigateTo: "/admin/drinks",
         icon: <Liquor />,
-        secondaryIcon: <AdminPanelSettings sx={{ color: "rgba(0,0,0,0.54)" }} />,
         role: "procure",
         avatarColor: "#88AEBF",
         action: "edit",
@@ -47,7 +44,6 @@ const entries = [
         translationKey: "manageDrinkStocks",
         navigateTo: "/admin/drinks/stocks",
         icon: <Liquor />,
-        secondaryIcon: <AdminPanelSettings sx={{ color: "rgba(0,0,0,0.54)" }} />,
         role: "procure",
         avatarColor: "#88AEBF",
         action: "edit",
@@ -57,7 +53,6 @@ const entries = [
         translationKey: "analyzeDrinkStocks",
         navigateTo: "/admin/drinks/analyze",
         icon: <ShowChart />,
-        secondaryIcon: <AdminPanelSettings sx={{ color: "rgba(0,0,0,0.54)" }} />,
         role: "procure",
         avatarColor: "#88AEBF",
         action: "edit",
@@ -67,7 +62,6 @@ const entries = [
         translationKey: "manageUsers",
         navigateTo: "/admin/users",
         icon: <Group />,
-        secondaryIcon: <AdminPanelSettings sx={{ color: "rgba(0,0,0,0.54)" }} />,
         role: "admin",
         avatarColor: "#88AEBF",
         action: "edit",
@@ -77,7 +71,6 @@ const entries = [
         translationKey: "completeHistory",
         navigateTo: "/admin/drinks/history",
         icon: <History />,
-        secondaryIcon: <AdminPanelSettings sx={{ color: "rgba(0,0,0,0.54)" }} />,
         role: "admin",
         avatarColor: "#88AEBF",
         action: "edit",
@@ -87,11 +80,19 @@ const entries = [
         translationKey: "manageGroups",
         navigateTo: "/trainer/groups",
         icon: <GroupOutlined />,
-        secondaryIcon: <AdminPanelSettings sx={{ color: "rgba(0,0,0,0.54)" }} />,
         role: "trainer",
         avatarColor: "#88AEBF",
         action: "edit",
         ability: "groups"
+    },
+    {
+        translationKey: "executeEdgeFunctions",
+        navigateTo: "/admin/edgeFunctions",
+        icon: <GroupOutlined />,
+        role: "admin",
+        avatarColor: "#88AEBF",
+        action: "edit",
+        ability: "edgeFunctions"
     }
 ] as EntryType[];
 

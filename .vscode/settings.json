@@ -13,6 +13,7 @@
         ".stylelintrc": "jsonc"
     },
     "emmet.showExpandedAbbreviation": "never",
-    // "deno.enable": true,
+    "deno.path": "C:\\Users\\Karl\\AppData\\Local\\Microsoft\\WinGet\\Packages\\DenoLand.Deno_Microsoft.Winget.Source_8wekyb3d8bbwe\\deno.exe",
+    //"deno.enable": true,
     // "deno.unstable": true,
 }

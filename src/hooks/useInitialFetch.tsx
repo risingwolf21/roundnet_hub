@@ -14,21 +14,26 @@ export function useInitialFetch() {
     const { user } = useSelector((state: RootState) => state.application);
 
     useEffect(() => {
-        if (user && user.role === "admin") {
-            let adminUsersRepository = container?.get<IAdminUsersRepository>("IAdminUsersRepository")
-            if (adminUsersRepository)
-                dispatch(fetchAdminUsersAsync(adminUsersRepository));
-        }
-    }, [dispatch, user, container]);
+        // fetchAdminUsers();
+        // fetchAdminDrinks();
+    }, []);
 
-    useEffect(() => {
+
+    function fetchAdminDrinks() {
         if (user && user.role === "admin") {
             let adminDrinksRepository = container?.get<IAdminDrinksRepository>("IAdminDrinksRepository");
             if (adminDrinksRepository)
                 dispatch(fetchDrinksAsync(adminDrinksRepository));
         }
-    }, [dispatch, user, container]);
+    }
 
+    function fetchAdminUsers() {
+        if (user && user.role === "admin") {
+            let adminUsersRepository = container?.get<IAdminUsersRepository>("IAdminUsersRepository");
+            if (adminUsersRepository)
+                dispatch(fetchAdminUsersAsync(adminUsersRepository));
+        }
+    }
     // useEffect(() => {
     //     if (!user)
     //         return;

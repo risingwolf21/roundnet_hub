@@ -3,7 +3,8 @@
 // This enables autocomplete, go to definition, etc.
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.7.1'
 import { serve } from 'https://deno.land/std@0.177.0/http/server.ts'
-import { format, addMonths, addDays } from "https://esm.sh/date-fns";
+import { format, addMonths, addDays } from "https://esm.sh/date-fns"
+import * as Sentry from 'https://deno.land/x/sentry/index.mjs'
 
 type Json =
 	| string
@@ -16,22 +17,31 @@ type Json =
 type EventRecurrence = "Weekly" | "Fortnightly" | "Monthly" | "None"
 type Event = {
 	answerDeadline?: string | null
-	created_at?: string
-	description?: string
+	created_at: string
+	description: string
 	end_at?: string | null
-	group?: number | null
-	id?: number
-	isCancelled?: boolean
-	key?: string
-	maxAttendees?: number
+	group: number | null
+	id: number
+	isCancelled: boolean
+	key: string
+	maxAttendees: number
 	meetingDateTime?: string | null
 	place?: Json | null
-	recurrence?: EventRecurrence
+	recurrence: EventRecurrence
 	startingDateTime: string
-	title?: string
+	title: string
 };
 
-serve(async (req: Request) => {
+Sentry.init({
+	dsn: "https://a06f63fae5ab4ce4ac291d0d6fb4e989@o4505379650666496.ingest.sentry.io/4505379651649536",
+	integrations: [],
+	// Performance Monitoring
+	tracesSampleRate: 1.0,
+	// Set sampling rate for profiling - this is relative to tracesSampleRate
+	profilesSampleRate: 1.0,
+})
+
+Deno.serve(async (req: Request) => {
 	try {
 
 		const supabaseClient = createClient(
@@ -59,7 +69,6 @@ serve(async (req: Request) => {
 		if (error) throw error;
 
 		const addRecurringFrequency = (date: Date, frequency: EventRecurrence) => {
-			let newDate = new Date(date);
 			if (frequency === "Weekly") {
 				return addDays(date, 7);
 			} else if (frequency === "Fortnightly") {
@@ -70,7 +79,7 @@ serve(async (req: Request) => {
 			return null;
 		}
 
-		const createNextEvent = async (event) => {
+		const createNextEvent = async (event: Event) => {
 			let newStartingDateTime = addRecurringFrequency(new Date(event.startingDateTime), event.recurrence);
 			if (newStartingDateTime === null) {
 				console.log("Event has no starting time!", event);
@@ -81,7 +90,7 @@ serve(async (req: Request) => {
 				title: event.title,
 				recurrence: event.recurrence,
 				description: event.description,
-				startingDateTime: format(newStartingDateTime, "yyyy-MM-dd HH:mm:ss.SSSXXX"),
+				startingDateTime: format(newStartingDateTime, "yyyy-MM-dd HH:mm:ssXXX"),
 				place: event.place,
 				"end_at": event["end_at"],
 				key: event.key,
@@ -133,6 +142,7 @@ serve(async (req: Request) => {
 			},
 		})
 	} catch (error) {
+		Sentry.captureException(error)
 		return new Response(JSON.stringify({ error: error.message }), { status: 500 })
 	}
 })

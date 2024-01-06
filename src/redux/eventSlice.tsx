@@ -195,7 +195,7 @@ export const eventSlice = createSlice({
           user: action.meta.arg.user,
           state: action.meta.arg.state,
           userId: action.meta.arg.user.userId,
-          lastUpdate: formatDateToDatabase(moment())
+          lastUpdate: formatDateToDatabase(new Date())
         } as FullAttendance;
         let index = state.items.findIndex(x => x.id === toInteger(action.meta.arg.eventId));
 
@@ -226,7 +226,7 @@ export const eventSlice = createSlice({
           displayName: action.meta.arg.user.displayName ?? "",
           user: { userId: action.meta.arg.user.userId, displayName: action.meta.arg.user.displayName ?? "", email: null },
           userId: action.meta.arg.user.userId,
-          created_at: formatDateToDatabase(moment())
+          created_at: formatDateToDatabase(new Date())
         } as FullComment;
         let eventIndex = state.items.findIndex(x => x.id === toInteger(action.meta.arg.eventId));
 
@@ -286,7 +286,7 @@ const updateAttendanceRevert = (state: EventSliceState, error: string | null, ev
       userId: user.userId,
       user: user,
       state: oldAttendance,
-      lastUpdate: formatDateToDatabase(moment())
+      lastUpdate: formatDateToDatabase(new Date())
     } as FullAttendance;
     let index = state.items.findIndex(x => x.id === eventId);
 

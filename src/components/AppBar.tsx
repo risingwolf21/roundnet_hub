@@ -23,7 +23,6 @@ const CustomAppBar = ({ navigateBack = false, title = "Roundnet Karlsruhe", onRe
             {
                 navigateBack && <IconButton
                     color="inherit"
-                    aria-label="open drawer"
                     onClick={() => navigate(-1)}
                     edge="start"
                     sx={{ mr: 2 }}>

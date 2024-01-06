@@ -12,7 +12,8 @@
         "manageUsers": "Benutzer verwalten",
         "completeHistory": "Gesamtverlauf",
         "manageGroups": "Gruppen verwalten",
-        "analyzeDrinkStocks": "Getränkenutzung analysieren"
+        "analyzeDrinkStocks": "Getränkenutzung analysieren",
+        "executeEdgeFunctions": "Edge-Funktionen ausführen"
     },
     "navigation": {
         "browse": "Browse",
