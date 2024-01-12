@@ -40,6 +40,12 @@
             "waitingListAccepted": "You are on the waiting list for this event"
         }
     },
+    "notificationTags": {
+        "eventComments": "Event comments",
+        "userRegistration": "User registrations",
+        "paymentRequest": "Payment requests",
+        "paymentPending": "Payment pending"
+    },
     "feature_not_available": "This feature is not ready yet. Try again later!",
     "notification_actionMessage": "We'd like to show you notifications for the following categories.",
     "notification_updateMessage": "Update your push notification subscription preferences."

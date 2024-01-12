@@ -40,6 +40,12 @@
             "waitingListAccepted": "Du bist auf der Warteliste für dieses Event"
         }
     },
+    "notificationTags": {
+        "eventComments": "Event Kommentare",
+        "userRegistration": "Benutzer Registierung",
+        "paymentRequest": "Zahlungsaufforderung",
+        "paymentPending": "Zahlung wartend"
+    },
     "feature_not_available": "Diese Funktion ist noch nicht bereit. Versuche es später erneut!",
     "notification_actionMessage": "Du kannst Push-Benachrichtigungen zu den folgenden Themen erhalten",
     "notification_updateMessage": "Update deine Push-Benachrichtigungs Segmente"

@@ -12,6 +12,7 @@ import { useInitialFetch } from "./hooks/useInitialFetch";
 import { useOneSignal } from "./hooks/useOneSignal";
 import { useServiceWorker } from './hooks/useServiceWorker';
 import ExecuteEdgeFunctions from "./components/admin/ExecuteEdgeFunctions";
+import NotificationsScreenProvider from "./components/NotificationsScreen";
 
 const FeatureNotAvailable = React.lazy(() => import('./components/FeatureNotAvailable'));
 const HistoryScreenProvider = React.lazy(() => import('./components/HistoryScreen'));
@@ -60,6 +61,7 @@ const App = () => {
             <Route path="/history" element={<HistoryScreenProvider />} />
             <Route path="/payments" element={<PayDrinksScreenProvider />} />
             <Route path="/keys" element={<KeyHolderScreenProvider />} />
+            <Route path="/notifications" element={<NotificationsScreenProvider />} />
 
             <Route path="/trainer/groups" element={<ManageGroupsProvider />} />
             <Route path="/trainer/groups/:id" element={<GroupInformationProvider />} />

@@ -44,6 +44,13 @@ const tabs = [
         icon: <Key />,
         avatarColor: "#88AEBF",
         ability: "keyFinder"
+    },
+    {
+        translationKey: "notifications",
+        navigateTo: "/notifications",
+        icon: <Notifications />,
+        avatarColor: "#88AEBF",
+        ability: "notifications"
     }
 ] as TabsType[];
 
@@ -70,16 +77,6 @@ const Browse = ({ t }: { t: TFunction }) => {
                         <ListItemText primary={t("browse." + x.translationKey)} />
                     </ListItemButton>
                 })
-            }
-            {
-                can("view", "notifications") && <ListItemButton key={"notifications"} onClick={requestNotificationPermission} sx={{ mt: 1 }}>
-                    <ListItemAvatar>
-                        <Avatar sx={{ background: "#88AEBF", width: 40, height: 40, borderRadius: 2 }}>
-                            <Notifications />
-                        </Avatar>
-                    </ListItemAvatar>
-                    <ListItemText primary={t("browse.notifications")} />
-                </ListItemButton>
             }
             <ListItem key={"appVersion"} dense>
                 <ListItemAvatar>

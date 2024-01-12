@@ -220,43 +220,6 @@ export interface Database {
           }
         ]
       }
-      group_event_mapping: {
-        Row: {
-          event: number
-          group: number
-        }
-        Insert: {
-          event: number
-          group: number
-        }
-        Update: {
-          event?: number
-          group?: number
-        }
-        Relationships: [
-          {
-            foreignKeyName: "group_event_mapping_event_fkey"
-            columns: ["event"]
-            isOneToOne: false
-            referencedRelation: "distinct_event"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "group_event_mapping_event_fkey"
-            columns: ["event"]
-            isOneToOne: false
-            referencedRelation: "events"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "group_event_mapping_group_fkey"
-            columns: ["group"]
-            isOneToOne: false
-            referencedRelation: "event_group"
-            referencedColumns: ["id"]
-          }
-        ]
-      }
       group_subgroup_mapping: {
         Row: {
           id: number
@@ -461,7 +424,9 @@ export interface Database {
           disabled: boolean
           displayName: string
           email: string
-          notificationTags: string[]
+          notifications:
+            | Database["public"]["Enums"]["NotificationTags"][]
+            | null
           permissions: Database["public"]["Enums"]["Permissions"][] | null
           role: Database["public"]["Enums"]["UserRole"]
           userId: string
@@ -472,7 +437,9 @@ export interface Database {
           disabled?: boolean
           displayName?: string
           email?: string
-          notificationTags?: string[]
+          notifications?:
+            | Database["public"]["Enums"]["NotificationTags"][]
+            | null
           permissions?: Database["public"]["Enums"]["Permissions"][] | null
           role?: Database["public"]["Enums"]["UserRole"]
           userId?: string
@@ -483,7 +450,9 @@ export interface Database {
           disabled?: boolean
           displayName?: string
           email?: string
-          notificationTags?: string[]
+          notifications?:
+            | Database["public"]["Enums"]["NotificationTags"][]
+            | null
           permissions?: Database["public"]["Enums"]["Permissions"][] | null
           role?: Database["public"]["Enums"]["UserRole"]
           userId?: string
@@ -520,49 +489,89 @@ export interface Database {
       }
     }
     Functions: {
-      [_ in never]: never
+      eventcreation: {
+        Args: Record<PropertyKey, never>
+        Returns: number
+      }
+      get_attending_users: {
+        Args: {
+          event_id: number
+        }
+        Returns: string[]
+      }
+      getattendingusers: {
+        Args: {
+          event_id: number
+        }
+        Returns: string[]
+      }
+      getusersforeventcommentnotifications: {
+        Args: {
+          event_id: number
+        }
+        Returns: string[]
+      }
+      getusersfornotificationstag: {
+        Args: {
+          tag: Database["public"]["Enums"]["NotificationTags"]
+        }
+        Returns: string[]
+      }
+      getusersforpaymentrequestnotifications: {
+        Args: Record<PropertyKey, never>
+        Returns: string[]
+      }
+      getusersforuserregistrationnotifications: {
+        Args: Record<PropertyKey, never>
+        Returns: string[]
+      }
+      sendnotifications:
+        | {
+            Args: {
+              external_ids: string[]
+            }
+            Returns: number
+          }
+        | {
+            Args: {
+              external_ids: string
+            }
+            Returns: number
+          }
     }
     Enums: {
       EventAttendance: "Declined" | "Attending" | "Unanswered" | "Waiting"
       EventRecurrence: "Weekly" | "Fortnightly" | "Monthly" | "None"
+      NotificationTags:
+        | "eventComments"
+        | "userRegistration"
+        | "paymentRequest"
+        | "paymentPending"
       PaymentState: "Open" | "Fulfilled"
       Permissions:
-      | "use;drink"
-      | "edit;drink"
-      | "delete;drink"
-      | "view;drink"
-      | "use;training"
-      | "edit;training"
-      | "delete;training"
-      | "view;training"
-      | "edit;groups"
-      | "delete;groups"
-      | "view;groups"
-      | "edit;payments"
-      | "edit;user"
-      | "view;keyFinder"
-      | "use;user"
-      | "view;user"
-      | "delete;user"
-      | "edit;keyFinder"
-      | "delete;keyFinder"
-      | "view;notifications"
-      | "edit;notifications"
-      PermissionsOld: "Admin" | "Tester" | "Finance" | "Trainer" | "Procure"
-      PermissionsOld2:
-      | "canEditTraining"
-      | "canAddTraining"
-      | "canDeleteTraining"
-      | "canCreateGroup"
-      | "canEditGroup"
-      | "canViewDrinks"
-      | "canAddDrinks"
-      | "canEditDrinks"
-      | "canDeleteDrinks"
-      | "canConfirmPayment"
-      | "canEditUsers"
-      | "canViewUserList"
-      | "canViewCompleteHistory"
+        | "use;drink"
+        | "edit;drink"
+        | "delete;drink"
+        | "view;drink"
+        | "use;training"
+        | "edit;training"
+        | "delete;training"
+        | "view;training"
+        | "edit;groups"
+        | "delete;groups"
+        | "view;groups"
+        | "edit;payments"
+        | "edit;user"
+        | "view;keyFinder"
+        | "use;user"
+        | "view;user"
+        | "delete;user"
+        | "edit;keyFinder"
+        | "delete;keyFinder"
+        | "view;notifications"
+        | "edit;notifications"
+        | "edit;history"
+        | "edit;edgeFunctions"
       ProductType: "Drink" | "Special" | "None"
       UserRole: "user" | "admin" | "procure" | "finance" | "trainer"
     }
@@ -574,78 +583,78 @@ export interface Database {
 
 export type Tables<
   PublicTableNameOrOptions extends
-  | keyof (Database["public"]["Tables"] & Database["public"]["Views"])
-  | { schema: keyof Database },
+    | keyof (Database["public"]["Tables"] & Database["public"]["Views"])
+    | { schema: keyof Database },
   TableName extends PublicTableNameOrOptions extends { schema: keyof Database }
-  ? keyof (Database[PublicTableNameOrOptions["schema"]]["Tables"] &
-    Database[PublicTableNameOrOptions["schema"]]["Views"])
-  : never = never
+    ? keyof (Database[PublicTableNameOrOptions["schema"]]["Tables"] &
+        Database[PublicTableNameOrOptions["schema"]]["Views"])
+    : never = never
 > = PublicTableNameOrOptions extends { schema: keyof Database }
   ? (Database[PublicTableNameOrOptions["schema"]]["Tables"] &
-    Database[PublicTableNameOrOptions["schema"]]["Views"])[TableName] extends {
+      Database[PublicTableNameOrOptions["schema"]]["Views"])[TableName] extends {
       Row: infer R
     }
-  ? R
-  : never
+    ? R
+    : never
   : PublicTableNameOrOptions extends keyof (Database["public"]["Tables"] &
-    Database["public"]["Views"])
+      Database["public"]["Views"])
   ? (Database["public"]["Tables"] &
-    Database["public"]["Views"])[PublicTableNameOrOptions] extends {
+      Database["public"]["Views"])[PublicTableNameOrOptions] extends {
       Row: infer R
     }
-  ? R
-  : never
+    ? R
+    : never
   : never
 
 export type TablesInsert<
   PublicTableNameOrOptions extends
-  | keyof Database["public"]["Tables"]
-  | { schema: keyof Database },
+    | keyof Database["public"]["Tables"]
+    | { schema: keyof Database },
   TableName extends PublicTableNameOrOptions extends { schema: keyof Database }
-  ? keyof Database[PublicTableNameOrOptions["schema"]]["Tables"]
-  : never = never
+    ? keyof Database[PublicTableNameOrOptions["schema"]]["Tables"]
+    : never = never
 > = PublicTableNameOrOptions extends { schema: keyof Database }
   ? Database[PublicTableNameOrOptions["schema"]]["Tables"][TableName] extends {
-    Insert: infer I
-  }
-  ? I
-  : never
+      Insert: infer I
+    }
+    ? I
+    : never
   : PublicTableNameOrOptions extends keyof Database["public"]["Tables"]
   ? Database["public"]["Tables"][PublicTableNameOrOptions] extends {
-    Insert: infer I
-  }
-  ? I
-  : never
+      Insert: infer I
+    }
+    ? I
+    : never
   : never
 
 export type TablesUpdate<
   PublicTableNameOrOptions extends
-  | keyof Database["public"]["Tables"]
-  | { schema: keyof Database },
+    | keyof Database["public"]["Tables"]
+    | { schema: keyof Database },
   TableName extends PublicTableNameOrOptions extends { schema: keyof Database }
-  ? keyof Database[PublicTableNameOrOptions["schema"]]["Tables"]
-  : never = never
+    ? keyof Database[PublicTableNameOrOptions["schema"]]["Tables"]
+    : never = never
 > = PublicTableNameOrOptions extends { schema: keyof Database }
   ? Database[PublicTableNameOrOptions["schema"]]["Tables"][TableName] extends {
-    Update: infer U
-  }
-  ? U
-  : never
+      Update: infer U
+    }
+    ? U
+    : never
   : PublicTableNameOrOptions extends keyof Database["public"]["Tables"]
   ? Database["public"]["Tables"][PublicTableNameOrOptions] extends {
-    Update: infer U
-  }
-  ? U
-  : never
+      Update: infer U
+    }
+    ? U
+    : never
   : never
 
 export type Enums<
   PublicEnumNameOrOptions extends
-  | keyof Database["public"]["Enums"]
-  | { schema: keyof Database },
+    | keyof Database["public"]["Enums"]
+    | { schema: keyof Database },
   EnumName extends PublicEnumNameOrOptions extends { schema: keyof Database }
-  ? keyof Database[PublicEnumNameOrOptions["schema"]]["Enums"]
-  : never = never
+    ? keyof Database[PublicEnumNameOrOptions["schema"]]["Enums"]
+    : never = never
 > = PublicEnumNameOrOptions extends { schema: keyof Database }
   ? Database[PublicEnumNameOrOptions["schema"]]["Enums"][EnumName]
   : PublicEnumNameOrOptions extends keyof Database["public"]["Enums"]
