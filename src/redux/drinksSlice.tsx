@@ -119,7 +119,7 @@ export const drinksSlice = createSlice({
             /**
              * Drinks initial loading
              */
-            .addCase(fetchDrinksAsync.pending, (state: DrinksSliceState, action) => {
+            .addCase(fetchDrinksAsync.pending, (state: DrinksSliceState, _action) => {
                 state.loading = true;
             })
             .addCase(fetchDrinksAsync.fulfilled, (state: DrinksSliceState, action) => {
@@ -135,7 +135,7 @@ export const drinksSlice = createSlice({
             /**
              * History initial loading
              */
-            .addCase(fetchHistoryAsync.pending, (state: DrinksSliceState, action) => {
+            .addCase(fetchHistoryAsync.pending, (state: DrinksSliceState, _action) => {
                 state.loading = true;
             })
             .addCase(fetchHistoryAsync.fulfilled, (state: DrinksSliceState, action) => {
@@ -163,7 +163,7 @@ export const drinksSlice = createSlice({
             /**
              * Fetching active payment for user
              */
-            .addCase(fetchPaymentAsync.pending, (state: DrinksSliceState, action) => {
+            .addCase(fetchPaymentAsync.pending, (state: DrinksSliceState, _action) => {
                 state.paymentLoading = true;
             })
             .addCase(fetchPaymentAsync.fulfilled, (state: DrinksSliceState, action) => {
@@ -177,7 +177,7 @@ export const drinksSlice = createSlice({
                 state.paymentError = action.error.message;
             })
 
-            .addCase(fetchDrinksToPayAsync.pending, (state: DrinksSliceState, action) => {
+            .addCase(fetchDrinksToPayAsync.pending, (state: DrinksSliceState, _action) => {
                 state.paymentDrinksLoading = true;
             })
             .addCase(fetchDrinksToPayAsync.fulfilled, (state: DrinksSliceState, action) => {
@@ -202,22 +202,22 @@ type DrinkRepositoryWithUserIdAndPagination = DrinkRepositoryWithUserId & {
     page: number
 }
 
-export const fetchPaymentAsync = createAsyncThunk("payments/forUser", async ({ repository, userId }: DrinkRepositoryWithUserId, { rejectWithValue }) => {
+export const fetchPaymentAsync = createAsyncThunk("payments/forUser", async ({ repository, userId }: DrinkRepositoryWithUserId) => {
     const response = await repository.fetchCurrentPaymentForUser(userId);
     return response?.data;
 });
 
-export const fetchDrinksToPayAsync = createAsyncThunk("payments/openDrinks", async ({ repository, userId }: DrinkRepositoryWithUserId, { rejectWithValue }) => {
+export const fetchDrinksToPayAsync = createAsyncThunk("payments/openDrinks", async ({ repository, userId }: DrinkRepositoryWithUserId) => {
     const response = await repository.fetchDrinksToPay(userId);
     return response?.data ?? [];
 });
 
-export const fetchDrinksAsync = createAsyncThunk("drink", async (repository: IDrinkRepository, { rejectWithValue }) => {
+export const fetchDrinksAsync = createAsyncThunk("drink", async (repository: IDrinkRepository) => {
     const response = await repository.fetchDrinks();
     return response?.data ?? [];
 });
 
-export const fetchHistoryAsync = createAsyncThunk("history", async ({ repository, userId, page = 0, count = 20 }: DrinkRepositoryWithUserIdAndPagination, { rejectWithValue }) => {
+export const fetchHistoryAsync = createAsyncThunk("history", async ({ repository, userId, page = 0, count = 20 }: DrinkRepositoryWithUserIdAndPagination) => {
     const response = await repository.fetchHistoryForUser(userId, page, count);
     return { entries: response?.data ?? [], more: page !== 0 };
 });

@@ -176,7 +176,7 @@ const CreateEvent = ({ t, eventToEdit, repository }: CreateEventProps) => {
                 <ListItem sx={{ pt: 0, pb: 0, mb: 2 }} key={"startTime"}>
                     <ListItemAvatar />
 
-                    <TimePicker sx={{ width: "100%" }} views={['hours', 'minutes']} disablePast ampm={false} label="Startzeit" onChange={(val) => setEditedEvent({
+                    <TimePicker sx={{ width: "100%" }} views={['hours', 'minutes']} ampm={false} label="Startzeit" onChange={(val) => setEditedEvent({
                         ...editedEvent,
                         startingDateTime: formatDateToDatabase(set(new Date(editedEvent.startingDateTime), { hours: val?.hour(), minutes: val?.minute(), seconds: 0, milliseconds: 0 }))
                     })} value={dayjsFromDb(editedEvent.startingDateTime)} />

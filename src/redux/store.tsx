@@ -8,6 +8,8 @@ import drinksSlice from './drinksSlice'
 import eventSlice from './eventSlice'
 import groupsSlice from './groupsSlice'
 import keysSlice from './keysSlice'
+import eventAttendanceSlice from './events/eventAttendanceSlice'
+import eventCommentsSlice from './events/eventCommentsSlice'
 
 const store = configureStore({
     reducer: {
@@ -18,7 +20,9 @@ const store = configureStore({
         keys: keysSlice,
         adminDrinks: adminDrinksSlice,
         adminPayments: adminPaymentsSlice,
-        adminUsers: adminUsersSlice
+        adminUsers: adminUsersSlice,
+        eventAttendance: eventAttendanceSlice,
+        eventComments: eventCommentsSlice
     },
 });
 export type RootState = ReturnType<typeof store.getState>

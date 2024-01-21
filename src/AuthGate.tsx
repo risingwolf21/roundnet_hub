@@ -49,7 +49,7 @@ const AuthGate = ({ children }: Props) => {
                             role: res.data.role,
                             verified: res.data.verified,
                             permissions: res.data.permissions ?? [],
-                            notificationTags: res.data.notificationTags ?? []
+                            notifications: res.data.notificationTags ?? []
                         } as User;
                         if (!container.isBound("IAdminDrinksRepository"))
                             container.bind<IAdminDrinksRepository>("IAdminDrinksRepository").toDynamicValue(() => {

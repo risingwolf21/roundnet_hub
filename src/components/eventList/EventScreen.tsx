@@ -9,7 +9,7 @@ import { useDependency } from "../../hooks/useDependency";
 import { fetchEventsAsync, onEventDelete, onEventErrorRead, onEventInsert, onEventUpdate, updateAttendanceAsync } from "../../redux/eventSlice";
 import { RootState, useAppDispatch } from "../../redux/store";
 import { IEventRepository } from "../../repository/IEventRepository";
-import { EventAttendance, FullEvent, User } from "../../types/supabaseTypes";
+import { EventAttendance, EventInsert, EventUpdate, FullEvent, User } from "../../types/supabaseTypes";
 import { AlertSnackbar } from "../AlertSnackbar";
 import CustomAppBar from "../AppBar";
 import { InfiniteScrollList } from "../InfiniteScrollList";
@@ -58,9 +58,9 @@ const EventScreen = ({ events, userGroups, loading, error, endReached, repositor
 
     useEffect(() => {
         let subscription = client.channel("public:drink")
-            .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'events' }, payload => dispatch(onEventUpdate(payload)))
-            .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'events' }, payload => dispatch(onEventDelete(payload)))
-            .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'events' }, payload => dispatch(onEventInsert(payload)))
+            .on<EventUpdate>('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'events' }, payload => dispatch(onEventUpdate(payload.new)))
+            .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'events' }, payload => dispatch(onEventDelete(payload.old.id)))
+            .on<EventInsert>('postgres_changes', { event: 'INSERT', schema: 'public', table: 'events' }, payload => dispatch(onEventInsert(payload.new)))
             .subscribe();
         return () => {
             subscription.unsubscribe();

@@ -25,7 +25,7 @@ function TabPanel(props: any) {
 }
 
 
-const EventAttendanceDialog = ({ open, index, setOpen, event }: EventAttendanceDialogProps) => {
+const EventAttendanceDialog = ({ open, index, setOpen, attendance }: EventAttendanceDialogProps) => {
 
     const [value, setValue] = useState(index ?? 0);
     const theme = useTheme();
@@ -59,7 +59,7 @@ const EventAttendanceDialog = ({ open, index, setOpen, event }: EventAttendanceD
             <TabPanel value={value} index={0} dir={theme.direction}>
                 <List>
                     {
-                        event && event?.attendance?.filter((x: FullAttendance) => x.state === "Attending").map((x: FullAttendance, index: number) => <ListItem key={x.userId + index}>
+                        attendance.filter((x: FullAttendance) => x.state === "Attending").map((x: FullAttendance, index: number) => <ListItem key={x.userId + index}>
                             <ListItemAvatar>
                                 <Avatar>
                                     <AccountCircle />
@@ -73,7 +73,7 @@ const EventAttendanceDialog = ({ open, index, setOpen, event }: EventAttendanceD
             <TabPanel value={value} index={1} dir={theme.direction}>
                 <List>
                     {
-                        event && event?.attendance?.filter((x: FullAttendance) => x.state === "Declined").map((x: FullAttendance, index: number) => <ListItem key={x.userId + index}>
+                        attendance.filter((x: FullAttendance) => x.state === "Declined").map((x: FullAttendance, index: number) => <ListItem key={x.userId + index}>
                             <ListItemAvatar>
                                 <Avatar>
                                     <AccountCircle />

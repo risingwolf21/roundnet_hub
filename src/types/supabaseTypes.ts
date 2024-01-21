@@ -19,7 +19,14 @@ export type EventInsert = Database["public"]["Tables"]["events"]["Insert"];
 export type EventUpdate = Database["public"]["Tables"]["events"]["Update"];
 
 export type EventAttendanceInsert = Database["public"]["Tables"]["event_attendance_user_mapping"]["Insert"];
+export type EventAttendanceUpdate = Database["public"]["Tables"]["event_attendance_user_mapping"]["Update"];
 export type EventAttendanceMapping = Database["public"]["Tables"]["event_attendance_user_mapping"]["Row"];
+
+export type EventCommentUpdate = Database["public"]["Tables"]["event_comments"]["Update"];
+export type EventCommentInsert = Database["public"]["Tables"]["event_comments"]["Insert"];
+
+
+export type NotificationTags = Database["public"]["Enums"]["NotificationTags"];
 
 export type DrinkCounter = Drink & {
     count: number

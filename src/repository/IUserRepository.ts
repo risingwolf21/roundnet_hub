@@ -1,5 +1,5 @@
 import { PostgrestSingleResponse } from "@supabase/supabase-js";
-import { User } from "src/types/supabaseTypes";
+import { NotificationTags, User } from "src/types/supabaseTypes";
 import { SupabaseRepository } from "./Repository";
 
 export interface IUserRepository {
@@ -7,10 +7,10 @@ export interface IUserRepository {
 }
 
 export class SupabaseUserRepository extends SupabaseRepository implements IUserRepository {
-    async updateNotificationTags(notificationTags: string[], user: User): Promise<PostgrestSingleResponse<null>> {
+    async updateNotificationTags(notificationTags: NotificationTags[], user: User): Promise<PostgrestSingleResponse<null>> {
         return this.client
             .from("user")
-            .update({ notificationTags: notificationTags })
+            .update({ notifications: notificationTags })
             .eq("userId", user.userId);
     }
 

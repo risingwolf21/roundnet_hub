@@ -1,12 +1,10 @@
-import { EventAttendance, EventAttendanceMapping, EventInsert, EventUpdate, FullAttendance, FullEvent, Group, User } from "../types/supabaseTypes";
+import { Comment, EventAttendance, EventAttendanceMapping, EventInsert, EventUpdate, FullAttendance, FullComment, FullEvent, Group, User } from "../types/supabaseTypes";
 import { PostgrestSingleResponse } from '@supabase/supabase-js';
 import moment from "moment";
 import { PostgrestError } from '@supabase/supabase-js'
 import { injectable } from "inversify";
 import { SupabaseRepository } from "./Repository";
-import { format } from "date-fns";
 import { formatDateToDatabase } from "src/utils";
-import dayjs from "dayjs";
 
 export type DbResult<T> = T extends PromiseLike<infer U> ? U : never
 export type DbResultOk<T> = T extends PromiseLike<{ data: infer U }> ? Exclude<U, null> : never
@@ -25,12 +23,19 @@ interface IEventRepository {
     updateAttendance(userId: string, eventId: number, state: EventAttendance): Promise<PostgrestSingleResponse<EventAttendanceMapping>>
     insertComment(user: User, eventId: number, comment: string): Promise<PostgrestSingleResponse<Comment>>
     fetchEventAttendance(eventId: number): Promise<PostgrestSingleResponse<FullAttendance[]>>
+    fetchEventComments(eventId: number): Promise<PostgrestSingleResponse<FullComment[]>>
     fetchSingleEvent(eventId: number): Promise<PostgrestSingleResponse<FullEvent>>
     fetchUserGroups(user: User): Promise<PostgrestSingleResponse<{ user: { userId: string }, group: Group }[]>>
 }
 
 @injectable()
 class SupabaseEventRepository extends SupabaseRepository implements IEventRepository {
+    async fetchEventComments(eventId: number): Promise<PostgrestSingleResponse<FullComment[]>> {
+        return this.client.from("event_comments")
+            .select("user(userId, displayName), *")
+            .eq("event", eventId)
+            .returns<FullComment[]>();
+    }
 
     async updateEndOfOldEvent(eventId: number, end_at: string): Promise<PostgrestSingleResponse<null>> {
         return this.client

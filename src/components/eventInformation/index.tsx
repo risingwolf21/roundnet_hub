@@ -4,7 +4,7 @@ import moment from "moment";
 import React, { createRef, useEffect, useState } from "react";
 import { MapContainer, Marker, TileLayer } from "react-leaflet";
 import { useNavigate } from "react-router-dom";
-import { editEvent, fetchEventAttendanceAsync, fetchSingleEventAsync, onEventErrorRead, updateAttendanceAsync, upsertCommentToEventAsync } from "../../redux/eventSlice";
+import { editEvent, fetchSingleEventAsync, onEventErrorRead } from "../../redux/eventSlice";
 import { EventAttendance, answerDeadlineExpired, maxAttendeesExceeded } from "../../types/supabaseTypes";
 import { DeleteEventDialog } from "./DeleteEventDialog";
 import { SwipeableDialog } from "../SwipeableDialog";
@@ -12,8 +12,11 @@ import { DeleteEventType, EventInformationProps } from "./types";
 import EventAttendanceDialog from "./EventAttendanceDialog";
 import { CancelTrainingDialog } from "./CancelTrainingDialog";
 import { can } from "src/utils/PermissionService";
+import { fetchEventAttendanceAsync, updateAttendanceAsync } from "src/redux/events/eventAttendanceSlice";
+import { formatDateToDatabase } from "src/utils";
+import { fetchEventCommentsAsync, upsertCommentToEventAsync } from "src/redux/events/eventCommentsSlice";
 
-const EventInformation = ({ dispatch, selectedEvent, attendanceLoading, error, user, selectedEventPlace, repository, t }: EventInformationProps) => {
+const EventInformation = ({ dispatch, selectedEvent, attendanceLoading, error, user, selectedEventPlace, repository, t, attendance, comments }: EventInformationProps) => {
 
     const [eventAttendanceState, setEventAttendanceState] = useState({ open: false, index: 0 });
     const [cancelTrainingOpen, setCancelTrainingOpen] = useState(false);
@@ -24,7 +27,8 @@ const EventInformation = ({ dispatch, selectedEvent, attendanceLoading, error, u
     const [anchorEl, setAnchorEl] = useState<EventTarget & HTMLButtonElement | null>(null);
 
     useEffect(() => {
-        dispatch(fetchEventAttendanceAsync({ repository, eventId: selectedEvent.id }))
+        dispatch(fetchEventAttendanceAsync({ repository, eventId: selectedEvent.id }));
+        dispatch(fetchEventCommentsAsync({ repository, eventId: selectedEvent.id }));
     }, [dispatch, repository, selectedEvent.id]);
 
     const cancelTraining = async () => {
@@ -58,7 +62,7 @@ const EventInformation = ({ dispatch, selectedEvent, attendanceLoading, error, u
         if (!comment)
             return;
 
-        dispatch(upsertCommentToEventAsync({ repository, user, eventId: selectedEvent.id, comment: comment.toString() }));
+        dispatch(upsertCommentToEventAsync({ repository, user, eventId: selectedEvent.id, comment: comment.toString(), created_at: formatDateToDatabase(new Date()) }));
         event.currentTarget.reset();
     }
 
@@ -272,7 +276,7 @@ const EventInformation = ({ dispatch, selectedEvent, attendanceLoading, error, u
                     <Card sx={{ mt: 2, mb: 2, pb: 0 }} onClick={() => setCommentsOpen(true)} variant="elevation" elevation={3}>
                         <CardContent sx={{ '&.MuiCardContent-root': { paddingBottom: 1 } }}>
                             <Typography sx={{ fontSize: 16, fontWeight: "bold" }} color="text.secondary" gutterBottom>
-                                {`Kommentare ${selectedEvent.comments.length}`}
+                                {`Kommentare ${comments.length}`}
                             </Typography>
                             <ListItem dense sx={{ '&.MuiListItem-root': { paddingLeft: 0 } }}>
                                 <ListItemAvatar>
@@ -303,7 +307,7 @@ const EventInformation = ({ dispatch, selectedEvent, attendanceLoading, error, u
                         <Box sx={{ display: "flex", px: 2, flexDirection: "column" }}>
                             <List sx={{ mb: 8 }}>
                                 {
-                                    selectedEvent.comments && selectedEvent.comments.map((x, index) => <ListItem divider dense key={index} sx={{ '&.MuiListItem-root': { paddingLeft: 0 } }}>
+                                    comments && comments.map((x, index) => <ListItem divider dense key={index} sx={{ '&.MuiListItem-root': { paddingLeft: 0 } }}>
                                         <ListItemAvatar>
                                             <Avatar>
                                                 {
@@ -346,7 +350,7 @@ const EventInformation = ({ dispatch, selectedEvent, attendanceLoading, error, u
                 open={eventAttendanceState.open}
                 index={eventAttendanceState.index}
                 setOpen={(value) => setEventAttendanceState({ open: value, index: 0 })}
-                event={selectedEvent} />
+                attendance={attendance} />
 
             <CancelTrainingDialog
                 cancelTrainingOpen={cancelTrainingOpen}

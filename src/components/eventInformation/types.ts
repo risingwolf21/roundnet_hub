@@ -2,12 +2,15 @@ import { TFunction } from "i18next";
 import { IEventRepository } from "src/repository/IEventRepository";
 import { AnyAction, ThunkDispatch } from "@reduxjs/toolkit";
 import { RootState } from "src/redux/store";
-import { FullEvent, Group, User } from "src/types/supabaseTypes";
+import { FullAttendance, FullComment, FullEvent, Group, User } from "src/types/supabaseTypes";
 import { PlaceType } from "../eventCreation/types";
 
 export type EventInformationProps = {
     selectedEvent: FullEvent,
     attendanceLoading: boolean,
+    attendance: FullAttendance[],
+    comments: FullComment[],
+    commentsLoading: boolean,
     error: string | null,
     user: User,
     dispatch: ThunkDispatch<RootState, undefined, AnyAction>,
@@ -20,7 +23,7 @@ export type EventAttendanceDialogProps = {
     open: boolean,
     index: number,
     setOpen: (value: boolean) => void,
-    event: FullEvent
+    attendance: FullAttendance[]
 }
 
 export type SelectGroupDialogProps = {

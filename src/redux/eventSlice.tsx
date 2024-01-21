@@ -1,13 +1,10 @@
-import { createSlice, createAsyncThunk, PayloadAction, ActionReducerMapBuilder } from '@reduxjs/toolkit';
-import moment from 'moment';
+import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import { toInteger } from "lodash";
-import { compareById, formatDateToDatabase } from '../utils';
-import { Comment, EventAttendance, FullAttendance, FullComment, FullEvent, User } from '../types/supabaseTypes';
-import { PostgrestError } from '@supabase/supabase-js';
+import { Comment, EventAttendance, EventInsert, EventUpdate, FullAttendance, FullComment, FullEvent, User } from '../types/supabaseTypes';
 import { IEventRepository } from '../repository/IEventRepository';
 
 type EventSliceState = {
-  items: FullEvent[] extends infer O ? O : never,
+  items: FullEvent[],
   userGroups: number[],
   selectedEvent: number | null,
   eventToEdit: FullEvent | null,
@@ -63,22 +60,19 @@ export const eventSlice = createSlice({
         }
       }
     },
-    onEventUpdate: (state, action) => {
-      const index = state.items.findIndex(x => x.id === action.payload.new.id)
+    onEventUpdate: (state, action: PayloadAction<EventUpdate>) => {
+      const index = state.items.findIndex(x => x.id === action.payload.id)
       if (index === -1)
         return;
-      let event = state.items[index];
-      state.items = [
-        ...state.items.slice(0, index),
-        Object.assign(event, action.payload.new),
-        ...state.items.slice(index + 1)
-      ]
+      // eventsAdapter.updateOne(state, event)
+      // state.items[index] = Object.assign(state.items[index], { ...event })
     },
-    onEventDelete: (state, action) => {
-      state.items = state.items.filter(x => !compareById(x, action.payload.old))
+    onEventDelete: (state, action: PayloadAction<number>) => {
+      state.items = state.items.filter(x => x.id !== action.payload)
     },
-    onEventInsert: (state, action) => {
-      state.items = [...(state.items ?? []), action.payload.new]
+    onEventInsert: (state, action: PayloadAction<EventInsert>) => {
+      // if (newEvent)
+      //   state.items.push(newEvent)
     },
     onEventAttendanceUserUpdate: (state, action) => {
       let eventIndex = state.items.findIndex(x => x.id === action.payload.new.event);
@@ -111,19 +105,14 @@ export const eventSlice = createSlice({
       state.error = null;
     }
   },
-  extraReducers(builder: ActionReducerMapBuilder<EventSliceState>) {
+  extraReducers(builder) {
     //@ts-ignore
     builder
-      .addCase(fetchEventsAsync.pending, (state: EventSliceState, action: any) => {
+      .addCase(fetchEventsAsync.pending, (state: EventSliceState, _action) => {
         state.loading = true;
       })
       .addCase(fetchEventsAsync.fulfilled, (state: EventSliceState, action) => {
         state.loading = false;
-
-        if (!action.payload) {
-          state.error = "Payload was undefined";
-          return;
-        }
 
         if (action.payload.entries && action.payload.entries.length < 1) {
           state.endReached = true
@@ -141,22 +130,6 @@ export const eventSlice = createSlice({
         state.loading = false;
         state.error = action.error.message ?? "";
         state.items = [];
-      })
-
-      .addCase(fetchEventAttendanceAsync.pending, (state: EventSliceState, _action) => {
-        state.attendanceLoading = true;
-      })
-      .addCase(fetchEventAttendanceAsync.fulfilled, (state: EventSliceState, action) => {
-        state.attendanceLoading = false;
-        state.attendanceError = '';
-        let index = state.items.findIndex(x => x.id === action.payload.eventId);
-        if (index !== -1) {
-          state.items[index].attendance = action.payload.data ?? [];
-        }
-      })
-      .addCase(fetchEventAttendanceAsync.rejected, (state: EventSliceState, action) => {
-        state.attendanceLoading = false;
-        state.attendanceError = action.error.message ?? "";
       })
 
       .addCase(fetchSingleEventAsync.pending, (state: EventSliceState, _action) => {
@@ -190,118 +163,29 @@ export const eventSlice = createSlice({
       })
 
       .addCase(updateAttendanceAsync.pending, (state: EventSliceState, action) => {
-        let attendanceEntry = {
-          event: toInteger(action.meta.arg.eventId),
-          user: action.meta.arg.user,
-          state: action.meta.arg.state,
-          userId: action.meta.arg.user.userId,
-          lastUpdate: formatDateToDatabase(new Date())
-        } as FullAttendance;
+        state.attendanceLoading = true;
+
         let index = state.items.findIndex(x => x.id === toInteger(action.meta.arg.eventId));
 
         if (index !== -1) {
           state.items[index].userAttendance = action.meta.arg.state;
-
-          let attendanceIndex = state.items[index].attendance.findIndex(x => x.user.userId === action.meta.arg.user.userId);
-          if (attendanceIndex !== -1) {
-            state.items[index].attendance[attendanceIndex] = attendanceEntry
-          } else {
-            state.items[index].attendance = [...state.items[index].attendance, attendanceEntry]
-          }
         }
       })
       .addCase(updateAttendanceAsync.fulfilled, (state: EventSliceState, action) => {
-        updateAttendanceRevert(state, null, toInteger(action.meta.arg.eventId), action.meta.arg.user, action.meta.arg.state)
+        state.attendanceLoading = false;
       })
       .addCase(updateAttendanceAsync.rejected, (state: EventSliceState, action) => {
-        updateAttendanceRevert(state, "rejected", toInteger(action.meta.arg.eventId), action.meta.arg.user, action.meta.arg.state)
-      })
+        state.attendanceLoading = false;
 
-      .addCase(upsertCommentToEventAsync.pending, (state: EventSliceState, action) => {
-        let newComment = {
-          id: -1,
-          pending: true,
-          comment: action.meta.arg.comment ?? "",
-          event: toInteger(action.meta.arg.eventId),
-          displayName: action.meta.arg.user.displayName ?? "",
-          user: { userId: action.meta.arg.user.userId, displayName: action.meta.arg.user.displayName ?? "", email: null },
-          userId: action.meta.arg.user.userId,
-          created_at: formatDateToDatabase(new Date())
-        } as FullComment;
-        let eventIndex = state.items.findIndex(x => x.id === toInteger(action.meta.arg.eventId));
+        let index = state.items.findIndex(x => x.id === toInteger(action.meta.arg.eventId));
 
-        if (eventIndex !== -1) {
-          // event exists user, eventId, comment
-          let commentIndex = state.items[eventIndex].comments.findIndex(x =>
-            x.user?.userId === action.meta.arg.user.userId && x.comment === action.meta.arg.comment && x.event === toInteger(action.meta.arg.eventId));
-          if (commentIndex !== -1) {
-            // update comment
-            state.items[eventIndex].comments[commentIndex] = newComment;
-          } else {
-            // insert new comment
-            state.items[eventIndex].comments = [...(state.items[eventIndex].comments ?? []), newComment]
-              .sort((a, b) => new Date(a["created_at"]).getTime() - new Date(b["created_at"]).getTime())
-          }
+        if (index !== -1) {
+          state.items[index].userAttendance = action.meta.arg.state;
         }
-      })
-      .addCase(upsertCommentToEventAsync.fulfilled, (state, action) => {
-        upsertCommentRevert(state, action.meta.arg.eventId, action.meta.arg.user.userId, action.meta.arg.comment,
-          action.payload.error?.message ?? null);
-      })
-      .addCase(upsertCommentToEventAsync.rejected, (state, action) => {
-        upsertCommentRevert(state, action.meta.arg.eventId, action.meta.arg.user.userId, action.meta.arg.comment,
-          "rejected");
       })
   }
 });
 
-const upsertCommentRevert = (state: EventSliceState, eventId: number, userId: string,
-  comment: string, error: string | null) => {
-  let eventIndex = state.items.findIndex(x => x.id === eventId);
-  if (eventIndex === -1)
-    return;
-
-  let commentIndex = state.items[eventIndex].comments.findIndex(x =>
-    x.user?.userId === userId && x.comment === comment
-    && x.event === eventId);
-
-  if (commentIndex === -1)
-    return;
-
-  if (!error) {
-    state.items[eventIndex].comments[commentIndex] = Object.assign(state.items[eventIndex].comments[commentIndex], { pending: false });
-  } else {
-    state.error = error;
-    state.items[eventIndex].comments = state.items[eventIndex].comments.filter((_x, index) => index === commentIndex);
-  }
-}
-
-const updateAttendanceRevert = (state: EventSliceState, error: string | null, eventId: number, user: User,
-  oldAttendance: EventAttendance) => {
-  // Reset to oldState because there was an error updating
-  if (error) {
-    state.error = error;
-    let attendanceEntry = {
-      event: eventId,
-      userId: user.userId,
-      user: user,
-      state: oldAttendance,
-      lastUpdate: formatDateToDatabase(new Date())
-    } as FullAttendance;
-    let index = state.items.findIndex(x => x.id === eventId);
-
-    if (index !== -1) {
-      state.items[index].userAttendance = oldAttendance;
-
-      let attendanceIndex = state.items[index].attendance.findIndex(x => x.user.userId === user.userId);
-      if (attendanceIndex !== -1) {
-        state.items[index].attendance[attendanceIndex] = attendanceEntry
-      } else {
-        state.items[index].attendance = [...state.items[index].attendance, attendanceEntry]
-      }
-    }
-  }
-}
 
 export const fetchUserGroupsAsync = createAsyncThunk("fetchUserGroupsAsync", async ({ repository, user }: { repository: IEventRepository, user: User }) => {
   const response = await repository.fetchUserGroups(user);
@@ -331,10 +215,6 @@ export const fetchEventsAsync = createAsyncThunk("events", async ({ user, page =
 
 export type ClientEventId = { repository: IEventRepository, eventId: number }
 
-export const fetchEventAttendanceAsync = createAsyncThunk("fetchEventAttendanceAsync", async ({ repository, eventId }: ClientEventId) => {
-  const attendance = await repository.fetchEventAttendance(eventId);
-  return { data: attendance.data, eventId };
-});
 
 export const fetchSingleEventAsync = createAsyncThunk("fetchSingleEventAsync", async ({ repository, eventId, userId }: ClientEventId & { userId: string }) => {
   const response = await repository.fetchSingleEvent(eventId);
@@ -357,15 +237,6 @@ type UpdateAttendanceProps = {
 export const updateAttendanceAsync = createAsyncThunk("updateAttendanceAsync", async ({ repository, eventId, user, state, oldState }: UpdateAttendanceProps) => {
   const response = await repository.updateAttendance(user.userId, eventId, state);
   return { data: response.data, error: response.error, oldState };
-});
-
-type UpsertCommentProps = { repository: IEventRepository, user: User, eventId: number, comment: string }
-type DataErrorReturned = { data: any | null, error: PostgrestError | null }
-
-export const upsertCommentToEventAsync = createAsyncThunk("upsertCommentToEventAsync", async ({ repository, user, eventId, comment }: UpsertCommentProps) => {
-  const response = await repository.insertComment(user, eventId, comment);
-
-  return { data: response.data, error: response.error } as DataErrorReturned;
 });
 
 export const {

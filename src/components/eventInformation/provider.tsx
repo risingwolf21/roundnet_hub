@@ -1,9 +1,8 @@
-import { Box, Typography } from "@mui/material";
 import { toInteger, toNumber } from "lodash";
 import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useSelector } from "react-redux";
-import { Navigate, useParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import { useDependency } from "src/hooks/useDependency";
 import { IEventRepository } from "src/repository/IEventRepository";
 import { fetchSingleEventAsync } from "../../redux/eventSlice";
@@ -15,7 +14,9 @@ import LoadingEventInfo from "./LoadingEventInfo";
 import { AlertSnackbar } from "../AlertSnackbar";
 
 const EventInformationProvider = () => {
-    const { items, error, attendanceLoading, loading } = useSelector((state: RootState) => state.events);
+    const { items, error, loading } = useSelector((state: RootState) => state.events);
+    const { loading: attendanceLoading, entities: attendance } = useSelector((state: RootState) => state.eventAttendance);
+    const { loading: commentsLoading, entities: comments } = useSelector((state: RootState) => state.eventComments);
     const { user } = useSelector((state: RootState) => state.application);
     const { selectedEventId } = useParams();
     const dispatch = useAppDispatch();
@@ -47,7 +48,10 @@ const EventInformationProvider = () => {
         selectedEvent={selectedEvent}
         selectedEventPlace={selectedEventPlace}
         repository={repository}
+        attendance={attendance[toInteger(selectedEventId)]?.attendance ?? []}
         attendanceLoading={attendanceLoading}
+        comments={comments[toInteger(selectedEventId)]?.comments ?? []}
+        commentsLoading={commentsLoading}
         error={error}
         user={user}
         dispatch={dispatch} />
