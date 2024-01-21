@@ -25,8 +25,9 @@ export type EventAttendanceMapping = Database["public"]["Tables"]["event_attenda
 export type EventCommentUpdate = Database["public"]["Tables"]["event_comments"]["Update"];
 export type EventCommentInsert = Database["public"]["Tables"]["event_comments"]["Insert"];
 
+export type EdgeFunctions = keyof Database["public"]["Functions"]
 
-export type NotificationTags = Database["public"]["Enums"]["NotificationTags"];
+export type NotificationTags = Database["public"]["Enums"]["NotificationTags"]
 
 export type DrinkCounter = Drink & {
     count: number
