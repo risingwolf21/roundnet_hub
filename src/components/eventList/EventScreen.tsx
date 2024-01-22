@@ -6,17 +6,19 @@ import { Navigate, useNavigate } from 'react-router-dom';
 import { useClient } from "react-supabase";
 import { can } from 'src/utils/PermissionService';
 import { useDependency } from "../../hooks/useDependency";
-import { fetchEventsAsync, onEventDelete, onEventErrorRead, onEventInsert, onEventUpdate, updateAttendanceAsync } from "../../redux/eventSlice";
 import { RootState, useAppDispatch } from "../../redux/store";
 import { IEventRepository } from "../../repository/IEventRepository";
-import { EventAttendance, EventInsert, EventUpdate, FullEvent, User } from "../../types/supabaseTypes";
+import { EventAttendance, EventUpdate, FullEvent, User } from "../../types/supabaseTypes";
 import { AlertSnackbar } from "../AlertSnackbar";
 import CustomAppBar from "../AppBar";
 import { InfiniteScrollList } from "../InfiniteScrollList";
 import { EventItem } from "./EventItem";
+import { SliceEvent, eventsSelector, fetchEventsAsync, onEventDelete, onEventErrorRead, onEventUpdate } from 'src/redux/events/eventsSlice';
+import { updateAttendanceAsync } from 'src/redux/events/eventAttendanceSlice';
 
 const EventScreenProvider = () => {
-    const { items: events, userGroups, loading, error, endReached } = useSelector((state: RootState) => state.events);
+    const { loading, error, endReached } = useSelector((state: RootState) => state.events);
+    const events = useSelector(eventsSelector.selectAll);
     const { user } = useSelector((state: RootState) => state.application);
     const repository = useDependency<IEventRepository>("IEventRepository");
 
@@ -31,7 +33,6 @@ const EventScreenProvider = () => {
     else
         return <EventScreen
             events={events}
-            userGroups={userGroups}
             loading={loading}
             error={error ?? ""}
             endReached={endReached}
@@ -41,8 +42,7 @@ const EventScreenProvider = () => {
 }
 
 type EventScreenProps = {
-    events: FullEvent[],
-    userGroups: number[],
+    events: SliceEvent[],
     loading: boolean,
     error: string,
     endReached: boolean,
@@ -50,7 +50,7 @@ type EventScreenProps = {
     user: User
 }
 
-const EventScreen = ({ events, userGroups, loading, error, endReached, repository, user }: EventScreenProps) => {
+const EventScreen = ({ events, loading, error, endReached, repository, user }: EventScreenProps) => {
     const client = useClient();
     const dispatch = useAppDispatch();
     const navigate = useNavigate();
@@ -60,7 +60,7 @@ const EventScreen = ({ events, userGroups, loading, error, endReached, repositor
         let subscription = client.channel("public:drink")
             .on<EventUpdate>('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'events' }, payload => dispatch(onEventUpdate(payload.new)))
             .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'events' }, payload => dispatch(onEventDelete(payload.old.id)))
-            .on<EventInsert>('postgres_changes', { event: 'INSERT', schema: 'public', table: 'events' }, payload => dispatch(onEventInsert(payload.new)))
+            // .on<EventInsert>('postgres_changes', { event: 'INSERT', schema: 'public', table: 'events' }, payload => dispatch(onEventInsert(payload.new)))
             .subscribe();
         return () => {
             subscription.unsubscribe();
@@ -69,7 +69,7 @@ const EventScreen = ({ events, userGroups, loading, error, endReached, repositor
 
     useEffect(() => {
         dispatch(fetchEventsAsync({ user, page: 0, count: 20, repository }));
-    }, [dispatch, client, user, userGroups, repository]);
+    }, [dispatch, client, user, repository]);
 
     const fetchEvents = (page: number, count: number) => {
         dispatch(fetchEventsAsync({ user, page, count, repository }));

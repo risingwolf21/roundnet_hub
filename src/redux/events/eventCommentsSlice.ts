@@ -13,6 +13,8 @@ const eventsCommentsAdapter = createEntityAdapter({
     selectId: (event: SliceComments) => event.id
 })
 
+export const eventsCommentsSelector = eventsCommentsAdapter.getSelectors();
+
 const eventCommentsSlice = createSlice({
     name: 'eventAttendance',
     initialState: eventsCommentsAdapter.getInitialState({
@@ -25,7 +27,6 @@ const eventCommentsSlice = createSlice({
             let index = commentsSlice?.comments.findIndex(x => x.id === action.payload.id);
             if (!commentsSlice || !action.payload.event || !index)
                 return;
-
 
             eventsCommentsAdapter.upsertOne(state, {
                 id: action.payload.event,

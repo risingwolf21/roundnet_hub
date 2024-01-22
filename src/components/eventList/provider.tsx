@@ -1,26 +1,21 @@
-import AddIcon from '@mui/icons-material/Add';
-import { Alert, Divider, Fab, Grid, LinearProgress, Snackbar } from "@mui/material";
-import React, { useEffect, useState } from "react";
+import React, { } from "react";
 import { useSelector } from "react-redux";
-import { Navigate, useNavigate } from 'react-router-dom';
-import { useClient } from "react-supabase";
+import { Navigate } from 'react-router-dom';
 import { can } from 'src/utils/PermissionService';
 import { useDependency } from "../../hooks/useDependency";
-import { fetchEventsAsync, onEventDelete, onEventErrorRead, onEventInsert, onEventUpdate, updateAttendanceAsync } from "../../redux/eventSlice";
-import { RootState, useAppDispatch } from "../../redux/store";
+import { RootState } from "../../redux/store";
 import { IEventRepository } from "../../repository/IEventRepository";
-import { EventAttendance, FullEvent, User } from "../../types/supabaseTypes";
 import { AlertSnackbar } from "../AlertSnackbar";
-import CustomAppBar from "../AppBar";
-import { InfiniteScrollList } from "../InfiniteScrollList";
-import { EventItem } from "./EventItem";
 import EventScreen from '.';
+import { eventsSelector } from "src/redux/events/eventsSlice";
 
 const EventScreenProvider = () => {
-    const { items: events, userGroups, loading, error, endReached } = useSelector((state: RootState) => state.events);
+    const { loading, error, endReached } = useSelector((state: RootState) => state.events);
+    const events = useSelector(eventsSelector.selectAll)
     const { user } = useSelector((state: RootState) => state.application);
     const repository = useDependency<IEventRepository>("IEventRepository");
 
+    let test = Object.values(events).filter(x => x !== null || x != undefined)
     if (!can("view", "training"))
         return <AlertSnackbar close={() => { }} alertInfo={{ message: "No permission to view this screen", severity: "error" }} />
 
@@ -32,7 +27,6 @@ const EventScreenProvider = () => {
     else
         return <EventScreen
             events={events}
-            userGroups={userGroups}
             loading={loading}
             error={error ?? ""}
             endReached={endReached}

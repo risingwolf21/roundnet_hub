@@ -5,52 +5,54 @@ import { useSelector } from "react-redux";
 import { useParams } from "react-router-dom";
 import { useDependency } from "src/hooks/useDependency";
 import { IEventRepository } from "src/repository/IEventRepository";
-import { fetchSingleEventAsync } from "../../redux/eventSlice";
 import { RootState, useAppDispatch } from "../../redux/store";
 import { FullEvent } from "../../types/supabaseTypes";
 import EventInformation from ".";
 import { PlaceType } from "../eventCreation/types";
 import LoadingEventInfo from "./LoadingEventInfo";
 import { AlertSnackbar } from "../AlertSnackbar";
+import { SliceEvent, eventsSelector, fetchSingleEventAsync } from "src/redux/events/eventsSlice";
+import { attendanceSelector } from "src/redux/events/eventAttendanceSlice";
+import { eventsCommentsSelector } from "src/redux/events/eventCommentsSlice";
 
 const EventInformationProvider = () => {
-    const { items, error, loading } = useSelector((state: RootState) => state.events);
-    const { loading: attendanceLoading, entities: attendance } = useSelector((state: RootState) => state.eventAttendance);
-    const { loading: commentsLoading, entities: comments } = useSelector((state: RootState) => state.eventComments);
-    const { user } = useSelector((state: RootState) => state.application);
     const { selectedEventId } = useParams();
+    const { error, loading } = useSelector((state: RootState) => state.events);
+    const attendance = useSelector((state: RootState) => attendanceSelector.selectById(state.eventAttendance, toInteger(selectedEventId)));
+    const comments = useSelector((state: RootState) => eventsCommentsSelector.selectById(state.eventComments, toInteger(selectedEventId)));
+    const event = useSelector((state: RootState) => eventsSelector.selectById(state, toInteger(selectedEventId)));
+    const { loading: attendanceLoading } = useSelector((state: RootState) => state.eventAttendance);
+    const { loading: commentsLoading } = useSelector((state: RootState) => state.eventComments);
+    const { user } = useSelector((state: RootState) => state.application);
     const dispatch = useAppDispatch();
     const { t } = useTranslation();
-    const [selectedEvent, setSelectedEvent] = useState<FullEvent>();
     const [selectedEventPlace, setSelectedEventPlace] = useState<PlaceType | null>(null);
     const repository = useDependency<IEventRepository>("IEventRepository");
 
     useEffect(() => {
         if (!repository || !user)
             return;
-        let found = items.find(x => x.id === toInteger(selectedEventId));
-        if (!found) {
+        if (!event) {
             dispatch(fetchSingleEventAsync({ repository, eventId: toNumber(selectedEventId), userId: user.userId }));
         } else {
-            setSelectedEvent(found);
-            setSelectedEventPlace(found.place ? JSON.parse(found.place?.toString() ?? "") as PlaceType : null)
+            setSelectedEventPlace(event.place ? JSON.parse(event.place?.toString() ?? "") as PlaceType : null)
         }
-    }, [items, selectedEventId, dispatch, repository, user]);
+    }, [selectedEventId, dispatch, repository, user]);
 
     if (loading)
         return <LoadingEventInfo />
 
-    if (!selectedEvent || !repository || !user)
+    if (!event || !repository || !user)
         return <AlertSnackbar close={() => { }} alertInfo={{ message: "Fatal error occured. Repository, user or selectedEvent was null!", severity: "error" }} />
 
     return <EventInformation
         t={t}
-        selectedEvent={selectedEvent}
+        selectedEvent={event}
         selectedEventPlace={selectedEventPlace}
         repository={repository}
-        attendance={attendance[toInteger(selectedEventId)]?.attendance ?? []}
+        attendance={attendance?.attendance ?? []}
         attendanceLoading={attendanceLoading}
-        comments={comments[toInteger(selectedEventId)]?.comments ?? []}
+        comments={comments?.comments ?? []}
         commentsLoading={commentsLoading}
         error={error}
         user={user}

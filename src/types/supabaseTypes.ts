@@ -1,4 +1,5 @@
 import { isBefore } from "date-fns";
+import { SliceEvent } from "src/redux/events/eventsSlice";
 import { Database } from "src/types/supabase";
 
 export type Drink = Database["public"]["Tables"]["drink"]["Row"];
@@ -63,20 +64,20 @@ export type FullEvent = Event & {
     fullGroup: Group
 }
 
-export function answerDeadlineExpired(x: FullEvent) {
+export function answerDeadlineExpired<EventType extends Event>(x: EventType) {
     if (!x.answerDeadline)
         return false;
     return isBefore(x.answerDeadline, Date.now());
 }
 
-export function maxAttendeesExceeded(x: FullEvent) {
-    return x.attendance.filter(y => y.state === "Attending").length >= x.maxAttendees;
+export function maxAttendeesExceeded<EventType extends Event, AttendanceType extends Attendance>(x: EventType, attendance: AttendanceType[]) {
+    return attendance.filter(y => y.state === "Attending").length >= x.maxAttendees;
 }
 
-export type FullAttendance = Modify<Attendance, {
+export type FullAttendance = Attendance & {
     user: User,
     userId: string
-}>
+}
 
 export type SimpleUser = {
     displayName: string,

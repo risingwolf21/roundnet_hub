@@ -4,7 +4,6 @@ import moment from "moment";
 import React, { createRef, useEffect, useState } from "react";
 import { MapContainer, Marker, TileLayer } from "react-leaflet";
 import { useNavigate } from "react-router-dom";
-import { editEvent, fetchSingleEventAsync, onEventErrorRead } from "../../redux/eventSlice";
 import { EventAttendance, answerDeadlineExpired, maxAttendeesExceeded } from "../../types/supabaseTypes";
 import { DeleteEventDialog } from "./DeleteEventDialog";
 import { SwipeableDialog } from "../SwipeableDialog";
@@ -15,6 +14,7 @@ import { can } from "src/utils/PermissionService";
 import { fetchEventAttendanceAsync, updateAttendanceAsync } from "src/redux/events/eventAttendanceSlice";
 import { formatDateToDatabase } from "src/utils";
 import { fetchEventCommentsAsync, upsertCommentToEventAsync } from "src/redux/events/eventCommentsSlice";
+import { editEvent, fetchSingleEventAsync, onEventErrorRead } from "src/redux/events/eventsSlice";
 
 const EventInformation = ({ dispatch, selectedEvent, attendanceLoading, error, user, selectedEventPlace, repository, t, attendance, comments }: EventInformationProps) => {
 
@@ -97,25 +97,24 @@ const EventInformation = ({ dispatch, selectedEvent, attendanceLoading, error, u
             alignItems: "center",
             justifyContent: "center"
         }}>
-        <AppBar position="sticky" sx={{ zIndex: (theme) => theme.zIndex.drawer + 1, background: "primary" }}>
-            <Toolbar>
+        <AppBar sx={{ position: "absolute", zIndex: (theme) => theme.zIndex.drawer + 1, width: "100%", background: "transparent" }} elevation={0}>
+            <Toolbar >
                 <IconButton
-                    color="inherit"
                     aria-label="open drawer"
                     onClick={() => navigate(-1)}
                     edge="start"
-                    sx={{ mr: 2 }}>
+                    sx={{ mr: 2, color: "#000" }}>
                     <ArrowBack />
                 </IconButton>
                 <Typography variant="h6" component="div" sx={{ flexGrow: 1 }} />
-                <IconButton color="inherit" onClick={() => navigate("/user")}>
+                <IconButton sx={{ color: "#000" }} onClick={() => navigate("/user")}>
                     <AccountCircle />
                 </IconButton>
-                <IconButton color="inherit" onClick={() => dispatch(fetchSingleEventAsync({ repository, eventId: selectedEvent.id, userId: user.userId }))}>
+                <IconButton sx={{ color: "#000" }} onClick={() => dispatch(fetchSingleEventAsync({ repository, eventId: selectedEvent.id, userId: user.userId }))}>
                     <Refresh />
                 </IconButton>
                 {(user?.role === "admin" || user?.role === "trainer" || can("edit", "training")) && <>
-                    <IconButton sx={{ color: "inherit", pr: 0 }} onClick={handleClick}>
+                    <IconButton sx={{ color: "#000", pr: 0 }} onClick={handleClick}>
                         <MoreVert />
                     </IconButton>
                     <Menu
@@ -158,50 +157,88 @@ const EventInformation = ({ dispatch, selectedEvent, attendanceLoading, error, u
                 }
             </Toolbar>
         </AppBar>
-
         <Box sx={{ justifyContent: "space-between", display: "flex", flexDirection: "column" }}>
             <Box>
-                <Box pl={1} pr={1}>
+                <Box>
                     {
                         selectedEvent.isCancelled && <Alert sx={{ mt: 2 }} severity="error">
                             <AlertTitle>Absage</AlertTitle>
                             Dieses Event wurde <strong>abgesagt</strong>
                         </Alert>
                     }
-                    <Card sx={{ mt: 2, mb: 2, p: 0 }} variant="elevation" elevation={3}>
-                        {
-                            selectedEventPlace && <CardMedia sx={{ maxHeight: "15%", borderRadius: 5 }}>
-                                <Box sx={{ width: "100%", maxHeight: "15%", alignSelf: "center" }}>
-                                    <MapContainer
-                                        style={{ width: "100%", height: "200px", borderRadius: "16px" }}
-                                        center={[selectedEventPlace.lat, selectedEventPlace.lon]}
-                                        zoom={15}
-                                        dragging={false}
-                                        doubleClickZoom={false}
-                                        scrollWheelZoom={false}
-                                        attributionControl={false}
-                                        zoomControl={false}>
-                                        <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-                                        <Marker
-                                            position={[selectedEventPlace.lat, selectedEventPlace.lon]}
-                                            interactive={false} />
-                                    </MapContainer>
-                                </Box>
-                            </CardMedia>
-                        }
-                        <CardHeader title={selectedEvent.title} subheader={createCardSubHeader()} />
+                    {
+                        selectedEventPlace && <CardMedia sx={{ maxHeight: "15%" }}>
+                            <Box sx={{ width: "100%", maxHeight: "15%", alignSelf: "center" }}>
+                                <MapContainer
+                                    style={{ width: "100%", height: "200px" }}
+                                    center={[selectedEventPlace.lat, selectedEventPlace.lon]}
+                                    zoom={15}
+                                    dragging={false}
+                                    doubleClickZoom={false}
+                                    scrollWheelZoom={false}
+                                    attributionControl={false}
+                                    zoomControl={false}>
+                                    <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+                                    <Marker
+                                        position={[selectedEventPlace.lat, selectedEventPlace.lon]}
+                                        interactive={false} />
+                                </MapContainer>
+                            </Box>
+                        </CardMedia>
+                    }
+                    <CardHeader title={selectedEvent.title} subheader={createCardSubHeader()} />
 
-                        <CardContent sx={{ '&.MuiCardContent-root': { paddingBottom: 1 } }}>
+                    <CardContent sx={{ '&.MuiCardContent-root': { paddingBottom: 1 } }}>
 
-                            <Typography sx={{ fontSize: 16, fontWeight: "bold" }} color="text.secondary" gutterBottom>
-                                Beschreibung
-                            </Typography>
-                            <Typography pb={1}>{selectedEvent?.description}</Typography>
-                        </CardContent>
-                    </Card>
+                        <Typography sx={{ fontSize: 16, fontWeight: "bold" }} color="text.secondary" gutterBottom>
+                            Beschreibung
+                        </Typography>
+                        <Typography pb={1}>{selectedEvent?.description}</Typography>
+                        <Divider />
+                        <Typography sx={{ fontSize: 16, fontWeight: "bold", mt: 2 }} color="text.secondary" gutterBottom>
+                            Teilnehmer
+                        </Typography>
+                        <List sx={{ p: 0 }}>
+                            <ListItem key={"attendEvent"} sx={{ '&.MuiListItem-root': { paddingLeft: 0 } }} onClick={() => attendanceLoading ? {} : setEventAttendanceState({ open: true, index: 0 })}>
+                                <ListItemAvatar>
+                                    {
+                                        attendanceLoading ? <CircularProgress size={"20px"} /> : <CheckCircleOutline color="success" />
+                                    }
+                                </ListItemAvatar>
+                                <ListItemText primary={(attendance.filter(x => x.state === "Attending").length) + " zusagen"} />
+                                <ListItemSecondaryAction>
+                                    <IconButton onClick={() => updateAttendance("Attending", selectedEvent.userAttendance)} disabled={selectedEvent.isCancelled || maxAttendeesExceeded(selectedEvent, attendance) || answerDeadlineExpired(selectedEvent)}>
+                                        {
+                                            selectedEvent.userAttendance === "Attending"
+                                                ? <ThumbUpAlt fontSize="inherit" sx={{ fontSize: "28px", color: "green" }} />
+                                                : <ThumbUpOffAlt fontSize="inherit" sx={{ fontSize: "28px" }} />
+                                        }
+                                    </IconButton>
+                                </ListItemSecondaryAction>
+                            </ListItem>
+                            <Divider />
+                            <ListItem key={"declineEvent"} sx={{ '&.MuiListItem-root': { paddingLeft: 0 } }} onClick={() => attendanceLoading ? {} : setEventAttendanceState({ open: true, index: 1 })}>
+                                <ListItemAvatar sx={{ justifyContent: "left", alignItems: "center", display: "flex" }}>
+                                    {
+                                        attendanceLoading ? <CircularProgress size={"20px"} /> : <RemoveCircleOutline color="error" />
+                                    }
+                                </ListItemAvatar>
+                                <ListItemText primary={(attendance.filter(x => x.state === "Declined").length ?? 0) + " absagen"} />
+                                <ListItemSecondaryAction>
+                                    <IconButton onClick={() => updateAttendance("Declined", selectedEvent.userAttendance)} disabled={selectedEvent.isCancelled}>
+                                        {
+                                            selectedEvent.userAttendance === "Declined"
+                                                ? <ThumbDownAlt fontSize="inherit" sx={{ fontSize: "28px", color: "red" }} />
+                                                : <ThumbDownOffAlt fontSize="inherit" sx={{ fontSize: "28px" }} />
+                                        }
+                                    </IconButton>
+                                </ListItemSecondaryAction>
+                            </ListItem>
+                        </List>
+                    </CardContent>
 
                     {
-                        selectedEvent.maxAttendees <= selectedEvent.attendance.filter(x => x.state === "Attending").length && selectedEvent.userAttendance !== "Waiting" && selectedEvent.userAttendance !== "Attending" &&
+                        selectedEvent.maxAttendees <= attendance.filter(x => x.state === "Attending").length && selectedEvent.userAttendance !== "Waiting" && selectedEvent.userAttendance !== "Attending" &&
                         <Alert sx={{ mt: 2 }} severity="info">
                             <AlertTitle>Warteliste</AlertTitle>
                             Die maximale Anzahl der Teilnehmer ist erreicht. Du kannst trotzdem der Warteliste beitreten.
@@ -213,7 +250,7 @@ const EventInformation = ({ dispatch, selectedEvent, attendanceLoading, error, u
 
                     {
                         selectedEvent.userAttendance === "Waiting" && <Alert sx={{ mt: 2 }} severity="info">
-                            <AlertTitle>{t("events.information.waitingListPlace", { place: selectedEvent.attendance.filter(x => x.state === "Waiting").sort((a, b) => new Date(b.lastUpdate).getTime() - new Date(a.lastUpdate).getTime()).findIndex(x => x.user.userId === user.userId) + 1, waitingListLength: selectedEvent.attendance.filter(x => x.state === "Waiting").length })}</AlertTitle>
+                            <AlertTitle>{t("events.information.waitingListPlace", { place: attendance.filter(x => x.state === "Waiting").sort((a, b) => new Date(b.lastUpdate).getTime() - new Date(a.lastUpdate).getTime()).findIndex(x => x.user.userId === user.userId) + 1, waitingListLength: attendance.filter(x => x.state === "Waiting").length })}</AlertTitle>
                             {t("events.information.waitingListAccepted")}
                             <Button sx={{ alignContent: "end" }} variant="contained" onClick={() => updateAttendance("Declined", selectedEvent.userAttendance)}>
                                 Verlassen
@@ -228,52 +265,7 @@ const EventInformation = ({ dispatch, selectedEvent, attendanceLoading, error, u
                         </Alert>
                     }
 
-                    <Card sx={{ mt: 2, mb: 2, pb: 0 }} variant="elevation" elevation={3}>
-                        <CardContent sx={{ '&.MuiCardContent-root': { paddingBottom: 1 } }}>
-                            <Typography sx={{ fontSize: 16, fontWeight: "bold" }} color="text.secondary" gutterBottom>
-                                Teilnehmer
-                            </Typography>
-                            <List sx={{ p: 0 }}>
-                                <ListItem key={"attendEvent"} sx={{ '&.MuiListItem-root': { paddingLeft: 0 } }} onClick={() => attendanceLoading ? {} : setEventAttendanceState({ open: true, index: 0 })}>
-                                    <ListItemAvatar>
-                                        {
-                                            attendanceLoading ? <CircularProgress size={"20px"} /> : <CheckCircleOutline color="success" />
-                                        }
-                                    </ListItemAvatar>
-                                    <ListItemText primary={(selectedEvent.attendance.filter(x => x.state === "Attending").length) + " zusagen"} />
-                                    <ListItemSecondaryAction>
-                                        <IconButton onClick={() => updateAttendance("Attending", selectedEvent.userAttendance)} disabled={selectedEvent.isCancelled || maxAttendeesExceeded(selectedEvent) || answerDeadlineExpired(selectedEvent)}>
-                                            {
-                                                selectedEvent.userAttendance === "Attending"
-                                                    ? <ThumbUpAlt fontSize="inherit" sx={{ fontSize: "28px", color: "green" }} />
-                                                    : <ThumbUpOffAlt fontSize="inherit" sx={{ fontSize: "28px" }} />
-                                            }
-                                        </IconButton>
-                                    </ListItemSecondaryAction>
-                                </ListItem>
-                                <Divider />
-                                <ListItem key={"declineEvent"} sx={{ '&.MuiListItem-root': { paddingLeft: 0 } }} onClick={() => attendanceLoading ? {} : setEventAttendanceState({ open: true, index: 1 })}>
-                                    <ListItemAvatar sx={{ justifyContent: "left", alignItems: "center", display: "flex" }}>
-                                        {
-                                            attendanceLoading ? <CircularProgress size={"20px"} /> : <RemoveCircleOutline color="error" />
-                                        }
-                                    </ListItemAvatar>
-                                    <ListItemText primary={(selectedEvent?.attendance?.filter(x => x.state === "Declined").length ?? 0) + " absagen"} />
-                                    <ListItemSecondaryAction>
-                                        <IconButton onClick={() => updateAttendance("Declined", selectedEvent.userAttendance)} disabled={selectedEvent.isCancelled}>
-                                            {
-                                                selectedEvent.userAttendance === "Declined"
-                                                    ? <ThumbDownAlt fontSize="inherit" sx={{ fontSize: "28px", color: "red" }} />
-                                                    : <ThumbDownOffAlt fontSize="inherit" sx={{ fontSize: "28px" }} />
-                                            }
-                                        </IconButton>
-                                    </ListItemSecondaryAction>
-                                </ListItem>
-                            </List>
-                        </CardContent>
-                    </Card>
-
-                    <Card sx={{ mt: 2, mb: 2, pb: 0 }} onClick={() => setCommentsOpen(true)} variant="elevation" elevation={3}>
+                    <Card sx={{ mb: 2, mt: 2, pb: 0 }} onClick={() => setCommentsOpen(true)} variant="elevation" elevation={24}>
                         <CardContent sx={{ '&.MuiCardContent-root': { paddingBottom: 1 } }}>
                             <Typography sx={{ fontSize: 16, fontWeight: "bold" }} color="text.secondary" gutterBottom>
                                 {`Kommentare ${comments.length}`}

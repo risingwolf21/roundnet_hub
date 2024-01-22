@@ -1,8 +1,9 @@
-import { PayloadAction, createAsyncThunk, createEntityAdapter, createSlice } from "@reduxjs/toolkit";
+import { PayloadAction, Update, createAsyncThunk, createEntityAdapter, createSlice } from "@reduxjs/toolkit";
 import { IEventRepository } from "src/repository/IEventRepository";
 import { Event, EventAttendance, EventAttendanceUpdate, FullAttendance, User } from "src/types/supabaseTypes";
 import { formatDateToDatabase } from "src/utils";
-import { fetchSingleEventAsync } from "../eventSlice";
+import { fetchSingleEventAsync } from "./eventsSlice";
+import { RootState } from "../store";
 
 type SliceAttendance = {
     id: number,
@@ -13,6 +14,8 @@ const eventAttendanceAdapter = createEntityAdapter({
     selectId: (event: SliceAttendance) => event.id
 })
 
+export const attendanceSelector = eventAttendanceAdapter.getSelectors();
+
 const eventAttendanceSlice = createSlice({
     name: 'eventAttendance',
     initialState: eventAttendanceAdapter.getInitialState({
@@ -20,7 +23,7 @@ const eventAttendanceSlice = createSlice({
         error: ""
     }),
     reducers: {
-        onEventUpdate: (state, action: PayloadAction<EventAttendanceUpdate>) => {
+        onEventAttendanceUpdate: (state, action: PayloadAction<EventAttendanceUpdate>) => {
             let event = action.payload as Event;
             let oldEvent = state.entities[event.id];
             if (!oldEvent)
@@ -28,7 +31,7 @@ const eventAttendanceSlice = createSlice({
             let newEvent = Object.assign(oldEvent, { ...event })
             eventAttendanceAdapter.upsertOne(state, newEvent)
         },
-        onEventDelete: (state, action: PayloadAction<number>) => {
+        onEventAttendanceDelete: (state, action: PayloadAction<number>) => {
             eventAttendanceAdapter.removeOne(state, action.payload)
         }
     },
@@ -99,7 +102,13 @@ const eventAttendanceSlice = createSlice({
                 if (!action.payload.data) {
                     return;
                 }
-                console.log(action.payload)
+                let attendanceUpdate = {
+                    id: action.meta.arg.eventId,
+                    changes: {
+                        attendance: action.payload.data.attendance ?? []
+                    }
+                } as Update<SliceAttendance>;
+                eventAttendanceAdapter.updateOne(state, attendanceUpdate);
             })
     },
 });

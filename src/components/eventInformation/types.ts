@@ -4,9 +4,10 @@ import { AnyAction, ThunkDispatch } from "@reduxjs/toolkit";
 import { RootState } from "src/redux/store";
 import { FullAttendance, FullComment, FullEvent, Group, User } from "src/types/supabaseTypes";
 import { PlaceType } from "../eventCreation/types";
+import { SliceEvent } from "src/redux/events/eventsSlice";
 
 export type EventInformationProps = {
-    selectedEvent: FullEvent,
+    selectedEvent: SliceEvent,
     attendanceLoading: boolean,
     attendance: FullAttendance[],
     comments: FullComment[],
@@ -43,5 +44,5 @@ export type DeleteEventDialogProps = {
     open: boolean,
     setOpen: () => void,
     handleClose: (result: DeleteEventType | null) => any,
-    selectedEvent: FullEvent
+    selectedEvent: SliceEvent
 }

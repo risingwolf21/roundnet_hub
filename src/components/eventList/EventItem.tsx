@@ -2,11 +2,12 @@ import { ThumbDownAlt, ThumbDownOffAlt, ThumbUpAlt, ThumbUpOffAlt } from "@mui/i
 import { Box, CircularProgress, IconButton, ListItem, ListItemAvatar, ListItemSecondaryAction, ListItemText, Typography } from "@mui/material"
 import moment from "moment"
 import React from "react"
-import { FullEvent, answerDeadlineExpired, maxAttendeesExceeded } from "src/types/supabaseTypes"
+import { SliceEvent } from "src/redux/events/eventsSlice"
+import { answerDeadlineExpired, maxAttendeesExceeded } from "src/types/supabaseTypes"
 
 export type EventItemProps = {
     attendanceUpdating: boolean,
-    event: FullEvent,
+    event: SliceEvent,
     onClick: () => void,
     attendEvent: () => void,
     declineEvent: () => void
@@ -42,7 +43,7 @@ export const EventItem = ({ event, onClick, attendEvent, declineEvent, attendanc
                                     : <ThumbDownOffAlt fontSize="inherit" sx={{ fontSize: "28px" }} />
                             }
                         </IconButton>
-                        <IconButton onClick={attendEvent} disabled={event.isCancelled || answerDeadlineExpired(event) || maxAttendeesExceeded(event)}>
+                        <IconButton onClick={attendEvent} disabled={event.isCancelled || answerDeadlineExpired(event)}>
                             {
                                 event.userAttendance === "Attending"
                                     ? <ThumbUpAlt fontSize="inherit" sx={{ fontSize: "28px", color: "green" }} />
