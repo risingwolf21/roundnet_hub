@@ -2,10 +2,11 @@ import { PayloadAction, Update, createAsyncThunk, createEntityAdapter, createSli
 import { IEventRepository } from "src/repository/IEventRepository";
 import { Event, EventAttendance, EventInsert, EventUpdate, FullAttendance, FullEvent, Group, User } from "src/types/supabaseTypes";
 import { RootState } from "../store";
-import { updateAttendanceAsync } from "./eventAttendanceSlice";
+import eventAttendanceSlice, { onEventAttendanceUpdate, updateAttendanceAsync } from "./eventAttendanceSlice";
 
 export type SliceEvent = Event & {
     userAttendance: EventAttendance,
+    attendanceUpdating: boolean,
     fullGroup: Group
 }
 
@@ -82,17 +83,39 @@ const eventsSlice = createSlice({
                 }
                 state.error = null;
 
-                eventsAdapter.upsertOne(state, action.payload.data as FullEvent);
+                eventsAdapter.upsertOne(state, action.payload.data as SliceEvent);
             })
             .addCase(fetchSingleEventAsync.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.error.message ?? "";
             })
+            .addCase(updateAttendanceAsync.pending, (state, action) => {
+                let sliceEvent = {
+                    id: action.meta.arg.eventId,
+                    changes: { attendanceUpdating: true }
+                } as Update<SliceEvent>;
+
+                eventsAdapter.updateOne(state, sliceEvent);
+            })
             .addCase(updateAttendanceAsync.fulfilled, (state, action) => {
                 let sliceEvent = {
                     id: action.meta.arg.eventId,
                     changes: {
-                        userAttendance: action.meta.arg.state
+                        userAttendance: action.meta.arg.state,
+                        attendanceUpdating: false,
+                    }
+                } as Update<SliceEvent>;
+
+                eventsAdapter.updateOne(state, sliceEvent);
+            })
+            .addCase(onEventAttendanceUpdate, (state, action) => {
+                if (!action.payload.event || action.payload.user !== action.payload.userId)
+                    return;
+
+                let sliceEvent = {
+                    id: action.payload.event,
+                    changes: {
+                        userAttendance: action.payload.state,
                     }
                 } as Update<SliceEvent>;
 
@@ -115,7 +138,8 @@ export const fetchEventsAsync = createAsyncThunk("events", async ({ user, page =
         entries: (response.data ?? []).map((x: FullEvent) => {
             return {
                 ...x,
-                userAttendance: (x.attendance.find((y: FullAttendance) => y.user.userId === user.userId)?.state ?? "Unanswered") as EventAttendance
+                userAttendance: (x.attendance.find((y: FullAttendance) => y.user.userId === user.userId)?.state ?? "Unanswered") as EventAttendance,
+                attendanceUpdating: false
             }
         }),
         more: page !== 0
@@ -130,7 +154,8 @@ export const fetchSingleEventAsync = createAsyncThunk("fetchSingleEventAsync", a
     return {
         data: {
             ...response.data,
-            userAttendance: response.data?.attendance.find((x: FullAttendance) => x.user.userId === userId)?.state ?? "Unanswered"
+            userAttendance: response.data?.attendance.find((x: FullAttendance) => x.user.userId === userId)?.state ?? "Unanswered",
+            attendanceUpdating: false
         }, eventId
     };
 });

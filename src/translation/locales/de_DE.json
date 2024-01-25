@@ -37,7 +37,7 @@
             "answerDeadlineExceeded": "Die Anmeldung für dieses Event ist am {{ answerDeadline, dd.MM.yyyy 'um' HH:mm}} verstrichen",
             "answerDeadlineExceededTitle": "Anmeldezeitraum vorbei",
             "waitingListPlace": "Warteliste Platz ({{ place }} / {{ waitingListLength }})",
-            "waitingListAccepted": "Du bist auf der Warteliste für dieses Event"
+            "waitingListAccepted": "Du bist auf Wartelisteplatz {{ place }} von {{ waitingListLength }} für dieses Event"
         }
     },
     "notificationTags": {
