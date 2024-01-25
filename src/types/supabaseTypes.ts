@@ -96,7 +96,7 @@ export type UserWithGroups = User & {
 }
 
 export type GroupWithUsers = Group & {
-    users: SimpleUser[]
+    users: User[]
 }
 
 export type ProductType = Database["public"]["Enums"]["ProductType"];

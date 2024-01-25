@@ -37,7 +37,6 @@ const AuthGate = ({ children }: Props) => {
 
     useEffect(() => {
         const { data } = client.auth.onAuthStateChange((event, session) => {
-            console.log(`Supabase auth event: ${event}`);
             setUser({ email: session?.user?.email, id: session?.user?.id });
             if (session && session.user) {
                 client.from(TABLE_USER).select().eq("userId", session.user.id).single().then((res) => {
@@ -49,7 +48,7 @@ const AuthGate = ({ children }: Props) => {
                             role: res.data.role,
                             verified: res.data.verified,
                             permissions: res.data.permissions ?? [],
-                            notifications: res.data.notificationTags ?? []
+                            notifications: res.data.notifications ?? []
                         } as User;
                         if (!container.isBound("IAdminDrinksRepository"))
                             container.bind<IAdminDrinksRepository>("IAdminDrinksRepository").toDynamicValue(() => {

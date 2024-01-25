@@ -58,11 +58,7 @@ const eventsSlice = createSlice({
             .addCase(fetchEventsAsync.fulfilled, (state, action) => {
                 state.loading = false;
 
-                if (action.payload.entries && action.payload.entries.length < 1) {
-                    state.endReached = true
-                } else {
-                    state.endReached = false
-                }
+                state.endReached = action.payload.entries && action.payload.entries.length < 1;
 
                 if (action.payload.more) {
                     eventsAdapter.addMany(state, action.payload.entries);
