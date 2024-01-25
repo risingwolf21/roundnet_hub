@@ -1,22 +1,21 @@
-import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
+import { createAsyncThunk, createEntityAdapter, createSlice } from "@reduxjs/toolkit";
 import { GroupWithUsers } from "../types/supabaseTypes";
 import { SupabaseClient } from "@supabase/supabase-js";
+import { IAdminUsersRepository } from "src/repository/IAdminUsersRepository";
+import { RootState } from "./store";
 
-type GroupSliceState = {
-    groups: GroupWithUsers[],
-    loading: boolean,
-    error: string | null
-}
+const groupsAdapter = createEntityAdapter({
+    selectId: (group: GroupWithUsers) => group.id
+});
 
-const initialState = {
-    groups: [],
-    loading: false,
-    error: null
-} as GroupSliceState;
+export const groupsSelector = groupsAdapter.getSelectors((st: RootState) => st.groups);
 
 const groupsSlice = createSlice({
     name: "groups",
-    initialState,
+    initialState: groupsAdapter.getInitialState({
+        loading: false,
+        error: null as string | null
+    }),
     reducers: {},
     extraReducers(builder) {
         builder
@@ -27,7 +26,7 @@ const groupsSlice = createSlice({
                 state.loading = false;
                 state.error = null;
 
-                state.groups = action.payload;
+                groupsAdapter.upsertMany(state, action.payload);
             })
             .addCase(fetchGroupsAsync.rejected, (state, action) => {
                 state.loading = false;
@@ -37,20 +36,15 @@ const groupsSlice = createSlice({
             .addCase(fetchSingleGroupAsync.fulfilled, (state, action) => {
                 state.loading = false;
                 state.error = null;
+                console.log("group changed", action.payload.data)
 
                 if (!action.payload.data)
                     return;
 
-                let index = state.groups.findIndex(x => x.id === action.payload.id);
-                if (index !== -1) {
-                    state.groups = [
-                        ...state.groups.slice(0, index),
-                        action.payload.data,
-                        ...state.groups.slice(index + 1)
-                    ]
-                } else {
-                    state.groups = [...state.groups, action.payload.data];
-                }
+                groupsAdapter.upsertOne(state, action.payload.data);
+            })
+            .addCase(fetchSingleGroupAsync.rejected, (state, action) => {
+                console.log(action);
             })
     }
 });
@@ -62,16 +56,13 @@ export const fetchGroupsAsync = createAsyncThunk("fetchGroupsAsync", async ({ cl
     return response.data?.map(x => { return { ...x, users: x.users.map((y: any) => y.user) } as GroupWithUsers }) ?? [];
 });
 
-export const fetchSingleGroupAsync = createAsyncThunk("fetchSingleGroupAsync", async ({ client, id }: { client: SupabaseClient, id: number }) => {
-    const response = await client.from("event_group")
-        .select("*, users: group_user_mapping ( user ( userId, email, displayName ) )")
-        .eq("id", id)
-        .single();
-
+export const fetchSingleGroupAsync = createAsyncThunk("fetchSingleGroupAsync", async ({ repository, id }: { repository: IAdminUsersRepository, id: number }) => {
+    // returns {id, description, name, color, users: { user:{}[] }
+    const response = await repository.fetchSingleGroupWithUsers(id);
     return {
         data: {
             ...response.data,
-            users: response.data.map((x: any) => x.user)
+            users: response.data?.users?.map((x: any) => x.user) ?? []
         } as GroupWithUsers,
         id
     }

@@ -1,28 +1,28 @@
+import AddIcon from '@mui/icons-material/Add';
 import { Alert, Divider, Fab, Grid, LinearProgress, Snackbar } from "@mui/material";
+import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { Navigate, useNavigate } from 'react-router-dom';
-import { fetchEventsAsync, onEventErrorRead, updateAttendanceAsync } from "../../redux/eventSlice";
-import AddIcon from '@mui/icons-material/Add';
 import { useClient } from "react-supabase";
-import React, { useState, useEffect } from "react";
-import { InfiniteScrollList } from "../InfiniteScrollList";
-import CustomAppBar from "../AppBar";
-import { EventAttendance, FullEvent, User } from "../../types/supabaseTypes";
-import { RootState } from "../../redux/store";
-import { useAppDispatch } from "../..";
+import { can } from 'src/utils/PermissionService';
 import { useDependency } from "../../hooks/useDependency";
+import { RootState, useAppDispatch } from "../../redux/store";
 import { IEventRepository } from "../../repository/IEventRepository";
-import { EventItem } from "./EventItem";
+import { EventAttendance, EventUpdate, FullEvent, User } from "../../types/supabaseTypes";
 import { AlertSnackbar } from "../AlertSnackbar";
-import { AbilityContext, useAppAbility } from "src/utils/PermissionService";
+import CustomAppBar from "../AppBar";
+import { InfiniteScrollList } from "../InfiniteScrollList";
+import { EventItem } from "./EventItem";
+import { SliceEvent, eventsSelector, fetchEventsAsync, onEventDelete, onEventErrorRead, onEventUpdate } from 'src/redux/events/eventsSlice';
+import { updateAttendanceAsync } from 'src/redux/events/eventAttendanceSlice';
 
-export const EventScreenProvider = () => {
-    const { items: events, userGroups, loading, error, endReached } = useSelector((state: RootState) => state.events);
+const EventScreenProvider = () => {
+    const { loading, error, endReached } = useSelector((state: RootState) => state.events);
+    const events = useSelector(eventsSelector.selectAll);
     const { user } = useSelector((state: RootState) => state.application);
     const repository = useDependency<IEventRepository>("IEventRepository");
-    const { cannot } = useAppAbility();
 
-    if (cannot("view", "training"))
+    if (!can("view", "training"))
         return <AlertSnackbar close={() => { }} alertInfo={{ message: "No permission to view this screen", severity: "error" }} />
 
     if (!user || !repository)
@@ -33,7 +33,6 @@ export const EventScreenProvider = () => {
     else
         return <EventScreen
             events={events}
-            userGroups={userGroups}
             loading={loading}
             error={error ?? ""}
             endReached={endReached}
@@ -43,8 +42,7 @@ export const EventScreenProvider = () => {
 }
 
 type EventScreenProps = {
-    events: FullEvent[],
-    userGroups: number[],
+    events: SliceEvent[],
     loading: boolean,
     error: string,
     endReached: boolean,
@@ -52,15 +50,26 @@ type EventScreenProps = {
     user: User
 }
 
-const EventScreen = ({ events, userGroups, loading, error, endReached, repository, user }: EventScreenProps) => {
+const EventScreen = ({ events, loading, error, endReached, repository, user }: EventScreenProps) => {
     const client = useClient();
     const dispatch = useAppDispatch();
     const navigate = useNavigate();
     const [eventsUpdatingAttendance, setEventsUpdatingAttendance] = useState<number[]>([]);
 
     useEffect(() => {
+        let subscription = client.channel("public:drink")
+            .on<EventUpdate>('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'events' }, payload => dispatch(onEventUpdate(payload.new)))
+            .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'events' }, payload => dispatch(onEventDelete(payload.old.id)))
+            // .on<EventInsert>('postgres_changes', { event: 'INSERT', schema: 'public', table: 'events' }, payload => dispatch(onEventInsert(payload.new)))
+            .subscribe();
+        return () => {
+            subscription.unsubscribe();
+        }
+    }, [client, dispatch]);
+
+    useEffect(() => {
         dispatch(fetchEventsAsync({ user, page: 0, count: 20, repository }));
-    }, [dispatch, client, user, userGroups, repository]);
+    }, [dispatch, client, user, repository]);
 
     const fetchEvents = (page: number, count: number) => {
         dispatch(fetchEventsAsync({ user, page, count, repository }));
@@ -80,7 +89,7 @@ const EventScreen = ({ events, userGroups, loading, error, endReached, repositor
         direction="column"
         alignItems="center"
         justifyContent="center">
-        <CustomAppBar onRefresh={() => fetchEvents(0, 20)} />
+        <CustomAppBar />
         {
             loading && <LinearProgress sx={{ position: "fixed", top: 56, left: 0, right: 0 }} />
         }
@@ -118,4 +127,4 @@ const EventScreen = ({ events, userGroups, loading, error, endReached, repositor
     </Grid >);
 }
 
-export default EventScreen;
+export default EventScreenProvider;

@@ -6,6 +6,7 @@ import { useEffect } from "react";
 import React from "react";
 import { FullAttendance, FullEvent } from "../../types/supabaseTypes";
 import { SwipeableDialog } from "../SwipeableDialog";
+import { EventAttendanceDialogProps } from "./types";
 
 function TabPanel(props: any) {
     const { children, value, index, ...other } = props;
@@ -23,14 +24,8 @@ function TabPanel(props: any) {
     );
 }
 
-type EventAttendanceDialogProps = {
-    open: boolean,
-    index: number,
-    setOpen: (value: boolean) => void,
-    event: FullEvent
-}
 
-const EventAttendanceDialog = ({ open, index, setOpen, event }: EventAttendanceDialogProps) => {
+const EventAttendanceDialog = ({ open, index, setOpen, attendance }: EventAttendanceDialogProps) => {
 
     const [value, setValue] = useState(index ?? 0);
     const theme = useTheme();
@@ -64,7 +59,7 @@ const EventAttendanceDialog = ({ open, index, setOpen, event }: EventAttendanceD
             <TabPanel value={value} index={0} dir={theme.direction}>
                 <List>
                     {
-                        event && event?.attendance?.filter((x: FullAttendance) => x.state === "Attending").map((x: FullAttendance, index: number) => <ListItem key={x.userId + index}>
+                        attendance.filter((x: FullAttendance) => x.state === "Attending").map((x: FullAttendance, index: number) => <ListItem key={x.userId + index}>
                             <ListItemAvatar>
                                 <Avatar>
                                     <AccountCircle />
@@ -78,7 +73,7 @@ const EventAttendanceDialog = ({ open, index, setOpen, event }: EventAttendanceD
             <TabPanel value={value} index={1} dir={theme.direction}>
                 <List>
                     {
-                        event && event?.attendance?.filter((x: FullAttendance) => x.state === "Declined").map((x: FullAttendance, index: number) => <ListItem key={x.userId + index}>
+                        attendance.filter((x: FullAttendance) => x.state === "Declined").map((x: FullAttendance, index: number) => <ListItem key={x.userId + index}>
                             <ListItemAvatar>
                                 <Avatar>
                                     <AccountCircle />

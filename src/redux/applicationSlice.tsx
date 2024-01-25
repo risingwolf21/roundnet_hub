@@ -6,7 +6,7 @@ type ApplicationSliceState = {
     mode: string,
     appUpdateAvailable: boolean,
     appVersion: string,
-    realtimeState: "CLOSED" | "SUBSCRIBED" | "TIMED_OUT" | "CHANNEL_ERROR"
+    realtimeState: "CLOSED" | "SUBSCRIBED" | "TIMED_OUT" | "CHANNEL_ERROR",
 }
 
 const initialState = {
@@ -14,7 +14,7 @@ const initialState = {
     mode: "drinks",
     appUpdateAvailable: false,
     appVersion: "",
-    realtimeState: "CLOSED"
+    realtimeState: "CLOSED",
 } as ApplicationSliceState;
 
 export const applicationReducer = createSlice({

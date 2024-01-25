@@ -1,13 +1,15 @@
 import { PostgrestSingleResponse } from "@supabase/supabase-js";
 import { injectable } from "inversify";
-import { Group, User, UserWithGroups } from "src/types/supabaseTypes";
+import { Group, GroupWithUsers, User, UserWithGroups } from "src/types/supabaseTypes";
 import { SupabaseRepository } from "./Repository";
 import { TABLE_PAYMENTS, TABLE_USER } from "src/constants";
 import { UserEdited } from "src/components/admin/EditUserDialog";
 
 export interface IAdminUsersRepository {
     addUsersToGroup(group: Group, users: User[]): Promise<PostgrestSingleResponse<null>>
+    removeUsersFromGroup(group: Group, users: User[]): Promise<PostgrestSingleResponse<null>>
     fetchAllUsersWithGroups(): Promise<PostgrestSingleResponse<UserWithGroups[]>>
+    fetchSingleGroupWithUsers(groupId: number): Promise<PostgrestSingleResponse<any>>
     fetchNotVerifiedUsers(): Promise<PostgrestSingleResponse<User[]>>
     updateUser(user: UserEdited): Promise<PostgrestSingleResponse<null>>
     deactivateUser(user: User): Promise<void>
@@ -15,6 +17,19 @@ export interface IAdminUsersRepository {
 
 @injectable()
 export class SupabaseAdminUsersRepository extends SupabaseRepository implements IAdminUsersRepository {
+    async removeUsersFromGroup(group: Group, users: User[]): Promise<PostgrestSingleResponse<null>> {
+        return this.client
+            .from("group_user_mapping")
+            .delete()
+            .eq("group", group.id)
+            .in("user", users.map(x => x.userId))
+    }
+    async fetchSingleGroupWithUsers(groupId: number): Promise<PostgrestSingleResponse<any>> {
+        return await this.client.from("event_group")
+            .select("*, users: group_user_mapping ( user (*) )")
+            .eq("id", groupId)
+            .single();
+    }
 
     async deactivateUser(user: User): Promise<void> {
         await this.client
@@ -53,15 +68,29 @@ export class SupabaseAdminUsersRepository extends SupabaseRepository implements 
         return this.client
             .from(TABLE_USER)
             .select("*, groups: group_user_mapping ( group: event_group ( * ) )")
+            .order("displayName", { ascending: true })
             .returns<UserWithGroups[]>()
     }
 
     async addUsersToGroup(group: Group, users: User[]): Promise<PostgrestSingleResponse<null>> {
-        throw new Error("Method not implemented.");
+        return this.client
+            .from("group_user_mapping")
+            .upsert(users.map(x => {
+                return {
+                    user: x.userId,
+                    group: group.id
+                }
+            }));
     }
 }
 
 export class EmptyAdminUsersRepository implements IAdminUsersRepository {
+    removeUsersFromGroup(group: Group, users: User[]): Promise<PostgrestSingleResponse<null>> {
+        return Promise.resolve({} as PostgrestSingleResponse<null>);
+    }
+    fetchSingleGroupWithUsers(groupId: number): Promise<PostgrestSingleResponse<GroupWithUsers>> {
+        return Promise.resolve({} as PostgrestSingleResponse<GroupWithUsers>);
+    }
 
     addUsersToGroup(group: Group, users: User[]): Promise<PostgrestSingleResponse<null>> {
         return Promise.resolve({} as PostgrestSingleResponse<null>);

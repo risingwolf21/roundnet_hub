@@ -12,7 +12,8 @@
         "manageUsers": "Benutzer verwalten",
         "completeHistory": "Gesamtverlauf",
         "manageGroups": "Gruppen verwalten",
-        "analyzeDrinkStocks": "Getränkenutzung analysieren"
+        "analyzeDrinkStocks": "Getränkenutzung analysieren",
+        "executeEdgeFunctions": "Edge-Funktionen ausführen"
     },
     "navigation": {
         "browse": "Browse",
@@ -26,7 +27,8 @@
             "titleTooShort": "Der Titel des Events muss aus mindestens 6 Zeichen bestehen",
             "descriptionEmpty": "Die Beschreibung des Events darf nicht leer sein",
             "startDateCannotBeNull": "Die Startzeit des Events darf nicht leer sein",
-            "answerDeadlineBeforeNow": "Der Anmeldezeitraum kann nicht vor dem aktuellen Datum sein"
+            "answerDeadlineBeforeNow": "Der Anmeldezeitraum kann nicht vor dem aktuellen Datum sein",
+            "noGroupSelected": "Es ist keine Gruppe für dieses Event ausgewählt!"
         },
         "information": {
             "startTime": "Startet um {{ startTime, HH:mm }}",
@@ -38,5 +40,13 @@
             "waitingListAccepted": "Du bist auf der Warteliste für dieses Event"
         }
     },
-    "feature_not_available": "Diese Funktion ist noch nicht bereit. Versuche es später erneut!"
+    "notificationTags": {
+        "eventComments": "Event Kommentare",
+        "userRegistration": "Benutzer Registierung",
+        "paymentRequest": "Zahlungsaufforderung",
+        "paymentPending": "Zahlung wartend"
+    },
+    "feature_not_available": "Diese Funktion ist noch nicht bereit. Versuche es später erneut!",
+    "notification_actionMessage": "Du kannst Push-Benachrichtigungen zu den folgenden Themen erhalten",
+    "notification_updateMessage": "Update deine Push-Benachrichtigungs Segmente"
 }

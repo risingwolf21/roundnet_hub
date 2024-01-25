@@ -1,53 +1,43 @@
-import * as React from 'react';
 import { Grid } from "@mui/material";
-import UserScreen from './components/User';
+import * as React from 'react';
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
-import { HistoryScreenProvider } from './components/HistoryScreen';
-import { AdminDrinkListProvider } from './components/admin/AdminDrinkList';
-import { PayDrinksScreenProvider } from './components/PayDrinksScreen';
-import PaymentsPendingAdmin from './components/admin/PaymentsPendingAdmin';
-import { AdminUserListProvider } from './components/admin/AdminUserList';
-import { AdminHistoryScreenProvider } from './components/admin/AdminHistoryScreen';
-import { useEffect } from 'react';
-import Browse from './components/Browse';
-import CreateEventProvider from './components/training/CreateEvent';
-import { EventScreenProvider } from './components/training/EventScreen';
-import { EventInformationProvider } from './components/training/EventInformation';
-import CustomBottomNavigation from './components/BottomNavigation';
-import UpdateAvailable from './components/UpdateAvailable';
 import AuthGate from './AuthGate';
-import ResetPasswordScreen from './components/ResetPasswordScreen';
-import { ManageGroupsProvider } from './components/groups/ManageGroups';
+import CustomBottomNavigation from './components/BottomNavigation';
+import Browse from './components/Browse';
+import { LoadingScreen } from "./components/LoadingScreen";
+import UpdateAvailable from './components/UpdateAvailable';
+import UserScreen from './components/User';
 import BrowseAdmin from './components/admin/BrowseAdmin';
-import DrinkStockUpdateScreen from './components/procure/DrinkStockUpdateScreen';
-import { AnalyzeDrinkStockHistoryProvider } from './components/procure/AnalyzeDrinkStockHistory';
-import { GroupInformationProvider } from './components/groups/GroupInformation';
-import { DrinkListScreenProvider } from './components/drinkList/DrinkListScreen';
-import FeatureNotAvailable from './components/FeatureNotAvailable';
-import { SubscriptionHandler } from './components/SubscriptionHandler';
-import { KeyHolderScreenProvider } from './components/KeyHolderScreen';
-import OneSignal from 'react-onesignal';
-import { NotificationsScreen } from './components/NotificationsScreen';
+import { useInitialFetch } from "./hooks/useInitialFetch";
+import { useOneSignal } from "./hooks/useOneSignal";
 import { useServiceWorker } from './hooks/useServiceWorker';
-import { useAppAbility } from './utils/PermissionService';
+import ExecuteEdgeFunctions from "./components/admin/ExecuteEdgeFunctions";
+import NotificationsScreenProvider from "./components/NotificationsScreen";
+
+const FeatureNotAvailable = React.lazy(() => import('./components/FeatureNotAvailable'));
+const HistoryScreenProvider = React.lazy(() => import('./components/HistoryScreen'));
+const KeyHolderScreenProvider = React.lazy(() => import('./components/KeyHolderScreen'));
+const PayDrinksScreenProvider = React.lazy(() => import('./components/PayDrinksScreen'));
+const ResetPasswordScreen = React.lazy(() => import('./components/ResetPasswordScreen'));
+const PaymentsPendingAdmin = React.lazy(() => import('./components/admin/PaymentsPendingAdmin'));
+const DrinkStockUpdateScreen = React.lazy(() => import('./components/procure/DrinkStockUpdateScreen'));
+const CreateEventProvider = React.lazy(() => import('./components/eventCreation/provider'));
+const AdminDrinkListProvider = React.lazy(() => import('./components/admin/AdminDrinkList'));
+const AdminHistoryScreenProvider = React.lazy(() => import('./components/admin/AdminHistoryScreen'));
+const AdminUserListProvider = React.lazy(() => import('./components/admin/AdminUserList'));
+const DrinkListScreenProvider = React.lazy(() => import('./components/drinkList/provider'));
+const GroupInformationProvider = React.lazy(() => import('./components/groups/GroupInformation'));
+const ManageGroupsProvider = React.lazy(() => import('./components/groups/ManageGroups'));
+const AnalyzeDrinkStockHistoryProvider = React.lazy(() => import('./components/procure/AnalyzeDrinkStockHistory'));
+const EventInformationProvider = React.lazy(() => import('./components/eventInformation/provider'));
+const EventScreenProvider = React.lazy(() => import('./components/eventList/EventScreen'));
 
 const App = () => {
 
+  useOneSignal();
+  useInitialFetch();
+
   const { isUpdateAvailable, updateServiceWorker } = useServiceWorker();
-  // const { can } = useAppAbility();
-
-  useEffect(() => {
-    if (process.env.REACT_APP_oneSignalAppId) {
-      OneSignal.init({
-        appId: process.env.REACT_APP_oneSignalAppId,
-        allowLocalhostAsSecureOrigin: true,
-      }).then(() => {
-        OneSignal.Slidedown.promptPush();
-      });
-    }
-  }, []);
-
-  const can = (a: string, b: string) => true
 
   if (isUpdateAvailable)
     return <UpdateAvailable update={updateServiceWorker} />
@@ -55,7 +45,7 @@ const App = () => {
   return <Grid maxHeight={"100vh"}>
     <BrowserRouter>
       <AuthGate>
-        <SubscriptionHandler>
+        <React.Suspense fallback={<LoadingScreen />}>
           <Routes>
             <Route path='/' element={<Navigate replace to={"/drinks"} />} />
             <Route path="*" element={<Navigate replace to={"/drinks"} />} />
@@ -71,24 +61,13 @@ const App = () => {
             <Route path="/history" element={<HistoryScreenProvider />} />
             <Route path="/payments" element={<PayDrinksScreenProvider />} />
             <Route path="/keys" element={<KeyHolderScreenProvider />} />
-            <Route path="/notifications" element={<NotificationsScreen />} />
+            <Route path="/notifications" element={<NotificationsScreenProvider />} />
 
-
-            {
-              can("edit", "groups") && <Route path="/trainer/groups" element={<ManageGroupsProvider />} />
-            }
-            {
-              can("edit", "groups") && <Route path="/trainer/groups/:id" element={<GroupInformationProvider />} />
-            }
-            {
-              can("view", "training") && <Route path="/training" element={<EventScreenProvider />} />
-            }
-            {
-              can("view", "training") && <Route path="/training/event/:selectedEventId" element={<EventInformationProvider />} />
-            }
-            {
-              can("edit", "training") && <Route path="/training/create" element={<CreateEventProvider />} />
-            }
+            <Route path="/trainer/groups" element={<ManageGroupsProvider />} />
+            <Route path="/trainer/groups/:id" element={<GroupInformationProvider />} />
+            <Route path="/training" element={<EventScreenProvider />} />
+            <Route path="/training/event/:selectedEventId" element={<EventInformationProvider />} />
+            <Route path="/training/create" element={<CreateEventProvider />} />
 
             <Route path='/admin/drinks' element={<AdminDrinkListProvider />} />
 
@@ -97,12 +76,13 @@ const App = () => {
             <Route path='/admin/drinks/stocks' element={<DrinkStockUpdateScreen />} />
             <Route path='/admin/drinks/analyze' element={<AnalyzeDrinkStockHistoryProvider />} />
             <Route path='/admin/users' element={<AdminUserListProvider />} />
+            <Route path='/admin/edgeFunctions' element={<ExecuteEdgeFunctions />} />
           </Routes>
-          <div style={{ width: "100%", height: "56px" }} />
-          <CustomBottomNavigation />
-        </SubscriptionHandler>
+        </React.Suspense>
+        <div style={{ width: "100%", height: "56px" }} />
+        <CustomBottomNavigation />
       </AuthGate>
     </BrowserRouter>
-  </Grid >
+  </Grid>
 }
 export default App;

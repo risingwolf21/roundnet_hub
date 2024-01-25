@@ -1,21 +1,18 @@
-import { AppBar, Badge, Box, Chip, Grid, IconButton, LinearProgress, List, ListItem, ListItemAvatar, ListItemSecondaryAction, ListItemText, Toolbar, Typography } from "@mui/material";
 import { AccountCircle, AdminPanelSettings, ArrowBack, Edit, EuroRounded, Liquor, PersonOff, Refresh, Verified } from "@mui/icons-material";
 import SearchIcon from "@mui/icons-material/Search";
-import EditUserDialog, { UserEdited } from "./EditUserDialog";
-import { Fragment, useState } from "react";
-import { Error } from "../Error";
+import { AppBar, Badge, Box, Chip, Grid, IconButton, LinearProgress, List, ListItem, ListItemAvatar, ListItemSecondaryAction, ListItemText, Toolbar, Typography } from "@mui/material";
+import React, { Fragment, useEffect, useState } from "react";
 import { useSelector } from "react-redux";
-import { useEffect } from "react";
-import { fetchAdminUsersAsync } from "../../redux/adminUserSlice";
 import { useNavigate } from "react-router-dom";
-import { Search, SearchIconWrapper, StyledInputBase } from "../SearchBar";
-import React from "react";
-import { User, UserWithGroups } from "../../types/supabaseTypes";
-import { useAppDispatch } from "../..";
-import { RootState } from "../../redux/store";
-import { IAdminUsersRepository } from "src/repository/IAdminUsersRepository";
 import { useDependency } from "src/hooks/useDependency";
+import { IAdminUsersRepository } from "src/repository/IAdminUsersRepository";
+import { fetchAdminUsersAsync } from "../../redux/adminUserSlice";
+import { RootState, useAppDispatch } from "../../redux/store";
+import { User, UserWithGroups } from "../../types/supabaseTypes";
 import { AlertSnackbar } from "../AlertSnackbar";
+import { Error } from "../Error";
+import { Search, SearchIconWrapper, StyledInputBase } from "../SearchBar";
+import EditUserDialog, { UserEdited } from "./EditUserDialog";
 
 const AdminUserItem = ({ user, onEditClick }: { user: User, onEditClick: () => void }) => {
     let color = "rgba(0, 0, 0, 0.54)";
@@ -51,7 +48,7 @@ const AdminUserItem = ({ user, onEditClick }: { user: User, onEditClick: () => v
     </ListItem>
 }
 
-export const AdminUserListProvider = () => {
+const AdminUserListProvider = () => {
     const adminUsersRepository = useDependency<IAdminUsersRepository>("IAdminUsersRepository");
 
     if (!adminUsersRepository)
@@ -153,4 +150,4 @@ const AdminUserList = ({ repository }: AdminUserListProps) => {
     </Grid >);
 }
 
-export default AdminUserList;
+export default AdminUserListProvider;

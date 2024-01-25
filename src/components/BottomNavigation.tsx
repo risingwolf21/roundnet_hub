@@ -1,14 +1,13 @@
-import { Liquor, List, SportsHandball, AdminPanelSettings } from "@mui/icons-material"
-import { Badge, BottomNavigation, BottomNavigationAction, Paper } from "@mui/material"
-import { SyntheticEvent, useState } from "react";
+import { AdminPanelSettings, Liquor, List, SportsHandball } from "@mui/icons-material";
+import { Badge, BottomNavigation, BottomNavigationAction, Paper } from "@mui/material";
+import { TFunction } from "i18next";
+import React, { SyntheticEvent, useState } from "react";
+import { withTranslation } from 'react-i18next';
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
+import { Ability, can } from "src/utils/PermissionService";
 import { onModeChange } from "../redux/applicationSlice";
-import { withTranslation } from 'react-i18next';
-import React, { useEffect } from "react";
-import { TFunction } from "i18next";
 import { RootState } from "../redux/store";
-import { Ability, Can, useAppAbility } from "src/utils/PermissionService";
 
 export type Tab = {
     translationKey: string,
@@ -53,15 +52,8 @@ const CustomBottomNavigation = ({ t }: { t: TFunction }) => {
 
     let navigate = useNavigate();
     let dispatch = useDispatch();
-    const { can } = useAppAbility();
     const { hasNotVerifiedUsers } = useSelector((state: RootState) => state.adminUsers);
-    const [tabs, setTabs] = useState<Tab[]>(defaultTabs)
-
-    useEffect(() => {
-        setTab(window?.location?.pathname);
-    }, [tabs]);
-
-    const [tab, setTab] = useState<string>(window?.location?.pathname);
+    const [tab, setTab] = useState<string>("drinks");
 
     const handleChange = (e: SyntheticEvent<Element, Event>, newValue: string) => {
         setTab(newValue);
@@ -77,6 +69,7 @@ const CustomBottomNavigation = ({ t }: { t: TFunction }) => {
             {
                 defaultTabs.filter(x => can("view", x.ability)).map(x => {
                     return <BottomNavigationAction
+                        key={x.path}
                         value={x.path}
                         aria-selected={tab === x.path}
                         label={t("navigation." + x.translationKey)}

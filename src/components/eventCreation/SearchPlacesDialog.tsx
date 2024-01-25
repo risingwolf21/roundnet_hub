@@ -4,15 +4,9 @@ import { ArrowBack } from "@mui/icons-material";
 import React, { useState } from "react";
 import { OpenStreetMapProvider } from 'leaflet-geosearch';
 import { SearchResult } from "leaflet-geosearch/dist/providers/provider";
-import { PlaceType } from "./CreateEvent";
 import { RawResult } from "leaflet-geosearch/dist/providers/openStreetMapProvider";
 import { toNumber } from "lodash";
-
-type SearchPlacesDialogProps = {
-    open: boolean,
-    handleClose: () => void,
-    placeSelected: (place: PlaceType) => void
-}
+import { PlaceType, SearchPlacesDialogProps } from "./types";
 
 const SearchPlacesDialog = ({ open, handleClose, placeSelected }: SearchPlacesDialogProps) => {
 

@@ -69,13 +69,6 @@ export interface Database {
             foreignKeyName: "event_attendance_user_mapping_event_fkey"
             columns: ["event"]
             isOneToOne: false
-            referencedRelation: "distinct_event"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "event_attendance_user_mapping_event_fkey"
-            columns: ["event"]
-            isOneToOne: false
             referencedRelation: "events"
             referencedColumns: ["id"]
           },
@@ -114,13 +107,6 @@ export interface Database {
           user?: string
         }
         Relationships: [
-          {
-            foreignKeyName: "event_comments_event_fkey"
-            columns: ["event"]
-            isOneToOne: false
-            referencedRelation: "distinct_event"
-            referencedColumns: ["id"]
-          },
           {
             foreignKeyName: "event_comments_event_fkey"
             columns: ["event"]
@@ -173,7 +159,7 @@ export interface Database {
           key: string
           maxAttendees: number
           meetingDateTime: string | null
-          place: Json | null
+          place: string | null
           recurrence: Database["public"]["Enums"]["EventRecurrence"]
           startingDateTime: string
           title: string
@@ -189,7 +175,7 @@ export interface Database {
           key?: string
           maxAttendees?: number
           meetingDateTime?: string | null
-          place?: Json | null
+          place?: string | null
           recurrence?: Database["public"]["Enums"]["EventRecurrence"]
           startingDateTime: string
           title?: string
@@ -205,7 +191,7 @@ export interface Database {
           key?: string
           maxAttendees?: number
           meetingDateTime?: string | null
-          place?: Json | null
+          place?: string | null
           recurrence?: Database["public"]["Enums"]["EventRecurrence"]
           startingDateTime?: string
           title?: string
@@ -213,43 +199,6 @@ export interface Database {
         Relationships: [
           {
             foreignKeyName: "events_group_fkey"
-            columns: ["group"]
-            isOneToOne: false
-            referencedRelation: "event_group"
-            referencedColumns: ["id"]
-          }
-        ]
-      }
-      group_event_mapping: {
-        Row: {
-          event: number
-          group: number
-        }
-        Insert: {
-          event: number
-          group: number
-        }
-        Update: {
-          event?: number
-          group?: number
-        }
-        Relationships: [
-          {
-            foreignKeyName: "group_event_mapping_event_fkey"
-            columns: ["event"]
-            isOneToOne: false
-            referencedRelation: "distinct_event"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "group_event_mapping_event_fkey"
-            columns: ["event"]
-            isOneToOne: false
-            referencedRelation: "events"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "group_event_mapping_group_fkey"
             columns: ["group"]
             isOneToOne: false
             referencedRelation: "event_group"
@@ -461,6 +410,9 @@ export interface Database {
           disabled: boolean
           displayName: string
           email: string
+          notifications:
+            | Database["public"]["Enums"]["NotificationTags"][]
+            | null
           permissions: Database["public"]["Enums"]["Permissions"][] | null
           role: Database["public"]["Enums"]["UserRole"]
           userId: string
@@ -471,6 +423,9 @@ export interface Database {
           disabled?: boolean
           displayName?: string
           email?: string
+          notifications?:
+            | Database["public"]["Enums"]["NotificationTags"][]
+            | null
           permissions?: Database["public"]["Enums"]["Permissions"][] | null
           role?: Database["public"]["Enums"]["UserRole"]
           userId?: string
@@ -481,6 +436,9 @@ export interface Database {
           disabled?: boolean
           displayName?: string
           email?: string
+          notifications?:
+            | Database["public"]["Enums"]["NotificationTags"][]
+            | null
           permissions?: Database["public"]["Enums"]["Permissions"][] | null
           role?: Database["public"]["Enums"]["UserRole"]
           userId?: string
@@ -490,38 +448,67 @@ export interface Database {
       }
     }
     Views: {
-      distinct_event: {
-        Row: {
-          created_at: string | null
-          description: string | null
-          end_at: string | null
-          group: number | null
-          id: number | null
-          isCancelled: boolean | null
-          key: string | null
-          meetingDateTime: string | null
-          place: Json | null
-          recurrence: Database["public"]["Enums"]["EventRecurrence"] | null
-          startingDateTime: string | null
-          title: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "events_group_fkey"
-            columns: ["group"]
-            isOneToOne: false
-            referencedRelation: "event_group"
-            referencedColumns: ["id"]
-          }
-        ]
-      }
+      [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      eventcreation: {
+        Args: Record<PropertyKey, never>
+        Returns: number
+      }
+      get_attending_users: {
+        Args: {
+          event_id: number
+        }
+        Returns: string[]
+      }
+      getattendingusers: {
+        Args: {
+          event_id: number
+        }
+        Returns: string[]
+      }
+      getusersforeventcommentnotifications: {
+        Args: {
+          event_id: number
+        }
+        Returns: string[]
+      }
+      getusersfornotificationstag: {
+        Args: {
+          tag: Database["public"]["Enums"]["NotificationTags"]
+        }
+        Returns: string[]
+      }
+      getusersforpaymentrequestnotifications: {
+        Args: Record<PropertyKey, never>
+        Returns: string[]
+      }
+      getusersforuserregistrationnotifications: {
+        Args: Record<PropertyKey, never>
+        Returns: string[]
+      }
+      sendnotifications:
+        | {
+            Args: {
+              external_ids: string[]
+            }
+            Returns: number
+          }
+        | {
+            Args: {
+              external_ids: string
+            }
+            Returns: number
+          }
     }
     Enums: {
       EventAttendance: "Declined" | "Attending" | "Unanswered" | "Waiting"
       EventRecurrence: "Weekly" | "Fortnightly" | "Monthly" | "None"
+      NotificationTags:
+        | "eventComments"
+        | "userRegistration"
+        | "paymentRequest"
+        | "paymentPending"
       PaymentState: "Open" | "Fulfilled"
       Permissions:
         | "use;drink"
@@ -545,21 +532,8 @@ export interface Database {
         | "delete;keyFinder"
         | "view;notifications"
         | "edit;notifications"
-      PermissionsOld: "Admin" | "Tester" | "Finance" | "Trainer" | "Procure"
-      PermissionsOld2:
-        | "canEditTraining"
-        | "canAddTraining"
-        | "canDeleteTraining"
-        | "canCreateGroup"
-        | "canEditGroup"
-        | "canViewDrinks"
-        | "canAddDrinks"
-        | "canEditDrinks"
-        | "canDeleteDrinks"
-        | "canConfirmPayment"
-        | "canEditUsers"
-        | "canViewUserList"
-        | "canViewCompleteHistory"
+        | "edit;history"
+        | "edit;edgeFunctions"
       ProductType: "Drink" | "Special" | "None"
       UserRole: "user" | "admin" | "procure" | "finance" | "trainer"
     }

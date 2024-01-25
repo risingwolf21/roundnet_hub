@@ -12,7 +12,8 @@
         "manageUsers": "Manage users",
         "completeHistory": "Complete history",
         "manageGroups": "Manage groups",
-        "analyzeDrinkStocks": "Analyse drink history"
+        "analyzeDrinkStocks": "Analyse drink history",
+        "executeEdgeFunctions": "Execute edge functions"
     },
     "navigation": {
         "browse": "Browse",
@@ -26,7 +27,8 @@
             "titleTooShort": "The title of this event needs at least 6 characters",
             "descriptionEmpty": "The description of this event can not be empty",
             "startDateCannotBeNull": "The startDate of this event can not be empty",
-            "answerDeadlineBeforeNow": "The answer dead line can not be before now"
+            "answerDeadlineBeforeNow": "The answer dead line can not be before now",
+            "noGroupSelected": "There is no group selected for this event"
         },
         "information": {
             "startTime": "Starts at {{ startTime, HH:mm }}",
@@ -38,5 +40,13 @@
             "waitingListAccepted": "You are on the waiting list for this event"
         }
     },
-    "feature_not_available": "This feature is not ready yet. Try again later!"
+    "notificationTags": {
+        "eventComments": "Event comments",
+        "userRegistration": "User registrations",
+        "paymentRequest": "Payment requests",
+        "paymentPending": "Payment pending"
+    },
+    "feature_not_available": "This feature is not ready yet. Try again later!",
+    "notification_actionMessage": "We'd like to show you notifications for the following categories.",
+    "notification_updateMessage": "Update your push notification subscription preferences."
 }

@@ -1,22 +1,20 @@
-import { Avatar, Badge, Button, Dialog, DialogActions, DialogContent, DialogTitle, Fab, Grid, IconButton, LinearProgress, List, ListItem, ListItemAvatar, ListItemSecondaryAction, ListItemText, Typography } from "@mui/material";
 import AddIcon from '@mui/icons-material/Add';
-import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
-import EditDrinkDialog from "./EditDrinkDialog";
+import EditIcon from '@mui/icons-material/Edit';
 import LocalDrinkIcon from '@mui/icons-material/LocalDrink';
-import { useEffect, useState } from "react";
+import { Avatar, Badge, Button, Dialog, DialogActions, DialogContent, DialogTitle, Fab, Grid, IconButton, LinearProgress, List, ListItem, ListItemAvatar, ListItemSecondaryAction, ListItemText, Typography } from "@mui/material";
 import _ from "lodash";
-import { Error } from "../Error";
+import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
-import CustomAppBar from "../AppBar";
-import React from "react";
-import { Drink } from "../../types/supabaseTypes";
 import { useDependency } from "../../hooks/useDependency";
-import { IAdminDrinksRepository } from "../../repository/IAdminDrinksRepository";
-import { RootState } from "../../redux/store";
-import { useAppDispatch } from "../..";
 import { fetchDrinksAsync } from "../../redux/adminDrinksSlice";
+import { RootState, useAppDispatch } from "../../redux/store";
+import { IAdminDrinksRepository } from "../../repository/IAdminDrinksRepository";
+import { Drink } from "../../types/supabaseTypes";
 import { AlertSnackbar } from "../AlertSnackbar";
+import CustomAppBar from "../AppBar";
+import { Error } from "../Error";
+import EditDrinkDialog from "./EditDrinkDialog";
 
 type AdminDrinkItemProps = {
     drink: Drink,
@@ -62,7 +60,7 @@ const EMPTY_DRINK: Drink =
     type: "Drink"
 };
 
-export const AdminDrinkListProvider = () => {
+const AdminDrinkListProvider = () => {
     const { drinks, drinksError, drinksLoading } = useSelector((state: RootState) => state.adminDrinks);
     const repository = useDependency<IAdminDrinksRepository>("IAdminDrinksRepository");
 
@@ -187,4 +185,4 @@ const AdminDrinkList = ({ repository, drinks, drinksError, drinksLoading }: Admi
     </Grid >);
 }
 
-export default AdminDrinkList;
+export default AdminDrinkListProvider;

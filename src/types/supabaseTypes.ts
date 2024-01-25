@@ -1,4 +1,5 @@
 import { isBefore } from "date-fns";
+import { SliceEvent } from "src/redux/events/eventsSlice";
 import { Database } from "src/types/supabase";
 
 export type Drink = Database["public"]["Tables"]["drink"]["Row"];
@@ -16,9 +17,18 @@ export type KeyHolder = Database["public"]["Tables"]["key_holders"]["Row"];
 export type Key = Database["public"]["Tables"]["keys"]["Row"];
 
 export type EventInsert = Database["public"]["Tables"]["events"]["Insert"];
+export type EventUpdate = Database["public"]["Tables"]["events"]["Update"];
 
 export type EventAttendanceInsert = Database["public"]["Tables"]["event_attendance_user_mapping"]["Insert"];
+export type EventAttendanceUpdate = Database["public"]["Tables"]["event_attendance_user_mapping"]["Update"];
 export type EventAttendanceMapping = Database["public"]["Tables"]["event_attendance_user_mapping"]["Row"];
+
+export type EventCommentUpdate = Database["public"]["Tables"]["event_comments"]["Update"];
+export type EventCommentInsert = Database["public"]["Tables"]["event_comments"]["Insert"];
+
+export type EdgeFunctions = keyof Database["public"]["Functions"]
+
+export type NotificationTags = Database["public"]["Enums"]["NotificationTags"]
 
 export type DrinkCounter = Drink & {
     count: number
@@ -51,23 +61,23 @@ export type FullEvent = Event & {
     comments: FullComment[],
     attendance: FullAttendance[],
     userAttendance: EventAttendance,
-    groups: Group[]
+    fullGroup: Group
 }
 
-export function answerDeadlineExpired(x: FullEvent) {
+export function answerDeadlineExpired<EventType extends Event>(x: EventType) {
     if (!x.answerDeadline)
         return false;
     return isBefore(x.answerDeadline, Date.now());
 }
 
-export function maxAttendeesExceeded(x: FullEvent) {
-    return x.attendance.filter(y => y.state === "Attending").length >= x.maxAttendees;
+export function maxAttendeesExceeded<EventType extends Event, AttendanceType extends Attendance>(x: EventType, attendance: AttendanceType[]) {
+    return attendance.filter(y => y.state === "Attending").length >= x.maxAttendees;
 }
 
-export type FullAttendance = Modify<Attendance, {
+export type FullAttendance = Attendance & {
     user: User,
     userId: string
-}>
+}
 
 export type SimpleUser = {
     displayName: string,
@@ -86,7 +96,7 @@ export type UserWithGroups = User & {
 }
 
 export type GroupWithUsers = Group & {
-    users: SimpleUser[]
+    users: User[]
 }
 
 export type ProductType = Database["public"]["Enums"]["ProductType"];
