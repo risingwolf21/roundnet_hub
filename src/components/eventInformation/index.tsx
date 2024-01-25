@@ -234,12 +234,6 @@ const EventInformation = ({
             <Box>
                 <Box>
                     {
-                        selectedEvent.isCancelled && <Alert sx={{ mt: 2 }} severity="error">
-                            <AlertTitle>Absage</AlertTitle>
-                            Dieses Event wurde <strong>abgesagt</strong>
-                        </Alert>
-                    }
-                    {
                         selectedEventPlace && <CardMedia sx={{ maxHeight: "15%" }}>
                             <Box sx={{ width: "100%", maxHeight: "15%", alignSelf: "center" }}>
                                 <Box component="button" onClick={() => {
@@ -263,6 +257,17 @@ const EventInformation = ({
                             </Box>
                         </CardMedia>
                     }
+                    {
+                        selectedEvent.isCancelled && <Alert sx={{ ml: 2, mr: 2, mt: 2 }} severity="error">
+                            Dieses Event wurde <strong>abgesagt</strong>
+                        </Alert>
+                    }
+                    {
+                        answerDeadlineExpired(selectedEvent) && selectedEvent.answerDeadline &&
+                        <Alert sx={{ ml: 2, mr: 2, mt: 2 }} severity="info">
+                            {t("events.information.answerDeadlineExceeded", { answerDeadline: new Date(selectedEvent.answerDeadline) })}
+                        </Alert>
+                    }
                     <CardHeader title={selectedEvent.title} subheader={createCardSubHeader()} />
 
                     <CardContent sx={{ '&.MuiCardContent-root': { paddingBottom: 1 } }}>
@@ -272,6 +277,32 @@ const EventInformation = ({
                         </Typography>
                         <Typography pb={1}>{selectedEvent?.description}</Typography>
                         <Divider />
+
+                        {
+                            selectedEvent.maxAttendees <= attendance.filter(x => x.state === "Attending").length && selectedEvent.userAttendance !== "Waiting" && selectedEvent.userAttendance !== "Attending" &&
+                            <Alert sx={{ mt: 2 }} severity="info">
+                                <AlertTitle>Warteliste</AlertTitle>
+                                Die maximale Anzahl der Teilnehmer ist erreicht. Du kannst trotzdem der Warteliste
+                                beitreten.
+                                <Button sx={{ alignContent: "end" }} variant="contained"
+                                    onClick={() => updateAttendance("Waiting", selectedEvent.userAttendance)}>
+                                    Beitreten
+                                </Button>
+                            </Alert>
+                        }
+
+                        {
+                            selectedEvent.userAttendance === "Waiting" && <Alert sx={{ mt: 2 }} severity="warning" action={
+                                <Button variant="contained" size="small" sx={{ backgroundColor: "#934b00" }} onClick={() => updateAttendance("Declined", selectedEvent.userAttendance)}>
+                                    Verlassen
+                                </Button>
+                            }>
+                                {t("events.information.waitingListAccepted", {
+                                    place: attendance.filter(x => x.state === "Waiting").sort((a, b) => new Date(b.lastUpdate).getTime() - new Date(a.lastUpdate).getTime()).findIndex(x => x.user.userId === user.userId) + 1,
+                                    waitingListLength: attendance.filter(x => x.state === "Waiting").length
+                                })}
+                            </Alert>
+                        }
                         <Typography sx={{ fontSize: 16, fontWeight: "bold", mt: 2 }} color="text.secondary" gutterBottom>
                             Teilnehmer
                         </Typography>
@@ -349,41 +380,6 @@ const EventInformation = ({
                         </ListItemButton>
                         <Divider />
                     </CardContent>
-
-                    {
-                        selectedEvent.maxAttendees <= attendance.filter(x => x.state === "Attending").length && selectedEvent.userAttendance !== "Waiting" && selectedEvent.userAttendance !== "Attending" &&
-                        <Alert sx={{ mt: 2 }} severity="info">
-                            <AlertTitle>Warteliste</AlertTitle>
-                            Die maximale Anzahl der Teilnehmer ist erreicht. Du kannst trotzdem der Warteliste
-                            beitreten.
-                            <Button sx={{ alignContent: "end" }} variant="contained"
-                                onClick={() => updateAttendance("Waiting", selectedEvent.userAttendance)}>
-                                Beitreten
-                            </Button>
-                        </Alert>
-                    }
-
-                    {
-                        selectedEvent.userAttendance === "Waiting" && <Alert sx={{ mt: 2 }} severity="info">
-                            <AlertTitle>{t("events.information.waitingListPlace", {
-                                place: attendance.filter(x => x.state === "Waiting").sort((a, b) => new Date(b.lastUpdate).getTime() - new Date(a.lastUpdate).getTime()).findIndex(x => x.user.userId === user.userId) + 1,
-                                waitingListLength: attendance.filter(x => x.state === "Waiting").length
-                            })}</AlertTitle>
-                            {t("events.information.waitingListAccepted")}
-                            <Button sx={{ alignContent: "end" }} variant="contained"
-                                onClick={() => updateAttendance("Declined", selectedEvent.userAttendance)}>
-                                Verlassen
-                            </Button>
-                        </Alert>
-                    }
-
-                    {
-                        answerDeadlineExpired(selectedEvent) && selectedEvent.answerDeadline &&
-                        <Alert sx={{ mt: 2 }} severity="info">
-                            <AlertTitle>{t("events.information.answerDeadlineExceededTitle")}</AlertTitle>
-                            {t("events.information.answerDeadlineExceeded", { answerDeadline: new Date(selectedEvent.answerDeadline) })}
-                        </Alert>
-                    }
 
                     <SwipeableDialog open={commentsOpen} onClose={() => setCommentsOpen(false)}
                         setOpen={setCommentsOpen} title={"Kommentare"} minHeight={40}>

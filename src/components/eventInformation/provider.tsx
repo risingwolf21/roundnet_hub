@@ -6,14 +6,15 @@ import { useParams } from "react-router-dom";
 import { useDependency } from "src/hooks/useDependency";
 import { IEventRepository } from "src/repository/IEventRepository";
 import { RootState, useAppDispatch } from "../../redux/store";
-import { FullEvent } from "../../types/supabaseTypes";
+import { EventAttendanceUpdate, FullEvent } from "../../types/supabaseTypes";
 import EventInformation from ".";
 import { PlaceType } from "../eventCreation/types";
 import LoadingEventInfo from "./LoadingEventInfo";
 import { AlertSnackbar } from "../AlertSnackbar";
 import { SliceEvent, eventsSelector, fetchSingleEventAsync } from "src/redux/events/eventsSlice";
-import { attendanceSelector } from "src/redux/events/eventAttendanceSlice";
+import { attendanceSelector, onEventAttendanceDelete, onEventAttendanceUpdate } from "src/redux/events/eventAttendanceSlice";
 import { eventsCommentsSelector } from "src/redux/events/eventCommentsSlice";
+import { useClient } from "react-supabase";
 
 const EventInformationProvider = () => {
     const { selectedEventId } = useParams();
@@ -25,9 +26,23 @@ const EventInformationProvider = () => {
     const { loading: commentsLoading } = useSelector((state: RootState) => state.eventComments);
     const { user } = useSelector((state: RootState) => state.application);
     const dispatch = useAppDispatch();
+    const client = useClient();
     const { t } = useTranslation();
     const [selectedEventPlace, setSelectedEventPlace] = useState<PlaceType | null>(null);
     const repository = useDependency<IEventRepository>("IEventRepository");
+
+    useEffect(() => {
+        if (!user)
+            return;
+        let subscription = client.channel("public:event_attendance_user_mapping")
+            .on<EventAttendanceUpdate>('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'event_attendance_user_mapping' }, payload => dispatch(onEventAttendanceUpdate({ ...(payload.new), userId: user.userId })))
+            .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'event_attendance_user_mapping' }, payload => dispatch(onEventAttendanceDelete(payload.old.id)))
+            // .on<EventInsert>('postgres_changes', { event: 'INSERT', schema: 'public', table: 'events' }, payload => dispatch(onEventInsert(payload.new)))
+            .subscribe();
+        return () => {
+            subscription.unsubscribe();
+        }
+    }, [client, dispatch, user]);
 
     useEffect(() => {
         if (!repository || !user)

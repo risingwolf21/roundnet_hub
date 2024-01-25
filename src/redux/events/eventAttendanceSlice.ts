@@ -23,13 +23,21 @@ const eventAttendanceSlice = createSlice({
         error: ""
     }),
     reducers: {
-        onEventAttendanceUpdate: (state, action: PayloadAction<EventAttendanceUpdate>) => {
-            let event = action.payload as Event;
-            let oldEvent = state.entities[event.id];
-            if (!oldEvent)
+        onEventAttendanceUpdate: (state, action: PayloadAction<EventAttendanceUpdate & { userId: string }>) => {
+            let attendanceSlice = eventAttendanceAdapter.getSelectors().selectById(state, action.payload.event ?? -1);
+            let index = attendanceSlice?.attendance.findIndex(x => x.user.userId === action.payload.user);
+            if (!attendanceSlice || !action.payload.event || index === -1)
                 return;
-            let newEvent = Object.assign(oldEvent, { ...event })
-            eventAttendanceAdapter.upsertOne(state, newEvent)
+
+            eventAttendanceAdapter.upsertOne(state, {
+                id: action.payload.event,
+                attendance: attendanceSlice.attendance.map((x, i) =>
+                    i === index ? {
+                        ...x,
+                        state: action.payload.state ?? x.state
+                    } as FullAttendance : x
+                )
+            } as SliceAttendance);
         },
         onEventAttendanceDelete: (state, action: PayloadAction<number>) => {
             eventAttendanceAdapter.removeOne(state, action.payload)
@@ -124,5 +132,7 @@ export const updateAttendanceAsync = createAsyncThunk("updateAttendanceAsync", a
     const response = await repository.updateAttendance(user.userId, eventId, state);
     return { data: response.data, error: response.error, oldState };
 });
+
+export const { onEventAttendanceDelete, onEventAttendanceUpdate } = eventAttendanceSlice.actions;
 
 export default eventAttendanceSlice.reducer;

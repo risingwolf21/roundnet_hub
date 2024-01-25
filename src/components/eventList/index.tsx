@@ -16,7 +16,6 @@ const EventScreen = ({ events, loading, error, endReached, repository, user }: E
     const client = useClient();
     const dispatch = useAppDispatch();
     const navigate = useNavigate();
-    const [eventsUpdatingAttendance, setEventsUpdatingAttendance] = useState<number[]>([]);
 
     useEffect(() => {
         let subscription = client.channel("public:drink")
@@ -31,18 +30,14 @@ const EventScreen = ({ events, loading, error, endReached, repository, user }: E
 
     useEffect(() => {
         dispatch(fetchEventsAsync({ user, page: 0, count: 20, repository }));
-    }, [dispatch, client, user, repository]);
+    }, [dispatch, user, repository]);
 
     const fetchEvents = (page: number, count: number) => {
         dispatch(fetchEventsAsync({ user, page, count, repository }));
     }
 
     const updateAttendance = async (eventId: number, state: EventAttendance, oldState: EventAttendance) => {
-        setEventsUpdatingAttendance([...eventsUpdatingAttendance, eventId]);
-
         dispatch(updateAttendanceAsync({ repository, user, eventId, state, oldState }));
-
-        setEventsUpdatingAttendance([...eventsUpdatingAttendance.filter(x => x === eventId)]);
     }
 
     return (<Grid
@@ -57,10 +52,10 @@ const EventScreen = ({ events, loading, error, endReached, repository, user }: E
         }
         <InfiniteScrollList fetch={(page) => fetchEvents(page, 20)} error={error ?? ""} loading={loading} endReached={endReached}>
             {
-                events && events.map((event, index) => <div key={"Drink" + index}>
+                events.map((event) => <div key={event.id}>
                     <EventItem
                         event={event}
-                        attendanceUpdating={eventsUpdatingAttendance.some(x => x === event.id)}
+                        attendanceUpdating={event.attendanceUpdating}
                         attendEvent={() => updateAttendance(event.id, "Attending", event.userAttendance)}
                         declineEvent={() => updateAttendance(event.id, "Declined", event.userAttendance)}
                         onClick={() => {
@@ -71,7 +66,7 @@ const EventScreen = ({ events, loading, error, endReached, repository, user }: E
             }
         </InfiniteScrollList>
         {
-            user?.role === "admin" && <Fab sx={{ background: "#66bb6a", position: "fixed", right: "16px", bottom: "76px" }}
+            user.role === "admin" && <Fab sx={{ background: "#66bb6a", position: "fixed", right: "16px", bottom: "76px" }}
                 onClick={() => navigate("create")}>
                 {
                     <AddIcon sx={{ color: "white" }} />
