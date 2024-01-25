@@ -11,7 +11,7 @@ import { PaymentHistory, User } from "../types/supabaseTypes";
 import { groupBy } from '../utils';
 import { AlertSnackbar } from "./AlertSnackbar";
 import CustomAppBar from "./AppBar";
-import { Loading } from "./Loading";
+import { LoadingScreen } from './LoadingScreen';
 
 const PayDrinksButton = ({ amountToPay }: { amountToPay: number }) => {
 
@@ -64,7 +64,7 @@ const PayDrinksSummary = ({ paymentHistory }: { paymentHistory: PaymentHistory[]
     </Box>
 }
 
-export const PayDrinksScreenProvider = () => {
+const PayDrinksScreenProvider = () => {
     const drinksRepository = useDependency<IDrinkRepository>("IDrinkRepository");
     const { user } = useSelector((state: RootState) => state.application);
     const { paymentHistory, paymentError, paymentLoading } = useSelector((state: RootState) => state.drinks);
@@ -98,7 +98,7 @@ const PayDrinksScreen = ({ user, drinksRepository, paymentHistory, paymentError,
     }, [dispatch, user, drinksRepository]);
 
     if (paymentLoading)
-        return <Loading />
+        return <LoadingScreen />
 
     return (
         <Box>
@@ -115,4 +115,4 @@ const PayDrinksScreen = ({ user, drinksRepository, paymentHistory, paymentError,
     );
 }
 
-export default PayDrinksScreen;
+export default PayDrinksScreenProvider;

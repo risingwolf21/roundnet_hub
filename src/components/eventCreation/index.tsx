@@ -1,84 +1,48 @@
 import { AppBar, Box, Button, Dialog, IconButton, Toolbar, Typography, TextField, ListItem, ListItemAvatar, ListItemText, DialogTitle, DialogContent, FormControl, FormControlLabel, RadioGroup, Radio, Divider, Checkbox, DialogActions, List, InputAdornment, Snackbar, Alert, ListItemButton } from "@mui/material"
-import { AccessTime, Article, Close, FiberManualRecord, Map, People } from "@mui/icons-material";
+import { AccessTime, Article, Close, FiberManualRecord, Map } from "@mui/icons-material";
 import EventIcon from "@mui/icons-material/Event";
 import { useNavigate } from 'react-router-dom';
 import { DatePicker, DateTimePicker } from "@mui/x-date-pickers";
 import { TimePicker } from '@mui/x-date-pickers/TimePicker';
 import { FormEvent, useState } from "react";
-import moment, { Moment } from "moment";
 import EventRepeatIcon from '@mui/icons-material/EventRepeat';
-import { withTranslation } from 'react-i18next';
 import React, { useEffect } from "react";
 import SearchPlacesDialog from "./SearchPlacesDialog";
 import { MapContainer, TileLayer, Marker, useMap } from "react-leaflet";
-import { TFunction } from "i18next";
-import { EventInsert, EventRecurrence, FullEvent, Group } from "../../types/supabaseTypes";
-import { RootState } from "../../redux/store";
-import { useDependency } from "src/hooks/useDependency";
-import { IEventRepository } from "src/repository/IEventRepository";
-import { useSelector } from "react-redux";
-import { AlertSnackbar } from "../AlertSnackbar";
-import { isBefore } from "date-fns";
-import { toNumber } from "lodash";
+import { EventInsert, EventRecurrence, FullEvent } from "../../types/supabaseTypes";
+import { format, isBefore, set } from "date-fns";
+import _, { toNumber } from "lodash";
+import { CreateEventProps, PlaceType } from "./types";
 import { SelectGroupDialog } from "./SelectGroupDialog";
+import { dayjsFromDb, formatDateToDatabase } from "src/utils";
 
-export type PlaceType = {
-    name: string,
-    lat: number,
-    lon: number
-}
-
-const CreateEventProvider = ({ t }: { t: TFunction }) => {
-    const repository = useDependency<IEventRepository>("IEventRepository");
-    const eventToEdit = useSelector((state: RootState) => state.events.eventToEdit);
-
-    if (!repository)
-        return <AlertSnackbar close={() => { }} alertInfo={{ message: "Fatal error occured. Repository or user was null!", severity: "error" }} />
-
-    return <CreateEvent t={t} eventToEdit={eventToEdit} repository={repository} />
-}
-
-type CreateEventProps = {
-    t: TFunction,
-    eventToEdit: FullEvent | null,
-    repository: IEventRepository
-}
+const emptyEvent = {
+    title: "",
+    description: "",
+    startingDateTime: formatDateToDatabase(set(new Date(), { seconds: 0, milliseconds: 0 })),
+    recurrence: "None",
+    maxAttendees: -1,
+    answerDeadline: null,
+    group: null,
+    place: "",
+} as FullEvent;
 
 const CreateEvent = ({ t, eventToEdit, repository }: CreateEventProps) => {
 
     const navigate = useNavigate();
 
-    const [group, setGroup] = useState<Group | null>();
+    const [editedEvent, setEditedEvent] = useState<FullEvent>(eventToEdit ?? emptyEvent);
+
     const [selectGroupOpen, setSelectGroupOpen] = useState(false);
-    const [maxAttendees, setMaxAttendees] = useState<number>(-1);
-    const [maxAttendeesEnabled, setMaxAttendeesEnabled] = useState(false);
-    const [answerDeadline, setAnswerDeadline] = useState<Moment | null>();
-    const [answerDeadlineEnabled, setAnswerDeadlineEnabled] = useState(false);
-    const [startDate, setStartDate] = useState<Moment | null>(moment());
-    const [startTime, setStartTime] = useState<Moment | null>(moment());
-    const [meetingTime, setMeetingTime] = useState<Moment | null>(moment());
-    const [stopRepeatDateTime, setStopRepeatDateTime] = useState<Moment | null>(moment());
-    const [stopRepeatDisabled, setStopRepeatDisabled] = useState(true);
     const [stopRepeatDialogOpen, setStopRepeatDialogOpen] = useState(false);
     const [repeatDialogOpen, setRepeatDialogOpen] = useState(false);
-    const [repeat, setRepeat] = useState<EventRecurrence>("None");
-    const [errorSnackbar, setErrorSnackbar] = useState({ open: false, message: "" });
     const [searchPlacesDialogOpen, setSearchPlacesDialogOpen] = useState(false);
+    const [errorSnackbar, setErrorSnackbar] = useState({ open: false, message: "" });
     const [selectedPlace, setSelectedPlace] = useState<PlaceType>({ lat: 49.0226481, lon: 8.416547971872856, name: "MTV Karlsruhe" });
 
     useEffect(() => {
         if (eventToEdit) {
-            console.log(eventToEdit)
-            setStartDate(moment(eventToEdit.startingDateTime));
-            setStartTime(moment(eventToEdit.startingDateTime));
-            setMeetingTime(moment(eventToEdit.meetingDateTime));
-            setStopRepeatDateTime(moment(eventToEdit["end_at"]) ?? moment());
-            setStopRepeatDisabled(!eventToEdit["end_at"]);
-            setRepeat(eventToEdit.recurrence);
-            setAnswerDeadline(moment(eventToEdit.answerDeadline));
-            setMaxAttendees(eventToEdit.maxAttendees);
-            setMaxAttendeesEnabled(eventToEdit.maxAttendees > 0);
-            setGroup(eventToEdit.group)
+            setEditedEvent(eventToEdit);
         }
     }, [eventToEdit]);
 
@@ -86,44 +50,38 @@ const CreateEvent = ({ t, eventToEdit, repository }: CreateEventProps) => {
         e.preventDefault();
         try {
             const data = new FormData(e.currentTarget);
-            if (!startDate || !startTime)
-                throw new Error(t("events.creation.startDateCannotBeNull"))
-            if (!meetingTime)
-                setMeetingTime(startTime);
-            let startingDateTime = startDate.set("hour", startTime.hour()).set("minute", startTime.minute()).set("seconds", 0).format("yyyy-MM-DD HH:mm:ssZ");
-            let meetingDateTime = startDate.set("hour", meetingTime?.hour() ?? 0).set("minute", meetingTime?.minute() ?? 0).set("seconds", 0).format("yyyy-MM-DD HH:mm:ssZ");
+
+            if (!editedEvent.meetingDateTime)
+                setEditedEvent({ ...editedEvent, meetingDateTime: editedEvent.startingDateTime });
 
             let eventTitle = data.get("eventTitle")?.toString();
             let eventDescription = data.get("eventDescription")?.toString();
             let event = {
+                ...(_.omit(editedEvent, ["fullGroup", "attendance", "comments", "userAttendance", "id"])),
                 title: eventTitle,
+                startingDateTime: editedEvent.startingDateTime,
                 description: eventDescription,
-                startingDateTime: startingDateTime,
-                meetingDateTime: meetingDateTime,
-                recurrence: repeat,
-                maxAttendees: maxAttendeesEnabled ? maxAttendees : -1,
-                answerDeadline: answerDeadlineEnabled ? answerDeadline : null,
-                group: group?.id,
                 place: JSON.stringify(selectedPlace),
-                "end_at": (stopRepeatDisabled || !stopRepeatDateTime)
-                    ? null
-                    : stopRepeatDateTime.format("yyyy-MM-DD HH:mm:ssZ")
             } as EventInsert;
 
-            if(!group)
+            if (!event.startingDateTime)
+                throw new Error(t("events.creation.startDateCannotBeNull"))
+
+            if (!event.group)
                 throw new Error(t("events.creation.noGroupSelected"))
 
-            if (answerDeadline && isBefore(answerDeadline.toDate(), Date.now()))
+            if (event.answerDeadline && isBefore(new Date(event.answerDeadline), Date.now()))
                 throw new Error(t("events.creation.answerDeadlineBeforeNow"))
 
-            if (!eventTitle || eventTitle.length < 6)
+            if (!event.title || event.title.length < 6)
                 throw new Error(t("events.creation.titleTooShort"))
 
-            if (!eventDescription || eventDescription.length < 1)
+            if (!event.description || event.description.length < 1)
                 throw new Error(t("events.creation.descriptionEmpty"))
 
-            if (meetingDateTime > startingDateTime)
-                throw new Error(t("events.creation.meetingTimeBeforeStartTime"))
+            if (event.meetingDateTime)
+                if (event.meetingDateTime > event.startingDateTime)
+                    throw new Error(t("events.creation.meetingTimeBeforeStartTime"))
 
             const { error } = await repository.insertEvent(event)
 
@@ -131,7 +89,7 @@ const CreateEvent = ({ t, eventToEdit, repository }: CreateEventProps) => {
 
             // update old event to end_at now
             if (eventToEdit) {
-                await repository.updateEndOfOldEvent(eventToEdit.id, moment().format("yyyy-MM-DD HH:mm:ssZ"))
+                await repository.updateEndOfOldEvent(eventToEdit.id, formatDateToDatabase(new Date()))
             }
 
             navigate("/training", { replace: true });
@@ -169,10 +127,10 @@ const CreateEvent = ({ t, eventToEdit, repository }: CreateEventProps) => {
                 </Toolbar>
             </AppBar>
             <List>
-                <ListItem sx={{ pt: 0, pb: 0 }}>
+                <ListItem sx={{ pt: 0, pb: 0 }} key={"title"}>
                     <TextField
                         fullWidth
-                        defaultValue={eventToEdit?.title ?? ""}
+                        defaultValue={editedEvent.title}
                         id="eventTitle"
                         name="eventTitle"
                         variant="standard"
@@ -180,11 +138,11 @@ const CreateEvent = ({ t, eventToEdit, repository }: CreateEventProps) => {
                         InputProps={{ startAdornment: (<InputAdornment position="start"><EventIcon /></InputAdornment>) }}
                         margin="normal" />
                 </ListItem>
-                <ListItem sx={{ pt: 0, pb: 0 }}>
+                <ListItem sx={{ pt: 0, pb: 0 }} key={"eventDescription"}>
                     <TextField
                         fullWidth
                         multiline
-                        defaultValue={eventToEdit?.description ?? ""}
+                        defaultValue={editedEvent.description}
                         id="eventDescription"
                         name="eventDescription"
                         variant="standard"
@@ -193,45 +151,54 @@ const CreateEvent = ({ t, eventToEdit, repository }: CreateEventProps) => {
                         margin="normal" />
                 </ListItem>
 
-                <ListItemButton onClick={() => setSelectGroupOpen(true)}>
+                <ListItemButton onClick={() => setSelectGroupOpen(true)} key={"group"}>
                     <ListItemAvatar>
                         {
-                            group && <FiberManualRecord sx={{ color: group.color }} />
+                            editedEvent.fullGroup && <FiberManualRecord sx={{ color: editedEvent.fullGroup.color }} />
                         }
                     </ListItemAvatar>
-                    <ListItemText primary={group?.name ?? "Keine Gruppe gewählt"} secondary={group?.description ?? ""} />
+                    <ListItemText primary={editedEvent.fullGroup?.name ?? "Keine Gruppe gewählt"} secondary={editedEvent.fullGroup?.description ?? ""} />
                 </ListItemButton>
 
                 <Divider sx={{ mb: 2, mt: 2 }} />
 
-                <ListItem sx={{ pt: 0, pb: 0, mb: 2 }}>
+                <ListItem sx={{ pt: 0, pb: 0, mb: 2 }} key={"startDate"}>
                     <ListItemAvatar>
                         <AccessTime />
                     </ListItemAvatar>
 
-                    <DatePicker sx={{ width: "100%" }} label="Datum" disablePast format="DD MMMM YYYY" onChange={(val) => setStartDate(val)} value={startDate} />
+                    <DatePicker sx={{ width: "100%" }} label="Datum" disablePast format="DD MMMM YYYY" onChange={(val) => setEditedEvent({
+                        ...editedEvent,
+                        startingDateTime: formatDateToDatabase(set(new Date(editedEvent.startingDateTime), { date: val?.date(), year: val?.year(), month: val?.month(), seconds: 0, milliseconds: 0 }))
+                    })} value={dayjsFromDb(editedEvent.startingDateTime)} />
                 </ListItem>
 
-                <ListItem sx={{ pt: 0, pb: 0, mb: 2 }}>
+                <ListItem sx={{ pt: 0, pb: 0, mb: 2 }} key={"startTime"}>
                     <ListItemAvatar />
 
-                    <TimePicker sx={{ width: "100%" }} views={['hours', 'minutes']} ampm={false} label="Startzeit" onChange={(val) => setStartTime(val)} value={startTime} />
+                    <TimePicker sx={{ width: "100%" }} views={['hours', 'minutes']} ampm={false} label="Startzeit" onChange={(val) => setEditedEvent({
+                        ...editedEvent,
+                        startingDateTime: formatDateToDatabase(set(new Date(editedEvent.startingDateTime), { hours: val?.hour(), minutes: val?.minute(), seconds: 0, milliseconds: 0 }))
+                    })} value={dayjsFromDb(editedEvent.startingDateTime)} />
                 </ListItem>
 
-                <ListItem sx={{ pt: 0, pb: 0, mb: 2 }}>
+                <ListItem sx={{ pt: 0, pb: 0, mb: 2 }} key={"meetingTime"}>
                     <ListItemAvatar />
 
-                    <TimePicker sx={{ width: "100%" }} views={['hours', 'minutes']} ampm={false} label="Treffpunkt" onChange={(val) => setMeetingTime(val)} value={meetingTime} />
+                    <TimePicker sx={{ width: "100%" }} views={['hours', 'minutes']} ampm={false} maxTime={dayjsFromDb(editedEvent.startingDateTime)} label="Treffpunkt" onChange={(val) => setEditedEvent({
+                        ...editedEvent,
+                        meetingDateTime: formatDateToDatabase(set(new Date(editedEvent.startingDateTime), { hours: val?.hour(), minutes: val?.minute(), seconds: 0, milliseconds: 0 }))
+                    })} value={editedEvent.meetingDateTime ? dayjsFromDb(editedEvent.meetingDateTime) : null} />
                 </ListItem>
 
-                <ListItem onClick={() => setSearchPlacesDialogOpen(true)}>
+                <ListItem onClick={() => setSearchPlacesDialogOpen(true)} key={"searchPlace"}>
                     <ListItemAvatar>
                         <Map />
                     </ListItemAvatar>
 
                     <ListItemText primary={selectedPlace?.name ?? "Nothing selected"} />
                 </ListItem>
-                <ListItem sx={{ '&.MuiListItem-root': { pb: 1, pt: 0 } }} onClick={() => setSearchPlacesDialogOpen(true)}>
+                <ListItem sx={{ '&.MuiListItem-root': { pb: 1, pt: 0 } }} onClick={() => setSearchPlacesDialogOpen(true)} key={"searchPlaceMap"}>
                     <ListItemAvatar>
                     </ListItemAvatar>
                     <ListItemText>
@@ -255,44 +222,49 @@ const CreateEvent = ({ t, eventToEdit, repository }: CreateEventProps) => {
 
                 <Divider />
 
-                <ListItem onClick={() => setRepeatDialogOpen(true)}>
+                <ListItem onClick={() => setRepeatDialogOpen(true)} key={"recurrence"}>
                     <ListItemAvatar>
                         <EventRepeatIcon />
                     </ListItemAvatar>
-                    <ListItemText primary={"Wiederholung"} secondary={repeat} />
+                    <ListItemText primary={"Wiederholung"} secondary={editedEvent.recurrence} />
                 </ListItem>
 
-                <ListItem disabled={repeat === "None"} onClick={() => setStopRepeatDialogOpen(true)}>
+                <ListItem disabled={editedEvent.recurrence === "None"} onClick={() => setStopRepeatDialogOpen(true)} key={"stopRecurrence"}>
                     <ListItemAvatar />
-                    <ListItemText primary={"Wiederholung stoppen"} secondary={stopRepeatDisabled ? "Niemals" : moment(stopRepeatDateTime).format("DD MMMM yyyy")} />
+                    <ListItemText primary={"Wiederholung stoppen"} secondary={!editedEvent.end_at ? "Niemals" : format(editedEvent.end_at, "dd MMM yyyy")} />
                 </ListItem>
 
-                <ListItem sx={{ pt: 0, pb: 0, mb: 2 }}>
+                <ListItem sx={{ pt: 0, pb: 0, mb: 2 }} key={"answerDeadline"}>
                     <ListItemAvatar>
-                        <Checkbox sx={{ pl: 0 }} checked={answerDeadlineEnabled} onChange={() => setAnswerDeadlineEnabled(!answerDeadlineEnabled)} />
+                        <Checkbox sx={{ pl: 0 }} checked={editedEvent.answerDeadline !== null} onChange={() => setEditedEvent({ ...editedEvent, answerDeadline: editedEvent.answerDeadline ? null : formatDateToDatabase(set(Date.now(), { seconds: 0, milliseconds: 0 })) })} />
                     </ListItemAvatar>
 
-                    <DateTimePicker disabled={!answerDeadlineEnabled} sx={{ width: "100%" }} label="Answer deadline" disablePast format="DD MMMM YYYY HH:mm" onChange={(val) => setAnswerDeadline(val)} value={answerDeadline} />
+                    <DateTimePicker disabled={editedEvent.answerDeadline === null} sx={{ width: "100%" }} label="Answer deadline" disablePast ampm={false} format="DD MMMM YYYY HH:mm"
+                        onChange={(val) => setEditedEvent({
+                            ...editedEvent,
+                            answerDeadline: formatDateToDatabase(set(new Date(editedEvent.answerDeadline ?? ""), { date: val?.date(), month: val?.month(), year: val?.year(), hours: val?.hour(), minutes: val?.minute(), seconds: 0, milliseconds: 0 }))
+                        })} value={editedEvent.answerDeadline ? dayjsFromDb(editedEvent.answerDeadline) : null} />
                 </ListItem>
 
-                <ListItem sx={{ pt: 0, pb: 0, mb: 2 }}>
+                <ListItem sx={{ pt: 0, pb: 0, mb: 2 }} key={"maxAttendees"}>
                     <ListItemAvatar>
-                        <Checkbox sx={{ pl: 0 }} checked={maxAttendeesEnabled} onChange={() => setMaxAttendeesEnabled(!maxAttendeesEnabled)} />
+                        <Checkbox sx={{ pl: 0 }} checked={editedEvent.maxAttendees !== -1} onChange={() => setEditedEvent({ ...editedEvent, maxAttendees: editedEvent.maxAttendees === -1 ? 0 : -1 })} />
                     </ListItemAvatar>
 
                     <TextField
                         fullWidth
-                        disabled={!maxAttendeesEnabled}
-                        defaultValue={eventToEdit?.maxAttendees ?? ""}
+                        disabled={editedEvent.maxAttendees === -1}
+                        value={editedEvent.maxAttendees === -1 ? "" : editedEvent.maxAttendees}
                         id="maxAttendees"
                         name="maxAttendees"
                         variant="outlined"
                         type="number"
-                        onChange={(event) =>
-                            toNumber(event.target.value) < 0
-                                ? (event.target.value = "0")
-                                : event.target.value
-                        }
+                        onChange={(event) => {
+                            if (toNumber(event.target.value) <= 0) {
+                                event.target.value = ""
+                            }
+                            setEditedEvent({ ...editedEvent, maxAttendees: toNumber(event.target.value) })
+                        }}
                         inputMode="numeric"
                         label="Max number of attendees"
                         margin="normal" />
@@ -306,9 +278,9 @@ const CreateEvent = ({ t, eventToEdit, repository }: CreateEventProps) => {
                 <FormControl sx={{ m: 1, minWidth: 120 }}>
                     <RadioGroup
                         aria-labelledby="demo-radio-buttons-group-label"
-                        defaultValue={repeat}
+                        value={editedEvent.recurrence}
                         onChange={(e) => {
-                            setRepeat(e.target.value as EventRecurrence);
+                            setEditedEvent({ ...editedEvent, recurrence: e.target.value as EventRecurrence })
                             setRepeatDialogOpen(false);
                         }}
                         name="radio-buttons-group">
@@ -319,7 +291,7 @@ const CreateEvent = ({ t, eventToEdit, repository }: CreateEventProps) => {
                                 { value: "Fortnightly", label: "Alle 2 Wochen" },
                                 { value: "Monthly", label: "Monatlich" },
                             ])
-                                .map(item => <FormControlLabel value={item.value} control={<Radio />} label={item.label} />)
+                                .map(item => <FormControlLabel value={item.value} control={<Radio />} label={item.label} key={item.value} />)
                         }
                     </RadioGroup>
                 </FormControl>
@@ -330,12 +302,14 @@ const CreateEvent = ({ t, eventToEdit, repository }: CreateEventProps) => {
             <DialogTitle>Wiederholung</DialogTitle>
             <DialogContent>
 
-                <FormControlLabel control={<Checkbox checked={stopRepeatDisabled} onChange={(e) => setStopRepeatDisabled(e.target.checked)} />} label="Niemals" />
+                <FormControlLabel control={<Checkbox checked={editedEvent.end_at === null} onChange={() => setEditedEvent({ ...editedEvent, end_at: editedEvent.end_at ? null : formatDateToDatabase(set(Date.now(), { seconds: 0, milliseconds: 0 })) })} />} label="Niemals" />
 
                 <DatePicker sx={{ mt: 2, mb: 2, width: "100%" }} label="Start"
-                    onChange={(val) => setStopRepeatDateTime(val)}
-                    disabled={stopRepeatDisabled}
-                    defaultValue={stopRepeatDateTime} />
+                    disabled={editedEvent.end_at === null}
+                    onChange={(val) => setEditedEvent({
+                        ...editedEvent,
+                        end_at: formatDateToDatabase(set(editedEvent.end_at ? new Date(editedEvent.end_at) : Date.now(), { date: val?.date(), month: val?.month(), year: val?.year(), hours: 0, minutes: 0, seconds: 0, milliseconds: 0 }))
+                    })} value={editedEvent.end_at ? dayjsFromDb(editedEvent.end_at) : null} />
 
                 <Typography>Es werden Termine erstellt bis einschließlich diesem Tag. Alles danach entfällt</Typography>
 
@@ -348,7 +322,7 @@ const CreateEvent = ({ t, eventToEdit, repository }: CreateEventProps) => {
         <SelectGroupDialog open={selectGroupOpen}
             handleClose={() => setSelectGroupOpen(false)}
             handleSubmit={(group) => {
-                setGroup(group)
+                setEditedEvent({ ...editedEvent, group: group.id, fullGroup: group })
                 setSelectGroupOpen(false);
             }} />
 
@@ -356,7 +330,6 @@ const CreateEvent = ({ t, eventToEdit, repository }: CreateEventProps) => {
             open={searchPlacesDialogOpen}
             handleClose={() => setSearchPlacesDialogOpen(false)}
             placeSelected={(place) => {
-                console.log(place);
                 setSelectedPlace({
                     name: place.name,
                     lat: place.lat,
@@ -373,4 +346,4 @@ const CreateEvent = ({ t, eventToEdit, repository }: CreateEventProps) => {
     </Box >
 }
 
-export default withTranslation()(CreateEventProvider);
+export default CreateEvent;

@@ -1,4 +1,4 @@
-import React, { FormEvent, useState } from "react";
+import React, {FormEvent, useState} from "react";
 import Button from '@mui/material/Button';
 import CssBaseline from '@mui/material/CssBaseline';
 import TextField from '@mui/material/TextField';
@@ -8,11 +8,11 @@ import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
 import Logo from "../images/Karlsruher_Kojoten_Logo.svg";
-import { supabase } from "./services/supabase/supabaseClient";
-import { useNavigate } from "react-router-dom";
-import { TABLE_USER } from "../constants";
-import { captureException } from "@sentry/react";
-import { RegistrationError } from "../utils";
+import {supabase} from "./services/supabase/supabaseClient";
+import {useNavigate} from "react-router-dom";
+import {TABLE_USER} from "../constants";
+import {captureException} from "@sentry/react";
+import {RegistrationError} from "../utils";
 
 type RegisterProps = {
     email: string,
@@ -25,8 +25,8 @@ const RegisterScreen = () => {
     const [errorMessage, setErrorMessage] = useState("");
     const navigate = useNavigate();
 
-    const onRegister = async ({ email, password, displayName }: RegisterProps) => {
-        const { data, error } = await supabase.auth.signUp({
+    const onRegister = async ({email, password, displayName}: RegisterProps) => {
+        const {data, error} = await supabase.auth.signUp({
             email: email,
             password: password,
             options: {
@@ -49,8 +49,18 @@ const RegisterScreen = () => {
             return;
         }
 
-        let { error: updatingUserError } = await supabase.auth.updateUser({ data: { userId: data.user.id } })
-        let { error: writingError } = await supabase.from(TABLE_USER).upsert({ email, displayName, userId: data.user.id, role: "user" })
+        let {error: updatingUserError} = await supabase.auth.updateUser({data: {userId: data.user.id}})
+        let {error: writingError} = await supabase.from(TABLE_USER).upsert({
+            email, displayName, userId: data.user.id, role: "user", permissions: [
+                "use;drink",
+                "view;drink",
+                "use;training",
+                "view;groups",
+                "use;user",
+                "view;user",
+                "view;keyFinder"
+            ]
+        })
 
         if (error)
             setErrorMessage(JSON.stringify(error));
@@ -69,7 +79,7 @@ const RegisterScreen = () => {
             })
         }
 
-        navigate("/drinks", { replace: true });
+        navigate("/drinks", {replace: true});
     }
 
     const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
@@ -83,18 +93,18 @@ const RegisterScreen = () => {
 
         if (!password || !password2 || (password !== password2)) {
             setErrorMessage("Die Passwörter stimmen nicht überein.")
-        } else if (!email || !/^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/.test(email)) {
+        } else if (!email || !/^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$/.test(email)) {
             setErrorMessage("Die angegebene Email-Adresse ist nicht korrekt.")
         } else if (!name || !surname || name.length < 2 || surname.length < 2) {
             setErrorMessage("Bitte gib deinen Vor-und Nachnamen an.")
         } else {
-            onRegister({ email, password, displayName: name.trim() + " " + surname.trim() })
+            onRegister({email, password, displayName: name.trim() + " " + surname.trim()})
         }
     };
 
     return (
         <Container component="main" maxWidth="xs">
-            <CssBaseline />
+            <CssBaseline/>
             <Box
                 sx={{
                     marginTop: 8,
@@ -102,11 +112,11 @@ const RegisterScreen = () => {
                     flexDirection: 'column',
                     alignItems: 'center',
                 }}>
-                <img src={Logo} alt="Logo" width={150} />
+                <img src={Logo} alt="Logo" width={150}/>
                 <Typography component="h1" variant="h5">
                     Registerierung
                 </Typography>
-                <Box component="form" onSubmit={handleSubmit} noValidate sx={{ mt: 1 }}>
+                <Box component="form" onSubmit={handleSubmit} noValidate sx={{mt: 1}}>
                     <TextField
                         margin="normal"
                         required
@@ -165,7 +175,7 @@ const RegisterScreen = () => {
                         fullWidth
                         color='secondary'
                         variant="contained"
-                        sx={{ mt: 3, mb: 2 }}
+                        sx={{mt: 3, mb: 2}}
                     >
                         Registrieren
                     </Button>

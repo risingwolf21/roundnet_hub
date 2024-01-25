@@ -7,11 +7,12 @@ export type AlertMessage = {
 }
 
 type AlertSnackbarProps = {
-    close: (() => void) | null,
-    alertInfo: AlertMessage | null
+    close?: (() => void) | null,
+    alertInfo: AlertMessage | null,
+    autoHideDuration?: number | null
 }
 
-export const AlertSnackbar = ({ alertInfo, close }: AlertSnackbarProps) => {
+export const AlertSnackbar = ({ alertInfo, close, autoHideDuration }: AlertSnackbarProps) => {
 
     const handleSnackbarClose = (event: Event | SyntheticEvent<any, Event>, reason: SnackbarCloseReason) => {
         if (reason === 'clickaway') {
@@ -20,11 +21,11 @@ export const AlertSnackbar = ({ alertInfo, close }: AlertSnackbarProps) => {
         close && close();
     };
 
-    const handleAlertClose = (event: SyntheticEvent<Element, Event>) => {
+    const handleAlertClose = (_: SyntheticEvent<Element, Event>) => {
         close && close();
     }
 
-    return <Snackbar sx={{ position: "fixed", right: "16px", bottom: "72px" }} open={alertInfo != null} onClose={close ? handleSnackbarClose : undefined}>
+    return <Snackbar sx={{ position: "fixed", right: "16px", bottom: "72px" }} open={alertInfo != null} autoHideDuration={autoHideDuration} onClose={close ? handleSnackbarClose : undefined}>
         <Alert onClose={close ? handleAlertClose : undefined} severity={alertInfo?.severity} sx={{ width: '100%' }}>
             {alertInfo?.message}
         </Alert>

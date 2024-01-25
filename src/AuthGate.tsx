@@ -36,7 +36,7 @@ const AuthGate = ({ children }: Props) => {
     const navigate = useNavigate();
 
     useEffect(() => {
-        client.auth.onAuthStateChange((event, session) => {
+        const { data } = client.auth.onAuthStateChange((event, session) => {
             setUser({ email: session?.user?.email, id: session?.user?.id });
             if (session && session.user) {
                 client.from(TABLE_USER).select().eq("userId", session.user.id).single().then((res) => {
@@ -48,7 +48,7 @@ const AuthGate = ({ children }: Props) => {
                             role: res.data.role,
                             verified: res.data.verified,
                             permissions: res.data.permissions ?? [],
-                            notificationTags: res.data.notificationTags ?? []
+                            notifications: res.data.notifications ?? []
                         } as User;
                         if (!container.isBound("IAdminDrinksRepository"))
                             container.bind<IAdminDrinksRepository>("IAdminDrinksRepository").toDynamicValue(() => {
@@ -89,6 +89,9 @@ const AuthGate = ({ children }: Props) => {
                 navigate("/login", { replace: true });
             }
         })
+        return () => {
+            data.subscription.unsubscribe();
+        }
     }, [client, dispatch, navigate]);
 
     const authenticationRoutes = [

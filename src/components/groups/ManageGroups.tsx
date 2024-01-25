@@ -6,17 +6,15 @@ import { useSelector } from "react-redux";
 import { Navigate, useNavigate } from "react-router-dom";
 import { useClient } from "react-supabase";
 import { GroupWithUsers } from "src/types/supabaseTypes";
-import { fetchGroupsAsync } from "../../redux/groupsSlice";
+import { fetchGroupsAsync, groupsSelector } from "../../redux/groupsSlice";
 import { RootState, useAppDispatch } from "../../redux/store";
 import CustomAppBar from "../AppBar";
 
-export const ManageGroupsProvider = () => {
+const ManageGroupsProvider = () => {
 
-    const { groups, loading } = useSelector((state: RootState) => state.groups);
+    const groups = useSelector((state: RootState) => groupsSelector.selectAll(state));
+    const { loading } = useSelector((state: RootState) => state.groups);
     const client = useClient();
-
-    if (process.env.REACT_APP_training !== "enabled")
-        return <Navigate to={"/feature-not-available"} />
 
     return <ManageGroupsScreen
         groups={groups}
@@ -32,7 +30,7 @@ type ManageGroupsScreenProps = {
 
 const ManageGroupsScreen = ({ groups, loading, client }: ManageGroupsScreenProps) => {
 
-
+    const { user } = useSelector((state: RootState) => state.application);
     const dispatch = useAppDispatch();
     const navigate = useNavigate();
 
@@ -52,15 +50,17 @@ const ManageGroupsScreen = ({ groups, loading, client }: ManageGroupsScreenProps
         }
         <List sx={{ width: "100%" }}>
             {
-                groups && groups.map(x => <ListItem divider onClick={() => navigate("/trainer/groups/" + x.id)}>
-                    <ListItemAvatar>
-                        <FiberManualRecord sx={{ color: x.color }} />
-                    </ListItemAvatar>
-                    <ListItemText primary={x.name} />
-                </ListItem>)
+                groups && groups
+                    .filter(x => user && x.users.some(x => x.userId === user.userId))
+                    .map(x => <ListItem key={x.id} divider onClick={() => navigate("/trainer/groups/" + x.id)}>
+                        <ListItemAvatar>
+                            <FiberManualRecord sx={{ color: x.color }} />
+                        </ListItemAvatar>
+                        <ListItemText primary={x.name} />
+                    </ListItem>)
             }
         </List>
     </Grid>
 }
 
-export default ManageGroupsScreen;
+export default ManageGroupsProvider;

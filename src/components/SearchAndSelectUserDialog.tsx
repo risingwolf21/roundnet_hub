@@ -33,7 +33,7 @@ const SearchAndSelectUserDialog = ({ open, handleClose, users, loading, handleSu
         open={open}
         onClose={handleClose}
         TransitionComponent={SlideUpTransition}>
-        <Box component="form" onSubmit={() => handleSubmit(selectedUsers)} noValidate sx={{
+        <Box component="form" noValidate sx={{
             width: "100%",
             direction: "column",
             alignItems: "center",
@@ -58,7 +58,7 @@ const SearchAndSelectUserDialog = ({ open, handleClose, users, loading, handleSu
                             inputProps={{ 'aria-label': 'search' }}
                         />
                     </Search>
-                    <Button autoFocus color="inherit" type="submit">
+                    <Button autoFocus color="inherit" onClick={() => handleSubmit(selectedUsers)}>
                         Speichern
                     </Button>
                 </Toolbar>

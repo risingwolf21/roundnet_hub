@@ -12,7 +12,8 @@
         "manageUsers": "Benutzer verwalten",
         "completeHistory": "Gesamtverlauf",
         "manageGroups": "Gruppen verwalten",
-        "analyzeDrinkStocks": "Getränkenutzung analysieren"
+        "analyzeDrinkStocks": "Getränkenutzung analysieren",
+        "executeEdgeFunctions": "Edge-Funktionen ausführen"
     },
     "navigation": {
         "browse": "Browse",
@@ -38,6 +39,12 @@
             "waitingListPlace": "Warteliste Platz ({{ place }} / {{ waitingListLength }})",
             "waitingListAccepted": "Du bist auf der Warteliste für dieses Event"
         }
+    },
+    "notificationTags": {
+        "eventComments": "Event Kommentare",
+        "userRegistration": "Benutzer Registierung",
+        "paymentRequest": "Zahlungsaufforderung",
+        "paymentPending": "Zahlung wartend"
     },
     "feature_not_available": "Diese Funktion ist noch nicht bereit. Versuche es später erneut!",
     "notification_actionMessage": "Du kannst Push-Benachrichtigungen zu den folgenden Themen erhalten",

@@ -9,12 +9,7 @@ import { RootState } from "src/redux/store";
 import { IEventRepository } from "src/repository/IEventRepository";
 import { Group } from "src/types/supabaseTypes";
 import { SlideUpTransition } from "../../utils";
-
-type SelectGroupDialogProps = {
-    open: boolean,
-    handleClose: () => void,
-    handleSubmit: (group: Group) => void
-}
+import { SelectGroupDialogProps } from "../eventInformation/types";
 
 export const SelectGroupDialog = ({ open, handleClose, handleSubmit }: SelectGroupDialogProps) => {
 
@@ -52,7 +47,7 @@ export const SelectGroupDialog = ({ open, handleClose, handleSubmit }: SelectGro
             <Box>
                 <List>
                     {
-                        groups.map(x => <ListItemButton divider onClick={() => handleSubmit(x)}>
+                        groups.map(x => <ListItemButton key={x.id} divider onClick={() => handleSubmit(x)}>
                             <ListItemAvatar>
                                 <FiberManualRecord sx={{ color: x.color }} />
                             </ListItemAvatar>

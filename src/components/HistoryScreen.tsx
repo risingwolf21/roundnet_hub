@@ -40,7 +40,7 @@ const HistoryItem = ({ items, header, onClick }: HistoryItemProps) => {
     </List>
 }
 
-export const HistoryScreenProvider = () => {
+const HistoryScreenProvider = () => {
     const drinksRepository = useDependency<IDrinkRepository>("IDrinkRepository");
     const { history, drinks, historyLoading, historyError, historyEndReached } = useSelector((state: RootState) => state.drinks);
     const { user } = useSelector((state: RootState) => state.application);
@@ -144,3 +144,5 @@ const HistoryScreen = ({ drinksRepository, history, drinks, historyLoading, hist
             handleSubmit={(newEntry) => handleEntryUpdate(newEntry)} />
     </Grid>
 }
+
+export default HistoryScreenProvider;

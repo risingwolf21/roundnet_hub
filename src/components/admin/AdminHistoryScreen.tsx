@@ -28,7 +28,7 @@ const AdminHistoryItem = ({ items, header }: { items: FullHistory[], header: str
     </List>
 }
 
-export const AdminHistoryScreenProvider = () => {
+const AdminHistoryScreenProvider = () => {
     const adminDrinkRepository = useDependency<IAdminDrinksRepository>("IAdminDrinksRepository");
 
     if (!adminDrinkRepository)
@@ -68,3 +68,5 @@ const AdminHistoryScreen = ({ adminDrinkRepository }: { adminDrinkRepository: IA
         </InfiniteScrollList>
     </Grid>
 }
+
+export default AdminHistoryScreenProvider;

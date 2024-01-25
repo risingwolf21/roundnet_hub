@@ -1,5 +1,6 @@
 import { Slide, SlideProps } from "@mui/material";
-import moment, { MomentInput } from "moment";
+import { format, parse } from "date-fns";
+import dayjs from "dayjs";
 import { forwardRef } from "react";
 import React from "react";
 import { ProductType } from "src/types/supabaseTypes";
@@ -26,8 +27,16 @@ export const SlideUpTransition = forwardRef(function Transition(props: SlideProp
     return <Slide direction="up" ref={ref} {...props} />;
 });
 
-export const formatDateToDatabase = (date: MomentInput) => {
-    return moment(date).format("yyyy-MM-DD HH:mm:ssZ")
+export const formatDateToDatabase = (date: Date) => {
+    return format(date, "yyyy-MM-dd'T'HH:mm:ssxxx");
+}
+
+export const formatDateFromDatabase = (date: string) => {
+    return parse(date, "yyyy-MM-dd'T'HH:mm:ssxxx", new Date());
+}
+
+export const dayjsFromDb = (date: string) => {
+    return dayjs(formatDateFromDatabase(date));
 }
 
 export class RegistrationError extends Error {

@@ -1,11 +1,12 @@
 import { AccountCircle, Euro, History, Info, Key, Notifications } from "@mui/icons-material";
-import { Avatar, Box, List, ListItem, ListItemAvatar, ListItemText } from "@mui/material";
+import { Avatar, Box, List, ListItem, ListItemAvatar, ListItemButton, ListItemText } from "@mui/material";
 import { TFunction } from "i18next";
 import React, { ReactElement } from "react";
 import { withTranslation } from 'react-i18next';
 import { useNavigate } from "react-router";
 import { Ability, can } from "src/utils/PermissionService";
 import CustomAppBar from "./AppBar";
+import OneSignal from "react-onesignal";
 
 type TabsType = {
     translationKey: string
@@ -57,19 +58,24 @@ const Browse = ({ t }: { t: TFunction }) => {
 
     const navigate = useNavigate();
 
+    const requestNotificationPermission = () => {
+        console.log("asdf")
+        OneSignal.Slidedown.promptPush();
+    }
+
     return <Box>
         <CustomAppBar />
         <List>
             {
                 tabs.filter(x => can("view", x.ability)).map(x => {
-                    return <ListItem key={x.translationKey} onClick={() => navigate(x.navigateTo)} sx={{ mt: 1 }}>
+                    return <ListItemButton key={x.translationKey} onClick={() => navigate(x.navigateTo)} sx={{ mt: 1 }}>
                         <ListItemAvatar>
                             <Avatar sx={{ background: x.avatarColor, width: 40, height: 40, borderRadius: 2 }}>
                                 {x.icon}
                             </Avatar>
                         </ListItemAvatar>
                         <ListItemText primary={t("browse." + x.translationKey)} />
-                    </ListItem>
+                    </ListItemButton>
                 })
             }
             <ListItem key={"appVersion"} dense>
