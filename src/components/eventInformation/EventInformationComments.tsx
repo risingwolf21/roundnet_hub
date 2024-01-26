@@ -1,5 +1,5 @@
 import { ArrowRight, Comment, Send } from "@mui/icons-material"
-import { Typography, ListItemButton, ListItemAvatar, Container, ListItemText, ListItemSecondaryAction, IconButton, Box, List, ListItem, Avatar, CircularProgress, TextField, InputAdornment } from "@mui/material"
+import { Typography, ListItemButton, ListItemAvatar, Container, ListItemText, ListItemSecondaryAction, IconButton, Box, List, ListItem, Avatar, CircularProgress, TextField, InputAdornment, Divider } from "@mui/material"
 import { SwipeableDialog } from "../SwipeableDialog"
 import { useEffect, useState } from "react"
 import React from "react"
@@ -32,7 +32,7 @@ const EventInformationComments = ({ comments, inputRef, handleCommentSubmit, eve
         }
     }, [client, dispatch, eventId]);
 
-    return <Container sx={{ p: 0, m: 0 }}>
+    return <Container sx={{ p: 0, alignSelf: "center" }}>
         <Typography sx={{ fontSize: 16, fontWeight: "bold", mt: 2 }} color="text.secondary" gutterBottom>
             Kommentare
         </Typography>
@@ -49,7 +49,7 @@ const EventInformationComments = ({ comments, inputRef, handleCommentSubmit, eve
                 </IconButton>
             </ListItemSecondaryAction>
         </ListItemButton>
-
+        <Divider />
         <SwipeableDialog open={commentsOpen} onClose={() => setCommentsOpen(false)}
             setOpen={setCommentsOpen} title={"Kommentare"} minHeight={40}>
             <Box sx={{ display: "flex", px: 2, flexDirection: "column" }}>

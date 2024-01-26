@@ -57,7 +57,7 @@ const CreateEvent = ({ t, eventToEdit, repository }: CreateEventProps) => {
             let eventTitle = data.get("eventTitle")?.toString();
             let eventDescription = data.get("eventDescription")?.toString();
             let event = {
-                ...(_.omit(editedEvent, ["fullGroup", "attendance", "comments", "userAttendance", "id"])),
+                ...(_.omit(editedEvent, ["fullGroup", "attendance", "comments", "userAttendance", "id", "attendanceUpdating"])),
                 title: eventTitle,
                 startingDateTime: editedEvent.startingDateTime,
                 description: eventDescription,

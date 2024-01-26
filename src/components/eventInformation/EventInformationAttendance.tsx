@@ -35,13 +35,13 @@ const EventInformationAttendance = ({ selectedEvent, attendance, attendanceLoadi
         }
     }, [client, dispatch, user, selectedEvent]);
 
-    return <Container sx={{ p: 0, m: 0 }}>
+    return <Container sx={{ p: 0, alignSelf: "center" }}>
         <Typography sx={{ fontSize: 16, fontWeight: "bold", mt: 2 }} color="text.secondary" gutterBottom>
             Teilnehmer
         </Typography>
         <List sx={{ p: 0 }}>
             {
-                selectedEvent.maxAttendees && <>
+                selectedEvent.maxAttendees >= 0 && <>
                     <ListItem key={"spotsTaken"} sx={{ '&.MuiListItem-root': { paddingLeft: 0 } }}>
                         <ListItemAvatar sx={{ justifyContent: "left", alignItems: "center", display: "flex" }}>
                             <CircularProgress size={"24px"} thickness={8} sx={{ borderRadius: "100%", p: "2px", position: "relative", zIndex: 2 }} variant="determinate"
@@ -110,6 +110,7 @@ const EventInformationAttendance = ({ selectedEvent, attendance, attendanceLoadi
                 </ListItemSecondaryAction>
             </ListItem>
         </List>
+        <Divider />
     </Container>
 }
 

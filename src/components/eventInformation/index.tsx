@@ -27,6 +27,7 @@ import {
     CardHeader,
     CardMedia,
     CircularProgress,
+    Container,
     Divider,
     IconButton,
     InputAdornment,
@@ -223,46 +224,47 @@ const EventInformation = ({
         </AppBar>
         <Box sx={{ justifyContent: "space-between", display: "flex", flexDirection: "column" }}>
             <Box>
-                <Box>
-                    {
-                        selectedEventPlace && <CardMedia sx={{ maxHeight: "10%" }}>
-                            <Box sx={{ width: "100%", maxHeight: "10%", alignSelf: "center" }}>
-                                <Box component="button" onClick={() => {
-                                    window.open("https://maps.google.com?q=" + selectedEventPlace.lat + "," + selectedEventPlace.lon, '_blank');
-                                }} sx={{ position: "absolute", zIndex: 999, width: "100%", height: "150px", border: "none", background: "transparent" }}></Box>
-                                <MapContainer
-                                    style={{ width: "100%", height: "150px" }}
-                                    center={[selectedEventPlace.lat, selectedEventPlace.lon]}
-                                    zoom={15}
-                                    tap={false}
-                                    dragging={false}
-                                    doubleClickZoom={false}
-                                    scrollWheelZoom={false}
-                                    attributionControl={false}
-                                    zoomControl={false}>
-                                    <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-                                    <Marker
-                                        position={[selectedEventPlace.lat, selectedEventPlace.lon]}
-                                        interactive={false} />
-                                </MapContainer>
-                            </Box>
-                        </CardMedia>
-                    }
-                    {
-                        selectedEvent.isCancelled && <Alert sx={{ ml: 2, mr: 2, mt: 2 }} severity="error">
-                            Dieses Event wurde <strong>abgesagt</strong>
-                        </Alert>
-                    }
-                    {
-                        answerDeadlineExpired(selectedEvent) && selectedEvent.answerDeadline &&
-                        <Alert sx={{ ml: 2, mr: 2, mt: 2 }} severity="info">
-                            {t("events.information.answerDeadlineExceeded", { answerDeadline: new Date(selectedEvent.answerDeadline) })}
-                        </Alert>
-                    }
+                {
+                    selectedEventPlace && <CardMedia sx={{ maxHeight: "10%" }}>
+                        <Container sx={{ p: 0, width: "100%", maxHeight: "10%", alignSelf: "center" }}>
+                            <Box component="button" onClick={() => {
+                                window.open("https://maps.google.com?q=" + selectedEventPlace.lat + "," + selectedEventPlace.lon, '_blank');
+                            }} sx={{ position: "absolute", zIndex: 999, width: "100%", height: "150px", border: "none", background: "transparent" }}></Box>
+                            <MapContainer
+                                style={{ width: "100%", height: "150px" }}
+                                center={[selectedEventPlace.lat, selectedEventPlace.lon]}
+                                zoom={15}
+                                tap={false}
+                                dragging={false}
+                                doubleClickZoom={false}
+                                scrollWheelZoom={false}
+                                attributionControl={false}
+                                zoomControl={false}>
+                                <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+                                <Marker
+                                    position={[selectedEventPlace.lat, selectedEventPlace.lon]}
+                                    interactive={false} />
+                            </MapContainer>
+                        </Container>
+                    </CardMedia>
+                }
+                {
+                    selectedEvent.isCancelled && <Alert sx={{ ml: 2, mr: 2, mt: 2 }} severity="error">
+                        Dieses Event wurde <strong>abgesagt</strong>
+                    </Alert>
+                }
+                {
+                    answerDeadlineExpired(selectedEvent) && selectedEvent.answerDeadline &&
+                    <Alert sx={{ ml: 2, mr: 2, mt: 2 }} severity="info">
+                        {t("events.information.answerDeadlineExceeded", { answerDeadline: new Date(selectedEvent.answerDeadline) })}
+                    </Alert>
+                }
+                <Container sx={{ p: 0, alignSelf: "center" }}>
                     <CardHeader subheader={createCardSubHeader()} sx={{ pb: 0 }} />
+                </Container>
+                <CardContent sx={{ '&.MuiCardContent-root': { paddingBottom: 1 } }}>
 
-                    <CardContent sx={{ '&.MuiCardContent-root': { paddingBottom: 1 } }}>
-
+                    <Container sx={{ p: 0, alignSelf: "center" }}>
                         <Typography sx={{ fontSize: 16, fontWeight: "bold" }} color="text.secondary" gutterBottom>
                             Beschreibung
                         </Typography>
@@ -270,15 +272,14 @@ const EventInformation = ({
                         <Divider />
 
                         {
-                            selectedEvent.maxAttendees <= attendance.filter(x => x.state === "Attending").length && selectedEvent.userAttendance !== "Waiting" && selectedEvent.userAttendance !== "Attending" &&
-                            <Alert sx={{ mt: 2 }} severity="info">
-                                <AlertTitle>Warteliste</AlertTitle>
-                                Die maximale Anzahl der Teilnehmer ist erreicht. Du kannst trotzdem der Warteliste
-                                beitreten.
-                                <Button sx={{ alignContent: "end" }} variant="contained"
-                                    onClick={() => updateAttendance("Waiting", selectedEvent.userAttendance)}>
+                            selectedEvent.maxAttendees >= 0 && selectedEvent.maxAttendees <= attendance.filter(x => x.state === "Attending").length && selectedEvent.userAttendance !== "Waiting" && selectedEvent.userAttendance !== "Attending" &&
+                            <Alert sx={{ mt: 2 }} severity="info" action={
+                                <Button variant="contained" size="small" onClick={() => updateAttendance("Waiting", selectedEvent.userAttendance)}>
                                     Beitreten
                                 </Button>
+                            }>
+                                Die maximale Anzahl der Teilnehmer ist erreicht. Du kannst trotzdem der Warteliste
+                                beitreten.
                             </Alert>
                         }
 
@@ -294,22 +295,21 @@ const EventInformation = ({
                                 })}
                             </Alert>
                         }
-                        <EventInformationAttendance
-                            user={user}
-                            attendance={attendance}
-                            attendanceLoading={attendanceLoading}
-                            selectedEvent={selectedEvent}
-                            setEventAttendanceState={setEventAttendanceState}
-                            updateAttendance={updateAttendance} />
-                        <Divider />
-                        <EventInformationComments
-                            eventId={selectedEvent.id}
-                            comments={comments}
-                            handleCommentSubmit={handleCommentSubmit}
-                            inputRef={inputRef} />
-                        <Divider />
-                    </CardContent>
-                </Box>
+                    </Container>
+                    <EventInformationAttendance
+                        user={user}
+                        attendance={attendance}
+                        attendanceLoading={attendanceLoading}
+                        selectedEvent={selectedEvent}
+                        setEventAttendanceState={setEventAttendanceState}
+                        updateAttendance={updateAttendance} />
+
+                    <EventInformationComments
+                        eventId={selectedEvent.id}
+                        comments={comments}
+                        handleCommentSubmit={handleCommentSubmit}
+                        inputRef={inputRef} />
+                </CardContent>
             </Box>
 
             <EventAttendanceDialog

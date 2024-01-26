@@ -50,7 +50,7 @@ export const InfiniteScrollList = ({ children, fetch, error, loading, endReached
     }, [observerTarget]);
 
     return <div style={{ width: "100%" }}>
-        <List sx={{ overflowY: "auto" }}>
+        <List sx={{ overflowY: "auto", pb: 10 }}>
             {children}
             <div ref={observerTarget}></div>
         </List>

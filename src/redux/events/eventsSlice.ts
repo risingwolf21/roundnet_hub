@@ -12,7 +12,7 @@ export type SliceEvent = Event & {
 
 const eventsAdapter = createEntityAdapter({
     selectId: (event: SliceEvent) => event.id,
-    sortComparer: (a, b) => a.created_at.localeCompare(b.created_at),
+    sortComparer: (a, b) => a.startingDateTime.localeCompare(b.startingDateTime),
 });
 export const eventsSelector = eventsAdapter.getSelectors((st: RootState) => st.events);
 
@@ -127,6 +127,7 @@ const eventsSlice = createSlice({
                 eventsAdapter.updateOne(state, sliceEvent);
             })
             .addCase(onEventAttendanceUpdate, (state, action) => {
+                console.log(action)
                 if (!action.payload.event || action.payload.user !== action.payload.userId)
                     return;
 
