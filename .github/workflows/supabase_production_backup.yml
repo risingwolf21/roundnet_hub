@@ -1,3 +1,4 @@
+name: Supabase Production Backup
 on:
   schedule:
     - cron: '0 6 * * *'
