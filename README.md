@@ -21,11 +21,17 @@ To create one, follow the link bellow:
 
 # Development
 
-## Supabase Types
+## Supabase
 
-To get the database types from the supabase database run the following command:
+<details open>
+  <summary>Generate Typescript Types</summary>
 
-### Staging
+<br>
+
+ | :warning: **Saving format**: This file will be generated as a `UTF-16 LE`. Make sure to save it as a `UTF-8` file! |
+ | --- |
+
+  ### Staging
 ```
 npx supabase gen types typescript --project-id xibmjvkjkdxdbmreicps > src/types/supabase.ts
 ```
@@ -34,6 +40,27 @@ npx supabase gen types typescript --project-id xibmjvkjkdxdbmreicps > src/types/
 ```
 npx supabase gen types typescript --project-id vsuhzabcrnmrljzecxee > src/types/supabase.ts
 ```
+</details>
+
+<details>
+  <summary>Database dump</summary>
+
+  ### Downloading database dump
+```
+npx supabase db dump --db-url postgres://postgres."$SUPABASE_PRODUCTION_ID":"$SUPABASE_PRODUCTION_DB_PASSWORD"@aws-0-eu-central-1.pooler.supabase.com:6543/postgres -f supabase/backup/"$NOW"_production_data.sql --use-copy --data-only
+```
+```
+npx supabase db dump --db-url postgres://postgres."$SUPABASE_PRODUCTION_ID":"$SUPABASE_PRODUCTION_DB_PASSWORD"@aws-0-eu-central-1.pooler.supabase.com:6543/postgres -f supabase/backup/"$NOW"_production_schema.sql
+```
+```
+npx supabase db dump --db-url postgres://postgres."$SUPABASE_PRODUCTION_ID":"$SUPABASE_PRODUCTION_DB_PASSWORD"@aws-0-eu-central-1.pooler.supabase.com:6543/postgres -f supabase/backup/"$NOW"_production_roles.sql --role-only
+```
+
+### Applying database dump
+```
+psql -h aws-0-eu-central-1.pooler.supabase.com -p 6543 -d postgres -U postgres.PROJECT_REF --single-transaction --variable ON_ERROR_STOP=1 --file backup/"$NOW"_production_roles.sql --command 'SET session_replication_role = replica' --file backup/"$NOW"_production_data.sql
+```
+</details>
 
 ## Notifications
 
