@@ -130,4 +130,6 @@ export const fetchEventCommentsAsync = createAsyncThunk("fetchEventCommentsAsync
     return { data: attendance.data, eventId };
 });
 
+export const { onEventCommentUpdate, onEventCommentDelete } = eventCommentsSlice.actions;
+
 export default eventCommentsSlice.reducer;

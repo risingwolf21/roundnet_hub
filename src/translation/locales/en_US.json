@@ -37,7 +37,8 @@
             "answerDeadlineExceeded": "The registration for this event expired on {{ answerDeadline, MMMM dd, yyyy 'at' HH:mm}}",
             "answerDeadlineExceededTitle": "Registration period expired",
             "waitingListPlace": "Waitlinglist Place ({{ place }} / {{ waitingListLength }})",
-            "waitingListAccepted": "You are on waiting list place {{ place }} of {{ waitingListLength }} for this event"
+            "waitingListAccepted": "You are on waiting list place {{ place }} of {{ waitingListLength }} for this event",
+            "eventSpotsTaken": "{{ taken }} of {{waitingListLength}} spots taken"
         }
     },
     "notificationTags": {

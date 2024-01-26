@@ -14,6 +14,7 @@ export type Ability =
     | [Actions, 'notifications']
     | [Actions, 'browse']
     | [Actions, 'browseAdmin']
+    | [Actions, 'eventComments']
 
 export const allPermissions: Permissions[] = [
     "use;drink",

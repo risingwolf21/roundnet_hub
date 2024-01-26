@@ -33,19 +33,37 @@ const eventsSlice = createSlice({
             state.eventToEdit = action.payload;
         },
         onEventUpdate: (state, action: PayloadAction<EventUpdate>) => {
-            let event = action.payload as Event;
-            let oldEvent = state.entities[event.id];
-            if (!oldEvent)
+            console.log(action)
+            let eventSlice = eventsAdapter.getSelectors().selectById(state, action.payload.id ?? -1);
+            if (!eventSlice)
                 return;
-            let newEvent = Object.assign(oldEvent, { ...event })
-            eventsAdapter.upsertOne(state, newEvent)
+
+
+            let update = action.payload;
+
+            let changes = {
+                id: eventSlice.id,
+                changes: {
+                    answerDeadline: update.answerDeadline,
+                    created_at: update.created_at,
+                    description: update.description,
+                    end_at: update.end_at,
+                    group: update.group,
+                    isCancelled: update.isCancelled,
+                    key: update.key,
+                    maxAttendees: update.maxAttendees,
+                    meetingDateTime: update.meetingDateTime,
+                    place: update.place,
+                    recurrence: update.recurrence,
+                    startingDateTime: update.startingDateTime,
+                    title: update.title
+                }
+            } as Update<SliceEvent>;
+
+            eventsAdapter.updateOne(state, changes);
         },
         onEventDelete: (state, action: PayloadAction<number>) => {
             eventsAdapter.removeOne(state, action.payload)
-        },
-        onEventInsert: (state, action: PayloadAction<EventInsert>) => {
-            let newEvent = Object.assign({}, action.payload) as SliceEvent;
-            eventsAdapter.addOne(state, newEvent)
         },
         onEventErrorRead: (state, _action) => {
             state.error = null;
