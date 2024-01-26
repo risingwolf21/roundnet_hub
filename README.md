@@ -29,7 +29,7 @@ To create one, follow the link bellow:
 <br>
 To get the database types from the supabase database run the following command:
 
-> [!WARNING]<br>
+> [!WARNING]  
 > **Saving format**: This file will be generated as a `UTF-16 LE`. Make sure to save it as a `UTF-8` file!
 
   ### Staging
