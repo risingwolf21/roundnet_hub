@@ -12,7 +12,7 @@ type SliceAttendance = {
 
 const eventAttendanceAdapter = createEntityAdapter({
     selectId: (event: SliceAttendance) => event.id
-})
+});
 
 export const attendanceSelector = eventAttendanceAdapter.getSelectors();
 
@@ -48,7 +48,34 @@ const eventAttendanceSlice = createSlice({
             .addCase(fetchEventAttendanceAsync.fulfilled, (state, action) => {
                 state.loading = false;
                 state.error = "";
-                eventAttendanceAdapter.upsertOne(state, { id: action.payload.eventId, attendance: action.payload.data ?? [] })
+
+                let slice = eventAttendanceAdapter.getSelectors().selectById(state, action.payload.eventId);
+
+                if (!slice) {
+                    eventAttendanceAdapter.addOne(state, {
+                        id: action.payload.eventId, attendance: action.payload.data?.map(x => {
+                            return {
+                                ...x,
+                                userId: x.user.userId
+                            }
+                        }) ?? []
+                    });
+                    return;
+                }
+                
+                let update = {
+                    id: action.payload.eventId,
+                    changes: {
+                        attendance: action.payload.data?.map(x => {
+                            return {
+                                ...x,
+                                userId: x.user.userId
+                            }
+                        }) ?? []
+                    }
+                } as Update<SliceAttendance>;
+
+                eventAttendanceAdapter.updateOne(state, update);
             })
             .addCase(fetchEventAttendanceAsync.pending, (state, action) => {
                 state.loading = true;
@@ -69,39 +96,55 @@ const eventAttendanceSlice = createSlice({
                     lastUpdate: formatDateToDatabase(new Date())
                 } as FullAttendance;
 
-                let attendance = eventAttendanceAdapter.getSelectors().selectById(state, action.meta.arg.eventId)?.attendance ?? []
+                let slice = eventAttendanceAdapter.getSelectors().selectById(state, action.meta.arg.eventId);
+                if (!slice) {
+                    eventAttendanceAdapter.addOne(state, { id: action.meta.arg.eventId, attendance: [attendanceEntry] });
+                    return;
+                }
+
+                let attendance = slice.attendance;
+
+                let sliceAttendance = {
+                    id: action.meta.arg.eventId
+                } as Update<SliceAttendance>
 
                 let index = attendance.findIndex(x => x.userId === action.meta.arg.user.userId);
 
-                let sliceAttendance = {
-                    id: action.meta.arg.eventId,
-                    attendance: [...attendance
-                        .map((x, i) => i === index ? {
+                if (index === -1) {
+                    sliceAttendance.changes = { attendance: [...attendance, attendanceEntry] }
+                } else {
+                    sliceAttendance.changes = {
+                        attendance: attendance.map((x, i) => i === index ? {
                             ...x,
                             state: action.meta.arg.state,
                             lastUpdate: formatDateToDatabase(new Date())
-                        } : attendanceEntry)]
-                } as SliceAttendance;
+                        } : x)
+                    }
+                }
 
-                eventAttendanceAdapter.upsertOne(state, sliceAttendance);
+                eventAttendanceAdapter.updateOne(state, sliceAttendance);
             })
             .addCase(updateAttendanceAsync.rejected, (state, action) => {
                 state.error = action.error.message ?? ""
 
-                let index = (state.entities[action.meta.arg.eventId]?.attendance ?? [])
-                    .findIndex(x => x.userId === action.meta.arg.user.userId);
+                let attendance = eventAttendanceAdapter.getSelectors().selectById(state, action.meta.arg.eventId)?.attendance ?? [];
+                let index = attendance.findIndex(x => x.userId === action.meta.arg.user.userId);
+
+                if (!attendance || index < 0)
+                    return;
 
                 let sliceAttendance = {
                     id: action.meta.arg.eventId,
-                    attendance: [...(state.entities[action.meta.arg.eventId]?.attendance ?? [])
-                        .map((x, i) => i === index ? {
+                    changes: {
+                        attendance: attendance.map((x, i) => i === index ? {
                             ...x,
-                            state: action.meta.arg.state,
+                            state: action.meta.arg.oldState,
                             lastUpdate: formatDateToDatabase(new Date())
-                        } : x)]
-                } as SliceAttendance;
+                        } : x)
+                    }
+                } as Update<SliceAttendance>;
 
-                eventAttendanceAdapter.upsertOne(state, sliceAttendance);
+                eventAttendanceAdapter.updateOne(state, sliceAttendance);
             })
             .addCase(updateAttendanceAsync.fulfilled, (state, action) => {
                 state.loading = false;
