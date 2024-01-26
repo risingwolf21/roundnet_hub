@@ -1,0 +1,32 @@
+on:
+  schedule:
+    - cron: '0 6 * * *'
+
+jobs:
+  database_dump:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set current date as env variable
+        run: echo "NOW=$(date +'%Y%m%d%H%M%S')" >> $GITHUB_ENV
+        
+      - name: Download supabase production data
+      - uses: supabase/setup-cli@v1
+        with: # Set the secret as an input
+          supabase_db_password: ${{ secrets.SUPABASE_PRODUCTION_DB_PASSWORD }}
+          supabase_db_id: ${{ secrets.SUPABASE_PRODUCTION_ID }}
+      - run: supabase init
+      - run: supabase db dump --db-url postgres://postgres."$supabase_db_id":"$supabase_db_password"@aws-0-eu-central-1.pooler.supabase.com:6543/postgres -f supabase/backup/"$NOW"_production_data.sql --use-copy --data-only
+      - run: supabase db dump --db-url postgres://postgres."$supabase_db_id":"$supabase_db_password"@aws-0-eu-central-1.pooler.supabase.com:6543/postgres -f supabase/backup/"$NOW"_production_schema.sql
+      - run: supabase db dump --db-url postgres://postgres."$supabase_db_id":"$supabase_db_password"@aws-0-eu-central-1.pooler.supabase.com:6543/postgres -f supabase/backup/"$NOW"_production_roles.sql --role-only
+
+      - uses: actions/checkout@v3
+      - name: Commit files to backup data
+      - name: Commit report
+        run: |
+          git config --global user.name 'Karl Wolf'
+          git config --global user.email 'admin@example.com'
+          git commit -am "$NOW supabase backup"
+          git push
+        
+    
+    
