@@ -8,7 +8,7 @@ import { UserEdited } from "src/components/admin/EditUserDialog";
 export interface IAdminUsersRepository {
     addUsersToGroup(group: Group, users: User[]): Promise<PostgrestSingleResponse<null>>
     removeUsersFromGroup(group: Group, users: User[]): Promise<PostgrestSingleResponse<null>>
-    fetchAllUsersWithGroups(): Promise<PostgrestSingleResponse<UserWithGroups[]>>
+    fetchAllUsersWithGroups(): Promise<PostgrestSingleResponse<any>>
     fetchSingleGroupWithUsers(groupId: number): Promise<PostgrestSingleResponse<any>>
     fetchNotVerifiedUsers(): Promise<PostgrestSingleResponse<User[]>>
     updateUser(user: UserEdited): Promise<PostgrestSingleResponse<null>>

@@ -56,7 +56,12 @@ export const adminUsersSlice = createSlice({
 
 export const fetchAdminUsersAsync = createAsyncThunk("fetchAdminUsersAsync", async (repository: IAdminUsersRepository) => {
     const response = await repository.fetchAllUsersWithGroups();
-    return response.data ?? [];
+    return (response.data?.map((x: any) => {
+        return {
+            ...x,
+            groups: x.groups.map((x: any) => x.group)
+        }
+    }) ?? []) as UserWithGroups[]
 });
 
 export const fetchNotVerifiedUsersAsync = createAsyncThunk("fetchNotVerifiedUsersAsync", async (repository: IAdminUsersRepository) => {

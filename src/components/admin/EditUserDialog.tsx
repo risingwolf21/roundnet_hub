@@ -143,7 +143,7 @@ const EditUserDialog = ({ user, open, handleClose, onUserEditFinished, deleteUse
                     <Divider />
                     <List subheader={<ListSubheader>Gruppen</ListSubheader>}>
                         {
-                            user?.groups && user.groups.map((x: Group) => <ListItem divider>
+                            user?.groups && user.groups.map((x: Group) => <ListItem key={x.id} divider>
                                 <ListItemAvatar>
                                     <FiberManualRecord sx={{ color: x.color }} />
                                 </ListItemAvatar>
@@ -226,7 +226,7 @@ const EditUserDialog = ({ user, open, handleClose, onUserEditFinished, deleteUse
             </DialogTitle>
             <DialogContent>
                 <Typography>
-                    {`Wenn du diesen Benutzer löscht, wird dieser sowohl in der Datenbank als auch bei Firebase gelöscht. Es werden alle offenen, bezahlten und Getränke in Zahlung gelöscht. Auch der Verlauf der Getränke wird gelöscht. 
+                    {`Wenn du diesen Benutzer löscht, wird dieser sowohl in der Datenbank als auch bei Supabase gelöscht. Es werden alle offenen, bezahlten und Getränke in Zahlung gelöscht. Auch der Verlauf der Getränke wird gelöscht. 
                     Der offene Betrag dieses Benutzers liegt bei`}
                 </Typography>
                 <Typography fontWeight={"bold"} variant="h5">
