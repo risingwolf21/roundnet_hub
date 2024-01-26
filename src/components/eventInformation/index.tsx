@@ -59,7 +59,8 @@ import { fetchEventAttendanceAsync, updateAttendanceAsync } from "src/redux/even
 import { formatDateToDatabase } from "src/utils";
 import { fetchEventCommentsAsync, upsertCommentToEventAsync } from "src/redux/events/eventCommentsSlice";
 import { editEvent, fetchSingleEventAsync, onEventErrorRead } from "src/redux/events/eventsSlice";
-import { LeafletOnClick } from "../LeafletOnClick";
+import EventInformationAttendance from "./EventInformationAttendance";
+import EventInformationComments from "./EventInformationComments";
 
 const EventInformation = ({
     dispatch,
@@ -175,17 +176,7 @@ const EventInformation = ({
                     sx={{ mr: 2, color: "#fff" }}>
                     <ArrowBack />
                 </IconButton>
-                <Typography variant="h6" component="div" sx={{ flexGrow: 1 }} />
-                <IconButton sx={{ color: "#fff" }} onClick={() => navigate("/user")}>
-                    <AccountCircle />
-                </IconButton>
-                <IconButton sx={{ color: "#fff" }} onClick={() => dispatch(fetchSingleEventAsync({
-                    repository,
-                    eventId: selectedEvent.id,
-                    userId: user.userId
-                }))}>
-                    <Refresh />
-                </IconButton>
+                <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>{selectedEvent.title}</Typography>
                 {(user?.role === "admin" || user?.role === "trainer" || can("edit", "training")) && <>
                     <IconButton sx={{ color: "#fff", pr: 0 }} onClick={handleClick}>
                         <MoreVert />
@@ -234,19 +225,13 @@ const EventInformation = ({
             <Box>
                 <Box>
                     {
-                        selectedEvent.isCancelled && <Alert sx={{ mt: 2 }} severity="error">
-                            <AlertTitle>Absage</AlertTitle>
-                            Dieses Event wurde <strong>abgesagt</strong>
-                        </Alert>
-                    }
-                    {
-                        selectedEventPlace && <CardMedia sx={{ maxHeight: "15%" }}>
-                            <Box sx={{ width: "100%", maxHeight: "15%", alignSelf: "center" }}>
+                        selectedEventPlace && <CardMedia sx={{ maxHeight: "10%" }}>
+                            <Box sx={{ width: "100%", maxHeight: "10%", alignSelf: "center" }}>
                                 <Box component="button" onClick={() => {
                                     window.open("https://maps.google.com?q=" + selectedEventPlace.lat + "," + selectedEventPlace.lon, '_blank');
-                                }} sx={{ position: "absolute", zIndex: 999, width: "100%", height: "200px", border: "none", background: "transparent" }}></Box>
+                                }} sx={{ position: "absolute", zIndex: 999, width: "100%", height: "150px", border: "none", background: "transparent" }}></Box>
                                 <MapContainer
-                                    style={{ width: "100%", height: "200px" }}
+                                    style={{ width: "100%", height: "150px" }}
                                     center={[selectedEventPlace.lat, selectedEventPlace.lon]}
                                     zoom={15}
                                     tap={false}
@@ -263,7 +248,18 @@ const EventInformation = ({
                             </Box>
                         </CardMedia>
                     }
-                    <CardHeader title={selectedEvent.title} subheader={createCardSubHeader()} />
+                    {
+                        selectedEvent.isCancelled && <Alert sx={{ ml: 2, mr: 2, mt: 2 }} severity="error">
+                            Dieses Event wurde <strong>abgesagt</strong>
+                        </Alert>
+                    }
+                    {
+                        answerDeadlineExpired(selectedEvent) && selectedEvent.answerDeadline &&
+                        <Alert sx={{ ml: 2, mr: 2, mt: 2 }} severity="info">
+                            {t("events.information.answerDeadlineExceeded", { answerDeadline: new Date(selectedEvent.answerDeadline) })}
+                        </Alert>
+                    }
+                    <CardHeader subheader={createCardSubHeader()} sx={{ pb: 0 }} />
 
                     <CardContent sx={{ '&.MuiCardContent-root': { paddingBottom: 1 } }}>
 
@@ -272,169 +268,47 @@ const EventInformation = ({
                         </Typography>
                         <Typography pb={1}>{selectedEvent?.description}</Typography>
                         <Divider />
-                        <Typography sx={{ fontSize: 16, fontWeight: "bold", mt: 2 }} color="text.secondary" gutterBottom>
-                            Teilnehmer
-                        </Typography>
-                        <List sx={{ p: 0 }}>
-                            <ListItem key={"attendEvent"} sx={{ '&.MuiListItem-root': { paddingLeft: 0 } }}
-                                onClick={() => attendanceLoading ? {} : setEventAttendanceState({
-                                    open: true,
-                                    index: 0
-                                })}>
-                                <ListItemAvatar>
-                                    {
-                                        attendanceLoading ? <CircularProgress size={"20px"} /> :
-                                            <CheckCircleOutline color="success" />
-                                    }
-                                </ListItemAvatar>
-                                <ListItemText
-                                    primary={(attendance.filter(x => x.state === "Attending").length) + " zusagen"} />
-                                <ListItemSecondaryAction>
-                                    <IconButton
-                                        onClick={() => updateAttendance("Attending", selectedEvent.userAttendance)}
-                                        disabled={selectedEvent.isCancelled || maxAttendeesExceeded(selectedEvent, attendance) || answerDeadlineExpired(selectedEvent)}>
-                                        {
-                                            selectedEvent.userAttendance === "Attending"
-                                                ?
-                                                <ThumbUpAlt fontSize="inherit" sx={{ fontSize: "28px", color: "green" }} />
-                                                : <ThumbUpOffAlt fontSize="inherit" sx={{ fontSize: "28px" }} />
-                                        }
-                                    </IconButton>
-                                </ListItemSecondaryAction>
-                            </ListItem>
-                            <Divider />
-                            <ListItem key={"declineEvent"} sx={{ '&.MuiListItem-root': { paddingLeft: 0 } }}
-                                onClick={() => attendanceLoading ? {} : setEventAttendanceState({
-                                    open: true,
-                                    index: 1
-                                })}>
-                                <ListItemAvatar sx={{ justifyContent: "left", alignItems: "center", display: "flex" }}>
-                                    {
-                                        attendanceLoading ? <CircularProgress size={"20px"} /> :
-                                            <RemoveCircleOutline color="error" />
-                                    }
-                                </ListItemAvatar>
-                                <ListItemText
-                                    primary={(attendance.filter(x => x.state === "Declined").length ?? 0) + " absagen"} />
-                                <ListItemSecondaryAction>
-                                    <IconButton
-                                        onClick={() => updateAttendance("Declined", selectedEvent.userAttendance)}
-                                        disabled={selectedEvent.isCancelled}>
-                                        {
-                                            selectedEvent.userAttendance === "Declined"
-                                                ?
-                                                <ThumbDownAlt fontSize="inherit" sx={{ fontSize: "28px", color: "red" }} />
-                                                : <ThumbDownOffAlt fontSize="inherit" sx={{ fontSize: "28px" }} />
-                                        }
-                                    </IconButton>
-                                </ListItemSecondaryAction>
-                            </ListItem>
-                        </List>
+
+                        {
+                            selectedEvent.maxAttendees <= attendance.filter(x => x.state === "Attending").length && selectedEvent.userAttendance !== "Waiting" && selectedEvent.userAttendance !== "Attending" &&
+                            <Alert sx={{ mt: 2 }} severity="info">
+                                <AlertTitle>Warteliste</AlertTitle>
+                                Die maximale Anzahl der Teilnehmer ist erreicht. Du kannst trotzdem der Warteliste
+                                beitreten.
+                                <Button sx={{ alignContent: "end" }} variant="contained"
+                                    onClick={() => updateAttendance("Waiting", selectedEvent.userAttendance)}>
+                                    Beitreten
+                                </Button>
+                            </Alert>
+                        }
+
+                        {
+                            selectedEvent.userAttendance === "Waiting" && <Alert sx={{ mt: 2 }} severity="warning" action={
+                                <Button variant="contained" size="small" sx={{ backgroundColor: "#934b00" }} onClick={() => updateAttendance("Declined", selectedEvent.userAttendance)}>
+                                    Verlassen
+                                </Button>
+                            }>
+                                {t("events.information.waitingListAccepted", {
+                                    place: attendance.filter(x => x.state === "Waiting").sort((a, b) => new Date(b.lastUpdate).getTime() - new Date(a.lastUpdate).getTime()).findIndex(x => x.user.userId === user.userId) + 1,
+                                    waitingListLength: attendance.filter(x => x.state === "Waiting").length
+                                })}
+                            </Alert>
+                        }
+                        <EventInformationAttendance
+                            user={user}
+                            attendance={attendance}
+                            attendanceLoading={attendanceLoading}
+                            selectedEvent={selectedEvent}
+                            setEventAttendanceState={setEventAttendanceState}
+                            updateAttendance={updateAttendance} />
                         <Divider />
-                        <Typography sx={{ fontSize: 16, fontWeight: "bold", mt: 2 }} color="text.secondary" gutterBottom>
-                            Kommentare
-                        </Typography>
-                        <ListItemButton onClick={() => setCommentsOpen(true)}
-                            sx={{ '&.MuiListItemButton-root': { paddingLeft: 0 } }}>
-                            <ListItemAvatar>
-                                <Comment sx={{ color: "rgba(0, 0, 0, 0.54)", fontSize: "1.5rem" }} />
-                            </ListItemAvatar>
-                            <ListItemText
-                                primary={`${comments.length} ${comments.length === 1 ? "Kommentar" : "Kommentare"}`} />
-                            <ListItemSecondaryAction>
-                                <IconButton>
-                                    <ArrowRight />
-                                </IconButton>
-                            </ListItemSecondaryAction>
-                        </ListItemButton>
+                        <EventInformationComments
+                            eventId={selectedEvent.id}
+                            comments={comments}
+                            handleCommentSubmit={handleCommentSubmit}
+                            inputRef={inputRef} />
                         <Divider />
                     </CardContent>
-
-                    {
-                        selectedEvent.maxAttendees <= attendance.filter(x => x.state === "Attending").length && selectedEvent.userAttendance !== "Waiting" && selectedEvent.userAttendance !== "Attending" &&
-                        <Alert sx={{ mt: 2 }} severity="info">
-                            <AlertTitle>Warteliste</AlertTitle>
-                            Die maximale Anzahl der Teilnehmer ist erreicht. Du kannst trotzdem der Warteliste
-                            beitreten.
-                            <Button sx={{ alignContent: "end" }} variant="contained"
-                                onClick={() => updateAttendance("Waiting", selectedEvent.userAttendance)}>
-                                Beitreten
-                            </Button>
-                        </Alert>
-                    }
-
-                    {
-                        selectedEvent.userAttendance === "Waiting" && <Alert sx={{ mt: 2 }} severity="info">
-                            <AlertTitle>{t("events.information.waitingListPlace", {
-                                place: attendance.filter(x => x.state === "Waiting").sort((a, b) => new Date(b.lastUpdate).getTime() - new Date(a.lastUpdate).getTime()).findIndex(x => x.user.userId === user.userId) + 1,
-                                waitingListLength: attendance.filter(x => x.state === "Waiting").length
-                            })}</AlertTitle>
-                            {t("events.information.waitingListAccepted")}
-                            <Button sx={{ alignContent: "end" }} variant="contained"
-                                onClick={() => updateAttendance("Declined", selectedEvent.userAttendance)}>
-                                Verlassen
-                            </Button>
-                        </Alert>
-                    }
-
-                    {
-                        answerDeadlineExpired(selectedEvent) && selectedEvent.answerDeadline &&
-                        <Alert sx={{ mt: 2 }} severity="info">
-                            <AlertTitle>{t("events.information.answerDeadlineExceededTitle")}</AlertTitle>
-                            {t("events.information.answerDeadlineExceeded", { answerDeadline: new Date(selectedEvent.answerDeadline) })}
-                        </Alert>
-                    }
-
-                    <SwipeableDialog open={commentsOpen} onClose={() => setCommentsOpen(false)}
-                        setOpen={setCommentsOpen} title={"Kommentare"} minHeight={40}>
-                        <Box sx={{ display: "flex", px: 2, flexDirection: "column" }}>
-                            <List sx={{ mb: 8 }}>
-                                {
-                                    comments && comments.map((x, index) => <ListItem divider dense key={index}
-                                        sx={{ '&.MuiListItem-root': { paddingLeft: 0 } }}>
-                                        <ListItemAvatar>
-                                            <Avatar>
-                                                {
-                                                    x.pending
-                                                        ? <CircularProgress size={"20px"} />
-                                                        : <Typography
-                                                            style={{ fontWeight: "bold" }}>{x.displayName?.charAt(0)}</Typography>
-                                                }
-                                            </Avatar>
-                                        </ListItemAvatar>
-                                        <ListItemText primaryTypographyProps={{ fontWeight: "bold", fontSize: "11pt" }}
-                                            primary={x.displayName} secondary={x.comment} />
-                                        <ListItemSecondaryAction sx={{ height: "100%" }}>
-                                            <Typography style={{
-                                                fontSize: "10pt",
-                                                color: "rgba(0,0,0,0.6)",
-                                                marginTop: "8px",
-                                                alignContent: "baseline"
-                                            }}>{moment(x.created_at).format("HH:mm")}</Typography>
-                                        </ListItemSecondaryAction>
-                                    </ListItem>)
-                                }
-                            </List>
-                            <Box sx={{ position: "absolute", background: "#fff", bottom: 0, left: 0, right: 0, p: 2 }}
-                                component={"form"} onSubmit={handleCommentSubmit}>
-                                <TextField
-                                    ref={inputRef}
-                                    id="comment"
-                                    name="comment"
-                                    fullWidth
-                                    placeholder="Write a comment..."
-                                    sx={{ '& fieldset': { borderRadius: "30px" }, '& input': { pt: 1.5, pb: 1.5 } }}
-                                    InputProps={{
-                                        endAdornment: <InputAdornment position="end">
-                                            <IconButton edge="end" type="submit">
-                                                <Send />
-                                            </IconButton>
-                                        </InputAdornment>,
-                                    }} />
-                            </Box>
-                        </Box>
-                    </SwipeableDialog>
-
                 </Box>
             </Box>
 

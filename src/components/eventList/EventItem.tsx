@@ -1,4 +1,4 @@
-import { ThumbDownAlt, ThumbDownOffAlt, ThumbUpAlt, ThumbUpOffAlt } from "@mui/icons-material"
+import { HourglassBottom, ThumbDownAlt, ThumbDownOffAlt, ThumbUpAlt, ThumbUpOffAlt } from "@mui/icons-material"
 import { Box, CircularProgress, IconButton, ListItem, ListItemAvatar, ListItemSecondaryAction, ListItemText, Typography } from "@mui/material"
 import moment from "moment"
 import React from "react"
@@ -35,22 +35,26 @@ export const EventItem = ({ event, onClick, attendEvent, declineEvent, attendanc
             {
                 attendanceUpdating
                     ? <CircularProgress />
-                    : <Box sx={{ display: "flex", flexDirection: "row" }}>
-                        <IconButton onClick={declineEvent} disabled={event.isCancelled}>
-                            {
-                                event.userAttendance === "Declined"
-                                    ? <ThumbDownAlt fontSize="inherit" sx={{ fontSize: "28px", color: "red" }} />
-                                    : <ThumbDownOffAlt fontSize="inherit" sx={{ fontSize: "28px" }} />
-                            }
+                    : event.userAttendance === "Waiting"
+                        ? <IconButton onClick={declineEvent} disabled={event.isCancelled}>
+                            <HourglassBottom fontSize="inherit" sx={{ fontSize: "28px", color: "#125db2" }} />
                         </IconButton>
-                        <IconButton onClick={attendEvent} disabled={event.isCancelled || answerDeadlineExpired(event)}>
-                            {
-                                event.userAttendance === "Attending"
-                                    ? <ThumbUpAlt fontSize="inherit" sx={{ fontSize: "28px", color: "green" }} />
-                                    : <ThumbUpOffAlt fontSize="inherit" sx={{ fontSize: "28px" }} />
-                            }
-                        </IconButton>
-                    </Box>
+                        : <Box sx={{ display: "flex", flexDirection: "row" }}>
+                            <IconButton onClick={declineEvent} disabled={event.isCancelled}>
+                                {
+                                    event.userAttendance === "Declined"
+                                        ? <ThumbDownAlt fontSize="inherit" sx={{ fontSize: "28px", color: "red" }} />
+                                        : <ThumbDownOffAlt fontSize="inherit" sx={{ fontSize: "28px" }} />
+                                }
+                            </IconButton>
+                            <IconButton onClick={attendEvent} disabled={event.isCancelled || answerDeadlineExpired(event)}>
+                                {
+                                    event.userAttendance === "Attending"
+                                        ? <ThumbUpAlt fontSize="inherit" sx={{ fontSize: "28px", color: "green" }} />
+                                        : <ThumbUpOffAlt fontSize="inherit" sx={{ fontSize: "28px" }} />
+                                }
+                            </IconButton>
+                        </Box>
             }
         </ListItemSecondaryAction>
     </ListItem>

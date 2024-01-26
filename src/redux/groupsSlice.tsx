@@ -26,7 +26,7 @@ const groupsSlice = createSlice({
                 state.loading = false;
                 state.error = null;
 
-                groupsAdapter.upsertMany(state, action.payload);
+                groupsAdapter.setAll(state, action.payload);
             })
             .addCase(fetchGroupsAsync.rejected, (state, action) => {
                 state.loading = false;
@@ -36,15 +36,11 @@ const groupsSlice = createSlice({
             .addCase(fetchSingleGroupAsync.fulfilled, (state, action) => {
                 state.loading = false;
                 state.error = null;
-                console.log("group changed", action.payload.data)
 
                 if (!action.payload.data)
                     return;
 
-                groupsAdapter.upsertOne(state, action.payload.data);
-            })
-            .addCase(fetchSingleGroupAsync.rejected, (state, action) => {
-                console.log(action);
+                groupsAdapter.setOne(state, action.payload.data);
             })
     }
 });
