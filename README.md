@@ -21,11 +21,18 @@ To create one, follow the link bellow:
 
 # Development
 
-## Supabase Types
+## Supabase
 
+<details open>
+  <summary>Generate Typescript Types</summary>
+
+<br>
 To get the database types from the supabase database run the following command:
 
-### Staging
+> [!WARNING]<br>
+> **Saving format**: This file will be generated as a `UTF-16 LE`. Make sure to save it as a `UTF-8` file!
+
+  ### Staging
 ```
 npx supabase gen types typescript --project-id xibmjvkjkdxdbmreicps > src/types/supabase.ts
 ```
@@ -34,6 +41,7 @@ npx supabase gen types typescript --project-id xibmjvkjkdxdbmreicps > src/types/
 ```
 npx supabase gen types typescript --project-id vsuhzabcrnmrljzecxee > src/types/supabase.ts
 ```
+</details>
 
 ## Notifications
 
