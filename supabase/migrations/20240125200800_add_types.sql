@@ -19,7 +19,9 @@ create type public."Permissions" as enum(
     'edit;keyFinder',
     'delete;keyFinder',
     'view;notifications',
-    'edit;notifications'
+    'edit;notifications',
+    'edit;history',
+    'edit;edgeFunctions'
 );
 
 create type public.UserRole as enum('user', 'admin', 'procure', 'finance', 'trainer');

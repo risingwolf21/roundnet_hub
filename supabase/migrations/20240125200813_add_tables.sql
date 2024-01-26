@@ -1,15 +1,15 @@
-
 create table public.user (
     created_at timestamp with time zone null default now(),
-    "displayName" text null,
-    email text null,
+    "displayName" text not null default '' :: text,
+    email text not null default '' :: text,
     "userId" text not null default '' :: text,
-    role public.UserRole not null default 'user' :: public.UserRole,
     verified boolean not null default false,
+    role public.UserRole not null default 'user' :: UserRole,
+    disabled boolean not null default false,
     permissions "Permissions" [] null,
     notifications "NotificationTags" [] null,
-    constraint users_new_pkey primary key ("userId"),
-    constraint users_new_userid_key unique ("userId")
+    constraint users_pkey primary key ("userId"),
+    constraint users_userid_key unique ("userId")
 ) tablespace pg_default;
 
 create table public.payments (
