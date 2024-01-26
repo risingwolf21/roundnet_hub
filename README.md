@@ -27,10 +27,9 @@ To create one, follow the link bellow:
   <summary>Generate Typescript Types</summary>
 
 <br>
-To get the database types from the supabase database run the following command:
 
-> [!WARNING]  
-> **Saving format**: This file will be generated as a `UTF-16 LE`. Make sure to save it as a `UTF-8` file!
+ | :warning: **Saving format**: This file will be generated as a `UTF-16 LE`. Make sure to save it as a `UTF-8` file! |
+ | --- |
 
   ### Staging
 ```
