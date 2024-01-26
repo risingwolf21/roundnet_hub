@@ -18,6 +18,9 @@ jobs:
       
       - name: Set current date as env variable
         run: echo "NOW=$(date +'%Y%m%d%H%M%S')" >> $GITHUB_ENV
+
+      - name: Supabase init
+        run: supabase init
         
       - name: Download supabase production data
         run: | 
