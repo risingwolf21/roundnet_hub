@@ -25,6 +25,21 @@
 
 ## Hosting
 
+> [!NOTE]  
+> Highlights information that users should take into account, even when skimming.
+
+> [!TIP]
+> Optional information to help a user be more successful.
+
+> [!IMPORTANT]  
+> Crucial information necessary for users to succeed.
+
+> [!WARNING]  
+> Critical content demanding immediate user attention due to potential risks.
+
+> [!CAUTION]
+> Negative potential consequences of an action.
+
 [https://roundnet-karlsruhe.web.app/](https://roundnet-karlsruhe.web.app/)
 
 [https://staging-roundnet-karlsruhe.web.app/](https://staging-roundnet-karlsruhe.web.app/)
@@ -35,48 +50,46 @@ To create a release you need to push a commit to the `production` branch. <br/>
 To prevent any unwanted releases, the pipeline only gets triggered when you merge via a Pull-Request.
 To create one, follow the link bellow:
 
-[Create new release](https://github.com/risingwolf21/roundnet_karlsruhe_app/compare/production...master)
+[<kbd> <br> KeyBinding Button <br> </kbd>][https://github.com/risingwolf21/roundnet_karlsruhe_app/compare/production...master]
+
+[<img src="https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png" width="30"/>](https://github.com/)
+
 
 # Development
 
 ## Supabase
 
-<details open>
-  <summary>Generate Typescript Types</summary>
+### Generate Typescript Types
 
-<br>
+> [!IMPORTANT]  
+> **Saving format**: This file will be generated as a `UTF-16 LE`. Make sure to save it as a `UTF-8` file!
 
- | :warning: **Saving format**: This file will be generated as a `UTF-16 LE`. Make sure to save it as a `UTF-8` file! |
- | --- |
-
-  ### Staging
+#### Staging
 ```
 npx supabase gen types typescript --project-id xibmjvkjkdxdbmreicps > src/types/supabase.ts
 ```
 
-### Production
+#### Production
 ```
 npx supabase gen types typescript --project-id vsuhzabcrnmrljzecxee > src/types/supabase.ts
 ```
-</details>
 
-<details>
-  <summary>Database dump</summary>
+### Database dump
 
   ### Downloading database dump
 ```
-npx supabase db dump --db-url postgres://postgres."$SUPABASE_PRODUCTION_ID":"$SUPABASE_PRODUCTION_DB_PASSWORD"@aws-0-eu-central-1.pooler.supabase.com:6543/postgres -f supabase/backup/"$NOW"_production_data.sql --use-copy --data-only
+npx supabase db dump --db-url postgres://postgres."$SUPABASE_PRODUCTION_ID":"$SUPABASE_PRODUCTION_DB_PASSWORD"@aws-0-eu-central-1.pooler.supabase.com:6543/postgres -f supabase/backup/data.sql --use-copy --data-only
 ```
 ```
-npx supabase db dump --db-url postgres://postgres."$SUPABASE_PRODUCTION_ID":"$SUPABASE_PRODUCTION_DB_PASSWORD"@aws-0-eu-central-1.pooler.supabase.com:6543/postgres -f supabase/backup/"$NOW"_production_schema.sql
+npx supabase db dump --db-url postgres://postgres."$SUPABASE_PRODUCTION_ID":"$SUPABASE_PRODUCTION_DB_PASSWORD"@aws-0-eu-central-1.pooler.supabase.com:6543/postgres -f supabase/backup/schema.sql
 ```
 ```
-npx supabase db dump --db-url postgres://postgres."$SUPABASE_PRODUCTION_ID":"$SUPABASE_PRODUCTION_DB_PASSWORD"@aws-0-eu-central-1.pooler.supabase.com:6543/postgres -f supabase/backup/"$NOW"_production_roles.sql --role-only
+npx supabase db dump --db-url postgres://postgres."$SUPABASE_PRODUCTION_ID":"$SUPABASE_PRODUCTION_DB_PASSWORD"@aws-0-eu-central-1.pooler.supabase.com:6543/postgres -f supabase/backup/roles.sql --role-only
 ```
 
 ### Applying database dump
 ```
-psql -h aws-0-eu-central-1.pooler.supabase.com -p 6543 -d postgres -U postgres.PROJECT_REF --single-transaction --variable ON_ERROR_STOP=1 --file backup/"$NOW"_production_roles.sql --command 'SET session_replication_role = replica' --file backup/"$NOW"_production_data.sql
+psql -h aws-0-eu-central-1.pooler.supabase.com -p 6543 -d postgres -U postgres.PROJECT_REF --single-transaction --variable ON_ERROR_STOP=1 --file backup/roles.sql --command 'SET session_replication_role = replica' --file backup/data.sql
 ```
 </details>
 
