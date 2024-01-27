@@ -22,6 +22,7 @@ const emptyEvent = {
     description: "",
     startingDateTime: formatDateToDatabase(set(new Date(), { seconds: 0, milliseconds: 0 })),
     meetingDateTime: null,
+    endDateTime: null,
     recurrence: "None",
     maxAttendees: -1,
 } as FullEvent;
@@ -92,20 +93,21 @@ const CreateEvent = ({ t, eventToEdit, repository }: CreateEventProps) => {
                 if (isAfter(event.meetingDateTime, event.startingDateTime))
                     throw new Error(t("events.creation.meetingTimeBeforeStartTime"))
 
-            if (!state) {
+            if (state && state.option === "NewEvent") {
+                // create new event as there is no option
                 const { error } = await repository.insertEvent(event)
 
                 if (error) throw error;
             }
-            else if (state.option === "OnlyThis") {
+            else if (state && state.option === "OnlyThis") {
                 const { error } = await repository.updateEvent(event.id ?? -1, event)
 
                 if (error) throw error;
 
-            } else if (state.option === "EveryRecurrence") {
+            } else if (state && state.option === "EveryRecurrence") {
 
             } else {
-                throw Error("There was no option provided wether to update only this or every recurring event. Please try again!")
+                throw Error("There was no option provided wether this is a new event, to update only this or every recurring event. Please try again!")
             }
 
             const { error } = await repository.insertEvent(event)
