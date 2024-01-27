@@ -24,7 +24,7 @@
 [![Production](https://github.com/risingwolf21/roundnet_karlsruhe_app/actions/workflows/firebase_deployment.yml/badge.svg?branch=production)](https://github.com/risingwolf21/roundnet_karlsruhe_app/actions/workflows/firebase_deployment.yml) [![Database Backup](https://github.com/risingwolf21/roundnet_karlsruhe_app/actions/workflows/supabase_production_backup.yml/badge.svg?branch=master)](https://github.com/risingwolf21/roundnet_karlsruhe_app/actions/workflows/supabase_production_backup.yml) [![Building](https://github.com/risingwolf21/roundnet_karlsruhe_app/actions/workflows/react_build_deploy_staging.yml/badge.svg)](https://github.com/risingwolf21/roundnet_karlsruhe_app/actions/workflows/react_build_deploy_staging.yml)
 
 ## Hosting
-
+<!---
 > [!NOTE]  
 > Highlights information that users should take into account, even when skimming.
 
@@ -39,7 +39,7 @@
 
 > [!CAUTION]
 > Negative potential consequences of an action.
-
+--->
 [https://roundnet-karlsruhe.web.app/](https://roundnet-karlsruhe.web.app/)
 
 [https://staging-roundnet-karlsruhe.web.app/](https://staging-roundnet-karlsruhe.web.app/)
@@ -50,9 +50,7 @@ To create a release you need to push a commit to the `production` branch. <br/>
 To prevent any unwanted releases, the pipeline only gets triggered when you merge via a Pull-Request.
 To create one, follow the link bellow:
 
-[<kbd> <br> KeyBinding Button <br> </kbd>][https://github.com/risingwolf21/roundnet_karlsruhe_app/compare/production...master]
-
-[<img src="https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png" width="30"/>](https://github.com/)
+[<img src="images/pull-request-button.png" width="200"/>](https://github.com/risingwolf21/roundnet_karlsruhe_app/compare/production...master)
 
 
 # Development
