@@ -30,7 +30,7 @@ const CreateEvent = ({ t, eventToEdit, repository }: CreateEventProps) => {
 
     const navigate = useNavigate();
     const {
-        state: { option },
+        state,
     } = useLocation();
 
     const [editedEvent, setEditedEvent] = useState<FullEvent>(eventToEdit ?? emptyEvent);
@@ -56,6 +56,9 @@ const CreateEvent = ({ t, eventToEdit, repository }: CreateEventProps) => {
 
             if (!editedEvent.meetingDateTime)
                 setEditedEvent({ ...editedEvent, meetingDateTime: editedEvent.startingDateTime });
+
+            if (!editedEvent.endDateTime)
+                setEditedEvent({ ...editedEvent, endDateTime: editedEvent.meetingDateTime });
 
             let eventTitle = data.get("eventTitle")?.toString();
             let eventDescription = data.get("eventDescription")?.toString();
@@ -89,12 +92,17 @@ const CreateEvent = ({ t, eventToEdit, repository }: CreateEventProps) => {
                 if (isAfter(event.meetingDateTime, event.startingDateTime))
                     throw new Error(t("events.creation.meetingTimeBeforeStartTime"))
 
-            if (option === "OnlyThis") {
+            if (!state) {
+                const { error } = await repository.insertEvent(event)
+
+                if (error) throw error;
+            }
+            else if (state.option === "OnlyThis") {
                 const { error } = await repository.updateEvent(event.id ?? -1, event)
 
                 if (error) throw error;
-                
-            } else if (option === "EveryRecurrence") {
+
+            } else if (state.option === "EveryRecurrence") {
 
             } else {
                 throw Error("There was no option provided wether to update only this or every recurring event. Please try again!")
@@ -104,7 +112,7 @@ const CreateEvent = ({ t, eventToEdit, repository }: CreateEventProps) => {
 
             if (error) throw error;
 
-            // update old event to end_at now
+            // update old event to recurrenceEnd now
             if (eventToEdit) {
                 await repository.updateEndOfOldEvent(eventToEdit.id, formatDateToDatabase(new Date()))
             }
@@ -211,6 +219,18 @@ const CreateEvent = ({ t, eventToEdit, repository }: CreateEventProps) => {
                         })} value={editedEvent.meetingDateTime ? dayjsFromDb(editedEvent.meetingDateTime) : null} />
                 </ListItem>
 
+                <ListItem sx={{ pt: 0, pb: 0, mb: 2 }} key={"endDateTime"}>
+                    <ListItemAvatar>
+                        <Checkbox sx={{ pl: 0 }} checked={editedEvent.endDateTime !== null} onChange={() => setEditedEvent({ ...editedEvent, endDateTime: editedEvent.endDateTime !== null ? null : editedEvent.startingDateTime })} />
+                    </ListItemAvatar>
+
+                    <DateTimePicker slotProps={{ textField: { error: false } }} disabled={editedEvent.endDateTime === null} sx={{ width: "100%" }} views={['year', 'month', 'day', 'hours', 'minutes']}
+                        ampm={false} minDateTime={dayjsFromDb(editedEvent.startingDateTime)} label="Ende" onChange={(val) => setEditedEvent({
+                            ...editedEvent,
+                            endDateTime: formatDateToDatabase(set(new Date(), { year: val?.year(), month: val?.month(), date: val?.date(), hours: val?.hour(), minutes: val?.minute(), seconds: 0, milliseconds: 0 }))
+                        })} value={editedEvent.endDateTime ? dayjsFromDb(editedEvent.endDateTime) : null} />
+                </ListItem>
+
                 <ListItem onClick={() => setSearchPlacesDialogOpen(true)} key={"searchPlace"}>
                     <ListItemAvatar>
                         <Map />
@@ -251,7 +271,7 @@ const CreateEvent = ({ t, eventToEdit, repository }: CreateEventProps) => {
 
                 <ListItem disabled={editedEvent.recurrence === "None"} onClick={() => setStopRepeatDialogOpen(true)} key={"stopRecurrence"}>
                     <ListItemAvatar />
-                    <ListItemText primary={"Wiederholung stoppen"} secondary={!editedEvent.end_at ? "Niemals" : format(editedEvent.end_at, "dd MMM yyyy")} />
+                    <ListItemText primary={"Wiederholung stoppen"} secondary={!editedEvent.recurrenceEnd ? "Niemals" : format(editedEvent.recurrenceEnd, "dd MMM yyyy")} />
                 </ListItem>
 
                 <ListItem sx={{ pt: 0, pb: 0, mb: 2 }} key={"answerDeadline"}>
@@ -314,14 +334,14 @@ const CreateEvent = ({ t, eventToEdit, repository }: CreateEventProps) => {
             <DialogTitle>Wiederholung</DialogTitle>
             <DialogContent>
 
-                <FormControlLabel control={<Checkbox checked={editedEvent.end_at === null} onChange={() => setEditedEvent({ ...editedEvent, end_at: editedEvent.end_at ? null : formatDateToDatabase(set(Date.now(), { seconds: 0, milliseconds: 0 })) })} />} label="Niemals" />
+                <FormControlLabel control={<Checkbox checked={editedEvent.recurrenceEnd === null} onChange={() => setEditedEvent({ ...editedEvent, recurrenceEnd: editedEvent.recurrenceEnd ? null : formatDateToDatabase(set(Date.now(), { seconds: 0, milliseconds: 0 })) })} />} label="Niemals" />
 
                 <DatePicker sx={{ mt: 2, mb: 2, width: "100%" }} label="Start"
-                    disabled={editedEvent.end_at === null}
+                    disabled={editedEvent.recurrenceEnd === null}
                     onChange={(val) => setEditedEvent({
                         ...editedEvent,
-                        end_at: formatDateToDatabase(set(editedEvent.end_at ? new Date(editedEvent.end_at) : Date.now(), { date: val?.date(), month: val?.month(), year: val?.year(), hours: 0, minutes: 0, seconds: 0, milliseconds: 0 }))
-                    })} value={editedEvent.end_at ? dayjsFromDb(editedEvent.end_at) : null} />
+                        recurrenceEnd: formatDateToDatabase(set(editedEvent.recurrenceEnd ? new Date(editedEvent.recurrenceEnd) : Date.now(), { date: val?.date(), month: val?.month(), year: val?.year(), hours: 0, minutes: 0, seconds: 0, milliseconds: 0 }))
+                    })} value={editedEvent.recurrenceEnd ? dayjsFromDb(editedEvent.recurrenceEnd) : null} />
 
                 <Typography>Es werden Termine erstellt bis einschließlich diesem Tag. Alles danach entfällt</Typography>
 

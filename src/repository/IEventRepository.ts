@@ -14,7 +14,7 @@ export type RepositorySource = "supabase" | "none";
 
 interface IEventRepository {
     insertEvent(event: EventInsert): Promise<PostgrestSingleResponse<null>>
-    updateEndOfOldEvent(eventId: number, end_at: string): Promise<PostgrestSingleResponse<null>>
+    updateEndOfOldEvent(eventId: number, recurrenceEnd: string): Promise<PostgrestSingleResponse<null>>
     updateEvent(eventId: number, event: EventUpdate): Promise<PostgrestSingleResponse<null>>
     updateEveryRecurrenceOfEvent(key: string, event: EventUpdate): Promise<PostgrestSingleResponse<null>>
     fetchEvents(user: User, userGroups: number[], page: number, count: number): Promise<PostgrestSingleResponse<FullEvent[]>>
@@ -44,11 +44,11 @@ class SupabaseEventRepository extends SupabaseRepository implements IEventReposi
             .returns<FullComment[]>();
     }
 
-    async updateEndOfOldEvent(eventId: number, end_at: string): Promise<PostgrestSingleResponse<null>> {
+    async updateEndOfOldEvent(eventId: number, recurrenceEnd: string): Promise<PostgrestSingleResponse<null>> {
         return this.client
             .from("events")
             .update({
-                "end_at": end_at
+                recurrenceEnd: recurrenceEnd
             }).eq("id", eventId)
     }
 
@@ -101,7 +101,7 @@ class SupabaseEventRepository extends SupabaseRepository implements IEventReposi
         await this.client
             .from("events")
             .update({
-                end_at: moment().format("yyyy-MM-DD HH:mm:ssZ")
+                recurrenceEnd: moment().format("yyyy-MM-DD HH:mm:ssZ")
             })
             .eq("id", eventId);
     }
@@ -118,7 +118,7 @@ class SupabaseEventRepository extends SupabaseRepository implements IEventReposi
             .select("*, fullGroup: event_group(id, created_at, description, name, color), attendance: event_attendance_user_mapping ( state , user(userId, displayName)  ), comments: event_comments ( comment, created_at, displayName, event, user ( displayName, userId))")
             // get events that are on the same day or later
             .gt("startingDateTime", formatDateToDatabase(new Date()))
-            .or(`end_at.is.null,end_at.gt.'${formatDateToDatabase(new Date())}'`)
+            .or(`recurrenceEnd.is.null,recurrenceEnd.gt.'${formatDateToDatabase(new Date())}'`)
             .in("group", userGroups)
             .range(page * count, page * count + count - 1)
             .order("startingDateTime", { ascending: true })

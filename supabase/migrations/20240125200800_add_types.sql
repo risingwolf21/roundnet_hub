@@ -24,13 +24,13 @@ create type public."Permissions" as enum(
     'edit;edgeFunctions'
 );
 
-create type public.UserRole as enum('user', 'admin', 'procure', 'finance', 'trainer');
+create type public."UserRole" as enum('user', 'admin', 'procure', 'finance', 'trainer');
 
-create type public.PaymentState as enum('Open', 'Fulfilled');
+create type public."PaymentState" as enum('Open', 'Fulfilled');
 
-create type public.EventRecurrence as enum('Weekly', 'Fortnightly', 'Monthly', 'None');
+create type public."EventRecurrence" as enum('Weekly', 'Fortnightly', 'Monthly', 'None');
 
-create type public.ProductType as enum('Drink', 'Special', 'None');
+create type public."ProductType" as enum('Drink', 'Special', 'None');
 
 create type public."NotificationTags" as enum(
     'eventComments',

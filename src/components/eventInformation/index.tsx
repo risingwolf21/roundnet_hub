@@ -140,13 +140,13 @@ const EventInformation = ({
     };
 
     const createCardSubHeader = () => {
-        const { meetingDateTime, startingDateTime, end_at } = selectedEvent;
+        const { meetingDateTime, startingDateTime, recurrenceEnd } = selectedEvent;
 
         var startTimeTranslation = t("events.information.startTime", { startTime: new Date(startingDateTime) });
-        if (end_at) {
+        if (recurrenceEnd) {
             startTimeTranslation = t("events.information.startTimeAndEndTime", {
                 startTime: new Date(startingDateTime),
-                endTime: new Date(end_at)
+                endTime: new Date(recurrenceEnd)
             });
         }
 

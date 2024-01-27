@@ -24,6 +24,10 @@ CREATE EXTENSION IF NOT EXISTS "supabase_vault" WITH SCHEMA "vault";
 
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp" WITH SCHEMA "extensions";
 
+CREATE extension IF NOT EXISTS "http" WITH SCHEMA "extensions";
+
+CREATE extension IF NOT EXISTS "pg_cron" WITH SCHEMA "extensions";
+
 GRANT USAGE ON SCHEMA "public" TO "postgres";
 GRANT USAGE ON SCHEMA "public" TO "anon";
 GRANT USAGE ON SCHEMA "public" TO "authenticated";

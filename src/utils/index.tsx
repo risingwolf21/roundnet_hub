@@ -35,7 +35,8 @@ export const formatDateFromDatabase = (date: string) => {
     return parse(date, "yyyy-MM-dd'T'HH:mm:ssxxx", new Date());
 }
 
-export const dayjsFromDb = (date: string) => {
+export const dayjsFromDb = (date: string | null) => {
+    if (!date) return null;
     return dayjs(formatDateFromDatabase(date));
 }
 

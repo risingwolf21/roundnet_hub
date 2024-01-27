@@ -172,3 +172,5 @@ AS $function$
   END;
   $function$
 ;
+
+CREATE TRIGGER "WaitingListAttendanceTrigger" AFTER DELETE OR UPDATE ON public.event_attendance_user_mapping FOR EACH ROW EXECUTE FUNCTION updatewaitinglistattendance();

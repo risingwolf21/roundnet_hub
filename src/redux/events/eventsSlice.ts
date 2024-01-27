@@ -47,7 +47,7 @@ const eventsSlice = createSlice({
                     answerDeadline: update.answerDeadline,
                     created_at: update.created_at,
                     description: update.description,
-                    end_at: update.end_at,
+                    recurrenceEnd: update.recurrenceEnd,
                     group: update.group,
                     isCancelled: update.isCancelled,
                     key: update.key,
