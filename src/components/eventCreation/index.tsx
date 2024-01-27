@@ -1,5 +1,5 @@
 import { AppBar, Box, Button, Dialog, IconButton, Toolbar, Typography, TextField, ListItem, ListItemAvatar, ListItemText, DialogTitle, DialogContent, FormControl, FormControlLabel, RadioGroup, Radio, Divider, Checkbox, DialogActions, List, InputAdornment, Snackbar, Alert, ListItemButton } from "@mui/material"
-import { AccessTime, Article, Close, FiberManualRecord, Map } from "@mui/icons-material";
+import { AccessTime, Article, Clear, Close, FiberManualRecord, Map } from "@mui/icons-material";
 import EventIcon from "@mui/icons-material/Event";
 import { useNavigate } from 'react-router-dom';
 import { DatePicker, DateTimePicker } from "@mui/x-date-pickers";
@@ -10,21 +10,20 @@ import React, { useEffect } from "react";
 import SearchPlacesDialog from "./SearchPlacesDialog";
 import { MapContainer, TileLayer, Marker, useMap } from "react-leaflet";
 import { EventInsert, EventRecurrence, FullEvent } from "../../types/supabaseTypes";
-import { format, isBefore, set } from "date-fns";
+import { format, isAfter, isBefore, set } from "date-fns";
 import _, { toNumber } from "lodash";
 import { CreateEventProps, PlaceType } from "./types";
 import { SelectGroupDialog } from "./SelectGroupDialog";
 import { dayjsFromDb, formatDateToDatabase } from "src/utils";
+import { NumberInput } from "../mui/NumberInput";
 
 const emptyEvent = {
     title: "",
     description: "",
     startingDateTime: formatDateToDatabase(set(new Date(), { seconds: 0, milliseconds: 0 })),
+    meetingDateTime: null,
     recurrence: "None",
     maxAttendees: -1,
-    answerDeadline: null,
-    group: null,
-    place: "",
 } as FullEvent;
 
 const CreateEvent = ({ t, eventToEdit, repository }: CreateEventProps) => {
@@ -70,8 +69,11 @@ const CreateEvent = ({ t, eventToEdit, repository }: CreateEventProps) => {
             if (!event.group)
                 throw new Error(t("events.creation.noGroupSelected"))
 
-            if (event.answerDeadline && isBefore(new Date(event.answerDeadline), Date.now()))
+            if (event.answerDeadline && isBefore(event.answerDeadline, Date.now()))
                 throw new Error(t("events.creation.answerDeadlineBeforeNow"))
+
+            if (event.answerDeadline && isAfter(event.answerDeadline, event.startingDateTime))
+                throw new Error(t("events.creation.answerDeadlineAfterStart"))
 
             if (!event.title || event.title.length < 6)
                 throw new Error(t("events.creation.titleTooShort"))
@@ -80,7 +82,7 @@ const CreateEvent = ({ t, eventToEdit, repository }: CreateEventProps) => {
                 throw new Error(t("events.creation.descriptionEmpty"))
 
             if (event.meetingDateTime)
-                if (event.meetingDateTime > event.startingDateTime)
+                if (isAfter(event.meetingDateTime, event.startingDateTime))
                     throw new Error(t("events.creation.meetingTimeBeforeStartTime"))
 
             const { error } = await repository.insertEvent(event)
@@ -183,12 +185,15 @@ const CreateEvent = ({ t, eventToEdit, repository }: CreateEventProps) => {
                 </ListItem>
 
                 <ListItem sx={{ pt: 0, pb: 0, mb: 2 }} key={"meetingTime"}>
-                    <ListItemAvatar />
+                    <ListItemAvatar>
+                        <Checkbox sx={{ pl: 0 }} checked={editedEvent.meetingDateTime !== null} onChange={() => setEditedEvent({ ...editedEvent, meetingDateTime: editedEvent.meetingDateTime !== null ? null : formatDateToDatabase(new Date()) })} />
+                    </ListItemAvatar>
 
-                    <TimePicker sx={{ width: "100%" }} views={['hours', 'minutes']} ampm={false} maxTime={dayjsFromDb(editedEvent.startingDateTime)} label="Treffpunkt" onChange={(val) => setEditedEvent({
-                        ...editedEvent,
-                        meetingDateTime: formatDateToDatabase(set(new Date(editedEvent.startingDateTime), { hours: val?.hour(), minutes: val?.minute(), seconds: 0, milliseconds: 0 }))
-                    })} value={editedEvent.meetingDateTime ? dayjsFromDb(editedEvent.meetingDateTime) : null} />
+                    <TimePicker slotProps={{ textField: { error: false } }} disabled={editedEvent.meetingDateTime === null} sx={{ width: "100%" }} views={['hours', 'minutes']}
+                        ampm={false} maxTime={dayjsFromDb(editedEvent.startingDateTime)} label="Treffpunkt" onChange={(val) => setEditedEvent({
+                            ...editedEvent,
+                            meetingDateTime: formatDateToDatabase(set(new Date(editedEvent.startingDateTime), { hours: val?.hour(), minutes: val?.minute(), seconds: 0, milliseconds: 0 }))
+                        })} value={editedEvent.meetingDateTime ? dayjsFromDb(editedEvent.meetingDateTime) : null} />
                 </ListItem>
 
                 <ListItem onClick={() => setSearchPlacesDialogOpen(true)} key={"searchPlace"}>
@@ -239,7 +244,7 @@ const CreateEvent = ({ t, eventToEdit, repository }: CreateEventProps) => {
                         <Checkbox sx={{ pl: 0 }} checked={editedEvent.answerDeadline !== null} onChange={() => setEditedEvent({ ...editedEvent, answerDeadline: editedEvent.answerDeadline ? null : formatDateToDatabase(set(Date.now(), { seconds: 0, milliseconds: 0 })) })} />
                     </ListItemAvatar>
 
-                    <DateTimePicker disabled={editedEvent.answerDeadline === null} sx={{ width: "100%" }} label="Answer deadline" disablePast ampm={false} format="DD MMMM YYYY HH:mm"
+                    <DateTimePicker slotProps={{ textField: { error: false } }} disabled={editedEvent.answerDeadline === null} sx={{ width: "100%" }} label="Answer deadline" disablePast ampm={false} format="DD MMMM YYYY HH:mm"
                         onChange={(val) => setEditedEvent({
                             ...editedEvent,
                             answerDeadline: formatDateToDatabase(set(new Date(editedEvent.answerDeadline ?? ""), { date: val?.date(), month: val?.month(), year: val?.year(), hours: val?.hour(), minutes: val?.minute(), seconds: 0, milliseconds: 0 }))
@@ -251,23 +256,15 @@ const CreateEvent = ({ t, eventToEdit, repository }: CreateEventProps) => {
                         <Checkbox sx={{ pl: 0 }} checked={editedEvent.maxAttendees !== -1} onChange={() => setEditedEvent({ ...editedEvent, maxAttendees: editedEvent.maxAttendees === -1 ? 0 : -1 })} />
                     </ListItemAvatar>
 
-                    <TextField
+                    <NumberInput
                         fullWidth
                         disabled={editedEvent.maxAttendees === -1}
-                        value={editedEvent.maxAttendees === -1 ? "" : editedEvent.maxAttendees}
-                        id="maxAttendees"
-                        name="maxAttendees"
-                        variant="outlined"
-                        type="number"
-                        onChange={(event) => {
-                            if (toNumber(event.target.value) <= 0) {
-                                event.target.value = ""
-                            }
-                            setEditedEvent({ ...editedEvent, maxAttendees: toNumber(event.target.value) })
+                        value={editedEvent.maxAttendees}
+                        onChange={(event, val) => {
+                            if (event.type === 'click')
+                                setEditedEvent({ ...editedEvent, maxAttendees: val ?? 0 });
                         }}
-                        inputMode="numeric"
-                        label="Max number of attendees"
-                        margin="normal" />
+                        placeholder="Max number of attendees" />
                 </ListItem>
 
             </List>

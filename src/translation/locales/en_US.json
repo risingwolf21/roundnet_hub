@@ -28,6 +28,7 @@
             "descriptionEmpty": "The description of this event can not be empty",
             "startDateCannotBeNull": "The startDate of this event can not be empty",
             "answerDeadlineBeforeNow": "The answer dead line can not be before now",
+            "answerDeadlineAfterStart": "The answer dead line can not be after the start of the event",
             "noGroupSelected": "There is no group selected for this event"
         },
         "information": {

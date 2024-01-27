@@ -69,14 +69,15 @@ export function defineRulesFor(user: User | null) {
     can("view", "browse");
     can("view", "notifications");
 
-    if (user.role !== "user") {
-        can("view", "browseAdmin");
-    }
     if (user.permissions) {
         user.permissions.forEach(each => {
             var split = each.split(";");
             can(split[0] as Actions, split[1] as Ability[1]);
         });
+    }
+
+    if (can("edit", "groups") || can("edit", "drink") || can("edit", "payments") || can("edit", "user")) {
+        can("view", "browseAdmin");
     }
 
     return rules;

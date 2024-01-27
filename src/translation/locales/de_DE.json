@@ -28,6 +28,7 @@
             "descriptionEmpty": "Die Beschreibung des Events darf nicht leer sein",
             "startDateCannotBeNull": "Die Startzeit des Events darf nicht leer sein",
             "answerDeadlineBeforeNow": "Der Anmeldezeitraum kann nicht vor dem aktuellen Datum sein",
+            "answerDeadlineAfterStart": "Der Anmeldezeitraum kann nicht nach dem Start des Events sein",
             "noGroupSelected": "Es ist keine Gruppe für dieses Event ausgewählt!"
         },
         "information": {
