@@ -1,7 +1,27 @@
-# Roundnet Karlsruhe App
-[![Production](https://github.com/risingwolf21/roundnet_karlsruhe_app/actions/workflows/firebase_deployment.yml/badge.svg?branch=production)](https://github.com/risingwolf21/roundnet_karlsruhe_app/actions/workflows/firebase_deployment.yml)
-[![Building](https://github.com/risingwolf21/roundnet_karlsruhe_app/actions/workflows/react_build_deploy_staging.yml/badge.svg)](https://github.com/risingwolf21/roundnet_karlsruhe_app/actions/workflows/react_build_deploy_staging.yml)
-[![Database Backup](https://github.com/risingwolf21/roundnet_karlsruhe_app/actions/workflows/supabase_production_backup.yml/badge.svg?branch=master)](https://github.com/risingwolf21/roundnet_karlsruhe_app/actions/workflows/supabase_production_backup.yml)
+<br/>
+<p align="center">
+  <a>
+    <img src="src/images/Karlsruher_Kojoten_Logo.svg" alt="Logo" width="200" height="200">
+  </a>
+
+  <h2 align="center">Roundnet Karlsruhe Web App</h2>
+
+  <p align="center">
+    Web Application to admister events and drinks for the Roundnet Karlsruhe Community
+    <br/>
+    <br/>
+    <br/>
+    <p align="center">
+      <a href="https://roundnet-karlsruhe.web.app">View Production</a>
+      .
+      <a href="https://staging-roundnet-karlsruhe.web.app">View Staging</a>
+      .
+      <a href="https://github.com/risingwolf21/roundnet_karlsruhe_app/issues">Report Bug</a>
+    </p>
+  </p>
+</p>
+
+[![Production](https://github.com/risingwolf21/roundnet_karlsruhe_app/actions/workflows/firebase_deployment.yml/badge.svg?branch=production)](https://github.com/risingwolf21/roundnet_karlsruhe_app/actions/workflows/firebase_deployment.yml) [![Database Backup](https://github.com/risingwolf21/roundnet_karlsruhe_app/actions/workflows/supabase_production_backup.yml/badge.svg?branch=master)](https://github.com/risingwolf21/roundnet_karlsruhe_app/actions/workflows/supabase_production_backup.yml) [![Building](https://github.com/risingwolf21/roundnet_karlsruhe_app/actions/workflows/react_build_deploy_staging.yml/badge.svg)](https://github.com/risingwolf21/roundnet_karlsruhe_app/actions/workflows/react_build_deploy_staging.yml)
 
 ## Hosting
 
