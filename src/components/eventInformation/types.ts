@@ -46,3 +46,9 @@ export type DeleteEventDialogProps = {
     handleClose: (result: DeleteEventType | null) => any,
     selectedEvent: SliceEvent
 }
+
+export type EditEventOptionsDialogProps = {
+    open: boolean,
+    setOpen: () => void,
+    handleClose: (result: "OnlyThis" | "EveryRecurrence" | null) => any,
+}

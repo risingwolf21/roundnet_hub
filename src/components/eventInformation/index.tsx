@@ -62,6 +62,7 @@ import { fetchEventCommentsAsync, upsertCommentToEventAsync } from "src/redux/ev
 import { editEvent, fetchSingleEventAsync, onEventErrorRead } from "src/redux/events/eventsSlice";
 import EventInformationAttendance from "./EventInformationAttendance";
 import EventInformationComments from "./EventInformationComments";
+import { EditEventOptionsDialog } from "./EditEventOptionsDialog";
 
 const EventInformation = ({
     dispatch,
@@ -79,6 +80,7 @@ const EventInformation = ({
     const [eventAttendanceState, setEventAttendanceState] = useState({ open: false, index: 0 });
     const [cancelTrainingOpen, setCancelTrainingOpen] = useState(false);
     const [deleteTrainingOpen, setDeleteTrainingOpen] = useState(false);
+    const [editEventOptionOpen, setEditEventOptionOpen] = useState(false);
     const [commentsOpen, setCommentsOpen] = useState(false);
     const navigate = useNavigate();
     const inputRef = createRef<HTMLInputElement>();
@@ -189,8 +191,8 @@ const EventInformation = ({
                         open={Boolean(anchorEl)}
                         onClose={handleClose}>
                         <MenuItem onClick={() => {
-                            dispatch(editEvent(selectedEvent));
-                            navigate("/training/create", { replace: true })
+                            setEditEventOptionOpen(true);
+                            handleClose();
                         }}>
                             <ListItemIcon>
                                 <Edit />
@@ -332,6 +334,18 @@ const EventInformation = ({
                     deleteEvent(e);
                     setDeleteTrainingOpen(false);
                 }} />
+
+            <EditEventOptionsDialog
+                setOpen={() => setEditEventOptionOpen(true)}
+                open={editEventOptionOpen}
+                handleClose={(e) => {
+                    setEditEventOptionOpen(false);
+                    if (e != null) {
+                        dispatch(editEvent(selectedEvent));
+                        navigate("/training/create", { replace: true, state: { option: e } })
+                    }
+                }}
+            />
         </Box>
         <Snackbar sx={{ position: "fixed", right: "16px", }} open={error !== null}>
             <Alert severity={"error"} sx={{ width: '100%' }} onClose={() => dispatch(onEventErrorRead(null))}>

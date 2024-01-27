@@ -16,6 +16,7 @@ interface IEventRepository {
     insertEvent(event: EventInsert): Promise<PostgrestSingleResponse<null>>
     updateEndOfOldEvent(eventId: number, end_at: string): Promise<PostgrestSingleResponse<null>>
     updateEvent(eventId: number, event: EventUpdate): Promise<PostgrestSingleResponse<null>>
+    updateEveryRecurrenceOfEvent(key: string, event: EventUpdate): Promise<PostgrestSingleResponse<null>>
     fetchEvents(user: User, userGroups: number[], page: number, count: number): Promise<PostgrestSingleResponse<FullEvent[]>>
     updateCancellationForEvent(eventId: number, isCancelled: boolean): Promise<PostgrestSingleResponse<null>>
     deleteEvent(eventId: number): Promise<PostgrestSingleResponse<null>>
@@ -30,6 +31,12 @@ interface IEventRepository {
 
 @injectable()
 class SupabaseEventRepository extends SupabaseRepository implements IEventRepository {
+    async updateEveryRecurrenceOfEvent(key: string, event: EventUpdate): Promise<PostgrestSingleResponse<null>> {
+        return this.client
+            .from("events")
+            .update(event)
+            .eq("key", key)
+    }
     async fetchEventComments(eventId: number): Promise<PostgrestSingleResponse<FullComment[]>> {
         return this.client.from("event_comments")
             .select("user(userId, displayName), *")

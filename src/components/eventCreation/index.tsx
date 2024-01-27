@@ -1,10 +1,10 @@
 import { AppBar, Box, Button, Dialog, IconButton, Toolbar, Typography, TextField, ListItem, ListItemAvatar, ListItemText, DialogTitle, DialogContent, FormControl, FormControlLabel, RadioGroup, Radio, Divider, Checkbox, DialogActions, List, InputAdornment, Snackbar, Alert, ListItemButton } from "@mui/material"
 import { AccessTime, Article, Clear, Close, FiberManualRecord, Map } from "@mui/icons-material";
 import EventIcon from "@mui/icons-material/Event";
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { DatePicker, DateTimePicker } from "@mui/x-date-pickers";
 import { TimePicker } from '@mui/x-date-pickers/TimePicker';
-import { FormEvent, useState } from "react";
+import { FormEvent, Ref, useRef, useState } from "react";
 import EventRepeatIcon from '@mui/icons-material/EventRepeat';
 import React, { useEffect } from "react";
 import SearchPlacesDialog from "./SearchPlacesDialog";
@@ -29,6 +29,9 @@ const emptyEvent = {
 const CreateEvent = ({ t, eventToEdit, repository }: CreateEventProps) => {
 
     const navigate = useNavigate();
+    const {
+        state: { option },
+    } = useLocation();
 
     const [editedEvent, setEditedEvent] = useState<FullEvent>(eventToEdit ?? emptyEvent);
 
@@ -38,6 +41,7 @@ const CreateEvent = ({ t, eventToEdit, repository }: CreateEventProps) => {
     const [searchPlacesDialogOpen, setSearchPlacesDialogOpen] = useState(false);
     const [errorSnackbar, setErrorSnackbar] = useState({ open: false, message: "" });
     const [selectedPlace, setSelectedPlace] = useState<PlaceType>({ lat: 49.0226481, lon: 8.416547971872856, name: "MTV Karlsruhe" });
+    const ref = useRef<Ref<HTMLFormElement>>();
 
     useEffect(() => {
         if (eventToEdit) {
@@ -85,6 +89,17 @@ const CreateEvent = ({ t, eventToEdit, repository }: CreateEventProps) => {
                 if (isAfter(event.meetingDateTime, event.startingDateTime))
                     throw new Error(t("events.creation.meetingTimeBeforeStartTime"))
 
+            if (option === "OnlyThis") {
+                const { error } = await repository.updateEvent(event.id ?? -1, event)
+
+                if (error) throw error;
+                
+            } else if (option === "EveryRecurrence") {
+
+            } else {
+                throw Error("There was no option provided wether to update only this or every recurring event. Please try again!")
+            }
+
             const { error } = await repository.insertEvent(event)
 
             if (error) throw error;
@@ -110,7 +125,7 @@ const CreateEvent = ({ t, eventToEdit, repository }: CreateEventProps) => {
     }
 
     return <Box>
-        <Box component="form" onSubmit={handleSubmit} noValidate>
+        <Box ref={ref} component="form" onSubmit={handleSubmit} noValidate>
             <AppBar position="sticky" sx={{ position: "relative" }}>
                 <Toolbar>
                     <IconButton
@@ -159,7 +174,7 @@ const CreateEvent = ({ t, eventToEdit, repository }: CreateEventProps) => {
                             editedEvent.fullGroup && <FiberManualRecord sx={{ color: editedEvent.fullGroup.color }} />
                         }
                     </ListItemAvatar>
-                    <ListItemText primary={editedEvent.fullGroup?.name ?? "Keine Gruppe gewählt"} secondary={editedEvent.fullGroup?.description ?? ""} />
+                    <ListItemText primary={editedEvent.fullGroup?.name ?? "Keine Gruppe gewählt"} secondary={editedEvent.fullGroup?.description} />
                 </ListItemButton>
 
                 <Divider sx={{ mb: 2, mt: 2 }} />
