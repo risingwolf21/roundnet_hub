@@ -124,6 +124,7 @@ class SupabaseEventRepository extends SupabaseRepository implements IEventReposi
         return this.client.from("group_user_mapping")
             .select("user(userId), group(*)")
             .eq("user.userId", user.userId)
+            .not("user", "is", null)
             .returns<{ user: { userId: string }, group: Group }[]>();
     }
 

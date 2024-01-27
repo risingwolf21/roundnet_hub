@@ -109,7 +109,7 @@ const EventScreen = ({ events, loading, error, endReached, repository, user }: E
             }
         </InfiniteScrollList>
         {
-            user?.role === "admin" && <Fab sx={{ background: "#66bb6a", position: "fixed", right: "16px", bottom: "76px" }}
+            can("edit", "training") && <Fab sx={{ background: "#66bb6a", position: "fixed", right: "16px", bottom: "76px" }}
                 onClick={() => navigate("create")}>
                 {
                     <AddIcon sx={{ color: "white" }} />
