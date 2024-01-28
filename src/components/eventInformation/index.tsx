@@ -342,7 +342,7 @@ const EventInformation = ({
                     setEditEventOptionOpen(false);
                     if (e != null) {
                         dispatch(editEvent(selectedEvent));
-                        navigate("/training/create", { replace: true, state: { option: e } })
+                        navigate("/training/createOrUpdate/" + e, { replace: true })
                     }
                 }}
             />

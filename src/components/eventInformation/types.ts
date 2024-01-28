@@ -3,7 +3,7 @@ import { IEventRepository } from "src/repository/IEventRepository";
 import { AnyAction, ThunkDispatch } from "@reduxjs/toolkit";
 import { RootState } from "src/redux/store";
 import { FullAttendance, FullComment, FullEvent, Group, User } from "src/types/supabaseTypes";
-import { PlaceType } from "../eventCreation/types";
+import { CreateEventOption, PlaceType } from "../eventCreation/types";
 import { SliceEvent } from "src/redux/events/eventsSlice";
 
 export type EventInformationProps = {
@@ -50,5 +50,5 @@ export type DeleteEventDialogProps = {
 export type EditEventOptionsDialogProps = {
     open: boolean,
     setOpen: () => void,
-    handleClose: (result: "OnlyThis" | "EveryRecurrence" | null) => any,
+    handleClose: (result: CreateEventOption | null) => any,
 }

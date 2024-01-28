@@ -1,7 +1,7 @@
 import { AppBar, Box, Button, Dialog, IconButton, Toolbar, Typography, TextField, ListItem, ListItemAvatar, ListItemText, DialogTitle, DialogContent, FormControl, FormControlLabel, RadioGroup, Radio, Divider, Checkbox, DialogActions, List, InputAdornment, Snackbar, Alert, ListItemButton } from "@mui/material"
 import { AccessTime, Article, Clear, Close, FiberManualRecord, Map } from "@mui/icons-material";
 import EventIcon from "@mui/icons-material/Event";
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { DatePicker, DateTimePicker } from "@mui/x-date-pickers";
 import { TimePicker } from '@mui/x-date-pickers/TimePicker';
 import { FormEvent, Ref, useRef, useState } from "react";
@@ -27,12 +27,9 @@ const emptyEvent = {
     maxAttendees: -1,
 } as FullEvent;
 
-const CreateEvent = ({ t, eventToEdit, repository }: CreateEventProps) => {
+const CreateEvent = ({ t, eventToEdit, repository, option }: CreateEventProps) => {
 
     const navigate = useNavigate();
-    const {
-        state,
-    } = useLocation();
 
     const [editedEvent, setEditedEvent] = useState<FullEvent>(eventToEdit ?? emptyEvent);
 
@@ -93,18 +90,18 @@ const CreateEvent = ({ t, eventToEdit, repository }: CreateEventProps) => {
                 if (isAfter(event.meetingDateTime, event.startingDateTime))
                     throw new Error(t("events.creation.meetingTimeBeforeStartTime"))
 
-            if (state && state.option === "NewEvent") {
+            if (option === "InsertEvent") {
                 // create new event as there is no option
                 const { error } = await repository.insertEvent(event)
 
                 if (error) throw error;
             }
-            else if (state && state.option === "OnlyThis") {
+            else if (option === "UpdateSingle") {
                 const { error } = await repository.updateEvent(event.id ?? -1, event)
 
                 if (error) throw error;
 
-            } else if (state && state.option === "EveryRecurrence") {
+            } else if (option === "UpdateRecurrence") {
 
             } else {
                 throw Error("There was no option provided wether this is a new event, to update only this or every recurring event. Please try again!")
