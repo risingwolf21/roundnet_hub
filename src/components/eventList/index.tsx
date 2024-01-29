@@ -11,6 +11,7 @@ import { EventItem } from "./EventItem";
 import { EventScreenProps } from './types';
 import { fetchEventsAsync, onEventDelete, onEventErrorRead, onEventUpdate } from 'src/redux/events/eventsSlice';
 import { updateAttendanceAsync } from 'src/redux/events/eventAttendanceSlice';
+import { CreateEventOption } from '../eventCreation/types';
 
 const EventScreen = ({ events, loading, error, endReached, repository, user }: EventScreenProps) => {
     const client = useClient();
@@ -67,7 +68,7 @@ const EventScreen = ({ events, loading, error, endReached, repository, user }: E
         </InfiniteScrollList>
         {
             user.role === "admin" && <Fab sx={{ background: "#66bb6a", position: "fixed", right: "16px", bottom: "76px" }}
-                onClick={() => navigate("create")}>
+                onClick={() => navigate("/training/createOrUpdate/" + "NewEvent" as CreateEventOption)}>
                 {
                     <AddIcon sx={{ color: "white" }} />
                 }

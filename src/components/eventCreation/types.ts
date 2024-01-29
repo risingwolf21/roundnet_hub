@@ -2,10 +2,13 @@ import { TFunction } from "i18next"
 import { IEventRepository } from "src/repository/IEventRepository"
 import { FullEvent } from "src/types/supabaseTypes"
 
+export type CreateEventOption = "UpdateSingle" | "UpdateRecurrence" | "InsertEvent";
+
 export type CreateEventProps = {
     t: TFunction,
     eventToEdit: FullEvent | null,
-    repository: IEventRepository
+    repository: IEventRepository,
+    option: CreateEventOption
 }
 
 export type PlaceType = {

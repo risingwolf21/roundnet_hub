@@ -30,7 +30,7 @@ const GroupInformationProvider = React.lazy(() => import('./components/groups/Gr
 const ManageGroupsProvider = React.lazy(() => import('./components/groups/ManageGroups'));
 const AnalyzeDrinkStockHistoryProvider = React.lazy(() => import('./components/procure/AnalyzeDrinkStockHistory'));
 const EventInformationProvider = React.lazy(() => import('./components/eventInformation/provider'));
-const EventScreenProvider = React.lazy(() => import('./components/eventList/EventScreen'));
+const EventScreenProvider = React.lazy(() => import('./components/eventList/provider'));
 
 const App = () => {
 
@@ -67,7 +67,7 @@ const App = () => {
             <Route path="/trainer/groups/:id" element={<GroupInformationProvider />} />
             <Route path="/training" element={<EventScreenProvider />} />
             <Route path="/training/event/:selectedEventId" element={<EventInformationProvider />} />
-            <Route path="/training/create" element={<CreateEventProvider />} />
+            <Route path="/training/createOrUpdate/:option" element={<CreateEventProvider />} />
 
             <Route path='/admin/drinks' element={<AdminDrinkListProvider />} />
 

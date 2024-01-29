@@ -6,27 +6,20 @@ import { serve } from 'https://deno.land/std@0.177.0/http/server.ts'
 import { format, addMonths, addDays } from "https://esm.sh/date-fns"
 import * as Sentry from 'https://deno.land/x/sentry/index.mjs'
 
-type Json =
-	| string
-	| number
-	| boolean
-	| null
-	| { [key: string]: Json | undefined }
-	| Json[]
-
 type EventRecurrence = "Weekly" | "Fortnightly" | "Monthly" | "None"
 type Event = {
 	answerDeadline?: string | null
 	created_at: string
 	description: string
-	end_at?: string | null
+	recurrenceEnd?: string | null
+	endDateTime?: string | null
 	group: number | null
 	id: number
 	isCancelled: boolean
 	key: string
 	maxAttendees: number
 	meetingDateTime?: string | null
-	place?: Json | null
+	place?: string | null
 	recurrence: EventRecurrence
 	startingDateTime: string
 	title: string
@@ -92,7 +85,8 @@ Deno.serve(async (req: Request) => {
 				description: event.description,
 				startingDateTime: format(newStartingDateTime, "yyyy-MM-dd HH:mm:ssXXX"),
 				place: event.place,
-				"end_at": event["end_at"],
+				recurrenceEnd: event.recurrenceEnd,
+				endDateTime: event.endDateTime,
 				key: event.key,
 				group: event.group,
 				maxAttendees: event.maxAttendees,
@@ -112,10 +106,10 @@ Deno.serve(async (req: Request) => {
 
 			let maximumStartTime = addMonths(new Date(event.startingDateTime), 1);
 
-			if ((!event["end_at"] || newStartingDateTime < new Date(event["end_at"])) && newStartingDateTime <= maximumStartTime) {
+			if ((!event.recurrenceEnd || newStartingDateTime < new Date(event.recurrenceEnd)) && newStartingDateTime <= maximumStartTime) {
 				await supabaseClient.from("events").insert(newEvent).select("*");
 			} else {
-				console.log(`New event was not added to database. Either newStartingDateTime(${newStartingDateTime}) exeeded end_at (${event["end_at"]}) or maximumStartTime (${maximumStartTime})`)
+				console.log(`New event was not added to database. Either newStartingDateTime(${newStartingDateTime}) exeeded recurrenceEnd (${event.recurrenceEnd}) or maximumStartTime (${maximumStartTime})`)
 			}
 		}
 

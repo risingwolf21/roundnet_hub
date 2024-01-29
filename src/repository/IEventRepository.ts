@@ -1,10 +1,10 @@
-import { Comment, EventAttendance, EventAttendanceMapping, EventInsert, EventUpdate, FullAttendance, FullComment, FullEvent, Group, User } from "../types/supabaseTypes";
-import { PostgrestSingleResponse } from '@supabase/supabase-js';
+import { Comment, Event, EventAttendance, EventAttendanceMapping, EventInsert, EventUpdate, FullAttendance, FullComment, FullEvent, Group, User } from "../types/supabaseTypes";
+import { PostgrestSingleResponse, PostgrestError } from '@supabase/supabase-js';
 import moment from "moment";
-import { PostgrestError } from '@supabase/supabase-js'
 import { injectable } from "inversify";
 import { SupabaseRepository } from "./Repository";
 import { formatDateToDatabase } from "src/utils";
+import { add, interval, intervalToDuration } from "date-fns";
 
 export type DbResult<T> = T extends PromiseLike<infer U> ? U : never
 export type DbResultOk<T> = T extends PromiseLike<{ data: infer U }> ? Exclude<U, null> : never
@@ -14,8 +14,9 @@ export type RepositorySource = "supabase" | "none";
 
 interface IEventRepository {
     insertEvent(event: EventInsert): Promise<PostgrestSingleResponse<null>>
-    updateEndOfOldEvent(eventId: number, end_at: string): Promise<PostgrestSingleResponse<null>>
+    updateEndOfOldEvent(eventId: number, recurrenceEnd: string): Promise<PostgrestSingleResponse<null>>
     updateEvent(eventId: number, event: EventUpdate): Promise<PostgrestSingleResponse<null>>
+    updateEventAndAllRecurrences(event: FullEvent, eventUpdate: EventUpdate): Promise<PostgrestSingleResponse<null>>
     fetchEvents(user: User, userGroups: number[], page: number, count: number): Promise<PostgrestSingleResponse<FullEvent[]>>
     updateCancellationForEvent(eventId: number, isCancelled: boolean): Promise<PostgrestSingleResponse<null>>
     deleteEvent(eventId: number): Promise<PostgrestSingleResponse<null>>
@@ -30,6 +31,45 @@ interface IEventRepository {
 
 @injectable()
 class SupabaseEventRepository extends SupabaseRepository implements IEventRepository {
+    async updateEventAndAllRecurrences(event: FullEvent, eventUpdate: EventUpdate): Promise<PostgrestSingleResponse<null>> {
+        let startingDateTimeDifference = eventUpdate.startingDateTime ? intervalToDuration({ start: event.startingDateTime, end: eventUpdate.startingDateTime }) : intervalToDuration(interval(0, 0));
+
+        let endDateTimeDifference = intervalToDuration(interval(0, 0));
+        if (!event.endDateTime && eventUpdate.endDateTime) {
+            endDateTimeDifference = intervalToDuration({ start: 0, end: eventUpdate.endDateTime });
+        } else if (event.endDateTime && eventUpdate.endDateTime) {
+            endDateTimeDifference = intervalToDuration({ start: event.endDateTime, end: eventUpdate.endDateTime });
+        }
+
+        let meetingDateTimeDifference = intervalToDuration(interval(0, 0));
+        if (!event.meetingDateTime && eventUpdate.meetingDateTime) {
+            meetingDateTimeDifference = intervalToDuration({ start: 0, end: eventUpdate.meetingDateTime });
+        } else if (event.meetingDateTime && eventUpdate.meetingDateTime) {
+            meetingDateTimeDifference = intervalToDuration({ start: event.meetingDateTime, end: eventUpdate.meetingDateTime });
+        }
+
+        const { data, error } = await this.client.from("events").select("*").eq("key", event.key).gte("id", event.id).returns<Event[]>();
+
+        if (!data || error) {
+            return { error: { code: "", details: "", hint: "", message: "Could not fetch events that need to be updated!" } as PostgrestError, data: null, count: null, status: 400, statusText: "" };
+        }
+
+        const events = data.map(e => {
+            return {
+                ...event,
+                ...eventUpdate,
+                startingDateTime: formatDateToDatabase(add(e.startingDateTime, startingDateTimeDifference)),
+                endDateTime: e.endDateTime ? formatDateToDatabase(add(e.endDateTime, endDateTimeDifference)) : null,
+                meetingDateTime: e.meetingDateTime ? formatDateToDatabase(add(e.meetingDateTime, meetingDateTimeDifference)) : null,
+            } as EventInsert;
+        });
+        console.log(events);
+
+        return { error: { code: "", details: "", hint: "", message: "Could not fetch events that need to be updated!" } as PostgrestError, data: null, count: null, status: 400, statusText: "" };
+        // return this.client
+        //     .from("events")
+        //     .upsert(events);
+    }
     async fetchEventComments(eventId: number): Promise<PostgrestSingleResponse<FullComment[]>> {
         return this.client.from("event_comments")
             .select("user(userId, displayName), *")
@@ -37,18 +77,19 @@ class SupabaseEventRepository extends SupabaseRepository implements IEventReposi
             .returns<FullComment[]>();
     }
 
-    async updateEndOfOldEvent(eventId: number, end_at: string): Promise<PostgrestSingleResponse<null>> {
+    async updateEndOfOldEvent(eventId: number, recurrenceEnd: string): Promise<PostgrestSingleResponse<null>> {
         return this.client
             .from("events")
             .update({
-                "end_at": end_at
+                recurrenceEnd: recurrenceEnd
             }).eq("id", eventId)
     }
 
     async updateEvent(eventId: number, event: EventUpdate): Promise<PostgrestSingleResponse<null>> {
         return this.client
             .from("events")
-            .update(event).eq("id", eventId)
+            .update(event)
+            .eq("id", eventId)
     }
 
     async insertEvent(event: EventInsert): Promise<PostgrestSingleResponse<null>> {
@@ -94,7 +135,7 @@ class SupabaseEventRepository extends SupabaseRepository implements IEventReposi
         await this.client
             .from("events")
             .update({
-                end_at: moment().format("yyyy-MM-DD HH:mm:ssZ")
+                recurrenceEnd: moment().format("yyyy-MM-DD HH:mm:ssZ")
             })
             .eq("id", eventId);
     }
@@ -111,7 +152,7 @@ class SupabaseEventRepository extends SupabaseRepository implements IEventReposi
             .select("*, fullGroup: event_group(id, created_at, description, name, color), attendance: event_attendance_user_mapping ( state , user(userId, displayName)  ), comments: event_comments ( comment, created_at, displayName, event, user ( displayName, userId))")
             // get events that are on the same day or later
             .gt("startingDateTime", formatDateToDatabase(new Date()))
-            .or(`end_at.is.null,end_at.gt.'${formatDateToDatabase(new Date())}'`)
+            .or(`recurrenceEnd.is.null,recurrenceEnd.gt.'${formatDateToDatabase(new Date())}'`)
             .in("group", userGroups)
             .range(page * count, page * count + count - 1)
             .order("startingDateTime", { ascending: true })
@@ -124,6 +165,7 @@ class SupabaseEventRepository extends SupabaseRepository implements IEventReposi
         return this.client.from("group_user_mapping")
             .select("user(userId), group(*)")
             .eq("user.userId", user.userId)
+            .not("user", "is", null)
             .returns<{ user: { userId: string }, group: Group }[]>();
     }
 

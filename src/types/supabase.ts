@@ -14,33 +14,33 @@ export interface Database {
           active: boolean
           deleted: boolean
           id: number
-          imageUrl: string
-          name: string
+          imageUrl: string | null
+          name: string | null
           previousDrink: number | null
-          price: number
-          stock: number
+          price: number | null
+          stock: number | null
           type: Database["public"]["Enums"]["ProductType"]
         }
         Insert: {
           active?: boolean
           deleted?: boolean
           id?: number
-          imageUrl?: string
-          name: string
+          imageUrl?: string | null
+          name?: string | null
           previousDrink?: number | null
-          price?: number
-          stock?: number
+          price?: number | null
+          stock?: number | null
           type?: Database["public"]["Enums"]["ProductType"]
         }
         Update: {
           active?: boolean
           deleted?: boolean
           id?: number
-          imageUrl?: string
-          name?: string
+          imageUrl?: string | null
+          name?: string | null
           previousDrink?: number | null
-          price?: number
-          stock?: number
+          price?: number | null
+          stock?: number | null
           type?: Database["public"]["Enums"]["ProductType"]
         }
         Relationships: []
@@ -65,6 +65,13 @@ export interface Database {
           user?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "event_attendance_user_mapping_event_fkey"
+            columns: ["event"]
+            isOneToOne: false
+            referencedRelation: "distinct_event"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "event_attendance_user_mapping_event_fkey"
             columns: ["event"]
@@ -111,6 +118,13 @@ export interface Database {
             foreignKeyName: "event_comments_event_fkey"
             columns: ["event"]
             isOneToOne: false
+            referencedRelation: "distinct_event"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "event_comments_event_fkey"
+            columns: ["event"]
+            isOneToOne: false
             referencedRelation: "events"
             referencedColumns: ["id"]
           },
@@ -152,7 +166,7 @@ export interface Database {
           answerDeadline: string | null
           created_at: string
           description: string
-          end_at: string | null
+          endDateTime: string | null
           group: number | null
           id: number
           isCancelled: boolean
@@ -161,6 +175,7 @@ export interface Database {
           meetingDateTime: string | null
           place: string | null
           recurrence: Database["public"]["Enums"]["EventRecurrence"]
+          recurrenceEnd: string | null
           startingDateTime: string
           title: string
         }
@@ -168,7 +183,7 @@ export interface Database {
           answerDeadline?: string | null
           created_at?: string
           description?: string
-          end_at?: string | null
+          endDateTime?: string | null
           group?: number | null
           id?: number
           isCancelled?: boolean
@@ -177,6 +192,7 @@ export interface Database {
           meetingDateTime?: string | null
           place?: string | null
           recurrence?: Database["public"]["Enums"]["EventRecurrence"]
+          recurrenceEnd?: string | null
           startingDateTime: string
           title?: string
         }
@@ -184,7 +200,7 @@ export interface Database {
           answerDeadline?: string | null
           created_at?: string
           description?: string
-          end_at?: string | null
+          endDateTime?: string | null
           group?: number | null
           id?: number
           isCancelled?: boolean
@@ -193,6 +209,7 @@ export interface Database {
           meetingDateTime?: string | null
           place?: string | null
           recurrence?: Database["public"]["Enums"]["EventRecurrence"]
+          recurrenceEnd?: string | null
           startingDateTime?: string
           title?: string
         }
@@ -200,39 +217,6 @@ export interface Database {
           {
             foreignKeyName: "events_group_fkey"
             columns: ["group"]
-            isOneToOne: false
-            referencedRelation: "event_group"
-            referencedColumns: ["id"]
-          }
-        ]
-      }
-      group_subgroup_mapping: {
-        Row: {
-          id: number
-          main_group: number
-          sub_group: number
-        }
-        Insert: {
-          id?: number
-          main_group: number
-          sub_group: number
-        }
-        Update: {
-          id?: number
-          main_group?: number
-          sub_group?: number
-        }
-        Relationships: [
-          {
-            foreignKeyName: "group_subgroup_mapping_main_group_fkey"
-            columns: ["main_group"]
-            isOneToOne: false
-            referencedRelation: "event_group"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "group_subgroup_mapping_sub_group_fkey"
-            columns: ["sub_group"]
             isOneToOne: false
             referencedRelation: "event_group"
             referencedColumns: ["id"]
@@ -396,7 +380,7 @@ export interface Database {
         }
         Relationships: [
           {
-            foreignKeyName: "payments_userId_fkey"
+            foreignKeyName: "payments_userid_fkey"
             columns: ["userId"]
             isOneToOne: false
             referencedRelation: "user"
@@ -448,7 +432,34 @@ export interface Database {
       }
     }
     Views: {
-      [_ in never]: never
+      distinct_event: {
+        Row: {
+          answerDeadline: string | null
+          created_at: string | null
+          description: string | null
+          endDateTime: string | null
+          group: number | null
+          id: number | null
+          isCancelled: boolean | null
+          key: string | null
+          maxAttendees: number | null
+          meetingDateTime: string | null
+          place: string | null
+          recurrence: Database["public"]["Enums"]["EventRecurrence"] | null
+          recurrenceEnd: string | null
+          startingDateTime: string | null
+          title: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "events_group_fkey"
+            columns: ["group"]
+            isOneToOne: false
+            referencedRelation: "event_group"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
     }
     Functions: {
       eventcreation: {

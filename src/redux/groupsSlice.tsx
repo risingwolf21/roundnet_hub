@@ -25,8 +25,8 @@ const groupsSlice = createSlice({
             .addCase(fetchGroupsAsync.fulfilled, (state, action) => {
                 state.loading = false;
                 state.error = null;
-
-                groupsAdapter.setAll(state, action.payload);
+                groupsAdapter.removeAll(state);
+                groupsAdapter.addMany(state, action.payload);
             })
             .addCase(fetchGroupsAsync.rejected, (state, action) => {
                 state.loading = false;

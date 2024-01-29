@@ -10,6 +10,7 @@ import { IEventRepository } from "src/repository/IEventRepository";
 import { Group } from "src/types/supabaseTypes";
 import { SlideUpTransition } from "../../utils";
 import { SelectGroupDialogProps } from "../eventInformation/types";
+import { PostgrestSingleResponse } from "@supabase/supabase-js";
 
 export const SelectGroupDialog = ({ open, handleClose, handleSubmit }: SelectGroupDialogProps) => {
 
@@ -18,11 +19,11 @@ export const SelectGroupDialog = ({ open, handleClose, handleSubmit }: SelectGro
     const user = useSelector((state: RootState) => state.application.user);
 
     useEffect(() => {
-        if (user)
-            repo?.fetchUserGroups(user).then(x => {
-                setGroups(x?.data?.map(y => y.group) ?? []);
-            })
-    }, [open, user]);
+        if (user && repo && open)
+            repo.fetchUserGroups(user).then((x: PostgrestSingleResponse<{ user: { userId: string }, group: Group }[]>) => {
+                setGroups(x.data?.map(y => y.group) ?? []);
+            });
+    }, [open, user, repo]);
 
     return <Dialog
         fullScreen

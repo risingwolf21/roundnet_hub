@@ -4,7 +4,7 @@ create table public.user (
     email text not null default '' :: text,
     "userId" text not null default '' :: text,
     verified boolean not null default false,
-    role public.UserRole not null default 'user' :: UserRole,
+    role public."UserRole" not null default 'user' :: "UserRole",
     disabled boolean not null default false,
     permissions "Permissions" [] null,
     notifications "NotificationTags" [] null,
@@ -17,7 +17,7 @@ create table public.payments (
     created_at timestamp with time zone null default now(),
     "userId" text not null,
     "amountToPay" numeric not null default '0' :: numeric,
-    "paymentState" public.PaymentState not null default 'Open' :: public.PaymentState,
+    "paymentState" public."PaymentState" not null default 'Open' :: public."PaymentState",
     constraint payments_pkey primary key (id),
     constraint payments_userId_fkey foreign key ("userId") references "user" ("userId")
 ) tablespace pg_default;
@@ -49,7 +49,7 @@ create table public.drink (
     active boolean not null default false,
     deleted boolean not null default false,
     "previousDrink" bigint null,
-    type public.ProductType not null default 'None' :: public.ProductType,
+    type public."ProductType" not null default 'None' :: public."ProductType",
     constraint drinks_pkey primary key (id)
 ) tablespace pg_default;
 
@@ -96,7 +96,7 @@ create table public.events (
     key text not null default gen_random_uuid (),
     "isCancelled" boolean not null default false,
     place text null,
-    recurrence public.EventRecurrence not null default 'None' :: public.EventRecurrence,
+    recurrence public."EventRecurrence" not null default 'None' :: public."EventRecurrence",
     "group" bigint null,
     "answerDeadline" timestamp with time zone null,
     "maxAttendees" numeric not null default '-1' :: numeric,
@@ -153,7 +153,7 @@ where
         events.end_at > now()
         or events.end_at is null
     )
-    and events.recurrence <> 'None' :: public.EventRecurrence
+    and events.recurrence <> 'None' :: public."EventRecurrence"
 order by
     events.key,
     events.created_at desc;
