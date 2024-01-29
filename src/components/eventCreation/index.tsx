@@ -101,23 +101,12 @@ const CreateEvent = ({ t, eventToEdit, repository, option }: CreateEventProps) =
 
                 if (error) throw error;
 
-            } else if (option === "UpdateRecurrence" && eventToEdit) {
-                const { error } = await repository.updateEventAndAllRecurrences(eventToEdit, event);
-
-                if (error) throw error;
+            } else if (option === "UpdateRecurrence") {
+                throw Error("Currently cannot change every recurrence. Still working on it <3")
             } else {
                 throw Error("There was no option provided wether this is a new event, to update only this or every recurring event. Please try again!")
             }
-
-            const { error } = await repository.insertEvent(event)
-
-            if (error) throw error;
-
-            // update old event to recurrenceEnd now
-            if (eventToEdit) {
-                await repository.updateEndOfOldEvent(eventToEdit.id, formatDateToDatabase(new Date()))
-            }
-
+            
             navigate("/training", { replace: true });
             setErrorSnackbar({ open: false, message: "" });
         } catch (error: unknown) {

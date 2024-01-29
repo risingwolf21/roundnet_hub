@@ -47,8 +47,8 @@ const App = () => {
       <AuthGate>
         <React.Suspense fallback={<LoadingScreen />}>
           <Routes>
-            {/* <Route path='/' element={<Navigate replace to={"/drinks"} />} />
-            <Route path="*" element={<Navigate replace to={"/drinks"} />} /> */}
+            <Route path='/' element={<Navigate replace to={"/drinks"} />} />
+            <Route path="*" element={<Navigate replace to={"/drinks"} />} />
 
             <Route path='/feature-not-available' element={<FeatureNotAvailable />} />
 

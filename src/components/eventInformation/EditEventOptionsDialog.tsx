@@ -20,7 +20,7 @@ export const EditEventOptionsDialog = ({ open, handleClose, setOpen }: EditEvent
                         setSaveEventOption(e.target.value as CreateEventOption);
                     }}
                     name="radio-buttons-group">
-                    <FormControlLabel value={"OnlyThis"} control={<Radio />} label={"Nur dieses Event aktualisieren"} key={"OnlyThis"} />
+                    <FormControlLabel value={"UpdateSingle"} control={<Radio />} label={"Nur dieses Event aktualisieren"} key={"UpdateSingle"} />
                     <FormControlLabel value={"UpdateRecurrence"} control={<Radio />} label={"Dieses und alle folgenden Events aktualisieren"} key={"UpdateRecurrence"} />
                 </RadioGroup>
             </FormControl>
