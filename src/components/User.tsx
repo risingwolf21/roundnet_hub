@@ -4,7 +4,7 @@ import { useClient } from "react-supabase";
 import CustomAppBar from "./AppBar";
 import { useSelector } from "react-redux";
 import React, { FormEvent, useState } from "react";
-import { RootState } from "../redux/store";
+import { AppDispatch, RootState, useAppDispatch } from "../redux/store";
 import { TABLE_USER } from "../constants";
 import { AlertSnackbar } from "./AlertSnackbar";
 import { User } from "src/types/supabaseTypes";
@@ -15,23 +15,31 @@ import { uuid } from "@supabase/gotrue-js/dist/module/lib/helpers";
 import { dataURLtoFile, readFile } from "src/utils";
 import { captureException } from "@sentry/react";
 import { Database } from "src/types/supabase";
+import Compressor from 'compressorjs';
+import { fetchCurrentUserAsync } from "src/redux/applicationSlice";
+import { useDependency } from "src/hooks/useDependency";
+import { IUserRepository } from "src/repository/IUserRepository";
 
 type UserScreenProps = {
     user: User,
-    client: SupabaseClient<Database>
+    client: SupabaseClient<Database>,
+    dispatch: AppDispatch,
+    repository: IUserRepository
 }
 
 export const UserScreenProvider = () => {
     const { user } = useSelector((state: RootState) => state.application);
+    const repository = useDependency<IUserRepository>("IUserRepository");
     const client = useClient();
+    const dispatch = useAppDispatch();
 
-    if (!user)
+    if (!user || !repository)
         return <AlertSnackbar close={() => { }} alertInfo={{ message: "Fatal error occured. User was null!", severity: "error" }} />
 
-    return <UserScreen user={user} client={client} />
+    return <UserScreen user={user} client={client} dispatch={dispatch} repository={repository} />
 }
 
-const UserScreen = ({ user, client }: UserScreenProps) => {
+const UserScreen = ({ user, client, dispatch, repository }: UserScreenProps) => {
 
     const [selectedImage, setSelectedImage] = useState<string | ArrayBuffer | null>(null);
     const [croppedImage, setCroppedImage] = useState<string | null>(null);
@@ -45,11 +53,30 @@ const UserScreen = ({ user, client }: UserScreenProps) => {
 
         if (croppedImage) {
             var fileName = uuid() + ".jpg";
+            new Compressor(dataURLtoFile(croppedImage, fileName), {
+                convertSize: 1000000, // 1 MB
+                success: async (file) => {
+                    let compressedFile = await readFile(file);
+                    if (compressedFile && typeof (compressedFile) === "string") {
+                        await uploadAvatarImage(fileName, compressedFile);
+                        dispatch(fetchCurrentUserAsync({ userId: user.userId, repository }));
+                        setCroppedImage(null);
+                    }
+                    else {
+                        setErrorSnackbar({ message: "Something went wrong compressing your image. Please try again.", open: true })
+                    }
+                }
+            });
+        }
+        updateDisplayName();
+    };
 
+    const uploadAvatarImage = async (fileName: string, compressedImage: string) => {
+        if (croppedImage) {
             const { data: uploadData, error } = await client
                 .storage
                 .from('user')
-                .upload(`${user.userId}/${fileName}`, dataURLtoFile(croppedImage, fileName), {
+                .upload(`${user.userId}/${fileName}`, dataURLtoFile(compressedImage, fileName), {
                     upsert: true
                 });
 
@@ -75,7 +102,7 @@ const UserScreen = ({ user, client }: UserScreenProps) => {
         } else {
             updateDisplayName();
         }
-    };
+    }
 
     const updateDisplayName = async () => {
         const { error } = await client.from(TABLE_USER).update({ displayName }).eq("userId", user.userId);
@@ -105,11 +132,6 @@ const UserScreen = ({ user, client }: UserScreenProps) => {
                         if (!event.target.files || event.target.files.length === 0)
                             return;
 
-                        var filesize = ((event.target.files[0].size / 1024) / 1024);
-                        if (filesize > 1) {
-                            setErrorSnackbar({ message: `Your image exceeded the upload limit of 1 MB. [Image size: ${filesize.toFixed(4)} MB]`, open: true });
-                            return;
-                        }
                         let imageDataUrl = await readFile(event.target.files[0]);
                         setSelectedImage(imageDataUrl);
                         setCropImageDialogOpen(true);
