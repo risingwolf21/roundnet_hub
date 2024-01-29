@@ -82,6 +82,7 @@ export type FullAttendance = Attendance & {
 export type SimpleUser = {
     displayName: string,
     userId: string,
+    avatarUrl: string | null,
     email: string | null
 }
 

@@ -63,6 +63,7 @@ import { editEvent, fetchSingleEventAsync, onEventErrorRead } from "src/redux/ev
 import EventInformationAttendance from "./EventInformationAttendance";
 import EventInformationComments from "./EventInformationComments";
 import { EditEventOptionsDialog } from "./EditEventOptionsDialog";
+import { isBefore } from "date-fns";
 
 const EventInformation = ({
     dispatch,
@@ -77,7 +78,7 @@ const EventInformation = ({
     comments
 }: EventInformationProps) => {
 
-    const [eventAttendanceState, setEventAttendanceState] = useState({ open: false, index: 0 });
+
     const [cancelTrainingOpen, setCancelTrainingOpen] = useState(false);
     const [deleteTrainingOpen, setDeleteTrainingOpen] = useState(false);
     const [editEventOptionOpen, setEditEventOptionOpen] = useState(false);
@@ -292,7 +293,7 @@ const EventInformation = ({
                                 </Button>
                             }>
                                 {t("events.information.waitingListAccepted", {
-                                    place: attendance.filter(x => x.state === "Waiting").sort((a, b) => new Date(b.lastUpdate).getTime() - new Date(a.lastUpdate).getTime()).findIndex(x => x.user.userId === user.userId) + 1,
+                                    place: attendance.filter(x => x.state === "Waiting").sort((a, b) => isBefore(a.lastUpdate, b.lastUpdate) ? 1 : 0).findIndex(x => x.user.userId === user.userId) + 1,
                                     waitingListLength: attendance.filter(x => x.state === "Waiting").length
                                 })}
                             </Alert>
@@ -303,7 +304,6 @@ const EventInformation = ({
                         attendance={attendance}
                         attendanceLoading={attendanceLoading}
                         selectedEvent={selectedEvent}
-                        setEventAttendanceState={setEventAttendanceState}
                         updateAttendance={updateAttendance} />
 
                     <EventInformationComments
@@ -313,12 +313,6 @@ const EventInformation = ({
                         inputRef={inputRef} />
                 </CardContent>
             </Box>
-
-            <EventAttendanceDialog
-                open={eventAttendanceState.open}
-                index={eventAttendanceState.index}
-                setOpen={(value) => setEventAttendanceState({ open: value, index: 0 })}
-                attendance={attendance} />
 
             <CancelTrainingDialog
                 cancelTrainingOpen={cancelTrainingOpen}

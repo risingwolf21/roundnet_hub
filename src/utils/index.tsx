@@ -77,3 +77,23 @@ export const calculateEventDateWith = (eventDateTime: string | null, eventUpdate
     }
     return null;
 }
+
+export const dataURLtoFile = (dataurl: string, filename: string): File => {
+    var arr = dataurl.split(',');
+    var mime = ((arr[0] ?? "").match(/:(.*?);/) ?? [])[1] ?? null;
+    var bstr = atob(arr[arr.length - 1]);
+    var n = bstr.length;
+    var u8arr = new Uint8Array(n);
+    while (n--) {
+        u8arr[n] = bstr.charCodeAt(n);
+    }
+    return new File([u8arr], filename, { type: mime });
+}
+
+export function readFile(file: Blob): Promise<string | ArrayBuffer | null> {
+    return new Promise((resolve) => {
+        const reader = new FileReader()
+        reader.addEventListener('load', () => resolve(reader.result), false)
+        reader.readAsDataURL(file)
+    })
+}

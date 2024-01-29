@@ -24,7 +24,8 @@ export type EventAttendanceDialogProps = {
     open: boolean,
     index: number,
     setOpen: (value: boolean) => void,
-    attendance: FullAttendance[]
+    attendance: FullAttendance[],
+    hasWaitingList: boolean
 }
 
 export type SelectGroupDialogProps = {

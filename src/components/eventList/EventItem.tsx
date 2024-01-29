@@ -36,7 +36,7 @@ export const EventItem = ({ event, onClick, attendEvent, declineEvent, attendanc
                 attendanceUpdating
                     ? <CircularProgress />
                     : event.userAttendance === "Waiting"
-                        ? <IconButton onClick={declineEvent} disabled={event.isCancelled}>
+                        ? <IconButton disabled={event.isCancelled}>
                             <HourglassBottom fontSize="inherit" sx={{ fontSize: "28px", color: "#125db2" }} />
                         </IconButton>
                         : <Box sx={{ display: "flex", flexDirection: "row" }}>

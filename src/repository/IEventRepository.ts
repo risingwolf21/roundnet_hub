@@ -85,10 +85,10 @@ class SupabaseEventRepository extends SupabaseRepository implements IEventReposi
         //     .upsert(events);
     }
 
-    
+
     async fetchEventComments(eventId: number): Promise<PostgrestSingleResponse<FullComment[]>> {
         return this.client.from("event_comments")
-            .select("user(userId, displayName), *")
+            .select("user(userId, displayName, avatarUrl), *")
             .eq("event", eventId)
             .returns<FullComment[]>();
     }
@@ -165,7 +165,7 @@ class SupabaseEventRepository extends SupabaseRepository implements IEventReposi
 
     async fetchEvents(user: User, userGroups: number[], page: number, count: number): Promise<PostgrestSingleResponse<FullEvent[]>> {
         const query = await this.client.from("events")
-            .select("*, fullGroup: event_group(id, created_at, description, name, color), attendance: event_attendance_user_mapping ( state , user(userId, displayName)  ), comments: event_comments ( comment, created_at, displayName, event, user ( displayName, userId))")
+            .select("*, fullGroup: event_group(id, created_at, description, name, color), attendance: event_attendance_user_mapping ( state , user(userId, displayName, avatarUrl)  ), comments: event_comments ( comment, created_at, displayName, event, user ( displayName, userId, avatarUrl))")
             // get events that are on the same day or later
             .gt("startingDateTime", formatDateToDatabase(new Date()))
             .or(`recurrenceEnd.is.null,recurrenceEnd.gt.'${formatDateToDatabase(new Date())}'`)
@@ -187,14 +187,14 @@ class SupabaseEventRepository extends SupabaseRepository implements IEventReposi
 
     async fetchEventAttendance(eventId: number): Promise<PostgrestSingleResponse<FullAttendance[]>> {
         return this.client.from("event_attendance_user_mapping")
-            .select("user(userId, displayName), *")
+            .select("user(userId, displayName, avatarUrl), *")
             .eq("event", eventId)
             .returns<FullAttendance[]>();
     }
 
     async fetchSingleEvent(eventId: number): Promise<PostgrestSingleResponse<FullEvent>> {
         return this.client.from("events")
-            .select("*, group(*), attendance: event_attendance_user_mapping ( state , user(userId, displayName)  ), comments: event_comments ( comment, created_at, displayName, event, user ( displayName, userId))")
+            .select("*, group(*), attendance: event_attendance_user_mapping ( state , user(userId, displayName, avatarUrl)  ), comments: event_comments ( comment, created_at, displayName, event, user ( displayName, userId, avatarUrl))")
             .eq("id", eventId)
             .single<FullEvent>()
     }

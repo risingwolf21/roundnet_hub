@@ -6,7 +6,7 @@ import CustomBottomNavigation from './components/BottomNavigation';
 import Browse from './components/Browse';
 import { LoadingScreen } from "./components/LoadingScreen";
 import UpdateAvailable from './components/UpdateAvailable';
-import UserScreen from './components/User';
+import UserScreen, { UserScreenProvider } from './components/User';
 import BrowseAdmin from './components/admin/BrowseAdmin';
 import { useInitialFetch } from "./hooks/useInitialFetch";
 import { useOneSignal } from "./hooks/useOneSignal";
@@ -57,7 +57,7 @@ const App = () => {
             <Route path='/browse' element={<Browse />} />
             <Route path='/browse-admin' element={<BrowseAdmin />} />
             <Route path="/drinks" element={<DrinkListScreenProvider />} />
-            <Route path="/user" element={<UserScreen />} />
+            <Route path="/user" element={<UserScreenProvider />} />
             <Route path="/history" element={<HistoryScreenProvider />} />
             <Route path="/payments" element={<PayDrinksScreenProvider />} />
             <Route path="/keys" element={<KeyHolderScreenProvider />} />

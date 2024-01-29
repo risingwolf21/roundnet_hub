@@ -1,13 +1,14 @@
-import { CheckCircleOutline, ThumbUpAlt, ThumbUpOffAlt, RemoveCircleOutline, ThumbDownAlt, ThumbDownOffAlt } from "@mui/icons-material"
+import { CheckCircleOutline, ThumbUpAlt, ThumbUpOffAlt, RemoveCircleOutline, ThumbDownAlt, ThumbDownOffAlt, HourglassBottom, HourglassBottomOutlined } from "@mui/icons-material"
 import { Typography, List, ListItem, ListItemAvatar, CircularProgress, ListItemText, Divider, ListItemSecondaryAction, IconButton, Container } from "@mui/material"
 import { t } from "i18next"
-import React, { useEffect } from "react"
+import React, { useEffect, useState } from "react"
 import { useDispatch } from "react-redux"
 import { useClient } from "react-supabase"
 import { onEventAttendanceDelete, onEventAttendanceUpdate } from "src/redux/events/eventAttendanceSlice"
 import { SliceEvent } from "src/redux/events/eventsSlice"
 import { useAppDispatch } from "src/redux/store"
 import { maxAttendeesExceeded, answerDeadlineExpired, FullAttendance, Attendance, EventAttendance, EventAttendanceUpdate, User } from "src/types/supabaseTypes"
+import EventAttendanceDialog from "./EventAttendanceDialog"
 
 type EventInformationAttendanceProps = {
     user: User,
@@ -15,12 +16,13 @@ type EventInformationAttendanceProps = {
     attendance: FullAttendance[],
     attendanceLoading: boolean,
     updateAttendance: (newValue: EventAttendance, oldValue: EventAttendance) => void,
-    setEventAttendanceState: (value: { index: number, open: boolean }) => void
 }
 
-const EventInformationAttendance = ({ selectedEvent, attendance, attendanceLoading, updateAttendance, setEventAttendanceState, user }: EventInformationAttendanceProps) => {
+const EventInformationAttendance = ({ selectedEvent, attendance, attendanceLoading, updateAttendance, user }: EventInformationAttendanceProps) => {
     const client = useClient();
     const dispatch = useAppDispatch();
+    const [eventAttendanceState, setEventAttendanceState] = useState({ open: false, index: 0 });
+
     useEffect(() => {
         if (!user)
             return;
@@ -109,9 +111,35 @@ const EventInformationAttendance = ({ selectedEvent, attendance, attendanceLoadi
                     </IconButton>
                 </ListItemSecondaryAction>
             </ListItem>
+            {
+                (attendance.filter(x => x.state === "Waiting").length ?? 0) > 0 && <>
+                    <Divider />
+                    <ListItem key={"waitingEvent"} sx={{ '&.MuiListItem-root': { paddingLeft: 0 } }}
+                        onClick={() => attendanceLoading ? {} : setEventAttendanceState({
+                            open: true,
+                            index: 2
+                        })}>
+                        <ListItemAvatar sx={{ justifyContent: "left", alignItems: "center", display: "flex" }}>
+                            {
+                                attendanceLoading ? <CircularProgress size={"20px"} /> :
+                                    <HourglassBottom sx={{ color: "#125db2" }} />
+                            }
+                        </ListItemAvatar>
+                        <ListItemText
+                            primary={(attendance.filter(x => x.state === "Waiting").length ?? 0) + " warten"} />
+                    </ListItem>
+                </>
+            }
         </List>
         <Divider />
-    </Container>
+
+        <EventAttendanceDialog
+            open={eventAttendanceState.open}
+            index={eventAttendanceState.index}
+            hasWaitingList={attendance.some(x => x.state === "Waiting")}
+            setOpen={(value) => setEventAttendanceState({ open: value, index: 0 })}
+            attendance={attendance} />
+    </Container >
 }
 
 export default EventInformationAttendance;
