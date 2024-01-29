@@ -9,7 +9,7 @@ import EventRepeatIcon from '@mui/icons-material/EventRepeat';
 import React, { useEffect } from "react";
 import SearchPlacesDialog from "./SearchPlacesDialog";
 import { MapContainer, TileLayer, Marker, useMap } from "react-leaflet";
-import { EventInsert, EventRecurrence, FullEvent } from "../../types/supabaseTypes";
+import { EventInsert, EventRecurrence, EventUpdate, FullEvent } from "../../types/supabaseTypes";
 import { format, isAfter, isBefore, set } from "date-fns";
 import _, { toNumber } from "lodash";
 import { CreateEventProps, PlaceType } from "./types";
@@ -101,8 +101,10 @@ const CreateEvent = ({ t, eventToEdit, repository, option }: CreateEventProps) =
 
                 if (error) throw error;
 
-            } else if (option === "UpdateRecurrence") {
+            } else if (option === "UpdateRecurrence" && eventToEdit) {
+                const { error } = await repository.updateEventAndAllRecurrences(eventToEdit, event);
 
+                if (error) throw error;
             } else {
                 throw Error("There was no option provided wether this is a new event, to update only this or every recurring event. Please try again!")
             }

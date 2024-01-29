@@ -1,9 +1,9 @@
 import { Slide, SlideProps } from "@mui/material";
-import { format, parse } from "date-fns";
+import { Duration, add, format, intervalToDuration, parse } from "date-fns";
 import dayjs from "dayjs";
 import { forwardRef } from "react";
 import React from "react";
-import { ProductType } from "src/types/supabaseTypes";
+import { EventRecurrence, ProductType } from "src/types/supabaseTypes";
 
 export const compareById = (x: any, y: any) => {
     return x.id === y.id;
@@ -64,4 +64,16 @@ export const nameOfProductType = (type: ProductType) => {
         case "Special": return "Anderes"
         case "None": return "Ohne Typ"
     }
+}
+
+export const calculateEventDateWith = (eventDateTime: string | null, eventUpdateDateTime: string | null, difference: Duration, recurrence: EventRecurrence, index: number) => {
+    // if the current event has this date we can simply add our calculated difference
+    if (eventDateTime) {
+        return formatDateToDatabase(add(eventDateTime, difference))
+    }
+    //
+    if (eventUpdateDateTime) {
+
+    }
+    return null;
 }

@@ -21,7 +21,7 @@ export const EditEventOptionsDialog = ({ open, handleClose, setOpen }: EditEvent
                     }}
                     name="radio-buttons-group">
                     <FormControlLabel value={"OnlyThis"} control={<Radio />} label={"Nur dieses Event aktualisieren"} key={"OnlyThis"} />
-                    <FormControlLabel value={"EveryRecurrence"} control={<Radio />} label={"Dieses und alle folgenden Events aktualisieren"} key={"EveryRecurrence"} />
+                    <FormControlLabel value={"UpdateRecurrence"} control={<Radio />} label={"Dieses und alle folgenden Events aktualisieren"} key={"UpdateRecurrence"} />
                 </RadioGroup>
             </FormControl>
 
