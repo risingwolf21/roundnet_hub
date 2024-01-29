@@ -21,6 +21,7 @@ const isLocalhost = Boolean(
 );
 
 export function register(config: ServiceWorkerConfig) {
+  console.log('This web app installs a service worker now...')
   if ('serviceWorker' in navigator) {
     if (!process.env.PUBLIC_URL)
       return;
