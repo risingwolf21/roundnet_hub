@@ -77,8 +77,9 @@ const UserScreen = ({ user, client, dispatch, repository, groups }: UserScreenPr
                     }
                 }
             });
+        } else {
+            updateDisplayName(currentUser.avatarUrl);
         }
-        updateDisplayName();
     };
 
     const removeOldAvatarImages = async () => {
@@ -93,44 +94,38 @@ const UserScreen = ({ user, client, dispatch, repository, groups }: UserScreenPr
     }
 
     const uploadAvatarImage = async (fileName: string, compressedImage: string) => {
-        if (croppedImage) {
-            const { data: uploadData, error } = await client
-                .storage
-                .from('user')
-                .upload(`${user.userId}/${fileName}`, dataURLtoFile(compressedImage, fileName), {
-                    upsert: true
-                });
+        const { data: uploadData, error } = await client
+            .storage
+            .from('user')
+            .upload(`${user.userId}/${fileName}`, dataURLtoFile(compressedImage, fileName), {
+                upsert: true
+            });
 
-            if (!error && uploadData && uploadData.path) {
-                const { data } = client.storage.from('user').getPublicUrl(uploadData.path)
+        if (!error && uploadData && uploadData.path) {
+            const { data } = client.storage.from('user').getPublicUrl(uploadData.path)
 
-                const { error } = await client.from("user").update({ avatarUrl: data.publicUrl }).eq("userId", user.userId);
-                if (error) {
-                    client.storage.from('user').remove([uploadData.path])
-                }
-                setCurrentUser({ ...currentUser, avatarUrl: data.publicUrl })
-
-                let result = await updateDisplayName();
-
-                if (result) {
-                    setErrorSnackbar({ message: "Successfully updated your profile!", open: true, severity: "success" });
-                }
-            } else {
-                setErrorSnackbar({ message: "Something went wrong uploading your image. Please try it again.", open: true });
-                return;
+            const { error } = await client.from("user").update({ avatarUrl: data.publicUrl }).eq("userId", user.userId);
+            if (error) {
+                client.storage.from('user').remove([uploadData.path])
             }
+            setCurrentUser({ ...currentUser, avatarUrl: data.publicUrl });
+            setCroppedImage(null);
+
+            await updateDisplayName(data.publicUrl);
+
         } else {
-            updateDisplayName();
+            setErrorSnackbar({ message: "Something went wrong uploading your image. Please try it again.", open: true });
+            return;
         }
     }
 
-    const updateDisplayName = async () => {
+    const updateDisplayName = async (avatarUrl: string | null) => {
         let displayName = [firstName.trim(), surName.trim()].filter(x => x !== "").join(" ");
-        const { error } = await client.from(TABLE_USER).update({ displayName }).eq("userId", user.userId);
+        const { error } = await client.from(TABLE_USER).update({ displayName, avatarUrl }).eq("userId", user.userId);
         if (error) {
             setErrorSnackbar({ message: error.message, open: true });
             captureException(error);
-            return false;
+            return;
         }
         const { error: authError } = await client.auth.updateUser({
             data: { displayName }
@@ -138,9 +133,9 @@ const UserScreen = ({ user, client, dispatch, repository, groups }: UserScreenPr
         if (authError) {
             setErrorSnackbar({ message: authError.message, open: true });
             captureException(authError);
-            return false;
+            return;
         }
-        return true;
+        setErrorSnackbar({ message: "Successfully updated your profile!", open: true, severity: "success" });
     }
 
     const onImageInputChange = async (event: React.ChangeEvent<HTMLInputElement>): Promise<void> => {
@@ -168,7 +163,7 @@ const UserScreen = ({ user, client, dispatch, repository, groups }: UserScreenPr
                                 :
                                 currentUser.avatarUrl
                                     ? <img src={currentUser.avatarUrl} alt="logo" width={"150px"} height={"150px"} />
-                                    : <AccountBox sx={{ fontSize: "75px" }} />
+                                    : <AddPhotoAlternateOutlined sx={{ fontSize: "50px" }} />
                         }
                     </Avatar>
                 </Button>
@@ -243,7 +238,8 @@ const UserScreen = ({ user, client, dispatch, repository, groups }: UserScreenPr
                 }
             </List>
             {
-                (user.displayName !== ([firstName.trim(), surName.trim()].filter(x => x !== "").join(" ")) || croppedImage) &&
+                (user.displayName !== ([firstName.trim(), surName.trim()].filter(x => x !== "").join(" "))
+                    || croppedImage || (user.avatarUrl !== null && currentUser.avatarUrl === null)) &&
                 <Fab key={"saveButton"} variant="extended" sx={{ background: "#66bb6a", color: "#fff", position: "fixed", right: "16px", bottom: "72px" }} onClick={handleSubmit}>
                     <Save sx={{ color: "white", mr: 1 }} />
                     Speichern
