@@ -39,7 +39,7 @@ const CustomAppBar = ({ navigateBack = false, title = "Roundnet Karlsruhe", onRe
                 </IconButton>
             }
             {
-                onLogout && <Button color='inherit' onClick={onLogout}>
+                onLogout && <Button variant='contained' sx={{ color: (theme) => theme.palette.primary.main, background: "#fff" }} onClick={onLogout}>
                     Logout
                 </Button>
             }

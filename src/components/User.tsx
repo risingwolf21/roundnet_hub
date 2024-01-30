@@ -1,16 +1,15 @@
-import { Button, Checkbox, Fab, FormControlLabel, Grid, TextField, Box, Container, Avatar, Snackbar, Alert } from "@mui/material";
-import CheckIcon from '@mui/icons-material/Check';
+import { Button, Fab, Grid, TextField, Box, Container, Avatar, Snackbar, Alert, ListItem, ListItemAvatar, ListItemText, List, ListSubheader } from "@mui/material";
 import { useClient } from "react-supabase";
 import CustomAppBar from "./AppBar";
 import { useSelector } from "react-redux";
-import React, { FormEvent, useState } from "react";
+import React, { FormEvent, useEffect, useState } from "react";
 import { AppDispatch, RootState, useAppDispatch } from "../redux/store";
 import { TABLE_USER } from "../constants";
 import { AlertSnackbar } from "./AlertSnackbar";
-import { User } from "src/types/supabaseTypes";
+import { Group, User } from "src/types/supabaseTypes";
 import { SupabaseClient } from "@supabase/supabase-js";
 import CropImageDialog from "./CropImageDialog";
-import { AccountBox, RestaurantMenu, Save } from "@mui/icons-material";
+import { AccountBox, AddPhotoAlternateOutlined, AdminPanelSettingsOutlined, DeleteOutline, EditOutlined, EmailOutlined, FiberManualRecord, PersonOutlineOutlined, Save } from "@mui/icons-material";
 import { uuid } from "@supabase/gotrue-js/dist/module/lib/helpers";
 import { dataURLtoFile, readFile } from "src/utils";
 import { captureException } from "@sentry/react";
@@ -19,9 +18,11 @@ import Compressor from 'compressorjs';
 import { fetchCurrentUserAsync } from "src/redux/applicationSlice";
 import { useDependency } from "src/hooks/useDependency";
 import { IUserRepository } from "src/repository/IUserRepository";
+import { IEventRepository } from "src/repository/IEventRepository";
 
 type UserScreenProps = {
     user: User,
+    groups: Group[],
     client: SupabaseClient<Database>,
     dispatch: AppDispatch,
     repository: IUserRepository
@@ -30,27 +31,35 @@ type UserScreenProps = {
 export const UserScreenProvider = () => {
     const { user } = useSelector((state: RootState) => state.application);
     const repository = useDependency<IUserRepository>("IUserRepository");
+    const eventRepository = useDependency<IEventRepository>("IEventRepository");
     const client = useClient();
     const dispatch = useAppDispatch();
+    const [groups, setGroups] = useState<Group[]>([])
+
+    useEffect(() => {
+        if (user && eventRepository)
+            eventRepository.fetchUserGroups(user).then((result) => {
+                setGroups(result.data?.map(x => x.group) ?? []);
+            })
+    }, [user, eventRepository]);
 
     if (!user || !repository)
         return <AlertSnackbar close={() => { }} alertInfo={{ message: "Fatal error occured. User was null!", severity: "error" }} />
 
-    return <UserScreen user={user} client={client} dispatch={dispatch} repository={repository} />
+    return <UserScreen user={user} client={client} dispatch={dispatch} repository={repository} groups={groups} />
 }
 
-const UserScreen = ({ user, client, dispatch, repository }: UserScreenProps) => {
+const UserScreen = ({ user, client, dispatch, repository, groups }: UserScreenProps) => {
 
     const [selectedImage, setSelectedImage] = useState<string | ArrayBuffer | null>(null);
     const [croppedImage, setCroppedImage] = useState<string | null>(null);
     const [cropImageDialogOpen, setCropImageDialogOpen] = useState(false);
-    const [displayName, setDisplayName] = useState(user.displayName);
     const [errorSnackbar, setErrorSnackbar] = useState<{ open: boolean, message: string, severity?: "error" | "success" }>({ open: false, message: "", severity: "error" });
+    const [currentUser, setCurrentUser] = useState(user);
+    const [firstName, setFirstName] = useState(user.displayName.split(" ")[0]);
+    const [surName, setSueName] = useState(user.displayName.split(" ")[1] ?? "");
 
-
-    const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
-        event.preventDefault();
-
+    const handleSubmit = async () => {
         if (croppedImage) {
             var fileName = uuid() + ".jpg";
             new Compressor(dataURLtoFile(croppedImage, fileName), {
@@ -58,6 +67,7 @@ const UserScreen = ({ user, client, dispatch, repository }: UserScreenProps) => 
                 success: async (file) => {
                     let compressedFile = await readFile(file);
                     if (compressedFile && typeof (compressedFile) === "string") {
+                        await removeOldAvatarImages();
                         await uploadAvatarImage(fileName, compressedFile);
                         dispatch(fetchCurrentUserAsync({ userId: user.userId, repository }));
                         setCroppedImage(null);
@@ -70,6 +80,17 @@ const UserScreen = ({ user, client, dispatch, repository }: UserScreenProps) => 
         }
         updateDisplayName();
     };
+
+    const removeOldAvatarImages = async () => {
+        const { data: list, error } = await client.storage.from("user").list(`${user.userId}`);
+        if (error || !list) {
+            captureException(error);
+            return;
+        }
+        const filesToRemove = list.map((x) => `${user.userId}/${x.name}`);
+
+        const { data } = await client.storage.from("user").remove(filesToRemove);
+    }
 
     const uploadAvatarImage = async (fileName: string, compressedImage: string) => {
         if (croppedImage) {
@@ -87,14 +108,13 @@ const UserScreen = ({ user, client, dispatch, repository }: UserScreenProps) => 
                 if (error) {
                     client.storage.from('user').remove([uploadData.path])
                 }
+                setCurrentUser({ ...currentUser, avatarUrl: data.publicUrl })
 
                 let result = await updateDisplayName();
 
                 if (result) {
                     setErrorSnackbar({ message: "Successfully updated your profile!", open: true, severity: "success" });
                 }
-
-
             } else {
                 setErrorSnackbar({ message: "Something went wrong uploading your image. Please try it again.", open: true });
                 return;
@@ -105,6 +125,7 @@ const UserScreen = ({ user, client, dispatch, repository }: UserScreenProps) => 
     }
 
     const updateDisplayName = async () => {
+        let displayName = [firstName.trim(), surName.trim()].filter(x => x !== "").join(" ");
         const { error } = await client.from(TABLE_USER).update({ displayName }).eq("userId", user.userId);
         if (error) {
             setErrorSnackbar({ message: error.message, open: true });
@@ -122,63 +143,113 @@ const UserScreen = ({ user, client, dispatch, repository }: UserScreenProps) => 
         return true;
     }
 
+    const onImageInputChange = async (event: React.ChangeEvent<HTMLInputElement>): Promise<void> => {
+        if (!event.target.files || event.target.files.length === 0)
+            return;
+
+        let imageDataUrl = await readFile(event.target.files[0]);
+        setSelectedImage(imageDataUrl);
+        setCropImageDialogOpen(true);
+        event.target.files = null;
+        event.target.value = '';
+    };
+
     return <Grid
         width="100%">
         <CustomAppBar navigateBack={true} title="Profil" onLogout={() => client.auth.signOut()} />
-        <Box sx={{ pl: 2, pr: 2 }}><Box component="form" onSubmit={handleSubmit} noValidate>
-            <Container sx={{ display: "flex", justifyContent: "center", m: 2, p: 0, width: "auto" }}>
+        <List sx={{ pl: 2, pr: 2, pb: 8 }}>
+            <Container key={"avatar"} sx={{ display: "flex", justifyContent: "center", flexDirection: "column", m: 2, p: 0, width: "auto" }}>
                 <Button component="label" sx={{ border: "none", background: "transparent" }}>
-                    <input accept="image/*" type="file" hidden onChange={async (event) => {
-                        if (!event.target.files || event.target.files.length === 0)
-                            return;
-
-                        let imageDataUrl = await readFile(event.target.files[0]);
-                        setSelectedImage(imageDataUrl);
-                        setCropImageDialogOpen(true);
-                        event.target.files = null;
-                        event.target.value = '';
-                    }} />
-                    <Avatar sx={{ borderRadius: 2, width: "100px", height: "100px" }}>
+                    <input accept="image/*" type="file" hidden onChange={onImageInputChange} />
+                    <Avatar sx={{ borderRadius: 2, width: "150px", height: "150px" }}>
                         {
                             croppedImage
-                                ? <img src={croppedImage} alt="logo" width={"100px"} height={"100px"} />
+                                ? <img src={croppedImage} alt="logo" width={"150px"} height={"150px"} />
                                 :
-                                user.avatarUrl
-                                    ? <img src={user.avatarUrl} alt="logo" width={"100px"} height={"100px"} />
-                                    : <AccountBox sx={{ fontSize: "50px" }} />
+                                currentUser.avatarUrl
+                                    ? <img src={currentUser.avatarUrl} alt="logo" width={"150px"} height={"150px"} />
+                                    : <AccountBox sx={{ fontSize: "75px" }} />
                         }
                     </Avatar>
                 </Button>
+                <Box sx={{ display: "flex", justifyContent: "center", mt: 1 }}>
+                    {
+                        currentUser.avatarUrl ? <>
+                            <Button component="label" sx={{ border: "none", background: "transparent", mr: 2 }} startIcon={<EditOutlined />}>
+                                <input accept="image/*" type="file" hidden onChange={onImageInputChange} />
+                                Change
+                            </Button>
+                            <Button startIcon={<DeleteOutline />} onClick={() => setCurrentUser({ ...currentUser, avatarUrl: null })}>
+                                Remove
+                            </Button>
+                        </>
+                            : <Button component="label" sx={{ border: "none", background: "transparent" }} startIcon={<AddPhotoAlternateOutlined />}>
+                                <input accept="image/*" type="file" hidden onChange={onImageInputChange} />
+                                Add picture
+                            </Button>
+                    }
+                </Box>
             </Container>
-            <TextField
-                fullWidth
-                variant="filled"
-                value={displayName}
-                onChange={(e) => setDisplayName(e.target.value)}
-                label="Name"
-                margin="normal" />
-            <TextField
-                fullWidth
-                disabled
-                variant="filled"
-                defaultValue={user.email}
-                label="Email"
-                margin="normal" />
+            <ListItem key={"firstName"} sx={{ '&.MuiListItem-root': { p: 0 } }}>
+                <ListItemAvatar>
+                    <PersonOutlineOutlined sx={{ color: "rgba(0,0,0,0.54)" }} />
+                </ListItemAvatar>
+                <TextField
+                    fullWidth
+                    variant="outlined"
+                    value={firstName}
+                    onChange={(e) => setFirstName(e.target.value)}
+                    label="Vorname"
+                    margin="normal" />
+            </ListItem>
+            <ListItem key={"surName"} sx={{ '&.MuiListItem-root': { p: 0 } }}>
+                <ListItemAvatar />
+                <TextField
+                    fullWidth
+                    variant="outlined"
+                    value={surName}
+                    onChange={(e) => setSueName(e.target.value)}
+                    label="Nachname"
+                    margin="normal" />
+            </ListItem>
+            <ListItem key={"email"} sx={{ '&.MuiListItem-root': { p: 0 } }}>
+                <ListItemAvatar>
+                    <EmailOutlined sx={{ color: "rgba(0,0,0,0.54)" }} />
+                </ListItemAvatar>
+                <TextField
+                    fullWidth
+                    disabled
+                    variant="outlined"
+                    defaultValue={user.email}
+                    label="Email"
+                    margin="normal" />
+            </ListItem>
             {
-                user.role === "admin" && <FormControlLabel key={"adminRights"}
-                    control={<Checkbox checked={user.role === "admin"} disabled />}
-                    label="Adminrechte"
-                />
+                user.role === "admin" && <ListItem key={"adminRoles"} sx={{ '&.MuiListItem-root': { p: 0 } }}>
+                    <ListItemAvatar>
+                        <AdminPanelSettingsOutlined sx={{ color: "rgba(0,0,0,0.54)" }} />
+                    </ListItemAvatar>
+                    <ListItemText primary={"Adminrechte"} secondary={"Benutzerfreigabe"} />
+                </ListItem>
             }
+            <List key={"groups"} subheader={<ListSubheader sx={{ zIndex: "-1", fontWeight: "bold", lineHeight: "normal", my: 2, pl: 0 }}>Gruppen</ListSubheader>}>
+                {
+                    groups.map((group, index) => <ListItem key={`${group.name} ${index}`} sx={{ '&.MuiListItem-root': { p: 0 } }} divider={index !== groups.length - 1}>
+                        <ListItemAvatar>
+                            <FiberManualRecord sx={{ color: "rgba(0,0,0,0.54)" }} />
+                        </ListItemAvatar>
+                        <ListItemText primary={group.name} secondary={group.description} />
+                    </ListItem>)
+                }
+            </List>
             {
-                (user.displayName !== displayName || croppedImage) &&
-                <Fab key={"saveButton"} variant="extended" sx={{ background: "#66bb6a", color: "#fff", position: "fixed", right: "16px", bottom: "72px" }} type="submit">
+                (user.displayName !== ([firstName.trim(), surName.trim()].filter(x => x !== "").join(" ")) || croppedImage) &&
+                <Fab key={"saveButton"} variant="extended" sx={{ background: "#66bb6a", color: "#fff", position: "fixed", right: "16px", bottom: "72px" }} onClick={handleSubmit}>
                     <Save sx={{ color: "white", mr: 1 }} />
                     Speichern
                 </Fab>
             }
-        </Box>
-        </Box>
+        </List>
         {
             (selectedImage && typeof (selectedImage) === "string") && <CropImageDialog
                 open={cropImageDialogOpen}
@@ -189,7 +260,7 @@ const UserScreen = ({ user, client, dispatch, repository }: UserScreenProps) => 
                     setCropImageDialogOpen(false);
                 }} />
         }
-        <Snackbar sx={{ position: "fixed", right: "16px", }} open={errorSnackbar.open} autoHideDuration={5000} onClose={() => setErrorSnackbar({ message: "", open: false })}>
+        <Snackbar sx={{ position: "fixed", right: "16px", bottom: "76px" }} open={errorSnackbar.open} autoHideDuration={5000} onClose={() => setErrorSnackbar({ message: "", open: false })}>
             <Alert severity={errorSnackbar.severity ?? "error"} sx={{ width: '100%' }}>
                 {errorSnackbar.message}
             </Alert>
