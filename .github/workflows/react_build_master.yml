@@ -30,4 +30,4 @@ jobs:
           write-mode: overwrite
 
       - name: Build
-        run: yarn run build-staging
+        run: yarn run build:staging
