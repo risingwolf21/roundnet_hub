@@ -231,7 +231,7 @@ const UserScreen = ({ user, client, dispatch, repository, groups }: UserScreenPr
                 {
                     groups.map((group, index) => <ListItem key={`${group.name} ${index}`} sx={{ '&.MuiListItem-root': { p: 0 } }} divider={index !== groups.length - 1}>
                         <ListItemAvatar>
-                            <FiberManualRecord sx={{ color: "rgba(0,0,0,0.54)" }} />
+                            <FiberManualRecord sx={{ color: group.color }} />
                         </ListItemAvatar>
                         <ListItemText primary={group.name} secondary={group.description} />
                     </ListItem>)
