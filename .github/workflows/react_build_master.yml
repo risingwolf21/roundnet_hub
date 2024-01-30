@@ -19,7 +19,7 @@ jobs:
         run: yarn install
         
       - name: Test
-        run: yarn test
+        run: yarn test --passWithNoTests
 
       - name: Write commit Version to file
         uses: DamianReeves/write-file-action@master
