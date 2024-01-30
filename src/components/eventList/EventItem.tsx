@@ -3,7 +3,7 @@ import { Box, CircularProgress, IconButton, ListItem, ListItemAvatar, ListItemSe
 import moment from "moment"
 import React from "react"
 import { SliceEvent } from "src/redux/events/eventsSlice"
-import { answerDeadlineExpired, maxAttendeesExceeded } from "src/types/supabaseTypes"
+import { answerDeadlineExpired } from "src/types/supabaseTypes"
 
 export type EventItemProps = {
     attendanceUpdating: boolean,

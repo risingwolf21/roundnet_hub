@@ -1,7 +1,7 @@
 import { AppBar, Box, Button, Dialog, IconButton, Toolbar, Typography, TextField, ListItem, ListItemAvatar, ListItemText, DialogTitle, DialogContent, FormControl, FormControlLabel, RadioGroup, Radio, Divider, Checkbox, DialogActions, List, InputAdornment, Snackbar, Alert, ListItemButton } from "@mui/material"
-import { AccessTime, Article, Clear, Close, FiberManualRecord, Map } from "@mui/icons-material";
+import { AccessTime, Article, Close, FiberManualRecord, Map } from "@mui/icons-material";
 import EventIcon from "@mui/icons-material/Event";
-import { useLocation, useNavigate, useParams } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { DatePicker, DateTimePicker } from "@mui/x-date-pickers";
 import { TimePicker } from '@mui/x-date-pickers/TimePicker';
 import { FormEvent, Ref, useRef, useState } from "react";
@@ -9,9 +9,9 @@ import EventRepeatIcon from '@mui/icons-material/EventRepeat';
 import React, { useEffect } from "react";
 import SearchPlacesDialog from "./SearchPlacesDialog";
 import { MapContainer, TileLayer, Marker, useMap } from "react-leaflet";
-import { EventInsert, EventRecurrence, EventUpdate, FullEvent } from "../../types/supabaseTypes";
+import { EventInsert, EventRecurrence, FullEvent } from "../../types/supabaseTypes";
 import { format, isAfter, isBefore, set } from "date-fns";
-import _, { toNumber } from "lodash";
+import _ from "lodash";
 import { CreateEventProps, PlaceType } from "./types";
 import { SelectGroupDialog } from "./SelectGroupDialog";
 import { dayjsFromDb, formatDateToDatabase } from "src/utils";

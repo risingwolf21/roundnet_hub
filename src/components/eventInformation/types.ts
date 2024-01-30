@@ -2,7 +2,7 @@ import { TFunction } from "i18next";
 import { IEventRepository } from "src/repository/IEventRepository";
 import { AnyAction, ThunkDispatch } from "@reduxjs/toolkit";
 import { RootState } from "src/redux/store";
-import { FullAttendance, FullComment, FullEvent, Group, User } from "src/types/supabaseTypes";
+import { FullAttendance, FullComment, Group, User } from "src/types/supabaseTypes";
 import { CreateEventOption, PlaceType } from "../eventCreation/types";
 import { SliceEvent } from "src/redux/events/eventsSlice";
 

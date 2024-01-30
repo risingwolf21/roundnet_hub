@@ -1,5 +1,4 @@
 import { isBefore } from "date-fns";
-import { SliceEvent } from "src/redux/events/eventsSlice";
 import { Database } from "src/types/supabase";
 
 export type Drink = Database["public"]["Tables"]["drink"]["Row"];

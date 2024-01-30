@@ -6,12 +6,12 @@ import { useParams } from "react-router-dom";
 import { useDependency } from "src/hooks/useDependency";
 import { IEventRepository } from "src/repository/IEventRepository";
 import { RootState, useAppDispatch } from "../../redux/store";
-import { EventAttendanceUpdate, EventUpdate, FullEvent } from "../../types/supabaseTypes";
+import { EventAttendanceUpdate, EventUpdate } from "../../types/supabaseTypes";
 import EventInformation from ".";
 import { PlaceType } from "../eventCreation/types";
 import LoadingEventInfo from "./LoadingEventInfo";
 import { AlertSnackbar } from "../AlertSnackbar";
-import { SliceEvent, eventsSelector, fetchSingleEventAsync, onEventDelete, onEventUpdate } from "src/redux/events/eventsSlice";
+import { eventsSelector, fetchSingleEventAsync, onEventDelete, onEventUpdate } from "src/redux/events/eventsSlice";
 import { attendanceSelector, onEventAttendanceDelete, onEventAttendanceUpdate } from "src/redux/events/eventAttendanceSlice";
 import { eventsCommentsSelector } from "src/redux/events/eventCommentsSlice";
 import { useClient } from "react-supabase";
@@ -55,7 +55,7 @@ const EventInformationProvider = () => {
         } else {
             setSelectedEventPlace(event.place ? JSON.parse(event.place?.toString() ?? "") as PlaceType : null)
         }
-    }, [selectedEventId, dispatch, repository, user]);
+    }, [selectedEventId, dispatch, repository, user, event]);
 
     if (loading)
         return <LoadingEventInfo />

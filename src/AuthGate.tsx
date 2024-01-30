@@ -8,7 +8,7 @@ import LoginScreen from './components/LoginScreen';
 import NotVerifiedScreen from "./components/NotVerifiedScreen";
 import RegisterScreen from './components/RegisterScreen';
 import ResetPasswordScreen from "./components/ResetPasswordScreen";
-import UserScreen, { UserScreenProvider } from "./components/User";
+import { UserScreenProvider } from "./components/User";
 import { supabaseAdmin } from "./components/services/supabase/supabaseClient";
 import { TABLE_USER } from "./constants";
 import { onUserChange } from "./redux/applicationSlice";

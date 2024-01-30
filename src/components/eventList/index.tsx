@@ -1,10 +1,10 @@
 import AddIcon from '@mui/icons-material/Add';
 import { Alert, Divider, Fab, Grid, LinearProgress, Snackbar } from "@mui/material";
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import { useNavigate } from 'react-router-dom';
 import { useClient } from "react-supabase";
 import { useAppDispatch } from "../../redux/store";
-import { EventAttendance, EventInsert, EventUpdate } from "../../types/supabaseTypes";
+import { EventAttendance, EventUpdate } from "../../types/supabaseTypes";
 import CustomAppBar from "../AppBar";
 import { InfiniteScrollList } from "../InfiniteScrollList";
 import { EventItem } from "./EventItem";
@@ -68,7 +68,7 @@ const EventScreen = ({ events, loading, error, endReached, repository, user }: E
         </InfiniteScrollList>
         {
             user.role === "admin" && <Fab sx={{ background: "#66bb6a", position: "fixed", right: "16px", bottom: "76px" }}
-                onClick={() => navigate("/training/createOrUpdate/" + "NewEvent" as CreateEventOption)}>
+                onClick={() => navigate("/training/createOrUpdate/NewEvent")}>
                 {
                     <AddIcon sx={{ color: "white" }} />
                 }

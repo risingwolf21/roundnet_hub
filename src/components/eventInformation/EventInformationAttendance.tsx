@@ -1,13 +1,12 @@
-import { CheckCircleOutline, ThumbUpAlt, ThumbUpOffAlt, RemoveCircleOutline, ThumbDownAlt, ThumbDownOffAlt, HourglassBottom, HourglassBottomOutlined } from "@mui/icons-material"
+import { CheckCircleOutline, ThumbUpAlt, ThumbUpOffAlt, RemoveCircleOutline, ThumbDownAlt, ThumbDownOffAlt, HourglassBottom } from "@mui/icons-material"
 import { Typography, List, ListItem, ListItemAvatar, CircularProgress, ListItemText, Divider, ListItemSecondaryAction, IconButton, Container } from "@mui/material"
 import { t } from "i18next"
 import React, { useEffect, useState } from "react"
-import { useDispatch } from "react-redux"
 import { useClient } from "react-supabase"
 import { onEventAttendanceDelete, onEventAttendanceUpdate } from "src/redux/events/eventAttendanceSlice"
 import { SliceEvent } from "src/redux/events/eventsSlice"
 import { useAppDispatch } from "src/redux/store"
-import { maxAttendeesExceeded, answerDeadlineExpired, FullAttendance, Attendance, EventAttendance, EventAttendanceUpdate, User } from "src/types/supabaseTypes"
+import { maxAttendeesExceeded, answerDeadlineExpired, FullAttendance, EventAttendance, EventAttendanceUpdate, User } from "src/types/supabaseTypes"
 import EventAttendanceDialog from "./EventAttendanceDialog"
 
 type EventInformationAttendanceProps = {

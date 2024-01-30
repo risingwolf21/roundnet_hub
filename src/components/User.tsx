@@ -2,14 +2,14 @@ import { Button, Fab, Grid, TextField, Box, Container, Avatar, Snackbar, Alert, 
 import { useClient } from "react-supabase";
 import CustomAppBar from "./AppBar";
 import { useSelector } from "react-redux";
-import React, { FormEvent, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { AppDispatch, RootState, useAppDispatch } from "../redux/store";
 import { TABLE_USER } from "../constants";
 import { AlertSnackbar } from "./AlertSnackbar";
 import { Group, User } from "src/types/supabaseTypes";
 import { SupabaseClient } from "@supabase/supabase-js";
 import CropImageDialog from "./CropImageDialog";
-import { AccountBox, AddPhotoAlternateOutlined, AdminPanelSettingsOutlined, DeleteOutline, EditOutlined, EmailOutlined, FiberManualRecord, PersonOutlineOutlined, Save } from "@mui/icons-material";
+import { AddPhotoAlternateOutlined, AdminPanelSettingsOutlined, DeleteOutline, EditOutlined, EmailOutlined, FiberManualRecord, PersonOutlineOutlined, Save } from "@mui/icons-material";
 import { uuid } from "@supabase/gotrue-js/dist/module/lib/helpers";
 import { dataURLtoFile, readFile } from "src/utils";
 import { captureException } from "@sentry/react";
@@ -90,7 +90,7 @@ const UserScreen = ({ user, client, dispatch, repository, groups }: UserScreenPr
         }
         const filesToRemove = list.map((x) => `${user.userId}/${x.name}`);
 
-        const { data } = await client.storage.from("user").remove(filesToRemove);
+         await client.storage.from("user").remove(filesToRemove);
     }
 
     const uploadAvatarImage = async (fileName: string, compressedImage: string) => {
