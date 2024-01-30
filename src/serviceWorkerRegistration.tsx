@@ -54,6 +54,8 @@ export function register(config: ServiceWorkerConfig) {
         registerValidSW(swUrl, config);
       }
     });
+  } else {
+    console.log("No service worker found in Navigator!");
   }
 }
 
