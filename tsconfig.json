@@ -109,6 +109,7 @@
   },
   "include": [
     "src/**/*",
-    "@casl/react/contextAPIPatch.d.ts"
+    "@casl/react/contextAPIPatch.d.ts",
+    "src/service-worker.js"  
   ]
 }
