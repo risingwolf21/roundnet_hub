@@ -74,7 +74,7 @@
     "start:production": "env-cmd -f .env.production react-scripts start",
     "build:staging": "env-cmd -f .env.staging react-scripts build",
     "build:production": "env-cmd -f .env.production react-scripts build",
-    "test": "env-cmd -f .env.staging react-scripts test",
+    "test": "env-cmd -f .env.staging react-scripts test --passWithNoTests",
     "eject": "env-cmd -f .env.staging react-scripts eject",
     "function-deploy-all": "npx supabase functions deploy --project-ref xibmjvkjkdxdbmreicps",
     "function-deploy-all-prod": "npx supabase functions deploy --project-ref PROJECT_REF"
