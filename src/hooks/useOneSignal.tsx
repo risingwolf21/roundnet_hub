@@ -6,7 +6,7 @@ import { RootState } from 'src/redux/store';
 
 export function useOneSignal() {
     const { t } = useTranslation();
-    const oneSignalUserId = process.env.REACT_APP_oneSignalAppId;
+    const oneSignalUserId = process.env.REACT_APP_ONESIGNAL_APP_ID;
     const [oneSignalInitialized, setOneSignalInitialized] = useState(false);
     const { user } = useSelector((state: RootState) => state.application);
 
