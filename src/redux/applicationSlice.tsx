@@ -1,5 +1,6 @@
-import { PayloadAction, createSlice } from '@reduxjs/toolkit';
+import { PayloadAction, createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import { User } from '../types/supabaseTypes';
+import { IUserRepository } from 'src/repository/IUserRepository';
 
 type ApplicationSliceState = {
     user: User | null,
@@ -36,8 +37,19 @@ export const applicationReducer = createSlice({
         onRealtimeStateChange: (state, action: PayloadAction<"CLOSED" | "SUBSCRIBED" | "TIMED_OUT" | "CHANNEL_ERROR">) => {
             state.realtimeState = action.payload;
         }
-    }
+    },
+    extraReducers(builder) {
+        builder.addCase(fetchCurrentUserAsync.fulfilled, (state, action) => {
+            state.user = action.payload
+        })
+    },
 });
+
+export const fetchCurrentUserAsync = createAsyncThunk("fetchCurrentUser", async ({ repository, userId }: { userId: string, repository: IUserRepository }) => {
+    const response = await repository.fetchUser(userId);
+    return response.data;
+});
+
 
 export const { onUserChange, onModeChange, onAppUpdateAvailableChange, onAppVersionChange, onRealtimeStateChange } = applicationReducer.actions;
 

@@ -46,5 +46,5 @@ export function useOneSignal() {
         if (user && oneSignalInitialized) {
             OneSignal.login(user.userId);
         }
-    }, [user])
+    }, [user, oneSignalInitialized])
 }

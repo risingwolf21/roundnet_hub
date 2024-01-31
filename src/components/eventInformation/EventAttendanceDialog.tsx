@@ -1,10 +1,10 @@
 import { AppBar, Avatar, Box, List, ListItem, ListItemAvatar, ListItemSecondaryAction, ListItemText, Tab, Tabs, Typography } from "@mui/material"
 import { useState } from "react";
-import { AccountBox, AccountCircle } from "@mui/icons-material";
+import { AccountBox } from "@mui/icons-material";
 import { useTheme } from '@mui/material/styles';
 import { useEffect } from "react";
 import React from "react";
-import { FullAttendance, FullEvent } from "../../types/supabaseTypes";
+import { FullAttendance } from "../../types/supabaseTypes";
 import { SwipeableDialog } from "../SwipeableDialog";
 import { EventAttendanceDialogProps } from "./types";
 import { isBefore } from "date-fns";

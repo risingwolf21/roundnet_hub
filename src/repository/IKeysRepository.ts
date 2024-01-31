@@ -2,7 +2,6 @@ import { PostgrestSingleResponse } from "@supabase/supabase-js";
 import { FullKeyHolder, Key, User } from "src/types/supabaseTypes";
 import { SupabaseRepository } from "./Repository";
 import { formatDateToDatabase } from "src/utils";
-import moment from "moment";
 
 export interface IKeysRepository {
     getKeys(): Promise<PostgrestSingleResponse<FullKeyHolder[]>>

@@ -47,10 +47,6 @@ export const UserPermissionsDialog = ({ open, handleClose, handleSubmit, permiss
         }
     }
 
-    const handleDialogSubmit = (e: React.FormEventHandler<HTMLFormElement> | undefined) => {
-        handleSubmit(selectedUserPermissions);
-    }
-
     return <Dialog
         fullScreen
         open={open}

@@ -3,7 +3,7 @@ import { Grid, LinearProgress, List, ListItem, ListItemAvatar, ListItemText } fr
 import { SupabaseClient } from "@supabase/supabase-js";
 import React, { useEffect } from "react";
 import { useSelector } from "react-redux";
-import { Navigate, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useClient } from "react-supabase";
 import { GroupWithUsers } from "src/types/supabaseTypes";
 import { fetchGroupsAsync, groupsSelector } from "../../redux/groupsSlice";

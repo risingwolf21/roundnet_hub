@@ -1,10 +1,8 @@
-import { AccountBox, ArrowRight, Comment, Send } from "@mui/icons-material"
-import { Typography, ListItemButton, ListItemAvatar, Container, ListItemText, ListItemSecondaryAction, IconButton, Box, List, ListItem, Avatar, CircularProgress, TextField, InputAdornment, Divider } from "@mui/material"
-import { SwipeableDialog } from "../SwipeableDialog"
+import { AccountBox, Send } from "@mui/icons-material"
+import { Typography, ListItemAvatar, Container, ListItemText, ListItemSecondaryAction, IconButton, Box, List, ListItem, Avatar, CircularProgress, TextField, InputAdornment } from "@mui/material"
 import { useEffect, useState } from "react"
 import React from "react"
 import { EventCommentUpdate, FullComment } from "src/types/supabaseTypes"
-import moment from "moment"
 import { useAppDispatch } from "src/redux/store"
 import { useClient } from "react-supabase"
 import { onEventCommentDelete, onEventCommentUpdate } from "src/redux/events/eventCommentsSlice"
@@ -18,7 +16,6 @@ type EventInformationCommentsProps = {
 }
 
 const EventInformationComments = ({ comments, inputRef, handleCommentSubmit, eventId }: EventInformationCommentsProps) => {
-    const [commentsOpen, setCommentsOpen] = useState(false);
     const client = useClient();
     const dispatch = useAppDispatch();
     useEffect(() => {

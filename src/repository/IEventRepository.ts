@@ -3,7 +3,7 @@ import { PostgrestSingleResponse, PostgrestError } from '@supabase/supabase-js';
 import moment from "moment";
 import { injectable } from "inversify";
 import { SupabaseRepository } from "./Repository";
-import { formatDateFromDatabase, formatDateToDatabase } from "src/utils";
+import { formatDateToDatabase } from "src/utils";
 import { add, interval, intervalToDuration } from "date-fns";
 import _ from "lodash";
 

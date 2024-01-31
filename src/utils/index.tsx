@@ -1,5 +1,5 @@
 import { Slide, SlideProps } from "@mui/material";
-import { Duration, add, format, intervalToDuration, parse } from "date-fns";
+import { Duration, add, format, parse } from "date-fns";
 import dayjs from "dayjs";
 import { forwardRef } from "react";
 import React from "react";

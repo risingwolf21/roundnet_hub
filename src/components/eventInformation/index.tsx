@@ -1,59 +1,36 @@
 import {
-    AccountCircle,
-    ArrowBack, ArrowRight,
-    CheckCircleOutline,
-    Comment,
+    ArrowBack,
     Delete,
     DoNotDisturb,
     DoNotDisturbOff,
     Edit,
-    MoreVert,
-    Refresh,
-    RemoveCircleOutline,
-    Send,
-    ThumbDownAlt,
-    ThumbDownOffAlt,
-    ThumbUpAlt,
-    ThumbUpOffAlt
+    MoreVert
 } from "@mui/icons-material";
 import {
     Alert,
-    AlertTitle,
     AppBar,
-    Avatar,
     Box,
     Button,
     CardContent,
     CardHeader,
     CardMedia,
-    CircularProgress,
     Container,
     Divider,
     IconButton,
-    InputAdornment,
-    List,
-    ListItem,
-    ListItemAvatar,
-    ListItemButton,
     ListItemIcon,
-    ListItemSecondaryAction,
     ListItemText,
     Menu,
     MenuItem,
     Snackbar,
-    TextField,
     Toolbar,
     Typography
 } from "@mui/material";
-import moment from "moment";
 import React, { createRef, useEffect, useState } from "react";
 import { MapContainer, Marker, TileLayer } from "react-leaflet";
 import { useNavigate } from "react-router-dom";
-import { EventAttendance, answerDeadlineExpired, maxAttendeesExceeded } from "../../types/supabaseTypes";
+import { EventAttendance, answerDeadlineExpired } from "../../types/supabaseTypes";
 import { DeleteEventDialog } from "./DeleteEventDialog";
-import { SwipeableDialog } from "../SwipeableDialog";
 import { DeleteEventType, EventInformationProps } from "./types";
-import EventAttendanceDialog from "./EventAttendanceDialog";
 import { CancelTrainingDialog } from "./CancelTrainingDialog";
 import { can } from "src/utils/PermissionService";
 import { fetchEventAttendanceAsync, updateAttendanceAsync } from "src/redux/events/eventAttendanceSlice";
@@ -82,7 +59,6 @@ const EventInformation = ({
     const [cancelTrainingOpen, setCancelTrainingOpen] = useState(false);
     const [deleteTrainingOpen, setDeleteTrainingOpen] = useState(false);
     const [editEventOptionOpen, setEditEventOptionOpen] = useState(false);
-    const [commentsOpen, setCommentsOpen] = useState(false);
     const navigate = useNavigate();
     const inputRef = createRef<HTMLInputElement>();
     const [anchorEl, setAnchorEl] = useState<EventTarget & HTMLButtonElement | null>(null);

@@ -6,8 +6,6 @@ import { enGB, de } from "date-fns/locale";
 import translationEN from './locales/en_US.json'
 import translationDE from './locales/de_DE.json';
 
-const locales = { enGB, de };
-
 const resources = {
     en: {
         translation: translationEN

@@ -1,7 +1,7 @@
 import React, { FormEvent, useEffect, useState } from "react";
 import { AppBar, Avatar, Button, Checkbox, Collapse, Dialog, DialogActions, DialogContent, DialogTitle, Divider, IconButton, List, ListItem, ListItemAvatar, ListItemButton, ListItemSecondaryAction, ListItemText, ListSubheader, Radio, TextField, Toolbar, Typography } from "@mui/material"
 import { Box } from "@mui/system";
-import { AccountCircle, Close, Edit, Email, ExpandLess, ExpandMore, FiberManualRecord, ManageAccounts, Verified } from "@mui/icons-material";
+import { AccountCircle, Close, Edit, Email, FiberManualRecord, ManageAccounts, Verified } from "@mui/icons-material";
 import { useClient } from "react-supabase";
 import { SlideUpTransition } from "../../utils";
 import { FullHistory, Group, Permissions, User, UserRole, UserWithGroups } from "../../types/supabaseTypes";

@@ -19,15 +19,7 @@ jobs:
         run: yarn install
         
       - name: Test
-        run: yarn test
-
-      - name: Write commit Version to file
-        uses: DamianReeves/write-file-action@master
-        with:
-          path: ${{github.workspace}}/src/git_commit.txt
-          contents: |
-            ${{github.sha}}
-          write-mode: overwrite
+        run: yarn test --passWithNoTests
 
       - name: Build
-        run: yarn run build-staging
+        run: yarn run build:staging

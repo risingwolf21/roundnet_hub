@@ -6,9 +6,8 @@ import CustomBottomNavigation from './components/BottomNavigation';
 import Browse from './components/Browse';
 import { LoadingScreen } from "./components/LoadingScreen";
 import UpdateAvailable from './components/UpdateAvailable';
-import UserScreen, { UserScreenProvider } from './components/User';
+import { UserScreenProvider } from './components/User';
 import BrowseAdmin from './components/admin/BrowseAdmin';
-import { useInitialFetch } from "./hooks/useInitialFetch";
 import { useOneSignal } from "./hooks/useOneSignal";
 import { useServiceWorker } from './hooks/useServiceWorker';
 import ExecuteEdgeFunctions from "./components/admin/ExecuteEdgeFunctions";
@@ -35,7 +34,6 @@ const EventScreenProvider = React.lazy(() => import('./components/eventList/prov
 const App = () => {
 
   useOneSignal();
-  useInitialFetch();
 
   const { isUpdateAvailable, updateServiceWorker } = useServiceWorker();
 
