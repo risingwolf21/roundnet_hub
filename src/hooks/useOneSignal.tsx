@@ -17,7 +17,6 @@ export function useOneSignal() {
         OneSignal.init({
             appId: oneSignalUserId,
             allowLocalhostAsSecureOrigin: true,
-            path: 'push/onesignal/OneSignalSDKWorker.js',
             serviceWorkerParam: { scope: '/push/onesignal/' },
             promptOptions: {
                 slidedown: {
