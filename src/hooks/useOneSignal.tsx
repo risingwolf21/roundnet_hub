@@ -13,9 +13,12 @@ export function useOneSignal() {
     useEffect(() => {
         if (oneSignalInitialized || !oneSignalUserId)
             return;
+
         OneSignal.init({
             appId: oneSignalUserId,
             allowLocalhostAsSecureOrigin: true,
+            path: 'push/onesignal/OneSignalSDKWorker.js',
+            serviceWorkerParam: { scope: '/push/onesignal/' },
             promptOptions: {
                 slidedown: {
                     prompts: [
