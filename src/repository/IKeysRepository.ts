@@ -11,24 +11,20 @@ export interface IKeysRepository {
 export class SupabaseKeysRepository extends SupabaseRepository implements IKeysRepository {
 
     async getKeys(): Promise<PostgrestSingleResponse<FullKeyHolder[]>> {
-        const query = this.client
+        return this.client
             .from("key_holders")
             .select("*, user: user(*), key: key(*)")
             .returns<FullKeyHolder[]>();
-
-        return query;
     }
 
     async giveKeyToUser(key: Key, user: User): Promise<PostgrestSingleResponse<null>> {
-        const query = this.client
+        return this.client
             .from("key_holders")
             .update({
                 user: user.userId,
                 lastUpdate: formatDateToDatabase(new Date()),
             })
             .eq("key", key.id);
-
-        return query;
     }
 
 }

@@ -61,7 +61,7 @@ const KeyHolderScreen = ({ keysRepository, dispatch, keys, loading, user }: KeyH
     const confirmKeyHandOver = () => {
         if (!selectedKeyHolder || !selectedUser)
             return;
-        keysRepository.giveKeyToUser(selectedKeyHolder.key, selectedUser).then((result) => {
+        keysRepository.giveKeyToUser(selectedKeyHolder.key, selectedUser).then(() => {
             setSelectedUser(null);
             setSelectedKeyHolder(null);
             dispatch(fetchKeyssAsync(keysRepository));
@@ -73,7 +73,7 @@ const KeyHolderScreen = ({ keysRepository, dispatch, keys, loading, user }: KeyH
         setSelectedKeyHolder(key);
     }
 
-    const selectKeyToRecieve = (key: FullKeyHolder) => {
+    const selectKeyToReceive = (key: FullKeyHolder) => {
         setSelectedKeyHolder(key);
         setSelectedUser(user);
     }
@@ -85,7 +85,7 @@ const KeyHolderScreen = ({ keysRepository, dispatch, keys, loading, user }: KeyH
             {
                 keys.map((key: FullKeyHolder, index: number) => <ListItem key={index} divider>
                     <ListItemAvatar>
-                        <Avatar sx={{ background: "#88AEBF", width: 40, height: 40, borderRadius: 2 }}>
+                        <Avatar sx={{ background: key.key.color, width: 40, height: 40, borderRadius: 2 }}>
                             <KeyIcon />
                         </Avatar>
                     </ListItemAvatar>
@@ -99,7 +99,7 @@ const KeyHolderScreen = ({ keysRepository, dispatch, keys, loading, user }: KeyH
                             </ListItemSecondaryAction>
                             :
                             <ListItemSecondaryAction>
-                                <Button color="primary" onClick={() => selectKeyToRecieve(key)}>
+                                <Button color="primary" onClick={() => selectKeyToReceive(key)}>
                                     Annehmen
                                 </Button>
                             </ListItemSecondaryAction>
