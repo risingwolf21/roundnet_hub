@@ -2,6 +2,7 @@
   "name": "roundnet_karlsruhe_app",
   "version": "1.1.1",
   "private": true,
+  "homepage": ".",
   "dependencies": {
     "@casl/ability": "^6.5.0",
     "@casl/react": "^3.1.0",
@@ -74,7 +75,7 @@
     "start:production": "env-cmd -f .env.production react-scripts start",
     "build:staging": "env-cmd -f .env.staging react-scripts build",
     "build:production": "env-cmd -f .env.production react-scripts build",
-    "test": "env-cmd -f .env.staging react-scripts test",
+    "test": "env-cmd -f .env.staging react-scripts test --passWithNoTests",
     "eject": "env-cmd -f .env.staging react-scripts eject",
     "function-deploy-all": "npx supabase functions deploy --project-ref xibmjvkjkdxdbmreicps",
     "function-deploy-all-prod": "npx supabase functions deploy --project-ref PROJECT_REF"

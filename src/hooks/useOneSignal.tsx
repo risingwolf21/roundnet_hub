@@ -6,16 +6,18 @@ import { RootState } from 'src/redux/store';
 
 export function useOneSignal() {
     const { t } = useTranslation();
-    const oneSignalUserId = process.env.REACT_APP_oneSignalAppId;
+    const oneSignalUserId = process.env.REACT_APP_ONESIGNAL_APP_ID;
     const [oneSignalInitialized, setOneSignalInitialized] = useState(false);
     const { user } = useSelector((state: RootState) => state.application);
 
     useEffect(() => {
         if (oneSignalInitialized || !oneSignalUserId)
             return;
+
         OneSignal.init({
             appId: oneSignalUserId,
             allowLocalhostAsSecureOrigin: true,
+            serviceWorkerParam: { scope: '/push/onesignal/' },
             promptOptions: {
                 slidedown: {
                     prompts: [
