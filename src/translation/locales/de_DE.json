@@ -39,7 +39,8 @@
             "answerDeadlineExceededTitle": "Anmeldezeitraum vorbei",
             "waitingListPlace": "Warteliste Platz ({{ place }} / {{ waitingListLength }})",
             "waitingListAccepted": "Du bist auf Wartelisteplatz {{ place }} von {{ waitingListLength }} für dieses Event",
-            "eventSpotsTaken": "{{ taken }} von {{waitingListLength}} Plätzen vergeben"
+            "eventSpotsTaken": "{{ taken }} von {{waitingListLength}} Plätzen vergeben",
+            "noKeyHolderAttending": "Es nimmt bisher niemand mit einem Schlüssel teil"
         }
     },
     "notificationTags": {

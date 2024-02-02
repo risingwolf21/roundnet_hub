@@ -39,7 +39,8 @@
             "answerDeadlineExceededTitle": "Registration period expired",
             "waitingListPlace": "Waitlinglist Place ({{ place }} / {{ waitingListLength }})",
             "waitingListAccepted": "You are on waiting list place {{ place }} of {{ waitingListLength }} for this event",
-            "eventSpotsTaken": "{{ taken }} of {{waitingListLength}} spots taken"
+            "eventSpotsTaken": "{{ taken }} of {{waitingListLength}} spots taken",
+            "noKeyHolderAttending": "There is no keyholder attending this event."
         }
     },
     "notificationTags": {
