@@ -15,7 +15,7 @@ import NotificationsScreenProvider from "./components/NotificationsScreen";
 
 const FeatureNotAvailable = React.lazy(() => import('./components/FeatureNotAvailable'));
 const HistoryScreenProvider = React.lazy(() => import('./components/HistoryScreen'));
-const KeyHolderScreenProvider = React.lazy(() => import('./components/KeyHolderScreen'));
+const KeyHolderScreenProvider = React.lazy(() => import('./components/keys/KeyHolderScreen'));
 const PayDrinksScreenProvider = React.lazy(() => import('./components/PayDrinksScreen'));
 const ResetPasswordScreen = React.lazy(() => import('./components/ResetPasswordScreen'));
 const PaymentsPendingAdmin = React.lazy(() => import('./components/admin/PaymentsPendingAdmin'));
