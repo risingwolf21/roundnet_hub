@@ -19,6 +19,8 @@ import {
 } from "src/redux/events/eventAttendanceSlice";
 import {eventsCommentsSelector} from "src/redux/events/eventCommentsSlice";
 import {useClient} from "react-supabase";
+import {fetchKeysAsync, keyHoldersSelector} from "../../redux/keysSlice";
+import {IKeysRepository} from "../../repository/IKeysRepository";
 
 const EventInformationProvider = () => {
     const {selectedEventId} = useParams();
@@ -28,15 +30,19 @@ const EventInformationProvider = () => {
     const event = useSelector((state: RootState) => eventsSelector.selectById(state, toInteger(selectedEventId)));
     const {loading: attendanceLoading} = useSelector((state: RootState) => state.eventAttendance);
     const {loading: commentsLoading} = useSelector((state: RootState) => state.eventComments);
-    const {keys: keyHolders} = useSelector((state: RootState) => state.keys);
+    const keyHolders = useSelector((state: RootState) => keyHoldersSelector.selectAll(state));
     const {user} = useSelector((state: RootState) => state.application);
     const dispatch = useAppDispatch();
     const client = useClient();
     const {t} = useTranslation();
     const [selectedEventPlace, setSelectedEventPlace] = useState<PlaceType | null>(null);
     const repository = useDependency<IEventRepository>("IEventRepository");
+    const keysRepository = useDependency<IKeysRepository>("IKeysRepository");
 
     useEffect(() => {
+        if(keysRepository)
+            dispatch(fetchKeysAsync(keysRepository));
+
         if (!user || !event)
             return;
 

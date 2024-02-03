@@ -18,6 +18,7 @@ import { EmptyAdminDrinksRepository, IAdminDrinksRepository, SupabaseAdminDrinks
 import { EmptyAdminUsersRepository, IAdminUsersRepository, SupabaseAdminUsersRepository } from "./repository/IAdminUsersRepository";
 import { User } from "./types/supabaseTypes";
 import { ability, defineRulesFor } from "./utils/PermissionService";
+import {InitialLoader} from "./components/InitialLoader";
 
 
 const initialState = { session: null, user: null }
@@ -120,7 +121,7 @@ const AuthGate = ({ children }: Props) => {
             <Route path="/user" element={<UserScreenProvider />} />
         </Routes>
     } else {
-        return children
+        return children;
     }
 }
 export default AuthGate;

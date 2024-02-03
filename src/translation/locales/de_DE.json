@@ -40,7 +40,7 @@
             "waitingListPlace": "Warteliste Platz ({{ place }} / {{ waitingListLength }})",
             "waitingListAccepted": "Du bist auf Wartelisteplatz {{ place }} von {{ waitingListLength }} für dieses Event",
             "eventSpotsTaken": "{{ taken }} von {{waitingListLength}} Plätzen vergeben",
-            "noKeyHolderAttending": "Es nimmt bisher niemand mit einem Schlüssel teil"
+            "keyHolderAttending": "Jemand mit einem Schlüssel ist angemeldet"
         }
     },
     "notificationTags": {
@@ -51,5 +51,6 @@
     },
     "feature_not_available": "Diese Funktion ist noch nicht bereit. Versuche es später erneut!",
     "notification_actionMessage": "Du kannst Push-Benachrichtigungen zu den folgenden Themen erhalten",
-    "notification_updateMessage": "Update deine Push-Benachrichtigungs Segmente"
+    "notification_updateMessage": "Update deine Push-Benachrichtigungs Segmente",
+    "attendees": "Teilnehmer"
 }

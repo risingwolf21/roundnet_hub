@@ -1,40 +1,51 @@
-import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
-import { FullKeyHolder } from "../types/supabaseTypes";
-import { IKeysRepository } from "src/repository/IKeysRepository";
+import {createAsyncThunk, createEntityAdapter, createSlice, PayloadAction} from "@reduxjs/toolkit";
+import {FullKeyHolder, KeyInsert, KeyUpdate} from "../types/supabaseTypes";
+import {IKeysRepository} from "src/repository/IKeysRepository";
+import {SliceEvent} from "./events/eventsSlice";
+import {RootState} from "./store";
 
 type KeysSliceState = {
-    keys: FullKeyHolder[],
+    keyHolders: FullKeyHolder[],
     loading: boolean,
     error: string | null
 }
 
-const initialState = {
-    keys: [],
-    loading: false,
-    error: null
-} as KeysSliceState;
+
+const keyHoldersAdapter = createEntityAdapter({
+    selectId: (keyHolder: FullKeyHolder) => keyHolder.key.id + keyHolder.user.userId,
+});
+
+export const keyHoldersSelector = keyHoldersAdapter.getSelectors((st: RootState) => st.keys);
+
 
 const keysSlice = createSlice({
     name: "groups",
-    initialState,
-    reducers: {},
+    initialState: keyHoldersAdapter.getInitialState({
+        loading: false,
+        error: null as string | null
+    }),
+    reducers: {
+        onKeyHoldersDelete: (state, action: PayloadAction<number>) => {
+
+        }
+    },
     extraReducers(builder) {
         builder
-            .addCase(fetchKeyssAsync.fulfilled, (state, action) => {
-                state.keys = action.payload;
+            .addCase(fetchKeysAsync.fulfilled, (state, action) => {
+                keyHoldersAdapter.setAll(state, action.payload);
                 state.loading = false;
             })
-            .addCase(fetchKeyssAsync.pending, (state, action) => {
+            .addCase(fetchKeysAsync.pending, (state, action) => {
                 state.loading = true;
                 state.error = "";
             })
-            .addCase(fetchKeyssAsync.rejected, (state, action) => {
+            .addCase(fetchKeysAsync.rejected, (state, action) => {
                 state.error = action.error.message ?? "";
             })
     }
 });
 
-export const fetchKeyssAsync = createAsyncThunk("fetchGroupsAsync", async (keysRepository: IKeysRepository) => {
+export const fetchKeysAsync = createAsyncThunk("fetchKeysAsync", async (keysRepository: IKeysRepository) => {
     const response = await keysRepository.getKeys();
 
     return response.data ?? [];

@@ -6,7 +6,7 @@ import {
     ThumbDownAlt,
     ThumbDownOffAlt,
     HourglassBottom,
-    WarningOutlined
+    WarningOutlined, VerifiedOutlined
 } from "@mui/icons-material"
 import {
     Typography,
@@ -35,7 +35,6 @@ import {
     User, FullKeyHolder
 } from "src/types/supabaseTypes"
 import EventAttendanceDialog from "./EventAttendanceDialog"
-import {isAfter} from "date-fns";
 
 type EventInformationAttendanceProps = {
     user: User,
@@ -83,16 +82,16 @@ const EventInformationAttendance = ({
 
     return <Container sx={{p: 0, alignSelf: "center"}}>
         <Typography sx={{fontSize: 16, fontWeight: "bold", mt: 2}} color="text.secondary" gutterBottom>
-            Teilnehmer
+            {t("attendees")}
         </Typography>
         <List sx={{p: 0}}>
             {
-                (!attendance.some(x => keyHolders.map(y => y.user.userId).some(y => y === x.user)) || (selectedEvent.answerDeadline && isAfter(Date.now(), selectedEvent.answerDeadline))) &&
+                keyHolders.some(x => attendance.map(y => y.user.userId).includes(x.user.userId)) &&
                 <ListItem key={"keyAttendees"} sx={{'&.MuiListItem-root': {paddingLeft: 0}}} divider>
                     <ListItemAvatar sx={{justifyContent: "left", alignItems: "center", display: "flex"}}>
-                        <WarningOutlined sx={{color: (theme) => theme.palette.warning.main}}/>
+                        <VerifiedOutlined sx={{color: (theme) => theme.palette.success.main}}/>
                     </ListItemAvatar>
-                    <ListItemText primary={t("events.information.noKeyHolderAttending")}/>
+                    <ListItemText primary={t("events.information.keyHolderAttending")}/>
                 </ListItem>
             }
             {

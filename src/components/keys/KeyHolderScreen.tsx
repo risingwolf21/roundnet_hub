@@ -23,7 +23,7 @@ import {useSelector} from "react-redux";
 import {useClient} from "react-supabase";
 import {TABLE_USER} from "src/constants";
 import {useDependency} from "src/hooks/useDependency";
-import {fetchKeyssAsync} from "src/redux/keysSlice";
+import {fetchKeysAsync, keyHoldersSelector} from "src/redux/keysSlice";
 import {AppDispatch, RootState, useAppDispatch} from "src/redux/store";
 import {IKeysRepository} from "src/repository/IKeysRepository";
 import {FullKeyHolder, User} from "src/types/supabaseTypes";
@@ -40,7 +40,8 @@ const KeyHolderScreenProvider = () => {
     const {user} = useSelector((state: RootState) => state.application);
     const keysRepository = useDependency<IKeysRepository>("IKeysRepository");
     const dispatch = useAppDispatch();
-    const {keys, loading} = useSelector((state: RootState) => state.keys);
+    const keyHolders = useSelector((state: RootState) => keyHoldersSelector.selectAll(state));
+    const { loading} = useSelector((state: RootState) => state.keys);
 
     if (!user || !keysRepository)
         return <AlertSnackbar close={() => {
@@ -51,18 +52,18 @@ const KeyHolderScreenProvider = () => {
         dispatch={dispatch}
         user={user}
         loading={loading}
-        keys={keys}/>
+        keyHolders={keyHolders}/>
 }
 
 type KeyHolderScreenProps = {
     keysRepository: IKeysRepository,
     dispatch: AppDispatch,
-    keys: FullKeyHolder[],
+    keyHolders: FullKeyHolder[],
     loading: boolean,
     user: User
 }
 
-const KeyHolderScreen = ({keysRepository, dispatch, keys, loading, user}: KeyHolderScreenProps) => {
+const KeyHolderScreen = ({keysRepository, dispatch, keyHolders, loading, user}: KeyHolderScreenProps) => {
 
     const [searchUserOpen, setSearchUserOpen] = useState(false);
     const [addOrUpdateKeysOpen, setAddOrUpdateKeysOpen] = useState(false);
@@ -70,7 +71,7 @@ const KeyHolderScreen = ({keysRepository, dispatch, keys, loading, user}: KeyHol
     const [selectedKeyHolder, setSelectedKeyHolder] = useState<FullKeyHolder | null>(null);
 
     useEffect(() => {
-        dispatch(fetchKeyssAsync(keysRepository));
+        dispatch(fetchKeysAsync(keysRepository));
     }, [dispatch, keysRepository]);
 
     const userSelected = (user: User) => {
@@ -84,7 +85,7 @@ const KeyHolderScreen = ({keysRepository, dispatch, keys, loading, user}: KeyHol
         keysRepository.giveKeyToUser(selectedKeyHolder.key, selectedUser).then(() => {
             setSelectedUser(null);
             setSelectedKeyHolder(null);
-            dispatch(fetchKeyssAsync(keysRepository));
+            dispatch(fetchKeysAsync(keysRepository));
         });
     }
 
@@ -103,7 +104,7 @@ const KeyHolderScreen = ({keysRepository, dispatch, keys, loading, user}: KeyHol
         <LoadingIndicator loading={loading}/>
         <List>
             {
-                keys.map((key: FullKeyHolder, index: number) => <ListItem key={index} divider>
+                keyHolders.map((key: FullKeyHolder, index: number) => <ListItem key={index} divider>
                     <ListItemAvatar>
                         <Avatar sx={{background: key.key.color, width: 40, height: 40, borderRadius: 2}}>
                             <KeyIcon/>

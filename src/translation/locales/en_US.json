@@ -40,7 +40,7 @@
             "waitingListPlace": "Waitlinglist Place ({{ place }} / {{ waitingListLength }})",
             "waitingListAccepted": "You are on waiting list place {{ place }} of {{ waitingListLength }} for this event",
             "eventSpotsTaken": "{{ taken }} of {{waitingListLength}} spots taken",
-            "noKeyHolderAttending": "There is no keyholder attending this event."
+            "keyHolderAttending": "Someone with a key attends this event"
         }
     },
     "notificationTags": {
@@ -51,5 +51,6 @@
     },
     "feature_not_available": "This feature is not ready yet. Try again later!",
     "notification_actionMessage": "We'd like to show you notifications for the following categories.",
-    "notification_updateMessage": "Update your push notification subscription preferences."
+    "notification_updateMessage": "Update your push notification subscription preferences.",
+    "attendees": "Attendees"
 }
