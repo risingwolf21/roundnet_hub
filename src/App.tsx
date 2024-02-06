@@ -1,17 +1,18 @@
-import { Grid } from "@mui/material";
+import {Grid} from "@mui/material";
 import * as React from 'react';
-import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
+import {BrowserRouter, Navigate, Route, Routes} from 'react-router-dom';
 import AuthGate from './AuthGate';
 import CustomBottomNavigation from './components/BottomNavigation';
 import Browse from './components/Browse';
-import { LoadingScreen } from "./components/LoadingScreen";
+import {LoadingScreen} from "./components/LoadingScreen";
 import UpdateAvailable from './components/UpdateAvailable';
-import { UserScreenProvider } from './components/User';
+import {UserScreenProvider} from './components/User';
 import BrowseAdmin from './components/admin/BrowseAdmin';
-import { useOneSignal } from "./hooks/useOneSignal";
-import { useServiceWorker } from './hooks/useServiceWorker';
+import {useOneSignal} from "./hooks/useOneSignal";
+import {useServiceWorker} from './hooks/useServiceWorker';
 import ExecuteEdgeFunctions from "./components/admin/ExecuteEdgeFunctions";
 import NotificationsScreenProvider from "./components/NotificationsScreen";
+import {useInitialFetch} from "./components/InitialFetch";
 
 const FeatureNotAvailable = React.lazy(() => import('./components/FeatureNotAvailable'));
 const HistoryScreenProvider = React.lazy(() => import('./components/HistoryScreen'));
@@ -33,54 +34,55 @@ const EventScreenProvider = React.lazy(() => import('./components/eventList/prov
 
 const App = () => {
 
-  useOneSignal();
+    useOneSignal();
+    useInitialFetch();
 
-  const { isUpdateAvailable, updateServiceWorker } = useServiceWorker();
+    const {isUpdateAvailable, updateServiceWorker} = useServiceWorker();
 
-  if (isUpdateAvailable)
-    return <UpdateAvailable update={updateServiceWorker} />
+    if (isUpdateAvailable)
+        return <UpdateAvailable update={updateServiceWorker}/>
 
-  return <Grid maxHeight={"100vh"}>
-    <BrowserRouter>
-      <AuthGate>
-        <React.Suspense fallback={<LoadingScreen />}>
-          <Routes>
-            <Route path='/' element={<Navigate replace to={"/drinks"} />} />
-            <Route path="*" element={<Navigate replace to={"/drinks"} />} />
+    return <Grid maxHeight={"100vh"}>
+        <BrowserRouter>
+            <AuthGate>
+                <React.Suspense fallback={<LoadingScreen/>}>
+                    <Routes>
+                        <Route path='/' element={<Navigate replace to={"/drinks"}/>}/>
+                        <Route path="*" element={<Navigate replace to={"/drinks"}/>}/>
 
-            <Route path='/feature-not-available' element={<FeatureNotAvailable />} />
+                        <Route path='/feature-not-available' element={<FeatureNotAvailable/>}/>
 
-            <Route path='/reset-password' element={<ResetPasswordScreen />} />
+                        <Route path='/reset-password' element={<ResetPasswordScreen/>}/>
 
-            <Route path='/browse' element={<Browse />} />
-            <Route path='/browse-admin' element={<BrowseAdmin />} />
-            <Route path="/drinks" element={<DrinkListScreenProvider />} />
-            <Route path="/user" element={<UserScreenProvider />} />
-            <Route path="/history" element={<HistoryScreenProvider />} />
-            <Route path="/payments" element={<PayDrinksScreenProvider />} />
-            <Route path="/keys" element={<KeyHolderScreenProvider />} />
-            <Route path="/notifications" element={<NotificationsScreenProvider />} />
+                        <Route path='/browse' element={<Browse/>}/>
+                        <Route path='/browse-admin' element={<BrowseAdmin/>}/>
+                        <Route path="/drinks" element={<DrinkListScreenProvider/>}/>
+                        <Route path="/user" element={<UserScreenProvider/>}/>
+                        <Route path="/history" element={<HistoryScreenProvider/>}/>
+                        <Route path="/payments" element={<PayDrinksScreenProvider/>}/>
+                        <Route path="/keys" element={<KeyHolderScreenProvider/>}/>
+                        <Route path="/notifications" element={<NotificationsScreenProvider/>}/>
 
-            <Route path="/trainer/groups" element={<ManageGroupsProvider />} />
-            <Route path="/trainer/groups/:id" element={<GroupInformationProvider />} />
-            <Route path="/training" element={<EventScreenProvider />} />
-            <Route path="/training/event/:selectedEventId" element={<EventInformationProvider />} />
-            <Route path="/training/createOrUpdate/:option" element={<CreateEventProvider />} />
+                        <Route path="/trainer/groups" element={<ManageGroupsProvider/>}/>
+                        <Route path="/trainer/groups/:id" element={<GroupInformationProvider/>}/>
+                        <Route path="/training" element={<EventScreenProvider/>}/>
+                        <Route path="/training/event/:selectedEventId" element={<EventInformationProvider/>}/>
+                        <Route path="/training/createOrUpdate/:option" element={<CreateEventProvider/>}/>
 
-            <Route path='/admin/drinks' element={<AdminDrinkListProvider />} />
+                        <Route path='/admin/drinks' element={<AdminDrinkListProvider/>}/>
 
-            <Route path="/admin/drinks/history" element={<AdminHistoryScreenProvider />} />
-            <Route path='/admin/drinks/payments' element={<PaymentsPendingAdmin />} />
-            <Route path='/admin/drinks/stocks' element={<DrinkStockUpdateScreen />} />
-            <Route path='/admin/drinks/analyze' element={<AnalyzeDrinkStockHistoryProvider />} />
-            <Route path='/admin/users' element={<AdminUserListProvider />} />
-            <Route path='/admin/edgeFunctions' element={<ExecuteEdgeFunctions />} />
-          </Routes>
-        </React.Suspense>
-        <div style={{ width: "100%", height: "56px" }} />
-        <CustomBottomNavigation />
-      </AuthGate>
-    </BrowserRouter>
-  </Grid>
+                        <Route path="/admin/drinks/history" element={<AdminHistoryScreenProvider/>}/>
+                        <Route path='/admin/drinks/payments' element={<PaymentsPendingAdmin/>}/>
+                        <Route path='/admin/drinks/stocks' element={<DrinkStockUpdateScreen/>}/>
+                        <Route path='/admin/drinks/analyze' element={<AnalyzeDrinkStockHistoryProvider/>}/>
+                        <Route path='/admin/users' element={<AdminUserListProvider/>}/>
+                        <Route path='/admin/edgeFunctions' element={<ExecuteEdgeFunctions/>}/>
+                    </Routes>
+                </React.Suspense>
+                <div style={{width: "100%", height: "56px"}}/>
+                <CustomBottomNavigation/>
+            </AuthGate>
+        </BrowserRouter>
+    </Grid>
 }
 export default App;

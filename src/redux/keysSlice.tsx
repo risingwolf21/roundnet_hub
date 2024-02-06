@@ -1,18 +1,10 @@
 import {createAsyncThunk, createEntityAdapter, createSlice, PayloadAction} from "@reduxjs/toolkit";
-import {FullKeyHolder, KeyInsert, KeyUpdate} from "../types/supabaseTypes";
+import {FullKeyHolder} from "../types/supabaseTypes";
 import {IKeysRepository} from "src/repository/IKeysRepository";
-import {SliceEvent} from "./events/eventsSlice";
 import {RootState} from "./store";
 
-type KeysSliceState = {
-    keyHolders: FullKeyHolder[],
-    loading: boolean,
-    error: string | null
-}
-
-
 const keyHoldersAdapter = createEntityAdapter({
-    selectId: (keyHolder: FullKeyHolder) => keyHolder.key.id + keyHolder.user.userId,
+    selectId: (keyHolder: FullKeyHolder) => keyHolder.key.id,
 });
 
 export const keyHoldersSelector = keyHoldersAdapter.getSelectors((st: RootState) => st.keys);
@@ -26,7 +18,7 @@ const keysSlice = createSlice({
     }),
     reducers: {
         onKeyHoldersDelete: (state, action: PayloadAction<number>) => {
-
+            keyHoldersAdapter.removeOne(state, action.payload);
         }
     },
     extraReducers(builder) {
@@ -35,12 +27,18 @@ const keysSlice = createSlice({
                 keyHoldersAdapter.setAll(state, action.payload);
                 state.loading = false;
             })
-            .addCase(fetchKeysAsync.pending, (state, action) => {
+            .addCase(fetchKeysAsync.pending, (state) => {
                 state.loading = true;
                 state.error = "";
             })
             .addCase(fetchKeysAsync.rejected, (state, action) => {
                 state.error = action.error.message ?? "";
+            })
+
+            .addCase(fetchInsertedKeyHolderAsync.fulfilled, (state, action) => {
+                if(action.payload)
+                    keyHoldersAdapter.upsertMany(state, action.payload);
+                state.loading = false;
             })
     }
 });
@@ -50,5 +48,21 @@ export const fetchKeysAsync = createAsyncThunk("fetchKeysAsync", async (keysRepo
 
     return response.data ?? [];
 });
+
+export const fetchInsertedKeyHolderAsync = createAsyncThunk("fetchInsertedKeyHolderAsync", async ({
+                                                                                                      keysRepository,
+                                                                                                      key,
+                                                                                                      user
+                                                                                                  } : {
+    keysRepository: IKeysRepository,
+    key: number,
+    user: string
+}) => {
+    const response = await keysRepository.fetchInsertedKey(key, user);
+
+    return response.data;
+});
+
+export const {onKeyHoldersDelete} = keysSlice.actions;
 
 export default keysSlice.reducer;

@@ -8,15 +8,17 @@ export interface IKeysRepository {
 
     giveKeyToUser(key: Key, user: User): Promise<PostgrestSingleResponse<null>>
 
-    createKey(key: KeyInsert, userId: string): Promise<PostgrestSingleResponse<null>>
+    fetchInsertedKey(key: number, user: string): Promise<PostgrestSingleResponse<FullKeyHolder[]>>
+
+    upsertKey(key: KeyInsert, userId: string): Promise<PostgrestSingleResponse<null>>
 }
 
 export class SupabaseKeysRepository extends SupabaseRepository implements IKeysRepository {
 
-    async createKey(key: KeyInsert, userId: string): Promise<PostgrestSingleResponse<null>> {
+    async upsertKey(key: KeyInsert, userId: string): Promise<PostgrestSingleResponse<null>> {
         const {data, error} = await this.client
             .from("keys")
-            .insert(key)
+            .upsert(key)
             .select()
             .single();
         if (!data || error)
@@ -29,9 +31,8 @@ export class SupabaseKeysRepository extends SupabaseRepository implements IKeysR
                 } as PostgrestError, data: null, count: null, status: 400, statusText: ""
             };
         return this.client
-
             .from("key_holders")
-            .insert({user: userId, key: data.id});
+            .upsert({user: userId, key: data.id});
     }
 
     async getKeys(): Promise<PostgrestSingleResponse<FullKeyHolder[]>> {
@@ -49,6 +50,16 @@ export class SupabaseKeysRepository extends SupabaseRepository implements IKeysR
                 lastUpdate: formatDateToDatabase(new Date()),
             })
             .eq("key", key.id);
+    }
+
+    async fetchInsertedKey(key: number, user: string): Promise<PostgrestSingleResponse<FullKeyHolder[]>> {
+        return this.client
+            .from("key_holders")
+            .select("*, user: user(*), key: key(*)")
+            .eq("key.id", key)
+            .eq("user.userId", user)
+            .not("key", "is", null)
+            .returns<FullKeyHolder[]>();
     }
 
 }

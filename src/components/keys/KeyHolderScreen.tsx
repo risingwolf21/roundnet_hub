@@ -1,4 +1,4 @@
-import {AddOutlined, ArrowBack} from "@mui/icons-material";
+import {AddOutlined, ArrowBack, EditOffOutlined, EditOutlined} from "@mui/icons-material";
 import KeyIcon from "@mui/icons-material/Key";
 import SearchIcon from "@mui/icons-material/Search";
 import {
@@ -6,11 +6,11 @@ import {
     Avatar,
     Box,
     Button,
-    Dialog, Fab,
+    Dialog,
+    Fab,
     IconButton,
     LinearProgress,
     List,
-    ListItem,
     ListItemAvatar,
     ListItemButton,
     ListItemSecondaryAction,
@@ -26,7 +26,7 @@ import {useDependency} from "src/hooks/useDependency";
 import {fetchKeysAsync, keyHoldersSelector} from "src/redux/keysSlice";
 import {AppDispatch, RootState, useAppDispatch} from "src/redux/store";
 import {IKeysRepository} from "src/repository/IKeysRepository";
-import {FullKeyHolder, User} from "src/types/supabaseTypes";
+import {FullKeyHolder, Key, User} from "src/types/supabaseTypes";
 import {SlideUpTransition} from "src/utils";
 import {AlertSnackbar} from "../AlertSnackbar";
 import CustomAppBar from "../AppBar";
@@ -35,13 +35,14 @@ import {Search, SearchIconWrapper, StyledInputBase} from "../SearchBar";
 import {SwipeableDialog} from "../SwipeableDialog";
 import {can} from "../../utils/PermissionService";
 import {EditOrAddKeyDialog} from "./EditOrAddKeyDialog";
+import EditIcon from "@mui/icons-material/Edit";
 
 const KeyHolderScreenProvider = () => {
     const {user} = useSelector((state: RootState) => state.application);
     const keysRepository = useDependency<IKeysRepository>("IKeysRepository");
     const dispatch = useAppDispatch();
     const keyHolders = useSelector((state: RootState) => keyHoldersSelector.selectAll(state));
-    const { loading} = useSelector((state: RootState) => state.keys);
+    const {loading} = useSelector((state: RootState) => state.keys);
 
     if (!user || !keysRepository)
         return <AlertSnackbar close={() => {
@@ -63,16 +64,16 @@ type KeyHolderScreenProps = {
     user: User
 }
 
+export const EMPTY_KEY = {name: "", color: "#000000", id: 0, created_at: ""};
+
 const KeyHolderScreen = ({keysRepository, dispatch, keyHolders, loading, user}: KeyHolderScreenProps) => {
 
     const [searchUserOpen, setSearchUserOpen] = useState(false);
     const [addOrUpdateKeysOpen, setAddOrUpdateKeysOpen] = useState(false);
     const [selectedUser, setSelectedUser] = useState<User | null>(null);
     const [selectedKeyHolder, setSelectedKeyHolder] = useState<FullKeyHolder | null>(null);
-
-    useEffect(() => {
-        dispatch(fetchKeysAsync(keysRepository));
-    }, [dispatch, keysRepository]);
+    const [isEditingMode, setEditingMode] = useState(false);
+    const [keyToEdit, setKeyToEdit] = useState<Key>(EMPTY_KEY);
 
     const userSelected = (user: User) => {
         setSearchUserOpen(false);
@@ -104,7 +105,7 @@ const KeyHolderScreen = ({keysRepository, dispatch, keyHolders, loading, user}: 
         <LoadingIndicator loading={loading}/>
         <List>
             {
-                keyHolders.map((key: FullKeyHolder, index: number) => <ListItem key={index} divider>
+                keyHolders.map((key: FullKeyHolder) => <ListItemButton divider>
                     <ListItemAvatar>
                         <Avatar sx={{background: key.key.color, width: 40, height: 40, borderRadius: 2}}>
                             <KeyIcon/>
@@ -112,28 +113,52 @@ const KeyHolderScreen = ({keysRepository, dispatch, keyHolders, loading, user}: 
                     </ListItemAvatar>
                     <ListItemText primary={key.user.displayName} secondary={key.key.name}/>
                     {
-                        key.user.userId === user.userId ?
-                            <ListItemSecondaryAction>
-                                <Button color="primary" onClick={() => selectKeyToHandOver(key)}>
-                                    Abgeben
-                                </Button>
+                        isEditingMode
+                            ? <ListItemSecondaryAction>
+                                <IconButton onClick={() => {
+                                    setKeyToEdit(key.key);
+                                    console.log(key.key)
+                                    setAddOrUpdateKeysOpen(true);
+                                }}>
+                                    <EditIcon/>
+                                </IconButton>
                             </ListItemSecondaryAction>
-                            :
-                            <ListItemSecondaryAction>
-                                <Button color="primary" onClick={() => selectKeyToReceive(key)}>
-                                    Annehmen
-                                </Button>
-                            </ListItemSecondaryAction>
+                            : key.user.userId === user.userId ?
+                                <ListItemSecondaryAction>
+                                    <Button color="primary" onClick={() => selectKeyToHandOver(key)}>
+                                        Abgeben
+                                    </Button>
+                                </ListItemSecondaryAction>
+                                :
+                                <ListItemSecondaryAction>
+                                    <Button color="primary" onClick={() => selectKeyToReceive(key)}>
+                                        Annehmen
+                                    </Button>
+                                </ListItemSecondaryAction>
                     }
-                </ListItem>)
+                </ListItemButton>)
             }
         </List>
+
         {
             can("edit", "keyFinder") &&
-            <Fab sx={{background: "#66bb6a", position: "fixed", right: "16px", bottom: "76px"}}
-                 onClick={() => setAddOrUpdateKeysOpen(true)}>
-                <AddOutlined sx={{color: "#fff"}}/>
-            </Fab>
+            <Box sx={{position: "fixed", right: "16px", bottom: "76px", display: "flex", flexDirection: "row"}}>
+                <Fab sx={{background: "#66bb6a", mr: 2}}
+                     onClick={() => {
+                         setKeyToEdit(EMPTY_KEY);
+                         setAddOrUpdateKeysOpen(true);
+                     }}>
+                    <AddOutlined sx={{color: "#fff"}}/>
+                </Fab>
+                <Fab sx={{background: "#66bb6a"}}
+                     onClick={() => setEditingMode(!isEditingMode)}>
+                    {
+                        isEditingMode
+                            ? <EditOffOutlined sx={{color: "#fff"}}/>
+                            : <EditOutlined sx={{color: "#fff"}}/>
+                    }
+                </Fab>
+            </Box>
         }
         <SearchUserDialog open={searchUserOpen} handleClose={() => setSearchUserOpen(false)} user={user}
                           onUserSelected={userSelected}/>
@@ -177,7 +202,10 @@ const KeyHolderScreen = ({keysRepository, dispatch, keyHolders, loading, user}: 
                 </Button>
             </Box>
         </SwipeableDialog>
-        <EditOrAddKeyDialog open={addOrUpdateKeysOpen} handleClose={() => setAddOrUpdateKeysOpen(false)}/>
+        <EditOrAddKeyDialog open={addOrUpdateKeysOpen} handleClose={() => {
+            setAddOrUpdateKeysOpen(false);
+            setEditingMode(false);
+        }} keyToEdit={keyToEdit}/>
     </Box>
 }
 
@@ -242,7 +270,7 @@ const SearchUserDialog = ({onUserSelected, user, open, handleClose}: {
                     users && users
                         .filter((x: User) => x.userId !== user.userId)
                         .filter((x: User) => searchString === "" || (x.displayName ?? "").toLowerCase().includes(searchString.toLowerCase()))
-                        .map((user: User, index: number) => <ListItemButton key={index}
+                        .map((user: User) => <ListItemButton key={user.userId}
                                                                             onClick={() => onUserSelected(user)}>
                             <ListItemText primary={user.displayName} secondary={"Benutzername"}/>
                         </ListItemButton>)
