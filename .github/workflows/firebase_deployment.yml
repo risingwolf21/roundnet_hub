@@ -6,6 +6,9 @@ name: Production
   push:
     branches:
       - production
+env:
+  CI: ''
+
 jobs:
   build_and_deploy:
     runs-on: ubuntu-latest
