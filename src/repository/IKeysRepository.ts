@@ -1,35 +1,65 @@
-import { PostgrestSingleResponse } from "@supabase/supabase-js";
-import { FullKeyHolder, Key, User } from "src/types/supabaseTypes";
-import { SupabaseRepository } from "./Repository";
-import { formatDateToDatabase } from "src/utils";
-import moment from "moment";
+import {PostgrestError, PostgrestSingleResponse} from "@supabase/supabase-js";
+import {FullKeyHolder, Key, KeyInsert, User} from "src/types/supabaseTypes";
+import {SupabaseRepository} from "./Repository";
+import {formatDateToDatabase} from "src/utils";
 
 export interface IKeysRepository {
     getKeys(): Promise<PostgrestSingleResponse<FullKeyHolder[]>>
+
     giveKeyToUser(key: Key, user: User): Promise<PostgrestSingleResponse<null>>
+
+    fetchInsertedKey(key: number, user: string): Promise<PostgrestSingleResponse<FullKeyHolder[]>>
+
+    upsertKey(key: KeyInsert, userId: string): Promise<PostgrestSingleResponse<null>>
 }
 
 export class SupabaseKeysRepository extends SupabaseRepository implements IKeysRepository {
 
+    async upsertKey(key: KeyInsert, userId: string): Promise<PostgrestSingleResponse<null>> {
+        const {data, error} = await this.client
+            .from("keys")
+            .upsert(key)
+            .select()
+            .single();
+        if (!data || error)
+            return {
+                error: {
+                    code: "",
+                    details: "",
+                    hint: "",
+                    message: "Key could not be added to database"
+                } as PostgrestError, data: null, count: null, status: 400, statusText: ""
+            };
+        return this.client
+            .from("key_holders")
+            .upsert({user: userId, key: data.id});
+    }
+
     async getKeys(): Promise<PostgrestSingleResponse<FullKeyHolder[]>> {
-        const query = this.client
+        return this.client
             .from("key_holders")
             .select("*, user: user(*), key: key(*)")
             .returns<FullKeyHolder[]>();
-
-        return query;
     }
 
     async giveKeyToUser(key: Key, user: User): Promise<PostgrestSingleResponse<null>> {
-        const query = this.client
+        return this.client
             .from("key_holders")
             .update({
                 user: user.userId,
                 lastUpdate: formatDateToDatabase(new Date()),
             })
             .eq("key", key.id);
+    }
 
-        return query;
+    async fetchInsertedKey(key: number, user: string): Promise<PostgrestSingleResponse<FullKeyHolder[]>> {
+        return this.client
+            .from("key_holders")
+            .select("*, user: user(*), key: key(*)")
+            .eq("key.id", key)
+            .eq("user.userId", user)
+            .not("key", "is", null)
+            .returns<FullKeyHolder[]>();
     }
 
 }

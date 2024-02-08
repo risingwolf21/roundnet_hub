@@ -1,13 +1,12 @@
-import { ArrowRight, Comment, Send } from "@mui/icons-material"
-import { Typography, ListItemButton, ListItemAvatar, Container, ListItemText, ListItemSecondaryAction, IconButton, Box, List, ListItem, Avatar, CircularProgress, TextField, InputAdornment, Divider } from "@mui/material"
-import { SwipeableDialog } from "../SwipeableDialog"
+import { AccountBox, Send } from "@mui/icons-material"
+import { Typography, ListItemAvatar, Container, ListItemText, ListItemSecondaryAction, IconButton, Box, List, ListItem, Avatar, CircularProgress, TextField, InputAdornment } from "@mui/material"
 import { useEffect, useState } from "react"
 import React from "react"
 import { EventCommentUpdate, FullComment } from "src/types/supabaseTypes"
-import moment from "moment"
 import { useAppDispatch } from "src/redux/store"
 import { useClient } from "react-supabase"
 import { onEventCommentDelete, onEventCommentUpdate } from "src/redux/events/eventCommentsSlice"
+import { formatDistanceToNow } from "date-fns"
 
 type EventInformationCommentsProps = {
     comments: FullComment[],
@@ -17,7 +16,6 @@ type EventInformationCommentsProps = {
 }
 
 const EventInformationComments = ({ comments, inputRef, handleCommentSubmit, eventId }: EventInformationCommentsProps) => {
-    const [commentsOpen, setCommentsOpen] = useState(false);
     const client = useClient();
     const dispatch = useAppDispatch();
     useEffect(() => {
@@ -36,21 +34,53 @@ const EventInformationComments = ({ comments, inputRef, handleCommentSubmit, eve
         <Typography sx={{ fontSize: 16, fontWeight: "bold", mt: 2 }} color="text.secondary" gutterBottom>
             Kommentare
         </Typography>
-        <ListItemButton onClick={() => setCommentsOpen(true)}
-            sx={{ '&.MuiListItemButton-root': { paddingLeft: 0 } }}>
-            <ListItemAvatar>
-                <Comment sx={{ color: "rgba(0, 0, 0, 0.54)", fontSize: "1.5rem" }} />
-            </ListItemAvatar>
-            <ListItemText
-                primary={`${comments.length} ${comments.length === 1 ? "Kommentar" : "Kommentare"}`} />
-            <ListItemSecondaryAction>
-                <IconButton>
-                    <ArrowRight />
-                </IconButton>
-            </ListItemSecondaryAction>
-        </ListItemButton>
-        <Divider />
-        <SwipeableDialog open={commentsOpen} onClose={() => setCommentsOpen(false)}
+        <Box sx={{ display: "flex", flexDirection: "column" }}>
+            <List sx={{ mb: 4 }}>
+                {
+                    comments && comments.map((x, index) => <ListItem divider={index !== comments.length - 1} dense key={index}
+                        sx={{ '&.MuiListItem-root': { paddingLeft: 0 } }}>
+                        <ListItemAvatar>
+                            <Avatar sx={{ borderRadius: 2 }}>
+                                {
+                                    x.pending
+                                        ? <CircularProgress size={"20px"} />
+                                        : x.user?.avatarUrl
+                                            ? <img src={x.user?.avatarUrl} alt="logo" width={"100%"} height={"100%"} />
+                                            : <AccountBox />
+                                }
+                            </Avatar>
+                        </ListItemAvatar>
+                        <ListItemText primaryTypographyProps={{ fontWeight: "bold", fontSize: "11pt" }}
+                            primary={x.displayName} secondary={x.comment} />
+                        <ListItemSecondaryAction sx={{ height: "100%" }}>
+                            <Typography style={{
+                                fontSize: "10pt",
+                                color: "rgba(0,0,0,0.6)",
+                                marginTop: "8px",
+                                alignContent: "baseline"
+                            }}>{formatDistanceToNow(x.created_at)} ago</Typography>
+                        </ListItemSecondaryAction>
+                    </ListItem>)
+                }
+            </List>
+            <Box component={"form"} onSubmit={handleCommentSubmit}>
+                <TextField
+                    ref={inputRef}
+                    id="comment"
+                    name="comment"
+                    fullWidth
+                    placeholder="Write a comment..."
+                    sx={{ '& fieldset': { borderRadius: 4 }, '& input': { pt: 1.5, pb: 1.5 } }}
+                    InputProps={{
+                        endAdornment: <InputAdornment position="end">
+                            <IconButton edge="end" type="submit">
+                                <Send />
+                            </IconButton>
+                        </InputAdornment>,
+                    }} />
+            </Box>
+        </Box>
+        {/* <SwipeableDialog open={commentsOpen} onClose={() => setCommentsOpen(false)}
             setOpen={setCommentsOpen} title={"Kommentare"} minHeight={40}>
             <Box sx={{ display: "flex", px: 2, flexDirection: "column" }}>
                 <List sx={{ mb: 8 }}>
@@ -58,12 +88,13 @@ const EventInformationComments = ({ comments, inputRef, handleCommentSubmit, eve
                         comments && comments.map((x, index) => <ListItem divider dense key={index}
                             sx={{ '&.MuiListItem-root': { paddingLeft: 0 } }}>
                             <ListItemAvatar>
-                                <Avatar>
+                                <Avatar sx={{ borderRadius: 2 }}>
                                     {
                                         x.pending
                                             ? <CircularProgress size={"20px"} />
-                                            : <Typography
-                                                style={{ fontWeight: "bold" }}>{x.displayName?.charAt(0)}</Typography>
+                                            : x.user?.avatarUrl
+                                                ? <img src={x.user?.avatarUrl} alt="logo" width={"100%"} height={"100%"} />
+                                                : <AccountBox />
                                     }
                                 </Avatar>
                             </ListItemAvatar>
@@ -75,7 +106,7 @@ const EventInformationComments = ({ comments, inputRef, handleCommentSubmit, eve
                                     color: "rgba(0,0,0,0.6)",
                                     marginTop: "8px",
                                     alignContent: "baseline"
-                                }}>{moment(x.created_at).format("HH:mm")}</Typography>
+                                }}>{formatDistanceToNow(x.created_at)} ago</Typography>
                             </ListItemSecondaryAction>
                         </ListItem>)
                     }
@@ -98,7 +129,7 @@ const EventInformationComments = ({ comments, inputRef, handleCommentSubmit, eve
                         }} />
                 </Box>
             </Box>
-        </SwipeableDialog>
+        </SwipeableDialog> */}
     </Container>
 }
 

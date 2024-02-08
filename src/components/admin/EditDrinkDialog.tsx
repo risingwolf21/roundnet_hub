@@ -11,20 +11,8 @@ import CropImageDialog from "../CropImageDialog";
 import { useClient } from "react-supabase";
 import { uuid } from "@supabase/gotrue-js/dist/module/lib/helpers";
 import { Check } from "@mui/icons-material";
-import { SlideUpTransition } from "../../utils";
+import { SlideUpTransition, dataURLtoFile, readFile } from "../../utils";
 import { Drink } from "../../types/supabaseTypes";
-
-const dataURLtoFile = (dataurl: string, filename: string): File => {
-    var arr = dataurl.split(',');
-    var mime = ((arr[0] ?? "").match(/:(.*?);/) ?? [])[1] ?? null;
-    var bstr = atob(arr[arr.length - 1]);
-    var n = bstr.length;
-    var u8arr = new Uint8Array(n);
-    while (n--) {
-        u8arr[n] = bstr.charCodeAt(n);
-    }
-    return new File([u8arr], filename, { type: mime });
-}
 
 type EditDrinkDialogProps = {
     drink: Drink,
@@ -235,11 +223,3 @@ const EditDrinkDialog = ({ drink, onDrinkEditFinished, open, handleClose, drinkH
     </Box>
 }
 export default EditDrinkDialog;
-
-function readFile(file: Blob): Promise<string | ArrayBuffer | null> {
-    return new Promise((resolve) => {
-        const reader = new FileReader()
-        reader.addEventListener('load', () => resolve(reader.result), false)
-        reader.readAsDataURL(file)
-    })
-}

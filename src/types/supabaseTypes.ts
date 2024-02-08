@@ -1,5 +1,4 @@
 import { isBefore } from "date-fns";
-import { SliceEvent } from "src/redux/events/eventsSlice";
 import { Database } from "src/types/supabase";
 
 export type Drink = Database["public"]["Tables"]["drink"]["Row"];
@@ -8,6 +7,8 @@ export type DrinkUpdate = Database["public"]["Tables"]["drink"]["Update"];
 export type Attendance = Database["public"]["Tables"]["event_attendance_user_mapping"]["Row"];
 export type Comment = Database["public"]["Tables"]["event_comments"]["Row"];
 export type Group = Database["public"]["Tables"]["event_group"]["Row"];
+export type GroupUpdate = Database["public"]["Tables"]["event_group"]["Update"];
+export type GroupInsert = Database["public"]["Tables"]["event_group"]["Insert"];
 export type Event = Database["public"]["Tables"]["events"]["Row"];
 export type History = Database["public"]["Tables"]["history"]["Row"];
 export type Payment = Database["public"]["Tables"]["payments"]["Row"];
@@ -15,6 +16,8 @@ export type PaymentInsert = Database["public"]["Tables"]["payments"]["Insert"];
 export type User = Database["public"]["Tables"]["user"]["Row"];
 export type KeyHolder = Database["public"]["Tables"]["key_holders"]["Row"];
 export type Key = Database["public"]["Tables"]["keys"]["Row"];
+export type KeyInsert = Database["public"]["Tables"]["keys"]["Insert"];
+export type KeyUpdate = Database["public"]["Tables"]["keys"]["Update"];
 
 export type EventInsert = Database["public"]["Tables"]["events"]["Insert"];
 export type EventUpdate = Database["public"]["Tables"]["events"]["Update"];
@@ -82,6 +85,7 @@ export type FullAttendance = Attendance & {
 export type SimpleUser = {
     displayName: string,
     userId: string,
+    avatarUrl: string | null,
     email: string | null
 }
 

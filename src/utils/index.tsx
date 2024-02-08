@@ -1,9 +1,9 @@
 import { Slide, SlideProps } from "@mui/material";
-import { format, parse } from "date-fns";
+import { Duration, add, format, parse } from "date-fns";
 import dayjs from "dayjs";
 import { forwardRef } from "react";
 import React from "react";
-import { ProductType } from "src/types/supabaseTypes";
+import { EventRecurrence, ProductType } from "src/types/supabaseTypes";
 
 export const compareById = (x: any, y: any) => {
     return x.id === y.id;
@@ -64,4 +64,36 @@ export const nameOfProductType = (type: ProductType) => {
         case "Special": return "Anderes"
         case "None": return "Ohne Typ"
     }
+}
+
+export const calculateEventDateWith = (eventDateTime: string | null, eventUpdateDateTime: string | null, difference: Duration, recurrence: EventRecurrence, index: number) => {
+    // if the current event has this date we can simply add our calculated difference
+    if (eventDateTime) {
+        return formatDateToDatabase(add(eventDateTime, difference))
+    }
+    //
+    if (eventUpdateDateTime) {
+
+    }
+    return null;
+}
+
+export const dataURLtoFile = (dataurl: string, filename: string): File => {
+    var arr = dataurl.split(',');
+    var mime = ((arr[0] ?? "").match(/:(.*?);/) ?? [])[1] ?? null;
+    var bstr = atob(arr[arr.length - 1]);
+    var n = bstr.length;
+    var u8arr = new Uint8Array(n);
+    while (n--) {
+        u8arr[n] = bstr.charCodeAt(n);
+    }
+    return new File([u8arr], filename, { type: mime });
+}
+
+export function readFile(file: Blob): Promise<string | ArrayBuffer | null> {
+    return new Promise((resolve) => {
+        const reader = new FileReader()
+        reader.addEventListener('load', () => resolve(reader.result), false)
+        reader.readAsDataURL(file)
+    })
 }

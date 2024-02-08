@@ -2,7 +2,7 @@ import { TFunction } from "i18next";
 import { IEventRepository } from "src/repository/IEventRepository";
 import { AnyAction, ThunkDispatch } from "@reduxjs/toolkit";
 import { RootState } from "src/redux/store";
-import { FullAttendance, FullComment, FullEvent, Group, User } from "src/types/supabaseTypes";
+import {FullAttendance, FullComment, FullKeyHolder, Group, User} from "src/types/supabaseTypes";
 import { CreateEventOption, PlaceType } from "../eventCreation/types";
 import { SliceEvent } from "src/redux/events/eventsSlice";
 
@@ -17,6 +17,7 @@ export type EventInformationProps = {
     dispatch: ThunkDispatch<RootState, undefined, AnyAction>,
     selectedEventPlace: PlaceType | null,
     repository: IEventRepository,
+    keyHolders: FullKeyHolder[],
     t: TFunction
 }
 
@@ -24,7 +25,8 @@ export type EventAttendanceDialogProps = {
     open: boolean,
     index: number,
     setOpen: (value: boolean) => void,
-    attendance: FullAttendance[]
+    attendance: FullAttendance[],
+    hasWaitingList: boolean
 }
 
 export type SelectGroupDialogProps = {

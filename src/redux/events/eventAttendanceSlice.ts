@@ -1,9 +1,8 @@
 import { PayloadAction, Update, createAsyncThunk, createEntityAdapter, createSlice } from "@reduxjs/toolkit";
 import { IEventRepository } from "src/repository/IEventRepository";
-import { Event, EventAttendance, EventAttendanceUpdate, FullAttendance, User } from "src/types/supabaseTypes";
+import { EventAttendance, EventAttendanceUpdate, FullAttendance, User } from "src/types/supabaseTypes";
 import { formatDateToDatabase } from "src/utils";
 import { fetchSingleEventAsync } from "./eventsSlice";
-import { RootState } from "../store";
 
 type SliceAttendance = {
     id: number,

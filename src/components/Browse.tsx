@@ -58,11 +58,6 @@ const Browse = ({ t }: { t: TFunction }) => {
 
     const navigate = useNavigate();
 
-    const requestNotificationPermission = () => {
-        console.log("asdf")
-        OneSignal.Slidedown.promptPush();
-    }
-
     return <Box>
         <CustomAppBar />
         <List>

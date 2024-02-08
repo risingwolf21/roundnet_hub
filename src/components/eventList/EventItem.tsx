@@ -3,7 +3,7 @@ import { Box, CircularProgress, IconButton, ListItem, ListItemAvatar, ListItemSe
 import moment from "moment"
 import React from "react"
 import { SliceEvent } from "src/redux/events/eventsSlice"
-import { answerDeadlineExpired, maxAttendeesExceeded } from "src/types/supabaseTypes"
+import { answerDeadlineExpired } from "src/types/supabaseTypes"
 
 export type EventItemProps = {
     attendanceUpdating: boolean,
@@ -36,7 +36,7 @@ export const EventItem = ({ event, onClick, attendEvent, declineEvent, attendanc
                 attendanceUpdating
                     ? <CircularProgress />
                     : event.userAttendance === "Waiting"
-                        ? <IconButton onClick={declineEvent} disabled={event.isCancelled}>
+                        ? <IconButton disabled={event.isCancelled}>
                             <HourglassBottom fontSize="inherit" sx={{ fontSize: "28px", color: "#125db2" }} />
                         </IconButton>
                         : <Box sx={{ display: "flex", flexDirection: "row" }}>

@@ -1,7 +1,7 @@
 import { Dialog, DialogContent, Grid, List, ListItemButton, ListItemText } from "@mui/material"
 import CustomAppBar from "../AppBar"
 import React, { useState } from "react"
-import { supabase, supabaseAdmin } from "../services/supabase/supabaseClient"
+import { supabase } from "../services/supabase/supabaseClient"
 import { EdgeFunctions } from "src/types/supabaseTypes"
 
 const ExecuteEdgeFunctions = () => {

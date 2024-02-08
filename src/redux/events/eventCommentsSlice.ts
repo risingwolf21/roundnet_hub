@@ -78,7 +78,7 @@ const eventCommentsSlice = createSlice({
                     comment: action.meta.arg.comment ?? "",
                     event: toInteger(action.meta.arg.eventId),
                     displayName: action.meta.arg.user.displayName ?? "",
-                    user: { userId: action.meta.arg.user.userId, displayName: action.meta.arg.user.displayName ?? "", email: null },
+                    user: { userId: action.meta.arg.user.userId, displayName: action.meta.arg.user.displayName ?? "", avatarUrl: action.meta.arg.user.avatarUrl, email: null },
                     userId: action.meta.arg.user.userId,
                     created_at: action.meta.arg.created_at
                 } as FullComment;

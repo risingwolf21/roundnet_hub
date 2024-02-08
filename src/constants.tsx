@@ -1,4 +1,4 @@
-export const PAYPAL_ME_ADDRESS = process.env.REACT_APP_paypalMeLink;
+export const PAYPAL_ME_ADDRESS = process.env.REACT_APP_PAYPAL_ME_LINK;
 
 export const TABLE_DRINK = "drink";
 export const TABLE_USER = "user";

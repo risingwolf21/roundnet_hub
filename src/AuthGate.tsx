@@ -8,7 +8,7 @@ import LoginScreen from './components/LoginScreen';
 import NotVerifiedScreen from "./components/NotVerifiedScreen";
 import RegisterScreen from './components/RegisterScreen';
 import ResetPasswordScreen from "./components/ResetPasswordScreen";
-import UserScreen from "./components/User";
+import { UserScreenProvider } from "./components/User";
 import { supabaseAdmin } from "./components/services/supabase/supabaseClient";
 import { TABLE_USER } from "./constants";
 import { onUserChange } from "./redux/applicationSlice";
@@ -18,6 +18,7 @@ import { EmptyAdminDrinksRepository, IAdminDrinksRepository, SupabaseAdminDrinks
 import { EmptyAdminUsersRepository, IAdminUsersRepository, SupabaseAdminUsersRepository } from "./repository/IAdminUsersRepository";
 import { User } from "./types/supabaseTypes";
 import { ability, defineRulesFor } from "./utils/PermissionService";
+import {InitialLoader} from "./components/InitialLoader";
 
 
 const initialState = { session: null, user: null }
@@ -47,6 +48,7 @@ const AuthGate = ({ children }: Props) => {
                             displayName: session.user.user_metadata.displayName,
                             role: res.data.role,
                             verified: res.data.verified,
+                            avatarUrl: res.data.avatarUrl,
                             permissions: res.data.permissions ?? [],
                             notifications: res.data.notifications ?? []
                         } as User;
@@ -116,10 +118,10 @@ const AuthGate = ({ children }: Props) => {
             <Route key={"not-verified"} path='/not-verified' element={<NotVerifiedScreen />} />
             <Route key={"*"} path="*" element={<Navigate replace to={"/not-verified"} />} />
             <Route key={"/"} path='/' element={<Navigate replace to={"/not-verified"} />} />
-            <Route path="/user" element={<UserScreen />} />
+            <Route path="/user" element={<UserScreenProvider />} />
         </Routes>
     } else {
-        return children
+        return children;
     }
 }
 export default AuthGate;

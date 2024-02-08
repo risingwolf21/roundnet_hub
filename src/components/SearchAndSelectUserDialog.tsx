@@ -54,7 +54,7 @@ const SearchAndSelectUserDialog = ({ open, handleClose, users, loading, handleSu
                         </SearchIconWrapper>
                         <StyledInputBase
                             placeholder="Search…"
-                            onChange={(e) => setSearchString(e.target.value)}
+                            // onChange={(e) => setSearchString(e.target.value)}
                             inputProps={{ 'aria-label': 'search' }}
                         />
                     </Search>

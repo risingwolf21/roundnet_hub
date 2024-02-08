@@ -340,16 +340,19 @@ export interface Database {
       }
       keys: {
         Row: {
+          color: string
           created_at: string
           id: number
           name: string | null
         }
         Insert: {
+          color?: string
           created_at?: string
           id?: number
           name?: string | null
         }
         Update: {
+          color?: string
           created_at?: string
           id?: number
           name?: string | null
@@ -390,6 +393,7 @@ export interface Database {
       }
       user: {
         Row: {
+          avatarUrl: string | null
           created_at: string | null
           disabled: boolean
           displayName: string
@@ -403,6 +407,7 @@ export interface Database {
           verified: boolean
         }
         Insert: {
+          avatarUrl?: string | null
           created_at?: string | null
           disabled?: boolean
           displayName?: string
@@ -416,6 +421,7 @@ export interface Database {
           verified?: boolean
         }
         Update: {
+          avatarUrl?: string | null
           created_at?: string | null
           disabled?: boolean
           displayName?: string

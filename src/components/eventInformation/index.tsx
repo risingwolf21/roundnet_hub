@@ -1,99 +1,77 @@
 import {
-    AccountCircle,
-    ArrowBack, ArrowRight,
-    CheckCircleOutline,
-    Comment,
+    ArrowBack,
     Delete,
     DoNotDisturb,
     DoNotDisturbOff,
     Edit,
-    MoreVert,
-    Refresh,
-    RemoveCircleOutline,
-    Send,
-    ThumbDownAlt,
-    ThumbDownOffAlt,
-    ThumbUpAlt,
-    ThumbUpOffAlt
+    MoreVert
 } from "@mui/icons-material";
 import {
     Alert,
-    AlertTitle,
     AppBar,
-    Avatar,
     Box,
     Button,
     CardContent,
     CardHeader,
     CardMedia,
-    CircularProgress,
     Container,
     Divider,
     IconButton,
-    InputAdornment,
-    List,
-    ListItem,
-    ListItemAvatar,
-    ListItemButton,
     ListItemIcon,
-    ListItemSecondaryAction,
     ListItemText,
     Menu,
     MenuItem,
     Snackbar,
-    TextField,
     Toolbar,
     Typography
 } from "@mui/material";
-import moment from "moment";
-import React, { createRef, useEffect, useState } from "react";
-import { MapContainer, Marker, TileLayer } from "react-leaflet";
-import { useNavigate } from "react-router-dom";
-import { EventAttendance, answerDeadlineExpired, maxAttendeesExceeded } from "../../types/supabaseTypes";
-import { DeleteEventDialog } from "./DeleteEventDialog";
-import { SwipeableDialog } from "../SwipeableDialog";
-import { DeleteEventType, EventInformationProps } from "./types";
-import EventAttendanceDialog from "./EventAttendanceDialog";
-import { CancelTrainingDialog } from "./CancelTrainingDialog";
-import { can } from "src/utils/PermissionService";
-import { fetchEventAttendanceAsync, updateAttendanceAsync } from "src/redux/events/eventAttendanceSlice";
-import { formatDateToDatabase } from "src/utils";
-import { fetchEventCommentsAsync, upsertCommentToEventAsync } from "src/redux/events/eventCommentsSlice";
-import { editEvent, fetchSingleEventAsync, onEventErrorRead } from "src/redux/events/eventsSlice";
+import React, {createRef, useEffect, useState} from "react";
+import {MapContainer, Marker, TileLayer} from "react-leaflet";
+import {useNavigate} from "react-router-dom";
+import {EventAttendance, answerDeadlineExpired} from "../../types/supabaseTypes";
+import {DeleteEventDialog} from "./DeleteEventDialog";
+import {DeleteEventType, EventInformationProps} from "./types";
+import {CancelTrainingDialog} from "./CancelTrainingDialog";
+import {can} from "src/utils/PermissionService";
+import {fetchEventAttendanceAsync, updateAttendanceAsync} from "src/redux/events/eventAttendanceSlice";
+import {formatDateToDatabase} from "src/utils";
+import {fetchEventCommentsAsync, upsertCommentToEventAsync} from "src/redux/events/eventCommentsSlice";
+import {editEvent, fetchSingleEventAsync, onEventErrorRead} from "src/redux/events/eventsSlice";
 import EventInformationAttendance from "./EventInformationAttendance";
 import EventInformationComments from "./EventInformationComments";
-import { EditEventOptionsDialog } from "./EditEventOptionsDialog";
+import {EditEventOptionsDialog} from "./EditEventOptionsDialog";
+import {isBefore} from "date-fns";
 
 const EventInformation = ({
-    dispatch,
-    selectedEvent,
-    attendanceLoading,
-    error,
-    user,
-    selectedEventPlace,
-    repository,
-    t,
-    attendance,
-    comments
-}: EventInformationProps) => {
+                              dispatch,
+                              selectedEvent,
+                              attendanceLoading,
+                              error,
+                              user,
+                              selectedEventPlace,
+                              repository,
+                              t,
+                              attendance,
+                              comments,
+                              keyHolders
+                          }: EventInformationProps) => {
 
-    const [eventAttendanceState, setEventAttendanceState] = useState({ open: false, index: 0 });
+
     const [cancelTrainingOpen, setCancelTrainingOpen] = useState(false);
     const [deleteTrainingOpen, setDeleteTrainingOpen] = useState(false);
     const [editEventOptionOpen, setEditEventOptionOpen] = useState(false);
-    const [commentsOpen, setCommentsOpen] = useState(false);
     const navigate = useNavigate();
     const inputRef = createRef<HTMLInputElement>();
     const [anchorEl, setAnchorEl] = useState<EventTarget & HTMLButtonElement | null>(null);
 
     useEffect(() => {
-        dispatch(fetchEventAttendanceAsync({ repository, eventId: selectedEvent.id }));
-        dispatch(fetchEventCommentsAsync({ repository, eventId: selectedEvent.id }));
+        dispatch(fetchEventAttendanceAsync({repository, eventId: selectedEvent.id}));
+        dispatch(fetchEventCommentsAsync({repository, eventId: selectedEvent.id}));
     }, [dispatch, repository, selectedEvent.id]);
 
     const cancelTraining = async () => {
         await repository.updateCancellationForEvent(selectedEvent.id, !selectedEvent.isCancelled)
-        dispatch(fetchSingleEventAsync({ repository, eventId: selectedEvent.id, userId: user.userId }));
+        dispatch(fetchSingleEventAsync({repository, eventId: selectedEvent.id, userId: user.userId}));
         setCancelTrainingOpen(false);
     }
 
@@ -102,15 +80,15 @@ const EventInformation = ({
             return;
         } else if (value === "This Event") {
             await repository.deleteEvent(selectedEvent.id);
-            navigate("/training", { replace: true });
+            navigate("/training", {replace: true});
         } else if (value === "This and following events") {
             await repository.deleteEventAndUpcomingEvents(selectedEvent.id, selectedEvent.key, selectedEvent.startingDateTime)
-            navigate("/training", { replace: true });
+            navigate("/training", {replace: true});
         }
     }
 
     const updateAttendance = async (state: EventAttendance, oldState: EventAttendance) => {
-        dispatch(updateAttendanceAsync({ repository, user, eventId: selectedEvent.id, state, oldState }));
+        dispatch(updateAttendanceAsync({repository, user, eventId: selectedEvent.id, state, oldState}));
     }
 
     const handleCommentSubmit = (event: React.FormEvent<HTMLFormElement>) => {
@@ -140,9 +118,9 @@ const EventInformation = ({
     };
 
     const createCardSubHeader = () => {
-        const { meetingDateTime, startingDateTime, recurrenceEnd } = selectedEvent;
+        const {meetingDateTime, startingDateTime, recurrenceEnd} = selectedEvent;
 
-        var startTimeTranslation = t("events.information.startTime", { startTime: new Date(startingDateTime) });
+        let startTimeTranslation = t("events.information.startTime", {startTime: new Date(startingDateTime)});
         if (recurrenceEnd) {
             startTimeTranslation = t("events.information.startTimeAndEndTime", {
                 startTime: new Date(startingDateTime),
@@ -151,11 +129,11 @@ const EventInformation = ({
         }
 
         if (meetingDateTime) {
-            return <ListItemText sx={{ m: 0 }}
-                primary={t("events.information.meetTime", { meetTime: new Date(meetingDateTime) })}
-                secondary={startTimeTranslation} />
+            return <ListItemText sx={{m: 0}}
+                                 primary={t("events.information.meetTime", {meetTime: new Date(meetingDateTime)})}
+                                 secondary={startTimeTranslation}/>
         } else {
-            return <ListItemText sx={{ m: 0 }} primary={startTimeTranslation} />
+            return <ListItemText sx={{m: 0}} primary={startTimeTranslation}/>
         }
 
     }
@@ -176,13 +154,13 @@ const EventInformation = ({
                     aria-label="open drawer"
                     onClick={() => navigate(-1)}
                     edge="start"
-                    sx={{ mr: 2, color: "#fff" }}>
-                    <ArrowBack />
+                    sx={{mr: 2, color: "#fff"}}>
+                    <ArrowBack/>
                 </IconButton>
-                <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>{selectedEvent.title}</Typography>
+                <Typography variant="h6" component="div" sx={{flexGrow: 1}}>{selectedEvent.title}</Typography>
                 {(user?.role === "admin" || user?.role === "trainer" || can("edit", "training")) && <>
-                    <IconButton sx={{ color: "#fff", pr: 0 }} onClick={handleClick}>
-                        <MoreVert />
+                    <IconButton sx={{color: "#fff", pr: 0}} onClick={handleClick}>
+                        <MoreVert/>
                     </IconButton>
                     <Menu
                         id="simple-menu"
@@ -195,9 +173,9 @@ const EventInformation = ({
                             handleClose();
                         }}>
                             <ListItemIcon>
-                                <Edit />
+                                <Edit/>
                             </ListItemIcon>
-                            <ListItemText primary="Bearbeiten" />
+                            <ListItemText primary="Bearbeiten"/>
                         </MenuItem>
                         <MenuItem onClick={() => {
                             setCancelTrainingOpen(true);
@@ -205,35 +183,42 @@ const EventInformation = ({
                         }}>
                             <ListItemIcon>
                                 {
-                                    selectedEvent.isCancelled ? <DoNotDisturbOff /> : <DoNotDisturb />
+                                    selectedEvent.isCancelled ? <DoNotDisturbOff/> : <DoNotDisturb/>
                                 }
                             </ListItemIcon>
-                            <ListItemText primary={selectedEvent.isCancelled ? "Stattfinden" : "Absagen"} />
+                            <ListItemText primary={selectedEvent.isCancelled ? "Stattfinden" : "Absagen"}/>
                         </MenuItem>
                         <MenuItem onClick={() => {
                             setDeleteTrainingOpen(true);
                             handleClose();
                         }}>
                             <ListItemIcon>
-                                <Delete />
+                                <Delete/>
                             </ListItemIcon>
-                            <ListItemText primary="Löschen" />
+                            <ListItemText primary="Löschen"/>
                         </MenuItem>
                     </Menu>
                 </>
                 }
             </Toolbar>
         </AppBar>
-        <Box sx={{ justifyContent: "space-between", display: "flex", flexDirection: "column" }}>
+        <Box sx={{justifyContent: "space-between", display: "flex", flexDirection: "column"}}>
             <Box>
                 {
-                    selectedEventPlace && <CardMedia sx={{ maxHeight: "10%" }}>
-                        <Container sx={{ p: 0, width: "100%", maxHeight: "10%", alignSelf: "center" }}>
+                    selectedEventPlace && <CardMedia sx={{maxHeight: "10%"}}>
+                        <Container sx={{p: 0, width: "100%", maxHeight: "10%", alignSelf: "center"}}>
                             <Box component="button" onClick={() => {
                                 window.open("https://maps.google.com?q=" + selectedEventPlace.lat + "," + selectedEventPlace.lon, '_blank');
-                            }} sx={{ position: "absolute", zIndex: 999, width: "100%", height: "150px", border: "none", background: "transparent" }}></Box>
+                            }} sx={{
+                                position: "absolute",
+                                zIndex: 999,
+                                width: "100%",
+                                height: "150px",
+                                border: "none",
+                                background: "transparent"
+                            }}></Box>
                             <MapContainer
-                                style={{ width: "100%", height: "150px" }}
+                                style={{width: "100%", height: "150px"}}
                                 center={[selectedEventPlace.lat, selectedEventPlace.lon]}
                                 zoom={15}
                                 tap={false}
@@ -242,41 +227,42 @@ const EventInformation = ({
                                 scrollWheelZoom={false}
                                 attributionControl={false}
                                 zoomControl={false}>
-                                <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+                                <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"/>
                                 <Marker
                                     position={[selectedEventPlace.lat, selectedEventPlace.lon]}
-                                    interactive={false} />
+                                    interactive={false}/>
                             </MapContainer>
                         </Container>
                     </CardMedia>
                 }
                 {
-                    selectedEvent.isCancelled && <Alert sx={{ ml: 2, mr: 2, mt: 2 }} severity="error">
+                    selectedEvent.isCancelled && <Alert sx={{ml: 2, mr: 2, mt: 2}} severity="error">
                         Dieses Event wurde <strong>abgesagt</strong>
                     </Alert>
                 }
                 {
                     answerDeadlineExpired(selectedEvent) && selectedEvent.answerDeadline &&
-                    <Alert sx={{ ml: 2, mr: 2, mt: 2 }} severity="info">
-                        {t("events.information.answerDeadlineExceeded", { answerDeadline: new Date(selectedEvent.answerDeadline) })}
+                    <Alert sx={{ml: 2, mr: 2, mt: 2}} severity="info">
+                        {t("events.information.answerDeadlineExceeded", {answerDeadline: new Date(selectedEvent.answerDeadline)})}
                     </Alert>
                 }
-                <Container sx={{ p: 0, alignSelf: "center" }}>
-                    <CardHeader subheader={createCardSubHeader()} sx={{ pb: 0 }} />
+                <Container sx={{p: 0, alignSelf: "center"}}>
+                    <CardHeader subheader={createCardSubHeader()} sx={{pb: 0}}/>
                 </Container>
-                <CardContent sx={{ '&.MuiCardContent-root': { paddingBottom: 1 } }}>
+                <CardContent sx={{'&.MuiCardContent-root': {paddingBottom: 1}}}>
 
-                    <Container sx={{ p: 0, alignSelf: "center" }}>
-                        <Typography sx={{ fontSize: 16, fontWeight: "bold" }} color="text.secondary" gutterBottom>
+                    <Container sx={{p: 0, alignSelf: "center"}}>
+                        <Typography sx={{fontSize: 16, fontWeight: "bold"}} color="text.secondary" gutterBottom>
                             Beschreibung
                         </Typography>
                         <Typography pb={1}>{selectedEvent?.description}</Typography>
-                        <Divider />
+                        <Divider/>
 
                         {
                             selectedEvent.maxAttendees >= 0 && selectedEvent.maxAttendees <= attendance.filter(x => x.state === "Attending").length && selectedEvent.userAttendance !== "Waiting" && selectedEvent.userAttendance !== "Attending" &&
-                            <Alert sx={{ mt: 2 }} severity="info" action={
-                                <Button variant="contained" size="small" onClick={() => updateAttendance("Waiting", selectedEvent.userAttendance)}>
+                            <Alert sx={{mt: 2}} severity="info" action={
+                                <Button variant="contained" size="small"
+                                        onClick={() => updateAttendance("Waiting", selectedEvent.userAttendance)}>
                                     Beitreten
                                 </Button>
                             }>
@@ -286,13 +272,15 @@ const EventInformation = ({
                         }
 
                         {
-                            selectedEvent.userAttendance === "Waiting" && <Alert sx={{ mt: 2 }} severity="warning" action={
-                                <Button variant="contained" size="small" sx={{ backgroundColor: "#934b00" }} onClick={() => updateAttendance("Declined", selectedEvent.userAttendance)}>
+                            selectedEvent.userAttendance === "Waiting" &&
+                            <Alert sx={{mt: 2}} severity="warning" action={
+                                <Button variant="contained" size="small" sx={{backgroundColor: "#934b00"}}
+                                        onClick={() => updateAttendance("Declined", selectedEvent.userAttendance)}>
                                     Verlassen
                                 </Button>
                             }>
                                 {t("events.information.waitingListAccepted", {
-                                    place: attendance.filter(x => x.state === "Waiting").sort((a, b) => new Date(b.lastUpdate).getTime() - new Date(a.lastUpdate).getTime()).findIndex(x => x.user.userId === user.userId) + 1,
+                                    place: attendance.filter(x => x.state === "Waiting").sort((a, b) => isBefore(a.lastUpdate, b.lastUpdate) ? 1 : 0).findIndex(x => x.user.userId === user.userId) + 1,
                                     waitingListLength: attendance.filter(x => x.state === "Waiting").length
                                 })}
                             </Alert>
@@ -301,30 +289,24 @@ const EventInformation = ({
                     <EventInformationAttendance
                         user={user}
                         attendance={attendance}
+                        keyHolders={keyHolders}
                         attendanceLoading={attendanceLoading}
                         selectedEvent={selectedEvent}
-                        setEventAttendanceState={setEventAttendanceState}
-                        updateAttendance={updateAttendance} />
+                        updateAttendance={updateAttendance}/>
 
                     <EventInformationComments
                         eventId={selectedEvent.id}
                         comments={comments}
                         handleCommentSubmit={handleCommentSubmit}
-                        inputRef={inputRef} />
+                        inputRef={inputRef}/>
                 </CardContent>
             </Box>
-
-            <EventAttendanceDialog
-                open={eventAttendanceState.open}
-                index={eventAttendanceState.index}
-                setOpen={(value) => setEventAttendanceState({ open: value, index: 0 })}
-                attendance={attendance} />
 
             <CancelTrainingDialog
                 cancelTrainingOpen={cancelTrainingOpen}
                 setCancelTrainingOpen={setCancelTrainingOpen}
                 cancelTraining={cancelTraining}
-                selectedEvent={selectedEvent} />
+                selectedEvent={selectedEvent}/>
 
             <DeleteEventDialog
                 selectedEvent={selectedEvent}
@@ -333,7 +315,7 @@ const EventInformation = ({
                 handleClose={(e) => {
                     deleteEvent(e);
                     setDeleteTrainingOpen(false);
-                }} />
+                }}/>
 
             <EditEventOptionsDialog
                 setOpen={() => setEditEventOptionOpen(true)}
@@ -342,13 +324,13 @@ const EventInformation = ({
                     setEditEventOptionOpen(false);
                     if (e != null) {
                         dispatch(editEvent(selectedEvent));
-                        navigate("/training/createOrUpdate/" + e, { replace: true })
+                        navigate("/training/createOrUpdate/" + e, {replace: true})
                     }
                 }}
             />
         </Box>
-        <Snackbar sx={{ position: "fixed", right: "16px", }} open={error !== null}>
-            <Alert severity={"error"} sx={{ width: '100%' }} onClose={() => dispatch(onEventErrorRead(null))}>
+        <Snackbar sx={{position: "fixed", right: "16px",}} open={error !== null}>
+            <Alert severity={"error"} sx={{width: '100%'}} onClose={() => dispatch(onEventErrorRead(null))}>
                 {error}
             </Alert>
         </Snackbar>

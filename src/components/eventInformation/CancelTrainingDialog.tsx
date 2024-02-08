@@ -1,7 +1,6 @@
 import { Box, Button, DialogContent, DialogContentText } from "@mui/material";
 import { SwipeableDialog } from "../SwipeableDialog";
 import React from "react";
-import { FullEvent } from "src/types/supabaseTypes";
 import { SliceEvent } from "src/redux/events/eventsSlice";
 
 type CancelTrainingDialogProps = {
