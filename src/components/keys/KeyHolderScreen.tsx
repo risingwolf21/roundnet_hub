@@ -105,7 +105,7 @@ const KeyHolderScreen = ({keysRepository, dispatch, keyHolders, loading, user}: 
         <LoadingIndicator loading={loading}/>
         <List>
             {
-                keyHolders.map((key: FullKeyHolder) => <ListItemButton divider>
+                keyHolders.map((key: FullKeyHolder) => <ListItemButton key={key.key.id} divider>
                     <ListItemAvatar>
                         <Avatar sx={{background: key.key.color, width: 40, height: 40, borderRadius: 2}}>
                             <KeyIcon/>
@@ -277,7 +277,6 @@ const SearchUserDialog = ({onUserSelected, user, open, handleClose}: {
                 }
             </List>
         </Box>
-
     </Dialog>
 }
 

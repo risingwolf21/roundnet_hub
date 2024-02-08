@@ -89,7 +89,7 @@ export const EditOrAddKeyDialog = ({open, handleClose, keyToEdit}: EditOrAddKeyD
                         <CloseIcon/>
                     </IconButton>
                     <Typography sx={{ml: 2, flex: 1}} variant="h6" component="div">
-                        Schlüssel erstellen
+                        {`Schlüssel ${keyToEdit.id > 0 ? "bearbeiten" : "erstellen"}`}
                     </Typography>
                     <Button variant="contained" sx={{background: "white", color: (theme) => theme.palette.primary.main}}
                             onClick={handleSubmit}>Speichern</Button>
