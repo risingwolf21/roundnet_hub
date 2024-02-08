@@ -70,8 +70,8 @@ export function defineRulesFor(user: User | null) {
     can("view", "notifications");
 
     if (user.permissions) {
-        user.permissions.forEach(each => {
-            var split = each.split(";");
+        user.permissions.forEach((each: Permissions) => {
+            let split = each.split(";");
             can(split[0] as Actions, split[1] as Ability[1]);
         });
     }

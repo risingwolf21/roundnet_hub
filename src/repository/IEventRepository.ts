@@ -170,14 +170,11 @@ class SupabaseEventRepository extends SupabaseRepository implements IEventReposi
     }
 
     async updateAttendance(userId: string, eventId: number, state: "Declined" | "Attending" | "Unanswered"): Promise<PostgrestSingleResponse<EventAttendanceMapping>> {
-        return this.client.from("event_attendance_user_mapping")
-            .upsert({
-                user: userId,
-                event: eventId,
-                state: state
-            })
-            .select()
-            .single<EventAttendanceMapping>();
+        return this.client.rpc("update_attendance", {
+            eventid: eventId,
+            userid: userId,
+            state
+        }).returns<EventAttendanceMapping>()
     }
 
     async deleteEvent(eventId: number): Promise<PostgrestSingleResponse<null>> {

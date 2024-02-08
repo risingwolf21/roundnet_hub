@@ -2,7 +2,7 @@ import { Grid, LinearProgress, List, ListItem, ListItemAvatar, ListItemSecondary
 import moment from "moment/moment";
 import React, { useCallback, useEffect } from "react";
 import { useSelector } from "react-redux";
-import { useDependency } from "../../hooks/useDependency";
+import {useDependency, useRepository} from "../../hooks/useDependency";
 import { fetchAdminHistoryAsync } from "../../redux/adminDrinksSlice";
 import { RootState, useAppDispatch } from "../../redux/store";
 import { IAdminDrinksRepository } from "../../repository/IAdminDrinksRepository";
@@ -29,7 +29,7 @@ const AdminHistoryItem = ({ items, header }: { items: FullHistory[], header: str
 }
 
 const AdminHistoryScreenProvider = () => {
-    const adminDrinkRepository = useDependency<IAdminDrinksRepository>("IAdminDrinksRepository");
+    const adminDrinkRepository = useRepository<IAdminDrinksRepository>("IAdminDrinksRepository");
 
     if (!adminDrinkRepository)
         return <AlertSnackbar close={() => { }} alertInfo={{ message: "Fatal error occured. Repository or user was null!", severity: "error" }} />

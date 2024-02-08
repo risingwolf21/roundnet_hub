@@ -6,7 +6,7 @@ export type Json =
   | { [key: string]: Json | undefined }
   | Json[]
 
-export interface Database {
+export type Database = {
   public: {
     Tables: {
       drink: {
@@ -517,6 +517,19 @@ export interface Database {
             }
             Returns: number
           }
+      update_attendance: {
+        Args: {
+          eventid: number
+          userid: string
+          state: Database["public"]["Enums"]["EventAttendance"]
+        }
+        Returns: {
+          event: number
+          lastUpdate: string
+          state: Database["public"]["Enums"]["EventAttendance"]
+          user: string
+        }[]
+      }
     }
     Enums: {
       EventAttendance: "Declined" | "Attending" | "Unanswered" | "Waiting"

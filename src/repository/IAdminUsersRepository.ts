@@ -25,7 +25,7 @@ export class SupabaseAdminUsersRepository extends SupabaseRepository implements 
             .in("user", users.map(x => x.userId))
     }
     async fetchSingleGroupWithUsers(groupId: number): Promise<PostgrestSingleResponse<any>> {
-        return await this.client.from("event_group")
+        return this.client.from("event_group")
             .select("*, users: group_user_mapping ( user (*) )")
             .eq("id", groupId)
             .single();

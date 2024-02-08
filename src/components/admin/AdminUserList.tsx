@@ -4,7 +4,7 @@ import { AppBar, Badge, Box, Chip, Grid, IconButton, LinearProgress, List, ListI
 import React, { Fragment, useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
-import { useDependency } from "src/hooks/useDependency";
+import {useDependency, useRepository} from "src/hooks/useDependency";
 import { IAdminUsersRepository } from "src/repository/IAdminUsersRepository";
 import { fetchAdminUsersAsync } from "../../redux/adminUserSlice";
 import { RootState, useAppDispatch } from "../../redux/store";
@@ -49,7 +49,7 @@ const AdminUserItem = ({ user, onEditClick }: { user: User, onEditClick: () => v
 }
 
 const AdminUserListProvider = () => {
-    const adminUsersRepository = useDependency<IAdminUsersRepository>("IAdminUsersRepository");
+    const adminUsersRepository = useRepository<IAdminUsersRepository>("IAdminUsersRepository");
 
     if (!adminUsersRepository)
         return <AlertSnackbar close={() => { }} alertInfo={{ message: "Fatal error occured. Repository or user was null!", severity: "error" }} />

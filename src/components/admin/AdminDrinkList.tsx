@@ -6,7 +6,7 @@ import { Avatar, Badge, Button, Dialog, DialogActions, DialogContent, DialogTitl
 import _ from "lodash";
 import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
-import { useDependency } from "../../hooks/useDependency";
+import {useDependency, useRepository} from "../../hooks/useDependency";
 import { fetchDrinksAsync } from "../../redux/adminDrinksSlice";
 import { RootState, useAppDispatch } from "../../redux/store";
 import { IAdminDrinksRepository } from "../../repository/IAdminDrinksRepository";
@@ -62,7 +62,7 @@ const EMPTY_DRINK: Drink =
 
 const AdminDrinkListProvider = () => {
     const { drinks, drinksError, drinksLoading } = useSelector((state: RootState) => state.adminDrinks);
-    const repository = useDependency<IAdminDrinksRepository>("IAdminDrinksRepository");
+    const repository = useRepository<IAdminDrinksRepository>("IAdminDrinksRepository");
 
     if (!repository)
         return <AlertSnackbar close={() => { }} alertInfo={{ message: "Fatal error occured. Repository or user was null!", severity: "error" }} />

@@ -1,4 +1,4 @@
-import { FormEvent, useState } from "react"
+import {FormEvent, useState} from "react"
 import Button from '@mui/material/Button';
 import CssBaseline from '@mui/material/CssBaseline';
 import TextField from '@mui/material/TextField';
@@ -8,23 +8,27 @@ import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
 import Logo from "../images/Karlsruher_Kojoten_Logo.svg";
-import { supabase } from "./services/supabase/supabaseClient";
-import { useNavigate } from "react-router-dom";
+import {supabase} from "./services/supabase/supabaseClient";
+import {useNavigate} from "react-router-dom";
 import React from "react";
-import { TABLE_USER } from "../constants";
+import {TABLE_USER} from "../constants";
 
 type Credentials = {
     email: string,
     password: string
 }
 
-const LoginScreen = () => {
+type LoginProps = {
+    goToRegister: () => void,
+    goToForgotPassword: () => void
+}
+
+const LoginScreen = ({goToRegister, goToForgotPassword}: LoginProps) => {
 
     const [errorMessage, setErrorMessage] = useState("");
-    const navigate = useNavigate();
 
     const onLogin = async (credentials: Credentials) => {
-        const { data, error } = await supabase.auth.signInWithPassword({
+        const {data, error} = await supabase.auth.signInWithPassword({
             email: credentials.email,
             password: credentials.password
         });
@@ -34,9 +38,8 @@ const LoginScreen = () => {
             supabase.from(TABLE_USER).select().eq("userId", data.user.id).then(async res => {
                 if (res.data && res.data.length === 1) {
                     await supabase.auth.updateUser({
-                        data: { role: res.data[0].role }
+                        data: {role: res.data[0].role}
                     });
-                    navigate("/drinks", { replace: true })
                 }
             })
     }
@@ -47,7 +50,7 @@ const LoginScreen = () => {
         const email = data.get("email")?.toString();
         const password = data.get("password")?.toString();
         if (email && password) {
-            onLogin({ email, password });
+            onLogin({email, password});
         } else {
             setErrorMessage("Email or Password is null.")
         }
@@ -55,7 +58,7 @@ const LoginScreen = () => {
 
     return (
         <Container component="main" maxWidth="xs">
-            <CssBaseline />
+            <CssBaseline/>
             <Box
                 sx={{
                     marginTop: 8,
@@ -63,11 +66,11 @@ const LoginScreen = () => {
                     flexDirection: 'column',
                     alignItems: 'center',
                 }}>
-                <img src={Logo} alt='Logo' width={150} />
+                <img src={Logo} alt='Logo' width={150}/>
                 <Typography component="h1" variant="h5">
                     Login
                 </Typography>
-                <Box component="form" onSubmit={handleSubmit} noValidate sx={{ mt: 1 }}>
+                <Box component="form" onSubmit={handleSubmit} noValidate sx={{mt: 1}}>
                     <TextField
                         margin="normal"
                         color='secondary'
@@ -99,24 +102,24 @@ const LoginScreen = () => {
                         fullWidth
                         color='secondary'
                         variant="contained"
-                        sx={{ mt: 3, mb: 2 }}
+                        sx={{mt: 3, mb: 2}}
                     >
                         Einloggen
                     </Button>
                     <Grid container>
                         <Grid item xs>
-                            <Link href="#" variant="body2" onClick={() => navigate("/forgot-password")}>
+                            <Link href="#" variant="body2" onClick={goToForgotPassword}>
                                 Passwort vergessen?
                             </Link>
                         </Grid>
                         <Grid item>
-                            <Link href="#" variant="body2" onClick={() => navigate("/register")}>
+                            <Link href="#" variant="body2" onClick={goToRegister}>
                                 {"Noch keinen Account?"}
                             </Link>
                         </Grid>
                     </Grid>
-                    <Grid container sx={{ position: "absolute", left: 0, bottom: 0, right: 0, justifyContent: "center" }}>
-                        <p style={{ color: "#ccc" }}>Version {process.env.REACT_APP_VERSION}</p>
+                    <Grid container sx={{position: "absolute", left: 0, bottom: 0, right: 0, justifyContent: "center"}}>
+                        <p style={{color: "#ccc"}}>Version {process.env.REACT_APP_VERSION}</p>
                     </Grid>
                 </Box>
             </Box>

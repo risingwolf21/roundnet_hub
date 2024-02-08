@@ -1,0 +1,103 @@
+import {
+    Alert,
+    Avatar,
+    Box,
+    Button,
+    Container,
+    Fab,
+    Grid,
+    List,
+    ListItem,
+    ListItemAvatar,
+    ListItemText,
+    ListSubheader,
+    Snackbar,
+    TextField, Typography
+} from "@mui/material";
+import CustomAppBar from "./AppBar";
+import React, {useEffect, useState} from "react";
+import CropImageDialog from "./CropImageDialog";
+import {
+    AddPhotoAlternateOutlined,
+    AdminPanelSettingsOutlined,
+    DeleteOutline,
+    EditOutlined,
+    EmailOutlined,
+    FiberManualRecord,
+    PersonOutlineOutlined,
+    Save
+} from "@mui/icons-material";
+import {useDependency} from "src/hooks/useDependency";
+import {IUserRepository} from "src/repository/IUserRepository";
+import {useParams} from "react-router-dom";
+import {UserWithGroups, Group} from "../types/supabaseTypes";
+import {LoadingIndicator} from "./LoadingIndicator";
+import {useSelector} from "react-redux";
+import {RootState} from "../redux/store";
+
+const UserScreen = () => {
+
+    const {userId} = useParams();
+    const repo = useDependency<IUserRepository>("IUserRepository");
+    const {user} = useSelector((state: RootState) => state.application);
+    const [loading, setLoading] = useState<boolean>(false);
+    const [currentUser, setCurrentUser] = useState<UserWithGroups | null>(null);
+    const [overlappingGroups, setOverlappingGroups] = useState<Group[]>([]);
+
+    console.log("can go back: ", window.history.state.idx !== 0)
+
+    useEffect(() => {
+        if (userId && repo && user) {
+            setLoading(true);
+            repo.fetchUserWithGroups(userId).then(result => {
+                repo.fetchUserWithGroups(user.userId).then(userResult => {
+                    setOverlappingGroups(result.data?.groups?.filter(x =>
+                        userResult.data?.groups.some(y => y.id === x.id)) ?? [])
+                    setCurrentUser(result.data);
+                    setLoading(false);
+                });
+            });
+        }
+    }, [repo, userId, user]);
+
+    return <Grid
+        width="100%">
+        <CustomAppBar navigateBack={true}/>
+        <LoadingIndicator loading={loading}/>
+        <List sx={{pl: 2, pr: 2, pb: 8}}>
+            <Container key={"avatar"} sx={{
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                flexDirection: "column",
+                m: 2,
+                p: 0,
+                width: "auto"
+            }}>
+                <Avatar sx={{borderRadius: 2, width: "150px", height: "150px"}}>
+                    {
+                        currentUser?.avatarUrl
+                            ? <img src={currentUser?.avatarUrl} alt="logo" width={"150px"} height={"150px"}/>
+                            : <AddPhotoAlternateOutlined sx={{fontSize: "50px"}}/>
+                    }
+                </Avatar>
+                <Typography variant={"h5"} sx={{mt: 4}}>{currentUser?.displayName}</Typography>
+            </Container>
+            <List key={"groups"} subheader={<ListSubheader
+                sx={{zIndex: "-1", fontWeight: "bold", lineHeight: "normal", my: 2, pl: 0}}>Gemeinsame
+                Gruppen</ListSubheader>}>
+                {
+                    overlappingGroups.map((group, index) => <ListItem key={`${group.name} ${index}`}
+                                                                      sx={{'&.MuiListItem-root': {p: 0}}}
+                                                                      divider={index !== overlappingGroups.length - 1}>
+                        <ListItemAvatar>
+                            <FiberManualRecord sx={{color: group.color}}/>
+                        </ListItemAvatar>
+                        <ListItemText primary={group.name} secondary={group.description}/>
+                    </ListItem>)
+                }
+            </List>
+        </List>
+    </Grid>
+}
+export default UserScreen;

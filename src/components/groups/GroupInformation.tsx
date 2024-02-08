@@ -4,7 +4,7 @@ import { toInteger } from "lodash";
 import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { useParams } from "react-router-dom";
-import { useDependency } from "src/hooks/useDependency";
+import {useDependency, useRepository} from "src/hooks/useDependency";
 import { IAdminUsersRepository } from "src/repository/IAdminUsersRepository";
 import { fetchAdminUsersAsync } from "../../redux/adminUserSlice";
 import { RootState, useAppDispatch } from "../../redux/store";
@@ -20,7 +20,7 @@ const GroupInformationProvider = () => {
     const group = useSelector((state: RootState) => groupsSelector.selectById(state, toInteger(id)));
 
     const { users, loading } = useSelector((state: RootState) => state.adminUsers);
-    const adminUsersRepository = useDependency<IAdminUsersRepository>("IAdminUsersRepository");
+    const adminUsersRepository = useRepository<IAdminUsersRepository>("IAdminUsersRepository");
 
     useEffect(() => {
         if (adminUsersRepository)
