@@ -117,7 +117,6 @@ const KeyHolderScreen = ({keysRepository, dispatch, keyHolders, loading, user}: 
                             ? <ListItemSecondaryAction>
                                 <IconButton onClick={() => {
                                     setKeyToEdit(key.key);
-                                    console.log(key.key)
                                     setAddOrUpdateKeysOpen(true);
                                 }}>
                                     <EditIcon/>
@@ -205,6 +204,7 @@ const KeyHolderScreen = ({keysRepository, dispatch, keyHolders, loading, user}: 
         <EditOrAddKeyDialog open={addOrUpdateKeysOpen} handleClose={() => {
             setAddOrUpdateKeysOpen(false);
             setEditingMode(false);
+            dispatch(fetchKeysAsync(keysRepository));
         }} keyToEdit={keyToEdit}/>
     </Box>
 }
@@ -271,7 +271,7 @@ const SearchUserDialog = ({onUserSelected, user, open, handleClose}: {
                         .filter((x: User) => x.userId !== user.userId)
                         .filter((x: User) => searchString === "" || (x.displayName ?? "").toLowerCase().includes(searchString.toLowerCase()))
                         .map((user: User) => <ListItemButton key={user.userId}
-                                                                            onClick={() => onUserSelected(user)}>
+                                                             onClick={() => onUserSelected(user)}>
                             <ListItemText primary={user.displayName} secondary={"Benutzername"}/>
                         </ListItemButton>)
                 }
