@@ -1,14 +1,14 @@
-import { Euro, Group, GroupOutlined, History, Liquor, ShowChart } from "@mui/icons-material";
-import { Avatar, Badge, Box, List, ListItemAvatar, ListItemButton, ListItemText } from "@mui/material";
-import { TFunction } from "i18next";
+import {Euro, Group, GroupOutlined, History, Liquor, ShowChart, StorageOutlined} from "@mui/icons-material";
+import {Avatar, Badge, Box, List, ListItemAvatar, ListItemButton, ListItemText} from "@mui/material";
+import {TFunction} from "i18next";
 import React from "react";
-import { withTranslation } from 'react-i18next';
-import { useSelector } from "react-redux";
-import { useNavigate } from "react-router";
-import { UserRole } from "src/types/supabaseTypes";
-import { Ability, Actions, can } from "src/utils/PermissionService";
-import { RootState } from "../../redux/store";
-import { AlertSnackbar } from "../AlertSnackbar";
+import {withTranslation} from 'react-i18next';
+import {useSelector} from "react-redux";
+import {useNavigate} from "react-router";
+import {UserRole} from "src/types/supabaseTypes";
+import {Ability, Actions, can} from "src/utils/PermissionService";
+import {RootState} from "../../redux/store";
+import {AlertSnackbar} from "../AlertSnackbar";
 import CustomAppBar from "../AppBar";
 
 type EntryType = {
@@ -89,6 +89,15 @@ const entries = [
         translationKey: "executeEdgeFunctions",
         navigateTo: "/admin/edgeFunctions",
         icon: <GroupOutlined />,
+        role: "admin",
+        avatarColor: "#88AEBF",
+        action: "edit",
+        ability: "edgeFunctions"
+    },
+    {
+        translationKey: "postgresClient",
+        navigateTo: "/admin/supabase",
+        icon: <StorageOutlined/>,
         role: "admin",
         avatarColor: "#88AEBF",
         action: "edit",

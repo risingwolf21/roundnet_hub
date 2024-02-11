@@ -28,7 +28,7 @@ import {AppDispatch, RootState, useAppDispatch} from "src/redux/store";
 import {IKeysRepository} from "src/repository/IKeysRepository";
 import {FullKeyHolder, Key, User} from "src/types/supabaseTypes";
 import {SlideUpTransition} from "src/utils";
-import {AlertSnackbar} from "../AlertSnackbar";
+import {AlertMessage, AlertSnackbar} from "../AlertSnackbar";
 import CustomAppBar from "../AppBar";
 import {LoadingIndicator} from "../LoadingIndicator";
 import {Search, SearchIconWrapper, StyledInputBase} from "../SearchBar";
@@ -36,6 +36,8 @@ import {SwipeableDialog} from "../SwipeableDialog";
 import {can} from "../../utils/PermissionService";
 import {EditOrAddKeyDialog} from "./EditOrAddKeyDialog";
 import EditIcon from "@mui/icons-material/Edit";
+import {TFunction} from "i18next";
+import {useTranslation} from "react-i18next";
 
 const KeyHolderScreenProvider = () => {
     const {user} = useSelector((state: RootState) => state.application);
@@ -43,12 +45,14 @@ const KeyHolderScreenProvider = () => {
     const dispatch = useAppDispatch();
     const keyHolders = useSelector((state: RootState) => keyHoldersSelector.selectAll(state));
     const {loading} = useSelector((state: RootState) => state.keys);
+    const {t} = useTranslation();
 
     if (!user || !keysRepository)
         return <AlertSnackbar close={() => {
         }} alertInfo={{message: "Fatal error occured. Repository or user was null!", severity: "error"}}/>
 
     return <KeyHolderScreen
+        t={t}
         keysRepository={keysRepository}
         dispatch={dispatch}
         user={user}
@@ -61,12 +65,13 @@ type KeyHolderScreenProps = {
     dispatch: AppDispatch,
     keyHolders: FullKeyHolder[],
     loading: boolean,
-    user: User
+    user: User,
+    t: TFunction
 }
 
 export const EMPTY_KEY = {name: "", color: "#000000", id: 0, created_at: ""};
 
-const KeyHolderScreen = ({keysRepository, dispatch, keyHolders, loading, user}: KeyHolderScreenProps) => {
+const KeyHolderScreen = ({keysRepository, dispatch, keyHolders, loading, user, t}: KeyHolderScreenProps) => {
 
     const [searchUserOpen, setSearchUserOpen] = useState(false);
     const [addOrUpdateKeysOpen, setAddOrUpdateKeysOpen] = useState(false);
@@ -74,6 +79,7 @@ const KeyHolderScreen = ({keysRepository, dispatch, keyHolders, loading, user}: 
     const [selectedKeyHolder, setSelectedKeyHolder] = useState<FullKeyHolder | null>(null);
     const [isEditingMode, setEditingMode] = useState(false);
     const [keyToEdit, setKeyToEdit] = useState<Key>(EMPTY_KEY);
+    const [alertInfo, setAlertInfo] = useState<AlertMessage | null>(null);
 
     const userSelected = (user: User) => {
         setSearchUserOpen(false);
@@ -81,9 +87,13 @@ const KeyHolderScreen = ({keysRepository, dispatch, keyHolders, loading, user}: 
     }
 
     const confirmKeyHandOver = () => {
-        if (!selectedKeyHolder || !selectedUser)
+        if (!selectedKeyHolder || !selectedUser) {
+            setAlertInfo({message: t("keyHandOverError", {error: ""}), severity: "error"});
             return;
-        keysRepository.giveKeyToUser(selectedKeyHolder.key, selectedUser).then(() => {
+        }
+        keysRepository.giveKeyToUser(selectedKeyHolder.key, selectedUser).then((result) => {
+            if (result.error)
+                setAlertInfo({message: t("keyHandOverError", {error: result.error}), severity: "error"});
             setSelectedUser(null);
             setSelectedKeyHolder(null);
             dispatch(fetchKeysAsync(keysRepository));
@@ -125,13 +135,13 @@ const KeyHolderScreen = ({keysRepository, dispatch, keyHolders, loading, user}: 
                             : key.user.userId === user.userId ?
                                 <ListItemSecondaryAction>
                                     <Button color="primary" onClick={() => selectKeyToHandOver(key)}>
-                                        Abgeben
+                                        {t("handover_key")}
                                     </Button>
                                 </ListItemSecondaryAction>
                                 :
                                 <ListItemSecondaryAction>
                                     <Button color="primary" onClick={() => selectKeyToReceive(key)}>
-                                        Annehmen
+                                        {t("take_key")}
                                     </Button>
                                 </ListItemSecondaryAction>
                     }
@@ -162,12 +172,18 @@ const KeyHolderScreen = ({keysRepository, dispatch, keyHolders, loading, user}: 
         <SearchUserDialog open={searchUserOpen} handleClose={() => setSearchUserOpen(false)} user={user}
                           onUserSelected={userSelected}/>
         <SwipeableDialog open={selectedUser !== null} setOpen={() => {
-        }} onClose={() => setSelectedUser(null)} title={"Schlüsselübergabe"}>
+        }} onClose={() => setSelectedUser(null)} title={t("keyHandOver")}>
             <Typography m={2}>
                 {
                     selectedUser?.userId === user.userId ?
-                        "Hiermit bestätigst du das du den Schlüssel \"" + selectedKeyHolder?.key.name + "\" von \"" + selectedKeyHolder?.user.displayName + "\" erhalten hast!"
-                        : "Bist du sicher das du den Schlüssel \"" + selectedKeyHolder?.key.name + "\" an \"" + selectedUser?.displayName + "\" abgeben möchtest?"
+                        t("confirmKeyTaken", {
+                            keyName: selectedKeyHolder?.key.name,
+                            userName: selectedKeyHolder?.user.displayName
+                        }) :
+                        t("confirmKeyHandover", {
+                            keyName: selectedKeyHolder?.key.name,
+                            userName: selectedKeyHolder?.user.displayName
+                        })
                 }
             </Typography>
             <Box sx={{
@@ -187,7 +203,7 @@ const KeyHolderScreen = ({keysRepository, dispatch, keyHolders, loading, user}: 
                     fontSize: "16px",
                     fontFamily: "sans-serif",
                     lineSpacing: "24px"
-                }} onClick={() => setSelectedUser(null)}>Abbrechen</Button>
+                }} onClick={() => setSelectedUser(null)}>{t("cancel")}</Button>
                 <Button variant="contained" fullWidth sx={{
                     ml: 1,
                     mr: 2,
@@ -197,10 +213,11 @@ const KeyHolderScreen = ({keysRepository, dispatch, keyHolders, loading, user}: 
                     fontFamily: "sans-serif",
                     lineSpacing: "24px"
                 }} onClick={confirmKeyHandOver} autoFocus>
-                    Bestätigen
+                    {t("confirm")}
                 </Button>
             </Box>
         </SwipeableDialog>
+        <AlertSnackbar alertInfo={alertInfo} autoHideDuration={1500} close={() => setAlertInfo(null)}/>
         <EditOrAddKeyDialog open={addOrUpdateKeysOpen} handleClose={() => {
             setAddOrUpdateKeysOpen(false);
             setEditingMode(false);
@@ -220,6 +237,7 @@ const SearchUserDialog = ({onUserSelected, user, open, handleClose}: {
     const [searchString, setSearchString] = useState("");
     const [users, setUsers] = useState<User[]>([]);
     const client = useClient();
+    const {t} = useTranslation();
 
     useEffect(() => {
         client.from(TABLE_USER)
@@ -272,7 +290,7 @@ const SearchUserDialog = ({onUserSelected, user, open, handleClose}: {
                         .filter((x: User) => searchString === "" || (x.displayName ?? "").toLowerCase().includes(searchString.toLowerCase()))
                         .map((user: User) => <ListItemButton key={user.userId}
                                                              onClick={() => onUserSelected(user)}>
-                            <ListItemText primary={user.displayName} secondary={"Benutzername"}/>
+                            <ListItemText primary={user.displayName} secondary={t("userName")}/>
                         </ListItemButton>)
                 }
             </List>

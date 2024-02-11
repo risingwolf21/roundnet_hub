@@ -14,11 +14,9 @@ import ExecuteEdgeFunctions from "./components/admin/ExecuteEdgeFunctions";
 import NotificationsScreenProvider from "./components/NotificationsScreen";
 import {useInitialFetch} from "./components/InitialFetch";
 import NotVerifiedScreen from "./components/NotVerifiedScreen";
-import LoginScreen from "./components/LoginScreen";
-import RegisterScreen from "./components/RegisterScreen";
-import ForgotPasswordScreen from "./components/ForgotPasswordScreen";
 import ProtectedRoute from "./components/ProtectedRoute";
 import {AuthStateListener} from "./components/AuthStateListener";
+import {SupabaseClient} from "./components/SupabaseClient";
 
 const FeatureNotAvailable = React.lazy(() => import('./components/FeatureNotAvailable'));
 const HistoryScreenProvider = React.lazy(() => import('./components/HistoryScreen'));
@@ -104,6 +102,7 @@ const App = () => {
                         <Route path='/admin/users' element={<ProtectedRoute><AdminUserListProvider/></ProtectedRoute>}/>
                         <Route path='/admin/edgeFunctions'
                                element={<ProtectedRoute><ExecuteEdgeFunctions/></ProtectedRoute>}/>
+                        <Route path='/admin/supabase' element={<ProtectedRoute><SupabaseClient/></ProtectedRoute>}/>
                     </Routes>
                 </React.Suspense>
                 <div style={{width: "100%", height: "56px"}}/>
