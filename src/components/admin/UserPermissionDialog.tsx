@@ -1,12 +1,33 @@
-import { AccountCircle, AdminPanelSettings, EuroRounded, Liquor, SportsHandball } from "@mui/icons-material";
+import {AccountCircle, AdminPanelSettings, EuroRounded, Liquor, SportsHandball} from "@mui/icons-material";
 import CloseIcon from '@mui/icons-material/Close';
-import { AppBar, Button, Chip, Dialog, Divider, Grid, IconButton, Table, TableBody, TableCell, TableHead, TableRow, Toolbar, Typography } from "@mui/material";
+import {
+    AppBar,
+    Button,
+    Chip,
+    Dialog,
+    Divider,
+    Grid,
+    IconButton,
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableRow,
+    Toolbar,
+    Typography
+} from "@mui/material";
 import Checkbox from '@mui/material/Checkbox';
-import { Box } from "@mui/system";
-import React, { useState } from "react";
-import { Permissions, UserRole } from "src/types/supabaseTypes";
-import { allPermissions, financePermissions, procurePermissions, trainerPermissions, userPermissions } from "src/utils/PermissionService";
-import { SlideUpTransition } from "../../utils";
+import {Box} from "@mui/system";
+import React, {useState} from "react";
+import {Permissions} from "src/types/supabaseTypes";
+import {
+    allPermissions,
+    financePermissions,
+    procurePermissions,
+    trainerPermissions,
+    userPermissions
+} from "src/utils/PermissionService";
+import {SlideUpTransition} from "../../utils";
 
 type UserPermissionsDialogProps = {
     open: boolean,
@@ -27,7 +48,7 @@ export const UserPermissionsDialog = ({ open, handleClose, handleSubmit, permiss
         }
     }
 
-    const chipClicked = (role: UserRole) => {
+    const chipClicked = (role: string) => {
         switch (role) {
             case "admin":
                 setSelectedUserPermissions(allPermissions)

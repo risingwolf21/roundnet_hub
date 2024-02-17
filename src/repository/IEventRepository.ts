@@ -4,6 +4,7 @@ import {
     EventAttendance,
     EventAttendanceMapping,
     EventInsert,
+    EventRecurrence,
     EventUpdate,
     FullAttendance,
     FullComment,
@@ -11,12 +12,12 @@ import {
     Group,
     User
 } from "../types/supabaseTypes";
-import {PostgrestSingleResponse, PostgrestError} from '@supabase/supabase-js';
+import {PostgrestError, PostgrestSingleResponse} from '@supabase/supabase-js';
 import moment from "moment";
 import {injectable} from "inversify";
 import {SupabaseRepository} from "./Repository";
 import {formatDateToDatabase} from "src/utils";
-import {add, interval, intervalToDuration} from "date-fns";
+import {add, Duration} from "date-fns";
 import _ from "lodash";
 
 export type DbResult<T> = T extends PromiseLike<infer U> ? U : never
@@ -32,7 +33,7 @@ interface IEventRepository {
 
     updateEvent(eventId: number, event: EventUpdate): Promise<PostgrestSingleResponse<null>>
 
-    updateEventAndAllRecurrences(event: FullEvent, eventUpdate: EventUpdate): Promise<PostgrestSingleResponse<null>>
+    updateEventAndAllRecurrences(eventUpdate: EventUpdate): Promise<PostgrestSingleResponse<null>>
 
     fetchEvents(user: User, userGroups: number[], page: number, count: number): Promise<PostgrestSingleResponse<FullEvent[]>>
 
@@ -57,31 +58,12 @@ interface IEventRepository {
 
 @injectable()
 class SupabaseEventRepository extends SupabaseRepository implements IEventRepository {
-    async updateEventAndAllRecurrences(event: FullEvent, eventUpdate: EventUpdate): Promise<PostgrestSingleResponse<null>> {
-        let startingDateTimeDifference = eventUpdate.startingDateTime ? intervalToDuration({
-            start: event.startingDateTime,
-            end: eventUpdate.startingDateTime
-        }) : intervalToDuration(interval(0, 0));
-
-        let endDateTimeDifference = intervalToDuration(interval(new Date(), new Date()));
-        if (event.endDateTime && eventUpdate.endDateTime) {
-            endDateTimeDifference = intervalToDuration(interval(event.endDateTime, eventUpdate.endDateTime));
-        }
-
-        let meetingDateTimeDifference = intervalToDuration(interval(0, 0));
-        if (event.meetingDateTime && eventUpdate.meetingDateTime) {
-            meetingDateTimeDifference = intervalToDuration(interval(event.meetingDateTime, eventUpdate.meetingDateTime));
-        }
-
-        let answerDeadlineDifference = intervalToDuration(interval(0, 0));
-        if (event.answerDeadline && eventUpdate.answerDeadline) {
-            answerDeadlineDifference = intervalToDuration(interval(event.answerDeadline, eventUpdate.answerDeadline));
-        }
+    async updateEventAndAllRecurrences(eventUpdate: EventUpdate): Promise<PostgrestSingleResponse<null>> {
 
         const {
             data,
             error
-        } = await this.client.from("events").select("*").eq("key", event.key).gte("id", event.id).returns<Event[]>();
+        } = await this.client.from("events").select("*").eq("key", eventUpdate.key).gte("id", eventUpdate.id).order("id").returns<Event[]>();
 
         if (!data || error) {
             return {
@@ -94,40 +76,33 @@ class SupabaseEventRepository extends SupabaseRepository implements IEventReposi
             };
         }
 
-        console.log(meetingDateTimeDifference)
-        console.log(endDateTimeDifference)
+        const recurrenceFrom = (recurrence: EventRecurrence, index: number): Duration => {
+            switch (recurrence) {
+                case "Monthly":
+                    return {months: index};
+                case "Weekly":
+                    return {days: index * 7};
+                case "Fortnightly":
+                    return {days: index * 14};
+                case "None":
+                    return {days: 0}
+            }
+        }
 
-        const events = data.map((e) => {
+        const events = data.map((e, index) => {
             return {
-                ...(_.omit(event, ["id", "fullGroup", "attendance", "comments", "userAttendance", "attendanceUpdating"])),
+                ...e,
                 ...(_.omit(eventUpdate, ["id"])),
-                startingDateTime: formatDateToDatabase(add(e.startingDateTime, startingDateTimeDifference)),
-                endDateTime: e.endDateTime
-                    ? formatDateToDatabase(add(e.endDateTime, endDateTimeDifference))
-                    : eventUpdate.endDateTime
-                        ? add(eventUpdate.endDateTime, {})
-                        : null,
-                meetingDateTime: e.meetingDateTime ? formatDateToDatabase(add(e.meetingDateTime, meetingDateTimeDifference)) : null,
-                answerDeadline: e.answerDeadline
-                    ? formatDateToDatabase(add(e.answerDeadline, answerDeadlineDifference))
-                    : eventUpdate.answerDeadline
-                        ? add(eventUpdate.answerDeadline, {})
-                        : null
+                startingDateTime: eventUpdate.startingDateTime ? formatDateToDatabase(add(eventUpdate.startingDateTime, recurrenceFrom(eventUpdate.recurrence ?? e.recurrence, index))) : e.startingDateTime,
+                endDateTime: eventUpdate.endDateTime ? formatDateToDatabase(add(eventUpdate.endDateTime, recurrenceFrom(eventUpdate.recurrence ?? e.recurrence, index))) : e.endDateTime,
+                meetingDateTime: eventUpdate.meetingDateTime ? formatDateToDatabase(add(eventUpdate.meetingDateTime, recurrenceFrom(eventUpdate.recurrence ?? e.recurrence, index))) : e.meetingDateTime,
+                answerDeadline: eventUpdate.answerDeadline ? formatDateToDatabase(add(eventUpdate.answerDeadline, recurrenceFrom(eventUpdate.recurrence ?? e.recurrence, index))) : e.answerDeadline,
             } as EventInsert;
         });
-        console.log(events);
 
-        return {
-            error: {
-                code: "",
-                details: "",
-                hint: "",
-                message: "Could not fetch events that need to be updated!"
-            } as PostgrestError, data: null, count: null, status: 400, statusText: ""
-        };
-        // return this.client
-        //     .from("events")
-        //     .upsert(events);
+        return this.client
+            .from("events")
+            .upsert(events);
     }
 
 
