@@ -97,7 +97,7 @@ const EventInformationAttendance = ({
                 </ListItem>
             }
             {
-                selectedEvent.maxAttendees >= 0 &&
+                selectedEvent.maxAttendees && selectedEvent.maxAttendees >= 0 &&
                 <ListItem key={"spotsTaken"} sx={{'&.MuiListItem-root': {paddingLeft: 0}}} divider>
                     <ListItemAvatar sx={{justifyContent: "left", alignItems: "center", display: "flex"}}>
                         <CircularProgress size={"24px"} thickness={8}

@@ -1,11 +1,4 @@
-import {
-    ArrowBack,
-    Delete,
-    DoNotDisturb,
-    DoNotDisturbOff,
-    Edit,
-    MoreVert
-} from "@mui/icons-material";
+import {ArrowBack, Delete, DoNotDisturb, DoNotDisturbOff, Edit, MoreVert} from "@mui/icons-material";
 import {
     Alert,
     AppBar,
@@ -28,7 +21,7 @@ import {
 import React, {createRef, useEffect, useState} from "react";
 import {MapContainer, Marker, TileLayer} from "react-leaflet";
 import {useNavigate} from "react-router-dom";
-import {EventAttendance, answerDeadlineExpired} from "../../types/supabaseTypes";
+import {answerDeadlineExpired, EventAttendance} from "../../types/supabaseTypes";
 import {DeleteEventDialog} from "./DeleteEventDialog";
 import {DeleteEventType, EventInformationProps} from "./types";
 import {CancelTrainingDialog} from "./CancelTrainingDialog";
@@ -259,7 +252,7 @@ const EventInformation = ({
                         <Divider/>
 
                         {
-                            selectedEvent.maxAttendees >= 0 && selectedEvent.maxAttendees <= attendance.filter(x => x.state === "Attending").length && selectedEvent.userAttendance !== "Waiting" && selectedEvent.userAttendance !== "Attending" &&
+                            selectedEvent.maxAttendees && selectedEvent.maxAttendees >= 0 && selectedEvent.maxAttendees <= attendance.filter(x => x.state === "Attending").length && selectedEvent.userAttendance !== "Waiting" && selectedEvent.userAttendance !== "Attending" &&
                             <Alert sx={{mt: 2}} severity="info" action={
                                 <Button variant="contained" size="small"
                                         onClick={() => updateAttendance("Waiting", selectedEvent.userAttendance)}>

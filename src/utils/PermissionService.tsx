@@ -1,5 +1,5 @@
-import { AbilityBuilder, MongoQuery, PureAbility, createMongoAbility } from '@casl/ability';
-import { Permissions, User } from "src/types/supabaseTypes";
+import {AbilityBuilder, createMongoAbility, MongoQuery, PureAbility} from '@casl/ability';
+import {Permissions, User} from "src/types/supabaseTypes";
 
 
 export type Actions = 'use' | 'edit' | 'delete' | 'view'
@@ -81,4 +81,4 @@ export function defineRulesFor(user: User | null) {
     }
 
     return rules;
-};
+}

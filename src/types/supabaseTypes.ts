@@ -74,6 +74,8 @@ export function answerDeadlineExpired<EventType extends Event>(x: EventType) {
 }
 
 export function maxAttendeesExceeded<EventType extends Event, AttendanceType extends Attendance>(x: EventType, attendance: AttendanceType[]) {
+    if (!x.maxAttendees)
+        return false;
     return attendance.filter(y => y.state === "Attending").length >= x.maxAttendees && x.maxAttendees > 0;
 }
 

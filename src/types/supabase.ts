@@ -171,7 +171,7 @@ export type Database = {
           id: number
           isCancelled: boolean
           key: string
-          maxAttendees: number
+          maxAttendees: number | null
           meetingDateTime: string | null
           place: string | null
           recurrence: Database["public"]["Enums"]["EventRecurrence"]
@@ -188,7 +188,7 @@ export type Database = {
           id?: number
           isCancelled?: boolean
           key?: string
-          maxAttendees?: number
+          maxAttendees?: number | null
           meetingDateTime?: string | null
           place?: string | null
           recurrence?: Database["public"]["Enums"]["EventRecurrence"]
@@ -205,7 +205,7 @@ export type Database = {
           id?: number
           isCancelled?: boolean
           key?: string
-          maxAttendees?: number
+          maxAttendees?: number | null
           meetingDateTime?: string | null
           place?: string | null
           recurrence?: Database["public"]["Enums"]["EventRecurrence"]
