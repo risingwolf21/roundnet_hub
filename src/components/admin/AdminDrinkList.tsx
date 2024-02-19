@@ -2,18 +2,36 @@ import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
 import LocalDrinkIcon from '@mui/icons-material/LocalDrink';
-import { Avatar, Badge, Button, Dialog, DialogActions, DialogContent, DialogTitle, Fab, Grid, IconButton, LinearProgress, List, ListItem, ListItemAvatar, ListItemSecondaryAction, ListItemText, Typography } from "@mui/material";
+import {
+    Avatar,
+    Badge,
+    Button,
+    Dialog,
+    DialogActions,
+    DialogContent,
+    DialogTitle,
+    Fab,
+    Grid,
+    IconButton,
+    LinearProgress,
+    List,
+    ListItem,
+    ListItemAvatar,
+    ListItemSecondaryAction,
+    ListItemText,
+    Typography
+} from "@mui/material";
 import _ from "lodash";
-import React, { useEffect, useState } from "react";
-import { useSelector } from "react-redux";
-import {useDependency, useRepository} from "../../hooks/useDependency";
-import { fetchDrinksAsync } from "../../redux/adminDrinksSlice";
-import { RootState, useAppDispatch } from "../../redux/store";
-import { IAdminDrinksRepository } from "../../repository/IAdminDrinksRepository";
-import { Drink } from "../../types/supabaseTypes";
-import { AlertSnackbar } from "../AlertSnackbar";
+import React, {useEffect, useState} from "react";
+import {useSelector} from "react-redux";
+import {useDependency} from "../../hooks/useDependency";
+import {fetchDrinksAsync} from "../../redux/adminDrinksSlice";
+import {RootState, useAppDispatch} from "../../redux/store";
+import {IAdminDrinksRepository} from "../../repository/IAdminDrinksRepository";
+import {Drink} from "../../types/supabaseTypes";
+import {AlertSnackbar} from "../AlertSnackbar";
 import CustomAppBar from "../AppBar";
-import { Error } from "../Error";
+import {Error} from "../Error";
 import EditDrinkDialog from "./EditDrinkDialog";
 
 type AdminDrinkItemProps = {
@@ -62,7 +80,7 @@ const EMPTY_DRINK: Drink =
 
 const AdminDrinkListProvider = () => {
     const { drinks, drinksError, drinksLoading } = useSelector((state: RootState) => state.adminDrinks);
-    const repository = useRepository<IAdminDrinksRepository>("IAdminDrinksRepository");
+    const repository = useDependency<IAdminDrinksRepository>("IAdminDrinksRepository");
 
     if (!repository)
         return <AlertSnackbar close={() => { }} alertInfo={{ message: "Fatal error occured. Repository or user was null!", severity: "error" }} />

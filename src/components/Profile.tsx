@@ -1,36 +1,21 @@
 import {
-    Alert,
     Avatar,
-    Box,
-    Button,
     Container,
-    Fab,
     Grid,
     List,
     ListItem,
     ListItemAvatar,
     ListItemText,
     ListSubheader,
-    Snackbar,
-    TextField, Typography
+    Typography
 } from "@mui/material";
 import CustomAppBar from "./AppBar";
 import React, {useEffect, useState} from "react";
-import CropImageDialog from "./CropImageDialog";
-import {
-    AddPhotoAlternateOutlined,
-    AdminPanelSettingsOutlined,
-    DeleteOutline,
-    EditOutlined,
-    EmailOutlined,
-    FiberManualRecord,
-    PersonOutlineOutlined,
-    Save
-} from "@mui/icons-material";
+import {AddPhotoAlternateOutlined, FiberManualRecord} from "@mui/icons-material";
 import {useDependency} from "src/hooks/useDependency";
 import {IUserRepository} from "src/repository/IUserRepository";
 import {useParams} from "react-router-dom";
-import {UserWithGroups, Group} from "../types/supabaseTypes";
+import {Group, UserWithGroups} from "../types/supabaseTypes";
 import {LoadingIndicator} from "./LoadingIndicator";
 import {useSelector} from "react-redux";
 import {RootState} from "../redux/store";
@@ -43,8 +28,6 @@ const UserScreen = () => {
     const [loading, setLoading] = useState<boolean>(false);
     const [currentUser, setCurrentUser] = useState<UserWithGroups | null>(null);
     const [overlappingGroups, setOverlappingGroups] = useState<Group[]>([]);
-
-    console.log("can go back: ", window.history.state.idx !== 0)
 
     useEffect(() => {
         if (userId && repo && user) {

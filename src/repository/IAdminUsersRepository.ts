@@ -1,9 +1,9 @@
-import { PostgrestSingleResponse } from "@supabase/supabase-js";
-import { injectable } from "inversify";
-import { Group, GroupWithUsers, User, UserWithGroups } from "src/types/supabaseTypes";
-import { SupabaseRepository } from "./Repository";
-import { TABLE_PAYMENTS, TABLE_USER } from "src/constants";
-import { UserEdited } from "src/components/admin/EditUserDialog";
+import {PostgrestSingleResponse} from "@supabase/supabase-js";
+import {injectable} from "inversify";
+import {Group, GroupWithUsers, User, UserWithGroups} from "src/types/supabaseTypes";
+import {SupabaseRepository} from "./Repository";
+import {TABLE_PAYMENTS, TABLE_USER} from "src/constants";
+import {UserEdited} from "src/components/admin/EditUserDialog";
 
 export interface IAdminUsersRepository {
     addUsersToGroup(group: Group, users: User[]): Promise<PostgrestSingleResponse<null>>
@@ -46,14 +46,14 @@ export class SupabaseAdminUsersRepository extends SupabaseRepository implements 
     async updateUser(user: UserEdited): Promise<PostgrestSingleResponse<null>> {
         const result = await this.client.auth.admin.updateUserById(
             user.userId,
-            { user_metadata: { displayName: user.displayName, role: user.role, verified: user.verified } }
+            {user_metadata: {displayName: user.displayName, verified: user.verified}}
         );
         if (result.error) {
             throw result.error;
         }
         return this.client
             .from(TABLE_USER)
-            .update({ displayName: user.displayName, role: user.role, verified: user.verified, permissions: user.permissions })
+            .update({displayName: user.displayName, verified: user.verified, permissions: user.permissions})
             .eq("userId", user.userId);
     }
 

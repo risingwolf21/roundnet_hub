@@ -1,5 +1,5 @@
-import { isBefore } from "date-fns";
-import { Database } from "src/types/supabase";
+import {isBefore} from "date-fns";
+import {Database} from "src/types/supabase";
 
 export type Drink = Database["public"]["Tables"]["drink"]["Row"];
 export type DrinkInsert = Database["public"]["Tables"]["drink"]["Insert"];
@@ -107,7 +107,6 @@ export type ProductType = Database["public"]["Enums"]["ProductType"];
 export type EventAttendance = Database["public"]["Enums"]["EventAttendance"];
 export type EventRecurrence = Database["public"]["Enums"]["EventRecurrence"];
 export type PaymentState = Database["public"]["Enums"]["PaymentState"];
-export type UserRole = Database["public"]["Enums"]["UserRole"];
 export type Permissions = Database["public"]["Enums"]["Permissions"];
 
 type Modify<T, R> = Omit<T, keyof R> & R;

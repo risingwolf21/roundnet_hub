@@ -1,14 +1,34 @@
-import React, { FormEvent, useEffect, useState } from "react";
-import { AppBar, Avatar, Button, Checkbox, Collapse, Dialog, DialogActions, DialogContent, DialogTitle, Divider, IconButton, List, ListItem, ListItemAvatar, ListItemButton, ListItemSecondaryAction, ListItemText, ListSubheader, Radio, TextField, Toolbar, Typography } from "@mui/material"
-import { Box } from "@mui/system";
-import { AccountCircle, Close, Edit, Email, FiberManualRecord, ManageAccounts, Verified } from "@mui/icons-material";
-import { useClient } from "react-supabase";
-import { SlideUpTransition } from "../../utils";
-import { FullHistory, Group, Permissions, User, UserRole, UserWithGroups } from "../../types/supabaseTypes";
-import { useDependency } from "../../hooks/useDependency";
-import { IDrinkRepository } from "../../repository/IDrinkRepository";
+import React, {FormEvent, useEffect, useState} from "react";
+import {
+    AppBar,
+    Avatar,
+    Button,
+    Checkbox,
+    Dialog,
+    DialogActions,
+    DialogContent,
+    DialogTitle,
+    Divider,
+    IconButton,
+    List,
+    ListItem,
+    ListItemAvatar,
+    ListItemSecondaryAction,
+    ListItemText,
+    ListSubheader,
+    TextField,
+    Toolbar,
+    Typography
+} from "@mui/material"
+import {Box} from "@mui/system";
+import {AccountCircle, Close, Email, FiberManualRecord, Verified} from "@mui/icons-material";
+import {useClient} from "react-supabase";
+import {SlideUpTransition} from "../../utils";
+import {FullHistory, Group, Permissions, User, UserWithGroups} from "../../types/supabaseTypes";
+import {useDependency} from "../../hooks/useDependency";
+import {IDrinkRepository} from "../../repository/IDrinkRepository";
 import moment from "moment";
-import { UserPermissionsDialog } from "./UserPermissionDialog";
+import {UserPermissionsDialog} from "./UserPermissionDialog";
 
 type EditUserDialogProps = {
     user: UserWithGroups,
@@ -21,16 +41,13 @@ type EditUserDialogProps = {
 export type UserEdited = {
     displayName: string,
     verified: boolean,
-    role: UserRole,
     userId: string,
     permissions: Permissions[]
 }
 
 const EditUserDialog = ({ user, open, handleClose, onUserEditFinished, deleteUser }: EditUserDialogProps) => {
 
-    const [userRoleCollapseOpen, setUserCollapseOpen] = useState(false);
     const [editUserPermissionsOpen, setEditUserPermissionsOpen] = useState(false);
-    const [role, setRole] = useState<UserRole>(user.role);
     const drinksRepository = useDependency<IDrinkRepository>("IDrinkRepository");
     const [verified, setVerified] = useState(user.verified)
     const [deleteUserOpen, setDeleteUserOpen] = useState(false);
@@ -48,20 +65,17 @@ const EditUserDialog = ({ user, open, handleClose, onUserEditFinished, deleteUse
                 }
             })
         }
-        setRole(user.role);
         setVerified(user.verified);
         setUserPermissions(user.permissions ?? []);
     }, [user, client, drinksRepository]);
 
     const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
-        setUserCollapseOpen(false);
         const data = new FormData(event.currentTarget);
 
         onUserEditFinished({
             userId: user.userId,
             displayName: data.get("displayName"),
-            role,
             verified,
             permissions: userPermissions
         } as UserEdited);
@@ -152,40 +166,6 @@ const EditUserDialog = ({ user, open, handleClose, onUserEditFinished, deleteUse
                         }
                     </List>
                     <Divider />
-                    <ListItemButton key={"editUserRole"} onClick={() => setUserCollapseOpen(!userRoleCollapseOpen)}>
-                        <ListItemAvatar>
-                            <Avatar>
-                                <ManageAccounts />
-                            </Avatar>
-                        </ListItemAvatar>
-                        <ListItemText secondary={userPermissions.length + " Berechtigungen"} primary={role} />
-                        <ListItemSecondaryAction onClick={() => setEditUserPermissionsOpen(true)}>
-                            {/* {userRoleCollapseOpen ? <ExpandLess /> : <ExpandMore />} */}
-                            <Edit />
-                        </ListItemSecondaryAction>
-                    </ListItemButton>
-                    <Collapse in={userRoleCollapseOpen} timeout="auto" unmountOnExit>
-                        <List component="div" disablePadding>
-                            {
-                                Array.from<{ value: UserRole, display: string }>([
-                                    { value: "user", display: "Benutzer" },
-                                    { value: "procure", display: "Procure" },
-                                    { value: "finance", display: "Finanzen" },
-                                    { value: "admin", display: "Administrator" }
-                                ])
-                                    .map(x => <ListItem key={x.value} sx={{ pl: 4 }}>
-                                        <ListItemAvatar>
-                                            <Radio
-                                                checked={role === x.value}
-                                                onChange={(e) => setRole(e.target.value as UserRole)}
-                                                value={x.value}
-                                                name="role-buttons" />
-                                        </ListItemAvatar>
-                                        <ListItemText primary={x.display} />
-                                    </ListItem>)
-                            }
-                        </List>
-                    </Collapse>
                     <Divider />
                     <List subheader={<ListSubheader>Offene Getränke</ListSubheader>}>
                         {
