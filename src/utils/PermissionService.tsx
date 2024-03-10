@@ -71,7 +71,6 @@ export function defineRulesFor(user: User | null) {
 
     if (user.permissions) {
         user.permissions.forEach((each: Permissions) => {
-            console.log(each);
             let split = each.split(";");
             can(split[0] as Actions, split[1] as Ability[1]);
         });
