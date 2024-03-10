@@ -59,7 +59,7 @@ export const ability = createMongoAbility();
 export const can = (action: Actions, subject: Ability[1]) => ability.can(action, subject);
 
 export function defineRulesFor(user: User | null) {
-    const { can, rules } = new AbilityBuilder<AppAbility>(createMongoAbility);
+    const {can, rules} = new AbilityBuilder<AppAbility>(createMongoAbility);
 
     if (!user)
         return [];
@@ -71,12 +71,13 @@ export function defineRulesFor(user: User | null) {
 
     if (user.permissions) {
         user.permissions.forEach((each: Permissions) => {
+            console.log(each);
             let split = each.split(";");
             can(split[0] as Actions, split[1] as Ability[1]);
         });
     }
 
-    if (can("edit", "groups") || can("edit", "drink") || can("edit", "payments") || can("edit", "user")) {
+    if (user.permissions?.some(x => ["edit;groups", "edit;drink", "edit;payments", "edit;user"].includes(x))) {
         can("view", "browseAdmin");
     }
 
