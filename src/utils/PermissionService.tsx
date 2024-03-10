@@ -1,5 +1,5 @@
-import { AbilityBuilder, MongoQuery, PureAbility, createMongoAbility } from '@casl/ability';
-import { Permissions, User } from "src/types/supabaseTypes";
+import {AbilityBuilder, createMongoAbility, MongoQuery, PureAbility} from '@casl/ability';
+import {Permissions, User} from "src/types/supabaseTypes";
 
 
 export type Actions = 'use' | 'edit' | 'delete' | 'view'
@@ -59,7 +59,7 @@ export const ability = createMongoAbility();
 export const can = (action: Actions, subject: Ability[1]) => ability.can(action, subject);
 
 export function defineRulesFor(user: User | null) {
-    const { can, rules } = new AbilityBuilder<AppAbility>(createMongoAbility);
+    const {can, rules} = new AbilityBuilder<AppAbility>(createMongoAbility);
 
     if (!user)
         return [];
@@ -70,15 +70,15 @@ export function defineRulesFor(user: User | null) {
     can("view", "notifications");
 
     if (user.permissions) {
-        user.permissions.forEach(each => {
-            var split = each.split(";");
+        user.permissions.forEach((each: Permissions) => {
+            let split = each.split(";");
             can(split[0] as Actions, split[1] as Ability[1]);
         });
     }
 
-    if (can("edit", "groups") || can("edit", "drink") || can("edit", "payments") || can("edit", "user")) {
+    if (user.permissions?.some(x => ["edit;groups", "edit;drink", "edit;payments", "edit;user"].includes(x))) {
         can("view", "browseAdmin");
     }
 
     return rules;
-};
+}

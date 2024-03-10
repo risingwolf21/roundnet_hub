@@ -1,0 +1,66 @@
+{
+  "attendees": "Attendees",
+  "browse": {
+    "account": "Account",
+    "analyzeDrinkStocks": "Analyse drink history",
+    "completeHistory": "Complete history",
+    "executeEdgeFunctions": "Execute edge functions",
+    "history": "History",
+    "keys": "Key finder",
+    "manageDrinkStocks": "Manage drinks stock",
+    "manageDrinks": "Manage drinks",
+    "manageGroups": "Manage groups",
+    "managePayments": "Manage payments",
+    "manageUsers": "Manage users",
+    "notifications": "Notifications",
+    "payment": "Payment",
+    "postgresClient": "Postgres Client",
+    "training": "Training"
+  },
+  "cancel": "Cancel",
+  "confirm": "Confirm",
+  "confirmKeyHandover": "Are you sure you want to hand over the key \"{{ keyName }}\" to \"{{ userName }}\"?",
+  "confirmKeyTaken": "Hereby you confirm that you have received the key \"{{ keyName }}\" from \"{{ userName }}\"!",
+  "events": {
+    "creation": {
+      "answerDeadlineAfterStart": "The answer dead line can not be after the start of the event",
+      "answerDeadlineBeforeNow": "The answer dead line can not be before now",
+      "descriptionEmpty": "The description of this event can not be empty",
+      "meetingTimeBeforeStartTime": "The meetup time can not be after the start time",
+      "noGroupSelected": "There is no group selected for this event",
+      "startDateCannotBeNull": "The startDate of this event can not be empty",
+      "titleTooShort": "The title of this event needs at least 6 characters"
+    },
+    "information": {
+      "answerDeadlineExceeded": "The registration for this event expired on {{ answerDeadline, MMMM dd, yyyy 'at' HH:mm}}",
+      "answerDeadlineExceededTitle": "Registration period expired",
+      "eventSpotsTaken": "{{ taken }} of {{waitingListLength}} spots taken",
+      "keyHolderAttending": "Someone with a key attends this event",
+      "meetTime": "Meet: {{ meetTime, ccc. dd.MM 'at' HH:mm }}",
+      "startTime": "Starts at {{ startTime, HH:mm }}",
+      "startTimeAndEndTime": "Starts at {{ startTime, HH:mm }} and ends at {{ endTime, HH:mm }}",
+      "waitingListAccepted": "You are on waiting list place {{ place }} of {{ waitingListLength }} for this event",
+      "waitingListPlace": "Waitlinglist Place ({{ place }} / {{ waitingListLength }})"
+    }
+  },
+  "feature_not_available": "This feature is not ready yet. Try again later!",
+  "handover_key": "Hand over",
+  "keyHandOver": "Keyhandover",
+  "keyHandOverError": "Could not hand over key {{error}}",
+  "navigation": {
+    "admin": "Admin",
+    "browse": "Browse",
+    "drinks": "Drinks",
+    "training": "Training"
+  },
+  "notificationTags": {
+    "eventComments": "Event comments",
+    "paymentPending": "Payment pending",
+    "paymentRequest": "Payment requests",
+    "userRegistration": "User registrations"
+  },
+  "notification_actionMessage": "We'd like to show you notifications for the following categories.",
+  "notification_updateMessage": "Update your push notification subscription preferences.",
+  "take_key": "Take",
+  "userName": "userName"
+}

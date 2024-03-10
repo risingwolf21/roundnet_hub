@@ -13,7 +13,11 @@ import { Alert, CircularProgress, Snackbar } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 
-const ForgotPasswordScreen = () => {
+type ForgotPasswordScreenProps = {
+    goToLogin: () => void,
+}
+
+const ForgotPasswordScreen = ({goToLogin}: ForgotPasswordScreenProps) => {
 
     const [errorMessage, setErrorMessage] = React.useState("");
     const [loading, setLoading] = useState(false);
@@ -88,7 +92,7 @@ const ForgotPasswordScreen = () => {
                     </Snackbar>
                     <Grid container>
                         <Grid item xs>
-                            <Link href="#" variant="body2" onClick={() => navigate("/login")}>
+                            <Link href="#" variant="body2" onClick={goToLogin}>
                                 Hier einloggen
                             </Link>
                         </Grid>

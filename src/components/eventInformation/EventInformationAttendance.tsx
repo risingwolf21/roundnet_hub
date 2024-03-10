@@ -1,24 +1,24 @@
 import {
     CheckCircleOutline,
-    ThumbUpAlt,
-    ThumbUpOffAlt,
+    HourglassBottom,
     RemoveCircleOutline,
     ThumbDownAlt,
     ThumbDownOffAlt,
-    HourglassBottom,
-    WarningOutlined, VerifiedOutlined
+    ThumbUpAlt,
+    ThumbUpOffAlt,
+    VerifiedOutlined
 } from "@mui/icons-material"
 import {
-    Typography,
+    CircularProgress,
+    Container,
+    Divider,
+    IconButton,
     List,
     ListItem,
     ListItemAvatar,
-    CircularProgress,
-    ListItemText,
-    Divider,
     ListItemSecondaryAction,
-    IconButton,
-    Container
+    ListItemText,
+    Typography
 } from "@mui/material"
 import {t} from "i18next"
 import React, {useEffect, useState} from "react"
@@ -27,12 +27,13 @@ import {onEventAttendanceDelete, onEventAttendanceUpdate} from "src/redux/events
 import {SliceEvent} from "src/redux/events/eventsSlice"
 import {useAppDispatch} from "src/redux/store"
 import {
-    maxAttendeesExceeded,
     answerDeadlineExpired,
-    FullAttendance,
     EventAttendance,
     EventAttendanceUpdate,
-    User, FullKeyHolder
+    FullAttendance,
+    FullKeyHolder,
+    maxAttendeesExceeded,
+    User
 } from "src/types/supabaseTypes"
 import EventAttendanceDialog from "./EventAttendanceDialog"
 
@@ -86,7 +87,8 @@ const EventInformationAttendance = ({
         </Typography>
         <List sx={{p: 0}}>
             {
-                keyHolders.some(x => attendance.map(y => y.user.userId).includes(x.user.userId)) &&
+                attendance.filter(x => x.state === "Attending").map(y => y.user.userId)
+                    .some(x => keyHolders.map(y => y.user.userId).includes(x)) &&
                 <ListItem key={"keyAttendees"} sx={{'&.MuiListItem-root': {paddingLeft: 0}}} divider>
                     <ListItemAvatar sx={{justifyContent: "left", alignItems: "center", display: "flex"}}>
                         <VerifiedOutlined sx={{color: (theme) => theme.palette.success.main}}/>
@@ -95,7 +97,7 @@ const EventInformationAttendance = ({
                 </ListItem>
             }
             {
-                selectedEvent.maxAttendees >= 0 &&
+                selectedEvent.maxAttendees && selectedEvent.maxAttendees >= 0 &&
                 <ListItem key={"spotsTaken"} sx={{'&.MuiListItem-root': {paddingLeft: 0}}} divider>
                     <ListItemAvatar sx={{justifyContent: "left", alignItems: "center", display: "flex"}}>
                         <CircularProgress size={"24px"} thickness={8}

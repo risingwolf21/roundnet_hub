@@ -1,10 +1,9 @@
 import i18n from "i18next";
 import detector from "i18next-browser-languagedetector";
-import { initReactI18next } from "react-i18next";
-import { format as formatDate, isDate } from "date-fns";
-import { enGB, de } from "date-fns/locale";
-import translationEN from './locales/en_US.json'
-import translationDE from './locales/de_DE.json';
+import {initReactI18next} from "react-i18next";
+import {format as formatDate, isDate} from "date-fns";
+import translationEN from './locales/translation.en_US.json'
+import translationDE from './locales/translation.de_DE.json';
 
 const resources = {
     en: {

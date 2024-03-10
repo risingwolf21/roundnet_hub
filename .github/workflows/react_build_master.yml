@@ -4,6 +4,9 @@ on:
     branches-ignore:
       - staging
       - production
+env:
+  CI: ''
+
 jobs:
   build_and_preview:
     runs-on: ubuntu-latest

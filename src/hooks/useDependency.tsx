@@ -1,9 +1,10 @@
-import { useContext, useEffect, useState } from 'react'
-import { DependencyContext } from '..'
-import { captureException } from '@sentry/react';
+import {useContext, useEffect, useState} from 'react'
+import {DependencyContext} from '..'
+import {captureException} from '@sentry/react';
+import {interfaces} from "inversify";
 
 export function useDependency<T>(name: string) {
-    const { container } = useContext(DependencyContext);
+    const {container} = useContext(DependencyContext);
     const [dependency, setDependency] = useState<T | null>(null);
 
     useEffect(() => {
@@ -15,7 +16,8 @@ export function useDependency<T>(name: string) {
                 captureException(new Error(message), (scope) => {
                     scope.clear();
                     scope.setExtra("name", name);
-                    return scope;;
+                    return scope;
+                    ;
                 });
             }
         }

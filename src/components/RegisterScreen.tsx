@@ -20,7 +20,11 @@ type RegisterProps = {
     displayName: string
 }
 
-const RegisterScreen = () => {
+type RegisterScreenProps = {
+    goToLogin: () => void
+}
+
+const RegisterScreen = ({goToLogin}: RegisterScreenProps) => {
 
     const [errorMessage, setErrorMessage] = useState("");
     const navigate = useNavigate();
@@ -78,8 +82,6 @@ const RegisterScreen = () => {
                 return scope;
             })
         }
-
-        navigate("/drinks", {replace: true});
     }
 
     const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
@@ -181,7 +183,7 @@ const RegisterScreen = () => {
                     </Button>
                     <Grid container>
                         <Grid item xs>
-                            <Link href="#" variant="body2" onClick={() => navigate("/login")}>
+                            <Link href="#" variant="body2" onClick={goToLogin}>
                                 Already have an account? Sign in here!
                             </Link>
                         </Grid>
