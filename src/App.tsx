@@ -1,4 +1,4 @@
-import {Grid} from "@mui/material";
+import {Container, Grid, Typography} from "@mui/material";
 import * as React from 'react';
 import {BrowserRouter, Navigate, Route, Routes} from 'react-router-dom';
 import AuthScreen from './components/AuthScreen';
@@ -48,6 +48,12 @@ const App = () => {
         return <UpdateAvailable update={updateServiceWorker}/>
 
     return <Grid maxHeight={"100vh"}>
+        {
+            process.env.NODE_ENV !== "production" && <Container
+                style={{height: "24px", width: "100%", textAlign: "center", maxWidth: "none", background: "#eee"}}>
+                <Typography>{process.env.NODE_ENV}</Typography>
+            </Container>
+        }
         <BrowserRouter>
             <AuthStateListener>
                 <React.Suspense fallback={<LoadingScreen/>}>
