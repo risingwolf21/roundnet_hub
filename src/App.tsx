@@ -49,9 +49,9 @@ const App = () => {
 
     return <Grid maxHeight={"100vh"}>
         {
-            process.env.NODE_ENV !== "production" && <Container
+            process.env.REACT_APP_ENV !== "production" && <Container
                 style={{height: "24px", width: "100%", textAlign: "center", maxWidth: "none", background: "#eee"}}>
-                <Typography>{process.env.NODE_ENV}</Typography>
+                <Typography>{process.env.REACT_APP_ENV}</Typography>
             </Container>
         }
         <BrowserRouter>
