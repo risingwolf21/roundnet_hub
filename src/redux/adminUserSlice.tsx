@@ -1,6 +1,7 @@
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import { UserWithGroups } from '../types/supabaseTypes';
-import { IAdminUsersRepository } from 'src/repository/IAdminUsersRepository';
+import {createAsyncThunk, createSlice} from '@reduxjs/toolkit';
+import {UserWithGroups} from '../types/supabaseTypes';
+import {IAdminUsersRepository} from 'src/repository/IAdminUsersRepository';
+import {captureException} from "@sentry/react";
 
 type AdminUsersSliceState = {
     users: UserWithGroups[],
@@ -54,21 +55,31 @@ export const adminUsersSlice = createSlice({
     }
 });
 
-export const fetchAdminUsersAsync = createAsyncThunk("fetchAdminUsersAsync", async (repository: IAdminUsersRepository) => {
-    const response = await repository.fetchAllUsersWithGroups();
-    return (response.data?.map((x: any) => {
-        return {
-            ...x,
-            groups: x.groups.map((x: any) => x.group)
-        }
-    }) ?? []) as UserWithGroups[]
+export const fetchAdminUsersAsync = createAsyncThunk("fetchAdminUsersAsync", async (repository: IAdminUsersRepository, {rejectWithValue}) => {
+    try {
+        const response = await repository.fetchAllUsersWithGroups();
+        return (response.data?.map((x: any) => {
+            return {
+                ...x,
+                groups: x.groups.map((x: any) => x.group)
+            }
+        }) ?? []) as UserWithGroups[]
+    } catch (e) {
+        captureException(e);
+        return rejectWithValue(e);
+    }
 });
 
-export const fetchNotVerifiedUsersAsync = createAsyncThunk("fetchNotVerifiedUsersAsync", async (repository: IAdminUsersRepository) => {
-    const response = await repository.fetchNotVerifiedUsers();
-    return response.data ?? [];
+export const fetchNotVerifiedUsersAsync = createAsyncThunk("fetchNotVerifiedUsersAsync", async (repository: IAdminUsersRepository, {rejectWithValue}) => {
+    try {
+        const response = await repository.fetchNotVerifiedUsers();
+        return response.data ?? [];
+    } catch (e) {
+        captureException(e);
+        return rejectWithValue(e);
+    }
 })
 
-export const { onUserDeleted, onUserInserted, onUserUpdate } = adminUsersSlice.actions;
+export const {onUserDeleted, onUserInserted, onUserUpdate} = adminUsersSlice.actions;
 
 export default adminUsersSlice.reducer;

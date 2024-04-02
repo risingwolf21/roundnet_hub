@@ -16,8 +16,10 @@ import {
     GridRowModes,
     GridRowModesModel
 } from "@mui/x-data-grid";
+import {AlertMessage, AlertSnackbar} from "./AlertSnackbar";
+import {omit} from "lodash";
 
-const table_names = ["distinct_event", "readable_history", "drink", "event_attendance_user_mapping", "event_comments", "event_group", "events", "group_user_mapping", "history", "key_holders", "keys", "payments"]
+const table_names = ["distinct_event", "distinct_drinks", "readable_history", "drink", "event_attendance_user_mapping", "event_comments", "event_group", "events", "group_user_mapping", "history", "key_holders", "keys", "payments"]
 export const SupabaseClient = () => {
 
     const [selectedTable, setSelectedTable] = useState<typeof table_names[number]>("drink");
@@ -26,6 +28,7 @@ export const SupabaseClient = () => {
     const [loading, setLoading] = useState(false);
     const [selectedTableData, setSelectedTableData] = useState<any[]>([]);
     const [rowModesModel, setRowModesModel] = React.useState<GridRowModesModel>({});
+    const [alertInfo, setAlertInfo] = useState<AlertMessage | null>(null);
 
     useEffect(() => {
         setLoading(true);
@@ -61,17 +64,61 @@ export const SupabaseClient = () => {
     } | null {
         switch (key) {
             case "type":
-                return {type: "singleSelect", valueOptions: ["Drink", "Special"], editable: getRowId(key) !== "id"};
-            case "created_at":
                 return {
-                    type: "dateTime", valueGetter: (params) => new Date(params.value), editable: true
+                    type: "singleSelect", valueOptions: ["Drink", "Special"], editable: true
+                }
+            case "paymentState":
+                return {
+                    type: "singleSelect", valueOptions: ["Open", "Fulfilled"], editable: true
+                }
+            case "state":
+                return {
+                    type: "singleSelect",
+                    valueOptions: ["Declined", "Unanswered", "Waiting", "Attending"],
+                    editable: true
+                }
+            case "recurrence":
+                return {
+                    type: "singleSelect",
+                    valueOptions: ["Weekly", "Fortnightly", "Monthly", "None"],
+                    editable: true
+                }
+            case "role":
+                return {
+                    type: "singleSelect",
+                    valueOptions: ["user", "admin", "procure", "finance", "trainer"],
+                    editable: true,
+                }
+            case "created_at":
+            case "lastUpdate":
+            case "meetingDateTime":
+            case "startingDateTime":
+            case "answerDeadline":
+            case "endDateTime":
+            case "recurrenceEnd":
+                return {
+                    type: "dateTime",
+                    valueGetter: (params) => params.value ? new Date(params.value) : null,
+                    editable: true
                 };
+            case "active":
+            case "deleted":
+            case "isCancelled":
+            case "verified":
+            case "disabled":
+                return {
+                    type: "boolean", editable: true
+                }
             case "user":
             case "drink":
             case "event":
-                return {editable: false};
+            case "group":
+            case "payment":
+            case "key":
+            case "userId":
+            case "place":
             default:
-                return {editable: getRowId(key) !== "id"};
+                return {editable: false};
         }
     }
 
@@ -101,7 +148,12 @@ export const SupabaseClient = () => {
 
     const processRowUpdate = (newRow: GridRowModel) => {
         const updatedRow = {...newRow, isNew: false};
-        setSelectedTableData(selectedTableData.map((row) => (row.id === newRow.id ? updatedRow : row)));
+        client.from(selectedTable).upsert(omit(updatedRow, ["isNew"])).then((result) => {
+            if (!result.error)
+                setSelectedTableData(selectedTableData.map((row) => (row.id === newRow.id ? updatedRow : row)));
+            else
+                setAlertInfo({message: result.error.message, severity: "error"});
+        });
         return updatedRow;
     };
 
@@ -195,5 +247,7 @@ export const SupabaseClient = () => {
                 }
             </List>
         </SwipeableDialog>
+
+        <AlertSnackbar alertInfo={alertInfo} autoHideDuration={1500} close={() => setAlertInfo(null)}/>
     </Box>
 }

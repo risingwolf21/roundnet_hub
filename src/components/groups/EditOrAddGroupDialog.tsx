@@ -64,18 +64,17 @@ export const EditOrAddGroupDialog = ({open, handleClose, groupToEdit}: EditOrAdd
             setErrorSnackbar({message: "Something went wrong. Try again later!", open: true});
             return;
         }
-        const result = await repo.upsertGroup({
+        repo.upsertGroup({
             id: currentGroup.id,
             name: currentGroup.name,
             color: currentGroup.color,
             description: currentGroup.description
-        });
-        if (result.error) {
-            setErrorSnackbar({message: result.error.message ?? "", open: true});
-        } else {
+        }).then(result => {
             setErrorSnackbar({message: "", open: false});
             handleClose();
-        }
+        }).catch(error => {
+            setErrorSnackbar({message: error.message ?? "", open: true});
+        });
     }
 
     return <Dialog

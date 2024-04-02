@@ -1,6 +1,6 @@
 import {PostgrestSingleResponse} from "@supabase/supabase-js";
 import {injectable} from "inversify";
-import {Group, GroupWithUsers, User, UserWithGroups} from "src/types/supabaseTypes";
+import {Group, User, UserWithGroups} from "src/types/supabaseTypes";
 import {SupabaseRepository} from "./Repository";
 import {TABLE_PAYMENTS, TABLE_USER} from "src/constants";
 import {UserEdited} from "src/components/admin/EditUserDialog";
@@ -23,12 +23,14 @@ export class SupabaseAdminUsersRepository extends SupabaseRepository implements 
             .delete()
             .eq("group", group.id)
             .in("user", users.map(x => x.userId))
+            .throwOnError()
     }
     async fetchSingleGroupWithUsers(groupId: number): Promise<PostgrestSingleResponse<any>> {
         return this.client.from("event_group")
             .select("*, users: group_user_mapping ( user (*) )")
             .eq("id", groupId)
-            .single();
+            .single()
+            .throwOnError();
     }
 
     async deactivateUser(user: User): Promise<void> {
@@ -61,7 +63,8 @@ export class SupabaseAdminUsersRepository extends SupabaseRepository implements 
         return this.client.from(TABLE_USER)
             .select("*")
             .eq("verified", false)
-            .returns<User[]>();
+            .returns<User[]>()
+            .throwOnError();
     }
 
     async fetchAllUsersWithGroups(): Promise<PostgrestSingleResponse<UserWithGroups[]>> {
@@ -70,6 +73,7 @@ export class SupabaseAdminUsersRepository extends SupabaseRepository implements 
             .select("*, groups: group_user_mapping ( group: event_group ( * ) )")
             .order("displayName", { ascending: true })
             .returns<UserWithGroups[]>()
+            .throwOnError();
     }
 
     async addUsersToGroup(group: Group, users: User[]): Promise<PostgrestSingleResponse<null>> {
@@ -80,32 +84,7 @@ export class SupabaseAdminUsersRepository extends SupabaseRepository implements 
                     user: x.userId,
                     group: group.id
                 }
-            }));
+            }))
+            .throwOnError();
     }
-}
-
-export class EmptyAdminUsersRepository implements IAdminUsersRepository {
-    removeUsersFromGroup(group: Group, users: User[]): Promise<PostgrestSingleResponse<null>> {
-        return Promise.resolve({} as PostgrestSingleResponse<null>);
-    }
-    fetchSingleGroupWithUsers(groupId: number): Promise<PostgrestSingleResponse<GroupWithUsers>> {
-        return Promise.resolve({} as PostgrestSingleResponse<GroupWithUsers>);
-    }
-
-    addUsersToGroup(group: Group, users: User[]): Promise<PostgrestSingleResponse<null>> {
-        return Promise.resolve({} as PostgrestSingleResponse<null>);
-    }
-    fetchAllUsersWithGroups(): Promise<PostgrestSingleResponse<UserWithGroups[]>> {
-        return Promise.resolve({} as PostgrestSingleResponse<UserWithGroups[]>)
-    }
-    async fetchNotVerifiedUsers(): Promise<PostgrestSingleResponse<User[]>> {
-        return Promise.resolve({} as PostgrestSingleResponse<User[]>);
-    }
-    updateUser(user: UserEdited): Promise<PostgrestSingleResponse<null>> {
-        return Promise.resolve({} as PostgrestSingleResponse<null>);
-    }
-    deactivateUser(user: User): Promise<void> {
-        return Promise.resolve();
-    }
-
 }

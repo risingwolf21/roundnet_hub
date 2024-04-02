@@ -13,6 +13,7 @@ import {AlertMessage, AlertSnackbar} from "../AlertSnackbar";
 import CustomAppBar from "../AppBar";
 import SearchAndSelectUserDialog from "../SearchAndSelectUserDialog";
 import {fetchSingleGroupAsync, groupsSelector} from "src/redux/groupsSlice";
+import {captureException} from "@sentry/react";
 
 const GroupInformationProvider = () => {
     const {id} = useParams();
@@ -50,37 +51,34 @@ const GroupInformation = ({users, loading, group, repository}: GroupInformationP
 
     const handleUsersRemove = async (users: User[]) => {
         await repository.removeUsersFromGroup(group, users).then(r => {
-            if (r.error) {
-                setAlertInfo({
-                    message: `Failed to remove ${users.length} users from the group ${group.name} ${r.error.message}`,
-                    severity: "error"
-                });
-            } else {
-                setAlertInfo({
-                    message: `Successfully removed ${users.length} users from the group ${group.name}`,
-                    severity: "success"
-                });
-            }
+            setAlertInfo({
+                message: `Successfully removed ${users.length} users from the group ${group.name}`,
+                severity: "success"
+            });
             setDeleteUsersOpen(false);
             dispatch(fetchSingleGroupAsync({repository, id: group.id}));
+        }).catch(error => {
+            captureException(error);
+            setAlertInfo({
+                message: `Failed to remove ${users.length} users from the group ${group.name} ${error.message}`,
+                severity: "error"
+            });
         });
     }
 
     const handleUsersAdded = async (users: User[]) => {
         await repository.addUsersToGroup(group, users).then(r => {
-            if (r.error) {
-                setAlertInfo({
-                    message: `Failed to add ${users.length} user to the group ${group.name} ${r.error.message}`,
-                    severity: "error"
-                });
-            } else {
-                setAlertInfo({
-                    message: `Successfully added ${users.length} users to the group ${group.name}`,
-                    severity: "success"
-                });
-            }
+            setAlertInfo({
+                message: `Successfully added ${users.length} users to the group ${group.name}`,
+                severity: "success"
+            });
             setSearchAndSelectUsersOpen(false);
             dispatch(fetchSingleGroupAsync({repository, id: group.id}));
+        }).catch(error => {
+            setAlertInfo({
+                message: `Failed to add ${users.length} user to the group ${group.name} ${error.message}`,
+                severity: "error"
+            });
         });
     }
 

@@ -2,6 +2,7 @@ import {AddOutlined, ArrowBack, EditOffOutlined, EditOutlined} from "@mui/icons-
 import KeyIcon from "@mui/icons-material/Key";
 import SearchIcon from "@mui/icons-material/Search";
 import {
+    Alert,
     AppBar,
     Avatar,
     Box,
@@ -113,6 +114,12 @@ const KeyHolderScreen = ({keysRepository, dispatch, keyHolders, loading, user, t
     return <Box>
         <CustomAppBar navigateBack/>
         <LoadingIndicator loading={loading}/>
+        <Alert sx={{ml: 2, mr: 2, mt: 2}} severity="info">
+            Bitte euren Schlüssel gut aufbewahren und Übergaben eintragen! Wer unverschuldet den Schlüssel verloren hat
+            (z.B. Diebstahl), wird von der Abteilung unterstützt. Wer den Schlüssel selbst verschuldet verliert (z.B.
+            verlegt), muss für den neuen Schlüssel selbst aufkommen. Grundsätzlich ist immer die eingetragene Person für
+            den Schlüssel verantwortlich!
+        </Alert>
         <List>
             {
                 keyHolders.map((key: FullKeyHolder) => <ListItemButton key={key.key.id} divider>

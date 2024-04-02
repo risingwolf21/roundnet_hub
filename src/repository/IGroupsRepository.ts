@@ -12,7 +12,6 @@ export class SupabaseGroupsRepository extends SupabaseRepository implements IGro
         return this.client
             .from("event_group")
             .upsert(group)
-            .select()
-            .single();
+            .throwOnError();
     }
 }

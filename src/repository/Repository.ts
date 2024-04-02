@@ -1,6 +1,6 @@
-import { SupabaseClient } from "@supabase/supabase-js";
-import { injectable } from "inversify";
-import { Database } from "src/types/supabase";
+import {SupabaseClient} from "@supabase/supabase-js";
+import {injectable} from "inversify";
+import {Database} from "src/types/supabase";
 
 @injectable()
 export abstract class SupabaseRepository {

@@ -34,10 +34,11 @@ import {IAdminUsersRepository} from "src/repository/IAdminUsersRepository";
 import {fetchAdminUsersAsync} from "../../redux/adminUserSlice";
 import {RootState, useAppDispatch} from "../../redux/store";
 import {User, UserWithGroups} from "../../types/supabaseTypes";
-import {AlertSnackbar} from "../AlertSnackbar";
+import {AlertMessage, AlertSnackbar} from "../AlertSnackbar";
 import {Error} from "../Error";
 import {Search, SearchIconWrapper, StyledInputBase} from "../SearchBar";
 import EditUserDialog, {UserEdited} from "./EditUserDialog";
+import {captureException} from "@sentry/react";
 
 const AdminUserItem = ({user, onEditClick}: { user: User, onEditClick: () => void }) => {
     let color = "rgba(0, 0, 0, 0.54)";
@@ -95,6 +96,7 @@ const AdminUserList = ({repository}: AdminUserListProps) => {
     const [showNotVerifiedUsers, setShowNotVerifiedUsers] = useState(false)
     const dispatch = useAppDispatch();
     const navigate = useNavigate();
+    const [alertInfo, setAlertInfo] = useState<AlertMessage | null>(null);
 
     useEffect(() => {
         dispatch(fetchAdminUsersAsync(repository));
@@ -108,7 +110,12 @@ const AdminUserList = ({repository}: AdminUserListProps) => {
     }
 
     const deleteUser = async (user: User) => {
-        await repository.deactivateUser(user);
+        repository.deactivateUser(user).then(() => {
+            setAlertInfo({message: `Successfully deactivated user ${user.email}`, severity: "success"});
+        }).catch(error => {
+            captureException(error);
+            setAlertInfo({message: error, severity: "error"});
+        });
     }
 
     const onUserEditFinished = async (result: UserEdited) => {
@@ -177,6 +184,7 @@ const AdminUserList = ({repository}: AdminUserListProps) => {
                 deleteUser={deleteUser}
                 onUserEditFinished={onUserEditFinished}/>
         }
+        <AlertSnackbar alertInfo={alertInfo} autoHideDuration={1500} close={() => setAlertInfo(null)}/>
     </Grid>);
 }
 

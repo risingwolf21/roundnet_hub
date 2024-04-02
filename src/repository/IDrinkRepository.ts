@@ -6,8 +6,8 @@ import {
     DrinkCounter,
     FullHistory,
     Payment,
-    PaymentInsert,
     PaymentHistory,
+    PaymentInsert,
     PaymentState
 } from "../types/supabaseTypes";
 import {TABLE_DRINK, TABLE_HISTORY, TABLE_PAYMENTS} from "../constants";
@@ -35,49 +35,6 @@ export interface IDrinkRepository {
     fetchHistoryStockType(): Promise<PostgrestSingleResponse<DrinkStockType[]>>
 }
 
-export class EmptyDrinkRepository implements IDrinkRepository {
-    fetchDrinksToPay(userId: string): Promise<PostgrestSingleResponse<PaymentHistory[]>> {
-        throw new Error("Method not implemented.");
-    }
-
-    fetchDrinks(): Promise<PostgrestSingleResponse<Drink[]>> {
-        throw new Error("Method not implemented.");
-    }
-
-    fetchHistoryForUser(userId: string, page: number, count: number): Promise<PostgrestSingleResponse<FullHistory[]>> {
-        throw new Error("Method not implemented.");
-    }
-
-    fetchOpenDrinksForUser(userId: string): Promise<PostgrestSingleResponse<FullHistory[]>> {
-        throw new Error("Method not implemented.");
-    }
-
-    fetchCurrentPaymentForUser(userId: string): Promise<PostgrestSingleResponse<Payment[]>> {
-        throw new Error("Method not implemented.");
-    }
-
-    insertHistoryItems(drinks: DrinkCounter[], userId: string, paymentId: number): Promise<PostgrestSingleResponse<any>> {
-        throw new Error("Method not implemented.");
-    }
-
-    updateHistoryItem(id: number, count: number, amount: number): Promise<PostgrestSingleResponse<any>> {
-        throw new Error("Method not implemented.");
-    }
-
-    insertNewPayment(userId: string): Promise<PostgrestSingleResponse<PaymentInsert>> {
-        throw new Error("Method not implemented.");
-    }
-
-    updateDrinkStock(drinkId: number, stock: number): Promise<PostgrestSingleResponse<any>> {
-        throw new Error("Method not implemented.");
-    }
-
-    fetchHistoryStockType(): Promise<PostgrestSingleResponse<DrinkStockType[]>> {
-        throw new Error("Method not implemented.");
-    }
-
-}
-
 @injectable()
 export class SupabaseDrinkRepository extends SupabaseRepository implements IDrinkRepository {
 
@@ -87,11 +44,13 @@ export class SupabaseDrinkRepository extends SupabaseRepository implements IDrin
             .select("count, amount, created_at, drink (id, name, price, stock), user(displayName)")
             .returns<DrinkStockType[]>()
             .order('id', {ascending: false})
+            .throwOnError();
     }
 
     async updateDrinkStock(drinkId: number, stock: number): Promise<PostgrestSingleResponse<any>> {
         return this.client.from(TABLE_DRINK)
             .update({stock}).eq("id", drinkId)
+            .throwOnError();
     }
 
     async fetchHistoryForUser(userId: string, page: number = 0, count: number = 20): Promise<PostgrestSingleResponse<FullHistory[]>> {
@@ -102,7 +61,8 @@ export class SupabaseDrinkRepository extends SupabaseRepository implements IDrin
             .eq('user.userId', userId)
             .range(page * count, page * count + count - 1)
             .order('created_at', {ascending: false})
-            .returns<FullHistory[]>();
+            .returns<FullHistory[]>()
+            .throwOnError();
     }
 
     async fetchCurrentPaymentForUser(userId: string): Promise<PostgrestSingleResponse<any[]>> {
@@ -111,33 +71,48 @@ export class SupabaseDrinkRepository extends SupabaseRepository implements IDrin
             .select("*")
             .eq("userId", userId)
             .eq("paymentState", "Open")
-            .returns<Payment[]>();
+            .returns<Payment[]>()
+            .throwOnError();
     }
 
     async insertNewPayment(userId: string): Promise<PostgrestSingleResponse<PaymentInsert>> {
-        return this.client.from(TABLE_PAYMENTS)
+        return new Promise((resolve, reject) => this.client.from(TABLE_PAYMENTS)
             .insert({
                 userId: userId,
                 paymentState: "Open"
             })
             .select()
             .returns<PaymentInsert>()
-            .single();
+            .single()
+            .throwOnError()
+            .then(result => {
+                if (!result.error && result.data)
+                    resolve(result)
+                else
+                    reject(result.error)
+            })
+        )
     }
 
     async fetchOpenDrinksForUser(userId: string): Promise<PostgrestSingleResponse<FullHistory[]>> {
-        const query = this.client
+        return new Promise((resolve, reject) => this.client
             .from(TABLE_HISTORY)
             .select("*, drink ( price, name ), payment(*)")
             .eq("user ", userId)
             .eq("payment.paymentState", "Open" as PaymentState)
-            .returns<FullHistory[]>();
-
-        return query;
+            .returns<FullHistory[]>()
+            .throwOnError()
+            .then(result => {
+                if (!result.error && result.data)
+                    resolve(result)
+                else
+                    reject(result.error)
+            })
+        )
     }
 
     async insertHistoryItems(drinks: DrinkCounter[], userId: string, paymentId: number): Promise<PostgrestSingleResponse<any>> {
-        const query = this.client
+        return new Promise((resolve, reject) => this.client
             .from(TABLE_HISTORY)
             .insert(drinks.map((drink) => {
                 return {
@@ -147,9 +122,15 @@ export class SupabaseDrinkRepository extends SupabaseRepository implements IDrin
                     payment: paymentId,
                     amount: drink.count * (drink.price ?? 1)
                 }
-            }));
-
-        return query;
+            }))
+            .throwOnError()
+            .then(result => {
+                if (!result.error && result.data)
+                    resolve(result)
+                else
+                    reject(result.error)
+            })
+        )
     }
 
     async updateHistoryItem(id: number, count: number, amount: number): Promise<PostgrestSingleResponse<any>> {
@@ -157,6 +138,7 @@ export class SupabaseDrinkRepository extends SupabaseRepository implements IDrin
             .from(TABLE_HISTORY)
             .update({count: count, amount: amount})
             .eq("id", id)
+            .throwOnError();
     }
 
     async fetchDrinksToPay(userId: string): Promise<PostgrestSingleResponse<PaymentHistory[]>> {
@@ -167,12 +149,14 @@ export class SupabaseDrinkRepository extends SupabaseRepository implements IDrin
             .not("payments", "is", null)
             .eq('user', userId)
             .returns<PaymentHistory[]>()
+            .throwOnError();
     }
 
     async fetchDrinks(): Promise<PostgrestSingleResponse<Drink[]>> {
         return this.client.from(TABLE_DRINK).select("*")
             .order('id', {ascending: false})
-            .returns<Drink[]>();
+            .returns<Drink[]>()
+            .throwOnError();
     }
 
 }

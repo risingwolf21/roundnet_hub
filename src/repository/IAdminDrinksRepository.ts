@@ -1,75 +1,61 @@
-import { PostgrestSingleResponse } from "@supabase/supabase-js";
-import { injectable } from "inversify";
-import { Drink } from "../types/supabaseTypes";
+import {PostgrestSingleResponse} from "@supabase/supabase-js";
+import {injectable} from "inversify";
+import {Drink} from "../types/supabaseTypes";
 import _ from "lodash";
-import { TABLE_DRINK, TABLE_HISTORY } from "../constants";
-import { SupabaseRepository } from "./Repository";
+import {TABLE_DRINK, TABLE_HISTORY} from "../constants";
+import {SupabaseRepository} from "./Repository";
 
 export interface IAdminDrinksRepository {
     fetchDrinks(): Promise<PostgrestSingleResponse<any[]>>
+
     fetchAdminHistory(page: number, count: number): Promise<PostgrestSingleResponse<any[]>>
-    updateDrink(drink: Drink): Promise<void>
-    deleteDrink(id: number): Promise<void>
-    addDrink(drink: Drink): Promise<void>
+
+    updateDrink(drink: Drink): Promise<PostgrestSingleResponse<null>>
+
+    deleteDrink(id: number): Promise<PostgrestSingleResponse<null>>
+
+    addDrink(drink: Drink): Promise<PostgrestSingleResponse<null>>
 }
 
 @injectable()
 export class SupabaseAdminDrinksRepository extends SupabaseRepository implements IAdminDrinksRepository {
 
     async fetchDrinks(): Promise<PostgrestSingleResponse<any[]>> {
-        const query = this.client
+        return this.client
             .from(TABLE_DRINK)
-            .select("id, name, price, stock, imageUrl, active, deleted, previousDrink");
-
-        return query;
+            .select("id, name, price, stock, imageUrl, active, deleted, previousDrink")
+            .throwOnError();
     }
 
     async fetchAdminHistory(page: number = 0, count: number = 20): Promise<PostgrestSingleResponse<any[]>> {
-        const query = this.client
+        return this.client
             .from(TABLE_HISTORY)
             .select("count, amount, created_at, drinkId: drink, drink(*), user(*)")
-            .order('created_at', { ascending: false })
-            .range(page * count, page * count + count - 1);
-
-        return query;
+            .order('created_at', {ascending: false})
+            .range(page * count, page * count + count - 1)
+            .throwOnError();
     }
 
-    async updateDrink(drink: Drink): Promise<void> {
-        await this.client
+    async updateDrink(drink: Drink): Promise<PostgrestSingleResponse<null>> {
+        return this.client
             .from('drink')
             .update(drink)
-            .eq('id', drink.id);
+            .eq('id', drink.id)
+            .throwOnError();
     }
 
-    async deleteDrink(id: number): Promise<void> {
-        await this.client
+    async deleteDrink(id: number): Promise<PostgrestSingleResponse<null>> {
+        return this.client
             .from('drink')
             .delete()
-            .eq('id', id);
+            .eq('id', id)
+            .throwOnError();
     }
 
-    async addDrink(drink: Drink): Promise<void> {
-        await this.client
+    async addDrink(drink: Drink): Promise<PostgrestSingleResponse<null>> {
+        return this.client
             .from('drink')
-            .insert(_.omit(drink, ["id"]));
-    }
-}
-
-@injectable()
-export class EmptyAdminDrinksRepository implements IAdminDrinksRepository {
-    fetchDrinks(): Promise<PostgrestSingleResponse<any[]>> {
-        throw new Error("Method not implemented.");
-    }
-    fetchAdminHistory(page: number, count: number): Promise<PostgrestSingleResponse<any[]>> {
-        throw new Error("Method not implemented.");
-    }
-    updateDrink(drink: { active: boolean; deleted: boolean; id: number; imageUrl: string | null; name: string | null; previousDrink: number | null; price: number | null; stock: number | null; }): Promise<void> {
-        throw new Error("Method not implemented.");
-    }
-    deleteDrink(id: number): Promise<void> {
-        throw new Error("Method not implemented.");
-    }
-    addDrink(drink: { active: boolean; deleted: boolean; id: number; imageUrl: string | null; name: string | null; previousDrink: number | null; price: number | null; stock: number | null; }): Promise<void> {
-        throw new Error("Method not implemented.");
+            .insert(_.omit(drink, ["id"]))
+            .throwOnError();
     }
 }

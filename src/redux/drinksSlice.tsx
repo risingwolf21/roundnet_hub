@@ -1,7 +1,8 @@
-import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
-import { Drink, DrinkInsert, FullHistory, Payment, PaymentHistory } from '../types/supabaseTypes';
-import { compareById } from '../utils';
-import { IDrinkRepository } from '../repository/IDrinkRepository';
+import {createAsyncThunk, createSlice, PayloadAction} from '@reduxjs/toolkit';
+import {Drink, DrinkInsert, FullHistory, Payment, PaymentHistory} from '../types/supabaseTypes';
+import {compareById} from '../utils';
+import {IDrinkRepository} from '../repository/IDrinkRepository';
+import {captureException} from "@sentry/react";
 
 type DrinksSliceState = {
     history: FullHistory[],
@@ -67,7 +68,10 @@ export const drinksSlice = createSlice({
             let drinkIndex = state.drinks.findIndex(x => x.id === action.payload.new.drink);
             let newHistoryEntry = action.payload.new;
             if (drinkIndex !== -1) {
-                newHistoryEntry = Object.assign(newHistoryEntry, { drink: state.drinks[drinkIndex], drinkId: action.payload.new.drink });
+                newHistoryEntry = Object.assign(newHistoryEntry, {
+                    drink: state.drinks[drinkIndex],
+                    drinkId: action.payload.new.drink
+                });
             }
 
             let index = state.history.findIndex((x) =>
@@ -144,8 +148,7 @@ export const drinksSlice = createSlice({
 
                 if (action.payload.entries && action.payload.entries.length < 1) {
                     state.endReached = true
-                }
-                else {
+                } else {
                     state.endReached = false
                 }
 
@@ -202,24 +205,53 @@ type DrinkRepositoryWithUserIdAndPagination = DrinkRepositoryWithUserId & {
     page: number
 }
 
-export const fetchPaymentAsync = createAsyncThunk("payments/forUser", async ({ repository, userId }: DrinkRepositoryWithUserId) => {
-    const response = await repository.fetchCurrentPaymentForUser(userId);
-    return response?.data;
+export const fetchPaymentAsync = createAsyncThunk("payments/forUser", async ({
+                                                                                 repository,
+                                                                                 userId
+                                                                             }: DrinkRepositoryWithUserId, {rejectWithValue}) => {
+    return repository.fetchCurrentPaymentForUser(userId)
+        .then(result => result.data ?? [])
+        .catch(error => {
+            captureException(error);
+            return rejectWithValue(error);
+        });
 });
 
-export const fetchDrinksToPayAsync = createAsyncThunk("payments/openDrinks", async ({ repository, userId }: DrinkRepositoryWithUserId) => {
-    const response = await repository.fetchDrinksToPay(userId);
-    return response?.data ?? [];
+export const fetchDrinksToPayAsync = createAsyncThunk("payments/openDrinks", async ({
+                                                                                        repository,
+                                                                                        userId
+                                                                                    }: DrinkRepositoryWithUserId, {rejectWithValue}) => {
+    return repository.fetchDrinksToPay(userId)
+        .then(result => result.data ?? [])
+        .catch(error => {
+            captureException(error);
+            return rejectWithValue(error);
+        });
 });
 
-export const fetchDrinksAsync = createAsyncThunk("drink", async (repository: IDrinkRepository) => {
-    const response = await repository.fetchDrinks();
-    return response?.data ?? [];
+export const fetchDrinksAsync = createAsyncThunk("drink", async (repository: IDrinkRepository, {rejectWithValue}) => {
+    return repository.fetchDrinks()
+        .then(result => result.data ?? [])
+        .catch(error => {
+            captureException(error);
+            return rejectWithValue(error);
+        });
 });
 
-export const fetchHistoryAsync = createAsyncThunk("history", async ({ repository, userId, page = 0, count = 20 }: DrinkRepositoryWithUserIdAndPagination) => {
-    const response = await repository.fetchHistoryForUser(userId, page, count);
-    return { entries: response?.data ?? [], more: page !== 0 };
+export const fetchHistoryAsync = createAsyncThunk("history", async ({
+                                                                        repository,
+                                                                        userId,
+                                                                        page = 0,
+                                                                        count = 20
+                                                                    }: DrinkRepositoryWithUserIdAndPagination, {rejectWithValue}) => {
+    return repository.fetchHistoryForUser(userId, page, count)
+        .then(result => {
+            return {entries: result?.data ?? [], more: page !== 0}
+        })
+        .catch(error => {
+            captureException(error);
+            return rejectWithValue(error);
+        })
 });
 
 export const {
@@ -228,8 +260,7 @@ export const {
     onHistoryInsert,
     onDrinkUpdated,
     onDrinkInserted,
-    onDrinkDeleted,
-    onPaymentDeleted,
-    onPaymentUpdated } = drinksSlice.actions;
+    onDrinkDeleted
+} = drinksSlice.actions;
 
 export default drinksSlice.reducer
