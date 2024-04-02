@@ -29,6 +29,7 @@ import {useDependency} from "../../hooks/useDependency";
 import {IDrinkRepository} from "../../repository/IDrinkRepository";
 import moment from "moment";
 import {UserPermissionsDialog} from "./UserPermissionDialog";
+import {captureException} from "@sentry/react";
 
 type EditUserDialogProps = {
     user: UserWithGroups,
@@ -45,14 +46,14 @@ export type UserEdited = {
     permissions: Permissions[]
 }
 
-const EditUserDialog = ({ user, open, handleClose, onUserEditFinished, deleteUser }: EditUserDialogProps) => {
+const EditUserDialog = ({user, open, handleClose, onUserEditFinished, deleteUser}: EditUserDialogProps) => {
 
     const [editUserPermissionsOpen, setEditUserPermissionsOpen] = useState(false);
     const drinksRepository = useDependency<IDrinkRepository>("IDrinkRepository");
     const [verified, setVerified] = useState(user.verified)
     const [deleteUserOpen, setDeleteUserOpen] = useState(false);
     const [userPermissions, setUserPermissions] = useState<Permissions[]>([]);
-    const [userInfo, setUserInfo] = useState({ openAmount: 0 });
+    const [userInfo, setUserInfo] = useState({openAmount: 0});
     const [drinksForUser, setDrinksForUser] = useState<FullHistory[]>([]);
     const client = useClient();
 
@@ -60,9 +61,11 @@ const EditUserDialog = ({ user, open, handleClose, onUserEditFinished, deleteUse
         if (drinksRepository) {
             drinksRepository.fetchOpenDrinksForUser(user.userId).then(result => {
                 if (result && result.data) {
-                    setUserInfo({ openAmount: result.data.reduce((prev, curr) => prev + ((curr?.count ?? 0) * (curr?.drink?.price ?? 1)), 0) })
+                    setUserInfo({openAmount: result.data.reduce((prev, curr) => prev + ((curr?.count ?? 0) * (curr?.drink?.price ?? 1)), 0)})
                     setDrinksForUser(result.data);
                 }
+            }).catch(error => {
+                captureException(error);
             })
         }
         setVerified(user.verified);
@@ -94,22 +97,22 @@ const EditUserDialog = ({ user, open, handleClose, onUserEditFinished, deleteUse
                         color="inherit"
                         onClick={handleClose}
                         aria-label="close">
-                        <Close />
+                        <Close/>
                     </IconButton>
-                    <Typography sx={{ ml: 2, flex: 1 }} variant="h6" component="div">
+                    <Typography sx={{ml: 2, flex: 1}} variant="h6" component="div">
                         Benutzer bearbeiten
                     </Typography>
-                    <Button sx={{ color: "white" }} type="submit">
+                    <Button sx={{color: "white"}} type="submit">
                         Speichern
                     </Button>
                 </Toolbar>
             </AppBar>
             <Box>
                 <List>
-                    <ListItem key={"displayName"} sx={{ pt: 0, pb: 0 }}>
+                    <ListItem key={"displayName"} sx={{pt: 0, pb: 0}}>
                         <ListItemAvatar>
                             <Avatar>
-                                <AccountCircle />
+                                <AccountCircle/>
                             </Avatar>
                         </ListItemAvatar>
                         <ListItemText>
@@ -124,10 +127,10 @@ const EditUserDialog = ({ user, open, handleClose, onUserEditFinished, deleteUse
                             />
                         </ListItemText>
                     </ListItem>
-                    <ListItem key={"email"} sx={{ pt: 0, pb: 0 }}>
+                    <ListItem key={"email"} sx={{pt: 0, pb: 0}}>
                         <ListItemAvatar>
                             <Avatar>
-                                <Email />
+                                <Email/>
                             </Avatar>
                         </ListItemAvatar>
                         <ListItemText>
@@ -146,34 +149,35 @@ const EditUserDialog = ({ user, open, handleClose, onUserEditFinished, deleteUse
                     <ListItem key={"verified"}>
                         <ListItemAvatar>
                             <Avatar>
-                                <Verified />
+                                <Verified/>
                             </Avatar>
                         </ListItemAvatar>
-                        <ListItemText primary="Verified" />
+                        <ListItemText primary="Verified"/>
                         <ListItemSecondaryAction>
-                            <Checkbox checked={verified} onChange={(e) => setVerified(e.target.checked)} />
+                            <Checkbox checked={verified} onChange={(e) => setVerified(e.target.checked)}/>
                         </ListItemSecondaryAction>
                     </ListItem>
-                    <Divider />
+                    <Divider/>
                     <List subheader={<ListSubheader>Gruppen</ListSubheader>}>
                         {
                             user?.groups && user.groups.map((x: Group) => <ListItem key={x.id} divider>
                                 <ListItemAvatar>
-                                    <FiberManualRecord sx={{ color: x.color }} />
+                                    <FiberManualRecord sx={{color: x.color}}/>
                                 </ListItemAvatar>
-                                <ListItemText primary={x.name} />
+                                <ListItemText primary={x.name}/>
                             </ListItem>)
                         }
                     </List>
-                    <Divider />
-                    <Divider />
+                    <Divider/>
+                    <Divider/>
                     <List subheader={<ListSubheader>Offene Getränke</ListSubheader>}>
                         {
                             drinksForUser && drinksForUser.map((x: FullHistory) => <ListItem dense key={x.id}>
                                 <ListItemAvatar>
                                     <Typography>{x.count} x</Typography>
                                 </ListItemAvatar>
-                                <ListItemText primary={x.drink.name} secondary={moment(new Date((x.created_at ?? ""))).format("HH:mm")} />
+                                <ListItemText primary={x.drink.name}
+                                              secondary={moment(new Date((x.created_at ?? ""))).format("HH:mm")}/>
                                 <ListItemSecondaryAction>
                                     <Typography>{(x.count ?? 0) * (x.drink?.price ?? 1)} €</Typography>
                                 </ListItemSecondaryAction>
@@ -181,13 +185,18 @@ const EditUserDialog = ({ user, open, handleClose, onUserEditFinished, deleteUse
                         }
                     </List>
                 </List>
-                <Box sx={{ position: "fixed", bottom: 0, left: 0, right: 0, pl: 2, pr: 2, pb: 2 }}>
+                <Box sx={{position: "fixed", bottom: 0, left: 0, right: 0, pl: 2, pr: 2, pb: 2}}>
                     <Button
                         onClick={() => setDeleteUserOpen(true)}
                         fullWidth
                         color="error"
                         variant="contained"
-                        sx={{ borderRadius: "50px !important", fontSize: "16px", fontFamily: "sans-serif", lineSpacing: "24px" }}>
+                        sx={{
+                            borderRadius: "50px !important",
+                            fontSize: "16px",
+                            fontFamily: "sans-serif",
+                            lineSpacing: "24px"
+                        }}>
                         Löschen</Button>
                 </Box>
             </Box>
@@ -199,7 +208,7 @@ const EditUserDialog = ({ user, open, handleClose, onUserEditFinished, deleteUse
                 setUserPermissions(permissions);
                 setEditUserPermissionsOpen(false);
             }}
-            permissions={user.permissions ?? []} />
+            permissions={user.permissions ?? []}/>
         <Dialog open={deleteUserOpen}>
             <DialogTitle>
                 {`Benuter ${user.displayName} löschen?`}

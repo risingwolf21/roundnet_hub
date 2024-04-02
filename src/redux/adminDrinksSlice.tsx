@@ -1,7 +1,8 @@
-import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
-import { Drink, FullHistory } from '../types/supabaseTypes';
-import { IAdminDrinksRepository } from '../repository/IAdminDrinksRepository';
-import { compareById } from '../utils';
+import {createAsyncThunk, createSlice, PayloadAction} from '@reduxjs/toolkit';
+import {Drink, FullHistory} from '../types/supabaseTypes';
+import {IAdminDrinksRepository} from '../repository/IAdminDrinksRepository';
+import {compareById} from '../utils';
+import {captureException} from '@sentry/react';
 
 type AdminDrinkSliceState = {
     history: FullHistory[],
@@ -51,7 +52,10 @@ export const adminDrinksSlice = createSlice({
             let drinkIndex = state.drinks.findIndex(x => x.id === action.payload.new.drink);
             let newHistoryEntry = action.payload.new;
             if (drinkIndex !== -1) {
-                newHistoryEntry = Object.assign(newHistoryEntry, { drink: state.drinks[drinkIndex], drinkId: action.payload.new.drink });
+                newHistoryEntry = Object.assign(newHistoryEntry, {
+                    drink: state.drinks[drinkIndex],
+                    drinkId: action.payload.new.drink
+                });
             }
 
             let index = state.history.findIndex((x) =>
@@ -99,12 +103,7 @@ export const adminDrinksSlice = createSlice({
                 state.loading = false;
                 state.historyError = '';
 
-                if (action.payload.entries && action.payload.entries.length < 1) {
-                    state.endReached = true
-                }
-                else {
-                    state.endReached = false
-                }
+                state.endReached = !!(action.payload.entries && action.payload.entries.length < 1);
 
                 if (action.payload.more) {
                     state.history = [...state.history, ...(action.payload.entries ?? [])];
@@ -120,9 +119,14 @@ export const adminDrinksSlice = createSlice({
     }
 });
 
-export const fetchDrinksAsync = createAsyncThunk("adminDrinks", async (repository: IAdminDrinksRepository) => {
-    const response = await repository.fetchDrinks();
-    return response?.data ?? [];
+export const fetchDrinksAsync = createAsyncThunk("adminDrinks", async (repository: IAdminDrinksRepository, {rejectWithValue}) => {
+    try {
+        const response = await repository.fetchDrinks();
+        return response?.data ?? [];
+    } catch (error) {
+        captureException(error);
+        return rejectWithValue(error);
+    }
 });
 
 type Props = {
@@ -131,9 +135,21 @@ type Props = {
     count: number
 }
 
-export const fetchAdminHistoryAsync = createAsyncThunk("adminHistory", async ({ repository, page = 0, count = 20 }: Props) => {
-    const response = await repository.fetchAdminHistory(page, count);
-    return { entries: response?.data ?? [], more: page !== 0 };
+export const fetchAdminHistoryAsync = createAsyncThunk("adminHistory", async ({
+                                                                                  repository,
+                                                                                  page = 0,
+                                                                                  count = 20
+                                                                              }: Props, {rejectWithValue}) => {
+    try {
+        const response = await repository.fetchAdminHistory(page, count);
+        return {
+            entries: response?.data ?? [],
+            more: page !== 0
+        };
+    } catch (error) {
+        captureException(error);
+        return rejectWithValue(error);
+    }
 });
 
 export const {
@@ -142,6 +158,7 @@ export const {
     onHistoryInsert,
     onDrinkUpdated,
     onDrinkInserted,
-    onDrinkDeleted } = adminDrinksSlice.actions;
+    onDrinkDeleted
+} = adminDrinksSlice.actions;
 
 export default adminDrinksSlice.reducer
