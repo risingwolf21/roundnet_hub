@@ -13,6 +13,7 @@ import {
     List,
     ListItem,
     ListItemAvatar,
+    ListItemButton,
     ListItemSecondaryAction,
     ListItemText,
     ListSubheader,
@@ -21,7 +22,7 @@ import {
     Typography
 } from "@mui/material"
 import {Box} from "@mui/system";
-import {AccountCircle, Close, Email, FiberManualRecord, Verified} from "@mui/icons-material";
+import {AccountCircle, Close, Edit, Email, FiberManualRecord, ManageAccounts, Verified} from "@mui/icons-material";
 import {useClient} from "react-supabase";
 import {SlideUpTransition} from "../../utils";
 import {FullHistory, Group, Permissions, User, UserWithGroups} from "../../types/supabaseTypes";
@@ -157,6 +158,17 @@ const EditUserDialog = ({user, open, handleClose, onUserEditFinished, deleteUser
                             <Checkbox checked={verified} onChange={(e) => setVerified(e.target.checked)}/>
                         </ListItemSecondaryAction>
                     </ListItem>
+                    <ListItemButton key={"editUserRole"} onClick={() => setEditUserPermissionsOpen(true)}>
+                        <ListItemAvatar>
+                            <Avatar>
+                                <ManageAccounts/>
+                            </Avatar>
+                        </ListItemAvatar>
+                        <ListItemText secondary={userPermissions.length + " Berechtigungen"} primary={user.role}/>
+                        <ListItemSecondaryAction onClick={() => setEditUserPermissionsOpen(true)}>
+                            <Edit/>
+                        </ListItemSecondaryAction>
+                    </ListItemButton>
                     <Divider/>
                     <List subheader={<ListSubheader>Gruppen</ListSubheader>}>
                         {
