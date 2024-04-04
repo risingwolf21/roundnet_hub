@@ -1,17 +1,16 @@
 import AddIcon from '@mui/icons-material/Add';
-import { Alert, Divider, Fab, Grid, LinearProgress, Snackbar } from "@mui/material";
-import React, { useEffect } from "react";
-import { useNavigate } from 'react-router-dom';
-import { useClient } from "react-supabase";
-import { useAppDispatch } from "../../redux/store";
-import { EventAttendance, EventUpdate } from "../../types/supabaseTypes";
+import {Alert, Divider, Fab, Grid, LinearProgress, Snackbar} from "@mui/material";
+import React, {useEffect} from "react";
+import {useNavigate} from 'react-router-dom';
+import {useClient} from "react-supabase";
+import {useAppDispatch} from "../../redux/store";
+import {EventAttendance, EventUpdate} from "../../types/supabaseTypes";
 import CustomAppBar from "../AppBar";
-import { InfiniteScrollList } from "../InfiniteScrollList";
-import { EventItem } from "./EventItem";
-import { EventScreenProps } from './types';
-import { fetchEventsAsync, onEventDelete, onEventErrorRead, onEventUpdate } from 'src/redux/events/eventsSlice';
-import { updateAttendanceAsync } from 'src/redux/events/eventAttendanceSlice';
-import { CreateEventOption } from '../eventCreation/types';
+import {InfiniteScrollList} from "../InfiniteScrollList";
+import {EventItem} from "./EventItem";
+import {EventScreenProps} from './types';
+import {fetchEventsAsync, onEventDelete, onEventErrorRead, onEventUpdate} from 'src/redux/events/eventsSlice';
+import {updateAttendanceAsync} from 'src/redux/events/eventAttendanceSlice';
 
 const EventScreen = ({ events, loading, error, endReached, repository, user }: EventScreenProps) => {
     const client = useClient();
@@ -68,7 +67,7 @@ const EventScreen = ({ events, loading, error, endReached, repository, user }: E
         </InfiniteScrollList>
         {
             user.role === "admin" && <Fab sx={{ background: "#66bb6a", position: "fixed", right: "16px", bottom: "76px" }}
-                onClick={() => navigate("/training/createOrUpdate/NewEvent")}>
+                                          onClick={() => navigate("/training/createOrUpdate/InsertEvent")}>
                 {
                     <AddIcon sx={{ color: "white" }} />
                 }

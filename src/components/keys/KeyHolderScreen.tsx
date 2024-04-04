@@ -82,6 +82,10 @@ const KeyHolderScreen = ({keysRepository, dispatch, keyHolders, loading, user, t
     const [keyToEdit, setKeyToEdit] = useState<Key>(EMPTY_KEY);
     const [alertInfo, setAlertInfo] = useState<AlertMessage | null>(null);
 
+    useEffect(() => {
+        dispatch(fetchKeysAsync(keysRepository));
+    }, [dispatch, keysRepository]);
+
     const userSelected = (user: User) => {
         setSearchUserOpen(false);
         setSelectedUser(user);
@@ -120,7 +124,7 @@ const KeyHolderScreen = ({keysRepository, dispatch, keyHolders, loading, user, t
             verlegt), muss für den neuen Schlüssel selbst aufkommen. Grundsätzlich ist immer die eingetragene Person für
             den Schlüssel verantwortlich!
         </Alert>
-        <List>
+        <List sx={{pb: 10}}>
             {
                 keyHolders.map((key: FullKeyHolder) => <ListItemButton key={key.key.id} divider>
                     <ListItemAvatar>
