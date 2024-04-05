@@ -11,6 +11,7 @@ import {EventItem} from "./EventItem";
 import {EventScreenProps} from './types';
 import {fetchEventsAsync, onEventDelete, onEventErrorRead, onEventUpdate} from 'src/redux/events/eventsSlice';
 import {updateAttendanceAsync} from 'src/redux/events/eventAttendanceSlice';
+import {can} from "../../utils/PermissionService";
 
 const EventScreen = ({ events, loading, error, endReached, repository, user }: EventScreenProps) => {
     const client = useClient();
@@ -66,7 +67,8 @@ const EventScreen = ({ events, loading, error, endReached, repository, user }: E
             }
         </InfiniteScrollList>
         {
-            user.role === "admin" && <Fab sx={{ background: "#66bb6a", position: "fixed", right: "16px", bottom: "76px" }}
+            can("edit", "training") &&
+            <Fab sx={{background: "#66bb6a", position: "fixed", right: "16px", bottom: "76px"}}
                                           onClick={() => navigate("/training/createOrUpdate/InsertEvent")}>
                 {
                     <AddIcon sx={{ color: "white" }} />

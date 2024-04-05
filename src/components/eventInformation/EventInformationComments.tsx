@@ -1,12 +1,25 @@
-import { AccountBox, Send } from "@mui/icons-material"
-import { Typography, ListItemAvatar, Container, ListItemText, ListItemSecondaryAction, IconButton, Box, List, ListItem, Avatar, CircularProgress, TextField, InputAdornment } from "@mui/material"
-import { useEffect, useState } from "react"
-import React from "react"
-import { EventCommentUpdate, FullComment } from "src/types/supabaseTypes"
-import { useAppDispatch } from "src/redux/store"
-import { useClient } from "react-supabase"
-import { onEventCommentDelete, onEventCommentUpdate } from "src/redux/events/eventCommentsSlice"
-import { formatDistanceToNow } from "date-fns"
+import {AccountBox, Send} from "@mui/icons-material"
+import {
+    Avatar,
+    Box,
+    CircularProgress,
+    Container,
+    IconButton,
+    InputAdornment,
+    List,
+    ListItem,
+    ListItemAvatar,
+    ListItemSecondaryAction,
+    ListItemText,
+    TextField,
+    Typography
+} from "@mui/material"
+import React, {useEffect} from "react"
+import {EventCommentUpdate, FullComment} from "src/types/supabaseTypes"
+import {useAppDispatch} from "src/redux/store"
+import {useClient} from "react-supabase"
+import {onEventCommentDelete, onEventCommentUpdate} from "src/redux/events/eventCommentsSlice"
+import {formatDistanceToNow} from "date-fns"
 
 type EventInformationCommentsProps = {
     comments: FullComment[],

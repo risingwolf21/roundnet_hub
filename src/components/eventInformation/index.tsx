@@ -151,7 +151,7 @@ const EventInformation = ({
                     <ArrowBack/>
                 </IconButton>
                 <Typography variant="h6" component="div" sx={{flexGrow: 1}}>{selectedEvent.title}</Typography>
-                {(user?.role === "admin" || user?.role === "trainer" || can("edit", "training")) && <>
+                {can("edit", "training") && <>
                     <IconButton sx={{color: "#fff", pr: 0}} onClick={handleClick}>
                         <MoreVert/>
                     </IconButton>
