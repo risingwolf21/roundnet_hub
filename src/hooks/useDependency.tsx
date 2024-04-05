@@ -1,7 +1,6 @@
 import {useContext, useEffect, useState} from 'react'
 import {DependencyContext} from '..'
 import {captureException} from '@sentry/react';
-import {interfaces} from "inversify";
 
 export function useDependency<T>(name: string) {
     const {container} = useContext(DependencyContext);
@@ -17,7 +16,6 @@ export function useDependency<T>(name: string) {
                     scope.clear();
                     scope.setExtra("name", name);
                     return scope;
-                    ;
                 });
             }
         }

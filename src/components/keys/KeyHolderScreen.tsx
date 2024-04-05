@@ -24,7 +24,7 @@ import {useSelector} from "react-redux";
 import {useClient} from "react-supabase";
 import {TABLE_USER} from "src/constants";
 import {useDependency} from "src/hooks/useDependency";
-import {fetchKeysAsync, keyHoldersSelector} from "src/redux/keysSlice";
+import {fetchInsertedKeyHolderAsync, fetchKeysAsync, keyHoldersSelector} from "src/redux/keysSlice";
 import {AppDispatch, RootState, useAppDispatch} from "src/redux/store";
 import {IKeysRepository} from "src/repository/IKeysRepository";
 import {FullKeyHolder, Key, User} from "src/types/supabaseTypes";
@@ -39,6 +39,7 @@ import {EditOrAddKeyDialog} from "./EditOrAddKeyDialog";
 import EditIcon from "@mui/icons-material/Edit";
 import {TFunction} from "i18next";
 import {useTranslation} from "react-i18next";
+import {KeyHistoryDialog} from "./KeyHistoryDialog";
 
 const KeyHolderScreenProvider = () => {
     const {user} = useSelector((state: RootState) => state.application);
@@ -81,7 +82,41 @@ const KeyHolderScreen = ({keysRepository, dispatch, keyHolders, loading, user, t
     const [isEditingMode, setEditingMode] = useState(false);
     const [keyToEdit, setKeyToEdit] = useState<Key>(EMPTY_KEY);
     const [alertInfo, setAlertInfo] = useState<AlertMessage | null>(null);
+    const [keyHistoryDialogOpen, setKeyHistoryDialogOpen] = useState(false);
+    const client = useClient();
 
+    useEffect(() => {
+        dispatch(fetchKeysAsync(keysRepository));
+    }, [dispatch, keysRepository]);
+
+    useEffect(() => {
+        if (!keysRepository)
+            return;
+        let subscription = client.channel("public:key_holders")
+            .on('postgres_changes', {
+                    event: 'UPDATE',
+                    schema: 'public',
+                    table: 'key_holders'
+                }, payload => dispatch(fetchInsertedKeyHolderAsync({
+                    keysRepository,
+                    key: payload.new.key,
+                    user: payload.new.user
+                }))
+            )
+            .on('postgres_changes', {
+                event: 'INSERT',
+                schema: 'public',
+                table: 'key_holders'
+            }, payload => dispatch(fetchInsertedKeyHolderAsync({
+                keysRepository,
+                key: payload.new.key,
+                user: payload.new.user
+            })))
+            .subscribe();
+        return () => {
+            subscription.unsubscribe();
+        }
+    }, [dispatch, client, keysRepository]);
     const userSelected = (user: User) => {
         setSearchUserOpen(false);
         setSelectedUser(user);
@@ -120,9 +155,14 @@ const KeyHolderScreen = ({keysRepository, dispatch, keyHolders, loading, user, t
             verlegt), muss für den neuen Schlüssel selbst aufkommen. Grundsätzlich ist immer die eingetragene Person für
             den Schlüssel verantwortlich!
         </Alert>
-        <List>
+        <List sx={{pb: 10}}>
             {
-                keyHolders.map((key: FullKeyHolder) => <ListItemButton key={key.key.id} divider>
+                keyHolders.map((key: FullKeyHolder) => <ListItemButton key={key.key.id} divider
+                                                                       onClick={can("edit", "keyFinder") ? () => {
+                                                                           console.log(key.key)
+                                                                           setKeyToEdit(key.key);
+                                                                           setKeyHistoryDialogOpen(true);
+                                                                       } : undefined}>
                     <ListItemAvatar>
                         <Avatar sx={{background: key.key.color, width: 40, height: 40, borderRadius: 2}}>
                             <KeyIcon/>
@@ -176,8 +216,12 @@ const KeyHolderScreen = ({keysRepository, dispatch, keyHolders, loading, user, t
                 </Fab>
             </Box>
         }
+        <KeyHistoryDialog open={keyHistoryDialogOpen} handleClose={() => setKeyHistoryDialogOpen(false)}
+                          setOpen={() => setKeyHistoryDialogOpen(true)} keyId={keyToEdit.id} keyName={keyToEdit.name}/>
+
         <SearchUserDialog open={searchUserOpen} handleClose={() => setSearchUserOpen(false)} user={user}
                           onUserSelected={userSelected}/>
+
         <SwipeableDialog open={selectedUser !== null} setOpen={() => {
         }} onClose={() => setSelectedUser(null)} title={t("keyHandOver")}>
             <Typography m={2}>

@@ -354,7 +354,7 @@ const CreateEvent = ({t, eventToEdit, repository, option}: CreateEventProps) => 
 
                     <DateTimePicker slotProps={{textField: {error: false}}}
                                     disabled={editedEvent.answerDeadline === null} sx={{width: "100%"}}
-                                    label="Answer deadline" disablePast ampm={false} format="DD MMMM YYYY HH:mm"
+                                    label="Answer deadline" disablePast ampm={false}
                                     onChange={(val) => setEditedEvent({
                                         ...editedEvent,
                                         answerDeadline: formatDateToDatabase(set(new Date(editedEvent.answerDeadline ?? ""), {
@@ -376,7 +376,7 @@ const CreateEvent = ({t, eventToEdit, repository, option}: CreateEventProps) => 
                                   checked={editedEvent.maxAttendees !== null && editedEvent.maxAttendees > 0}
                                   onChange={() => setEditedEvent({
                                       ...editedEvent,
-                                      maxAttendees: editedEvent.maxAttendees === null || editedEvent.maxAttendees === 0 ? 1 : null
+                                      maxAttendees: editedEvent.maxAttendees
                                   })}/>
                     </ListItemAvatar>
 

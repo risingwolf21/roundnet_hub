@@ -9,7 +9,6 @@ import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
 import Logo from "../images/Karlsruher_Kojoten_Logo.svg";
 import {supabase} from "./services/supabase/supabaseClient";
-import {useNavigate} from "react-router-dom";
 import {TABLE_USER} from "../constants";
 import {captureException} from "@sentry/react";
 import {RegistrationError} from "../utils";
@@ -27,7 +26,6 @@ type RegisterScreenProps = {
 const RegisterScreen = ({goToLogin}: RegisterScreenProps) => {
 
     const [errorMessage, setErrorMessage] = useState("");
-    const navigate = useNavigate();
 
     const onRegister = async ({email, password, displayName}: RegisterProps) => {
         const {data, error} = await supabase.auth.signUp({
