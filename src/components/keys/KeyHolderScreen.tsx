@@ -39,6 +39,7 @@ import {EditOrAddKeyDialog} from "./EditOrAddKeyDialog";
 import EditIcon from "@mui/icons-material/Edit";
 import {TFunction} from "i18next";
 import {useTranslation} from "react-i18next";
+import {KeyHistoryDialog} from "./KeyHistoryDialog";
 
 const KeyHolderScreenProvider = () => {
     const {user} = useSelector((state: RootState) => state.application);
@@ -81,11 +82,12 @@ const KeyHolderScreen = ({keysRepository, dispatch, keyHolders, loading, user, t
     const [isEditingMode, setEditingMode] = useState(false);
     const [keyToEdit, setKeyToEdit] = useState<Key>(EMPTY_KEY);
     const [alertInfo, setAlertInfo] = useState<AlertMessage | null>(null);
+    const [keyHistoryDialogOpen, setKeyHistoryDialogOpen] = useState(false);
     const client = useClient();
 
     useEffect(() => {
         dispatch(fetchKeysAsync(keysRepository));
-    }, []);
+    }, [dispatch, keysRepository]);
 
     useEffect(() => {
         if (!keysRepository)
@@ -155,7 +157,12 @@ const KeyHolderScreen = ({keysRepository, dispatch, keyHolders, loading, user, t
         </Alert>
         <List sx={{pb: 10}}>
             {
-                keyHolders.map((key: FullKeyHolder) => <ListItemButton key={key.key.id} divider>
+                keyHolders.map((key: FullKeyHolder) => <ListItemButton key={key.key.id} divider
+                                                                       onClick={can("edit", "keyFinder") ? () => {
+                                                                           console.log(key.key)
+                                                                           setKeyToEdit(key.key);
+                                                                           setKeyHistoryDialogOpen(true);
+                                                                       } : undefined}>
                     <ListItemAvatar>
                         <Avatar sx={{background: key.key.color, width: 40, height: 40, borderRadius: 2}}>
                             <KeyIcon/>
@@ -209,8 +216,12 @@ const KeyHolderScreen = ({keysRepository, dispatch, keyHolders, loading, user, t
                 </Fab>
             </Box>
         }
+        <KeyHistoryDialog open={keyHistoryDialogOpen} handleClose={() => setKeyHistoryDialogOpen(false)}
+                          setOpen={() => setKeyHistoryDialogOpen(true)} keyId={keyToEdit.id} keyName={keyToEdit.name}/>
+
         <SearchUserDialog open={searchUserOpen} handleClose={() => setSearchUserOpen(false)} user={user}
                           onUserSelected={userSelected}/>
+
         <SwipeableDialog open={selectedUser !== null} setOpen={() => {
         }} onClose={() => setSelectedUser(null)} title={t("keyHandOver")}>
             <Typography m={2}>

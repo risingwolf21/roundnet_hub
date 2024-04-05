@@ -18,6 +18,7 @@ export type KeyHolder = Database["public"]["Tables"]["key_holders"]["Row"];
 export type Key = Database["public"]["Tables"]["keys"]["Row"];
 export type KeyInsert = Database["public"]["Tables"]["keys"]["Insert"];
 export type KeyUpdate = Database["public"]["Tables"]["keys"]["Update"];
+export type KeyHistory = Database["public"]["Tables"]["key_history"]["Row"];
 
 export type EventInsert = Database["public"]["Tables"]["events"]["Insert"];
 export type EventUpdate = Database["public"]["Tables"]["events"]["Update"];
@@ -32,6 +33,12 @@ export type EventCommentInsert = Database["public"]["Tables"]["event_comments"][
 export type EdgeFunctions = keyof Database["public"]["Functions"]
 
 export type NotificationTags = Database["public"]["Enums"]["NotificationTags"]
+
+export type FullKeyHistory = Modify<KeyHistory, {
+    pastUser: User,
+    currentUser: User,
+    key: Key
+}>
 
 export type DrinkCounter = Drink & {
     count: number

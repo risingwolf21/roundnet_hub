@@ -1,5 +1,5 @@
 import {PostgrestError, PostgrestSingleResponse} from "@supabase/supabase-js";
-import {FullKeyHolder, Key, KeyInsert, User} from "src/types/supabaseTypes";
+import {FullKeyHistory, FullKeyHolder, Key, KeyInsert, User} from "src/types/supabaseTypes";
 import {SupabaseRepository} from "./Repository";
 import {formatDateToDatabase} from "src/utils";
 
@@ -11,9 +11,20 @@ export interface IKeysRepository {
     fetchInsertedKey(key: number, user: string): Promise<PostgrestSingleResponse<FullKeyHolder[]>>
 
     upsertKey(key: KeyInsert, userId: string): Promise<PostgrestSingleResponse<null>>
+
+    loadKeyHistory(keyId: number): Promise<PostgrestSingleResponse<FullKeyHistory[]>>
 }
 
 export class SupabaseKeysRepository extends SupabaseRepository implements IKeysRepository {
+    async loadKeyHistory(keyId: number): Promise<PostgrestSingleResponse<any>> {
+        return this.client
+            .from("key_history")
+            .select("*, pastUser: user!key_history_pastuser_fkey(*), currentUser: user!key_history_currentuser_fkey(*), key: key(*)")
+            .eq("key.id", keyId)
+            .not("key", "is", null)
+            .order("created_at", {ascending: false})
+            .throwOnError();
+    }
 
     async upsertKey(key: KeyInsert, userId: string): Promise<PostgrestSingleResponse<null>> {
         const {data, error} = await this.client

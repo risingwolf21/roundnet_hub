@@ -376,7 +376,7 @@ const CreateEvent = ({t, eventToEdit, repository, option}: CreateEventProps) => 
                                   checked={editedEvent.maxAttendees !== null && editedEvent.maxAttendees > 0}
                                   onChange={() => setEditedEvent({
                                       ...editedEvent,
-                                      maxAttendees: editedEvent.maxAttendees === null || editedEvent.maxAttendees === 0 ? 1 : null
+                                      maxAttendees: editedEvent.maxAttendees
                                   })}/>
                     </ListItemAvatar>
 
