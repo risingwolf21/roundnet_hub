@@ -1,5 +1,5 @@
-import { configureStore } from '@reduxjs/toolkit'
-import { useDispatch } from 'react-redux'
+import {compose, configureStore} from '@reduxjs/toolkit'
+import {useDispatch} from 'react-redux'
 import adminDrinksSlice from './adminDrinksSlice'
 import adminPaymentsSlice from './adminPaymentsSlice'
 import adminUsersSlice from './adminUserSlice'
@@ -10,6 +10,11 @@ import keysSlice from './keysSlice'
 import eventAttendanceSlice from './events/eventAttendanceSlice'
 import eventCommentsSlice from './events/eventCommentsSlice'
 import eventsSlice from './events/eventsSlice'
+import {createReduxEnhancer} from "@sentry/react";
+
+const sentryReduxEnhancer = createReduxEnhancer({
+    // Optionally pass options listed below
+});
 
 const store = configureStore({
     reducer: {
@@ -24,6 +29,7 @@ const store = configureStore({
         eventAttendance: eventAttendanceSlice,
         eventComments: eventCommentsSlice
     },
+    enhancers: compose(sentryReduxEnhancer),
 });
 export type RootState = ReturnType<typeof store.getState>
 

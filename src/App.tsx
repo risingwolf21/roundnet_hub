@@ -1,6 +1,6 @@
 import {Container, Grid, Typography} from "@mui/material";
 import * as React from 'react';
-import {BrowserRouter, Navigate, Route, Routes} from 'react-router-dom';
+import {BrowserRouter, Navigate, Route} from 'react-router-dom';
 import AuthScreen from './components/AuthScreen';
 import CustomBottomNavigation from './components/BottomNavigation';
 import Browse from './components/Browse';
@@ -17,6 +17,7 @@ import NotVerifiedScreen from "./components/NotVerifiedScreen";
 import ProtectedRoute from "./components/ProtectedRoute";
 import {AuthStateListener} from "./components/AuthStateListener";
 import {SupabaseClient} from "./components/SupabaseClient";
+import {SentryRoutes} from "./index";
 
 const FeatureNotAvailable = React.lazy(() => import('./components/FeatureNotAvailable'));
 const HistoryScreenProvider = React.lazy(() => import('./components/HistoryScreen'));
@@ -57,7 +58,7 @@ const App = () => {
         <BrowserRouter>
             <AuthStateListener>
                 <React.Suspense fallback={<LoadingScreen/>}>
-                    <Routes>
+                    <SentryRoutes>
                         <Route path='/' element={<Navigate replace to={"/drinks"}/>}/>
                         <Route path='*' element={<Navigate replace to={"/drinks"}/>}/>
 
@@ -109,7 +110,7 @@ const App = () => {
                         <Route path='/admin/edgeFunctions'
                                element={<ProtectedRoute><ExecuteEdgeFunctions/></ProtectedRoute>}/>
                         <Route path='/admin/supabase' element={<ProtectedRoute><SupabaseClient/></ProtectedRoute>}/>
-                    </Routes>
+                    </SentryRoutes>
                 </React.Suspense>
                 <div style={{width: "100%", height: "56px"}}/>
                 <CustomBottomNavigation/>
