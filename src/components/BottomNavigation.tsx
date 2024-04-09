@@ -8,7 +8,6 @@ import {useNavigate} from "react-router-dom";
 import {Ability, can} from "src/utils/PermissionService";
 import {onModeChange} from "../redux/applicationSlice";
 import {RootState} from "../redux/store";
-import {stubString} from "lodash";
 
 export type Tab = {
     translationKey: string,
@@ -20,18 +19,18 @@ export type Tab = {
 
 const defaultTabs: Tab[] = [
     {
-        translationKey: "drinks",
-        path: "drinks",
-        index: 0,
-        icon: <Liquor/>,
-        ability: "drink"
-    },
-    {
         translationKey: "training",
         path: "training",
         index: 1,
         icon: <SportsHandball/>,
         ability: "training"
+    },
+    {
+        translationKey: "drinks",
+        path: "drinks",
+        index: 0,
+        icon: <Liquor/>,
+        ability: "drink"
     },
     {
         translationKey: "browse",

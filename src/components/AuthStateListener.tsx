@@ -3,7 +3,6 @@ import {useDispatch} from "react-redux";
 import {useLocation, useNavigate} from "react-router-dom";
 import {useEffect} from "react";
 import {setUser} from "@sentry/react";
-import {TABLE_USER} from "../constants";
 import {User} from "../types/supabaseTypes";
 import {ability, defineRulesFor} from "../utils/PermissionService";
 import {onUserChange} from "../redux/applicationSlice";
@@ -19,30 +18,29 @@ export const AuthStateListener = ({children}: Props) => {
     const location = useLocation();
 
     useEffect(() => {
-        const {data} = client.auth.onAuthStateChange((event, session) => {
-            setUser({email: session?.user?.email, id: session?.user?.id});
+        if (location.state?.from.pathname === "/auth")
+            return;
+        const {data: {subscription}} = client.auth.onAuthStateChange((event, session) => {
             if (session && session.user) {
-                client.from(TABLE_USER).select().eq("userId", session.user.id).single().then((res) => {
-                    if (res && res.data) {
-                        let user = {
-                            userId: session.user.id,
-                            email: session.user.email,
-                            displayName: session.user.user_metadata.displayName,
-                            role: res.data.role,
-                            verified: res.data.verified,
-                            avatarUrl: res.data.avatarUrl,
-                            permissions: res.data.permissions ?? [],
-                            notifications: res.data.notifications ?? []
-                        } as User;
+                client.from("user")
+                    .select("*")
+                    .eq("userId", session.user.id)
+                    .returns<User>()
+                    .single<User>()
+                    .then((result) => {
+                        if (!result.data) {
+                            return;
+                        }
+                        const user = result.data;
+                        setUser({email: session.user.email, id: session.user.id, username: user.displayName});
                         ability.update(defineRulesFor(user))
                         dispatch(onUserChange(user));
-                        if(!user.verified)
+                        if (!user.verified)
                             return;
                         if (location.state && location.state.from) {
                             navigate(location.state.from, {replace: true});
                         }
-                    }
-                })
+                    })
             } else {
                 ability.update(defineRulesFor(null))
 
@@ -51,7 +49,7 @@ export const AuthStateListener = ({children}: Props) => {
             }
         })
         return () => {
-            data.subscription.unsubscribe();
+            subscription.unsubscribe();
         }
     }, [client, dispatch, navigate]);
 

@@ -5,6 +5,7 @@ import RegisterScreen from './RegisterScreen';
 import {useSelector} from "react-redux";
 import {RootState} from "../redux/store";
 import {Navigate, useLocation} from "react-router-dom";
+import {HOMEPAGE} from "../constants";
 
 type CURRENT_SCREEN = "LOGIN" | "REGISTER" | "FORGOT_PASSWORD";
 
@@ -14,7 +15,7 @@ const AuthScreen = () => {
     const location = useLocation();
 
     if (user) {
-        return <Navigate to={"/drink"} state={{from: location}}/>
+        return <Navigate to={`/${HOMEPAGE}`} state={{from: location}}/>
     } else if (currentScreen === "LOGIN") {
         return <LoginScreen goToRegister={() => setCurrentScreen("REGISTER")}
                             goToForgotPassword={() => setCurrentScreen("FORGOT_PASSWORD")}/>

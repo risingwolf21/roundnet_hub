@@ -18,6 +18,7 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import {AuthStateListener} from "./components/AuthStateListener";
 import {SupabaseClient} from "./components/SupabaseClient";
 import {SentryRoutes} from "./index";
+import {HOMEPAGE} from "./constants";
 
 const FeatureNotAvailable = React.lazy(() => import('./components/FeatureNotAvailable'));
 const HistoryScreenProvider = React.lazy(() => import('./components/HistoryScreen'));
@@ -59,8 +60,8 @@ const App = () => {
             <AuthStateListener>
                 <React.Suspense fallback={<LoadingScreen/>}>
                     <SentryRoutes>
-                        <Route path='/' element={<Navigate replace to={"/drinks"}/>}/>
-                        <Route path='*' element={<Navigate replace to={"/drinks"}/>}/>
+                        <Route path='/' element={<Navigate replace to={`/${HOMEPAGE}`}/>}/>
+                        <Route path='*' element={<Navigate replace to={`/${HOMEPAGE}`}/>}/>
 
                         <Route path='/auth' element={<AuthScreen/>}/>
                         <Route path='/reset-password' element={<ResetPasswordScreen/>}/>
