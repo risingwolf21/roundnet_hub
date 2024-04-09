@@ -1,4 +1,4 @@
-import {compose, configureStore} from '@reduxjs/toolkit'
+import {configureStore} from '@reduxjs/toolkit'
 import {useDispatch} from 'react-redux'
 import adminDrinksSlice from './adminDrinksSlice'
 import adminPaymentsSlice from './adminPaymentsSlice'
@@ -29,7 +29,9 @@ const store = configureStore({
         eventAttendance: eventAttendanceSlice,
         eventComments: eventCommentsSlice
     },
-    enhancers: compose(sentryReduxEnhancer),
+    enhancers: (getDefaultEnhancers) => {
+        return getDefaultEnhancers.concat(sentryReduxEnhancer);
+    },
 });
 export type RootState = ReturnType<typeof store.getState>
 

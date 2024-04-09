@@ -1,10 +1,10 @@
 import * as React from 'react';
 import {
-    Unstable_NumberInput as BaseNumberInput,
-    NumberInputProps,
     numberInputClasses,
+    NumberInputProps,
+    Unstable_NumberInput as BaseNumberInput,
 } from '@mui/base/Unstable_NumberInput';
-import { styled } from '@mui/system';
+import {styled} from '@mui/system';
 
 export const NumberInput = React.forwardRef(function CustomNumberInput(
     props: NumberInputProps & { fullWidth?: boolean },
@@ -41,18 +41,6 @@ export const NumberInput = React.forwardRef(function CustomNumberInput(
         />
     );
 });
-
-export default function NumberInputBasic() {
-    const [value, setValue] = React.useState<number | undefined>();
-    return (
-        <NumberInput
-            aria-label="Demo number input"
-            placeholder="Type a number…"
-            value={value}
-            onChange={(event, val) => setValue(val)}
-        />
-    );
-}
 
 const blue = {
     100: '#DAECFF',
