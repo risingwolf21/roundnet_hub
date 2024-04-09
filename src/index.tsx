@@ -34,9 +34,10 @@ const DependencyProvider = ({container, children}: Props) => {
 
 export const SentryRoutes = Sentry.withSentryReactRouterV6Routing(Routes);
 
-if (process.env.NODE_ENV === "production") {
+if (process.env.REACT_APP_ENV !== "development") {
     Sentry.init({
         dsn: "https://a06f63fae5ab4ce4ac291d0d6fb4e989@o4505379650666496.ingest.sentry.io/4505379651649536",
+        environment: process.env.REACT_APP_ENV,
         integrations: [
             Sentry.reactRouterV6BrowserTracingIntegration({
                 useEffect: React.useEffect,
