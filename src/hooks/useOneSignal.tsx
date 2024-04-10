@@ -1,8 +1,8 @@
-import { useEffect, useState } from 'react';
-import { useTranslation } from 'react-i18next';
+import {useEffect, useState} from 'react';
+import {useTranslation} from 'react-i18next';
 import OneSignal from 'react-onesignal';
-import { useSelector } from 'react-redux';
-import { RootState } from 'src/redux/store';
+import {useSelector} from 'react-redux';
+import {RootState} from 'src/redux/store';
 
 export function useOneSignal() {
     const { t } = useTranslation();
@@ -46,7 +46,7 @@ export function useOneSignal() {
 
     useEffect(() => {
         if (user && oneSignalInitialized) {
-            OneSignal.login(user.userId);
+            OneSignal.login(user.userId).catch(error => console.log(error))
         }
     }, [user, oneSignalInitialized])
 }

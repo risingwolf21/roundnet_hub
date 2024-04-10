@@ -2,26 +2,26 @@ import React, {useState} from "react";
 import ForgotPasswordScreen from './ForgotPasswordScreen';
 import LoginScreen from './LoginScreen';
 import RegisterScreen from './RegisterScreen';
-import {useSelector} from "react-redux";
-import {RootState} from "../redux/store";
-import {Navigate, useLocation} from "react-router-dom";
 
-type CURRENT_SCREEN = "LOGIN" | "REGISTER" | "FORGOT_PASSWORD";
+export type AuthViewType =
+    | 'sign_in'
+    | 'sign_up'
+    | 'forgotten_password'
+    | 'magic_link'
+    | 'update_password'
 
 const AuthScreen = () => {
-    const [currentScreen, setCurrentScreen] = useState<CURRENT_SCREEN>("LOGIN");
-    const {user} = useSelector((state: RootState) => state.application);
-    const location = useLocation();
+    const [authView, setAuthView] = useState<AuthViewType>('sign_in');
 
-    if (user) {
-        return <Navigate to={"/drink"} state={{from: location}}/>
-    } else if (currentScreen === "LOGIN") {
-        return <LoginScreen goToRegister={() => setCurrentScreen("REGISTER")}
-                            goToForgotPassword={() => setCurrentScreen("FORGOT_PASSWORD")}/>
-    } else if (currentScreen === "REGISTER") {
-        return <RegisterScreen goToLogin={() => setCurrentScreen("LOGIN")}/>
-    } else {
-        return <ForgotPasswordScreen goToLogin={() => setCurrentScreen("LOGIN")}/>
+    switch (authView) {
+        case "sign_in":
+            return <LoginScreen setAuthView={setAuthView}/>
+        case "sign_up":
+            return <RegisterScreen setAuthView={setAuthView}/>
+        case "forgotten_password":
+            return <ForgotPasswordScreen setAuthView={setAuthView}/>
+        default:
+            return null;
     }
 }
 export default AuthScreen;

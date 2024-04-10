@@ -1,18 +1,33 @@
-import React, { FormEvent, useEffect, useState } from "react";
-import { AppBar, Avatar, Button, Dialog, IconButton, List, ListItem, ListItemAvatar, ListItemSecondaryAction, ListItemText, ListSubheader, TextField, Toolbar, Typography } from "@mui/material"
+import React, {FormEvent, useEffect, useState} from "react";
+import {
+    AppBar,
+    Avatar,
+    Button,
+    Dialog,
+    IconButton,
+    List,
+    ListItem,
+    ListItemAvatar,
+    ListItemSecondaryAction,
+    ListItemText,
+    ListSubheader,
+    TextField,
+    Toolbar,
+    Typography
+} from "@mui/material"
 import CloseIcon from '@mui/icons-material/Close';
-import { Box } from "@mui/system";
+import {Box} from "@mui/system";
 import Checkbox from '@mui/material/Checkbox';
 import LocalDrinkIcon from '@mui/icons-material/LocalDrink';
 import EuroIcon from '@mui/icons-material/Euro';
 import InventoryIcon from '@mui/icons-material/Inventory';
 import FormatSizeIcon from '@mui/icons-material/FormatSize';
 import CropImageDialog from "../CropImageDialog";
-import { useClient } from "react-supabase";
-import { uuid } from "@supabase/gotrue-js/dist/module/lib/helpers";
-import { Check } from "@mui/icons-material";
-import { SlideUpTransition, dataURLtoFile, readFile } from "../../utils";
-import { Drink } from "../../types/supabaseTypes";
+import {useClient} from "react-supabase";
+import {Check} from "@mui/icons-material";
+import {dataURLtoFile, readFile, SlideUpTransition} from "../../utils";
+import {Drink} from "../../types/supabaseTypes";
+import {uuid} from "@supabase/supabase-js/dist/main/lib/helpers";
 
 type EditDrinkDialogProps = {
     drink: Drink,
@@ -56,7 +71,7 @@ const EditDrinkDialog = ({ drink, onDrinkEditFinished, open, handleClose, drinkH
             };
 
             if (croppedImage) {
-                var fileName = uuid() + ".jpg";
+                let fileName = uuid() + ".jpg";
 
                 const { data: uploadData, error } = await client
                     .storage

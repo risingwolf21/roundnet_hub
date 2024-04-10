@@ -63,7 +63,7 @@ class SupabaseEventRepository extends SupabaseRepository implements IEventReposi
         const {
             data,
             error
-        } = await this.client.from("events").select("*").eq("key", eventUpdate.key).gte("id", eventUpdate.id).order("id").returns<Event[]>();
+        } = await this.client.from("events").select("*").eq("key", eventUpdate.key ?? '').gte("id", eventUpdate.id).order("id").returns<Event[]>();
 
         if (!data || error) {
             return {

@@ -1,7 +1,6 @@
 import {Container, Grid, Typography} from "@mui/material";
 import * as React from 'react';
-import {BrowserRouter, Navigate, Route, Routes} from 'react-router-dom';
-import AuthScreen from './components/AuthScreen';
+import {BrowserRouter, Navigate, Route} from 'react-router-dom';
 import CustomBottomNavigation from './components/BottomNavigation';
 import Browse from './components/Browse';
 import {LoadingScreen} from "./components/LoadingScreen";
@@ -14,9 +13,10 @@ import ExecuteEdgeFunctions from "./components/admin/ExecuteEdgeFunctions";
 import NotificationsScreenProvider from "./components/NotificationsScreen";
 import {useInitialFetch} from "./components/InitialFetch";
 import NotVerifiedScreen from "./components/NotVerifiedScreen";
-import ProtectedRoute from "./components/ProtectedRoute";
-import {AuthStateListener} from "./components/AuthStateListener";
+import {AuthGate} from "./components/AuthGate";
 import {SupabaseClient} from "./components/SupabaseClient";
+import {SentryRoutes} from "./index";
+import {HOMEPAGE} from "./constants";
 
 const FeatureNotAvailable = React.lazy(() => import('./components/FeatureNotAvailable'));
 const HistoryScreenProvider = React.lazy(() => import('./components/HistoryScreen'));
@@ -41,7 +41,6 @@ const App = () => {
 
     useOneSignal();
     useInitialFetch();
-
     const {isUpdateAvailable, updateServiceWorker} = useServiceWorker();
 
     if (isUpdateAvailable)
@@ -55,13 +54,12 @@ const App = () => {
             </Container>
         }
         <BrowserRouter>
-            <AuthStateListener>
+            <AuthGate>
                 <React.Suspense fallback={<LoadingScreen/>}>
-                    <Routes>
-                        <Route path='/' element={<Navigate replace to={"/drinks"}/>}/>
-                        <Route path='*' element={<Navigate replace to={"/drinks"}/>}/>
+                    <SentryRoutes>
+                        <Route path='/' element={<Navigate replace to={`/${HOMEPAGE}`}/>}/>
+                        <Route path='*' element={<Navigate replace to={`/${HOMEPAGE}`}/>}/>
 
-                        <Route path='/auth' element={<AuthScreen/>}/>
                         <Route path='/reset-password' element={<ResetPasswordScreen/>}/>
                         <Route path='/not-verified' element={<NotVerifiedScreen/>}/>
 
@@ -71,49 +69,49 @@ const App = () => {
 
                         <Route path='/browse' element={<Browse/>}/>
                         <Route path='/browse-admin' element={<BrowseAdmin/>}/>
-                        <Route path="/drinks" element={<ProtectedRoute><DrinkListScreenProvider/></ProtectedRoute>}/>
+                        <Route path="/drinks" element={<DrinkListScreenProvider/>}/>
                         <Route path="/user"
-                               element={<ProtectedRoute><UserScreenProvider/></ProtectedRoute>}/>
+                               element={<UserScreenProvider/>}/>
                         <Route path="/user/:userId"
-                               element={<ProtectedRoute><ProfileScreen/></ProtectedRoute>}/>
+                               element={<ProfileScreen/>}/>
                         <Route path="/history"
-                               element={<ProtectedRoute><HistoryScreenProvider/></ProtectedRoute>}/>
+                               element={<HistoryScreenProvider/>}/>
                         <Route path="/payments"
-                               element={<ProtectedRoute><PayDrinksScreenProvider/></ProtectedRoute>}/>
+                               element={<PayDrinksScreenProvider/>}/>
                         <Route path="/keys"
-                               element={<ProtectedRoute><KeyHolderScreenProvider/></ProtectedRoute>}/>
+                               element={<KeyHolderScreenProvider/>}/>
 
                         <Route path="/notifications"
-                               element={<ProtectedRoute><NotificationsScreenProvider/></ProtectedRoute>}/>
+                               element={<NotificationsScreenProvider/>}/>
 
                         <Route path="/trainer/groups"
-                               element={<ProtectedRoute><ManageGroupsProvider/></ProtectedRoute>}/>
+                               element={<ManageGroupsProvider/>}/>
                         <Route path="/trainer/groups/:id"
-                               element={<ProtectedRoute><GroupInformationProvider/></ProtectedRoute>}/>
-                        <Route path="/training" element={<ProtectedRoute><EventScreenProvider/></ProtectedRoute>}/>
+                               element={<GroupInformationProvider/>}/>
+                        <Route path="/training" element={<EventScreenProvider/>}/>
                         <Route path="/training/event/:selectedEventId"
-                               element={<ProtectedRoute><EventInformationProvider/></ProtectedRoute>}/>
+                               element={<EventInformationProvider/>}/>
                         <Route path="/training/createOrUpdate/:option"
-                               element={<ProtectedRoute><CreateEventProvider/></ProtectedRoute>}/>
+                               element={<CreateEventProvider/>}/>
                         <Route path='/admin/drinks'
-                               element={<ProtectedRoute><AdminDrinkListProvider/></ProtectedRoute>}/>
+                               element={<AdminDrinkListProvider/>}/>
                         <Route path="/admin/drinks/history"
-                               element={<ProtectedRoute><AdminHistoryScreenProvider/></ProtectedRoute>}/>
+                               element={<AdminHistoryScreenProvider/>}/>
                         <Route path='/admin/drinks/payments'
-                               element={<ProtectedRoute><PaymentsPendingAdmin/></ProtectedRoute>}/>
+                               element={<PaymentsPendingAdmin/>}/>
                         <Route path='/admin/drinks/stocks'
-                               element={<ProtectedRoute><DrinkStockUpdateScreen/></ProtectedRoute>}/>
+                               element={<DrinkStockUpdateScreen/>}/>
                         <Route path='/admin/drinks/analyze'
-                               element={<ProtectedRoute><AnalyzeDrinkStockHistoryProvider/></ProtectedRoute>}/>
-                        <Route path='/admin/users' element={<ProtectedRoute><AdminUserListProvider/></ProtectedRoute>}/>
+                               element={<AnalyzeDrinkStockHistoryProvider/>}/>
+                        <Route path='/admin/users' element={<AdminUserListProvider/>}/>
                         <Route path='/admin/edgeFunctions'
-                               element={<ProtectedRoute><ExecuteEdgeFunctions/></ProtectedRoute>}/>
-                        <Route path='/admin/supabase' element={<ProtectedRoute><SupabaseClient/></ProtectedRoute>}/>
-                    </Routes>
+                               element={<ExecuteEdgeFunctions/>}/>
+                        <Route path='/admin/supabase' element={<SupabaseClient/>}/>
+                    </SentryRoutes>
                 </React.Suspense>
                 <div style={{width: "100%", height: "56px"}}/>
                 <CustomBottomNavigation/>
-            </AuthStateListener>
+            </AuthGate>
         </BrowserRouter>
     </Grid>
 }

@@ -1,23 +1,23 @@
-import { Tune } from "@mui/icons-material";
+import {Tune} from "@mui/icons-material";
 import CheckIcon from '@mui/icons-material/Check';
-import { Box, Checkbox, CircularProgress, Fab, List, ListItem, ListItemAvatar, ListItemText } from "@mui/material";
-import { captureException } from "@sentry/react";
-import React, { useEffect, useState } from "react";
-import { useClient } from "react-supabase";
-import { AlertMessage, AlertSnackbar } from "src/components/AlertSnackbar";
+import {Box, Checkbox, CircularProgress, Fab, List, ListItem, ListItemAvatar, ListItemText} from "@mui/material";
+import {captureException} from "@sentry/react";
+import React, {useEffect, useState} from "react";
+import {useClient} from "react-supabase";
+import {AlertMessage, AlertSnackbar} from "src/components/AlertSnackbar";
 import CustomAppBar from "src/components/AppBar";
-import { LoadingIndicator } from "src/components/LoadingIndicator";
-import { onDrinkDeleted, onDrinkInserted, onDrinkUpdated } from "src/redux/drinksSlice";
-import { Drink, DrinkCounter, DrinkInsert, DrinkUpdate, ProductType } from "src/types/supabaseTypes";
-import { MultiplePaymentsError, nameOfProductType } from "src/utils";
-import { Error } from "../Error";
-import { SwipeableDialog } from "../SwipeableDialog";
+import {LoadingIndicator} from "src/components/LoadingIndicator";
+import {onDrinkDeleted, onDrinkInserted, onDrinkUpdated} from "src/redux/drinksSlice";
+import {Drink, DrinkCounter, DrinkInsert, DrinkUpdate, ProductType} from "src/types/supabaseTypes";
+import {MultiplePaymentsError, nameOfProductType} from "src/utils";
+import {Error} from "../Error";
+import {SwipeableDialog} from "../SwipeableDialog";
 import DrinkList from "./DrinkList";
-import { DrinkListScreenProps } from "./types";
+import {DrinkListScreenProps} from "./types";
 
-const SUCCESS_MESSAGE_INFO: AlertMessage = { message: "Getränke erfolgreich gebucht!", severity: "success" };
+const SUCCESS_MESSAGE_INFO: AlertMessage = {message: "Getränke erfolgreich gebucht!", severity: "success"};
 
-const DrinkListScreen = ({ repository, user, drinks, drinksLoading, drinksError, dispatch }: DrinkListScreenProps) => {
+const DrinkListScreen = ({repository, user, drinks, drinksLoading, drinksError, dispatch}: DrinkListScreenProps) => {
 
     const [addedDrinks, setAddedDrinks] = useState<DrinkCounter[]>([]);
     const [loading, setLoading] = useState(false);
@@ -28,9 +28,21 @@ const DrinkListScreen = ({ repository, user, drinks, drinksLoading, drinksError,
 
     useEffect(() => {
         let subscription = client.channel("public:drink")
-            .on<DrinkUpdate>("postgres_changes", { event: "UPDATE", schema: "public", table: "drink" }, (payload) => dispatch(onDrinkUpdated(payload.new)))
-            .on<DrinkInsert>("postgres_changes", { event: "INSERT", schema: "public", table: "drink" }, (payload) => dispatch(onDrinkInserted(payload.new)))
-            .on("postgres_changes", { event: "DELETE", schema: "public", table: "drink" }, (payload) => dispatch(onDrinkDeleted(payload.old.id)))
+            .on<DrinkUpdate>("postgres_changes", {
+                event: "UPDATE",
+                schema: "public",
+                table: "drink"
+            }, (payload) => dispatch(onDrinkUpdated(payload.new)))
+            .on<DrinkInsert>("postgres_changes", {
+                event: "INSERT",
+                schema: "public",
+                table: "drink"
+            }, (payload) => dispatch(onDrinkInserted(payload.new)))
+            .on("postgres_changes", {
+                event: "DELETE",
+                schema: "public",
+                table: "drink"
+            }, (payload) => dispatch(onDrinkDeleted(payload.old.id)))
             .subscribe();
         return () => {
             subscription.unsubscribe();
@@ -39,7 +51,7 @@ const DrinkListScreen = ({ repository, user, drinks, drinksLoading, drinksError,
 
     useEffect(() => {
         if (drinksError) {
-            setAlertInfo({ message: drinksError, severity: "error" });
+            setAlertInfo({message: drinksError, severity: "error"});
         }
     }, [drinksError]);
 
@@ -57,10 +69,10 @@ const DrinkListScreen = ({ repository, user, drinks, drinksLoading, drinksError,
                 const paymentCreation = await repository.insertNewPayment(user.userId);
 
                 if (!paymentCreation || (paymentCreation && paymentCreation.error))
-                    throw Error({ message: paymentCreation?.error?.message ?? "Could not create payment" });
+                    throw Error({message: paymentCreation?.error?.message ?? "Could not create payment"});
 
                 if (!paymentCreation.data.id)
-                    throw Error({ message: "Could not create payment" });
+                    throw Error({message: "Could not create payment"});
 
                 paymentId = paymentCreation.data.id;
             } else if (result.data && result.data.length > 1) {
@@ -71,28 +83,28 @@ const DrinkListScreen = ({ repository, user, drinks, drinksLoading, drinksError,
                     scope.setExtra("user", JSON.stringify(user));
                     return scope;
                 });
-                confirmDrinksDialog({ message: "There were multiple payments found. Please contact your admin! Your drinks still have been added to your current open payment.", severity: "warning" });
+                confirmDrinksDialog({
+                    message: "There were multiple payments found. Please contact your admin! Your drinks still have been added to your current open payment.",
+                    severity: "warning"
+                });
             } else {
                 paymentId = result.data[0].id;
             }
 
             if (!paymentId)
-                throw Error({ message: "Payment ID could not be found" })
+                throw Error({message: "Payment ID could not be found"})
 
-            const insertResult = await repository.insertHistoryItems(Object.values(addedDrinks), user.userId, paymentId)
-            if (!insertResult || insertResult.error) {
-                throw Error({ message: "Drink could not be added to your history. [" + insertResult?.error + "]" });
-            }
-
-            setLoading(false);
-            setAddedDrinks([]);
-            confirmDrinksDialog(SUCCESS_MESSAGE_INFO);
-        }
-        catch (error) {
+            repository.insertHistoryItems(Object.values(addedDrinks), user.userId, paymentId)
+                .then(result => {
+                    setLoading(false);
+                    setAddedDrinks([]);
+                    confirmDrinksDialog(SUCCESS_MESSAGE_INFO);
+                });
+        } catch (error) {
             setLoading(false);
             let message = (error as Error).message;
-            confirmDrinksDialog({ message, severity: "error" });
-            captureException(Error({ message }), (scope) => {
+            confirmDrinksDialog({message, severity: "error"});
+            captureException(Error({message}), (scope) => {
                 scope.clear();
                 scope.setExtra("drinks", JSON.stringify(addedDrinks));
                 return scope;
@@ -105,9 +117,9 @@ const DrinkListScreen = ({ repository, user, drinks, drinksLoading, drinksError,
         if (drink.id in temp) {
             temp[drink.id].count = temp[drink.id].count + 1;
         } else {
-            temp[drink.id] = { count: 1, ...drink };
+            temp[drink.id] = {count: 1, ...drink};
         }
-        setAddedDrinks({ ...temp });
+        setAddedDrinks({...temp});
     }
 
     const onRemoveDrinkClick = (drink: Drink) => {
@@ -119,7 +131,7 @@ const DrinkListScreen = ({ repository, user, drinks, drinksLoading, drinksError,
                 temp[drink.id].count = temp[drink.id].count - 1;
             }
         }
-        setAddedDrinks({ ...temp });
+        setAddedDrinks({...temp});
     }
 
 
@@ -130,35 +142,41 @@ const DrinkListScreen = ({ repository, user, drinks, drinksLoading, drinksError,
     }
 
     return <Box>
-        <CustomAppBar />
-        <LoadingIndicator loading={drinksLoading} />
-        <DrinkList drinks={drinks} onAddDrinkClick={onAddDrinkClick} onRemoveDrinkClick={onRemoveDrinkClick} addedDrinks={addedDrinks} visibleTypes={visibleTypes} />
+        <CustomAppBar/>
+        <LoadingIndicator loading={drinksLoading}/>
+        <DrinkList drinks={drinks} onAddDrinkClick={onAddDrinkClick} onRemoveDrinkClick={onRemoveDrinkClick}
+                   addedDrinks={addedDrinks} visibleTypes={visibleTypes}/>
         {
             Object.values(addedDrinks).length > 0
-                ? <Fab sx={{ background: "#66bb6a", position: "fixed", right: "16px", bottom: "56px", mb: "16px" }} onClick={confirmDrinks}>
+                ? <Fab sx={{background: "#66bb6a", position: "fixed", right: "16px", bottom: "56px", mb: "16px"}}
+                       onClick={confirmDrinks}>
                     {
-                        loading ? <CircularProgress /> : <CheckIcon sx={{ color: "white" }} />
+                        loading ? <CircularProgress/> : <CheckIcon sx={{color: "white"}}/>
                     }
                 </Fab>
-                : <Fab sx={{ background: "#66bb6a", position: "fixed", right: "16px", bottom: "56px", mb: "16px" }} onClick={() => setFilterDialogOpen(true)}>
-                    <Tune sx={{ color: "white" }} />
+                : <Fab sx={{background: "#66bb6a", position: "fixed", right: "16px", bottom: "56px", mb: "16px"}}
+                       onClick={() => setFilterDialogOpen(true)}>
+                    <Tune sx={{color: "white"}}/>
                 </Fab>
         }
 
-        <SwipeableDialog open={filterDialogOpen} setOpen={setFilterDialogOpen} onClose={() => setFilterDialogOpen(false)} title="Filter">
+        <SwipeableDialog open={filterDialogOpen} setOpen={setFilterDialogOpen}
+                         onClose={() => setFilterDialogOpen(false)} title="Filter">
             <List>
                 {
-                    [...new Set(drinks.map(x => x.type))].sort().map(x => <ListItem key={x} divider disabled={x === "Drink"}>
+                    [...new Set(drinks.map(x => x.type))].sort().map(x => <ListItem key={x} divider
+                                                                                    disabled={x === "Drink"}>
                         <ListItemAvatar>
-                            <Checkbox disabled={x === "Drink"} checked={visibleTypes.some(y => y === x)} onChange={(e) => changeVisibleTypes(e, x)} />
+                            <Checkbox disabled={x === "Drink"} checked={visibleTypes.some(y => y === x)}
+                                      onChange={(e) => changeVisibleTypes(e, x)}/>
                         </ListItemAvatar>
-                        <ListItemText primary={nameOfProductType(x)} />
+                        <ListItemText primary={nameOfProductType(x)}/>
                     </ListItem>)
                 }
             </List>
         </SwipeableDialog>
 
-        <AlertSnackbar close={() => setAlertInfo(null)} alertInfo={alertInfo} />
+        <AlertSnackbar autoHideDuration={1500} close={() => setAlertInfo(null)} alertInfo={alertInfo}/>
 
     </Box>
 }

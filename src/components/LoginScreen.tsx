@@ -1,4 +1,4 @@
-import {FormEvent, useState} from "react"
+import React, {FormEvent, useState} from "react"
 import Button from '@mui/material/Button';
 import CssBaseline from '@mui/material/CssBaseline';
 import TextField from '@mui/material/TextField';
@@ -9,9 +9,8 @@ import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
 import Logo from "../images/Karlsruher_Kojoten_Logo.svg";
 import {supabase} from "./services/supabase/supabaseClient";
-import {useNavigate} from "react-router-dom";
-import React from "react";
 import {TABLE_USER} from "../constants";
+import {AuthViewType} from "./AuthScreen";
 
 type Credentials = {
     email: string,
@@ -19,11 +18,10 @@ type Credentials = {
 }
 
 type LoginProps = {
-    goToRegister: () => void,
-    goToForgotPassword: () => void
+    setAuthView: (view: AuthViewType) => void
 }
 
-const LoginScreen = ({goToRegister, goToForgotPassword}: LoginProps) => {
+const LoginScreen = ({setAuthView}: LoginProps) => {
 
     const [errorMessage, setErrorMessage] = useState("");
 
@@ -108,12 +106,12 @@ const LoginScreen = ({goToRegister, goToForgotPassword}: LoginProps) => {
                     </Button>
                     <Grid container>
                         <Grid item xs>
-                            <Link href="#" variant="body2" onClick={goToForgotPassword}>
+                            <Link href="#" variant="body2" onClick={() => setAuthView('forgotten_password')}>
                                 Passwort vergessen?
                             </Link>
                         </Grid>
                         <Grid item>
-                            <Link href="#" variant="body2" onClick={goToRegister}>
+                            <Link href="#" variant="body2" onClick={() => setAuthView('sign_up')}>
                                 {"Noch keinen Account?"}
                             </Link>
                         </Grid>

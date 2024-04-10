@@ -112,7 +112,7 @@ export class SupabaseDrinkRepository extends SupabaseRepository implements IDrin
     }
 
     async insertHistoryItems(drinks: DrinkCounter[], userId: string, paymentId: number): Promise<PostgrestSingleResponse<any>> {
-        return new Promise((resolve, reject) => this.client
+        return this.client
             .from(TABLE_HISTORY)
             .insert(drinks.map((drink) => {
                 return {
@@ -124,13 +124,6 @@ export class SupabaseDrinkRepository extends SupabaseRepository implements IDrin
                 }
             }))
             .throwOnError()
-            .then(result => {
-                if (!result.error && result.data)
-                    resolve(result)
-                else
-                    reject(result.error)
-            })
-        )
     }
 
     async updateHistoryItem(id: number, count: number, amount: number): Promise<PostgrestSingleResponse<any>> {
