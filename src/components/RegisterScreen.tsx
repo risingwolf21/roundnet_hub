@@ -12,6 +12,7 @@ import {supabase} from "./services/supabase/supabaseClient";
 import {TABLE_USER} from "../constants";
 import {captureException} from "@sentry/react";
 import {RegistrationError} from "../utils";
+import {AuthViewType} from "./AuthScreen";
 
 type RegisterProps = {
     email: string,
@@ -20,10 +21,10 @@ type RegisterProps = {
 }
 
 type RegisterScreenProps = {
-    goToLogin: () => void
+    setAuthView: (view: AuthViewType) => void
 }
 
-const RegisterScreen = ({goToLogin}: RegisterScreenProps) => {
+const RegisterScreen = ({setAuthView}: RegisterScreenProps) => {
 
     const [errorMessage, setErrorMessage] = useState("");
 
@@ -181,7 +182,7 @@ const RegisterScreen = ({goToLogin}: RegisterScreenProps) => {
                     </Button>
                     <Grid container>
                         <Grid item xs>
-                            <Link href="#" variant="body2" onClick={goToLogin}>
+                            <Link href="#" variant="body2" onClick={() => setAuthView('sign_in')}>
                                 Already have an account? Sign in here!
                             </Link>
                         </Grid>
