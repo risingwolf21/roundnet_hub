@@ -1,8 +1,8 @@
-import { PayloadAction, createAsyncThunk, createEntityAdapter, createSlice } from "@reduxjs/toolkit";
-import { toInteger } from "lodash";
-import { IEventRepository } from "src/repository/IEventRepository";
-import { Comment, EventCommentUpdate, FullComment, User } from "src/types/supabaseTypes";
-import { PostgrestError } from "@supabase/supabase-js";
+import {createAsyncThunk, createEntityAdapter, createSlice, PayloadAction} from "@reduxjs/toolkit";
+import {toInteger} from "lodash";
+import {Comment, EventCommentUpdate, FullComment, User} from "src/types/supabaseTypes";
+import {PostgrestError} from "@supabase/supabase-js";
+import {SupabaseEventRepository} from "../../components/services/supabase/EventRepository";
 
 type SliceComments = {
     id: number,
@@ -116,17 +116,21 @@ const eventCommentsSlice = createSlice({
     },
 });
 
-type UpsertCommentProps = { repository: IEventRepository, user: User, eventId: number, comment: string, created_at: string }
+type UpsertCommentProps = { user: User, eventId: number, comment: string, created_at: string }
 type DataErrorReturned = { data: Comment | null, error: PostgrestError | null }
-export const upsertCommentToEventAsync = createAsyncThunk("upsertCommentToEventAsync", async ({ repository, user, eventId, comment }: UpsertCommentProps) => {
-    const response = await repository.insertComment(user, eventId, comment);
+export const upsertCommentToEventAsync = createAsyncThunk("upsertCommentToEventAsync", async ({
+                                                                                                  user,
+                                                                                                  eventId,
+                                                                                                  comment
+                                                                                              }: UpsertCommentProps) => {
+    const response = await SupabaseEventRepository.insertComment(user, eventId, comment);
 
     return { data: response.data, error: response.error, commmentId: response.data?.id } as DataErrorReturned;
 });
 
-type ClientEventId = { repository: IEventRepository, eventId: number }
-export const fetchEventCommentsAsync = createAsyncThunk("fetchEventCommentsAsync", async ({ repository, eventId }: ClientEventId) => {
-    const attendance = await repository.fetchEventComments(eventId);
+type ClientEventId = { eventId: number }
+export const fetchEventCommentsAsync = createAsyncThunk("fetchEventCommentsAsync", async ({eventId}: ClientEventId) => {
+    const attendance = await SupabaseEventRepository.fetchEventComments(eventId);
     return { data: attendance.data, eventId };
 });
 

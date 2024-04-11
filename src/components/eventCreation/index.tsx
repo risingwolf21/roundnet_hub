@@ -42,6 +42,7 @@ import {SelectGroupDialog} from "./SelectGroupDialog";
 import {dayjsFromDb, formatDateToDatabase} from "src/utils";
 import {NumberInput} from "../mui/NumberInput";
 import {LoadingIndicator} from "../LoadingIndicator";
+import {SupabaseEventRepository} from "../services/supabase/EventRepository";
 
 const emptyEvent = {
     title: "",
@@ -53,7 +54,7 @@ const emptyEvent = {
     maxAttendees: -1,
 } as FullEvent;
 
-const CreateEvent = ({t, eventToEdit, repository, option}: CreateEventProps) => {
+const CreateEvent = ({t, eventToEdit, option}: CreateEventProps) => {
 
     const navigate = useNavigate();
 
@@ -123,16 +124,16 @@ const CreateEvent = ({t, eventToEdit, repository, option}: CreateEventProps) => 
 
             if (option === "InsertEvent") {
                 // create new event as there is no option
-                const {error} = await repository.insertEvent(event)
+                const {error} = await SupabaseEventRepository.insertEvent(event)
 
                 if (error) throw error;
             } else if (option === "UpdateSingle") {
-                const {error} = await repository.updateEvent(event.id ?? -1, event)
+                const {error} = await SupabaseEventRepository.updateEvent(event.id ?? -1, event)
 
                 if (error) throw error;
 
             } else if (option === "UpdateRecurrence") {
-                const {error} = await repository.updateEventAndAllRecurrences(event)
+                const {error} = await SupabaseEventRepository.updateEventAndAllRecurrences(event)
 
                 if (error) throw error;
             } else {

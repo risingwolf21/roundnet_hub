@@ -1,7 +1,5 @@
 import {useEffect} from "react";
 import {RootState, useAppDispatch} from "../redux/store";
-import {useDependency} from "../hooks/useDependency";
-import {IKeysRepository} from "../repository/IKeysRepository";
 import {useClient} from "react-supabase";
 import {EventAttendanceUpdate} from "../types/supabaseTypes";
 import {useSelector} from "react-redux";
@@ -14,7 +12,6 @@ type Props = {
 export const InitialLoader = ({children}: Props) => {
 
     const dispatch = useAppDispatch();
-    const keysRepository = useDependency<IKeysRepository>("IKeysRepository");
     const client = useClient();
     const {user} = useSelector((state: RootState) => state.application);
 

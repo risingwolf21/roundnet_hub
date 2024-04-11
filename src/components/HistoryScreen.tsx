@@ -13,10 +13,8 @@ import moment from "moment/moment";
 import React, {useEffect, useState} from "react";
 import {useSelector} from "react-redux";
 import {useClient} from "react-supabase";
-import {useDependency} from "../hooks/useDependency";
 import {fetchHistoryAsync, onHistoryDelete, onHistoryInsert, onHistoryUpdate} from "../redux/drinksSlice";
 import {RootState, useAppDispatch} from "../redux/store";
-import {IDrinkRepository} from "../repository/IDrinkRepository";
 import {Drink, FullHistory, User} from "../types/supabaseTypes";
 import {groupBy} from "../utils";
 import {AlertMessage, AlertSnackbar} from "./AlertSnackbar";
@@ -24,6 +22,7 @@ import CustomAppBar from "./AppBar";
 import EditHistoryEntryDialog from "./EditHistoryEntryDialog";
 import {InfiniteScrollList} from "./InfiniteScrollList";
 import {captureException} from "@sentry/react";
+import {SupabaseDrinkRepository} from "./services/supabase/DrinkRepository";
 
 export type FullHistoryUpdate = FullHistory & {
     newCount: number
@@ -55,7 +54,6 @@ const HistoryItem = ({items, header, onClick}: HistoryItemProps) => {
 }
 
 const HistoryScreenProvider = () => {
-    const drinksRepository = useDependency<IDrinkRepository>("IDrinkRepository");
     const {
         history,
         drinks,
@@ -65,7 +63,7 @@ const HistoryScreenProvider = () => {
     } = useSelector((state: RootState) => state.drinks);
     const {user} = useSelector((state: RootState) => state.application);
 
-    if (!drinksRepository || !user)
+    if (!user)
         return <AlertSnackbar close={() => {
         }} alertInfo={{message: "Fatal error occured. Repository or user was null!", severity: "error"}}/>
 
@@ -75,8 +73,7 @@ const HistoryScreenProvider = () => {
         historyEndReached={historyEndReached}
         historyError={historyError ?? ""}
         historyLoading={historyLoading}
-        user={user}
-        drinksRepository={drinksRepository}/>
+        user={user}/>
 }
 
 type HistoryScreenProps = {
@@ -85,12 +82,10 @@ type HistoryScreenProps = {
     historyLoading: boolean,
     historyEndReached: boolean,
     historyError: string,
-    user: User,
-    drinksRepository: IDrinkRepository
+    user: User
 }
 
 const HistoryScreen = ({
-                           drinksRepository,
                            history,
                            drinks,
                            historyLoading,
@@ -144,14 +139,14 @@ const HistoryScreen = ({
 
     useEffect(() => {
         fetchForPage(0);
-    }, [drinksRepository]);
+    }, []);
 
     const fetchForPage = (page: number) => {
-        dispatch(fetchHistoryAsync({repository: drinksRepository, userId: user.userId, page, count: 20}))
+        dispatch(fetchHistoryAsync({userId: user.userId, page, count: 20}))
     }
 
     const handleEntryUpdate = (newEntry: FullHistory) => {
-        drinksRepository.updateHistoryItem(newEntry.id, newEntry.count ?? 0, (newEntry.count ?? 0) * (newEntry.drink.price ?? 1)).then(result => {
+        SupabaseDrinkRepository.updateHistoryItem(newEntry.id, newEntry.count ?? 0, (newEntry.count ?? 0) * (newEntry.drink.price ?? 1)).then(result => {
             setEditHistoryEntryOpen(false);
         }).catch(error => {
             captureException(error);

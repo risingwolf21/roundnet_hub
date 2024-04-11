@@ -11,7 +11,6 @@ import {
     PaymentState
 } from "../types/supabaseTypes";
 import {TABLE_DRINK, TABLE_HISTORY, TABLE_PAYMENTS} from "../constants";
-import {DrinkStockType} from "../components/procure/AnalyzeDrinkStockHistory";
 
 export interface IDrinkRepository {
     fetchDrinksToPay(userId: string): Promise<PostgrestSingleResponse<PaymentHistory[]>>
@@ -32,20 +31,10 @@ export interface IDrinkRepository {
 
     updateDrinkStock(drinkId: number, stock: number): Promise<PostgrestSingleResponse<any>>
 
-    fetchHistoryStockType(): Promise<PostgrestSingleResponse<DrinkStockType[]>>
 }
 
 @injectable()
 export class SupabaseDrinkRepository extends SupabaseRepository implements IDrinkRepository {
-
-    async fetchHistoryStockType(): Promise<PostgrestSingleResponse<DrinkStockType[]>> {
-        return this.client
-            .from(TABLE_HISTORY)
-            .select("count, amount, created_at, drink (id, name, price, stock), user(displayName)")
-            .returns<DrinkStockType[]>()
-            .order('id', {ascending: false})
-            .throwOnError();
-    }
 
     async updateDrinkStock(drinkId: number, stock: number): Promise<PostgrestSingleResponse<any>> {
         return this.client.from(TABLE_DRINK)

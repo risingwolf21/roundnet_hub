@@ -14,10 +14,11 @@ import {Error} from "../Error";
 import {SwipeableDialog} from "../SwipeableDialog";
 import DrinkList from "./DrinkList";
 import {DrinkListScreenProps} from "./types";
+import {SupabaseDrinkRepository} from "../services/supabase/DrinkRepository";
 
 const SUCCESS_MESSAGE_INFO: AlertMessage = {message: "Getränke erfolgreich gebucht!", severity: "success"};
 
-const DrinkListScreen = ({repository, user, drinks, drinksLoading, drinksError, dispatch}: DrinkListScreenProps) => {
+const DrinkListScreen = ({user, drinks, drinksLoading, drinksError, dispatch}: DrinkListScreenProps) => {
 
     const [addedDrinks, setAddedDrinks] = useState<DrinkCounter[]>([]);
     const [loading, setLoading] = useState(false);
@@ -64,9 +65,9 @@ const DrinkListScreen = ({repository, user, drinks, drinksLoading, drinksError, 
         setLoading(true);
         try {
             let paymentId: number;
-            const result = await repository.fetchCurrentPaymentForUser(user.userId)
+            const result = await SupabaseDrinkRepository.fetchCurrentPaymentForUser(user.userId)
             if (!result || !result.data || result.data.length < 1) {
-                const paymentCreation = await repository.insertNewPayment(user.userId);
+                const paymentCreation = await SupabaseDrinkRepository.insertNewPayment(user.userId);
 
                 if (!paymentCreation || (paymentCreation && paymentCreation.error))
                     throw Error({message: paymentCreation?.error?.message ?? "Could not create payment"});
@@ -94,7 +95,7 @@ const DrinkListScreen = ({repository, user, drinks, drinksLoading, drinksError, 
             if (!paymentId)
                 throw Error({message: "Payment ID could not be found"})
 
-            repository.insertHistoryItems(Object.values(addedDrinks), user.userId, paymentId)
+            SupabaseDrinkRepository.insertHistoryItems(Object.values(addedDrinks), user.userId, paymentId)
                 .then(result => {
                     setLoading(false);
                     setAddedDrinks([]);

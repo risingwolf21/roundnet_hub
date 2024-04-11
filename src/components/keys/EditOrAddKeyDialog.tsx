@@ -1,13 +1,15 @@
 import CloseIcon from '@mui/icons-material/Close';
 import {
     Alert,
-    AppBar, Avatar,
+    AppBar,
+    Avatar,
     Button,
     Dialog,
     IconButton,
     List,
     ListItem,
-    ListItemAvatar, Snackbar,
+    ListItemAvatar,
+    Snackbar,
     TextField,
     Toolbar,
     Typography
@@ -15,12 +17,11 @@ import {
 import {Box} from "@mui/system";
 import React, {useEffect, useState} from "react";
 import {useSelector} from "react-redux";
-import {useDependency} from "src/hooks/useDependency";
 import {RootState} from "src/redux/store";
 import {SlideUpTransition} from "../../utils";
-import {IKeysRepository} from "../../repository/IKeysRepository";
 import {Key, KeyUpdate} from "../../types/supabaseTypes";
 import KeyIcon from "@mui/icons-material/Key";
+import {SupabaseKeysRepository} from "../services/supabase/KeysRepository";
 
 type EditOrAddKeyDialogProps = {
     open: boolean,
@@ -30,7 +31,6 @@ type EditOrAddKeyDialogProps = {
 
 export const EditOrAddKeyDialog = ({open, handleClose, keyToEdit}: EditOrAddKeyDialogProps) => {
 
-    const repo = useDependency<IKeysRepository>("IKeysRepository");
     const user = useSelector((state: RootState) => state.application.user);
     const [currentKey, setCurrentKey] = useState<KeyUpdate>({
         id: keyToEdit.id,
@@ -56,11 +56,11 @@ export const EditOrAddKeyDialog = ({open, handleClose, keyToEdit}: EditOrAddKeyD
             setErrorSnackbar({message: "Der Schlüsselname ist zu kurz!", open: true});
             return;
         }
-        if (!user || !repo) {
+        if (!user) {
             setErrorSnackbar({message: "Something went wrong. Try again later!", open: true});
             return;
         }
-        const result = await repo.upsertKey({
+        const result = await SupabaseKeysRepository.upsertKey({
             id: currentKey.id,
             name: currentKey.name,
             color: currentKey.color

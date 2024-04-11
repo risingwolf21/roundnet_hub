@@ -1,4 +1,4 @@
-import {Euro, Group, GroupOutlined, History, Liquor, ShowChart, StorageOutlined} from "@mui/icons-material";
+import {Euro, Group, GroupOutlined, History, Liquor, StorageOutlined} from "@mui/icons-material";
 import {Avatar, Badge, Box, List, ListItemAvatar, ListItemButton, ListItemText} from "@mui/material";
 import {TFunction} from "i18next";
 import React from "react";
@@ -32,22 +32,6 @@ const entries = [
         translationKey: "manageDrinks",
         navigateTo: "/admin/drinks",
         icon: <Liquor/>,
-        avatarColor: "#88AEBF",
-        action: "edit",
-        ability: "drink"
-    },
-    {
-        translationKey: "manageDrinkStocks",
-        navigateTo: "/admin/drinks/stocks",
-        icon: <Liquor/>,
-        avatarColor: "#88AEBF",
-        action: "edit",
-        ability: "drink"
-    },
-    {
-        translationKey: "analyzeDrinkStocks",
-        navigateTo: "/admin/drinks/analyze",
-        icon: <ShowChart/>,
         avatarColor: "#88AEBF",
         action: "edit",
         ability: "drink"

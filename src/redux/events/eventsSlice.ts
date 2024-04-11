@@ -1,8 +1,8 @@
-import { PayloadAction, Update, createAsyncThunk, createEntityAdapter, createSlice } from "@reduxjs/toolkit";
-import { IEventRepository } from "src/repository/IEventRepository";
-import { Event, EventAttendance, EventUpdate, FullAttendance, FullEvent, Group, User } from "src/types/supabaseTypes";
-import { RootState } from "../store";
-import { onEventAttendanceUpdate, updateAttendanceAsync } from "./eventAttendanceSlice";
+import {createAsyncThunk, createEntityAdapter, createSlice, PayloadAction, Update} from "@reduxjs/toolkit";
+import {Event, EventAttendance, EventUpdate, FullAttendance, FullEvent, Group, User} from "src/types/supabaseTypes";
+import {RootState} from "../store";
+import {onEventAttendanceUpdate, updateAttendanceAsync} from "./eventAttendanceSlice";
+import {SupabaseEventRepository} from "../../components/services/supabase/EventRepository";
 
 export type SliceEvent = Event & {
     userAttendance: EventAttendance,
@@ -146,13 +146,12 @@ const eventsSlice = createSlice({
 type FetchEventsType = {
     user: User,
     page: number,
-    count: number,
-    repository: IEventRepository
+    count: number
 }
 
-export const fetchEventsAsync = createAsyncThunk("events", async ({ user, page = 0, count = 20, repository }: FetchEventsType) => {
-    const userGroups = await repository.fetchUserGroups(user);
-    const response = await repository.fetchEvents(user, userGroups.data?.map(x => x.group.id) ?? [], page, count);
+export const fetchEventsAsync = createAsyncThunk("events", async ({user, page = 0, count = 20}: FetchEventsType) => {
+    const userGroups = await SupabaseEventRepository.fetchUserGroups(user);
+    const response = await SupabaseEventRepository.fetchEvents(user, userGroups.data?.map(x => x.group.id) ?? [], page, count);
     return {
         entries: (response.data ?? []).map((x: FullEvent) => {
             return {
@@ -165,11 +164,16 @@ export const fetchEventsAsync = createAsyncThunk("events", async ({ user, page =
     };
 });
 
-export type ClientEventId = { repository: IEventRepository, eventId: number }
+export type ClientEventId = { eventId: number }
 
 
-export const fetchSingleEventAsync = createAsyncThunk("fetchSingleEventAsync", async ({ repository, eventId, userId }: ClientEventId & { userId: string }) => {
-    const response = await repository.fetchSingleEvent(eventId);
+export const fetchSingleEventAsync = createAsyncThunk("fetchSingleEventAsync", async ({
+                                                                                          eventId,
+                                                                                          userId
+                                                                                      }: ClientEventId & {
+    userId: string
+}) => {
+    const response = await SupabaseEventRepository.fetchSingleEvent(eventId);
     return {
         data: {
             ...response.data,

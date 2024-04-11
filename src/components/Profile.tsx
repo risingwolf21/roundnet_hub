@@ -12,28 +12,26 @@ import {
 import CustomAppBar from "./AppBar";
 import React, {useEffect, useState} from "react";
 import {AddPhotoAlternateOutlined, FiberManualRecord} from "@mui/icons-material";
-import {useDependency} from "src/hooks/useDependency";
-import {IUserRepository} from "src/repository/IUserRepository";
 import {useParams} from "react-router-dom";
 import {Group, UserWithGroups} from "../types/supabaseTypes";
 import {LoadingIndicator} from "./LoadingIndicator";
 import {useSelector} from "react-redux";
 import {RootState} from "../redux/store";
+import {SupabaseUserRepository} from "./services/supabase/UserRepository";
 
 const UserScreen = () => {
 
     const {userId} = useParams();
-    const repo = useDependency<IUserRepository>("IUserRepository");
     const {user} = useSelector((state: RootState) => state.application);
     const [loading, setLoading] = useState<boolean>(false);
     const [currentUser, setCurrentUser] = useState<UserWithGroups | null>(null);
     const [overlappingGroups, setOverlappingGroups] = useState<Group[]>([]);
 
     useEffect(() => {
-        if (userId && repo && user) {
+        if (userId && user) {
             setLoading(true);
-            repo.fetchUserWithGroups(userId).then(result => {
-                repo.fetchUserWithGroups(user.userId).then(userResult => {
+            SupabaseUserRepository.fetchUserWithGroups(userId).then(result => {
+                SupabaseUserRepository.fetchUserWithGroups(user.userId).then(userResult => {
                     setOverlappingGroups(result.data?.groups?.filter(x =>
                         userResult.data?.groups.some(y => y.id === x.id)) ?? [])
                     setCurrentUser(result.data);
@@ -41,7 +39,7 @@ const UserScreen = () => {
                 });
             });
         }
-    }, [repo, userId, user]);
+    }, [userId, user]);
 
     return <Grid
         width="100%">

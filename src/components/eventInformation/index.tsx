@@ -34,6 +34,7 @@ import EventInformationAttendance from "./EventInformationAttendance";
 import EventInformationComments from "./EventInformationComments";
 import {EditEventOptionsDialog} from "./EditEventOptionsDialog";
 import {isBefore} from "date-fns";
+import {SupabaseEventRepository} from "../services/supabase/EventRepository";
 
 const EventInformation = ({
                               dispatch,
@@ -42,7 +43,6 @@ const EventInformation = ({
                               error,
                               user,
                               selectedEventPlace,
-                              repository,
                               t,
                               attendance,
                               comments,
@@ -58,13 +58,13 @@ const EventInformation = ({
     const [anchorEl, setAnchorEl] = useState<EventTarget & HTMLButtonElement | null>(null);
 
     useEffect(() => {
-        dispatch(fetchEventAttendanceAsync({repository, eventId: selectedEvent.id}));
-        dispatch(fetchEventCommentsAsync({repository, eventId: selectedEvent.id}));
-    }, [dispatch, repository, selectedEvent.id]);
+        dispatch(fetchEventAttendanceAsync({eventId: selectedEvent.id}));
+        dispatch(fetchEventCommentsAsync({eventId: selectedEvent.id}));
+    }, [dispatch, selectedEvent.id]);
 
     const cancelTraining = async () => {
-        await repository.updateCancellationForEvent(selectedEvent.id, !selectedEvent.isCancelled)
-        dispatch(fetchSingleEventAsync({repository, eventId: selectedEvent.id, userId: user.userId}));
+        await SupabaseEventRepository.updateCancellationForEvent(selectedEvent.id, !selectedEvent.isCancelled)
+        dispatch(fetchSingleEventAsync({eventId: selectedEvent.id, userId: user.userId}));
         setCancelTrainingOpen(false);
     }
 
@@ -72,16 +72,16 @@ const EventInformation = ({
         if (!value) {
             return;
         } else if (value === "This Event") {
-            await repository.deleteEvent(selectedEvent.id);
+            await SupabaseEventRepository.deleteEvent(selectedEvent.id);
             navigate("/training", {replace: true});
         } else if (value === "This and following events") {
-            await repository.deleteEventAndUpcomingEvents(selectedEvent.id, selectedEvent.key, selectedEvent.startingDateTime)
+            await SupabaseEventRepository.deleteEventAndUpcomingEvents(selectedEvent.id, selectedEvent.key, selectedEvent.startingDateTime)
             navigate("/training", {replace: true});
         }
     }
 
     const updateAttendance = async (state: EventAttendance, oldState: EventAttendance) => {
-        dispatch(updateAttendanceAsync({repository, user, eventId: selectedEvent.id, state, oldState}));
+        dispatch(updateAttendanceAsync({user, eventId: selectedEvent.id, state, oldState}));
     }
 
     const handleCommentSubmit = (event: React.FormEvent<HTMLFormElement>) => {
@@ -93,7 +93,6 @@ const EventInformation = ({
             return;
 
         dispatch(upsertCommentToEventAsync({
-            repository,
             user,
             eventId: selectedEvent.id,
             comment: comment.toString(),

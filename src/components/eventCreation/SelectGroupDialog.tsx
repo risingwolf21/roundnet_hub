@@ -1,29 +1,40 @@
-import { FiberManualRecord } from "@mui/icons-material";
+import {FiberManualRecord} from "@mui/icons-material";
 import CloseIcon from '@mui/icons-material/Close';
-import { AppBar, Dialog, IconButton, List, ListItemAvatar, ListItemButton, ListItemText, Toolbar, Typography } from "@mui/material";
-import { Box } from "@mui/system";
-import React, { useEffect, useState } from "react";
-import { useSelector } from "react-redux";
-import { useDependency } from "src/hooks/useDependency";
-import { RootState } from "src/redux/store";
-import { IEventRepository } from "src/repository/IEventRepository";
-import { Group } from "src/types/supabaseTypes";
-import { SlideUpTransition } from "../../utils";
-import { SelectGroupDialogProps } from "../eventInformation/types";
-import { PostgrestSingleResponse } from "@supabase/supabase-js";
+import {
+    AppBar,
+    Dialog,
+    IconButton,
+    List,
+    ListItemAvatar,
+    ListItemButton,
+    ListItemText,
+    Toolbar,
+    Typography
+} from "@mui/material";
+import {Box} from "@mui/system";
+import React, {useEffect, useState} from "react";
+import {useSelector} from "react-redux";
+import {RootState} from "src/redux/store";
+import {Group} from "src/types/supabaseTypes";
+import {SlideUpTransition} from "../../utils";
+import {SelectGroupDialogProps} from "../eventInformation/types";
+import {PostgrestSingleResponse} from "@supabase/supabase-js";
+import {SupabaseEventRepository} from "../services/supabase/EventRepository";
 
 export const SelectGroupDialog = ({ open, handleClose, handleSubmit }: SelectGroupDialogProps) => {
 
     const [groups, setGroups] = useState<Group[]>([]);
-    const repo = useDependency<IEventRepository>("IEventRepository");
     const user = useSelector((state: RootState) => state.application.user);
 
     useEffect(() => {
-        if (user && repo && open)
-            repo.fetchUserGroups(user).then((x: PostgrestSingleResponse<{ user: { userId: string }, group: Group }[]>) => {
+        if (user && open)
+            SupabaseEventRepository.fetchUserGroups(user).then((x: PostgrestSingleResponse<{
+                user: { userId: string },
+                group: Group
+            }[]>) => {
                 setGroups(x.data?.map(y => y.group) ?? []);
             });
-    }, [open, user, repo]);
+    }, [open, user]);
 
     return <Dialog
         fullScreen
