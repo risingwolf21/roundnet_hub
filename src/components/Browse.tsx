@@ -1,12 +1,11 @@
-import { AccountCircle, Euro, History, Info, Key, Notifications } from "@mui/icons-material";
-import { Avatar, Box, List, ListItem, ListItemAvatar, ListItemButton, ListItemText } from "@mui/material";
-import { TFunction } from "i18next";
-import React, { ReactElement } from "react";
-import { withTranslation } from 'react-i18next';
-import { useNavigate } from "react-router";
-import { Ability, can } from "src/utils/PermissionService";
+import {AccountCircle, Euro, History, Info, Key, Notifications} from "@mui/icons-material";
+import {Avatar, Box, List, ListItem, ListItemAvatar, ListItemButton, ListItemText} from "@mui/material";
+import {TFunction} from "i18next";
+import React, {ReactElement} from "react";
+import {withTranslation} from 'react-i18next';
+import {useNavigate} from "react-router";
+import {Ability, can} from "src/utils/PermissionService";
 import CustomAppBar from "./AppBar";
-import OneSignal from "react-onesignal";
 
 type TabsType = {
     translationKey: string

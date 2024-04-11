@@ -1,7 +1,5 @@
-import { Alert, List, Snackbar, SnackbarCloseReason } from "@mui/material";
-import React from "react";
-import { useEffect } from "react";
-import { useRef, useState } from "react";
+import {Alert, List, Snackbar, SnackbarCloseReason} from "@mui/material";
+import React, {useEffect, useRef, useState} from "react";
 
 type InfiniteScrollListProps = {
     fetch: (page: number) => any,
