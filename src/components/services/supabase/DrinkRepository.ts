@@ -31,6 +31,11 @@ export const SupabaseDrinkRepository = {
             .throwOnError();
     },
 
+    async fetchOpenPaymentIdForUser(userId: string): Promise<PostgrestSingleResponse<number>> {
+        return supabase.rpc("get_or_create_payment_for_user", {user_id: userId})
+            .throwOnError();
+    },
+
     async fetchCurrentPaymentForUser(userId: string): Promise<PostgrestSingleResponse<any[]>> {
         return supabase
             .from(TABLE_PAYMENTS)

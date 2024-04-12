@@ -9,7 +9,7 @@ import CustomAppBar from "src/components/AppBar";
 import {LoadingIndicator} from "src/components/LoadingIndicator";
 import {onDrinkDeleted, onDrinkInserted, onDrinkUpdated} from "src/redux/drinksSlice";
 import {Drink, DrinkCounter, DrinkInsert, DrinkUpdate, ProductType} from "src/types/supabaseTypes";
-import {MultiplePaymentsError, nameOfProductType} from "src/utils";
+import {nameOfProductType} from "src/utils";
 import {Error} from "../Error";
 import {SwipeableDialog} from "../SwipeableDialog";
 import DrinkList from "./DrinkList";
@@ -64,43 +64,25 @@ const DrinkListScreen = ({user, drinks, drinksLoading, drinksError, dispatch}: D
     const confirmDrinks = async () => {
         setLoading(true);
         try {
-            let paymentId: number;
-            const result = await SupabaseDrinkRepository.fetchCurrentPaymentForUser(user.userId)
-            if (!result || !result.data || result.data.length < 1) {
-                const paymentCreation = await SupabaseDrinkRepository.insertNewPayment(user.userId);
+            let {data: paymentId, error} = await SupabaseDrinkRepository.fetchOpenPaymentIdForUser(user.userId);
 
-                if (!paymentCreation || (paymentCreation && paymentCreation.error))
-                    throw Error({message: paymentCreation?.error?.message ?? "Could not create payment"});
-
-                if (!paymentCreation.data.id)
-                    throw Error({message: "Could not create payment"});
-
-                paymentId = paymentCreation.data.id;
-            } else if (result.data && result.data.length > 1) {
-                paymentId = result.data[0].id;
-                captureException(new MultiplePaymentsError("Multiple payments found for user."), (scope) => {
+            if (!paymentId || error) {
+                setLoading(false);
+                let message = error?.message ?? "Payment could not be created";
+                confirmDrinksDialog({message, severity: "error"});
+                captureException(Error({message}), (scope) => {
                     scope.clear();
-                    scope.setExtra("result", JSON.stringify(result));
-                    scope.setExtra("user", JSON.stringify(user));
+                    scope.setExtra("drinks", JSON.stringify(addedDrinks));
                     return scope;
                 });
-                confirmDrinksDialog({
-                    message: "There were multiple payments found. Please contact your admin! Your drinks still have been added to your current open payment.",
-                    severity: "warning"
-                });
             } else {
-                paymentId = result.data[0].id;
+                SupabaseDrinkRepository.insertHistoryItems(Object.values(addedDrinks), user.userId, paymentId)
+                    .then(result => {
+                        setLoading(false);
+                        setAddedDrinks([]);
+                        confirmDrinksDialog(SUCCESS_MESSAGE_INFO);
+                    });
             }
-
-            if (!paymentId)
-                throw Error({message: "Payment ID could not be found"})
-
-            SupabaseDrinkRepository.insertHistoryItems(Object.values(addedDrinks), user.userId, paymentId)
-                .then(result => {
-                    setLoading(false);
-                    setAddedDrinks([]);
-                    confirmDrinksDialog(SUCCESS_MESSAGE_INFO);
-                });
         } catch (error) {
             setLoading(false);
             let message = (error as Error).message;

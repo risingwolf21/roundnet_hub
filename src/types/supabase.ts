@@ -69,6 +69,13 @@ export type Database = {
             foreignKeyName: "event_attendance_user_mapping_event_fkey"
             columns: ["event"]
             isOneToOne: false
+            referencedRelation: "current_distinct_event"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "event_attendance_user_mapping_event_fkey"
+            columns: ["event"]
+            isOneToOne: false
             referencedRelation: "distinct_event"
             referencedColumns: ["id"]
           },
@@ -114,6 +121,13 @@ export type Database = {
           user?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "event_comments_event_fkey"
+            columns: ["event"]
+            isOneToOne: false
+            referencedRelation: "current_distinct_event"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "event_comments_event_fkey"
             columns: ["event"]
@@ -171,7 +185,7 @@ export type Database = {
           id: number
           isCancelled: boolean
           key: string
-            maxAttendees: number
+          maxAttendees: number | null
           meetingDateTime: string | null
           place: string | null
           recurrence: Database["public"]["Enums"]["EventRecurrence"]
@@ -188,7 +202,7 @@ export type Database = {
           id?: number
           isCancelled?: boolean
           key?: string
-            maxAttendees?: number
+          maxAttendees?: number | null
           meetingDateTime?: string | null
           place?: string | null
           recurrence?: Database["public"]["Enums"]["EventRecurrence"]
@@ -205,7 +219,7 @@ export type Database = {
           id?: number
           isCancelled?: boolean
           key?: string
-            maxAttendees?: number
+          maxAttendees?: number | null
           meetingDateTime?: string | null
           place?: string | null
           recurrence?: Database["public"]["Enums"]["EventRecurrence"]
@@ -283,13 +297,6 @@ export type Database = {
         }
         Relationships: [
           {
-              foreignKeyName: "history_drink_fkey"
-              columns: ["drink"]
-              isOneToOne: false
-              referencedRelation: "distinct_drinks"
-              referencedColumns: ["id"]
-          },
-            {
             foreignKeyName: "history_drink_fkey"
             columns: ["drink"]
             isOneToOne: false
@@ -312,50 +319,50 @@ export type Database = {
           },
         ]
       }
-        key_history: {
-            Row: {
-                created_at: string
-                currentUser: string | null
-                id: number
-                key: number | null
-                pastUser: string | null
-            }
-            Insert: {
-                created_at?: string
-                currentUser?: string | null
-                id?: number
-                key?: number | null
-                pastUser?: string | null
-            }
-            Update: {
-                created_at?: string
-                currentUser?: string | null
-                id?: number
-                key?: number | null
-                pastUser?: string | null
-            }
-            Relationships: [
-                {
-                    foreignKeyName: "key_history_currentuser_fkey"
-                    columns: ["currentUser"]
-                    isOneToOne: false
-                    referencedRelation: "user"
-                    referencedColumns: ["userId"]
-                },
-                {
-                    foreignKeyName: "key_history_key_fkey"
-                    columns: ["key"]
-                    isOneToOne: false
-                    referencedRelation: "keys"
-                    referencedColumns: ["id"]
-                },
-                {
-                    foreignKeyName: "key_history_pastuser_fkey"
-                    columns: ["pastUser"]
-                    isOneToOne: false
-                    referencedRelation: "user"
-                    referencedColumns: ["userId"]
-                },
+      key_history: {
+        Row: {
+          created_at: string
+          currentUser: string | null
+          id: number
+          key: number | null
+          pastUser: string | null
+        }
+        Insert: {
+          created_at?: string
+          currentUser?: string | null
+          id?: number
+          key?: number | null
+          pastUser?: string | null
+        }
+        Update: {
+          created_at?: string
+          currentUser?: string | null
+          id?: number
+          key?: number | null
+          pastUser?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "key_history_currentuser_fkey"
+            columns: ["currentUser"]
+            isOneToOne: false
+            referencedRelation: "user"
+            referencedColumns: ["userId"]
+          },
+          {
+            foreignKeyName: "key_history_key_fkey"
+            columns: ["key"]
+            isOneToOne: false
+            referencedRelation: "keys"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "key_history_pastuser_fkey"
+            columns: ["pastUser"]
+            isOneToOne: false
+            referencedRelation: "user"
+            referencedColumns: ["userId"]
+          },
         ]
       }
       key_holders: {
@@ -491,20 +498,34 @@ export type Database = {
       }
     }
     Views: {
-        distinct_drinks: {
-            Row: {
-                active: boolean | null
-                deleted: boolean | null
-                id: number | null
-                imageUrl: string | null
-                name: string | null
-                previousDrink: number | null
-                price: number | null
-                stock: number | null
-                type: Database["public"]["Enums"]["ProductType"] | null
-            }
-            Relationships: []
+      current_distinct_event: {
+        Row: {
+          answerDeadline: string | null
+          created_at: string | null
+          description: string | null
+          endDateTime: string | null
+          group: number | null
+          id: number | null
+          isCancelled: boolean | null
+          key: string | null
+          maxAttendees: number | null
+          meetingDateTime: string | null
+          place: string | null
+          recurrence: Database["public"]["Enums"]["EventRecurrence"] | null
+          recurrenceEnd: string | null
+          startingDateTime: string | null
+          title: string | null
         }
+        Relationships: [
+          {
+            foreignKeyName: "events_group_fkey"
+            columns: ["group"]
+            isOneToOne: false
+            referencedRelation: "event_group"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       distinct_event: {
         Row: {
           answerDeadline: string | null
@@ -533,20 +554,14 @@ export type Database = {
           },
         ]
       }
-        readable_history: {
-            Row: {
-                amount: number | null
-                count: number | null
-                date: string | null
-                displayName: string | null
-                id: number | null
-                name: string | null
-                time: string | null
-            }
-            Relationships: []
-      }
     }
     Functions: {
+      add_permission_to_all_users: {
+        Args: {
+          permission: Database["public"]["Enums"]["Permissions"]
+        }
+        Returns: undefined
+      }
       eventcreation: {
         Args: Record<PropertyKey, never>
         Returns: number
@@ -556,6 +571,12 @@ export type Database = {
           event_id: number
         }
         Returns: string[]
+      }
+      get_or_create_payment_for_user: {
+        Args: {
+          user_id: string
+        }
+        Returns: number
       }
       getattendingusers: {
         Args: {
@@ -582,6 +603,12 @@ export type Database = {
       getusersforuserregistrationnotifications: {
         Args: Record<PropertyKey, never>
         Returns: string[]
+      }
+      remove_permission_from_all_users: {
+        Args: {
+          permission: Database["public"]["Enums"]["Permissions"]
+        }
+        Returns: undefined
       }
       sendnotifications:
         | {
@@ -655,7 +682,7 @@ export type Database = {
 type PublicSchema = Database[Extract<keyof Database, "public">]
 
 export type Tables<
-  PublicTableNameOrOptions extends | keyof (PublicSchema["Tables"] & PublicSchema["Views"])
+    PublicTableNameOrOptions extends | keyof (PublicSchema["Tables"] & PublicSchema["Views"])
     | { schema: keyof Database },
   TableName extends PublicTableNameOrOptions extends { schema: keyof Database }
     ? keyof (Database[PublicTableNameOrOptions["schema"]]["Tables"] &
@@ -672,14 +699,14 @@ export type Tables<
             PublicSchema["Views"])
         ? (PublicSchema["Tables"] &
             PublicSchema["Views"])[PublicTableNameOrOptions] extends {
-                Row: infer R
+              Row: infer R
             }
             ? R
             : never
         : never
 
 export type TablesInsert<
-  PublicTableNameOrOptions extends | keyof PublicSchema["Tables"]
+    PublicTableNameOrOptions extends | keyof PublicSchema["Tables"]
     | { schema: keyof Database },
   TableName extends PublicTableNameOrOptions extends { schema: keyof Database }
     ? keyof Database[PublicTableNameOrOptions["schema"]]["Tables"]
@@ -692,14 +719,14 @@ export type TablesInsert<
     : never
     : PublicTableNameOrOptions extends keyof PublicSchema["Tables"]
         ? PublicSchema["Tables"][PublicTableNameOrOptions] extends {
-                Insert: infer I
+              Insert: infer I
             }
             ? I
             : never
         : never
 
 export type TablesUpdate<
-  PublicTableNameOrOptions extends | keyof PublicSchema["Tables"]
+    PublicTableNameOrOptions extends | keyof PublicSchema["Tables"]
     | { schema: keyof Database },
   TableName extends PublicTableNameOrOptions extends { schema: keyof Database }
     ? keyof Database[PublicTableNameOrOptions["schema"]]["Tables"]
@@ -712,14 +739,14 @@ export type TablesUpdate<
     : never
     : PublicTableNameOrOptions extends keyof PublicSchema["Tables"]
         ? PublicSchema["Tables"][PublicTableNameOrOptions] extends {
-                Update: infer U
+              Update: infer U
             }
             ? U
             : never
         : never
 
 export type Enums<
-  PublicEnumNameOrOptions extends | keyof PublicSchema["Enums"]
+    PublicEnumNameOrOptions extends | keyof PublicSchema["Enums"]
     | { schema: keyof Database },
   EnumName extends PublicEnumNameOrOptions extends { schema: keyof Database }
     ? keyof Database[PublicEnumNameOrOptions["schema"]]["Enums"]

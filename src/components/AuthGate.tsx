@@ -42,7 +42,6 @@ export const AuthGate = ({children}: Props) => {
         const {data: {subscription}} = client.auth
             .onAuthStateChange((_event, session) => {
                 if (session) {
-                    console.log(session)
                     fetchUser(session.user.id)
                         .then((result) => {
                             const user = result.data;
@@ -57,7 +56,6 @@ export const AuthGate = ({children}: Props) => {
                             ability.update(defineRulesFor(user));
                             dispatch(onUserChange(user));
                             setSession(session);
-                            console.log(location)
                             if (location.state && location.state.from) {
                                 navigate(location.state.from, {replace: true});
                             } else {
