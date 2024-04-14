@@ -22,9 +22,11 @@ jobs:
       - name: Install dependencies
         run: yarn install
 
-      - name: Build
-        run: PUBLIC_URL=https://staging-roundnet-karlsruhe.web.app yarn run build:staging
-
+      - uses: supabase/setup-cli@v1
+        with:
+          version: latest
+      - run: supabase init
+      - run: supabase db start
       - name: 'Verify generated types match Postgres schema'
         run: |
           supabase gen types typescript --local > src/types/supabase.ts
@@ -33,6 +35,9 @@ jobs:
             git diff
             exit 1
           fi
+
+      - name: Build
+        run: PUBLIC_URL=https://staging-roundnet-karlsruhe.web.app yarn run build:staging
 
       - name: Deploying to Staging Environment
         uses: FirebaseExtended/action-hosting-deploy@v0
