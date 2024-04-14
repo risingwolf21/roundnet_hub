@@ -1,11 +1,23 @@
-import { ArrowBack } from "@mui/icons-material";
+import {ArrowBack} from "@mui/icons-material";
 import SearchIcon from "@mui/icons-material/Search";
-import { AppBar, Box, Button, Checkbox, Dialog, IconButton, LinearProgress, List, ListItem, ListItemIcon, ListItemText, Toolbar } from "@mui/material";
-import { Search, SearchIconWrapper, StyledInputBase } from "./SearchBar";
-import { useState } from "react";
-import { SlideUpTransition } from "../utils";
-import React from "react";
-import { User } from "../types/supabaseTypes";
+import {
+    AppBar,
+    Box,
+    Button,
+    Checkbox,
+    Dialog,
+    IconButton,
+    LinearProgress,
+    List,
+    ListItem,
+    ListItemIcon,
+    ListItemText,
+    Toolbar
+} from "@mui/material";
+import {Search, SearchIconWrapper, StyledInputBase} from "./SearchBar";
+import React, {useState} from "react";
+import {SlideUpTransition} from "../utils";
+import {User} from "../types/supabaseTypes";
 
 type SearchAndSelectUserDialogProps = {
     open: boolean,

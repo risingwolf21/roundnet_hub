@@ -8,31 +8,28 @@ import {LoadingIndicator} from "./LoadingIndicator"
 import {useTranslation} from "react-i18next"
 import {TFunction} from "i18next"
 import {NotificationTags, User} from "src/types/supabaseTypes"
-import {IUserRepository} from "src/repository/IUserRepository"
-import {useDependency} from "src/hooks/useDependency"
 import {AlertMessage, AlertSnackbar} from "./AlertSnackbar"
+import {SupabaseUserRepository} from "./services/supabase/UserRepository";
 
 const userTags: NotificationTags[] = ["eventComments", "userRegistration", "paymentRequest", "paymentPending"]
 
 const NotificationsScreenProvider = () => {
     const {user} = useSelector((state: RootState) => state.application);
     const {t} = useTranslation();
-    const userRepository = useDependency<IUserRepository>("IUserRepository");
 
-    if (!user || !userRepository)
+    if (!user)
         return <AlertSnackbar close={() => {
         }} alertInfo={{message: "Fatal error occured. Repository or user was null!", severity: "error"}}/>
 
-    return <NotificationsScreen t={t} user={user} userRepository={userRepository}/>
+    return <NotificationsScreen t={t} user={user}/>
 }
 
 type NotificationsScreenProps = {
     t: TFunction,
-    user: User,
-    userRepository: IUserRepository
+    user: User
 }
 
-export const NotificationsScreen = ({user, t, userRepository}: NotificationsScreenProps) => {
+export const NotificationsScreen = ({user, t}: NotificationsScreenProps) => {
 
     const [activeUserTags, setActiveUserTags] = useState<NotificationTags[]>(user.notifications ?? []);
     const [loading, setLoading] = useState(false);
@@ -48,7 +45,7 @@ export const NotificationsScreen = ({user, t, userRepository}: NotificationsScre
 
     const saveTags = () => {
         setLoading(true);
-        userRepository.updateNotificationTags(activeUserTags, user).then(r => {
+        SupabaseUserRepository.updateNotificationTags(activeUserTags, user).then(r => {
             setLoading(false);
             if (!r.error) {
                 setAlertInfo({message: "Successfully updated your notification preferences", severity: "info"})

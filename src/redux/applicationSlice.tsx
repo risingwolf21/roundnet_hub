@@ -1,6 +1,6 @@
-import { PayloadAction, createAsyncThunk, createSlice } from '@reduxjs/toolkit';
-import { User } from '../types/supabaseTypes';
-import { IUserRepository } from 'src/repository/IUserRepository';
+import {createAsyncThunk, createSlice, PayloadAction} from '@reduxjs/toolkit';
+import {User} from '../types/supabaseTypes';
+import {SupabaseUserRepository} from "../components/services/supabase/UserRepository";
 
 type ApplicationSliceState = {
     user: User | null,
@@ -45,8 +45,8 @@ export const applicationReducer = createSlice({
     },
 });
 
-export const fetchCurrentUserAsync = createAsyncThunk("fetchCurrentUser", async ({ repository, userId }: { userId: string, repository: IUserRepository }) => {
-    const response = await repository.fetchUser(userId);
+export const fetchCurrentUserAsync = createAsyncThunk("fetchCurrentUser", async ({userId}: { userId: string }) => {
+    const response = await SupabaseUserRepository.fetchUser(userId);
     return response.data;
 });
 

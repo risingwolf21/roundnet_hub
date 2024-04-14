@@ -13,7 +13,7 @@ import {fetchEventsAsync, onEventDelete, onEventErrorRead, onEventUpdate} from '
 import {updateAttendanceAsync} from 'src/redux/events/eventAttendanceSlice';
 import {can} from "../../utils/PermissionService";
 
-const EventScreen = ({ events, loading, error, endReached, repository, user }: EventScreenProps) => {
+const EventScreen = ({events, loading, error, endReached, user}: EventScreenProps) => {
     const client = useClient();
     const dispatch = useAppDispatch();
     const navigate = useNavigate();
@@ -30,15 +30,15 @@ const EventScreen = ({ events, loading, error, endReached, repository, user }: E
     }, [client, dispatch]);
 
     useEffect(() => {
-        dispatch(fetchEventsAsync({ user, page: 0, count: 20, repository }));
-    }, [dispatch, user, repository]);
+        dispatch(fetchEventsAsync({user, page: 0, count: 20}));
+    }, [dispatch, user]);
 
     const fetchEvents = (page: number, count: number) => {
-        dispatch(fetchEventsAsync({ user, page, count, repository }));
+        dispatch(fetchEventsAsync({user, page, count}));
     }
 
     const updateAttendance = async (eventId: number, state: EventAttendance, oldState: EventAttendance) => {
-        dispatch(updateAttendanceAsync({ repository, user, eventId, state, oldState }));
+        dispatch(updateAttendanceAsync({user, eventId, state, oldState}));
     }
 
     return (<Grid

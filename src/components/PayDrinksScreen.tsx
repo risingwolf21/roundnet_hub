@@ -1,17 +1,27 @@
 import EuroIcon from '@mui/icons-material/Euro';
-import { Alert, Box, Button, Divider, List, ListItem, ListItemAvatar, ListItemSecondaryAction, ListItemText, Snackbar, Typography } from "@mui/material";
-import React, { useEffect } from "react";
-import { useSelector } from "react-redux";
-import { PAYPAL_ME_ADDRESS } from "../constants";
-import { useDependency } from "../hooks/useDependency";
-import { fetchDrinksToPayAsync, fetchPaymentAsync } from "../redux/drinksSlice";
-import { RootState, useAppDispatch } from "../redux/store";
-import { IDrinkRepository } from "../repository/IDrinkRepository";
-import { PaymentHistory, User } from "../types/supabaseTypes";
-import { groupBy } from '../utils';
-import { AlertSnackbar } from "./AlertSnackbar";
+import {
+    Alert,
+    Box,
+    Button,
+    Divider,
+    List,
+    ListItem,
+    ListItemAvatar,
+    ListItemSecondaryAction,
+    ListItemText,
+    Snackbar,
+    Typography
+} from "@mui/material";
+import React, {useEffect} from "react";
+import {useSelector} from "react-redux";
+import {PAYPAL_ME_ADDRESS} from "../constants";
+import {fetchDrinksToPayAsync, fetchPaymentAsync} from "../redux/drinksSlice";
+import {RootState, useAppDispatch} from "../redux/store";
+import {PaymentHistory, User} from "../types/supabaseTypes";
+import {groupBy} from '../utils';
+import {AlertSnackbar} from "./AlertSnackbar";
 import CustomAppBar from "./AppBar";
-import { LoadingScreen } from './LoadingScreen';
+import {LoadingScreen} from './LoadingScreen';
 
 const PayDrinksButton = ({ amountToPay }: { amountToPay: number }) => {
 
@@ -65,15 +75,13 @@ const PayDrinksSummary = ({ paymentHistory }: { paymentHistory: PaymentHistory[]
 }
 
 const PayDrinksScreenProvider = () => {
-    const drinksRepository = useDependency<IDrinkRepository>("IDrinkRepository");
     const { user } = useSelector((state: RootState) => state.application);
     const { paymentHistory, paymentError, paymentLoading } = useSelector((state: RootState) => state.drinks);
 
-    if (!drinksRepository || !user)
+    if (!user)
         return <AlertSnackbar close={() => { }} alertInfo={{ message: "Fatal error occured. Repository or selected group was null!", severity: "error" }} />
 
     return <PayDrinksScreen
-        drinksRepository={drinksRepository}
         user={user}
         paymentHistory={paymentHistory ?? []}
         paymentError={paymentError ?? ""}
@@ -84,18 +92,17 @@ type PayDrinksScreenProps = {
     user: User,
     paymentHistory: PaymentHistory[],
     paymentError: string,
-    paymentLoading: boolean,
-    drinksRepository: IDrinkRepository
+    paymentLoading: boolean
 }
 
-const PayDrinksScreen = ({ user, drinksRepository, paymentHistory, paymentError, paymentLoading }: PayDrinksScreenProps) => {
+const PayDrinksScreen = ({user, paymentHistory, paymentError, paymentLoading}: PayDrinksScreenProps) => {
 
     const dispatch = useAppDispatch();
 
     useEffect(() => {
-        dispatch(fetchDrinksToPayAsync({ repository: drinksRepository, userId: user.userId }));
-        dispatch(fetchPaymentAsync({ repository: drinksRepository, userId: user.userId }));
-    }, [dispatch, user, drinksRepository]);
+        dispatch(fetchDrinksToPayAsync({userId: user.userId}));
+        dispatch(fetchPaymentAsync({userId: user.userId}));
+    }, [dispatch, user]);
 
     if (paymentLoading)
         return <LoadingScreen />

@@ -39,42 +39,37 @@ import {captureException} from "@sentry/react";
 import {Database} from "src/types/supabase";
 import Compressor from 'compressorjs';
 import {fetchCurrentUserAsync} from "src/redux/applicationSlice";
-import {useDependency} from "src/hooks/useDependency";
-import {IUserRepository} from "src/repository/IUserRepository";
-import {IEventRepository} from "src/repository/IEventRepository";
 import {uuid} from "@supabase/supabase-js/dist/main/lib/helpers";
+import {SupabaseEventRepository} from "./services/supabase/EventRepository";
 
 type UserScreenProps = {
     user: User,
     groups: Group[],
     client: SupabaseClient<Database>,
-    dispatch: AppDispatch,
-    repository: IUserRepository
+    dispatch: AppDispatch
 }
 
 export const UserScreenProvider = () => {
     const {user} = useSelector((state: RootState) => state.application);
-    const repository = useDependency<IUserRepository>("IUserRepository");
-    const eventRepository = useDependency<IEventRepository>("IEventRepository");
     const client = useClient();
     const dispatch = useAppDispatch();
     const [groups, setGroups] = useState<Group[]>([])
 
     useEffect(() => {
-        if (user && eventRepository)
-            eventRepository.fetchUserGroups(user).then((result) => {
+        if (user)
+            SupabaseEventRepository.fetchUserGroups(user).then((result) => {
                 setGroups(result.data?.map(x => x.group) ?? []);
             })
-    }, [user, eventRepository]);
+    }, [user]);
 
-    if (!user || !repository)
+    if (!user)
         return <AlertSnackbar close={() => {
         }} alertInfo={{message: "Fatal error occured. User was null!", severity: "error"}}/>
 
-    return <UserScreen user={user} client={client} dispatch={dispatch} repository={repository} groups={groups}/>
+    return <UserScreen user={user} client={client} dispatch={dispatch} groups={groups}/>
 }
 
-const UserScreen = ({user, client, dispatch, repository, groups}: UserScreenProps) => {
+const UserScreen = ({user, client, dispatch, groups}: UserScreenProps) => {
 
     const [selectedImage, setSelectedImage] = useState<string | ArrayBuffer | null>(null);
     const [croppedImage, setCroppedImage] = useState<string | null>(null);
@@ -98,7 +93,7 @@ const UserScreen = ({user, client, dispatch, repository, groups}: UserScreenProp
                     if (compressedFile && typeof (compressedFile) === "string") {
                         await removeOldAvatarImages();
                         await uploadAvatarImage(fileName, compressedFile);
-                        dispatch(fetchCurrentUserAsync({userId: user.userId, repository}));
+                        dispatch(fetchCurrentUserAsync({userId: user.userId}));
                         setCroppedImage(null);
                     } else {
                         setErrorSnackbar({

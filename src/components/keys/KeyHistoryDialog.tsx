@@ -1,12 +1,11 @@
 import React, {useEffect, useState} from "react";
-import {useDependency} from "src/hooks/useDependency";
-import {IKeysRepository} from "../../repository/IKeysRepository";
 import {FullKeyHistory} from "../../types/supabaseTypes";
 import {SwipeableDialog} from "../SwipeableDialog";
 import {captureException} from "@sentry/react";
 import {Alert, List, ListItem, ListItemText} from "@mui/material";
 import {format} from "date-fns";
 import {LoadingIndicator} from "../LoadingIndicator";
+import {SupabaseKeysRepository} from "../services/supabase/KeysRepository";
 
 type KeyHistoryDialogProps = {
     open: boolean,
@@ -18,18 +17,17 @@ type KeyHistoryDialogProps = {
 
 export const KeyHistoryDialog = ({open, setOpen, handleClose, keyId, keyName}: KeyHistoryDialogProps) => {
 
-    const repo = useDependency<IKeysRepository>("IKeysRepository");
     const [error, setError] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
     const [history, setHistory] = useState<FullKeyHistory[]>([])
 
     useEffect(() => {
-        if (!keyId || !repo)
+        if (!keyId)
             return;
 
         setHistory([]);
         setLoading(true);
-        repo?.loadKeyHistory(keyId).then(result => {
+        SupabaseKeysRepository.loadKeyHistory(keyId).then(result => {
             setHistory(result.data ?? []);
         }).catch(error => {
             captureException(error);
@@ -37,7 +35,7 @@ export const KeyHistoryDialog = ({open, setOpen, handleClose, keyId, keyName}: K
         }).finally(() => {
             setLoading(false);
         });
-    }, [repo, keyId, keyName]);
+    }, [keyId, keyName]);
 
     return <SwipeableDialog open={open} setOpen={setOpen} onClose={handleClose}
                             title={"Schlüssel Historie - " + keyName}>

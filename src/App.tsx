@@ -24,7 +24,6 @@ const KeyHolderScreenProvider = React.lazy(() => import('./components/keys/KeyHo
 const PayDrinksScreenProvider = React.lazy(() => import('./components/PayDrinksScreen'));
 const ResetPasswordScreen = React.lazy(() => import('./components/ResetPasswordScreen'));
 const PaymentsPendingAdmin = React.lazy(() => import('./components/admin/PaymentsPendingAdmin'));
-const DrinkStockUpdateScreen = React.lazy(() => import('./components/procure/DrinkStockUpdateScreen'));
 const CreateEventProvider = React.lazy(() => import('./components/eventCreation/provider'));
 const AdminDrinkListProvider = React.lazy(() => import('./components/admin/AdminDrinkList'));
 const AdminHistoryScreenProvider = React.lazy(() => import('./components/admin/AdminHistoryScreen'));
@@ -32,7 +31,6 @@ const AdminUserListProvider = React.lazy(() => import('./components/admin/AdminU
 const DrinkListScreenProvider = React.lazy(() => import('./components/drinkList/provider'));
 const GroupInformationProvider = React.lazy(() => import('./components/groups/GroupInformation'));
 const ManageGroupsProvider = React.lazy(() => import('./components/groups/ManageGroups'));
-const AnalyzeDrinkStockHistoryProvider = React.lazy(() => import('./components/procure/AnalyzeDrinkStockHistory'));
 const EventInformationProvider = React.lazy(() => import('./components/eventInformation/provider'));
 const EventScreenProvider = React.lazy(() => import('./components/eventList/provider'));
 const ProfileScreen = React.lazy(() => import('./components/Profile'));
@@ -99,10 +97,6 @@ const App = () => {
                                element={<AdminHistoryScreenProvider/>}/>
                         <Route path='/admin/drinks/payments'
                                element={<PaymentsPendingAdmin/>}/>
-                        <Route path='/admin/drinks/stocks'
-                               element={<DrinkStockUpdateScreen/>}/>
-                        <Route path='/admin/drinks/analyze'
-                               element={<AnalyzeDrinkStockHistoryProvider/>}/>
                         <Route path='/admin/users' element={<AdminUserListProvider/>}/>
                         <Route path='/admin/edgeFunctions'
                                element={<ExecuteEdgeFunctions/>}/>

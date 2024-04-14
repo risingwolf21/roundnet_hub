@@ -17,12 +17,11 @@ import {
 import {Box} from "@mui/system";
 import React, {useEffect, useState} from "react";
 import {useSelector} from "react-redux";
-import {useDependency} from "src/hooks/useDependency";
 import {RootState} from "src/redux/store";
 import {SlideUpTransition} from "../../utils";
 import {Group, GroupUpdate} from "../../types/supabaseTypes";
 import KeyIcon from "@mui/icons-material/Key";
-import {IGroupsRepository} from "../../repository/IGroupsRepository";
+import {SupabaseGroupsRepository} from "../services/supabase/SupabaseGroupsRepository";
 
 type EditOrAddGroupDialogProps = {
     open: boolean,
@@ -32,7 +31,6 @@ type EditOrAddGroupDialogProps = {
 
 export const EditOrAddGroupDialog = ({open, handleClose, groupToEdit}: EditOrAddGroupDialogProps) => {
 
-    const repo = useDependency<IGroupsRepository>("IGroupsRepository");
     const user = useSelector((state: RootState) => state.application.user);
     const [currentGroup, setCurrentGroup] = useState<GroupUpdate>({
         id: groupToEdit.id,
@@ -60,11 +58,11 @@ export const EditOrAddGroupDialog = ({open, handleClose, groupToEdit}: EditOrAdd
             setErrorSnackbar({message: "Der Gruppenname ist zu kurz!", open: true});
             return;
         }
-        if (!user || !repo) {
+        if (!user) {
             setErrorSnackbar({message: "Something went wrong. Try again later!", open: true});
             return;
         }
-        repo.upsertGroup({
+        SupabaseGroupsRepository.upsertGroup({
             id: currentGroup.id,
             name: currentGroup.name,
             color: currentGroup.color,

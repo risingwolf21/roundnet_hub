@@ -1,8 +1,8 @@
 import {createAsyncThunk, createSlice, PayloadAction} from '@reduxjs/toolkit';
 import {Drink, DrinkInsert, FullHistory, Payment, PaymentHistory} from '../types/supabaseTypes';
 import {compareById} from '../utils';
-import {IDrinkRepository} from '../repository/IDrinkRepository';
 import {captureException} from "@sentry/react";
+import {SupabaseDrinkRepository} from "../components/services/supabase/DrinkRepository";
 
 type DrinksSliceState = {
     history: FullHistory[],
@@ -197,7 +197,6 @@ export const drinksSlice = createSlice({
 });
 
 type DrinkRepositoryWithUserId = {
-    repository: IDrinkRepository,
     userId: string
 }
 type DrinkRepositoryWithUserIdAndPagination = DrinkRepositoryWithUserId & {
@@ -206,10 +205,9 @@ type DrinkRepositoryWithUserIdAndPagination = DrinkRepositoryWithUserId & {
 }
 
 export const fetchPaymentAsync = createAsyncThunk("payments/forUser", async ({
-                                                                                 repository,
                                                                                  userId
                                                                              }: DrinkRepositoryWithUserId, {rejectWithValue}) => {
-    return repository.fetchCurrentPaymentForUser(userId)
+    return SupabaseDrinkRepository.fetchCurrentPaymentForUser(userId)
         .then(result => result.data ?? [])
         .catch(error => {
             captureException(error);
@@ -218,10 +216,9 @@ export const fetchPaymentAsync = createAsyncThunk("payments/forUser", async ({
 });
 
 export const fetchDrinksToPayAsync = createAsyncThunk("payments/openDrinks", async ({
-                                                                                        repository,
                                                                                         userId
                                                                                     }: DrinkRepositoryWithUserId, {rejectWithValue}) => {
-    return repository.fetchDrinksToPay(userId)
+    return SupabaseDrinkRepository.fetchDrinksToPay(userId)
         .then(result => result.data ?? [])
         .catch(error => {
             captureException(error);
@@ -229,8 +226,8 @@ export const fetchDrinksToPayAsync = createAsyncThunk("payments/openDrinks", asy
         });
 });
 
-export const fetchDrinksAsync = createAsyncThunk("drink", async (repository: IDrinkRepository, {rejectWithValue}) => {
-    return repository.fetchDrinks()
+export const fetchDrinksAsync = createAsyncThunk("drink", async (_, {rejectWithValue}) => {
+    return SupabaseDrinkRepository.fetchDrinks()
         .then(result => result.data ?? [])
         .catch(error => {
             captureException(error);
@@ -239,12 +236,11 @@ export const fetchDrinksAsync = createAsyncThunk("drink", async (repository: IDr
 });
 
 export const fetchHistoryAsync = createAsyncThunk("history", async ({
-                                                                        repository,
                                                                         userId,
                                                                         page = 0,
                                                                         count = 20
                                                                     }: DrinkRepositoryWithUserIdAndPagination, {rejectWithValue}) => {
-    return repository.fetchHistoryForUser(userId, page, count)
+    return SupabaseDrinkRepository.fetchHistoryForUser(userId, page, count)
         .then(result => {
             return {entries: result?.data ?? [], more: page !== 0}
         })

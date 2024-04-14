@@ -26,11 +26,10 @@ import {AccountCircle, Close, Edit, Email, FiberManualRecord, ManageAccounts, Ve
 import {useClient} from "react-supabase";
 import {SlideUpTransition} from "../../utils";
 import {FullHistory, Group, Permissions, User, UserWithGroups} from "../../types/supabaseTypes";
-import {useDependency} from "../../hooks/useDependency";
-import {IDrinkRepository} from "../../repository/IDrinkRepository";
 import moment from "moment";
 import {UserPermissionsDialog} from "./UserPermissionDialog";
 import {captureException} from "@sentry/react";
+import {SupabaseDrinkRepository} from "../services/supabase/DrinkRepository";
 
 type EditUserDialogProps = {
     user: UserWithGroups,
@@ -50,7 +49,6 @@ export type UserEdited = {
 const EditUserDialog = ({user, open, handleClose, onUserEditFinished, deleteUser}: EditUserDialogProps) => {
 
     const [editUserPermissionsOpen, setEditUserPermissionsOpen] = useState(false);
-    const drinksRepository = useDependency<IDrinkRepository>("IDrinkRepository");
     const [verified, setVerified] = useState(user.verified)
     const [deleteUserOpen, setDeleteUserOpen] = useState(false);
     const [userPermissions, setUserPermissions] = useState<Permissions[]>([]);
@@ -59,19 +57,17 @@ const EditUserDialog = ({user, open, handleClose, onUserEditFinished, deleteUser
     const client = useClient();
 
     useEffect(() => {
-        if (drinksRepository) {
-            drinksRepository.fetchOpenDrinksForUser(user.userId).then(result => {
-                if (result && result.data) {
-                    setUserInfo({openAmount: result.data.reduce((prev, curr) => prev + ((curr?.count ?? 0) * (curr?.drink?.price ?? 1)), 0)})
-                    setDrinksForUser(result.data);
-                }
-            }).catch(error => {
-                captureException(error);
-            })
-        }
+        SupabaseDrinkRepository.fetchOpenDrinksForUser(user.userId).then(result => {
+            if (result && result.data) {
+                setUserInfo({openAmount: result.data.reduce((prev, curr) => prev + ((curr?.count ?? 0) * (curr?.drink?.price ?? 1)), 0)})
+                setDrinksForUser(result.data);
+            }
+        }).catch(error => {
+            captureException(error);
+        })
         setVerified(user.verified);
         setUserPermissions(user.permissions ?? []);
-    }, [user, client, drinksRepository]);
+    }, [user, client]);
 
     const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();

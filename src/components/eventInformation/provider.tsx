@@ -3,8 +3,6 @@ import React, {useEffect, useState} from "react";
 import {useTranslation} from "react-i18next";
 import {useSelector} from "react-redux";
 import {useParams} from "react-router-dom";
-import {useDependency} from "src/hooks/useDependency";
-import {IEventRepository} from "src/repository/IEventRepository";
 import {RootState, useAppDispatch} from "../../redux/store";
 import {EventAttendanceUpdate, EventUpdate} from "../../types/supabaseTypes";
 import EventInformation from ".";
@@ -20,7 +18,6 @@ import {
 import {eventsCommentsSelector} from "src/redux/events/eventCommentsSlice";
 import {useClient} from "react-supabase";
 import {fetchKeysAsync, keyHoldersSelector} from "../../redux/keysSlice";
-import {IKeysRepository} from "../../repository/IKeysRepository";
 
 const EventInformationProvider = () => {
     const {selectedEventId} = useParams();
@@ -36,12 +33,9 @@ const EventInformationProvider = () => {
     const client = useClient();
     const {t} = useTranslation();
     const [selectedEventPlace, setSelectedEventPlace] = useState<PlaceType | null>(null);
-    const repository = useDependency<IEventRepository>("IEventRepository");
-    const keysRepository = useDependency<IKeysRepository>("IKeysRepository");
 
     useEffect(() => {
-        if(keysRepository)
-            dispatch(fetchKeysAsync(keysRepository));
+        dispatch(fetchKeysAsync());
 
         if (!user || !event)
             return;
@@ -77,19 +71,19 @@ const EventInformationProvider = () => {
     }, [client, dispatch, user, event]);
 
     useEffect(() => {
-        if (!repository || !user)
+        if (!user)
             return;
         if (!event) {
-            dispatch(fetchSingleEventAsync({repository, eventId: toNumber(selectedEventId), userId: user.userId}));
+            dispatch(fetchSingleEventAsync({eventId: toNumber(selectedEventId), userId: user.userId}));
         } else {
             setSelectedEventPlace(event.place ? JSON.parse(event.place?.toString() ?? "") as PlaceType : null)
         }
-    }, [selectedEventId, dispatch, repository, user, event]);
+    }, [selectedEventId, dispatch, user, event]);
 
     if (loading)
         return <LoadingEventInfo/>
 
-    if (!event || !repository || !user)
+    if (!event || !user)
         return <AlertSnackbar close={() => {
         }} alertInfo={{
             message: "Fatal error occured. Repository, user or selectedEvent was null!",
@@ -101,7 +95,6 @@ const EventInformationProvider = () => {
         keyHolders={keyHolders}
         selectedEvent={event}
         selectedEventPlace={selectedEventPlace}
-        repository={repository}
         attendance={attendance?.attendance ?? []}
         attendanceLoading={attendanceLoading}
         comments={comments?.comments ?? []}

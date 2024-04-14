@@ -2,11 +2,6 @@ import {SupabaseClient} from "@supabase/supabase-js";
 import {Container} from "inversify";
 import {supabase, supabaseAdmin} from "src/components/services/supabase/supabaseClient";
 import {Database} from "../types/supabase";
-import {IDrinkRepository, SupabaseDrinkRepository} from "./IDrinkRepository";
-import {IEventRepository, SupabaseEventRepository} from "./IEventRepository";
-import {IKeysRepository, SupabaseKeysRepository} from "./IKeysRepository";
-import {IUserRepository, SupabaseUserRepository} from "./IUserRepository";
-import {IGroupsRepository, SupabaseGroupsRepository} from "./IGroupsRepository";
 import {IAdminDrinksRepository, SupabaseAdminDrinksRepository} from "./IAdminDrinksRepository";
 import {IAdminUsersRepository, SupabaseAdminUsersRepository} from "./IAdminUsersRepository";
 
@@ -18,11 +13,5 @@ container.bind<IAdminDrinksRepository>("IAdminDrinksRepository").toDynamicValue(
 
 container.bind<IAdminUsersRepository>("IAdminUsersRepository").toDynamicValue(() => new SupabaseAdminUsersRepository(supabaseAdmin)).inSingletonScope()
 // container.bind<IAdminUsersRepository>("EmptyAdminUsersRepository").toDynamicValue(() => new EmptyAdminUsersRepository()).inSingletonScope()
-
-container.bind<IDrinkRepository>("IDrinkRepository").toDynamicValue(() => new SupabaseDrinkRepository(supabase)).inSingletonScope()
-container.bind<IEventRepository>("IEventRepository").toDynamicValue(() => new SupabaseEventRepository(supabase)).inSingletonScope()
-container.bind<IKeysRepository>("IKeysRepository").toDynamicValue(() => new SupabaseKeysRepository(supabase)).inSingletonScope()
-container.bind<IUserRepository>("IUserRepository").toDynamicValue(() => new SupabaseUserRepository(supabase)).inSingletonScope()
-container.bind<IGroupsRepository>("IGroupsRepository").toDynamicValue(() => new SupabaseGroupsRepository(supabase)).inSingletonScope()
 
 export default container;

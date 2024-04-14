@@ -1,8 +1,8 @@
-import { PayloadAction, Update, createAsyncThunk, createEntityAdapter, createSlice } from "@reduxjs/toolkit";
-import { IEventRepository } from "src/repository/IEventRepository";
-import { EventAttendance, EventAttendanceUpdate, FullAttendance, User } from "src/types/supabaseTypes";
-import { formatDateToDatabase } from "src/utils";
-import { fetchSingleEventAsync } from "./eventsSlice";
+import {createAsyncThunk, createEntityAdapter, createSlice, PayloadAction, Update} from "@reduxjs/toolkit";
+import {EventAttendance, EventAttendanceUpdate, FullAttendance, User} from "src/types/supabaseTypes";
+import {formatDateToDatabase} from "src/utils";
+import {fetchSingleEventAsync} from "./eventsSlice";
+import {SupabaseEventRepository} from "../../components/services/supabase/EventRepository";
 
 type SliceAttendance = {
     id: number,
@@ -163,15 +163,20 @@ const eventAttendanceSlice = createSlice({
     },
 });
 
-type ClientEventId = { repository: IEventRepository, eventId: number }
-export const fetchEventAttendanceAsync = createAsyncThunk("fetchEventAttendanceAsync", async ({ repository, eventId }: ClientEventId) => {
-    const attendance = await repository.fetchEventAttendance(eventId);
+type ClientEventId = { eventId: number }
+export const fetchEventAttendanceAsync = createAsyncThunk("fetchEventAttendanceAsync", async ({eventId}: ClientEventId) => {
+    const attendance = await SupabaseEventRepository.fetchEventAttendance(eventId);
     return { data: attendance.data, eventId };
 });
 
-type UpdateAttendanceProps = { user: User, eventId: number, state: EventAttendance, oldState: EventAttendance, repository: IEventRepository }
-export const updateAttendanceAsync = createAsyncThunk("updateAttendanceAsync", async ({ repository, eventId, user, state, oldState }: UpdateAttendanceProps) => {
-    const response = await repository.updateAttendance(user.userId, eventId, state);
+type UpdateAttendanceProps = { user: User, eventId: number, state: EventAttendance, oldState: EventAttendance }
+export const updateAttendanceAsync = createAsyncThunk("updateAttendanceAsync", async ({
+                                                                                          eventId,
+                                                                                          user,
+                                                                                          state,
+                                                                                          oldState
+                                                                                      }: UpdateAttendanceProps) => {
+    const response = await SupabaseEventRepository.updateAttendance(user.userId, eventId, state);
     return { data: response.data, error: response.error, oldState };
 });
 

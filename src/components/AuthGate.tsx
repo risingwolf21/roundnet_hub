@@ -1,5 +1,5 @@
 import {useClient} from "react-supabase";
-import {useDispatch} from "react-redux";
+import {useDispatch, useSelector} from "react-redux";
 import {useLocation, useNavigate} from "react-router-dom";
 import React, {useEffect, useState} from "react";
 import {setUser} from "@sentry/react";
@@ -10,6 +10,8 @@ import {Session} from "@supabase/supabase-js";
 import AuthScreen from "./AuthScreen";
 import {AlertMessage, AlertSnackbar} from "./AlertSnackbar";
 import {HOMEPAGE} from "../constants";
+import NotVerifiedScreen from "./NotVerifiedScreen";
+import {RootState} from "../redux/store";
 
 type Props = {
     children: string | JSX.Element | JSX.Element[]
@@ -23,6 +25,7 @@ export const AuthGate = ({children}: Props) => {
 
     const [session, setSession] = useState<Session | null>(null);
     const [alertInfo, setAlertInfo] = useState<AlertMessage | null>(null);
+    const {user} = useSelector((state: RootState) => state.application);
 
     const fetchUser = (userId: string) => client
         .from("user")
@@ -53,8 +56,6 @@ export const AuthGate = ({children}: Props) => {
                             ability.update(defineRulesFor(user));
                             dispatch(onUserChange(user));
                             setSession(session);
-                            if (!user.verified)
-                                return;
                             if (location.state && location.state.from) {
                                 navigate(location.state.from, {replace: true});
                             } else {
@@ -72,7 +73,11 @@ export const AuthGate = ({children}: Props) => {
 
     return <>
         {
-            session ? children : <AuthScreen/>
+            session
+                ? user?.verified
+                    ? children
+                    : <NotVerifiedScreen/>
+                : <AuthScreen/>
         }
         <AlertSnackbar alertInfo={alertInfo} autoHideDuration={1500} close={() => setAlertInfo(null)}/>
     </>

@@ -23,10 +23,8 @@ import React, {useEffect, useState} from "react";
 import {useSelector} from "react-redux";
 import {useClient} from "react-supabase";
 import {TABLE_USER} from "src/constants";
-import {useDependency} from "src/hooks/useDependency";
 import {fetchInsertedKeyHolderAsync, fetchKeysAsync, keyHoldersSelector} from "src/redux/keysSlice";
 import {AppDispatch, RootState, useAppDispatch} from "src/redux/store";
-import {IKeysRepository} from "src/repository/IKeysRepository";
 import {FullKeyHolder, Key, User} from "src/types/supabaseTypes";
 import {SlideUpTransition} from "src/utils";
 import {AlertMessage, AlertSnackbar} from "../AlertSnackbar";
@@ -40,22 +38,21 @@ import EditIcon from "@mui/icons-material/Edit";
 import {TFunction} from "i18next";
 import {useTranslation} from "react-i18next";
 import {KeyHistoryDialog} from "./KeyHistoryDialog";
+import {SupabaseKeysRepository} from "../services/supabase/KeysRepository";
 
 const KeyHolderScreenProvider = () => {
     const {user} = useSelector((state: RootState) => state.application);
-    const keysRepository = useDependency<IKeysRepository>("IKeysRepository");
     const dispatch = useAppDispatch();
     const keyHolders = useSelector((state: RootState) => keyHoldersSelector.selectAll(state));
     const {loading} = useSelector((state: RootState) => state.keys);
     const {t} = useTranslation();
 
-    if (!user || !keysRepository)
+    if (!user)
         return <AlertSnackbar close={() => {
         }} alertInfo={{message: "Fatal error occured. Repository or user was null!", severity: "error"}}/>
 
     return <KeyHolderScreen
         t={t}
-        keysRepository={keysRepository}
         dispatch={dispatch}
         user={user}
         loading={loading}
@@ -63,7 +60,6 @@ const KeyHolderScreenProvider = () => {
 }
 
 type KeyHolderScreenProps = {
-    keysRepository: IKeysRepository,
     dispatch: AppDispatch,
     keyHolders: FullKeyHolder[],
     loading: boolean,
@@ -73,7 +69,7 @@ type KeyHolderScreenProps = {
 
 export const EMPTY_KEY = {name: "", color: "#000000", id: 0, created_at: ""};
 
-const KeyHolderScreen = ({keysRepository, dispatch, keyHolders, loading, user, t}: KeyHolderScreenProps) => {
+const KeyHolderScreen = ({dispatch, keyHolders, loading, user, t}: KeyHolderScreenProps) => {
 
     const [searchUserOpen, setSearchUserOpen] = useState(false);
     const [addOrUpdateKeysOpen, setAddOrUpdateKeysOpen] = useState(false);
@@ -86,19 +82,16 @@ const KeyHolderScreen = ({keysRepository, dispatch, keyHolders, loading, user, t
     const client = useClient();
 
     useEffect(() => {
-        dispatch(fetchKeysAsync(keysRepository));
-    }, [dispatch, keysRepository]);
+        dispatch(fetchKeysAsync());
+    }, [dispatch]);
 
     useEffect(() => {
-        if (!keysRepository)
-            return;
         let subscription = client.channel("public:key_holders")
             .on('postgres_changes', {
                     event: 'UPDATE',
                     schema: 'public',
                     table: 'key_holders'
                 }, payload => dispatch(fetchInsertedKeyHolderAsync({
-                    keysRepository,
                     key: payload.new.key,
                     user: payload.new.user
                 }))
@@ -108,7 +101,6 @@ const KeyHolderScreen = ({keysRepository, dispatch, keyHolders, loading, user, t
                 schema: 'public',
                 table: 'key_holders'
             }, payload => dispatch(fetchInsertedKeyHolderAsync({
-                keysRepository,
                 key: payload.new.key,
                 user: payload.new.user
             })))
@@ -116,7 +108,7 @@ const KeyHolderScreen = ({keysRepository, dispatch, keyHolders, loading, user, t
         return () => {
             subscription.unsubscribe();
         }
-    }, [dispatch, client, keysRepository]);
+    }, [dispatch, client]);
     const userSelected = (user: User) => {
         setSearchUserOpen(false);
         setSelectedUser(user);
@@ -127,12 +119,12 @@ const KeyHolderScreen = ({keysRepository, dispatch, keyHolders, loading, user, t
             setAlertInfo({message: t("keyHandOverError", {error: ""}), severity: "error"});
             return;
         }
-        keysRepository.giveKeyToUser(selectedKeyHolder.key, selectedUser).then((result) => {
+        SupabaseKeysRepository.giveKeyToUser(selectedKeyHolder.key, selectedUser).then((result) => {
             if (result.error)
                 setAlertInfo({message: t("keyHandOverError", {error: result.error}), severity: "error"});
             setSelectedUser(null);
             setSelectedKeyHolder(null);
-            dispatch(fetchKeysAsync(keysRepository));
+            dispatch(fetchKeysAsync());
         });
     }
 
@@ -272,7 +264,7 @@ const KeyHolderScreen = ({keysRepository, dispatch, keyHolders, loading, user, t
         <EditOrAddKeyDialog open={addOrUpdateKeysOpen} handleClose={() => {
             setAddOrUpdateKeysOpen(false);
             setEditingMode(false);
-            dispatch(fetchKeysAsync(keysRepository));
+            dispatch(fetchKeysAsync());
         }} keyToEdit={keyToEdit}/>
     </Box>
 }

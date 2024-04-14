@@ -1,7 +1,7 @@
 import {createAsyncThunk, createEntityAdapter, createSlice, PayloadAction} from "@reduxjs/toolkit";
 import {FullKeyHolder} from "../types/supabaseTypes";
-import {IKeysRepository} from "src/repository/IKeysRepository";
 import {RootState} from "./store";
+import {SupabaseKeysRepository} from "../components/services/supabase/KeysRepository";
 
 const keyHoldersAdapter = createEntityAdapter({
     selectId: (keyHolder: FullKeyHolder) => keyHolder.key.id,
@@ -36,29 +36,27 @@ const keysSlice = createSlice({
             })
 
             .addCase(fetchInsertedKeyHolderAsync.fulfilled, (state, action) => {
-                if(action.payload)
+                if (action.payload)
                     keyHoldersAdapter.upsertMany(state, action.payload);
                 state.loading = false;
             })
     }
 });
 
-export const fetchKeysAsync = createAsyncThunk("fetchKeysAsync", async (keysRepository: IKeysRepository) => {
-    const response = await keysRepository.getKeys();
+export const fetchKeysAsync = createAsyncThunk("fetchKeysAsync", async () => {
+    const response = await SupabaseKeysRepository.getKeys();
 
     return response.data ?? [];
 });
 
 export const fetchInsertedKeyHolderAsync = createAsyncThunk("fetchInsertedKeyHolderAsync", async ({
-                                                                                                      keysRepository,
                                                                                                       key,
                                                                                                       user
-                                                                                                  } : {
-    keysRepository: IKeysRepository,
+                                                                                                  }: {
     key: number,
     user: string
 }) => {
-    const response = await keysRepository.fetchInsertedKey(key, user);
+    const response = await SupabaseKeysRepository.fetchInsertedKey(key, user);
 
     return response.data;
 });
