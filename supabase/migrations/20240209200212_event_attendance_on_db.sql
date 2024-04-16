@@ -11,7 +11,9 @@ begin
     where id = eventId
     limit 1;
 
-    if (select count(*) from event_attendance_user_mapping where event = eventId) >= (Select events."maxAttendees" from events where events.id =  eventId LIMIT 1) then
+if
+((Select events."maxAttendees" from events where events.id =  eventId LIMIT 1) is not null &&
+       select count(*) from event_attendance_user_mapping where event = eventId) >= (Select events."maxAttendees" from events where events.id =  eventId LIMIT 1) then
       --- max attendees reached, new attendance need to be on waiting list
       newState = 'Waiting';
     else

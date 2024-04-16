@@ -374,17 +374,17 @@ const CreateEvent = ({t, eventToEdit, option}: CreateEventProps) => {
                 <ListItem sx={{pt: 0, pb: 0, mb: 2}} key={"maxAttendees"}>
                     <ListItemAvatar>
                         <Checkbox sx={{pl: 0}}
-                                  checked={editedEvent.maxAttendees !== null && editedEvent.maxAttendees > 0}
+                                  checked={editedEvent.maxAttendees !== null}
                                   onChange={() => setEditedEvent({
                                       ...editedEvent,
-                                      maxAttendees: editedEvent.maxAttendees
+                                      maxAttendees: editedEvent.maxAttendees === null ? 0 : null
                                   })}/>
                     </ListItemAvatar>
 
                     <NumberInput
                         fullWidth
-                        disabled={!editedEvent.maxAttendees}
-                        value={editedEvent.maxAttendees ?? undefined}
+                        disabled={editedEvent.maxAttendees === null}
+                        value={editedEvent.maxAttendees}
                         onChange={(event, val) => {
                             if (event.type === 'click')
                                 setEditedEvent({...editedEvent, maxAttendees: val ?? 0});
