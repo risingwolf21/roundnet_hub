@@ -2,7 +2,7 @@ import {useClient} from "react-supabase";
 import {useDispatch, useSelector} from "react-redux";
 import {useLocation, useNavigate} from "react-router-dom";
 import React, {useEffect, useState} from "react";
-import {captureException, setUser} from "@sentry/react";
+import {setUser} from "@sentry/react";
 import {User} from "../types/supabaseTypes";
 import {ability, defineRulesFor} from "../utils/PermissionService";
 import {onUserChange} from "../redux/applicationSlice";
@@ -32,7 +32,8 @@ export const AuthGate = ({children}: Props) => {
         .select("*")
         .eq("userId", userId)
         .returns<User>()
-        .single<User>();
+        .single<User>()
+        .throwOnError();
 
     useEffect(() => {
         client.auth.getSession().then(({data: {session}}) => {
@@ -43,22 +44,22 @@ export const AuthGate = ({children}: Props) => {
                 try {
                     if (!session)
                         throw Error("Session was null");
-                    const {data, error} = await fetchUser(session.user.id)
-                    const user = data;
-                    if (!user || error) {
-                        throw Error("Fetching user in AuthGate was not successful.");
-                    }
-                    setUser({email: session.user.email, id: session.user.id, username: user.displayName});
-                    ability.update(defineRulesFor(user));
-                    dispatch(onUserChange(user));
-                    setSession(session);
-                    if (location.state && location.state.from) {
-                        navigate(location.state.from, {replace: true});
-                    } else {
-                        navigate(`/${HOMEPAGE}`, {replace: true});
-                    }
+                    fetchUser(session.user.id).then(result => {
+                        const user = result.data;
+                        if (!user || result.error) {
+                            throw Error("Fetching user in AuthGate was not successful.");
+                        }
+                        setUser({email: session.user.email, id: session.user.id, username: user.displayName});
+                        ability.update(defineRulesFor(user));
+                        dispatch(onUserChange(user));
+                        setSession(session);
+                        if (location.state && location.state.from) {
+                            navigate(location.state.from, {replace: true});
+                        } else {
+                            navigate(`/${HOMEPAGE}`, {replace: true});
+                        }
+                    })
                 } catch (e) {
-                    captureException(e);
                     setSession(null);
                     ability.update(defineRulesFor(null))
                     dispatch(onUserChange(null));
