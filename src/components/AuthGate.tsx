@@ -2,7 +2,7 @@ import {useClient} from "react-supabase";
 import {useDispatch, useSelector} from "react-redux";
 import {useLocation, useNavigate} from "react-router-dom";
 import React, {useEffect, useState} from "react";
-import {setUser} from "@sentry/react";
+import {captureException, setUser} from "@sentry/react";
 import {User} from "../types/supabaseTypes";
 import {ability, defineRulesFor} from "../utils/PermissionService";
 import {onUserChange} from "../redux/applicationSlice";
@@ -58,6 +58,7 @@ export const AuthGate = ({children}: Props) => {
                         navigate(`/${HOMEPAGE}`, {replace: true});
                     }
                 } catch (e) {
+                    captureException(e);
                     setSession(null);
                     ability.update(defineRulesFor(null))
                     dispatch(onUserChange(null));
