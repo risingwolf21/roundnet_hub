@@ -32,37 +32,32 @@ export const AuthGate = ({children}: Props) => {
         .select("*")
         .eq("userId", userId)
         .returns<User>()
-        .single<User>()
-        .throwOnError();
+        .single<User>();
 
     useEffect(() => {
         client.auth.getSession().then(({data: {session}}) => {
             setSession(session);
         });
         const {data: {subscription}} = client.auth
-            .onAuthStateChange((_event, session) => {
-                if (session) {
-                    fetchUser(session.user.id)
-                        .then((result) => {
-                            const user = result.data;
-                            if (!user || result.error) {
-                                setAlertInfo({
-                                    message: "Fetching user in AuthGate was not successful. " + JSON.stringify(result.error),
-                                    severity: "error"
-                                });
-                                return;
-                            }
-                            setUser({email: session.user.email, id: session.user.id, username: user.displayName});
-                            ability.update(defineRulesFor(user));
-                            dispatch(onUserChange(user));
-                            setSession(session);
-                            if (location.state && location.state.from) {
-                                navigate(location.state.from, {replace: true});
-                            } else {
-                                navigate(`/${HOMEPAGE}`, {replace: true});
-                            }
-                        });
-                } else {
+            .onAuthStateChange(async (_event, session) => {
+                try {
+                    if (!session)
+                        throw Error("Session was null");
+                    const {data, error} = await fetchUser(session.user.id)
+                    const user = data;
+                    if (!user || error) {
+                        throw Error("Fetching user in AuthGate was not successful.");
+                    }
+                    setUser({email: session.user.email, id: session.user.id, username: user.displayName});
+                    ability.update(defineRulesFor(user));
+                    dispatch(onUserChange(user));
+                    setSession(session);
+                    if (location.state && location.state.from) {
+                        navigate(location.state.from, {replace: true});
+                    } else {
+                        navigate(`/${HOMEPAGE}`, {replace: true});
+                    }
+                } catch (e) {
                     setSession(null);
                     ability.update(defineRulesFor(null))
                     dispatch(onUserChange(null));

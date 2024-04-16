@@ -9,11 +9,9 @@ import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
 import Logo from "../images/Karlsruher_Kojoten_Logo.svg";
 import {supabase} from "./services/supabase/supabaseClient";
-import {TABLE_USER} from "../constants";
 import {captureException} from "@sentry/react";
 import {RegistrationError} from "../utils";
 import {AuthViewType} from "./AuthScreen";
-import {Permissions} from "../types/supabaseTypes";
 
 type RegisterProps = {
     email: string,
@@ -30,7 +28,7 @@ const RegisterScreen = ({setAuthView}: RegisterScreenProps) => {
     const [errorMessage, setErrorMessage] = useState("");
 
     const onRegister = async ({email, password, displayName}: RegisterProps) => {
-        const {data, error} = await supabase.auth.signUp({
+        const {error} = await supabase.auth.signUp({
             email: email,
             password: password,
             options: {
@@ -42,46 +40,15 @@ const RegisterScreen = ({setAuthView}: RegisterScreenProps) => {
             }
         });
 
-        if (!data.user || error) {
-            captureException(new RegistrationError("Could not sign up user. The result was empty!"), (scope) => {
+        if (error) {
+            captureException(new RegistrationError("Could not sign up user."), (scope) => {
                 scope.clear();
                 scope.setExtra("displayName", displayName);
                 scope.setExtra("email", email);
+                scope.setExtra("error", JSON.stringify(error));
                 return scope;
             })
-            setErrorMessage("Could not sign up user. The result was empty! [" + error?.message + "]");
-            return;
-        }
-
-        let {error: updatingUserError} = await supabase.auth.updateUser({data: {userId: data.user.id}})
-        let {error: writingError} = await supabase.from(TABLE_USER).upsert({
-            email, displayName, userId: data.user.id, role: "user", permissions: [
-                "use;drink",
-                "view;drink",
-                "use;training",
-                "view;training",
-                "view;groups",
-                "use;user",
-                "view;user",
-                "view;keyFinder"
-            ] as Permissions[]
-        })
-
-        if (error)
-            setErrorMessage(JSON.stringify(error));
-        if (updatingUserError)
-            setErrorMessage(JSON.stringify(updatingUserError));
-        if (writingError)
-            setErrorMessage(JSON.stringify(writingError));
-
-        if (error || updatingUserError || writingError) {
-            captureException(new RegistrationError(""), (scope) => {
-                scope.clear();
-                scope.setExtra("signUpError", JSON.stringify(error))
-                scope.setExtra("updatingUserError", JSON.stringify(updatingUserError))
-                scope.setExtra("writingError", JSON.stringify(writingError))
-                return scope;
-            })
+            setErrorMessage("Could not sign up user. [" + error?.message + "]");
         }
     }
 
