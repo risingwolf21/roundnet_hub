@@ -21,7 +21,7 @@ import {RootState} from "src/redux/store";
 import {SlideUpTransition} from "../../utils";
 import {Group, GroupUpdate} from "../../types/supabaseTypes";
 import KeyIcon from "@mui/icons-material/Key";
-import {SupabaseGroupsRepository} from "../services/supabase/SupabaseGroupsRepository";
+import {GroupsRepository} from "../../repository/GroupsRepository";
 
 type EditOrAddGroupDialogProps = {
     open: boolean,
@@ -62,7 +62,7 @@ export const EditOrAddGroupDialog = ({open, handleClose, groupToEdit}: EditOrAdd
             setErrorSnackbar({message: "Something went wrong. Try again later!", open: true});
             return;
         }
-        SupabaseGroupsRepository.upsertGroup({
+        GroupsRepository.upsertGroup({
             id: currentGroup.id,
             name: currentGroup.name,
             color: currentGroup.color,

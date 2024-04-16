@@ -29,7 +29,7 @@ import {FullHistory, Group, Permissions, User, UserWithGroups} from "../../types
 import moment from "moment";
 import {UserPermissionsDialog} from "./UserPermissionDialog";
 import {captureException} from "@sentry/react";
-import {SupabaseDrinkRepository} from "../services/supabase/DrinkRepository";
+import {SupabaseDrinkRepository} from "../../repository/DrinkRepository";
 
 type EditUserDialogProps = {
     user: UserWithGroups,

@@ -1,5 +1,5 @@
 import {PostgrestSingleResponse} from "@supabase/supabase-js";
-import {TABLE_DRINK, TABLE_HISTORY, TABLE_PAYMENTS} from "../../../constants";
+import {TABLE_DRINK, TABLE_HISTORY, TABLE_PAYMENTS} from "../constants";
 import {
     Drink,
     DrinkCounter,
@@ -8,8 +8,8 @@ import {
     PaymentHistory,
     PaymentInsert,
     PaymentState
-} from "../../../types/supabaseTypes";
-import {supabase} from "./supabaseClient";
+} from "../types/supabaseTypes";
+import {supabase} from "../components/services/supabase/supabaseClient";
 
 export const SupabaseDrinkRepository = {
 

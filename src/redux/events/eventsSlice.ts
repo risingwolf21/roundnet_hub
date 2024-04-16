@@ -2,7 +2,7 @@ import {createAsyncThunk, createEntityAdapter, createSlice, PayloadAction, Updat
 import {Event, EventAttendance, EventUpdate, FullAttendance, FullEvent, Group, User} from "src/types/supabaseTypes";
 import {RootState} from "../store";
 import {onEventAttendanceUpdate, updateAttendanceAsync} from "./eventAttendanceSlice";
-import {SupabaseEventRepository} from "../../components/services/supabase/EventRepository";
+import {SupabaseEventRepository} from "../../repository/EventRepository";
 
 export type SliceEvent = Event & {
     userAttendance: EventAttendance,
