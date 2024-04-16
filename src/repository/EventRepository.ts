@@ -12,58 +12,20 @@ import {
     Group,
     User
 } from "../types/supabaseTypes";
-import {PostgrestError, PostgrestSingleResponse} from '@supabase/supabase-js';
-import moment from "moment";
-import {injectable} from "inversify";
-import {SupabaseRepository} from "./Repository";
-import {formatDateToDatabase} from "src/utils";
+import {PostgrestError, PostgrestSingleResponse} from "@supabase/supabase-js";
 import {add, Duration} from "date-fns";
 import _ from "lodash";
+import {formatDateToDatabase} from "../utils";
+import moment from "moment/moment";
+import {supabase} from "../components/services/supabase/supabaseClient";
 
-export type DbResult<T> = T extends PromiseLike<infer U> ? U : never
-export type DbResultOk<T> = T extends PromiseLike<{ data: infer U }> ? Exclude<U, null> : never
-export type DbResultErr = PostgrestError
-
-export type RepositorySource = "supabase" | "none";
-
-interface IEventRepository {
-    insertEvent(event: EventInsert): Promise<PostgrestSingleResponse<null>>
-
-    updateEndOfOldEvent(eventId: number, recurrenceEnd: string): Promise<PostgrestSingleResponse<null>>
-
-    updateEvent(eventId: number, event: EventUpdate): Promise<PostgrestSingleResponse<null>>
-
-    updateEventAndAllRecurrences(eventUpdate: EventUpdate): Promise<PostgrestSingleResponse<null>>
-
-    fetchEvents(user: User, userGroups: number[], page: number, count: number): Promise<PostgrestSingleResponse<FullEvent[]>>
-
-    updateCancellationForEvent(eventId: number, isCancelled: boolean): Promise<PostgrestSingleResponse<null>>
-
-    deleteEvent(eventId: number): Promise<PostgrestSingleResponse<null>>
-
-    deleteEventAndUpcomingEvents(eventId: number, key: string, startDateTime: string | null): Promise<void>
-
-    updateAttendance(userId: string, eventId: number, state: EventAttendance): Promise<PostgrestSingleResponse<EventAttendanceMapping>>
-
-    insertComment(user: User, eventId: number, comment: string): Promise<PostgrestSingleResponse<Comment>>
-
-    fetchEventAttendance(eventId: number): Promise<PostgrestSingleResponse<FullAttendance[]>>
-
-    fetchEventComments(eventId: number): Promise<PostgrestSingleResponse<FullComment[]>>
-
-    fetchSingleEvent(eventId: number): Promise<PostgrestSingleResponse<FullEvent>>
-
-    fetchUserGroups(user: User): Promise<PostgrestSingleResponse<{ user: { userId: string }, group: Group }[]>>
-}
-
-@injectable()
-class SupabaseEventRepository extends SupabaseRepository implements IEventRepository {
+export const SupabaseEventRepository = {
     async updateEventAndAllRecurrences(eventUpdate: EventUpdate): Promise<PostgrestSingleResponse<null>> {
 
         const {
             data,
             error
-        } = await this.client.from("events").select("*").eq("key", eventUpdate.key ?? '').gte("id", eventUpdate.id).order("id").returns<Event[]>();
+        } = await supabase.from("events").select("*").eq("key", eventUpdate.key ?? '').gte("id", eventUpdate.id).order("id").returns<Event[]>();
 
         if (!data || error) {
             return {
@@ -100,44 +62,44 @@ class SupabaseEventRepository extends SupabaseRepository implements IEventReposi
             } as EventInsert;
         });
 
-        return this.client
+        return supabase
             .from("events")
             .upsert(events)
             .throwOnError();
-    }
+    },
 
 
     async fetchEventComments(eventId: number): Promise<PostgrestSingleResponse<FullComment[]>> {
-        return this.client.from("event_comments")
+        return supabase.from("event_comments")
             .select("user(userId, displayName, avatarUrl), *")
             .eq("event", eventId)
             .returns<FullComment[]>()
             .throwOnError()
-    }
+    },
 
     async updateEndOfOldEvent(eventId: number, recurrenceEnd: string): Promise<PostgrestSingleResponse<null>> {
-        return this.client
+        return supabase
             .from("events")
             .update({
                 recurrenceEnd: recurrenceEnd
             }).eq("id", eventId)
             .throwOnError()
-    }
+    },
 
     async updateEvent(eventId: number, event: EventUpdate): Promise<PostgrestSingleResponse<null>> {
-        return this.client
+        return supabase
             .from("events")
             .update(event)
             .eq("id", eventId)
             .throwOnError()
-    }
+    },
 
     async insertEvent(event: EventInsert): Promise<PostgrestSingleResponse<null>> {
-        return this.client.from("events").insert(event).throwOnError();
-    }
+        return supabase.from("events").insert(event).throwOnError();
+    },
 
     async insertComment(user: User, eventId: number, comment: string): Promise<PostgrestSingleResponse<Comment>> {
-        return this.client.from("event_comments")
+        return supabase.from("event_comments")
             .insert({
                 user: user.userId,
                 event: eventId,
@@ -147,51 +109,51 @@ class SupabaseEventRepository extends SupabaseRepository implements IEventReposi
             .select()
             .single<Comment>()
             .throwOnError();
-    }
+    },
 
-    async updateAttendance(userId: string, eventId: number, state: "Declined" | "Attending" | "Unanswered"): Promise<PostgrestSingleResponse<EventAttendanceMapping>> {
-        return this.client.rpc("update_attendance", {
+    async updateAttendance(userId: string, eventId: number, state: EventAttendance): Promise<PostgrestSingleResponse<EventAttendanceMapping>> {
+        return supabase.rpc("update_attendance", {
             eventid: eventId,
             userid: userId,
             state
         })
             .returns<EventAttendanceMapping>()
             .throwOnError();
-    }
+    },
 
     async deleteEvent(eventId: number): Promise<PostgrestSingleResponse<null>> {
-        return this.client
+        return supabase
             .from("events")
             .delete()
             .eq("id", eventId)
             .throwOnError()
-    }
+    },
 
     async deleteEventAndUpcomingEvents(eventId: number, key: string, startDateTime: string | null): Promise<void> {
-        await this.client
+        await supabase
             .from("events")
             .delete()
             .eq("key", key)
             .gt("startingDateTime", startDateTime);
 
-        await this.client
+        await supabase
             .from("events")
             .update({
                 recurrenceEnd: moment().format("yyyy-MM-DD HH:mm:ssZ")
             })
             .eq("id", eventId);
-    }
+    },
 
     async updateCancellationForEvent(eventId: number, isCancelled: boolean): Promise<PostgrestSingleResponse<null>> {
-        return this.client
+        return supabase
             .from("events")
             .update({isCancelled: isCancelled})
             .eq("id", eventId)
             .throwOnError()
-    }
+    },
 
     async fetchEvents(user: User, userGroups: number[], page: number, count: number): Promise<PostgrestSingleResponse<FullEvent[]>> {
-        return this.client.from("events")
+        return supabase.from("events")
             .select("*, fullGroup: event_group(id, created_at, description, name, color), attendance: event_attendance_user_mapping ( state , user(userId, displayName, avatarUrl)  ), comments: event_comments ( comment, created_at, displayName, event, user ( displayName, userId, avatarUrl))")
             // get events that are on the same day or later
             .gt("startingDateTime", formatDateToDatabase(new Date()))
@@ -202,33 +164,30 @@ class SupabaseEventRepository extends SupabaseRepository implements IEventReposi
             .order("startingDateTime", {ascending: true})
             .returns<FullEvent[]>()
             .throwOnError();
-    }
+    },
 
     async fetchUserGroups(user: User): Promise<PostgrestSingleResponse<{ user: { userId: string }, group: Group }[]>> {
-        return this.client.from("group_user_mapping")
+        return supabase.from("group_user_mapping")
             .select("user(userId), group(*)")
             .eq("user.userId", user.userId)
             .not("user", "is", null)
             .returns<{ user: { userId: string }, group: Group }[]>()
             .throwOnError();
-    }
+    },
 
     async fetchEventAttendance(eventId: number): Promise<PostgrestSingleResponse<FullAttendance[]>> {
-        return this.client.from("event_attendance_user_mapping")
+        return supabase.from("event_attendance_user_mapping")
             .select("user(userId, displayName, avatarUrl), *")
             .eq("event", eventId)
             .returns<FullAttendance[]>()
             .throwOnError();
-    }
+    },
 
     async fetchSingleEvent(eventId: number): Promise<PostgrestSingleResponse<FullEvent>> {
-        return this.client.from("events")
+        return supabase.from("events")
             .select("*, group(*), attendance: event_attendance_user_mapping ( state , user(userId, displayName, avatarUrl)  ), comments: event_comments ( comment, created_at, displayName, event, user ( displayName, userId, avatarUrl))")
             .eq("id", eventId)
             .single<FullEvent>()
             .throwOnError();
     }
-
 }
-
-export {SupabaseEventRepository, IEventRepository}

@@ -40,7 +40,7 @@ import {Database} from "src/types/supabase";
 import Compressor from 'compressorjs';
 import {fetchCurrentUserAsync} from "src/redux/applicationSlice";
 import {uuid} from "@supabase/supabase-js/dist/main/lib/helpers";
-import {SupabaseEventRepository} from "./services/supabase/EventRepository";
+import {SupabaseEventRepository} from "../repository/EventRepository";
 
 type UserScreenProps = {
     user: User,

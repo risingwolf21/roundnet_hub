@@ -9,7 +9,7 @@ import {useTranslation} from "react-i18next"
 import {TFunction} from "i18next"
 import {NotificationTags, User} from "src/types/supabaseTypes"
 import {AlertMessage, AlertSnackbar} from "./AlertSnackbar"
-import {SupabaseUserRepository} from "./services/supabase/UserRepository";
+import {SupabaseUserRepository} from "../repository/UserRepository";
 
 const userTags: NotificationTags[] = ["eventComments", "userRegistration", "paymentRequest", "paymentPending"]
 

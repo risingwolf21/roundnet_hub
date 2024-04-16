@@ -1,7 +1,7 @@
 import {createAsyncThunk, createEntityAdapter, createSlice, PayloadAction} from "@reduxjs/toolkit";
 import {FullKeyHolder} from "../types/supabaseTypes";
 import {RootState} from "./store";
-import {SupabaseKeysRepository} from "../components/services/supabase/KeysRepository";
+import {SupabaseKeysRepository} from "../repository/KeysRepository";
 
 const keyHoldersAdapter = createEntityAdapter({
     selectId: (keyHolder: FullKeyHolder) => keyHolder.key.id,

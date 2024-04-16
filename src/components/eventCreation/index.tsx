@@ -42,7 +42,7 @@ import {SelectGroupDialog} from "./SelectGroupDialog";
 import {dayjsFromDb, formatDateToDatabase} from "src/utils";
 import {NumberInput} from "../mui/NumberInput";
 import {LoadingIndicator} from "../LoadingIndicator";
-import {SupabaseEventRepository} from "../services/supabase/EventRepository";
+import {SupabaseEventRepository} from "../../repository/EventRepository";
 
 const emptyEvent = {
     title: "",

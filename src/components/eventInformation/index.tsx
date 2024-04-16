@@ -34,7 +34,7 @@ import EventInformationAttendance from "./EventInformationAttendance";
 import EventInformationComments from "./EventInformationComments";
 import {EditEventOptionsDialog} from "./EditEventOptionsDialog";
 import {isBefore} from "date-fns";
-import {SupabaseEventRepository} from "../services/supabase/EventRepository";
+import {SupabaseEventRepository} from "../../repository/EventRepository";
 
 const EventInformation = ({
                               dispatch,

@@ -21,7 +21,7 @@ import {RootState} from "src/redux/store";
 import {SlideUpTransition} from "../../utils";
 import {Key, KeyUpdate} from "../../types/supabaseTypes";
 import KeyIcon from "@mui/icons-material/Key";
-import {SupabaseKeysRepository} from "../services/supabase/KeysRepository";
+import {SupabaseKeysRepository} from "../../repository/KeysRepository";
 
 type EditOrAddKeyDialogProps = {
     open: boolean,

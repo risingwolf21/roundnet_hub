@@ -5,7 +5,7 @@ import {captureException} from "@sentry/react";
 import {Alert, List, ListItem, ListItemText} from "@mui/material";
 import {format} from "date-fns";
 import {LoadingIndicator} from "../LoadingIndicator";
-import {SupabaseKeysRepository} from "../services/supabase/KeysRepository";
+import {SupabaseKeysRepository} from "../../repository/KeysRepository";
 
 type KeyHistoryDialogProps = {
     open: boolean,

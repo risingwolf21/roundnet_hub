@@ -17,7 +17,7 @@ import {Group, UserWithGroups} from "../types/supabaseTypes";
 import {LoadingIndicator} from "./LoadingIndicator";
 import {useSelector} from "react-redux";
 import {RootState} from "../redux/store";
-import {SupabaseUserRepository} from "./services/supabase/UserRepository";
+import {SupabaseUserRepository} from "../repository/UserRepository";
 
 const UserScreen = () => {
 

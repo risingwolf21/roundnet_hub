@@ -2,7 +2,7 @@ import {createAsyncThunk, createEntityAdapter, createSlice, PayloadAction} from 
 import {toInteger} from "lodash";
 import {Comment, EventCommentUpdate, FullComment, User} from "src/types/supabaseTypes";
 import {PostgrestError} from "@supabase/supabase-js";
-import {SupabaseEventRepository} from "../../components/services/supabase/EventRepository";
+import {SupabaseEventRepository} from "../../repository/EventRepository";
 
 type SliceComments = {
     id: number,

@@ -38,7 +38,7 @@ import EditIcon from "@mui/icons-material/Edit";
 import {TFunction} from "i18next";
 import {useTranslation} from "react-i18next";
 import {KeyHistoryDialog} from "./KeyHistoryDialog";
-import {SupabaseKeysRepository} from "../services/supabase/KeysRepository";
+import {SupabaseKeysRepository} from "../../repository/KeysRepository";
 
 const KeyHolderScreenProvider = () => {
     const {user} = useSelector((state: RootState) => state.application);

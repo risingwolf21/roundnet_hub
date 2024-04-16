@@ -14,7 +14,7 @@ import {Error} from "../Error";
 import {SwipeableDialog} from "../SwipeableDialog";
 import DrinkList from "./DrinkList";
 import {DrinkListScreenProps} from "./types";
-import {SupabaseDrinkRepository} from "../services/supabase/DrinkRepository";
+import {SupabaseDrinkRepository} from "../../repository/DrinkRepository";
 
 const SUCCESS_MESSAGE_INFO: AlertMessage = {message: "Getränke erfolgreich gebucht!", severity: "success"};
 
