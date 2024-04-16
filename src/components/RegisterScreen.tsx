@@ -13,6 +13,7 @@ import {TABLE_USER} from "../constants";
 import {captureException} from "@sentry/react";
 import {RegistrationError} from "../utils";
 import {AuthViewType} from "./AuthScreen";
+import {Permissions} from "../types/supabaseTypes";
 
 type RegisterProps = {
     email: string,
@@ -58,11 +59,12 @@ const RegisterScreen = ({setAuthView}: RegisterScreenProps) => {
                 "use;drink",
                 "view;drink",
                 "use;training",
+                "view;training",
                 "view;groups",
                 "use;user",
                 "view;user",
                 "view;keyFinder"
-            ]
+            ] as Permissions[]
         })
 
         if (error)
