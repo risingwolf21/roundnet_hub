@@ -3,6 +3,7 @@ import {
     Avatar,
     Box,
     Button,
+    CircularProgress,
     Container,
     Fab,
     Grid,
@@ -82,10 +83,12 @@ const UserScreen = ({user, client, dispatch, groups}: UserScreenProps) => {
     const [currentUser, setCurrentUser] = useState(user);
     const [firstName, setFirstName] = useState(user.displayName.split(" ")[0]);
     const [surName, setSueName] = useState(user.displayName.split(" ")[1] ?? "");
+    const [loadingSave, setLoadingSave] = useState(false);
 
     const handleSubmit = async () => {
+        setLoadingSave(true);
         if (croppedImage) {
-            var fileName = uuid() + ".jpg";
+            let fileName = uuid() + ".jpg";
             new Compressor(dataURLtoFile(croppedImage, fileName), {
                 convertSize: 1000000, // 1 MB
                 success: async (file) => {
@@ -104,8 +107,9 @@ const UserScreen = ({user, client, dispatch, groups}: UserScreenProps) => {
                 }
             });
         } else {
-            updateDisplayName(currentUser.avatarUrl);
+            await updateDisplayName(currentUser.avatarUrl);
         }
+        setLoadingSave(false);
     };
 
     const removeOldAvatarImages = async () => {
@@ -282,7 +286,8 @@ const UserScreen = ({user, client, dispatch, groups}: UserScreenProps) => {
                 <Fab key={"saveButton"} variant="extended"
                      sx={{background: "#66bb6a", color: "#fff", position: "fixed", right: "16px", bottom: "72px"}}
                      onClick={handleSubmit}>
-                    <Save sx={{color: "white", mr: 1}}/>
+                    {loadingSave ? <CircularProgress size={"20px"} sx={{color: "white", mr: 1}}/> :
+                        <Save sx={{color: "white", mr: 1}}/>}
                     Speichern
                 </Fab>
             }

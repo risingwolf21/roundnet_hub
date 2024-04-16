@@ -2,7 +2,7 @@ import React from 'react';
 import AppBar from '@mui/material/AppBar';
 import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
-import {Button, IconButton} from "@mui/material";
+import {Avatar, Button, IconButton} from "@mui/material";
 import {useNavigate} from 'react-router-dom';
 import {AccountCircle, ArrowBack, Refresh} from '@mui/icons-material';
 import {useSelector} from 'react-redux';
@@ -29,11 +29,23 @@ export const AppBarLogoutAction = ({
 }
 
 export const AppBarAccountAction = ({
-                                        click, isVisible
-                                    }: { click?: () => any, isVisible?: boolean }) => {
+                                        click, isVisible, profileUrl
+                                    }: {
+    click?: () => any,
+    isVisible?: boolean,
+    profileUrl: string | null | undefined
+}) => {
     if (click && isVisible) {
-        return <IconButton color="inherit" onClick={click}>
-            <AccountCircle/>
+        return <IconButton color="inherit" onClick={click} sx={{pr: 0}}>
+            {
+                profileUrl
+                    ? <Avatar sx={{borderRadius: 2, width: "35px", height: "35px"}}>
+                        <img src={profileUrl} alt="logo"
+                             width={"35px"}
+                             height={"35px"}/>
+                    </Avatar>
+                    : <AccountCircle/>
+            }
         </IconButton>
     }
     return null;
@@ -69,7 +81,7 @@ const CustomAppBar = ({navigateBack = false, title = "Roundnet Karlsruhe", onRef
                 {title}
             </Typography>
 
-            <AppBarAccountAction click={() => navigate("/user")}
+            <AppBarAccountAction click={() => navigate("/user")} profileUrl={user?.avatarUrl}
                                  isVisible={user?.userId !== undefined && onLogout === undefined}/>
 
             <AppBarLogoutAction click={onLogout} isVisible={onLogout !== undefined}/>
