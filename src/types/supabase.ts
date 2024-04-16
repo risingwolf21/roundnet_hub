@@ -304,18 +304,18 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "history_payment_fkey"
-            columns: ["payment"]
-            isOneToOne: false
-            referencedRelation: "payments"
-            referencedColumns: ["id"]
-          },
-          {
             foreignKeyName: "history_user_fkey"
             columns: ["user"]
             isOneToOne: false
             referencedRelation: "user"
             referencedColumns: ["userId"]
+          },
+          {
+            foreignKeyName: "public_history_payment_fkey"
+            columns: ["payment"]
+            isOneToOne: false
+            referencedRelation: "payments"
+            referencedColumns: ["id"]
           },
         ]
       }

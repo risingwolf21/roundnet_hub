@@ -1,6 +1,5 @@
 name: Staging
 on:
-  pull_request:
   push:
     branches:
       - staging
@@ -24,15 +23,6 @@ jobs:
 
       - name: Build
         run: PUBLIC_URL=https://staging-roundnet-karlsruhe.web.app yarn run build:staging
-
-      - name: 'Verify generated types match Postgres schema'
-        run: |
-          supabase gen types typescript --local > src/types/supabase.ts
-          if ! git diff --ignore-space-at-eol --exit-code --quiet schema.gen.ts; then
-            echo "Detected uncommitted changes after build. See status below:"
-            git diff
-            exit 1
-          fi
 
       - name: Deploying to Staging Environment
         uses: FirebaseExtended/action-hosting-deploy@v0

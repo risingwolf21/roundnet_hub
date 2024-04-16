@@ -1,7 +1,7 @@
 import {PostgrestError, PostgrestSingleResponse} from "@supabase/supabase-js";
-import {FullKeyHolder, Key, KeyInsert, User} from "../../../types/supabaseTypes";
-import {formatDateToDatabase} from "../../../utils";
-import {supabase} from "./supabaseClient";
+import {FullKeyHolder, Key, KeyInsert, User} from "../types/supabaseTypes";
+import {formatDateToDatabase} from "../utils";
+import {supabase} from "../components/services/supabase/supabaseClient";
 
 export const SupabaseKeysRepository = {
     async loadKeyHistory(keyId: number): Promise<PostgrestSingleResponse<any>> {

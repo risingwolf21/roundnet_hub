@@ -19,7 +19,7 @@ import {Group} from "src/types/supabaseTypes";
 import {SlideUpTransition} from "../../utils";
 import {SelectGroupDialogProps} from "../eventInformation/types";
 import {PostgrestSingleResponse} from "@supabase/supabase-js";
-import {SupabaseEventRepository} from "../services/supabase/EventRepository";
+import {SupabaseEventRepository} from "../../repository/EventRepository";
 
 export const SelectGroupDialog = ({ open, handleClose, handleSubmit }: SelectGroupDialogProps) => {
 

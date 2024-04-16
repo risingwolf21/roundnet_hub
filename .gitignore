@@ -27,3 +27,5 @@ package-lock.json
 
 .firebase/
 .idea/
+
+/supabase/config.toml

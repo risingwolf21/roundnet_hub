@@ -22,7 +22,7 @@ import CustomAppBar from "./AppBar";
 import EditHistoryEntryDialog from "./EditHistoryEntryDialog";
 import {InfiniteScrollList} from "./InfiniteScrollList";
 import {captureException} from "@sentry/react";
-import {SupabaseDrinkRepository} from "./services/supabase/DrinkRepository";
+import {SupabaseDrinkRepository} from "../repository/DrinkRepository";
 
 export type FullHistoryUpdate = FullHistory & {
     newCount: number
