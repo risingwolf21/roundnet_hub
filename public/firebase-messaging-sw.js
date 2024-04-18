@@ -22,7 +22,7 @@ const messaging = firebase.messaging();
 
 messaging.onBackgroundMessage((payload) => {
     const notificationTitle = payload.notification.title;
-    const notificationOptions: NotificationOptions = {
+    const notificationOptions = {
         body: payload.notification.body,
         icon: "./chrome-touch-icon-192x192.png",
     };
