@@ -17,3 +17,5 @@ policy "Allow all" on "public"."notifications" as permissive for all to public u
 
 alter table
     "public"."notifications" enable row level security;
+
+drop function public.sendnotifications

@@ -4,8 +4,9 @@ import serviceAccount from '../service-account.json' with {type: 'json'}
 
 interface Notification {
     id: string
-    userId: string
-    body: string
+    user: string
+    body: string,
+    title: string,
 }
 
 interface WebhookPayload {
@@ -26,7 +27,7 @@ Deno.serve(async (req) => {
     const {data} = await supabase
         .from('user')
         .select('fcm_token')
-        .eq('userId', payload.record.userId)
+        .eq('userId', payload.record.user)
         .single();
 
     const fcmToken = data!.fcm_token as string
@@ -48,7 +49,7 @@ Deno.serve(async (req) => {
                 message: {
                     token: fcmToken,
                     notification: {
-                        title: `Notification from Supabase`,
+                        title: payload.record.title,
                         body: payload.record.body,
                     },
                 },

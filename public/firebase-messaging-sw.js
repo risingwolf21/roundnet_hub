@@ -22,9 +22,9 @@ const messaging = firebase.messaging();
 
 messaging.onBackgroundMessage((payload) => {
     const notificationTitle = payload.notification.title;
-    const notificationOptions = {
+    const notificationOptions: NotificationOptions = {
         body: payload.notification.body,
-        icon: payload.notification.image,
+        icon: "./chrome-touch-icon-192x192.png",
     };
 
     self.registration.showNotification(notificationTitle, notificationOptions);
