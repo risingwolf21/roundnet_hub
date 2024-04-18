@@ -82,7 +82,7 @@ const defaultConfig = {
     appId: true,
 };
 
-firebase.initializeApp(firebaseConfig);
+firebase.initializeApp(defaultConfig);
 
 // Retrieve firebase messaging
 const messaging = firebase.messaging();
