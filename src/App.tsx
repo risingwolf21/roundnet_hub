@@ -7,7 +7,6 @@ import {LoadingScreen} from "./components/LoadingScreen";
 import UpdateAvailable from './components/UpdateAvailable';
 import {UserScreenProvider} from './components/User';
 import BrowseAdmin from './components/admin/BrowseAdmin';
-import {useOneSignal} from "./hooks/useOneSignal";
 import {useServiceWorker} from './hooks/useServiceWorker';
 import ExecuteEdgeFunctions from "./components/admin/ExecuteEdgeFunctions";
 import NotificationsScreenProvider from "./components/NotificationsScreen";
@@ -17,6 +16,7 @@ import {AuthGate} from "./components/AuthGate";
 import {SupabaseClient} from "./components/SupabaseClient";
 import {SentryRoutes} from "./index";
 import {HOMEPAGE} from "./constants";
+import {FirebaseMessaging} from "./components/FirebaseMessaging";
 
 const FeatureNotAvailable = React.lazy(() => import('./components/FeatureNotAvailable'));
 const HistoryScreenProvider = React.lazy(() => import('./components/HistoryScreen'));
@@ -37,7 +37,6 @@ const ProfileScreen = React.lazy(() => import('./components/Profile'));
 
 const App = () => {
 
-    useOneSignal();
     useInitialFetch();
     const {isUpdateAvailable, updateServiceWorker} = useServiceWorker();
 
@@ -53,58 +52,60 @@ const App = () => {
         }
         <BrowserRouter>
             <AuthGate>
-                <React.Suspense fallback={<LoadingScreen/>}>
-                    <SentryRoutes>
-                        <Route path='/' element={<Navigate replace to={`/${HOMEPAGE}`}/>}/>
-                        <Route path='*' element={<Navigate replace to={`/${HOMEPAGE}`}/>}/>
+                <FirebaseMessaging>
+                    <React.Suspense fallback={<LoadingScreen/>}>
+                        <SentryRoutes>
+                            <Route path='/' element={<Navigate replace to={`/${HOMEPAGE}`}/>}/>
+                            <Route path='*' element={<Navigate replace to={`/${HOMEPAGE}`}/>}/>
 
-                        <Route path='/reset-password' element={<ResetPasswordScreen/>}/>
-                        <Route path='/not-verified' element={<NotVerifiedScreen/>}/>
+                            <Route path='/reset-password' element={<ResetPasswordScreen/>}/>
+                            <Route path='/not-verified' element={<NotVerifiedScreen/>}/>
 
-                        <Route path='/feature-not-available' element={<FeatureNotAvailable/>}/>
+                            <Route path='/feature-not-available' element={<FeatureNotAvailable/>}/>
 
-                        <Route path='/reset-password' element={<ResetPasswordScreen/>}/>
+                            <Route path='/reset-password' element={<ResetPasswordScreen/>}/>
 
-                        <Route path='/browse' element={<Browse/>}/>
-                        <Route path='/browse-admin' element={<BrowseAdmin/>}/>
-                        <Route path="/drinks" element={<DrinkListScreenProvider/>}/>
-                        <Route path="/user"
-                               element={<UserScreenProvider/>}/>
-                        <Route path="/user/:userId"
-                               element={<ProfileScreen/>}/>
-                        <Route path="/history"
-                               element={<HistoryScreenProvider/>}/>
-                        <Route path="/payments"
-                               element={<PayDrinksScreenProvider/>}/>
-                        <Route path="/keys"
-                               element={<KeyHolderScreenProvider/>}/>
+                            <Route path='/browse' element={<Browse/>}/>
+                            <Route path='/browse-admin' element={<BrowseAdmin/>}/>
+                            <Route path="/drinks" element={<DrinkListScreenProvider/>}/>
+                            <Route path="/user"
+                                   element={<UserScreenProvider/>}/>
+                            <Route path="/user/:userId"
+                                   element={<ProfileScreen/>}/>
+                            <Route path="/history"
+                                   element={<HistoryScreenProvider/>}/>
+                            <Route path="/payments"
+                                   element={<PayDrinksScreenProvider/>}/>
+                            <Route path="/keys"
+                                   element={<KeyHolderScreenProvider/>}/>
 
-                        <Route path="/notifications"
-                               element={<NotificationsScreenProvider/>}/>
+                            <Route path="/notifications"
+                                   element={<NotificationsScreenProvider/>}/>
 
-                        <Route path="/trainer/groups"
-                               element={<ManageGroupsProvider/>}/>
-                        <Route path="/trainer/groups/:id"
-                               element={<GroupInformationProvider/>}/>
-                        <Route path="/training" element={<EventScreenProvider/>}/>
-                        <Route path="/training/event/:selectedEventId"
-                               element={<EventInformationProvider/>}/>
-                        <Route path="/training/createOrUpdate/:option"
-                               element={<CreateEventProvider/>}/>
-                        <Route path='/admin/drinks'
-                               element={<AdminDrinkListProvider/>}/>
-                        <Route path="/admin/drinks/history"
-                               element={<AdminHistoryScreenProvider/>}/>
-                        <Route path='/admin/drinks/payments'
-                               element={<PaymentsPendingAdmin/>}/>
-                        <Route path='/admin/users' element={<AdminUserListProvider/>}/>
-                        <Route path='/admin/edgeFunctions'
-                               element={<ExecuteEdgeFunctions/>}/>
-                        <Route path='/admin/supabase' element={<SupabaseClient/>}/>
-                    </SentryRoutes>
-                </React.Suspense>
-                <div style={{width: "100%", height: "56px"}}/>
-                <CustomBottomNavigation/>
+                            <Route path="/trainer/groups"
+                                   element={<ManageGroupsProvider/>}/>
+                            <Route path="/trainer/groups/:id"
+                                   element={<GroupInformationProvider/>}/>
+                            <Route path="/training" element={<EventScreenProvider/>}/>
+                            <Route path="/training/event/:selectedEventId"
+                                   element={<EventInformationProvider/>}/>
+                            <Route path="/training/createOrUpdate/:option"
+                                   element={<CreateEventProvider/>}/>
+                            <Route path='/admin/drinks'
+                                   element={<AdminDrinkListProvider/>}/>
+                            <Route path="/admin/drinks/history"
+                                   element={<AdminHistoryScreenProvider/>}/>
+                            <Route path='/admin/drinks/payments'
+                                   element={<PaymentsPendingAdmin/>}/>
+                            <Route path='/admin/users' element={<AdminUserListProvider/>}/>
+                            <Route path='/admin/edgeFunctions'
+                                   element={<ExecuteEdgeFunctions/>}/>
+                            <Route path='/admin/supabase' element={<SupabaseClient/>}/>
+                        </SentryRoutes>
+                    </React.Suspense>
+                    <div style={{width: "100%", height: "56px"}}/>
+                    <CustomBottomNavigation/>
+                </FirebaseMessaging>
             </AuthGate>
         </BrowserRouter>
     </Grid>
