@@ -26,7 +26,7 @@ if (firebase.messaging.isSupported()) {
         self.registration.showNotification(notificationTitle, {
             body: payload.notification.body,
             icon: "/chrome-touch-icon-192x192.png",
-            tag: payload.notification.id,
+            tag: payload.data.id,
             renotify: true
         });
     });

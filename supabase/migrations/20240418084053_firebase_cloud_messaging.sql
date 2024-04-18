@@ -20,3 +20,19 @@ alter table
     "public"."notifications" enable row level security;
 
 drop function public.sendnotifications
+
+create
+or replace function public.handle_new_user_notification () returns trigger language plpgsql security definer
+set
+  search_path = public as $$
+begin
+insert into public.notifications (body, "user", title)
+values (new.displayName + ' hat sich neu registriert!', new.userId, 'Roundnet Karlsruhe App');
+return new;
+end;
+$$;
+
+create trigger on_auth_user_created_notification
+    after insert
+    on public.user
+    for each row execute procedure public.handle_new_user_notification();

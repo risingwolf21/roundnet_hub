@@ -50,9 +50,11 @@ Deno.serve(async (req) => {
                     token: fcmToken,
                     notification: {
                         title: payload.record.title,
-                        body: payload.record.body,
-                        id: payload.record.id
+                        body: payload.record.body
                     },
+                    data: {
+                        id: payload.record.id
+                    }
                 },
             }),
         }
