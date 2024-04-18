@@ -11,21 +11,25 @@ export function useFirebase(user: User | null) {
         const permission = await Notification.requestPermission();
 
         if (permission === "granted") {
-            const token = await getToken(messaging, {
+            getToken(messaging, {
                 vapidKey: process.env.REACT_APP_FIREBASE_VAPID_KEY,
-            });
-            console.log("notification permission granted", token);
+            }).then(token => {
+                console.log("notification permission granted", token);
 
-            SupabaseUserRepository.updateFCMToken(token, user).then(result => {
-                if (result.error) {
-                    captureException(result.error, scope => {
-                        scope.setExtra("displayName", user.displayName);
-                        scope.setExtra("email", user.email);
-                        scope.setExtra("userId", user.userId);
-                        return scope;
-                    })
-                }
+                SupabaseUserRepository.updateFCMToken(token, user).then(result => {
+                    if (result.error) {
+                        captureException(result.error, scope => {
+                            scope.setExtra("displayName", user.displayName);
+                            scope.setExtra("email", user.email);
+                            scope.setExtra("userId", user.userId);
+                            return scope;
+                        })
+                    }
+                })
+            }).catch(error => {
+                console.log(error);
             })
+
         } else if (permission === "denied") {
             //notifications are blocked
             console.log("You denied for the notification or the user was null", user);
