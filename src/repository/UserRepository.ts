@@ -47,7 +47,7 @@ export const SupabaseUserRepository = {
     async updateFCMToken(fcmToken: string, user: User): Promise<PostgrestSingleResponse<any>> {
         return supabase
             .from("user")
-            .update("fcm_token", fcmToken)
+            .update({fcm_token: fcmToken})
             .eq("userId", user.userId);
     }
 }

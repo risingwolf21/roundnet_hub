@@ -27,7 +27,7 @@ export function useFirebase(user: User | null) {
             })
         } else if (permission === "denied") {
             //notifications are blocked
-            alert("You denied for the notification or the user was null");
+            console.log("You denied for the notification or the user was null", user);
         }
     }
 
