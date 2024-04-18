@@ -1,7 +1,7 @@
 // This optional code is used to register a service worker.
 // register() is not called by default.
 
-import { ServiceWorkerConfig } from "./hooks/useServiceWorker";
+import {ServiceWorkerConfig} from "./hooks/useServiceWorker";
 
 // This lets the app load faster on subsequent visits in production, and gives
 // it offline capabilities. However, it also means that developers (and users)
@@ -39,7 +39,6 @@ export function register(config: ServiceWorkerConfig) {
 
     window.addEventListener('load', () => {
       const swUrl = `${process.env.PUBLIC_URL}/service-worker.js`;
-      //const swUrl = `${process.env.PUBLIC_URL}/OneSignalSDKWorker.js`;
       if (isLocalhost) {
         // This is running on localhost. Let's check if a service worker still exists or not.
         checkValidServiceWorker(swUrl, config);

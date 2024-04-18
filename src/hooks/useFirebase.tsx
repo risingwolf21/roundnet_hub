@@ -14,6 +14,7 @@ export function useFirebase(user: User | null) {
             const token = await getToken(messaging, {
                 vapidKey: process.env.REACT_APP_FIREBASE_VAPID_KEY,
             });
+            console.log("notification permission granted", token);
 
             SupabaseUserRepository.updateFCMToken(token, user).then(result => {
                 if (result.error) {

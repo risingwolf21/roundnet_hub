@@ -12,9 +12,6 @@ import {ExpirationPlugin} from 'workbox-expiration';
 import {createHandlerBoundToURL, precacheAndRoute} from 'workbox-precaching';
 import {registerRoute} from 'workbox-routing';
 import {StaleWhileRevalidate} from 'workbox-strategies';
-/* eslint-disable no-undef */
-importScripts("https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js");
-importScripts("https://www.gstatic.com/firebasejs/8.10.0/firebase-messaging.js");
 
 clientsClaim();
 
@@ -71,28 +68,4 @@ self.addEventListener('message', (event) => {
     if (event.data && event.data.type === 'SKIP_WAITING') {
         self.skipWaiting();
     }
-});
-
-// Initialize the Firebase app in the service worker
-// "Default" Firebase configuration (prevents errors)
-const defaultConfig = {
-    apiKey: true,
-    projectId: true,
-    messagingSenderId: true,
-    appId: true,
-};
-
-firebase.initializeApp(defaultConfig);
-
-// Retrieve firebase messaging
-const messaging = firebase.messaging();
-
-messaging.onBackgroundMessage((payload) => {
-    const notificationTitle = payload.notification.title;
-    const notificationOptions = {
-        body: payload.notification.body,
-        icon: payload.notification.image,
-    };
-
-    self.registration.showNotification(notificationTitle, notificationOptions);
 });
