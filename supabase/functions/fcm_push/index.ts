@@ -51,6 +51,7 @@ Deno.serve(async (req) => {
                     notification: {
                         title: payload.record.title,
                         body: payload.record.body,
+                        id: payload.record.id
                     },
                 },
             }),
