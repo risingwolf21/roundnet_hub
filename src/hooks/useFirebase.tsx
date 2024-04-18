@@ -1,4 +1,4 @@
-import {getToken, onMessage} from "firebase/messaging";
+import {getToken, Messaging, onMessage} from "firebase/messaging";
 import {messaging} from "../firebase/firebaseConfig";
 import {useEffect} from "react";
 import {SupabaseUserRepository} from "../repository/UserRepository";
@@ -6,7 +6,7 @@ import {User} from "../types/supabaseTypes";
 import {captureException} from "@sentry/react";
 
 export function useFirebase(user: User | null) {
-    async function requestPermission(user: User) {
+    async function requestPermission(user: User, messaging: Messaging) {
         //requesting permission using Notification API
         const permission = await Notification.requestPermission();
 
@@ -32,13 +32,15 @@ export function useFirebase(user: User | null) {
         }
     }
 
-    onMessage(messaging, (payload) => {
-        console.log(payload);
-    });
-
     useEffect(() => {
-        if (user !== null)
-            requestPermission(user);
+        messaging.then(messagingResolver => {
+            if (messagingResolver && user) {
+                onMessage(messagingResolver, (payload) => {
+                    console.log(payload);
+                });
+                requestPermission(user, messagingResolver)
+            }
+        });
     }, [user]);
 }
 
