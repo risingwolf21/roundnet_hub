@@ -31,5 +31,3 @@ if (firebase.messaging.isSupported()) {
         });
     });
 }
-
-// Retrieve firebase messaging
