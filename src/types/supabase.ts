@@ -419,6 +419,35 @@ export type Database = {
         }
         Relationships: []
       }
+      notifications: {
+        Row: {
+          body: string
+          created_at: string
+          id: number
+          user: string | null
+        }
+        Insert: {
+          body?: string
+          created_at?: string
+          id?: number
+          user?: string | null
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          id?: number
+          user?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "public_notifications_user_fkey"
+            columns: ["user"]
+            isOneToOne: false
+            referencedRelation: "user"
+            referencedColumns: ["userId"]
+          },
+        ]
+      }
       payments: {
         Row: {
           amountToPay: number
@@ -458,6 +487,7 @@ export type Database = {
           disabled: boolean
           displayName: string
           email: string
+          fcm_token: string | null
           notifications:
             | Database["public"]["Enums"]["NotificationTags"][]
             | null
@@ -472,6 +502,7 @@ export type Database = {
           disabled?: boolean
           displayName?: string
           email?: string
+          fcm_token?: string | null
           notifications?:
             | Database["public"]["Enums"]["NotificationTags"][]
             | null
@@ -486,6 +517,7 @@ export type Database = {
           disabled?: boolean
           displayName?: string
           email?: string
+          fcm_token?: string | null
           notifications?:
             | Database["public"]["Enums"]["NotificationTags"][]
             | null

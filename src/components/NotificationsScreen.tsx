@@ -1,6 +1,17 @@
 import {Save} from "@mui/icons-material"
-import {Box, Checkbox, CircularProgress, Fab, List, ListItemAvatar, ListItemButton, ListItemText} from "@mui/material"
-import React, {useState} from "react"
+import {
+    Box,
+    Button,
+    Checkbox,
+    CircularProgress,
+    Fab,
+    List,
+    ListItemAvatar,
+    ListItemButton,
+    ListItemSecondaryAction,
+    ListItemText
+} from "@mui/material"
+import React, {useEffect, useState} from "react"
 import {useSelector} from "react-redux"
 import {RootState} from "src/redux/store"
 import CustomAppBar from "./AppBar"
@@ -34,6 +45,13 @@ export const NotificationsScreen = ({user, t}: NotificationsScreenProps) => {
     const [activeUserTags, setActiveUserTags] = useState<NotificationTags[]>(user.notifications ?? []);
     const [loading, setLoading] = useState(false);
     const [alertInfo, setAlertInfo] = useState<AlertMessage | null>(null);
+    const [notificationPermissionGranted, setNotificationPermissionGranted] = useState(false);
+
+    useEffect(() => {
+        Notification.requestPermission().then(result => {
+            setNotificationPermissionGranted(result === 'granted')
+        })
+    }, []);
 
     const handleChange = (tag: NotificationTags) => {
         if (!activeUserTags.includes(tag)) {
@@ -60,7 +78,16 @@ export const NotificationsScreen = ({user, t}: NotificationsScreenProps) => {
         <LoadingIndicator loading={false}/>
         <List>
             {
-                userTags.map(x => <ListItemButton key={x} onClick={() => handleChange(x)}>
+                !notificationPermissionGranted && <ListItemButton key={"requestPermission"}>
+                    <ListItemText primary={"Request Notification permissions"}/>
+                    <ListItemSecondaryAction>
+                        <Button variant={"text"} title={"Request"}/>
+                    </ListItemSecondaryAction>
+                </ListItemButton>
+            }
+            {
+                userTags.map(x => <ListItemButton key={x} onClick={() => handleChange(x)}
+                                                  disabled={!notificationPermissionGranted}>
                     <ListItemAvatar>
                         <Checkbox checked={activeUserTags.includes(x)} onChange={(_) => handleChange(x)}/>
                     </ListItemAvatar>
