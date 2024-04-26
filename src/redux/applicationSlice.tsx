@@ -1,6 +1,6 @@
-import {createAsyncThunk, createSlice, PayloadAction} from '@reduxjs/toolkit';
-import {Notification, NotificationTags, User} from '../types/supabaseTypes';
-import {SupabaseUserRepository} from "../repository/UserRepository";
+import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { Notification, NotificationTags, User } from '../types/supabaseTypes';
+import { SupabaseUserRepository } from "../repository/UserRepository";
 
 type ApplicationSliceState = {
     user: User | null,
@@ -9,6 +9,9 @@ type ApplicationSliceState = {
     appVersion: string,
     realtimeState: "CLOSED" | "SUBSCRIBED" | "TIMED_OUT" | "CHANNEL_ERROR",
     updatingNotificationTags: boolean,
+    serviceWorkerInitialized: boolean,
+    serviceWorkerUpdated: boolean,
+    serviceWorkerRegistration: ServiceWorkerRegistration | null,
 }
 
 const initialState = {
@@ -18,6 +21,9 @@ const initialState = {
     appVersion: "",
     realtimeState: "CLOSED",
     updatingNotificationTags: false,
+    serviceWorkerInitialized: false,
+    serviceWorkerUpdated: false,
+    serviceWorkerRegistration: null,
 } as ApplicationSliceState;
 
 export const applicationReducer = createSlice({
@@ -38,6 +44,13 @@ export const applicationReducer = createSlice({
         },
         onRealtimeStateChange: (state, action: PayloadAction<"CLOSED" | "SUBSCRIBED" | "TIMED_OUT" | "CHANNEL_ERROR">) => {
             state.realtimeState = action.payload;
+        },
+        onUpdateServiceWorker: (state, action: PayloadAction<ServiceWorkerRegistration | null>) => {
+            state.serviceWorkerRegistration = action.payload;
+            state.serviceWorkerUpdated = !state.serviceWorkerUpdated;
+        },
+        onServiceWorkerInitialized: (state, action: PayloadAction<undefined>) => {
+            state.serviceWorkerInitialized = !state.serviceWorkerInitialized;
         }
     },
     extraReducers(builder) {
@@ -62,16 +75,16 @@ export const applicationReducer = createSlice({
     },
 });
 
-export const fetchCurrentUserAsync = createAsyncThunk("fetchCurrentUser", async ({userId}: { userId: string }) => {
+export const fetchCurrentUserAsync = createAsyncThunk("fetchCurrentUser", async ({ userId }: { userId: string }) => {
     const response = await SupabaseUserRepository.fetchUser(userId);
     return response.data;
 });
 
 export const removeNotificationPermissionAsync = createAsyncThunk("removeNotificationPermissionAsync",
     async ({
-               user,
-               notificationToRemove
-           }: {
+        user,
+        notificationToRemove
+    }: {
         user: User, notificationToRemove: NotificationTags
     }) => {
         let newNotificationTags = user.notifications
@@ -81,9 +94,9 @@ export const removeNotificationPermissionAsync = createAsyncThunk("removeNotific
 
 export const addNotificationPermissionAsync = createAsyncThunk("addNotificationPermissionAsync",
     async ({
-               user,
-               notificationToAdd
-           }: {
+        user,
+        notificationToAdd
+    }: {
         user: User, notificationToAdd: NotificationTags
     }) => {
         let newNotificationTags = new Set([...(user?.notifications ?? []), notificationToAdd]);
@@ -95,7 +108,9 @@ export const {
     onModeChange,
     onAppUpdateAvailableChange,
     onAppVersionChange,
-    onRealtimeStateChange
+    onRealtimeStateChange,
+    onUpdateServiceWorker,
+    onServiceWorkerInitialized
 } = applicationReducer.actions;
 
 export default applicationReducer.reducer
