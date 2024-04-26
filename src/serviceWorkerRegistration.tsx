@@ -1,7 +1,7 @@
 // This optional code is used to register a service worker.
 // register() is not called by default.
 
-import {ServiceWorkerConfig} from "./hooks/useServiceWorker";
+import { ServiceWorkerConfig } from "./hooks/useServiceWorker";
 
 // This lets the app load faster on subsequent visits in production, and gives
 // it offline capabilities. However, it also means that developers (and users)
@@ -65,6 +65,11 @@ function registerValidSW(swUrl: string, config: ServiceWorkerConfig) {
   navigator.serviceWorker
     .register(swUrl)
     .then((registration) => {
+      // check for updates periodically
+      // every 30 seconds
+      setInterval(() => {
+        registration.update();
+      }, 1000 * 30);
 
       registration.onupdatefound = () => {
         const installingWorker = registration.installing;
