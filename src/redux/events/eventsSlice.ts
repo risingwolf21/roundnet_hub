@@ -33,7 +33,6 @@ const eventsSlice = createSlice({
             state.eventToEdit = action.payload;
         },
         onEventUpdate: (state, action: PayloadAction<EventUpdate>) => {
-            console.log(action)
             let eventSlice = eventsAdapter.getSelectors().selectById(state, action.payload.id ?? -1);
             if (!eventSlice)
                 return;

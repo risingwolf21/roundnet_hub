@@ -34,6 +34,8 @@ const ManageGroupsProvider = React.lazy(() => import('./components/groups/Manage
 const EventInformationProvider = React.lazy(() => import('./components/eventInformation/provider'));
 const EventScreenProvider = React.lazy(() => import('./components/eventList/provider'));
 const ProfileScreen = React.lazy(() => import('./components/Profile'));
+const NotificationScreen = React.lazy(() => import('./components/notifications/NotificationScreen'));
+
 
 const App = () => {
 
@@ -80,6 +82,9 @@ const App = () => {
                                    element={<KeyHolderScreenProvider/>}/>
 
                             <Route path="/notifications"
+                                   element={<NotificationScreen/>}/>
+
+                            <Route path="/notificationPermissions"
                                    element={<NotificationsScreenProvider/>}/>
 
                             <Route path="/trainer/groups"

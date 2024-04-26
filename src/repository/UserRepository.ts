@@ -1,5 +1,5 @@
-import {PostgrestError, PostgrestSingleResponse} from "@supabase/supabase-js";
-import {NotificationTags, User, UserWithGroups} from "../types/supabaseTypes";
+import {PostgrestError, PostgrestResponse, PostgrestSingleResponse} from "@supabase/supabase-js";
+import {Notification, NotificationTags, User, UserWithGroups} from "../types/supabaseTypes";
 import {supabase} from "../components/services/supabase/supabaseClient";
 
 export const SupabaseUserRepository = {
@@ -37,11 +37,13 @@ export const SupabaseUserRepository = {
             .single();
     },
 
-    async updateNotificationTags(notificationTags: NotificationTags[], user: User): Promise<PostgrestSingleResponse<null>> {
+    async updateNotificationTags(notificationTags: NotificationTags[], user: User): Promise<PostgrestSingleResponse<User>> {
         return supabase
             .from("user")
             .update({notifications: notificationTags})
-            .eq("userId", user.userId);
+            .eq("userId", user.userId)
+            .select()
+            .single();
     },
 
     async updateFCMToken(fcmToken: string, user: User): Promise<PostgrestSingleResponse<any>> {
@@ -49,5 +51,19 @@ export const SupabaseUserRepository = {
             .from("user")
             .update({fcm_token: fcmToken})
             .eq("userId", user.userId);
+    },
+
+    async loadNotifications(): Promise<PostgrestSingleResponse<Notification[]>> {
+        return supabase
+            .from("notifications")
+            .select("*")
+            .throwOnError()
+            .returns<Notification[]>()
+    },
+    async markNotificationsAsRead(user: User): Promise<PostgrestSingleResponse<null>> {
+        return supabase
+            .from("notifications")
+            .delete()
+            .eq("user", user.userId)
     }
 }

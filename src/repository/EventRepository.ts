@@ -160,7 +160,6 @@ export const SupabaseEventRepository = {
             .gt("startingDateTime", formatDateToDatabase(new Date()))
             .or(`recurrenceEnd.is.null,recurrenceEnd.gt.'${formatDateToDatabase(new Date())}'`)
             .lt("startingDateTime", formatDateToDatabase(add(new Date(), {weeks: 2})))
-            .in("group", userGroups)
             .range(page * count, page * count + count - 1)
             .order("startingDateTime", {ascending: true})
             .returns<FullEvent[]>()

@@ -1,60 +1,24 @@
-import {AdminPanelSettings, Liquor, List, SportsHandball} from "@mui/icons-material";
+import {AdminPanelSettings, Liquor, List, Notifications, SportsHandball} from "@mui/icons-material";
 import {Badge, BottomNavigation, BottomNavigationAction, Paper} from "@mui/material";
 import {TFunction} from "i18next";
 import React, {SyntheticEvent, useEffect, useState} from "react";
 import {withTranslation} from 'react-i18next';
 import {useDispatch, useSelector} from "react-redux";
 import {useNavigate} from "react-router-dom";
-import {Ability, can} from "src/utils/PermissionService";
+import {can} from "src/utils/PermissionService";
 import {onModeChange} from "../redux/applicationSlice";
 import {RootState} from "../redux/store";
-
-export type Tab = {
-    translationKey: string,
-    path: string,
-    index: number,
-    icon: JSX.Element,
-    ability: Ability[1]
-}
-
-const defaultTabs: Tab[] = [
-    {
-        translationKey: "training",
-        path: "training",
-        index: 1,
-        icon: <SportsHandball/>,
-        ability: "training"
-    },
-    {
-        translationKey: "drinks",
-        path: "drinks",
-        index: 0,
-        icon: <Liquor/>,
-        ability: "drink"
-    },
-    {
-        translationKey: "browse",
-        path: "browse",
-        index: 2,
-        icon: <List/>,
-        ability: "browse"
-    },
-    {
-        translationKey: "admin",
-        path: "browse-admin",
-        index: 3,
-        icon: <AdminPanelSettings/>,
-        ability: "browseAdmin"
-    }
-];
+import {notificationsSelector} from "../redux/notificationsSlice";
+import {HOMEPAGE} from "../constants";
 
 const CustomBottomNavigation = ({t}: { t: TFunction }) => {
 
     let navigate = useNavigate();
     let dispatch = useDispatch();
     const {hasNotVerifiedUsers} = useSelector((state: RootState) => state.adminUsers);
+    const notifications = useSelector((state: RootState) => notificationsSelector.selectAll(state));
     const {user} = useSelector((state: RootState) => state.application);
-    const [tab, setTab] = useState<string>("drinks");
+    const [tab, setTab] = useState<string>(HOMEPAGE);
 
     useEffect(() => {
         setTab(window.location.pathname.substring(1));
@@ -71,21 +35,45 @@ const CustomBottomNavigation = ({t}: { t: TFunction }) => {
 
     return <Paper sx={{position: "fixed", bottom: 0, left: 0, right: 0}} elevation={3}>
         <BottomNavigation
-            showLabels
             value={tab}
             onChange={handleChange}>
             {
-                defaultTabs.filter(x => can("view", x.ability)).map(x => {
-                    return <BottomNavigationAction
-                        key={x.path}
-                        value={x.path}
-                        aria-selected={tab === x.path}
-                        label={t("navigation." + x.translationKey)}
-                        icon={<Badge color="secondary" variant="dot" badgeContent=" "
-                                     invisible={!(x.translationKey === "admin" && hasNotVerifiedUsers)}>
-                            {x.icon}
-                        </Badge>}/>
-                })
+                can("view", "training") && <BottomNavigationAction
+                    key={"training"}
+                    value={"training"}
+                    aria-selected={tab === "training"}
+                    label={t("navigation.training")}
+                    icon={<SportsHandball/>}/>
+            }
+            {
+                can("view", "drink") && <BottomNavigationAction
+                    key={"drinks"}
+                    value={"drinks"}
+                    aria-selected={tab === "drinks"}
+                    label={t("navigation.drinks")}
+                    icon={<Liquor/>}/>
+            }
+            {
+                can("view", "browse") && <BottomNavigationAction
+                    key={"browse"}
+                    value={"browse"}
+                    aria-selected={tab === "browse"}
+                    label={t("navigation.browse")}
+                    icon={<Badge color="secondary" variant="dot" badgeContent={" "}
+                                 invisible={notifications.length < 1}>
+                        <List/>
+                    </Badge>}/>
+            }
+            {
+                can("view", "browseAdmin") && <BottomNavigationAction
+                    key={"admin"}
+                    value={"browse-admin"}
+                    aria-selected={tab === "browse-admin"}
+                    label={t("navigation.admin")}
+                    icon={<Badge color="secondary" variant="dot" badgeContent={" "}
+                                 invisible={!hasNotVerifiedUsers}>
+                        <AdminPanelSettings/>
+                    </Badge>}/>
             }
         </BottomNavigation>
     </Paper>

@@ -7,6 +7,7 @@ import applicationSlice from './applicationSlice'
 import drinksSlice from './drinksSlice'
 import groupsSlice from './groupsSlice'
 import keysSlice from './keysSlice'
+import notificationsSlice from './notificationsSlice'
 import eventAttendanceSlice from './events/eventAttendanceSlice'
 import eventCommentsSlice from './events/eventCommentsSlice'
 import eventsSlice from './events/eventsSlice'
@@ -27,7 +28,8 @@ const store = configureStore({
         adminUsers: adminUsersSlice,
         events: eventsSlice,
         eventAttendance: eventAttendanceSlice,
-        eventComments: eventCommentsSlice
+        eventComments: eventCommentsSlice,
+        notifications: notificationsSlice
     },
     enhancers: (getDefaultEnhancers) => {
         return getDefaultEnhancers.concat(sentryReduxEnhancer);

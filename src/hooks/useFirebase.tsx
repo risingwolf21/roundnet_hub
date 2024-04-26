@@ -4,6 +4,7 @@ import {useEffect} from "react";
 import {SupabaseUserRepository} from "../repository/UserRepository";
 import {User} from "../types/supabaseTypes";
 import {captureException} from "@sentry/react";
+import {toast} from "react-toastify";
 
 export function useFirebase(user: User | null) {
     async function requestPermission(user: User, messaging: Messaging) {
@@ -14,8 +15,6 @@ export function useFirebase(user: User | null) {
             getToken(messaging, {
                 vapidKey: process.env.REACT_APP_FIREBASE_VAPID_KEY,
             }).then(token => {
-                console.log("notification permission granted", token);
-
                 SupabaseUserRepository.updateFCMToken(token, user).then(result => {
                     if (result.error) {
                         captureException(result.error, scope => {
@@ -27,7 +26,12 @@ export function useFirebase(user: User | null) {
                     }
                 })
             }).catch(error => {
-                console.log(error);
+                captureException(error, scope => {
+                    scope.setExtra("displayName", user.displayName);
+                    scope.setExtra("email", user.email);
+                    scope.setExtra("userId", user.userId);
+                    return scope;
+                })
             })
 
         } else if (permission === "denied") {
@@ -40,7 +44,7 @@ export function useFirebase(user: User | null) {
         messaging.then(messagingResolver => {
             if (messagingResolver && user) {
                 onMessage(messagingResolver, (payload) => {
-                    console.log(payload);
+                    toast.info("asdfasdf")
                 });
                 requestPermission(user, messagingResolver)
             }

@@ -9,10 +9,10 @@ import {
     Grid,
     List,
     ListItem,
-    ListItemAvatar,
+    ListItemAvatar, ListItemSecondaryAction,
     ListItemText,
     ListSubheader,
-    Snackbar,
+    Snackbar, Switch,
     TextField
 } from "@mui/material";
 import {useClient} from "react-supabase";
@@ -22,7 +22,7 @@ import React, {useEffect, useState} from "react";
 import {AppDispatch, RootState, useAppDispatch} from "../redux/store";
 import {TABLE_USER} from "../constants";
 import {AlertSnackbar} from "./AlertSnackbar";
-import {Group, User} from "src/types/supabaseTypes";
+import {Group, NotificationTags, User} from "src/types/supabaseTypes";
 import {SupabaseClient} from "@supabase/supabase-js";
 import CropImageDialog from "./CropImageDialog";
 import {
@@ -39,7 +39,11 @@ import {dataURLtoFile, readFile} from "src/utils";
 import {captureException} from "@sentry/react";
 import {Database} from "src/types/supabase";
 import Compressor from 'compressorjs';
-import {fetchCurrentUserAsync} from "src/redux/applicationSlice";
+import {
+    addNotificationPermissionAsync,
+    fetchCurrentUserAsync,
+    removeNotificationPermissionAsync
+} from "src/redux/applicationSlice";
 import {uuid} from "@supabase/supabase-js/dist/main/lib/helpers";
 import {SupabaseEventRepository} from "../repository/EventRepository";
 
@@ -70,6 +74,38 @@ export const UserScreenProvider = () => {
     return <UserScreen user={user} client={client} dispatch={dispatch} groups={groups}/>
 }
 
+const NotificationSwitch = ({title, tag, loading, user, dispatch}: {
+    title: string,
+    tag: NotificationTags,
+    loading: boolean,
+    user: User,
+    dispatch: AppDispatch
+}) => {
+    return <ListItem>
+        <ListItemText primary={title}/>
+        <ListItemSecondaryAction>
+            {
+                loading
+                    ? <CircularProgress/>
+                    : <Switch checked={user.notifications?.includes(tag) ?? false}
+                              onChange={(event) => {
+                                  if (!event.target.checked) {
+                                      dispatch(removeNotificationPermissionAsync({
+                                          user,
+                                          notificationToRemove: tag
+                                      }))
+                                  } else {
+                                      dispatch(addNotificationPermissionAsync({
+                                          user,
+                                          notificationToAdd: tag
+                                      }))
+                                  }
+                              }}/>
+            }
+        </ListItemSecondaryAction>
+    </ListItem>
+}
+
 const UserScreen = ({user, client, dispatch, groups}: UserScreenProps) => {
 
     const [selectedImage, setSelectedImage] = useState<string | ArrayBuffer | null>(null);
@@ -84,6 +120,7 @@ const UserScreen = ({user, client, dispatch, groups}: UserScreenProps) => {
     const [firstName, setFirstName] = useState(user.displayName.split(" ")[0]);
     const [surName, setSueName] = useState(user.displayName.split(" ")[1] ?? "");
     const [loadingSave, setLoadingSave] = useState(false);
+    const {updatingNotificationTags} = useSelector((state: RootState) => state.application);
 
     const handleSubmit = async () => {
         setLoadingSave(true);
@@ -278,6 +315,33 @@ const UserScreen = ({user, client, dispatch, groups}: UserScreenProps) => {
                         </ListItemAvatar>
                         <ListItemText primary={group.name} secondary={group.description}/>
                     </ListItem>)
+                }
+            </List>
+            <List key={"notifications"} subheader={<ListSubheader
+                sx={{
+                    zIndex: "-1",
+                    fontWeight: "bold",
+                    lineHeight: "normal",
+                    my: 2,
+                    pl: 0
+                }}>Benachrichtigungen</ListSubheader>}>
+                <NotificationSwitch title={"Event Kommentare"} tag={"eventComments"}
+                                    loading={updatingNotificationTags} user={user} dispatch={dispatch}/>
+
+                <NotificationSwitch title={"Event abgesagt"} tag={"eventCancelled"}
+                                    loading={updatingNotificationTags} user={user} dispatch={dispatch}/>
+
+                <NotificationSwitch title={"Event aktualisiert"} tag={"eventUpdated"}
+                                    loading={updatingNotificationTags} user={user} dispatch={dispatch}/>
+
+                <NotificationSwitch title={"Event Anwesenheit aktualisiert"} tag={"eventAttedanceChanged"}
+                                    loading={updatingNotificationTags} user={user} dispatch={dispatch}/>
+
+                {
+                    user.role === "admin" &&
+                    <NotificationSwitch title={"Benutzer-Registrierung"} tag={"userRegistration"}
+                                        loading={updatingNotificationTags} user={user}
+                                        dispatch={dispatch}/>
                 }
             </List>
             {
