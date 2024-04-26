@@ -1,4 +1,4 @@
-import {ArrowBack} from "@mui/icons-material";
+import { ArrowBack } from "@mui/icons-material";
 import SearchIcon from "@mui/icons-material/Search";
 import {
     AppBar,
@@ -14,10 +14,10 @@ import {
     ListItemText,
     Toolbar
 } from "@mui/material";
-import {Search, SearchIconWrapper, StyledInputBase} from "./SearchBar";
-import React, {useState} from "react";
-import {SlideUpTransition} from "../utils";
-import {User} from "../types/supabaseTypes";
+import { Search, SearchIconWrapper, StyledInputBase } from "./SearchBar";
+import React, { useState } from "react";
+import { SlideUpTransition } from "../utils";
+import { User } from "../types/supabaseTypes";
 
 type SearchAndSelectUserDialogProps = {
     open: boolean,
@@ -66,7 +66,7 @@ const SearchAndSelectUserDialog = ({ open, handleClose, users, loading, handleSu
                         </SearchIconWrapper>
                         <StyledInputBase
                             placeholder="Search…"
-                            // onChange={(e) => setSearchString(e.target.value)}
+                            onChange={(e) => setSearchString(e.target.value)}
                             inputProps={{ 'aria-label': 'search' }}
                         />
                     </Search>
@@ -79,7 +79,7 @@ const SearchAndSelectUserDialog = ({ open, handleClose, users, loading, handleSu
 
             <List sx={{ width: "100%" }}>
                 {
-                    users && users.map((user: User, index: number) => <ListItem key={index}>
+                    users && users.filter((user) => user.displayName.toLowerCase().includes(searchString.toLowerCase())).map((user: User, index: number) => <ListItem key={index}>
                         <ListItemIcon>
                             <Checkbox checked={selectedUsers.some((x: User) => x.userId === user.userId)} onChange={e => handleChange(e, user)} />
                         </ListItemIcon>
