@@ -26,6 +26,7 @@ if (firebase.messaging.isSupported()) {
         self.registration.showNotification(notificationTitle, {
             body: payload.data.body,
             icon: self.location.origin + "/android-chrome-192x192.png",
+            badge: self.location.origin + "/mstile-150x150.png",
             tag: payload.data.id,
             renotify: true,
             data: {
