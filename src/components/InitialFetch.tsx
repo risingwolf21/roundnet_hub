@@ -3,19 +3,66 @@ import {RootState, useAppDispatch} from "../redux/store";
 import {useClient} from "react-supabase";
 import {fetchSingleEventAsync} from "../redux/events/eventsSlice";
 import {useSelector} from "react-redux";
+import {fetchNotVerifiedUsersAsync} from "../redux/adminUserSlice";
+import {useDependency} from "../hooks/useDependency";
+import {IAdminUsersRepository} from "../repository/IAdminUsersRepository";
+import {
+    fetchNotificationsAsync,
+    onNotificationDelete,
+    onNotificationInsert,
+    onNotificationUpdate
+} from "../redux/notificationsSlice";
+import {NotificationInsert, NotificationUpdate} from "../types/supabaseTypes";
 
 export const useInitialFetch = () => {
     const dispatch = useAppDispatch();
     const client = useClient();
     const {user} = useSelector((state: RootState) => state.application);
+    const adminUserRepository = useDependency<IAdminUsersRepository>("IAdminUsersRepository");
 
-    // useEffect(() => {
-    //     if (sentryRepository) {
-    //         sentryRepository.loadUnresolvedIssues().then((result) => {
-    //             console.log(result);
-    //         })
-    //     }
-    // }, [sentryRepository]);
+    useEffect(() => {
+        if (!user || !adminUserRepository)
+            return;
+
+        dispatch(fetchNotVerifiedUsersAsync(adminUserRepository))
+
+    }, [dispatch, client, user, adminUserRepository]);
+
+    useEffect(() => {
+
+        if (!user)
+            return;
+
+        dispatch(fetchNotificationsAsync(user))
+
+        let subscription = client.channel("public:notifications")
+            .on<NotificationUpdate>('postgres_changes', {
+                    event: 'UPDATE',
+                    schema: 'public',
+                table: 'notifications',
+                filter: `eq.${user.userId}`
+                }, payload => dispatch(onNotificationUpdate(payload.new))
+            )
+            .on('postgres_changes', {
+                    event: 'DELETE',
+                    schema: 'public',
+                table: 'notifications',
+                filter: `eq.${user.userId}`
+                }, payload => dispatch(onNotificationDelete(payload.old.id))
+            )
+            .on<NotificationInsert>('postgres_changes', {
+                    event: 'INSERT',
+                    schema: 'public',
+                table: 'notifications',
+                filter: `eq.${user.userId}`
+                }, payload => dispatch(onNotificationInsert(payload.new))
+            )
+            .subscribe();
+        return () => {
+            subscription.unsubscribe();
+        }
+
+    }, [dispatch, client, user]);
 
     useEffect(() => {
         if (!user)

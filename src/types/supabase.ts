@@ -252,14 +252,14 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "group_user_mapping_group_fkey"
+            foreignKeyName: "public_group_user_mapping_group_fkey"
             columns: ["group"]
             isOneToOne: false
             referencedRelation: "event_group"
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "group_user_mapping_user_fkey"
+            foreignKeyName: "public_group_user_mapping_user_fkey"
             columns: ["user"]
             isOneToOne: false
             referencedRelation: "user"
@@ -423,22 +423,35 @@ export type Database = {
         Row: {
           body: string
           created_at: string
-          id: number
+          id: string
+          issuer: string | null
+          title: string
           user: string | null
         }
         Insert: {
           body?: string
           created_at?: string
-          id?: number
+          id?: string
+          issuer?: string | null
+          title?: string
           user?: string | null
         }
         Update: {
           body?: string
           created_at?: string
-          id?: number
+          id?: string
+          issuer?: string | null
+          title?: string
           user?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "public_notifications_issuer_fkey"
+            columns: ["issuer"]
+            isOneToOne: false
+            referencedRelation: "user"
+            referencedColumns: ["userId"]
+          },
           {
             foreignKeyName: "public_notifications_user_fkey"
             columns: ["user"]
@@ -616,45 +629,6 @@ export type Database = {
         }
         Returns: string[]
       }
-      getusersforeventcommentnotifications: {
-        Args: {
-          event_id: number
-        }
-        Returns: string[]
-      }
-      getusersfornotificationstag: {
-        Args: {
-          tag: Database["public"]["Enums"]["NotificationTags"]
-        }
-        Returns: string[]
-      }
-      getusersforpaymentrequestnotifications: {
-        Args: Record<PropertyKey, never>
-        Returns: string[]
-      }
-      getusersforuserregistrationnotifications: {
-        Args: Record<PropertyKey, never>
-        Returns: string[]
-      }
-      remove_permission_from_all_users: {
-        Args: {
-          permission: Database["public"]["Enums"]["Permissions"]
-        }
-        Returns: undefined
-      }
-      sendnotifications:
-        | {
-            Args: {
-              external_ids: string[]
-            }
-            Returns: number
-          }
-        | {
-            Args: {
-              external_ids: string
-            }
-            Returns: number
-          }
       update_attendance: {
         Args: {
           eventid: number
@@ -677,6 +651,9 @@ export type Database = {
         | "userRegistration"
         | "paymentRequest"
         | "paymentPending"
+        | "eventCancelled"
+        | "eventUpdated"
+        | "eventAttedanceChanged"
       PaymentState: "Open" | "Fulfilled"
       Permissions:
         | "use;drink"
@@ -714,12 +691,13 @@ export type Database = {
 type PublicSchema = Database[Extract<keyof Database, "public">]
 
 export type Tables<
-    PublicTableNameOrOptions extends | keyof (PublicSchema["Tables"] & PublicSchema["Views"])
+  PublicTableNameOrOptions extends
+    | keyof (PublicSchema["Tables"] & PublicSchema["Views"])
     | { schema: keyof Database },
   TableName extends PublicTableNameOrOptions extends { schema: keyof Database }
     ? keyof (Database[PublicTableNameOrOptions["schema"]]["Tables"] &
         Database[PublicTableNameOrOptions["schema"]]["Views"])
-      : never = never,
+    : never = never,
 > = PublicTableNameOrOptions extends { schema: keyof Database }
   ? (Database[PublicTableNameOrOptions["schema"]]["Tables"] &
       Database[PublicTableNameOrOptions["schema"]]["Views"])[TableName] extends {
@@ -727,64 +705,67 @@ export type Tables<
     }
     ? R
     : never
-    : PublicTableNameOrOptions extends keyof (PublicSchema["Tables"] &
-            PublicSchema["Views"])
-        ? (PublicSchema["Tables"] &
-            PublicSchema["Views"])[PublicTableNameOrOptions] extends {
-              Row: infer R
-            }
-            ? R
-            : never
-        : never
+  : PublicTableNameOrOptions extends keyof (PublicSchema["Tables"] &
+        PublicSchema["Views"])
+    ? (PublicSchema["Tables"] &
+        PublicSchema["Views"])[PublicTableNameOrOptions] extends {
+        Row: infer R
+      }
+      ? R
+      : never
+    : never
 
 export type TablesInsert<
-    PublicTableNameOrOptions extends | keyof PublicSchema["Tables"]
+  PublicTableNameOrOptions extends
+    | keyof PublicSchema["Tables"]
     | { schema: keyof Database },
   TableName extends PublicTableNameOrOptions extends { schema: keyof Database }
     ? keyof Database[PublicTableNameOrOptions["schema"]]["Tables"]
-      : never = never,
+    : never = never,
 > = PublicTableNameOrOptions extends { schema: keyof Database }
   ? Database[PublicTableNameOrOptions["schema"]]["Tables"][TableName] extends {
       Insert: infer I
     }
     ? I
     : never
-    : PublicTableNameOrOptions extends keyof PublicSchema["Tables"]
-        ? PublicSchema["Tables"][PublicTableNameOrOptions] extends {
-              Insert: infer I
-            }
-            ? I
-            : never
-        : never
+  : PublicTableNameOrOptions extends keyof PublicSchema["Tables"]
+    ? PublicSchema["Tables"][PublicTableNameOrOptions] extends {
+        Insert: infer I
+      }
+      ? I
+      : never
+    : never
 
 export type TablesUpdate<
-    PublicTableNameOrOptions extends | keyof PublicSchema["Tables"]
+  PublicTableNameOrOptions extends
+    | keyof PublicSchema["Tables"]
     | { schema: keyof Database },
   TableName extends PublicTableNameOrOptions extends { schema: keyof Database }
     ? keyof Database[PublicTableNameOrOptions["schema"]]["Tables"]
-      : never = never,
+    : never = never,
 > = PublicTableNameOrOptions extends { schema: keyof Database }
   ? Database[PublicTableNameOrOptions["schema"]]["Tables"][TableName] extends {
       Update: infer U
     }
     ? U
     : never
-    : PublicTableNameOrOptions extends keyof PublicSchema["Tables"]
-        ? PublicSchema["Tables"][PublicTableNameOrOptions] extends {
-              Update: infer U
-            }
-            ? U
-            : never
-        : never
+  : PublicTableNameOrOptions extends keyof PublicSchema["Tables"]
+    ? PublicSchema["Tables"][PublicTableNameOrOptions] extends {
+        Update: infer U
+      }
+      ? U
+      : never
+    : never
 
 export type Enums<
-    PublicEnumNameOrOptions extends | keyof PublicSchema["Enums"]
+  PublicEnumNameOrOptions extends
+    | keyof PublicSchema["Enums"]
     | { schema: keyof Database },
   EnumName extends PublicEnumNameOrOptions extends { schema: keyof Database }
     ? keyof Database[PublicEnumNameOrOptions["schema"]]["Enums"]
-      : never = never,
+    : never = never,
 > = PublicEnumNameOrOptions extends { schema: keyof Database }
   ? Database[PublicEnumNameOrOptions["schema"]]["Enums"][EnumName]
-    : PublicEnumNameOrOptions extends keyof PublicSchema["Enums"]
-        ? PublicSchema["Enums"][PublicEnumNameOrOptions]
-        : never
+  : PublicEnumNameOrOptions extends keyof PublicSchema["Enums"]
+    ? PublicSchema["Enums"][PublicEnumNameOrOptions]
+    : never

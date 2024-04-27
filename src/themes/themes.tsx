@@ -72,16 +72,8 @@ export const mainTheme = createTheme({
                         "color": "primary"
                     },
                     "style": {
-                        "backgroundColor": "#e9ddff",
+                        "backgroundColor": "primary",
                         "color": "#22005d",
-                        "&:hover": {
-                            "background": "#d5c9ee",
-                            "boxShadow": "0px 2px 4px -1px rgba(0,0,0,0.2),0px 4px 5px 0px rgba(0,0,0,0.14),0px 1px 10px 0px rgba(0,0,0,0.12)"
-                        },
-                        "&:active": {
-                            "background": "#ccc0e6",
-                            "boxShadow": "0px 3px 3px -2px rgba(0,0,0,0.2),0px 3px 4px 0px rgba(0,0,0,0.14),0px 1px 8px 0px rgba(0,0,0,0.12)"
-                        }
                     }
                 },
                 {
@@ -89,16 +81,8 @@ export const mainTheme = createTheme({
                         "color": "secondary"
                     },
                     "style": {
-                        "backgroundColor": "#e8def8",
+                        "backgroundColor": "secondary",
                         "color": "#1e192b",
-                        "&:hover": {
-                            "background": "#d4cbe4",
-                            "boxShadow": "0px 2px 4px -1px rgba(0,0,0,0.2),0px 4px 5px 0px rgba(0,0,0,0.14),0px 1px 10px 0px rgba(0,0,0,0.12)"
-                        },
-                        "&:active": {
-                            "background": "#cbc1da",
-                            "boxShadow": "0px 3px 3px -2px rgba(0,0,0,0.2),0px 3px 4px 0px rgba(0,0,0,0.14),0px 1px 8px 0px rgba(0,0,0,0.12)"
-                        }
                     }
                 },
             ]

@@ -21,13 +21,17 @@ if (firebase.messaging.isSupported()) {
     const messaging = firebase.messaging();
 
     messaging.onBackgroundMessage((payload) => {
-        const notificationTitle = payload.notification.title;
+        const notificationTitle = payload.data.title;
 
         self.registration.showNotification(notificationTitle, {
-            body: payload.notification.body,
-            icon: "/chrome-touch-icon-192x192.png",
+            body: payload.data.body,
+            icon: self.location.origin + "/android-chrome-192x192.png",
+            badge: self.location.origin + "/badge.png",
             tag: payload.data.id,
-            renotify: true
+            renotify: true,
+            data: {
+                url: self.location.origin
+            }
         });
     });
 }
