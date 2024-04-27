@@ -25,9 +25,12 @@ if (firebase.messaging.isSupported()) {
 
         self.registration.showNotification(notificationTitle, {
             body: payload.data.body,
-            icon: "./chrome-touch-icon-192x192.png",
+            icon: "https://roundnet-karslruhe.web.app/android-chrome-192x192.png",
             tag: payload.data.id,
-            renotify: true
+            renotify: true,
+            data: {
+                url: self.location.origin
+            }
         });
     });
 }

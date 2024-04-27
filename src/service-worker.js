@@ -69,3 +69,24 @@ self.addEventListener('message', (event) => {
         self.skipWaiting();
     }
 });
+
+self.addEventListener('notificationclick', event => {
+    const notificationData = event.notification.data;
+
+    if (notificationData.url) {
+        event.waitUntil(
+            self.clients.matchAll({
+                type: 'window'
+            })
+                .then(clients => {
+                    for (let i = 0; i < clients.length; i++) {
+                        const client = clients[i];
+                        if (client.url === '/' && 'focus' in client) return client.focus();
+                    }
+                    if (clients.openWindow) return clients.openWindow('/');
+                })
+        );
+    }
+
+    event.notification.close();
+});
