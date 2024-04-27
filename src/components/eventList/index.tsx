@@ -68,7 +68,7 @@ const EventScreen = ({events, loading, error, endReached, user}: EventScreenProp
         </InfiniteScrollList>
         {
             can("edit", "training") &&
-            <Fab sx={{background: "#66bb6a", position: "fixed", right: "16px", bottom: "76px"}}
+            <Fab sx={{background: "#66bb6a", position: "fixed", right: "16px", bottom: "56px", mb: "16px"}}
                                           onClick={() => navigate("/training/createOrUpdate/InsertEvent")}>
                 {
                     <AddIcon sx={{ color: "white" }} />

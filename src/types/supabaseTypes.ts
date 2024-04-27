@@ -19,6 +19,9 @@ export type Key = Database["public"]["Tables"]["keys"]["Row"];
 export type KeyInsert = Database["public"]["Tables"]["keys"]["Insert"];
 export type KeyUpdate = Database["public"]["Tables"]["keys"]["Update"];
 export type KeyHistory = Database["public"]["Tables"]["key_history"]["Row"];
+export type Notification = Database["public"]["Tables"]["notifications"]["Row"];
+export type NotificationInsert = Database["public"]["Tables"]["notifications"]["Insert"];
+export type NotificationUpdate = Database["public"]["Tables"]["notifications"]["Update"];
 
 export type EventInsert = Database["public"]["Tables"]["events"]["Insert"];
 export type EventUpdate = Database["public"]["Tables"]["events"]["Update"];

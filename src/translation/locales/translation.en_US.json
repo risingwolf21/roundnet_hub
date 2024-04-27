@@ -51,7 +51,8 @@
     "admin": "Admin",
     "browse": "Browse",
     "drinks": "Drinks",
-    "training": "Training"
+    "training": "Training",
+    "notifications": "Notifications"
   },
   "notificationTags": {
     "eventComments": "Event comments",

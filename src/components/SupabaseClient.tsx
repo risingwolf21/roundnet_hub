@@ -19,7 +19,7 @@ import {
 import {AlertMessage, AlertSnackbar} from "./AlertSnackbar";
 import {omit} from "lodash";
 
-const table_names = ["distinct_event", "distinct_drinks", "readable_history", "drink", "event_attendance_user_mapping", "event_comments", "event_group", "events", "group_user_mapping", "history", "key_holders", "keys", "payments"]
+const table_names = ["distinct_event", "distinct_drinks", "readable_history", "drink", "user", "event_attendance_user_mapping", "event_comments", "event_group", "events", "group_user_mapping", "history", "key_history", "key_holders", "keys", "payments", "notifications"]
 export const SupabaseClient = () => {
 
     const [selectedTable, setSelectedTable] = useState<typeof table_names[number]>("drink");
@@ -49,7 +49,7 @@ export const SupabaseClient = () => {
             case "key_holders":
                 return row.key + row.user;
             case "user":
-                return row.user;
+                return row.userId;
             default:
                 return row.id;
         }
@@ -238,7 +238,7 @@ export const SupabaseClient = () => {
                          setOpen={() => setSelectTableOpen(true)} title={"Tablle auswählen"}>
             <List>
                 {
-                    table_names.map(x => <ListItemButton onClick={() => {
+                    table_names.map(x => <ListItemButton key={x} onClick={() => {
                         setSelectedTable(x);
                         setSelectTableOpen(false);
                     }}>

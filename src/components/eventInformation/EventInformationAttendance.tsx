@@ -192,7 +192,7 @@ const EventInformationAttendance = ({
             open={eventAttendanceState.open}
             index={eventAttendanceState.index}
             hasWaitingList={attendance.some(x => x.state === "Waiting")}
-            setOpen={(value) => setEventAttendanceState({open: value, index: 0})}
+            setOpen={(value) => setEventAttendanceState({open: value, index: eventAttendanceState.index})}
             attendance={attendance}/>
     </Container>
 }

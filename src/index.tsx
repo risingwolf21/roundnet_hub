@@ -1,40 +1,42 @@
-import {ThemeProvider} from '@mui/material';
-import {LocalizationProvider} from '@mui/x-date-pickers';
-import {AdapterDayjs} from '@mui/x-date-pickers/AdapterDayjs';
+import { ThemeProvider } from '@mui/material';
+import { LocalizationProvider } from '@mui/x-date-pickers';
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import * as Sentry from "@sentry/react";
-import {Container} from 'inversify';
-import React, {createContext, ReactNode} from 'react';
+import { Container } from 'inversify';
+import React, { createContext, ReactNode } from 'react';
 import ReactDOM from 'react-dom/client';
-import {Provider} from 'react-redux';
-import {Provider as SupabaseProvider} from "react-supabase";
+import { Provider } from 'react-redux';
+import { Provider as SupabaseProvider } from "react-supabase";
 import "reflect-metadata";
 import App from './App';
-import {supabase} from './components/services/supabase/supabaseClient';
+import { supabase } from './components/services/supabase/supabaseClient';
 import "./global.css";
 import store from './redux/store';
 import container from './repository/Container';
-import {mainTheme} from './themes/themes';
+import { mainTheme } from './themes/themes';
 import "./translation/i18n";
 //@ts-ignore
 import "src/apocalypseHandler.js";
-import {createRoutesFromChildren, matchRoutes, Routes, useLocation, useNavigationType} from "react-router-dom";
+import { createRoutesFromChildren, matchRoutes, Routes, useLocation, useNavigationType } from "react-router-dom";
+import { SupabaseClient } from '@supabase/supabase-js'
+import { SupabaseIntegration } from '@supabase/sentry-js-integration'
 
 type Props = {
     children: ReactNode,
     container: Container
 }
 
-export const DependencyContext = createContext<{ container: Container | null }>({container: null});
+export const DependencyContext = createContext<{ container: Container | null }>({ container: null });
 
-const DependencyProvider = ({container, children}: Props) => {
-    return <DependencyContext.Provider value={{container: container}}>
+const DependencyProvider = ({ container, children }: Props) => {
+    return <DependencyContext.Provider value={{ container: container }}>
         {children}
     </DependencyContext.Provider>
 }
 
 export const SentryRoutes = Sentry.withSentryReactRouterV6Routing(Routes);
 
-if (process.env.REACT_APP_ENV !== "development") {
+if (process.env.REACT_APP_ENV === "production") {
     Sentry.init({
         dsn: "https://a06f63fae5ab4ce4ac291d0d6fb4e989@o4505379650666496.ingest.sentry.io/4505379651649536",
         environment: process.env.REACT_APP_ENV,
@@ -45,6 +47,11 @@ if (process.env.REACT_APP_ENV !== "development") {
                 useNavigationType,
                 createRoutesFromChildren,
                 matchRoutes,
+            }),
+            new SupabaseIntegration(SupabaseClient, {
+                tracing: true,
+                breadcrumbs: true,
+                errors: true,
             }),
         ],
         tracesSampleRate: 1.0,
@@ -60,7 +67,7 @@ root.render(
             <SupabaseProvider value={supabase}>
                 <DependencyProvider container={container}>
                     <LocalizationProvider dateAdapter={AdapterDayjs}>
-                        <App/>
+                        <App />
                     </LocalizationProvider>
                 </DependencyProvider>
             </SupabaseProvider>

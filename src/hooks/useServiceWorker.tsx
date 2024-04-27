@@ -1,5 +1,8 @@
 import { useState, useEffect, useMemo } from "react";
 import * as serviceWorker from "../serviceWorkerRegistration";
+import { onServiceWorkerInitialized, onUpdateServiceWorker } from "src/redux/applicationSlice";
+import { RootState, useAppDispatch } from "src/redux/store";
+import { useSelector } from "react-redux";
 
 export type ServiceWorkerConfig = {
     onUpdate: (registration: ServiceWorkerRegistration) => void,
@@ -7,36 +10,28 @@ export type ServiceWorkerConfig = {
 }
 
 export const useServiceWorker = () => {
-    const [waitingServiceWorker, setWaitingServiceWorker] = useState<ServiceWorker | null>(null);
-    const [isUpdateAvailable, setUpdateAvailable] = useState(false);
+    const { serviceWorkerUpdated, serviceWorkerRegistration } = useSelector((state: RootState) => state.application);
+    const dispatch = useAppDispatch();
 
-    useEffect(() => {
-        serviceWorker.register({
-            onUpdate: (registration: ServiceWorkerRegistration) => {
-                setWaitingServiceWorker(registration.waiting);
-                setUpdateAvailable(true);
-            },
-            onSuccess: () => {
-                setUpdateAvailable(true);
-            }
-        });
-    }, []);
+    serviceWorker.register({
+        onUpdate: (registration: ServiceWorkerRegistration) => dispatch(onUpdateServiceWorker(registration)),
+        onSuccess: () => dispatch(onServiceWorkerInitialized())
+    });
 
     const value = useMemo(() => ({
-        isUpdateAvailable,
+        serviceWorkerUpdated,
         updateServiceWorker: () => {
-            if (waitingServiceWorker) {
-                waitingServiceWorker.postMessage({ type: 'SKIP_WAITING' });
-                waitingServiceWorker.addEventListener('statechange', (e: Event) => {
+            if (serviceWorkerRegistration?.waiting) {
+                serviceWorkerRegistration.waiting.postMessage({ type: 'SKIP_WAITING' });
+                serviceWorkerRegistration.waiting.addEventListener('statechange', (e: Event) => {
                     const sw = e?.target as ServiceWorker;
                     if (sw.state === 'activated') {
-                        setUpdateAvailable(false);
                         window.location.reload();
                     }
                 });
             }
         }
-    }), [isUpdateAvailable, waitingServiceWorker]);
+    }), [serviceWorkerUpdated, serviceWorkerRegistration]);
 
-    return { isUpdateAvailable: value.isUpdateAvailable, updateServiceWorker: value.updateServiceWorker }
+    return { isUpdateAvailable: value.serviceWorkerUpdated, updateServiceWorker: value.updateServiceWorker }
 }
