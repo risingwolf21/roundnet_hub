@@ -72,7 +72,7 @@ self.addEventListener('message', (event) => {
 
 self.addEventListener('notificationclick', event => {
     const notificationData = event.notification.data;
-
+    console.log("notificationclick", notificationData)
     if (notificationData.url) {
         event.waitUntil(
             self.clients.matchAll({
