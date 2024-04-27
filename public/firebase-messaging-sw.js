@@ -25,7 +25,7 @@ if (firebase.messaging.isSupported()) {
 
         self.registration.showNotification(notificationTitle, {
             body: payload.data.body,
-            icon: "https://roundnet-karslruhe.web.app/android-chrome-192x192.png",
+            icon: self.location.origin + "/android-chrome-192x192.png",
             tag: payload.data.id,
             renotify: true,
             data: {
