@@ -77,6 +77,15 @@ export const SupabaseEventRepository = {
             .throwOnError()
     },
 
+    async fetchSingleComment(commentId: number): Promise<PostgrestSingleResponse<FullComment>> {
+        return supabase.from("event_comments")
+            .select("user(userId, displayName, avatarUrl), *")
+            .eq("id", commentId)
+            .returns<FullComment>()
+            .single()
+            .throwOnError()
+    },
+
     async updateEndOfOldEvent(eventId: number, recurrenceEnd: string): Promise<PostgrestSingleResponse<null>> {
         return supabase
             .from("events")

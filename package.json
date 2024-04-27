@@ -80,7 +80,7 @@
     "build:production": "env-cmd -f .env.production react-scripts build",
     "test": "env-cmd -f .env.staging react-scripts test --passWithNoTests",
     "eject": "env-cmd -f .env.staging react-scripts eject",
-    "function-deploy-all": "npx supabase functions deploy --project-ref xibmjvkjkdxdbmreicps",
+    "function-deploy-all": "npx supabase functions deploy --project-ref vsuhzabcrnmrljzecxee",
     "function-deploy-all-prod": "npx supabase functions deploy --project-ref PROJECT_REF"
   },
   "eslintConfig": {

@@ -1,8 +1,7 @@
 import {createAsyncThunk, createEntityAdapter, createSlice, PayloadAction, Update} from "@reduxjs/toolkit";
-import {Notification, NotificationInsert, NotificationUpdate} from "../types/supabaseTypes";
+import {Notification, NotificationInsert, NotificationUpdate, User} from "../types/supabaseTypes";
 import {RootState} from "./store";
 import {SupabaseUserRepository} from "../repository/UserRepository";
-import {SliceEvent} from "./events/eventsSlice";
 
 const notificationsAdapter = createEntityAdapter({
     selectId: (notification: Notification) => notification.id,
@@ -67,8 +66,8 @@ const notificationsSlice = createSlice({
     }
 });
 
-export const fetchNotificationsAsync = createAsyncThunk("fetchNotificationsAsync", async () => {
-    const response = await SupabaseUserRepository.loadNotifications();
+export const fetchNotificationsAsync = createAsyncThunk("fetchNotificationsAsync", async (user: User) => {
+    const response = await SupabaseUserRepository.loadNotifications(user);
 
     return response.data ?? [];
 });

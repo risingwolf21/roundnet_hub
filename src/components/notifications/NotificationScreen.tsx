@@ -1,27 +1,29 @@
 import {useSelector} from "react-redux";
-import {RootState} from "../../redux/store";
+import {RootState, useAppDispatch} from "../../redux/store";
 import {can} from "../../utils/PermissionService";
 import {AlertSnackbar} from "../AlertSnackbar";
 import React from "react";
 import {Navigate} from "react-router-dom";
 import {HOMEPAGE} from "../../constants";
-import {Container, Fab, Grid, LinearProgress, List, ListItem, ListItemText} from "@mui/material";
+import {Fab, Grid, LinearProgress, List, ListItem, ListItemText} from "@mui/material";
 import CustomAppBar from "../AppBar";
 import {DoneAll} from "@mui/icons-material";
-import {notificationsSelector} from "../../redux/notificationsSlice";
-import {toast} from "react-toastify";
+import {fetchNotificationsAsync, notificationsSelector} from "../../redux/notificationsSlice";
 import {SupabaseUserRepository} from "../../repository/UserRepository";
 
 const NotificationScreen = () => {
     const {loading, error} = useSelector((state: RootState) => state.notifications);
     const {user} = useSelector((state: RootState) => state.application);
     const notifications = useSelector((state: RootState) => notificationsSelector.selectAll(state));
+    const dispatch = useAppDispatch();
 
     if (!can("view", "notifications") || !user)
         return <Navigate to={`/${HOMEPAGE}`} replace={true}/>
 
     const markNotificationsAsRead = () => {
-        SupabaseUserRepository.markNotificationsAsRead(user);
+        SupabaseUserRepository.markNotificationsAsRead(user).then(result => {
+            dispatch(fetchNotificationsAsync(user));
+        });
     }
 
     return <Grid

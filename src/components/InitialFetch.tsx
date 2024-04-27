@@ -30,25 +30,31 @@ export const useInitialFetch = () => {
 
     useEffect(() => {
 
-        dispatch(fetchNotificationsAsync())
+        if (!user)
+            return;
+
+        dispatch(fetchNotificationsAsync(user))
 
         let subscription = client.channel("public:notifications")
             .on<NotificationUpdate>('postgres_changes', {
                     event: 'UPDATE',
                     schema: 'public',
-                    table: 'notifications'
+                table: 'notifications',
+                filter: `eq.${user.userId}`
                 }, payload => dispatch(onNotificationUpdate(payload.new))
             )
             .on('postgres_changes', {
                     event: 'DELETE',
                     schema: 'public',
-                    table: 'notifications'
+                table: 'notifications',
+                filter: `eq.${user.userId}`
                 }, payload => dispatch(onNotificationDelete(payload.old.id))
             )
             .on<NotificationInsert>('postgres_changes', {
                     event: 'INSERT',
                     schema: 'public',
-                    table: 'notifications'
+                table: 'notifications',
+                filter: `eq.${user.userId}`
                 }, payload => dispatch(onNotificationInsert(payload.new))
             )
             .subscribe();
@@ -56,7 +62,7 @@ export const useInitialFetch = () => {
             subscription.unsubscribe();
         }
 
-    }, [dispatch, client]);
+    }, [dispatch, client, user]);
 
     useEffect(() => {
         if (!user)

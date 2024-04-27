@@ -31,9 +31,6 @@ const store = configureStore({
         eventComments: eventCommentsSlice,
         notifications: notificationsSlice
     },
-    enhancers: (getDefaultEnhancers) => {
-        return getDefaultEnhancers.concat(sentryReduxEnhancer);
-    },
 });
 export type RootState = ReturnType<typeof store.getState>
 

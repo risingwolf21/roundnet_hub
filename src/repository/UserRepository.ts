@@ -1,4 +1,4 @@
-import {PostgrestError, PostgrestResponse, PostgrestSingleResponse} from "@supabase/supabase-js";
+import {PostgrestError, PostgrestSingleResponse} from "@supabase/supabase-js";
 import {Notification, NotificationTags, User, UserWithGroups} from "../types/supabaseTypes";
 import {supabase} from "../components/services/supabase/supabaseClient";
 
@@ -53,10 +53,11 @@ export const SupabaseUserRepository = {
             .eq("userId", user.userId);
     },
 
-    async loadNotifications(): Promise<PostgrestSingleResponse<Notification[]>> {
+    async loadNotifications(user: User): Promise<PostgrestSingleResponse<Notification[]>> {
         return supabase
             .from("notifications")
             .select("*")
+            .eq("user", user.userId)
             .throwOnError()
             .returns<Notification[]>()
     },

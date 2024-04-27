@@ -60,7 +60,10 @@ const eventCommentsSlice = createSlice({
             .addCase(fetchEventCommentsAsync.fulfilled, (state, action) => {
                 state.loading = false;
                 state.error = "";
-                eventsCommentsAdapter.upsertOne(state, { id: action.payload.eventId, comments: action.payload.data ?? [] })
+                eventsCommentsAdapter.upsertOne(state, {
+                    id: action.payload.eventId,
+                    comments: action.payload.data ?? []
+                })
             })
             .addCase(fetchEventCommentsAsync.pending, (state, action) => {
                 state.loading = true;
@@ -78,7 +81,12 @@ const eventCommentsSlice = createSlice({
                     comment: action.meta.arg.comment ?? "",
                     event: toInteger(action.meta.arg.eventId),
                     displayName: action.meta.arg.user.displayName ?? "",
-                    user: { userId: action.meta.arg.user.userId, displayName: action.meta.arg.user.displayName ?? "", avatarUrl: action.meta.arg.user.avatarUrl, email: null },
+                    user: {
+                        userId: action.meta.arg.user.userId,
+                        displayName: action.meta.arg.user.displayName ?? "",
+                        avatarUrl: action.meta.arg.user.avatarUrl,
+                        email: null
+                    },
                     userId: action.meta.arg.user.userId,
                     created_at: action.meta.arg.created_at
                 } as FullComment;
@@ -125,15 +133,15 @@ export const upsertCommentToEventAsync = createAsyncThunk("upsertCommentToEventA
                                                                                               }: UpsertCommentProps) => {
     const response = await SupabaseEventRepository.insertComment(user, eventId, comment);
 
-    return { data: response.data, error: response.error, commmentId: response.data?.id } as DataErrorReturned;
+    return {data: response.data, error: response.error, commmentId: response.data?.id} as DataErrorReturned;
 });
 
 type ClientEventId = { eventId: number }
 export const fetchEventCommentsAsync = createAsyncThunk("fetchEventCommentsAsync", async ({eventId}: ClientEventId) => {
     const attendance = await SupabaseEventRepository.fetchEventComments(eventId);
-    return { data: attendance.data, eventId };
+    return {data: attendance.data, eventId};
 });
 
-export const { onEventCommentUpdate, onEventCommentDelete } = eventCommentsSlice.actions;
+export const {onEventCommentUpdate, onEventCommentDelete, onEventCommentInsert} = eventCommentsSlice.actions;
 
 export default eventCommentsSlice.reducer;

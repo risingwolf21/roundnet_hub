@@ -48,11 +48,9 @@ Deno.serve(async (req) => {
             body: JSON.stringify({
                 message: {
                     token: fcmToken,
-                    notification: {
-                        title: payload.record.title,
-                        body: payload.record.body
-                    },
                     data: {
+                        title: payload.record.title,
+                        body: payload.record.body,
                         id: payload.record.id
                     }
                 },

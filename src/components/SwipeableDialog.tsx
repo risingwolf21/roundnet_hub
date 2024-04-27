@@ -1,7 +1,7 @@
-import { Global } from "@emotion/react";
-import { Close } from "@mui/icons-material";
-import { Box, CssBaseline, IconButton, SwipeableDrawer, Toolbar, Typography, styled } from "@mui/material"
-import { grey } from "@mui/material/colors";
+import {Global} from "@emotion/react";
+import {Close} from "@mui/icons-material";
+import {Box, CssBaseline, IconButton, styled, SwipeableDrawer, Toolbar, Typography} from "@mui/material"
+import {grey} from "@mui/material/colors";
 import React from "react";
 
 const drawerBleeding = 56;
@@ -63,12 +63,12 @@ export const SwipeableDialog = ({ open, setOpen, onClose, children, title = "", 
                 sx={{
                     borderTopLeftRadius: 16,
                     borderTopRightRadius: 16,
-                    visibility: 'visible',
+                    visibility: open ? 'visible' : 'invisible',
                 }}>
                 <Toolbar>
                     <IconButton
                         color="inherit"
-                        aria-label="open drawer"
+                        aria-label="close drawer"
                         onClick={handleClose}
                         edge="start"
                         sx={{ mr: 2 }}>
