@@ -1,10 +1,11 @@
 import {getToken, Messaging, onMessage} from "firebase/messaging";
 import {messaging} from "../firebase/firebaseConfig";
-import {useEffect} from "react";
+import React, {useEffect} from "react";
 import {SupabaseUserRepository} from "../repository/UserRepository";
 import {User} from "../types/supabaseTypes";
 import {captureException} from "@sentry/react";
 import {toast} from "react-toastify";
+import {Notification as NotificationComponent} from "../components/Notification";
 
 export function useFirebase(user: User | null) {
     async function requestPermission(user: User, messaging: Messaging) {
@@ -44,7 +45,10 @@ export function useFirebase(user: User | null) {
         messaging.then(messagingResolver => {
             if (messagingResolver && user) {
                 onMessage(messagingResolver, (payload) => {
-                    toast.info("asdfasdf")
+                    toast(<NotificationComponent title={payload.data?.title ?? "Title"} body={payload.data?.body ?? ""}
+                                                 toastId={"123"}/>, {
+                        autoClose: false, toastId: "123", containerId: "main"
+                    })
                 });
                 requestPermission(user, messagingResolver)
             }
