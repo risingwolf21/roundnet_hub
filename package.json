@@ -1,6 +1,6 @@
 {
   "name": "roundnet_karlsruhe_app",
-  "version": "1.4.5",
+  "version": "1.4.6",
   "private": true,
   "homepage": ".",
   "dependencies": {
@@ -16,6 +16,7 @@
     "@mui/x-date-pickers": "^6.11.2",
     "@paypal/react-paypal-js": "^7.8.3",
     "@reduxjs/toolkit": "^1.9.5",
+    "@sentry/integrations": "^7.112.2",
     "@sentry/react": "^7.109.0",
     "@supabase/sentry-js-integration": "^0.1.0",
     "@supabase/supabase-js": "^2.26.0",
