@@ -1,35 +1,36 @@
-import { ThemeProvider } from '@mui/material';
-import { LocalizationProvider } from '@mui/x-date-pickers';
-import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import {ThemeProvider} from '@mui/material';
+import {LocalizationProvider} from '@mui/x-date-pickers';
+import {AdapterDayjs} from '@mui/x-date-pickers/AdapterDayjs';
 import * as Sentry from "@sentry/react";
-import { Container } from 'inversify';
-import React, { createContext, ReactNode } from 'react';
+import {Container} from 'inversify';
+import React, {createContext, ReactNode} from 'react';
 import ReactDOM from 'react-dom/client';
-import { Provider } from 'react-redux';
-import { Provider as SupabaseProvider } from "react-supabase";
+import {Provider} from 'react-redux';
+import {Provider as SupabaseProvider} from "react-supabase";
 import "reflect-metadata";
 import App from './App';
-import { supabase } from './components/services/supabase/supabaseClient';
+import {supabase} from './components/services/supabase/supabaseClient';
 import "./global.css";
 import store from './redux/store';
 import container from './repository/Container';
-import { mainTheme } from './themes/themes';
+import {mainTheme} from './themes/themes';
 import "./translation/i18n";
 //@ts-ignore
 import "src/apocalypseHandler.js";
-import { createRoutesFromChildren, matchRoutes, Routes, useLocation, useNavigationType } from "react-router-dom";
-import { SupabaseClient } from '@supabase/supabase-js'
-import { SupabaseIntegration } from '@supabase/sentry-js-integration'
+import {createRoutesFromChildren, matchRoutes, Routes, useLocation, useNavigationType} from "react-router-dom";
+import {SupabaseClient} from '@supabase/supabase-js'
+import {SupabaseIntegration} from '@supabase/sentry-js-integration'
+import {captureConsoleIntegration} from "@sentry/integrations";
 
 type Props = {
     children: ReactNode,
     container: Container
 }
 
-export const DependencyContext = createContext<{ container: Container | null }>({ container: null });
+export const DependencyContext = createContext<{ container: Container | null }>({container: null});
 
-const DependencyProvider = ({ container, children }: Props) => {
-    return <DependencyContext.Provider value={{ container: container }}>
+const DependencyProvider = ({container, children}: Props) => {
+    return <DependencyContext.Provider value={{container: container}}>
         {children}
     </DependencyContext.Provider>
 }
@@ -53,6 +54,7 @@ if (process.env.REACT_APP_ENV === "production") {
                 breadcrumbs: true,
                 errors: true,
             }),
+            captureConsoleIntegration()
         ],
         tracesSampleRate: 1.0,
         tracePropagationTargets: [/^https:\/\/roundnet-karlsruhe\.web.app/, /^https:\/\/staging-roundnet-karlsruhe\.web.app/]
@@ -67,7 +69,7 @@ root.render(
             <SupabaseProvider value={supabase}>
                 <DependencyProvider container={container}>
                     <LocalizationProvider dateAdapter={AdapterDayjs}>
-                        <App />
+                        <App/>
                     </LocalizationProvider>
                 </DependencyProvider>
             </SupabaseProvider>
