@@ -25,7 +25,7 @@ import {useClient} from "react-supabase";
 import {TABLE_USER} from "src/constants";
 import {fetchInsertedKeyHolderAsync, fetchKeysAsync, keyHoldersSelector} from "src/redux/keysSlice";
 import {AppDispatch, RootState, useAppDispatch} from "src/redux/store";
-import {FullKeyHolder, Key, User} from "src/types/supabaseTypes";
+import {FullItemHolder, Key, User} from "src/types/supabaseTypes";
 import {SlideUpTransition} from "src/utils";
 import {AlertMessage, AlertSnackbar} from "../AlertSnackbar";
 import CustomAppBar from "../AppBar";
@@ -61,20 +61,20 @@ const KeyHolderScreenProvider = () => {
 
 type KeyHolderScreenProps = {
     dispatch: AppDispatch,
-    keyHolders: FullKeyHolder[],
+    keyHolders: FullItemHolder[],
     loading: boolean,
     user: User,
     t: TFunction
 }
 
-export const EMPTY_KEY = {name: "", color: "#000000", id: 0, created_at: ""};
+export const EMPTY_KEY = {name: "", color: "#000000", id: 0, created_at: "", current_holder: null, type: null};
 
 const KeyHolderScreen = ({dispatch, keyHolders, loading, user, t}: KeyHolderScreenProps) => {
 
     const [searchUserOpen, setSearchUserOpen] = useState(false);
     const [addOrUpdateKeysOpen, setAddOrUpdateKeysOpen] = useState(false);
     const [selectedUser, setSelectedUser] = useState<User | null>(null);
-    const [selectedKeyHolder, setSelectedKeyHolder] = useState<FullKeyHolder | null>(null);
+    const [selectedKeyHolder, setSelectedKeyHolder] = useState<FullItemHolder | null>(null);
     const [isEditingMode, setEditingMode] = useState(false);
     const [keyToEdit, setKeyToEdit] = useState<Key>(EMPTY_KEY);
     const [alertInfo, setAlertInfo] = useState<AlertMessage | null>(null);
@@ -119,7 +119,7 @@ const KeyHolderScreen = ({dispatch, keyHolders, loading, user, t}: KeyHolderScre
             setAlertInfo({message: t("keyHandOverError", {error: ""}), severity: "error"});
             return;
         }
-        SupabaseKeysRepository.giveKeyToUser(selectedKeyHolder.key, selectedUser).then((result) => {
+        SupabaseKeysRepository.giveItemToUser(selectedKeyHolder, selectedUser).then((result) => {
             if (result.error)
                 setAlertInfo({message: t("keyHandOverError", {error: result.error}), severity: "error"});
             setSelectedUser(null);
@@ -128,12 +128,12 @@ const KeyHolderScreen = ({dispatch, keyHolders, loading, user, t}: KeyHolderScre
         });
     }
 
-    const selectKeyToHandOver = (key: FullKeyHolder) => {
+    const selectKeyToHandOver = (key: FullItemHolder) => {
         setSearchUserOpen(true);
         setSelectedKeyHolder(key);
     }
 
-    const selectKeyToReceive = (key: FullKeyHolder) => {
+    const selectKeyToReceive = (key: FullItemHolder) => {
         setSelectedKeyHolder(key);
         setSelectedUser(user);
     }
@@ -149,37 +149,36 @@ const KeyHolderScreen = ({dispatch, keyHolders, loading, user, t}: KeyHolderScre
         </Alert>
         <List sx={{pb: 10}}>
             {
-                keyHolders.map((key: FullKeyHolder) => <ListItemButton key={key.key.id} divider
-                                                                       onClick={can("edit", "keyFinder") ? () => {
-                                                                           console.log(key.key)
-                                                                           setKeyToEdit(key.key);
+                keyHolders.map((x: FullItemHolder) => <ListItemButton key={x.id} divider
+                                                                      onClick={can("edit", "keyFinder") ? () => {
+                                                                          setKeyToEdit(x);
                                                                            setKeyHistoryDialogOpen(true);
                                                                        } : undefined}>
                     <ListItemAvatar>
-                        <Avatar sx={{background: key.key.color, width: 40, height: 40, borderRadius: 2}}>
+                        <Avatar sx={{background: x.color, width: 40, height: 40, borderRadius: 2}}>
                             <KeyIcon/>
                         </Avatar>
                     </ListItemAvatar>
-                    <ListItemText primary={key.user.displayName} secondary={key.key.name}/>
+                    <ListItemText primary={x.user.displayName ?? "Nicht zugewiesen"} secondary={x.name}/>
                     {
                         isEditingMode
                             ? <ListItemSecondaryAction>
                                 <IconButton onClick={() => {
-                                    setKeyToEdit(key.key);
+                                    setKeyToEdit(x);
                                     setAddOrUpdateKeysOpen(true);
                                 }}>
                                     <EditIcon/>
                                 </IconButton>
                             </ListItemSecondaryAction>
-                            : key.user.userId === user.userId ?
+                            : x.user.userId === user.userId ?
                                 <ListItemSecondaryAction>
-                                    <Button color="primary" onClick={() => selectKeyToHandOver(key)}>
+                                    <Button color="primary" onClick={() => selectKeyToHandOver(x)}>
                                         {t("handover_key")}
                                     </Button>
                                 </ListItemSecondaryAction>
                                 :
                                 <ListItemSecondaryAction>
-                                    <Button color="primary" onClick={() => selectKeyToReceive(key)}>
+                                    <Button color="primary" onClick={() => selectKeyToReceive(x)}>
                                         {t("take_key")}
                                     </Button>
                                 </ListItemSecondaryAction>
@@ -220,12 +219,12 @@ const KeyHolderScreen = ({dispatch, keyHolders, loading, user, t}: KeyHolderScre
                 {
                     selectedUser?.userId === user.userId ?
                         t("confirmKeyTaken", {
-                            keyName: selectedKeyHolder?.key.name,
-                            userName: selectedKeyHolder?.user.displayName
+                            keyName: selectedKeyHolder?.name,
+                            userName: selectedKeyHolder?.user?.displayName ?? ""
                         }) :
                         t("confirmKeyHandover", {
-                            keyName: selectedKeyHolder?.key.name,
-                            userName: selectedKeyHolder?.user.displayName
+                            keyName: selectedKeyHolder?.name,
+                            userName: selectedKeyHolder?.user?.displayName ?? ""
                         })
                 }
             </Typography>

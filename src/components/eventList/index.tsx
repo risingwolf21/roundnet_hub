@@ -4,7 +4,7 @@ import React, {useEffect} from "react";
 import {useNavigate} from 'react-router-dom';
 import {useClient} from "react-supabase";
 import {useAppDispatch} from "../../redux/store";
-import {EventAttendance, EventUpdate} from "../../types/supabaseTypes";
+import {EventAttendance} from "../../types/supabaseTypes";
 import CustomAppBar from "../AppBar";
 import {InfiniteScrollList} from "../InfiniteScrollList";
 import {EventItem} from "./EventItem";
@@ -12,6 +12,7 @@ import {EventScreenProps} from './types';
 import {fetchEventsAsync, onEventDelete, onEventErrorRead, onEventUpdate} from 'src/redux/events/eventsSlice';
 import {updateAttendanceAsync} from 'src/redux/events/eventAttendanceSlice';
 import {can} from "../../utils/PermissionService";
+import {TablesUpdate} from "../../types/supabase-generated.types";
 
 const EventScreen = ({events, loading, error, endReached, user}: EventScreenProps) => {
     const client = useClient();
@@ -20,7 +21,11 @@ const EventScreen = ({events, loading, error, endReached, user}: EventScreenProp
 
     useEffect(() => {
         let subscription = client.channel("public:drink")
-            .on<EventUpdate>('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'events' }, payload => dispatch(onEventUpdate(payload.new)))
+            .on<TablesUpdate<'events'>>('postgres_changes', {
+                event: 'UPDATE',
+                schema: 'public',
+                table: 'events'
+            }, payload => dispatch(onEventUpdate(payload.new)))
             .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'events' }, payload => dispatch(onEventDelete(payload.old.id)))
             // .on<EventInsert>('postgres_changes', { event: 'INSERT', schema: 'public', table: 'events' }, payload => dispatch(onEventInsert(payload.new)))
             .subscribe();

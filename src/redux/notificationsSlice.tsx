@@ -2,9 +2,10 @@ import {createAsyncThunk, createEntityAdapter, createSlice, PayloadAction, Updat
 import {Notification, NotificationInsert, NotificationUpdate, User} from "../types/supabaseTypes";
 import {RootState} from "./store";
 import {SupabaseUserRepository} from "../repository/UserRepository";
+import {Tables} from "../types/supabase-generated.types";
 
 const notificationsAdapter = createEntityAdapter({
-    selectId: (notification: Notification) => notification.id,
+    selectId: (notification: Tables<'notifications'>) => notification.id,
 });
 
 export const notificationsSelector = notificationsAdapter.getSelectors((st: RootState) => st.notifications);

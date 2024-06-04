@@ -29,19 +29,19 @@ import {useAppDispatch} from "src/redux/store"
 import {
     answerDeadlineExpired,
     EventAttendance,
-    EventAttendanceUpdate,
     FullAttendance,
-    FullKeyHolder,
+    FullItemHolder,
     maxAttendeesExceeded,
     User
 } from "src/types/supabaseTypes"
 import EventAttendanceDialog from "./EventAttendanceDialog"
+import {TablesUpdate} from "../../types/supabase-generated.types";
 
 type EventInformationAttendanceProps = {
     user: User,
     selectedEvent: SliceEvent,
     attendance: FullAttendance[],
-    keyHolders: FullKeyHolder[],
+    keyHolders: FullItemHolder[],
     attendanceLoading: boolean,
     updateAttendance: (newValue: EventAttendance, oldValue: EventAttendance) => void,
 }
@@ -63,7 +63,7 @@ const EventInformationAttendance = ({
             return;
 
         let subscription = client.channel("public:event_attendance_user_mapping")
-            .on<EventAttendanceUpdate>('postgres_changes', {
+            .on<TablesUpdate<'event_attendance_user_mapping'>>('postgres_changes', {
                 event: 'UPDATE',
                 schema: 'public',
                 table: 'event_attendance_user_mapping',
@@ -88,7 +88,7 @@ const EventInformationAttendance = ({
         <List sx={{p: 0}}>
             {
                 attendance.filter(x => x.state === "Attending").map(y => y.user.userId)
-                    .some(x => keyHolders.map(y => y.user.userId).includes(x)) &&
+                    .some(x => keyHolders.filter(y => y.type === selectedEvent.key).map(y => y.user?.userId).includes(x)) &&
                 <ListItem key={"keyAttendees"} sx={{'&.MuiListItem-root': {paddingLeft: 0}}} divider>
                     <ListItemAvatar sx={{justifyContent: "left", alignItems: "center", display: "flex"}}>
                         <VerifiedOutlined sx={{color: (theme) => theme.palette.success.main}}/>

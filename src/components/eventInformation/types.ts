@@ -1,7 +1,7 @@
 import {TFunction} from "i18next";
 import {AnyAction, ThunkDispatch} from "@reduxjs/toolkit";
 import {RootState} from "src/redux/store";
-import {FullAttendance, FullComment, FullKeyHolder, Group, User} from "src/types/supabaseTypes";
+import {FullAttendance, FullComment, FullItemHolder, Group, User} from "src/types/supabaseTypes";
 import {CreateEventOption, PlaceType} from "../eventCreation/types";
 import {SliceEvent} from "src/redux/events/eventsSlice";
 
@@ -15,7 +15,7 @@ export type EventInformationProps = {
     user: User,
     dispatch: ThunkDispatch<RootState, undefined, AnyAction>,
     selectedEventPlace: PlaceType | null,
-    keyHolders: FullKeyHolder[],
+    keyHolders: FullItemHolder[],
     t: TFunction
 }
 

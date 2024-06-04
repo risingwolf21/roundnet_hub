@@ -1,8 +1,9 @@
 import {createAsyncThunk, createEntityAdapter, createSlice, PayloadAction} from "@reduxjs/toolkit";
 import {toInteger} from "lodash";
-import {Comment, EventCommentUpdate, FullComment, User} from "src/types/supabaseTypes";
+import {EventCommentUpdate, FullComment, User} from "src/types/supabaseTypes";
 import {PostgrestError} from "@supabase/supabase-js";
 import {SupabaseEventRepository} from "../../repository/EventRepository";
+import {Tables} from "../../types/supabase-generated.types";
 
 type SliceComments = {
     id: number,
@@ -76,20 +77,16 @@ const eventCommentsSlice = createSlice({
 
             .addCase(upsertCommentToEventAsync.pending, (state, action) => {
                 state.loading = true
-                let newComment = {
+                let newComment: FullComment = {
+                    id: -1,
                     pending: true,
-                    comment: action.meta.arg.comment ?? "",
+                    comment: action.meta.arg.comment,
                     event: toInteger(action.meta.arg.eventId),
-                    displayName: action.meta.arg.user.displayName ?? "",
-                    user: {
-                        userId: action.meta.arg.user.userId,
-                        displayName: action.meta.arg.user.displayName ?? "",
-                        avatarUrl: action.meta.arg.user.avatarUrl,
-                        email: null
-                    },
+                    displayName: action.meta.arg.user.displayName,
+                    user: action.meta.arg.user,
                     userId: action.meta.arg.user.userId,
-                    created_at: action.meta.arg.created_at
-                } as FullComment;
+                    created_at: action.meta.arg.created_at,
+                };
 
                 let comments = eventsCommentsAdapter.getSelectors().selectById(state, action.meta.arg.eventId)?.comments ?? [];
                 let sliceAttendance = {
@@ -125,7 +122,7 @@ const eventCommentsSlice = createSlice({
 });
 
 type UpsertCommentProps = { user: User, eventId: number, comment: string, created_at: string }
-type DataErrorReturned = { data: Comment | null, error: PostgrestError | null }
+type DataErrorReturned = { data: Tables<'event_comments'> | null, error: PostgrestError | null }
 export const upsertCommentToEventAsync = createAsyncThunk("upsertCommentToEventAsync", async ({
                                                                                                   user,
                                                                                                   eventId,

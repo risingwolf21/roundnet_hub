@@ -1,10 +1,10 @@
 import {createAsyncThunk, createEntityAdapter, createSlice, PayloadAction} from "@reduxjs/toolkit";
-import {FullKeyHolder} from "../types/supabaseTypes";
+import {FullItemHolder} from "../types/supabaseTypes";
 import {RootState} from "./store";
 import {SupabaseKeysRepository} from "../repository/KeysRepository";
 
 const keyHoldersAdapter = createEntityAdapter({
-    selectId: (keyHolder: FullKeyHolder) => keyHolder.key.id,
+    selectId: (itemHolder: FullItemHolder) => itemHolder.id
 });
 
 export const keyHoldersSelector = keyHoldersAdapter.getSelectors((st: RootState) => st.keys);
@@ -44,7 +44,7 @@ const keysSlice = createSlice({
 });
 
 export const fetchKeysAsync = createAsyncThunk("fetchKeysAsync", async () => {
-    const response = await SupabaseKeysRepository.getKeys();
+    const response = await SupabaseKeysRepository.getItems();
 
     return response.data ?? [];
 });

@@ -18,8 +18,10 @@ import {
     ListItemAvatar,
     ListItemButton,
     ListItemText,
+    MenuItem,
     Radio,
     RadioGroup,
+    Select,
     Snackbar,
     TextField,
     Toolbar,
@@ -34,7 +36,7 @@ import React, {FormEvent, Ref, useEffect, useRef, useState} from "react";
 import EventRepeatIcon from '@mui/icons-material/EventRepeat';
 import SearchPlacesDialog from "./SearchPlacesDialog";
 import {MapContainer, Marker, TileLayer, useMap} from "react-leaflet";
-import {EventInsert, EventRecurrence, FullEvent} from "../../types/supabaseTypes";
+import {EventRecurrence, FullEvent} from "../../types/supabaseTypes";
 import {format, isAfter, isBefore, set} from "date-fns";
 import _ from "lodash";
 import {CreateEventProps, PlaceType} from "./types";
@@ -43,6 +45,7 @@ import {dayjsFromDb, formatDateToDatabase} from "src/utils";
 import {NumberInput} from "../mui/NumberInput";
 import {LoadingIndicator} from "../LoadingIndicator";
 import {SupabaseEventRepository} from "../../repository/EventRepository";
+import {Enums, TablesInsert} from "../../types/supabase-generated.types";
 
 const emptyEvent = {
     title: "",
@@ -52,6 +55,7 @@ const emptyEvent = {
     endDateTime: null,
     recurrence: "None",
     maxAttendees: -1,
+    required_item: null
 } as FullEvent;
 
 const CreateEvent = ({t, eventToEdit, option}: CreateEventProps) => {
@@ -98,7 +102,7 @@ const CreateEvent = ({t, eventToEdit, option}: CreateEventProps) => {
                 startingDateTime: editedEvent.startingDateTime,
                 description: eventDescription,
                 place: JSON.stringify(selectedPlace),
-            } as EventInsert;
+            } as TablesInsert<'events'>;
 
             if (!event.startingDateTime)
                 throw new Error(t("events.creation.startDateCannotBeNull"))
@@ -390,6 +394,33 @@ const CreateEvent = ({t, eventToEdit, option}: CreateEventProps) => {
                                 setEditedEvent({...editedEvent, maxAttendees: val ?? 0});
                         }}
                         placeholder="Max number of attendees"/>
+                </ListItem>
+
+                <ListItem sx={{pt: 0, pb: 0, mb: 2}} key={"itemType"}>
+                    <ListItemAvatar>
+                        <Checkbox sx={{pl: 0}}
+                                  checked={editedEvent.required_item !== null}
+                                  onChange={() => setEditedEvent({
+                                      ...editedEvent,
+                                      required_item: editedEvent.required_item === null ? "mtvStorage" : null
+                                  })}/>
+                    </ListItemAvatar>
+                    <Select
+                        placeholder={"Benötigter Schlüssel"}
+                        disabled={editedEvent.required_item === null}
+                        fullWidth
+                        value={editedEvent.required_item}
+                        onChange={(e) => {
+                            if (e.target.value === undefined)
+                                setEditedEvent({...editedEvent, required_item: null})
+                            else
+                                setEditedEvent({...editedEvent, required_item: e.target.value as Enums<'ItemType'>})
+                        }}>
+                        <MenuItem value={"mtvStorage"}>MTV Kellerschlüssel</MenuItem>
+                        <MenuItem value={"mtvGym"}>MTV Gymschlüssel</MenuItem>
+                        <MenuItem value={"mtvGymPalazzo"}>MTV Gym/Palazzoschlüssel</MenuItem>
+                        <MenuItem value={undefined}>Keiner</MenuItem>
+                    </Select>
                 </ListItem>
 
             </List>

@@ -19,9 +19,10 @@ import React, {useEffect, useState} from "react";
 import {useSelector} from "react-redux";
 import {RootState} from "src/redux/store";
 import {SlideUpTransition} from "../../utils";
-import {Group, GroupUpdate} from "../../types/supabaseTypes";
+import {Group} from "../../types/supabaseTypes";
 import KeyIcon from "@mui/icons-material/Key";
 import {GroupsRepository} from "../../repository/GroupsRepository";
+import {TablesUpdate} from "../../types/supabase-generated.types";
 
 type EditOrAddGroupDialogProps = {
     open: boolean,
@@ -32,7 +33,7 @@ type EditOrAddGroupDialogProps = {
 export const EditOrAddGroupDialog = ({open, handleClose, groupToEdit}: EditOrAddGroupDialogProps) => {
 
     const user = useSelector((state: RootState) => state.application.user);
-    const [currentGroup, setCurrentGroup] = useState<GroupUpdate>({
+    const [currentGroup, setCurrentGroup] = useState<TablesUpdate<'event_group'>>({
         id: groupToEdit.id,
         name: groupToEdit.name,
         color: groupToEdit.color,
