@@ -19,3 +19,11 @@ on conflict (id) do update set current_holder = null;
 
 alter table public.events
     add column required_item public."ItemType" null;
+
+drop table public.key_holders;
+
+alter table public.keys
+    rename to "items";
+
+alter table public."key_history"
+    rename to "item_history";
