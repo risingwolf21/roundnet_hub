@@ -1,8 +1,9 @@
 import {createAsyncThunk, createEntityAdapter, createSlice, PayloadAction, Update} from "@reduxjs/toolkit";
-import {Event, EventAttendance, EventUpdate, FullAttendance, FullEvent, Group, User} from "src/types/supabaseTypes";
+import {Event, EventAttendance, FullAttendance, FullEvent, Group, User} from "src/types/supabaseTypes";
 import {RootState} from "../store";
 import {onEventAttendanceUpdate, updateAttendanceAsync} from "./eventAttendanceSlice";
 import {SupabaseEventRepository} from "../../repository/EventRepository";
+import {TablesUpdate} from "../../types/supabase-generated.types";
 
 export type SliceEvent = Event & {
     userAttendance: EventAttendance,
@@ -32,7 +33,7 @@ const eventsSlice = createSlice({
         editEvent: (state, action) => {
             state.eventToEdit = action.payload;
         },
-        onEventUpdate: (state, action: PayloadAction<EventUpdate>) => {
+        onEventUpdate: (state, action: PayloadAction<TablesUpdate<'events'>>) => {
             let eventSlice = eventsAdapter.getSelectors().selectById(state, action.payload.id ?? -1);
             if (!eventSlice)
                 return;

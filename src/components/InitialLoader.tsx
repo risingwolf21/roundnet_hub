@@ -1,13 +1,11 @@
 import {useEffect} from "react";
 import {RootState, useAppDispatch} from "../redux/store";
 import {useClient} from "react-supabase";
-import {EventAttendanceUpdate} from "../types/supabaseTypes";
 import {useSelector} from "react-redux";
 
 type Props = {
     children: string | JSX.Element | JSX.Element[]
 }
-
 
 export const InitialLoader = ({children}: Props) => {
 
@@ -21,7 +19,7 @@ export const InitialLoader = ({children}: Props) => {
             return;
         }
         let subscription = client.channel("public")
-            .on<EventAttendanceUpdate>('postgres_changes', {
+            .on('postgres_changes', {
                 event: '*',
                 schema: 'public',
                 table: 'key_holders'

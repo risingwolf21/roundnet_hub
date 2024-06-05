@@ -1,8 +1,9 @@
 import {createAsyncThunk, createSlice, PayloadAction} from '@reduxjs/toolkit';
-import {Drink, DrinkInsert, FullHistory, Payment, PaymentHistory} from '../types/supabaseTypes';
+import {Drink, FullHistory, Payment, PaymentHistory} from '../types/supabaseTypes';
 import {compareById} from '../utils';
 import {captureException} from "@sentry/react";
 import {SupabaseDrinkRepository} from "../repository/DrinkRepository";
+import {TablesInsert, TablesUpdate} from "../types/supabase-generated.types";
 
 type DrinksSliceState = {
     history: FullHistory[],
@@ -44,7 +45,7 @@ export const drinksSlice = createSlice({
     name: 'drinks',
     initialState,
     reducers: {
-        onDrinkUpdated: (state: DrinksSliceState, action: PayloadAction<any>) => {
+        onDrinkUpdated: (state: DrinksSliceState, action: PayloadAction<TablesUpdate<'drink'>>) => {
             let drink = action.payload as Drink;
             const index = state.drinks.findIndex((x) =>
                 x.id === drink.id,
@@ -58,7 +59,7 @@ export const drinksSlice = createSlice({
         onDrinkDeleted: (state: DrinksSliceState, action: PayloadAction<number>) => {
             state.drinks = state.drinks.filter((x: Drink) => x.id !== action.payload)
         },
-        onDrinkInserted: (state: DrinksSliceState, action: PayloadAction<DrinkInsert>) => {
+        onDrinkInserted: (state: DrinksSliceState, action: PayloadAction<TablesInsert<'drink'>>) => {
             let newDrink = action.payload as Drink;
             if (newDrink)
                 state.drinks = [...(state.drinks ?? []), newDrink]

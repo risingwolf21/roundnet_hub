@@ -9,6 +9,8 @@ import {
     List,
     ListItem,
     ListItemAvatar,
+    MenuItem,
+    Select,
     Snackbar,
     TextField,
     Toolbar,
@@ -36,6 +38,8 @@ export const EditOrAddKeyDialog = ({open, handleClose, keyToEdit}: EditOrAddKeyD
         id: keyToEdit.id,
         name: keyToEdit.name,
         color: keyToEdit.color,
+        current_holder: keyToEdit.current_holder,
+        type: keyToEdit.type
     });
     const [errorSnackbar, setErrorSnackbar] = useState<{
         open: boolean,
@@ -48,6 +52,8 @@ export const EditOrAddKeyDialog = ({open, handleClose, keyToEdit}: EditOrAddKeyD
             id: keyToEdit.id,
             name: keyToEdit.name,
             color: keyToEdit.color,
+            current_holder: keyToEdit.current_holder,
+            type: keyToEdit.type
         })
     }, [keyToEdit]);
 
@@ -60,11 +66,13 @@ export const EditOrAddKeyDialog = ({open, handleClose, keyToEdit}: EditOrAddKeyD
             setErrorSnackbar({message: "Something went wrong. Try again later!", open: true});
             return;
         }
-        const result = await SupabaseKeysRepository.upsertKey({
+        const result = await SupabaseKeysRepository.upsertItem({
             id: currentKey.id,
             name: currentKey.name,
-            color: currentKey.color
-        }, user.userId);
+            color: currentKey.color,
+            type: currentKey.type,
+            current_holder: currentKey.current_holder
+        });
         if (result.error) {
             setErrorSnackbar({message: result.error.message ?? "", open: true});
         } else {
@@ -119,6 +127,17 @@ export const EditOrAddKeyDialog = ({open, handleClose, keyToEdit}: EditOrAddKeyD
                             onChange={(e) => setCurrentKey({...currentKey, color: e.target.value})}
                             label="Farbe"
                             margin="normal"/>
+                    </ListItem>
+                    <ListItem>
+                        <ListItemAvatar>
+                        </ListItemAvatar>
+                        <Select fullWidth
+                                value={currentKey.type}
+                                onChange={(e) => setCurrentKey({...currentKey, type: e.target.value})}>
+                            <MenuItem value={"mtvStorage"}>MTV Kellerschlüssel</MenuItem>
+                            <MenuItem value={"mtvGym"}>MTV Gymschlüssel</MenuItem>
+                            <MenuItem value={"mtvGymPalazzo"}>MTV Gym/Palazzoschlüssel</MenuItem>
+                        </Select>
                     </ListItem>
                 </List>
             </Box>

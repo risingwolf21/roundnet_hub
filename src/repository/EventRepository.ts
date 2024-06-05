@@ -3,9 +3,7 @@ import {
     Event,
     EventAttendance,
     EventAttendanceMapping,
-    EventInsert,
     EventRecurrence,
-    EventUpdate,
     FullAttendance,
     FullComment,
     FullEvent,
@@ -18,9 +16,10 @@ import _ from "lodash";
 import {formatDateToDatabase} from "../utils";
 import moment from "moment/moment";
 import {supabase} from "../components/services/supabase/supabaseClient";
+import {TablesInsert, TablesUpdate} from "../types/supabase-generated.types";
 
 export const SupabaseEventRepository = {
-    async updateEventAndAllRecurrences(eventUpdate: EventUpdate): Promise<PostgrestSingleResponse<null>> {
+    async updateEventAndAllRecurrences(eventUpdate: TablesUpdate<'events'>): Promise<PostgrestSingleResponse<null>> {
 
         const {
             data,
@@ -46,6 +45,7 @@ export const SupabaseEventRepository = {
                     return {days: index * 7};
                 case "Fortnightly":
                     return {days: index * 14};
+                default:
                 case "None":
                     return {days: 0}
             }
@@ -59,7 +59,7 @@ export const SupabaseEventRepository = {
                 endDateTime: eventUpdate.endDateTime ? formatDateToDatabase(add(eventUpdate.endDateTime, recurrenceFrom(eventUpdate.recurrence ?? e.recurrence, index))) : e.endDateTime,
                 meetingDateTime: eventUpdate.meetingDateTime ? formatDateToDatabase(add(eventUpdate.meetingDateTime, recurrenceFrom(eventUpdate.recurrence ?? e.recurrence, index))) : e.meetingDateTime,
                 answerDeadline: eventUpdate.answerDeadline ? formatDateToDatabase(add(eventUpdate.answerDeadline, recurrenceFrom(eventUpdate.recurrence ?? e.recurrence, index))) : e.answerDeadline,
-            } as EventInsert;
+            } as TablesInsert<'events'>;
         });
 
         return supabase
@@ -67,7 +67,6 @@ export const SupabaseEventRepository = {
             .upsert(events)
             .throwOnError();
     },
-
 
     async fetchEventComments(eventId: number): Promise<PostgrestSingleResponse<FullComment[]>> {
         return supabase.from("event_comments")
@@ -95,7 +94,7 @@ export const SupabaseEventRepository = {
             .throwOnError()
     },
 
-    async updateEvent(eventId: number, event: EventUpdate): Promise<PostgrestSingleResponse<null>> {
+    async updateEvent(eventId: number, event: TablesUpdate<'events'>): Promise<PostgrestSingleResponse<null>> {
         return supabase
             .from("events")
             .update(event)
@@ -103,7 +102,7 @@ export const SupabaseEventRepository = {
             .throwOnError()
     },
 
-    async insertEvent(event: EventInsert): Promise<PostgrestSingleResponse<null>> {
+    async insertEvent(event: TablesInsert<'events'>): Promise<PostgrestSingleResponse<null>> {
         return supabase.from("events").insert(event).throwOnError();
     },
 

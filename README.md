@@ -64,12 +64,12 @@ To create one, follow the link bellow:
 
 #### Staging
 ```
-npx supabase gen types typescript --project-id vsuhzabcrnmrljzecxee > src/types/supabase.ts
+npx supabase gen types typescript --project-id vsuhzabcrnmrljzecxee > src/types/supabase-generated.types.ts
 ```
 
 #### Production
 ```
-npx supabase gen types typescript --project-id PROJECT_REF > src/types/supabase.ts
+npx supabase gen types typescript --project-id PROJECT_REF > src/types/supabase-generated.types.ts
 ```
 
 ### Database dump

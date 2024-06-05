@@ -9,10 +9,13 @@ import {
     Grid,
     List,
     ListItem,
-    ListItemAvatar, ListItemSecondaryAction,
+    ListItemAvatar,
+    ListItemButton,
+    ListItemSecondaryAction,
     ListItemText,
     ListSubheader,
-    Snackbar, Switch,
+    Snackbar,
+    Switch,
     TextField
 } from "@mui/material";
 import {useClient} from "react-supabase";
@@ -32,12 +35,12 @@ import {
     EditOutlined,
     EmailOutlined,
     FiberManualRecord,
+    NotificationsRounded,
     PersonOutlineOutlined,
     Save
 } from "@mui/icons-material";
 import {dataURLtoFile, readFile} from "src/utils";
 import {captureException} from "@sentry/react";
-import {Database} from "src/types/supabase";
 import Compressor from 'compressorjs';
 import {
     addNotificationPermissionAsync,
@@ -46,6 +49,9 @@ import {
 } from "src/redux/applicationSlice";
 import {uuid} from "@supabase/supabase-js/dist/main/lib/helpers";
 import {SupabaseEventRepository} from "../repository/EventRepository";
+import {requestNotificationPermission} from "../hooks/useFirebase";
+import {messaging} from "../firebase/firebaseConfig";
+import {Database} from "../types/supabase-generated.types";
 
 type UserScreenProps = {
     user: User,
@@ -325,23 +331,46 @@ const UserScreen = ({user, client, dispatch, groups}: UserScreenProps) => {
                     my: 2,
                     pl: 0
                 }}>Benachrichtigungen</ListSubheader>}>
-                <NotificationSwitch title={"Event Kommentare"} tag={"eventComments"}
-                                    loading={updatingNotificationTags} user={user} dispatch={dispatch}/>
-
-                <NotificationSwitch title={"Event abgesagt"} tag={"eventCancelled"}
-                                    loading={updatingNotificationTags} user={user} dispatch={dispatch}/>
-
-                <NotificationSwitch title={"Event aktualisiert"} tag={"eventUpdated"}
-                                    loading={updatingNotificationTags} user={user} dispatch={dispatch}/>
-
-                <NotificationSwitch title={"Event Anwesenheit aktualisiert"} tag={"eventAttedanceChanged"}
-                                    loading={updatingNotificationTags} user={user} dispatch={dispatch}/>
-
                 {
-                    user.role === "admin" &&
-                    <NotificationSwitch title={"Benutzer-Registrierung"} tag={"userRegistration"}
-                                        loading={updatingNotificationTags} user={user}
-                                        dispatch={dispatch}/>
+                    Notification.permission === "granted" && <>
+                        <NotificationSwitch title={"Event Kommentare"} tag={"eventComments"}
+                                            loading={updatingNotificationTags} user={user} dispatch={dispatch}/>
+
+                        <NotificationSwitch title={"Event abgesagt"} tag={"eventCancelled"}
+                                            loading={updatingNotificationTags} user={user} dispatch={dispatch}/>
+
+                        <NotificationSwitch title={"Event aktualisiert"} tag={"eventUpdated"}
+                                            loading={updatingNotificationTags} user={user} dispatch={dispatch}/>
+
+                        <NotificationSwitch title={"Event Anwesenheit aktualisiert"} tag={"eventAttedanceChanged"}
+                                            loading={updatingNotificationTags} user={user} dispatch={dispatch}/>
+
+                        {
+                            user.role === "admin" &&
+                            <NotificationSwitch title={"Benutzer-Registrierung"} tag={"userRegistration"}
+                                                loading={updatingNotificationTags} user={user}
+                                                dispatch={dispatch}/>
+                        }
+                    </>
+                }
+                {
+                    Notification.permission !== "granted" && <ListItemButton sx={{p: 0}} onClick={() => {
+                        messaging.then(result => {
+                            if (result)
+                                requestNotificationPermission(user, result).then()
+                            else
+                                setErrorSnackbar({
+                                    open: true,
+                                    message: "Notifications are not supported in this browser",
+                                    severity: "error"
+                                });
+                        })
+                    }}>
+                        <ListItemAvatar>
+                            <NotificationsRounded/>
+                        </ListItemAvatar>
+                        <ListItemText primary={"Benachrichtigungen aktivieren"}/>
+                    </ListItemButton>
                 }
             </List>
             {

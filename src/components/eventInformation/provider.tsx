@@ -4,7 +4,6 @@ import {useTranslation} from "react-i18next";
 import {useSelector} from "react-redux";
 import {useParams} from "react-router-dom";
 import {RootState, useAppDispatch} from "../../redux/store";
-import {EventAttendanceUpdate, EventUpdate} from "../../types/supabaseTypes";
 import EventInformation from ".";
 import {PlaceType} from "../eventCreation/types";
 import LoadingEventInfo from "./LoadingEventInfo";
@@ -18,6 +17,7 @@ import {
 import {eventsCommentsSelector} from "src/redux/events/eventCommentsSlice";
 import {useClient} from "react-supabase";
 import {fetchKeysAsync, keyHoldersSelector} from "../../redux/keysSlice";
+import {TablesUpdate} from "../../types/supabase-generated.types";
 
 const EventInformationProvider = () => {
     const {selectedEventId} = useParams();
@@ -41,7 +41,7 @@ const EventInformationProvider = () => {
             return;
 
         let subscription = client.channel("public:event_attendance_user_mapping")
-            .on<EventAttendanceUpdate>('postgres_changes', {
+            .on<TablesUpdate<'event_attendance_user_mapping'>>('postgres_changes', {
                 event: 'UPDATE',
                 schema: 'public',
                 table: 'event_attendance_user_mapping'
@@ -52,7 +52,7 @@ const EventInformationProvider = () => {
                 table: 'event_attendance_user_mapping'
             }, payload => dispatch(onEventAttendanceDelete(payload.old.id)))
             // .on<EventInsert>('postgres_changes', { event: 'INSERT', schema: 'public', table: 'events' }, payload => dispatch(onEventInsert(payload.new)))
-            .on<EventUpdate>('postgres_changes', {
+            .on<TablesUpdate<'events'>>('postgres_changes', {
                 event: 'UPDATE',
                 schema: 'public',
                 table: 'events',

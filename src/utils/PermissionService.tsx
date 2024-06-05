@@ -76,7 +76,7 @@ export function defineRulesFor(user: User | null) {
         });
     }
 
-    if (user.permissions?.some(x => ["edit;groups", "edit;drink", "edit;payments", "edit;user"].includes(x))) {
+    if (user.permissions?.some((x: Permissions) => ["edit;groups", "edit;drink", "edit;payments", "edit;user"].includes(x))) {
         can("view", "browseAdmin");
     }
 

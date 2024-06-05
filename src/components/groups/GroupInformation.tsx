@@ -8,12 +8,13 @@ import {useDependency} from "src/hooks/useDependency";
 import {IAdminUsersRepository} from "src/repository/IAdminUsersRepository";
 import {fetchAdminUsersAsync} from "../../redux/adminUserSlice";
 import {RootState, useAppDispatch} from "../../redux/store";
-import {GroupWithUsers, SimpleUser, User, UserWithGroups} from "../../types/supabaseTypes";
+import {GroupWithUsers, User, UserWithGroups} from "../../types/supabaseTypes";
 import {AlertMessage, AlertSnackbar} from "../AlertSnackbar";
 import CustomAppBar from "../AppBar";
 import SearchAndSelectUserDialog from "../SearchAndSelectUserDialog";
 import {fetchSingleGroupAsync, groupsSelector} from "src/redux/groupsSlice";
 import {captureException} from "@sentry/react";
+import {Tables} from "../../types/supabase-generated.types";
 
 const GroupInformationProvider = () => {
     const {id} = useParams();
@@ -95,7 +96,8 @@ const GroupInformation = ({users, loading, group, repository}: GroupInformationP
             <Divider/>
             <Typography pl={2} pt={1} variant="h6" fontWeight="bold">Mitglieder</Typography>
             {
-                group && group.users && group.users.map((x: SimpleUser, index: number) => <ListItem key={index} divider>
+                group && group.users && group.users.map((x: Tables<'user'>, index: number) => <ListItem key={index}
+                                                                                                        divider>
                     <ListItemAvatar>
                         <AccountCircle/>
                     </ListItemAvatar>
@@ -122,7 +124,7 @@ const GroupInformation = ({users, loading, group, repository}: GroupInformationP
             open={searchAndSelectUsersOpen}
             handleClose={() => setSearchAndSelectUsersOpen(false)}
             handleSubmit={handleUsersAdded}
-            users={users.filter((x: UserWithGroups) => !group?.users?.some((y: SimpleUser) => y.userId === x.userId) ?? false)}
+            users={users.filter((x: UserWithGroups) => !group?.users?.some((y: Tables<'user'>) => y.userId === x.userId) ?? false)}
             loading={loading}/>
 
         <SearchAndSelectUserDialog
