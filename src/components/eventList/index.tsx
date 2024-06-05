@@ -1,6 +1,6 @@
 import AddIcon from '@mui/icons-material/Add';
-import {Alert, Divider, Fab, Grid, LinearProgress, Snackbar} from "@mui/material";
-import React, {useEffect} from "react";
+import {Alert, Chip, Divider, Fab, Grid, LinearProgress, Snackbar} from "@mui/material";
+import React, {useEffect, useState} from "react";
 import {useNavigate} from 'react-router-dom';
 import {useClient} from "react-supabase";
 import {useAppDispatch} from "../../redux/store";
@@ -9,7 +9,13 @@ import CustomAppBar from "../AppBar";
 import {InfiniteScrollList} from "../InfiniteScrollList";
 import {EventItem} from "./EventItem";
 import {EventScreenProps} from './types';
-import {fetchEventsAsync, onEventDelete, onEventErrorRead, onEventUpdate} from 'src/redux/events/eventsSlice';
+import {
+    fetchPastEventsAsync,
+    fetchUpcomingEventsAsync,
+    onEventDelete,
+    onEventErrorRead,
+    onEventUpdate
+} from 'src/redux/events/eventsSlice';
 import {updateAttendanceAsync} from 'src/redux/events/eventAttendanceSlice';
 import {can} from "../../utils/PermissionService";
 import {TablesUpdate} from "../../types/supabase-generated.types";
@@ -18,15 +24,20 @@ const EventScreen = ({events, loading, error, endReached, user}: EventScreenProp
     const client = useClient();
     const dispatch = useAppDispatch();
     const navigate = useNavigate();
+    const [fetchEventMode, setFetchEventMode] = useState<"upcoming" | "past">("upcoming");
 
     useEffect(() => {
-        let subscription = client.channel("public:drink")
+        let subscription = client.channel("public:events")
             .on<TablesUpdate<'events'>>('postgres_changes', {
                 event: 'UPDATE',
                 schema: 'public',
                 table: 'events'
             }, payload => dispatch(onEventUpdate(payload.new)))
-            .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'events' }, payload => dispatch(onEventDelete(payload.old.id)))
+            .on('postgres_changes', {
+                event: 'DELETE',
+                schema: 'public',
+                table: 'events'
+            }, payload => dispatch(onEventDelete(payload.old.id)))
             // .on<EventInsert>('postgres_changes', { event: 'INSERT', schema: 'public', table: 'events' }, payload => dispatch(onEventInsert(payload.new)))
             .subscribe();
         return () => {
@@ -35,11 +46,19 @@ const EventScreen = ({events, loading, error, endReached, user}: EventScreenProp
     }, [client, dispatch]);
 
     useEffect(() => {
-        dispatch(fetchEventsAsync({user, page: 0, count: 20}));
+        dispatch(fetchUpcomingEventsAsync({user, page: 0, count: 20}));
     }, [dispatch, user]);
 
-    const fetchEvents = (page: number, count: number) => {
-        dispatch(fetchEventsAsync({user, page, count}));
+    const fetchEvents = (mode: "upcoming" | "past", page: number, count: number) => {
+        if (mode === "upcoming")
+            dispatch(fetchUpcomingEventsAsync({user, page, count}));
+        else
+            dispatch(fetchPastEventsAsync({user, page, count}));
+    }
+
+    const switchEventFetching = (mode: "upcoming" | "past") => {
+        setFetchEventMode(mode);
+        fetchEvents(mode, 0, 20);
     }
 
     const updateAttendance = async (eventId: number, state: EventAttendance, oldState: EventAttendance) => {
@@ -52,11 +71,19 @@ const EventScreen = ({events, loading, error, endReached, user}: EventScreenProp
         direction="column"
         alignItems="center"
         justifyContent="center">
-        <CustomAppBar />
+        <CustomAppBar/>
         {
-            loading && <LinearProgress sx={{ position: "fixed", top: 56, left: 0, right: 0 }} />
+            loading && <LinearProgress sx={{position: "fixed", top: 56, left: 0, right: 0}}/>
         }
-        <InfiniteScrollList fetch={(page) => fetchEvents(page, 20)} error={error ?? ""} loading={loading} endReached={endReached}>
+        <Grid container p={2} alignItems={"start"} justifyContent="start" direction={"row"} width={"100%"}>
+            <Chip label="Upcoming" color={fetchEventMode === "upcoming" ? "primary" : "default"}
+                  onClick={() => switchEventFetching("upcoming")}/>
+            <Chip sx={{ml: 2}} label="Past" color={fetchEventMode === "past" ? "primary" : "default"}
+                  onClick={() => switchEventFetching("past")}/>
+        </Grid>
+        <InfiniteScrollList fetch={(page) => fetchEvents(fetchEventMode, page, 20)} error={error ?? ""}
+                            loading={loading}
+                            endReached={endReached}>
             {
                 events.map((event) => <div key={event.id}>
                     <EventItem
@@ -66,29 +93,29 @@ const EventScreen = ({events, loading, error, endReached, user}: EventScreenProp
                         declineEvent={() => updateAttendance(event.id, "Declined", event.userAttendance)}
                         onClick={() => {
                             navigate("/training/event/" + event.id);
-                        }} />
-                    <Divider />
+                        }}/>
+                    <Divider/>
                 </div>)
             }
         </InfiniteScrollList>
         {
             can("edit", "training") &&
             <Fab sx={{background: "#66bb6a", position: "fixed", right: "16px", bottom: "56px", mb: "16px"}}
-                                          onClick={() => navigate("/training/createOrUpdate/InsertEvent")}>
+                 onClick={() => navigate("/training/createOrUpdate/InsertEvent")}>
                 {
-                    <AddIcon sx={{ color: "white" }} />
+                    <AddIcon sx={{color: "white"}}/>
                 }
             </Fab>
         }
 
         {
-            error && <Snackbar sx={{ position: "fixed", right: "16px", }} open={true} >
-                <Alert severity={"error"} sx={{ width: '100%' }} onClose={() => dispatch(onEventErrorRead(null))}>
+            error && <Snackbar sx={{position: "fixed", right: "16px",}} open={true}>
+                <Alert severity={"error"} sx={{width: '100%'}} onClose={() => dispatch(onEventErrorRead(null))}>
                     {error}
                 </Alert>
             </Snackbar>
         }
-    </Grid >);
+    </Grid>);
 }
 
 export default EventScreen;

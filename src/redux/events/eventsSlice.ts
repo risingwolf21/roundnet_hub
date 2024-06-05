@@ -11,9 +11,8 @@ export type SliceEvent = Event & {
     fullGroup: Group
 }
 
-const eventsAdapter = createEntityAdapter({
-    selectId: (event: SliceEvent) => event.id,
-    sortComparer: (a, b) => a.startingDateTime.localeCompare(b.startingDateTime),
+export const eventsAdapter = createEntityAdapter({
+    selectId: (event: SliceEvent) => event.id
 });
 export const eventsSelector = eventsAdapter.getSelectors((st: RootState) => st.events);
 
@@ -71,10 +70,10 @@ const eventsSlice = createSlice({
     },
     extraReducers(builder) {
         builder
-            .addCase(fetchEventsAsync.pending, (state, _action) => {
+            .addCase(fetchUpcomingEventsAsync.pending, (state, _action) => {
                 state.loading = true;
             })
-            .addCase(fetchEventsAsync.fulfilled, (state, action) => {
+            .addCase(fetchUpcomingEventsAsync.fulfilled, (state, action) => {
                 state.loading = false;
 
                 state.endReached = action.payload.entries && action.payload.entries.length < 1;
@@ -85,7 +84,26 @@ const eventsSlice = createSlice({
                     eventsAdapter.setAll(state, action.payload.entries);
                 }
             })
-            .addCase(fetchEventsAsync.rejected, (state, action) => {
+            .addCase(fetchUpcomingEventsAsync.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.error.message ?? "";
+            })
+
+            .addCase(fetchPastEventsAsync.pending, (state, _action) => {
+                state.loading = true;
+            })
+            .addCase(fetchPastEventsAsync.fulfilled, (state, action) => {
+                state.loading = false;
+
+                state.endReached = action.payload.entries && action.payload.entries.length < 1;
+
+                if (action.payload.more) {
+                    eventsAdapter.addMany(state, action.payload.entries);
+                } else {
+                    eventsAdapter.setAll(state, action.payload.entries);
+                }
+            })
+            .addCase(fetchPastEventsAsync.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.error.message ?? "";
             })
@@ -149,9 +167,30 @@ type FetchEventsType = {
     count: number
 }
 
-export const fetchEventsAsync = createAsyncThunk("events", async ({user, page = 0, count = 20}: FetchEventsType) => {
-    const userGroups = await SupabaseEventRepository.fetchUserGroups(user);
-    const response = await SupabaseEventRepository.fetchEvents(user, userGroups.data?.map(x => x.group.id) ?? [], page, count);
+export const fetchUpcomingEventsAsync = createAsyncThunk("fetchUpcomingEventsAsync", async ({
+                                                                                                user,
+                                                                                                page = 0,
+                                                                                                count = 20
+                                                                                            }: FetchEventsType) => {
+    const response = await SupabaseEventRepository.fetchUpcomingEvents(page, count);
+    return {
+        entries: (response.data ?? []).map((x: FullEvent) => {
+            return {
+                ...x,
+                userAttendance: (x.attendance.find((y: FullAttendance) => y.user.userId === user.userId)?.state ?? "Unanswered") as EventAttendance,
+                attendanceUpdating: false
+            }
+        }),
+        more: page !== 0
+    };
+});
+
+export const fetchPastEventsAsync = createAsyncThunk("fetchPastEventsAsync", async ({
+                                                                                        user,
+                                                                                        page = 0,
+                                                                                        count = 20
+                                                                                    }: FetchEventsType) => {
+    const response = await SupabaseEventRepository.fetchPastEvents(page, count);
     return {
         entries: (response.data ?? []).map((x: FullEvent) => {
             return {

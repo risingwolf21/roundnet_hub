@@ -74,6 +74,10 @@ export function answerDeadlineExpired<EventType extends Event>(x: EventType) {
     return isBefore(x.answerDeadline, Date.now());
 }
 
+export function eventInThePast(x: Event) {
+    return isBefore(x.endDateTime !== null ? x.endDateTime : x.startingDateTime, Date.now());
+}
+
 export function maxAttendeesExceeded<EventType extends Event, AttendanceType extends Attendance>(x: EventType, attendance: AttendanceType[]) {
     if (!x.maxAttendees)
         return false;

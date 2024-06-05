@@ -161,7 +161,7 @@ export const SupabaseEventRepository = {
             .throwOnError()
     },
 
-    async fetchEvents(user: User, userGroups: number[], page: number, count: number): Promise<PostgrestSingleResponse<FullEvent[]>> {
+    async fetchUpcomingEvents(page: number, count: number): Promise<PostgrestSingleResponse<FullEvent[]>> {
         return supabase.from("events")
             .select("*, fullGroup: event_group(id, created_at, description, name, color), attendance: event_attendance_user_mapping ( state , user(userId, displayName, avatarUrl)  ), comments: event_comments ( comment, created_at, displayName, event, user ( displayName, userId, avatarUrl))")
             // get events that are on the same day or later
@@ -170,6 +170,16 @@ export const SupabaseEventRepository = {
             .lt("startingDateTime", formatDateToDatabase(add(new Date(), {weeks: 2})))
             .range(page * count, page * count + count - 1)
             .order("startingDateTime", {ascending: true})
+            .returns<FullEvent[]>()
+            .throwOnError();
+    },
+
+    async fetchPastEvents(page: number, count: number): Promise<PostgrestSingleResponse<FullEvent[]>> {
+        return supabase.from("events")
+            .select("*, fullGroup: event_group(id, created_at, description, name, color), attendance: event_attendance_user_mapping ( state , user(userId, displayName, avatarUrl)  ), comments: event_comments ( comment, created_at, displayName, event, user ( displayName, userId, avatarUrl))")
+            .lt("startingDateTime", formatDateToDatabase(new Date()))
+            .range(page * count, page * count + count - 1)
+            .order("startingDateTime", {ascending: false})
             .returns<FullEvent[]>()
             .throwOnError();
     },
