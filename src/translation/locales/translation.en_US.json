@@ -62,6 +62,8 @@
   },
   "notification_actionMessage": "We'd like to show you notifications for the following categories.",
   "notification_updateMessage": "Update your push notification subscription preferences.",
+  "past": "Past",
   "take_key": "Take",
+  "upcoming": "Upcoming",
   "userName": "userName"
 }

@@ -19,6 +19,7 @@ import {
 import {updateAttendanceAsync} from 'src/redux/events/eventAttendanceSlice';
 import {can} from "../../utils/PermissionService";
 import {TablesUpdate} from "../../types/supabase-generated.types";
+import {t} from "i18next";
 
 const EventScreen = ({events, loading, error, endReached, user}: EventScreenProps) => {
     const client = useClient();
@@ -76,9 +77,9 @@ const EventScreen = ({events, loading, error, endReached, user}: EventScreenProp
             loading && <LinearProgress sx={{position: "fixed", top: 56, left: 0, right: 0}}/>
         }
         <Grid container p={2} alignItems={"start"} justifyContent="start" direction={"row"} width={"100%"}>
-            <Chip label="Upcoming" color={fetchEventMode === "upcoming" ? "primary" : "default"}
+            <Chip label={t("upcoming")} color={fetchEventMode === "upcoming" ? "primary" : "default"}
                   onClick={() => switchEventFetching("upcoming")}/>
-            <Chip sx={{ml: 2}} label="Past" color={fetchEventMode === "past" ? "primary" : "default"}
+            <Chip sx={{ml: 2}} label={t("past")} color={fetchEventMode === "past" ? "primary" : "default"}
                   onClick={() => switchEventFetching("past")}/>
         </Grid>
         <InfiniteScrollList fetch={(page) => fetchEvents(fetchEventMode, page, 20)} error={error ?? ""}
