@@ -20,6 +20,9 @@ on conflict (id) do update set current_holder = null;
 alter table public.events
     add column required_item public."ItemType" null;
 
+
+drop trigger key_history_trigger on public.key_holders;
+
 drop table public.key_holders;
 
 alter table public.keys
@@ -40,9 +43,7 @@ begin
 end;
 $$;
 
-alter trigger key_history_trigger on public.items rename to item_history_trigger;
-
-create or replace trigger public
+create or replace trigger "item_history_trigger"
     after update
     on public.items
     for each row
