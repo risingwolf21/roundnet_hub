@@ -29,6 +29,7 @@ import {useAppDispatch} from "src/redux/store"
 import {
     answerDeadlineExpired,
     EventAttendance,
+    eventInThePast,
     FullAttendance,
     FullItemHolder,
     maxAttendeesExceeded,
@@ -129,7 +130,7 @@ const EventInformationAttendance = ({
                 <ListItemSecondaryAction>
                     <IconButton
                         onClick={() => updateAttendance("Attending", selectedEvent.userAttendance)}
-                        disabled={selectedEvent.isCancelled || maxAttendeesExceeded(selectedEvent, attendance) || answerDeadlineExpired(selectedEvent)}>
+                        disabled={selectedEvent.isCancelled || maxAttendeesExceeded(selectedEvent, attendance) || answerDeadlineExpired(selectedEvent) || eventInThePast(selectedEvent)}>
                         {
                             selectedEvent.userAttendance === "Attending"
                                 ?
@@ -156,7 +157,7 @@ const EventInformationAttendance = ({
                 <ListItemSecondaryAction>
                     <IconButton
                         onClick={() => updateAttendance("Declined", selectedEvent.userAttendance)}
-                        disabled={selectedEvent.isCancelled}>
+                        disabled={selectedEvent.isCancelled || eventInThePast(selectedEvent)}>
                         {
                             selectedEvent.userAttendance === "Declined"
                                 ?
