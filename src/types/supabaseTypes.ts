@@ -15,9 +15,8 @@ export type Payment = Database["public"]["Tables"]["payments"]["Row"];
 export type PaymentInsert = Database["public"]["Tables"]["payments"]["Insert"];
 export type User = Database["public"]["Tables"]["user"]["Row"];
 
-export type Key = Database["public"]["Tables"]["keys"]["Row"];
-export type KeyInsert = Database["public"]["Tables"]["keys"]["Insert"];
-export type KeyUpdate = Database["public"]["Tables"]["keys"]["Update"];
+export type Item = Database["public"]["Tables"]["items"]["Row"];
+export type ItemUpdate = Database["public"]["Tables"]["items"]["Update"];
 export type KeyHistory = Database["public"]["Tables"]["key_history"]["Row"];
 export type Notification = Database["public"]["Tables"]["notifications"]["Row"];
 export type NotificationInsert = Database["public"]["Tables"]["notifications"]["Insert"];
@@ -33,7 +32,7 @@ export type NotificationTags = Database["public"]["Enums"]["NotificationTags"]
 export type FullKeyHistory = Modify<KeyHistory, {
     pastUser: User,
     currentUser: User,
-    key: Key
+    key: Item
 }>
 
 export type DrinkCounter = Tables<'drink'> & {

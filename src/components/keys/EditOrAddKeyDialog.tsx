@@ -21,20 +21,20 @@ import React, {useEffect, useState} from "react";
 import {useSelector} from "react-redux";
 import {RootState} from "src/redux/store";
 import {SlideUpTransition} from "../../utils";
-import {Key, KeyUpdate} from "../../types/supabaseTypes";
+import {Item, ItemUpdate} from "../../types/supabaseTypes";
 import KeyIcon from "@mui/icons-material/Key";
 import {SupabaseKeysRepository} from "../../repository/KeysRepository";
 
 type EditOrAddKeyDialogProps = {
     open: boolean,
     handleClose: () => void,
-    keyToEdit: Key
+    keyToEdit: Item
 }
 
 export const EditOrAddKeyDialog = ({open, handleClose, keyToEdit}: EditOrAddKeyDialogProps) => {
 
     const user = useSelector((state: RootState) => state.application.user);
-    const [currentKey, setCurrentKey] = useState<KeyUpdate>({
+    const [currentKey, setCurrentKey] = useState<ItemUpdate>({
         id: keyToEdit.id,
         name: keyToEdit.name,
         color: keyToEdit.color,

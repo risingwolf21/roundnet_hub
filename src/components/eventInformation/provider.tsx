@@ -16,7 +16,7 @@ import {
 } from "src/redux/events/eventAttendanceSlice";
 import {eventsCommentsSelector} from "src/redux/events/eventCommentsSlice";
 import {useClient} from "react-supabase";
-import {fetchKeysAsync, keyHoldersSelector} from "../../redux/keysSlice";
+import {fetchItemsAsync, keyHoldersSelector} from "../../redux/keysSlice";
 import {TablesUpdate} from "../../types/supabase-generated.types";
 
 const EventInformationProvider = () => {
@@ -35,7 +35,7 @@ const EventInformationProvider = () => {
     const [selectedEventPlace, setSelectedEventPlace] = useState<PlaceType | null>(null);
 
     useEffect(() => {
-        dispatch(fetchKeysAsync());
+        dispatch(fetchItemsAsync());
 
         if (!user || !event)
             return;

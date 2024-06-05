@@ -23,9 +23,9 @@ import React, {useEffect, useState} from "react";
 import {useSelector} from "react-redux";
 import {useClient} from "react-supabase";
 import {TABLE_USER} from "src/constants";
-import {fetchInsertedKeyHolderAsync, fetchKeysAsync, keyHoldersSelector} from "src/redux/keysSlice";
+import {fetchInsertedItemsAsync, fetchItemsAsync, keyHoldersSelector} from "src/redux/keysSlice";
 import {AppDispatch, RootState, useAppDispatch} from "src/redux/store";
-import {FullItemHolder, Key, User} from "src/types/supabaseTypes";
+import {FullItemHolder, Item, User} from "src/types/supabaseTypes";
 import {SlideUpTransition} from "src/utils";
 import {AlertMessage, AlertSnackbar} from "../AlertSnackbar";
 import CustomAppBar from "../AppBar";
@@ -76,22 +76,22 @@ const KeyHolderScreen = ({dispatch, keyHolders, loading, user, t}: KeyHolderScre
     const [selectedUser, setSelectedUser] = useState<User | null>(null);
     const [selectedKeyHolder, setSelectedKeyHolder] = useState<FullItemHolder | null>(null);
     const [isEditingMode, setEditingMode] = useState(false);
-    const [keyToEdit, setKeyToEdit] = useState<Key>(EMPTY_KEY);
+    const [keyToEdit, setKeyToEdit] = useState<Item>(EMPTY_KEY);
     const [alertInfo, setAlertInfo] = useState<AlertMessage | null>(null);
     const [keyHistoryDialogOpen, setKeyHistoryDialogOpen] = useState(false);
     const client = useClient();
 
     useEffect(() => {
-        dispatch(fetchKeysAsync());
+        dispatch(fetchItemsAsync());
     }, [dispatch]);
 
     useEffect(() => {
-        let subscription = client.channel("public:key_holders")
+        let subscription = client.channel("public:items")
             .on('postgres_changes', {
                     event: 'UPDATE',
                     schema: 'public',
-                    table: 'key_holders'
-                }, payload => dispatch(fetchInsertedKeyHolderAsync({
+                    table: 'items'
+                }, payload => dispatch(fetchInsertedItemsAsync({
                     key: payload.new.key,
                     user: payload.new.user
                 }))
@@ -99,8 +99,8 @@ const KeyHolderScreen = ({dispatch, keyHolders, loading, user, t}: KeyHolderScre
             .on('postgres_changes', {
                 event: 'INSERT',
                 schema: 'public',
-                table: 'key_holders'
-            }, payload => dispatch(fetchInsertedKeyHolderAsync({
+                table: 'items'
+            }, payload => dispatch(fetchInsertedItemsAsync({
                 key: payload.new.key,
                 user: payload.new.user
             })))
@@ -124,7 +124,7 @@ const KeyHolderScreen = ({dispatch, keyHolders, loading, user, t}: KeyHolderScre
                 setAlertInfo({message: t("keyHandOverError", {error: result.error}), severity: "error"});
             setSelectedUser(null);
             setSelectedKeyHolder(null);
-            dispatch(fetchKeysAsync());
+            dispatch(fetchItemsAsync());
         });
     }
 
@@ -263,7 +263,7 @@ const KeyHolderScreen = ({dispatch, keyHolders, loading, user, t}: KeyHolderScre
         <EditOrAddKeyDialog open={addOrUpdateKeysOpen} handleClose={() => {
             setAddOrUpdateKeysOpen(false);
             setEditingMode(false);
-            dispatch(fetchKeysAsync());
+            dispatch(fetchItemsAsync());
         }} keyToEdit={keyToEdit}/>
     </Box>
 }

@@ -1,5 +1,5 @@
 import {PostgrestSingleResponse} from "@supabase/supabase-js";
-import {FullItemHolder, Key, User} from "../types/supabaseTypes";
+import {FullItemHolder, Item, User} from "../types/supabaseTypes";
 import {formatDateToDatabase} from "../utils";
 import {supabase} from "../components/services/supabase/supabaseClient";
 import {TablesInsert} from "../types/supabase-generated.types";
@@ -15,7 +15,7 @@ export const SupabaseKeysRepository = {
             .throwOnError();
     },
 
-    async upsertItem(item: TablesInsert<'items'>): Promise<PostgrestSingleResponse<Key>> {
+    async upsertItem(item: TablesInsert<'items'>): Promise<PostgrestSingleResponse<Item>> {
         return supabase
             .from("items")
             .upsert(item)
@@ -30,7 +30,7 @@ export const SupabaseKeysRepository = {
             .returns<FullItemHolder[]>();
     },
 
-    async giveItemToUser(key: Key, user: User): Promise<PostgrestSingleResponse<null>> {
+    async giveItemToUser(key: Item, user: User): Promise<PostgrestSingleResponse<null>> {
         return supabase
             .from("items")
             .update({
@@ -40,7 +40,7 @@ export const SupabaseKeysRepository = {
             .eq("id", key.id);
     },
 
-    async fetchInsertedKey(key: number, user: string): Promise<PostgrestSingleResponse<FullItemHolder[]>> {
+    async fetchInsertedItem(key: number, user: string): Promise<PostgrestSingleResponse<FullItemHolder[]>> {
         return supabase
             .from("items")
             .select("*, user: user(*)")

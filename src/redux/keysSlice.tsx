@@ -23,19 +23,19 @@ const keysSlice = createSlice({
     },
     extraReducers(builder) {
         builder
-            .addCase(fetchKeysAsync.fulfilled, (state, action) => {
+            .addCase(fetchItemsAsync.fulfilled, (state, action) => {
                 keyHoldersAdapter.setAll(state, action.payload);
                 state.loading = false;
             })
-            .addCase(fetchKeysAsync.pending, (state) => {
+            .addCase(fetchItemsAsync.pending, (state) => {
                 state.loading = true;
                 state.error = "";
             })
-            .addCase(fetchKeysAsync.rejected, (state, action) => {
+            .addCase(fetchItemsAsync.rejected, (state, action) => {
                 state.error = action.error.message ?? "";
             })
 
-            .addCase(fetchInsertedKeyHolderAsync.fulfilled, (state, action) => {
+            .addCase(fetchInsertedItemsAsync.fulfilled, (state, action) => {
                 if (action.payload)
                     keyHoldersAdapter.upsertMany(state, action.payload);
                 state.loading = false;
@@ -43,20 +43,20 @@ const keysSlice = createSlice({
     }
 });
 
-export const fetchKeysAsync = createAsyncThunk("fetchKeysAsync", async () => {
+export const fetchItemsAsync = createAsyncThunk("fetchKeysAsync", async () => {
     const response = await SupabaseKeysRepository.getItems();
 
     return response.data ?? [];
 });
 
-export const fetchInsertedKeyHolderAsync = createAsyncThunk("fetchInsertedKeyHolderAsync", async ({
+export const fetchInsertedItemsAsync = createAsyncThunk("fetchInsertedItemsAsync", async ({
                                                                                                       key,
                                                                                                       user
                                                                                                   }: {
     key: number,
     user: string
 }) => {
-    const response = await SupabaseKeysRepository.fetchInsertedKey(key, user);
+    const response = await SupabaseKeysRepository.fetchInsertedItem(key, user);
 
     return response.data;
 });
