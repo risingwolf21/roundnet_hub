@@ -27,3 +27,24 @@ alter table public.keys
 
 alter table public."key_history"
     rename to "item_history";
+
+alter function "add_key_history_entry" rename to "add_item_history_entry";
+
+create or replace function public.add_item_history_entry() returns trigger
+    language plpgsql as
+$$
+begin
+    insert into item_history("pastUser", "currentUser", key)
+    values (old."current_holder", new."current_holder", new.id);
+    return new;
+end;
+$$;
+
+alter trigger key_history_trigger on public.items rename to item_history_trigger;
+
+create or replace trigger public
+    after update
+    on public.items
+    for each row
+execute function public.add_item_history_entry();
+
