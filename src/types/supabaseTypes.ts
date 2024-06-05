@@ -40,7 +40,7 @@ export type DrinkCounter = Tables<'drink'> & {
 }
 
 export type FullItemHolder = Tables<'items'> & {
-    user: Tables<'user'>,
+    current_holder: Tables<'user'>,
     lastUpdate: string | null
 }
 

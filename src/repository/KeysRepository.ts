@@ -26,7 +26,7 @@ export const SupabaseKeysRepository = {
     async getItems(): Promise<PostgrestSingleResponse<FullItemHolder[]>> {
         return supabase
             .from("items")
-            .select("*, user: user(*)")
+            .select("*, current_holder: user!keys_user_fkey(*)")
             .returns<FullItemHolder[]>();
     },
 

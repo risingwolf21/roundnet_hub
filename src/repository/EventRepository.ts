@@ -11,7 +11,7 @@ import {
     User
 } from "../types/supabaseTypes";
 import {PostgrestError, PostgrestSingleResponse} from "@supabase/supabase-js";
-import {add, Duration} from "date-fns";
+import {add, Duration, startOfDay} from "date-fns";
 import _ from "lodash";
 import {formatDateToDatabase} from "../utils";
 import moment from "moment/moment";
@@ -165,7 +165,7 @@ export const SupabaseEventRepository = {
         return supabase.from("events")
             .select("*, fullGroup: event_group(id, created_at, description, name, color), attendance: event_attendance_user_mapping ( state , user(userId, displayName, avatarUrl)  ), comments: event_comments ( comment, created_at, displayName, event, user ( displayName, userId, avatarUrl))")
             // get events that are on the same day or later
-            .gt("startingDateTime", formatDateToDatabase(new Date()))
+            .gt("startingDateTime", formatDateToDatabase(startOfDay(new Date())))
             .or(`recurrenceEnd.is.null,recurrenceEnd.gt.'${formatDateToDatabase(new Date())}'`)
             .lt("startingDateTime", formatDateToDatabase(add(new Date(), {weeks: 2})))
             .range(page * count, page * count + count - 1)

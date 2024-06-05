@@ -159,7 +159,7 @@ const KeyHolderScreen = ({dispatch, keyHolders, loading, user, t}: KeyHolderScre
                             <KeyIcon/>
                         </Avatar>
                     </ListItemAvatar>
-                    <ListItemText primary={x.user.displayName ?? "Nicht zugewiesen"} secondary={x.name}/>
+                    <ListItemText primary={x.current_holder?.displayName ?? "Nicht zugewiesen"} secondary={x.name}/>
                     {
                         isEditingMode
                             ? <ListItemSecondaryAction>
@@ -170,7 +170,7 @@ const KeyHolderScreen = ({dispatch, keyHolders, loading, user, t}: KeyHolderScre
                                     <EditIcon/>
                                 </IconButton>
                             </ListItemSecondaryAction>
-                            : x.user.userId === user.userId ?
+                            : x.current_holder?.userId === user.userId ?
                                 <ListItemSecondaryAction>
                                     <Button color="primary" onClick={() => selectKeyToHandOver(x)}>
                                         {t("handover_key")}
@@ -220,11 +220,11 @@ const KeyHolderScreen = ({dispatch, keyHolders, loading, user, t}: KeyHolderScre
                     selectedUser?.userId === user.userId ?
                         t("confirmKeyTaken", {
                             keyName: selectedKeyHolder?.name,
-                            userName: selectedKeyHolder?.user?.displayName ?? ""
+                            userName: selectedKeyHolder?.current_holder?.displayName ?? ""
                         }) :
                         t("confirmKeyHandover", {
                             keyName: selectedKeyHolder?.name,
-                            userName: selectedKeyHolder?.user?.displayName ?? ""
+                            userName: selectedKeyHolder?.current_holder?.displayName ?? ""
                         })
                 }
             </Typography>
