@@ -3,6 +3,7 @@
   "browse": {
     "account": "Account",
     "analyzeDrinkStocks": "Analyse drink history",
+    "challenges": "Challenges",
     "completeHistory": "Complete history",
     "executeEdgeFunctions": "Execute edge functions",
     "history": "History",

@@ -15,6 +15,7 @@ export type Ability =
     | [Actions, 'browse']
     | [Actions, 'browseAdmin']
     | [Actions, 'eventComments']
+    | [Actions, 'challenges']
 
 export const allPermissions: Permissions[] = [
     "use;drink",
@@ -35,7 +36,9 @@ export const allPermissions: Permissions[] = [
     "edit;user",
     "view;keyFinder",
     "edit;keyFinder",
-    "delete;keyFinder"
+    "delete;keyFinder",
+    "view;challenges",
+    "use;challenges"
 ];
 
 export const userPermissions: Permissions[] = [

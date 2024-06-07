@@ -1,4 +1,4 @@
-import {AccountCircle, Euro, History, Info, Key, Notifications} from "@mui/icons-material";
+import {AccountCircle, EmojiEvents, Euro, History, Info, Key, Notifications} from "@mui/icons-material";
 import {Avatar, Badge, Box, List, ListItem, ListItemAvatar, ListItemButton, ListItemText} from "@mui/material";
 import {TFunction} from "i18next";
 import React, {ReactElement} from "react";
@@ -53,6 +53,13 @@ const tabs = [
         icon: <Notifications/>,
         avatarColor: "#88AEBF",
         ability: "notifications"
+    },
+    {
+        translationKey: "challenges",
+        navigateTo: "/challenges",
+        icon: <EmojiEvents/>,
+        avatarColor: "#88AEBF",
+        ability: "challenges"
     }
 ] as TabsType[];
 
@@ -119,6 +126,20 @@ const Browse = ({t}: { t: TFunction }) => {
                         </Badge>
                     </ListItemAvatar>
                     <ListItemText primary={t("browse.notifications")}/>
+                </ListItemButton>
+            }
+            {
+                can("view", "challenges") &&
+                <ListItemButton key={"challenges"} onClick={() => navigate("/challenges")} sx={{mt: 1}}>
+                    <ListItemAvatar>
+                        <Badge color="secondary" variant="standard" badgeContent={notifications.length}
+                               invisible={notifications.length < 1}>
+                            <Avatar sx={{background: "#88AEBF", width: 40, height: 40, borderRadius: 2}}>
+                                <EmojiEvents/>
+                            </Avatar>
+                        </Badge>
+                    </ListItemAvatar>
+                    <ListItemText primary={t("browse.challenges")}/>
                 </ListItemButton>
             }
             <ListItem key={"appVersion"} dense>

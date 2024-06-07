@@ -27,7 +27,22 @@ export type EventAttendanceMapping = Database["public"]["Tables"]["event_attenda
 export type EventCommentUpdate = Database["public"]["Tables"]["event_comments"]["Update"];
 export type EventCommentInsert = Database["public"]["Tables"]["event_comments"]["Insert"];
 
-export type NotificationTags = Database["public"]["Enums"]["NotificationTags"]
+export type NotificationTags = Database["public"]["Enums"]["NotificationTags"];
+
+export type Challenge = Tables<'challenge'>;
+export type ChallengeStats = Tables<'challenge_stats'>;
+
+export type FullChallenge = Challenge & {
+    stats: ChallengeStatWithUser[]
+}
+
+export type ChallengeStatWithUser = ChallengeStats & {
+    user: User
+}
+export type FullChallengeStats = ChallengeStats & {
+    user: User,
+    challenge: Challenge
+}
 
 export type FullKeyHistory = Modify<KeyHistory, {
     pastUser: User,
