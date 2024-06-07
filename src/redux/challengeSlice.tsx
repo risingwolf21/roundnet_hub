@@ -42,7 +42,6 @@ const challengeSlice = createSlice({
                 state.loading = false;
                 state.error = action.error.message ?? "";
             })
-
             .addCase(fetchChallengeStatsSingleAsync.pending, (state, action) => {
                 state.loading = true;
             })
@@ -73,16 +72,24 @@ const challengeSlice = createSlice({
 
 export const fetchChallengesAsync = createAsyncThunk("fetchChallengesAsync", async () => {
     const response = await ChallengeRepository.fetchChallenges();
-    return response.data ?? [];
+    return response.data?.map(x => {
+        return {
+            ...x,
+            stats: x.stats.sort((a, b) => a.count < b.count ? 1 : -1)
+        }
+    }) ?? [];
 });
 
-export const fetchChallengeStatsSingleAsync = createAsyncThunk("fetchChallengesAsync", async ({challengeId}: {
+export const fetchChallengeStatsSingleAsync = createAsyncThunk("fetchChallengeStatsSingleAsync", async ({challengeId}: {
     challengeId: string
 }) => {
     const response = await ChallengeRepository.fetchChallengeStats(challengeId);
     return {
         challengeId,
-        data: response.data
+        data: {
+            ...response.data,
+            stats: response.data?.stats.sort((a, b) => a.count < b.count ? 1 : -1)
+        }
     }
 });
 

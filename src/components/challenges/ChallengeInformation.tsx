@@ -202,7 +202,6 @@ const ChallengeInformation = ({t, dispatch, challenge, user, client}: ChallengeI
             <Divider/>
             {
                 challenge.stats
-                    .sort((a, b) => a.count < b.count ? 1 : -1)
                     .map((x, index) => <ListItem key={x.user.userId}>
                             <ListItemAvatar>
                                 <Avatar sx={{borderRadius: 2}}>
