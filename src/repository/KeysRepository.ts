@@ -1,12 +1,13 @@
-import {PostgrestError, PostgrestSingleResponse} from "@supabase/supabase-js";
-import {FullKeyHolder, Key, KeyInsert, User} from "../types/supabaseTypes";
+import {PostgrestSingleResponse} from "@supabase/supabase-js";
+import {FullItemHolder, Item, User} from "../types/supabaseTypes";
 import {formatDateToDatabase} from "../utils";
 import {supabase} from "../components/services/supabase/supabaseClient";
+import {TablesInsert} from "../types/supabase-generated.types";
 
 export const SupabaseKeysRepository = {
     async loadKeyHistory(keyId: number): Promise<PostgrestSingleResponse<any>> {
         return supabase
-            .from("key_history")
+            .from("item_history")
             .select("*, pastUser: user!key_history_pastuser_fkey(*), currentUser: user!key_history_currentuser_fkey(*), key: key(*)")
             .eq("key.id", keyId)
             .not("key", "is", null)
@@ -14,50 +15,37 @@ export const SupabaseKeysRepository = {
             .throwOnError();
     },
 
-    async upsertKey(key: KeyInsert, userId: string): Promise<PostgrestSingleResponse<null>> {
-        const {data, error} = await supabase
-            .from("keys")
-            .upsert(key)
+    async upsertItem(item: TablesInsert<'items'>): Promise<PostgrestSingleResponse<Item>> {
+        return supabase
+            .from("items")
+            .upsert(item)
             .select()
             .single();
-        if (!data || error)
-            return {
-                error: {
-                    code: "",
-                    details: "",
-                    hint: "",
-                    message: "Key could not be added to database"
-                } as PostgrestError, data: null, count: null, status: 400, statusText: ""
-            };
-        return supabase
-            .from("key_holders")
-            .upsert({user: userId, key: data.id});
     },
 
-    async getKeys(): Promise<PostgrestSingleResponse<FullKeyHolder[]>> {
+    async getItems(): Promise<PostgrestSingleResponse<FullItemHolder[]>> {
         return supabase
-            .from("key_holders")
-            .select("*, user: user(*), key: key(*)")
-            .returns<FullKeyHolder[]>();
+            .from("items")
+            .select("*, current_holder: user!keys_user_fkey(*)")
+            .returns<FullItemHolder[]>();
     },
 
-    async giveKeyToUser(key: Key, user: User): Promise<PostgrestSingleResponse<null>> {
+    async giveItemToUser(key: Item, user: User): Promise<PostgrestSingleResponse<null>> {
         return supabase
-            .from("key_holders")
+            .from("items")
             .update({
-                user: user.userId,
+                current_holder: user.userId,
                 lastUpdate: formatDateToDatabase(new Date()),
             })
-            .eq("key", key.id);
+            .eq("id", key.id);
     },
 
-    async fetchInsertedKey(key: number, user: string): Promise<PostgrestSingleResponse<FullKeyHolder[]>> {
+    async fetchInsertedItem(key: number, user: string): Promise<PostgrestSingleResponse<FullItemHolder[]>> {
         return supabase
-            .from("key_holders")
-            .select("*, user: user(*), key: key(*)")
-            .eq("key.id", key)
+            .from("items")
+            .select("*, user: user(*)")
+            .eq("id", key)
             .eq("user.userId", user)
-            .not("key", "is", null)
-            .returns<FullKeyHolder[]>();
+            .returns<FullItemHolder[]>();
     }
 }

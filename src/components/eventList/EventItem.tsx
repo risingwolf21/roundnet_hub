@@ -12,7 +12,7 @@ import {
 import moment from "moment"
 import React from "react"
 import {SliceEvent} from "src/redux/events/eventsSlice"
-import {answerDeadlineExpired} from "src/types/supabaseTypes"
+import {answerDeadlineExpired, eventInThePast} from "src/types/supabaseTypes"
 
 export type EventItemProps = {
     attendanceUpdating: boolean,
@@ -46,18 +46,19 @@ export const EventItem = ({event, onClick, attendEvent, declineEvent, attendance
                 attendanceUpdating
                     ? <CircularProgress size={"22px"}/>
                     : event.userAttendance === "Waiting"
-                        ? <IconButton disabled={event.isCancelled}>
+                        ? <IconButton disabled={event.isCancelled || eventInThePast(event)}>
                             <HourglassBottom fontSize="inherit" sx={{fontSize: "28px", color: "#125db2"}}/>
                         </IconButton>
                         : <Box sx={{display: "flex", flexDirection: "row"}}>
-                            <IconButton onClick={declineEvent} disabled={event.isCancelled}>
+                            <IconButton onClick={declineEvent} disabled={event.isCancelled || eventInThePast(event)}>
                                 {
                                     event.userAttendance === "Declined"
                                         ? <ThumbDownAlt fontSize="inherit" sx={{fontSize: "28px", color: "red"}}/>
                                         : <ThumbDownOffAlt fontSize="inherit" sx={{fontSize: "28px"}}/>
                                 }
                             </IconButton>
-                            <IconButton onClick={attendEvent} disabled={event.isCancelled || answerDeadlineExpired(event)}>
+                            <IconButton onClick={attendEvent}
+                                        disabled={event.isCancelled || answerDeadlineExpired(event) || eventInThePast(event)}>
                                 {
                                     event.userAttendance === "Attending"
                                         ? <ThumbUpAlt fontSize="inherit" sx={{fontSize: "28px", color: "green"}}/>

@@ -8,13 +8,14 @@ import {AlertMessage, AlertSnackbar} from "src/components/AlertSnackbar";
 import CustomAppBar from "src/components/AppBar";
 import {LoadingIndicator} from "src/components/LoadingIndicator";
 import {onDrinkDeleted, onDrinkInserted, onDrinkUpdated} from "src/redux/drinksSlice";
-import {Drink, DrinkCounter, DrinkInsert, DrinkUpdate, ProductType} from "src/types/supabaseTypes";
+import {Drink, DrinkCounter, ProductType} from "src/types/supabaseTypes";
 import {nameOfProductType} from "src/utils";
 import {Error} from "../Error";
 import {SwipeableDialog} from "../SwipeableDialog";
 import DrinkList from "./DrinkList";
 import {DrinkListScreenProps} from "./types";
 import {SupabaseDrinkRepository} from "../../repository/DrinkRepository";
+import {TablesInsert, TablesUpdate} from "../../types/supabase-generated.types";
 
 const SUCCESS_MESSAGE_INFO: AlertMessage = {message: "Getränke erfolgreich gebucht!", severity: "success"};
 
@@ -29,12 +30,12 @@ const DrinkListScreen = ({user, drinks, drinksLoading, drinksError, dispatch}: D
 
     useEffect(() => {
         let subscription = client.channel("public:drink")
-            .on<DrinkUpdate>("postgres_changes", {
+            .on<TablesUpdate<'drink'>>("postgres_changes", {
                 event: "UPDATE",
                 schema: "public",
                 table: "drink"
             }, (payload) => dispatch(onDrinkUpdated(payload.new)))
-            .on<DrinkInsert>("postgres_changes", {
+            .on<TablesInsert<'drink'>>("postgres_changes", {
                 event: "INSERT",
                 schema: "public",
                 table: "drink"

@@ -21,7 +21,7 @@ import {
 import React, {createRef, useEffect, useState} from "react";
 import {MapContainer, Marker, TileLayer} from "react-leaflet";
 import {useNavigate} from "react-router-dom";
-import {answerDeadlineExpired, EventAttendance} from "../../types/supabaseTypes";
+import {answerDeadlineExpired, EventAttendance, eventInThePast} from "../../types/supabaseTypes";
 import {DeleteEventDialog} from "./DeleteEventDialog";
 import {DeleteEventType, EventInformationProps} from "./types";
 import {CancelTrainingDialog} from "./CancelTrainingDialog";
@@ -110,13 +110,13 @@ const EventInformation = ({
     };
 
     const createCardSubHeader = () => {
-        const {meetingDateTime, startingDateTime, recurrenceEnd} = selectedEvent;
+        const {meetingDateTime, startingDateTime, endDateTime} = selectedEvent;
 
         let startTimeTranslation = t("events.information.startTime", {startTime: new Date(startingDateTime)});
-        if (recurrenceEnd) {
+        if (endDateTime) {
             startTimeTranslation = t("events.information.startTimeAndEndTime", {
                 startTime: new Date(startingDateTime),
-                endTime: new Date(recurrenceEnd)
+                endTime: new Date(endDateTime)
             });
         }
 
@@ -290,7 +290,8 @@ const EventInformation = ({
                         eventId={selectedEvent.id}
                         comments={comments}
                         handleCommentSubmit={handleCommentSubmit}
-                        inputRef={inputRef}/>
+                        inputRef={inputRef}
+                        eventInThePast={eventInThePast(selectedEvent)}/>
                 </CardContent>
             </Box>
 

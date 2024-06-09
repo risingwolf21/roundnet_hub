@@ -35,23 +35,10 @@ Sentry.init({
 
 Deno.serve(async (req: Request) => {
     try {
-
         const supabaseClient = createClient(
-            // Supabase API URL - env var exported by default.
             Deno.env.get('SUPABASE_URL') ?? '',
-            // Supabase API ANON KEY - env var exported by default.
-            Deno.env.get('SUPABASE_ANON_KEY') ?? '',
-            {
-                global: {
-                    headers: {
-                        Authorization: req.headers.get('Authorization')!
-                    }
-                },
-                auth: {
-                    persistSession: false
-                }
-            },
-        );
+            Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+        )
 
         const {data: current_events, error: current_events_error} = await supabaseClient.from('current_distinct_event')
             .select("*")
@@ -104,6 +91,11 @@ Deno.serve(async (req: Request) => {
                 if (newMeetingDateTime !== null)
                     newEvent.meetingDateTime = format(newMeetingDateTime, "yyyy-MM-dd HH:mm:ss.SSSXXX");
             }
+            if (event.endDateTime) {
+                let newEndDateTime = addRecurringFrequency(new Date(event.endDateTime), event.recurrence);
+                if (newEndDateTime !== null)
+                    newEvent.endDateTime = format(newEndDateTime, "yyyy-MM-dd HH:mm:ss.SSSXXX");
+            }
             if (event.answerDeadline) {
                 let newAnswerDeadline = addRecurringFrequency(new Date(event.answerDeadline), event.recurrence);
                 if (newAnswerDeadline !== null)
@@ -113,9 +105,22 @@ Deno.serve(async (req: Request) => {
             let maximumStartTime = addMonths(new Date(event.startingDateTime), 1);
 
             if ((!event.recurrenceEnd || newStartingDateTime < new Date(event.recurrenceEnd)) && newStartingDateTime <= maximumStartTime) {
-                await supabaseClient.from("events").insert(newEvent).select("*");
+                const {data, error} = await supabaseClient.from("events").insert(newEvent).select("*");
+                if (error || data.length < 1) {
+                    console.error("Error creating event: ", error)
+                    Sentry.captureException(Error(JSON.stringify({error, data})))
+                    return new Response(JSON.stringify({error: error.message}), {status: 500})
+                } else {
+                    console.log("Inserted new event with id:", data[0].id, data[0].key)
+                }
             } else {
                 console.log(`New event was not added to database. Either newStartingDateTime(${newStartingDateTime}) exeeded recurrenceEnd (${event.recurrenceEnd}) or maximumStartTime (${maximumStartTime})`)
+                Sentry.captureException(Error(JSON.stringify({
+                    eventToAdd: newEvent,
+                    recurrenceEnd: event.recurrenceEnd,
+                    newStartingDateTime: newStartingDateTime,
+                    maximumStartTime: maximumStartTime
+                })))
             }
         }
 
@@ -124,11 +129,13 @@ Deno.serve(async (req: Request) => {
                 case "Fortnightly":
                 case "Weekly":
                 case "Monthly": {
+                    console.log("Creating next event for: ", event.id, event.key);
                     await createNextEvent(event);
                     break;
                 }
                 default:
                 case "None":
+                    console.log("No recurrence found for: ", event);
                     break;
             }
 

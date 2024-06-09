@@ -1,55 +1,61 @@
 import {isBefore} from "date-fns";
+// @ts-ignore
 import {Database} from "src/types/supabase";
+import {Tables} from "./supabase-generated.types";
 
 export type Drink = Database["public"]["Tables"]["drink"]["Row"];
-export type DrinkInsert = Database["public"]["Tables"]["drink"]["Insert"];
-export type DrinkUpdate = Database["public"]["Tables"]["drink"]["Update"];
+
 export type Attendance = Database["public"]["Tables"]["event_attendance_user_mapping"]["Row"];
 export type Comment = Database["public"]["Tables"]["event_comments"]["Row"];
 export type Group = Database["public"]["Tables"]["event_group"]["Row"];
-export type GroupUpdate = Database["public"]["Tables"]["event_group"]["Update"];
-export type GroupInsert = Database["public"]["Tables"]["event_group"]["Insert"];
+
 export type Event = Database["public"]["Tables"]["events"]["Row"];
 export type History = Database["public"]["Tables"]["history"]["Row"];
 export type Payment = Database["public"]["Tables"]["payments"]["Row"];
 export type PaymentInsert = Database["public"]["Tables"]["payments"]["Insert"];
 export type User = Database["public"]["Tables"]["user"]["Row"];
-export type KeyHolder = Database["public"]["Tables"]["key_holders"]["Row"];
-export type Key = Database["public"]["Tables"]["keys"]["Row"];
-export type KeyInsert = Database["public"]["Tables"]["keys"]["Insert"];
-export type KeyUpdate = Database["public"]["Tables"]["keys"]["Update"];
+
+export type Item = Database["public"]["Tables"]["items"]["Row"];
+export type ItemUpdate = Database["public"]["Tables"]["items"]["Update"];
 export type KeyHistory = Database["public"]["Tables"]["key_history"]["Row"];
 export type Notification = Database["public"]["Tables"]["notifications"]["Row"];
 export type NotificationInsert = Database["public"]["Tables"]["notifications"]["Insert"];
 export type NotificationUpdate = Database["public"]["Tables"]["notifications"]["Update"];
 
-export type EventInsert = Database["public"]["Tables"]["events"]["Insert"];
-export type EventUpdate = Database["public"]["Tables"]["events"]["Update"];
-
-export type EventAttendanceInsert = Database["public"]["Tables"]["event_attendance_user_mapping"]["Insert"];
-export type EventAttendanceUpdate = Database["public"]["Tables"]["event_attendance_user_mapping"]["Update"];
 export type EventAttendanceMapping = Database["public"]["Tables"]["event_attendance_user_mapping"]["Row"];
 
 export type EventCommentUpdate = Database["public"]["Tables"]["event_comments"]["Update"];
 export type EventCommentInsert = Database["public"]["Tables"]["event_comments"]["Insert"];
 
-export type EdgeFunctions = keyof Database["public"]["Functions"]
+export type NotificationTags = Database["public"]["Enums"]["NotificationTags"];
 
-export type NotificationTags = Database["public"]["Enums"]["NotificationTags"]
+export type Challenge = Tables<'challenge'>;
+export type ChallengeStats = Tables<'challenge_stats'>;
+
+export type FullChallenge = Challenge & {
+    stats: ChallengeStatWithUser[]
+}
+
+export type ChallengeStatWithUser = ChallengeStats & {
+    user: User
+}
+export type FullChallengeStats = ChallengeStats & {
+    user: User,
+    challenge: Challenge
+}
 
 export type FullKeyHistory = Modify<KeyHistory, {
     pastUser: User,
     currentUser: User,
-    key: Key
+    key: Item
 }>
 
-export type DrinkCounter = Drink & {
+export type DrinkCounter = Tables<'drink'> & {
     count: number
 }
 
-export type FullKeyHolder = {
-    user: User,
-    key: Key,
+export type FullItemHolder = Tables<'items'> & {
+    current_holder: Tables<'user'>,
     lastUpdate: string | null
 }
 
@@ -83,36 +89,32 @@ export function answerDeadlineExpired<EventType extends Event>(x: EventType) {
     return isBefore(x.answerDeadline, Date.now());
 }
 
+export function eventInThePast(x: Event) {
+    return isBefore(x.endDateTime !== null ? x.endDateTime : x.startingDateTime, Date.now());
+}
+
 export function maxAttendeesExceeded<EventType extends Event, AttendanceType extends Attendance>(x: EventType, attendance: AttendanceType[]) {
     if (!x.maxAttendees)
         return false;
     return attendance.filter(y => y.state === "Attending").length >= x.maxAttendees && x.maxAttendees > 0;
 }
 
-export type FullAttendance = Attendance & {
-    user: User,
-    userId: string
+export type FullAttendance = Tables<'event_attendance_user_mapping'> & {
+    user: Tables<'user'>,
 }
 
-export type SimpleUser = {
-    displayName: string,
-    userId: string,
-    avatarUrl: string | null,
-    email: string | null
-}
-
-export type FullComment = Modify<Comment, {
-    user: SimpleUser | null,
+export type FullComment = Modify<Tables<'event_comments'>, {
+    user: Tables<'user'>,
     userId: string,
     pending: boolean | null
 }>
 
-export type UserWithGroups = User & {
-    groups: Group[]
+export type UserWithGroups = Tables<'user'> & {
+    groups: Tables<'event_group'>[]
 }
 
-export type GroupWithUsers = Group & {
-    users: User[]
+export type GroupWithUsers = Tables<'event_group'> & {
+    users: Tables<'user'>[]
 }
 
 export type ProductType = Database["public"]["Enums"]["ProductType"];

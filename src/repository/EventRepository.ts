@@ -3,9 +3,7 @@ import {
     Event,
     EventAttendance,
     EventAttendanceMapping,
-    EventInsert,
     EventRecurrence,
-    EventUpdate,
     FullAttendance,
     FullComment,
     FullEvent,
@@ -13,14 +11,15 @@ import {
     User
 } from "../types/supabaseTypes";
 import {PostgrestError, PostgrestSingleResponse} from "@supabase/supabase-js";
-import {add, Duration} from "date-fns";
+import {add, Duration, startOfDay} from "date-fns";
 import _ from "lodash";
 import {formatDateToDatabase} from "../utils";
 import moment from "moment/moment";
 import {supabase} from "../components/services/supabase/supabaseClient";
+import {TablesInsert, TablesUpdate} from "../types/supabase-generated.types";
 
 export const SupabaseEventRepository = {
-    async updateEventAndAllRecurrences(eventUpdate: EventUpdate): Promise<PostgrestSingleResponse<null>> {
+    async updateEventAndAllRecurrences(eventUpdate: TablesUpdate<'events'>): Promise<PostgrestSingleResponse<null>> {
 
         const {
             data,
@@ -46,6 +45,7 @@ export const SupabaseEventRepository = {
                     return {days: index * 7};
                 case "Fortnightly":
                     return {days: index * 14};
+                default:
                 case "None":
                     return {days: 0}
             }
@@ -59,7 +59,7 @@ export const SupabaseEventRepository = {
                 endDateTime: eventUpdate.endDateTime ? formatDateToDatabase(add(eventUpdate.endDateTime, recurrenceFrom(eventUpdate.recurrence ?? e.recurrence, index))) : e.endDateTime,
                 meetingDateTime: eventUpdate.meetingDateTime ? formatDateToDatabase(add(eventUpdate.meetingDateTime, recurrenceFrom(eventUpdate.recurrence ?? e.recurrence, index))) : e.meetingDateTime,
                 answerDeadline: eventUpdate.answerDeadline ? formatDateToDatabase(add(eventUpdate.answerDeadline, recurrenceFrom(eventUpdate.recurrence ?? e.recurrence, index))) : e.answerDeadline,
-            } as EventInsert;
+            } as TablesInsert<'events'>;
         });
 
         return supabase
@@ -67,7 +67,6 @@ export const SupabaseEventRepository = {
             .upsert(events)
             .throwOnError();
     },
-
 
     async fetchEventComments(eventId: number): Promise<PostgrestSingleResponse<FullComment[]>> {
         return supabase.from("event_comments")
@@ -95,7 +94,7 @@ export const SupabaseEventRepository = {
             .throwOnError()
     },
 
-    async updateEvent(eventId: number, event: EventUpdate): Promise<PostgrestSingleResponse<null>> {
+    async updateEvent(eventId: number, event: TablesUpdate<'events'>): Promise<PostgrestSingleResponse<null>> {
         return supabase
             .from("events")
             .update(event)
@@ -103,7 +102,7 @@ export const SupabaseEventRepository = {
             .throwOnError()
     },
 
-    async insertEvent(event: EventInsert): Promise<PostgrestSingleResponse<null>> {
+    async insertEvent(event: TablesInsert<'events'>): Promise<PostgrestSingleResponse<null>> {
         return supabase.from("events").insert(event).throwOnError();
     },
 
@@ -162,15 +161,25 @@ export const SupabaseEventRepository = {
             .throwOnError()
     },
 
-    async fetchEvents(user: User, userGroups: number[], page: number, count: number): Promise<PostgrestSingleResponse<FullEvent[]>> {
+    async fetchUpcomingEvents(page: number, count: number): Promise<PostgrestSingleResponse<FullEvent[]>> {
         return supabase.from("events")
             .select("*, fullGroup: event_group(id, created_at, description, name, color), attendance: event_attendance_user_mapping ( state , user(userId, displayName, avatarUrl)  ), comments: event_comments ( comment, created_at, displayName, event, user ( displayName, userId, avatarUrl))")
             // get events that are on the same day or later
-            .gt("startingDateTime", formatDateToDatabase(new Date()))
+            .gt("startingDateTime", formatDateToDatabase(startOfDay(new Date())))
             .or(`recurrenceEnd.is.null,recurrenceEnd.gt.'${formatDateToDatabase(new Date())}'`)
             .lt("startingDateTime", formatDateToDatabase(add(new Date(), {weeks: 2})))
             .range(page * count, page * count + count - 1)
             .order("startingDateTime", {ascending: true})
+            .returns<FullEvent[]>()
+            .throwOnError();
+    },
+
+    async fetchPastEvents(page: number, count: number): Promise<PostgrestSingleResponse<FullEvent[]>> {
+        return supabase.from("events")
+            .select("*, fullGroup: event_group(id, created_at, description, name, color), attendance: event_attendance_user_mapping ( state , user(userId, displayName, avatarUrl)  ), comments: event_comments ( comment, created_at, displayName, event, user ( displayName, userId, avatarUrl))")
+            .lt("startingDateTime", formatDateToDatabase(new Date()))
+            .range(page * count, page * count + count - 1)
+            .order("startingDateTime", {ascending: false})
             .returns<FullEvent[]>()
             .throwOnError();
     },

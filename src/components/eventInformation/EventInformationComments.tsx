@@ -26,14 +26,16 @@ type EventInformationCommentsProps = {
     comments: FullComment[],
     handleCommentSubmit: (event: React.FormEvent<HTMLFormElement>) => void,
     inputRef: React.RefObject<HTMLInputElement>,
-    eventId: number
+    eventId: number,
+    eventInThePast: boolean
 }
 
 const EventInformationComments = ({
                                       comments,
                                       inputRef,
                                       handleCommentSubmit,
-                                      eventId
+                                      eventId,
+                                      eventInThePast
                                   }: EventInformationCommentsProps) => {
     const client = useClient();
     const dispatch = useAppDispatch();
@@ -107,6 +109,7 @@ const EventInformationComments = ({
             <Box component={"form"} onSubmit={handleCommentSubmit}>
                 <TextField
                     ref={inputRef}
+                    disabled={eventInThePast}
                     id="comment"
                     name="comment"
                     fullWidth
@@ -114,63 +117,13 @@ const EventInformationComments = ({
                     sx={{'& fieldset': {borderRadius: 4}, '& input': {pt: 1.5, pb: 1.5}}}
                     InputProps={{
                         endAdornment: <InputAdornment position="end">
-                            <IconButton edge="end" type="submit">
+                            <IconButton edge="end" type="submit" disabled={eventInThePast}>
                                 <Send/>
                             </IconButton>
                         </InputAdornment>,
                     }}/>
             </Box>
         </Box>
-        {/* <SwipeableDialog open={commentsOpen} onClose={() => setCommentsOpen(false)}
-            setOpen={setCommentsOpen} title={"Kommentare"} minHeight={40}>
-            <Box sx={{ display: "flex", px: 2, flexDirection: "column" }}>
-                <List sx={{ mb: 8 }}>
-                    {
-                        comments && comments.map((x, index) => <ListItem divider dense key={index}
-                            sx={{ '&.MuiListItem-root': { paddingLeft: 0 } }}>
-                            <ListItemAvatar>
-                                <Avatar sx={{ borderRadius: 2 }}>
-                                    {
-                                        x.pending
-                                            ? <CircularProgress size={"20px"} />
-                                            : x.user?.avatarUrl
-                                                ? <img src={x.user?.avatarUrl} alt="logo" width={"100%"} height={"100%"} />
-                                                : <AccountBox />
-                                    }
-                                </Avatar>
-                            </ListItemAvatar>
-                            <ListItemText primaryTypographyProps={{ fontWeight: "bold", fontSize: "11pt" }}
-                                primary={x.displayName} secondary={x.comment} />
-                            <ListItemSecondaryAction sx={{ height: "100%" }}>
-                                <Typography style={{
-                                    fontSize: "10pt",
-                                    color: "rgba(0,0,0,0.6)",
-                                    marginTop: "8px",
-                                    alignContent: "baseline"
-                                }}>{formatDistanceToNow(x.created_at)} ago</Typography>
-                            </ListItemSecondaryAction>
-                        </ListItem>)
-                    }
-                </List>
-                <Box sx={{ position: "absolute", background: "#fff", bottom: 0, left: 0, right: 0, p: 2 }}
-                    component={"form"} onSubmit={handleCommentSubmit}>
-                    <TextField
-                        ref={inputRef}
-                        id="comment"
-                        name="comment"
-                        fullWidth
-                        placeholder="Write a comment..."
-                        sx={{ '& fieldset': { borderRadius: "30px" }, '& input': { pt: 1.5, pb: 1.5 } }}
-                        InputProps={{
-                            endAdornment: <InputAdornment position="end">
-                                <IconButton edge="end" type="submit">
-                                    <Send />
-                                </IconButton>
-                            </InputAdornment>,
-                        }} />
-                </Box>
-            </Box>
-        </SwipeableDialog> */}
     </Container>
 }
 

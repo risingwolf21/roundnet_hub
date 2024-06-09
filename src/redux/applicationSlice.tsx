@@ -88,7 +88,7 @@ export const removeNotificationPermissionAsync = createAsyncThunk("removeNotific
         user: User, notificationToRemove: NotificationTags
     }) => {
         let newNotificationTags = user.notifications
-            ?.filter((x) => x !== notificationToRemove) ?? [];
+            ?.filter((x: NotificationTags) => x !== notificationToRemove) ?? [];
         return await SupabaseUserRepository.updateNotificationTags(newNotificationTags, user);
     });
 

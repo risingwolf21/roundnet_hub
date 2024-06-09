@@ -12,6 +12,7 @@ import eventAttendanceSlice from './events/eventAttendanceSlice'
 import eventCommentsSlice from './events/eventCommentsSlice'
 import eventsSlice from './events/eventsSlice'
 import {createReduxEnhancer} from "@sentry/react";
+import challengeSlice from "./challengeSlice";
 
 const sentryReduxEnhancer = createReduxEnhancer({
     // Optionally pass options listed below
@@ -29,7 +30,8 @@ const store = configureStore({
         events: eventsSlice,
         eventAttendance: eventAttendanceSlice,
         eventComments: eventCommentsSlice,
-        notifications: notificationsSlice
+        notifications: notificationsSlice,
+        challenges: challengeSlice
     },
 });
 export type RootState = ReturnType<typeof store.getState>

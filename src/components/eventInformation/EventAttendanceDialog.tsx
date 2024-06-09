@@ -12,11 +12,9 @@ import {
     Tabs,
     Typography
 } from "@mui/material"
-import {useState} from "react";
+import React, {useEffect, useState} from "react";
 import {AccountBox} from "@mui/icons-material";
 import {useTheme} from '@mui/material/styles';
-import {useEffect} from "react";
-import React from "react";
 import {FullAttendance} from "../../types/supabaseTypes";
 import {SwipeableDialog} from "../SwipeableDialog";
 import {EventAttendanceDialogProps} from "./types";
@@ -79,7 +77,8 @@ const EventAttendanceDialog = ({open, index, setOpen, attendance, hasWaitingList
                 <List>
                     {
                         attendance.filter((x: FullAttendance) => x.state === "Attending").map((x: FullAttendance, index: number) =>
-                            <ListItemButton key={x.userId + index} onClick={() => navigate("/user/" + x.userId)}>
+                            <ListItemButton key={x.user.userId + index}
+                                            onClick={() => navigate("/user/" + x.user.userId)}>
                                 <ListItemAvatar>
                                     <Avatar sx={{borderRadius: 2}}>
                                         {
@@ -99,7 +98,8 @@ const EventAttendanceDialog = ({open, index, setOpen, attendance, hasWaitingList
                 <List>
                     {
                         attendance.filter((x: FullAttendance) => x.state === "Declined").map((x: FullAttendance, index: number) =>
-                            <ListItemButton key={x.userId + index} onClick={() => navigate("/user/" + x.userId)}>
+                            <ListItemButton key={x.user.userId + index}
+                                            onClick={() => navigate("/user/" + x.user.userId)}>
                                 <ListItemAvatar>
                                     <Avatar sx={{borderRadius: 2}}>
                                         {
@@ -120,7 +120,7 @@ const EventAttendanceDialog = ({open, index, setOpen, attendance, hasWaitingList
                     <List>
                         {
                             attendance.filter((x: FullAttendance) => x.state === "Waiting").sort((a, b) => isBefore(a.lastUpdate, b.lastUpdate) ? 1 : 0).map((x: FullAttendance, index: number) =>
-                                <ListItem key={x.userId + index}>
+                                <ListItem key={x.user.userId + index}>
                                     <ListItemAvatar>
                                         <Avatar sx={{borderRadius: 2}}>
                                             {

@@ -3,6 +3,7 @@
   "browse": {
     "account": "Konto",
     "analyzeDrinkStocks": "Getränkenutzung analysieren",
+    "challenges": "Herausforderungen",
     "completeHistory": "Gesamtverlauf",
     "executeEdgeFunctions": "Edge-Funktionen ausführen",
     "history": "Verlauf",
@@ -51,8 +52,8 @@
     "admin": "Administrator",
     "browse": "Browse",
     "drinks": "Getränke",
-    "training": "Training",
-    "notifications": "Benachrichtigungen"
+    "notifications": "Benachrichtigungen",
+    "training": "Training"
   },
   "notificationTags": {
     "eventComments": "Event Kommentare",

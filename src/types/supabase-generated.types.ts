@@ -1,14 +1,85 @@
 export type Json =
-  | string
-  | number
-  | boolean
-  | null
-  | { [key: string]: Json | undefined }
-  | Json[]
+    | string
+    | number
+    | boolean
+    | null
+    | { [key: string]: Json | undefined }
+    | Json[]
 
 export type Database = {
   public: {
     Tables: {
+      challenge: {
+        Row: {
+          created_at: string
+          description: string
+          group: number
+          id: number
+          name: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string
+          group: number
+          id?: number
+          name?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string
+          group?: number
+          id?: number
+          name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "challenge_group_fkey"
+            columns: ["group"]
+            isOneToOne: false
+            referencedRelation: "event_group"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      challenge_stats: {
+        Row: {
+          challenge: number
+          count: number
+          id: number
+          last_update: string
+          user: string
+        }
+        Insert: {
+          challenge: number
+          count?: number
+          id?: number
+          last_update?: string
+          user: string
+        }
+        Update: {
+          challenge?: number
+          count?: number
+          id?: number
+          last_update?: string
+          user?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "challenge_stats_challenge_fkey"
+            columns: ["challenge"]
+            isOneToOne: false
+            referencedRelation: "challenge"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "challenge_stats_user_fkey"
+            columns: ["user"]
+            isOneToOne: false
+            referencedRelation: "user"
+            referencedColumns: ["userId"]
+          },
+        ]
+      }
       drink: {
         Row: {
           active: boolean
@@ -190,6 +261,7 @@ export type Database = {
           place: string | null
           recurrence: Database["public"]["Enums"]["EventRecurrence"]
           recurrenceEnd: string | null
+          required_item: Database["public"]["Enums"]["ItemType"] | null
           startingDateTime: string
           title: string
         }
@@ -207,6 +279,7 @@ export type Database = {
           place?: string | null
           recurrence?: Database["public"]["Enums"]["EventRecurrence"]
           recurrenceEnd?: string | null
+          required_item?: Database["public"]["Enums"]["ItemType"] | null
           startingDateTime: string
           title?: string
         }
@@ -224,6 +297,7 @@ export type Database = {
           place?: string | null
           recurrence?: Database["public"]["Enums"]["EventRecurrence"]
           recurrenceEnd?: string | null
+          required_item?: Database["public"]["Enums"]["ItemType"] | null
           startingDateTime?: string
           title?: string
         }
@@ -319,7 +393,7 @@ export type Database = {
           },
         ]
       }
-      key_history: {
+      item_history: {
         Row: {
           created_at: string
           currentUser: string | null
@@ -353,7 +427,7 @@ export type Database = {
             foreignKeyName: "key_history_key_fkey"
             columns: ["key"]
             isOneToOne: false
-            referencedRelation: "keys"
+            referencedRelation: "items"
             referencedColumns: ["id"]
           },
           {
@@ -365,59 +439,43 @@ export type Database = {
           },
         ]
       }
-      key_holders: {
+      items: {
         Row: {
-          key: number
-          lastUpdate: string | null
-          user: string
+          color: string
+          created_at: string
+          current_holder: string | null
+          id: number
+          lastUpdate: string
+          name: string | null
+          type: Database["public"]["Enums"]["ItemType"] | null
         }
         Insert: {
-          key: number
-          lastUpdate?: string | null
-          user: string
+          color?: string
+          created_at?: string
+          current_holder?: string | null
+          id?: number
+          lastUpdate?: string
+          name?: string | null
+          type?: Database["public"]["Enums"]["ItemType"] | null
         }
         Update: {
-          key?: number
-          lastUpdate?: string | null
-          user?: string
+          color?: string
+          created_at?: string
+          current_holder?: string | null
+          id?: number
+          lastUpdate?: string
+          name?: string | null
+          type?: Database["public"]["Enums"]["ItemType"] | null
         }
         Relationships: [
           {
-            foreignKeyName: "key_holders_key_fkey"
-            columns: ["key"]
-            isOneToOne: false
-            referencedRelation: "keys"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "key_holders_user_fkey"
-            columns: ["user"]
+            foreignKeyName: "keys_user_fkey"
+            columns: ["current_holder"]
             isOneToOne: false
             referencedRelation: "user"
             referencedColumns: ["userId"]
           },
         ]
-      }
-      keys: {
-        Row: {
-          color: string
-          created_at: string
-          id: number
-          name: string | null
-        }
-        Insert: {
-          color?: string
-          created_at?: string
-          id?: number
-          name?: string | null
-        }
-        Update: {
-          color?: string
-          created_at?: string
-          id?: number
-          name?: string | null
-        }
-        Relationships: []
       }
       notifications: {
         Row: {
@@ -502,8 +560,8 @@ export type Database = {
           email: string
           fcm_token: string | null
           notifications:
-            | Database["public"]["Enums"]["NotificationTags"][]
-            | null
+              | Database["public"]["Enums"]["NotificationTags"][]
+              | null
           permissions: Database["public"]["Enums"]["Permissions"][] | null
           role: Database["public"]["Enums"]["UserRole"]
           userId: string
@@ -517,8 +575,8 @@ export type Database = {
           email?: string
           fcm_token?: string | null
           notifications?:
-            | Database["public"]["Enums"]["NotificationTags"][]
-            | null
+              | Database["public"]["Enums"]["NotificationTags"][]
+              | null
           permissions?: Database["public"]["Enums"]["Permissions"][] | null
           role?: Database["public"]["Enums"]["UserRole"]
           userId?: string
@@ -532,8 +590,8 @@ export type Database = {
           email?: string
           fcm_token?: string | null
           notifications?:
-            | Database["public"]["Enums"]["NotificationTags"][]
-            | null
+              | Database["public"]["Enums"]["NotificationTags"][]
+              | null
           permissions?: Database["public"]["Enums"]["Permissions"][] | null
           role?: Database["public"]["Enums"]["UserRole"]
           userId?: string
@@ -601,6 +659,12 @@ export type Database = {
       }
     }
     Functions: {
+      add_notificationtags_to_all_users: {
+        Args: {
+          notification: Database["public"]["Enums"]["NotificationTags"]
+        }
+        Returns: undefined
+      }
       add_permission_to_all_users: {
         Args: {
           permission: Database["public"]["Enums"]["Permissions"]
@@ -629,6 +693,19 @@ export type Database = {
         }
         Returns: string[]
       }
+      increase_challenge_stats_count: {
+        Args: {
+          user_id: string
+          amount: number
+        }
+        Returns: undefined
+      }
+      remove_notificationtags_from_all_users: {
+        Args: {
+          notification: Database["public"]["Enums"]["NotificationTags"]
+        }
+        Returns: undefined
+      }
       update_attendance: {
         Args: {
           eventid: number
@@ -646,39 +723,42 @@ export type Database = {
     Enums: {
       EventAttendance: "Declined" | "Attending" | "Unanswered" | "Waiting"
       EventRecurrence: "Weekly" | "Fortnightly" | "Monthly" | "None"
+      ItemType: "mtvStorage" | "mtvGym" | "mtvGymPalazzo"
       NotificationTags:
-        | "eventComments"
-        | "userRegistration"
-        | "paymentRequest"
-        | "paymentPending"
-        | "eventCancelled"
-        | "eventUpdated"
-        | "eventAttedanceChanged"
+          | "eventComments"
+          | "userRegistration"
+          | "paymentRequest"
+          | "paymentPending"
+          | "eventCancelled"
+          | "eventUpdated"
+          | "eventAttedanceChanged"
       PaymentState: "Open" | "Fulfilled"
       Permissions:
-        | "use;drink"
-        | "edit;drink"
-        | "delete;drink"
-        | "view;drink"
-        | "use;training"
-        | "edit;training"
-        | "delete;training"
-        | "view;training"
-        | "edit;groups"
-        | "delete;groups"
-        | "view;groups"
-        | "edit;payments"
-        | "edit;user"
-        | "view;keyFinder"
-        | "use;user"
-        | "view;user"
-        | "delete;user"
-        | "edit;keyFinder"
-        | "delete;keyFinder"
-        | "view;notifications"
-        | "edit;notifications"
-        | "edit;history"
-        | "edit;edgeFunctions"
+          | "use;drink"
+          | "edit;drink"
+          | "delete;drink"
+          | "view;drink"
+          | "use;training"
+          | "edit;training"
+          | "delete;training"
+          | "view;training"
+          | "edit;groups"
+          | "delete;groups"
+          | "view;groups"
+          | "edit;payments"
+          | "edit;user"
+          | "view;keyFinder"
+          | "use;user"
+          | "view;user"
+          | "delete;user"
+          | "edit;keyFinder"
+          | "delete;keyFinder"
+          | "view;notifications"
+          | "edit;notifications"
+          | "edit;history"
+          | "edit;edgeFunctions"
+          | "view;challenges"
+          | "use;challenges"
       ProductType: "Drink" | "Special" | "None"
       UserRole: "user" | "admin" | "procure" | "finance" | "trainer"
     }
@@ -691,81 +771,77 @@ export type Database = {
 type PublicSchema = Database[Extract<keyof Database, "public">]
 
 export type Tables<
-  PublicTableNameOrOptions extends
-    | keyof (PublicSchema["Tables"] & PublicSchema["Views"])
-    | { schema: keyof Database },
-  TableName extends PublicTableNameOrOptions extends { schema: keyof Database }
-    ? keyof (Database[PublicTableNameOrOptions["schema"]]["Tables"] &
-        Database[PublicTableNameOrOptions["schema"]]["Views"])
-    : never = never,
+    PublicTableNameOrOptions extends | keyof (PublicSchema["Tables"] & PublicSchema["Views"])
+        | { schema: keyof Database },
+    TableName extends PublicTableNameOrOptions extends { schema: keyof Database }
+        ? keyof (Database[PublicTableNameOrOptions["schema"]]["Tables"] &
+            Database[PublicTableNameOrOptions["schema"]]["Views"])
+        : never = never,
 > = PublicTableNameOrOptions extends { schema: keyof Database }
-  ? (Database[PublicTableNameOrOptions["schema"]]["Tables"] &
-      Database[PublicTableNameOrOptions["schema"]]["Views"])[TableName] extends {
-      Row: infer R
-    }
-    ? R
-    : never
-  : PublicTableNameOrOptions extends keyof (PublicSchema["Tables"] &
-        PublicSchema["Views"])
-    ? (PublicSchema["Tables"] &
-        PublicSchema["Views"])[PublicTableNameOrOptions] extends {
-        Row: infer R
-      }
-      ? R
-      : never
-    : never
+    ? (Database[PublicTableNameOrOptions["schema"]]["Tables"] &
+        Database[PublicTableNameOrOptions["schema"]]["Views"])[TableName] extends {
+          Row: infer R
+        }
+        ? R
+        : never
+    : PublicTableNameOrOptions extends keyof (PublicSchema["Tables"] &
+            PublicSchema["Views"])
+        ? (PublicSchema["Tables"] &
+            PublicSchema["Views"])[PublicTableNameOrOptions] extends {
+              Row: infer R
+            }
+            ? R
+            : never
+        : never
 
 export type TablesInsert<
-  PublicTableNameOrOptions extends
-    | keyof PublicSchema["Tables"]
-    | { schema: keyof Database },
-  TableName extends PublicTableNameOrOptions extends { schema: keyof Database }
-    ? keyof Database[PublicTableNameOrOptions["schema"]]["Tables"]
-    : never = never,
+    PublicTableNameOrOptions extends | keyof PublicSchema["Tables"]
+        | { schema: keyof Database },
+    TableName extends PublicTableNameOrOptions extends { schema: keyof Database }
+        ? keyof Database[PublicTableNameOrOptions["schema"]]["Tables"]
+        : never = never,
 > = PublicTableNameOrOptions extends { schema: keyof Database }
-  ? Database[PublicTableNameOrOptions["schema"]]["Tables"][TableName] extends {
-      Insert: infer I
-    }
-    ? I
-    : never
-  : PublicTableNameOrOptions extends keyof PublicSchema["Tables"]
-    ? PublicSchema["Tables"][PublicTableNameOrOptions] extends {
-        Insert: infer I
-      }
-      ? I
-      : never
-    : never
+    ? Database[PublicTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+          Insert: infer I
+        }
+        ? I
+        : never
+    : PublicTableNameOrOptions extends keyof PublicSchema["Tables"]
+        ? PublicSchema["Tables"][PublicTableNameOrOptions] extends {
+              Insert: infer I
+            }
+            ? I
+            : never
+        : never
 
 export type TablesUpdate<
-  PublicTableNameOrOptions extends
-    | keyof PublicSchema["Tables"]
-    | { schema: keyof Database },
-  TableName extends PublicTableNameOrOptions extends { schema: keyof Database }
-    ? keyof Database[PublicTableNameOrOptions["schema"]]["Tables"]
-    : never = never,
+    PublicTableNameOrOptions extends | keyof PublicSchema["Tables"]
+        | { schema: keyof Database },
+    TableName extends PublicTableNameOrOptions extends { schema: keyof Database }
+        ? keyof Database[PublicTableNameOrOptions["schema"]]["Tables"]
+        : never = never,
 > = PublicTableNameOrOptions extends { schema: keyof Database }
-  ? Database[PublicTableNameOrOptions["schema"]]["Tables"][TableName] extends {
-      Update: infer U
-    }
-    ? U
-    : never
-  : PublicTableNameOrOptions extends keyof PublicSchema["Tables"]
-    ? PublicSchema["Tables"][PublicTableNameOrOptions] extends {
-        Update: infer U
-      }
-      ? U
-      : never
-    : never
+    ? Database[PublicTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+          Update: infer U
+        }
+        ? U
+        : never
+    : PublicTableNameOrOptions extends keyof PublicSchema["Tables"]
+        ? PublicSchema["Tables"][PublicTableNameOrOptions] extends {
+              Update: infer U
+            }
+            ? U
+            : never
+        : never
 
 export type Enums<
-  PublicEnumNameOrOptions extends
-    | keyof PublicSchema["Enums"]
-    | { schema: keyof Database },
-  EnumName extends PublicEnumNameOrOptions extends { schema: keyof Database }
-    ? keyof Database[PublicEnumNameOrOptions["schema"]]["Enums"]
-    : never = never,
+    PublicEnumNameOrOptions extends | keyof PublicSchema["Enums"]
+        | { schema: keyof Database },
+    EnumName extends PublicEnumNameOrOptions extends { schema: keyof Database }
+        ? keyof Database[PublicEnumNameOrOptions["schema"]]["Enums"]
+        : never = never,
 > = PublicEnumNameOrOptions extends { schema: keyof Database }
-  ? Database[PublicEnumNameOrOptions["schema"]]["Enums"][EnumName]
-  : PublicEnumNameOrOptions extends keyof PublicSchema["Enums"]
-    ? PublicSchema["Enums"][PublicEnumNameOrOptions]
-    : never
+    ? Database[PublicEnumNameOrOptions["schema"]]["Enums"][EnumName]
+    : PublicEnumNameOrOptions extends keyof PublicSchema["Enums"]
+        ? PublicSchema["Enums"][PublicEnumNameOrOptions]
+        : never

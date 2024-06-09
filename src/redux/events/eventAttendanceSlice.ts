@@ -1,8 +1,9 @@
 import {createAsyncThunk, createEntityAdapter, createSlice, PayloadAction, Update} from "@reduxjs/toolkit";
-import {EventAttendance, EventAttendanceUpdate, FullAttendance, User} from "src/types/supabaseTypes";
+import {EventAttendance, FullAttendance, User} from "src/types/supabaseTypes";
 import {formatDateToDatabase} from "src/utils";
 import {fetchSingleEventAsync} from "./eventsSlice";
 import {SupabaseEventRepository} from "../../repository/EventRepository";
+import {TablesUpdate} from "../../types/supabase-generated.types";
 
 type SliceAttendance = {
     id: number,
@@ -22,7 +23,9 @@ const eventAttendanceSlice = createSlice({
         error: ""
     }),
     reducers: {
-        onEventAttendanceUpdate: (state, action: PayloadAction<EventAttendanceUpdate & { userId: string }>) => {
+        onEventAttendanceUpdate: (state, action: PayloadAction<TablesUpdate<'event_attendance_user_mapping'> & {
+            userId: string
+        }>) => {
             let attendanceSlice = eventAttendanceAdapter.getSelectors().selectById(state, action.payload.event ?? -1);
             let index = attendanceSlice?.attendance.findIndex(x => x.user.userId === action.payload.user);
             if (!attendanceSlice || !action.payload.event || index === -1)
@@ -107,7 +110,7 @@ const eventAttendanceSlice = createSlice({
                     id: action.meta.arg.eventId
                 } as Update<SliceAttendance>
 
-                let index = attendance.findIndex(x => x.userId === action.meta.arg.user.userId);
+                let index = attendance.findIndex(x => x.user.userId === action.meta.arg.user.userId);
 
                 if (index === -1) {
                     sliceAttendance.changes = { attendance: [...attendance, attendanceEntry] }
@@ -127,7 +130,7 @@ const eventAttendanceSlice = createSlice({
                 state.error = action.error.message ?? ""
 
                 let attendance = eventAttendanceAdapter.getSelectors().selectById(state, action.meta.arg.eventId)?.attendance ?? [];
-                let index = attendance.findIndex(x => x.userId === action.meta.arg.user.userId);
+                let index = attendance.findIndex(x => x.user.userId === action.meta.arg.user.userId);
 
                 if (!attendance || index < 0)
                     return;

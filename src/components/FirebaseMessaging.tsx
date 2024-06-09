@@ -12,10 +12,15 @@ export const FirebaseMessaging = ({children}: { children: string | JSX.Element |
     return <>
         {children}
         <ToastContainer
+            containerId={"main"}
             position="top-center"
             newestOnTop
             closeOnClick={false}
+            autoClose={4000}
             draggable
+            style={{
+                padding: 0
+            }}
         />
     </>;
 }
