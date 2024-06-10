@@ -1,8 +1,8 @@
-import {createAsyncThunk, createEntityAdapter, createSlice, PayloadAction, Update} from "@reduxjs/toolkit";
-import {RootState} from "./store";
-import {ChallengeRepository} from "../repository/ChallengeRepository";
-import {FullChallenge} from "../types/supabaseTypes";
-import {TablesInsert, TablesUpdate} from "../types/supabase-generated.types";
+import { createAsyncThunk, createEntityAdapter, createSlice, PayloadAction, Update } from "@reduxjs/toolkit";
+import { RootState } from "./store";
+import { ChallengeRepository } from "../repository/ChallengeRepository";
+import { FullChallenge } from "../types/supabaseTypes";
+import { TablesInsert, TablesUpdate } from "../types/supabase-generated.types";
 
 const challengeAdapter = createEntityAdapter({
     selectId: (challenge: FullChallenge) => challenge.id
@@ -18,13 +18,25 @@ const challengeSlice = createSlice({
     }),
     reducers: {
         onChallengeStatsUpdate: (state, action: PayloadAction<TablesUpdate<'challenge_stats'>>) => {
+            if (!action.payload.challenge)
+                return;
+            let update = {
+                id: action.payload.challenge,
+                changes: {
+                    id: action.payload.id,
+                    description: action.payload.description,
 
+                }
+            } as Update<FullChallenge>;
+            challengeAdapter.updateOne(state, update);
         },
-        onChallengeStatsInsert: (state, action: PayloadAction<TablesInsert<'challenge_stats'>>) => {
-
+        onChallengeStatsInsert: (state, action: PayloadAction<FullChallenge | null>) => {
+            if(!action.payload)
+                return;
+            challengeAdapter.upsertOne(state, action.payload);
         },
         onChallengeStatsDelete: (state, action: PayloadAction<number>) => {
-
+            challengeAdapter.removeOne(state, action.payload)
         },
     },
     extraReducers(builder) {
@@ -80,7 +92,7 @@ export const fetchChallengesAsync = createAsyncThunk("fetchChallengesAsync", asy
     }) ?? [];
 });
 
-export const fetchChallengeStatsSingleAsync = createAsyncThunk("fetchChallengeStatsSingleAsync", async ({challengeId}: {
+export const fetchChallengeStatsSingleAsync = createAsyncThunk("fetchChallengeStatsSingleAsync", async ({ challengeId }: {
     challengeId: string
 }) => {
     const response = await ChallengeRepository.fetchChallengeStats(challengeId);
@@ -93,6 +105,6 @@ export const fetchChallengeStatsSingleAsync = createAsyncThunk("fetchChallengeSt
     }
 });
 
-export const {onChallengeStatsUpdate, onChallengeStatsInsert, onChallengeStatsDelete} = challengeSlice.actions;
+export const { onChallengeStatsUpdate, onChallengeStatsInsert, onChallengeStatsDelete } = challengeSlice.actions;
 
 export default challengeSlice.reducer;

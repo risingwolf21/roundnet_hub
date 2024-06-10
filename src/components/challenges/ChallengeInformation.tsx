@@ -50,35 +50,6 @@ const ChallengeInformationProvider = ({t}: { t: TFunction }) => {
         if (!challengeId)
             return;
         dispatch(fetchChallengeStatsSingleAsync({challengeId}));
-
-        const subscription = client
-            .channel("public:challenge_stats")
-            .on<TablesUpdate<'challenge_stats'>>('postgres_changes', {
-                    event: 'UPDATE',
-                    schema: 'public',
-                    table: 'challenge_stats',
-                    filter: `id=eq.${challengeId}`
-                }, payload => dispatch(onChallengeStatsUpdate(payload.new))
-            )
-            .on<TablesInsert<'challenge_stats'>>('postgres_changes', {
-                    event: 'INSERT',
-                    schema: 'public',
-                    table: 'challenge_stats',
-                    filter: `id=eq.${challengeId}`
-                }, payload => dispatch(onChallengeStatsInsert(payload.new))
-            )
-            .on('postgres_changes', {
-                    event: 'DELETE',
-                    schema: 'public',
-                    table: 'challenge_stats',
-                    filter: `id=eq.${challengeId}`
-                }, payload => dispatch(onChallengeStatsDelete(payload.old.id))
-            )
-            .subscribe();
-
-        return () => {
-            subscription.unsubscribe();
-        }
     }, []);
 
     if (!challenge)
