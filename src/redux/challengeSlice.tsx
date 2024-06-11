@@ -1,8 +1,8 @@
-import {createAsyncThunk, createEntityAdapter, createSlice, PayloadAction, Update} from "@reduxjs/toolkit";
-import {RootState} from "./store";
-import {ChallengeRepository} from "../repository/ChallengeRepository";
-import {FullChallenge} from "../types/supabaseTypes";
-import {TablesInsert, TablesUpdate} from "../types/supabase-generated.types";
+import { createAsyncThunk, createEntityAdapter, createSlice, PayloadAction, Update } from "@reduxjs/toolkit";
+import { RootState } from "./store";
+import { ChallengeRepository } from "../repository/ChallengeRepository";
+import { ChallengeStatWithUser, FullChallenge } from "../types/supabaseTypes";
+import { TablesInsert, TablesUpdate } from "../types/supabase-generated.types";
 
 const challengeAdapter = createEntityAdapter({
     selectId: (challenge: FullChallenge) => challenge.id
@@ -17,14 +17,77 @@ const challengeSlice = createSlice({
         error: null as string | null
     }),
     reducers: {
-        onChallengeStatsUpdate: (state, action: PayloadAction<TablesUpdate<'challenge_stats'>>) => {
-
+        onChallengeStatsUpdate: (state, action: PayloadAction<ChallengeStatWithUser | null>) => {
+            if (!action.payload)
+                return;
+            let challenge = challengeAdapter.getSelectors().selectById(state, action.payload.id ?? -1);
+            if (!challenge)
+                return;
+            let update = {
+                id: challenge.id,
+                changes: {
+                    ...challenge,
+                    stats: [...(challenge.stats.filter(x => x.id !== action.payload?.id ?? -1)), action.payload]
+                }
+            } as Update<FullChallenge>;
+            challengeAdapter.updateOne(state, update);
         },
-        onChallengeStatsInsert: (state, action: PayloadAction<TablesInsert<'challenge_stats'>>) => {
+        onChallengeStatsInsert: (state, action: PayloadAction<ChallengeStatWithUser | null>) => {
+            if (!action.payload)
+                return;
+            let challenge = challengeAdapter.getSelectors().selectById(state, action.payload.id ?? -1);
+            if (!challenge)
+                return;
 
+            let update = {
+                id: challenge.id,
+                changes: {
+                    ...challenge,
+                    stats: [...challenge.stats, action.payload]
+                }
+            } as Update<FullChallenge>;
+            challengeAdapter.updateOne(state, update);
         },
         onChallengeStatsDelete: (state, action: PayloadAction<number>) => {
+            // let challenge = challengeAdapter
+            //     .getSelectors()
+            //     .selectById(state, action.payload.id?.toString() ?? -1);
+            // if (!challenge)
+            //     return;
 
+            // let update = {
+            //     id: challenge.id,
+            //     changes: {
+            //         ...challenge,
+            //         stats: challenge.stats.filter(x => x.id !== action.payload)
+            //     }
+            // } as Update<FullChallenge>;
+            // challengeAdapter.updateOne(state, update);
+        },
+
+        onChallengeUpdate: (state, action: PayloadAction<TablesUpdate<'challenge'>>) => {
+            let fullChallenge = challengeAdapter
+                .getSelectors()
+                .selectById(state, action.payload.id?.toString() ?? "-1");
+            if (!fullChallenge)
+                return;
+            let update = {
+                id: action.payload.id,
+                changes: {
+                    ...fullChallenge,
+                    description: action.payload.description,
+                    name: action.payload.name,
+                }
+            } as Update<FullChallenge>;
+            challengeAdapter.updateOne(state, update);
+        },
+        onChallengeInsert: (state, action: PayloadAction<FullChallenge | null>) => {
+            if (!action.payload)
+                return;
+            challengeAdapter.addOne(state, action.payload);
+        },
+        onChallengeDelete: (state, action: PayloadAction<number>) => {
+            challengeAdapter.removeOne(state, action.payload)
         },
     },
     extraReducers(builder) {
@@ -80,7 +143,7 @@ export const fetchChallengesAsync = createAsyncThunk("fetchChallengesAsync", asy
     }) ?? [];
 });
 
-export const fetchChallengeStatsSingleAsync = createAsyncThunk("fetchChallengeStatsSingleAsync", async ({challengeId}: {
+export const fetchChallengeStatsSingleAsync = createAsyncThunk("fetchChallengeStatsSingleAsync", async ({ challengeId }: {
     challengeId: string
 }) => {
     const response = await ChallengeRepository.fetchChallengeStats(challengeId);
@@ -93,6 +156,6 @@ export const fetchChallengeStatsSingleAsync = createAsyncThunk("fetchChallengeSt
     }
 });
 
-export const {onChallengeStatsUpdate, onChallengeStatsInsert, onChallengeStatsDelete} = challengeSlice.actions;
+export const { onChallengeStatsUpdate, onChallengeStatsInsert, onChallengeStatsDelete, onChallengeDelete, onChallengeInsert, onChallengeUpdate } = challengeSlice.actions;
 
 export default challengeSlice.reducer;

@@ -1,6 +1,6 @@
-import {supabase} from "../components/services/supabase/supabaseClient";
-import {FullChallenge} from "../types/supabaseTypes";
-import {PostgrestSingleResponse} from "@supabase/supabase-js";
+import { supabase } from "../components/services/supabase/supabaseClient";
+import { ChallengeStats, ChallengeStatWithUser, FullChallenge } from "../types/supabaseTypes";
+import { PostgrestSingleResponse } from "@supabase/supabase-js";
 
 export const ChallengeRepository = {
     async fetchChallenges(): Promise<PostgrestSingleResponse<FullChallenge[]>> {
@@ -15,15 +15,26 @@ export const ChallengeRepository = {
         return supabase
             .from("challenge")
             .select("*, stats: challenge_stats (*, user: user(*))")
-            .eq("challenge", id)
+            .eq("id", id)
             .throwOnError()
             .returns<FullChallenge>()
             .single();
     },
 
-    async increasePointForUser(userId: string) {
+    async fetchChallengeStatsSingle(challenge_id: number, user_id: string): Promise<PostgrestSingleResponse<ChallengeStatWithUser>> {
         return supabase
-            .rpc("increase_challenge_stats_count", {user_id: userId, amount: 1})
+            .from("challenge_stats")
+            .select("*, user: user(*)")
+            .eq("challenge", challenge_id)
+            .eq("user.userId", user_id)
+            .throwOnError()
+            .returns<ChallengeStatWithUser>()
+            .single();
+    },
+
+    async increasePointForUser(userId: string, challenge: number) {
+        return supabase
+            .rpc("increase_challenge_stats_count", { user_id: userId, amount: 1, challenge_id: challenge })
             .throwOnError();
     }
 }
