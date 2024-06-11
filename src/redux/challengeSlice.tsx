@@ -18,24 +18,71 @@ const challengeSlice = createSlice({
     }),
     reducers: {
         onChallengeStatsUpdate: (state, action: PayloadAction<TablesUpdate<'challenge_stats'>>) => {
-            if (!action.payload.challenge)
+            let challenge = challengeAdapter.getSelectors().selectById(state, action.payload.id ?? -1);
+            if (!challenge)
                 return;
             let update = {
-                id: action.payload.challenge,
+                id: challenge.id,
                 changes: {
-                    id: action.payload.id,
-                    description: action.payload.description,
-
+                    ...challenge,
+                    stats: [...(challenge.stats.filter(x => x.id !== action.payload.id)), action.payload]
                 }
             } as Update<FullChallenge>;
             challengeAdapter.updateOne(state, update);
         },
-        onChallengeStatsInsert: (state, action: PayloadAction<FullChallenge | null>) => {
-            if(!action.payload)
+        onChallengeStatsInsert: (state, action: PayloadAction<TablesInsert<'challenge_stats'>>) => {
+            let challenge = challengeAdapter.getSelectors().selectById(state, action.payload.id ?? -1);
+            if (!challenge)
                 return;
-            challengeAdapter.upsertOne(state, action.payload);
+
+            let update = {
+                id: challenge.id,
+                changes: {
+                    ...challenge,
+                    stats: [...challenge.stats, action.payload]
+                }
+            } as Update<FullChallenge>;
+            challengeAdapter.updateOne(state, update);
         },
         onChallengeStatsDelete: (state, action: PayloadAction<number>) => {
+            // let challenge = challengeAdapter
+            //     .getSelectors()
+            //     .selectById(state, action.payload.id?.toString() ?? -1);
+            // if (!challenge)
+            //     return;
+
+            // let update = {
+            //     id: challenge.id,
+            //     changes: {
+            //         ...challenge,
+            //         stats: challenge.stats.filter(x => x.id !== action.payload)
+            //     }
+            // } as Update<FullChallenge>;
+            // challengeAdapter.updateOne(state, update);
+        },
+
+        onChallengeUpdate: (state, action: PayloadAction<TablesUpdate<'challenge'>>) => {
+            let fullChallenge = challengeAdapter
+                .getSelectors()
+                .selectById(state, action.payload.id?.toString() ?? "-1");
+            if (!fullChallenge)
+                return;
+            let update = {
+                id: action.payload.id,
+                changes: {
+                    ...fullChallenge,
+                    description: action.payload.description,
+                    name: action.payload.name,
+                }
+            } as Update<FullChallenge>;
+            challengeAdapter.updateOne(state, update);
+        },
+        onChallengeInsert: (state, action: PayloadAction<FullChallenge | null>) => {
+            if (!action.payload)
+                return;
+            challengeAdapter.addOne(state, action.payload);
+        },
+        onChallengeDelete: (state, action: PayloadAction<number>) => {
             challengeAdapter.removeOne(state, action.payload)
         },
     },
@@ -105,6 +152,6 @@ export const fetchChallengeStatsSingleAsync = createAsyncThunk("fetchChallengeSt
     }
 });
 
-export const { onChallengeStatsUpdate, onChallengeStatsInsert, onChallengeStatsDelete } = challengeSlice.actions;
+export const { onChallengeStatsUpdate, onChallengeStatsInsert, onChallengeStatsDelete, onChallengeDelete, onChallengeInsert, onChallengeUpdate } = challengeSlice.actions;
 
 export default challengeSlice.reducer;

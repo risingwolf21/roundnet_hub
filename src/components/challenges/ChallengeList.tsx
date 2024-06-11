@@ -2,7 +2,7 @@ import CustomAppBar from "../AppBar";
 import { Grid, LinearProgress, List, ListItem, ListItemText } from "@mui/material";
 import React, { useEffect } from "react";
 import { RootState, useAppDispatch } from "../../redux/store";
-import { challengeSelector, fetchChallengesAsync, onChallengeStatsDelete, onChallengeStatsInsert, onChallengeStatsUpdate } from "../../redux/challengeSlice";
+import { challengeSelector, fetchChallengesAsync, onChallengeDelete, onChallengeInsert, onChallengeStatsDelete, onChallengeStatsInsert, onChallengeStatsUpdate, onChallengeUpdate } from "../../redux/challengeSlice";
 import { Challenge } from "../../types/supabaseTypes";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
@@ -24,22 +24,35 @@ const ChallengeListProvider = () => {
                 event: 'UPDATE',
                 schema: 'public',
                 table: 'challenge_stats'
-            }, payload => dispatch(onChallengeStatsUpdate(payload.new))
-            )
+            }, payload => dispatch(onChallengeStatsUpdate(payload.new)))
             .on<TablesInsert<'challenge_stats'>>('postgres_changes', {
                 event: 'INSERT',
                 schema: 'public',
                 table: 'challenge_stats'
+            }, payload => dispatch(onChallengeStatsInsert(payload.new)))
+            // .on('postgres_changes', {
+            //     event: 'DELETE',
+            //     schema: 'public',
+            //     table: 'challenge_stats'
+            // }, payload => dispatch(onChallengeStatsDelete(payload.old)))
+
+            .on<TablesUpdate<'challenge'>>('postgres_changes', {
+                event: 'UPDATE',
+                schema: 'public',
+                table: 'challenge'
+            }, payload => dispatch(onChallengeUpdate(payload.new)))
+            .on<TablesInsert<'challenge'>>('postgres_changes', {
+                event: 'INSERT',
+                schema: 'public',
+                table: 'challenge'
             }, payload => ChallengeRepository
                 .fetchChallengeStats(payload.new.id?.toString() ?? "-1")
-                .then(result => dispatch(onChallengeStatsInsert(result.data)))
-            )
+                .then(result => dispatch(onChallengeInsert(result.data))))
             .on('postgres_changes', {
                 event: 'DELETE',
                 schema: 'public',
-                table: 'challenge_stats'
-            }, payload => dispatch(onChallengeStatsDelete(payload.old.id))
-            )
+                table: 'challenge'
+            }, payload => dispatch(onChallengeDelete(payload.old.id)))
             .subscribe();
 
         return () => {
