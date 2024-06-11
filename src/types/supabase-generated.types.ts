@@ -1,12 +1,37 @@
 export type Json =
-    | string
-    | number
-    | boolean
-    | null
-    | { [key: string]: Json | undefined }
-    | Json[]
+  | string
+  | number
+  | boolean
+  | null
+  | { [key: string]: Json | undefined }
+  | Json[]
 
-export type Database = {
+export interface Database {
+  graphql_public: {
+    Tables: {
+      [_ in never]: never
+    }
+    Views: {
+      [_ in never]: never
+    }
+    Functions: {
+      graphql: {
+        Args: {
+          operationName?: string
+          query?: string
+          variables?: Json
+          extensions?: Json
+        }
+        Returns: Json
+      }
+    }
+    Enums: {
+      [_ in never]: never
+    }
+    CompositeTypes: {
+      [_ in never]: never
+    }
+  }
   public: {
     Tables: {
       challenge: {
@@ -38,7 +63,7 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "event_group"
             referencedColumns: ["id"]
-          },
+          }
         ]
       }
       challenge_stats: {
@@ -77,7 +102,7 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "user"
             referencedColumns: ["userId"]
-          },
+          }
         ]
       }
       drink: {
@@ -163,7 +188,7 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "user"
             referencedColumns: ["userId"]
-          },
+          }
         ]
       }
       event_comments: {
@@ -219,7 +244,7 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "user"
             referencedColumns: ["userId"]
-          },
+          }
         ]
       }
       event_group: {
@@ -308,7 +333,7 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "event_group"
             referencedColumns: ["id"]
-          },
+          }
         ]
       }
       group_user_mapping: {
@@ -326,19 +351,19 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "public_group_user_mapping_group_fkey"
+            foreignKeyName: "group_user_mapping_group_fkey"
             columns: ["group"]
             isOneToOne: false
             referencedRelation: "event_group"
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "public_group_user_mapping_user_fkey"
+            foreignKeyName: "group_user_mapping_user_fkey"
             columns: ["user"]
             isOneToOne: false
             referencedRelation: "user"
             referencedColumns: ["userId"]
-          },
+          }
         ]
       }
       history: {
@@ -378,19 +403,19 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "history_user_fkey"
-            columns: ["user"]
-            isOneToOne: false
-            referencedRelation: "user"
-            referencedColumns: ["userId"]
-          },
-          {
-            foreignKeyName: "public_history_payment_fkey"
+            foreignKeyName: "history_payment_fkey"
             columns: ["payment"]
             isOneToOne: false
             referencedRelation: "payments"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "history_user_fkey"
+            columns: ["user"]
+            isOneToOne: false
+            referencedRelation: "user"
+            referencedColumns: ["userId"]
+          }
         ]
       }
       item_history: {
@@ -436,7 +461,7 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "user"
             referencedColumns: ["userId"]
-          },
+          }
         ]
       }
       items: {
@@ -474,15 +499,32 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "user"
             referencedColumns: ["userId"]
-          },
+          }
         ]
+      }
+      logs: {
+        Row: {
+          created_at: string
+          id: number
+          message: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: number
+          message?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: number
+          message?: string | null
+        }
+        Relationships: []
       }
       notifications: {
         Row: {
           body: string
           created_at: string
           id: string
-          issuer: string | null
           title: string
           user: string | null
         }
@@ -490,7 +532,6 @@ export type Database = {
           body?: string
           created_at?: string
           id?: string
-          issuer?: string | null
           title?: string
           user?: string | null
         }
@@ -498,25 +539,17 @@ export type Database = {
           body?: string
           created_at?: string
           id?: string
-          issuer?: string | null
           title?: string
           user?: string | null
         }
         Relationships: [
-          {
-            foreignKeyName: "public_notifications_issuer_fkey"
-            columns: ["issuer"]
-            isOneToOne: false
-            referencedRelation: "user"
-            referencedColumns: ["userId"]
-          },
           {
             foreignKeyName: "public_notifications_user_fkey"
             columns: ["user"]
             isOneToOne: false
             referencedRelation: "user"
             referencedColumns: ["userId"]
-          },
+          }
         ]
       }
       payments: {
@@ -548,7 +581,7 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "user"
             referencedColumns: ["userId"]
-          },
+          }
         ]
       }
       user: {
@@ -560,8 +593,8 @@ export type Database = {
           email: string
           fcm_token: string | null
           notifications:
-              | Database["public"]["Enums"]["NotificationTags"][]
-              | null
+            | Database["public"]["Enums"]["NotificationTags"][]
+            | null
           permissions: Database["public"]["Enums"]["Permissions"][] | null
           role: Database["public"]["Enums"]["UserRole"]
           userId: string
@@ -575,8 +608,8 @@ export type Database = {
           email?: string
           fcm_token?: string | null
           notifications?:
-              | Database["public"]["Enums"]["NotificationTags"][]
-              | null
+            | Database["public"]["Enums"]["NotificationTags"][]
+            | null
           permissions?: Database["public"]["Enums"]["Permissions"][] | null
           role?: Database["public"]["Enums"]["UserRole"]
           userId?: string
@@ -590,8 +623,8 @@ export type Database = {
           email?: string
           fcm_token?: string | null
           notifications?:
-              | Database["public"]["Enums"]["NotificationTags"][]
-              | null
+            | Database["public"]["Enums"]["NotificationTags"][]
+            | null
           permissions?: Database["public"]["Enums"]["Permissions"][] | null
           role?: Database["public"]["Enums"]["UserRole"]
           userId?: string
@@ -626,7 +659,7 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "event_group"
             referencedColumns: ["id"]
-          },
+          }
         ]
       }
       distinct_event: {
@@ -654,23 +687,11 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "event_group"
             referencedColumns: ["id"]
-          },
+          }
         ]
       }
     }
     Functions: {
-      add_notificationtags_to_all_users: {
-        Args: {
-          notification: Database["public"]["Enums"]["NotificationTags"]
-        }
-        Returns: undefined
-      }
-      add_permission_to_all_users: {
-        Args: {
-          permission: Database["public"]["Enums"]["Permissions"]
-        }
-        Returns: undefined
-      }
       eventcreation: {
         Args: Record<PropertyKey, never>
         Returns: number
@@ -693,19 +714,55 @@ export type Database = {
         }
         Returns: string[]
       }
-      increase_challenge_stats_count: {
+      getusersforeventcommentnotifications: {
         Args: {
-          user_id: string
-          amount: number
+          event_id: number
         }
-        Returns: undefined
+        Returns: string[]
       }
-      remove_notificationtags_from_all_users: {
+      getusersfornotificationstag: {
         Args: {
-          notification: Database["public"]["Enums"]["NotificationTags"]
+          tag: Database["public"]["Enums"]["NotificationTags"]
         }
-        Returns: undefined
+        Returns: string[]
       }
+      getusersforpaymentrequestnotifications: {
+        Args: Record<PropertyKey, never>
+        Returns: string[]
+      }
+      getusersforuserregistrationnotifications: {
+        Args: Record<PropertyKey, never>
+        Returns: string[]
+      }
+      increase_challenge_stats_count:
+        | {
+            Args: {
+              user_id: string
+              amount: number
+            }
+            Returns: undefined
+          }
+        | {
+            Args: {
+              user_id: string
+              challenge_id: number
+              amount: number
+            }
+            Returns: undefined
+          }
+      sendnotifications:
+        | {
+            Args: {
+              external_ids: string[]
+            }
+            Returns: number
+          }
+        | {
+            Args: {
+              external_ids: string
+            }
+            Returns: number
+          }
       update_attendance: {
         Args: {
           eventid: number
@@ -725,40 +782,37 @@ export type Database = {
       EventRecurrence: "Weekly" | "Fortnightly" | "Monthly" | "None"
       ItemType: "mtvStorage" | "mtvGym" | "mtvGymPalazzo"
       NotificationTags:
-          | "eventComments"
-          | "userRegistration"
-          | "paymentRequest"
-          | "paymentPending"
-          | "eventCancelled"
-          | "eventUpdated"
-          | "eventAttedanceChanged"
+        | "eventComments"
+        | "userRegistration"
+        | "paymentRequest"
+        | "paymentPending"
       PaymentState: "Open" | "Fulfilled"
       Permissions:
-          | "use;drink"
-          | "edit;drink"
-          | "delete;drink"
-          | "view;drink"
-          | "use;training"
-          | "edit;training"
-          | "delete;training"
-          | "view;training"
-          | "edit;groups"
-          | "delete;groups"
-          | "view;groups"
-          | "edit;payments"
-          | "edit;user"
-          | "view;keyFinder"
-          | "use;user"
-          | "view;user"
-          | "delete;user"
-          | "edit;keyFinder"
-          | "delete;keyFinder"
-          | "view;notifications"
-          | "edit;notifications"
-          | "edit;history"
-          | "edit;edgeFunctions"
-          | "view;challenges"
-          | "use;challenges"
+        | "use;drink"
+        | "edit;drink"
+        | "delete;drink"
+        | "view;drink"
+        | "use;training"
+        | "edit;training"
+        | "delete;training"
+        | "view;training"
+        | "edit;groups"
+        | "delete;groups"
+        | "view;groups"
+        | "edit;payments"
+        | "edit;user"
+        | "view;keyFinder"
+        | "use;user"
+        | "view;user"
+        | "delete;user"
+        | "edit;keyFinder"
+        | "delete;keyFinder"
+        | "view;notifications"
+        | "edit;notifications"
+        | "edit;history"
+        | "edit;edgeFunctions"
+        | "use;challenges"
+        | "view;challenges"
       ProductType: "Drink" | "Special" | "None"
       UserRole: "user" | "admin" | "procure" | "finance" | "trainer"
     }
@@ -766,82 +820,264 @@ export type Database = {
       [_ in never]: never
     }
   }
+  storage: {
+    Tables: {
+      buckets: {
+        Row: {
+          allowed_mime_types: string[] | null
+          avif_autodetection: boolean | null
+          created_at: string | null
+          file_size_limit: number | null
+          id: string
+          name: string
+          owner: string | null
+          owner_id: string | null
+          public: boolean | null
+          updated_at: string | null
+        }
+        Insert: {
+          allowed_mime_types?: string[] | null
+          avif_autodetection?: boolean | null
+          created_at?: string | null
+          file_size_limit?: number | null
+          id: string
+          name: string
+          owner?: string | null
+          owner_id?: string | null
+          public?: boolean | null
+          updated_at?: string | null
+        }
+        Update: {
+          allowed_mime_types?: string[] | null
+          avif_autodetection?: boolean | null
+          created_at?: string | null
+          file_size_limit?: number | null
+          id?: string
+          name?: string
+          owner?: string | null
+          owner_id?: string | null
+          public?: boolean | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      migrations: {
+        Row: {
+          executed_at: string | null
+          hash: string
+          id: number
+          name: string
+        }
+        Insert: {
+          executed_at?: string | null
+          hash: string
+          id: number
+          name: string
+        }
+        Update: {
+          executed_at?: string | null
+          hash?: string
+          id?: number
+          name?: string
+        }
+        Relationships: []
+      }
+      objects: {
+        Row: {
+          bucket_id: string | null
+          created_at: string | null
+          id: string
+          last_accessed_at: string | null
+          metadata: Json | null
+          name: string | null
+          owner: string | null
+          owner_id: string | null
+          path_tokens: string[] | null
+          updated_at: string | null
+          version: string | null
+        }
+        Insert: {
+          bucket_id?: string | null
+          created_at?: string | null
+          id?: string
+          last_accessed_at?: string | null
+          metadata?: Json | null
+          name?: string | null
+          owner?: string | null
+          owner_id?: string | null
+          path_tokens?: string[] | null
+          updated_at?: string | null
+          version?: string | null
+        }
+        Update: {
+          bucket_id?: string | null
+          created_at?: string | null
+          id?: string
+          last_accessed_at?: string | null
+          metadata?: Json | null
+          name?: string | null
+          owner?: string | null
+          owner_id?: string | null
+          path_tokens?: string[] | null
+          updated_at?: string | null
+          version?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "objects_bucketId_fkey"
+            columns: ["bucket_id"]
+            isOneToOne: false
+            referencedRelation: "buckets"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
+    }
+    Views: {
+      [_ in never]: never
+    }
+    Functions: {
+      can_insert_object: {
+        Args: {
+          bucketid: string
+          name: string
+          owner: string
+          metadata: Json
+        }
+        Returns: undefined
+      }
+      extension: {
+        Args: {
+          name: string
+        }
+        Returns: string
+      }
+      filename: {
+        Args: {
+          name: string
+        }
+        Returns: string
+      }
+      foldername: {
+        Args: {
+          name: string
+        }
+        Returns: unknown
+      }
+      get_size_by_bucket: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          size: number
+          bucket_id: string
+        }[]
+      }
+      search: {
+        Args: {
+          prefix: string
+          bucketname: string
+          limits?: number
+          levels?: number
+          offsets?: number
+          search?: string
+          sortcolumn?: string
+          sortorder?: string
+        }
+        Returns: {
+          name: string
+          id: string
+          updated_at: string
+          created_at: string
+          last_accessed_at: string
+          metadata: Json
+        }[]
+      }
+    }
+    Enums: {
+      [_ in never]: never
+    }
+    CompositeTypes: {
+      [_ in never]: never
+    }
+  }
 }
 
-type PublicSchema = Database[Extract<keyof Database, "public">]
-
 export type Tables<
-    PublicTableNameOrOptions extends | keyof (PublicSchema["Tables"] & PublicSchema["Views"])
-        | { schema: keyof Database },
-    TableName extends PublicTableNameOrOptions extends { schema: keyof Database }
-        ? keyof (Database[PublicTableNameOrOptions["schema"]]["Tables"] &
-            Database[PublicTableNameOrOptions["schema"]]["Views"])
-        : never = never,
+  PublicTableNameOrOptions extends
+    | keyof (Database["public"]["Tables"] & Database["public"]["Views"])
+    | { schema: keyof Database },
+  TableName extends PublicTableNameOrOptions extends { schema: keyof Database }
+    ? keyof (Database[PublicTableNameOrOptions["schema"]]["Tables"] &
+        Database[PublicTableNameOrOptions["schema"]]["Views"])
+    : never = never
 > = PublicTableNameOrOptions extends { schema: keyof Database }
-    ? (Database[PublicTableNameOrOptions["schema"]]["Tables"] &
-        Database[PublicTableNameOrOptions["schema"]]["Views"])[TableName] extends {
-          Row: infer R
-        }
-        ? R
-        : never
-    : PublicTableNameOrOptions extends keyof (PublicSchema["Tables"] &
-            PublicSchema["Views"])
-        ? (PublicSchema["Tables"] &
-            PublicSchema["Views"])[PublicTableNameOrOptions] extends {
-              Row: infer R
-            }
-            ? R
-            : never
-        : never
+  ? (Database[PublicTableNameOrOptions["schema"]]["Tables"] &
+      Database[PublicTableNameOrOptions["schema"]]["Views"])[TableName] extends {
+      Row: infer R
+    }
+    ? R
+    : never
+  : PublicTableNameOrOptions extends keyof (Database["public"]["Tables"] &
+      Database["public"]["Views"])
+  ? (Database["public"]["Tables"] &
+      Database["public"]["Views"])[PublicTableNameOrOptions] extends {
+      Row: infer R
+    }
+    ? R
+    : never
+  : never
 
 export type TablesInsert<
-    PublicTableNameOrOptions extends | keyof PublicSchema["Tables"]
-        | { schema: keyof Database },
-    TableName extends PublicTableNameOrOptions extends { schema: keyof Database }
-        ? keyof Database[PublicTableNameOrOptions["schema"]]["Tables"]
-        : never = never,
+  PublicTableNameOrOptions extends
+    | keyof Database["public"]["Tables"]
+    | { schema: keyof Database },
+  TableName extends PublicTableNameOrOptions extends { schema: keyof Database }
+    ? keyof Database[PublicTableNameOrOptions["schema"]]["Tables"]
+    : never = never
 > = PublicTableNameOrOptions extends { schema: keyof Database }
-    ? Database[PublicTableNameOrOptions["schema"]]["Tables"][TableName] extends {
-          Insert: infer I
-        }
-        ? I
-        : never
-    : PublicTableNameOrOptions extends keyof PublicSchema["Tables"]
-        ? PublicSchema["Tables"][PublicTableNameOrOptions] extends {
-              Insert: infer I
-            }
-            ? I
-            : never
-        : never
+  ? Database[PublicTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+      Insert: infer I
+    }
+    ? I
+    : never
+  : PublicTableNameOrOptions extends keyof Database["public"]["Tables"]
+  ? Database["public"]["Tables"][PublicTableNameOrOptions] extends {
+      Insert: infer I
+    }
+    ? I
+    : never
+  : never
 
 export type TablesUpdate<
-    PublicTableNameOrOptions extends | keyof PublicSchema["Tables"]
-        | { schema: keyof Database },
-    TableName extends PublicTableNameOrOptions extends { schema: keyof Database }
-        ? keyof Database[PublicTableNameOrOptions["schema"]]["Tables"]
-        : never = never,
+  PublicTableNameOrOptions extends
+    | keyof Database["public"]["Tables"]
+    | { schema: keyof Database },
+  TableName extends PublicTableNameOrOptions extends { schema: keyof Database }
+    ? keyof Database[PublicTableNameOrOptions["schema"]]["Tables"]
+    : never = never
 > = PublicTableNameOrOptions extends { schema: keyof Database }
-    ? Database[PublicTableNameOrOptions["schema"]]["Tables"][TableName] extends {
-          Update: infer U
-        }
-        ? U
-        : never
-    : PublicTableNameOrOptions extends keyof PublicSchema["Tables"]
-        ? PublicSchema["Tables"][PublicTableNameOrOptions] extends {
-              Update: infer U
-            }
-            ? U
-            : never
-        : never
+  ? Database[PublicTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+      Update: infer U
+    }
+    ? U
+    : never
+  : PublicTableNameOrOptions extends keyof Database["public"]["Tables"]
+  ? Database["public"]["Tables"][PublicTableNameOrOptions] extends {
+      Update: infer U
+    }
+    ? U
+    : never
+  : never
 
 export type Enums<
-    PublicEnumNameOrOptions extends | keyof PublicSchema["Enums"]
-        | { schema: keyof Database },
-    EnumName extends PublicEnumNameOrOptions extends { schema: keyof Database }
-        ? keyof Database[PublicEnumNameOrOptions["schema"]]["Enums"]
-        : never = never,
+  PublicEnumNameOrOptions extends
+    | keyof Database["public"]["Enums"]
+    | { schema: keyof Database },
+  EnumName extends PublicEnumNameOrOptions extends { schema: keyof Database }
+    ? keyof Database[PublicEnumNameOrOptions["schema"]]["Enums"]
+    : never = never
 > = PublicEnumNameOrOptions extends { schema: keyof Database }
-    ? Database[PublicEnumNameOrOptions["schema"]]["Enums"][EnumName]
-    : PublicEnumNameOrOptions extends keyof PublicSchema["Enums"]
-        ? PublicSchema["Enums"][PublicEnumNameOrOptions]
-        : never
+  ? Database[PublicEnumNameOrOptions["schema"]]["Enums"][EnumName]
+  : PublicEnumNameOrOptions extends keyof Database["public"]["Enums"]
+  ? Database["public"]["Enums"][PublicEnumNameOrOptions]
+  : never
+

@@ -20,21 +20,6 @@ const ChallengeListProvider = () => {
 
         const subscription = client
             .channel("public:challenge_stats")
-            .on<TablesUpdate<'challenge_stats'>>('postgres_changes', {
-                event: 'UPDATE',
-                schema: 'public',
-                table: 'challenge_stats'
-            }, payload => dispatch(onChallengeStatsUpdate(payload.new)))
-            .on<TablesInsert<'challenge_stats'>>('postgres_changes', {
-                event: 'INSERT',
-                schema: 'public',
-                table: 'challenge_stats'
-            }, payload => dispatch(onChallengeStatsInsert(payload.new)))
-            // .on('postgres_changes', {
-            //     event: 'DELETE',
-            //     schema: 'public',
-            //     table: 'challenge_stats'
-            // }, payload => dispatch(onChallengeStatsDelete(payload.old)))
 
             .on<TablesUpdate<'challenge'>>('postgres_changes', {
                 event: 'UPDATE',

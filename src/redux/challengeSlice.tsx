@@ -1,7 +1,7 @@
 import { createAsyncThunk, createEntityAdapter, createSlice, PayloadAction, Update } from "@reduxjs/toolkit";
 import { RootState } from "./store";
 import { ChallengeRepository } from "../repository/ChallengeRepository";
-import { FullChallenge } from "../types/supabaseTypes";
+import { ChallengeStatWithUser, FullChallenge } from "../types/supabaseTypes";
 import { TablesInsert, TablesUpdate } from "../types/supabase-generated.types";
 
 const challengeAdapter = createEntityAdapter({
@@ -17,7 +17,9 @@ const challengeSlice = createSlice({
         error: null as string | null
     }),
     reducers: {
-        onChallengeStatsUpdate: (state, action: PayloadAction<TablesUpdate<'challenge_stats'>>) => {
+        onChallengeStatsUpdate: (state, action: PayloadAction<ChallengeStatWithUser | null>) => {
+            if (!action.payload)
+                return;
             let challenge = challengeAdapter.getSelectors().selectById(state, action.payload.id ?? -1);
             if (!challenge)
                 return;
@@ -25,12 +27,14 @@ const challengeSlice = createSlice({
                 id: challenge.id,
                 changes: {
                     ...challenge,
-                    stats: [...(challenge.stats.filter(x => x.id !== action.payload.id)), action.payload]
+                    stats: [...(challenge.stats.filter(x => x.id !== action.payload?.id ?? -1)), action.payload]
                 }
             } as Update<FullChallenge>;
             challengeAdapter.updateOne(state, update);
         },
-        onChallengeStatsInsert: (state, action: PayloadAction<TablesInsert<'challenge_stats'>>) => {
+        onChallengeStatsInsert: (state, action: PayloadAction<ChallengeStatWithUser | null>) => {
+            if (!action.payload)
+                return;
             let challenge = challengeAdapter.getSelectors().selectById(state, action.payload.id ?? -1);
             if (!challenge)
                 return;
