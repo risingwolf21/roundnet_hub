@@ -164,12 +164,9 @@ const Browse = ({t}: { t: TFunction }) => {
                 can("view", "challenges") &&
                 <ListItemButton key={"challenges"} onClick={() => navigate("/challenges")} sx={{mt: 1}}>
                     <ListItemAvatar>
-                        <Badge color="secondary" variant="standard" badgeContent={notifications.length}
-                               invisible={notifications.length < 1}>
-                            <Avatar sx={{background: "#88AEBF", width: 40, height: 40, borderRadius: 2}}>
-                                <EmojiEvents/>
-                            </Avatar>
-                        </Badge>
+                        <Avatar sx={{background: "#88AEBF", width: 40, height: 40, borderRadius: 2}}>
+                            <EmojiEvents/>
+                        </Avatar>
                     </ListItemAvatar>
                     <ListItemText primary={t("browse.challenges")}/>
                 </ListItemButton>
