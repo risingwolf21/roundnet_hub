@@ -1,4 +1,14 @@
-import {AccountCircle, Euro, History, Info, Key, Notifications} from "@mui/icons-material";
+import {
+    AccountCircle,
+    EmojiEvents,
+    Euro,
+    History,
+    Info,
+    Key,
+    Liquor,
+    Notifications,
+    SportsHandball
+} from "@mui/icons-material";
 import {Avatar, Badge, Box, List, ListItem, ListItemAvatar, ListItemButton, ListItemText} from "@mui/material";
 import {TFunction} from "i18next";
 import React, {ReactElement} from "react";
@@ -53,6 +63,13 @@ const tabs = [
         icon: <Notifications/>,
         avatarColor: "#88AEBF",
         ability: "notifications"
+    },
+    {
+        translationKey: "challenges",
+        navigateTo: "/challenges",
+        icon: <EmojiEvents/>,
+        avatarColor: "#88AEBF",
+        ability: "challenges"
     }
 ] as TabsType[];
 
@@ -97,6 +114,28 @@ const Browse = ({t}: { t: TFunction }) => {
                 </ListItemButton>
             }
             {
+                can("view", "drink") &&
+                <ListItemButton key={"drinks"} onClick={() => navigate("/drinks")} sx={{mt: 1}}>
+                    <ListItemAvatar>
+                        <Avatar sx={{background: "#88AEBF", width: 40, height: 40, borderRadius: 2}}>
+                            <Liquor/>
+                        </Avatar>
+                    </ListItemAvatar>
+                    <ListItemText primary={t("navigation.drinks")}/>
+                </ListItemButton>
+            }
+            {
+                can("view", "training") &&
+                <ListItemButton key={"training"} onClick={() => navigate("/training")} sx={{mt: 1}}>
+                    <ListItemAvatar>
+                        <Avatar sx={{background: "#88AEBF", width: 40, height: 40, borderRadius: 2}}>
+                            <SportsHandball/>
+                        </Avatar>
+                    </ListItemAvatar>
+                    <ListItemText primary={t("navigation.training")}/>
+                </ListItemButton>
+            }
+            {
                 can("view", "keyFinder") &&
                 <ListItemButton key={"keys"} onClick={() => navigate("/keys")} sx={{mt: 1}}>
                     <ListItemAvatar>
@@ -119,6 +158,17 @@ const Browse = ({t}: { t: TFunction }) => {
                         </Badge>
                     </ListItemAvatar>
                     <ListItemText primary={t("browse.notifications")}/>
+                </ListItemButton>
+            }
+            {
+                can("view", "challenges") &&
+                <ListItemButton key={"challenges"} onClick={() => navigate("/challenges")} sx={{mt: 1}}>
+                    <ListItemAvatar>
+                        <Avatar sx={{background: "#88AEBF", width: 40, height: 40, borderRadius: 2}}>
+                            <EmojiEvents/>
+                        </Avatar>
+                    </ListItemAvatar>
+                    <ListItemText primary={t("browse.challenges")}/>
                 </ListItemButton>
             }
             <ListItem key={"appVersion"} dense>
