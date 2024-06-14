@@ -22,35 +22,47 @@ create table public.challenge_stats
     constraint challenge_stats_user_fkey foreign key ("user") references "user" ("userId")
 ) tablespace pg_default;
 
-ALTER TYPE public."Permissions"
-    ADD
-        VALUE 'use;challenges';
+alter table
+    "public"."challenge"
+    enable row level security;
+
+alter table
+    "public"."challenge_stats"
+    enable row level security;
 
 ALTER TYPE public."Permissions"
-    ADD
-        VALUE 'view;challenges';
+    ADD VALUE 'use;challenges';
+
+ALTER TYPE public."Permissions"
+    ADD VALUE 'view;challenges';
 
 CREATE
     OR REPLACE FUNCTION increase_challenge_stats_count(
     user_id TEXT,
     challenge_id numeric,
     amount NUMERIC
-) AS
+) returns void AS
 $$
 declare
-    challenge public.challenge;
+    currentChallenge public.challenge;
 BEGIN
-    select * into challenge from public.challenge where id = challenge_id limit 1;
+    select *
+    into currentChallenge
+    from public.challenge
+    where id = challenge_id
+    limit 1;
 
-    if challenge is null then
+    if
+        currentChallenge is null then
         raise exception 'Could not select given challenge';
     end if;
 
-    if ((Select count(*)
-         from challenge_stats
-         where "user" = user_id
-           and "challenge" = challenge_id
-           and DATE_PART('week', created_at) = DATE_PART('week', now())) >= challenge.max_points_per_week) then
+    if
+        ((Select count(*)
+          from challenge_stats
+          where "user" = user_id
+            and "challenge" = challenge_id
+            and DATE_PART('week', created_at) = DATE_PART('week', now())) >= currentChallenge.max_points_per_week) then
         raise exception 'Maximum points per week already reached';
     else
         INSERT INTO challenge_stats ("user", "challenge", "count")
@@ -58,4 +70,49 @@ BEGIN
     end if;
 END;
 
-$$ LANGUAGE plpgsql;
+$$
+    LANGUAGE plpgsql;
+
+create
+    policy "Select challenges for user with group" on "public"."challenge" as permissive for
+    select
+    to public using
+    (
+        (ARRAY ['edit;training'::"Permissions"] && (SELECT "user".permissions
+                                                    FROM "user"
+                                                    WHERE ("user"."userId" = (auth.uid())::text)))
+        );
+
+create
+    policy "Enable delete for users based on user_id" on "public"."challenge_stats" as permissive for delete
+    to public using
+    (
+        ((SELECT (auth.uid())::text AS uid) = USER)
+        );
+
+create
+    policy "Enable insert for users based on user_id" on "public"."challenge_stats" as permissive for insert
+    to public with check
+    (
+        ((SELECT (auth.uid())::text AS uid) = USER)
+        );
+
+create
+    policy "Enable update for users based on user_id" on "public"."challenge_stats" as permissive for
+    update
+    to public using
+    (
+        ((SELECT (auth.uid())::text AS uid) = USER)
+        );
+
+create
+    policy "Select challenge stats only if user is in group of challenge" on "public"."challenge_stats" as permissive for
+    select
+    to public using
+    (
+        ((SELECT challenge_stats.challenge) IN (SELECT challenge.id
+                                                FROM challenge
+                                                WHERE (challenge."group" IN (SELECT group_user_mapping."group"
+                                                                             FROM group_user_mapping
+                                                                             WHERE (group_user_mapping."user" = (auth.uid())::text)))))
+        );
