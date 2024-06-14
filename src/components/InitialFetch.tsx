@@ -40,21 +40,21 @@ export const useInitialFetch = () => {
                     event: 'UPDATE',
                     schema: 'public',
                 table: 'notifications',
-                filter: `eq.${user.userId}`
+                filter: `user=eq.${user.userId}`
                 }, payload => dispatch(onNotificationUpdate(payload.new))
             )
             .on('postgres_changes', {
                     event: 'DELETE',
                     schema: 'public',
                 table: 'notifications',
-                filter: `eq.${user.userId}`
+                filter: `user=eq.${user.userId}`
                 }, payload => dispatch(onNotificationDelete(payload.old.id))
             )
             .on<NotificationInsert>('postgres_changes', {
                     event: 'INSERT',
                     schema: 'public',
                 table: 'notifications',
-                filter: `eq.${user.userId}`
+                filter: `user=eq.${user.userId}`
                 }, payload => dispatch(onNotificationInsert(payload.new))
             )
             .subscribe();

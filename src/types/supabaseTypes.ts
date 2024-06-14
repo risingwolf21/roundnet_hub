@@ -39,10 +39,6 @@ export type FullChallenge = Challenge & {
 export type ChallengeStatWithUser = ChallengeStats & {
     user: User
 }
-export type FullChallengeStats = ChallengeStats & {
-    user: User,
-    challenge: Challenge
-}
 
 export type FullKeyHistory = Modify<KeyHistory, {
     pastUser: User,

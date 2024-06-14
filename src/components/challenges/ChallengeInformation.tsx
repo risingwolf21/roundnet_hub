@@ -1,4 +1,5 @@
 import {
+    Alert,
     Avatar,
     Button,
     Divider,
@@ -12,39 +13,36 @@ import {
     Typography
 } from "@mui/material";
 import CustomAppBar from "../AppBar";
-import React, { useEffect, useState } from "react";
-import { Navigate, useParams } from "react-router-dom";
-import { ChallengeRepository } from "../../repository/ChallengeRepository";
-import { FullChallenge, User } from "../../types/supabaseTypes";
-import { captureException } from "@sentry/react";
-import { AlertMessage, AlertSnackbar } from "../AlertSnackbar";
-import { Box } from "@mui/system";
-import { AccountBox } from "@mui/icons-material";
-import { can } from "../../utils/PermissionService";
+import React, {useEffect, useState} from "react";
+import {Navigate, useParams} from "react-router-dom";
+import {ChallengeRepository} from "../../repository/ChallengeRepository";
+import {FullChallenge, User} from "../../types/supabaseTypes";
+import {captureException} from "@sentry/react";
+import {AlertMessage, AlertSnackbar} from "../AlertSnackbar";
+import {Box} from "@mui/system";
+import {AccountBox} from "@mui/icons-material";
+import {can} from "../../utils/PermissionService";
 import EditIcon from "@mui/icons-material/Edit";
-import { SwipeableDialog } from "../SwipeableDialog";
-import { withTranslation } from "react-i18next";
-import { TFunction } from "i18next";
-import { useSelector } from "react-redux";
-import { AppDispatch, RootState, useAppDispatch } from "../../redux/store";
-import { useClient } from "react-supabase";
-import { TablesInsert, TablesUpdate } from "../../types/supabase-generated.types";
+import {SwipeableDialog} from "../SwipeableDialog";
+import {withTranslation} from "react-i18next";
+import {TFunction} from "i18next";
+import {useSelector} from "react-redux";
+import {AppDispatch, RootState, useAppDispatch} from "../../redux/store";
+import {useClient} from "react-supabase";
+import {TablesInsert, TablesUpdate} from "../../types/supabase-generated.types";
 import {
     challengeSelector,
     fetchChallengeStatsSingleAsync,
     onChallengeDelete,
     onChallengeInsert,
-    onChallengeStatsDelete,
-    onChallengeStatsInsert,
-    onChallengeStatsUpdate,
     onChallengeUpdate
 } from "../../redux/challengeSlice";
-import { SupabaseClient } from "@supabase/supabase-js";
+import {SupabaseClient} from "@supabase/supabase-js";
 
-const ChallengeInformationProvider = ({ t }: { t: TFunction }) => {
-    const { challengeId } = useParams();
+const ChallengeInformationProvider = ({t}: { t: TFunction }) => {
+    const {challengeId} = useParams();
     const challenge = useSelector((root: RootState) => challengeSelector.selectById(root, challengeId ?? 0));
-    const { user } = useSelector((state: RootState) => state.application);
+    const {user} = useSelector((state: RootState) => state.application);
     const client = useClient();
     const dispatch = useAppDispatch();
 
@@ -52,29 +50,28 @@ const ChallengeInformationProvider = ({ t }: { t: TFunction }) => {
     useEffect(() => {
         if (!challengeId)
             return;
-        dispatch(fetchChallengeStatsSingleAsync({ challengeId }));
+        dispatch(fetchChallengeStatsSingleAsync({challengeId}));
 
         const subscription = client
             .channel("public:challenge_stats")
             .on<TablesUpdate<'challenge_stats'>>('postgres_changes', {
                 event: 'UPDATE',
                 schema: 'public',
-                table: 'challenge_stats'
-            }, payload => ChallengeRepository
-                .fetchChallengeStatsSingle(payload.new.challenge ?? -1, payload.new.user ?? "")
-                .then(result => dispatch(onChallengeStatsUpdate(result.data))))
+                table: 'challenge_stats',
+                filter: `id=eq.${challengeId}`
+            }, payload => dispatch(fetchChallengeStatsSingleAsync({challengeId})))
             .on<TablesInsert<'challenge_stats'>>('postgres_changes', {
                 event: 'INSERT',
                 schema: 'public',
-                table: 'challenge_stats'
-            }, payload => ChallengeRepository
-                .fetchChallengeStatsSingle(payload.new.challenge ?? -1, payload.new.user ?? "")
-                .then(result => dispatch(onChallengeStatsInsert(result.data))))
-            // .on('postgres_changes', {
-            //     event: 'DELETE',
-            //     schema: 'public',
-            //     table: 'challenge_stats'
-            // }, payload => dispatch(onChallengeStatsDelete(payload.old)))
+                table: 'challenge_stats',
+                filter: `id=eq.${challengeId}`
+            }, payload => dispatch(fetchChallengeStatsSingleAsync({challengeId})))
+            .on('postgres_changes', {
+                event: 'DELETE',
+                schema: 'public',
+                table: 'challenge_stats',
+                filter: `id=eq.${challengeId}`
+            }, payload => dispatch(fetchChallengeStatsSingleAsync({challengeId})))
 
             .on<TablesUpdate<'challenge'>>('postgres_changes', {
                 event: 'UPDATE',
@@ -98,12 +95,12 @@ const ChallengeInformationProvider = ({ t }: { t: TFunction }) => {
         return () => {
             subscription.unsubscribe();
         }
-    }, []);
+    }, [dispatch, client, challengeId]);
 
     if (!challenge)
-        return <Navigate to={"/challenges"} replace={true} />
+        return <Navigate to={"/challenges"} replace={true}/>
 
-    return <ChallengeInformation t={t} dispatch={dispatch} challenge={challenge} user={user} client={client} />
+    return <ChallengeInformation t={t} dispatch={dispatch} challenge={challenge} user={user} client={client}/>
 }
 
 type ChallengeInformationProps = {
@@ -114,10 +111,9 @@ type ChallengeInformationProps = {
     client: SupabaseClient
 }
 
-const ChallengeInformation = ({ t, dispatch, challenge, user, client }: ChallengeInformationProps) => {
+const ChallengeInformation = ({t, dispatch, challenge, user, client}: ChallengeInformationProps) => {
     const [alertInfo, setAlertInfo] = useState<AlertMessage | null>(null);
     const [open, setOpen] = useState(false);
-
 
     const medalForPlace = (index: number) => {
         if (index === 0)
@@ -132,14 +128,14 @@ const ChallengeInformation = ({ t, dispatch, challenge, user, client }: Challeng
     const increaseChallengePoint = () => {
         setOpen(false);
         if (!user) {
-            setAlertInfo({ message: "Something went wrong! Try again later", severity: "error" });
+            setAlertInfo({message: "Something went wrong! Try again later", severity: "error"});
             return;
         }
-        ChallengeRepository.increasePointForUser(user.userId, challenge.id).then(() => {
-            setAlertInfo({ message: "Success!", severity: "success" });
+        ChallengeRepository.increasePointForUser(user.userId, challenge.id).then((result) => {
+            setAlertInfo({message: "Success!", severity: "success"});
         }).catch(error => {
             captureException(error);
-            setAlertInfo({ message: error, severity: 'error' })
+            setAlertInfo({message: error.message, severity: 'error'})
         });
     }
 
@@ -149,13 +145,13 @@ const ChallengeInformation = ({ t, dispatch, challenge, user, client }: Challeng
         direction="column"
         alignItems="center"
         justifyContent="center">
-        <CustomAppBar navigateBack title={challenge.name} />
+        <CustomAppBar navigateBack title={challenge.name}/>
 
         <Grid container width="100%" spacing={3} justifyContent={"center"}>
             {
-                challenge.stats.length >= 2 && <Grid item xs sx={{ maxWidth: "40%" }}>
+                challenge.stats.length >= 2 && <Grid item xs sx={{width: "33%", maxWidth: "150px"}}>
                     <Grid>
-                        <Box sx={{ height: "50px", background: "transparent" }}></Box>
+                        <Box sx={{height: "50px", background: "transparent"}}></Box>
                         <Typography variant={"h5"} sx={{
                             height: "50px",
                             lineHeight: "50px",
@@ -174,7 +170,7 @@ const ChallengeInformation = ({ t, dispatch, challenge, user, client }: Challeng
             }
             {
                 challenge.stats.length >= 1 &&
-                <Grid item xs sx={{ maxWidth: "40%" }}>
+                <Grid item xs sx={{width: "33%", maxWidth: "150px"}}>
                     <Grid>
                         <Typography variant={"h5"} sx={{
                             height: "50px",
@@ -196,9 +192,9 @@ const ChallengeInformation = ({ t, dispatch, challenge, user, client }: Challeng
             }
             {
                 challenge.stats.length >= 3 &&
-                <Grid item xs sx={{ maxWidth: "40%" }}>
+                <Grid item xs sx={{width: "33%", maxWidth: "150px"}}>
                     <Grid>
-                        <Box sx={{ height: "100px", background: "transparent" }}></Box>
+                        <Box sx={{height: "100px", background: "transparent"}}></Box>
                         <Typography variant={"h5"} sx={{
                             height: "50px",
                             lineHeight: "50px",
@@ -217,38 +213,42 @@ const ChallengeInformation = ({ t, dispatch, challenge, user, client }: Challeng
             }
         </Grid>
 
-        <List sx={{ width: "100%" }}>
-            <Divider />
+        <List sx={{width: "100%"}}>
+            <Divider/>
+            <Alert sx={{m: 2}} severity={"info"}>
+                {challenge.description}
+            </Alert>
+            <Divider/>
             {
                 challenge.stats
                     .map((x, index) => <ListItem key={x.user.userId}>
-                        <ListItemAvatar>
-                            <Avatar sx={{ borderRadius: 2 }}>
-                                {
-                                    x.user.avatarUrl
-                                        ?
-                                        <img src={x.user.avatarUrl} alt="logo" width={"100%"} height={"100%"} />
-                                        : <AccountBox />
-                                }
-                            </Avatar>
-                        </ListItemAvatar>
-                        <ListItemText primary={x.user.displayName + " " + medalForPlace(index)} />
-                        <ListItemSecondaryAction>
-                            <Typography>{x.count}</Typography>
-                        </ListItemSecondaryAction>
-                    </ListItem>
+                            <ListItemAvatar>
+                                <Avatar sx={{borderRadius: 2}}>
+                                    {
+                                        x.user.avatarUrl
+                                            ?
+                                            <img src={x.user.avatarUrl} alt="logo" width={"100%"} height={"100%"}/>
+                                            : <AccountBox/>
+                                    }
+                                </Avatar>
+                            </ListItemAvatar>
+                            <ListItemText primary={x.user.displayName + " " + medalForPlace(index)}/>
+                            <ListItemSecondaryAction>
+                                <Typography>{x.count}</Typography>
+                            </ListItemSecondaryAction>
+                        </ListItem>
                     )
             }
         </List>
 
         {
             can("use", "challenges") &&
-            <Fab sx={{ background: "#66bb6a", position: "fixed", right: "16px", bottom: "56px", mb: "16px" }}
-                onClick={() => {
-                    setOpen(true)
-                }}>
+            <Fab sx={{background: "#66bb6a", position: "fixed", right: "16px", bottom: "56px", mb: "16px"}}
+                 onClick={() => {
+                     setOpen(true)
+                 }}>
                 {
-                    <EditIcon sx={{ color: "white" }} />
+                    <EditIcon sx={{color: "white"}}/>
                 }
             </Fab>
         }
@@ -292,7 +292,7 @@ const ChallengeInformation = ({ t, dispatch, challenge, user, client }: Challeng
             </Box>
         </SwipeableDialog>
 
-        <AlertSnackbar alertInfo={alertInfo} autoHideDuration={1500} close={() => setAlertInfo(null)} />
+        <AlertSnackbar alertInfo={alertInfo} autoHideDuration={4000} close={() => setAlertInfo(null)}/>
     </Grid>
 }
 

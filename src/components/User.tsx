@@ -5,6 +5,7 @@ import {
     Button,
     CircularProgress,
     Container,
+    DialogContent,
     Fab,
     Grid,
     List,
@@ -23,7 +24,7 @@ import CustomAppBar from "./AppBar";
 import {useSelector} from "react-redux";
 import React, {useEffect, useState} from "react";
 import {AppDispatch, RootState, useAppDispatch} from "../redux/store";
-import {TABLE_USER} from "../constants";
+import {BOTTOM_NAV_OPTION_1, BOTTOM_NAV_OPTION_2, TABLE_USER} from "../constants";
 import {AlertSnackbar} from "./AlertSnackbar";
 import {Group, NotificationTags, User} from "src/types/supabaseTypes";
 import {SupabaseClient} from "@supabase/supabase-js";
@@ -52,6 +53,9 @@ import {SupabaseEventRepository} from "../repository/EventRepository";
 import {requestNotificationPermission} from "../hooks/useFirebase";
 import {messaging} from "../firebase/firebaseConfig";
 import {Database} from "../types/supabase-generated.types";
+import {BottomNavigationItem} from "../types/types";
+import {SwipeableDialog} from "./SwipeableDialog";
+import {Ability, can} from "../utils/PermissionService";
 
 type UserScreenProps = {
     user: User,
@@ -127,6 +131,12 @@ const UserScreen = ({user, client, dispatch, groups}: UserScreenProps) => {
     const [surName, setSueName] = useState(user.displayName.split(" ")[1] ?? "");
     const [loadingSave, setLoadingSave] = useState(false);
     const {updatingNotificationTags} = useSelector((state: RootState) => state.application);
+    const [bottomNavigationOption1, setBottomNavigationOption1]
+        = useState<BottomNavigationItem>(localStorage.getItem(BOTTOM_NAV_OPTION_1) as BottomNavigationItem ?? "training");
+    const [bottomNavigationOption2, setBottomNavigationOption2]
+        = useState<BottomNavigationItem>(localStorage.getItem(BOTTOM_NAV_OPTION_2) as BottomNavigationItem ?? "drinks");
+    const [bottomNavigationOption1Open, setBottomNavigationOption1Open] = useState<boolean>(false);
+    const [bottomNavigationOption2Open, setBottomNavigationOption2Open] = useState<boolean>(false);
 
     const handleSubmit = async () => {
         setLoadingSave(true);
@@ -221,6 +231,19 @@ const UserScreen = ({user, client, dispatch, groups}: UserScreenProps) => {
         event.target.files = null;
         event.target.value = '';
     };
+
+    const translateBottomNavigation = (item: BottomNavigationItem) => {
+        switch (item) {
+            case "challenges":
+                return "Challenges";
+            case "drinks":
+                return "Getränke";
+            case "training":
+                return "Training";
+            default:
+                return "";
+        }
+    }
 
     return <Grid
         width="100%">
@@ -373,6 +396,23 @@ const UserScreen = ({user, client, dispatch, groups}: UserScreenProps) => {
                     </ListItemButton>
                 }
             </List>
+            <List subheader={<ListSubheader
+                sx={{
+                    zIndex: "-1",
+                    fontWeight: "bold",
+                    lineHeight: "normal",
+                    my: 2,
+                    pl: 0
+                }}>Bottom Navigation</ListSubheader>}>
+                <ListItemButton onClick={() => setBottomNavigationOption1Open(true)}>
+                    <ListItemText primary={translateBottomNavigation(bottomNavigationOption1)}
+                                  secondary={"Erster Navigationspunkt"}/>
+                </ListItemButton>
+                <ListItemButton onClick={() => setBottomNavigationOption2Open(true)}>
+                    <ListItemText primary={translateBottomNavigation(bottomNavigationOption2)}
+                                  secondary={"Zweiter Navigationspunkt"}/>
+                </ListItemButton>
+            </List>
             {
                 (user.displayName !== ([firstName.trim(), surName.trim()].filter(x => x !== "").join(" "))
                     || croppedImage || (user.avatarUrl !== null && currentUser.avatarUrl === null)) &&
@@ -385,6 +425,7 @@ const UserScreen = ({user, client, dispatch, groups}: UserScreenProps) => {
                 </Fab>
             }
         </List>
+
         {
             (selectedImage && typeof (selectedImage) === "string") && <CropImageDialog
                 open={cropImageDialogOpen}
@@ -395,6 +436,47 @@ const UserScreen = ({user, client, dispatch, groups}: UserScreenProps) => {
                     setCropImageDialogOpen(false);
                 }}/>
         }
+
+        <SwipeableDialog open={bottomNavigationOption1Open} setOpen={setBottomNavigationOption1Open} title={"Auswahl"}
+                         onClose={() => setBottomNavigationOption1Open(false)}>
+            <DialogContent>
+                <List>
+                    {
+                        ["training", "drinks", "challenges"]
+                            .filter(x => can("view", x as Ability[1]))
+                            .filter(x => x !== bottomNavigationOption2).map(x =>
+                            <ListItemButton onClick={() => {
+                                setBottomNavigationOption1(x as BottomNavigationItem);
+                                localStorage.setItem(BOTTOM_NAV_OPTION_1, x);
+                                setBottomNavigationOption1Open(false);
+                            }}>
+                                <ListItemText primary={translateBottomNavigation(x as BottomNavigationItem)}/>
+                            </ListItemButton>)
+                    }
+                </List>
+            </DialogContent>
+        </SwipeableDialog>
+
+        <SwipeableDialog open={bottomNavigationOption2Open} setOpen={setBottomNavigationOption2Open} title={"Auswahl"}
+                         onClose={() => setBottomNavigationOption2Open(false)}>
+            <DialogContent>
+                <List>
+                    {
+                        ["training", "drinks", "challenges"]
+                            .filter(x => can("view", x as Ability[1]))
+                            .filter(x => x !== bottomNavigationOption1).map(x =>
+                            <ListItemButton onClick={() => {
+                                setBottomNavigationOption2(x as BottomNavigationItem);
+                                localStorage.setItem(BOTTOM_NAV_OPTION_2, x);
+                                setBottomNavigationOption2Open(false);
+                            }}>
+                                <ListItemText primary={translateBottomNavigation(x as BottomNavigationItem)}/>
+                            </ListItemButton>)
+                    }
+                </List>
+            </DialogContent>
+        </SwipeableDialog>
+
         <Snackbar sx={{position: "fixed", right: "16px", bottom: "76px"}} open={errorSnackbar.open}
                   autoHideDuration={5000} onClose={() => setErrorSnackbar({message: "", open: false})}>
             <Alert severity={errorSnackbar.severity ?? "error"} sx={{width: '100%'}}>
