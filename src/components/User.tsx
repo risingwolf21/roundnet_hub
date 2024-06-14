@@ -35,10 +35,13 @@ import {
     DeleteOutline,
     EditOutlined,
     EmailOutlined,
+    EmojiEvents,
     FiberManualRecord,
+    Liquor,
     NotificationsRounded,
     PersonOutlineOutlined,
-    Save
+    Save,
+    SportsHandball
 } from "@mui/icons-material";
 import {dataURLtoFile, readFile} from "src/utils";
 import {captureException} from "@sentry/react";
@@ -245,6 +248,19 @@ const UserScreen = ({user, client, dispatch, groups}: UserScreenProps) => {
         }
     }
 
+    const iconForBottomNavigation = (item: BottomNavigationItem) => {
+        switch (item) {
+            case "challenges":
+                return <EmojiEvents/>;
+            case "drinks":
+                return <Liquor/>
+            case "training":
+                return <SportsHandball/>
+            default:
+                return "";
+        }
+    }
+
     return <Grid
         width="100%">
         <CustomAppBar navigateBack={true} title="Profil" onLogout={() => client.auth.signOut()}/>
@@ -405,10 +421,16 @@ const UserScreen = ({user, client, dispatch, groups}: UserScreenProps) => {
                     pl: 0
                 }}>Bottom Navigation</ListSubheader>}>
                 <ListItemButton onClick={() => setBottomNavigationOption1Open(true)}>
+                    <ListItemAvatar>
+                        {iconForBottomNavigation(bottomNavigationOption1)}
+                    </ListItemAvatar>
                     <ListItemText primary={translateBottomNavigation(bottomNavigationOption1)}
                                   secondary={"Erster Navigationspunkt"}/>
                 </ListItemButton>
                 <ListItemButton onClick={() => setBottomNavigationOption2Open(true)}>
+                    <ListItemAvatar>
+                        {iconForBottomNavigation(bottomNavigationOption2)}
+                    </ListItemAvatar>
                     <ListItemText primary={translateBottomNavigation(bottomNavigationOption2)}
                                   secondary={"Zweiter Navigationspunkt"}/>
                 </ListItemButton>
@@ -450,6 +472,9 @@ const UserScreen = ({user, client, dispatch, groups}: UserScreenProps) => {
                                 localStorage.setItem(BOTTOM_NAV_OPTION_1, x);
                                 setBottomNavigationOption1Open(false);
                             }}>
+                                <ListItemAvatar>
+                                    {iconForBottomNavigation(x as BottomNavigationItem)}
+                                </ListItemAvatar>
                                 <ListItemText primary={translateBottomNavigation(x as BottomNavigationItem)}/>
                             </ListItemButton>)
                     }
@@ -470,6 +495,9 @@ const UserScreen = ({user, client, dispatch, groups}: UserScreenProps) => {
                                 localStorage.setItem(BOTTOM_NAV_OPTION_2, x);
                                 setBottomNavigationOption2Open(false);
                             }}>
+                                <ListItemAvatar>
+                                    {iconForBottomNavigation(x as BottomNavigationItem)}
+                                </ListItemAvatar>
                                 <ListItemText primary={translateBottomNavigation(x as BottomNavigationItem)}/>
                             </ListItemButton>)
                     }
