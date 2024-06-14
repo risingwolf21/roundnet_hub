@@ -1,4 +1,14 @@
-import {AccountCircle, EmojiEvents, Euro, History, Info, Key, Notifications} from "@mui/icons-material";
+import {
+    AccountCircle,
+    EmojiEvents,
+    Euro,
+    History,
+    Info,
+    Key,
+    Liquor,
+    Notifications,
+    SportsHandball
+} from "@mui/icons-material";
 import {Avatar, Badge, Box, List, ListItem, ListItemAvatar, ListItemButton, ListItemText} from "@mui/material";
 import {TFunction} from "i18next";
 import React, {ReactElement} from "react";
@@ -101,6 +111,28 @@ const Browse = ({t}: { t: TFunction }) => {
                         </Avatar>
                     </ListItemAvatar>
                     <ListItemText primary={t("browse.history")}/>
+                </ListItemButton>
+            }
+            {
+                can("view", "drink") &&
+                <ListItemButton key={"drinks"} onClick={() => navigate("/drinks")} sx={{mt: 1}}>
+                    <ListItemAvatar>
+                        <Avatar sx={{background: "#88AEBF", width: 40, height: 40, borderRadius: 2}}>
+                            <Liquor/>
+                        </Avatar>
+                    </ListItemAvatar>
+                    <ListItemText primary={t("navigation.drinks")}/>
+                </ListItemButton>
+            }
+            {
+                can("view", "training") &&
+                <ListItemButton key={"training"} onClick={() => navigate("/training")} sx={{mt: 1}}>
+                    <ListItemAvatar>
+                        <Avatar sx={{background: "#88AEBF", width: 40, height: 40, borderRadius: 2}}>
+                            <SportsHandball/>
+                        </Avatar>
+                    </ListItemAvatar>
+                    <ListItemText primary={t("navigation.training")}/>
                 </ListItemButton>
             }
             {

@@ -55,6 +55,7 @@ import {messaging} from "../firebase/firebaseConfig";
 import {Database} from "../types/supabase-generated.types";
 import {BottomNavigationItem} from "../types/types";
 import {SwipeableDialog} from "./SwipeableDialog";
+import {Ability, can} from "../utils/PermissionService";
 
 type UserScreenProps = {
     user: User,
@@ -441,7 +442,9 @@ const UserScreen = ({user, client, dispatch, groups}: UserScreenProps) => {
             <DialogContent>
                 <List>
                     {
-                        ["training", "drinks", "challenges"].filter(x => x !== bottomNavigationOption2).map(x =>
+                        ["training", "drinks", "challenges"]
+                            .filter(x => can("view", x as Ability[1]))
+                            .filter(x => x !== bottomNavigationOption2).map(x =>
                             <ListItemButton onClick={() => {
                                 setBottomNavigationOption1(x as BottomNavigationItem);
                                 localStorage.setItem(BOTTOM_NAV_OPTION_1, x);
@@ -459,7 +462,9 @@ const UserScreen = ({user, client, dispatch, groups}: UserScreenProps) => {
             <DialogContent>
                 <List>
                     {
-                        ["training", "drinks", "challenges"].filter(x => x !== bottomNavigationOption1).map(x =>
+                        ["training", "drinks", "challenges"]
+                            .filter(x => can("view", x as Ability[1]))
+                            .filter(x => x !== bottomNavigationOption1).map(x =>
                             <ListItemButton onClick={() => {
                                 setBottomNavigationOption2(x as BottomNavigationItem);
                                 localStorage.setItem(BOTTOM_NAV_OPTION_2, x);
