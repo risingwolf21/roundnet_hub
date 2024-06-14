@@ -1,8 +1,8 @@
-import { createAsyncThunk, createEntityAdapter, createSlice, PayloadAction, Update } from "@reduxjs/toolkit";
-import { RootState } from "./store";
-import { ChallengeRepository } from "../repository/ChallengeRepository";
-import { ChallengeStatWithUser, FullChallenge } from "../types/supabaseTypes";
-import { TablesInsert, TablesUpdate } from "../types/supabase-generated.types";
+import {createAsyncThunk, createEntityAdapter, createSlice, PayloadAction, Update} from "@reduxjs/toolkit";
+import {RootState} from "./store";
+import {ChallengeRepository} from "../repository/ChallengeRepository";
+import {ChallengeStatWithUser, FullChallenge} from "../types/supabaseTypes";
+import {TablesUpdate} from "../types/supabase-generated.types";
 
 const challengeAdapter = createEntityAdapter({
     selectId: (challenge: FullChallenge) => challenge.id
@@ -84,7 +84,7 @@ const challengeSlice = createSlice({
         onChallengeInsert: (state, action: PayloadAction<FullChallenge | null>) => {
             if (!action.payload)
                 return;
-            challengeAdapter.addOne(state, action.payload);
+            challengeAdapter.upsertOne(state, action.payload);
         },
         onChallengeDelete: (state, action: PayloadAction<number>) => {
             challengeAdapter.removeOne(state, action.payload)
@@ -138,12 +138,14 @@ export const fetchChallengesAsync = createAsyncThunk("fetchChallengesAsync", asy
     return response.data?.map(x => {
         return {
             ...x,
-            stats: x.stats.sort((a, b) => a.count < b.count ? 1 : -1)
+            stats: [
+                ...x.stats.reduce(reduceChallengeStats, new Map<string, ChallengeStatWithUser>()).values()
+            ].sort(sortChallengeStats)
         }
     }) ?? [];
 });
 
-export const fetchChallengeStatsSingleAsync = createAsyncThunk("fetchChallengeStatsSingleAsync", async ({ challengeId }: {
+export const fetchChallengeStatsSingleAsync = createAsyncThunk("fetchChallengeStatsSingleAsync", async ({challengeId}: {
     challengeId: string
 }) => {
     const response = await ChallengeRepository.fetchChallengeStats(challengeId);
@@ -151,11 +153,37 @@ export const fetchChallengeStatsSingleAsync = createAsyncThunk("fetchChallengeSt
         challengeId,
         data: {
             ...response.data,
-            stats: response.data?.stats.sort((a, b) => a.count < b.count ? 1 : -1)
+            stats: [
+                ...response.data?.stats?.reduce(reduceChallengeStats, new Map<string, ChallengeStatWithUser>()).values() ?? []
+            ].sort(sortChallengeStats)
         }
     }
 });
 
-export const { onChallengeStatsUpdate, onChallengeStatsInsert, onChallengeStatsDelete, onChallengeDelete, onChallengeInsert, onChallengeUpdate } = challengeSlice.actions;
+const sortChallengeStats = (a: ChallengeStatWithUser, b: ChallengeStatWithUser) => {
+    return a.count < b.count ? 1 : -1
+}
+
+const reduceChallengeStats = (acc: Map<string, ChallengeStatWithUser>, curr: ChallengeStatWithUser) => {
+    let x = acc.get(curr.user.userId);
+    if (x) {
+        acc.set(curr.user.userId, {
+            ...x,
+            count: x.count + curr.count
+        })
+    } else {
+        acc.set(curr.user.userId, curr);
+    }
+    return acc;
+}
+
+export const {
+    onChallengeStatsUpdate,
+    onChallengeStatsInsert,
+    onChallengeStatsDelete,
+    onChallengeDelete,
+    onChallengeInsert,
+    onChallengeUpdate
+} = challengeSlice.actions;
 
 export default challengeSlice.reducer;
