@@ -1,4 +1,4 @@
-import {AdminPanelSettings, Liquor, List, Notifications, SportsHandball} from "@mui/icons-material";
+import {AdminPanelSettings, EmojiEvents, Liquor, List, SportsHandball} from "@mui/icons-material";
 import {Badge, BottomNavigation, BottomNavigationAction, Paper} from "@mui/material";
 import {TFunction} from "i18next";
 import React, {SyntheticEvent, useEffect, useState} from "react";
@@ -9,7 +9,8 @@ import {can} from "src/utils/PermissionService";
 import {onModeChange} from "../redux/applicationSlice";
 import {RootState} from "../redux/store";
 import {notificationsSelector} from "../redux/notificationsSlice";
-import {HOMEPAGE} from "../constants";
+import {BOTTOM_NAV_OPTION_1, BOTTOM_NAV_OPTION_2, HOMEPAGE} from "../constants";
+import {BottomNavigationItem} from "../types/types";
 
 const CustomBottomNavigation = ({t}: { t: TFunction }) => {
 
@@ -19,6 +20,9 @@ const CustomBottomNavigation = ({t}: { t: TFunction }) => {
     const notifications = useSelector((state: RootState) => notificationsSelector.selectAll(state));
     const {user} = useSelector((state: RootState) => state.application);
     const [tab, setTab] = useState<string>(HOMEPAGE);
+
+    let bottomNavigation1: BottomNavigationItem = localStorage.getItem(BOTTOM_NAV_OPTION_1) as BottomNavigationItem ?? "training";
+    let bottomNavigation2: BottomNavigationItem = localStorage.getItem(BOTTOM_NAV_OPTION_2) as BottomNavigationItem ?? "drinks";
 
     useEffect(() => {
         setTab(window.location.pathname.substring(1));
@@ -30,6 +34,27 @@ const CustomBottomNavigation = ({t}: { t: TFunction }) => {
         dispatch(onModeChange(newValue));
     }
 
+    const drinks = () => <BottomNavigationAction
+        key={"drinks"}
+        value={"drinks"}
+        aria-selected={tab === "drinks"}
+        label={t("navigation.drinks")}
+        icon={<Liquor/>}/>
+
+    const training = () => <BottomNavigationAction
+        key={"training"}
+        value={"training"}
+        aria-selected={tab === "training"}
+        label={t("navigation.training")}
+        icon={<SportsHandball/>}/>
+
+    const challenges = () => <BottomNavigationAction
+        key={"challenges"}
+        value={"challenges"}
+        aria-selected={tab === "challenges"}
+        label={t("navigation.challenges")}
+        icon={<EmojiEvents/>}/>
+
     if (!user)
         return null;
 
@@ -38,20 +63,22 @@ const CustomBottomNavigation = ({t}: { t: TFunction }) => {
             value={tab}
             onChange={handleChange}>
             {
-                can("view", "training") && <BottomNavigationAction
-                    key={"training"}
-                    value={"training"}
-                    aria-selected={tab === "training"}
-                    label={t("navigation.training")}
-                    icon={<SportsHandball/>}/>
+                bottomNavigation1 === "training" && can("view", "training") && training()
             }
             {
-                can("view", "drink") && <BottomNavigationAction
-                    key={"drinks"}
-                    value={"drinks"}
-                    aria-selected={tab === "drinks"}
-                    label={t("navigation.drinks")}
-                    icon={<Liquor/>}/>
+                bottomNavigation1 === "drinks" && can("view", "drink") && drinks()
+            }
+            {
+                bottomNavigation1 === "challenges" && can("view", "challenges") && challenges()
+            }
+            {
+                bottomNavigation2 === "training" && can("view", "training") && training()
+            }
+            {
+                bottomNavigation2 === "drinks" && can("view", "drink") && drinks()
+            }
+            {
+                bottomNavigation2 === "challenges" && can("view", "challenges") && challenges()
             }
             {
                 can("view", "browse") && <BottomNavigationAction
