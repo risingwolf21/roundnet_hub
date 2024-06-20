@@ -119,7 +119,7 @@ export const adminDrinksSlice = createSlice({
     }
 });
 
-export const fetchDrinksAsync = createAsyncThunk("adminDrinks", (_, {rejectWithValue}) => {
+export const fetchDrinksAsync = createAsyncThunk("adminDrinks", async (_, {rejectWithValue}) => {
     try {
         const response = await AdminDrinksRepository.fetchDrinks();
         return response?.data ?? [];
