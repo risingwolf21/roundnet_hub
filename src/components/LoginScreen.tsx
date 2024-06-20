@@ -11,6 +11,7 @@ import Logo from "../images/Karlsruher_Kojoten_Logo.svg";
 import {supabase} from "./services/supabase/supabaseClient";
 import {TABLE_USER} from "../constants";
 import {AuthViewType} from "./AuthScreen";
+import {CircularProgress} from "@mui/material";
 
 type Credentials = {
     email: string,
@@ -24,21 +25,27 @@ type LoginProps = {
 const LoginScreen = ({setAuthView}: LoginProps) => {
 
     const [errorMessage, setErrorMessage] = useState("");
+    const [loginInProgress, setLoginInProgress] = useState(false);
 
     const onLogin = async (credentials: Credentials) => {
+        setErrorMessage("");
+        setLoginInProgress(true)
         const {data, error} = await supabase.auth.signInWithPassword({
             email: credentials.email,
             password: credentials.password
         });
-        if (error)
+        if (error) {
             setErrorMessage(error.message);
-        else
+            setLoginInProgress(false);
+        } else
             supabase.from(TABLE_USER).select().eq("userId", data.user.id).then(async res => {
                 if (res.data && res.data.length === 1) {
                     await supabase.auth.updateUser({
                         data: {role: res.data[0].role}
                     });
                 }
+                setErrorMessage("");
+                setLoginInProgress(false);
             })
     }
 
@@ -98,11 +105,14 @@ const LoginScreen = ({setAuthView}: LoginProps) => {
                     <Button
                         type="submit"
                         fullWidth
+                        disabled={loginInProgress}
                         color='secondary'
                         variant="contained"
                         sx={{mt: 3, mb: 2}}
                     >
-                        Einloggen
+                        {
+                            loginInProgress ? <CircularProgress/> : "Einloggen"
+                        }
                     </Button>
                     <Grid container>
                         <Grid item xs>
