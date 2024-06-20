@@ -1,6 +1,6 @@
 import {createAsyncThunk, createSlice} from '@reduxjs/toolkit';
 import {UserWithGroups} from '../types/supabaseTypes';
-import {IAdminUsersRepository} from 'src/repository/IAdminUsersRepository';
+import {AdminUsersRepository} from 'src/repository/AdminUsersRepository';
 import {captureException} from "@sentry/react";
 
 type AdminUsersSliceState = {
@@ -55,9 +55,9 @@ export const adminUsersSlice = createSlice({
     }
 });
 
-export const fetchAdminUsersAsync = createAsyncThunk("fetchAdminUsersAsync", async (repository: IAdminUsersRepository, {rejectWithValue}) => {
+export const fetchAdminUsersAsync = createAsyncThunk("fetchAdminUsersAsync", async (_, {rejectWithValue}) => {
     try {
-        const response = await repository.fetchAllUsersWithGroups();
+        const response = await AdminUsersRepository.fetchAllUsersWithGroups();
         return (response.data?.map((x: any) => {
             return {
                 ...x,
@@ -70,9 +70,9 @@ export const fetchAdminUsersAsync = createAsyncThunk("fetchAdminUsersAsync", asy
     }
 });
 
-export const fetchNotVerifiedUsersAsync = createAsyncThunk("fetchNotVerifiedUsersAsync", async (repository: IAdminUsersRepository, {rejectWithValue}) => {
+export const fetchNotVerifiedUsersAsync = createAsyncThunk("fetchNotVerifiedUsersAsync", async (_, {rejectWithValue}) => {
     try {
-        const response = await repository.fetchNotVerifiedUsers();
+        const response = await AdminUsersRepository.fetchNotVerifiedUsers();
         return response.data ?? [];
     } catch (e) {
         captureException(e);

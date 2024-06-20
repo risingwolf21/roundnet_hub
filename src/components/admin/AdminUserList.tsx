@@ -29,8 +29,6 @@ import {
 import React, {Fragment, useEffect, useState} from "react";
 import {useSelector} from "react-redux";
 import {useNavigate} from "react-router-dom";
-import {useDependency} from "src/hooks/useDependency";
-import {IAdminUsersRepository} from "src/repository/IAdminUsersRepository";
 import {fetchAdminUsersAsync} from "../../redux/adminUserSlice";
 import {RootState, useAppDispatch} from "../../redux/store";
 import {User, UserWithGroups} from "../../types/supabaseTypes";
@@ -39,6 +37,7 @@ import {Error} from "../Error";
 import {Search, SearchIconWrapper, StyledInputBase} from "../SearchBar";
 import EditUserDialog, {UserEdited} from "./EditUserDialog";
 import {captureException} from "@sentry/react";
+import {AdminUsersRepository} from "../../repository/AdminUsersRepository";
 
 const AdminUserItem = ({user, onEditClick}: { user: User, onEditClick: () => void }) => {
     let color = "rgba(0, 0, 0, 0.54)";
@@ -73,22 +72,7 @@ const AdminUserItem = ({user, onEditClick}: { user: User, onEditClick: () => voi
         </ListItemSecondaryAction>
     </ListItem>
 }
-
-const AdminUserListProvider = () => {
-    const adminUsersRepository = useDependency<IAdminUsersRepository>("IAdminUsersRepository");
-
-    if (!adminUsersRepository)
-        return <AlertSnackbar close={() => {
-        }} alertInfo={{message: "Fatal error occured. Repository or user was null!", severity: "error"}}/>
-
-    return <AdminUserList repository={adminUsersRepository}/>
-}
-
-type AdminUserListProps = {
-    repository: IAdminUsersRepository,
-}
-
-const AdminUserList = ({repository}: AdminUserListProps) => {
+const AdminUserList = () => {
 
     const [editUserOpen, setEditUserOpen] = useState(false);
     const [currentUser, setCurrentUser] = useState<UserWithGroups | null>();
@@ -99,8 +83,8 @@ const AdminUserList = ({repository}: AdminUserListProps) => {
     const [alertInfo, setAlertInfo] = useState<AlertMessage | null>(null);
 
     useEffect(() => {
-        dispatch(fetchAdminUsersAsync(repository));
-    }, [dispatch, repository]);
+        dispatch(fetchAdminUsersAsync());
+    }, [dispatch]);
 
     const {users, loading, error} = useSelector((state: RootState) => state.adminUsers);
 
@@ -110,7 +94,7 @@ const AdminUserList = ({repository}: AdminUserListProps) => {
     }
 
     const deleteUser = async (user: User) => {
-        repository.deactivateUser(user).then(() => {
+        AdminUsersRepository.deactivateUser(user).then(() => {
             setAlertInfo({message: `Successfully deactivated user ${user.email}`, severity: "success"});
         }).catch(error => {
             captureException(error);
@@ -119,9 +103,9 @@ const AdminUserList = ({repository}: AdminUserListProps) => {
     }
 
     const onUserEditFinished = async (result: UserEdited) => {
-        await repository.updateUser(result);
+        await AdminUsersRepository.updateUser(result);
         setEditUserOpen(false);
-        dispatch(fetchAdminUsersAsync(repository));
+        dispatch(fetchAdminUsersAsync());
     }
 
     if (error)
@@ -153,7 +137,7 @@ const AdminUserList = ({repository}: AdminUserListProps) => {
                     />
                 </Search>
 
-                <IconButton color="inherit" onClick={() => dispatch(fetchAdminUsersAsync(repository))}>
+                <IconButton color="inherit" onClick={() => dispatch(fetchAdminUsersAsync())}>
                     <Refresh/>
                 </IconButton>
             </Toolbar>
@@ -188,4 +172,4 @@ const AdminUserList = ({repository}: AdminUserListProps) => {
     </Grid>);
 }
 
-export default AdminUserListProvider;
+export default AdminUserList;
