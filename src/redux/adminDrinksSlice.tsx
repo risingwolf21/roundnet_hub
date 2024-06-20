@@ -1,6 +1,6 @@
 import {createAsyncThunk, createSlice, PayloadAction} from '@reduxjs/toolkit';
 import {Drink, FullHistory} from '../types/supabaseTypes';
-import {IAdminDrinksRepository} from '../repository/IAdminDrinksRepository';
+import {AdminDrinksRepository} from '../repository/AdminDrinksRepository';
 import {compareById} from '../utils';
 import {captureException} from '@sentry/react';
 
@@ -119,9 +119,9 @@ export const adminDrinksSlice = createSlice({
     }
 });
 
-export const fetchDrinksAsync = createAsyncThunk("adminDrinks", async (repository: IAdminDrinksRepository, {rejectWithValue}) => {
+export const fetchDrinksAsync = createAsyncThunk("adminDrinks", (_, {rejectWithValue}) => {
     try {
-        const response = await repository.fetchDrinks();
+        const response = await AdminDrinksRepository.fetchDrinks();
         return response?.data ?? [];
     } catch (error) {
         captureException(error);
@@ -130,18 +130,16 @@ export const fetchDrinksAsync = createAsyncThunk("adminDrinks", async (repositor
 });
 
 type Props = {
-    repository: IAdminDrinksRepository,
     page: number,
     count: number
 }
 
 export const fetchAdminHistoryAsync = createAsyncThunk("adminHistory", async ({
-                                                                                  repository,
                                                                                   page = 0,
                                                                                   count = 20
                                                                               }: Props, {rejectWithValue}) => {
     try {
-        const response = await repository.fetchAdminHistory(page, count);
+        const response = await AdminDrinksRepository.fetchAdminHistory(page, count);
         return {
             entries: response?.data ?? [],
             more: page !== 0
