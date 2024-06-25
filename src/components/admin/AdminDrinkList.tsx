@@ -24,7 +24,6 @@ import {
 import _ from "lodash";
 import React, {useEffect, useState} from "react";
 import {useSelector} from "react-redux";
-import {useDependency} from "../../hooks/useDependency";
 import {fetchDrinksAsync} from "../../redux/adminDrinksSlice";
 import {RootState, useAppDispatch} from "../../redux/store";
 import {Drink} from "../../types/supabaseTypes";
@@ -79,22 +78,9 @@ const EMPTY_DRINK: Drink =
         type: "Drink"
     };
 
-const AdminDrinkListProvider = () => {
+const AdminDrinkList = () => {
+
     const {drinks, drinksError, drinksLoading} = useSelector((state: RootState) => state.adminDrinks);
-
-    return <AdminDrinkList
-        drinks={drinks}
-        drinksError={drinksError}
-        drinksLoading={drinksLoading}/>
-}
-
-type AdminDrinkListProps = {
-    drinks: Drink[],
-    drinksError: string,
-    drinksLoading: boolean
-}
-
-const AdminDrinkList = ({ drinks, drinksError, drinksLoading}: AdminDrinkListProps) => {
 
     const dispatch = useAppDispatch();
     const [open, setOpen] = useState(false);
@@ -219,4 +205,4 @@ const AdminDrinkList = ({ drinks, drinksError, drinksLoading}: AdminDrinkListPro
     </Grid>);
 }
 
-export default AdminDrinkListProvider;
+export default AdminDrinkList;
