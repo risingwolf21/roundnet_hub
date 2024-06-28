@@ -160,7 +160,7 @@ const DrinkListScreen = ({user, drinks, drinksLoading, drinksError, dispatch}: D
             </List>
         </SwipeableDialog>
 
-        <AlertSnackbar autoHideDuration={1500} close={() => setAlertInfo(null)} alertInfo={alertInfo}/>
+        <AlertSnackbar close={() => setAlertInfo(null)} alertInfo={alertInfo}/>
 
     </Box>
 }

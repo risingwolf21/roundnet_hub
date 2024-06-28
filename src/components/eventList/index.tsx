@@ -20,12 +20,18 @@ import {updateAttendanceAsync} from 'src/redux/events/eventAttendanceSlice';
 import {can} from "../../utils/PermissionService";
 import {TablesUpdate} from "../../types/supabase-generated.types";
 import {t} from "i18next";
+import {AlertMessage, AlertSnackbar} from "../AlertSnackbar";
 
 const EventScreen = ({events, loading, error, endReached, user}: EventScreenProps) => {
     const client = useClient();
     const dispatch = useAppDispatch();
     const navigate = useNavigate();
     const [fetchEventMode, setFetchEventMode] = useState<"upcoming" | "past">("upcoming");
+    const [alertInfo, setAlertInfo] = useState<AlertMessage | null>(null);
+
+    useEffect(() => {
+        setAlertInfo(error ? {message: error, severity: "error"} : null);
+    }, [error]);
 
     useEffect(() => {
         let subscription = client.channel("public:events")
@@ -51,7 +57,6 @@ const EventScreen = ({events, loading, error, endReached, user}: EventScreenProp
     }, [dispatch, user]);
 
     const fetchEvents = (mode: "upcoming" | "past", page: number, count: number) => {
-        console.log("fetching events with", mode, page, count)
         if (mode === "upcoming")
             dispatch(fetchUpcomingEventsAsync({user, page, count}));
         else
@@ -59,7 +64,6 @@ const EventScreen = ({events, loading, error, endReached, user}: EventScreenProp
     }
 
     const switchEventFetching = (mode: "upcoming" | "past") => {
-        console.log("switch from", fetchEventMode, "to", mode)
         setFetchEventMode(mode);
         fetchEvents(mode, 0, 20);
     }
@@ -111,13 +115,7 @@ const EventScreen = ({events, loading, error, endReached, user}: EventScreenProp
             </Fab>
         }
 
-        {
-            error && <Snackbar sx={{position: "fixed", right: "16px",}} open={true}>
-                <Alert severity={"error"} sx={{width: '100%'}} onClose={() => dispatch(onEventErrorRead(null))}>
-                    {error}
-                </Alert>
-            </Snackbar>
-        }
+        <AlertSnackbar alertInfo={alertInfo} close={() => dispatch(onEventErrorRead(null))}/>
     </Grid>);
 }
 
