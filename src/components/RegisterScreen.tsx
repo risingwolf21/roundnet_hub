@@ -12,6 +12,7 @@ import {supabase} from "./services/supabase/supabaseClient";
 import {captureException} from "@sentry/react";
 import {RegistrationError} from "../utils";
 import {AuthViewType} from "./AuthScreen";
+import {AlertMessage, AlertSnackbar} from "./AlertSnackbar";
 
 type RegisterProps = {
     email: string,
@@ -25,7 +26,7 @@ type RegisterScreenProps = {
 
 const RegisterScreen = ({setAuthView}: RegisterScreenProps) => {
 
-    const [errorMessage, setErrorMessage] = useState("");
+    const [alertInfo, setAlertInfo] = useState<AlertMessage | null>(null);
 
     const onRegister = async ({email, password, displayName}: RegisterProps) => {
         const {error} = await supabase.auth.signUp({
@@ -48,7 +49,7 @@ const RegisterScreen = ({setAuthView}: RegisterScreenProps) => {
                 scope.setExtra("error", JSON.stringify(error));
                 return scope;
             })
-            setErrorMessage("Could not sign up user. [" + error?.message + "]");
+            setAlertInfo({message: "Could not sign up user. [" + error?.message + "]", severity: "error"});
         }
     }
 
@@ -62,11 +63,11 @@ const RegisterScreen = ({setAuthView}: RegisterScreenProps) => {
         const surname = data.get('surname')?.toString();
 
         if (!password || !password2 || (password !== password2)) {
-            setErrorMessage("Die Passwörter stimmen nicht überein.")
+            setAlertInfo({message: "Die Passwörter stimmen nicht überein.", severity: "error"});
         } else if (!email || !/^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$/.test(email)) {
-            setErrorMessage("Die angegebene Email-Adresse ist nicht korrekt.")
+            setAlertInfo({message: "Die angegebene Email-Adresse ist nicht korrekt.", severity: "error"});
         } else if (!name || !surname || name.length < 2 || surname.length < 2) {
-            setErrorMessage("Bitte gib deinen Vor-und Nachnamen an.")
+            setAlertInfo({message: "Bitte gib deinen Vor-und Nachnamen an.", severity: "error"});
         } else {
             onRegister({email, password, displayName: name.trim() + " " + surname.trim()})
         }
@@ -135,11 +136,6 @@ const RegisterScreen = ({setAuthView}: RegisterScreenProps) => {
                         type="password"
                         id="password2"
                     />
-                    {
-                        errorMessage && <Typography color="red">
-                            {errorMessage}
-                        </Typography>
-                    }
                     <Button
                         type="submit"
                         fullWidth
@@ -158,6 +154,7 @@ const RegisterScreen = ({setAuthView}: RegisterScreenProps) => {
                     </Grid>
                 </Box>
             </Box>
+            <AlertSnackbar alertInfo={alertInfo}/>
         </Container>
     );
 }

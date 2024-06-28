@@ -12,6 +12,7 @@ import {supabase} from "./services/supabase/supabaseClient";
 import {TABLE_USER} from "../constants";
 import {AuthViewType} from "./AuthScreen";
 import {CircularProgress} from "@mui/material";
+import {AlertMessage, AlertSnackbar} from "./AlertSnackbar";
 
 type Credentials = {
     email: string,
@@ -24,18 +25,18 @@ type LoginProps = {
 
 const LoginScreen = ({setAuthView}: LoginProps) => {
 
-    const [errorMessage, setErrorMessage] = useState("");
+    const [alertInfo, setAlertInfo] = useState<AlertMessage | null>(null);
     const [loginInProgress, setLoginInProgress] = useState(false);
 
     const onLogin = async (credentials: Credentials) => {
-        setErrorMessage("");
+        setAlertInfo(null);
         setLoginInProgress(true)
         const {data, error} = await supabase.auth.signInWithPassword({
             email: credentials.email,
             password: credentials.password
         });
         if (error) {
-            setErrorMessage(error.message);
+            setAlertInfo({message: error.message, severity: "error"});
             setLoginInProgress(false);
         } else
             supabase.from(TABLE_USER).select().eq("userId", data.user.id).then(async res => {
@@ -44,7 +45,7 @@ const LoginScreen = ({setAuthView}: LoginProps) => {
                         data: {role: res.data[0].role}
                     });
                 }
-                setErrorMessage("");
+                setAlertInfo(null);
                 setLoginInProgress(false);
             })
     }
@@ -57,7 +58,7 @@ const LoginScreen = ({setAuthView}: LoginProps) => {
         if (email && password) {
             onLogin({email, password});
         } else {
-            setErrorMessage("Email or Password is null.")
+            setAlertInfo({message: "Email or Password is null.", severity: "error"})
         }
     };
 
@@ -97,11 +98,6 @@ const LoginScreen = ({setAuthView}: LoginProps) => {
                         id="password"
                         autoComplete="current-password"
                     />
-                    {
-                        errorMessage && <Typography color="red">
-                            {errorMessage}
-                        </Typography>
-                    }
                     <Button
                         type="submit"
                         fullWidth
@@ -131,6 +127,7 @@ const LoginScreen = ({setAuthView}: LoginProps) => {
                     </Grid>
                 </Box>
             </Box>
+            <AlertSnackbar alertInfo={alertInfo}/>
         </Container>
     );
 }
