@@ -14,7 +14,6 @@ import {
     ListItemText,
     Menu,
     MenuItem,
-    Snackbar,
     Toolbar,
     Typography
 } from "@mui/material";
@@ -35,6 +34,7 @@ import EventInformationComments from "./EventInformationComments";
 import {EditEventOptionsDialog} from "./EditEventOptionsDialog";
 import {isBefore} from "date-fns";
 import {SupabaseEventRepository} from "../../repository/EventRepository";
+import {AlertMessage, AlertSnackbar} from "../AlertSnackbar";
 
 const EventInformation = ({
                               dispatch,
@@ -56,6 +56,11 @@ const EventInformation = ({
     const navigate = useNavigate();
     const inputRef = createRef<HTMLInputElement>();
     const [anchorEl, setAnchorEl] = useState<EventTarget & HTMLButtonElement | null>(null);
+    const [alertInfo, setAlertInfo] = useState<AlertMessage | null>(null);
+
+    useEffect(() => {
+        setAlertInfo(error ? {message: error, severity: "error"} : null);
+    }, [error]);
 
     useEffect(() => {
         dispatch(fetchEventAttendanceAsync({eventId: selectedEvent.id}));
@@ -322,11 +327,7 @@ const EventInformation = ({
                 }}
             />
         </Box>
-        <Snackbar sx={{position: "fixed", right: "16px",}} open={error !== null}>
-            <Alert severity={"error"} sx={{width: '100%'}} onClose={() => dispatch(onEventErrorRead(null))}>
-                {error}
-            </Alert>
-        </Snackbar>
+        <AlertSnackbar alertInfo={alertInfo} close={() => dispatch(onEventErrorRead(null))}/>
     </Box>
 }
 
