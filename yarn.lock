@@ -6804,16 +6804,6 @@ internal-slot@^1.0.4, internal-slot@^1.0.7:
   resolved "https://registry.yarnpkg.com/internmap/-/internmap-2.0.3.tgz#6685f23755e43c524e251d29cbc97248e3061009"
   integrity sha512-5Hh7Y1wQbvY5ooGgPbDaL5iYLAPzMTUrjMulskHLH6wnv/A+1q5rgEaiuqEjB+oxGXIVZs1FF+R/KPN3ZSQYYg==
 
-inversify-dts@^3.0.0:
-  version "3.0.0"
-  resolved "https://registry.yarnpkg.com/inversify-dts/-/inversify-dts-3.0.0.tgz#230aa0e64d97f07a17e2ed4d92c3cec6465429bc"
-  integrity sha512-PZk/8701Nj0uwnRbYQRlPokVltTxLHaYrTSQ7DMpXjS5KZXhhBalq4yv1OAgxyIo9ycVyxJppdy7wNt1/eKaQg==
-
-inversify@^6.0.1:
-  version "6.0.2"
-  resolved "https://registry.yarnpkg.com/inversify/-/inversify-6.0.2.tgz#dc7fa0348213d789d35ffb719dea9685570989c7"
-  integrity sha512-i9m8j/7YIv4mDuYXUAcrpKPSaju/CIly9AHK5jvCBeoiM/2KEsuCQTTP+rzSWWpLYWRukdXFSl6ZTk2/uumbiA==
-
 invert-kv@^1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/invert-kv/-/invert-kv-1.0.0.tgz#104a8e4aaca6d3d8cd157a8ef8bfab2d7a3ffdb6"

@@ -25,21 +25,21 @@ import {Item, ItemUpdate} from "../../types/supabaseTypes";
 import KeyIcon from "@mui/icons-material/Key";
 import {SupabaseKeysRepository} from "../../repository/KeysRepository";
 
-type EditOrAddKeyDialogProps = {
+type EditOrAddItemDialogProps = {
     open: boolean,
     handleClose: () => void,
-    keyToEdit: Item
+    itemToEdit: Item | null
 }
 
-export const EditOrAddKeyDialog = ({open, handleClose, keyToEdit}: EditOrAddKeyDialogProps) => {
+export const EditOrAddItemDialog = ({open, handleClose, itemToEdit}: EditOrAddItemDialogProps) => {
 
     const user = useSelector((state: RootState) => state.application.user);
     const [currentKey, setCurrentKey] = useState<ItemUpdate>({
-        id: keyToEdit.id,
-        name: keyToEdit.name,
-        color: keyToEdit.color,
-        current_holder: keyToEdit.current_holder,
-        type: keyToEdit.type
+        id: itemToEdit?.id,
+        name: itemToEdit?.name,
+        color: itemToEdit?.color,
+        current_holder: itemToEdit?.current_holder,
+        type: itemToEdit?.type
     });
     const [errorSnackbar, setErrorSnackbar] = useState<{
         open: boolean,
@@ -49,13 +49,13 @@ export const EditOrAddKeyDialog = ({open, handleClose, keyToEdit}: EditOrAddKeyD
 
     useEffect(() => {
         setCurrentKey({
-            id: keyToEdit.id,
-            name: keyToEdit.name,
-            color: keyToEdit.color,
-            current_holder: keyToEdit.current_holder,
-            type: keyToEdit.type
+            id: itemToEdit?.id,
+            name: itemToEdit?.name,
+            color: itemToEdit?.color,
+            current_holder: itemToEdit?.current_holder,
+            type: itemToEdit?.type
         })
-    }, [keyToEdit]);
+    }, [itemToEdit]);
 
     const handleSubmit = async () => {
         if (!currentKey.name || currentKey.name.length < 6) {
@@ -66,13 +66,22 @@ export const EditOrAddKeyDialog = ({open, handleClose, keyToEdit}: EditOrAddKeyD
             setErrorSnackbar({message: "Something went wrong. Try again later!", open: true});
             return;
         }
-        const result = await SupabaseKeysRepository.upsertItem({
-            id: currentKey.id,
-            name: currentKey.name,
-            color: currentKey.color,
-            type: currentKey.type,
-            current_holder: currentKey.current_holder
-        });
+        let result;
+        if (currentKey.id) {
+            result = await SupabaseKeysRepository.updateItem({
+                name: currentKey.name,
+                color: currentKey.color,
+                type: currentKey.type,
+                current_holder: currentKey.current_holder
+            }, currentKey.id);
+        } else {
+            result = await SupabaseKeysRepository.insertItem({
+                name: currentKey.name,
+                color: currentKey.color,
+                type: currentKey.type,
+                current_holder: currentKey.current_holder
+            });
+        }
         if (result.error) {
             setErrorSnackbar({message: result.error.message ?? "", open: true});
         } else {
@@ -97,7 +106,7 @@ export const EditOrAddKeyDialog = ({open, handleClose, keyToEdit}: EditOrAddKeyD
                         <CloseIcon/>
                     </IconButton>
                     <Typography sx={{ml: 2, flex: 1}} variant="h6" component="div">
-                        {`Schlüssel ${keyToEdit.id > 0 ? "bearbeiten" : "erstellen"}`}
+                        {`Schlüssel ${itemToEdit?.id > 0 ? "bearbeiten" : "erstellen"}`}
                     </Typography>
                     <Button variant="contained" sx={{background: "white", color: (theme) => theme.palette.primary.main}}
                             onClick={handleSubmit}>Speichern</Button>
@@ -116,14 +125,15 @@ export const EditOrAddKeyDialog = ({open, handleClose, keyToEdit}: EditOrAddKeyD
                     </ListItem>
                     <ListItem>
                         <ListItemAvatar>
-                            <Avatar sx={{background: currentKey.color, width: 40, height: 40, borderRadius: 2}}>
+                            <Avatar
+                                sx={{background: currentKey?.color ?? "#000", width: 40, height: 40, borderRadius: 2}}>
                                 <KeyIcon/>
                             </Avatar>
                         </ListItemAvatar>
                         <TextField
                             fullWidth
                             variant="outlined"
-                            value={currentKey.color}
+                            value={currentKey?.color ?? "#000"}
                             onChange={(e) => setCurrentKey({...currentKey, color: e.target.value})}
                             label="Farbe"
                             margin="normal"/>
@@ -132,11 +142,15 @@ export const EditOrAddKeyDialog = ({open, handleClose, keyToEdit}: EditOrAddKeyD
                         <ListItemAvatar>
                         </ListItemAvatar>
                         <Select fullWidth
-                                value={currentKey.type}
-                                onChange={(e) => setCurrentKey({...currentKey, type: e.target.value})}>
+                                value={currentKey?.type ?? "nothing"}
+                                onChange={(e) => setCurrentKey({
+                                    ...currentKey,
+                                    type: e.target.value === "nothing" ? null : e.target.value
+                                })}>
                             <MenuItem value={"mtvStorage"}>MTV Kellerschlüssel</MenuItem>
                             <MenuItem value={"mtvGym"}>MTV Gymschlüssel</MenuItem>
                             <MenuItem value={"mtvGymPalazzo"}>MTV Gym/Palazzoschlüssel</MenuItem>
+                            <MenuItem value={"nothing"}>Nichts</MenuItem>
                         </Select>
                     </ListItem>
                 </List>

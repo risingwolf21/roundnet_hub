@@ -33,14 +33,14 @@ import {LoadingIndicator} from "../LoadingIndicator";
 import {Search, SearchIconWrapper, StyledInputBase} from "../SearchBar";
 import {SwipeableDialog} from "../SwipeableDialog";
 import {can} from "../../utils/PermissionService";
-import {EditOrAddKeyDialog} from "./EditOrAddKeyDialog";
+import {EditOrAddItemDialog} from "./EditOrAddItemDialog";
 import EditIcon from "@mui/icons-material/Edit";
 import {TFunction} from "i18next";
 import {useTranslation} from "react-i18next";
-import {KeyHistoryDialog} from "./KeyHistoryDialog";
+import {ItemHistoryDialog} from "./ItemHistoryDialog";
 import {SupabaseKeysRepository} from "../../repository/KeysRepository";
 
-const KeyHolderScreenProvider = () => {
+const ItemHolderScreenProvider = () => {
     const {user} = useSelector((state: RootState) => state.application);
     const dispatch = useAppDispatch();
     const keyHolders = useSelector((state: RootState) => keyHoldersSelector.selectAll(state));
@@ -51,7 +51,7 @@ const KeyHolderScreenProvider = () => {
         return <AlertSnackbar close={() => {
         }} alertInfo={{message: "Fatal error occured. Repository or user was null!", severity: "error"}}/>
 
-    return <KeyHolderScreen
+    return <ItemHolderScreen
         t={t}
         dispatch={dispatch}
         user={user}
@@ -59,7 +59,7 @@ const KeyHolderScreenProvider = () => {
         keyHolders={keyHolders}/>
 }
 
-type KeyHolderScreenProps = {
+type ItemHolderScreenProps = {
     dispatch: AppDispatch,
     keyHolders: FullItemHolder[],
     loading: boolean,
@@ -67,18 +67,18 @@ type KeyHolderScreenProps = {
     t: TFunction
 }
 
-export const EMPTY_KEY = {name: "", color: "#000000", id: 0, created_at: "", current_holder: null, type: null};
+export const EMPTY_KEY = {name: "", color: "#000000", id: null, created_at: "", current_holder: null, type: null};
 
-const KeyHolderScreen = ({dispatch, keyHolders, loading, user, t}: KeyHolderScreenProps) => {
+const ItemHolderScreen = ({dispatch, keyHolders, loading, user, t}: ItemHolderScreenProps) => {
 
     const [searchUserOpen, setSearchUserOpen] = useState(false);
     const [addOrUpdateKeysOpen, setAddOrUpdateKeysOpen] = useState(false);
     const [selectedUser, setSelectedUser] = useState<User | null>(null);
     const [selectedKeyHolder, setSelectedKeyHolder] = useState<FullItemHolder | null>(null);
     const [isEditingMode, setEditingMode] = useState(false);
-    const [keyToEdit, setKeyToEdit] = useState<Item>(EMPTY_KEY);
+    const [itemToEdit, setItemToEdit] = useState<Item | null>(null);
     const [alertInfo, setAlertInfo] = useState<AlertMessage | null>(null);
-    const [keyHistoryDialogOpen, setKeyHistoryDialogOpen] = useState(false);
+    const [itemHistoryDialogOpen, setItemHistoryDialogOpen] = useState(false);
     const client = useClient();
 
     useEffect(() => {
@@ -150,10 +150,11 @@ const KeyHolderScreen = ({dispatch, keyHolders, loading, user, t}: KeyHolderScre
         <List sx={{pb: 10}}>
             {
                 keyHolders.map((x: FullItemHolder) => <ListItemButton key={x.id} divider
-                                                                      onClick={can("edit", "keyFinder") ? () => {
-                                                                          setKeyToEdit(x);
-                                                                           setKeyHistoryDialogOpen(true);
-                                                                       } : undefined}>
+                                                                      onClick={() => {
+                                                                          console.log(x)
+                                                                          setItemToEdit(x);
+                                                                          setItemHistoryDialogOpen(true);
+                                                                      }}>
                     <ListItemAvatar>
                         <Avatar sx={{background: x.color, width: 40, height: 40, borderRadius: 2}}>
                             <KeyIcon/>
@@ -164,7 +165,7 @@ const KeyHolderScreen = ({dispatch, keyHolders, loading, user, t}: KeyHolderScre
                         isEditingMode
                             ? <ListItemSecondaryAction>
                                 <IconButton onClick={() => {
-                                    setKeyToEdit(x);
+                                    setItemToEdit(x);
                                     setAddOrUpdateKeysOpen(true);
                                 }}>
                                     <EditIcon/>
@@ -192,7 +193,7 @@ const KeyHolderScreen = ({dispatch, keyHolders, loading, user, t}: KeyHolderScre
             <Box sx={{position: "fixed", right: "16px", bottom: "76px", display: "flex", flexDirection: "row"}}>
                 <Fab sx={{background: "#66bb6a", mr: 2}}
                      onClick={() => {
-                         setKeyToEdit(EMPTY_KEY);
+                         setItemToEdit(EMPTY_KEY);
                          setAddOrUpdateKeysOpen(true);
                      }}>
                     <AddOutlined sx={{color: "#fff"}}/>
@@ -207,8 +208,8 @@ const KeyHolderScreen = ({dispatch, keyHolders, loading, user, t}: KeyHolderScre
                 </Fab>
             </Box>
         }
-        <KeyHistoryDialog open={keyHistoryDialogOpen} handleClose={() => setKeyHistoryDialogOpen(false)}
-                          setOpen={() => setKeyHistoryDialogOpen(true)} keyId={keyToEdit.id} keyName={keyToEdit.name}/>
+        <ItemHistoryDialog open={itemHistoryDialogOpen} handleClose={() => setItemHistoryDialogOpen(false)}
+                           setOpen={() => setItemHistoryDialogOpen(true)} item={itemToEdit}/>
 
         <SearchUserDialog open={searchUserOpen} handleClose={() => setSearchUserOpen(false)} user={user}
                           onUserSelected={userSelected}/>
@@ -260,11 +261,11 @@ const KeyHolderScreen = ({dispatch, keyHolders, loading, user, t}: KeyHolderScre
             </Box>
         </SwipeableDialog>
         <AlertSnackbar alertInfo={alertInfo} autoHideDuration={1500} close={() => setAlertInfo(null)}/>
-        <EditOrAddKeyDialog open={addOrUpdateKeysOpen} handleClose={() => {
+        <EditOrAddItemDialog open={addOrUpdateKeysOpen} handleClose={() => {
             setAddOrUpdateKeysOpen(false);
             setEditingMode(false);
             dispatch(fetchItemsAsync());
-        }} keyToEdit={keyToEdit}/>
+        }} itemToEdit={itemToEdit}/>
     </Box>
 }
 
@@ -340,4 +341,4 @@ const SearchUserDialog = ({onUserSelected, user, open, handleClose}: {
     </Dialog>
 }
 
-export default KeyHolderScreenProvider;
+export default ItemHolderScreenProvider;

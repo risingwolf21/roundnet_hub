@@ -1,33 +1,35 @@
 import React, {useEffect, useState} from "react";
-import {FullKeyHistory} from "../../types/supabaseTypes";
+import {FullKeyHistory, Item} from "../../types/supabaseTypes";
 import {SwipeableDialog} from "../SwipeableDialog";
 import {captureException} from "@sentry/react";
-import {Alert, List, ListItem, ListItemText} from "@mui/material";
+import {Alert, CircularProgress, List, ListItem, ListItemText} from "@mui/material";
 import {format} from "date-fns";
-import {LoadingIndicator} from "../LoadingIndicator";
 import {SupabaseKeysRepository} from "../../repository/KeysRepository";
 
-type KeyHistoryDialogProps = {
+type ItemHistoryDialogProps = {
     open: boolean,
     handleClose: () => void,
     setOpen: (value: boolean) => void,
-    keyId: number | null,
-    keyName: string | null
+    item: Item | null
 }
 
-export const KeyHistoryDialog = ({open, setOpen, handleClose, keyId, keyName}: KeyHistoryDialogProps) => {
+export const ItemHistoryDialog = ({open, setOpen, handleClose, item}: ItemHistoryDialogProps) => {
 
     const [error, setError] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
     const [history, setHistory] = useState<FullKeyHistory[]>([])
 
     useEffect(() => {
-        if (!keyId)
+        console.log("useEffect", item)
+        if (!item) {
+            setError("Es wurde kein Schlüssel ausgewählt");
             return;
+        }
 
         setHistory([]);
         setLoading(true);
-        SupabaseKeysRepository.loadKeyHistory(keyId).then(result => {
+        SupabaseKeysRepository.loadKeyHistory(item.id).then(result => {
+            setError(null);
             setHistory(result.data ?? []);
         }).catch(error => {
             captureException(error);
@@ -35,22 +37,24 @@ export const KeyHistoryDialog = ({open, setOpen, handleClose, keyId, keyName}: K
         }).finally(() => {
             setLoading(false);
         });
-    }, [keyId, keyName]);
+    }, [item]);
 
     return <SwipeableDialog open={open} setOpen={setOpen} onClose={handleClose}
-                            title={"Schlüssel Historie - " + keyName}>
+                            title={"Schlüssel Historie - " + item?.name}>
         {
-            error && <Alert sx={{mt: 2}} severity="error">
+            error && <Alert sx={{m: 2}} severity="error">
                 {"Could not load key history: " + error}
             </Alert>
         }
         {
-            !loading && history.length === 0 && <Alert sx={{m: 2}} severity={"info"}>
+            !loading && history.length === 0 && !error && <Alert sx={{m: 2}} severity={"info"}>
                 Es ist keine Historie vorhanden!
             </Alert>
         }
-        <LoadingIndicator loading={loading}/>
-        <List sx={{maxHeight: "80%", overflow: "auto"}}>
+        {
+            loading && <CircularProgress/>
+        }
+        <List sx={{maxHeight: "70%", overflow: "auto"}}>
             {
                 history.map(x => <ListItem key={x.id} divider>
                     <ListItemText primary={`${x.pastUser.displayName} ➔ ${x.currentUser.displayName}`}
