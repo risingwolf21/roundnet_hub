@@ -2,7 +2,7 @@ import {PostgrestSingleResponse} from "@supabase/supabase-js";
 import {FullItemHolder, Item, User} from "../types/supabaseTypes";
 import {formatDateToDatabase} from "../utils";
 import {supabase} from "../components/services/supabase/supabaseClient";
-import {TablesInsert} from "../types/supabase-generated.types";
+import {TablesInsert, TablesUpdate} from "../types/supabase-generated.types";
 
 export const SupabaseKeysRepository = {
     async loadKeyHistory(keyId: number): Promise<PostgrestSingleResponse<any>> {
@@ -11,14 +11,25 @@ export const SupabaseKeysRepository = {
             .select("*, pastUser: user!key_history_pastuser_fkey(*), currentUser: user!key_history_currentuser_fkey(*), key: key(*)")
             .eq("key.id", keyId)
             .not("key", "is", null)
+            .not("pastUser", "is", null)
+            .not("currentUser", "is", null)
             .order("created_at", {ascending: false})
             .throwOnError();
     },
 
-    async upsertItem(item: TablesInsert<'items'>): Promise<PostgrestSingleResponse<Item>> {
+    async updateItem(item: TablesUpdate<'items'>, id: number): Promise<PostgrestSingleResponse<Item>> {
         return supabase
             .from("items")
-            .upsert(item)
+            .update(item)
+            .eq("id", id)
+            .select()
+            .single();
+    },
+
+    async insertItem(item: TablesInsert<'items'>): Promise<PostgrestSingleResponse<Item>> {
+        return supabase
+            .from("items")
+            .insert(item)
             .select()
             .single();
     },

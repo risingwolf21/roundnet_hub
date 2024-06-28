@@ -24,16 +24,15 @@ import {
 import _ from "lodash";
 import React, {useEffect, useState} from "react";
 import {useSelector} from "react-redux";
-import {useDependency} from "../../hooks/useDependency";
 import {fetchDrinksAsync} from "../../redux/adminDrinksSlice";
 import {RootState, useAppDispatch} from "../../redux/store";
-import {IAdminDrinksRepository} from "../../repository/IAdminDrinksRepository";
 import {Drink} from "../../types/supabaseTypes";
 import {AlertMessage, AlertSnackbar} from "../AlertSnackbar";
 import CustomAppBar from "../AppBar";
 import {Error} from "../Error";
 import EditDrinkDialog from "./EditDrinkDialog";
 import {captureException} from "@sentry/react";
+import {AdminDrinksRepository} from "../../repository/AdminDrinksRepository";
 
 type AdminDrinkItemProps = {
     drink: Drink,
@@ -79,29 +78,9 @@ const EMPTY_DRINK: Drink =
         type: "Drink"
     };
 
-const AdminDrinkListProvider = () => {
+const AdminDrinkList = () => {
+
     const {drinks, drinksError, drinksLoading} = useSelector((state: RootState) => state.adminDrinks);
-    const repository = useDependency<IAdminDrinksRepository>("IAdminDrinksRepository");
-
-    if (!repository)
-        return <AlertSnackbar close={() => {
-        }} alertInfo={{message: "Fatal error occured. Repository or user was null!", severity: "error"}}/>
-
-    return <AdminDrinkList
-        repository={repository}
-        drinks={drinks}
-        drinksError={drinksError}
-        drinksLoading={drinksLoading}/>
-}
-
-type AdminDrinkListProps = {
-    repository: IAdminDrinksRepository,
-    drinks: Drink[],
-    drinksError: string,
-    drinksLoading: boolean
-}
-
-const AdminDrinkList = ({repository, drinks, drinksError, drinksLoading}: AdminDrinkListProps) => {
 
     const dispatch = useAppDispatch();
     const [open, setOpen] = useState(false);
@@ -110,8 +89,8 @@ const AdminDrinkList = ({repository, drinks, drinksError, drinksLoading}: AdminD
     const [alertInfo, setAlertInfo] = useState<AlertMessage | null>(null);
 
     useEffect(() => {
-        dispatch(fetchDrinksAsync(repository))
-    }, [repository, dispatch]);
+        dispatch(fetchDrinksAsync())
+    }, [dispatch]);
 
     const selectDrink = (drink: Drink) => {
         setSelectedDrink(drink);
@@ -125,7 +104,7 @@ const AdminDrinkList = ({repository, drinks, drinksError, drinksLoading}: AdminD
 
     const onDeleteDrink = (drink: Drink | undefined) => {
         if (!drink) throw Error({message: "Could not delete Drink, because it was undefined"});
-        repository.deleteDrink(drink.id).then(() => {
+        AdminDrinksRepository.deleteDrink(drink.id).then(() => {
             setDeleteOpen(false);
         }).catch(error => {
             captureException(error);
@@ -147,8 +126,8 @@ const AdminDrinkList = ({repository, drinks, drinksError, drinksLoading}: AdminD
     const onDrinkEditFinished = (drink: Drink) => {
         if (drink.id && selectedDrink) {
             if (drink.name !== selectedDrink.name || drink.price !== selectedDrink.price) {
-                repository.addDrink(_.omit({...drink, previousDrink: selectedDrink.id})).then(() => {
-                    repository.updateDrink({...selectedDrink, deleted: true, active: false}).catch(error => {
+                AdminDrinksRepository.addDrink(_.omit({...drink, previousDrink: selectedDrink.id})).then(() => {
+                    AdminDrinksRepository.updateDrink({...selectedDrink, deleted: true, active: false}).catch(error => {
                         captureException(error);
                         setAlertInfo({message: error, severity: "error"});
                     });
@@ -157,13 +136,13 @@ const AdminDrinkList = ({repository, drinks, drinksError, drinksLoading}: AdminD
                     setAlertInfo({message: error, severity: "error"});
                 });
             } else {
-                repository.updateDrink(drink).catch(error => {
+                AdminDrinksRepository.updateDrink(drink).catch(error => {
                     captureException(error);
                     setAlertInfo({message: error, severity: "error"});
                 });
             }
         } else {
-            repository.addDrink(_.omit(drink)).catch(error => {
+            AdminDrinksRepository.addDrink(_.omit(drink)).catch(error => {
                 captureException(error);
                 setAlertInfo({message: error, severity: "error"});
             });
@@ -226,4 +205,4 @@ const AdminDrinkList = ({repository, drinks, drinksError, drinksLoading}: AdminD
     </Grid>);
 }
 
-export default AdminDrinkListProvider;
+export default AdminDrinkList;

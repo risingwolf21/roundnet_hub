@@ -33,6 +33,7 @@ const store = configureStore({
         notifications: notificationsSlice,
         challenges: challengeSlice
     },
+    enhancers: defaultEnhancers => [...defaultEnhancers, sentryReduxEnhancer]
 });
 export type RootState = ReturnType<typeof store.getState>
 

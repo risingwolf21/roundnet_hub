@@ -12,13 +12,10 @@ import {
 import moment from "moment/moment";
 import React, {useCallback, useEffect} from "react";
 import {useSelector} from "react-redux";
-import {useDependency} from "../../hooks/useDependency";
 import {fetchAdminHistoryAsync} from "../../redux/adminDrinksSlice";
 import {RootState, useAppDispatch} from "../../redux/store";
-import {IAdminDrinksRepository} from "../../repository/IAdminDrinksRepository";
 import {FullHistory} from "../../types/supabaseTypes";
 import {groupBy} from "../../utils";
-import {AlertSnackbar} from "../AlertSnackbar";
 import CustomAppBar from "../AppBar";
 import {InfiniteScrollList} from "../InfiniteScrollList";
 
@@ -39,17 +36,7 @@ const AdminHistoryItem = ({items, header}: { items: FullHistory[], header: strin
     </List>
 }
 
-const AdminHistoryScreenProvider = () => {
-    const adminDrinkRepository = useDependency<IAdminDrinksRepository>("IAdminDrinksRepository");
-
-    if (!adminDrinkRepository)
-        return <AlertSnackbar close={() => {
-        }} alertInfo={{message: "Fatal error occured. Repository or user was null!", severity: "error"}}/>
-
-    return <AdminHistoryScreen adminDrinkRepository={adminDrinkRepository}/>
-}
-
-const AdminHistoryScreen = ({adminDrinkRepository}: { adminDrinkRepository: IAdminDrinksRepository }) => {
+const AdminHistoryScreen = () => {
 
     const {
         history,
@@ -60,8 +47,8 @@ const AdminHistoryScreen = ({adminDrinkRepository}: { adminDrinkRepository: IAdm
     const dispatch = useAppDispatch();
 
     const fetchForPage = useCallback((page: number) => {
-        dispatch(fetchAdminHistoryAsync({repository: adminDrinkRepository, page, count: 20}))
-    }, [dispatch, adminDrinkRepository]);
+        dispatch(fetchAdminHistoryAsync({page, count: 20}))
+    }, [dispatch]);
 
     useEffect(() => {
         fetchForPage(0);
@@ -87,4 +74,4 @@ const AdminHistoryScreen = ({adminDrinkRepository}: { adminDrinkRepository: IAdm
     </Grid>
 }
 
-export default AdminHistoryScreenProvider;
+export default AdminHistoryScreen;

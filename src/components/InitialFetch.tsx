@@ -4,8 +4,6 @@ import {useClient} from "react-supabase";
 import {fetchSingleEventAsync} from "../redux/events/eventsSlice";
 import {useSelector} from "react-redux";
 import {fetchNotVerifiedUsersAsync} from "../redux/adminUserSlice";
-import {useDependency} from "../hooks/useDependency";
-import {IAdminUsersRepository} from "../repository/IAdminUsersRepository";
 import {
     fetchNotificationsAsync,
     onNotificationDelete,
@@ -18,15 +16,14 @@ export const useInitialFetch = () => {
     const dispatch = useAppDispatch();
     const client = useClient();
     const {user} = useSelector((state: RootState) => state.application);
-    const adminUserRepository = useDependency<IAdminUsersRepository>("IAdminUsersRepository");
 
     useEffect(() => {
-        if (!user || !adminUserRepository)
+        if (!user)
             return;
 
-        dispatch(fetchNotVerifiedUsersAsync(adminUserRepository))
+        dispatch(fetchNotVerifiedUsersAsync())
 
-    }, [dispatch, client, user, adminUserRepository]);
+    }, [dispatch, client, user]);
 
     useEffect(() => {
 

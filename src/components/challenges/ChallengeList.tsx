@@ -1,14 +1,20 @@
 import CustomAppBar from "../AppBar";
-import { Grid, LinearProgress, List, ListItem, ListItemText } from "@mui/material";
-import React, { useEffect } from "react";
-import { RootState, useAppDispatch } from "../../redux/store";
-import { challengeSelector, fetchChallengesAsync, onChallengeDelete, onChallengeInsert, onChallengeStatsDelete, onChallengeStatsInsert, onChallengeStatsUpdate, onChallengeUpdate } from "../../redux/challengeSlice";
-import { Challenge } from "../../types/supabaseTypes";
-import { useSelector } from "react-redux";
-import { useNavigate } from "react-router-dom";
-import { TablesInsert, TablesUpdate } from "src/types/supabase-generated.types";
-import { useClient } from "react-supabase";
-import { ChallengeRepository } from "src/repository/ChallengeRepository";
+import {Grid, LinearProgress, List, ListItem, ListItemText} from "@mui/material";
+import React, {useEffect} from "react";
+import {RootState, useAppDispatch} from "../../redux/store";
+import {
+    challengeSelector,
+    fetchChallengesAsync,
+    onChallengeDelete,
+    onChallengeInsert,
+    onChallengeUpdate
+} from "../../redux/challengeSlice";
+import {Challenge} from "../../types/supabaseTypes";
+import {useSelector} from "react-redux";
+import {useNavigate} from "react-router-dom";
+import {TablesInsert, TablesUpdate} from "src/types/supabase-generated.types";
+import {useClient} from "react-supabase";
+import {ChallengeRepository} from "src/repository/ChallengeRepository";
 
 const ChallengeListProvider = () => {
     const dispatch = useAppDispatch();

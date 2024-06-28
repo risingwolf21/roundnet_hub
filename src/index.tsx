@@ -2,8 +2,7 @@ import {ThemeProvider} from '@mui/material';
 import {LocalizationProvider} from '@mui/x-date-pickers';
 import {AdapterDayjs} from '@mui/x-date-pickers/AdapterDayjs';
 import * as Sentry from "@sentry/react";
-import {Container} from 'inversify';
-import React, {createContext, ReactNode} from 'react';
+import React from 'react';
 import ReactDOM from 'react-dom/client';
 import {Provider} from 'react-redux';
 import {Provider as SupabaseProvider} from "react-supabase";
@@ -12,7 +11,6 @@ import App from './App';
 import {supabase} from './components/services/supabase/supabaseClient';
 import "./global.css";
 import store from './redux/store';
-import container from './repository/Container';
 import {mainTheme} from './themes/themes';
 import "./translation/i18n";
 //@ts-ignore
@@ -22,18 +20,6 @@ import {SupabaseClient} from '@supabase/supabase-js'
 import {SupabaseIntegration} from '@supabase/sentry-js-integration'
 import {captureConsoleIntegration} from "@sentry/integrations";
 
-type Props = {
-    children: ReactNode,
-    container: Container
-}
-
-export const DependencyContext = createContext<{ container: Container | null }>({container: null});
-
-const DependencyProvider = ({container, children}: Props) => {
-    return <DependencyContext.Provider value={{container: container}}>
-        {children}
-    </DependencyContext.Provider>
-}
 
 export const SentryRoutes = Sentry.withSentryReactRouterV6Routing(Routes);
 
@@ -67,11 +53,9 @@ root.render(
     <ThemeProvider theme={mainTheme}>
         <Provider store={store}>
             <SupabaseProvider value={supabase}>
-                <DependencyProvider container={container}>
-                    <LocalizationProvider dateAdapter={AdapterDayjs}>
-                        <App/>
-                    </LocalizationProvider>
-                </DependencyProvider>
+                <LocalizationProvider dateAdapter={AdapterDayjs}>
+                    <App/>
+                </LocalizationProvider>
             </SupabaseProvider>
         </Provider>
     </ThemeProvider>

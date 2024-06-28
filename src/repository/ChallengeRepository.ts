@@ -1,6 +1,6 @@
-import { supabase } from "../components/services/supabase/supabaseClient";
-import { ChallengeStats, ChallengeStatWithUser, FullChallenge } from "../types/supabaseTypes";
-import { PostgrestSingleResponse } from "@supabase/supabase-js";
+import {supabase} from "../components/services/supabase/supabaseClient";
+import {ChallengeStatWithUser, FullChallenge} from "../types/supabaseTypes";
+import {PostgrestSingleResponse} from "@supabase/supabase-js";
 
 export const ChallengeRepository = {
     async fetchChallenges(): Promise<PostgrestSingleResponse<FullChallenge[]>> {

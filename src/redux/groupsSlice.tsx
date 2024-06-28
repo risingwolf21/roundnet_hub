@@ -1,7 +1,7 @@
 import {createAsyncThunk, createEntityAdapter, createSlice} from "@reduxjs/toolkit";
 import {GroupWithUsers} from "../types/supabaseTypes";
 import {SupabaseClient} from "@supabase/supabase-js";
-import {IAdminUsersRepository} from "src/repository/IAdminUsersRepository";
+import {AdminUsersRepository} from "src/repository/AdminUsersRepository";
 import {RootState} from "./store";
 import {captureException} from "@sentry/react";
 
@@ -55,12 +55,11 @@ export const fetchGroupsAsync = createAsyncThunk("fetchGroupsAsync", async ({cli
     }) ?? [];
 });
 
-export const fetchSingleGroupAsync = createAsyncThunk("fetchSingleGroupAsync", async ({repository, id}: {
-    repository: IAdminUsersRepository,
+export const fetchSingleGroupAsync = createAsyncThunk("fetchSingleGroupAsync", async ({id}: {
     id: number
 }, {rejectWithValue}) => {
     // returns {id, description, name, color, users: { user:{}[] }
-    return repository.fetchSingleGroupWithUsers(id).then(response => {
+    return AdminUsersRepository.fetchSingleGroupWithUsers(id).then(response => {
         return {
             data: {
                 ...response.data,

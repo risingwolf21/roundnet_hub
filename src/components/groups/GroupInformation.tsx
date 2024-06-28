@@ -4,8 +4,6 @@ import {toInteger} from "lodash";
 import React, {useEffect, useState} from "react";
 import {useSelector} from "react-redux";
 import {useParams} from "react-router-dom";
-import {useDependency} from "src/hooks/useDependency";
-import {IAdminUsersRepository} from "src/repository/IAdminUsersRepository";
 import {fetchAdminUsersAsync} from "../../redux/adminUserSlice";
 import {RootState, useAppDispatch} from "../../redux/store";
 import {GroupWithUsers, User, UserWithGroups} from "../../types/supabaseTypes";
@@ -15,6 +13,7 @@ import SearchAndSelectUserDialog from "../SearchAndSelectUserDialog";
 import {fetchSingleGroupAsync, groupsSelector} from "src/redux/groupsSlice";
 import {captureException} from "@sentry/react";
 import {Tables} from "../../types/supabase-generated.types";
+import {AdminUsersRepository} from "../../repository/AdminUsersRepository";
 
 const GroupInformationProvider = () => {
     const {id} = useParams();
@@ -22,28 +21,25 @@ const GroupInformationProvider = () => {
     const group = useSelector((state: RootState) => groupsSelector.selectById(state, toInteger(id)));
 
     const {users, loading} = useSelector((state: RootState) => state.adminUsers);
-    const adminUsersRepository = useDependency<IAdminUsersRepository>("IAdminUsersRepository");
 
     useEffect(() => {
-        if (adminUsersRepository)
-            dispatch(fetchAdminUsersAsync(adminUsersRepository));
-    }, [dispatch, adminUsersRepository]);
+        dispatch(fetchAdminUsersAsync());
+    }, [dispatch]);
 
-    if (!group || !adminUsersRepository)
+    if (!group)
         return <AlertSnackbar close={() => {
         }} alertInfo={{message: "Fatal error occured. Repository or selected group was null!", severity: "error"}}/>
 
-    return <GroupInformation users={users} loading={loading} group={group} repository={adminUsersRepository}/>
+    return <GroupInformation users={users} loading={loading} group={group}/>
 }
 
 type GroupInformationProps = {
     users: UserWithGroups[],
     loading: boolean,
-    group: GroupWithUsers,
-    repository: IAdminUsersRepository
+    group: GroupWithUsers
 }
 
-const GroupInformation = ({users, loading, group, repository}: GroupInformationProps) => {
+const GroupInformation = ({users, loading, group}: GroupInformationProps) => {
 
     const dispatch = useAppDispatch();
     const [searchAndSelectUsersOpen, setSearchAndSelectUsersOpen] = useState(false);
@@ -51,13 +47,13 @@ const GroupInformation = ({users, loading, group, repository}: GroupInformationP
     const [alertInfo, setAlertInfo] = useState<AlertMessage | null>(null);
 
     const handleUsersRemove = async (users: User[]) => {
-        await repository.removeUsersFromGroup(group, users).then(r => {
+        await AdminUsersRepository.removeUsersFromGroup(group, users).then(r => {
             setAlertInfo({
                 message: `Successfully removed ${users.length} users from the group ${group.name}`,
                 severity: "success"
             });
             setDeleteUsersOpen(false);
-            dispatch(fetchSingleGroupAsync({repository, id: group.id}));
+            dispatch(fetchSingleGroupAsync({id: group.id}));
         }).catch(error => {
             captureException(error);
             setAlertInfo({
@@ -68,13 +64,13 @@ const GroupInformation = ({users, loading, group, repository}: GroupInformationP
     }
 
     const handleUsersAdded = async (users: User[]) => {
-        await repository.addUsersToGroup(group, users).then(r => {
+        await AdminUsersRepository.addUsersToGroup(group, users).then(r => {
             setAlertInfo({
                 message: `Successfully added ${users.length} users to the group ${group.name}`,
                 severity: "success"
             });
             setSearchAndSelectUsersOpen(false);
-            dispatch(fetchSingleGroupAsync({repository, id: group.id}));
+            dispatch(fetchSingleGroupAsync({id: group.id}));
         }).catch(error => {
             setAlertInfo({
                 message: `Failed to add ${users.length} user to the group ${group.name} ${error.message}`,

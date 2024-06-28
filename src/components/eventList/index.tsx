@@ -51,6 +51,7 @@ const EventScreen = ({events, loading, error, endReached, user}: EventScreenProp
     }, [dispatch, user]);
 
     const fetchEvents = (mode: "upcoming" | "past", page: number, count: number) => {
+        console.log("fetching events with", mode, page, count)
         if (mode === "upcoming")
             dispatch(fetchUpcomingEventsAsync({user, page, count}));
         else
@@ -58,6 +59,7 @@ const EventScreen = ({events, loading, error, endReached, user}: EventScreenProp
     }
 
     const switchEventFetching = (mode: "upcoming" | "past") => {
+        console.log("switch from", fetchEventMode, "to", mode)
         setFetchEventMode(mode);
         fetchEvents(mode, 0, 20);
     }
