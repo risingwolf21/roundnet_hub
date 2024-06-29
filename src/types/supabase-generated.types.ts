@@ -11,6 +11,7 @@ export type Database = {
     Tables: {
       challenge: {
         Row: {
+          automated: boolean
           created_at: string
           description: string
           group: number
@@ -19,6 +20,7 @@ export type Database = {
           name: string
         }
         Insert: {
+          automated?: boolean
           created_at?: string
           description?: string
           group: number
@@ -27,6 +29,7 @@ export type Database = {
           name?: string
         }
         Update: {
+          automated?: boolean
           created_at?: string
           description?: string
           group?: number
@@ -329,14 +332,14 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "public_group_user_mapping_group_fkey"
+            foreignKeyName: "group_user_mapping_group_fkey"
             columns: ["group"]
             isOneToOne: false
             referencedRelation: "event_group"
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "public_group_user_mapping_user_fkey"
+            foreignKeyName: "group_user_mapping_user_fkey"
             columns: ["user"]
             isOneToOne: false
             referencedRelation: "user"
@@ -377,7 +380,21 @@ export type Database = {
             foreignKeyName: "history_drink_fkey"
             columns: ["drink"]
             isOneToOne: false
+            referencedRelation: "distinct_drinks"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "history_drink_fkey"
+            columns: ["drink"]
+            isOneToOne: false
             referencedRelation: "drink"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "history_payment_fkey"
+            columns: ["payment"]
+            isOneToOne: false
+            referencedRelation: "payments"
             referencedColumns: ["id"]
           },
           {
@@ -386,13 +403,6 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "user"
             referencedColumns: ["userId"]
-          },
-          {
-            foreignKeyName: "public_history_payment_fkey"
-            columns: ["payment"]
-            isOneToOne: false
-            referencedRelation: "payments"
-            referencedColumns: ["id"]
           },
         ]
       }
@@ -420,18 +430,18 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: "item_history_key_fkey"
+            columns: ["key"]
+            isOneToOne: false
+            referencedRelation: "items"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "key_history_currentuser_fkey"
             columns: ["currentUser"]
             isOneToOne: false
             referencedRelation: "user"
             referencedColumns: ["userId"]
-          },
-          {
-            foreignKeyName: "key_history_key_fkey"
-            columns: ["key"]
-            isOneToOne: false
-            referencedRelation: "items"
-            referencedColumns: ["id"]
           },
           {
             foreignKeyName: "key_history_pastuser_fkey"
@@ -485,7 +495,6 @@ export type Database = {
           body: string
           created_at: string
           id: string
-          issuer: string | null
           title: string
           user: string | null
         }
@@ -493,7 +502,6 @@ export type Database = {
           body?: string
           created_at?: string
           id?: string
-          issuer?: string | null
           title?: string
           user?: string | null
         }
@@ -501,18 +509,10 @@ export type Database = {
           body?: string
           created_at?: string
           id?: string
-          issuer?: string | null
           title?: string
           user?: string | null
         }
         Relationships: [
-          {
-            foreignKeyName: "public_notifications_issuer_fkey"
-            columns: ["issuer"]
-            isOneToOne: false
-            referencedRelation: "user"
-            referencedColumns: ["userId"]
-          },
           {
             foreignKeyName: "public_notifications_user_fkey"
             columns: ["user"]
@@ -632,6 +632,20 @@ export type Database = {
           },
         ]
       }
+      distinct_drinks: {
+        Row: {
+          active: boolean | null
+          deleted: boolean | null
+          id: number | null
+          imageUrl: string | null
+          name: string | null
+          previousDrink: number | null
+          price: number | null
+          stock: number | null
+          type: Database["public"]["Enums"]["ProductType"] | null
+        }
+        Relationships: []
+      }
       distinct_event: {
         Row: {
           answerDeadline: string | null
@@ -660,6 +674,18 @@ export type Database = {
           },
         ]
       }
+      readable_history: {
+        Row: {
+          amount: number | null
+          count: number | null
+          date: string | null
+          displayName: string | null
+          id: number | null
+          name: string | null
+          time: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       add_notificationtags_to_all_users: {
@@ -673,6 +699,12 @@ export type Database = {
           permission: Database["public"]["Enums"]["Permissions"]
         }
         Returns: undefined
+      }
+      check_version: {
+        Args: {
+          input_version: string
+        }
+        Returns: boolean
       }
       eventcreation: {
         Args: Record<PropertyKey, never>
@@ -736,6 +768,7 @@ export type Database = {
           | "eventCancelled"
           | "eventUpdated"
           | "eventAttedanceChanged"
+          | "challengeUpdate"
       PaymentState: "Open" | "Fulfilled"
       Permissions:
         | "use;drink"
@@ -761,8 +794,9 @@ export type Database = {
         | "edit;notifications"
         | "edit;history"
         | "edit;edgeFunctions"
-        | "view;challenges"
           | "use;challenges"
+          | "view;challenges"
+          | "edit;challenges"
       ProductType: "Drink" | "Special" | "None"
       UserRole: "user" | "admin" | "procure" | "finance" | "trainer"
     }
@@ -775,7 +809,7 @@ export type Database = {
 type PublicSchema = Database[Extract<keyof Database, "public">]
 
 export type Tables<
-  PublicTableNameOrOptions extends | keyof (PublicSchema["Tables"] & PublicSchema["Views"])
+    PublicTableNameOrOptions extends | keyof (PublicSchema["Tables"] & PublicSchema["Views"])
     | { schema: keyof Database },
   TableName extends PublicTableNameOrOptions extends { schema: keyof Database }
     ? keyof (Database[PublicTableNameOrOptions["schema"]]["Tables"] &
@@ -799,7 +833,7 @@ export type Tables<
         : never
 
 export type TablesInsert<
-  PublicTableNameOrOptions extends | keyof PublicSchema["Tables"]
+    PublicTableNameOrOptions extends | keyof PublicSchema["Tables"]
     | { schema: keyof Database },
   TableName extends PublicTableNameOrOptions extends { schema: keyof Database }
     ? keyof Database[PublicTableNameOrOptions["schema"]]["Tables"]
@@ -819,7 +853,7 @@ export type TablesInsert<
         : never
 
 export type TablesUpdate<
-  PublicTableNameOrOptions extends | keyof PublicSchema["Tables"]
+    PublicTableNameOrOptions extends | keyof PublicSchema["Tables"]
     | { schema: keyof Database },
   TableName extends PublicTableNameOrOptions extends { schema: keyof Database }
     ? keyof Database[PublicTableNameOrOptions["schema"]]["Tables"]
@@ -839,7 +873,7 @@ export type TablesUpdate<
         : never
 
 export type Enums<
-  PublicEnumNameOrOptions extends | keyof PublicSchema["Enums"]
+    PublicEnumNameOrOptions extends | keyof PublicSchema["Enums"]
     | { schema: keyof Database },
   EnumName extends PublicEnumNameOrOptions extends { schema: keyof Database }
     ? keyof Database[PublicEnumNameOrOptions["schema"]]["Enums"]

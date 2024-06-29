@@ -27,7 +27,7 @@ import {SwipeableDialog} from "../SwipeableDialog";
 import {withTranslation} from "react-i18next";
 import {TFunction} from "i18next";
 import {useSelector} from "react-redux";
-import {AppDispatch, RootState, useAppDispatch} from "../../redux/store";
+import {RootState, useAppDispatch} from "../../redux/store";
 import {useClient} from "react-supabase";
 import {TablesInsert, TablesUpdate} from "../../types/supabase-generated.types";
 import {
@@ -37,7 +37,6 @@ import {
     onChallengeInsert,
     onChallengeUpdate
 } from "../../redux/challengeSlice";
-import {SupabaseClient} from "@supabase/supabase-js";
 
 const ChallengeInformationProvider = ({t}: { t: TFunction }) => {
     const {challengeId} = useParams();
@@ -100,18 +99,16 @@ const ChallengeInformationProvider = ({t}: { t: TFunction }) => {
     if (!challenge)
         return <Navigate to={"/challenges"} replace={true}/>
 
-    return <ChallengeInformation t={t} dispatch={dispatch} challenge={challenge} user={user} client={client}/>
+    return <ChallengeInformation t={t} challenge={challenge} user={user}/>
 }
 
 type ChallengeInformationProps = {
     t: TFunction,
-    dispatch: AppDispatch,
     challenge: FullChallenge,
-    user: User,
-    client: SupabaseClient
+    user: User
 }
 
-const ChallengeInformation = ({t, dispatch, challenge, user, client}: ChallengeInformationProps) => {
+const ChallengeInformation = ({t, challenge, user}: ChallengeInformationProps) => {
     const [alertInfo, setAlertInfo] = useState<AlertMessage | null>(null);
     const [open, setOpen] = useState(false);
 
@@ -218,6 +215,11 @@ const ChallengeInformation = ({t, dispatch, challenge, user, client}: ChallengeI
             <Alert sx={{m: 2}} severity={"info"}>
                 {challenge.description}
             </Alert>
+            {
+                challenge.automated && <Alert sx={{m: 2}} severity={"info"}>
+                    {t('challenge.automatedChallenge')}
+                </Alert>
+            }
             <Divider/>
             {
                 challenge.stats
@@ -242,7 +244,7 @@ const ChallengeInformation = ({t, dispatch, challenge, user, client}: ChallengeI
         </List>
 
         {
-            can("use", "challenges") &&
+            can("use", "challenges") && !challenge.automated &&
             <Fab sx={{background: "#66bb6a", position: "fixed", right: "16px", bottom: "56px", mb: "16px"}}
                  onClick={() => {
                      setOpen(true)

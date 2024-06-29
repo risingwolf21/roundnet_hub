@@ -67,5 +67,8 @@
   "past": "Past",
   "take_key": "Take",
   "upcoming": "Upcoming",
-  "userName": "userName"
+  "userName": "userName",
+  "challenge": {
+    "automatedChallenge": "In this challenge, the points are updated automatically!"
+  }
 }
