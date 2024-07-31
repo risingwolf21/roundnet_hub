@@ -21,20 +21,20 @@ import React, {createRef, useEffect, useState} from "react";
 import {MapContainer, Marker, TileLayer} from "react-leaflet";
 import {useNavigate} from "react-router-dom";
 import {answerDeadlineExpired, EventAttendance, eventInThePast} from "../../types/supabaseTypes";
-import {DeleteEventDialog} from "./DeleteEventDialog";
+import {DeleteEventDialog} from "./components/DeleteEventDialog";
 import {DeleteEventType, EventInformationProps} from "./types";
-import {CancelTrainingDialog} from "./CancelTrainingDialog";
+import {CancelTrainingDialog} from "./components/CancelTrainingDialog";
 import {can} from "src/utils/PermissionService";
 import {fetchEventAttendanceAsync, updateAttendanceAsync} from "src/redux/events/eventAttendanceSlice";
 import {formatDateToDatabase} from "src/utils";
 import {fetchEventCommentsAsync, upsertCommentToEventAsync} from "src/redux/events/eventCommentsSlice";
 import {editEvent, fetchSingleEventAsync, onEventErrorRead} from "src/redux/events/eventsSlice";
-import EventInformationAttendance from "./EventInformationAttendance";
-import EventInformationComments from "./EventInformationComments";
-import {EditEventOptionsDialog} from "./EditEventOptionsDialog";
+import EventInformationAttendance from "./components/EventInformationAttendance";
+import EventInformationComments from "./components/EventInformationComments";
+import {EditEventOptionsDialog} from "./components/EditEventOptionsDialog";
 import {isBefore} from "date-fns";
 import {SupabaseEventRepository} from "../../repository/EventRepository";
-import {AlertMessage, AlertSnackbar} from "../AlertSnackbar";
+import {AlertMessage, AlertSnackbar} from "../../components/AlertSnackbar";
 
 const EventInformation = ({
                               dispatch,

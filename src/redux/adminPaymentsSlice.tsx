@@ -1,7 +1,6 @@
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import { PaymentState, FullPayment } from '../types/supabaseTypes';
-import { SupabaseClient } from '@supabase/supabase-js';
-import { TABLE_PAYMENTS } from '../constants';
+import {createAsyncThunk, createSlice} from '@reduxjs/toolkit';
+import {FullPayment, PaymentState} from '../types/supabaseTypes';
+import {SupabaseClient} from '@supabase/supabase-js';
 
 type AdminPaymentsSliceState = {
     payments: FullPayment[] | null,
@@ -38,7 +37,7 @@ export const adminPaymentsSlice = createSlice({
 });
 
 export const fetchAdminsPaymentsAsync = createAsyncThunk("admin-payments", async ({ client }: { client: SupabaseClient }) => {
-    const response = await client.from(TABLE_PAYMENTS)
+    const response = await client.from('payments')
         .select("id, created_at, paymentState, amountToPay, userId, user (userId, displayName, email), history (*)")
         .eq("paymentState", "Open" as PaymentState)
         .order("displayName", { foreignTable: "user", ascending: true })

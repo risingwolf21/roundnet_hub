@@ -41,7 +41,6 @@ const AdminHistoryScreen = () => {
     const {
         history,
         historyLoading,
-        historyError,
         historyEndReached
     } = useSelector((state: RootState) => state.adminDrinks);
     const dispatch = useAppDispatch();
@@ -64,7 +63,8 @@ const AdminHistoryScreen = () => {
         {
             historyLoading && <LinearProgress style={{position: "fixed", left: 0, top: 56, right: 0}}/>
         }
-        <InfiniteScrollList fetch={fetchForPage} error={historyError} loading={historyLoading}
+        <InfiniteScrollList fetch={fetchForPage}
+                            loading={historyLoading}
                             endReached={historyEndReached}>
             {
                 Array.from(groupBy(history, (x: FullHistory) => moment(new Date(x.created_at ?? "")).format("DD MMMM yyyy")))

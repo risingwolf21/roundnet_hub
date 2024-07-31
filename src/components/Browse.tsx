@@ -11,67 +11,14 @@ import {
 } from "@mui/icons-material";
 import {Avatar, Badge, Box, List, ListItem, ListItemAvatar, ListItemButton, ListItemText} from "@mui/material";
 import {TFunction} from "i18next";
-import React, {ReactElement} from "react";
+import React from "react";
 import {withTranslation} from 'react-i18next';
 import {useNavigate} from "react-router";
-import {Ability, can} from "src/utils/PermissionService";
+import {can} from "src/utils/PermissionService";
 import CustomAppBar from "./AppBar";
 import {useSelector} from "react-redux";
 import {RootState} from "../redux/store";
 import {notificationsSelector} from "../redux/notificationsSlice";
-
-type TabsType = {
-    translationKey: string
-    navigateTo: string
-    icon: ReactElement
-    avatarColor: string
-    ability: Ability[1]
-}
-
-const tabs = [
-    {
-        translationKey: "account",
-        navigateTo: "/user",
-        icon: <AccountCircle/>,
-        avatarColor: "#88AEBF",
-        ability: "user"
-    },
-    {
-        translationKey: "payment",
-        navigateTo: "/payments",
-        icon: <Euro/>,
-        avatarColor: "#88AEBF",
-        ability: "payments"
-    },
-    {
-        translationKey: "history",
-        navigateTo: "/history",
-        icon: <History/>,
-        avatarColor: "#88AEBF",
-        ability: "history"
-    },
-    {
-        translationKey: "keys",
-        navigateTo: "/keys",
-        icon: <Key/>,
-        avatarColor: "#88AEBF",
-        ability: "keyFinder"
-    },
-    {
-        translationKey: "notifications",
-        navigateTo: "/notificationPermissions",
-        icon: <Notifications/>,
-        avatarColor: "#88AEBF",
-        ability: "notifications"
-    },
-    {
-        translationKey: "challenges",
-        navigateTo: "/challenges",
-        icon: <EmojiEvents/>,
-        avatarColor: "#88AEBF",
-        ability: "challenges"
-    }
-] as TabsType[];
 
 const Browse = ({t}: { t: TFunction }) => {
 

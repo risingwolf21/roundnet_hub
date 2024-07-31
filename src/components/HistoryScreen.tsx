@@ -102,6 +102,10 @@ const HistoryScreen = ({
     const [alertInfo, setAlertInfo] = useState<AlertMessage | null>(null);
 
     useEffect(() => {
+        setAlertInfo(historyError ? {message: historyError, severity: "error"} : null);
+    }, [historyError]);
+
+    useEffect(() => {
         let subscription = client.channel("public:history")
             .on('postgres_changes', {
                 event: 'UPDATE',
@@ -169,7 +173,8 @@ const HistoryScreen = ({
         {
             historyLoading && <LinearProgress style={{position: "fixed", left: 0, top: 56, right: 0}}/>
         }
-        <InfiniteScrollList fetch={fetchForPage} error={historyError ?? ""} loading={historyLoading}
+        <InfiniteScrollList fetch={fetchForPage}
+                            loading={historyLoading}
                             endReached={historyEndReached}>
             {
                 Array.from(groupBy(historyItems.filter(x => x.drink), (x: FullHistory) =>

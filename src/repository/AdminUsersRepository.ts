@@ -1,7 +1,6 @@
 import {PostgrestSingleResponse} from "@supabase/supabase-js";
 import {Group, User, UserWithGroups} from "src/types/supabaseTypes";
 import {supabase} from "../components/services/supabase/supabaseClient";
-import {TABLE_PAYMENTS, TABLE_USER} from "src/constants";
 import {UserEdited} from "src/components/admin/EditUserDialog";
 
 export const AdminUsersRepository = {
@@ -23,32 +22,25 @@ export const AdminUsersRepository = {
 
     async deactivateUser(user: User): Promise<void> {
         await supabase
-            .from(TABLE_PAYMENTS)
-            .update({ paymentState: "Fulfilled" })
+            .from('payments')
+            .update({paymentState: "Fulfilled"})
             .eq("userId", user.userId);
 
         await supabase
-            .from(TABLE_USER)
-            .update({ verified: false })
+            .from('user')
+            .update({verified: false})
             .eq("userId", user.userId);
     },
 
     async updateUser(user: UserEdited): Promise<PostgrestSingleResponse<null>> {
-        const result = await supabase.auth.admin.updateUserById(
-            user.userId,
-            {user_metadata: {displayName: user.displayName, verified: user.verified}}
-        );
-        if (result.error) {
-            throw result.error;
-        }
         return supabase
-            .from(TABLE_USER)
+            .from('user')
             .update({displayName: user.displayName, verified: user.verified, permissions: user.permissions})
             .eq("userId", user.userId);
     },
 
     async fetchNotVerifiedUsers(): Promise<PostgrestSingleResponse<User[]>> {
-        return supabase.from(TABLE_USER)
+        return supabase.from('user')
             .select("*")
             .eq("verified", false)
             .returns<User[]>()
@@ -57,9 +49,9 @@ export const AdminUsersRepository = {
 
     async fetchAllUsersWithGroups(): Promise<PostgrestSingleResponse<UserWithGroups[]>> {
         return supabase
-            .from(TABLE_USER)
+            .from('user')
             .select("*, groups: group_user_mapping ( group: event_group ( * ) )")
-            .order("displayName", { ascending: true })
+            .order("displayName", {ascending: true})
             .returns<UserWithGroups[]>()
             .throwOnError();
     },

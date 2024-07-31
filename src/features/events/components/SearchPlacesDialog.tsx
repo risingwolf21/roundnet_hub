@@ -1,12 +1,12 @@
-import { Box, Dialog, IconButton, List, ListItem, ListItemText, TextField, Toolbar } from "@mui/material";
-import { SlideUpTransition } from "../../utils"
-import { ArrowBack } from "@mui/icons-material";
-import React, { useState } from "react";
-import { OpenStreetMapProvider } from 'leaflet-geosearch';
-import { SearchResult } from "leaflet-geosearch/dist/providers/provider";
-import { RawResult } from "leaflet-geosearch/dist/providers/openStreetMapProvider";
-import { toNumber } from "lodash";
-import { PlaceType, SearchPlacesDialogProps } from "./types";
+import {Box, Dialog, IconButton, List, ListItem, ListItemText, TextField, Toolbar} from "@mui/material";
+import {SlideUpTransition} from "../../../utils"
+import {ArrowBack} from "@mui/icons-material";
+import React, {useState} from "react";
+import {OpenStreetMapProvider} from 'leaflet-geosearch';
+import {SearchResult} from "leaflet-geosearch/dist/providers/provider";
+import {RawResult} from "leaflet-geosearch/dist/providers/openStreetMapProvider";
+import {toNumber} from "lodash";
+import {PlaceType, SearchPlacesDialogProps} from "../types";
 
 const SearchPlacesDialog = ({ open, handleClose, placeSelected }: SearchPlacesDialogProps) => {
 

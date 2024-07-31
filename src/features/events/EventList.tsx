@@ -1,37 +1,40 @@
 import AddIcon from '@mui/icons-material/Add';
-import {Alert, Chip, Divider, Fab, Grid, LinearProgress, Snackbar} from "@mui/material";
+import {Chip, Divider, Fab, Grid, LinearProgress} from "@mui/material";
 import React, {useEffect, useState} from "react";
 import {useNavigate} from 'react-router-dom';
 import {useClient} from "react-supabase";
 import {useAppDispatch} from "../../redux/store";
-import {EventAttendance} from "../../types/supabaseTypes";
-import CustomAppBar from "../AppBar";
-import {InfiniteScrollList} from "../InfiniteScrollList";
-import {EventItem} from "./EventItem";
-import {EventScreenProps} from './types';
+import {EventAttendance, User} from "../../types/supabaseTypes";
+import CustomAppBar from "../../components/AppBar";
+import {InfiniteScrollList} from "../../components/InfiniteScrollList";
+import {EventItem} from "./components/EventItem";
 import {
     fetchPastEventsAsync,
     fetchUpcomingEventsAsync,
     onEventDelete,
     onEventErrorRead,
-    onEventUpdate
+    onEventUpdate,
+    SliceEvent
 } from 'src/redux/events/eventsSlice';
 import {updateAttendanceAsync} from 'src/redux/events/eventAttendanceSlice';
 import {can} from "../../utils/PermissionService";
 import {TablesUpdate} from "../../types/supabase-generated.types";
 import {t} from "i18next";
-import {AlertMessage, AlertSnackbar} from "../AlertSnackbar";
+import {AlertMessage, AlertSnackbar} from "../../components/AlertSnackbar";
+
+export type EventScreenProps = {
+    events: SliceEvent[],
+    loading: boolean,
+    error: AlertMessage | null,
+    endReached: boolean,
+    user: User
+}
 
 const EventScreen = ({events, loading, error, endReached, user}: EventScreenProps) => {
     const client = useClient();
     const dispatch = useAppDispatch();
     const navigate = useNavigate();
     const [fetchEventMode, setFetchEventMode] = useState<"upcoming" | "past">("upcoming");
-    const [alertInfo, setAlertInfo] = useState<AlertMessage | null>(null);
-
-    useEffect(() => {
-        setAlertInfo(error ? {message: error, severity: "error"} : null);
-    }, [error]);
 
     useEffect(() => {
         let subscription = client.channel("public:events")
@@ -88,7 +91,7 @@ const EventScreen = ({events, loading, error, endReached, user}: EventScreenProp
             <Chip sx={{ml: 2}} label={t("past")} color={fetchEventMode === "past" ? "primary" : "default"}
                   onClick={() => switchEventFetching("past")}/>
         </Grid>
-        <InfiniteScrollList fetch={(page) => fetchEvents(fetchEventMode, page, 20)} error={error ?? ""}
+        <InfiniteScrollList fetch={(page) => fetchEvents(fetchEventMode, page, 20)}
                             loading={loading}
                             endReached={endReached}>
             {
@@ -115,7 +118,7 @@ const EventScreen = ({events, loading, error, endReached, user}: EventScreenProp
             </Fab>
         }
 
-        <AlertSnackbar alertInfo={alertInfo} close={() => dispatch(onEventErrorRead(null))}/>
+        <AlertSnackbar alertInfo={error} close={() => dispatch(onEventErrorRead(null))}/>
     </Grid>);
 }
 

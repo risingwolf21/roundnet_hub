@@ -1,8 +1,8 @@
-import { useState, useEffect, useMemo } from "react";
+import {useMemo} from "react";
 import * as serviceWorker from "../serviceWorkerRegistration";
-import { onServiceWorkerInitialized, onUpdateServiceWorker } from "src/redux/applicationSlice";
-import { RootState, useAppDispatch } from "src/redux/store";
-import { useSelector } from "react-redux";
+import {onServiceWorkerInitialized, onUpdateServiceWorker} from "src/redux/applicationSlice";
+import {RootState, useAppDispatch} from "src/redux/store";
+import {useSelector} from "react-redux";
 
 export type ServiceWorkerConfig = {
     onUpdate: (registration: ServiceWorkerRegistration) => void,

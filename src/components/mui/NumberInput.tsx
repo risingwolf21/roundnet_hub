@@ -22,7 +22,7 @@ export const NumberInput = React.forwardRef(function CustomNumberInput(
             slotProps={{
                 input: {
                     disabled: props.disabled,
-                    readOnly: props.disabled ? true : false,
+                    readOnly: !!props.disabled,
                     width: props.fullWidth ? "100%" : undefined
                 },
                 incrementButton: {

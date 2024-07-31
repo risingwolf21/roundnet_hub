@@ -36,7 +36,7 @@ import {
     User
 } from "src/types/supabaseTypes"
 import EventAttendanceDialog from "./EventAttendanceDialog"
-import {TablesUpdate} from "../../types/supabase-generated.types";
+import {TablesUpdate} from "../../../types/supabase-generated.types";
 
 type EventInformationAttendanceProps = {
     user: User,

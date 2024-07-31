@@ -34,18 +34,18 @@ import {DatePicker, DateTimePicker} from "@mui/x-date-pickers";
 import {TimePicker} from '@mui/x-date-pickers/TimePicker';
 import React, {FormEvent, Ref, useEffect, useRef, useState} from "react";
 import EventRepeatIcon from '@mui/icons-material/EventRepeat';
-import SearchPlacesDialog from "./SearchPlacesDialog";
+import SearchPlacesDialog from "./components/SearchPlacesDialog";
 import {MapContainer, Marker, TileLayer, useMap} from "react-leaflet";
 import {EventRecurrence, FullEvent} from "../../types/supabaseTypes";
 import {format, isAfter, isBefore, set} from "date-fns";
 import _ from "lodash";
-import {CreateEventProps, PlaceType} from "./types";
-import {SelectGroupDialog} from "./SelectGroupDialog";
+import {SelectGroupDialog} from "./components/SelectGroupDialog";
 import {dayjsFromDb, formatDateToDatabase} from "src/utils";
-import {NumberInput} from "../mui/NumberInput";
-import {LoadingIndicator} from "../LoadingIndicator";
+import {NumberInput} from "../../components/mui/NumberInput";
+import {LoadingIndicator} from "../../components/LoadingIndicator";
 import {SupabaseEventRepository} from "../../repository/EventRepository";
 import {Enums, TablesInsert} from "../../types/supabase-generated.types";
+import {CreateEventProps, PlaceType} from "./types";
 
 const emptyEvent = {
     title: "",

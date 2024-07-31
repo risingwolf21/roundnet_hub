@@ -1,8 +1,7 @@
-import { Box, Button, DialogContent, FormControl, FormControlLabel, Radio, RadioGroup } from "@mui/material";
-import { useState } from "react";
-import React from "react";
-import { DeleteEventDialogProps, DeleteEventType, DeletionType } from "./types";
-import { SwipeableDialog } from "../SwipeableDialog";
+import {Box, Button, DialogContent, FormControl, FormControlLabel, Radio, RadioGroup} from "@mui/material";
+import React, {useState} from "react";
+import {DeleteEventDialogProps, DeleteEventType, DeletionType} from "../types";
+import {SwipeableDialog} from "../../../components/SwipeableDialog";
 
 export const THIS_EVENT = "THIS_EVENT";
 export const THIS_AND_FOLLOWING_EVENT = "THIS_AND_FOLLOWING_EVENT";

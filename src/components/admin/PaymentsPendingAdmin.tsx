@@ -1,18 +1,32 @@
-import { ArrowBack, Refresh } from "@mui/icons-material";
+import {ArrowBack, Refresh} from "@mui/icons-material";
 import CheckIcon from "@mui/icons-material/Check";
 import SearchIcon from "@mui/icons-material/Search";
-import { AppBar, Box, Button, Fab, Grid, IconButton, LinearProgress, List, ListItem, ListItemAvatar, ListItemSecondaryAction, ListItemText, Toolbar, Typography } from "@mui/material";
-import React, { useEffect, useState } from "react";
-import { useSelector } from "react-redux";
-import { useNavigate } from "react-router-dom";
-import { useClient } from "react-supabase";
-import { TABLE_PAYMENTS } from "../../constants";
-import { fetchAdminsPaymentsAsync } from "../../redux/adminPaymentsSlice";
-import { RootState, useAppDispatch } from "../../redux/store";
-import { FullPayment, History, PaymentState } from "../../types/supabaseTypes";
-import { Error } from "../Error";
-import { Search, SearchIconWrapper, StyledInputBase } from "../SearchBar";
-import { SwipeableDialog } from "../SwipeableDialog";
+import {
+    AppBar,
+    Box,
+    Button,
+    Fab,
+    Grid,
+    IconButton,
+    LinearProgress,
+    List,
+    ListItem,
+    ListItemAvatar,
+    ListItemSecondaryAction,
+    ListItemText,
+    Toolbar,
+    Typography
+} from "@mui/material";
+import React, {useEffect, useState} from "react";
+import {useSelector} from "react-redux";
+import {useNavigate} from "react-router-dom";
+import {useClient} from "react-supabase";
+import {fetchAdminsPaymentsAsync} from "../../redux/adminPaymentsSlice";
+import {RootState, useAppDispatch} from "../../redux/store";
+import {FullPayment, History, PaymentState} from "../../types/supabaseTypes";
+import {Error} from "../Error";
+import {Search, SearchIconWrapper, StyledInputBase} from "../SearchBar";
+import {SwipeableDialog} from "../SwipeableDialog";
 
 const PaymentsPendingAdmin = () => {
 
@@ -40,7 +54,7 @@ const PaymentsPendingAdmin = () => {
     const confirmPayment = (payment: FullPayment | null) => {
         if (!payment)
             return;
-        client.from(TABLE_PAYMENTS).update({ paymentState: "Fulfilled" as PaymentState }).eq("userId", payment?.user?.userId).then(res => {
+        client.from('payments').update({paymentState: "Fulfilled" as PaymentState}).eq("userId", payment?.user?.userId).then(res => {
             setOpen(false);
         });
     }

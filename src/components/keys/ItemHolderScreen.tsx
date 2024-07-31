@@ -22,7 +22,6 @@ import {
 import React, {useEffect, useState} from "react";
 import {useSelector} from "react-redux";
 import {useClient} from "react-supabase";
-import {TABLE_USER} from "src/constants";
 import {fetchInsertedItemsAsync, fetchItemsAsync, keyHoldersSelector} from "src/redux/keysSlice";
 import {AppDispatch, RootState, useAppDispatch} from "src/redux/store";
 import {FullItemHolder, Item, User} from "src/types/supabaseTypes";
@@ -283,7 +282,7 @@ const SearchUserDialog = ({onUserSelected, user, open, handleClose}: {
     const {t} = useTranslation();
 
     useEffect(() => {
-        client.from(TABLE_USER)
+        client.from('user')
             .select("*")
             .eq("verified", true)
             .returns<User[]>().then(result => {

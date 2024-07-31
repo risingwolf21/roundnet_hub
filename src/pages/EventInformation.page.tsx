@@ -3,11 +3,10 @@ import React, {useEffect, useState} from "react";
 import {useTranslation} from "react-i18next";
 import {useSelector} from "react-redux";
 import {useParams} from "react-router-dom";
-import {RootState, useAppDispatch} from "../../redux/store";
-import EventInformation from ".";
-import {PlaceType} from "../eventCreation/types";
-import LoadingEventInfo from "./LoadingEventInfo";
-import {AlertSnackbar} from "../AlertSnackbar";
+import {RootState, useAppDispatch} from "../redux/store";
+import EventInformation from "../features/events/EventInformation";
+import LoadingEventInfo from "../features/events/components/LoadingEventInfo";
+import {AlertSnackbar} from "../components/AlertSnackbar";
 import {eventsSelector, fetchSingleEventAsync, onEventDelete, onEventUpdate} from "src/redux/events/eventsSlice";
 import {
     attendanceSelector,
@@ -16,8 +15,9 @@ import {
 } from "src/redux/events/eventAttendanceSlice";
 import {eventsCommentsSelector} from "src/redux/events/eventCommentsSlice";
 import {useClient} from "react-supabase";
-import {fetchItemsAsync, keyHoldersSelector} from "../../redux/keysSlice";
-import {TablesUpdate} from "../../types/supabase-generated.types";
+import {fetchItemsAsync, keyHoldersSelector} from "../redux/keysSlice";
+import {TablesUpdate} from "../types/supabase-generated.types";
+import {PlaceType} from "../features/events/types";
 
 const EventInformationProvider = () => {
     const {selectedEventId} = useParams();

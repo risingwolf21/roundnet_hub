@@ -1,9 +1,7 @@
-import { Box, Button, DialogContent, FormControl, FormControlLabel, Radio, RadioGroup } from "@mui/material";
-import { useState } from "react";
-import React from "react";
-import { EditEventOptionsDialogProps } from "./types";
-import { SwipeableDialog } from "../SwipeableDialog";
-import { CreateEventOption } from "../eventCreation/types";
+import {Box, Button, DialogContent, FormControl, FormControlLabel, Radio, RadioGroup} from "@mui/material";
+import React, {useState} from "react";
+import {CreateEventOption, EditEventOptionsDialogProps} from "../types";
+import {SwipeableDialog} from "../../../components/SwipeableDialog";
 
 export const EditEventOptionsDialog = ({ open, handleClose, setOpen }: EditEventOptionsDialogProps) => {
 

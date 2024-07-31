@@ -1,27 +1,16 @@
-import {Alert, List, Snackbar, SnackbarCloseReason} from "@mui/material";
-import React, {useEffect, useRef, useState} from "react";
+import {List} from "@mui/material";
+import React, {useEffect, useRef} from "react";
 
 type InfiniteScrollListProps = {
     fetch: (page: number) => any,
-    error: string,
     loading: boolean,
     endReached: boolean,
     children: any
 }
 
-export const InfiniteScrollList = ({ children, fetch, error, loading, endReached }: InfiniteScrollListProps) => {
+export const InfiniteScrollList = ({children, fetch, loading, endReached}: InfiniteScrollListProps) => {
 
-    const [snackbarOpen, setSnackbarOpen] = useState(error !== "");
     const observerTarget = useRef(null);
-
-    const handleClose = (event: Event | React.SyntheticEvent<any, Event>, reason: SnackbarCloseReason) => {
-        if (reason === 'clickaway') {
-            return;
-        }
-        setSnackbarOpen(false);
-    };
-
-    const handleAlertClose = (event: React.SyntheticEvent<Element, Event>) => setSnackbarOpen(false);
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
     useEffect(() => {
@@ -52,12 +41,5 @@ export const InfiniteScrollList = ({ children, fetch, error, loading, endReached
             {children}
             <div ref={observerTarget}></div>
         </List>
-        {
-            <Snackbar sx={{ position: "absolute", right: "16px", bottom: "16px" }} open={snackbarOpen} onClose={handleClose}>
-                <Alert onClose={handleAlertClose} severity={"error"} sx={{ width: '100%' }}>
-                    {error}
-                </Alert>
-            </Snackbar>
-        }
     </div>
 }

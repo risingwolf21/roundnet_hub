@@ -1,9 +1,28 @@
 import {TFunction} from "i18next";
 import {AnyAction, ThunkDispatch} from "@reduxjs/toolkit";
 import {RootState} from "src/redux/store";
-import {FullAttendance, FullComment, FullItemHolder, Group, User} from "src/types/supabaseTypes";
-import {CreateEventOption, PlaceType} from "../eventCreation/types";
+import {FullAttendance, FullComment, FullEvent, FullItemHolder, Group, User} from "src/types/supabaseTypes";
 import {SliceEvent} from "src/redux/events/eventsSlice";
+
+export type CreateEventOption = "UpdateSingle" | "UpdateRecurrence" | "InsertEvent";
+
+export type CreateEventProps = {
+    t: TFunction,
+    eventToEdit: FullEvent | null,
+    option: CreateEventOption
+}
+
+export type PlaceType = {
+    name: string,
+    lat: number,
+    lon: number
+}
+
+export type SearchPlacesDialogProps = {
+    open: boolean,
+    handleClose: () => void,
+    placeSelected: (place: PlaceType) => void
+}
 
 export type EventInformationProps = {
     selectedEvent: SliceEvent,

@@ -1,5 +1,4 @@
 import {PostgrestSingleResponse} from "@supabase/supabase-js";
-import {TABLE_DRINK, TABLE_HISTORY, TABLE_PAYMENTS} from "../constants";
 import {
     Drink,
     DrinkCounter,
@@ -14,14 +13,14 @@ import {supabase} from "../components/services/supabase/supabaseClient";
 export const SupabaseDrinkRepository = {
 
     async updateDrinkStock(drinkId: number, stock: number): Promise<PostgrestSingleResponse<any>> {
-        return supabase.from(TABLE_DRINK)
+        return supabase.from('drink')
             .update({stock}).eq("id", drinkId)
             .throwOnError();
     },
 
     async fetchHistoryForUser(userId: string, page: number = 0, count: number = 20): Promise<PostgrestSingleResponse<FullHistory[]>> {
         return supabase
-            .from(TABLE_HISTORY)
+            .from('history')
             .select('id, count, amount, created_at, drinkId: drink, drink(*), user(*)')
             .not("user", "is", null)
             .eq('user.userId', userId)
@@ -38,7 +37,7 @@ export const SupabaseDrinkRepository = {
 
     async fetchCurrentPaymentForUser(userId: string): Promise<PostgrestSingleResponse<any[]>> {
         return supabase
-            .from(TABLE_PAYMENTS)
+            .from('payments')
             .select("*")
             .eq("userId", userId)
             .eq("paymentState", "Open")
@@ -48,7 +47,7 @@ export const SupabaseDrinkRepository = {
 
     async insertNewPayment(userId: string): Promise<PostgrestSingleResponse<PaymentInsert>> {
         return supabase
-            .from(TABLE_PAYMENTS)
+            .from('payments')
             .insert({
                 userId: userId,
                 paymentState: "Open"
@@ -61,7 +60,7 @@ export const SupabaseDrinkRepository = {
 
     async fetchOpenDrinksForUser(userId: string): Promise<PostgrestSingleResponse<FullHistory[]>> {
         return supabase
-            .from(TABLE_HISTORY)
+            .from('history')
             .select("*, drink ( price, name ), payment(*)")
             .eq("user ", userId)
             .eq("payment.paymentState", "Open" as PaymentState)
@@ -71,7 +70,7 @@ export const SupabaseDrinkRepository = {
 
     async insertHistoryItems(drinks: DrinkCounter[], userId: string, paymentId: number): Promise<PostgrestSingleResponse<any>> {
         return supabase
-            .from(TABLE_HISTORY)
+            .from('history')
             .insert(drinks.map((drink) => {
                 return {
                     user: userId,
@@ -86,7 +85,7 @@ export const SupabaseDrinkRepository = {
 
     async updateHistoryItem(id: number, count: number, amount: number): Promise<PostgrestSingleResponse<any>> {
         return supabase
-            .from(TABLE_HISTORY)
+            .from('history')
             .update({count: count, amount: amount})
             .eq("id", id)
             .throwOnError();
@@ -94,7 +93,7 @@ export const SupabaseDrinkRepository = {
 
     async fetchDrinksToPay(userId: string): Promise<PostgrestSingleResponse<PaymentHistory[]>> {
         return supabase
-            .from(TABLE_HISTORY)
+            .from('history')
             .select("id, count, created_at, user, amount, drink ( name, price ), payments ( paymentState )")
             .eq('payments.paymentState', "Open")
             .not("payments", "is", null)
@@ -105,7 +104,7 @@ export const SupabaseDrinkRepository = {
 
     async fetchDrinks(): Promise<PostgrestSingleResponse<Drink[]>> {
         return supabase
-            .from(TABLE_DRINK)
+            .from('drink')
             .select("*")
             .order('id', {ascending: false})
             .returns<Drink[]>()

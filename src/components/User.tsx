@@ -24,7 +24,7 @@ import CustomAppBar from "./AppBar";
 import {useSelector} from "react-redux";
 import React, {useEffect, useState} from "react";
 import {AppDispatch, RootState, useAppDispatch} from "../redux/store";
-import {BOTTOM_NAV_OPTION_1, BOTTOM_NAV_OPTION_2, TABLE_USER} from "../constants";
+import {BOTTOM_NAV_OPTION_1, BOTTOM_NAV_OPTION_2} from "../constants";
 import {AlertSnackbar} from "./AlertSnackbar";
 import {Group, NotificationTags, User} from "src/types/supabaseTypes";
 import {SupabaseClient} from "@supabase/supabase-js";
@@ -207,7 +207,7 @@ const UserScreen = ({user, client, dispatch, groups}: UserScreenProps) => {
 
     const updateDisplayName = async (avatarUrl: string | null) => {
         let displayName = [firstName.trim(), surName.trim()].filter(x => x !== "").join(" ");
-        const {error} = await client.from(TABLE_USER).update({displayName, avatarUrl}).eq("userId", user.userId);
+        const {error} = await client.from('user').update({displayName, avatarUrl}).eq("userId", user.userId);
         if (error) {
             setErrorSnackbar({message: error.message, open: true});
             captureException(error);

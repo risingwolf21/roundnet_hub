@@ -20,7 +20,7 @@ import {useAppDispatch} from "src/redux/store"
 import {useClient} from "react-supabase"
 import {onEventCommentDelete, onEventCommentInsert, onEventCommentUpdate} from "src/redux/events/eventCommentsSlice"
 import {formatDistanceToNow} from "date-fns"
-import {SupabaseEventRepository} from "../../repository/EventRepository";
+import {SupabaseEventRepository} from "../../../repository/EventRepository";
 
 type EventInformationCommentsProps = {
     comments: FullComment[],

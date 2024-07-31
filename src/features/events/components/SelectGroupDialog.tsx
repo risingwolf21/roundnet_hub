@@ -16,10 +16,10 @@ import React, {useEffect, useState} from "react";
 import {useSelector} from "react-redux";
 import {RootState} from "src/redux/store";
 import {Group} from "src/types/supabaseTypes";
-import {SlideUpTransition} from "../../utils";
-import {SelectGroupDialogProps} from "../eventInformation/types";
+import {SlideUpTransition} from "../../../utils";
+import {SelectGroupDialogProps} from "../types";
 import {PostgrestSingleResponse} from "@supabase/supabase-js";
-import {SupabaseEventRepository} from "../../repository/EventRepository";
+import {SupabaseEventRepository} from "../../../repository/EventRepository";
 
 export const SelectGroupDialog = ({ open, handleClose, handleSubmit }: SelectGroupDialogProps) => {
 

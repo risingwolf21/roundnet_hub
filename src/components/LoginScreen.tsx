@@ -9,7 +9,6 @@ import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
 import Logo from "../images/Karlsruher_Kojoten_Logo.svg";
 import {supabase} from "./services/supabase/supabaseClient";
-import {TABLE_USER} from "../constants";
 import {AuthViewType} from "./AuthScreen";
 import {CircularProgress} from "@mui/material";
 import {AlertMessage, AlertSnackbar} from "./AlertSnackbar";
@@ -39,7 +38,7 @@ const LoginScreen = ({setAuthView}: LoginProps) => {
             setAlertInfo({message: error.message, severity: "error"});
             setLoginInProgress(false);
         } else
-            supabase.from(TABLE_USER).select().eq("userId", data.user.id).then(async res => {
+            supabase.from('user').select().eq("userId", data.user.id).then(async res => {
                 if (res.data && res.data.length === 1) {
                     await supabase.auth.updateUser({
                         data: {role: res.data[0].role}

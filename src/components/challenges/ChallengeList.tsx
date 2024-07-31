@@ -49,7 +49,7 @@ const ChallengeListProvider = () => {
         return () => {
             subscription.unsubscribe();
         }
-    }, [dispatch]);
+    }, [dispatch, client]);
 
     return <ChallengeList loading={false} challenges={challenges} />
 }

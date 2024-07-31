@@ -15,9 +15,9 @@ import {
 import React, {useEffect, useState} from "react";
 import {AccountBox} from "@mui/icons-material";
 import {useTheme} from '@mui/material/styles';
-import {FullAttendance} from "../../types/supabaseTypes";
-import {SwipeableDialog} from "../SwipeableDialog";
-import {EventAttendanceDialogProps} from "./types";
+import {FullAttendance} from "../../../types/supabaseTypes";
+import {SwipeableDialog} from "../../../components/SwipeableDialog";
+import {EventAttendanceDialogProps} from "../types";
 import {isBefore} from "date-fns";
 import {useNavigate} from "react-router-dom";
 
