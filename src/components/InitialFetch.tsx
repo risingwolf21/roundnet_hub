@@ -1,15 +1,15 @@
 import {useEffect} from "react";
 import {RootState, useAppDispatch} from "../redux/store";
 import {useClient} from "react-supabase";
-import {fetchSingleEventAsync} from "../redux/events/eventsSlice";
+import {fetchSingleEventAsync} from "../features/events/slices/eventsSlice";
 import {useSelector} from "react-redux";
-import {fetchNotVerifiedUsersAsync} from "../redux/adminUserSlice";
+import {fetchNotVerifiedUsersAsync} from "../features/admin/slices/adminUserSlice";
 import {
     fetchNotificationsAsync,
     onNotificationDelete,
     onNotificationInsert,
     onNotificationUpdate
-} from "../redux/notificationsSlice";
+} from "../features/notifications/slices/notificationsSlice";
 import {NotificationInsert, NotificationUpdate} from "../types/supabaseTypes";
 
 export const useInitialFetch = () => {

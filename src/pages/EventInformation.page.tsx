@@ -7,15 +7,20 @@ import {RootState, useAppDispatch} from "../redux/store";
 import EventInformation from "../features/events/EventInformation";
 import LoadingEventInfo from "../features/events/components/LoadingEventInfo";
 import {AlertSnackbar} from "../components/AlertSnackbar";
-import {eventsSelector, fetchSingleEventAsync, onEventDelete, onEventUpdate} from "src/redux/events/eventsSlice";
+import {
+    eventsSelector,
+    fetchSingleEventAsync,
+    onEventDelete,
+    onEventUpdate
+} from "src/features/events/slices/eventsSlice";
 import {
     attendanceSelector,
     onEventAttendanceDelete,
     onEventAttendanceUpdate
-} from "src/redux/events/eventAttendanceSlice";
-import {eventsCommentsSelector} from "src/redux/events/eventCommentsSlice";
+} from "src/features/events/slices/eventAttendanceSlice";
+import {eventsCommentsSelector} from "src/features/events/slices/eventCommentsSlice";
 import {useClient} from "react-supabase";
-import {fetchItemsAsync, keyHoldersSelector} from "../redux/keysSlice";
+import {fetchItemsAsync, keyHoldersSelector} from "../features/keys/slices/keysSlice";
 import {TablesUpdate} from "../types/supabase-generated.types";
 import {PlaceType} from "../features/events/types";
 

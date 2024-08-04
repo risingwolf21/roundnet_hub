@@ -15,8 +15,8 @@ import {
     onEventErrorRead,
     onEventUpdate,
     SliceEvent
-} from 'src/redux/events/eventsSlice';
-import {updateAttendanceAsync} from 'src/redux/events/eventAttendanceSlice';
+} from 'src/features/events/slices/eventsSlice';
+import {updateAttendanceAsync} from 'src/features/events/slices/eventAttendanceSlice';
 import {can} from "../../utils/PermissionService";
 import {TablesUpdate} from "../../types/supabase-generated.types";
 import {t} from "i18next";

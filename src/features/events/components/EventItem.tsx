@@ -11,7 +11,7 @@ import {
 } from "@mui/material"
 import moment from "moment"
 import React from "react"
-import {SliceEvent} from "src/redux/events/eventsSlice"
+import {SliceEvent} from "src/features/events/slices/eventsSlice"
 import {answerDeadlineExpired, eventInThePast} from "src/types/supabaseTypes"
 
 export type EventItemProps = {

@@ -18,7 +18,7 @@ import {can} from "src/utils/PermissionService";
 import CustomAppBar from "./AppBar";
 import {useSelector} from "react-redux";
 import {RootState} from "../redux/store";
-import {notificationsSelector} from "../redux/notificationsSlice";
+import {notificationsSelector} from "../features/notifications/slices/notificationsSlice";
 
 const Browse = ({t}: { t: TFunction }) => {
 

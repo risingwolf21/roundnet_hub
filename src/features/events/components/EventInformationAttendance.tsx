@@ -23,8 +23,8 @@ import {
 import {t} from "i18next"
 import React, {useEffect, useState} from "react"
 import {useClient} from "react-supabase"
-import {onEventAttendanceDelete, onEventAttendanceUpdate} from "src/redux/events/eventAttendanceSlice"
-import {SliceEvent} from "src/redux/events/eventsSlice"
+import {onEventAttendanceDelete, onEventAttendanceUpdate} from "src/features/events/slices/eventAttendanceSlice"
+import {SliceEvent} from "src/features/events/slices/eventsSlice"
 import {useAppDispatch} from "src/redux/store"
 import {
     answerDeadlineExpired,
@@ -35,7 +35,7 @@ import {
     maxAttendeesExceeded,
     User
 } from "src/types/supabaseTypes"
-import EventAttendanceDialog from "./EventAttendanceDialog"
+import EventAttendanceDialog from "../dialogs/EventAttendanceDialog"
 import {TablesUpdate} from "../../../types/supabase-generated.types";
 
 type EventInformationAttendanceProps = {

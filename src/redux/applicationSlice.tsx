@@ -106,9 +106,6 @@ export const addNotificationPermissionAsync = createAsyncThunk("addNotificationP
 export const {
     onUserChange,
     onModeChange,
-    onAppUpdateAvailableChange,
-    onAppVersionChange,
-    onRealtimeStateChange,
     onUpdateServiceWorker,
     onServiceWorkerInitialized
 } = applicationReducer.actions;

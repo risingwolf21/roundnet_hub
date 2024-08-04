@@ -18,7 +18,11 @@ import React, {useEffect} from "react"
 import {EventCommentInsert, EventCommentUpdate, FullComment} from "src/types/supabaseTypes"
 import {useAppDispatch} from "src/redux/store"
 import {useClient} from "react-supabase"
-import {onEventCommentDelete, onEventCommentInsert, onEventCommentUpdate} from "src/redux/events/eventCommentsSlice"
+import {
+    onEventCommentDelete,
+    onEventCommentInsert,
+    onEventCommentUpdate
+} from "src/features/events/slices/eventCommentsSlice"
 import {formatDistanceToNow} from "date-fns"
 import {SupabaseEventRepository} from "../../../repository/EventRepository";
 

@@ -19,7 +19,7 @@ import {
 import {AlertMessage, AlertSnackbar} from "./AlertSnackbar";
 import {omit} from "lodash";
 
-const table_names = ["distinct_event", "distinct_drinks", "readable_history", "drink", "user", "event_attendance_user_mapping", "event_comments", "event_group", "events", "group_user_mapping", "history", "key_history", "key_holders", "keys", "payments", "notifications"]
+const table_names = ["challenge", "challenge_stats", "drink", "event_attendance_user_mapping", "event_comments", "event_group", "events", "group_user_mapping", "history", "item_history", "items", "notifications", "payments", "user"]
 export const SupabaseClient = () => {
 
     const [selectedTable, setSelectedTable] = useState<typeof table_names[number]>("drink");
@@ -89,6 +89,11 @@ export const SupabaseClient = () => {
                     valueOptions: ["user", "admin", "procure", "finance", "trainer"],
                     editable: true,
                 }
+            case "displayName":
+                return {
+                    type: "string",
+                    editable: true
+                }
             case "created_at":
             case "lastUpdate":
             case "meetingDateTime":
@@ -141,7 +146,7 @@ export const SupabaseClient = () => {
         });
 
         const editedRow = selectedTableData.find((row) => row.id === id);
-        if (editedRow!.isNew) {
+        if (editedRow && editedRow!.isNew) {
             setSelectedTableData(selectedTableData.filter((row) => row.id !== id));
         }
     };

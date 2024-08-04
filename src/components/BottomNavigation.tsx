@@ -8,7 +8,7 @@ import {useNavigate} from "react-router-dom";
 import {can} from "src/utils/PermissionService";
 import {onModeChange} from "../redux/applicationSlice";
 import {RootState} from "../redux/store";
-import {notificationsSelector} from "../redux/notificationsSlice";
+import {notificationsSelector} from "../features/notifications/slices/notificationsSlice";
 import {BOTTOM_NAV_OPTION_1, BOTTOM_NAV_OPTION_2, HOMEPAGE} from "../constants";
 import {BottomNavigationItem} from "../types/types";
 

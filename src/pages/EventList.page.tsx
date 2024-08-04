@@ -4,7 +4,7 @@ import {can} from 'src/utils/PermissionService';
 import {RootState} from "../redux/store";
 import {AlertSnackbar} from "../components/AlertSnackbar";
 import EventScreen from '../features/events/EventList';
-import {eventsSelector} from "src/redux/events/eventsSlice";
+import {eventsSelector} from "src/features/events/slices/eventsSlice";
 
 const EventScreenProvider = () => {
     const {loading, error, endReached} = useSelector((state: RootState) => state.events);

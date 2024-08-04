@@ -5,7 +5,7 @@ import {SupabaseUserRepository} from "../repository/UserRepository";
 import {User} from "../types/supabaseTypes";
 import {captureException} from "@sentry/react";
 import {toast} from "react-toastify";
-import {Notification as NotificationComponent} from "../components/Notification";
+import {Notification as NotificationComponent} from "../features/notifications/Notification";
 
 export async function requestNotificationPermission(user: User, messaging: Messaging) {
     //requesting permission using Notification API
