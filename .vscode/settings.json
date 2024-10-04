@@ -14,6 +14,9 @@
     },
     "emmet.showExpandedAbbreviation": "never",
     "deno.path": "C:\\Users\\Karl\\AppData\\Local\\Microsoft\\WinGet\\Packages\\DenoLand.Deno_Microsoft.Winget.Source_8wekyb3d8bbwe\\deno.exe",
+    "i18n-ally.localesPaths": [
+        "src/translation/locales"
+    ],
     //"deno.enable": true,
     // "deno.unstable": true,
 }
