@@ -42,8 +42,21 @@ export const EventItem = ({event, onClick, attendEvent, declineEvent, attendance
             </Box>
         </ListItemAvatar>
         <ListItemText primary={event.title}
-                      secondary={event.isCancelled ? "Event abgesagt" : t('events.startTime', {date: toDate(event.startingDateTime)})}/>
-        <ListItemSecondaryAction>
+                        primaryTypographyProps={{
+                            style: {
+                                whiteSpace: 'nowrap',
+                                overflow: 'clip',
+                                textOverflow: 'ellipsis'
+                            }
+                        }}
+                      secondary={event.isCancelled ? "Event abgesagt" : t('events.startTime', {date: toDate(event.startingDateTime)})}
+                      secondaryTypographyProps={{
+                        style: {
+                            whiteSpace: 'nowrap',
+                            overflow: 'clip',
+                            textOverflow: 'ellipsis'
+                        }
+                    }}/>
             {
                 attendanceUpdating
                     ? <CircularProgress size={"22px"}/>
@@ -69,6 +82,5 @@ export const EventItem = ({event, onClick, attendEvent, declineEvent, attendance
                             </IconButton>
                         </Box>
             }
-        </ListItemSecondaryAction>
-    </ListItem>
+        </ListItem>
 }
