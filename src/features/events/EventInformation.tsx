@@ -256,7 +256,11 @@ const EventInformation = ({
                         <Divider/>
 
                         {
-                            selectedEvent.maxAttendees && selectedEvent.maxAttendees >= 0 && selectedEvent.maxAttendees <= attendance.filter(x => x.state === "Attending").length && selectedEvent.userAttendance !== "Waiting" && selectedEvent.userAttendance !== "Attending" &&
+                            (selectedEvent.maxAttendees 
+                                && selectedEvent.maxAttendees >= 0 
+                                && selectedEvent.maxAttendees <= attendance.filter(x => x.state === "Attending").length 
+                                && selectedEvent.userAttendance !== "Waiting" 
+                                && selectedEvent.userAttendance !== "Attending") &&
                             <Alert sx={{mt: 2}} severity="info" action={
                                 <Button variant="contained" size="small"
                                         onClick={() => updateAttendance("Waiting", selectedEvent.userAttendance)}>
