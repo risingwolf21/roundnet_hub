@@ -9,7 +9,8 @@ import {
     ListItemText,
     Typography
 } from "@mui/material"
-import moment from "moment"
+import { toDate } from "date-fns"
+import { TFunction } from "i18next"
 import React from "react"
 import {SliceEvent} from "src/features/events/slices/eventsSlice"
 import {answerDeadlineExpired, eventInThePast} from "src/types/supabaseTypes"
@@ -17,30 +18,31 @@ import {answerDeadlineExpired, eventInThePast} from "src/types/supabaseTypes"
 export type EventItemProps = {
     attendanceUpdating: boolean,
     event: SliceEvent,
+    t: TFunction,
     onClick: () => void,
     attendEvent: () => void,
     declineEvent: () => void
 }
 
-export const EventItem = ({event, onClick, attendEvent, declineEvent, attendanceUpdating}: EventItemProps) => {
+export const EventItem = ({event, onClick, attendEvent, declineEvent, attendanceUpdating, t}: EventItemProps) => {
 
     return <ListItem sx={{p: 1}} onClick={onClick}>
         <ListItemAvatar>
             <Box sx={{display: "flex", flexDirection: "column", justifyContent: "left"}}>
                 <Typography fontSize={10} textAlign={"center"}>
                     {
-                        moment(event.startingDateTime).format("MMM").toUpperCase()
+                        t('events.startDateShortMonth', {date: toDate(event.startingDateTime)}).toUpperCase()
                     }
                 </Typography>
                 <Typography variant="h6" fontWeight={"bold"} textAlign={"center"}>
                     {
-                        moment(event.startingDateTime).format("D")
+                        t('events.startDateDay', {date: toDate(event.startingDateTime)}).toUpperCase()
                     }
                 </Typography>
             </Box>
         </ListItemAvatar>
         <ListItemText primary={event.title}
-                      secondary={event.isCancelled ? "Event abgesagt" : moment(event.startingDateTime).format("dddd [at] HH:mm")}/>
+                      secondary={event.isCancelled ? "Event abgesagt" : t('events.startTime', {date: toDate(event.startingDateTime)})}/>
         <ListItemSecondaryAction>
             {
                 attendanceUpdating

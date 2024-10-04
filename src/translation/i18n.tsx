@@ -4,6 +4,7 @@ import {initReactI18next} from "react-i18next";
 import {format as formatDate, isDate} from "date-fns";
 import translationEN from './locales/translation.en_US.json'
 import translationDE from './locales/translation.de_DE.json';
+import {enGB, de} from "date-fns/locale";
 
 const resources = {
     en: {
@@ -24,7 +25,7 @@ i18n
             escapeValue: false, // react already safes from xss
             format: (value, format, lng) => {
                 if (isDate(value) && format && lng) {
-                    return formatDate(value, format);
+                    return formatDate(value, format, {locale: lng === "de" ? de : enGB });
                 }
                 return value;
             }

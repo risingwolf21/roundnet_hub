@@ -98,6 +98,7 @@ const EventScreen = ({events, loading, error, endReached, user}: EventScreenProp
                 events.map((event) => <div key={event.id}>
                     <EventItem
                         event={event}
+                        t={t}
                         attendanceUpdating={event.attendanceUpdating}
                         attendEvent={() => updateAttendance(event.id, "Attending", event.userAttendance)}
                         declineEvent={() => updateAttendance(event.id, "Declined", event.userAttendance)}
