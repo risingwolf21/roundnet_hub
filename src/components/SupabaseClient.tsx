@@ -18,6 +18,8 @@ import {
 } from "@mui/x-data-grid";
 import {AlertMessage, AlertSnackbar} from "./AlertSnackbar";
 import {omit} from "lodash";
+import {Tables} from "../types/supabase-generated.types";
+import {supabase} from "./services/supabase/supabaseClient";
 
 const table_names = ["challenge", "challenge_stats", "drink", "event_attendance_user_mapping", "event_comments", "event_group", "events", "group_user_mapping", "history", "item_history", "items", "notifications", "payments", "user"]
 export const SupabaseClient = () => {
@@ -29,10 +31,22 @@ export const SupabaseClient = () => {
     const [selectedTableData, setSelectedTableData] = useState<any[]>([]);
     const [rowModesModel, setRowModesModel] = React.useState<GridRowModesModel>({});
     const [alertInfo, setAlertInfo] = useState<AlertMessage | null>(null);
+    const [users, setUsers] = useState<Tables<'user'>[]>([]);
+    const [groups, setGroups] = useState<Tables<'event_group'>[]>([]);
+
+    useEffect(() => {
+        supabase.from('user').select("*").returns<Tables<'user'>[]>().then(result => {
+            setUsers(result.data ?? []);
+        });
+        supabase.from('event_group').select("*").returns<Tables<'event_group'>[]>().then(result => {
+            setGroups(result.data ?? []);
+        });
+    }, [client])
 
     useEffect(() => {
         setLoading(true);
-        client.from(selectedTable).select("*").then(result => {
+        // @ts-ignore
+        supabase.from(selectedTable).select("*").then(result => {
             if (result.data) {
                 setSelectedTableData(result.data);
                 setLoading(false);
@@ -64,8 +78,18 @@ export const SupabaseClient = () => {
     } | null {
         switch (key) {
             case "type":
-                return {
-                    type: "singleSelect", valueOptions: ["Drink", "Special"], editable: true
+                if (selectedTable === "items") {
+                    return {
+                        type: "singleSelect",
+                        valueOptions: ["mtvStorage", "mtvGymPalazzo", "mtvGym", "goethe"],
+                        editable: true
+                    }
+                } else if (selectedTable === "drink") {
+                    return {
+                        type: "singleSelect", valueOptions: ["Drink", "Special"], editable: true
+                    }
+                } else {
+                    return {editable: false};
                 }
             case "paymentState":
                 return {
@@ -114,10 +138,29 @@ export const SupabaseClient = () => {
                 return {
                     type: "boolean", editable: true
                 }
+            case "current_holder":
             case "user":
+                return {
+                    type: "singleSelect",
+                    editable: true,
+                    valueOptions: users.map(x => ({
+                        value: x.userId,
+                        label: x.displayName
+                    })),
+                    valueGetter: params => users.find(x => x.userId === params.value)?.userId
+                }
+            case "group":
+                return {
+                    type: "singleSelect",
+                    editable: true,
+                    valueOptions: groups.map(x => ({
+                        value: x.id,
+                        label: x.name
+                    })),
+                    valueGetter: params => groups.find(x => x.id === params.value)?.id
+                }
             case "drink":
             case "event":
-            case "group":
             case "payment":
             case "key":
             case "userId":
@@ -153,7 +196,9 @@ export const SupabaseClient = () => {
 
     const processRowUpdate = (newRow: GridRowModel) => {
         const updatedRow = {...newRow, isNew: false};
-        client.from(selectedTable).upsert(omit(updatedRow, ["isNew"])).then((result) => {
+        console.log(updatedRow)
+        // @ts-ignore
+        supabase.from(selectedTable).upsert(omit(updatedRow, ["isNew"])).then((result) => {
             if (!result.error)
                 setSelectedTableData(selectedTableData.map((row) => (row.id === newRow.id ? updatedRow : row)));
             else

@@ -1,4 +1,4 @@
-import {ArrowBack, Delete, DoNotDisturb, DoNotDisturbOff, Edit, MoreVert} from "@mui/icons-material";
+import {ArrowBack, Delete, DoNotDisturb, DoNotDisturbOff, Edit, Key, MoreVert} from "@mui/icons-material";
 import {
     Alert,
     AppBar,
@@ -154,8 +154,14 @@ const EventInformation = ({
                     sx={{mr: 2, color: "#fff"}}>
                     <ArrowBack/>
                 </IconButton>
-                <Typography variant="h6" component="div" sx={{flexGrow: 1}}>{selectedEvent.title}</Typography>
+                <Typography variant="h6" component="div" sx={{
+                    flexGrow: 1,
+                    whiteSpace: 'nowrap',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis'
+                }}>{selectedEvent.title}</Typography>
                 {can("edit", "training") && <>
+                    <Typography component="div">{selectedEvent.id}</Typography>
                     <IconButton sx={{color: "#fff", pr: 0}} onClick={handleClick}>
                         <MoreVert/>
                     </IconButton>
@@ -165,6 +171,12 @@ const EventInformation = ({
                         keepMounted
                         open={Boolean(anchorEl)}
                         onClose={handleClose}>
+                        <MenuItem>
+                            <ListItemIcon>
+                                <Key/>
+                            </ListItemIcon>
+                            <ListItemText primary={`ID: ${selectedEvent.id}`}/>
+                        </MenuItem>
                         <MenuItem onClick={() => {
                             setEditEventOptionOpen(true);
                             handleClose();
@@ -256,10 +268,10 @@ const EventInformation = ({
                         <Divider/>
 
                         {
-                            (selectedEvent.maxAttendees 
-                                && selectedEvent.maxAttendees >= 0 
-                                && selectedEvent.maxAttendees <= attendance.filter(x => x.state === "Attending").length 
-                                && selectedEvent.userAttendance !== "Waiting" 
+                            (selectedEvent.maxAttendees
+                                && selectedEvent.maxAttendees >= 0
+                                && selectedEvent.maxAttendees <= attendance.filter(x => x.state === "Attending").length
+                                && selectedEvent.userAttendance !== "Waiting"
                                 && selectedEvent.userAttendance !== "Attending") &&
                             <Alert sx={{mt: 2}} severity="info" action={
                                 <Button variant="contained" size="small"
