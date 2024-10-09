@@ -40,6 +40,11 @@ export async function requestNotificationPermission(user: User, messaging: Messa
     }
 }
 
+const isNotificationSupported = () =>
+    'Notification' in window &&
+    'serviceWorker' in navigator &&
+    'PushManager' in window
+
 export function useFirebase(user: User | null) {
 
 
@@ -52,7 +57,8 @@ export function useFirebase(user: User | null) {
                         autoClose: false, toastId: "123", containerId: "main"
                     })
                 });
-                requestNotificationPermission(user, messagingResolver)
+                if (isNotificationSupported())
+                    requestNotificationPermission(user, messagingResolver)
             }
         });
     }, [user]);

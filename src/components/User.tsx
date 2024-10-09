@@ -39,6 +39,7 @@ import {
     FiberManualRecord,
     Liquor,
     NotificationsRounded,
+    PasswordOutlined,
     PersonOutlineOutlined,
     Save,
     SportsHandball
@@ -59,6 +60,7 @@ import {Database} from "../types/supabase-generated.types";
 import {BottomNavigationItem} from "../types/types";
 import {SwipeableDialog} from "./SwipeableDialog";
 import {Ability, can} from "../utils/PermissionService";
+import {useNavigate} from "react-router-dom";
 
 type UserScreenProps = {
     user: User,
@@ -121,6 +123,7 @@ const NotificationSwitch = ({title, tag, loading, user, dispatch}: {
 
 const UserScreen = ({user, client, dispatch, groups}: UserScreenProps) => {
 
+    const navigate = useNavigate();
     const [selectedImage, setSelectedImage] = useState<string | ArrayBuffer | null>(null);
     const [croppedImage, setCroppedImage] = useState<string | null>(null);
     const [cropImageDialogOpen, setCropImageDialogOpen] = useState(false);
@@ -140,6 +143,11 @@ const UserScreen = ({user, client, dispatch, groups}: UserScreenProps) => {
         = useState<BottomNavigationItem>(localStorage.getItem(BOTTOM_NAV_OPTION_2) as BottomNavigationItem ?? "drinks");
     const [bottomNavigationOption1Open, setBottomNavigationOption1Open] = useState<boolean>(false);
     const [bottomNavigationOption2Open, setBottomNavigationOption2Open] = useState<boolean>(false);
+
+    const isNotificationSupported = () =>
+        'Notification' in window &&
+        'serviceWorker' in navigator &&
+        'PushManager' in window
 
     const handleSubmit = async () => {
         setLoadingSave(true);
@@ -306,6 +314,12 @@ const UserScreen = ({user, client, dispatch, groups}: UserScreenProps) => {
                             </Button>
                     }
                 </Box>
+                <Box sx={{display: "flex", justifyContent: "center", mt: 1}}>
+                    <Button startIcon={<PasswordOutlined/>}
+                            onClick={() => navigate("/reset-password")}>
+                        Passwort ändern
+                    </Button>
+                </Box>
             </Container>
             <ListItem key={"firstName"} sx={{'&.MuiListItem-root': {p: 0}}}>
                 <ListItemAvatar>
@@ -371,7 +385,7 @@ const UserScreen = ({user, client, dispatch, groups}: UserScreenProps) => {
                     pl: 0
                 }}>Benachrichtigungen</ListSubheader>}>
                 {
-                    Notification.permission === "granted" && <>
+                    isNotificationSupported() && Notification.permission === "granted" && <>
                         <NotificationSwitch title={"Event Kommentare"} tag={"eventComments"}
                                             loading={updatingNotificationTags} user={user} dispatch={dispatch}/>
 
@@ -393,7 +407,8 @@ const UserScreen = ({user, client, dispatch, groups}: UserScreenProps) => {
                     </>
                 }
                 {
-                    Notification.permission !== "granted" && <ListItemButton sx={{p: 0}} onClick={() => {
+                    isNotificationSupported() && Notification.permission !== "granted" &&
+                    <ListItemButton sx={{p: 0}} onClick={() => {
                         messaging.then(result => {
                             if (result)
                                 requestNotificationPermission(user, result).then()

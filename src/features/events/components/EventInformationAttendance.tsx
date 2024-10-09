@@ -90,6 +90,7 @@ const EventInformationAttendance = ({
             {
                 attendance.filter(x => x.state === "Attending").map(y => y.user.userId)
                     .some(x => keyHolders.filter(y => y.type === selectedEvent.required_item)
+                        .filter(y => y.current_holder !== null)
                         .map(y => y.current_holder.userId).includes(x)) &&
                 <ListItem key={"keyAttendees"} sx={{'&.MuiListItem-root': {paddingLeft: 0}}} divider>
                     <ListItemAvatar sx={{justifyContent: "left", alignItems: "center", display: "flex"}}>
