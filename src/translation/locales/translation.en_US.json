@@ -42,7 +42,10 @@
       "startTimeAndEndTime": "Starts at {{ startTime, HH:mm }} and ends at {{ endTime, HH:mm }}",
       "waitingListAccepted": "You are on waiting list place {{ place }} of {{ waitingListLength }} for this event",
       "waitingListPlace": "Waitlinglist Place ({{ place }} / {{ waitingListLength }})"
-    }
+    },
+    "startDateShortMonth":"{{date, MMM}}",
+    "startDateDay":"{{date, d}}",
+    "startTime":"{{date, cccc}} um {{date, HH:mm}}"
   },
   "feature_not_available": "This feature is not ready yet. Try again later!",
   "handover_key": "Hand over",

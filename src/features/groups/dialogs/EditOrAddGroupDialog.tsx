@@ -69,8 +69,16 @@ export const EditOrAddGroupDialog = ({open, handleClose, groupToEdit}: EditOrAdd
             color: currentGroup.color,
             description: currentGroup.description
         }).then(result => {
-            setErrorSnackbar({message: "", open: false});
-            handleClose();
+            if(!result.data){
+                setErrorSnackbar({message: "Something went wrong creating the group.", open: false});
+            } else 
+                GroupsRepository.addUserToGroup(result.data.id, user.id).then(result => {
+                    setErrorSnackbar({message: "", open: false});
+                    handleClose();
+                }).catch(error => {
+                    setErrorSnackbar({message: error.message ?? "", open: true});
+                })
+            
         }).catch(error => {
             setErrorSnackbar({message: error.message ?? "", open: true});
         });
