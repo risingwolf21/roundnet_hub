@@ -1,9 +1,8 @@
-import { Slide, SlideProps } from "@mui/material";
-import { Duration, add, format, parse } from "date-fns";
+import {Slide, SlideProps} from "@mui/material";
+import {add, Duration, format, parse} from "date-fns";
 import dayjs from "dayjs";
-import { forwardRef } from "react";
-import React from "react";
-import { EventRecurrence, ProductType } from "src/types/supabaseTypes";
+import React, {forwardRef} from "react";
+import {EventRecurrence, ProductType} from "src/types/supabaseTypes";
 
 export const compareById = (x: any, y: any) => {
     return x.id === y.id;
@@ -28,11 +27,11 @@ export const SlideUpTransition = forwardRef(function Transition(props: SlideProp
 });
 
 export const formatDateToDatabase = (date: Date) => {
-    return format(date, "yyyy-MM-dd'T'HH:mm:ssxxx");
+    return format(date, "yyyy-MM-dd'T'HH:mm:ss.SSSSSSXXX");
 }
 
 export const formatDateFromDatabase = (date: string) => {
-    return parse(date, "yyyy-MM-dd'T'HH:mm:ssxxx", new Date());
+    return parse(date, "yyyy-MM-dd'T'HH:mm:ss.SSSSSSXXX", new Date());
 }
 
 export const dayjsFromDb = (date: string | null) => {

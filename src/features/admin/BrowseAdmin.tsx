@@ -61,14 +61,6 @@ const entries = [
         ability: "groups"
     },
     {
-        translationKey: "executeEdgeFunctions",
-        navigateTo: "/admin/edgeFunctions",
-        icon: <GroupOutlined/>,
-        avatarColor: "#88AEBF",
-        action: "edit",
-        ability: "edgeFunctions"
-    },
-    {
         translationKey: "postgresClient",
         navigateTo: "/admin/supabase",
         icon: <StorageOutlined/>,

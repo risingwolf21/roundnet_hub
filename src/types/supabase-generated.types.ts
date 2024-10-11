@@ -716,11 +716,22 @@ export type Database = {
         }
         Returns: string[]
       }
+      get_enum_types: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          enum_name: string
+          enum_values: string[]
+        }[]
+      }
       get_or_create_payment_for_user: {
         Args: {
           user_id: string
         }
         Returns: number
+      }
+      get_public_table_names: {
+        Args: Record<PropertyKey, never>
+        Returns: string[]
       }
       getattendingusers: {
         Args: {
@@ -759,7 +770,7 @@ export type Database = {
     Enums: {
       EventAttendance: "Declined" | "Attending" | "Unanswered" | "Waiting"
       EventRecurrence: "Weekly" | "Fortnightly" | "Monthly" | "None"
-      ItemType: "mtvStorage" | "mtvGym" | "mtvGymPalazzo"
+      ItemType: "mtvStorage" | "mtvGym" | "mtvGymPalazzo" | "goethe"
       NotificationTags:
         | "eventComments"
         | "userRegistration"

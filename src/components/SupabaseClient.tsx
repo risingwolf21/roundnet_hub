@@ -1,7 +1,7 @@
 import {Box} from "@mui/system";
 import React, {useEffect, useState} from "react";
 import CustomAppBar from "./AppBar";
-import {List, ListItemButton, ListItemSecondaryAction, ListItemText} from "@mui/material";
+import {Button, List, ListItemButton, ListItemSecondaryAction, ListItemText} from "@mui/material";
 import {useClient} from "react-supabase";
 import {Cancel, Delete, Edit, ExpandMoreOutlined, Save} from "@mui/icons-material";
 import {SwipeableDialog} from "./SwipeableDialog";
@@ -14,31 +14,85 @@ import {
     GridRowId,
     GridRowModel,
     GridRowModes,
-    GridRowModesModel
+    GridRowModesModel,
+    GridRowsProp,
+    GridSlots,
+    GridToolbarContainer
 } from "@mui/x-data-grid";
 import {AlertMessage, AlertSnackbar} from "./AlertSnackbar";
-import {omit} from "lodash";
-import {Tables} from "../types/supabase-generated.types";
+import {isNull, omit, omitBy} from "lodash";
 import {supabase} from "./services/supabase/supabaseClient";
+import AddIcon from "@mui/icons-material/Add";
+import {formatDateFromDatabase} from "../utils";
 
-const table_names = ["challenge", "challenge_stats", "drink", "event_attendance_user_mapping", "event_comments", "event_group", "events", "group_user_mapping", "history", "item_history", "items", "notifications", "payments", "user"]
+interface EditToolbarProps {
+    setRows: (newRows: (oldRows: GridRowsProp) => GridRowsProp) => void;
+    setRowModesModel: (
+        newModel: (oldModel: GridRowModesModel) => GridRowModesModel,
+    ) => void;
+}
+
+function EditToolbar(props: EditToolbarProps) {
+    const {setRows, setRowModesModel} = props;
+
+    const handleClick = () => {
+        const id = -1
+        setRows((oldRows) => [
+            ...oldRows,
+            {id, isNew: true},
+        ]);
+        setRowModesModel((oldModel) => ({
+            ...oldModel,
+            [id]: {mode: GridRowModes.Edit, fieldToFocus: 'name'},
+        }));
+    };
+
+    return (
+        <GridToolbarContainer>
+            <Button color="primary" startIcon={<AddIcon/>} onClick={handleClick}>
+                Add record
+            </Button>
+        </GridToolbarContainer>
+    );
+}
+
+
 export const SupabaseClient = () => {
 
-    const [selectedTable, setSelectedTable] = useState<typeof table_names[number]>("drink");
+    const [tables, setTables] = useState<string[]>([]);
+    const [enums, setEnums] = useState<Map<string, string[]>>(new Map<string, string[]>());
+    const [selectedTable, setSelectedTable] = useState<string>("");
     const [selectTableOpen, setSelectTableOpen] = useState(false);
     const client = useClient();
     const [loading, setLoading] = useState(false);
     const [selectedTableData, setSelectedTableData] = useState<any[]>([]);
     const [rowModesModel, setRowModesModel] = React.useState<GridRowModesModel>({});
     const [alertInfo, setAlertInfo] = useState<AlertMessage | null>(null);
-    const [users, setUsers] = useState<Tables<'user'>[]>([]);
-    const [groups, setGroups] = useState<Tables<'event_group'>[]>([]);
+    const [users, setUsers] = useState<{ displayName: string, userId: string }[]>([]);
+    const [groups, setGroups] = useState<{ name: string, id: number }[]>([]);
 
     useEffect(() => {
-        supabase.from('user').select("*").returns<Tables<'user'>[]>().then(result => {
+        supabase.rpc("get_public_table_names").select("*").then(result => {
+            if (result.data) {
+                let loadedTables = result.data as string[];
+                setTables(loadedTables);
+                setSelectedTable(loadedTables[0] ?? "");
+            }
+        });
+        supabase.rpc("get_enum_types").select("*").then(result => {
+            if (result.data) {
+                let loaded = new Map<string, string[]>();
+                result.data.forEach(x => loaded.set(x.enum_name, x.enum_values));
+                setEnums(loaded)
+            }
+        })
+        supabase.from('user').select("displayName,userId").returns<{
+            displayName: string,
+            userId: string
+        }[]>().then(result => {
             setUsers(result.data ?? []);
         });
-        supabase.from('event_group').select("*").returns<Tables<'event_group'>[]>().then(result => {
+        supabase.from('event_group').select("*").returns<{ name: string, id: number }[]>().then(result => {
             setGroups(result.data ?? []);
         });
     }, [client])
@@ -49,6 +103,7 @@ export const SupabaseClient = () => {
         supabase.from(selectedTable).select("*").then(result => {
             if (result.data) {
                 setSelectedTableData(result.data);
+                console.log(result.data)
                 setLoading(false);
             }
         })
@@ -57,11 +112,11 @@ export const SupabaseClient = () => {
     function getRowId(row: any) {
         switch (selectedTable) {
             case "event_attendance_user_mapping":
-                return row.user + row.event;
+                return row.user + " " + row.event;
             case "group_user_mapping":
-                return row.user + row.group;
-            case "key_holders":
-                return row.key + row.user;
+                return row.user + " " + row.group;
+            case "item_holders":
+                return row.key + " " + row.user;
             case "user":
                 return row.userId;
             default:
@@ -81,42 +136,37 @@ export const SupabaseClient = () => {
                 if (selectedTable === "items") {
                     return {
                         type: "singleSelect",
-                        valueOptions: ["mtvStorage", "mtvGymPalazzo", "mtvGym", "goethe"],
+                        valueOptions: enums.get("ItemType"),
                         editable: true
                     }
                 } else if (selectedTable === "drink") {
                     return {
-                        type: "singleSelect", valueOptions: ["Drink", "Special"], editable: true
+                        type: "singleSelect", valueOptions: enums.get("ProductType"), editable: true
                     }
                 } else {
                     return {editable: false};
                 }
             case "paymentState":
                 return {
-                    type: "singleSelect", valueOptions: ["Open", "Fulfilled"], editable: true
+                    type: "singleSelect", valueOptions: enums.get("PaymentState"), editable: true
                 }
             case "state":
                 return {
                     type: "singleSelect",
-                    valueOptions: ["Declined", "Unanswered", "Waiting", "Attending"],
+                    valueOptions: enums.get("EventAttendance"),
                     editable: true
                 }
             case "recurrence":
                 return {
                     type: "singleSelect",
-                    valueOptions: ["Weekly", "Fortnightly", "Monthly", "None"],
+                    valueOptions: enums.get("EventRecurrence"),
                     editable: true
                 }
             case "role":
                 return {
                     type: "singleSelect",
-                    valueOptions: ["user", "admin", "procure", "finance", "trainer"],
+                    valueOptions: enums.get("UserRole"),
                     editable: true,
-                }
-            case "displayName":
-                return {
-                    type: "string",
-                    editable: true
                 }
             case "created_at":
             case "lastUpdate":
@@ -127,7 +177,10 @@ export const SupabaseClient = () => {
             case "recurrenceEnd":
                 return {
                     type: "dateTime",
-                    valueGetter: (params) => params.value ? new Date(params.value) : null,
+                    valueGetter: (params) => {
+                        console.log(params)
+                        return params ? formatDateFromDatabase(params) : null;
+                    },
                     editable: true
                 };
             case "active":
@@ -138,8 +191,24 @@ export const SupabaseClient = () => {
                 return {
                     type: "boolean", editable: true
                 }
-            case "current_holder":
+            case "displayName":
+            case "description":
+            case "color":
+            case "imageUrl":
+            case "name":
+                return {
+                    type: "string", editable: true
+                }
+            case "price":
+            case "stock":
+            case "previousDrink":
+                return {
+                    type: "number", editable: true
+                }
             case "user":
+            case "currentUser":
+            case "pastUser":
+            case "current_holder":
                 return {
                     type: "singleSelect",
                     editable: true,
@@ -147,7 +216,7 @@ export const SupabaseClient = () => {
                         value: x.userId,
                         label: x.displayName
                     })),
-                    valueGetter: params => users.find(x => x.userId === params.value)?.userId
+                    valueGetter: params => users.find(x => x.userId === params)?.userId ?? "Not found"
                 }
             case "group":
                 return {
@@ -157,7 +226,7 @@ export const SupabaseClient = () => {
                         value: x.id,
                         label: x.name
                     })),
-                    valueGetter: params => groups.find(x => x.id === params.value)?.id
+                    valueGetter: params => groups.find(x => x.id === params)?.id
                 }
             case "drink":
             case "event":
@@ -195,8 +264,20 @@ export const SupabaseClient = () => {
     };
 
     const processRowUpdate = (newRow: GridRowModel) => {
-        const updatedRow = {...newRow, isNew: false};
-        console.log(updatedRow)
+        let updatedRow = {...newRow, isNew: false};
+        // @ts-ignore
+        if (updatedRow["id"] === -1) { // @ts-ignore
+            updatedRow = omitBy(omit(updatedRow, ["id"]), isNull);
+            // @ts-ignore
+            supabase.from(selectedTable).insert(omit(updatedRow, ["isNew"])).select("*").single().then((result) => {
+                if (!result.error) {
+                    updatedRow = {...result.data, isNew: false};
+                    setSelectedTableData(selectedTableData.map((row) => (row.id === -1 ? result.data : row)));
+                } else
+                    setAlertInfo({message: result.error.message, severity: "error"});
+            });
+        }
+
         // @ts-ignore
         supabase.from(selectedTable).upsert(omit(updatedRow, ["isNew"])).then((result) => {
             if (!result.error)
@@ -227,6 +308,7 @@ export const SupabaseClient = () => {
                     field: x,
                     headerName: x,
                     hideable: true,
+                    width: 150,
                     ...getRowTypeOptions(x)
                 } as GridColDef;
             }), {
@@ -274,13 +356,28 @@ export const SupabaseClient = () => {
                         />,
                     ];
                 },
-            }]} rows={selectedTableData} editMode={"row"} rowModesModel={rowModesModel} getRowId={getRowId} initialState={{
-                pagination: {
-                    paginationModel: {
-                        pageSize: 50,
-                    },
-                },
-            }} processRowUpdate={processRowUpdate} onRowModesModelChange={handleRowModesModelChange}
+            }]}
+                                              slots={{
+                                                  toolbar: EditToolbar as GridSlots['toolbar'],
+                                              }}
+                                              slotProps={{
+                                                  toolbar: {setRows: setSelectedTableData, setRowModesModel},
+                                              }}
+                                              rows={selectedTableData}
+                                              density={"compact"}
+                                              editMode={"row"}
+                                              rowModesModel={rowModesModel}
+                                              getRowId={getRowId}
+                                              showCellVerticalBorder
+                                              initialState={{
+                                                  pagination: {
+                                                      paginationModel: {
+                                                          pageSize: 50
+                                                      },
+                                                  },
+                                              }}
+                                              processRowUpdate={processRowUpdate}
+                                              onRowModesModelChange={handleRowModesModelChange}
                                               onProcessRowUpdateError={(error) => console.log(error)}/>
         }
 
@@ -288,7 +385,7 @@ export const SupabaseClient = () => {
                          setOpen={() => setSelectTableOpen(true)} title={"Tablle auswählen"}>
             <List>
                 {
-                    table_names.map(x => <ListItemButton key={x} onClick={() => {
+                    tables.map(x => <ListItemButton key={x} onClick={() => {
                         setSelectedTable(x);
                         setSelectTableOpen(false);
                     }}>
