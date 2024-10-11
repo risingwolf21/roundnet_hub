@@ -208,6 +208,7 @@ export const SupabaseClient = () => {
             case "user":
             case "currentUser":
             case "pastUser":
+            case "userId":
             case "current_holder":
                 return {
                     type: "singleSelect",
@@ -232,7 +233,6 @@ export const SupabaseClient = () => {
             case "event":
             case "payment":
             case "key":
-            case "userId":
             case "place":
             default:
                 return {editable: false};
