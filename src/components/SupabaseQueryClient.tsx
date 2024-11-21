@@ -1,7 +1,7 @@
 import {Box} from "@mui/system";
 import React, {useEffect, useState} from "react";
 import CustomAppBar from "./AppBar";
-import {Button, List, ListItemButton, ListItemSecondaryAction, ListItemText, TextField, Grid, Item} from "@mui/material";
+import {Button, List, ListItemButton, ListItemSecondaryAction, ListItemText, TextField, Grid} from "@mui/material";
 import {useClient} from "react-supabase";
 import {Cancel, Delete, Edit, ExpandMoreOutlined, Save} from "@mui/icons-material";
 import {SwipeableDialog} from "./SwipeableDialog";
@@ -26,7 +26,7 @@ import AddIcon from "@mui/icons-material/Add";
 import {formatDateFromDatabase} from "../utils";
 
 const AutoItem = (content:any) => <Grid item xs="auto">
-    <Item>{content}</Item>
+    {content}
   </Grid>
 
 export const SupabaseQueryClient = () => {
