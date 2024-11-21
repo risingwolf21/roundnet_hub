@@ -36,10 +36,21 @@ export const SupabaseQueryClient = () => {
     const [result, setResult] = useState<any[]>([]);
     const [error, setError] = useState<string|null>(null);
 
+    const sanitizeQuery = (query) => {
+  // Ersetze typografische einfache Anführungszeichen durch gerade
+  let sanitizedQuery = query.replace(/[‘’]/g, "'");
+  
+  // Ersetze typografische doppelte Anführungszeichen durch gerade
+  sanitizedQuery = sanitizedQuery.replace(/[“”]/g, '"');
+  
+  return sanitizedQuery;
+};
+
   const executeQuery = async () => {
     setError(null);
     try {
-      const { data, error } = await supabase.rpc('execute_query', { query_text: query });
+        const sanitizedQuery = sanitizeQuery(query);
+        const { data, error } = await supabase.rpc('execute_query', { query_text: sanitizedQuery });
 
       if (error) {
         setError(error.message);
