@@ -714,7 +714,7 @@ export type Database = {
         Args: {
           query_text: string
         }
-        Returns: any[]
+        Returns: Array<{result: Record<string, any>}>
       }
       get_attending_users: {
         Args: {
