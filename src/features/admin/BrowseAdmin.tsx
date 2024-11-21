@@ -69,7 +69,7 @@ const entries = [
         ability: "edgeFunctions"
     },
     {
-        translationKey: "postgresClient",
+        translationKey: "supabaseQueries",
         navigateTo: "/admin/supabase/queries",
         icon: <StorageOutlined/>,
         avatarColor: "#88AEBF",
