@@ -1,7 +1,7 @@
 import {Box} from "@mui/system";
 import React, {useEffect, useState} from "react";
 import CustomAppBar from "./AppBar";
-import {Button, List, ListItemButton, ListItemSecondaryAction, ListItemText} from "@mui/material";
+import {Button, List, ListItemButton, ListItemSecondaryAction, ListItemText, TextField} from "@mui/material";
 import {useClient} from "react-supabase";
 import {Cancel, Delete, Edit, ExpandMoreOutlined, Save} from "@mui/icons-material";
 import {SwipeableDialog} from "./SwipeableDialog";
@@ -58,13 +58,13 @@ export const SupabaseQueryClient = () => {
         <CustomAppBar navigateBack/>
         <LoadingIndicator loading={loading}/>
         <Box sx={{ padding: 2 }}>
-        <textarea
+        <TextField 
+            fullWidth
+            label="Schreibe deine SELECT-Abfrage hier..."
         value={query}
         onChange={(e) => setQuery(e.target.value)}
-        placeholder="Schreibe deine SELECT-Abfrage hier..."
-        rows={5}
-        cols={50}
-        style={{ width: '100%' }}
+        variant="outlined"
+        minRows={5}
       />
       <br />
       <button onClick={executeQuery}>Abfrage ausführen</button>
@@ -79,18 +79,10 @@ export const SupabaseQueryClient = () => {
                     width: 150
                 } as GridColDef;
             })}
-                                              rows={result}
-                                             density={"compact"}
-                                              getRowId={(row:any)=> row.distinctId}
-                                              showCellVerticalBorder
-                                              initialState={{
-                                                  pagination: {
-                                                      paginationModel: {
-                                                          pageSize: 50
-                                                      },
-                                                  },
-                                              }}
-                                    onProcessRowUpdateError={(error) => console.log(error)}/>
+rows={result}
+density={"compact"}
+getRowId={(row:any)=> row.distinctId}
+onProcessRowUpdateError={(error) => console.log(error)}/>
         }
         </Box>
     </Box>
