@@ -32,7 +32,7 @@ export const SupabaseQueryClient = () => {
     const [result, setResult] = useState<any[]>([]);
     const [error, setError] = useState<string|null>(null);
 
-    const sanitizeQuery = (query) => {
+    const sanitizeQuery = (query: string) => {
   // Ersetze typografische einfache Anführungszeichen durch gerade
   let sanitizedQuery = query.replace(/[‘’]/g, "'");
   
