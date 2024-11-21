@@ -27,7 +27,10 @@ import {formatDateFromDatabase} from "../utils";
 
 export const SupabaseQueryClient = () => {
 
+    const [loading, setLoading] = useState(false);
+
     return <Box>
-                                              
+        <CustomAppBar navigateBack/>
+        <LoadingIndicator loading={loading}/>
     </Box>
 }
