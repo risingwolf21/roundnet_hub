@@ -57,19 +57,19 @@ export const SupabaseQueryClient = () => {
     return <Box>
         <CustomAppBar navigateBack/>
         <LoadingIndicator loading={loading}/>
+        <Box sx={{ padding: 2 }}>
         <textarea
         value={query}
         onChange={(e) => setQuery(e.target.value)}
         placeholder="Schreibe deine SELECT-Abfrage hier..."
         rows={5}
         cols={50}
-        style={{ width: '100%', margin: '8px' }}
+        style={{ width: '100%' }}
       />
       <br />
       <button onClick={executeQuery}>Abfrage ausführen</button>
       {error && <p style={{ color: 'red' }}>Fehler: {error}</p>}
       <h2>Ergebnisse:</h2>
-      <pre>{JSON.stringify(result, null, 2)}</pre>
         {
             result && result[0] && <DataGrid columns={Object.keys(result[0]).map(x => {
                 return {
@@ -92,5 +92,6 @@ export const SupabaseQueryClient = () => {
                                               }}
                                     onProcessRowUpdateError={(error) => console.log(error)}/>
         }
+        </Box>
     </Box>
 }
