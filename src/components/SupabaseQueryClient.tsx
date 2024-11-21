@@ -76,7 +76,7 @@ export const SupabaseQueryClient = () => {
                 ["SELECT","FROM","WHERE", "ORDER BY"].map(x => <AutoItem>
     <Button onClick={()=>setQuery(query + x + " ")}>{x}</Button>
 </AutoItem>
-            }
+            )}
         </Grid>
       <br />
       <button onClick={executeQuery}>Abfrage ausführen</button>
