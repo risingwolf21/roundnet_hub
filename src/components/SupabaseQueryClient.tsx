@@ -25,10 +25,6 @@ import {supabase} from "./services/supabase/supabaseClient";
 import AddIcon from "@mui/icons-material/Add";
 import {formatDateFromDatabase} from "../utils";
 
-const AutoItem = (content:any) => <Grid item xs="auto">
-    {content}
-  </Grid>
-
 export const SupabaseQueryClient = () => {
 
     const [loading, setLoading] = useState(false);
@@ -84,9 +80,9 @@ export const SupabaseQueryClient = () => {
       />
         <Grid container spacing={2}>
             {
-                ["SELECT","FROM","WHERE", "ORDER BY"].map(x => <AutoItem>
+                ["SELECT","FROM","WHERE", "ORDER BY"].map(x => <Grid item xs="auto">
     <Button onClick={()=>setQuery(query + x + " ")}>{x}</Button>
-</AutoItem>
+</Grid>
             )}
         </Grid>
       <br />
