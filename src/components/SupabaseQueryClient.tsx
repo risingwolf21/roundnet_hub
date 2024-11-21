@@ -57,6 +57,7 @@ export const SupabaseQueryClient = () => {
         placeholder="Schreibe deine SELECT-Abfrage hier..."
         rows={5}
         cols={50}
+        style={{ width: '100%', margin: '8px' }}
       />
       <br />
       <button onClick={executeQuery}>Abfrage ausführen</button>
