@@ -1,7 +1,7 @@
 import {Box} from "@mui/system";
 import React, {useEffect, useState} from "react";
 import CustomAppBar from "./AppBar";
-import {Button, List, ListItemButton, ListItemSecondaryAction, ListItemText, TextField} from "@mui/material";
+import {Button, List, ListItemButton, ListItemSecondaryAction, ListItemText, TextField, Grid, Item} from "@mui/material";
 import {useClient} from "react-supabase";
 import {Cancel, Delete, Edit, ExpandMoreOutlined, Save} from "@mui/icons-material";
 import {SwipeableDialog} from "./SwipeableDialog";
@@ -24,6 +24,10 @@ import {isNull, omit, omitBy} from "lodash";
 import {supabase} from "./services/supabase/supabaseClient";
 import AddIcon from "@mui/icons-material/Add";
 import {formatDateFromDatabase} from "../utils";
+
+const AutoItem = (content:any) => <Grid item xs="auto">
+    <Item>{content}</Item>
+  </Grid>
 
 export const SupabaseQueryClient = () => {
 
@@ -67,6 +71,13 @@ export const SupabaseQueryClient = () => {
         variant="outlined"
         minRows={5}
       />
+        <Grid container spacing={2}>
+            {
+                ["SELECT","FROM","WHERE", "ORDER BY"].map(x => <AutoItem>
+    <Button onClick={()=>setQuery(query + x + " ")}>{x}</Button>
+</AutoItem>
+            }
+        </Grid>
       <br />
       <button onClick={executeQuery}>Abfrage ausführen</button>
       {error && <p style={{ color: 'red' }}>Fehler: {error}</p>}
