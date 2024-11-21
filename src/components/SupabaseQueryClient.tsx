@@ -29,7 +29,7 @@ export const SupabaseQueryClient = () => {
 
     const [loading, setLoading] = useState(false);
     const [query, setQuery] = useState('');
-    const [result, setResult] = useState([]);
+    const [result, setResult] = useState<any[]>([]);
     const [error, setError] = useState<string|null>(null);
 
   const executeQuery = async () => {
