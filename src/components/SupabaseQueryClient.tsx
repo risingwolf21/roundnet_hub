@@ -42,7 +42,7 @@ export const SupabaseQueryClient = () => {
         return;
       }
 
-      setResult(data);
+      setResult(data.map(x=>x.result));
     } catch (err) {
       setError('Ein unerwarteter Fehler ist aufgetreten: ' + JSON.stringify(err));
     }
@@ -64,5 +64,18 @@ export const SupabaseQueryClient = () => {
       {error && <p style={{ color: 'red' }}>Fehler: {error}</p>}
       <h2>Ergebnisse:</h2>
       <pre>{JSON.stringify(result, null, 2)}</pre>
+        {
+            result && result[0] && <DataGrid columns={Object.keys(result[0]).map(x => {
+                return {
+                    field: x,
+                    headerName: x,
+                    hideable: true,
+                    width: 150
+                } as GridColDef;
+            })}
+                                              rows={result}
+                                             density={"compact"}
+                                    onProcessRowUpdateError={(error) => console.log(error)}/>
+        }
     </Box>
 }
