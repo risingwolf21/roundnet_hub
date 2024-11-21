@@ -44,7 +44,7 @@ export const SupabaseQueryClient = () => {
 
       setResult(data);
     } catch (err) {
-      setError('Ein unerwarteter Fehler ist aufgetreten: ' + err.message);
+      setError('Ein unerwarteter Fehler ist aufgetreten: ' + JSON.stringify(err));
     }
   };
 
