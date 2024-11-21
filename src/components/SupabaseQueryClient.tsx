@@ -60,6 +60,7 @@ export const SupabaseQueryClient = () => {
         <Box sx={{ padding: 2 }}>
         <TextField 
             fullWidth
+            multiline
             label="Schreibe deine SELECT-Abfrage hier..."
         value={query}
         onChange={(e) => setQuery(e.target.value)}
