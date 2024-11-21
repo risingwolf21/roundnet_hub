@@ -42,7 +42,13 @@ export const SupabaseQueryClient = () => {
         return;
       }
 
-      setResult(data.map(x=>x.result));
+      setResult(data.map((x,id)=>{
+            return {
+                ...x.result,
+                distinctId: id
+            }
+        })
+        );
     } catch (err) {
       setError('Ein unerwarteter Fehler ist aufgetreten: ' + JSON.stringify(err));
     }
@@ -75,6 +81,15 @@ export const SupabaseQueryClient = () => {
             })}
                                               rows={result}
                                              density={"compact"}
+                                              getRowId={(row:any)=> row.distinctId}
+                                              showCellVerticalBorder
+                                              initialState={{
+                                                  pagination: {
+                                                      paginationModel: {
+                                                          pageSize: 50
+                                                      },
+                                                  },
+                                              }}
                                     onProcessRowUpdateError={(error) => console.log(error)}/>
         }
     </Box>
