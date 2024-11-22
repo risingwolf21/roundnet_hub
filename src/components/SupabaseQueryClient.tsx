@@ -81,8 +81,11 @@ export const SupabaseQueryClient = () => {
         <Grid container spacing={2}>
             {
                 ["SELECT","FROM","WHERE", "ORDER BY"].map(x => <Grid item xs="auto">
-    <Button onClick={()=>setQuery(query + x + " ")}>{x}</Button>
-</Grid>
+        <Button onMouseDown={(e: any)=> {
+            e.preventDefault();
+            setQuery(query + x + " ");
+            }}>{x}</Button>
+        </Grid>
             )}
         </Grid>
       <br />
