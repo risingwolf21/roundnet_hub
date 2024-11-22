@@ -34,10 +34,10 @@ export const SupabaseQueryClient = () => {
 
     const sanitizeQuery = (query: string) => {
   // Ersetze typografische einfache Anführungszeichen durch gerade
-  let sanitizedQuery = query.replaceAll(/[‘’]/g, "'");
+  let sanitizedQuery = query.replace(/[‘’]/g, "'");
   
   // Ersetze typografische doppelte Anführungszeichen durch gerade
-  sanitizedQuery = sanitizedQuery.replaceAll(/[“”]/g, '"');
+  sanitizedQuery = sanitizedQuery.replace(/[“”]/g, '"');
   
   return sanitizedQuery;
 };
