@@ -80,7 +80,7 @@ export type FullEvent = Event & {
 }
 
 export type EventWithGroup = Event & {
-    group: Group
+    fullGroup: Group
 }
 
 export function answerDeadlineExpired<EventType extends Event>(x: EventType) {

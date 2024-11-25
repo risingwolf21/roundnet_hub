@@ -211,6 +211,9 @@ export const SupabaseEventRepository = {
     },
 
     async fetchRecurringEvents(): Promise<PostgrestSingleResponse<Event[]>> {
-        return supabase.from("distinct_event").select("*, group(*)").returns<EventWithGroup[]>().throwOnError();
+        return supabase.from("current_distinct_event")
+            .select("*, fullGroup: event_group(id, created_at, description, name, color)")
+            .returns<EventWithGroup[]>()
+            .throwOnError();
     }
 }

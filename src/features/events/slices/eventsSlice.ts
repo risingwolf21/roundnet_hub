@@ -4,6 +4,7 @@ import {RootState} from "../../../redux/store";
 import {onEventAttendanceUpdate, updateAttendanceAsync} from "./eventAttendanceSlice";
 import {SupabaseEventRepository} from "../../../repository/EventRepository";
 import {TablesUpdate} from "../../../types/supabase-generated.types";
+import {formatDateFromDatabase} from "../../../utils";
 
 export type SliceEvent = Event & {
     userAttendance: EventAttendance,
@@ -132,8 +133,17 @@ const eventsSlice = createSlice({
                 state.recurringEventsLoading = true;
             })
             .addCase(fetchRecurringEventsAsync.fulfilled, (state, action) => {
+
+                function getDayWithSundayAs7(date: Date) {
+                    const day = date.getDay();
+                    return day === 0 ? 7 : day;
+                }
+
                 state.recurringEventsLoading = false;
-                state.recurringEvents = action.payload ?? [];
+                state.recurringEvents = action.payload?.sort((a, b) =>
+                        getDayWithSundayAs7(formatDateFromDatabase(a.startingDateTime)) - getDayWithSundayAs7(formatDateFromDatabase(b.startingDateTime))
+                    )
+                    ?? [];
             })
             .addCase(fetchRecurringEventsAsync.rejected, (state, action) => {
                 state.recurringEventsLoading = false;
@@ -143,7 +153,7 @@ const eventsSlice = createSlice({
             .addCase(updateAttendanceAsync.pending, (state, action) => {
                 let sliceEvent = {
                     id: action.meta.arg.eventId,
-                    changes: { attendanceUpdating: true }
+                    changes: {attendanceUpdating: true}
                 } as Update<SliceEvent>;
 
                 eventsAdapter.updateOne(state, sliceEvent);
@@ -247,6 +257,7 @@ export const {
     editEvent,
     onEventErrorRead,
     onEventDelete,
-    onEventUpdate } = eventsSlice.actions;
+    onEventUpdate
+} = eventsSlice.actions;
 
 export default eventsSlice.reducer;

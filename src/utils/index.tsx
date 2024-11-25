@@ -27,11 +27,11 @@ export const SlideUpTransition = forwardRef(function Transition(props: SlideProp
 });
 
 export const formatDateToDatabase = (date: Date) => {
-    return format(date, "yyyy-MM-dd'T'HH:mm:ss.SSSSSSXXX");
+    return format(date, "yyyy-MM-dd'T'HH:mm:ssXXX");
 }
 
 export const formatDateFromDatabase = (date: string) => {
-    return parse(date, "yyyy-MM-dd'T'HH:mm:ss.SSSSSSXXX", new Date());
+    return parse(date, "yyyy-MM-dd'T'HH:mm:ssXXX", new Date());
 }
 
 export const dayjsFromDb = (date: string | null) => {
