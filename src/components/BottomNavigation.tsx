@@ -63,29 +63,31 @@ const CustomBottomNavigation = ({t}: { t: TFunction }) => {
             value={tab}
             onChange={handleChange}>
             {
-                bottomNavigation1 === "training" && can("view", "training") && training()
+                can("view", "training") && <BottomNavigationAction
+                key={"training"}
+                value={"training"}
+                aria-selected={tab === "training"}
+                icon={<SportsHandball/>}/>
             }
             {
-                bottomNavigation1 === "drinks" && can("view", "drink") && drinks()
+                can("view","drink") && <BottomNavigationAction
+                key={"drinks"}
+                value={"drinks"}
+                aria-selected={tab === "drinks"}
+                icon={<Liquor/>}/>
             }
             {
-                bottomNavigation1 === "challenges" && can("view", "challenges") && challenges()
-            }
-            {
-                bottomNavigation2 === "training" && can("view", "training") && training()
-            }
-            {
-                bottomNavigation2 === "drinks" && can("view", "drink") && drinks()
-            }
-            {
-                bottomNavigation2 === "challenges" && can("view", "challenges") && challenges()
+                can("view","challenges") && <BottomNavigationAction
+                key={"challenges"}
+                value={"challenges"}
+                aria-selected={tab === "challenges"}
+                icon={<EmojiEvents/>}/>
             }
             {
                 can("view", "browse") && <BottomNavigationAction
                     key={"browse"}
                     value={"browse"}
                     aria-selected={tab === "browse"}
-                    label={t("navigation.browse")}
                     icon={<Badge color="secondary" variant="dot" badgeContent={" "}
                                  invisible={notifications.length < 1}>
                         <List/>
@@ -96,7 +98,6 @@ const CustomBottomNavigation = ({t}: { t: TFunction }) => {
                     key={"admin"}
                     value={"browse-admin"}
                     aria-selected={tab === "browse-admin"}
-                    label={t("navigation.admin")}
                     icon={<Badge color="secondary" variant="dot" badgeContent={" "}
                                  invisible={!hasNotVerifiedUsers}>
                         <AdminPanelSettings/>

@@ -710,6 +710,12 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: number
       }
+      execute_query: {
+        Args: {
+          query_text: string
+        }
+        Returns: Array<{result: Record<string, any>}>
+      }
       get_attending_users: {
         Args: {
           event_id: number

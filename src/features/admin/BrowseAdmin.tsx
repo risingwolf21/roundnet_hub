@@ -67,6 +67,14 @@ const entries = [
         avatarColor: "#88AEBF",
         action: "edit",
         ability: "edgeFunctions"
+    },
+    {
+        translationKey: "supabaseQueries",
+        navigateTo: "/admin/supabase/queries",
+        icon: <StorageOutlined/>,
+        avatarColor: "#88AEBF",
+        action: "edit",
+        ability: "edgeFunctions"
     }
 ] as EntryType[];
 

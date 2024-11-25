@@ -13,6 +13,7 @@ import {useInitialFetch} from "./components/InitialFetch";
 import NotVerifiedScreen from "./components/NotVerifiedScreen";
 import {AuthGate} from "./features/auth/AuthGate";
 import {SupabaseClient} from "./components/SupabaseClient";
+import {SupabaseQueryClient} from "./components/SupabaseQueryClient";
 import {SentryRoutes} from "./index";
 import {HOMEPAGE} from "./constants";
 import {FirebaseMessaging} from "./features/notifications/FirebaseMessaging";
@@ -108,6 +109,7 @@ const App = () => {
                                    element={<PaymentsPendingAdmin/>}/>
                             <Route path='/admin/users' element={<AdminUserListProvider/>}/>
                             <Route path='/admin/supabase' element={<SupabaseClient/>}/>
+                            <Route path='/admin/supabase/queries' element={<SupabaseQueryClient/>}/>
                         </SentryRoutes>
                     </React.Suspense>
                     <div style={{width: "100%", height: "56px"}}/>
