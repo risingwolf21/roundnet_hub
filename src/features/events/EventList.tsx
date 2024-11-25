@@ -21,6 +21,7 @@ import {can} from "../../utils/PermissionService";
 import {TablesUpdate} from "../../types/supabase-generated.types";
 import {t} from "i18next";
 import {AlertMessage, AlertSnackbar} from "../../components/AlertSnackbar";
+import {EventRepeat} from "@mui/icons-material";
 
 export type EventScreenProps = {
     events: SliceEvent[],
@@ -115,6 +116,15 @@ const EventScreen = ({events, loading, error, endReached, user}: EventScreenProp
                  onClick={() => navigate("/training/createOrUpdate/InsertEvent")}>
                 {
                     <AddIcon sx={{color: "white"}}/>
+                }
+            </Fab>
+        }
+        {
+            can("edit", "training") &&
+            <Fab sx={{background: "#66bb6a", position: "fixed", right: "88px", bottom: "56px", mb: "16px"}}
+                 onClick={() => navigate("/training/recurringEvents")}>
+                {
+                    <EventRepeat sx={{color: "white"}}/>
                 }
             </Fab>
         }

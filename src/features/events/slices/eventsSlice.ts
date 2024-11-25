@@ -1,5 +1,5 @@
 import {createAsyncThunk, createEntityAdapter, createSlice, PayloadAction, Update} from "@reduxjs/toolkit";
-import {Event, EventAttendance, FullAttendance, FullEvent, Group, User} from "src/types/supabaseTypes";
+import {Event, EventAttendance, EventWithGroup, FullAttendance, FullEvent, Group, User} from "src/types/supabaseTypes";
 import {RootState} from "../../../redux/store";
 import {onEventAttendanceUpdate, updateAttendanceAsync} from "./eventAttendanceSlice";
 import {SupabaseEventRepository} from "../../../repository/EventRepository";
@@ -24,6 +24,8 @@ const eventsSlice = createSlice({
         endReached: false,
         selectedEvent: null as number | null,
         eventToEdit: null as FullEvent | null,
+        recurringEventsLoading: false,
+        recurringEvents: [] as EventWithGroup[]
     }),
     reducers: {
         selectEvent: (state, action: PayloadAction<number>) => {
@@ -125,6 +127,19 @@ const eventsSlice = createSlice({
                 state.loading = false;
                 state.error = action.error.message ?? "";
             })
+
+            .addCase(fetchRecurringEventsAsync.pending, (state, _action) => {
+                state.recurringEventsLoading = true;
+            })
+            .addCase(fetchRecurringEventsAsync.fulfilled, (state, action) => {
+                state.recurringEventsLoading = false;
+                state.recurringEvents = action.payload ?? [];
+            })
+            .addCase(fetchRecurringEventsAsync.rejected, (state, action) => {
+                state.recurringEventsLoading = false;
+                state.error = action.error.message ?? "";
+            })
+
             .addCase(updateAttendanceAsync.pending, (state, action) => {
                 let sliceEvent = {
                     id: action.meta.arg.eventId,
@@ -220,6 +235,11 @@ export const fetchSingleEventAsync = createAsyncThunk("fetchSingleEventAsync", a
             attendanceUpdating: false
         }, eventId
     };
+});
+
+export const fetchRecurringEventsAsync = createAsyncThunk("fetchRecurringEvents", async () => {
+    const response = await SupabaseEventRepository.fetchRecurringEvents();
+    return response.data;
 });
 
 export const {

@@ -4,6 +4,7 @@ import {
     EventAttendance,
     EventAttendanceMapping,
     EventRecurrence,
+    EventWithGroup,
     FullAttendance,
     FullComment,
     FullEvent,
@@ -207,5 +208,9 @@ export const SupabaseEventRepository = {
             .eq("id", eventId)
             .single<FullEvent>()
             .throwOnError();
+    },
+
+    async fetchRecurringEvents(): Promise<PostgrestSingleResponse<Event[]>> {
+        return supabase.from("distinct_event").select("*, group(*)").returns<EventWithGroup[]>().throwOnError();
     }
 }

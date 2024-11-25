@@ -65,6 +65,19 @@ export const nameOfProductType = (type: ProductType) => {
     }
 }
 
+export const nameOfRecurrence = (type: EventRecurrence) => {
+    switch (type) {
+        case "Weekly":
+            return "Wöchentlich"
+        case "Fortnightly":
+            return "Alle 2 Wochen"
+        case "Monthly":
+            return "Monatlich"
+        case "None":
+            return "Keine"
+    }
+}
+
 export const calculateEventDateWith = (eventDateTime: string | null, eventUpdateDateTime: string | null, difference: Duration, recurrence: EventRecurrence, index: number) => {
     // if the current event has this date we can simply add our calculated difference
     if (eventDateTime) {

@@ -79,6 +79,10 @@ export type FullEvent = Event & {
     fullGroup: Group
 }
 
+export type EventWithGroup = Event & {
+    group: Group
+}
+
 export function answerDeadlineExpired<EventType extends Event>(x: EventType) {
     if (!x.answerDeadline)
         return false;

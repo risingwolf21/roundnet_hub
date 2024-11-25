@@ -17,6 +17,7 @@ import {SupabaseQueryClient} from "./components/SupabaseQueryClient";
 import {SentryRoutes} from "./index";
 import {HOMEPAGE} from "./constants";
 import {FirebaseMessaging} from "./features/notifications/FirebaseMessaging";
+import {RecurringEventsProvider} from "./features/events/RecurringEvents";
 
 const FeatureNotAvailable = React.lazy(() => import('./components/FeatureNotAvailable'));
 const HistoryScreenProvider = React.lazy(() => import('./features/drinks/HistoryScreenProvider'));
@@ -97,6 +98,7 @@ const App = () => {
                             <Route path="/trainer/groups/:id"
                                    element={<GroupInformationProvider/>}/>
                             <Route path="/training" element={<EventScreenProvider/>}/>
+                            <Route path="/training/recurringEvents" element={<RecurringEventsProvider/>}/>
                             <Route path="/training/event/:selectedEventId"
                                    element={<EventInformationProvider/>}/>
                             <Route path="/training/createOrUpdate/:option"

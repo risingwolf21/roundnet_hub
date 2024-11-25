@@ -338,7 +338,7 @@ const CreateEvent = ({t, eventToEdit, option}: CreateEventProps) => {
                     <ListItemText primary={"Wiederholung"} secondary={editedEvent.recurrence}/>
                 </ListItem>
 
-                <ListItem disabled={editedEvent.recurrence === "None"} onClick={() => setStopRepeatDialogOpen(true)}
+                <ListItem onClick={() => setStopRepeatDialogOpen(true)}
                           key={"stopRecurrence"}>
                     <ListItemAvatar/>
                     <ListItemText primary={"Wiederholung stoppen"}

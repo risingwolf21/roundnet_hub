@@ -121,8 +121,7 @@ const DrinkListScreen = ({user, drinks, drinksLoading, drinksError, dispatch}: D
                          onClose={() => setFilterDialogOpen(false)} title="Filter">
             <List>
                 {
-                    [...new Set(drinks.map(x => x.type))].sort().map(x => <ListItem key={x} divider
-                                                                                    disabled={x === "Drink"}>
+                    [...new Set(drinks.map(x => x.type))].sort().map(x => <ListItem key={x} divider>
                         <ListItemAvatar>
                             <Checkbox disabled={x === "Drink"} checked={visibleTypes.some(y => y === x)}
                                       onChange={(e) => changeVisibleTypes(e, x)}/>
