@@ -10,6 +10,10 @@ import {
     Collapse,
     Divider,
     LinearProgress,
+    List,
+    ListItem,
+    ListItemText,
+    ListItemAvatar,
     Step,
     StepLabel,
     Stepper
@@ -24,6 +28,7 @@ import {RootState, useAppDispatch} from "../../redux/store";
 import {useSelector} from "react-redux";
 import {EventWithGroup} from "../../types/supabaseTypes";
 import {nameOfRecurrence} from "../../utils";
+import {PlaceType} from "./types";
 import {
     CalendarMonth,
     Edit,
@@ -217,16 +222,16 @@ const RecurringEvents = ({recurringEvents, loading, error}: RecurringEventsProps
                                                     </Grid>
                                                     <Grid>
                                                         {
-                                                            x.place && x.place.name && <Chip 
+                                                            x.place && <Chip 
                                                                 icon={<Place/>} 
-                                                                label={x.place.name}/>
+                                                                label={(JSON.parse(x.place?.toString() ?? "") as PlaceType).name}/>
                                                         }
                                                     </Grid>
                                                 </Grid>
                                             </Grid>
                                         </Grid>
                                     </CardContent>
-                                    <CardActions>
+                                    <CardActions disableSpacing>
                                         <Button startIcon={<Edit/>} onClick={() => {
                                             dispatch(editEvent(x));
                                             navigate("/training/createOrUpdate/UpdateRecurrence", {replace: true})
@@ -240,7 +245,14 @@ const RecurringEvents = ({recurringEvents, loading, error}: RecurringEventsProps
                                         </ExpandMore>
                                     </CardActions>
                                     <Collapse in={expanded === index} timeout="auto" unmountOnExit>
-                                        <Chip icon={<Key/>} label={x.key}/>
+                                        <List sx={{width: "100%"}}>
+                                            <ListItem>
+                                                <ListItemAvatar>
+                                                    <Key/>
+                                                </ListItemAvatar>
+                                                <ListItemText primary={x.key}/>
+                                            </ListItem>
+                                        </List>
                                     </Collapse>
                                 </Card>
                             </Box>
