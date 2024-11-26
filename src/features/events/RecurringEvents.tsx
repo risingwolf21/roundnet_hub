@@ -169,8 +169,9 @@ const RecurringEvents = ({recurringEvents, loading, error}: RecurringEventsProps
                                                     </Grid>
                                                     <Grid>
                                                         {
-                                                            x.maxAttendees > 0 &&
-                                                            <Chip icon={<PersonOffRounded/>} label={x.maxAttendees}/>
+                                                            <Chip 
+                                                                icon={<PersonOffRounded/>} 
+                                                                label={(x.maxAttendees && x.maxAttendees > 0) ? x.maxAttendees : "Keine Begrenzung"}/>
                                                         }
                                                     </Grid>
                                                     <Grid>
