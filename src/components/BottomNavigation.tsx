@@ -21,9 +21,6 @@ const CustomBottomNavigation = ({t}: { t: TFunction }) => {
     const {user} = useSelector((state: RootState) => state.application);
     const [tab, setTab] = useState<string>(HOMEPAGE);
 
-    let bottomNavigation1: BottomNavigationItem = localStorage.getItem(BOTTOM_NAV_OPTION_1) as BottomNavigationItem ?? "training";
-    let bottomNavigation2: BottomNavigationItem = localStorage.getItem(BOTTOM_NAV_OPTION_2) as BottomNavigationItem ?? "drinks";
-
     useEffect(() => {
         setTab(window.location.pathname.substring(1));
     }, [window.location.pathname]);
