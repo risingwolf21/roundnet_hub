@@ -7,12 +7,14 @@ import {
     CardContent,
     CardHeader,
     Chip,
+    Collapse,
     Divider,
     LinearProgress,
     Step,
     StepLabel,
     Stepper
 } from "@mui/material";
+import IconButton, { IconButtonProps } from '@mui/material/IconButton';
 import Grid from '@mui/material/Grid2';
 import React, {useEffect} from "react";
 import {AlertMessage} from "../../components/AlertSnackbar";
@@ -28,14 +30,44 @@ import {
     GroupRounded,
     Key,
     PersonOffRounded,
+    Place,
     PlayCircle,
     Repeat,
     Stop,
     StopCircleRounded,
     WatchLaterRounded
 } from "@mui/icons-material";
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import {format} from "date-fns";
 import {useNavigate} from "react-router-dom";
+
+interface ExpandMoreProps extends IconButtonProps {
+    expand: boolean;
+  }
+  
+  const ExpandMore = styled((props: ExpandMoreProps) => {
+    const { expand, ...other } = props;
+    return <IconButton {...other} />;
+  })(({ theme }) => ({
+    marginLeft: 'auto',
+    transition: theme.transitions.create('transform', {
+      duration: theme.transitions.duration.shortest,
+    }),
+    variants: [
+      {
+        props: ({ expand }) => !expand,
+        style: {
+          transform: 'rotate(0deg)',
+        },
+      },
+      {
+        props: ({ expand }) => !!expand,
+        style: {
+          transform: 'rotate(180deg)',
+        },
+      },
+    ],
+  }));
 
 export type RecurringEventsProps = {
     recurringEvents: EventWithGroup[],
@@ -55,10 +87,18 @@ export const RecurringEventsProvider = () => {
 const RecurringEvents = ({recurringEvents, loading, error}: RecurringEventsProps) => {
     const dispatch = useAppDispatch();
     const navigate = useNavigate();
+    const [expanded, setExpanded] = React.useState(-1);
 
     useEffect(() => {
         dispatch(fetchRecurringEventsAsync());
     }, [dispatch]);
+
+    const handleExpandClick = (index: number) => {
+        if(expanded === index)
+            setExpanded(-1);
+        else
+            setExpanded(index)
+    };
 
     return <Grid
         container
@@ -73,7 +113,7 @@ const RecurringEvents = ({recurringEvents, loading, error}: RecurringEventsProps
         <Grid container rowSpacing={2} sx={{width: "100%", p: 1}}>
             {
                 recurringEvents
-                    .map(x =>
+                    .map((x,index) =>
                         <Grid size={{xs: 12, md: 12}} key={x.id}>
                             <Box sx={{display: "flex"}}>
                                 <Card elevation={4} sx={{width: "100%"}}>
@@ -175,7 +215,11 @@ const RecurringEvents = ({recurringEvents, loading, error}: RecurringEventsProps
                                                         }
                                                     </Grid>
                                                     <Grid>
-                                                        <Chip icon={<Key/>} label={x.key}/>
+                                                        {
+                                                            x.place && x.place.name && <Chip 
+                                                                icon={<Place/>} 
+                                                                label={x.place.name}/>
+                                                        }
                                                     </Grid>
                                                 </Grid>
                                             </Grid>
@@ -186,7 +230,17 @@ const RecurringEvents = ({recurringEvents, loading, error}: RecurringEventsProps
                                             dispatch(editEvent(x));
                                             navigate("/training/createOrUpdate/UpdateRecurrence", {replace: true})
                                         }}>Bearbeiten</Button>
+                                        <ExpandMore
+                                            expand={expanded === index}
+                                            onClick={()=>handleExpandClick(index)}
+                                            aria-label="show more"
+                                            >
+                                            <ExpandMoreIcon />
+                                        </ExpandMore>
                                     </CardActions>
+                                    <Collapse in={expanded === index} timeout="auto" unmountOnExit>
+                                        <Chip icon={<Key/>} label={x.key}/>
+                                    </Collapse>
                                 </Card>
                             </Box>
                         </Grid>)
