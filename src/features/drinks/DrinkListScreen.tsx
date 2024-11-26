@@ -13,6 +13,7 @@ import {SwipeableDialog} from "../../components/SwipeableDialog";
 import DrinkList from "./components/DrinkList";
 import {DrinkListScreenProps} from "./types";
 import {SupabaseDrinkRepository} from "../../repository/DrinkRepository";
+import VoucherCard from "./components/Voucher";
 
 const SUCCESS_MESSAGE_INFO: AlertMessage = {message: "Getränke erfolgreich gebucht!", severity: "success"};
 
@@ -101,6 +102,15 @@ const DrinkListScreen = ({user, drinks, drinksLoading, drinksError, dispatch}: D
     return <Box>
         <CustomAppBar/>
         <LoadingIndicator loading={drinksLoading}/>
+        <VoucherCard vouchers={[
+            {
+                total_drinks: 5,
+                used_drinks: 2,
+                id: "asdf",
+                user: "asdfasdf",
+                created_at: ""
+            }
+        ]}/>
         <DrinkList drinks={drinks} onAddDrinkClick={onAddDrinkClick} onRemoveDrinkClick={onRemoveDrinkClick}
                    addedDrinks={addedDrinks} visibleTypes={visibleTypes}/>
         {

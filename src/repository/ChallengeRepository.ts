@@ -1,12 +1,15 @@
 import {supabase} from "../components/services/supabase/supabaseClient";
 import {ChallengeStatWithUser, FullChallenge} from "../types/supabaseTypes";
 import {PostgrestSingleResponse} from "@supabase/supabase-js";
+import {formatDateToDatabase} from "../utils";
 
 export const ChallengeRepository = {
     async fetchChallenges(): Promise<PostgrestSingleResponse<FullChallenge[]>> {
         return supabase
             .from("challenge")
             .select("*, stats: challenge_stats (*, user: user(*))")
+            .or(`end_date.is.null,end_date.gt.'${formatDateToDatabase(new Date())}'`)
+            .order("name")
             .throwOnError()
             .returns<FullChallenge[]>();
     },
@@ -34,7 +37,7 @@ export const ChallengeRepository = {
 
     async increasePointForUser(userId: string, challenge: number) {
         return supabase
-            .rpc("increase_challenge_stats_count", { user_id: userId, amount: 1, challenge_id: challenge })
+            .rpc("increase_challenge_stats_count", {user_id: userId, amount: 1, challenge_id: challenge})
             .throwOnError();
     }
 }

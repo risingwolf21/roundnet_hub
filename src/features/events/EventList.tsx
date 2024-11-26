@@ -72,7 +72,7 @@ const EventScreen = ({events, loading, error, endReached, user}: EventScreenProp
         fetchEvents(mode, 0, 20);
     }
 
-    const updateAttendance = async (eventId: number, state: EventAttendance, oldState: EventAttendance) => {
+    const updateAttendance = async (eventId: string, state: EventAttendance, oldState: EventAttendance) => {
         dispatch(updateAttendanceAsync({user, eventId, state, oldState}));
     }
 

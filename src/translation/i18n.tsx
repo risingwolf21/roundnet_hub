@@ -25,7 +25,7 @@ i18n
             escapeValue: false, // react already safes from xss
             format: (value, format, lng) => {
                 if (isDate(value) && format && lng) {
-                    return formatDate(value, format, {locale: lng === "de" ? de : enGB });
+                    return formatDate(value, format, {locale: lng === "en" ? enGB : de});
                 }
                 return value;
             }

@@ -6,7 +6,7 @@ import {SupabaseEventRepository} from "../../../repository/EventRepository";
 import {TablesUpdate} from "../../../types/supabase-generated.types";
 
 type SliceAttendance = {
-    id: number,
+    id: string,
     attendance: FullAttendance[]
 }
 
@@ -64,7 +64,7 @@ const eventAttendanceSlice = createSlice({
                     });
                     return;
                 }
-                
+
                 let update = {
                     id: action.payload.eventId,
                     changes: {
@@ -100,7 +100,7 @@ const eventAttendanceSlice = createSlice({
 
                 let slice = eventAttendanceAdapter.getSelectors().selectById(state, action.meta.arg.eventId);
                 if (!slice) {
-                    eventAttendanceAdapter.addOne(state, { id: action.meta.arg.eventId, attendance: [attendanceEntry] });
+                    eventAttendanceAdapter.addOne(state, {id: action.meta.arg.eventId, attendance: [attendanceEntry]});
                     return;
                 }
 
@@ -113,7 +113,7 @@ const eventAttendanceSlice = createSlice({
                 let index = attendance.findIndex(x => x.user.userId === action.meta.arg.user.userId);
 
                 if (index === -1) {
-                    sliceAttendance.changes = { attendance: [...attendance, attendanceEntry] }
+                    sliceAttendance.changes = {attendance: [...attendance, attendanceEntry]}
                 } else {
                     sliceAttendance.changes = {
                         attendance: attendance.map((x, i) => i === index ? {
@@ -166,13 +166,13 @@ const eventAttendanceSlice = createSlice({
     },
 });
 
-type ClientEventId = { eventId: number }
+type ClientEventId = { eventId: string }
 export const fetchEventAttendanceAsync = createAsyncThunk("fetchEventAttendanceAsync", async ({eventId}: ClientEventId) => {
     const attendance = await SupabaseEventRepository.fetchEventAttendance(eventId);
-    return { data: attendance.data, eventId };
+    return {data: attendance.data, eventId};
 });
 
-type UpdateAttendanceProps = { user: User, eventId: number, state: EventAttendance, oldState: EventAttendance }
+type UpdateAttendanceProps = { user: User, eventId: string, state: EventAttendance, oldState: EventAttendance }
 export const updateAttendanceAsync = createAsyncThunk("updateAttendanceAsync", async ({
                                                                                           eventId,
                                                                                           user,
@@ -180,9 +180,9 @@ export const updateAttendanceAsync = createAsyncThunk("updateAttendanceAsync", a
                                                                                           oldState
                                                                                       }: UpdateAttendanceProps) => {
     const response = await SupabaseEventRepository.updateAttendance(user.userId, eventId, state);
-    return { data: response.data, error: response.error, oldState };
+    return {data: response.data, error: response.error, oldState};
 });
 
-export const { onEventAttendanceDelete, onEventAttendanceUpdate } = eventAttendanceSlice.actions;
+export const {onEventAttendanceDelete, onEventAttendanceUpdate} = eventAttendanceSlice.actions;
 
 export default eventAttendanceSlice.reducer;

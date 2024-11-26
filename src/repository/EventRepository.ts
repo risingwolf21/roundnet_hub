@@ -69,7 +69,7 @@ export const SupabaseEventRepository = {
             .throwOnError();
     },
 
-    async fetchEventComments(eventId: number): Promise<PostgrestSingleResponse<FullComment[]>> {
+    async fetchEventComments(eventId: string): Promise<PostgrestSingleResponse<FullComment[]>> {
         return supabase.from("event_comments")
             .select("user(userId, displayName, avatarUrl), *")
             .eq("event", eventId)
@@ -86,7 +86,7 @@ export const SupabaseEventRepository = {
             .throwOnError()
     },
 
-    async updateEndOfOldEvent(eventId: number, recurrenceEnd: string): Promise<PostgrestSingleResponse<null>> {
+    async updateEndOfOldEvent(eventId: string, recurrenceEnd: string): Promise<PostgrestSingleResponse<null>> {
         return supabase
             .from("events")
             .update({
@@ -95,7 +95,7 @@ export const SupabaseEventRepository = {
             .throwOnError()
     },
 
-    async updateEvent(eventId: number, event: TablesUpdate<'events'>): Promise<PostgrestSingleResponse<null>> {
+    async updateEvent(eventId: string, event: TablesUpdate<'events'>): Promise<PostgrestSingleResponse<null>> {
         return supabase
             .from("events")
             .update(event)
@@ -107,7 +107,7 @@ export const SupabaseEventRepository = {
         return supabase.from("events").insert(event).throwOnError();
     },
 
-    async insertComment(user: User, eventId: number, comment: string): Promise<PostgrestSingleResponse<Comment>> {
+    async insertComment(user: User, eventId: string, comment: string): Promise<PostgrestSingleResponse<Comment>> {
         return supabase.from("event_comments")
             .insert({
                 user: user.userId,
@@ -120,7 +120,7 @@ export const SupabaseEventRepository = {
             .throwOnError();
     },
 
-    async updateAttendance(userId: string, eventId: number, state: EventAttendance): Promise<PostgrestSingleResponse<EventAttendanceMapping>> {
+    async updateAttendance(userId: string, eventId: string, state: EventAttendance): Promise<PostgrestSingleResponse<EventAttendanceMapping>> {
         return supabase
             .rpc("update_attendance", {
                 eventid: eventId,
@@ -131,7 +131,7 @@ export const SupabaseEventRepository = {
             .throwOnError();
     },
 
-    async deleteEvent(eventId: number): Promise<PostgrestSingleResponse<null>> {
+    async deleteEvent(eventId: string): Promise<PostgrestSingleResponse<null>> {
         return supabase
             .from("events")
             .delete()
@@ -139,7 +139,7 @@ export const SupabaseEventRepository = {
             .throwOnError()
     },
 
-    async deleteEventAndUpcomingEvents(eventId: number, key: string, startDateTime: string | null): Promise<void> {
+    async deleteEventAndUpcomingEvents(eventId: string, key: string, startDateTime: string | null): Promise<void> {
         await supabase
             .from("events")
             .delete()
@@ -154,7 +154,7 @@ export const SupabaseEventRepository = {
             .eq("id", eventId);
     },
 
-    async updateCancellationForEvent(eventId: number, isCancelled: boolean): Promise<PostgrestSingleResponse<null>> {
+    async updateCancellationForEvent(eventId: string, isCancelled: boolean): Promise<PostgrestSingleResponse<null>> {
         return supabase
             .from("events")
             .update({isCancelled: isCancelled})
@@ -194,7 +194,7 @@ export const SupabaseEventRepository = {
             .throwOnError();
     },
 
-    async fetchEventAttendance(eventId: number): Promise<PostgrestSingleResponse<FullAttendance[]>> {
+    async fetchEventAttendance(eventId: string): Promise<PostgrestSingleResponse<FullAttendance[]>> {
         return supabase.from("event_attendance_user_mapping")
             .select("user(userId, displayName, avatarUrl), *")
             .eq("event", eventId)
@@ -202,7 +202,7 @@ export const SupabaseEventRepository = {
             .throwOnError();
     },
 
-    async fetchSingleEvent(eventId: number): Promise<PostgrestSingleResponse<FullEvent>> {
+    async fetchSingleEvent(eventId: string): Promise<PostgrestSingleResponse<FullEvent>> {
         return supabase.from("events")
             .select("*, group(*), attendance: event_attendance_user_mapping ( state , user(userId, displayName, avatarUrl)  ), comments: event_comments ( comment, created_at, displayName, event, user ( displayName, userId, avatarUrl))")
             .eq("id", eventId)

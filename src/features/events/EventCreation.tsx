@@ -132,7 +132,7 @@ const CreateEvent = ({t, eventToEdit, option}: CreateEventProps) => {
 
                 if (error) throw error;
             } else if (option === "UpdateSingle") {
-                const {error} = await SupabaseEventRepository.updateEvent(event.id ?? -1, event)
+                const {error} = await SupabaseEventRepository.updateEvent(event.id ?? "", event)
 
                 if (error) throw error;
 

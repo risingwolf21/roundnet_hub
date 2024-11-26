@@ -161,7 +161,7 @@ const EventInformation = ({
                     textOverflow: 'ellipsis'
                 }}>{selectedEvent.title}</Typography>
                 {can("edit", "training") && <>
-                    <Typography component="div">{selectedEvent.id}</Typography>
+                    <Typography component="div">{selectedEvent.id.substring(0, 8)}</Typography>
                     <IconButton sx={{color: "#fff", pr: 0}} onClick={handleClick}>
                         <MoreVert/>
                     </IconButton>
@@ -175,7 +175,7 @@ const EventInformation = ({
                             <ListItemIcon>
                                 <Key/>
                             </ListItemIcon>
-                            <ListItemText primary={`ID: ${selectedEvent.id}`}/>
+                            <ListItemText primary={`ID: ${selectedEvent.id.substring(0, 8)}`}/>
                         </MenuItem>
                         <MenuItem onClick={() => {
                             setEditEventOptionOpen(true);

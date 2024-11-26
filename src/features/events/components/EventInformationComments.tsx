@@ -30,7 +30,7 @@ type EventInformationCommentsProps = {
     comments: FullComment[],
     handleCommentSubmit: (event: React.FormEvent<HTMLFormElement>) => void,
     inputRef: React.RefObject<HTMLInputElement>,
-    eventId: number,
+    eventId: string,
     eventInThePast: boolean
 }
 

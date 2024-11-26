@@ -1,4 +1,3 @@
-import {toInteger, toNumber} from "lodash";
 import React, {useEffect, useState} from "react";
 import {useTranslation} from "react-i18next";
 import {useSelector} from "react-redux";
@@ -27,9 +26,9 @@ import {PlaceType} from "../features/events/types";
 const EventInformationProvider = () => {
     const {selectedEventId} = useParams();
     const {error, loading} = useSelector((state: RootState) => state.events);
-    const attendance = useSelector((state: RootState) => attendanceSelector.selectById(state.eventAttendance, toInteger(selectedEventId)));
-    const comments = useSelector((state: RootState) => eventsCommentsSelector.selectById(state.eventComments, toInteger(selectedEventId)));
-    const event = useSelector((state: RootState) => eventsSelector.selectById(state, toInteger(selectedEventId)));
+    const attendance = useSelector((state: RootState) => attendanceSelector.selectById(state.eventAttendance, selectedEventId ?? ""));
+    const comments = useSelector((state: RootState) => eventsCommentsSelector.selectById(state.eventComments, selectedEventId ?? ""));
+    const event = useSelector((state: RootState) => eventsSelector.selectById(state, selectedEventId ?? ""));
     const {loading: attendanceLoading} = useSelector((state: RootState) => state.eventAttendance);
     const {loading: commentsLoading} = useSelector((state: RootState) => state.eventComments);
     const keyHolders = useSelector((state: RootState) => keyHoldersSelector.selectAll(state));
@@ -79,7 +78,7 @@ const EventInformationProvider = () => {
         if (!user)
             return;
         if (!event) {
-            dispatch(fetchSingleEventAsync({eventId: toNumber(selectedEventId), userId: user.userId}));
+            dispatch(fetchSingleEventAsync({eventId: selectedEventId ?? "", userId: user.userId}));
         } else {
             setSelectedEventPlace(event.place ? JSON.parse(event.place?.toString() ?? "") as PlaceType : null)
         }

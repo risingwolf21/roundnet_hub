@@ -19,7 +19,7 @@ import React, {useEffect, useState} from "react";
 import {useSelector} from "react-redux";
 import {RootState} from "src/redux/store";
 import {SlideUpTransition} from "../../../utils";
-import {Group} from "../../../types/supabaseTypes";
+import {Group, User} from "../../../types/supabaseTypes";
 import KeyIcon from "@mui/icons-material/Key";
 import {GroupsRepository} from "../../../repository/GroupsRepository";
 import {TablesUpdate} from "../../../types/supabase-generated.types";
@@ -32,7 +32,7 @@ type EditOrAddGroupDialogProps = {
 
 export const EditOrAddGroupDialog = ({open, handleClose, groupToEdit}: EditOrAddGroupDialogProps) => {
 
-    const user = useSelector((state: RootState) => state.application.user);
+    const user: User | null = useSelector((state: RootState) => state.application.user);
     const [currentGroup, setCurrentGroup] = useState<TablesUpdate<'event_group'>>({
         id: groupToEdit.id,
         name: groupToEdit.name,
@@ -69,16 +69,16 @@ export const EditOrAddGroupDialog = ({open, handleClose, groupToEdit}: EditOrAdd
             color: currentGroup.color,
             description: currentGroup.description
         }).then(result => {
-            if(!result.data){
+            if (!result.data) {
                 setErrorSnackbar({message: "Something went wrong creating the group.", open: false});
-            } else 
-                GroupsRepository.addUserToGroup(result.data.id, user.id).then(result => {
+            } else
+                GroupsRepository.addUserToGroup(result.data.id, user.userId).then(result => {
                     setErrorSnackbar({message: "", open: false});
                     handleClose();
                 }).catch(error => {
                     setErrorSnackbar({message: error.message ?? "", open: true});
                 })
-            
+
         }).catch(error => {
             setErrorSnackbar({message: error.message ?? "", open: true});
         });

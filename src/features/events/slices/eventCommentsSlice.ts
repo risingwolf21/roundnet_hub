@@ -1,12 +1,11 @@
 import {createAsyncThunk, createEntityAdapter, createSlice, PayloadAction} from "@reduxjs/toolkit";
-import {toInteger} from "lodash";
 import {EventCommentUpdate, FullComment, User} from "src/types/supabaseTypes";
 import {PostgrestError} from "@supabase/supabase-js";
 import {SupabaseEventRepository} from "../../../repository/EventRepository";
 import {Tables} from "../../../types/supabase-generated.types";
 
 type SliceComments = {
-    id: number,
+    id: string,
     comments: FullComment[]
 }
 
@@ -81,7 +80,7 @@ const eventCommentsSlice = createSlice({
                     id: -1,
                     pending: true,
                     comment: action.meta.arg.comment,
-                    event: toInteger(action.meta.arg.eventId),
+                    event: action.meta.arg.eventId,
                     displayName: action.meta.arg.user.displayName,
                     user: action.meta.arg.user,
                     userId: action.meta.arg.user.userId,
@@ -121,7 +120,7 @@ const eventCommentsSlice = createSlice({
     },
 });
 
-type UpsertCommentProps = { user: User, eventId: number, comment: string, created_at: string }
+type UpsertCommentProps = { user: User, eventId: string, comment: string, created_at: string }
 type DataErrorReturned = { data: Tables<'event_comments'> | null, error: PostgrestError | null }
 export const upsertCommentToEventAsync = createAsyncThunk("upsertCommentToEventAsync", async ({
                                                                                                   user,
@@ -133,7 +132,7 @@ export const upsertCommentToEventAsync = createAsyncThunk("upsertCommentToEventA
     return {data: response.data, error: response.error, commmentId: response.data?.id} as DataErrorReturned;
 });
 
-type ClientEventId = { eventId: number }
+type ClientEventId = { eventId: string }
 export const fetchEventCommentsAsync = createAsyncThunk("fetchEventCommentsAsync", async ({eventId}: ClientEventId) => {
     const attendance = await SupabaseEventRepository.fetchEventComments(eventId);
     return {data: attendance.data, eventId};

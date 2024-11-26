@@ -67,7 +67,7 @@ const ChallengeList = ({ loading, challenges }: ChallengeListProps) => {
         direction="column"
         alignItems="center"
         justifyContent="center">
-        <CustomAppBar navigateBack />
+        <CustomAppBar/>
         {
             loading && <LinearProgress sx={{ position: "fixed", top: 56, left: 0, right: 0 }} />
         }

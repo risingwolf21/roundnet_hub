@@ -1,12 +1,12 @@
 import {createAsyncThunk, createEntityAdapter, createSlice, PayloadAction, Update} from "@reduxjs/toolkit";
-import {Event, EventAttendance, EventWithGroup, FullAttendance, FullEvent, Group, User} from "src/types/supabaseTypes";
+import {EventAttendance, EventWithGroup, FullAttendance, FullEvent, Group, User} from "src/types/supabaseTypes";
 import {RootState} from "../../../redux/store";
 import {onEventAttendanceUpdate, updateAttendanceAsync} from "./eventAttendanceSlice";
 import {SupabaseEventRepository} from "../../../repository/EventRepository";
-import {TablesUpdate} from "../../../types/supabase-generated.types";
+import {Tables, TablesUpdate} from "../../../types/supabase-generated.types";
 import {formatDateFromDatabase} from "../../../utils";
 
-export type SliceEvent = Event & {
+export type SliceEvent = Tables<'events'> & {
     userAttendance: EventAttendance,
     attendanceUpdating: boolean,
     fullGroup: Group
@@ -228,7 +228,7 @@ export const fetchPastEventsAsync = createAsyncThunk("fetchPastEventsAsync", asy
     };
 });
 
-export type ClientEventId = { eventId: number }
+export type ClientEventId = { eventId: string }
 
 
 export const fetchSingleEventAsync = createAsyncThunk("fetchSingleEventAsync", async ({

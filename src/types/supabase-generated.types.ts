@@ -14,6 +14,7 @@ export type Database = {
           automated: boolean
           created_at: string
           description: string
+          end_date: string | null
           group: number
           id: number
           max_points_per_week: number | null
@@ -23,6 +24,7 @@ export type Database = {
           automated?: boolean
           created_at?: string
           description?: string
+          end_date?: string | null
           group: number
           id?: number
           max_points_per_week?: number | null
@@ -32,6 +34,7 @@ export type Database = {
           automated?: boolean
           created_at?: string
           description?: string
+          end_date?: string | null
           group?: number
           id?: number
           max_points_per_week?: number | null
@@ -124,38 +127,24 @@ export type Database = {
       }
       event_attendance_user_mapping: {
         Row: {
-          event: number
+          event: string
           lastUpdate: string
           state: Database["public"]["Enums"]["EventAttendance"]
           user: string
         }
         Insert: {
-          event: number
+          event?: string
           lastUpdate?: string
           state?: Database["public"]["Enums"]["EventAttendance"]
           user: string
         }
         Update: {
-          event?: number
+          event?: string
           lastUpdate?: string
           state?: Database["public"]["Enums"]["EventAttendance"]
           user?: string
         }
         Relationships: [
-          {
-            foreignKeyName: "event_attendance_user_mapping_event_fkey"
-            columns: ["event"]
-            isOneToOne: false
-            referencedRelation: "current_distinct_event"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "event_attendance_user_mapping_event_fkey"
-            columns: ["event"]
-            isOneToOne: false
-            referencedRelation: "distinct_event"
-            referencedColumns: ["id"]
-          },
           {
             foreignKeyName: "event_attendance_user_mapping_event_fkey"
             columns: ["event"]
@@ -177,7 +166,7 @@ export type Database = {
           comment: string
           created_at: string
           displayName: string
-          event: number
+          event: string
           id: number
           user: string
         }
@@ -185,7 +174,7 @@ export type Database = {
           comment?: string
           created_at?: string
           displayName?: string
-          event: number
+          event?: string
           id?: number
           user: string
         }
@@ -193,25 +182,11 @@ export type Database = {
           comment?: string
           created_at?: string
           displayName?: string
-          event?: number
+          event?: string
           id?: number
           user?: string
         }
         Relationships: [
-          {
-            foreignKeyName: "event_comments_event_fkey"
-            columns: ["event"]
-            isOneToOne: false
-            referencedRelation: "current_distinct_event"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "event_comments_event_fkey"
-            columns: ["event"]
-            isOneToOne: false
-            referencedRelation: "distinct_event"
-            referencedColumns: ["id"]
-          },
           {
             foreignKeyName: "event_comments_event_fkey"
             columns: ["event"]
@@ -259,7 +234,8 @@ export type Database = {
           description: string
           endDateTime: string | null
           group: number | null
-          id: number
+          id: string
+          id_old: number
           isCancelled: boolean
           key: string
           maxAttendees: number | null
@@ -277,7 +253,8 @@ export type Database = {
           description?: string
           endDateTime?: string | null
           group?: number | null
-          id?: number
+          id?: string
+          id_old: number
           isCancelled?: boolean
           key?: string
           maxAttendees?: number | null
@@ -295,7 +272,8 @@ export type Database = {
           description?: string
           endDateTime?: string | null
           group?: number | null
-          id?: number
+          id?: string
+          id_old?: number
           isCancelled?: boolean
           key?: string
           maxAttendees?: number | null
@@ -602,6 +580,38 @@ export type Database = {
         }
         Relationships: []
       }
+      vouchers: {
+        Row: {
+          created_at: string
+          id: string
+          total_drinks: number
+          used_drinks: number
+          user: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          total_drinks?: number
+          used_drinks?: number
+          user?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          total_drinks?: number
+          used_drinks?: number
+          user?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "vouchers_user_fkey"
+            columns: ["user"]
+            isOneToOne: false
+            referencedRelation: "user"
+            referencedColumns: ["userId"]
+          },
+        ]
+      }
     }
     Views: {
       current_distinct_event: {
@@ -714,7 +724,15 @@ export type Database = {
         Args: {
           query_text: string
         }
-        Returns: Array<{result: Record<string, any>}>
+        Returns: {
+          result: Json
+        }[]
+      }
+      execute_sql: {
+        Args: {
+          query: string
+        }
+        Returns: Json
       }
       get_attending_users: {
         Args: {
@@ -761,12 +779,13 @@ export type Database = {
       }
       update_attendance: {
         Args: {
-          eventid: number
+          eventid: string
           userid: string
           state: Database["public"]["Enums"]["EventAttendance"]
         }
         Returns: {
-          event: number
+          event: string
+          event_old: number
           lastUpdate: string
           state: Database["public"]["Enums"]["EventAttendance"]
           user: string
@@ -899,4 +918,18 @@ export type Enums<
   ? Database[PublicEnumNameOrOptions["schema"]]["Enums"][EnumName]
     : PublicEnumNameOrOptions extends keyof PublicSchema["Enums"]
         ? PublicSchema["Enums"][PublicEnumNameOrOptions]
+        : never
+
+export type CompositeTypes<
+    PublicCompositeTypeNameOrOptions extends | keyof PublicSchema["CompositeTypes"]
+        | { schema: keyof Database },
+    CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
+          schema: keyof Database
+        }
+        ? keyof Database[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
+        : never = never,
+> = PublicCompositeTypeNameOrOptions extends { schema: keyof Database }
+    ? Database[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
+    : PublicCompositeTypeNameOrOptions extends keyof PublicSchema["CompositeTypes"]
+        ? PublicSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
         : never

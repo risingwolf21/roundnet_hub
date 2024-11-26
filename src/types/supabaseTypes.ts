@@ -32,6 +32,8 @@ export type NotificationTags = Database["public"]["Enums"]["NotificationTags"];
 export type Challenge = Tables<'challenge'>;
 export type ChallengeStats = Tables<'challenge_stats'>;
 
+export type Voucher = Tables<'vouchers'>;
+
 export type FullChallenge = Challenge & {
     stats: ChallengeStatWithUser[]
 }

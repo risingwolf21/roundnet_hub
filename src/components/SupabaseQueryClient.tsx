@@ -5,6 +5,7 @@ import {Button, Grid, TextField} from "@mui/material";
 import {LoadingIndicator} from "./LoadingIndicator";
 import {DataGrid, GridColDef} from "@mui/x-data-grid";
 import {supabase} from "./services/supabase/supabaseClient";
+import {Json} from "src/types/supabase-generated.types";
 
 export const SupabaseQueryClient = () => {
 
@@ -20,6 +21,13 @@ export const SupabaseQueryClient = () => {
         return sanitizedQuery;
     };
 
+    function safeSpread(value: Json): { [p: string]: Json | undefined } {
+        if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
+            return {...value};
+        }
+        throw new Error("Value is not a spreadable object");
+    }
+
     const executeQuery = async () => {
         setError(null);
         setLoading(true);
@@ -32,9 +40,9 @@ export const SupabaseQueryClient = () => {
                 return;
             }
 
-            setResult(data.map((x, id) => {
+            setResult(data.map((x: { result: Json }, id) => {
                     return {
-                        ...x.result,
+                        ...safeSpread(x.result),
                         distinctId: id
                     }
                 })
