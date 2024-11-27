@@ -5,7 +5,6 @@ import {
     List,
     ListItem,
     ListItemAvatar,
-    ListItemButton,
     ListItemSecondaryAction,
     ListItemText,
     Tab,
@@ -18,8 +17,8 @@ import {useTheme} from '@mui/material/styles';
 import {FullAttendance} from "../../../types/supabaseTypes";
 import {SwipeableDialog} from "../../../components/SwipeableDialog";
 import {EventAttendanceDialogProps} from "../types";
-import {isBefore} from "date-fns";
 import {useNavigate} from "react-router-dom";
+import {compareDesc, formatDistanceToNow, isBefore} from "date-fns";
 
 function TabPanel(props: any) {
     const {children, value, index, ...other} = props;
@@ -35,6 +34,32 @@ function TabPanel(props: any) {
             {value === index && children}
         </div>
     );
+}
+
+const AttendanceItem = ({attendance, onClick}: {
+    attendance: FullAttendance,
+    onClick: () => void
+}) => {
+    return <ListItem onClick={onClick}
+                     secondaryAction={<Typography style={{
+                         fontSize: "10pt",
+                         color: "rgba(0,0,0,0.6)",
+                         marginTop: "8px",
+                         alignContent: "baseline"
+                     }}>{formatDistanceToNow(attendance.lastUpdate)} ago</Typography>}>
+        <ListItemAvatar>
+            <Avatar sx={{borderRadius: 2}}>
+                {
+                    attendance.user.avatarUrl
+                        ?
+                        <img src={attendance.user.avatarUrl} alt="logo" width={"100%"}
+                             height={"100%"}/>
+                        : <AccountBox/>
+                }
+            </Avatar>
+        </ListItemAvatar>
+        <ListItemText primary={attendance.user?.displayName}/>
+    </ListItem>
 }
 
 
@@ -76,42 +101,24 @@ const EventAttendanceDialog = ({open, index, setOpen, attendance, hasWaitingList
             <TabPanel value={value} index={0} dir={theme.direction}>
                 <List>
                     {
-                        attendance.filter((x: FullAttendance) => x.state === "Attending").map((x: FullAttendance, index: number) =>
-                            <ListItemButton key={x.user.userId + index}
-                                            onClick={() => navigate("/user/" + x.user.userId)}>
-                                <ListItemAvatar>
-                                    <Avatar sx={{borderRadius: 2}}>
-                                        {
-                                            x.user.avatarUrl
-                                                ?
-                                                <img src={x.user.avatarUrl} alt="logo" width={"100%"} height={"100%"}/>
-                                                : <AccountBox/>
-                                        }
-                                    </Avatar>
-                                </ListItemAvatar>
-                                <ListItemText primary={x.user?.displayName}/>
-                            </ListItemButton>)
+                        attendance
+                            .filter((x: FullAttendance) => x.state === "Attending")
+                            .sort((a, b) => compareDesc(a.lastUpdate, b.lastUpdate))
+                            .map((x: FullAttendance, index: number) =>
+                                <AttendanceItem attendance={x} key={x.user.userId + index}
+                                                onClick={() => navigate("/user/" + x.user.userId)}/>)
                     }
                 </List>
             </TabPanel>
             <TabPanel value={value} index={1} dir={theme.direction}>
                 <List>
                     {
-                        attendance.filter((x: FullAttendance) => x.state === "Declined").map((x: FullAttendance, index: number) =>
-                            <ListItemButton key={x.user.userId + index}
-                                            onClick={() => navigate("/user/" + x.user.userId)}>
-                                <ListItemAvatar>
-                                    <Avatar sx={{borderRadius: 2}}>
-                                        {
-                                            x.user.avatarUrl
-                                                ?
-                                                <img src={x.user.avatarUrl} alt="logo" width={"100%"} height={"100%"}/>
-                                                : <AccountBox/>
-                                        }
-                                    </Avatar>
-                                </ListItemAvatar>
-                                <ListItemText primary={x.user?.displayName}/>
-                            </ListItemButton>)
+                        attendance
+                            .filter((x: FullAttendance) => x.state === "Declined")
+                            .sort((a, b) => compareDesc(a.lastUpdate, b.lastUpdate))
+                            .map((x: FullAttendance, index: number) =>
+                                <AttendanceItem attendance={x} key={x.user.userId + index}
+                                                onClick={() => navigate("/user/" + x.user.userId)}/>)
                     }
                 </List>
             </TabPanel>
