@@ -149,6 +149,20 @@ export type Database = {
             foreignKeyName: "event_attendance_user_mapping_event_fkey"
             columns: ["event"]
             isOneToOne: false
+            referencedRelation: "current_distinct_event"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "event_attendance_user_mapping_event_fkey"
+            columns: ["event"]
+            isOneToOne: false
+            referencedRelation: "distinct_event"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "event_attendance_user_mapping_event_fkey"
+            columns: ["event"]
+            isOneToOne: false
             referencedRelation: "events"
             referencedColumns: ["id"]
           },
@@ -187,6 +201,20 @@ export type Database = {
           user?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "event_comments_event_fkey"
+            columns: ["event"]
+            isOneToOne: false
+            referencedRelation: "current_distinct_event"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "event_comments_event_fkey"
+            columns: ["event"]
+            isOneToOne: false
+            referencedRelation: "distinct_event"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "event_comments_event_fkey"
             columns: ["event"]
@@ -235,7 +263,6 @@ export type Database = {
           endDateTime: string | null
           group: number | null
           id: string
-          id_old: number
           isCancelled: boolean
           key: string
           maxAttendees: number | null
@@ -254,7 +281,6 @@ export type Database = {
           endDateTime?: string | null
           group?: number | null
           id?: string
-          id_old: number
           isCancelled?: boolean
           key?: string
           maxAttendees?: number | null
@@ -273,7 +299,6 @@ export type Database = {
           endDateTime?: string | null
           group?: number | null
           id?: string
-          id_old?: number
           isCancelled?: boolean
           key?: string
           maxAttendees?: number | null
@@ -621,7 +646,7 @@ export type Database = {
           description: string | null
           endDateTime: string | null
           group: number | null
-          id: number | null
+          id: string | null
           isCancelled: boolean | null
           key: string | null
           maxAttendees: number | null
@@ -663,7 +688,7 @@ export type Database = {
           description: string | null
           endDateTime: string | null
           group: number | null
-          id: number | null
+          id: string | null
           isCancelled: boolean | null
           key: string | null
           maxAttendees: number | null
@@ -785,7 +810,6 @@ export type Database = {
         }
         Returns: {
           event: string
-          event_old: number
           lastUpdate: string
           state: Database["public"]["Enums"]["EventAttendance"]
           user: string
