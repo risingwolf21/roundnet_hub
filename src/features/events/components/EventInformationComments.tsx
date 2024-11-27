@@ -15,7 +15,7 @@ import {
     Typography
 } from "@mui/material"
 import React, {useEffect} from "react"
-import {EventCommentInsert, EventCommentUpdate, FullComment} from "src/types/supabaseTypes"
+import {FullComment} from "src/types/supabaseTypes"
 import {useAppDispatch} from "src/redux/store"
 import {useClient} from "react-supabase"
 import {

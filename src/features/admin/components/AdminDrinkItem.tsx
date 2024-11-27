@@ -1,4 +1,3 @@
-import {Drink} from "../../../types/supabaseTypes";
 import {
     Avatar,
     Badge,

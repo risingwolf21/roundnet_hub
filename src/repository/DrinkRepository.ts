@@ -1,14 +1,7 @@
 import {PostgrestSingleResponse} from "@supabase/supabase-js";
-import {
-    Drink,
-    DrinkCounter,
-    FullHistory,
-    Payment,
-    PaymentHistory,
-    PaymentInsert,
-    PaymentState
-} from "../types/supabaseTypes";
+import {DrinkCounter, FullHistory, PaymentHistory} from "../types/supabaseTypes";
 import {supabase} from "../components/services/supabase/supabaseClient";
+import {Tables} from "../types/supabase-generated.types";
 
 export const SupabaseDrinkRepository = {
 
@@ -108,6 +101,15 @@ export const SupabaseDrinkRepository = {
             .select("*")
             .order('id', {ascending: false})
             .returns<Drink[]>()
+            .throwOnError();
+    },
+
+    async fetchVouchersForUser(userId: string): Promise<PostgrestSingleResponse<Tables<'vouchers'>[]>> {
+        return supabase
+            .from("vouchers")
+            .select("*")
+            .eq("user", userId)
+            .returns<Tables<'vouchers'>[]>()
             .throwOnError();
     }
 

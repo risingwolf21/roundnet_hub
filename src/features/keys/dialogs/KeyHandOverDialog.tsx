@@ -1,12 +1,12 @@
 import {Box, Button, Typography} from "@mui/material";
 import {SwipeableDialog} from "../../../components/SwipeableDialog";
 import React from "react";
-import {FullItemHolder, User} from "../../../types/supabaseTypes";
+import {FullItemHolder} from "../../../types/supabaseTypes";
 import {TFunction} from "i18next";
 
 type KeyHandOverDialogProps = {
     user: User,
-    selectedUser: User,
+    selectedUser: User | null,
     selectedKeyHolder: FullItemHolder | null,
     t: TFunction,
     setSelectedUser: (user: User | null) => void,

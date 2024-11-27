@@ -16,7 +16,7 @@ import React, {useEffect, useState} from "react";
 import {useSelector} from "react-redux";
 import {useNavigate} from "react-router-dom";
 import {useClient} from "react-supabase";
-import {Group, GroupWithUsers} from "src/types/supabaseTypes";
+import {GroupWithUsers} from "src/types/supabaseTypes";
 import {fetchGroupsAsync, groupsSelector} from "./slices/groupsSlice";
 import {RootState, useAppDispatch} from "../../redux/store";
 import CustomAppBar from "../../components/AppBar";

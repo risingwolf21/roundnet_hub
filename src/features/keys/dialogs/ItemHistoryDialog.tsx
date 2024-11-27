@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from "react";
-import {FullKeyHistory, Item} from "../../../types/supabaseTypes";
+import {FullKeyHistory} from "../../../types/supabaseTypes";
 import {SwipeableDialog} from "../../../components/SwipeableDialog";
 import {captureException} from "@sentry/react";
 import {Alert, CircularProgress, List, ListItem, ListItemText} from "@mui/material";
@@ -10,7 +10,7 @@ type ItemHistoryDialogProps = {
     open: boolean,
     handleClose: () => void,
     setOpen: (value: boolean) => void,
-    item: Item | null
+    item: ItemUpdate | null
 }
 
 export const ItemHistoryDialog = ({open, setOpen, handleClose, item}: ItemHistoryDialogProps) => {
@@ -21,7 +21,7 @@ export const ItemHistoryDialog = ({open, setOpen, handleClose, item}: ItemHistor
 
     useEffect(() => {
         console.log("useEffect", item)
-        if (!item) {
+        if (!item || !item.id) {
             setError("Es wurde kein Schlüssel ausgewählt");
             return;
         }

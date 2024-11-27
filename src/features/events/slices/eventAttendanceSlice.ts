@@ -1,5 +1,5 @@
 import {createAsyncThunk, createEntityAdapter, createSlice, PayloadAction, Update} from "@reduxjs/toolkit";
-import {EventAttendance, FullAttendance, User} from "src/types/supabaseTypes";
+import {FullAttendance} from "src/types/supabaseTypes";
 import {formatDateToDatabase} from "src/utils";
 import {fetchSingleEventAsync} from "./eventsSlice";
 import {SupabaseEventRepository} from "../../../repository/EventRepository";
@@ -94,7 +94,6 @@ const eventAttendanceSlice = createSlice({
                     event: action.meta.arg.eventId,
                     user: action.meta.arg.user,
                     state: action.meta.arg.state,
-                    userId: action.meta.arg.user.userId,
                     lastUpdate: formatDateToDatabase(new Date())
                 } as FullAttendance;
 

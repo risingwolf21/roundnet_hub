@@ -1,4 +1,3 @@
-import {User} from "../../../types/supabaseTypes";
 import {
     Box,
     IconButton,

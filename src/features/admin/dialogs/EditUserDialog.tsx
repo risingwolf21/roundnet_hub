@@ -25,11 +25,12 @@ import {Box} from "@mui/system";
 import {AccountCircle, Close, Edit, Email, FiberManualRecord, ManageAccounts, Verified} from "@mui/icons-material";
 import {useClient} from "react-supabase";
 import {SlideUpTransition} from "../../../utils";
-import {FullHistory, Group, Permissions, User, UserWithGroups} from "../../../types/supabaseTypes";
+import {FullHistory, UserWithGroups} from "../../../types/supabaseTypes";
 import moment from "moment";
 import {UserPermissionsDialog} from "./UserPermissionDialog";
 import {captureException} from "@sentry/react";
 import {SupabaseDrinkRepository} from "../../../repository/DrinkRepository";
+import {Permissions} from "types/supabase"
 
 type EditUserDialogProps = {
     user: UserWithGroups,

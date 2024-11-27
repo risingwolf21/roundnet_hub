@@ -4,7 +4,6 @@ import React, {useEffect, useState} from "react";
 import {useNavigate} from 'react-router-dom';
 import {useClient} from "react-supabase";
 import {useAppDispatch} from "../../redux/store";
-import {EventAttendance, User} from "../../types/supabaseTypes";
 import CustomAppBar from "../../components/AppBar";
 import {InfiniteScrollList} from "../../components/InfiniteScrollList";
 import {EventItem} from "./components/EventItem";

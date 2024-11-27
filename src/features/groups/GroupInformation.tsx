@@ -6,7 +6,7 @@ import {useSelector} from "react-redux";
 import {useParams} from "react-router-dom";
 import {fetchAdminUsersAsync} from "../admin/slices/adminUserSlice";
 import {RootState, useAppDispatch} from "../../redux/store";
-import {GroupWithUsers, User, UserWithGroups} from "../../types/supabaseTypes";
+import {GroupWithUsers, UserWithGroups} from "../../types/supabaseTypes";
 import {AlertMessage, AlertSnackbar} from "../../components/AlertSnackbar";
 import CustomAppBar from "../../components/AppBar";
 import SearchAndSelectUserDialog from "./dialogs/SearchAndSelectUserDialog";

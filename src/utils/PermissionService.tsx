@@ -1,6 +1,5 @@
 import {AbilityBuilder, createMongoAbility, MongoQuery, PureAbility} from '@casl/ability';
-import {Permissions, User} from "src/types/supabaseTypes";
-
+import {Permissions} from "types/supabase";
 
 export type Actions = 'use' | 'edit' | 'delete' | 'view'
 export type Ability =

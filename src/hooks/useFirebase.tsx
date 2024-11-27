@@ -2,7 +2,6 @@ import {getToken, Messaging, onMessage} from "firebase/messaging";
 import {messaging} from "../firebase/firebaseConfig";
 import React, {useEffect} from "react";
 import {SupabaseUserRepository} from "../repository/UserRepository";
-import {User} from "../types/supabaseTypes";
 import {captureException} from "@sentry/react";
 import {toast} from "react-toastify";
 import {Notification as NotificationComponent} from "../features/notifications/Notification";

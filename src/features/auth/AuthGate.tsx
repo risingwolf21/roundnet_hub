@@ -3,7 +3,6 @@ import {useDispatch, useSelector} from "react-redux";
 import {useLocation, useNavigate} from "react-router-dom";
 import React, {useEffect, useState} from "react";
 import {setUser} from "@sentry/react";
-import {User} from "../../types/supabaseTypes";
 import {ability, defineRulesFor} from "../../utils/PermissionService";
 import {onUserChange} from "../../redux/applicationSlice";
 import {Session} from "@supabase/supabase-js";

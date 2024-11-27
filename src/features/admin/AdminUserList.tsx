@@ -6,7 +6,7 @@ import {useSelector} from "react-redux";
 import {useNavigate} from "react-router-dom";
 import {fetchAdminUsersAsync} from "./slices/adminUserSlice";
 import {RootState, useAppDispatch} from "../../redux/store";
-import {User, UserWithGroups} from "../../types/supabaseTypes";
+import {UserWithGroups} from "../../types/supabaseTypes";
 import {AlertMessage, AlertSnackbar} from "../../components/AlertSnackbar";
 import {Error} from "../../components/Error";
 import {Search, SearchIconWrapper, StyledInputBase} from "../../components/SearchBar";

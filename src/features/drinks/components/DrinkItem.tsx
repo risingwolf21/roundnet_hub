@@ -12,7 +12,6 @@ import AddIcon from '@mui/icons-material/Add';
 import RemoveIcon from '@mui/icons-material/Remove';
 import LocalDrinkIcon from '@mui/icons-material/LocalDrink';
 import React, {Fragment} from 'react';
-import {Drink} from 'src/types/supabaseTypes';
 
 type Props = {
     drink: Drink,

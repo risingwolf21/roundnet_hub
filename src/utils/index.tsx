@@ -2,7 +2,6 @@ import {Slide, SlideProps} from "@mui/material";
 import {add, Duration, format, parse} from "date-fns";
 import dayjs from "dayjs";
 import React, {forwardRef} from "react";
-import {EventRecurrence, ProductType} from "src/types/supabaseTypes";
 
 export const compareById = (x: any, y: any) => {
     return x.id === y.id;

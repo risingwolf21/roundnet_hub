@@ -12,21 +12,20 @@ import {
     LinearProgress,
     List,
     ListItem,
-    ListItemText,
     ListItemAvatar,
+    ListItemText,
     Step,
     StepLabel,
     Stepper
 } from "@mui/material";
-import { styled } from '@mui/material/styles';
-import IconButton, { IconButtonProps } from '@mui/material/IconButton';
+import {styled} from '@mui/material/styles';
+import IconButton, {IconButtonProps} from '@mui/material/IconButton';
 import Grid from '@mui/material/Grid2';
 import React, {useEffect} from "react";
 import {AlertMessage} from "../../components/AlertSnackbar";
 import {editEvent, fetchRecurringEventsAsync} from "./slices/eventsSlice";
 import {RootState, useAppDispatch} from "../../redux/store";
 import {useSelector} from "react-redux";
-import {EventWithGroup} from "../../types/supabaseTypes";
 import {nameOfRecurrence} from "../../utils";
 import {PlaceType} from "./types";
 import {
@@ -46,6 +45,7 @@ import {
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import {format} from "date-fns";
 import {useNavigate} from "react-router-dom";
+import {EventWithGroup} from "../../types/supabaseTypes";
 
 interface ExpandMoreProps extends IconButtonProps {
     expand: boolean;
@@ -210,8 +210,8 @@ const RecurringEvents = ({recurringEvents, loading, error}: RecurringEventsProps
                                                         </Grid>
                                                     }
                                                     <Grid>
-                                                        <Chip icon={<GroupRounded style={{color: x.fullGroup.color}}/>}
-                                                              label={x.fullGroup.name}/>
+                                                        <Chip icon={<GroupRounded style={{color: x.fullGroup?.color}}/>}
+                                                              label={x.fullGroup?.name}/>
                                                     </Grid>
                                                     <Grid>
                                                         {

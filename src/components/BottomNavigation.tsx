@@ -9,8 +9,7 @@ import {can} from "src/utils/PermissionService";
 import {onModeChange} from "../redux/applicationSlice";
 import {RootState} from "../redux/store";
 import {notificationsSelector} from "../features/notifications/slices/notificationsSlice";
-import {BOTTOM_NAV_OPTION_1, BOTTOM_NAV_OPTION_2, HOMEPAGE} from "../constants";
-import {BottomNavigationItem} from "../types/types";
+import {HOMEPAGE} from "../constants";
 
 const CustomBottomNavigation = ({t}: { t: TFunction }) => {
 
@@ -61,24 +60,24 @@ const CustomBottomNavigation = ({t}: { t: TFunction }) => {
             onChange={handleChange}>
             {
                 can("view", "training") && <BottomNavigationAction
-                key={"training"}
-                value={"training"}
-                aria-selected={tab === "training"}
-                icon={<SportsHandball/>}/>
+                    key={"training"}
+                    value={"training"}
+                    aria-selected={tab === "training"}
+                    icon={<SportsHandball/>}/>
             }
             {
-                can("view","drink") && <BottomNavigationAction
-                key={"drinks"}
-                value={"drinks"}
-                aria-selected={tab === "drinks"}
-                icon={<Liquor/>}/>
+                can("view", "drink") && <BottomNavigationAction
+                    key={"drinks"}
+                    value={"drinks"}
+                    aria-selected={tab === "drinks"}
+                    icon={<Liquor/>}/>
             }
             {
-                can("view","challenges") && <BottomNavigationAction
-                key={"challenges"}
-                value={"challenges"}
-                aria-selected={tab === "challenges"}
-                icon={<EmojiEvents/>}/>
+                can("view", "challenges") && <BottomNavigationAction
+                    key={"challenges"}
+                    value={"challenges"}
+                    aria-selected={tab === "challenges"}
+                    icon={<EmojiEvents/>}/>
             }
             {
                 can("view", "browse") && <BottomNavigationAction

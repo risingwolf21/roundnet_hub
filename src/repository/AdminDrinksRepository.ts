@@ -1,5 +1,4 @@
 import {PostgrestSingleResponse} from "@supabase/supabase-js";
-import {Drink} from "../types/supabaseTypes";
 import _ from "lodash";
 import {supabase} from "../components/services/supabase/supabaseClient";
 

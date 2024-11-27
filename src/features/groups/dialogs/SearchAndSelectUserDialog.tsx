@@ -17,7 +17,6 @@ import {
 import {Search, SearchIconWrapper, StyledInputBase} from "../../../components/SearchBar";
 import React, {useState} from "react";
 import {SlideUpTransition} from "../../../utils";
-import {User} from "../../../types/supabaseTypes";
 
 type SearchAndSelectUserDialogProps = {
     open: boolean,

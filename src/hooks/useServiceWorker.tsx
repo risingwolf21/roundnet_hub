@@ -1,4 +1,4 @@
-import {useMemo} from "react";
+import {useEffect, useMemo} from "react";
 import * as serviceWorker from "../serviceWorkerRegistration";
 import {onServiceWorkerInitialized, onUpdateServiceWorker} from "src/redux/applicationSlice";
 import {RootState, useAppDispatch} from "src/redux/store";
@@ -10,19 +10,21 @@ export type ServiceWorkerConfig = {
 }
 
 export const useServiceWorker = () => {
-    const { serviceWorkerUpdated, serviceWorkerRegistration } = useSelector((state: RootState) => state.application);
+    const {serviceWorkerUpdated, serviceWorkerRegistration} = useSelector((state: RootState) => state.application);
     const dispatch = useAppDispatch();
 
-    serviceWorker.register({
-        onUpdate: (registration: ServiceWorkerRegistration) => dispatch(onUpdateServiceWorker(registration)),
-        onSuccess: () => dispatch(onServiceWorkerInitialized())
-    });
+    useEffect(() => {
+        serviceWorker.register({
+            onUpdate: (registration: ServiceWorkerRegistration) => dispatch(onUpdateServiceWorker(registration)),
+            onSuccess: () => dispatch(onServiceWorkerInitialized())
+        });
+    }, [dispatch]);
 
     const value = useMemo(() => ({
         serviceWorkerUpdated,
         updateServiceWorker: () => {
             if (serviceWorkerRegistration?.waiting) {
-                serviceWorkerRegistration.waiting.postMessage({ type: 'SKIP_WAITING' });
+                serviceWorkerRegistration.waiting.postMessage({type: 'SKIP_WAITING'});
                 serviceWorkerRegistration.waiting.addEventListener('statechange', (e: Event) => {
                     const sw = e?.target as ServiceWorker;
                     if (sw.state === 'activated') {
@@ -33,5 +35,5 @@ export const useServiceWorker = () => {
         }
     }), [serviceWorkerUpdated, serviceWorkerRegistration]);
 
-    return { isUpdateAvailable: value.serviceWorkerUpdated, updateServiceWorker: value.updateServiceWorker }
+    return {isUpdateAvailable: value.serviceWorkerUpdated, updateServiceWorker: value.updateServiceWorker}
 }

@@ -19,7 +19,6 @@ import React, {useEffect, useState} from "react";
 import {useSelector} from "react-redux";
 import {RootState} from "src/redux/store";
 import {SlideUpTransition} from "../../../utils";
-import {Group, User} from "../../../types/supabaseTypes";
 import KeyIcon from "@mui/icons-material/Key";
 import {GroupsRepository} from "../../../repository/GroupsRepository";
 import {TablesUpdate} from "../../../types/supabase-generated.types";

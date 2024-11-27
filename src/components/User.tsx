@@ -24,7 +24,6 @@ import {useSelector} from "react-redux";
 import React, {useEffect, useState} from "react";
 import {AppDispatch, RootState, useAppDispatch} from "../redux/store";
 import {AlertSnackbar} from "./AlertSnackbar";
-import {Group, NotificationTags, User} from "src/types/supabaseTypes";
 import {SupabaseClient} from "@supabase/supabase-js";
 import CropImageDialog from "./CropImageDialog";
 import {

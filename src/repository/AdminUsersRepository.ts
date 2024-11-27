@@ -1,5 +1,5 @@
 import {PostgrestSingleResponse} from "@supabase/supabase-js";
-import {Group, User, UserWithGroups} from "src/types/supabaseTypes";
+import {UserWithGroups} from "src/types/supabaseTypes";
 import {supabase} from "../components/services/supabase/supabaseClient";
 import {UserEdited} from "src/features/admin/dialogs/EditUserDialog";
 

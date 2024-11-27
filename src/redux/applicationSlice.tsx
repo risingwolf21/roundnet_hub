@@ -1,5 +1,4 @@
 import {createAsyncThunk, createSlice, PayloadAction} from '@reduxjs/toolkit';
-import {NotificationTags, User} from '../types/supabaseTypes';
 import {SupabaseUserRepository} from "../repository/UserRepository";
 
 type ApplicationSliceState = {

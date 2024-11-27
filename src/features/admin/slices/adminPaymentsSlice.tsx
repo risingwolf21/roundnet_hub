@@ -1,5 +1,5 @@
 import {createAsyncThunk, createSlice} from '@reduxjs/toolkit';
-import {FullPayment, PaymentState} from '../../../types/supabaseTypes';
+import {FullPayment} from '../../../types/supabaseTypes';
 import {SupabaseClient} from '@supabase/supabase-js';
 
 type AdminPaymentsSliceState = {

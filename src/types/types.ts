@@ -1,1 +1,0 @@
-export type BottomNavigationItem = "training" | "drinks" | "challenges";

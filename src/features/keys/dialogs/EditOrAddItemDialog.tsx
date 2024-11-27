@@ -21,20 +21,19 @@ import React, {useEffect, useState} from "react";
 import {useSelector} from "react-redux";
 import {RootState} from "src/redux/store";
 import {SlideUpTransition} from "../../../utils";
-import {Item, ItemUpdate} from "../../../types/supabaseTypes";
 import KeyIcon from "@mui/icons-material/Key";
 import {SupabaseKeysRepository} from "../../../repository/KeysRepository";
 
 type EditOrAddItemDialogProps = {
     open: boolean,
     handleClose: () => void,
-    itemToEdit: Item | null
+    itemToEdit: ItemUpdate | null
 }
 
 export const EditOrAddItemDialog = ({open, handleClose, itemToEdit}: EditOrAddItemDialogProps) => {
 
     const user = useSelector((state: RootState) => state.application.user);
-    const [currentKey, setCurrentKey] = useState<ItemUpdate>({
+    const [currentItem, setCurrentItem] = useState<ItemUpdate>({
         id: itemToEdit?.id,
         name: itemToEdit?.name,
         color: itemToEdit?.color,
@@ -48,7 +47,7 @@ export const EditOrAddItemDialog = ({open, handleClose, itemToEdit}: EditOrAddIt
     }>({open: false, message: "", severity: "error"});
 
     useEffect(() => {
-        setCurrentKey({
+        setCurrentItem({
             id: itemToEdit?.id,
             name: itemToEdit?.name,
             color: itemToEdit?.color,
@@ -58,7 +57,7 @@ export const EditOrAddItemDialog = ({open, handleClose, itemToEdit}: EditOrAddIt
     }, [itemToEdit]);
 
     const handleSubmit = async () => {
-        if (!currentKey.name || currentKey.name.length < 6) {
+        if (!currentItem.name || currentItem.name.length < 6) {
             setErrorSnackbar({message: "Der Schlüsselname ist zu kurz!", open: true});
             return;
         }
@@ -67,19 +66,19 @@ export const EditOrAddItemDialog = ({open, handleClose, itemToEdit}: EditOrAddIt
             return;
         }
         let result;
-        if (currentKey.id) {
+        if (currentItem.id) {
             result = await SupabaseKeysRepository.updateItem({
-                name: currentKey.name,
-                color: currentKey.color,
-                type: currentKey.type,
-                current_holder: currentKey.current_holder
-            }, currentKey.id);
+                name: currentItem.name,
+                color: currentItem.color,
+                type: currentItem.type,
+                current_holder: currentItem.current_holder
+            }, currentItem.id);
         } else {
             result = await SupabaseKeysRepository.insertItem({
-                name: currentKey.name,
-                color: currentKey.color,
-                type: currentKey.type,
-                current_holder: currentKey.current_holder
+                name: currentItem.name,
+                color: currentItem.color,
+                type: currentItem.type,
+                current_holder: currentItem.current_holder
             });
         }
         if (result.error) {
@@ -106,7 +105,7 @@ export const EditOrAddItemDialog = ({open, handleClose, itemToEdit}: EditOrAddIt
                         <CloseIcon/>
                     </IconButton>
                     <Typography sx={{ml: 2, flex: 1}} variant="h6" component="div">
-                        {`Schlüssel ${itemToEdit?.id > 0 ? "bearbeiten" : "erstellen"}`}
+                        {`Schlüssel ${(currentItem.id ?? 0) > 0 ? "bearbeiten" : "erstellen"}`}
                     </Typography>
                     <Button variant="contained" sx={{background: "white", color: (theme) => theme.palette.primary.main}}
                             onClick={handleSubmit}>Speichern</Button>
@@ -118,23 +117,23 @@ export const EditOrAddItemDialog = ({open, handleClose, itemToEdit}: EditOrAddIt
                         <TextField
                             fullWidth
                             variant="outlined"
-                            value={currentKey?.name ?? ""}
-                            onChange={(e) => setCurrentKey({...currentKey, name: e.target.value})}
+                            value={currentItem?.name ?? ""}
+                            onChange={(e) => setCurrentItem({...currentItem, name: e.target.value})}
                             label="Schlüsselname"
                             margin="normal"/>
                     </ListItem>
                     <ListItem>
                         <ListItemAvatar>
                             <Avatar
-                                sx={{background: currentKey?.color ?? "#000", width: 40, height: 40, borderRadius: 2}}>
+                                sx={{background: currentItem?.color ?? "#000", width: 40, height: 40, borderRadius: 2}}>
                                 <KeyIcon/>
                             </Avatar>
                         </ListItemAvatar>
                         <TextField
                             fullWidth
                             variant="outlined"
-                            value={currentKey?.color ?? "#000"}
-                            onChange={(e) => setCurrentKey({...currentKey, color: e.target.value})}
+                            value={currentItem?.color ?? "#000"}
+                            onChange={(e) => setCurrentItem({...currentItem, color: e.target.value})}
                             label="Farbe"
                             margin="normal"/>
                     </ListItem>
@@ -142,10 +141,10 @@ export const EditOrAddItemDialog = ({open, handleClose, itemToEdit}: EditOrAddIt
                         <ListItemAvatar>
                         </ListItemAvatar>
                         <Select fullWidth
-                                value={currentKey?.type ?? "nothing"}
-                                onChange={(e) => setCurrentKey({
-                                    ...currentKey,
-                                    type: e.target.value === "nothing" ? null : e.target.value
+                                value={currentItem?.type ?? "nothing"}
+                                onChange={(e) => setCurrentItem({
+                                    ...currentItem,
+                                    type: e.target.value === "nothing" ? null : e.target.value as ItemType
                                 })}>
                             <MenuItem value={"mtvStorage"}>MTV Kellerschlüssel</MenuItem>
                             <MenuItem value={"mtvGym"}>MTV Gymschlüssel</MenuItem>

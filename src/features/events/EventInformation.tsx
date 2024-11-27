@@ -20,7 +20,7 @@ import {
 import React, {createRef, useEffect, useState} from "react";
 import {MapContainer, Marker, TileLayer} from "react-leaflet";
 import {useNavigate} from "react-router-dom";
-import {answerDeadlineExpired, EventAttendance, eventInThePast} from "../../types/supabaseTypes";
+import {answerDeadlineExpired, eventInThePast} from "../../types/supabaseTypes";
 import {DeleteEventDialog} from "./dialogs/DeleteEventDialog";
 import {DeleteEventType, EventInformationProps} from "./types";
 import {CancelTrainingDialog} from "./dialogs/CancelTrainingDialog";

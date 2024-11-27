@@ -1,4 +1,3 @@
-import {User} from "../../../types/supabaseTypes";
 import React, {useEffect, useState} from "react";
 import {useClient} from "react-supabase";
 import {useTranslation} from "react-i18next";

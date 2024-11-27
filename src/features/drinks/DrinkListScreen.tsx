@@ -6,7 +6,7 @@ import React, {useEffect, useState} from "react";
 import {AlertMessage, AlertSnackbar} from "src/components/AlertSnackbar";
 import CustomAppBar from "src/components/AppBar";
 import {LoadingIndicator} from "src/components/LoadingIndicator";
-import {Drink, DrinkCounter, ProductType} from "src/types/supabaseTypes";
+import {DrinkCounter} from "src/types/supabaseTypes";
 import {nameOfProductType} from "src/utils";
 import {Error} from "../../components/Error";
 import {SwipeableDialog} from "../../components/SwipeableDialog";
@@ -102,15 +102,7 @@ const DrinkListScreen = ({user, drinks, drinksLoading, drinksError, dispatch}: D
     return <Box>
         <CustomAppBar/>
         <LoadingIndicator loading={drinksLoading}/>
-        <VoucherCard vouchers={[
-            {
-                total_drinks: 5,
-                used_drinks: 2,
-                id: "asdf",
-                user: "asdfasdf",
-                created_at: ""
-            }
-        ]}/>
+        <VoucherCard/>
         <DrinkList drinks={drinks} onAddDrinkClick={onAddDrinkClick} onRemoveDrinkClick={onRemoveDrinkClick}
                    addedDrinks={addedDrinks} visibleTypes={visibleTypes}/>
         {

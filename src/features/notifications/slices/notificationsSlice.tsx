@@ -1,8 +1,9 @@
 import {createAsyncThunk, createEntityAdapter, createSlice, PayloadAction, Update} from "@reduxjs/toolkit";
-import {Notification, NotificationInsert, NotificationUpdate, User} from "../../../types/supabaseTypes";
 import {RootState} from "../../../redux/store";
 import {SupabaseUserRepository} from "../../../repository/UserRepository";
 import {Tables} from "../../../types/supabase-generated.types";
+import {Notification} from "types/supabase"
+
 
 const notificationsAdapter = createEntityAdapter({
     selectId: (notification: Tables<'notifications'>) => notification.id,

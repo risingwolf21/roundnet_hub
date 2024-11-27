@@ -2,7 +2,7 @@ import {AddOutlined, EditOffOutlined, EditOutlined} from "@mui/icons-material";
 import {Alert, Box, Fab, List} from "@mui/material";
 import React, {useEffect, useState} from "react";
 import {fetchItemsAsync} from "src/features/keys/slices/keysSlice";
-import {FullItemHolder, Item, User} from "src/types/supabaseTypes";
+import {FullItemHolder} from "src/types/supabaseTypes";
 import {AlertMessage, AlertSnackbar} from "../../components/AlertSnackbar";
 import CustomAppBar from "../../components/AppBar";
 import {LoadingIndicator} from "../../components/LoadingIndicator";
@@ -15,7 +15,7 @@ import {ItemHolderItem} from "./components/ItemHolderItem";
 import {KeyHandOverDialog} from "./dialogs/KeyHandOverDialog";
 import {SearchUserDialog} from "./dialogs/SearchUserDialog";
 
-export const EMPTY_KEY = {name: "", color: "#000000", id: null, created_at: "", current_holder: null, type: null};
+export const EMPTY_KEY: ItemUpdate = {name: "", color: "#000000", created_at: "", current_holder: null, type: null};
 
 export const ItemHolderScreen = ({dispatch, keyHolders, loading, user, t}: ItemHolderScreenProps) => {
 
@@ -24,7 +24,7 @@ export const ItemHolderScreen = ({dispatch, keyHolders, loading, user, t}: ItemH
     const [selectedUser, setSelectedUser] = useState<User | null>(null);
     const [selectedKeyHolder, setSelectedKeyHolder] = useState<FullItemHolder | null>(null);
     const [isEditingMode, setEditingMode] = useState(false);
-    const [itemToEdit, setItemToEdit] = useState<Item | null>(null);
+    const [itemToEdit, setItemToEdit] = useState<ItemUpdate | null>(null);
     const [alertInfo, setAlertInfo] = useState<AlertMessage | null>(null);
     const [itemHistoryDialogOpen, setItemHistoryDialogOpen] = useState(false);
 

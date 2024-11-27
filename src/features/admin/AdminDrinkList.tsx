@@ -16,7 +16,6 @@ import React, {useEffect, useState} from "react";
 import {useSelector} from "react-redux";
 import {fetchDrinksAsync} from "./slices/adminDrinksSlice";
 import {RootState, useAppDispatch} from "../../redux/store";
-import {Drink} from "../../types/supabaseTypes";
 import {AlertMessage, AlertSnackbar} from "../../components/AlertSnackbar";
 import CustomAppBar from "../../components/AppBar";
 import {Error} from "../../components/Error";

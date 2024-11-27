@@ -28,12 +28,10 @@ import {SliceEvent} from "src/features/events/slices/eventsSlice"
 import {useAppDispatch} from "src/redux/store"
 import {
     answerDeadlineExpired,
-    EventAttendance,
     eventInThePast,
     FullAttendance,
     FullItemHolder,
-    maxAttendeesExceeded,
-    User
+    maxAttendeesExceeded
 } from "src/types/supabaseTypes"
 import EventAttendanceDialog from "../dialogs/EventAttendanceDialog"
 import {TablesUpdate} from "../../../types/supabase-generated.types";

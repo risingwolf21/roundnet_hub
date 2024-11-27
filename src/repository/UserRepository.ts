@@ -1,6 +1,7 @@
 import {PostgrestError, PostgrestSingleResponse} from "@supabase/supabase-js";
-import {Notification, NotificationTags, User, UserWithGroups} from "../types/supabaseTypes";
+import {UserWithGroups} from "../types/supabaseTypes";
 import {supabase} from "../components/services/supabase/supabaseClient";
+import {Notification} from "types/supabase"
 
 export const SupabaseUserRepository = {
     async fetchUserWithGroups(userId: string): Promise<PostgrestSingleResponse<UserWithGroups>> {

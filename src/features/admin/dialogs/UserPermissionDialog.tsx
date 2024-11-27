@@ -19,7 +19,6 @@ import {
 import Checkbox from '@mui/material/Checkbox';
 import {Box} from "@mui/system";
 import React, {useState} from "react";
-import {Permissions} from "src/types/supabaseTypes";
 import {
     allPermissions,
     financePermissions,
@@ -28,6 +27,7 @@ import {
     userPermissions
 } from "src/utils/PermissionService";
 import {SlideUpTransition} from "../../../utils";
+import {Permissions} from "types/supabase"
 
 type UserPermissionsDialogProps = {
     open: boolean,

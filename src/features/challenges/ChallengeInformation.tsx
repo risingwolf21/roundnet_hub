@@ -2,7 +2,7 @@ import {Alert, Divider, Fab, Grid, List, Typography} from "@mui/material";
 import CustomAppBar from "../../components/AppBar";
 import React, {useState} from "react";
 import {ChallengeRepository} from "../../repository/ChallengeRepository";
-import {FullChallenge, User} from "../../types/supabaseTypes";
+import {FullChallenge} from "../../types/supabaseTypes";
 import {captureException} from "@sentry/react";
 import {AlertMessage, AlertSnackbar} from "../../components/AlertSnackbar";
 import {Box} from "@mui/system";
@@ -15,7 +15,7 @@ import {ChallengeStatItem} from "./components/ChallengeStatItem";
 type ChallengeInformationProps = {
     t: TFunction,
     challenge: FullChallenge,
-    user: User
+    user: User | null
 }
 
 export const ChallengeInformation = ({t, challenge, user}: ChallengeInformationProps) => {

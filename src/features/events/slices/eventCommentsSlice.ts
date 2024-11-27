@@ -1,8 +1,7 @@
 import {createAsyncThunk, createEntityAdapter, createSlice, PayloadAction} from "@reduxjs/toolkit";
-import {EventCommentUpdate, FullComment, User} from "src/types/supabaseTypes";
+import {FullComment} from "src/types/supabaseTypes";
 import {PostgrestError} from "@supabase/supabase-js";
 import {SupabaseEventRepository} from "../../../repository/EventRepository";
-import {Tables} from "../../../types/supabase-generated.types";
 
 type SliceComments = {
     id: string,
@@ -121,7 +120,7 @@ const eventCommentsSlice = createSlice({
 });
 
 type UpsertCommentProps = { user: User, eventId: string, comment: string, created_at: string }
-type DataErrorReturned = { data: Tables<'event_comments'> | null, error: PostgrestError | null }
+type DataErrorReturned = { data: EventComment | null, error: PostgrestError | null }
 export const upsertCommentToEventAsync = createAsyncThunk("upsertCommentToEventAsync", async ({
                                                                                                   user,
                                                                                                   eventId,

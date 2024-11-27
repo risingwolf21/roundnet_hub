@@ -13,7 +13,7 @@ import CustomAppBar from "./AppBar";
 import React, {useEffect, useState} from "react";
 import {AddPhotoAlternateOutlined, FiberManualRecord} from "@mui/icons-material";
 import {useParams} from "react-router-dom";
-import {Group, UserWithGroups} from "../types/supabaseTypes";
+import {UserWithGroups} from "../types/supabaseTypes";
 import {LoadingIndicator} from "./LoadingIndicator";
 import {useSelector} from "react-redux";
 import {RootState} from "../redux/store";
@@ -32,8 +32,8 @@ const UserScreen = () => {
             setLoading(true);
             SupabaseUserRepository.fetchUserWithGroups(userId).then(result => {
                 SupabaseUserRepository.fetchUserWithGroups(user.userId).then(userResult => {
-                    setOverlappingGroups(result.data?.groups?.filter(x =>
-                        userResult.data?.groups.some(y => y.id === x.id)) ?? [])
+                    setOverlappingGroups(result.data?.groups?.filter((x: Group) =>
+                        userResult.data?.groups.some((y: Group) => y.id === x.id)) ?? [])
                     setCurrentUser(result.data);
                     setLoading(false);
                 });

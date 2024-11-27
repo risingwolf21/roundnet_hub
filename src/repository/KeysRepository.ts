@@ -1,5 +1,5 @@
 import {PostgrestSingleResponse} from "@supabase/supabase-js";
-import {FullItemHolder, Item, User} from "../types/supabaseTypes";
+import {FullItemHolder} from "../types/supabaseTypes";
 import {formatDateToDatabase} from "../utils";
 import {supabase} from "../components/services/supabase/supabaseClient";
 import {TablesInsert, TablesUpdate} from "../types/supabase-generated.types";

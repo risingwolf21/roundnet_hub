@@ -36,7 +36,7 @@ import React, {FormEvent, Ref, useEffect, useRef, useState} from "react";
 import EventRepeatIcon from '@mui/icons-material/EventRepeat';
 import SearchPlacesDialog from "./dialogs/SearchPlacesDialog";
 import {MapContainer, Marker, TileLayer, useMap} from "react-leaflet";
-import {EventRecurrence, FullEvent} from "../../types/supabaseTypes";
+import {FullEvent} from "../../types/supabaseTypes";
 import {format, isAfter, isBefore, set} from "date-fns";
 import _ from "lodash";
 import {SelectGroupDialog} from "./dialogs/SelectGroupDialog";

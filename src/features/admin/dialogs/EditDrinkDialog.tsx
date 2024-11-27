@@ -26,7 +26,6 @@ import CropImageDialog from "../../../components/CropImageDialog";
 import {useClient} from "react-supabase";
 import {Check} from "@mui/icons-material";
 import {dataURLtoFile, readFile, SlideUpTransition} from "../../../utils";
-import {Drink} from "../../../types/supabaseTypes";
 import {uuid} from "@supabase/supabase-js/dist/main/lib/helpers";
 
 type EditDrinkDialogProps = {

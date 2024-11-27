@@ -1,5 +1,5 @@
 import {AppDispatch} from "../../redux/store";
-import {FullItemHolder, User} from "../../types/supabaseTypes";
+import {FullItemHolder} from "../../types/supabaseTypes";
 import {TFunction} from "i18next";
 
 export type ItemHolderScreenProps = {

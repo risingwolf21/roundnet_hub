@@ -1,5 +1,5 @@
 import {createAsyncThunk, createEntityAdapter, createSlice, PayloadAction, Update} from "@reduxjs/toolkit";
-import {EventAttendance, EventWithGroup, FullAttendance, FullEvent, Group, User} from "src/types/supabaseTypes";
+import {EventWithGroup, FullAttendance, FullEvent} from "src/types/supabaseTypes";
 import {RootState} from "../../../redux/store";
 import {onEventAttendanceUpdate, updateAttendanceAsync} from "./eventAttendanceSlice";
 import {SupabaseEventRepository} from "../../../repository/EventRepository";

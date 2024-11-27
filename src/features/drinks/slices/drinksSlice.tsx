@@ -1,14 +1,15 @@
 import {createAsyncThunk, createSlice, PayloadAction} from '@reduxjs/toolkit';
-import {Drink, FullHistory, Payment, PaymentHistory} from '../../../types/supabaseTypes';
+import {FullHistory, PaymentHistory} from '../../../types/supabaseTypes';
 import {compareById} from '../../../utils';
 import {SupabaseDrinkRepository} from "../../../repository/DrinkRepository";
-import {TablesInsert, TablesUpdate} from "../../../types/supabase-generated.types";
+import {Tables, TablesInsert, TablesUpdate} from "../../../types/supabase-generated.types";
 
 type DrinksSliceState = {
     history: FullHistory[],
     payment: Payment | null,
     drinks: Drink[],
     paymentHistory: PaymentHistory[] | null,
+    vouchers: Tables<'vouchers'>[],
     loading: boolean,
     endReached: boolean,
     historyEndReached: boolean,
@@ -27,6 +28,7 @@ const initialState = {
     payment: null,
     drinks: [],
     paymentHistory: [],
+    vouchers: [],
     loading: false,
     endReached: false,
     historyEndReached: false,
@@ -180,6 +182,10 @@ export const drinksSlice = createSlice({
                 state.paymentError = action.error.message;
             })
 
+            .addCase(fetchVouchersAsync.fulfilled, (state: DrinksSliceState, action) => {
+                state.vouchers = action.payload ?? [];
+            })
+
             .addCase(fetchDrinksToPayAsync.pending, (state: DrinksSliceState, _action) => {
                 state.paymentDrinksLoading = true;
             })
@@ -220,6 +226,11 @@ export const fetchDrinksToPayAsync = createAsyncThunk("payments/openDrinks", asy
 
 export const fetchDrinksAsync = createAsyncThunk("drink", async () => {
     const response = await SupabaseDrinkRepository.fetchDrinks();
+    return response?.data ?? [];
+});
+
+export const fetchVouchersAsync = createAsyncThunk("fetchVouchersAsync", async (userId: string) => {
+    const response = await SupabaseDrinkRepository.fetchVouchersForUser(userId);
     return response?.data ?? [];
 });
 

@@ -10,7 +10,7 @@ import {
 import KeyIcon from "@mui/icons-material/Key";
 import EditIcon from "@mui/icons-material/Edit";
 import React from "react";
-import {FullItemHolder, User} from "../../../types/supabaseTypes";
+import {FullItemHolder} from "../../../types/supabaseTypes";
 import {TFunction} from "i18next";
 
 type ItemHolderItemProsp = {

@@ -10,7 +10,6 @@ import {
     onNotificationInsert,
     onNotificationUpdate
 } from "../features/notifications/slices/notificationsSlice";
-import {NotificationInsert, NotificationUpdate} from "../types/supabaseTypes";
 
 export const useInitialFetch = () => {
     const dispatch = useAppDispatch();

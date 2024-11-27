@@ -17,7 +17,7 @@ import {useSelector} from "react-redux";
 import {PAYPAL_ME_ADDRESS} from "../../constants";
 import {fetchDrinksToPayAsync, fetchPaymentAsync} from "./slices/drinksSlice";
 import {RootState, useAppDispatch} from "../../redux/store";
-import {PaymentHistory, User} from "../../types/supabaseTypes";
+import {PaymentHistory} from "../../types/supabaseTypes";
 import {groupBy} from '../../utils';
 import {AlertSnackbar} from "../../components/AlertSnackbar";
 import CustomAppBar from "../../components/AppBar";

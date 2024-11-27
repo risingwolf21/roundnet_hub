@@ -18,7 +18,6 @@ import CustomAppBar from "../../components/AppBar"
 import {LoadingIndicator} from "../../components/LoadingIndicator"
 import {useTranslation} from "react-i18next"
 import {TFunction} from "i18next"
-import {NotificationTags, User} from "src/types/supabaseTypes"
 import {AlertMessage, AlertSnackbar} from "../../components/AlertSnackbar"
 import {SupabaseUserRepository} from "../../repository/UserRepository";
 

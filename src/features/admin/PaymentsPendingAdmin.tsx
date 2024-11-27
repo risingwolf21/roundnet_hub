@@ -23,10 +23,11 @@ import {useNavigate} from "react-router-dom";
 import {useClient} from "react-supabase";
 import {fetchAdminsPaymentsAsync} from "./slices/adminPaymentsSlice";
 import {RootState, useAppDispatch} from "../../redux/store";
-import {FullPayment, History, PaymentState} from "../../types/supabaseTypes";
+import {FullPayment} from "../../types/supabaseTypes";
 import {Error} from "../../components/Error";
 import {Search, SearchIconWrapper, StyledInputBase} from "../../components/SearchBar";
 import {SwipeableDialog} from "../../components/SwipeableDialog";
+import {History} from "types/supabase"
 
 const PaymentsPendingAdmin = () => {
 

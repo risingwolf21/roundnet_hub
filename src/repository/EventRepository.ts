@@ -1,16 +1,4 @@
-import {
-    Comment,
-    Event,
-    EventAttendance,
-    EventAttendanceMapping,
-    EventRecurrence,
-    EventWithGroup,
-    FullAttendance,
-    FullComment,
-    FullEvent,
-    Group,
-    User
-} from "../types/supabaseTypes";
+import {EventWithGroup, FullAttendance, FullComment, FullEvent} from "../types/supabaseTypes";
 import {PostgrestError, PostgrestSingleResponse} from "@supabase/supabase-js";
 import {add, Duration, startOfDay} from "date-fns";
 import _ from "lodash";
@@ -18,6 +6,7 @@ import {formatDateToDatabase} from "../utils";
 import moment from "moment/moment";
 import {supabase} from "../components/services/supabase/supabaseClient";
 import {TablesInsert, TablesUpdate} from "../types/supabase-generated.types";
+import {Event} from "types/supabase";
 
 export const SupabaseEventRepository = {
     async updateEventAndAllRecurrences(eventUpdate: TablesUpdate<'events'>): Promise<PostgrestSingleResponse<null>> {
@@ -86,15 +75,6 @@ export const SupabaseEventRepository = {
             .throwOnError()
     },
 
-    async updateEndOfOldEvent(eventId: string, recurrenceEnd: string): Promise<PostgrestSingleResponse<null>> {
-        return supabase
-            .from("events")
-            .update({
-                recurrenceEnd: recurrenceEnd
-            }).eq("id", eventId)
-            .throwOnError()
-    },
-
     async updateEvent(eventId: string, event: TablesUpdate<'events'>): Promise<PostgrestSingleResponse<null>> {
         return supabase
             .from("events")
@@ -107,7 +87,7 @@ export const SupabaseEventRepository = {
         return supabase.from("events").insert(event).throwOnError();
     },
 
-    async insertComment(user: User, eventId: string, comment: string): Promise<PostgrestSingleResponse<Comment>> {
+    async insertComment(user: User, eventId: string, comment: string): Promise<PostgrestSingleResponse<EventComment>> {
         return supabase.from("event_comments")
             .insert({
                 user: user.userId,
@@ -116,18 +96,18 @@ export const SupabaseEventRepository = {
                 displayName: user.displayName ?? ""
             })
             .select()
-            .single<Comment>()
+            .single<EventComment>()
             .throwOnError();
     },
 
-    async updateAttendance(userId: string, eventId: string, state: EventAttendance): Promise<PostgrestSingleResponse<EventAttendanceMapping>> {
+    async updateAttendance(userId: string, eventId: string, state: EventAttendance): Promise<PostgrestSingleResponse<EventAttendance>> {
         return supabase
             .rpc("update_attendance", {
                 eventid: eventId,
                 userid: userId,
                 state
             })
-            .returns<EventAttendanceMapping>()
+            .returns<EventAttendance>()
             .throwOnError();
     },
 
@@ -210,7 +190,7 @@ export const SupabaseEventRepository = {
             .throwOnError();
     },
 
-    async fetchRecurringEvents(): Promise<PostgrestSingleResponse<Event[]>> {
+    async fetchRecurringEvents(): Promise<PostgrestSingleResponse<EventWithGroup[]>> {
         return supabase.from("current_distinct_event")
             .select("*, fullGroup: event_group(id, created_at, description, name, color)")
             .returns<EventWithGroup[]>()
