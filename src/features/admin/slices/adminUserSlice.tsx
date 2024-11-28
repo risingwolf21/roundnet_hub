@@ -61,7 +61,8 @@ export const fetchAdminUsersAsync = createAsyncThunk("fetchAdminUsersAsync", asy
         return (response.data?.map((x: any) => {
             return {
                 ...x,
-                groups: x.groups.map((x: any) => x.group)
+                groups: x.groups.map((x: any) => x.group),
+                roles: x.roles.map((x: any) => x.role)
             }
         }) ?? []) as UserWithGroups[]
     } catch (e) {

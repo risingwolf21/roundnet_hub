@@ -33,6 +33,8 @@ declare global {
     type EventRecurrence = Enums<'EventRecurrence'>
     type PaymentState = Enums<'PaymentState'>
     type ItemType = Enums<'ItemType'>
+    type AppRole = Enums<'app_role'>
+    type AppPermission = Enums<'app_permission'>
 
 }
 

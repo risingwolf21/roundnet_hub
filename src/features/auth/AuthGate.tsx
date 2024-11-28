@@ -52,7 +52,6 @@ export const AuthGate = ({children}: Props) => {
                         ability.update(defineRulesFor(user));
                         dispatch(onUserChange(user));
                         setSession(session);
-                        console.log(location)
                         if (location.pathname) {
                             navigate(location.pathname, {replace: true});
                         } else {

@@ -80,10 +80,13 @@ export type FullComment = Modify<EventComment, {
 
 export type UserWithGroups = User & {
     groups: Group[]
+    roles: AppRole[]
 }
 
 export type GroupWithUsers = Group & {
     users: User[]
 }
+
+export const allAppRoles: AppRole[] = ["admin", "groupModerator", "userModerator", "eventModerator", "eventUser", "drinkModerator", "drinkUser", "challengeModerator", "challengeUser", "itemModerator", "itemUser"]
 
 type Modify<T, R> = Omit<T, keyof R> & R;

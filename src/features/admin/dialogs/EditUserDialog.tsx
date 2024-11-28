@@ -31,6 +31,7 @@ import {UserPermissionsDialog} from "./UserPermissionDialog";
 import {captureException} from "@sentry/react";
 import {SupabaseDrinkRepository} from "../../../repository/DrinkRepository";
 import {Permissions} from "types/supabase"
+import {UserRolesDialog} from "./UserRolesDialog";
 
 type EditUserDialogProps = {
     user: UserWithGroups,
@@ -44,15 +45,18 @@ export type UserEdited = {
     displayName: string,
     verified: boolean,
     userId: string,
-    permissions: Permissions[]
+    permissions: Permissions[],
+    roles: AppRole[]
 }
 
 const EditUserDialog = ({user, open, handleClose, onUserEditFinished, deleteUser}: EditUserDialogProps) => {
 
     const [editUserPermissionsOpen, setEditUserPermissionsOpen] = useState(false);
+    const [editUserRoles, setEditUserRoles] = useState(false);
     const [verified, setVerified] = useState(user.verified)
     const [deleteUserOpen, setDeleteUserOpen] = useState(false);
     const [userPermissions, setUserPermissions] = useState<Permissions[]>([]);
+    const [userRoles, setUserRoles] = useState<AppRole[]>([]);
     const [userInfo, setUserInfo] = useState({openAmount: 0});
     const [drinksForUser, setDrinksForUser] = useState<FullHistory[]>([]);
     const client = useClient();
@@ -68,6 +72,7 @@ const EditUserDialog = ({user, open, handleClose, onUserEditFinished, deleteUser
         })
         setVerified(user.verified);
         setUserPermissions(user.permissions ?? []);
+        setUserRoles(user.roles);
     }, [user, client]);
 
     const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
@@ -78,7 +83,8 @@ const EditUserDialog = ({user, open, handleClose, onUserEditFinished, deleteUser
             userId: user.userId,
             displayName: data.get("displayName"),
             verified,
-            permissions: userPermissions
+            permissions: userPermissions,
+            roles: userRoles
         } as UserEdited);
     }
 
@@ -166,6 +172,17 @@ const EditUserDialog = ({user, open, handleClose, onUserEditFinished, deleteUser
                             <Edit/>
                         </ListItemSecondaryAction>
                     </ListItemButton>
+                    <ListItemButton key={"userRoles"} onClick={() => setEditUserRoles(true)}>
+                        <ListItemAvatar>
+                            <Avatar>
+                                <ManageAccounts/>
+                            </Avatar>
+                        </ListItemAvatar>
+                        <ListItemText primary={userRoles.join(", ")}/>
+                        <ListItemSecondaryAction onClick={() => setEditUserRoles(true)}>
+                            <Edit/>
+                        </ListItemSecondaryAction>
+                    </ListItemButton>
                     <Divider/>
                     <List subheader={<ListSubheader>Gruppen</ListSubheader>}>
                         {
@@ -218,6 +235,14 @@ const EditUserDialog = ({user, open, handleClose, onUserEditFinished, deleteUser
                 setEditUserPermissionsOpen(false);
             }}
             permissions={user.permissions ?? []}/>
+        <UserRolesDialog
+            open={editUserRoles}
+            handleClose={() => setEditUserRoles(false)}
+            handleSubmit={(roles) => {
+                setUserRoles(roles);
+                setEditUserRoles(false);
+            }}
+            roles={user.roles}/>
         <Dialog open={deleteUserOpen}>
             <DialogTitle>
                 {`Benuter ${user.displayName} löschen?`}
