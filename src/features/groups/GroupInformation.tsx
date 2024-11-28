@@ -92,8 +92,9 @@ const GroupInformation = ({users, loading, group}: GroupInformationProps) => {
             <Divider/>
             <Typography pl={2} pt={1} variant="h6" fontWeight="bold">Mitglieder</Typography>
             {
-                group && group.users && group.users.map((x: Tables<'user'>, index: number) => <ListItem key={index}
-                                                                                                        divider>
+                group && group.users && group.users
+                .sort((a,b) => a.displayName.localeCompare(b.displayName))
+                .map((x: Tables<'user'>, index: number) => <ListItem key={index} divider>
                     <ListItemAvatar>
                         <AccountCircle/>
                     </ListItemAvatar>
@@ -120,7 +121,7 @@ const GroupInformation = ({users, loading, group}: GroupInformationProps) => {
             open={searchAndSelectUsersOpen}
             handleClose={() => setSearchAndSelectUsersOpen(false)}
             handleSubmit={handleUsersAdded}
-            users={users.filter((x: UserWithGroups) => !group?.users?.some((y: Tables<'user'>) => y.userId === x.userId) ?? false)}
+            users={users.filter((x: UserWithGroups) => !group?.users?.some((y: Tables<'user'>) => y.userId === x.userId))}
             loading={loading}/>
 
         <SearchAndSelectUserDialog
