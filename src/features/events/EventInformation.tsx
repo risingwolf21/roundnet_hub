@@ -77,11 +77,17 @@ const EventInformation = ({
         if (!value) {
             return;
         } else if (value === "This Event") {
-            await SupabaseEventRepository.deleteEvent(selectedEvent.id);
-            navigate("/training", {replace: true});
+            SupabaseEventRepository.deleteEvent(selectedEvent.id).then(()=> {
+                navigate("/training", {replace: true});
+            }).catch((e)=> {
+                setAlertInfo({message: e.message, severity: "error"})
+            })
         } else if (value === "This and following events") {
-            await SupabaseEventRepository.deleteEventAndUpcomingEvents(selectedEvent.id, selectedEvent.key, selectedEvent.startingDateTime)
-            navigate("/training", {replace: true});
+            SupabaseEventRepository.deleteEventAndUpcomingEvents(selectedEvent.id, selectedEvent.key, selectedEvent.startingDateTime).then(()=> {
+                navigate("/training", {replace: true});
+            }).catch((e)=> {
+                setAlertInfo({message: e.message, severity: "error"})
+            })
         }
     }
 
@@ -343,7 +349,10 @@ const EventInformation = ({
                 }}
             />
         </Box>
-        <AlertSnackbar alertInfo={alertInfo} close={() => dispatch(onEventErrorRead(null))}/>
+        <AlertSnackbar alertInfo={alertInfo} close={() => {
+            dispatch(onEventErrorRead(null));
+            setAlertInfo(null)
+        }}/>
     </Box>
 }
 
