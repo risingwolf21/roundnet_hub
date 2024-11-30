@@ -1,4 +1,3 @@
-import CustomAppBar from "../../components/AppBar";
 import {
     Box,
     Button,
@@ -46,34 +45,35 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import {format} from "date-fns";
 import {useNavigate} from "react-router-dom";
 import {EventWithGroup} from "../../types/supabaseTypes";
+import Layout from "../../components/Layout";
 
 interface ExpandMoreProps extends IconButtonProps {
     expand: boolean;
-  }
-  
-  const ExpandMore = styled((props: ExpandMoreProps) => {
-    const { expand, ...other } = props;
+}
+
+const ExpandMore = styled((props: ExpandMoreProps) => {
+    const {expand, ...other} = props;
     return <IconButton {...other} />;
-  })(({ theme }) => ({
+})(({theme}) => ({
     marginLeft: 'auto',
     transition: theme.transitions.create('transform', {
-      duration: theme.transitions.duration.shortest,
+        duration: theme.transitions.duration.shortest,
     }),
     variants: [
-      {
-        props: ({ expand }) => !expand,
-        style: {
-          transform: 'rotate(0deg)',
+        {
+            props: ({expand}) => !expand,
+            style: {
+                transform: 'rotate(0deg)',
+            },
         },
-      },
-      {
-        props: ({ expand }) => !!expand,
-        style: {
-          transform: 'rotate(180deg)',
+        {
+            props: ({expand}) => !!expand,
+            style: {
+                transform: 'rotate(180deg)',
+            },
         },
-      },
     ],
-  }));
+}));
 
 export type RecurringEventsProps = {
     recurringEvents: EventWithGroup[],
@@ -100,26 +100,20 @@ const RecurringEvents = ({recurringEvents, loading, error}: RecurringEventsProps
     }, [dispatch]);
 
     const handleExpandClick = (index: number) => {
-        if(expanded === index)
+        if (expanded === index)
             setExpanded(-1);
         else
             setExpanded(index)
     };
 
-    return <Grid
-        container
-        width="100%"
-        direction="column"
-        alignItems="center"
-        justifyContent="center">
-        <CustomAppBar/>
+    return <Layout appBarConfig={{showBackButton: true}}>
         {
             loading && <LinearProgress sx={{position: "fixed", top: 56, left: 0, right: 0}}/>
         }
         <Grid container rowSpacing={2} sx={{width: "100%", p: 1}}>
             {
                 recurringEvents
-                    .map((x,index) =>
+                    .map((x, index) =>
                         <Grid size={{xs: 12, md: 12}} key={x.id}>
                             <Box sx={{display: "flex"}}>
                                 <Card elevation={4} sx={{width: "100%"}}>
@@ -215,15 +209,15 @@ const RecurringEvents = ({recurringEvents, loading, error}: RecurringEventsProps
                                                     </Grid>
                                                     <Grid>
                                                         {
-                                                            <Chip 
-                                                                icon={<PersonOffRounded/>} 
+                                                            <Chip
+                                                                icon={<PersonOffRounded/>}
                                                                 label={(x.maxAttendees && x.maxAttendees > 0) ? x.maxAttendees : "Keine Begrenzung"}/>
                                                         }
                                                     </Grid>
                                                     <Grid>
                                                         {
-                                                            x.place && <Chip 
-                                                                icon={<Place/>} 
+                                                            x.place && <Chip
+                                                                icon={<Place/>}
                                                                 label={(JSON.parse(x.place?.toString() ?? "") as PlaceType).name}/>
                                                         }
                                                     </Grid>
@@ -238,10 +232,10 @@ const RecurringEvents = ({recurringEvents, loading, error}: RecurringEventsProps
                                         }}>Bearbeiten</Button>
                                         <ExpandMore
                                             expand={expanded === index}
-                                            onClick={()=>handleExpandClick(index)}
+                                            onClick={() => handleExpandClick(index)}
                                             aria-label="show more"
-                                            >
-                                            <ExpandMoreIcon />
+                                        >
+                                            <ExpandMoreIcon/>
                                         </ExpandMore>
                                     </CardActions>
                                     <Collapse in={expanded === index} timeout="auto" unmountOnExit>
@@ -259,5 +253,5 @@ const RecurringEvents = ({recurringEvents, loading, error}: RecurringEventsProps
                         </Grid>)
             }
         </Grid>
-    </Grid>
+    </Layout>
 }

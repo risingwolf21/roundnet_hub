@@ -4,16 +4,14 @@ import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
 import {Avatar, Button, IconButton} from "@mui/material";
 import {useNavigate} from 'react-router-dom';
-import {AccountCircle, ArrowBack, Refresh} from '@mui/icons-material';
+import {AccountCircle, ArrowBack} from '@mui/icons-material';
 import {useSelector} from 'react-redux';
 import {RootState} from '../redux/store';
 
 type Props = {
     navigateBack?: boolean,
     title?: string,
-    onRefresh?: () => any,
-    onLogout?: () => any,
-    actions?: JSX.Element[]
+    onLogout?: () => any
 }
 
 export const AppBarLogoutAction = ({
@@ -51,23 +49,16 @@ export const AppBarAccountAction = ({
     return null;
 }
 
-export const AppBarRefreshAction = ({
-                                        click, isVisible
-                                    }: { click?: () => any, isVisible?: boolean }) => {
-    if (click && isVisible) {
-        return <IconButton color="inherit" onClick={click}>
-            <Refresh/>
-        </IconButton>
-    }
-    return null;
-}
-
-const CustomAppBar = ({navigateBack = false, title = "Roundnet Karlsruhe", onRefresh, onLogout, actions}: Props) => {
+const CustomAppBar = ({navigateBack = false, title = "Roundnet Karlsruhe", onLogout}: Props) => {
     const navigate = useNavigate();
     const {user} = useSelector((state: RootState) => state.application);
 
     return (<AppBar position="sticky" sx={{zIndex: (theme) => theme.zIndex.drawer + 1, background: "primary"}}>
-        <Toolbar>
+        <Toolbar sx={{
+            width: "calc(100% - 48px)",
+            maxWidth: 1400,
+            mx: "auto"
+        }}>
             {
                 navigateBack && <IconButton
                     color="inherit"
@@ -86,11 +77,6 @@ const CustomAppBar = ({navigateBack = false, title = "Roundnet Karlsruhe", onRef
 
             <AppBarLogoutAction click={onLogout} isVisible={onLogout !== undefined}/>
 
-            <AppBarRefreshAction click={onRefresh} isVisible={onRefresh !== undefined}/>
-
-            {
-                actions
-            }
         </Toolbar>
     </AppBar>)
 }

@@ -13,7 +13,7 @@ import NotVerifiedScreen from "../../components/NotVerifiedScreen";
 import {RootState} from "../../redux/store";
 
 type Props = {
-    children: string | JSX.Element | JSX.Element[]
+    children: React.ReactNode
 }
 
 export const AuthGate = ({children}: Props) => {
@@ -39,7 +39,7 @@ export const AuthGate = ({children}: Props) => {
             setSession(session);
         });
         const {data: {subscription}} = client.auth
-            .onAuthStateChange(async (_event, session) => {
+            .onAuthStateChange(async (event, session) => {
                 try {
                     if (!session)
                         throw Error("Session was null");

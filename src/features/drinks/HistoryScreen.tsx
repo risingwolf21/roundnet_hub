@@ -1,4 +1,4 @@
-import {Grid, LinearProgress} from "@mui/material";
+import {LinearProgress} from "@mui/material";
 import moment from "moment/moment";
 import React, {useEffect, useState} from "react";
 import {fetchHistoryAsync} from "./slices/drinksSlice";
@@ -6,13 +6,13 @@ import {useAppDispatch} from "../../redux/store";
 import {FullHistory} from "../../types/supabaseTypes";
 import {groupBy} from "../../utils";
 import {AlertMessage, AlertSnackbar} from "../../components/AlertSnackbar";
-import CustomAppBar from "../../components/AppBar";
 import EditHistoryEntryDialog from "./dialog/EditHistoryEntryDialog";
 import {InfiniteScrollList} from "../../components/InfiniteScrollList";
 import {captureException} from "@sentry/react";
 import {SupabaseDrinkRepository} from "../../repository/DrinkRepository";
 import {HistoryScreenProps} from "./types";
 import {HistoryItem} from "./components/HistoryItem";
+import Layout from "../../components/Layout";
 
 export const HistoryScreen = ({
                                   history,
@@ -65,13 +65,7 @@ export const HistoryScreen = ({
         setEditHistoryEntryOpen(true);
     }
 
-    return <Grid
-        container
-        width="100%"
-        direction="column"
-        alignItems="center"
-        justifyContent="center">
-        <CustomAppBar navigateBack={true}/>
+    return <Layout>
         {
             historyLoading && <LinearProgress style={{position: "fixed", left: 0, top: 56, right: 0}}/>
         }
@@ -95,5 +89,5 @@ export const HistoryScreen = ({
             entry={historyEntryToEdit}
             handleSubmit={(newEntry) => handleEntryUpdate(newEntry)}/>
         <AlertSnackbar alertInfo={alertInfo} autoHideDuration={1500} close={() => setAlertInfo(null)}/>
-    </Grid>
+    </Layout>
 }

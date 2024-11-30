@@ -1,5 +1,5 @@
 import {Euro, Group, GroupOutlined, History, Liquor, StorageOutlined} from "@mui/icons-material";
-import {Avatar, Badge, Box, List, ListItemAvatar, ListItemButton, ListItemText} from "@mui/material";
+import {Avatar, Badge, List, ListItemAvatar, ListItemButton, ListItemText} from "@mui/material";
 import {TFunction} from "i18next";
 import React from "react";
 import {withTranslation} from 'react-i18next';
@@ -8,7 +8,7 @@ import {useNavigate} from "react-router";
 import {Ability, Actions, can} from "src/utils/PermissionService";
 import {RootState} from "../../redux/store";
 import {AlertSnackbar} from "../../components/AlertSnackbar";
-import CustomAppBar from "../../components/AppBar";
+import Layout from "../../components/Layout";
 
 type EntryType = {
     translationKey: string
@@ -88,13 +88,13 @@ const BrowseAdmin = ({t}: { t: TFunction }) => {
         return <AlertSnackbar close={() => {
         }} alertInfo={{message: "Fatal error occured. User was null!", severity: "error"}}/>
 
-    return <Box>
-        <CustomAppBar/>
+    return <Layout>
         <List>
             {
                 entries
                     .filter(x => can(x.action, x.ability)).map(x => {
-                    return <ListItemButton key={x.translationKey} onClick={() => navigate(x.navigateTo)} sx={{mt: 1}}>
+                    return <ListItemButton key={x.translationKey} onClick={() => navigate(x.navigateTo)}
+                                           sx={{mt: 1}}>
                         <ListItemAvatar>
                             <Badge color="secondary" variant="dot" badgeContent="  "
                                    invisible={(x.translationKey !== "manageUsers" || !hasNotVerifiedUsers)}>
@@ -108,7 +108,7 @@ const BrowseAdmin = ({t}: { t: TFunction }) => {
                 })
             }
         </List>
-    </Box>
+    </Layout>
 }
 
 export default withTranslation()(BrowseAdmin);

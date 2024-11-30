@@ -1,7 +1,6 @@
-import {Container, Grid, Typography} from "@mui/material";
+import {Container, Typography} from "@mui/material";
 import * as React from 'react';
 import {BrowserRouter, Navigate, Route} from 'react-router-dom';
-import CustomBottomNavigation from './components/BottomNavigation';
 import Browse from './components/Browse';
 import {LoadingScreen} from "./components/LoadingScreen";
 import UpdateAvailable from './components/UpdateAvailable';
@@ -18,6 +17,7 @@ import {SentryRoutes} from "./index";
 import {HOMEPAGE} from "./constants";
 import {FirebaseMessaging} from "./features/notifications/FirebaseMessaging";
 import {RecurringEventsProvider} from "./features/events/RecurringEvents";
+import Grid from "@mui/material/Grid2";
 
 const FeatureNotAvailable = React.lazy(() => import('./components/FeatureNotAvailable'));
 const HistoryScreenProvider = React.lazy(() => import('./features/drinks/HistoryScreenProvider'));
@@ -114,8 +114,6 @@ const App = () => {
                             <Route path='/admin/supabase/queries' element={<SupabaseQueryClient/>}/>
                         </SentryRoutes>
                     </React.Suspense>
-                    <div style={{width: "100%", height: "56px"}}/>
-                    <CustomBottomNavigation/>
                 </FirebaseMessaging>
             </AuthGate>
         </BrowserRouter>

@@ -1,6 +1,5 @@
 import {Save} from "@mui/icons-material"
 import {
-    Box,
     Button,
     Checkbox,
     CircularProgress,
@@ -14,12 +13,12 @@ import {
 import React, {useEffect, useState} from "react"
 import {useSelector} from "react-redux"
 import {RootState} from "src/redux/store"
-import CustomAppBar from "../../components/AppBar"
 import {LoadingIndicator} from "../../components/LoadingIndicator"
 import {useTranslation} from "react-i18next"
 import {TFunction} from "i18next"
 import {AlertMessage, AlertSnackbar} from "../../components/AlertSnackbar"
 import {SupabaseUserRepository} from "../../repository/UserRepository";
+import Layout from "../../components/Layout";
 
 const userTags: NotificationTags[] = ["eventComments", "userRegistration", "paymentRequest", "paymentPending"]
 
@@ -72,8 +71,7 @@ export const NotificationsScreen = ({user, t}: NotificationsScreenProps) => {
         });
     }
 
-    return <Box>
-        <CustomAppBar navigateBack/>
+    return <Layout>
         <LoadingIndicator loading={false}/>
         <List>
             {
@@ -101,7 +99,7 @@ export const NotificationsScreen = ({user, t}: NotificationsScreenProps) => {
             }
         </Fab>
         <AlertSnackbar alertInfo={alertInfo} autoHideDuration={1500} close={() => setAlertInfo(null)}/>
-    </Box>
+    </Layout>
 }
 
 export default NotificationsScreenProvider;

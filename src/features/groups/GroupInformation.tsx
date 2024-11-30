@@ -1,5 +1,5 @@
 import {AccountCircle, GroupAdd, GroupRemove} from "@mui/icons-material";
-import {Box, Divider, Fab, Grid, List, ListItem, ListItemAvatar, ListItemText, Typography} from "@mui/material";
+import {Box, Divider, Fab, List, ListItem, ListItemAvatar, ListItemText, Typography} from "@mui/material";
 import {toInteger} from "lodash";
 import React, {useEffect, useState} from "react";
 import {useSelector} from "react-redux";
@@ -8,12 +8,12 @@ import {fetchAdminUsersAsync} from "../admin/slices/adminUserSlice";
 import {RootState, useAppDispatch} from "../../redux/store";
 import {GroupWithUsers, UserWithGroups} from "../../types/supabaseTypes";
 import {AlertMessage, AlertSnackbar} from "../../components/AlertSnackbar";
-import CustomAppBar from "../../components/AppBar";
 import SearchAndSelectUserDialog from "./dialogs/SearchAndSelectUserDialog";
 import {fetchSingleGroupAsync, groupsSelector} from "src/features/groups/slices/groupsSlice";
 import {captureException} from "@sentry/react";
 import {Tables} from "../../types/supabase-generated.types";
 import {AdminUsersRepository} from "../../repository/AdminUsersRepository";
+import Layout from "../../components/Layout";
 
 const GroupInformationProvider = () => {
     const {id} = useParams();
@@ -79,13 +79,7 @@ const GroupInformation = ({users, loading, group}: GroupInformationProps) => {
         });
     }
 
-    return <Grid
-        container
-        width="100%"
-        direction="column"
-        alignItems="center"
-        justifyContent="center">
-        <CustomAppBar title={group?.name ?? ""} navigateBack/>
+    return <Layout appBarConfig={{title: group.name, showProfile: true, showBackButton: true}}>
         <List sx={{width: "100%", pb: 10}}>
             <Typography pl={2} variant="h6" fontWeight="bold">Beschreibung</Typography>
             <Typography pl={2} pb={1}>{group?.description}</Typography>
@@ -93,13 +87,13 @@ const GroupInformation = ({users, loading, group}: GroupInformationProps) => {
             <Typography pl={2} pt={1} variant="h6" fontWeight="bold">Mitglieder</Typography>
             {
                 group && group.users && group.users
-                .sort((a,b) => a.displayName.localeCompare(b.displayName))
-                .map((x: Tables<'user'>, index: number) => <ListItem key={index} divider>
-                    <ListItemAvatar>
-                        <AccountCircle/>
-                    </ListItemAvatar>
-                    <ListItemText primary={x.displayName}/>
-                </ListItem>)
+                    .sort((a, b) => a.displayName.localeCompare(b.displayName))
+                    .map((x: Tables<'user'>, index: number) => <ListItem key={index} divider>
+                        <ListItemAvatar>
+                            <AccountCircle/>
+                        </ListItemAvatar>
+                        <ListItemText primary={x.displayName}/>
+                    </ListItem>)
             }
         </List>
         <Box sx={{position: "fixed", right: "16px", bottom: "76px", display: "flex", flexDirection: "row"}}>
@@ -132,8 +126,7 @@ const GroupInformation = ({users, loading, group}: GroupInformationProps) => {
             loading={loading}/>
 
         <AlertSnackbar alertInfo={alertInfo} close={() => setAlertInfo(null)} autoHideDuration={1500}/>
-    </Grid>
-
+    </Layout>
 }
 
 export default GroupInformationProvider;

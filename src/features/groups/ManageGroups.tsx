@@ -2,7 +2,6 @@ import {AddOutlined, EditOffOutlined, EditOutlined, FiberManualRecord} from "@mu
 import {
     Box,
     Fab,
-    Grid,
     IconButton,
     LinearProgress,
     List,
@@ -19,10 +18,10 @@ import {useClient} from "react-supabase";
 import {GroupWithUsers} from "src/types/supabaseTypes";
 import {fetchGroupsAsync, groupsSelector} from "./slices/groupsSlice";
 import {RootState, useAppDispatch} from "../../redux/store";
-import CustomAppBar from "../../components/AppBar";
 import EditIcon from "@mui/icons-material/Edit";
 import {EditOrAddGroupDialog} from "./dialogs/EditOrAddGroupDialog";
 import {can} from "../../utils/PermissionService";
+import Layout from "../../components/Layout";
 
 const ManageGroupsProvider = () => {
 
@@ -57,13 +56,7 @@ const ManageGroupsScreen = ({groups, loading, client}: ManageGroupsScreenProps) 
         dispatch(fetchGroupsAsync({client}))
     }, [client, dispatch]);
 
-    return <Grid
-        container
-        width="100%"
-        direction="column"
-        alignItems="center"
-        justifyContent="center">
-        <CustomAppBar navigateBack/>
+    return <Layout>
         {
             loading && <LinearProgress sx={{position: "fixed", top: 56, left: 0, right: 0}}/>
         }
@@ -113,7 +106,7 @@ const ManageGroupsScreen = ({groups, loading, client}: ManageGroupsScreenProps) 
             setAddOrUpdateGroupOpen(false);
             setEditingMode(false);
         }} groupToEdit={groupToEdit}/>
-    </Grid>
+    </Layout>
 }
 
 export default ManageGroupsProvider;

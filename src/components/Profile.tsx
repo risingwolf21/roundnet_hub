@@ -1,7 +1,6 @@
 import {
     Avatar,
     Container,
-    Grid,
     List,
     ListItem,
     ListItemAvatar,
@@ -9,7 +8,6 @@ import {
     ListSubheader,
     Typography
 } from "@mui/material";
-import CustomAppBar from "./AppBar";
 import React, {useEffect, useState} from "react";
 import {AddPhotoAlternateOutlined, FiberManualRecord} from "@mui/icons-material";
 import {useParams} from "react-router-dom";
@@ -18,6 +16,7 @@ import {LoadingIndicator} from "./LoadingIndicator";
 import {useSelector} from "react-redux";
 import {RootState} from "../redux/store";
 import {SupabaseUserRepository} from "../repository/UserRepository";
+import Layout from "./Layout";
 
 const UserScreen = () => {
 
@@ -41,9 +40,7 @@ const UserScreen = () => {
         }
     }, [userId, user]);
 
-    return <Grid
-        width="100%">
-        <CustomAppBar navigateBack={true}/>
+    return <Layout>
         <LoadingIndicator loading={loading}/>
         <List sx={{pl: 2, pr: 2, pb: 8}}>
             <Container key={"avatar"} sx={{
@@ -79,6 +76,6 @@ const UserScreen = () => {
                 }
             </List>
         </List>
-    </Grid>
+    </Layout>
 }
 export default UserScreen;

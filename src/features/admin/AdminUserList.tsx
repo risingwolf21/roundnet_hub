@@ -80,10 +80,6 @@ const AdminUserList = () => {
                         inputProps={{'aria-label': 'search'}}
                     />
                 </Search>
-
-                <IconButton color="inherit" onClick={() => dispatch(fetchAdminUsersAsync())}>
-                    <Refresh/>
-                </IconButton>
             </Toolbar>
         </AppBar>
         {loading && <LinearProgress style={{position: "fixed", left: 0, right: 0, top: 56}}/>}

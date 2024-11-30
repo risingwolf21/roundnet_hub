@@ -3,7 +3,6 @@ import {SupabaseUserRepository} from "../repository/UserRepository";
 
 type ApplicationSliceState = {
     user: User | null,
-    mode: string,
     appUpdateAvailable: boolean,
     appVersion: string,
     realtimeState: "CLOSED" | "SUBSCRIBED" | "TIMED_OUT" | "CHANNEL_ERROR",
@@ -15,7 +14,6 @@ type ApplicationSliceState = {
 
 const initialState = {
     user: null,
-    mode: "drinks",
     appUpdateAvailable: false,
     appVersion: "",
     realtimeState: "CLOSED",
@@ -31,9 +29,6 @@ export const applicationReducer = createSlice({
     reducers: {
         onAppVersionChange: (state, action) => {
             state.appVersion = action.payload;
-        },
-        onModeChange: (state, action) => {
-            state.mode = action.payload
         },
         onUserChange: (state, action) => {
             state.user = action.payload
@@ -104,7 +99,6 @@ export const addNotificationPermissionAsync = createAsyncThunk("addNotificationP
 
 export const {
     onUserChange,
-    onModeChange,
     onUpdateServiceWorker,
     onServiceWorkerInitialized
 } = applicationReducer.actions;

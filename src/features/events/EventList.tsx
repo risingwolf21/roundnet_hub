@@ -1,10 +1,9 @@
 import AddIcon from '@mui/icons-material/Add';
-import {Chip, Divider, Fab, Grid, LinearProgress} from "@mui/material";
+import {Chip, Divider, Fab, LinearProgress} from "@mui/material";
 import React, {useEffect, useState} from "react";
 import {useNavigate} from 'react-router-dom';
 import {useClient} from "react-supabase";
 import {useAppDispatch} from "../../redux/store";
-import CustomAppBar from "../../components/AppBar";
 import {InfiniteScrollList} from "../../components/InfiniteScrollList";
 import {EventItem} from "./components/EventItem";
 import {
@@ -21,6 +20,8 @@ import {TablesUpdate} from "../../types/supabase-generated.types";
 import {t} from "i18next";
 import {AlertMessage, AlertSnackbar} from "../../components/AlertSnackbar";
 import {EventRepeat} from "@mui/icons-material";
+import Grid from "@mui/material/Grid2";
+import Layout from "../../components/Layout";
 
 export type EventScreenProps = {
     events: SliceEvent[],
@@ -75,13 +76,7 @@ const EventScreen = ({events, loading, error, endReached, user}: EventScreenProp
         dispatch(updateAttendanceAsync({user, eventId, state, oldState}));
     }
 
-    return (<Grid
-        container
-        width="100%"
-        direction="column"
-        alignItems="center"
-        justifyContent="center">
-        <CustomAppBar/>
+    return (<Layout>
         {
             loading && <LinearProgress sx={{position: "fixed", top: 56, left: 0, right: 0}}/>
         }
@@ -129,7 +124,7 @@ const EventScreen = ({events, loading, error, endReached, user}: EventScreenProp
         }
 
         <AlertSnackbar alertInfo={error} close={() => dispatch(onEventErrorRead(null))}/>
-    </Grid>);
+    </Layout>);
 }
 
 export default EventScreen;

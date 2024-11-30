@@ -1,12 +1,11 @@
 import {AdminPanelSettings, EmojiEvents, Liquor, List, SportsHandball} from "@mui/icons-material";
 import {Badge, BottomNavigation, BottomNavigationAction, Paper} from "@mui/material";
 import {TFunction} from "i18next";
-import React, {SyntheticEvent, useEffect, useState} from "react";
+import React, {useEffect, useState} from "react";
 import {withTranslation} from 'react-i18next';
-import {useDispatch, useSelector} from "react-redux";
+import {useSelector} from "react-redux";
 import {useNavigate} from "react-router-dom";
 import {can} from "src/utils/PermissionService";
-import {onModeChange} from "../redux/applicationSlice";
 import {RootState} from "../redux/store";
 import {notificationsSelector} from "../features/notifications/slices/notificationsSlice";
 import {HOMEPAGE} from "../constants";
@@ -14,7 +13,6 @@ import {HOMEPAGE} from "../constants";
 const CustomBottomNavigation = ({t}: { t: TFunction }) => {
 
     let navigate = useNavigate();
-    let dispatch = useDispatch();
     const {hasNotVerifiedUsers} = useSelector((state: RootState) => state.adminUsers);
     const notifications = useSelector((state: RootState) => notificationsSelector.selectAll(state));
     const {user} = useSelector((state: RootState) => state.application);
@@ -24,32 +22,10 @@ const CustomBottomNavigation = ({t}: { t: TFunction }) => {
         setTab(window.location.pathname.substring(1));
     }, [window.location.pathname]);
 
-    const handleChange = (e: SyntheticEvent<Element, Event>, newValue: string) => {
+    const handleChange = (e: any, newValue: string) => {
         setTab(newValue);
-        navigate(newValue, {replace: true});
-        dispatch(onModeChange(newValue));
+        navigate("/" + newValue, {replace: true});
     }
-
-    const drinks = () => <BottomNavigationAction
-        key={"drinks"}
-        value={"drinks"}
-        aria-selected={tab === "drinks"}
-        label={t("navigation.drinks")}
-        icon={<Liquor/>}/>
-
-    const training = () => <BottomNavigationAction
-        key={"training"}
-        value={"training"}
-        aria-selected={tab === "training"}
-        label={t("navigation.training")}
-        icon={<SportsHandball/>}/>
-
-    const challenges = () => <BottomNavigationAction
-        key={"challenges"}
-        value={"challenges"}
-        aria-selected={tab === "challenges"}
-        label={t("navigation.challenges")}
-        icon={<EmojiEvents/>}/>
 
     if (!user)
         return null;

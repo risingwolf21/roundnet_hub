@@ -6,7 +6,6 @@ import {
     CircularProgress,
     Container,
     Fab,
-    Grid,
     List,
     ListItem,
     ListItemAvatar,
@@ -19,7 +18,6 @@ import {
     TextField
 } from "@mui/material";
 import {useClient} from "react-supabase";
-import CustomAppBar from "./AppBar";
 import {useSelector} from "react-redux";
 import React, {useEffect, useState} from "react";
 import {AppDispatch, RootState, useAppDispatch} from "../redux/store";
@@ -52,6 +50,7 @@ import {requestNotificationPermission} from "../hooks/useFirebase";
 import {messaging} from "../firebase/firebaseConfig";
 import {Database} from "../types/supabase-generated.types";
 import {useNavigate} from "react-router-dom";
+import Layout from "./Layout";
 
 type UserScreenProps = {
     user: User,
@@ -228,9 +227,8 @@ const UserScreen = ({user, client, dispatch, groups}: UserScreenProps) => {
         event.target.value = '';
     };
 
-    return <Grid
-        width="100%">
-        <CustomAppBar navigateBack={true} title="Profil" onLogout={() => client.auth.signOut()}/>
+    return <Layout appBarConfig={{title: "Profil", showBackButton: true, showProfile: false}}>
+        {/*<CustomAppBar navigateBack={true} title="Profil" onLogout={() => client.auth.signOut()}/>*/}
         <List sx={{pl: 2, pr: 2, pb: 8}}>
             <Container key={"avatar"} sx={{
                 display: "flex",
@@ -416,6 +414,6 @@ const UserScreen = ({user, client, dispatch, groups}: UserScreenProps) => {
                 {errorSnackbar.message}
             </Alert>
         </Snackbar>
-    </Grid>
+    </Layout>
 }
 export default UserScreen;

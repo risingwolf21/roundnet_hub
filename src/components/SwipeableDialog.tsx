@@ -43,7 +43,7 @@ export const SwipeableDialog = ({ open, setOpen, onClose, children, title = "", 
                 '.MuiDrawer-root > .MuiPaper-root': {
                     overflow: 'visible',
                     maxHeight: `90%`,
-                    minHeight: `${minHeight}%`,
+                    minHeight: open ? `${minHeight}%` : 0,
                     borderTopLeftRadius: 16,
                     borderTopRightRadius: 16,
                 },
@@ -56,8 +56,15 @@ export const SwipeableDialog = ({ open, setOpen, onClose, children, title = "", 
             onOpen={toggleDrawer(true)}
             swipeAreaWidth={drawerBleeding}
             disableSwipeToOpen={true}
-            ModalProps={{
-                keepMounted: true,
+
+            PaperProps={{
+                sx: {
+                    backgroundColor: "white",
+                    height: "auto",
+                    width: "calc(100% - 48px)",
+                    maxWidth: 1400,
+                    mx: "auto"
+                },
             }}>
             <StyledBox
                 sx={{
