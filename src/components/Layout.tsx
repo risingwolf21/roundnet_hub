@@ -2,9 +2,8 @@ import React from "react";
 import {AppBar, Avatar, Box, IconButton, TextField, Toolbar, Typography} from "@mui/material";
 import {AccountCircle, ArrowBack} from "@mui/icons-material";
 import {useNavigate} from "react-router-dom";
-import {useSelector} from "react-redux";
-import {RootState} from "../redux/store";
 import CustomBottomNavigation from "./BottomNavigation";
+import {useAuth} from "../features/auth/AuthContext";
 
 type Props = {
     children: React.ReactNode,
@@ -29,7 +28,7 @@ const Layout = ({
                 }: Props) => {
 
     const navigate = useNavigate();
-    const user = useSelector((state: RootState) => state.application.user);
+    const user = useAuth();
 
     return (
         <Box sx={{display: "flex", flexDirection: "column", height: "100vh"}}>
@@ -56,7 +55,7 @@ const Layout = ({
                     </Typography>
                     {/* Profile */}
                     {
-                        user && showProfile && <IconButton color="inherit" onClick={() => {
+                        showProfile && <IconButton color="inherit" onClick={() => {
                             navigate("/user/")
                         }} sx={{pr: 0}}>
                             {

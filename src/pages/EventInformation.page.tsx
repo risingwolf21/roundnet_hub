@@ -22,6 +22,7 @@ import {useClient} from "react-supabase";
 import {fetchItemsAsync, keyHoldersSelector} from "../features/keys/slices/keysSlice";
 import {TablesUpdate} from "../types/supabase-generated.types";
 import {PlaceType} from "../features/events/types";
+import {useAuth} from "../features/auth/AuthContext";
 
 const EventInformationProvider = () => {
     const {selectedEventId} = useParams();
@@ -32,7 +33,7 @@ const EventInformationProvider = () => {
     const {loading: attendanceLoading} = useSelector((state: RootState) => state.eventAttendance);
     const {loading: commentsLoading} = useSelector((state: RootState) => state.eventComments);
     const keyHolders = useSelector((state: RootState) => keyHoldersSelector.selectAll(state));
-    const {user} = useSelector((state: RootState) => state.application);
+    const user = useAuth();
     const dispatch = useAppDispatch();
     const client = useClient();
     const {t} = useTranslation();
@@ -41,7 +42,7 @@ const EventInformationProvider = () => {
     useEffect(() => {
         dispatch(fetchItemsAsync());
 
-        if (!user || !event)
+        if (!event)
             return;
 
         let subscription = client.channel("public:event_attendance_user_mapping")
@@ -75,8 +76,6 @@ const EventInformationProvider = () => {
     }, [client, dispatch, user, event]);
 
     useEffect(() => {
-        if (!user)
-            return;
         if (!event) {
             dispatch(fetchSingleEventAsync({eventId: selectedEventId ?? "", userId: user.userId}));
         } else {
@@ -87,7 +86,7 @@ const EventInformationProvider = () => {
     if (loading)
         return <LoadingEventInfo/>
 
-    if (!event || !user)
+    if (!event)
         return <AlertSnackbar close={() => {
         }} alertInfo={{
             message: "Fatal error occured. Repository, user or selectedEvent was null!",

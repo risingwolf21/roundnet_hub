@@ -166,7 +166,7 @@ const EventInformation = ({
                     overflow: 'hidden',
                     textOverflow: 'ellipsis'
                 }}>{selectedEvent.title}</Typography>
-                {can("edit", "training") && <>
+                {can("update", "event") && <>
                     <Typography component="div">{selectedEvent.id.substring(0, 8)}</Typography>
                     <IconButton sx={{color: "#fff", pr: 0}} onClick={handleClick}>
                         <MoreVert/>

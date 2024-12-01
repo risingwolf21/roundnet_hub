@@ -18,8 +18,6 @@ import {
 } from "@mui/material";
 import {Box} from "@mui/system";
 import React, {useEffect, useState} from "react";
-import {useSelector} from "react-redux";
-import {RootState} from "src/redux/store";
 import {SlideUpTransition} from "../../../utils";
 import KeyIcon from "@mui/icons-material/Key";
 import {SupabaseKeysRepository} from "../../../repository/KeysRepository";
@@ -32,7 +30,6 @@ type EditOrAddItemDialogProps = {
 
 export const EditOrAddItemDialog = ({open, handleClose, itemToEdit}: EditOrAddItemDialogProps) => {
 
-    const user = useSelector((state: RootState) => state.application.user);
     const [currentItem, setCurrentItem] = useState<ItemUpdate>({
         id: itemToEdit?.id,
         name: itemToEdit?.name,
@@ -59,10 +56,6 @@ export const EditOrAddItemDialog = ({open, handleClose, itemToEdit}: EditOrAddIt
     const handleSubmit = async () => {
         if (!currentItem.name || currentItem.name.length < 6) {
             setErrorSnackbar({message: "Der Schlüsselname ist zu kurz!", open: true});
-            return;
-        }
-        if (!user) {
-            setErrorSnackbar({message: "Something went wrong. Try again later!", open: true});
             return;
         }
         let result;

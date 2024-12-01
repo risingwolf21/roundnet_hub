@@ -10,14 +10,15 @@ import {DoneAll} from "@mui/icons-material";
 import {fetchNotificationsAsync, notificationsSelector} from "./slices/notificationsSlice";
 import {SupabaseUserRepository} from "../../repository/UserRepository";
 import Layout from "../../components/Layout";
+import {useAuth} from "../auth/AuthContext";
 
 const NotificationScreen = () => {
     const {loading, error} = useSelector((state: RootState) => state.notifications);
-    const {user} = useSelector((state: RootState) => state.application);
+    const user = useAuth();
     const notifications = useSelector((state: RootState) => notificationsSelector.selectAll(state));
     const dispatch = useAppDispatch();
 
-    if (!can("view", "notifications") || !user)
+    if (!can("select", "notifications"))
         return <Navigate to={`/${HOMEPAGE}`} replace={true}/>
 
     const markNotificationsAsRead = () => {

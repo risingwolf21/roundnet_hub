@@ -15,11 +15,12 @@ import {
     onChallengeUpdate
 } from "./slices/challengeSlice";
 import {ChallengeInformation} from "./ChallengeInformation";
+import {useAuth} from "../auth/AuthContext";
 
 const ChallengeInformationProvider = ({t}: { t: TFunction }) => {
     const {challengeId} = useParams();
     const challenge = useSelector((root: RootState) => challengeSelector.selectById(root, challengeId ?? 0));
-    const {user} = useSelector((state: RootState) => state.application);
+    const user = useAuth();
     const client = useClient();
     const dispatch = useAppDispatch();
 

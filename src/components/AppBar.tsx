@@ -5,8 +5,7 @@ import Typography from '@mui/material/Typography';
 import {Avatar, Button, IconButton} from "@mui/material";
 import {useNavigate} from 'react-router-dom';
 import {AccountCircle, ArrowBack} from '@mui/icons-material';
-import {useSelector} from 'react-redux';
-import {RootState} from '../redux/store';
+import {useAuth} from "../features/auth/AuthContext";
 
 type Props = {
     navigateBack?: boolean,
@@ -51,7 +50,7 @@ export const AppBarAccountAction = ({
 
 const CustomAppBar = ({navigateBack = false, title = "Roundnet Karlsruhe", onLogout}: Props) => {
     const navigate = useNavigate();
-    const {user} = useSelector((state: RootState) => state.application);
+    const user = useAuth();
 
     return (<AppBar position="sticky" sx={{zIndex: (theme) => theme.zIndex.drawer + 1, background: "primary"}}>
         <Toolbar sx={{

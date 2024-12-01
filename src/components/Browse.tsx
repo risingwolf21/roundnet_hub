@@ -28,7 +28,7 @@ const Browse = ({t}: { t: TFunction }) => {
     return <Layout>
         <List>
             {
-                can("view", "user") &&
+                can("select", "user") &&
                 <ListItemButton key={"account"} onClick={() => navigate("/user")} sx={{mt: 1}}>
                     <ListItemAvatar>
                         <Avatar sx={{background: "#88AEBF", width: 40, height: 40, borderRadius: 2}}>
@@ -39,7 +39,7 @@ const Browse = ({t}: { t: TFunction }) => {
                 </ListItemButton>
             }
             {
-                can("view", "payments") &&
+                can("select", "payments") &&
                 <ListItemButton key={"payments"} onClick={() => navigate("/payments")} sx={{mt: 1}}>
                     <ListItemAvatar>
                         <Avatar sx={{background: "#88AEBF", width: 40, height: 40, borderRadius: 2}}>
@@ -50,7 +50,7 @@ const Browse = ({t}: { t: TFunction }) => {
                 </ListItemButton>
             }
             {
-                can("view", "history") &&
+                can("select", "history") &&
                 <ListItemButton key={"history"} onClick={() => navigate("/history")} sx={{mt: 1}}>
                     <ListItemAvatar>
                         <Avatar sx={{background: "#88AEBF", width: 40, height: 40, borderRadius: 2}}>
@@ -61,7 +61,7 @@ const Browse = ({t}: { t: TFunction }) => {
                 </ListItemButton>
             }
             {
-                can("view", "drink") &&
+                can("select", "drink") &&
                 <ListItemButton key={"drinks"} onClick={() => navigate("/drinks")} sx={{mt: 1}}>
                     <ListItemAvatar>
                         <Avatar sx={{background: "#88AEBF", width: 40, height: 40, borderRadius: 2}}>
@@ -72,7 +72,7 @@ const Browse = ({t}: { t: TFunction }) => {
                 </ListItemButton>
             }
             {
-                can("view", "training") &&
+                can("select", "event") &&
                 <ListItemButton key={"training"} onClick={() => navigate("/training")} sx={{mt: 1}}>
                     <ListItemAvatar>
                         <Avatar sx={{background: "#88AEBF", width: 40, height: 40, borderRadius: 2}}>
@@ -83,7 +83,7 @@ const Browse = ({t}: { t: TFunction }) => {
                 </ListItemButton>
             }
             {
-                can("view", "keyFinder") &&
+                can("select", "item") &&
                 <ListItemButton key={"keys"} onClick={() => navigate("/keys")} sx={{mt: 1}}>
                     <ListItemAvatar>
                         <Avatar sx={{background: "#88AEBF", width: 40, height: 40, borderRadius: 2}}>
@@ -94,7 +94,7 @@ const Browse = ({t}: { t: TFunction }) => {
                 </ListItemButton>
             }
             {
-                can("view", "notifications") &&
+                can("select", "notifications") &&
                 <ListItemButton key={"notifications"} onClick={() => navigate("/notifications")} sx={{mt: 1}}>
                     <ListItemAvatar>
                         <Badge color="secondary" variant="standard" badgeContent={notifications.length}
@@ -108,7 +108,7 @@ const Browse = ({t}: { t: TFunction }) => {
                 </ListItemButton>
             }
             {
-                can("view", "challenges") &&
+                can("select", "challenge") &&
                 <ListItemButton key={"challenges"} onClick={() => navigate("/challenges")} sx={{mt: 1}}>
                     <ListItemAvatar>
                         <Avatar sx={{background: "#88AEBF", width: 40, height: 40, borderRadius: 2}}>

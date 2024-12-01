@@ -1,12 +1,12 @@
-import {ArrowBack, PersonOff, Refresh} from "@mui/icons-material";
+import {PersonOff} from "@mui/icons-material";
 import SearchIcon from "@mui/icons-material/Search";
-import {AppBar, Badge, Chip, Grid, IconButton, LinearProgress, List, Toolbar} from "@mui/material";
+import {Badge, Chip, LinearProgress, List} from "@mui/material";
 import React, {useEffect, useState} from "react";
 import {useSelector} from "react-redux";
 import {useNavigate} from "react-router-dom";
 import {fetchAdminUsersAsync} from "./slices/adminUserSlice";
 import {RootState, useAppDispatch} from "../../redux/store";
-import {UserWithGroups} from "../../types/supabaseTypes";
+import {UserWithGroupsAndRoles} from "../../types/supabaseTypes";
 import {AlertMessage, AlertSnackbar} from "../../components/AlertSnackbar";
 import {Error} from "../../components/Error";
 import {Search, SearchIconWrapper, StyledInputBase} from "../../components/SearchBar";
@@ -14,12 +14,13 @@ import EditUserDialog, {UserEdited} from "./dialogs/EditUserDialog";
 import {captureException} from "@sentry/react";
 import {AdminUsersRepository} from "../../repository/AdminUsersRepository";
 import {AdminUserItem} from "./components/AdminUserItem";
+import Layout from "../../components/Layout";
 
 
 const AdminUserList = () => {
 
     const [editUserOpen, setEditUserOpen] = useState(false);
-    const [currentUser, setCurrentUser] = useState<UserWithGroups | null>();
+    const [currentUser, setCurrentUser] = useState<UserWithGroupsAndRoles | null>();
     const [searchString, setSearchString] = useState("");
     const [showNotVerifiedUsers, setShowNotVerifiedUsers] = useState(false)
     const dispatch = useAppDispatch();
@@ -32,7 +33,7 @@ const AdminUserList = () => {
 
     const {users, loading, error} = useSelector((state: RootState) => state.adminUsers);
 
-    const editUser = (user: UserWithGroups) => {
+    const editUser = (user: UserWithGroupsAndRoles) => {
         setCurrentUser(user);
         setEditUserOpen(true);
     }
@@ -55,36 +56,22 @@ const AdminUserList = () => {
     if (error)
         return <Error message={error}/>
 
-    return (<Grid
-        container
-        width="100%"
-        direction="column"
-        alignItems="center"
-        justifyContent="center">
-        <AppBar position="sticky">
-            <Toolbar>
-                <IconButton
-                    size="large"
-                    edge="start"
-                    color="inherit"
-                    onClick={() => navigate(-1)}>
-                    <ArrowBack/>
-                </IconButton>
-                <Search>
-                    <SearchIconWrapper>
-                        <SearchIcon/>
-                    </SearchIconWrapper>
-                    <StyledInputBase
-                        placeholder="Search…"
-                        onChange={(e) => setSearchString(e.target.value)}
-                        inputProps={{'aria-label': 'search'}}
-                    />
-                </Search>
-            </Toolbar>
-        </AppBar>
-        {loading && <LinearProgress style={{position: "fixed", left: 0, right: 0, top: 56}}/>}
+    return (<Layout>
+            <Search sx={{m: 2, width: "unset", backgroundColor: "gray", '.hover': {backgroundColor: "gray"}}}>
+                <SearchIconWrapper>
+                    <SearchIcon/>
+                </SearchIconWrapper>
+                <StyledInputBase
+                    placeholder="Search…"
+                    onChange={(e) => setSearchString(e.target.value)}
+                    inputProps={{'aria-label': 'search'}}
+                />
+            </Search>
+            {
+                loading && <LinearProgress style={{position: "fixed", left: 0, right: 0, top: 56}}/>
+            }
 
-        <Badge sx={{mt: 2}} color="info"
+            <Badge sx={{m: 2}} color="info"
                badgeContent={users.filter(x => searchString === "" || x.displayName?.toLowerCase().includes(searchString.toLowerCase())).filter(x => !x.verified).length}>
             <Chip icon={<PersonOff/>} label="Not verified"
                   onClick={() => setShowNotVerifiedUsers(!showNotVerifiedUsers)}
@@ -94,7 +81,7 @@ const AdminUserList = () => {
         <List sx={{width: "100%"}}>
             {
                 users && users
-                    .filter((x: UserWithGroups) => searchString === "" || x.displayName?.toLowerCase().includes(searchString.toLowerCase()))
+                    .filter((x: UserWithGroupsAndRoles) => searchString === "" || x.displayName?.toLowerCase().includes(searchString.toLowerCase()))
                     .filter(x => (showNotVerifiedUsers && !x.verified) || (!showNotVerifiedUsers && x.verified))
                     .map((user, index) => <AdminUserItem key={"user" + index} user={user}
                                                          onEditClick={() => editUser(user)}/>)
@@ -109,7 +96,9 @@ const AdminUserList = () => {
                 onUserEditFinished={onUserEditFinished}/>
         }
         <AlertSnackbar alertInfo={alertInfo} autoHideDuration={1500} close={() => setAlertInfo(null)}/>
-    </Grid>);
+        </Layout>
+    )
+        ;
 }
 
 export default AdminUserList;

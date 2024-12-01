@@ -1,12 +1,11 @@
-import {useSelector} from "react-redux";
-import {RootState} from "../../redux/store";
 import {useFirebase} from "../../hooks/useFirebase";
 import {ToastContainer} from "react-toastify";
 import React from "react";
 import 'react-toastify/dist/ReactToastify.css';
+import {useAuth} from "../auth/AuthContext";
 
 export const FirebaseMessaging = ({children}: { children: string | JSX.Element | JSX.Element[] }) => {
-    const {user} = useSelector((state: RootState) => state.application);
+    const user = useAuth();
     useFirebase(user);
 
     return <>

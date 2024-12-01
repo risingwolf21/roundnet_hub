@@ -1,8 +1,9 @@
 import {createAsyncThunk, createSlice, PayloadAction} from '@reduxjs/toolkit';
 import {SupabaseUserRepository} from "../repository/UserRepository";
+import {UserWithRolesAndPermissions} from "../types/supabaseTypes";
 
 type ApplicationSliceState = {
-    user: User | null,
+    user: UserWithRolesAndPermissions | null,
     appUpdateAvailable: boolean,
     appVersion: string,
     realtimeState: "CLOSED" | "SUBSCRIBED" | "TIMED_OUT" | "CHANNEL_ERROR",
@@ -56,14 +57,12 @@ export const applicationReducer = createSlice({
                 state.updatingNotificationTags = true;
             })
             .addCase(removeNotificationPermissionAsync.fulfilled, (state, action) => {
-                state.user = action.payload.data;
                 state.updatingNotificationTags = false;
             })
             .addCase(addNotificationPermissionAsync.pending, (state, action) => {
                 state.updatingNotificationTags = true;
             })
             .addCase(addNotificationPermissionAsync.fulfilled, (state, action) => {
-                state.user = action.payload.data;
                 state.updatingNotificationTags = false;
             })
     },

@@ -19,9 +19,9 @@ import {fetchDrinksToPayAsync, fetchPaymentAsync} from "./slices/drinksSlice";
 import {RootState, useAppDispatch} from "../../redux/store";
 import {PaymentHistory} from "../../types/supabaseTypes";
 import {groupBy} from '../../utils';
-import {AlertSnackbar} from "../../components/AlertSnackbar";
 import {LoadingScreen} from '../../components/LoadingScreen';
 import Layout from "../../components/Layout";
+import {useAuth} from "../auth/AuthContext";
 
 const PayDrinksButton = ({amountToPay}: { amountToPay: number }) => {
 
@@ -93,12 +93,8 @@ const PayDrinksSummary = ({paymentHistory}: { paymentHistory: PaymentHistory[] }
 }
 
 const PayDrinksScreenProvider = () => {
-    const {user} = useSelector((state: RootState) => state.application);
+    const user = useAuth();
     const {paymentHistory, paymentError, paymentLoading} = useSelector((state: RootState) => state.drinks);
-
-    if (!user)
-        return <AlertSnackbar close={() => {
-        }} alertInfo={{message: "Fatal error occured. Repository or selected group was null!", severity: "error"}}/>
 
     return <PayDrinksScreen
         user={user}

@@ -105,7 +105,7 @@ const EventScreen = ({events, loading, error, endReached, user}: EventScreenProp
             }
         </InfiniteScrollList>
         {
-            can("edit", "training") &&
+            can("insert", "event") &&
             <Fab sx={{background: "#66bb6a", position: "fixed", right: "16px", bottom: "56px", mb: "16px"}}
                  onClick={() => navigate("/training/createOrUpdate/InsertEvent")}>
                 {
@@ -114,7 +114,7 @@ const EventScreen = ({events, loading, error, endReached, user}: EventScreenProp
             </Fab>
         }
         {
-            can("edit", "training") &&
+            can("update", "event") &&
             <Fab sx={{background: "#66bb6a", position: "fixed", right: "88px", bottom: "56px", mb: "16px"}}
                  onClick={() => navigate("/training/recurringEvents")}>
                 {

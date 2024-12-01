@@ -1,13 +1,13 @@
 import {PostgrestError, PostgrestSingleResponse} from "@supabase/supabase-js";
-import {UserWithGroups} from "../types/supabaseTypes";
+import {UserWithGroupsAndRoles, UserWithRolesAndPermissions} from "../types/supabaseTypes";
 import {supabase} from "../components/services/supabase/supabaseClient";
 import {Notification} from "types/supabase"
 
 export const SupabaseUserRepository = {
-    async fetchUserWithGroups(userId: string): Promise<PostgrestSingleResponse<UserWithGroups>> {
+    async fetchUserWithGroups(userId: string): Promise<PostgrestSingleResponse<UserWithGroupsAndRoles>> {
         const response = await supabase
             .from("user")
-            .select("*, groups: group_user_mapping ( group: event_group ( * ) )")
+            .select("*, groups: group_user_mapping ( group: event_group ( * ) ), roles: user_roles(*)")
             .eq("userId", userId)
             .single();
 
@@ -25,15 +25,16 @@ export const SupabaseUserRepository = {
             ...response,
             data: {
                 ...response.data,
-                groups: response.data?.groups.map((x: any) => x.group) ?? []
+                groups: response.data?.groups.map((x: any) => x.group) ?? [],
+                roles: response.data?.roles.map((x: any) => x.role) ?? [],
             }
         }
     },
 
-    async fetchUser(userId: string): Promise<PostgrestSingleResponse<User>> {
+    async fetchUser(userId: string): Promise<PostgrestSingleResponse<UserWithRolesAndPermissions>> {
         return supabase
             .from("user")
-            .select("*")
+            .select("*, roles: user_roles ( role, permissions: role_permissions(*))")
             .eq("userId", userId)
             .single();
     },

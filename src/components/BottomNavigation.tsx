@@ -9,13 +9,14 @@ import {can} from "src/utils/PermissionService";
 import {RootState} from "../redux/store";
 import {notificationsSelector} from "../features/notifications/slices/notificationsSlice";
 import {HOMEPAGE} from "../constants";
+import {useAuth} from "../features/auth/AuthContext";
 
 const CustomBottomNavigation = ({t}: { t: TFunction }) => {
 
     let navigate = useNavigate();
     const {hasNotVerifiedUsers} = useSelector((state: RootState) => state.adminUsers);
     const notifications = useSelector((state: RootState) => notificationsSelector.selectAll(state));
-    const {user} = useSelector((state: RootState) => state.application);
+    const user = useAuth();
     const [tab, setTab] = useState<string>(HOMEPAGE);
 
     useEffect(() => {
@@ -27,36 +28,33 @@ const CustomBottomNavigation = ({t}: { t: TFunction }) => {
         navigate("/" + newValue, {replace: true});
     }
 
-    if (!user)
-        return null;
-
     return <Paper sx={{position: "fixed", bottom: 0, left: 0, right: 0}} elevation={3}>
         <BottomNavigation
             value={tab}
             onChange={handleChange}>
             {
-                can("view", "training") && <BottomNavigationAction
+                can("select", "event") && <BottomNavigationAction
                     key={"training"}
                     value={"training"}
                     aria-selected={tab === "training"}
                     icon={<SportsHandball/>}/>
             }
             {
-                can("view", "drink") && <BottomNavigationAction
+                can("select", "drink") && <BottomNavigationAction
                     key={"drinks"}
                     value={"drinks"}
                     aria-selected={tab === "drinks"}
                     icon={<Liquor/>}/>
             }
             {
-                can("view", "challenges") && <BottomNavigationAction
+                can("select", "challenge") && <BottomNavigationAction
                     key={"challenges"}
                     value={"challenges"}
                     aria-selected={tab === "challenges"}
                     icon={<EmojiEvents/>}/>
             }
             {
-                can("view", "browse") && <BottomNavigationAction
+                can("select", "browse") && <BottomNavigationAction
                     key={"browse"}
                     value={"browse"}
                     aria-selected={tab === "browse"}
@@ -66,7 +64,7 @@ const CustomBottomNavigation = ({t}: { t: TFunction }) => {
                     </Badge>}/>
             }
             {
-                can("view", "browseAdmin") && <BottomNavigationAction
+                can("select", "browseAdmin") && <BottomNavigationAction
                     key={"admin"}
                     value={"browse-admin"}
                     aria-selected={tab === "browse-admin"}

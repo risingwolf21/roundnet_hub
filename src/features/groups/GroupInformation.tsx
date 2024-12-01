@@ -6,7 +6,7 @@ import {useSelector} from "react-redux";
 import {useParams} from "react-router-dom";
 import {fetchAdminUsersAsync} from "../admin/slices/adminUserSlice";
 import {RootState, useAppDispatch} from "../../redux/store";
-import {GroupWithUsers, UserWithGroups} from "../../types/supabaseTypes";
+import {GroupWithUsers, UserWithGroupsAndRoles} from "../../types/supabaseTypes";
 import {AlertMessage, AlertSnackbar} from "../../components/AlertSnackbar";
 import SearchAndSelectUserDialog from "./dialogs/SearchAndSelectUserDialog";
 import {fetchSingleGroupAsync, groupsSelector} from "src/features/groups/slices/groupsSlice";
@@ -34,7 +34,7 @@ const GroupInformationProvider = () => {
 }
 
 type GroupInformationProps = {
-    users: UserWithGroups[],
+    users: UserWithGroupsAndRoles[],
     loading: boolean,
     group: GroupWithUsers
 }
@@ -115,7 +115,7 @@ const GroupInformation = ({users, loading, group}: GroupInformationProps) => {
             open={searchAndSelectUsersOpen}
             handleClose={() => setSearchAndSelectUsersOpen(false)}
             handleSubmit={handleUsersAdded}
-            users={users.filter((x: UserWithGroups) => !group?.users?.some((y: Tables<'user'>) => y.userId === x.userId))}
+            users={users.filter((x: UserWithGroupsAndRoles) => !group?.users?.some((y: Tables<'user'>) => y.userId === x.userId))}
             loading={loading}/>
 
         <SearchAndSelectUserDialog

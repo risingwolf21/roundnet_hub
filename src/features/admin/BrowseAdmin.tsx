@@ -7,8 +7,8 @@ import {useSelector} from "react-redux";
 import {useNavigate} from "react-router";
 import {Ability, Actions, can} from "src/utils/PermissionService";
 import {RootState} from "../../redux/store";
-import {AlertSnackbar} from "../../components/AlertSnackbar";
 import Layout from "../../components/Layout";
+import {useAuth} from "../auth/AuthContext";
 
 type EntryType = {
     translationKey: string
@@ -25,7 +25,7 @@ const entries = [
         navigateTo: "/admin/drinks/payments",
         icon: <Euro/>,
         avatarColor: "#88AEBF",
-        action: "edit",
+        action: "select",
         ability: "payments"
     },
     {
@@ -33,7 +33,7 @@ const entries = [
         navigateTo: "/admin/drinks",
         icon: <Liquor/>,
         avatarColor: "#88AEBF",
-        action: "edit",
+        action: "select",
         ability: "drink"
     },
     {
@@ -41,7 +41,7 @@ const entries = [
         navigateTo: "/admin/users",
         icon: <Group/>,
         avatarColor: "#88AEBF",
-        action: "edit",
+        action: "select",
         ability: "user"
     },
     {
@@ -49,7 +49,7 @@ const entries = [
         navigateTo: "/admin/drinks/history",
         icon: <History/>,
         avatarColor: "#88AEBF",
-        action: "edit",
+        action: "select",
         ability: "history"
     },
     {
@@ -57,7 +57,7 @@ const entries = [
         navigateTo: "/trainer/groups",
         icon: <GroupOutlined/>,
         avatarColor: "#88AEBF",
-        action: "edit",
+        action: "select",
         ability: "groups"
     },
     {
@@ -75,18 +75,22 @@ const entries = [
         avatarColor: "#88AEBF",
         action: "edit",
         ability: "edgeFunctions"
+    },
+    {
+        translationKey: "permissions",
+        navigateTo: "/admin/permissions",
+        icon: <StorageOutlined/>,
+        avatarColor: "#88AEBF",
+        action: "edit",
+        ability: "edgeFunctions"
     }
 ] as EntryType[];
 
 const BrowseAdmin = ({t}: { t: TFunction }) => {
 
     const navigate = useNavigate();
-    const {user} = useSelector((state: RootState) => state.application);
+    const user = useAuth();
     const {hasNotVerifiedUsers} = useSelector((state: RootState) => state.adminUsers);
-
-    if (!user)
-        return <AlertSnackbar close={() => {
-        }} alertInfo={{message: "Fatal error occured. User was null!", severity: "error"}}/>
 
     return <Layout>
         <List>

@@ -25,15 +25,15 @@ import {Box} from "@mui/system";
 import {AccountCircle, Close, Edit, Email, FiberManualRecord, ManageAccounts, Verified} from "@mui/icons-material";
 import {useClient} from "react-supabase";
 import {SlideUpTransition} from "../../../utils";
-import {FullHistory, UserWithGroups} from "../../../types/supabaseTypes";
+import {FullHistory, UserWithGroupsAndRoles} from "../../../types/supabaseTypes";
 import moment from "moment";
-import {UserPermissionsDialog} from "./UserPermissionDialog";
 import {captureException} from "@sentry/react";
 import {SupabaseDrinkRepository} from "../../../repository/DrinkRepository";
 import {Permissions} from "types/supabase"
+import {AppRolesDialog} from "./AppRolesDialog";
 
 type EditUserDialogProps = {
-    user: UserWithGroups,
+    user: UserWithGroupsAndRoles,
     open: boolean,
     handleClose: () => void,
     onUserEditFinished: (user: UserEdited) => void,
@@ -44,15 +44,18 @@ export type UserEdited = {
     displayName: string,
     verified: boolean,
     userId: string,
-    permissions: Permissions[]
+    permissions: Permissions[],
+    roles: AppRole[]
 }
 
 const EditUserDialog = ({user, open, handleClose, onUserEditFinished, deleteUser}: EditUserDialogProps) => {
 
     const [editUserPermissionsOpen, setEditUserPermissionsOpen] = useState(false);
+    const [editUserRolesOpen, setEditUserRolesOpen] = useState(false);
     const [verified, setVerified] = useState(user.verified)
     const [deleteUserOpen, setDeleteUserOpen] = useState(false);
     const [userPermissions, setUserPermissions] = useState<Permissions[]>([]);
+    const [userRoles, setUserRoles] = useState<AppRole[]>([]);
     const [userInfo, setUserInfo] = useState({openAmount: 0});
     const [drinksForUser, setDrinksForUser] = useState<FullHistory[]>([]);
     const client = useClient();
@@ -78,7 +81,8 @@ const EditUserDialog = ({user, open, handleClose, onUserEditFinished, deleteUser
             userId: user.userId,
             displayName: data.get("displayName"),
             verified,
-            permissions: userPermissions
+            permissions: userPermissions,
+            roles: userRoles
         } as UserEdited);
     }
 
@@ -166,6 +170,17 @@ const EditUserDialog = ({user, open, handleClose, onUserEditFinished, deleteUser
                             <Edit/>
                         </ListItemSecondaryAction>
                     </ListItemButton>
+                    <ListItemButton key={"user_roles"} onClick={() => setEditUserRolesOpen(true)}>
+                        <ListItemAvatar>
+                            <Avatar>
+                                <ManageAccounts/>
+                            </Avatar>
+                        </ListItemAvatar>
+                        <ListItemText primary={user.roles.join(", ")}/>
+                        <ListItemSecondaryAction onClick={() => setEditUserRolesOpen(true)}>
+                            <Edit/>
+                        </ListItemSecondaryAction>
+                    </ListItemButton>
                     <Divider/>
                     <List subheader={<ListSubheader>Gruppen</ListSubheader>}>
                         {
@@ -210,14 +225,14 @@ const EditUserDialog = ({user, open, handleClose, onUserEditFinished, deleteUser
                 </Box>
             </Box>
         </Box>
-        <UserPermissionsDialog
-            open={editUserPermissionsOpen}
-            handleClose={() => setEditUserPermissionsOpen(false)}
-            handleSubmit={(permissions) => {
-                setUserPermissions(permissions);
-                setEditUserPermissionsOpen(false);
-            }}
-            permissions={user.permissions ?? []}/>
+        <AppRolesDialog
+            open={editUserRolesOpen}
+            roles={user.roles}
+            handleClose={() => setEditUserRolesOpen(false)}
+            handleSubmit={(roles: AppRole[]) => {
+                setUserRoles(roles);
+                setEditUserRolesOpen(false)
+            }}/>
         <Dialog open={deleteUserOpen}>
             <DialogTitle>
                 {`Benuter ${user.displayName} löschen?`}

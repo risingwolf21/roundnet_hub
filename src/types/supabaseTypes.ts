@@ -78,8 +78,18 @@ export type FullComment = Modify<EventComment, {
     pending: boolean | null
 }>
 
-export type UserWithGroups = User & {
-    groups: Group[]
+export type UserWithGroupsAndRoles = User & {
+    groups: Group[],
+    roles: AppRole[]
+}
+
+export type UserWithRoles = User & {
+    roles: UserRoles[]
+}
+
+export type UserWithRolesAndPermissions = User & {
+    roles: UserRoles[],
+    permissions: AppPermission[]
 }
 
 export type GroupWithUsers = Group & {

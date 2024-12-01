@@ -557,6 +557,24 @@ export type Database = {
           },
         ]
       }
+      role_permissions: {
+        Row: {
+          id: string
+          permission: Database["public"]["Enums"]["app_permission"]
+          role: Database["public"]["Enums"]["app_role"]
+        }
+        Insert: {
+          id?: string
+          permission: Database["public"]["Enums"]["app_permission"]
+          role: Database["public"]["Enums"]["app_role"]
+        }
+        Update: {
+          id?: string
+          permission?: Database["public"]["Enums"]["app_permission"]
+          role?: Database["public"]["Enums"]["app_role"]
+        }
+        Relationships: []
+      }
       user: {
         Row: {
           avatarUrl: string | null
@@ -604,6 +622,32 @@ export type Database = {
           verified?: boolean
         }
         Relationships: []
+      }
+      user_roles: {
+        Row: {
+          id: number
+          role: Database["public"]["Enums"]["app_role"]
+          user: string
+        }
+        Insert: {
+          id?: number
+          role: Database["public"]["Enums"]["app_role"]
+          user?: string
+        }
+        Update: {
+          id?: number
+          role?: Database["public"]["Enums"]["app_role"]
+          user?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_roles_user_fkey"
+            columns: ["user"]
+            isOneToOne: false
+            referencedRelation: "user"
+            referencedColumns: ["userId"]
+          },
+        ]
       }
       vouchers: {
         Row: {
@@ -735,11 +779,23 @@ export type Database = {
         }
         Returns: undefined
       }
+      authorize: {
+        Args: {
+          requested_permission: Database["public"]["Enums"]["app_permission"]
+        }
+        Returns: boolean
+      }
       check_version: {
         Args: {
           input_version: string
         }
         Returns: boolean
+      }
+      custom_access_token_hook: {
+        Args: {
+          event: Json
+        }
+        Returns: Json
       }
       eventcreation: {
         Args: Record<PropertyKey, never>
@@ -817,6 +873,43 @@ export type Database = {
       }
     }
     Enums: {
+      app_permission:
+          | "event.select"
+          | "event.update"
+          | "event.insert"
+          | "event.delete"
+          | "drink.select"
+          | "drink.update"
+          | "drink.insert"
+          | "drink.delete"
+          | "group.select"
+          | "group.update"
+          | "group.insert"
+          | "group.delete"
+          | "challenge.select"
+          | "challenge.update"
+          | "challenge.insert"
+          | "challenge.delete"
+          | "payments.select"
+          | "payments.update"
+          | "payments.insert"
+          | "payments.delete"
+          | "item.select"
+          | "item.update"
+          | "item.insert"
+          | "item.delete"
+      app_role:
+          | "admin"
+          | "groupModerator"
+          | "userModerator"
+          | "eventModerator"
+          | "eventUser"
+          | "drinkModerator"
+          | "drinkUser"
+          | "challengeModerator"
+          | "challengeUser"
+          | "itemModerator"
+          | "itemUser"
       EventAttendance: "Declined" | "Attending" | "Unanswered" | "Waiting"
       EventRecurrence: "Weekly" | "Fortnightly" | "Monthly" | "None"
       ItemType: "mtvStorage" | "mtvGym" | "mtvGymPalazzo" | "goethe"

@@ -1,85 +1,55 @@
 import {AbilityBuilder, createMongoAbility, MongoQuery, PureAbility} from '@casl/ability';
-import {Permissions} from "types/supabase";
 
-export type Actions = 'use' | 'edit' | 'delete' | 'view'
+export type Actions = 'select' | 'insert' | 'update' | 'delete'
 export type Ability =
+    | [Actions, 'event']
     | [Actions, 'drink']
-    | [Actions, 'training']
     | [Actions, 'payments']
+    | [Actions, 'challenge']
+    | [Actions, 'group']
+    | [Actions, 'item']
     | [Actions, 'user']
-    | [Actions, 'groups']
-    | [Actions, 'keyFinder']
+    | [Actions, 'eventComments']
+
     | [Actions, 'history']
     | [Actions, 'notifications']
     | [Actions, 'browse']
     | [Actions, 'browseAdmin']
-    | [Actions, 'eventComments']
-    | [Actions, 'challenges']
-
-export const allPermissions: Permissions[] = [
-    "use;drink",
-    "edit;drink",
-    "delete;drink",
-    "view;drink",
-    "use;training",
-    "edit;training",
-    "delete;training",
-    "view;training",
-    "edit;groups",
-    "delete;groups",
-    "view;groups",
-    "edit;payments",
-    "use;user",
-    "delete;user",
-    "view;user",
-    "edit;user",
-    "view;keyFinder",
-    "edit;keyFinder",
-    "delete;keyFinder",
-    "view;challenges",
-    "use;challenges"
-];
-
-export const userPermissions: Permissions[] = [
-    "use;drink",
-    "view;drink",
-    "use;training",
-    "view;training",
-    "view;groups",
-    "use;user",
-    "view;user",
-    "view;keyFinder"
-]
-
-export const financePermissions: Permissions[] = [...userPermissions, "edit;payments"];
-export const procurePermissions: Permissions[] = [...userPermissions, "edit;drink", "delete;drink"];
-export const trainerPermissions: Permissions[] = [...userPermissions, "edit;training", "delete;training", "edit;groups"];
 
 export type AppAbility = PureAbility<Ability, MongoQuery>
 
 export const ability = createMongoAbility();
 export const can = (action: Actions, subject: Ability[1]) => ability.can(action, subject);
 
-export function defineRulesFor(user: User | null) {
+export function defineRulesFor(userPermissions: AppPermission[]) {
     const {can, rules} = new AbilityBuilder<AppAbility>(createMongoAbility);
 
-    if (!user)
-        return [];
+    can("select", "payments");
 
-    can("view", "payments");
-    can("view", "history");
-    can("view", "browse");
-    can("view", "notifications");
+    userPermissions.forEach((each: AppPermission) => {
+        let split = each.split(".");
+        can(split[1] as Actions, split[0] as Ability[1]);
+    });
 
-    if (user.permissions) {
-        user.permissions.forEach((each: Permissions) => {
-            let split = each.split(";");
-            can(split[0] as Actions, split[1] as Ability[1]);
-        });
-    }
-
-    if (user.permissions?.some((x: Permissions) => ["edit;groups", "edit;drink", "edit;payments", "edit;user"].includes(x))) {
-        can("view", "browseAdmin");
+    if (userPermissions.some((x: AppPermission) => ["event.update"
+        , "event.insert"
+        , "event.delete"
+        , "drink.update"
+        , "drink.insert"
+        , "drink.delete"
+        , "group.update"
+        , "group.insert"
+        , "group.delete"
+        , "challenge.update"
+        , "challenge.insert"
+        , "challenge.delete"
+        , "payments.update"
+        , "payments.insert"
+        , "payments.delete"
+        , "item.update"
+        , "item.insert"
+        , "item.delete"].includes(x))) {
+        can("select", "browseAdmin");
     }
 
     return rules;

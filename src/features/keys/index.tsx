@@ -82,7 +82,7 @@ export const ItemHolderScreen = ({dispatch, keyHolders, loading, user, t}: ItemH
         </List>
 
         {
-            can("edit", "keyFinder") &&
+            can("update", "item") &&
             <Box sx={{position: "fixed", right: "16px", bottom: "76px", display: "flex", flexDirection: "row"}}>
                 <Fab sx={{background: "#66bb6a", mr: 2}}
                      onClick={() => {

@@ -22,6 +22,7 @@ import EditIcon from "@mui/icons-material/Edit";
 import {EditOrAddGroupDialog} from "./dialogs/EditOrAddGroupDialog";
 import {can} from "../../utils/PermissionService";
 import Layout from "../../components/Layout";
+import {useAuth} from "../auth/AuthContext";
 
 const ManageGroupsProvider = () => {
 
@@ -45,7 +46,7 @@ export const EMPTY_GROUP = {name: "", color: "#000000", id: 0, description: "", 
 
 const ManageGroupsScreen = ({groups, loading, client}: ManageGroupsScreenProps) => {
 
-    const {user} = useSelector((state: RootState) => state.application);
+    const user = useAuth();
     const dispatch = useAppDispatch();
     const navigate = useNavigate();
     const [isEditingMode, setEditingMode] = useState(false);
@@ -83,7 +84,7 @@ const ManageGroupsScreen = ({groups, loading, client}: ManageGroupsScreenProps) 
             }
         </List>
         {
-            can("edit", "groups") &&
+            can("update", "group") &&
             <Box sx={{position: "fixed", right: "16px", bottom: "76px", display: "flex", flexDirection: "row"}}>
                 <Fab sx={{background: "#66bb6a", mr: 2}}
                      onClick={() => {

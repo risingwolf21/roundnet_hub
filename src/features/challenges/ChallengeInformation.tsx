@@ -122,7 +122,7 @@ export const ChallengeInformation = ({t, challenge, user}: ChallengeInformationP
         </List>
 
         {
-            can("use", "challenges") && !challenge.automated &&
+            can("update", "challenge") && !challenge.automated &&
             <Fab sx={{background: "#66bb6a", position: "fixed", right: "16px", bottom: "56px", mb: "16px"}}
                  onClick={() => {
                      setOpen(true)
