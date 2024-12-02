@@ -5,9 +5,9 @@ import {
     CircularProgress,
     Fab,
     List,
+    ListItem,
     ListItemAvatar,
     ListItemButton,
-    ListItemSecondaryAction,
     ListItemText
 } from "@mui/material"
 import React, {useEffect, useState} from "react"
@@ -70,12 +70,11 @@ export const NotificationsScreen = ({user, t}: NotificationsScreenProps) => {
         <LoadingIndicator loading={false}/>
         <List>
             {
-                !notificationPermissionGranted && <ListItemButton key={"requestPermission"}>
+                !notificationPermissionGranted && <ListItem
+                    key={"requestPermission"}
+                    secondaryAction={<Button variant={"text"} title={"Request"}/>}>
                     <ListItemText primary={"Request Notification permissions"}/>
-                    <ListItemSecondaryAction>
-                        <Button variant={"text"} title={"Request"}/>
-                    </ListItemSecondaryAction>
-                </ListItemButton>
+                </ListItem>
             }
             {
                 userTags.map(x => <ListItemButton key={x} onClick={() => handleChange(x)}

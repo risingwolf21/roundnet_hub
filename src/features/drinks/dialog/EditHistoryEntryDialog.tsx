@@ -8,7 +8,6 @@ import {
     List,
     ListItem,
     ListItemAvatar,
-    ListItemSecondaryAction,
     ListItemText,
     Typography
 } from "@mui/material";
@@ -73,13 +72,11 @@ const EditHistoryEntryDialog = ({open, handleClose, setOpen, entry, handleSubmit
                         </Box>
                     </ListItem>
                     <Divider/>
-                    <ListItem key={"totalAmount"}>
+                    <ListItem key={"totalAmount"}
+                              secondaryAction={<Typography sx={{fontWeight: "bold"}}>
+                                  {(newCount * (entry.drink?.price ?? 1)) + " €"}
+                              </Typography>}>
                         <ListItemText primaryTypographyProps={{fontWeight: "bold"}} primary={"Gesamtkosten"}/>
-                        <ListItemSecondaryAction>
-                            <Typography sx={{fontWeight: "bold"}}>
-                                {(newCount * (entry.drink?.price ?? 1)) + " €"}
-                            </Typography>
-                        </ListItemSecondaryAction>
                     </ListItem>
                 </List>
             </Box>

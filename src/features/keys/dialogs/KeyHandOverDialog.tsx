@@ -1,4 +1,4 @@
-import {Box, Button, Typography} from "@mui/material";
+import {Button, Typography} from "@mui/material";
 import {SwipeableDialog} from "../../../components/SwipeableDialog";
 import React from "react";
 import {FullItemHolder} from "../../../types/supabaseTypes";
@@ -23,7 +23,13 @@ export const KeyHandOverDialog = ({
                                       confirmKeyHandOver
                                   }: KeyHandOverDialogProps) => {
     return <SwipeableDialog open={selectedUser !== null} setOpen={() => {
-    }} onClose={() => setSelectedUser(null)} title={t("keyHandOver")}>
+    }} onClose={() => setSelectedUser(null)} title={t("keyHandOver")}
+                            actions={<><Button onClick={() => setSelectedUser(null)}>
+                                {t("cancel")}
+                            </Button>
+                                <Button onClick={confirmKeyHandOver} autoFocus>
+                                    {t("confirm")}
+                                </Button></>}>
         <Typography m={2}>
             {
                 selectedUser?.userId === user.userId ?
@@ -37,35 +43,5 @@ export const KeyHandOverDialog = ({
                     })
             }
         </Typography>
-        <Box sx={{
-            display: "flex",
-            flexDirection: "row",
-            flexGrow: 1,
-            position: "absolute",
-            left: 0,
-            right: 0,
-            bottom: 0
-        }}>
-            <Button variant="outlined" fullWidth sx={{
-                ml: 2,
-                mr: 1,
-                mb: 2,
-                borderRadius: "50px !important",
-                fontSize: "16px",
-                fontFamily: "sans-serif",
-                lineSpacing: "24px"
-            }} onClick={() => setSelectedUser(null)}>{t("cancel")}</Button>
-            <Button variant="contained" fullWidth sx={{
-                ml: 1,
-                mr: 2,
-                mb: 2,
-                borderRadius: "50px !important",
-                fontSize: "16px",
-                fontFamily: "sans-serif",
-                lineSpacing: "24px"
-            }} onClick={confirmKeyHandOver} autoFocus>
-                {t("confirm")}
-            </Button>
-        </Box>
     </SwipeableDialog>
 }

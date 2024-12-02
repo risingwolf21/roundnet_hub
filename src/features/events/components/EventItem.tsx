@@ -27,16 +27,20 @@ export const EventItem = ({event, onClick, attendEvent, declineEvent, attendance
                                  <HourglassBottom fontSize="inherit" sx={{fontSize: "28px", color: "#125db2"}}/>
                              </IconButton>
                              : <Box sx={{display: "flex", flexDirection: "row"}}>
-                                 <IconButton onClick={declineEvent}
-                                             disabled={event.isCancelled || eventInThePast(event)}>
+                                 <IconButton onClick={(event) => {
+                                     declineEvent();
+                                     event.stopPropagation();
+                                 }} disabled={event.isCancelled || eventInThePast(event)}>
                                      {
                                          event.userAttendance === "Declined"
                                              ? <ThumbDownAlt fontSize="inherit" sx={{fontSize: "28px", color: "red"}}/>
                                              : <ThumbDownOffAlt fontSize="inherit" sx={{fontSize: "28px"}}/>
                                      }
                                  </IconButton>
-                                 <IconButton onClick={attendEvent}
-                                             disabled={event.isCancelled || answerDeadlineExpired(event) || eventInThePast(event)}>
+                                 <IconButton onClick={(event) => {
+                                     attendEvent();
+                                     event.stopPropagation();
+                                 }} disabled={event.isCancelled || answerDeadlineExpired(event) || eventInThePast(event)}>
                                      {
                                          event.userAttendance === "Attending"
                                              ? <ThumbUpAlt fontSize="inherit" sx={{fontSize: "28px", color: "green"}}/>

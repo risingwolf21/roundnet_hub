@@ -8,7 +8,6 @@ import {
     List,
     ListItem,
     ListItemAvatar,
-    ListItemSecondaryAction,
     ListItemText,
     ListSubheader,
     TextField,
@@ -37,7 +36,7 @@ type EditDrinkDialogProps = {
 }
 
 
-const EditDrinkDialog = ({ drink, onDrinkEditFinished, open, handleClose, drinkHistory }: EditDrinkDialogProps) => {
+const EditDrinkDialog = ({drink, onDrinkEditFinished, open, handleClose, drinkHistory}: EditDrinkDialogProps) => {
 
     useEffect(() => {
         setActiveDrink(drink.active);
@@ -72,7 +71,7 @@ const EditDrinkDialog = ({ drink, onDrinkEditFinished, open, handleClose, drinkH
             if (croppedImage) {
                 let fileName = uuid() + ".jpg";
 
-                const { data: uploadData, error } = await client
+                const {data: uploadData, error} = await client
                     .storage
                     .from('drink')
                     .upload(`avatars/${fileName}`, dataURLtoFile(croppedImage, fileName), {
@@ -81,7 +80,7 @@ const EditDrinkDialog = ({ drink, onDrinkEditFinished, open, handleClose, drinkH
                     });
 
                 if (!error && uploadData && uploadData.path) {
-                    const { data } = client.storage.from('drink').getPublicUrl(uploadData.path)
+                    const {data} = client.storage.from('drink').getPublicUrl(uploadData.path)
                     newDrink.imageUrl = data.publicUrl;
                 }
             }
@@ -99,16 +98,16 @@ const EditDrinkDialog = ({ drink, onDrinkEditFinished, open, handleClose, drinkH
             onClose={handleClose}
             TransitionComponent={SlideUpTransition}>
             <Box component="form" onSubmit={handleSubmit} noValidate>
-                <AppBar sx={{ position: "relative" }}>
+                <AppBar sx={{position: "relative"}}>
                     <Toolbar>
                         <IconButton
                             edge="start"
                             color="inherit"
                             onClick={handleClose}
                             aria-label="close">
-                            <CloseIcon />
+                            <CloseIcon/>
                         </IconButton>
-                        <Typography sx={{ ml: 2, flex: 1 }} variant="h6" component="div">
+                        <Typography sx={{ml: 2, flex: 1}} variant="h6" component="div">
                             Getränk {drink?.id ? "bearbeiten" : "erstellen"}
                         </Typography>
                         <Button autoFocus color="inherit" type="submit">
@@ -117,10 +116,10 @@ const EditDrinkDialog = ({ drink, onDrinkEditFinished, open, handleClose, drinkH
                     </Toolbar>
                 </AppBar>
                 <List>
-                    <ListItem sx={{ pt: 0, pb: 0 }}>
+                    <ListItem sx={{pt: 0, pb: 0}}>
                         <ListItemAvatar>
                             <Avatar>
-                                <FormatSizeIcon />
+                                <FormatSizeIcon/>
                             </Avatar>
                         </ListItemAvatar>
                         <ListItemText>
@@ -135,10 +134,10 @@ const EditDrinkDialog = ({ drink, onDrinkEditFinished, open, handleClose, drinkH
                             />
                         </ListItemText>
                     </ListItem>
-                    <ListItem sx={{ pt: 0, pb: 0 }}>
+                    <ListItem sx={{pt: 0, pb: 0}}>
                         <ListItemAvatar>
                             <Avatar>
-                                <EuroIcon />
+                                <EuroIcon/>
                             </Avatar>
                         </ListItemAvatar>
                         <ListItemText>
@@ -154,10 +153,10 @@ const EditDrinkDialog = ({ drink, onDrinkEditFinished, open, handleClose, drinkH
                             />
                         </ListItemText>
                     </ListItem>
-                    <ListItem sx={{ pt: 0, pb: 0 }}>
+                    <ListItem sx={{pt: 0, pb: 0}}>
                         <ListItemAvatar>
                             <Avatar>
-                                <InventoryIcon />
+                                <InventoryIcon/>
                             </Avatar>
                         </ListItemAvatar>
                         <ListItemText>
@@ -173,35 +172,32 @@ const EditDrinkDialog = ({ drink, onDrinkEditFinished, open, handleClose, drinkH
                             />
                         </ListItemText>
                     </ListItem>
-                    <ListItem>
+                    <ListItem secondaryAction={<Button variant="contained" component="label">
+                        Upload
+                        <input accept="image/*" type="file" hidden onChange={async (event) => {
+                            if (!event.target.files || event.target.files.length === 0)
+                                return;
+                            let imageDataUrl = await readFile(event.target.files[0]);
+                            setSelectedImage(imageDataUrl);
+                            setCropImageDialogOpen(true);
+                        }}/>
+                    </Button>}>
                         <ListItemAvatar>
-                            <Avatar sx={{ borderRadius: 2 }}>
+                            <Avatar sx={{borderRadius: 2}}>
                                 {
                                     croppedImage
-                                        ? <img src={croppedImage} alt="logo" width={40} height={40} />
+                                        ? <img src={croppedImage} alt="logo" width={40} height={40}/>
                                         :
                                         drink?.imageUrl
-                                            ? <img src={drink.imageUrl} alt="logo" width={40} height={40} />
-                                            : <LocalDrinkIcon />
+                                            ? <img src={drink.imageUrl} alt="logo" width={40} height={40}/>
+                                            : <LocalDrinkIcon/>
                                 }
                             </Avatar>
                         </ListItemAvatar>
-                        <ListItemSecondaryAction sx={{ ml: 5 }}>
-                            <Button variant="contained" component="label">
-                                Upload
-                                <input accept="image/*" type="file" hidden onChange={async (event) => {
-                                    if (!event.target.files || event.target.files.length === 0)
-                                        return;
-                                    let imageDataUrl = await readFile(event.target.files[0]);
-                                    setSelectedImage(imageDataUrl);
-                                    setCropImageDialogOpen(true);
-                                }} />
-                            </Button>
-                        </ListItemSecondaryAction>
                     </ListItem>
                     <ListItem onClick={() => setActiveDrink(!activeDrink)}>
                         <ListItemAvatar>
-                            <Checkbox checked={activeDrink} />
+                            <Checkbox checked={activeDrink}/>
                         </ListItemAvatar>
                         <ListItemText>
                             <Typography>Aktiv</Typography>
@@ -213,10 +209,10 @@ const EditDrinkDialog = ({ drink, onDrinkEditFinished, open, handleClose, drinkH
                                 return <ListItem key={"drinkHistory" + index}>
                                     <ListItemAvatar>
                                         {
-                                            index === 0 && <Check />
+                                            index === 0 && <Check/>
                                         }
                                     </ListItemAvatar>
-                                    <ListItemText primary={x.name} secondary={x.price + " €"} />
+                                    <ListItemText primary={x.name} secondary={x.price + " €"}/>
                                 </ListItem>
                             })
                         }
@@ -232,7 +228,7 @@ const EditDrinkDialog = ({ drink, onDrinkEditFinished, open, handleClose, drinkH
                 onImageCropFinished={(img) => {
                     setCroppedImage(img);
                     setCropImageDialogOpen(false);
-                }} />
+                }}/>
         }
     </Box>
 }

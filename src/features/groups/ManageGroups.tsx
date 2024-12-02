@@ -1,15 +1,5 @@
 import {AddOutlined, EditOffOutlined, EditOutlined, FiberManualRecord} from "@mui/icons-material";
-import {
-    Box,
-    Fab,
-    IconButton,
-    LinearProgress,
-    List,
-    ListItem,
-    ListItemAvatar,
-    ListItemSecondaryAction,
-    ListItemText
-} from "@mui/material";
+import {Box, Fab, IconButton, LinearProgress, List, ListItem, ListItemAvatar, ListItemText} from "@mui/material";
 import {SupabaseClient} from "@supabase/supabase-js";
 import React, {useEffect, useState} from "react";
 import {useSelector} from "react-redux";
@@ -65,22 +55,21 @@ const ManageGroupsScreen = ({groups, loading, client}: ManageGroupsScreenProps) 
             {
                 groups && groups
                     .filter(x => user && x.users.some(x => x.userId === user.userId))
-                    .map(x => <ListItem key={x.id} divider onClick={() => navigate("/trainer/groups/" + x.id)}>
-                        <ListItemAvatar>
-                            <FiberManualRecord sx={{color: x.color}}/>
-                        </ListItemAvatar>
-                        <ListItemText primary={x.name}/>
-                        {
-                            isEditingMode && <ListItemSecondaryAction>
-                                <IconButton onClick={() => {
-                                    setGroupToEdit(x);
-                                    setAddOrUpdateGroupOpen(true);
-                                }}>
-                                    <EditIcon/>
-                                </IconButton>
-                            </ListItemSecondaryAction>
-                        }
-                    </ListItem>)
+                    .map(x =>
+                        <ListItem key={x.id} divider onClick={() => navigate("/trainer/groups/" + x.id)}
+                                  secondaryAction={isEditingMode &&
+                                      <IconButton onClick={(event) => {
+                                          event.stopPropagation();
+                                          setGroupToEdit(x);
+                                          setAddOrUpdateGroupOpen(true);
+                                      }}>
+                                          <EditIcon/>
+                                      </IconButton>}>
+                            <ListItemAvatar>
+                                <FiberManualRecord sx={{color: x.color}}/>
+                            </ListItemAvatar>
+                            <ListItemText primary={x.name}/>
+                        </ListItem>)
             }
         </List>
         {

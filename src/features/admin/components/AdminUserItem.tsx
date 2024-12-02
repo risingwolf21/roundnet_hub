@@ -1,18 +1,13 @@
-import {
-    Box,
-    IconButton,
-    ListItem,
-    ListItemAvatar,
-    ListItemSecondaryAction,
-    ListItemText,
-    Typography
-} from "@mui/material";
+import {Box, IconButton, ListItem, ListItemAvatar, ListItemText, Typography} from "@mui/material";
 import {AccountCircle, AdminPanelSettings, Edit, EuroRounded, Liquor, Verified} from "@mui/icons-material";
 import React, {Fragment} from "react";
 
 export const AdminUserItem = ({user, onEditClick}: { user: User, onEditClick: () => void }) => {
     let color = "rgba(0, 0, 0, 0.54)";
-    return <ListItem divider>
+    return <ListItem divider
+                     secondaryAction={<IconButton onClick={onEditClick}>
+                         <Edit/>
+                     </IconButton>}>
         <ListItemAvatar>
             {
                 user.role === "user" && <AccountCircle htmlColor={color}/>
@@ -36,10 +31,5 @@ export const AdminUserItem = ({user, onEditClick}: { user: User, onEditClick: ()
             </Box>
         </Fragment>}
                       secondary={user.email}/>
-        <ListItemSecondaryAction>
-            <IconButton onClick={onEditClick}>
-                <Edit/>
-            </IconButton>
-        </ListItemSecondaryAction>
     </ListItem>
 }

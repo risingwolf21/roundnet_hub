@@ -13,8 +13,6 @@ import {
     List,
     ListItem,
     ListItemAvatar,
-    ListItemButton,
-    ListItemSecondaryAction,
     ListItemText,
     ListSubheader,
     TextField,
@@ -50,7 +48,6 @@ export type UserEdited = {
 
 const EditUserDialog = ({user, open, handleClose, onUserEditFinished, deleteUser}: EditUserDialogProps) => {
 
-    const [editUserPermissionsOpen, setEditUserPermissionsOpen] = useState(false);
     const [editUserRolesOpen, setEditUserRolesOpen] = useState(false);
     const [verified, setVerified] = useState(user.verified)
     const [deleteUserOpen, setDeleteUserOpen] = useState(false);
@@ -149,39 +146,30 @@ const EditUserDialog = ({user, open, handleClose, onUserEditFinished, deleteUser
                             />
                         </ListItemText>
                     </ListItem>
-                    <ListItem key={"verified"}>
+                    <ListItem key={"verified"} secondaryAction={<Checkbox checked={verified}
+                                                                          onChange={(e) => setVerified(e.target.checked)}/>}>
                         <ListItemAvatar>
                             <Avatar>
                                 <Verified/>
                             </Avatar>
                         </ListItemAvatar>
                         <ListItemText primary="Verified"/>
-                        <ListItemSecondaryAction>
-                            <Checkbox checked={verified} onChange={(e) => setVerified(e.target.checked)}/>
-                        </ListItemSecondaryAction>
                     </ListItem>
-                    <ListItemButton key={"editUserRole"} onClick={() => setEditUserPermissionsOpen(true)}>
-                        <ListItemAvatar>
-                            <Avatar>
-                                <ManageAccounts/>
-                            </Avatar>
-                        </ListItemAvatar>
-                        <ListItemText secondary={userPermissions.length + " Berechtigungen"} primary={user.role}/>
-                        <ListItemSecondaryAction onClick={() => setEditUserPermissionsOpen(true)}>
-                            <Edit/>
-                        </ListItemSecondaryAction>
-                    </ListItemButton>
-                    <ListItemButton key={"user_roles"} onClick={() => setEditUserRolesOpen(true)}>
+                    <ListItem key={"user_roles"} onClick={() => setEditUserRolesOpen(true)}
+                              secondaryAction={
+                                  <IconButton onClick={(event) => {
+                                      setEditUserRolesOpen(true);
+                                      event.stopPropagation();
+                                  }}>
+                                      <Edit/>
+                                  </IconButton>}>
                         <ListItemAvatar>
                             <Avatar>
                                 <ManageAccounts/>
                             </Avatar>
                         </ListItemAvatar>
                         <ListItemText primary={user.roles.map(x => x.name).join(", ")}/>
-                        <ListItemSecondaryAction onClick={() => setEditUserRolesOpen(true)}>
-                            <Edit/>
-                        </ListItemSecondaryAction>
-                    </ListItemButton>
+                    </ListItem>
                     <Divider/>
                     <List subheader={<ListSubheader>Gruppen</ListSubheader>}>
                         {
@@ -197,16 +185,18 @@ const EditUserDialog = ({user, open, handleClose, onUserEditFinished, deleteUser
                     <Divider/>
                     <List subheader={<ListSubheader>Offene Getränke</ListSubheader>}>
                         {
-                            drinksForUser && drinksForUser.map((x: FullHistory) => <ListItem dense key={x.id}>
-                                <ListItemAvatar>
-                                    <Typography>{x.count} x</Typography>
-                                </ListItemAvatar>
-                                <ListItemText primary={x.drink.name}
-                                              secondary={moment(new Date((x.created_at ?? ""))).format("HH:mm")}/>
-                                <ListItemSecondaryAction>
-                                    <Typography>{(x.count ?? 0) * (x.drink?.price ?? 1)} €</Typography>
-                                </ListItemSecondaryAction>
-                            </ListItem>)
+                            drinksForUser && drinksForUser.map((x: FullHistory) =>
+                                <ListItem
+                                    dense
+                                    key={x.id}
+                                    secondaryAction={
+                                        <Typography>{(x.count ?? 0) * (x.drink?.price ?? 1)} €</Typography>}>
+                                    <ListItemAvatar>
+                                        <Typography>{x.count} x</Typography>
+                                    </ListItemAvatar>
+                                    <ListItemText primary={x.drink.name}
+                                                  secondary={moment(new Date((x.created_at ?? ""))).format("HH:mm")}/>
+                                </ListItem>)
                         }
                     </List>
                 </List>

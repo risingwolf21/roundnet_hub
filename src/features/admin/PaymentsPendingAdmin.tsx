@@ -12,7 +12,6 @@ import {
     List,
     ListItem,
     ListItemAvatar,
-    ListItemSecondaryAction,
     ListItemText,
     Toolbar,
     Typography
@@ -38,14 +37,14 @@ const PaymentsPendingAdmin = () => {
     const dispatch = useAppDispatch();
     const navigate = useNavigate();
 
-    const { payments, error, loading } = useSelector((state: RootState) => state.adminPayments);
+    const {payments, error, loading} = useSelector((state: RootState) => state.adminPayments);
 
     useEffect(() => {
-        dispatch(fetchAdminsPaymentsAsync({ client }));
+        dispatch(fetchAdminsPaymentsAsync({client}));
     }, [client, dispatch]);
 
     if (error)
-        return <Error message={error} />
+        return <Error message={error}/>
 
     const selectedPayment = (payment: FullPayment) => {
         setPayment(payment);
@@ -73,45 +72,50 @@ const PaymentsPendingAdmin = () => {
                     edge="start"
                     color="inherit"
                     onClick={() => navigate(-1)}>
-                    <ArrowBack />
+                    <ArrowBack/>
                 </IconButton>
                 <Search>
                     <SearchIconWrapper>
-                        <SearchIcon />
+                        <SearchIcon/>
                     </SearchIconWrapper>
                     <StyledInputBase
                         placeholder="Search…"
                         onChange={(e) => setSearchString(e.target.value)}
-                        inputProps={{ 'aria-label': 'search' }}
+                        inputProps={{'aria-label': 'search'}}
                     />
                 </Search>
             </Toolbar>
         </AppBar>
         {
-            loading && <LinearProgress style={{ position: "fixed", left: 0, top: 56, right: 0 }} />
+            loading && <LinearProgress style={{position: "fixed", left: 0, top: 56, right: 0}}/>
         }
         {
-            (payments && payments.length > 0) && <List sx={{ width: "100%", pt: 0 }}>
+            (payments && payments.length > 0) && <List sx={{width: "100%", pt: 0}}>
                 {
                     Object.values(payments)
                         .filter(x => searchString === "" || (x.user?.displayName ?? "").toLowerCase().includes(searchString.toLowerCase()))
-                        .map((x, index) => {
-                            return <ListItem key={x.user.email} divider>
+                        .map((x, index) =>
+                            <ListItem
+                                key={x.user.email}
+                                divider
+                                secondaryAction={<IconButton onClick={(event) => {
+                                    selectedPayment(x);
+                                    event.stopPropagation();
+                                }}>
+                                    <CheckIcon/>
+                                </IconButton>}>
                                 <ListItemAvatar>
-                                    <Typography fontWeight={"bold"}>{x.history.reduce((prev: number, curr: History) => prev + (curr.amount ?? 0), 0)} €</Typography>
+                                    <Typography
+                                        fontWeight={"bold"}>{x.history.reduce((prev: number, curr: History) => prev + (curr.amount ?? 0), 0)} €</Typography>
                                 </ListItemAvatar>
-                                <ListItemText primary={x.user?.displayName ?? x.user.email} secondary={x.user.displayName ? "Benutzername" : "Email"} />
-                                <ListItemSecondaryAction >
-                                    <IconButton onClick={() => selectedPayment(x)}>
-                                        <CheckIcon />
-                                    </IconButton>
-                                </ListItemSecondaryAction>
+                                <ListItemText primary={x.user?.displayName ?? x.user.email}
+                                              secondary={x.user.displayName ? "Benutzername" : "Email"}/>
                             </ListItem>
-                        })
+                        )
                 }
-                <ListItem key="spacer" sx={{ visibility: "hidden" }}>
-                    <ListItemAvatar />
-                    <ListItemText primary="Shu shu shu, sha sha sha" secondary="EasterEgg" />
+                <ListItem key="spacer" sx={{visibility: "hidden"}}>
+                    <ListItemAvatar/>
+                    <ListItemText primary="Shu shu shu, sha sha sha" secondary="EasterEgg"/>
                 </ListItem>
             </List>
         }
@@ -122,15 +126,46 @@ const PaymentsPendingAdmin = () => {
                 direction="column"
                 alignItems="center"
                 justifyContent="center"
-                style={{ minHeight: '100vh' }}>
+                style={{minHeight: '100vh'}}>
                 <Typography>Keine aktiven Zahlungen gefunden</Typography>
             </Grid>
         }
-        <Fab sx={{ background: "#66bb6a", position: "fixed", right: "16px", bottom: "72px" }} onClick={() => dispatch(fetchAdminsPaymentsAsync({ client }))}>
-            <Refresh sx={{ color: "white" }} />
+        <Fab sx={{background: "#66bb6a", position: "fixed", right: "16px", bottom: "72px"}}
+             onClick={() => dispatch(fetchAdminsPaymentsAsync({client}))}>
+            <Refresh sx={{color: "white"}}/>
         </Fab>
-        <SwipeableDialog open={open} setOpen={setOpen} title="Zahlung bestätigen">
-            <Box sx={{ justifyContent: "center", alignItems: "center", display: "flex", flexDirection: "column" }}>
+        <SwipeableDialog open={open} setOpen={setOpen} onClose={() => setOpen(false)} title="Zahlung bestätigen"
+                         actions={<Box sx={{
+                             display: "flex",
+                             flexDirection: "row",
+                             flexGrow: 1,
+                             position: "absolute",
+                             left: 0,
+                             right: 0,
+                             bottom: 0
+                         }}>
+                             <Button variant="outlined" fullWidth sx={{
+                                 ml: 2,
+                                 mr: 1,
+                                 mb: 2,
+                                 borderRadius: "50px !important",
+                                 fontSize: "16px",
+                                 fontFamily: "sans-serif",
+                                 lineSpacing: "24px"
+                             }} onClick={() => setOpen(false)}>Abbrechen</Button>
+                             <Button variant="contained" fullWidth sx={{
+                                 ml: 1,
+                                 mr: 2,
+                                 mb: 2,
+                                 borderRadius: "50px !important",
+                                 fontSize: "16px",
+                                 fontFamily: "sans-serif",
+                                 lineSpacing: "24px"
+                             }} onClick={() => confirmPayment(currentPayment)} autoFocus>
+                                 Bestätigen
+                             </Button>
+                         </Box>}>
+            <Box sx={{justifyContent: "center", alignItems: "center", display: "flex", flexDirection: "column"}}>
                 <Typography>
                     Hiermit bestätigst du, dass
                 </Typography>
@@ -149,12 +184,6 @@ const PaymentsPendingAdmin = () => {
                 <Typography>
                     getätigt hat.
                 </Typography>
-            </Box>
-            <Box sx={{ display: "flex", flexDirection: "row", flexGrow: 1, position: "absolute", left: 0, right: 0, bottom: 0 }}>
-                <Button variant="outlined" fullWidth sx={{ ml: 2, mr: 1, mb: 2, borderRadius: "50px !important", fontSize: "16px", fontFamily: "sans-serif", lineSpacing: "24px" }} onClick={() => setOpen(false)}>Abbrechen</Button>
-                <Button variant="contained" fullWidth sx={{ ml: 1, mr: 2, mb: 2, borderRadius: "50px !important", fontSize: "16px", fontFamily: "sans-serif", lineSpacing: "24px" }} onClick={() => confirmPayment(currentPayment)} autoFocus>
-                    Bestätigen
-                </Button>
             </Box>
         </SwipeableDialog>
     </Grid>

@@ -1,12 +1,4 @@
-import {
-    Avatar,
-    Badge,
-    IconButton,
-    ListItem,
-    ListItemAvatar,
-    ListItemSecondaryAction,
-    ListItemText
-} from "@mui/material";
+import {Avatar, Badge, IconButton, ListItem, ListItemAvatar, ListItemText} from "@mui/material";
 import LocalDrinkIcon from "@mui/icons-material/LocalDrink";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
@@ -19,7 +11,14 @@ type AdminDrinkItemProps = {
 }
 
 export const AdminDrinkItem = ({drink, onEditClick, onDeleteClick}: AdminDrinkItemProps) => {
-    return <ListItem divider={true}>
+    return <ListItem divider={true} secondaryAction={<>
+        <IconButton onClick={onEditClick}>
+            <EditIcon fontSize={"medium"}/>
+        </IconButton>
+        <IconButton onClick={onDeleteClick}>
+            <DeleteIcon fontSize={"medium"}/>
+        </IconButton>
+    </>}>
         <ListItemAvatar>
             <Badge color={drink?.active ? "success" : "warning"} variant="dot">
                 <Avatar sx={{borderRadius: 2}}>
@@ -32,13 +31,5 @@ export const AdminDrinkItem = ({drink, onEditClick, onDeleteClick}: AdminDrinkIt
             </Badge>
         </ListItemAvatar>
         <ListItemText primary={drink.name} secondary={drink.price + " €"}/>
-        <ListItemSecondaryAction>
-            <IconButton onClick={onEditClick}>
-                <EditIcon fontSize={"medium"}/>
-            </IconButton>
-            <IconButton onClick={onDeleteClick}>
-                <DeleteIcon fontSize={"medium"}/>
-            </IconButton>
-        </ListItemSecondaryAction>
     </ListItem>
 }

@@ -18,7 +18,9 @@ const EnterPointDialog = ({open, setOpen, t, increaseChallengePoint}: EnterPoint
         open={open}
         onClose={() => setOpen(false)}
         minHeight={40}
-        setOpen={setOpen}>
+        setOpen={setOpen}
+        actions={<Button onClick={increaseChallengePoint}>
+            {t("confirm")}Bestätigen</Button>}>
         <Typography m={2}>Hiermit trägst du einen Punkt für die Serve Challenge ein</Typography>
         <Box sx={{
             display: "flex",
@@ -38,17 +40,6 @@ const EnterPointDialog = ({open, setOpen, t, increaseChallengePoint}: EnterPoint
                 fontFamily: "sans-serif",
                 lineSpacing: "24px"
             }} onClick={() => setOpen(false)}>{t("cancel")}</Button>
-            <Button variant="contained" fullWidth sx={{
-                ml: 1,
-                mr: 2,
-                mb: 2,
-                borderRadius: "50px !important",
-                fontSize: "16px",
-                fontFamily: "sans-serif",
-                lineSpacing: "24px"
-            }} onClick={increaseChallengePoint}>
-                {t("confirm")}
-            </Button>
         </Box>
     </SwipeableDialog>
 }

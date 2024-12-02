@@ -1,5 +1,5 @@
 import {Close} from "@mui/icons-material";
-import {Button, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, Toolbar, Typography} from "@mui/material"
+import {Dialog, DialogActions, DialogContent, DialogTitle, IconButton, Toolbar, Typography} from "@mui/material"
 import React from "react";
 
 
@@ -7,7 +7,8 @@ type SwipeableDialogProps = {
     open: boolean,
     setOpen?: (value: boolean) => void,
     onClose?: () => void,
-    children: any,
+    children: React.ReactNode,
+    actions?: React.ReactNode,
     title: string,
     minHeight?: number
 }
@@ -16,6 +17,7 @@ export const SwipeableDialog = ({
                                     open,
                                     onClose,
                                     children,
+                                    actions,
                                     title = "",
                                     minHeight = 40
                                 }: SwipeableDialogProps) => {
@@ -61,11 +63,13 @@ export const SwipeableDialog = ({
                 </Typography>
             </Toolbar>
         </DialogTitle>
-        <DialogContent>
+        <DialogContent sx={{p: 0}}>
             {children}
         </DialogContent>
-        <DialogActions>
-            <Button>Close</Button>
-        </DialogActions>
+        {
+            actions && <DialogActions>
+                {actions}
+            </DialogActions>
+        }
     </Dialog>
 }

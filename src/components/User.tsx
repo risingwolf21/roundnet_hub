@@ -10,7 +10,6 @@ import {
     ListItem,
     ListItemAvatar,
     ListItemButton,
-    ListItemSecondaryAction,
     ListItemText,
     ListSubheader,
     Snackbar,
@@ -29,7 +28,8 @@ import {
     DeleteOutline,
     EditOutlined,
     EmailOutlined,
-    FiberManualRecord, Logout,
+    FiberManualRecord,
+    Logout,
     NotificationsRounded,
     PasswordOutlined,
     PersonOutlineOutlined,
@@ -77,28 +77,25 @@ const NotificationSwitch = ({title, tag, loading, user, dispatch}: {
     user: User,
     dispatch: AppDispatch
 }) => {
-    return <ListItem>
+    return <ListItem
+        secondaryAction={loading
+            ? <CircularProgress/>
+            : <Switch checked={user.notifications?.includes(tag) ?? false}
+                      onChange={(event) => {
+                          event.stopPropagation();
+                          if (!event.target.checked) {
+                              dispatch(removeNotificationPermissionAsync({
+                                  user,
+                                  notificationToRemove: tag
+                              }))
+                          } else {
+                              dispatch(addNotificationPermissionAsync({
+                                  user,
+                                  notificationToAdd: tag
+                              }))
+                          }
+                      }}/>}>
         <ListItemText primary={title}/>
-        <ListItemSecondaryAction>
-            {
-                loading
-                    ? <CircularProgress/>
-                    : <Switch checked={user.notifications?.includes(tag) ?? false}
-                              onChange={(event) => {
-                                  if (!event.target.checked) {
-                                      dispatch(removeNotificationPermissionAsync({
-                                          user,
-                                          notificationToRemove: tag
-                                      }))
-                                  } else {
-                                      dispatch(addNotificationPermissionAsync({
-                                          user,
-                                          notificationToAdd: tag
-                                      }))
-                                  }
-                              }}/>
-            }
-        </ListItemSecondaryAction>
     </ListItem>
 }
 

@@ -7,7 +7,6 @@ import {
     List,
     ListItem,
     ListItemAvatar,
-    ListItemSecondaryAction,
     ListItemText,
     Snackbar,
     Typography
@@ -69,24 +68,22 @@ const PayDrinksSummary = ({paymentHistory}: { paymentHistory: PaymentHistory[] }
                             priceTotal: value.reduce((prev, curr) => prev + (curr.count ?? 0), 0),
                         }
                     })
-                    .map((x, index) => <ListItem key={"drinks" + index}>
-                        <ListItemAvatar>
-                            <Typography>{x.count + " x"}</Typography>
-                        </ListItemAvatar>
-                        <ListItemText primary={x.name} secondary={x.priceSingle + " €"}/>
-                        <ListItemSecondaryAction>
-                            <Typography>{x.priceTotal} €</Typography>
-                        </ListItemSecondaryAction>
-                    </ListItem>)
+                    .map((x, index) =>
+                        <ListItem key={"drinks" + index}
+                                  secondaryAction={<Typography>{x.priceTotal} €</Typography>}>
+                            <ListItemAvatar>
+                                <Typography>{x.count + " x"}</Typography>
+                            </ListItemAvatar>
+                            <ListItemText primary={x.name} secondary={x.priceSingle + " €"}/>
+                        </ListItem>)
             }
             <Divider/>
-            <ListItem key={"totalAmount"}>
+            <ListItem key={"totalAmount"} secondaryAction={
+                <Typography sx={{fontWeight: "bold"}}>
+                    {paymentHistory.reduce((prev, curr) => prev + (curr.amount ?? 0), 0)} €
+                </Typography>
+            }>
                 <ListItemText primaryTypographyProps={{fontWeight: "bold"}} primary={"Gesamtkosten"}/>
-                <ListItemSecondaryAction>
-                    <Typography sx={{fontWeight: "bold"}}>
-                        {paymentHistory.reduce((prev, curr) => prev + (curr.amount ?? 0), 0)} €
-                    </Typography>
-                </ListItemSecondaryAction>
             </ListItem>
         </List>
     </Box>

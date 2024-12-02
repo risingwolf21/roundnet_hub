@@ -1,16 +1,4 @@
-import {
-    AppBar,
-    Avatar,
-    Box,
-    List,
-    ListItem,
-    ListItemAvatar,
-    ListItemSecondaryAction,
-    ListItemText,
-    Tab,
-    Tabs,
-    Typography
-} from "@mui/material"
+import {AppBar, Avatar, Box, List, ListItem, ListItemAvatar, ListItemText, Tab, Tabs, Typography} from "@mui/material"
 import React, {useEffect, useState} from "react";
 import {AccountBox} from "@mui/icons-material";
 import {useTheme} from '@mui/material/styles';
@@ -127,7 +115,9 @@ const EventAttendanceDialog = ({open, index, setOpen, attendance, hasWaitingList
                     <List>
                         {
                             attendance.filter((x: FullAttendance) => x.state === "Waiting").sort((a, b) => isBefore(a.lastUpdate, b.lastUpdate) ? 1 : 0).map((x: FullAttendance, index: number) =>
-                                <ListItem key={x.user.userId + index}>
+                                <ListItem
+                                    key={x.user.userId + index}
+                                    secondaryAction={<Typography fontWeight={"bold"}>{`${index + 1}.)`}</Typography>}>
                                     <ListItemAvatar>
                                         <Avatar sx={{borderRadius: 2}}>
                                             {
@@ -139,9 +129,6 @@ const EventAttendanceDialog = ({open, index, setOpen, attendance, hasWaitingList
                                         </Avatar>
                                     </ListItemAvatar>
                                     <ListItemText primary={x.user?.displayName}/>
-                                    <ListItemSecondaryAction>
-                                        <Typography fontWeight={"bold"}>{`${index + 1}.)`}</Typography>
-                                    </ListItemSecondaryAction>
                                 </ListItem>)
                         }
                     </List>

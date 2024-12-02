@@ -1,12 +1,4 @@
-import {
-    Avatar,
-    Button,
-    IconButton,
-    ListItemAvatar,
-    ListItemButton,
-    ListItemSecondaryAction,
-    ListItemText
-} from "@mui/material";
+import {Avatar, Button, IconButton, ListItem, ListItemAvatar, ListItemText} from "@mui/material";
 import KeyIcon from "@mui/icons-material/Key";
 import EditIcon from "@mui/icons-material/Edit";
 import React from "react";
@@ -36,39 +28,37 @@ export const ItemHolderItem = ({
                                    selectKeyToHandOver,
                                    selectKeyToReceive
                                }: ItemHolderItemProsp) => {
-    return <ListItemButton key={x.id} divider
-                           onClick={() => {
-                               setItemToEdit(x);
-                               setItemHistoryDialogOpen(true);
-                           }}>
+    return <ListItem key={x.id} divider
+                     onClick={() => {
+                         setItemToEdit(x);
+                         setItemHistoryDialogOpen(true);
+                     }} secondaryAction={isEditingMode
+        ? <IconButton onClick={(event) => {
+            event.stopPropagation();
+            setItemToEdit(x);
+            setAddOrUpdateKeysOpen(true);
+        }}>
+            <EditIcon/>
+        </IconButton>
+        : x.current_holder?.userId === user.userId ?
+            <Button color="primary" onClick={(event) => {
+                selectKeyToHandOver(x);
+                event.stopPropagation();
+            }}>
+                {t("handover_key")}
+            </Button>
+            :
+            <Button color="primary" onClick={(event) => {
+                selectKeyToReceive(x);
+                event.stopPropagation();
+            }}>
+                {t("take_key")}
+            </Button>}>
         <ListItemAvatar>
             <Avatar sx={{background: x.color, width: 40, height: 40, borderRadius: 2}}>
                 <KeyIcon/>
             </Avatar>
         </ListItemAvatar>
         <ListItemText primary={x.current_holder?.displayName ?? "Nicht zugewiesen"} secondary={x.name}/>
-        {
-            isEditingMode
-                ? <ListItemSecondaryAction>
-                    <IconButton onClick={() => {
-                        setItemToEdit(x);
-                        setAddOrUpdateKeysOpen(true);
-                    }}>
-                        <EditIcon/>
-                    </IconButton>
-                </ListItemSecondaryAction>
-                : x.current_holder?.userId === user.userId ?
-                    <ListItemSecondaryAction>
-                        <Button color="primary" onClick={() => selectKeyToHandOver(x)}>
-                            {t("handover_key")}
-                        </Button>
-                    </ListItemSecondaryAction>
-                    :
-                    <ListItemSecondaryAction>
-                        <Button color="primary" onClick={() => selectKeyToReceive(x)}>
-                            {t("take_key")}
-                        </Button>
-                    </ListItemSecondaryAction>
-        }
-    </ListItemButton>
+    </ListItem>
 }

@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from "react";
-import {Button, List, ListItemButton, ListItemSecondaryAction, ListItemText} from "@mui/material";
+import {Button, List, ListItem, ListItemButton, ListItemText} from "@mui/material";
 import {useClient} from "react-supabase";
 import {Cancel, Delete, Edit, ExpandMoreOutlined, Save} from "@mui/icons-material";
 import {SwipeableDialog} from "./SwipeableDialog";
@@ -293,12 +293,11 @@ export const SupabaseClient = () => {
 
     return <Layout>
         <LoadingIndicator loading={loading}/>
-        <ListItemButton onClick={() => setSelectTableOpen(true)}>
+        <ListItem
+            onClick={() => setSelectTableOpen(true)}
+            secondaryAction={<ExpandMoreOutlined/>}>
             <ListItemText primary={selectedTable}/>
-            <ListItemSecondaryAction>
-                <ExpandMoreOutlined/>
-            </ListItemSecondaryAction>
-        </ListItemButton>
+        </ListItem>
 
         {
             selectedTableData[0] && <DataGrid columns={[...Object.keys(selectedTableData[0]).map(x => {

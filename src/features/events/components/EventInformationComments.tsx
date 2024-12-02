@@ -9,7 +9,6 @@ import {
     List,
     ListItem,
     ListItemAvatar,
-    ListItemSecondaryAction,
     ListItemText,
     TextField,
     Typography
@@ -83,31 +82,33 @@ const EventInformationComments = ({
         <Box sx={{display: "flex", flexDirection: "column"}}>
             <List sx={{mb: 4}}>
                 {
-                    comments && comments.map((x, index) => <ListItem divider={index !== comments.length - 1} dense
-                                                                     key={index}
-                                                                     sx={{'&.MuiListItem-root': {paddingLeft: 0}}}>
-                        <ListItemAvatar>
-                            <Avatar sx={{borderRadius: 2}}>
-                                {
-                                    x.pending
-                                        ? <CircularProgress size={"20px"}/>
-                                        : x.user?.avatarUrl
-                                            ? <img src={x.user?.avatarUrl} alt="logo" width={"100%"} height={"100%"}/>
-                                            : <AccountBox/>
-                                }
-                            </Avatar>
-                        </ListItemAvatar>
-                        <ListItemText primaryTypographyProps={{fontWeight: "bold", fontSize: "11pt"}}
-                                      primary={x.displayName} secondary={x.comment}/>
-                        <ListItemSecondaryAction sx={{height: "100%"}}>
-                            <Typography style={{
+                    comments && comments.map((x, index) =>
+                        <ListItem
+                            divider={index !== comments.length - 1} dense
+                            key={index}
+                            sx={{
+                                '&.MuiListItem-root': {paddingLeft: 0},
+                            }}
+                            secondaryAction={<Typography style={{
                                 fontSize: "10pt",
                                 color: "rgba(0,0,0,0.6)",
                                 marginTop: "8px",
                                 alignContent: "baseline"
-                            }}>{formatDistanceToNow(x.created_at)} ago</Typography>
-                        </ListItemSecondaryAction>
-                    </ListItem>)
+                            }}>{formatDistanceToNow(x.created_at)} ago</Typography>}>
+                            <ListItemAvatar>
+                                <Avatar sx={{borderRadius: 2}}>
+                                    {
+                                        x.pending
+                                            ? <CircularProgress size={"20px"}/>
+                                            : x.user?.avatarUrl
+                                                ? <img src={x.user?.avatarUrl} alt="logo" width={"100%"} height={"100%"}/>
+                                                : <AccountBox/>
+                                    }
+                                </Avatar>
+                            </ListItemAvatar>
+                            <ListItemText primaryTypographyProps={{fontWeight: "bold", fontSize: "11pt"}}
+                                          primary={x.displayName} secondary={x.comment}/>
+                        </ListItem>)
                 }
             </List>
             <Box component={"form"} onSubmit={handleCommentSubmit}>
@@ -119,12 +120,14 @@ const EventInformationComments = ({
                     fullWidth
                     placeholder="Write a comment..."
                     sx={{'& fieldset': {borderRadius: 4}, '& input': {pt: 1.5, pb: 1.5}}}
-                    InputProps={{
-                        endAdornment: <InputAdornment position="end">
-                            <IconButton edge="end" type="submit" disabled={eventInThePast}>
-                                <Send/>
-                            </IconButton>
-                        </InputAdornment>,
+                    slotProps={{
+                        input: {
+                            endAdornment: <InputAdornment position="end">
+                                <IconButton edge="end" type="submit" disabled={eventInThePast}>
+                                    <Send/>
+                                </IconButton>
+                            </InputAdornment>
+                        }
                     }}/>
             </Box>
         </Box>
