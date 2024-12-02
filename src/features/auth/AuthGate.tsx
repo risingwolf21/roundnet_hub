@@ -30,6 +30,10 @@ export const AuthGate = ({children}: Props) => {
     const [alertInfo, setAlertInfo] = useState<AlertMessage | null>(null);
 
     const handleAuthChange = useCallback(async (event: AuthChangeEvent, session: Session | null) => {
+        if (event === "PASSWORD_RECOVERY") {
+            navigate("/reset-password", {replace: true});
+            return;
+        }
         try {
             if (!session)
                 throw Error("Session was null");
