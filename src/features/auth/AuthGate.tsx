@@ -14,7 +14,6 @@ import {setUser} from "@sentry/react";
 import {RootState} from "../../redux/store";
 import {AdminPermissionsRepository} from "../../repository/AdminPermissionsRepository";
 import {SupabaseUserRepository} from "../../repository/UserRepository";
-import { jwtDecode } from 'jwt-decode'
 
 type Props = {
     children: React.ReactNode
@@ -31,14 +30,13 @@ export const AuthGate = ({children}: Props) => {
     const [alertInfo, setAlertInfo] = useState<AlertMessage | null>(null);
 
     const handleAuthChange = useCallback(async (event: AuthChangeEvent, session: Session | null) => {
-
         try {
             if (!session)
                 throw Error("Session was null");
             const roles = await AdminPermissionsRepository.fetchRolesForUser(session.user.id);
             const permissions = await AdminPermissionsRepository.fetchPermissionsForRoles(roles);
             const {data: user} = await SupabaseUserRepository.fetchUser(session.user.id);
-            console.log(roles,permissions);
+            console.log(roles, permissions);
 
             if (!user) {
                 throw Error("Fetching user in AuthGate was not successful.");
