@@ -53,8 +53,8 @@ const App = () => {
                 <Typography>{process.env.REACT_APP_ENV}</Typography>
             </Container>
         }
-        <AuthGate>
-            <BrowserRouter>
+        <BrowserRouter>
+            <AuthGate>
                 <FirebaseMessaging>
                     <React.Suspense fallback={<LoadingScreen/>}>
                         <SentryRoutes>
@@ -114,8 +114,8 @@ const App = () => {
                         </SentryRoutes>
                     </React.Suspense>
                 </FirebaseMessaging>
-            </BrowserRouter>
-        </AuthGate>
+            </AuthGate>
+        </BrowserRouter>
     </Grid>
 }
 export default App;

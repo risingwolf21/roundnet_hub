@@ -12,6 +12,8 @@ import {setUser} from "@sentry/react";
 import {RootState} from "../../redux/store";
 import {AdminPermissionsRepository} from "../../repository/AdminPermissionsRepository";
 import {SupabaseUserRepository} from "../../repository/UserRepository";
+import {useLocation, useNavigate} from "react-router-dom";
+import {HOMEPAGE} from "../../constants";
 
 type Props = {
     children: React.ReactNode
@@ -20,6 +22,9 @@ type Props = {
 export const AuthGate = ({children}: Props) => {
     const client = useClient();
     const dispatch = useDispatch();
+
+    const navigate = useNavigate();
+    const location = useLocation();
 
     const currentUser = useSelector((state: RootState) => state.application.user)
     const [session, setSession] = useState<Session | null>(null);
@@ -40,6 +45,12 @@ export const AuthGate = ({children}: Props) => {
             ability.update(defineRulesFor(permissions, roles));
             dispatch(onUserChange(user))
             setSession(session);
+
+            if (location.pathname) {
+                navigate(location.pathname, {replace: true});
+            } else {
+                navigate(`/${HOMEPAGE}`, {replace: true});
+            }
         } catch (e: any) {
             setSession(null);
             ability.update(defineRulesFor([], []))
