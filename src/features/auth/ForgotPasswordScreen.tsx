@@ -8,7 +8,6 @@ import Grid from '@mui/material/Grid';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
-import {supabase} from '../../components/services/supabase/supabaseClient';
 import Logo from "../../images/Karlsruher_Kojoten_Logo.svg";
 import {Alert, CircularProgress, Snackbar} from '@mui/material';
 import {AuthViewType} from "../../pages/Auth.page";
@@ -19,12 +18,15 @@ type ForgotPasswordScreenProps = {
 
 const ForgotPasswordScreen = ({setAuthView}: ForgotPasswordScreenProps) => {
 
+    const [email, setEmail] = React.useState("");
     const [errorMessage, setErrorMessage] = React.useState("");
     const [loading, setLoading] = useState(false);
     const [successMessageOpen, setSuccessMessageOpen] = React.useState(false);
 
-    const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
-        setLoading(true);
+    const handleSubmit = async () => {
+        setErrorMessage("Das Zurücksetzen des Passworts ist derzeit nur über die Admin Konsole möglich, bitte melde dich bei Karl Wolf.");
+        return;
+        /*setLoading(true);
         event.preventDefault();
         const data = new FormData(event.currentTarget);
 
@@ -38,7 +40,7 @@ const ForgotPasswordScreen = ({setAuthView}: ForgotPasswordScreenProps) => {
         if (error)
             setErrorMessage(error.message);
         else
-            setSuccessMessageOpen(true)
+            setSuccessMessageOpen(true)*/
     };
 
     return (
@@ -55,7 +57,7 @@ const ForgotPasswordScreen = ({setAuthView}: ForgotPasswordScreenProps) => {
                 <Typography component="h1" variant="h5">
                     Passwort zurücksetzen
                 </Typography>
-                <Box component="form" onSubmit={(e) => handleSubmit(e)} noValidate sx={{mt: 1}}>
+                <Box sx={{mt: 1}}>
                     <TextField
                         margin="normal"
                         color='secondary'
@@ -66,6 +68,8 @@ const ForgotPasswordScreen = ({setAuthView}: ForgotPasswordScreenProps) => {
                         name="email"
                         autoComplete="email"
                         autoFocus
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
                     />
                     {
                         errorMessage && <Typography color="red">
@@ -73,12 +77,12 @@ const ForgotPasswordScreen = ({setAuthView}: ForgotPasswordScreenProps) => {
                         </Typography>
                     }
                     <Button
-                        type="submit"
                         fullWidth
                         color='secondary'
                         variant="contained"
                         disabled={loading}
-                        sx={{mt: 3, mb: 2}}>
+                        sx={{mt: 3, mb: 2}}
+                        onClick={handleSubmit}>
                         {
                             loading ? <CircularProgress/> : "Abschicken"
                         }
