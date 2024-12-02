@@ -74,7 +74,7 @@ export const AppRolesDialog = ({open, handleClose, handleSubmit, roles}: AppRole
                                                             sx={{'&:last-child td, &:last-child th': {border: 0}}}>
                                 <TableCell sx={{p: 1}}>
                                     <Checkbox
-                                        checked={selectedAppRoles.includes(x)}
+                                        checked={selectedAppRoles.some(y => y.id === x.id)}
                                         onChange={(e, checked) => handleRoleChange(checked, x)}/>
                                 </TableCell>
                                 <TableCell sx={{p: 1}}>{x.name}</TableCell>

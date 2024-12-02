@@ -26,7 +26,7 @@ export const SupabaseUserRepository = {
             data: {
                 ...response.data,
                 groups: response.data?.groups.map((x: any) => x.group) ?? [],
-                roles: response.data?.roles.map((x: any) => x.role) ?? [],
+                roles: response.data?.roles.map((x: any) => x.app_role) ?? [],
             }
         }
     },
