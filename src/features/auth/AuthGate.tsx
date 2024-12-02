@@ -1,13 +1,11 @@
 import {useClient} from "react-supabase";
 import {useDispatch, useSelector} from "react-redux";
-import {useLocation, useNavigate} from "react-router-dom";
 import React, {useCallback, useEffect, useState} from "react";
 import {ability, defineRulesFor} from "../../utils/PermissionService";
 import {onUserChange} from "../../redux/applicationSlice";
 import {AuthChangeEvent, Session} from "@supabase/supabase-js";
 import AuthPage from "../../pages/Auth.page";
 import {AlertMessage, AlertSnackbar} from "../../components/AlertSnackbar";
-import {HOMEPAGE} from "../../constants";
 import NotVerifiedScreen from "../../components/NotVerifiedScreen";
 import {AuthContext} from "./AuthContext";
 import {setUser} from "@sentry/react";
@@ -22,18 +20,12 @@ type Props = {
 export const AuthGate = ({children}: Props) => {
     const client = useClient();
     const dispatch = useDispatch();
-    const navigate = useNavigate();
-    const location = useLocation();
 
     const currentUser = useSelector((state: RootState) => state.application.user)
     const [session, setSession] = useState<Session | null>(null);
     const [alertInfo, setAlertInfo] = useState<AlertMessage | null>(null);
 
     const handleAuthChange = useCallback(async (event: AuthChangeEvent, session: Session | null) => {
-        if (event === "PASSWORD_RECOVERY") {
-            navigate("/reset-password", {replace: true});
-            return;
-        }
         try {
             if (!session)
                 throw Error("Session was null");
@@ -48,11 +40,6 @@ export const AuthGate = ({children}: Props) => {
             ability.update(defineRulesFor(permissions, roles));
             dispatch(onUserChange(user))
             setSession(session);
-            if (location.pathname) {
-                navigate(location.pathname, {replace: true});
-            } else {
-                navigate(`/${HOMEPAGE}`, {replace: true});
-            }
         } catch (e: any) {
             setSession(null);
             ability.update(defineRulesFor([], []))

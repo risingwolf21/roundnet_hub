@@ -1,27 +1,23 @@
-import React, {useState} from "react";
+import React from "react";
 import ForgotPasswordScreen from '../features/auth/ForgotPasswordScreen';
 import LoginScreen from '../features/auth/LoginScreen';
 import RegisterScreen from '../features/auth/RegisterScreen';
+import {BrowserRouter, Navigate, Route, Routes} from "react-router-dom";
+import ResetPasswordScreen from "../features/auth/ResetPasswordScreen";
 
-export type AuthViewType =
-    | 'sign_in'
-    | 'sign_up'
-    | 'forgotten_password'
-    | 'magic_link'
-    | 'update_password'
 
 const AuthPage = () => {
-    const [authView, setAuthView] = useState<AuthViewType>('sign_in');
 
-    switch (authView) {
-        case "sign_in":
-            return <LoginScreen setAuthView={setAuthView}/>
-        case "sign_up":
-            return <RegisterScreen setAuthView={setAuthView}/>
-        case "forgotten_password":
-            return <ForgotPasswordScreen setAuthView={setAuthView}/>
-        default:
-            return null;
-    }
+    return <BrowserRouter>
+        <Routes>
+            <Route path='/' element={<Navigate replace to={`/login`}/>}/>
+            <Route path='*' element={<Navigate replace to={`/login`}/>}/>
+
+            <Route path='/login' element={<LoginScreen/>}/>
+            <Route path='/register' element={<RegisterScreen/>}/>
+            <Route path='/forgot-password' element={<ForgotPasswordScreen/>}/>
+            <Route path='/reset-password' element={<ResetPasswordScreen/>}/>
+        </Routes>
+    </BrowserRouter>
 }
 export default AuthPage;

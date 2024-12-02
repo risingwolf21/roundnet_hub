@@ -53,15 +53,14 @@ const App = () => {
                 <Typography>{process.env.REACT_APP_ENV}</Typography>
             </Container>
         }
-        <BrowserRouter>
-            <AuthGate>
+        <AuthGate>
+            <BrowserRouter>
                 <FirebaseMessaging>
                     <React.Suspense fallback={<LoadingScreen/>}>
                         <SentryRoutes>
                             <Route path='/' element={<Navigate replace to={`/${HOMEPAGE}`}/>}/>
                             <Route path='*' element={<Navigate replace to={`/${HOMEPAGE}`}/>}/>
 
-                            <Route path='/reset-password' element={<ResetPasswordScreen/>}/>
                             <Route path='/not-verified' element={<NotVerifiedScreen/>}/>
 
                             <Route path='/feature-not-available' element={<FeatureNotAvailable/>}/>
@@ -115,8 +114,8 @@ const App = () => {
                         </SentryRoutes>
                     </React.Suspense>
                 </FirebaseMessaging>
-            </AuthGate>
-        </BrowserRouter>
+            </BrowserRouter>
+        </AuthGate>
     </Grid>
 }
 export default App;

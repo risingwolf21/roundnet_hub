@@ -4,20 +4,17 @@ import Button from '@mui/material/Button';
 import CssBaseline from '@mui/material/CssBaseline';
 import TextField from '@mui/material/TextField';
 import Link from '@mui/material/Link';
-import Grid from '@mui/material/Grid';
+import Grid from '@mui/material/Grid2';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
 import Logo from "../../images/Karlsruher_Kojoten_Logo.svg";
 import {Alert, CircularProgress, Snackbar} from '@mui/material';
-import {AuthViewType} from "../../pages/Auth.page";
+import {useNavigate} from "react-router-dom";
 
-type ForgotPasswordScreenProps = {
-    setAuthView: (view: AuthViewType) => void
-}
+const ForgotPasswordScreen = () => {
 
-const ForgotPasswordScreen = ({setAuthView}: ForgotPasswordScreenProps) => {
-
+    const navigate = useNavigate()
     const [email, setEmail] = React.useState("");
     const [errorMessage, setErrorMessage] = React.useState("");
     const [loading, setLoading] = useState(false);
@@ -94,8 +91,8 @@ const ForgotPasswordScreen = ({setAuthView}: ForgotPasswordScreenProps) => {
                         </Alert>
                     </Snackbar>
                     <Grid container>
-                        <Grid item xs>
-                            <Link href="#" variant="body2" onClick={() => setAuthView('sign_in')}>
+                        <Grid>
+                            <Link href="#" variant="body2" onClick={() => navigate('/login',{replace: true})}>
                                 Hier einloggen
                             </Link>
                         </Grid>

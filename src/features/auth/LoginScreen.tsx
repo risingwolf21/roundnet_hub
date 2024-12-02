@@ -3,29 +3,27 @@ import Button from '@mui/material/Button';
 import CssBaseline from '@mui/material/CssBaseline';
 import TextField from '@mui/material/TextField';
 import Link from '@mui/material/Link';
-import Grid from '@mui/material/Grid';
+import Grid from '@mui/material/Grid2';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
 import Logo from "../../images/Karlsruher_Kojoten_Logo.svg";
 import {supabase} from "../../components/services/supabase/supabaseClient";
-import {AuthViewType} from "../../pages/Auth.page";
 import {CircularProgress} from "@mui/material";
 import {AlertMessage, AlertSnackbar} from "../../components/AlertSnackbar";
+import {useNavigate} from "react-router-dom";
 
 type Credentials = {
     email: string,
     password: string
 }
 
-type LoginProps = {
-    setAuthView: (view: AuthViewType) => void
-}
-
-const LoginScreen = ({setAuthView}: LoginProps) => {
+const LoginScreen = () => {
 
     const [alertInfo, setAlertInfo] = useState<AlertMessage | null>(null);
     const [loginInProgress, setLoginInProgress] = useState(false);
+
+    const navigate = useNavigate();
 
     const onLogin = async (credentials: Credentials) => {
         setAlertInfo(null);
@@ -110,13 +108,14 @@ const LoginScreen = ({setAuthView}: LoginProps) => {
                         }
                     </Button>
                     <Grid container>
-                        <Grid item xs>
-                            <Link href="#" variant="body2" onClick={() => setAuthView('forgotten_password')}>
+                        <Grid>
+                            <Link href="#" variant="body2"
+                                  onClick={() => navigate('/forgot-password', {replace: true})}>
                                 Passwort vergessen?
                             </Link>
                         </Grid>
-                        <Grid item>
-                            <Link href="#" variant="body2" onClick={() => setAuthView('sign_up')}>
+                        <Grid>
+                            <Link href="#" variant="body2" onClick={() => navigate('/register', {replace: true})}>
                                 {"Noch keinen Account?"}
                             </Link>
                         </Grid>

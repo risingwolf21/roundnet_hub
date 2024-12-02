@@ -3,7 +3,7 @@ import Button from '@mui/material/Button';
 import CssBaseline from '@mui/material/CssBaseline';
 import TextField from '@mui/material/TextField';
 import Link from '@mui/material/Link';
-import Grid from '@mui/material/Grid';
+import Grid from '@mui/material/Grid2';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
@@ -11,8 +11,8 @@ import Logo from "../../images/Karlsruher_Kojoten_Logo.svg";
 import {supabase} from "../../components/services/supabase/supabaseClient";
 import {captureException} from "@sentry/react";
 import {RegistrationError} from "../../utils";
-import {AuthViewType} from "../../pages/Auth.page";
 import {AlertMessage, AlertSnackbar} from "../../components/AlertSnackbar";
+import {useNavigate} from "react-router-dom";
 
 type RegisterProps = {
     email: string,
@@ -20,13 +20,10 @@ type RegisterProps = {
     displayName: string
 }
 
-type RegisterScreenProps = {
-    setAuthView: (view: AuthViewType) => void
-}
-
-const RegisterScreen = ({setAuthView}: RegisterScreenProps) => {
+const RegisterScreen = () => {
 
     const [alertInfo, setAlertInfo] = useState<AlertMessage | null>(null);
+    const navigate = useNavigate();
 
     const onRegister = async ({email, password, displayName}: RegisterProps) => {
         const {error} = await supabase.auth.signUp({
@@ -146,8 +143,8 @@ const RegisterScreen = ({setAuthView}: RegisterScreenProps) => {
                         Registrieren
                     </Button>
                     <Grid container>
-                        <Grid item xs>
-                            <Link href="#" variant="body2" onClick={() => setAuthView('sign_in')}>
+                        <Grid>
+                            <Link href="#" variant="body2" onClick={() => navigate('/login', {replace: true})}>
                                 Already have an account? Sign in here!
                             </Link>
                         </Grid>
