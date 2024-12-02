@@ -123,7 +123,7 @@ const PayDrinksScreen = ({user, paymentHistory, paymentError, paymentLoading}: P
         return <LoadingScreen/>
 
     return (
-        <Layout>
+        <Layout appBarConfig={{showBackButton: true}}>
             <PayDrinksSummary paymentHistory={paymentHistory ?? []}/>
             <PayDrinksButton amountToPay={paymentHistory?.reduce((prev, curr) => prev + (curr.amount ?? 0), 0) ?? 0}/>
 

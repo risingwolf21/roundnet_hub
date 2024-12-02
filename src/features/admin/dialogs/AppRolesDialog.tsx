@@ -1,4 +1,4 @@
-import {allUserRoles, SlideUpTransition} from "../../../utils";
+import {SlideUpTransition} from "../../../utils";
 import {Box} from "@mui/system";
 import {
     AppBar,
@@ -14,7 +14,8 @@ import {
     Typography
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
-import React, {useState} from "react";
+import React, {useEffect, useState} from "react";
+import {AdminPermissionsRepository} from "../../../repository/AdminPermissionsRepository";
 
 type AppRolesDialogProps = {
     open: boolean,
@@ -26,6 +27,13 @@ type AppRolesDialogProps = {
 export const AppRolesDialog = ({open, handleClose, handleSubmit, roles}: AppRolesDialogProps) => {
 
     const [selectedAppRoles, setSelectedAppRoles] = useState<AppRole[]>(roles);
+    const [allRoles, setAllRoles] = useState<AppRole[]>([])
+
+    useEffect(() => {
+        AdminPermissionsRepository.fetchAllAppRoles().then(result => {
+            setAllRoles(result.data ?? []);
+        })
+    }, []);
 
     const handleRoleChange = (checked: boolean, role: AppRole) => {
         if (checked) {
@@ -62,14 +70,14 @@ export const AppRolesDialog = ({open, handleClose, handleSubmit, roles}: AppRole
                 <Table>
                     <TableBody>
                         {
-                            allUserRoles.map(x => <TableRow key={x}
+                            allRoles.map(x => <TableRow key={x.id}
                                                             sx={{'&:last-child td, &:last-child th': {border: 0}}}>
                                 <TableCell sx={{p: 1}}>
                                     <Checkbox
                                         checked={selectedAppRoles.includes(x)}
                                         onChange={(e, checked) => handleRoleChange(checked, x)}/>
                                 </TableCell>
-                                <TableCell sx={{p: 1}}>{x}</TableCell>
+                                <TableCell sx={{p: 1}}>{x.name}</TableCell>
                             </TableRow>)
                         }
                     </TableBody>

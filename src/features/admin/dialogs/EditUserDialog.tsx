@@ -176,7 +176,7 @@ const EditUserDialog = ({user, open, handleClose, onUserEditFinished, deleteUser
                                 <ManageAccounts/>
                             </Avatar>
                         </ListItemAvatar>
-                        <ListItemText primary={user.roles.join(", ")}/>
+                        <ListItemText primary={user.roles.map(x => x.name).join(", ")}/>
                         <ListItemSecondaryAction onClick={() => setEditUserRolesOpen(true)}>
                             <Edit/>
                         </ListItemSecondaryAction>

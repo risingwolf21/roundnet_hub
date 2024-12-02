@@ -29,7 +29,7 @@ import {
     DeleteOutline,
     EditOutlined,
     EmailOutlined,
-    FiberManualRecord,
+    FiberManualRecord, Logout,
     NotificationsRounded,
     PasswordOutlined,
     PersonOutlineOutlined,
@@ -218,7 +218,6 @@ const UserScreen = ({user, client, dispatch, groups}: UserScreenProps) => {
     };
 
     return <Layout appBarConfig={{title: "Profil", showBackButton: true, showProfile: false}}>
-        {/*<CustomAppBar navigateBack={true} title="Profil" onLogout={() => client.auth.signOut()}/>*/}
         <List sx={{pl: 2, pr: 2, pb: 8}}>
             <Container key={"avatar"} sx={{
                 display: "flex",
@@ -265,6 +264,12 @@ const UserScreen = ({user, client, dispatch, groups}: UserScreenProps) => {
                     <Button startIcon={<PasswordOutlined/>}
                             onClick={() => navigate("/reset-password")}>
                         Passwort ändern
+                    </Button>
+                </Box>
+                <Box sx={{display: "flex", justifyContent: "center", mt: 1}}>
+                    <Button startIcon={<Logout/>}
+                            onClick={() => client.auth.signOut()}>
+                        Logout
                     </Button>
                 </Box>
             </Container>

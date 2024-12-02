@@ -94,7 +94,7 @@ const Browse = ({t}: { t: TFunction }) => {
                 </ListItemButton>
             }
             {
-                can("select", "notifications") &&
+                can("view", "notifications") &&
                 <ListItemButton key={"notifications"} onClick={() => navigate("/notifications")} sx={{mt: 1}}>
                     <ListItemAvatar>
                         <Badge color="secondary" variant="standard" badgeContent={notifications.length}

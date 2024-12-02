@@ -53,16 +53,14 @@ const CustomBottomNavigation = ({t}: { t: TFunction }) => {
                     aria-selected={tab === "challenges"}
                     icon={<EmojiEvents/>}/>
             }
-            {
-                can("select", "browse") && <BottomNavigationAction
-                    key={"browse"}
-                    value={"browse"}
-                    aria-selected={tab === "browse"}
-                    icon={<Badge color="secondary" variant="dot" badgeContent={" "}
-                                 invisible={notifications.length < 1}>
-                        <List/>
-                    </Badge>}/>
-            }
+            <BottomNavigationAction
+                key={"browse"}
+                value={"browse"}
+                aria-selected={tab === "browse"}
+                icon={<Badge color="secondary" variant="dot" badgeContent={" "}
+                             invisible={notifications.length < 1}>
+                    <List/>
+                </Badge>}/>
             {
                 can("select", "browseAdmin") && <BottomNavigationAction
                     key={"admin"}

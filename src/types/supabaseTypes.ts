@@ -83,6 +83,12 @@ export type UserWithGroupsAndRoles = User & {
     roles: AppRole[]
 }
 
+export type FullUser = User & {
+    groups: Group[],
+    roles: AppRole[],
+    app_permissions: AppPermission[],
+}
+
 export type UserWithRoles = User & {
     roles: UserRoles[]
 }
@@ -91,6 +97,11 @@ export type UserWithRolesAndPermissions = User & {
     roles: UserRoles[],
     permissions: AppPermission[]
 }
+
+export type FullRolePermission = Modify<RolePermissions,{
+    app_permission: AppPermission,
+    app_role: AppRole
+}>
 
 export type GroupWithUsers = Group & {
     users: User[]

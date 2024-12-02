@@ -18,7 +18,7 @@ const NotificationScreen = () => {
     const notifications = useSelector((state: RootState) => notificationsSelector.selectAll(state));
     const dispatch = useAppDispatch();
 
-    if (!can("select", "notifications"))
+    if (!can("view", "notifications"))
         return <Navigate to={`/${HOMEPAGE}`} replace={true}/>
 
     const markNotificationsAsRead = () => {

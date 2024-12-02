@@ -50,9 +50,6 @@ export const applicationReducer = createSlice({
     },
     extraReducers(builder) {
         builder
-            .addCase(fetchCurrentUserAsync.fulfilled, (state, action) => {
-                state.user = action.payload
-            })
             .addCase(removeNotificationPermissionAsync.pending, (state, action) => {
                 state.updatingNotificationTags = true;
             })
@@ -66,11 +63,6 @@ export const applicationReducer = createSlice({
                 state.updatingNotificationTags = false;
             })
     },
-});
-
-export const fetchCurrentUserAsync = createAsyncThunk("fetchCurrentUser", async ({userId}: { userId: string }) => {
-    const response = await SupabaseUserRepository.fetchUser(userId);
-    return response.data;
 });
 
 export const removeNotificationPermissionAsync = createAsyncThunk("removeNotificationPermissionAsync",

@@ -65,7 +65,7 @@ export const HistoryScreen = ({
         setEditHistoryEntryOpen(true);
     }
 
-    return <Layout>
+    return <Layout appBarConfig={{showBackButton: true}}>
         {
             historyLoading && <LinearProgress style={{position: "fixed", left: 0, top: 56, right: 0}}/>
         }

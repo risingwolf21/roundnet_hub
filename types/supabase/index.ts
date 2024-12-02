@@ -20,6 +20,8 @@ declare global {
     type Voucher = Tables<'vouchers'>
     type RolePermissions = Tables<'role_permissions'>
     type UserRoles = Tables<'user_roles'>
+    type AppPermission = Tables<'app_permissions'>
+    type AppRole = Tables<'app_roles'>
 
     type PaymentInsert = TablesInsert<'payments'>
     type EventCommentInsert = TablesInsert<'event_comments'>
@@ -35,8 +37,6 @@ declare global {
     type EventRecurrence = Enums<'EventRecurrence'>
     type PaymentState = Enums<'PaymentState'>
     type ItemType = Enums<'ItemType'>
-    type AppPermission = Enums<'app_permission'>
-    type AppRole = Enums<'app_role'>
 
 }
 

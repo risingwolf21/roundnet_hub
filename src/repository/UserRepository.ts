@@ -1,5 +1,5 @@
 import {PostgrestError, PostgrestSingleResponse} from "@supabase/supabase-js";
-import {UserWithGroupsAndRoles, UserWithRolesAndPermissions} from "../types/supabaseTypes";
+import {UserWithGroupsAndRoles} from "../types/supabaseTypes";
 import {supabase} from "../components/services/supabase/supabaseClient";
 import {Notification} from "types/supabase"
 
@@ -31,12 +31,13 @@ export const SupabaseUserRepository = {
         }
     },
 
-    async fetchUser(userId: string): Promise<PostgrestSingleResponse<UserWithRolesAndPermissions>> {
+    async fetchUser(userId: string): Promise<PostgrestSingleResponse<User>> {
         return supabase
             .from("user")
-            .select("*, roles: user_roles ( role, permissions: role_permissions(*))")
+            .select("*")
             .eq("userId", userId)
-            .single();
+            .single()
+            .throwOnError()
     },
 
     async updateNotificationTags(notificationTags: NotificationTags[], user: User): Promise<PostgrestSingleResponse<User>> {

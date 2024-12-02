@@ -25,7 +25,7 @@ const entries = [
         navigateTo: "/admin/drinks/payments",
         icon: <Euro/>,
         avatarColor: "#88AEBF",
-        action: "select",
+        action: "update",
         ability: "payments"
     },
     {
@@ -33,7 +33,7 @@ const entries = [
         navigateTo: "/admin/drinks",
         icon: <Liquor/>,
         avatarColor: "#88AEBF",
-        action: "select",
+        action: "update",
         ability: "drink"
     },
     {
@@ -41,7 +41,7 @@ const entries = [
         navigateTo: "/admin/users",
         icon: <Group/>,
         avatarColor: "#88AEBF",
-        action: "select",
+        action: "update",
         ability: "user"
     },
     {
@@ -49,7 +49,7 @@ const entries = [
         navigateTo: "/admin/drinks/history",
         icon: <History/>,
         avatarColor: "#88AEBF",
-        action: "select",
+        action: "update",
         ability: "history"
     },
     {
@@ -57,34 +57,34 @@ const entries = [
         navigateTo: "/trainer/groups",
         icon: <GroupOutlined/>,
         avatarColor: "#88AEBF",
-        action: "select",
-        ability: "groups"
+        action: "update",
+        ability: "group"
     },
     {
         translationKey: "postgresClient",
         navigateTo: "/admin/supabase",
         icon: <StorageOutlined/>,
         avatarColor: "#88AEBF",
-        action: "edit",
-        ability: "edgeFunctions"
+        action: "view",
+        ability: "postgres"
     },
     {
         translationKey: "supabaseQueries",
         navigateTo: "/admin/supabase/queries",
         icon: <StorageOutlined/>,
         avatarColor: "#88AEBF",
-        action: "edit",
-        ability: "edgeFunctions"
+        action: "view",
+        ability: "postgres"
     },
     {
         translationKey: "permissions",
         navigateTo: "/admin/permissions",
         icon: <StorageOutlined/>,
         avatarColor: "#88AEBF",
-        action: "edit",
-        ability: "edgeFunctions"
+        action: "view",
+        ability: "postgres"
     }
-] as EntryType[];
+] satisfies EntryType[];
 
 const BrowseAdmin = ({t}: { t: TFunction }) => {
 

@@ -61,7 +61,7 @@ export const ItemHolderScreen = ({dispatch, keyHolders, loading, user, t}: ItemH
         setSelectedUser(user);
     }
 
-    return <Layout>
+    return <Layout appBarConfig={{showBackButton: true}}>
         <LoadingIndicator loading={loading}/>
         <Alert sx={{ml: 2, mr: 2, mt: 2}} severity="info">
             Bitte euren Schlüssel gut aufbewahren und Übergaben eintragen! Wer unverschuldet den Schlüssel verloren hat

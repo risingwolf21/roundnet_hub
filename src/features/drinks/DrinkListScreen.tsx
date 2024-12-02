@@ -36,37 +36,38 @@ const DrinkListScreen = ({user, drinks, drinksLoading, drinksError, dispatch}: D
         setLoading(false);
     }
 
+    const resetDrinks = (message: string) => {
+        setLoading(false);
+        confirmDrinksDialog({message, severity: "error"});
+        captureException(Error({message}), (scope) => {
+            scope.clear();
+            scope.setExtra("drinks", JSON.stringify(addedDrinks));
+            return scope;
+        });
+    }
+
     const confirmDrinks = async () => {
         setLoading(true);
         try {
             let {data: paymentId, error} = await SupabaseDrinkRepository.fetchOpenPaymentIdForUser(user.userId);
 
             if (!paymentId || error) {
-                setLoading(false);
                 let message = error?.message ?? "Payment could not be created";
-                confirmDrinksDialog({message, severity: "error"});
-                captureException(Error({message}), (scope) => {
-                    scope.clear();
-                    scope.setExtra("drinks", JSON.stringify(addedDrinks));
-                    return scope;
-                });
+                resetDrinks(message);
             } else {
                 SupabaseDrinkRepository.insertHistoryItems(Object.values(addedDrinks), user.userId, paymentId)
                     .then(result => {
                         setLoading(false);
                         setAddedDrinks([]);
                         confirmDrinksDialog(SUCCESS_MESSAGE_INFO);
-                    });
+                    }).catch(error => {
+                    let message = error?.message ?? "Payment could not be created";
+                    resetDrinks(message);
+                })
             }
         } catch (error) {
-            setLoading(false);
             let message = (error as Error).message;
-            confirmDrinksDialog({message, severity: "error"});
-            captureException(Error({message}), (scope) => {
-                scope.clear();
-                scope.setExtra("drinks", JSON.stringify(addedDrinks));
-                return scope;
-            });
+            resetDrinks(message);
         }
     }
 

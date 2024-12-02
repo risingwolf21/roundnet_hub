@@ -41,7 +41,7 @@ export const AdminUsersRepository = {
             .from("user_roles")
             .upsert(user.roles.map(x => {
                 return {
-                    role: x,
+                    app_role: x.id,
                     user: user.userId
                 }
             }));
@@ -62,7 +62,7 @@ export const AdminUsersRepository = {
     async fetchAllUsersWithGroups(): Promise<PostgrestSingleResponse<UserWithGroupsAndRoles[]>> {
         return supabase
             .from('user')
-            .select("*, groups: group_user_mapping ( group: event_group ( * ) ), roles: user_roles(*)")
+            .select("*, groups: group_user_mapping ( group: event_group ( * ) ), roles: user_roles(app_role(*))")
             .order("displayName", {ascending: true})
             .returns<UserWithGroupsAndRoles[]>()
             .throwOnError();
