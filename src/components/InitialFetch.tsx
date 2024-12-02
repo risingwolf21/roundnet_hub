@@ -1,8 +1,7 @@
 import {useEffect} from "react";
-import {RootState, useAppDispatch} from "../redux/store";
+import {useAppDispatch} from "../redux/store";
 import {useClient} from "react-supabase";
 import {fetchSingleEventAsync} from "../features/events/slices/eventsSlice";
-import {useSelector} from "react-redux";
 import {fetchNotVerifiedUsersAsync} from "../features/admin/slices/adminUserSlice";
 import {
     fetchNotificationsAsync,
@@ -10,25 +9,18 @@ import {
     onNotificationInsert,
     onNotificationUpdate
 } from "../features/notifications/slices/notificationsSlice";
+import {useAuth} from "../features/auth/AuthContext";
 
 export const useInitialFetch = () => {
     const dispatch = useAppDispatch();
     const client = useClient();
-    const {user} = useSelector((state: RootState) => state.application);
+    const user = useAuth();
 
     useEffect(() => {
-        if (!user)
-            return;
-
         dispatch(fetchNotVerifiedUsersAsync())
-
     }, [dispatch, client, user]);
 
     useEffect(() => {
-
-        if (!user)
-            return;
-
         dispatch(fetchNotificationsAsync(user))
 
         let subscription = client.channel("public:notifications")
@@ -61,8 +53,6 @@ export const useInitialFetch = () => {
     }, [dispatch, client, user]);
 
     useEffect(() => {
-        if (!user)
-            return;
         let subscription = client.channel("public:events")
             .on('postgres_changes', {
                     event: 'UPDATE',

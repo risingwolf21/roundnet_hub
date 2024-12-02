@@ -1,9 +1,9 @@
 import {createAsyncThunk, createSlice, PayloadAction} from '@reduxjs/toolkit';
 import {SupabaseUserRepository} from "../repository/UserRepository";
+import {UserWithRolesAndPermissions} from "../types/supabaseTypes";
 
 type ApplicationSliceState = {
-    user: User | null,
-    mode: string,
+    user: UserWithRolesAndPermissions | null,
     appUpdateAvailable: boolean,
     appVersion: string,
     realtimeState: "CLOSED" | "SUBSCRIBED" | "TIMED_OUT" | "CHANNEL_ERROR",
@@ -15,7 +15,6 @@ type ApplicationSliceState = {
 
 const initialState = {
     user: null,
-    mode: "drinks",
     appUpdateAvailable: false,
     appVersion: "",
     realtimeState: "CLOSED",
@@ -31,9 +30,6 @@ export const applicationReducer = createSlice({
     reducers: {
         onAppVersionChange: (state, action) => {
             state.appVersion = action.payload;
-        },
-        onModeChange: (state, action) => {
-            state.mode = action.payload
         },
         onUserChange: (state, action) => {
             state.user = action.payload
@@ -54,29 +50,19 @@ export const applicationReducer = createSlice({
     },
     extraReducers(builder) {
         builder
-            .addCase(fetchCurrentUserAsync.fulfilled, (state, action) => {
-                state.user = action.payload
-            })
             .addCase(removeNotificationPermissionAsync.pending, (state, action) => {
                 state.updatingNotificationTags = true;
             })
             .addCase(removeNotificationPermissionAsync.fulfilled, (state, action) => {
-                state.user = action.payload.data;
                 state.updatingNotificationTags = false;
             })
             .addCase(addNotificationPermissionAsync.pending, (state, action) => {
                 state.updatingNotificationTags = true;
             })
             .addCase(addNotificationPermissionAsync.fulfilled, (state, action) => {
-                state.user = action.payload.data;
                 state.updatingNotificationTags = false;
             })
     },
-});
-
-export const fetchCurrentUserAsync = createAsyncThunk("fetchCurrentUser", async ({userId}: { userId: string }) => {
-    const response = await SupabaseUserRepository.fetchUser(userId);
-    return response.data;
 });
 
 export const removeNotificationPermissionAsync = createAsyncThunk("removeNotificationPermissionAsync",
@@ -104,7 +90,6 @@ export const addNotificationPermissionAsync = createAsyncThunk("addNotificationP
 
 export const {
     onUserChange,
-    onModeChange,
     onUpdateServiceWorker,
     onServiceWorkerInitialized
 } = applicationReducer.actions;

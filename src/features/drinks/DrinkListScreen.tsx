@@ -1,10 +1,9 @@
 import {Tune} from "@mui/icons-material";
 import CheckIcon from '@mui/icons-material/Check';
-import {Box, Checkbox, CircularProgress, Fab, List, ListItem, ListItemAvatar, ListItemText} from "@mui/material";
+import {Checkbox, CircularProgress, Fab, List, ListItem, ListItemAvatar, ListItemText} from "@mui/material";
 import {captureException} from "@sentry/react";
 import React, {useEffect, useState} from "react";
 import {AlertMessage, AlertSnackbar} from "src/components/AlertSnackbar";
-import CustomAppBar from "src/components/AppBar";
 import {LoadingIndicator} from "src/components/LoadingIndicator";
 import {DrinkCounter} from "src/types/supabaseTypes";
 import {nameOfProductType} from "src/utils";
@@ -14,6 +13,7 @@ import DrinkList from "./components/DrinkList";
 import {DrinkListScreenProps} from "./types";
 import {SupabaseDrinkRepository} from "../../repository/DrinkRepository";
 import VoucherCard from "./components/Voucher";
+import Layout from "../../components/Layout";
 
 const SUCCESS_MESSAGE_INFO: AlertMessage = {message: "Getränke erfolgreich gebucht!", severity: "success"};
 
@@ -36,37 +36,38 @@ const DrinkListScreen = ({user, drinks, drinksLoading, drinksError, dispatch}: D
         setLoading(false);
     }
 
+    const resetDrinks = (message: string) => {
+        setLoading(false);
+        confirmDrinksDialog({message, severity: "error"});
+        captureException(Error({message}), (scope) => {
+            scope.clear();
+            scope.setExtra("drinks", JSON.stringify(addedDrinks));
+            return scope;
+        });
+    }
+
     const confirmDrinks = async () => {
         setLoading(true);
         try {
             let {data: paymentId, error} = await SupabaseDrinkRepository.fetchOpenPaymentIdForUser(user.userId);
 
             if (!paymentId || error) {
-                setLoading(false);
                 let message = error?.message ?? "Payment could not be created";
-                confirmDrinksDialog({message, severity: "error"});
-                captureException(Error({message}), (scope) => {
-                    scope.clear();
-                    scope.setExtra("drinks", JSON.stringify(addedDrinks));
-                    return scope;
-                });
+                resetDrinks(message);
             } else {
                 SupabaseDrinkRepository.insertHistoryItems(Object.values(addedDrinks), user.userId, paymentId)
                     .then(result => {
                         setLoading(false);
                         setAddedDrinks([]);
                         confirmDrinksDialog(SUCCESS_MESSAGE_INFO);
-                    });
+                    }).catch(error => {
+                    let message = error?.message ?? "Payment could not be created";
+                    resetDrinks(message);
+                })
             }
         } catch (error) {
-            setLoading(false);
             let message = (error as Error).message;
-            confirmDrinksDialog({message, severity: "error"});
-            captureException(Error({message}), (scope) => {
-                scope.clear();
-                scope.setExtra("drinks", JSON.stringify(addedDrinks));
-                return scope;
-            });
+            resetDrinks(message);
         }
     }
 
@@ -99,8 +100,7 @@ const DrinkListScreen = ({user, drinks, drinksLoading, drinksError, dispatch}: D
         localStorage.setItem("visibleTypes", newValue.join(";"));
     }
 
-    return <Box>
-        <CustomAppBar/>
+    return <Layout>
         <LoadingIndicator loading={drinksLoading}/>
         <VoucherCard/>
         <DrinkList drinks={drinks} onAddDrinkClick={onAddDrinkClick} onRemoveDrinkClick={onRemoveDrinkClick}
@@ -135,8 +135,7 @@ const DrinkListScreen = ({user, drinks, drinksLoading, drinksError, dispatch}: D
         </SwipeableDialog>
 
         <AlertSnackbar close={() => setAlertInfo(null)} alertInfo={alertInfo}/>
-
-    </Box>
+    </Layout>
 }
 
 export default DrinkListScreen;

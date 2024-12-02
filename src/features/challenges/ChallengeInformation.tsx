@@ -1,5 +1,4 @@
 import {Alert, Divider, Fab, Grid, List, Typography} from "@mui/material";
-import CustomAppBar from "../../components/AppBar";
 import React, {useState} from "react";
 import {ChallengeRepository} from "../../repository/ChallengeRepository";
 import {FullChallenge} from "../../types/supabaseTypes";
@@ -11,6 +10,7 @@ import EditIcon from "@mui/icons-material/Edit";
 import {TFunction} from "i18next";
 import EnterPointDialog from "./dialogs/EnterPointDialog";
 import {ChallengeStatItem} from "./components/ChallengeStatItem";
+import Layout from "../../components/Layout";
 
 type ChallengeInformationProps = {
     t: TFunction,
@@ -36,13 +36,7 @@ export const ChallengeInformation = ({t, challenge, user}: ChallengeInformationP
         });
     }
 
-    return <Grid
-        container
-        width="100%"
-        direction="column"
-        alignItems="center"
-        justifyContent="center">
-        <CustomAppBar navigateBack title={challenge.name}/>
+    return <Layout appBarConfig={{title: challenge.name, showBackButton: true, showProfile: true}}>
 
         <Grid container width="100%" spacing={3} justifyContent={"center"}>
             {
@@ -128,7 +122,7 @@ export const ChallengeInformation = ({t, challenge, user}: ChallengeInformationP
         </List>
 
         {
-            can("use", "challenges") && !challenge.automated &&
+            can("update", "challenge") && !challenge.automated &&
             <Fab sx={{background: "#66bb6a", position: "fixed", right: "16px", bottom: "56px", mb: "16px"}}
                  onClick={() => {
                      setOpen(true)
@@ -142,5 +136,5 @@ export const ChallengeInformation = ({t, challenge, user}: ChallengeInformationP
         <EnterPointDialog open={open} setOpen={setOpen} increaseChallengePoint={increaseChallengePoint}/>
 
         <AlertSnackbar alertInfo={alertInfo} autoHideDuration={4000} close={() => setAlertInfo(null)}/>
-    </Grid>
+    </Layout>
 }

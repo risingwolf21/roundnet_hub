@@ -1,6 +1,5 @@
 import {Save} from "@mui/icons-material"
 import {
-    Box,
     Button,
     Checkbox,
     CircularProgress,
@@ -12,24 +11,19 @@ import {
     ListItemText
 } from "@mui/material"
 import React, {useEffect, useState} from "react"
-import {useSelector} from "react-redux"
-import {RootState} from "src/redux/store"
-import CustomAppBar from "../../components/AppBar"
 import {LoadingIndicator} from "../../components/LoadingIndicator"
 import {useTranslation} from "react-i18next"
 import {TFunction} from "i18next"
 import {AlertMessage, AlertSnackbar} from "../../components/AlertSnackbar"
 import {SupabaseUserRepository} from "../../repository/UserRepository";
+import Layout from "../../components/Layout";
+import {useAuth} from "../auth/AuthContext";
 
 const userTags: NotificationTags[] = ["eventComments", "userRegistration", "paymentRequest", "paymentPending"]
 
 const NotificationsScreenProvider = () => {
-    const {user} = useSelector((state: RootState) => state.application);
+    const user = useAuth();
     const {t} = useTranslation();
-
-    if (!user)
-        return <AlertSnackbar close={() => {
-        }} alertInfo={{message: "Fatal error occured. Repository or user was null!", severity: "error"}}/>
 
     return <NotificationsScreen t={t} user={user}/>
 }
@@ -72,8 +66,7 @@ export const NotificationsScreen = ({user, t}: NotificationsScreenProps) => {
         });
     }
 
-    return <Box>
-        <CustomAppBar navigateBack/>
+    return <Layout>
         <LoadingIndicator loading={false}/>
         <List>
             {
@@ -101,7 +94,7 @@ export const NotificationsScreen = ({user, t}: NotificationsScreenProps) => {
             }
         </Fab>
         <AlertSnackbar alertInfo={alertInfo} autoHideDuration={1500} close={() => setAlertInfo(null)}/>
-    </Box>
+    </Layout>
 }
 
 export default NotificationsScreenProvider;

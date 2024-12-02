@@ -1,11 +1,11 @@
 import {Box} from "@mui/system";
 import React, {useState} from "react";
-import CustomAppBar from "./AppBar";
 import {Button, Grid, TextField} from "@mui/material";
 import {LoadingIndicator} from "./LoadingIndicator";
 import {DataGrid, GridColDef} from "@mui/x-data-grid";
 import {supabase} from "./services/supabase/supabaseClient";
 import {Json} from "src/types/supabase-generated.types";
+import Layout from "./Layout";
 
 export const SupabaseQueryClient = () => {
 
@@ -53,8 +53,7 @@ export const SupabaseQueryClient = () => {
         setLoading(false);
     };
 
-    return <Box>
-        <CustomAppBar navigateBack/>
+    return <Layout>
         <LoadingIndicator loading={loading}/>
         <Box sx={{padding: 2}}>
             <TextField
@@ -96,5 +95,5 @@ export const SupabaseQueryClient = () => {
                           onProcessRowUpdateError={(error) => console.log(error)}/>
             }
         </Box>
-    </Box>
+    </Layout>
 }

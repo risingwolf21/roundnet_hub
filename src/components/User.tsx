@@ -6,7 +6,6 @@ import {
     CircularProgress,
     Container,
     Fab,
-    Grid,
     List,
     ListItem,
     ListItemAvatar,
@@ -19,11 +18,9 @@ import {
     TextField
 } from "@mui/material";
 import {useClient} from "react-supabase";
-import CustomAppBar from "./AppBar";
 import {useSelector} from "react-redux";
 import React, {useEffect, useState} from "react";
 import {AppDispatch, RootState, useAppDispatch} from "../redux/store";
-import {AlertSnackbar} from "./AlertSnackbar";
 import {SupabaseClient} from "@supabase/supabase-js";
 import CropImageDialog from "./CropImageDialog";
 import {
@@ -32,7 +29,7 @@ import {
     DeleteOutline,
     EditOutlined,
     EmailOutlined,
-    FiberManualRecord,
+    FiberManualRecord, Logout,
     NotificationsRounded,
     PasswordOutlined,
     PersonOutlineOutlined,
@@ -41,17 +38,15 @@ import {
 import {dataURLtoFile, readFile} from "src/utils";
 import {captureException} from "@sentry/react";
 import Compressor from 'compressorjs';
-import {
-    addNotificationPermissionAsync,
-    fetchCurrentUserAsync,
-    removeNotificationPermissionAsync
-} from "src/redux/applicationSlice";
+import {addNotificationPermissionAsync, removeNotificationPermissionAsync} from "src/redux/applicationSlice";
 import {uuid} from "@supabase/supabase-js/dist/main/lib/helpers";
 import {SupabaseEventRepository} from "../repository/EventRepository";
 import {requestNotificationPermission} from "../hooks/useFirebase";
 import {messaging} from "../firebase/firebaseConfig";
 import {Database} from "../types/supabase-generated.types";
 import {useNavigate} from "react-router-dom";
+import Layout from "./Layout";
+import {useAuth} from "../features/auth/AuthContext";
 
 type UserScreenProps = {
     user: User,
@@ -61,21 +56,16 @@ type UserScreenProps = {
 }
 
 export const UserScreenProvider = () => {
-    const {user} = useSelector((state: RootState) => state.application);
+    const user = useAuth();
     const client = useClient();
     const dispatch = useAppDispatch();
     const [groups, setGroups] = useState<Group[]>([])
 
     useEffect(() => {
-        if (user)
-            SupabaseEventRepository.fetchUserGroups(user).then((result) => {
-                setGroups(result.data?.map(x => x.group) ?? []);
-            })
+        SupabaseEventRepository.fetchUserGroups(user).then((result) => {
+            setGroups(result.data?.map(x => x.group) ?? []);
+        })
     }, [user]);
-
-    if (!user)
-        return <AlertSnackbar close={() => {
-        }} alertInfo={{message: "Fatal error occured. User was null!", severity: "error"}}/>
 
     return <UserScreen user={user} client={client} dispatch={dispatch} groups={groups}/>
 }
@@ -145,7 +135,6 @@ const UserScreen = ({user, client, dispatch, groups}: UserScreenProps) => {
                     if (compressedFile && typeof (compressedFile) === "string") {
                         await removeOldAvatarImages();
                         await uploadAvatarImage(fileName, compressedFile);
-                        dispatch(fetchCurrentUserAsync({userId: user.userId}));
                         setCroppedImage(null);
                     } else {
                         setErrorSnackbar({
@@ -228,9 +217,7 @@ const UserScreen = ({user, client, dispatch, groups}: UserScreenProps) => {
         event.target.value = '';
     };
 
-    return <Grid
-        width="100%">
-        <CustomAppBar navigateBack={true} title="Profil" onLogout={() => client.auth.signOut()}/>
+    return <Layout appBarConfig={{title: "Profil", showBackButton: true, showProfile: false}}>
         <List sx={{pl: 2, pr: 2, pb: 8}}>
             <Container key={"avatar"} sx={{
                 display: "flex",
@@ -277,6 +264,12 @@ const UserScreen = ({user, client, dispatch, groups}: UserScreenProps) => {
                     <Button startIcon={<PasswordOutlined/>}
                             onClick={() => navigate("/reset-password")}>
                         Passwort ändern
+                    </Button>
+                </Box>
+                <Box sx={{display: "flex", justifyContent: "center", mt: 1}}>
+                    <Button startIcon={<Logout/>}
+                            onClick={() => client.auth.signOut()}>
+                        Logout
                     </Button>
                 </Box>
             </Container>
@@ -416,6 +409,6 @@ const UserScreen = ({user, client, dispatch, groups}: UserScreenProps) => {
                 {errorSnackbar.message}
             </Alert>
         </Snackbar>
-    </Grid>
+    </Layout>
 }
 export default UserScreen;

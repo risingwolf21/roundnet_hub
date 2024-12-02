@@ -5,17 +5,17 @@ import {WorkspacePremium} from "@mui/icons-material";
 import {useSelector} from "react-redux";
 import {RootState, useAppDispatch} from "../../../redux/store";
 import {fetchVouchersAsync} from "../slices/drinksSlice";
+import {useAuth} from "../../auth/AuthContext";
 
 
 const VoucherCard = () => {
 
-    const {user} = useSelector((state: RootState) => state.application);
+    const user = useAuth();
     const {vouchers} = useSelector((state: RootState) => state.drinks);
     const dispatch = useAppDispatch();
 
     useEffect(() => {
-        if (user)
-            dispatch(fetchVouchersAsync(user.userId));
+        dispatch(fetchVouchersAsync(user.userId));
     }, [dispatch, user]);
 
     let total = vouchers.reduce((p, a) => p + a.total_drinks, 0);

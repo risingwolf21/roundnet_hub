@@ -1,7 +1,6 @@
-import {Container, Grid, Typography} from "@mui/material";
+import {Container, Typography} from "@mui/material";
 import * as React from 'react';
 import {BrowserRouter, Navigate, Route} from 'react-router-dom';
-import CustomBottomNavigation from './components/BottomNavigation';
 import Browse from './components/Browse';
 import {LoadingScreen} from "./components/LoadingScreen";
 import UpdateAvailable from './components/UpdateAvailable';
@@ -9,7 +8,6 @@ import {UserScreenProvider} from './components/User';
 import BrowseAdmin from './features/admin/BrowseAdmin';
 import {useServiceWorker} from './hooks/useServiceWorker';
 import NotificationsScreenProvider from "./features/notifications/NotificationsScreen";
-import {useInitialFetch} from "./components/InitialFetch";
 import NotVerifiedScreen from "./components/NotVerifiedScreen";
 import {AuthGate} from "./features/auth/AuthGate";
 import {SupabaseClient} from "./components/SupabaseClient";
@@ -18,6 +16,8 @@ import {SentryRoutes} from "./index";
 import {HOMEPAGE} from "./constants";
 import {FirebaseMessaging} from "./features/notifications/FirebaseMessaging";
 import {RecurringEventsProvider} from "./features/events/RecurringEvents";
+import Grid from "@mui/material/Grid2";
+import {PermissionList} from "./features/admin/PermissionList";
 
 const FeatureNotAvailable = React.lazy(() => import('./components/FeatureNotAvailable'));
 const HistoryScreenProvider = React.lazy(() => import('./features/drinks/HistoryScreenProvider'));
@@ -41,7 +41,6 @@ const ChallengeInfoScreen = React.lazy(() => import('./features/challenges/Chall
 
 const App = () => {
 
-    useInitialFetch();
     const {isUpdateAvailable, updateServiceWorker} = useServiceWorker();
 
     if (isUpdateAvailable)
@@ -112,10 +111,9 @@ const App = () => {
                             <Route path='/admin/users' element={<AdminUserListProvider/>}/>
                             <Route path='/admin/supabase' element={<SupabaseClient/>}/>
                             <Route path='/admin/supabase/queries' element={<SupabaseQueryClient/>}/>
+                            <Route path='/admin/permissions' element={<PermissionList/>}/>
                         </SentryRoutes>
                     </React.Suspense>
-                    <div style={{width: "100%", height: "56px"}}/>
-                    <CustomBottomNavigation/>
                 </FirebaseMessaging>
             </AuthGate>
         </BrowserRouter>

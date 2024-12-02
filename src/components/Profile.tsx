@@ -1,7 +1,6 @@
 import {
     Avatar,
     Container,
-    Grid,
     List,
     ListItem,
     ListItemAvatar,
@@ -9,26 +8,25 @@ import {
     ListSubheader,
     Typography
 } from "@mui/material";
-import CustomAppBar from "./AppBar";
 import React, {useEffect, useState} from "react";
 import {AddPhotoAlternateOutlined, FiberManualRecord} from "@mui/icons-material";
 import {useParams} from "react-router-dom";
-import {UserWithGroups} from "../types/supabaseTypes";
+import {UserWithGroupsAndRoles} from "../types/supabaseTypes";
 import {LoadingIndicator} from "./LoadingIndicator";
-import {useSelector} from "react-redux";
-import {RootState} from "../redux/store";
 import {SupabaseUserRepository} from "../repository/UserRepository";
+import Layout from "./Layout";
+import {useAuth} from "../features/auth/AuthContext";
 
 const UserScreen = () => {
 
     const {userId} = useParams();
-    const {user} = useSelector((state: RootState) => state.application);
+    const user = useAuth();
     const [loading, setLoading] = useState<boolean>(false);
-    const [currentUser, setCurrentUser] = useState<UserWithGroups | null>(null);
+    const [currentUser, setCurrentUser] = useState<UserWithGroupsAndRoles | null>(null);
     const [overlappingGroups, setOverlappingGroups] = useState<Group[]>([]);
 
     useEffect(() => {
-        if (userId && user) {
+        if (userId) {
             setLoading(true);
             SupabaseUserRepository.fetchUserWithGroups(userId).then(result => {
                 SupabaseUserRepository.fetchUserWithGroups(user.userId).then(userResult => {
@@ -41,9 +39,7 @@ const UserScreen = () => {
         }
     }, [userId, user]);
 
-    return <Grid
-        width="100%">
-        <CustomAppBar navigateBack={true}/>
+    return <Layout>
         <LoadingIndicator loading={loading}/>
         <List sx={{pl: 2, pr: 2, pb: 8}}>
             <Container key={"avatar"} sx={{
@@ -79,6 +75,6 @@ const UserScreen = () => {
                 }
             </List>
         </List>
-    </Grid>
+    </Layout>
 }
 export default UserScreen;

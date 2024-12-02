@@ -16,12 +16,11 @@ import {
 } from "@mui/material";
 import {Box} from "@mui/system";
 import React, {useEffect, useState} from "react";
-import {useSelector} from "react-redux";
-import {RootState} from "src/redux/store";
 import {SlideUpTransition} from "../../../utils";
 import KeyIcon from "@mui/icons-material/Key";
 import {GroupsRepository} from "../../../repository/GroupsRepository";
 import {TablesUpdate} from "../../../types/supabase-generated.types";
+import {useAuth} from "../../auth/AuthContext";
 
 type EditOrAddGroupDialogProps = {
     open: boolean,
@@ -31,7 +30,7 @@ type EditOrAddGroupDialogProps = {
 
 export const EditOrAddGroupDialog = ({open, handleClose, groupToEdit}: EditOrAddGroupDialogProps) => {
 
-    const user: User | null = useSelector((state: RootState) => state.application.user);
+    const user = useAuth();
     const [currentGroup, setCurrentGroup] = useState<TablesUpdate<'event_group'>>({
         id: groupToEdit.id,
         name: groupToEdit.name,

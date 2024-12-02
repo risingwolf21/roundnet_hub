@@ -5,19 +5,20 @@ import {AlertSnackbar} from "../../components/AlertSnackbar";
 import React from "react";
 import {Navigate} from "react-router-dom";
 import {HOMEPAGE} from "../../constants";
-import {Fab, Grid, LinearProgress, List, ListItem, ListItemText} from "@mui/material";
-import CustomAppBar from "../../components/AppBar";
+import {Fab, LinearProgress, List, ListItem, ListItemText} from "@mui/material";
 import {DoneAll} from "@mui/icons-material";
 import {fetchNotificationsAsync, notificationsSelector} from "./slices/notificationsSlice";
 import {SupabaseUserRepository} from "../../repository/UserRepository";
+import Layout from "../../components/Layout";
+import {useAuth} from "../auth/AuthContext";
 
 const NotificationScreen = () => {
     const {loading, error} = useSelector((state: RootState) => state.notifications);
-    const {user} = useSelector((state: RootState) => state.application);
+    const user = useAuth();
     const notifications = useSelector((state: RootState) => notificationsSelector.selectAll(state));
     const dispatch = useAppDispatch();
 
-    if (!can("view", "notifications") || !user)
+    if (!can("view", "notifications"))
         return <Navigate to={`/${HOMEPAGE}`} replace={true}/>
 
     const markNotificationsAsRead = () => {
@@ -26,13 +27,7 @@ const NotificationScreen = () => {
         });
     }
 
-    return <Grid
-        container
-        width="100%"
-        direction="column"
-        alignItems="center"
-        justifyContent="center">
-        <CustomAppBar navigateBack/>
+    return <Layout appBarConfig={{showBackButton: true}}>
         {
             loading && <LinearProgress sx={{position: "fixed", top: 56, left: 0, right: 0}}/>
         }
@@ -62,7 +57,7 @@ const NotificationScreen = () => {
         {
             error && <AlertSnackbar alertInfo={{message: error, severity: "error"}}/>
         }
-    </Grid>
+    </Layout>
 }
 
 export default NotificationScreen;

@@ -9,6 +9,36 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      app_permissions: {
+        Row: {
+          id: string
+          name: string
+        }
+        Insert: {
+          id?: string
+          name: string
+        }
+        Update: {
+          id?: string
+          name?: string
+        }
+        Relationships: []
+      }
+      app_roles: {
+        Row: {
+          id: string
+          name: string
+        }
+        Insert: {
+          id?: string
+          name: string
+        }
+        Update: {
+          id?: string
+          name?: string
+        }
+        Relationships: []
+      }
       challenge: {
         Row: {
           automated: boolean
@@ -557,24 +587,39 @@ export type Database = {
           },
         ]
       }
-        role_permissions: {
-            Row: {
-                id: string
-                permission: Database["public"]["Enums"]["app_permission"]
-                role: Database["public"]["Enums"]["app_role"]
-            }
-            Insert: {
-                id?: string
-                permission: Database["public"]["Enums"]["app_permission"]
-                role: Database["public"]["Enums"]["app_role"]
-            }
-            Update: {
-                id?: string
-                permission?: Database["public"]["Enums"]["app_permission"]
-                role?: Database["public"]["Enums"]["app_role"]
-            }
-            Relationships: []
+      role_permissions: {
+        Row: {
+          app_permission: string
+          app_role: string
+          id: string
         }
+        Insert: {
+          app_permission: string
+          app_role: string
+          id?: string
+        }
+        Update: {
+          app_permission?: string
+          app_role?: string
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "role_permissions_app_permission_fkey"
+            columns: ["app_permission"]
+            isOneToOne: false
+            referencedRelation: "app_permissions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "role_permissions_app_role_fkey"
+            columns: ["app_role"]
+            isOneToOne: false
+            referencedRelation: "app_roles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user: {
         Row: {
           avatarUrl: string | null
@@ -623,32 +668,39 @@ export type Database = {
         }
         Relationships: []
       }
-        user_roles: {
-            Row: {
-                id: number
-                role: Database["public"]["Enums"]["app_role"]
-                user: string
-            }
-            Insert: {
-                id?: number
-                role: Database["public"]["Enums"]["app_role"]
-                user?: string
-            }
-            Update: {
-                id?: number
-                role?: Database["public"]["Enums"]["app_role"]
-                user?: string
-            }
-            Relationships: [
-                {
-                    foreignKeyName: "user_roles_user_fkey"
-                    columns: ["user"]
-                    isOneToOne: true
-                    referencedRelation: "user"
-                    referencedColumns: ["userId"]
-                },
-            ]
+      user_roles: {
+        Row: {
+          app_role: string
+          id: number
+          user: string
         }
+        Insert: {
+          app_role: string
+          id?: number
+          user?: string
+        }
+        Update: {
+          app_role?: string
+          id?: number
+          user?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_roles_app_role_fkey"
+            columns: ["app_role"]
+            isOneToOne: false
+            referencedRelation: "app_roles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_roles_user_fkey"
+            columns: ["user"]
+            isOneToOne: false
+            referencedRelation: "user"
+            referencedColumns: ["userId"]
+          },
+        ]
+      }
       vouchers: {
         Row: {
           created_at: string
@@ -779,24 +831,31 @@ export type Database = {
         }
         Returns: undefined
       }
-        authorize: {
+      authorize:
+        | {
             Args: {
-                requested_permission: Database["public"]["Enums"]["app_permission"]
+              requested_permission: Database["public"]["Enums"]["app_permission"]
             }
             Returns: boolean
-        }
+          }
+        | {
+            Args: {
+              requested_permission: string
+            }
+            Returns: boolean
+          }
       check_version: {
         Args: {
           input_version: string
         }
         Returns: boolean
       }
-        custom_access_token_hook: {
-            Args: {
-                event: Json
-            }
-            Returns: Json
+      custom_access_token_hook: {
+        Args: {
+          event: Json
         }
+        Returns: Json
+      }
       eventcreation: {
         Args: Record<PropertyKey, never>
         Returns: number
@@ -873,43 +932,43 @@ export type Database = {
       }
     }
     Enums: {
-        app_permission:
-            | "event.select"
-            | "event.update"
-            | "event.insert"
-            | "event.delete"
-            | "drink.select"
-            | "drink.update"
-            | "drink.insert"
-            | "drink.delete"
-            | "group.select"
-            | "group.update"
-            | "group.insert"
-            | "group.delete"
-            | "challenge.select"
-            | "challenge.update"
-            | "challenge.insert"
-            | "challenge.delete"
-            | "payments.select"
-            | "payments.update"
-            | "payments.insert"
-            | "payments.delete"
-            | "item.select"
-            | "item.update"
-            | "item.insert"
-            | "item.delete"
-        app_role:
-            | "admin"
-            | "groupModerator"
-            | "userModerator"
-            | "eventModerator"
-            | "eventUser"
-            | "drinkModerator"
-            | "drinkUser"
-            | "challengeModerator"
-            | "challengeUser"
-            | "itemModerator"
-            | "itemUser"
+      app_permission:
+        | "event.select"
+        | "event.update"
+        | "event.insert"
+        | "event.delete"
+        | "drink.select"
+        | "drink.update"
+        | "drink.insert"
+        | "drink.delete"
+        | "group.select"
+        | "group.update"
+        | "group.insert"
+        | "group.delete"
+        | "challenge.select"
+        | "challenge.update"
+        | "challenge.insert"
+        | "challenge.delete"
+        | "payments.select"
+        | "payments.update"
+        | "payments.insert"
+        | "payments.delete"
+        | "item.select"
+        | "item.update"
+        | "item.insert"
+        | "item.delete"
+      app_role:
+        | "admin"
+        | "groupModerator"
+        | "userModerator"
+        | "eventModerator"
+        | "eventUser"
+        | "drinkModerator"
+        | "drinkUser"
+        | "challengeModerator"
+        | "challengeUser"
+        | "itemModerator"
+        | "itemUser"
       EventAttendance: "Declined" | "Attending" | "Unanswered" | "Waiting"
       EventRecurrence: "Weekly" | "Fortnightly" | "Monthly" | "None"
       ItemType: "mtvStorage" | "mtvGym" | "mtvGymPalazzo" | "goethe"
@@ -918,10 +977,10 @@ export type Database = {
         | "userRegistration"
         | "paymentRequest"
         | "paymentPending"
-          | "eventCancelled"
-          | "eventUpdated"
-          | "eventAttedanceChanged"
-          | "challengeUpdate"
+        | "eventCancelled"
+        | "eventUpdated"
+        | "eventAttedanceChanged"
+        | "challengeUpdate"
       PaymentState: "Open" | "Fulfilled"
       Permissions:
         | "use;drink"
@@ -947,9 +1006,9 @@ export type Database = {
         | "edit;notifications"
         | "edit;history"
         | "edit;edgeFunctions"
-          | "use;challenges"
-          | "view;challenges"
-          | "edit;challenges"
+        | "use;challenges"
+        | "view;challenges"
+        | "edit;challenges"
       ProductType: "Drink" | "Special" | "None"
       UserRole: "user" | "admin" | "procure" | "finance" | "trainer"
     }
@@ -962,12 +1021,13 @@ export type Database = {
 type PublicSchema = Database[Extract<keyof Database, "public">]
 
 export type Tables<
-    PublicTableNameOrOptions extends | keyof (PublicSchema["Tables"] & PublicSchema["Views"])
+  PublicTableNameOrOptions extends
+    | keyof (PublicSchema["Tables"] & PublicSchema["Views"])
     | { schema: keyof Database },
   TableName extends PublicTableNameOrOptions extends { schema: keyof Database }
     ? keyof (Database[PublicTableNameOrOptions["schema"]]["Tables"] &
         Database[PublicTableNameOrOptions["schema"]]["Views"])
-      : never = never,
+    : never = never,
 > = PublicTableNameOrOptions extends { schema: keyof Database }
   ? (Database[PublicTableNameOrOptions["schema"]]["Tables"] &
       Database[PublicTableNameOrOptions["schema"]]["Views"])[TableName] extends {
@@ -975,78 +1035,82 @@ export type Tables<
     }
     ? R
     : never
-    : PublicTableNameOrOptions extends keyof (PublicSchema["Tables"] &
-            PublicSchema["Views"])
-        ? (PublicSchema["Tables"] &
-            PublicSchema["Views"])[PublicTableNameOrOptions] extends {
-                Row: infer R
-            }
-            ? R
-            : never
-        : never
+  : PublicTableNameOrOptions extends keyof (PublicSchema["Tables"] &
+        PublicSchema["Views"])
+    ? (PublicSchema["Tables"] &
+        PublicSchema["Views"])[PublicTableNameOrOptions] extends {
+        Row: infer R
+      }
+      ? R
+      : never
+    : never
 
 export type TablesInsert<
-    PublicTableNameOrOptions extends | keyof PublicSchema["Tables"]
+  PublicTableNameOrOptions extends
+    | keyof PublicSchema["Tables"]
     | { schema: keyof Database },
   TableName extends PublicTableNameOrOptions extends { schema: keyof Database }
     ? keyof Database[PublicTableNameOrOptions["schema"]]["Tables"]
-      : never = never,
+    : never = never,
 > = PublicTableNameOrOptions extends { schema: keyof Database }
   ? Database[PublicTableNameOrOptions["schema"]]["Tables"][TableName] extends {
       Insert: infer I
     }
     ? I
     : never
-    : PublicTableNameOrOptions extends keyof PublicSchema["Tables"]
-        ? PublicSchema["Tables"][PublicTableNameOrOptions] extends {
-                Insert: infer I
-            }
-            ? I
-            : never
-        : never
+  : PublicTableNameOrOptions extends keyof PublicSchema["Tables"]
+    ? PublicSchema["Tables"][PublicTableNameOrOptions] extends {
+        Insert: infer I
+      }
+      ? I
+      : never
+    : never
 
 export type TablesUpdate<
-    PublicTableNameOrOptions extends | keyof PublicSchema["Tables"]
+  PublicTableNameOrOptions extends
+    | keyof PublicSchema["Tables"]
     | { schema: keyof Database },
   TableName extends PublicTableNameOrOptions extends { schema: keyof Database }
     ? keyof Database[PublicTableNameOrOptions["schema"]]["Tables"]
-      : never = never,
+    : never = never,
 > = PublicTableNameOrOptions extends { schema: keyof Database }
   ? Database[PublicTableNameOrOptions["schema"]]["Tables"][TableName] extends {
       Update: infer U
     }
     ? U
     : never
-    : PublicTableNameOrOptions extends keyof PublicSchema["Tables"]
-        ? PublicSchema["Tables"][PublicTableNameOrOptions] extends {
-                Update: infer U
-            }
-            ? U
-            : never
-        : never
+  : PublicTableNameOrOptions extends keyof PublicSchema["Tables"]
+    ? PublicSchema["Tables"][PublicTableNameOrOptions] extends {
+        Update: infer U
+      }
+      ? U
+      : never
+    : never
 
 export type Enums<
-    PublicEnumNameOrOptions extends | keyof PublicSchema["Enums"]
+  PublicEnumNameOrOptions extends
+    | keyof PublicSchema["Enums"]
     | { schema: keyof Database },
   EnumName extends PublicEnumNameOrOptions extends { schema: keyof Database }
     ? keyof Database[PublicEnumNameOrOptions["schema"]]["Enums"]
-      : never = never,
+    : never = never,
 > = PublicEnumNameOrOptions extends { schema: keyof Database }
   ? Database[PublicEnumNameOrOptions["schema"]]["Enums"][EnumName]
-    : PublicEnumNameOrOptions extends keyof PublicSchema["Enums"]
-        ? PublicSchema["Enums"][PublicEnumNameOrOptions]
-        : never
+  : PublicEnumNameOrOptions extends keyof PublicSchema["Enums"]
+    ? PublicSchema["Enums"][PublicEnumNameOrOptions]
+    : never
 
 export type CompositeTypes<
-    PublicCompositeTypeNameOrOptions extends | keyof PublicSchema["CompositeTypes"]
-        | { schema: keyof Database },
-    CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
-            schema: keyof Database
-        }
-        ? keyof Database[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
-        : never = never,
+  PublicCompositeTypeNameOrOptions extends
+    | keyof PublicSchema["CompositeTypes"]
+    | { schema: keyof Database },
+  CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
+    schema: keyof Database
+  }
+    ? keyof Database[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
+    : never = never,
 > = PublicCompositeTypeNameOrOptions extends { schema: keyof Database }
-    ? Database[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
-    : PublicCompositeTypeNameOrOptions extends keyof PublicSchema["CompositeTypes"]
-        ? PublicSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
-        : never
+  ? Database[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
+  : PublicCompositeTypeNameOrOptions extends keyof PublicSchema["CompositeTypes"]
+    ? PublicSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
+    : never

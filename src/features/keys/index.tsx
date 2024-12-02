@@ -4,7 +4,6 @@ import React, {useEffect, useState} from "react";
 import {fetchItemsAsync} from "src/features/keys/slices/keysSlice";
 import {FullItemHolder} from "src/types/supabaseTypes";
 import {AlertMessage, AlertSnackbar} from "../../components/AlertSnackbar";
-import CustomAppBar from "../../components/AppBar";
 import {LoadingIndicator} from "../../components/LoadingIndicator";
 import {can} from "../../utils/PermissionService";
 import {EditOrAddItemDialog} from "./dialogs/EditOrAddItemDialog";
@@ -14,6 +13,7 @@ import {ItemHolderScreenProps} from "./types";
 import {ItemHolderItem} from "./components/ItemHolderItem";
 import {KeyHandOverDialog} from "./dialogs/KeyHandOverDialog";
 import {SearchUserDialog} from "./dialogs/SearchUserDialog";
+import Layout from "../../components/Layout";
 
 export const EMPTY_KEY: ItemUpdate = {name: "", color: "#000000", created_at: "", current_holder: null, type: null};
 
@@ -61,8 +61,7 @@ export const ItemHolderScreen = ({dispatch, keyHolders, loading, user, t}: ItemH
         setSelectedUser(user);
     }
 
-    return <Box>
-        <CustomAppBar navigateBack/>
+    return <Layout appBarConfig={{showBackButton: true}}>
         <LoadingIndicator loading={loading}/>
         <Alert sx={{ml: 2, mr: 2, mt: 2}} severity="info">
             Bitte euren Schlüssel gut aufbewahren und Übergaben eintragen! Wer unverschuldet den Schlüssel verloren hat
@@ -70,7 +69,7 @@ export const ItemHolderScreen = ({dispatch, keyHolders, loading, user, t}: ItemH
             verlegt), muss für den neuen Schlüssel selbst aufkommen. Grundsätzlich ist immer die eingetragene Person für
             den Schlüssel verantwortlich!
         </Alert>
-        <List sx={{pb: 10}}>
+        <List sx={{ width: "100%"}}>
             {
                 keyHolders.map((x: FullItemHolder) => <ItemHolderItem x={x} t={t} user={user}
                                                                       isEditingMode={isEditingMode}
@@ -83,7 +82,7 @@ export const ItemHolderScreen = ({dispatch, keyHolders, loading, user, t}: ItemH
         </List>
 
         {
-            can("edit", "keyFinder") &&
+            can("update", "item") &&
             <Box sx={{position: "fixed", right: "16px", bottom: "76px", display: "flex", flexDirection: "row"}}>
                 <Fab sx={{background: "#66bb6a", mr: 2}}
                      onClick={() => {
@@ -118,6 +117,6 @@ export const ItemHolderScreen = ({dispatch, keyHolders, loading, user, t}: ItemH
         }} itemToEdit={itemToEdit}/>
 
         <AlertSnackbar alertInfo={alertInfo} autoHideDuration={1500} close={() => setAlertInfo(null)}/>
-    </Box>
+    </Layout>
 }
 

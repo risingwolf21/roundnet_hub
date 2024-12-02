@@ -19,26 +19,44 @@ import {fetchDrinksToPayAsync, fetchPaymentAsync} from "./slices/drinksSlice";
 import {RootState, useAppDispatch} from "../../redux/store";
 import {PaymentHistory} from "../../types/supabaseTypes";
 import {groupBy} from '../../utils';
-import {AlertSnackbar} from "../../components/AlertSnackbar";
-import CustomAppBar from "../../components/AppBar";
 import {LoadingScreen} from '../../components/LoadingScreen';
+import Layout from "../../components/Layout";
+import {useAuth} from "../auth/AuthContext";
 
-const PayDrinksButton = ({ amountToPay }: { amountToPay: number }) => {
+const PayDrinksButton = ({amountToPay}: { amountToPay: number }) => {
 
     const onPayClick = () => {
         const newWindow = window.open(`https://www.paypal.me/${PAYPAL_ME_ADDRESS}/${amountToPay}EUR`, '_blank', 'noopener,noreferrer')
         if (newWindow) newWindow.opener = null
     }
 
-    return <Box sx={{ position: "fixed", bottom: "60px", left: 0, right: 0, flexDirection: "column", justifyContent: "end", display: "flex", textAlign: "center", pl: 2, pr: 2, pb: 2 }}>
-        <Button variant="contained" fullWidth sx={{ marginTop: 2, borderRadius: "50px !important", fontSize: "16px", fontFamily: "sans-serif", lineSpacing: "24px" }}
-            onClick={onPayClick}
-            disabled={amountToPay === 0}
-            startIcon={<EuroIcon />}>Mit Paypal bezahlen</Button>
+    return <Box sx={{
+        position: "fixed",
+        bottom: "60px",
+        left: 0,
+        right: 0,
+        flexDirection: "column",
+        justifyContent: "end",
+        display: "flex",
+        textAlign: "center",
+        pl: 2,
+        pr: 2,
+        pb: 2
+    }}>
+        <Button variant="contained" fullWidth sx={{
+            marginTop: 2,
+            borderRadius: "50px !important",
+            fontSize: "16px",
+            fontFamily: "sans-serif",
+            lineSpacing: "24px"
+        }}
+                onClick={onPayClick}
+                disabled={amountToPay === 0}
+                startIcon={<EuroIcon/>}>Mit Paypal bezahlen</Button>
     </Box>
 }
 
-const PayDrinksSummary = ({ paymentHistory }: { paymentHistory: PaymentHistory[] }) => {
+const PayDrinksSummary = ({paymentHistory}: { paymentHistory: PaymentHistory[] }) => {
     return <Box>
         <List>
             {
@@ -55,17 +73,17 @@ const PayDrinksSummary = ({ paymentHistory }: { paymentHistory: PaymentHistory[]
                         <ListItemAvatar>
                             <Typography>{x.count + " x"}</Typography>
                         </ListItemAvatar>
-                        <ListItemText primary={x.name} secondary={x.priceSingle + " €"} />
+                        <ListItemText primary={x.name} secondary={x.priceSingle + " €"}/>
                         <ListItemSecondaryAction>
                             <Typography>{x.priceTotal} €</Typography>
                         </ListItemSecondaryAction>
                     </ListItem>)
             }
-            <Divider />
+            <Divider/>
             <ListItem key={"totalAmount"}>
-                <ListItemText primaryTypographyProps={{ fontWeight: "bold" }} primary={"Gesamtkosten"} />
+                <ListItemText primaryTypographyProps={{fontWeight: "bold"}} primary={"Gesamtkosten"}/>
                 <ListItemSecondaryAction>
-                    <Typography sx={{ fontWeight: "bold" }}>
+                    <Typography sx={{fontWeight: "bold"}}>
                         {paymentHistory.reduce((prev, curr) => prev + (curr.amount ?? 0), 0)} €
                     </Typography>
                 </ListItemSecondaryAction>
@@ -75,17 +93,14 @@ const PayDrinksSummary = ({ paymentHistory }: { paymentHistory: PaymentHistory[]
 }
 
 const PayDrinksScreenProvider = () => {
-    const { user } = useSelector((state: RootState) => state.application);
-    const { paymentHistory, paymentError, paymentLoading } = useSelector((state: RootState) => state.drinks);
-
-    if (!user)
-        return <AlertSnackbar close={() => { }} alertInfo={{ message: "Fatal error occured. Repository or selected group was null!", severity: "error" }} />
+    const user = useAuth();
+    const {paymentHistory, paymentError, paymentLoading} = useSelector((state: RootState) => state.drinks);
 
     return <PayDrinksScreen
         user={user}
         paymentHistory={paymentHistory ?? []}
         paymentError={paymentError ?? ""}
-        paymentLoading={paymentLoading} />
+        paymentLoading={paymentLoading}/>
 }
 
 type PayDrinksScreenProps = {
@@ -105,20 +120,19 @@ const PayDrinksScreen = ({user, paymentHistory, paymentError, paymentLoading}: P
     }, [dispatch, user]);
 
     if (paymentLoading)
-        return <LoadingScreen />
+        return <LoadingScreen/>
 
     return (
-        <Box>
-            <CustomAppBar navigateBack />
-            <PayDrinksSummary paymentHistory={paymentHistory ?? []} />
-            <PayDrinksButton amountToPay={paymentHistory?.reduce((prev, curr) => prev + (curr.amount ?? 0), 0) ?? 0} />
+        <Layout appBarConfig={{showBackButton: true}}>
+            <PayDrinksSummary paymentHistory={paymentHistory ?? []}/>
+            <PayDrinksButton amountToPay={paymentHistory?.reduce((prev, curr) => prev + (curr.amount ?? 0), 0) ?? 0}/>
 
-            <Snackbar sx={{ position: "fixed", right: "16px", bottom: "72px" }} open={paymentError !== ""}>
-                <Alert severity={"error"} sx={{ width: '100%' }}>
+            <Snackbar sx={{position: "fixed", right: "16px", bottom: "72px"}} open={paymentError !== ""}>
+                <Alert severity={"error"} sx={{width: '100%'}}>
                     {paymentError}
                 </Alert>
             </Snackbar>
-        </Box>
+        </Layout>
     );
 }
 

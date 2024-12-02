@@ -9,27 +9,27 @@ import {
     Notifications,
     SportsHandball
 } from "@mui/icons-material";
-import {Avatar, Badge, Box, List, ListItem, ListItemAvatar, ListItemButton, ListItemText} from "@mui/material";
+import {Avatar, Badge, List, ListItem, ListItemAvatar, ListItemButton, ListItemText} from "@mui/material";
 import {TFunction} from "i18next";
 import React from "react";
-import {withTranslation} from 'react-i18next';
 import {useNavigate} from "react-router";
 import {can} from "src/utils/PermissionService";
-import CustomAppBar from "./AppBar";
 import {useSelector} from "react-redux";
 import {RootState} from "../redux/store";
 import {notificationsSelector} from "../features/notifications/slices/notificationsSlice";
+import Layout from "./Layout";
+import {withTranslation} from "react-i18next";
 
 const Browse = ({t}: { t: TFunction }) => {
 
     const navigate = useNavigate();
     const notifications = useSelector((state: RootState) => notificationsSelector.selectAll(state));
 
-    return <Box>
-        <CustomAppBar/>
+    return <Layout>
         <List>
             {
-                can("view", "user") && <ListItemButton key={"account"} onClick={() => navigate("/user")} sx={{mt: 1}}>
+                can("select", "user") &&
+                <ListItemButton key={"account"} onClick={() => navigate("/user")} sx={{mt: 1}}>
                     <ListItemAvatar>
                         <Avatar sx={{background: "#88AEBF", width: 40, height: 40, borderRadius: 2}}>
                             <AccountCircle/>
@@ -39,7 +39,7 @@ const Browse = ({t}: { t: TFunction }) => {
                 </ListItemButton>
             }
             {
-                can("view", "payments") &&
+                can("select", "payments") &&
                 <ListItemButton key={"payments"} onClick={() => navigate("/payments")} sx={{mt: 1}}>
                     <ListItemAvatar>
                         <Avatar sx={{background: "#88AEBF", width: 40, height: 40, borderRadius: 2}}>
@@ -50,7 +50,7 @@ const Browse = ({t}: { t: TFunction }) => {
                 </ListItemButton>
             }
             {
-                can("view", "history") &&
+                can("select", "history") &&
                 <ListItemButton key={"history"} onClick={() => navigate("/history")} sx={{mt: 1}}>
                     <ListItemAvatar>
                         <Avatar sx={{background: "#88AEBF", width: 40, height: 40, borderRadius: 2}}>
@@ -61,7 +61,7 @@ const Browse = ({t}: { t: TFunction }) => {
                 </ListItemButton>
             }
             {
-                can("view", "drink") &&
+                can("select", "drink") &&
                 <ListItemButton key={"drinks"} onClick={() => navigate("/drinks")} sx={{mt: 1}}>
                     <ListItemAvatar>
                         <Avatar sx={{background: "#88AEBF", width: 40, height: 40, borderRadius: 2}}>
@@ -72,7 +72,7 @@ const Browse = ({t}: { t: TFunction }) => {
                 </ListItemButton>
             }
             {
-                can("view", "training") &&
+                can("select", "event") &&
                 <ListItemButton key={"training"} onClick={() => navigate("/training")} sx={{mt: 1}}>
                     <ListItemAvatar>
                         <Avatar sx={{background: "#88AEBF", width: 40, height: 40, borderRadius: 2}}>
@@ -83,7 +83,7 @@ const Browse = ({t}: { t: TFunction }) => {
                 </ListItemButton>
             }
             {
-                can("view", "keyFinder") &&
+                can("select", "item") &&
                 <ListItemButton key={"keys"} onClick={() => navigate("/keys")} sx={{mt: 1}}>
                     <ListItemAvatar>
                         <Avatar sx={{background: "#88AEBF", width: 40, height: 40, borderRadius: 2}}>
@@ -108,7 +108,7 @@ const Browse = ({t}: { t: TFunction }) => {
                 </ListItemButton>
             }
             {
-                can("view", "challenges") &&
+                can("select", "challenge") &&
                 <ListItemButton key={"challenges"} onClick={() => navigate("/challenges")} sx={{mt: 1}}>
                     <ListItemAvatar>
                         <Avatar sx={{background: "#88AEBF", width: 40, height: 40, borderRadius: 2}}>
@@ -124,10 +124,11 @@ const Browse = ({t}: { t: TFunction }) => {
                         <Info/>
                     </Avatar>
                 </ListItemAvatar>
-                <ListItemText sx={{overflow: "clip"}} primary={process.env.REACT_APP_VERSION} secondary={"Version"}/>
+                <ListItemText sx={{overflow: "clip"}} primary={process.env.REACT_APP_VERSION}
+                              secondary={"Version"}/>
             </ListItem>
         </List>
-    </Box>
+    </Layout>
 }
 
 export default withTranslation()(Browse);

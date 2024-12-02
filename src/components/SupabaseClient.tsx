@@ -1,6 +1,4 @@
-import {Box} from "@mui/system";
 import React, {useEffect, useState} from "react";
-import CustomAppBar from "./AppBar";
 import {Button, List, ListItemButton, ListItemSecondaryAction, ListItemText} from "@mui/material";
 import {useClient} from "react-supabase";
 import {Cancel, Delete, Edit, ExpandMoreOutlined, Save} from "@mui/icons-material";
@@ -24,6 +22,7 @@ import {isNull, omit, omitBy} from "lodash";
 import {supabase} from "./services/supabase/supabaseClient";
 import AddIcon from "@mui/icons-material/Add";
 import {formatDateFromDatabase} from "../utils";
+import Layout from "./Layout";
 
 interface EditToolbarProps {
     setRows: (newRows: (oldRows: GridRowsProp) => GridRowsProp) => void;
@@ -292,8 +291,7 @@ export const SupabaseClient = () => {
         setRowModesModel(newRowModesModel);
     };
 
-    return <Box>
-        <CustomAppBar navigateBack/>
+    return <Layout>
         <LoadingIndicator loading={loading}/>
         <ListItemButton onClick={() => setSelectTableOpen(true)}>
             <ListItemText primary={selectedTable}/>
@@ -396,5 +394,5 @@ export const SupabaseClient = () => {
         </SwipeableDialog>
 
         <AlertSnackbar alertInfo={alertInfo} autoHideDuration={1500} close={() => setAlertInfo(null)}/>
-    </Box>
+    </Layout>
 }

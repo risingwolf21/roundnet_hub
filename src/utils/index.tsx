@@ -22,7 +22,15 @@ export function groupBy<Type>(items: Type[], getter: (any: Type) => string): Map
 }
 
 export const SlideUpTransition = forwardRef(function Transition(props: SlideProps, ref) {
-    return <Slide direction="up" ref={ref} {...props} />;
+    return <Slide direction="up" ref={ref} {...props}>
+        {props.children}
+    </Slide>;
+});
+
+const SlideDownTransition = React.forwardRef(function Transition(props: SlideProps, ref) {
+    return <Slide direction="down" ref={ref} {...props}>
+        {props.children}
+    </Slide>;
 });
 
 export const formatDateToDatabase = (date: Date) => {
@@ -58,9 +66,12 @@ export class FetchingError extends Error {
 
 export const nameOfProductType = (type: ProductType) => {
     switch (type) {
-        case "Drink": return "Getränke"
-        case "Special": return "Anderes"
-        case "None": return "Ohne Typ"
+        case "Drink":
+            return "Getränke"
+        case "Special":
+            return "Anderes"
+        case "None":
+            return "Ohne Typ"
     }
 }
 
@@ -98,7 +109,7 @@ export const dataURLtoFile = (dataurl: string, filename: string): File => {
     while (n--) {
         u8arr[n] = bstr.charCodeAt(n);
     }
-    return new File([u8arr], filename, { type: mime });
+    return new File([u8arr], filename, {type: mime});
 }
 
 export function readFile(file: Blob): Promise<string | ArrayBuffer | null> {

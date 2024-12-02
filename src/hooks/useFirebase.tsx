@@ -44,12 +44,12 @@ const isNotificationSupported = () =>
     'serviceWorker' in navigator &&
     'PushManager' in window
 
-export function useFirebase(user: User | null) {
+export function useFirebase(user: User) {
 
 
     useEffect(() => {
         messaging.then(messagingResolver => {
-            if (messagingResolver && user) {
+            if (messagingResolver) {
                 onMessage(messagingResolver, (payload) => {
                     toast(<NotificationComponent title={payload.data?.title ?? "Title"} body={payload.data?.body ?? ""}
                                                  toastId={"123"}/>, {

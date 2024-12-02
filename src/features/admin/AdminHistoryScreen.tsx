@@ -1,4 +1,4 @@
-import {Grid, LinearProgress} from "@mui/material";
+import {LinearProgress} from "@mui/material";
 import moment from "moment/moment";
 import React, {useCallback, useEffect} from "react";
 import {useSelector} from "react-redux";
@@ -6,9 +6,9 @@ import {fetchAdminHistoryAsync} from "./slices/adminDrinksSlice";
 import {RootState, useAppDispatch} from "../../redux/store";
 import {FullHistory} from "../../types/supabaseTypes";
 import {groupBy} from "../../utils";
-import CustomAppBar from "../../components/AppBar";
 import {InfiniteScrollList} from "../../components/InfiniteScrollList";
 import {AdminHistoryItem} from "./components/AdminHistoryItem";
+import Layout from "../../components/Layout";
 
 
 const AdminHistoryScreen = () => {
@@ -28,13 +28,7 @@ const AdminHistoryScreen = () => {
         fetchForPage(0);
     }, [fetchForPage]);
 
-    return <Grid
-        container
-        width="100%"
-        direction="column"
-        alignItems="center"
-        justifyContent="center">
-        <CustomAppBar navigateBack/>
+    return <Layout>
         {
             historyLoading && <LinearProgress style={{position: "fixed", left: 0, top: 56, right: 0}}/>
         }
@@ -46,7 +40,7 @@ const AdminHistoryScreen = () => {
                     .map(([key, value]) => <AdminHistoryItem key={key} items={value} header={key}/>)
             }
         </InfiniteScrollList>
-    </Grid>
+    </Layout>
 }
 
 export default AdminHistoryScreen;

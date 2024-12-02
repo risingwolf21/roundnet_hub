@@ -6,7 +6,6 @@ import {
     DialogContent,
     DialogTitle,
     Fab,
-    Grid,
     LinearProgress,
     List,
     Typography
@@ -17,12 +16,12 @@ import {useSelector} from "react-redux";
 import {fetchDrinksAsync} from "./slices/adminDrinksSlice";
 import {RootState, useAppDispatch} from "../../redux/store";
 import {AlertMessage, AlertSnackbar} from "../../components/AlertSnackbar";
-import CustomAppBar from "../../components/AppBar";
 import {Error} from "../../components/Error";
 import EditDrinkDialog from "./dialogs/EditDrinkDialog";
 import {captureException} from "@sentry/react";
 import {AdminDrinksRepository} from "../../repository/AdminDrinksRepository";
 import {AdminDrinkItem} from "./components/AdminDrinkItem";
+import Layout from "../../components/Layout";
 
 const EMPTY_DRINK: Drink =
     {
@@ -112,13 +111,7 @@ const AdminDrinkList = () => {
     if (drinksError)
         return <Error message={drinksError}/>
 
-    return (<Grid
-        container
-        width="100%"
-        direction="column"
-        alignItems="center"
-        justifyContent="center">
-        <CustomAppBar navigateBack/>
+    return (<Layout>
         {
             drinksLoading && <LinearProgress style={{position: "fixed", left: 0, top: 56, right: 0}}/>
         }
@@ -161,7 +154,7 @@ const AdminDrinkList = () => {
             </DialogActions>
         </Dialog>
         <AlertSnackbar alertInfo={alertInfo} autoHideDuration={1500} close={() => setAlertInfo(null)}/>
-    </Grid>);
+    </Layout>);
 }
 
 export default AdminDrinkList;

@@ -5,19 +5,16 @@ import {RootState} from "../redux/store";
 import {AlertSnackbar} from "../components/AlertSnackbar";
 import EventScreen from '../features/events/EventList';
 import {eventsSelector} from "src/features/events/slices/eventsSlice";
+import {useAuth} from "../features/auth/AuthContext";
 
 const EventScreenProvider = () => {
     const {loading, error, endReached} = useSelector((state: RootState) => state.events);
     const events = useSelector(eventsSelector.selectAll)
-    const {user} = useSelector((state: RootState) => state.application);
+    const user = useAuth();
 
-    if (!can("view", "training"))
+    if (!can("select", "event"))
         return <AlertSnackbar close={() => {
         }} alertInfo={{message: "No permission to view this screen", severity: "error"}}/>
-
-    if (!user)
-        return <AlertSnackbar close={() => {
-        }} alertInfo={{message: "Fatal error occured. Repository or user was null!", severity: "error"}}/>
 
     return <EventScreen
         events={events}

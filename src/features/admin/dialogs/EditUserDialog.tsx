@@ -25,16 +25,15 @@ import {Box} from "@mui/system";
 import {AccountCircle, Close, Edit, Email, FiberManualRecord, ManageAccounts, Verified} from "@mui/icons-material";
 import {useClient} from "react-supabase";
 import {SlideUpTransition} from "../../../utils";
-import {FullHistory, UserWithGroups} from "../../../types/supabaseTypes";
+import {FullHistory, UserWithGroupsAndRoles} from "../../../types/supabaseTypes";
 import moment from "moment";
-import {UserPermissionsDialog} from "./UserPermissionDialog";
 import {captureException} from "@sentry/react";
 import {SupabaseDrinkRepository} from "../../../repository/DrinkRepository";
 import {Permissions} from "types/supabase"
-import {UserRolesDialog} from "./UserRolesDialog";
+import {AppRolesDialog} from "./AppRolesDialog";
 
 type EditUserDialogProps = {
-    user: UserWithGroups,
+    user: UserWithGroupsAndRoles,
     open: boolean,
     handleClose: () => void,
     onUserEditFinished: (user: UserEdited) => void,
@@ -52,7 +51,7 @@ export type UserEdited = {
 const EditUserDialog = ({user, open, handleClose, onUserEditFinished, deleteUser}: EditUserDialogProps) => {
 
     const [editUserPermissionsOpen, setEditUserPermissionsOpen] = useState(false);
-    const [editUserRoles, setEditUserRoles] = useState(false);
+    const [editUserRolesOpen, setEditUserRolesOpen] = useState(false);
     const [verified, setVerified] = useState(user.verified)
     const [deleteUserOpen, setDeleteUserOpen] = useState(false);
     const [userPermissions, setUserPermissions] = useState<Permissions[]>([]);
@@ -172,14 +171,14 @@ const EditUserDialog = ({user, open, handleClose, onUserEditFinished, deleteUser
                             <Edit/>
                         </ListItemSecondaryAction>
                     </ListItemButton>
-                    <ListItemButton key={"userRoles"} onClick={() => setEditUserRoles(true)}>
+                    <ListItemButton key={"user_roles"} onClick={() => setEditUserRolesOpen(true)}>
                         <ListItemAvatar>
                             <Avatar>
                                 <ManageAccounts/>
                             </Avatar>
                         </ListItemAvatar>
-                        <ListItemText primary={userRoles.join(", ")}/>
-                        <ListItemSecondaryAction onClick={() => setEditUserRoles(true)}>
+                        <ListItemText primary={user.roles.map(x => x.name).join(", ")}/>
+                        <ListItemSecondaryAction onClick={() => setEditUserRolesOpen(true)}>
                             <Edit/>
                         </ListItemSecondaryAction>
                     </ListItemButton>
@@ -227,22 +226,14 @@ const EditUserDialog = ({user, open, handleClose, onUserEditFinished, deleteUser
                 </Box>
             </Box>
         </Box>
-        <UserPermissionsDialog
-            open={editUserPermissionsOpen}
-            handleClose={() => setEditUserPermissionsOpen(false)}
-            handleSubmit={(permissions) => {
-                setUserPermissions(permissions);
-                setEditUserPermissionsOpen(false);
-            }}
-            permissions={user.permissions ?? []}/>
-        <UserRolesDialog
-            open={editUserRoles}
-            handleClose={() => setEditUserRoles(false)}
-            handleSubmit={(roles) => {
+        <AppRolesDialog
+            open={editUserRolesOpen}
+            roles={user.roles}
+            handleClose={() => setEditUserRolesOpen(false)}
+            handleSubmit={(roles: AppRole[]) => {
                 setUserRoles(roles);
-                setEditUserRoles(false);
-            }}
-            roles={user.roles}/>
+                setEditUserRolesOpen(false)
+            }}/>
         <Dialog open={deleteUserOpen}>
             <DialogTitle>
                 {`Benuter ${user.displayName} löschen?`}

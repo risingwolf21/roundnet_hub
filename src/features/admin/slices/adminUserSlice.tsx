@@ -1,10 +1,10 @@
 import {createAsyncThunk, createSlice} from '@reduxjs/toolkit';
-import {UserWithGroups} from '../../../types/supabaseTypes';
+import {UserWithGroupsAndRoles} from '../../../types/supabaseTypes';
 import {AdminUsersRepository} from 'src/repository/AdminUsersRepository';
 import {captureException} from "@sentry/react";
 
 type AdminUsersSliceState = {
-    users: UserWithGroups[],
+    users: UserWithGroupsAndRoles[],
     loading: boolean,
     error: string | null,
     hasNotVerifiedUsers: boolean
@@ -62,9 +62,9 @@ export const fetchAdminUsersAsync = createAsyncThunk("fetchAdminUsersAsync", asy
             return {
                 ...x,
                 groups: x.groups.map((x: any) => x.group),
-                roles: x.roles.map((x: any) => x.role)
+                roles: x.roles.map((x: any) => x.app_role)
             }
-        }) ?? []) as UserWithGroups[]
+        }) ?? []) as UserWithGroupsAndRoles[]
     } catch (e) {
         captureException(e);
         return rejectWithValue(e);

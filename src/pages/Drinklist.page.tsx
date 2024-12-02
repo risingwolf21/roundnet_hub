@@ -1,6 +1,5 @@
 import React, {useEffect} from "react";
 import {useSelector} from "react-redux";
-import {AlertSnackbar} from "src/components/AlertSnackbar";
 import {
     fetchDrinksAsync,
     onDrinkDeleted,
@@ -11,10 +10,11 @@ import {RootState, useAppDispatch} from "src/redux/store";
 import DrinkListScreen from "../features/drinks/DrinkListScreen";
 import {TablesInsert, TablesUpdate} from "../types/supabase-generated.types";
 import {useClient} from "react-supabase";
+import {useAuth} from "../features/auth/AuthContext";
 
 
 const DrinkListScreenProvider = () => {
-    const {user} = useSelector((state: RootState) => state.application);
+    const user = useAuth();
     const {drinks, drinksLoading, drinksError} = useSelector((state: RootState) => state.drinks);
     const dispatch = useAppDispatch();
     const client = useClient();
@@ -45,10 +45,6 @@ const DrinkListScreenProvider = () => {
             subscription.unsubscribe();
         }
     }, [client, dispatch]);
-
-    if (!user)
-        return <AlertSnackbar close={() => {
-        }} alertInfo={{message: "Fatal error occured. Repository or user was null!", severity: "error"}}/>
 
     return <DrinkListScreen
         dispatch={dispatch}

@@ -1,5 +1,4 @@
-import CustomAppBar from "../../components/AppBar";
-import {Box, Grid, LinearProgress, List, ListItem, ListItemText, Typography} from "@mui/material";
+import {Box, LinearProgress, List, ListItem, ListItemText, Typography} from "@mui/material";
 import React, {useEffect} from "react";
 import {RootState, useAppDispatch} from "../../redux/store";
 import {
@@ -14,6 +13,7 @@ import {useNavigate} from "react-router-dom";
 import {TablesInsert, TablesUpdate} from "src/types/supabase-generated.types";
 import {useClient} from "react-supabase";
 import {ChallengeRepository} from "src/repository/ChallengeRepository";
+import Layout from "../../components/Layout";
 
 const ChallengeListProvider = () => {
     const dispatch = useAppDispatch();
@@ -60,13 +60,7 @@ type ChallengeListProps = {
 
 const ChallengeList = ({loading, challenges}: ChallengeListProps) => {
     const navigate = useNavigate();
-    return <Grid
-        container
-        width="100%"
-        direction="column"
-        alignItems="center"
-        justifyContent="center">
-        <CustomAppBar/>
+    return <Layout>
         {
             loading && <LinearProgress sx={{position: "fixed", top: 56, left: 0, right: 0}}/>
         }
@@ -81,18 +75,16 @@ const ChallengeList = ({loading, challenges}: ChallengeListProps) => {
                     }
                 </List>
                 : <Box sx={{
-                    width: "100%",
-                    height: "calc(100vh - 56px)",
                     display: "flex",
-                    flexDirection: "column",
                     justifyContent: "center",
-                    alignItems: "center"
+                    alignItems: "center",
+                    height: "100%"
                 }}>
                     <Typography variant="h3">🏅</Typography>
                     <Typography variant="h5">Keine Challenges aktiv</Typography>
                 </Box>
         }
-    </Grid>
+    </Layout>
 }
 
 export default ChallengeListProvider;

@@ -5,6 +5,7 @@ import {onHistoryDelete, onHistoryInsert, onHistoryUpdate} from "./slices/drinks
 import {RootState, useAppDispatch} from "../../redux/store";
 import {AlertSnackbar} from "../../components/AlertSnackbar";
 import {HistoryScreen} from "./HistoryScreen";
+import {useAuth} from "../auth/AuthContext";
 
 const HistoryScreenProvider = () => {
     const {
@@ -17,10 +18,9 @@ const HistoryScreenProvider = () => {
     const client = useClient();
     const dispatch = useAppDispatch();
 
-    const {user} = useSelector((state: RootState) => state.application);
+    const user = useAuth();
 
     useEffect(() => {
-        if (!user) return;
         let subscription = client.channel("public:history")
             .on('postgres_changes', {
                 event: 'UPDATE',

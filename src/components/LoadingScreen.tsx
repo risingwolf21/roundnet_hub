@@ -1,11 +1,9 @@
-import { Box } from "@mui/material"
 import React from "react"
-import CustomAppBar from "./AppBar"
-import { LoadingIndicator } from "./LoadingIndicator"
+import {LoadingIndicator} from "./LoadingIndicator"
+import Layout from "./Layout";
 
 export const LoadingScreen = () => {
-    return <Box>
-        <CustomAppBar />
-        <LoadingIndicator loading={true} />
-    </Box>
+    return <Layout>
+        <LoadingIndicator loading={true}/>
+    </Layout>
 }

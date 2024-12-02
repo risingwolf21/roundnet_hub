@@ -47,7 +47,6 @@ if (process.env.REACT_APP_ENV === "production") {
     });
 }
 
-
 const root = ReactDOM.createRoot(document.getElementById('root') as HTMLElement);
 root.render(
     <ThemeProvider theme={mainTheme}>

@@ -1,19 +1,22 @@
 import {useClient} from "react-supabase";
 import {useDispatch, useSelector} from "react-redux";
 import {useLocation, useNavigate} from "react-router-dom";
-import React, {useEffect, useState} from "react";
-import {setUser} from "@sentry/react";
+import React, {useCallback, useEffect, useState} from "react";
 import {ability, defineRulesFor} from "../../utils/PermissionService";
 import {onUserChange} from "../../redux/applicationSlice";
-import {Session} from "@supabase/supabase-js";
+import {AuthChangeEvent, Session} from "@supabase/supabase-js";
 import AuthPage from "../../pages/Auth.page";
 import {AlertMessage, AlertSnackbar} from "../../components/AlertSnackbar";
 import {HOMEPAGE} from "../../constants";
 import NotVerifiedScreen from "../../components/NotVerifiedScreen";
+import {AuthContext} from "./AuthContext";
+import {setUser} from "@sentry/react";
 import {RootState} from "../../redux/store";
+import {AdminPermissionsRepository} from "../../repository/AdminPermissionsRepository";
+import {SupabaseUserRepository} from "../../repository/UserRepository";
 
 type Props = {
-    children: string | JSX.Element | JSX.Element[]
+    children: React.ReactNode
 }
 
 export const AuthGate = ({children}: Props) => {
@@ -22,56 +25,54 @@ export const AuthGate = ({children}: Props) => {
     const navigate = useNavigate();
     const location = useLocation();
 
+    const currentUser = useSelector((state: RootState) => state.application.user)
     const [session, setSession] = useState<Session | null>(null);
     const [alertInfo, setAlertInfo] = useState<AlertMessage | null>(null);
-    const {user} = useSelector((state: RootState) => state.application);
 
-    const fetchUser = (userId: string) => client
-        .from("user")
-        .select("*")
-        .eq("userId", userId)
-        .returns<User>()
-        .single<User>()
-        .throwOnError();
+    const handleAuthChange = useCallback(async (event: AuthChangeEvent, session: Session | null) => {
+        try {
+            if (!session)
+                throw Error("Session was null");
+            const roles = await AdminPermissionsRepository.fetchRolesForUser(session.user.id);
+            const permissions = await AdminPermissionsRepository.fetchPermissionsForRoles(roles);
+            const {data: user} = await SupabaseUserRepository.fetchUser(session.user.id);
+            console.log(roles, permissions);
+
+            if (!user) {
+                throw Error("Fetching user in AuthGate was not successful.");
+            }
+            setUser({email: session.user.email, id: session.user.id, username: user.displayName});
+            ability.update(defineRulesFor(permissions, roles));
+            dispatch(onUserChange(user))
+            setSession(session);
+            if (location.pathname) {
+                navigate(location.pathname, {replace: true});
+            } else {
+                navigate(`/${HOMEPAGE}`, {replace: true});
+            }
+        } catch (e: any) {
+            setSession(null);
+            ability.update(defineRulesFor([], []))
+            dispatch(onUserChange(null));
+            setUser(null)
+        }
+    }, [dispatch])
 
     useEffect(() => {
-        client.auth.getSession().then(({data: {session}}) => {
-            setSession(session);
-        });
         const {data: {subscription}} = client.auth
-            .onAuthStateChange(async (_event, session) => {
-                try {
-                    if (!session)
-                        throw Error("Session was null");
-                    fetchUser(session.user.id).then(result => {
-                        const user = result.data;
-                        if (!user || result.error) {
-                            throw Error("Fetching user in AuthGate was not successful.");
-                        }
-                        setUser({email: session.user.email, id: session.user.id, username: user.displayName});
-                        ability.update(defineRulesFor(user));
-                        dispatch(onUserChange(user));
-                        setSession(session);
-                        if (location.pathname) {
-                            navigate(location.pathname, {replace: true});
-                        } else {
-                            navigate(`/${HOMEPAGE}`, {replace: true});
-                        }
-                    })
-                } catch (e) {
-                    setSession(null);
-                    ability.update(defineRulesFor(null))
-                    dispatch(onUserChange(null));
-                }
+            .onAuthStateChange((event, session) => {
+                handleAuthChange(event, session);
             });
         return () => subscription.unsubscribe();
-    }, []);
+    }, [client, handleAuthChange]);
 
     return <>
         {
             session
-                ? user?.verified
-                    ? children
+                ? currentUser && currentUser.verified
+                    ? <AuthContext.Provider value={currentUser}>
+                        {children}
+                    </AuthContext.Provider>
                     : <NotVerifiedScreen/>
                 : <AuthPage/>
         }
