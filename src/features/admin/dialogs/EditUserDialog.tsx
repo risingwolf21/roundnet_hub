@@ -20,15 +20,25 @@ import {
     Typography
 } from "@mui/material"
 import {Box} from "@mui/system";
-import {AccountCircle, Close, Edit, Email, FiberManualRecord, ManageAccounts, Verified} from "@mui/icons-material";
+import {
+    AccountCircle,
+    Close,
+    Edit,
+    Email,
+    FiberManualRecord,
+    ManageAccounts,
+    Password,
+    Verified
+} from "@mui/icons-material";
 import {useClient} from "react-supabase";
 import {SlideUpTransition} from "../../../utils";
 import {FullHistory, UserWithGroupsAndRoles} from "../../../types/supabaseTypes";
 import moment from "moment";
 import {captureException} from "@sentry/react";
 import {SupabaseDrinkRepository} from "../../../repository/DrinkRepository";
-import {Permissions} from "types/supabase"
 import {AppRolesDialog} from "./AppRolesDialog";
+import {supabase} from "../../../components/services/supabase/supabaseClient";
+import {AlertMessage, AlertSnackbar} from "../../../components/AlertSnackbar";
 
 type EditUserDialogProps = {
     user: UserWithGroupsAndRoles,
@@ -42,16 +52,16 @@ export type UserEdited = {
     displayName: string,
     verified: boolean,
     userId: string,
-    permissions: Permissions[],
     roles: AppRole[]
 }
 
 const EditUserDialog = ({user, open, handleClose, onUserEditFinished, deleteUser}: EditUserDialogProps) => {
 
+    const [alertInfo, setAlertInfo] = useState<AlertMessage | null>(null);
     const [editUserRolesOpen, setEditUserRolesOpen] = useState(false);
-    const [verified, setVerified] = useState(user.verified)
+    const [verified, setVerified] = useState(user.verified);
+    const [password, setPassword] = useState("");
     const [deleteUserOpen, setDeleteUserOpen] = useState(false);
-    const [userPermissions, setUserPermissions] = useState<Permissions[]>([]);
     const [userRoles, setUserRoles] = useState<AppRole[]>([]);
     const [userInfo, setUserInfo] = useState({openAmount: 0});
     const [drinksForUser, setDrinksForUser] = useState<FullHistory[]>([]);
@@ -67,7 +77,6 @@ const EditUserDialog = ({user, open, handleClose, onUserEditFinished, deleteUser
             captureException(error);
         })
         setVerified(user.verified);
-        setUserPermissions(user.permissions ?? []);
         setUserRoles(user.roles);
     }, [user, client]);
 
@@ -79,7 +88,6 @@ const EditUserDialog = ({user, open, handleClose, onUserEditFinished, deleteUser
             userId: user.userId,
             displayName: data.get("displayName"),
             verified,
-            permissions: userPermissions,
             roles: userRoles
         } as UserEdited);
     }
@@ -145,6 +153,40 @@ const EditUserDialog = ({user, open, handleClose, onUserEditFinished, deleteUser
                                 defaultValue={user?.email ? user.email : ""}
                             />
                         </ListItemText>
+                    </ListItem>
+                    <ListItem
+                        key={"password"} sx={{pt: 0, pb: 0}}
+                        secondaryAction={<Button onClick={() => {
+                            supabase.auth.admin.updateUserById(
+                                user.userId,
+                                {
+                                    password: password
+                                }).then(result => {
+                                setAlertInfo({message: "Passwort erfolgreich geändert", severity: "success"})
+                            }).catch(error => {
+                                setAlertInfo({message: error.message, severity: "error"})
+                            })
+                        }}>Speichern</Button>}>
+                        <ListItemAvatar>
+                            <Avatar>
+                                <Password/>
+                            </Avatar>
+                        </ListItemAvatar>
+                        <ListItemText
+                            primaryTypographyProps={{
+                                style: {
+                                    whiteSpace: 'nowrap',
+                                    overflow: 'clip',
+                                    textOverflow: 'ellipsis'
+                                }
+                            }}
+                            primary={<TextField
+                                margin="normal"
+                                fullWidth
+                                label="Passwort ändern"
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
+                            />}/>
                     </ListItem>
                     <ListItem key={"verified"} secondaryAction={<Checkbox checked={verified}
                                                                           onChange={(e) => setVerified(e.target.checked)}/>}>
@@ -247,6 +289,7 @@ const EditUserDialog = ({user, open, handleClose, onUserEditFinished, deleteUser
                 </Button>
             </DialogActions>
         </Dialog>
+        <AlertSnackbar alertInfo={alertInfo} autoHideDuration={1500} close={() => setAlertInfo(null)}/>
     </Dialog>
 }
 

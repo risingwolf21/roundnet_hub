@@ -10,7 +10,6 @@ import {
 } from "@mui/icons-material"
 import {
     CircularProgress,
-    Container,
     Divider,
     IconButton,
     List,
@@ -34,6 +33,7 @@ import {
 } from "src/types/supabaseTypes"
 import EventAttendanceDialog from "../dialogs/EventAttendanceDialog"
 import {TablesUpdate} from "../../../types/supabase-generated.types";
+import Box from "@mui/material/Box";
 
 type EventInformationAttendanceProps = {
     user: User,
@@ -79,7 +79,7 @@ const EventInformationAttendance = ({
         }
     }, [client, dispatch, user, selectedEvent]);
 
-    return <Container sx={{p: 0, alignSelf: "center"}}>
+    return <Box sx={{p: 0, alignSelf: "center"}}>
         <Typography sx={{fontSize: 16, fontWeight: "bold", mt: 2}} color="text.secondary" gutterBottom>
             {t("attendees")}
         </Typography>
@@ -196,7 +196,7 @@ const EventInformationAttendance = ({
             hasWaitingList={attendance.some(x => x.state === "Waiting")}
             setOpen={(value) => setEventAttendanceState({open: value, index: eventAttendanceState.index})}
             attendance={attendance}/>
-    </Container>
+    </Box>
 }
 
 export default EventInformationAttendance;

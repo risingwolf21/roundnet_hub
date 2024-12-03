@@ -3,7 +3,6 @@ import {
     Avatar,
     Box,
     CircularProgress,
-    Container,
     IconButton,
     InputAdornment,
     List,
@@ -75,7 +74,7 @@ const EventInformationComments = ({
         }
     }, [client, dispatch, eventId]);
 
-    return <Container sx={{p: 0, alignSelf: "center"}}>
+    return <Box sx={{p: 0, alignSelf: "center"}}>
         <Typography sx={{fontSize: 16, fontWeight: "bold", mt: 2}} color="text.secondary" gutterBottom>
             Kommentare
         </Typography>
@@ -131,7 +130,7 @@ const EventInformationComments = ({
                     }}/>
             </Box>
         </Box>
-    </Container>
+    </Box>
 }
 
 export default EventInformationComments;

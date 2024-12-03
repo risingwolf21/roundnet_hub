@@ -1,20 +1,15 @@
-import {ArrowBack, Delete, DoNotDisturb, DoNotDisturbOff, Edit, Key, MoreVert} from "@mui/icons-material";
+import {Delete, DoNotDisturb, DoNotDisturbOff, Edit, Key, MoreVert} from "@mui/icons-material";
 import {
     Alert,
-    AppBar,
     Box,
     Button,
     CardContent,
-    CardHeader,
-    CardMedia,
-    Container,
     Divider,
     IconButton,
     ListItemIcon,
     ListItemText,
     Menu,
     MenuItem,
-    Toolbar,
     Typography
 } from "@mui/material";
 import React, {createRef, useEffect, useState} from "react";
@@ -35,6 +30,7 @@ import {EditEventOptionsDialog} from "./dialogs/EditEventOptionsDialog";
 import {isBefore} from "date-fns";
 import {SupabaseEventRepository} from "../../repository/EventRepository";
 import {AlertMessage, AlertSnackbar} from "../../components/AlertSnackbar";
+import Layout from "../../components/Layout";
 
 const EventInformation = ({
                               dispatch,
@@ -77,15 +73,15 @@ const EventInformation = ({
         if (!value) {
             return;
         } else if (value === "This Event") {
-            SupabaseEventRepository.deleteEvent(selectedEvent.id).then(()=> {
+            SupabaseEventRepository.deleteEvent(selectedEvent.id).then(() => {
                 navigate("/training", {replace: true});
-            }).catch((e)=> {
+            }).catch((e) => {
                 setAlertInfo({message: e.message, severity: "error"})
             })
         } else if (value === "This and following events") {
-            SupabaseEventRepository.deleteEventAndUpcomingEvents(selectedEvent.id, selectedEvent.key, selectedEvent.startingDateTime).then(()=> {
+            SupabaseEventRepository.deleteEventAndUpcomingEvents(selectedEvent.id, selectedEvent.key, selectedEvent.startingDateTime).then(() => {
                 navigate("/training", {replace: true});
-            }).catch((e)=> {
+            }).catch((e) => {
                 setAlertInfo({message: e.message, severity: "error"})
             })
         }
@@ -132,195 +128,171 @@ const EventInformation = ({
         }
 
         if (meetingDateTime) {
-            return <ListItemText sx={{m: 0}}
+            return <ListItemText sx={{m: 0, mt: 2}}
                                  primary={t("events.information.meetTime", {meetTime: new Date(meetingDateTime)})}
                                  secondary={startTimeTranslation}/>
         } else {
-            return <ListItemText sx={{m: 0}} primary={startTimeTranslation}/>
+            return <ListItemText sx={{m: 0, mt: 2}} primary={startTimeTranslation}/>
         }
 
     }
 
-    return <Box
-        sx={{
-            width: "100%",
-            direction: "column",
-            alignItems: "center",
-            justifyContent: "center"
-        }}>
-        <AppBar sx={{
-            zIndex: (theme) => theme.zIndex.drawer + 1,
-            width: "100%",
-        }} elevation={0} position="sticky">
-            <Toolbar>
-                <IconButton
-                    aria-label="open drawer"
-                    onClick={() => navigate(-1)}
-                    edge="start"
-                    sx={{mr: 2, color: "#fff"}}>
-                    <ArrowBack/>
-                </IconButton>
-                <Typography variant="h6" component="div" sx={{
-                    flexGrow: 1,
-                    whiteSpace: 'nowrap',
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis'
-                }}>{selectedEvent.title}</Typography>
-                {can("update", "event") && <>
-                    <Typography component="div">{selectedEvent.id.substring(0, 8)}</Typography>
-                    <IconButton sx={{color: "#fff", pr: 0}} onClick={handleClick}>
-                        <MoreVert/>
-                    </IconButton>
-                    <Menu
-                        id="simple-menu"
-                        anchorEl={anchorEl}
-                        keepMounted
-                        open={Boolean(anchorEl)}
-                        onClose={handleClose}>
-                        <MenuItem>
-                            <ListItemIcon>
-                                <Key/>
-                            </ListItemIcon>
-                            <ListItemText primary={`ID: ${selectedEvent.id.substring(0, 8)}`}/>
-                        </MenuItem>
-                        <MenuItem onClick={() => {
-                            setEditEventOptionOpen(true);
-                            handleClose();
-                        }}>
-                            <ListItemIcon>
-                                <Edit/>
-                            </ListItemIcon>
-                            <ListItemText primary="Bearbeiten"/>
-                        </MenuItem>
-                        <MenuItem onClick={() => {
-                            setCancelTrainingOpen(true);
-                            handleClose();
-                        }}>
-                            <ListItemIcon>
-                                {
-                                    selectedEvent.isCancelled ? <DoNotDisturbOff/> : <DoNotDisturb/>
-                                }
-                            </ListItemIcon>
-                            <ListItemText primary={selectedEvent.isCancelled ? "Stattfinden" : "Absagen"}/>
-                        </MenuItem>
-                        <MenuItem onClick={() => {
-                            setDeleteTrainingOpen(true);
-                            handleClose();
-                        }}>
-                            <ListItemIcon>
-                                <Delete/>
-                            </ListItemIcon>
-                            <ListItemText primary="Löschen"/>
-                        </MenuItem>
-                    </Menu>
-                </>
-                }
-            </Toolbar>
-        </AppBar>
-        <Box sx={{justifyContent: "space-between", display: "flex", flexDirection: "column"}}>
-            <Box>
+    return <Layout
+        appBarConfig={{
+            showBackButton: true, title: selectedEvent.title, showProfile: false
+        }}
+        appBarActions={can("update", "event") && <>
+            <Typography component="div">{selectedEvent.id.substring(0, 8)}</Typography>
+            <IconButton sx={{color: "#fff", pr: 0}} onClick={handleClick}>
+                <MoreVert/>
+            </IconButton>
+            <Menu
+                id="simple-menu"
+                anchorEl={anchorEl}
+                keepMounted
+                open={Boolean(anchorEl)}
+                onClose={handleClose}>
+                <MenuItem>
+                    <ListItemIcon>
+                        <Key/>
+                    </ListItemIcon>
+                    <ListItemText primary={`ID: ${selectedEvent.id.substring(0, 8)}`}/>
+                </MenuItem>
+                <MenuItem onClick={() => {
+                    setEditEventOptionOpen(true);
+                    handleClose();
+                }}>
+                    <ListItemIcon>
+                        <Edit/>
+                    </ListItemIcon>
+                    <ListItemText primary="Bearbeiten"/>
+                </MenuItem>
+                <MenuItem onClick={() => {
+                    setCancelTrainingOpen(true);
+                    handleClose();
+                }}>
+                    <ListItemIcon>
+                        {
+                            selectedEvent.isCancelled ? <DoNotDisturbOff/> : <DoNotDisturb/>
+                        }
+                    </ListItemIcon>
+                    <ListItemText primary={selectedEvent.isCancelled ? "Stattfinden" : "Absagen"}/>
+                </MenuItem>
+                <MenuItem onClick={() => {
+                    setDeleteTrainingOpen(true);
+                    handleClose();
+                }}>
+                    <ListItemIcon>
+                        <Delete/>
+                    </ListItemIcon>
+                    <ListItemText primary="Löschen"/>
+                </MenuItem>
+            </Menu>
+        </>
+        }>
+        <Box sx={{justifyContent: "space-between", p: 0, display: "flex", flexDirection: "column", maxWidth: "none"}}>
+            {
+                selectedEventPlace &&
+                <Box sx={{p: 0, width: "100%", maxHeight: "10%"}}>
+                    <Box component="button" onClick={() => {
+                        window.open("https://maps.google.com?q=" + selectedEventPlace.lat + "," + selectedEventPlace.lon, '_blank');
+                    }} sx={{
+                        position: "absolute",
+                        zIndex: 999,
+                        width: "100%",
+                        height: "150px",
+                        border: "none",
+                        background: "transparent"
+                    }}></Box>
+                    <MapContainer
+                        style={{width: "100%", height: "150px"}}
+                        center={[selectedEventPlace.lat, selectedEventPlace.lon]}
+                        zoom={15}
+                        tap={false}
+                        dragging={false}
+                        doubleClickZoom={false}
+                        scrollWheelZoom={false}
+                        attributionControl={false}
+                        zoomControl={false}>
+                        <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"/>
+                        <Marker
+                            position={[selectedEventPlace.lat, selectedEventPlace.lon]}
+                            interactive={false}/>
+                    </MapContainer>
+                </Box>
+            }
+            <Box sx={{px: 2}}>
                 {
-                    selectedEventPlace && <CardMedia sx={{maxHeight: "10%"}}>
-                        <Container sx={{p: 0, width: "100%", maxHeight: "10%", alignSelf: "center"}}>
-                            <Box component="button" onClick={() => {
-                                window.open("https://maps.google.com?q=" + selectedEventPlace.lat + "," + selectedEventPlace.lon, '_blank');
-                            }} sx={{
-                                position: "absolute",
-                                zIndex: 999,
-                                width: "100%",
-                                height: "150px",
-                                border: "none",
-                                background: "transparent"
-                            }}></Box>
-                            <MapContainer
-                                style={{width: "100%", height: "150px"}}
-                                center={[selectedEventPlace.lat, selectedEventPlace.lon]}
-                                zoom={15}
-                                tap={false}
-                                dragging={false}
-                                doubleClickZoom={false}
-                                scrollWheelZoom={false}
-                                attributionControl={false}
-                                zoomControl={false}>
-                                <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"/>
-                                <Marker
-                                    position={[selectedEventPlace.lat, selectedEventPlace.lon]}
-                                    interactive={false}/>
-                            </MapContainer>
-                        </Container>
-                    </CardMedia>
-                }
-                {
-                    selectedEvent.isCancelled && <Alert sx={{ml: 2, mr: 2, mt: 2}} severity="error">
+                    selectedEvent.isCancelled && <Alert sx={{mt: 2}} severity="error">
                         Dieses Event wurde <strong>abgesagt</strong>
                     </Alert>
                 }
                 {
                     answerDeadlineExpired(selectedEvent) && selectedEvent.answerDeadline &&
-                    <Alert sx={{ml: 2, mr: 2, mt: 2}} severity="info">
+                    <Alert sx={{mt: 2}} severity="info">
                         {t("events.information.answerDeadlineExceeded", {answerDeadline: new Date(selectedEvent.answerDeadline)})}
                     </Alert>
                 }
-                <Container sx={{p: 0, alignSelf: "center"}}>
-                    <CardHeader subheader={createCardSubHeader()} sx={{pb: 0}}/>
-                </Container>
-                <CardContent sx={{'&.MuiCardContent-root': {paddingBottom: 1}}}>
-
-                    <Container sx={{p: 0, alignSelf: "center"}}>
-                        <Typography sx={{fontSize: 16, fontWeight: "bold"}} color="text.secondary" gutterBottom>
-                            Beschreibung
-                        </Typography>
-                        <Typography pb={1}>{selectedEvent?.description}</Typography>
-                        <Divider/>
-
-                        {
-                            (selectedEvent.maxAttendees
-                                && selectedEvent.maxAttendees >= 0
-                                && selectedEvent.maxAttendees <= attendance.filter(x => x.state === "Attending").length
-                                && selectedEvent.userAttendance !== "Waiting"
-                                && selectedEvent.userAttendance !== "Attending") &&
-                            <Alert sx={{mt: 2}} severity="info" action={
-                                <Button variant="contained" size="small"
-                                        onClick={() => updateAttendance("Waiting", selectedEvent.userAttendance)}>
-                                    Beitreten
-                                </Button>
-                            }>
-                                Die maximale Anzahl der Teilnehmer ist erreicht. Du kannst trotzdem der Warteliste
-                                beitreten.
-                            </Alert>
-                        }
-
-                        {
-                            selectedEvent.userAttendance === "Waiting" &&
-                            <Alert sx={{mt: 2}} severity="warning" action={
-                                <Button variant="contained" size="small" sx={{backgroundColor: "#934b00"}}
-                                        onClick={() => updateAttendance("Declined", selectedEvent.userAttendance)}>
-                                    Verlassen
-                                </Button>
-                            }>
-                                {t("events.information.waitingListAccepted", {
-                                    place: attendance.filter(x => x.state === "Waiting").sort((a, b) => isBefore(a.lastUpdate, b.lastUpdate) ? 1 : 0).findIndex(x => x.user.userId === user.userId) + 1,
-                                    waitingListLength: attendance.filter(x => x.state === "Waiting").length
-                                })}
-                            </Alert>
-                        }
-                    </Container>
-                    <EventInformationAttendance
-                        user={user}
-                        attendance={attendance}
-                        keyHolders={keyHolders}
-                        attendanceLoading={attendanceLoading}
-                        selectedEvent={selectedEvent}
-                        updateAttendance={updateAttendance}/>
-
-                    <EventInformationComments
-                        eventId={selectedEvent.id}
-                        comments={comments}
-                        handleCommentSubmit={handleCommentSubmit}
-                        inputRef={inputRef}
-                        eventInThePast={eventInThePast(selectedEvent)}/>
-                </CardContent>
+                {
+                    createCardSubHeader()
+                }
             </Box>
+            <CardContent sx={{'&.MuiCardContent-root': {paddingBottom: 1}}}>
+
+                <Box sx={{p: 0, alignSelf: "center"}}>
+                    <Typography sx={{fontSize: 16, fontWeight: "bold"}} color="text.secondary" gutterBottom>
+                        Beschreibung
+                    </Typography>
+                    <Typography pb={1}>{selectedEvent?.description}</Typography>
+                    <Divider/>
+
+                    {
+                        (selectedEvent.maxAttendees
+                            && selectedEvent.maxAttendees >= 0
+                            && selectedEvent.maxAttendees <= attendance.filter(x => x.state === "Attending").length
+                            && selectedEvent.userAttendance !== "Waiting"
+                            && selectedEvent.userAttendance !== "Attending") &&
+                        <Alert sx={{mt: 2}} severity="info" action={
+                            <Button variant="contained" size="small"
+                                    onClick={() => updateAttendance("Waiting", selectedEvent.userAttendance)}>
+                                Beitreten
+                            </Button>
+                        }>
+                            Die maximale Anzahl der Teilnehmer ist erreicht. Du kannst trotzdem der Warteliste
+                            beitreten.
+                        </Alert>
+                    }
+
+                    {
+                        selectedEvent.userAttendance === "Waiting" &&
+                        <Alert sx={{mt: 2}} severity="warning" action={
+                            <Button variant="contained" size="small" sx={{backgroundColor: "#934b00"}}
+                                    onClick={() => updateAttendance("Declined", selectedEvent.userAttendance)}>
+                                Verlassen
+                            </Button>
+                        }>
+                            {t("events.information.waitingListAccepted", {
+                                place: attendance.filter(x => x.state === "Waiting").sort((a, b) => isBefore(a.lastUpdate, b.lastUpdate) ? 1 : 0).findIndex(x => x.user.userId === user.userId) + 1,
+                                waitingListLength: attendance.filter(x => x.state === "Waiting").length
+                            })}
+                        </Alert>
+                    }
+                </Box>
+                <EventInformationAttendance
+                    user={user}
+                    attendance={attendance}
+                    keyHolders={keyHolders}
+                    attendanceLoading={attendanceLoading}
+                    selectedEvent={selectedEvent}
+                    updateAttendance={updateAttendance}/>
+
+                <EventInformationComments
+                    eventId={selectedEvent.id}
+                    comments={comments}
+                    handleCommentSubmit={handleCommentSubmit}
+                    inputRef={inputRef}
+                    eventInThePast={eventInThePast(selectedEvent)}/>
+            </CardContent>
 
             <CancelTrainingDialog
                 cancelTrainingOpen={cancelTrainingOpen}
@@ -353,7 +325,7 @@ const EventInformation = ({
             dispatch(onEventErrorRead(null));
             setAlertInfo(null)
         }}/>
-    </Box>
+    </Layout>
 }
 
 export default EventInformation;

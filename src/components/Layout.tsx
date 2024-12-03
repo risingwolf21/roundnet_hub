@@ -1,4 +1,4 @@
-import React from "react";
+import React, {ReactNode} from "react";
 import {AppBar, Avatar, Box, IconButton, TextField, Toolbar, Typography} from "@mui/material";
 import {AccountCircle, ArrowBack} from "@mui/icons-material";
 import {useNavigate} from "react-router-dom";
@@ -6,7 +6,8 @@ import CustomBottomNavigation from "./BottomNavigation";
 import {useAuth} from "../features/auth/AuthContext";
 
 type Props = {
-    children: React.ReactNode,
+    children: ReactNode,
+    appBarActions?: ReactNode,
     appBarConfig?: {
         title?: string,
         showBackButton?: boolean,
@@ -18,6 +19,7 @@ type Props = {
 
 const Layout = ({
                     children,
+                    appBarActions,
                     appBarConfig: {
                         title = "Roundnet Karlsruhe",
                         showBackButton = false,
@@ -36,7 +38,7 @@ const Layout = ({
             <AppBar position="sticky" sx={{zIndex: (theme) => theme.zIndex.drawer + 1, background: "primary"}}>
                 <Toolbar sx={{
                     width: "calc(100% - 48px)",
-                    maxWidth: 1400,
+                    maxWidth: 1200,
                     mx: "auto"
                 }}>
                     {/* Optional Back Button */}
@@ -79,13 +81,16 @@ const Layout = ({
                             sx={{backgroundColor: "white", borderRadius: 1}}
                         />
                     )}
+                    {
+                        appBarActions && appBarActions
+                    }
                 </Toolbar>
             </AppBar>
 
             {/* Main Content */}
             <Box sx={{
                 width: "100%",
-                maxWidth: 1400,
+                maxWidth: 1200,
                 mx: "auto",
                 flexGrow: 1,
                 overflow: "auto",

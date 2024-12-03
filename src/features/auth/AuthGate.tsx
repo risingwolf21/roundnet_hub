@@ -45,8 +45,9 @@ export const AuthGate = ({children}: Props) => {
             ability.update(defineRulesFor(permissions, roles));
             dispatch(onUserChange(user))
             setSession(session);
-
-            if (location.pathname) {
+            if (event === "PASSWORD_RECOVERY") {
+                navigate("/reset-password", {replace: true});
+            } else if (location.pathname) {
                 navigate(location.pathname, {replace: true});
             } else {
                 navigate(`/${HOMEPAGE}`, {replace: true});

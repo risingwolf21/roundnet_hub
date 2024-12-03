@@ -47,7 +47,7 @@ export const AdminUsersRepository = {
             }));
         return supabase
             .from('user')
-            .update({displayName: user.displayName, verified: user.verified, permissions: user.permissions})
+            .update({displayName: user.displayName, verified: user.verified})
             .eq("userId", user.userId);
     },
 
