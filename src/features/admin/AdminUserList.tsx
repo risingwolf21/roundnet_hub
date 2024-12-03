@@ -1,6 +1,6 @@
 import {PersonOff} from "@mui/icons-material";
 import SearchIcon from "@mui/icons-material/Search";
-import {Badge, Chip, LinearProgress, List} from "@mui/material";
+import {Badge, Chip, InputAdornment, LinearProgress, List} from "@mui/material";
 import React, {useEffect, useState} from "react";
 import {useSelector} from "react-redux";
 import {useNavigate} from "react-router-dom";
@@ -15,6 +15,8 @@ import {captureException} from "@sentry/react";
 import {AdminUsersRepository} from "../../repository/AdminUsersRepository";
 import {AdminUserItem} from "./components/AdminUserItem";
 import Layout from "../../components/Layout";
+import TextField from "@mui/material/TextField";
+import Box from "@mui/material/Box";
 
 
 const AdminUserList = () => {
@@ -57,45 +59,53 @@ const AdminUserList = () => {
         return <Error message={error}/>
 
     return (<Layout>
-            <Search sx={{m: 2, width: "unset", backgroundColor: "gray", '.hover': {backgroundColor: "gray"}}}>
-                <SearchIconWrapper>
-                    <SearchIcon/>
-                </SearchIconWrapper>
-                <StyledInputBase
-                    placeholder="Search…"
+            <Box
+                sx={{px: 2, pt: 2}}>
+                <TextField
+                    fullWidth
+                    variant={"outlined"}
+                    placeholder={"Suche"}
+                    slotProps={{
+                        input: {
+                            startAdornment: (
+                                <InputAdornment position="start">
+                                    <SearchIcon/>
+                                </InputAdornment>
+                            ),
+                        },
+                    }}
                     onChange={(e) => setSearchString(e.target.value)}
-                    inputProps={{'aria-label': 'search'}}
-                />
-            </Search>
+                    value={searchString}/>
+            </Box>
             {
                 loading && <LinearProgress style={{position: "fixed", left: 0, right: 0, top: 56}}/>
             }
 
             <Badge sx={{m: 2}} color="info"
-               badgeContent={users.filter(x => searchString === "" || x.displayName?.toLowerCase().includes(searchString.toLowerCase())).filter(x => !x.verified).length}>
-            <Chip icon={<PersonOff/>} label="Not verified"
-                  onClick={() => setShowNotVerifiedUsers(!showNotVerifiedUsers)}
-                  variant={showNotVerifiedUsers ? "filled" : "outlined"}/>
-        </Badge>
+                   badgeContent={users.filter(x => searchString === "" || x.displayName?.toLowerCase().includes(searchString.toLowerCase())).filter(x => !x.verified).length}>
+                <Chip icon={<PersonOff aria-hidden={"false"}/>} label="Not verified"
+                      onClick={() => setShowNotVerifiedUsers(!showNotVerifiedUsers)}
+                      variant={showNotVerifiedUsers ? "filled" : "outlined"}/>
+            </Badge>
 
-        <List sx={{width: "100%"}}>
+            <List sx={{width: "100%"}}>
+                {
+                    users && users
+                        .filter((x: UserWithGroupsAndRoles) => searchString === "" || x.displayName?.toLowerCase().includes(searchString.toLowerCase()))
+                        .filter(x => (showNotVerifiedUsers && !x.verified) || (!showNotVerifiedUsers && x.verified))
+                        .map((user, index) => <AdminUserItem key={"user" + index} user={user}
+                                                             onEditClick={() => editUser(user)}/>)
+                }
+            </List>
             {
-                users && users
-                    .filter((x: UserWithGroupsAndRoles) => searchString === "" || x.displayName?.toLowerCase().includes(searchString.toLowerCase()))
-                    .filter(x => (showNotVerifiedUsers && !x.verified) || (!showNotVerifiedUsers && x.verified))
-                    .map((user, index) => <AdminUserItem key={"user" + index} user={user}
-                                                         onEditClick={() => editUser(user)}/>)
+                currentUser && <EditUserDialog
+                    open={editUserOpen}
+                    user={currentUser}
+                    handleClose={() => setEditUserOpen(false)}
+                    deleteUser={deleteUser}
+                    onUserEditFinished={onUserEditFinished}/>
             }
-        </List>
-        {
-            currentUser && <EditUserDialog
-                open={editUserOpen}
-                user={currentUser}
-                handleClose={() => setEditUserOpen(false)}
-                deleteUser={deleteUser}
-                onUserEditFinished={onUserEditFinished}/>
-        }
-        <AlertSnackbar alertInfo={alertInfo} autoHideDuration={1500} close={() => setAlertInfo(null)}/>
+            <AlertSnackbar alertInfo={alertInfo} autoHideDuration={1500} close={() => setAlertInfo(null)}/>
         </Layout>
     )
         ;

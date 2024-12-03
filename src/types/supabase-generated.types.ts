@@ -631,7 +631,6 @@ export type Database = {
           notifications:
             | Database["public"]["Enums"]["NotificationTags"][]
             | null
-          permissions: Database["public"]["Enums"]["Permissions"][] | null
           role: Database["public"]["Enums"]["UserRole"]
           userId: string
           verified: boolean
@@ -646,7 +645,6 @@ export type Database = {
           notifications?:
             | Database["public"]["Enums"]["NotificationTags"][]
             | null
-          permissions?: Database["public"]["Enums"]["Permissions"][] | null
           role?: Database["public"]["Enums"]["UserRole"]
           userId?: string
           verified?: boolean
@@ -661,7 +659,6 @@ export type Database = {
           notifications?:
             | Database["public"]["Enums"]["NotificationTags"][]
             | null
-          permissions?: Database["public"]["Enums"]["Permissions"][] | null
           role?: Database["public"]["Enums"]["UserRole"]
           userId?: string
           verified?: boolean
@@ -825,25 +822,18 @@ export type Database = {
         }
         Returns: undefined
       }
-      add_permission_to_all_users: {
+      authorize: {
         Args: {
-          permission: Database["public"]["Enums"]["Permissions"]
+          requested_permission: string
         }
-        Returns: undefined
+        Returns: boolean
       }
-      authorize:
-        | {
-            Args: {
-              requested_permission: Database["public"]["Enums"]["app_permission"]
-            }
-            Returns: boolean
-          }
-        | {
-            Args: {
-              requested_permission: string
-            }
-            Returns: boolean
-          }
+      authorizewithrole: {
+        Args: {
+          requested_role: string
+        }
+        Returns: boolean
+      }
       check_version: {
         Args: {
           input_version: string
@@ -957,19 +947,12 @@ export type Database = {
         | "item.update"
         | "item.insert"
         | "item.delete"
-      app_role:
-        | "admin"
-        | "groupModerator"
-        | "userModerator"
-        | "eventModerator"
-        | "eventUser"
-        | "drinkModerator"
-        | "drinkUser"
-        | "challengeModerator"
-        | "challengeUser"
-        | "itemModerator"
-        | "itemUser"
-      EventAttendance: "Declined" | "Attending" | "Unanswered" | "Waiting"
+      EventAttendance:
+        | "Declined"
+        | "Attending"
+        | "Unanswered"
+        | "Waiting"
+        | "AttendingAsTrainer"
       EventRecurrence: "Weekly" | "Fortnightly" | "Monthly" | "None"
       ItemType: "mtvStorage" | "mtvGym" | "mtvGymPalazzo" | "goethe"
       NotificationTags:
@@ -982,33 +965,6 @@ export type Database = {
         | "eventAttedanceChanged"
         | "challengeUpdate"
       PaymentState: "Open" | "Fulfilled"
-      Permissions:
-        | "use;drink"
-        | "edit;drink"
-        | "delete;drink"
-        | "view;drink"
-        | "use;training"
-        | "edit;training"
-        | "delete;training"
-        | "view;training"
-        | "edit;groups"
-        | "delete;groups"
-        | "view;groups"
-        | "edit;payments"
-        | "edit;user"
-        | "view;keyFinder"
-        | "use;user"
-        | "view;user"
-        | "delete;user"
-        | "edit;keyFinder"
-        | "delete;keyFinder"
-        | "view;notifications"
-        | "edit;notifications"
-        | "edit;history"
-        | "edit;edgeFunctions"
-        | "use;challenges"
-        | "view;challenges"
-        | "edit;challenges"
       ProductType: "Drink" | "Special" | "None"
       UserRole: "user" | "admin" | "procure" | "finance" | "trainer"
     }

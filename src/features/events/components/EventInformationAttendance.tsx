@@ -1,6 +1,8 @@
 import {
     CheckCircleOutline,
     HourglassBottom,
+    RecordVoiceOver,
+    RecordVoiceOverOutlined,
     RemoveCircleOutline,
     ThumbDownAlt,
     ThumbDownOffAlt,
@@ -118,19 +120,37 @@ const EventInformationAttendance = ({
                           open: true,
                           index: 0
                       })}
-                      secondaryAction={<IconButton
-                          onClick={(event) => {
-                              updateAttendance("Attending", selectedEvent.userAttendance);
-                              event.stopPropagation()
-                          }}
-                          disabled={selectedEvent.isCancelled || maxAttendeesExceeded(selectedEvent, attendance) || answerDeadlineExpired(selectedEvent) || eventInThePast(selectedEvent)}>
+                      secondaryAction={<>
+                          <IconButton
+                              onClick={(event) => {
+                                  updateAttendance("Attending", selectedEvent.userAttendance);
+                                  event.stopPropagation()
+                              }}
+                              disabled={selectedEvent.isCancelled || maxAttendeesExceeded(selectedEvent, attendance) || answerDeadlineExpired(selectedEvent) || eventInThePast(selectedEvent)}>
+                              {
+                                  selectedEvent.userAttendance === "Attending"
+                                      ?
+                                      <ThumbUpAlt fontSize="inherit" sx={{fontSize: "28px", color: "green"}}/>
+                                      : <ThumbUpOffAlt fontSize="inherit" sx={{fontSize: "28px"}}/>
+                              }
+                          </IconButton>
                           {
-                              selectedEvent.userAttendance === "Attending"
-                                  ?
-                                  <ThumbUpAlt fontSize="inherit" sx={{fontSize: "28px", color: "green"}}/>
-                                  : <ThumbUpOffAlt fontSize="inherit" sx={{fontSize: "28px"}}/>
+                              user.role === "trainer" && <IconButton
+                                  hidden={user.role !== "trainer"}
+                                  onClick={(event) => {
+                                      updateAttendance("AttendingAsTrainer", selectedEvent.userAttendance);
+                                      event.stopPropagation()
+                                  }}
+                                  disabled={selectedEvent.isCancelled || eventInThePast(selectedEvent)}>
+                                  {
+                                      selectedEvent.userAttendance === "AttendingAsTrainer"
+                                          ?
+                                          <RecordVoiceOver fontSize="inherit" sx={{fontSize: "28px", color: "green"}}/>
+                                          : <RecordVoiceOverOutlined fontSize="inherit" sx={{fontSize: "28px"}}/>
+                                  }
+                              </IconButton>
                           }
-                      </IconButton>}>
+                      </>}>
                 <ListItemAvatar sx={{justifyContent: "left", alignItems: "center", display: "flex"}}>
                     {
                         attendanceLoading ? <CircularProgress size={"20px"}/> :
@@ -138,7 +158,11 @@ const EventInformationAttendance = ({
                     }
                 </ListItemAvatar>
                 <ListItemText
-                    primary={(attendance.filter(x => x.state === "Attending").length) + " zusagen"}/>
+                    primary={t("events.information.attending", {
+                        count: attendance
+                            .filter(x => x.state === "Attending" || x.state === "AttendingAsTrainer")
+                            .length
+                    })}/>
             </ListItem>
             <Divider/>
             <ListItem key={"declineEvent"} sx={{'&.MuiListItem-root': {paddingLeft: 0}}}
@@ -166,7 +190,7 @@ const EventInformationAttendance = ({
                     }
                 </ListItemAvatar>
                 <ListItemText
-                    primary={(attendance.filter(x => x.state === "Declined").length ?? 0) + " absagen"}/>
+                    primary={t("events.information.declined", {count: attendance.filter(x => x.state === "Declined").length})}/>
             </ListItem>
             {
                 (attendance.filter(x => x.state === "Waiting").length ?? 0) > 0 && <>

@@ -1,6 +1,6 @@
 import {AppBar, Avatar, Box, List, ListItem, ListItemAvatar, ListItemText, Tab, Tabs, Typography} from "@mui/material"
 import React, {useEffect, useState} from "react";
-import {AccountBox} from "@mui/icons-material";
+import {AccountBox, RecordVoiceOver} from "@mui/icons-material";
 import {useTheme} from '@mui/material/styles';
 import {FullAttendance} from "../../../types/supabaseTypes";
 import {SwipeableDialog} from "../../../components/SwipeableDialog";
@@ -46,7 +46,12 @@ const AttendanceItem = ({attendance, onClick}: {
                 }
             </Avatar>
         </ListItemAvatar>
-        <ListItemText primary={attendance.user?.displayName}/>
+        <ListItemText primary={<Box sx={{display: "flex", alignItems: "center"}}>
+            {attendance.user?.displayName}
+            {
+                attendance.state === "AttendingAsTrainer" && <RecordVoiceOver sx={{ml: 1}}/>
+            }
+        </Box>}/>
     </ListItem>
 }
 
@@ -88,6 +93,14 @@ const EventAttendanceDialog = ({open, index, setOpen, attendance, hasWaitingList
             </AppBar>
             <TabPanel value={value} index={0} dir={theme.direction}>
                 <List>
+                    {
+                        attendance
+                            .filter((x: FullAttendance) => x.state === "AttendingAsTrainer")
+                            .sort((a, b) => compareDesc(a.lastUpdate, b.lastUpdate))
+                            .map((x: FullAttendance, index: number) =>
+                                <AttendanceItem attendance={x} key={x.user.userId + index}
+                                                onClick={() => navigate("/user/" + x.user.userId)}/>)
+                    }
                     {
                         attendance
                             .filter((x: FullAttendance) => x.state === "Attending")

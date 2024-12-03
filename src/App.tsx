@@ -1,6 +1,6 @@
 import {Container, Typography} from "@mui/material";
 import * as React from 'react';
-import {BrowserRouter, Navigate, Route} from 'react-router-dom';
+import {BrowserRouter, Navigate, Route, Routes} from 'react-router-dom';
 import Browse from './components/Browse';
 import {LoadingScreen} from "./components/LoadingScreen";
 import UpdateAvailable from './components/UpdateAvailable';
@@ -12,7 +12,6 @@ import NotVerifiedScreen from "./components/NotVerifiedScreen";
 import {AuthGate} from "./features/auth/AuthGate";
 import {SupabaseClient} from "./components/SupabaseClient";
 import {SupabaseQueryClient} from "./components/SupabaseQueryClient";
-import {SentryRoutes} from "./index";
 import {HOMEPAGE} from "./constants";
 import {FirebaseMessaging} from "./features/notifications/FirebaseMessaging";
 import {RecurringEventsProvider} from "./features/events/RecurringEvents";
@@ -57,7 +56,7 @@ const App = () => {
             <AuthGate>
                 <FirebaseMessaging>
                     <React.Suspense fallback={<LoadingScreen/>}>
-                        <SentryRoutes>
+                        <Routes>
                             <Route path='/' element={<Navigate replace to={`/${HOMEPAGE}`}/>}/>
                             <Route path='*' element={<Navigate replace to={`/${HOMEPAGE}`}/>}/>
 
@@ -111,7 +110,7 @@ const App = () => {
                             <Route path='/admin/supabase' element={<SupabaseClient/>}/>
                             <Route path='/admin/supabase/queries' element={<SupabaseQueryClient/>}/>
                             <Route path='/admin/permissions' element={<PermissionList/>}/>
-                        </SentryRoutes>
+                        </Routes>
                     </React.Suspense>
                 </FirebaseMessaging>
             </AuthGate>

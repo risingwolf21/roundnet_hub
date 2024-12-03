@@ -41,7 +41,11 @@
       "startTime": "Startet um {{ startTime, HH:mm }}",
       "startTimeAndEndTime": "Startet um {{ startTime, HH:mm }} und endet um {{ endTime, HH:mm }}",
       "waitingListAccepted": "Du bist auf Wartelisteplatz {{ place }} von {{ waitingListLength }} für dieses Event",
-      "waitingListPlace": "Warteliste Platz ({{ place }} / {{ waitingListLength }})"
+      "waitingListPlace": "Warteliste Platz ({{ place }} / {{ waitingListLength }})",
+      "attending_one": "{{count}} Zusage",
+      "attending_other": "{{count}} Zusagen",
+      "declined_one": "{{count}} Absage",
+      "declined_other": "{{count}} Absagen"
     },
     "startDateShortMonth":"{{date, MMM}}",
     "startDateDay":"{{date, d}}",
