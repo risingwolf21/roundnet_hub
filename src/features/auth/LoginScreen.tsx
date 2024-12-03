@@ -9,42 +9,47 @@ import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
 import Logo from "../../images/Karlsruher_Kojoten_Logo.svg";
 import {supabase} from "../../components/services/supabase/supabaseClient";
-import {CircularProgress} from "@mui/material";
-import {AlertMessage, AlertSnackbar} from "../../components/AlertSnackbar";
+import {Alert, CircularProgress} from "@mui/material";
+import {AlertMessage} from "../../components/AlertSnackbar";
 import {useNavigate} from "react-router-dom";
+import {Session} from "@supabase/supabase-js";
 
 type Credentials = {
     email: string,
     password: string
 }
 
-const LoginScreen = () => {
+type LoginScreenProps = {
+    onLoggedIn: (session: Session) => void
+}
+
+const LoginScreen = ({onLoggedIn}: LoginScreenProps) => {
 
     const [alertInfo, setAlertInfo] = useState<AlertMessage | null>(null);
     const [loginInProgress, setLoginInProgress] = useState(false);
 
     const navigate = useNavigate();
 
-    const onLogin = async (credentials: Credentials) => {
+    const onLogin = (credentials: Credentials) => {
         setAlertInfo(null);
-        setLoginInProgress(true)
-        const {data, error} = await supabase.auth.signInWithPassword({
+        setLoginInProgress(true);
+        supabase.auth.signInWithPassword({
             email: credentials.email,
             password: credentials.password
-        });
-        if (error) {
-            setAlertInfo({message: error.message, severity: "error"});
-            setLoginInProgress(false);
-        } else
-            supabase.from('user').select().eq("userId", data.user.id).then(async res => {
-                if (res.data && res.data.length === 1) {
-                    await supabase.auth.updateUser({
-                        data: {role: res.data[0].role}
-                    });
-                }
+        }).then(result => {
+            if (result.error) {
+                throw result.error;
+            } else if (!result.data.session) {
+                throw Error("Login failed without any error message. Please try again...")
+            } else {
+                onLoggedIn(result.data.session);
                 setAlertInfo(null);
                 setLoginInProgress(false);
-            })
+            }
+        }).catch((error) => {
+            setAlertInfo({message: error.message, severity: "error"});
+            setLoginInProgress(false);
+        });
     }
 
     const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
@@ -95,6 +100,11 @@ const LoginScreen = () => {
                         id="password"
                         autoComplete="current-password"
                     />
+                    {
+                        alertInfo && <Alert sx={{mt: 2}} severity="error">
+                            {alertInfo.message}
+                        </Alert>
+                    }
                     <Button
                         type="submit"
                         fullWidth
@@ -107,7 +117,7 @@ const LoginScreen = () => {
                             loginInProgress ? <CircularProgress/> : "Einloggen"
                         }
                     </Button>
-                    <Grid container>
+                    <Grid container sx={{justifyContent: "space-between"}}>
                         <Grid>
                             <Link href="#" variant="body2"
                                   onClick={() => navigate('/forgot-password', {replace: true})}>
@@ -125,7 +135,6 @@ const LoginScreen = () => {
                     </Grid>
                 </Box>
             </Box>
-            <AlertSnackbar alertInfo={alertInfo}/>
         </Container>
     );
 }

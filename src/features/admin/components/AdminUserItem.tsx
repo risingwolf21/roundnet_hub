@@ -1,26 +1,22 @@
-import {Box, IconButton, ListItem, ListItemAvatar, ListItemText, Typography} from "@mui/material";
-import {AccountCircle, AdminPanelSettings, Edit, EuroRounded, Liquor, Verified} from "@mui/icons-material";
+import {Avatar, Box, IconButton, ListItem, ListItemAvatar, ListItemText, Typography} from "@mui/material";
+import {AccountBox, Edit, Verified} from "@mui/icons-material";
 import React, {Fragment} from "react";
 
 export const AdminUserItem = ({user, onEditClick}: { user: User, onEditClick: () => void }) => {
-    let color = "rgba(0, 0, 0, 0.54)";
     return <ListItem divider
                      secondaryAction={<IconButton onClick={onEditClick}>
                          <Edit/>
                      </IconButton>}>
         <ListItemAvatar>
-            {
-                user.role === "user" && <AccountCircle htmlColor={color}/>
-            }
-            {
-                user.role === "finance" && <EuroRounded htmlColor={color}/>
-            }
-            {
-                user.role === "procure" && <Liquor htmlColor={color}/>
-            }
-            {
-                user.role === "admin" && <AdminPanelSettings htmlColor={color}/>
-            }
+            <Avatar sx={{borderRadius: 2}}>
+                {
+                    user.avatarUrl
+                        ?
+                        <img src={user.avatarUrl} alt="logo" width={"100%"}
+                             height={"100%"}/>
+                        : <AccountBox/>
+                }
+            </Avatar>
         </ListItemAvatar>
         <ListItemText primary={<Fragment>
             <Box sx={{display: "flex", flexDirection: "row", alignItems: "center"}}>

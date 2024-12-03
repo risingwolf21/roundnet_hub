@@ -24,7 +24,6 @@ import {SupabaseClient} from "@supabase/supabase-js";
 import CropImageDialog from "./CropImageDialog";
 import {
     AddPhotoAlternateOutlined,
-    AdminPanelSettingsOutlined,
     DeleteOutline,
     EditOutlined,
     EmailOutlined,
@@ -304,14 +303,6 @@ const UserScreen = ({user, client, dispatch, groups}: UserScreenProps) => {
                     label="Email"
                     margin="normal"/>
             </ListItem>
-            {
-                user.role === "admin" && <ListItem key={"adminRoles"} sx={{'&.MuiListItem-root': {p: 0}}}>
-                    <ListItemAvatar>
-                        <AdminPanelSettingsOutlined sx={{color: "rgba(0,0,0,0.54)"}}/>
-                    </ListItemAvatar>
-                    <ListItemText primary={"Adminrechte"} secondary={"Benutzerfreigabe"}/>
-                </ListItem>
-            }
             <List key={"groups"} subheader={<ListSubheader
                 sx={{zIndex: "-1", fontWeight: "bold", lineHeight: "normal", my: 2, pl: 0}}>Gruppen</ListSubheader>}>
                 {
@@ -346,13 +337,6 @@ const UserScreen = ({user, client, dispatch, groups}: UserScreenProps) => {
 
                         <NotificationSwitch title={"Event Anwesenheit aktualisiert"} tag={"eventAttedanceChanged"}
                                             loading={updatingNotificationTags} user={user} dispatch={dispatch}/>
-
-                        {
-                            user.role === "admin" &&
-                            <NotificationSwitch title={"Benutzer-Registrierung"} tag={"userRegistration"}
-                                                loading={updatingNotificationTags} user={user}
-                                                dispatch={dispatch}/>
-                        }
                     </>
                 }
                 {

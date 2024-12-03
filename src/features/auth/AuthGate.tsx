@@ -30,40 +30,56 @@ export const AuthGate = ({children}: Props) => {
     const [session, setSession] = useState<Session | null>(null);
     const [alertInfo, setAlertInfo] = useState<AlertMessage | null>(null);
 
-    const handleAuthChange = useCallback(async (event: AuthChangeEvent, session: Session | null) => {
-        try {
-            if (!session)
-                throw Error("Session was null");
-            const roles = await AdminPermissionsRepository.fetchRolesForUser(session.user.id);
-            const permissions = await AdminPermissionsRepository.fetchPermissionsForRoles(roles);
-            const {data: user} = await SupabaseUserRepository.fetchUser(session.user.id);
-
-            if (!user) {
-                throw Error("Fetching user in AuthGate was not successful.");
-            }
-            setUser({email: session.user.email, id: session.user.id, username: user.displayName});
-            ability.update(defineRulesFor(permissions, roles));
-            dispatch(onUserChange(user))
-            setSession(session);
-            if (event === "PASSWORD_RECOVERY") {
-                navigate("/reset-password", {replace: true});
-            } else if (location.pathname) {
-                navigate(location.pathname, {replace: true});
-            } else {
-                navigate(`/${HOMEPAGE}`, {replace: true});
-            }
-        } catch (e: any) {
+    const onLoggedIn = (session: Session) => {
+        handleAuthChange("SIGNED_IN", session).then(result => {
+            navigate(result.navigateTo, {replace: true});
+        }).catch(() => {
             setSession(null);
             ability.update(defineRulesFor([], []))
             dispatch(onUserChange(null));
             setUser(null)
+        })
+    }
+
+    const handleAuthChange = useCallback(async (event: AuthChangeEvent, session: Session | null): Promise<{
+        navigateTo: string
+    }> => {
+        if (!session)
+            throw Error("Session was null");
+        const roles = await AdminPermissionsRepository.fetchRolesForUser(session.user.id);
+        const permissions = await AdminPermissionsRepository.fetchPermissionsForRoles(roles);
+        const {data: user} = await SupabaseUserRepository.fetchUser(session.user.id);
+
+        if (!user) {
+            throw Error("Fetching user in AuthGate was not successful.");
+        }
+        setUser({email: session.user.email, id: session.user.id, username: user.displayName});
+        ability.update(defineRulesFor(permissions, roles));
+        dispatch(onUserChange(user))
+        setSession(session);
+        if (event === "PASSWORD_RECOVERY") {
+            return {navigateTo: "/reset-password"};
+        } else if (location.pathname) {
+            return {navigateTo: location.pathname};
+        } else {
+            return {navigateTo: `/${HOMEPAGE}`};
         }
     }, [dispatch])
 
     useEffect(() => {
         const {data: {subscription}} = client.auth
             .onAuthStateChange((event, session) => {
-                handleAuthChange(event, session);
+                if (event === "SIGNED_IN") {
+                    return;
+                }
+                handleAuthChange(event, session).then(result => {
+                    navigate(result.navigateTo, {replace: true});
+                }).catch(() => {
+                    setSession(null);
+                    ability.update(defineRulesFor([], []))
+                    dispatch(onUserChange(null));
+                    setUser(null)
+                })
             });
         return () => subscription.unsubscribe();
     }, [client, handleAuthChange]);
@@ -76,7 +92,7 @@ export const AuthGate = ({children}: Props) => {
                         {children}
                     </AuthContext.Provider>
                     : <NotVerifiedScreen/>
-                : <AuthPage/>
+                : <AuthPage onLoggedIn={onLoggedIn}/>
         }
         <AlertSnackbar alertInfo={alertInfo} autoHideDuration={1500} close={() => setAlertInfo(null)}/>
     </>
