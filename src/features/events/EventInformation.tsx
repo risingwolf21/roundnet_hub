@@ -31,6 +31,7 @@ import {isBefore} from "date-fns";
 import {SupabaseEventRepository} from "../../repository/EventRepository";
 import {AlertMessage, AlertSnackbar} from "../../components/AlertSnackbar";
 import Layout from "../../components/Layout";
+import {captureException} from "@sentry/react";
 
 const EventInformation = ({
                               dispatch,
@@ -76,12 +77,14 @@ const EventInformation = ({
             SupabaseEventRepository.deleteEvent(selectedEvent.id).then(() => {
                 navigate("/training", {replace: true});
             }).catch((e) => {
+                captureException(e);
                 setAlertInfo({message: e.message, severity: "error"})
             })
         } else if (value === "This and following events") {
             SupabaseEventRepository.deleteEventAndUpcomingEvents(selectedEvent.id, selectedEvent.key, selectedEvent.startingDateTime).then(() => {
                 navigate("/training", {replace: true});
             }).catch((e) => {
+                captureException(e);
                 setAlertInfo({message: e.message, severity: "error"})
             })
         }

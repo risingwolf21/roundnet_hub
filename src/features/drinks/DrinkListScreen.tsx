@@ -17,7 +17,7 @@ import Layout from "../../components/Layout";
 
 const SUCCESS_MESSAGE_INFO: AlertMessage = {message: "Getränke erfolgreich gebucht!", severity: "success"};
 
-const DrinkListScreen = ({user, drinks, drinksLoading, drinksError, dispatch}: DrinkListScreenProps) => {
+const DrinkListScreen = ({user, drinks, drinksLoading, drinksError}: DrinkListScreenProps) => {
 
     const [addedDrinks, setAddedDrinks] = useState<DrinkCounter[]>([]);
     const [loading, setLoading] = useState(false);
@@ -32,7 +32,7 @@ const DrinkListScreen = ({user, drinks, drinksLoading, drinksError, dispatch}: D
     }, [drinksError]);
 
     const confirmDrinksDialog = (message: AlertMessage) => {
-        setAlertInfo(SUCCESS_MESSAGE_INFO);
+        setAlertInfo(message);
         setLoading(false);
     }
 
@@ -61,11 +61,13 @@ const DrinkListScreen = ({user, drinks, drinksLoading, drinksError, dispatch}: D
                         setAddedDrinks([]);
                         confirmDrinksDialog(SUCCESS_MESSAGE_INFO);
                     }).catch(error => {
+                    captureException(error);
                     let message = error?.message ?? "Payment could not be created";
                     resetDrinks(message);
                 })
             }
         } catch (error) {
+            captureException(error)
             let message = (error as Error).message;
             resetDrinks(message);
         }

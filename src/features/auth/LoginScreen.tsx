@@ -13,6 +13,7 @@ import {Alert, CircularProgress} from "@mui/material";
 import {AlertMessage} from "../../components/AlertSnackbar";
 import {useNavigate} from "react-router-dom";
 import {Session} from "@supabase/supabase-js";
+import {captureException} from "@sentry/react";
 
 type Credentials = {
     email: string,
@@ -47,6 +48,7 @@ const LoginScreen = ({onLoggedIn}: LoginScreenProps) => {
                 setLoginInProgress(false);
             }
         }).catch((error) => {
+            captureException(error);
             setAlertInfo({message: error.message, severity: "error"});
             setLoginInProgress(false);
         });

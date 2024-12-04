@@ -21,6 +21,7 @@ import KeyIcon from "@mui/icons-material/Key";
 import {GroupsRepository} from "../../../repository/GroupsRepository";
 import {TablesUpdate} from "../../../types/supabase-generated.types";
 import {useAuth} from "../../auth/AuthContext";
+import {captureException} from "@sentry/react";
 
 type EditOrAddGroupDialogProps = {
     open: boolean,
@@ -74,10 +75,12 @@ export const EditOrAddGroupDialog = ({open, handleClose, groupToEdit}: EditOrAdd
                     setErrorSnackbar({message: "", open: false});
                     handleClose();
                 }).catch(error => {
+                    captureException(error);
                     setErrorSnackbar({message: error.message ?? "", open: true});
                 })
 
         }).catch(error => {
+            captureException(error);
             setErrorSnackbar({message: error.message ?? "", open: true});
         });
     }

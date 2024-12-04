@@ -72,6 +72,7 @@ const GroupInformation = ({users, loading, group}: GroupInformationProps) => {
             setSearchAndSelectUsersOpen(false);
             dispatch(fetchSingleGroupAsync({id: group.id}));
         }).catch(error => {
+            captureException(error);
             setAlertInfo({
                 message: `Failed to add ${users.length} user to the group ${group.name} ${error.message}`,
                 severity: "error"
