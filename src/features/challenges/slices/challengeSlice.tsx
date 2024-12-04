@@ -99,7 +99,10 @@ const challengeSlice = createSlice({
                 state.loading = false;
                 state.error = null;
                 challengeAdapter.removeAll(state);
-                challengeAdapter.addMany(state, action.payload);
+                challengeAdapter.addMany(state, action.payload.map(x =>({
+                    ...x,
+                    stats:[]
+                })));
             })
             .addCase(fetchChallengesAsync.rejected, (state, action) => {
                 state.loading = false;
@@ -135,14 +138,12 @@ const challengeSlice = createSlice({
 
 export const fetchChallengesAsync = createAsyncThunk("fetchChallengesAsync", async () => {
     const response = await ChallengeRepository.fetchChallenges();
-    return response.data?.map(x => {
-        return {
-            ...x,
-            stats: [
-                ...x.stats.reduce(reduceChallengeStats, new Map<string, ChallengeStatWithUser>()).values()
-            ].sort(sortChallengeStats)
-        }
-    }) ?? [];
+    return response.data ?? [];
+});
+
+export const fetchArchivedChallenges = createAsyncThunk("fetchArchivedChallenges", async () => {
+    const response = await ChallengeRepository.fetchArchivedChallenges();
+    return response.data ?? [];
 });
 
 export const fetchChallengeStatsSingleAsync = createAsyncThunk("fetchChallengeStatsSingleAsync", async ({challengeId}: {

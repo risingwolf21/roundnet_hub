@@ -6,7 +6,9 @@ import {FullAttendance} from "../../../types/supabaseTypes";
 import {SwipeableDialog} from "../../../components/SwipeableDialog";
 import {EventAttendanceDialogProps} from "../types";
 import {useNavigate} from "react-router-dom";
-import {compareDesc, formatDistanceToNow, isBefore} from "date-fns";
+import {compareDesc, formatDistanceToNowStrict, isBefore} from "date-fns";
+import {useTranslation} from "react-i18next";
+import {de} from "date-fns/locale";
 
 function TabPanel(props: any) {
     const {children, value, index, ...other} = props;
@@ -29,13 +31,16 @@ const AttendanceItem = ({attendance, onClick, required_item}: {
     onClick: () => void,
     required_item?: Item
 }) => {
+    const {t} = useTranslation();
     return <ListItem onClick={onClick}
                      secondaryAction={<Typography style={{
                          fontSize: "10pt",
                          color: "rgba(0,0,0,0.6)",
                          marginTop: "8px",
                          alignContent: "baseline"
-                     }}>{formatDistanceToNow(attendance.lastUpdate)} ago</Typography>}>
+                     }}>{t("events.information.commentTimeAgo", {
+                         time: formatDistanceToNowStrict(attendance.lastUpdate, {locale: de})
+                     })}</Typography>}>
         <ListItemAvatar>
             <Avatar sx={{borderRadius: 2}}>
                 {
@@ -88,7 +93,7 @@ const EventAttendanceDialog = ({
         minHeight={60}
         setOpen={setOpen}>
         <Box sx={{paddingLeft: 0}}>
-            <AppBar position="sticky" sx={{'&.MuiAppBar-root': {backgroundColor: "#fff", color: "#000"}}}>
+            <AppBar position="sticky" elevation={0} sx={{'&.MuiAppBar-root': {backgroundColor: "#fff", color: "#000"}}}>
                 <Tabs
                     value={value}
                     onChange={handleChange}

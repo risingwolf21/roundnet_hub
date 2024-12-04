@@ -15,13 +15,10 @@ import {mainTheme} from './themes/themes';
 import "./translation/i18n";
 //@ts-ignore
 import "src/apocalypseHandler.js";
-import {createRoutesFromChildren, matchRoutes, Routes, useLocation, useNavigationType} from "react-router-dom";
+import {createRoutesFromChildren, matchRoutes, useLocation, useNavigationType} from "react-router-dom";
 import {SupabaseClient} from '@supabase/supabase-js'
 import {SupabaseIntegration} from '@supabase/sentry-js-integration'
 import {captureConsoleIntegration} from "@sentry/integrations";
-
-
-export const SentryRoutes = Sentry.withSentryReactRouterV6Routing(Routes);
 
 if (process.env.REACT_APP_ENV === "production") {
     Sentry.init({

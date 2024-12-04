@@ -7,6 +7,7 @@ import {useAppDispatch} from "../../redux/store";
 import {InfiniteScrollList} from "../../components/InfiniteScrollList";
 import {EventItem} from "./components/EventItem";
 import {
+    editEvent,
     fetchPastEventsAsync,
     fetchUpcomingEventsAsync,
     onEventDelete,
@@ -107,7 +108,10 @@ const EventScreen = ({events, loading, error, endReached, user}: EventScreenProp
         {
             can("insert", "event") &&
             <Fab sx={{background: "#66bb6a", position: "fixed", right: "16px", bottom: "56px", mb: "16px"}}
-                 onClick={() => navigate("/training/createOrUpdate/InsertEvent")}>
+                 onClick={() => {
+                     dispatch(editEvent(null));
+                     navigate("/training/createOrUpdate/InsertEvent");
+                 }}>
                 {
                     <AddIcon sx={{color: "white"}}/>
                 }

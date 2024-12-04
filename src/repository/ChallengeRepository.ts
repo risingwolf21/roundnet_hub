@@ -4,14 +4,25 @@ import {PostgrestSingleResponse} from "@supabase/supabase-js";
 import {formatDateToDatabase} from "../utils";
 
 export const ChallengeRepository = {
-    async fetchChallenges(): Promise<PostgrestSingleResponse<FullChallenge[]>> {
+    async fetchChallenges(): Promise<PostgrestSingleResponse<Challenge[]>> {
         return supabase
             .from("challenge")
-            .select("*, stats: challenge_stats (*, user: user(*))")
+            .select("*")
             .or(`end_date.is.null,end_date.gt.'${formatDateToDatabase(new Date())}'`)
             .order("name")
             .throwOnError()
-            .returns<FullChallenge[]>();
+            .returns<Challenge[]>();
+    },
+
+    async fetchArchivedChallenges(): Promise<PostgrestSingleResponse<Challenge[]>> {
+        return supabase
+            .from("challenge")
+            .select("*")
+            .not("end_date", "is", null)
+            .lt("end_date", formatDateToDatabase(new Date()))
+            .order("end_date")
+            .throwOnError()
+            .returns<Challenge[]>();
     },
 
     async fetchChallengeStats(id: string): Promise<PostgrestSingleResponse<FullChallenge>> {

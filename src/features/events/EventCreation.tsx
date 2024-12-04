@@ -54,8 +54,9 @@ const emptyEvent = {
     meetingDateTime: null,
     endDateTime: null,
     recurrence: "None",
-    maxAttendees: -1,
-    required_item: null
+    maxAttendees: null,
+    required_item: null,
+    answerDeadline: null
 } as FullEvent;
 
 const CreateEvent = ({t, eventToEdit, option}: CreateEventProps) => {
@@ -284,6 +285,7 @@ const CreateEvent = ({t, eventToEdit, option}: CreateEventProps) => {
 
                     <DateTimePicker slotProps={{textField: {error: false}}} disabled={editedEvent.endDateTime === null}
                                     sx={{width: "100%"}} views={['year', 'month', 'day', 'hours', 'minutes']}
+                                    format={"DD MMMM YYYY HH:mm"}
                                     ampm={false} minDateTime={dayjsFromDb(editedEvent.startingDateTime)} label="Ende"
                                     onChange={(val) => setEditedEvent({
                                         ...editedEvent,
@@ -360,6 +362,7 @@ const CreateEvent = ({t, eventToEdit, option}: CreateEventProps) => {
                     <DateTimePicker slotProps={{textField: {error: false}}}
                                     disabled={editedEvent.answerDeadline === null} sx={{width: "100%"}}
                                     label="Answer deadline" disablePast ampm={false}
+                                    format={"DD MMMM YYYY HH:mm"}
                                     onChange={(val) => setEditedEvent({
                                         ...editedEvent,
                                         answerDeadline: formatDateToDatabase(set(new Date(editedEvent.answerDeadline ?? ""), {
@@ -390,10 +393,10 @@ const CreateEvent = ({t, eventToEdit, option}: CreateEventProps) => {
                         disabled={editedEvent.maxAttendees === null}
                         value={editedEvent.maxAttendees}
                         onChange={(event, val) => {
-                            if (event.type === 'click')
+                            if (event.type === 'click' && val && val >= 0)
                                 setEditedEvent({...editedEvent, maxAttendees: val ?? 0});
                         }}
-                        placeholder="Max number of attendees"/>
+                        placeholder="Maximale Teilnehmerzahl"/>
                 </ListItem>
 
                 <ListItem sx={{pt: 0, pb: 0, mb: 2}} key={"itemType"}>
@@ -409,9 +412,9 @@ const CreateEvent = ({t, eventToEdit, option}: CreateEventProps) => {
                         placeholder={"Benötigter Schlüssel"}
                         disabled={editedEvent.required_item === null}
                         fullWidth
-                        value={editedEvent.required_item}
+                        value={editedEvent.required_item ?? "none"}
                         onChange={(e) => {
-                            if (e.target.value === undefined)
+                            if (e.target.value === "none")
                                 setEditedEvent({...editedEvent, required_item: null})
                             else
                                 setEditedEvent({...editedEvent, required_item: e.target.value as Enums<'ItemType'>})
@@ -419,7 +422,7 @@ const CreateEvent = ({t, eventToEdit, option}: CreateEventProps) => {
                         <MenuItem value={"mtvStorage"}>MTV Kellerschlüssel</MenuItem>
                         <MenuItem value={"mtvGym"}>MTV Gymschlüssel</MenuItem>
                         <MenuItem value={"mtvGymPalazzo"}>MTV Gym/Palazzoschlüssel</MenuItem>
-                        <MenuItem value={undefined}>Keiner</MenuItem>
+                        <MenuItem value={"none"}>Keiner</MenuItem>
                     </Select>
                 </ListItem>
 

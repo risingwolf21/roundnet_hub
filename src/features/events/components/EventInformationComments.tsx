@@ -20,7 +20,7 @@ import {
     onEventCommentInsert,
     onEventCommentUpdate
 } from "src/features/events/slices/eventCommentsSlice"
-import {formatDistanceToNow} from "date-fns"
+import {formatDistanceToNowStrict} from "date-fns"
 import {SupabaseEventRepository} from "../../../repository/EventRepository";
 import {useTranslation} from "react-i18next";
 import {de} from "date-fns/locale"
@@ -97,7 +97,7 @@ const EventInformationComments = ({
                             }}>
                             <ListItemAvatar onClick={(e) => {
                                 e.stopPropagation();
-                                navigate("/user/"+x.user.userId)
+                                navigate("/user/" + x.user.userId)
                             }}>
                                 <Avatar sx={{borderRadius: 2}}>
                                     {
@@ -133,7 +133,7 @@ const EventInformationComments = ({
                                         fontSize: "10pt",
                                         color: "rgba(0,0,0,0.6)"
                                     }}>{t("events.information.commentTimeAgo", {
-                                        time: formatDistanceToNow(x.created_at, {locale: de})
+                                        time: formatDistanceToNowStrict(x.created_at, {locale: de})
                                     })}</Typography>
                                 </Box>
                                 <Typography sx={{
