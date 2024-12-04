@@ -214,7 +214,7 @@ const UserScreen = ({user, client, dispatch, groups}: UserScreenProps) => {
     };
 
     return <Layout appBarConfig={{title: "Profil", showBackButton: true, showProfile: false}}>
-        <List sx={{pl: 2, pr: 2, pb: 8}}>
+        <List sx={{pl: 2, pr: 2}}>
             <Container key={"avatar"} sx={{
                 display: "flex",
                 justifyContent: "center",
@@ -261,8 +261,6 @@ const UserScreen = ({user, client, dispatch, groups}: UserScreenProps) => {
                             onClick={() => navigate("/reset-password")}>
                         Passwort ändern
                     </Button>
-                </Box>
-                <Box sx={{display: "flex", justifyContent: "center", mt: 1}}>
                     <Button startIcon={<Logout/>}
                             onClick={() => client.auth.signOut()}>
                         Logout

@@ -63,15 +63,15 @@ export const ItemHolderScreen = ({dispatch, keyHolders, loading, user, t}: ItemH
 
     return <Layout appBarConfig={{showBackButton: true}}>
         <LoadingIndicator loading={loading}/>
-        <Alert sx={{ml: 2, mr: 2, mt: 2}} severity="info">
-            Bitte euren Schlüssel gut aufbewahren und Übergaben eintragen! Wer unverschuldet den Schlüssel verloren hat
-            (z.B. Diebstahl), wird von der Abteilung unterstützt. Wer den Schlüssel selbst verschuldet verliert (z.B.
-            verlegt), muss für den neuen Schlüssel selbst aufkommen. Grundsätzlich ist immer die eingetragene Person für
-            den Schlüssel verantwortlich!
-        </Alert>
-        <List sx={{ width: "100%"}}>
+        <List sx={{ width: "100%", pb: 10}}>
+            <Alert key={"alert"} sx={{ml: 2, mr: 2, mt: 2}} severity="info">
+                Bitte euren Schlüssel gut aufbewahren und Übergaben eintragen! Wer unverschuldet den Schlüssel verloren hat
+                (z.B. Diebstahl), wird von der Abteilung unterstützt. Wer den Schlüssel selbst verschuldet verliert (z.B.
+                verlegt), muss für den neuen Schlüssel selbst aufkommen. Grundsätzlich ist immer die eingetragene Person für
+                den Schlüssel verantwortlich!
+            </Alert>
             {
-                keyHolders.map((x: FullItemHolder) => <ItemHolderItem x={x} t={t} user={user}
+                keyHolders.map((x: FullItemHolder) => <ItemHolderItem key={x.id} x={x} t={t} user={user}
                                                                       isEditingMode={isEditingMode}
                                                                       setItemToEdit={setItemToEdit}
                                                                       setAddOrUpdateKeysOpen={setAddOrUpdateKeysOpen}

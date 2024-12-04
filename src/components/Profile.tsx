@@ -39,7 +39,7 @@ const UserScreen = () => {
         }
     }, [userId, user]);
 
-    return <Layout>
+    return <Layout appBarConfig={{showBackButton: true}}>
         <LoadingIndicator loading={loading}/>
         <List sx={{pl: 2, pr: 2, pb: 8}}>
             <Container key={"avatar"} sx={{

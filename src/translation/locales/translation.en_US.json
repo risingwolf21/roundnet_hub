@@ -45,7 +45,8 @@
       "attending_one": "{{count}} attendance",
       "attending_other": "{{count}} attendances",
       "declined_one": "{{count}} declined",
-      "declined_other": "{{count}} declined"
+      "declined_other": "{{count}} declined",
+      "commentTimeAgo": "{{time}} ago"
     },
     "startDateShortMonth":"{{date, MMM}}",
     "startDateDay":"{{date, d}}",

@@ -15,7 +15,7 @@ type DrinkListProps = {
 
 const DrinkList = ({ drinks, onAddDrinkClick, onRemoveDrinkClick, addedDrinks, visibleTypes }: DrinkListProps) => {
 
-    return <List>
+    return <List sx={{pb: 10}}>
         {
             Array.from(groupBy(drinks.filter((x: Drink) => !x.deleted && x.active && visibleTypes.some(y => y === x.type)), (x) => x.type)).sort().map(([key, mappedDrinks]) =>
                 <List key={key} subheader={<ListSubheader sx={{ zIndex: "-1", fontWeight: "bold", lineHeight: "normal", my: 1 }} id="nested-list-subheader">{nameOfProductType(key as ProductType)}</ListSubheader>}>

@@ -8,7 +8,6 @@ import {
     List,
     ListItem,
     ListItemAvatar,
-    ListItemText,
     TextField,
     Typography
 } from "@mui/material"
@@ -23,6 +22,9 @@ import {
 } from "src/features/events/slices/eventCommentsSlice"
 import {formatDistanceToNow} from "date-fns"
 import {SupabaseEventRepository} from "../../../repository/EventRepository";
+import {useTranslation} from "react-i18next";
+import {de} from "date-fns/locale"
+import {useNavigate} from "react-router-dom";
 
 type EventInformationCommentsProps = {
     comments: FullComment[],
@@ -39,8 +41,10 @@ const EventInformationComments = ({
                                       eventId,
                                       eventInThePast
                                   }: EventInformationCommentsProps) => {
+    const {t} = useTranslation();
     const client = useClient();
     const dispatch = useAppDispatch();
+    const navigate = useNavigate();
     useEffect(() => {
 
         let subscription = client.channel("public:event_comments")
@@ -74,7 +78,7 @@ const EventInformationComments = ({
         }
     }, [client, dispatch, eventId]);
 
-    return <Box sx={{p: 0, alignSelf: "center"}}>
+    return <Box sx={{p: 0, pb: 2, alignSelf: "center"}}>
         <Typography sx={{fontSize: 16, fontWeight: "bold", mt: 2}} color="text.secondary" gutterBottom>
             Kommentare
         </Typography>
@@ -86,15 +90,15 @@ const EventInformationComments = ({
                             divider={index !== comments.length - 1} dense
                             key={index}
                             sx={{
-                                '&.MuiListItem-root': {paddingLeft: 0},
-                            }}
-                            secondaryAction={<Typography style={{
-                                fontSize: "10pt",
-                                color: "rgba(0,0,0,0.6)",
-                                marginTop: "8px",
-                                alignContent: "baseline"
-                            }}>{formatDistanceToNow(x.created_at)} ago</Typography>}>
-                            <ListItemAvatar>
+                                justifyContent: "space-between",
+                                "&.MuiListItem-root": {
+                                    paddingLeft: 0
+                                },
+                            }}>
+                            <ListItemAvatar onClick={(e) => {
+                                e.stopPropagation();
+                                navigate("/user/"+x.user.userId)
+                            }}>
                                 <Avatar sx={{borderRadius: 2}}>
                                     {
                                         x.pending
@@ -105,8 +109,42 @@ const EventInformationComments = ({
                                     }
                                 </Avatar>
                             </ListItemAvatar>
-                            <ListItemText primaryTypographyProps={{fontWeight: "bold", fontSize: "11pt"}}
-                                          primary={x.displayName} secondary={x.comment}/>
+                            <Box sx={{
+                                width: "100%",
+                                display: "flex",
+                                flexDirection: "column",
+                                justifyContent: "start",
+                                alignContent: "start",
+                                mt: "6px",
+                                mb: "6px"
+                            }}>
+                                <Box sx={{
+                                    display: "flex",
+                                    flexDirection: "row",
+                                    justifyContent: "space-between",
+                                    width: "100%",
+                                }}>
+                                    <Typography style={{
+                                        fontWeight: "bold",
+                                        fontSize: "10pt",
+                                        color: "rgba(0,0,0,0.8)"
+                                    }}>{x.displayName}</Typography>
+                                    <Typography style={{
+                                        fontSize: "10pt",
+                                        color: "rgba(0,0,0,0.6)"
+                                    }}>{t("events.information.commentTimeAgo", {
+                                        time: formatDistanceToNow(x.created_at, {locale: de})
+                                    })}</Typography>
+                                </Box>
+                                <Typography sx={{
+                                    margin: 0,
+                                    fontFamily: '"Roboto", "Helvetica", "Arial"," sans-serif"',
+                                    fontWeight: 400,
+                                    fontSize: "0.875rem",
+                                    lineHeight: "1.43",
+                                    color: "rgba(0, 0, 0, 0.6)"
+                                }}>{x.comment}</Typography>
+                            </Box>
                         </ListItem>)
                 }
             </List>

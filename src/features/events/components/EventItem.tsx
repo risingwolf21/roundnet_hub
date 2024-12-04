@@ -1,4 +1,11 @@
-import {HourglassBottom, ThumbDownAlt, ThumbDownOffAlt, ThumbUpAlt, ThumbUpOffAlt} from "@mui/icons-material"
+import {
+    HourglassBottom,
+    RecordVoiceOver,
+    ThumbDownAlt,
+    ThumbDownOffAlt,
+    ThumbUpAlt,
+    ThumbUpOffAlt
+} from "@mui/icons-material"
 import {Box, CircularProgress, IconButton, ListItem, ListItemAvatar, ListItemText, Typography} from "@mui/material"
 import {toDate} from "date-fns"
 import {TFunction} from "i18next"
@@ -37,16 +44,26 @@ export const EventItem = ({event, onClick, attendEvent, declineEvent, attendance
                                              : <ThumbDownOffAlt fontSize="inherit" sx={{fontSize: "28px"}}/>
                                      }
                                  </IconButton>
-                                 <IconButton onClick={(event) => {
-                                     attendEvent();
-                                     event.stopPropagation();
-                                 }} disabled={event.isCancelled || answerDeadlineExpired(event) || eventInThePast(event)}>
-                                     {
-                                         event.userAttendance === "Attending"
-                                             ? <ThumbUpAlt fontSize="inherit" sx={{fontSize: "28px", color: "green"}}/>
-                                             : <ThumbUpOffAlt fontSize="inherit" sx={{fontSize: "28px"}}/>
-                                     }
-                                 </IconButton>
+                                 {
+                                     event.userAttendance === "AttendingAsTrainer" ? <IconButton
+                                             disabled={event.isCancelled || answerDeadlineExpired(event) || eventInThePast(event)}>
+                                             <RecordVoiceOver fontSize="inherit"
+                                                              sx={{fontSize: "28px", color: "green"}}/>
+                                         </IconButton>
+                                         : <IconButton
+                                             onClick={(event) => {
+                                                 attendEvent();
+                                                 event.stopPropagation();
+                                             }}
+                                             disabled={event.isCancelled || answerDeadlineExpired(event) || eventInThePast(event)}>
+                                             {
+                                                 event.userAttendance === "Attending"
+                                                     ? <ThumbUpAlt fontSize="inherit"
+                                                                   sx={{fontSize: "28px", color: "green"}}/>
+                                                     : <ThumbUpOffAlt fontSize="inherit" sx={{fontSize: "28px"}}/>
+                                             }
+                                         </IconButton>
+                                 }
                              </Box>}>
         <ListItemAvatar>
             <Box sx={{display: "flex", flexDirection: "column", justifyContent: "left"}}>

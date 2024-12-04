@@ -45,7 +45,8 @@
       "attending_one": "{{count}} Zusage",
       "attending_other": "{{count}} Zusagen",
       "declined_one": "{{count}} Absage",
-      "declined_other": "{{count}} Absagen"
+      "declined_other": "{{count}} Absagen",
+      "commentTimeAgo": "vor {{time}}"
     },
     "startDateShortMonth":"{{date, MMM}}",
     "startDateDay":"{{date, d}}",

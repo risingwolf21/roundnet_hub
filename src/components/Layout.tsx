@@ -33,7 +33,7 @@ const Layout = ({
     const user = useAuth();
 
     return (
-        <Box sx={{display: "flex", flexDirection: "column", height: "100vh"}}>
+        <Box sx={{display: "flex", flexDirection: "column", overflow: "hidden", height: "100vh"}}>
             {/* AppBar */}
             <AppBar position="sticky" sx={{zIndex: (theme) => theme.zIndex.drawer + 1, background: "primary"}}>
                 <Toolbar sx={{
@@ -92,6 +92,7 @@ const Layout = ({
                 width: "100%",
                 maxWidth: 1200,
                 mx: "auto",
+                mb: 7,
                 flexGrow: 1,
                 overflow: "auto",
             }}>{children}</Box>
