@@ -141,7 +141,7 @@ const EventInformation = ({
         appBarConfig={{
             showBackButton: true, title: selectedEvent.title, showProfile: false
         }}
-        appBarActions={can("update", "event") && <>
+        appBarActions={(can("update", "event") || can("delete", "event")) && <>
             <Typography component="div">{selectedEvent.id.substring(0, 8)}</Typography>
             <IconButton sx={{color: "#fff", pr: 0}} onClick={handleClick}>
                 <MoreVert/>
@@ -158,19 +158,23 @@ const EventInformation = ({
                     </ListItemIcon>
                     <ListItemText primary={`ID: ${selectedEvent.id.substring(0, 8)}`}/>
                 </MenuItem>
-                <MenuItem onClick={() => {
-                    setEditEventOptionOpen(true);
-                    handleClose();
-                }}>
+                <MenuItem
+                    hidden={!can("update", "event")}
+                    onClick={() => {
+                        setEditEventOptionOpen(true);
+                        handleClose();
+                    }}>
                     <ListItemIcon>
                         <Edit/>
                     </ListItemIcon>
                     <ListItemText primary="Bearbeiten"/>
                 </MenuItem>
-                <MenuItem onClick={() => {
-                    setCancelTrainingOpen(true);
-                    handleClose();
-                }}>
+                <MenuItem
+                    hidden={!can("update", "event")}
+                    onClick={() => {
+                        setCancelTrainingOpen(true);
+                        handleClose();
+                    }}>
                     <ListItemIcon>
                         {
                             selectedEvent.isCancelled ? <DoNotDisturbOff/> : <DoNotDisturb/>
@@ -178,10 +182,12 @@ const EventInformation = ({
                     </ListItemIcon>
                     <ListItemText primary={selectedEvent.isCancelled ? "Stattfinden" : "Absagen"}/>
                 </MenuItem>
-                <MenuItem onClick={() => {
-                    setDeleteTrainingOpen(true);
-                    handleClose();
-                }}>
+                <MenuItem
+                    hidden={!can("delete", "event")}
+                    onClick={() => {
+                        setDeleteTrainingOpen(true);
+                        handleClose();
+                    }}>
                     <ListItemIcon>
                         <Delete/>
                     </ListItemIcon>

@@ -1,6 +1,6 @@
 import {
     CheckCircleOutline,
-    HourglassBottom,
+    HourglassBottom, Key,
     RecordVoiceOver,
     RecordVoiceOverOutlined,
     RemoveCircleOutline,
@@ -87,13 +87,17 @@ const EventInformationAttendance = ({
         </Typography>
         <List sx={{p: 0}}>
             {
-                attendance.filter(x => x.state === "Attending").map(y => y.user.userId)
-                    .some(x => keyHolders.filter(y => y.type === selectedEvent.required_item)
+                attendance
+                    .filter(x => x.state === "Attending")
+                    .map(y => y.user.userId)
+                    .some(x => keyHolders
+                        .filter(y => y.type === selectedEvent.required_item)
                         .filter(y => y.current_holder !== null)
-                        .map(y => y.current_holder.userId).includes(x)) &&
+                        .map(y => y.current_holder.userId)
+                        .includes(x)) &&
                 <ListItem key={"keyAttendees"} sx={{'&.MuiListItem-root': {paddingLeft: 0}}} divider>
                     <ListItemAvatar sx={{justifyContent: "left", alignItems: "center", display: "flex"}}>
-                        <VerifiedOutlined sx={{color: (theme) => theme.palette.success.main}}/>
+                        <Key sx={{color: (theme) => theme.palette.success.main}}/>
                     </ListItemAvatar>
                     <ListItemText primary={t("events.information.keyHolderAttending")}/>
                 </ListItem>
@@ -136,7 +140,6 @@ const EventInformationAttendance = ({
                           </IconButton>
                           {
                               user.role === "trainer" && <IconButton
-                                  hidden={user.role !== "trainer"}
                                   onClick={(event) => {
                                       updateAttendance("AttendingAsTrainer", selectedEvent.userAttendance);
                                       event.stopPropagation()
@@ -219,7 +222,14 @@ const EventInformationAttendance = ({
             index={eventAttendanceState.index}
             hasWaitingList={attendance.some(x => x.state === "Waiting")}
             setOpen={(value) => setEventAttendanceState({open: value, index: eventAttendanceState.index})}
-            attendance={attendance}/>
+            attendance={attendance}
+            usersWithRequiredItem={keyHolders
+                .filter(x => x.type === selectedEvent.required_item)
+                .map(x => ({
+                        user: x.current_holder.userId,
+                        item: x
+                    })
+                )}/>
     </Box>
 }
 

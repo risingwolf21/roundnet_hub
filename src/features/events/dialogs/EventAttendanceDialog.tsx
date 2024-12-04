@@ -1,6 +1,6 @@
 import {AppBar, Avatar, Box, List, ListItem, ListItemAvatar, ListItemText, Tab, Tabs, Typography} from "@mui/material"
 import React, {useEffect, useState} from "react";
-import {AccountBox, RecordVoiceOver} from "@mui/icons-material";
+import {AccountBox, Key, RecordVoiceOver} from "@mui/icons-material";
 import {useTheme} from '@mui/material/styles';
 import {FullAttendance} from "../../../types/supabaseTypes";
 import {SwipeableDialog} from "../../../components/SwipeableDialog";
@@ -24,9 +24,10 @@ function TabPanel(props: any) {
     );
 }
 
-const AttendanceItem = ({attendance, onClick}: {
+const AttendanceItem = ({attendance, onClick, required_item}: {
     attendance: FullAttendance,
-    onClick: () => void
+    onClick: () => void,
+    required_item?: Item
 }) => {
     return <ListItem onClick={onClick}
                      secondaryAction={<Typography style={{
@@ -51,12 +52,22 @@ const AttendanceItem = ({attendance, onClick}: {
             {
                 attendance.state === "AttendingAsTrainer" && <RecordVoiceOver sx={{ml: 1}}/>
             }
+            {
+                required_item && <Key sx={{ml: 1, color: required_item.color}}/>
+            }
         </Box>}/>
     </ListItem>
 }
 
 
-const EventAttendanceDialog = ({open, index, setOpen, attendance, hasWaitingList}: EventAttendanceDialogProps) => {
+const EventAttendanceDialog = ({
+                                   open,
+                                   index,
+                                   setOpen,
+                                   attendance,
+                                   hasWaitingList,
+                                   usersWithRequiredItem
+                               }: EventAttendanceDialogProps) => {
 
     const [value, setValue] = useState(index ?? 0);
     const theme = useTheme();
@@ -98,16 +109,22 @@ const EventAttendanceDialog = ({open, index, setOpen, attendance, hasWaitingList
                             .filter((x: FullAttendance) => x.state === "AttendingAsTrainer")
                             .sort((a, b) => compareDesc(a.lastUpdate, b.lastUpdate))
                             .map((x: FullAttendance, index: number) =>
-                                <AttendanceItem attendance={x} key={x.user.userId + index}
-                                                onClick={() => navigate("/user/" + x.user.userId)}/>)
+                                <AttendanceItem
+                                    attendance={x}
+                                    key={x.user.userId + index}
+                                    onClick={() => navigate("/user/" + x.user.userId)}
+                                    required_item={usersWithRequiredItem.find(y => y.user === x.user.userId)?.item}/>)
                     }
                     {
                         attendance
                             .filter((x: FullAttendance) => x.state === "Attending")
                             .sort((a, b) => compareDesc(a.lastUpdate, b.lastUpdate))
                             .map((x: FullAttendance, index: number) =>
-                                <AttendanceItem attendance={x} key={x.user.userId + index}
-                                                onClick={() => navigate("/user/" + x.user.userId)}/>)
+                                <AttendanceItem
+                                    attendance={x}
+                                    key={x.user.userId + index}
+                                    onClick={() => navigate("/user/" + x.user.userId)}
+                                    required_item={usersWithRequiredItem.find(y => y.user === x.user.userId)?.item}/>)
                     }
                 </List>
             </TabPanel>

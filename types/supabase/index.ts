@@ -1,7 +1,6 @@
 import {Enums, Tables, TablesInsert, TablesUpdate} from "../../src/types/supabase-generated.types";
 
 export type Event = Tables<'events'>;
-export type Permissions = Enums<'Permissions'>;
 export type History = Tables<'history'>;
 export type Notification = Tables<'notifications'>;
 
@@ -37,8 +36,7 @@ declare global {
     type EventRecurrence = Enums<'EventRecurrence'>
     type PaymentState = Enums<'PaymentState'>
     type ItemType = Enums<'ItemType'>
-    type AppRole = Enums<'app_role'>
-    type AppPermission = Enums<'app_permission'>
+    type UserRole = Enums<'UserRole'>
 
 }
 

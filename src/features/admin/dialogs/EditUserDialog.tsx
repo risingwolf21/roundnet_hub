@@ -39,6 +39,7 @@ import {SupabaseDrinkRepository} from "../../../repository/DrinkRepository";
 import {AppRolesDialog} from "./AppRolesDialog";
 import {supabase} from "../../../components/services/supabase/supabaseClient";
 import {AlertMessage, AlertSnackbar} from "../../../components/AlertSnackbar";
+import {UserRoleDialog} from "./UserRoleDialog";
 
 type EditUserDialogProps = {
     user: UserWithGroupsAndRoles,
@@ -52,16 +53,19 @@ export type UserEdited = {
     displayName: string,
     verified: boolean,
     userId: string,
-    roles: AppRole[]
+    roles: AppRole[],
+    role: UserRole
 }
 
 const EditUserDialog = ({user, open, handleClose, onUserEditFinished, deleteUser}: EditUserDialogProps) => {
 
     const [alertInfo, setAlertInfo] = useState<AlertMessage | null>(null);
     const [editUserRolesOpen, setEditUserRolesOpen] = useState(false);
+    const [editRoleOpen, setEditRoleOpen] = useState(false);
     const [verified, setVerified] = useState(user.verified);
     const [password, setPassword] = useState("");
     const [deleteUserOpen, setDeleteUserOpen] = useState(false);
+    const [role, setRole] = useState(user.role);
     const [userRoles, setUserRoles] = useState<AppRole[]>([]);
     const [userInfo, setUserInfo] = useState({openAmount: 0});
     const [drinksForUser, setDrinksForUser] = useState<FullHistory[]>([]);
@@ -88,7 +92,8 @@ const EditUserDialog = ({user, open, handleClose, onUserEditFinished, deleteUser
             userId: user.userId,
             displayName: data.get("displayName"),
             verified,
-            roles: userRoles
+            roles: userRoles,
+            role: role
         } as UserEdited);
     }
 
@@ -197,6 +202,24 @@ const EditUserDialog = ({user, open, handleClose, onUserEditFinished, deleteUser
                         </ListItemAvatar>
                         <ListItemText primary="Verified"/>
                     </ListItem>
+                    <ListItem
+                        key={"role"}
+                        onClick={() => {
+                        }}
+                        secondaryAction={
+                            <IconButton onClick={(event) => {
+                                setEditRoleOpen(true);
+                                event.stopPropagation();
+                            }}>
+                                <Edit/>
+                            </IconButton>}>
+                        <ListItemAvatar>
+                            <Avatar>
+                                <AccountCircle/>
+                            </Avatar>
+                        </ListItemAvatar>
+                        <ListItemText primary={role} secondary={"User Role"}/>
+                    </ListItem>
                     <ListItem key={"user_roles"} onClick={() => setEditUserRolesOpen(true)}
                               secondaryAction={
                                   <IconButton onClick={(event) => {
@@ -210,7 +233,8 @@ const EditUserDialog = ({user, open, handleClose, onUserEditFinished, deleteUser
                                 <ManageAccounts/>
                             </Avatar>
                         </ListItemAvatar>
-                        <ListItemText primary={user.roles.map(x => x.name).join(", ")}/>
+                        <ListItemText primary={user.roles.map(x => x.name).join(", ")}
+                                      secondary={"App Roles"}/>
                     </ListItem>
                     <Divider/>
                     <List subheader={<ListSubheader>Gruppen</ListSubheader>}>
@@ -265,6 +289,14 @@ const EditUserDialog = ({user, open, handleClose, onUserEditFinished, deleteUser
             handleSubmit={(roles: AppRole[]) => {
                 setUserRoles(roles);
                 setEditUserRolesOpen(false)
+            }}/>
+        <UserRoleDialog
+            open={editRoleOpen}
+            role={role}
+            handleClose={() => setEditRoleOpen(false)}
+            handleSubmit={(role: UserRole) => {
+                setRole(role);
+                setEditRoleOpen(false)
             }}/>
         <Dialog open={deleteUserOpen}>
             <DialogTitle>
