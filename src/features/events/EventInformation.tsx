@@ -6,6 +6,7 @@ import {
   CardContent,
   Divider,
   IconButton,
+  List,
   ListItemIcon,
   ListItemText,
   Menu,
@@ -210,7 +211,7 @@ const EventInformation = ({
         )
       }
     >
-      <Box sx={{ justifyContent: 'space-between', p: 0, display: 'flex', flexDirection: 'column', maxWidth: 'none' }}>
+      <List sx={{ p: 0 }}>
         {selectedEventPlace && (
           <Box sx={{ p: 0, width: '100%', maxHeight: '10%' }}>
             <Box
@@ -363,7 +364,7 @@ const EventInformation = ({
             }
           }}
         />
-      </Box>
+      </List>
       <AlertSnackbar
         alertInfo={alertInfo}
         close={() => {
