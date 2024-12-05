@@ -4,6 +4,7 @@ import { AccountCircle, ArrowBack } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import CustomBottomNavigation from './BottomNavigation';
 import { useAuth } from '../features/auth/AuthContext';
+import Grid from '@mui/material/Grid2';
 
 type Props = {
   children: ReactNode;
@@ -32,7 +33,7 @@ const Layout = ({
   const user = useAuth();
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', overflow: 'hidden', height: '100vh' }}>
+    <Box sx={{ display: 'flex', flexDirection: 'column', height: '100vh' }}>
       {/* AppBar */}
       <AppBar position="static" sx={{ zIndex: (theme) => theme.zIndex.drawer + 1, background: 'primary' }}>
         <Toolbar
@@ -90,8 +91,7 @@ const Layout = ({
           width: '100%',
           maxWidth: 1200,
           mx: 'auto',
-          mb: 7,
-          flexGrow: 1,
+          flex: 1,
           overflow: 'auto',
         }}
       >
