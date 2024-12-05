@@ -65,10 +65,9 @@ const CreateEvent = ({t, eventToEdit, option}: CreateEventProps) => {
 
     const [editedEvent, setEditedEvent] = useState<FullEvent>(eventToEdit ?? emptyEvent);
     const [loading, setLoading] = useState(false);
-    const [selectGroupOpen, setSelectGroupOpen] = useState(false);
-    const [stopRepeatDialogOpen, setStopRepeatDialogOpen] = useState(false);
-    const [repeatDialogOpen, setRepeatDialogOpen] = useState(false);
-    const [searchPlacesDialogOpen, setSearchPlacesDialogOpen] = useState(false);
+    const [dialogOpen, setDialogOpen]
+        = useState<"group" | "stopRepeat" | "repeat" | "places" | null>(null);
+
     const [errorSnackbar, setErrorSnackbar] = useState({open: false, message: ""});
     const [selectedPlace, setSelectedPlace] = useState<PlaceType>({
         lat: 49.0226481,
@@ -205,7 +204,7 @@ const CreateEvent = ({t, eventToEdit, option}: CreateEventProps) => {
                         margin="normal"/>
                 </ListItem>
 
-                <ListItemButton onClick={() => setSelectGroupOpen(true)} key={"group"}>
+                <ListItemButton onClick={() => setDialogOpen("group")} key={"group"}>
                     <ListItemAvatar>
                         {
                             editedEvent.fullGroup && <FiberManualRecord sx={{color: editedEvent.fullGroup.color}}/>
@@ -301,14 +300,14 @@ const CreateEvent = ({t, eventToEdit, option}: CreateEventProps) => {
                                     })} value={editedEvent.endDateTime ? dayjsFromDb(editedEvent.endDateTime) : null}/>
                 </ListItem>
 
-                <ListItem onClick={() => setSearchPlacesDialogOpen(true)} key={"searchPlace"}>
+                <ListItem onClick={() => setDialogOpen("places")} key={"searchPlace"}>
                     <ListItemAvatar>
                         <Map/>
                     </ListItemAvatar>
 
                     <ListItemText primary={selectedPlace?.name ?? "Nothing selected"}/>
                 </ListItem>
-                <ListItem sx={{'&.MuiListItem-root': {pb: 1, pt: 0}}} onClick={() => setSearchPlacesDialogOpen(true)}
+                <ListItem sx={{'&.MuiListItem-root': {pb: 1, pt: 0}}} onClick={() => setDialogOpen("places")}
                           key={"searchPlaceMap"}>
                     <ListItemAvatar>
                     </ListItemAvatar>
@@ -333,14 +332,14 @@ const CreateEvent = ({t, eventToEdit, option}: CreateEventProps) => {
 
                 <Divider/>
 
-                <ListItem onClick={() => setRepeatDialogOpen(true)} key={"recurrence"}>
+                <ListItem onClick={() => setDialogOpen("repeat")} key={"recurrence"}>
                     <ListItemAvatar>
                         <EventRepeatIcon/>
                     </ListItemAvatar>
                     <ListItemText primary={"Wiederholung"} secondary={editedEvent.recurrence}/>
                 </ListItem>
 
-                <ListItem onClick={() => setStopRepeatDialogOpen(true)}
+                <ListItem onClick={() => setDialogOpen("stopRepeat")}
                           key={"stopRecurrence"}>
                     <ListItemAvatar/>
                     <ListItemText primary={"Wiederholung stoppen"}
@@ -428,7 +427,7 @@ const CreateEvent = ({t, eventToEdit, option}: CreateEventProps) => {
 
             </List>
         </Box>
-        <Dialog open={repeatDialogOpen} onClose={() => setRepeatDialogOpen(false)}>
+        <Dialog open={dialogOpen === "repeat"} onClose={() => setDialogOpen(null)}>
             <DialogTitle>Wiederholung</DialogTitle>
             <DialogContent>
                 <FormControl sx={{m: 1, minWidth: 120}}>
@@ -437,7 +436,7 @@ const CreateEvent = ({t, eventToEdit, option}: CreateEventProps) => {
                         value={editedEvent.recurrence}
                         onChange={(e) => {
                             setEditedEvent({...editedEvent, recurrence: e.target.value as EventRecurrence})
-                            setRepeatDialogOpen(false);
+                            setDialogOpen(null);
                         }}
                         name="radio-buttons-group">
                         {
@@ -455,7 +454,7 @@ const CreateEvent = ({t, eventToEdit, option}: CreateEventProps) => {
             </DialogContent>
         </Dialog>
 
-        <Dialog open={stopRepeatDialogOpen} onClose={() => setStopRepeatDialogOpen(false)}>
+        <Dialog open={dialogOpen === "stopRepeat"} onClose={() => setDialogOpen(null)}>
             <DialogTitle>Wiederholung</DialogTitle>
             <DialogContent>
 
@@ -487,27 +486,27 @@ const CreateEvent = ({t, eventToEdit, option}: CreateEventProps) => {
 
             </DialogContent>
             <DialogActions>
-                <Button onClick={() => setStopRepeatDialogOpen(false)}>Bestätigen</Button>
+                <Button onClick={() => setDialogOpen(null)}>Bestätigen</Button>
             </DialogActions>
         </Dialog>
 
-        <SelectGroupDialog open={selectGroupOpen}
-                           handleClose={() => setSelectGroupOpen(false)}
+        <SelectGroupDialog open={dialogOpen === "group"}
+                           handleClose={() => setDialogOpen(null)}
                            handleSubmit={(group) => {
                                setEditedEvent({...editedEvent, group: group.id, fullGroup: group})
-                               setSelectGroupOpen(false);
+                               setDialogOpen(null);
                            }}/>
 
         <SearchPlacesDialog
-            open={searchPlacesDialogOpen}
-            handleClose={() => setSearchPlacesDialogOpen(false)}
+            open={dialogOpen === "places"}
+            handleClose={() => setDialogOpen(null)}
             placeSelected={(place) => {
                 setSelectedPlace({
                     name: place.name,
                     lat: place.lat,
                     lon: place.lon
                 });
-                setSearchPlacesDialogOpen(false)
+                setDialogOpen(null);
             }}/>
 
         <Snackbar sx={{position: "fixed", right: "16px",}} open={errorSnackbar.open} autoHideDuration={1500}>
