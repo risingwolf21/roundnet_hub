@@ -103,6 +103,7 @@ const EventScreen = ({ events, loading, error, user }: EventScreenProps) => {
       <List sx={{ pb: 10 }}>
         {events.map((event) => (
           <EventItem
+            key={event.id}
             event={event}
             t={t}
             attendanceUpdating={event.attendanceUpdating}

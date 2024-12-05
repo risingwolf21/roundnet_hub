@@ -28,7 +28,7 @@ const CustomBottomNavigation = ({ t }: { t: TFunction }) => {
   };
 
   return (
-    <Paper sx={{ position: 'static', bottom: 0, left: 0, right: 0 }} elevation={3}>
+    <Paper sx={{ position: 'absolute', bottom: 0, left: 0, right: 0 }} elevation={3}>
       <BottomNavigation value={tab} onChange={handleChange}>
         {can('select', 'event') && (
           <BottomNavigationAction

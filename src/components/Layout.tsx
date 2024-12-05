@@ -90,6 +90,7 @@ const Layout = ({
           width: '100%',
           maxWidth: 1200,
           mx: 'auto',
+          mb: 7,
           flexGrow: 1,
           overflow: 'auto',
         }}
