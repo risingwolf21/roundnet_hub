@@ -4,8 +4,6 @@ body {
   margin: 0;
 }
 
-main
-{
-    display: block; /* because <main/> is very new */
-    
+main {
+  display: block; /* because <main/> is very new */
 }

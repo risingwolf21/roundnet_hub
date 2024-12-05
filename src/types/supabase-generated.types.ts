@@ -1,1072 +1,1043 @@
-export type Json =
-  | string
-  | number
-  | boolean
-  | null
-  | { [key: string]: Json | undefined }
-  | Json[]
+export type Json = string | number | boolean | null | { [key: string]: Json | undefined } | Json[];
 
 export type Database = {
   public: {
     Tables: {
       app_permissions: {
         Row: {
-          id: string
-          name: string
-        }
+          id: string;
+          name: string;
+        };
         Insert: {
-          id?: string
-          name: string
-        }
+          id?: string;
+          name: string;
+        };
         Update: {
-          id?: string
-          name?: string
-        }
-        Relationships: []
-      }
+          id?: string;
+          name?: string;
+        };
+        Relationships: [];
+      };
       app_roles: {
         Row: {
-          id: string
-          name: string
-        }
+          id: string;
+          name: string;
+        };
         Insert: {
-          id?: string
-          name: string
-        }
+          id?: string;
+          name: string;
+        };
         Update: {
-          id?: string
-          name?: string
-        }
-        Relationships: []
-      }
+          id?: string;
+          name?: string;
+        };
+        Relationships: [];
+      };
       challenge: {
         Row: {
-          automated: boolean
-          created_at: string
-          description: string
-          end_date: string | null
-          group: number
-          id: number
-          max_points_per_week: number | null
-          name: string
-        }
+          automated: boolean;
+          created_at: string;
+          description: string;
+          end_date: string | null;
+          group: number;
+          id: number;
+          max_points_per_week: number | null;
+          name: string;
+        };
         Insert: {
-          automated?: boolean
-          created_at?: string
-          description?: string
-          end_date?: string | null
-          group: number
-          id?: number
-          max_points_per_week?: number | null
-          name?: string
-        }
+          automated?: boolean;
+          created_at?: string;
+          description?: string;
+          end_date?: string | null;
+          group: number;
+          id?: number;
+          max_points_per_week?: number | null;
+          name?: string;
+        };
         Update: {
-          automated?: boolean
-          created_at?: string
-          description?: string
-          end_date?: string | null
-          group?: number
-          id?: number
-          max_points_per_week?: number | null
-          name?: string
-        }
+          automated?: boolean;
+          created_at?: string;
+          description?: string;
+          end_date?: string | null;
+          group?: number;
+          id?: number;
+          max_points_per_week?: number | null;
+          name?: string;
+        };
         Relationships: [
           {
-            foreignKeyName: "challenge_group_fkey"
-            columns: ["group"]
-            isOneToOne: false
-            referencedRelation: "event_group"
-            referencedColumns: ["id"]
+            foreignKeyName: 'challenge_group_fkey';
+            columns: ['group'];
+            isOneToOne: false;
+            referencedRelation: 'event_group';
+            referencedColumns: ['id'];
           },
-        ]
-      }
+        ];
+      };
       challenge_stats: {
         Row: {
-          challenge: number
-          count: number
-          created_at: string
-          id: number
-          user: string
-        }
+          challenge: number;
+          count: number;
+          created_at: string;
+          id: number;
+          user: string;
+        };
         Insert: {
-          challenge: number
-          count?: number
-          created_at?: string
-          id?: number
-          user: string
-        }
+          challenge: number;
+          count?: number;
+          created_at?: string;
+          id?: number;
+          user: string;
+        };
         Update: {
-          challenge?: number
-          count?: number
-          created_at?: string
-          id?: number
-          user?: string
-        }
+          challenge?: number;
+          count?: number;
+          created_at?: string;
+          id?: number;
+          user?: string;
+        };
         Relationships: [
           {
-            foreignKeyName: "challenge_stats_challenge_fkey"
-            columns: ["challenge"]
-            isOneToOne: false
-            referencedRelation: "challenge"
-            referencedColumns: ["id"]
+            foreignKeyName: 'challenge_stats_challenge_fkey';
+            columns: ['challenge'];
+            isOneToOne: false;
+            referencedRelation: 'challenge';
+            referencedColumns: ['id'];
           },
           {
-            foreignKeyName: "challenge_stats_user_fkey"
-            columns: ["user"]
-            isOneToOne: false
-            referencedRelation: "user"
-            referencedColumns: ["userId"]
+            foreignKeyName: 'challenge_stats_user_fkey';
+            columns: ['user'];
+            isOneToOne: false;
+            referencedRelation: 'user';
+            referencedColumns: ['userId'];
           },
-        ]
-      }
+        ];
+      };
       drink: {
         Row: {
-          active: boolean
-          deleted: boolean
-          id: number
-          imageUrl: string | null
-          name: string | null
-          previousDrink: number | null
-          price: number | null
-          stock: number | null
-          type: Database["public"]["Enums"]["ProductType"]
-        }
+          active: boolean;
+          deleted: boolean;
+          id: number;
+          imageUrl: string | null;
+          name: string | null;
+          previousDrink: number | null;
+          price: number | null;
+          stock: number | null;
+          type: Database['public']['Enums']['ProductType'];
+        };
         Insert: {
-          active?: boolean
-          deleted?: boolean
-          id?: number
-          imageUrl?: string | null
-          name?: string | null
-          previousDrink?: number | null
-          price?: number | null
-          stock?: number | null
-          type?: Database["public"]["Enums"]["ProductType"]
-        }
+          active?: boolean;
+          deleted?: boolean;
+          id?: number;
+          imageUrl?: string | null;
+          name?: string | null;
+          previousDrink?: number | null;
+          price?: number | null;
+          stock?: number | null;
+          type?: Database['public']['Enums']['ProductType'];
+        };
         Update: {
-          active?: boolean
-          deleted?: boolean
-          id?: number
-          imageUrl?: string | null
-          name?: string | null
-          previousDrink?: number | null
-          price?: number | null
-          stock?: number | null
-          type?: Database["public"]["Enums"]["ProductType"]
-        }
-        Relationships: []
-      }
+          active?: boolean;
+          deleted?: boolean;
+          id?: number;
+          imageUrl?: string | null;
+          name?: string | null;
+          previousDrink?: number | null;
+          price?: number | null;
+          stock?: number | null;
+          type?: Database['public']['Enums']['ProductType'];
+        };
+        Relationships: [];
+      };
       event_attendance_user_mapping: {
         Row: {
-          event: string
-          lastUpdate: string
-          state: Database["public"]["Enums"]["EventAttendance"]
-          user: string
-        }
+          event: string;
+          lastUpdate: string;
+          state: Database['public']['Enums']['EventAttendance'];
+          user: string;
+        };
         Insert: {
-          event?: string
-          lastUpdate?: string
-          state?: Database["public"]["Enums"]["EventAttendance"]
-          user: string
-        }
+          event?: string;
+          lastUpdate?: string;
+          state?: Database['public']['Enums']['EventAttendance'];
+          user: string;
+        };
         Update: {
-          event?: string
-          lastUpdate?: string
-          state?: Database["public"]["Enums"]["EventAttendance"]
-          user?: string
-        }
+          event?: string;
+          lastUpdate?: string;
+          state?: Database['public']['Enums']['EventAttendance'];
+          user?: string;
+        };
         Relationships: [
           {
-            foreignKeyName: "event_attendance_user_mapping_event_fkey"
-            columns: ["event"]
-            isOneToOne: false
-            referencedRelation: "current_distinct_event"
-            referencedColumns: ["id"]
+            foreignKeyName: 'event_attendance_user_mapping_event_fkey';
+            columns: ['event'];
+            isOneToOne: false;
+            referencedRelation: 'current_distinct_event';
+            referencedColumns: ['id'];
           },
           {
-            foreignKeyName: "event_attendance_user_mapping_event_fkey"
-            columns: ["event"]
-            isOneToOne: false
-            referencedRelation: "distinct_event"
-            referencedColumns: ["id"]
+            foreignKeyName: 'event_attendance_user_mapping_event_fkey';
+            columns: ['event'];
+            isOneToOne: false;
+            referencedRelation: 'distinct_event';
+            referencedColumns: ['id'];
           },
           {
-            foreignKeyName: "event_attendance_user_mapping_event_fkey"
-            columns: ["event"]
-            isOneToOne: false
-            referencedRelation: "events"
-            referencedColumns: ["id"]
+            foreignKeyName: 'event_attendance_user_mapping_event_fkey';
+            columns: ['event'];
+            isOneToOne: false;
+            referencedRelation: 'events';
+            referencedColumns: ['id'];
           },
           {
-            foreignKeyName: "event_attendance_user_mapping_user_fkey"
-            columns: ["user"]
-            isOneToOne: false
-            referencedRelation: "user"
-            referencedColumns: ["userId"]
+            foreignKeyName: 'event_attendance_user_mapping_user_fkey';
+            columns: ['user'];
+            isOneToOne: false;
+            referencedRelation: 'user';
+            referencedColumns: ['userId'];
           },
-        ]
-      }
+        ];
+      };
       event_comments: {
         Row: {
-          comment: string
-          created_at: string
-          displayName: string
-          event: string
-          id: number
-          user: string
-        }
+          comment: string;
+          created_at: string;
+          displayName: string;
+          event: string;
+          id: number;
+          user: string;
+        };
         Insert: {
-          comment?: string
-          created_at?: string
-          displayName?: string
-          event?: string
-          id?: number
-          user: string
-        }
+          comment?: string;
+          created_at?: string;
+          displayName?: string;
+          event?: string;
+          id?: number;
+          user: string;
+        };
         Update: {
-          comment?: string
-          created_at?: string
-          displayName?: string
-          event?: string
-          id?: number
-          user?: string
-        }
+          comment?: string;
+          created_at?: string;
+          displayName?: string;
+          event?: string;
+          id?: number;
+          user?: string;
+        };
         Relationships: [
           {
-            foreignKeyName: "event_comments_event_fkey"
-            columns: ["event"]
-            isOneToOne: false
-            referencedRelation: "current_distinct_event"
-            referencedColumns: ["id"]
+            foreignKeyName: 'event_comments_event_fkey';
+            columns: ['event'];
+            isOneToOne: false;
+            referencedRelation: 'current_distinct_event';
+            referencedColumns: ['id'];
           },
           {
-            foreignKeyName: "event_comments_event_fkey"
-            columns: ["event"]
-            isOneToOne: false
-            referencedRelation: "distinct_event"
-            referencedColumns: ["id"]
+            foreignKeyName: 'event_comments_event_fkey';
+            columns: ['event'];
+            isOneToOne: false;
+            referencedRelation: 'distinct_event';
+            referencedColumns: ['id'];
           },
           {
-            foreignKeyName: "event_comments_event_fkey"
-            columns: ["event"]
-            isOneToOne: false
-            referencedRelation: "events"
-            referencedColumns: ["id"]
+            foreignKeyName: 'event_comments_event_fkey';
+            columns: ['event'];
+            isOneToOne: false;
+            referencedRelation: 'events';
+            referencedColumns: ['id'];
           },
           {
-            foreignKeyName: "event_comments_user_fkey"
-            columns: ["user"]
-            isOneToOne: false
-            referencedRelation: "user"
-            referencedColumns: ["userId"]
+            foreignKeyName: 'event_comments_user_fkey';
+            columns: ['user'];
+            isOneToOne: false;
+            referencedRelation: 'user';
+            referencedColumns: ['userId'];
           },
-        ]
-      }
+        ];
+      };
       event_group: {
         Row: {
-          color: string
-          created_at: string
-          description: string
-          id: number
-          name: string
-        }
+          color: string;
+          created_at: string;
+          description: string;
+          id: number;
+          name: string;
+        };
         Insert: {
-          color?: string
-          created_at?: string
-          description?: string
-          id?: number
-          name?: string
-        }
+          color?: string;
+          created_at?: string;
+          description?: string;
+          id?: number;
+          name?: string;
+        };
         Update: {
-          color?: string
-          created_at?: string
-          description?: string
-          id?: number
-          name?: string
-        }
-        Relationships: []
-      }
+          color?: string;
+          created_at?: string;
+          description?: string;
+          id?: number;
+          name?: string;
+        };
+        Relationships: [];
+      };
       events: {
         Row: {
-          answerDeadline: string | null
-          created_at: string
-          description: string
-          endDateTime: string | null
-          group: number | null
-          id: string
-          isCancelled: boolean
-          key: string
-          maxAttendees: number | null
-          meetingDateTime: string | null
-          place: string | null
-          recurrence: Database["public"]["Enums"]["EventRecurrence"]
-          recurrenceEnd: string | null
-          required_item: Database["public"]["Enums"]["ItemType"] | null
-          startingDateTime: string
-          title: string
-        }
+          answerDeadline: string | null;
+          created_at: string;
+          description: string;
+          endDateTime: string | null;
+          group: number | null;
+          id: string;
+          isCancelled: boolean;
+          key: string;
+          maxAttendees: number | null;
+          meetingDateTime: string | null;
+          place: string | null;
+          recurrence: Database['public']['Enums']['EventRecurrence'];
+          recurrenceEnd: string | null;
+          required_item: Database['public']['Enums']['ItemType'] | null;
+          startingDateTime: string;
+          title: string;
+        };
         Insert: {
-          answerDeadline?: string | null
-          created_at?: string
-          description?: string
-          endDateTime?: string | null
-          group?: number | null
-          id?: string
-          isCancelled?: boolean
-          key?: string
-          maxAttendees?: number | null
-          meetingDateTime?: string | null
-          place?: string | null
-          recurrence?: Database["public"]["Enums"]["EventRecurrence"]
-          recurrenceEnd?: string | null
-          required_item?: Database["public"]["Enums"]["ItemType"] | null
-          startingDateTime: string
-          title?: string
-        }
+          answerDeadline?: string | null;
+          created_at?: string;
+          description?: string;
+          endDateTime?: string | null;
+          group?: number | null;
+          id?: string;
+          isCancelled?: boolean;
+          key?: string;
+          maxAttendees?: number | null;
+          meetingDateTime?: string | null;
+          place?: string | null;
+          recurrence?: Database['public']['Enums']['EventRecurrence'];
+          recurrenceEnd?: string | null;
+          required_item?: Database['public']['Enums']['ItemType'] | null;
+          startingDateTime: string;
+          title?: string;
+        };
         Update: {
-          answerDeadline?: string | null
-          created_at?: string
-          description?: string
-          endDateTime?: string | null
-          group?: number | null
-          id?: string
-          isCancelled?: boolean
-          key?: string
-          maxAttendees?: number | null
-          meetingDateTime?: string | null
-          place?: string | null
-          recurrence?: Database["public"]["Enums"]["EventRecurrence"]
-          recurrenceEnd?: string | null
-          required_item?: Database["public"]["Enums"]["ItemType"] | null
-          startingDateTime?: string
-          title?: string
-        }
+          answerDeadline?: string | null;
+          created_at?: string;
+          description?: string;
+          endDateTime?: string | null;
+          group?: number | null;
+          id?: string;
+          isCancelled?: boolean;
+          key?: string;
+          maxAttendees?: number | null;
+          meetingDateTime?: string | null;
+          place?: string | null;
+          recurrence?: Database['public']['Enums']['EventRecurrence'];
+          recurrenceEnd?: string | null;
+          required_item?: Database['public']['Enums']['ItemType'] | null;
+          startingDateTime?: string;
+          title?: string;
+        };
         Relationships: [
           {
-            foreignKeyName: "events_group_fkey"
-            columns: ["group"]
-            isOneToOne: false
-            referencedRelation: "event_group"
-            referencedColumns: ["id"]
+            foreignKeyName: 'events_group_fkey';
+            columns: ['group'];
+            isOneToOne: false;
+            referencedRelation: 'event_group';
+            referencedColumns: ['id'];
           },
-        ]
-      }
+        ];
+      };
       group_user_mapping: {
         Row: {
-          group: number
-          user: string
-        }
+          group: number;
+          user: string;
+        };
         Insert: {
-          group: number
-          user: string
-        }
+          group: number;
+          user: string;
+        };
         Update: {
-          group?: number
-          user?: string
-        }
+          group?: number;
+          user?: string;
+        };
         Relationships: [
           {
-            foreignKeyName: "group_user_mapping_group_fkey"
-            columns: ["group"]
-            isOneToOne: false
-            referencedRelation: "event_group"
-            referencedColumns: ["id"]
+            foreignKeyName: 'group_user_mapping_group_fkey';
+            columns: ['group'];
+            isOneToOne: false;
+            referencedRelation: 'event_group';
+            referencedColumns: ['id'];
           },
           {
-            foreignKeyName: "group_user_mapping_user_fkey"
-            columns: ["user"]
-            isOneToOne: false
-            referencedRelation: "user"
-            referencedColumns: ["userId"]
+            foreignKeyName: 'group_user_mapping_user_fkey';
+            columns: ['user'];
+            isOneToOne: false;
+            referencedRelation: 'user';
+            referencedColumns: ['userId'];
           },
-        ]
-      }
+        ];
+      };
       history: {
         Row: {
-          amount: number
-          count: number
-          created_at: string | null
-          drink: number
-          id: number
-          payment: number
-          user: string
-        }
+          amount: number;
+          count: number;
+          created_at: string | null;
+          drink: number;
+          id: number;
+          payment: number;
+          user: string;
+        };
         Insert: {
-          amount?: number
-          count: number
-          created_at?: string | null
-          drink: number
-          id?: number
-          payment: number
-          user: string
-        }
+          amount?: number;
+          count: number;
+          created_at?: string | null;
+          drink: number;
+          id?: number;
+          payment: number;
+          user: string;
+        };
         Update: {
-          amount?: number
-          count?: number
-          created_at?: string | null
-          drink?: number
-          id?: number
-          payment?: number
-          user?: string
-        }
+          amount?: number;
+          count?: number;
+          created_at?: string | null;
+          drink?: number;
+          id?: number;
+          payment?: number;
+          user?: string;
+        };
         Relationships: [
           {
-            foreignKeyName: "history_drink_fkey"
-            columns: ["drink"]
-            isOneToOne: false
-            referencedRelation: "distinct_drinks"
-            referencedColumns: ["id"]
+            foreignKeyName: 'history_drink_fkey';
+            columns: ['drink'];
+            isOneToOne: false;
+            referencedRelation: 'distinct_drinks';
+            referencedColumns: ['id'];
           },
           {
-            foreignKeyName: "history_drink_fkey"
-            columns: ["drink"]
-            isOneToOne: false
-            referencedRelation: "drink"
-            referencedColumns: ["id"]
+            foreignKeyName: 'history_drink_fkey';
+            columns: ['drink'];
+            isOneToOne: false;
+            referencedRelation: 'drink';
+            referencedColumns: ['id'];
           },
           {
-            foreignKeyName: "history_payment_fkey"
-            columns: ["payment"]
-            isOneToOne: false
-            referencedRelation: "payments"
-            referencedColumns: ["id"]
+            foreignKeyName: 'history_payment_fkey';
+            columns: ['payment'];
+            isOneToOne: false;
+            referencedRelation: 'payments';
+            referencedColumns: ['id'];
           },
           {
-            foreignKeyName: "history_user_fkey"
-            columns: ["user"]
-            isOneToOne: false
-            referencedRelation: "user"
-            referencedColumns: ["userId"]
+            foreignKeyName: 'history_user_fkey';
+            columns: ['user'];
+            isOneToOne: false;
+            referencedRelation: 'user';
+            referencedColumns: ['userId'];
           },
-        ]
-      }
+        ];
+      };
       item_history: {
         Row: {
-          created_at: string
-          currentUser: string | null
-          id: number
-          key: number | null
-          pastUser: string | null
-        }
+          created_at: string;
+          currentUser: string | null;
+          id: number;
+          key: number | null;
+          pastUser: string | null;
+        };
         Insert: {
-          created_at?: string
-          currentUser?: string | null
-          id?: number
-          key?: number | null
-          pastUser?: string | null
-        }
+          created_at?: string;
+          currentUser?: string | null;
+          id?: number;
+          key?: number | null;
+          pastUser?: string | null;
+        };
         Update: {
-          created_at?: string
-          currentUser?: string | null
-          id?: number
-          key?: number | null
-          pastUser?: string | null
-        }
+          created_at?: string;
+          currentUser?: string | null;
+          id?: number;
+          key?: number | null;
+          pastUser?: string | null;
+        };
         Relationships: [
           {
-            foreignKeyName: "item_history_key_fkey"
-            columns: ["key"]
-            isOneToOne: false
-            referencedRelation: "items"
-            referencedColumns: ["id"]
+            foreignKeyName: 'item_history_key_fkey';
+            columns: ['key'];
+            isOneToOne: false;
+            referencedRelation: 'items';
+            referencedColumns: ['id'];
           },
           {
-            foreignKeyName: "key_history_currentuser_fkey"
-            columns: ["currentUser"]
-            isOneToOne: false
-            referencedRelation: "user"
-            referencedColumns: ["userId"]
+            foreignKeyName: 'key_history_currentuser_fkey';
+            columns: ['currentUser'];
+            isOneToOne: false;
+            referencedRelation: 'user';
+            referencedColumns: ['userId'];
           },
           {
-            foreignKeyName: "key_history_pastuser_fkey"
-            columns: ["pastUser"]
-            isOneToOne: false
-            referencedRelation: "user"
-            referencedColumns: ["userId"]
+            foreignKeyName: 'key_history_pastuser_fkey';
+            columns: ['pastUser'];
+            isOneToOne: false;
+            referencedRelation: 'user';
+            referencedColumns: ['userId'];
           },
-        ]
-      }
+        ];
+      };
       items: {
         Row: {
-          color: string
-          created_at: string
-          current_holder: string | null
-          id: number
-          lastUpdate: string
-          name: string | null
-          type: Database["public"]["Enums"]["ItemType"] | null
-        }
+          color: string;
+          created_at: string;
+          current_holder: string | null;
+          id: number;
+          lastUpdate: string;
+          name: string | null;
+          type: Database['public']['Enums']['ItemType'] | null;
+        };
         Insert: {
-          color?: string
-          created_at?: string
-          current_holder?: string | null
-          id?: number
-          lastUpdate?: string
-          name?: string | null
-          type?: Database["public"]["Enums"]["ItemType"] | null
-        }
+          color?: string;
+          created_at?: string;
+          current_holder?: string | null;
+          id?: number;
+          lastUpdate?: string;
+          name?: string | null;
+          type?: Database['public']['Enums']['ItemType'] | null;
+        };
         Update: {
-          color?: string
-          created_at?: string
-          current_holder?: string | null
-          id?: number
-          lastUpdate?: string
-          name?: string | null
-          type?: Database["public"]["Enums"]["ItemType"] | null
-        }
+          color?: string;
+          created_at?: string;
+          current_holder?: string | null;
+          id?: number;
+          lastUpdate?: string;
+          name?: string | null;
+          type?: Database['public']['Enums']['ItemType'] | null;
+        };
         Relationships: [
           {
-            foreignKeyName: "keys_user_fkey"
-            columns: ["current_holder"]
-            isOneToOne: false
-            referencedRelation: "user"
-            referencedColumns: ["userId"]
+            foreignKeyName: 'keys_user_fkey';
+            columns: ['current_holder'];
+            isOneToOne: false;
+            referencedRelation: 'user';
+            referencedColumns: ['userId'];
           },
-        ]
-      }
+        ];
+      };
       notifications: {
         Row: {
-          body: string
-          created_at: string
-          id: string
-          title: string
-          user: string | null
-        }
+          body: string;
+          created_at: string;
+          id: string;
+          title: string;
+          user: string | null;
+        };
         Insert: {
-          body?: string
-          created_at?: string
-          id?: string
-          title?: string
-          user?: string | null
-        }
+          body?: string;
+          created_at?: string;
+          id?: string;
+          title?: string;
+          user?: string | null;
+        };
         Update: {
-          body?: string
-          created_at?: string
-          id?: string
-          title?: string
-          user?: string | null
-        }
+          body?: string;
+          created_at?: string;
+          id?: string;
+          title?: string;
+          user?: string | null;
+        };
         Relationships: [
           {
-            foreignKeyName: "public_notifications_user_fkey"
-            columns: ["user"]
-            isOneToOne: false
-            referencedRelation: "user"
-            referencedColumns: ["userId"]
+            foreignKeyName: 'public_notifications_user_fkey';
+            columns: ['user'];
+            isOneToOne: false;
+            referencedRelation: 'user';
+            referencedColumns: ['userId'];
           },
-        ]
-      }
+        ];
+      };
       payments: {
         Row: {
-          amountToPay: number
-          created_at: string | null
-          id: number
-          paymentState: Database["public"]["Enums"]["PaymentState"]
-          userId: string
-        }
+          amountToPay: number;
+          created_at: string | null;
+          id: number;
+          paymentState: Database['public']['Enums']['PaymentState'];
+          userId: string;
+        };
         Insert: {
-          amountToPay?: number
-          created_at?: string | null
-          id?: number
-          paymentState?: Database["public"]["Enums"]["PaymentState"]
-          userId: string
-        }
+          amountToPay?: number;
+          created_at?: string | null;
+          id?: number;
+          paymentState?: Database['public']['Enums']['PaymentState'];
+          userId: string;
+        };
         Update: {
-          amountToPay?: number
-          created_at?: string | null
-          id?: number
-          paymentState?: Database["public"]["Enums"]["PaymentState"]
-          userId?: string
-        }
+          amountToPay?: number;
+          created_at?: string | null;
+          id?: number;
+          paymentState?: Database['public']['Enums']['PaymentState'];
+          userId?: string;
+        };
         Relationships: [
           {
-            foreignKeyName: "payments_userid_fkey"
-            columns: ["userId"]
-            isOneToOne: false
-            referencedRelation: "user"
-            referencedColumns: ["userId"]
+            foreignKeyName: 'payments_userid_fkey';
+            columns: ['userId'];
+            isOneToOne: false;
+            referencedRelation: 'user';
+            referencedColumns: ['userId'];
           },
-        ]
-      }
+        ];
+      };
       role_permissions: {
         Row: {
-          app_permission: string
-          app_role: string
-          id: string
-        }
+          app_permission: string;
+          app_role: string;
+          id: string;
+        };
         Insert: {
-          app_permission: string
-          app_role: string
-          id?: string
-        }
+          app_permission: string;
+          app_role: string;
+          id?: string;
+        };
         Update: {
-          app_permission?: string
-          app_role?: string
-          id?: string
-        }
+          app_permission?: string;
+          app_role?: string;
+          id?: string;
+        };
         Relationships: [
           {
-            foreignKeyName: "role_permissions_app_permission_fkey"
-            columns: ["app_permission"]
-            isOneToOne: false
-            referencedRelation: "app_permissions"
-            referencedColumns: ["id"]
+            foreignKeyName: 'role_permissions_app_permission_fkey';
+            columns: ['app_permission'];
+            isOneToOne: false;
+            referencedRelation: 'app_permissions';
+            referencedColumns: ['id'];
           },
           {
-            foreignKeyName: "role_permissions_app_role_fkey"
-            columns: ["app_role"]
-            isOneToOne: false
-            referencedRelation: "app_roles"
-            referencedColumns: ["id"]
+            foreignKeyName: 'role_permissions_app_role_fkey';
+            columns: ['app_role'];
+            isOneToOne: false;
+            referencedRelation: 'app_roles';
+            referencedColumns: ['id'];
           },
-        ]
-      }
+        ];
+      };
       user: {
         Row: {
-          avatarUrl: string | null
-          created_at: string | null
-          disabled: boolean
-          displayName: string
-          email: string
-          fcm_token: string | null
-          notifications:
-            | Database["public"]["Enums"]["NotificationTags"][]
-            | null
-          role: Database["public"]["Enums"]["UserRole"]
-          userId: string
-          verified: boolean
-        }
+          avatarUrl: string | null;
+          created_at: string | null;
+          disabled: boolean;
+          displayName: string;
+          email: string;
+          fcm_token: string | null;
+          notifications: Database['public']['Enums']['NotificationTags'][] | null;
+          role: Database['public']['Enums']['UserRole'];
+          userId: string;
+          verified: boolean;
+        };
         Insert: {
-          avatarUrl?: string | null
-          created_at?: string | null
-          disabled?: boolean
-          displayName?: string
-          email?: string
-          fcm_token?: string | null
-          notifications?:
-            | Database["public"]["Enums"]["NotificationTags"][]
-            | null
-          role?: Database["public"]["Enums"]["UserRole"]
-          userId?: string
-          verified?: boolean
-        }
+          avatarUrl?: string | null;
+          created_at?: string | null;
+          disabled?: boolean;
+          displayName?: string;
+          email?: string;
+          fcm_token?: string | null;
+          notifications?: Database['public']['Enums']['NotificationTags'][] | null;
+          role?: Database['public']['Enums']['UserRole'];
+          userId?: string;
+          verified?: boolean;
+        };
         Update: {
-          avatarUrl?: string | null
-          created_at?: string | null
-          disabled?: boolean
-          displayName?: string
-          email?: string
-          fcm_token?: string | null
-          notifications?:
-            | Database["public"]["Enums"]["NotificationTags"][]
-            | null
-          role?: Database["public"]["Enums"]["UserRole"]
-          userId?: string
-          verified?: boolean
-        }
-        Relationships: []
-      }
+          avatarUrl?: string | null;
+          created_at?: string | null;
+          disabled?: boolean;
+          displayName?: string;
+          email?: string;
+          fcm_token?: string | null;
+          notifications?: Database['public']['Enums']['NotificationTags'][] | null;
+          role?: Database['public']['Enums']['UserRole'];
+          userId?: string;
+          verified?: boolean;
+        };
+        Relationships: [];
+      };
       user_roles: {
         Row: {
-          app_role: string
-          id: number
-          user: string
-        }
+          app_role: string;
+          id: number;
+          user: string;
+        };
         Insert: {
-          app_role: string
-          id?: number
-          user?: string
-        }
+          app_role: string;
+          id?: number;
+          user?: string;
+        };
         Update: {
-          app_role?: string
-          id?: number
-          user?: string
-        }
+          app_role?: string;
+          id?: number;
+          user?: string;
+        };
         Relationships: [
           {
-            foreignKeyName: "user_roles_app_role_fkey"
-            columns: ["app_role"]
-            isOneToOne: false
-            referencedRelation: "app_roles"
-            referencedColumns: ["id"]
+            foreignKeyName: 'user_roles_app_role_fkey';
+            columns: ['app_role'];
+            isOneToOne: false;
+            referencedRelation: 'app_roles';
+            referencedColumns: ['id'];
           },
           {
-            foreignKeyName: "user_roles_user_fkey"
-            columns: ["user"]
-            isOneToOne: false
-            referencedRelation: "user"
-            referencedColumns: ["userId"]
+            foreignKeyName: 'user_roles_user_fkey';
+            columns: ['user'];
+            isOneToOne: false;
+            referencedRelation: 'user';
+            referencedColumns: ['userId'];
           },
-        ]
-      }
+        ];
+      };
       vouchers: {
         Row: {
-          created_at: string
-          id: string
-          total_drinks: number
-          used_drinks: number
-          user: string | null
-        }
+          created_at: string;
+          id: string;
+          total_drinks: number;
+          used_drinks: number;
+          user: string | null;
+        };
         Insert: {
-          created_at?: string
-          id?: string
-          total_drinks?: number
-          used_drinks?: number
-          user?: string | null
-        }
+          created_at?: string;
+          id?: string;
+          total_drinks?: number;
+          used_drinks?: number;
+          user?: string | null;
+        };
         Update: {
-          created_at?: string
-          id?: string
-          total_drinks?: number
-          used_drinks?: number
-          user?: string | null
-        }
+          created_at?: string;
+          id?: string;
+          total_drinks?: number;
+          used_drinks?: number;
+          user?: string | null;
+        };
         Relationships: [
           {
-            foreignKeyName: "vouchers_user_fkey"
-            columns: ["user"]
-            isOneToOne: false
-            referencedRelation: "user"
-            referencedColumns: ["userId"]
+            foreignKeyName: 'vouchers_user_fkey';
+            columns: ['user'];
+            isOneToOne: false;
+            referencedRelation: 'user';
+            referencedColumns: ['userId'];
           },
-        ]
-      }
-    }
+        ];
+      };
+    };
     Views: {
       current_distinct_event: {
         Row: {
-          answerDeadline: string | null
-          created_at: string | null
-          description: string | null
-          endDateTime: string | null
-          group: number | null
-          id: string | null
-          isCancelled: boolean | null
-          key: string | null
-          maxAttendees: number | null
-          meetingDateTime: string | null
-          place: string | null
-          recurrence: Database["public"]["Enums"]["EventRecurrence"] | null
-          recurrenceEnd: string | null
-          startingDateTime: string | null
-          title: string | null
-        }
+          answerDeadline: string | null;
+          created_at: string | null;
+          description: string | null;
+          endDateTime: string | null;
+          group: number | null;
+          id: string | null;
+          isCancelled: boolean | null;
+          key: string | null;
+          maxAttendees: number | null;
+          meetingDateTime: string | null;
+          place: string | null;
+          recurrence: Database['public']['Enums']['EventRecurrence'] | null;
+          recurrenceEnd: string | null;
+          startingDateTime: string | null;
+          title: string | null;
+        };
         Relationships: [
           {
-            foreignKeyName: "events_group_fkey"
-            columns: ["group"]
-            isOneToOne: false
-            referencedRelation: "event_group"
-            referencedColumns: ["id"]
+            foreignKeyName: 'events_group_fkey';
+            columns: ['group'];
+            isOneToOne: false;
+            referencedRelation: 'event_group';
+            referencedColumns: ['id'];
           },
-        ]
-      }
+        ];
+      };
       distinct_drinks: {
         Row: {
-          active: boolean | null
-          deleted: boolean | null
-          id: number | null
-          imageUrl: string | null
-          name: string | null
-          previousDrink: number | null
-          price: number | null
-          stock: number | null
-          type: Database["public"]["Enums"]["ProductType"] | null
-        }
-        Relationships: []
-      }
+          active: boolean | null;
+          deleted: boolean | null;
+          id: number | null;
+          imageUrl: string | null;
+          name: string | null;
+          previousDrink: number | null;
+          price: number | null;
+          stock: number | null;
+          type: Database['public']['Enums']['ProductType'] | null;
+        };
+        Relationships: [];
+      };
       distinct_event: {
         Row: {
-          answerDeadline: string | null
-          created_at: string | null
-          description: string | null
-          endDateTime: string | null
-          group: number | null
-          id: string | null
-          isCancelled: boolean | null
-          key: string | null
-          maxAttendees: number | null
-          meetingDateTime: string | null
-          place: string | null
-          recurrence: Database["public"]["Enums"]["EventRecurrence"] | null
-          recurrenceEnd: string | null
-          startingDateTime: string | null
-          title: string | null
-        }
+          answerDeadline: string | null;
+          created_at: string | null;
+          description: string | null;
+          endDateTime: string | null;
+          group: number | null;
+          id: string | null;
+          isCancelled: boolean | null;
+          key: string | null;
+          maxAttendees: number | null;
+          meetingDateTime: string | null;
+          place: string | null;
+          recurrence: Database['public']['Enums']['EventRecurrence'] | null;
+          recurrenceEnd: string | null;
+          startingDateTime: string | null;
+          title: string | null;
+        };
         Relationships: [
           {
-            foreignKeyName: "events_group_fkey"
-            columns: ["group"]
-            isOneToOne: false
-            referencedRelation: "event_group"
-            referencedColumns: ["id"]
+            foreignKeyName: 'events_group_fkey';
+            columns: ['group'];
+            isOneToOne: false;
+            referencedRelation: 'event_group';
+            referencedColumns: ['id'];
           },
-        ]
-      }
+        ];
+      };
       readable_history: {
         Row: {
-          amount: number | null
-          count: number | null
-          date: string | null
-          displayName: string | null
-          id: number | null
-          name: string | null
-          time: string | null
-        }
-        Relationships: []
-      }
-    }
+          amount: number | null;
+          count: number | null;
+          date: string | null;
+          displayName: string | null;
+          id: number | null;
+          name: string | null;
+          time: string | null;
+        };
+        Relationships: [];
+      };
+    };
     Functions: {
       add_notificationtags_to_all_users: {
         Args: {
-          notification: Database["public"]["Enums"]["NotificationTags"]
-        }
-        Returns: undefined
-      }
+          notification: Database['public']['Enums']['NotificationTags'];
+        };
+        Returns: undefined;
+      };
       authorize: {
         Args: {
-          requested_permission: string
-        }
-        Returns: boolean
-      }
+          requested_permission: string;
+        };
+        Returns: boolean;
+      };
       authorizewithrole: {
         Args: {
-          requested_role: string
-        }
-        Returns: boolean
-      }
+          requested_role: string;
+        };
+        Returns: boolean;
+      };
       check_version: {
         Args: {
-          input_version: string
-        }
-        Returns: boolean
-      }
+          input_version: string;
+        };
+        Returns: boolean;
+      };
       custom_access_token_hook: {
         Args: {
-          event: Json
-        }
-        Returns: Json
-      }
+          event: Json;
+        };
+        Returns: Json;
+      };
       eventcreation: {
-        Args: Record<PropertyKey, never>
-        Returns: number
-      }
+        Args: Record<PropertyKey, never>;
+        Returns: number;
+      };
       execute_query: {
         Args: {
-          query_text: string
-        }
+          query_text: string;
+        };
         Returns: {
-          result: Json
-        }[]
-      }
+          result: Json;
+        }[];
+      };
       execute_sql: {
         Args: {
-          query: string
-        }
-        Returns: Json
-      }
+          query: string;
+        };
+        Returns: Json;
+      };
       get_attending_users: {
         Args: {
-          event_id: number
-        }
-        Returns: string[]
-      }
+          event_id: number;
+        };
+        Returns: string[];
+      };
       get_enum_types: {
-        Args: Record<PropertyKey, never>
+        Args: Record<PropertyKey, never>;
         Returns: {
-          enum_name: string
-          enum_values: string[]
-        }[]
-      }
+          enum_name: string;
+          enum_values: string[];
+        }[];
+      };
       get_or_create_payment_for_user: {
         Args: {
-          user_id: string
-        }
-        Returns: number
-      }
+          user_id: string;
+        };
+        Returns: number;
+      };
       get_public_table_names: {
-        Args: Record<PropertyKey, never>
-        Returns: string[]
-      }
+        Args: Record<PropertyKey, never>;
+        Returns: string[];
+      };
       getattendingusers: {
         Args: {
-          event_id: number
-        }
-        Returns: string[]
-      }
+          event_id: number;
+        };
+        Returns: string[];
+      };
       increase_challenge_stats_count: {
         Args: {
-          user_id: string
-          challenge_id: number
-          amount: number
-        }
-        Returns: undefined
-      }
+          user_id: string;
+          challenge_id: number;
+          amount: number;
+        };
+        Returns: undefined;
+      };
       remove_notificationtags_from_all_users: {
         Args: {
-          notification: Database["public"]["Enums"]["NotificationTags"]
-        }
-        Returns: undefined
-      }
+          notification: Database['public']['Enums']['NotificationTags'];
+        };
+        Returns: undefined;
+      };
       update_attendance: {
         Args: {
-          eventid: string
-          userid: string
-          state: Database["public"]["Enums"]["EventAttendance"]
-        }
+          eventid: string;
+          userid: string;
+          state: Database['public']['Enums']['EventAttendance'];
+        };
         Returns: {
-          event: string
-          lastUpdate: string
-          state: Database["public"]["Enums"]["EventAttendance"]
-          user: string
-        }[]
-      }
-    }
+          event: string;
+          lastUpdate: string;
+          state: Database['public']['Enums']['EventAttendance'];
+          user: string;
+        }[];
+      };
+    };
     Enums: {
       app_permission:
-        | "event.select"
-        | "event.update"
-        | "event.insert"
-        | "event.delete"
-        | "drink.select"
-        | "drink.update"
-        | "drink.insert"
-        | "drink.delete"
-        | "group.select"
-        | "group.update"
-        | "group.insert"
-        | "group.delete"
-        | "challenge.select"
-        | "challenge.update"
-        | "challenge.insert"
-        | "challenge.delete"
-        | "payments.select"
-        | "payments.update"
-        | "payments.insert"
-        | "payments.delete"
-        | "item.select"
-        | "item.update"
-        | "item.insert"
-        | "item.delete"
-      EventAttendance:
-        | "Declined"
-        | "Attending"
-        | "Unanswered"
-        | "Waiting"
-        | "AttendingAsTrainer"
-      EventRecurrence: "Weekly" | "Fortnightly" | "Monthly" | "None"
-      ItemType: "mtvStorage" | "mtvGym" | "mtvGymPalazzo" | "goethe"
+        | 'event.select'
+        | 'event.update'
+        | 'event.insert'
+        | 'event.delete'
+        | 'drink.select'
+        | 'drink.update'
+        | 'drink.insert'
+        | 'drink.delete'
+        | 'group.select'
+        | 'group.update'
+        | 'group.insert'
+        | 'group.delete'
+        | 'challenge.select'
+        | 'challenge.update'
+        | 'challenge.insert'
+        | 'challenge.delete'
+        | 'payments.select'
+        | 'payments.update'
+        | 'payments.insert'
+        | 'payments.delete'
+        | 'item.select'
+        | 'item.update'
+        | 'item.insert'
+        | 'item.delete';
+      EventAttendance: 'Declined' | 'Attending' | 'Unanswered' | 'Waiting' | 'AttendingAsTrainer';
+      EventRecurrence: 'Weekly' | 'Fortnightly' | 'Monthly' | 'None';
+      ItemType: 'mtvStorage' | 'mtvGym' | 'mtvGymPalazzo' | 'goethe';
       NotificationTags:
-        | "eventComments"
-        | "userRegistration"
-        | "paymentRequest"
-        | "paymentPending"
-        | "eventCancelled"
-        | "eventUpdated"
-        | "eventAttedanceChanged"
-        | "challengeUpdate"
-      PaymentState: "Open" | "Fulfilled"
-      ProductType: "Drink" | "Special" | "None"
-      UserRole: "user" | "admin" | "procure" | "finance" | "trainer"
-    }
+        | 'eventComments'
+        | 'userRegistration'
+        | 'paymentRequest'
+        | 'paymentPending'
+        | 'eventCancelled'
+        | 'eventUpdated'
+        | 'eventAttedanceChanged'
+        | 'challengeUpdate';
+      PaymentState: 'Open' | 'Fulfilled';
+      ProductType: 'Drink' | 'Special' | 'None';
+      UserRole: 'user' | 'admin' | 'procure' | 'finance' | 'trainer';
+    };
     CompositeTypes: {
-      [_ in never]: never
-    }
-  }
-}
+      [_ in never]: never;
+    };
+  };
+};
 
-type PublicSchema = Database[Extract<keyof Database, "public">]
+type PublicSchema = Database[Extract<keyof Database, 'public'>];
 
 export type Tables<
-  PublicTableNameOrOptions extends
-    | keyof (PublicSchema["Tables"] & PublicSchema["Views"])
-    | { schema: keyof Database },
+  PublicTableNameOrOptions extends keyof (PublicSchema['Tables'] & PublicSchema['Views']) | { schema: keyof Database },
   TableName extends PublicTableNameOrOptions extends { schema: keyof Database }
-    ? keyof (Database[PublicTableNameOrOptions["schema"]]["Tables"] &
-        Database[PublicTableNameOrOptions["schema"]]["Views"])
+    ? keyof (Database[PublicTableNameOrOptions['schema']]['Tables'] &
+        Database[PublicTableNameOrOptions['schema']]['Views'])
     : never = never,
 > = PublicTableNameOrOptions extends { schema: keyof Database }
-  ? (Database[PublicTableNameOrOptions["schema"]]["Tables"] &
-      Database[PublicTableNameOrOptions["schema"]]["Views"])[TableName] extends {
-      Row: infer R
+  ? (Database[PublicTableNameOrOptions['schema']]['Tables'] &
+      Database[PublicTableNameOrOptions['schema']]['Views'])[TableName] extends {
+      Row: infer R;
     }
     ? R
     : never
-  : PublicTableNameOrOptions extends keyof (PublicSchema["Tables"] &
-        PublicSchema["Views"])
-    ? (PublicSchema["Tables"] &
-        PublicSchema["Views"])[PublicTableNameOrOptions] extends {
-        Row: infer R
+  : PublicTableNameOrOptions extends keyof (PublicSchema['Tables'] & PublicSchema['Views'])
+    ? (PublicSchema['Tables'] & PublicSchema['Views'])[PublicTableNameOrOptions] extends {
+        Row: infer R;
       }
       ? R
       : never
-    : never
+    : never;
 
 export type TablesInsert<
-  PublicTableNameOrOptions extends
-    | keyof PublicSchema["Tables"]
-    | { schema: keyof Database },
+  PublicTableNameOrOptions extends keyof PublicSchema['Tables'] | { schema: keyof Database },
   TableName extends PublicTableNameOrOptions extends { schema: keyof Database }
-    ? keyof Database[PublicTableNameOrOptions["schema"]]["Tables"]
+    ? keyof Database[PublicTableNameOrOptions['schema']]['Tables']
     : never = never,
 > = PublicTableNameOrOptions extends { schema: keyof Database }
-  ? Database[PublicTableNameOrOptions["schema"]]["Tables"][TableName] extends {
-      Insert: infer I
+  ? Database[PublicTableNameOrOptions['schema']]['Tables'][TableName] extends {
+      Insert: infer I;
     }
     ? I
     : never
-  : PublicTableNameOrOptions extends keyof PublicSchema["Tables"]
-    ? PublicSchema["Tables"][PublicTableNameOrOptions] extends {
-        Insert: infer I
+  : PublicTableNameOrOptions extends keyof PublicSchema['Tables']
+    ? PublicSchema['Tables'][PublicTableNameOrOptions] extends {
+        Insert: infer I;
       }
       ? I
       : never
-    : never
+    : never;
 
 export type TablesUpdate<
-  PublicTableNameOrOptions extends
-    | keyof PublicSchema["Tables"]
-    | { schema: keyof Database },
+  PublicTableNameOrOptions extends keyof PublicSchema['Tables'] | { schema: keyof Database },
   TableName extends PublicTableNameOrOptions extends { schema: keyof Database }
-    ? keyof Database[PublicTableNameOrOptions["schema"]]["Tables"]
+    ? keyof Database[PublicTableNameOrOptions['schema']]['Tables']
     : never = never,
 > = PublicTableNameOrOptions extends { schema: keyof Database }
-  ? Database[PublicTableNameOrOptions["schema"]]["Tables"][TableName] extends {
-      Update: infer U
+  ? Database[PublicTableNameOrOptions['schema']]['Tables'][TableName] extends {
+      Update: infer U;
     }
     ? U
     : never
-  : PublicTableNameOrOptions extends keyof PublicSchema["Tables"]
-    ? PublicSchema["Tables"][PublicTableNameOrOptions] extends {
-        Update: infer U
+  : PublicTableNameOrOptions extends keyof PublicSchema['Tables']
+    ? PublicSchema['Tables'][PublicTableNameOrOptions] extends {
+        Update: infer U;
       }
       ? U
       : never
-    : never
+    : never;
 
 export type Enums<
-  PublicEnumNameOrOptions extends
-    | keyof PublicSchema["Enums"]
-    | { schema: keyof Database },
+  PublicEnumNameOrOptions extends keyof PublicSchema['Enums'] | { schema: keyof Database },
   EnumName extends PublicEnumNameOrOptions extends { schema: keyof Database }
-    ? keyof Database[PublicEnumNameOrOptions["schema"]]["Enums"]
+    ? keyof Database[PublicEnumNameOrOptions['schema']]['Enums']
     : never = never,
 > = PublicEnumNameOrOptions extends { schema: keyof Database }
-  ? Database[PublicEnumNameOrOptions["schema"]]["Enums"][EnumName]
-  : PublicEnumNameOrOptions extends keyof PublicSchema["Enums"]
-    ? PublicSchema["Enums"][PublicEnumNameOrOptions]
-    : never
+  ? Database[PublicEnumNameOrOptions['schema']]['Enums'][EnumName]
+  : PublicEnumNameOrOptions extends keyof PublicSchema['Enums']
+    ? PublicSchema['Enums'][PublicEnumNameOrOptions]
+    : never;
 
 export type CompositeTypes<
-  PublicCompositeTypeNameOrOptions extends
-    | keyof PublicSchema["CompositeTypes"]
-    | { schema: keyof Database },
+  PublicCompositeTypeNameOrOptions extends keyof PublicSchema['CompositeTypes'] | { schema: keyof Database },
   CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
-    schema: keyof Database
+    schema: keyof Database;
   }
-    ? keyof Database[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
+    ? keyof Database[PublicCompositeTypeNameOrOptions['schema']]['CompositeTypes']
     : never = never,
 > = PublicCompositeTypeNameOrOptions extends { schema: keyof Database }
-  ? Database[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
-  : PublicCompositeTypeNameOrOptions extends keyof PublicSchema["CompositeTypes"]
-    ? PublicSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
-    : never
+  ? Database[PublicCompositeTypeNameOrOptions['schema']]['CompositeTypes'][CompositeTypeName]
+  : PublicCompositeTypeNameOrOptions extends keyof PublicSchema['CompositeTypes']
+    ? PublicSchema['CompositeTypes'][PublicCompositeTypeNameOrOptions]
+    : never;

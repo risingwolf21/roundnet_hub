@@ -1,99 +1,94 @@
-import {Save} from "@mui/icons-material"
+import { Save } from '@mui/icons-material';
 import {
-    Button,
-    Checkbox,
-    CircularProgress,
-    Fab,
-    List,
-    ListItem,
-    ListItemAvatar,
-    ListItemButton,
-    ListItemText
-} from "@mui/material"
-import React, {useEffect, useState} from "react"
-import {LoadingIndicator} from "../../components/LoadingIndicator"
-import {useTranslation} from "react-i18next"
-import {TFunction} from "i18next"
-import {AlertMessage, AlertSnackbar} from "../../components/AlertSnackbar"
-import {SupabaseUserRepository} from "../../repository/UserRepository";
-import Layout from "../../components/Layout";
-import {useAuth} from "../auth/AuthContext";
+  Button,
+  Checkbox,
+  CircularProgress,
+  Fab,
+  List,
+  ListItem,
+  ListItemAvatar,
+  ListItemButton,
+  ListItemText,
+} from '@mui/material';
+import React, { useEffect, useState } from 'react';
+import { LoadingIndicator } from '../../components/LoadingIndicator';
+import { useTranslation } from 'react-i18next';
+import { TFunction } from 'i18next';
+import { AlertMessage, AlertSnackbar } from '../../components/AlertSnackbar';
+import { SupabaseUserRepository } from '../../repository/UserRepository';
+import Layout from '../../components/Layout';
+import { useAuth } from '../auth/AuthContext';
 
-const userTags: NotificationTags[] = ["eventComments", "userRegistration", "paymentRequest", "paymentPending"]
+const userTags: NotificationTags[] = ['eventComments', 'userRegistration', 'paymentRequest', 'paymentPending'];
 
 const NotificationsScreenProvider = () => {
-    const user = useAuth();
-    const {t} = useTranslation();
+  const user = useAuth();
+  const { t } = useTranslation();
 
-    return <NotificationsScreen t={t} user={user}/>
-}
+  return <NotificationsScreen t={t} user={user} />;
+};
 
 type NotificationsScreenProps = {
-    t: TFunction,
-    user: User
-}
+  t: TFunction;
+  user: User;
+};
 
-export const NotificationsScreen = ({user, t}: NotificationsScreenProps) => {
+export const NotificationsScreen = ({ user, t }: NotificationsScreenProps) => {
+  const [activeUserTags, setActiveUserTags] = useState<NotificationTags[]>(user.notifications ?? []);
+  const [loading, setLoading] = useState(false);
+  const [alertInfo, setAlertInfo] = useState<AlertMessage | null>(null);
+  const [notificationPermissionGranted, setNotificationPermissionGranted] = useState(false);
 
-    const [activeUserTags, setActiveUserTags] = useState<NotificationTags[]>(user.notifications ?? []);
-    const [loading, setLoading] = useState(false);
-    const [alertInfo, setAlertInfo] = useState<AlertMessage | null>(null);
-    const [notificationPermissionGranted, setNotificationPermissionGranted] = useState(false);
+  useEffect(() => {
+    Notification.requestPermission().then((result) => {
+      setNotificationPermissionGranted(result === 'granted');
+    });
+  }, []);
 
-    useEffect(() => {
-        Notification.requestPermission().then(result => {
-            setNotificationPermissionGranted(result === 'granted')
-        })
-    }, []);
-
-    const handleChange = (tag: NotificationTags) => {
-        if (!activeUserTags.includes(tag)) {
-            setActiveUserTags([...activeUserTags, tag])
-        } else {
-            setActiveUserTags(activeUserTags.filter(x => x !== tag))
-        }
+  const handleChange = (tag: NotificationTags) => {
+    if (!activeUserTags.includes(tag)) {
+      setActiveUserTags([...activeUserTags, tag]);
+    } else {
+      setActiveUserTags(activeUserTags.filter((x) => x !== tag));
     }
+  };
 
-    const saveTags = () => {
-        setLoading(true);
-        SupabaseUserRepository.updateNotificationTags(activeUserTags, user).then(r => {
-            setLoading(false);
-            if (!r.error) {
-                setAlertInfo({message: "Successfully updated your notification preferences", severity: "info"})
-            } else {
-                setAlertInfo({message: "Something went wrong here: " + r.error.message, severity: "error"})
-            }
-        });
-    }
+  const saveTags = () => {
+    setLoading(true);
+    SupabaseUserRepository.updateNotificationTags(activeUserTags, user).then((r) => {
+      setLoading(false);
+      if (!r.error) {
+        setAlertInfo({ message: 'Successfully updated your notification preferences', severity: 'info' });
+      } else {
+        setAlertInfo({ message: 'Something went wrong here: ' + r.error.message, severity: 'error' });
+      }
+    });
+  };
 
-    return <Layout>
-        <LoadingIndicator loading={false}/>
-        <List>
-            {
-                !notificationPermissionGranted && <ListItem
-                    key={"requestPermission"}
-                    secondaryAction={<Button variant={"text"} title={"Request"}/>}>
-                    <ListItemText primary={"Request Notification permissions"}/>
-                </ListItem>
-            }
-            {
-                userTags.map(x => <ListItemButton key={x} onClick={() => handleChange(x)}
-                                                  disabled={!notificationPermissionGranted}>
-                    <ListItemAvatar>
-                        <Checkbox checked={activeUserTags.includes(x)} onChange={(_) => handleChange(x)}/>
-                    </ListItemAvatar>
-                    <ListItemText primary={t("notificationTags." + x)}/>
-                </ListItemButton>)
-            }
-        </List>
-        <Fab sx={{background: "#66bb6a", position: "fixed", right: "16px", bottom: "76px"}}
-             onClick={saveTags}>
-            {
-                !loading ? <Save sx={{color: "white"}}/> : <CircularProgress/>
-            }
-        </Fab>
-        <AlertSnackbar alertInfo={alertInfo} autoHideDuration={1500} close={() => setAlertInfo(null)}/>
+  return (
+    <Layout>
+      <LoadingIndicator loading={false} />
+      <List>
+        {!notificationPermissionGranted && (
+          <ListItem key={'requestPermission'} secondaryAction={<Button variant={'text'} title={'Request'} />}>
+            <ListItemText primary={'Request Notification permissions'} />
+          </ListItem>
+        )}
+        {userTags.map((x) => (
+          <ListItemButton key={x} onClick={() => handleChange(x)} disabled={!notificationPermissionGranted}>
+            <ListItemAvatar>
+              <Checkbox checked={activeUserTags.includes(x)} onChange={(_) => handleChange(x)} />
+            </ListItemAvatar>
+            <ListItemText primary={t('notificationTags.' + x)} />
+          </ListItemButton>
+        ))}
+      </List>
+      <Fab sx={{ background: '#66bb6a', position: 'fixed', right: '16px', bottom: '76px' }} onClick={saveTags}>
+        {!loading ? <Save sx={{ color: 'white' }} /> : <CircularProgress />}
+      </Fab>
+      <AlertSnackbar alertInfo={alertInfo} autoHideDuration={1500} close={() => setAlertInfo(null)} />
     </Layout>
-}
+  );
+};
 
 export default NotificationsScreenProvider;

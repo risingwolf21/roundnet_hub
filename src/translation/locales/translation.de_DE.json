@@ -72,9 +72,9 @@
   },
   "notification_actionMessage": "Du kannst Push-Benachrichtigungen zu den folgenden Themen erhalten",
   "notification_updateMessage": "Update deine Push-Benachrichtigungs Segmente",
-  "past": "Vergangene",
+  "pastMonth": "Vergangene 30 Tage",
   "take_key": "Annehmen",
-  "upcoming": "Nächste",
+  "nextMonth": "Nächste 30 Tage",
   "userName": "Benutzername",
   "challenge": {
     "automatedChallenge": "Bei dieser Challenge werden die Punkte automatisiert aktualisiert!"
