@@ -4,6 +4,7 @@ import { AccountCircle, ArrowBack } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import CustomBottomNavigation from './BottomNavigation';
 import { useAuth } from '../features/auth/AuthContext';
+import { FirebaseMessaging } from '../features/notifications/FirebaseMessaging';
 
 type Props = {
   children: ReactNode;
@@ -37,7 +38,6 @@ const Layout = ({
         display: 'flex',
         flexDirection: 'column',
         height: '100vh',
-        position: 'fixed',
         overflow: 'hidden',
       }}
     >
@@ -95,13 +95,16 @@ const Layout = ({
         </Toolbar>
       </AppBar>
 
+      <FirebaseMessaging />
+
       {/* Main Content */}
       <Box
         sx={{
-          width: '100vw',
+          width: '100%',
           maxWidth: 1200,
           mx: 'auto',
           flex: 1,
+          alignItems: 'center',
           overflow: 'auto',
         }}
       >
