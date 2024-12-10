@@ -22,6 +22,7 @@ import { AlertMessage, AlertSnackbar } from '../../components/AlertSnackbar';
 import { EventRepeat } from '@mui/icons-material';
 import Grid from '@mui/material/Grid2';
 import Layout from '../../components/Layout';
+import { Box } from '@mui/system';
 
 export type EventScreenProps = {
   events: SliceEvent[];
@@ -100,7 +101,7 @@ const EventScreen = ({ events, loading, error, user }: EventScreenProps) => {
           onClick={() => switchEventFetching('past')}
         />
       </Grid>
-      <List sx={{ pb: 10 }}>
+      <Box sx={{ pb: 10 }}>
         {events.map((event) => (
           <EventItem
             key={event.id}
@@ -114,7 +115,7 @@ const EventScreen = ({ events, loading, error, user }: EventScreenProps) => {
             }}
           />
         ))}
-      </List>
+      </Box>
       {can('insert', 'event') && (
         <Fab
           sx={{ background: '#66bb6a', position: 'fixed', right: '16px', bottom: '56px', mb: '16px' }}
