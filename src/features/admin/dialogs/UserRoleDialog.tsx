@@ -14,7 +14,7 @@ export const UserRoleDialog = ({ open, handleClose, handleSubmit, role }: UserRo
     <SwipeableDialog open={open} onClose={handleClose} title={'User Role wählen'}>
       <List>
         {(['admin', 'user', 'finance', 'trainer', 'procure'] as UserRole[]).map((x) => (
-          <ListItem onClick={() => handleSubmit(x)}>
+          <ListItem key={x} onClick={() => handleSubmit(x)}>
             <ListItemAvatar>
               <Radio checked={x === role}></Radio>
             </ListItemAvatar>
