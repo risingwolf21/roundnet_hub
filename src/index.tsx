@@ -47,9 +47,14 @@ if (process.env.REACT_APP_ENV === 'production') {
   });
 }
 
-window.addEventListener('scroll', (event: any) => {
-  event.preventDefault();
-  window.scrollTo(0, 0);
+let isScrolling: NodeJS.Timeout;
+
+window.addEventListener('scroll', () => {
+  clearTimeout(isScrolling);
+
+  isScrolling = setTimeout(() => {
+    window.scrollTo(0, 0);
+  }, 100); // Verzögere die Scroll-Reset-Logik
 });
 
 const root = ReactDOM.createRoot(document.getElementById('root') as HTMLElement);

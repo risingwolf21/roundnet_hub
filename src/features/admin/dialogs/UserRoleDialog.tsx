@@ -1,24 +1,5 @@
-import { SlideUpTransition } from '../../../utils';
-import { Box } from '@mui/system';
-import {
-  AppBar,
-  Button,
-  Checkbox,
-  Dialog,
-  IconButton,
-  List,
-  ListItem,
-  ListItemText,
-  Table,
-  TableBody,
-  TableCell,
-  TableRow,
-  Toolbar,
-  Typography,
-} from '@mui/material';
-import CloseIcon from '@mui/icons-material/Close';
-import React, { useEffect, useState } from 'react';
-import { AdminPermissionsRepository } from '../../../repository/AdminPermissionsRepository';
+import { List, ListItem, ListItemAvatar, ListItemText, Radio } from '@mui/material';
+import React from 'react';
 import { SwipeableDialog } from '../../../components/SwipeableDialog';
 
 type UserRoleDialogProps = {
@@ -34,6 +15,9 @@ export const UserRoleDialog = ({ open, handleClose, handleSubmit, role }: UserRo
       <List>
         {(['admin', 'user', 'finance', 'trainer', 'procure'] as UserRole[]).map((x) => (
           <ListItem onClick={() => handleSubmit(x)}>
+            <ListItemAvatar>
+              <Radio checked={x === role}></Radio>
+            </ListItemAvatar>
             <ListItemText primary={x} />
           </ListItem>
         ))}
