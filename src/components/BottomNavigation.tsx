@@ -9,13 +9,11 @@ import { can } from 'src/utils/PermissionService';
 import { RootState } from '../redux/store';
 import { notificationsSelector } from '../features/notifications/slices/notificationsSlice';
 import { HOMEPAGE } from '../constants';
-import { useAuth } from '../features/auth/AuthContext';
 
-const CustomBottomNavigation = ({ t }: { t: TFunction }) => {
+const CustomBottomNavigation = () => {
   let navigate = useNavigate();
   const { hasNotVerifiedUsers } = useSelector((state: RootState) => state.adminUsers);
   const notifications = useSelector((state: RootState) => notificationsSelector.selectAll(state));
-  const user = useAuth();
   const [tab, setTab] = useState<string>(HOMEPAGE);
 
   useEffect(() => {
@@ -28,7 +26,7 @@ const CustomBottomNavigation = ({ t }: { t: TFunction }) => {
   };
 
   return (
-    <Paper sx={{ position: 'sticky', bottom: 0 }} elevation={3} component="footer">
+    <Paper sx={{ position: 'sticky', bottom: 0, overflow: 'hidden' }} elevation={3} component="footer">
       <BottomNavigation value={tab} onChange={handleChange}>
         {can('select', 'event') && (
           <BottomNavigationAction

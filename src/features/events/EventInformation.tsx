@@ -3,7 +3,6 @@ import {
   Alert,
   Box,
   Button,
-  CardContent,
   Divider,
   IconButton,
   List,
@@ -262,7 +261,7 @@ const EventInformation = ({
           )}
           {createCardSubHeader()}
         </Box>
-        <CardContent sx={{ '&.MuiCardContent-root': { paddingBottom: 1 } }}>
+        <Box sx={{ px: 2 }}>
           <Box sx={{ p: 0, alignSelf: 'center' }}>
             <Typography sx={{ fontSize: 16, fontWeight: 'bold' }} color="text.secondary" gutterBottom>
               Beschreibung
@@ -334,7 +333,7 @@ const EventInformation = ({
             inputRef={inputRef}
             eventInThePast={eventInThePast(selectedEvent)}
           />
-        </CardContent>
+        </Box>
 
         <CancelTrainingDialog
           cancelTrainingOpen={cancelTrainingOpen}

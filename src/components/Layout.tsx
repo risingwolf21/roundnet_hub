@@ -32,9 +32,21 @@ const Layout = ({
   const user = useAuth();
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', height: '100vh' }}>
+    <Box
+      sx={{
+        display: 'flex',
+        flexDirection: 'column',
+        height: '100vh',
+        position: 'fixed',
+        overflowX: 'hidden',
+        overflowY: 'auto',
+      }}
+    >
       {/* AppBar */}
-      <AppBar position="static" sx={{ zIndex: (theme) => theme.zIndex.drawer + 1, background: 'primary' }}>
+      <AppBar
+        position="static"
+        sx={{ zIndex: (theme) => theme.zIndex.drawer + 1, background: 'primary', overflow: 'hidden' }}
+      >
         <Toolbar
           sx={{
             width: 'calc(100% - 48px)',
