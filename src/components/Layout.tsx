@@ -103,9 +103,9 @@ const Layout = ({
           width: '100%',
           maxWidth: 1200,
           mx: 'auto',
-          flex: 1,
           alignItems: 'center',
-          overflow: 'auto',
+          overflowY: 'auto',
+          height: 'calc(100% - 56px - 64px)',
         }}
       >
         {children}
