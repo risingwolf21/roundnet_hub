@@ -38,8 +38,7 @@ const Layout = ({
         flexDirection: 'column',
         height: '100vh',
         position: 'fixed',
-        overflowX: 'hidden',
-        overflowY: 'auto',
+        overflow: 'hidden',
       }}
     >
       {/* AppBar */}

@@ -26,7 +26,11 @@ const CustomBottomNavigation = () => {
   };
 
   return (
-    <Paper sx={{ position: 'sticky', bottom: 0, overflow: 'hidden' }} elevation={3} component="footer">
+    <Paper
+      sx={{ position: 'fixed', bottom: 0, left: 0, right: 0, overflow: 'hidden' }}
+      elevation={3}
+      component="footer"
+    >
       <BottomNavigation value={tab} onChange={handleChange}>
         {can('select', 'event') && (
           <BottomNavigationAction
