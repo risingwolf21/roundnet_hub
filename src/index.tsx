@@ -47,6 +47,11 @@ if (process.env.REACT_APP_ENV === 'production') {
   });
 }
 
+window.addEventListener('scroll', (event: any) => {
+  event.preventDefault();
+  window.scrollTo(0, 0);
+});
+
 const root = ReactDOM.createRoot(document.getElementById('root') as HTMLElement);
 root.render(
   <ThemeProvider theme={mainTheme}>

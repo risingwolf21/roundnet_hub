@@ -100,7 +100,7 @@ const EventScreen = ({ events, loading, error, user }: EventScreenProps) => {
           onClick={() => switchEventFetching('past')}
         />
       </Grid>
-      <List sx={{ pb: 10 }}>
+      <List sx={{ pb: 10, overflowX: 'hidden' }}>
         {events.map((event) => (
           <EventItem
             key={event.id}

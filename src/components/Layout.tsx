@@ -4,7 +4,6 @@ import { AccountCircle, ArrowBack } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import CustomBottomNavigation from './BottomNavigation';
 import { useAuth } from '../features/auth/AuthContext';
-import Grid from '@mui/material/Grid2';
 
 type Props = {
   children: ReactNode;
@@ -88,7 +87,7 @@ const Layout = ({
       {/* Main Content */}
       <Box
         sx={{
-          width: '100%',
+          width: '100vw',
           maxWidth: 1200,
           mx: 'auto',
           flex: 1,
