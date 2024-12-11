@@ -116,10 +116,10 @@ const Layout = ({
                     mx: 'auto',
                     alignItems: 'center',
                     position: "absolute",
-                    top: "calc(56px + env(safe-area-inset-bottom))",
+                    top: "calc(56px + env(safe-area-inset-top))",
                     left: 0,
                     right: 0,
-                    bottom: "56px",
+                    bottom: "calc(56px + env(safe-area-inset-bottom))",
                 }}
             >
                 <Box sx={{

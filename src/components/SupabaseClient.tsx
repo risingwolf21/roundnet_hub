@@ -1,9 +1,9 @@
-import React, { useEffect, useState } from 'react';
-import { Button, List, ListItem, ListItemButton, ListItemText } from '@mui/material';
-import { useClient } from 'react-supabase';
-import { Cancel, Delete, Edit, ExpandMoreOutlined, Save } from '@mui/icons-material';
-import { SwipeableDialog } from './SwipeableDialog';
-import { LoadingIndicator } from './LoadingIndicator';
+import React, {useEffect, useState} from 'react';
+import {Button, List, ListItem, ListItemButton, ListItemText} from '@mui/material';
+import {useClient} from 'react-supabase';
+import {Cancel, Delete, Edit, ExpandMoreOutlined, Save} from '@mui/icons-material';
+import {SwipeableDialog} from './SwipeableDialog';
+import {LoadingIndicator} from './LoadingIndicator';
 import {
   DataGrid,
   GridActionsCellItem,
@@ -17,11 +17,11 @@ import {
   GridSlots,
   GridToolbarContainer,
 } from '@mui/x-data-grid';
-import { AlertMessage, AlertSnackbar } from './AlertSnackbar';
-import { isNull, omit, omitBy } from 'lodash';
-import { supabase } from './services/supabase/supabaseClient';
+import {AlertMessage, AlertSnackbar} from './AlertSnackbar';
+import {isNull, omit, omitBy} from 'lodash';
+import {supabase} from './services/supabase/supabaseClient';
 import AddIcon from '@mui/icons-material/Add';
-import { formatDateFromDatabase } from '../utils';
+import {formatDateFromDatabase} from '../utils';
 import Layout from './Layout';
 
 interface EditToolbarProps {
@@ -401,6 +401,9 @@ export const SupabaseClient = () => {
                 pageSize: 50,
               },
             },
+          }}
+          sx={{
+              pb: "calc(56px + env(safe-area-inset-bottom))"
           }}
           processRowUpdate={processRowUpdate}
           onRowModesModelChange={handleRowModesModelChange}

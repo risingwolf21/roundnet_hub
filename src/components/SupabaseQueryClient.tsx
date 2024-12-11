@@ -1,10 +1,10 @@
-import { Box } from '@mui/system';
-import React, { useState } from 'react';
-import { Button, Grid, TextField } from '@mui/material';
-import { LoadingIndicator } from './LoadingIndicator';
-import { DataGrid, GridColDef } from '@mui/x-data-grid';
-import { supabase } from './services/supabase/supabaseClient';
-import { Json } from 'src/types/supabase-generated.types';
+import {Box} from '@mui/system';
+import React, {useState} from 'react';
+import {Button, Grid, TextField} from '@mui/material';
+import {LoadingIndicator} from './LoadingIndicator';
+import {DataGrid, GridColDef} from '@mui/x-data-grid';
+import {supabase} from './services/supabase/supabaseClient';
+import {Json} from 'src/types/supabase-generated.types';
 import Layout from './Layout';
 
 export const SupabaseQueryClient = () => {
@@ -56,7 +56,7 @@ export const SupabaseQueryClient = () => {
   return (
     <Layout>
       <LoadingIndicator loading={loading} />
-      <Box sx={{ padding: 2 }}>
+      <Box sx={{padding: 2, pb: "calc(56px + env(safe-area-inset-bottom))"}}>
         <TextField
           fullWidth
           multiline

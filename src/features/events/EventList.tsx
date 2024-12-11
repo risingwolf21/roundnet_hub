@@ -86,7 +86,7 @@ const EventScreen = ({events, loading, error, user}: EventScreenProps) => {
     return (
         <Layout>
             {loading && <LinearProgress sx={{position: 'fixed', top: 56, left: 0, right: 0}}/>}
-            <List sx={{overflowY: "auto", pt: 0, pb: 8}}>
+            <List sx={{overflowY: "auto", pt: 0, pb: 10}}>
                 <Grid container p={2} alignItems={'start'} justifyContent="start" direction={'row'} width={'100%'}>
                     <Chip
                         variant={fetchEventMode === 'upcoming' ? 'filled' : 'outlined'}

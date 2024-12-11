@@ -1,19 +1,18 @@
-import { PersonOff } from '@mui/icons-material';
+import {PersonOff} from '@mui/icons-material';
 import SearchIcon from '@mui/icons-material/Search';
-import { Badge, Chip, InputAdornment, LinearProgress, List } from '@mui/material';
-import React, { useEffect, useState } from 'react';
-import { useSelector } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
-import { fetchAdminUsersAsync } from './slices/adminUserSlice';
-import { RootState, useAppDispatch } from '../../redux/store';
-import { UserWithGroupsAndRoles } from '../../types/supabaseTypes';
-import { AlertMessage, AlertSnackbar } from '../../components/AlertSnackbar';
-import { Error } from '../../components/Error';
-import { Search, SearchIconWrapper, StyledInputBase } from '../../components/SearchBar';
-import EditUserDialog, { UserEdited } from './dialogs/EditUserDialog';
-import { captureException } from '@sentry/react';
-import { AdminUsersRepository } from '../../repository/AdminUsersRepository';
-import { AdminUserItem } from './components/AdminUserItem';
+import {Badge, Chip, InputAdornment, LinearProgress, List} from '@mui/material';
+import React, {useEffect, useState} from 'react';
+import {useSelector} from 'react-redux';
+import {useNavigate} from 'react-router-dom';
+import {fetchAdminUsersAsync} from './slices/adminUserSlice';
+import {RootState, useAppDispatch} from '../../redux/store';
+import {UserWithGroupsAndRoles} from '../../types/supabaseTypes';
+import {AlertMessage, AlertSnackbar} from '../../components/AlertSnackbar';
+import {Error} from '../../components/Error';
+import EditUserDialog, {UserEdited} from './dialogs/EditUserDialog';
+import {captureException} from '@sentry/react';
+import {AdminUsersRepository} from '../../repository/AdminUsersRepository';
+import {AdminUserItem} from './components/AdminUserItem';
 import Layout from '../../components/Layout';
 import TextField from '@mui/material/TextField';
 import Box from '@mui/material/Box';
@@ -96,7 +95,7 @@ const AdminUserList = () => {
         />
       </Badge>
 
-      <List sx={{ width: '100%' }}>
+        <List sx={{width: '100%', pb: "calc(56px + env(safe-area-inset-bottom))"}}>
         {users &&
           users
             .filter(
