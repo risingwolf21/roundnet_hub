@@ -1,14 +1,13 @@
-import { AdminPanelSettings, EmojiEvents, Liquor, List, SportsHandball } from '@mui/icons-material';
-import { Badge, BottomNavigation, BottomNavigationAction, Paper } from '@mui/material';
-import { TFunction } from 'i18next';
-import React, { useEffect, useState } from 'react';
-import { withTranslation } from 'react-i18next';
-import { useSelector } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
-import { can } from 'src/utils/PermissionService';
-import { RootState } from '../redux/store';
-import { notificationsSelector } from '../features/notifications/slices/notificationsSlice';
-import { HOMEPAGE } from '../constants';
+import {AdminPanelSettings, EmojiEvents, Liquor, List, SportsHandball} from '@mui/icons-material';
+import {Badge, BottomNavigation, BottomNavigationAction, Paper} from '@mui/material';
+import React, {useEffect, useState} from 'react';
+import {withTranslation} from 'react-i18next';
+import {useSelector} from 'react-redux';
+import {useNavigate} from 'react-router-dom';
+import {can} from 'src/utils/PermissionService';
+import {RootState} from '../redux/store';
+import {notificationsSelector} from '../features/notifications/slices/notificationsSlice';
+import {HOMEPAGE} from '../constants';
 
 const CustomBottomNavigation = () => {
   let navigate = useNavigate();
@@ -26,7 +25,7 @@ const CustomBottomNavigation = () => {
   };
 
   return (
-    <Paper sx={{ position: 'fixed', bottom: 0, left: 0, right: 0 }} elevation={3}>
+      <Paper sx={{position: 'fixed', bottom: "env(safe-area-inset-bottom)", left: 0, right: 0}} elevation={3}>
       <BottomNavigation value={tab} onChange={handleChange}>
         {can('select', 'event') && (
           <BottomNavigationAction
