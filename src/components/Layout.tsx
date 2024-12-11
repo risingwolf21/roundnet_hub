@@ -52,8 +52,7 @@ const Layout = ({
                     zIndex: (theme) => theme.zIndex.drawer + 1,
                     background: 'primary',
                     overflow: 'hidden',
-                    position: "fixed",
-                    pt: "env(safe-area-inset-top)"
+                    position: "fixed"
                 }}
             >
                 <Toolbar
@@ -61,6 +60,7 @@ const Layout = ({
                         width: 'calc(100% - 48px)',
                         maxWidth: 1200,
                         mx: 'auto',
+                        pt: "env(safe-area-inset-top)"
                     }}
                 >
                     {/* Optional Back Button */}
