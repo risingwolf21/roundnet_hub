@@ -53,7 +53,8 @@ const Layout = ({
                     background: 'primary',
                     overflow: 'hidden',
                     position: "fixed",
-                    top: 0
+                    top: 0,
+                    pt: "env(safe-area-inset-top)"
                 }}
             >
                 <Toolbar
@@ -61,7 +62,6 @@ const Layout = ({
                         width: 'calc(100% - 48px)',
                         maxWidth: 1200,
                         mx: 'auto',
-                        pt: "env(safe-area-inset-top)"
                     }}
                 >
                     {/* Optional Back Button */}
