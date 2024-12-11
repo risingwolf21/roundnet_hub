@@ -52,7 +52,8 @@ const Layout = ({
                     zIndex: (theme) => theme.zIndex.drawer + 1,
                     background: 'primary',
                     overflow: 'hidden',
-                    position: "fixed"
+                    position: "fixed",
+                    top: 0
                 }}
             >
                 <Toolbar

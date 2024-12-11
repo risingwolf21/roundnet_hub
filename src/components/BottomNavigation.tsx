@@ -27,7 +27,7 @@ const CustomBottomNavigation = () => {
   return (
       <Paper sx={{
         position: 'fixed',
-        bottom: "env(safe-area-inset-bottom)",
+          bottom: 0,
         pb: "env(safe-area-inset-bottom)",
         left: 0,
         right: 0
