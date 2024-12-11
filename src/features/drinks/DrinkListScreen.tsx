@@ -1,17 +1,17 @@
-import { Tune } from '@mui/icons-material';
+import {Tune} from '@mui/icons-material';
 import CheckIcon from '@mui/icons-material/Check';
-import { Checkbox, CircularProgress, Fab, List, ListItem, ListItemAvatar, ListItemText } from '@mui/material';
-import { captureException } from '@sentry/react';
-import React, { useEffect, useState } from 'react';
-import { AlertMessage, AlertSnackbar } from 'src/components/AlertSnackbar';
-import { LoadingIndicator } from 'src/components/LoadingIndicator';
-import { DrinkCounter } from 'src/types/supabaseTypes';
-import { nameOfProductType } from 'src/utils';
-import { Error } from '../../components/Error';
-import { SwipeableDialog } from '../../components/SwipeableDialog';
+import {Checkbox, CircularProgress, Fab, List, ListItem, ListItemAvatar, ListItemText} from '@mui/material';
+import {captureException} from '@sentry/react';
+import React, {useEffect, useState} from 'react';
+import {AlertMessage, AlertSnackbar} from 'src/components/AlertSnackbar';
+import {LoadingIndicator} from 'src/components/LoadingIndicator';
+import {DrinkCounter} from 'src/types/supabaseTypes';
+import {nameOfProductType} from 'src/utils';
+import {Error} from '../../components/Error';
+import {SwipeableDialog} from '../../components/SwipeableDialog';
 import DrinkList from './components/DrinkList';
-import { DrinkListScreenProps } from './types';
-import { SupabaseDrinkRepository } from '../../repository/DrinkRepository';
+import {DrinkListScreenProps} from './types';
+import {SupabaseDrinkRepository} from '../../repository/DrinkRepository';
 import VoucherCard from './components/Voucher';
 import Layout from '../../components/Layout';
 
@@ -116,14 +116,26 @@ const DrinkListScreen = ({ user, drinks, drinksLoading, drinksError }: DrinkList
       />
       {Object.values(addedDrinks).length > 0 ? (
         <Fab
-          sx={{ background: '#66bb6a', position: 'fixed', right: '16px', bottom: '56px', mb: '16px' }}
+            sx={{
+                background: '#66bb6a',
+                position: 'fixed',
+                right: '16px',
+                bottom: 'calc(56px + env(safe-area-inset-bottom))',
+                mb: '16px'
+            }}
           onClick={confirmDrinks}
         >
           {loading ? <CircularProgress /> : <CheckIcon sx={{ color: 'white' }} />}
         </Fab>
       ) : (
         <Fab
-          sx={{ background: '#66bb6a', position: 'fixed', right: '16px', bottom: '56px', mb: '16px' }}
+            sx={{
+                background: '#66bb6a',
+                position: 'fixed',
+                right: '16px',
+                bottom: 'calc(56px + env(safe-area-inset-bottom))',
+                mb: '16px'
+            }}
           onClick={() => setFilterDialogOpen(true)}
         >
           <Tune sx={{ color: 'white' }} />

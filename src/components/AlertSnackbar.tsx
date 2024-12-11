@@ -1,5 +1,5 @@
-import { Alert, AlertColor, Button, Snackbar, SnackbarCloseReason } from '@mui/material';
-import React, { SyntheticEvent } from 'react';
+import {Alert, AlertColor, Button, Snackbar, SnackbarCloseReason} from '@mui/material';
+import React, {SyntheticEvent} from 'react';
 
 export type AlertMessage = {
   message: string;
@@ -28,7 +28,7 @@ export const AlertSnackbar = ({ alertInfo, close, autoHideDuration }: AlertSnack
 
   return (
     <Snackbar
-      sx={{ position: 'fixed', right: '16px', bottom: '72px' }}
+        sx={{position: 'fixed', right: '16px', bottom: 'calc(72px + env(safe-area-inset-bottom))'}}
       open={alertInfo != null}
       autoHideDuration={versionError() ? null : autoHideDuration}
       onClose={close ? handleSnackbarClose : undefined}

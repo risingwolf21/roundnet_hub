@@ -1,18 +1,18 @@
-import { AccountCircle, GroupAdd, GroupRemove } from '@mui/icons-material';
-import { Box, Divider, Fab, List, ListItem, ListItemAvatar, ListItemText, Typography } from '@mui/material';
-import { toInteger } from 'lodash';
-import React, { useEffect, useState } from 'react';
-import { useSelector } from 'react-redux';
-import { useParams } from 'react-router-dom';
-import { fetchAdminUsersAsync } from '../admin/slices/adminUserSlice';
-import { RootState, useAppDispatch } from '../../redux/store';
-import { GroupWithUsers, UserWithGroupsAndRoles } from '../../types/supabaseTypes';
-import { AlertMessage, AlertSnackbar } from '../../components/AlertSnackbar';
+import {AccountCircle, GroupAdd, GroupRemove} from '@mui/icons-material';
+import {Box, Divider, Fab, List, ListItem, ListItemAvatar, ListItemText, Typography} from '@mui/material';
+import {toInteger} from 'lodash';
+import React, {useEffect, useState} from 'react';
+import {useSelector} from 'react-redux';
+import {useParams} from 'react-router-dom';
+import {fetchAdminUsersAsync} from '../admin/slices/adminUserSlice';
+import {RootState, useAppDispatch} from '../../redux/store';
+import {GroupWithUsers, UserWithGroupsAndRoles} from '../../types/supabaseTypes';
+import {AlertMessage, AlertSnackbar} from '../../components/AlertSnackbar';
 import SearchAndSelectUserDialog from './dialogs/SearchAndSelectUserDialog';
-import { fetchSingleGroupAsync, groupsSelector } from 'src/features/groups/slices/groupsSlice';
-import { captureException } from '@sentry/react';
-import { Tables } from '../../types/supabase-generated.types';
-import { AdminUsersRepository } from '../../repository/AdminUsersRepository';
+import {fetchSingleGroupAsync, groupsSelector} from 'src/features/groups/slices/groupsSlice';
+import {captureException} from '@sentry/react';
+import {Tables} from '../../types/supabase-generated.types';
+import {AdminUsersRepository} from '../../repository/AdminUsersRepository';
 import Layout from '../../components/Layout';
 
 const GroupInformationProvider = () => {
@@ -113,7 +113,13 @@ const GroupInformation = ({ users, loading, group }: GroupInformationProps) => {
               </ListItem>
             ))}
       </List>
-      <Box sx={{ position: 'fixed', right: '16px', bottom: '76px', display: 'flex', flexDirection: 'row' }}>
+        <Box sx={{
+            position: 'fixed',
+            right: '16px',
+            bottom: 'calc(76px + env(safe-area-inset-bottom))',
+            display: 'flex',
+            flexDirection: 'row'
+        }}>
         <Fab sx={{ background: '#ba1a1a', mr: 2 }} onClick={() => setDeleteUsersOpen(true)}>
           {<GroupRemove sx={{ color: 'white' }} />}
         </Fab>

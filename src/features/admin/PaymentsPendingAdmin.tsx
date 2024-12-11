@@ -1,32 +1,32 @@
-import { ArrowBack, Refresh } from '@mui/icons-material';
+import {ArrowBack, Refresh} from '@mui/icons-material';
 import CheckIcon from '@mui/icons-material/Check';
 import SearchIcon from '@mui/icons-material/Search';
 import {
-  AppBar,
-  Box,
-  Button,
-  Fab,
-  Grid,
-  IconButton,
-  LinearProgress,
-  List,
-  ListItem,
-  ListItemAvatar,
-  ListItemText,
-  Toolbar,
-  Typography,
+    AppBar,
+    Box,
+    Button,
+    Fab,
+    Grid,
+    IconButton,
+    LinearProgress,
+    List,
+    ListItem,
+    ListItemAvatar,
+    ListItemText,
+    Toolbar,
+    Typography,
 } from '@mui/material';
-import React, { useEffect, useState } from 'react';
-import { useSelector } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
-import { useClient } from 'react-supabase';
-import { fetchAdminsPaymentsAsync } from './slices/adminPaymentsSlice';
-import { RootState, useAppDispatch } from '../../redux/store';
-import { FullPayment } from '../../types/supabaseTypes';
-import { Error } from '../../components/Error';
-import { Search, SearchIconWrapper, StyledInputBase } from '../../components/SearchBar';
-import { SwipeableDialog } from '../../components/SwipeableDialog';
-import { History } from 'types/supabase';
+import React, {useEffect, useState} from 'react';
+import {useSelector} from 'react-redux';
+import {useNavigate} from 'react-router-dom';
+import {useClient} from 'react-supabase';
+import {fetchAdminsPaymentsAsync} from './slices/adminPaymentsSlice';
+import {RootState, useAppDispatch} from '../../redux/store';
+import {FullPayment} from '../../types/supabaseTypes';
+import {Error} from '../../components/Error';
+import {Search, SearchIconWrapper, StyledInputBase} from '../../components/SearchBar';
+import {SwipeableDialog} from '../../components/SwipeableDialog';
+import {History} from 'types/supabase';
 
 const PaymentsPendingAdmin = () => {
   const [open, setOpen] = useState(false);
@@ -132,7 +132,12 @@ const PaymentsPendingAdmin = () => {
         </Grid>
       )}
       <Fab
-        sx={{ background: '#66bb6a', position: 'fixed', right: '16px', bottom: '72px' }}
+          sx={{
+              background: '#66bb6a',
+              position: 'fixed',
+              right: '16px',
+              bottom: 'calc(72px + env(safe-area-inset-bottom))'
+          }}
         onClick={() => dispatch(fetchAdminsPaymentsAsync({ client }))}
       >
         <Refresh sx={{ color: 'white' }} />

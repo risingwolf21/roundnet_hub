@@ -1,26 +1,26 @@
 import EuroIcon from '@mui/icons-material/Euro';
 import {
-  Alert,
-  Box,
-  Button,
-  Divider,
-  List,
-  ListItem,
-  ListItemAvatar,
-  ListItemText,
-  Snackbar,
-  Typography,
+    Alert,
+    Box,
+    Button,
+    Divider,
+    List,
+    ListItem,
+    ListItemAvatar,
+    ListItemText,
+    Snackbar,
+    Typography,
 } from '@mui/material';
-import React, { useEffect } from 'react';
-import { useSelector } from 'react-redux';
-import { PAYPAL_ME_ADDRESS } from '../../constants';
-import { fetchDrinksToPayAsync, fetchPaymentAsync } from './slices/drinksSlice';
-import { RootState, useAppDispatch } from '../../redux/store';
-import { PaymentHistory } from '../../types/supabaseTypes';
-import { groupBy } from '../../utils';
-import { LoadingScreen } from '../../components/LoadingScreen';
+import React, {useEffect} from 'react';
+import {useSelector} from 'react-redux';
+import {PAYPAL_ME_ADDRESS} from '../../constants';
+import {fetchDrinksToPayAsync, fetchPaymentAsync} from './slices/drinksSlice';
+import {RootState, useAppDispatch} from '../../redux/store';
+import {PaymentHistory} from '../../types/supabaseTypes';
+import {groupBy} from '../../utils';
+import {LoadingScreen} from '../../components/LoadingScreen';
 import Layout from '../../components/Layout';
-import { useAuth } from '../auth/AuthContext';
+import {useAuth} from '../auth/AuthContext';
 
 const PayDrinksButton = ({ amountToPay }: { amountToPay: number }) => {
   const onPayClick = () => {
@@ -141,7 +141,8 @@ const PayDrinksScreen = ({ user, paymentHistory, paymentError, paymentLoading }:
       <PayDrinksSummary paymentHistory={paymentHistory ?? []} />
       <PayDrinksButton amountToPay={paymentHistory?.reduce((prev, curr) => prev + (curr.amount ?? 0), 0) ?? 0} />
 
-      <Snackbar sx={{ position: 'fixed', right: '16px', bottom: '72px' }} open={paymentError !== ''}>
+        <Snackbar sx={{position: 'fixed', right: '16px', bottom: 'calc(72px + env(safe-area-inset-bottom))'}}
+                  open={paymentError !== ''}>
         <Alert severity={'error'} sx={{ width: '100%' }}>
           {paymentError}
         </Alert>

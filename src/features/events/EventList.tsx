@@ -119,7 +119,13 @@ const EventScreen = ({events, loading, error, user}: EventScreenProps) => {
                 </Box>
                 {can('insert', 'event') && (
                     <Fab
-                        sx={{background: '#66bb6a', position: 'fixed', right: '16px', bottom: '56px', mb: '16px'}}
+                        sx={{
+                            background: '#66bb6a',
+                            position: 'fixed',
+                            right: '16px',
+                            bottom: 'calc(56px + env(safe-area-inset-bottom))',
+                            mb: '16px'
+                        }}
                         onClick={() => {
                             dispatch(editEvent(null));
                             navigate('/training/createOrUpdate/InsertEvent');
@@ -130,7 +136,13 @@ const EventScreen = ({events, loading, error, user}: EventScreenProps) => {
                 )}
                 {can('update', 'event') && (
                     <Fab
-                        sx={{background: '#66bb6a', position: 'fixed', right: '88px', bottom: '56px', mb: '16px'}}
+                        sx={{
+                            background: '#66bb6a',
+                            position: 'fixed',
+                            right: '88px',
+                            bottom: 'calc(56px + env(safe-area-inset-bottom))',
+                            mb: '16px'
+                        }}
                         onClick={() => navigate('/training/recurringEvents')}
                     >
                         {<EventRepeat sx={{color: 'white'}}/>}

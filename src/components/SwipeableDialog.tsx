@@ -43,7 +43,7 @@ export const SwipeableDialog = ({
           m: 0,
           left: 0,
           right: 0,
-            bottom: "56px",
+          bottom: 'calc(56px + env(safe-area-inset-bottom))',
           top: 0,
             height: 'calc(100vh - 56px)',
           width: '100%',

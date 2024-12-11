@@ -1,4 +1,4 @@
-import { Save } from '@mui/icons-material';
+import {Save} from '@mui/icons-material';
 import {
   Button,
   Checkbox,
@@ -10,14 +10,14 @@ import {
   ListItemButton,
   ListItemText,
 } from '@mui/material';
-import React, { useEffect, useState } from 'react';
-import { LoadingIndicator } from '../../components/LoadingIndicator';
-import { useTranslation } from 'react-i18next';
-import { TFunction } from 'i18next';
-import { AlertMessage, AlertSnackbar } from '../../components/AlertSnackbar';
-import { SupabaseUserRepository } from '../../repository/UserRepository';
+import React, {useEffect, useState} from 'react';
+import {LoadingIndicator} from '../../components/LoadingIndicator';
+import {useTranslation} from 'react-i18next';
+import {TFunction} from 'i18next';
+import {AlertMessage, AlertSnackbar} from '../../components/AlertSnackbar';
+import {SupabaseUserRepository} from '../../repository/UserRepository';
 import Layout from '../../components/Layout';
-import { useAuth } from '../auth/AuthContext';
+import {useAuth} from '../auth/AuthContext';
 
 const userTags: NotificationTags[] = ['eventComments', 'userRegistration', 'paymentRequest', 'paymentPending'];
 
@@ -83,7 +83,12 @@ export const NotificationsScreen = ({ user, t }: NotificationsScreenProps) => {
           </ListItemButton>
         ))}
       </List>
-      <Fab sx={{ background: '#66bb6a', position: 'fixed', right: '16px', bottom: '76px' }} onClick={saveTags}>
+      <Fab sx={{
+        background: '#66bb6a',
+        position: 'fixed',
+        right: '16px',
+        bottom: 'calc(76px + env(safe-area-inset-bottom))'
+      }} onClick={saveTags}>
         {!loading ? <Save sx={{ color: 'white' }} /> : <CircularProgress />}
       </Fab>
       <AlertSnackbar alertInfo={alertInfo} autoHideDuration={1500} close={() => setAlertInfo(null)} />

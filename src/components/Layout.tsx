@@ -52,7 +52,8 @@ const Layout = ({
                     zIndex: (theme) => theme.zIndex.drawer + 1,
                     background: 'primary',
                     overflow: 'hidden',
-                    position: "fixed"
+                    position: "fixed",
+                    pt: "env(safe-area-inset-top)"
                 }}
             >
                 <Toolbar
@@ -114,7 +115,7 @@ const Layout = ({
                     mx: 'auto',
                     alignItems: 'center',
                     position: "absolute",
-                    top: "56px",
+                    top: "calc(56px + env(safe-area-inset-bottom))",
                     left: 0,
                     right: 0,
                     bottom: "56px",

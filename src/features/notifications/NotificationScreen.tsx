@@ -1,16 +1,16 @@
-import { useSelector } from 'react-redux';
-import { RootState, useAppDispatch } from '../../redux/store';
-import { can } from '../../utils/PermissionService';
-import { AlertSnackbar } from '../../components/AlertSnackbar';
+import {useSelector} from 'react-redux';
+import {RootState, useAppDispatch} from '../../redux/store';
+import {can} from '../../utils/PermissionService';
+import {AlertSnackbar} from '../../components/AlertSnackbar';
 import React from 'react';
-import { Navigate } from 'react-router-dom';
-import { HOMEPAGE } from '../../constants';
-import { Fab, LinearProgress, List, ListItem, ListItemText } from '@mui/material';
-import { DoneAll } from '@mui/icons-material';
-import { fetchNotificationsAsync, notificationsSelector } from './slices/notificationsSlice';
-import { SupabaseUserRepository } from '../../repository/UserRepository';
+import {Navigate} from 'react-router-dom';
+import {HOMEPAGE} from '../../constants';
+import {Fab, LinearProgress, List, ListItem, ListItemText} from '@mui/material';
+import {DoneAll} from '@mui/icons-material';
+import {fetchNotificationsAsync, notificationsSelector} from './slices/notificationsSlice';
+import {SupabaseUserRepository} from '../../repository/UserRepository';
 import Layout from '../../components/Layout';
-import { useAuth } from '../auth/AuthContext';
+import {useAuth} from '../auth/AuthContext';
 
 const NotificationScreen = () => {
   const { loading, error } = useSelector((state: RootState) => state.notifications);
@@ -46,7 +46,7 @@ const NotificationScreen = () => {
           backgroundColor: (theme) => theme.palette.primary.main,
           position: 'fixed',
           right: '16px',
-          bottom: '56px',
+            bottom: 'calc(56px + env(safe-area-inset-bottom))',
           mb: '16px',
         }}
         onClick={markNotificationsAsRead}

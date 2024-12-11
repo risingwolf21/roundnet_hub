@@ -16,11 +16,11 @@ import {
   Switch,
   TextField,
 } from '@mui/material';
-import { useClient } from 'react-supabase';
-import { useSelector } from 'react-redux';
-import React, { useEffect, useState } from 'react';
-import { AppDispatch, RootState, useAppDispatch } from '../redux/store';
-import { SupabaseClient } from '@supabase/supabase-js';
+import {useClient} from 'react-supabase';
+import {useSelector} from 'react-redux';
+import React, {useEffect, useState} from 'react';
+import {AppDispatch, RootState, useAppDispatch} from '../redux/store';
+import {SupabaseClient} from '@supabase/supabase-js';
 import CropImageDialog from './CropImageDialog';
 import {
   AddPhotoAlternateOutlined,
@@ -34,18 +34,18 @@ import {
   PersonOutlineOutlined,
   Save,
 } from '@mui/icons-material';
-import { dataURLtoFile, readFile } from 'src/utils';
-import { captureException } from '@sentry/react';
+import {dataURLtoFile, readFile} from 'src/utils';
+import {captureException} from '@sentry/react';
 import Compressor from 'compressorjs';
-import { addNotificationPermissionAsync, removeNotificationPermissionAsync } from 'src/redux/applicationSlice';
-import { uuid } from '@supabase/supabase-js/dist/main/lib/helpers';
-import { SupabaseEventRepository } from '../repository/EventRepository';
-import { requestNotificationPermission } from '../hooks/useFirebase';
-import { messaging } from '../firebase/firebaseConfig';
-import { Database } from '../types/supabase-generated.types';
-import { useNavigate } from 'react-router-dom';
+import {addNotificationPermissionAsync, removeNotificationPermissionAsync} from 'src/redux/applicationSlice';
+import {uuid} from '@supabase/supabase-js/dist/main/lib/helpers';
+import {SupabaseEventRepository} from '../repository/EventRepository';
+import {requestNotificationPermission} from '../hooks/useFirebase';
+import {messaging} from '../firebase/firebaseConfig';
+import {Database} from '../types/supabase-generated.types';
+import {useNavigate} from 'react-router-dom';
 import Layout from './Layout';
-import { useAuth } from '../features/auth/AuthContext';
+import {useAuth} from '../features/auth/AuthContext';
 
 type UserScreenProps = {
   user: User;
@@ -420,7 +420,13 @@ const UserScreen = ({ user, client, dispatch, groups }: UserScreenProps) => {
           <Fab
             key={'saveButton'}
             variant="extended"
-            sx={{ background: '#66bb6a', color: '#fff', position: 'fixed', right: '16px', bottom: '72px' }}
+            sx={{
+                background: '#66bb6a',
+                color: '#fff',
+                position: 'fixed',
+                right: '16px',
+                bottom: 'calc(72px + env(safe-area-inset-bottom))'
+            }}
             onClick={handleSubmit}
           >
             {loadingSave ? (
@@ -446,7 +452,7 @@ const UserScreen = ({ user, client, dispatch, groups }: UserScreenProps) => {
       )}
 
       <Snackbar
-        sx={{ position: 'fixed', right: '16px', bottom: '76px' }}
+          sx={{position: 'fixed', right: '16px', bottom: 'calc(76px + env(safe-area-inset-bottom))'}}
         open={errorSnackbar.open}
         autoHideDuration={5000}
         onClose={() => setErrorSnackbar({ message: '', open: false })}

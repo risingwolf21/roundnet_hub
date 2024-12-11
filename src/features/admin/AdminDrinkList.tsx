@@ -11,16 +11,16 @@ import {
   Typography,
 } from '@mui/material';
 import _ from 'lodash';
-import React, { useEffect, useState } from 'react';
-import { useSelector } from 'react-redux';
-import { fetchDrinksAsync } from './slices/adminDrinksSlice';
-import { RootState, useAppDispatch } from '../../redux/store';
-import { AlertMessage, AlertSnackbar } from '../../components/AlertSnackbar';
-import { Error } from '../../components/Error';
+import React, {useEffect, useState} from 'react';
+import {useSelector} from 'react-redux';
+import {fetchDrinksAsync} from './slices/adminDrinksSlice';
+import {RootState, useAppDispatch} from '../../redux/store';
+import {AlertMessage, AlertSnackbar} from '../../components/AlertSnackbar';
+import {Error} from '../../components/Error';
 import EditDrinkDialog from './dialogs/EditDrinkDialog';
-import { captureException } from '@sentry/react';
-import { AdminDrinksRepository } from '../../repository/AdminDrinksRepository';
-import { AdminDrinkItem } from './components/AdminDrinkItem';
+import {captureException} from '@sentry/react';
+import {AdminDrinksRepository} from '../../repository/AdminDrinksRepository';
+import {AdminDrinkItem} from './components/AdminDrinkItem';
 import Layout from '../../components/Layout';
 
 const EMPTY_DRINK: Drink = {
@@ -129,7 +129,12 @@ const AdminDrinkList = () => {
           ))}
       </List>
       <Fab
-        sx={{ background: '#66bb6a', position: 'fixed', right: '16px', bottom: '72px' }}
+          sx={{
+              background: '#66bb6a',
+              position: 'fixed',
+              right: '16px',
+              bottom: 'calc(72px + env(safe-area-inset-bottom))'
+          }}
         onClick={() => selectDrink(EMPTY_DRINK)}
       >
         <AddIcon sx={{ color: 'white' }} />

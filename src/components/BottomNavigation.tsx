@@ -25,7 +25,13 @@ const CustomBottomNavigation = () => {
   };
 
   return (
-      <Paper sx={{position: 'fixed', bottom: "env(safe-area-inset-bottom)", left: 0, right: 0}} elevation={3}>
+      <Paper sx={{
+        position: 'fixed',
+        bottom: "env(safe-area-inset-bottom)",
+        pb: "env(safe-area-inset-bottom)",
+        left: 0,
+        right: 0
+      }} elevation={3}>
       <BottomNavigation value={tab} onChange={handleChange}>
         {can('select', 'event') && (
           <BottomNavigationAction
