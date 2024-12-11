@@ -1,7 +1,7 @@
-import { PostgrestSingleResponse } from '@supabase/supabase-js';
-import { DrinkCounter, FullHistory, PaymentHistory } from '../types/supabaseTypes';
-import { supabase } from '../components/services/supabase/supabaseClient';
-import { Tables } from '../types/supabase-generated.types';
+import {PostgrestSingleResponse} from '@supabase/supabase-js';
+import {DrinkCounter, FullHistory, PaymentHistory} from '../types/supabaseTypes';
+import {supabase} from '../components/services/supabase/supabaseClient';
+import {Tables} from '../types/supabase-generated.types';
 
 export const SupabaseDrinkRepository = {
   async updateDrinkStock(drinkId: number, stock: number): Promise<PostgrestSingleResponse<any>> {
@@ -101,7 +101,7 @@ export const SupabaseDrinkRepository = {
     return supabase.from('drink').select('*').order('id', { ascending: false }).returns<Drink[]>().throwOnError();
   },
 
-  async fetchVouchersForUser(userId: string): Promise<PostgrestSingleResponse<Tables<'vouchers'>[]>> {
-    return supabase.from('vouchers').select('*').eq('user', userId).returns<Tables<'vouchers'>[]>().throwOnError();
+  async fetchVouchersForUser(userId: string): Promise<PostgrestSingleResponse<Tables<'user_vouchers'>[]>> {
+    return supabase.from('user_vouchers').select('*').returns<Tables<'user_vouchers'>[]>().throwOnError();
   },
 };

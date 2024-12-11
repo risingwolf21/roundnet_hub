@@ -1,54 +1,39 @@
-import { Avatar, Card, CardHeader } from '@mui/material';
-import React, { useEffect } from 'react';
-import Grid from '@mui/material/Grid2';
-import { WorkspacePremium } from '@mui/icons-material';
-import { useSelector } from 'react-redux';
-import { RootState, useAppDispatch } from '../../../redux/store';
-import { fetchVouchersAsync } from '../slices/drinksSlice';
-import { useAuth } from '../../auth/AuthContext';
+import {Avatar, Chip, List, ListItem, ListItemAvatar, ListItemText, ListSubheader} from '@mui/material';
+import React, {useEffect} from 'react';
+import {useSelector} from 'react-redux';
+import {RootState, useAppDispatch} from '../../../redux/store';
+import {fetchVouchersAsync} from '../slices/drinksSlice';
+import {useAuth} from '../../auth/AuthContext';
+import {Redeem} from "@mui/icons-material";
 
 const VoucherCard = () => {
-  const user = useAuth();
-  const { vouchers } = useSelector((state: RootState) => state.drinks);
-  const dispatch = useAppDispatch();
+    const user = useAuth();
+    const {vouchers} = useSelector((state: RootState) => state.drinks);
+    const dispatch = useAppDispatch();
 
-  useEffect(() => {
-    dispatch(fetchVouchersAsync(user.userId));
-  }, [dispatch, user]);
+    useEffect(() => {
+        dispatch(fetchVouchersAsync(user.userId));
+    }, [dispatch, user]);
 
-  let total = vouchers.reduce((p, a) => p + a.total_drinks, 0);
-  let used = vouchers.reduce((p, a) => p + a.used_drinks, 0);
-
-  if (!vouchers || vouchers.length === 0 || total - used === 0) return null;
-
-  return (
-    <Card elevation={4} sx={{ m: 2, pb: 2 }}>
-      <CardHeader
-        sx={{ pt: 0, pb: 0 }}
-        titleTypographyProps={{ fontSize: '14pt' }}
-        title={'Getränke-Gutscheine'}
-      ></CardHeader>
-      {/*<ListItem secondaryAction={<Typography sx={{ml: 2}}>{`${used} / ${total}`}</Typography>}>
-            <ListItemAvatar>
-                <Typography fontSize={"26pt"}>🏅</Typography>
-            </ListItemAvatar>
-            <ListItemText primary={<LinearProgress sx={{flexGrow: 1, height: "20px", borderRadius: "10px", mr: 2}}
-                                                   variant={"determinate"}
-                                                   value={(used / total) * 100}/>}>
-
-            </ListItemText>
-        </ListItem>*/}
-      <Grid container rowSpacing={2} columnSpacing={2}>
-        {Array.from({ length: total - used }, (v, k) => k + 1).map((x) => (
-          <Grid key={x}>
-            <Avatar sx={{ borderRadius: 2, width: '60px', height: '60px' }}>
-              <WorkspacePremium fontSize={'large'} />
-            </Avatar>
-          </Grid>
-        ))}
-      </Grid>
-    </Card>
-  );
+    return (
+        <List subheader={<ListSubheader
+            sx={{zIndex: '-1', fontWeight: 'bold', lineHeight: 'normal', my: 1}}
+            id="nested-list-subheader">
+            Gutscheine
+        </ListSubheader>}>
+            {
+                vouchers.map(x => <ListItem key={x.id}
+                                            secondaryAction={<Chip color={"secondary"} label={x.available}/>}>
+                    <ListItemAvatar>
+                        <Avatar sx={{background: '#88AEBF', width: 40, height: 40, borderRadius: 2}}>
+                            <Redeem/>
+                        </Avatar>
+                    </ListItemAvatar>
+                    <ListItemText primary={x.title}/>
+                </ListItem>)
+            }
+        </List>
+    );
 };
 
 export default VoucherCard;

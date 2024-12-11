@@ -423,6 +423,7 @@ export type Database = {
           id: number
           payment: number
           user: string
+          voucher: string | null
         }
         Insert: {
           amount?: number
@@ -432,6 +433,7 @@ export type Database = {
           id?: number
           payment: number
           user: string
+          voucher?: string | null
         }
         Update: {
           amount?: number
@@ -441,6 +443,7 @@ export type Database = {
           id?: number
           payment?: number
           user?: string
+          voucher?: string | null
         }
         Relationships: [
           {
@@ -470,6 +473,20 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "user"
             referencedColumns: ["userId"]
+          },
+          {
+            foreignKeyName: "history_voucher_fkey"
+            columns: ["voucher"]
+            isOneToOne: false
+            referencedRelation: "user_vouchers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "history_voucher_fkey"
+            columns: ["voucher"]
+            isOneToOne: false
+            referencedRelation: "vouchers"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -736,6 +753,7 @@ export type Database = {
         Row: {
           created_at: string
           id: string
+          title: string | null
           total_drinks: number
           used_drinks: number
           user: string | null
@@ -743,6 +761,7 @@ export type Database = {
         Insert: {
           created_at?: string
           id?: string
+          title?: string | null
           total_drinks?: number
           used_drinks?: number
           user?: string | null
@@ -750,6 +769,7 @@ export type Database = {
         Update: {
           created_at?: string
           id?: string
+          title?: string | null
           total_drinks?: number
           used_drinks?: number
           user?: string | null
@@ -845,6 +865,15 @@ export type Database = {
           id: number | null
           name: string | null
           time: string | null
+        }
+        Relationships: []
+      }
+      user_vouchers: {
+        Row: {
+          available: number | null
+          created_at: string | null
+          id: string | null
+          title: string | null
         }
         Relationships: []
       }

@@ -1,15 +1,15 @@
-import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { FullHistory, PaymentHistory } from '../../../types/supabaseTypes';
-import { compareById } from '../../../utils';
-import { SupabaseDrinkRepository } from '../../../repository/DrinkRepository';
-import { Tables, TablesInsert, TablesUpdate } from '../../../types/supabase-generated.types';
+import {createAsyncThunk, createSlice, PayloadAction} from '@reduxjs/toolkit';
+import {FullHistory, PaymentHistory} from '../../../types/supabaseTypes';
+import {compareById} from '../../../utils';
+import {SupabaseDrinkRepository} from '../../../repository/DrinkRepository';
+import {Tables, TablesInsert, TablesUpdate} from '../../../types/supabase-generated.types';
 
 type DrinksSliceState = {
   history: FullHistory[];
   payment: Payment | null;
   drinks: Drink[];
   paymentHistory: PaymentHistory[] | null;
-  vouchers: Tables<'vouchers'>[];
+  vouchers: Tables<'user_vouchers'>[];
   loading: boolean;
   endReached: boolean;
   historyEndReached: boolean;
