@@ -1,1 +1,0 @@
-alter table "public"."keys" add column "color" text not null default '#88AEBF'::text;
