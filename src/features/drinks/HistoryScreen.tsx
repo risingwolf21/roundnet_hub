@@ -1,4 +1,4 @@
-import { LinearProgress } from '@mui/material';
+import { Box, LinearProgress, Typography } from '@mui/material';
 import moment from 'moment/moment';
 import React, { useEffect, useState } from 'react';
 import { fetchHistoryAsync } from './slices/drinksSlice';
@@ -16,7 +16,6 @@ import Layout from '../../components/Layout';
 
 export const HistoryScreen = ({
   history,
-  drinks,
   historyLoading,
   historyError,
   historyEndReached,
@@ -24,7 +23,6 @@ export const HistoryScreen = ({
 }: HistoryScreenProps) => {
   const dispatch = useAppDispatch();
 
-  const [historyItems, setHistoryItems] = useState<FullHistory[]>([]);
   const [editHistoryEntryOpen, setEditHistoryEntryOpen] = useState<boolean>(false);
   const [historyEntryToEdit, setHistoryEntryToEdit] = useState<FullHistory | null>(null);
   const [alertInfo, setAlertInfo] = useState<AlertMessage | null>(null);
@@ -32,16 +30,6 @@ export const HistoryScreen = ({
   useEffect(() => {
     setAlertInfo(historyError ? { message: historyError, severity: 'error' } : null);
   }, [historyError]);
-
-  useEffect(() => {
-    let mappedEntries = history?.map((x: any) => {
-      return {
-        ...x,
-        drink: drinks.find((y: any) => y.id === x.drinkId),
-      };
-    });
-    setHistoryItems(mappedEntries);
-  }, [history, drinks]);
 
   useEffect(() => {
     fetchForPage(0);
@@ -74,10 +62,16 @@ export const HistoryScreen = ({
   return (
     <Layout appBarConfig={{ showBackButton: true }}>
       {historyLoading && <LinearProgress style={{ position: 'fixed', left: 0, top: 56, right: 0 }} />}
+      {!historyLoading && history.length <= 0 && (
+        <Box sx={{ alignItems: 'center', display: 'flex', flexDirection: 'column', pt: 10 }}>
+          <Typography sx={{ fontSize: '30pt', fontWeight: 'bold' }}>📖</Typography>
+          <Typography sx={{ fontSize: '18pt', fontWeight: 'bold' }}>Keine Einträge gefunden</Typography>
+        </Box>
+      )}
       <InfiniteScrollList fetch={fetchForPage} loading={historyLoading} endReached={historyEndReached}>
         {Array.from(
           groupBy(
-            historyItems.filter((x) => x.drink),
+            history.filter((x) => x.drink),
             (x: FullHistory) => moment(new Date(x.created_at ?? '')).format('DD MMMM yyyy')
           )
         ).map(([key, value]) => (

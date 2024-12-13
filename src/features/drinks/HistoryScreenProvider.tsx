@@ -8,9 +8,7 @@ import { HistoryScreen } from './HistoryScreen';
 import { useAuth } from '../auth/AuthContext';
 
 const HistoryScreenProvider = () => {
-  const { history, drinks, historyLoading, historyError, historyEndReached } = useSelector(
-    (state: RootState) => state.drinks
-  );
+  const { history, historyLoading, historyError, historyEndReached } = useSelector((state: RootState) => state.drinks);
   const client = useClient();
   const dispatch = useAppDispatch();
 
@@ -66,7 +64,6 @@ const HistoryScreenProvider = () => {
   return (
     <HistoryScreen
       history={history}
-      drinks={drinks}
       historyEndReached={historyEndReached}
       historyError={historyError ?? ''}
       historyLoading={historyLoading}

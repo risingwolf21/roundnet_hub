@@ -21,7 +21,6 @@ export type HistoryItemProps = {
 
 export type HistoryScreenProps = {
   history: FullHistory[];
-  drinks: Drink[];
   historyLoading: boolean;
   historyEndReached: boolean;
   historyError: string;

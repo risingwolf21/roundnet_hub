@@ -4,7 +4,6 @@ import { useSelector } from 'react-redux';
 import { useParams } from 'react-router-dom';
 import { RootState, useAppDispatch } from '../redux/store';
 import EventInformation from '../features/events/EventInformation';
-import LoadingEventInfo from '../features/events/components/LoadingEventInfo';
 import { AlertSnackbar } from '../components/AlertSnackbar';
 import {
   eventsSelector,
@@ -103,8 +102,6 @@ const EventInformationProvider = () => {
     }
   }, [selectedEventId, dispatch, user, event]);
 
-  if (loading) return <LoadingEventInfo />;
-
   if (!event)
     return (
       <AlertSnackbar
@@ -129,6 +126,7 @@ const EventInformationProvider = () => {
       error={error}
       user={user}
       dispatch={dispatch}
+      loading={loading || commentsLoading || attendanceLoading}
     />
   );
 };

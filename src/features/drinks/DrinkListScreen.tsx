@@ -1,23 +1,26 @@
-import {Tune} from '@mui/icons-material';
+import { Tune } from '@mui/icons-material';
 import CheckIcon from '@mui/icons-material/Check';
-import {Checkbox, CircularProgress, Fab, List, ListItem, ListItemAvatar, ListItemText} from '@mui/material';
-import {captureException} from '@sentry/react';
-import React, {useEffect, useState} from 'react';
-import {AlertMessage, AlertSnackbar} from 'src/components/AlertSnackbar';
-import {LoadingIndicator} from 'src/components/LoadingIndicator';
-import {DrinkCounter} from 'src/types/supabaseTypes';
-import {nameOfProductType} from 'src/utils';
-import {Error} from '../../components/Error';
-import {SwipeableDialog} from '../../components/SwipeableDialog';
+import { Checkbox, CircularProgress, Fab, List, ListItem, ListItemAvatar, ListItemText } from '@mui/material';
+import { captureException } from '@sentry/react';
+import React, { useEffect, useState } from 'react';
+import { AlertMessage, AlertSnackbar } from 'src/components/AlertSnackbar';
+import { DrinkCounter } from 'src/types/supabaseTypes';
+import { nameOfProductType } from 'src/utils';
+import { Error } from '../../components/Error';
+import { SwipeableDialog } from '../../components/SwipeableDialog';
 import DrinkList from './components/DrinkList';
-import {DrinkListScreenProps} from './types';
-import {SupabaseDrinkRepository} from '../../repository/DrinkRepository';
+import { DrinkListScreenProps } from './types';
+import { SupabaseDrinkRepository } from '../../repository/DrinkRepository';
 import VoucherCard from './components/Voucher';
 import Layout from '../../components/Layout';
+import { fetchVouchersAsync } from './slices/drinksSlice';
+import { useAppDispatch } from '../../redux/store';
+import { LoadingDrinkItem } from './components/LoadingDrinkItem';
 
 const SUCCESS_MESSAGE_INFO: AlertMessage = { message: 'Getränke erfolgreich gebucht!', severity: 'success' };
 
 const DrinkListScreen = ({ user, drinks, drinksLoading, drinksError }: DrinkListScreenProps) => {
+  const dispatch = useAppDispatch();
   const [addedDrinks, setAddedDrinks] = useState<DrinkCounter[]>([]);
   const [loading, setLoading] = useState(false);
   const [alertInfo, setAlertInfo] = useState<AlertMessage | null>(null);
@@ -49,30 +52,18 @@ const DrinkListScreen = ({ user, drinks, drinksLoading, drinksError }: DrinkList
 
   const confirmDrinks = async () => {
     setLoading(true);
-    try {
-      let { data: paymentId, error } = await SupabaseDrinkRepository.fetchOpenPaymentIdForUser(user.userId);
-
-      if (!paymentId || error) {
-        let message = error?.message ?? 'Payment could not be created';
+    SupabaseDrinkRepository.insertHistoryItems(Object.values(addedDrinks))
+      .then(() => {
+        setLoading(false);
+        setAddedDrinks([]);
+        confirmDrinksDialog(SUCCESS_MESSAGE_INFO);
+        dispatch(fetchVouchersAsync());
+      })
+      .catch((error) => {
+        captureException(error);
+        let message = error?.message ?? 'Drink could not be added';
         resetDrinks(message);
-      } else {
-        SupabaseDrinkRepository.insertHistoryItems(Object.values(addedDrinks), user.userId, paymentId)
-          .then((result) => {
-            setLoading(false);
-            setAddedDrinks([]);
-            confirmDrinksDialog(SUCCESS_MESSAGE_INFO);
-          })
-          .catch((error) => {
-            captureException(error);
-            let message = error?.message ?? 'Payment could not be created';
-            resetDrinks(message);
-          });
-      }
-    } catch (error) {
-      captureException(error);
-      let message = (error as Error).message;
-      resetDrinks(message);
-    }
+      });
   };
 
   const onAddDrinkClick = (drink: Drink) => {
@@ -105,37 +96,40 @@ const DrinkListScreen = ({ user, drinks, drinksLoading, drinksError }: DrinkList
 
   return (
     <Layout>
-      <LoadingIndicator loading={drinksLoading} />
       <VoucherCard />
-      <DrinkList
-        drinks={drinks}
-        onAddDrinkClick={onAddDrinkClick}
-        onRemoveDrinkClick={onRemoveDrinkClick}
-        addedDrinks={addedDrinks}
-        visibleTypes={visibleTypes}
-      />
+      {loading ? (
+        Array.from({ length: 10 }, (v, k) => k + 1).map(() => <LoadingDrinkItem />)
+      ) : (
+        <DrinkList
+          drinks={drinks}
+          onAddDrinkClick={onAddDrinkClick}
+          onRemoveDrinkClick={onRemoveDrinkClick}
+          addedDrinks={addedDrinks}
+          visibleTypes={visibleTypes}
+        />
+      )}
       {Object.values(addedDrinks).length > 0 ? (
         <Fab
-            sx={{
-                background: '#66bb6a',
-                position: 'fixed',
-                right: '16px',
-                bottom: 'calc(56px + env(safe-area-inset-bottom))',
-                mb: '16px'
-            }}
+          sx={{
+            background: '#66bb6a',
+            position: 'fixed',
+            right: '16px',
+            bottom: 'calc(56px + env(safe-area-inset-bottom))',
+            mb: '16px',
+          }}
           onClick={confirmDrinks}
         >
           {loading ? <CircularProgress /> : <CheckIcon sx={{ color: 'white' }} />}
         </Fab>
       ) : (
         <Fab
-            sx={{
-                background: '#66bb6a',
-                position: 'fixed',
-                right: '16px',
-                bottom: 'calc(56px + env(safe-area-inset-bottom))',
-                mb: '16px'
-            }}
+          sx={{
+            background: '#66bb6a',
+            position: 'fixed',
+            right: '16px',
+            bottom: 'calc(56px + env(safe-area-inset-bottom))',
+            mb: '16px',
+          }}
           onClick={() => setFilterDialogOpen(true)}
         >
           <Tune sx={{ color: 'white' }} />

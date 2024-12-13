@@ -1,37 +1,39 @@
-import {Delete, DoNotDisturb, DoNotDisturbOff, Edit, Key, MoreVert} from '@mui/icons-material';
+import { Delete, DoNotDisturb, DoNotDisturbOff, Edit, Key, MoreVert } from '@mui/icons-material';
 import {
-    Alert,
-    Box,
-    Button,
-    Divider,
-    IconButton,
-    List,
-    ListItemIcon,
-    ListItemText,
-    Menu,
-    MenuItem,
-    Typography,
+  Alert,
+  Box,
+  Button,
+  Divider,
+  IconButton,
+  List,
+  ListItemIcon,
+  ListItemText,
+  Menu,
+  MenuItem,
+  Skeleton,
+  Typography,
 } from '@mui/material';
-import React, {createRef, useEffect, useState} from 'react';
-import {MapContainer, Marker, TileLayer} from 'react-leaflet';
-import {useNavigate} from 'react-router-dom';
-import {answerDeadlineExpired, eventInThePast} from '../../types/supabaseTypes';
-import {DeleteEventDialog} from './dialogs/DeleteEventDialog';
-import {DeleteEventType, EventInformationProps} from './types';
-import {CancelTrainingDialog} from './dialogs/CancelTrainingDialog';
-import {can} from 'src/utils/PermissionService';
-import {fetchEventAttendanceAsync, updateAttendanceAsync} from 'src/features/events/slices/eventAttendanceSlice';
-import {formatDateToDatabase} from 'src/utils';
-import {fetchEventCommentsAsync, upsertCommentToEventAsync} from 'src/features/events/slices/eventCommentsSlice';
-import {editEvent, fetchSingleEventAsync, onEventErrorRead} from 'src/features/events/slices/eventsSlice';
+import React, { createRef, useEffect, useState } from 'react';
+import { MapContainer, Marker, TileLayer } from 'react-leaflet';
+import { useNavigate } from 'react-router-dom';
+import { answerDeadlineExpired, eventInThePast } from '../../types/supabaseTypes';
+import { DeleteEventDialog } from './dialogs/DeleteEventDialog';
+import { DeleteEventType, EventInformationProps } from './types';
+import { CancelTrainingDialog } from './dialogs/CancelTrainingDialog';
+import { can } from 'src/utils/PermissionService';
+import { fetchEventAttendanceAsync, updateAttendanceAsync } from 'src/features/events/slices/eventAttendanceSlice';
+import { formatDateToDatabase } from 'src/utils';
+import { fetchEventCommentsAsync, upsertCommentToEventAsync } from 'src/features/events/slices/eventCommentsSlice';
+import { editEvent, fetchSingleEventAsync, onEventErrorRead } from 'src/features/events/slices/eventsSlice';
 import EventInformationAttendance from './components/EventInformationAttendance';
 import EventInformationComments from './components/EventInformationComments';
-import {EditEventOptionsDialog} from './dialogs/EditEventOptionsDialog';
-import {isBefore} from 'date-fns';
-import {SupabaseEventRepository} from '../../repository/EventRepository';
-import {AlertMessage, AlertSnackbar} from '../../components/AlertSnackbar';
+import { EditEventOptionsDialog } from './dialogs/EditEventOptionsDialog';
+import { isBefore } from 'date-fns';
+import { SupabaseEventRepository } from '../../repository/EventRepository';
+import { AlertMessage, AlertSnackbar } from '../../components/AlertSnackbar';
 import Layout from '../../components/Layout';
-import {captureException} from '@sentry/react';
+import { captureException } from '@sentry/react';
+import { LoadingEventInformation } from './components/LoadingEventInformation';
 
 const EventInformation = ({
   dispatch,
@@ -41,6 +43,7 @@ const EventInformation = ({
   user,
   selectedEventPlace,
   t,
+  loading,
   attendance,
   comments,
   keyHolders,
@@ -137,6 +140,15 @@ const EventInformation = ({
       });
     }
 
+    if (loading)
+      return (
+        <ListItemText
+          sx={{ m: 0, mt: 2 }}
+          primary={<Skeleton variant={'rectangular'} />}
+          secondary={<Skeleton sx={{ mt: 1 }} variant={'rectangular'} />}
+        />
+      );
+
     if (meetingDateTime) {
       return (
         <ListItemText
@@ -158,7 +170,8 @@ const EventInformation = ({
         showProfile: false,
       }}
       appBarActions={
-        (can('update', 'event') || can('delete', 'event')) && (
+        (can('update', 'event') || can('delete', 'event')) &&
+        !loading && (
           <>
             <Typography component="div">{selectedEvent.id.substring(0, 8)}</Typography>
             <IconButton sx={{ color: '#fff', pr: 0 }} onClick={handleClick}>
@@ -210,49 +223,53 @@ const EventInformation = ({
         )
       }
     >
-        <List sx={{p: 0, pb: 10}}>
-        {selectedEventPlace && (
-          <Box sx={{ p: 0, width: '100%', maxHeight: '10%' }}>
-            <Box
-              component="button"
-              onClick={() => {
-                window.open(
-                  'https://maps.google.com?q=' + selectedEventPlace.lat + ',' + selectedEventPlace.lon,
-                  '_blank'
-                );
-              }}
-              sx={{
-                position: 'absolute',
-                zIndex: 999,
-                width: '100%',
-                height: '150px',
-                border: 'none',
-                background: 'transparent',
-              }}
-            ></Box>
-            <MapContainer
-              style={{ width: '100%', height: '150px' }}
-              center={[selectedEventPlace.lat, selectedEventPlace.lon]}
-              zoom={15}
-              tap={false}
-              dragging={false}
-              doubleClickZoom={false}
-              scrollWheelZoom={false}
-              attributionControl={false}
-              zoomControl={false}
-            >
-              <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-              <Marker position={[selectedEventPlace.lat, selectedEventPlace.lon]} interactive={false} />
-            </MapContainer>
-          </Box>
+      <List sx={{ p: 0, pb: 10 }}>
+        {loading ? (
+          <Skeleton variant={'rectangular'} width={'100%'} height={'150px'} />
+        ) : (
+          selectedEventPlace && (
+            <Box sx={{ p: 0, width: '100%', maxHeight: '10%' }}>
+              <Box
+                component="button"
+                onClick={() => {
+                  window.open(
+                    'https://maps.google.com?q=' + selectedEventPlace.lat + ',' + selectedEventPlace.lon,
+                    '_blank'
+                  );
+                }}
+                sx={{
+                  position: 'absolute',
+                  zIndex: 999,
+                  width: '100%',
+                  height: '150px',
+                  border: 'none',
+                  background: 'transparent',
+                }}
+              ></Box>
+              <MapContainer
+                style={{ width: '100%', height: '150px' }}
+                center={[selectedEventPlace.lat, selectedEventPlace.lon]}
+                zoom={15}
+                tap={false}
+                dragging={false}
+                doubleClickZoom={false}
+                scrollWheelZoom={false}
+                attributionControl={false}
+                zoomControl={false}
+              >
+                <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+                <Marker position={[selectedEventPlace.lat, selectedEventPlace.lon]} interactive={false} />
+              </MapContainer>
+            </Box>
+          )
         )}
         <Box sx={{ px: 2 }}>
-          {selectedEvent.isCancelled && (
+          {selectedEvent.isCancelled && !loading && (
             <Alert sx={{ mt: 2 }} severity="error">
               Dieses Event wurde <strong>abgesagt</strong>
             </Alert>
           )}
-          {answerDeadlineExpired(selectedEvent) && selectedEvent.answerDeadline && (
+          {answerDeadlineExpired(selectedEvent) && selectedEvent.answerDeadline && !loading && (
             <Alert sx={{ mt: 2 }} severity="info">
               {t('events.information.answerDeadlineExceeded', {
                 answerDeadline: new Date(selectedEvent.answerDeadline),
@@ -261,79 +278,83 @@ const EventInformation = ({
           )}
           {createCardSubHeader()}
         </Box>
-        <Box sx={{ px: 2 }}>
-          <Box sx={{ p: 0, alignSelf: 'center' }}>
-            <Typography sx={{ fontSize: 16, fontWeight: 'bold' }} color="text.secondary" gutterBottom>
-              Beschreibung
-            </Typography>
-            <Typography pb={1}>{selectedEvent?.description}</Typography>
-            <Divider />
+        {loading ? (
+          <LoadingEventInformation />
+        ) : (
+          <Box sx={{ px: 2 }}>
+            <Box sx={{ p: 0, alignSelf: 'center' }}>
+              <Typography sx={{ fontSize: 16, fontWeight: 'bold' }} color="text.secondary" gutterBottom>
+                Beschreibung
+              </Typography>
+              <Typography pb={1}>{selectedEvent?.description}</Typography>
+              <Divider />
 
-            {selectedEvent.maxAttendees &&
-              selectedEvent.maxAttendees >= 0 &&
-              selectedEvent.maxAttendees <= attendance.filter((x) => x.state === 'Attending').length &&
-              selectedEvent.userAttendance !== 'Waiting' &&
-              selectedEvent.userAttendance !== 'Attending' && (
+              {selectedEvent.maxAttendees &&
+                selectedEvent.maxAttendees >= 0 &&
+                selectedEvent.maxAttendees <= attendance.filter((x) => x.state === 'Attending').length &&
+                selectedEvent.userAttendance !== 'Waiting' &&
+                selectedEvent.userAttendance !== 'Attending' && (
+                  <Alert
+                    sx={{ mt: 2 }}
+                    severity="info"
+                    action={
+                      <Button
+                        variant="contained"
+                        size="small"
+                        onClick={() => updateAttendance('Waiting', selectedEvent.userAttendance)}
+                      >
+                        Beitreten
+                      </Button>
+                    }
+                  >
+                    Die maximale Anzahl der Teilnehmer ist erreicht. Du kannst trotzdem der Warteliste beitreten.
+                  </Alert>
+                )}
+
+              {selectedEvent.userAttendance === 'Waiting' && (
                 <Alert
                   sx={{ mt: 2 }}
-                  severity="info"
+                  severity="warning"
                   action={
                     <Button
                       variant="contained"
                       size="small"
-                      onClick={() => updateAttendance('Waiting', selectedEvent.userAttendance)}
+                      sx={{ backgroundColor: '#934b00' }}
+                      onClick={() => updateAttendance('Declined', selectedEvent.userAttendance)}
                     >
-                      Beitreten
+                      Verlassen
                     </Button>
                   }
                 >
-                  Die maximale Anzahl der Teilnehmer ist erreicht. Du kannst trotzdem der Warteliste beitreten.
+                  {t('events.information.waitingListAccepted', {
+                    place:
+                      attendance
+                        .filter((x) => x.state === 'Waiting')
+                        .sort((a, b) => (isBefore(a.lastUpdate, b.lastUpdate) ? 1 : 0))
+                        .findIndex((x) => x.user.userId === user.userId) + 1,
+                    waitingListLength: attendance.filter((x) => x.state === 'Waiting').length,
+                  })}
                 </Alert>
               )}
+            </Box>
+            <EventInformationAttendance
+              user={user}
+              attendance={attendance}
+              keyHolders={keyHolders}
+              attendanceLoading={attendanceLoading}
+              selectedEvent={selectedEvent}
+              updateAttendance={updateAttendance}
+            />
 
-            {selectedEvent.userAttendance === 'Waiting' && (
-              <Alert
-                sx={{ mt: 2 }}
-                severity="warning"
-                action={
-                  <Button
-                    variant="contained"
-                    size="small"
-                    sx={{ backgroundColor: '#934b00' }}
-                    onClick={() => updateAttendance('Declined', selectedEvent.userAttendance)}
-                  >
-                    Verlassen
-                  </Button>
-                }
-              >
-                {t('events.information.waitingListAccepted', {
-                  place:
-                    attendance
-                      .filter((x) => x.state === 'Waiting')
-                      .sort((a, b) => (isBefore(a.lastUpdate, b.lastUpdate) ? 1 : 0))
-                      .findIndex((x) => x.user.userId === user.userId) + 1,
-                  waitingListLength: attendance.filter((x) => x.state === 'Waiting').length,
-                })}
-              </Alert>
-            )}
+            <EventInformationComments
+              eventId={selectedEvent.id}
+              comments={comments}
+              handleCommentSubmit={handleCommentSubmit}
+              inputRef={inputRef}
+              eventInThePast={eventInThePast(selectedEvent)}
+            />
           </Box>
-          <EventInformationAttendance
-            user={user}
-            attendance={attendance}
-            keyHolders={keyHolders}
-            attendanceLoading={attendanceLoading}
-            selectedEvent={selectedEvent}
-            updateAttendance={updateAttendance}
-          />
-
-          <EventInformationComments
-            eventId={selectedEvent.id}
-            comments={comments}
-            handleCommentSubmit={handleCommentSubmit}
-            inputRef={inputRef}
-            eventInThePast={eventInThePast(selectedEvent)}
-          />
-        </Box>
+        )}
 
         <CancelTrainingDialog
           cancelTrainingOpen={cancelTrainingOpen}

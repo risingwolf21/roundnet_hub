@@ -879,6 +879,29 @@ export type Database = {
       }
     }
     Functions: {
+      add_drink_history: {
+        Args: {
+          drink_id: number
+          payment_id: number
+          count: number
+          amount: number
+        }
+        Returns: undefined
+      }
+      add_drinks_history:
+        | {
+            Args: {
+              items: Json
+            }
+            Returns: undefined
+          }
+        | {
+            Args: {
+              items: Json
+              payment_id: number
+            }
+            Returns: undefined
+          }
       add_notificationtags_to_all_users: {
         Args: {
           notification: Database["public"]["Enums"]["NotificationTags"]
@@ -955,6 +978,12 @@ export type Database = {
           event_id: number
         }
         Returns: string[]
+      }
+      gettingjsonarray: {
+        Args: {
+          items: Json
+        }
+        Returns: undefined
       }
       increase_challenge_stats_count: {
         Args: {

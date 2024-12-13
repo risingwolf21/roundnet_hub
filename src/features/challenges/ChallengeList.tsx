@@ -85,16 +85,9 @@ const ChallengeList = ({ loading, challenges }: ChallengeListProps) => {
           ))}
         </List>
       ) : (
-        <Box
-          sx={{
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-            height: '100%',
-          }}
-        >
-          <Typography variant="h3">🏅</Typography>
-          <Typography variant="h5">Keine Challenges aktiv</Typography>
+        <Box sx={{ alignItems: 'center', display: 'flex', flexDirection: 'column', pt: 10 }}>
+          <Typography sx={{ fontSize: '30pt', fontWeight: 'bold' }}>🏅</Typography>
+          <Typography sx={{ fontSize: '18pt', fontWeight: 'bold' }}>Keine Challenges gefunden</Typography>
         </Box>
       )}
     </Layout>

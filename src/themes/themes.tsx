@@ -108,8 +108,21 @@ export const mainTheme = createTheme({
             color: 'primary',
           },
           style: {
-            backgroundColor: 'primary',
-            color: '#22005d',
+            '&:hover': {
+              background: '#d5c9ee',
+              boxShadow:
+                '0px 2px 4px -1px rgba(0,0,0,0.2),0px 4px 5px 0px rgba(0,0,0,0.14),0px 1px 10px 0px rgba(0,0,0,0.12)',
+            },
+            '&:focus': {
+              background: '#ccc0e6',
+              boxShadow:
+                '0px 3px 3px -2px rgba(0,0,0,0.2),0px 3px 4px 0px rgba(0,0,0,0.14),0px 1px 8px 0px rgba(0,0,0,0.12)',
+            },
+            '&:active': {
+              background: '#ccc0e6',
+              boxShadow:
+                '0px 3px 3px -2px rgba(0,0,0,0.2),0px 3px 4px 0px rgba(0,0,0,0.14),0px 1px 8px 0px rgba(0,0,0,0.12)',
+            },
           },
         },
         {
@@ -117,8 +130,21 @@ export const mainTheme = createTheme({
             color: 'secondary',
           },
           style: {
-            backgroundColor: 'secondary',
-            color: '#1e192b',
+            '&:hover': {
+              background: 'secondary',
+              boxShadow:
+                '0px 2px 4px -1px rgba(0,0,0,0.2),0px 4px 5px 0px rgba(0,0,0,0.14),0px 1px 10px 0px rgba(0,0,0,0.12)',
+            },
+            '&:focus': {
+              background: 'secondary',
+              boxShadow:
+                '0px 3px 3px -2px rgba(0,0,0,0.2),0px 3px 4px 0px rgba(0,0,0,0.14),0px 1px 8px 0px rgba(0,0,0,0.12)',
+            },
+            '&:active': {
+              background: 'secondary',
+              boxShadow:
+                '0px 3px 3px -2px rgba(0,0,0,0.2),0px 3px 4px 0px rgba(0,0,0,0.14),0px 1px 8px 0px rgba(0,0,0,0.12)',
+            },
           },
         },
       ],
@@ -198,10 +224,16 @@ export const mainTheme = createTheme({
   },
   palette: {
     primary: {
-      main: '#00866C',
+      main: '#005b4a',
+      contrastText: '#ffffff',
     },
     secondary: {
-      main: '#741E0E',
+      main: '#590a00',
+      contrastText: '#ffffff',
+    },
+    error: {
+      main: '#ba1a1a',
+      contrastText: '#ffffff',
     },
     mode: 'light',
   },

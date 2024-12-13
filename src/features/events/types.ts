@@ -36,6 +36,7 @@ export type EventInformationProps = {
   selectedEventPlace: PlaceType | null;
   keyHolders: FullItemHolder[];
   t: TFunction;
+  loading: boolean;
 };
 
 export type EventAttendanceDialogProps = {

@@ -1,26 +1,26 @@
 import EuroIcon from '@mui/icons-material/Euro';
 import {
-    Alert,
-    Box,
-    Button,
-    Divider,
-    List,
-    ListItem,
-    ListItemAvatar,
-    ListItemText,
-    Snackbar,
-    Typography,
+  Alert,
+  Box,
+  Button,
+  Divider,
+  List,
+  ListItem,
+  ListItemAvatar,
+  ListItemText,
+  Snackbar,
+  Typography,
 } from '@mui/material';
-import React, {useEffect} from 'react';
-import {useSelector} from 'react-redux';
-import {PAYPAL_ME_ADDRESS} from '../../constants';
-import {fetchDrinksToPayAsync, fetchPaymentAsync} from './slices/drinksSlice';
-import {RootState, useAppDispatch} from '../../redux/store';
-import {PaymentHistory} from '../../types/supabaseTypes';
-import {groupBy} from '../../utils';
-import {LoadingScreen} from '../../components/LoadingScreen';
+import React, { useEffect } from 'react';
+import { useSelector } from 'react-redux';
+import { PAYPAL_ME_ADDRESS } from '../../constants';
+import { fetchDrinksToPayAsync, fetchPaymentAsync } from './slices/drinksSlice';
+import { RootState, useAppDispatch } from '../../redux/store';
+import { PaymentHistory } from '../../types/supabaseTypes';
+import { groupBy } from '../../utils';
+import { LoadingScreen } from '../../components/LoadingScreen';
 import Layout from '../../components/Layout';
-import {useAuth} from '../auth/AuthContext';
+import { useAuth } from '../auth/AuthContext';
 
 const PayDrinksButton = ({ amountToPay }: { amountToPay: number }) => {
   const onPayClick = () => {
@@ -36,7 +36,7 @@ const PayDrinksButton = ({ amountToPay }: { amountToPay: number }) => {
     <Box
       sx={{
         position: 'fixed',
-        bottom: '60px',
+        bottom: 'calc(76px + env(safe-area-inset-bottom))',
         left: 0,
         right: 0,
         flexDirection: 'column',
@@ -64,43 +64,6 @@ const PayDrinksButton = ({ amountToPay }: { amountToPay: number }) => {
       >
         Mit Paypal bezahlen
       </Button>
-    </Box>
-  );
-};
-
-const PayDrinksSummary = ({ paymentHistory }: { paymentHistory: PaymentHistory[] }) => {
-  return (
-    <Box>
-      <List>
-        {Array.from(groupBy(paymentHistory, (x) => x.drink?.name ?? ''))
-          .map(([key, value]) => {
-            return {
-              name: key,
-              count: value.reduce((prev, curr) => prev + (curr.count ?? 0), 0),
-              priceSingle: value[0]?.drink?.price ?? 'NaN',
-              priceTotal: value.reduce((prev, curr) => prev + (curr.count ?? 0), 0),
-            };
-          })
-          .map((x, index) => (
-            <ListItem key={'drinks' + index} secondaryAction={<Typography>{x.priceTotal} €</Typography>}>
-              <ListItemAvatar>
-                <Typography>{x.count + ' x'}</Typography>
-              </ListItemAvatar>
-              <ListItemText primary={x.name} secondary={x.priceSingle + ' €'} />
-            </ListItem>
-          ))}
-        <Divider />
-        <ListItem
-          key={'totalAmount'}
-          secondaryAction={
-            <Typography sx={{ fontWeight: 'bold' }}>
-              {paymentHistory.reduce((prev, curr) => prev + (curr.amount ?? 0), 0)} €
-            </Typography>
-          }
-        >
-          <ListItemText primaryTypographyProps={{ fontWeight: 'bold' }} primary={'Gesamtkosten'} />
-        </ListItem>
-      </List>
     </Box>
   );
 };
@@ -138,11 +101,86 @@ const PayDrinksScreen = ({ user, paymentHistory, paymentError, paymentLoading }:
 
   return (
     <Layout appBarConfig={{ showBackButton: true }}>
-      <PayDrinksSummary paymentHistory={paymentHistory ?? []} />
-      <PayDrinksButton amountToPay={paymentHistory?.reduce((prev, curr) => prev + (curr.amount ?? 0), 0) ?? 0} />
+      <Box>
+        <List>
+          {Array.from(
+            groupBy(
+              paymentHistory.filter((x) => !x.voucher),
+              (x) => x.drink?.name ?? ''
+            )
+          )
+            .map(([key, value]) => {
+              return {
+                name: key,
+                count: value.reduce((prev, curr) => prev + (curr.count ?? 0), 0),
+                priceSingle: value[0]?.drink?.price ?? 'NaN',
+                priceTotal: value.reduce((prev, curr) => prev + (curr.count ?? 0), 0),
+              };
+            })
+            .map((x, index) => (
+              <ListItem key={'drinks' + index} secondaryAction={<Typography>{x.priceTotal} €</Typography>}>
+                <ListItemAvatar>
+                  <Typography>{x.count + ' x'}</Typography>
+                </ListItemAvatar>
+                <ListItemText primary={x.name} secondary={x.priceSingle + ' €'} />
+              </ListItem>
+            ))}
+          {paymentHistory.filter((x) => x.voucher).length > 0 &&
+            [
+              paymentHistory
+                .filter((x) => x.voucher)
+                .reduce(
+                  (prev, curr) => ({
+                    totalAmount: curr.amount + prev.totalAmount,
+                    count: curr.count + prev.count,
+                    name: curr.drink?.name ?? '',
+                  }),
+                  { totalAmount: 0, count: 0, name: '' } as { totalAmount: number; count: number; name: string }
+                ),
+            ].map((x) => (
+              <ListItem key={'voucher'} secondaryAction={<Typography>{x.totalAmount} €</Typography>}>
+                <ListItemAvatar>
+                  <Typography>{x.count + ' x'}</Typography>
+                </ListItemAvatar>
+                <ListItemText primary={x.name} secondary={'Gutscheine'} />
+              </ListItem>
+            ))}
+          {paymentHistory.length > 0 && (
+            <>
+              <Divider />
+              <ListItem
+                key={'totalAmount'}
+                secondaryAction={
+                  <Typography sx={{ fontWeight: 'bold' }}>
+                    {paymentHistory.filter((x) => !x.voucher).reduce((prev, curr) => prev + (curr.amount ?? 0), 0)} €
+                  </Typography>
+                }
+              >
+                <ListItemText primaryTypographyProps={{ fontWeight: 'bold' }} primary={'Gesamtkosten'} />
+              </ListItem>
+            </>
+          )}
+        </List>
 
-        <Snackbar sx={{position: 'fixed', right: '16px', bottom: 'calc(72px + env(safe-area-inset-bottom))'}}
-                  open={paymentError !== ''}>
+        {paymentHistory.length <= 0 && (
+          <Box sx={{ alignItems: 'center', display: 'flex', flexDirection: 'column', pt: 10 }}>
+            <Typography sx={{ fontSize: '30pt', fontWeight: 'bold' }}>📖</Typography>
+            <Typography sx={{ fontSize: '18pt', fontWeight: 'bold' }}>Keine Einträge gefunden</Typography>
+          </Box>
+        )}
+      </Box>
+      {paymentHistory.length > 0 && (
+        <PayDrinksButton
+          amountToPay={
+            paymentHistory.filter((x) => !x.voucher).reduce((prev, curr) => prev + (curr.amount ?? 0), 0) ?? 0
+          }
+        />
+      )}
+
+      <Snackbar
+        sx={{ position: 'fixed', right: '16px', bottom: 'calc(76px + env(safe-area-inset-bottom))' }}
+        open={paymentError !== ''}
+      >
         <Alert severity={'error'} sx={{ width: '100%' }}>
           {paymentError}
         </Alert>

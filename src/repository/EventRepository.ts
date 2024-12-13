@@ -170,7 +170,6 @@ export const SupabaseEventRepository = {
   },
 
   async fetchPastEvents(): Promise<PostgrestSingleResponse<FullEvent[]>> {
-    console.log(formatDateToDatabase(add(new Date(), { weeks: -3 })));
     return supabase
       .from('events')
       .select(

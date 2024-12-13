@@ -1,8 +1,8 @@
-import {createAsyncThunk, createSlice, PayloadAction} from '@reduxjs/toolkit';
-import {FullHistory, PaymentHistory} from '../../../types/supabaseTypes';
-import {compareById} from '../../../utils';
-import {SupabaseDrinkRepository} from '../../../repository/DrinkRepository';
-import {Tables, TablesInsert, TablesUpdate} from '../../../types/supabase-generated.types';
+import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { FullHistory, PaymentHistory } from '../../../types/supabaseTypes';
+import { compareById } from '../../../utils';
+import { SupabaseDrinkRepository } from '../../../repository/DrinkRepository';
+import { Tables, TablesInsert, TablesUpdate } from '../../../types/supabase-generated.types';
 
 type DrinksSliceState = {
   history: FullHistory[];
@@ -210,8 +210,8 @@ export const fetchDrinksAsync = createAsyncThunk('drink', async () => {
   return response?.data ?? [];
 });
 
-export const fetchVouchersAsync = createAsyncThunk('fetchVouchersAsync', async (userId: string) => {
-  const response = await SupabaseDrinkRepository.fetchVouchersForUser(userId);
+export const fetchVouchersAsync = createAsyncThunk('fetchVouchersAsync', async () => {
+  const response = await SupabaseDrinkRepository.fetchVouchersForUser();
   return response?.data ?? [];
 });
 

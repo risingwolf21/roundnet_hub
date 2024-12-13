@@ -1,5 +1,5 @@
-import {Close} from '@mui/icons-material';
-import {Dialog, DialogActions, DialogContent, DialogTitle, IconButton, Toolbar, Typography} from '@mui/material';
+import { Close } from '@mui/icons-material';
+import { Dialog, DialogActions, DialogContent, DialogTitle, IconButton, Toolbar, Typography } from '@mui/material';
 import React from 'react';
 
 type SwipeableDialogProps = {
@@ -37,15 +37,18 @@ export const SwipeableDialog = ({
           width: '100%',
           borderTopLeftRadius: 16,
           borderTopRightRadius: 16,
+          borderBottomRightRadius: 0,
+          borderBottomLeftRadius: 0,
         },
         '.MuiDialog-container': {
           position: 'absolute',
           m: 0,
           left: 0,
           right: 0,
-          bottom: 'calc(56px + env(safe-area-inset-bottom))',
-          top: 0,
-            height: 'calc(100vh - 56px)',
+          bottom: 0,
+          top: 'calc(56px + env(safe-area-inset-top))',
+          pb: 'calc(56px + env(safe-area-inset-bottom))',
+          height: 'calc(100vh - 56px)',
           width: '100%',
           alignItems: 'end',
         },
