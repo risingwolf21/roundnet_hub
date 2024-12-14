@@ -212,7 +212,7 @@ const EventInformationComments = ({
                                 endAdornment: (
                                     <InputAdornment position="end">
                                         <IconButton edge="end" type="submit"
-                                                    disabled={eventInThePast || can('insert', 'eventComments')}>
+                                                    disabled={eventInThePast || !can('insert', 'eventComments')}>
                                             <Send/>
                                         </IconButton>
                                     </InputAdornment>
