@@ -111,12 +111,12 @@ const DrinkListScreen = ({ user, drinks, drinksLoading, drinksError }: DrinkList
       {Object.values(addedDrinks).length > 0 ? (
         <Fab
           sx={{
-            background: '#66bb6a',
             position: 'fixed',
             right: '16px',
             bottom: 'calc(56px + env(safe-area-inset-bottom))',
             mb: '16px',
           }}
+          color={'secondary'}
           onClick={confirmDrinks}
         >
           {loading ? <CircularProgress /> : <CheckIcon sx={{ color: 'white' }} />}
@@ -124,12 +124,12 @@ const DrinkListScreen = ({ user, drinks, drinksLoading, drinksError }: DrinkList
       ) : (
         <Fab
           sx={{
-            background: '#66bb6a',
             position: 'fixed',
             right: '16px',
             bottom: 'calc(56px + env(safe-area-inset-bottom))',
             mb: '16px',
           }}
+          color={'secondary'}
           onClick={() => setFilterDialogOpen(true)}
         >
           <Tune sx={{ color: 'white' }} />

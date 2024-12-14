@@ -109,7 +109,7 @@ const ResetPasswordScreen = () => {
               type="password"
               id="password1"
             />
-            {errorMessage && <Typography color="red">{errorMessage}</Typography>}
+            {errorMessage && <Typography color="error">{errorMessage}</Typography>}
             <Button type="submit" fullWidth color="secondary" variant="contained" sx={{ mt: 3, mb: 2 }}>
               Passwort ändern
             </Button>

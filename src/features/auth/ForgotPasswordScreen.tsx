@@ -70,7 +70,7 @@ const ForgotPasswordScreen = () => {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
           />
-          {errorMessage && <Typography color="red">{errorMessage}</Typography>}
+          {errorMessage && <Typography color="error">{errorMessage}</Typography>}
           <Button
             fullWidth
             color="secondary"
