@@ -1,5 +1,5 @@
-import { isBefore } from 'date-fns';
-import { Event, History } from 'types/supabase';
+import {isBefore} from 'date-fns';
+import {Event, History} from 'types/supabase';
 
 export type FullChallenge = Challenge & {
   stats: ChallengeStatWithUser[];
@@ -83,7 +83,9 @@ export type FullComment = Modify<
     userId: string;
     pending: boolean | null;
   }
->;
+> & {
+    replies: FullComment[]
+};
 
 export type UserWithGroupsAndRoles = User & {
   groups: Group[];

@@ -1,4 +1,4 @@
-import { Delete, DoNotDisturb, DoNotDisturbOff, Edit, Key, MoreVert } from '@mui/icons-material';
+import {Delete, DoNotDisturb, DoNotDisturbOff, Edit, Key, MoreVert} from '@mui/icons-material';
 import {
   Alert,
   Box,
@@ -13,27 +13,27 @@ import {
   Skeleton,
   Typography,
 } from '@mui/material';
-import React, { createRef, useEffect, useState } from 'react';
-import { MapContainer, Marker, TileLayer } from 'react-leaflet';
-import { useNavigate } from 'react-router-dom';
-import { answerDeadlineExpired, eventInThePast } from '../../types/supabaseTypes';
-import { DeleteEventDialog } from './dialogs/DeleteEventDialog';
-import { DeleteEventType, EventInformationProps } from './types';
-import { CancelTrainingDialog } from './dialogs/CancelTrainingDialog';
-import { can } from 'src/utils/PermissionService';
-import { fetchEventAttendanceAsync, updateAttendanceAsync } from 'src/features/events/slices/eventAttendanceSlice';
-import { formatDateToDatabase } from 'src/utils';
-import { fetchEventCommentsAsync, upsertCommentToEventAsync } from 'src/features/events/slices/eventCommentsSlice';
-import { editEvent, fetchSingleEventAsync, onEventErrorRead } from 'src/features/events/slices/eventsSlice';
+import React, {createRef, useEffect, useState} from 'react';
+import {MapContainer, Marker, TileLayer} from 'react-leaflet';
+import {useNavigate} from 'react-router-dom';
+import {answerDeadlineExpired, eventInThePast} from '../../types/supabaseTypes';
+import {DeleteEventDialog} from './dialogs/DeleteEventDialog';
+import {DeleteEventType, EventInformationProps} from './types';
+import {CancelTrainingDialog} from './dialogs/CancelTrainingDialog';
+import {can} from 'src/utils/PermissionService';
+import {fetchEventAttendanceAsync, updateAttendanceAsync} from 'src/features/events/slices/eventAttendanceSlice';
+import {formatDateToDatabase} from 'src/utils';
+import {fetchEventCommentsAsync, upsertCommentToEventAsync} from 'src/features/events/slices/eventCommentsSlice';
+import {editEvent, fetchSingleEventAsync, onEventErrorRead} from 'src/features/events/slices/eventsSlice';
 import EventInformationAttendance from './components/EventInformationAttendance';
 import EventInformationComments from './components/EventInformationComments';
-import { EditEventOptionsDialog } from './dialogs/EditEventOptionsDialog';
-import { isBefore } from 'date-fns';
-import { SupabaseEventRepository } from '../../repository/EventRepository';
-import { AlertMessage, AlertSnackbar } from '../../components/AlertSnackbar';
+import {EditEventOptionsDialog} from './dialogs/EditEventOptionsDialog';
+import {isBefore} from 'date-fns';
+import {SupabaseEventRepository} from '../../repository/EventRepository';
+import {AlertMessage, AlertSnackbar} from '../../components/AlertSnackbar';
 import Layout from '../../components/Layout';
-import { captureException } from '@sentry/react';
-import { LoadingEventInformation } from './components/LoadingEventInformation';
+import {captureException} from '@sentry/react';
+import {LoadingEventInformation} from './components/LoadingEventInformation';
 
 const EventInformation = ({
   dispatch,
@@ -116,6 +116,7 @@ const EventInformation = ({
         eventId: selectedEvent.id,
         comment: comment.toString(),
         created_at: formatDateToDatabase(new Date()),
+          reply_to: null
       })
     );
     event.currentTarget.reset();

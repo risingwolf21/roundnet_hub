@@ -244,24 +244,33 @@ export type Database = {
           comment: string
           created_at: string
           displayName: string
+            edited: boolean
           event: string
-          id: number
+            id: string
+            last_update: string
+            reply_to: string | null
           user: string
         }
         Insert: {
           comment?: string
           created_at?: string
           displayName?: string
+            edited?: boolean
           event?: string
-          id?: number
+            id?: string
+            last_update?: string
+            reply_to?: string | null
           user: string
         }
         Update: {
           comment?: string
           created_at?: string
           displayName?: string
+            edited?: boolean
           event?: string
-          id?: number
+            id?: string
+            last_update?: string
+            reply_to?: string | null
           user?: string
         }
         Relationships: [
@@ -285,6 +294,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "events"
             referencedColumns: ["id"]
+          },
+            {
+                foreignKeyName: "event_comments_reply_to_fkey"
+                columns: ["reply_to"]
+                isOneToOne: false
+                referencedRelation: "event_comments"
+                referencedColumns: ["id"]
           },
           {
             foreignKeyName: "event_comments_user_fkey"
@@ -755,7 +771,6 @@ export type Database = {
           id: string
           title: string | null
           total_drinks: number
-          used_drinks: number
           user: string | null
         }
         Insert: {
@@ -763,7 +778,6 @@ export type Database = {
           id?: string
           title?: string | null
           total_drinks?: number
-          used_drinks?: number
           user?: string | null
         }
         Update: {
@@ -771,7 +785,6 @@ export type Database = {
           id?: string
           title?: string | null
           total_drinks?: number
-          used_drinks?: number
           user?: string | null
         }
         Relationships: [

@@ -1,18 +1,6 @@
-import {AccountBox, Send} from '@mui/icons-material';
-import {
-    Avatar,
-    Box,
-    Button,
-    CircularProgress,
-    IconButton,
-    InputAdornment,
-    List,
-    ListItem,
-    ListItemAvatar,
-    TextField,
-    Typography,
-} from '@mui/material';
-import React, {useEffect} from 'react';
+import {Send} from '@mui/icons-material';
+import {Box, IconButton, InputAdornment, List, TextField, Typography,} from '@mui/material';
+import React, {useEffect, useState} from 'react';
 import {FullComment} from 'src/types/supabaseTypes';
 import {useAppDispatch} from 'src/redux/store';
 import {useClient} from 'react-supabase';
@@ -21,13 +9,14 @@ import {
     onEventCommentInsert,
     onEventCommentUpdate,
 } from 'src/features/events/slices/eventCommentsSlice';
-import {formatDistanceToNowStrict} from 'date-fns';
 import {SupabaseEventRepository} from '../../../repository/EventRepository';
 import {useTranslation} from 'react-i18next';
-import {de} from 'date-fns/locale';
 import {useNavigate} from 'react-router-dom';
 import {can} from '../../../utils/PermissionService';
 import useDetectKeyboardOpen from "../../../hooks/useDetectKeyboardOpen";
+import {CommentReplyItem, CommentReplyText} from "./CommentReplyItem";
+import {CommentItem} from "./CommentItem";
+import {EventCommentConversationDialog} from "../dialogs/EventCommentConversationDialog";
 
 type EventInformationCommentsProps = {
     comments: FullComment[];
@@ -48,6 +37,7 @@ const EventInformationComments = ({
     const client = useClient();
     const dispatch = useAppDispatch();
     const navigate = useNavigate();
+    const [replyDialogOpen, setReplyDialogOpen] = useState<FullComment | null>(null);
     const isKeyboardOpen = useDetectKeyboardOpen();
 
 
@@ -102,101 +92,25 @@ const EventInformationComments = ({
             </Typography>
             <Box sx={{display: 'flex', flexDirection: 'column'}}>
                 <List sx={{mb: 4}}>
-                    {comments &&
+                    {
+                        comments &&
                         comments.map((x, index) => (
-                            <ListItem
-                                divider={index !== comments.length - 1}
-                                dense
-                                disablePadding
-                                key={index}
-                                sx={{
-                                    justifyContent: 'space-between',
-                                    '&.MuiListItem-root': {
-                                        paddingLeft: 0,
-                                    },
-                                }}
-                            >
-                                <ListItemAvatar
-                                    sx={{verticalAlign: "top", display: "flex"}}
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        navigate('/user/' + x.user.userId);
-                                    }}
-                                >
-                                    <Avatar sx={{borderRadius: 2}}>
-                                        {x.pending ? (
-                                            <CircularProgress size={'20px'}/>
-                                        ) : x.user?.avatarUrl ? (
-                                            <img src={x.user?.avatarUrl} alt="logo" width={'100%'} height={'100%'}/>
-                                        ) : (
-                                            <AccountBox/>
-                                        )}
-                                    </Avatar>
-                                </ListItemAvatar>
-                                <Box
-                                    sx={{
-                                        width: '100%',
-                                        display: 'flex',
-                                        flexDirection: 'column',
-                                        justifyContent: 'start',
-                                        alignContent: 'start',
-                                        mt: '6px',
-                                        mb: '6px',
-                                    }}
-                                >
-                                    <Box
-                                        sx={{
-                                            display: 'flex',
-                                            flexDirection: 'row',
-                                            justifyContent: 'space-between',
-                                            width: '100%',
-                                        }}
-                                    >
-                                        <Typography
-                                            style={{
-                                                fontWeight: 'bold',
-                                                fontSize: '10pt',
-                                                color: 'rgba(0,0,0,0.8)',
-                                            }}
-                                        >
-                                            {x.displayName}
-                                        </Typography>
-                                        <Typography
-                                            style={{
-                                                fontSize: '10pt',
-                                                color: 'rgba(0,0,0,0.6)',
-                                            }}
-                                        >
-                                            {t('events.information.commentTimeAgo', {
-                                                time: formatDistanceToNowStrict(x.created_at, {locale: de}),
-                                            })}
-                                        </Typography>
-                                    </Box>
-                                    <Typography
-                                        sx={{
-                                            margin: 0,
-                                            fontFamily: '"Roboto", "Helvetica", "Arial"," sans-serif"',
-                                            fontWeight: 400,
-                                            fontSize: '0.875rem',
-                                            lineHeight: '1.43',
-                                            color: 'rgba(0, 0, 0, 0.6)',
-                                        }}
-                                    >
-                                        {x.comment}
-                                    </Typography>
-                                    <Box sx={{
-                                        display: 'flex',
-                                        flexDirection: 'row',
-                                        justifyContent: 'space-between',
-                                        width: '100%',
-                                    }}>
-                                        <Button
-                                            sx={{m: 0, borderRadius: 1, p: 0, justifyContent: "start"}}
-                                            variant={"text"}>Reply to</Button>
-                                    </Box>
-                                </Box>
-                            </ListItem>
-                        ))}
+                            <>
+                                <CommentItem comment={x} t={t} replyToPressed={() => setReplyDialogOpen(x)}/>
+                                {
+                                    x.replies.length > 0 && <>
+                                        {
+                                            x.replies.map((reply, index) =>
+                                                <CommentReplyItem
+                                                    reply={reply} t={t}/>)
+
+                                        }
+                                        <CommentReplyText onClick={() => setReplyDialogOpen(x)}/>
+                                    </>
+                                }
+                            </>
+                        ))
+                    }
                 </List>
                 <Box component={'form'} onSubmit={handleCommentSubmit}>
                     <TextField
@@ -221,6 +135,11 @@ const EventInformationComments = ({
                         }}
                     />
                 </Box>
+                <EventCommentConversationDialog
+                    comment={replyDialogOpen}
+                    title={"Antworten"}
+                    t={t}
+                    onClose={() => setReplyDialogOpen(null)}/>
             </Box>
         </Box>
     );
