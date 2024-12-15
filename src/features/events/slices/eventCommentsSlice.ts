@@ -102,64 +102,66 @@ const eventCommentsSlice = createSlice({
                     comments: [...comments, newComment],
                 } as SliceComments;
 
-        eventsCommentsAdapter.upsertOne(state, sliceAttendance);
-      })
-      .addCase(upsertCommentToEventAsync.rejected, (state, action) => {
-        let comments = eventsCommentsAdapter.getSelectors().selectById(state, action.meta.arg.eventId)?.comments ?? [];
-        let sliceAttendance = {
-          id: action.meta.arg.eventId,
-          comments: [...comments.filter((x) => x.created_at === action.meta.arg.created_at)],
-        } as SliceComments;
-        eventsCommentsAdapter.upsertOne(state, sliceAttendance);
-      })
-      .addCase(upsertCommentToEventAsync.fulfilled, (state, action) => {
-        state.loading = false;
+                eventsCommentsAdapter.upsertOne(state, sliceAttendance);
+            })
+            .addCase(upsertCommentToEventAsync.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.error.message ?? "";
+                let comments = eventsCommentsAdapter.getSelectors().selectById(state, action.meta.arg.eventId)?.comments ?? [];
+                let sliceAttendance = {
+                    id: action.meta.arg.eventId,
+                    comments: [...comments.filter((x) => x.created_at !== action.meta.arg.created_at)],
+                } as SliceComments;
+                eventsCommentsAdapter.upsertOne(state, sliceAttendance);
+            })
+            .addCase(upsertCommentToEventAsync.fulfilled, (state, action) => {
+                state.loading = false;
 
-          let comments = eventsCommentsAdapter.getSelectors().selectById(state, action.meta.arg.eventId)?.comments ?? [];
+                let comments = eventsCommentsAdapter.getSelectors().selectById(state, action.meta.arg.eventId)?.comments ?? [];
 
-          if (!action.payload.data?.reply_to) {
-              let sliceAttendance = {
-                  id: action.meta.arg.eventId,
-                  comments: [
-                      ...comments.map((x) =>
-                          x.created_at === action.meta.arg.created_at
-                              ? {
-                                  ...x,
-                                  id: action.payload.data?.id,
-                                  pending: false,
-                              }
-                              : x
-                      ),
-                  ],
-              } as SliceComments;
+                if (!action.payload.data?.reply_to) {
+                    let sliceAttendance = {
+                        id: action.meta.arg.eventId,
+                        comments: [
+                            ...comments.map((x) =>
+                                x.created_at === action.meta.arg.created_at
+                                    ? {
+                                        ...x,
+                                        id: action.payload.data?.id,
+                                        pending: false,
+                                    }
+                                    : x
+                            ),
+                        ],
+                    } as SliceComments;
 
-              eventsCommentsAdapter.upsertOne(state, sliceAttendance);
-          } else {
-              let sliceAttendance = {
-                  id: action.meta.arg.eventId,
-                  comments: [
-                      ...comments.map((x) =>
-                          x.id === action.meta.arg.reply_to
-                              ? {
-                                  ...x,
-                                  id: action.payload.data?.id,
-                                  pending: false,
-                                  replies: [x.replies, action.payload.data]
-                              }
-                              : x.created_at === action.meta.arg.created_at
-                                  ? {
-                                      ...x,
-                                      id: action.payload.data?.id,
-                                      pending: false,
-                                  }
-                                  : x
-                      ),
-                  ],
-              } as SliceComments;
+                    eventsCommentsAdapter.upsertOne(state, sliceAttendance);
+                } else {
+                    let sliceAttendance = {
+                        id: action.meta.arg.eventId,
+                        comments: [
+                            ...comments.map((x) =>
+                                x.id === action.meta.arg.reply_to
+                                    ? {
+                                        ...x,
+                                        id: action.payload.data?.id,
+                                        pending: false,
+                                        replies: [x.replies, action.payload.data]
+                                    }
+                                    : x.created_at === action.meta.arg.created_at
+                                        ? {
+                                            ...x,
+                                            id: action.payload.data?.id,
+                                            pending: false,
+                                        }
+                                        : x
+                            ),
+                        ],
+                    } as SliceComments;
 
-              eventsCommentsAdapter.upsertOne(state, sliceAttendance);
-          }
-      });
+                    eventsCommentsAdapter.upsertOne(state, sliceAttendance);
+                }
+            });
     },
 });
 

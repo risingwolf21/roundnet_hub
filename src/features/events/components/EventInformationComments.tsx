@@ -13,7 +13,6 @@ import {SupabaseEventRepository} from '../../../repository/EventRepository';
 import {useTranslation} from 'react-i18next';
 import {useNavigate} from 'react-router-dom';
 import {can} from '../../../utils/PermissionService';
-import useDetectKeyboardOpen from "../../../hooks/useDetectKeyboardOpen";
 import {CommentReplyItem, CommentReplyText} from "./CommentReplyItem";
 import {CommentItem} from "./CommentItem";
 import {EventCommentConversationDialog} from "../dialogs/EventCommentConversationDialog";
@@ -38,8 +37,6 @@ const EventInformationComments = ({
     const dispatch = useAppDispatch();
     const navigate = useNavigate();
     const [replyDialogOpen, setReplyDialogOpen] = useState<FullComment | null>(null);
-    const isKeyboardOpen = useDetectKeyboardOpen();
-
 
     useEffect(() => {
         let subscription = client
@@ -86,7 +83,7 @@ const EventInformationComments = ({
     }, [client, dispatch, eventId]);
 
     return (
-        <Box sx={{p: 0, pb: 2 + (isKeyboardOpen ? 30 : 0), alignSelf: 'center'}}>
+        <Box sx={{p: 0, pb: 2, alignSelf: 'center'}}>
             <Typography sx={{fontSize: 16, fontWeight: 'bold', mt: 2}} color="text.secondary" gutterBottom>
                 Kommentare
             </Typography>
