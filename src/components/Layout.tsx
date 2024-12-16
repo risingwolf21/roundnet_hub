@@ -38,11 +38,6 @@ const Layout = ({
         display: 'flex',
         flexDirection: 'column',
         height: '100vh',
-        overflow: 'hidden',
-        paddingTop: 'env(safe-area-inset-top)',
-        paddingRight: 'env(safe-area-inset-right)',
-        paddingBottom: 'env(safe-area-inset-bottom)',
-        paddingLeft: 'env(safe-area-inset-left)',
       }}
     >
       {/* AppBar */}
@@ -51,9 +46,6 @@ const Layout = ({
         sx={{
           zIndex: (theme) => theme.zIndex.drawer + 1,
           background: 'primary',
-          overflow: 'hidden',
-          position: 'fixed',
-          top: 0,
           pt: 'env(safe-area-inset-top)',
         }}
       >
@@ -115,26 +107,14 @@ const Layout = ({
           maxWidth: 1200,
           mx: 'auto',
           alignItems: 'center',
-          position: 'absolute',
-          top: 'calc(56px + env(safe-area-inset-top))',
-          left: 0,
-          right: 0,
-          bottom: 'calc(56px + env(safe-area-inset-bottom))',
+          flex: 1,
+          overflowY: 'auto',
         }}
       >
-        <Box
-          sx={{
-            overflowY: 'auto',
-            display: 'flex',
-            flexGrow: 1,
-            flexDirection: 'column',
-          }}
-        >
-          {children}
-        </Box>
-      </Box>
+        <Box>{children}</Box>
 
-      <CustomBottomNavigation />
+        <CustomBottomNavigation />
+      </Box>
     </Box>
   );
 };
