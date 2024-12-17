@@ -37,16 +37,17 @@ const Layout = ({
       sx={{
         display: 'flex',
         flexDirection: 'column',
-        height: '100vh',
+        height: 'calc(100vh - env(safe-area-inset-bottom))',
         overflow: 'hidden',
       }}
     >
       {/* AppBar */}
       <AppBar
-        position="static"
+        position="sticky"
         sx={{
           zIndex: (theme) => theme.zIndex.drawer + 1,
           background: 'primary',
+          top: 0,
           pt: 'env(safe-area-inset-top)',
         }}
       >
@@ -110,11 +111,18 @@ const Layout = ({
           alignItems: 'center',
           flex: 1,
           overflowY: 'auto',
+          overScrollBehavior: 'contain'
         }}
       >
         <Box>{children}</Box>
 
-        <CustomBottomNavigation />
+        <Box sx={{
+          position: 'sticky',
+          pb: 'env(safe-area-inset-bottom)',
+          zIndex: 2
+        }}>
+          <CustomBottomNavigation />
+        </Box>
       </Box>
     </Box>
   );
