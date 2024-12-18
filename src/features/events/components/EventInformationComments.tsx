@@ -81,7 +81,8 @@ const EventInformationComments = ({
 
   const handleFocus = () => {
     if (inputRef.current) {
-      inputRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      const yOffest = inputRef.current.getBoundingClientRect().top + window.scrollY - 100;
+      inputRef.current.scrollTo({ top: yOffest, behavior: 'smooth' });
     }
   };
 
