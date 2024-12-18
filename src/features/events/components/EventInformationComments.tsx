@@ -80,10 +80,17 @@ const EventInformationComments = ({
   }, [client, dispatch, eventId]);
 
   const handleFocus = () => {
-    if (inputRef.current) {
-      const yOffest = inputRef.current.getBoundingClientRect().top + window.scrollY - 100;
-      inputRef.current.scrollTo({ top: yOffest, behavior: 'smooth' });
-    }
+    document.body.style.paddingBottom = '300px';
+    setTimeout(() => {
+      if (inputRef.current) {
+        const yOffset = inputRef.current.getBoundingClientRect().top + window.scrollY - 50; // 50px Puffer
+        window.scrollTo({ top: yOffset, behavior: 'smooth' });
+      }
+    }, 300);
+  };
+
+  const handleBlur = () => {
+    document.body.style.paddingBottom = '0px'; // Padding zurücksetzen
   };
 
   return (
@@ -118,6 +125,7 @@ const EventInformationComments = ({
             placeholder="Write a comment..."
             sx={{ '& fieldset': { borderRadius: 4 }, '& input': { pt: 1.5, pb: 1.5 } }}
             onFocus={handleFocus}
+            onBlur={handleBlur}
             slotProps={{
               input: {
                 endAdornment: (
