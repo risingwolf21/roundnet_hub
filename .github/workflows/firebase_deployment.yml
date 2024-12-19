@@ -26,8 +26,7 @@ jobs:
       - name: Build
         run: PUBLIC_URL=https://roundnet-karlsruhe.web.app yarn run build:production
         env:
-          REACT_APP_SUPABASE_ANON_KEY: ${{secrets.SUPABASE_PRODUCTION_ANON_KEY}}
-          REACT_APP_SUPABASE_ADMIN_KEY: ${{secrets.SUPABASE_PRODUCTION_ADMIN_KEY}}
+          REACT_APP_SUPABASE_API_KEY: ${{secrets.SUPABASE_PRODUCTION_ANON_KEY}}
           REACT_APP_SUPABASE_URL: ${{secrets.SUPABASE_PRODUCTION_URL}}
 
       - uses: FirebaseExtended/action-hosting-deploy@v0
@@ -37,3 +36,18 @@ jobs:
           channelId: live
           projectId: roundnet-karlsruhe
           target: production
+
+
+      - name: Build for admin page
+        run: PUBLIC_URL=https://admin-roundnet-karlsruhe.web.app yarn run build:production
+        env:
+          REACT_APP_SUPABASE_API_KEY: ${{secrets.SUPABASE_PRODUCTION_ADMIN_KEY}}
+          REACT_APP_SUPABASE_URL: ${{secrets.SUPABASE_PRODUCTION_URL}}
+
+      - uses: FirebaseExtended/action-hosting-deploy@v0
+        with:
+          repoToken: '${{ secrets.GITHUB_TOKEN }}'
+          firebaseServiceAccount: '${{ secrets.FIREBASE_SERVICE_ACCOUNT_ROUNDNET_KARLSRUHE }}'
+          channelId: live
+          projectId: roundnet-karlsruhe
+          target: admin-production
