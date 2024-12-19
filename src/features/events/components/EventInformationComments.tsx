@@ -82,14 +82,20 @@ const EventInformationComments = ({
   const handleFocus = () => {
     document.body.style.paddingBottom = '400px';
     setTimeout(() => {
-      const container = document.querySelector('[data-content-container]'); // Haupt-Content-Container finden
-      if (inputRef.current && container) {
-        const inputRect = inputRef.current.getBoundingClientRect();
-        const containerRect = container.getBoundingClientRect();
+      if (inputRef.current) {
+        const container = inputRef.current.closest('[data-content-container]');
+        if (container) {
+          const inputRect = inputRef.current.getBoundingClientRect();
+          const containerRect = container.getBoundingClientRect();
 
-        // Relative Position berechnen und scrollen
-        const offset = inputRect.top - containerRect.top + container.scrollTop - 50; // 50px Puffer
-        container.scrollTo({ top: offset, behavior: 'smooth' });
+          // Scrollen relativ zum Container
+          const offset = inputRect.top - containerRect.top + container.scrollTop - 50; // 50px Puffer
+          container.scrollTo({ top: offset, behavior: 'smooth' });
+        } else {
+          // Fallback: Global scrollen
+          const yOffset = inputRef.current.getBoundingClientRect().top + window.scrollY - 50;
+          window.scrollTo({ top: yOffset, behavior: 'smooth' });
+        }
       }
     }, 300);
   };
