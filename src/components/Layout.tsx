@@ -35,10 +35,14 @@ const Layout = ({
   return (
     <Box
       sx={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        width: '100%',
+        height: '100vh', // Volle Ansichtshöhe
         display: 'flex',
         flexDirection: 'column',
-        height: 'calc(100vh - env(safe-area-inset-bottom))',
-        overflow: 'hidden',
+        overflow: 'hidden', // Kein Overflow außerhalb des Containers
       }}
     >
       {/* AppBar */}
@@ -112,7 +116,6 @@ const Layout = ({
           alignItems: 'center',
           flex: 1,
           overflowY: 'auto',
-          overScrollBehavior: 'contain',
         }}
       >
         <Box>{children}</Box>
@@ -120,7 +123,9 @@ const Layout = ({
         <Box
           sx={{
             position: 'sticky',
-            pb: 'env(safe-area-inset-bottom)',
+            bottom: 0,
+            width: '100%',
+            pb: 'env(safe-area-inset-bottom)', // Safe Area Unterstützung
             zIndex: 2,
           }}
         >
