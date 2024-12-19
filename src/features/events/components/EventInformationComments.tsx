@@ -83,7 +83,7 @@ const EventInformationComments = ({
     document.body.style.paddingBottom = '50%';
     setTimeout(() => {
       if (inputRef.current) {
-        const yOffset = inputRef.current.getBoundingClientRect().top + window.scrollY - 50; // 50px Puffer
+        const yOffset = inputRef.current.getBoundingClientRect().top - 50; // 50px Puffer
         window.scrollTo({ top: yOffset, behavior: 'smooth' });
       }
     }, 300);
