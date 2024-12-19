@@ -80,11 +80,16 @@ const EventInformationComments = ({
   }, [client, dispatch, eventId]);
 
   const handleFocus = () => {
-    document.body.style.paddingBottom = '50%';
+    document.body.style.paddingBottom = '400px';
     setTimeout(() => {
-      if (inputRef.current) {
-        const yOffset = inputRef.current.getBoundingClientRect().top - 50; // 50px Puffer
-        window.scrollTo({ top: yOffset, behavior: 'smooth' });
+      const container = document.querySelector('[data-content-container]'); // Haupt-Content-Container finden
+      if (inputRef.current && container) {
+        const inputRect = inputRef.current.getBoundingClientRect();
+        const containerRect = container.getBoundingClientRect();
+
+        // Relative Position berechnen und scrollen
+        const offset = inputRect.top - containerRect.top + container.scrollTop - 50; // 50px Puffer
+        container.scrollTo({ top: offset, behavior: 'smooth' });
       }
     }, 300);
   };

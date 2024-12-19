@@ -104,6 +104,7 @@ const Layout = ({
 
       {/* Main Content */}
       <Box
+        data-content-container
         sx={{
           width: '100%',
           maxWidth: 1200,
@@ -111,16 +112,18 @@ const Layout = ({
           alignItems: 'center',
           flex: 1,
           overflowY: 'auto',
-          overScrollBehavior: 'contain'
+          overScrollBehavior: 'contain',
         }}
       >
         <Box>{children}</Box>
 
-        <Box sx={{
-          position: 'sticky',
-          pb: 'env(safe-area-inset-bottom)',
-          zIndex: 2
-        }}>
+        <Box
+          sx={{
+            position: 'sticky',
+            pb: 'env(safe-area-inset-bottom)',
+            zIndex: 2,
+          }}
+        >
           <CustomBottomNavigation />
         </Box>
       </Box>
