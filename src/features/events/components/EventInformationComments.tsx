@@ -80,7 +80,7 @@ const EventInformationComments = ({
   }, [client, dispatch, eventId]);
 
   const handleFocus = () => {
-    document.body.style.paddingBottom = '300px';
+    document.body.style.paddingBottom = '50%';
     setTimeout(() => {
       if (inputRef.current) {
         const yOffset = inputRef.current.getBoundingClientRect().top + window.scrollY - 50; // 50px Puffer
@@ -144,6 +144,7 @@ const EventInformationComments = ({
           title={'Antworten'}
           t={t}
           onClose={() => setReplyDialogOpen(null)}
+          eventInThePast={eventInThePast}
         />
       </Box>
     </Box>
