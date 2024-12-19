@@ -25,6 +25,10 @@ jobs:
 
       - name: Build
         run: PUBLIC_URL=https://roundnet-karlsruhe.web.app yarn run build:production
+        env:
+          REACT_APP_SUPABASE_ANON_KEY: ${{secrets.SUPABASE_PRODUCTION_ANON_KEY}}
+          REACT_APP_SUPABASE_ADMIN_KEY: ${{secrets.SUPABASE_PRODUCTION_ADMIN_KEY}}
+          REACT_APP_SUPABASE_URL: ${{secrets.SUPABASE_PRODUCTION_URL}}
 
       - uses: FirebaseExtended/action-hosting-deploy@v0
         with:
