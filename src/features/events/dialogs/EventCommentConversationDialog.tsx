@@ -1,11 +1,13 @@
 import { SwipeableDialog } from '../../../components/SwipeableDialog';
-import React from 'react';
+import React, { createRef } from 'react';
 import { Box, IconButton, InputAdornment, List, TextField } from '@mui/material';
 import { FullComment } from '../../../types/supabaseTypes';
 import { CommentItem } from '../components/CommentItem';
 import { TFunction } from 'i18next';
 import { can } from '../../../utils/PermissionService';
 import { Send } from '@mui/icons-material';
+import { upsertCommentToEventAsync } from '../slices/eventCommentsSlice';
+import { formatDateToDatabase } from '../../../utils';
 
 type Props = {
   comment: FullComment | null;
@@ -14,9 +16,51 @@ type Props = {
   onClose?: () => void;
   t: TFunction;
   eventInThePast: boolean;
+  handleCommentSubmit: (value: { comment: string; reply_to: string | null }) => void;
 };
 
-export const EventCommentConversationDialog = ({ comment, title, setOpen, onClose, t, eventInThePast }: Props) => {
+export const EventCommentConversationDialog = ({
+  comment,
+  title,
+  setOpen,
+  onClose,
+  t,
+  eventInThePast,
+  handleCommentSubmit,
+}: Props) => {
+  const inputRef = createRef<HTMLInputElement>();
+
+  const handleFocus = (e: any) => {
+    e.preventDefault();
+    setTimeout(() => {
+      if (inputRef.current) {
+        const element = inputRef.current;
+        const rect = element.getBoundingClientRect(); // Position relativ zum Viewport
+        const scrollTop = window.scrollY || document.documentElement.scrollTop;
+
+        // Zielposition berechnen (z. B. mit einem kleinen Offset)
+        const targetScroll = rect.top + scrollTop - 100; // 100px Puffer nach oben
+
+        // Scrollen auslösen
+        window.scrollTo({
+          top: targetScroll,
+          behavior: 'smooth',
+        });
+      }
+    }, 300);
+  };
+
+  const submit = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const data = new FormData(event.currentTarget);
+
+    const commentValue = data.get('comment')?.toString();
+    if (!commentValue || !comment) return;
+
+    handleCommentSubmit({ comment: commentValue, reply_to: comment.id });
+    event.currentTarget.reset();
+  };
+
   return (
     <SwipeableDialog minHeight={90} open={comment !== null} title={title} setOpen={setOpen} onClose={onClose}>
       <Box sx={{ p: 2 }}>
@@ -26,25 +70,29 @@ export const EventCommentConversationDialog = ({ comment, title, setOpen, onClos
             comment.replies.length > 0 &&
             comment.replies.map((x) => <CommentItem key={x.id} comment={x} t={t} replyToPressed={() => {}} />)}
         </List>
-        <TextField
-          disabled={eventInThePast || !can('insert', 'eventComments')}
-          id="comment"
-          name="comment"
-          fullWidth
-          placeholder="Write a comment..."
-          sx={{ '& fieldset': { borderRadius: 4 }, '& input': { pt: 1.5, pb: 1.5 } }}
-          slotProps={{
-            input: {
-              endAdornment: (
-                <InputAdornment position="end">
-                  <IconButton edge="end" type="submit" disabled={eventInThePast || !can('insert', 'eventComments')}>
-                    <Send />
-                  </IconButton>
-                </InputAdornment>
-              ),
-            },
-          }}
-        />
+        <Box component={'form'} onSubmit={submit}>
+          <TextField
+            ref={inputRef}
+            disabled={eventInThePast || !can('insert', 'eventComments')}
+            id="comment"
+            name="comment"
+            fullWidth
+            placeholder="Write a comment..."
+            sx={{ '& fieldset': { borderRadius: 4 }, '& input': { pt: 1.5, pb: 1.5 } }}
+            onFocus={handleFocus}
+            slotProps={{
+              input: {
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <IconButton edge="end" type="submit" disabled={eventInThePast || !can('insert', 'eventComments')}>
+                      <Send />
+                    </IconButton>
+                  </InputAdornment>
+                ),
+              },
+            }}
+          />
+        </Box>
       </Box>
     </SwipeableDialog>
   );

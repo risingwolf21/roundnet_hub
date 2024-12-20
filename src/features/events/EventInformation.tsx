@@ -13,7 +13,7 @@ import {
   Skeleton,
   Typography,
 } from '@mui/material';
-import React, { createRef, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { MapContainer, Marker, TileLayer } from 'react-leaflet';
 import { useNavigate } from 'react-router-dom';
 import { answerDeadlineExpired, eventInThePast } from '../../types/supabaseTypes';
@@ -102,23 +102,16 @@ const EventInformation = ({
     dispatch(updateAttendanceAsync({ user, eventId: selectedEvent.id, state, oldState }));
   };
 
-  const handleCommentSubmit = (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    const data = new FormData(event.currentTarget);
-
-    const comment = data.get('comment')?.toString();
-    if (!comment) return;
-
+  const handleCommentSubmit = (value: { comment: string; reply_to: string | null }) => {
     dispatch(
       upsertCommentToEventAsync({
         user,
         eventId: selectedEvent.id,
-        comment: comment.toString(),
+        comment: value.comment,
         created_at: formatDateToDatabase(new Date()),
-        reply_to: null,
+        reply_to: value.reply_to,
       })
     );
-    event.currentTarget.reset();
   };
 
   const handleClick = (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {

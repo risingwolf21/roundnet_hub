@@ -18,7 +18,7 @@ import { EventCommentConversationDialog } from '../dialogs/EventCommentConversat
 
 type EventInformationCommentsProps = {
   comments: FullComment[];
-  handleCommentSubmit: (event: React.FormEvent<HTMLFormElement>) => void;
+  handleCommentSubmit: (value: { comment: string; reply_to: string | null }) => void;
   eventId: string;
   eventInThePast: boolean;
 };
@@ -99,7 +99,15 @@ const EventInformationComments = ({
     }, 300);
   };
 
-  const handleBlur = () => {
+  const submit = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const data = new FormData(event.currentTarget);
+
+    const commentValue = data.get('comment')?.toString();
+    if (!commentValue) return;
+
+    handleCommentSubmit({ comment: commentValue, reply_to: null });
+    event.currentTarget.reset();
   };
 
   return (
@@ -124,7 +132,7 @@ const EventInformationComments = ({
               </>
             ))}
         </List>
-        <Box component={'form'} onSubmit={handleCommentSubmit}>
+        <Box component={'form'} onSubmit={submit}>
           <TextField
             ref={inputRef}
             disabled={eventInThePast || !can('insert', 'eventComments')}
@@ -134,7 +142,6 @@ const EventInformationComments = ({
             placeholder="Write a comment..."
             sx={{ '& fieldset': { borderRadius: 4 }, '& input': { pt: 1.5, pb: 1.5 } }}
             onFocus={handleFocus}
-            onBlur={handleBlur}
             slotProps={{
               input: {
                 endAdornment: (
@@ -154,6 +161,7 @@ const EventInformationComments = ({
           t={t}
           onClose={() => setReplyDialogOpen(null)}
           eventInThePast={eventInThePast}
+          handleCommentSubmit={handleCommentSubmit}
         />
       </Box>
     </Box>
