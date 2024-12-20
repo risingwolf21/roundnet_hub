@@ -83,7 +83,6 @@ const EventInformationComments = ({
     e.preventDefault();
     setTimeout(() => {
       if (inputRef.current) {
-        document.querySelectorAll('*').forEach((el) => (el.style.overflow = 'visible'));
         inputRef.current.focus({ preventScroll: true });
         inputRef.current.scrollIntoViewIfNeeded
         ? inputRef.current.scrollIntoViewIfNeeded({ behavior: 'smooth', block: 'center' })
