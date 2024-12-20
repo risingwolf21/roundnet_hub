@@ -79,29 +79,16 @@ const EventInformationComments = ({
     };
   }, [client, dispatch, eventId]);
 
-  const handleFocus = () => {
-    document.body.style.paddingBottom = '400px';
+  const handleFocus = (e: any) => {
+    e.preventDefault();
     setTimeout(() => {
       if (inputRef.current) {
-        const container = inputRef.current.closest('[data-content-container]');
-        if (container) {
-          const inputRect = inputRef.current.getBoundingClientRect();
-          const containerRect = container.getBoundingClientRect();
-
-          // Scrollen relativ zum Container
-          const offset = inputRect.top - containerRect.top + container.scrollTop - 50; // 50px Puffer
-          container.scrollTo({ top: offset, behavior: 'smooth' });
-        } else {
-          // Fallback: Global scrollen
-          const yOffset = inputRef.current.getBoundingClientRect().top + window.scrollY - 50;
-          window.scrollTo({ top: yOffset, behavior: 'smooth' });
-        }
+        inputRef.current.scrollIntoView({ block: "nearest", behavior: 'smooth' });
       }
     }, 300);
   };
 
   const handleBlur = () => {
-    document.body.style.paddingBottom = '0px'; // Padding zurücksetzen
   };
 
   return (
