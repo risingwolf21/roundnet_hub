@@ -1,4 +1,4 @@
-import React, { ReactNode } from 'react';
+import React, { ReactNode, useRef, useEffect, useState } from 'react';
 import { AppBar, Avatar, Box, IconButton, TextField, Toolbar, Typography } from '@mui/material';
 import { AccountCircle, ArrowBack } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
@@ -31,6 +31,14 @@ const Layout = ({
 }: Props) => {
   const navigate = useNavigate();
   const user = useAuth();
+  const [appBarHeight, setAppBarHeight] = useState(64); // Default AppBar height
+  const appBarRef = useRef(null);
+
+  useEffect(() => {
+    if (appBarRef.current) {
+      setAppBarHeight(appBarRef.current.offsetHeight);
+    }
+  }, [])
 
   return (
     <Box
@@ -47,7 +55,8 @@ const Layout = ({
     >
       {/* AppBar */}
       <AppBar
-        position="sticky"
+        ref={appBarRef}
+        position="fixed"
         sx={{
           zIndex: (theme) => theme.zIndex.drawer + 1,
           background: 'primary',
@@ -116,6 +125,7 @@ const Layout = ({
           alignItems: 'center',
           flex: 1,
           overflowY: 'auto',
+          mt: `${appBarRef?.current?.offsetHeight || 64}px`,
         }}
       >
         <Box>{children}</Box>
