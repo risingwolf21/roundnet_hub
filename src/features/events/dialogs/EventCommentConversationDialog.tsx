@@ -60,7 +60,7 @@ export const EventCommentConversationDialog = ({
   };
 
   return (
-    <SwipeableDialog minHeight={90} open={comment !== null} title={title} setOpen={setOpen} onClose={onClose}>
+    <SwipeableDialog minHeight={80} open={comment !== null} title={title} setOpen={setOpen} onClose={onClose}>
       <Box sx={{ p: 2, display: 'flex' }}>
         <List sx={{ width: '100%', flex: 1 }}>
           {comment && <CommentItem key={comment.id} comment={comment} t={t} replyToPressed={() => {}} />}
@@ -68,11 +68,7 @@ export const EventCommentConversationDialog = ({
             comment.replies.length > 0 &&
             comment.replies.map((x) => <CommentItem key={x.id} comment={x} t={t} replyToPressed={() => {}} />)}
         </List>
-        <Box
-          sx={{ position: 'absolute', bottom: '64px', left: 0, right: 0, p: 1 }}
-          component={'form'}
-          onSubmit={submit}
-        >
+        <Box sx={{ position: 'absolute', bottom: 0, left: 0, right: 0, p: 1 }} component={'form'} onSubmit={submit}>
           <TextField
             ref={inputRef}
             disabled={eventInThePast || !can('insert', 'eventComments')}
