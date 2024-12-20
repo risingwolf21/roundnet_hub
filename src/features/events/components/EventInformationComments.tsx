@@ -83,7 +83,8 @@ const EventInformationComments = ({
     e.preventDefault();
     setTimeout(() => {
       if (inputRef.current) {
-        inputRef.current.scrollIntoView({ block: "nearest", behavior: 'smooth' });
+        inputRef.current.focus({ preventScroll: true });
+        inputRef.current.scrollIntoView({ block: "center", behavior: 'smooth', inline: 'nearest' });
       }
     }, 300);
   };
