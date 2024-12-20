@@ -83,10 +83,18 @@ const EventInformationComments = ({
     e.preventDefault();
     setTimeout(() => {
       if (inputRef.current) {
-        inputRef.current.focus({ preventScroll: true });
-        inputRef.current.scrollIntoViewIfNeeded
-        ? inputRef.current.scrollIntoViewIfNeeded({ behavior: 'smooth', block: 'center' })
-        : inputRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        const element = inputRef.current;
+        const rect = element.getBoundingClientRect(); // Position relativ zum Viewport
+        const scrollTop = window.scrollY || document.documentElement.scrollTop;
+
+        // Zielposition berechnen (z. B. mit einem kleinen Offset)
+        const targetScroll = rect.top + scrollTop - 100; // 100px Puffer nach oben
+
+        // Scrollen auslösen
+        window.scrollTo({
+          top: targetScroll,
+          behavior: 'smooth',
+        });
       }
     }, 300);
   };
