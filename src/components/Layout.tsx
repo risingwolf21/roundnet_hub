@@ -32,7 +32,7 @@ const Layout = ({
   const navigate = useNavigate();
   const user = useAuth();
   const [appBarHeight, setAppBarHeight] = useState(64); // Default AppBar height
-  const appBarRef = useRef(null);
+  const appBarRef = useRef<HTMLDivElement|null>(null);
 
   useEffect(() => {
     if (appBarRef.current) {
