@@ -85,7 +85,9 @@ const EventInformationComments = ({
       if (inputRef.current) {
         document.querySelectorAll('*').forEach((el) => (el.style.overflow = 'visible'));
         inputRef.current.focus({ preventScroll: true });
-        inputRef.current.scrollIntoView({ block: "center", behavior: 'smooth', inline: 'nearest' });
+        inputRef.current.scrollIntoViewIfNeeded
+        ? inputRef.current.scrollIntoViewIfNeeded({ behavior: 'smooth', block: 'center' })
+        : inputRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
       }
     }, 300);
   };
