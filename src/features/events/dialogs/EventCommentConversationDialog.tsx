@@ -69,7 +69,19 @@ export const EventCommentConversationDialog = ({
             comment.replies.length > 0 &&
             comment.replies.map((x) => <CommentReplyItem key={x.id} pl={0} reply={x} t={t} />)}
         </List>
-        <Box sx={{ position: 'absolute', bottom: 0, left: 0, right: 0, p: 1 }} component={'form'} onSubmit={submit}>
+        <Box
+          sx={{
+            position: 'fixed',
+            bottom: 0,
+            left: 0,
+            right: 0,
+            p: 1,
+            background: 'white',
+            pb: 'calc(8px + env(safe-area-inset-bottom))',
+          }}
+          component={'form'}
+          onSubmit={submit}
+        >
           <TextField
             ref={inputRef}
             disabled={eventInThePast || !can('insert', 'eventComments')}
