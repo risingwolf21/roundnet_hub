@@ -21,6 +21,7 @@ export const CommentItem = ({ comment, t, replyToPressed }: Props) => {
       dense
       disablePadding
       key={comment.id}
+      onClick={replyToPressed}
       sx={{
         justifyContent: 'space-between',
         '&.MuiListItem-root': {

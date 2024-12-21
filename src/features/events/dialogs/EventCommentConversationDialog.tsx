@@ -62,20 +62,31 @@ export const EventCommentConversationDialog = ({
 
   return (
     <SwipeableDialog minHeight={80} open={comment !== null} title={title} setOpen={setOpen} onClose={onClose}>
-      <Box sx={{ p: 2, display: 'flex' }}>
-        <List sx={{ width: '100%', flex: 1 }}>
-          {comment && <CommentItem key={comment.id} comment={comment} t={t} replyToPressed={() => {}} />}
-          {comment &&
-            comment.replies.length > 0 &&
-            comment.replies.map((x) => <CommentReplyItem key={x.id} pl={0} reply={x} t={t} />)}
-        </List>
+      <Box sx={{ p: 2, pb: 0, display: 'flex', flexDirection: 'column' }}>
         <Box
           sx={{
-            position: 'fixed',
+            width: '100%',
+            maxWidth: 1200,
+            mx: 'auto',
+            alignItems: 'center',
+            flex: 1,
+            overflowY: 'auto',
+          }}
+        >
+          <List sx={{ width: '100%' }}>
+            {comment && <CommentItem key={comment.id} comment={comment} t={t} replyToPressed={() => {}} />}
+            {comment &&
+              comment.replies.length > 0 &&
+              comment.replies.map((x) => <CommentReplyItem key={x.id} pl={0} reply={x} t={t} />)}
+          </List>
+        </Box>
+        <Box
+          sx={{
+            position: 'sticky',
             bottom: 0,
             left: 0,
             right: 0,
-            p: 1,
+            flex: 'auto',
             background: 'white',
             pb: 'calc(8px + env(safe-area-inset-bottom))',
           }}
