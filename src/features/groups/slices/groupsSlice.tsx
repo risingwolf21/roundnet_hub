@@ -63,7 +63,7 @@ export const fetchSingleGroupAsync = createAsyncThunk(
     {
       id,
     }: {
-      id: number;
+      id: string;
     },
     { rejectWithValue }
   ) => {

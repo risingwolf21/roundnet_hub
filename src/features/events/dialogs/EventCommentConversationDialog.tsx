@@ -6,6 +6,7 @@ import { CommentItem } from '../components/CommentItem';
 import { TFunction } from 'i18next';
 import { can } from '../../../utils/PermissionService';
 import { Send } from '@mui/icons-material';
+import { CommentReplyItem } from '../components/CommentReplyItem';
 
 type Props = {
   comment: FullComment | null;
@@ -66,7 +67,7 @@ export const EventCommentConversationDialog = ({
           {comment && <CommentItem key={comment.id} comment={comment} t={t} replyToPressed={() => {}} />}
           {comment &&
             comment.replies.length > 0 &&
-            comment.replies.map((x) => <CommentItem key={x.id} comment={x} t={t} replyToPressed={() => {}} />)}
+            comment.replies.map((x) => <CommentReplyItem key={x.id} pl={0} reply={x} t={t} />)}
         </List>
         <Box sx={{ position: 'absolute', bottom: 0, left: 0, right: 0, p: 1 }} component={'form'} onSubmit={submit}>
           <TextField

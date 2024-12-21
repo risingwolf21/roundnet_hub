@@ -79,7 +79,7 @@ export type Database = {
           created_at: string
           description: string
           end_date: string | null
-          group: number
+          group: string | null
           id: number
           max_points_per_week: number | null
           name: string
@@ -89,7 +89,7 @@ export type Database = {
           created_at?: string
           description?: string
           end_date?: string | null
-          group: number
+          group?: string | null
           id?: number
           max_points_per_week?: number | null
           name?: string
@@ -99,7 +99,7 @@ export type Database = {
           created_at?: string
           description?: string
           end_date?: string | null
-          group?: number
+          group?: string | null
           id?: number
           max_points_per_week?: number | null
           name?: string
@@ -244,33 +244,33 @@ export type Database = {
           comment: string
           created_at: string
           displayName: string
-            edited: boolean
+          edited: boolean
           event: string
-            id: string
-            last_update: string
-            reply_to: string | null
+          id: string
+          last_update: string
+          reply_to: string | null
           user: string
         }
         Insert: {
           comment?: string
           created_at?: string
           displayName?: string
-            edited?: boolean
+          edited?: boolean
           event?: string
-            id?: string
-            last_update?: string
-            reply_to?: string | null
+          id?: string
+          last_update?: string
+          reply_to?: string | null
           user: string
         }
         Update: {
           comment?: string
           created_at?: string
           displayName?: string
-            edited?: boolean
+          edited?: boolean
           event?: string
-            id?: string
-            last_update?: string
-            reply_to?: string | null
+          id?: string
+          last_update?: string
+          reply_to?: string | null
           user?: string
         }
         Relationships: [
@@ -295,12 +295,12 @@ export type Database = {
             referencedRelation: "events"
             referencedColumns: ["id"]
           },
-            {
-                foreignKeyName: "event_comments_reply_to_fkey"
-                columns: ["reply_to"]
-                isOneToOne: false
-                referencedRelation: "event_comments"
-                referencedColumns: ["id"]
+          {
+            foreignKeyName: "event_comments_reply_to_fkey"
+            columns: ["reply_to"]
+            isOneToOne: false
+            referencedRelation: "event_comments"
+            referencedColumns: ["id"]
           },
           {
             foreignKeyName: "event_comments_user_fkey"
@@ -316,21 +316,21 @@ export type Database = {
           color: string
           created_at: string
           description: string
-          id: number
+          id: string
           name: string
         }
         Insert: {
           color?: string
           created_at?: string
           description?: string
-          id?: number
+          id?: string
           name?: string
         }
         Update: {
           color?: string
           created_at?: string
           description?: string
-          id?: number
+          id?: string
           name?: string
         }
         Relationships: []
@@ -341,7 +341,7 @@ export type Database = {
           created_at: string
           description: string
           endDateTime: string | null
-          group: number | null
+          group: string | null
           id: string
           isCancelled: boolean
           key: string
@@ -359,7 +359,7 @@ export type Database = {
           created_at?: string
           description?: string
           endDateTime?: string | null
-          group?: number | null
+          group?: string | null
           id?: string
           isCancelled?: boolean
           key?: string
@@ -377,7 +377,7 @@ export type Database = {
           created_at?: string
           description?: string
           endDateTime?: string | null
-          group?: number | null
+          group?: string | null
           id?: string
           isCancelled?: boolean
           key?: string
@@ -402,15 +402,15 @@ export type Database = {
       }
       group_user_mapping: {
         Row: {
-          group: number
+          group: string
           user: string
         }
         Insert: {
-          group: number
+          group: string
           user: string
         }
         Update: {
-          group?: number
+          group?: string
           user?: string
         }
         Relationships: [
@@ -805,7 +805,7 @@ export type Database = {
           created_at: string | null
           description: string | null
           endDateTime: string | null
-          group: number | null
+          group: string | null
           id: string | null
           isCancelled: boolean | null
           key: string | null
@@ -847,7 +847,7 @@ export type Database = {
           created_at: string | null
           description: string | null
           endDateTime: string | null
-          group: number | null
+          group: string | null
           id: string | null
           isCancelled: boolean | null
           key: string | null

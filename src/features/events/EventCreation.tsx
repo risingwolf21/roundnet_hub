@@ -96,6 +96,7 @@ const CreateEvent = ({ t, eventToEdit, option }: CreateEventProps) => {
       let event = {
         ..._.omit(editedEvent, ['fullGroup', 'attendance', 'comments', 'userAttendance', 'attendanceUpdating']),
         title: eventTitle,
+        group: editedEvent.fullGroup.id,
         startingDateTime: editedEvent.startingDateTime,
         description: eventDescription,
         place: JSON.stringify(selectedPlace),
@@ -602,6 +603,7 @@ const CreateEvent = ({ t, eventToEdit, option }: CreateEventProps) => {
         open={dialogOpen === 'group'}
         handleClose={() => setDialogOpen(null)}
         handleSubmit={(group) => {
+          console.log(group);
           setEditedEvent({ ...editedEvent, group: group.id, fullGroup: group });
           setDialogOpen(null);
         }}

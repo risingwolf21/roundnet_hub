@@ -15,7 +15,7 @@ export const AdminUsersRepository = {
       )
       .throwOnError();
   },
-  async fetchSingleGroupWithUsers(groupId: number): Promise<PostgrestSingleResponse<any>> {
+  async fetchSingleGroupWithUsers(groupId: string): Promise<PostgrestSingleResponse<any>> {
     return supabase
       .from('event_group')
       .select('*, users: group_user_mapping ( user (*) )')

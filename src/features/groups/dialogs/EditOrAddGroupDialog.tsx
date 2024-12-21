@@ -96,7 +96,7 @@ export const EditOrAddGroupDialog = ({ open, handleClose, groupToEdit }: EditOrA
               <CloseIcon />
             </IconButton>
             <Typography sx={{ ml: 2, flex: 1 }} variant="h6" component="div">
-              {`Gruppe ${groupToEdit.id > 0 ? 'bearbeiten' : 'erstellen'}`}
+              {`Gruppe ${groupToEdit.id === '' ? 'bearbeiten' : 'erstellen'}`}
             </Typography>
             <Button
               variant="contained"

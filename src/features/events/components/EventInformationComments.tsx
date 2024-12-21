@@ -123,9 +123,11 @@ const EventInformationComments = ({
                 <CommentItem comment={x} t={t} replyToPressed={() => setReplyDialogOpen(x)} />
                 {x.replies.length > 0 && (
                   <>
-                    {x.replies.map((reply, index) => (
-                      <CommentReplyItem reply={reply} t={t} />
-                    ))}
+                    {x.replies
+                      .filter((x) => x)
+                      .map((reply, index) => (
+                        <CommentReplyItem reply={reply} t={t} />
+                      ))}
                     <CommentReplyText onClick={() => setReplyDialogOpen(x)} />
                   </>
                 )}

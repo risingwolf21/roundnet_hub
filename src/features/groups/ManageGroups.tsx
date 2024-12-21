@@ -1,18 +1,18 @@
-import {AddOutlined, EditOffOutlined, EditOutlined, FiberManualRecord} from '@mui/icons-material';
-import {Box, Fab, IconButton, LinearProgress, List, ListItem, ListItemAvatar, ListItemText} from '@mui/material';
-import {SupabaseClient} from '@supabase/supabase-js';
-import React, {useEffect, useState} from 'react';
-import {useSelector} from 'react-redux';
-import {useNavigate} from 'react-router-dom';
-import {useClient} from 'react-supabase';
-import {GroupWithUsers} from 'src/types/supabaseTypes';
-import {fetchGroupsAsync, groupsSelector} from './slices/groupsSlice';
-import {RootState, useAppDispatch} from '../../redux/store';
+import { AddOutlined, EditOffOutlined, EditOutlined, FiberManualRecord } from '@mui/icons-material';
+import { Box, Fab, IconButton, LinearProgress, List, ListItem, ListItemAvatar, ListItemText } from '@mui/material';
+import { SupabaseClient } from '@supabase/supabase-js';
+import React, { useEffect, useState } from 'react';
+import { useSelector } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
+import { useClient } from 'react-supabase';
+import { GroupWithUsers } from 'src/types/supabaseTypes';
+import { fetchGroupsAsync, groupsSelector } from './slices/groupsSlice';
+import { RootState, useAppDispatch } from '../../redux/store';
 import EditIcon from '@mui/icons-material/Edit';
-import {EditOrAddGroupDialog} from './dialogs/EditOrAddGroupDialog';
-import {can} from '../../utils/PermissionService';
+import { EditOrAddGroupDialog } from './dialogs/EditOrAddGroupDialog';
+import { can } from '../../utils/PermissionService';
 import Layout from '../../components/Layout';
-import {useAuth} from '../auth/AuthContext';
+import { useAuth } from '../auth/AuthContext';
 
 const ManageGroupsProvider = () => {
   const groups = useSelector((state: RootState) => groupsSelector.selectAll(state));
@@ -28,7 +28,7 @@ type ManageGroupsScreenProps = {
   client: SupabaseClient;
 };
 
-export const EMPTY_GROUP = { name: '', color: '#000000', id: 0, description: '', created_at: '' };
+export const EMPTY_GROUP = { name: '', color: '#000000', id: '', description: '', created_at: '' };
 
 const ManageGroupsScreen = ({ groups, loading, client }: ManageGroupsScreenProps) => {
   const user = useAuth();
@@ -76,13 +76,15 @@ const ManageGroupsScreen = ({ groups, loading, client }: ManageGroupsScreenProps
             ))}
       </List>
       {can('update', 'group') && (
-          <Box sx={{
-              position: 'fixed',
-              right: '16px',
-              bottom: 'calc(76px + env(safe-area-inset-bottom))',
-              display: 'flex',
-              flexDirection: 'row'
-          }}>
+        <Box
+          sx={{
+            position: 'fixed',
+            right: '16px',
+            bottom: 'calc(76px + env(safe-area-inset-bottom))',
+            display: 'flex',
+            flexDirection: 'row',
+          }}
+        >
           <Fab
             sx={{ background: '#66bb6a', mr: 2 }}
             onClick={() => {
