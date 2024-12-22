@@ -1,9 +1,9 @@
-import { createAsyncThunk, createEntityAdapter, createSlice } from '@reduxjs/toolkit';
-import { GroupWithUsers } from '../../../types/supabaseTypes';
-import { SupabaseClient } from '@supabase/supabase-js';
-import { AdminUsersRepository } from 'src/repository/AdminUsersRepository';
-import { RootState } from '../../../redux/store';
-import { captureException } from '@sentry/react';
+import {createAsyncThunk, createEntityAdapter, createSlice} from '@reduxjs/toolkit';
+import {GroupWithUsers} from '../../../types/supabaseTypes';
+import {SupabaseClient} from '@supabase/supabase-js';
+import {AdminUsersRepository} from 'src/repository/AdminUsersRepository';
+import {RootState} from '../../../redux/store';
+import {captureException} from '@sentry/react';
 
 const groupsAdapter = createEntityAdapter({
   selectId: (group: GroupWithUsers) => group.id,
@@ -63,7 +63,7 @@ export const fetchSingleGroupAsync = createAsyncThunk(
     {
       id,
     }: {
-      id: number;
+      id: string;
     },
     { rejectWithValue }
   ) => {

@@ -1,6 +1,6 @@
-import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { SupabaseUserRepository } from '../repository/UserRepository';
-import { UserWithRolesAndPermissions } from '../types/supabaseTypes';
+import {createAsyncThunk, createSlice, PayloadAction} from '@reduxjs/toolkit';
+import {SupabaseUserRepository} from '../repository/UserRepository';
+import {UserWithRolesAndPermissions} from '../types/supabaseTypes';
 
 type ApplicationSliceState = {
   user: UserWithRolesAndPermissions | null;
@@ -31,7 +31,7 @@ export const applicationReducer = createSlice({
     onAppVersionChange: (state, action) => {
       state.appVersion = action.payload;
     },
-    onUserChange: (state, action) => {
+    onUserChange: (state, action: PayloadAction<UserWithRolesAndPermissions | null>) => {
       state.user = action.payload;
     },
     onAppUpdateAvailableChange: (state, action) => {

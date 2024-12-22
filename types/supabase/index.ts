@@ -1,4 +1,4 @@
-import {Enums, Tables, TablesInsert, TablesUpdate} from "../../src/types/supabase-generated.types";
+import {Database, Enums, Tables, TablesInsert, TablesUpdate} from "../../src/types/supabase-generated.types";
 
 export type Event = Tables<'events'>;
 export type History = Tables<'history'>;
@@ -21,6 +21,8 @@ declare global {
     type UserRoles = Tables<'user_roles'>
     type AppPermission = Tables<'app_permissions'>
     type AppRole = Tables<'app_roles'>
+
+    type Player = Database["games"]["Tables"]["players"]["Row"];
 
     type PaymentInsert = TablesInsert<'payments'>
     type EventCommentInsert = TablesInsert<'event_comments'>

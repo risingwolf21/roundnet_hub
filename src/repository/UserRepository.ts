@@ -1,7 +1,7 @@
-import { PostgrestError, PostgrestSingleResponse } from '@supabase/supabase-js';
-import { UserWithGroupsAndRoles } from '../types/supabaseTypes';
-import { supabase } from '../components/services/supabase/supabaseClient';
-import { Notification } from 'types/supabase';
+import {PostgrestError, PostgrestSingleResponse} from '@supabase/supabase-js';
+import {UserWithGroupsAndRoles} from '../types/supabaseTypes';
+import {supabase} from '../components/services/supabase/supabaseClient';
+import {Notification} from 'types/supabase';
 
 export const SupabaseUserRepository = {
   async fetchUserWithGroups(userId: string): Promise<PostgrestSingleResponse<UserWithGroupsAndRoles>> {
@@ -37,6 +37,10 @@ export const SupabaseUserRepository = {
 
   async fetchUser(userId: string): Promise<PostgrestSingleResponse<User>> {
     return supabase.from('user').select('*').eq('userId', userId).single().throwOnError();
+  },
+
+  async fetchPlayer(userId: string): Promise<PostgrestSingleResponse<Player>> {
+    return supabase.schema("games").from("players").select('*').eq('player', userId).single().throwOnError();
   },
 
   async updateNotificationTags(

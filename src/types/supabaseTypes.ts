@@ -103,8 +103,9 @@ export type UserWithRoles = User & {
 };
 
 export type UserWithRolesAndPermissions = User & {
-  roles: UserRoles[];
+    roles: AppRole[];
   permissions: AppPermission[];
+    player_data: Player | null
 };
 
 export type FullRolePermission = Modify<
