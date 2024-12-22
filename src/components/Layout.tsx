@@ -1,4 +1,4 @@
-import React, { ReactNode } from 'react';
+import React, { ReactNode, useRef, useEffect, useState } from 'react';
 import { AppBar, Avatar, Box, IconButton, TextField, Toolbar, Typography } from '@mui/material';
 import { AccountCircle, ArrowBack } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
@@ -31,28 +31,35 @@ const Layout = ({
 }: Props) => {
   const navigate = useNavigate();
   const user = useAuth();
+  const [appBarHeight, setAppBarHeight] = useState(64); // Default AppBar height
+  const appBarRef = useRef<HTMLDivElement|null>(null);
+
+  useEffect(() => {
+    if (appBarRef.current) {
+      setAppBarHeight(appBarRef.current.offsetHeight);
+    }
+  }, [])
 
   return (
     <Box
       sx={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        width: '100%',
+        height: '100vh', // Volle Ansichtshöhe
         display: 'flex',
         flexDirection: 'column',
-        height: '100vh',
-        overflow: 'hidden',
-        paddingTop: 'env(safe-area-inset-top)',
-        paddingRight: 'env(safe-area-inset-right)',
-        paddingBottom: 'env(safe-area-inset-bottom)',
-        paddingLeft: 'env(safe-area-inset-left)',
+        overflow: 'hidden', // Kein Overflow außerhalb des Containers
       }}
     >
       {/* AppBar */}
       <AppBar
-        position="static"
+        ref={appBarRef}
+        position="fixed"
         sx={{
           zIndex: (theme) => theme.zIndex.drawer + 1,
           background: 'primary',
-          overflow: 'hidden',
-          position: 'fixed',
           top: 0,
           pt: 'env(safe-area-inset-top)',
         }}
@@ -110,31 +117,31 @@ const Layout = ({
 
       {/* Main Content */}
       <Box
+        data-content-container
         sx={{
           width: '100%',
           maxWidth: 1200,
           mx: 'auto',
           alignItems: 'center',
-          position: 'absolute',
-          top: 'calc(56px + env(safe-area-inset-top))',
-          left: 0,
-          right: 0,
-          bottom: 'calc(56px + env(safe-area-inset-bottom))',
+          flex: 1,
+          overflowY: 'auto',
+          mt: `${appBarRef?.current?.offsetHeight || 64}px`,
         }}
       >
+        <Box>{children}</Box>
+
         <Box
           sx={{
-            overflowY: 'auto',
-            display: 'flex',
-            flexGrow: 1,
-            flexDirection: 'column',
+            position: 'sticky',
+            bottom: 0,
+            width: '100%',
+            pb: 'env(safe-area-inset-bottom)', // Safe Area Unterstützung
+            zIndex: 2,
           }}
         >
-          {children}
+          <CustomBottomNavigation />
         </Box>
       </Box>
-
-      <CustomBottomNavigation />
     </Box>
   );
 };

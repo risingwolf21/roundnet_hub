@@ -1,4 +1,4 @@
-import {Delete, DoNotDisturb, DoNotDisturbOff, Edit, Key, MoreVert} from '@mui/icons-material';
+import { Delete, DoNotDisturb, DoNotDisturbOff, Edit, Key, MoreVert } from '@mui/icons-material';
 import {
   Alert,
   Box,
@@ -13,27 +13,27 @@ import {
   Skeleton,
   Typography,
 } from '@mui/material';
-import React, {createRef, useEffect, useState} from 'react';
-import {MapContainer, Marker, TileLayer} from 'react-leaflet';
-import {useNavigate} from 'react-router-dom';
-import {answerDeadlineExpired, eventInThePast} from '../../types/supabaseTypes';
-import {DeleteEventDialog} from './dialogs/DeleteEventDialog';
-import {DeleteEventType, EventInformationProps} from './types';
-import {CancelTrainingDialog} from './dialogs/CancelTrainingDialog';
-import {can} from 'src/utils/PermissionService';
-import {fetchEventAttendanceAsync, updateAttendanceAsync} from 'src/features/events/slices/eventAttendanceSlice';
-import {formatDateToDatabase} from 'src/utils';
-import {fetchEventCommentsAsync, upsertCommentToEventAsync} from 'src/features/events/slices/eventCommentsSlice';
-import {editEvent, fetchSingleEventAsync, onEventErrorRead} from 'src/features/events/slices/eventsSlice';
+import React, { useEffect, useState } from 'react';
+import { MapContainer, Marker, TileLayer } from 'react-leaflet';
+import { useNavigate } from 'react-router-dom';
+import { answerDeadlineExpired, eventInThePast } from '../../types/supabaseTypes';
+import { DeleteEventDialog } from './dialogs/DeleteEventDialog';
+import { DeleteEventType, EventInformationProps } from './types';
+import { CancelTrainingDialog } from './dialogs/CancelTrainingDialog';
+import { can } from 'src/utils/PermissionService';
+import { fetchEventAttendanceAsync, updateAttendanceAsync } from 'src/features/events/slices/eventAttendanceSlice';
+import { formatDateToDatabase } from 'src/utils';
+import { fetchEventCommentsAsync, upsertCommentToEventAsync } from 'src/features/events/slices/eventCommentsSlice';
+import { editEvent, fetchSingleEventAsync, onEventErrorRead } from 'src/features/events/slices/eventsSlice';
 import EventInformationAttendance from './components/EventInformationAttendance';
 import EventInformationComments from './components/EventInformationComments';
-import {EditEventOptionsDialog} from './dialogs/EditEventOptionsDialog';
-import {isBefore} from 'date-fns';
-import {SupabaseEventRepository} from '../../repository/EventRepository';
-import {AlertMessage, AlertSnackbar} from '../../components/AlertSnackbar';
+import { EditEventOptionsDialog } from './dialogs/EditEventOptionsDialog';
+import { isBefore } from 'date-fns';
+import { SupabaseEventRepository } from '../../repository/EventRepository';
+import { AlertMessage, AlertSnackbar } from '../../components/AlertSnackbar';
 import Layout from '../../components/Layout';
-import {captureException} from '@sentry/react';
-import {LoadingEventInformation} from './components/LoadingEventInformation';
+import { captureException } from '@sentry/react';
+import { LoadingEventInformation } from './components/LoadingEventInformation';
 
 const EventInformation = ({
   dispatch,
@@ -52,7 +52,6 @@ const EventInformation = ({
   const [deleteTrainingOpen, setDeleteTrainingOpen] = useState(false);
   const [editEventOptionOpen, setEditEventOptionOpen] = useState(false);
   const navigate = useNavigate();
-  const inputRef = createRef<HTMLInputElement>();
   const [anchorEl, setAnchorEl] = useState<(EventTarget & HTMLButtonElement) | null>(null);
   const [alertInfo, setAlertInfo] = useState<AlertMessage | null>(null);
 
@@ -103,23 +102,16 @@ const EventInformation = ({
     dispatch(updateAttendanceAsync({ user, eventId: selectedEvent.id, state, oldState }));
   };
 
-  const handleCommentSubmit = (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    const data = new FormData(event.currentTarget);
-
-    const comment = data.get('comment')?.toString();
-    if (!comment) return;
-
+  const handleCommentSubmit = (value: { comment: string; reply_to: string | null }) => {
     dispatch(
       upsertCommentToEventAsync({
         user,
         eventId: selectedEvent.id,
-        comment: comment.toString(),
+        comment: value.comment,
         created_at: formatDateToDatabase(new Date()),
-          reply_to: null
+        reply_to: value.reply_to,
       })
     );
-    event.currentTarget.reset();
   };
 
   const handleClick = (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
@@ -351,7 +343,6 @@ const EventInformation = ({
               eventId={selectedEvent.id}
               comments={comments}
               handleCommentSubmit={handleCommentSubmit}
-              inputRef={inputRef}
               eventInThePast={eventInThePast(selectedEvent)}
             />
           </Box>

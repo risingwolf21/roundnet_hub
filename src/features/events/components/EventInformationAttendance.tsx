@@ -9,7 +9,6 @@ import {
   ThumbDownOffAlt,
   ThumbUpAlt,
   ThumbUpOffAlt,
-  VerifiedOutlined,
 } from '@mui/icons-material';
 import {
   CircularProgress,

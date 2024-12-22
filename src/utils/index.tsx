@@ -29,16 +29,8 @@ export const SlideUpTransition = forwardRef(function Transition(props: SlideProp
   );
 });
 
-const SlideDownTransition = React.forwardRef(function Transition(props: SlideProps, ref) {
-  return (
-    <Slide direction="down" ref={ref} {...props}>
-      {props.children}
-    </Slide>
-  );
-});
-
 export const formatDateToDatabase = (date: Date) => {
-  return format(date, "yyyy-MM-dd'T'HH:mm:ssXXX");
+  return format(date, "yyyy-MM-dd'T'HH:mm:ss.SSSXXX");
 };
 
 export const formatDateFromDatabase = (date: string) => {
