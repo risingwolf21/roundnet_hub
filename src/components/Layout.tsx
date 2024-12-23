@@ -1,6 +1,6 @@
 import React, { ReactNode, useEffect, useRef, useState } from 'react';
 import { AppBar, Avatar, Box, IconButton, TextField, Toolbar, Typography } from '@mui/material';
-import { AccountCircle, Menu } from '@mui/icons-material';
+import { AccountCircle, ArrowBack, Menu } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../features/auth/AuthContext';
 import { FirebaseMessaging } from '../features/notifications/FirebaseMessaging';
@@ -72,9 +72,16 @@ const Layout = ({
             mx: 'auto',
           }}
         >
-          <IconButton color="inherit" onClick={() => setDrawerOpen(true)} edge="start" sx={{ mr: 2 }}>
-            <Menu />
-          </IconButton>
+          {showBackButton ? (
+            <IconButton color="inherit" onClick={() => navigate(-1)} edge="start" sx={{ mr: 2 }}>
+              <ArrowBack />
+            </IconButton>
+          ) : (
+            <IconButton color="inherit" onClick={() => setDrawerOpen(true)} edge="start" sx={{ mr: 2 }}>
+              <Menu />
+            </IconButton>
+          )}
+
           {/* Title */}
           <Typography variant="h6" sx={{ flexGrow: 1 }}>
             {title}

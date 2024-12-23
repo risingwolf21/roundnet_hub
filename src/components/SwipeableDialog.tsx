@@ -39,7 +39,7 @@ export const SwipeableDialog = ({
           borderTopRightRadius: 16,
           borderBottomRightRadius: 0,
           borderBottomLeftRadius: 0,
-          pb: 'calc(56px + env(safe-area-inset-bottom))',
+          pb: 'env(safe-area-inset-bottom)',
         },
         '.MuiDialog-container': {
           position: 'absolute',

@@ -231,7 +231,7 @@ const UserScreen = ({ user, client, dispatch, groups }: UserScreenProps) => {
   };
 
   return (
-    <Layout appBarConfig={{ title: 'Profil', showBackButton: true, showProfile: false }}>
+    <Layout appBarConfig={{ title: 'Profil', showProfile: false }}>
       <List sx={{ pl: 2, pr: 2, pb: 10 }}>
         <Container
           key={'avatar'}

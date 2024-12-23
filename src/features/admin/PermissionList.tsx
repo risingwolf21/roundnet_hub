@@ -80,7 +80,7 @@ export const PermissionList = () => {
   }, [fetchRolesAndPermissions]);
 
   return (
-    <Layout appBarConfig={{ showBackButton: true }}>
+    <Layout>
       <List sx={{ pb: 10 }}>
         {Object.entries(_.groupBy([...permissions, ...addedPermissions], (x) => JSON.stringify(x.app_role))).map(
           ([key, value]) => (

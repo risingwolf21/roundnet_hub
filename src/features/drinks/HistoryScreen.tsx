@@ -60,7 +60,7 @@ export const HistoryScreen = ({
   };
 
   return (
-    <Layout appBarConfig={{ showBackButton: true }}>
+    <Layout>
       {historyLoading && <LinearProgress style={{ position: 'fixed', left: 0, top: 56, right: 0 }} />}
       {!historyLoading && history.length <= 0 && (
         <Box sx={{ alignItems: 'center', display: 'flex', flexDirection: 'column', pt: 10 }}>

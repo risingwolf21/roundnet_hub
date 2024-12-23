@@ -114,7 +114,6 @@ const DrinkListScreen = ({ user, drinks, drinksLoading, drinksError }: DrinkList
             position: 'fixed',
             right: '16px',
             bottom: 'calc(16px + env(safe-area-inset-bottom))',
-            mb: '16px',
           }}
           color={'secondary'}
           onClick={confirmDrinks}
@@ -127,7 +126,6 @@ const DrinkListScreen = ({ user, drinks, drinksLoading, drinksError }: DrinkList
             position: 'fixed',
             right: '16px',
             bottom: 'calc(16px + env(safe-area-inset-bottom))',
-            mb: '16px',
           }}
           color={'secondary'}
           onClick={() => setFilterDialogOpen(true)}

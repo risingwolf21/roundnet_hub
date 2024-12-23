@@ -27,7 +27,7 @@ const NotificationScreen = () => {
   };
 
   return (
-    <Layout appBarConfig={{ showBackButton: true }}>
+    <Layout>
       {loading && <LinearProgress sx={{ position: 'fixed', top: 56, left: 0, right: 0 }} />}
       <List sx={{ width: '100%' }}>
         {notifications.map((notification) => {

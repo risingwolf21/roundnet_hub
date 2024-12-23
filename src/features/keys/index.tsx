@@ -60,7 +60,7 @@ export const ItemHolderScreen = ({ dispatch, keyHolders, loading, user, t }: Ite
   };
 
   return (
-    <Layout appBarConfig={{ showBackButton: true }}>
+    <Layout>
       <LoadingIndicator loading={loading} />
       <List sx={{ width: '100%', pb: 10 }}>
         <Alert key={'alert'} sx={{ ml: 2, mr: 2, mt: 2 }} severity="info">

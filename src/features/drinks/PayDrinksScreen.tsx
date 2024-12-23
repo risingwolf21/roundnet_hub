@@ -100,7 +100,7 @@ const PayDrinksScreen = ({ user, paymentHistory, paymentError, paymentLoading }:
   if (paymentLoading) return <LoadingScreen />;
 
   return (
-    <Layout appBarConfig={{ showBackButton: true }}>
+    <Layout>
       <Box>
         <List>
           {Array.from(
