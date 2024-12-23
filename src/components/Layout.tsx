@@ -3,8 +3,8 @@ import { AppBar, Avatar, Box, IconButton, TextField, Toolbar, Typography } from 
 import { AccountCircle, ArrowBack, Menu } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../features/auth/AuthContext';
-import { FirebaseMessaging } from '../features/notifications/FirebaseMessaging';
 import { Drawer } from './Drawer';
+import { FirebaseMessaging } from '../features/notifications/FirebaseMessaging';
 
 type Props = {
   children: ReactNode;
@@ -119,7 +119,7 @@ const Layout = ({
       </AppBar>
 
       {/* Drawer  */}
-      <Drawer open={drawerOpen} onClose={() => setDrawerOpen(false)} />
+      <Drawer open={drawerOpen} onClose={() => setDrawerOpen(false)} onOpen={() => setDrawerOpen(true)} />
 
       <FirebaseMessaging />
 

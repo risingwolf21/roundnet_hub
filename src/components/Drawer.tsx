@@ -12,6 +12,8 @@ import {
   ListItemProps,
   ListItemText,
   ListSubheader,
+  SwipeableDrawer,
+  SwipeableDrawerProps,
   Typography,
 } from '@mui/material';
 import React, { useEffect, useState } from 'react';
@@ -41,6 +43,7 @@ import { notificationsSelector } from '../features/notifications/slices/notifica
 type Props = {
   open: boolean;
   onClose: () => void;
+  onOpen: () => void;
 };
 
 interface StyledDrawerItemProps extends ListItemProps {
@@ -82,7 +85,7 @@ const DrawerBox = styled(Box)<BoxProps>(({ theme }) => ({
   paddingBottom: 'env(safe-area-inset-bottom)',
 }));
 
-const CustomDrawer = styled(MaterialDrawer)<DrawerProps>(({ theme }) => ({
+const CustomDrawer = styled(SwipeableDrawer)<SwipeableDrawerProps>(({ theme }) => ({
   '& .MuiPaper-root': {
     borderTopRightRadius: 24,
     borderBottomRightRadius: 24,
@@ -91,7 +94,7 @@ const CustomDrawer = styled(MaterialDrawer)<DrawerProps>(({ theme }) => ({
   },
 }));
 
-export const Drawer = ({ open, onClose }: Props) => {
+export const Drawer = ({ open, onClose, onOpen }: Props) => {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const [tab, setTab] = useState<string>(HOMEPAGE);
@@ -107,7 +110,7 @@ export const Drawer = ({ open, onClose }: Props) => {
   };
 
   return (
-    <CustomDrawer open={open} onClose={onClose}>
+    <CustomDrawer anchor={'left'} open={open} onClose={onClose} onOpen={onOpen}>
       <DrawerBox>
         <List>
           <DrawerItem selected={tab === 'user'} onClick={() => handleChange('user')}>
