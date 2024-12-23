@@ -36,7 +36,7 @@ const PayDrinksButton = ({ amountToPay }: { amountToPay: number }) => {
     <Box
       sx={{
         position: 'fixed',
-        bottom: 'calc(76px + env(safe-area-inset-bottom))',
+        bottom: 'calc(16px + env(safe-area-inset-bottom))',
         left: 0,
         right: 0,
         flexDirection: 'column',
@@ -178,7 +178,7 @@ const PayDrinksScreen = ({ user, paymentHistory, paymentError, paymentLoading }:
       )}
 
       <Snackbar
-        sx={{ position: 'fixed', right: '16px', bottom: 'calc(76px + env(safe-area-inset-bottom))' }}
+        sx={{ position: 'fixed', right: '16px', bottom: 'calc(16px + env(safe-area-inset-bottom))' }}
         open={paymentError !== ''}
       >
         <Alert severity={'error'} sx={{ width: '100%' }}>

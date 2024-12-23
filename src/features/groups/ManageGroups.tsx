@@ -28,7 +28,7 @@ type ManageGroupsScreenProps = {
   client: SupabaseClient;
 };
 
-export const EMPTY_GROUP = {name: '', color: '#000000', id: "", description: '', created_at: ''};
+export const EMPTY_GROUP = { name: '', color: '#000000', id: '', description: '', created_at: '' };
 
 const ManageGroupsScreen = ({ groups, loading, client }: ManageGroupsScreenProps) => {
   const user = useAuth();
@@ -80,7 +80,7 @@ const ManageGroupsScreen = ({ groups, loading, client }: ManageGroupsScreenProps
           sx={{
             position: 'fixed',
             right: '16px',
-            bottom: 'calc(76px + env(safe-area-inset-bottom))',
+            bottom: 'calc(16px + env(safe-area-inset-bottom))',
             display: 'flex',
             flexDirection: 'row',
           }}

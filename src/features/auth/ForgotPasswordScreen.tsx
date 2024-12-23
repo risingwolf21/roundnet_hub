@@ -82,7 +82,7 @@ const ForgotPasswordScreen = () => {
             {loading ? <CircularProgress /> : 'Abschicken'}
           </Button>
           <Snackbar
-            sx={{ position: 'absolute', right: '16px', bottom: '16px' }}
+            sx={{ position: 'absolute', right: '16px', bottom: 'calc(16px + env(safe-area-inset-bottom))' }}
             open={successMessageOpen}
             onClose={() => setSuccessMessageOpen(false)}
           >

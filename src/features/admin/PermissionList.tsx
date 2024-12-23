@@ -1,7 +1,7 @@
 import Layout from '../../components/Layout';
-import React, {useCallback, useEffect, useState} from 'react';
-import {AdminPermissionsRepository} from '../../repository/AdminPermissionsRepository';
-import {AlertMessage, AlertSnackbar} from '../../components/AlertSnackbar';
+import React, { useCallback, useEffect, useState } from 'react';
+import { AdminPermissionsRepository } from '../../repository/AdminPermissionsRepository';
+import { AlertMessage, AlertSnackbar } from '../../components/AlertSnackbar';
 import _ from 'lodash';
 import {
   Fab,
@@ -13,10 +13,10 @@ import {
   ListItemText,
   ListSubheader,
 } from '@mui/material';
-import {Add, Delete, Restore, Save} from '@mui/icons-material';
-import {SwipeableDialog} from '../../components/SwipeableDialog';
-import {supabase} from '../../components/services/supabase/supabaseClient';
-import {FullRolePermission} from '../../types/supabaseTypes';
+import { Add, Delete, Restore, Save } from '@mui/icons-material';
+import { SwipeableDialog } from '../../components/SwipeableDialog';
+import { supabase } from '../../components/services/supabase/supabaseClient';
+import { FullRolePermission } from '../../types/supabaseTypes';
 
 export const PermissionList = () => {
   const [alertInfo, setAlertInfo] = useState<AlertMessage | null>(null);
@@ -159,7 +159,7 @@ export const PermissionList = () => {
             backgroundColor: (theme) => theme.palette.primary.main,
             position: 'fixed',
             right: '16px',
-            bottom: 'calc(56px + env(safe-area-inset-bottom))',
+            bottom: 'calc(16px + env(safe-area-inset-bottom))',
             mb: '16px',
           }}
           onClick={savePermissions}

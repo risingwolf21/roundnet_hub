@@ -122,7 +122,7 @@ const EventScreen = ({ events, loading, error, user }: EventScreenProps) => {
             sx={{
               position: 'fixed',
               right: '16px',
-              bottom: 'calc(56px + env(safe-area-inset-bottom))',
+              bottom: 'calc(16px + env(safe-area-inset-bottom))',
               mb: '16px',
             }}
             color={'secondary'}
@@ -139,7 +139,7 @@ const EventScreen = ({ events, loading, error, user }: EventScreenProps) => {
             sx={{
               position: 'fixed',
               right: '88px',
-              bottom: 'calc(56px + env(safe-area-inset-bottom))',
+              bottom: 'calc(16px + env(safe-area-inset-bottom))',
               mb: '16px',
             }}
             color={'secondary'}

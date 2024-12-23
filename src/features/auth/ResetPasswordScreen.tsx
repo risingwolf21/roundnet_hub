@@ -114,7 +114,7 @@ const ResetPasswordScreen = () => {
               Passwort ändern
             </Button>
             <Snackbar
-              sx={{ position: 'absolute', right: '16px', bottom: '72px' }}
+              sx={{ position: 'absolute', right: '16px', bottom: 'calc(16px + env(safe-area-inset-bottom))' }}
               open={successMessageOpen}
               onClose={() => setSuccessMessageOpen(false)}
             >

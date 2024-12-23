@@ -1,18 +1,18 @@
-import {AddOutlined, EditOffOutlined, EditOutlined} from '@mui/icons-material';
-import {Alert, Box, Fab, List} from '@mui/material';
-import React, {useEffect, useState} from 'react';
-import {fetchItemsAsync} from 'src/features/keys/slices/keysSlice';
-import {FullItemHolder} from 'src/types/supabaseTypes';
-import {AlertMessage, AlertSnackbar} from '../../components/AlertSnackbar';
-import {LoadingIndicator} from '../../components/LoadingIndicator';
-import {can} from '../../utils/PermissionService';
-import {EditOrAddItemDialog} from './dialogs/EditOrAddItemDialog';
-import {ItemHistoryDialog} from './dialogs/ItemHistoryDialog';
-import {SupabaseKeysRepository} from '../../repository/KeysRepository';
-import {ItemHolderScreenProps} from './types';
-import {ItemHolderItem} from './components/ItemHolderItem';
-import {KeyHandOverDialog} from './dialogs/KeyHandOverDialog';
-import {SearchUserDialog} from './dialogs/SearchUserDialog';
+import { AddOutlined, EditOffOutlined, EditOutlined } from '@mui/icons-material';
+import { Alert, Box, Fab, List } from '@mui/material';
+import React, { useEffect, useState } from 'react';
+import { fetchItemsAsync } from 'src/features/keys/slices/keysSlice';
+import { FullItemHolder } from 'src/types/supabaseTypes';
+import { AlertMessage, AlertSnackbar } from '../../components/AlertSnackbar';
+import { LoadingIndicator } from '../../components/LoadingIndicator';
+import { can } from '../../utils/PermissionService';
+import { EditOrAddItemDialog } from './dialogs/EditOrAddItemDialog';
+import { ItemHistoryDialog } from './dialogs/ItemHistoryDialog';
+import { SupabaseKeysRepository } from '../../repository/KeysRepository';
+import { ItemHolderScreenProps } from './types';
+import { ItemHolderItem } from './components/ItemHolderItem';
+import { KeyHandOverDialog } from './dialogs/KeyHandOverDialog';
+import { SearchUserDialog } from './dialogs/SearchUserDialog';
 import Layout from '../../components/Layout';
 
 export const EMPTY_KEY: ItemUpdate = { name: '', color: '#000000', created_at: '', current_holder: null, type: null };
@@ -86,13 +86,15 @@ export const ItemHolderScreen = ({ dispatch, keyHolders, loading, user, t }: Ite
       </List>
 
       {can('update', 'item') && (
-          <Box sx={{
-              position: 'fixed',
-              right: '16px',
-              bottom: 'calc(76px + env(safe-area-inset-bottom))',
-              display: 'flex',
-              flexDirection: 'row'
-          }}>
+        <Box
+          sx={{
+            position: 'fixed',
+            right: '16px',
+            bottom: 'calc(16px + env(safe-area-inset-bottom))',
+            display: 'flex',
+            flexDirection: 'row',
+          }}
+        >
           <Fab
             sx={{ background: '#66bb6a', mr: 2 }}
             onClick={() => {

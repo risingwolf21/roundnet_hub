@@ -1,15 +1,15 @@
-import {Alert, Divider, Fab, Grid, List, Typography} from '@mui/material';
-import React, {useState} from 'react';
-import {ChallengeRepository} from '../../repository/ChallengeRepository';
-import {FullChallenge} from '../../types/supabaseTypes';
-import {captureException} from '@sentry/react';
-import {AlertMessage, AlertSnackbar} from '../../components/AlertSnackbar';
-import {Box} from '@mui/system';
-import {can} from '../../utils/PermissionService';
+import { Alert, Divider, Fab, Grid, List, Typography } from '@mui/material';
+import React, { useState } from 'react';
+import { ChallengeRepository } from '../../repository/ChallengeRepository';
+import { FullChallenge } from '../../types/supabaseTypes';
+import { captureException } from '@sentry/react';
+import { AlertMessage, AlertSnackbar } from '../../components/AlertSnackbar';
+import { Box } from '@mui/system';
+import { can } from '../../utils/PermissionService';
 import EditIcon from '@mui/icons-material/Edit';
-import {TFunction} from 'i18next';
+import { TFunction } from 'i18next';
 import EnterPointDialog from './dialogs/EnterPointDialog';
-import {ChallengeStatItem} from './components/ChallengeStatItem';
+import { ChallengeStatItem } from './components/ChallengeStatItem';
 import Layout from '../../components/Layout';
 
 type ChallengeInformationProps = {
@@ -153,13 +153,13 @@ export const ChallengeInformation = ({ t, challenge, user }: ChallengeInformatio
 
       {can('update', 'challenge') && !challenge.automated && (
         <Fab
-            sx={{
-                background: '#66bb6a',
-                position: 'fixed',
-                right: '16px',
-                bottom: 'calc(56px + env(safe-area-inset-bottom))',
-                mb: '16px'
-            }}
+          sx={{
+            background: '#66bb6a',
+            position: 'fixed',
+            right: '16px',
+            bottom: 'calc(16px + env(safe-area-inset-bottom))',
+            mb: '16px',
+          }}
           onClick={() => {
             setOpen(true);
           }}

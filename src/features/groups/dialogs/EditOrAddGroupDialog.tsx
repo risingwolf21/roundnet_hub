@@ -14,14 +14,14 @@ import {
   Toolbar,
   Typography,
 } from '@mui/material';
-import {Box} from '@mui/system';
-import React, {useEffect, useState} from 'react';
-import {SlideUpTransition} from '../../../utils';
+import { Box } from '@mui/system';
+import React, { useEffect, useState } from 'react';
+import { SlideUpTransition } from '../../../utils';
 import KeyIcon from '@mui/icons-material/Key';
-import {GroupsRepository} from '../../../repository/GroupsRepository';
-import {TablesUpdate} from '../../../types/supabase-generated.types';
-import {useAuth} from '../../auth/AuthContext';
-import {captureException} from '@sentry/react';
+import { GroupsRepository } from '../../../repository/GroupsRepository';
+import { TablesUpdate } from '../../../types/supabase-generated.types';
+import { useAuth } from '../../auth/AuthContext';
+import { captureException } from '@sentry/react';
 
 type EditOrAddGroupDialogProps = {
   open: boolean;
@@ -96,7 +96,7 @@ export const EditOrAddGroupDialog = ({ open, handleClose, groupToEdit }: EditOrA
               <CloseIcon />
             </IconButton>
             <Typography sx={{ ml: 2, flex: 1 }} variant="h6" component="div">
-              {`Gruppe ${groupToEdit.id !== "" ? 'bearbeiten' : 'erstellen'}`}
+              {`Gruppe ${groupToEdit.id !== '' ? 'bearbeiten' : 'erstellen'}`}
             </Typography>
             <Button
               variant="contained"
@@ -148,7 +148,7 @@ export const EditOrAddGroupDialog = ({ open, handleClose, groupToEdit }: EditOrA
         </Box>
       </Box>
       <Snackbar
-        sx={{ position: 'fixed', right: '16px', bottom: '16px' }}
+        sx={{ position: 'fixed', right: '16px', bottom: 'calc(16px + env(safe-area-inset-bottom))' }}
         open={errorSnackbar.open}
         autoHideDuration={5000}
         onClose={() => setErrorSnackbar({ message: '', open: false })}

@@ -153,7 +153,7 @@ export const EditOrAddItemDialog = ({ open, handleClose, itemToEdit }: EditOrAdd
         </Box>
       </Box>
       <Snackbar
-        sx={{ position: 'fixed', right: '16px', bottom: '16px' }}
+        sx={{ position: 'fixed', right: '16px', bottom: 'calc(16px + env(safe-area-inset-bottom))' }}
         open={errorSnackbar.open}
         autoHideDuration={5000}
         onClose={() => setErrorSnackbar({ message: '', open: false })}

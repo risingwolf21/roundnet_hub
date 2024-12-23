@@ -113,7 +113,7 @@ const DrinkListScreen = ({ user, drinks, drinksLoading, drinksError }: DrinkList
           sx={{
             position: 'fixed',
             right: '16px',
-            bottom: 'calc(56px + env(safe-area-inset-bottom))',
+            bottom: 'calc(16px + env(safe-area-inset-bottom))',
             mb: '16px',
           }}
           color={'secondary'}
@@ -126,7 +126,7 @@ const DrinkListScreen = ({ user, drinks, drinksLoading, drinksError }: DrinkList
           sx={{
             position: 'fixed',
             right: '16px',
-            bottom: 'calc(56px + env(safe-area-inset-bottom))',
+            bottom: 'calc(16px + env(safe-area-inset-bottom))',
             mb: '16px',
           }}
           color={'secondary'}
