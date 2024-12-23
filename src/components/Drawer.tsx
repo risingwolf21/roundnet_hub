@@ -11,36 +11,47 @@ import {
     ListItemIcon,
     ListItemProps,
     ListItemText,
-    ListSubheader
+    ListSubheader,
+    Typography
 } from "@mui/material";
 import React, {useEffect, useState} from "react";
-import {EmojiEvents, Euro, History, Key, Liquor, Person, Scoreboard, SportsHandball} from "@mui/icons-material";
+import {
+    EmojiEvents,
+    Euro,
+    History,
+    Key,
+    Liquor,
+    Notifications,
+    Person,
+    Scoreboard,
+    SportsHandball
+} from "@mui/icons-material";
 import {styled} from "@mui/system";
 import {HOMEPAGE} from "../constants";
 import {useNavigate} from "react-router-dom";
 import {can, canAny} from "../utils/PermissionService";
 import {useTranslation} from "react-i18next";
+import {useSelector} from "react-redux";
+import {RootState} from "../redux/store";
+import {notificationsSelector} from "../features/notifications/slices/notificationsSlice";
 
 type Props = {
     open: boolean,
     onClose: () => void;
 }
 
-const DrawerItem = styled(ListItem)<ListItemProps>(({theme}) => ({
+interface StyledDrawerItemProps extends ListItemProps {
+    selected: boolean;
+}
+
+const DrawerItem = styled(ListItem, {
+    shouldForwardProp: (prop) => prop !== 'selected',
+})<StyledDrawerItemProps>(({theme}) => ({
     borderRadius: 28,
     height: 56,
     marginRight: 12,
     marginLeft: 12,
     width: "unset",
-    "& .Mui-selected": {
-        backgroundColor: `${alpha(theme.palette.secondary.main, 0.16)}`
-    },
-    "& .Mui-focusVisible": {
-        backgroundColor: `${alpha(theme.palette.secondary.main, 0.16)}`
-    },
-    ":hover": {
-        backgroundColor: `${alpha(theme.palette.secondary.main, 0.16)}`
-    },
     "& .MuiListItemSecondaryAction-root": {
         right: 24
     },
@@ -53,7 +64,24 @@ const DrawerItem = styled(ListItem)<ListItemProps>(({theme}) => ({
     },
     "& .MuiListItemIcon-root": {
         alignItems: "center"
-    }
+    },
+    variants: [
+        {
+            props: ({selected}) => selected,
+            backgroundColor: `${alpha(theme.palette.secondary.main, 0.16)}`,
+            style: {
+                "& .Mui-selected": {
+                    backgroundColor: `${alpha(theme.palette.secondary.main, 0.16)}`
+                },
+                "& .Mui-focusVisible": {
+                    backgroundColor: `${alpha(theme.palette.secondary.main, 0.16)}`
+                },
+                ":hover": {
+                    backgroundColor: `${alpha(theme.palette.secondary.main, 0.16)}`
+                },
+            }
+        }
+    ]
 }));
 
 const DrawerBox = styled(Box)<BoxProps>(({theme}) => ({
@@ -74,6 +102,7 @@ export const Drawer = ({open, onClose}: Props) => {
     const navigate = useNavigate();
     const {t} = useTranslation();
     const [tab, setTab] = useState<string>(HOMEPAGE);
+    const notifications = useSelector((state: RootState) => notificationsSelector.selectAll(state));
 
     useEffect(() => {
         setTab(window.location.pathname.substring(1));
@@ -87,7 +116,7 @@ export const Drawer = ({open, onClose}: Props) => {
     return <CustomDrawer open={open} onClose={onClose}>
         <DrawerBox role="presentation">
             <List>
-                <DrawerItem selected={true} onClick={() => handleChange("account")}>
+                <DrawerItem selected={tab === "account"} onClick={() => handleChange("account")}>
                     <ListItemAvatar>
                         <ListItemIcon>
                             <Person/>
@@ -112,7 +141,7 @@ export const Drawer = ({open, onClose}: Props) => {
                     </ListSubheader>}>
                         {
                             can('select', 'drink') && (
-                                <DrawerItem onClick={() => handleChange("drinks")}>
+                                <DrawerItem selected={true} onClick={() => handleChange("drinks")}>
                                     <ListItemAvatar>
                                         <ListItemIcon>
                                             <Liquor/>
@@ -125,7 +154,7 @@ export const Drawer = ({open, onClose}: Props) => {
                         }
                         {
                             can('select', 'history') && (
-                                <DrawerItem onClick={() => handleChange("history")}>
+                                <DrawerItem selected={tab === "history"} onClick={() => handleChange("history")}>
                                     <ListItemAvatar>
                                         <ListItemIcon>
                                             <History/>
@@ -138,7 +167,7 @@ export const Drawer = ({open, onClose}: Props) => {
                         }
                         {
                             can('select', 'payments') && (
-                                <DrawerItem onClick={() => handleChange("payments")}>
+                                <DrawerItem selected={tab === "payments"} onClick={() => handleChange("payments")}>
                                     <ListItemAvatar>
                                         <ListItemIcon>
                                             <Euro/>
@@ -155,20 +184,71 @@ export const Drawer = ({open, onClose}: Props) => {
             )}
 
             <List>
-                {[
-                    {text: "Training", icon: <SportsHandball/>},
-                    {text: "Challenges", icon: <EmojiEvents/>},
-                    {text: "Schlüssel", icon: <Key/>},
-                    {text: "Spiele", icon: <Scoreboard/>}].map(({text, icon}, index) => (
-                    <DrawerItem>
-                        <ListItemAvatar sx={{width: "28px", height: "28px", mr: "12px", minWidth: "unset"}}>
+                {
+                    can('select', 'event') && (
+                        <DrawerItem selected={tab === "training"} onClick={() => handleChange("training")}>
+                            <ListItemAvatar>
+                                <ListItemIcon>
+                                    <SportsHandball/>
+                                </ListItemIcon>
+                            </ListItemAvatar>
+                            <ListItemText primaryTypographyProps={{fontWeight: "bold", fontSize: "0.9rem"}}
+                                          primary={t("navigation.training")}/>
+                        </DrawerItem>
+                    )
+                }
+                {
+                    can('select', 'challenge') && (
+                        <DrawerItem selected={tab === "challenges"} onClick={() => handleChange("challenges")}>
+                            <ListItemAvatar>
+                                <ListItemIcon>
+                                    <EmojiEvents/>
+                                </ListItemIcon>
+                            </ListItemAvatar>
+                            <ListItemText primaryTypographyProps={{fontWeight: "bold", fontSize: "0.9rem"}}
+                                          primary={t("navigation.challenges")}/>
+                        </DrawerItem>
+                    )
+                }
+                {
+                    can('select', 'item') && (
+                        <DrawerItem selected={tab === "payments"} onClick={() => handleChange("keys")}>
+                            <ListItemAvatar>
+                                <ListItemIcon>
+                                    <Key/>
+                                </ListItemIcon>
+                            </ListItemAvatar>
+                            <ListItemText primaryTypographyProps={{fontWeight: "bold", fontSize: "0.9rem"}}
+                                          primary={t("browse.keys")}/>
+                        </DrawerItem>
+                    )
+                }
+                {can('view', 'notifications') && (
+                    <DrawerItem
+                        selected={tab === "notifications"}
+                        onClick={() => handleChange("notifications")}
+                        secondaryAction={<Typography
+                            sx={{fontWeight: "bold", fontSize: "0.9rem"}}>{notifications.length || ""}</Typography>}>
+                        <ListItemAvatar>
                             <ListItemIcon>
-                                {icon}
+                                <Notifications/>
                             </ListItemIcon>
                         </ListItemAvatar>
-                        <ListItemText primaryTypographyProps={{fontWeight: "bold", fontSize: "0.9rem"}} primary={text}/>
+                        <ListItemText primaryTypographyProps={{fontWeight: "bold", fontSize: "0.9rem"}}
+                                      primary={t("browse.notifications")}/>
                     </DrawerItem>
-                ))}
+                )}
+                {can('view', 'notifications') && (
+                    <DrawerItem selected={tab === "notifications"}>
+                        <ListItemAvatar sx={{width: "28px", height: "28px", mr: "12px", minWidth: "unset"}}>
+                            <ListItemIcon>
+                                <Scoreboard/>
+                            </ListItemIcon>
+                        </ListItemAvatar>
+                        <ListItemText primaryTypographyProps={{fontWeight: "bold", fontSize: "0.9rem"}}
+                                      primary={"Spiele"}/>
+                    </DrawerItem>
+                )}
             </List>
         </DrawerBox>
     </CustomDrawer>
