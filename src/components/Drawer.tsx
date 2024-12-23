@@ -80,13 +80,14 @@ const DrawerItem = styled(ListItem, {
 }));
 
 const DrawerBox = styled(Box)<BoxProps>(({ theme }) => ({
-  width: 360,
+  width: '100%',
   height: '100%',
   paddingBottom: 'env(safe-area-inset-bottom)',
 }));
 
 const CustomDrawer = styled(SwipeableDrawer)<SwipeableDrawerProps>(({ theme }) => ({
   '& .MuiPaper-root': {
+    width: 'min(360px, 80%)',
     borderTopRightRadius: 24,
     borderBottomRightRadius: 24,
     background: '#f2ecf1',
