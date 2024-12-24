@@ -7,12 +7,12 @@ type AdminUsersSliceState = {
   users: UserWithGroupsAndRoles[];
   loading: boolean;
   error: string | null;
-  hasNotVerifiedUsers: boolean;
+  notVerifiedUsers: number;
 };
 
 const initialState = {
   users: [],
-  hasNotVerifiedUsers: false,
+  notVerifiedUsers: 0,
   loading: false,
   error: null,
 } as AdminUsersSliceState;
@@ -46,11 +46,15 @@ export const adminUsersSlice = createSlice({
         state.loading = false;
         state.error = '';
         state.users = action.payload ?? [];
-        state.hasNotVerifiedUsers = (action.payload ?? []).some((x) => !x.verified);
+        state.notVerifiedUsers = (action.payload ?? []).filter((x) => !x.verified).length;
       })
       .addCase(fetchAdminUsersAsync.rejected, (state: AdminUsersSliceState, action) => {
         state.loading = false;
         state.error = action.error.message ?? '';
+      })
+
+      .addCase(fetchNotVerifiedUsersAsync.fulfilled, (state, action) => {
+        state.notVerifiedUsers = action.payload.length;
       });
   },
 });

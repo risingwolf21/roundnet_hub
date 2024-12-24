@@ -89,7 +89,7 @@ const entries = [
 const BrowseAdmin = ({ t }: { t: TFunction }) => {
   const navigate = useNavigate();
   const user = useAuth();
-  const { hasNotVerifiedUsers } = useSelector((state: RootState) => state.adminUsers);
+  const { notVerifiedUsers } = useSelector((state: RootState) => state.adminUsers);
 
   return (
     <Layout>
@@ -104,7 +104,7 @@ const BrowseAdmin = ({ t }: { t: TFunction }) => {
                     color="secondary"
                     variant="dot"
                     badgeContent="  "
-                    invisible={x.translationKey !== 'manageUsers' || !hasNotVerifiedUsers}
+                    invisible={x.translationKey !== 'manageUsers' || notVerifiedUsers < 1}
                   >
                     <Avatar sx={{ background: x.avatarColor, width: 40, height: 40, borderRadius: 2 }}>{x.icon}</Avatar>
                   </Badge>

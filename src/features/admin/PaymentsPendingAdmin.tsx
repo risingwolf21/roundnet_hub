@@ -1,19 +1,18 @@
-import { ArrowBack, Refresh } from '@mui/icons-material';
+import { Refresh } from '@mui/icons-material';
 import CheckIcon from '@mui/icons-material/Check';
 import SearchIcon from '@mui/icons-material/Search';
 import {
-  AppBar,
   Box,
   Button,
   Fab,
   Grid,
   IconButton,
+  InputAdornment,
   LinearProgress,
   List,
   ListItem,
   ListItemAvatar,
   ListItemText,
-  Toolbar,
   Typography,
 } from '@mui/material';
 import React, { useEffect, useState } from 'react';
@@ -24,9 +23,10 @@ import { fetchAdminsPaymentsAsync } from './slices/adminPaymentsSlice';
 import { RootState, useAppDispatch } from '../../redux/store';
 import { FullPayment } from '../../types/supabaseTypes';
 import { Error } from '../../components/Error';
-import { Search, SearchIconWrapper, StyledInputBase } from '../../components/SearchBar';
 import { SwipeableDialog } from '../../components/SwipeableDialog';
 import { History } from 'types/supabase';
+import Layout from '../../components/Layout';
+import TextField from '@mui/material/TextField';
 
 const PaymentsPendingAdmin = () => {
   const [open, setOpen] = useState(false);
@@ -61,24 +61,25 @@ const PaymentsPendingAdmin = () => {
   };
 
   return (
-    <Grid container width="100%" direction="column" alignItems="center" justifyContent="center">
-      <AppBar position="sticky">
-        <Toolbar>
-          <IconButton size="large" edge="start" color="inherit" onClick={() => navigate(-1)}>
-            <ArrowBack />
-          </IconButton>
-          <Search>
-            <SearchIconWrapper>
-              <SearchIcon />
-            </SearchIconWrapper>
-            <StyledInputBase
-              placeholder="Search…"
-              onChange={(e) => setSearchString(e.target.value)}
-              inputProps={{ 'aria-label': 'search' }}
-            />
-          </Search>
-        </Toolbar>
-      </AppBar>
+    <Layout>
+      <Box sx={{ px: 2, pt: 2 }}>
+        <TextField
+          fullWidth
+          variant={'outlined'}
+          placeholder={'Suche'}
+          slotProps={{
+            input: {
+              startAdornment: (
+                <InputAdornment position="start">
+                  <SearchIcon />
+                </InputAdornment>
+              ),
+            },
+          }}
+          onChange={(e) => setSearchString(e.target.value)}
+          value={searchString}
+        />
+      </Box>
       {loading && <LinearProgress style={{ position: 'fixed', left: 0, top: 56, right: 0 }} />}
       {payments && payments.length > 0 && (
         <List sx={{ width: '100%', pt: 0 }}>
@@ -206,7 +207,7 @@ const PaymentsPendingAdmin = () => {
           <Typography>getätigt hat.</Typography>
         </Box>
       </SwipeableDialog>
-    </Grid>
+    </Layout>
   );
 };
 

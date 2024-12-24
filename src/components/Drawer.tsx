@@ -1,10 +1,9 @@
 import {
   alpha,
+  Badge,
   Box,
   BoxProps,
   Divider,
-  Drawer as MaterialDrawer,
-  DrawerProps,
   List,
   ListItem,
   ListItemAvatar,
@@ -27,7 +26,6 @@ import {
   Liquor,
   Notifications,
   Person,
-  Scoreboard,
   SportsHandball,
   StorageOutlined,
 } from '@mui/icons-material';
@@ -100,6 +98,7 @@ export const Drawer = ({ open, onClose, onOpen }: Props) => {
   const { t } = useTranslation();
   const [tab, setTab] = useState<string>(HOMEPAGE);
   const notifications = useSelector((state: RootState) => notificationsSelector.selectAll(state));
+  const { notVerifiedUsers } = useSelector((state: RootState) => state.adminUsers);
 
   useEffect(() => {
     setTab(window.location.pathname.substring(1));
@@ -232,12 +231,16 @@ export const Drawer = ({ open, onClose, onOpen }: Props) => {
               selected={tab === 'notifications'}
               onClick={() => handleChange('notifications')}
               secondaryAction={
-                <Typography sx={{ fontWeight: 'bold', fontSize: '0.9rem' }}>{notifications.length || ''}</Typography>
+                <Typography fontWeight={'bold'} fontSize={'0.9rem'}>
+                  {notifications.length || ''}
+                </Typography>
               }
             >
               <ListItemAvatar>
                 <ListItemIcon>
-                  <Notifications />
+                  <Badge color={'secondary'} variant={'dot'} badgeContent={notifications.length}>
+                    <Notifications />
+                  </Badge>
                 </ListItemIcon>
               </ListItemAvatar>
               <ListItemText
@@ -267,8 +270,8 @@ export const Drawer = ({ open, onClose, onOpen }: Props) => {
         >
           {can('update', 'payments') && (
             <DrawerItem
-              selected={tab === '/admin/drinks/payments'}
-              onClick={() => handleChange('/admin/drinks/payments')}
+              selected={tab === 'admin/drinks/payments'}
+              onClick={() => handleChange('admin/drinks/payments')}
             >
               <ListItemAvatar>
                 <ListItemIcon>
@@ -282,7 +285,7 @@ export const Drawer = ({ open, onClose, onOpen }: Props) => {
             </DrawerItem>
           )}
           {can('update', 'drink') && (
-            <DrawerItem selected={tab == '/admin/drinks'} onClick={() => handleChange('/admin/drinks')}>
+            <DrawerItem selected={tab == 'admin/drinks'} onClick={() => handleChange('admin/drinks')}>
               <ListItemAvatar>
                 <ListItemIcon>
                   <Liquor />
@@ -295,10 +298,20 @@ export const Drawer = ({ open, onClose, onOpen }: Props) => {
             </DrawerItem>
           )}
           {can('update', 'user') && (
-            <DrawerItem selected={tab == '/admin/users'} onClick={() => handleChange('/admin/users')}>
+            <DrawerItem
+              selected={tab == 'admin/users'}
+              onClick={() => handleChange('admin/users')}
+              secondaryAction={
+                <Typography fontWeight={'bold'} fontSize={'0.9rem'}>
+                  {notVerifiedUsers || ''}
+                </Typography>
+              }
+            >
               <ListItemAvatar>
                 <ListItemIcon>
-                  <Group />
+                  <Badge color={'secondary'} variant={'dot'} badgeContent={notVerifiedUsers}>
+                    <Group />
+                  </Badge>
                 </ListItemIcon>
               </ListItemAvatar>
               <ListItemText
@@ -308,7 +321,7 @@ export const Drawer = ({ open, onClose, onOpen }: Props) => {
             </DrawerItem>
           )}
           {can('update', 'history') && (
-            <DrawerItem selected={tab == '/admin/history'} onClick={() => handleChange('/admin/history')}>
+            <DrawerItem selected={tab == 'admin/history'} onClick={() => handleChange('admin/history')}>
               <ListItemAvatar>
                 <ListItemIcon>
                   <History />
@@ -321,7 +334,7 @@ export const Drawer = ({ open, onClose, onOpen }: Props) => {
             </DrawerItem>
           )}
           {can('update', 'group') && (
-            <DrawerItem selected={tab == '/trainer/groups'} onClick={() => handleChange('/trainer/groups')}>
+            <DrawerItem selected={tab == 'trainer/groups'} onClick={() => handleChange('trainer/groups')}>
               <ListItemAvatar>
                 <ListItemIcon>
                   <GroupOutlined />
@@ -334,7 +347,7 @@ export const Drawer = ({ open, onClose, onOpen }: Props) => {
             </DrawerItem>
           )}
           {can('view', 'postgres') && (
-            <DrawerItem selected={tab == '/admin/supabase'} onClick={() => handleChange('/admin/supabase')}>
+            <DrawerItem selected={tab == 'admin/supabase'} onClick={() => handleChange('admin/supabase')}>
               <ListItemAvatar>
                 <ListItemIcon>
                   <StorageOutlined />
@@ -348,8 +361,8 @@ export const Drawer = ({ open, onClose, onOpen }: Props) => {
           )}
           {can('view', 'postgres') && (
             <DrawerItem
-              selected={tab == '/admin/supabase/queries'}
-              onClick={() => handleChange('/admin/supabase/queries')}
+              selected={tab == 'admin/supabase/queries'}
+              onClick={() => handleChange('admin/supabase/queries')}
             >
               <ListItemAvatar>
                 <ListItemIcon>
@@ -363,7 +376,7 @@ export const Drawer = ({ open, onClose, onOpen }: Props) => {
             </DrawerItem>
           )}
           {can('view', 'postgres') && (
-            <DrawerItem selected={tab == '/admin/permissions'} onClick={() => handleChange('/admin/permissions')}>
+            <DrawerItem selected={tab == 'admin/permissions'} onClick={() => handleChange('admin/permissions')}>
               <ListItemAvatar>
                 <ListItemIcon>
                   <GroupOutlined />

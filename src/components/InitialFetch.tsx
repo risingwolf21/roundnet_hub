@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { ReactNode, useEffect } from 'react';
 import { useAppDispatch } from '../redux/store';
 import { useClient } from 'react-supabase';
 import { fetchSingleEventAsync } from '../features/events/slices/eventsSlice';
@@ -10,6 +10,12 @@ import {
   onNotificationUpdate,
 } from '../features/notifications/slices/notificationsSlice';
 import { useAuth } from '../features/auth/AuthContext';
+
+export const InitialFetch = ({ children }: { children: ReactNode }) => {
+  useInitialFetch();
+
+  return children;
+};
 
 export const useInitialFetch = () => {
   const dispatch = useAppDispatch();
