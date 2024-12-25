@@ -1,21 +1,46 @@
-import {PersonOff} from '@mui/icons-material';
+import { PersonOff } from '@mui/icons-material';
 import SearchIcon from '@mui/icons-material/Search';
-import {Badge, Chip, InputAdornment, LinearProgress, List} from '@mui/material';
-import React, {useEffect, useState} from 'react';
-import {useSelector} from 'react-redux';
-import {useNavigate} from 'react-router-dom';
-import {fetchAdminUsersAsync} from './slices/adminUserSlice';
-import {RootState, useAppDispatch} from '../../redux/store';
-import {UserWithGroupsAndRoles} from '../../types/supabaseTypes';
-import {AlertMessage, AlertSnackbar} from '../../components/AlertSnackbar';
-import {Error} from '../../components/Error';
-import EditUserDialog, {UserEdited} from './dialogs/EditUserDialog';
-import {captureException} from '@sentry/react';
-import {AdminUsersRepository} from '../../repository/AdminUsersRepository';
-import {AdminUserItem} from './components/AdminUserItem';
+import { Badge, Chip, InputAdornment, LinearProgress, List, TextFieldProps } from '@mui/material';
+import React, { useEffect, useState } from 'react';
+import { useSelector } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
+import { fetchAdminUsersAsync } from './slices/adminUserSlice';
+import { RootState, useAppDispatch } from '../../redux/store';
+import { UserWithGroupsAndRoles } from '../../types/supabaseTypes';
+import { AlertMessage, AlertSnackbar } from '../../components/AlertSnackbar';
+import { Error } from '../../components/Error';
+import EditUserDialog, { UserEdited } from './dialogs/EditUserDialog';
+import { captureException } from '@sentry/react';
+import { AdminUsersRepository } from '../../repository/AdminUsersRepository';
+import { AdminUserItem } from './components/AdminUserItem';
 import Layout from '../../components/Layout';
 import TextField from '@mui/material/TextField';
-import Box from '@mui/material/Box';
+import { styled } from '@mui/system';
+
+const SearchBar = styled(TextField)<TextFieldProps>(({ theme }) => ({
+  marginLeft: 16,
+  marginRight: 16,
+  marginTop: 16,
+  width: 'calc(100% - 32px)',
+  '& .MuiInputBase-root': {
+    borderRadius: 28,
+    border: 'none',
+    height: 56,
+    backgroundColor: 'rgba(202,196,208,0.4)',
+    '&:before, :after, :hover:not(.Mui-disabled):before': {
+      borderBottom: 0,
+    },
+    '& .MuiInputAdornment-root': {
+      marginLeft: 16,
+      marginRight: 16,
+    },
+  },
+  '& .Mui-focused': {
+    marginLeft: 0,
+    marginRight: 0,
+    marginTop: 0,
+  },
+}));
 
 const AdminUserList = () => {
   const [editUserOpen, setEditUserOpen] = useState(false);
@@ -58,24 +83,21 @@ const AdminUserList = () => {
 
   return (
     <Layout>
-      <Box sx={{ px: 2, pt: 2 }}>
-        <TextField
-          fullWidth
-          variant={'outlined'}
-          placeholder={'Suche'}
-          slotProps={{
-            input: {
-              startAdornment: (
-                <InputAdornment position="start">
-                  <SearchIcon />
-                </InputAdornment>
-              ),
-            },
-          }}
-          onChange={(e) => setSearchString(e.target.value)}
-          value={searchString}
-        />
-      </Box>
+      <SearchBar
+        variant={'standard'}
+        placeholder={'Suche'}
+        slotProps={{
+          input: {
+            startAdornment: (
+              <InputAdornment position="start">
+                <SearchIcon />
+              </InputAdornment>
+            ),
+          },
+        }}
+        onChange={(e) => setSearchString(e.target.value)}
+        value={searchString}
+      />
       {loading && <LinearProgress style={{ position: 'fixed', left: 0, right: 0, top: 56 }} />}
 
       <Badge
@@ -95,7 +117,7 @@ const AdminUserList = () => {
         />
       </Badge>
 
-        <List sx={{width: '100%', pb: "calc(56px + env(safe-area-inset-bottom))"}}>
+      <List sx={{ width: '100%', pb: 'calc(56px + env(safe-area-inset-bottom))' }}>
         {users &&
           users
             .filter(
