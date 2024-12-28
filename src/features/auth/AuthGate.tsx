@@ -58,7 +58,7 @@ export const AuthGate = ({children}: Props) => {
             const roles = await AdminPermissionsRepository.fetchRolesForUser(session.user.id);
             const permissions = await AdminPermissionsRepository.fetchPermissionsForRoles(roles);
             const {data: user} = await SupabaseUserRepository.fetchUser(session.user.id);
-            const {data: player_data} = await SupabaseUserRepository.fetchPlayer(session.user.id);
+            //const {data: player_data} = await SupabaseUserRepository.fetchPlayer(session.user.id);
 
             if (!user) {
                 throw Error('Fetching user in AuthGate was not successful.');
@@ -69,7 +69,7 @@ export const AuthGate = ({children}: Props) => {
                 ...user,
                 roles,
                 permissions,
-                player_data
+                player_data: null
             } satisfies UserWithRolesAndPermissions));
             setSession(session);
             setLoading(false);
