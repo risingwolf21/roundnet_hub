@@ -1,30 +1,25 @@
-import React, { FormEvent, useState } from 'react';
-import Button from '@mui/material/Button';
-import CssBaseline from '@mui/material/CssBaseline';
-import TextField from '@mui/material/TextField';
-import Link from '@mui/material/Link';
-import Grid from '@mui/material/Grid2';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
-import Container from '@mui/material/Container';
-import Logo from '../../images/Karlsruher_Kojoten_Logo.svg';
-import { supabase } from '../../components/services/supabase/supabaseClient';
 import { Alert, CircularProgress } from '@mui/material';
-import { AlertMessage } from '../../components/AlertSnackbar';
-import { useNavigate } from 'react-router-dom';
-import { Session } from '@supabase/supabase-js';
+import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
+import Container from '@mui/material/Container';
+import CssBaseline from '@mui/material/CssBaseline';
+import Grid from '@mui/material/Grid2';
+import Link from '@mui/material/Link';
+import TextField from '@mui/material/TextField';
+import Typography from '@mui/material/Typography';
 import { captureException } from '@sentry/react';
+import React, { FormEvent, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { AlertMessage } from '../../components/AlertSnackbar';
+import { supabase } from '../../components/services/supabase/supabaseClient';
+import Logo from '../../images/Karlsruher_Kojoten_Logo.svg';
 
 type Credentials = {
   email: string;
   password: string;
 };
 
-type LoginScreenProps = {
-  onLoggedIn: (session: Session) => void;
-};
-
-const LoginScreen = ({ onLoggedIn }: LoginScreenProps) => {
+const LoginScreen = () => {
   const [alertInfo, setAlertInfo] = useState<AlertMessage | null>(null);
   const [loginInProgress, setLoginInProgress] = useState(false);
 
@@ -44,7 +39,6 @@ const LoginScreen = ({ onLoggedIn }: LoginScreenProps) => {
         } else if (!result.data.session) {
           throw Error('Login failed without any error message. Please try again...');
         } else {
-          onLoggedIn(result.data.session);
           setAlertInfo(null);
           setLoginInProgress(false);
         }

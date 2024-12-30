@@ -33,80 +33,80 @@ export const AuthGate = ({ children }: Props) => {
   const [session, setSession] = useState<Session | null>(null);
   const [alertInfo, setAlertInfo] = useState<AlertMessage | null>(null);
 
-  const onLoggedIn = (session: Session) => {
-    handleAuthChange('SIGNED_IN', session)
-      .then((result) => {
-        navigate(result.navigateTo, { replace: true });
-      })
-      .catch(() => {
-        setLoading(false);
-        setSession(null);
-        ability.update(defineRulesFor([], []));
-        dispatch(onUserChange(null));
-        setUser(null);
-      });
-  };
-
   const handleAuthChange = useCallback(
     async (
       event: AuthChangeEvent,
       session: Session | null
     ): Promise<{
       navigateTo: string;
-    }> => {
+    } | null> => {
+      if (!session || currentUser?.userId === session.user.id) {
+        return null; // Keine Aktion notwendig
+      }
       console.log(event, session);
       setLoading(true);
-      if (!session) throw Error('Session was null');
-      const roles = await AdminPermissionsRepository.fetchRolesForUser(session.user.id);
-      const permissions = await AdminPermissionsRepository.fetchPermissionsForRoles(roles);
-      const { data: user } = await SupabaseUserRepository.fetchUser(session.user.id);
-      // const { data: player_data } = await SupabaseUserRepository.fetchPlayer(session.user.id);
+      try {
+        const roles = await AdminPermissionsRepository.fetchRolesForUser(session.user.id);
+        const permissions = await AdminPermissionsRepository.fetchPermissionsForRoles(roles);
+        const { data: user } = await SupabaseUserRepository.fetchUser(session.user.id);
+        // const { data: player_data } = await SupabaseUserRepository.fetchPlayer(session.user.id);
 
-      if (!user) {
-        throw Error('Fetching user in AuthGate was not successful.');
+        if (!user) {
+          throw Error('Fetching user in AuthGate was not successful.');
+        }
+        setUser({ email: session.user.email, id: session.user.id, username: user.displayName });
+        ability.update(defineRulesFor(permissions, roles));
+        dispatch(
+          onUserChange({
+            ...user,
+            roles,
+            permissions,
+            player_data: null,
+          } satisfies UserWithRolesAndPermissions)
+        );
+        setSession(session);
+      } catch (error) {
+        console.error('Error handling auth change:', error);
+        setLoading(false);
+        setSession(null);
+        ability.update(defineRulesFor([], []));
+        dispatch(onUserChange(null));
+        setUser(null);
+        throw error;
+      } finally {
+        setLoading(false);
       }
-      setUser({ email: session.user.email, id: session.user.id, username: user.displayName });
-      ability.update(defineRulesFor(permissions, roles));
-      dispatch(
-        onUserChange({
-          ...user,
-          roles,
-          permissions,
-          player_data: null,
-        } satisfies UserWithRolesAndPermissions)
-      );
-      setSession(session);
-      setLoading(false);
+
       if (event === 'PASSWORD_RECOVERY') {
         return { navigateTo: '/reset-password' };
-      } else if (location.pathname) {
-        return { navigateTo: location.pathname };
       } else {
-        return { navigateTo: `/${HOMEPAGE}` };
+        return { navigateTo: location.pathname || `/${HOMEPAGE}` };
       }
     },
-    [dispatch]
+    [dispatch, currentUser, location.pathname]
   );
 
   useEffect(() => {
     const {
       data: { subscription },
     } = client.auth.onAuthStateChange((event, session) => {
-      if (event === 'SIGNED_IN') return;
-      handleAuthChange(event, session)
-        .then((result) => {
-          navigate(result.navigateTo, { replace: true });
-        })
-        .catch(() => {
-          setLoading(false);
-          setSession(null);
-          ability.update(defineRulesFor([], []));
-          dispatch(onUserChange(null));
-          setUser(null);
-        });
+      console.log('Auth event:', event);
+      console.log('Session:', session);
+
+      if (event === 'INITIAL_SESSION' && currentUser) {
+        console.log('Skipping INITIAL_SESSION: User already loaded.');
+        return;
+      }
+      if (currentUser?.userId !== session?.user.id) {
+        handleAuthChange(event, session)
+          .then((result) => {
+            if (result) navigate(result.navigateTo, { replace: true });
+          })
+          .catch(() => setLoading(false));
+      }
     });
     return () => subscription.unsubscribe();
-  }, [client, handleAuthChange, dispatch, navigate]);
+  }, [client, handleAuthChange, dispatch, navigate, currentUser]);
 
   if (loading)
     return (
@@ -136,7 +136,7 @@ export const AuthGate = ({ children }: Props) => {
           <NotVerifiedScreen />
         )
       ) : (
-        <AuthPage onLoggedIn={onLoggedIn} />
+        <AuthPage />
       )}
       <AlertSnackbar alertInfo={alertInfo} autoHideDuration={1500} close={() => setAlertInfo(null)} />
     </>
