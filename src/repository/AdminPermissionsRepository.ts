@@ -1,13 +1,14 @@
 import { PostgrestSingleResponse } from '@supabase/supabase-js';
 import { supabase } from '../components/services/supabase/supabaseClient';
-import { FullRolePermission } from '../types/supabaseTypes';
+
+export const fetchRolePermissionMapping = supabase
+.from('role_permissions')
+.select('id, permission: app_permissions!role_permissions_app_permission_fkey(*), role: app_roles!role_permissions_app_role_fkey(*)')
 
 export const AdminPermissionsRepository = {
-  async fetchPermissions(): Promise<PostgrestSingleResponse<FullRolePermission[]>> {
-    return supabase
-      .from('role_permissions')
-      .select('*, app_permission(*), app_role(*)')
-      .returns<FullRolePermission[]>()
+  async fetchPermissions(): Promise<PostgrestSingleResponse<RolePermissionMapping[]>> {
+    return fetchRolePermissionMapping
+      .returns<RolePermissionMapping[]>()
       .throwOnError();
   },
 

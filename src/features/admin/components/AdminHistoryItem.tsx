@@ -1,4 +1,3 @@
-import { FullHistory } from '../../../types/supabaseTypes';
 import { List, ListItem, ListItemAvatar, ListItemText, ListSubheader, Typography } from '@mui/material';
 import React from 'react';
 

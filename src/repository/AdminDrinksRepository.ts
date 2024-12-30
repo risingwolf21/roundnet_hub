@@ -1,19 +1,15 @@
 import { PostgrestSingleResponse } from '@supabase/supabase-js';
 import _ from 'lodash';
 import { supabase } from '../components/services/supabase/supabaseClient';
+import { fetchDrink, fetchFullHistory } from './DrinkRepository';
 
 export const AdminDrinksRepository = {
-  async fetchDrinks(): Promise<PostgrestSingleResponse<any[]>> {
-    return supabase
-      .from('drink')
-      .select('id, name, price, stock, imageUrl, active, deleted, previousDrink')
-      .throwOnError();
+  async fetchDrinks(): Promise<PostgrestSingleResponse<Drink[]>> {
+    return fetchDrink.throwOnError();
   },
 
-  async fetchAdminHistory(page: number = 0, count: number = 20): Promise<PostgrestSingleResponse<any[]>> {
-    return supabase
-      .from('history')
-      .select('count, amount, created_at, drinkId: drink, drink(*), user(*)')
+  async fetchAdminHistory(page: number = 0, count: number = 20): Promise<PostgrestSingleResponse<FullHistory[]>> {
+    return fetchFullHistory
       .order('created_at', { ascending: false })
       .range(page * count, page * count + count - 1)
       .throwOnError();

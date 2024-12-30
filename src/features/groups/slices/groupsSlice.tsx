@@ -67,7 +67,6 @@ export const fetchSingleGroupAsync = createAsyncThunk(
     },
     { rejectWithValue }
   ) => {
-    // returns {id, description, name, color, users: { user:{}[] }
     return AdminUsersRepository.fetchSingleGroupWithUsers(id)
       .then((response) => {
         return {

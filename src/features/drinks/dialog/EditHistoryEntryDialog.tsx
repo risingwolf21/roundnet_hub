@@ -13,7 +13,6 @@ import {
 } from '@mui/material';
 import { Add, LocalDrink, Remove } from '@mui/icons-material';
 import React, { useEffect, useState } from 'react';
-import { FullHistory } from '../../../types/supabaseTypes';
 import { SwipeableDialog } from '../../../components/SwipeableDialog';
 import { FullHistoryUpdate } from '../types';
 

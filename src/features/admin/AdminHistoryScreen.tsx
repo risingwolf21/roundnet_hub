@@ -4,7 +4,6 @@ import React, { useCallback, useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import { fetchAdminHistoryAsync } from './slices/adminDrinksSlice';
 import { RootState, useAppDispatch } from '../../redux/store';
-import { FullHistory } from '../../types/supabaseTypes';
 import { groupBy } from '../../utils';
 import { InfiniteScrollList } from '../../components/InfiniteScrollList';
 import { AdminHistoryItem } from './components/AdminHistoryItem';

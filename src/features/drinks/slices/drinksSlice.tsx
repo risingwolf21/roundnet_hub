@@ -1,8 +1,8 @@
 import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { FullHistory, PaymentHistory } from '../../../types/supabaseTypes';
-import { compareById } from '../../../utils';
 import { SupabaseDrinkRepository } from '../../../repository/DrinkRepository';
 import { Tables, TablesInsert, TablesUpdate } from '../../../types/supabase-generated.types';
+import { PaymentHistory } from '../../../types/supabaseTypes';
+import { compareById } from '../../../utils';
 
 type DrinksSliceState = {
   history: FullHistory[];

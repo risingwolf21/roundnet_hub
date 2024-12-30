@@ -1,21 +1,25 @@
 import { PostgrestSingleResponse } from '@supabase/supabase-js';
-import { DrinkCounter, FullHistory, PaymentHistory } from '../types/supabaseTypes';
 import { supabase } from '../components/services/supabase/supabaseClient';
-import { Tables } from '../types/supabase-generated.types';
+import { DrinkCounter, PaymentHistory } from '../types/supabaseTypes';
+import { Tables } from 'src/types/supabase-generated.types';
+
+export const fetchDrink = supabase.from('drink').select('*');
+
+export const fetchFullHistory = supabase
+  .from('history')
+  .select('*, drinkId: drink, drink(*), user(*)');
+
+  export const fetchDrinksToPay = supabase
+  .from('history')
+  .select('*, drink ( name, price ), payments ( paymentState ), voucher');
 
 export const SupabaseDrinkRepository = {
-  async updateDrinkStock(drinkId: number, stock: number): Promise<PostgrestSingleResponse<any>> {
-    return supabase.from('drink').update({ stock }).eq('id', drinkId).throwOnError();
-  },
-
   async fetchHistoryForUser(
     userId: string,
     page: number = 0,
     count: number = 20
   ): Promise<PostgrestSingleResponse<FullHistory[]>> {
-    return supabase
-      .from('history')
-      .select('id, count, amount, created_at, drinkId: drink, drink(*), user(*)')
+    return fetchFullHistory
       .not('user', 'is', null)
       .eq('user.userId', userId)
       .range(page * count, page * count + count - 1)
@@ -24,7 +28,7 @@ export const SupabaseDrinkRepository = {
       .throwOnError();
   },
 
-  async fetchCurrentPaymentForUser(userId: string): Promise<PostgrestSingleResponse<any[]>> {
+  async fetchCurrentPaymentForUser(userId: string): Promise<PostgrestSingleResponse<Payment[]>> {
     return supabase
       .from('payments')
       .select('*')
@@ -34,13 +38,11 @@ export const SupabaseDrinkRepository = {
       .throwOnError();
   },
 
-  async fetchOpenDrinksForUser(userId: string): Promise<PostgrestSingleResponse<FullHistory[]>> {
-    return supabase
-      .from('history')
-      .select('*, drink ( price, name ), payment(*)')
+  async fetchOpenDrinksForUser(userId: string): Promise<PostgrestSingleResponse<OpenDrinksForUser[]>> {
+    return fetchDrinksToPay
       .eq('user ', userId)
       .eq('payment.paymentState', 'Open' as PaymentState)
-      .returns<FullHistory[]>()
+      .returns<OpenDrinksForUser[]>()
       .throwOnError();
   },
 
@@ -54,9 +56,7 @@ export const SupabaseDrinkRepository = {
   },
 
   async fetchDrinksToPay(userId: string): Promise<PostgrestSingleResponse<PaymentHistory[]>> {
-    return supabase
-      .from('history')
-      .select('id, count, created_at, user, amount, drink ( name, price ), payments ( paymentState ), voucher')
+    return fetchDrinksToPay
       .eq('payments.paymentState', 'Open')
       .not('payments', 'is', null)
       .eq('user', userId)
@@ -65,7 +65,7 @@ export const SupabaseDrinkRepository = {
   },
 
   async fetchDrinks(): Promise<PostgrestSingleResponse<Drink[]>> {
-    return supabase.from('drink').select('*').order('id', { ascending: false }).returns<Drink[]>().throwOnError();
+    return fetchDrink.order('id', { ascending: false }).returns<Drink[]>().throwOnError();
   },
 
   async fetchVouchersForUser(): Promise<PostgrestSingleResponse<Tables<'user_vouchers'>[]>> {

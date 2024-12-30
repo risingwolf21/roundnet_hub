@@ -1,4 +1,13 @@
-import React, { FormEvent, useEffect, useState } from 'react';
+import {
+  AccountCircle,
+  Close,
+  Edit,
+  Email,
+  FiberManualRecord,
+  ManageAccounts,
+  Password,
+  Verified,
+} from '@mui/icons-material';
 import {
   AppBar,
   Avatar,
@@ -20,25 +29,16 @@ import {
   Typography,
 } from '@mui/material';
 import { Box } from '@mui/system';
-import {
-  AccountCircle,
-  Close,
-  Edit,
-  Email,
-  FiberManualRecord,
-  ManageAccounts,
-  Password,
-  Verified,
-} from '@mui/icons-material';
-import { useClient } from 'react-supabase';
-import { SlideUpTransition } from '../../../utils';
-import { FullHistory, UserWithGroupsAndRoles } from '../../../types/supabaseTypes';
-import moment from 'moment';
 import { captureException } from '@sentry/react';
-import { SupabaseDrinkRepository } from '../../../repository/DrinkRepository';
-import { AppRolesDialog } from './AppRolesDialog';
-import { supabase } from '../../../components/services/supabase/supabaseClient';
+import moment from 'moment';
+import React, { FormEvent, useEffect, useState } from 'react';
+import { useClient } from 'react-supabase';
 import { AlertMessage, AlertSnackbar } from '../../../components/AlertSnackbar';
+import { supabase } from '../../../components/services/supabase/supabaseClient';
+import { SupabaseDrinkRepository } from '../../../repository/DrinkRepository';
+import { UserWithGroupsAndRoles } from '../../../types/supabaseTypes';
+import { SlideUpTransition } from '../../../utils';
+import { AppRolesDialog } from './AppRolesDialog';
 import { UserRoleDialog } from './UserRoleDialog';
 
 type EditUserDialogProps = {
@@ -67,7 +67,7 @@ const EditUserDialog = ({ user, open, handleClose, onUserEditFinished, deleteUse
   const [role, setRole] = useState(user.role);
   const [userRoles, setUserRoles] = useState<AppRole[]>([]);
   const [userInfo, setUserInfo] = useState({ openAmount: 0 });
-  const [drinksForUser, setDrinksForUser] = useState<FullHistory[]>([]);
+  const [drinksForUser, setDrinksForUser] = useState<OpenDrinksForUser[]>([]);
   const client = useClient();
 
   useEffect(() => {
@@ -75,7 +75,7 @@ const EditUserDialog = ({ user, open, handleClose, onUserEditFinished, deleteUse
       .then((result) => {
         if (result && result.data) {
           setUserInfo({
-            openAmount: result.data.reduce((prev, curr) => prev + (curr?.count ?? 0) * (curr?.drink?.price ?? 1), 0),
+            openAmount: result.data.reduce((prev, curr) => prev + (curr.count ?? 0) * (curr?.drink?.price ?? 1), 0),
           });
           setDrinksForUser(result.data);
         }
@@ -270,7 +270,7 @@ const EditUserDialog = ({ user, open, handleClose, onUserEditFinished, deleteUse
             <Divider />
             <List subheader={<ListSubheader>Offene Getränke</ListSubheader>}>
               {drinksForUser &&
-                drinksForUser.map((x: FullHistory) => (
+                drinksForUser.map((x: OpenDrinksForUser) => (
                   <ListItem
                     dense
                     key={x.id}

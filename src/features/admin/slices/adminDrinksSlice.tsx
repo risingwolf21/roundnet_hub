@@ -1,8 +1,7 @@
 import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { captureException } from '@sentry/react';
 import { AdminDrinksRepository } from '../../../repository/AdminDrinksRepository';
 import { compareById } from '../../../utils';
-import { captureException } from '@sentry/react';
-import { FullHistory } from '../../../types/supabaseTypes';
 
 type AdminDrinkSliceState = {
   history: FullHistory[];

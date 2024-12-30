@@ -85,7 +85,7 @@ const EventScreen = ({ events, loading, error, user }: EventScreenProps) => {
   return (
     <Layout>
       <List sx={{ overflowY: 'auto', pt: 0, pb: 10 }}>
-        <Grid container p={2} alignItems={'start'} justifyContent="start" direction={'row'} width={'100%'}>
+        <Grid key={"filters"} container p={2} alignItems={'start'} justifyContent="start" direction={'row'} width={'100%'}>
           <Chip
             variant={fetchEventMode === 'upcoming' ? 'filled' : 'outlined'}
             label={t('nextMonth')}
@@ -102,7 +102,7 @@ const EventScreen = ({ events, loading, error, user }: EventScreenProps) => {
         </Grid>
         <Box sx={{ pb: 10 }}>
           {loading
-            ? Array.from({ length: 10 }, (v, k) => k + 1).map(() => <LoadingEventItem />)
+            ? Array.from({ length: 10 }, (v, k) => k + 1).map((x) => <LoadingEventItem key={x} />)
             : events.map((event) => (
                 <EventItem
                   key={event.id}

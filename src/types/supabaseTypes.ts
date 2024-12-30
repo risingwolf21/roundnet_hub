@@ -32,12 +32,6 @@ export type FullPayment = Payment & {
     history: History[];
 };
 
-export type FullHistory = History & {
-    drink: Drink;
-    drinkId: string;
-    user: User;
-};
-
 export type PaymentHistory = Modify<
     History,
     {
@@ -108,16 +102,8 @@ export type UserWithRolesAndPermissions = User & {
     player_data: Player | null
 };
 
-export type FullRolePermission = Modify<
-    RolePermissions,
-    {
-        app_permission: AppPermission;
-        app_role: AppRole;
-    }
->;
-
 export type GroupWithUsers = Group & {
     users: User[];
 };
 
-type Modify<T, R> = Omit<T, keyof R> & R;
+export type Modify<T, R> = Omit<T, keyof R> & R;

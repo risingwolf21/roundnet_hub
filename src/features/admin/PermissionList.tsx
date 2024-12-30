@@ -16,15 +16,16 @@ import {
 import { Add, Delete, Restore, Save } from '@mui/icons-material';
 import { SwipeableDialog } from '../../components/SwipeableDialog';
 import { supabase } from '../../components/services/supabase/supabaseClient';
-import { FullRolePermission } from '../../types/supabaseTypes';
+import { NonNullableFields } from 'types/supabase';
 
 export const PermissionList = () => {
   const [alertInfo, setAlertInfo] = useState<AlertMessage | null>(null);
-  const [permissions, setPermissions] = useState<FullRolePermission[]>([]);
+  const [permissions, setPermissions] = useState<RolePermissionMapping[]>([]);
   const [allAppPermissions, setAllAppPermissions] = useState<AppPermission[]>([]);
+  const [allAppRoles, setAllAppRoles] = useState<AppRole[]>([]);
 
-  const [markedToDelete, setMarkedToDelete] = useState<FullRolePermission[]>([]);
-  const [addedPermissions, setAddedPermissions] = useState<FullRolePermission[]>([]);
+  const [markedToDelete, setMarkedToDelete] = useState<RolePermissionMapping[]>([]);
+  const [addedPermissions, setAddedPermissions] = useState<RolePermissionMapping[]>([]);
   const [addPermissionsOpen, setAddPermissionsOpen] = useState<{ key: AppRole; value: AppPermission[] } | null>(null);
 
   const savePermissions = async () => {
@@ -32,29 +33,30 @@ export const PermissionList = () => {
       await supabase
         .from('role_permissions')
         .delete()
-        .eq('app_permission', x.app_permission.id)
-        .eq('app_role', x.app_role.id)
+        .eq('app_permission', x.permission?.id ?? '')
+        .eq('app_role', x.role?.id ?? '')
         .eq('id', x.id);
     }
     await supabase.from('role_permissions').insert(
-      addedPermissions.map((x) => {
-        return {
-          app_role: x.app_role.id,
-          app_permission: x.app_permission.id,
-        };
-      })
+      addedPermissions
+        .filter((x) => x.role || x.permission)
+        .map(x => x as NonNullableFields<RolePermissionMapping, "role"|"permission">)
+        .map((x: NonNullableFields<RolePermissionMapping, "role"|"permission">) => {
+          return {
+            app_role: x.role.id,
+            app_permission: x.permission.id,
+          };
+        })
     );
     fetchRolesAndPermissions();
     setMarkedToDelete([]);
     setAddedPermissions([]);
   };
 
-  const markDeleted = (x: FullRolePermission) => {
+  const markDeleted = (x: RolePermissionMapping) => {
     if (x.id === '') {
       setAddedPermissions(
-        addedPermissions.filter(
-          (y) => !(y.app_role.id === x.app_role.id && y.app_permission.id === x.app_permission.id)
-        )
+        addedPermissions.filter((y) => !(y.role?.id === x.role?.id && y.permission?.id === x.permission?.id))
       );
       return;
     }
@@ -73,6 +75,11 @@ export const PermissionList = () => {
         setAllAppPermissions(result.data ?? []);
       })
       .catch((error) => setAlertInfo({ message: error.message, severity: 'error' }));
+    AdminPermissionsRepository.fetchAllAppRoles()
+      .then((result) => {
+        setAllAppRoles(result.data ?? []);
+      })
+      .catch((error) => setAlertInfo({ message: error.message, severity: 'error' }));
   }, []);
 
   useEffect(() => {
@@ -82,47 +89,62 @@ export const PermissionList = () => {
   return (
     <Layout>
       <List sx={{ pb: 10 }}>
-        {Object.entries(_.groupBy([...permissions, ...addedPermissions], (x) => JSON.stringify(x.app_role))).map(
-          ([key, value]) => (
-            <List
-              key={key}
-              subheader={
-                <ListSubheader sx={{ fontWeight: 'bold', fontSize: '16pt' }}>{JSON.parse(key).name}</ListSubheader>
-              }
-            >
-              {value.map((x) => {
+        {Object.entries(
+          _.groupBy(
+            [
+              ...permissions,
+              ...addedPermissions,
+              ...allAppRoles.map((x) => ({ id: '', role: x, permission: null }) satisfies RolePermissionMapping),
+            ],
+            (x) => JSON.stringify(x.role)
+          )
+        ).map(([key, value]) =>(
+          <List
+            key={key}
+            subheader={
+              <ListSubheader sx={{ fontWeight: 'bold', fontSize: '16pt' }}>{JSON.parse(key).name}</ListSubheader>
+            }
+          >
+            {value
+              .filter((x) => x.permission)
+              .map((x) => {
                 let deleted = x.id ? markedToDelete.includes(x) : false;
                 let added = !x.id;
                 return (
                   <ListItem
                     sx={{ backgroundColor: deleted ? 'indianred' : added ? 'lightgreen' : 'white' }}
-                    key={x.app_permission.id}
+                    key={x.permission?.id}
                     divider
                     secondaryAction={
                       <IconButton onClick={() => markDeleted(x)}>{deleted ? <Restore /> : <Delete />}</IconButton>
                     }
                   >
-                    <ListItemText primary={x.app_permission.name} />
+                    <ListItemText primary={x.permission?.name} />
                   </ListItem>
                 );
               })}
-              <ListItemButton
-                key={key + ' add'}
-                onClick={() => {
-                  setAddPermissionsOpen({
-                    key: JSON.parse(key) as AppRole,
-                    value: allAppPermissions.filter((y) => !value.map((x) => x.app_permission.id).includes(y.id)),
-                  });
-                }}
-              >
-                <ListItemAvatar>
-                  <Add />
-                </ListItemAvatar>
-                <ListItemText primary={'Hinzufügen'} />
-              </ListItemButton>
-            </List>
-          )
-        )}
+            <ListItemButton
+              key={key + ' add'}
+              onClick={() => {
+                setAddPermissionsOpen({
+                  key: JSON.parse(key) as AppRole,
+                  value: allAppPermissions.filter(
+                    (y) =>
+                      !value
+                        .filter((x) => !x.permission)
+                        .map((x) => x.permission?.id)
+                        .includes(y.id)
+                  ),
+                });
+              }}
+            >
+              <ListItemAvatar>
+                <Add />
+              </ListItemAvatar>
+              <ListItemText primary={'Hinzufügen'} />
+            </ListItemButton>
+          </List>
+        ))}
       </List>
       <SwipeableDialog
         title={`Berechtigung zu "${addPermissionsOpen?.key.name}" hinzufügen`}
@@ -139,9 +161,9 @@ export const PermissionList = () => {
                   ...addedPermissions,
                   {
                     id: '',
-                    app_role: addPermissionsOpen.key,
-                    app_permission: x,
-                  } satisfies FullRolePermission,
+                    role: addPermissionsOpen.key,
+                    permission: x,
+                  } satisfies RolePermissionMapping,
                 ]);
                 setAddPermissionsOpen(null);
               }}

@@ -1,18 +1,17 @@
 import { Box, LinearProgress, Typography } from '@mui/material';
+import { captureException } from '@sentry/react';
 import moment from 'moment/moment';
 import React, { useEffect, useState } from 'react';
-import { fetchHistoryAsync } from './slices/drinksSlice';
-import { useAppDispatch } from '../../redux/store';
-import { FullHistory } from '../../types/supabaseTypes';
-import { groupBy } from '../../utils';
 import { AlertMessage, AlertSnackbar } from '../../components/AlertSnackbar';
-import EditHistoryEntryDialog from './dialog/EditHistoryEntryDialog';
 import { InfiniteScrollList } from '../../components/InfiniteScrollList';
-import { captureException } from '@sentry/react';
-import { SupabaseDrinkRepository } from '../../repository/DrinkRepository';
-import { HistoryScreenProps } from './types';
-import { HistoryItem } from './components/HistoryItem';
 import Layout from '../../components/Layout';
+import { useAppDispatch } from '../../redux/store';
+import { SupabaseDrinkRepository } from '../../repository/DrinkRepository';
+import { groupBy } from '../../utils';
+import { HistoryItem } from './components/HistoryItem';
+import EditHistoryEntryDialog from './dialog/EditHistoryEntryDialog';
+import { fetchHistoryAsync } from './slices/drinksSlice';
+import { HistoryScreenProps } from './types';
 
 export const HistoryScreen = ({
   history,

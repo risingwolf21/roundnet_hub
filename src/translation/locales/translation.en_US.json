@@ -16,7 +16,9 @@
     "notifications": "Notifications",
     "payment": "Payment",
     "postgresClient": "Postgres Client",
-    "training": "Training"
+    "training": "Training",
+    "permissions": "Berechtigungen",
+    "supabaseQueries": "Supabase Query Client"
   },
   "cancel": "Cancel",
   "confirm": "Confirm",

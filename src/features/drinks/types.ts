@@ -1,5 +1,4 @@
 import { AppDispatch } from 'src/redux/store';
-import { FullHistory } from 'src/types/supabaseTypes';
 
 export type DrinkListScreenProps = {
   dispatch: AppDispatch;

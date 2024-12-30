@@ -1,5 +1,4 @@
 import { List, ListItem, ListItemAvatar, ListItemText, ListSubheader, Typography } from '@mui/material';
-import { FullHistory } from '../../../types/supabaseTypes';
 import moment from 'moment';
 import React from 'react';
 import { HistoryItemProps } from '../types';
