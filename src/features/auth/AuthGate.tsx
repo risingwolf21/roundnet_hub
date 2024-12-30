@@ -39,6 +39,7 @@ export const AuthGate = ({ children }: Props) => {
         navigate(result.navigateTo, { replace: true });
       })
       .catch(() => {
+        setLoading(false);
         setSession(null);
         ability.update(defineRulesFor([], []));
         dispatch(onUserChange(null));
@@ -53,7 +54,7 @@ export const AuthGate = ({ children }: Props) => {
     ): Promise<{
       navigateTo: string;
     }> => {
-      console.log(event,session)
+      console.log(event, session);
       setLoading(true);
       if (!session) throw Error('Session was null');
       const roles = await AdminPermissionsRepository.fetchRolesForUser(session.user.id);
@@ -91,8 +92,7 @@ export const AuthGate = ({ children }: Props) => {
     const {
       data: { subscription },
     } = client.auth.onAuthStateChange((event, session) => {
-      if(event === "SIGNED_IN" && currentUser?.userId === session?.user.id)
-        return;
+      if (event === 'SIGNED_IN') return;
       handleAuthChange(event, session)
         .then((result) => {
           navigate(result.navigateTo, { replace: true });
