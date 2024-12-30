@@ -53,6 +53,7 @@ export const AuthGate = ({ children }: Props) => {
     ): Promise<{
       navigateTo: string;
     }> => {
+      console.log(event,session)
       setLoading(true);
       if (!session) throw Error('Session was null');
       const roles = await AdminPermissionsRepository.fetchRolesForUser(session.user.id);

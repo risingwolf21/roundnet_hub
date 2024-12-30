@@ -23,7 +23,7 @@ export const useInitialFetch = () => {
   const user = useAuth();
 
   useEffect(() => {
-    dispatch(fetchNotVerifiedUsersAsync());
+    if (user.role === 'admin') dispatch(fetchNotVerifiedUsersAsync());
   }, [dispatch, client, user]);
 
   useEffect(() => {
