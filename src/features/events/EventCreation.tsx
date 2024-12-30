@@ -72,7 +72,7 @@ const CreateEvent = ({ t, eventToEdit, option }: CreateEventProps) => {
     lon: 8.416547971872856,
     name: 'MTV Karlsruhe',
   });
-  const ref = useRef<Ref<HTMLFormElement>>();
+  const ref = useRef<Ref<HTMLFormElement>>(null);
 
   useEffect(() => {
     if (eventToEdit) {
@@ -501,7 +501,7 @@ const CreateEvent = ({ t, eventToEdit, option }: CreateEventProps) => {
               />
             </ListItemAvatar>
             <Select
-              placeholder={'Benötigter Schlüssel'}
+              label={'Benötigter Schlüssel'}
               disabled={editedEvent.required_item === null}
               fullWidth
               value={editedEvent.required_item ?? 'none'}

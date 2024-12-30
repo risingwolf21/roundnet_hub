@@ -1,4 +1,5 @@
 import * as React from 'react';
+import * as Sentry from '@sentry/react';
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import Browse from './components/Browse';
 import { LoadingScreen } from './components/LoadingScreen';
@@ -15,6 +16,7 @@ import { HOMEPAGE } from './constants';
 import { RecurringEventsProvider } from './features/events/RecurringEvents';
 import { PermissionList } from './features/admin/PermissionList';
 import { InitialFetch } from './components/InitialFetch';
+import { Error } from './components/Error';
 
 const FeatureNotAvailable = React.lazy(() => import('./components/FeatureNotAvailable'));
 const HistoryScreenProvider = React.lazy(() => import('./features/drinks/HistoryScreenProvider'));
@@ -42,55 +44,72 @@ const App = () => {
   if (isUpdateAvailable) return <UpdateAvailable update={updateServiceWorker} />;
 
   return (
-    <BrowserRouter>
-      <AuthGate>
-        <InitialFetch>
-          <React.Suspense fallback={<LoadingScreen />}>
-            <Routes>
-              <Route path="/" element={<Navigate replace to={`/${HOMEPAGE}`} />} />
-              <Route path="*" element={<Navigate replace to={`/${HOMEPAGE}`} />} />
+    <Sentry.ErrorBoundary fallback={<Error message={'Es ist ein Fehler aufgetreten'} />} showDialog>
+      <BrowserRouter
+        future={{
+          v7_relativeSplatPath: true,
+          v7_startTransition: true
+        }}
+      >
+        <AuthGate>
+          <InitialFetch>
+            <React.Suspense fallback={<LoadingScreen />}>
+              <Routes>
+                <Route path="/" element={<Navigate replace to={`/${HOMEPAGE}`} />} />
+                <Route path="*" element={<Navigate replace to={`/${HOMEPAGE}`} />} />
 
-              <Route path="/not-verified" element={<NotVerifiedScreen />} />
+                <Route path="/not-verified" element={<NotVerifiedScreen />} />
 
-              <Route path="/feature-not-available" element={<FeatureNotAvailable />} />
+                <Route path="/feature-not-available" element={<FeatureNotAvailable />} />
 
-              <Route path="/reset-password" element={<ResetPasswordScreen />} />
+                <Route path="/reset-password" element={<ResetPasswordScreen />} />
 
-              <Route path="/browse" element={<Browse />} />
-              <Route path="/browse-admin" element={<BrowseAdmin />} />
-              <Route path="/drinks" element={<DrinkListScreenProvider />} />
-              <Route path="/user" element={<UserScreenProvider />} />
-              <Route path="/user/:userId" element={<ProfileScreen />} />
-              <Route path="/history" element={<HistoryScreenProvider />} />
-              <Route path="/payments" element={<PayDrinksScreenProvider />} />
-              <Route path="/keys" element={<KeyHolderScreenProvider />} />
+                <Route path="/browse" element={<Browse />} />
+                <Route path="/browse-admin" element={<BrowseAdmin />} />
+                <Route path="/drinks" element={<DrinkListScreenProvider />} />
 
-              <Route path="/notifications" element={<NotificationScreen />} />
+                <Route path="/history" element={<HistoryScreenProvider />} />
+                <Route path="/payments" element={<PayDrinksScreenProvider />} />
+                <Route path="/keys" element={<KeyHolderScreenProvider />} />
 
-              <Route path="/notificationPermissions" element={<NotificationsScreenProvider />} />
+                <Route path="/notifications" element={<NotificationScreen />} />
 
-              <Route path="/challenges" element={<ChallengeScreen />} />
+                <Route path="/notificationPermissions" element={<NotificationsScreenProvider />} />
 
-              <Route path="/challenges/:challengeId" element={<ChallengeInfoScreen />} />
+                <Route path="user" element={<UserScreenProvider />}>
+                  <Route path=":userId" element={<ProfileScreen />} />
+                </Route>
 
-              <Route path="/trainer/groups" element={<ManageGroupsProvider />} />
-              <Route path="/trainer/groups/:id" element={<GroupInformationProvider />} />
-              <Route path="/training" element={<EventScreenProvider />} />
-              <Route path="/training/recurringEvents" element={<RecurringEventsProvider />} />
-              <Route path="/training/event/:selectedEventId" element={<EventInformationProvider />} />
-              <Route path="/training/createOrUpdate/:option" element={<CreateEventProvider />} />
-              <Route path="/admin/drinks" element={<AdminDrinkListProvider />} />
-              <Route path="/admin/drinks/history" element={<AdminHistoryScreenProvider />} />
-              <Route path="/admin/drinks/payments" element={<PaymentsPendingAdmin />} />
-              <Route path="/admin/users" element={<AdminUserListProvider />} />
-              <Route path="/admin/supabase" element={<SupabaseClient />} />
-              <Route path="/admin/supabase/queries" element={<SupabaseQueryClient />} />
-              <Route path="/admin/permissions" element={<PermissionList />} />
-            </Routes>
-          </React.Suspense>
-        </InitialFetch>
-      </AuthGate>
-    </BrowserRouter>
+                <Route path="challenges" element={<ChallengeScreen />}>
+                  <Route path=":challengeId" element={<ChallengeInfoScreen />} />
+                </Route>
+
+                <Route path="trainer">
+                  <Route path="groups" element={<ManageGroupsProvider />} />
+                  <Route path="groups/:id" element={<GroupInformationProvider />} />
+                </Route>
+
+                <Route path="training" element={<EventScreenProvider />}>
+                  <Route path="recurringEvents" element={<RecurringEventsProvider />} />
+                  <Route path="event/:selectedEventId" element={<EventInformationProvider />} />
+                  <Route path="createOrUpdate/:option" element={<CreateEventProvider />} />
+                </Route>
+
+                <Route path="admin">
+                  <Route path="drinks" element={<AdminDrinkListProvider />} />
+                  <Route path="drinks/history" element={<AdminHistoryScreenProvider />} />
+                  <Route path="drinks/payments" element={<PaymentsPendingAdmin />} />
+                  <Route path="users" element={<AdminUserListProvider />} />
+                  <Route path="supabase" element={<SupabaseClient />} />
+                  <Route path="supabase/queries" element={<SupabaseQueryClient />} />
+                  <Route path="permissions" element={<PermissionList />} />
+                </Route>
+              </Routes>
+            </React.Suspense>
+          </InitialFetch>
+        </AuthGate>
+      </BrowserRouter>
+    </Sentry.ErrorBoundary>
   );
 };
 export default App;

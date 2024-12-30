@@ -94,7 +94,7 @@ export const PermissionList = () => {
             [
               ...permissions,
               ...addedPermissions,
-              ...allAppRoles.map((x) => ({ id: '', role: x, permission: null }) satisfies RolePermissionMapping),
+              ...allAppRoles.map((x) => ({ id: '', role: x, permission: null })),
             ],
             (x) => JSON.stringify(x.role)
           )
@@ -107,6 +107,9 @@ export const PermissionList = () => {
           >
             {value
               .filter((x) => x.permission)
+              .map((x) => ({
+                ...x,
+              } as RolePermissionMapping))
               .map((x) => {
                 let deleted = x.id ? markedToDelete.includes(x) : false;
                 let added = !x.id;
@@ -131,7 +134,7 @@ export const PermissionList = () => {
                   value: allAppPermissions.filter(
                     (y) =>
                       !value
-                        .filter((x) => !x.permission)
+                        .filter((x) => x.permission)
                         .map((x) => x.permission?.id)
                         .includes(y.id)
                   ),

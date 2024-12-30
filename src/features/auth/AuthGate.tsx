@@ -90,6 +90,8 @@ export const AuthGate = ({ children }: Props) => {
     const {
       data: { subscription },
     } = client.auth.onAuthStateChange((event, session) => {
+      if(event === "SIGNED_IN")
+        return;
       handleAuthChange(event, session)
         .then((result) => {
           navigate(result.navigateTo, { replace: true });

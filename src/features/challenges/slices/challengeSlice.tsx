@@ -25,7 +25,7 @@ const challengeSlice = createSlice({
         id: challenge.id,
         changes: {
           ...challenge,
-          stats: [...challenge.stats.filter((x) => x.id !== action.payload?.id ?? -1), action.payload],
+          stats: [...challenge.stats.filter((x) => x.id !== action.payload?.id), action.payload],
         },
       } as Update<FullChallenge>;
       challengeAdapter.updateOne(state, update);
