@@ -91,11 +91,14 @@ export const AuthGate = ({ children }: Props) => {
     const {
       data: { subscription },
     } = client.auth.onAuthStateChange((event, session) => {
+      if(event === "SIGNED_IN" && currentUser?.userId === session?.user.id)
+        return;
       handleAuthChange(event, session)
         .then((result) => {
           navigate(result.navigateTo, { replace: true });
         })
         .catch(() => {
+          setLoading(false);
           setSession(null);
           ability.update(defineRulesFor([], []));
           dispatch(onUserChange(null));
