@@ -243,7 +243,6 @@ const EventInformation = ({
                 style={{ width: '100%', height: '150px' }}
                 center={[selectedEventPlace.lat, selectedEventPlace.lon]}
                 zoom={15}
-                tap={false}
                 dragging={false}
                 doubleClickZoom={false}
                 scrollWheelZoom={false}
