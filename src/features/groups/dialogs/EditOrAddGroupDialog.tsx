@@ -30,7 +30,7 @@ type EditOrAddGroupDialogProps = {
 };
 
 export const EditOrAddGroupDialog = ({ open, handleClose, groupToEdit }: EditOrAddGroupDialogProps) => {
-  const user = useAuth();
+  const { user } = useAuth();
   const [currentGroup, setCurrentGroup] = useState<TablesUpdate<'event_group'>>({
     id: groupToEdit.id,
     name: groupToEdit.name,

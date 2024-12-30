@@ -21,7 +21,7 @@ import { useAuth } from '../../auth/AuthContext';
 
 export const SelectGroupDialog = ({ open, handleClose, handleSubmit }: SelectGroupDialogProps) => {
   const [groups, setGroups] = useState<Group[]>([]);
-  const user = useAuth();
+  const { user } = useAuth();
 
   useEffect(() => {
     if (open)

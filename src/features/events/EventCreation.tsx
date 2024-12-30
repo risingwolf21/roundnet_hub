@@ -139,7 +139,7 @@ const CreateEvent = ({ t, eventToEdit, option }: CreateEventProps) => {
         );
       }
       setLoading(false);
-      navigate('/training', { replace: true });
+      navigate('/training/list', { replace: true });
       setErrorSnackbar({ open: false, message: '' });
     } catch (error: unknown) {
       const message = error instanceof Error ? (error as Error).message : 'Unknown error.';
@@ -163,7 +163,7 @@ const CreateEvent = ({ t, eventToEdit, option }: CreateEventProps) => {
             <IconButton
               edge="start"
               color="inherit"
-              onClick={() => navigate('/training', { replace: true })}
+              onClick={() => navigate('/training/list', { replace: true })}
               aria-label="close"
             >
               <Close />

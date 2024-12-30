@@ -19,7 +19,7 @@
     "@sentry/integrations": "^7.112.2",
     "@sentry/react": "^8.47.0",
     "@supabase/sentry-js-integration": "^0.3.0",
-    "@supabase/supabase-js": "^2.26.0",
+    "@supabase/supabase-js": "^2.43.4",
     "@testing-library/jest-dom": "^5.16.5",
     "@testing-library/react": "^14.0.0",
     "@testing-library/user-event": "^14.4.3",

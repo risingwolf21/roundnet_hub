@@ -20,7 +20,7 @@ import { useAuth } from '../auth/AuthContext';
 const ChallengeInformationProvider = ({ t }: { t: TFunction }) => {
   const { challengeId } = useParams();
   const challenge = useSelector((root: RootState) => challengeSelector.selectById(root, challengeId ?? 0));
-  const user = useAuth();
+  const { user } = useAuth();
   const client = useClient();
   const dispatch = useAppDispatch();
 

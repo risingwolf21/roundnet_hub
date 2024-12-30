@@ -13,7 +13,7 @@ import { useClient } from 'react-supabase';
 import { useAuth } from '../features/auth/AuthContext';
 
 const DrinkListScreenProvider = () => {
-  const user = useAuth();
+  const { user } = useAuth();
   const { drinks, drinksLoading, drinksError } = useSelector((state: RootState) => state.drinks);
   const dispatch = useAppDispatch();
   const client = useClient();

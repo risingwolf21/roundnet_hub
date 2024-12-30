@@ -21,7 +21,7 @@ import pzLogo from '../images/pz_logo.svg';
 
 const UserScreen = () => {
   const { userId } = useParams();
-  const user = useAuth();
+  const { user } = useAuth();
   const [loading, setLoading] = useState<boolean>(false);
   const [currentUser, setCurrentUser] = useState<FullUser | null>(null);
   const [overlappingGroups, setOverlappingGroups] = useState<Group[]>([]);

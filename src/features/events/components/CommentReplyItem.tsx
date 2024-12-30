@@ -25,7 +25,7 @@ type Props = {
 };
 
 export const CommentReplyText = ({ onClick }: { onClick: () => void }) => {
-  const user = useAuth();
+  const { user } = useAuth();
   return (
     <>
       <ListItem

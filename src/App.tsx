@@ -12,7 +12,6 @@ import NotVerifiedScreen from './components/NotVerifiedScreen';
 import { AuthGate } from './features/auth/AuthGate';
 import { SupabaseClient } from './components/SupabaseClient';
 import { SupabaseQueryClient } from './components/SupabaseQueryClient';
-import { HOMEPAGE } from './constants';
 import { RecurringEventsProvider } from './features/events/RecurringEvents';
 import { PermissionList } from './features/admin/PermissionList';
 import { InitialFetch } from './components/InitialFetch';
@@ -39,6 +38,7 @@ const ChallengeScreen = React.lazy(() => import('./features/challenges/Challenge
 const ChallengeInfoScreen = React.lazy(() => import('./features/challenges/ChallengeInformationProvider'));
 
 const App = () => {
+  console.log('App');
   const { isUpdateAvailable, updateServiceWorker } = useServiceWorker();
 
   if (isUpdateAvailable) return <UpdateAvailable update={updateServiceWorker} />;
@@ -48,15 +48,14 @@ const App = () => {
       <BrowserRouter
         future={{
           v7_relativeSplatPath: true,
-          v7_startTransition: true
+          v7_startTransition: true,
         }}
       >
         <AuthGate>
           <InitialFetch>
             <React.Suspense fallback={<LoadingScreen />}>
               <Routes>
-                <Route path="/" element={<Navigate replace to={`/${HOMEPAGE}`} />} />
-                <Route path="*" element={<Navigate replace to={`/${HOMEPAGE}`} />} />
+                <Route path="/" element={<Navigate replace to={`/training/list`} />} />
 
                 <Route path="/not-verified" element={<NotVerifiedScreen />} />
 
@@ -76,7 +75,7 @@ const App = () => {
 
                 <Route path="/notificationPermissions" element={<NotificationsScreenProvider />} />
 
-                <Route path="user" element={<UserScreenProvider />}>
+                <Route path="user" element={<UserScreenProvider/>}>
                   <Route path=":userId" element={<ProfileScreen />} />
                 </Route>
 
@@ -89,7 +88,8 @@ const App = () => {
                   <Route path="groups/:id" element={<GroupInformationProvider />} />
                 </Route>
 
-                <Route path="training" element={<EventScreenProvider />}>
+                <Route path="training">
+                  <Route path="list" element={<EventScreenProvider />} />
                   <Route path="recurringEvents" element={<RecurringEventsProvider />} />
                   <Route path="event/:selectedEventId" element={<EventInformationProvider />} />
                   <Route path="createOrUpdate/:option" element={<CreateEventProvider />} />
@@ -104,6 +104,7 @@ const App = () => {
                   <Route path="supabase/queries" element={<SupabaseQueryClient />} />
                   <Route path="permissions" element={<PermissionList />} />
                 </Route>
+                <Route path="*" element={<Navigate replace to={`/training/list`} />} />
               </Routes>
             </React.Suspense>
           </InitialFetch>

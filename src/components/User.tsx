@@ -50,16 +50,18 @@ import { useAuth } from '../features/auth/AuthContext';
 import { UserWithRolesAndPermissions } from '../types/supabaseTypes';
 import CropImageDialog from './CropImageDialog';
 import pzLogo from '../images/pz_logo.svg';
+import { supabase } from './services/supabase/supabaseClient';
 
 type UserScreenProps = {
   user: UserWithRolesAndPermissions;
   groups: Group[];
   client: SupabaseClient<Database>;
   dispatch: AppDispatch;
+  handleSignOut: () => void;
 };
 
 export const UserScreenProvider = () => {
-  const user = useAuth();
+  const {user, signOut} = useAuth();
   const client = useClient();
   const dispatch = useAppDispatch();
   const [groups, setGroups] = useState<Group[]>([]);
@@ -70,7 +72,7 @@ export const UserScreenProvider = () => {
     });
   }, [user]);
 
-  return <UserScreen user={user} client={client} dispatch={dispatch} groups={groups} />;
+  return <UserScreen user={user} client={client} dispatch={dispatch} groups={groups} handleSignOut={signOut} />;
 };
 
 const NotificationSwitch = ({
@@ -121,7 +123,7 @@ const NotificationSwitch = ({
   );
 };
 
-const UserScreen = ({ user, client, dispatch, groups }: UserScreenProps) => {
+const UserScreen = ({ user, client, dispatch, groups, handleSignOut }: UserScreenProps) => {
   const navigate = useNavigate();
   const [selectedImage, setSelectedImage] = useState<string | ArrayBuffer | null>(null);
   const [croppedImage, setCroppedImage] = useState<string | null>(null);
@@ -230,6 +232,11 @@ const UserScreen = ({ user, client, dispatch, groups }: UserScreenProps) => {
     event.target.value = '';
   };
 
+  const handleLogout = async () => {
+    const { error } = await supabase.auth.signOut({ scope: 'local' });
+    console.log(error);
+  };
+
   return (
     <Layout appBarConfig={{ title: 'Profil', showProfile: false }}>
       <List sx={{ pl: 2, pr: 2, pb: 10 }}>
@@ -289,7 +296,7 @@ const UserScreen = ({ user, client, dispatch, groups }: UserScreenProps) => {
             <Button startIcon={<PasswordOutlined />} onClick={() => navigate('/reset-password')}>
               Passwort ändern
             </Button>
-            <Button startIcon={<Logout />} onClick={() => client.auth.signOut()}>
+            <Button startIcon={<Logout />} onClick={handleLogout}>
               Logout
             </Button>
           </Box>

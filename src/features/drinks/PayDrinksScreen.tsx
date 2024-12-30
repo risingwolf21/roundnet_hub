@@ -69,7 +69,7 @@ const PayDrinksButton = ({ amountToPay }: { amountToPay: number }) => {
 };
 
 const PayDrinksScreenProvider = () => {
-  const user = useAuth();
+  const { user } = useAuth();
   const { paymentHistory, paymentError, paymentLoading } = useSelector((state: RootState) => state.drinks);
 
   return (

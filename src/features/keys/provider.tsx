@@ -8,7 +8,7 @@ import { useClient } from 'react-supabase';
 import { useAuth } from '../auth/AuthContext';
 
 const ItemHolderScreenProvider = () => {
-  const user = useAuth();
+  const { user } = useAuth();
   const dispatch = useAppDispatch();
   const keyHolders = useSelector((state: RootState) => keyHoldersSelector.selectAll(state));
   const { loading } = useSelector((state: RootState) => state.keys);

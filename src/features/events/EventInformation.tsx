@@ -76,7 +76,7 @@ const EventInformation = ({
     } else if (value === 'This Event') {
       SupabaseEventRepository.deleteEvent(selectedEvent.id)
         .then(() => {
-          navigate('/training', { replace: true });
+          navigate('/training/list', { replace: true });
         })
         .catch((e) => {
           captureException(e);
@@ -89,7 +89,7 @@ const EventInformation = ({
         selectedEvent.startingDateTime
       )
         .then(() => {
-          navigate('/training', { replace: true });
+          navigate('/training/list', { replace: true });
         })
         .catch((e) => {
           captureException(e);

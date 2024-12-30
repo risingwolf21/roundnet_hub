@@ -143,7 +143,7 @@ export const Drawer = ({ open, onClose, onOpen }: Props) => {
               }
             >
               {can('select', 'drink') && (
-                <DrawerItem selected={tab == 'drinks'} onClick={() => handleChange('drinks')}>
+                <DrawerItem selected={tab === 'drinks'} onClick={() => handleChange('drinks')}>
                   <ListItemAvatar>
                     <ListItemIcon>
                       <Liquor />
@@ -188,7 +188,7 @@ export const Drawer = ({ open, onClose, onOpen }: Props) => {
 
         <List>
           {can('select', 'event') && (
-            <DrawerItem selected={tab === 'training'} onClick={() => handleChange('training')}>
+            <DrawerItem selected={tab === 'training/list'} onClick={() => handleChange('training/list')}>
               <ListItemAvatar>
                 <ListItemIcon>
                   <SportsHandball />

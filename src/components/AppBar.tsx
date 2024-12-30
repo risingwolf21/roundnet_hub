@@ -55,7 +55,7 @@ export const AppBarAccountAction = ({
 
 const CustomAppBar = ({ navigateBack = false, title = 'Roundnet Karlsruhe', onLogout }: Props) => {
   const navigate = useNavigate();
-  const user = useAuth();
+  const { user } = useAuth();
 
   return (
     <AppBar position="sticky" sx={{ zIndex: (theme) => theme.zIndex.drawer + 1, background: 'primary' }}>

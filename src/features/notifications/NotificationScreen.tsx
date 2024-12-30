@@ -14,7 +14,7 @@ import { useAuth } from '../auth/AuthContext';
 
 const NotificationScreen = () => {
   const { loading, error } = useSelector((state: RootState) => state.notifications);
-  const user = useAuth();
+  const { user } = useAuth();
   const notifications = useSelector((state: RootState) => notificationsSelector.selectAll(state));
   const dispatch = useAppDispatch();
 

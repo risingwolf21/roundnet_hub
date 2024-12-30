@@ -20,7 +20,7 @@ export const InitialFetch = ({ children }: { children: ReactNode }) => {
 export const useInitialFetch = () => {
   const dispatch = useAppDispatch();
   const client = useClient();
-  const user = useAuth();
+  const { user } = useAuth();
 
   useEffect(() => {
     if (user.role === 'admin') dispatch(fetchNotVerifiedUsersAsync());

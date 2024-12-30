@@ -12,7 +12,7 @@ const HistoryScreenProvider = () => {
   const client = useClient();
   const dispatch = useAppDispatch();
 
-  const user = useAuth();
+  const { user } = useAuth();
 
   useEffect(() => {
     let subscription = client

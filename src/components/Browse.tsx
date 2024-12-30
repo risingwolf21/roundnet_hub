@@ -68,7 +68,7 @@ const Browse = ({ t }: { t: TFunction }) => {
           </ListItemButton>
         )}
         {can('select', 'event') && (
-          <ListItemButton key={'training'} onClick={() => navigate('/training')} sx={{ mt: 1 }}>
+          <ListItemButton key={'training'} onClick={() => navigate('/training/list')} sx={{ mt: 1 }}>
             <ListItemAvatar>
               <Avatar sx={{ background: '#88AEBF', width: 40, height: 40, borderRadius: 2 }}>
                 <SportsHandball />

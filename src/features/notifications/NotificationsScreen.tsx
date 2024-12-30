@@ -22,7 +22,7 @@ import { useAuth } from '../auth/AuthContext';
 const userTags: NotificationTags[] = ['eventComments', 'userRegistration', 'paymentRequest', 'paymentPending'];
 
 const NotificationsScreenProvider = () => {
-  const user = useAuth();
+  const { user } = useAuth();
   const { t } = useTranslation();
 
   return <NotificationsScreen t={t} user={user} />;

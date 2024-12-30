@@ -10,7 +10,7 @@ import { useAuth } from '../features/auth/AuthContext';
 const EventScreenProvider = () => {
   const { loading, error } = useSelector((state: RootState) => state.events);
   const events = useSelector(eventsSelector.selectAll);
-  const user = useAuth();
+  const { user } = useAuth();
 
   if (!can('select', 'event'))
     return (

@@ -88,7 +88,7 @@ const entries = [
 
 const BrowseAdmin = ({ t }: { t: TFunction }) => {
   const navigate = useNavigate();
-  const user = useAuth();
+  const { user } = useAuth();
   const { notVerifiedUsers } = useSelector((state: RootState) => state.adminUsers);
 
   return (

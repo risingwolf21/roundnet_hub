@@ -36,7 +36,7 @@ const EventInformationProvider = () => {
   const { loading: attendanceLoading } = useSelector((state: RootState) => state.eventAttendance);
   const { loading: commentsLoading } = useSelector((state: RootState) => state.eventComments);
   const keyHolders = useSelector((state: RootState) => keyHoldersSelector.selectAll(state));
-  const user = useAuth();
+  const { user } = useAuth();
   const dispatch = useAppDispatch();
   const client = useClient();
   const { t } = useTranslation();

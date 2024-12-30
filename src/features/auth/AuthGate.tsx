@@ -33,6 +33,31 @@ export const AuthGate = ({ children }: Props) => {
   const [session, setSession] = useState<Session | null>(null);
   const [alertInfo, setAlertInfo] = useState<AlertMessage | null>(null);
 
+  const signOut = async () => {
+    try {
+      const session = client.auth.getSession(); // Prüfen, ob eine Sitzung vorhanden ist
+      if (!session) {
+        console.warn("No active session found, skipping sign-out.");
+        reset();
+        return;
+      }
+  
+      await client.auth.signOut();
+      console.log("Successfully signed out");
+    } catch (error: any) {
+      reset();
+      console.error("Error during sign-out:", error.message);
+    }
+  }
+
+  const reset = () => {
+    setLoading(false);
+    setSession(null);
+    ability.update(defineRulesFor([], []));
+    dispatch(onUserChange(null));
+    setUser(null);
+  }
+
   const handleAuthChange = useCallback(
     async (
       event: AuthChangeEvent,
@@ -41,6 +66,7 @@ export const AuthGate = ({ children }: Props) => {
       navigateTo: string;
     } | null> => {
       if (!session || currentUser?.userId === session.user.id) {
+        console.log(location.pathname)
         return null; // Keine Aktion notwendig
       }
       console.log(event, session);
@@ -67,17 +93,14 @@ export const AuthGate = ({ children }: Props) => {
         setSession(session);
       } catch (error) {
         console.error('Error handling auth change:', error);
-        setLoading(false);
-        setSession(null);
-        ability.update(defineRulesFor([], []));
-        dispatch(onUserChange(null));
-        setUser(null);
+        reset();
         throw error;
       } finally {
         setLoading(false);
       }
-
-      if (event === 'PASSWORD_RECOVERY') {
+      if (event === "SIGNED_IN") {
+        return { navigateTo: location.pathname === "/login" ? `/${HOMEPAGE}` : location.pathname };
+      } else if (event === 'PASSWORD_RECOVERY') {
         return { navigateTo: '/reset-password' };
       } else {
         return { navigateTo: location.pathname || `/${HOMEPAGE}` };
@@ -97,7 +120,12 @@ export const AuthGate = ({ children }: Props) => {
         console.log('Skipping INITIAL_SESSION: User already loaded.');
         return;
       }
-      if (currentUser?.userId !== session?.user.id) {
+      if (event === 'SIGNED_OUT') {
+        setSession(null);
+        ability.update(defineRulesFor([], []));
+        dispatch(onUserChange(null));
+        setUser(null);
+      } else if (currentUser?.userId !== session?.user.id) {
         handleAuthChange(event, session)
           .then((result) => {
             if (result) navigate(result.navigateTo, { replace: true });
@@ -131,7 +159,7 @@ export const AuthGate = ({ children }: Props) => {
     <>
       {session ? (
         currentUser && currentUser.verified ? (
-          <AuthContext.Provider value={currentUser}>{children}</AuthContext.Provider>
+          <AuthContext.Provider value={{user: currentUser, signOut: signOut}}>{children}</AuthContext.Provider>
         ) : (
           <NotVerifiedScreen />
         )
