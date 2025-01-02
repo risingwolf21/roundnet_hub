@@ -90,8 +90,15 @@ const EventScreen = ({ events, loading, error, user }: EventScreenProps) => {
 
   return (
     <Layout>
-      <List sx={{ overflowY: 'auto', pt: 0, pb: 10 }}>
-        <Box sx={{ pb: 10 }}>
+      <List
+        sx={(theme) => ({
+          overflowY: 'auto',
+          pt: 0,
+          [theme.breakpoints.down('xl')]: { pb: 10 },
+          [theme.breakpoints.up('xl')]: { pb: 0 },
+        })}
+      >
+        <Box>
           {loading
             ? Array.from({ length: 10 }, (v, k) => k + 1).map((x) => <LoadingEventItem key={x} />)
             : events
@@ -220,10 +227,10 @@ const EventScreen = ({ events, loading, error, user }: EventScreenProps) => {
                     color={'secondary'}
                     onClick={() => {
                       let newGroups = selectedGroups.includes(x.id)
-                      ? [...selectedGroups.filter((y) => y !== x.id)]
-                      : [...selectedGroups, x.id]
+                        ? [...selectedGroups.filter((y) => y !== x.id)]
+                        : [...selectedGroups, x.id];
                       setSelectedGroups(newGroups);
-                      localStorage.setItem('selectedGroups', newGroups.join(";"));
+                      localStorage.setItem('selectedGroups', newGroups.join(';'));
                     }}
                     icon={<Check fontSize="small" />}
                     label={x.name}

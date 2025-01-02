@@ -6,7 +6,7 @@ import {
   ThumbUpAlt,
   ThumbUpOffAlt,
 } from '@mui/icons-material';
-import { Box, CircularProgress, IconButton, ListItem, ListItemAvatar, ListItemText, Typography } from '@mui/material';
+import { alpha, Box, CircularProgress, IconButton, ListItem, ListItemAvatar, ListItemText, Typography } from '@mui/material';
 import { toDate } from 'date-fns';
 import { TFunction } from 'i18next';
 import React from 'react';
@@ -27,9 +27,15 @@ export const EventItem = ({ event, onClick, attendEvent, declineEvent, attendanc
     <ListItem
       key={event.id}
       disablePadding
-      sx={{ p: 1 }}
       onClick={onClick}
       divider={true}
+      sx={{
+        p: 1,
+        cursor: 'pointer',
+        '&:hover': {
+          backgroundColor: alpha('#808080', 0.2),
+        },
+      }}
       secondaryAction={
         attendanceUpdating ? (
           <CircularProgress size={'22px'} />

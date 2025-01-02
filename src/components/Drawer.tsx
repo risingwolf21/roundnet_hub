@@ -1,22 +1,4 @@
 import {
-  alpha,
-  Badge,
-  Box,
-  BoxProps,
-  Divider,
-  List,
-  ListItem,
-  ListItemAvatar,
-  ListItemIcon,
-  ListItemProps,
-  ListItemText,
-  ListSubheader,
-  SwipeableDrawer,
-  SwipeableDrawerProps,
-  Typography,
-} from '@mui/material';
-import React, { useEffect, useState } from 'react';
-import {
   EmojiEvents,
   Euro,
   Group,
@@ -29,19 +11,40 @@ import {
   SportsHandball,
   StorageOutlined,
 } from '@mui/icons-material';
-import { styled } from '@mui/system';
-import { HOMEPAGE } from '../constants';
-import { useNavigate } from 'react-router-dom';
-import { can, canAny } from '../utils/PermissionService';
+import {
+  alpha,
+  Badge,
+  Box,
+  BoxProps,
+  Divider,
+  List,
+  ListItem,
+  ListItemAvatar,
+  ListItemIcon,
+  ListItemProps,
+  ListItemText,
+  ListSubheader,
+  Drawer as MuiDrawer,
+  DrawerProps as MuiDrawerProps,
+  Theme,
+  Typography,
+} from '@mui/material';
+import { darken, styled } from '@mui/system';
+import { TFunction } from 'i18next';
+import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
-import { RootState } from '../redux/store';
+import { useNavigate } from 'react-router-dom';
+import { HOMEPAGE } from '../constants';
 import { notificationsSelector } from '../features/notifications/slices/notificationsSlice';
+import { RootState } from '../redux/store';
+import { can, canAny } from '../utils/PermissionService';
+
+export const drawerWidth = 360;
 
 type Props = {
   open: boolean;
   onClose: () => void;
-  onOpen: () => void;
 };
 
 interface StyledDrawerItemProps extends ListItemProps {
@@ -56,6 +59,12 @@ const DrawerItem = styled(ListItem, {
   marginRight: 12,
   marginLeft: 12,
   width: 'unset',
+  cursor: 'pointer',
+  backgroundPosition: 'center',
+  transition: 'background 0.2s',
+  '&:hover': {
+    background: alpha("#808080", 0.2),
+  },
   '& .MuiListItemSecondaryAction-root': {
     right: 24,
   },
@@ -72,7 +81,7 @@ const DrawerItem = styled(ListItem, {
   ...(selected && {
     backgroundColor: alpha(theme.palette.secondary.main, 0.16),
     '&:hover': {
-      backgroundColor: alpha(theme.palette.secondary.main, 0.2),
+      backgroundColor: alpha(theme.palette.secondary.main, 0.3),
     },
   }),
 }));
@@ -81,19 +90,315 @@ const DrawerBox = styled(Box)<BoxProps>(({ theme }) => ({
   width: '100%',
   height: '100%',
   paddingBottom: 'env(safe-area-inset-bottom)',
+  overflow: 'auto',
 }));
 
-const CustomDrawer = styled(SwipeableDrawer)<SwipeableDrawerProps>(({ theme }) => ({
+const CustomDrawer = styled(MuiDrawer)<MuiDrawerProps>(({ theme }) => ({
   '& .MuiPaper-root': {
-    width: 'min(360px, 80%)',
     borderTopRightRadius: 24,
     borderBottomRightRadius: 24,
     background: '#f2ecf1',
     color: '#49454e',
+    [theme.breakpoints.down('lg')]: {
+      borderTopRightRadius: 24,
+      borderBottomRightRadius: 24,
+    },
+    [theme.breakpoints.up('lg')]: {
+      borderTopRightRadius: 0,
+      borderBottomRightRadius: 0,
+    },
   },
 }));
 
-export const Drawer = ({ open, onClose, onOpen }: Props) => {
+type DrawerContentProps = {
+  tab: string;
+  handleChange: (value: string) => void;
+  t: TFunction;
+  notificationsLength: number;
+  notVerifiedUsersLength: number;
+};
+const DrawerContent = ({ tab, handleChange, t, notificationsLength, notVerifiedUsersLength }: DrawerContentProps) => {
+  return (
+    <DrawerBox>
+      <List>
+        <DrawerItem selected={tab === 'user'} onClick={() => handleChange('user')}>
+          <ListItemAvatar>
+            <ListItemIcon>
+              <Person />
+            </ListItemIcon>
+          </ListItemAvatar>
+          <ListItemText primaryTypographyProps={{ fontWeight: 'bold', fontSize: '0.9rem' }} primary={'Account'} />
+        </DrawerItem>
+      </List>
+      <Divider />
+      {canAny('select', ['drink', 'history', 'payments']) && (
+        <>
+          <List
+            subheader={
+              <ListSubheader
+                disableSticky
+                sx={{
+                  zIndex: '-1',
+                  fontWeight: 'bold',
+                  lineHeight: 'normal',
+                  my: 2,
+                  mx: 2,
+                  backgroundColor: '#f2ecf1',
+                }}
+              >
+                {t('navigation.drinks')}
+              </ListSubheader>
+            }
+          >
+            {can('select', 'drink') && (
+              <DrawerItem selected={tab === 'drinks'} onClick={() => handleChange('drinks')}>
+                <ListItemAvatar>
+                  <ListItemIcon>
+                    <Liquor />
+                  </ListItemIcon>
+                </ListItemAvatar>
+                <ListItemText
+                  primaryTypographyProps={{ fontWeight: 'bold', fontSize: '0.9rem' }}
+                  primary={t('navigation.drinks')}
+                />
+              </DrawerItem>
+            )}
+            {can('select', 'history') && (
+              <DrawerItem selected={tab === 'history'} onClick={() => handleChange('history')}>
+                <ListItemAvatar>
+                  <ListItemIcon>
+                    <History />
+                  </ListItemIcon>
+                </ListItemAvatar>
+                <ListItemText
+                  primaryTypographyProps={{ fontWeight: 'bold', fontSize: '0.9rem' }}
+                  primary={t('browse.history')}
+                />
+              </DrawerItem>
+            )}
+            {can('select', 'payments') && (
+              <DrawerItem selected={tab === 'payments'} onClick={() => handleChange('payments')}>
+                <ListItemAvatar>
+                  <ListItemIcon>
+                    <Euro />
+                  </ListItemIcon>
+                </ListItemAvatar>
+                <ListItemText
+                  primaryTypographyProps={{ fontWeight: 'bold', fontSize: '0.9rem' }}
+                  primary={t('browse.payment')}
+                />
+              </DrawerItem>
+            )}
+          </List>
+          <Divider />
+        </>
+      )}
+
+      <List>
+        {can('select', 'event') && (
+          <DrawerItem selected={tab === 'training/list'} onClick={() => handleChange('training/list')}>
+            <ListItemAvatar>
+              <ListItemIcon>
+                <SportsHandball />
+              </ListItemIcon>
+            </ListItemAvatar>
+            <ListItemText
+              primaryTypographyProps={{ fontWeight: 'bold', fontSize: '0.9rem' }}
+              primary={t('navigation.training')}
+            />
+          </DrawerItem>
+        )}
+        {can('select', 'challenge') && (
+          <DrawerItem selected={tab === 'challenges'} onClick={() => handleChange('challenges')}>
+            <ListItemAvatar>
+              <ListItemIcon>
+                <EmojiEvents />
+              </ListItemIcon>
+            </ListItemAvatar>
+            <ListItemText
+              primaryTypographyProps={{ fontWeight: 'bold', fontSize: '0.9rem' }}
+              primary={t('navigation.challenges')}
+            />
+          </DrawerItem>
+        )}
+        {can('select', 'item') && (
+          <DrawerItem selected={tab === 'keys'} onClick={() => handleChange('keys')}>
+            <ListItemAvatar>
+              <ListItemIcon>
+                <Key />
+              </ListItemIcon>
+            </ListItemAvatar>
+            <ListItemText
+              primaryTypographyProps={{ fontWeight: 'bold', fontSize: '0.9rem' }}
+              primary={t('browse.keys')}
+            />
+          </DrawerItem>
+        )}
+        {can('view', 'notifications') && (
+          <DrawerItem
+            selected={tab === 'notifications'}
+            onClick={() => handleChange('notifications')}
+            secondaryAction={
+              <Typography fontWeight={'bold'} fontSize={'0.9rem'}>
+                {notificationsLength || ''}
+              </Typography>
+            }
+          >
+            <ListItemAvatar>
+              <ListItemIcon>
+                <Badge color={'secondary'} variant={'dot'} badgeContent={notificationsLength}>
+                  <Notifications />
+                </Badge>
+              </ListItemIcon>
+            </ListItemAvatar>
+            <ListItemText
+              primaryTypographyProps={{ fontWeight: 'bold', fontSize: '0.9rem' }}
+              primary={t('browse.notifications')}
+            />
+          </DrawerItem>
+        )}
+      </List>
+      <Divider />
+      <List
+        subheader={
+          <ListSubheader
+            disableSticky
+            sx={{
+              zIndex: '-1',
+              fontWeight: 'bold',
+              lineHeight: 'normal',
+              my: 2,
+              mx: 2,
+              backgroundColor: '#f2ecf1',
+            }}
+          >
+            Admin
+          </ListSubheader>
+        }
+      >
+        {can('update', 'payments') && (
+          <DrawerItem selected={tab === 'admin/drinks/payments'} onClick={() => handleChange('admin/drinks/payments')}>
+            <ListItemAvatar>
+              <ListItemIcon>
+                <Euro />
+              </ListItemIcon>
+            </ListItemAvatar>
+            <ListItemText
+              primaryTypographyProps={{ fontWeight: 'bold', fontSize: '0.9rem' }}
+              primary={t('browse.managePayments')}
+            />
+          </DrawerItem>
+        )}
+        {can('update', 'drink') && (
+          <DrawerItem selected={tab === 'admin/drinks'} onClick={() => handleChange('admin/drinks')}>
+            <ListItemAvatar>
+              <ListItemIcon>
+                <Liquor />
+              </ListItemIcon>
+            </ListItemAvatar>
+            <ListItemText
+              primaryTypographyProps={{ fontWeight: 'bold', fontSize: '0.9rem' }}
+              primary={t('browse.manageDrinks')}
+            />
+          </DrawerItem>
+        )}
+        {can('update', 'user') && (
+          <DrawerItem
+            selected={tab === 'admin/users'}
+            onClick={() => handleChange('admin/users')}
+            secondaryAction={
+              <Typography fontWeight={'bold'} fontSize={'0.9rem'}>
+                {notVerifiedUsersLength || ''}
+              </Typography>
+            }
+          >
+            <ListItemAvatar>
+              <ListItemIcon>
+                <Badge color={'secondary'} variant={'dot'} badgeContent={notVerifiedUsersLength}>
+                  <Group />
+                </Badge>
+              </ListItemIcon>
+            </ListItemAvatar>
+            <ListItemText
+              primaryTypographyProps={{ fontWeight: 'bold', fontSize: '0.9rem' }}
+              primary={t('browse.manageUsers')}
+            />
+          </DrawerItem>
+        )}
+        {can('update', 'history') && (
+          <DrawerItem selected={tab === 'admin/history'} onClick={() => handleChange('admin/history')}>
+            <ListItemAvatar>
+              <ListItemIcon>
+                <History />
+              </ListItemIcon>
+            </ListItemAvatar>
+            <ListItemText
+              primaryTypographyProps={{ fontWeight: 'bold', fontSize: '0.9rem' }}
+              primary={t('browse.completeHistory')}
+            />
+          </DrawerItem>
+        )}
+        {can('update', 'group') && (
+          <DrawerItem selected={tab === 'trainer/groups'} onClick={() => handleChange('trainer/groups')}>
+            <ListItemAvatar>
+              <ListItemIcon>
+                <GroupOutlined />
+              </ListItemIcon>
+            </ListItemAvatar>
+            <ListItemText
+              primaryTypographyProps={{ fontWeight: 'bold', fontSize: '0.9rem' }}
+              primary={t('browse.manageGroups')}
+            />
+          </DrawerItem>
+        )}
+        {can('view', 'postgres') && (
+          <DrawerItem selected={tab === 'admin/supabase'} onClick={() => handleChange('admin/supabase')}>
+            <ListItemAvatar>
+              <ListItemIcon>
+                <StorageOutlined />
+              </ListItemIcon>
+            </ListItemAvatar>
+            <ListItemText
+              primaryTypographyProps={{ fontWeight: 'bold', fontSize: '0.9rem' }}
+              primary={t('browse.postgresClient')}
+            />
+          </DrawerItem>
+        )}
+        {can('view', 'postgres') && (
+          <DrawerItem
+            selected={tab === 'admin/supabase/queries'}
+            onClick={() => handleChange('admin/supabase/queries')}
+          >
+            <ListItemAvatar>
+              <ListItemIcon>
+                <StorageOutlined />
+              </ListItemIcon>
+            </ListItemAvatar>
+            <ListItemText
+              primaryTypographyProps={{ fontWeight: 'bold', fontSize: '0.9rem' }}
+              primary={t('browse.supabaseQueries')}
+            />
+          </DrawerItem>
+        )}
+        {can('view', 'postgres') && (
+          <DrawerItem selected={tab === 'admin/permissions'} onClick={() => handleChange('admin/permissions')}>
+            <ListItemAvatar>
+              <ListItemIcon>
+                <GroupOutlined />
+              </ListItemIcon>
+            </ListItemAvatar>
+            <ListItemText
+              primaryTypographyProps={{ fontWeight: 'bold', fontSize: '0.9rem' }}
+              primary={t('browse.permissions')}
+            />
+          </DrawerItem>
+        )}
+      </List>
+    </DrawerBox>
+  );
+};
+
+export const Drawer = ({ open, onClose }: Props) => {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const [tab, setTab] = useState<string>(HOMEPAGE);
@@ -110,286 +415,73 @@ export const Drawer = ({ open, onClose, onOpen }: Props) => {
   };
 
   return (
-    <CustomDrawer anchor={'left'} open={open} onClose={onClose} onOpen={onOpen}>
-      <DrawerBox>
-        <List>
-          <DrawerItem selected={tab === 'user'} onClick={() => handleChange('user')}>
-            <ListItemAvatar>
-              <ListItemIcon>
-                <Person />
-              </ListItemIcon>
-            </ListItemAvatar>
-            <ListItemText primaryTypographyProps={{ fontWeight: 'bold', fontSize: '0.9rem' }} primary={'Account'} />
-          </DrawerItem>
-        </List>
-        <Divider />
-        {canAny('select', ['drink', 'history', 'payments']) && (
-          <>
-            <List
-              subheader={
-                <ListSubheader
-                  disableSticky
-                  sx={{
-                    zIndex: '-1',
-                    fontWeight: 'bold',
-                    lineHeight: 'normal',
-                    my: 2,
-                    mx: 2,
-                    backgroundColor: '#f2ecf1',
-                  }}
-                >
-                  {t('navigation.drinks')}
-                </ListSubheader>
-              }
-            >
-              {can('select', 'drink') && (
-                <DrawerItem selected={tab === 'drinks'} onClick={() => handleChange('drinks')}>
-                  <ListItemAvatar>
-                    <ListItemIcon>
-                      <Liquor />
-                    </ListItemIcon>
-                  </ListItemAvatar>
-                  <ListItemText
-                    primaryTypographyProps={{ fontWeight: 'bold', fontSize: '0.9rem' }}
-                    primary={t('navigation.drinks')}
-                  />
-                </DrawerItem>
-              )}
-              {can('select', 'history') && (
-                <DrawerItem selected={tab === 'history'} onClick={() => handleChange('history')}>
-                  <ListItemAvatar>
-                    <ListItemIcon>
-                      <History />
-                    </ListItemIcon>
-                  </ListItemAvatar>
-                  <ListItemText
-                    primaryTypographyProps={{ fontWeight: 'bold', fontSize: '0.9rem' }}
-                    primary={t('browse.history')}
-                  />
-                </DrawerItem>
-              )}
-              {can('select', 'payments') && (
-                <DrawerItem selected={tab === 'payments'} onClick={() => handleChange('payments')}>
-                  <ListItemAvatar>
-                    <ListItemIcon>
-                      <Euro />
-                    </ListItemIcon>
-                  </ListItemAvatar>
-                  <ListItemText
-                    primaryTypographyProps={{ fontWeight: 'bold', fontSize: '0.9rem' }}
-                    primary={t('browse.payment')}
-                  />
-                </DrawerItem>
-              )}
-            </List>
-            <Divider />
-          </>
-        )}
-
-        <List>
-          {can('select', 'event') && (
-            <DrawerItem selected={tab === 'training/list'} onClick={() => handleChange('training/list')}>
-              <ListItemAvatar>
-                <ListItemIcon>
-                  <SportsHandball />
-                </ListItemIcon>
-              </ListItemAvatar>
-              <ListItemText
-                primaryTypographyProps={{ fontWeight: 'bold', fontSize: '0.9rem' }}
-                primary={t('navigation.training')}
-              />
-            </DrawerItem>
-          )}
-          {can('select', 'challenge') && (
-            <DrawerItem selected={tab === 'challenges'} onClick={() => handleChange('challenges')}>
-              <ListItemAvatar>
-                <ListItemIcon>
-                  <EmojiEvents />
-                </ListItemIcon>
-              </ListItemAvatar>
-              <ListItemText
-                primaryTypographyProps={{ fontWeight: 'bold', fontSize: '0.9rem' }}
-                primary={t('navigation.challenges')}
-              />
-            </DrawerItem>
-          )}
-          {can('select', 'item') && (
-            <DrawerItem selected={tab === 'keys'} onClick={() => handleChange('keys')}>
-              <ListItemAvatar>
-                <ListItemIcon>
-                  <Key />
-                </ListItemIcon>
-              </ListItemAvatar>
-              <ListItemText
-                primaryTypographyProps={{ fontWeight: 'bold', fontSize: '0.9rem' }}
-                primary={t('browse.keys')}
-              />
-            </DrawerItem>
-          )}
-          {can('view', 'notifications') && (
-            <DrawerItem
-              selected={tab === 'notifications'}
-              onClick={() => handleChange('notifications')}
-              secondaryAction={
-                <Typography fontWeight={'bold'} fontSize={'0.9rem'}>
-                  {notifications.length || ''}
-                </Typography>
-              }
-            >
-              <ListItemAvatar>
-                <ListItemIcon>
-                  <Badge color={'secondary'} variant={'dot'} badgeContent={notifications.length}>
-                    <Notifications />
-                  </Badge>
-                </ListItemIcon>
-              </ListItemAvatar>
-              <ListItemText
-                primaryTypographyProps={{ fontWeight: 'bold', fontSize: '0.9rem' }}
-                primary={t('browse.notifications')}
-              />
-            </DrawerItem>
-          )}
-        </List>
-        <Divider />
-        <List
-          subheader={
-            <ListSubheader
-              disableSticky
-              sx={{
-                zIndex: '-1',
-                fontWeight: 'bold',
-                lineHeight: 'normal',
-                my: 2,
-                mx: 2,
-                backgroundColor: '#f2ecf1',
-              }}
-            >
-              Admin
-            </ListSubheader>
-          }
-        >
-          {can('update', 'payments') && (
-            <DrawerItem
-              selected={tab === 'admin/drinks/payments'}
-              onClick={() => handleChange('admin/drinks/payments')}
-            >
-              <ListItemAvatar>
-                <ListItemIcon>
-                  <Euro />
-                </ListItemIcon>
-              </ListItemAvatar>
-              <ListItemText
-                primaryTypographyProps={{ fontWeight: 'bold', fontSize: '0.9rem' }}
-                primary={t('browse.managePayments')}
-              />
-            </DrawerItem>
-          )}
-          {can('update', 'drink') && (
-            <DrawerItem selected={tab == 'admin/drinks'} onClick={() => handleChange('admin/drinks')}>
-              <ListItemAvatar>
-                <ListItemIcon>
-                  <Liquor />
-                </ListItemIcon>
-              </ListItemAvatar>
-              <ListItemText
-                primaryTypographyProps={{ fontWeight: 'bold', fontSize: '0.9rem' }}
-                primary={t('browse.manageDrinks')}
-              />
-            </DrawerItem>
-          )}
-          {can('update', 'user') && (
-            <DrawerItem
-              selected={tab == 'admin/users'}
-              onClick={() => handleChange('admin/users')}
-              secondaryAction={
-                <Typography fontWeight={'bold'} fontSize={'0.9rem'}>
-                  {notVerifiedUsers || ''}
-                </Typography>
-              }
-            >
-              <ListItemAvatar>
-                <ListItemIcon>
-                  <Badge color={'secondary'} variant={'dot'} badgeContent={notVerifiedUsers}>
-                    <Group />
-                  </Badge>
-                </ListItemIcon>
-              </ListItemAvatar>
-              <ListItemText
-                primaryTypographyProps={{ fontWeight: 'bold', fontSize: '0.9rem' }}
-                primary={t('browse.manageUsers')}
-              />
-            </DrawerItem>
-          )}
-          {can('update', 'history') && (
-            <DrawerItem selected={tab == 'admin/history'} onClick={() => handleChange('admin/history')}>
-              <ListItemAvatar>
-                <ListItemIcon>
-                  <History />
-                </ListItemIcon>
-              </ListItemAvatar>
-              <ListItemText
-                primaryTypographyProps={{ fontWeight: 'bold', fontSize: '0.9rem' }}
-                primary={t('browse.completeHistory')}
-              />
-            </DrawerItem>
-          )}
-          {can('update', 'group') && (
-            <DrawerItem selected={tab == 'trainer/groups'} onClick={() => handleChange('trainer/groups')}>
-              <ListItemAvatar>
-                <ListItemIcon>
-                  <GroupOutlined />
-                </ListItemIcon>
-              </ListItemAvatar>
-              <ListItemText
-                primaryTypographyProps={{ fontWeight: 'bold', fontSize: '0.9rem' }}
-                primary={t('browse.manageGroups')}
-              />
-            </DrawerItem>
-          )}
-          {can('view', 'postgres') && (
-            <DrawerItem selected={tab == 'admin/supabase'} onClick={() => handleChange('admin/supabase')}>
-              <ListItemAvatar>
-                <ListItemIcon>
-                  <StorageOutlined />
-                </ListItemIcon>
-              </ListItemAvatar>
-              <ListItemText
-                primaryTypographyProps={{ fontWeight: 'bold', fontSize: '0.9rem' }}
-                primary={t('browse.postgresClient')}
-              />
-            </DrawerItem>
-          )}
-          {can('view', 'postgres') && (
-            <DrawerItem
-              selected={tab == 'admin/supabase/queries'}
-              onClick={() => handleChange('admin/supabase/queries')}
-            >
-              <ListItemAvatar>
-                <ListItemIcon>
-                  <StorageOutlined />
-                </ListItemIcon>
-              </ListItemAvatar>
-              <ListItemText
-                primaryTypographyProps={{ fontWeight: 'bold', fontSize: '0.9rem' }}
-                primary={t('browse.supabaseQueries')}
-              />
-            </DrawerItem>
-          )}
-          {can('view', 'postgres') && (
-            <DrawerItem selected={tab == 'admin/permissions'} onClick={() => handleChange('admin/permissions')}>
-              <ListItemAvatar>
-                <ListItemIcon>
-                  <GroupOutlined />
-                </ListItemIcon>
-              </ListItemAvatar>
-              <ListItemText
-                primaryTypographyProps={{ fontWeight: 'bold', fontSize: '0.9rem' }}
-                primary={t('browse.permissions')}
-              />
-            </DrawerItem>
-          )}
-        </List>
-      </DrawerBox>
-    </CustomDrawer>
+    <Box
+      component="nav"
+      sx={(theme) => ({
+        flexGrow: 1,
+        alignItems: 'center',
+        display: 'flex',
+        flexDirection: 'column',
+        [theme.breakpoints.down('lg')]: {
+          width: 'unset',
+          flexShrink: 0,
+        },
+        [theme.breakpoints.up('lg')]: {
+          width: `${drawerWidth}px`,
+          paddingRight: '24px',
+        },
+      })}
+    >
+      <CustomDrawer
+        variant="temporary"
+        anchor={'left'}
+        open={open}
+        onClose={onClose}
+        ModalProps={{
+          keepMounted: true, // Better open performance on mobile.
+        }}
+        sx={(theme: Theme) => ({
+          '& .MuiDrawer-paper': { boxSizing: 'border-box', width: drawerWidth },
+          [theme.breakpoints.down('lg')]: {
+            display: 'block',
+            overflow: 'auto',
+          },
+          [theme.breakpoints.up('lg')]: {
+            display: 'none',
+          },
+        })}
+      >
+        <DrawerContent
+          tab={tab}
+          handleChange={handleChange}
+          t={t}
+          notVerifiedUsersLength={notVerifiedUsers}
+          notificationsLength={notifications.length}
+        />
+      </CustomDrawer>
+      <CustomDrawer
+        anchor={'left'}
+        variant="permanent"
+        sx={(theme: Theme) => ({
+          '& .MuiDrawer-paper': { boxSizing: 'border-box', width: drawerWidth },
+          [theme.breakpoints.down('lg')]: {
+            display: 'none',
+          },
+          [theme.breakpoints.up('lg')]: {
+            display: 'block',
+            overflow: 'none',
+          },
+        })}
+        open
+      >
+        <DrawerContent
+          tab={tab}
+          handleChange={handleChange}
+          t={t}
+          notVerifiedUsersLength={notVerifiedUsers}
+          notificationsLength={notifications.length}
+        />
+      </CustomDrawer>
+    </Box>
   );
 };

@@ -14,7 +14,7 @@ import { RegistrationError } from '../../utils';
 import { AlertMessage, AlertSnackbar } from '../../components/AlertSnackbar';
 import { useNavigate } from 'react-router-dom';
 
-type RegisterProps = {
+export type RegisterProps = {
   email: string;
   password: string;
   displayName: string;

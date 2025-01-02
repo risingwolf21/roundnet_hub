@@ -1,9 +1,9 @@
 import React, { ReactNode, useEffect, useRef, useState } from 'react';
-import { AppBar, Avatar, Box, IconButton, TextField, Toolbar, Typography } from '@mui/material';
+import { AppBar, Avatar, Box, CssBaseline, IconButton, TextField, Toolbar, Typography } from '@mui/material';
 import { AccountCircle, ArrowBack, Menu } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../features/auth/AuthContext';
-import { Drawer } from './Drawer';
+import { Drawer, drawerWidth } from './Drawer';
 import { FirebaseMessaging } from '../features/notifications/FirebaseMessaging';
 
 type Props = {
@@ -32,14 +32,6 @@ const Layout = ({
   const navigate = useNavigate();
   const { user } = useAuth();
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const [appBarHeight, setAppBarHeight] = useState(64); // Default AppBar height
-  const appBarRef = useRef<HTMLDivElement | null>(null);
-
-  useEffect(() => {
-    if (appBarRef.current) {
-      setAppBarHeight(appBarRef.current.offsetHeight);
-    }
-  }, []);
 
   return (
     <Box
@@ -50,40 +42,64 @@ const Layout = ({
         width: '100%',
         height: '100vh', // Volle Ansichtshöhe
         display: 'flex',
-        flexDirection: 'column',
         overflow: 'hidden', // Kein Overflow außerhalb des Containers
       }}
     >
+      <CssBaseline />
       {/* AppBar */}
       <AppBar
-        ref={appBarRef}
         position="fixed"
-        sx={{
-          zIndex: (theme) => theme.zIndex.drawer + 1,
+        sx={(theme) => ({
+          zIndex: theme.zIndex.drawer + 1,
           background: 'primary',
           top: 0,
           pt: 'env(safe-area-inset-top)',
-        }}
+          [theme.breakpoints.down('lg')]: {
+            width: `100%`,
+          },
+          [theme.breakpoints.up('lg')]: {
+            width: `calc(100% - ${drawerWidth}px)`,
+            ml: `${drawerWidth}px`,
+          },
+        })}
       >
         <Toolbar
           sx={{
-            width: 'calc(100% - 48px)',
-            maxWidth: 1200,
-            mx: 'auto',
+            width: '100%',
           }}
         >
           {showBackButton ? (
-            <IconButton color="inherit" onClick={() => navigate(-1)} edge="start" sx={{ mr: 2 }}>
+            <IconButton
+              color="inherit"
+              onClick={() => navigate(-1)}
+              edge="start"
+              sx={(theme) => ({
+                mr: 2,
+                [theme.breakpoints.up('lg')]: {
+                  display: 'none',
+                },
+              })}
+            >
               <ArrowBack />
             </IconButton>
           ) : (
-            <IconButton color="inherit" onClick={() => setDrawerOpen(true)} edge="start" sx={{ mr: 2 }}>
+            <IconButton
+              color="inherit"
+              onClick={() => setDrawerOpen(true)}
+              edge="start"
+              sx={(theme) => ({
+                mr: 2,
+                [theme.breakpoints.up('lg')]: {
+                  display: 'none',
+                },
+              })}
+            >
               <Menu />
             </IconButton>
           )}
 
           {/* Title */}
-          <Typography variant="h6" sx={{ flexGrow: 1 }}>
+          <Typography variant="h6" noWrap sx={{ flexGrow: 1 }}>
             {title}
           </Typography>
           {/* Profile */}
@@ -91,7 +107,7 @@ const Layout = ({
             <IconButton
               color="inherit"
               onClick={() => {
-                navigate('/user/');
+                navigate('/user');
               }}
               sx={{ pr: 0 }}
             >
@@ -119,24 +135,39 @@ const Layout = ({
       </AppBar>
 
       {/* Drawer  */}
-      <Drawer open={drawerOpen} onClose={() => setDrawerOpen(false)} onOpen={() => setDrawerOpen(true)} />
+      <Drawer open={drawerOpen} onClose={() => setDrawerOpen(false)} />
 
       <FirebaseMessaging />
 
       {/* Main Content */}
       <Box
         data-content-container
-        sx={{
-          width: '100%',
-          maxWidth: 1200,
-          mx: 'auto',
+        component="main"
+        sx={(theme) => ({
+          flexGrow: 1,
           alignItems: 'center',
-          flex: 1,
-          overflowY: 'auto',
-          mt: `${appBarRef?.current?.offsetHeight || 64}px`,
-        }}
+          display: 'flex',
+          flexDirection: 'column',
+          [theme.breakpoints.down('lg')]: {
+            width: '100%',
+          },
+          [theme.breakpoints.up('lg')]: {
+            width: `calc(100% - ${drawerWidth}px)`,
+          },
+        })}
       >
-        <Box>{children}</Box>
+        <Toolbar />
+        <Box
+          sx={{
+            width: '100%',
+            overflowY: 'auto',
+            alignItems: 'center',
+            flexGrow: 1,
+            flex: 1,
+          }}
+        >
+          <Box>{children}</Box>
+        </Box>
       </Box>
     </Box>
   );
