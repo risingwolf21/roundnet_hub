@@ -25,6 +25,8 @@
   "confirmKeyHandover": "Are you sure you want to hand over the key \"{{ keyName }}\" to \"{{ userName }}\"?",
   "confirmKeyTaken": "Hereby you confirm that you have received the key \"{{ keyName }}\" from \"{{ userName }}\"!",
   "events": {
+    "upcoming": "Upcoming",
+    "past": "Past",
     "creation": {
       "answerDeadlineAfterStart": "The answer dead line can not be after the start of the event",
       "answerDeadlineBeforeNow": "The answer dead line can not be before now",
@@ -50,9 +52,9 @@
       "declined_other": "{{count}} declined",
       "commentTimeAgo": "{{time}} ago"
     },
-    "startDateShortMonth":"{{date, MMM}}",
-    "startDateDay":"{{date, d}}",
-    "startTime":"{{date, cccc}} um {{date, HH:mm}}"
+    "startDateShortMonth": "{{date, MMM}}",
+    "startDateDay": "{{date, d}}",
+    "startTime": "{{date, cccc}} um {{date, HH:mm}}"
   },
   "feature_not_available": "This feature is not ready yet. Try again later!",
   "handover_key": "Hand over",
@@ -74,11 +76,10 @@
   },
   "notification_actionMessage": "We'd like to show you notifications for the following categories.",
   "notification_updateMessage": "Update your push notification subscription preferences.",
-  "past": "Past",
   "take_key": "Take",
-  "upcoming": "Upcoming",
   "userName": "userName",
   "challenge": {
     "automatedChallenge": "In this challenge, the points are updated automatically!"
-  }
+  },
+  "filter": "Filter"
 }

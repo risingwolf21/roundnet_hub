@@ -75,6 +75,7 @@ export const AuthGate = ({ children }: Props) => {
         const roles = await AdminPermissionsRepository.fetchRolesForUser(session.user.id);
         const permissions = await AdminPermissionsRepository.fetchPermissionsForRoles(roles);
         const { data: user } = await SupabaseUserRepository.fetchUser(session.user.id);
+        const groups = await SupabaseUserRepository.fetchGroupsForUser(session.user.id);
         // const { data: player_data } = await SupabaseUserRepository.fetchPlayer(session.user.id);
 
         if (!user) {
@@ -88,6 +89,7 @@ export const AuthGate = ({ children }: Props) => {
             roles,
             permissions,
             player_data: null,
+            groups
           } satisfies UserWithRolesAndPermissions)
         );
         setSession(session);

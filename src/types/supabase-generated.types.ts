@@ -347,7 +347,7 @@ export type Database = {
           created_at: string
           description: string
           endDateTime: string | null
-          group: string | null
+          group: string
           id: string
           isCancelled: boolean
           key: string
@@ -365,7 +365,7 @@ export type Database = {
           created_at?: string
           description?: string
           endDateTime?: string | null
-          group?: string | null
+          group: string
           id?: string
           isCancelled?: boolean
           key?: string
@@ -383,7 +383,7 @@ export type Database = {
           created_at?: string
           description?: string
           endDateTime?: string | null
-          group?: string | null
+          group?: string
           id?: string
           isCancelled?: boolean
           key?: string

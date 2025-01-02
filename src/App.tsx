@@ -55,7 +55,7 @@ const App = () => {
           <InitialFetch>
             <React.Suspense fallback={<LoadingScreen />}>
               <Routes>
-                <Route path="/" element={<Navigate replace to={`/training/list`} />} />
+                <Route index path="/" element={<Navigate replace to={`/training/list`} />} />
 
                 <Route path="/not-verified" element={<NotVerifiedScreen />} />
 

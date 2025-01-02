@@ -25,6 +25,8 @@
   "confirmKeyHandover": "Bist du sicher das du den Schlüssel \"{{ keyName }}\" an \"{{ userName }}\" abgeben möchtest?",
   "confirmKeyTaken": "Hiermit bestätigst du das du den Schlüssel \"{{ keyName }}\" von \"{{ userName }}\" erhalten hast!",
   "events": {
+    "upcoming": "Anstehende",
+    "past": "Vergangene",
     "creation": {
       "answerDeadlineAfterStart": "Der Anmeldezeitraum kann nicht nach dem Start des Events sein",
       "answerDeadlineBeforeNow": "Der Anmeldezeitraum kann nicht vor dem aktuellen Datum sein",
@@ -50,9 +52,9 @@
       "declined_other": "{{count}} Absagen",
       "commentTimeAgo": "vor {{time}}"
     },
-    "startDateShortMonth":"{{date, MMM}}",
-    "startDateDay":"{{date, d}}",
-    "startTime":"{{date, cccc}} um {{date, HH:mm}}"
+    "startDateShortMonth": "{{date, MMM}}",
+    "startDateDay": "{{date, d}}",
+    "startTime": "{{date, cccc}} um {{date, HH:mm}}"
   },
   "feature_not_available": "Diese Funktion ist noch nicht bereit. Versuche es später erneut!",
   "handover_key": "Abgeben",
@@ -74,11 +76,10 @@
   },
   "notification_actionMessage": "Du kannst Push-Benachrichtigungen zu den folgenden Themen erhalten",
   "notification_updateMessage": "Update deine Push-Benachrichtigungs Segmente",
-  "pastMonth": "Vergangene 30 Tage",
   "take_key": "Annehmen",
-  "nextMonth": "Nächste 30 Tage",
   "userName": "Benutzername",
   "challenge": {
     "automatedChallenge": "Bei dieser Challenge werden die Punkte automatisiert aktualisiert!"
-  }
+  },
+  "filter": "Filtern"
 }
