@@ -4,6 +4,7 @@ import {
   Group,
   GroupOutlined,
   History,
+  InfoOutlined,
   Key,
   Liquor,
   Notifications,
@@ -121,7 +122,7 @@ const DrawerContent = ({ tab, handleChange, t, notificationsLength, notVerifiedU
   return (
     <DrawerBox>
       <List>
-        <DrawerItem selected={tab === 'user'} onClick={() => handleChange('user')}>
+        <DrawerItem key="user" selected={tab === 'user'} onClick={() => handleChange('user')}>
           <ListItemAvatar>
             <ListItemIcon>
               <Person />
@@ -134,6 +135,7 @@ const DrawerContent = ({ tab, handleChange, t, notificationsLength, notVerifiedU
       {canAny('select', ['drink', 'history', 'payments']) && (
         <>
           <List
+            key="drinkList"
             subheader={
               <ListSubheader
                 disableSticky
@@ -151,7 +153,7 @@ const DrawerContent = ({ tab, handleChange, t, notificationsLength, notVerifiedU
             }
           >
             {can('select', 'drink') && (
-              <DrawerItem selected={tab === 'drinks'} onClick={() => handleChange('drinks')}>
+              <DrawerItem key="drinks" selected={tab === 'drinks'} onClick={() => handleChange('drinks')}>
                 <ListItemAvatar>
                   <ListItemIcon>
                     <Liquor />
@@ -164,7 +166,7 @@ const DrawerContent = ({ tab, handleChange, t, notificationsLength, notVerifiedU
               </DrawerItem>
             )}
             {can('select', 'history') && (
-              <DrawerItem selected={tab === 'history'} onClick={() => handleChange('history')}>
+              <DrawerItem key="history" selected={tab === 'history'} onClick={() => handleChange('history')}>
                 <ListItemAvatar>
                   <ListItemIcon>
                     <History />
@@ -177,7 +179,7 @@ const DrawerContent = ({ tab, handleChange, t, notificationsLength, notVerifiedU
               </DrawerItem>
             )}
             {can('select', 'payments') && (
-              <DrawerItem selected={tab === 'payments'} onClick={() => handleChange('payments')}>
+              <DrawerItem key="payments" selected={tab === 'payments'} onClick={() => handleChange('payments')}>
                 <ListItemAvatar>
                   <ListItemIcon>
                     <Euro />
@@ -194,9 +196,9 @@ const DrawerContent = ({ tab, handleChange, t, notificationsLength, notVerifiedU
         </>
       )}
 
-      <List>
+      <List key="mainList">
         {can('select', 'event') && (
-          <DrawerItem selected={tab === 'training/list'} onClick={() => handleChange('training/list')}>
+          <DrawerItem key="events" selected={tab === 'training/list'} onClick={() => handleChange('training/list')}>
             <ListItemAvatar>
               <ListItemIcon>
                 <SportsHandball />
@@ -209,7 +211,7 @@ const DrawerContent = ({ tab, handleChange, t, notificationsLength, notVerifiedU
           </DrawerItem>
         )}
         {can('select', 'challenge') && (
-          <DrawerItem selected={tab === 'challenges'} onClick={() => handleChange('challenges')}>
+          <DrawerItem key="challenges" selected={tab === 'challenges'} onClick={() => handleChange('challenges')}>
             <ListItemAvatar>
               <ListItemIcon>
                 <EmojiEvents />
@@ -222,7 +224,7 @@ const DrawerContent = ({ tab, handleChange, t, notificationsLength, notVerifiedU
           </DrawerItem>
         )}
         {can('select', 'item') && (
-          <DrawerItem selected={tab === 'keys'} onClick={() => handleChange('keys')}>
+          <DrawerItem key="keys" selected={tab === 'keys'} onClick={() => handleChange('keys')}>
             <ListItemAvatar>
               <ListItemIcon>
                 <Key />
@@ -236,6 +238,7 @@ const DrawerContent = ({ tab, handleChange, t, notificationsLength, notVerifiedU
         )}
         {can('view', 'notifications') && (
           <DrawerItem
+            key="notifications"
             selected={tab === 'notifications'}
             onClick={() => handleChange('notifications')}
             secondaryAction={
@@ -258,8 +261,176 @@ const DrawerContent = ({ tab, handleChange, t, notificationsLength, notVerifiedU
           </DrawerItem>
         )}
       </List>
+      {canAny('select', ['payments', 'drink', 'user', 'history', 'group']) && (
+        <>
+          <Divider />
+          <List
+            key="adminList"
+            subheader={
+              <ListSubheader
+                disableSticky
+                sx={{
+                  zIndex: '-1',
+                  fontWeight: 'bold',
+                  lineHeight: 'normal',
+                  my: 2,
+                  mx: 2,
+                  backgroundColor: '#f2ecf1',
+                }}
+              >
+                Admin
+              </ListSubheader>
+            }
+          >
+            {can('update', 'payments') && (
+              <DrawerItem
+                key="updatePayements"
+                selected={tab === 'admin/drinks/payments'}
+                onClick={() => handleChange('admin/drinks/payments')}
+              >
+                <ListItemAvatar>
+                  <ListItemIcon>
+                    <Euro />
+                  </ListItemIcon>
+                </ListItemAvatar>
+                <ListItemText
+                  primaryTypographyProps={{ fontWeight: 'bold', fontSize: '0.9rem' }}
+                  primary={t('browse.managePayments')}
+                />
+              </DrawerItem>
+            )}
+            {can('update', 'drink') && (
+              <DrawerItem
+                key="updateDrink"
+                selected={tab === 'admin/drinks'}
+                onClick={() => handleChange('admin/drinks')}
+              >
+                <ListItemAvatar>
+                  <ListItemIcon>
+                    <Liquor />
+                  </ListItemIcon>
+                </ListItemAvatar>
+                <ListItemText
+                  primaryTypographyProps={{ fontWeight: 'bold', fontSize: '0.9rem' }}
+                  primary={t('browse.manageDrinks')}
+                />
+              </DrawerItem>
+            )}
+            {can('update', 'user') && (
+              <DrawerItem
+                key="updateUser"
+                selected={tab === 'admin/users'}
+                onClick={() => handleChange('admin/users')}
+                secondaryAction={
+                  <Typography fontWeight={'bold'} fontSize={'0.9rem'}>
+                    {notVerifiedUsersLength || ''}
+                  </Typography>
+                }
+              >
+                <ListItemAvatar>
+                  <ListItemIcon>
+                    <Badge color={'secondary'} variant={'dot'} badgeContent={notVerifiedUsersLength}>
+                      <Group />
+                    </Badge>
+                  </ListItemIcon>
+                </ListItemAvatar>
+                <ListItemText
+                  primaryTypographyProps={{ fontWeight: 'bold', fontSize: '0.9rem' }}
+                  primary={t('browse.manageUsers')}
+                />
+              </DrawerItem>
+            )}
+            {can('update', 'history') && (
+              <DrawerItem
+                key="updateHistory"
+                selected={tab === 'admin/history'}
+                onClick={() => handleChange('admin/history')}
+              >
+                <ListItemAvatar>
+                  <ListItemIcon>
+                    <History />
+                  </ListItemIcon>
+                </ListItemAvatar>
+                <ListItemText
+                  primaryTypographyProps={{ fontWeight: 'bold', fontSize: '0.9rem' }}
+                  primary={t('browse.completeHistory')}
+                />
+              </DrawerItem>
+            )}
+            {can('update', 'group') && (
+              <DrawerItem
+                key="updateGroup"
+                selected={tab === 'trainer/groups'}
+                onClick={() => handleChange('trainer/groups')}
+              >
+                <ListItemAvatar>
+                  <ListItemIcon>
+                    <GroupOutlined />
+                  </ListItemIcon>
+                </ListItemAvatar>
+                <ListItemText
+                  primaryTypographyProps={{ fontWeight: 'bold', fontSize: '0.9rem' }}
+                  primary={t('browse.manageGroups')}
+                />
+              </DrawerItem>
+            )}
+            {can('view', 'postgres') && (
+              <DrawerItem
+                key="supabaseClient"
+                selected={tab === 'admin/supabase'}
+                onClick={() => handleChange('admin/supabase')}
+              >
+                <ListItemAvatar>
+                  <ListItemIcon>
+                    <StorageOutlined />
+                  </ListItemIcon>
+                </ListItemAvatar>
+                <ListItemText
+                  primaryTypographyProps={{ fontWeight: 'bold', fontSize: '0.9rem' }}
+                  primary={t('browse.postgresClient')}
+                />
+              </DrawerItem>
+            )}
+            {can('view', 'postgres') && (
+              <DrawerItem
+                key="supabaseQuery"
+                selected={tab === 'admin/supabase/queries'}
+                onClick={() => handleChange('admin/supabase/queries')}
+              >
+                <ListItemAvatar>
+                  <ListItemIcon>
+                    <StorageOutlined />
+                  </ListItemIcon>
+                </ListItemAvatar>
+                <ListItemText
+                  primaryTypographyProps={{ fontWeight: 'bold', fontSize: '0.9rem' }}
+                  primary={t('browse.supabaseQueries')}
+                />
+              </DrawerItem>
+            )}
+            {can('view', 'postgres') && (
+              <DrawerItem
+                key="permission"
+                selected={tab === 'admin/permissions'}
+                onClick={() => handleChange('admin/permissions')}
+              >
+                <ListItemAvatar>
+                  <ListItemIcon>
+                    <GroupOutlined />
+                  </ListItemIcon>
+                </ListItemAvatar>
+                <ListItemText
+                  primaryTypographyProps={{ fontWeight: 'bold', fontSize: '0.9rem' }}
+                  primary={t('browse.permissions')}
+                />
+              </DrawerItem>
+            )}
+          </List>
+        </>
+      )}
       <Divider />
       <List
+        key="infolist"
         subheader={
           <ListSubheader
             disableSticky
@@ -272,127 +443,22 @@ const DrawerContent = ({ tab, handleChange, t, notificationsLength, notVerifiedU
               backgroundColor: '#f2ecf1',
             }}
           >
-            Admin
+            Info
           </ListSubheader>
         }
       >
-        {can('update', 'payments') && (
-          <DrawerItem selected={tab === 'admin/drinks/payments'} onClick={() => handleChange('admin/drinks/payments')}>
-            <ListItemAvatar>
-              <ListItemIcon>
-                <Euro />
-              </ListItemIcon>
-            </ListItemAvatar>
-            <ListItemText
-              primaryTypographyProps={{ fontWeight: 'bold', fontSize: '0.9rem' }}
-              primary={t('browse.managePayments')}
-            />
-          </DrawerItem>
-        )}
-        {can('update', 'drink') && (
-          <DrawerItem selected={tab === 'admin/drinks'} onClick={() => handleChange('admin/drinks')}>
-            <ListItemAvatar>
-              <ListItemIcon>
-                <Liquor />
-              </ListItemIcon>
-            </ListItemAvatar>
-            <ListItemText
-              primaryTypographyProps={{ fontWeight: 'bold', fontSize: '0.9rem' }}
-              primary={t('browse.manageDrinks')}
-            />
-          </DrawerItem>
-        )}
-        {can('update', 'user') && (
-          <DrawerItem
-            selected={tab === 'admin/users'}
-            onClick={() => handleChange('admin/users')}
-            secondaryAction={
-              <Typography fontWeight={'bold'} fontSize={'0.9rem'}>
-                {notVerifiedUsersLength || ''}
-              </Typography>
-            }
-          >
-            <ListItemAvatar>
-              <ListItemIcon>
-                <Badge color={'secondary'} variant={'dot'} badgeContent={notVerifiedUsersLength}>
-                  <Group />
-                </Badge>
-              </ListItemIcon>
-            </ListItemAvatar>
-            <ListItemText
-              primaryTypographyProps={{ fontWeight: 'bold', fontSize: '0.9rem' }}
-              primary={t('browse.manageUsers')}
-            />
-          </DrawerItem>
-        )}
-        {can('update', 'history') && (
-          <DrawerItem selected={tab === 'admin/history'} onClick={() => handleChange('admin/history')}>
-            <ListItemAvatar>
-              <ListItemIcon>
-                <History />
-              </ListItemIcon>
-            </ListItemAvatar>
-            <ListItemText
-              primaryTypographyProps={{ fontWeight: 'bold', fontSize: '0.9rem' }}
-              primary={t('browse.completeHistory')}
-            />
-          </DrawerItem>
-        )}
-        {can('update', 'group') && (
-          <DrawerItem selected={tab === 'trainer/groups'} onClick={() => handleChange('trainer/groups')}>
-            <ListItemAvatar>
-              <ListItemIcon>
-                <GroupOutlined />
-              </ListItemIcon>
-            </ListItemAvatar>
-            <ListItemText
-              primaryTypographyProps={{ fontWeight: 'bold', fontSize: '0.9rem' }}
-              primary={t('browse.manageGroups')}
-            />
-          </DrawerItem>
-        )}
-        {can('view', 'postgres') && (
-          <DrawerItem selected={tab === 'admin/supabase'} onClick={() => handleChange('admin/supabase')}>
-            <ListItemAvatar>
-              <ListItemIcon>
-                <StorageOutlined />
-              </ListItemIcon>
-            </ListItemAvatar>
-            <ListItemText
-              primaryTypographyProps={{ fontWeight: 'bold', fontSize: '0.9rem' }}
-              primary={t('browse.postgresClient')}
-            />
-          </DrawerItem>
-        )}
-        {can('view', 'postgres') && (
-          <DrawerItem
-            selected={tab === 'admin/supabase/queries'}
-            onClick={() => handleChange('admin/supabase/queries')}
-          >
-            <ListItemAvatar>
-              <ListItemIcon>
-                <StorageOutlined />
-              </ListItemIcon>
-            </ListItemAvatar>
-            <ListItemText
-              primaryTypographyProps={{ fontWeight: 'bold', fontSize: '0.9rem' }}
-              primary={t('browse.supabaseQueries')}
-            />
-          </DrawerItem>
-        )}
-        {can('view', 'postgres') && (
-          <DrawerItem selected={tab === 'admin/permissions'} onClick={() => handleChange('admin/permissions')}>
-            <ListItemAvatar>
-              <ListItemIcon>
-                <GroupOutlined />
-              </ListItemIcon>
-            </ListItemAvatar>
-            <ListItemText
-              primaryTypographyProps={{ fontWeight: 'bold', fontSize: '0.9rem' }}
-              primary={t('browse.permissions')}
-            />
-          </DrawerItem>
-        )}
+        <DrawerItem key="app version" selected={false}>
+          <ListItemAvatar>
+            <ListItemIcon>
+              <InfoOutlined />
+            </ListItemIcon>
+          </ListItemAvatar>
+          <ListItemText
+            primaryTypographyProps={{ fontWeight: 'bold', fontSize: '0.9rem' }}
+            secondary={'App Version'}
+            primary={process.env.REACT_APP_VERSION}
+          />
+        </DrawerItem>
       </List>
     </DrawerBox>
   );

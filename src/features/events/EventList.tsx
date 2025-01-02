@@ -119,6 +119,7 @@ const EventScreen = ({ events, loading, error, user }: EventScreenProps) => {
         </Box>
         {can('select', 'event') && (
           <Fab
+            key="filter"
             sx={{
               position: 'fixed',
               right: '16px',
@@ -132,6 +133,7 @@ const EventScreen = ({ events, loading, error, user }: EventScreenProps) => {
         )}
         {can('insert', 'event') && (
           <Fab
+            key="insertEvent"
             sx={{
               position: 'fixed',
               right: '88px',
@@ -148,6 +150,7 @@ const EventScreen = ({ events, loading, error, user }: EventScreenProps) => {
         )}
         {can('update', 'event') && (
           <Fab
+            key="updateEvent"
             sx={{
               position: 'fixed',
               right: '160px',
@@ -221,7 +224,7 @@ const EventScreen = ({ events, loading, error, user }: EventScreenProps) => {
           >
             <Grid container spacing={2}>
               {user.groups.map((x) => (
-                <Grid>
+                <Grid key={x.id}>
                   <Chip
                     variant={selectedGroups.includes(x.id) ? 'filled' : 'outlined'}
                     color={'secondary'}

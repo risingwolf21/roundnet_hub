@@ -38,7 +38,6 @@ const ChallengeScreen = React.lazy(() => import('./features/challenges/Challenge
 const ChallengeInfoScreen = React.lazy(() => import('./features/challenges/ChallengeInformationProvider'));
 
 const App = () => {
-
   const { isUpdateAvailable, updateServiceWorker } = useServiceWorker();
 
   if (isUpdateAvailable) return <UpdateAvailable update={updateServiceWorker} />;
@@ -75,7 +74,7 @@ const App = () => {
 
                 <Route path="/notificationPermissions" element={<NotificationsScreenProvider />} />
 
-                <Route path="user" element={<UserScreenProvider/>}>
+                <Route path="user" element={<UserScreenProvider />}>
                   <Route path=":userId" element={<ProfileScreen />} />
                 </Route>
 

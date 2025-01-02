@@ -34,6 +34,9 @@ const LoginScreen = () => {
         password: credentials.password,
       })
       .then((result) => {
+        if (process.env.REACT_APP_ENV === 'production_admin' && result.data.user?.role !== 'admin') {
+          throw Error('Cannot login if not user has not the admin role');
+        }
         if (result.error) {
           throw result.error;
         } else if (!result.data.session) {

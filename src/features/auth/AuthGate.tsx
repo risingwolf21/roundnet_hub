@@ -91,7 +91,7 @@ export const AuthGate = ({ children }: Props) => {
           } satisfies UserWithRolesAndPermissions)
         );
         setSession(session);
-      } catch (error) {
+      } catch (error: any) {
         captureException(error);
         reset();
         throw error;
@@ -103,7 +103,7 @@ export const AuthGate = ({ children }: Props) => {
       } else if (event === 'PASSWORD_RECOVERY') {
         return { navigateTo: '/reset-password' };
       } else {
-        return { navigateTo: location.pathname || `/${HOMEPAGE}` };
+        return { navigateTo: location.pathname === '/login' ? `/${HOMEPAGE}` : location.pathname };
       }
     },
     [dispatch, reset, currentUser, location.pathname]
@@ -126,7 +126,10 @@ export const AuthGate = ({ children }: Props) => {
           .then((result) => {
             if (result) navigate(result.navigateTo, { replace: true });
           })
-          .catch(() => setLoading(false));
+          .catch((error) => {
+            setLoading(false);
+            setAlertInfo({ message: error.message, severity: 'error' });
+          });
       }
     });
     return () => subscription.unsubscribe();
@@ -154,7 +157,7 @@ export const AuthGate = ({ children }: Props) => {
   return (
     <>
       {session ? (
-        currentUser && currentUser.verified ? (
+        (currentUser && currentUser.verified) ? (
           <AuthContext.Provider value={{ user: currentUser, signOut: signOut }}>{children}</AuthContext.Provider>
         ) : (
           <NotVerifiedScreen />

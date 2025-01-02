@@ -74,13 +74,13 @@
     "workbox-streams": "^6.6.0"
   },
   "scripts": {
-    "start": "env-cmd -f .env.development react-scripts start",
-    "start:staging": "env-cmd -f .env.staging react-scripts start",
-    "start:production": "env-cmd -f .env.production react-scripts start",
-    "build:staging": "env-cmd -f .env.staging react-scripts build",
-    "build:production": "env-cmd -f .env.production react-scripts build",
-    "test": "env-cmd -f .env.staging react-scripts test --passWithNoTests",
-    "eject": "env-cmd -f .env.staging react-scripts eject",
+    "start": "env-cmd -e main,development react-scripts start",
+    "start:staging": "env-cmd -e main,staging react-scripts start",
+    "start:production": "env-cmd -e main,production react-scripts start",
+    "start:production_admin": "env-cmd -e main,production,admin react-scripts start",
+    "build:staging": "env-cmd -e main,staging react-scripts build",
+    "build:production": "env-cmd -e main,production react-scripts build",
+    "build:production:admin": "env-cmd -e main,production,admin react-scripts build",
     "function-deploy-all-prod": "npx supabase functions deploy --project-ref PROJECT_REF",
     "gen-types:production": "npx supabase gen types typescript --project-id PROJECT_REF --schema public --schema games > src/types/supabase-generated.types.ts",
     "format": "prettier --write \"src/**/*.{js,jsx,ts,tsx,css,md}\" --config ./.prettierrc.json"
