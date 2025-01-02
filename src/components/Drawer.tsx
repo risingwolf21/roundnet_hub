@@ -29,7 +29,7 @@ import {
   Theme,
   Typography,
 } from '@mui/material';
-import { darken, styled } from '@mui/system';
+import { styled } from '@mui/system';
 import { TFunction } from 'i18next';
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -63,7 +63,7 @@ const DrawerItem = styled(ListItem, {
   backgroundPosition: 'center',
   transition: 'background 0.2s',
   '&:hover': {
-    background: alpha("#808080", 0.2),
+    background: alpha('#808080', 0.2),
   },
   '& .MuiListItemSecondaryAction-root': {
     right: 24,
@@ -407,6 +407,7 @@ export const Drawer = ({ open, onClose }: Props) => {
 
   useEffect(() => {
     setTab(window.location.pathname.substring(1));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [window.location.pathname]);
 
   const handleChange = (newValue: string) => {

@@ -1,10 +1,10 @@
-import React, { ReactNode, useEffect, useRef, useState } from 'react';
-import { AppBar, Avatar, Box, CssBaseline, IconButton, TextField, Toolbar, Typography } from '@mui/material';
 import { AccountCircle, ArrowBack, Menu } from '@mui/icons-material';
+import { AppBar, Avatar, Box, CssBaseline, IconButton, TextField, Toolbar, Typography } from '@mui/material';
+import React, { ReactNode, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../features/auth/AuthContext';
-import { Drawer, drawerWidth } from './Drawer';
 import { FirebaseMessaging } from '../features/notifications/FirebaseMessaging';
+import { Drawer, drawerWidth } from './Drawer';
 
 type Props = {
   children: ReactNode;

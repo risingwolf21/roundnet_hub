@@ -17,6 +17,7 @@ const CustomBottomNavigation = () => {
 
   useEffect(() => {
     setTab(window.location.pathname.substring(1));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [window.location.pathname]);
 
   const handleChange = (e: any, newValue: string) => {
