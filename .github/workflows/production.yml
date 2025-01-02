@@ -13,7 +13,6 @@ jobs:
 
   build_production:
     runs-on: ubuntu-latest
-    needs: [checkout, node_setup, dependencies]
     steps:
       - uses: actions/checkout@v2
 
@@ -52,7 +51,6 @@ jobs:
 
   build_admin:
     runs-on: ubuntu-latest
-    needs: [checkout, node_setup, dependencies]
     steps:
       - uses: actions/checkout@v2
 
@@ -63,7 +61,7 @@ jobs:
 
       - name: Install dependencies
         run: yarn install
-        
+
       - name: Build
         run: PUBLIC_URL=https://roundnet-karlsruhe.web.app yarn run build:production_admin
         env:
