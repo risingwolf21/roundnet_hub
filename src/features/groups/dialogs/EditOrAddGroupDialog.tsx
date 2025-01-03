@@ -9,19 +9,21 @@ import {
   List,
   ListItem,
   ListItemAvatar,
+  ListItemText,
   Snackbar,
   TextField,
   Toolbar,
   Typography,
 } from '@mui/material';
 import { Box } from '@mui/system';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { SlideUpTransition } from '../../../utils';
 import KeyIcon from '@mui/icons-material/Key';
 import { GroupsRepository } from '../../../repository/GroupsRepository';
 import { TablesUpdate } from '../../../types/supabase-generated.types';
 import { useAuth } from '../../auth/AuthContext';
 import { captureException } from '@sentry/react';
+import { ColorLens } from '@mui/icons-material';
 
 type EditOrAddGroupDialogProps = {
   open: boolean;
@@ -31,6 +33,7 @@ type EditOrAddGroupDialogProps = {
 
 export const EditOrAddGroupDialog = ({ open, handleClose, groupToEdit }: EditOrAddGroupDialogProps) => {
   const { user } = useAuth();
+  const inputRef = useRef<HTMLInputElement>(null);
   const [currentGroup, setCurrentGroup] = useState<TablesUpdate<'event_group'>>({
     id: groupToEdit.id,
     name: groupToEdit.name,
@@ -98,11 +101,7 @@ export const EditOrAddGroupDialog = ({ open, handleClose, groupToEdit }: EditOrA
             <Typography sx={{ ml: 2, flex: 1 }} variant="h6" component="div">
               {`Gruppe ${groupToEdit.id !== '' ? 'bearbeiten' : 'erstellen'}`}
             </Typography>
-            <Button
-              variant="contained"
-              sx={{ background: 'white', color: (theme) => theme.palette.primary.main }}
-              onClick={handleSubmit}
-            >
+            <Button sx={{ color: 'white' }} onClick={handleSubmit}>
               Speichern
             </Button>
           </Toolbar>
@@ -129,19 +128,51 @@ export const EditOrAddGroupDialog = ({ open, handleClose, groupToEdit }: EditOrA
                 margin="normal"
               />
             </ListItem>
-            <ListItem>
+            <ListItem
+              secondaryAction={
+                <IconButton
+                  LinkComponent={'span'}
+                  onClick={(e) => {
+                    if (inputRef.current) {
+                      inputRef.current.click();
+                    }
+                  }}
+                >
+                  <input
+                    ref={inputRef}
+                    hidden
+                    type="color"
+                    value={currentGroup.color}
+                    onChange={(e) => setCurrentGroup({ ...currentGroup, color: e.target.value })}
+                  />
+                  <ColorLens />
+                </IconButton>
+              }
+            >
               <ListItemAvatar>
                 <Avatar sx={{ background: currentGroup.color, width: 40, height: 40, borderRadius: 2 }}>
                   <KeyIcon />
                 </Avatar>
               </ListItemAvatar>
-              <TextField
-                fullWidth
-                variant="outlined"
-                value={currentGroup.color}
-                onChange={(e) => setCurrentGroup({ ...currentGroup, color: e.target.value })}
-                label="Farbe"
-                margin="normal"
+              <ListItemText
+                sx={{ mr: 2 }}
+                slotProps={{
+                  primary: {
+                    whiteSpace: 'nowrap',
+                    overflow: 'clip',
+                    textOverflow: 'ellipsis',
+                  },
+                }}
+                primary={
+                  <TextField
+                    fullWidth
+                    variant="outlined"
+                    value={currentGroup.color}
+                    onChange={(e) => setCurrentGroup({ ...currentGroup, color: e.target.value })}
+                    label="Farbe"
+                    margin="normal"
+                  />
+                }
               />
             </ListItem>
           </List>

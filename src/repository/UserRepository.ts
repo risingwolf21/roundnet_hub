@@ -7,14 +7,14 @@ export const fetchGroups = supabase.from('group_user_mapping').select('group(*)'
 
 export const SupabaseUserRepository = {
   async fetchUserWithGroups(userId: string): Promise<PostgrestSingleResponse<FullUser>> {
+    const {data: player_data} = await SupabaseUserRepository.fetchPlayer(userId);
     const response = await supabase
       .from('user')
       .select('*, groups: group_user_mapping ( group: event_group ( * ) ), roles: user_roles(*)')
       .eq('userId', userId)
       .single();
-    const player_data = await supabase.schema('games').from('players').select('*').eq('player', userId).single();
 
-    if (!response.data || !player_data.data)
+    if (!response.data)
       return {
         error: {
           code: '',
@@ -34,7 +34,7 @@ export const SupabaseUserRepository = {
         ...response.data,
         groups: response.data?.groups.map((x: any) => x.group) ?? [],
         roles: response.data?.roles.map((x: any) => x.app_role) ?? [],
-        player_data: player_data.data,
+        player_data: player_data,
       },
     };
   },
@@ -49,8 +49,8 @@ export const SupabaseUserRepository = {
     return data?.map(x => x.group) ?? [];
   },
 
-  async fetchPlayer(userId: string): Promise<PostgrestSingleResponse<Player>> {
-    return supabase.schema('games').from('players').select('*').eq('player', userId).single().throwOnError();
+  async fetchPlayer(userId: string): Promise<PostgrestSingleResponse<Player|null>> {
+    return supabase.schema('games').from('players').select('*').eq('player', userId).maybeSingle().throwOnError();
   },
 
   async updateNotificationTags(
