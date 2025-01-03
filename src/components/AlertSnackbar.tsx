@@ -28,7 +28,7 @@ export const AlertSnackbar = ({ alertInfo, close, autoHideDuration }: AlertSnack
 
   return (
     <Snackbar
-      sx={{ position: 'fixed', right: '16px', bottom: 'calc(16px + env(safe-area-inset-bottom))' }}
+      sx={{ position: 'fixed', right: '16px', bottom: 'max(16px, env(safe-area-inset-bottom))' }}
       open={alertInfo != null}
       autoHideDuration={versionError() ? null : autoHideDuration}
       onClose={close ? handleSnackbarClose : undefined}

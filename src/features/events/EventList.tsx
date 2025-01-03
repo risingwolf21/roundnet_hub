@@ -133,7 +133,7 @@ const EventScreen = ({ events, loading, error, user }: EventScreenProps) => {
             sx={{
               position: 'fixed',
               right: '16px',
-              bottom: 'calc(16px + env(safe-area-inset-bottom))',
+              bottom: 'max(16px, env(safe-area-inset-bottom))',
             }}
             color={'secondary'}
             onClick={() => setFilterDialogOpen(true)}
@@ -147,7 +147,7 @@ const EventScreen = ({ events, loading, error, user }: EventScreenProps) => {
             sx={{
               position: 'fixed',
               right: '88px',
-              bottom: 'calc(16px + env(safe-area-inset-bottom))',
+              bottom: 'max(16px, env(safe-area-inset-bottom))',
             }}
             color={'secondary'}
             onClick={() => {
@@ -164,7 +164,7 @@ const EventScreen = ({ events, loading, error, user }: EventScreenProps) => {
             sx={{
               position: 'fixed',
               right: '160px',
-              bottom: 'calc(16px + env(safe-area-inset-bottom))',
+              bottom: 'max(16px, env(safe-area-inset-bottom))',
             }}
             color={'secondary'}
             onClick={() => navigate('/training/recurringEvents')}

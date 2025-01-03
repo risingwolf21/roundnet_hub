@@ -403,7 +403,7 @@ export const SupabaseClient = () => {
             },
           }}
           sx={{
-              pb: "calc(56px + env(safe-area-inset-bottom))"
+              pb: "max(56px,env(safe-area-inset-bottom))"
           }}
           processRowUpdate={processRowUpdate}
           onRowModesModelChange={handleRowModesModelChange}
