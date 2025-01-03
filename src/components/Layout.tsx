@@ -40,12 +40,11 @@ const Layout = ({
         top: 0,
         left: 0,
         width: '100%',
-        height: 'calc(100% + env(safe-area-inset-top) + env(safe-area-inset-bottom))',
+        minHeight: 'calc(100% + env(safe-area-inset-top) + env(safe-area-inset-bottom))',
         display: 'flex',
         overflow: 'hidden', // Kein Overflow außerhalb des Containers
       }}
     >
-      <CssBaseline />
       {/* AppBar */}
       <AppBar
         position="fixed"
