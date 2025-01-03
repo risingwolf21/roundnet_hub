@@ -168,13 +168,13 @@ const eventAttendanceSlice = createSlice({
         state.loading = false;
       })
       .addCase(fetchSingleEventAsync.fulfilled, (state, action) => {
-        if (!action.payload.data) {
+        if (!action.payload) {
           return;
         }
         let attendanceUpdate = {
           id: action.meta.arg.eventId,
           changes: {
-            attendance: action.payload.data.attendance ?? [],
+            attendance: action.payload.attendance ?? [],
           },
         } as Update<SliceAttendance>;
         eventAttendanceAdapter.updateOne(state, attendanceUpdate);

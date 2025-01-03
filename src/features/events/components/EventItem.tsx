@@ -6,7 +6,16 @@ import {
   ThumbUpAlt,
   ThumbUpOffAlt,
 } from '@mui/icons-material';
-import { alpha, Box, CircularProgress, IconButton, ListItem, ListItemAvatar, ListItemText, Typography } from '@mui/material';
+import {
+  alpha,
+  Box,
+  CircularProgress,
+  IconButton,
+  ListItem,
+  ListItemAvatar,
+  ListItemText,
+  Typography,
+} from '@mui/material';
 import { toDate } from 'date-fns';
 import { TFunction } from 'i18next';
 import React from 'react';
@@ -93,8 +102,13 @@ export const EventItem = ({ event, onClick, attendEvent, declineEvent, attendanc
       </ListItemAvatar>
       <ListItemText
         primary={event.title}
-        primaryTypographyProps={{
-          style: {
+        slotProps={{
+          primary: {
+            whiteSpace: 'nowrap',
+            overflow: 'clip',
+            textOverflow: 'ellipsis',
+          },
+          secondary: {
             whiteSpace: 'nowrap',
             overflow: 'clip',
             textOverflow: 'ellipsis',
@@ -103,13 +117,6 @@ export const EventItem = ({ event, onClick, attendEvent, declineEvent, attendanc
         secondary={
           event.isCancelled ? 'Event abgesagt' : t('events.startTime', { date: toDate(event.startingDateTime) })
         }
-        secondaryTypographyProps={{
-          style: {
-            whiteSpace: 'nowrap',
-            overflow: 'clip',
-            textOverflow: 'ellipsis',
-          },
-        }}
       />
     </ListItem>
   );

@@ -8,7 +8,6 @@ import { fetchAdminUsersAsync } from './slices/adminUserSlice';
 import { RootState, useAppDispatch } from '../../redux/store';
 import { UserWithGroupsAndRoles } from '../../types/supabaseTypes';
 import { AlertMessage, AlertSnackbar } from '../../components/AlertSnackbar';
-import { Error } from '../../components/Error';
 import EditUserDialog, { UserEdited } from './dialogs/EditUserDialog';
 import { captureException } from '@sentry/react';
 import { AdminUsersRepository } from '../../repository/AdminUsersRepository';
@@ -78,8 +77,6 @@ const AdminUserList = () => {
     setEditUserOpen(false);
     dispatch(fetchAdminUsersAsync());
   };
-
-  if (error) return <Error message={error} />;
 
   return (
     <Layout>

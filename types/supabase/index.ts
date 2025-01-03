@@ -4,6 +4,7 @@ import { fetchDrinksToPay, fetchFullHistory } from 'src/repository/DrinkReposito
 import { fetchRolePermissionMapping } from 'src/repository/AdminPermissionsRepository';
 import { fetchGroupWithUsers } from 'src/repository/AdminUsersRepository';
 import { fetchGroups } from 'src/repository/UserRepository';
+import { fetchEvents } from 'src/repository/EventRepository';
 
 export type Event = Tables<'events'>;
 export type History = Tables<'history'>;
@@ -35,6 +36,7 @@ declare global {
   type OpenDrinksForUser = QueryData<typeof fetchDrinksToPay> extends Array<infer U> ? U : never;
   type RolePermissionMapping = QueryData<typeof fetchRolePermissionMapping> extends Array<infer U> ? U : never;
   type Groups = QueryData<typeof fetchGroups> extends Array<infer U> ? U : never;
+  type FullEvent = QueryData<typeof fetchEvents> extends Array<infer U> ? U : never;
   type Player = Database['games']['Tables']['players']['Row'];
 
   type PaymentInsert = TablesInsert<'payments'>;

@@ -8,6 +8,7 @@ import { EventItem } from './components/EventItem';
 import {
   editEvent,
   fetchPastEventsAsync,
+  fetchSingleEventAsync,
   fetchUpcomingEventsAsync,
   onEventDelete,
   onEventErrorRead,
@@ -16,7 +17,7 @@ import {
 } from 'src/features/events/slices/eventsSlice';
 import { updateAttendanceAsync } from 'src/features/events/slices/eventAttendanceSlice';
 import { can } from '../../utils/PermissionService';
-import { TablesUpdate } from '../../types/supabase-generated.types';
+import { TablesInsert, TablesUpdate } from '../../types/supabase-generated.types';
 import { t } from 'i18next';
 import { AlertMessage, AlertSnackbar } from '../../components/AlertSnackbar';
 import { Check, EventRepeat, FilterAlt } from '@mui/icons-material';
@@ -67,12 +68,18 @@ const EventScreen = ({ events, loading, error, user }: EventScreenProps) => {
         },
         (payload) => dispatch(onEventDelete(payload.old.id))
       )
-      // .on<EventInsert>('postgres_changes', { event: 'INSERT', schema: 'public', table: 'events' }, payload => dispatch(onEventInsert(payload.new)))
+      .on<TablesInsert<'events'>>(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'events' },
+        (payload) => {
+          dispatch(fetchSingleEventAsync({ eventId: payload.new.id ?? '', userId: user.userId }));
+        }
+      )
       .subscribe();
     return () => {
       subscription.unsubscribe();
     };
-  }, [client, dispatch]);
+  }, [client, dispatch, user]);
 
   useEffect(() => {
     if (fetchEventMode === 'upcoming') dispatch(fetchUpcomingEventsAsync({ user }));
@@ -91,14 +98,17 @@ const EventScreen = ({ events, loading, error, user }: EventScreenProps) => {
   return (
     <Layout>
       <List
-        sx={(theme) => ({
+        sx={{
           overflowY: 'auto',
           pt: 0,
-          [theme.breakpoints.down('xl')]: { pb: 10 },
-          [theme.breakpoints.up('xl')]: { pb: 0 },
-        })}
+        }}
       >
-        <Box>
+        <Box
+          sx={(theme) => ({
+            [theme.breakpoints.down('xl')]: { pb: 10 },
+            [theme.breakpoints.up('xl')]: { pb: 0 },
+          })}
+        >
           {loading
             ? Array.from({ length: 10 }, (v, k) => k + 1).map((x) => <LoadingEventItem key={x} />)
             : events

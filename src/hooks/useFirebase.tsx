@@ -9,7 +9,7 @@ import { Notification as NotificationComponent } from '../features/notifications
 export async function requestNotificationPermission(user: User, messaging: Messaging) {
   //requesting permission using Notification API
   const permission = await Notification.requestPermission();
-
+  
   if (permission === 'granted') {
     getToken(messaging, {
       vapidKey: process.env.REACT_APP_FIREBASE_VAPID_KEY,

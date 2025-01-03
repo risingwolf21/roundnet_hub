@@ -15,18 +15,16 @@ import {
   ListItemText,
   Typography,
 } from '@mui/material';
+import TextField from '@mui/material/TextField';
 import React, { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
 import { useClient } from 'react-supabase';
-import { fetchAdminsPaymentsAsync } from './slices/adminPaymentsSlice';
-import { RootState, useAppDispatch } from '../../redux/store';
-import { FullPayment } from '../../types/supabaseTypes';
-import { Error } from '../../components/Error';
-import { SwipeableDialog } from '../../components/SwipeableDialog';
 import { History } from 'types/supabase';
 import Layout from '../../components/Layout';
-import TextField from '@mui/material/TextField';
+import { SwipeableDialog } from '../../components/SwipeableDialog';
+import { RootState, useAppDispatch } from '../../redux/store';
+import { FullPayment } from '../../types/supabaseTypes';
+import { fetchAdminsPaymentsAsync } from './slices/adminPaymentsSlice';
 
 const PaymentsPendingAdmin = () => {
   const [open, setOpen] = useState(false);
@@ -34,7 +32,6 @@ const PaymentsPendingAdmin = () => {
   const [searchString, setSearchString] = useState('');
   const client = useClient();
   const dispatch = useAppDispatch();
-  const navigate = useNavigate();
 
   const { payments, error, loading } = useSelector((state: RootState) => state.adminPayments);
 
@@ -42,7 +39,6 @@ const PaymentsPendingAdmin = () => {
     dispatch(fetchAdminsPaymentsAsync({ client }));
   }, [client, dispatch]);
 
-  if (error) return <Error message={error} />;
 
   const selectedPayment = (payment: FullPayment) => {
     setPayment(payment);

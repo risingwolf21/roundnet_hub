@@ -1,21 +1,21 @@
-import * as React from 'react';
 import * as Sentry from '@sentry/react';
+import * as React from 'react';
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import Browse from './components/Browse';
+import { FallbackComponent } from './components/Error';
+import { InitialFetch } from './components/InitialFetch';
 import { LoadingScreen } from './components/LoadingScreen';
+import NotVerifiedScreen from './components/NotVerifiedScreen';
+import { SupabaseClient } from './components/SupabaseClient';
+import { SupabaseQueryClient } from './components/SupabaseQueryClient';
 import UpdateAvailable from './components/UpdateAvailable';
 import { UserScreenProvider } from './components/User';
 import BrowseAdmin from './features/admin/BrowseAdmin';
-import { useServiceWorker } from './hooks/useServiceWorker';
-import NotificationsScreenProvider from './features/notifications/NotificationsScreen';
-import NotVerifiedScreen from './components/NotVerifiedScreen';
-import { AuthGate } from './features/auth/AuthGate';
-import { SupabaseClient } from './components/SupabaseClient';
-import { SupabaseQueryClient } from './components/SupabaseQueryClient';
-import { RecurringEventsProvider } from './features/events/RecurringEvents';
 import { PermissionList } from './features/admin/PermissionList';
-import { InitialFetch } from './components/InitialFetch';
-import { Error } from './components/Error';
+import { AuthGate } from './features/auth/AuthGate';
+import { RecurringEventsProvider } from './features/events/RecurringEvents';
+import NotificationsScreenProvider from './features/notifications/NotificationsScreen';
+import { useServiceWorker } from './hooks/useServiceWorker';
 
 const FeatureNotAvailable = React.lazy(() => import('./components/FeatureNotAvailable'));
 const HistoryScreenProvider = React.lazy(() => import('./features/drinks/HistoryScreenProvider'));
@@ -43,7 +43,11 @@ const App = () => {
   if (isUpdateAvailable) return <UpdateAvailable update={updateServiceWorker} />;
 
   return (
-    <Sentry.ErrorBoundary fallback={<Error message={'Es ist ein Fehler aufgetreten'} />} showDialog>
+    <Sentry.ErrorBoundary
+      onError={console.error}
+      fallback={({ resetError }) => <FallbackComponent message={'Es ist ein Fehler aufgetreten'} resetError={resetError} />}
+      showDialog
+    >
       <BrowserRouter
         future={{
           v7_relativeSplatPath: true,
@@ -74,11 +78,13 @@ const App = () => {
 
                 <Route path="/notificationPermissions" element={<NotificationsScreenProvider />} />
 
-                <Route path="user" element={<UserScreenProvider />}>
+                <Route path="user">
+                  <Route index element={<UserScreenProvider />} />
                   <Route path=":userId" element={<ProfileScreen />} />
                 </Route>
 
-                <Route path="challenges" element={<ChallengeScreen />}>
+                <Route path="challenges">
+                  <Route index element={<ChallengeScreen />} />
                   <Route path=":challengeId" element={<ChallengeInfoScreen />} />
                 </Route>
 

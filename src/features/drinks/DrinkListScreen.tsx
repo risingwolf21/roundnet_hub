@@ -6,7 +6,6 @@ import React, { useEffect, useState } from 'react';
 import { AlertMessage, AlertSnackbar } from 'src/components/AlertSnackbar';
 import { DrinkCounter } from 'src/types/supabaseTypes';
 import { nameOfProductType } from 'src/utils';
-import { Error } from '../../components/Error';
 import { SwipeableDialog } from '../../components/SwipeableDialog';
 import DrinkList from './components/DrinkList';
 import { DrinkListScreenProps } from './types';
@@ -43,7 +42,7 @@ const DrinkListScreen = ({ user, drinks, drinksLoading, drinksError }: DrinkList
   const resetDrinks = (message: string) => {
     setLoading(false);
     confirmDrinksDialog({ message, severity: 'error' });
-    captureException(Error({ message }), (scope) => {
+    captureException(Error(message), (scope) => {
       scope.clear();
       scope.setExtra('drinks', JSON.stringify(addedDrinks));
       return scope;

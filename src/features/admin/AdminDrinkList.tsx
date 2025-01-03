@@ -16,7 +16,6 @@ import { useSelector } from 'react-redux';
 import { fetchDrinksAsync } from './slices/adminDrinksSlice';
 import { RootState, useAppDispatch } from '../../redux/store';
 import { AlertMessage, AlertSnackbar } from '../../components/AlertSnackbar';
-import { Error } from '../../components/Error';
 import EditDrinkDialog from './dialogs/EditDrinkDialog';
 import { captureException } from '@sentry/react';
 import { AdminDrinksRepository } from '../../repository/AdminDrinksRepository';
@@ -59,7 +58,7 @@ const AdminDrinkList = () => {
   };
 
   const onDeleteDrink = (drink: Drink | undefined) => {
-    if (!drink) throw Error({ message: 'Could not delete Drink, because it was undefined' });
+    if (!drink) throw Error('Could not delete Drink, because it was undefined');
     AdminDrinksRepository.deleteDrink(drink.id)
       .then(() => {
         setDeleteOpen(false);
@@ -110,8 +109,6 @@ const AdminDrinkList = () => {
     }
     setOpen(false);
   };
-
-  if (drinksError) return <Error message={drinksError} />;
 
   return (
     <Layout>

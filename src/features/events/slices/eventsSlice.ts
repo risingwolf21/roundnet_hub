@@ -1,15 +1,14 @@
 import { createAsyncThunk, createEntityAdapter, createSlice, PayloadAction, Update } from '@reduxjs/toolkit';
-import { EventWithGroup, FullAttendance, FullEvent } from 'src/types/supabaseTypes';
+import { EventWithGroup } from 'src/types/supabaseTypes';
 import { RootState } from '../../../redux/store';
-import { onEventAttendanceUpdate, updateAttendanceAsync } from './eventAttendanceSlice';
 import { SupabaseEventRepository } from '../../../repository/EventRepository';
-import { Tables, TablesUpdate } from '../../../types/supabase-generated.types';
+import { TablesUpdate } from '../../../types/supabase-generated.types';
 import { formatDateFromDatabase } from '../../../utils';
+import { onEventAttendanceUpdate, updateAttendanceAsync } from './eventAttendanceSlice';
 
-export type SliceEvent = Tables<'events'> & {
+export type SliceEvent = FullEvent & {
   userAttendance: EventAttendance;
   attendanceUpdating: boolean;
-  fullGroup: Group;
 };
 
 export const eventsAdapter = createEntityAdapter({
@@ -101,13 +100,13 @@ const eventsSlice = createSlice({
       })
       .addCase(fetchSingleEventAsync.fulfilled, (state, action) => {
         state.loading = false;
-        if (!action.payload.data) {
-          state.error = 'No event with ID [' + action.payload.eventId + '] found!';
+        if (!action.payload) {
+          state.error = 'No event with ID [' + action.meta.arg.eventId + '] found!';
           return;
         }
         state.error = null;
 
-        eventsAdapter.upsertOne(state, action.payload.data as SliceEvent);
+        eventsAdapter.upsertOne(state, action.payload as SliceEvent);
       })
       .addCase(fetchSingleEventAsync.rejected, (state, action) => {
         state.loading = false;
@@ -181,7 +180,7 @@ export const fetchUpcomingEventsAsync = createAsyncThunk(
     const response = await SupabaseEventRepository.fetchUpcomingEvents();
     return (response.data ?? []).map((x: FullEvent) => ({
       ...x,
-      userAttendance: x.attendance.find((y: FullAttendance) => y.user.userId === user.userId)?.state ?? 'Unanswered',
+      userAttendance: x.attendance.find((y) => y.user.userId === user.userId)?.state ?? 'Unanswered',
       attendanceUpdating: false,
     }));
   }
@@ -191,7 +190,7 @@ export const fetchPastEventsAsync = createAsyncThunk('fetchPastEventsAsync', asy
   const response = await SupabaseEventRepository.fetchPastEvents();
   return (response.data ?? []).map((x: FullEvent) => ({
     ...x,
-    userAttendance: x.attendance.find((y: FullAttendance) => y.user.userId === user.userId)?.state ?? 'Unanswered',
+    userAttendance: x.attendance.find((y) => y.user.userId === user.userId)?.state ?? 'Unanswered',
     attendanceUpdating: false,
   }));
 });
@@ -207,14 +206,11 @@ export const fetchSingleEventAsync = createAsyncThunk(
     userId: string;
   }) => {
     const response = await SupabaseEventRepository.fetchSingleEvent(eventId);
+    if (!response.data) return null;
     return {
-      data: {
-        ...response.data,
-        userAttendance:
-          response.data?.attendance.find((x: FullAttendance) => x.user.userId === userId)?.state ?? 'Unanswered',
-        attendanceUpdating: false,
-      },
-      eventId,
+      ...response.data,
+      userAttendance: response.data?.attendance.find((x) => x.user.userId === userId)?.state ?? 'Unanswered',
+      attendanceUpdating: false,
     };
   }
 );

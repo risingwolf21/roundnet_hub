@@ -41,13 +41,6 @@ export type PaymentHistory = Modify<
     }
 >;
 
-export type FullEvent = Event & {
-    comments: FullComment[];
-    attendance: FullAttendance[];
-    userAttendance: EventAttendance;
-    fullGroup: Group;
-};
-
 export type EventWithGroup = Event & {
     fullGroup: Group;
 };
