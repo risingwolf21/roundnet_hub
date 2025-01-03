@@ -31,7 +31,7 @@ export const SwipeableDialog = ({
       scroll={'paper'}
       sx={{
         '.MuiDialog-container > .MuiPaper-root': {
-          m: 0,
+          margin: 0,
           maxHeight: '75vh',
           minHeight: `${minHeight}vh`,
           width: '100%',

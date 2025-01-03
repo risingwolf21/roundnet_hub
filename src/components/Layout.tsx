@@ -158,6 +158,7 @@ const Layout = ({
             width: '100%',
             overflowY: 'auto',
             alignItems: 'center',
+            pb: 'env(safe-area-inset-bottom)',
             flexGrow: 1,
             flex: 1,
           }}

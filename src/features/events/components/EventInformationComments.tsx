@@ -111,12 +111,12 @@ const EventInformationComments = ({
   };
 
   return (
-    <Box sx={{ p: 0, pb: 2, alignSelf: 'center' }}>
+    <Box sx={{ p: 0, alignSelf: 'center' }}>
       <Typography sx={{ fontSize: 16, fontWeight: 'bold', mt: 2 }} color="text.secondary" gutterBottom>
         Kommentare
       </Typography>
       <Box sx={{ display: 'flex', flexDirection: 'column' }}>
-        <List sx={{ mb: 4 }}>
+        <List>
           {comments &&
             comments.map((x, index) => (
               <>

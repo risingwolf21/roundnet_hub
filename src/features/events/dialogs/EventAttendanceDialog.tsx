@@ -107,7 +107,7 @@ const EventAttendanceDialog = ({
           </Tabs>
         </AppBar>
         <TabPanel value={value} index={0} dir={theme.direction}>
-          <List sx={{pb: 10}}>
+          <List sx={{pb: "env(safe-area-inset-bottom)"}}>
             {attendance
               .filter((x: FullAttendance) => x.state === 'AttendingAsTrainer')
               .sort((a, b) => compareDesc(a.lastUpdate, b.lastUpdate))

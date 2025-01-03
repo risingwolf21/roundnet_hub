@@ -216,7 +216,7 @@ const EventInformation = ({
         )
       }
     >
-      <List sx={{ p: 0, pb: 10 }}>
+      <List sx={{ p: 0, pb: "calc(16px + env(safe-area-inset-bottom))" }}>
         {loading ? (
           <Skeleton variant={'rectangular'} width={'100%'} height={'150px'} />
         ) : (

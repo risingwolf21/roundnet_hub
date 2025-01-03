@@ -19,7 +19,6 @@ export const ItemHistoryDialog = ({ open, setOpen, handleClose, item }: ItemHist
   const [history, setHistory] = useState<FullKeyHistory[]>([]);
 
   useEffect(() => {
-    console.log('useEffect', item);
     if (!item || !item.id) {
       setError('Es wurde kein Schlüssel ausgewählt');
       return;
@@ -54,7 +53,7 @@ export const ItemHistoryDialog = ({ open, setOpen, handleClose, item }: ItemHist
         </Alert>
       )}
       {loading && <CircularProgress />}
-      <List sx={{ maxHeight: '70%', overflow: 'auto' }}>
+      <List sx={{ maxHeight: '70%', overflow: 'auto', pb: "env(safe-area-inset-bottom)" }}>
         {history.map((x) => (
           <ListItem key={x.id} divider>
             <ListItemText

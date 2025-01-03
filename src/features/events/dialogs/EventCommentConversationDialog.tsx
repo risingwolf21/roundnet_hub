@@ -87,7 +87,6 @@ export const EventCommentConversationDialog = ({
             right: 0,
             flex: 'auto',
             background: 'white',
-            pb: 'calc(8px + env(safe-area-inset-bottom))',
           }}
           component={'form'}
           onSubmit={submit}

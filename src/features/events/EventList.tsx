@@ -99,7 +99,7 @@ const EventScreen = ({ events, loading, error, user }: EventScreenProps) => {
     <Layout>
       <List
         sx={(theme) => ({
-          [theme.breakpoints.down('xl')]: { pb: 20 },
+          [theme.breakpoints.down('xl')]: { pb: 12 },
           [theme.breakpoints.up('xl')]: { pb: 0 },
         })}
       >

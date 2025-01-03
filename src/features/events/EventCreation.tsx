@@ -45,6 +45,7 @@ import { LoadingIndicator } from '../../components/LoadingIndicator';
 import { SupabaseEventRepository } from '../../repository/EventRepository';
 import { Enums, TablesInsert } from '../../types/supabase-generated.types';
 import { CreateEventProps, PlaceType } from './types';
+import Layout from 'src/components/Layout';
 
 const emptyEvent = {
   title: '',
@@ -154,27 +155,13 @@ const CreateEvent = ({ t, eventToEdit, option }: CreateEventProps) => {
   }
 
   return (
-    <Box>
-      <LoadingIndicator loading={loading} />
+    <Layout
+      appBarConfig={{ showBackButton: true, showProfile: false, title: `Event ${eventToEdit ? "bearbeiten" : "erstellen"}` }}
+      appBarActions={
+        <Button autoFocus color="inherit" type="submit">
+          Speichern
+        </Button>}>
       <Box ref={ref} component="form" onSubmit={handleSubmit} noValidate>
-        <AppBar position="sticky" sx={{ position: 'relative' }}>
-          <Toolbar>
-            <IconButton
-              edge="start"
-              color="inherit"
-              onClick={() => navigate('/training/list', { replace: true })}
-              aria-label="close"
-            >
-              <Close />
-            </IconButton>
-            <Typography sx={{ ml: 2, flex: 1 }} variant="h6" component="div">
-              Event {eventToEdit ? 'bearbeiten' : 'erstellen'}
-            </Typography>
-            <Button autoFocus color="inherit" type="submit">
-              Speichern
-            </Button>
-          </Toolbar>
-        </AppBar>
         <List>
           <ListItem sx={{ pt: 0, pb: 0 }} key={'title'}>
             <TextField
@@ -422,11 +409,11 @@ const CreateEvent = ({ t, eventToEdit, option }: CreateEventProps) => {
                     answerDeadline: editedEvent.answerDeadline
                       ? null
                       : formatDateToDatabase(
-                          set(Date.now(), {
-                            seconds: 0,
-                            milliseconds: 0,
-                          })
-                        ),
+                        set(Date.now(), {
+                          seconds: 0,
+                          milliseconds: 0,
+                        })
+                      ),
                   })
                 }
               />
@@ -556,11 +543,11 @@ const CreateEvent = ({ t, eventToEdit, option }: CreateEventProps) => {
                     recurrenceEnd: editedEvent.recurrenceEnd
                       ? null
                       : formatDateToDatabase(
-                          set(Date.now(), {
-                            seconds: 0,
-                            milliseconds: 0,
-                          })
-                        ),
+                        set(Date.now(), {
+                          seconds: 0,
+                          milliseconds: 0,
+                        })
+                      ),
                   })
                 }
               />
@@ -626,7 +613,7 @@ const CreateEvent = ({ t, eventToEdit, option }: CreateEventProps) => {
           {errorSnackbar.message}
         </Alert>
       </Snackbar>
-    </Box>
+    </Layout>
   );
 };
 
