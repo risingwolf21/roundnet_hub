@@ -39,8 +39,8 @@ const Layout = ({
         position: 'fixed',
         top: 0,
         left: 0,
-        right: 0,
-        minHeight: 'calc(100% + env(safe-area-inset-top) + env(sage-area-inset-bottom))',
+        width: '100%',
+        minHeight: 'calc(100% + env(safe-area-inset-top))',
         display: 'flex',
         overflow: 'hidden', // Kein Overflow außerhalb des Containers
       }}
@@ -166,7 +166,7 @@ const Layout = ({
             flex: 1,
           }}
         >
-          <Box>{children}</Box>
+          {children}
         </Box>
       </Box>
     </Box>
