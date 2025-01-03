@@ -69,6 +69,9 @@ const DrawerItem = styled(ListItem, {
   '&:hover': {
     background: alpha('#808080', 0.2),
   },
+  '&:active': {
+    backgroundColor: "unset"
+  },
   '& .MuiListItemSecondaryAction-root': {
     right: 24,
   },
@@ -93,7 +96,9 @@ const DrawerItem = styled(ListItem, {
 const DrawerBox = styled(Box)<BoxProps>(({ theme }) => ({
   width: '100%',
   height: 'calc(100% + env(safe-area-inset-top))',
-  padding: 'env(safe-area-inset-top) 0 0 env(safe-area-inset-left)',
+  paddingTop: 'env(safe-area-inset-top)',
+  paddingBottom: 'env(safe-area-inset-bottom)',
+  paddingLeft: 'env(safe-area-inset-left)',
   overflow: 'auto',
 }));
 

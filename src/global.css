@@ -1,11 +1,15 @@
 html,
 body {
   margin: 0;
-  overflow: hidden;
+  overflow-y: none;
   overscroll-behavior: none;
+  padding: 0;
+  height: calc(100% + env(safe-area-inset-top));
 }
 
 main {
+  overflow-y: none;
+  overscroll-behavior: none;
   display: block; /* because <main/> is very new */
 }
 
@@ -13,5 +17,5 @@ main {
   position: fixed;
   width: 100%;
   height: calc(100% + env(safe-area-inset-top));
-  overflow-y: auto; /* Ermöglicht das Scrollen innerhalb der Wrapper-Komponente */
+  overflow-y: none; /* Ermöglicht das Scrollen innerhalb der Wrapper-Komponente */
 }

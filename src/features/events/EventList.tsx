@@ -98,34 +98,30 @@ const EventScreen = ({ events, loading, error, user }: EventScreenProps) => {
   return (
     <Layout>
       <List
-        sx={{
-          overflowY: 'auto',
-          pt: 0,
-        }}
+        sx={(theme) => ({
+          [theme.breakpoints.down('xl')]: { pb: 20 },
+          [theme.breakpoints.up('xl')]: { pb: 0 },
+        })}
       >
         <Box
-          sx={(theme) => ({
-            [theme.breakpoints.down('xl')]: { pb: 10 },
-            [theme.breakpoints.up('xl')]: { pb: 0 },
-          })}
         >
           {loading
             ? Array.from({ length: 10 }, (v, k) => k + 1).map((x) => <LoadingEventItem key={x} />)
             : events
-                .filter((x) => selectedGroups.includes(x.group))
-                .map((event) => (
-                  <EventItem
-                    key={event.id}
-                    event={event}
-                    t={t}
-                    attendanceUpdating={event.attendanceUpdating}
-                    attendEvent={() => updateAttendance(event.id, 'Attending', event.userAttendance)}
-                    declineEvent={() => updateAttendance(event.id, 'Declined', event.userAttendance)}
-                    onClick={() => {
-                      navigate('/training/event/' + event.id);
-                    }}
-                  />
-                ))}
+              .filter((x) => selectedGroups.includes(x.group))
+              .map((event) => (
+                <EventItem
+                  key={event.id}
+                  event={event}
+                  t={t}
+                  attendanceUpdating={event.attendanceUpdating}
+                  attendEvent={() => updateAttendance(event.id, 'Attending', event.userAttendance)}
+                  declineEvent={() => updateAttendance(event.id, 'Declined', event.userAttendance)}
+                  onClick={() => {
+                    navigate('/training/event/' + event.id);
+                  }}
+                />
+              ))}
         </Box>
         {can('select', 'event') && (
           <Fab
@@ -254,7 +250,7 @@ const EventScreen = ({ events, loading, error, user }: EventScreenProps) => {
           </List>
         </>
       </SwipeableDialog>
-    </Layout>
+    </Layout >
   );
 };
 

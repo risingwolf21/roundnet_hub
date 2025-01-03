@@ -40,9 +40,9 @@ const Layout = ({
         top: 0,
         left: 0,
         width: '100%',
-        height: 'calc(100vh + env(safe-area-inset-top) + env(safe-area-inset-bottom))',
+        height: 'calc(100vh + env(safe-area-inset-top))',
         display: 'flex',
-        overflow: 'hidden', // Kein Overflow außerhalb des Containers
+        overflowY: 'none', // Kein Overflow außerhalb des Containers
       }}
     >
       {/* AppBar */}
@@ -142,7 +142,8 @@ const Layout = ({
           alignItems: 'center',
           display: 'flex',
           flexDirection: 'column',
-          
+          pt: 'env(safe-area-inset-top)',
+          pb: 'env(safe-area-inset-bottom)',
           [theme.breakpoints.down('lg')]: {
             width: '100%',
           },
@@ -151,7 +152,7 @@ const Layout = ({
           },
         })}
       >
-        <Toolbar sx={{ pt: 'env(safe-area-inset-top)' }} />
+        <Toolbar />
         <Box
           sx={{
             width: '100%',

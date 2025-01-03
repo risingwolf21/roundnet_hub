@@ -70,7 +70,6 @@ export const EventCommentConversationDialog = ({
             mx: 'auto',
             alignItems: 'center',
             flex: 1,
-            overflowY: 'auto',
           }}
         >
           <List sx={{ width: '100%' }}>

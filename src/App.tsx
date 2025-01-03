@@ -16,6 +16,7 @@ import { AuthGate } from './features/auth/AuthGate';
 import { RecurringEventsProvider } from './features/events/RecurringEvents';
 import NotificationsScreenProvider from './features/notifications/NotificationsScreen';
 import { useServiceWorker } from './hooks/useServiceWorker';
+import { CssBaseline } from '@mui/material';
 
 const FeatureNotAvailable = React.lazy(() => import('./components/FeatureNotAvailable'));
 const HistoryScreenProvider = React.lazy(() => import('./features/drinks/HistoryScreenProvider'));
@@ -48,6 +49,7 @@ const App = () => {
       fallback={({ resetError }) => <FallbackComponent message={'Es ist ein Fehler aufgetreten'} resetError={resetError} />}
       showDialog
     >
+      <CssBaseline />
       <BrowserRouter
         future={{
           v7_relativeSplatPath: true,
