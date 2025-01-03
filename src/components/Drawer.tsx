@@ -92,7 +92,6 @@ const DrawerItem = styled(ListItem, {
 const DrawerBox = styled(Box)<BoxProps>(({ theme }) => ({
   width: '100%',
   height: '100%',
-  paddingBottom: 'env(safe-area-inset-bottom)',
   overflow: 'auto',
 }));
 
@@ -506,6 +505,8 @@ export const Drawer = ({ open, onClose }: Props) => {
         alignItems: 'center',
         display: 'flex',
         flexDirection: 'column',
+        pt: 'env(safe-area-inset-top)',
+        pb: 'env(safe-area-inset-bottom)',
         [theme.breakpoints.down('lg')]: {
           width: 'unset',
           flexShrink: 0,
