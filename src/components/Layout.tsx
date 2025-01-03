@@ -156,7 +156,7 @@ const Layout = ({
           },
         })}
       >
-        <Toolbar />
+        <Toolbar sx={{ pt: 'env(safe-area-inset-top)' }} />
         <Box
           sx={{
             width: '100%',
