@@ -40,7 +40,7 @@ const Layout = ({
         top: 0,
         left: 0,
         width: '100%',
-        minHeight: 'calc(100% + env(safe-area-inset-top) + env(safe-area-inset-bottom))',
+        height: 'calc(100vh + env(safe-area-inset-top) + env(safe-area-inset-bottom))',
         display: 'flex',
         overflow: 'hidden', // Kein Overflow außerhalb des Containers
       }}
@@ -62,11 +62,7 @@ const Layout = ({
           },
         })}
       >
-        <Toolbar
-          sx={{
-            width: '100%',
-          }}
-        >
+        <Toolbar>
           {showBackButton ? (
             <IconButton
               color="inherit"
@@ -140,13 +136,13 @@ const Layout = ({
 
       {/* Main Content */}
       <Box
-        data-content-container
         component="main"
         sx={(theme) => ({
           flexGrow: 1,
           alignItems: 'center',
           display: 'flex',
           flexDirection: 'column',
+          
           [theme.breakpoints.down('lg')]: {
             width: '100%',
           },
@@ -165,7 +161,7 @@ const Layout = ({
             flex: 1,
           }}
         >
-          {children}
+          <Box>{children}</Box>
         </Box>
       </Box>
     </Box>
