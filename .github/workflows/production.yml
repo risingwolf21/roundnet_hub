@@ -10,7 +10,6 @@ env:
   CI: ''
 
 jobs:
-
   build_and_deploy_production:
     runs-on: ubuntu-latest
     steps:
@@ -24,12 +23,20 @@ jobs:
       - name: Install dependencies
         run: yarn install
 
+      - name: Write commit Version to file
+        uses: DamianReeves/write-file-action@master
+        with:
+          path: ${{github.workspace}}/src/git_commit.txt
+          contents: |
+            ${{github.sha}}
+          write-mode: overwrite
+
       - name: Build
         run: PUBLIC_URL=https://roundnet-karlsruhe.web.app yarn run build:production
         env:
           REACT_APP_SUPABASE_API_KEY: ${{secrets.SUPABASE_PRODUCTION_ANON_KEY}}
           REACT_APP_SUPABASE_URL: ${{secrets.SUPABASE_PRODUCTION_URL}}
-      
+
       - uses: FirebaseExtended/action-hosting-deploy@v0
         with:
           repoToken: '${{ secrets.GITHUB_TOKEN }}'
@@ -51,12 +58,20 @@ jobs:
       - name: Install dependencies
         run: yarn install
 
+      - name: Write commit Version to file
+        uses: DamianReeves/write-file-action@master
+        with:
+          path: ${{github.workspace}}/src/git_commit.txt
+          contents: |
+            ${{github.sha}}
+          write-mode: overwrite
+
       - name: Build
         run: PUBLIC_URL=https://roundnet-karlsruhe.web.app yarn run build:production:admin
         env:
           REACT_APP_SUPABASE_API_KEY: ${{secrets.SUPABASE_PRODUCTION_ANON_KEY}}
           REACT_APP_SUPABASE_URL: ${{secrets.SUPABASE_PRODUCTION_URL}}
-      
+
       - uses: FirebaseExtended/action-hosting-deploy@v0
         with:
           repoToken: '${{ secrets.GITHUB_TOKEN }}'

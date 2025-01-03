@@ -42,6 +42,7 @@ import { notificationsSelector } from '../features/notifications/slices/notifica
 import { RootState } from '../redux/store';
 import { can, canAny } from '../utils/PermissionService';
 import { InstallPWA } from './PwaInstallPromp';
+import raw from '../git_commit.txt';
 
 export const drawerWidth = 360;
 
@@ -118,8 +119,16 @@ type DrawerContentProps = {
   t: TFunction;
   notificationsLength: number;
   notVerifiedUsersLength: number;
+  version: string;
 };
-const DrawerContent = ({ tab, handleChange, t, notificationsLength, notVerifiedUsersLength }: DrawerContentProps) => {
+const DrawerContent = ({
+  tab,
+  handleChange,
+  t,
+  notificationsLength,
+  notVerifiedUsersLength,
+  version,
+}: DrawerContentProps) => {
   return (
     <DrawerBox>
       <List>
@@ -472,7 +481,7 @@ const DrawerContent = ({ tab, handleChange, t, notificationsLength, notVerifiedU
           <ListItemText
             primaryTypographyProps={{ fontWeight: 'bold', fontSize: '0.9rem' }}
             secondary={'App Version'}
-            primary={process.env.REACT_APP_VERSION}
+            primary={process.env.REACT_APP_VERSION + '.' + version.slice(0, 6)}
           />
         </DrawerItem>
       </List>
@@ -486,6 +495,15 @@ export const Drawer = ({ open, onClose }: Props) => {
   const [tab, setTab] = useState<string>(HOMEPAGE);
   const notifications = useSelector((state: RootState) => notificationsSelector.selectAll(state));
   const { notVerifiedUsers } = useSelector((state: RootState) => state.adminUsers);
+  const [version, setVersion] = useState<string>('');
+
+  useEffect(() => {
+    fetch(raw)
+      .then((r) => r.text())
+      .then((text) => {
+        setVersion(text);
+      });
+  });
 
   useEffect(() => {
     setTab(window.location.pathname.substring(1));
@@ -542,6 +560,7 @@ export const Drawer = ({ open, onClose }: Props) => {
           t={t}
           notVerifiedUsersLength={notVerifiedUsers}
           notificationsLength={notifications.length}
+          version={version}
         />
       </CustomDrawer>
       <CustomDrawer
@@ -565,6 +584,7 @@ export const Drawer = ({ open, onClose }: Props) => {
           t={t}
           notVerifiedUsersLength={notVerifiedUsers}
           notificationsLength={notifications.length}
+          version={version}
         />
       </CustomDrawer>
     </Box>
