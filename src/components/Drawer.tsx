@@ -5,6 +5,7 @@ import {
   GroupOutlined,
   History,
   InfoOutlined,
+  InstallDesktop,
   Key,
   Liquor,
   Notifications,
@@ -40,6 +41,7 @@ import { HOMEPAGE } from '../constants';
 import { notificationsSelector } from '../features/notifications/slices/notificationsSlice';
 import { RootState } from '../redux/store';
 import { can, canAny } from '../utils/PermissionService';
+import { InstallPWA } from './PwaInstallPromp';
 
 export const drawerWidth = 360;
 
@@ -130,6 +132,21 @@ const DrawerContent = ({ tab, handleChange, t, notificationsLength, notVerifiedU
           </ListItemAvatar>
           <ListItemText primaryTypographyProps={{ fontWeight: 'bold', fontSize: '0.9rem' }} primary={'Account'} />
         </DrawerItem>
+        <InstallPWA
+          element={(onClick) => (
+            <DrawerItem key="installPWA" selected={false} onClick={onClick}>
+              <ListItemAvatar>
+                <ListItemIcon>
+                  <InstallDesktop />
+                </ListItemIcon>
+              </ListItemAvatar>
+              <ListItemText
+                primaryTypographyProps={{ fontWeight: 'bold', fontSize: '0.9rem' }}
+                primary={'Installieren'}
+              />
+            </DrawerItem>
+          )}
+        />
       </List>
       <Divider />
       {canAny('select', ['drink', 'history', 'payments']) && (

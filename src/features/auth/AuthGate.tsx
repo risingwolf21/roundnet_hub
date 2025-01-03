@@ -17,6 +17,7 @@ import { SupabaseUserRepository } from '../../repository/UserRepository';
 import { UserWithRolesAndPermissions } from '../../types/supabaseTypes';
 import { ability, defineRulesFor } from '../../utils/PermissionService';
 import { AuthContext } from './AuthContext';
+import { InstallPWA } from 'src/components/PwaInstallPromp';
 
 type Props = {
   children: React.ReactNode;
@@ -157,7 +158,7 @@ export const AuthGate = ({ children }: Props) => {
   return (
     <>
       {session ? (
-        (currentUser && currentUser.verified) ? (
+        currentUser && currentUser.verified ? (
           <AuthContext.Provider value={{ user: currentUser, signOut: signOut }}>{children}</AuthContext.Provider>
         ) : (
           <NotVerifiedScreen />
