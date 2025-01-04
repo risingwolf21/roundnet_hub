@@ -31,8 +31,8 @@ export const AdminUsersRepository = {
   },
 
   async updateUser(user: UserEdited): Promise<PostgrestSingleResponse<null>> {
-    await supabase.from('user_roles').delete().eq('user', user.userId);
-    await supabase.from('user_roles').upsert(
+    await supabase.schema("permissions").from('user_roles').delete().eq('user', user.userId);
+    await supabase.schema("permissions").from('user_roles').upsert(
       user.roles.map((x) => {
         return {
           app_role: x.id,
@@ -53,7 +53,7 @@ export const AdminUsersRepository = {
   async fetchAllUsersWithGroups(): Promise<PostgrestSingleResponse<UserWithGroupsAndRoles[]>> {
     return supabase
       .from('user')
-      .select('*, groups: group_user_mapping ( group: event_group ( * ) ), roles: user_roles(app_role(*))')
+      .select('*, groups: group_user_mapping ( group: event_group ( * ) ), roles: permissions.user_roles(app_role(*))')
       .order('displayName', { ascending: true })
       .returns<UserWithGroupsAndRoles[]>()
       .throwOnError();

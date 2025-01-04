@@ -9,6 +9,42 @@ export type Json =
 export type Database = {
   games: {
     Tables: {
+      match: {
+        Row: {
+          created_at: string
+          id: string
+          team_a: string
+          team_b: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          team_a: string
+          team_b: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          team_a?: string
+          team_b?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "match_team_a_fkey"
+            columns: ["team_a"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "match_team_b_fkey"
+            columns: ["team_b"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       players: {
         Row: {
           created_at: string
@@ -32,6 +68,185 @@ export type Database = {
           rg_link?: string | null
         }
         Relationships: []
+      }
+      sets: {
+        Row: {
+          created_at: string
+          id: string
+          match: string
+          set_number: number
+          team_a_score: number
+          team_b_score: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          match: string
+          set_number: number
+          team_a_score: number
+          team_b_score: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          match?: string
+          set_number?: number
+          team_a_score?: number
+          team_b_score?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sets_match_fkey"
+            columns: ["match"]
+            isOneToOne: false
+            referencedRelation: "match"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      teams: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          player_1: string
+          player_2: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          player_1: string
+          player_2: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          player_1?: string
+          player_2?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "teams_player_1_fkey"
+            columns: ["player_1"]
+            isOneToOne: false
+            referencedRelation: "players"
+            referencedColumns: ["player"]
+          },
+          {
+            foreignKeyName: "teams_player_2_fkey"
+            columns: ["player_2"]
+            isOneToOne: false
+            referencedRelation: "players"
+            referencedColumns: ["player"]
+          },
+        ]
+      }
+    }
+    Views: {
+      [_ in never]: never
+    }
+    Functions: {
+      [_ in never]: never
+    }
+    Enums: {
+      [_ in never]: never
+    }
+    CompositeTypes: {
+      [_ in never]: never
+    }
+  }
+  permissions: {
+    Tables: {
+      app_permissions: {
+        Row: {
+          id: string
+          name: string
+        }
+        Insert: {
+          id?: string
+          name: string
+        }
+        Update: {
+          id?: string
+          name?: string
+        }
+        Relationships: []
+      }
+      app_roles: {
+        Row: {
+          id: string
+          name: string
+        }
+        Insert: {
+          id?: string
+          name: string
+        }
+        Update: {
+          id?: string
+          name?: string
+        }
+        Relationships: []
+      }
+      role_permissions: {
+        Row: {
+          app_permission: string
+          app_role: string
+          id: string
+        }
+        Insert: {
+          app_permission: string
+          app_role: string
+          id?: string
+        }
+        Update: {
+          app_permission?: string
+          app_role?: string
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "role_permissions_app_permission_fkey"
+            columns: ["app_permission"]
+            isOneToOne: false
+            referencedRelation: "app_permissions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "role_permissions_app_role_fkey"
+            columns: ["app_role"]
+            isOneToOne: false
+            referencedRelation: "app_roles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_roles: {
+        Row: {
+          app_role: string
+          id: string
+          user: string
+        }
+        Insert: {
+          app_role: string
+          id?: string
+          user?: string
+        }
+        Update: {
+          app_role?: string
+          id?: string
+          user?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_roles_app_role_fkey"
+            columns: ["app_role"]
+            isOneToOne: false
+            referencedRelation: "app_roles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {

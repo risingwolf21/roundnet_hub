@@ -12,7 +12,6 @@ import {
 import React, { useEffect, useState } from 'react';
 import { AddPhotoAlternateOutlined, FiberManualRecord, Launch } from '@mui/icons-material';
 import { useParams } from 'react-router-dom';
-import { FullUser } from '../types/supabaseTypes';
 import { LoadingIndicator } from './LoadingIndicator';
 import { SupabaseUserRepository } from '../repository/UserRepository';
 import Layout from './Layout';
@@ -23,7 +22,7 @@ const UserScreen = () => {
   const { userId } = useParams();
   const { user } = useAuth();
   const [loading, setLoading] = useState<boolean>(false);
-  const [currentUser, setCurrentUser] = useState<FullUser | null>(null);
+  const [currentUser, setCurrentUser] = useState<UserWithGroupsAndPlayerData | null>(null);
   const [overlappingGroups, setOverlappingGroups] = useState<Group[]>([]);
 
   useEffect(() => {

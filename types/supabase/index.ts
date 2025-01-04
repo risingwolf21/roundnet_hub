@@ -3,7 +3,7 @@ import { Database, Enums, Tables, TablesInsert, TablesUpdate } from '../../src/t
 import { fetchDrinksToPay, fetchFullHistory } from 'src/repository/DrinkRepository';
 import { fetchRolePermissionMapping } from 'src/repository/AdminPermissionsRepository';
 import { fetchGroupWithUsers } from 'src/repository/AdminUsersRepository';
-import { fetchGroups } from 'src/repository/UserRepository';
+import { fetchGroups, fetchUserWithGroups } from 'src/repository/UserRepository';
 import { fetchEvents } from 'src/repository/EventRepository';
 
 export type Event = Tables<'events'>;
@@ -13,6 +13,12 @@ export type Notification = Tables<'notifications'>;
 export type NonNullableFields<T, K extends keyof T> = Omit<T, K> & {
   [P in K]-?: NonNullable<T[P]>;
 };
+
+export type ResolveProperty<T, K extends keyof T> = T[K] extends Array<infer U>
+  ? U extends { [key: string]: any }
+  ? { [P in keyof U]: U[P] }
+  : T[K]
+  : T[K];
 
 declare global {
   type Challenge = Tables<'challenge'>;
@@ -30,6 +36,7 @@ declare global {
   type UserRoles = Tables<'user_roles'>;
   type AppPermission = Tables<'app_permissions'>;
   type AppRole = Tables<'app_roles'>;
+  type Player = Database['games']['Tables']['players']['Row'];
 
   type GroupWithUsersBase = QueryData<typeof fetchGroupWithUsers> extends Array<infer U> ? U : never;
   type FullHistory = QueryData<typeof fetchFullHistory> extends Array<infer U> ? U : never;
@@ -37,7 +44,12 @@ declare global {
   type RolePermissionMapping = QueryData<typeof fetchRolePermissionMapping> extends Array<infer U> ? U : never;
   type Groups = QueryData<typeof fetchGroups> extends Array<infer U> ? U : never;
   type FullEvent = QueryData<typeof fetchEvents> extends Array<infer U> ? U : never;
-  type Player = Database['games']['Tables']['players']['Row'];
+  type UserWithGroupsBase = QueryData<typeof fetchUserWithGroups> extends Array<infer U> ? U : never;
+  type UserWithGroupsAndPlayerData = {
+    [P in keyof UserWithGroupsBase]: P extends "groups"
+    ? UserWithGroupsBase["groups"][number]["group"][]
+    : UserWithGroupsBase[P];
+  } & { player_data: Player | null };
 
   type PaymentInsert = TablesInsert<'payments'>;
   type EventCommentInsert = TablesInsert<'event_comments'>;
@@ -56,4 +68,4 @@ declare global {
   type UserRole = Enums<'UserRole'>;
 }
 
-export {};
+export { };

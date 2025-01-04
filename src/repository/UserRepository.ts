@@ -4,13 +4,14 @@ import { supabase } from '../components/services/supabase/supabaseClient';
 import { Notification } from 'types/supabase';
 
 export const fetchGroups = supabase.from('group_user_mapping').select('group(*)');
+export const fetchUserWithGroups = supabase
+  .from('user')
+  .select('*, groups: group_user_mapping ( group: event_group ( * ) )')
 
 export const SupabaseUserRepository = {
-  async fetchUserWithGroups(userId: string): Promise<PostgrestSingleResponse<FullUser>> {
-    const {data: player_data} = await SupabaseUserRepository.fetchPlayer(userId);
-    const response = await supabase
-      .from('user')
-      .select('*, groups: group_user_mapping ( group: event_group ( * ) ), roles: user_roles(*)')
+  async fetchUserWithGroups(userId: string): Promise<PostgrestSingleResponse<UserWithGroupsAndPlayerData>> {
+    const { data: player_data } = await SupabaseUserRepository.fetchPlayer(userId);
+    const response = await fetchUserWithGroups
       .eq('userId', userId)
       .single();
 
@@ -33,8 +34,7 @@ export const SupabaseUserRepository = {
       data: {
         ...response.data,
         groups: response.data?.groups.map((x: any) => x.group) ?? [],
-        roles: response.data?.roles.map((x: any) => x.app_role) ?? [],
-        player_data: player_data,
+        player_data
       },
     };
   },
@@ -44,12 +44,12 @@ export const SupabaseUserRepository = {
   },
 
   async fetchGroupsForUser(userId: string): Promise<Group[]> {
-    const {data} = await fetchGroups.eq('user', userId).throwOnError();
+    const { data } = await fetchGroups.eq('user', userId).throwOnError();
 
     return data?.map(x => x.group) ?? [];
   },
 
-  async fetchPlayer(userId: string): Promise<PostgrestSingleResponse<Player|null>> {
+  async fetchPlayer(userId: string): Promise<PostgrestSingleResponse<Player | null>> {
     return supabase.schema('games').from('players').select('*').eq('player', userId).maybeSingle().throwOnError();
   },
 
