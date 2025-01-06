@@ -34,7 +34,26 @@ export const SentryRepository = {
             return JSON.parse(json) as SentryIssue[];
         }).catch((error) => {
             console.error(error);
-            return [];
+            return [{
+                title: "Error",
+                culprit: error.message,
+                level: "",
+                permalink: "",
+                status: "",
+                type: "",
+                metadata: {
+                    value: "",
+                    type: "",
+                    filename: "",
+                    function: "",
+                },
+                firstSeen: "",
+                lastSeen: "",
+                isUnhandled: false,
+                count: 0,
+                userCount: 0,
+                hasSeen: false,
+            } satisfies SentryIssue];
         });
     }
 }
