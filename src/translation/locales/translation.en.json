@@ -18,7 +18,8 @@
     "postgresClient": "Postgres Client",
     "training": "Training",
     "permissions": "Berechtigungen",
-    "supabaseQueries": "Supabase Query Client"
+    "supabaseQueries": "Supabase Query Client",
+    "sentryIssues": "Sentry issues"
   },
   "cancel": "Cancel",
   "confirm": "Confirm",

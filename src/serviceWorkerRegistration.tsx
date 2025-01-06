@@ -86,14 +86,12 @@ function registerValidSW(swUrl: string, config: ServiceWorkerConfig) {
               // At this point, the updated precached content has been fetched,
               // but the previous service worker will still serve the older
               // content until all client tabs are closed.
-              console.log(
-                'New content is available and will be used when all ' +
-                'tabs for this page are closed. See https://cra.link/PWA.'
-              );
 
               // Execute callback
               if (config && config.onUpdate) {
                 config.onUpdate(registration);
+              } else {
+                Sentry.captureMessage(`[SERVICE_WORKER_INSTALLATION]: ServiceWorker cannot be update because the config or the config.onUpdate is not defined`)
               }
             } else {
               // At this point, everything has been precached.

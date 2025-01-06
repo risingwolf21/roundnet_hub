@@ -17,6 +17,8 @@ import { RecurringEventsProvider } from './features/events/RecurringEvents';
 import NotificationsScreenProvider from './features/notifications/NotificationsScreen';
 import { useServiceWorker } from './hooks/useServiceWorker';
 import { CssBaseline } from '@mui/material';
+import { SentryRepository } from './repository/SentryRepository';
+import { SentryIssueList } from './features/admin/SentryIssues';
 
 const FeatureNotAvailable = React.lazy(() => import('./components/FeatureNotAvailable'));
 const HistoryScreenProvider = React.lazy(() => import('./features/drinks/HistoryScreenProvider'));
@@ -110,6 +112,7 @@ const App = () => {
                   <Route path="supabase" element={<SupabaseClient />} />
                   <Route path="supabase/queries" element={<SupabaseQueryClient />} />
                   <Route path="permissions" element={<PermissionList />} />
+                  <Route path="sentry-issues" element={<SentryIssueList />} />
                 </Route>
                 <Route path="*" element={<Navigate replace to={`/training/list`} />} />
                 <Route path="" element={<Navigate replace to={`/training/list`} />} />
