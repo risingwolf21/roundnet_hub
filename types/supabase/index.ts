@@ -3,8 +3,10 @@ import { Database, Enums, Tables, TablesInsert, TablesUpdate } from '../../src/t
 import { fetchDrinksToPay, fetchFullHistory } from 'src/repository/DrinkRepository';
 import { fetchRolePermissionMapping } from 'src/repository/AdminPermissionsRepository';
 import { fetchGroupWithUsers } from 'src/repository/AdminUsersRepository';
-import { fetchGroups, fetchUserWithGroups } from 'src/repository/UserRepository';
+import { fetchGroups, fetchSimpleUser, fetchUserWithGroups } from 'src/repository/UserRepository';
 import { fetchEvents } from 'src/repository/EventRepository';
+import { GamesTable } from 'src/types/supabaseTypes';
+import { fetchUserMatches } from 'src/repository/GamesRepository';
 
 export type Event = Tables<'events'>;
 export type History = Tables<'history'>;
@@ -36,15 +38,21 @@ declare global {
   type UserRoles = Tables<'user_roles'>;
   type AppPermission = Tables<'app_permissions'>;
   type AppRole = Tables<'app_roles'>;
-  type Player = Database['games']['Tables']['players']['Row'];
+  type Player = GamesTable<'players'>;
+  type Match = GamesTable<'match'>;
+  type MatchSet = GamesTable<'sets'>;
+  type Team = GamesTable<'teams'>;
+  type FullMatch = GamesTable<"user_matches">;
 
-  type GroupWithUsersBase = QueryData<typeof fetchGroupWithUsers> extends Array<infer U> ? U : never;
-  type FullHistory = QueryData<typeof fetchFullHistory> extends Array<infer U> ? U : never;
-  type OpenDrinksForUser = QueryData<typeof fetchDrinksToPay> extends Array<infer U> ? U : never;
-  type RolePermissionMapping = QueryData<typeof fetchRolePermissionMapping> extends Array<infer U> ? U : never;
-  type Groups = QueryData<typeof fetchGroups> extends Array<infer U> ? U : never;
-  type FullEvent = QueryData<typeof fetchEvents> extends Array<infer U> ? U : never;
-  type UserWithGroupsBase = QueryData<typeof fetchUserWithGroups> extends Array<infer U> ? U : never;
+  type GroupWithUsersBase = QueryData<ReturnType<typeof fetchGroupWithUsers>> extends Array<infer U> ? U : never;
+  type FullHistory = QueryData<ReturnType<typeof fetchFullHistory>> extends Array<infer U> ? U : never;
+  type SimpleUser = QueryData<ReturnType<typeof fetchSimpleUser>> extends Array<infer U> ? U : never;
+  type OpenDrinksForUser = QueryData<ReturnType<typeof fetchDrinksToPay>> extends Array<infer U> ? U : never;
+  type RolePermissionMapping = QueryData<ReturnType<typeof fetchRolePermissionMapping>> extends Array<infer U> ? U : never;
+  type Groups = QueryData<ReturnType<typeof fetchGroups>> extends Array<infer U> ? U : never;
+  type FullEvent = QueryData<ReturnType<typeof fetchEvents>> extends Array<infer U> ? U : never;
+  type FullUserMatch = QueryData<ReturnType<typeof fetchUserMatches>> extends Array<infer U> ? U : never;
+  type UserWithGroupsBase = QueryData<ReturnType<typeof fetchUserWithGroups>> extends Array<infer U> ? U : never;
   type UserWithGroupsAndPlayerData = {
     [P in keyof UserWithGroupsBase]: P extends "groups"
     ? UserWithGroupsBase["groups"][number]["group"][]

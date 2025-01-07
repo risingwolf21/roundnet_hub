@@ -3,13 +3,13 @@ import { supabase } from '../components/services/supabase/supabaseClient';
 import { DrinkCounter, PaymentHistory } from '../types/supabaseTypes';
 import { Tables } from 'src/types/supabase-generated.types';
 
-export const fetchDrink = supabase.from('drink').select('*');
+export const fetchDrink = () => supabase.from('drink').select('*');
 
-export const fetchFullHistory = supabase
+export const fetchFullHistory = () => supabase
   .from('history')
   .select('*, drinkId: drink, drink(*), user(*)');
 
-  export const fetchDrinksToPay = supabase
+export const fetchDrinksToPay = () => supabase
   .from('history')
   .select('*, drink ( name, price ), payments ( paymentState ), voucher');
 
@@ -19,7 +19,7 @@ export const SupabaseDrinkRepository = {
     page: number = 0,
     count: number = 20
   ): Promise<PostgrestSingleResponse<FullHistory[]>> {
-    return fetchFullHistory
+    return fetchFullHistory()
       .not('user', 'is', null)
       .eq('user.userId', userId)
       .range(page * count, page * count + count - 1)
@@ -39,7 +39,7 @@ export const SupabaseDrinkRepository = {
   },
 
   async fetchOpenDrinksForUser(userId: string): Promise<PostgrestSingleResponse<OpenDrinksForUser[]>> {
-    return fetchDrinksToPay
+    return fetchDrinksToPay()
       .eq('user ', userId)
       .eq('payment.paymentState', 'Open' as PaymentState)
       .returns<OpenDrinksForUser[]>()
@@ -56,7 +56,7 @@ export const SupabaseDrinkRepository = {
   },
 
   async fetchDrinksToPay(userId: string): Promise<PostgrestSingleResponse<PaymentHistory[]>> {
-    return fetchDrinksToPay
+    return fetchDrinksToPay()
       .eq('payments.paymentState', 'Open')
       .not('payments', 'is', null)
       .eq('user', userId)
@@ -65,7 +65,7 @@ export const SupabaseDrinkRepository = {
   },
 
   async fetchDrinks(): Promise<PostgrestSingleResponse<Drink[]>> {
-    return fetchDrink.order('id', { ascending: false }).returns<Drink[]>().throwOnError();
+    return fetchDrink().order('id', { ascending: false }).returns<Drink[]>().throwOnError();
   },
 
   async fetchVouchersForUser(): Promise<PostgrestSingleResponse<Tables<'user_vouchers'>[]>> {

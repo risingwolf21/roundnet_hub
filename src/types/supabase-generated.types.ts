@@ -102,6 +102,13 @@ export type Database = {
             referencedRelation: "match"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "sets_match_fkey"
+            columns: ["match"]
+            isOneToOne: false
+            referencedRelation: "user_matches"
+            referencedColumns: ["id"]
+          },
         ]
       }
       teams: {
@@ -145,7 +152,49 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      user_matches: {
+        Row: {
+          created_at: string | null
+          id: string | null
+          set_results: string | null
+          team_a_name: string | null
+          team_a_player_1: string | null
+          team_a_player_2: string | null
+          team_b_name: string | null
+          team_b_player_1: string | null
+          team_b_player_2: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "teams_player_1_fkey"
+            columns: ["team_a_player_1"]
+            isOneToOne: false
+            referencedRelation: "players"
+            referencedColumns: ["player"]
+          },
+          {
+            foreignKeyName: "teams_player_1_fkey"
+            columns: ["team_b_player_1"]
+            isOneToOne: false
+            referencedRelation: "players"
+            referencedColumns: ["player"]
+          },
+          {
+            foreignKeyName: "teams_player_2_fkey"
+            columns: ["team_a_player_2"]
+            isOneToOne: false
+            referencedRelation: "players"
+            referencedColumns: ["player"]
+          },
+          {
+            foreignKeyName: "teams_player_2_fkey"
+            columns: ["team_b_player_2"]
+            isOneToOne: false
+            referencedRelation: "players"
+            referencedColumns: ["player"]
+          },
+        ]
+      }
     }
     Functions: {
       [_ in never]: never

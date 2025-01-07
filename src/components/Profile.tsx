@@ -25,17 +25,23 @@ const UserScreen = () => {
   const [currentUser, setCurrentUser] = useState<UserWithGroupsAndPlayerData | null>(null);
   const [overlappingGroups, setOverlappingGroups] = useState<Group[]>([]);
 
+  const loadUserData = async (userId: string) => {
+
+    const userResult = await SupabaseUserRepository.fetchUserWithGroups(user.userId);
+    const result = await SupabaseUserRepository.fetchUserWithGroups(userId);
+
+    return { result, userResult }
+  }
+
   useEffect(() => {
     if (userId) {
       setLoading(true);
-      SupabaseUserRepository.fetchUserWithGroups(userId).then((result) => {
-        SupabaseUserRepository.fetchUserWithGroups(user.userId).then((userResult) => {
-          setOverlappingGroups(
-            result.data?.groups?.filter((x: Group) => userResult.data?.groups.some((y: Group) => y.id === x.id)) ?? []
-          );
-          setCurrentUser(result.data);
-          setLoading(false);
-        });
+      loadUserData(userId).then(({ result, userResult }) => {
+        setOverlappingGroups(
+          result.data?.groups?.filter((x: Group) => userResult.data?.groups.some((y: Group) => y.id === x.id)) ?? []
+        );
+        setCurrentUser(result.data);
+        setLoading(false);
       });
     }
   }, [userId, user]);

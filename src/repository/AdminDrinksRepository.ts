@@ -5,11 +5,11 @@ import { fetchDrink, fetchFullHistory } from './DrinkRepository';
 
 export const AdminDrinksRepository = {
   async fetchDrinks(): Promise<PostgrestSingleResponse<Drink[]>> {
-    return fetchDrink.throwOnError();
+    return fetchDrink().throwOnError();
   },
 
   async fetchAdminHistory(page: number = 0, count: number = 20): Promise<PostgrestSingleResponse<FullHistory[]>> {
-    return fetchFullHistory
+    return fetchFullHistory()
       .order('created_at', { ascending: false })
       .range(page * count, page * count + count - 1)
       .throwOnError();

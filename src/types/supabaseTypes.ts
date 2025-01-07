@@ -1,5 +1,6 @@
-import {isBefore} from 'date-fns';
-import {Event, History} from 'types/supabase';
+import { isBefore } from 'date-fns';
+import { Event, History } from 'types/supabase';
+import { Database } from './supabase-generated.types';
 
 export type FullChallenge = Challenge & {
     stats: ChallengeStatWithUser[];
@@ -101,3 +102,102 @@ export type GroupWithUsers = Group & {
 };
 
 export type Modify<T, R> = Omit<T, keyof R> & R;
+
+
+type GamesSchema = Database[Extract<keyof Database, "games">]
+
+export type GamesTable<
+    PublicTableNameOrOptions extends
+    | keyof (GamesSchema["Tables"] & GamesSchema["Views"])
+    | { schema: keyof Database },
+    TableName extends PublicTableNameOrOptions extends { schema: keyof Database }
+    ? keyof (Database[PublicTableNameOrOptions["schema"]]["Tables"] &
+        Database[PublicTableNameOrOptions["schema"]]["Views"])
+    : never = never,
+> = PublicTableNameOrOptions extends { schema: keyof Database }
+    ? (Database[PublicTableNameOrOptions["schema"]]["Tables"] &
+        Database[PublicTableNameOrOptions["schema"]]["Views"])[TableName] extends {
+            Row: infer R
+        }
+    ? R
+    : never
+    : PublicTableNameOrOptions extends keyof (GamesSchema["Tables"] &
+        GamesSchema["Views"])
+    ? (GamesSchema["Tables"] &
+        GamesSchema["Views"])[PublicTableNameOrOptions] extends {
+            Row: infer R
+        }
+    ? R
+    : never
+    : never
+
+export type GamesTablesInsert<
+    PublicTableNameOrOptions extends
+    | keyof GamesSchema["Tables"]
+    | { schema: keyof Database },
+    TableName extends PublicTableNameOrOptions extends { schema: keyof Database }
+    ? keyof Database[PublicTableNameOrOptions["schema"]]["Tables"]
+    : never = never,
+> = PublicTableNameOrOptions extends { schema: keyof Database }
+    ? Database[PublicTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+        Insert: infer I
+    }
+    ? I
+    : never
+    : PublicTableNameOrOptions extends keyof GamesSchema["Tables"]
+    ? GamesSchema["Tables"][PublicTableNameOrOptions] extends {
+        Insert: infer I
+    }
+    ? I
+    : never
+    : never
+
+export type GamesTablesUpdate<
+    PublicTableNameOrOptions extends
+    | keyof GamesSchema["Tables"]
+    | { schema: keyof Database },
+    TableName extends PublicTableNameOrOptions extends { schema: keyof Database }
+    ? keyof Database[PublicTableNameOrOptions["schema"]]["Tables"]
+    : never = never,
+> = PublicTableNameOrOptions extends { schema: keyof Database }
+    ? Database[PublicTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+        Update: infer U
+    }
+    ? U
+    : never
+    : PublicTableNameOrOptions extends keyof GamesSchema["Tables"]
+    ? GamesSchema["Tables"][PublicTableNameOrOptions] extends {
+        Update: infer U
+    }
+    ? U
+    : never
+    : never
+
+export type GamesEnums<
+    PublicEnumNameOrOptions extends
+    | keyof GamesSchema["Enums"]
+    | { schema: keyof Database },
+    EnumName extends PublicEnumNameOrOptions extends { schema: keyof Database }
+    ? keyof Database[PublicEnumNameOrOptions["schema"]]["Enums"]
+    : never = never,
+> = PublicEnumNameOrOptions extends { schema: keyof Database }
+    ? Database[PublicEnumNameOrOptions["schema"]]["Enums"][EnumName]
+    : PublicEnumNameOrOptions extends keyof GamesSchema["Enums"]
+    ? GamesSchema["Enums"][PublicEnumNameOrOptions]
+    : never
+
+export type GamesCompositeTypes<
+    PublicCompositeTypeNameOrOptions extends
+    | keyof GamesSchema["CompositeTypes"]
+    | { schema: keyof Database },
+    CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
+        schema: keyof Database
+    }
+    ? keyof Database[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
+    : never = never,
+> = PublicCompositeTypeNameOrOptions extends { schema: keyof Database }
+    ? Database[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
+    : PublicCompositeTypeNameOrOptions extends keyof GamesSchema["CompositeTypes"]
+    ? GamesSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
+    : never
+

@@ -8,23 +8,22 @@ import { supabase } from '../components/services/supabase/supabaseClient';
 import { TablesInsert, TablesUpdate } from '../types/supabase-generated.types';
 import { Event } from 'types/supabase';
 
-export const fetchEvents = supabase
+export const fetchEvents = () => supabase
   .from('events')
   .select(
     '*, fullGroup: event_group(id, created_at, description, name, color), attendance: event_attendance_user_mapping ( state , user(userId, displayName, avatarUrl)  ), comments: event_comments ( comment, created_at, displayName, event, user ( displayName, userId, avatarUrl))'
   );
 
 export const SupabaseEventRepository = {
-  async updateEventAndAllRecurrences(eventUpdate: TablesUpdate<'events'>): Promise<PostgrestSingleResponse<null>> {
+  async updateEventAndAllRecurrences(eventUpdate: TablesUpdate<'events'>, oldStartTime: string | undefined): Promise<PostgrestSingleResponse<null>> {
     const { data, error } = await supabase
       .from('events')
       .select('*')
       .eq('key', eventUpdate.key ?? '')
-      .gte('id', eventUpdate.id)
-      .order('id')
+      .gte("startingDateTime", oldStartTime)
       .returns<Event[]>();
 
-    if (!data || error) {
+    if (!data || error || !oldStartTime) {
       return {
         error: {
           code: '',
@@ -59,23 +58,23 @@ export const SupabaseEventRepository = {
         ..._.omit(eventUpdate, ['id']),
         startingDateTime: eventUpdate.startingDateTime
           ? formatDateToDatabase(
-              add(eventUpdate.startingDateTime, recurrenceFrom(eventUpdate.recurrence ?? e.recurrence, index))
-            )
+            add(eventUpdate.startingDateTime, recurrenceFrom(eventUpdate.recurrence ?? e.recurrence, index))
+          )
           : e.startingDateTime,
         endDateTime: eventUpdate.endDateTime
           ? formatDateToDatabase(
-              add(eventUpdate.endDateTime, recurrenceFrom(eventUpdate.recurrence ?? e.recurrence, index))
-            )
+            add(eventUpdate.endDateTime, recurrenceFrom(eventUpdate.recurrence ?? e.recurrence, index))
+          )
           : e.endDateTime,
         meetingDateTime: eventUpdate.meetingDateTime
           ? formatDateToDatabase(
-              add(eventUpdate.meetingDateTime, recurrenceFrom(eventUpdate.recurrence ?? e.recurrence, index))
-            )
+            add(eventUpdate.meetingDateTime, recurrenceFrom(eventUpdate.recurrence ?? e.recurrence, index))
+          )
           : e.meetingDateTime,
         answerDeadline: eventUpdate.answerDeadline
           ? formatDateToDatabase(
-              add(eventUpdate.answerDeadline, recurrenceFrom(eventUpdate.recurrence ?? e.recurrence, index))
-            )
+            add(eventUpdate.answerDeadline, recurrenceFrom(eventUpdate.recurrence ?? e.recurrence, index))
+          )
           : e.answerDeadline,
       } as TablesInsert<'events'>;
     });
@@ -166,7 +165,7 @@ export const SupabaseEventRepository = {
 
   async fetchUpcomingEvents(): Promise<PostgrestSingleResponse<FullEvent[]>> {
     return (
-      fetchEvents
+      fetchEvents()
         // get events that are on the same day or later
         .gt('startingDateTime', formatDateToDatabase(startOfDay(new Date())))
         .or(`recurrenceEnd.is.null,recurrenceEnd.gt.'${formatDateToDatabase(new Date())}'`)
@@ -178,7 +177,7 @@ export const SupabaseEventRepository = {
   },
 
   async fetchPastEvents(): Promise<PostgrestSingleResponse<FullEvent[]>> {
-    return fetchEvents
+    return fetchEvents()
       .lt('startingDateTime', formatDateToDatabase(new Date()))
       .gt('startingDateTime', formatDateToDatabase(add(new Date(), { weeks: -3 })))
       .order('startingDateTime', { ascending: false })
@@ -206,7 +205,7 @@ export const SupabaseEventRepository = {
   },
 
   async fetchSingleEvent(eventId: string): Promise<PostgrestSingleResponse<FullEvent>> {
-    return fetchEvents.eq('id', eventId).single<FullEvent>().throwOnError();
+    return fetchEvents().eq('id', eventId).single<FullEvent>().throwOnError();
   },
 
   async fetchRecurringEvents(): Promise<PostgrestSingleResponse<EventWithGroup[]>> {

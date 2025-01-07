@@ -10,6 +10,8 @@ import {
   Liquor,
   Notifications,
   Person,
+  Score,
+  Scoreboard,
   SportsHandball,
   StorageOutlined,
 } from '@mui/icons-material';
@@ -241,6 +243,19 @@ const DrawerContent = ({
             />
           </DrawerItem>
         )}
+        {can('select', 'games') && (
+          <DrawerItem key="matches" selected={tab === 'matches'} onClick={() => handleChange('matches')}>
+            <ListItemAvatar>
+              <ListItemIcon>
+                <Scoreboard />
+              </ListItemIcon>
+            </ListItemAvatar>
+            <ListItemText
+              primaryTypographyProps={{ fontWeight: 'bold', fontSize: '0.9rem' }}
+              primary={t('navigation.matches')}
+            />
+          </DrawerItem>
+        )}
         {can('select', 'challenge') && (
           <DrawerItem key="challenges" selected={tab === 'challenges'} onClick={() => handleChange('challenges')}>
             <ListItemAvatar>
@@ -456,7 +471,7 @@ const DrawerContent = ({
                 />
               </DrawerItem>
             )}
-             {can('view', 'postgres') && (
+            {can('view', 'postgres') && (
               <DrawerItem
                 key="sentryIssues"
                 selected={tab === 'admin/sentry-issues'}

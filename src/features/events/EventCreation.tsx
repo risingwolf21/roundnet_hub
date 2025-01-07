@@ -1,6 +1,8 @@
+import { AccessTime, Article, FiberManualRecord, Map } from '@mui/icons-material';
+import EventIcon from '@mui/icons-material/Event';
+import EventRepeatIcon from '@mui/icons-material/EventRepeat';
 import {
   Alert,
-  AppBar,
   Box,
   Button,
   Checkbox,
@@ -11,7 +13,6 @@ import {
   Divider,
   FormControl,
   FormControlLabel,
-  IconButton,
   InputAdornment,
   List,
   ListItem,
@@ -24,28 +25,24 @@ import {
   Select,
   Snackbar,
   TextField,
-  Toolbar,
-  Typography,
+  Typography
 } from '@mui/material';
-import { AccessTime, Article, Close, FiberManualRecord, Map } from '@mui/icons-material';
-import EventIcon from '@mui/icons-material/Event';
-import { useNavigate } from 'react-router-dom';
 import { DatePicker, DateTimePicker } from '@mui/x-date-pickers';
 import { TimePicker } from '@mui/x-date-pickers/TimePicker';
-import React, { FormEvent, Ref, useEffect, useRef, useState } from 'react';
-import EventRepeatIcon from '@mui/icons-material/EventRepeat';
-import SearchPlacesDialog from './dialogs/SearchPlacesDialog';
-import { MapContainer, Marker, TileLayer, useMap } from 'react-leaflet';
 import { format, isAfter, isBefore, set } from 'date-fns';
 import _ from 'lodash';
-import { SelectGroupDialog } from './dialogs/SelectGroupDialog';
+import React, { FormEvent, Ref, useEffect, useRef, useState } from 'react';
+import { MapContainer, Marker, TileLayer, useMap } from 'react-leaflet';
+import { useNavigate } from 'react-router-dom';
+import Layout from 'src/components/Layout';
 import { dayjsFromDb, formatDateToDatabase } from 'src/utils';
 import { NumberInput } from '../../components/mui/NumberInput';
-import { LoadingIndicator } from '../../components/LoadingIndicator';
 import { SupabaseEventRepository } from '../../repository/EventRepository';
 import { Enums, TablesInsert } from '../../types/supabase-generated.types';
+import SearchPlacesDialog from './dialogs/SearchPlacesDialog';
+import { SelectGroupDialog } from './dialogs/SelectGroupDialog';
 import { CreateEventProps, PlaceType } from './types';
-import Layout from 'src/components/Layout';
+import { rewriteFramesIntegration } from '@sentry/react';
 
 const emptyEvent = {
   title: '',
@@ -72,7 +69,7 @@ const CreateEvent = ({ t, eventToEdit, option }: CreateEventProps) => {
     lon: 8.416547971872856,
     name: 'MTV Karlsruhe',
   });
-  const ref = useRef<Ref<HTMLFormElement>>(null);
+  const ref = useRef<HTMLFormElement>(null);
 
   useEffect(() => {
     if (eventToEdit) {
@@ -106,9 +103,6 @@ const CreateEvent = ({ t, eventToEdit, option }: CreateEventProps) => {
 
       if (!event.group) throw new Error(t('events.creation.noGroupSelected'));
 
-      if (event.answerDeadline && isBefore(event.answerDeadline, Date.now()))
-        throw new Error(t('events.creation.answerDeadlineBeforeNow'));
-
       if (event.answerDeadline && isAfter(event.answerDeadline, event.startingDateTime))
         throw new Error(t('events.creation.answerDeadlineAfterStart'));
 
@@ -130,7 +124,7 @@ const CreateEvent = ({ t, eventToEdit, option }: CreateEventProps) => {
 
         if (error) throw error;
       } else if (option === 'UpdateRecurrence') {
-        const { error } = await SupabaseEventRepository.updateEventAndAllRecurrences(event);
+        const { error } = await SupabaseEventRepository.updateEventAndAllRecurrences(event, eventToEdit?.startingDateTime);
 
         if (error) throw error;
       } else {
@@ -158,7 +152,10 @@ const CreateEvent = ({ t, eventToEdit, option }: CreateEventProps) => {
     <Layout
       appBarConfig={{ showBackButton: true, showProfile: false, title: `Event ${eventToEdit ? "bearbeiten" : "erstellen"}` }}
       appBarActions={
-        <Button autoFocus color="inherit" type="submit">
+        <Button autoFocus color="inherit" onClick={() => {
+          if (ref.current)
+            ref.current.dispatchEvent(new Event("submit", { cancelable: true, bubbles: true }))
+        }}>
           Speichern
         </Button>}>
       <Box ref={ref} component="form" onSubmit={handleSubmit} noValidate>
@@ -589,7 +586,6 @@ const CreateEvent = ({ t, eventToEdit, option }: CreateEventProps) => {
         open={dialogOpen === 'group'}
         handleClose={() => setDialogOpen(null)}
         handleSubmit={(group) => {
-          console.log(group);
           setEditedEvent({ ...editedEvent, group: group.id, fullGroup: group });
           setDialogOpen(null);
         }}

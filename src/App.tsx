@@ -19,6 +19,8 @@ import { useServiceWorker } from './hooks/useServiceWorker';
 import { CssBaseline } from '@mui/material';
 import { SentryRepository } from './repository/SentryRepository';
 import { SentryIssueList } from './features/admin/SentryIssues';
+import { GameList } from './features/games/GameList';
+import { ReportScore } from './features/games/ReportScore';
 
 const FeatureNotAvailable = React.lazy(() => import('./components/FeatureNotAvailable'));
 const HistoryScreenProvider = React.lazy(() => import('./features/drinks/HistoryScreenProvider'));
@@ -102,6 +104,11 @@ const App = () => {
                   <Route path="recurringEvents" element={<RecurringEventsProvider />} />
                   <Route path="event/:selectedEventId" element={<EventInformationProvider />} />
                   <Route path="createOrUpdate/:option" element={<CreateEventProvider />} />
+                </Route>
+
+                <Route path="matches">
+                  <Route index element={<GameList />} />
+                  <Route path="report" element={<ReportScore />} />
                 </Route>
 
                 <Route path="admin">

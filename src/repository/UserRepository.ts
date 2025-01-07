@@ -1,21 +1,26 @@
 import { PostgrestError, PostgrestSingleResponse } from '@supabase/supabase-js';
-import { FullUser } from '../types/supabaseTypes';
-import { supabase } from '../components/services/supabase/supabaseClient';
 import { Notification } from 'types/supabase';
+import { supabase } from '../components/services/supabase/supabaseClient';
 
-export const fetchGroups = supabase.from('group_user_mapping').select('group(*)');
-export const fetchUserWithGroups = supabase
+export const fetchGroups = () => supabase.from('group_user_mapping').select('group(*)');
+export const fetchUserWithGroups = () => supabase
   .from('user')
   .select('*, groups: group_user_mapping ( group: event_group ( * ) )')
+export const fetchSimpleUser = () => supabase.from("user").select("userId, displayName")
 
 export const SupabaseUserRepository = {
+
+  async fetchSimpleUsers(): Promise<PostgrestSingleResponse<SimpleUser[]>> {
+    return fetchSimpleUser();
+  },
+
   async fetchUserWithGroups(userId: string): Promise<PostgrestSingleResponse<UserWithGroupsAndPlayerData>> {
     const { data: player_data } = await SupabaseUserRepository.fetchPlayer(userId);
-    const response = await fetchUserWithGroups
+    const response = await fetchUserWithGroups()
       .eq('userId', userId)
-      .single();
+      .maybeSingle();
 
-    if (!response.data)
+    if (!response.data || response.error)
       return {
         error: {
           code: '',
@@ -44,7 +49,7 @@ export const SupabaseUserRepository = {
   },
 
   async fetchGroupsForUser(userId: string): Promise<Group[]> {
-    const { data } = await fetchGroups.eq('user', userId).throwOnError();
+    const { data } = await fetchGroups().eq('user', userId).throwOnError();
 
     return data?.map(x => x.group) ?? [];
   },

@@ -12,6 +12,7 @@ export type Ability =
   | [Actions, 'eventComments']
   | [Actions, 'history']
   | [Actions, 'notifications']
+  | [Actions, 'games']
   | [Actions, 'browse']
   | [Actions, 'browseAdmin']
   | [Actions, 'postgres'];
