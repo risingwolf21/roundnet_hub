@@ -1,5 +1,5 @@
 import { Add } from "@mui/icons-material"
-import { Box, Fab, List, ListItem, Typography } from "@mui/material"
+import { Box, CircularProgress, Fab, List, ListItem, Typography } from "@mui/material"
 import React, { useEffect, useState } from "react"
 import { useNavigate } from "react-router-dom"
 import Layout from "src/components/Layout"
@@ -9,11 +9,13 @@ export const GameList = () => {
 
     const navigate = useNavigate();
     const [matches, setMatches] = useState<FullUserMatch[]>([]);
+    const [loadingMatches, setLoadingMatches] = useState(false);
 
     useEffect(() => {
+        setLoadingMatches(true);
         GamesRepository.fetchGamesForUser().then(result => {
             setMatches(result.data ?? [])
-        });
+        }).finally(() => setLoadingMatches(false))
     }, []);
 
     return <Layout>
@@ -63,7 +65,14 @@ export const GameList = () => {
             }
 
             {
-                matches.length <= 0 && <Box sx={{ alignItems: 'center', display: 'flex', flexDirection: 'column', pt: 10 }}>
+                loadingMatches && <Box sx={{ alignItems: 'center', display: 'flex', flexDirection: 'column', pt: 10 }}>
+                    <CircularProgress />
+                    <Typography sx={{ fontSize: '18pt', fontWeight: 'bold' }}>Einträge werden geladen</Typography>
+                </Box>
+            }
+
+            {
+                matches.length <= 0 && !loadingMatches && <Box sx={{ alignItems: 'center', display: 'flex', flexDirection: 'column', pt: 10 }}>
                     <Typography sx={{ fontSize: '30pt', fontWeight: 'bold' }}>📖</Typography>
                     <Typography sx={{ fontSize: '18pt', fontWeight: 'bold' }}>Keine Einträge gefunden</Typography>
                 </Box>

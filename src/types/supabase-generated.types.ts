@@ -1185,6 +1185,18 @@ export type Database = {
             }
             Returns: undefined
           }
+      add_match_with_sets: {
+        Args: {
+          player_1a: string
+          player_2a: string
+          player_1b: string
+          player_2b: string
+          team_a: string
+          team_b: string
+          match_sets: Json
+        }
+        Returns: undefined
+      }
       add_notificationtags_to_all_users: {
         Args: {
           notification: Database["public"]["Enums"]["NotificationTags"]

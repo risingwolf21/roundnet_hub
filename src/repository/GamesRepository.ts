@@ -9,5 +9,9 @@ export const fetchUserMatches = () => supabase
 export const GamesRepository = {
     async fetchGamesForUser(): Promise<PostgrestSingleResponse<FullUserMatch[]>> {
         return fetchUserMatches();
+    },
+
+    async reportScores(sets: { team_a_score: number, team_b_score: number }[], player_1a: string, player_1b: string, player_2a: string, player_2b: string, team_a: string, team_b: string): Promise<PostgrestSingleResponse<undefined>> {
+        return supabase.rpc("add_match_with_sets", { match_sets: JSON.stringify(sets), player_1a, player_1b, player_2a, player_2b, team_a, team_b })
     }
 }
