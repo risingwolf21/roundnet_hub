@@ -12,6 +12,14 @@ export const GamesRepository = {
     },
 
     async reportScores(sets: { team_a_score: number, team_b_score: number }[], player_1a: string, player_1b: string, player_2a: string, player_2b: string, team_a: string, team_b: string): Promise<PostgrestSingleResponse<undefined>> {
-        return supabase.rpc("add_match_with_sets", { match_sets: JSON.stringify(sets), player_1a, player_1b, player_2a, player_2b, team_a, team_b })
+        return supabase.rpc("add_match_with_sets", {
+            match_sets: sets.map(x => ({ team_a_score: x.team_a_score, team_b_score: x.team_b_score })),
+            player_1a,
+            player_1b,
+            player_2a,
+            player_2b,
+            team_a,
+            team_b
+        }).throwOnError();
     }
 }
