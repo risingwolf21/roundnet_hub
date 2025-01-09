@@ -61,7 +61,7 @@ type UserScreenProps = {
 };
 
 export const UserScreenProvider = () => {
-  const {user, signOut} = useAuth();
+  const { user, signOut } = useAuth();
   const client = useClient();
   const dispatch = useAppDispatch();
   const [groups, setGroups] = useState<Group[]>([]);
@@ -134,8 +134,8 @@ const UserScreen = ({ user, client, dispatch, groups, handleSignOut }: UserScree
     severity?: 'error' | 'success';
   }>({ open: false, message: '', severity: 'error' });
   const [currentUser, setCurrentUser] = useState(user);
-  const [firstName, setFirstName] = useState(user.displayName.split(' ')[0]);
-  const [surName, setSueName] = useState(user.displayName.split(' ')[1] ?? '');
+  const [displayName, setDisplayName] = useState(user.displayName);
+  const [name, setName] = useState(user.name);
   const [loadingSave, setLoadingSave] = useState(false);
   const { updatingNotificationTags } = useSelector((state: RootState) => state.application);
 
@@ -204,15 +204,23 @@ const UserScreen = ({ user, client, dispatch, groups, handleSignOut }: UserScree
   };
 
   const updateDisplayName = async (avatarUrl: string | null) => {
-    let displayName = [firstName.trim(), surName.trim()].filter((x) => x !== '').join(' ');
-    const { error } = await client.from('user').update({ displayName, avatarUrl }).eq('userId', user.userId);
+    if (name.length < 6 || displayName.length < 4) {
+      setErrorSnackbar({ message: 'Name oder Anzeigename müssen 6 bzw. 4 Zeichen lang sein', open: true });
+      return;
+    }
+    if (name.split(' ').length < 2) {
+      setErrorSnackbar({ message: 'Du musst dein vollen Name, mit Vor und Nachname angeben', open: true });
+      return;
+    }
+
+    const { error } = await client.from('user').update({ name, displayName, avatarUrl }).eq('userId', user.userId);
     if (error) {
       setErrorSnackbar({ message: error.message, open: true });
       captureException(error);
       return;
     }
     const { error: authError } = await client.auth.updateUser({
-      data: { displayName },
+      data: { displayName, name },
     });
     if (authError) {
       setErrorSnackbar({ message: authError.message, open: true });
@@ -309,21 +317,21 @@ const UserScreen = ({ user, client, dispatch, groups, handleSignOut }: UserScree
             fullWidth
             size="small"
             variant="outlined"
-            value={firstName}
-            onChange={(e) => setFirstName(e.target.value)}
-            label="Vorname"
+            value={displayName}
+            onChange={(e) => setDisplayName(e.target.value)}
+            label="Anzeigename"
             margin="normal"
           />
         </ListItem>
-        <ListItem key={'surName'} sx={{ '&.MuiListItem-root': { p: 0 } }}>
+        <ListItem key={'fullName'} sx={{ '&.MuiListItem-root': { p: 0 } }}>
           <ListItemAvatar />
           <TextField
             fullWidth
             size="small"
             variant="outlined"
-            value={surName}
-            onChange={(e) => setSueName(e.target.value)}
-            label="Nachname"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            label="Voller Name"
             margin="normal"
           />
         </ListItem>
@@ -448,7 +456,8 @@ const UserScreen = ({ user, client, dispatch, groups, handleSignOut }: UserScree
             </ListItemButton>
           )}
         </List>
-        {(user.displayName !== [firstName.trim(), surName.trim()].filter((x) => x !== '').join(' ') ||
+        {(user.displayName !== displayName ||
+          user.name !== name ||
           croppedImage ||
           (user.avatarUrl !== null && currentUser.avatarUrl === null)) && (
           <Fab

@@ -6,7 +6,7 @@ export const fetchGroups = () => supabase.from('group_user_mapping').select('gro
 export const fetchUserWithGroups = () => supabase
   .from('user')
   .select('*, groups: group_user_mapping ( group: event_group ( * ) )')
-export const fetchSimpleUser = () => supabase.from("user").select("userId, displayName")
+export const fetchSimpleUser = () => supabase.from("user").select("userId, name")
 
 export const SupabaseUserRepository = {
 

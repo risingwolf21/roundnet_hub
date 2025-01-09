@@ -197,7 +197,18 @@ export type Database = {
       }
     }
     Functions: {
-      [_ in never]: never
+      add_match_with_sets: {
+        Args: {
+          player_1a: string
+          player_2a: string
+          player_1b: string
+          player_2b: string
+          team_a: string
+          team_b: string
+          match_sets: Json
+        }
+        Returns: undefined
+      }
     }
     Enums: {
       [_ in never]: never
@@ -965,6 +976,7 @@ export type Database = {
           displayName: string
           email: string
           fcm_token: string | null
+          name: string
           notifications:
             | Database["public"]["Enums"]["NotificationTags"][]
             | null
@@ -979,6 +991,7 @@ export type Database = {
           displayName?: string
           email?: string
           fcm_token?: string | null
+          name?: string
           notifications?:
             | Database["public"]["Enums"]["NotificationTags"][]
             | null
@@ -993,6 +1006,7 @@ export type Database = {
           displayName?: string
           email?: string
           fcm_token?: string | null
+          name?: string
           notifications?:
             | Database["public"]["Enums"]["NotificationTags"][]
             | null

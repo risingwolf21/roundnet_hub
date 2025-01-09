@@ -17,14 +17,6 @@ interface WebhookPayload {
   schema: 'public';
 }
 
-const supabase = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_ANON_KEY')!, {
-  global: {
-    headers: {
-      app_version: '1.6.0',
-    },
-  },
-});
-
 Sentry.init({
   dsn: 'https://a06f63fae5ab4ce4ac291d0d6fb4e989@o4505379650666496.ingest.sentry.io/4505379651649536',
   integrations: [],
@@ -34,76 +26,104 @@ Sentry.init({
   profilesSampleRate: 1.0,
 });
 
-Deno.serve(async (req) => {
-  const payload: WebhookPayload = await req.json();
+Deno.serve(async (req: Request) => {
+  try {
+    const getAccessToken = ({
+      clientEmail,
+      privateKey,
+    }: {
+      clientEmail: string;
+      privateKey: string;
+    }): Promise<string> => {
+      return new Promise((resolve, reject) => {
+        const jwtClient = new JWT({
+          email: clientEmail,
+          key: privateKey,
+          scopes: ['https://www.googleapis.com/auth/firebase.messaging'],
+        });
+        jwtClient.authorize((err, tokens) => {
+          if (err) {
+            reject(err);
+            return;
+          }
+          resolve(tokens!.access_token!);
+        });
+      });
+    };
 
-  const { data } = await supabase
-    .from('user')
-    .select('fcm_token')
-    .not('fcm_token', 'is', null)
-    .eq('userId', payload.record.user)
-    .single();
-
-  const fcmToken = data?.fcm_token;
-
-  const accessToken = await getAccessToken({
-    clientEmail: serviceAccount.client_email,
-    privateKey: serviceAccount.private_key,
-  });
-
-  if (!fcmToken || !accessToken) {
-    Sentry.captureException(Error('FCM Token or AccessToken was null'), (scope: any) => {
-      scope.clear();
-      scope.setExtra('accessToken', accessToken);
-      scope.setExtra('fcmToken', fcmToken);
-      scope.setExtra('payload', JSON.stringify(payload));
-      return scope;
-    });
-    throw Error('FCM Token or AccessToken was null');
-  }
-
-  const res = await fetch(`https://fcm.googleapis.com/v1/projects/${serviceAccount.project_id}/messages:send`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${accessToken}`,
-    },
-    body: JSON.stringify({
-      message: {
-        token: fcmToken,
-        data: {
-          title: payload.record.title,
-          body: payload.record.body,
-          id: payload.record.id,
+    const supabase = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_ANON_KEY')!, {
+      global: {
+        headers: {
+          app_version: '1.6.0',
         },
       },
-    }),
-  });
+    });
+    const payload: WebhookPayload = await req.json();
 
-  const resData = await res.json();
-  if (res.status < 200 || 299 < res.status) {
-    Sentry.captureException(Error(JSON.stringify({ resData })));
-    throw resData;
+    const { data } = await supabase
+      .from('user')
+      .select('fcm_token, name')
+      .not('fcm_token', 'is', null)
+      .eq('userId', payload.record.user)
+      .single();
+
+    const fcmToken = data?.fcm_token;
+
+    const accessToken = await getAccessToken({
+      clientEmail: serviceAccount.client_email,
+      privateKey: serviceAccount.private_key,
+    });
+
+    if (!fcmToken || !accessToken) {
+      Sentry.captureException(Error('FCM Token or AccessToken was null'), (scope: any) => {
+        scope.clear();
+        scope.setExtra('accessToken', accessToken);
+        scope.setExtra('fcmToken', fcmToken);
+        scope.setExtra('payload', JSON.stringify(payload));
+        return scope;
+      });
+      return new Response(JSON.stringify({ error: 'FCM Token or AccessToken was null' }), { status: 500 });
+    }
+
+    const res = await fetch(`https://fcm.googleapis.com/v1/projects/${serviceAccount.project_id}/messages:send`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${accessToken}`,
+      },
+      body: JSON.stringify({
+        message: {
+          token: fcmToken,
+          data: {
+            title: payload.record.title,
+            body: payload.record.body,
+            id: payload.record.id,
+          },
+        },
+      }),
+    });
+
+    const resData = await res.json();
+    if (res.status < 200 || 299 < res.status) {
+      Sentry.captureException(Error(JSON.stringify({ resData })));
+      throw resData;
+    }
+
+    Sentry.captureMessage('Notification successful', {
+      level: 'info',
+      extra: {
+        title: payload.record.title,
+        body: payload.record.body,
+        name: data.name,
+      },
+    });
+
+    return new Response(JSON.stringify(resData), {
+      headers: { 'Content-Type': 'application/json' },
+    });
+  } catch (error) {
+    console.error(error);
+    Sentry.captureException(error);
+    return new Response(JSON.stringify({ error: error.message }), { status: 500 });
   }
-
-  return new Response(JSON.stringify(resData), {
-    headers: { 'Content-Type': 'application/json' },
-  });
 });
-
-const getAccessToken = ({ clientEmail, privateKey }: { clientEmail: string; privateKey: string }): Promise<string> => {
-  return new Promise((resolve, reject) => {
-    const jwtClient = new JWT({
-      email: clientEmail,
-      key: privateKey,
-      scopes: ['https://www.googleapis.com/auth/firebase.messaging'],
-    });
-    jwtClient.authorize((err, tokens) => {
-      if (err) {
-        reject(err);
-        return;
-      }
-      resolve(tokens!.access_token!);
-    });
-  });
-};

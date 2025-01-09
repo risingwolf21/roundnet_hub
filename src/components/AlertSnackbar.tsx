@@ -1,4 +1,4 @@
-import { Alert, AlertColor, Button, Snackbar, SnackbarCloseReason } from '@mui/material';
+import { Alert, AlertColor, Button, Snackbar, SnackbarCloseReason, SxProps, Theme } from '@mui/material';
 import React, { SyntheticEvent } from 'react';
 
 export type AlertMessage = {
@@ -10,9 +10,10 @@ type AlertSnackbarProps = {
   close?: (() => void) | null;
   alertInfo: AlertMessage | null;
   autoHideDuration?: number | null;
+  sx?: SxProps<Theme>;
 };
 
-export const AlertSnackbar = ({ alertInfo, close, autoHideDuration }: AlertSnackbarProps) => {
+export const AlertSnackbar = ({ alertInfo, close, autoHideDuration, sx }: AlertSnackbarProps) => {
   const handleSnackbarClose = (event: Event | SyntheticEvent<any, Event>, reason: SnackbarCloseReason) => {
     if (reason === 'clickaway') {
       return;
@@ -28,7 +29,7 @@ export const AlertSnackbar = ({ alertInfo, close, autoHideDuration }: AlertSnack
 
   return (
     <Snackbar
-      sx={{ position: 'fixed', right: '16px', bottom: 'max(16px, env(safe-area-inset-bottom))' }}
+      sx={{ ...sx, position: 'fixed', right: '16px', bottom: 'max(16px, env(safe-area-inset-bottom))' }}
       open={alertInfo != null}
       autoHideDuration={versionError() ? null : autoHideDuration}
       onClose={close ? handleSnackbarClose : undefined}
