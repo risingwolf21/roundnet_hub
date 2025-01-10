@@ -1,12 +1,12 @@
 import { QueryData } from '@supabase/supabase-js';
-import { Database, Enums, Tables, TablesInsert, TablesUpdate } from '../../src/types/supabase-generated.types';
-import { fetchDrinksToPay, fetchFullHistory } from 'src/repository/DrinkRepository';
 import { fetchRolePermissionMapping } from 'src/repository/AdminPermissionsRepository';
 import { fetchGroupWithUsers } from 'src/repository/AdminUsersRepository';
-import { fetchGroups, fetchSimpleUser, fetchUserWithGroups } from 'src/repository/UserRepository';
+import { fetchDrinksToPay, fetchFullHistory } from 'src/repository/DrinkRepository';
 import { fetchEvents } from 'src/repository/EventRepository';
-import { GamesTable } from 'src/types/supabaseTypes';
 import { fetchUserMatches } from 'src/repository/GamesRepository';
+import { fetchGroups, fetchSimpleUser, fetchUserWithGroups } from 'src/repository/UserRepository';
+import { GamesTable, PermissionsTable } from 'src/types/supabaseTypes';
+import { Enums, Tables, TablesInsert, TablesUpdate } from '../../src/types/supabase-generated.types';
 
 export type Event = Tables<'events'>;
 export type History = Tables<'history'>;
@@ -16,11 +16,8 @@ export type NonNullableFields<T, K extends keyof T> = Omit<T, K> & {
   [P in K]-?: NonNullable<T[P]>;
 };
 
-export type ResolveProperty<T, K extends keyof T> = T[K] extends Array<infer U>
-  ? U extends { [key: string]: any }
-  ? { [P in keyof U]: U[P] }
-  : T[K]
-  : T[K];
+export type ResolveProperty<T, K extends keyof T> =
+  T[K] extends Array<infer U> ? (U extends { [key: string]: any } ? { [P in keyof U]: U[P] } : T[K]) : T[K];
 
 declare global {
   type Challenge = Tables<'challenge'>;
@@ -34,29 +31,31 @@ declare global {
   type Payment = Tables<'payments'>;
   type User = Tables<'user'>;
   type Voucher = Tables<'vouchers'>;
-  type RolePermissions = Tables<'role_permissions'>;
-  type UserRoles = Tables<'user_roles'>;
-  type AppPermission = Tables<'app_permissions'>;
-  type AppRole = Tables<'app_roles'>;
+  type RolePermissions = PermissionsTable<'role_permissions'>;
+  type UserRoles = PermissionsTable<'user_roles'>;
+  type AppPermission = PermissionsTable<'app_permissions'>;
+  type AppRole = PermissionsTable<'app_roles'>;
   type Player = GamesTable<'players'>;
   type Match = GamesTable<'match'>;
   type MatchSet = GamesTable<'sets'>;
   type Team = GamesTable<'teams'>;
-  type FullMatch = GamesTable<"user_matches">;
+  type FullMatch = GamesTable<'user_matches'>;
+  type PlayerWithSimpleUser = Player & { name: string; userId: string };
 
   type GroupWithUsersBase = QueryData<ReturnType<typeof fetchGroupWithUsers>> extends Array<infer U> ? U : never;
   type FullHistory = QueryData<ReturnType<typeof fetchFullHistory>> extends Array<infer U> ? U : never;
   type SimpleUser = QueryData<ReturnType<typeof fetchSimpleUser>> extends Array<infer U> ? U : never;
   type OpenDrinksForUser = QueryData<ReturnType<typeof fetchDrinksToPay>> extends Array<infer U> ? U : never;
-  type RolePermissionMapping = QueryData<ReturnType<typeof fetchRolePermissionMapping>> extends Array<infer U> ? U : never;
+  type RolePermissionMapping =
+    QueryData<ReturnType<typeof fetchRolePermissionMapping>> extends Array<infer U> ? U : never;
   type Groups = QueryData<ReturnType<typeof fetchGroups>> extends Array<infer U> ? U : never;
   type FullEvent = QueryData<ReturnType<typeof fetchEvents>> extends Array<infer U> ? U : never;
   type FullUserMatch = QueryData<ReturnType<typeof fetchUserMatches>> extends Array<infer U> ? U : never;
   type UserWithGroupsBase = QueryData<ReturnType<typeof fetchUserWithGroups>> extends Array<infer U> ? U : never;
   type UserWithGroupsAndPlayerData = {
-    [P in keyof UserWithGroupsBase]: P extends "groups"
-    ? UserWithGroupsBase["groups"][number]["group"][]
-    : UserWithGroupsBase[P];
+    [P in keyof UserWithGroupsBase]: P extends 'groups'
+      ? UserWithGroupsBase['groups'][number]['group'][]
+      : UserWithGroupsBase[P];
   } & { player_data: Player | null };
 
   type PaymentInsert = TablesInsert<'payments'>;
@@ -76,4 +75,4 @@ declare global {
   type UserRole = Enums<'UserRole'>;
 }
 
-export { };
+export {};

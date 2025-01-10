@@ -1,5 +1,7 @@
 import { PostgrestSingleResponse } from '@supabase/supabase-js';
 import { supabase } from 'src/components/services/supabase/supabaseClient';
+import { fetchSimpleUser } from './UserRepository';
+import _ from 'lodash';
 
 export const fetchUserMatches = () =>
   supabase
@@ -7,15 +9,24 @@ export const fetchUserMatches = () =>
     .from('user_matches')
     .select(
       '*, team_a_player_1: players!team_a_player_1(*), team_a_player_2: players!team_a_player_2(*), team_b_player_1: players!team_b_player_1(*), team_b_player_2: players!team_b_player_2(*)'
-    );
+    )
+    .order('created_at', { ascending: false });
 
 export const GamesRepository = {
   async fetchGamesForUser(): Promise<PostgrestSingleResponse<FullUserMatch[]>> {
     return fetchUserMatches();
   },
 
-  async fetchAvailablePlayers(): Promise<PostgrestSingleResponse<Player[]>> {
-    return supabase.schema('games').from('players').select('*');
+  async fetchAvailablePlayers(): Promise<PlayerWithSimpleUser[]> {
+    const { data: simpleUsers } = await fetchSimpleUser();
+    const { data: players } = await supabase.schema('games').from('players').select('*');
+
+    return _(players) // start sequence
+      .keyBy('player') // create a dictionary of the 1st array
+      .merge(_.keyBy(simpleUsers, 'userId')) // create a dictionary of the 2nd array, and merge it to the 1st
+      .values() // turn the combined dictionary to array
+      .value()
+      .map((x) => ({ ...x }) as PlayerWithSimpleUser); // get the value (array) out of the sequence
   },
 
   async reportScores(

@@ -65,7 +65,7 @@ Deno.serve(async (req: Request) => {
       .select('fcm_token, name')
       .not('fcm_token', 'is', null)
       .eq('userId', payload.record.user)
-      .single();
+      .maybeSingle();
 
     const fcmToken = data?.fcm_token;
 
@@ -78,7 +78,8 @@ Deno.serve(async (req: Request) => {
       Sentry.captureException(Error('FCM Token or AccessToken was null'), (scope: any) => {
         scope.clear();
         scope.setExtra('accessToken', accessToken);
-        scope.setExtra('fcmToken', fcmToken);
+        scope.setExtra('fcmToken', JSON.stringify(fcmToken)); 
+        scope.setExtra('name', data.name); 
         scope.setExtra('payload', JSON.stringify(payload));
         return scope;
       });

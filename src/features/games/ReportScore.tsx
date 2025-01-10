@@ -13,12 +13,14 @@ import {
   Typography,
 } from '@mui/material';
 import React, { useEffect, useState } from 'react';
+import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { AlertMessage, AlertSnackbar } from 'src/components/AlertSnackbar';
 import { drawerWidth } from 'src/components/Drawer';
 import Layout from 'src/components/Layout';
+import { RootState, useAppDispatch } from 'src/redux/store';
 import { GamesRepository } from 'src/repository/GamesRepository';
-import { SupabaseUserRepository } from 'src/repository/UserRepository';
+import { fetchMatchesAsync, fetchPlayersAsync } from './slices/gamesSlice';
 
 type Props = { options: SimpleUser[]; loading: boolean; label: string; onSelect: (value: SimpleUser | null) => void };
 const SelectPlayer = ({ options, loading, label, onSelect }: Props) => {
@@ -53,11 +55,11 @@ const SelectPlayer = ({ options, loading, label, onSelect }: Props) => {
 };
 
 export const ReportScore = () => {
-  const [loadingUsers, setLoadingUsers] = useState(false);
-  const [simpleUsers, setSimpleUsers] = useState<SimpleUser[]>([]);
+  const { players, loadingPlayers } = useSelector((state: RootState) => state.games);
   const [sets, setSets] = useState<MatchSet[]>([]);
   const [alertInfo, setAlertInfo] = useState<AlertMessage | null>(null);
   const navigate = useNavigate();
+  const dispatch = useAppDispatch();
 
   const [player1a, setPlayer1a] = useState<SimpleUser | null>();
   const [player2a, setPlayer2a] = useState<SimpleUser | null>();
@@ -65,15 +67,8 @@ export const ReportScore = () => {
   const [player2b, setPlayer2b] = useState<SimpleUser | null>();
 
   useEffect(() => {
-    setLoadingUsers(true);
-    GamesRepository.fetchAvailablePlayers()
-      .then((players) => {
-        SupabaseUserRepository.fetchSimpleUsers().then((result) => {
-          setSimpleUsers(result.data?.filter((x) => players.data?.map((y) => y.player).includes(x.userId)) ?? []);
-        });
-      })
-      .finally(() => setLoadingUsers(false));
-  }, []);
+    dispatch(fetchPlayersAsync());
+  }, [dispatch]);
 
   const saveScores = () => {
     if (!player1a) {
@@ -140,8 +135,8 @@ export const ReportScore = () => {
           <Grid size={6} sx={{ p: 2 }}>
             <SelectPlayer
               label="Player 1"
-              loading={loadingUsers}
-              options={simpleUsers.filter(
+              loading={loadingPlayers}
+              options={players.filter(
                 (x) =>
                   ![player1b, player2a, player2b]
                     .filter((x) => x)
@@ -154,8 +149,8 @@ export const ReportScore = () => {
           <Grid size={6} sx={{ p: 2 }}>
             <SelectPlayer
               label="Player 1"
-              loading={loadingUsers}
-              options={simpleUsers.filter(
+              loading={loadingPlayers}
+              options={players.filter(
                 (x) =>
                   ![player1a, player2a, player2b]
                     .filter((x) => x)
@@ -168,8 +163,8 @@ export const ReportScore = () => {
           <Grid size={6} sx={{ p: 2 }}>
             <SelectPlayer
               label="Player 2"
-              loading={loadingUsers}
-              options={simpleUsers.filter(
+              loading={loadingPlayers}
+              options={players.filter(
                 (x) =>
                   ![player1b, player1a, player2b]
                     .filter((x) => x)
@@ -182,8 +177,8 @@ export const ReportScore = () => {
           <Grid size={6} sx={{ p: 2 }}>
             <SelectPlayer
               label="Player 2"
-              loading={loadingUsers}
-              options={simpleUsers.filter(
+              loading={loadingPlayers}
+              options={players.filter(
                 (x) =>
                   ![player1b, player1a, player2a]
                     .filter((x) => x)

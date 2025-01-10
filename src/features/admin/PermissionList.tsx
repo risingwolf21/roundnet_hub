@@ -31,23 +31,27 @@ export const PermissionList = () => {
   const savePermissions = async () => {
     for (const x of markedToDelete) {
       await supabase
+        .schema('permissions')
         .from('role_permissions')
         .delete()
         .eq('app_permission', x.permission?.id ?? '')
         .eq('app_role', x.role?.id ?? '')
         .eq('id', x.id);
     }
-    await supabase.from('role_permissions').insert(
-      addedPermissions
-        .filter((x) => x.role || x.permission)
-        .map(x => x as NonNullableFields<RolePermissionMapping, "role"|"permission">)
-        .map((x: NonNullableFields<RolePermissionMapping, "role"|"permission">) => {
-          return {
-            app_role: x.role.id,
-            app_permission: x.permission.id,
-          };
-        })
-    );
+    await supabase
+      .schema('permissions')
+      .from('role_permissions')
+      .insert(
+        addedPermissions
+          .filter((x) => x.role || x.permission)
+          .map((x) => x as NonNullableFields<RolePermissionMapping, 'role' | 'permission'>)
+          .map((x: NonNullableFields<RolePermissionMapping, 'role' | 'permission'>) => {
+            return {
+              app_role: x.role.id,
+              app_permission: x.permission.id,
+            };
+          })
+      );
     fetchRolesAndPermissions();
     setMarkedToDelete([]);
     setAddedPermissions([]);
@@ -91,14 +95,10 @@ export const PermissionList = () => {
       <List sx={{ pb: 10 }}>
         {Object.entries(
           _.groupBy(
-            [
-              ...permissions,
-              ...addedPermissions,
-              ...allAppRoles.map((x) => ({ id: '', role: x, permission: null })),
-            ],
+            [...permissions, ...addedPermissions, ...allAppRoles.map((x) => ({ id: '', role: x, permission: null }))],
             (x) => JSON.stringify(x.role)
           )
-        ).map(([key, value]) =>(
+        ).map(([key, value]) => (
           <List
             key={key}
             subheader={
@@ -107,9 +107,12 @@ export const PermissionList = () => {
           >
             {value
               .filter((x) => x.permission)
-              .map((x) => ({
-                ...x,
-              } as RolePermissionMapping))
+              .map(
+                (x) =>
+                  ({
+                    ...x,
+                  }) as RolePermissionMapping
+              )
               .map((x) => {
                 let deleted = x.id ? markedToDelete.includes(x) : false;
                 let added = !x.id;

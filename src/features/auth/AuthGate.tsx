@@ -17,7 +17,6 @@ import { SupabaseUserRepository } from '../../repository/UserRepository';
 import { UserWithRolesAndPermissions } from '../../types/supabaseTypes';
 import { ability, defineRulesFor } from '../../utils/PermissionService';
 import { AuthContext } from './AuthContext';
-import { InstallPWA } from 'src/components/PwaInstallPromp';
 
 type Props = {
   children: React.ReactNode;

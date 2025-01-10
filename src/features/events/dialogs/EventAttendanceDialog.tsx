@@ -1,14 +1,24 @@
-import {AppBar, Avatar, Box, List, ListItem, ListItemAvatar, ListItemText, Tab, Tabs, Typography,} from '@mui/material';
-import React, {useEffect, useState} from 'react';
-import {AccountBox, Key, RecordVoiceOver} from '@mui/icons-material';
-import {useTheme} from '@mui/material/styles';
-import {FullAttendance} from '../../../types/supabaseTypes';
-import {SwipeableDialog} from '../../../components/SwipeableDialog';
-import {EventAttendanceDialogProps} from '../types';
-import {useNavigate} from 'react-router-dom';
-import {compareDesc, formatDistanceToNowStrict, isBefore} from 'date-fns';
-import {useTranslation} from 'react-i18next';
-import {de} from 'date-fns/locale';
+import { AccountBox, Key, RecordVoiceOver } from '@mui/icons-material';
+import {
+  AppBar,
+  Avatar,
+  Box,
+  List,
+  ListItem,
+  ListItemAvatar,
+  ListItemText,
+  Tab,
+  Tabs,
+  Typography,
+} from '@mui/material';
+import { useTheme } from '@mui/material/styles';
+import { compareDesc, isBefore } from 'date-fns';
+import React, { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
+import { SwipeableDialog } from '../../../components/SwipeableDialog';
+import { FullAttendance } from '../../../types/supabaseTypes';
+import { EventAttendanceDialogProps } from '../types';
 
 function TabPanel(props: any) {
   const { children, value, index, ...other } = props;
@@ -48,9 +58,7 @@ const AttendanceItem = ({
             alignContent: 'baseline',
           }}
         >
-          {t('events.information.commentTimeAgo', {
-            time: formatDistanceToNowStrict(attendance.lastUpdate, { locale: de }),
-          })}
+          {t('format.distanceToNow', { date: new Date(attendance.lastUpdate) })}
         </Typography>
       }
     >
@@ -107,7 +115,7 @@ const EventAttendanceDialog = ({
           </Tabs>
         </AppBar>
         <TabPanel value={value} index={0} dir={theme.direction}>
-          <List sx={{pb: "env(safe-area-inset-bottom)"}}>
+          <List sx={{ pb: 'env(safe-area-inset-bottom)' }}>
             {attendance
               .filter((x: FullAttendance) => x.state === 'AttendingAsTrainer')
               .sort((a, b) => compareDesc(a.lastUpdate, b.lastUpdate))
@@ -133,7 +141,7 @@ const EventAttendanceDialog = ({
           </List>
         </TabPanel>
         <TabPanel value={value} index={1} dir={theme.direction}>
-          <List sx={{pb: 8}}>
+          <List sx={{ pb: 8 }}>
             {attendance
               .filter((x: FullAttendance) => x.state === 'Declined')
               .sort((a, b) => compareDesc(a.lastUpdate, b.lastUpdate))
@@ -148,7 +156,7 @@ const EventAttendanceDialog = ({
         </TabPanel>
         {hasWaitingList && (
           <TabPanel value={value} index={2} dir={theme.direction}>
-            <List sx={{pb: 8}}>
+            <List sx={{ pb: 8 }}>
               {attendance
                 .filter((x: FullAttendance) => x.state === 'Waiting')
                 .sort((a, b) => (isBefore(a.lastUpdate, b.lastUpdate) ? 1 : 0))

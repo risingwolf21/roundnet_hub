@@ -1,3 +1,4 @@
+import { AccountBox } from '@mui/icons-material';
 import {
   Avatar,
   Box,
@@ -8,13 +9,10 @@ import {
   ListItemText,
   Typography,
 } from '@mui/material';
-import { AccountBox } from '@mui/icons-material';
-import { formatDistanceToNowStrict } from 'date-fns';
-import { de } from 'date-fns/locale';
+import { TFunction } from 'i18next';
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FullComment } from '../../../types/supabaseTypes';
-import { TFunction } from 'i18next';
 import { useAuth } from '../../auth/AuthContext';
 
 type Props = {
@@ -119,9 +117,7 @@ export const CommentReplyItem = ({ reply, t, pl = 56 }: Props) => {
               color: 'rgba(0,0,0,0.6)',
             }}
           >
-            {t('events.information.commentTimeAgo', {
-              time: formatDistanceToNowStrict(reply.created_at, { locale: de }),
-            })}
+            {t('format.distanceToNow', { date: new Date(reply.created_at) })}
           </Typography>
         </Box>
         <Typography

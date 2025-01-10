@@ -201,3 +201,100 @@ export type GamesCompositeTypes<
     ? GamesSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
     : never
 
+    type PermissionsSchema = Database[Extract<keyof Database, "permissions">]
+
+    export type PermissionsTable<
+        PublicTableNameOrOptions extends
+        | keyof (PermissionsSchema["Tables"] & PermissionsSchema["Views"])
+        | { schema: keyof Database },
+        TableName extends PublicTableNameOrOptions extends { schema: keyof Database }
+        ? keyof (Database[PublicTableNameOrOptions["schema"]]["Tables"] &
+            Database[PublicTableNameOrOptions["schema"]]["Views"])
+        : never = never,
+    > = PublicTableNameOrOptions extends { schema: keyof Database }
+        ? (Database[PublicTableNameOrOptions["schema"]]["Tables"] &
+            Database[PublicTableNameOrOptions["schema"]]["Views"])[TableName] extends {
+                Row: infer R
+            }
+        ? R
+        : never
+        : PublicTableNameOrOptions extends keyof (PermissionsSchema["Tables"] &
+            PermissionsSchema["Views"])
+        ? (PermissionsSchema["Tables"] &
+            PermissionsSchema["Views"])[PublicTableNameOrOptions] extends {
+                Row: infer R
+            }
+        ? R
+        : never
+        : never
+    
+    export type PermissionsTablesInsert<
+        PublicTableNameOrOptions extends
+        | keyof PermissionsSchema["Tables"]
+        | { schema: keyof Database },
+        TableName extends PublicTableNameOrOptions extends { schema: keyof Database }
+        ? keyof Database[PublicTableNameOrOptions["schema"]]["Tables"]
+        : never = never,
+    > = PublicTableNameOrOptions extends { schema: keyof Database }
+        ? Database[PublicTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+            Insert: infer I
+        }
+        ? I
+        : never
+        : PublicTableNameOrOptions extends keyof PermissionsSchema["Tables"]
+        ? PermissionsSchema["Tables"][PublicTableNameOrOptions] extends {
+            Insert: infer I
+        }
+        ? I
+        : never
+        : never
+    
+    export type PermissionsTablesUpdate<
+        PublicTableNameOrOptions extends
+        | keyof PermissionsSchema["Tables"]
+        | { schema: keyof Database },
+        TableName extends PublicTableNameOrOptions extends { schema: keyof Database }
+        ? keyof Database[PublicTableNameOrOptions["schema"]]["Tables"]
+        : never = never,
+    > = PublicTableNameOrOptions extends { schema: keyof Database }
+        ? Database[PublicTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+            Update: infer U
+        }
+        ? U
+        : never
+        : PublicTableNameOrOptions extends keyof PermissionsSchema["Tables"]
+        ? PermissionsSchema["Tables"][PublicTableNameOrOptions] extends {
+            Update: infer U
+        }
+        ? U
+        : never
+        : never
+    
+    export type PermissionsEnums<
+        PublicEnumNameOrOptions extends
+        | keyof PermissionsSchema["Enums"]
+        | { schema: keyof Database },
+        EnumName extends PublicEnumNameOrOptions extends { schema: keyof Database }
+        ? keyof Database[PublicEnumNameOrOptions["schema"]]["Enums"]
+        : never = never,
+    > = PublicEnumNameOrOptions extends { schema: keyof Database }
+        ? Database[PublicEnumNameOrOptions["schema"]]["Enums"][EnumName]
+        : PublicEnumNameOrOptions extends keyof PermissionsSchema["Enums"]
+        ? PermissionsSchema["Enums"][PublicEnumNameOrOptions]
+        : never
+    
+    export type PermissionsCompositeTypes<
+        PublicCompositeTypeNameOrOptions extends
+        | keyof PermissionsSchema["CompositeTypes"]
+        | { schema: keyof Database },
+        CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
+            schema: keyof Database
+        }
+        ? keyof Database[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
+        : never = never,
+    > = PublicCompositeTypeNameOrOptions extends { schema: keyof Database }
+        ? Database[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
+        : PublicCompositeTypeNameOrOptions extends keyof PermissionsSchema["CompositeTypes"]
+        ? PermissionsSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
+        : never
+    

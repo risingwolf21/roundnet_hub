@@ -324,36 +324,6 @@ export type Database = {
   }
   public: {
     Tables: {
-      app_permissions: {
-        Row: {
-          id: string
-          name: string
-        }
-        Insert: {
-          id?: string
-          name: string
-        }
-        Update: {
-          id?: string
-          name?: string
-        }
-        Relationships: []
-      }
-      app_roles: {
-        Row: {
-          id: string
-          name: string
-        }
-        Insert: {
-          id?: string
-          name: string
-        }
-        Update: {
-          id?: string
-          name?: string
-        }
-        Relationships: []
-      }
       challenge: {
         Row: {
           automated: boolean
@@ -935,39 +905,6 @@ export type Database = {
           },
         ]
       }
-      role_permissions: {
-        Row: {
-          app_permission: string
-          app_role: string
-          id: string
-        }
-        Insert: {
-          app_permission: string
-          app_role: string
-          id?: string
-        }
-        Update: {
-          app_permission?: string
-          app_role?: string
-          id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "role_permissions_app_permission_fkey"
-            columns: ["app_permission"]
-            isOneToOne: false
-            referencedRelation: "app_permissions"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "role_permissions_app_role_fkey"
-            columns: ["app_role"]
-            isOneToOne: false
-            referencedRelation: "app_roles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       user: {
         Row: {
           avatarUrl: string | null
@@ -1015,39 +952,6 @@ export type Database = {
           verified?: boolean
         }
         Relationships: []
-      }
-      user_roles: {
-        Row: {
-          app_role: string
-          id: number
-          user: string
-        }
-        Insert: {
-          app_role: string
-          id?: number
-          user?: string
-        }
-        Update: {
-          app_role?: string
-          id?: number
-          user?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "user_roles_app_role_fkey"
-            columns: ["app_role"]
-            isOneToOne: false
-            referencedRelation: "app_roles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "user_roles_user_fkey"
-            columns: ["user"]
-            isOneToOne: false
-            referencedRelation: "user"
-            referencedColumns: ["userId"]
-          },
-        ]
       }
       vouchers: {
         Row: {

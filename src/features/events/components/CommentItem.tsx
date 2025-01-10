@@ -1,11 +1,9 @@
-import { Avatar, Box, Button, CircularProgress, ListItem, ListItemAvatar, Typography } from '@mui/material';
 import { AccountBox } from '@mui/icons-material';
-import { formatDistanceToNowStrict } from 'date-fns';
-import { de } from 'date-fns/locale';
-import React from 'react';
-import { FullComment } from '../../../types/supabaseTypes';
+import { Avatar, Box, Button, CircularProgress, ListItem, ListItemAvatar, Typography } from '@mui/material';
 import { TFunction } from 'i18next';
+import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import { FullComment } from '../../../types/supabaseTypes';
 
 type Props = {
   comment: FullComment;
@@ -80,9 +78,7 @@ export const CommentItem = ({ comment, t, replyToPressed }: Props) => {
               color: 'rgba(0,0,0,0.6)',
             }}
           >
-            {t('events.information.commentTimeAgo', {
-              time: formatDistanceToNowStrict(comment.created_at, { locale: de }),
-            })}
+            {t('format.distanceToNow', { date: new Date(comment.created_at) })}
           </Typography>
         </Box>
         <Typography

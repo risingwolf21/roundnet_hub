@@ -1,4 +1,7 @@
 {
+  "format": {
+    "distanceToNow": "{{ date, ago }}"
+  },
   "attendees": "Teilnehmer",
   "browse": {
     "account": "Konto",
