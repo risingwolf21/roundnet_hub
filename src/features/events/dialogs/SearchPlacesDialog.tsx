@@ -1,6 +1,6 @@
-import { ArrowBack, MyLocation } from '@mui/icons-material';
+import { ArrowBack, MyLocation, Place } from '@mui/icons-material';
 import {
-  Alert,
+  Avatar,
   Box,
   Dialog,
   IconButton,
@@ -12,36 +12,39 @@ import {
   ListItemText,
   TextField,
   Toolbar,
+  Typography,
 } from '@mui/material';
 import L, { LatLng } from 'leaflet';
 import { OpenStreetMapProvider } from 'leaflet-geosearch';
-import { RawResult } from 'leaflet-geosearch/dist/providers/openStreetMapProvider';
 import { SearchResult } from 'leaflet-geosearch/dist/providers/provider';
 import { toNumber } from 'lodash';
 import React, { useEffect, useState } from 'react';
+import { AlertMessage, AlertSnackbar } from 'src/components/AlertSnackbar';
 import { SlideUpTransition } from '../../../utils';
 import { PlaceType, SearchPlacesDialogProps } from '../types';
 
 const SearchPlacesDialog = ({ open, handleClose, placeSelected }: SearchPlacesDialogProps) => {
   const [value, setValue] = useState('');
-  const [results, setResults] = useState<SearchResult<RawResult>[]>();
+  const [results, setResults] = useState<SearchResult<any>[]>();
   const [loading, setLoading] = useState(false);
 
-  const [error, setError] = useState<string | null>();
-
+  const [alertInfo, setAlertInfo] = useState<AlertMessage | null>(null);
   const [userLocation, setUserLocation] = useState<{ latitude: number; longitude: number } | null>(null);
 
   useEffect(() => {
     getUserLocation();
   }, []);
 
-  const provider = new OpenStreetMapProvider();
+  const provider = new OpenStreetMapProvider({ params: {} });
 
   const search = () => {
-    provider.search({ query: value }).then(function (results) {
-      setResults(results);
-      console.log(results);
-    });
+    setLoading(true);
+    provider
+      .search({ query: value })
+      .then(function (results) {
+        setResults(results);
+      })
+      .finally(() => setLoading(false));
   };
 
   const keyPress = (e: any) => {
@@ -65,11 +68,11 @@ const SearchPlacesDialog = ({ open, handleClose, placeSelected }: SearchPlacesDi
               const { latitude, longitude } = position.coords;
               // update the value of userlocation variable
               setUserLocation({ latitude, longitude });
-              setError(null);
+              setAlertInfo(null);
             },
             // if there was an error getting the users location
             (error) => {
-              console.error('Error getting user location:', error);
+              setAlertInfo({ message: `Error getting user location: \n ${error.message}`, severity: 'error' });
             }
           );
         }
@@ -77,6 +80,7 @@ const SearchPlacesDialog = ({ open, handleClose, placeSelected }: SearchPlacesDi
     }
     // if geolocation is not supported by the users browser
     else {
+      setAlertInfo({ message: `Geolocation is not supported by this browser.`, severity: 'error' });
       console.error('Geolocation is not supported by this browser.');
     }
   };
@@ -120,18 +124,13 @@ const SearchPlacesDialog = ({ open, handleClose, placeSelected }: SearchPlacesDi
             onChange={(e) => setValue(e.target.value)}
           />
         </Toolbar>
-        {error && (
-          <Alert sx={{ mt: 2 }} severity="error">
-            <strong>{error}</strong>
-          </Alert>
-        )}
         {loading && <LinearProgress style={{ position: 'fixed', left: 0, top: 64, right: 0 }} />}
         <List>
           {results &&
-            results.map((result) => (
+            results.map((result, index) => (
               <ListItem
                 divider
-                key={result.label}
+                key={index}
                 onClick={() =>
                   placeSelected({
                     name: result.raw.display_name,
@@ -140,22 +139,57 @@ const SearchPlacesDialog = ({ open, handleClose, placeSelected }: SearchPlacesDi
                   } as PlaceType)
                 }
               >
-                {userLocation && Number(result.raw.lat) && Number(result.raw.lon) && (
-                  <ListItemAvatar>
-                    {`${(
-                      L.latLng(userLocation.latitude, userLocation.longitude).distanceTo(
+                <ListItemAvatar sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', pr: 2 }}>
+                  <Avatar sx={{ width: 30, height: 30, backgroundColor: 'rgba(189, 189, 189, 0.5)' }}>
+                    <Place sx={{ width: 20, height: 20, color: 'rgba(0,0,0,0.8)' }} />
+                    {userLocation &&
+                      Number(result.raw.lat) &&
+                      Number(result.raw.lon) &&
+                      getDistance(
+                        L.latLng(userLocation.latitude, userLocation.longitude),
                         L.latLng(Number(result.raw.lat), Number(result.raw.lon))
-                      ) / 1000
-                    ).toFixed(2)} km`}
-                  </ListItemAvatar>
-                )}
-                <ListItemText primary={result.raw.display_name} secondary={result.raw.type} />
+                      )}
+                  </Avatar>
+                </ListItemAvatar>
+                <ListItemText
+                  primary={result.raw.name ?? result.raw.display_name}
+                  secondary={result.raw.display_name
+                    .split(',')
+                    .filter((y: any) => y.trim() !== result.raw.name)
+                    .join(', ')}
+                  slotProps={{
+                    primary: {
+                      whiteSpace: 'nowrap',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                    },
+                    secondary: {
+                      whiteSpace: 'nowrap',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                    },
+                  }}
+                />
               </ListItem>
             ))}
         </List>
+        {alertInfo && <AlertSnackbar alertInfo={alertInfo} close={() => setAlertInfo(null)} />}
       </Box>
     </Dialog>
   );
+
+  function getDistance(from: LatLng, to: LatLng) {
+    const distance = from.distanceTo(to);
+
+    if (distance > 1000) return null;
+
+    let distanceFixed = distance.toFixed(0);
+
+    if (distance < 10) distanceFixed = distance.toFixed(2);
+    else if (distance < 100) distanceFixed = distance.toFixed(1);
+
+    return <Typography sx={{ fontSize: '0.875rem', color: 'rgba(0,0,0,0.6)' }}>{`${distanceFixed}km`}</Typography>;
+  }
 };
 
 export default SearchPlacesDialog;
