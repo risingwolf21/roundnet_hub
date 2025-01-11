@@ -143,8 +143,8 @@ const SearchPlacesDialog = ({ open, handleClose, placeSelected }: SearchPlacesDi
                   <Avatar sx={{ width: 30, height: 30, backgroundColor: 'rgba(189, 189, 189, 0.5)' }}>
                     <Place sx={{ width: 20, height: 20, color: 'rgba(0,0,0,0.8)' }} />
                     {userLocation &&
-                      Number(result.raw.lat) &&
-                      Number(result.raw.lon) &&
+                      result.raw.lat &&
+                      result.raw.lon &&
                       getDistance(
                         L.latLng(userLocation.latitude, userLocation.longitude),
                         L.latLng(Number(result.raw.lat), Number(result.raw.lon))
@@ -179,7 +179,7 @@ const SearchPlacesDialog = ({ open, handleClose, placeSelected }: SearchPlacesDi
   );
 
   function getDistance(from: LatLng, to: LatLng) {
-    const distance = from.distanceTo(to);
+    const distance = from.distanceTo(to) / 1000;
 
     if (distance > 1000) return null;
 
