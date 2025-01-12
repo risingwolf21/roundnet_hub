@@ -42,8 +42,8 @@ export const GameList = () => {
               </ListSubheader>
             }
           >
-            {value.map((x) => (
-              <ListItem key={x.id} divider>
+            {value.map((x, index) => (
+              <ListItem key={index} divider>
                 <Box sx={{ display: 'flex', flexDirection: 'row', width: '100%' }}>
                   <Box
                     sx={{
