@@ -1,7 +1,7 @@
 import { PostgrestSingleResponse } from '@supabase/supabase-js';
-import { UserWithGroupsAndRoles } from 'src/types/supabaseTypes';
-import { supabase } from '../components/services/supabase/supabaseClient';
 import { UserEdited } from 'src/features/admin/dialogs/EditUserDialog';
+import { UserWithGroups } from 'src/types/supabaseTypes';
+import { supabase } from '../components/services/supabase/supabaseClient';
 
 export const fetchGroupWithUsers = () => supabase.from('event_group').select('*, users: group_user_mapping ( user (*) )');
 
@@ -50,12 +50,12 @@ export const AdminUsersRepository = {
     return supabase.from('user').select('*').eq('verified', false).returns<User[]>().throwOnError();
   },
 
-  async fetchAllUsersWithGroups(): Promise<PostgrestSingleResponse<UserWithGroupsAndRoles[]>> {
+  async fetchAllUsersWithGroups(): Promise<PostgrestSingleResponse<UserWithGroups[]>> {
     return supabase
       .from('user')
-      .select('*, groups: group_user_mapping ( group: event_group ( * ) ), roles: permissions.user_roles(app_role(*))')
+      .select('*, groups: group_user_mapping ( group: event_group ( * ))')
       .order('displayName', { ascending: true })
-      .returns<UserWithGroupsAndRoles[]>()
+      .returns<UserWithGroups[]>()
       .throwOnError();
   },
 

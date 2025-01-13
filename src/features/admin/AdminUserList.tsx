@@ -6,7 +6,7 @@ import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { fetchAdminUsersAsync } from './slices/adminUserSlice';
 import { RootState, useAppDispatch } from '../../redux/store';
-import { UserWithGroupsAndRoles } from '../../types/supabaseTypes';
+import { UserWithGroups } from '../../types/supabaseTypes';
 import { AlertMessage, AlertSnackbar } from '../../components/AlertSnackbar';
 import EditUserDialog, { UserEdited } from './dialogs/EditUserDialog';
 import { captureException } from '@sentry/react';
@@ -43,7 +43,7 @@ const SearchBar = styled(TextField)<TextFieldProps>(({ theme }) => ({
 
 const AdminUserList = () => {
   const [editUserOpen, setEditUserOpen] = useState(false);
-  const [currentUser, setCurrentUser] = useState<UserWithGroupsAndRoles | null>();
+  const [currentUser, setCurrentUser] = useState<UserWithGroups | null>();
   const [searchString, setSearchString] = useState('');
   const [showNotVerifiedUsers, setShowNotVerifiedUsers] = useState(false);
   const dispatch = useAppDispatch();
@@ -56,7 +56,7 @@ const AdminUserList = () => {
 
   const { users, loading, error } = useSelector((state: RootState) => state.adminUsers);
 
-  const editUser = (user: UserWithGroupsAndRoles) => {
+  const editUser = (user: UserWithGroups) => {
     setCurrentUser(user);
     setEditUserOpen(true);
   };
@@ -118,7 +118,7 @@ const AdminUserList = () => {
         {users &&
           users
             .filter(
-              (x: UserWithGroupsAndRoles) =>
+              (x: UserWithGroups) =>
                 searchString === '' || x.displayName?.toLowerCase().includes(searchString.toLowerCase())
             )
             .filter((x) => (showNotVerifiedUsers && !x.verified) || (!showNotVerifiedUsers && x.verified))

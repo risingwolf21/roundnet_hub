@@ -75,9 +75,8 @@ export type FullComment = Modify<
     replies: FullComment[]
 };
 
-export type UserWithGroupsAndRoles = User & {
+export type UserWithGroups = User & {
     groups: Group[];
-    roles: AppRole[];
 };
 
 export type FullUser = User & {

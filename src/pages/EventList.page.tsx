@@ -1,21 +1,14 @@
 import React from 'react';
 import { useSelector } from 'react-redux';
-import { can } from 'src/utils/PermissionService';
-import { RootState } from '../redux/store';
-import { AlertSnackbar } from '../components/AlertSnackbar';
-import EventScreen from '../features/events/EventList';
 import { eventsSelector } from 'src/features/events/slices/eventsSlice';
 import { useAuth } from '../features/auth/AuthContext';
+import EventScreen from '../features/events/EventList';
+import { RootState } from '../redux/store';
 
 const EventScreenProvider = () => {
   const { loading, error } = useSelector((state: RootState) => state.events);
   const events = useSelector(eventsSelector.selectAll);
   const { user } = useAuth();
-
-  if (!can('select', 'event'))
-    return (
-      <AlertSnackbar close={() => {}} alertInfo={{ message: 'No permission to view this screen', severity: 'error' }} />
-    );
 
   return (
     <EventScreen

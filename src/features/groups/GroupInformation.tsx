@@ -6,7 +6,7 @@ import { useSelector } from 'react-redux';
 import { useParams } from 'react-router-dom';
 import { fetchAdminUsersAsync } from '../admin/slices/adminUserSlice';
 import { RootState, useAppDispatch } from '../../redux/store';
-import { GroupWithUsers, UserWithGroupsAndRoles } from '../../types/supabaseTypes';
+import { GroupWithUsers, UserWithGroups } from '../../types/supabaseTypes';
 import { AlertMessage, AlertSnackbar } from '../../components/AlertSnackbar';
 import SearchAndSelectUserDialog from './dialogs/SearchAndSelectUserDialog';
 import { fetchSingleGroupAsync, groupsSelector } from 'src/features/groups/slices/groupsSlice';
@@ -29,7 +29,7 @@ const GroupInformationProvider = () => {
   if (!group)
     return (
       <AlertSnackbar
-        close={() => {}}
+        close={() => { }}
         alertInfo={{ message: 'Fatal error occured. Repository or selected group was null!', severity: 'error' }}
       />
     );
@@ -38,7 +38,7 @@ const GroupInformationProvider = () => {
 };
 
 type GroupInformationProps = {
-  users: UserWithGroupsAndRoles[];
+  users: UserWithGroups[];
   loading: boolean;
   group: GroupWithUsers;
 };
@@ -135,7 +135,7 @@ const GroupInformation = ({ users, loading, group }: GroupInformationProps) => {
         handleClose={() => setSearchAndSelectUsersOpen(false)}
         handleSubmit={handleUsersAdded}
         users={users.filter(
-          (x: UserWithGroupsAndRoles) => !group?.users?.some((y: Tables<'user'>) => y.userId === x.userId)
+          (x: UserWithGroups) => !group?.users?.some((y: Tables<'user'>) => y.userId === x.userId)
         )}
         loading={loading}
       />

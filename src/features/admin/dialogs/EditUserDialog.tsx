@@ -29,20 +29,21 @@ import {
   Typography,
 } from '@mui/material';
 import { Box } from '@mui/system';
-import { captureException } from '@sentry/react';
+import { captureException, setUser } from '@sentry/react';
 import moment from 'moment';
-import React, { FormEvent, useEffect, useState } from 'react';
+import React, { FormEvent, useCallback, useEffect, useState } from 'react';
 import { useClient } from 'react-supabase';
 import { AlertMessage, AlertSnackbar } from '../../../components/AlertSnackbar';
 import { supabase } from '../../../components/services/supabase/supabaseClient';
 import { SupabaseDrinkRepository } from '../../../repository/DrinkRepository';
-import { UserWithGroupsAndRoles } from '../../../types/supabaseTypes';
+import { UserWithGroups } from '../../../types/supabaseTypes';
 import { SlideUpTransition } from '../../../utils';
 import { AppRolesDialog } from './AppRolesDialog';
 import { UserRoleDialog } from './UserRoleDialog';
+import { AdminPermissionsRepository } from 'src/repository/AdminPermissionsRepository';
 
 type EditUserDialogProps = {
-  user: UserWithGroupsAndRoles;
+  user: UserWithGroups;
   open: boolean;
   handleClose: () => void;
   onUserEditFinished: (user: UserEdited) => void;
@@ -68,24 +69,31 @@ const EditUserDialog = ({ user, open, handleClose, onUserEditFinished, deleteUse
   const [userRoles, setUserRoles] = useState<AppRole[]>([]);
   const [userInfo, setUserInfo] = useState({ openAmount: 0 });
   const [drinksForUser, setDrinksForUser] = useState<OpenDrinksForUser[]>([]);
-  const client = useClient();
+  const [loading, setLoading] = useState<boolean>(false);
+
+
 
   useEffect(() => {
-    SupabaseDrinkRepository.fetchOpenDrinksForUser(user.userId)
-      .then((result) => {
-        if (result && result.data) {
-          setUserInfo({
-            openAmount: result.data.reduce((prev, curr) => prev + (curr.count ?? 0) * (curr?.drink?.price ?? 1), 0),
-          });
-          setDrinksForUser(result.data);
-        }
-      })
-      .catch((error) => {
-        captureException(error);
+    setUserRoles([]);
+    setUserInfo({ openAmount: 0});
+    setDrinksForUser([]);
+    const loadUserData = async (user: UserWithGroups) => {
+      setLoading(true);
+      setVerified(user.verified);
+      const result = await SupabaseDrinkRepository.fetchOpenDrinksForUser(user.userId);
+      setUserInfo({
+        openAmount: result.data?.reduce((prev, curr) => prev + (curr.count ?? 0) * (curr?.drink?.price ?? 1), 0) ?? 0,
       });
-    setVerified(user.verified);
-    setUserRoles(user.roles);
-  }, [user, client]);
+      setDrinksForUser(result.data ?? []);
+      const roles = await AdminPermissionsRepository.fetchRolesForUser(user.userId);
+      setUserRoles(roles)
+    }
+
+    loadUserData(user)
+      .catch(error => captureException(error))
+      .finally(() => setLoading(false))
+
+  }, [user]);
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -126,6 +134,7 @@ const EditUserDialog = ({ user, open, handleClose, onUserEditFinished, deleteUse
               </ListItemAvatar>
               <ListItemText>
                 <TextField
+                  disabled={loading}
                   margin="normal"
                   required
                   fullWidth
@@ -160,6 +169,7 @@ const EditUserDialog = ({ user, open, handleClose, onUserEditFinished, deleteUse
               sx={{ pt: 0, pb: 0 }}
               secondaryAction={
                 <Button
+                  disabled={loading}
                   onClick={() => {
                     supabase.auth.admin
                       .updateUserById(user.userId, {
@@ -192,6 +202,7 @@ const EditUserDialog = ({ user, open, handleClose, onUserEditFinished, deleteUse
                 }}
                 primary={
                   <TextField
+                    disabled={loading}
                     margin="normal"
                     fullWidth
                     label="Passwort ändern"
@@ -214,9 +225,10 @@ const EditUserDialog = ({ user, open, handleClose, onUserEditFinished, deleteUse
             </ListItem>
             <ListItem
               key={'role'}
-              onClick={() => {}}
+              onClick={() => { }}
               secondaryAction={
                 <IconButton
+                  disabled={loading}
                   onClick={(event) => {
                     setEditRoleOpen(true);
                     event.stopPropagation();
@@ -238,6 +250,7 @@ const EditUserDialog = ({ user, open, handleClose, onUserEditFinished, deleteUse
               onClick={() => setEditUserRolesOpen(true)}
               secondaryAction={
                 <IconButton
+                  disabled={loading}
                   onClick={(event) => {
                     setEditUserRolesOpen(true);
                     event.stopPropagation();
@@ -252,7 +265,7 @@ const EditUserDialog = ({ user, open, handleClose, onUserEditFinished, deleteUse
                   <ManageAccounts />
                 </Avatar>
               </ListItemAvatar>
-              <ListItemText primary={user.roles.map((x) => x.name).join(', ')} secondary={'App Roles'} />
+              <ListItemText primary={userRoles.map((x) => x.name).join(', ')} secondary={'App Roles'} />
             </ListItem>
             <Divider />
             <List subheader={<ListSubheader>Gruppen</ListSubheader>}>
@@ -307,7 +320,7 @@ const EditUserDialog = ({ user, open, handleClose, onUserEditFinished, deleteUse
       </Box>
       <AppRolesDialog
         open={editUserRolesOpen}
-        roles={user.roles}
+        roles={userRoles}
         handleClose={() => setEditUserRolesOpen(false)}
         handleSubmit={(roles: AppRole[]) => {
           setUserRoles(roles);

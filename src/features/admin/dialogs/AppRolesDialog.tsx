@@ -25,14 +25,15 @@ type AppRolesDialogProps = {
 };
 
 export const AppRolesDialog = ({ open, handleClose, handleSubmit, roles }: AppRolesDialogProps) => {
-  const [selectedAppRoles, setSelectedAppRoles] = useState<AppRole[]>(roles);
+  const [selectedAppRoles, setSelectedAppRoles] = useState<AppRole[]>([]);
   const [allRoles, setAllRoles] = useState<AppRole[]>([]);
 
   useEffect(() => {
     AdminPermissionsRepository.fetchAllAppRoles().then((result) => {
       setAllRoles(result.data ?? []);
+      setSelectedAppRoles(roles);
     });
-  }, []);
+  }, [roles]);
 
   const handleRoleChange = (checked: boolean, role: AppRole) => {
     if (checked) {
@@ -65,7 +66,7 @@ export const AppRolesDialog = ({ open, handleClose, handleSubmit, roles }: AppRo
                 <TableRow key={x.id} sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
                   <TableCell sx={{ p: 1 }}>
                     <Checkbox
-                      checked={selectedAppRoles.some((y) => y.id === x.id)}
+                      checked={selectedAppRoles.find((y) => y.id === x.id) !== undefined}
                       onChange={(e, checked) => handleRoleChange(checked, x)}
                     />
                   </TableCell>

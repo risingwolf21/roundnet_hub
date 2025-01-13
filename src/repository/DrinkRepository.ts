@@ -41,7 +41,7 @@ export const SupabaseDrinkRepository = {
   async fetchOpenDrinksForUser(userId: string): Promise<PostgrestSingleResponse<OpenDrinksForUser[]>> {
     return fetchDrinksToPay()
       .eq('user ', userId)
-      .eq('payment.paymentState', 'Open' as PaymentState)
+      .eq('payments.paymentState', 'Open' as PaymentState)
       .returns<OpenDrinksForUser[]>()
       .throwOnError();
   },
