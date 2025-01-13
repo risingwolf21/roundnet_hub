@@ -17,6 +17,15 @@ interface WebhookPayload {
   schema: 'public';
 }
 
+class NotificationTokenError extends Error {
+  constructor(msg: string) {
+    super(msg);
+
+    // Set the prototype explicitly.
+    Object.setPrototypeOf(this, NotificationTokenError.prototype);
+  }
+}
+
 Sentry.init({
   dsn: 'https://a06f63fae5ab4ce4ac291d0d6fb4e989@o4505379650666496.ingest.sentry.io/4505379651649536',
   integrations: [],
@@ -75,7 +84,7 @@ Deno.serve(async (req: Request) => {
     });
 
     if (!fcmToken || !accessToken) {
-      Sentry.captureException(Error('FCM Token or AccessToken was null'), (scope: any) => {
+      Sentry.captureException(new NotificationTokenError('FCM Token or AccessToken was null'), (scope: any) => {
         scope.clear();
         scope.setExtra('accessToken', accessToken);
         scope.setExtra('fcmToken', JSON.stringify(fcmToken)); 

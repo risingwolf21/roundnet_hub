@@ -17,30 +17,31 @@ import { useNavigate } from 'react-router-dom';
 export type RegisterProps = {
   email: string;
   password: string;
-  displayName: string;
+  name: string;
 };
 
 const RegisterScreen = () => {
   const [alertInfo, setAlertInfo] = useState<AlertMessage | null>(null);
   const navigate = useNavigate();
 
-  const onRegister = async ({ email, password, displayName }: RegisterProps) => {
-    const { error } = await supabase.auth.signUp({
+  const onRegister = async ({ email, password, name }: RegisterProps) => {
+    const { error, data } = await supabase.auth.signUp({
       email: email,
       password: password,
       options: {
         data: {
-          displayName,
+          name,
+          displayName: name,
           email,
           role: 'user',
         },
       },
     });
 
-    if (error) {
+    if (error || !data || !data.user) {
       captureException(new RegistrationError('Could not sign up user.'), (scope) => {
         scope.clear();
-        scope.setExtra('displayName', displayName);
+        scope.setExtra('displayName', name);
         scope.setExtra('email', email);
         scope.setExtra('error', JSON.stringify(error));
         return scope;
@@ -65,7 +66,7 @@ const RegisterScreen = () => {
     } else if (!name || !surname || name.length < 2 || surname.length < 2) {
       setAlertInfo({ message: 'Bitte gib deinen Vor-und Nachnamen an.', severity: 'error' });
     } else {
-      onRegister({ email, password, displayName: name.trim() + ' ' + surname.trim() });
+      onRegister({ email, password, name: name.trim() + ' ' + surname.trim() });
     }
   };
 

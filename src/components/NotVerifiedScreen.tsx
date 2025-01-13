@@ -18,21 +18,10 @@ const NotVerifiedScreen = () => {
           </Typography>
         </Toolbar>
       </AppBar>
-      <Box
-        sx={{
-          width: '100%',
-          maxWidth: 1400,
-          mx: 'auto',
-          flexGrow: 1,
-          overflow: 'auto',
-        }}
-      >
-        <Warning fontSize="large" sx={{ color: 'primary' }} />
-        <Typography sx={{ mt: 2, wordWrap: 'normal', textAlign: 'center', color: 'primary', padding: 2 }}>
-          Du bist zur Zeit nicht verifiziert. Um die Funktionen nutzen zu können, musst du vorher von einem
-          Administrator verifiziert werden.
-        </Typography>
-        <Button onClick={() => window.location.reload()}>Aktualisieren</Button>
+      <Box sx={{ alignItems: 'center', display: 'flex', flexDirection: 'column', pt: 10 }}>
+        <Typography sx={{ fontSize: '30pt', fontWeight: 'bold' }}>⚠️</Typography>
+        <Typography sx={{ fontSize: '18pt', fontWeight: 'bold', textAlign: "center" }}>Du bist zur Zeit nicht verifiziert. Um die Funktionen nutzen zu können, musst du vorher von einem
+          Administrator verifiziert werden.</Typography>
       </Box>
     </Box>
   );
