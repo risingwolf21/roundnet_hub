@@ -65,6 +65,7 @@ declare global {
   type ItemUpdate = TablesUpdate<'items'>;
   type NotificationUpdate = TablesUpdate<'notifications'>;
   type EventCommentUpdate = TablesUpdate<'event_comments'>;
+  type UserUpdate = TablesUpdate<'user'>;
 
   type NotificationTags = Enums<'NotificationTags'>;
   type ProductType = Enums<'ProductType'>;

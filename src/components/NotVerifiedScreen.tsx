@@ -1,6 +1,6 @@
-import { Warning } from '@mui/icons-material';
 import { AppBar, Box, Button, Toolbar, Typography } from '@mui/material';
 import React from 'react';
+import { supabase } from './services/supabase/supabaseClient';
 
 const NotVerifiedScreen = () => {
   return (
@@ -16,6 +16,9 @@ const NotVerifiedScreen = () => {
           <Typography variant="h6" sx={{ flexGrow: 1 }}>
             Roundnet Karlsruhe
           </Typography>
+          <Button sx={{ color: 'white' }} onClick={() => supabase.auth.signOut()}>
+            Logout
+          </Button>
         </Toolbar>
       </AppBar>
       <Box sx={{ alignItems: 'center', display: 'flex', flexDirection: 'column', pt: 10 }}>

@@ -1,6 +1,7 @@
-import {createAsyncThunk, createSlice, PayloadAction} from '@reduxjs/toolkit';
-import {SupabaseUserRepository} from '../repository/UserRepository';
-import {UserWithRolesAndPermissions} from '../types/supabaseTypes';
+import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { SupabaseUserRepository } from '../repository/UserRepository';
+import { UserWithRolesAndPermissions } from '../types/supabaseTypes';
+import { stat } from 'fs';
 
 type ApplicationSliceState = {
   user: UserWithRolesAndPermissions | null;
@@ -33,6 +34,13 @@ export const applicationReducer = createSlice({
     },
     onUserChange: (state, action: PayloadAction<UserWithRolesAndPermissions | null>) => {
       state.user = action.payload;
+    },
+    onUserDatabaseUpdate: (state, action: PayloadAction<UserUpdate>) => {
+      if (state.user)
+        state.user = {
+          ...state.user,
+          verified: action.payload.verified ?? state.user.verified
+        }
     },
     onAppUpdateAvailableChange: (state, action) => {
       state.appUpdateAvailable = action.payload;
@@ -81,6 +89,6 @@ export const addNotificationPermissionAsync = createAsyncThunk(
   }
 );
 
-export const { onUserChange, onUpdateServiceWorker, onServiceWorkerInitialized } = applicationReducer.actions;
+export const { onUserChange, onUserDatabaseUpdate, onUpdateServiceWorker, onServiceWorkerInitialized } = applicationReducer.actions;
 
 export default applicationReducer.reducer;

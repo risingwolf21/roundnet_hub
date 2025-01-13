@@ -10,7 +10,7 @@ import { AlertMessage, AlertSnackbar } from '../../components/AlertSnackbar';
 import NotVerifiedScreen from '../../components/NotVerifiedScreen';
 import { HOMEPAGE } from '../../constants';
 import AuthPage from '../../pages/Auth.page';
-import { onUserChange } from '../../redux/applicationSlice';
+import { onUserChange, onUserDatabaseUpdate } from '../../redux/applicationSlice';
 import { RootState } from '../../redux/store';
 import { AdminPermissionsRepository } from '../../repository/AdminPermissionsRepository';
 import { SupabaseUserRepository } from '../../repository/UserRepository';
@@ -134,6 +134,26 @@ export const AuthGate = ({ children }: Props) => {
     });
     return () => subscription.unsubscribe();
   }, [client, handleAuthChange, dispatch, navigate, currentUser]);
+
+  useEffect(() => {
+    if (!currentUser)
+      return;
+    let subscription = client
+      .channel('public:user')
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'user',
+        },
+        (payload) => dispatch(onUserDatabaseUpdate(payload.new))
+      )
+      .subscribe(console.log);
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, [currentUser])
 
   if (loading)
     return (

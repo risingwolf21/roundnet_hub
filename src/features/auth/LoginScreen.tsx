@@ -33,7 +33,7 @@ const LoginScreen = () => {
       .then((text) => {
         setVersion(text);
       });
-  });
+  },[]);
 
   const onLogin = (credentials: Credentials) => {
     setAlertInfo(null);
