@@ -8,11 +8,12 @@ import Link from '@mui/material/Link';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import { captureException } from '@sentry/react';
-import React, { FormEvent, useState } from 'react';
+import React, { FormEvent, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AlertMessage } from '../../components/AlertSnackbar';
 import { supabase } from '../../components/services/supabase/supabaseClient';
 import Logo from '../../images/Karlsruher_Kojoten_Logo.svg';
+import raw from '../../git_commit.txt';
 
 type Credentials = {
   email: string;
@@ -24,6 +25,15 @@ const LoginScreen = () => {
   const [loginInProgress, setLoginInProgress] = useState(false);
 
   const navigate = useNavigate();
+  const [version, setVersion] = useState<string>('');
+
+  useEffect(() => {
+    fetch(raw)
+      .then((r) => r.text())
+      .then((text) => {
+        setVersion(text);
+      });
+  });
 
   const onLogin = (credentials: Credentials) => {
     setAlertInfo(null);
@@ -130,7 +140,7 @@ const LoginScreen = () => {
             </Grid>
           </Grid>
           <Grid container sx={{ position: 'absolute', left: 0, bottom: 0, right: 0, justifyContent: 'center' }}>
-            <p style={{ color: '#ccc' }}>Version {process.env.REACT_APP_VERSION}</p>
+            <p style={{ color: '#ccc' }}>Version {process.env.REACT_APP_VERSION + '.' + version.slice(0, 6)}</p>
           </Grid>
         </Box>
       </Box>
