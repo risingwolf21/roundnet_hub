@@ -65,6 +65,4 @@ export const fetchPlayersAsync = createAsyncThunk('fetchPlayersAsync', async () 
   return response ?? [];
 });
 
-export const {} = gamesSlice.actions;
-
 export default gamesSlice.reducer;
