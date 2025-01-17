@@ -29,10 +29,10 @@ import {
   Typography,
 } from '@mui/material';
 import { Box } from '@mui/system';
-import { captureException, setUser } from '@sentry/react';
+import { captureException } from '@sentry/react';
 import moment from 'moment';
-import React, { FormEvent, useCallback, useEffect, useState } from 'react';
-import { useClient } from 'react-supabase';
+import React, { FormEvent, useEffect, useState } from 'react';
+import { AdminPermissionsRepository } from 'src/repository/AdminPermissionsRepository';
 import { AlertMessage, AlertSnackbar } from '../../../components/AlertSnackbar';
 import { supabase } from '../../../components/services/supabase/supabaseClient';
 import { SupabaseDrinkRepository } from '../../../repository/DrinkRepository';
@@ -40,7 +40,6 @@ import { UserWithGroups } from '../../../types/supabaseTypes';
 import { SlideUpTransition } from '../../../utils';
 import { AppRolesDialog } from './AppRolesDialog';
 import { UserRoleDialog } from './UserRoleDialog';
-import { AdminPermissionsRepository } from 'src/repository/AdminPermissionsRepository';
 
 type EditUserDialogProps = {
   user: UserWithGroups;
@@ -111,7 +110,7 @@ const EditUserDialog = ({ user, open, handleClose, onUserEditFinished, deleteUse
   return (
     <Dialog fullScreen open={open} onClose={handleClose} TransitionComponent={SlideUpTransition}>
       <Box component="form" onSubmit={handleSubmit} noValidate>
-        <AppBar position="sticky">
+        <AppBar position='fixed' sx={{ pt: 'env(safe-area-inset-top)' }}>
           <Toolbar>
             <IconButton edge="start" color="inherit" onClick={handleClose} aria-label="close">
               <Close />
