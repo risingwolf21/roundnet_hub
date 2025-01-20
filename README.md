@@ -72,24 +72,6 @@ npx supabase gen types typescript --project-id vsuhzabcrnmrljzecxee > src/types/
 npx supabase gen types typescript --project-id PROJECT_REF > src/types/supabase-generated.types.ts
 ```
 
-### Database dump
-
-#### Downloading database dump
-```
-npx supabase db dump --db-url postgres://postgres."$SUPABASE_PRODUCTION_ID":"$SUPABASE_PRODUCTION_DB_PASSWORD"@aws-0-eu-central-1.pooler.supabase.com:6543/postgres -f supabase/backup/data.sql --use-copy --data-only
-```
-```
-npx supabase db dump --db-url postgres://postgres."$SUPABASE_PRODUCTION_ID":"$SUPABASE_PRODUCTION_DB_PASSWORD"@aws-0-eu-central-1.pooler.supabase.com:6543/postgres -f supabase/backup/schema.sql
-```
-```
-npx supabase db dump --db-url postgres://postgres."$SUPABASE_PRODUCTION_ID":"$SUPABASE_PRODUCTION_DB_PASSWORD"@aws-0-eu-central-1.pooler.supabase.com:6543/postgres -f supabase/backup/roles.sql --role-only
-```
-
-#### Applying database dump
-```
-psql -h aws-0-eu-central-1.pooler.supabase.com -p 6543 -d postgres -U postgres.PROJECT_REF --single-transaction --variable ON_ERROR_STOP=1 --file backup/roles.sql --command 'SET session_replication_role = replica' --file backup/data.sql
-```
-
 ### Migrations
 
 ```
@@ -104,7 +86,6 @@ Prints all changes from the local database setup to the linked project, as a sql
 - Create changes in the local database 
 - Create the diff from local to the production database
 - Create Migration and add those changes
-
 
 ## Available Scripts
 

@@ -1,0 +1,9 @@
+.Toastify__toast--default {
+  padding: 0 !important;
+  background: transparent !important;
+}
+
+.Toastify__close-button {
+  visibility: hidden !important;
+  display: none !important;
+}

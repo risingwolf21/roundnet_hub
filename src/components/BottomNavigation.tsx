@@ -1,109 +1,89 @@
-import {AdminPanelSettings, EmojiEvents, Liquor, List, SportsHandball} from "@mui/icons-material";
-import {Badge, BottomNavigation, BottomNavigationAction, Paper} from "@mui/material";
-import {TFunction} from "i18next";
-import React, {SyntheticEvent, useEffect, useState} from "react";
-import {withTranslation} from 'react-i18next';
-import {useDispatch, useSelector} from "react-redux";
-import {useNavigate} from "react-router-dom";
-import {can} from "src/utils/PermissionService";
-import {onModeChange} from "../redux/applicationSlice";
-import {RootState} from "../redux/store";
-import {notificationsSelector} from "../redux/notificationsSlice";
-import {BOTTOM_NAV_OPTION_1, BOTTOM_NAV_OPTION_2, HOMEPAGE} from "../constants";
-import {BottomNavigationItem} from "../types/types";
+import { AdminPanelSettings, EmojiEvents, Liquor, List, Scoreboard, SportsHandball } from '@mui/icons-material';
+import { Badge, BottomNavigation, BottomNavigationAction, Paper } from '@mui/material';
+import React, { useEffect, useState } from 'react';
+import { withTranslation } from 'react-i18next';
+import { useSelector } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
+import { can } from 'src/utils/PermissionService';
+import { RootState } from '../redux/store';
+import { notificationsSelector } from '../features/notifications/slices/notificationsSlice';
+import { HOMEPAGE } from '../constants';
 
-const CustomBottomNavigation = ({t}: { t: TFunction }) => {
+const CustomBottomNavigation = () => {
+  let navigate = useNavigate();
+  const { notVerifiedUsers } = useSelector((state: RootState) => state.adminUsers);
+  const notifications = useSelector((state: RootState) => notificationsSelector.selectAll(state));
+  const [tab, setTab] = useState<string>(HOMEPAGE);
 
-    let navigate = useNavigate();
-    let dispatch = useDispatch();
-    const {hasNotVerifiedUsers} = useSelector((state: RootState) => state.adminUsers);
-    const notifications = useSelector((state: RootState) => notificationsSelector.selectAll(state));
-    const {user} = useSelector((state: RootState) => state.application);
-    const [tab, setTab] = useState<string>(HOMEPAGE);
+  useEffect(() => {
+    setTab(window.location.pathname.substring(1));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [window.location.pathname]);
 
-    let bottomNavigation1: BottomNavigationItem = localStorage.getItem(BOTTOM_NAV_OPTION_1) as BottomNavigationItem ?? "training";
-    let bottomNavigation2: BottomNavigationItem = localStorage.getItem(BOTTOM_NAV_OPTION_2) as BottomNavigationItem ?? "drinks";
+  const handleChange = (e: any, newValue: string) => {
+    setTab(newValue);
+    navigate('/' + newValue, { replace: true });
+  };
 
-    useEffect(() => {
-        setTab(window.location.pathname.substring(1));
-    }, [window.location.pathname]);
-
-    const handleChange = (e: SyntheticEvent<Element, Event>, newValue: string) => {
-        setTab(newValue);
-        navigate(newValue, {replace: true});
-        dispatch(onModeChange(newValue));
-    }
-
-    const drinks = () => <BottomNavigationAction
-        key={"drinks"}
-        value={"drinks"}
-        aria-selected={tab === "drinks"}
-        label={t("navigation.drinks")}
-        icon={<Liquor/>}/>
-
-    const training = () => <BottomNavigationAction
-        key={"training"}
-        value={"training"}
-        aria-selected={tab === "training"}
-        label={t("navigation.training")}
-        icon={<SportsHandball/>}/>
-
-    const challenges = () => <BottomNavigationAction
-        key={"challenges"}
-        value={"challenges"}
-        aria-selected={tab === "challenges"}
-        label={t("navigation.challenges")}
-        icon={<EmojiEvents/>}/>
-
-    if (!user)
-        return null;
-
-    return <Paper sx={{position: "fixed", bottom: 0, left: 0, right: 0}} elevation={3}>
-        <BottomNavigation
-            value={tab}
-            onChange={handleChange}>
-            {
-                bottomNavigation1 === "training" && can("view", "training") && training()
+  return (
+    <Paper
+      sx={{
+        position: 'fixed',
+        bottom: 0,
+        pb: 'env(safe-area-inset-bottom)',
+        left: 0,
+        right: 0,
+      }}
+      elevation={3}
+    >
+      <BottomNavigation value={tab} onChange={handleChange}>
+        {can('select', 'event') && (
+          <BottomNavigationAction
+            key={'training'}
+            value={'training'}
+            aria-selected={tab === 'training'}
+            icon={<SportsHandball />}
+          />
+        )}
+        {can('select', 'drink') && (
+          <BottomNavigationAction key={'drinks'} value={'drinks'} aria-selected={tab === 'drinks'} icon={<Liquor />} />
+        )}
+        {can('select', 'challenge') && (
+          <BottomNavigationAction
+            key={'challenges'}
+            value={'challenges'}
+            aria-selected={tab === 'challenges'}
+            icon={<EmojiEvents />}
+          />
+        )}
+        {can('select', 'drink') && (
+          <BottomNavigationAction key={'games'} value={'games'} aria-selected={tab === 'games'} icon={<Scoreboard />} />
+        )}
+        <BottomNavigationAction
+          key={'browse'}
+          value={'browse'}
+          aria-selected={tab === 'browse'}
+          icon={
+            <Badge color="secondary" variant="dot" badgeContent={' '} invisible={notifications.length < 1}>
+              <List />
+            </Badge>
+          }
+        />
+        {can('select', 'browseAdmin') && (
+          <BottomNavigationAction
+            key={'admin'}
+            value={'browse-admin'}
+            aria-selected={tab === 'browse-admin'}
+            icon={
+              <Badge color="secondary" variant="dot" badgeContent={' '} invisible={notVerifiedUsers < 1}>
+                <AdminPanelSettings />
+              </Badge>
             }
-            {
-                bottomNavigation1 === "drinks" && can("view", "drink") && drinks()
-            }
-            {
-                bottomNavigation1 === "challenges" && can("view", "challenges") && challenges()
-            }
-            {
-                bottomNavigation2 === "training" && can("view", "training") && training()
-            }
-            {
-                bottomNavigation2 === "drinks" && can("view", "drink") && drinks()
-            }
-            {
-                bottomNavigation2 === "challenges" && can("view", "challenges") && challenges()
-            }
-            {
-                can("view", "browse") && <BottomNavigationAction
-                    key={"browse"}
-                    value={"browse"}
-                    aria-selected={tab === "browse"}
-                    label={t("navigation.browse")}
-                    icon={<Badge color="secondary" variant="dot" badgeContent={" "}
-                                 invisible={notifications.length < 1}>
-                        <List/>
-                    </Badge>}/>
-            }
-            {
-                can("view", "browseAdmin") && <BottomNavigationAction
-                    key={"admin"}
-                    value={"browse-admin"}
-                    aria-selected={tab === "browse-admin"}
-                    label={t("navigation.admin")}
-                    icon={<Badge color="secondary" variant="dot" badgeContent={" "}
-                                 invisible={!hasNotVerifiedUsers}>
-                        <AdminPanelSettings/>
-                    </Badge>}/>
-            }
-        </BottomNavigation>
+          />
+        )}
+      </BottomNavigation>
     </Paper>
-}
+  );
+};
 
 export default withTranslation()(CustomBottomNavigation);

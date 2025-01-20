@@ -1,24 +1,33 @@
-import { Warning } from "@mui/icons-material"
-import { Box, Grid, Typography } from "@mui/material"
-import React from "react";
-import CustomAppBar from "./AppBar";
+import { AppBar, Box, Button, Toolbar, Typography } from '@mui/material';
+import React from 'react';
+import { supabase } from './services/supabase/supabaseClient';
 
 const NotVerifiedScreen = () => {
-    return <Box>
-        <CustomAppBar />
-        <Grid
-            container
-            spacing={0}
-            direction="column"
-            alignItems="center"
-            justifyContent="center"
-            style={{ position: "absolute", top: "56px", left: 0, right: 0, bottom: "56px" }}>
-            <Warning fontSize="large" sx={{ color: "primary" }} />
-            <Typography sx={{ mt: 2, wordWrap: "normal", textAlign: "center", color: "primary", padding: 2 }}>
-                Du bist zur Zeit nicht verifiziert. Um die Funktionen nutzen zu können, musst du vorher von einem Administrator verifiziert werden.
-            </Typography>
-        </Grid>
+  return (
+    <Box sx={{ display: 'flex', flexDirection: 'column', height: '100vh' }}>
+      <AppBar position="sticky" sx={{ zIndex: (theme) => theme.zIndex.drawer + 1, background: 'primary' }}>
+        <Toolbar
+          sx={{
+            width: 'calc(100% - 48px)',
+            maxWidth: 1400,
+            mx: 'auto',
+          }}
+        >
+          <Typography variant="h6" sx={{ flexGrow: 1 }}>
+            Roundnet Karlsruhe
+          </Typography>
+          <Button sx={{ color: 'white' }} onClick={() => supabase.auth.signOut()}>
+            Logout
+          </Button>
+        </Toolbar>
+      </AppBar>
+      <Box sx={{ alignItems: 'center', display: 'flex', flexDirection: 'column', pt: 10 }}>
+        <Typography sx={{ fontSize: '30pt', fontWeight: 'bold' }}>⚠️</Typography>
+        <Typography sx={{ fontSize: '18pt', fontWeight: 'bold', textAlign: "center" }}>Du bist zur Zeit nicht verifiziert. Um die Funktionen nutzen zu können, musst du vorher von einem
+          Administrator verifiziert werden.</Typography>
+      </Box>
     </Box>
-}
+  );
+};
 
 export default NotVerifiedScreen;

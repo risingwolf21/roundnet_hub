@@ -10,6 +10,9 @@
         ],
         "production": [
           "roundnet-karlsruhe"
+        ],
+        "admin-production": [
+          "admin-roundnet-karlsruhe"
         ]
       }
     }

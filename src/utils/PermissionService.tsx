@@ -1,87 +1,52 @@
 import {AbilityBuilder, createMongoAbility, MongoQuery, PureAbility} from '@casl/ability';
-import {Permissions, User} from "src/types/supabaseTypes";
 
-
-export type Actions = 'use' | 'edit' | 'delete' | 'view'
+export type Actions = 'select' | 'insert' | 'update' | 'delete' | 'view';
 export type Ability =
-    | [Actions, 'drink']
-    | [Actions, 'training']
-    | [Actions, 'payments']
-    | [Actions, 'user']
-    | [Actions, 'groups']
-    | [Actions, 'keyFinder']
-    | [Actions, 'history']
-    | [Actions, 'notifications']
-    | [Actions, 'browse']
-    | [Actions, 'browseAdmin']
-    | [Actions, 'eventComments']
-    | [Actions, 'challenges']
+  | [Actions, 'event']
+  | [Actions, 'drink']
+  | [Actions, 'payments']
+  | [Actions, 'challenge']
+  | [Actions, 'group']
+  | [Actions, 'item']
+  | [Actions, 'user']
+  | [Actions, 'eventComments']
+  | [Actions, 'history']
+  | [Actions, 'notifications']
+  | [Actions, 'games']
+  | [Actions, 'browse']
+  | [Actions, 'browseAdmin']
+  | [Actions, 'postgres'];
 
-export const allPermissions: Permissions[] = [
-    "use;drink",
-    "edit;drink",
-    "delete;drink",
-    "view;drink",
-    "use;training",
-    "edit;training",
-    "delete;training",
-    "view;training",
-    "edit;groups",
-    "delete;groups",
-    "view;groups",
-    "edit;payments",
-    "use;user",
-    "delete;user",
-    "view;user",
-    "edit;user",
-    "view;keyFinder",
-    "edit;keyFinder",
-    "delete;keyFinder",
-    "view;challenges",
-    "use;challenges"
-];
-
-export const userPermissions: Permissions[] = [
-    "use;drink",
-    "view;drink",
-    "use;training",
-    "view;training",
-    "view;groups",
-    "use;user",
-    "view;user",
-    "view;keyFinder"
-]
-
-export const financePermissions: Permissions[] = [...userPermissions, "edit;payments"];
-export const procurePermissions: Permissions[] = [...userPermissions, "edit;drink", "delete;drink"];
-export const trainerPermissions: Permissions[] = [...userPermissions, "edit;training", "delete;training", "edit;groups"];
-
-export type AppAbility = PureAbility<Ability, MongoQuery>
+export type AppAbility = PureAbility<Ability, MongoQuery>;
 
 export const ability = createMongoAbility();
 export const can = (action: Actions, subject: Ability[1]) => ability.can(action, subject);
+export const canAny = (action: Actions, subject: Ability[1][]) => subject.reduce((prev, acc) => prev && can(action, acc), true)
 
-export function defineRulesFor(user: User | null) {
-    const {can, rules} = new AbilityBuilder<AppAbility>(createMongoAbility);
+export function defineRulesFor(userPermissions: AppPermission[], roles: AppRole[]) {
+  const { can, rules } = new AbilityBuilder<AppAbility>(createMongoAbility);
 
-    if (!user)
-        return [];
+  can('view', 'notifications');
+  can('view', 'browse');
 
-    can("view", "payments");
-    can("view", "history");
-    can("view", "browse");
-    can("view", "notifications");
+  userPermissions.forEach((each: AppPermission) => {
+    let split = each.name.split('.');
+    can(split[1] as Actions, split[0] as Ability[1]);
+  });
 
-    if (user.permissions) {
-        user.permissions.forEach((each: Permissions) => {
-            let split = each.split(";");
-            can(split[0] as Actions, split[1] as Ability[1]);
-        });
-    }
+  if (
+    roles.some((x: AppRole) =>
+      ['admin', 'eventModerator', 'userModerator', 'groupModerator', 'drinkModerator', 'challengeModerator'].includes(
+        x.name
+      )
+    )
+  ) {
+    can('select', 'browseAdmin');
+  }
 
-    if (user.permissions?.some((x: Permissions) => ["edit;groups", "edit;drink", "edit;payments", "edit;user"].includes(x))) {
-        can("view", "browseAdmin");
-    }
+  if (roles.some((x: AppRole) => ['admin'].includes(x.name))) {
+    can('view', 'postgres');
+  }
 
-    return rules;
+  return rules;
 }
