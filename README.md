@@ -105,42 +105,6 @@ Prints all changes from the local database setup to the linked project, as a sql
 - Create the diff from local to the production database
 - Create Migration and add those changes
 
-## Notifications
-
-| Notification-Tag | Beschreibung                                            |
-|------------------|---------------------------------------------------------|
-| userRegistration | Once a user gets registered and added to the user table |
-
-## Permissions
-
-Actions: `use, edit, delete, view`
-
-| Permission-Name | Beschreibung                                              | admin | finance | procure | trainer | user |
-|-----------------|-----------------------------------------------------------|-------|---------|---------|---------|------|
-| use;drink       | User can buy a drink                                      | ✅     | ✅       | ✅       | ✅       | ✅    |
-| edit;drink      | User can edit drinks                                      | ✅     | ❌       | ✅       | ❌       | ❌    |
-| delete;drink    | User can delete a drink (only deactivates it in database) | ✅     | ❌       | ✅       | ❌       | ❌    |
-| view;drink      | User can see the current drinks and drink list            | ✅     | ✅       | ✅       | ✅       | ✅    |
-||||||||
-| use;training    | User can attend/decline trainings                         | ✅     | ✅       | ✅       | ✅       | ✅    |
-| edit;training   | User can create new training events                       | ✅     | ❌       | ❌       | ✅       | ❌    |
-| delete;training | User can delete events                                    | ✅     | ❌       | ❌       | ✅       | ❌    |
-| view;training   | User can view training events list                        | ✅     | ✅       | ✅       | ✅       | ✅    |
-||||||||
-| edit;groups     | Change users for group or edit group information          | ✅     | ❌       | ❌       | ✅       | ❌    |
-| delete;groups   | Delete a group (could possibile delete events)            | ✅     | ❌       | ❌       | ❌       | ❌    |
-| view;groups     | User can view the groups he is assigned to                | ✅     | ✅       | ✅       | ✅       | ✅    |
-||||||||
-| edit;payments   | User can accept payments                                  | ✅     | ✅       | ❌       | ❌       | ❌    |
-||||||||
-| use;user        | User can edit his own informations                        | ✅     | ✅       | ✅       | ✅       | ✅    |
-| edit;user       | Edit user information/verification state/permissions      | ✅     | ❌       | ❌       | ❌       | ❌    |
-| delete;user     | User can edit his own informations                        | ✅     | ❌       | ❌       | ❌       | ❌    |
-| view;user       | User can view his own informations                        | ✅     | ✅       | ✅       | ✅       | ✅    |
-||||||||
-| view;keyFinder  | User can view key finder                                  | ✅     | ✅       | ✅       | ✅       | ✅    |
-| edit;keyFinder  | User can edit keys                                        | ✅     | ❌       | ❌       | ❌       | ❌    |
-| delete;keyFinder| User can delete keys                                      | ✅     | ❌       | ❌       | ❌       | ❌    |
 
 ## Available Scripts
 
