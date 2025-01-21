@@ -25,13 +25,13 @@ import {
   Select,
   Snackbar,
   TextField,
-  Typography
+  Typography,
 } from '@mui/material';
 import { DatePicker, DateTimePicker } from '@mui/x-date-pickers';
 import { TimePicker } from '@mui/x-date-pickers/TimePicker';
-import { format, isAfter, isBefore, set } from 'date-fns';
+import { format, isAfter, set } from 'date-fns';
 import _ from 'lodash';
-import React, { FormEvent, Ref, useEffect, useRef, useState } from 'react';
+import React, { FormEvent, useEffect, useRef, useState } from 'react';
 import { MapContainer, Marker, TileLayer, useMap } from 'react-leaflet';
 import { useNavigate } from 'react-router-dom';
 import Layout from 'src/components/Layout';
@@ -42,7 +42,6 @@ import { Enums, TablesInsert } from '../../types/supabase-generated.types';
 import SearchPlacesDialog from './dialogs/SearchPlacesDialog';
 import { SelectGroupDialog } from './dialogs/SelectGroupDialog';
 import { CreateEventProps, PlaceType } from './types';
-import { rewriteFramesIntegration } from '@sentry/react';
 
 const emptyEvent = {
   title: '',
@@ -124,7 +123,10 @@ const CreateEvent = ({ t, eventToEdit, option }: CreateEventProps) => {
 
         if (error) throw error;
       } else if (option === 'UpdateRecurrence') {
-        const { error } = await SupabaseEventRepository.updateEventAndAllRecurrences(event, eventToEdit?.startingDateTime);
+        const { error } = await SupabaseEventRepository.updateEventAndAllRecurrences(
+          event,
+          eventToEdit?.startingDateTime
+        );
 
         if (error) throw error;
       } else {
@@ -150,14 +152,23 @@ const CreateEvent = ({ t, eventToEdit, option }: CreateEventProps) => {
 
   return (
     <Layout
-      appBarConfig={{ showBackButton: true, showProfile: false, title: `Event ${eventToEdit ? "bearbeiten" : "erstellen"}` }}
+      appBarConfig={{
+        showBackButton: true,
+        showProfile: false,
+        title: `Event ${eventToEdit ? 'bearbeiten' : 'erstellen'}`,
+      }}
       appBarActions={
-        <Button autoFocus color="inherit" onClick={() => {
-          if (ref.current)
-            ref.current.dispatchEvent(new Event("submit", { cancelable: true, bubbles: true }))
-        }}>
+        <Button
+          autoFocus
+          color="inherit"
+          onClick={() => {
+            if (ref.current) ref.current.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
+          }}
+        >
           Speichern
-        </Button>}>
+        </Button>
+      }
+    >
       <Box ref={ref} component="form" onSubmit={handleSubmit} noValidate>
         <List>
           <ListItem sx={{ pt: 0, pb: 0 }} key={'title'}>
@@ -406,11 +417,11 @@ const CreateEvent = ({ t, eventToEdit, option }: CreateEventProps) => {
                     answerDeadline: editedEvent.answerDeadline
                       ? null
                       : formatDateToDatabase(
-                        set(Date.now(), {
-                          seconds: 0,
-                          milliseconds: 0,
-                        })
-                      ),
+                          set(Date.now(), {
+                            seconds: 0,
+                            milliseconds: 0,
+                          })
+                        ),
                   })
                 }
               />
@@ -540,11 +551,11 @@ const CreateEvent = ({ t, eventToEdit, option }: CreateEventProps) => {
                     recurrenceEnd: editedEvent.recurrenceEnd
                       ? null
                       : formatDateToDatabase(
-                        set(Date.now(), {
-                          seconds: 0,
-                          milliseconds: 0,
-                        })
-                      ),
+                          set(Date.now(), {
+                            seconds: 0,
+                            milliseconds: 0,
+                          })
+                        ),
                   })
                 }
               />
