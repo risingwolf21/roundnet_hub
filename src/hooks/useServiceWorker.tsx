@@ -1,37 +1,42 @@
-import { useState, useEffect, useMemo } from "react";
-import * as serviceWorker from "../serviceWorkerRegistration";
-import { onServiceWorkerInitialized, onUpdateServiceWorker } from "src/redux/applicationSlice";
-import { RootState, useAppDispatch } from "src/redux/store";
-import { useSelector } from "react-redux";
+import { useEffect, useMemo } from 'react';
+import * as serviceWorker from '../serviceWorkerRegistration';
+import { onServiceWorkerInitialized, onUpdateServiceWorker } from 'src/redux/applicationSlice';
+import { RootState, useAppDispatch } from 'src/redux/store';
+import { useSelector } from 'react-redux';
 
 export type ServiceWorkerConfig = {
-    onUpdate: (registration: ServiceWorkerRegistration) => void,
-    onSuccess: (registration: ServiceWorkerRegistration) => void
-}
+  onUpdate: (registration: ServiceWorkerRegistration) => void;
+  onSuccess: (registration: ServiceWorkerRegistration) => void;
+};
 
 export const useServiceWorker = () => {
-    const { serviceWorkerUpdated, serviceWorkerRegistration } = useSelector((state: RootState) => state.application);
-    const dispatch = useAppDispatch();
+  const { serviceWorkerUpdated, serviceWorkerRegistration } = useSelector((state: RootState) => state.application);
+  const dispatch = useAppDispatch();
 
+  useEffect(() => {
     serviceWorker.register({
-        onUpdate: (registration: ServiceWorkerRegistration) => dispatch(onUpdateServiceWorker(registration)),
-        onSuccess: () => dispatch(onServiceWorkerInitialized())
+      onUpdate: (registration: ServiceWorkerRegistration) => dispatch(onUpdateServiceWorker(registration)),
+      onSuccess: () => dispatch(onServiceWorkerInitialized()),
     });
+  }, [dispatch]);
 
-    const value = useMemo(() => ({
-        serviceWorkerUpdated,
-        updateServiceWorker: () => {
-            if (serviceWorkerRegistration?.waiting) {
-                serviceWorkerRegistration.waiting.postMessage({ type: 'SKIP_WAITING' });
-                serviceWorkerRegistration.waiting.addEventListener('statechange', (e: Event) => {
-                    const sw = e?.target as ServiceWorker;
-                    if (sw.state === 'activated') {
-                        window.location.reload();
-                    }
-                });
+  const value = useMemo(
+    () => ({
+      serviceWorkerUpdated,
+      updateServiceWorker: () => {
+        if (serviceWorkerRegistration?.waiting) {
+          serviceWorkerRegistration.waiting.postMessage({ type: 'SKIP_WAITING' });
+          serviceWorkerRegistration.waiting.addEventListener('statechange', (e: Event) => {
+            const sw = e?.target as ServiceWorker;
+            if (sw.state === 'activated') {
+              window.location.reload();
             }
+          });
         }
-    }), [serviceWorkerUpdated, serviceWorkerRegistration]);
+      },
+    }),
+    [serviceWorkerUpdated, serviceWorkerRegistration]
+  );
 
-    return { isUpdateAvailable: value.serviceWorkerUpdated, updateServiceWorker: value.updateServiceWorker }
-}
+  return { isUpdateAvailable: value.serviceWorkerUpdated, updateServiceWorker: value.updateServiceWorker };
+};

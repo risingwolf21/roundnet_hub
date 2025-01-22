@@ -17,6 +17,14 @@
     "i18n-ally.localesPaths": [
         "src/translation/locales"
     ],
+    "i18n-ally.pathMatcher": "translation.{locale}.json",
+    "i18n-ally.displayLanguage": "de",
+    "i18n-ally.theme.annotation": "rgba(153, 153, 153, .8)",
+    "i18n-ally.theme.annotationBorder": "rgba(153, 153, 153, .8)",
+    "i18n-ally.theme.annotationMissing": "#d37070",
+    "i18n-ally.theme.annotationMissingBorder": "#d37070",
+    "i18n-ally.keystyle": "nested",
+    "typescript.tsdk": "node_modules\\typescript\\lib"
     //"deno.enable": true,
     // "deno.unstable": true,
 }

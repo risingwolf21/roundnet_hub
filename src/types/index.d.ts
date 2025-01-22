@@ -1,6 +1,5 @@
-declare module "*.jpg"
-declare module "*.png"
-declare module "*.svg"
-declare module "*.txt"
-declare module "*.json"
-declare module "@types/supabase"
+declare module '*.jpg';
+declare module '*.png';
+declare module '*.svg';
+declare module '*.txt';
+declare module '*.json';

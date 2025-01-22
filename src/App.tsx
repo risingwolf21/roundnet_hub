@@ -1,120 +1,134 @@
-import {Container, Grid, Typography} from "@mui/material";
+import * as Sentry from '@sentry/react';
 import * as React from 'react';
-import {BrowserRouter, Navigate, Route} from 'react-router-dom';
-import CustomBottomNavigation from './components/BottomNavigation';
+import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import Browse from './components/Browse';
-import {LoadingScreen} from "./components/LoadingScreen";
+import { FallbackComponent } from './components/Error';
+import { InitialFetch } from './components/InitialFetch';
+import { LoadingScreen } from './components/LoadingScreen';
+import NotVerifiedScreen from './components/NotVerifiedScreen';
+import { SupabaseClient } from './components/SupabaseClient';
+import { SupabaseQueryClient } from './components/SupabaseQueryClient';
 import UpdateAvailable from './components/UpdateAvailable';
-import {UserScreenProvider} from './components/User';
-import BrowseAdmin from './components/admin/BrowseAdmin';
-import {useServiceWorker} from './hooks/useServiceWorker';
-import NotificationsScreenProvider from "./components/NotificationsScreen";
-import {useInitialFetch} from "./components/InitialFetch";
-import NotVerifiedScreen from "./components/NotVerifiedScreen";
-import {AuthGate} from "./components/AuthGate";
-import {SupabaseClient} from "./components/SupabaseClient";
-import {SentryRoutes} from "./index";
-import {HOMEPAGE} from "./constants";
-import {FirebaseMessaging} from "./components/FirebaseMessaging";
+import { UserScreenProvider } from './components/User';
+import BrowseAdmin from './features/admin/BrowseAdmin';
+import { PermissionList } from './features/admin/PermissionList';
+import { AuthGate } from './features/auth/AuthGate';
+import { RecurringEventsProvider } from './features/events/RecurringEvents';
+import NotificationsScreenProvider from './features/notifications/NotificationsScreen';
+import { useServiceWorker } from './hooks/useServiceWorker';
+import { CssBaseline } from '@mui/material';
+import { SentryRepository } from './repository/SentryRepository';
+import { SentryIssueList } from './features/admin/SentryIssues';
+import { GameList } from './features/games/GameList';
+import { ReportScore } from './features/games/ReportScore';
 
 const FeatureNotAvailable = React.lazy(() => import('./components/FeatureNotAvailable'));
-const HistoryScreenProvider = React.lazy(() => import('./components/HistoryScreen'));
-const KeyHolderScreenProvider = React.lazy(() => import('./components/keys/ItemHolderScreen'));
-const PayDrinksScreenProvider = React.lazy(() => import('./components/PayDrinksScreen'));
-const ResetPasswordScreen = React.lazy(() => import('./components/ResetPasswordScreen'));
-const PaymentsPendingAdmin = React.lazy(() => import('./components/admin/PaymentsPendingAdmin'));
-const CreateEventProvider = React.lazy(() => import('./components/eventCreation/provider'));
-const AdminDrinkListProvider = React.lazy(() => import('./components/admin/AdminDrinkList'));
-const AdminHistoryScreenProvider = React.lazy(() => import('./components/admin/AdminHistoryScreen'));
-const AdminUserListProvider = React.lazy(() => import('./components/admin/AdminUserList'));
-const DrinkListScreenProvider = React.lazy(() => import('./components/drinkList/provider'));
-const GroupInformationProvider = React.lazy(() => import('./components/groups/GroupInformation'));
-const ManageGroupsProvider = React.lazy(() => import('./components/groups/ManageGroups'));
-const EventInformationProvider = React.lazy(() => import('./components/eventInformation/provider'));
-const EventScreenProvider = React.lazy(() => import('./components/eventList/provider'));
+const HistoryScreenProvider = React.lazy(() => import('./features/drinks/HistoryScreenProvider'));
+const KeyHolderScreenProvider = React.lazy(() => import('./features/keys/provider'));
+const PayDrinksScreenProvider = React.lazy(() => import('./features/drinks/PayDrinksScreen'));
+const ResetPasswordScreen = React.lazy(() => import('./features/auth/ResetPasswordScreen'));
+const PaymentsPendingAdmin = React.lazy(() => import('./features/admin/PaymentsPendingAdmin'));
+const CreateEventProvider = React.lazy(() => import('./pages/EventCreation.page'));
+const AdminDrinkListProvider = React.lazy(() => import('./features/admin/AdminDrinkList'));
+const AdminHistoryScreenProvider = React.lazy(() => import('./features/admin/AdminHistoryScreen'));
+const AdminUserListProvider = React.lazy(() => import('./features/admin/AdminUserList'));
+const DrinkListScreenProvider = React.lazy(() => import('./pages/Drinklist.page'));
+const GroupInformationProvider = React.lazy(() => import('./features/groups/GroupInformation'));
+const ManageGroupsProvider = React.lazy(() => import('./features/groups/ManageGroups'));
+const EventInformationProvider = React.lazy(() => import('./pages/EventInformation.page'));
+const EventScreenProvider = React.lazy(() => import('./pages/EventList.page'));
 const ProfileScreen = React.lazy(() => import('./components/Profile'));
-const NotificationScreen = React.lazy(() => import('./components/notifications/NotificationScreen'));
-const ChallengeScreen = React.lazy(() => import('./components/challenges/ChallengeList'));
-const ChallengeInfoScreen = React.lazy(() => import('./components/challenges/ChallengeInformation'));
+const NotificationScreen = React.lazy(() => import('./features/notifications/NotificationScreen'));
+const ChallengeScreen = React.lazy(() => import('./features/challenges/ChallengeList'));
+const ChallengeInfoScreen = React.lazy(() => import('./features/challenges/ChallengeInformationProvider'));
 
 const App = () => {
+  const { isUpdateAvailable, updateServiceWorker } = useServiceWorker();
 
-    useInitialFetch();
-    const {isUpdateAvailable, updateServiceWorker} = useServiceWorker();
+  if (isUpdateAvailable) return <UpdateAvailable update={updateServiceWorker} />;
 
-    if (isUpdateAvailable)
-        return <UpdateAvailable update={updateServiceWorker}/>
+  return (
+    <Sentry.ErrorBoundary
+      onError={console.error}
+      fallback={({ resetError }) => <FallbackComponent message={'Es ist ein Fehler aufgetreten'} resetError={resetError} />}
+      showDialog
+    >
+      <CssBaseline />
+      <BrowserRouter
+        future={{
+          v7_relativeSplatPath: true,
+          v7_startTransition: true,
+        }}
+      >
+        <AuthGate>
+          <InitialFetch>
+            <React.Suspense fallback={<LoadingScreen />}>
+              <Routes>
+                <Route index path="/" element={<Navigate replace to={`/training/list`} />} />
 
-    return <Grid maxHeight={"100vh"}>
-        {
-            process.env.REACT_APP_ENV !== "production" && <Container
-                style={{height: "24px", width: "100%", textAlign: "center", maxWidth: "none", background: "#eee"}}>
-                <Typography>{process.env.REACT_APP_ENV}</Typography>
-            </Container>
-        }
-        <BrowserRouter>
-            <AuthGate>
-                <FirebaseMessaging>
-                    <React.Suspense fallback={<LoadingScreen/>}>
-                        <SentryRoutes>
-                            <Route path='/' element={<Navigate replace to={`/${HOMEPAGE}`}/>}/>
-                            <Route path='*' element={<Navigate replace to={`/${HOMEPAGE}`}/>}/>
+                <Route path="/not-verified" element={<NotVerifiedScreen />} />
 
-                            <Route path='/reset-password' element={<ResetPasswordScreen/>}/>
-                            <Route path='/not-verified' element={<NotVerifiedScreen/>}/>
+                <Route path="/feature-not-available" element={<FeatureNotAvailable />} />
 
-                            <Route path='/feature-not-available' element={<FeatureNotAvailable/>}/>
+                <Route path="/reset-password" element={<ResetPasswordScreen />} />
 
-                            <Route path='/reset-password' element={<ResetPasswordScreen/>}/>
+                <Route path="/browse" element={<Browse />} />
+                <Route path="/browse-admin" element={<BrowseAdmin />} />
+                <Route path="/drinks" element={<DrinkListScreenProvider />} />
 
-                            <Route path='/browse' element={<Browse/>}/>
-                            <Route path='/browse-admin' element={<BrowseAdmin/>}/>
-                            <Route path="/drinks" element={<DrinkListScreenProvider/>}/>
-                            <Route path="/user"
-                                   element={<UserScreenProvider/>}/>
-                            <Route path="/user/:userId"
-                                   element={<ProfileScreen/>}/>
-                            <Route path="/history"
-                                   element={<HistoryScreenProvider/>}/>
-                            <Route path="/payments"
-                                   element={<PayDrinksScreenProvider/>}/>
-                            <Route path="/keys"
-                                   element={<KeyHolderScreenProvider/>}/>
+                <Route path="/history" element={<HistoryScreenProvider />} />
+                <Route path="/payments" element={<PayDrinksScreenProvider />} />
+                <Route path="/keys" element={<KeyHolderScreenProvider />} />
 
-                            <Route path="/notifications"
-                                   element={<NotificationScreen/>}/>
+                <Route path="/notifications" element={<NotificationScreen />} />
 
-                            <Route path="/notificationPermissions"
-                                   element={<NotificationsScreenProvider/>}/>
+                <Route path="/notificationPermissions" element={<NotificationsScreenProvider />} />
 
-                            <Route path="/challenges" element={<ChallengeScreen/>}/>
+                <Route path="user">
+                  <Route index element={<UserScreenProvider />} />
+                  <Route path=":userId" element={<ProfileScreen />} />
+                </Route>
 
-                            <Route path="/challenges/:challengeId" element={<ChallengeInfoScreen/>}/>
+                <Route path="challenges">
+                  <Route index element={<ChallengeScreen />} />
+                  <Route path=":challengeId" element={<ChallengeInfoScreen />} />
+                </Route>
 
-                            <Route path="/trainer/groups"
-                                   element={<ManageGroupsProvider/>}/>
-                            <Route path="/trainer/groups/:id"
-                                   element={<GroupInformationProvider/>}/>
-                            <Route path="/training" element={<EventScreenProvider/>}/>
-                            <Route path="/training/event/:selectedEventId"
-                                   element={<EventInformationProvider/>}/>
-                            <Route path="/training/createOrUpdate/:option"
-                                   element={<CreateEventProvider/>}/>
-                            <Route path='/admin/drinks'
-                                   element={<AdminDrinkListProvider/>}/>
-                            <Route path="/admin/drinks/history"
-                                   element={<AdminHistoryScreenProvider/>}/>
-                            <Route path='/admin/drinks/payments'
-                                   element={<PaymentsPendingAdmin/>}/>
-                            <Route path='/admin/users' element={<AdminUserListProvider/>}/>
-                            <Route path='/admin/supabase' element={<SupabaseClient/>}/>
-                        </SentryRoutes>
-                    </React.Suspense>
-                    <div style={{width: "100%", height: "56px"}}/>
-                    <CustomBottomNavigation/>
-                </FirebaseMessaging>
-            </AuthGate>
-        </BrowserRouter>
-    </Grid>
-}
+                <Route path="trainer">
+                  <Route path="groups" element={<ManageGroupsProvider />} />
+                  <Route path="groups/:id" element={<GroupInformationProvider />} />
+                </Route>
+
+                <Route path="training">
+                  <Route path="list" element={<EventScreenProvider />} />
+                  <Route path="recurringEvents" element={<RecurringEventsProvider />} />
+                  <Route path="event/:selectedEventId" element={<EventInformationProvider />} />
+                  <Route path="createOrUpdate/:option" element={<CreateEventProvider />} />
+                </Route>
+
+                <Route path="matches">
+                  <Route index element={<GameList />} />
+                  <Route path="report" element={<ReportScore />} />
+                </Route>
+
+                <Route path="admin">
+                  <Route path="drinks" element={<AdminDrinkListProvider />} />
+                  <Route path="drinks/history" element={<AdminHistoryScreenProvider />} />
+                  <Route path="drinks/payments" element={<PaymentsPendingAdmin />} />
+                  <Route path="users" element={<AdminUserListProvider />} />
+                  <Route path="supabase" element={<SupabaseClient />} />
+                  <Route path="supabase/queries" element={<SupabaseQueryClient />} />
+                  <Route path="permissions" element={<PermissionList />} />
+                  <Route path="sentry-issues" element={<SentryIssueList />} />
+                </Route>
+                <Route path="*" element={<Navigate replace to={`/training/list`} />} />
+                <Route path="" element={<Navigate replace to={`/training/list`} />} />
+              </Routes>
+            </React.Suspense>
+          </InitialFetch>
+        </AuthGate>
+      </BrowserRouter>
+    </Sentry.ErrorBoundary>
+  );
+};
 export default App;
