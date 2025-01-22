@@ -163,6 +163,13 @@ export const SupabaseEventRepository = {
     return supabase.from('events').update({ isCancelled: isCancelled }).eq('id', eventId).throwOnError();
   },
 
+  async fetchEvents(fetchMode: 'upcoming' | 'past'): Promise<PostgrestSingleResponse<FullEvent[]>> {
+    if (fetchMode === "upcoming")
+      return this.fetchUpcomingEvents();
+    else
+      return this.fetchPastEvents();
+  },
+
   async fetchUpcomingEvents(): Promise<PostgrestSingleResponse<FullEvent[]>> {
     return (
       fetchEvents()

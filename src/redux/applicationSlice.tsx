@@ -1,7 +1,6 @@
 import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { SupabaseUserRepository } from '../repository/UserRepository';
 import { UserWithRolesAndPermissions } from '../types/supabaseTypes';
-import { stat } from 'fs';
 
 type ApplicationSliceState = {
   user: UserWithRolesAndPermissions | null;

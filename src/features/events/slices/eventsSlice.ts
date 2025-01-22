@@ -23,6 +23,7 @@ const eventsSlice = createSlice({
     error: null as string | null,
     selectedEvent: null as number | null,
     eventToEdit: null as FullEvent | null,
+    fetchMode: "upcoming" as "upcoming" | "past",
     recurringEventsLoading: false,
     recurringEvents: [] as EventWithGroup[],
   }),
@@ -32,6 +33,9 @@ const eventsSlice = createSlice({
     },
     editEvent: (state, action) => {
       state.eventToEdit = action.payload;
+    },
+    updateFetchMode: (state, action: PayloadAction<"upcoming" | "past">) => {
+      state.fetchMode = action.payload
     },
     onEventUpdate: (state, action: PayloadAction<TablesUpdate<'events'>>) => {
       let eventSlice = eventsAdapter.getSelectors().selectById(state, action.payload.id ?? -1);
@@ -69,28 +73,16 @@ const eventsSlice = createSlice({
   },
   extraReducers(builder) {
     builder
-      .addCase(fetchUpcomingEventsAsync.pending, (state, _action) => {
+
+      .addCase(fetchEventsAsync.pending, (state, _action) => {
         state.loading = true;
       })
-      .addCase(fetchUpcomingEventsAsync.fulfilled, (state, action) => {
+      .addCase(fetchEventsAsync.fulfilled, (state, action) => {
         state.loading = false;
 
         eventsAdapter.setAll(state, action.payload);
       })
-      .addCase(fetchUpcomingEventsAsync.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.error.message ?? '';
-      })
-
-      .addCase(fetchPastEventsAsync.pending, (state, _action) => {
-        state.loading = true;
-      })
-      .addCase(fetchPastEventsAsync.fulfilled, (state, action) => {
-        state.loading = false;
-
-        eventsAdapter.setAll(state, action.payload);
-      })
-      .addCase(fetchPastEventsAsync.rejected, (state, action) => {
+      .addCase(fetchEventsAsync.rejected, (state, action) => {
         state.loading = false;
         state.error = action.error.message ?? '';
       })
@@ -172,12 +164,13 @@ const eventsSlice = createSlice({
 
 type FetchEventsType = {
   user: User;
+  fetchMode: 'upcoming' | 'past'
 };
 
-export const fetchUpcomingEventsAsync = createAsyncThunk(
-  'fetchUpcomingEventsAsync',
-  async ({ user }: FetchEventsType) => {
-    const response = await SupabaseEventRepository.fetchUpcomingEvents();
+export const fetchEventsAsync = createAsyncThunk(
+  'fetchEventsAsync',
+  async ({ user, fetchMode }: FetchEventsType) => {
+    const response = await SupabaseEventRepository.fetchEvents(fetchMode);
     return (response.data ?? []).map((x: FullEvent) => ({
       ...x,
       userAttendance: x.attendance.find((y) => y.user.userId === user.userId)?.state ?? 'Unanswered',
@@ -185,15 +178,6 @@ export const fetchUpcomingEventsAsync = createAsyncThunk(
     }));
   }
 );
-
-export const fetchPastEventsAsync = createAsyncThunk('fetchPastEventsAsync', async ({ user }: FetchEventsType) => {
-  const response = await SupabaseEventRepository.fetchPastEvents();
-  return (response.data ?? []).map((x: FullEvent) => ({
-    ...x,
-    userAttendance: x.attendance.find((y) => y.user.userId === user.userId)?.state ?? 'Unanswered',
-    attendanceUpdating: false,
-  }));
-});
 
 export type ClientEventId = { eventId: string };
 
@@ -220,6 +204,6 @@ export const fetchRecurringEventsAsync = createAsyncThunk('fetchRecurringEvents'
   return response.data;
 });
 
-export const { selectEvent, editEvent, onEventErrorRead, onEventDelete, onEventUpdate } = eventsSlice.actions;
+export const { selectEvent, editEvent, onEventErrorRead, onEventDelete, onEventUpdate, updateFetchMode } = eventsSlice.actions;
 
 export default eventsSlice.reducer;

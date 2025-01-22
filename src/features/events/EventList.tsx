@@ -1,47 +1,46 @@
+import { Check, EventRepeat, FilterAlt } from '@mui/icons-material';
 import AddIcon from '@mui/icons-material/Add';
 import { Chip, Fab, List, ListSubheader } from '@mui/material';
+import Grid from '@mui/material/Grid2';
+import { Box } from '@mui/system';
+import { t } from 'i18next';
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useClient } from 'react-supabase';
-import { useAppDispatch } from '../../redux/store';
-import { EventItem } from './components/EventItem';
+import { PullToRefresh } from 'src/components/pull-to-refresh/PullToRefresh';
+import { SwipeableDialog } from 'src/components/SwipeableDialog';
+import { updateAttendanceAsync } from 'src/features/events/slices/eventAttendanceSlice';
 import {
   editEvent,
-  fetchPastEventsAsync,
+  fetchEventsAsync,
   fetchSingleEventAsync,
-  fetchUpcomingEventsAsync,
   onEventDelete,
   onEventErrorRead,
   onEventUpdate,
   SliceEvent,
+  updateFetchMode
 } from 'src/features/events/slices/eventsSlice';
-import { updateAttendanceAsync } from 'src/features/events/slices/eventAttendanceSlice';
-import { can } from '../../utils/PermissionService';
-import { TablesInsert, TablesUpdate } from '../../types/supabase-generated.types';
-import { t } from 'i18next';
-import { AlertMessage, AlertSnackbar } from '../../components/AlertSnackbar';
-import { Check, EventRepeat, FilterAlt } from '@mui/icons-material';
-import Grid from '@mui/material/Grid2';
-import Layout from '../../components/Layout';
-import { Box } from '@mui/system';
-import { LoadingEventItem } from './components/LoadingEventItem';
-import { SwipeableDialog } from 'src/components/SwipeableDialog';
 import { UserWithRolesAndPermissions } from 'src/types/supabaseTypes';
+import { AlertMessage, AlertSnackbar } from '../../components/AlertSnackbar';
+import Layout from '../../components/Layout';
+import { useAppDispatch } from '../../redux/store';
+import { TablesInsert, TablesUpdate } from '../../types/supabase-generated.types';
+import { can } from '../../utils/PermissionService';
+import { EventItem } from './components/EventItem';
+import { LoadingEventItem } from './components/LoadingEventItem';
 
 export type EventScreenProps = {
   events: SliceEvent[];
   loading: boolean;
   error: AlertMessage | null;
   user: UserWithRolesAndPermissions;
+  fetchMode: 'upcoming' | 'past';
 };
 
-const EventScreen = ({ events, loading, error, user }: EventScreenProps) => {
+const EventScreen = ({ events, loading, error, user, fetchMode }: EventScreenProps) => {
   const client = useClient();
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
-  const [fetchEventMode, setFetchEventMode] = useState<'upcoming' | 'past'>(
-    (localStorage.getItem('fetchMode') as 'upcoming' | 'past') ?? 'upcoming'
-  );
   const [filterDialogOpen, setFilterDialogOpen] = useState(false);
   const [selectedGroups, setSelectedGroups] = useState<string[]>(
     (localStorage.getItem('selectedGroups')?.split(';') as string[]) ?? user.groups.map((x) => x.id)
@@ -82,13 +81,12 @@ const EventScreen = ({ events, loading, error, user }: EventScreenProps) => {
   }, [client, dispatch, user]);
 
   useEffect(() => {
-    if (fetchEventMode === 'upcoming') dispatch(fetchUpcomingEventsAsync({ user }));
-    else dispatch(fetchPastEventsAsync({ user }));
-  }, [dispatch, user, fetchEventMode]);
+    dispatch(fetchEventsAsync({ user, fetchMode }))
+  }, [dispatch, user, fetchMode]);
 
   const switchEventFetching = (mode: 'upcoming' | 'past') => {
     localStorage.setItem('fetchMode', mode);
-    setFetchEventMode(mode);
+    dispatch(updateFetchMode(mode))
   };
 
   const updateAttendance = async (eventId: string, state: EventAttendance, oldState: EventAttendance) => {
@@ -97,79 +95,82 @@ const EventScreen = ({ events, loading, error, user }: EventScreenProps) => {
 
   return (
     <Layout>
-      <List
-        sx={(theme) => ({
-          [theme.breakpoints.down('xl')]: { pb: 12 },
-          [theme.breakpoints.up('xl')]: { pb: 0 },
-        })}
-      >
-        <Box
+      <PullToRefresh onRefresh={() => dispatch(fetchEventsAsync({ user, fetchMode }))}>
+        <List
+          sx={(theme) => ({
+            overscrollBehavior: "none",
+            [theme.breakpoints.down('xl')]: { pb: 12 },
+            [theme.breakpoints.up('xl')]: { pb: 0 },
+          })}
         >
-          {loading
-            ? Array.from({ length: 10 }, (v, k) => k + 1).map((x) => <LoadingEventItem key={x} />)
-            : events
-              .filter((x) => selectedGroups.includes(x.group))
-              .map((event) => (
-                <EventItem
-                  key={event.id}
-                  event={event}
-                  t={t}
-                  attendanceUpdating={event.attendanceUpdating}
-                  attendEvent={() => updateAttendance(event.id, 'Attending', event.userAttendance)}
-                  declineEvent={() => updateAttendance(event.id, 'Declined', event.userAttendance)}
-                  onClick={() => {
-                    navigate('/training/event/' + event.id);
-                  }}
-                />
-              ))}
-        </Box>
-        {can('select', 'event') && (
-          <Fab
-            key="filter"
-            sx={{
-              position: 'fixed',
-              right: '16px',
-              bottom: 'max(16px, env(safe-area-inset-bottom))',
-            }}
-            color={'secondary'}
-            onClick={() => setFilterDialogOpen(true)}
+          <Box
           >
-            {<FilterAlt sx={{ color: 'white' }} />}
-          </Fab>
-        )}
-        {can('insert', 'event') && (
-          <Fab
-            key="insertEvent"
-            sx={{
-              position: 'fixed',
-              right: '88px',
-              bottom: 'max(16px, env(safe-area-inset-bottom))',
-            }}
-            color={'secondary'}
-            onClick={() => {
-              dispatch(editEvent(null));
-              navigate('/training/createOrUpdate/InsertEvent');
-            }}
-          >
-            {<AddIcon sx={{ color: 'white' }} />}
-          </Fab>
-        )}
-        {can('update', 'event') && (
-          <Fab
-            key="updateEvent"
-            sx={{
-              position: 'fixed',
-              right: '160px',
-              bottom: 'max(16px, env(safe-area-inset-bottom))',
-            }}
-            color={'secondary'}
-            onClick={() => navigate('/training/recurringEvents')}
-          >
-            {<EventRepeat sx={{ color: 'white' }} />}
-          </Fab>
-        )}
-        <AlertSnackbar alertInfo={error} close={() => dispatch(onEventErrorRead(null))} />
-      </List>
+            {loading
+              ? Array.from({ length: 10 }, (v, k) => k + 1).map((x) => <LoadingEventItem key={x} />)
+              : events
+                .filter((x) => selectedGroups.includes(x.group))
+                .map((event) => (
+                  <EventItem
+                    key={event.id}
+                    event={event}
+                    t={t}
+                    attendanceUpdating={event.attendanceUpdating}
+                    attendEvent={() => updateAttendance(event.id, 'Attending', event.userAttendance)}
+                    declineEvent={() => updateAttendance(event.id, 'Declined', event.userAttendance)}
+                    onClick={() => {
+                      navigate('/training/event/' + event.id);
+                    }}
+                  />
+                ))}
+          </Box>
+          {can('select', 'event') && (
+            <Fab
+              key="filter"
+              sx={{
+                position: 'fixed',
+                right: '16px',
+                bottom: 'max(16px, env(safe-area-inset-bottom))',
+              }}
+              color={'secondary'}
+              onClick={() => setFilterDialogOpen(true)}
+            >
+              {<FilterAlt sx={{ color: 'white' }} />}
+            </Fab>
+          )}
+          {can('insert', 'event') && (
+            <Fab
+              key="insertEvent"
+              sx={{
+                position: 'fixed',
+                right: '88px',
+                bottom: 'max(16px, env(safe-area-inset-bottom))',
+              }}
+              color={'secondary'}
+              onClick={() => {
+                dispatch(editEvent(null));
+                navigate('/training/createOrUpdate/InsertEvent');
+              }}
+            >
+              {<AddIcon sx={{ color: 'white' }} />}
+            </Fab>
+          )}
+          {can('update', 'event') && (
+            <Fab
+              key="updateEvent"
+              sx={{
+                position: 'fixed',
+                right: '160px',
+                bottom: 'max(16px, env(safe-area-inset-bottom))',
+              }}
+              color={'secondary'}
+              onClick={() => navigate('/training/recurringEvents')}
+            >
+              {<EventRepeat sx={{ color: 'white' }} />}
+            </Fab>
+          )}
+          <AlertSnackbar alertInfo={error} close={() => dispatch(onEventErrorRead(null))} />
+        </List>
+      </PullToRefresh>
       <SwipeableDialog
         open={filterDialogOpen}
         onClose={() => setFilterDialogOpen(false)}
@@ -196,17 +197,17 @@ const EventScreen = ({ events, loading, error, user }: EventScreenProps) => {
             <Grid container spacing={2}>
               <Grid>
                 <Chip
-                  variant={fetchEventMode === 'upcoming' ? 'filled' : 'outlined'}
+                  variant={fetchMode === 'upcoming' ? 'filled' : 'outlined'}
                   label={t('events.upcoming')}
-                  color={fetchEventMode === 'upcoming' ? 'primary' : 'default'}
+                  color={fetchMode === 'upcoming' ? 'primary' : 'default'}
                   onClick={() => switchEventFetching('upcoming')}
                 />
               </Grid>
               <Grid>
                 <Chip
-                  variant={fetchEventMode === 'past' ? 'filled' : 'outlined'}
+                  variant={fetchMode === 'past' ? 'filled' : 'outlined'}
                   label={t('events.past')}
-                  color={fetchEventMode === 'past' ? 'primary' : 'default'}
+                  color={fetchMode === 'past' ? 'primary' : 'default'}
                   onClick={() => switchEventFetching('past')}
                 />
               </Grid>
