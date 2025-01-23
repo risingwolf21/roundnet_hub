@@ -23,6 +23,8 @@
   "i18n-ally.theme.annotationMissingBorder": "#d37070",
   "i18n-ally.keystyle": "nested",
   "typescript.tsdk": "node_modules\\typescript\\lib",
+  //"deno.enable": true,
+  // "deno.unstable": true,
 
   "files.eol": "\n",
   "editor.tabSize": 2,
@@ -51,7 +53,4 @@
     "editor.formatOnSave": false
   },
   "prettier-eslint.eslintIntegration": true
-
-  //"deno.enable": true,
-  // "deno.unstable": true,
 }
