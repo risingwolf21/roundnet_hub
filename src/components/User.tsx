@@ -54,6 +54,7 @@ import { supabase } from './services/supabase/supabaseClient';
 
 type UserScreenProps = {
   user: UserWithRolesAndPermissions;
+  deviceId: string;
   groups: Group[];
   client: SupabaseClient<Database>;
   dispatch: AppDispatch;
@@ -61,7 +62,7 @@ type UserScreenProps = {
 };
 
 export const UserScreenProvider = () => {
-  const { user, signOut } = useAuth();
+  const { user, signOut, deviceId } = useAuth();
   const client = useClient();
   const dispatch = useAppDispatch();
   const [groups, setGroups] = useState<Group[]>([]);
@@ -72,7 +73,7 @@ export const UserScreenProvider = () => {
     });
   }, [user]);
 
-  return <UserScreen user={user} client={client} dispatch={dispatch} groups={groups} handleSignOut={signOut} />;
+  return <UserScreen user={user} deviceId={deviceId} client={client} dispatch={dispatch} groups={groups} handleSignOut={signOut} />;
 };
 
 const NotificationSwitch = ({
@@ -123,7 +124,7 @@ const NotificationSwitch = ({
   );
 };
 
-const UserScreen = ({ user, client, dispatch, groups, handleSignOut }: UserScreenProps) => {
+const UserScreen = ({ user, client, dispatch, groups, deviceId }: UserScreenProps) => {
   const navigate = useNavigate();
   const [selectedImage, setSelectedImage] = useState<string | ArrayBuffer | null>(null);
   const [croppedImage, setCroppedImage] = useState<string | null>(null);
@@ -439,7 +440,7 @@ const UserScreen = ({ user, client, dispatch, groups, handleSignOut }: UserScree
               sx={{ p: 0 }}
               onClick={() => {
                 messaging.then((result) => {
-                  if (result) requestNotificationPermission(user, result).then();
+                  if (result) requestNotificationPermission(user, deviceId, result).then();
                   else
                     setErrorSnackbar({
                       open: true,
