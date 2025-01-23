@@ -29,5 +29,15 @@ services:
     ports:
       - 3000/tcp
 
+  supabase-db:
+    image: supabase/postgres:latest
+    container_name: supabase-db
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_PASSWORD: yourpassword
+      POSTGRES_USER: postgres
+      POSTGRES_DB: postgres
+
 volumes:
   node_modules:

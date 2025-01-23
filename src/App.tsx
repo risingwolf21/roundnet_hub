@@ -1,3 +1,4 @@
+import { CssBaseline } from '@mui/material';
 import * as Sentry from '@sentry/react';
 import * as React from 'react';
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
@@ -12,15 +13,13 @@ import UpdateAvailable from './components/UpdateAvailable';
 import { UserScreenProvider } from './components/User';
 import BrowseAdmin from './features/admin/BrowseAdmin';
 import { PermissionList } from './features/admin/PermissionList';
+import { SentryIssueList } from './features/admin/SentryIssues';
 import { AuthGate } from './features/auth/AuthGate';
 import { RecurringEventsProvider } from './features/events/RecurringEvents';
-import NotificationsScreenProvider from './features/notifications/NotificationsScreen';
-import { useServiceWorker } from './hooks/useServiceWorker';
-import { CssBaseline } from '@mui/material';
-import { SentryRepository } from './repository/SentryRepository';
-import { SentryIssueList } from './features/admin/SentryIssues';
 import { GameList } from './features/games/GameList';
 import { ReportScore } from './features/games/ReportScore';
+import NotificationsScreenProvider from './features/notifications/NotificationsScreen';
+import { useServiceWorker } from './hooks/useServiceWorker';
 
 const FeatureNotAvailable = React.lazy(() => import('./components/FeatureNotAvailable'));
 const HistoryScreenProvider = React.lazy(() => import('./features/drinks/HistoryScreenProvider'));
@@ -64,7 +63,6 @@ const App = () => {
           <InitialFetch>
             <React.Suspense fallback={<LoadingScreen />}>
               <Routes>
-                <Route index path="/" element={<Navigate replace to={`/training/list`} />} />
 
                 <Route path="/not-verified" element={<NotVerifiedScreen />} />
 

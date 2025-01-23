@@ -70,11 +70,9 @@ const EditUserDialog = ({ user, open, handleClose, onUserEditFinished, deleteUse
   const [drinksForUser, setDrinksForUser] = useState<OpenDrinksForUser[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
 
-
-
   useEffect(() => {
     setUserRoles([]);
-    setUserInfo({ openAmount: 0});
+    setUserInfo({ openAmount: 0 });
     setDrinksForUser([]);
     const loadUserData = async (user: UserWithGroups) => {
       setLoading(true);
@@ -85,13 +83,12 @@ const EditUserDialog = ({ user, open, handleClose, onUserEditFinished, deleteUse
       });
       setDrinksForUser(result.data ?? []);
       const roles = await AdminPermissionsRepository.fetchRolesForUser(user.userId);
-      setUserRoles(roles)
-    }
+      setUserRoles(roles);
+    };
 
     loadUserData(user)
-      .catch(error => captureException(error))
-      .finally(() => setLoading(false))
-
+      .catch((error) => captureException(error))
+      .finally(() => setLoading(false));
   }, [user]);
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
@@ -110,7 +107,7 @@ const EditUserDialog = ({ user, open, handleClose, onUserEditFinished, deleteUse
   return (
     <Dialog fullScreen open={open} onClose={handleClose} TransitionComponent={SlideUpTransition}>
       <Box component="form" onSubmit={handleSubmit} noValidate>
-        <AppBar position='fixed' sx={{ pt: 'env(safe-area-inset-top)' }}>
+        <AppBar position="fixed" sx={{ pt: 'env(safe-area-inset-top)' }}>
           <Toolbar>
             <IconButton edge="start" color="inherit" onClick={handleClose} aria-label="close">
               <Close />
@@ -124,7 +121,8 @@ const EditUserDialog = ({ user, open, handleClose, onUserEditFinished, deleteUse
           </Toolbar>
         </AppBar>
         <Box>
-          <List>
+          <Toolbar />
+          <List sx={{ pb: 10 }}>
             <ListItem key={'displayName'} sx={{ pt: 0, pb: 0 }}>
               <ListItemAvatar>
                 <Avatar>
@@ -224,7 +222,7 @@ const EditUserDialog = ({ user, open, handleClose, onUserEditFinished, deleteUse
             </ListItem>
             <ListItem
               key={'role'}
-              onClick={() => { }}
+              onClick={() => {}}
               secondaryAction={
                 <IconButton
                   disabled={loading}
@@ -280,7 +278,7 @@ const EditUserDialog = ({ user, open, handleClose, onUserEditFinished, deleteUse
             </List>
             <Divider />
             <Divider />
-            <List subheader={<ListSubheader>Offene Getränke</ListSubheader>}>
+            <List subheader={<ListSubheader sx={{ zIndex: 5 }}>Offene Getränke</ListSubheader>}>
               {drinksForUser &&
                 drinksForUser.map((x: OpenDrinksForUser) => (
                   <ListItem
@@ -299,7 +297,7 @@ const EditUserDialog = ({ user, open, handleClose, onUserEditFinished, deleteUse
                 ))}
             </List>
           </List>
-          <Box sx={{ position: 'fixed', bottom: 0, left: 0, right: 0, pl: 2, pr: 2, pb: 2 }}>
+          <Box sx={{ position: 'fixed', bottom: 0, left: 0, right: 0, pl: 2, pr: 2, pb: 2, zIndex: 6 }}>
             <Button
               onClick={() => setDeleteUserOpen(true)}
               fullWidth
