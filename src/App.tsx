@@ -21,6 +21,7 @@ import { SentryRepository } from './repository/SentryRepository';
 import { SentryIssueList } from './features/admin/SentryIssues';
 import { GameList } from './features/games/GameList';
 import { ReportScore } from './features/games/ReportScore';
+import { HomePage } from './features/homepage/HomePage';
 
 const FeatureNotAvailable = React.lazy(() => import('./components/FeatureNotAvailable'));
 const HistoryScreenProvider = React.lazy(() => import('./features/drinks/HistoryScreenProvider'));
@@ -64,7 +65,7 @@ const App = () => {
           <InitialFetch>
             <React.Suspense fallback={<LoadingScreen />}>
               <Routes>
-                <Route index path="/" element={<Navigate replace to={`/training/list`} />} />
+                <Route index path="/" element={<HomePage />} />
 
                 <Route path="/not-verified" element={<NotVerifiedScreen />} />
 
