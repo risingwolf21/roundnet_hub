@@ -1,12 +1,13 @@
 import { useEffect, useMemo } from 'react';
-import * as serviceWorker from '../serviceWorkerRegistration';
+import { useSelector } from 'react-redux';
 import { onServiceWorkerInitialized, onUpdateServiceWorker } from 'src/redux/applicationSlice';
 import { RootState, useAppDispatch } from 'src/redux/store';
-import { useSelector } from 'react-redux';
+import * as serviceWorker from '../serviceWorkerRegistration';
 
 export type ServiceWorkerConfig = {
   onUpdate: (registration: ServiceWorkerRegistration) => void;
   onSuccess: (registration: ServiceWorkerRegistration) => void;
+  onNotificationRecieved: (registration: ServiceWorkerRegistration) => void;
 };
 
 export const useServiceWorker = () => {
@@ -17,6 +18,8 @@ export const useServiceWorker = () => {
     serviceWorker.register({
       onUpdate: (registration: ServiceWorkerRegistration) => dispatch(onUpdateServiceWorker(registration)),
       onSuccess: () => dispatch(onServiceWorkerInitialized()),
+      onNotificationRecieved: () => {
+      }
     });
   }, [dispatch]);
 

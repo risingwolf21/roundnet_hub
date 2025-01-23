@@ -75,6 +75,12 @@ function registerValidSW(swUrl: string, config: ServiceWorkerConfig) {
         registration.update();
       }, 1000 * 30);
 
+      registration.addEventListener("NOTIFICATION_RECIEVED", () => {
+        if (config && config.onNotificationRecieved) {
+          config.onNotificationRecieved(registration);
+        }
+      });
+
       registration.onupdatefound = () => {
         const installingWorker = registration.installing;
         if (installingWorker == null) {

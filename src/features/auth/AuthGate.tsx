@@ -17,6 +17,7 @@ import { SupabaseUserRepository } from '../../repository/UserRepository';
 import { UserWithRolesAndPermissions } from '../../types/supabaseTypes';
 import { ability, defineRulesFor } from '../../utils/PermissionService';
 import { AuthContext } from './AuthContext';
+import useDeviceId from 'src/hooks/useDeviceId';
 
 type Props = {
   children: React.ReactNode;
@@ -28,6 +29,8 @@ export const AuthGate = ({ children }: Props) => {
 
   const navigate = useNavigate();
   const location = useLocation();
+
+  const deviceId = useDeviceId();
 
   const currentUser = useSelector((state: RootState) => state.application.user);
   const [loading, setLoading] = useState(false);
@@ -176,7 +179,7 @@ export const AuthGate = ({ children }: Props) => {
     <>
       {session ? (
         currentUser && currentUser.verified ? (
-          <AuthContext.Provider value={{ user: currentUser, signOut: signOut }}>{children}</AuthContext.Provider>
+          <AuthContext.Provider value={{ user: currentUser, signOut: signOut, deviceId }}>{children}</AuthContext.Provider>
         ) : (
           <NotVerifiedScreen />
         )

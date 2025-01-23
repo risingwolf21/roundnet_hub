@@ -3,6 +3,7 @@ import { UserWithRolesAndPermissions } from '../../types/supabaseTypes';
 
 export const AuthContext = createContext<{
   user: UserWithRolesAndPermissions;
+  deviceId: string;
   signOut: () => void;
 }>(null!);
 

@@ -29,7 +29,7 @@ export const SlideUpTransition = forwardRef(function Transition(props: SlideProp
   );
 });
 
-export const formatDateToDatabase = (date: Date) => {
+export const formatDateToDatabase = (date: string | number | Date) => {
   return format(date, "yyyy-MM-dd'T'HH:mm:ss.SSSXXX");
 };
 
@@ -42,9 +42,9 @@ export const dayjsFromDb = (date: string | null) => {
   return dayjs(formatDateFromDatabase(date));
 };
 
-export class RegistrationError extends Error {}
+export class RegistrationError extends Error { }
 
-export class MultiplePaymentsError extends Error {}
+export class MultiplePaymentsError extends Error { }
 
 export class FetchingError extends Error {
   private screen: string;

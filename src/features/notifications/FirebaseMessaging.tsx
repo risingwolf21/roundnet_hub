@@ -5,8 +5,8 @@ import 'react-toastify/dist/ReactToastify.css';
 import { useAuth } from '../auth/AuthContext';
 
 export const FirebaseMessaging = () => {
-  const { user } = useAuth();
-  useFirebase(user);
+  const { user, deviceId } = useAuth();
+  useFirebase(user, deviceId);
 
   return (
     <ToastContainer

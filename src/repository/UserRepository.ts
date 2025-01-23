@@ -1,4 +1,5 @@
 import { PostgrestError, PostgrestSingleResponse } from '@supabase/supabase-js';
+import { formatDateToDatabase } from 'src/utils';
 import { Notification } from 'types/supabase';
 import { supabase } from '../components/services/supabase/supabaseClient';
 
@@ -70,8 +71,11 @@ export const SupabaseUserRepository = {
       .single();
   },
 
-  async updateFCMToken(fcmToken: string, user: User): Promise<PostgrestSingleResponse<any>> {
-    return supabase.from('user').update({ fcm_token: fcmToken }).eq('userId', user.userId);
+  async updateFCMToken(fcmToken: string, deviceId: string, user: User): Promise<PostgrestSingleResponse<any>> {
+    return supabase
+      .from('notification_token')
+      .update({ fcm_token: fcmToken, device_id: deviceId, last_used: formatDateToDatabase(Date.now()) })
+      .eq('userId', user.userId);
   },
 
   async loadNotifications(user: User): Promise<PostgrestSingleResponse<Notification[]>> {

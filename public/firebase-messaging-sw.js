@@ -22,7 +22,7 @@ if (firebase.messaging.isSupported()) {
 
     messaging.onBackgroundMessage((payload) => {
         const notificationTitle = payload.data.title;
-
+        self.dispatchEvent("NOTIFICATION_RECIEVED");
         self.registration.showNotification(notificationTitle, {
             body: payload.data.body,
             icon: self.location.origin + "/android-chrome-192x192.png",

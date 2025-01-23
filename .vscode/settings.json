@@ -14,7 +14,9 @@
   },
   "emmet.showExpandedAbbreviation": "never",
   "deno.path": "C:\\Users\\Karl\\AppData\\Local\\Microsoft\\WinGet\\Packages\\DenoLand.Deno_Microsoft.Winget.Source_8wekyb3d8bbwe\\deno.exe",
-  "i18n-ally.localesPaths": ["src/translation/locales"],
+  "i18n-ally.localesPaths": [
+    "src/translation/locales"
+  ],
   "i18n-ally.pathMatcher": "translation.{locale}.json",
   "i18n-ally.displayLanguage": "de",
   "i18n-ally.theme.annotation": "rgba(153, 153, 153, .8)",
@@ -25,7 +27,6 @@
   "typescript.tsdk": "node_modules\\typescript\\lib",
   //"deno.enable": true,
   // "deno.unstable": true,
-
   "files.eol": "\n",
   "editor.tabSize": 2,
   "remote.extensionKind": {
@@ -34,22 +35,27 @@
   "editor.codeActionsOnSave": {
     "source.fixAll.eslint": "always"
   },
-  "eslint.validate": ["javascript", "javascriptreact", "typescript", "typescriptreact"],
+  "eslint.validate": [
+    "javascript",
+    "javascriptreact",
+    "typescript",
+    "typescriptreact"
+  ],
   "editor.formatOnSave": true,
   "[javascript]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode",
     "editor.formatOnSave": false
   },
   "[javascriptreact]": {
-    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.defaultFormatter": "vscode.typescript-language-features",
     "editor.formatOnSave": false
   },
   "[typescript]": {
-    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.defaultFormatter": "vscode.typescript-language-features",
     "editor.formatOnSave": false
   },
   "[typescriptreact]": {
-    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.defaultFormatter": "vscode.typescript-language-features",
     "editor.formatOnSave": false
   },
   "prettier-eslint.eslintIntegration": true

@@ -6,16 +6,16 @@ import { captureException } from '@sentry/react';
 import { toast } from 'react-toastify';
 import { Notification as NotificationComponent } from '../features/notifications/Notification';
 
-export async function requestNotificationPermission(user: User, messaging: Messaging) {
+export async function requestNotificationPermission(user: User, deviceId: string, messaging: Messaging) {
   //requesting permission using Notification API
   const permission = await Notification.requestPermission();
-  
+
   if (permission === 'granted') {
     getToken(messaging, {
       vapidKey: process.env.REACT_APP_FIREBASE_VAPID_KEY,
     })
       .then((token) => {
-        SupabaseUserRepository.updateFCMToken(token, user).then((result) => {
+        SupabaseUserRepository.updateFCMToken(token, deviceId, user).then((result) => {
           if (result.error) {
             captureException(result.error, (scope) => {
               scope.setExtra('displayName', user.displayName);
@@ -43,7 +43,7 @@ export async function requestNotificationPermission(user: User, messaging: Messa
 const isNotificationSupported = () =>
   'Notification' in window && 'serviceWorker' in navigator && 'PushManager' in window;
 
-export function useFirebase(user: User) {
+export function useFirebase(user: User, deviceId: string) {
   useEffect(() => {
     messaging.then((messagingResolver) => {
       if (messagingResolver) {
@@ -61,7 +61,7 @@ export function useFirebase(user: User) {
             }
           );
         });
-        if (isNotificationSupported()) requestNotificationPermission(user, messagingResolver);
+        if (isNotificationSupported()) requestNotificationPermission(user, deviceId, messagingResolver);
       }
     });
   }, [user]);

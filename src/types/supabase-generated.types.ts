@@ -48,23 +48,26 @@ export type Database = {
       players: {
         Row: {
           created_at: string
-          index: number
+          ka_index: number
           player: string
           rg_id: string | null
+          rg_index: number
           rg_link: string | null
         }
         Insert: {
           created_at?: string
-          index?: number
+          ka_index?: number
           player?: string
           rg_id?: string | null
+          rg_index?: number
           rg_link?: string | null
         }
         Update: {
           created_at?: string
-          index?: number
+          ka_index?: number
           player?: string
           rg_id?: string | null
+          rg_index?: number
           rg_link?: string | null
         }
         Relationships: []
@@ -116,6 +119,7 @@ export type Database = {
           created_at: string
           id: string
           name: string
+          normalized_players: string
           player_1: string
           player_2: string
         }
@@ -123,6 +127,7 @@ export type Database = {
           created_at?: string
           id?: string
           name: string
+          normalized_players: string
           player_1: string
           player_2: string
         }
@@ -130,6 +135,7 @@ export type Database = {
           created_at?: string
           id?: string
           name?: string
+          normalized_players?: string
           player_1?: string
           player_2?: string
         }
@@ -207,6 +213,10 @@ export type Database = {
           team_b: string
           match_sets: Json
         }
+        Returns: undefined
+      }
+      fetch_all_player_infos_from_pz: {
+        Args: Record<PropertyKey, never>
         Returns: undefined
       }
     }
@@ -781,6 +791,13 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: "item_history_currentUser_fkey"
+            columns: ["currentUser"]
+            isOneToOne: false
+            referencedRelation: "user"
+            referencedColumns: ["userId"]
+          },
+          {
             foreignKeyName: "item_history_key_fkey"
             columns: ["key"]
             isOneToOne: false
@@ -788,14 +805,7 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "key_history_currentuser_fkey"
-            columns: ["currentUser"]
-            isOneToOne: false
-            referencedRelation: "user"
-            referencedColumns: ["userId"]
-          },
-          {
-            foreignKeyName: "key_history_pastuser_fkey"
+            foreignKeyName: "item_history_pastUser_fkey"
             columns: ["pastUser"]
             isOneToOne: false
             referencedRelation: "user"
@@ -835,6 +845,35 @@ export type Database = {
           {
             foreignKeyName: "keys_user_fkey"
             columns: ["current_holder"]
+            isOneToOne: false
+            referencedRelation: "user"
+            referencedColumns: ["userId"]
+          },
+        ]
+      }
+      notification_token: {
+        Row: {
+          device_id: string
+          fcm_token: string
+          last_used: string
+          user: string
+        }
+        Insert: {
+          device_id: string
+          fcm_token: string
+          last_used?: string
+          user?: string
+        }
+        Update: {
+          device_id?: string
+          fcm_token?: string
+          last_used?: string
+          user?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notification_token_user_fkey"
+            columns: ["user"]
             isOneToOne: false
             referencedRelation: "user"
             referencedColumns: ["userId"]
@@ -908,7 +947,7 @@ export type Database = {
       user: {
         Row: {
           avatarUrl: string | null
-          created_at: string | null
+          created_at: string
           disabled: boolean
           displayName: string
           email: string
@@ -923,7 +962,7 @@ export type Database = {
         }
         Insert: {
           avatarUrl?: string | null
-          created_at?: string | null
+          created_at?: string
           disabled?: boolean
           displayName?: string
           email?: string
@@ -938,7 +977,7 @@ export type Database = {
         }
         Update: {
           avatarUrl?: string | null
-          created_at?: string | null
+          created_at?: string
           disabled?: boolean
           displayName?: string
           email?: string
