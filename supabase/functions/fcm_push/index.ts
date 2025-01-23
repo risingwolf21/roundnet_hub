@@ -13,8 +13,9 @@ interface Notification {
 interface WebhookPayload {
   type: 'INSERT';
   table: string;
+  schema: string;
   record: Notification;
-  schema: 'public';
+  old_record: null;
 }
 
 class NotificationTokenError extends Error {
@@ -36,6 +37,7 @@ Sentry.init({
 });
 
 Deno.serve(async (req: Request) => {
+  console.log('Got request to send notification', req);
   try {
     const getAccessToken = ({
       clientEmail,
@@ -84,11 +86,12 @@ Deno.serve(async (req: Request) => {
     });
 
     if (!fcmToken || !accessToken) {
+      console.log('FCM Token or accessToken was null', fcmToken, accessToken);
       Sentry.captureException(new NotificationTokenError('FCM Token or AccessToken was null'), (scope: any) => {
         scope.clear();
         scope.setExtra('accessToken', accessToken);
-        scope.setExtra('fcmToken', JSON.stringify(fcmToken)); 
-        scope.setExtra('name', data.name); 
+        scope.setExtra('fcmToken', JSON.stringify(fcmToken));
+        scope.setExtra('name', data.name);
         scope.setExtra('payload', JSON.stringify(payload));
         return scope;
       });
@@ -118,6 +121,7 @@ Deno.serve(async (req: Request) => {
       Sentry.captureException(Error(JSON.stringify({ resData })));
       throw resData;
     }
+    console.log('Successfully sent notification.', payload);
 
     Sentry.captureMessage('Notification successful', {
       level: 'info',
