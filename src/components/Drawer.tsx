@@ -14,6 +14,7 @@ import {
   Scoreboard,
   SportsHandball,
   StorageOutlined,
+  Update,
 } from '@mui/icons-material';
 import {
   alpha,
@@ -510,6 +511,17 @@ const DrawerContent = ({
           </ListSubheader>
         }
       >
+        <DrawerItem key="update app" selected={false} onClick={() => window.location.reload()}>
+          <ListItemAvatar>
+            <ListItemIcon>
+              <Update />
+            </ListItemIcon>
+          </ListItemAvatar>
+          <ListItemText
+            primaryTypographyProps={{ fontWeight: 'bold', fontSize: '0.9rem' }}
+            primary={'App aktualisieren'}
+          />
+        </DrawerItem>
         <DrawerItem key="app version" selected={false}>
           <ListItemAvatar>
             <ListItemIcon>

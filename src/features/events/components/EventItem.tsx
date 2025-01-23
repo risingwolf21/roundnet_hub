@@ -42,12 +42,6 @@ export const EventItem = ({ event, onClick, attendEvent, declineEvent, attendanc
         p: 1,
         paddingLeft: "env(safe-area-inset-left)",
         cursor: 'pointer',
-        '&:hover': {
-          backgroundColor: alpha('#808080', 0.2),
-        },
-        '&:active': {
-          backgroundColor: "unset"
-        }
       }}
       secondaryAction={
         attendanceUpdating ? (
