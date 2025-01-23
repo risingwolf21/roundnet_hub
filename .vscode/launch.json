@@ -10,5 +10,11 @@
             "request": "launch",
             "type": "node-terminal"
         },
+        {
+            "command": "yarn start",
+            "name": "Run yarn start",
+            "request": "launch",
+            "type": "node-terminal"
+        },
     ]
 }

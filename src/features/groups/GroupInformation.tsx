@@ -18,7 +18,7 @@ import Layout from '../../components/Layout';
 const GroupInformationProvider = () => {
   const { id } = useParams();
   const dispatch = useAppDispatch();
-  const group = useSelector((state: RootState) => groupsSelector.selectById(state, toInteger(id)));
+  const group = useSelector((state: RootState) => groupsSelector.selectById(state, id ?? ''));
 
   const { users, loading } = useSelector((state: RootState) => state.adminUsers);
 
@@ -29,7 +29,7 @@ const GroupInformationProvider = () => {
   if (!group)
     return (
       <AlertSnackbar
-        close={() => { }}
+        close={() => {}}
         alertInfo={{ message: 'Fatal error occured. Repository or selected group was null!', severity: 'error' }}
       />
     );
@@ -102,7 +102,7 @@ const GroupInformation = ({ users, loading, group }: GroupInformationProps) => {
         </Typography>
         {group &&
           group.users &&
-          group.users
+          [...group.users]
             .sort((a, b) => a.displayName.localeCompare(b.displayName))
             .map((x: Tables<'user'>, index: number) => (
               <ListItem key={index} divider>
@@ -134,9 +134,7 @@ const GroupInformation = ({ users, loading, group }: GroupInformationProps) => {
         open={searchAndSelectUsersOpen}
         handleClose={() => setSearchAndSelectUsersOpen(false)}
         handleSubmit={handleUsersAdded}
-        users={users.filter(
-          (x: UserWithGroups) => !group?.users?.some((y: Tables<'user'>) => y.userId === x.userId)
-        )}
+        users={users.filter((x: UserWithGroups) => !group?.users?.some((y: Tables<'user'>) => y.userId === x.userId))}
         loading={loading}
       />
 

@@ -20,7 +20,7 @@ import { drawerWidth } from 'src/components/Drawer';
 import Layout from 'src/components/Layout';
 import { RootState, useAppDispatch } from 'src/redux/store';
 import { GamesRepository } from 'src/repository/GamesRepository';
-import { fetchMatchesAsync, fetchPlayersAsync } from './slices/gamesSlice';
+import { fetchPlayersAsync } from './slices/gamesSlice';
 
 type Props = { options: SimpleUser[]; loading: boolean; label: string; onSelect: (value: SimpleUser | null) => void };
 const SelectPlayer = ({ options, loading, label, onSelect }: Props) => {
@@ -56,7 +56,9 @@ const SelectPlayer = ({ options, loading, label, onSelect }: Props) => {
 
 export const ReportScore = () => {
   const { players, loadingPlayers } = useSelector((state: RootState) => state.games);
-  const [sets, setSets] = useState<MatchSet[]>([{ id: '', created_at: '', set_number: 1, match: '', team_a_score: 0, team_b_score: 0 }]);
+  const [sets, setSets] = useState<MatchSet[]>([
+    { id: '', created_at: '', set_number: 1, match: '', team_a_score: 0, team_b_score: 0 },
+  ]);
   const [alertInfo, setAlertInfo] = useState<AlertMessage | null>(null);
   const navigate = useNavigate();
   const dispatch = useAppDispatch();

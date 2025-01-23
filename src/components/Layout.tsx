@@ -40,7 +40,7 @@ const Layout = ({
         top: 0,
         left: 0,
         width: '100%',
-        height: 'calc(100vh + env(safe-area-inset-top))',
+        height: 'calc(100vh + env(safe-area-inset-top) + env(safe-area-inset-bottom))',
         display: 'flex',
         overflowY: 'none', // Kein Overflow außerhalb des Containers
       }}

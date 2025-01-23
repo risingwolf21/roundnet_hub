@@ -44,7 +44,7 @@ const EventScreen = ({ events, loading, error, user }: EventScreenProps) => {
   );
   const [filterDialogOpen, setFilterDialogOpen] = useState(false);
   const [selectedGroups, setSelectedGroups] = useState<string[]>(
-    (localStorage.getItem('selectedGroups')?.split(';') as string[]) ?? user.groups.map((x) => x.id)
+    (localStorage.getItem('selectedGroups')?.split(';') as string[]) || user.groups.map((x) => x.id)
   );
 
   useEffect(() => {

@@ -98,9 +98,7 @@ export const AuthGate = ({ children }: Props) => {
       } finally {
         setLoading(false);
       }
-      if (event === 'SIGNED_IN') {
-        return { navigateTo: location.pathname === '/login' ? `/${HOMEPAGE}` : location.pathname };
-      } else if (event === 'PASSWORD_RECOVERY') {
+      if (event === 'PASSWORD_RECOVERY') {
         return { navigateTo: '/reset-password' };
       } else {
         return { navigateTo: location.pathname === '/login' ? `/${HOMEPAGE}` : location.pathname };
