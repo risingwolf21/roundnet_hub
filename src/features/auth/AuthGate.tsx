@@ -18,6 +18,8 @@ import { UserWithRolesAndPermissions } from '../../types/supabaseTypes';
 import { ability, defineRulesFor } from '../../utils/PermissionService';
 import { AuthContext } from './AuthContext';
 import useDeviceId from 'src/hooks/useDeviceId';
+import { analytics } from 'src/firebase/firebaseConfig';
+import { logEvent, setUserId } from 'firebase/analytics';
 
 type Props = {
   children: React.ReactNode;
@@ -82,6 +84,8 @@ export const AuthGate = ({ children }: Props) => {
         if (!user || error) {
           throw Error('Fetching user in AuthGate was not successful. \n' + JSON.stringify(error));
         }
+        setUserId(analytics, session.user.id);
+        logEvent(analytics, "login", { user, roles, permissions, groups, player_data })
         setUser({ email: session.user.email, id: session.user.id, username: user.displayName });
         ability.update(defineRulesFor(permissions, roles));
         dispatch(
@@ -137,8 +141,7 @@ export const AuthGate = ({ children }: Props) => {
   }, [client, handleAuthChange, dispatch, navigate, currentUser]);
 
   useEffect(() => {
-    if (!currentUser)
-      return;
+    if (!currentUser) return;
     let subscription = client
       .channel('public:user')
       .on(
@@ -154,7 +157,7 @@ export const AuthGate = ({ children }: Props) => {
     return () => {
       subscription.unsubscribe();
     };
-  }, [currentUser])
+  }, [currentUser, client, dispatch]);
 
   if (loading)
     return (
@@ -179,7 +182,9 @@ export const AuthGate = ({ children }: Props) => {
     <>
       {session ? (
         currentUser && currentUser.verified ? (
-          <AuthContext.Provider value={{ user: currentUser, signOut: signOut, deviceId }}>{children}</AuthContext.Provider>
+          <AuthContext.Provider value={{ user: currentUser, signOut: signOut, deviceId }}>
+            {children}
+          </AuthContext.Provider>
         ) : (
           <NotVerifiedScreen />
         )

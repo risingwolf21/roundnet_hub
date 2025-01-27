@@ -114,7 +114,6 @@ export const SupabaseClient = () => {
       .then((result) => {
         if (result.data) {
           setSelectedTableData(result.data);
-          console.log(result.data);
           setLoading(false);
         }
       });
@@ -193,7 +192,6 @@ export const SupabaseClient = () => {
         return {
           type: 'dateTime',
           valueGetter: (params) => {
-            console.log(params);
             return params ? formatDateFromDatabase(params) : null;
           },
           editable: true,

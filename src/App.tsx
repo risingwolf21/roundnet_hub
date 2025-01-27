@@ -1,3 +1,4 @@
+import { InfluxDBClient } from '@influxdata/influxdb3-client';
 import { CssBaseline } from '@mui/material';
 import * as Sentry from '@sentry/react';
 import * as React from 'react';
@@ -49,7 +50,9 @@ const App = () => {
   return (
     <Sentry.ErrorBoundary
       onError={console.error}
-      fallback={({ resetError }) => <FallbackComponent message={'Es ist ein Fehler aufgetreten'} resetError={resetError} />}
+      fallback={({ resetError }) => (
+        <FallbackComponent message={'Es ist ein Fehler aufgetreten'} resetError={resetError} />
+      )}
       showDialog
     >
       <CssBaseline />
@@ -63,7 +66,6 @@ const App = () => {
           <InitialFetch>
             <React.Suspense fallback={<LoadingScreen />}>
               <Routes>
-
                 <Route path="/not-verified" element={<NotVerifiedScreen />} />
 
                 <Route path="/feature-not-available" element={<FeatureNotAvailable />} />
