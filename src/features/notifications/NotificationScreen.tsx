@@ -11,6 +11,8 @@ import { fetchNotificationsAsync, notificationsSelector } from './slices/notific
 import { SupabaseUserRepository } from '../../repository/UserRepository';
 import Layout from '../../components/Layout';
 import { useAuth } from '../auth/AuthContext';
+import { logEvent } from 'firebase/analytics';
+import { analytics } from 'src/firebase/firebaseConfig';
 
 const NotificationScreen = () => {
   const { loading, error } = useSelector((state: RootState) => state.notifications);
@@ -21,6 +23,7 @@ const NotificationScreen = () => {
   if (!can('view', 'notifications')) return <Navigate to={`/${HOMEPAGE}`} replace={true} />;
 
   const markNotificationsAsRead = () => {
+    logEvent(analytics, "notifications_cleared", { user });
     SupabaseUserRepository.markNotificationsAsRead(user).then((result) => {
       dispatch(fetchNotificationsAsync(user));
     });

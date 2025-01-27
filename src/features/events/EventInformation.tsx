@@ -34,6 +34,8 @@ import { AlertMessage, AlertSnackbar } from '../../components/AlertSnackbar';
 import Layout from '../../components/Layout';
 import { captureException } from '@sentry/react';
 import { LoadingEventInformation } from './components/LoadingEventInformation';
+import { analytics } from 'src/firebase/firebaseConfig';
+import { logEvent } from 'firebase/analytics';
 
 const EventInformation = ({
   dispatch,
@@ -99,6 +101,7 @@ const EventInformation = ({
   };
 
   const updateAttendance = async (state: EventAttendance, oldState: EventAttendance) => {
+    logEvent(analytics, "event_attendance_update", { user, eventId: selectedEvent.id, state, oldState });
     dispatch(updateAttendanceAsync({ user, eventId: selectedEvent.id, state, oldState }));
   };
 
@@ -225,6 +228,7 @@ const EventInformation = ({
               <Box
                 component="button"
                 onClick={() => {
+                  logEvent(analytics, "event_info_map_click", { user, selectedEvent });
                   window.open(
                     'https://maps.google.com?q=' + selectedEventPlace.lat + ',' + selectedEventPlace.lon,
                     '_blank'

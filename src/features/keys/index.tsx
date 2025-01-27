@@ -14,6 +14,8 @@ import { ItemHolderItem } from './components/ItemHolderItem';
 import { KeyHandOverDialog } from './dialogs/KeyHandOverDialog';
 import { SearchUserDialog } from './dialogs/SearchUserDialog';
 import Layout from '../../components/Layout';
+import { analytics } from 'src/firebase/firebaseConfig';
+import { logEvent } from 'firebase/analytics';
 
 export const EMPTY_KEY: ItemUpdate = { name: '', color: '#000000', created_at: '', current_holder: null, type: null };
 
@@ -42,10 +44,15 @@ export const ItemHolderScreen = ({ dispatch, keyHolders, loading, user, t }: Ite
       return;
     }
     SupabaseKeysRepository.giveItemToUser(selectedKeyHolder, selectedUser).then((result) => {
-      if (result.error) setAlertInfo({ message: t('keyHandOverError', { error: result.error }), severity: 'error' });
-      setSelectedUser(null);
-      setSelectedKeyHolder(null);
-      dispatch(fetchItemsAsync());
+      if (result.error) {
+        logEvent(analytics, "item_handover_error", { user, error: result.error, selectedKeyHolder, selectedUser });
+        setAlertInfo({ message: t('keyHandOverError', { error: result.error }), severity: 'error' });
+      } else {
+        logEvent(analytics, "item_handover_success", { user, selectedKeyHolder, selectedUser });
+        setSelectedUser(null);
+        setSelectedKeyHolder(null);
+        dispatch(fetchItemsAsync());
+      }
     });
   };
 

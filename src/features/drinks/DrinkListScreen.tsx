@@ -15,6 +15,8 @@ import Layout from '../../components/Layout';
 import { fetchVouchersAsync } from './slices/drinksSlice';
 import { useAppDispatch } from '../../redux/store';
 import { LoadingDrinkItem } from './components/LoadingDrinkItem';
+import { logEvent } from 'firebase/analytics';
+import { analytics } from 'src/firebase/firebaseConfig';
 
 const SUCCESS_MESSAGE_INFO: AlertMessage = { message: 'Getränke erfolgreich gebucht!', severity: 'success' };
 
@@ -53,12 +55,14 @@ const DrinkListScreen = ({ user, drinks, drinksLoading, drinksError }: DrinkList
     setLoading(true);
     SupabaseDrinkRepository.insertHistoryItems(Object.values(addedDrinks))
       .then(() => {
+        logEvent(analytics, "drink_history_success", { addedDrinks, user });
         setLoading(false);
         setAddedDrinks([]);
         confirmDrinksDialog(SUCCESS_MESSAGE_INFO);
         dispatch(fetchVouchersAsync());
       })
       .catch((error) => {
+        logEvent(analytics, "drink_history_error", { error, addedDrinks, user });
         captureException(error);
         let message = error?.message ?? 'Drink could not be added';
         resetDrinks(message);

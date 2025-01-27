@@ -15,6 +15,8 @@ import { can } from '../../../utils/PermissionService';
 import { CommentReplyItem, CommentReplyText } from './CommentReplyItem';
 import { CommentItem } from './CommentItem';
 import { EventCommentConversationDialog } from '../dialogs/EventCommentConversationDialog';
+import { logEvent } from 'firebase/analytics';
+import { analytics } from 'src/firebase/firebaseConfig';
 
 type EventInformationCommentsProps = {
   comments: FullComment[];
@@ -106,6 +108,7 @@ const EventInformationComments = ({
     const commentValue = data.get('comment')?.toString();
     if (!commentValue) return;
 
+    logEvent(analytics, "event_comment_added", { comment: commentValue });
     handleCommentSubmit({ comment: commentValue, reply_to: null });
     event.currentTarget.reset();
   };

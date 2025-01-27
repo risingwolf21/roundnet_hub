@@ -28,6 +28,8 @@ import { TablesInsert, TablesUpdate } from '../../types/supabase-generated.types
 import { can } from '../../utils/PermissionService';
 import { EventItem } from './components/EventItem';
 import { LoadingEventItem } from './components/LoadingEventItem';
+import { logEvent } from 'firebase/analytics';
+import { analytics } from 'src/firebase/firebaseConfig';
 
 export type EventScreenProps = {
   events: SliceEvent[];
@@ -90,6 +92,7 @@ const EventScreen = ({ events, loading, error, user, fetchMode }: EventScreenPro
   };
 
   const updateAttendance = async (eventId: string, state: EventAttendance, oldState: EventAttendance) => {
+    logEvent(analytics, "event_attendance_update", { user, eventId, state, oldState });
     dispatch(updateAttendanceAsync({ user, eventId, state, oldState }));
   };
 

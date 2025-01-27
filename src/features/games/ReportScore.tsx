@@ -21,6 +21,8 @@ import Layout from 'src/components/Layout';
 import { RootState, useAppDispatch } from 'src/redux/store';
 import { GamesRepository } from 'src/repository/GamesRepository';
 import { fetchPlayersAsync } from './slices/gamesSlice';
+import { logEvent } from 'firebase/analytics';
+import { analytics } from 'src/firebase/firebaseConfig';
 
 type Props = { options: SimpleUser[]; loading: boolean; label: string; onSelect: (value: SimpleUser | null) => void };
 const SelectPlayer = ({ options, loading, label, onSelect }: Props) => {
@@ -119,6 +121,7 @@ export const ReportScore = () => {
       team_b_name
     )
       .then((result) => {
+        logEvent(analytics, "match_score_added", { team_a_name, team_b_name, player1a, player1b, player2a, player2b });
         navigate('/matches');
       })
       .catch((error) => setAlertInfo({ message: error.message, severity: 'error' }));
