@@ -92,7 +92,7 @@ const EventScreen = ({ events, loading, error, user, fetchMode }: EventScreenPro
   };
 
   const updateAttendance = async (eventId: string, state: EventAttendance, oldState: EventAttendance) => {
-    logEvent(analytics, "event_attendance_update", { user, eventId, state, oldState });
+    logEvent(analytics, "event_attendance_update", { user: user.userId, name: user.name, eventId, state, oldState });
     dispatch(updateAttendanceAsync({ user, eventId, state, oldState }));
   };
 

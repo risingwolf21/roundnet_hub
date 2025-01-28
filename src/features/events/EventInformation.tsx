@@ -101,7 +101,7 @@ const EventInformation = ({
   };
 
   const updateAttendance = async (state: EventAttendance, oldState: EventAttendance) => {
-    logEvent(analytics, "event_attendance_update", { user, eventId: selectedEvent.id, state, oldState });
+    logEvent(analytics, "event_attendance_update", { user: user.userId, eventId: selectedEvent.id, state, oldState });
     dispatch(updateAttendanceAsync({ user, eventId: selectedEvent.id, state, oldState }));
   };
 
@@ -228,7 +228,7 @@ const EventInformation = ({
               <Box
                 component="button"
                 onClick={() => {
-                  logEvent(analytics, "event_info_map_click", { user, selectedEvent });
+                  logEvent(analytics, "event_info_map_click", { user: user.userId, name: user.name, selectedEvent });
                   window.open(
                     'https://maps.google.com?q=' + selectedEventPlace.lat + ',' + selectedEventPlace.lon,
                     '_blank'

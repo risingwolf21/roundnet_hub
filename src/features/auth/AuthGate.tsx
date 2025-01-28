@@ -85,7 +85,7 @@ export const AuthGate = ({ children }: Props) => {
           throw Error('Fetching user in AuthGate was not successful. \n' + JSON.stringify(error));
         }
         setUserId(analytics, session.user.id);
-        logEvent(analytics, "login", { user, roles, permissions, groups, player_data })
+        logEvent(analytics, "login", { id: session.user.id, username: user.displayName })
         setUser({ email: session.user.email, id: session.user.id, username: user.displayName });
         ability.update(defineRulesFor(permissions, roles));
         dispatch(

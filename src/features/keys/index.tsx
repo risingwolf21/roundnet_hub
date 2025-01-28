@@ -45,10 +45,10 @@ export const ItemHolderScreen = ({ dispatch, keyHolders, loading, user, t }: Ite
     }
     SupabaseKeysRepository.giveItemToUser(selectedKeyHolder, selectedUser).then((result) => {
       if (result.error) {
-        logEvent(analytics, "item_handover_error", { user, error: result.error, selectedKeyHolder, selectedUser });
+        logEvent(analytics, "item_handover_error", { user: user.userId, name: user.name, error: result.error, selectedKeyHolder, selectedUser });
         setAlertInfo({ message: t('keyHandOverError', { error: result.error }), severity: 'error' });
       } else {
-        logEvent(analytics, "item_handover_success", { user, selectedKeyHolder, selectedUser });
+        logEvent(analytics, "item_handover_success", { user: user.userId, name: user.name, selectedKeyHolder, selectedUser });
         setSelectedUser(null);
         setSelectedKeyHolder(null);
         dispatch(fetchItemsAsync());
