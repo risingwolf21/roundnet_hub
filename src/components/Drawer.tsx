@@ -4,6 +4,7 @@ import {
   Group,
   GroupOutlined,
   History,
+  Home,
   InfoOutlined,
   InstallDesktop,
   Key,
@@ -141,6 +142,14 @@ const DrawerContent = ({
   return (
     <DrawerBox>
       <List>
+        <DrawerItem key="homepage" selected={tab === ''} onClick={() => handleChange('')}>
+          <ListItemAvatar>
+            <ListItemIcon>
+              <Home />
+            </ListItemIcon>
+          </ListItemAvatar>
+          <ListItemText primaryTypographyProps={{ fontWeight: 'bold', fontSize: '0.9rem' }} primary={'Home'} />
+        </DrawerItem>
         <DrawerItem key="user" selected={tab === 'user'} onClick={() => handleChange('user')}>
           <ListItemAvatar>
             <ListItemIcon>
@@ -149,6 +158,7 @@ const DrawerContent = ({
           </ListItemAvatar>
           <ListItemText primaryTypographyProps={{ fontWeight: 'bold', fontSize: '0.9rem' }} primary={'Account'} />
         </DrawerItem>
+
         <InstallPWA
           element={(onClick) => (
             <DrawerItem key="installPWA" selected={false} onClick={onClick}>

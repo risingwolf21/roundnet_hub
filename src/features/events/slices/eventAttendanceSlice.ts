@@ -40,9 +40,9 @@ const eventAttendanceSlice = createSlice({
         attendance: attendanceSlice.attendance.map((x, i) =>
           i === index
             ? ({
-                ...x,
-                state: action.payload.state ?? x.state,
-              } as FullAttendance)
+              ...x,
+              state: action.payload.state ?? x.state,
+            } as FullAttendance)
             : x
         ),
       } as SliceAttendance);
@@ -127,10 +127,10 @@ const eventAttendanceSlice = createSlice({
             attendance: attendance.map((x, i) =>
               i === index
                 ? {
-                    ...x,
-                    state: action.meta.arg.state,
-                    lastUpdate: formatDateToDatabase(new Date()),
-                  }
+                  ...x,
+                  state: action.meta.arg.state,
+                  lastUpdate: formatDateToDatabase(new Date()),
+                }
                 : x
             ),
           };
@@ -153,10 +153,10 @@ const eventAttendanceSlice = createSlice({
             attendance: attendance.map((x, i) =>
               i === index
                 ? {
-                    ...x,
-                    state: action.meta.arg.oldState,
-                    lastUpdate: formatDateToDatabase(new Date()),
-                  }
+                  ...x,
+                  state: action.meta.arg.oldState,
+                  lastUpdate: formatDateToDatabase(new Date()),
+                }
                 : x
             ),
           },

@@ -21,6 +21,7 @@ import { GameList } from './features/games/GameList';
 import { ReportScore } from './features/games/ReportScore';
 import NotificationsScreenProvider from './features/notifications/NotificationsScreen';
 import { useServiceWorker } from './hooks/useServiceWorker';
+import { HomePage } from './features/homepage/HomePage';
 
 const FeatureNotAvailable = React.lazy(() => import('./components/FeatureNotAvailable'));
 const HistoryScreenProvider = React.lazy(() => import('./features/drinks/HistoryScreenProvider'));
@@ -66,6 +67,8 @@ const App = () => {
           <InitialFetch>
             <React.Suspense fallback={<LoadingScreen />}>
               <Routes>
+                <Route index path="/" element={<HomePage />} />
+
                 <Route path="/not-verified" element={<NotVerifiedScreen />} />
 
                 <Route path="/feature-not-available" element={<FeatureNotAvailable />} />
