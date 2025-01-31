@@ -18,6 +18,9 @@ import 'src/apocalypseHandler.js';
 import { createRoutesFromChildren, matchRoutes, useLocation, useNavigationType } from 'react-router-dom';
 import { supabaseIntegration } from '@supabase/sentry-js-integration';
 import { captureConsoleIntegration } from '@sentry/integrations';
+import { AppProvider } from '@toolpad/core/AppProvider';
+import { useTheme } from '@mui/material/styles';
+import { BRANDING } from './utils';
 
 Sentry.init({
   dsn: 'https://a06f63fae5ab4ce4ac291d0d6fb4e989@o4505379650666496.ingest.sentry.io/4505379651649536',
@@ -54,12 +57,14 @@ const root = ReactDOM.createRoot(document.getElementById('root') as HTMLElement,
 });
 root.render(
   <ThemeProvider theme={mainTheme}>
-    <Provider store={store}>
-      <SupabaseProvider value={supabase}>
-        <LocalizationProvider dateAdapter={AdapterDayjs}>
-          <App />
-        </LocalizationProvider>
-      </SupabaseProvider>
-    </Provider>
+    <AppProvider branding={BRANDING} theme={mainTheme}>
+      <Provider store={store}>
+        <SupabaseProvider value={supabase}>
+          <LocalizationProvider dateAdapter={AdapterDayjs}>
+            <App />
+          </LocalizationProvider>
+        </SupabaseProvider>
+      </Provider>
+    </AppProvider>
   </ThemeProvider>
 );

@@ -2,6 +2,16 @@ import { Slide, SlideProps } from '@mui/material';
 import { add, Duration, format, parse } from 'date-fns';
 import dayjs from 'dayjs';
 import React, { forwardRef } from 'react';
+import Logo from '../images/Karlsruher_Kojoten_Logo.svg';
+
+export const BRANDING = {
+  logo: (<img
+    src={Logo}
+    alt="MUI logo"
+    style={{ height: 96 }}
+  />),
+  title: 'Roundnet Karlsruhe',
+}
 
 export const compareById = (x: any, y: any) => {
   return x.id === y.id;
