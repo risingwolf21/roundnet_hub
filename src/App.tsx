@@ -85,8 +85,6 @@ const App = () => {
 
                 <Route path="/notifications" element={<NotificationScreen />} />
 
-                <Route path="/notificationPermissions" element={<NotificationsScreenProvider />} />
-
                 <Route path="user">
                   <Route index element={<UserScreenProvider />} />
                   <Route path=":userId" element={<ProfileScreen />} />

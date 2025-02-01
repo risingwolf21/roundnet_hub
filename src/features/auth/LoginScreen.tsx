@@ -1,6 +1,8 @@
+import { useTheme } from '@mui/material';
 import Link from '@mui/material/Link';
 import { captureException } from '@sentry/react';
 import { SignInPage, type AuthProvider } from '@toolpad/core/SignInPage';
+import { useNotifications } from '@toolpad/core/useNotifications';
 import React, { FormEvent, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AlertMessage } from '../../components/AlertSnackbar';
@@ -15,8 +17,9 @@ type Credentials = {
 const LoginScreen = () => {
   const [alertInfo, setAlertInfo] = useState<AlertMessage | null>(null);
   const [loginInProgress, setLoginInProgress] = useState(false);
-
+  const theme = useTheme();
   const navigate = useNavigate();
+  const notifications = useNotifications();
   const [version, setVersion] = useState<string>('');
 
   useEffect(() => {
@@ -25,6 +28,9 @@ const LoginScreen = () => {
       .then((text) => {
         setVersion(text);
       });
+    notifications.show('Die Email des Google-Kontos muss übereinstimmen für eine Verknüpfung mit einem bestehenden Konto. Ansonsten wird ein neues Roundnet Karlsruhe Konto angelegt.', {
+      severity: "info"
+    });
   }, []);
 
   const onLogin = (credentials: Credentials) => {
@@ -107,7 +113,8 @@ const LoginScreen = () => {
         supabase.auth.signInWithOAuth({
           provider: 'google',
           options: {
-            scopes: 'https://www.googleapis.com/auth/calendar'
+            scopes: 'https://www.googleapis.com/auth/calendar',
+            redirectTo: window.location.origin
           }
         })
           .then((result) => {
@@ -164,6 +171,16 @@ const LoginScreen = () => {
       signUpLink: SignUpLink,
       forgotPasswordLink: ForgotPasswordLink,
       rememberMe: rememberMe
+    }}
+    sx={{
+      "minHeight": "100%",
+      "verticalAlign": "middle",
+      "& .MuiContainer-root .MuiBox-root": {
+        [theme.breakpoints.down("sm")]: {
+          border: "none",
+          boxShadow: "none"
+        }
+      }
     }}
     slotProps={{
       emailField: { autoFocus: false },

@@ -1,22 +1,28 @@
-import { Save } from '@mui/icons-material';
+import { ArrowBack, Save } from '@mui/icons-material';
 import {
+  AppBar,
+  Box,
   Button,
   Checkbox,
   CircularProgress,
+  Dialog,
   Fab,
+  IconButton,
   List,
   ListItem,
   ListItemAvatar,
   ListItemButton,
   ListItemText,
+  Toolbar,
+  Typography,
 } from '@mui/material';
-import React, { useEffect, useState } from 'react';
-import { LoadingIndicator } from '../../components/LoadingIndicator';
-import { useTranslation } from 'react-i18next';
 import { TFunction } from 'i18next';
+import React, { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
 import { AlertMessage, AlertSnackbar } from '../../components/AlertSnackbar';
+import { LoadingIndicator } from '../../components/LoadingIndicator';
 import { SupabaseUserRepository } from '../../repository/UserRepository';
-import Layout from '../../components/Layout';
 import { useAuth } from '../auth/AuthContext';
 
 const userTags: NotificationTags[] = ['eventComments', 'userRegistration', 'paymentRequest', 'paymentPending'];
@@ -38,6 +44,7 @@ export const NotificationsScreen = ({ user, t }: NotificationsScreenProps) => {
   const [loading, setLoading] = useState(false);
   const [alertInfo, setAlertInfo] = useState<AlertMessage | null>(null);
   const [notificationPermissionGranted, setNotificationPermissionGranted] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     Notification.requestPermission().then((result) => {
@@ -66,36 +73,48 @@ export const NotificationsScreen = ({ user, t }: NotificationsScreenProps) => {
   };
 
   return (
-    <Layout>
-      <LoadingIndicator loading={false} />
-      <List>
-        {!notificationPermissionGranted && (
-          <ListItem key={'requestPermission'} secondaryAction={<Button variant={'text'} title={'Request'} />}>
-            <ListItemText primary={'Request Notification permissions'} />
-          </ListItem>
-        )}
-        {userTags.map((x) => (
-          <ListItemButton key={x} onClick={() => handleChange(x)} disabled={!notificationPermissionGranted}>
-            <ListItemAvatar>
-              <Checkbox checked={activeUserTags.includes(x)} onChange={(_) => handleChange(x)} />
-            </ListItemAvatar>
-            <ListItemText primary={t('notificationTags.' + x)} />
-          </ListItemButton>
-        ))}
-      </List>
-      <Fab
-        sx={{
-          background: '#66bb6a',
-          position: 'fixed',
-          right: '16px',
-          bottom: 'calc(16px + env(safe-area-inset-bottom))',
-        }}
-        onClick={saveTags}
-      >
-        {!loading ? <Save sx={{ color: 'white' }} /> : <CircularProgress />}
-      </Fab>
-      <AlertSnackbar alertInfo={alertInfo} autoHideDuration={1500} close={() => setAlertInfo(null)} />
-    </Layout>
+    <Dialog open={true} fullScreen>
+      <Box>
+        <AppBar position="fixed" sx={{ pt: 'env(safe-area-inset-top)' }}>
+          <Toolbar>
+            <IconButton edge="start" color="inherit" onClick={() => navigate(-1)} aria-label="close">
+              <ArrowBack />
+            </IconButton>
+            <Typography sx={{ ml: 2, flex: 1 }} variant="h6" component="div">
+              Benachrichtigungen
+            </Typography>
+          </Toolbar>
+        </AppBar>
+        <LoadingIndicator loading={false} />
+        <List>
+          {!notificationPermissionGranted && (
+            <ListItem key={'requestPermission'} secondaryAction={<Button variant={'text'} title={'Request'} />}>
+              <ListItemText primary={'Request Notification permissions'} />
+            </ListItem>
+          )}
+          {userTags.map((x) => (
+            <ListItemButton key={x} onClick={() => handleChange(x)} disabled={!notificationPermissionGranted}>
+              <ListItemAvatar>
+                <Checkbox checked={activeUserTags.includes(x)} onChange={(_) => handleChange(x)} />
+              </ListItemAvatar>
+              <ListItemText primary={t('notificationTags.' + x)} />
+            </ListItemButton>
+          ))}
+        </List>
+        <Fab
+          sx={{
+            background: '#66bb6a',
+            position: 'fixed',
+            right: '16px',
+            bottom: 'calc(16px + env(safe-area-inset-bottom))',
+          }}
+          onClick={saveTags}
+        >
+          {!loading ? <Save sx={{ color: 'white' }} /> : <CircularProgress />}
+        </Fab>
+        <AlertSnackbar alertInfo={alertInfo} autoHideDuration={1500} close={() => setAlertInfo(null)} />
+      </Box>
+    </Dialog>
   );
 };
 

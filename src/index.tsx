@@ -19,7 +19,7 @@ import { createRoutesFromChildren, matchRoutes, useLocation, useNavigationType }
 import { supabaseIntegration } from '@supabase/sentry-js-integration';
 import { captureConsoleIntegration } from '@sentry/integrations';
 import { AppProvider } from '@toolpad/core/AppProvider';
-import { useTheme } from '@mui/material/styles';
+import { NotificationsProvider } from '@toolpad/core/useNotifications';
 import { BRANDING } from './utils';
 
 Sentry.init({
@@ -58,13 +58,15 @@ const root = ReactDOM.createRoot(document.getElementById('root') as HTMLElement,
 root.render(
   <ThemeProvider theme={mainTheme}>
     <AppProvider branding={BRANDING} theme={mainTheme}>
-      <Provider store={store}>
-        <SupabaseProvider value={supabase}>
-          <LocalizationProvider dateAdapter={AdapterDayjs}>
-            <App />
-          </LocalizationProvider>
-        </SupabaseProvider>
-      </Provider>
+      <NotificationsProvider>
+        <Provider store={store}>
+          <SupabaseProvider value={supabase}>
+            <LocalizationProvider dateAdapter={AdapterDayjs}>
+              <App />
+            </LocalizationProvider>
+          </SupabaseProvider>
+        </Provider>
+      </NotificationsProvider>
     </AppProvider>
   </ThemeProvider>
 );

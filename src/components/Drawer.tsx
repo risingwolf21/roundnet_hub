@@ -11,11 +11,10 @@ import {
   Liquor,
   Notifications,
   Person,
-  Score,
   Scoreboard,
   SportsHandball,
   StorageOutlined,
-  Update,
+  Update
 } from '@mui/icons-material';
 import {
   alpha,
@@ -43,10 +42,10 @@ import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { HOMEPAGE } from '../constants';
 import { notificationsSelector } from '../features/notifications/slices/notificationsSlice';
+import raw from '../git_commit.txt';
 import { RootState } from '../redux/store';
 import { can, canAny } from '../utils/PermissionService';
 import { InstallPWA } from './PwaInstallPromp';
-import raw from '../git_commit.txt';
 
 export const drawerWidth = 360;
 

@@ -21,7 +21,7 @@ import { useClient } from 'react-supabase';
 import { useSelector } from 'react-redux';
 import React, { useEffect, useState } from 'react';
 import { AppDispatch, RootState, useAppDispatch } from '../redux/store';
-import { SupabaseClient } from '@supabase/supabase-js';
+import { Session, SupabaseClient } from '@supabase/supabase-js';
 import {
   AddPhotoAlternateOutlined,
   DeleteOutline,
@@ -54,6 +54,7 @@ import { supabase } from './services/supabase/supabaseClient';
 
 type UserScreenProps = {
   user: UserWithRolesAndPermissions;
+  session: Session;
   deviceId: string;
   groups: Group[];
   client: SupabaseClient<Database>;
@@ -62,7 +63,7 @@ type UserScreenProps = {
 };
 
 export const UserScreenProvider = () => {
-  const { user, signOut, deviceId } = useAuth();
+  const { user, signOut, deviceId, session } = useAuth();
   const client = useClient();
   const dispatch = useAppDispatch();
   const [groups, setGroups] = useState<Group[]>([]);
@@ -73,7 +74,7 @@ export const UserScreenProvider = () => {
     });
   }, [user]);
 
-  return <UserScreen user={user} deviceId={deviceId} client={client} dispatch={dispatch} groups={groups} handleSignOut={signOut} />;
+  return <UserScreen user={user} deviceId={deviceId} client={client} dispatch={dispatch} groups={groups} handleSignOut={signOut} session={session} />;
 };
 
 const NotificationSwitch = ({
@@ -124,7 +125,7 @@ const NotificationSwitch = ({
   );
 };
 
-const UserScreen = ({ user, client, dispatch, groups, deviceId }: UserScreenProps) => {
+const UserScreen = ({ user, session, client, dispatch, groups, deviceId }: UserScreenProps) => {
   const navigate = useNavigate();
   const [selectedImage, setSelectedImage] = useState<string | ArrayBuffer | null>(null);
   const [croppedImage, setCroppedImage] = useState<string | null>(null);
@@ -139,6 +140,22 @@ const UserScreen = ({ user, client, dispatch, groups, deviceId }: UserScreenProp
   const [name, setName] = useState(user.name);
   const [loadingSave, setLoadingSave] = useState(false);
   const { updatingNotificationTags } = useSelector((state: RootState) => state.application);
+
+  useEffect(() => {
+    if (session.provider_token) {
+      fetch("https://www.googleapis.com/calendar/v3/users/me/calendarList", {
+        method: "GET",
+        headers: {
+          "Authorization": "Bearer " + session.provider_token,
+        }
+      })
+        .then((res) => res.json())
+        .then((res) => console.log(res))
+        .catch(err => console.error(err))
+    } else {
+      console.log("no provider token")
+    }
+  }, [])
 
   const isNotificationSupported = () =>
     'Notification' in window && 'serviceWorker' in navigator && 'PushManager' in window;
@@ -461,26 +478,26 @@ const UserScreen = ({ user, client, dispatch, groups, deviceId }: UserScreenProp
           user.name !== name ||
           croppedImage ||
           (user.avatarUrl !== null && currentUser.avatarUrl === null)) && (
-          <Fab
-            key={'saveButton'}
-            variant="extended"
-            sx={{
-              background: '#66bb6a',
-              color: '#fff',
-              position: 'fixed',
-              right: '16px',
-              bottom: 'calc(16px + env(safe-area-inset-bottom))',
-            }}
-            onClick={handleSubmit}
-          >
-            {loadingSave ? (
-              <CircularProgress size={'20px'} sx={{ color: 'white', mr: 1 }} />
-            ) : (
-              <Save sx={{ color: 'white', mr: 1 }} />
-            )}
-            Speichern
-          </Fab>
-        )}
+            <Fab
+              key={'saveButton'}
+              variant="extended"
+              sx={{
+                background: '#66bb6a',
+                color: '#fff',
+                position: 'fixed',
+                right: '16px',
+                bottom: 'calc(16px + env(safe-area-inset-bottom))',
+              }}
+              onClick={handleSubmit}
+            >
+              {loadingSave ? (
+                <CircularProgress size={'20px'} sx={{ color: 'white', mr: 1 }} />
+              ) : (
+                <Save sx={{ color: 'white', mr: 1 }} />
+              )}
+              Speichern
+            </Fab>
+          )}
       </List>
 
       {selectedImage && typeof selectedImage === 'string' && (

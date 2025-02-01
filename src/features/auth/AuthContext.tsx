@@ -1,10 +1,12 @@
 import { createContext, useContext } from 'react';
 import { UserWithRolesAndPermissions } from '../../types/supabaseTypes';
+import { Session } from '@supabase/supabase-js';
 
 export const AuthContext = createContext<{
   user: UserWithRolesAndPermissions;
   deviceId: string;
   signOut: () => void;
+  session: Session
 }>(null!);
 
 // export the useAuth hook

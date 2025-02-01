@@ -1,25 +1,25 @@
 import { Box, CircularProgress, Typography } from '@mui/material';
 import { captureException, setUser } from '@sentry/react';
 import { AuthChangeEvent, Session } from '@supabase/supabase-js';
+import { useNotifications } from '@toolpad/core/useNotifications';
+import { logEvent, setUserId } from 'firebase/analytics';
 import React, { useCallback, useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useClient } from 'react-supabase';
 import { supabase } from 'src/components/services/supabase/supabaseClient';
-import { AlertMessage, AlertSnackbar } from '../../components/AlertSnackbar';
+import { analytics } from 'src/firebase/firebaseConfig';
+import useDeviceId from 'src/hooks/useDeviceId';
 import NotVerifiedScreen from '../../components/NotVerifiedScreen';
 import { HOMEPAGE } from '../../constants';
 import AuthPage from '../../pages/Auth.page';
-import { onUserChange, onUserDatabaseUpdate } from '../../redux/applicationSlice';
+import { onUserChange } from '../../redux/applicationSlice';
 import { RootState } from '../../redux/store';
 import { AdminPermissionsRepository } from '../../repository/AdminPermissionsRepository';
 import { SupabaseUserRepository } from '../../repository/UserRepository';
 import { UserWithRolesAndPermissions } from '../../types/supabaseTypes';
 import { ability, defineRulesFor } from '../../utils/PermissionService';
 import { AuthContext } from './AuthContext';
-import useDeviceId from 'src/hooks/useDeviceId';
-import { analytics } from 'src/firebase/firebaseConfig';
-import { logEvent, setUserId } from 'firebase/analytics';
 
 type Props = {
   children: React.ReactNode;
@@ -31,13 +31,12 @@ export const AuthGate = ({ children }: Props) => {
 
   const navigate = useNavigate();
   const location = useLocation();
-
+  const notifications = useNotifications();
   const deviceId = useDeviceId();
 
   const currentUser = useSelector((state: RootState) => state.application.user);
   const [loading, setLoading] = useState(false);
   const [session, setSession] = useState<Session | null>(null);
-  const [alertInfo, setAlertInfo] = useState<AlertMessage | null>(null);
 
   const signOut = async () => {
     try {
@@ -133,31 +132,12 @@ export const AuthGate = ({ children }: Props) => {
           })
           .catch((error) => {
             setLoading(false);
-            setAlertInfo({ message: error.message, severity: 'error' });
+            notifications.show(error.message,{severity: "error"})
           });
       }
     });
     return () => subscription.unsubscribe();
   }, [client, handleAuthChange, dispatch, navigate, currentUser]);
-
-  useEffect(() => {
-    if (!currentUser) return;
-    let subscription = client
-      .channel('public:user')
-      .on(
-        'postgres_changes',
-        {
-          event: 'UPDATE',
-          schema: 'public',
-          table: 'user',
-        },
-        (payload) => dispatch(onUserDatabaseUpdate(payload.new))
-      )
-      .subscribe(console.log);
-    return () => {
-      subscription.unsubscribe();
-    };
-  }, [currentUser, client, dispatch]);
 
   if (loading)
     return (
@@ -177,12 +157,11 @@ export const AuthGate = ({ children }: Props) => {
         <CircularProgress variant={'indeterminate'} size={50}></CircularProgress>
       </Box>
     );
-
   return (
     <>
       {session ? (
         currentUser && currentUser.verified ? (
-          <AuthContext.Provider value={{ user: currentUser, signOut: signOut, deviceId }}>
+          <AuthContext.Provider value={{ user: currentUser, signOut: signOut, deviceId, session }}>
             {children}
           </AuthContext.Provider>
         ) : (
@@ -191,7 +170,6 @@ export const AuthGate = ({ children }: Props) => {
       ) : (
         <AuthPage />
       )}
-      <AlertSnackbar alertInfo={alertInfo} autoHideDuration={1500} close={() => setAlertInfo(null)} />
     </>
   );
 };
