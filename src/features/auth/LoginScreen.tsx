@@ -28,9 +28,9 @@ const LoginScreen = () => {
       .then((text) => {
         setVersion(text);
       });
-    notifications.show('Die Email des Google-Kontos muss übereinstimmen für eine Verknüpfung mit einem bestehenden Konto. Ansonsten wird ein neues Roundnet Karlsruhe Konto angelegt.', {
-      severity: "info"
-    });
+    // notifications.show('Die Email des Google-Kontos muss übereinstimmen für eine Verknüpfung mit einem bestehenden Konto. Ansonsten wird ein neues Roundnet Karlsruhe Konto angelegt.', {
+    //   severity: "info"
+    // });
   }, []);
 
   const onLogin = (credentials: Credentials) => {
