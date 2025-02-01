@@ -5,7 +5,7 @@ import { useNotifications } from '@toolpad/core/useNotifications';
 import { logEvent, setUserId } from 'firebase/analytics';
 import React, { useCallback, useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { useClient } from 'react-supabase';
 import { supabase } from 'src/components/services/supabase/supabaseClient';
 import { analytics } from 'src/firebase/firebaseConfig';
@@ -38,6 +38,22 @@ export const AuthGate = ({ children }: Props) => {
   const [loading, setLoading] = useState(false);
   const [session, setSession] = useState<Session | null>(null);
 
+  const [searchParams, _] = useSearchParams();
+
+  useEffect(() => {
+    const hash = window.location.hash;
+    const params = new URLSearchParams(hash.replace("#", "?"))
+    const refresh_token = params.get("refresh_token");
+    console.log(refresh_token)
+    if (refresh_token) {
+      supabase.auth.refreshSession({ refresh_token }).then(result => {
+        if (result.data.session) {
+          handleAuthChange("SIGNED_IN", result.data.session);
+        }
+      })
+    }
+  }, []);
+
   const signOut = async () => {
     try {
       const session = supabase.auth.getSession(); // Prüfen, ob eine Sitzung vorhanden ist
@@ -69,6 +85,7 @@ export const AuthGate = ({ children }: Props) => {
     ): Promise<{
       navigateTo: string;
     } | null> => {
+      console.log("handleAuthChange", event,  session, currentUser)
       if (!session || currentUser?.userId === session.user.id) {
         return null; // Keine Aktion notwendig
       }
@@ -107,7 +124,7 @@ export const AuthGate = ({ children }: Props) => {
       if (event === 'PASSWORD_RECOVERY') {
         return { navigateTo: '/reset-password' };
       } else {
-        return { navigateTo: location.pathname === '/login' ? `/${HOMEPAGE}` : location.pathname };
+        return { navigateTo: location.pathname === '/login' || location.pathname === '/auth/callback' ? `/${HOMEPAGE}` : location.pathname };
       }
     },
     [dispatch, reset, currentUser, location.pathname]
@@ -132,7 +149,7 @@ export const AuthGate = ({ children }: Props) => {
           })
           .catch((error) => {
             setLoading(false);
-            notifications.show(error.message,{severity: "error"})
+            notifications.show(error.message, { severity: "error" })
           });
       }
     });
