@@ -85,7 +85,6 @@ export const AuthGate = ({ children }: Props) => {
     ): Promise<{
       navigateTo: string;
     } | null> => {
-      console.log("handleAuthChange", event,  session, currentUser)
       if (!session || currentUser?.userId === session.user.id) {
         return null; // Keine Aktion notwendig
       }
@@ -134,6 +133,7 @@ export const AuthGate = ({ children }: Props) => {
     const {
       data: { subscription },
     } = client.auth.onAuthStateChange((event, session) => {
+      console.log(session?.provider_token)
       if (event === 'INITIAL_SESSION' && currentUser) {
         return;
       }

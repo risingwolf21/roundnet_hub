@@ -114,8 +114,8 @@ const LoginScreen = () => {
           provider: 'google',
           options: {
             scopes: 'https://www.googleapis.com/auth/calendar',
-            redirectTo: window.location.origin + "/auth/callback"
-          }
+            redirectTo: window.location.origin + "/auth/callback",
+          },
         })
           .then((result) => {
             if (process.env.REACT_APP_ENV === 'production_admin') {
@@ -163,7 +163,7 @@ const LoginScreen = () => {
   const rememberMe = () => <div></div>
 
   return <SignInPage
-    providers={[{ id: 'credentials', name: 'Credentials' }, { id: 'google', name: 'Google' }]}
+    providers={[{ id: 'credentials', name: 'Credentials' }]}
     signIn={signIn}
     slots={{
       title: Title,

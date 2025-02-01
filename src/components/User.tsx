@@ -142,19 +142,24 @@ const UserScreen = ({ user, session, client, dispatch, groups, deviceId }: UserS
   const { updatingNotificationTags } = useSelector((state: RootState) => state.application);
 
   useEffect(() => {
-    if (session.provider_token) {
-      fetch("https://www.googleapis.com/calendar/v3/users/me/calendarList", {
-        method: "GET",
-        headers: {
-          "Authorization": "Bearer " + session.provider_token,
-        }
-      })
-        .then((res) => res.json())
-        .then((res) => console.log(res))
-        .catch(err => console.error(err))
-    } else {
-      console.log("no provider token")
-    }
+    supabase.auth.getSession().then(result => {
+      console.log(result)
+      const provider_token = result.data.session?.access_token
+      if (provider_token) {
+        fetch("https://www.googleapis.com/calendar/v3/users/me/calendarList", {
+          method: "GET",
+          headers: {
+            "Authorization": "Bearer " + provider_token,
+          }
+        })
+          .then((res) => res.json())
+          .then((res) => console.log(res))
+          .catch(err => console.error(err))
+      } else {
+        console.log("no provider token")
+      }
+    })
+    
   }, [])
 
   const isNotificationSupported = () =>

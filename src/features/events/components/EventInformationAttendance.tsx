@@ -58,37 +58,6 @@ const EventInformationAttendance = ({
   const dispatch = useAppDispatch();
   const [eventAttendanceState, setEventAttendanceState] = useState({ open: false, index: 0 });
 
-  useEffect(() => {
-    if (!user) return;
-
-    let subscription = client
-      .channel('public:event_attendance_user_mapping')
-      .on<TablesUpdate<'event_attendance_user_mapping'>>(
-        'postgres_changes',
-        {
-          event: 'UPDATE',
-          schema: 'public',
-          table: 'event_attendance_user_mapping',
-          filter: `id=eq.${selectedEvent.id}`,
-        },
-        (payload) => dispatch(onEventAttendanceUpdate({ ...payload.new, userId: user.userId }))
-      )
-      .on(
-        'postgres_changes',
-        {
-          event: 'DELETE',
-          schema: 'public',
-          table: 'event_attendance_user_mapping',
-          filter: `id=eq.${selectedEvent.id}`,
-        },
-        (payload) => dispatch(onEventAttendanceDelete(payload.old.id))
-      )
-      .subscribe();
-    return () => {
-      subscription.unsubscribe();
-    };
-  }, [client, dispatch, user, selectedEvent]);
-
   return (
     <Box sx={{ p: 0, alignSelf: 'center' }}>
       <Typography sx={{ fontSize: 16, fontWeight: 'bold', mt: 2 }} color="text.secondary" gutterBottom>

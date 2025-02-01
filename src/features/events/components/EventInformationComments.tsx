@@ -1,22 +1,14 @@
 import { Send } from '@mui/icons-material';
 import { Box, IconButton, InputAdornment, List, TextField, Typography } from '@mui/material';
-import React, { createRef, useEffect, useState } from 'react';
-import { FullComment } from 'src/types/supabaseTypes';
-import { useAppDispatch } from 'src/redux/store';
-import { useClient } from 'react-supabase';
-import {
-  onEventCommentDelete,
-  onEventCommentInsert,
-  onEventCommentUpdate,
-} from 'src/features/events/slices/eventCommentsSlice';
-import { SupabaseEventRepository } from '../../../repository/EventRepository';
-import { useTranslation } from 'react-i18next';
-import { can } from '../../../utils/PermissionService';
-import { CommentReplyItem, CommentReplyText } from './CommentReplyItem';
-import { CommentItem } from './CommentItem';
-import { EventCommentConversationDialog } from '../dialogs/EventCommentConversationDialog';
 import { logEvent } from 'firebase/analytics';
+import React, { createRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { analytics } from 'src/firebase/firebaseConfig';
+import { FullComment } from 'src/types/supabaseTypes';
+import { can } from '../../../utils/PermissionService';
+import { EventCommentConversationDialog } from '../dialogs/EventCommentConversationDialog';
+import { CommentItem } from './CommentItem';
+import { CommentReplyItem, CommentReplyText } from './CommentReplyItem';
 
 type EventInformationCommentsProps = {
   comments: FullComment[];
@@ -32,54 +24,8 @@ const EventInformationComments = ({
   eventInThePast,
 }: EventInformationCommentsProps) => {
   const { t } = useTranslation();
-  const client = useClient();
-  const dispatch = useAppDispatch();
   const inputRef = createRef<HTMLInputElement>();
   const [replyDialogOpen, setReplyDialogOpen] = useState<FullComment | null>(null);
-
-  useEffect(() => {
-    let subscription = client
-      .channel('public:event_comments')
-      .on<EventCommentUpdate>(
-        'postgres_changes',
-        {
-          event: 'UPDATE',
-          schema: 'public',
-          table: 'event_comments',
-          filter: `event=eq.${eventId}`,
-        },
-        (payload) => dispatch(onEventCommentUpdate(payload.new))
-      )
-      .on(
-        'postgres_changes',
-        {
-          event: 'DELETE',
-          schema: 'public',
-          table: 'event_comments',
-          filter: `event=eq.${eventId}`,
-        },
-        (payload) => dispatch(onEventCommentDelete(payload.old.id))
-      )
-      .on<EventCommentInsert>(
-        'postgres_changes',
-        {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'events',
-          filter: `event=eq.${eventId}`,
-        },
-        (payload) => {
-          if (payload.new.id)
-            SupabaseEventRepository.fetchSingleComment(payload.new.id).then((result) => {
-              if (result.data) dispatch(onEventCommentInsert(result.data));
-            });
-        }
-      )
-      .subscribe();
-    return () => {
-      subscription.unsubscribe();
-    };
-  }, [client, dispatch, eventId]);
 
   const handleFocus = (e: any) => {
     e.preventDefault();

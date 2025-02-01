@@ -49,40 +49,6 @@ const EventScreen = ({ events, loading, error, user, fetchMode }: EventScreenPro
   );
 
   useEffect(() => {
-    let subscription = client
-      .channel('public:events')
-      .on<TablesUpdate<'events'>>(
-        'postgres_changes',
-        {
-          event: 'UPDATE',
-          schema: 'public',
-          table: 'events',
-        },
-        (payload) => dispatch(onEventUpdate(payload.new))
-      )
-      .on(
-        'postgres_changes',
-        {
-          event: 'DELETE',
-          schema: 'public',
-          table: 'events',
-        },
-        (payload) => dispatch(onEventDelete(payload.old.id))
-      )
-      .on<TablesInsert<'events'>>(
-        'postgres_changes',
-        { event: 'INSERT', schema: 'public', table: 'events' },
-        (payload) => {
-          dispatch(fetchSingleEventAsync({ eventId: payload.new.id ?? '', userId: user.userId }));
-        }
-      )
-      .subscribe();
-    return () => {
-      subscription.unsubscribe();
-    };
-  }, [client, dispatch, user]);
-
-  useEffect(() => {
     dispatch(fetchEventsAsync({ user, fetchMode }))
   }, [dispatch, user, fetchMode]);
 

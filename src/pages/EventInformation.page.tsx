@@ -2,26 +2,21 @@ import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 import { useParams } from 'react-router-dom';
-import { RootState, useAppDispatch } from '../redux/store';
-import EventInformation from '../features/events/EventInformation';
-import { AlertSnackbar } from '../components/AlertSnackbar';
+import { useClient } from 'react-supabase';
 import {
-  eventsSelector,
-  fetchSingleEventAsync,
-  onEventDelete,
-  onEventUpdate,
-} from 'src/features/events/slices/eventsSlice';
-import {
-  attendanceSelector,
-  onEventAttendanceDelete,
-  onEventAttendanceUpdate,
+  attendanceSelector
 } from 'src/features/events/slices/eventAttendanceSlice';
 import { eventsCommentsSelector } from 'src/features/events/slices/eventCommentsSlice';
-import { useClient } from 'react-supabase';
-import { fetchItemsAsync, keyHoldersSelector } from '../features/keys/slices/keysSlice';
-import { TablesUpdate } from '../types/supabase-generated.types';
-import { PlaceType } from '../features/events/types';
+import {
+  eventsSelector,
+  fetchSingleEventAsync
+} from 'src/features/events/slices/eventsSlice';
+import { AlertSnackbar } from '../components/AlertSnackbar';
 import { useAuth } from '../features/auth/AuthContext';
+import EventInformation from '../features/events/EventInformation';
+import { PlaceType } from '../features/events/types';
+import { fetchItemsAsync, keyHoldersSelector } from '../features/keys/slices/keysSlice';
+import { RootState, useAppDispatch } from '../redux/store';
 
 const EventInformationProvider = () => {
   const { selectedEventId } = useParams();
@@ -44,55 +39,7 @@ const EventInformationProvider = () => {
 
   useEffect(() => {
     dispatch(fetchItemsAsync());
-
-    if (!event) return;
-
-    let subscription = client
-      .channel('public:event_attendance_user_mapping')
-      .on<TablesUpdate<'event_attendance_user_mapping'>>(
-        'postgres_changes',
-        {
-          event: 'UPDATE',
-          schema: 'public',
-          table: 'event_attendance_user_mapping',
-        },
-        (payload) => dispatch(onEventAttendanceUpdate({ ...payload.new, userId: user.userId }))
-      )
-      .on(
-        'postgres_changes',
-        {
-          event: 'DELETE',
-          schema: 'public',
-          table: 'event_attendance_user_mapping',
-        },
-        (payload) => dispatch(onEventAttendanceDelete(payload.old.id))
-      )
-      // .on<EventInsert>('postgres_changes', { event: 'INSERT', schema: 'public', table: 'events' }, payload => dispatch(onEventInsert(payload.new)))
-      .on<TablesUpdate<'events'>>(
-        'postgres_changes',
-        {
-          event: 'UPDATE',
-          schema: 'public',
-          table: 'events',
-          filter: `id=eq.${event.id}`,
-        },
-        (payload) => dispatch(onEventUpdate(payload.new))
-      )
-      .on(
-        'postgres_changes',
-        {
-          event: 'DELETE',
-          schema: 'public',
-          table: 'events',
-          filter: `id=eq.${event.id}`,
-        },
-        (payload) => dispatch(onEventDelete(payload.old.id))
-      )
-      .subscribe();
-    return () => {
-      subscription.unsubscribe();
-    };
-  }, [client, dispatch, user, event]);
+  }, [dispatch]);
 
   useEffect(() => {
     if (!event) {
@@ -105,7 +52,7 @@ const EventInformationProvider = () => {
   if (!event)
     return (
       <AlertSnackbar
-        close={() => {}}
+        close={() => { }}
         alertInfo={{
           message: 'Fatal error occured. Repository, user or selectedEvent was null!',
           severity: 'error',

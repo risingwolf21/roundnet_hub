@@ -10,7 +10,7 @@ export const AuthCallback = () => {
     const params = new URLSearchParams(hash.replace("#", "?"))
     const refresh_token = params.get("refresh_token");
     if (refresh_token) {
-      supabase.auth.refreshSession({ refresh_token }).then(result => console.log("Refreshed session", result))
+      supabase.auth.refreshSession({ refresh_token }).then(result => console.log("Refreshed session"))
     }
   }, []);
 

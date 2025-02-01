@@ -1,19 +1,14 @@
 import { Box, LinearProgress, List, ListItem, ListItemText, Typography } from '@mui/material';
 import React, { useEffect } from 'react';
+import { useSelector } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
+import { useClient } from 'react-supabase';
+import Layout from '../../components/Layout';
 import { RootState, useAppDispatch } from '../../redux/store';
 import {
   challengeSelector,
-  fetchChallengesAsync,
-  onChallengeDelete,
-  onChallengeInsert,
-  onChallengeUpdate,
+  fetchChallengesAsync
 } from './slices/challengeSlice';
-import { useSelector } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
-import { TablesInsert, TablesUpdate } from 'src/types/supabase-generated.types';
-import { useClient } from 'react-supabase';
-import { ChallengeRepository } from 'src/repository/ChallengeRepository';
-import Layout from '../../components/Layout';
 
 const ChallengeListProvider = () => {
   const dispatch = useAppDispatch();
@@ -23,45 +18,7 @@ const ChallengeListProvider = () => {
   useEffect(() => {
     dispatch(fetchChallengesAsync());
 
-    const subscription = client
-      .channel('public:challenge_stats')
-
-      .on<TablesUpdate<'challenge'>>(
-        'postgres_changes',
-        {
-          event: 'UPDATE',
-          schema: 'public',
-          table: 'challenge',
-        },
-        (payload) => dispatch(onChallengeUpdate(payload.new))
-      )
-      .on<TablesInsert<'challenge'>>(
-        'postgres_changes',
-        {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'challenge',
-        },
-        (payload) =>
-          ChallengeRepository.fetchChallengeStats(payload.new.id?.toString() ?? '-1').then((result) =>
-            dispatch(onChallengeInsert(result.data))
-          )
-      )
-      .on(
-        'postgres_changes',
-        {
-          event: 'DELETE',
-          schema: 'public',
-          table: 'challenge',
-        },
-        (payload) => dispatch(onChallengeDelete(payload.old.id))
-      )
-      .subscribe();
-
-    return () => {
-      subscription.unsubscribe();
-    };
-  }, [dispatch, client]);
+  }, [dispatch]);
 
   return <ChallengeList loading={false} challenges={challenges} />;
 };
