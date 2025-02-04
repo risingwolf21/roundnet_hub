@@ -41,7 +41,7 @@ export const CommentReplyText = ({ onClick }: { onClick: () => void }) => {
       >
         <ListItemAvatar sx={{ verticalAlign: 'top', display: 'flex' }}>
           <Avatar sx={{ borderRadius: 2 }}>
-            {user.avatarUrl ? <img src={user.avatarUrl} alt="logo" width={'100%'} height={'100%'} /> : <AccountBox />}
+            {user?.avatarUrl ? <img src={user?.avatarUrl} alt="logo" width={'100%'} height={'100%'} /> : <AccountBox />}
           </Avatar>
         </ListItemAvatar>
         <ListItemText primaryTypographyProps={{ color: 'rgba(0,0,0,0.54)' }} primary={'Schreibe eine Antwort'} />

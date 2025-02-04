@@ -43,7 +43,7 @@ const EventInformationProvider = () => {
 
   useEffect(() => {
     if (!event) {
-      dispatch(fetchSingleEventAsync({ eventId: selectedEventId ?? '', userId: user.userId }));
+      dispatch(fetchSingleEventAsync({ eventId: selectedEventId ?? '', userId: user!.userId }));
     } else {
       setSelectedEventPlace(event.place ? (JSON.parse(event.place?.toString() ?? '') as PlaceType) : null);
     }
@@ -71,7 +71,7 @@ const EventInformationProvider = () => {
       comments={comments?.comments ?? []}
       commentsLoading={commentsLoading}
       error={error}
-      user={user}
+      user={user!}
       dispatch={dispatch}
       loading={loading || commentsLoading || attendanceLoading}
     />

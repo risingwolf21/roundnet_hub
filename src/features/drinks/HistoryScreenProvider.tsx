@@ -14,7 +14,7 @@ const HistoryScreenProvider = () => {
       historyEndReached={historyEndReached}
       historyError={historyError ?? ''}
       historyLoading={historyLoading}
-      user={user}
+      user={user!}
     />
   );
 };

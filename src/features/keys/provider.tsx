@@ -13,7 +13,7 @@ const ItemHolderScreenProvider = () => {
   const { loading } = useSelector((state: RootState) => state.keys);
   const { t } = useTranslation();
 
-  return <ItemHolderScreen t={t} dispatch={dispatch} user={user} loading={loading} keyHolders={keyHolders} />;
+  return <ItemHolderScreen t={t} dispatch={dispatch} user={user!} loading={loading} keyHolders={keyHolders} />;
 };
 
 export default ItemHolderScreenProvider;

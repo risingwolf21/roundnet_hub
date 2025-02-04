@@ -25,7 +25,7 @@ export const SelectGroupDialog = ({ open, handleClose, handleSubmit }: SelectGro
 
   useEffect(() => {
     if (open)
-      SupabaseEventRepository.fetchUserGroups(user).then(
+      SupabaseEventRepository.fetchUserGroups(user!).then(
         (
           x: PostgrestSingleResponse<
             {

@@ -6,7 +6,7 @@ import { useAuth } from '../auth/AuthContext';
 
 export const FirebaseMessaging = () => {
   const { user, deviceId } = useAuth();
-  useFirebase(user, deviceId);
+  useFirebase(user!, deviceId);
 
   return (
     <ToastContainer

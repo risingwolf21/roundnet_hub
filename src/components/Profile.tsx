@@ -27,7 +27,7 @@ const UserScreen = () => {
 
   const loadUserData = async (userId: string) => {
 
-    const userResult = await SupabaseUserRepository.fetchUserWithGroups(user.userId);
+    const userResult = await SupabaseUserRepository.fetchUserWithGroups(user!.userId);
     const result = await SupabaseUserRepository.fetchUserWithGroups(userId);
 
     return { result, userResult }

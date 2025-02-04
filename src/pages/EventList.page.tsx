@@ -21,7 +21,7 @@ const EventScreenProvider = () => {
       events={events}
       loading={loading}
       error={error ? { message: error, severity: 'error' } : null}
-      user={user}
+      user={user!}
       fetchMode={fetchMode}
     />
   );

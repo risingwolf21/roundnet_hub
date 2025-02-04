@@ -21,7 +21,7 @@ const DrinkListScreenProvider = () => {
   return (
     <DrinkListScreen
       dispatch={dispatch}
-      user={user}
+      user={user!}
       drinks={drinks}
       drinksError={drinksError ?? ''}
       drinksLoading={drinksLoading}

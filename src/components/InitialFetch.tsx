@@ -17,8 +17,8 @@ export const useInitialFetch = () => {
   const { user } = useAuth();
 
   useEffect(() => {
-    dispatch(fetchNotificationsAsync(user));
-    if (user.role === 'admin') dispatch(fetchNotVerifiedUsersAsync());
+    dispatch(fetchNotificationsAsync(user!));
+    if (user!.role === 'admin') dispatch(fetchNotVerifiedUsersAsync());
   }, [dispatch, user]);
 
 };

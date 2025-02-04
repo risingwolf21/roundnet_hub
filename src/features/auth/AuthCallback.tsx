@@ -1,18 +1,28 @@
 import { Box, CircularProgress, Typography } from "@mui/material";
 import React, { useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "src/components/services/supabase/supabaseClient";
 
 export const AuthCallback = () => {
 
+  const navigate = useNavigate();
+
   useEffect(() => {
-    const hash = window.location.hash;
-    const params = new URLSearchParams(hash.replace("#", "?"))
-    const refresh_token = params.get("refresh_token");
-    if (refresh_token) {
-      supabase.auth.refreshSession({ refresh_token }).then(result => console.log("Refreshed session"))
+    const hash = window.location.hash.substring(1);
+    const hashParams = new URLSearchParams(hash);
+
+    const parsedParams: Map<string, string> = new Map();
+    for (const [key, value] of hashParams.entries()) {
+      parsedParams.set(key, value)
     }
-  }, []);
+
+    supabase.auth.refreshSession({ refresh_token: parsedParams.get("refresh_token")! }).then(result => {
+      const provider_token = parsedParams.get("provider_token");
+      if (provider_token)
+        supabase.auth.updateUser({ data: { provider_token: provider_token } })
+    })
+
+  }, [navigate]);
 
   return (
     <Box

@@ -64,7 +64,7 @@ export const PullToRefresh = ({ onRefresh, children = null, indicatorSize = 50, 
         <div
             ref={ref}
             style={{
-                overflowY: dragging ? 'hidden' : 'scroll',
+                overflowY: 'hidden',
             }}
             onTouchStart={onTouchStart}
             onTouchMove={onTouchMove}

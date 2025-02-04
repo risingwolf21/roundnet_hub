@@ -7,7 +7,6 @@ export const InstallPWA = ({ element }: { element: (onClick: (e: any) => void) =
   useEffect(() => {
     const handler = (e: any) => {
       e.preventDefault();
-      console.log('we are being triggered :D');
       setSupportsPWA(true);
       setPromptInstall(e);
     };

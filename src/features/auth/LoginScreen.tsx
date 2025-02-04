@@ -33,46 +33,6 @@ const LoginScreen = () => {
     // });
   }, []);
 
-  const onLogin = (credentials: Credentials) => {
-    setAlertInfo(null);
-    setLoginInProgress(true);
-    supabase.auth
-      .signInWithPassword({
-        email: credentials.email,
-        password: credentials.password,
-      })
-      .then((result) => {
-        if (process.env.REACT_APP_ENV === 'production_admin' && result.data.user?.role !== 'admin') {
-          throw Error('Cannot login if not user has not the admin role');
-        }
-        if (result.error) {
-          throw result.error;
-        } else if (!result.data.session) {
-          throw Error('Login failed without any error message. Please try again...');
-        } else {
-          setAlertInfo(null);
-          setLoginInProgress(false);
-        }
-      })
-      .catch((error) => {
-        captureException(error);
-        setAlertInfo({ message: error.message, severity: 'error' });
-        setLoginInProgress(false);
-      });
-  };
-
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    const data = new FormData(event.currentTarget);
-    const email = data.get('email')?.toString();
-    const password = data.get('password')?.toString();
-    if (email && password) {
-      onLogin({ email, password });
-    } else {
-      setAlertInfo({ message: 'Email or Password is null.', severity: 'error' });
-    }
-  };
-
   const signIn: (provider: AuthProvider, formData: FormData | undefined) => void = async (
     provider,
     formData,
@@ -113,8 +73,12 @@ const LoginScreen = () => {
         supabase.auth.signInWithOAuth({
           provider: 'google',
           options: {
-            scopes: 'https://www.googleapis.com/auth/calendar',
+            scopes: 'https://www.googleapis.com/auth/calendar.readonly',
             redirectTo: window.location.origin + "/auth/callback",
+            queryParams: {
+              access_type: 'offline',
+              prompt: 'consent',
+            }
           },
         })
           .then((result) => {
@@ -163,7 +127,7 @@ const LoginScreen = () => {
   const rememberMe = () => <div></div>
 
   return <SignInPage
-    providers={[{ id: 'credentials', name: 'Credentials' }]}
+    providers={[{ id: 'credentials', name: 'Credentials' }, { id: 'google', name: 'google' }]}
     signIn={signIn}
     slots={{
       title: Title,

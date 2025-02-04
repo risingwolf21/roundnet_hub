@@ -106,9 +106,9 @@ const Layout = ({
               }}
               sx={{ pr: 0 }}
             >
-              {user.avatarUrl ? (
+              {user?.avatarUrl ? (
                 <Avatar sx={{ borderRadius: 2, width: '35px', height: '35px' }}>
-                  <img src={user.avatarUrl} alt="logo" width={'35px'} height={'35px'} />
+                  <img src={user?.avatarUrl} alt="logo" width={'35px'} height={'35px'} />
                 </Avatar>
               ) : (
                 <AccountCircle />

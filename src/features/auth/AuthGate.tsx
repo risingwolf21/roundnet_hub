@@ -1,18 +1,15 @@
 import { Box, CircularProgress, Typography } from '@mui/material';
 import { captureException, setUser } from '@sentry/react';
-import { AuthChangeEvent, Session } from '@supabase/supabase-js';
+import { Session } from '@supabase/supabase-js';
 import { useNotifications } from '@toolpad/core/useNotifications';
 import { logEvent, setUserId } from 'firebase/analytics';
 import React, { useCallback, useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
-import { useClient } from 'react-supabase';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { supabase } from 'src/components/services/supabase/supabaseClient';
 import { analytics } from 'src/firebase/firebaseConfig';
 import useDeviceId from 'src/hooks/useDeviceId';
-import NotVerifiedScreen from '../../components/NotVerifiedScreen';
 import { HOMEPAGE } from '../../constants';
-import AuthPage from '../../pages/Auth.page';
 import { onUserChange } from '../../redux/applicationSlice';
 import { RootState } from '../../redux/store';
 import { AdminPermissionsRepository } from '../../repository/AdminPermissionsRepository';
@@ -26,7 +23,6 @@ type Props = {
 };
 
 export const AuthGate = ({ children }: Props) => {
-  const client = useClient();
   const dispatch = useDispatch();
 
   const navigate = useNavigate();
@@ -37,22 +33,7 @@ export const AuthGate = ({ children }: Props) => {
   const currentUser = useSelector((state: RootState) => state.application.user);
   const [loading, setLoading] = useState(false);
   const [session, setSession] = useState<Session | null>(null);
-
-  const [searchParams, _] = useSearchParams();
-
-  useEffect(() => {
-    const hash = window.location.hash;
-    const params = new URLSearchParams(hash.replace("#", "?"))
-    const refresh_token = params.get("refresh_token");
-    console.log(refresh_token)
-    if (refresh_token) {
-      supabase.auth.refreshSession({ refresh_token }).then(result => {
-        if (result.data.session) {
-          handleAuthChange("SIGNED_IN", result.data.session);
-        }
-      })
-    }
-  }, []);
+  const [provider_token, setProviderToken] = useState<string | null>(null);
 
   const signOut = async () => {
     try {
@@ -80,7 +61,6 @@ export const AuthGate = ({ children }: Props) => {
 
   const handleAuthChange = useCallback(
     async (
-      event: AuthChangeEvent,
       session: Session | null
     ): Promise<{
       navigateTo: string;
@@ -99,6 +79,7 @@ export const AuthGate = ({ children }: Props) => {
         if (!user || error) {
           throw Error('Fetching user in AuthGate was not successful. \n' + JSON.stringify(error));
         }
+        setProviderToken(session.user.user_metadata["provider_token"])
         setUserId(analytics, session.user.id);
         logEvent(analytics, "login", { id: session.user.id, username: user.displayName })
         setUser({ email: session.user.email, id: session.user.id, username: user.displayName });
@@ -120,20 +101,34 @@ export const AuthGate = ({ children }: Props) => {
       } finally {
         setLoading(false);
       }
-      if (event === 'PASSWORD_RECOVERY') {
-        return { navigateTo: '/reset-password' };
-      } else {
-        return { navigateTo: location.pathname === '/login' || location.pathname === '/auth/callback' ? `/${HOMEPAGE}` : location.pathname };
-      }
+      return { navigateTo: location.pathname === '/login' || location.pathname === '/auth/callback' ? `/${HOMEPAGE}` : location.pathname };
     },
     [dispatch, reset, currentUser, location.pathname]
   );
 
   useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      console.log(session)
+      setSession(session);
+      if (session === null) {
+        reset();
+      } else if (session.user.id !== currentUser?.userId) {
+        handleAuthChange(session)
+          .then((result) => {
+            if (result) navigate(result.navigateTo, { replace: true });
+          })
+          .catch((error) => {
+            setLoading(false);
+            notifications.show(error.message, { severity: "error" })
+          });
+      }
+    });
+
     const {
       data: { subscription },
-    } = client.auth.onAuthStateChange((event, session) => {
-      console.log(session?.provider_token)
+    } = supabase.auth.onAuthStateChange((event, session) => {
+      console.log(event, session)
+      setSession(session);
       if (event === 'INITIAL_SESSION' && currentUser) {
         return;
       }
@@ -143,7 +138,7 @@ export const AuthGate = ({ children }: Props) => {
         dispatch(onUserChange(null));
         setUser(null);
       } else if (currentUser?.userId !== session?.user.id) {
-        handleAuthChange(event, session)
+        handleAuthChange(session)
           .then((result) => {
             if (result) navigate(result.navigateTo, { replace: true });
           })
@@ -154,7 +149,7 @@ export const AuthGate = ({ children }: Props) => {
       }
     });
     return () => subscription.unsubscribe();
-  }, [client, handleAuthChange, dispatch, navigate, currentUser]);
+  }, []);
 
   if (loading)
     return (
@@ -175,18 +170,8 @@ export const AuthGate = ({ children }: Props) => {
       </Box>
     );
   return (
-    <>
-      {session ? (
-        currentUser && currentUser.verified ? (
-          <AuthContext.Provider value={{ user: currentUser, signOut: signOut, deviceId, session }}>
-            {children}
-          </AuthContext.Provider>
-        ) : (
-          <NotVerifiedScreen />
-        )
-      ) : (
-        <AuthPage />
-      )}
-    </>
+    <AuthContext.Provider value={{ user: currentUser, signOut: signOut, deviceId, session, provider_token }}>
+      {children}
+    </AuthContext.Provider>
   );
 };

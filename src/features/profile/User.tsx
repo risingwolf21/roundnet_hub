@@ -20,7 +20,7 @@ import {
 import { useClient } from 'react-supabase';
 import { useSelector } from 'react-redux';
 import React, { useEffect, useState } from 'react';
-import { AppDispatch, RootState, useAppDispatch } from '../redux/store';
+import { AppDispatch, RootState, useAppDispatch } from '../../redux/store';
 import { Session, SupabaseClient } from '@supabase/supabase-js';
 import {
   AddPhotoAlternateOutlined,
@@ -40,17 +40,18 @@ import { captureException } from '@sentry/react';
 import Compressor from 'compressorjs';
 import { addNotificationPermissionAsync, removeNotificationPermissionAsync } from 'src/redux/applicationSlice';
 import { uuid } from '@supabase/supabase-js/dist/main/lib/helpers';
-import { SupabaseEventRepository } from '../repository/EventRepository';
-import { requestNotificationPermission } from '../hooks/useFirebase';
-import { messaging } from '../firebase/firebaseConfig';
-import { Database } from '../types/supabase-generated.types';
+import { SupabaseEventRepository } from '../../repository/EventRepository';
+import { requestNotificationPermission } from '../../hooks/useFirebase';
+import { messaging } from '../../firebase/firebaseConfig';
+import { Database } from '../../types/supabase-generated.types';
 import { useNavigate } from 'react-router-dom';
-import Layout from './Layout';
-import { useAuth } from '../features/auth/AuthContext';
-import { UserWithRolesAndPermissions } from '../types/supabaseTypes';
-import CropImageDialog from './CropImageDialog';
-import pzLogo from '../images/pz_logo.svg';
-import { supabase } from './services/supabase/supabaseClient';
+import Layout from '../../components/Layout';
+import { useAuth } from '../auth/AuthContext';
+import { UserWithRolesAndPermissions } from '../../types/supabaseTypes';
+import CropImageDialog from '../../components/CropImageDialog';
+import pzLogo from '../../images/pz_logo.svg';
+import { supabase } from '../../components/services/supabase/supabaseClient';
+import { CalendarList } from './CalendarList';
 
 type UserScreenProps = {
   user: UserWithRolesAndPermissions;
@@ -69,12 +70,12 @@ export const UserScreenProvider = () => {
   const [groups, setGroups] = useState<Group[]>([]);
 
   useEffect(() => {
-    SupabaseEventRepository.fetchUserGroups(user).then((result) => {
+    SupabaseEventRepository.fetchUserGroups(user!).then((result) => {
       setGroups(result.data?.map((x) => x.group) ?? []);
     });
   }, [user]);
 
-  return <UserScreen user={user} deviceId={deviceId} client={client} dispatch={dispatch} groups={groups} handleSignOut={signOut} session={session} />;
+  return <UserScreen user={user!} deviceId={deviceId} client={client} dispatch={dispatch} groups={groups} handleSignOut={signOut} session={session!} />;
 };
 
 const NotificationSwitch = ({
@@ -140,27 +141,6 @@ const UserScreen = ({ user, session, client, dispatch, groups, deviceId }: UserS
   const [name, setName] = useState(user.name);
   const [loadingSave, setLoadingSave] = useState(false);
   const { updatingNotificationTags } = useSelector((state: RootState) => state.application);
-
-  useEffect(() => {
-    supabase.auth.getSession().then(result => {
-      console.log(result)
-      const provider_token = result.data.session?.access_token
-      if (provider_token) {
-        fetch("https://www.googleapis.com/calendar/v3/users/me/calendarList", {
-          method: "GET",
-          headers: {
-            "Authorization": "Bearer " + provider_token,
-          }
-        })
-          .then((res) => res.json())
-          .then((res) => console.log(res))
-          .catch(err => console.error(err))
-      } else {
-        console.log("no provider token")
-      }
-    })
-    
-  }, [])
 
   const isNotificationSupported = () =>
     'Notification' in window && 'serviceWorker' in navigator && 'PushManager' in window;
@@ -385,6 +365,7 @@ const UserScreen = ({ user, session, client, dispatch, groups, deviceId }: UserS
             <ListItemText primary={user.player_data.rg_id} secondary={'Roundnet Germany ID'} />
           </ListItem>
         )}
+        <CalendarList />
         <List
           key={'groups'}
           subheader={

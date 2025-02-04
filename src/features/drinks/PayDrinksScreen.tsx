@@ -74,7 +74,7 @@ const PayDrinksScreenProvider = () => {
 
   return (
     <PayDrinksScreen
-      user={user}
+      user={user!}
       paymentHistory={paymentHistory ?? []}
       paymentError={paymentError ?? ''}
       paymentLoading={paymentLoading}

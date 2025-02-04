@@ -23,9 +23,9 @@ const NotificationScreen = () => {
   if (!can('view', 'notifications')) return <Navigate to={`/${HOMEPAGE}`} replace={true} />;
 
   const markNotificationsAsRead = () => {
-    logEvent(analytics, "notifications_cleared", { user: user.userId, name: user.name, });
-    SupabaseUserRepository.markNotificationsAsRead(user).then((result) => {
-      dispatch(fetchNotificationsAsync(user));
+    logEvent(analytics, "notifications_cleared", { user: user!.userId, name: user!.name, });
+    SupabaseUserRepository.markNotificationsAsRead(user!).then((result) => {
+      dispatch(fetchNotificationsAsync(user!));
     });
   };
 

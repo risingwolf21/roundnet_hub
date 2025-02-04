@@ -1,27 +1,29 @@
-import { InfluxDBClient } from '@influxdata/influxdb3-client';
 import { CssBaseline } from '@mui/material';
 import * as Sentry from '@sentry/react';
 import * as React from 'react';
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import Browse from './components/Browse';
 import { FallbackComponent } from './components/Error';
-import { InitialFetch } from './components/InitialFetch';
 import { LoadingScreen } from './components/LoadingScreen';
 import NotVerifiedScreen from './components/NotVerifiedScreen';
 import { SupabaseClient } from './components/SupabaseClient';
 import { SupabaseQueryClient } from './components/SupabaseQueryClient';
 import UpdateAvailable from './components/UpdateAvailable';
-import { UserScreenProvider } from './components/User';
+import { UserScreenProvider } from './features/profile/User';
 import BrowseAdmin from './features/admin/BrowseAdmin';
 import { PermissionList } from './features/admin/PermissionList';
 import { SentryIssueList } from './features/admin/SentryIssues';
+import { AuthCallback } from './features/auth/AuthCallback';
 import { AuthGate } from './features/auth/AuthGate';
+import ForgotPasswordScreen from './features/auth/ForgotPasswordScreen';
+import LoginScreen from './features/auth/LoginScreen';
+import { ProtectedLayout } from './features/auth/ProtectedRoute';
+import RegisterScreen from './features/auth/RegisterScreen';
 import { RecurringEventsProvider } from './features/events/RecurringEvents';
 import { GameList } from './features/games/GameList';
 import { ReportScore } from './features/games/ReportScore';
-import NotificationsScreenProvider from './features/notifications/NotificationsScreen';
-import { useServiceWorker } from './hooks/useServiceWorker';
 import { HomePage } from './features/homepage/HomePage';
+import { useServiceWorker } from './hooks/useServiceWorker';
 
 const FeatureNotAvailable = React.lazy(() => import('./components/FeatureNotAvailable'));
 const HistoryScreenProvider = React.lazy(() => import('./features/drinks/HistoryScreenProvider'));
@@ -64,9 +66,15 @@ const App = () => {
         }}
       >
         <AuthGate>
-          <InitialFetch>
-            <React.Suspense fallback={<LoadingScreen />}>
-              <Routes>
+          <React.Suspense fallback={<LoadingScreen />}>
+            <Routes>
+
+              <Route path="/login" element={<LoginScreen />} />
+              <Route path="/register" element={<RegisterScreen />} />
+              <Route path="/forgot-password" element={<ForgotPasswordScreen />} />
+              <Route path="/auth/callback" element={<AuthCallback />} />
+
+              <Route element={<ProtectedLayout />}>
                 <Route index path="/" element={<HomePage />} />
 
                 <Route path="/not-verified" element={<NotVerifiedScreen />} />
@@ -122,11 +130,10 @@ const App = () => {
                   <Route path="permissions" element={<PermissionList />} />
                   <Route path="sentry-issues" element={<SentryIssueList />} />
                 </Route>
-                <Route path="*" element={<Navigate replace to={`/training/list`} />} />
-                <Route path="" element={<Navigate replace to={`/training/list`} />} />
-              </Routes>
-            </React.Suspense>
-          </InitialFetch>
+              </Route>
+              <Route path="*" element={<Navigate to="/login" replace />} />
+            </Routes>
+          </React.Suspense>
         </AuthGate>
       </BrowserRouter>
     </Sentry.ErrorBoundary>

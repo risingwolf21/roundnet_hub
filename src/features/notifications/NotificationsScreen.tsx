@@ -31,7 +31,7 @@ const NotificationsScreenProvider = () => {
   const { user } = useAuth();
   const { t } = useTranslation();
 
-  return <NotificationsScreen t={t} user={user} />;
+  return <NotificationsScreen t={t} user={user!} />;
 };
 
 type NotificationsScreenProps = {
