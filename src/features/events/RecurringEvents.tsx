@@ -81,7 +81,7 @@ export type RecurringEventsProps = {
   error: AlertMessage | null;
 };
 
-export const RecurringEventsProvider = () => {
+const RecurringEventsProvider = () => {
   const { recurringEventsLoading, error, recurringEvents } = useSelector((state: RootState) => state.events);
 
   return (
@@ -259,3 +259,4 @@ const RecurringEvents = ({ recurringEvents, loading, error }: RecurringEventsPro
     </Layout>
   );
 };
+export default RecurringEventsProvider;

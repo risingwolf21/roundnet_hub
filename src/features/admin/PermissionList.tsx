@@ -18,7 +18,7 @@ import { SwipeableDialog } from '../../components/SwipeableDialog';
 import { supabase } from '../../components/services/supabase/supabaseClient';
 import { NonNullableFields } from 'types/supabase';
 
-export const PermissionList = () => {
+const PermissionList = () => {
   const [alertInfo, setAlertInfo] = useState<AlertMessage | null>(null);
   const [permissions, setPermissions] = useState<RolePermissionMapping[]>([]);
   const [allAppPermissions, setAllAppPermissions] = useState<AppPermission[]>([]);
@@ -200,3 +200,4 @@ export const PermissionList = () => {
     </Layout>
   );
 };
+export default PermissionList;

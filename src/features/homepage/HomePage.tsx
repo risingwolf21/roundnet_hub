@@ -11,7 +11,7 @@ import { eventsSelector } from "../events/slices/eventsSlice"
 import { format } from "date-fns"
 import { useNavigate } from "react-router-dom"
 
-export const HomePage = () => {
+const HomePage = () => {
 
     const { user } = useAuth();
     const events = useSelector(eventsSelector.selectAll);
@@ -151,3 +151,4 @@ export const HomePage = () => {
         </Box>
     </Layout >
 }
+export default HomePage;

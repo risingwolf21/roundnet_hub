@@ -56,7 +56,7 @@ const SelectPlayer = ({ options, loading, label, onSelect }: Props) => {
   );
 };
 
-export const ReportScore = () => {
+const ReportScore = () => {
   const { players, loadingPlayers } = useSelector((state: RootState) => state.games);
   const [sets, setSets] = useState<MatchSet[]>([
     { id: '', created_at: '', set_number: 1, match: '', team_a_score: 0, team_b_score: 0 },
@@ -272,3 +272,4 @@ export const ReportScore = () => {
     </Layout>
   );
 };
+export default ReportScore;

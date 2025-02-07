@@ -7,7 +7,7 @@ import {supabase} from './services/supabase/supabaseClient';
 import {Json} from 'src/types/supabase-generated.types';
 import Layout from './Layout';
 
-export const SupabaseQueryClient = () => {
+const SupabaseQueryClient = () => {
   const [loading, setLoading] = useState(false);
   const [query, setQuery] = useState('');
   const [result, setResult] = useState<any[]>([]);
@@ -104,3 +104,4 @@ export const SupabaseQueryClient = () => {
     </Layout>
   );
 };
+export default SupabaseQueryClient;
