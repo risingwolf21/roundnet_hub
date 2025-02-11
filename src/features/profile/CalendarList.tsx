@@ -16,7 +16,6 @@ export const CalendarList = () => {
 
   useEffect(() => {
     supabase.auth.getSession().then(result => {
-      console.log(result)
       const provider_token = result.data.session?.user.user_metadata["provider_token"]
       if (provider_token) {
         fetch("https://www.googleapis.com/calendar/v3/users/me/calendarList", {

@@ -24,6 +24,7 @@ import { GameList } from './features/games/GameList';
 import { ReportScore } from './features/games/ReportScore';
 import { HomePage } from './features/homepage/HomePage';
 import { useServiceWorker } from './hooks/useServiceWorker';
+import { DataProtection } from './components/DataProtection';
 
 const FeatureNotAvailable = React.lazy(() => import('./components/FeatureNotAvailable'));
 const HistoryScreenProvider = React.lazy(() => import('./features/drinks/HistoryScreenProvider'));
@@ -68,6 +69,8 @@ const App = () => {
         <AuthGate>
           <React.Suspense fallback={<LoadingScreen />}>
             <Routes>
+
+              <Route path="/data-protection" element={<DataProtection />} />
 
               <Route path="/login" element={<LoginScreen />} />
               <Route path="/register" element={<RegisterScreen />} />
