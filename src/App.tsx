@@ -41,7 +41,7 @@ const NotVerifiedScreen = React.lazy(() => import('./components/NotVerifiedScree
 const HomePage = React.lazy(() => import('./features/homepage/HomePage'));
 const SupabaseClient = React.lazy(() => import('./components/SupabaseClient'));
 const SupabaseQueryClient = React.lazy(() => import('./components/SupabaseQueryClient'));
-const UserScreenProvider = React.lazy(() => import('./components/User'));
+const UserScreenProvider = React.lazy(() => import('./features/profile/User'));
 const PermissionList = React.lazy(() => import('./features/admin/PermissionList'));
 
 const App = () => {
