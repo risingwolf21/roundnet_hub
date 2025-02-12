@@ -63,7 +63,7 @@ type UserScreenProps = {
   handleSignOut: () => void;
 };
 
-export const UserScreenProvider = () => {
+const UserScreenProvider = () => {
   const { user, signOut, deviceId, session } = useAuth();
   const client = useClient();
   const dispatch = useAppDispatch();
@@ -511,4 +511,4 @@ const UserScreen = ({ user, session, client, dispatch, groups, deviceId }: UserS
     </Layout>
   );
 };
-export default UserScreen;
+export default UserScreenProvider;

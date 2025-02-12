@@ -50,7 +50,7 @@ function EditToolbar(props: EditToolbarProps) {
   );
 }
 
-export const SupabaseClient = () => {
+const SupabaseClient = () => {
   const [tables, setTables] = useState<string[]>([]);
   const [enums, setEnums] = useState<Map<string, string[]>>(new Map<string, string[]>());
   const [selectedTable, setSelectedTable] = useState<string>('');
@@ -434,3 +434,4 @@ export const SupabaseClient = () => {
     </Layout>
   );
 };
+export default SupabaseClient;
