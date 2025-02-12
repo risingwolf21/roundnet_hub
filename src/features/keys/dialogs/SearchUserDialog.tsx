@@ -56,7 +56,7 @@ export const SearchUserDialog = ({
           justifyContent: 'center',
         }}
       >
-        <AppBar position="sticky">
+        <AppBar position="fixed" sx={{ pt: 'env(safe-area-inset-top)' }}>
           <Toolbar>
             <IconButton size="large" edge="start" color="inherit" onClick={handleClose}>
               <ArrowBack />
