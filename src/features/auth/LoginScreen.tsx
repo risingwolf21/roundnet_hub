@@ -1,25 +1,16 @@
-import { useTheme } from '@mui/material';
+import { Typography, useTheme } from '@mui/material';
 import Link from '@mui/material/Link';
 import { captureException } from '@sentry/react';
 import { SignInPage, type AuthProvider } from '@toolpad/core/SignInPage';
-import { useNotifications } from '@toolpad/core/useNotifications';
-import React, { FormEvent, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { AlertMessage } from '../../components/AlertSnackbar';
 import { supabase } from '../../components/services/supabase/supabaseClient';
 import raw from '../../git_commit.txt';
 
-type Credentials = {
-  email: string;
-  password: string;
-};
 
 const LoginScreen = () => {
-  const [alertInfo, setAlertInfo] = useState<AlertMessage | null>(null);
-  const [loginInProgress, setLoginInProgress] = useState(false);
   const theme = useTheme();
   const navigate = useNavigate();
-  const notifications = useNotifications();
   const [version, setVersion] = useState<string>('');
 
   useEffect(() => {
@@ -28,9 +19,6 @@ const LoginScreen = () => {
       .then((text) => {
         setVersion(text);
       });
-    // notifications.show('Die Email des Google-Kontos muss übereinstimmen für eine Verknüpfung mit einem bestehenden Konto. Ansonsten wird ein neues Roundnet Karlsruhe Konto angelegt.', {
-    //   severity: "info"
-    // });
   }, []);
 
   const signIn: (provider: AuthProvider, formData: FormData | undefined) => void = async (
@@ -55,15 +43,10 @@ const LoginScreen = () => {
                 throw result.error;
               } else if (!result.data.session) {
                 throw Error('Login failed without any error message. Please try again...');
-              } else {
-                setAlertInfo(null);
-                setLoginInProgress(false);
               }
             })
             .catch((error) => {
               captureException(error);
-              setAlertInfo({ message: error.message, severity: 'error' });
-              setLoginInProgress(false);
             })
             .finally(() => {
               resolve();
@@ -89,15 +72,10 @@ const LoginScreen = () => {
               throw result.error;
             } else if (!result.data) {
               throw Error('Login failed without any error message. Please try again...');
-            } else {
-              setAlertInfo(null);
-              setLoginInProgress(false);
             }
           })
           .catch((error) => {
             captureException(error);
-            setAlertInfo({ message: error.message, severity: 'error' });
-            setLoginInProgress(false);
           })
           .finally(() => {
             resolve();
@@ -124,7 +102,7 @@ const LoginScreen = () => {
     Passwort vergessen?
   </Link>
 
-  const rememberMe = () => <div></div>
+  const rememberMe = () => <Typography>{`Version ${version}`}</Typography>
 
   return <SignInPage
     providers={[{ id: 'credentials', name: 'Credentials' }, { id: 'google', name: 'google' }]}
@@ -151,76 +129,5 @@ const LoginScreen = () => {
       submitButton: { title: "Einloggen" },
       rememberMe: { disabled: true, hidden: true }
     }} />
-  // return (
-  //   <Container component="main" maxWidth="xs">
-  //     <CssBaseline />
-  //     <Box
-  //       sx={{
-  //         marginTop: 8,
-  //         display: 'flex',
-  //         flexDirection: 'column',
-  //         alignItems: 'center',
-  //       }}
-  //     >
-  //       <img src={Logo} alt="Logo" width={150} />
-  //       <Typography component="h1" variant="h5">
-  //         Login
-  //       </Typography>
-  //       <Box component="form" onSubmit={handleSubmit} noValidate sx={{ mt: 1 }}>
-  //         <TextField
-  //           margin="normal"
-  //           color="secondary"
-  //           required
-  //           fullWidth
-  //           id="email"
-  //           label="Email Address"
-  //           name="email"
-  //           autoComplete="email"
-  //         />
-  //         <TextField
-  //           margin="normal"
-  //           color="secondary"
-  //           required
-  //           fullWidth
-  //           name="password"
-  //           label="Password"
-  //           type="password"
-  //           id="password"
-  //           autoComplete="current-password"
-  //         />
-  //         {alertInfo && (
-  //           <Alert sx={{ mt: 2 }} severity="error">
-  //             {alertInfo.message}
-  //           </Alert>
-  //         )}
-  //         <Button
-  //           type="submit"
-  //           fullWidth
-  //           disabled={loginInProgress}
-  //           color="secondary"
-  //           variant="contained"
-  //           sx={{ mt: 3, mb: 2 }}
-  //         >
-  //           {loginInProgress ? <CircularProgress /> : 'Einloggen'}
-  //         </Button>
-  //         <Grid container sx={{ justifyContent: 'space-between' }}>
-  //           <Grid>
-  //             <Link href="#" variant="body2" onClick={() => navigate('/forgot-password', { replace: true })}>
-  //               Passwort vergessen?
-  //             </Link>
-  //           </Grid>
-  //           <Grid>
-  //             <Link href="#" variant="body2" onClick={() => navigate('/register', { replace: true })}>
-  //               {'Noch keinen Account?'}
-  //             </Link>
-  //           </Grid>
-  //         </Grid>
-  //         <Grid container sx={{ position: 'absolute', left: 0, bottom: 0, right: 0, justifyContent: 'center' }}>
-  //           <p style={{ color: '#ccc' }}>Version {process.env.REACT_APP_VERSION + '.' + version.slice(0, 6)}</p>
-  //         </Grid>
-  //       </Box>
-  //     </Box>
-  //   </Container>
-  // );
 };
 export default LoginScreen;
