@@ -96,7 +96,7 @@ const HomePage = () => {
                         <CardActions disableSpacing sx={{ justifyContent: "start" }}>
                             <IconButton
                                 onClick={(e) => {
-                                    dispatch(updateAttendanceAsync({ user: user!, eventId: event.id, state: "Declined", oldState: event.userAttendance }))
+                                    dispatch(updateAttendanceAsync({ user: user!, event, state: "Declined", oldState: event.userAttendance }))
                                     e.stopPropagation();
                                 }}
                                 disabled={event.isCancelled || eventInThePast(event)}
@@ -111,7 +111,7 @@ const HomePage = () => {
                             </IconButton>
                             <IconButton
                                 onClick={(e) => {
-                                    dispatch(updateAttendanceAsync({ user: user!, eventId: event.id, state: "Attending", oldState: event.userAttendance }));
+                                    dispatch(updateAttendanceAsync({ user: user!, event, state: "Attending", oldState: event.userAttendance }));
                                     e.stopPropagation();
                                 }}
                                 disabled={event.isCancelled || answerDeadlineExpired(event) || eventInThePast(event)}

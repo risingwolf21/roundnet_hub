@@ -4,6 +4,8 @@ import { formatDateToDatabase } from 'src/utils';
 import { fetchSingleEventAsync } from './eventsSlice';
 import { SupabaseEventRepository } from '../../../repository/EventRepository';
 import { TablesUpdate } from '../../../types/supabase-generated.types';
+import { Event } from 'types/supabase';
+import { GoogleRepository } from 'src/repository/GoogleRepository';
 
 type SliceAttendance = {
   id: string;
@@ -100,22 +102,22 @@ const eventAttendanceSlice = createSlice({
       .addCase(updateAttendanceAsync.pending, (state, action) => {
         state.loading = true;
         let attendanceEntry = {
-          event: action.meta.arg.eventId,
+          event: action.meta.arg.event.id,
           user: action.meta.arg.user,
           state: action.meta.arg.state,
           lastUpdate: formatDateToDatabase(new Date()),
         } as FullAttendance;
 
-        let slice = eventAttendanceAdapter.getSelectors().selectById(state, action.meta.arg.eventId);
+        let slice = eventAttendanceAdapter.getSelectors().selectById(state, action.meta.arg.event.id);
         if (!slice) {
-          eventAttendanceAdapter.addOne(state, { id: action.meta.arg.eventId, attendance: [attendanceEntry] });
+          eventAttendanceAdapter.addOne(state, { id: action.meta.arg.event.id, attendance: [attendanceEntry] });
           return;
         }
 
         let attendance = slice.attendance;
 
         let sliceAttendance = {
-          id: action.meta.arg.eventId,
+          id: action.meta.arg.event.id,
         } as Update<SliceAttendance>;
 
         let index = attendance.findIndex((x) => x.user.userId === action.meta.arg.user.userId);
@@ -142,13 +144,13 @@ const eventAttendanceSlice = createSlice({
         state.error = action.error.message ?? '';
 
         let attendance =
-          eventAttendanceAdapter.getSelectors().selectById(state, action.meta.arg.eventId)?.attendance ?? [];
+          eventAttendanceAdapter.getSelectors().selectById(state, action.meta.arg.event.id)?.attendance ?? [];
         let index = attendance.findIndex((x) => x.user.userId === action.meta.arg.user.userId);
 
         if (!attendance || index < 0) return;
 
         let sliceAttendance = {
-          id: action.meta.arg.eventId,
+          id: action.meta.arg.event.id,
           changes: {
             attendance: attendance.map((x, i) =>
               i === index
@@ -191,11 +193,15 @@ export const fetchEventAttendanceAsync = createAsyncThunk(
   }
 );
 
-type UpdateAttendanceProps = { user: User; eventId: string; state: EventAttendance; oldState: EventAttendance };
+type UpdateAttendanceProps = { user: User; event: Event; state: EventAttendance; oldState: EventAttendance, provider_token?: string | null };
 export const updateAttendanceAsync = createAsyncThunk(
   'updateAttendanceAsync',
-  async ({ eventId, user, state, oldState }: UpdateAttendanceProps) => {
-    const response = await SupabaseEventRepository.updateAttendance(user.userId, eventId, state);
+  async ({ event, user, state, oldState, provider_token }: UpdateAttendanceProps) => {
+    if (provider_token) {
+      const res = await GoogleRepository.insertEventToCalendar(event, provider_token);
+      console.log(res)
+    }
+    const response = await SupabaseEventRepository.updateAttendance(user.userId, event.id, state);
     return { data: response.data, error: response.error, oldState };
   }
 );

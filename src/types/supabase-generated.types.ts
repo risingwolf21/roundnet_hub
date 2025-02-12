@@ -601,7 +601,7 @@ export type Database = {
           answerDeadline: string | null
           created_at: string
           description: string
-          endDateTime: string | null
+          endDateTime: string
           group: string
           id: string
           isCancelled: boolean
@@ -619,7 +619,7 @@ export type Database = {
           answerDeadline?: string | null
           created_at?: string
           description?: string
-          endDateTime?: string | null
+          endDateTime: string
           group: string
           id?: string
           isCancelled?: boolean
@@ -637,7 +637,7 @@ export type Database = {
           answerDeadline?: string | null
           created_at?: string
           description?: string
-          endDateTime?: string | null
+          endDateTime?: string
           group?: string
           id?: string
           isCancelled?: boolean
