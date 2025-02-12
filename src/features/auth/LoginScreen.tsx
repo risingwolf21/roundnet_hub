@@ -94,15 +94,18 @@ const LoginScreen = () => {
     );
   }
 
-  const SignUpLink = () => <Link href="#" variant="body2" onClick={() => navigate('/register', { replace: true })}>
-    {'Noch keinen Account?'}
-  </Link >
+  const SignUpLink = () => <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
+    <Link href="#" variant="body2" onClick={() => navigate('/register', { replace: true })}>
+      {'Noch keinen Account?'}
+    </Link>
+    <Typography sx={{mt: 1}}>{`Version ${process.env.REACT_APP_VERSION}-${version.slice(0, 8)}`}</Typography>
+  </div>
 
   const ForgotPasswordLink = () => <Link href="#" variant="body2" onClick={() => navigate('/forgot-password', { replace: true })}>
     Passwort vergessen?
   </Link>
 
-  const rememberMe = () => <Typography>{`Version ${version}`}</Typography>
+  const rememberMe = () => <div></div>
 
   return <SignInPage
     providers={[{ id: 'credentials', name: 'Credentials' }, { id: 'google', name: 'google' }]}

@@ -1,21 +1,22 @@
 import { AddOutlined, EditOffOutlined, EditOutlined } from '@mui/icons-material';
 import { Alert, Box, Fab, List } from '@mui/material';
+import { logEvent } from 'firebase/analytics';
 import React, { useEffect, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { fetchItemsAsync } from 'src/features/keys/slices/keysSlice';
+import { analytics } from 'src/firebase/firebaseConfig';
 import { FullItemHolder } from 'src/types/supabaseTypes';
 import { AlertMessage, AlertSnackbar } from '../../components/AlertSnackbar';
+import Layout from '../../components/Layout';
 import { LoadingIndicator } from '../../components/LoadingIndicator';
+import { SupabaseKeysRepository } from '../../repository/KeysRepository';
 import { can } from '../../utils/PermissionService';
+import { ItemHolderItem } from './components/ItemHolderItem';
 import { EditOrAddItemDialog } from './dialogs/EditOrAddItemDialog';
 import { ItemHistoryDialog } from './dialogs/ItemHistoryDialog';
-import { SupabaseKeysRepository } from '../../repository/KeysRepository';
-import { ItemHolderScreenProps } from './types';
-import { ItemHolderItem } from './components/ItemHolderItem';
 import { KeyHandOverDialog } from './dialogs/KeyHandOverDialog';
 import { SearchUserDialog } from './dialogs/SearchUserDialog';
-import Layout from '../../components/Layout';
-import { analytics } from 'src/firebase/firebaseConfig';
-import { logEvent } from 'firebase/analytics';
+import { ItemHolderScreenProps } from './types';
 
 export const EMPTY_KEY: ItemUpdate = { name: '', color: '#000000', created_at: '', current_holder: null, type: null };
 
@@ -28,6 +29,24 @@ export const ItemHolderScreen = ({ dispatch, keyHolders, loading, user, t }: Ite
   const [itemToEdit, setItemToEdit] = useState<ItemUpdate | null>(null);
   const [alertInfo, setAlertInfo] = useState<AlertMessage | null>(null);
   const [itemHistoryDialogOpen, setItemHistoryDialogOpen] = useState(false);
+
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  useEffect(() => {
+    const type = searchParams.get("type");
+    const key = searchParams.get("key")
+    if (!key || !type) { return; }
+    const keyId = +key;
+    const keyHolder = keyHolders.find(x => x.id === keyId);
+    if (!keyHolder) return;
+
+    if (type === "handover") {
+      selectKeyToHandOver(keyHolder);
+    }
+    if (type === "take") {
+      selectKeyToReceive(keyHolder);
+    }
+  }, [searchParams, keyHolders, user]);
 
   useEffect(() => {
     dispatch(fetchItemsAsync());

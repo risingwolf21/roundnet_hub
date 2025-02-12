@@ -86,5 +86,11 @@
   "challenge": {
     "automatedChallenge": "Bei dieser Challenge werden die Punkte automatisiert aktualisiert!"
   },
-  "filter": "Filtern"
+  "filter": "Filtern",
+  "itemType": {
+    "goethe": "Goethe",
+    "mtvGym": "MTV Gym",
+    "mtvGymPalazzo": "MTV Palazzo/Gym",
+    "mtvStorage": "MTV Keller"
+  }
 }

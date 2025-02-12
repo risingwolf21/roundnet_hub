@@ -73,6 +73,7 @@ export const SearchUserDialog = ({
             </Search>
           </Toolbar>
         </AppBar>
+        <Toolbar />
         {loading && <LinearProgress style={{ position: 'fixed', left: 0, right: 0, top: 56 }} />}
 
         <List sx={{ width: '100%' }}>

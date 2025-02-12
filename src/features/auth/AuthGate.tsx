@@ -127,7 +127,6 @@ export const AuthGate = ({ children }: Props) => {
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((event, session) => {
-      console.log(event, session)
       setSession(session);
       if (event === 'INITIAL_SESSION' && currentUser) {
         return;

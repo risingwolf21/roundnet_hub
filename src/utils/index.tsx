@@ -65,6 +65,21 @@ export class FetchingError extends Error {
   }
 }
 
+export const translationKeyOfItemType = (type: ItemType | null) => {
+  switch (type) {
+    case "goethe":
+      return "itemType.goethe";
+    case "mtvGym":
+      return "itemType.mtvGym";
+    case "mtvGymPalazzo":
+      return "itemType.mtvGymPalazzo";
+    case "mtvStorage":
+      return "itemType.mtvStorage";
+    default:
+      return "Not found"
+  }
+}
+
 export const nameOfProductType = (type: ProductType) => {
   switch (type) {
     case 'Drink':
