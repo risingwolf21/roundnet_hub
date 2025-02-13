@@ -7,6 +7,7 @@ import {
   DeleteOutline,
   EditOutlined,
   Group,
+  Logout,
   NotificationsRounded,
   Save
 } from '@mui/icons-material';
@@ -47,6 +48,7 @@ import { GroupsDialog } from './GroupsDialog';
 import { isNotificationSupported, NotificationsDialog } from './NotificationsDialog';
 import { PlayerzoneProfileDialog } from './PlayerzoneProfile';
 import { updateCalenderSettingsAsync } from 'src/redux/applicationSlice';
+import { supabase } from 'src/components/services/supabase/supabaseClient';
 
 type UserScreenProps = {
   user: UserWithRolesAndPermissions;
@@ -262,6 +264,19 @@ const UserScreen = ({ user, client, dispatch, provider_token }: UserScreenProps)
                 <img src={pzLogo} alt={'pz logo'} width="20" height="20" />
               </ListItemAvatar>
               <ListItemText primary="Playerzone Profil" />
+            </ListItem>
+          </CardActionArea>
+        </Card>
+        <Card sx={{ color: "red", borderRadius: 2, py: 0, px: 1, mt: 1 }}>
+          <CardActionArea>
+            <ListItem
+              onClick={() => {
+                supabase.auth.signOut();
+              }}>
+              <ListItemAvatar sx={{ flexDirection: 'row', display: 'flex', alignItems: 'center' }}>
+                <Logout />
+              </ListItemAvatar>
+              <ListItemText primary="Logout" />
             </ListItem>
           </CardActionArea>
         </Card>
