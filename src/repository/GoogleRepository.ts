@@ -41,7 +41,7 @@ export const GoogleRepository = {
     });
     const jsonResponse = await response.json();
     if (jsonResponse.id) {
-      supabase.from("user_calendar_event_mapping").upsert({ user: userId, event: event.id, calendar_event_id: jsonResponse.id })
+      await supabase.from("user_calendar_event_mapping").upsert({ user: userId, event: event.id, calendar_event_id: jsonResponse.id })
     }
     return response;
   },
