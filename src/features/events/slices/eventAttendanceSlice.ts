@@ -1,5 +1,5 @@
 import { createAsyncThunk, createEntityAdapter, createSlice, PayloadAction, Update } from '@reduxjs/toolkit';
-import { FullAttendance } from 'src/types/supabaseTypes';
+import { FullAttendance, UserWithRolesAndPermissions } from 'src/types/supabaseTypes';
 import { formatDateToDatabase } from 'src/utils';
 import { fetchSingleEventAsync } from './eventsSlice';
 import { SupabaseEventRepository } from '../../../repository/EventRepository';
@@ -103,7 +103,7 @@ const eventAttendanceSlice = createSlice({
         state.loading = true;
         let attendanceEntry = {
           event: action.meta.arg.event.id,
-          user: action.meta.arg.user,
+          user: action.meta.arg.user.userId,
           state: action.meta.arg.state,
           lastUpdate: formatDateToDatabase(new Date()),
         } as FullAttendance;
@@ -193,12 +193,12 @@ export const fetchEventAttendanceAsync = createAsyncThunk(
   }
 );
 
-type UpdateAttendanceProps = { user: User; event: Event; state: EventAttendance; oldState: EventAttendance, provider_token?: string | null };
+type UpdateAttendanceProps = { user: UserWithRolesAndPermissions; event: Event; state: EventAttendance; oldState: EventAttendance, provider_token?: string | null };
 export const updateAttendanceAsync = createAsyncThunk(
   'updateAttendanceAsync',
   async ({ event, user, state, oldState, provider_token }: UpdateAttendanceProps) => {
-    if (provider_token) {
-      const res = await GoogleRepository.insertEventToCalendar(event, provider_token);
+    if (provider_token && (state === "Attending" || state === "AttendingAsTrainer")) {
+      const res = await GoogleRepository.insertEventToCalendar(event, provider_token, user.calendar_data);
       console.log(res)
     }
     const response = await SupabaseEventRepository.updateAttendance(user.userId, event.id, state);

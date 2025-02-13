@@ -1,7 +1,7 @@
 import { TFunction } from 'i18next';
 import { AnyAction, ThunkDispatch } from '@reduxjs/toolkit';
 import { RootState } from 'src/redux/store';
-import { FullAttendance, FullComment, FullItemHolder } from 'src/types/supabaseTypes';
+import { FullAttendance, FullComment, FullItemHolder, UserWithRolesAndPermissions } from 'src/types/supabaseTypes';
 import { SliceEvent } from 'src/features/events/slices/eventsSlice';
 
 export type CreateEventOption = 'UpdateSingle' | 'UpdateRecurrence' | 'InsertEvent';
@@ -31,7 +31,7 @@ export type EventInformationProps = {
   comments: FullComment[];
   commentsLoading: boolean;
   error: string | null;
-  user: User;
+  user: UserWithRolesAndPermissions;
   dispatch: ThunkDispatch<RootState, undefined, AnyAction>;
   selectedEventPlace: PlaceType | null;
   keyHolders: FullItemHolder[];

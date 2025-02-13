@@ -21,6 +21,7 @@ import { captureConsoleIntegration } from '@sentry/integrations';
 import { AppProvider } from '@toolpad/core/AppProvider';
 import { NotificationsProvider } from '@toolpad/core/useNotifications';
 import { BRANDING } from './utils';
+import { DialogsProvider } from '@toolpad/core/useDialogs';
 
 Sentry.init({
   dsn: 'https://a06f63fae5ab4ce4ac291d0d6fb4e989@o4505379650666496.ingest.sentry.io/4505379651649536',
@@ -59,13 +60,15 @@ root.render(
   <ThemeProvider theme={mainTheme}>
     <AppProvider branding={BRANDING} theme={mainTheme}>
       <NotificationsProvider>
-        <Provider store={store}>
-          <SupabaseProvider value={supabase}>
-            <LocalizationProvider dateAdapter={AdapterDayjs}>
-              <App />
-            </LocalizationProvider>
-          </SupabaseProvider>
-        </Provider>
+        <DialogsProvider>
+          <Provider store={store}>
+            <SupabaseProvider value={supabase}>
+              <LocalizationProvider dateAdapter={AdapterDayjs}>
+                <App />
+              </LocalizationProvider>
+            </SupabaseProvider>
+          </Provider>
+        </DialogsProvider>
       </NotificationsProvider>
     </AppProvider>
   </ThemeProvider>

@@ -1,6 +1,7 @@
 import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { SupabaseUserRepository } from '../repository/UserRepository';
 import { UserWithRolesAndPermissions } from '../types/supabaseTypes';
+import { CalendarSettingsResult } from 'src/features/profile/CalendarSettings';
 
 type ApplicationSliceState = {
   user: UserWithRolesAndPermissions | null;
@@ -85,6 +86,13 @@ export const addNotificationPermissionAsync = createAsyncThunk(
   async ({ user, notificationToAdd }: { user: User; notificationToAdd: NotificationTags }) => {
     let newNotificationTags = new Set([...(user?.notifications ?? []), notificationToAdd]);
     return await SupabaseUserRepository.updateNotificationTags([...newNotificationTags], user);
+  }
+);
+
+export const updateCalenderSettingsAsync = createAsyncThunk(
+  'updateCalenderSettingsAsync',
+  async ({ user, calenderSettings }: { user: User; calenderSettings: CalendarSettingsResult }) => {
+    return await SupabaseUserRepository.updateCalenderSettings(calenderSettings, user);
   }
 );
 

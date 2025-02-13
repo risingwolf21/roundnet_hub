@@ -992,6 +992,32 @@ export type Database = {
         }
         Relationships: []
       }
+      user_calender_settings: {
+        Row: {
+          calender_id: string | null
+          minutes_to_remind: number | null
+          user: string
+        }
+        Insert: {
+          calender_id?: string | null
+          minutes_to_remind?: number | null
+          user: string
+        }
+        Update: {
+          calender_id?: string | null
+          minutes_to_remind?: number | null
+          user?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_calender_settings_user_fkey"
+            columns: ["user"]
+            isOneToOne: true
+            referencedRelation: "user"
+            referencedColumns: ["userId"]
+          },
+        ]
+      }
       vouchers: {
         Row: {
           created_at: string

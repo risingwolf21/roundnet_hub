@@ -1,149 +1,79 @@
 import {
-  Alert,
+  AccountCircle,
+  AddPhotoAlternateOutlined,
+  CalendarMonth,
+  Cancel,
+  CheckCircle,
+  DeleteOutline,
+  EditOutlined,
+  Group,
+  NotificationsRounded,
+  Save
+} from '@mui/icons-material';
+import {
   Avatar,
   Box,
   Button,
+  Card,
+  CardActionArea,
   CircularProgress,
   Container,
   Fab,
-  IconButton,
   List,
   ListItem,
   ListItemAvatar,
-  ListItemButton,
   ListItemText,
-  ListSubheader,
-  Snackbar,
-  Switch,
-  TextField,
+  Typography
 } from '@mui/material';
-import { useClient } from 'react-supabase';
-import { useSelector } from 'react-redux';
-import React, { useEffect, useState } from 'react';
-import { AppDispatch, RootState, useAppDispatch } from '../../redux/store';
-import { Session, SupabaseClient } from '@supabase/supabase-js';
-import {
-  AddPhotoAlternateOutlined,
-  DeleteOutline,
-  EditOutlined,
-  EmailOutlined,
-  FiberManualRecord,
-  Launch,
-  Logout,
-  NotificationsRounded,
-  PasswordOutlined,
-  PersonOutlineOutlined,
-  Save,
-} from '@mui/icons-material';
-import { dataURLtoFile, readFile } from 'src/utils';
 import { captureException } from '@sentry/react';
-import Compressor from 'compressorjs';
-import { addNotificationPermissionAsync, removeNotificationPermissionAsync } from 'src/redux/applicationSlice';
+import { SupabaseClient } from '@supabase/supabase-js';
 import { uuid } from '@supabase/supabase-js/dist/main/lib/helpers';
-import { SupabaseEventRepository } from '../../repository/EventRepository';
-import { requestNotificationPermission } from '../../hooks/useFirebase';
-import { messaging } from '../../firebase/firebaseConfig';
-import { Database } from '../../types/supabase-generated.types';
-import { useNavigate } from 'react-router-dom';
-import Layout from '../../components/Layout';
-import { useAuth } from '../auth/AuthContext';
-import { UserWithRolesAndPermissions } from '../../types/supabaseTypes';
+import { useDialogs } from '@toolpad/core/useDialogs';
+import { useNotifications } from '@toolpad/core/useNotifications';
+import Compressor from 'compressorjs';
+import React, { useState } from 'react';
+import { useClient } from 'react-supabase';
+import { dataURLtoFile, readFile } from 'src/utils';
 import CropImageDialog from '../../components/CropImageDialog';
+import Layout from '../../components/Layout';
 import pzLogo from '../../images/pz_logo.svg';
-import { supabase } from '../../components/services/supabase/supabaseClient';
-import { CalendarList } from './CalendarList';
+import { AppDispatch, useAppDispatch } from '../../redux/store';
+import { Database } from '../../types/supabase-generated.types';
+import { UserWithRolesAndPermissions } from '../../types/supabaseTypes';
+import { useAuth } from '../auth/AuthContext';
+import { CalendarSettingsDialog } from './CalendarSettings';
+import { ContactInformation } from './ContactInformation';
+import { GroupsDialog } from './GroupsDialog';
+import { isNotificationSupported, NotificationsDialog } from './NotificationsDialog';
+import { PlayerzoneProfileDialog } from './PlayerzoneProfile';
+import { updateCalenderSettingsAsync } from 'src/redux/applicationSlice';
 
 type UserScreenProps = {
   user: UserWithRolesAndPermissions;
-  session: Session;
   deviceId: string;
-  groups: Group[];
   client: SupabaseClient<Database>;
   dispatch: AppDispatch;
   handleSignOut: () => void;
+  provider_token: string | null;
 };
 
 const UserScreenProvider = () => {
-  const { user, signOut, deviceId, session } = useAuth();
+  const { user, signOut, deviceId, provider_token } = useAuth();
   const client = useClient();
   const dispatch = useAppDispatch();
-  const [groups, setGroups] = useState<Group[]>([]);
 
-  useEffect(() => {
-    SupabaseEventRepository.fetchUserGroups(user!).then((result) => {
-      setGroups(result.data?.map((x) => x.group) ?? []);
-    });
-  }, [user]);
-
-  return <UserScreen user={user!} deviceId={deviceId} client={client} dispatch={dispatch} groups={groups} handleSignOut={signOut} session={session!} />;
+  return <UserScreen user={user!} provider_token={provider_token} deviceId={deviceId} client={client} dispatch={dispatch} handleSignOut={signOut} />;
 };
 
-const NotificationSwitch = ({
-  title,
-  tag,
-  loading,
-  user,
-  dispatch,
-}: {
-  title: string;
-  tag: NotificationTags;
-  loading: boolean;
-  user: User;
-  dispatch: AppDispatch;
-}) => {
-  return (
-    <ListItem
-      secondaryAction={
-        loading ? (
-          <CircularProgress />
-        ) : (
-          <Switch
-            checked={user.notifications?.includes(tag) ?? false}
-            onChange={(event) => {
-              event.stopPropagation();
-              if (!event.target.checked) {
-                dispatch(
-                  removeNotificationPermissionAsync({
-                    user,
-                    notificationToRemove: tag,
-                  })
-                );
-              } else {
-                dispatch(
-                  addNotificationPermissionAsync({
-                    user,
-                    notificationToAdd: tag,
-                  })
-                );
-              }
-            }}
-          />
-        )
-      }
-    >
-      <ListItemText primary={title} />
-    </ListItem>
-  );
-};
-
-const UserScreen = ({ user, session, client, dispatch, groups, deviceId }: UserScreenProps) => {
-  const navigate = useNavigate();
+const UserScreen = ({ user, client, dispatch, provider_token }: UserScreenProps) => {
+  const dialogs = useDialogs();
+  const notifications = useNotifications();
   const [selectedImage, setSelectedImage] = useState<string | ArrayBuffer | null>(null);
   const [croppedImage, setCroppedImage] = useState<string | null>(null);
   const [cropImageDialogOpen, setCropImageDialogOpen] = useState(false);
-  const [errorSnackbar, setErrorSnackbar] = useState<{
-    open: boolean;
-    message: string;
-    severity?: 'error' | 'success';
-  }>({ open: false, message: '', severity: 'error' });
-  const [currentUser, setCurrentUser] = useState(user);
-  const [displayName, setDisplayName] = useState(user.displayName);
-  const [name, setName] = useState(user.name);
-  const [loadingSave, setLoadingSave] = useState(false);
-  const { updatingNotificationTags } = useSelector((state: RootState) => state.application);
 
-  const isNotificationSupported = () =>
-    'Notification' in window && 'serviceWorker' in navigator && 'PushManager' in window;
+  const [currentUser, setCurrentUser] = useState(user);
+  const [loadingSave, setLoadingSave] = useState(false);
 
   const handleSubmit = async () => {
     setLoadingSave(true);
@@ -158,15 +88,10 @@ const UserScreen = ({ user, session, client, dispatch, groups, deviceId }: UserS
             await uploadAvatarImage(fileName, compressedFile);
             setCroppedImage(null);
           } else {
-            setErrorSnackbar({
-              message: 'Something went wrong compressing your image. Please try again.',
-              open: true,
-            });
+            notifications.show('Something went wrong compressing your image. Please try again.', { severity: "error" })
           }
         },
       });
-    } else {
-      await updateDisplayName(currentUser.avatarUrl);
     }
     setLoadingSave(false);
   };
@@ -198,39 +123,9 @@ const UserScreen = ({ user, session, client, dispatch, groups, deviceId }: UserS
       }
       setCurrentUser({ ...currentUser, avatarUrl: data.publicUrl });
       setCroppedImage(null);
-
-      await updateDisplayName(data.publicUrl);
     } else {
-      setErrorSnackbar({ message: 'Something went wrong uploading your image. Please try it again.', open: true });
-      return;
+      notifications.show('Something went wrong uploading your image. Please try it again.', { severity: "error" });
     }
-  };
-
-  const updateDisplayName = async (avatarUrl: string | null) => {
-    if (name.length < 6 || displayName.length < 4) {
-      setErrorSnackbar({ message: 'Name oder Anzeigename müssen 6 bzw. 4 Zeichen lang sein', open: true });
-      return;
-    }
-    if (name.split(' ').length < 2) {
-      setErrorSnackbar({ message: 'Du musst dein vollen Name, mit Vor und Nachname angeben', open: true });
-      return;
-    }
-
-    const { error } = await client.from('user').update({ name, displayName, avatarUrl }).eq('userId', user.userId);
-    if (error) {
-      setErrorSnackbar({ message: error.message, open: true });
-      captureException(error);
-      return;
-    }
-    const { error: authError } = await client.auth.updateUser({
-      data: { displayName, name },
-    });
-    if (authError) {
-      setErrorSnackbar({ message: authError.message, open: true });
-      captureException(authError);
-      return;
-    }
-    setErrorSnackbar({ message: 'Successfully updated your profile!', open: true, severity: 'success' });
   };
 
   const onImageInputChange = async (event: React.ChangeEvent<HTMLInputElement>): Promise<void> => {
@@ -241,11 +136,6 @@ const UserScreen = ({ user, session, client, dispatch, groups, deviceId }: UserS
     setCropImageDialogOpen(true);
     event.target.files = null;
     event.target.value = '';
-  };
-
-  const handleLogout = async () => {
-    const { error } = await supabase.auth.signOut({ scope: 'local' });
-    console.log(error);
   };
 
   return (
@@ -303,166 +193,79 @@ const UserScreen = ({ user, session, client, dispatch, groups, deviceId }: UserS
               </Button>
             )}
           </Box>
-          <Box sx={{ display: 'flex', justifyContent: 'center', mt: 1 }}>
-            <Button startIcon={<PasswordOutlined />} onClick={() => navigate('/reset-password')}>
-              Passwort ändern
-            </Button>
-            <Button startIcon={<Logout />} onClick={handleLogout}>
-              Logout
-            </Button>
-          </Box>
         </Container>
-        <ListItem key={'firstName'} sx={{ '&.MuiListItem-root': { p: 0 } }}>
-          <ListItemAvatar>
-            <PersonOutlineOutlined sx={{ color: 'rgba(0,0,0,0.54)' }} />
-          </ListItemAvatar>
-          <TextField
-            fullWidth
-            size="small"
-            variant="outlined"
-            value={displayName}
-            onChange={(e) => setDisplayName(e.target.value)}
-            label="Anzeigename"
-            margin="normal"
-          />
-        </ListItem>
-        <ListItem key={'fullName'} sx={{ '&.MuiListItem-root': { p: 0 } }}>
-          <ListItemAvatar />
-          <TextField
-            fullWidth
-            size="small"
-            variant="outlined"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            label="Voller Name"
-            margin="normal"
-          />
-        </ListItem>
-        <ListItem key={'email'} sx={{ '&.MuiListItem-root': { p: 0 } }}>
-          <ListItemAvatar>
-            <EmailOutlined sx={{ color: 'rgba(0,0,0,0.54)' }} />
-          </ListItemAvatar>
-          <ListItemText primary={user.email} secondary={'Email'} />
-        </ListItem>
-        {user.player_data?.rg_id && user.player_data?.rg_link && (
-          <ListItem
-            key={'rg_id'}
-            disableGutters
-            sx={{
-              '&.MuiListItem-root': { p: 0 },
-            }}
-            secondaryAction={
-              <IconButton
-                onClick={() => window.open(user.player_data?.rg_link ?? undefined, '_blank', 'noopener,noreferrer')}
-              >
-                <Launch />
-              </IconButton>
-            }
-          >
-            <ListItemAvatar>
-              <img src={pzLogo} alt={'pz logo'} width="25" height="25" />
-            </ListItemAvatar>
-            <ListItemText primary={user.player_data.rg_id} secondary={'Roundnet Germany ID'} />
-          </ListItem>
-        )}
-        <CalendarList />
-        <List
-          key={'groups'}
-          subheader={
-            <ListSubheader sx={{ zIndex: '-1', fontWeight: 'bold', lineHeight: 'normal', my: 2, pl: 0 }}>
-              Gruppen
-            </ListSubheader>
-          }
-        >
-          {groups.map((group, index) => (
+        <Typography variant="h5" component={"div"} sx={{ textAlign: "center" }}>{user.name}</Typography>
+        <Card sx={{ borderRadius: 2, py: 0, px: 1 }}>
+          <CardActionArea>
             <ListItem
-              key={`${group.name} ${index}`}
-              sx={{ '&.MuiListItem-root': { p: 0 } }}
-              divider={index !== groups.length - 1}
-            >
-              <ListItemAvatar>
-                <FiberManualRecord sx={{ color: group.color }} />
+              onClick={async () => {
+                await dialogs.open(ContactInformation, { user });
+              }}>
+              <ListItemAvatar sx={{ flexDirection: 'row', display: 'flex', alignItems: 'center' }}>
+                <AccountCircle />
               </ListItemAvatar>
-              <ListItemText primary={group.name} secondary={group.description} />
+              <ListItemText primary="Profil und Account" />
             </ListItem>
-          ))}
-        </List>
-        <List
-          key={'notifications'}
-          subheader={
-            <ListSubheader
-              sx={{
-                zIndex: '-1',
-                fontWeight: 'bold',
-                lineHeight: 'normal',
-                my: 2,
-                pl: 0,
+          </CardActionArea>
+        </Card>
+        <Card sx={{ borderRadius: 2, py: 0, px: 1, mt: 1 }}>
+          <CardActionArea>
+            <ListItem
+              onClick={async () => {
+                await dialogs.open(GroupsDialog, { groups: user.groups })
+              }}>
+              <ListItemAvatar sx={{ flexDirection: 'row', display: 'flex', alignItems: 'center' }}>
+                <Group />
+              </ListItemAvatar>
+              <ListItemText primary="Gruppen" />
+            </ListItem>
+          </CardActionArea>
+        </Card>
+        <Card sx={{ borderRadius: 2, py: 0, px: 1, mt: 1 }}>
+          <CardActionArea>
+            <ListItem
+              onClick={async () => {
+                await dialogs.open(NotificationsDialog, { user, dispatch })
               }}
-            >
-              Benachrichtigungen
-            </ListSubheader>
-          }
-        >
-          {isNotificationSupported() && Notification.permission === 'granted' && (
-            <>
-              <NotificationSwitch
-                title={'Event Kommentare'}
-                tag={'eventComments'}
-                loading={updatingNotificationTags}
-                user={user}
-                dispatch={dispatch}
-              />
-
-              <NotificationSwitch
-                title={'Event abgesagt'}
-                tag={'eventCancelled'}
-                loading={updatingNotificationTags}
-                user={user}
-                dispatch={dispatch}
-              />
-
-              <NotificationSwitch
-                title={'Event aktualisiert'}
-                tag={'eventUpdated'}
-                loading={updatingNotificationTags}
-                user={user}
-                dispatch={dispatch}
-              />
-
-              <NotificationSwitch
-                title={'Event Anwesenheit aktualisiert'}
-                tag={'eventAttedanceChanged'}
-                loading={updatingNotificationTags}
-                user={user}
-                dispatch={dispatch}
-              />
-            </>
-          )}
-          {isNotificationSupported() && Notification.permission !== 'granted' && (
-            <ListItemButton
-              sx={{ p: 0 }}
-              onClick={() => {
-                messaging.then((result) => {
-                  if (result) requestNotificationPermission(user, deviceId, result).then();
-                  else
-                    setErrorSnackbar({
-                      open: true,
-                      message: 'Notifications are not supported in this browser',
-                      severity: 'error',
-                    });
-                });
-              }}
-            >
-              <ListItemAvatar>
+              secondaryAction={isNotificationSupported() && Notification.permission === 'granted' ? <CheckCircle color='success' /> : <Cancel color="error" />}>
+              <ListItemAvatar sx={{ flexDirection: 'row', display: 'flex', alignItems: 'center' }}>
                 <NotificationsRounded />
               </ListItemAvatar>
-              <ListItemText primary={'Benachrichtigungen aktivieren'} />
-            </ListItemButton>
-          )}
-        </List>
-        {(user.displayName !== displayName ||
-          user.name !== name ||
-          croppedImage ||
+              <ListItemText primary="Benachrichtigungen" />
+            </ListItem>
+          </CardActionArea>
+        </Card>
+        <Card sx={{ borderRadius: 2, py: 0, px: 1, mt: 1 }}>
+          <CardActionArea>
+            <ListItem
+              onClick={async () => {
+                const result = await dialogs.open(CalendarSettingsDialog, { provider_token: provider_token });
+                if (result)
+                  dispatch(updateCalenderSettingsAsync({ user, calenderSettings: result }))
+              }}
+              secondaryAction={isNotificationSupported() && Notification.permission === 'granted' ? <CheckCircle color='success' /> : <Cancel color="error" />}>
+              <ListItemAvatar sx={{ flexDirection: 'row', display: 'flex', alignItems: 'center' }}>
+                <CalendarMonth />
+              </ListItemAvatar>
+              <ListItemText primary="Kalender-Einstellungen" />
+            </ListItem>
+          </CardActionArea>
+        </Card>
+        <Card sx={{ borderRadius: 2, py: 0, px: 1, mt: 1 }}>
+          <CardActionArea>
+            <ListItem
+              onClick={async () => {
+                await dialogs.open(PlayerzoneProfileDialog, { player_data: user.player_data })
+              }}
+              secondaryAction={user.player_data?.rg_id && user.player_data?.rg_link ? <CheckCircle color='success' /> : <Cancel color="error" />}>
+              <ListItemAvatar sx={{ flexDirection: 'row', display: 'flex', alignItems: 'center' }}>
+                <img src={pzLogo} alt={'pz logo'} width="20" height="20" />
+              </ListItemAvatar>
+              <ListItemText primary="Playerzone Profil" />
+            </ListItem>
+          </CardActionArea>
+        </Card>
+        {(croppedImage ||
           (user.avatarUrl !== null && currentUser.avatarUrl === null)) && (
             <Fab
               key={'saveButton'}
@@ -486,29 +289,20 @@ const UserScreen = ({ user, session, client, dispatch, groups, deviceId }: UserS
           )}
       </List>
 
-      {selectedImage && typeof selectedImage === 'string' && (
-        <CropImageDialog
-          open={cropImageDialogOpen}
-          handleClose={() => setCropImageDialogOpen(false)}
-          selectedImage={selectedImage}
-          onImageCropFinished={(img) => {
-            setCroppedImage(img);
-            setCropImageDialogOpen(false);
-          }}
-        />
-      )}
-
-      <Snackbar
-        sx={{ position: 'fixed', right: '16px', bottom: 'calc(16px + env(safe-area-inset-bottom))' }}
-        open={errorSnackbar.open}
-        autoHideDuration={5000}
-        onClose={() => setErrorSnackbar({ message: '', open: false })}
-      >
-        <Alert severity={errorSnackbar.severity ?? 'error'} sx={{ width: '100%' }}>
-          {errorSnackbar.message}
-        </Alert>
-      </Snackbar>
-    </Layout>
+      {
+        selectedImage && typeof selectedImage === 'string' && (
+          <CropImageDialog
+            open={cropImageDialogOpen}
+            handleClose={() => setCropImageDialogOpen(false)}
+            selectedImage={selectedImage}
+            onImageCropFinished={(img) => {
+              setCroppedImage(img);
+              setCropImageDialogOpen(false);
+            }}
+          />
+        )
+      }
+    </Layout >
   );
 };
 export default UserScreenProvider;

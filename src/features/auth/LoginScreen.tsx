@@ -56,12 +56,8 @@ const LoginScreen = () => {
         supabase.auth.signInWithOAuth({
           provider: 'google',
           options: {
-            scopes: 'https://www.googleapis.com/auth/calendar.readonly',
-            redirectTo: window.location.origin + "/auth/callback",
-            queryParams: {
-              access_type: 'offline',
-              prompt: 'consent',
-            }
+            scopes: 'https://www.googleapis.com/auth/calendar',
+            redirectTo: window.location.origin + "/auth/callback"
           },
         })
           .then((result) => {
@@ -98,7 +94,7 @@ const LoginScreen = () => {
     <Link href="#" variant="body2" onClick={() => navigate('/register', { replace: true })}>
       {'Noch keinen Account?'}
     </Link>
-    <Typography sx={{mt: 1}}>{`Version ${process.env.REACT_APP_VERSION}-${version.slice(0, 8)}`}</Typography>
+    <Typography sx={{ mt: 1 }}>{`Version ${process.env.REACT_APP_VERSION}-${version.slice(0, 8)}`}</Typography>
   </div>
 
   const ForgotPasswordLink = () => <Link href="#" variant="body2" onClick={() => navigate('/forgot-password', { replace: true })}>
