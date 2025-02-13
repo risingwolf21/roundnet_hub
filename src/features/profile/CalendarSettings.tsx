@@ -32,9 +32,13 @@ export const CalendarSettingsDialog = ({ payload, open, onClose }: DialogProps<C
           "Authorization": "Bearer " + payload.provider_token,
         }
       })
-        .then((res) => res.json())
         .then((res) => {
-          if (res.code < 300 || res.code > 100) {
+          if (res.ok)
+            return res.json();
+          return null
+        })
+        .then((res) => {
+          if (res) {
             setCalendarList(res.items.map((x: Calendar) => ({ id: x.id, summaryOverride: x.summary ?? x.summaryOverride })))
           }
         })
