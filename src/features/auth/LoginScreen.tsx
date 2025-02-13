@@ -57,7 +57,15 @@ const LoginScreen = () => {
           provider: 'google',
           options: {
             scopes: 'https://www.googleapis.com/auth/calendar',
+<<<<<<< HEAD
             redirectTo: window.location.origin + "/auth/callback"
+=======
+            redirectTo: window.location.origin + "/auth/callback",
+            queryParams: {
+              access_type: 'offline',
+              prompt: 'consent',
+            }
+>>>>>>> 3910a38f66c97f3fc0e0f26d4e8a59e5ae0c5f9c
           },
         })
           .then((result) => {
