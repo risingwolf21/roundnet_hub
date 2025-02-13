@@ -3,10 +3,11 @@ import { Event } from "types/supabase";
 
 export const GoogleRepository = {
   async insertEventToCalendar(event: Event, provider_token: string, calendarSettings: CalendarSettings | null): Promise<Response | null> {
-    var googleEvent = {
+    const place = JSON.parse(event.place ?? "{}");
+
+    const googleEvent = {
       'summary': event.title,
       'description': event.description,
-      'location': event.place,
       'start': {
         'dateTime': toDate(event.startingDateTime).toISOString(),
         'timeZone': Intl.DateTimeFormat().resolvedOptions().timeZone
@@ -22,6 +23,9 @@ export const GoogleRepository = {
             { 'method': 'popup', 'minutes': calendarSettings?.minutes_to_remind },
           ],
         },
+      }),
+      ...(place.lat && place.lon && {
+        'location': `${place.lat}, ${place.lon}`
       })
     }
     if (!calendarSettings || !calendarSettings.calender_id)
