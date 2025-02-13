@@ -1,5 +1,5 @@
 import { Close, NotificationsRounded } from "@mui/icons-material";
-import { AppBar, Box, Button, Card, CardActionArea, Dialog, IconButton, List, ListItem, ListItemAvatar, ListItemButton, ListItemText, MenuItem, Select, SelectChangeEvent, Toolbar, Typography } from "@mui/material";
+import { AppBar, Box, Button, Card, CardActionArea, Dialog, IconButton, List, ListItem, ListItemAvatar, ListItemButton, ListItemText, MenuItem, Radio, Select, SelectChangeEvent, Toolbar, Typography } from "@mui/material";
 import { DialogProps } from "@toolpad/core/useDialogs";
 import React, { useEffect, useState } from "react";
 import { SwipeableDialog } from "src/components/SwipeableDialog";
@@ -87,7 +87,7 @@ export const CalendarSettingsDialog = ({ payload, open, onClose }: DialogProps<C
               <ListItemAvatar sx={{ flexDirection: 'row', display: 'flex', alignItems: 'center' }}>
                 <NotificationsRounded />
               </ListItemAvatar>
-              <ListItemText primary="Benachrichtigungen vor dem Event" />
+              <ListItemText primary={minutesToRemind ? `${minutesToRemind} Minuten vor dem Event` : "Keine Benachrichtigung vor dem Event"} />
             </ListItem>
           </CardActionArea>
         </Card>
@@ -106,6 +106,9 @@ export const CalendarSettingsDialog = ({ payload, open, onClose }: DialogProps<C
                   setReminderOpen(false);
                 }}
               >
+                <ListItemAvatar>
+                  <Radio checked={x === minutesToRemind}></Radio>
+                </ListItemAvatar>
                 <ListItemText primary={x ? `${x} Minuten` : "Keine Benachrichtigung vor dem Event"} />
               </ListItemButton>
             ))}
