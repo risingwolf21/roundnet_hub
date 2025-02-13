@@ -3,6 +3,7 @@ import { AppBar, Box, Button, Card, CardActionArea, Dialog, IconButton, List, Li
 import { DialogProps } from "@toolpad/core/useDialogs";
 import React, { useEffect, useState } from "react";
 import { SwipeableDialog } from "src/components/SwipeableDialog";
+import { UserWithRolesAndPermissions } from "src/types/supabaseTypes";
 
 type Calendar = {
   id: string;
@@ -11,7 +12,8 @@ type Calendar = {
 }
 
 type CalendarSettingsPayload = {
-  provider_token: string | null
+  provider_token: string | null;
+  user: UserWithRolesAndPermissions;
 }
 export type CalendarSettingsResult = {
   calendar_id: string | null;
@@ -20,7 +22,7 @@ export type CalendarSettingsResult = {
 export const CalendarSettingsDialog = ({ payload, open, onClose }: DialogProps<CalendarSettingsPayload, CalendarSettingsResult | null>) => {
 
   const [reminderOpen, setReminderOpen] = useState(false);
-  const [minutesToRemind, setMinutesToRemind] = useState<number | null>(null)
+  const [minutesToRemind, setMinutesToRemind] = useState<number | null>(payload.user.calendar_data?.minutes_to_remind ?? null)
   const [calendarList, setCalendarList] = useState<Calendar[]>([]);
   const [selectedCalendar, setSelectedCalendar] = useState<Calendar | null>(null);
 
@@ -39,15 +41,20 @@ export const CalendarSettingsDialog = ({ payload, open, onClose }: DialogProps<C
         })
         .then((res) => {
           if (res) {
-            setCalendarList(res.items.map((x: Calendar) => ({ id: x.id, summaryOverride: x.summary ?? x.summaryOverride })))
+            const list: Calendar[] = res.items.map((x: Calendar) => ({ id: x.id, summaryOverride: x.summary ?? x.summaryOverride }))
+            setCalendarList(list);
+            setSelectedCalendar(list.find(x => x.id === payload.user.calendar_data?.calender_id) ?? null);
           }
         })
         .catch(err => console.error(err))
     }
-  }, [payload.provider_token]);
+  }, [payload.provider_token, payload.user.calendar_data?.calender_id]);
 
   const handleChange = (event: SelectChangeEvent) => {
-    setSelectedCalendar(calendarList.find(x => x.id === event.target.value) ?? null)
+    if (event.target.value === "undefined")
+      setSelectedCalendar(null);
+    else
+      setSelectedCalendar(calendarList.find(x => x.id === event.target.value) ?? null)
   };
 
 
@@ -72,14 +79,15 @@ export const CalendarSettingsDialog = ({ payload, open, onClose }: DialogProps<C
       (<Box sx={{ p: 2 }}>
         <Select
           fullWidth
-          value={selectedCalendar?.id}
+          disabled={calendarList.length < 1}
+          value={selectedCalendar?.id ?? "undefined"}
           label="Kalendar"
           onChange={handleChange}
         >
           {
             calendarList.map(x => <MenuItem value={x.id}>{x.summaryOverride}</MenuItem>)
           }
-          <MenuItem value={undefined}>Nicht in Kalendar eintragen</MenuItem>
+          <MenuItem value={"undefined"}>Nicht in Kalendar eintragen</MenuItem>
         </Select>
         <Card sx={{ borderRadius: 2, py: 0, px: 1, mt: 1 }}>
           <CardActionArea>

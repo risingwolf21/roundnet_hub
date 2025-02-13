@@ -7,7 +7,7 @@ export const GoogleRepository = {
 
     const googleEvent = {
       'summary': event.title,
-      'description': event.description,
+      'description': `${event.description}\n\n\nAdded by Roundnet Karlsruhe Web App❤️`,
       'start': {
         'dateTime': toDate(event.startingDateTime).toISOString(),
         'timeZone': Intl.DateTimeFormat().resolvedOptions().timeZone

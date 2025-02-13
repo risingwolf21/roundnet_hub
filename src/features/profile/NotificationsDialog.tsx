@@ -77,13 +77,14 @@ export const NotificationsDialog = ({ payload, open, onClose }: DialogProps<Noti
     </AppBar>
     {
       isNotificationSupported() && Notification.permission !== 'granted' && (
-        <Box>
+        <Box sx={{ display: "flex", flexDirection: "row", justifyContent: "center", pt: 2 }}>
+          <Typography variant="h5" color="primary" fontWeight="bold">Schalte Benachrichtigungen ein</Typography>
         </Box>
       )
     }
     {
       isNotificationSupported() && Notification.permission === 'granted' && (
-        <>
+        <Box sx={{ pt: 2 }}>
           <NotificationSwitch
             title={'Event Kommentare'}
             tag={'eventComments'}
@@ -105,7 +106,7 @@ export const NotificationsDialog = ({ payload, open, onClose }: DialogProps<Noti
             dispatch={payload.dispatch}
           />
 
-        </>
+        </Box>
       )
     }
   </Dialog>

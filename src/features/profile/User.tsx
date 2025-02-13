@@ -241,11 +241,11 @@ const UserScreen = ({ user, client, dispatch, provider_token }: UserScreenProps)
           <CardActionArea>
             <ListItem
               onClick={async () => {
-                const result = await dialogs.open(CalendarSettingsDialog, { provider_token: provider_token });
+                const result = await dialogs.open(CalendarSettingsDialog, { provider_token: provider_token, user });
                 if (result)
                   dispatch(updateCalenderSettingsAsync({ user, calenderSettings: result }))
               }}
-              secondaryAction={isNotificationSupported() && Notification.permission === 'granted' ? <CheckCircle color='success' /> : <Cancel color="error" />}>
+              secondaryAction={user.calendar_data?.calender_id && provider_token ? <CheckCircle color='success' /> : <Cancel color="error" />}>
               <ListItemAvatar sx={{ flexDirection: 'row', display: 'flex', alignItems: 'center' }}>
                 <CalendarMonth />
               </ListItemAvatar>
