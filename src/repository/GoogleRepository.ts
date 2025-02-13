@@ -1,8 +1,9 @@
 import { toDate } from "date-fns";
+import { supabase } from "src/components/services/supabase/supabaseClient";
 import { Event } from "types/supabase";
 
 export const GoogleRepository = {
-  async insertEventToCalendar(event: Event, provider_token: string, calendarSettings: CalendarSettings | null): Promise<Response | null> {
+  async insertEventToCalendar(event: Event, userId: string, provider_token: string, calendarSettings: CalendarSettings | null): Promise<Response | null> {
     const place = JSON.parse(event.place ?? "{}");
 
     const googleEvent = {
@@ -38,6 +39,33 @@ export const GoogleRepository = {
       },
       body: JSON.stringify(googleEvent)
     });
+    const jsonResponse = await response.json();
+    if (jsonResponse.id) {
+      supabase.from("user_calendar_event_mapping").upsert({ user: userId, event: event.id, calendar_event_id: jsonResponse.id })
+    }
     return response;
   },
+  async deleteEventFromGoogleCalendar(event: Event, userId: string, provider_token: string, calendarSettings: CalendarSettings | null): Promise<Response | null> {
+    if (!calendarSettings || !calendarSettings.calender_id)
+      return null;
+
+    const { data } = await supabase
+      .from("user_calendar_event_mapping")
+      .delete()
+      .eq("user", userId)
+      .eq("event", event.id)
+      .select()
+      .single();
+
+    if (!data)
+      return null;
+
+    const response = await fetch(`https://www.googleapis.com/calendar/v3/calendars/${calendarSettings.calender_id}/events/${data.calendar_event_id}`, {
+      method: "DELETE",
+      headers: {
+        "Authorization": "Bearer " + provider_token
+      },
+    });
+    return response;
+  }
 }

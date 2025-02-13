@@ -992,6 +992,53 @@ export type Database = {
         }
         Relationships: []
       }
+      user_calendar_event_mapping: {
+        Row: {
+          calendar_event_id: string
+          event: string
+          user: string
+        }
+        Insert: {
+          calendar_event_id: string
+          event: string
+          user: string
+        }
+        Update: {
+          calendar_event_id?: string
+          event?: string
+          user?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_calendar_event_mapping_event_fkey"
+            columns: ["event"]
+            isOneToOne: false
+            referencedRelation: "current_distinct_event"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_calendar_event_mapping_event_fkey"
+            columns: ["event"]
+            isOneToOne: false
+            referencedRelation: "distinct_event"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_calendar_event_mapping_event_fkey"
+            columns: ["event"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_calendar_event_mapping_user_fkey"
+            columns: ["user"]
+            isOneToOne: false
+            referencedRelation: "user"
+            referencedColumns: ["userId"]
+          },
+        ]
+      }
       user_calender_settings: {
         Row: {
           calender_id: string | null

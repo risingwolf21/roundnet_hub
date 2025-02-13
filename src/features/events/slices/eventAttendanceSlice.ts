@@ -197,10 +197,13 @@ type UpdateAttendanceProps = { user: UserWithRolesAndPermissions; event: Event; 
 export const updateAttendanceAsync = createAsyncThunk(
   'updateAttendanceAsync',
   async ({ event, user, state, oldState, provider_token }: UpdateAttendanceProps) => {
+
     if (provider_token && (state === "Attending" || state === "AttendingAsTrainer")) {
-      const res = await GoogleRepository.insertEventToCalendar(event, provider_token, user.calendar_data);
-      console.log(res)
+      await GoogleRepository.insertEventToCalendar(event, user.userId, provider_token, user.calendar_data);
+    } else if (provider_token && state === "Declined") {
+      await GoogleRepository.deleteEventFromGoogleCalendar(event, user.userId, provider_token, user.calendar_data);
     }
+
     const response = await SupabaseEventRepository.updateAttendance(user.userId, event.id, state);
     return { data: response.data, error: response.error, oldState };
   }
