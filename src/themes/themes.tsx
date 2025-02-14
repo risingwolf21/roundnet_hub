@@ -1,4 +1,4 @@
-import {createTheme} from '@mui/material';
+import { createTheme } from '@mui/material';
 
 export const mainTheme = createTheme({
     components: {
@@ -220,7 +220,7 @@ export const mainTheme = createTheme({
                     },
                 },
             ],
-        },
+        }
     },
     palette: {
         primary: {

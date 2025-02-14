@@ -59,8 +59,8 @@ const root = ReactDOM.createRoot(document.getElementById('root') as HTMLElement,
 root.render(
   <ThemeProvider theme={mainTheme}>
     <AppProvider branding={BRANDING} theme={mainTheme}>
-      <NotificationsProvider>
-        <DialogsProvider>
+      <DialogsProvider>
+        <NotificationsProvider>
           <Provider store={store}>
             <SupabaseProvider value={supabase}>
               <LocalizationProvider dateAdapter={AdapterDayjs}>
@@ -68,8 +68,8 @@ root.render(
               </LocalizationProvider>
             </SupabaseProvider>
           </Provider>
-        </DialogsProvider>
-      </NotificationsProvider>
+        </NotificationsProvider>
+      </DialogsProvider>
     </AppProvider>
   </ThemeProvider>
 );

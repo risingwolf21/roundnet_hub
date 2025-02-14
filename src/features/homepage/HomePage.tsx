@@ -1,5 +1,5 @@
 import { AccessTime, AccountBox, Key, Place, ThumbDownAlt, ThumbDownOffAlt, ThumbUpAlt, ThumbUpOffAlt } from "@mui/icons-material"
-import { Avatar, Badge, Box, Button, Card, CardActionArea, CardActions, CardContent, CardHeader, CardMedia, IconButton, ListItem, ListItemAvatar, ListItemText, Typography } from "@mui/material"
+import { Avatar, Badge, Box, Button, Card, CardActionArea, CardActions, CardContent, CardHeader, CardMedia, IconButton, List, ListItem, ListItemAvatar, ListItemText, Typography } from "@mui/material"
 import { format } from "date-fns"
 import { t } from "i18next"
 import React, { useEffect } from "react"
@@ -37,7 +37,7 @@ const HomePage = () => {
     }, [dispatch, user]);
 
     return <Layout>
-        <Box>
+        <List sx={{ pb: 10 }}>
             <Typography variant="h6" sx={{ mx: 2, mt: 2, fontWeight: "bold" }}>
                 Events
             </Typography>
@@ -255,7 +255,7 @@ const HomePage = () => {
                     </Card>
                 ))}
             </Box>
-        </Box>
+        </List>
     </Layout >
 }
 export default HomePage;

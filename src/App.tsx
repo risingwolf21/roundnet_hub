@@ -13,6 +13,7 @@ import { ProtectedLayout } from './features/auth/ProtectedRoute';
 import RegisterScreen from './features/auth/RegisterScreen';
 import { useServiceWorker } from './hooks/useServiceWorker';
 import { DataProtection } from './components/DataProtection';
+import raw from './git_commit.txt';
 
 const FeatureNotAvailable = React.lazy(() => import('./components/FeatureNotAvailable'));
 const HistoryScreenProvider = React.lazy(() => import('./features/drinks/HistoryScreenProvider'));
@@ -46,6 +47,15 @@ const PermissionList = React.lazy(() => import('./features/admin/PermissionList'
 
 const App = () => {
   const { isUpdateAvailable, updateServiceWorker } = useServiceWorker();
+  const [version, setVersion] = React.useState("");
+
+  React.useEffect(() => {
+    fetch(raw)
+      .then((r) => r.text())
+      .then((text) => {
+        setVersion(text);
+      });
+  }, []);
 
   if (isUpdateAvailable) return <UpdateAvailable update={updateServiceWorker} />;
 

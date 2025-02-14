@@ -50,6 +50,7 @@ export type Database = {
           created_at: string
           ka_index: number
           player: string
+          rg_avatar_url: string | null
           rg_id: string | null
           rg_index: number
           rg_link: string | null
@@ -58,6 +59,7 @@ export type Database = {
           created_at?: string
           ka_index?: number
           player?: string
+          rg_avatar_url?: string | null
           rg_id?: string | null
           rg_index?: number
           rg_link?: string | null
@@ -66,6 +68,7 @@ export type Database = {
           created_at?: string
           ka_index?: number
           player?: string
+          rg_avatar_url?: string | null
           rg_id?: string | null
           rg_index?: number
           rg_link?: string | null
