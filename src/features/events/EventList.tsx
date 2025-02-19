@@ -30,7 +30,7 @@ import { EventItem } from './components/EventItem';
 import { LoadingEventItem } from './components/LoadingEventItem';
 import { logEvent } from 'firebase/analytics';
 import { analytics } from 'src/firebase/firebaseConfig';
-import { useAuth } from '../auth/AuthContext';
+import { useApplication } from '../auth/AuthContext';
 import { Event } from 'types/supabase';
 
 export type EventScreenProps = {
@@ -42,7 +42,7 @@ export type EventScreenProps = {
 };
 
 const EventScreen = ({ events, loading, error, user, fetchMode }: EventScreenProps) => {
-  const { provider_token } = useAuth();
+  const { provider_token } = useApplication();
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const [filterDialogOpen, setFilterDialogOpen] = useState(false);

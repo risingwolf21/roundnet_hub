@@ -2,7 +2,7 @@ import { AccountCircle, ArrowBack, Menu } from '@mui/icons-material';
 import { AppBar, Avatar, Box, CssBaseline, IconButton, TextField, Toolbar, Typography } from '@mui/material';
 import React, { ReactNode, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../features/auth/AuthContext';
+import { useApplication } from '../features/auth/AuthContext';
 import { FirebaseMessaging } from '../features/notifications/FirebaseMessaging';
 import { Drawer, drawerWidth } from './Drawer';
 
@@ -30,7 +30,7 @@ const Layout = ({
   } = { title: 'Roundnet Karlsruhe', showBackButton: false, showProfile: true },
 }: Props) => {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user } = useApplication();
   const [drawerOpen, setDrawerOpen] = useState(false);
 
   return (

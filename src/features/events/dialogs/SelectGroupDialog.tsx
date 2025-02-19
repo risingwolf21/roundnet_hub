@@ -17,11 +17,11 @@ import { SlideUpTransition } from '../../../utils';
 import { SelectGroupDialogProps } from '../types';
 import { PostgrestSingleResponse } from '@supabase/supabase-js';
 import { SupabaseEventRepository } from '../../../repository/EventRepository';
-import { useAuth } from '../../auth/AuthContext';
+import { useApplication } from '../../auth/AuthContext';
 
 export const SelectGroupDialog = ({ open, handleClose, handleSubmit }: SelectGroupDialogProps) => {
   const [groups, setGroups] = useState<Group[]>([]);
-  const { user } = useAuth();
+  const { user } = useApplication();
 
   useEffect(() => {
     if (open)

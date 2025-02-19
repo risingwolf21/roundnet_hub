@@ -4,7 +4,6 @@ import * as React from 'react';
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import { FallbackComponent } from './components/Error';
 import { LoadingScreen } from './components/LoadingScreen';
-import { SentryIssueList } from './features/admin/SentryIssues';
 import { AuthCallback } from './features/auth/AuthCallback';
 import { AuthGate } from './features/auth/AuthGate';
 import ForgotPasswordScreen from './features/auth/ForgotPasswordScreen';
@@ -41,7 +40,6 @@ const UpdateAvailable = React.lazy(() => import('./components/UpdateAvailable'))
 const NotVerifiedScreen = React.lazy(() => import('./components/NotVerifiedScreen'));
 const HomePage = React.lazy(() => import('./features/homepage/HomePage'));
 const SupabaseClient = React.lazy(() => import('./components/SupabaseClient'));
-const SupabaseQueryClient = React.lazy(() => import('./components/SupabaseQueryClient'));
 const UserScreenProvider = React.lazy(() => import('./features/profile/User'));
 const PermissionList = React.lazy(() => import('./features/admin/PermissionList'));
 
@@ -73,7 +71,7 @@ const App = () => {
           v7_startTransition: true,
         }}
       >
-        <AuthGate>
+        <AuthGate version={version}>
           <React.Suspense fallback={<LoadingScreen />}>
             <Routes>
 
@@ -133,9 +131,7 @@ const App = () => {
                   <Route path="drinks/payments" element={<PaymentsPendingAdmin />} />
                   <Route path="users" element={<AdminUserListProvider />} />
                   <Route path="supabase" element={<SupabaseClient />} />
-                  <Route path="supabase/queries" element={<SupabaseQueryClient />} />
                   <Route path="permissions" element={<PermissionList />} />
-                  <Route path="sentry-issues" element={<SentryIssueList />} />
                 </Route>
               </Route>
               <Route path="*" element={<Navigate to="/login" replace />} />

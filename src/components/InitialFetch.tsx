@@ -1,6 +1,6 @@
 import { ReactNode, useEffect } from 'react';
 import { fetchNotVerifiedUsersAsync } from '../features/admin/slices/adminUserSlice';
-import { useAuth } from '../features/auth/AuthContext';
+import { useApplication } from '../features/auth/AuthContext';
 import {
   fetchNotificationsAsync
 } from '../features/notifications/slices/notificationsSlice';
@@ -14,7 +14,7 @@ export const InitialFetch = ({ children }: { children: ReactNode }) => {
 
 export const useInitialFetch = () => {
   const dispatch = useAppDispatch();
-  const { user } = useAuth();
+  const { user } = useApplication();
 
   useEffect(() => {
     dispatch(fetchNotificationsAsync(user!));

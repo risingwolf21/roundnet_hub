@@ -20,7 +20,7 @@ import { PaymentHistory } from '../../types/supabaseTypes';
 import { groupBy } from '../../utils';
 import { LoadingScreen } from '../../components/LoadingScreen';
 import Layout from '../../components/Layout';
-import { useAuth } from '../auth/AuthContext';
+import { useApplication } from '../auth/AuthContext';
 
 const PayDrinksButton = ({ amountToPay }: { amountToPay: number }) => {
   const onPayClick = () => {
@@ -69,7 +69,7 @@ const PayDrinksButton = ({ amountToPay }: { amountToPay: number }) => {
 };
 
 const PayDrinksScreenProvider = () => {
-  const { user } = useAuth();
+  const { user } = useApplication();
   const { paymentHistory, paymentError, paymentLoading } = useSelector((state: RootState) => state.drinks);
 
   return (

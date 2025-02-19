@@ -1,14 +1,14 @@
 import React, { useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import { eventsSelector, updateFetchMode } from 'src/features/events/slices/eventsSlice';
-import { useAuth } from '../features/auth/AuthContext';
+import { useApplication } from '../features/auth/AuthContext';
 import EventScreen from '../features/events/EventList';
 import { RootState, useAppDispatch } from '../redux/store';
 
 const EventScreenProvider = () => {
   const { loading, error, fetchMode } = useSelector((state: RootState) => state.events);
   const events = useSelector(eventsSelector.selectAll);
-  const { user } = useAuth();
+  const { user } = useApplication();
   const dispatch = useAppDispatch();
 
   useEffect(() => {

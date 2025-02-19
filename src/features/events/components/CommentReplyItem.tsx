@@ -13,7 +13,7 @@ import { TFunction } from 'i18next';
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FullComment } from '../../../types/supabaseTypes';
-import { useAuth } from '../../auth/AuthContext';
+import { useApplication } from '../../auth/AuthContext';
 
 type Props = {
   showDivider?: boolean;
@@ -23,7 +23,7 @@ type Props = {
 };
 
 export const CommentReplyText = ({ onClick }: { onClick: () => void }) => {
-  const { user } = useAuth();
+  const { user } = useApplication();
   return (
     <>
       <ListItem

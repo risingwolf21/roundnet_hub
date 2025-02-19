@@ -24,7 +24,7 @@ import Layout from '../../components/Layout';
 import pzLogo from '../../images/pz_logo.svg';
 import { AppDispatch, useAppDispatch } from '../../redux/store';
 import { UserWithRolesAndPermissions } from '../../types/supabaseTypes';
-import { useAuth } from '../auth/AuthContext';
+import { useApplication } from '../auth/AuthContext';
 import { CalendarSettingsDialog } from './CalendarSettings';
 import { ContactInformation } from './ContactInformation';
 import { GroupsDialog } from './GroupsDialog';
@@ -40,10 +40,10 @@ type UserScreenProps = {
 };
 
 const UserScreenProvider = () => {
-  const { user, signOut, provider_token } = useAuth();
+  const { user, signOut, provider_token } = useApplication();
   const dispatch = useAppDispatch();
 
-  return <UserScreen user={user!} provider_token={provider_token}  dispatch={dispatch} handleSignOut={signOut} />;
+  return <UserScreen user={user!} provider_token={provider_token} dispatch={dispatch} handleSignOut={signOut} />;
 };
 
 const UserScreen = ({ user, dispatch, provider_token }: UserScreenProps) => {
@@ -54,8 +54,8 @@ const UserScreen = ({ user, dispatch, provider_token }: UserScreenProps) => {
       <List sx={{ pl: 2, pr: 2, pb: 10 }}>
         <ProfileImage user={user} />
         <Typography variant="h5" component={"div"} sx={{ textAlign: "center" }}>{user.name}</Typography>
-        <Card sx={{ borderRadius: 2, py: 0, px: 1 }}>
-          <CardActionArea>
+        <Card sx={{ borderRadius: 2, py: 0, px: 0, mt: 1 }}>
+          <CardActionArea sx={{ px: 1 }}>
             <ListItem
               onClick={async () => {
                 await dialogs.open(ContactInformation, { user });
@@ -67,8 +67,8 @@ const UserScreen = ({ user, dispatch, provider_token }: UserScreenProps) => {
             </ListItem>
           </CardActionArea>
         </Card>
-        <Card sx={{ borderRadius: 2, py: 0, px: 1, mt: 1 }}>
-          <CardActionArea>
+        <Card sx={{ borderRadius: 2, py: 0, px: 0, mt: 1 }}>
+          <CardActionArea sx={{ px: 1 }}>
             <ListItem
               onClick={async () => {
                 await dialogs.open(GroupsDialog, { groups: user.groups })
@@ -80,8 +80,8 @@ const UserScreen = ({ user, dispatch, provider_token }: UserScreenProps) => {
             </ListItem>
           </CardActionArea>
         </Card>
-        <Card sx={{ borderRadius: 2, py: 0, px: 1, mt: 1 }}>
-          <CardActionArea>
+        <Card sx={{ borderRadius: 2, py: 0, px: 0, mt: 1 }}>
+          <CardActionArea sx={{ px: 1 }}>
             <ListItem
               onClick={async () => {
                 await dialogs.open(NotificationsDialog, { user, dispatch })
@@ -94,8 +94,8 @@ const UserScreen = ({ user, dispatch, provider_token }: UserScreenProps) => {
             </ListItem>
           </CardActionArea>
         </Card>
-        <Card sx={{ borderRadius: 2, py: 0, px: 1, mt: 1 }}>
-          <CardActionArea>
+        <Card sx={{ borderRadius: 2, py: 0, px: 0, mt: 1 }}>
+          <CardActionArea sx={{ px: 1 }}>
             <ListItem
               onClick={async () => {
                 const result = await dialogs.open(CalendarSettingsDialog, { provider_token: provider_token, user });
@@ -110,8 +110,8 @@ const UserScreen = ({ user, dispatch, provider_token }: UserScreenProps) => {
             </ListItem>
           </CardActionArea>
         </Card>
-        <Card sx={{ borderRadius: 2, py: 0, px: 1, mt: 1 }}>
-          <CardActionArea>
+        <Card sx={{ borderRadius: 2, py: 0, px: 0, mt: 1 }}>
+          <CardActionArea sx={{ px: 1 }}>
             <ListItem
               onClick={async () => {
                 await dialogs.open(PlayerzoneProfileDialog, { player_data: user.player_data, user })
@@ -124,8 +124,8 @@ const UserScreen = ({ user, dispatch, provider_token }: UserScreenProps) => {
             </ListItem>
           </CardActionArea>
         </Card>
-        <Card sx={{ color: "red", borderRadius: 2, py: 0, px: 1, mt: 1 }}>
-          <CardActionArea>
+        <Card sx={{ color: "red", borderRadius: 2, py: 0, px: 0, mt: 1 }}>
+          <CardActionArea sx={{ px: 1 }}>
             <ListItem
               onClick={() => {
                 supabase.auth.signOut();

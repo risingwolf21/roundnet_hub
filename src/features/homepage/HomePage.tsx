@@ -12,7 +12,7 @@ import {
 import { RootState, useAppDispatch } from "src/redux/store"
 import { answerDeadlineExpired, eventInThePast } from "src/types/supabaseTypes"
 import { translationKeyOfItemType } from "src/utils"
-import { useAuth } from "../auth/AuthContext"
+import { useApplication } from "../auth/AuthContext"
 import { updateAttendanceAsync } from "../events/slices/eventAttendanceSlice"
 import { eventsSelector, fetchEventsAsync } from "../events/slices/eventsSlice"
 import { fetchItemsAsync, keyHoldersSelector } from "../keys/slices/keysSlice"
@@ -21,7 +21,7 @@ import { useNotifications } from "@toolpad/core/useNotifications"
 
 const HomePage = () => {
 
-    const { user } = useAuth();
+    const { user } = useApplication();
     const events = useSelector(eventsSelector.selectAll);
     const { drinks } = useSelector((state: RootState) => state.drinks);
     const keys = useSelector(keyHoldersSelector.selectAll);

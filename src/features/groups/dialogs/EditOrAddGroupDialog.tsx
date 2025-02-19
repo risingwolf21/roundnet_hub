@@ -21,7 +21,7 @@ import { SlideUpTransition } from '../../../utils';
 import KeyIcon from '@mui/icons-material/Key';
 import { GroupsRepository } from '../../../repository/GroupsRepository';
 import { TablesUpdate } from '../../../types/supabase-generated.types';
-import { useAuth } from '../../auth/AuthContext';
+import { useApplication } from '../../auth/AuthContext';
 import { captureException } from '@sentry/react';
 import { ColorLens } from '@mui/icons-material';
 
@@ -32,7 +32,7 @@ type EditOrAddGroupDialogProps = {
 };
 
 export const EditOrAddGroupDialog = ({ open, handleClose, groupToEdit }: EditOrAddGroupDialogProps) => {
-  const { user } = useAuth();
+  const { user } = useApplication();
   const inputRef = useRef<HTMLInputElement>(null);
   const [currentGroup, setCurrentGroup] = useState<TablesUpdate<'event_group'>>({
     id: groupToEdit.id,

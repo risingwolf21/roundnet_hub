@@ -1,10 +1,10 @@
 import React from 'react';
 import { Navigate, Outlet, useLocation } from 'react-router-dom';
-import { useAuth } from './AuthContext';
+import { useApplication } from './AuthContext';
 import { InitialFetch } from 'src/components/InitialFetch';
 
 export const ProtectedLayout = () => {
-  const { session, user } = useAuth();
+  const { session, user } = useApplication();
   const location = useLocation();
 
   if (!session || !user){

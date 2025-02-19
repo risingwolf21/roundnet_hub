@@ -16,13 +16,14 @@ import { AdminPermissionsRepository } from '../../repository/AdminPermissionsRep
 import { SupabaseUserRepository } from '../../repository/UserRepository';
 import { UserWithRolesAndPermissions } from '../../types/supabaseTypes';
 import { ability, defineRulesFor } from '../../utils/PermissionService';
-import { AuthContext } from './AuthContext';
+import { ApplicationContext } from './AuthContext';
 
 type Props = {
   children: React.ReactNode;
+  version: string;
 };
 
-export const AuthGate = ({ children }: Props) => {
+export const AuthGate = ({ children, version }: Props) => {
   const dispatch = useDispatch();
 
   const navigate = useNavigate();
@@ -171,8 +172,8 @@ export const AuthGate = ({ children }: Props) => {
       </Box>
     );
   return (
-    <AuthContext.Provider value={{ user: currentUser, signOut: signOut, deviceId, session, provider_token }}>
+    <ApplicationContext.Provider value={{ user: currentUser, signOut: signOut, deviceId, session, provider_token, version }}>
       {children}
-    </AuthContext.Provider>
+    </ApplicationContext.Provider>
   );
 };

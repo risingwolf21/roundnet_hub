@@ -1,31 +1,30 @@
-import { Typography, useTheme } from '@mui/material';
+import { Button, CircularProgress, Typography, useTheme } from '@mui/material';
 import Link from '@mui/material/Link';
 import { captureException } from '@sentry/react';
-import { SignInPage, type AuthProvider } from '@toolpad/core/SignInPage';
-import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { AuthResponse, SignInPage, type AuthProvider } from '@toolpad/core/SignInPage';
+import { useNotifications } from '@toolpad/core/useNotifications';
+import React, { useState } from 'react';
+import { Navigate, useNavigate } from 'react-router-dom';
 import { supabase } from '../../components/services/supabase/supabaseClient';
-import raw from '../../git_commit.txt';
+import { useApplication } from './AuthContext';
 
 
 const LoginScreen = () => {
   const theme = useTheme();
+  const notifications = useNotifications();
   const navigate = useNavigate();
-  const [version, setVersion] = useState<string>('');
+  const { version, user, session } = useApplication();
+  const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    fetch(raw)
-      .then((r) => r.text())
-      .then((text) => {
-        setVersion(text);
-      });
-  }, []);
+  if (user && session)
+    return <Navigate to={"/"} replace={true} />
 
   const signIn: (provider: AuthProvider, formData: FormData | undefined) => void = async (
     provider,
     formData,
   ) => {
-    const promise = new Promise<void>((resolve) => {
+    const promise = new Promise<AuthResponse>((resolve) => {
+      setLoading(true);
       const email = formData?.get("email")?.toString();
       const password = formData?.get("password")?.toString();
       if (email && password) {
@@ -47,9 +46,13 @@ const LoginScreen = () => {
             })
             .catch((error) => {
               captureException(error);
+              resolve({
+                type: 'CredentialsSignin',
+                error: error.message,
+              });
             })
             .finally(() => {
-              resolve();
+              setLoading(false);
             })
       }
       if (provider.id === 'google')
@@ -75,10 +78,15 @@ const LoginScreen = () => {
             }
           })
           .catch((error) => {
+            notifications.show(error.message, { severity: "error" })
             captureException(error);
+            resolve({
+              type: 'CredentialsSignin',
+              error: error.message,
+            });
           })
           .finally(() => {
-            resolve();
+            setLoading(false);
           })
     });
     return promise;
@@ -92,6 +100,20 @@ const LoginScreen = () => {
     return (
       <div></div>
     );
+  }
+
+  function SubmitButton() {
+    return <Button
+      type="submit"
+      variant="contained"
+      fullWidth
+      disabled={loading}
+      sx={{ my: 2 }}
+    >
+      {
+        loading ? <CircularProgress color="inherit" size={25} /> : "Login"
+      }
+    </Button>
   }
 
   const SignUpLink = () => <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
@@ -115,7 +137,8 @@ const LoginScreen = () => {
       subtitle: Subtitle,
       signUpLink: SignUpLink,
       forgotPasswordLink: ForgotPasswordLink,
-      rememberMe: rememberMe
+      rememberMe: rememberMe,
+      submitButton: SubmitButton
     }}
     sx={{
       "minHeight": "100%",

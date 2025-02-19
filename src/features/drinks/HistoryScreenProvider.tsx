@@ -1,12 +1,12 @@
 import React from 'react';
 import { useSelector } from 'react-redux';
 import { RootState } from '../../redux/store';
-import { useAuth } from '../auth/AuthContext';
+import { useApplication } from '../auth/AuthContext';
 import { HistoryScreen } from './HistoryScreen';
 
 const HistoryScreenProvider = () => {
   const { history, historyLoading, historyError, historyEndReached } = useSelector((state: RootState) => state.drinks);
-  const { user } = useAuth();
+  const { user } = useApplication();
 
   return (
     <HistoryScreen

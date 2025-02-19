@@ -12,7 +12,7 @@ import EditIcon from '@mui/icons-material/Edit';
 import { EditOrAddGroupDialog } from './dialogs/EditOrAddGroupDialog';
 import { can } from '../../utils/PermissionService';
 import Layout from '../../components/Layout';
-import { useAuth } from '../auth/AuthContext';
+import { useApplication } from '../auth/AuthContext';
 
 const ManageGroupsProvider = () => {
   const groups = useSelector((state: RootState) => groupsSelector.selectAll(state));
@@ -31,7 +31,7 @@ type ManageGroupsScreenProps = {
 export const EMPTY_GROUP = { name: '', color: '#000000', id: '', description: '', created_at: '' };
 
 const ManageGroupsScreen = ({ groups, loading, client }: ManageGroupsScreenProps) => {
-  const { user } = useAuth();
+  const { user } = useApplication();
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const [isEditingMode, setEditingMode] = useState(false);

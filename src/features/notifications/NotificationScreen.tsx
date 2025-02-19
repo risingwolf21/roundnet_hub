@@ -10,13 +10,13 @@ import { DoneAll } from '@mui/icons-material';
 import { fetchNotificationsAsync, notificationsSelector } from './slices/notificationsSlice';
 import { SupabaseUserRepository } from '../../repository/UserRepository';
 import Layout from '../../components/Layout';
-import { useAuth } from '../auth/AuthContext';
+import { useApplication } from '../auth/AuthContext';
 import { logEvent } from 'firebase/analytics';
 import { analytics } from 'src/firebase/firebaseConfig';
 
 const NotificationScreen = () => {
   const { loading, error } = useSelector((state: RootState) => state.notifications);
-  const { user } = useAuth();
+  const { user } = useApplication();
   const notifications = useSelector((state: RootState) => notificationsSelector.selectAll(state));
   const dispatch = useAppDispatch();
 

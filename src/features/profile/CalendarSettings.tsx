@@ -1,6 +1,7 @@
 import { Close, NotificationsRounded } from "@mui/icons-material";
 import { AppBar, Box, Button, Card, CardActionArea, Dialog, IconButton, List, ListItem, ListItemAvatar, ListItemButton, ListItemText, MenuItem, Radio, Select, SelectChangeEvent, Toolbar, Typography } from "@mui/material";
 import { DialogProps } from "@toolpad/core/useDialogs";
+import { useNotifications } from "@toolpad/core/useNotifications";
 import React, { useEffect, useState } from "react";
 import { SwipeableDialog } from "src/components/SwipeableDialog";
 import { UserWithRolesAndPermissions } from "src/types/supabaseTypes";
@@ -26,6 +27,7 @@ export const CalendarSettingsDialog = ({ payload, open, onClose }: DialogProps<C
   const [minutesToRemind, setMinutesToRemind] = useState<number | null>(payload.user.calendar_data?.minutes_to_remind ?? null)
   const [calendarList, setCalendarList] = useState<Calendar[]>([]);
   const [selectedCalendar, setSelectedCalendar] = useState<Calendar | null>(null);
+  const notifications = useNotifications();
 
   useEffect(() => {
     if (payload.provider_token) {
@@ -36,9 +38,7 @@ export const CalendarSettingsDialog = ({ payload, open, onClose }: DialogProps<C
         }
       })
         .then((res) => {
-          if (res.ok)
-            return res.json();
-          return null
+          return res.json();
         })
         .then((res) => {
           if (res) {
@@ -47,6 +47,8 @@ export const CalendarSettingsDialog = ({ payload, open, onClose }: DialogProps<C
               .filter((x: Calendar) => x.accessRole === "owner")
             setCalendarList(list);
             setSelectedCalendar(list.find(x => x.id === payload.user.calendar_data?.calender_id) ?? null);
+          } else {
+
           }
         })
         .catch(err => console.error(err))
