@@ -2,38 +2,40 @@ import { MenuItem, Select, SelectChangeEvent } from "@mui/material";
 import React from "react";
 import { useEffect, useState } from "react"
 import { supabase } from "src/components/services/supabase/supabaseClient"
+import { useAuth } from "../auth/AuthContext";
+import { useNotifications } from "@toolpad/core/useNotifications";
 
 type Calendar = {
   id: string;
   summaryOverride: string;
   summary?: string;
+  accessRole: string;
 }
 
 export const CalendarList = () => {
 
+  const { provider_token } = useAuth();
   const [calendarList, setCalendarList] = useState<Calendar[]>([]);
   const [selectedCalendar, setSelectedCalendar] = useState<Calendar | null>(null);
+  const notifications = useNotifications();
 
   useEffect(() => {
-    supabase.auth.getSession().then(result => {
-      const provider_token = result.data.session?.user.user_metadata["provider_token"]
-      if (provider_token) {
-        fetch("https://www.googleapis.com/calendar/v3/users/me/calendarList", {
-          method: "GET",
-          headers: {
-            "Authorization": "Bearer " + provider_token,
-          }
+    if (provider_token) {
+      fetch("https://www.googleapis.com/calendar/v3/users/me/calendarList", {
+        method: "GET",
+        headers: {
+          "Authorization": "Bearer " + provider_token,
+        }
+      })
+        .then((res) => res.json())
+        .then((res) => {
+          setCalendarList(Array.from<Calendar>(res
+            .items)
+            .map((x: Calendar) => ({ id: x.id, summaryOverride: x.summary ?? x.summaryOverride, accessRole: x.accessRole }))
+            .filter((x: Calendar) => x.accessRole === "owner"))
         })
-          .then((res) => res.json())
-          .then((res) => {
-            setCalendarList(res.items.map((x: Calendar) => ({ id: x.id, summaryOverride: x.summary ?? x.summaryOverride })))
-          })
-          .catch(err => console.error(err))
-      } else {
-        console.log("no provider token")
-      }
-    })
-
+        .catch(err => notifications.show(err.message, { severity: "error" }))
+    }
   }, []);
 
   const handleChange = (event: SelectChangeEvent) => {

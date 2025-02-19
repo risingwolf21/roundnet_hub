@@ -9,7 +9,7 @@ export const SupabaseKeysRepository = {
     return supabase
       .from('item_history')
       .select(
-        '*, pastUser: user!key_history_pastuser_fkey(*), currentUser: user!key_history_currentuser_fkey(*), key: key(*)'
+        '*, pastUser: user!item_history_pastUser_fkey(*), currentUser: user!item_history_currentUser_fkey(*), key: key(*)'
       )
       .eq('key.id', keyId)
       .not('key', 'is', null)
