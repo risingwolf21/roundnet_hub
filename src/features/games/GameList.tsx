@@ -11,7 +11,7 @@ import { RootState, useAppDispatch } from 'src/redux/store';
 import { groupBy } from 'src/utils';
 import { fetchMatchesAsync } from './slices/gamesSlice';
 
-export const GameList = () => {
+const GameList = () => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const { matches, loadingMatches } = useSelector((state: RootState) => state.games);
@@ -144,3 +144,4 @@ export const GameList = () => {
     </Layout>
   );
 };
+export default GameList;

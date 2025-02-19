@@ -30,6 +30,8 @@ import { EventItem } from './components/EventItem';
 import { LoadingEventItem } from './components/LoadingEventItem';
 import { logEvent } from 'firebase/analytics';
 import { analytics } from 'src/firebase/firebaseConfig';
+import { useAuth } from '../auth/AuthContext';
+import { Event } from 'types/supabase';
 
 export type EventScreenProps = {
   events: SliceEvent[];
@@ -40,7 +42,7 @@ export type EventScreenProps = {
 };
 
 const EventScreen = ({ events, loading, error, user, fetchMode }: EventScreenProps) => {
-  const client = useClient();
+  const { provider_token } = useAuth();
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const [filterDialogOpen, setFilterDialogOpen] = useState(false);
@@ -57,9 +59,9 @@ const EventScreen = ({ events, loading, error, user, fetchMode }: EventScreenPro
     dispatch(updateFetchMode(mode))
   };
 
-  const updateAttendance = async (eventId: string, state: EventAttendance, oldState: EventAttendance) => {
-    logEvent(analytics, "event_attendance_update", { user: user.userId, name: user.name, eventId, state, oldState });
-    dispatch(updateAttendanceAsync({ user, eventId, state, oldState }));
+  const updateAttendance = async (event: Event, state: EventAttendance, oldState: EventAttendance) => {
+    logEvent(analytics, "event_attendance_update", { user: user.userId, name: user.name, eventId: event.id, state, oldState });
+    dispatch(updateAttendanceAsync({ user, event, state, oldState, provider_token }));
   };
 
   return (
@@ -84,8 +86,8 @@ const EventScreen = ({ events, loading, error, user, fetchMode }: EventScreenPro
                     event={event}
                     t={t}
                     attendanceUpdating={event.attendanceUpdating}
-                    attendEvent={() => updateAttendance(event.id, 'Attending', event.userAttendance)}
-                    declineEvent={() => updateAttendance(event.id, 'Declined', event.userAttendance)}
+                    attendEvent={() => updateAttendance(event, 'Attending', event.userAttendance)}
+                    declineEvent={() => updateAttendance(event, 'Declined', event.userAttendance)}
                     onClick={() => {
                       navigate('/training/event/' + event.id);
                     }}

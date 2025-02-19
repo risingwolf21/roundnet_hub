@@ -2,16 +2,8 @@ import { CssBaseline } from '@mui/material';
 import * as Sentry from '@sentry/react';
 import * as React from 'react';
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
-import Browse from './components/Browse';
 import { FallbackComponent } from './components/Error';
 import { LoadingScreen } from './components/LoadingScreen';
-import NotVerifiedScreen from './components/NotVerifiedScreen';
-import { SupabaseClient } from './components/SupabaseClient';
-import { SupabaseQueryClient } from './components/SupabaseQueryClient';
-import UpdateAvailable from './components/UpdateAvailable';
-import { UserScreenProvider } from './features/profile/User';
-import BrowseAdmin from './features/admin/BrowseAdmin';
-import { PermissionList } from './features/admin/PermissionList';
 import { SentryIssueList } from './features/admin/SentryIssues';
 import { AuthCallback } from './features/auth/AuthCallback';
 import { AuthGate } from './features/auth/AuthGate';
@@ -19,12 +11,9 @@ import ForgotPasswordScreen from './features/auth/ForgotPasswordScreen';
 import LoginScreen from './features/auth/LoginScreen';
 import { ProtectedLayout } from './features/auth/ProtectedRoute';
 import RegisterScreen from './features/auth/RegisterScreen';
-import { RecurringEventsProvider } from './features/events/RecurringEvents';
-import { GameList } from './features/games/GameList';
-import { ReportScore } from './features/games/ReportScore';
-import { HomePage } from './features/homepage/HomePage';
 import { useServiceWorker } from './hooks/useServiceWorker';
 import { DataProtection } from './components/DataProtection';
+import raw from './git_commit.txt';
 
 const FeatureNotAvailable = React.lazy(() => import('./components/FeatureNotAvailable'));
 const HistoryScreenProvider = React.lazy(() => import('./features/drinks/HistoryScreenProvider'));
@@ -45,9 +34,28 @@ const ProfileScreen = React.lazy(() => import('./components/Profile'));
 const NotificationScreen = React.lazy(() => import('./features/notifications/NotificationScreen'));
 const ChallengeScreen = React.lazy(() => import('./features/challenges/ChallengeList'));
 const ChallengeInfoScreen = React.lazy(() => import('./features/challenges/ChallengeInformationProvider'));
+const RecurringEvents = React.lazy(() => import('./features/events/RecurringEvents'));
+const GameList = React.lazy(() => import('./features/games/GameList'));
+const ReportScore = React.lazy(() => import('./features/games/ReportScore'));
+const UpdateAvailable = React.lazy(() => import('./components/UpdateAvailable'));
+const NotVerifiedScreen = React.lazy(() => import('./components/NotVerifiedScreen'));
+const HomePage = React.lazy(() => import('./features/homepage/HomePage'));
+const SupabaseClient = React.lazy(() => import('./components/SupabaseClient'));
+const SupabaseQueryClient = React.lazy(() => import('./components/SupabaseQueryClient'));
+const UserScreenProvider = React.lazy(() => import('./features/profile/User'));
+const PermissionList = React.lazy(() => import('./features/admin/PermissionList'));
 
 const App = () => {
   const { isUpdateAvailable, updateServiceWorker } = useServiceWorker();
+  const [version, setVersion] = React.useState("");
+
+  React.useEffect(() => {
+    fetch(raw)
+      .then((r) => r.text())
+      .then((text) => {
+        setVersion(text);
+      });
+  }, []);
 
   if (isUpdateAvailable) return <UpdateAvailable update={updateServiceWorker} />;
 
@@ -57,7 +65,6 @@ const App = () => {
       fallback={({ resetError }) => (
         <FallbackComponent message={'Es ist ein Fehler aufgetreten'} resetError={resetError} />
       )}
-      showDialog
     >
       <CssBaseline />
       <BrowserRouter
@@ -86,10 +93,7 @@ const App = () => {
 
                 <Route path="/reset-password" element={<ResetPasswordScreen />} />
 
-                <Route path="/browse" element={<Browse />} />
-                <Route path="/browse-admin" element={<BrowseAdmin />} />
                 <Route path="/drinks" element={<DrinkListScreenProvider />} />
-
                 <Route path="/history" element={<HistoryScreenProvider />} />
                 <Route path="/payments" element={<PayDrinksScreenProvider />} />
                 <Route path="/keys" element={<KeyHolderScreenProvider />} />
@@ -113,7 +117,7 @@ const App = () => {
 
                 <Route path="training">
                   <Route path="list" element={<EventScreenProvider />} />
-                  <Route path="recurringEvents" element={<RecurringEventsProvider />} />
+                  <Route path="recurringEvents" element={<RecurringEvents />} />
                   <Route path="event/:selectedEventId" element={<EventInformationProvider />} />
                   <Route path="createOrUpdate/:option" element={<CreateEventProvider />} />
                 </Route>

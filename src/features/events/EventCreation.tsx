@@ -48,7 +48,7 @@ const emptyEvent = {
   description: '',
   startingDateTime: formatDateToDatabase(set(new Date(), { seconds: 0, milliseconds: 0 })),
   meetingDateTime: null,
-  endDateTime: null,
+  endDateTime: formatDateToDatabase(set(new Date(), { seconds: 0, milliseconds: 0 })),
   recurrence: 'None',
   maxAttendees: null,
   required_item: null,
@@ -84,8 +84,6 @@ const CreateEvent = ({ t, eventToEdit, option }: CreateEventProps) => {
 
       if (!editedEvent.meetingDateTime)
         setEditedEvent({ ...editedEvent, meetingDateTime: editedEvent.startingDateTime });
-
-      if (!editedEvent.endDateTime) setEditedEvent({ ...editedEvent, endDateTime: editedEvent.meetingDateTime });
 
       let eventTitle = data.get('eventTitle')?.toString();
       let eventDescription = data.get('eventDescription')?.toString();
@@ -314,18 +312,6 @@ const CreateEvent = ({ t, eventToEdit, option }: CreateEventProps) => {
           </ListItem>
 
           <ListItem sx={{ pt: 0, pb: 0, mb: 2 }} key={'endDateTime'}>
-            <ListItemAvatar>
-              <Checkbox
-                sx={{ pl: 0 }}
-                checked={editedEvent.endDateTime !== null}
-                onChange={() =>
-                  setEditedEvent({
-                    ...editedEvent,
-                    endDateTime: editedEvent.endDateTime !== null ? null : editedEvent.startingDateTime,
-                  })
-                }
-              />
-            </ListItemAvatar>
 
             <DateTimePicker
               slotProps={{ textField: { error: false } }}
@@ -352,7 +338,7 @@ const CreateEvent = ({ t, eventToEdit, option }: CreateEventProps) => {
                   ),
                 })
               }
-              value={editedEvent.endDateTime ? dayjsFromDb(editedEvent.endDateTime) : null}
+              value={dayjsFromDb(editedEvent.endDateTime)}
             />
           </ListItem>
 

@@ -129,7 +129,7 @@ const eventsSlice = createSlice({
 
       .addCase(updateAttendanceAsync.pending, (state, action) => {
         let sliceEvent = {
-          id: action.meta.arg.eventId,
+          id: action.meta.arg.event.id,
           changes: { attendanceUpdating: true },
         } as Update<SliceEvent>;
 
@@ -137,7 +137,7 @@ const eventsSlice = createSlice({
       })
       .addCase(updateAttendanceAsync.fulfilled, (state, action) => {
         let sliceEvent = {
-          id: action.meta.arg.eventId,
+          id: action.meta.arg.event.id,
           changes: {
             userAttendance: action.meta.arg.state,
             attendanceUpdating: false,

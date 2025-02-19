@@ -562,7 +562,7 @@ export const Drawer = ({ open, onClose }: Props) => {
       .then((text) => {
         setVersion(text);
       });
-  });
+  }, []);
 
   useEffect(() => {
     setTab(window.location.pathname.substring(1));

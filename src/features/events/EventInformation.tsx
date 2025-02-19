@@ -102,7 +102,7 @@ const EventInformation = ({
 
   const updateAttendance = async (state: EventAttendance, oldState: EventAttendance) => {
     logEvent(analytics, "event_attendance_update", { user: user.userId, eventId: selectedEvent.id, state, oldState });
-    dispatch(updateAttendanceAsync({ user, eventId: selectedEvent.id, state, oldState }));
+    dispatch(updateAttendanceAsync({ user, event: selectedEvent, state, oldState }));
   };
 
   const handleCommentSubmit = (value: { comment: string; reply_to: string | null }) => {

@@ -5,7 +5,7 @@ import React from 'react';
 const UpdateAvailable = ({ update }: { update: () => void }) => {
   return (
     <Grid>
-      <AppBar position="fixed" sx={{ zIndex: (theme) => theme.zIndex.drawer + 1, background: 'primary' }}>
+      <AppBar position="static" sx={{ zIndex: (theme) => theme.zIndex.drawer + 1, background: 'primary', pt: "env(safe-area-inset-top)" }}>
         <Toolbar>
           <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
             Roundnet Karlsruhe

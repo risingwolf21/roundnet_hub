@@ -40,6 +40,7 @@ declare global {
   type MatchSet = GamesTable<'sets'>;
   type Team = GamesTable<'teams'>;
   type FullMatch = GamesTable<'user_matches'>;
+  type CalendarSettings = Tables<'user_calender_settings'>;
   type PlayerWithSimpleUser = Player & { name: string; userId: string };
 
   type GroupWithUsersBase = QueryData<ReturnType<typeof fetchGroupWithUsers>> extends Array<infer U> ? U : never;

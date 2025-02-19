@@ -50,6 +50,7 @@ export type Database = {
           created_at: string
           ka_index: number
           player: string
+          rg_avatar_url: string | null
           rg_id: string | null
           rg_index: number
           rg_link: string | null
@@ -58,6 +59,7 @@ export type Database = {
           created_at?: string
           ka_index?: number
           player?: string
+          rg_avatar_url?: string | null
           rg_id?: string | null
           rg_index?: number
           rg_link?: string | null
@@ -66,6 +68,7 @@ export type Database = {
           created_at?: string
           ka_index?: number
           player?: string
+          rg_avatar_url?: string | null
           rg_id?: string | null
           rg_index?: number
           rg_link?: string | null
@@ -601,7 +604,7 @@ export type Database = {
           answerDeadline: string | null
           created_at: string
           description: string
-          endDateTime: string | null
+          endDateTime: string
           group: string
           id: string
           isCancelled: boolean
@@ -619,7 +622,7 @@ export type Database = {
           answerDeadline?: string | null
           created_at?: string
           description?: string
-          endDateTime?: string | null
+          endDateTime: string
           group: string
           id?: string
           isCancelled?: boolean
@@ -637,7 +640,7 @@ export type Database = {
           answerDeadline?: string | null
           created_at?: string
           description?: string
-          endDateTime?: string | null
+          endDateTime?: string
           group?: string
           id?: string
           isCancelled?: boolean
@@ -991,6 +994,79 @@ export type Database = {
           verified?: boolean
         }
         Relationships: []
+      }
+      user_calendar_event_mapping: {
+        Row: {
+          calendar_event_id: string
+          event: string
+          user: string
+        }
+        Insert: {
+          calendar_event_id: string
+          event: string
+          user: string
+        }
+        Update: {
+          calendar_event_id?: string
+          event?: string
+          user?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_calendar_event_mapping_event_fkey"
+            columns: ["event"]
+            isOneToOne: false
+            referencedRelation: "current_distinct_event"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_calendar_event_mapping_event_fkey"
+            columns: ["event"]
+            isOneToOne: false
+            referencedRelation: "distinct_event"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_calendar_event_mapping_event_fkey"
+            columns: ["event"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_calendar_event_mapping_user_fkey"
+            columns: ["user"]
+            isOneToOne: false
+            referencedRelation: "user"
+            referencedColumns: ["userId"]
+          },
+        ]
+      }
+      user_calender_settings: {
+        Row: {
+          calender_id: string | null
+          minutes_to_remind: number | null
+          user: string
+        }
+        Insert: {
+          calender_id?: string | null
+          minutes_to_remind?: number | null
+          user: string
+        }
+        Update: {
+          calender_id?: string | null
+          minutes_to_remind?: number | null
+          user?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_calender_settings_user_fkey"
+            columns: ["user"]
+            isOneToOne: true
+            referencedRelation: "user"
+            referencedColumns: ["userId"]
+          },
+        ]
       }
       vouchers: {
         Row: {

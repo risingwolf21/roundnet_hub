@@ -2,6 +2,7 @@ import { PostgrestError, PostgrestSingleResponse } from '@supabase/supabase-js';
 import { formatDateToDatabase } from 'src/utils';
 import { Notification } from 'types/supabase';
 import { supabase } from '../components/services/supabase/supabaseClient';
+import { CalendarSettingsResult } from 'src/features/profile/CalendarSettings';
 
 export const fetchGroups = () => supabase.from('group_user_mapping').select('group(*)');
 export const fetchUserWithGroups = () => supabase
@@ -82,5 +83,29 @@ export const SupabaseUserRepository = {
   },
   async markNotificationsAsRead(user: User): Promise<PostgrestSingleResponse<null>> {
     return supabase.from('notifications').delete().eq('user', user.userId);
+  },
+  async fetchCalendarSettings(
+    userId: string
+  ): Promise<PostgrestSingleResponse<CalendarSettings | null>> {
+    return supabase
+      .from('user_calender_settings')
+      .select("*")
+      .eq("user", userId)
+      .maybeSingle()
+      .throwOnError()
+  },
+  async updateCalenderSettings(
+    settings: CalendarSettingsResult,
+    user: User
+  ): Promise<PostgrestSingleResponse<CalendarSettings>> {
+    return supabase
+      .from('user_calender_settings')
+      .upsert({
+        user: user.userId,
+        calender_id: settings.calendar_id,
+        minutes_to_remind: settings.minutes_to_remind
+      })
+      .select("*")
+      .returns<CalendarSettings>();
   },
 };
