@@ -119,5 +119,10 @@
     "prettier": "^3.4.2",
     "react-app-env": "^1.2.3",
     "supabase": "^2.6.8"
+  },
+  "overrides": {
+    "@supabase/supabase-js": {
+      "@supabase/gotrue-js": "2.61.0"
+    }
   }
 }

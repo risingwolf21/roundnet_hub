@@ -60,8 +60,8 @@ const App = () => {
   return (
     <Sentry.ErrorBoundary
       onError={console.error}
-      fallback={({ resetError }) => (
-        <FallbackComponent message={'Es ist ein Fehler aufgetreten'} resetError={resetError} />
+      fallback={({ resetError, error }) => (
+        <FallbackComponent message={'Es ist ein Fehler aufgetreten. ' + JSON.stringify(error)} resetError={resetError} />
       )}
     >
       <CssBaseline />
@@ -83,7 +83,7 @@ const App = () => {
               <Route path="/auth/callback" element={<AuthCallback />} />
 
               <Route element={<ProtectedLayout />}>
-                <Route index path="/" element={<HomePage />} />
+                <Route index path="/home" element={<HomePage />} />
 
                 <Route path="/not-verified" element={<NotVerifiedScreen />} />
 

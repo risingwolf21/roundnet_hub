@@ -1,6 +1,5 @@
 import React, { useEffect } from 'react';
 import { useSelector } from 'react-redux';
-import { useClient } from 'react-supabase';
 import {
   fetchDrinksAsync
 } from 'src/features/drinks/slices/drinksSlice';
@@ -12,7 +11,6 @@ const DrinkListScreenProvider = () => {
   const { user } = useApplication();
   const { drinks, drinksLoading, drinksError } = useSelector((state: RootState) => state.drinks);
   const dispatch = useAppDispatch();
-  const client = useClient();
 
   useEffect(() => {
     dispatch(fetchDrinksAsync());

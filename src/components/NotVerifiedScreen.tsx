@@ -5,7 +5,7 @@ import { supabase } from './services/supabase/supabaseClient';
 const NotVerifiedScreen = () => {
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', height: '100vh' }}>
-      <AppBar position="sticky" sx={{ zIndex: (theme) => theme.zIndex.drawer + 1, background: 'primary' }}>
+      <AppBar position="sticky" sx={{ zIndex: (theme) => theme.zIndex.drawer + 1, background: 'primary', pt: "env(safe-area-inset-top)" }}>
         <Toolbar
           sx={{
             width: 'calc(100% - 48px)',

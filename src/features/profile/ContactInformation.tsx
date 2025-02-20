@@ -1,15 +1,11 @@
-import { AddPhotoAlternateOutlined, Close, DeleteOutline, EditOutlined, EmailOutlined, PersonOutlineOutlined } from "@mui/icons-material";
-import { AppBar, Avatar, Box, Button, Container, Dialog, IconButton, List, ListItem, ListItemAvatar, ListItemText, TextField, Toolbar, Typography } from "@mui/material";
+import { AddPhotoAlternateOutlined, Close, EmailOutlined, PersonOutlineOutlined } from "@mui/icons-material";
+import { AppBar, Avatar, Button, Container, Dialog, IconButton, List, ListItem, ListItemAvatar, ListItemText, TextField, Toolbar, Typography } from "@mui/material";
 import { captureException } from "@sentry/react";
-import { uuid } from "@supabase/supabase-js/dist/main/lib/helpers";
 import { DialogProps } from '@toolpad/core/useDialogs';
 import { NotificationsProvider, useNotifications } from "@toolpad/core/useNotifications";
 import React, { useState } from "react";
-import CropImageDialog from "src/components/CropImageDialog";
 import { supabase } from "src/components/services/supabase/supabaseClient";
 import { UserWithRolesAndPermissions } from "src/types/supabaseTypes";
-import { dataURLtoFile, readFile } from "src/utils";
-import { ProfileImage } from "./ProfileImage";
 
 type ContactInformationPayload = {
   user: UserWithRolesAndPermissions;

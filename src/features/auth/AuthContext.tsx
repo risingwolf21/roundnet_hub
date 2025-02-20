@@ -6,7 +6,6 @@ export const ApplicationContext = createContext<{
   user: UserWithRolesAndPermissions | null;
   deviceId: string;
   signOut: () => void;
-  session: Session | null;
   provider_token: string | null;
   version: string;
 }>(null!);

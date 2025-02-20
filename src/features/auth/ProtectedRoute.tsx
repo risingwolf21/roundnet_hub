@@ -4,11 +4,10 @@ import { useApplication } from './AuthContext';
 import { InitialFetch } from 'src/components/InitialFetch';
 
 export const ProtectedLayout = () => {
-  const { session, user } = useApplication();
+  const { user } = useApplication();
   const location = useLocation();
 
-  if (!session || !user){
-    console.log("not session or user", session, user)
+  if (!user) {
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 

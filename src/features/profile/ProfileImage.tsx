@@ -1,13 +1,13 @@
-import { AddPhotoAlternateOutlined, EditOutlined, DeleteOutline, Save, Restore } from "@mui/icons-material"
-import { Container, Button, Avatar, Box, Fab, CircularProgress } from "@mui/material"
+import { AddPhotoAlternateOutlined, DeleteOutline, EditOutlined, Restore, Save } from "@mui/icons-material";
+import { Avatar, Box, Button, CircularProgress, Container } from "@mui/material";
 import { captureException } from "@sentry/react";
 import { uuid } from "@supabase/supabase-js/dist/main/lib/helpers";
 import { useNotifications } from "@toolpad/core/useNotifications";
-import React, { useState } from "react"
+import Compressor from 'compressorjs';
+import React, { useState } from "react";
 import CropImageDialog from "src/components/CropImageDialog";
 import { supabase } from "src/components/services/supabase/supabaseClient";
 import { dataURLtoFile, readFile } from "src/utils";
-import Compressor from 'compressorjs';
 
 type Props = {
   user: User;

@@ -27,7 +27,7 @@ export const AdminPermissionsRepository = {
       .from('user_roles')
       .select('app_role (*)')
       .eq('user', userId)
-      .returns<{ app_role: AppRole }[]>();
+      .returns<{ app_role: AppRole }[]>()
     if (error || !data) return [];
     return data.map((x) => x.app_role as AppRole);
   },

@@ -92,7 +92,7 @@ const EditDrinkDialog = ({ drink, onDrinkEditFinished, open, handleClose, drinkH
     <Box>
       <Dialog fullScreen open={open} onClose={handleClose} TransitionComponent={SlideUpTransition}>
         <Box component="form" onSubmit={handleSubmit} noValidate>
-          <AppBar sx={{ position: 'relative' }}>
+        <AppBar position="fixed" sx={{ pt: 'env(safe-area-inset-top)' }}>
             <Toolbar>
               <IconButton edge="start" color="inherit" onClick={handleClose} aria-label="close">
                 <CloseIcon />

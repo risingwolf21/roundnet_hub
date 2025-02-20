@@ -13,11 +13,8 @@ const LoginScreen = () => {
   const theme = useTheme();
   const notifications = useNotifications();
   const navigate = useNavigate();
-  const { version, user, session } = useApplication();
+  const { version, user } = useApplication();
   const [loading, setLoading] = useState(false);
-
-  if (user && session)
-    return <Navigate to={"/"} replace={true} />
 
   const signIn: (provider: AuthProvider, formData: FormData | undefined) => void = async (
     provider,
