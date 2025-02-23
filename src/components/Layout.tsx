@@ -1,7 +1,7 @@
 import { AccountCircle, ArrowBack, Menu } from '@mui/icons-material';
 import { AppBar, Avatar, Box, CssBaseline, IconButton, TextField, Toolbar, Typography } from '@mui/material';
 import React, { ReactNode, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import { useApplication } from '../features/auth/AuthContext';
 import { FirebaseMessaging } from '../features/notifications/FirebaseMessaging';
 import { Drawer, drawerWidth } from './Drawer';

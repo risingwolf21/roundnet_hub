@@ -5,7 +5,7 @@ import { AlertSnackbar } from '../components/AlertSnackbar';
 import React from 'react';
 import { withTranslation } from 'react-i18next';
 import CreateEvent from '../features/events/EventCreation';
-import { useParams } from 'react-router-dom';
+import { useParams } from 'react-router';
 import { CreateEventOption } from '../features/events/types';
 
 const CreateEventProvider = ({ t }: { t: TFunction }) => {

@@ -3,7 +3,7 @@ import { Box, Fab, IconButton, LinearProgress, List, ListItem, ListItemAvatar, L
 import { SupabaseClient } from '@supabase/supabase-js';
 import React, { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import { useClient } from 'react-supabase';
 import { GroupWithUsers } from 'src/types/supabaseTypes';
 import { fetchGroupsAsync, groupsSelector } from './slices/groupsSlice';

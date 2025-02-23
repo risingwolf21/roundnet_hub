@@ -43,7 +43,7 @@ import {
 } from '@mui/icons-material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { format } from 'date-fns';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import { EventWithGroup } from '../../types/supabaseTypes';
 import Layout from '../../components/Layout';
 

@@ -11,7 +11,7 @@ import {
 } from '@mui/material';
 import React, { useEffect, useState } from 'react';
 import { AddPhotoAlternateOutlined, FiberManualRecord, Launch } from '@mui/icons-material';
-import { useParams } from 'react-router-dom';
+import { useParams } from 'react-router';
 import { LoadingIndicator } from './LoadingIndicator';
 import { SupabaseUserRepository } from '../repository/UserRepository';
 import Layout from './Layout';

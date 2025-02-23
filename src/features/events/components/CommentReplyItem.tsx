@@ -11,7 +11,7 @@ import {
 } from '@mui/material';
 import { TFunction } from 'i18next';
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import { FullComment } from '../../../types/supabaseTypes';
 import { useApplication } from '../../auth/AuthContext';
 

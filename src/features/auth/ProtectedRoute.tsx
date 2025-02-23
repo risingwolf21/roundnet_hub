@@ -1,5 +1,5 @@
 import React from 'react';
-import { Navigate, Outlet, useLocation } from 'react-router-dom';
+import { Navigate, Outlet, useLocation } from 'react-router';
 import { useApplication } from './AuthContext';
 import { InitialFetch } from 'src/components/InitialFetch';
 

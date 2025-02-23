@@ -39,7 +39,7 @@ import { TFunction } from 'i18next';
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import { HOMEPAGE } from '../constants';
 import { notificationsSelector } from '../features/notifications/slices/notificationsSlice';
 import raw from '../git_commit.txt';

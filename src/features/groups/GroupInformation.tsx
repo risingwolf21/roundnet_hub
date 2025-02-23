@@ -3,7 +3,7 @@ import { Box, Divider, Fab, List, ListItem, ListItemAvatar, ListItemText, Typogr
 import { toInteger } from 'lodash';
 import React, { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
-import { useParams } from 'react-router-dom';
+import { useParams } from 'react-router';
 import { fetchAdminUsersAsync } from '../admin/slices/adminUserSlice';
 import { RootState, useAppDispatch } from '../../redux/store';
 import { GroupWithUsers, UserWithGroups } from '../../types/supabaseTypes';

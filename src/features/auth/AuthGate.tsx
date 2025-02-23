@@ -4,29 +4,33 @@ import { Session } from '@supabase/supabase-js';
 import { logEvent, setUserId } from 'firebase/analytics';
 import React, { useCallback, useEffect, useState } from 'react';
 import { useDispatch } from 'react-redux';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { AppRoutes } from 'src/AppRoutes';
+import { LoadingScreen } from 'src/components/LoadingScreen';
 import { supabase } from 'src/components/services/supabase/supabaseClient';
 import { analytics } from 'src/firebase/firebaseConfig';
 import useDeviceId from 'src/hooks/useDeviceId';
-import { HOMEPAGE } from '../../constants';
 import { onUserChange } from '../../redux/applicationSlice';
 import { AdminPermissionsRepository } from '../../repository/AdminPermissionsRepository';
 import { SupabaseUserRepository } from '../../repository/UserRepository';
 import { UserWithRolesAndPermissions } from '../../types/supabaseTypes';
 import { ability, defineRulesFor } from '../../utils/PermissionService';
 import { ApplicationContext } from './AuthContext';
+import raw from '../../git_commit.txt';
 
-type Props = {
-  children: React.ReactNode;
-  version: string;
-};
 
-export const AuthGate = ({ children, version }: Props) => {
+export const AuthGate = () => {
   const dispatch = useDispatch();
-
-  const navigate = useNavigate();
-  const location = useLocation();
   const deviceId = useDeviceId();
+
+  const [version, setVersion] = React.useState("");
+
+  React.useEffect(() => {
+    fetch(raw)
+      .then((r) => r.text())
+      .then((text) => {
+        setVersion(text);
+      });
+  }, []);
 
   const [session, setSession] = useState<Session | null>(null)
   const [currentUser, setCurrentUser] = useState<UserWithRolesAndPermissions | null>(null);
@@ -50,14 +54,13 @@ export const AuthGate = ({ children, version }: Props) => {
   };
 
   const reset = useCallback(() => {
-    navigate("/login", { replace: true })
     setLoading(false);
     ability.update(defineRulesFor([], []));
     dispatch(onUserChange(null));
     setUser(null);
     setCurrentUser(null);
     setProviderToken(null);
-  }, [dispatch, navigate]);
+  }, [dispatch]);
 
   const fetchUserData = useCallback(async (session: Session, abortSignal: AbortSignal) => {
     const roles = await AdminPermissionsRepository.fetchRolesForUser(session.user.id);
@@ -86,8 +89,7 @@ export const AuthGate = ({ children, version }: Props) => {
     ability.update(defineRulesFor(permissions, roles));
     setCurrentUser(userData);
     setLoading(false);
-    navigate(location.pathname === '/login' || location.pathname === '/auth/callback' ? HOMEPAGE : location.pathname, { replace: true })
-  }, [navigate, location.pathname]);
+  }, []);
 
   useEffect(() => {
     const abortController = new AbortController();
@@ -138,7 +140,9 @@ export const AuthGate = ({ children, version }: Props) => {
     );
   return (
     <ApplicationContext.Provider value={{ user: currentUser, signOut: signOut, deviceId, provider_token, version }}>
-      {children}
+      <React.Suspense fallback={<LoadingScreen />}>
+        <AppRoutes />
+      </React.Suspense>
     </ApplicationContext.Provider>
   );
 };

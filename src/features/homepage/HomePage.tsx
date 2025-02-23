@@ -4,7 +4,7 @@ import { format } from "date-fns"
 import { t } from "i18next"
 import React, { useEffect } from "react"
 import { useSelector } from "react-redux"
-import { useNavigate } from "react-router-dom"
+import { useNavigate } from "react-router"
 import Layout from "src/components/Layout"
 import {
     fetchDrinksAsync

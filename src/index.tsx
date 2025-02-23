@@ -7,21 +7,21 @@ import ReactDOM from 'react-dom/client';
 import { Provider } from 'react-redux';
 import { Provider as SupabaseProvider } from 'react-supabase';
 import 'reflect-metadata';
-import App from './App';
 import { supabase } from './components/services/supabase/supabaseClient';
 import './global.css';
 import store from './redux/store';
 import { mainTheme } from './themes/themes';
 import './translation/i18n';
 //@ts-ignore
-import 'src/apocalypseHandler.js';
-import { createRoutesFromChildren, matchRoutes, useLocation, useNavigationType } from 'react-router-dom';
-import { supabaseIntegration } from '@supabase/sentry-js-integration';
 import { captureConsoleIntegration } from '@sentry/integrations';
+import { supabaseIntegration } from '@supabase/sentry-js-integration';
 import { AppProvider } from '@toolpad/core/AppProvider';
-import { NotificationsProvider } from '@toolpad/core/useNotifications';
-import { BRANDING } from './utils';
 import { DialogsProvider } from '@toolpad/core/useDialogs';
+import { NotificationsProvider } from '@toolpad/core/useNotifications';
+import { createRoutesFromChildren, matchRoutes, useLocation, useNavigationType } from 'react-router';
+import 'src/apocalypseHandler.js';
+import { BRANDING } from './utils';
+import { AuthGate } from './features/auth/AuthGate';
 
 Sentry.init({
   dsn: 'https://a06f63fae5ab4ce4ac291d0d6fb4e989@o4505379650666496.ingest.sentry.io/4505379651649536',
@@ -56,6 +56,7 @@ const root = ReactDOM.createRoot(document.getElementById('root') as HTMLElement,
   onCaughtError: Sentry.reactErrorHandler(),
   onRecoverableError: Sentry.reactErrorHandler(),
 });
+
 root.render(
   <ThemeProvider theme={mainTheme}>
     <AppProvider branding={BRANDING} theme={mainTheme}>
@@ -64,7 +65,7 @@ root.render(
           <Provider store={store}>
             <SupabaseProvider value={supabase}>
               <LocalizationProvider dateAdapter={AdapterDayjs}>
-                <App />
+                <AuthGate />
               </LocalizationProvider>
             </SupabaseProvider>
           </Provider>

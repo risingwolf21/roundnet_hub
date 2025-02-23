@@ -3,7 +3,7 @@ import SearchIcon from '@mui/icons-material/Search';
 import { Badge, Chip, InputAdornment, LinearProgress, List, TextFieldProps } from '@mui/material';
 import React, { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import { fetchAdminUsersAsync } from './slices/adminUserSlice';
 import { RootState, useAppDispatch } from '../../redux/store';
 import { UserWithGroups } from '../../types/supabaseTypes';

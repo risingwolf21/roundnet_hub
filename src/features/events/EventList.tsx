@@ -5,7 +5,7 @@ import Grid from '@mui/material/Grid2';
 import { Box } from '@mui/system';
 import { t } from 'i18next';
 import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import { useClient } from 'react-supabase';
 import { PullToRefresh } from 'src/components/pull-to-refresh/PullToRefresh';
 import { SwipeableDialog } from 'src/components/SwipeableDialog';

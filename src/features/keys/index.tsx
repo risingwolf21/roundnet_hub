@@ -2,7 +2,7 @@ import { AddOutlined, EditOffOutlined, EditOutlined } from '@mui/icons-material'
 import { Alert, Box, Fab, List } from '@mui/material';
 import { logEvent } from 'firebase/analytics';
 import React, { useEffect, useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams } from 'react-router';
 import { fetchItemsAsync } from 'src/features/keys/slices/keysSlice';
 import { analytics } from 'src/firebase/firebaseConfig';
 import { FullItemHolder } from 'src/types/supabaseTypes';

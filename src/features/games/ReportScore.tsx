@@ -14,7 +14,7 @@ import {
 } from '@mui/material';
 import React, { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import { AlertMessage, AlertSnackbar } from 'src/components/AlertSnackbar';
 import { drawerWidth } from 'src/components/Drawer';
 import Layout from 'src/components/Layout';

@@ -4,9 +4,10 @@ import { captureException } from '@sentry/react';
 import { AuthResponse, SignInPage, type AuthProvider } from '@toolpad/core/SignInPage';
 import { useNotifications } from '@toolpad/core/useNotifications';
 import React, { useState } from 'react';
-import { Navigate, useNavigate } from 'react-router-dom';
+import { Navigate, useNavigate } from 'react-router';
 import { supabase } from '../../components/services/supabase/supabaseClient';
 import { useApplication } from './AuthContext';
+import { HOMEPAGE } from 'src/constants';
 
 
 const LoginScreen = () => {
@@ -15,6 +16,10 @@ const LoginScreen = () => {
   const navigate = useNavigate();
   const { version, user } = useApplication();
   const [loading, setLoading] = useState(false);
+
+  if (user) {
+    return <Navigate to={HOMEPAGE} />
+  }
 
   const signIn: (provider: AuthProvider, formData: FormData | undefined) => void = async (
     provider,
@@ -114,7 +119,7 @@ const LoginScreen = () => {
   }
 
   const SignUpLink = () => <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
-    <Link href="#" variant="body2" onClick={() => navigate('/register', { replace: true })}>
+    <Link href="#" variant="body2" onClick={() => navigate('/signup', { replace: true })}>
       {'Noch keinen Account?'}
     </Link>
     <Typography sx={{ mt: 1 }}>{`Version ${process.env.REACT_APP_VERSION}-${version.slice(0, 8)}`}</Typography>

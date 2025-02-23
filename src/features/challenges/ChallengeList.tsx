@@ -1,7 +1,7 @@
 import { Box, LinearProgress, List, ListItem, ListItemText, Typography } from '@mui/material';
 import React, { useEffect } from 'react';
 import { useSelector } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import { useClient } from 'react-supabase';
 import Layout from '../../components/Layout';
 import { RootState, useAppDispatch } from '../../redux/store';
