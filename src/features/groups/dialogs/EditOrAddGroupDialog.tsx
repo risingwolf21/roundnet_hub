@@ -21,7 +21,7 @@ import { SlideUpTransition } from '../../../utils';
 import KeyIcon from '@mui/icons-material/Key';
 import { GroupsRepository } from '../../../repository/GroupsRepository';
 import { TablesUpdate } from '../../../types/supabase-generated.types';
-import { useAuth } from '../../auth/AuthContext';
+import { useApplication } from '../../auth/AuthContext';
 import { captureException } from '@sentry/react';
 import { ColorLens } from '@mui/icons-material';
 
@@ -32,7 +32,7 @@ type EditOrAddGroupDialogProps = {
 };
 
 export const EditOrAddGroupDialog = ({ open, handleClose, groupToEdit }: EditOrAddGroupDialogProps) => {
-  const { user } = useAuth();
+  const { user } = useApplication();
   const inputRef = useRef<HTMLInputElement>(null);
   const [currentGroup, setCurrentGroup] = useState<TablesUpdate<'event_group'>>({
     id: groupToEdit.id,
@@ -93,7 +93,7 @@ export const EditOrAddGroupDialog = ({ open, handleClose, groupToEdit }: EditOrA
   return (
     <Dialog fullScreen open={open} onClose={handleClose} TransitionComponent={SlideUpTransition}>
       <Box component="form" noValidate>
-        <AppBar sx={{ position: 'relative' }}>
+        <AppBar position="fixed" sx={{ pt: 'env(safe-area-inset-top)' }}>
           <Toolbar>
             <IconButton edge="start" color="inherit" onClick={handleClose} aria-label="close">
               <CloseIcon />

@@ -1,7 +1,7 @@
 import { Close } from "@mui/icons-material";
-import { AppBar, Box, Button, CircularProgress, Dialog, IconButton, ListItem, ListItemText, Switch, Toolbar, Typography } from "@mui/material";
+import { AppBar, Box, Button, Dialog, IconButton, ListItem, ListItemText, Switch, Toolbar, Typography } from "@mui/material";
 import { DialogProps } from "@toolpad/core/useDialogs";
-import React, { useState } from "react";
+import React from "react";
 import { addNotificationPermissionAsync, removeNotificationPermissionAsync } from "src/redux/applicationSlice";
 import { AppDispatch } from "src/redux/store";
 import { UserWithRolesAndPermissions } from "src/types/supabaseTypes";

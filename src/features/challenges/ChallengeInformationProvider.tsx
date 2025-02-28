@@ -2,9 +2,9 @@ import { TFunction } from 'i18next';
 import React, { useEffect } from 'react';
 import { withTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
-import { Navigate, useParams } from 'react-router-dom';
+import { Navigate, useParams } from 'react-router';
 import { RootState, useAppDispatch } from '../../redux/store';
-import { useAuth } from '../auth/AuthContext';
+import { useApplication } from '../auth/AuthContext';
 import { ChallengeInformation } from './ChallengeInformation';
 import {
   challengeSelector,
@@ -14,7 +14,7 @@ import {
 const ChallengeInformationProvider = ({ t }: { t: TFunction }) => {
   const { challengeId } = useParams();
   const challenge = useSelector((root: RootState) => challengeSelector.selectById(root, challengeId ?? 0));
-  const { user } = useAuth();
+  const { user } = useApplication();
   const dispatch = useAppDispatch();
 
   useEffect(() => {

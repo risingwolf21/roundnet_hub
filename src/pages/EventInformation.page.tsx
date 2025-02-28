@@ -1,8 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
-import { useParams } from 'react-router-dom';
-import { useClient } from 'react-supabase';
+import { useParams } from 'react-router';
 import {
   attendanceSelector
 } from 'src/features/events/slices/eventAttendanceSlice';
@@ -12,7 +11,7 @@ import {
   fetchSingleEventAsync
 } from 'src/features/events/slices/eventsSlice';
 import { AlertSnackbar } from '../components/AlertSnackbar';
-import { useAuth } from '../features/auth/AuthContext';
+import { useApplication } from '../features/auth/AuthContext';
 import EventInformation from '../features/events/EventInformation';
 import { PlaceType } from '../features/events/types';
 import { fetchItemsAsync, keyHoldersSelector } from '../features/keys/slices/keysSlice';
@@ -31,9 +30,8 @@ const EventInformationProvider = () => {
   const { loading: attendanceLoading } = useSelector((state: RootState) => state.eventAttendance);
   const { loading: commentsLoading } = useSelector((state: RootState) => state.eventComments);
   const keyHolders = useSelector((state: RootState) => keyHoldersSelector.selectAll(state));
-  const { user } = useAuth();
+  const { user } = useApplication();
   const dispatch = useAppDispatch();
-  const client = useClient();
   const { t } = useTranslation();
   const [selectedEventPlace, setSelectedEventPlace] = useState<PlaceType | null>(null);
 

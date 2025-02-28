@@ -129,6 +129,8 @@ const SupabaseClient = () => {
         return row.key + ' ' + row.user;
       case 'user':
         return row.userId;
+      case 'user_calender_settings':
+        return row.user;
       default:
         return row.id;
     }

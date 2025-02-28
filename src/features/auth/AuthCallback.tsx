@@ -1,9 +1,9 @@
 import { Box, CircularProgress, Typography } from "@mui/material";
 import React, { useEffect } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router";
 import { supabase } from "src/components/services/supabase/supabaseClient";
 
-export const AuthCallback = () => {
+const AuthCallback = () => {
 
   const navigate = useNavigate();
 
@@ -42,3 +42,4 @@ export const AuthCallback = () => {
     </Box>
   );
 }
+export default AuthCallback;

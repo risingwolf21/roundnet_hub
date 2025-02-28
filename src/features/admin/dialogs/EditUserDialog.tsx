@@ -222,7 +222,7 @@ const EditUserDialog = ({ user, open, handleClose, onUserEditFinished, deleteUse
             </ListItem>
             <ListItem
               key={'role'}
-              onClick={() => {}}
+              onClick={() => { }}
               secondaryAction={
                 <IconButton
                   disabled={loading}

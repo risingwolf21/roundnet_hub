@@ -19,16 +19,16 @@ import {
 import { TFunction } from 'i18next';
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import { AlertMessage, AlertSnackbar } from '../../components/AlertSnackbar';
 import { LoadingIndicator } from '../../components/LoadingIndicator';
 import { SupabaseUserRepository } from '../../repository/UserRepository';
-import { useAuth } from '../auth/AuthContext';
+import { useApplication } from '../auth/AuthContext';
 
 const userTags: NotificationTags[] = ['eventComments', 'userRegistration', 'paymentRequest', 'paymentPending'];
 
 const NotificationsScreenProvider = () => {
-  const { user } = useAuth();
+  const { user } = useApplication();
   const { t } = useTranslation();
 
   return <NotificationsScreen t={t} user={user!} />;

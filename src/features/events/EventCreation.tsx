@@ -33,7 +33,7 @@ import { format, isAfter, set } from 'date-fns';
 import _ from 'lodash';
 import React, { FormEvent, useEffect, useRef, useState } from 'react';
 import { MapContainer, Marker, TileLayer, useMap } from 'react-leaflet';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import Layout from 'src/components/Layout';
 import { dayjsFromDb, formatDateToDatabase } from 'src/utils';
 import { NumberInput } from '../../components/mui/NumberInput';

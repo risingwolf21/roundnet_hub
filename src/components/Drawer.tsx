@@ -39,7 +39,7 @@ import { TFunction } from 'i18next';
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import { HOMEPAGE } from '../constants';
 import { notificationsSelector } from '../features/notifications/slices/notificationsSlice';
 import raw from '../git_commit.txt';
@@ -399,8 +399,8 @@ const DrawerContent = ({
             {can('update', 'history') && (
               <DrawerItem
                 key="updateHistory"
-                selected={tab === 'admin/history'}
-                onClick={() => handleChange('admin/history')}
+                selected={tab === 'admin/drinks/history'}
+                onClick={() => handleChange('admin/drinks/history')}
               >
                 <ListItemAvatar>
                   <ListItemIcon>
@@ -444,23 +444,6 @@ const DrawerContent = ({
                 <ListItemText
                   primaryTypographyProps={{ fontWeight: 'bold', fontSize: '0.9rem' }}
                   primary={t('browse.postgresClient')}
-                />
-              </DrawerItem>
-            )}
-            {can('view', 'postgres') && (
-              <DrawerItem
-                key="supabaseQuery"
-                selected={tab === 'admin/supabase/queries'}
-                onClick={() => handleChange('admin/supabase/queries')}
-              >
-                <ListItemAvatar>
-                  <ListItemIcon>
-                    <StorageOutlined />
-                  </ListItemIcon>
-                </ListItemAvatar>
-                <ListItemText
-                  primaryTypographyProps={{ fontWeight: 'bold', fontSize: '0.9rem' }}
-                  primary={t('browse.supabaseQueries')}
                 />
               </DrawerItem>
             )}

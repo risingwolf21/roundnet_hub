@@ -12,7 +12,7 @@ import { supabase } from '../../components/services/supabase/supabaseClient';
 import { captureException } from '@sentry/react';
 import { RegistrationError } from '../../utils';
 import { AlertMessage, AlertSnackbar } from '../../components/AlertSnackbar';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 
 export type RegisterProps = {
   email: string;

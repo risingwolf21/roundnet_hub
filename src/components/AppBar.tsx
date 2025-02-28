@@ -3,9 +3,9 @@ import AppBar from '@mui/material/AppBar';
 import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
 import { Avatar, Button, IconButton } from '@mui/material';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import { AccountCircle, ArrowBack } from '@mui/icons-material';
-import { useAuth } from '../features/auth/AuthContext';
+import { useApplication } from '../features/auth/AuthContext';
 
 type Props = {
   navigateBack?: boolean;
@@ -55,7 +55,7 @@ export const AppBarAccountAction = ({
 
 const CustomAppBar = ({ navigateBack = false, title = 'Roundnet Karlsruhe', onLogout }: Props) => {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user } = useApplication();
 
   return (
     <AppBar position="sticky" sx={{ zIndex: (theme) => theme.zIndex.drawer + 1, background: 'primary' }}>

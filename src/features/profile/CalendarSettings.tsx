@@ -9,6 +9,7 @@ type Calendar = {
   id: string;
   summaryOverride: string;
   summary?: string;
+  accessRole: string;
 }
 
 type CalendarSettingsPayload = {
@@ -35,15 +36,17 @@ export const CalendarSettingsDialog = ({ payload, open, onClose }: DialogProps<C
         }
       })
         .then((res) => {
-          if (res.ok)
-            return res.json();
-          return null
+          return res.json();
         })
         .then((res) => {
           if (res) {
-            const list: Calendar[] = res.items.map((x: Calendar) => ({ id: x.id, summaryOverride: x.summary ?? x.summaryOverride }))
+            const list: Calendar[] = Array.from<Calendar>(res.items)
+              .map((x: Calendar) => ({ id: x.id, summaryOverride: x.summary ?? x.summaryOverride, accessRole: x.accessRole ?? "" }))
+              .filter((x: Calendar) => x.accessRole === "owner")
             setCalendarList(list);
             setSelectedCalendar(list.find(x => x.id === payload.user.calendar_data?.calender_id) ?? null);
+          } else {
+
           }
         })
         .catch(err => console.error(err))

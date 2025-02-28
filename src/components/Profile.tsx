@@ -11,16 +11,16 @@ import {
 } from '@mui/material';
 import React, { useEffect, useState } from 'react';
 import { AddPhotoAlternateOutlined, FiberManualRecord, Launch } from '@mui/icons-material';
-import { useParams } from 'react-router-dom';
+import { useParams } from 'react-router';
 import { LoadingIndicator } from './LoadingIndicator';
 import { SupabaseUserRepository } from '../repository/UserRepository';
 import Layout from './Layout';
-import { useAuth } from '../features/auth/AuthContext';
+import { useApplication } from '../features/auth/AuthContext';
 import pzLogo from '../images/pz_logo.svg';
 
 const UserScreen = () => {
   const { userId } = useParams();
-  const { user } = useAuth();
+  const { user } = useApplication();
   const [loading, setLoading] = useState<boolean>(false);
   const [currentUser, setCurrentUser] = useState<UserWithGroupsAndPlayerData | null>(null);
   const [overlappingGroups, setOverlappingGroups] = useState<Group[]>([]);

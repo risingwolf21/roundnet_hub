@@ -3,20 +3,20 @@ import { RootState, useAppDispatch } from '../../redux/store';
 import { can } from '../../utils/PermissionService';
 import { AlertSnackbar } from '../../components/AlertSnackbar';
 import React from 'react';
-import { Navigate } from 'react-router-dom';
+import { Navigate } from 'react-router';
 import { HOMEPAGE } from '../../constants';
 import { Fab, LinearProgress, List, ListItem, ListItemText } from '@mui/material';
 import { DoneAll } from '@mui/icons-material';
 import { fetchNotificationsAsync, notificationsSelector } from './slices/notificationsSlice';
 import { SupabaseUserRepository } from '../../repository/UserRepository';
 import Layout from '../../components/Layout';
-import { useAuth } from '../auth/AuthContext';
+import { useApplication } from '../auth/AuthContext';
 import { logEvent } from 'firebase/analytics';
 import { analytics } from 'src/firebase/firebaseConfig';
 
 const NotificationScreen = () => {
   const { loading, error } = useSelector((state: RootState) => state.notifications);
-  const { user } = useAuth();
+  const { user } = useApplication();
   const notifications = useSelector((state: RootState) => notificationsSelector.selectAll(state));
   const dispatch = useAppDispatch();
 

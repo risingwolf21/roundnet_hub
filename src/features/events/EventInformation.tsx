@@ -15,7 +15,7 @@ import {
 } from '@mui/material';
 import React, { useEffect, useState } from 'react';
 import { MapContainer, Marker, TileLayer } from 'react-leaflet';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import { answerDeadlineExpired, eventInThePast } from '../../types/supabaseTypes';
 import { DeleteEventDialog } from './dialogs/DeleteEventDialog';
 import { DeleteEventType, EventInformationProps } from './types';

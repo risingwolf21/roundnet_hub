@@ -8,7 +8,7 @@ import { useNavigate } from 'react-router';
 import { Ability, Actions, can } from 'src/utils/PermissionService';
 import { RootState } from '../../redux/store';
 import Layout from '../../components/Layout';
-import { useAuth } from '../auth/AuthContext';
+import { useApplication } from '../auth/AuthContext';
 
 type EntryType = {
   translationKey: string;
@@ -88,7 +88,7 @@ const entries = [
 
 const BrowseAdmin = ({ t }: { t: TFunction }) => {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user } = useApplication();
   const { notVerifiedUsers } = useSelector((state: RootState) => state.adminUsers);
 
   return (

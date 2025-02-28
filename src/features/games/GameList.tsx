@@ -4,7 +4,7 @@ import { t } from 'i18next';
 import moment from 'moment';
 import React, { useEffect } from 'react';
 import { useSelector } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import Layout from 'src/components/Layout';
 import { PullToRefresh } from 'src/components/pull-to-refresh/PullToRefresh';
 import { RootState, useAppDispatch } from 'src/redux/store';

@@ -9,7 +9,7 @@ import Container from '@mui/material/Container';
 import { supabase } from '../../components/services/supabase/supabaseClient';
 import Logo from '../../images/Karlsruher_Kojoten_Logo.svg';
 import { Alert, Snackbar } from '@mui/material';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import CustomAppBar from '../../components/AppBar';
 import { HOMEPAGE } from '../../constants';
 
