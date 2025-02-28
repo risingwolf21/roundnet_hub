@@ -39,7 +39,7 @@ export const AppRolesDialog = ({ open, handleClose, handleSubmit, roles }: AppRo
     if (checked) {
       setSelectedAppRoles([...new Set([...selectedAppRoles, role])]);
     } else {
-      setSelectedAppRoles(selectedAppRoles.filter((x) => x !== role));
+      setSelectedAppRoles(selectedAppRoles.filter((x) => x.id !== role.id));
     }
   };
 
