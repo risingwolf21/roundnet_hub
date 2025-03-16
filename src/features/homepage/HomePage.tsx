@@ -115,7 +115,7 @@ const HomePage = () => {
                                     e.stopPropagation();
                                 }}
                                 disabled={event.isCancelled || answerDeadlineExpired(event) || eventInThePast(event)}
-                            >
+                            > 
                                 <Badge badgeContent={event.attendance.filter(x => x.state === "Attending").length} color="success">
                                     {event.userAttendance === 'Attending' ? (
                                         <ThumbUpAlt fontSize="inherit" sx={{ fontSize: '28px', color: 'green' }} />

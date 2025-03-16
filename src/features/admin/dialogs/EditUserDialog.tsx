@@ -107,7 +107,7 @@ const EditUserDialog = ({ user, open, handleClose, onUserEditFinished, deleteUse
   return (
     <Dialog fullScreen open={open} onClose={handleClose} TransitionComponent={SlideUpTransition}>
       <Box component="form" onSubmit={handleSubmit} noValidate>
-        <AppBar position="fixed" sx={{ pt: 'env(safe-area-inset-top)' }}>
+        <AppBar position="sticky" sx={{ pt: 'env(safe-area-inset-top)' }}>
           <Toolbar>
             <IconButton edge="start" color="inherit" onClick={handleClose} aria-label="close">
               <Close />

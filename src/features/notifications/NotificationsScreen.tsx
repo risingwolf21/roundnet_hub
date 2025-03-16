@@ -75,7 +75,7 @@ export const NotificationsScreen = ({ user, t }: NotificationsScreenProps) => {
   return (
     <Dialog open={true} fullScreen>
       <Box>
-        <AppBar position="fixed" sx={{ pt: 'env(safe-area-inset-top)' }}>
+        <AppBar position="sticky" sx={{ pt: 'env(safe-area-inset-top)' }}>
           <Toolbar>
             <IconButton edge="start" color="inherit" onClick={() => navigate(-1)} aria-label="close">
               <ArrowBack />
@@ -86,6 +86,7 @@ export const NotificationsScreen = ({ user, t }: NotificationsScreenProps) => {
           </Toolbar>
         </AppBar>
         <LoadingIndicator loading={false} />
+        <Toolbar />
         <List>
           {!notificationPermissionGranted && (
             <ListItem key={'requestPermission'} secondaryAction={<Button variant={'text'} title={'Request'} />}>

@@ -56,7 +56,7 @@ const SearchAndSelectUserDialog = ({
           justifyContent: 'center',
         }}
       >
-        <AppBar position="fixed" sx={{ pt: 'env(safe-area-inset-top)' }}>
+        <AppBar position="sticky" sx={{ pt: 'env(safe-area-inset-top)' }}>
           <Toolbar>
             <IconButton size="large" edge="start" color="inherit" onClick={handleClose}>
               <ArrowBack />
@@ -76,6 +76,7 @@ const SearchAndSelectUserDialog = ({
             </Button>
           </Toolbar>
         </AppBar>
+        <Toolbar />
         {loading && <LinearProgress style={{ position: 'fixed', left: 0, right: 0, top: 56 }} />}
 
         <List sx={{ width: '100%' }}>

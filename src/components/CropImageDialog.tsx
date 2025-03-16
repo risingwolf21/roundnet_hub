@@ -42,7 +42,7 @@ const CropImageDialog = ({ open, handleClose, selectedImage, onImageCropFinished
   return (
     <Dialog fullScreen open={open} onClose={handleClose} TransitionComponent={SlideUpTransition}>
       <Box>
-        <AppBar position="fixed" sx={{ pt: 'env(safe-area-inset-top)' }}>
+        <AppBar position="sticky" sx={{ pt: 'env(safe-area-inset-top)' }}>
           <Toolbar>
             <IconButton edge="start" color="inherit" onClick={handleClose} aria-label="close">
               <CloseIcon />
@@ -55,6 +55,7 @@ const CropImageDialog = ({ open, handleClose, selectedImage, onImageCropFinished
             </Button>
           </Toolbar>
         </AppBar>
+        <Toolbar/>
         <Cropper
           image={selectedImage}
           crop={crop}

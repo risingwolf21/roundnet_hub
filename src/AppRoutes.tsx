@@ -2,6 +2,7 @@ import React from "react";
 import { createBrowserRouter, Navigate, Outlet, RouterProvider } from "react-router";
 import ErrorRouteElement from "./components/ErrorRouteElement";
 import { useApplication } from "./features/auth/AuthContext";
+import { useServiceWorker } from "./hooks/useServiceWorker";
 
 const FeatureNotAvailable = React.lazy(() => import('./components/FeatureNotAvailable'));
 const HistoryScreenProvider = React.lazy(() => import('./features/drinks/HistoryScreenProvider'));
@@ -38,10 +39,13 @@ const AuthCallback = React.lazy(() => import('./features/auth/AuthCallback'));
 
 export const AppRoutes = () => {
   const { user } = useApplication();
+  const { isUpdateAvailable, updateServiceWorker } = useServiceWorker();
 
   const routes = user ? protectedRoutes : publicRoutes;
 
   const router = createBrowserRouter(routes)
+
+  if (isUpdateAvailable) return <UpdateAvailable update={updateServiceWorker} />;
 
   return <RouterProvider router={router} />
 }

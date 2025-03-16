@@ -42,7 +42,7 @@ export const SelectGroupDialog = ({ open, handleClose, handleSubmit }: SelectGro
   return (
     <Dialog fullScreen open={open} onClose={handleClose} TransitionComponent={SlideUpTransition}>
       <Box component="form" noValidate>
-        <AppBar position="fixed" sx={{ pt: 'env(safe-area-inset-top)' }}>
+        <AppBar position="sticky" sx={{ pt: 'env(safe-area-inset-top)' }}>
           <Toolbar>
             <IconButton edge="start" color="inherit" onClick={handleClose} aria-label="close">
               <CloseIcon />
@@ -53,6 +53,7 @@ export const SelectGroupDialog = ({ open, handleClose, handleSubmit }: SelectGro
           </Toolbar>
         </AppBar>
         <Box>
+          <Toolbar />
           <List>
             {groups.map((x) => (
               <ListItemButton key={x.id} divider onClick={() => handleSubmit(x)}>
