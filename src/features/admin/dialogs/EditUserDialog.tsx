@@ -121,7 +121,6 @@ const EditUserDialog = ({ user, open, handleClose, onUserEditFinished, deleteUse
           </Toolbar>
         </AppBar>
         <Box>
-          <Toolbar />
           <List sx={{ pb: 10 }}>
             <ListItem key={'displayName'} sx={{ pt: 0, pb: 0 }}>
               <ListItemAvatar>

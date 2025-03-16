@@ -107,7 +107,6 @@ export const EditOrAddGroupDialog = ({ open, handleClose, groupToEdit }: EditOrA
           </Toolbar>
         </AppBar>
         <Box>
-          <Toolbar/>
           <List>
             <ListItem>
               <TextField

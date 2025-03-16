@@ -60,7 +60,6 @@ export const AppRolesDialog = ({ open, handleClose, handleSubmit, roles }: AppRo
           </Toolbar>
         </AppBar>
         <Box>
-          <Toolbar />
           <Table>
             <TableBody>
               {allRoles.map((x) => (

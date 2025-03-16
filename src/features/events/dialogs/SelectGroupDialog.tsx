@@ -53,7 +53,6 @@ export const SelectGroupDialog = ({ open, handleClose, handleSubmit }: SelectGro
           </Toolbar>
         </AppBar>
         <Box>
-          <Toolbar />
           <List>
             {groups.map((x) => (
               <ListItemButton key={x.id} divider onClick={() => handleSubmit(x)}>

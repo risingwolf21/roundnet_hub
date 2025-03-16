@@ -104,7 +104,6 @@ export const EditOrAddItemDialog = ({ open, handleClose, itemToEdit }: EditOrAdd
           </Toolbar>
         </AppBar>
         <Box sx={{ pt: 'env(safe-area-inset-top)' }}>
-          <Toolbar />
           <List>
             <ListItem>
               <TextField

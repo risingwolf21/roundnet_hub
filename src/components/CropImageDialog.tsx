@@ -55,7 +55,6 @@ const CropImageDialog = ({ open, handleClose, selectedImage, onImageCropFinished
             </Button>
           </Toolbar>
         </AppBar>
-        <Toolbar/>
         <Cropper
           image={selectedImage}
           crop={crop}

@@ -86,7 +86,6 @@ export const NotificationsScreen = ({ user, t }: NotificationsScreenProps) => {
           </Toolbar>
         </AppBar>
         <LoadingIndicator loading={false} />
-        <Toolbar />
         <List>
           {!notificationPermissionGranted && (
             <ListItem key={'requestPermission'} secondaryAction={<Button variant={'text'} title={'Request'} />}>
