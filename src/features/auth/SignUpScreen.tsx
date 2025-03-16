@@ -113,7 +113,7 @@ const SignUpScreen = () => {
       password,
       options: {
         data: {
-          name,
+          name: name + " " + surname,
           displayName: name,
           email,
           role: 'user',
