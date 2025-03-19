@@ -67,7 +67,7 @@ jobs:
           write-mode: overwrite
 
       - name: Build
-        run: PUBLIC_URL=https://roundnet-karlsruhe.web.app yarn run build:production:admin
+        run: PUBLIC_URL=https://admin-roundnet-karlsruhe.web.app yarn run build:production:admin
         env:
           REACT_APP_SUPABASE_API_KEY: ${{secrets.SUPABASE_PRODUCTION_ANON_KEY}}
           REACT_APP_SUPABASE_URL: ${{secrets.SUPABASE_PRODUCTION_URL}}
