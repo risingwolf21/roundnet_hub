@@ -1,28 +1,31 @@
-import React, {useEffect, useState} from 'react';
-import {Button, List, ListItem, ListItemButton, ListItemText} from '@mui/material';
-import {useClient} from 'react-supabase';
-import {Cancel, Delete, Edit, ExpandMoreOutlined, Save} from '@mui/icons-material';
-import {SwipeableDialog} from './SwipeableDialog';
-import {LoadingIndicator} from './LoadingIndicator';
+import { Cancel, Delete, Edit, ExpandMoreOutlined, Save, UpdateRounded } from '@mui/icons-material';
+import AddIcon from '@mui/icons-material/Add';
+import { Button, List, ListItem, ListItemButton, ListItemText } from '@mui/material';
 import {
   DataGrid,
   GridActionsCellItem,
   GridColDef,
   GridColType,
+  GridFilterModel,
   GridRowId,
   GridRowModel,
   GridRowModes,
   GridRowModesModel,
   GridRowsProp,
   GridSlots,
+  GridSortModel,
   GridToolbarContainer,
+  GridValidRowModel,
 } from '@mui/x-data-grid';
-import {AlertMessage, AlertSnackbar} from './AlertSnackbar';
-import {isNull, omit, omitBy} from 'lodash';
-import {supabase} from './services/supabase/supabaseClient';
-import AddIcon from '@mui/icons-material/Add';
-import {formatDateFromDatabase} from '../utils';
-import Layout from './Layout';
+import { isNull, omit, omitBy } from 'lodash';
+import React, { useEffect, useState } from 'react';
+import { useClient } from 'react-supabase';
+import { AlertMessage, AlertSnackbar } from 'src/components/AlertSnackbar';
+import Layout from 'src/components/Layout';
+import { LoadingIndicator } from 'src/components/LoadingIndicator';
+import { supabase } from 'src/components/services/supabase/supabaseClient';
+import { SwipeableDialog } from 'src/components/SwipeableDialog';
+import { formatDateFromDatabase } from 'src/utils';
 
 interface EditToolbarProps {
   setRows: (newRows: (oldRows: GridRowsProp) => GridRowsProp) => void;
@@ -51,14 +54,16 @@ function EditToolbar(props: EditToolbarProps) {
 }
 
 const SupabaseClient = () => {
-  const [tables, setTables] = useState<string[]>([]);
+  const [tables, setTables] = useState<{ table_name: string, table_schema: string }[]>([]);
   const [enums, setEnums] = useState<Map<string, string[]>>(new Map<string, string[]>());
-  const [selectedTable, setSelectedTable] = useState<string>('');
+  const [selectedTable, setSelectedTable] = useState<{ table_name: string, table_schema: string } | null>(null);
   const [selectTableOpen, setSelectTableOpen] = useState(false);
   const client = useClient();
   const [loading, setLoading] = useState(false);
   const [selectedTableData, setSelectedTableData] = useState<any[]>([]);
   const [rowModesModel, setRowModesModel] = React.useState<GridRowModesModel>({});
+  const [rowFilterModel, setRowFilterModel] = React.useState<GridFilterModel>({ items: [] });
+  const [rowSortModel, setRowSortModel] = React.useState<GridSortModel>();
   const [alertInfo, setAlertInfo] = useState<AlertMessage | null>(null);
   const [users, setUsers] = useState<{ displayName: string; userId: string }[]>([]);
   const [groups, setGroups] = useState<{ name: string; id: number }[]>([]);
@@ -69,9 +74,8 @@ const SupabaseClient = () => {
       .select('*')
       .then((result) => {
         if (result.data) {
-          let loadedTables = result.data as string[];
-          setTables(loadedTables);
-          setSelectedTable(loadedTables[0] ?? '');
+          setTables(result.data);
+          setSelectedTable(result.data[0] ?? null);
         }
       });
     supabase
@@ -107,20 +111,23 @@ const SupabaseClient = () => {
 
   useEffect(() => {
     setLoading(true);
-    supabase
-      // @ts-ignore
-      .from(selectedTable)
-      .select('*')
-      .then((result) => {
-        if (result.data) {
-          setSelectedTableData(result.data);
-          setLoading(false);
-        }
-      });
-  }, [selectedTable, client]);
+    if (selectedTable)
+      supabase
+        // @ts-ignore
+        .schema(selectedTable.table_schema)
+        // @ts-ignore
+        .from(selectedTable.table_name)
+        .select('*')
+        .then((result) => {
+          if (result.data) {
+            setSelectedTableData(result.data);
+            setLoading(false);
+          }
+        });
+  }, [selectedTable, rowSortModel]);
 
   function getRowId(row: any) {
-    switch (selectedTable) {
+    switch (selectedTable?.table_name) {
       case 'event_attendance_user_mapping':
         return row.user + ' ' + row.event;
       case 'group_user_mapping':
@@ -145,13 +152,13 @@ const SupabaseClient = () => {
   } | null {
     switch (key) {
       case 'type':
-        if (selectedTable === 'items') {
+        if (selectedTable?.table_name === 'items') {
           return {
             type: 'singleSelect',
             valueOptions: enums.get('ItemType'),
             editable: true,
           };
-        } else if (selectedTable === 'drink') {
+        } else if (selectedTable?.table_name === 'drink') {
           return {
             type: 'singleSelect',
             valueOptions: enums.get('ProductType'),
@@ -212,12 +219,15 @@ const SupabaseClient = () => {
       case 'color':
       case 'imageUrl':
       case 'name':
+      case 'body':
+      case 'title':
         return {
           type: 'string',
           editable: true,
         };
       case 'price':
       case 'stock':
+      case 'minutes_to_remind':
       case 'previousDrink':
         return {
           type: 'number',
@@ -265,8 +275,22 @@ const SupabaseClient = () => {
     setRowModesModel({ ...rowModesModel, [id]: { mode: GridRowModes.View } });
   };
 
-  const handleDeleteClick = (id: GridRowId) => () => {
-    setSelectedTableData(selectedTableData.filter((row) => row.id !== id));
+  const handleDeleteClick = (id: GridRowId, row: GridValidRowModel) => async () => {
+
+    let query = supabase
+      // @ts-ignore
+      .schema(selectedTable?.table_schema)
+      // @ts-ignore
+      .from(selectedTable?.table_name)
+      .delete()
+
+    Object.entries(row).forEach(element => {
+      query = query.eq(element[0], element[1])
+    });
+
+    const result = await query;
+
+    setSelectedTableData(selectedTableData.filter((row) => getRowId(row) !== id));
   };
 
   const handleCancelClick = (id: GridRowId) => () => {
@@ -283,18 +307,23 @@ const SupabaseClient = () => {
 
   const processRowUpdate = (newRow: GridRowModel) => {
     let updatedRow = { ...newRow, isNew: false };
+
     // @ts-ignore
     if (updatedRow['id'] === -1) {
       // @ts-ignore
       updatedRow = omitBy(omit(updatedRow, ['id']), isNull);
       supabase
         // @ts-ignore
-        .from(selectedTable)
+        .schema(selectedTable?.table_schema)
+        // @ts-ignore
+        .from(selectedTable?.table_name)
+        // @ts-ignore
         .insert(omit(updatedRow, ['isNew']))
         .select('*')
         .single()
         .then((result) => {
           if (!result.error) {
+            // @ts-ignore
             updatedRow = { ...result.data, isNew: false };
             setSelectedTableData(selectedTableData.map((row) => (row.id === -1 ? result.data : row)));
           } else setAlertInfo({ message: result.error.message, severity: 'error' });
@@ -303,7 +332,10 @@ const SupabaseClient = () => {
 
     supabase
       // @ts-ignore
-      .from(selectedTable)
+      .schema(selectedTable?.table_schema)
+      // @ts-ignore
+      .from(selectedTable?.table_name)
+      // @ts-ignore
       .upsert(omit(updatedRow, ['isNew']))
       .then((result) => {
         if (!result.error)
@@ -321,7 +353,7 @@ const SupabaseClient = () => {
     <Layout>
       <LoadingIndicator loading={loading} />
       <ListItem onClick={() => setSelectTableOpen(true)} secondaryAction={<ExpandMoreOutlined />}>
-        <ListItemText primary={selectedTable} />
+        <ListItemText primary={selectedTable?.table_name} secondary={selectedTable?.table_schema} />
       </ListItem>
 
       {selectedTableData[0] && (
@@ -342,8 +374,8 @@ const SupabaseClient = () => {
               headerName: 'Actions',
               width: 100,
               cellClassName: 'actions',
-              getActions: ({ id }) => {
-                const isInEditMode = rowModesModel[id]?.mode === GridRowModes.Edit;
+              getActions: ({ id, row }) => {
+                const isInEditMode = row.mode === GridRowModes.Edit;
 
                 if (isInEditMode) {
                   return [
@@ -376,7 +408,7 @@ const SupabaseClient = () => {
                   <GridActionsCellItem
                     icon={<Delete />}
                     label="Delete"
-                    onClick={handleDeleteClick(id)}
+                    onClick={handleDeleteClick(id, row)}
                     color="inherit"
                   />,
                 ];
@@ -393,6 +425,7 @@ const SupabaseClient = () => {
           density={'compact'}
           editMode={'row'}
           rowModesModel={rowModesModel}
+          filterModel={rowFilterModel}
           getRowId={getRowId}
           showCellVerticalBorder
           initialState={{
@@ -403,7 +436,7 @@ const SupabaseClient = () => {
             },
           }}
           sx={{
-              pb: "max(56px,env(safe-area-inset-bottom))"
+            pb: "max(56px,env(safe-area-inset-bottom))"
           }}
           processRowUpdate={processRowUpdate}
           onRowModesModelChange={handleRowModesModelChange}
@@ -420,13 +453,13 @@ const SupabaseClient = () => {
         <List>
           {tables.map((x) => (
             <ListItemButton
-              key={x}
+              key={x.table_schema + "/" + x.table_name}
               onClick={() => {
                 setSelectedTable(x);
                 setSelectTableOpen(false);
               }}
             >
-              <ListItemText primary={x} />
+              <ListItemText primary={x.table_name} secondary={x.table_schema} />
             </ListItemButton>
           ))}
         </List>

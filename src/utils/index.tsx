@@ -44,7 +44,11 @@ export const formatDateToDatabase = (date: string | number | Date) => {
 };
 
 export const formatDateFromDatabase = (date: string) => {
-  return parse(date, "yyyy-MM-dd'T'HH:mm:ssXXX", new Date());
+  const result = parse(date, "yyyy-MM-dd'T'HH:mm:ssXXX", new Date());
+  if (isNaN(result.getTime())) {
+    return parse(date, "yyyy-MM-dd'T'HH:mm:ss.SSSSSSxxx", new Date())
+  }
+  return result;
 };
 
 export const dayjsFromDb = (date: string | null) => {

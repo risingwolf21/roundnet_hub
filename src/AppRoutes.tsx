@@ -29,7 +29,7 @@ const ReportScore = React.lazy(() => import('./features/games/ReportScore'));
 const UpdateAvailable = React.lazy(() => import('./components/UpdateAvailable'));
 const NotVerifiedScreen = React.lazy(() => import('./components/NotVerifiedScreen'));
 const HomePage = React.lazy(() => import('./features/homepage/HomePage'));
-const SupabaseClient = React.lazy(() => import('./components/SupabaseClient'));
+const SupabaseClient = React.lazy(() => import('./features/supabase/SupabaseClient'));
 const UserScreenProvider = React.lazy(() => import('./features/profile/User'));
 const PermissionList = React.lazy(() => import('./features/admin/PermissionList'));
 const LoginScreen = React.lazy(() => import('./features/auth/LoginScreen'));

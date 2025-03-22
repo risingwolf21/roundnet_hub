@@ -823,8 +823,8 @@ export type Database = {
           current_holder: string | null
           id: number
           lastUpdate: string
-          name: string | null
-          type: Database["public"]["Enums"]["ItemType"] | null
+          name: string
+          type: Database["public"]["Enums"]["ItemType"]
         }
         Insert: {
           color?: string
@@ -832,8 +832,8 @@ export type Database = {
           current_holder?: string | null
           id?: number
           lastUpdate?: string
-          name?: string | null
-          type?: Database["public"]["Enums"]["ItemType"] | null
+          name: string
+          type: Database["public"]["Enums"]["ItemType"]
         }
         Update: {
           color?: string
@@ -841,8 +841,8 @@ export type Database = {
           current_holder?: string | null
           id?: number
           lastUpdate?: string
-          name?: string | null
-          type?: Database["public"]["Enums"]["ItemType"] | null
+          name?: string
+          type?: Database["public"]["Enums"]["ItemType"]
         }
         Relationships: [
           {
@@ -1305,7 +1305,10 @@ export type Database = {
       }
       get_public_table_names: {
         Args: Record<PropertyKey, never>
-        Returns: string[]
+        Returns: {
+          table_name: string
+          table_schema: string
+        }[]
       }
       getattendingusers: {
         Args: {
