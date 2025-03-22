@@ -73,6 +73,10 @@ const publicRoutes = [
         element: <ForgotPasswordScreen />,
       },
       {
+        path: "/reset-password",
+        element: <ResetPasswordScreen />
+      },
+      {
         path: "/auth/callback",
         element: <AuthCallback />,
       }

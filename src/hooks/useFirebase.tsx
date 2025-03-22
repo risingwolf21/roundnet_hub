@@ -15,16 +15,17 @@ export async function requestNotificationPermission(user: User, deviceId: string
       vapidKey: process.env.REACT_APP_FIREBASE_VAPID_KEY,
     })
       .then((token) => {
-        SupabaseUserRepository.updateFCMToken(token, deviceId, user).then((result) => {
-          if (result.error) {
-            captureException(result.error, (scope) => {
-              scope.setExtra('displayName', user.displayName);
-              scope.setExtra('email', user.email);
-              scope.setExtra('userId', user.userId);
-              return scope;
-            });
-          }
-        });
+        if (user.userId)
+          SupabaseUserRepository.updateFCMToken(token, deviceId, user.userId).then((result) => {
+            if (result.error) {
+              captureException(result.error, (scope) => {
+                scope.setExtra('displayName', user.displayName);
+                scope.setExtra('email', user.email);
+                scope.setExtra('userId', user.userId);
+                return scope;
+              });
+            }
+          });
       })
       .catch((error) => {
         captureException(error, (scope) => {

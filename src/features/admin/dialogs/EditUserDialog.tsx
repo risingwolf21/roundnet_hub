@@ -172,7 +172,10 @@ const EditUserDialog = ({ user, open, handleClose, onUserEditFinished, deleteUse
                         password: password,
                       })
                       .then((result) => {
-                        setAlertInfo({ message: 'Passwort erfolgreich geändert', severity: 'success' });
+                        if (result.error)
+                          setAlertInfo({ message: result.error.message, severity: "error" })
+                        else
+                          setAlertInfo({ message: 'Passwort erfolgreich geändert', severity: 'success' });
                       })
                       .catch((error) => {
                         setAlertInfo({ message: error.message, severity: 'error' });

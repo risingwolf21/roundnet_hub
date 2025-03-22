@@ -95,6 +95,7 @@ export const ProfileImage = ({ user }: Props) => {
       m: 2,
       p: 0,
       width: 'auto',
+      maxWidth: 'unset!important'
     }}
   >
     <Button component="label" sx={{ border: 'none', background: 'transparent' }}>
