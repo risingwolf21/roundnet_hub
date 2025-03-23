@@ -22,7 +22,7 @@ const EventScreenProvider = React.lazy(() => import('./pages/EventList.page'));
 const ProfileScreen = React.lazy(() => import('./components/Profile'));
 const NotificationScreen = React.lazy(() => import('./features/notifications/NotificationScreen'));
 const ChallengeScreen = React.lazy(() => import('./features/challenges/ChallengeList'));
-const ChallengeInfoScreen = React.lazy(() => import('./features/challenges/ChallengeInformationProvider'));
+const ChallengeInfoScreen = React.lazy(() => import('./features/challenges/ChallengeInformation'));
 const RecurringEvents = React.lazy(() => import('./features/events/RecurringEvents'));
 const GameList = React.lazy(() => import('./features/games/GameList'));
 const ReportScore = React.lazy(() => import('./features/games/ReportScore'));

@@ -1,11 +1,20 @@
 import { createAsyncThunk, createEntityAdapter, createSlice, PayloadAction, Update } from '@reduxjs/toolkit';
 import { RootState } from '../../../redux/store';
 import { ChallengeRepository } from '../../../repository/ChallengeRepository';
-import { ChallengeStatWithUser, FullChallenge } from '../../../types/supabaseTypes';
+import { ChallengeImagesWithUser, ChallengeStatWithUser, FullChallenge, GroupWithUsers } from '../../../types/supabaseTypes';
 import { TablesUpdate } from '../../../types/supabase-generated.types';
+import { stringMatchesSomePattern } from '@sentry/core';
+import { formatDateToDatabase } from 'src/utils';
+import { PlaylistAddOutlined } from '@mui/icons-material';
+
+
+export type ChallengeSlice = ChallengeWithFullGroup & {
+  stats: ChallengeStatWithUser[]
+  images: ChallengeImagesWithUser[]
+}
 
 const challengeAdapter = createEntityAdapter({
-  selectId: (challenge: FullChallenge) => challenge.id,
+  selectId: (challenge: ChallengeSlice) => challenge.id,
 });
 
 export const challengeSelector = challengeAdapter.getSelectors((st: RootState) => st.challenges);
@@ -21,27 +30,28 @@ const challengeSlice = createSlice({
       if (!action.payload) return;
       let challenge = challengeAdapter.getSelectors().selectById(state, action.payload.id ?? -1);
       if (!challenge) return;
+
       let update = {
         id: challenge.id,
         changes: {
           ...challenge,
-          stats: [...challenge.stats.filter((x) => x.id !== action.payload?.id), action.payload],
+          stats: [...challenge.stats.filter((x) => x.id !== action.payload?.id), action.payload]
         },
-      } as Update<FullChallenge>;
+      } as Update<ChallengeSlice>;
       challengeAdapter.updateOne(state, update);
     },
     onChallengeStatsInsert: (state, action: PayloadAction<ChallengeStatWithUser | null>) => {
       if (!action.payload) return;
       let challenge = challengeAdapter.getSelectors().selectById(state, action.payload.id ?? -1);
       if (!challenge) return;
-
+      const payload = action.payload;
       let update = {
         id: challenge.id,
         changes: {
           ...challenge,
-          stats: [...challenge.stats, action.payload],
+          stats: [...(challenge.stats), payload]
         },
-      } as Update<FullChallenge>;
+      } as Update<ChallengeSlice>;
       challengeAdapter.updateOne(state, update);
     },
     onChallengeStatsDelete: (state, action: PayloadAction<number>) => {
@@ -70,16 +80,33 @@ const challengeSlice = createSlice({
           description: action.payload.description,
           name: action.payload.name,
         },
-      } as Update<FullChallenge>;
+      } as Update<ChallengeSlice>;
       challengeAdapter.updateOne(state, update);
     },
-    onChallengeInsert: (state, action: PayloadAction<FullChallenge | null>) => {
+    onChallengeInsert: (state, action: PayloadAction<ChallengeSlice | null>) => {
       if (!action.payload) return;
       challengeAdapter.upsertOne(state, action.payload);
     },
     onChallengeDelete: (state, action: PayloadAction<number>) => {
       challengeAdapter.removeOne(state, action.payload);
     },
+    onChallengeImageInserted: (state, action: PayloadAction<{ challenge: number, image_url: string, user: User }>) => {
+      let fullChallenge = challengeAdapter.getSelectors().selectById(state, action.payload.challenge);
+      if (!fullChallenge) return;
+      let update = {
+        id: action.payload.challenge,
+        changes: {
+          ...fullChallenge,
+          images: [{
+            challenge: action.payload.challenge,
+            image_url: action.payload.image_url,
+            user: action.payload.user,
+            created_at: formatDateToDatabase(Date.now())
+          }, ...fullChallenge.images]
+        },
+      } as Update<ChallengeSlice>;
+      challengeAdapter.updateOne(state, update);
+    }
   },
   extraReducers(builder) {
     builder
@@ -95,6 +122,7 @@ const challengeSlice = createSlice({
           action.payload.map((x) => ({
             ...x,
             stats: [],
+            images: []
           }))
         );
       })
@@ -115,11 +143,12 @@ const challengeSlice = createSlice({
           changes: {
             id: action.payload.data.id,
             stats: action.payload.data.stats,
+            images: action.payload.data.images,
             description: action.payload.data.description,
             name: action.payload.data.name,
             group: action.payload.data.group,
           },
-        } as Update<FullChallenge>;
+        } as Update<ChallengeSlice>;
         challengeAdapter.updateOne(state, update);
       })
       .addCase(fetchChallengeStatsSingleAsync.rejected, (state, action) => {
@@ -141,37 +170,18 @@ export const fetchArchivedChallenges = createAsyncThunk('fetchArchivedChallenges
 
 export const fetchChallengeStatsSingleAsync = createAsyncThunk(
   'fetchChallengeStatsSingleAsync',
-  async ({ challengeId }: { challengeId: string }) => {
+  async ({ challengeId }: { challengeId: number }) => {
     const response = await ChallengeRepository.fetchChallengeStats(challengeId);
     return {
       challengeId,
       data: {
         ...response.data,
-        stats: [
-          ...(response.data?.stats?.reduce(reduceChallengeStats, new Map<string, ChallengeStatWithUser>()).values() ??
-            []),
-        ].sort(sortChallengeStats),
+        stats: response.data?.stats ?? [],
+        images: response.data?.images ?? []
       },
     };
   }
 );
-
-const sortChallengeStats = (a: ChallengeStatWithUser, b: ChallengeStatWithUser) => {
-  return a.count < b.count ? 1 : -1;
-};
-
-const reduceChallengeStats = (acc: Map<string, ChallengeStatWithUser>, curr: ChallengeStatWithUser) => {
-  let x = acc.get(curr.user.userId);
-  if (x) {
-    acc.set(curr.user.userId, {
-      ...x,
-      count: x.count + curr.count,
-    });
-  } else {
-    acc.set(curr.user.userId, curr);
-  }
-  return acc;
-};
 
 export const {
   onChallengeStatsUpdate,
@@ -180,6 +190,7 @@ export const {
   onChallengeDelete,
   onChallengeInsert,
   onChallengeUpdate,
+  onChallengeImageInserted
 } = challengeSlice.actions;
 
 export default challengeSlice.reducer;

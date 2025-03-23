@@ -7,6 +7,7 @@ import { fetchUserMatches } from 'src/repository/GamesRepository';
 import { fetchGroups, fetchSimpleUser, fetchUserWithGroups } from 'src/repository/UserRepository';
 import { GamesTable, PermissionsTable } from 'src/types/supabaseTypes';
 import { Enums, Tables, TablesInsert, TablesUpdate } from '../../src/types/supabase-generated.types';
+import { fetchChallengeWithGroup } from 'src/repository/ChallengeRepository';
 
 export type Event = Tables<'events'>;
 export type History = Tables<'history'>;
@@ -22,6 +23,7 @@ export type ResolveProperty<T, K extends keyof T> =
 declare global {
   type Challenge = Tables<'challenge'>;
   type ChallengeStats = Tables<'challenge_stats'>;
+  type ChallengeImages = Tables<'challenge_images'>;
   type Drink = Tables<'drink'>;
   type Attendance = Tables<'event_attendance_user_mapping'>;
   type EventComment = Tables<'event_comments'>;
@@ -43,6 +45,7 @@ declare global {
   type CalendarSettings = Tables<'user_calender_settings'>;
   type PlayerWithSimpleUser = Player & { name: string; userId: string };
 
+  type ChallengeWithFullGroup = QueryData<ReturnType<typeof fetchChallengeWithGroup>> extends Array<infer U> ? U : never;
   type GroupWithUsersBase = QueryData<ReturnType<typeof fetchGroupWithUsers>> extends Array<infer U> ? U : never;
   type FullHistory = QueryData<ReturnType<typeof fetchFullHistory>> extends Array<infer U> ? U : never;
   type SimpleUser = QueryData<ReturnType<typeof fetchSimpleUser>> extends Array<infer U> ? U : never;
@@ -55,8 +58,8 @@ declare global {
   type UserWithGroupsBase = QueryData<ReturnType<typeof fetchUserWithGroups>> extends Array<infer U> ? U : never;
   type UserWithGroupsAndPlayerData = {
     [P in keyof UserWithGroupsBase]: P extends 'groups'
-      ? UserWithGroupsBase['groups'][number]['group'][]
-      : UserWithGroupsBase[P];
+    ? UserWithGroupsBase['groups'][number]['group'][]
+    : UserWithGroupsBase[P];
   } & { player_data: Player | null };
 
   type PaymentInsert = TablesInsert<'payments'>;
@@ -77,4 +80,4 @@ declare global {
   type UserRole = Enums<'UserRole'>;
 }
 
-export {};
+export { };

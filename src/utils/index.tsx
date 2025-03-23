@@ -1,6 +1,6 @@
 import { Slide, SlideProps } from '@mui/material';
 import { add, Duration, format, parse } from 'date-fns';
-import dayjs from 'dayjs';
+import dayjs, { Dayjs } from 'dayjs';
 import React, { forwardRef } from 'react';
 import Logo from '../images/Karlsruher_Kojoten_Logo.svg';
 
@@ -50,6 +50,10 @@ export const formatDateFromDatabase = (date: string) => {
   }
   return result;
 };
+
+export const dayjsToDb = (date: Dayjs) => {
+  return formatDateToDatabase(date.toDate());
+}
 
 export const dayjsFromDb = (date: string | null) => {
   if (!date) return null;

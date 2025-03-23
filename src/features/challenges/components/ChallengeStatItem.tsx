@@ -1,4 +1,4 @@
-import { Avatar, ListItem, ListItemAvatar, ListItemText, Typography } from '@mui/material';
+import { Avatar, Button, Card, CardActionArea, CardActions, CardContent, ListItem, ListItemAvatar, ListItemText, Typography } from '@mui/material';
 import { AccountBox } from '@mui/icons-material';
 import React from 'react';
 import { ChallengeStatWithUser } from '../../../types/supabaseTypes';
@@ -11,39 +11,49 @@ const medalForPlace = (index: number) => {
 };
 
 export const ChallengeStatItem = ({
-  challengeStatWithUser,
+  statsForUser,
   index,
 }: {
-  challengeStatWithUser: ChallengeStatWithUser;
+  statsForUser: ChallengeStatWithUser[];
   index: number;
 }) => {
-  return (
-    <ListItem
-      key={challengeStatWithUser.user.userId}
-      secondaryAction={<Typography>{challengeStatWithUser.count}</Typography>}
-    >
-      <ListItemAvatar sx={{ flexDirection: 'row', display: 'flex', alignItems: 'center', mr: 2 }}>
-        <Avatar sx={{ borderRadius: 2, backgroundColor: 'transparent' }}>
-          <Typography
-            sx={{
-              fontSize: index < 3 ? '22pt' : '18pt',
-              fontWeight: 'bold',
-              mr: 1,
-              color: 'black',
-            }}
-          >
-            {medalForPlace(index)}
-          </Typography>
-        </Avatar>
-        <Avatar sx={{ borderRadius: 2 }}>
-          {challengeStatWithUser.user.avatarUrl ? (
-            <img src={challengeStatWithUser.user.avatarUrl} alt="logo" width={'100%'} height={'100%'} />
-          ) : (
-            <AccountBox />
-          )}
-        </Avatar>
-      </ListItemAvatar>
-      <ListItemText primaryTypographyProps={{ fontWeight: 'bold' }} primary={challengeStatWithUser.user.displayName} />
-    </ListItem>
-  );
+
+  const user = statsForUser[0]?.user
+
+  if (!user)
+    return null
+
+  return <Card sx={{ m: 1, p: 0 }} elevation={3} key={user.userId}>
+    <CardActionArea>
+      <CardContent>
+        <ListItem
+          sx={{ p: 0 }}
+          secondaryAction={<Typography>{statsForUser.reduce((p, c) => p + c.count, 0)}</Typography>}
+        >
+          <ListItemAvatar sx={{ flexDirection: 'row', display: 'flex', alignItems: 'center', mr: 2 }}>
+            <Avatar sx={{ borderRadius: 2, backgroundColor: 'transparent', width: "50px", height: "50px" }}>
+              <Typography
+                sx={{
+                  fontSize: index < 3 ? '22pt' : '18pt',
+                  fontWeight: 'bold',
+                  color: 'black',
+                  mr: 1
+                }}
+              >
+                {medalForPlace(index)}
+              </Typography>
+            </Avatar>
+            <Avatar sx={{ borderRadius: 2, border: "2px solid red", width: "50px", height: "50px" }}>
+              {user.avatarUrl ? (
+                <img src={user.avatarUrl} alt="logo" width={'100%'} height={'100%'} />
+              ) : (
+                <AccountBox />
+              )}
+            </Avatar>
+          </ListItemAvatar>
+          <ListItemText primaryTypographyProps={{ fontWeight: 'bold' }} primary={user.displayName} />
+        </ListItem>
+      </CardContent>
+    </CardActionArea>
+  </Card>
 };

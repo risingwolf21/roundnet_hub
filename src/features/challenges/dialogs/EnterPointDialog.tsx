@@ -1,18 +1,44 @@
 import { Button, Typography } from '@mui/material';
-import { Box } from '@mui/system';
-import { SwipeableDialog } from '../../../components/SwipeableDialog';
-import React from 'react';
-import { withTranslation } from 'react-i18next';
+import { DatePicker, PickersDay, PickersDayProps } from '@mui/x-date-pickers';
+import dayjs, { Dayjs } from 'dayjs';
 import { TFunction } from 'i18next';
+import React, { useEffect, useState } from 'react';
+import { withTranslation } from 'react-i18next';
+import { dayjsFromDb } from 'src/utils';
+import { SwipeableDialog } from '../../../components/SwipeableDialog';
 
 type EnterPointDialogProps = {
   open: boolean;
   t: TFunction;
   setOpen: (value: boolean) => void;
-  increaseChallengePoint: () => void;
+  increaseChallengePoint: (created_at: Dayjs) => void;
+  dates: string[]
+  maxEntriesPerWeek: number
 };
 
-const EnterPointDialog = ({ open, setOpen, t, increaseChallengePoint }: EnterPointDialogProps) => {
+function ServerDay(props: PickersDayProps<Dayjs> & { highlightedDays?: Dayjs[], maxEntriesPerWeek?: number }) {
+  const { highlightedDays = [], maxEntriesPerWeek = 0, day, outsideCurrentMonth, ...other } = props;
+
+  const isHighlighted = highlightedDays.filter(x => day.isSame(x, "day")).length > 0;
+  const isDisabled = day.isAfter(dayjs(), "day") || isHighlighted || highlightedDays.filter(x => day.isSame(x, "week")).length > maxEntriesPerWeek;
+
+  return (
+    <PickersDay  {...other} outsideCurrentMonth={outsideCurrentMonth} day={day} sx={(theme) => ({
+      ...(isHighlighted && { backgroundColor: theme.palette.primary.main }),
+      ...(isHighlighted && { color: theme.palette.primary.contrastText })
+    })} disabled={isDisabled} />
+  );
+}
+
+const EnterPointDialog = ({ open, setOpen, t, increaseChallengePoint, dates, maxEntriesPerWeek }: EnterPointDialogProps) => {
+
+  const [date, setDate] = useState(dayjs());
+  const [highlightedDays, setHightlightedDays] = useState(dates.map(x => dayjsFromDb(x)))
+
+  useEffect(() => {
+    setHightlightedDays(dates.map(dayjsFromDb))
+  }, [dates]);
+
   return (
     <SwipeableDialog
       title="Punkt hinzufügen"
@@ -20,38 +46,36 @@ const EnterPointDialog = ({ open, setOpen, t, increaseChallengePoint }: EnterPoi
       onClose={() => setOpen(false)}
       minHeight={40}
       setOpen={setOpen}
-      actions={<Button onClick={increaseChallengePoint}>{t('confirm')}Bestätigen</Button>}
+      actions={<>
+        <Button onClick={() => increaseChallengePoint(date)}>Bestätigen</Button>
+        <Button onClick={() => setOpen(false)}>Abbrechen</Button>
+      </>}
     >
       <Typography m={2}>Hiermit trägst du einen Punkt für die Serve Challenge ein</Typography>
-      <Box
+      <DatePicker
         sx={{
-          display: 'flex',
-          flexDirection: 'row',
-          flexGrow: 1,
-          position: 'absolute',
-          left: 0,
-          right: 0,
-          bottom: 0,
+          width: '100%',
+          p: 2
         }}
-      >
-        <Button
-          variant="outlined"
-          fullWidth
-          sx={{
-            ml: 2,
-            mr: 1,
-            mb: 2,
-            borderRadius: '50px !important',
-            fontSize: '16px',
-            fontFamily: 'sans-serif',
-            lineSpacing: '24px',
-          }}
-          onClick={() => setOpen(false)}
-        >
-          {t('cancel')}
-        </Button>
-      </Box>
-    </SwipeableDialog>
+        slots={{
+          day: ServerDay,
+        }}
+        slotProps={{
+          day: {
+            highlightedDays,
+            maxEntriesPerWeek
+          } as any
+        }}
+        label="Datum"
+        disableFuture
+        format="DD MMMM YYYY"
+        onChange={(val) => {
+          if (val)
+            setDate(val)
+        }}
+        value={date}
+      />
+    </SwipeableDialog >
   );
 };
 
