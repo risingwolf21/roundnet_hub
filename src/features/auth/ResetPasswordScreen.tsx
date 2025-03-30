@@ -8,10 +8,10 @@ import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
 import { supabase } from '../../components/services/supabase/supabaseClient';
 import Logo from '../../images/Karlsruher_Kojoten_Logo.svg';
-import { Alert, Snackbar } from '@mui/material';
+import { Alert, AppBar, IconButton, Snackbar, Toolbar } from '@mui/material';
 import { useNavigate } from 'react-router';
-import CustomAppBar from '../../components/AppBar';
 import { HOMEPAGE } from '../../constants';
+import { ArrowBack } from '@mui/icons-material';
 
 const ResetPasswordScreen = () => {
   const [errorMessage, setErrorMessage] = React.useState('');
@@ -73,7 +73,19 @@ const ResetPasswordScreen = () => {
 
   return (
     <Box>
-      <CustomAppBar navigateBack />
+      <AppBar position="sticky" sx={{ zIndex: (theme) => theme.zIndex.drawer + 1, background: 'primary' }}>
+        <Toolbar
+          sx={{
+            width: 'calc(100% - 48px)',
+            maxWidth: 1400,
+            mx: 'auto',
+          }}
+        >
+          <IconButton color="inherit" onClick={() => navigate(-1)} edge="start" sx={{ mr: 2 }}>
+            <ArrowBack />
+          </IconButton>
+        </Toolbar>
+      </AppBar>
       <Container component="main" maxWidth="xs">
         <CssBaseline />
         <Box

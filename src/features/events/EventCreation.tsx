@@ -2,7 +2,6 @@ import { AccessTime, Article, FiberManualRecord, Map } from '@mui/icons-material
 import EventIcon from '@mui/icons-material/Event';
 import EventRepeatIcon from '@mui/icons-material/EventRepeat';
 import {
-  Alert,
   Box,
   Button,
   Checkbox,
@@ -23,12 +22,12 @@ import {
   Radio,
   RadioGroup,
   Select,
-  Snackbar,
   TextField,
-  Typography,
+  Typography
 } from '@mui/material';
 import { DatePicker, DateTimePicker } from '@mui/x-date-pickers';
 import { TimePicker } from '@mui/x-date-pickers/TimePicker';
+import { useNotifications } from '@toolpad/core/useNotifications';
 import { format, isAfter, set } from 'date-fns';
 import _ from 'lodash';
 import React, { FormEvent, useEffect, useRef, useState } from 'react';
@@ -57,16 +56,16 @@ const emptyEvent = {
 
 const CreateEvent = ({ t, eventToEdit, option }: CreateEventProps) => {
   const navigate = useNavigate();
+  const notifications = useNotifications();
 
   const [editedEvent, setEditedEvent] = useState<FullEvent>(eventToEdit ?? emptyEvent);
   const [loading, setLoading] = useState(false);
   const [dialogOpen, setDialogOpen] = useState<'group' | 'stopRepeat' | 'repeat' | 'places' | null>(null);
 
-  const [errorSnackbar, setErrorSnackbar] = useState({ open: false, message: '' });
   const [selectedPlace, setSelectedPlace] = useState<PlaceType>({
     lat: 49.0226481,
     lon: 8.416547971872856,
-    name: 'MTV Karlsruhe',
+    name: 'MTV Karlsruhe, Kanalweg 1, 76131 Karlsruhe',
   });
   const ref = useRef<HTMLFormElement>(null);
 
@@ -134,10 +133,9 @@ const CreateEvent = ({ t, eventToEdit, option }: CreateEventProps) => {
       }
       setLoading(false);
       navigate('/training/list', { replace: true });
-      setErrorSnackbar({ open: false, message: '' });
     } catch (error: unknown) {
       const message = error instanceof Error ? (error as Error).message : 'Unknown error.';
-      setErrorSnackbar({ open: true, message });
+      notifications.show(message, { severity: "error" })
     }
   };
 
@@ -403,11 +401,11 @@ const CreateEvent = ({ t, eventToEdit, option }: CreateEventProps) => {
                     answerDeadline: editedEvent.answerDeadline
                       ? null
                       : formatDateToDatabase(
-                          set(Date.now(), {
-                            seconds: 0,
-                            milliseconds: 0,
-                          })
-                        ),
+                        set(Date.now(), {
+                          seconds: 0,
+                          milliseconds: 0,
+                        })
+                      ),
                   })
                 }
               />
@@ -537,11 +535,11 @@ const CreateEvent = ({ t, eventToEdit, option }: CreateEventProps) => {
                     recurrenceEnd: editedEvent.recurrenceEnd
                       ? null
                       : formatDateToDatabase(
-                          set(Date.now(), {
-                            seconds: 0,
-                            milliseconds: 0,
-                          })
-                        ),
+                        set(Date.now(), {
+                          seconds: 0,
+                          milliseconds: 0,
+                        })
+                      ),
                   })
                 }
               />
@@ -600,12 +598,6 @@ const CreateEvent = ({ t, eventToEdit, option }: CreateEventProps) => {
           setDialogOpen(null);
         }}
       />
-
-      <Snackbar sx={{ position: 'fixed', right: '16px' }} open={errorSnackbar.open} autoHideDuration={1500}>
-        <Alert severity={'error'} sx={{ width: '100%' }}>
-          {errorSnackbar.message}
-        </Alert>
-      </Snackbar>
     </Layout>
   );
 };
