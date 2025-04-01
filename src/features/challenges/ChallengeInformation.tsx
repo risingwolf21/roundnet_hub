@@ -146,7 +146,7 @@ export const ChallengeInformation = ({ t }: { t: TFunction }) => {
             alignItems: 'center',
           }}>
             <Button component="label" sx={{ borderRadius: 4, border: 'none', width: "100px", height: "100px", background: 'transparent' }}>
-              <input accept="image/*" type="file" hidden onChange={onImageInputChange} />
+              <input accept="image/*" capture="user" type="file" hidden onChange={onImageInputChange} />
               <Avatar sx={{ borderRadius: 4, width: "100px", height: "100px" }}>
                 {challenge.images.filter(y => y.user.userId === user.userId).length > 0 ? (
                   <img src={challenge.images.filter(y => y.user.userId === user.userId)[0].image_url} style={{ objectFit: "cover" }} alt="logo" width={'100%'} height={'100%'} />
