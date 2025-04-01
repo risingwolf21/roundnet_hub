@@ -32,6 +32,9 @@ import { logEvent } from 'firebase/analytics';
 import { analytics } from 'src/firebase/firebaseConfig';
 import { useApplication } from '../auth/AuthContext';
 import { Event } from 'types/supabase';
+import { groupBy } from 'lodash';
+import { formatDateFromDatabase } from 'src/utils';
+import { format, parse } from 'date-fns';
 
 export type EventScreenProps = {
   events: SliceEvent[];
@@ -66,88 +69,105 @@ const EventScreen = ({ events, loading, error, user, fetchMode }: EventScreenPro
 
   return (
     <Layout>
-      <PullToRefresh onRefresh={() => dispatch(fetchEventsAsync({ user, fetchMode }))}>
-        <List
-          sx={(theme) => ({
-            overscrollBehavior: "none",
-            [theme.breakpoints.down('xl')]: { pb: 12 },
-            [theme.breakpoints.up('xl')]: { pb: 0 },
-          })}
+      <Box
+        sx={(theme) => ({
+          overscrollBehavior: "none",
+          [theme.breakpoints.down('xl')]: { pb: 12 },
+          [theme.breakpoints.up('xl')]: { pb: 0 },
+        })}
+      >
+        {loading
+          ? Array.from({ length: 10 }, (v, k) => k + 1).map((x) => <LoadingEventItem key={x} />)
+          : events.length <= 0
+            ? <Stack spacing={2} direction={"column"} sx={{ height: 300, alignItems: "center", justifyContent: "center" }}>
+              <Typography>Es sieht so aus als ob du keine Events siehts</Typography>
+              <Typography>Versuch einer Gruppe beizutreten um die Events dieser einzusehen</Typography>
+              <Button variant='contained' onClick={() => navigate("/groups/list")}>Gruppe beitreten</Button>
+            </Stack>
+            : Object.entries(groupBy(events
+              .filter((x) => selectedGroups.includes(x.group)), x => format(x.startingDateTime, "dd-MM-yyyy")))
+              .map(([key, value]) => <table style={{ width: "100%" }}>
+                <tbody>
+                  {
+                    value.map((event, index) => <tr>
+                      {
+                        index === 0 ? <th style={{ position: "sticky", top: 0, padding: 0 }}>
+                          <Box sx={{ display: 'flex', flexDirection: 'column', height: "100%", justifyContent: 'left', mx: 3, py: 1 }}>
+                            <Typography fontSize={10} textAlign={'center'}>
+                              {t('events.startDateDayString', { date: parse(key, "dd-MM-yyyy", new Date()) }).toUpperCase()}
+                            </Typography>
+                            <Typography variant="h6" fontWeight={'bold'} textAlign={'center'}>
+                              {t('events.startDateDay', { date: parse(key, "dd-MM-yyyy", new Date()) }).toUpperCase()}
+                            </Typography>
+                          </Box>
+                        </th> : <th style={{ padding: 0 }}></th>
+                      }
+                      <td style={{ width: "100%", padding: 0 }}>
+                        <EventItem
+                          key={event.id}
+                          event={event}
+                          t={t}
+                          attendanceUpdating={event.attendanceUpdating}
+                          attendEvent={() => updateAttendance(event, 'Attending', event.userAttendance)}
+                          declineEvent={() => updateAttendance(event, 'Declined', event.userAttendance)}
+                          onClick={() => {
+                            navigate('/training/event/' + event.id);
+                          }}
+                        />
+                      </td>
+                    </tr>)
+                  }
+                </tbody>
+              </table>
+              )}
+      </Box>
+      {can('select', 'event') && (
+        <Fab
+          key="filter"
+          sx={{
+            position: 'fixed',
+            right: '16px',
+            bottom: 'max(16px, env(safe-area-inset-bottom))',
+          }}
+          color={'secondary'}
+          onClick={() => setFilterDialogOpen(true)}
         >
-          <Box
-          >
-            {loading
-              ? Array.from({ length: 10 }, (v, k) => k + 1).map((x) => <LoadingEventItem key={x} />)
-              : events.length <= 0
-                ? <Stack spacing={2} direction={"column"} sx={{ height: 300, alignItems: "center", justifyContent: "center" }}>
-                  <Typography>Es sieht so aus als ob du keine Events siehts</Typography>
-                  <Typography>Versuch einer Gruppe beizutreten um die Events dieser einzusehen</Typography>
-                  <Button variant='contained' onClick={() => navigate("/groups/list")}>Gruppe beitreten</Button>
-                </Stack>
-                : events
-                  .filter((x) => selectedGroups.includes(x.group))
-                  .map((event) => (
-                    <EventItem
-                      key={event.id}
-                      event={event}
-                      t={t}
-                      attendanceUpdating={event.attendanceUpdating}
-                      attendEvent={() => updateAttendance(event, 'Attending', event.userAttendance)}
-                      declineEvent={() => updateAttendance(event, 'Declined', event.userAttendance)}
-                      onClick={() => {
-                        navigate('/training/event/' + event.id);
-                      }}
-                    />
-                  ))}
-          </Box>
-          {can('select', 'event') && (
-            <Fab
-              key="filter"
-              sx={{
-                position: 'fixed',
-                right: '16px',
-                bottom: 'max(16px, env(safe-area-inset-bottom))',
-              }}
-              color={'secondary'}
-              onClick={() => setFilterDialogOpen(true)}
-            >
-              {<FilterAlt sx={{ color: 'white' }} />}
-            </Fab>
-          )}
-          {can('insert', 'event') && (
-            <Fab
-              key="insertEvent"
-              sx={{
-                position: 'fixed',
-                right: '88px',
-                bottom: 'max(16px, env(safe-area-inset-bottom))',
-              }}
-              color={'secondary'}
-              onClick={() => {
-                dispatch(editEvent(null));
-                navigate('/training/createOrUpdate/InsertEvent');
-              }}
-            >
-              {<AddIcon sx={{ color: 'white' }} />}
-            </Fab>
-          )}
-          {can('update', 'event') && (
-            <Fab
-              key="updateEvent"
-              sx={{
-                position: 'fixed',
-                right: '160px',
-                bottom: 'max(16px, env(safe-area-inset-bottom))',
-              }}
-              color={'secondary'}
-              onClick={() => navigate('/training/recurringEvents')}
-            >
-              {<EventRepeat sx={{ color: 'white' }} />}
-            </Fab>
-          )}
-          <AlertSnackbar alertInfo={error} close={() => dispatch(onEventErrorRead(null))} />
-        </List>
-      </PullToRefresh>
+          {<FilterAlt sx={{ color: 'white' }} />}
+        </Fab>
+      )}
+      {can('insert', 'event') && (
+        <Fab
+          key="insertEvent"
+          sx={{
+            position: 'fixed',
+            right: '88px',
+            bottom: 'max(16px, env(safe-area-inset-bottom))',
+          }}
+          color={'secondary'}
+          onClick={() => {
+            dispatch(editEvent(null));
+            navigate('/training/createOrUpdate/InsertEvent');
+          }}
+        >
+          {<AddIcon sx={{ color: 'white' }} />}
+        </Fab>
+      )}
+      {can('update', 'event') && (
+        <Fab
+          key="updateEvent"
+          sx={{
+            position: 'fixed',
+            right: '160px',
+            bottom: 'max(16px, env(safe-area-inset-bottom))',
+          }}
+          color={'secondary'}
+          onClick={() => navigate('/training/recurringEvents')}
+        >
+          {<EventRepeat sx={{ color: 'white' }} />}
+        </Fab>
+      )}
+      <AlertSnackbar alertInfo={error} close={() => dispatch(onEventErrorRead(null))} />
+
       <SwipeableDialog
         open={filterDialogOpen}
         onClose={() => setFilterDialogOpen(false)}

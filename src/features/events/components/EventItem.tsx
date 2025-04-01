@@ -88,16 +88,6 @@ export const EventItem = ({ event, onClick, attendEvent, declineEvent, attendanc
         )
       }
     >
-      <ListItemAvatar>
-        <Box sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'left' }}>
-          <Typography fontSize={10} textAlign={'center'}>
-            {t('events.startDateShortMonth', { date: toDate(event.startingDateTime) }).toUpperCase()}
-          </Typography>
-          <Typography variant="h6" fontWeight={'bold'} textAlign={'center'}>
-            {t('events.startDateDay', { date: toDate(event.startingDateTime) }).toUpperCase()}
-          </Typography>
-        </Box>
-      </ListItemAvatar>
       <ListItemText
         primary={event.title}
         slotProps={{

@@ -57,6 +57,7 @@
       "commentTimeAgo": "vor {{time}}"
     },
     "startDateShortMonth": "{{date, MMM}}",
+    "startDateDayString": "{{date, EEE}}",
     "startDateDay": "{{date, d}}",
     "startTime": "{{date, cccc}} um {{date, HH:mm}}"
   },
