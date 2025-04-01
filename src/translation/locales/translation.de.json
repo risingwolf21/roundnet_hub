@@ -59,7 +59,10 @@
     "startDateShortMonth": "{{date, MMM}}",
     "startDateDayString": "{{date, EEE}}",
     "startDateDay": "{{date, d}}",
-    "startTime": "{{date, cccc}} um {{date, HH:mm}}"
+    "startTime": "{{date, cccc}} um {{date, HH:mm}}",
+    "secondaryTextStart": "{{start, HH:mm}}",
+    "secondaryTextWithEnd": "- {{end, HH:mm}}",
+    "secondaryTextWithPlace": " am {{place}}"
   },
   "feature_not_available": "Diese Funktion ist noch nicht bereit. Versuche es später erneut!",
   "handover_key": "Abgeben",
