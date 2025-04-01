@@ -85,7 +85,7 @@ const EventScreen = ({ events, loading, error, user, fetchMode }: EventScreenPro
                     value.map((event, index) => <tr style={{ height: "1px" }}>
                       {
                         index === 0 ? <td style={{ position: "sticky", top: 0, padding: 0, height: "inherit" }}>
-                          <Box sx={{ display: 'flex', flexDirection: 'column', height: "100%", justifyContent: 'center', mx: 3, py: 1 }}>
+                          <Box sx={{ display: 'flex', flexDirection: 'column', height: "100%", justifyContent: 'center', mx: 3, py: 1, width: 20 }}>
                             <Typography fontSize={10} textAlign={'center'}>
                               {t('events.startDateDayString', { date: parse(key, "dd-MM-yyyy", new Date()) }).toUpperCase()}
                             </Typography>
