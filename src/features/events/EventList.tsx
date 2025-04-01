@@ -1,8 +1,8 @@
 import { Check, EventRepeat, FilterAlt } from '@mui/icons-material';
 import AddIcon from '@mui/icons-material/Add';
-import { Chip, Fab, List, ListSubheader } from '@mui/material';
+import { Button, Chip, Fab, List, ListSubheader, Typography } from '@mui/material';
 import Grid from '@mui/material/Grid2';
-import { Box } from '@mui/system';
+import { Box, Stack } from '@mui/system';
 import { t } from 'i18next';
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
@@ -78,21 +78,27 @@ const EventScreen = ({ events, loading, error, user, fetchMode }: EventScreenPro
           >
             {loading
               ? Array.from({ length: 10 }, (v, k) => k + 1).map((x) => <LoadingEventItem key={x} />)
-              : events
-                .filter((x) => selectedGroups.includes(x.group))
-                .map((event) => (
-                  <EventItem
-                    key={event.id}
-                    event={event}
-                    t={t}
-                    attendanceUpdating={event.attendanceUpdating}
-                    attendEvent={() => updateAttendance(event, 'Attending', event.userAttendance)}
-                    declineEvent={() => updateAttendance(event, 'Declined', event.userAttendance)}
-                    onClick={() => {
-                      navigate('/training/event/' + event.id);
-                    }}
-                  />
-                ))}
+              : events.length <= 0
+                ? <Stack spacing={2} direction={"column"} sx={{ height: 300, alignItems: "center", justifyContent: "center" }}>
+                  <Typography>Es sieht so aus als ob du keine Events siehts</Typography>
+                  <Typography>Versuch einer Gruppe beizutreten um die Events dieser einzusehen</Typography>
+                  <Button variant='contained' onClick={() => navigate("/groups/list")}>Gruppe beitreten</Button>
+                </Stack>
+                : events
+                  .filter((x) => selectedGroups.includes(x.group))
+                  .map((event) => (
+                    <EventItem
+                      key={event.id}
+                      event={event}
+                      t={t}
+                      attendanceUpdating={event.attendanceUpdating}
+                      attendEvent={() => updateAttendance(event, 'Attending', event.userAttendance)}
+                      declineEvent={() => updateAttendance(event, 'Declined', event.userAttendance)}
+                      onClick={() => {
+                        navigate('/training/event/' + event.id);
+                      }}
+                    />
+                  ))}
           </Box>
           {can('select', 'event') && (
             <Fab
