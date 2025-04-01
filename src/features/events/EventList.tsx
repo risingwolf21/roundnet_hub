@@ -79,13 +79,13 @@ const EventScreen = ({ events, loading, error, user, fetchMode }: EventScreenPro
             </Stack>
             : Object.entries(groupBy(events
               .filter((x) => selectedGroups.includes(x.group)), x => format(x.startingDateTime, "dd-MM-yyyy")))
-              .map(([key, value]) => <table style={{ width: "100%" }}>
-                <tbody>
+              .map(([key, value]) => <table style={{ width: "100%", borderSpacing: 0 }}>
+                <tbody style={{ width: "100%" }}>
                   {
-                    value.map((event, index) => <tr>
+                    value.map((event, index) => <tr style={{ height: "1px" }}>
                       {
-                        index === 0 ? <th style={{ position: "sticky", top: 0, padding: 0 }}>
-                          <Box sx={{ display: 'flex', flexDirection: 'column', height: "100%", justifyContent: 'left', mx: 3, py: 1 }}>
+                        index === 0 ? <td style={{ position: "sticky", top: 0, padding: 0, height: "inherit" }}>
+                          <Box sx={{ display: 'flex', flexDirection: 'column', height: "100%", justifyContent: 'center', mx: 3, py: 1 }}>
                             <Typography fontSize={10} textAlign={'center'}>
                               {t('events.startDateDayString', { date: parse(key, "dd-MM-yyyy", new Date()) }).toUpperCase()}
                             </Typography>
@@ -93,7 +93,7 @@ const EventScreen = ({ events, loading, error, user, fetchMode }: EventScreenPro
                               {t('events.startDateDay', { date: parse(key, "dd-MM-yyyy", new Date()) }).toUpperCase()}
                             </Typography>
                           </Box>
-                        </th> : <th style={{ padding: 0 }}></th>
+                        </td> : <td style={{ padding: 0 }}></td>
                       }
                       <td style={{ width: "100%", padding: 0 }}>
                         <EventItem
