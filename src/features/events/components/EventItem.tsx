@@ -103,9 +103,7 @@ export const EventItem = ({ event, onClick, attendEvent, declineEvent, attendanc
         secondary={
           event.isCancelled ? 'Event abgesagt' : [
             t('events.secondaryTextStart', { start: toDate(event.startingDateTime) }),
-            event.endDateTime && t('events.secondaryTextWithEnd', { end: toDate(event.endDateTime) }),
-            event.place && t('events.secondaryTextWithPlace', { place: JSON.parse(event.place).name })
-          ].join(" ")
+            event.endDateTime && t('events.secondaryTextWithEnd', { end: toDate(event.endDateTime) })].join(" ")
         }
       />
     </ListItem>
