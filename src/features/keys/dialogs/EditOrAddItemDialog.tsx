@@ -91,7 +91,7 @@ export const EditOrAddItemDialog = ({ open, handleClose, itemToEdit }: EditOrAdd
   return (
     <Dialog fullScreen open={open} onClose={handleClose} TransitionComponent={SlideUpTransition}>
       <Box component="form" noValidate>
-        <AppBar position="fixed" sx={{ top: 0, pt: 'env(safe-area-inset-top)' }}>
+        <AppBar position="sticky" sx={{ top: 0, pt: 'env(safe-area-inset-top)' }}>
           <Toolbar>
             <IconButton edge="start" color="inherit" onClick={handleClose} aria-label="close">
               <CloseIcon />
@@ -108,7 +108,6 @@ export const EditOrAddItemDialog = ({ open, handleClose, itemToEdit }: EditOrAdd
           </Toolbar>
         </AppBar>
         <Box sx={{ pt: 'env(safe-area-inset-top)' }}>
-          <Toolbar />
           <List>
             <ListItem>
               <TextField

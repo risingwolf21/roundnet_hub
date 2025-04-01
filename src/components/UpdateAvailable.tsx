@@ -1,18 +1,18 @@
 import { Info, Refresh } from '@mui/icons-material';
-import { Grid, Typography, AppBar, Toolbar, Button } from '@mui/material';
+import { AppBar, Button, Grid2, Toolbar, Typography } from '@mui/material';
 import React from 'react';
 
 const UpdateAvailable = ({ update }: { update: () => void }) => {
   return (
-    <Grid>
-      <AppBar position="static" sx={{ zIndex: (theme) => theme.zIndex.drawer + 1, background: 'primary', pt: "env(safe-area-inset-top)" }}>
+    <Grid2>
+      <AppBar position="sticky" sx={{ zIndex: (theme) => theme.zIndex.drawer + 1, background: 'primary', pt: "env(safe-area-inset-top)" }}>
         <Toolbar>
           <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
             Roundnet Karlsruhe
           </Typography>
         </Toolbar>
       </AppBar>
-      <Grid
+      <Grid2
         container
         spacing={0}
         direction="column"
@@ -27,8 +27,8 @@ const UpdateAvailable = ({ update }: { update: () => void }) => {
         <Button variant="contained" startIcon={<Refresh />} onClick={update}>
           Update
         </Button>
-      </Grid>
-    </Grid>
+      </Grid2>
+    </Grid2>
   );
 };
 

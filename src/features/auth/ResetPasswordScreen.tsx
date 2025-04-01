@@ -1,19 +1,65 @@
+import { ArrowBack } from '@mui/icons-material';
+import { Alert, alpha, AppBar, CircularProgress, IconButton, Stack, SxProps, Theme, Toolbar, useTheme } from '@mui/material';
+import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
+import Container from '@mui/material/Container';
+import TextField, { TextFieldProps } from '@mui/material/TextField';
+import Typography from '@mui/material/Typography';
 import * as React from 'react';
 import { useEffect, useState } from 'react';
-import Button from '@mui/material/Button';
-import CssBaseline from '@mui/material/CssBaseline';
-import TextField from '@mui/material/TextField';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
-import Container from '@mui/material/Container';
-import { supabase } from '../../components/services/supabase/supabaseClient';
-import Logo from '../../images/Karlsruher_Kojoten_Logo.svg';
-import { Alert, AppBar, IconButton, Snackbar, Toolbar } from '@mui/material';
 import { useNavigate } from 'react-router';
+import Layout from 'src/components/Layout';
+import { BRANDING } from 'src/utils';
+import { supabase } from '../../components/services/supabase/supabaseClient';
 import { HOMEPAGE } from '../../constants';
-import { ArrowBack } from '@mui/icons-material';
+
+const mergeSlotSx = (defaultSx: SxProps<Theme>, slotProps?: { sx?: SxProps<Theme> }) => {
+  if (Array.isArray(slotProps?.sx)) {
+    return [defaultSx, ...slotProps.sx];
+  }
+
+  if (slotProps?.sx) {
+    return [defaultSx, slotProps?.sx];
+  }
+
+  return [defaultSx];
+};
+
+export const getCommonTextFieldProps = (theme: Theme, baseProps: TextFieldProps = {}): TextFieldProps => ({
+  required: true,
+  fullWidth: true,
+  ...baseProps,
+  slotProps: {
+    ...baseProps.slotProps,
+    htmlInput: {
+      ...baseProps.slotProps?.htmlInput,
+      sx: mergeSlotSx(
+        {
+          paddingTop: theme.spacing(1),
+          paddingBottom: theme.spacing(1),
+        },
+        typeof baseProps.slotProps?.htmlInput === 'function' ? {} : baseProps.slotProps?.htmlInput,
+      ),
+    },
+    inputLabel: {
+      ...baseProps.slotProps?.inputLabel,
+      sx: mergeSlotSx(
+        {
+          lineHeight: theme.typography.pxToRem(12),
+          fontSize: theme.typography.pxToRem(14),
+        },
+        typeof baseProps.slotProps?.inputLabel === 'function'
+          ? {}
+          : baseProps.slotProps?.inputLabel,
+      ),
+    },
+  },
+});
 
 const ResetPasswordScreen = () => {
+  const theme = useTheme();
+  const [error, setError] = React.useState('');
+  const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = React.useState('');
   const [accessToken, setAccessToken] = useState('');
   const [refreshToken, setRefreshToken] = useState('');
@@ -63,7 +109,7 @@ const ResetPasswordScreen = () => {
     }
 
     const { error } = await supabase.auth.updateUser({ password });
-    if (error) setErrorMessage(error.message);
+    if (error) setError(error.message);
     else {
       setSuccessMessageOpen(true);
       await new Promise((r) => setTimeout(r, 2000));
@@ -72,7 +118,7 @@ const ResetPasswordScreen = () => {
   };
 
   return (
-    <Box>
+    <Layout>
       <AppBar position="sticky" sx={{ zIndex: (theme) => theme.zIndex.drawer + 1, background: 'primary' }}>
         <Toolbar
           sx={{
@@ -87,57 +133,82 @@ const ResetPasswordScreen = () => {
         </Toolbar>
       </AppBar>
       <Container component="main" maxWidth="xs">
-        <CssBaseline />
         <Box
-          sx={{
-            marginTop: 8,
+          sx={(theme) => ({
             display: 'flex',
             flexDirection: 'column',
-            alignItems: 'center',
-          }}
+            bgcolor: 'background.paper',
+            borderRadius: 1,
+            p: 4,
+            mb: 10,
+            [theme.breakpoints.up('sm')]: {
+              border: '1px solid',
+              alignItems: 'center',
+              borderColor: alpha(theme.palette.grey[400], 0.4),
+              boxShadow: theme.shadows[4],
+              marginBottom: 0,
+            },
+            [theme.breakpoints.down('xs')]: {
+              alignItems: 'start',
+              border: "none",
+              boxShadow: "none"
+            },
+          })}
         >
-          <img src={Logo} alt="Logo" width={150} />
-          <Typography component="h1" variant="h5">
-            Passwort zurücksetzen
+
+          {BRANDING.logo}
+
+          <Typography variant="h5" component={"h1"} color='textPrimary' sx={{
+            my: theme.spacing(1),
+            textAlign: 'center',
+            fontWeight: 600,
+          }}>
+            Passwort zurücksetzen<br></br>{BRANDING.title}
           </Typography>
-          <Box component="form" onSubmit={handleSubmit} noValidate sx={{ mt: 1 }}>
-            <TextField
-              margin="normal"
-              color="secondary"
-              required
+          <Box
+            component="form"
+            onSubmit={handleSubmit}
+            sx={{ width: "100%" }}
+          >
+            <Stack direction={"column"} spacing={2} sx={{ mb: 2, mt: 2 }}>
+              <TextField
+                {...getCommonTextFieldProps(theme, {
+                  label: "Password",
+                  id: 'password',
+                  name: 'password',
+                  type: "password"
+                })}
+              />
+              <TextField
+                {...getCommonTextFieldProps(theme, {
+                  label: "Password",
+                  id: 'password2',
+                  name: 'password2',
+                  type: "password"
+                })}
+              />
+
+              {
+                error && <Alert sx={{ my: 2 }} severity="error">
+                  {error}
+                </Alert>
+              }
+            </Stack>
+
+            <Button
+              type="submit"
+              variant="contained"
               fullWidth
-              name="password"
-              label="Password"
-              type="password"
-              id="password"
-            />
-            <TextField
-              margin="normal"
-              color="secondary"
-              required
-              fullWidth
-              name="password1"
-              label="Password wiederholen"
-              type="password"
-              id="password1"
-            />
-            {errorMessage && <Typography color="error">{errorMessage}</Typography>}
-            <Button type="submit" fullWidth color="secondary" variant="contained" sx={{ mt: 3, mb: 2 }}>
-              Passwort ändern
-            </Button>
-            <Snackbar
-              sx={{ position: 'absolute', right: '16px', bottom: 'calc(16px + env(safe-area-inset-bottom))' }}
-              open={successMessageOpen}
-              onClose={() => setSuccessMessageOpen(false)}
+              disabled={loading}
+              sx={{ my: 2 }}
             >
-              <Alert onClose={() => setSuccessMessageOpen(false)} severity={'success'} sx={{ width: '100%' }}>
-                Passwort erfolgreich geändert!
-              </Alert>
-            </Snackbar>
+              {
+                loading ? <CircularProgress color="inherit" size={25} /> : "Abschicken"
+              }
+            </Button>
           </Box>
         </Box>
       </Container>
-    </Box>
-  );
+    </Layout>)
 };
 export default ResetPasswordScreen;

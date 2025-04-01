@@ -24,7 +24,7 @@
     "@testing-library/jest-dom": "^5.16.5",
     "@testing-library/react": "^14.0.0",
     "@testing-library/user-event": "^14.4.3",
-    "@toolpad/core": "^0.12.0",
+    "@toolpad/core": "^0.13.0",
     "@types/jest": "^29.5.5",
     "@types/node": "^20.8.6",
     "@types/react": "19.0.0",

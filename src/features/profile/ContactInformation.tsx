@@ -24,7 +24,8 @@ export const Content = ({ payload, onClose }: DialogProps<ContactInformationPayl
 
   const notifications = useNotifications();
   const [displayName, setDisplayName] = useState(payload.user.displayName);
-  const [name, setName] = useState(payload.user.name);
+  const [name, setName] = useState(payload.user.name.split(" ")[0] ?? "");
+  const [surname, setSurname] = useState(payload.user.name.split(" ")[1] ?? "");
   const [loadingSave, setLoadingSave] = useState(false);
 
   const updateDisplayName = async () => {
@@ -110,7 +111,7 @@ export const Content = ({ payload, onClose }: DialogProps<ContactInformationPayl
           margin="normal"
         />
       </ListItem>
-      <ListItem key={'fullName'} sx={{ '&.MuiListItem-root': { p: 0 } }}>
+      <ListItem key={'name'} sx={{ '&.MuiListItem-root': { p: 0 } }}>
         <ListItemAvatar />
         <TextField
           fullWidth
@@ -118,7 +119,19 @@ export const Content = ({ payload, onClose }: DialogProps<ContactInformationPayl
           variant="outlined"
           value={name}
           onChange={(e) => setName(e.target.value)}
-          label="Voller Name"
+          label="Vorname"
+          margin="normal"
+        />
+      </ListItem>
+      <ListItem key={'surname'} sx={{ '&.MuiListItem-root': { p: 0 } }}>
+        <ListItemAvatar />
+        <TextField
+          fullWidth
+          size="small"
+          variant="outlined"
+          value={surname}
+          onChange={(e) => setSurname(e.target.value)}
+          label="Nachame"
           margin="normal"
         />
       </ListItem>

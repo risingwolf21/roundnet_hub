@@ -75,7 +75,7 @@ export const NotificationsScreen = ({ user, t }: NotificationsScreenProps) => {
   return (
     <Dialog open={true} fullScreen>
       <Box>
-        <AppBar position="fixed" sx={{ pt: 'env(safe-area-inset-top)' }}>
+        <AppBar position="sticky" sx={{ pt: 'env(safe-area-inset-top)' }}>
           <Toolbar>
             <IconButton edge="start" color="inherit" onClick={() => navigate(-1)} aria-label="close">
               <ArrowBack />

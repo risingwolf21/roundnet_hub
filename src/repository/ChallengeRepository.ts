@@ -1,17 +1,21 @@
 import { supabase } from '../components/services/supabase/supabaseClient';
-import { ChallengeStatWithUser, FullChallenge } from '../types/supabaseTypes';
+import { ChallengeStatWithUser, FullChallenge, GroupWithUsers } from '../types/supabaseTypes';
 import { PostgrestSingleResponse } from '@supabase/supabase-js';
-import { formatDateToDatabase } from '../utils';
+import { dayjsToDb, formatDateToDatabase } from '../utils';
+import { Dayjs } from 'dayjs';
+
+export const fetchChallengeWithGroup = () => supabase
+  .from('challenge')
+  .select('*, fullGroup: group(*, users: group_user_mapping ( user ( userId, email, displayName, avatarUrl ) ))');
+
 
 export const ChallengeRepository = {
-  async fetchChallenges(): Promise<PostgrestSingleResponse<Challenge[]>> {
-    return supabase
-      .from('challenge')
-      .select('*')
+  async fetchChallenges(): Promise<PostgrestSingleResponse<ChallengeWithFullGroup[]>> {
+    return fetchChallengeWithGroup()
       .or(`end_date.is.null,end_date.gt.'${formatDateToDatabase(new Date())}'`)
       .order('name')
       .throwOnError()
-      .returns<Challenge[]>();
+      .returns<ChallengeWithFullGroup[]>();
   },
 
   async fetchArchivedChallenges(): Promise<PostgrestSingleResponse<Challenge[]>> {
@@ -25,10 +29,10 @@ export const ChallengeRepository = {
       .returns<Challenge[]>();
   },
 
-  async fetchChallengeStats(id: string): Promise<PostgrestSingleResponse<FullChallenge>> {
+  async fetchChallengeStats(id: number): Promise<PostgrestSingleResponse<FullChallenge>> {
     return supabase
       .from('challenge')
-      .select('*, stats: challenge_stats (*, user: user(*))')
+      .select('*, group: group(*, users: group_user_mapping ( user ( userId, email, displayName ) )), stats: challenge_stats (*, user: user(*)), images: challenge_images(*, user: user(*))')
       .eq('id', id)
       .throwOnError()
       .returns<FullChallenge>()
@@ -49,9 +53,9 @@ export const ChallengeRepository = {
       .single();
   },
 
-  async increasePointForUser(userId: string, challenge: number) {
+  async increasePointForUser(userId: string, challenge: number, created_at: Dayjs) {
     return supabase
-      .rpc('increase_challenge_stats_count', { user_id: userId, amount: 1, challenge_id: challenge })
+      .rpc('increase_challenge_stats_count', { user_id: userId, amount: 1, challenge_id: challenge, to_create_at: dayjsToDb(created_at) })
       .throwOnError();
-  },
+  }
 };

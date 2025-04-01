@@ -186,24 +186,6 @@ const SignUpScreen = () => {
           }}>
             Register at<br></br>{BRANDING.title}
           </Typography>
-
-          <Button
-            fullWidth
-            size='large'
-            type="submit"
-            disableElevation
-            color='inherit'
-            variant="outlined"
-            onClick={() => alert('Sign up with Google')}
-            startIcon={<GoogleIcon />}
-            sx={{ mt: theme.spacing(1) }}
-          >
-            Registrieren mit Google
-          </Button>
-
-          <Divider flexItem sx={{ mt: 2, mx: 0, mb: 2 }}>
-            oder
-          </Divider>
           <Box
             component="form"
             onSubmit={handleSubmit}

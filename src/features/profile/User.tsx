@@ -5,7 +5,8 @@ import {
   CheckCircle,
   Group,
   Logout,
-  NotificationsRounded
+  NotificationsRounded,
+  Password
 } from '@mui/icons-material';
 import {
   Card,
@@ -31,6 +32,7 @@ import { GroupsDialog } from './GroupsDialog';
 import { isNotificationSupported, NotificationsDialog } from './NotificationsDialog';
 import { PlayerzoneProfileDialog } from './PlayerzoneProfile';
 import { ProfileImage } from './ProfileImage';
+import { useNavigate } from 'react-router';
 
 type UserScreenProps = {
   user: UserWithRolesAndPermissions;
@@ -48,6 +50,7 @@ const UserScreenProvider = () => {
 
 const UserScreen = ({ user, dispatch, provider_token }: UserScreenProps) => {
   const dialogs = useDialogs();
+  const navigate = useNavigate();
 
   return (
     <Layout appBarConfig={{ title: 'Profil', showProfile: false }}>
@@ -64,6 +67,19 @@ const UserScreen = ({ user, dispatch, provider_token }: UserScreenProps) => {
                 <AccountCircle />
               </ListItemAvatar>
               <ListItemText primary="Profil und Account" />
+            </ListItem>
+          </CardActionArea>
+        </Card>
+        <Card sx={{ borderRadius: 2, py: 0, px: 0, mt: 1 }}>
+          <CardActionArea sx={{ px: 1 }}>
+            <ListItem
+              onClick={() => {
+                navigate("/reset-password")
+              }}>
+              <ListItemAvatar sx={{ flexDirection: 'row', display: 'flex', alignItems: 'center' }}>
+                <Password />
+              </ListItemAvatar>
+              <ListItemText primary="Passwort ändern" />
             </ListItem>
           </CardActionArea>
         </Card>

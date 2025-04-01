@@ -15,6 +15,7 @@ import { createReduxEnhancer } from '@sentry/react';
 import challengeSlice from '../features/challenges/slices/challengeSlice';
 import gamesSlice from '../features/games/slices/gamesSlice';
 
+
 const sentryReduxEnhancer = createReduxEnhancer({
   // Optionally pass options listed below
 });

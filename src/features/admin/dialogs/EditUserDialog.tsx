@@ -107,7 +107,7 @@ const EditUserDialog = ({ user, open, handleClose, onUserEditFinished, deleteUse
   return (
     <Dialog fullScreen open={open} onClose={handleClose} TransitionComponent={SlideUpTransition}>
       <Box component="form" onSubmit={handleSubmit} noValidate>
-        <AppBar position="fixed" sx={{ pt: 'env(safe-area-inset-top)' }}>
+        <AppBar position="sticky" sx={{ pt: 'env(safe-area-inset-top)' }}>
           <Toolbar>
             <IconButton edge="start" color="inherit" onClick={handleClose} aria-label="close">
               <Close />
@@ -121,7 +121,6 @@ const EditUserDialog = ({ user, open, handleClose, onUserEditFinished, deleteUse
           </Toolbar>
         </AppBar>
         <Box>
-          <Toolbar />
           <List sx={{ pb: 10 }}>
             <ListItem key={'displayName'} sx={{ pt: 0, pb: 0 }}>
               <ListItemAvatar>
@@ -173,7 +172,10 @@ const EditUserDialog = ({ user, open, handleClose, onUserEditFinished, deleteUse
                         password: password,
                       })
                       .then((result) => {
-                        setAlertInfo({ message: 'Passwort erfolgreich geändert', severity: 'success' });
+                        if (result.error)
+                          setAlertInfo({ message: result.error.message, severity: "error" })
+                        else
+                          setAlertInfo({ message: 'Passwort erfolgreich geändert', severity: 'success' });
                       })
                       .catch((error) => {
                         setAlertInfo({ message: error.message, severity: 'error' });

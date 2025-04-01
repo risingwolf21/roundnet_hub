@@ -46,7 +46,7 @@ export const AppRolesDialog = ({ open, handleClose, handleSubmit, roles }: AppRo
   return (
     <Dialog fullScreen open={open} onClose={handleClose} TransitionComponent={SlideUpTransition}>
       <Box component="form" noValidate>
-        <AppBar position="fixed" sx={{ pt: 'env(safe-area-inset-top)' }}>
+        <AppBar position="sticky" sx={{ pt: 'env(safe-area-inset-top)' }}>
           <Toolbar>
             <IconButton edge="start" color="inherit" onClick={handleClose} aria-label="close">
               <CloseIcon />
@@ -60,7 +60,6 @@ export const AppRolesDialog = ({ open, handleClose, handleSubmit, roles }: AppRo
           </Toolbar>
         </AppBar>
         <Box>
-          <Toolbar />
           <Table>
             <TableBody>
               {allRoles.map((x) => (
