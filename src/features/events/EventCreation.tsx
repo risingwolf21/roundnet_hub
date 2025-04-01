@@ -2,7 +2,6 @@ import { AccessTime, Article, FiberManualRecord, Map } from '@mui/icons-material
 import EventIcon from '@mui/icons-material/Event';
 import EventRepeatIcon from '@mui/icons-material/EventRepeat';
 import {
-  Alert,
   Box,
   Button,
   Checkbox,
@@ -23,24 +22,26 @@ import {
   Radio,
   RadioGroup,
   Select,
-  Snackbar,
   TextField,
-  Typography,
+  Typography
 } from '@mui/material';
 import { DatePicker, DateTimePicker } from '@mui/x-date-pickers';
 import { TimePicker } from '@mui/x-date-pickers/TimePicker';
+import { useNotifications } from '@toolpad/core/useNotifications';
 import { format, isAfter, set } from 'date-fns';
 import _ from 'lodash';
-import React, { FormEvent, useEffect, useRef, useState } from 'react';
+import React, { FormEvent, useEffect, useMemo, useRef, useState } from 'react';
 import { MapContainer, Marker, TileLayer, useMap } from 'react-leaflet';
 import { useNavigate } from 'react-router';
 import Layout from 'src/components/Layout';
+import { useAppDispatch } from 'src/redux/store';
 import { dayjsFromDb, formatDateToDatabase } from 'src/utils';
 import { NumberInput } from '../../components/mui/NumberInput';
 import { SupabaseEventRepository } from '../../repository/EventRepository';
-import { Enums, TablesInsert } from '../../types/supabase-generated.types';
+import { Enums, TablesInsert, TablesUpdate } from '../../types/supabase-generated.types';
 import SearchPlacesDialog from './dialogs/SearchPlacesDialog';
 import { SelectGroupDialog } from './dialogs/SelectGroupDialog';
+import { onEventsUpdate } from './slices/eventsSlice';
 import { CreateEventProps, PlaceType } from './types';
 
 const emptyEvent = {
@@ -53,22 +54,25 @@ const emptyEvent = {
   maxAttendees: null,
   required_item: null,
   answerDeadline: null,
+  place: JSON.stringify({
+    lat: 49.0226481,
+    lon: 8.416547971872856,
+    name: 'MTV Karlsruhe, Kanalweg 1, 76131 Karlsruhe',
+  })
 } as FullEvent;
 
 const CreateEvent = ({ t, eventToEdit, option }: CreateEventProps) => {
   const navigate = useNavigate();
+  const dispatch = useAppDispatch();
+  const notifications = useNotifications();
 
   const [editedEvent, setEditedEvent] = useState<FullEvent>(eventToEdit ?? emptyEvent);
   const [loading, setLoading] = useState(false);
   const [dialogOpen, setDialogOpen] = useState<'group' | 'stopRepeat' | 'repeat' | 'places' | null>(null);
 
-  const [errorSnackbar, setErrorSnackbar] = useState({ open: false, message: '' });
-  const [selectedPlace, setSelectedPlace] = useState<PlaceType>({
-    lat: 49.0226481,
-    lon: 8.416547971872856,
-    name: 'MTV Karlsruhe',
-  });
   const ref = useRef<HTMLFormElement>(null);
+
+  const place = useMemo(() => JSON.parse(editedEvent.place ?? "{}"), [editedEvent])
 
   useEffect(() => {
     if (eventToEdit) {
@@ -80,21 +84,14 @@ const CreateEvent = ({ t, eventToEdit, option }: CreateEventProps) => {
     e.preventDefault();
     try {
       setLoading(true);
-      const data = new FormData(e.currentTarget);
 
       if (!editedEvent.meetingDateTime)
         setEditedEvent({ ...editedEvent, meetingDateTime: editedEvent.startingDateTime });
 
-      let eventTitle = data.get('eventTitle')?.toString();
-      let eventDescription = data.get('eventDescription')?.toString();
-      let event = {
-        ..._.omit(editedEvent, ['fullGroup', 'attendance', 'comments', 'userAttendance', 'attendanceUpdating']),
-        title: eventTitle,
-        group: editedEvent.fullGroup.id,
-        startingDateTime: editedEvent.startingDateTime,
-        description: eventDescription,
-        place: JSON.stringify(selectedPlace),
-      } as TablesInsert<'events'>;
+      let event = _.omit(editedEvent, ['fullGroup', 'attendance', 'comments', 'userAttendance', 'attendanceUpdating']) as TablesInsert<"events">;
+
+      const changes = _.differenceWith(_.toPairs(event), _.toPairs(_.pick(eventToEdit ?? {}, Object.keys(event))), _.isEqual);
+      const eventChanges = _.fromPairs(changes) as TablesUpdate<"events">
 
       if (!event.startingDateTime) throw new Error(t('events.creation.startDateCannotBeNull'));
 
@@ -112,21 +109,24 @@ const CreateEvent = ({ t, eventToEdit, option }: CreateEventProps) => {
           throw new Error(t('events.creation.meetingTimeBeforeStartTime'));
 
       if (option === 'InsertEvent') {
-        // create new event as there is no option
-        const { error } = await SupabaseEventRepository.insertEvent(event);
+        try {
+          const { error } = await SupabaseEventRepository.insertEvent(eventChanges as TablesInsert<"events">);
 
-        if (error) throw error;
+          if (error) throw error;
+        } catch {
+          throw new Error("Event konnte nicht erstellt werden")
+        }
       } else if (option === 'UpdateSingle') {
-        const { error } = await SupabaseEventRepository.updateEvent(event.id ?? '', event);
+        const { error } = await SupabaseEventRepository.updateEvent(event.id ?? '', eventChanges);
 
         if (error) throw error;
       } else if (option === 'UpdateRecurrence') {
-        const { error } = await SupabaseEventRepository.updateEventAndAllRecurrences(
-          event,
-          eventToEdit?.startingDateTime
-        );
-
-        if (error) throw error;
+        const result = await SupabaseEventRepository.updateEventAndAllRecurrences(
+          eventChanges,
+          editedEvent.key,
+          editedEvent.startingDateTime
+        )
+        dispatch(onEventsUpdate(result.filter(x => x.data !== null).map(x => x.data)))
       } else {
         throw Error(
           'There was no option provided wether this is a new event, to update only this or every recurring event. Please try again!'
@@ -134,10 +134,9 @@ const CreateEvent = ({ t, eventToEdit, option }: CreateEventProps) => {
       }
       setLoading(false);
       navigate('/training/list', { replace: true });
-      setErrorSnackbar({ open: false, message: '' });
     } catch (error: unknown) {
       const message = error instanceof Error ? (error as Error).message : 'Unknown error.';
-      setErrorSnackbar({ open: true, message });
+      notifications.show(message, { severity: "error" })
     }
   };
 
@@ -172,11 +171,10 @@ const CreateEvent = ({ t, eventToEdit, option }: CreateEventProps) => {
           <ListItem sx={{ pt: 0, pb: 0 }} key={'title'}>
             <TextField
               fullWidth
-              defaultValue={editedEvent.title}
-              id="eventTitle"
-              name="eventTitle"
               variant="standard"
               label="Event-Titel"
+              value={editedEvent.title}
+              onChange={e => setEditedEvent({ ...editedEvent, title: e.target.value })}
               InputProps={{
                 startAdornment: (
                   <InputAdornment position="start">
@@ -191,9 +189,8 @@ const CreateEvent = ({ t, eventToEdit, option }: CreateEventProps) => {
             <TextField
               fullWidth
               multiline
-              defaultValue={editedEvent.description}
-              id="eventDescription"
-              name="eventDescription"
+              value={editedEvent.description}
+              onChange={e => setEditedEvent({ ...editedEvent, description: e.target.value })}
               variant="standard"
               label="Beschreibung"
               InputProps={{
@@ -263,7 +260,7 @@ const CreateEvent = ({ t, eventToEdit, option }: CreateEventProps) => {
                       hours: val?.hour(),
                       minutes: val?.minute(),
                       seconds: 0,
-                      milliseconds: 0,
+                      milliseconds: 0
                     })
                   ),
                 })
@@ -347,7 +344,7 @@ const CreateEvent = ({ t, eventToEdit, option }: CreateEventProps) => {
               <Map />
             </ListItemAvatar>
 
-            <ListItemText primary={selectedPlace?.name ?? 'Nothing selected'} />
+            <ListItemText primary={place?.name ?? 'Nothing selected'} />
           </ListItem>
           <ListItem
             sx={{ '&.MuiListItem-root': { pb: 1, pt: 0 } }}
@@ -358,7 +355,7 @@ const CreateEvent = ({ t, eventToEdit, option }: CreateEventProps) => {
             <ListItemText>
               <Box sx={{ width: '100%', height: '150px' }}>
                 <MapContainer
-                  center={[selectedPlace.lat, selectedPlace.lon]}
+                  center={[place.lat, place.lon]}
                   zoom={15}
                   dragging={false}
                   doubleClickZoom={false}
@@ -368,8 +365,8 @@ const CreateEvent = ({ t, eventToEdit, option }: CreateEventProps) => {
                   style={{ width: '100%', height: '150px', borderRadius: '16px', zIndex: -1 }}
                 >
                   <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-                  <SetViewOnClick place={selectedPlace} />
-                  <Marker position={[selectedPlace.lat, selectedPlace.lon]} />
+                  <SetViewOnClick place={place} />
+                  <Marker position={[place.lat, place.lon]} />
                 </MapContainer>
               </Box>
             </ListItemText>
@@ -403,11 +400,11 @@ const CreateEvent = ({ t, eventToEdit, option }: CreateEventProps) => {
                     answerDeadline: editedEvent.answerDeadline
                       ? null
                       : formatDateToDatabase(
-                          set(Date.now(), {
-                            seconds: 0,
-                            milliseconds: 0,
-                          })
-                        ),
+                        set(Date.now(), {
+                          seconds: 0,
+                          milliseconds: 0,
+                        })
+                      ),
                   })
                 }
               />
@@ -490,6 +487,7 @@ const CreateEvent = ({ t, eventToEdit, option }: CreateEventProps) => {
                 else setEditedEvent({ ...editedEvent, required_item: e.target.value as Enums<'ItemType'> });
               }}
             >
+              <MenuItem value={'goethe'}>Goethe Schlüssel</MenuItem>
               <MenuItem value={'mtvStorage'}>MTV Kellerschlüssel</MenuItem>
               <MenuItem value={'mtvGym'}>MTV Gymschlüssel</MenuItem>
               <MenuItem value={'mtvGymPalazzo'}>MTV Gym/Palazzoschlüssel</MenuItem>
@@ -537,11 +535,11 @@ const CreateEvent = ({ t, eventToEdit, option }: CreateEventProps) => {
                     recurrenceEnd: editedEvent.recurrenceEnd
                       ? null
                       : formatDateToDatabase(
-                          set(Date.now(), {
-                            seconds: 0,
-                            milliseconds: 0,
-                          })
-                        ),
+                        set(Date.now(), {
+                          seconds: 0,
+                          milliseconds: 0,
+                        })
+                      ),
                   })
                 }
               />
@@ -592,20 +590,17 @@ const CreateEvent = ({ t, eventToEdit, option }: CreateEventProps) => {
         open={dialogOpen === 'places'}
         handleClose={() => setDialogOpen(null)}
         placeSelected={(place) => {
-          setSelectedPlace({
-            name: place.name,
-            lat: place.lat,
-            lon: place.lon,
+          setEditedEvent({
+            ...editedEvent,
+            place: JSON.stringify({
+              name: place.name,
+              lat: place.lat,
+              lon: place.lon
+            })
           });
           setDialogOpen(null);
         }}
       />
-
-      <Snackbar sx={{ position: 'fixed', right: '16px' }} open={errorSnackbar.open} autoHideDuration={1500}>
-        <Alert severity={'error'} sx={{ width: '100%' }}>
-          {errorSnackbar.message}
-        </Alert>
-      </Snackbar>
     </Layout>
   );
 };

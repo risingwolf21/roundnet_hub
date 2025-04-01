@@ -73,29 +73,43 @@ const UserScreen = () => {
             {currentUser?.displayName}
           </Typography>
         </Container>
-        {currentUser?.player_data?.rg_id && currentUser.player_data?.rg_link && (
-          <ListItem
-            key={'rg_id'}
-            disableGutters
-            sx={{
-              '&.MuiListItem-root': { p: 0 },
-            }}
-            secondaryAction={
-              <IconButton
-                onClick={() =>
-                  window.open(currentUser.player_data?.rg_link ?? undefined, '_blank', 'noopener,noreferrer')
-                }
-              >
-                <Launch />
-              </IconButton>
-            }
-          >
-            <ListItemAvatar>
-              <img src={pzLogo} alt={'pz logo'} width="25" height="25" />
-            </ListItemAvatar>
-            <ListItemText primary={currentUser.player_data.rg_id} secondary={'Roundnet Germany ID'} />
-          </ListItem>
-        )}
+        {
+          currentUser?.player_data?.rg_id && currentUser.player_data?.rg_link && <>
+            <ListItem
+              key={'rg_id'}
+              disableGutters
+              sx={{
+                '&.MuiListItem-root': { p: 0 },
+              }}
+              secondaryAction={
+                <IconButton
+                  onClick={() =>
+                    window.open(currentUser.player_data?.rg_link ?? undefined, '_blank', 'noopener,noreferrer')
+                  }
+                >
+                  <Launch />
+                </IconButton>
+              }
+            >
+              <ListItemAvatar>
+                <img src={pzLogo} alt={'pz logo'} width="25" height="25" />
+              </ListItemAvatar>
+              <ListItemText primary={currentUser.player_data.rg_id} secondary={'Roundnet Germany ID'} />
+            </ListItem>
+            <ListItem
+              key={'rgx'}
+              disableGutters
+              sx={{
+                '&.MuiListItem-root': { p: 0 },
+              }}
+            >
+              <ListItemAvatar>
+                <img src={pzLogo} alt={'pz logo'} width="25" height="25" />
+              </ListItemAvatar>
+              <ListItemText primary={currentUser.player_data.rg_index} secondary={'Roundnet Germany Index'} />
+            </ListItem>
+          </>
+        }
         <List
           key={'groups'}
           subheader={

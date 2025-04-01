@@ -1,4 +1,5 @@
-import { Alert, alpha, CircularProgress, Stack, SxProps, Theme, useTheme } from '@mui/material';
+import { ArrowBack } from '@mui/icons-material';
+import { Alert, alpha, AppBar, CircularProgress, IconButton, Stack, SxProps, Theme, Toolbar, useTheme } from '@mui/material';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Container from '@mui/material/Container';
@@ -7,11 +8,10 @@ import Typography from '@mui/material/Typography';
 import * as React from 'react';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
+import Layout from 'src/components/Layout';
 import { BRANDING } from 'src/utils';
 import { supabase } from '../../components/services/supabase/supabaseClient';
 import { HOMEPAGE } from '../../constants';
-import CustomAppBar from 'src/components/AppBar';
-import Layout from 'src/components/Layout';
 
 const mergeSlotSx = (defaultSx: SxProps<Theme>, slotProps?: { sx?: SxProps<Theme> }) => {
   if (Array.isArray(slotProps?.sx)) {
@@ -117,24 +117,21 @@ const ResetPasswordScreen = () => {
     }
   };
 
-  return <Layout>
-    <Box
-      sx={(theme) => ({
-        height: `calc(100vh - ${theme.mixins.toolbar.height ?? 64}px)`,
-        display: 'flex',
-        flexDirection: 'column',
-        overflow: "hidden",
-        overflowY: "hidden",
-        [theme.breakpoints.up('sm')]: {
-          justifyContent: 'center',
-          alignItems: 'center',
-        },
-        [theme.breakpoints.down('xs')]: {
-          justifyContent: 'start',
-          alignItems: 'start',
-        },
-      })}
-    >
+  return (
+    <Layout>
+      <AppBar position="sticky" sx={{ zIndex: (theme) => theme.zIndex.drawer + 1, background: 'primary' }}>
+        <Toolbar
+          sx={{
+            width: 'calc(100% - 48px)',
+            maxWidth: 1400,
+            mx: 'auto',
+          }}
+        >
+          <IconButton color="inherit" onClick={() => navigate(-1)} edge="start" sx={{ mr: 2 }}>
+            <ArrowBack />
+          </IconButton>
+        </Toolbar>
+      </AppBar>
       <Container component="main" maxWidth="xs">
         <Box
           sx={(theme) => ({
@@ -212,7 +209,6 @@ const ResetPasswordScreen = () => {
           </Box>
         </Box>
       </Container>
-    </Box>
-  </Layout>
+    </Layout>)
 };
 export default ResetPasswordScreen;

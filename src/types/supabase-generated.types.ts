@@ -230,6 +230,68 @@ export type Database = {
       [_ in never]: never
     }
   }
+  graphql_public: {
+    Tables: {
+      [_ in never]: never
+    }
+    Views: {
+      [_ in never]: never
+    }
+    Functions: {
+      graphql: {
+        Args: {
+          operationName?: string
+          query?: string
+          variables?: Json
+          extensions?: Json
+        }
+        Returns: Json
+      }
+    }
+    Enums: {
+      [_ in never]: never
+    }
+    CompositeTypes: {
+      [_ in never]: never
+    }
+  }
+  logs: {
+    Tables: {
+      player_info: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          type: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          type: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          type?: string
+        }
+        Relationships: []
+      }
+    }
+    Views: {
+      [_ in never]: never
+    }
+    Functions: {
+      [_ in never]: never
+    }
+    Enums: {
+      [_ in never]: never
+    }
+    CompositeTypes: {
+      [_ in never]: never
+    }
+  }
   permissions: {
     Tables: {
       app_permissions: {
@@ -621,6 +683,7 @@ export type Database = {
           description: string
           id: string
           name: string
+          public: boolean
         }
         Insert: {
           color?: string
@@ -628,6 +691,7 @@ export type Database = {
           description?: string
           id?: string
           name?: string
+          public?: boolean
         }
         Update: {
           color?: string
@@ -635,6 +699,7 @@ export type Database = {
           description?: string
           id?: string
           name?: string
+          public?: boolean
         }
         Relationships: []
       }
@@ -706,14 +771,17 @@ export type Database = {
       group_user_mapping: {
         Row: {
           group: string
+          role: Database["public"]["Enums"]["UserRole"]
           user: string
         }
         Insert: {
           group: string
+          role?: Database["public"]["Enums"]["UserRole"]
           user: string
         }
         Update: {
           group?: string
+          role?: Database["public"]["Enums"]["UserRole"]
           user?: string
         }
         Relationships: [

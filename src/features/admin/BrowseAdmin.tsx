@@ -54,7 +54,7 @@ const entries = [
   },
   {
     translationKey: 'manageGroups',
-    navigateTo: '/trainer/groups',
+    navigateTo: '/admin/groups',
     icon: <GroupOutlined />,
     avatarColor: '#88AEBF',
     action: 'update',

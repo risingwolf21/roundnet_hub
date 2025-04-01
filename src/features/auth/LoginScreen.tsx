@@ -5,9 +5,9 @@ import { AuthResponse, SignInPage, type AuthProvider } from '@toolpad/core/SignI
 import { useNotifications } from '@toolpad/core/useNotifications';
 import React, { useState } from 'react';
 import { Navigate, useNavigate } from 'react-router';
+import { HOMEPAGE } from 'src/constants';
 import { supabase } from '../../components/services/supabase/supabaseClient';
 import { useApplication } from './AuthContext';
-import { HOMEPAGE } from 'src/constants';
 
 
 const LoginScreen = () => {

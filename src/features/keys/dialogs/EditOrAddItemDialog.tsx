@@ -57,8 +57,8 @@ export const EditOrAddItemDialog = ({ open, handleClose, itemToEdit }: EditOrAdd
       setErrorSnackbar({ message: 'Der Schlüsselname ist zu kurz!', open: true });
       return;
     }
-    if(!currentItem.type) {
-      setErrorSnackbar({ message: 'Der Schlüsseltyp muss gesetzt sein', open: true });
+    if (!currentItem.type) {
+      setErrorSnackbar({ message: 'Der Schlüssel braucht einen Typ', open: true });
       return;
     }
     let result;

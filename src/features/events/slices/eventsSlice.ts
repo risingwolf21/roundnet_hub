@@ -37,6 +37,11 @@ const eventsSlice = createSlice({
     updateFetchMode: (state, action: PayloadAction<"upcoming" | "past">) => {
       state.fetchMode = action.payload
     },
+    onEventsUpdate: (state, action: PayloadAction<TablesUpdate<'events'>[]>) => {
+      action.payload.forEach(element => {
+        onEventUpdate(element)
+      });
+    },
     onEventUpdate: (state, action: PayloadAction<TablesUpdate<'events'>>) => {
       let eventSlice = eventsAdapter.getSelectors().selectById(state, action.payload.id ?? -1);
       if (!eventSlice) return;
@@ -204,6 +209,6 @@ export const fetchRecurringEventsAsync = createAsyncThunk('fetchRecurringEvents'
   return response.data;
 });
 
-export const { selectEvent, editEvent, onEventErrorRead, onEventDelete, onEventUpdate, updateFetchMode } = eventsSlice.actions;
+export const { selectEvent, editEvent, onEventErrorRead, onEventDelete, onEventUpdate, onEventsUpdate, updateFetchMode } = eventsSlice.actions;
 
 export default eventsSlice.reducer;

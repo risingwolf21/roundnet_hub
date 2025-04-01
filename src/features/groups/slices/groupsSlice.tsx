@@ -1,9 +1,9 @@
-import {createAsyncThunk, createEntityAdapter, createSlice} from '@reduxjs/toolkit';
-import {GroupWithUsers} from '../../../types/supabaseTypes';
-import {SupabaseClient} from '@supabase/supabase-js';
-import {AdminUsersRepository} from 'src/repository/AdminUsersRepository';
-import {RootState} from '../../../redux/store';
-import {captureException} from '@sentry/react';
+import { createAsyncThunk, createEntityAdapter, createSlice, PayloadAction, Update } from '@reduxjs/toolkit';
+import { GroupWithUsers } from '../../../types/supabaseTypes';
+import { SupabaseClient } from '@supabase/supabase-js';
+import { AdminUsersRepository } from 'src/repository/AdminUsersRepository';
+import { RootState } from '../../../redux/store';
+import { captureException } from '@sentry/react';
 
 const groupsAdapter = createEntityAdapter({
   selectId: (group: GroupWithUsers) => group.id,
@@ -17,7 +17,21 @@ const groupsSlice = createSlice({
     loading: false,
     error: null as string | null,
   }),
-  reducers: {},
+  reducers: {
+    onEventMappingUserAdded(state, action: PayloadAction<{ user: User, group: string }>) {
+      let groupsSlice = groupsAdapter.getSelectors().selectById(state, action.payload.group);
+      if (!groupsSlice) return;
+
+      let changes = {
+        id: groupsSlice.id,
+        changes: {
+          users: [...groupsSlice.users, action.payload.user]
+        }
+      } as Update<GroupWithUsers>;
+
+      groupsAdapter.updateOne(state, changes);
+    }
+  },
   extraReducers(builder) {
     builder
       .addCase(fetchGroupsAsync.pending, (state, action) => {
@@ -83,5 +97,7 @@ export const fetchSingleGroupAsync = createAsyncThunk(
       });
   }
 );
+
+export const { onEventMappingUserAdded } = groupsSlice.actions;
 
 export default groupsSlice.reducer;

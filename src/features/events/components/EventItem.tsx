@@ -7,20 +7,18 @@ import {
   ThumbUpOffAlt,
 } from '@mui/icons-material';
 import {
-  alpha,
   Box,
   CircularProgress,
   IconButton,
   ListItem,
-  ListItemAvatar,
-  ListItemText,
-  Typography,
+  ListItemText
 } from '@mui/material';
 import { toDate } from 'date-fns';
 import { TFunction } from 'i18next';
 import React from 'react';
 import { SliceEvent } from 'src/features/events/slices/eventsSlice';
 import { answerDeadlineExpired, eventInThePast } from 'src/types/supabaseTypes';
+import { EventEmitter } from 'stream';
 
 export type EventItemProps = {
   attendanceUpdating: boolean;
@@ -88,16 +86,6 @@ export const EventItem = ({ event, onClick, attendEvent, declineEvent, attendanc
         )
       }
     >
-      <ListItemAvatar>
-        <Box sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'left' }}>
-          <Typography fontSize={10} textAlign={'center'}>
-            {t('events.startDateShortMonth', { date: toDate(event.startingDateTime) }).toUpperCase()}
-          </Typography>
-          <Typography variant="h6" fontWeight={'bold'} textAlign={'center'}>
-            {t('events.startDateDay', { date: toDate(event.startingDateTime) }).toUpperCase()}
-          </Typography>
-        </Box>
-      </ListItemAvatar>
       <ListItemText
         primary={event.title}
         slotProps={{
@@ -113,7 +101,9 @@ export const EventItem = ({ event, onClick, attendEvent, declineEvent, attendanc
           },
         }}
         secondary={
-          event.isCancelled ? 'Event abgesagt' : t('events.startTime', { date: toDate(event.startingDateTime) })
+          event.isCancelled ? 'Event abgesagt' : [
+            t('events.secondaryTextStart', { start: toDate(event.startingDateTime) }),
+            event.endDateTime && t('events.secondaryTextWithEnd', { end: toDate(event.endDateTime) })].join(" ")
         }
       />
     </ListItem>

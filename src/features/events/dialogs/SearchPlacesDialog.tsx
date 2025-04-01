@@ -35,7 +35,7 @@ const SearchPlacesDialog = ({ open, handleClose, placeSelected }: SearchPlacesDi
     getUserLocation();
   }, []);
 
-  const provider = new OpenStreetMapProvider({ params: {} });
+  const provider = new OpenStreetMapProvider({ params: { "addressdetails": 1 } });
 
   const search = () => {
     setLoading(true);
@@ -131,13 +131,17 @@ const SearchPlacesDialog = ({ open, handleClose, placeSelected }: SearchPlacesDi
               <ListItem
                 divider
                 key={index}
-                onClick={() =>
+                onClick={() => {
+                  const address = result.raw.address;
+                  const name = address
+                    ? `${result.raw.name}, ${address.road} ${address.house_number}, ${address.postcode} ${address.city}`
+                    : result.raw.display_name;
                   placeSelected({
-                    name: result.raw.display_name,
+                    name,
                     lat: toNumber(result.raw.lat),
                     lon: toNumber(result.raw.lon),
                   } as PlaceType)
-                }
+                }}
               >
                 <ListItemAvatar sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', pr: 2 }}>
                   <Avatar sx={{ width: 30, height: 30, backgroundColor: 'rgba(189, 189, 189, 0.5)' }}>

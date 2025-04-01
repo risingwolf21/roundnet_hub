@@ -57,8 +57,12 @@
       "commentTimeAgo": "{{time}} ago"
     },
     "startDateShortMonth": "{{date, MMM}}",
+    "startDateDayString": "{{date, EEE}}",
     "startDateDay": "{{date, d}}",
-    "startTime": "{{date, cccc}} um {{date, HH:mm}}"
+    "startTime": "{{date, cccc}} um {{date, HH:mm}}",
+    "secondaryTextStart": "{{start, HH:mm}}",
+    "secondaryTextWithEnd": "- {{end, HH:mm}}",
+    "secondaryTextWithPlace": " at {{place}}"
   },
   "feature_not_available": "This feature is not ready yet. Try again later!",
   "handover_key": "Hand over",
@@ -70,7 +74,8 @@
     "challenges": "Challenges",
     "drinks": "Drinks",
     "notifications": "Notifications",
-    "training": "Training"
+    "training": "Training",
+    "groups": "Groups"
   },
   "notificationTags": {
     "eventComments": "Event comments",

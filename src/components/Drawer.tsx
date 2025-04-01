@@ -3,6 +3,7 @@ import {
   Euro,
   Group,
   GroupOutlined,
+  Groups,
   History,
   Home,
   InfoOutlined,
@@ -253,6 +254,17 @@ const DrawerContent = ({
             />
           </DrawerItem>
         )}
+        <DrawerItem key="groups" selected={tab === 'groups/list'} onClick={() => handleChange('groups/list')}>
+          <ListItemAvatar>
+            <ListItemIcon>
+              <Groups />
+            </ListItemIcon>
+          </ListItemAvatar>
+          <ListItemText
+            primaryTypographyProps={{ fontWeight: 'bold', fontSize: '0.9rem' }}
+            primary={t('navigation.groups')}
+          />
+        </DrawerItem>
         {can('select', 'games') && (
           <DrawerItem key="matches" selected={tab === 'matches'} onClick={() => handleChange('matches')}>
             <ListItemAvatar>
@@ -416,8 +428,8 @@ const DrawerContent = ({
             {can('update', 'group') && (
               <DrawerItem
                 key="updateGroup"
-                selected={tab === 'trainer/groups'}
-                onClick={() => handleChange('trainer/groups')}
+                selected={tab === 'admin/groups'}
+                onClick={() => handleChange('admin/groups')}
               >
                 <ListItemAvatar>
                   <ListItemIcon>

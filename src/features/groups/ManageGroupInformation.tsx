@@ -15,7 +15,7 @@ import { Tables } from '../../types/supabase-generated.types';
 import { AdminUsersRepository } from '../../repository/AdminUsersRepository';
 import Layout from '../../components/Layout';
 
-const GroupInformationProvider = () => {
+const ManageGroupInformationProvider = () => {
   const { id } = useParams();
   const dispatch = useAppDispatch();
   const group = useSelector((state: RootState) => groupsSelector.selectById(state, id ?? ''));
@@ -34,7 +34,7 @@ const GroupInformationProvider = () => {
       />
     );
 
-  return <GroupInformation users={users} loading={loading} group={group} />;
+  return <ManageGroupInformation users={users} loading={loading} group={group} />;
 };
 
 type GroupInformationProps = {
@@ -43,7 +43,7 @@ type GroupInformationProps = {
   group: GroupWithUsers;
 };
 
-const GroupInformation = ({ users, loading, group }: GroupInformationProps) => {
+const ManageGroupInformation = ({ users, loading, group }: GroupInformationProps) => {
   const dispatch = useAppDispatch();
   const [searchAndSelectUsersOpen, setSearchAndSelectUsersOpen] = useState(false);
   const [deleteUsersOpen, setDeleteUsersOpen] = useState(false);
@@ -151,4 +151,4 @@ const GroupInformation = ({ users, loading, group }: GroupInformationProps) => {
   );
 };
 
-export default GroupInformationProvider;
+export default ManageGroupInformationProvider;

@@ -9,7 +9,6 @@
     "@emotion/react": "^11.10.5",
     "@emotion/styled": "^11.10.5",
     "@firebase/analytics": "^0.10.11",
-    "@influxdata/influxdb3-client": "^1.0.0",
     "@mui/base": "^5.0.0-beta.33",
     "@mui/icons-material": "^5.10.9",
     "@mui/material": "^6.1.8",
@@ -118,7 +117,7 @@
     "globals": "^15.13.0",
     "prettier": "^3.4.2",
     "react-app-env": "^1.2.3",
-    "supabase": "^2.6.8"
+    "supabase": "^2.20.5"
   },
   "overrides": {
     "@supabase/supabase-js": {

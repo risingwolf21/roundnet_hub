@@ -1,5 +1,5 @@
 import { AddOutlined, EditOffOutlined, EditOutlined, FiberManualRecord } from '@mui/icons-material';
-import { Box, Fab, IconButton, LinearProgress, List, ListItem, ListItemAvatar, ListItemText } from '@mui/material';
+import { Box, Chip, Fab, IconButton, LinearProgress, List, ListItem, ListItemAvatar, ListItemText, Stack, Typography } from '@mui/material';
 import { SupabaseClient } from '@supabase/supabase-js';
 import React, { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
@@ -28,7 +28,7 @@ type ManageGroupsScreenProps = {
   client: SupabaseClient;
 };
 
-export const EMPTY_GROUP = { name: '', color: '#000000', id: '', description: '', created_at: '' };
+export const EMPTY_GROUP: Group = { name: '', color: '#000000', id: '', description: '', created_at: '', public: false };
 
 const ManageGroupsScreen = ({ groups, loading, client }: ManageGroupsScreenProps) => {
   const { user } = useApplication();
@@ -53,7 +53,7 @@ const ManageGroupsScreen = ({ groups, loading, client }: ManageGroupsScreenProps
               <ListItem
                 key={x.id}
                 divider
-                onClick={() => navigate('/trainer/groups/' + x.id)}
+                onClick={() => navigate('/admin/groups/' + x.id)}
                 secondaryAction={
                   isEditingMode && (
                     <IconButton
@@ -71,7 +71,12 @@ const ManageGroupsScreen = ({ groups, loading, client }: ManageGroupsScreenProps
                 <ListItemAvatar>
                   <FiberManualRecord sx={{ color: x.color }} />
                 </ListItemAvatar>
-                <ListItemText primary={x.name} />
+                <ListItemText primary={<Stack direction={"row"} spacing={2}>
+                  <Typography>{x.name}</Typography>
+                  {
+                    x.public && <Chip variant='outlined' size="small" label="Public" color='info' />
+                  }
+                </Stack>} />
               </ListItem>
             ))}
       </List>
