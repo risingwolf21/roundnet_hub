@@ -1,16 +1,16 @@
 import { Groups } from "@mui/icons-material";
 import { Avatar, Button, ListItem, ListItemAvatar, ListItemText } from "@mui/material";
+import { useNotifications } from "@toolpad/core/useNotifications";
 import React, { useEffect } from "react";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router";
 import Layout from "src/components/Layout";
 import { supabase } from "src/components/services/supabase/supabaseClient";
 import { RootState, useAppDispatch } from "src/redux/store";
+import { GroupsRepository } from "src/repository/GroupsRepository";
 import { GroupWithUsers } from "src/types/supabaseTypes";
 import { useApplication } from "../auth/AuthContext";
 import { fetchGroupsAsync, groupsSelector, onEventMappingUserAdded } from "./slices/groupsSlice";
-import { GroupsRepository } from "src/repository/GroupsRepository";
-import { useNotifications } from "@toolpad/core/useNotifications";
 
 const PublicGroupList = () => {
   const groups = useSelector((state: RootState) => groupsSelector.selectAll(state));

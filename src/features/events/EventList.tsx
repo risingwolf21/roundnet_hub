@@ -3,38 +3,31 @@ import AddIcon from '@mui/icons-material/Add';
 import { Button, Chip, Fab, List, ListSubheader, Typography } from '@mui/material';
 import Grid from '@mui/material/Grid2';
 import { Box, Stack } from '@mui/system';
+import { format, parse } from 'date-fns';
+import { logEvent } from 'firebase/analytics';
 import { t } from 'i18next';
+import { groupBy } from 'lodash';
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
-import { useClient } from 'react-supabase';
-import { PullToRefresh } from 'src/components/pull-to-refresh/PullToRefresh';
 import { SwipeableDialog } from 'src/components/SwipeableDialog';
 import { updateAttendanceAsync } from 'src/features/events/slices/eventAttendanceSlice';
 import {
   editEvent,
   fetchEventsAsync,
-  fetchSingleEventAsync,
-  onEventDelete,
   onEventErrorRead,
-  onEventUpdate,
   SliceEvent,
   updateFetchMode
 } from 'src/features/events/slices/eventsSlice';
+import { analytics } from 'src/firebase/firebaseConfig';
 import { UserWithRolesAndPermissions } from 'src/types/supabaseTypes';
+import { Event } from 'types/supabase';
 import { AlertMessage, AlertSnackbar } from '../../components/AlertSnackbar';
 import Layout from '../../components/Layout';
 import { useAppDispatch } from '../../redux/store';
-import { TablesInsert, TablesUpdate } from '../../types/supabase-generated.types';
 import { can } from '../../utils/PermissionService';
+import { useApplication } from '../auth/AuthContext';
 import { EventItem } from './components/EventItem';
 import { LoadingEventItem } from './components/LoadingEventItem';
-import { logEvent } from 'firebase/analytics';
-import { analytics } from 'src/firebase/firebaseConfig';
-import { useApplication } from '../auth/AuthContext';
-import { Event } from 'types/supabase';
-import { groupBy } from 'lodash';
-import { formatDateFromDatabase } from 'src/utils';
-import { format, parse } from 'date-fns';
 
 export type EventScreenProps = {
   events: SliceEvent[];

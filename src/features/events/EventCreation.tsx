@@ -34,15 +34,15 @@ import React, { FormEvent, useEffect, useMemo, useRef, useState } from 'react';
 import { MapContainer, Marker, TileLayer, useMap } from 'react-leaflet';
 import { useNavigate } from 'react-router';
 import Layout from 'src/components/Layout';
+import { useAppDispatch } from 'src/redux/store';
 import { dayjsFromDb, formatDateToDatabase } from 'src/utils';
 import { NumberInput } from '../../components/mui/NumberInput';
 import { SupabaseEventRepository } from '../../repository/EventRepository';
 import { Enums, TablesInsert, TablesUpdate } from '../../types/supabase-generated.types';
 import SearchPlacesDialog from './dialogs/SearchPlacesDialog';
 import { SelectGroupDialog } from './dialogs/SelectGroupDialog';
-import { CreateEventProps, PlaceType } from './types';
-import { useAppDispatch } from 'src/redux/store';
 import { onEventsUpdate } from './slices/eventsSlice';
+import { CreateEventProps, PlaceType } from './types';
 
 const emptyEvent = {
   title: '',

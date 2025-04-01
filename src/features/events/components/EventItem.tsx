@@ -7,14 +7,11 @@ import {
   ThumbUpOffAlt,
 } from '@mui/icons-material';
 import {
-  alpha,
   Box,
   CircularProgress,
   IconButton,
   ListItem,
-  ListItemAvatar,
-  ListItemText,
-  Typography,
+  ListItemText
 } from '@mui/material';
 import { toDate } from 'date-fns';
 import { TFunction } from 'i18next';
