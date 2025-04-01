@@ -11333,10 +11333,10 @@ sucrase@^3.35.0:
     pirates "^4.0.1"
     ts-interface-checker "^0.1.9"
 
-supabase@^2.6.8:
-  version "2.6.8"
-  resolved "https://registry.yarnpkg.com/supabase/-/supabase-2.6.8.tgz#9a3b8e76bba472b22bb60e5eb249d4cadb0e7b4f"
-  integrity sha512-rgz9DVLso6LQ9VLKYXPDkvKgyFCYi6os1+3QS439yKkq4etbYn3KsedFBen0m4lgrHylBNL6W2qOB4+J/kgOLQ==
+supabase@^2.20.5:
+  version "2.20.5"
+  resolved "https://registry.yarnpkg.com/supabase/-/supabase-2.20.5.tgz#8d8a92bf00e002cece6553262dd04b6cc58a2057"
+  integrity sha512-3d6YbIqEzLatw0BpYPSeQwAaVQY9WUBkGiy7a+DLJPN17UsW5KYNEik3mO8PeX1a7TaJvtWxDs/Ve05pxfvldw==
   dependencies:
     bin-links "^5.0.0"
     https-proxy-agent "^7.0.2"

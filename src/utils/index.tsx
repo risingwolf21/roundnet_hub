@@ -1,5 +1,5 @@
 import { Slide, SlideProps } from '@mui/material';
-import { add, Duration, format, parse } from 'date-fns';
+import { add, Duration, format, formatISO, parse, parseISO } from 'date-fns';
 import dayjs from 'dayjs';
 import React, { forwardRef } from 'react';
 import Logo from '../images/Karlsruher_Kojoten_Logo.svg';
@@ -40,11 +40,11 @@ export const SlideUpTransition = forwardRef(function Transition(props: SlideProp
 });
 
 export const formatDateToDatabase = (date: string | number | Date) => {
-  return format(date, "yyyy-MM-dd'T'HH:mm:ss.SSSXXX");
+  return formatISO(date);
 };
 
 export const formatDateFromDatabase = (date: string) => {
-  return parse(date, "yyyy-MM-dd'T'HH:mm:ssXXX", new Date());
+  return parseISO(date);
 };
 
 export const dayjsFromDb = (date: string | null) => {

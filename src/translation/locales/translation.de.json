@@ -71,7 +71,8 @@
     "drinks": "Getränke",
     "notifications": "Benachrichtigungen",
     "training": "Training",
-    "matches": "Spiele"
+    "matches": "Spiele",
+    "groups": "Gruppen"
   },
   "notificationTags": {
     "eventComments": "Event Kommentare",

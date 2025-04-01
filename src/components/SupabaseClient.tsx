@@ -69,7 +69,7 @@ const SupabaseClient = () => {
       .select('*')
       .then((result) => {
         if (result.data) {
-          let loadedTables = result.data as string[];
+          let loadedTables = result.data.map(x => x.table_name);
           setTables(loadedTables);
           setSelectedTable(loadedTables[0] ?? '');
         }

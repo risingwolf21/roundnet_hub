@@ -230,6 +230,68 @@ export type Database = {
       [_ in never]: never
     }
   }
+  graphql_public: {
+    Tables: {
+      [_ in never]: never
+    }
+    Views: {
+      [_ in never]: never
+    }
+    Functions: {
+      graphql: {
+        Args: {
+          operationName?: string
+          query?: string
+          variables?: Json
+          extensions?: Json
+        }
+        Returns: Json
+      }
+    }
+    Enums: {
+      [_ in never]: never
+    }
+    CompositeTypes: {
+      [_ in never]: never
+    }
+  }
+  logs: {
+    Tables: {
+      player_info: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          type: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          type: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          type?: string
+        }
+        Relationships: []
+      }
+    }
+    Views: {
+      [_ in never]: never
+    }
+    Functions: {
+      [_ in never]: never
+    }
+    Enums: {
+      [_ in never]: never
+    }
+    CompositeTypes: {
+      [_ in never]: never
+    }
+  }
   permissions: {
     Tables: {
       app_permissions: {
@@ -375,6 +437,45 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "event_group"
             referencedColumns: ["id"]
+          },
+        ]
+      }
+      challenge_images: {
+        Row: {
+          challenge: number
+          created_at: string
+          id: string
+          image_url: string
+          user: string
+        }
+        Insert: {
+          challenge: number
+          created_at?: string
+          id?: string
+          image_url: string
+          user: string
+        }
+        Update: {
+          challenge?: number
+          created_at?: string
+          id?: string
+          image_url?: string
+          user?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "challenge_images_challenge_fkey"
+            columns: ["challenge"]
+            isOneToOne: false
+            referencedRelation: "challenge"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "challenge_images_user_fkey"
+            columns: ["user"]
+            isOneToOne: false
+            referencedRelation: "user"
+            referencedColumns: ["userId"]
           },
         ]
       }
@@ -582,6 +683,7 @@ export type Database = {
           description: string
           id: string
           name: string
+          public: boolean
         }
         Insert: {
           color?: string
@@ -589,6 +691,7 @@ export type Database = {
           description?: string
           id?: string
           name?: string
+          public?: boolean
         }
         Update: {
           color?: string
@@ -596,6 +699,7 @@ export type Database = {
           description?: string
           id?: string
           name?: string
+          public?: boolean
         }
         Relationships: []
       }
@@ -667,14 +771,17 @@ export type Database = {
       group_user_mapping: {
         Row: {
           group: string
+          role: Database["public"]["Enums"]["UserRole"]
           user: string
         }
         Insert: {
           group: string
+          role?: Database["public"]["Enums"]["UserRole"]
           user: string
         }
         Update: {
           group?: string
+          role?: Database["public"]["Enums"]["UserRole"]
           user?: string
         }
         Relationships: [
@@ -823,8 +930,8 @@ export type Database = {
           current_holder: string | null
           id: number
           lastUpdate: string
-          name: string | null
-          type: Database["public"]["Enums"]["ItemType"] | null
+          name: string
+          type: Database["public"]["Enums"]["ItemType"]
         }
         Insert: {
           color?: string
@@ -832,8 +939,8 @@ export type Database = {
           current_holder?: string | null
           id?: number
           lastUpdate?: string
-          name?: string | null
-          type?: Database["public"]["Enums"]["ItemType"] | null
+          name: string
+          type: Database["public"]["Enums"]["ItemType"]
         }
         Update: {
           color?: string
@@ -841,8 +948,8 @@ export type Database = {
           current_holder?: string | null
           id?: number
           lastUpdate?: string
-          name?: string | null
-          type?: Database["public"]["Enums"]["ItemType"] | null
+          name?: string
+          type?: Database["public"]["Enums"]["ItemType"]
         }
         Relationships: [
           {
@@ -1305,7 +1412,10 @@ export type Database = {
       }
       get_public_table_names: {
         Args: Record<PropertyKey, never>
-        Returns: string[]
+        Returns: {
+          table_name: string
+          table_schema: string
+        }[]
       }
       getattendingusers: {
         Args: {
@@ -1319,14 +1429,24 @@ export type Database = {
         }
         Returns: undefined
       }
-      increase_challenge_stats_count: {
-        Args: {
-          user_id: string
-          challenge_id: number
-          amount: number
-        }
-        Returns: undefined
-      }
+      increase_challenge_stats_count:
+        | {
+            Args: {
+              user_id: string
+              challenge_id: number
+              amount: number
+            }
+            Returns: undefined
+          }
+        | {
+            Args: {
+              user_id: string
+              challenge_id: number
+              amount: number
+              to_create_at: string
+            }
+            Returns: undefined
+          }
       remove_notificationtags_from_all_users: {
         Args: {
           notification: Database["public"]["Enums"]["NotificationTags"]

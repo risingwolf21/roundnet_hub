@@ -117,7 +117,7 @@
     "globals": "^15.13.0",
     "prettier": "^3.4.2",
     "react-app-env": "^1.2.3",
-    "supabase": "^2.6.8"
+    "supabase": "^2.20.5"
   },
   "overrides": {
     "@supabase/supabase-js": {

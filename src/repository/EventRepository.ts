@@ -1,12 +1,11 @@
-import { EventWithGroup, FullAttendance, FullComment } from '../types/supabaseTypes';
 import { PostgrestError, PostgrestSingleResponse } from '@supabase/supabase-js';
 import { add, Duration, startOfDay } from 'date-fns';
-import _ from 'lodash';
-import { formatDateToDatabase } from '../utils';
 import moment from 'moment/moment';
+import { Event } from 'types/supabase';
 import { supabase } from '../components/services/supabase/supabaseClient';
 import { TablesInsert, TablesUpdate } from '../types/supabase-generated.types';
-import { Event } from 'types/supabase';
+import { EventWithGroup, FullAttendance, FullComment } from '../types/supabaseTypes';
+import { formatDateToDatabase } from '../utils';
 
 export const fetchEvents = () => supabase
   .from('events')
@@ -15,27 +14,16 @@ export const fetchEvents = () => supabase
   );
 
 export const SupabaseEventRepository = {
-  async updateEventAndAllRecurrences(eventUpdate: TablesUpdate<'events'>, oldStartTime: string | undefined): Promise<PostgrestSingleResponse<null>> {
+  async updateEventAndAllRecurrences(updates: TablesUpdate<'events'>, key: string, oldStartTime: string) {
     const { data, error } = await supabase
       .from('events')
       .select('*')
-      .eq('key', eventUpdate.key ?? '')
+      .eq('key', key)
       .gte("startingDateTime", oldStartTime)
       .returns<Event[]>();
 
-    if (!data || error || !oldStartTime) {
-      return {
-        error: {
-          code: '',
-          details: '',
-          hint: '',
-          message: 'Could not fetch events that need to be updated!',
-        } as PostgrestError,
-        data: null,
-        count: null,
-        status: 400,
-        statusText: '',
-      };
+    if (!data || error) {
+      throw new Error('Could not fetch events that need to be updated!')
     }
 
     const recurrenceFrom = (recurrence: EventRecurrence, index: number): Duration => {
@@ -52,34 +40,33 @@ export const SupabaseEventRepository = {
       }
     };
 
-    const events = data.map((e, index) => {
-      return {
-        ...e,
-        ..._.omit(eventUpdate, ['id']),
-        startingDateTime: eventUpdate.startingDateTime
-          ? formatDateToDatabase(
-            add(eventUpdate.startingDateTime, recurrenceFrom(eventUpdate.recurrence ?? e.recurrence, index))
+    return Promise.all(data.map(async (e, index) => {
+      const updatedChanges = {
+        ...updates,
+        ...((updates.startingDateTime) && {
+          startingDateTime: formatDateToDatabase(
+            add(updates.startingDateTime, recurrenceFrom(updates.recurrence ?? e.recurrence, index))
           )
-          : e.startingDateTime,
-        endDateTime: eventUpdate.endDateTime
-          ? formatDateToDatabase(
-            add(eventUpdate.endDateTime, recurrenceFrom(eventUpdate.recurrence ?? e.recurrence, index))
+        }),
+        ...((updates.endDateTime) && {
+          endDateTime: formatDateToDatabase(
+            add(updates.endDateTime, recurrenceFrom(updates.recurrence ?? e.recurrence, index))
           )
-          : e.endDateTime,
-        meetingDateTime: eventUpdate.meetingDateTime
-          ? formatDateToDatabase(
-            add(eventUpdate.meetingDateTime, recurrenceFrom(eventUpdate.recurrence ?? e.recurrence, index))
+        }),
+        ...((updates.meetingDateTime) && {
+          meetingDateTime: formatDateToDatabase(
+            add(updates.meetingDateTime, recurrenceFrom(updates.recurrence ?? e.recurrence, index))
           )
-          : e.meetingDateTime,
-        answerDeadline: eventUpdate.answerDeadline
-          ? formatDateToDatabase(
-            add(eventUpdate.answerDeadline, recurrenceFrom(eventUpdate.recurrence ?? e.recurrence, index))
+        }),
+        ...((updates.answerDeadline) && {
+          answerDeadline: formatDateToDatabase(
+            add(updates.answerDeadline, recurrenceFrom(updates.recurrence ?? e.recurrence, index))
           )
-          : e.answerDeadline,
-      } as TablesInsert<'events'>;
-    });
-
-    return supabase.from('events').upsert(events).throwOnError();
+        }),
+      } as TablesUpdate<'events'>;
+      const result = await supabase.from('events').update(updatedChanges).eq("id", e.id).select("*").single().throwOnError();
+      return result;
+    }));
   },
 
   async fetchEventComments(eventId: string): Promise<PostgrestSingleResponse<FullComment[]>> {
@@ -87,6 +74,7 @@ export const SupabaseEventRepository = {
       .from('event_comments')
       .select('user(userId, displayName, avatarUrl), *')
       .eq('event', eventId)
+      .order("last_update", { ascending: false })
       .returns<FullComment[]>()
       .throwOnError();
   },

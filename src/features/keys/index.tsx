@@ -18,7 +18,7 @@ import { KeyHandOverDialog } from './dialogs/KeyHandOverDialog';
 import { SearchUserDialog } from './dialogs/SearchUserDialog';
 import { ItemHolderScreenProps } from './types';
 
-export const EMPTY_KEY: ItemUpdate = { name: '', color: '#000000', created_at: '', current_holder: null, type: null };
+export const EMPTY_KEY: ItemUpdate = { name: '', color: '#000000', created_at: '', current_holder: null };
 
 export const ItemHolderScreen = ({ dispatch, keyHolders, loading, user, t }: ItemHolderScreenProps) => {
   const [searchUserOpen, setSearchUserOpen] = useState(false);

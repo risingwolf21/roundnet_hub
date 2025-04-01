@@ -70,7 +70,8 @@
     "challenges": "Challenges",
     "drinks": "Drinks",
     "notifications": "Notifications",
-    "training": "Training"
+    "training": "Training",
+    "groups": "Groups"
   },
   "notificationTags": {
     "eventComments": "Event comments",

@@ -36,7 +36,6 @@ export async function requestNotificationPermission(user: User, deviceId: string
       });
   } else if (permission === 'denied') {
     //notifications are blocked
-    console.log('You denied for the notification or the user was null', user);
   }
 }
 
@@ -64,5 +63,5 @@ export function useFirebase(user: User, deviceId: string) {
         if (isNotificationSupported()) requestNotificationPermission(user, deviceId, messagingResolver);
       }
     });
-  }, [user]);
+  }, [user, deviceId]);
 }

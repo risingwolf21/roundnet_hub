@@ -4,6 +4,7 @@ import {
   AppBar,
   Avatar,
   Button,
+  Checkbox,
   Dialog,
   IconButton,
   List,
@@ -24,6 +25,7 @@ import { TablesUpdate } from '../../../types/supabase-generated.types';
 import { useApplication } from '../../auth/AuthContext';
 import { captureException } from '@sentry/react';
 import { ColorLens } from '@mui/icons-material';
+import { current } from '@reduxjs/toolkit';
 
 type EditOrAddGroupDialogProps = {
   open: boolean;
@@ -39,6 +41,7 @@ export const EditOrAddGroupDialog = ({ open, handleClose, groupToEdit }: EditOrA
     name: groupToEdit.name,
     color: groupToEdit.color,
     description: groupToEdit.description,
+    public: groupToEdit.public
   });
   const [errorSnackbar, setErrorSnackbar] = useState<{
     open: boolean;
@@ -52,6 +55,7 @@ export const EditOrAddGroupDialog = ({ open, handleClose, groupToEdit }: EditOrA
       name: groupToEdit.name,
       color: groupToEdit.color,
       description: groupToEdit.description,
+      public: groupToEdit.public
     });
   }, [groupToEdit]);
 
@@ -69,6 +73,7 @@ export const EditOrAddGroupDialog = ({ open, handleClose, groupToEdit }: EditOrA
       name: currentGroup.name,
       color: currentGroup.color,
       description: currentGroup.description,
+      public: currentGroup.public
     })
       .then((result) => {
         if (!result.data) {
@@ -93,7 +98,7 @@ export const EditOrAddGroupDialog = ({ open, handleClose, groupToEdit }: EditOrA
   return (
     <Dialog fullScreen open={open} onClose={handleClose} TransitionComponent={SlideUpTransition}>
       <Box component="form" noValidate>
-        <AppBar position="fixed" sx={{ pt: 'env(safe-area-inset-top)' }}>
+        <AppBar position="sticky" sx={{ pt: 'env(safe-area-inset-top)' }}>
           <Toolbar>
             <IconButton edge="start" color="inherit" onClick={handleClose} aria-label="close">
               <CloseIcon />
@@ -174,6 +179,21 @@ export const EditOrAddGroupDialog = ({ open, handleClose, groupToEdit }: EditOrA
                   />
                 }
               />
+            </ListItem>
+            <ListItem sx={{ pt: 0, pb: 0, mb: 2 }} key={'public'}>
+              <ListItemAvatar>
+                <Checkbox
+                  sx={{ pl: 0 }}
+                  checked={currentGroup.public ?? false}
+                  onChange={(e) =>
+                    setCurrentGroup({
+                      ...currentGroup,
+                      public: e.target.checked,
+                    })
+                  }
+                />
+              </ListItemAvatar>
+              <ListItemText primary={"Öffentlich?"} secondary={"Einer öffentlichen Gruppe kann jeder beitreten."} />
             </ListItem>
           </List>
         </Box>

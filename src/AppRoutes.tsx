@@ -14,7 +14,7 @@ const AdminDrinkListProvider = React.lazy(() => import('./features/admin/AdminDr
 const AdminHistoryScreenProvider = React.lazy(() => import('./features/admin/AdminHistoryScreen'));
 const AdminUserListProvider = React.lazy(() => import('./features/admin/AdminUserList'));
 const DrinkListScreenProvider = React.lazy(() => import('./pages/Drinklist.page'));
-const GroupInformationProvider = React.lazy(() => import('./features/groups/GroupInformation'));
+const ManageGroupInformationProvider = React.lazy(() => import('./features/groups/ManageGroupInformation'));
 const ManageGroupsProvider = React.lazy(() => import('./features/groups/ManageGroups'));
 const EventInformationProvider = React.lazy(() => import('./pages/EventInformation.page'));
 const EventScreenProvider = React.lazy(() => import('./pages/EventList.page'));
@@ -35,6 +35,8 @@ const LoginScreen = React.lazy(() => import('./features/auth/LoginScreen'));
 const SignUpScreen = React.lazy(() => import('./features/auth/SignUpScreen'));
 const ForgotPasswordScreen = React.lazy(() => import('./features/auth/ForgotPasswordScreen'));
 const AuthCallback = React.lazy(() => import('./features/auth/AuthCallback'));
+const PublicGroupList = React.lazy(() => import('./features/groups/PublicGroupList'));
+const PublicGroupInformation = React.lazy(() => import('./features/groups/PublicGroupInformation'));
 
 export const AppRoutes = () => {
   const { user } = useApplication();
@@ -155,15 +157,15 @@ const protectedRoutes = [
         ]
       },
       {
-        path: "/trainer",
+        path: "/groups",
         children: [
           {
-            path: "groups",
-            element: <ManageGroupsProvider />
+            path: "list",
+            element: <PublicGroupList />
           },
           {
-            path: "groups/:id",
-            element: <GroupInformationProvider />
+            path: ":groupId",
+            element: <PublicGroupInformation />
           }
         ]
       },
@@ -227,6 +229,14 @@ const protectedRoutes = [
           {
             path: "permissions",
             element: <PermissionList />
+          },
+          {
+            path: "groups",
+            element: <ManageGroupsProvider />
+          },
+          {
+            path: "groups/:id",
+            element: <ManageGroupInformationProvider />
           }
         ]
       },

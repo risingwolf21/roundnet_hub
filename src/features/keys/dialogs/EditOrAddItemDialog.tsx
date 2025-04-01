@@ -57,6 +57,10 @@ export const EditOrAddItemDialog = ({ open, handleClose, itemToEdit }: EditOrAdd
       setErrorSnackbar({ message: 'Der Schlüsselname ist zu kurz!', open: true });
       return;
     }
+    if (!currentItem.type) {
+      setErrorSnackbar({ message: 'Der Schlüssel braucht einen Typ', open: true });
+      return;
+    }
     let result;
     if (currentItem.id) {
       result = await SupabaseKeysRepository.updateItem(
@@ -139,7 +143,7 @@ export const EditOrAddItemDialog = ({ open, handleClose, itemToEdit }: EditOrAdd
                 onChange={(e) =>
                   setCurrentItem({
                     ...currentItem,
-                    type: e.target.value === 'nothing' ? null : (e.target.value as ItemType),
+                    type: e.target.value === 'nothing' ? undefined : (e.target.value as ItemType),
                   })
                 }
               >
