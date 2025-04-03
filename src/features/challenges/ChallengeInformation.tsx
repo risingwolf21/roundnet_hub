@@ -124,7 +124,7 @@ export const ChallengeInformation = ({ t }: { t: TFunction }) => {
           <Stack spacing={1} direction={"column"} sx={{ m: 1, mb: 12 }}>
             {
               Object.entries(groupBy(challenge.stats, (a) => format(a.created_at, "dd-MM-yyyy")))
-                .sort(([key_a], [key_b]) => parse(key_a, "dd-MM-yyyy", new Date()).getDate() - parse(key_b, "dd-MM-yyyy", new Date()).getDate())
+                .sort(([key_a], [key_b]) => parse(key_b, "dd-MM-yyyy", new Date()).getDate() - parse(key_a, "dd-MM-yyyy", new Date()).getDate())
                 .map(([key, value]) => <Stack spacing={1} direction={"column"}>
                   <Typography sx={{ textAlign: "center", color: 'rgba(0,0,0,0.6)', }}>{key}</Typography>
                   {
