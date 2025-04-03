@@ -25,7 +25,6 @@ export function register(config: ServiceWorkerConfig) {
   console.log('This web app installs a service worker now...');
   if ('serviceWorker' in navigator) {
     if (!process.env.PUBLIC_URL) {
-      Sentry.captureMessage("[SERVICE_WORKER_INSTALLATION_FAILED]: process.env.PUBLIC_URL is missing!");
       console.log('process.env.PUBLIC_URL is missing!');
       return;
     }
@@ -36,7 +35,6 @@ export function register(config: ServiceWorkerConfig) {
       // from what our page is served on. This might happen if a CDN is used to
       // serve assets; see https://github.com/facebook/create-react-app/issues/2374
       console.log('publicUrl is not the same as window.location.origin', publicUrl, window.location.origin);
-      Sentry.captureMessage(`[SERVICE_WORKER_INSTALLATION_FAILED]: publicUrl is not the same as window.location.origin. ${publicUrl} ${window.location.origin}`)
       return;
     }
 
@@ -61,7 +59,6 @@ export function register(config: ServiceWorkerConfig) {
     });
   } else {
     console.log('No service worker found in Navigator!');
-    Sentry.captureMessage(`[SERVICE_WORKER_INSTALLATION_FAILED]: No service worker found in Navigator!`)
   }
 }
 
@@ -69,11 +66,9 @@ function registerValidSW(swUrl: string, config: ServiceWorkerConfig) {
   navigator.serviceWorker
     .register(swUrl)
     .then((registration) => {
-      // check for updates periodically
-      // every 30 seconds
-      setInterval(() => {
-        registration.update();
-      }, 1000 * 30);
+      if (registration.waiting) {
+        registration.waiting.postMessage("SKIP_WAITING");
+      }
 
       registration.addEventListener("NOTIFICATION_RECIEVED", () => {
         if (config && config.onNotificationRecieved) {
@@ -87,22 +82,17 @@ function registerValidSW(swUrl: string, config: ServiceWorkerConfig) {
           return;
         }
         installingWorker.onstatechange = () => {
+          if (registration.waiting) {
+            if (navigator.serviceWorker.controller) {
+              registration.waiting.postMessage("SKIP_WAITING");
+            }
+          }
           if (installingWorker.state === 'installed') {
             if (navigator.serviceWorker.controller) {
-              // At this point, the updated precached content has been fetched,
-              // but the previous service worker will still serve the older
-              // content until all client tabs are closed.
-
-              // Execute callback
               if (config && config.onUpdate) {
                 config.onUpdate(registration);
-              } else {
-                Sentry.captureMessage(`[SERVICE_WORKER_INSTALLATION]: ServiceWorker cannot be update because the config or the config.onUpdate is not defined`)
               }
             } else {
-              // At this point, everything has been precached.
-              // It's the perfect time to display a
-              // "Content is cached for offline use." message.
               console.log('Content is cached for offline use.');
 
               // Execute callback
@@ -118,6 +108,13 @@ function registerValidSW(swUrl: string, config: ServiceWorkerConfig) {
       Sentry.captureMessage(`[SERVICE_WORKER_INSTALLATION_FAILED]: ${JSON.stringify(error)}`)
       console.error('Error during service worker registration:', error);
     });
+  let refreshing = false;
+  navigator.serviceWorker.addEventListener("controllerchange", () => {
+    if (!refreshing) {
+      window.location.reload();
+      refreshing = true;
+    }
+  });
 }
 
 function checkValidServiceWorker(swUrl: string, config: ServiceWorkerConfig) {
@@ -129,7 +126,6 @@ function checkValidServiceWorker(swUrl: string, config: ServiceWorkerConfig) {
       // Ensure service worker exists, and that we really are getting a JS file.
       const contentType = response.headers.get('content-type');
       if (response.status === 404 || (contentType != null && contentType.indexOf('javascript') === -1)) {
-        Sentry.captureMessage(`[SERVICE_WORKER_INSTALLATION_FAILED]: No service worker found. Probably a different app. Reload the page.`)
         console.log('No service worker found. Probably a different app. Reload the page.');
         // No service worker found. Probably a different app. Reload the page.
         navigator.serviceWorker.ready.then((registration) => {
