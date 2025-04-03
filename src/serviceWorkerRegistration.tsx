@@ -67,7 +67,7 @@ function registerValidSW(swUrl: string, config: ServiceWorkerConfig) {
     .register(swUrl)
     .then((registration) => {
       if (registration.waiting) {
-        registration.waiting.postMessage("SKIP_WAITING");
+        registration.waiting.postMessage({type: 'SKIP_WAITING'});
       }
 
       registration.addEventListener("NOTIFICATION_RECIEVED", () => {
@@ -84,7 +84,7 @@ function registerValidSW(swUrl: string, config: ServiceWorkerConfig) {
         installingWorker.onstatechange = () => {
           if (registration.waiting) {
             if (navigator.serviceWorker.controller) {
-              registration.waiting.postMessage("SKIP_WAITING");
+              registration.waiting.postMessage({type: 'SKIP_WAITING'});
             }
           }
           if (installingWorker.state === 'installed') {
