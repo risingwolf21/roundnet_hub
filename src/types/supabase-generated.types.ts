@@ -440,45 +440,6 @@ export type Database = {
           },
         ]
       }
-      challenge_images: {
-        Row: {
-          challenge: number
-          created_at: string
-          id: string
-          image_url: string
-          user: string
-        }
-        Insert: {
-          challenge: number
-          created_at?: string
-          id?: string
-          image_url: string
-          user: string
-        }
-        Update: {
-          challenge?: number
-          created_at?: string
-          id?: string
-          image_url?: string
-          user?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "challenge_images_challenge_fkey"
-            columns: ["challenge"]
-            isOneToOne: false
-            referencedRelation: "challenge"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "challenge_images_user_fkey"
-            columns: ["user"]
-            isOneToOne: false
-            referencedRelation: "user"
-            referencedColumns: ["userId"]
-          },
-        ]
-      }
       challenge_stats: {
         Row: {
           challenge: number

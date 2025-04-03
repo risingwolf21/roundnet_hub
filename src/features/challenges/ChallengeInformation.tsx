@@ -123,8 +123,8 @@ export const ChallengeInformation = ({ t }: { t: TFunction }) => {
         <TabPanel value={value} index={0}>
           <Stack spacing={1} direction={"column"} sx={{ m: 1, mb: 12 }}>
             {
-              Object.entries(groupBy(challenge.stats, (a) => format(a.created_at, "dd-MM-yyyy")))
-                .sort(([key_a], [key_b]) => parse(key_b, "dd-MM-yyyy", new Date()).getDate() - parse(key_a, "dd-MM-yyyy", new Date()).getDate())
+              Object.entries(groupBy(challenge.stats, (a) => formatDateFromDatabase(a.created_at).toDateString()))
+                .sort(([key_a], [key_b]) => new Date(key_b) > new Date(key_a) ? 1 : -1)
                 .map(([key, value]) => <Stack spacing={1} direction={"column"}>
                   <Typography sx={{ textAlign: "center", color: 'rgba(0,0,0,0.6)', }}>{key}</Typography>
                   {
