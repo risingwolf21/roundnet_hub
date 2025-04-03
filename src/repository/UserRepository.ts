@@ -4,7 +4,7 @@ import { Notification } from 'types/supabase';
 import { supabase } from '../components/services/supabase/supabaseClient';
 import { CalendarSettingsResult } from 'src/features/profile/CalendarSettings';
 
-export const fetchGroups = () => supabase.from('group_user_mapping').select('group(*)');
+export const fetchGroups = () => supabase.from('group_user_mapping').select('*, group: event_group(*)');
 export const fetchUserWithGroups = () => supabase
   .from('user')
   .select('*, groups: group_user_mapping ( group: event_group ( * ) )')
@@ -52,7 +52,7 @@ export const SupabaseUserRepository = {
 
   async fetchGroupsForUser(userId: string): Promise<Group[]> {
     const { data } = await fetchGroups().eq('user', userId).throwOnError();
-
+    console.log("fetchGroups",data)
     return data?.map(x => x.group) ?? [];
   },
 
