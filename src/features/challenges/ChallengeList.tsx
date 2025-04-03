@@ -1,4 +1,4 @@
-import { Box, LinearProgress, List, ListItem, ListItemText, Typography } from '@mui/material';
+import { Box, Card, LinearProgress, List, ListItem, ListItemText, Typography } from '@mui/material';
 import React, { useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router';
@@ -12,7 +12,6 @@ import {
 
 const ChallengeListProvider = () => {
   const dispatch = useAppDispatch();
-  const client = useClient();
   const challenges = useSelector((state: RootState) => challengeSelector.selectAll(state));
 
   useEffect(() => {
@@ -36,9 +35,11 @@ const ChallengeList = ({ loading, challenges }: ChallengeListProps) => {
       {challenges.length > 0 ? (
         <List sx={{ width: '100%' }}>
           {challenges.map((entry) => (
-            <ListItem key={entry.id} onClick={() => navigate('/challenges/' + entry.id)}>
-              <ListItemText primary={entry.name} secondary={entry.description} />
-            </ListItem>
+            <Card key={entry.id} sx={{ m: 2 }}>
+              <ListItem onClick={() => navigate('/challenges/' + entry.id)}>
+                <ListItemText primary={entry.name} secondary={entry.description} />
+              </ListItem>
+            </Card>
           ))}
         </List>
       ) : (
