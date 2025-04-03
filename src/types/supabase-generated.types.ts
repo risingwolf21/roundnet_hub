@@ -485,6 +485,7 @@ export type Database = {
           count: number
           created_at: string
           id: number
+          image_url: string | null
           user: string
         }
         Insert: {
@@ -492,6 +493,7 @@ export type Database = {
           count?: number
           created_at?: string
           id?: number
+          image_url?: string | null
           user: string
         }
         Update: {
@@ -499,6 +501,7 @@ export type Database = {
           count?: number
           created_at?: string
           id?: number
+          image_url?: string | null
           user?: string
         }
         Relationships: [
@@ -771,17 +774,17 @@ export type Database = {
       group_user_mapping: {
         Row: {
           group: string
-          role: Database["public"]["Enums"]["UserRole"]
+          role: Database["public"]["Enums"]["GroupRole"]
           user: string
         }
         Insert: {
           group: string
-          role?: Database["public"]["Enums"]["UserRole"]
+          role?: Database["public"]["Enums"]["GroupRole"]
           user: string
         }
         Update: {
           group?: string
-          role?: Database["public"]["Enums"]["UserRole"]
+          role?: Database["public"]["Enums"]["GroupRole"]
           user?: string
         }
         Relationships: [
@@ -1429,24 +1432,23 @@ export type Database = {
         }
         Returns: undefined
       }
-      increase_challenge_stats_count:
-        | {
-            Args: {
-              user_id: string
-              challenge_id: number
-              amount: number
-            }
-            Returns: undefined
-          }
-        | {
-            Args: {
-              user_id: string
-              challenge_id: number
-              amount: number
-              to_create_at: string
-            }
-            Returns: undefined
-          }
+      increase_challenge_stats_count: {
+        Args: {
+          user_id: string
+          challenge_id: number
+          amount: number
+          to_create_at: string
+          image_url: string
+        }
+        Returns: {
+          challenge: number
+          count: number
+          created_at: string
+          id: number
+          image_url: string | null
+          user: string
+        }
+      }
       remove_notificationtags_from_all_users: {
         Args: {
           notification: Database["public"]["Enums"]["NotificationTags"]
@@ -1500,6 +1502,7 @@ export type Database = {
         | "Waiting"
         | "AttendingAsTrainer"
       EventRecurrence: "Weekly" | "Fortnightly" | "Monthly" | "None"
+      GroupRole: "user" | "admin" | "joinRequested"
       ItemType: "mtvStorage" | "mtvGym" | "mtvGymPalazzo" | "goethe"
       NotificationTags:
         | "eventComments"

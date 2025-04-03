@@ -1,13 +1,10 @@
-import { AccountBox, Add, CameraAlt } from '@mui/icons-material';
+import { AccountBox } from '@mui/icons-material';
 import EditIcon from '@mui/icons-material/Edit';
-import { Alert, Avatar, Box, Button, Card, CardActions, CardContent, CardMedia, Divider, Fab, List, Typography } from '@mui/material';
+import { Alert, Avatar, Box, Card, CardMedia, Fab, List, ListItem, ListItemAvatar, ListItemText, Stack, Tab, Tabs, Typography } from '@mui/material';
 import { captureException } from '@sentry/react';
-import { uuid } from '@supabase/supabase-js/dist/main/lib/helpers';
-import { useNotifications } from '@toolpad/core/useNotifications';
-import Compressor from 'compressorjs';
 import { Dayjs } from 'dayjs';
 import { TFunction } from 'i18next';
-import { toNumber } from 'lodash';
+import { groupBy, toNumber } from 'lodash';
 import React, { useEffect, useMemo, useState } from 'react';
 import { withTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
@@ -16,30 +13,27 @@ import { PullToRefresh } from 'src/components/pull-to-refresh/PullToRefresh';
 import { supabase } from 'src/components/services/supabase/supabaseClient';
 import { RootState, useAppDispatch } from 'src/redux/store';
 import { ChallengeStatWithUser } from 'src/types/supabaseTypes';
-import { dataURLtoFile, readFile } from 'src/utils';
+import { dataURLtoFile, formatDateFromDatabase } from 'src/utils';
 import { AlertMessage, AlertSnackbar } from '../../components/AlertSnackbar';
 import Layout from '../../components/Layout';
 import { ChallengeRepository } from '../../repository/ChallengeRepository';
 import { can } from '../../utils/PermissionService';
 import { useApplication } from '../auth/AuthContext';
+import { TabPanel } from '../events/dialogs/EventAttendanceDialog';
 import { ChallengeStatItem } from './components/ChallengeStatItem';
 import EnterPointDialog from './dialogs/EnterPointDialog';
-import { challengeSelector, fetchChallengeStatsSingleAsync, onChallengeImageInserted } from './slices/challengeSlice';
-import { useDialogs } from '@toolpad/core/useDialogs';
-import { AppRolesDialog } from '../admin/dialogs/AppRolesDialog';
-import { DisplayStoryDialog } from './dialogs/DisplayStoryDialog';
+import { challengeSelector, fetchChallengeStatsSingleAsync, onChallengeStatsInsert } from './slices/challengeSlice';
+import { format, parse } from 'date-fns';
 
 
 export const ChallengeInformation = ({ t }: { t: TFunction }) => {
   const { challengeId } = useParams();
   const challenge = useSelector((root: RootState) => challengeSelector.selectById(root, challengeId ?? 0));
-  const { loading } = useSelector((root: RootState) => root.challenges);
   const { user } = useApplication();
   const dispatch = useAppDispatch();
   const [alertInfo, setAlertInfo] = useState<AlertMessage | null>(null);
   const [open, setOpen] = useState(false);
-  const notifications = useNotifications();
-  const dialogs = useDialogs();
+  const [value, setValue] = useState(0);
 
   useEffect(() => {
     if (!challengeId || isNaN(+challengeId)) return;
@@ -50,11 +44,11 @@ export const ChallengeInformation = ({ t }: { t: TFunction }) => {
   const challengeStatMap = useMemo(() => {
 
     const reduceChallengeStats = (acc: Map<string, ChallengeStatWithUser[]>, curr: ChallengeStatWithUser) => {
-      let x = acc.get(curr.user.userId);
+      let x = acc.get(curr.fullUser.userId);
       if (x) {
-        acc.set(curr.user.userId, [...x, curr]);
+        acc.set(curr.fullUser.userId, [...x, curr]);
       } else {
-        acc.set(curr.user.userId, [curr]);
+        acc.set(curr.fullUser.userId, [curr]);
       }
       return acc;
     };
@@ -66,15 +60,44 @@ export const ChallengeInformation = ({ t }: { t: TFunction }) => {
 
   if (!challenge || !user) return <Navigate to={'/challenges'} replace={true} />;
 
-  const increaseChallengePoint = (created_at: Dayjs) => {
+  const uploadImage = async (image: { dataUrl: string, fileName: string } | null) => {
+    if (!image) return null;
+    const { data: uploadData, error } = await supabase.storage
+      .from('challenge')
+      .upload(`${challenge.id}/${image.fileName}`, dataURLtoFile(image.dataUrl, image.fileName), {
+        upsert: true,
+      })
+    if (uploadData?.path && !error) {
+      const path = uploadData.path;
+      const { data } = supabase.storage.from('challenge').getPublicUrl(path);
+      if (error) {
+        supabase.storage.from('challenge').remove([path]);
+        return null;
+      } else {
+        return data.publicUrl;
+      }
+    } else {
+      return null;
+    }
+  }
+
+  const increaseChallengePoint = async (created_at: Dayjs, image: { dataUrl: string, fileName: string } | null) => {
     setOpen(false);
     if (!user) {
       setAlertInfo({ message: 'Something went wrong! Try again later', severity: 'error' });
       return;
     }
-    ChallengeRepository.increasePointForUser(user.userId, challenge.id, created_at)
+
+    const uploadedImageUrl = await uploadImage(image);
+    if (uploadedImageUrl) {
+      setAlertInfo({ message: 'Fehler beim hochladen des Bildes. Der Punkt wurde dennoch eingetragen', severity: 'error' });
+    }
+    ChallengeRepository.increasePointForUser(user.userId, challenge.id, created_at, uploadedImageUrl)
       .then((result) => {
-        setAlertInfo({ message: 'Success!', severity: 'success' });
+        if (result.data) {
+          dispatch(onChallengeStatsInsert({ ...result.data, user: user.userId, fullUser: user as User }))
+          setAlertInfo({ message: 'Success!', severity: 'success' });
+        }
       })
       .catch((error) => {
         captureException(error);
@@ -82,162 +105,68 @@ export const ChallengeInformation = ({ t }: { t: TFunction }) => {
       });
   };
 
-
-  const onImageInputChange = async (event: React.ChangeEvent<HTMLInputElement>): Promise<void> => {
-    if (!event.target.files || event.target.files.length === 0) return;
-
-    let imageDataUrl = await readFile(event.target.files[0]);
-
-    if (typeof imageDataUrl !== 'string') {
-      notifications.show('Something went wrong uploading your image. Please try again.', { severity: "error" })
-      return;
-    }
-
-    let fileName = uuid() + '.jpg';
-    new Compressor(dataURLtoFile(imageDataUrl, fileName), {
-      convertSize: 1000000, // 1 MB
-      success: async (file) => {
-        let compressedFile = await readFile(file);
-        if (compressedFile && typeof compressedFile === 'string') {
-          const { data: uploadData, error } = await supabase.storage
-            .from('challenge')
-            .upload(`${challenge.id}/${fileName}`, dataURLtoFile(compressedFile, fileName), {
-              upsert: true,
-            });
-          if (uploadData?.path && !error) {
-            const { data } = supabase.storage.from('challenge').getPublicUrl(uploadData.path);
-
-            const { error } = await supabase.from('challenge_images').insert({
-              user: user.userId,
-              challenge: challenge.id,
-              image_url: data.publicUrl
-            });
-            if (error) {
-              supabase.storage.from('challenge').remove([uploadData.path]);
-            } else {
-              dispatch(onChallengeImageInserted({ image_url: data.publicUrl, challenge: challenge.id, user: user }))
-            }
-          } else {
-            notifications.show('Something went wrong uploading your image. Please try again.', { severity: "error" })
-          }
-        } else {
-          notifications.show('Something went wrong compressing your image. Please try again.', { severity: "error" })
-        }
-      },
-    });
-    event.target.files = null;
-    event.target.value = '';
-  };
-
   return (
     <Layout appBarConfig={{ title: challenge.name, showBackButton: true, showProfile: true }}>
       <PullToRefresh onRefresh={() => dispatch(fetchChallengeStatsSingleAsync({ challengeId: challenge.id }))}>
-        <Box
-          sx={{
-            display: "flex",
-            overflowX: "auto",
-            gap: 2,
-            padding: 1,
-          }}
-        ><Box
-          sx={{
-            display: "flex",
-            flexDirection: "column",
-            alignItems: 'center',
-          }}>
-            <Button component="label" sx={{ borderRadius: 4, border: 'none', width: "100px", height: "100px", background: 'transparent' }}>
-              <input accept="image/*" type="file" hidden onChange={onImageInputChange} />
-              <Avatar sx={{ borderRadius: 4, width: "100px", height: "100px" }}>
-                {challenge.images.filter(y => y.user.userId === user.userId).length > 0 ? (
-                  <img src={challenge.images.filter(y => y.user.userId === user.userId)[0].image_url} style={{ objectFit: "cover" }} alt="logo" width={'100%'} height={'100%'} />
-                ) : (
-                  user.avatarUrl
-                    ? <img src={user.avatarUrl} alt="logo" width={'100%'} height={'100%'} />
-                    : <AccountBox />
-                )}
-                <Add sx={(theme) => ({
-                  backgroundColor: theme.palette.primary.main,
-                  position: "absolute",
-                  scale: 1.5,
-                  marginRight: 0.7,
-                  marginBottom: 0.7,
-                  borderRadius: 2,
-                  border: `5px solid white`,
-                  bottom: 0,
-                  right: 0
-                })} />
-              </Avatar>
-            </Button>
-            <Typography sx={{
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-              whiteSpace: 'nowrap',
-              textALign: "center"
-            }}>{user.displayName}</Typography>
-          </Box>
-          {
-            challenge.fullGroup?.users.filter(x => x.user.userId !== user.userId).map(x => {
-              const images = challenge.images.filter(y => y.user.userId === x.user.userId);
-              return <Box
-                sx={{
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: 'center',
-                }}>
-                <Button
-                  component="label"
-                  sx={{
-                    borderRadius: 4,
-                    border: 'none',
-                    display: "flex",
-                    flexDirection: "column",
-                    width: "100px",
-                    height: "100px",
-                    background: 'transparent'
-                  }}
-                  onClick={async () => {
-                    if (images.length > 0)
-                      await dialogs.open(DisplayStoryDialog, images[0].image_url)
-                  }}>
-
-                  <Avatar sx={{ borderRadius: 4, width: "100px", height: "100px" }}>
-
-                    {
-                      images.length > 0
-                        ? <img src={images[0].image_url} alt="logo" width={'100%'} height={'100%'} />
-                        : x.user.avatarUrl
-                          ? <img src={x.user.avatarUrl} alt="logo" width={'100%'} height={'100%'} />
-                          : <AccountBox />
-                    }
-                  </Avatar>
-                </Button>
-                <Typography sx={{
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis',
-                  whiteSpace: 'nowrap',
-                  textALign: "center"
-                }}>{x.user.displayName}</Typography>
-              </Box>
-            })
-          }
-        </Box>
-        <List sx={{ width: '100%' }}>
+        <Alert sx={{ m: 2 }} severity={'info'}>
+          {challenge.description}
+        </Alert>
+        {challenge.automated && (
           <Alert sx={{ m: 2 }} severity={'info'}>
-            {challenge.description}
+            {t('challenge.automatedChallenge')}
           </Alert>
-          {challenge.automated && (
-            <Alert sx={{ m: 2 }} severity={'info'}>
-              {t('challenge.automatedChallenge')}
-            </Alert>
-          )}
-          <Divider />
-          {[...challengeStatMap.values()]
-            .sort((a, b) => b.reduce((p, c) => p + c.count, 0) - a.reduce((p, c) => p + c.count, 0))
-            .map((x, index) => (
-              <ChallengeStatItem key={index} statsForUser={x} index={index} />
-            ))}
-        </List>
-
+        )}
+        <Tabs value={value} onChange={(e, v) => setValue(v)} indicatorColor="primary" textColor="inherit" variant="fullWidth">
+          <Tab label="Aktivität" />
+          <Tab label="Leaderboard" />
+        </Tabs>
+        <TabPanel value={value} index={0}>
+          <Stack spacing={1} direction={"column"} sx={{ m: 1, mb: 12 }}>
+            {
+              Object.entries(groupBy(challenge.stats, (a) => format(a.created_at, "dd-MM-yyyy")))
+                .sort(([key_a], [key_b]) => parse(key_a, "dd-MM-yyyy", new Date()).getDate() - parse(key_b, "dd-MM-yyyy", new Date()).getDate())
+                .map(([key, value]) => <Stack spacing={1} direction={"column"}>
+                  <Typography sx={{ textAlign: "center", color: 'rgba(0,0,0,0.6)', }}>{key}</Typography>
+                  {
+                    value.map(x => <Card sx={{ dsplay: "flex", p: 0 }}>
+                      <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+                        <ListItem sx={{ mr: 4 }}>
+                          <ListItemAvatar>
+                            <Avatar sx={{ borderRadius: 2 }}>
+                              {x.fullUser.avatarUrl ? (
+                                <img src={x.fullUser.avatarUrl} alt="logo" width={'100%'} height={'100%'} />
+                              ) : (
+                                <AccountBox />
+                              )}
+                            </Avatar>
+                          </ListItemAvatar>
+                          <ListItemText primary={"+1"} secondary={x.fullUser.displayName} />
+                        </ListItem>
+                        {
+                          x.image_url &&
+                          <CardMedia
+                            component="img"
+                            sx={{ width: "100%", maxHeight: "250px" }}
+                            image={x.image_url}
+                            alt="Challengestat images"
+                          />
+                        }
+                      </Box>
+                    </Card>)
+                  }
+                </Stack>)
+            }
+          </Stack>
+        </TabPanel>
+        <TabPanel value={value} index={1}>
+          <List sx={{ width: '100%' }}>
+            {[...challengeStatMap.values()]
+              .sort((a, b) => b.reduce((p, c) => p + c.count, 0) - a.reduce((p, c) => p + c.count, 0))
+              .map((x, index) => (
+                <ChallengeStatItem key={index} statsForUser={x} index={index} />
+              ))}
+          </List>
+        </TabPanel>
         {can('update', 'challenge') && !challenge.automated && (
           <Fab
             sx={{
@@ -259,12 +188,12 @@ export const ChallengeInformation = ({ t }: { t: TFunction }) => {
           open={open}
           setOpen={setOpen}
           maxEntriesPerWeek={challenge.max_points_per_week}
-          dates={challenge.stats.filter(x => x.user.userId === user.userId).map(x => x.created_at)}
-          increaseChallengePoint={(created_at: Dayjs) => increaseChallengePoint(created_at)} />
+          dates={challenge.stats.filter(x => x.fullUser.userId === user.userId).map(x => x.created_at)}
+          increaseChallengePoint={(created_at: Dayjs, image: { dataUrl: string, fileName: string } | null) => increaseChallengePoint(created_at, image)} />
 
         <AlertSnackbar alertInfo={alertInfo} autoHideDuration={4000} close={() => setAlertInfo(null)} />
       </PullToRefresh>
-    </Layout>
+    </Layout >
   );
 };
 export default withTranslation()(ChallengeInformation);

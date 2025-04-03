@@ -1,17 +1,21 @@
-import { Button, Typography } from '@mui/material';
+import { AddPhotoAlternateOutlined, DeleteOutline, EditOutlined } from '@mui/icons-material';
+import { Box, Button, Typography } from '@mui/material';
 import { DatePicker, PickersDay, PickersDayProps } from '@mui/x-date-pickers';
+import { uuid } from '@supabase/supabase-js/dist/main/lib/helpers';
+import Compressor from 'compressorjs';
 import dayjs, { Dayjs } from 'dayjs';
 import { TFunction } from 'i18next';
 import React, { useEffect, useState } from 'react';
 import { withTranslation } from 'react-i18next';
-import { dayjsFromDb } from 'src/utils';
+import { dataURLtoFile, dayjsFromDb, readFile } from 'src/utils';
 import { SwipeableDialog } from '../../../components/SwipeableDialog';
+
 
 type EnterPointDialogProps = {
   open: boolean;
   t: TFunction;
   setOpen: (value: boolean) => void;
-  increaseChallengePoint: (created_at: Dayjs) => void;
+  increaseChallengePoint: (created_at: Dayjs, image: { dataUrl: string, fileName: string } | null) => void;
   dates: string[]
   maxEntriesPerWeek: number
 };
@@ -34,10 +38,38 @@ const EnterPointDialog = ({ open, setOpen, t, increaseChallengePoint, dates, max
 
   const [date, setDate] = useState(dayjs());
   const [highlightedDays, setHightlightedDays] = useState(dates.map(x => dayjsFromDb(x)))
+  const [image, setImage] = useState<{ dataUrl: string, fileName: string } | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     setHightlightedDays(dates.map(dayjsFromDb))
   }, [dates]);
+
+  const onImageInputChange = async (event: React.ChangeEvent<HTMLInputElement>): Promise<void> => {
+    if (!event.target.files || event.target.files.length === 0) return;
+
+    let imageDataUrl = await readFile(event.target.files[0]);
+
+    if (typeof imageDataUrl !== 'string') {
+      setError('Something went wrong uploading your image. Please try again.')
+      return;
+    }
+
+    let fileName = uuid() + '.jpg';
+    new Compressor(dataURLtoFile(imageDataUrl, fileName), {
+      convertSize: 1000000, // 1 MB
+      success: async (file) => {
+        let compressedFile = await readFile(file);
+        if (compressedFile && typeof compressedFile === 'string') {
+          setImage({ dataUrl: compressedFile, fileName })
+        } else {
+          setError('Something went wrong compressing your image. Please try again.')
+        }
+      },
+    });
+    event.target.files = null;
+    event.target.value = '';
+  };
 
   return (
     <SwipeableDialog
@@ -47,7 +79,7 @@ const EnterPointDialog = ({ open, setOpen, t, increaseChallengePoint, dates, max
       minHeight={40}
       setOpen={setOpen}
       actions={<>
-        <Button onClick={() => increaseChallengePoint(date)}>Bestätigen</Button>
+        <Button onClick={() => increaseChallengePoint(date, image)}>Bestätigen</Button>
         <Button onClick={() => setOpen(false)}>Abbrechen</Button>
       </>}
     >
@@ -75,6 +107,42 @@ const EnterPointDialog = ({ open, setOpen, t, increaseChallengePoint, dates, max
         }}
         value={date}
       />
+
+      <Box sx={{ display: 'flex', justifyContent: 'center', mt: 1 }}>
+        {image ? (
+          <>
+            <Button
+              component="label"
+              sx={{ border: 'none', background: 'transparent', mr: 2 }}
+              startIcon={<EditOutlined />}
+            >
+              <input accept="image/*" type="file" hidden onChange={onImageInputChange} />
+              Change
+            </Button>
+            <Button
+              startIcon={<DeleteOutline />}
+              onClick={() => setImage(null)}
+            >
+              Remove
+            </Button>
+          </>
+        ) : (
+          <Button
+            component="label"
+            sx={{ border: 'none', background: 'transparent' }}
+            startIcon={<AddPhotoAlternateOutlined />}
+          >
+            <input accept="image/*" type="file" hidden onChange={onImageInputChange} />
+            Add picture
+          </Button>
+        )}
+      </Box>
+      {
+        image && <Box sx={{ m: 2, borderRadius: 2 }}>
+          <img src={image.dataUrl} width="100%" alt='Selected' style={{ borderRadius: "16px" }} />
+        </Box>
+      }
+      {error && <Typography color='error'>{error}</Typography>}
     </SwipeableDialog >
   );
 };

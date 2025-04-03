@@ -1,8 +1,8 @@
-import { supabase } from '../components/services/supabase/supabaseClient';
-import { ChallengeStatWithUser, FullChallenge, GroupWithUsers } from '../types/supabaseTypes';
 import { PostgrestSingleResponse } from '@supabase/supabase-js';
-import { dayjsToDb, formatDateToDatabase } from '../utils';
 import { Dayjs } from 'dayjs';
+import { supabase } from '../components/services/supabase/supabaseClient';
+import { ChallengeStatWithUser, FullChallenge } from '../types/supabaseTypes';
+import { dayjsToDb, formatDateToDatabase } from '../utils';
 
 export const fetchChallengeWithGroup = () => supabase
   .from('challenge')
@@ -32,7 +32,7 @@ export const ChallengeRepository = {
   async fetchChallengeStats(id: number): Promise<PostgrestSingleResponse<FullChallenge>> {
     return supabase
       .from('challenge')
-      .select('*, group: group(*, users: group_user_mapping ( user ( userId, email, displayName ) )), stats: challenge_stats (*, user: user(*)), images: challenge_images(*, user: user(*))')
+      .select('*, group: group(*, users: group_user_mapping ( user ( userId, email, displayName ) )), stats: challenge_stats (*, fullUser: user(*))')
       .eq('id', id)
       .throwOnError()
       .returns<FullChallenge>()
@@ -45,17 +45,17 @@ export const ChallengeRepository = {
   ): Promise<PostgrestSingleResponse<ChallengeStatWithUser>> {
     return supabase
       .from('challenge_stats')
-      .select('*, user: user(*)')
+      .select('*, fullUser: user(*)')
       .eq('challenge', challenge_id)
-      .eq('user.userId', user_id)
+      .eq('fullUser.userId', user_id)
       .throwOnError()
       .returns<ChallengeStatWithUser>()
       .single();
   },
 
-  async increasePointForUser(userId: string, challenge: number, created_at: Dayjs) {
+  async increasePointForUser(userId: string, challenge: number, created_at: Dayjs, image_url: string | null): Promise<PostgrestSingleResponse<ChallengeStats>> {
     return supabase
-      .rpc('increase_challenge_stats_count', { user_id: userId, amount: 1, challenge_id: challenge, to_create_at: dayjsToDb(created_at) })
+      .rpc('increase_challenge_stats_count', { user_id: userId, amount: 1, challenge_id: challenge, to_create_at: dayjsToDb(created_at), image_url: image_url ?? "" })
       .throwOnError();
   }
 };
