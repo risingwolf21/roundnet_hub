@@ -52,7 +52,6 @@ export const SupabaseUserRepository = {
 
   async fetchGroupsForUser(userId: string): Promise<Group[]> {
     const { data } = await fetchGroups().eq('user', userId).throwOnError();
-    console.log("fetchGroups",data)
     return data?.map(x => x.group) ?? [];
   },
 

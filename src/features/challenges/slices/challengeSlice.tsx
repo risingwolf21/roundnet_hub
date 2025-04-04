@@ -37,7 +37,6 @@ const challengeSlice = createSlice({
       challengeAdapter.updateOne(state, update);
     },
     onChallengeStatsInsert: (state, action: PayloadAction<ChallengeStatWithUser | null>) => {
-      console.log(action)
       if (!action.payload) return;
       let challenge = challengeAdapter.getSelectors().selectById(state, action.payload.challenge ?? -1);
       if (!challenge) return;
