@@ -63,32 +63,35 @@ export const AuthGate = () => {
   }, [dispatch]);
 
   const fetchUserData = useCallback(async (session: Session, abortSignal: AbortSignal) => {
-    const roles = await AdminPermissionsRepository.fetchRolesForUser(session.user.id);
-    const [permissions, { data: user, error }, groups, { data: player_data }, { data: calendar_data }] = await Promise.all([
-      AdminPermissionsRepository.fetchPermissionsForRoles(roles),
-      SupabaseUserRepository.fetchUser(session.user.id),
-      SupabaseUserRepository.fetchGroupsForUser(session.user.id),
-      SupabaseUserRepository.fetchPlayer(session.user.id),
-      SupabaseUserRepository.fetchCalendarSettings(session.user.id),
-    ])
-    if (!user || error)
-      return;
+    try {
+      const roles = await AdminPermissionsRepository.fetchRolesForUser(session.user.id);
+      const [permissions, { data: user, error }, groups, { data: player_data }, { data: calendar_data }] = await Promise.all([
+        AdminPermissionsRepository.fetchPermissionsForRoles(roles),
+        SupabaseUserRepository.fetchUser(session.user.id),
+        SupabaseUserRepository.fetchGroupsForUser(session.user.id),
+        SupabaseUserRepository.fetchPlayer(session.user.id),
+        SupabaseUserRepository.fetchCalendarSettings(session.user.id),
+      ])
+      if (!user || error)
+        return;
 
-    const userData: UserWithRolesAndPermissions = {
-      ...user,
-      roles,
-      permissions,
-      player_data,
-      calendar_data,
-      groups,
-    };
-    setProviderToken(session.user.user_metadata["provider_token"])
-    setUserId(analytics, session.user.id);
-    logEvent(analytics, "login", { id: session.user.id, username: user.displayName })
-    setUser({ email: session.user.email, id: session.user.id, username: user.displayName });
-    ability.update(defineRulesFor(permissions, roles));
-    setCurrentUser(userData);
-    setLoading(false);
+      const userData: UserWithRolesAndPermissions = {
+        ...user,
+        roles,
+        permissions,
+        player_data,
+        calendar_data,
+        groups,
+      };
+      setProviderToken(session.user.user_metadata["provider_token"])
+      setUserId(analytics, session.user.id);
+      logEvent(analytics, "login", { id: session.user.id, username: user.displayName })
+      setUser({ email: session.user.email, id: session.user.id, username: user.displayName });
+      ability.update(defineRulesFor(permissions, roles));
+      setCurrentUser(userData);
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
   useEffect(() => {

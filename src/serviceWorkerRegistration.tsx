@@ -2,7 +2,6 @@
 // register() is not called by default.
 
 import { ServiceWorkerConfig } from './hooks/useServiceWorker';
-import * as Sentry from "@sentry/react"
 
 // This lets the app load faster on subsequent visits in production, and gives
 // it offline capabilities. However, it also means that developers (and users)
@@ -67,7 +66,7 @@ function registerValidSW(swUrl: string, config: ServiceWorkerConfig) {
     .register(swUrl)
     .then((registration) => {
       if (registration.waiting) {
-        registration.waiting.postMessage({type: 'SKIP_WAITING'});
+        config.onUpdate(registration);
       }
 
       registration.addEventListener("NOTIFICATION_RECIEVED", () => {
@@ -84,7 +83,7 @@ function registerValidSW(swUrl: string, config: ServiceWorkerConfig) {
         installingWorker.onstatechange = () => {
           if (registration.waiting) {
             if (navigator.serviceWorker.controller) {
-              registration.waiting.postMessage({type: 'SKIP_WAITING'});
+              config.onUpdate(registration);
             }
           }
           if (installingWorker.state === 'installed') {
@@ -105,7 +104,6 @@ function registerValidSW(swUrl: string, config: ServiceWorkerConfig) {
       };
     })
     .catch((error) => {
-      Sentry.captureMessage(`[SERVICE_WORKER_INSTALLATION_FAILED]: ${JSON.stringify(error)}`)
       console.error('Error during service worker registration:', error);
     });
   let refreshing = false;
