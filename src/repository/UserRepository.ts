@@ -19,8 +19,7 @@ export const SupabaseUserRepository = {
   async fetchUserWithGroups(userId: string): Promise<PostgrestSingleResponse<UserWithGroupsAndPlayerData>> {
     const { data: player_data } = await SupabaseUserRepository.fetchPlayer(userId);
     const response = await fetchUserWithGroups()
-      .eq('userId', userId)
-      .maybeSingle();
+      .eq('userId', userId);
 
     if (!response.data || response.error)
       return {
