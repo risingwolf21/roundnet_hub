@@ -85,7 +85,6 @@ export const AuthGate = () => {
       };
       setProviderToken(session.user.user_metadata["provider_token"])
       setUserId(analytics, session.user.id);
-      logEvent(analytics, "login", { id: session.user.id, username: user.displayName })
       setUser({ email: session.user.email, id: session.user.id, username: user.displayName });
       ability.update(defineRulesFor(permissions, roles));
       setCurrentUser(userData);
