@@ -63,6 +63,35 @@ export function register(config: ServiceWorkerConfig) {
 
 function registerValidSW(swUrl: string, config: ServiceWorkerConfig) {
   navigator.serviceWorker
+    .register(`${process.env.PUBLIC_URL}/firebase-messaging-sw.js`)
+    .then(registration => {
+      if (registration.waiting) {
+        config.onUpdate(registration);
+      }
+      registration.onupdatefound = () => {
+        const installingWorker = registration.installing;
+        if (installingWorker == null) {
+          return;
+        }
+        installingWorker.onstatechange = () => {
+          if (registration.waiting) {
+            if (navigator.serviceWorker.controller) {
+              config.onUpdate(registration);
+            }
+          }
+          if (installingWorker.state === 'installed') {
+            if (navigator.serviceWorker.controller) {
+              if (config && config.onUpdate) {
+                config.onUpdate(registration);
+              }
+            }
+          }
+        };
+      };
+      console.log("Firebase Service Worker registered with scope: ", registration.scope)
+    })
+    .catch(error => console.log("Firbase Service Worker failed to register: ", error))
+  navigator.serviceWorker
     .register(swUrl)
     .then((registration) => {
       if (registration.waiting) {
