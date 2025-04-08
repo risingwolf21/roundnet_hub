@@ -13,6 +13,7 @@ import { captureException } from '@sentry/react';
 import { RegistrationError } from '../../utils';
 import { AlertMessage, AlertSnackbar } from '../../components/AlertSnackbar';
 import { useNavigate } from 'react-router';
+import Layout from 'src/components/Layout';
 
 export type RegisterProps = {
   email: string;
@@ -71,75 +72,77 @@ const RegisterScreen = () => {
   };
 
   return (
-    <Container component="main" maxWidth="xs">
-      <CssBaseline />
-      <Box
-        sx={{
-          marginTop: 8,
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-        }}
-      >
-        <img src={Logo} alt="Logo" width={150} />
-        <Typography component="h1" variant="h5">
-          Registerierung
-        </Typography>
-        <Box component="form" onSubmit={handleSubmit} noValidate sx={{ mt: 1 }}>
-          <TextField
-            margin="normal"
-            required
-            color="secondary"
-            fullWidth
-            id="email"
-            label="Email Addresse"
-            name="email"
-            autoComplete="email"
-          />
-          <TextField margin="normal" required fullWidth id="name" name="name" label="Vorname" color="secondary" />
-          <TextField
-            margin="normal"
-            required
-            fullWidth
-            id="surname"
-            name="surname"
-            label="Nachname"
-            color="secondary"
-          />
-          <TextField
-            margin="normal"
-            required
-            color="secondary"
-            fullWidth
-            name="password1"
-            label="Password"
-            type="password"
-            id="password1"
-          />
-          <TextField
-            margin="normal"
-            required
-            color="secondary"
-            fullWidth
-            name="password2"
-            label="Password"
-            type="password"
-            id="password2"
-          />
-          <Button type="submit" fullWidth color="secondary" variant="contained" sx={{ mt: 3, mb: 2 }}>
-            Registrieren
-          </Button>
-          <Grid container>
-            <Grid>
-              <Link href="#" variant="body2" onClick={() => navigate('/login', { replace: true })}>
-                Already have an account? Sign in here!
-              </Link>
+    <Layout appBarConfig={{ showProfile: false }}>
+      <Container component="main" maxWidth="xs">
+        <CssBaseline />
+        <Box
+          sx={{
+            marginTop: 8,
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+          }}
+        >
+          <img src={Logo} alt="Logo" width={150} />
+          <Typography component="h1" variant="h5">
+            Registerierung
+          </Typography>
+          <Box component="form" onSubmit={handleSubmit} noValidate sx={{ mt: 1 }}>
+            <TextField
+              margin="normal"
+              required
+              color="secondary"
+              fullWidth
+              id="email"
+              label="Email Addresse"
+              name="email"
+              autoComplete="email"
+            />
+            <TextField margin="normal" required fullWidth id="name" name="name" label="Vorname" color="secondary" />
+            <TextField
+              margin="normal"
+              required
+              fullWidth
+              id="surname"
+              name="surname"
+              label="Nachname"
+              color="secondary"
+            />
+            <TextField
+              margin="normal"
+              required
+              color="secondary"
+              fullWidth
+              name="password1"
+              label="Password"
+              type="password"
+              id="password1"
+            />
+            <TextField
+              margin="normal"
+              required
+              color="secondary"
+              fullWidth
+              name="password2"
+              label="Password"
+              type="password"
+              id="password2"
+            />
+            <Button type="submit" fullWidth color="secondary" variant="contained" sx={{ mt: 3, mb: 2 }}>
+              Registrieren
+            </Button>
+            <Grid container>
+              <Grid>
+                <Link href="#" variant="body2" onClick={() => navigate('/login', { replace: true })}>
+                  Already have an account? Sign in here!
+                </Link>
+              </Grid>
             </Grid>
-          </Grid>
+          </Box>
         </Box>
-      </Box>
-      <AlertSnackbar alertInfo={alertInfo} />
-    </Container>
+        <AlertSnackbar alertInfo={alertInfo} />
+      </Container>
+    </Layout>
   );
 };
 export default RegisterScreen;

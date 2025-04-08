@@ -1,5 +1,5 @@
 import { AccountCircle, ArrowBack, Menu } from '@mui/icons-material';
-import { AppBar, Avatar, Box, CssBaseline, IconButton, TextField, Toolbar, Typography } from '@mui/material';
+import { AppBar, Avatar, Box, IconButton, TextField, Toolbar, Typography } from '@mui/material';
 import React, { ReactNode, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { useApplication } from '../features/auth/AuthContext';
@@ -163,7 +163,7 @@ const Layout = ({
             flex: 1,
           }}
         >
-          <Box>{children}</Box>
+          <Box sx={{ height: "100%" }}>{children}</Box>
         </Box>
       </Box>
     </Box>

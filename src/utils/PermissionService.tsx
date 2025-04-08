@@ -1,4 +1,4 @@
-import {AbilityBuilder, createMongoAbility, MongoQuery, PureAbility} from '@casl/ability';
+import { AbilityBuilder, createMongoAbility, MongoQuery, PureAbility } from '@casl/ability';
 
 export type Actions = 'select' | 'insert' | 'update' | 'delete' | 'view';
 export type Ability =
@@ -26,8 +26,10 @@ export const canAny = (action: Actions, subject: Ability[1][]) => subject.reduce
 export function defineRulesFor(userPermissions: AppPermission[], roles: AppRole[]) {
   const { can, rules } = new AbilityBuilder<AppAbility>(createMongoAbility);
 
-  can('view', 'notifications');
-  can('view', 'browse');
+  if (userPermissions.length > 0 && roles.length > 0) {
+    can('view', 'notifications');
+    can('view', 'browse');
+  }
 
   userPermissions.forEach((each: AppPermission) => {
     let split = each.name.split('.');

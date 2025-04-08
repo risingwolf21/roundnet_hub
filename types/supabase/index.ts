@@ -23,7 +23,6 @@ export type ResolveProperty<T, K extends keyof T> =
 declare global {
   type Challenge = Tables<'challenge'>;
   type ChallengeStats = Tables<'challenge_stats'>;
-  type ChallengeImages = Tables<'challenge_images'>;
   type Drink = Tables<'drink'>;
   type Attendance = Tables<'event_attendance_user_mapping'>;
   type EventComment = Tables<'event_comments'>;

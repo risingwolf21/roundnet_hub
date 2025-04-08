@@ -142,22 +142,26 @@ const DrawerContent = ({
   return (
     <DrawerBox>
       <List>
-        <DrawerItem key="homepage" selected={tab === ''} onClick={() => handleChange('')}>
-          <ListItemAvatar>
-            <ListItemIcon>
-              <Home />
-            </ListItemIcon>
-          </ListItemAvatar>
-          <ListItemText primaryTypographyProps={{ fontWeight: 'bold', fontSize: '0.9rem' }} primary={'Home'} />
-        </DrawerItem>
-        <DrawerItem key="user" selected={tab === 'user'} onClick={() => handleChange('user')}>
-          <ListItemAvatar>
-            <ListItemIcon>
-              <Person />
-            </ListItemIcon>
-          </ListItemAvatar>
-          <ListItemText primaryTypographyProps={{ fontWeight: 'bold', fontSize: '0.9rem' }} primary={'Account'} />
-        </DrawerItem>
+        {
+          canAny('select', ['drink', 'drink', 'item']) && <DrawerItem key="homepage" selected={tab === ''} onClick={() => handleChange('')}>
+            <ListItemAvatar>
+              <ListItemIcon>
+                <Home />
+              </ListItemIcon>
+            </ListItemAvatar>
+            <ListItemText primaryTypographyProps={{ fontWeight: 'bold', fontSize: '0.9rem' }} primary={'Home'} />
+          </DrawerItem>
+        }
+        {
+          can('select', "user") && <DrawerItem key="user" selected={tab === 'user'} onClick={() => handleChange('user')}>
+            <ListItemAvatar>
+              <ListItemIcon>
+                <Person />
+              </ListItemIcon>
+            </ListItemAvatar>
+            <ListItemText primaryTypographyProps={{ fontWeight: 'bold', fontSize: '0.9rem' }} primary={'Account'} />
+          </DrawerItem>
+        }
 
         <InstallPWA
           element={(onClick) => (
@@ -235,8 +239,8 @@ const DrawerContent = ({
                 />
               </DrawerItem>
             )}
+            <Divider />
           </List>
-          <Divider />
         </>
       )}
 
@@ -254,17 +258,19 @@ const DrawerContent = ({
             />
           </DrawerItem>
         )}
-        <DrawerItem key="groups" selected={tab === 'groups/list'} onClick={() => handleChange('groups/list')}>
-          <ListItemAvatar>
-            <ListItemIcon>
-              <Groups />
-            </ListItemIcon>
-          </ListItemAvatar>
-          <ListItemText
-            primaryTypographyProps={{ fontWeight: 'bold', fontSize: '0.9rem' }}
-            primary={t('navigation.groups')}
-          />
-        </DrawerItem>
+        {
+          can("select", "group") && <DrawerItem key="groups" selected={tab === 'groups/list'} onClick={() => handleChange('groups/list')}>
+            <ListItemAvatar>
+              <ListItemIcon>
+                <Groups />
+              </ListItemIcon>
+            </ListItemAvatar>
+            <ListItemText
+              primaryTypographyProps={{ fontWeight: 'bold', fontSize: '0.9rem' }}
+              primary={t('navigation.groups')}
+            />
+          </DrawerItem>
+        }
         {can('select', 'games') && (
           <DrawerItem key="matches" selected={tab === 'matches'} onClick={() => handleChange('matches')}>
             <ListItemAvatar>
@@ -494,9 +500,9 @@ const DrawerContent = ({
               </DrawerItem>
             )}
           </List>
+          <Divider />
         </>
       )}
-      <Divider />
       <List
         key="infolist"
         subheader={
