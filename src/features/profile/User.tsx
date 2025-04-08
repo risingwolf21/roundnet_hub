@@ -32,7 +32,7 @@ import { GroupsDialog } from './GroupsDialog';
 import { isNotificationSupported, NotificationsDialog } from './NotificationsDialog';
 import { PlayerzoneProfileDialog } from './PlayerzoneProfile';
 import { ProfileImage } from './ProfileImage';
-import { useNavigate } from 'react-router';
+import { Navigate, useNavigate } from 'react-router';
 
 type UserScreenProps = {
   user: UserWithRolesAndPermissions;
@@ -45,7 +45,10 @@ const UserScreenProvider = () => {
   const { user, signOut, provider_token } = useApplication();
   const dispatch = useAppDispatch();
 
-  return <UserScreen user={user!} provider_token={provider_token} dispatch={dispatch} handleSignOut={signOut} />;
+  if (!user)
+    return <Navigate to={"/"} replace />
+
+  return <UserScreen user={user} provider_token={provider_token} dispatch={dispatch} handleSignOut={signOut} />;
 };
 
 const UserScreen = ({ user, dispatch, provider_token }: UserScreenProps) => {
@@ -56,7 +59,7 @@ const UserScreen = ({ user, dispatch, provider_token }: UserScreenProps) => {
     <Layout appBarConfig={{ title: 'Profil', showProfile: false }}>
       <List sx={{ pl: 2, pr: 2, pb: 10 }}>
         <ProfileImage user={user} />
-        <Typography variant="h5" component={"div"} sx={{ textAlign: "center" }}>{user?.name}</Typography>
+        <Typography variant="h5" component={"div"} sx={{ textAlign: "center" }}>{user.name}</Typography>
         <Card sx={{ borderRadius: 2, py: 0, px: 0, mt: 1 }}>
           <CardActionArea sx={{ px: 1 }}>
             <ListItem
