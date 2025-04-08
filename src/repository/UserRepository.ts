@@ -4,10 +4,10 @@ import { Notification } from 'types/supabase';
 import { supabase } from '../components/services/supabase/supabaseClient';
 import { CalendarSettingsResult } from 'src/features/profile/CalendarSettings';
 
-export const fetchGroups = () => supabase.from('group_user_mapping').select('*, fullGroup: event_group(*)');
+export const fetchGroups = () => supabase.schema("public").from('group_user_mapping').select('*, event_group(*)');
 export const fetchUserWithGroups = () => supabase
   .from('user')
-  .select('*, groups: group_user_mapping ( group: event_group ( * ) )')
+  .select('*, groups: group_user_mapping (group: event_group(*))')
 export const fetchSimpleUser = () => supabase.from("user").select("userId, name")
 
 export const SupabaseUserRepository = {
@@ -52,8 +52,8 @@ export const SupabaseUserRepository = {
 
   async fetchGroupsForUser(userId: string): Promise<Group[]> {
     const { data, error } = await fetchGroups().eq('user', userId);
-    if(!data || error) return []
-    return data.map(x => x.fullGroup);
+    if (!data || error) return []
+    return data.map(x => x.event_group);
   },
 
   async fetchPlayer(userId: string): Promise<PostgrestSingleResponse<Player | null>> {

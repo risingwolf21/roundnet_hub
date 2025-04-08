@@ -56,7 +56,7 @@ const UserScreen = ({ user, dispatch, provider_token }: UserScreenProps) => {
     <Layout appBarConfig={{ title: 'Profil', showProfile: false }}>
       <List sx={{ pl: 2, pr: 2, pb: 10 }}>
         <ProfileImage user={user} />
-        <Typography variant="h5" component={"div"} sx={{ textAlign: "center" }}>{user.name}</Typography>
+        <Typography variant="h5" component={"div"} sx={{ textAlign: "center" }}>{user?.name}</Typography>
         <Card sx={{ borderRadius: 2, py: 0, px: 0, mt: 1 }}>
           <CardActionArea sx={{ px: 1 }}>
             <ListItem

@@ -41,7 +41,7 @@ export const EditOrAddGroupDialog = ({ open, handleClose, groupToEdit }: EditOrA
     name: groupToEdit.name,
     color: groupToEdit.color,
     description: groupToEdit.description,
-    public: groupToEdit.public
+    is_public: groupToEdit.is_public
   });
   const [errorSnackbar, setErrorSnackbar] = useState<{
     open: boolean;
@@ -55,7 +55,7 @@ export const EditOrAddGroupDialog = ({ open, handleClose, groupToEdit }: EditOrA
       name: groupToEdit.name,
       color: groupToEdit.color,
       description: groupToEdit.description,
-      public: groupToEdit.public
+      is_public: groupToEdit.is_public
     });
   }, [groupToEdit]);
 
@@ -73,7 +73,7 @@ export const EditOrAddGroupDialog = ({ open, handleClose, groupToEdit }: EditOrA
       name: currentGroup.name,
       color: currentGroup.color,
       description: currentGroup.description,
-      public: currentGroup.public
+      is_public: currentGroup.is_public
     })
       .then((result) => {
         if (!result.data) {
@@ -184,11 +184,11 @@ export const EditOrAddGroupDialog = ({ open, handleClose, groupToEdit }: EditOrA
               <ListItemAvatar>
                 <Checkbox
                   sx={{ pl: 0 }}
-                  checked={currentGroup.public ?? false}
+                  checked={currentGroup.is_public ?? false}
                   onChange={(e) =>
                     setCurrentGroup({
                       ...currentGroup,
-                      public: e.target.checked,
+                      is_public: e.target.checked,
                     })
                   }
                 />

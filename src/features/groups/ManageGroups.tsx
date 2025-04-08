@@ -28,7 +28,7 @@ type ManageGroupsScreenProps = {
   client: SupabaseClient;
 };
 
-export const EMPTY_GROUP: Group = { name: '', color: '#000000', id: '', description: '', created_at: '', public: false };
+export const EMPTY_GROUP: Group = { name: '', color: '#000000', id: '', description: '', created_at: '', is_public: false };
 
 const ManageGroupsScreen = ({ groups, loading, client }: ManageGroupsScreenProps) => {
   const { user } = useApplication();
@@ -74,7 +74,7 @@ const ManageGroupsScreen = ({ groups, loading, client }: ManageGroupsScreenProps
                 <ListItemText primary={<Stack direction={"row"} spacing={2}>
                   <Typography>{x.name}</Typography>
                   {
-                    x.public && <Chip variant='outlined' size="small" label="Public" color='info' />
+                    x.is_public && <Chip variant='outlined' size="small" label="Public" color='info' />
                   }
                 </Stack>} />
               </ListItem>
