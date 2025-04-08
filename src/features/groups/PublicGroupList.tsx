@@ -40,11 +40,11 @@ const PublicGroupList = () => {
         key={x.id}
         divider
         onClick={() => {
-          if (x.users.filter(x => x.user.userId === user?.userId).length > 0)
+          if (x.users.filter(x => x.user?.userId === user?.userId).length > 0)
             navigate('/groups/' + x.id)
         }}
         secondaryAction={
-          x.users.filter(x => x.user.userId === user?.userId).length <= 0 && (
+          x.users.filter(x => x.user?.userId === user?.userId).length <= 0 && (
             <Button
               onClick={(event) => {
                 event.stopPropagation();

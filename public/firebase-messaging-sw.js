@@ -10,11 +10,11 @@ importScripts(
 // "Default" Firebase configuration (prevents errors)
 
 const defaultConfig = {
-    apiKey: process.env.REACT_APP_FIREBASE_API_KEY,
-    projectId: process.env.REACT_APP_FIREBASE_PROJECT_ID,
-    messagingSenderId: process.env.REACT_APP_FIREBASE_MESSAGING_SENDER_ID,
-    appId: process.env.REACT_APP_FIREBASE_APP_ID,
-};
+    apiKey: true,
+    projectId: true,
+    messagingSenderId: true,
+    appId: true,
+  };
 
 firebase.initializeApp(defaultConfig);
 

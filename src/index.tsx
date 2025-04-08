@@ -28,6 +28,7 @@ import updateLocale from 'dayjs/plugin/updateLocale'
 Sentry.init({
   dsn: 'https://a06f63fae5ab4ce4ac291d0d6fb4e989@o4505379650666496.ingest.sentry.io/4505379651649536',
   environment: process.env.REACT_APP_ENV,
+  enabled: process.env.REACT_APP_ENV !== "development",
   integrations: [
     Sentry.reactRouterV6BrowserTracingIntegration({
       useEffect,
