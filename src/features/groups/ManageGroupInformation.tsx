@@ -29,7 +29,7 @@ const ManageGroupInformationProvider = () => {
   if (!group)
     return (
       <AlertSnackbar
-        close={() => {}}
+        close={() => { }}
         alertInfo={{ message: 'Fatal error occured. Repository or selected group was null!', severity: 'error' }}
       />
     );
@@ -40,7 +40,7 @@ const ManageGroupInformationProvider = () => {
 type GroupInformationProps = {
   users: UserWithGroups[];
   loading: boolean;
-  group: GroupWithUsers;
+  group: GroupWithUsersBase;
 };
 
 const ManageGroupInformation = ({ users, loading, group }: GroupInformationProps) => {
@@ -103,13 +103,13 @@ const ManageGroupInformation = ({ users, loading, group }: GroupInformationProps
         {group &&
           group.users &&
           [...group.users]
-            .sort((a, b) => a.displayName.localeCompare(b.displayName))
-            .map((x: Tables<'user'>, index: number) => (
+            .sort((a, b) => a.user.displayName.localeCompare(b.user.displayName))
+            .map((x: { role: GroupRole, user: Tables<'user'> }, index: number) => (
               <ListItem key={index} divider>
                 <ListItemAvatar>
                   <AccountCircle />
                 </ListItemAvatar>
-                <ListItemText primary={x.displayName} />
+                <ListItemText primary={x.user.displayName} />
               </ListItem>
             ))}
       </List>
@@ -134,7 +134,7 @@ const ManageGroupInformation = ({ users, loading, group }: GroupInformationProps
         open={searchAndSelectUsersOpen}
         handleClose={() => setSearchAndSelectUsersOpen(false)}
         handleSubmit={handleUsersAdded}
-        users={users.filter((x: UserWithGroups) => !group?.users?.some((y: Tables<'user'>) => y.userId === x.userId))}
+        users={users.filter((x: UserWithGroups) => !group?.users?.map(y => y.user).some((y) => y.userId === x.userId))}
         loading={loading}
       />
 
@@ -142,7 +142,7 @@ const ManageGroupInformation = ({ users, loading, group }: GroupInformationProps
         open={deleteUsersOpen}
         handleClose={() => setDeleteUsersOpen(false)}
         handleSubmit={handleUsersRemove}
-        users={group?.users ?? []}
+        users={group?.users.map(y => y.user) ?? []}
         loading={loading}
       />
 

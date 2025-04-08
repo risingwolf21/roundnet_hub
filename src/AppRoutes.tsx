@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { createBrowserRouter, Navigate, Outlet, RouterProvider } from "react-router";
 import ErrorRouteElement from "./components/ErrorRouteElement";
 import { useApplication } from "./features/auth/AuthContext";

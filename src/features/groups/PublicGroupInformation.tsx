@@ -1,5 +1,5 @@
 import { AccountBox } from "@mui/icons-material";
-import { Avatar, Divider, List, ListItem, ListItemAvatar, ListItemButton, ListItemText, Typography } from "@mui/material";
+import { Avatar, Chip, Divider, List, ListItem, ListItemAvatar, ListItemButton, ListItemText, Stack, Typography } from "@mui/material";
 import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router";
 import Layout from "src/components/Layout";
@@ -51,7 +51,12 @@ const PublicGroupInformation = () => {
             </Avatar>
           </ListItemAvatar>
           <ListItemText
-            primary={x.user?.displayName}
+            primary={<Stack direction={"row"} spacing={2}>
+              <Typography>{x.user.displayName}</Typography>
+              {
+                x.user.role === "admin" && <Chip variant='outlined' size="small" label="Admin" color='info' />
+              }
+            </Stack>}
           />
         </ListItemButton>)
       }

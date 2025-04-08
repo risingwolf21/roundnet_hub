@@ -23,7 +23,7 @@ const ManageGroupsProvider = () => {
 };
 
 type ManageGroupsScreenProps = {
-  groups: GroupWithUsers[];
+  groups: GroupWithUsersBase[];
   loading: boolean;
   client: SupabaseClient;
 };
@@ -48,7 +48,7 @@ const ManageGroupsScreen = ({ groups, loading, client }: ManageGroupsScreenProps
       <List sx={{ width: '100%' }}>
         {groups &&
           groups
-            .filter((x) => user && x.users.some((x) => x.userId === user.userId))
+            .filter((x) => user && x.users.some((x) => x.user.userId === user.userId))
             .map((x) => (
               <ListItem
                 key={x.id}

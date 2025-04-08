@@ -6,7 +6,7 @@ import { RootState } from '../../../redux/store';
 import { captureException } from '@sentry/react';
 
 const groupsAdapter = createEntityAdapter({
-  selectId: (group: GroupWithUsers) => group.id,
+  selectId: (group: GroupWithUsersBase) => group.id,
 });
 
 export const groupsSelector = groupsAdapter.getSelectors((st: RootState) => st.groups);
@@ -27,7 +27,7 @@ const groupsSlice = createSlice({
         changes: {
           users: [...groupsSlice.users, action.payload.user]
         }
-      } as Update<GroupWithUsers>;
+      } as Update<GroupWithUsersBase>;
 
       groupsAdapter.updateOne(state, changes);
     }
@@ -66,7 +66,7 @@ export const fetchGroupsAsync = createAsyncThunk('fetchGroupsAsync', async ({ cl
 
   return (
     response.data?.map((x) => {
-      return { ...x, users: x.users.map((y: any) => y.user) } as GroupWithUsers;
+      return { ...x, users: x.users.map((y: any) => ({...y.user, role: y.role})) } as GroupWithUsersBase;
     }) ?? []
   );
 });
@@ -86,8 +86,8 @@ export const fetchSingleGroupAsync = createAsyncThunk(
         return {
           data: {
             ...response.data,
-            users: response.data?.users?.map((x: any) => x.user) ?? [],
-          } as GroupWithUsers,
+            users: response.data?.users?.map((x: any) => ({...x.user, role: x.role})) ?? [],
+          } as GroupWithUsersBase,
           id,
         };
       })

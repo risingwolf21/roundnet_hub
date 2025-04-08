@@ -78,6 +78,7 @@ declare global {
   type PaymentState = Enums<'PaymentState'>;
   type ItemType = Enums<'ItemType'>;
   type UserRole = Enums<'UserRole'>;
+  type GroupRole = Enums<'GroupRole'>;
 }
 
 export { };
