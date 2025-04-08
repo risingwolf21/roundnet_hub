@@ -14,6 +14,7 @@ import { HOMEPAGE } from 'src/constants';
 import { BRANDING } from 'src/utils';
 import { useApplication } from './AuthContext';
 import { getCommonTextFieldProps } from './SignUpScreen';
+import Layout from 'src/components/Layout';
 
 const ForgotPasswordScreen = () => {
   const navigate = useNavigate();
@@ -57,97 +58,100 @@ const ForgotPasswordScreen = () => {
     notifications.show("Anfrage erfolgreich versendet!", { severity: "success" })
   };
 
-  return <Box
-    sx={(theme) => ({
-      height: '100vh',
-      mb: "env(safe-area-inset-bottom)",
-      mt: "env(safe-area-inset-top)",
-      display: 'flex',
-      flexDirection: 'column',
-      overflow: "hidden",
-      overflowY: "scroll",
-      [theme.breakpoints.up('sm')]: {
-        justifyContent: 'center',
-        alignItems: 'center',
-      },
-      [theme.breakpoints.down('xs')]: {
-        justifyContent: 'start',
-        alignItems: 'start',
-      },
-    })}
-  >
-    <Container component="main" maxWidth="xs">
-      <Box
-        sx={(theme) => ({
-          display: 'flex',
-          flexDirection: 'column',
-          bgcolor: 'background.paper',
-          borderRadius: 1,
-          p: 4,
-          mb: 10,
-          [theme.breakpoints.up('sm')]: {
-            border: '1px solid',
-            alignItems: 'center',
-            borderColor: alpha(theme.palette.grey[400], 0.4),
-            boxShadow: theme.shadows[4],
-            marginBottom: 0,
-          },
-          [theme.breakpoints.down('xs')]: {
-            alignItems: 'start',
-            border: "none",
-            boxShadow: "none"
-          },
-        })}
-      >
-
-        {BRANDING.logo}
-
-        <Typography variant="h5" component={"h1"} color='textPrimary' sx={{
-          my: theme.spacing(1),
-          textAlign: 'center',
-          fontWeight: 600,
-        }}>
-          Passwort zurücksetzen
-        </Typography>
+  return <Layout appBarConfig={{ showProfile: false }}>
+    <Box
+      sx={(theme) => ({
+        height: '100%',
+        minHeight: "100%",
+        mb: "env(safe-area-inset-bottom)",
+        mt: "env(safe-area-inset-top)",
+        display: 'flex',
+        flexDirection: 'column',
+        overflow: "hidden",
+        overflowY: "auto",
+        [theme.breakpoints.up('sm')]: {
+          justifyContent: 'center',
+          alignItems: 'center',
+        },
+        [theme.breakpoints.down('xs')]: {
+          justifyContent: 'start',
+          alignItems: 'start',
+        },
+      })}
+    >
+      <Container component="main" maxWidth="xs">
         <Box
-          component="form"
-          onSubmit={handleSubmit}
-          sx={{ width: "100%" }}
+          sx={(theme) => ({
+            display: 'flex',
+            flexDirection: 'column',
+            bgcolor: 'background.paper',
+            borderRadius: 1,
+            p: 4,
+            mb: 10,
+            [theme.breakpoints.up('sm')]: {
+              border: '1px solid',
+              alignItems: 'center',
+              borderColor: alpha(theme.palette.grey[400], 0.4),
+              boxShadow: theme.shadows[4],
+              marginBottom: 0,
+            },
+            [theme.breakpoints.down('xs')]: {
+              alignItems: 'start',
+              border: "none",
+              boxShadow: "none"
+            },
+          })}
         >
-          <Stack direction={"column"} spacing={2} sx={{ mb: 2, mt: 2 }}>
-            <TextField
-              {...getCommonTextFieldProps(theme, {
-                label: "Email",
-                placeholder: 'your@email.com',
-                id: 'email',
-                name: 'email',
-                type: 'email',
-                autoComplete: 'email'
-              })}
-            />
-          </Stack>
 
-          <Button
-            type="submit"
-            variant="contained"
-            fullWidth
-            disabled={loading}
-            sx={{ my: 2 }}
+          {BRANDING.logo}
+
+          <Typography variant="h5" component={"h1"} color='textPrimary' sx={{
+            my: theme.spacing(1),
+            textAlign: 'center',
+            fontWeight: 600,
+          }}>
+            Passwort zurücksetzen
+          </Typography>
+          <Box
+            component="form"
+            onSubmit={handleSubmit}
+            sx={{ width: "100%" }}
           >
-            {
-              loading ? <CircularProgress color="inherit" size={25} /> : "Abschicken"
-            }
-          </Button>
+            <Stack direction={"column"} spacing={2} sx={{ mb: 2, mt: 2 }}>
+              <TextField
+                {...getCommonTextFieldProps(theme, {
+                  label: "Email",
+                  placeholder: 'your@email.com',
+                  id: 'email',
+                  name: 'email',
+                  type: 'email',
+                  autoComplete: 'email'
+                })}
+              />
+            </Stack>
 
-          <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
-            <Link href="#" variant="body2" onClick={() => navigate('/login', { replace: true })}>
-              Hier einloggen
-            </Link>
-            <Typography sx={{ mt: 1 }}>{`Version ${process.env.REACT_APP_VERSION}-${version.slice(0, 8)}`}</Typography>
-          </div>
+            <Button
+              type="submit"
+              variant="contained"
+              fullWidth
+              disabled={loading}
+              sx={{ my: 2 }}
+            >
+              {
+                loading ? <CircularProgress color="inherit" size={25} /> : "Abschicken"
+              }
+            </Button>
+
+            <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
+              <Link href="#" variant="body2" onClick={() => navigate('/login', { replace: true })}>
+                Hier einloggen
+              </Link>
+              <Typography sx={{ mt: 1 }}>{`Version ${process.env.REACT_APP_VERSION}-${version.slice(0, 8)}`}</Typography>
+            </div>
+          </Box>
         </Box>
-      </Box>
-    </Container>
-  </Box>
+      </Container>
+    </Box>
+  </Layout>
 };
 export default ForgotPasswordScreen;

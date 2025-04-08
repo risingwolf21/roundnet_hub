@@ -378,51 +378,13 @@ export type Database = {
           },
         ]
       }
-      challenge_images: {
-        Row: {
-          challenge: number
-          created_at: string
-          id: string
-          image_url: string
-          user: string
-        }
-        Insert: {
-          challenge: number
-          created_at?: string
-          id?: string
-          image_url: string
-          user: string
-        }
-        Update: {
-          challenge?: number
-          created_at?: string
-          id?: string
-          image_url?: string
-          user?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "challenge_images_challenge_fkey"
-            columns: ["challenge"]
-            isOneToOne: false
-            referencedRelation: "challenge"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "challenge_images_user_fkey"
-            columns: ["user"]
-            isOneToOne: false
-            referencedRelation: "user"
-            referencedColumns: ["userId"]
-          },
-        ]
-      }
       challenge_stats: {
         Row: {
           challenge: number
           count: number
           created_at: string
           id: number
+          image_url: string | null
           user: string
         }
         Insert: {
@@ -430,6 +392,7 @@ export type Database = {
           count?: number
           created_at?: string
           id?: number
+          image_url?: string | null
           user: string
         }
         Update: {
@@ -437,6 +400,7 @@ export type Database = {
           count?: number
           created_at?: string
           id?: number
+          image_url?: string | null
           user?: string
         }
         Relationships: [
@@ -1367,24 +1331,23 @@ export type Database = {
         }
         Returns: undefined
       }
-      increase_challenge_stats_count:
-        | {
-            Args: {
-              user_id: string
-              challenge_id: number
-              amount: number
-            }
-            Returns: undefined
-          }
-        | {
-            Args: {
-              user_id: string
-              challenge_id: number
-              amount: number
-              to_create_at: string
-            }
-            Returns: undefined
-          }
+      increase_challenge_stats_count: {
+        Args: {
+          user_id: string
+          challenge_id: number
+          amount: number
+          to_create_at: string
+          image_url: string
+        }
+        Returns: {
+          challenge: number
+          count: number
+          created_at: string
+          id: number
+          image_url: string | null
+          user: string
+        }
+      }
       remove_notificationtags_from_all_users: {
         Args: {
           notification: Database["public"]["Enums"]["NotificationTags"]

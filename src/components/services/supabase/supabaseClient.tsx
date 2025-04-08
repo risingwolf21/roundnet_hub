@@ -4,8 +4,6 @@ import { Database } from '../../../types/supabase-generated.types';
 const supabaseUrl = process.env.REACT_APP_SUPABASE_URL;
 const supabaseKey = process.env.REACT_APP_SUPABASE_API_KEY;
 
-console.log(process.env.REACT_APP_SUPABASE_API_KEY)
-
 export const supabase = createClient<Database>(supabaseUrl ?? '', supabaseKey ?? '', {
   auth: {
     autoRefreshToken: true,

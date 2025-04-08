@@ -28,7 +28,6 @@ import updateLocale from 'dayjs/plugin/updateLocale'
 Sentry.init({
   dsn: 'https://a06f63fae5ab4ce4ac291d0d6fb4e989@o4505379650666496.ingest.sentry.io/4505379651649536',
   environment: process.env.REACT_APP_ENV,
-  enabled: process.env.REACT_APP_ENV === "production",
   integrations: [
     Sentry.reactRouterV6BrowserTracingIntegration({
       useEffect,
@@ -61,23 +60,25 @@ const root = ReactDOM.createRoot(document.getElementById('root') as HTMLElement,
 
 dayjs.extend(updateLocale)
 dayjs.updateLocale('en', {
-    weekStart: 1,
+  weekStart: 1,
 })
 
 root.render(
-  <ThemeProvider theme={mainTheme}>
-    <AppProvider branding={BRANDING} theme={mainTheme}>
-      <DialogsProvider>
-        <NotificationsProvider>
-          <Provider store={store}>
-            <SupabaseProvider value={supabase}>
-              <LocalizationProvider dateAdapter={AdapterDayjs}>
-                <AuthGate />
-              </LocalizationProvider>
-            </SupabaseProvider>
-          </Provider>
-        </NotificationsProvider>
-      </DialogsProvider>
-    </AppProvider>
-  </ThemeProvider>
+  <Sentry.ErrorBoundary>
+    <ThemeProvider theme={mainTheme}>
+      <AppProvider branding={BRANDING} theme={mainTheme}>
+        <DialogsProvider>
+          <NotificationsProvider>
+            <Provider store={store}>
+              <SupabaseProvider value={supabase}>
+                <LocalizationProvider dateAdapter={AdapterDayjs}>
+                  <AuthGate />
+                </LocalizationProvider>
+              </SupabaseProvider>
+            </Provider>
+          </NotificationsProvider>
+        </DialogsProvider>
+      </AppProvider>
+    </ThemeProvider>
+  </Sentry.ErrorBoundary>
 );

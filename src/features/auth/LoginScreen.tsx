@@ -8,6 +8,7 @@ import { Navigate, useNavigate } from 'react-router';
 import { HOMEPAGE } from 'src/constants';
 import { supabase } from '../../components/services/supabase/supabaseClient';
 import { useApplication } from './AuthContext';
+import Layout from 'src/components/Layout';
 
 
 const LoginScreen = () => {
@@ -131,31 +132,34 @@ const LoginScreen = () => {
 
   const rememberMe = () => <div></div>
 
-  return <SignInPage
-    providers={[{ id: 'credentials', name: 'Credentials' }]}
-    signIn={signIn}
-    slots={{
-      title: Title,
-      subtitle: Subtitle,
-      signUpLink: SignUpLink,
-      forgotPasswordLink: ForgotPasswordLink,
-      rememberMe: rememberMe,
-      submitButton: SubmitButton
-    }}
-    sx={{
-      "minHeight": "100%",
-      "verticalAlign": "middle",
-      "& .MuiContainer-root .MuiBox-root": {
-        [theme.breakpoints.down("sm")]: {
-          border: "none",
-          boxShadow: "none"
+  return <Layout appBarConfig={{ showProfile: false }}>
+    <SignInPage
+      providers={[{ id: 'credentials', name: 'Credentials' }]}
+      signIn={signIn}
+      slots={{
+        title: Title,
+        subtitle: Subtitle,
+        signUpLink: SignUpLink,
+        forgotPasswordLink: ForgotPasswordLink,
+        rememberMe: rememberMe,
+        submitButton: SubmitButton
+      }}
+      sx={{
+        "height": "100%",
+        "minHeight": "100%",
+        "verticalAlign": "middle",
+        "& .MuiContainer-root .MuiBox-root": {
+          [theme.breakpoints.down("sm")]: {
+            border: "none",
+            boxShadow: "none"
+          }
         }
-      }
-    }}
-    slotProps={{
-      emailField: { autoFocus: false },
-      submitButton: { title: "Einloggen" },
-      rememberMe: { disabled: true, hidden: true }
-    }} />
+      }}
+      slotProps={{
+        emailField: { autoFocus: false },
+        submitButton: { title: "Einloggen" },
+        rememberMe: { disabled: true, hidden: true }
+      }} />
+  </Layout>
 };
 export default LoginScreen;

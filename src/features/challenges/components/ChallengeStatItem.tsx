@@ -1,5 +1,5 @@
-import { Avatar, Button, Card, CardActionArea, CardActions, CardContent, ListItem, ListItemAvatar, ListItemText, Typography } from '@mui/material';
 import { AccountBox } from '@mui/icons-material';
+import { Avatar, Card, CardActionArea, CardContent, ListItem, ListItemAvatar, ListItemText, Typography } from '@mui/material';
 import React from 'react';
 import { ChallengeStatWithUser } from '../../../types/supabaseTypes';
 
@@ -18,7 +18,7 @@ export const ChallengeStatItem = ({
   index: number;
 }) => {
 
-  const user = statsForUser[0]?.user
+  const user = statsForUser[0]?.fullUser
 
   if (!user)
     return null

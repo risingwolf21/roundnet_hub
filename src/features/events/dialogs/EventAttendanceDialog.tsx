@@ -20,7 +20,7 @@ import { SwipeableDialog } from '../../../components/SwipeableDialog';
 import { FullAttendance } from '../../../types/supabaseTypes';
 import { EventAttendanceDialogProps } from '../types';
 
-function TabPanel(props: any) {
+export const TabPanel = (props: any) => {
   const { children, value, index, ...other } = props;
 
   return (

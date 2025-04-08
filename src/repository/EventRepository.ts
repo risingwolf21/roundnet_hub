@@ -1,4 +1,4 @@
-import { PostgrestError, PostgrestSingleResponse } from '@supabase/supabase-js';
+import { PostgrestSingleResponse } from '@supabase/supabase-js';
 import { add, Duration, startOfDay } from 'date-fns';
 import moment from 'moment/moment';
 import { Event } from 'types/supabase';

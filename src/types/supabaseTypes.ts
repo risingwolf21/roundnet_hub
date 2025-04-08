@@ -4,18 +4,13 @@ import { Database } from './supabase-generated.types';
 
 export type FullChallenge = Challenge & {
     stats: ChallengeStatWithUser[];
-    images: ChallengeImagesWithUser[]
     group: GroupWithUsers
 };
 
 export type ChallengeWithFullGroup = Challenge & { group: GroupWithUsers }
 
-export type ChallengeImagesWithUser = ChallengeImages & {
-    user: User;
-};
-
 export type ChallengeStatWithUser = ChallengeStats & {
-    user: User;
+    fullUser: User;
 };
 
 export type FullKeyHistory = Modify<

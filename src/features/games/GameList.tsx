@@ -23,7 +23,11 @@ const GameList = () => {
   return (
     <Layout>
       <PullToRefresh onRefresh={() => dispatch(fetchMatchesAsync())}>
-        <List>
+        <List sx={(theme) => ({
+          overscrollBehavior: "none",
+          [theme.breakpoints.down('xl')]: { pb: 12 },
+          [theme.breakpoints.up('xl')]: { pb: 0 },
+        })}>
           {Array.from(
             groupBy(matches, (x: FullUserMatch) => moment(new Date(x.created_at ?? '')).format('DD MMMM yyyy'))
           ).map(([key, value]) => (

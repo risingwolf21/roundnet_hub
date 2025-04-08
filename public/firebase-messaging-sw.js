@@ -1,18 +1,19 @@
 // Scripts for firebase and firebase messaging
 // eslint-disable-next-line no-undef
-importScripts("https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js");
+importScripts("https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js");
 // eslint-disable-next-line no-undef
 importScripts(
-    "https://www.gstatic.com/firebasejs/8.10.0/firebase-messaging.js"
+    "https://www.gstatic.com/firebasejs/9.6.1/firebase-messaging-compat.js"
 );
 
 // Initialize the Firebase app in the service worker
 // "Default" Firebase configuration (prevents errors)
+
 const defaultConfig = {
-    apiKey: true,
-    projectId: true,
-    messagingSenderId: true,
-    appId: true,
+    apiKey: process.env.REACT_APP_FIREBASE_API_KEY,
+    projectId: process.env.REACT_APP_FIREBASE_PROJECT_ID,
+    messagingSenderId: process.env.REACT_APP_FIREBASE_MESSAGING_SENDER_ID,
+    appId: process.env.REACT_APP_FIREBASE_APP_ID,
 };
 
 firebase.initializeApp(defaultConfig);

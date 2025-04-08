@@ -1,16 +1,12 @@
 import { createAsyncThunk, createEntityAdapter, createSlice, PayloadAction, Update } from '@reduxjs/toolkit';
 import { RootState } from '../../../redux/store';
 import { ChallengeRepository } from '../../../repository/ChallengeRepository';
-import { ChallengeImagesWithUser, ChallengeStatWithUser, FullChallenge, GroupWithUsers } from '../../../types/supabaseTypes';
 import { TablesUpdate } from '../../../types/supabase-generated.types';
-import { stringMatchesSomePattern } from '@sentry/core';
-import { formatDateToDatabase } from 'src/utils';
-import { PlaylistAddOutlined } from '@mui/icons-material';
+import { ChallengeStatWithUser } from '../../../types/supabaseTypes';
 
 
 export type ChallengeSlice = ChallengeWithFullGroup & {
   stats: ChallengeStatWithUser[]
-  images: ChallengeImagesWithUser[]
 }
 
 const challengeAdapter = createEntityAdapter({
@@ -42,7 +38,7 @@ const challengeSlice = createSlice({
     },
     onChallengeStatsInsert: (state, action: PayloadAction<ChallengeStatWithUser | null>) => {
       if (!action.payload) return;
-      let challenge = challengeAdapter.getSelectors().selectById(state, action.payload.id ?? -1);
+      let challenge = challengeAdapter.getSelectors().selectById(state, action.payload.challenge ?? -1);
       if (!challenge) return;
       const payload = action.payload;
       let update = {
@@ -89,23 +85,6 @@ const challengeSlice = createSlice({
     },
     onChallengeDelete: (state, action: PayloadAction<number>) => {
       challengeAdapter.removeOne(state, action.payload);
-    },
-    onChallengeImageInserted: (state, action: PayloadAction<{ challenge: number, image_url: string, user: User }>) => {
-      let fullChallenge = challengeAdapter.getSelectors().selectById(state, action.payload.challenge);
-      if (!fullChallenge) return;
-      let update = {
-        id: action.payload.challenge,
-        changes: {
-          ...fullChallenge,
-          images: [{
-            challenge: action.payload.challenge,
-            image_url: action.payload.image_url,
-            user: action.payload.user,
-            created_at: formatDateToDatabase(Date.now())
-          }, ...fullChallenge.images]
-        },
-      } as Update<ChallengeSlice>;
-      challengeAdapter.updateOne(state, update);
     }
   },
   extraReducers(builder) {
@@ -143,7 +122,6 @@ const challengeSlice = createSlice({
           changes: {
             id: action.payload.data.id,
             stats: action.payload.data.stats,
-            images: action.payload.data.images,
             description: action.payload.data.description,
             name: action.payload.data.name,
             group: action.payload.data.group,
@@ -177,7 +155,6 @@ export const fetchChallengeStatsSingleAsync = createAsyncThunk(
       data: {
         ...response.data,
         stats: response.data?.stats ?? [],
-        images: response.data?.images ?? []
       },
     };
   }
@@ -189,8 +166,7 @@ export const {
   onChallengeStatsDelete,
   onChallengeDelete,
   onChallengeInsert,
-  onChallengeUpdate,
-  onChallengeImageInserted
+  onChallengeUpdate
 } = challengeSlice.actions;
 
 export default challengeSlice.reducer;

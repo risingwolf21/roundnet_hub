@@ -152,7 +152,6 @@ const eventsSlice = createSlice({
         eventsAdapter.updateOne(state, sliceEvent);
       })
       .addCase(onEventAttendanceUpdate, (state, action) => {
-        console.log(action);
         if (!action.payload.event || action.payload.user !== action.payload.userId) return;
 
         let sliceEvent = {
