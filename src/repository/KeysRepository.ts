@@ -28,7 +28,7 @@ export const SupabaseKeysRepository = {
   },
 
   async getItems(): Promise<PostgrestSingleResponse<FullItemHolder[]>> {
-    return supabase.from('items').select('*, current_holder: user!keys_user_fkey(*)').returns<FullItemHolder[]>();
+    return supabase.from('items').select('*, current_holder: user!keys_user_fkey(*)').not("current_holder", "is", null).returns<FullItemHolder[]>();
   },
 
   async giveItemToUser(key: Item, user: User): Promise<PostgrestSingleResponse<null>> {
