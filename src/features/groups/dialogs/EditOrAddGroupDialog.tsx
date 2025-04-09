@@ -1,4 +1,6 @@
+import { ColorLens } from '@mui/icons-material';
 import CloseIcon from '@mui/icons-material/Close';
+import KeyIcon from '@mui/icons-material/Key';
 import {
   Alert,
   AppBar,
@@ -17,15 +19,12 @@ import {
   Typography,
 } from '@mui/material';
 import { Box } from '@mui/system';
+import { captureException } from '@sentry/react';
 import React, { useEffect, useRef, useState } from 'react';
-import { SlideUpTransition } from '../../../utils';
-import KeyIcon from '@mui/icons-material/Key';
 import { GroupsRepository } from '../../../repository/GroupsRepository';
 import { TablesUpdate } from '../../../types/supabase-generated.types';
+import { SlideUpTransition } from '../../../utils';
 import { useApplication } from '../../auth/AuthContext';
-import { captureException } from '@sentry/react';
-import { ColorLens } from '@mui/icons-material';
-import { current } from '@reduxjs/toolkit';
 
 type EditOrAddGroupDialogProps = {
   open: boolean;

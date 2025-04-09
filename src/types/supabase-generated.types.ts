@@ -233,6 +233,92 @@ export type Database = {
       [_ in never]: never
     }
   }
+  graphql_public: {
+    Tables: {
+      [_ in never]: never
+    }
+    Views: {
+      [_ in never]: never
+    }
+    Functions: {
+      graphql: {
+        Args: {
+          operationName?: string
+          query?: string
+          variables?: Json
+          extensions?: Json
+        }
+        Returns: Json
+      }
+    }
+    Enums: {
+      [_ in never]: never
+    }
+    CompositeTypes: {
+      [_ in never]: never
+    }
+  }
+  logs: {
+    Tables: {
+      events: {
+        Row: {
+          author: string | null
+          created_at: string
+          data: Json
+          id: number
+          type: string
+        }
+        Insert: {
+          author?: string | null
+          created_at?: string
+          data: Json
+          id?: number
+          type: string
+        }
+        Update: {
+          author?: string | null
+          created_at?: string
+          data?: Json
+          id?: number
+          type?: string
+        }
+        Relationships: []
+      }
+      player_info: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          type: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          type: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          type?: string
+        }
+        Relationships: []
+      }
+    }
+    Views: {
+      [_ in never]: never
+    }
+    Functions: {
+      [_ in never]: never
+    }
+    Enums: {
+      [_ in never]: never
+    }
+    CompositeTypes: {
+      [_ in never]: never
+    }
+  }
   permissions: {
     Tables: {
       app_permissions: {
@@ -1080,6 +1166,32 @@ export type Database = {
           },
         ]
       }
+      user_notification_settings: {
+        Row: {
+          id: number
+          notification_tag: string
+          user: string
+        }
+        Insert: {
+          id?: number
+          notification_tag: string
+          user: string
+        }
+        Update: {
+          id?: number
+          notification_tag?: string
+          user?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_notification_settings_user_fkey"
+            columns: ["user"]
+            isOneToOne: false
+            referencedRelation: "user"
+            referencedColumns: ["userId"]
+          },
+        ]
+      }
       vouchers: {
         Row: {
           created_at: string
@@ -1496,6 +1608,12 @@ export type CompositeTypes<
 
 export const Constants = {
   games: {
+    Enums: {},
+  },
+  graphql_public: {
+    Enums: {},
+  },
+  logs: {
     Enums: {},
   },
   permissions: {

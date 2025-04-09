@@ -1,19 +1,17 @@
 import { AccountCircle, GroupAdd, GroupRemove } from '@mui/icons-material';
 import { Box, Divider, Fab, List, ListItem, ListItemAvatar, ListItemText, Typography } from '@mui/material';
-import { toInteger } from 'lodash';
+import { captureException } from '@sentry/react';
 import React, { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { useParams } from 'react-router';
-import { fetchAdminUsersAsync } from '../admin/slices/adminUserSlice';
-import { RootState, useAppDispatch } from '../../redux/store';
-import { GroupWithUsers, UserWithGroups } from '../../types/supabaseTypes';
-import { AlertMessage, AlertSnackbar } from '../../components/AlertSnackbar';
-import SearchAndSelectUserDialog from './dialogs/SearchAndSelectUserDialog';
 import { fetchSingleGroupAsync, groupsSelector } from 'src/features/groups/slices/groupsSlice';
-import { captureException } from '@sentry/react';
-import { Tables } from '../../types/supabase-generated.types';
-import { AdminUsersRepository } from '../../repository/AdminUsersRepository';
+import { AlertMessage, AlertSnackbar } from '../../components/AlertSnackbar';
 import Layout from '../../components/Layout';
+import { RootState, useAppDispatch } from '../../redux/store';
+import { AdminUsersRepository } from '../../repository/AdminUsersRepository';
+import { GroupWithUsers, UserWithGroups } from '../../types/supabaseTypes';
+import { fetchAdminUsersAsync } from '../admin/slices/adminUserSlice';
+import SearchAndSelectUserDialog from './dialogs/SearchAndSelectUserDialog';
 
 const ManageGroupInformationProvider = () => {
   const { id } = useParams();
@@ -40,7 +38,7 @@ const ManageGroupInformationProvider = () => {
 type GroupInformationProps = {
   users: UserWithGroups[];
   loading: boolean;
-  group: GroupWithUsersBase;
+  group: GroupWithUsers;
 };
 
 const ManageGroupInformation = ({ users, loading, group }: GroupInformationProps) => {
@@ -103,13 +101,13 @@ const ManageGroupInformation = ({ users, loading, group }: GroupInformationProps
         {group &&
           group.users &&
           [...group.users]
-            .sort((a, b) => a.user.displayName.localeCompare(b.user.displayName))
-            .map((x: { role: GroupRole, user: Tables<'user'> }, index: number) => (
+            .sort((a, b) => a.displayName.localeCompare(b.displayName))
+            .map((x, index: number) => (
               <ListItem key={index} divider>
                 <ListItemAvatar>
                   <AccountCircle />
                 </ListItemAvatar>
-                <ListItemText primary={x.user.displayName} />
+                <ListItemText primary={x.displayName} />
               </ListItem>
             ))}
       </List>
@@ -134,7 +132,7 @@ const ManageGroupInformation = ({ users, loading, group }: GroupInformationProps
         open={searchAndSelectUsersOpen}
         handleClose={() => setSearchAndSelectUsersOpen(false)}
         handleSubmit={handleUsersAdded}
-        users={users.filter((x: UserWithGroups) => !group?.users?.map(y => y.user).some((y) => y.userId === x.userId))}
+        users={users.filter((x: UserWithGroups) => !group.users.some((y) => y.userId === x.userId))}
         loading={loading}
       />
 
@@ -142,7 +140,7 @@ const ManageGroupInformation = ({ users, loading, group }: GroupInformationProps
         open={deleteUsersOpen}
         handleClose={() => setDeleteUsersOpen(false)}
         handleSubmit={handleUsersRemove}
-        users={group?.users.map(y => y.user) ?? []}
+        users={group.users}
         loading={loading}
       />
 

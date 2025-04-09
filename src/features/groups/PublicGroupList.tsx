@@ -11,6 +11,7 @@ import { GroupsRepository } from "src/repository/GroupsRepository";
 import { GroupWithUsers } from "src/types/supabaseTypes";
 import { useApplication } from "../auth/AuthContext";
 import { fetchGroupsAsync, groupsSelector, onEventMappingUserAdded } from "./slices/groupsSlice";
+import { LoadingGroupListItem } from "./LoadingGroupListItem";
 
 const PublicGroupList = () => {
   const groups = useSelector((state: RootState) => groupsSelector.selectAll(state));
@@ -26,7 +27,7 @@ const PublicGroupList = () => {
     dispatch(fetchGroupsAsync({ client: supabase }));
   }, [dispatch]);
 
-  const joinGroup = (group: GroupWithUsersBase) => {
+  const joinGroup = (group: GroupWithUsers) => {
     if (user)
       GroupsRepository.addUserToGroup(group.id, user?.userId).then(result => {
         dispatch(onEventMappingUserAdded({ user, group: group.id }));
@@ -36,33 +37,35 @@ const PublicGroupList = () => {
 
   return <Layout>
     {
-      groups.map(x => <ListItem
-        key={x.id}
-        divider
-        onClick={() => {
-          if (x.users.filter(x => x.user?.userId === user?.userId).length > 0)
-            navigate('/groups/' + x.id)
-        }}
-        secondaryAction={
-          x.users.filter(x => x.user?.userId === user?.userId).length <= 0 && (
-            <Button
-              onClick={(event) => {
-                event.stopPropagation();
-                joinGroup(x)
-              }}
-            >
-              Beitreten
-            </Button>
-          )
-        }
-      >
-        <ListItemAvatar>
-          <Avatar sx={{ backgroundColor: x.color, borderRadius: 2 }}>
-            <Groups />
-          </Avatar>
-        </ListItemAvatar>
-        <ListItemText primary={x.name} secondary={x.description} />
-      </ListItem>)
+      loading
+        ? Array.from({ length: 10 }, (v, k) => k + 1).map((x) => <LoadingGroupListItem key={x} />)
+        : groups.map(x => <ListItem
+          key={x.id}
+          divider
+          onClick={() => {
+            if (x.users.filter(x => x.userId === user?.userId).length > 0)
+              navigate('/groups/' + x.id)
+          }}
+          secondaryAction={
+            x.users.filter(x => x.userId === user?.userId).length <= 0 && (
+              <Button
+                onClick={(event) => {
+                  event.stopPropagation();
+                  joinGroup(x)
+                }}
+              >
+                Beitreten
+              </Button>
+            )
+          }
+        >
+          <ListItemAvatar>
+            <Avatar sx={{ backgroundColor: x.color, borderRadius: 2 }}>
+              <Groups />
+            </Avatar>
+          </ListItemAvatar>
+          <ListItemText primary={x.name} secondary={x.description} />
+        </ListItem>)
     }
   </Layout>
 }
