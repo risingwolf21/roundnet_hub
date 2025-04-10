@@ -228,11 +228,10 @@ const EventInformation = ({
               <Box
                 component="button"
                 onClick={() => {
-                  logEvent(analytics, "event_info_map_click", { user: user.userId, name: user.name, selectedEvent });
-                  window.open(
-                    'https://maps.google.com?q=' + selectedEventPlace.lat + ',' + selectedEventPlace.lon,
-                    '_blank'
-                  );
+                  if (/iPad|iPhone|iPod/.test(navigator.userAgent))
+                    window.open(`maps://www.google.com/maps/dir/?api=1&travelmode=driving&layer=traffic&destination=${selectedEventPlace.lat},${selectedEventPlace.lon}`, '_blank');
+                  else
+                    window.open(`https://www.google.com/maps/dir/?api=1&travelmode=driving&layer=traffic&destination=${selectedEventPlace.lat},${selectedEventPlace.lon}`, '_blank');
                 }}
                 sx={{
                   position: 'absolute',
