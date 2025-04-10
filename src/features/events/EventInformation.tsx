@@ -228,10 +228,7 @@ const EventInformation = ({
               <Box
                 component="button"
                 onClick={() => {
-                  if (/iPad|iPhone|iPod/.test(navigator.userAgent))
-                    window.open(`maps://www.google.com/maps/dir/?api=1&travelmode=driving&layer=traffic&destination=${selectedEventPlace.lat},${selectedEventPlace.lon}`, '_blank');
-                  else
-                    window.open(`https://www.google.com/maps/dir/?api=1&travelmode=driving&layer=traffic&destination=${selectedEventPlace.lat},${selectedEventPlace.lon}`, '_blank');
+                  window.open(`https://www.google.com/maps/dir/?api=1&travelmode=bicycling&destination=${selectedEventPlace.lat},${selectedEventPlace.lon}`, '_blank');
                 }}
                 sx={{
                   position: 'absolute',
