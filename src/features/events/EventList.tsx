@@ -79,10 +79,10 @@ const EventScreen = ({ events, loading, error, user, fetchMode }: EventScreenPro
             </Stack>
             : Object.entries(groupBy(events
               .filter((x) => selectedGroups.includes(x.group)), x => format(x.startingDateTime, "dd-MM-yyyy")))
-              .map(([key, value]) => <table style={{ width: "100%", borderSpacing: 0 }}>
+              .map(([key, value]) => <table style={{ width: "100%", borderSpacing: 0 }} key={key}>
                 <tbody style={{ width: "100%" }}>
                   {
-                    value.map((event, index) => <tr style={{ height: "1px" }}>
+                    value.map((event, index) => <tr style={{ height: "1px" }} key={index + event.id}>
                       {
                         index === 0 ? <td style={{ position: "sticky", top: 0, padding: 0, height: "inherit" }}>
                           <Box sx={{ display: 'flex', flexDirection: 'column', height: "100%", justifyContent: 'center', mx: 3, py: 1, width: 20 }}>

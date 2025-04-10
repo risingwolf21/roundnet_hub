@@ -29,7 +29,7 @@ export const ChallengeRepository = {
       .returns<Challenge[]>();
   },
 
-  async fetchChallengeStats(id: number): Promise<PostgrestSingleResponse<FullChallenge>> {
+  async fetchChallengeStats(id: string): Promise<PostgrestSingleResponse<FullChallenge>> {
     return supabase
       .from('challenge')
       .select('*, group: group(*, users: group_user_mapping ( user ( userId, email, displayName ) )), stats: challenge_stats (*, fullUser: user(*))')
@@ -40,7 +40,7 @@ export const ChallengeRepository = {
   },
 
   async fetchChallengeStatsSingle(
-    challenge_id: number,
+    challenge_id: string,
     user_id: string
   ): Promise<PostgrestSingleResponse<ChallengeStatWithUser>> {
     return supabase
@@ -53,7 +53,7 @@ export const ChallengeRepository = {
       .single();
   },
 
-  async increasePointForUser(userId: string, challenge: number, created_at: Dayjs, image_url: string | null): Promise<PostgrestSingleResponse<ChallengeStats>> {
+  async increasePointForUser(userId: string, challenge: string, created_at: Dayjs, image_url: string | null): Promise<PostgrestSingleResponse<ChallengeStats>> {
     return supabase
       .rpc('increase_challenge_stats_count', { user_id: userId, amount: 1, challenge_id: challenge, to_create_at: dayjsToDb(created_at), image_url: image_url ?? "" })
       .throwOnError();
