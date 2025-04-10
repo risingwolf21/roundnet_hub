@@ -41,9 +41,9 @@ export const fetchAdminsPaymentsAsync = createAsyncThunk(
   async ({ client }: { client: SupabaseClient }) => {
     const response = await client
       .from('payments')
-      .select('id, created_at, paymentState, amountToPay, userId, user (userId, displayName, email), history (*)')
+      .select('id, created_at, paymentState, amountToPay, userId, user (userId, displayName, name, email), history (*)')
       .eq('paymentState', 'Open' as PaymentState)
-      .order('displayName', { foreignTable: 'user', ascending: true })
+      .order('displayName', { referencedTable: 'user', ascending: true })
       .returns<FullPayment[]>();
     return response.data;
   }

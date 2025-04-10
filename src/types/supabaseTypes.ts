@@ -27,7 +27,7 @@ export type DrinkCounter = Drink & {
 };
 
 export type FullItemHolder = Item & {
-    current_holder: User;
+    full_current_holder: User | null;
     lastUpdate: string | null;
 };
 
