@@ -30,10 +30,10 @@ import {
 } from '@mui/material';
 import { Box } from '@mui/system';
 import { captureException } from '@sentry/react';
+import { useNotifications } from '@toolpad/core/useNotifications';
 import moment from 'moment';
 import React, { FormEvent, useEffect, useState } from 'react';
 import { AdminPermissionsRepository } from 'src/repository/AdminPermissionsRepository';
-import { AlertMessage, AlertSnackbar } from '../../../components/AlertSnackbar';
 import { supabase } from '../../../components/services/supabase/supabaseClient';
 import { SupabaseDrinkRepository } from '../../../repository/DrinkRepository';
 import { UserWithGroups } from '../../../types/supabaseTypes';
@@ -58,7 +58,7 @@ export type UserEdited = {
 };
 
 const EditUserDialog = ({ user, open, handleClose, onUserEditFinished, deleteUser }: EditUserDialogProps) => {
-  const [alertInfo, setAlertInfo] = useState<AlertMessage | null>(null);
+  const notifications = useNotifications();
   const [editUserRolesOpen, setEditUserRolesOpen] = useState(false);
   const [editRoleOpen, setEditRoleOpen] = useState(false);
   const [verified, setVerified] = useState(user.verified);
@@ -173,12 +173,12 @@ const EditUserDialog = ({ user, open, handleClose, onUserEditFinished, deleteUse
                       })
                       .then((result) => {
                         if (result.error)
-                          setAlertInfo({ message: result.error.message, severity: "error" })
+                          notifications.show(result.error.message, { severity: 'error' });
                         else
-                          setAlertInfo({ message: 'Passwort erfolgreich geändert', severity: 'success' });
+                          notifications.show('Passwort erfolgreich geändert', { severity: 'success' });
                       })
                       .catch((error) => {
-                        setAlertInfo({ message: error.message, severity: 'error' });
+                        notifications.show(error.message, { severity: 'error' });
                       });
                   }}
                 >
@@ -359,7 +359,6 @@ const EditUserDialog = ({ user, open, handleClose, onUserEditFinished, deleteUse
           </Button>
         </DialogActions>
       </Dialog>
-      <AlertSnackbar alertInfo={alertInfo} autoHideDuration={1500} close={() => setAlertInfo(null)} />
     </Dialog>
   );
 };

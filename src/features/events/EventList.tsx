@@ -3,8 +3,8 @@ import AddIcon from '@mui/icons-material/Add';
 import { Button, Chip, Fab, List, ListSubheader, Typography } from '@mui/material';
 import Grid from '@mui/material/Grid2';
 import { Box, Stack } from '@mui/system';
+import { useNotifications } from '@toolpad/core/useNotifications';
 import { format, parse } from 'date-fns';
-import { logEvent } from 'firebase/analytics';
 import { t } from 'i18next';
 import { groupBy } from 'lodash';
 import React, { useEffect, useState } from 'react';
@@ -18,10 +18,9 @@ import {
   SliceEvent,
   updateFetchMode
 } from 'src/features/events/slices/eventsSlice';
-import { analytics } from 'src/firebase/firebaseConfig';
 import { UserWithRolesAndPermissions } from 'src/types/supabaseTypes';
 import { Event } from 'types/supabase';
-import { AlertMessage, AlertSnackbar } from '../../components/AlertSnackbar';
+import { AlertMessage } from '../../components/AlertSnackbar';
 import Layout from '../../components/Layout';
 import { useAppDispatch } from '../../redux/store';
 import { can } from '../../utils/PermissionService';
@@ -40,11 +39,17 @@ export type EventScreenProps = {
 const EventScreen = ({ events, loading, error, user, fetchMode }: EventScreenProps) => {
   const { provider_token } = useApplication();
   const dispatch = useAppDispatch();
+  const notifications = useNotifications();
   const navigate = useNavigate();
   const [filterDialogOpen, setFilterDialogOpen] = useState(false);
   const [selectedGroups, setSelectedGroups] = useState<string[]>(
     (localStorage.getItem('selectedGroups')?.split(';') as string[]) || user.groups.map((x) => x.id)
   );
+
+  useEffect(() => {
+    if (error)
+      notifications.show(error.message, { severity: error.severity, onAction: () => dispatch(onEventErrorRead(null)) })
+  }, [error, notifications, dispatch])
 
   useEffect(() => {
     dispatch(fetchEventsAsync({ user, fetchMode }))
@@ -56,7 +61,6 @@ const EventScreen = ({ events, loading, error, user, fetchMode }: EventScreenPro
   };
 
   const updateAttendance = async (event: Event, state: EventAttendance, oldState: EventAttendance) => {
-    logEvent(analytics, "event_attendance_update", { user: user.userId, name: user.name, eventId: event.id, state, oldState });
     dispatch(updateAttendanceAsync({ user, event, state, oldState, provider_token }));
   };
 
@@ -159,7 +163,6 @@ const EventScreen = ({ events, loading, error, user, fetchMode }: EventScreenPro
           {<EventRepeat sx={{ color: 'white' }} />}
         </Fab>
       )}
-      <AlertSnackbar alertInfo={error} close={() => dispatch(onEventErrorRead(null))} />
 
       <SwipeableDialog
         open={filterDialogOpen}

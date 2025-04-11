@@ -1,6 +1,5 @@
 import { initializeApp } from 'firebase/app';
 import { getMessaging, isSupported } from 'firebase/messaging';
-import { getAnalytics } from "firebase/analytics";
 
 
 //Firebase Config values imported from .env file
@@ -16,8 +15,6 @@ const firebaseConfig = {
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
-
-export const analytics = getAnalytics(app)
 
 export const messaging = (async () => {
   try {

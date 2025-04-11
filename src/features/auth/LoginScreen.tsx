@@ -4,7 +4,7 @@ import { captureException } from '@sentry/react';
 import { AuthResponse, SignInPage, type AuthProvider } from '@toolpad/core/SignInPage';
 import { useNotifications } from '@toolpad/core/useNotifications';
 import React, { useState } from 'react';
-import { Navigate, useNavigate } from 'react-router';
+import { Navigate, useLocation, useNavigate } from 'react-router';
 import { HOMEPAGE } from 'src/constants';
 import { supabase } from '../../components/services/supabase/supabaseClient';
 import { useApplication } from './AuthContext';
@@ -17,6 +17,9 @@ const LoginScreen = () => {
   const navigate = useNavigate();
   const { version, user } = useApplication();
   const [loading, setLoading] = useState(false);
+  const location = useLocation();
+
+  console.log(location)
 
   if (user) {
     return <Navigate to={HOMEPAGE} />

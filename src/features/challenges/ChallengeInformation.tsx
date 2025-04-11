@@ -1,7 +1,8 @@
 import { AccountBox } from '@mui/icons-material';
 import EditIcon from '@mui/icons-material/Edit';
-import { Alert, Avatar, Box, Card, CardMedia, Fab, keyframes, List, ListItem, ListItemAvatar, ListItemText, Stack, Tab, Tabs, Typography } from '@mui/material';
+import { Alert, Avatar, Box, Card, CardMedia, Fab, List, ListItem, ListItemAvatar, ListItemText, Stack, Tab, Tabs, Typography } from '@mui/material';
 import { captureException } from '@sentry/react';
+import { useNotifications } from '@toolpad/core/useNotifications';
 import { Dayjs } from 'dayjs';
 import { TFunction } from 'i18next';
 import { groupBy } from 'lodash';
@@ -14,7 +15,6 @@ import { supabase } from 'src/components/services/supabase/supabaseClient';
 import { RootState, useAppDispatch } from 'src/redux/store';
 import { ChallengeStatWithUser } from 'src/types/supabaseTypes';
 import { dataURLtoFile, formatDateFromDatabase } from 'src/utils';
-import { AlertMessage, AlertSnackbar } from '../../components/AlertSnackbar';
 import Layout from '../../components/Layout';
 import { ChallengeRepository } from '../../repository/ChallengeRepository';
 import { can } from '../../utils/PermissionService';
@@ -30,7 +30,7 @@ export const ChallengeInformation = ({ t }: { t: TFunction }) => {
   const challenge = useSelector((root: RootState) => challengeSelector.selectById(root, challengeId ?? 0));
   const { user } = useApplication();
   const dispatch = useAppDispatch();
-  const [alertInfo, setAlertInfo] = useState<AlertMessage | null>(null);
+  const notifications = useNotifications();
   const [open, setOpen] = useState(false);
   const [value, setValue] = useState(0);
 
@@ -83,24 +83,24 @@ export const ChallengeInformation = ({ t }: { t: TFunction }) => {
   const increaseChallengePoint = async (created_at: Dayjs, image: { dataUrl: string, fileName: string } | null) => {
     setOpen(false);
     if (!user) {
-      setAlertInfo({ message: 'Something went wrong! Try again later', severity: 'error' });
+      notifications.show('Something went wrong! Try again later', { severity: 'error' });
       return;
     }
 
     const uploadedImageUrl = await uploadImage(image);
     if (uploadedImageUrl) {
-      setAlertInfo({ message: 'Fehler beim hochladen des Bildes. Der Punkt wurde dennoch eingetragen', severity: 'error' });
+      notifications.show('Fehler beim hochladen des Bildes. Der Punkt wurde dennoch eingetragen', { severity: 'error' });
     }
     ChallengeRepository.increasePointForUser(user.userId, challenge.id, created_at, uploadedImageUrl)
       .then((result) => {
         if (result.data) {
           dispatch(onChallengeStatsInsert({ ...result.data, user: user.userId, fullUser: user as User }))
-          setAlertInfo({ message: 'Success!', severity: 'success' });
+          notifications.show('Success!', { severity: 'success' });
         }
       })
       .catch((error) => {
         captureException(error);
-        setAlertInfo({ message: error.message, severity: 'error' });
+        notifications.show(error.message, { severity: 'error' });
       });
   };
 
@@ -190,7 +190,6 @@ export const ChallengeInformation = ({ t }: { t: TFunction }) => {
           dates={challenge.stats.filter(x => x.fullUser.userId === user.userId).map(x => x.created_at)}
           increaseChallengePoint={(created_at: Dayjs, image: { dataUrl: string, fileName: string } | null) => increaseChallengePoint(created_at, image)} />
 
-        <AlertSnackbar alertInfo={alertInfo} autoHideDuration={4000} close={() => setAlertInfo(null)} />
       </PullToRefresh>
     </Layout >
   );

@@ -1,8 +1,8 @@
 import { Box, LinearProgress, Typography } from '@mui/material';
 import { captureException } from '@sentry/react';
+import { useNotifications } from '@toolpad/core/useNotifications';
 import moment from 'moment/moment';
 import React, { useEffect, useState } from 'react';
-import { AlertMessage, AlertSnackbar } from '../../components/AlertSnackbar';
 import { InfiniteScrollList } from '../../components/InfiniteScrollList';
 import Layout from '../../components/Layout';
 import { useAppDispatch } from '../../redux/store';
@@ -21,14 +21,15 @@ export const HistoryScreen = ({
   user,
 }: HistoryScreenProps) => {
   const dispatch = useAppDispatch();
+  const notifications = useNotifications();
 
   const [editHistoryEntryOpen, setEditHistoryEntryOpen] = useState<boolean>(false);
   const [historyEntryToEdit, setHistoryEntryToEdit] = useState<FullHistory | null>(null);
-  const [alertInfo, setAlertInfo] = useState<AlertMessage | null>(null);
 
   useEffect(() => {
-    setAlertInfo(historyError ? { message: historyError, severity: 'error' } : null);
-  }, [historyError]);
+    if (historyError)
+      notifications.show(historyError, { severity: "error" });
+  }, [historyError, notifications]);
 
   useEffect(() => {
     fetchForPage(0);
@@ -49,7 +50,7 @@ export const HistoryScreen = ({
       })
       .catch((error) => {
         captureException(error);
-        setAlertInfo({ message: error, severity: 'error' });
+        notifications.show(error, { severity: 'error' });
       });
   };
 
@@ -84,7 +85,6 @@ export const HistoryScreen = ({
         entry={historyEntryToEdit}
         handleSubmit={(newEntry) => handleEntryUpdate(newEntry)}
       />
-      <AlertSnackbar alertInfo={alertInfo} autoHideDuration={1500} close={() => setAlertInfo(null)} />
     </Layout>
   );
 };

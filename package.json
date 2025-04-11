@@ -8,7 +8,6 @@
     "@casl/react": "^3.1.0",
     "@emotion/react": "^11.10.5",
     "@emotion/styled": "^11.10.5",
-    "@firebase/analytics": "^0.10.11",
     "@mui/base": "^5.0.0-beta.33",
     "@mui/icons-material": "^5.10.9",
     "@mui/material": "^6.1.8",
@@ -21,9 +20,6 @@
     "@sentry/react": "^8.47.0",
     "@supabase/sentry-js-integration": "^0.3.0",
     "@supabase/supabase-js": "^2.43.4",
-    "@testing-library/jest-dom": "^5.16.5",
-    "@testing-library/react": "^14.0.0",
-    "@testing-library/user-event": "^14.4.3",
     "@toolpad/core": "^0.13.0",
     "@types/jest": "^29.5.5",
     "@types/node": "^20.8.6",
@@ -37,7 +33,6 @@
     "firebase": "^10.11.0",
     "i18next": "^23.4.6",
     "i18next-browser-languagedetector": "^7.1.0",
-    "jwt-decode": "^4.0.0",
     "leaflet": "^1.9.4",
     "leaflet-geosearch": "^3.9.0",
     "lodash": "^4.17.21",
@@ -85,7 +80,8 @@
     "build:production:admin": "env-cmd -e main,production,admin react-scripts build",
     "deploy-functions:production": "npx supabase functions deploy --project-ref PROJECT_REF",
     "gen-types:production": "npx supabase gen types typescript --project-id PROJECT_REF --schema public --schema games --schema permissions > src/types/supabase-generated.types.ts",
-    "format": "prettier --write \"src/**/*.{js,jsx,ts,tsx,css,md}\" --config ./.prettierrc.json"
+    "format": "prettier --write \"src/**/*.{js,jsx,ts,tsx,css,md}\" --config ./.prettierrc.json",
+    "build-fcm-config": "node src/firebase/build_firebase_sw.js"
   },
   "eslintConfig": {
     "extends": [
@@ -94,7 +90,17 @@
     ],
     "ignorePatterns": [
       "src/types/supabase.ts"
-    ]
+    ],
+    "rules": {
+      "no-restricted-imports": [
+        "error",
+        {
+          "patterns": [
+            "@mui/*/*/*"
+          ]
+        }
+      ]
+    }
   },
   "browserslist": {
     "production": [

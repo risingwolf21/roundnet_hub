@@ -14,12 +14,12 @@ import {
   Toolbar,
   Typography,
 } from '@mui/material';
+import { useNotifications } from '@toolpad/core/useNotifications';
 import L, { LatLng } from 'leaflet';
 import { OpenStreetMapProvider } from 'leaflet-geosearch';
 import { SearchResult } from 'leaflet-geosearch/dist/providers/provider';
 import { toNumber } from 'lodash';
 import React, { useEffect, useState } from 'react';
-import { AlertMessage, AlertSnackbar } from 'src/components/AlertSnackbar';
 import { SlideUpTransition } from '../../../utils';
 import { PlaceType, SearchPlacesDialogProps } from '../types';
 
@@ -27,8 +27,7 @@ const SearchPlacesDialog = ({ open, handleClose, placeSelected }: SearchPlacesDi
   const [value, setValue] = useState('');
   const [results, setResults] = useState<SearchResult<any>[]>();
   const [loading, setLoading] = useState(false);
-
-  const [alertInfo, setAlertInfo] = useState<AlertMessage | null>(null);
+  const notifications = useNotifications();
   const [userLocation, setUserLocation] = useState<{ latitude: number; longitude: number } | null>(null);
 
   useEffect(() => {
@@ -68,11 +67,10 @@ const SearchPlacesDialog = ({ open, handleClose, placeSelected }: SearchPlacesDi
               const { latitude, longitude } = position.coords;
               // update the value of userlocation variable
               setUserLocation({ latitude, longitude });
-              setAlertInfo(null);
             },
             // if there was an error getting the users location
             (error) => {
-              setAlertInfo({ message: `Error getting user location: \n ${error.message}`, severity: 'error' });
+              notifications.show(`Error getting user location: \n ${error.message}`, { severity: 'error' });
             }
           );
         }
@@ -80,7 +78,7 @@ const SearchPlacesDialog = ({ open, handleClose, placeSelected }: SearchPlacesDi
     }
     // if geolocation is not supported by the users browser
     else {
-      setAlertInfo({ message: `Geolocation is not supported by this browser.`, severity: 'error' });
+      notifications.show(`Geolocation is not supported by this browser.`, { severity: 'error' });
       console.error('Geolocation is not supported by this browser.');
     }
   };
@@ -177,7 +175,6 @@ const SearchPlacesDialog = ({ open, handleClose, placeSelected }: SearchPlacesDi
               </ListItem>
             ))}
         </List>
-        {alertInfo && <AlertSnackbar alertInfo={alertInfo} close={() => setAlertInfo(null)} />}
       </Box>
     </Dialog>
   );

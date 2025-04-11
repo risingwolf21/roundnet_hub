@@ -17,10 +17,10 @@ import {
   GridToolbarContainer,
   GridValidRowModel,
 } from '@mui/x-data-grid';
+import { useNotifications } from '@toolpad/core/useNotifications';
 import { isNull, omit, omitBy } from 'lodash';
 import React, { useEffect, useState } from 'react';
 import { useClient } from 'react-supabase';
-import { AlertMessage, AlertSnackbar } from 'src/components/AlertSnackbar';
 import Layout from 'src/components/Layout';
 import { LoadingIndicator } from 'src/components/LoadingIndicator';
 import { supabase } from 'src/components/services/supabase/supabaseClient';
@@ -59,12 +59,12 @@ const SupabaseClient = () => {
   const [selectedTable, setSelectedTable] = useState<{ table_name: string, table_schema: string } | null>(null);
   const [selectTableOpen, setSelectTableOpen] = useState(false);
   const client = useClient();
+  const notifications = useNotifications();
   const [loading, setLoading] = useState(false);
   const [selectedTableData, setSelectedTableData] = useState<any[]>([]);
   const [rowModesModel, setRowModesModel] = React.useState<GridRowModesModel>({});
   const [rowFilterModel, setRowFilterModel] = React.useState<GridFilterModel>({ items: [] });
   const [rowSortModel, setRowSortModel] = React.useState<GridSortModel>();
-  const [alertInfo, setAlertInfo] = useState<AlertMessage | null>(null);
   const [users, setUsers] = useState<{ displayName: string; userId: string }[]>([]);
   const [groups, setGroups] = useState<{ name: string; id: number }[]>([]);
 
@@ -326,7 +326,7 @@ const SupabaseClient = () => {
             // @ts-ignore
             updatedRow = { ...result.data, isNew: false };
             setSelectedTableData(selectedTableData.map((row) => (row.id === -1 ? result.data : row)));
-          } else setAlertInfo({ message: result.error.message, severity: 'error' });
+          } else notifications.show(result.error.message, { severity: 'error' });
         });
     }
 
@@ -340,7 +340,7 @@ const SupabaseClient = () => {
       .then((result) => {
         if (!result.error)
           setSelectedTableData(selectedTableData.map((row) => (row.id === newRow.id ? updatedRow : row)));
-        else setAlertInfo({ message: result.error.message, severity: 'error' });
+        else notifications.show(result.error.message, { severity: 'error' });
       });
     return updatedRow;
   };
@@ -464,8 +464,6 @@ const SupabaseClient = () => {
           ))}
         </List>
       </SwipeableDialog>
-
-      <AlertSnackbar alertInfo={alertInfo} autoHideDuration={1500} close={() => setAlertInfo(null)} />
     </Layout>
   );
 };

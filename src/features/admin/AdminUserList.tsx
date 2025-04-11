@@ -1,20 +1,19 @@
 import { PersonOff } from '@mui/icons-material';
 import SearchIcon from '@mui/icons-material/Search';
 import { Badge, Chip, InputAdornment, LinearProgress, List, TextFieldProps } from '@mui/material';
-import React, { useEffect, useState } from 'react';
-import { useSelector } from 'react-redux';
-import { useNavigate } from 'react-router';
-import { fetchAdminUsersAsync } from './slices/adminUserSlice';
-import { RootState, useAppDispatch } from '../../redux/store';
-import { UserWithGroups } from '../../types/supabaseTypes';
-import { AlertMessage, AlertSnackbar } from '../../components/AlertSnackbar';
-import EditUserDialog, { UserEdited } from './dialogs/EditUserDialog';
-import { captureException } from '@sentry/react';
-import { AdminUsersRepository } from '../../repository/AdminUsersRepository';
-import { AdminUserItem } from './components/AdminUserItem';
-import Layout from '../../components/Layout';
 import TextField from '@mui/material/TextField';
 import { styled } from '@mui/system';
+import { captureException } from '@sentry/react';
+import { useNotifications } from '@toolpad/core/useNotifications';
+import React, { useEffect, useState } from 'react';
+import { useSelector } from 'react-redux';
+import Layout from '../../components/Layout';
+import { RootState, useAppDispatch } from '../../redux/store';
+import { AdminUsersRepository } from '../../repository/AdminUsersRepository';
+import { UserWithGroups } from '../../types/supabaseTypes';
+import { AdminUserItem } from './components/AdminUserItem';
+import EditUserDialog, { UserEdited } from './dialogs/EditUserDialog';
+import { fetchAdminUsersAsync } from './slices/adminUserSlice';
 
 const SearchBar = styled(TextField)<TextFieldProps>(({ theme }) => ({
   marginLeft: 16,
@@ -47,8 +46,7 @@ const AdminUserList = () => {
   const [searchString, setSearchString] = useState('');
   const [showNotVerifiedUsers, setShowNotVerifiedUsers] = useState(false);
   const dispatch = useAppDispatch();
-  const navigate = useNavigate();
-  const [alertInfo, setAlertInfo] = useState<AlertMessage | null>(null);
+  const notifications = useNotifications();
 
   useEffect(() => {
     dispatch(fetchAdminUsersAsync());
@@ -64,11 +62,11 @@ const AdminUserList = () => {
   const deleteUser = async (user: User) => {
     AdminUsersRepository.deactivateUser(user)
       .then(() => {
-        setAlertInfo({ message: `Successfully deactivated user ${user.email}`, severity: 'success' });
+        notifications.show(`Successfully deactivated user ${user.email}`, { severity: 'success' });
       })
       .catch((error) => {
         captureException(error);
-        setAlertInfo({ message: error, severity: 'error' });
+        notifications.show(error, { severity: 'error' });
       });
   };
 
@@ -135,7 +133,6 @@ const AdminUserList = () => {
           onUserEditFinished={onUserEditFinished}
         />
       )}
-      <AlertSnackbar alertInfo={alertInfo} autoHideDuration={1500} close={() => setAlertInfo(null)} />
     </Layout>
   );
 };

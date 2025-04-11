@@ -1,5 +1,4 @@
-import { ArrowBack } from '@mui/icons-material';
-import { Alert, alpha, AppBar, CircularProgress, IconButton, Stack, SxProps, Theme, Toolbar, useTheme } from '@mui/material';
+import { Alert, alpha, CircularProgress, Stack, SxProps, Theme, useTheme } from '@mui/material';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Container from '@mui/material/Container';
@@ -118,20 +117,7 @@ const ResetPasswordScreen = () => {
   };
 
   return (
-    <Layout>
-      <AppBar position="sticky" sx={{ zIndex: (theme) => theme.zIndex.drawer + 1, background: 'primary' }}>
-        <Toolbar
-          sx={{
-            width: 'calc(100% - 48px)',
-            maxWidth: 1400,
-            mx: 'auto',
-          }}
-        >
-          <IconButton color="inherit" onClick={() => navigate(-1)} edge="start" sx={{ mr: 2 }}>
-            <ArrowBack />
-          </IconButton>
-        </Toolbar>
-      </AppBar>
+    <Layout appBarConfig={{ showBackButton: true }}>
       <Container component="main" maxWidth="xs">
         <Box
           sx={(theme) => ({

@@ -1,12 +1,10 @@
 import { AddOutlined, EditOffOutlined, EditOutlined } from '@mui/icons-material';
 import { Alert, Box, Fab, List } from '@mui/material';
-import { logEvent } from 'firebase/analytics';
+import { useNotifications } from '@toolpad/core/useNotifications';
 import React, { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router';
 import { fetchItemsAsync } from 'src/features/keys/slices/keysSlice';
-import { analytics } from 'src/firebase/firebaseConfig';
 import { FullItemHolder } from 'src/types/supabaseTypes';
-import { AlertMessage, AlertSnackbar } from '../../components/AlertSnackbar';
 import Layout from '../../components/Layout';
 import { LoadingIndicator } from '../../components/LoadingIndicator';
 import { SupabaseKeysRepository } from '../../repository/KeysRepository';
@@ -27,10 +25,10 @@ export const ItemHolderScreen = ({ dispatch, keyHolders, loading, user, t }: Ite
   const [selectedKeyHolder, setSelectedKeyHolder] = useState<FullItemHolder | null>(null);
   const [isEditingMode, setEditingMode] = useState(false);
   const [itemToEdit, setItemToEdit] = useState<ItemUpdate | null>(null);
-  const [alertInfo, setAlertInfo] = useState<AlertMessage | null>(null);
   const [itemHistoryDialogOpen, setItemHistoryDialogOpen] = useState(false);
-
   const [searchParams, setSearchParams] = useSearchParams();
+
+  const notifications = useNotifications();
 
   useEffect(() => {
     const type = searchParams.get("type");
@@ -59,15 +57,13 @@ export const ItemHolderScreen = ({ dispatch, keyHolders, loading, user, t }: Ite
 
   const confirmKeyHandOver = () => {
     if (!selectedKeyHolder || !selectedUser) {
-      setAlertInfo({ message: t('keyHandOverError', { error: '' }), severity: 'error' });
+      notifications.show(t('keyHandOverError', { error: '' }), { severity: 'error' });
       return;
     }
     SupabaseKeysRepository.giveItemToUser(selectedKeyHolder, selectedUser).then((result) => {
       if (result.error) {
-        logEvent(analytics, "item_handover_error", { user: user.userId, name: user.name, error: result.error, selectedKeyHolder, selectedUser });
-        setAlertInfo({ message: t('keyHandOverError', { error: result.error }), severity: 'error' });
+        notifications.show(t('keyHandOverError', { error: result.error }), { severity: 'error' });
       } else {
-        logEvent(analytics, "item_handover_success", { user: user.userId, name: user.name, selectedKeyHolder, selectedUser });
         setSelectedUser(null);
         setSelectedKeyHolder(null);
         dispatch(fetchItemsAsync());
@@ -168,7 +164,6 @@ export const ItemHolderScreen = ({ dispatch, keyHolders, loading, user, t }: Ite
         itemToEdit={itemToEdit}
       />
 
-      <AlertSnackbar alertInfo={alertInfo} autoHideDuration={1500} close={() => setAlertInfo(null)} />
     </Layout>
   );
 };
