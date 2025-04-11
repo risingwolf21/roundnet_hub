@@ -13,29 +13,27 @@ import {
   Skeleton,
   Typography,
 } from '@mui/material';
+import { captureException } from '@sentry/react';
+import { useNotifications } from '@toolpad/core/useNotifications';
+import { isBefore } from 'date-fns';
 import React, { useEffect, useState } from 'react';
 import { MapContainer, Marker, TileLayer } from 'react-leaflet';
 import { useNavigate } from 'react-router';
-import { answerDeadlineExpired, eventInThePast } from '../../types/supabaseTypes';
-import { DeleteEventDialog } from './dialogs/DeleteEventDialog';
-import { DeleteEventType, EventInformationProps } from './types';
-import { CancelTrainingDialog } from './dialogs/CancelTrainingDialog';
-import { can } from 'src/utils/PermissionService';
 import { fetchEventAttendanceAsync, updateAttendanceAsync } from 'src/features/events/slices/eventAttendanceSlice';
-import { formatDateToDatabase } from 'src/utils';
 import { fetchEventCommentsAsync, upsertCommentToEventAsync } from 'src/features/events/slices/eventCommentsSlice';
-import { editEvent, fetchSingleEventAsync, onEventErrorRead } from 'src/features/events/slices/eventsSlice';
+import { editEvent, fetchSingleEventAsync } from 'src/features/events/slices/eventsSlice';
+import { formatDateToDatabase } from 'src/utils';
+import { can } from 'src/utils/PermissionService';
+import Layout from '../../components/Layout';
+import { SupabaseEventRepository } from '../../repository/EventRepository';
+import { answerDeadlineExpired, eventInThePast } from '../../types/supabaseTypes';
 import EventInformationAttendance from './components/EventInformationAttendance';
 import EventInformationComments from './components/EventInformationComments';
-import { EditEventOptionsDialog } from './dialogs/EditEventOptionsDialog';
-import { isBefore } from 'date-fns';
-import { SupabaseEventRepository } from '../../repository/EventRepository';
-import { AlertMessage, AlertSnackbar } from '../../components/AlertSnackbar';
-import Layout from '../../components/Layout';
-import { captureException } from '@sentry/react';
 import { LoadingEventInformation } from './components/LoadingEventInformation';
-import { analytics } from 'src/firebase/firebaseConfig';
-import { logEvent } from 'firebase/analytics';
+import { CancelTrainingDialog } from './dialogs/CancelTrainingDialog';
+import { DeleteEventDialog } from './dialogs/DeleteEventDialog';
+import { EditEventOptionsDialog } from './dialogs/EditEventOptionsDialog';
+import { DeleteEventType, EventInformationProps } from './types';
 
 const EventInformation = ({
   dispatch,
@@ -54,12 +52,13 @@ const EventInformation = ({
   const [deleteTrainingOpen, setDeleteTrainingOpen] = useState(false);
   const [editEventOptionOpen, setEditEventOptionOpen] = useState(false);
   const navigate = useNavigate();
+  const notifications = useNotifications();
   const [anchorEl, setAnchorEl] = useState<(EventTarget & HTMLButtonElement) | null>(null);
-  const [alertInfo, setAlertInfo] = useState<AlertMessage | null>(null);
 
   useEffect(() => {
-    setAlertInfo(error ? { message: error, severity: 'error' } : null);
-  }, [error]);
+    if (error)
+      notifications.show(error, { severity: "error" });
+  }, [error, notifications]);
 
   useEffect(() => {
     dispatch(fetchEventAttendanceAsync({ eventId: selectedEvent.id }));
@@ -82,7 +81,7 @@ const EventInformation = ({
         })
         .catch((e) => {
           captureException(e);
-          setAlertInfo({ message: e.message, severity: 'error' });
+          notifications.show(e.message, { severity: 'error' });
         });
     } else if (value === 'This and following events') {
       SupabaseEventRepository.deleteEventAndUpcomingEvents(
@@ -95,13 +94,12 @@ const EventInformation = ({
         })
         .catch((e) => {
           captureException(e);
-          setAlertInfo({ message: e.message, severity: 'error' });
+          notifications.show(e.message, { severity: 'error' });
         });
     }
   };
 
   const updateAttendance = async (state: EventAttendance, oldState: EventAttendance) => {
-    logEvent(analytics, "event_attendance_update", { user: user.userId, eventId: selectedEvent.id, state, oldState });
     dispatch(updateAttendanceAsync({ user, event: selectedEvent, state, oldState }));
   };
 
@@ -228,11 +226,7 @@ const EventInformation = ({
               <Box
                 component="button"
                 onClick={() => {
-                  logEvent(analytics, "event_info_map_click", { user: user.userId, name: user.name, selectedEvent });
-                  window.open(
-                    'https://maps.google.com?q=' + selectedEventPlace.lat + ',' + selectedEventPlace.lon,
-                    '_blank'
-                  );
+                  window.open(`https://www.google.com/maps/dir/?api=1&travelmode=bicycling&destination=${selectedEventPlace.lat},${selectedEventPlace.lon}`, '_blank');
                 }}
                 sx={{
                   position: 'absolute',
@@ -380,13 +374,6 @@ const EventInformation = ({
           }}
         />
       </List>
-      <AlertSnackbar
-        alertInfo={alertInfo}
-        close={() => {
-          dispatch(onEventErrorRead(null));
-          setAlertInfo(null);
-        }}
-      />
     </Layout>
   );
 };

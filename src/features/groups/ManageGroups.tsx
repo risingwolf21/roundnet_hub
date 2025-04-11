@@ -1,18 +1,17 @@
 import { AddOutlined, EditOffOutlined, EditOutlined, FiberManualRecord } from '@mui/icons-material';
+import EditIcon from '@mui/icons-material/Edit';
 import { Box, Chip, Fab, IconButton, LinearProgress, List, ListItem, ListItemAvatar, ListItemText, Stack, Typography } from '@mui/material';
 import { SupabaseClient } from '@supabase/supabase-js';
 import React, { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router';
 import { useClient } from 'react-supabase';
-import { GroupWithUsers } from 'src/types/supabaseTypes';
-import { fetchGroupsAsync, groupsSelector } from './slices/groupsSlice';
-import { RootState, useAppDispatch } from '../../redux/store';
-import EditIcon from '@mui/icons-material/Edit';
-import { EditOrAddGroupDialog } from './dialogs/EditOrAddGroupDialog';
-import { can } from '../../utils/PermissionService';
 import Layout from '../../components/Layout';
+import { RootState, useAppDispatch } from '../../redux/store';
+import { can } from '../../utils/PermissionService';
 import { useApplication } from '../auth/AuthContext';
+import { EditOrAddGroupDialog } from './dialogs/EditOrAddGroupDialog';
+import { fetchGroupsAsync, groupsSelector } from './slices/groupsSlice';
 
 const ManageGroupsProvider = () => {
   const groups = useSelector((state: RootState) => groupsSelector.selectAll(state));
@@ -23,7 +22,7 @@ const ManageGroupsProvider = () => {
 };
 
 type ManageGroupsScreenProps = {
-  groups: GroupWithUsersBase[];
+  groups: GroupWithUsers[];
   loading: boolean;
   client: SupabaseClient;
 };
@@ -48,7 +47,7 @@ const ManageGroupsScreen = ({ groups, loading, client }: ManageGroupsScreenProps
       <List sx={{ width: '100%' }}>
         {groups &&
           groups
-            .filter((x) => user && x.users.some((x) => x.user.userId === user.userId))
+            .filter((x) => user && x.users.some((x) => x.userId === user.userId))
             .map((x) => (
               <ListItem
                 key={x.id}

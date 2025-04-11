@@ -60,6 +60,11 @@ declare global {
     ? UserWithGroupsBase['groups'][number]['group'][]
     : UserWithGroupsBase[P];
   } & { player_data: Player | null };
+  type GroupWithUsers = {
+    [P in keyof GroupWithUsersBase]: P extends 'users'
+    ? GroupWithUsersBase['users'][number]['user'][]
+    : GroupWithUsersBase[P];
+  };
 
   type PaymentInsert = TablesInsert<'payments'>;
   type EventCommentInsert = TablesInsert<'event_comments'>;

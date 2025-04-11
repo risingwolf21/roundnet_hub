@@ -115,7 +115,7 @@ const HomePage = () => {
                                     e.stopPropagation();
                                 }}
                                 disabled={event.isCancelled || answerDeadlineExpired(event) || eventInThePast(event)}
-                            > 
+                            >
                                 <Badge badgeContent={event.attendance.filter(x => x.state === "Attending").length} color="success">
                                     {event.userAttendance === 'Attending' ? (
                                         <ThumbUpAlt fontSize="inherit" sx={{ fontSize: '28px', color: 'green' }} />
@@ -196,64 +196,66 @@ const HomePage = () => {
                     padding: 1,
                 }}
             >
-                {keys.map((key, index) => (
-                    <Card
-                        key={index}
-                        elevation={3}
-                        sx={{
-                            width: 200,
-                            flexShrink: 0,
-                            p: 0,
-                        }}
-                    >
-                        <CardActionArea sx={{ p: 2, pb: 0 }} onClick={() => navigate(`/keys`)}>
-                            <Typography sx={{
-                                mb: 1,
-                                fontSize: "1.2rem",
-                                whiteSpace: 'nowrap',
-                                overflow: 'hidden',
-                                textOverflow: 'ellipsis',
-                            }}>{key.name}</Typography>
-                            <Box sx={{ display: "flex", flexDirection: "row", alignItems: "center", mb: 1 }}>
-                                <Avatar sx={{ background: key.color, width: 40, height: 40, borderRadius: 2, mr: 1 }}>
-                                    <Key />
-                                </Avatar>
-                                <Typography>{t(translationKeyOfItemType(key.type))}</Typography>
-                            </Box>
-                            <Box sx={{ display: "flex", flexDirection: "row", alignItems: "center" }}>
-                                <Avatar sx={{ width: 40, height: 40, borderRadius: 2, mr: 1 }}>
-                                    {key.current_holder.avatarUrl ? <img src={key.current_holder.avatarUrl} alt="logo" width={'100%'} height={'100%'} /> : <AccountBox />}
-                                </Avatar>
-                                <Typography>{key.current_holder.displayName}</Typography>
-                            </Box>
-                        </CardActionArea>
-                        <CardActions>
-                            {
-                                key.current_holder?.userId === user?.userId ? (
-                                    <Button
-                                        color="primary"
-                                        onClick={(event) => {
-                                            event.stopPropagation();
-                                            navigate(`/keys?type=handover&key=${encodeURIComponent(key.id)}`)
-                                        }}
-                                    >
-                                        {t('handover_key')}
-                                    </Button>
-                                ) : (
-                                    <Button
-                                        color="primary"
-                                        onClick={(event) => {
-                                            event.stopPropagation();
-                                            navigate(`/keys?type=take&key=${encodeURIComponent(key.id)}`);
-                                        }}
-                                    >
-                                        {t('take_key')}
-                                    </Button>
-                                )
-                            }
-                        </CardActions>
-                    </Card>
-                ))}
+                {keys
+                    .filter(x => x.full_current_holder !== null)
+                    .map((key, index) => (
+                        <Card
+                            key={index}
+                            elevation={3}
+                            sx={{
+                                width: 200,
+                                flexShrink: 0,
+                                p: 0,
+                            }}
+                        >
+                            <CardActionArea sx={{ p: 2, pb: 0 }} onClick={() => navigate(`/keys`)}>
+                                <Typography sx={{
+                                    mb: 1,
+                                    fontSize: "1.2rem",
+                                    whiteSpace: 'nowrap',
+                                    overflow: 'hidden',
+                                    textOverflow: 'ellipsis',
+                                }}>{key.name}</Typography>
+                                <Box sx={{ display: "flex", flexDirection: "row", alignItems: "center", mb: 1 }}>
+                                    <Avatar sx={{ background: key.color, width: 40, height: 40, borderRadius: 2, mr: 1 }}>
+                                        <Key />
+                                    </Avatar>
+                                    <Typography>{t(translationKeyOfItemType(key.type))}</Typography>
+                                </Box>
+                                <Box sx={{ display: "flex", flexDirection: "row", alignItems: "center" }}>
+                                    <Avatar sx={{ width: 40, height: 40, borderRadius: 2, mr: 1 }}>
+                                        {key.full_current_holder!.avatarUrl ? <img src={key.full_current_holder!.avatarUrl} alt="logo" width={'100%'} height={'100%'} /> : <AccountBox />}
+                                    </Avatar>
+                                    <Typography>{key.full_current_holder!.displayName}</Typography>
+                                </Box>
+                            </CardActionArea>
+                            <CardActions>
+                                {
+                                    key.full_current_holder?.userId === user?.userId ? (
+                                        <Button
+                                            color="primary"
+                                            onClick={(event) => {
+                                                event.stopPropagation();
+                                                navigate(`/keys?type=handover&key=${encodeURIComponent(key.id)}`)
+                                            }}
+                                        >
+                                            {t('handover_key')}
+                                        </Button>
+                                    ) : (
+                                        <Button
+                                            color="primary"
+                                            onClick={(event) => {
+                                                event.stopPropagation();
+                                                navigate(`/keys?type=take&key=${encodeURIComponent(key.id)}`);
+                                            }}
+                                        >
+                                            {t('take_key')}
+                                        </Button>
+                                    )
+                                }
+                            </CardActions>
+                        </Card>
+                    ))}
             </Box>
         </List>
     </Layout >

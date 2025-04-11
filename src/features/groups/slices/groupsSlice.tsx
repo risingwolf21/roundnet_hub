@@ -6,7 +6,7 @@ import { RootState } from '../../../redux/store';
 import { captureException } from '@sentry/react';
 
 const groupsAdapter = createEntityAdapter({
-  selectId: (group: GroupWithUsersBase) => group.id,
+  selectId: (group: GroupWithUsers) => group.id,
 });
 
 export const groupsSelector = groupsAdapter.getSelectors((st: RootState) => st.groups);
@@ -27,7 +27,7 @@ const groupsSlice = createSlice({
         changes: {
           users: [...groupsSlice.users, action.payload.user]
         }
-      } as Update<GroupWithUsersBase>;
+      } as Update<GroupWithUsers>;
 
       groupsAdapter.updateOne(state, changes);
     }
@@ -38,6 +38,7 @@ const groupsSlice = createSlice({
         state.loading = true;
       })
       .addCase(fetchGroupsAsync.fulfilled, (state, action) => {
+        console.log("fetchGroups", action.payload)
         state.loading = false;
         state.error = null;
         groupsAdapter.removeAll(state);
@@ -62,11 +63,11 @@ const groupsSlice = createSlice({
 export const fetchGroupsAsync = createAsyncThunk('fetchGroupsAsync', async ({ client }: { client: SupabaseClient }) => {
   const response = await client
     .from('event_group')
-    .select('*, users: group_user_mapping ( user ( userId, email, displayName ) )');
+    .select('*, users: group_user_mapping ( user (*), role )');
 
   return (
     response.data?.map((x) => {
-      return { ...x, users: x.users.map((y: any) => ({...y.user, role: y.role})) } as GroupWithUsersBase;
+      return { ...x, users: x.users.map((y: any) => ({...y.user, role: y.role})) } as GroupWithUsers;
     }) ?? []
   );
 });
@@ -87,7 +88,7 @@ export const fetchSingleGroupAsync = createAsyncThunk(
           data: {
             ...response.data,
             users: response.data?.users?.map((x: any) => ({...x.user, role: x.role})) ?? [],
-          } as GroupWithUsersBase,
+          } as GroupWithUsers,
           id,
         };
       })

@@ -47,7 +47,7 @@ export const ItemHolderItem = ({
           >
             <EditIcon />
           </IconButton>
-        ) : x.current_holder?.userId === user.userId ? (
+        ) : x.full_current_holder?.userId === user.userId ? (
           <Button
             color="primary"
             onClick={(event) => {
@@ -75,7 +75,7 @@ export const ItemHolderItem = ({
           <KeyIcon />
         </Avatar>
       </ListItemAvatar>
-      <ListItemText primary={x.current_holder?.displayName ?? 'Nicht zugewiesen'} secondary={x.name} />
+      <ListItemText primary={x.full_current_holder?.displayName ?? 'Nicht zugewiesen'} secondary={x.name} />
     </ListItem>
   );
 };

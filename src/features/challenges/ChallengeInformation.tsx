@@ -2,9 +2,10 @@ import { AccountBox } from '@mui/icons-material';
 import EditIcon from '@mui/icons-material/Edit';
 import { Alert, Avatar, Box, Card, CardMedia, Fab, List, ListItem, ListItemAvatar, ListItemText, Stack, Tab, Tabs, Typography } from '@mui/material';
 import { captureException } from '@sentry/react';
+import { useNotifications } from '@toolpad/core/useNotifications';
 import { Dayjs } from 'dayjs';
 import { TFunction } from 'i18next';
-import { groupBy, toNumber } from 'lodash';
+import { groupBy } from 'lodash';
 import React, { useEffect, useMemo, useState } from 'react';
 import { withTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
@@ -14,7 +15,6 @@ import { supabase } from 'src/components/services/supabase/supabaseClient';
 import { RootState, useAppDispatch } from 'src/redux/store';
 import { ChallengeStatWithUser } from 'src/types/supabaseTypes';
 import { dataURLtoFile, formatDateFromDatabase } from 'src/utils';
-import { AlertMessage, AlertSnackbar } from '../../components/AlertSnackbar';
 import Layout from '../../components/Layout';
 import { ChallengeRepository } from '../../repository/ChallengeRepository';
 import { can } from '../../utils/PermissionService';
@@ -23,7 +23,6 @@ import { TabPanel } from '../events/dialogs/EventAttendanceDialog';
 import { ChallengeStatItem } from './components/ChallengeStatItem';
 import EnterPointDialog from './dialogs/EnterPointDialog';
 import { challengeSelector, fetchChallengeStatsSingleAsync, onChallengeStatsInsert } from './slices/challengeSlice';
-import { format, parse } from 'date-fns';
 
 
 export const ChallengeInformation = ({ t }: { t: TFunction }) => {
@@ -31,13 +30,13 @@ export const ChallengeInformation = ({ t }: { t: TFunction }) => {
   const challenge = useSelector((root: RootState) => challengeSelector.selectById(root, challengeId ?? 0));
   const { user } = useApplication();
   const dispatch = useAppDispatch();
-  const [alertInfo, setAlertInfo] = useState<AlertMessage | null>(null);
+  const notifications = useNotifications();
   const [open, setOpen] = useState(false);
   const [value, setValue] = useState(0);
 
   useEffect(() => {
-    if (!challengeId || isNaN(+challengeId)) return;
-    dispatch(fetchChallengeStatsSingleAsync({ challengeId: toNumber(challengeId) }));
+    if (challengeId)
+      dispatch(fetchChallengeStatsSingleAsync({ challengeId: challengeId }));
 
   }, [dispatch, challengeId]);
 
@@ -84,24 +83,24 @@ export const ChallengeInformation = ({ t }: { t: TFunction }) => {
   const increaseChallengePoint = async (created_at: Dayjs, image: { dataUrl: string, fileName: string } | null) => {
     setOpen(false);
     if (!user) {
-      setAlertInfo({ message: 'Something went wrong! Try again later', severity: 'error' });
+      notifications.show('Something went wrong! Try again later', { severity: 'error' });
       return;
     }
 
     const uploadedImageUrl = await uploadImage(image);
     if (uploadedImageUrl) {
-      setAlertInfo({ message: 'Fehler beim hochladen des Bildes. Der Punkt wurde dennoch eingetragen', severity: 'error' });
+      notifications.show('Fehler beim hochladen des Bildes. Der Punkt wurde dennoch eingetragen', { severity: 'error' });
     }
     ChallengeRepository.increasePointForUser(user.userId, challenge.id, created_at, uploadedImageUrl)
       .then((result) => {
         if (result.data) {
           dispatch(onChallengeStatsInsert({ ...result.data, user: user.userId, fullUser: user as User }))
-          setAlertInfo({ message: 'Success!', severity: 'success' });
+          notifications.show('Success!', { severity: 'success' });
         }
       })
       .catch((error) => {
         captureException(error);
-        setAlertInfo({ message: error.message, severity: 'error' });
+        notifications.show(error.message, { severity: 'error' });
       });
   };
 
@@ -125,10 +124,10 @@ export const ChallengeInformation = ({ t }: { t: TFunction }) => {
             {
               Object.entries(groupBy(challenge.stats, (a) => formatDateFromDatabase(a.created_at).toDateString()))
                 .sort(([key_a], [key_b]) => new Date(key_b) > new Date(key_a) ? 1 : -1)
-                .map(([key, value]) => <Stack spacing={1} direction={"column"}>
+                .map(([key, value]) => <Stack spacing={1} direction={"column"} key={key}>
                   <Typography sx={{ textAlign: "center", color: 'rgba(0,0,0,0.6)', }}>{key}</Typography>
                   {
-                    value.map(x => <Card sx={{ dsplay: "flex", p: 0 }}>
+                    value.map(x => <Card sx={{ dsplay: "flex", p: 0 }} key={x.id}>
                       <Box sx={{ display: "flex", justifyContent: "space-between" }}>
                         <ListItem sx={{ mr: 4 }}>
                           <ListItemAvatar>
@@ -191,7 +190,6 @@ export const ChallengeInformation = ({ t }: { t: TFunction }) => {
           dates={challenge.stats.filter(x => x.fullUser.userId === user.userId).map(x => x.created_at)}
           increaseChallengePoint={(created_at: Dayjs, image: { dataUrl: string, fileName: string } | null) => increaseChallengePoint(created_at, image)} />
 
-        <AlertSnackbar alertInfo={alertInfo} autoHideDuration={4000} close={() => setAlertInfo(null)} />
       </PullToRefresh>
     </Layout >
   );

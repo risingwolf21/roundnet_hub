@@ -12,17 +12,14 @@ import {
   TextField,
   Typography,
 } from '@mui/material';
+import { useNotifications } from '@toolpad/core/useNotifications';
 import React, { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router';
-import { AlertMessage, AlertSnackbar } from 'src/components/AlertSnackbar';
-import { drawerWidth } from 'src/components/Drawer';
 import Layout from 'src/components/Layout';
 import { RootState, useAppDispatch } from 'src/redux/store';
 import { GamesRepository } from 'src/repository/GamesRepository';
 import { fetchPlayersAsync } from './slices/gamesSlice';
-import { logEvent } from 'firebase/analytics';
-import { analytics } from 'src/firebase/firebaseConfig';
 
 type Props = { options: SimpleUser[]; loading: boolean; label: string; onSelect: (value: SimpleUser | null) => void };
 const SelectPlayer = ({ options, loading, label, onSelect }: Props) => {
@@ -61,7 +58,7 @@ const ReportScore = () => {
   const [sets, setSets] = useState<MatchSet[]>([
     { id: '', created_at: '', set_number: 1, match: '', team_a_score: 0, team_b_score: 0 },
   ]);
-  const [alertInfo, setAlertInfo] = useState<AlertMessage | null>(null);
+  const notifications = useNotifications();
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
 
@@ -76,32 +73,32 @@ const ReportScore = () => {
 
   const saveScores = () => {
     if (!player1a) {
-      setAlertInfo({ message: 'Player 1 of Team A not defined', severity: 'error' });
+      notifications.show('Player 1 of Team A not defined', { severity: 'error' });
       return;
     }
     if (!player2a) {
-      setAlertInfo({ message: 'Player 2 of Team A not defined', severity: 'error' });
+      notifications.show('Player 2 of Team A not defined', { severity: 'error' });
       return;
     }
     if (!player1b) {
-      setAlertInfo({ message: 'Player 1 of Team B not defined', severity: 'error' });
+      notifications.show('Player 1 of Team B not defined', { severity: 'error' });
       return;
     }
     if (!player2b) {
-      setAlertInfo({ message: 'Player 2 of Team B not defined', severity: 'error' });
+      notifications.show('Player 2 of Team B not defined', { severity: 'error' });
       return;
     }
     if (sets.length <= 0) {
-      setAlertInfo({ message: 'Need at least one recorded set of this match', severity: 'error' });
+      notifications.show('Need at least one recorded set of this match', { severity: 'error' });
       return;
     }
     for (const set of sets) {
       if (set.team_a_score === 0 && set.team_b_score === 0) {
-        setAlertInfo({ message: `Scores need in ${set.set_number} set`, severity: 'error' });
+        notifications.show(`Scores need in ${set.set_number} set`, { severity: 'error' });
         return;
       }
       if (set.team_a_score === set.team_b_score) {
-        setAlertInfo({ message: `Cannot have a draw in ${set.set_number} set`, severity: 'error' });
+        notifications.show(`Cannot have a draw in ${set.set_number} set`, { severity: 'error' });
         return;
       }
     }
@@ -121,10 +118,9 @@ const ReportScore = () => {
       team_b_name
     )
       .then((result) => {
-        logEvent(analytics, "match_score_added", { team_a_name, team_b_name, player1a, player1b, player2a, player2b });
         navigate('/matches');
       })
-      .catch((error) => setAlertInfo({ message: error.message, severity: 'error' }));
+      .catch((error) => notifications.show(error.message, { severity: 'error' }));
   };
 
   return (
@@ -258,16 +254,6 @@ const ReportScore = () => {
         >
           <Save />
         </Fab>
-        <AlertSnackbar
-          alertInfo={alertInfo}
-          sx={(theme) => ({
-            [theme.breakpoints.up('lg')]: {
-              ml: `calc(${drawerWidth}px + 16px)`,
-            },
-          })}
-          autoHideDuration={3000}
-          close={() => setAlertInfo(null)}
-        />
       </Box>
     </Layout>
   );

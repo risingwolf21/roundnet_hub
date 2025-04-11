@@ -20,12 +20,10 @@ import {
   ListItemText,
   Typography,
 } from '@mui/material';
+import Box from '@mui/material/Box';
 import { t } from 'i18next';
-import React, { useEffect, useState } from 'react';
-import { useClient } from 'react-supabase';
-import { onEventAttendanceDelete, onEventAttendanceUpdate } from 'src/features/events/slices/eventAttendanceSlice';
+import React, { useState } from 'react';
 import { SliceEvent } from 'src/features/events/slices/eventsSlice';
-import { useAppDispatch } from 'src/redux/store';
 import {
   answerDeadlineExpired,
   eventInThePast,
@@ -34,8 +32,6 @@ import {
   maxAttendeesExceeded,
 } from 'src/types/supabaseTypes';
 import EventAttendanceDialog from '../dialogs/EventAttendanceDialog';
-import { TablesUpdate } from '../../../types/supabase-generated.types';
-import Box from '@mui/material/Box';
 
 type EventInformationAttendanceProps = {
   user: User;
@@ -54,8 +50,6 @@ const EventInformationAttendance = ({
   user,
   keyHolders,
 }: EventInformationAttendanceProps) => {
-  const client = useClient();
-  const dispatch = useAppDispatch();
   const [eventAttendanceState, setEventAttendanceState] = useState({ open: false, index: 0 });
 
   return (
@@ -70,17 +64,17 @@ const EventInformationAttendance = ({
           .some((x) =>
             keyHolders
               .filter((y) => y.type === selectedEvent.required_item)
-              .filter((y) => y.current_holder !== null)
-              .map((y) => y.current_holder.userId)
+              .filter((y) => y.full_current_holder !== null)
+              .map((y) => y.full_current_holder?.userId)
               .includes(x)
           ) && (
-          <ListItem key={'keyAttendees'} sx={{ '&.MuiListItem-root': { paddingLeft: 0 } }} divider>
-            <ListItemAvatar sx={{ justifyContent: 'left', alignItems: 'center', display: 'flex' }}>
-              <Key sx={{ color: (theme) => theme.palette.success.main }} />
-            </ListItemAvatar>
-            <ListItemText primary={t('events.information.keyHolderAttending')} />
-          </ListItem>
-        )}
+            <ListItem key={'keyAttendees'} sx={{ '&.MuiListItem-root': { paddingLeft: 0 } }} divider>
+              <ListItemAvatar sx={{ justifyContent: 'left', alignItems: 'center', display: 'flex' }}>
+                <Key sx={{ color: (theme) => theme.palette.success.main }} />
+              </ListItemAvatar>
+              <ListItemText primary={t('events.information.keyHolderAttending')} />
+            </ListItem>
+          )}
         {selectedEvent.maxAttendees && selectedEvent.maxAttendees >= 0 && (
           <ListItem key={'spotsTaken'} sx={{ '&.MuiListItem-root': { paddingLeft: 0 } }} divider>
             <ListItemAvatar sx={{ justifyContent: 'left', alignItems: 'center', display: 'flex' }}>
@@ -114,9 +108,9 @@ const EventInformationAttendance = ({
             attendanceLoading
               ? {}
               : setEventAttendanceState({
-                  open: true,
-                  index: 0,
-                })
+                open: true,
+                index: 0,
+              })
           }
           secondaryAction={
             <>
@@ -173,9 +167,9 @@ const EventInformationAttendance = ({
             attendanceLoading
               ? {}
               : setEventAttendanceState({
-                  open: true,
-                  index: 1,
-                })
+                open: true,
+                index: 1,
+              })
           }
           secondaryAction={
             <IconButton
@@ -212,9 +206,9 @@ const EventInformationAttendance = ({
                 attendanceLoading
                   ? {}
                   : setEventAttendanceState({
-                      open: true,
-                      index: 2,
-                    })
+                    open: true,
+                    index: 2,
+                  })
               }
             >
               <ListItemAvatar sx={{ justifyContent: 'left', alignItems: 'center', display: 'flex' }}>
@@ -235,8 +229,9 @@ const EventInformationAttendance = ({
         attendance={attendance}
         usersWithRequiredItem={keyHolders
           .filter((x) => x.type === selectedEvent.required_item)
+          .filter((x) => x.full_current_holder !== null)
           .map((x) => ({
-            user: x.current_holder.userId,
+            user: (x.full_current_holder)!.userId,
             item: x,
           }))}
       />

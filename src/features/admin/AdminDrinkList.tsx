@@ -10,17 +10,17 @@ import {
   List,
   Typography,
 } from '@mui/material';
+import { captureException } from '@sentry/react';
+import { useNotifications } from '@toolpad/core/useNotifications';
 import _ from 'lodash';
 import React, { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
-import { fetchDrinksAsync } from './slices/adminDrinksSlice';
+import Layout from '../../components/Layout';
 import { RootState, useAppDispatch } from '../../redux/store';
-import { AlertMessage, AlertSnackbar } from '../../components/AlertSnackbar';
-import EditDrinkDialog from './dialogs/EditDrinkDialog';
-import { captureException } from '@sentry/react';
 import { AdminDrinksRepository } from '../../repository/AdminDrinksRepository';
 import { AdminDrinkItem } from './components/AdminDrinkItem';
-import Layout from '../../components/Layout';
+import EditDrinkDialog from './dialogs/EditDrinkDialog';
+import { fetchDrinksAsync } from './slices/adminDrinksSlice';
 
 const EMPTY_DRINK: Drink = {
   imageUrl: '',
@@ -41,7 +41,7 @@ const AdminDrinkList = () => {
   const [open, setOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [selectedDrink, setSelectedDrink] = useState<Drink>();
-  const [alertInfo, setAlertInfo] = useState<AlertMessage | null>(null);
+  const notifications = useNotifications();
 
   useEffect(() => {
     dispatch(fetchDrinksAsync());
@@ -65,7 +65,7 @@ const AdminDrinkList = () => {
       })
       .catch((error) => {
         captureException(error);
-        setAlertInfo({ message: error, severity: 'error' });
+        notifications.show(error, { severity: 'error' });
       });
   };
 
@@ -88,23 +88,23 @@ const AdminDrinkList = () => {
           .then(() => {
             AdminDrinksRepository.updateDrink({ ...selectedDrink, deleted: true, active: false }).catch((error) => {
               captureException(error);
-              setAlertInfo({ message: error, severity: 'error' });
+              notifications.show(error, { severity: 'error' });
             });
           })
           .catch((error) => {
             captureException(error);
-            setAlertInfo({ message: error, severity: 'error' });
+            notifications.show(error, { severity: 'error' });
           });
       } else {
         AdminDrinksRepository.updateDrink(drink).catch((error) => {
           captureException(error);
-          setAlertInfo({ message: error, severity: 'error' });
+          notifications.show(error, { severity: 'error' });
         });
       }
     } else {
       AdminDrinksRepository.addDrink(_.omit(drink)).catch((error) => {
         captureException(error);
-        setAlertInfo({ message: error, severity: 'error' });
+        notifications.show(error, { severity: 'error' });
       });
     }
     setOpen(false);
@@ -160,7 +160,6 @@ const AdminDrinkList = () => {
           </Button>
         </DialogActions>
       </Dialog>
-      <AlertSnackbar alertInfo={alertInfo} autoHideDuration={1500} close={() => setAlertInfo(null)} />
     </Layout>
   );
 };

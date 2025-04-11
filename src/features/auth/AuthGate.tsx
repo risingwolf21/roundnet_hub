@@ -1,21 +1,19 @@
 import { Box, CircularProgress, Typography } from '@mui/material';
 import { captureException, setUser } from '@sentry/react';
 import { Session } from '@supabase/supabase-js';
-import { logEvent, setUserId } from 'firebase/analytics';
 import React, { useCallback, useEffect, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { AppRoutes } from 'src/AppRoutes';
 import { LoadingScreen } from 'src/components/LoadingScreen';
 import { supabase } from 'src/components/services/supabase/supabaseClient';
-import { analytics } from 'src/firebase/firebaseConfig';
 import useDeviceId from 'src/hooks/useDeviceId';
+import raw from '../../git_commit.txt';
 import { onUserChange } from '../../redux/applicationSlice';
 import { AdminPermissionsRepository } from '../../repository/AdminPermissionsRepository';
 import { SupabaseUserRepository } from '../../repository/UserRepository';
 import { UserWithRolesAndPermissions } from '../../types/supabaseTypes';
 import { ability, defineRulesFor } from '../../utils/PermissionService';
 import { ApplicationContext } from './AuthContext';
-import raw from '../../git_commit.txt';
 
 
 export const AuthGate = () => {
@@ -84,7 +82,6 @@ export const AuthGate = () => {
         groups,
       };
       setProviderToken(session.user.user_metadata["provider_token"])
-      setUserId(analytics, session.user.id);
       setUser({ email: session.user.email, id: session.user.id, username: user.displayName });
       ability.update(defineRulesFor(permissions, roles));
       setCurrentUser(userData);

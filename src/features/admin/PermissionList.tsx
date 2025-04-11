@@ -1,8 +1,4 @@
-import Layout from '../../components/Layout';
-import React, { useCallback, useEffect, useState } from 'react';
-import { AdminPermissionsRepository } from '../../repository/AdminPermissionsRepository';
-import { AlertMessage, AlertSnackbar } from '../../components/AlertSnackbar';
-import _ from 'lodash';
+import { Add, Delete, Restore, Save } from '@mui/icons-material';
 import {
   Fab,
   IconButton,
@@ -13,13 +9,17 @@ import {
   ListItemText,
   ListSubheader,
 } from '@mui/material';
-import { Add, Delete, Restore, Save } from '@mui/icons-material';
+import { useNotifications } from '@toolpad/core/useNotifications';
+import _ from 'lodash';
+import React, { useCallback, useEffect, useState } from 'react';
+import { NonNullableFields } from 'types/supabase';
+import Layout from '../../components/Layout';
 import { SwipeableDialog } from '../../components/SwipeableDialog';
 import { supabase } from '../../components/services/supabase/supabaseClient';
-import { NonNullableFields } from 'types/supabase';
+import { AdminPermissionsRepository } from '../../repository/AdminPermissionsRepository';
 
 const PermissionList = () => {
-  const [alertInfo, setAlertInfo] = useState<AlertMessage | null>(null);
+  const notifications = useNotifications();
   const [permissions, setPermissions] = useState<RolePermissionMapping[]>([]);
   const [allAppPermissions, setAllAppPermissions] = useState<AppPermission[]>([]);
   const [allAppRoles, setAllAppRoles] = useState<AppRole[]>([]);
@@ -73,17 +73,17 @@ const PermissionList = () => {
       .then((result) => {
         setPermissions(result.data ?? []);
       })
-      .catch((error) => setAlertInfo({ message: error.message, severity: 'error' }));
+      .catch((error) => notifications.show(error, { severity: 'error' }));
     AdminPermissionsRepository.fetchAllAppPermissions()
       .then((result) => {
         setAllAppPermissions(result.data ?? []);
       })
-      .catch((error) => setAlertInfo({ message: error.message, severity: 'error' }));
+      .catch((error) => notifications.show(error, { severity: 'error' }));
     AdminPermissionsRepository.fetchAllAppRoles()
       .then((result) => {
         setAllAppRoles(result.data ?? []);
       })
-      .catch((error) => setAlertInfo({ message: error.message, severity: 'error' }));
+      .catch((error) => notifications.show(error, { severity: 'error' }));
   }, []);
 
   useEffect(() => {
@@ -196,7 +196,6 @@ const PermissionList = () => {
           Speichern
         </Fab>
       )}
-      <AlertSnackbar alertInfo={alertInfo} autoHideDuration={1500} close={() => setAlertInfo(null)} />
     </Layout>
   );
 };

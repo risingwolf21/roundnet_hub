@@ -25,6 +25,7 @@ import { SwipeableDialog } from '../../components/SwipeableDialog';
 import { RootState, useAppDispatch } from '../../redux/store';
 import { FullPayment } from '../../types/supabaseTypes';
 import { fetchAdminsPaymentsAsync } from './slices/adminPaymentsSlice';
+import { PullToRefresh } from 'src/components/pull-to-refresh/PullToRefresh';
 
 const PaymentsPendingAdmin = () => {
   const [open, setOpen] = useState(false);
@@ -78,43 +79,46 @@ const PaymentsPendingAdmin = () => {
       </Box>
       {loading && <LinearProgress style={{ position: 'fixed', left: 0, top: 56, right: 0 }} />}
       {payments && payments.length > 0 && (
-        <List sx={{ width: '100%', pt: 0 }}>
-          {Object.values(payments)
-            .filter(
-              (x) =>
-                searchString === '' || (x.user?.displayName ?? '').toLowerCase().includes(searchString.toLowerCase())
-            )
-            .map((x, index) => (
-              <ListItem
-                key={x.user.email}
-                divider
-                secondaryAction={
-                  <IconButton
-                    onClick={(event) => {
-                      selectedPayment(x);
-                      event.stopPropagation();
-                    }}
-                  >
-                    <CheckIcon />
-                  </IconButton>
-                }
-              >
-                <ListItemAvatar>
-                  <Typography fontWeight={'bold'}>
-                    {x.history.reduce((prev: number, curr: History) => prev + (curr.amount ?? 0), 0)} €
-                  </Typography>
-                </ListItemAvatar>
-                <ListItemText
-                  primary={x.user?.displayName ?? x.user.email}
-                  secondary={x.user.displayName ? 'Benutzername' : 'Email'}
-                />
-              </ListItem>
-            ))}
-          <ListItem key="spacer" sx={{ visibility: 'hidden' }}>
-            <ListItemAvatar />
-            <ListItemText primary="Shu shu shu, sha sha sha" secondary="EasterEgg" />
-          </ListItem>
-        </List>
+        <PullToRefresh onRefresh={() => dispatch(fetchAdminsPaymentsAsync({ client }))}>
+          <List sx={{ width: '100%', pt: 0 }}>
+            {Object.values(payments)
+              .filter(
+                (x) =>
+                  searchString === '' || [(x.user?.displayName ?? '').toLowerCase(), (x.user?.name ?? '').toLowerCase()].includes(searchString.toLowerCase())
+              )
+              .sort((a, b) => a.user.name > b.user.name ? 1 : -1)
+              .map((x, index) => (
+                <ListItem
+                  key={x.user.userId}
+                  divider
+                  secondaryAction={
+                    <IconButton
+                      onClick={(event) => {
+                        selectedPayment(x);
+                        event.stopPropagation();
+                      }}
+                    >
+                      <CheckIcon />
+                    </IconButton>
+                  }
+                >
+                  <ListItemAvatar>
+                    <Typography fontWeight={'bold'}>
+                      {x.history.reduce((prev: number, curr: History) => prev + (curr.amount ?? 0), 0)} €
+                    </Typography>
+                  </ListItemAvatar>
+                  <ListItemText
+                    primary={x.user?.name ?? x.user.email}
+                    secondary={x.user.name ? 'Name' : 'Email'}
+                  />
+                </ListItem>
+              ))}
+            <ListItem key="spacer" sx={{ visibility: 'hidden' }}>
+              <ListItemAvatar />
+              <ListItemText primary="Shu shu shu, sha sha sha" secondary="EasterEgg" />
+            </ListItem>
+          </List>
+        </PullToRefresh>
       )}
       {payments && payments.length < 1 && (
         <Grid
@@ -128,17 +132,6 @@ const PaymentsPendingAdmin = () => {
           <Typography>Keine aktiven Zahlungen gefunden</Typography>
         </Grid>
       )}
-      <Fab
-        sx={{
-          background: '#66bb6a',
-          position: 'fixed',
-          right: '16px',
-          bottom: 'calc(16px + env(safe-area-inset-bottom))',
-        }}
-        onClick={() => dispatch(fetchAdminsPaymentsAsync({ client }))}
-      >
-        <Refresh sx={{ color: 'white' }} />
-      </Fab>
       <SwipeableDialog
         open={open}
         setOpen={setOpen}

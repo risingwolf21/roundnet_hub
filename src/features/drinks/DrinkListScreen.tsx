@@ -2,29 +2,28 @@ import { Tune } from '@mui/icons-material';
 import CheckIcon from '@mui/icons-material/Check';
 import { Checkbox, CircularProgress, Fab, List, ListItem, ListItemAvatar, ListItemText } from '@mui/material';
 import { captureException } from '@sentry/react';
+import { useNotifications } from '@toolpad/core/useNotifications';
 import React, { useEffect, useState } from 'react';
-import { AlertMessage, AlertSnackbar } from 'src/components/AlertSnackbar';
+import { AlertMessage } from 'src/components/AlertSnackbar';
 import { DrinkCounter } from 'src/types/supabaseTypes';
 import { nameOfProductType } from 'src/utils';
-import { SwipeableDialog } from '../../components/SwipeableDialog';
-import DrinkList from './components/DrinkList';
-import { DrinkListScreenProps } from './types';
-import { SupabaseDrinkRepository } from '../../repository/DrinkRepository';
-import VoucherCard from './components/Voucher';
 import Layout from '../../components/Layout';
-import { fetchVouchersAsync } from './slices/drinksSlice';
+import { SwipeableDialog } from '../../components/SwipeableDialog';
 import { useAppDispatch } from '../../redux/store';
+import { SupabaseDrinkRepository } from '../../repository/DrinkRepository';
+import DrinkList from './components/DrinkList';
 import { LoadingDrinkItem } from './components/LoadingDrinkItem';
-import { logEvent } from 'firebase/analytics';
-import { analytics } from 'src/firebase/firebaseConfig';
+import VoucherCard from './components/Voucher';
+import { fetchVouchersAsync } from './slices/drinksSlice';
+import { DrinkListScreenProps } from './types';
 
 const SUCCESS_MESSAGE_INFO: AlertMessage = { message: 'Getränke erfolgreich gebucht!', severity: 'success' };
 
 const DrinkListScreen = ({ user, drinks, drinksLoading, drinksError }: DrinkListScreenProps) => {
   const dispatch = useAppDispatch();
+  const notifications = useNotifications();
   const [addedDrinks, setAddedDrinks] = useState<DrinkCounter[]>([]);
   const [loading, setLoading] = useState(false);
-  const [alertInfo, setAlertInfo] = useState<AlertMessage | null>(null);
   const [filterDialogOpen, setFilterDialogOpen] = useState(false);
   const [visibleTypes, setVisibleTypes] = useState<ProductType[]>(
     (localStorage.getItem('visibleTypes')?.split(';') as ProductType[]) ?? ['Drink']
@@ -32,12 +31,12 @@ const DrinkListScreen = ({ user, drinks, drinksLoading, drinksError }: DrinkList
 
   useEffect(() => {
     if (drinksError) {
-      setAlertInfo({ message: drinksError, severity: 'error' });
+      notifications.show(drinksError, { severity: 'error' });
     }
-  }, [drinksError]);
+  }, [drinksError, notifications]);
 
   const confirmDrinksDialog = (message: AlertMessage) => {
-    setAlertInfo(message);
+    notifications.show(message.message, { severity: message.severity });
     setLoading(false);
   };
 
@@ -55,14 +54,12 @@ const DrinkListScreen = ({ user, drinks, drinksLoading, drinksError }: DrinkList
     setLoading(true);
     SupabaseDrinkRepository.insertHistoryItems(Object.values(addedDrinks))
       .then(() => {
-        logEvent(analytics, "drink_history_success", { addedDrinks, user });
         setLoading(false);
         setAddedDrinks([]);
         confirmDrinksDialog(SUCCESS_MESSAGE_INFO);
         dispatch(fetchVouchersAsync());
       })
       .catch((error) => {
-        logEvent(analytics, "drink_history_error", { error, addedDrinks, user });
         captureException(error);
         let message = error?.message ?? 'Drink could not be added';
         resetDrinks(message);
@@ -158,8 +155,6 @@ const DrinkListScreen = ({ user, drinks, drinksLoading, drinksError }: DrinkList
           ))}
         </List>
       </SwipeableDialog>
-
-      <AlertSnackbar close={() => setAlertInfo(null)} alertInfo={alertInfo} />
     </Layout>
   );
 };

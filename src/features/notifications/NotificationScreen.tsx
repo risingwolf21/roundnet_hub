@@ -1,29 +1,32 @@
-import { useSelector } from 'react-redux';
-import { RootState, useAppDispatch } from '../../redux/store';
-import { can } from '../../utils/PermissionService';
-import { AlertSnackbar } from '../../components/AlertSnackbar';
-import React from 'react';
-import { Navigate } from 'react-router';
-import { HOMEPAGE } from '../../constants';
-import { Fab, LinearProgress, List, ListItem, ListItemText } from '@mui/material';
 import { DoneAll } from '@mui/icons-material';
-import { fetchNotificationsAsync, notificationsSelector } from './slices/notificationsSlice';
-import { SupabaseUserRepository } from '../../repository/UserRepository';
+import { Fab, LinearProgress, List, ListItem, ListItemText } from '@mui/material';
+import { useNotifications } from '@toolpad/core/useNotifications';
+import React, { useEffect } from 'react';
+import { useSelector } from 'react-redux';
+import { Navigate } from 'react-router';
 import Layout from '../../components/Layout';
+import { HOMEPAGE } from '../../constants';
+import { RootState, useAppDispatch } from '../../redux/store';
+import { SupabaseUserRepository } from '../../repository/UserRepository';
+import { can } from '../../utils/PermissionService';
 import { useApplication } from '../auth/AuthContext';
-import { logEvent } from 'firebase/analytics';
-import { analytics } from 'src/firebase/firebaseConfig';
+import { fetchNotificationsAsync, notificationsSelector } from './slices/notificationsSlice';
 
 const NotificationScreen = () => {
   const { loading, error } = useSelector((state: RootState) => state.notifications);
   const { user } = useApplication();
   const notifications = useSelector((state: RootState) => notificationsSelector.selectAll(state));
   const dispatch = useAppDispatch();
+  const dialog = useNotifications();
+
+  useEffect(() => {
+    if (error)
+      dialog.show(error, { severity: "error" });
+  }, [error, dialog]);
 
   if (!can('view', 'notifications')) return <Navigate to={`/${HOMEPAGE}`} replace={true} />;
 
   const markNotificationsAsRead = () => {
-    logEvent(analytics, "notifications_cleared", { user: user!.userId, name: user!.name, });
     SupabaseUserRepository.markNotificationsAsRead(user!).then((result) => {
       dispatch(fetchNotificationsAsync(user!));
     });
@@ -57,7 +60,6 @@ const NotificationScreen = () => {
         <DoneAll sx={{ color: 'white', mr: 1 }} />
         Als gelesen markieren
       </Fab>
-      {error && <AlertSnackbar alertInfo={{ message: error, severity: 'error' }} />}
     </Layout>
   );
 };

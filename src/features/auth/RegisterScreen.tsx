@@ -1,19 +1,19 @@
-import React, { FormEvent, useState } from 'react';
-import Button from '@mui/material/Button';
-import CssBaseline from '@mui/material/CssBaseline';
-import TextField from '@mui/material/TextField';
-import Link from '@mui/material/Link';
-import Grid from '@mui/material/Grid2';
 import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
+import Button from '@mui/material/Button';
 import Container from '@mui/material/Container';
-import Logo from '../../images/Karlsruher_Kojoten_Logo.svg';
-import { supabase } from '../../components/services/supabase/supabaseClient';
+import CssBaseline from '@mui/material/CssBaseline';
+import Grid from '@mui/material/Grid2';
+import Link from '@mui/material/Link';
+import TextField from '@mui/material/TextField';
+import Typography from '@mui/material/Typography';
 import { captureException } from '@sentry/react';
-import { RegistrationError } from '../../utils';
-import { AlertMessage, AlertSnackbar } from '../../components/AlertSnackbar';
+import { useNotifications } from '@toolpad/core/useNotifications';
+import React, { FormEvent } from 'react';
 import { useNavigate } from 'react-router';
 import Layout from 'src/components/Layout';
+import { supabase } from '../../components/services/supabase/supabaseClient';
+import Logo from '../../images/Karlsruher_Kojoten_Logo.svg';
+import { RegistrationError } from '../../utils';
 
 export type RegisterProps = {
   email: string;
@@ -22,8 +22,8 @@ export type RegisterProps = {
 };
 
 const RegisterScreen = () => {
-  const [alertInfo, setAlertInfo] = useState<AlertMessage | null>(null);
   const navigate = useNavigate();
+  const notifications = useNotifications();
 
   const onRegister = async ({ email, password, name }: RegisterProps) => {
     const { error, data } = await supabase.auth.signUp({
@@ -47,7 +47,7 @@ const RegisterScreen = () => {
         scope.setExtra('error', JSON.stringify(error));
         return scope;
       });
-      setAlertInfo({ message: 'Could not sign up user. [' + error?.message + ']', severity: 'error' });
+      notifications.show('Could not sign up user. [' + error?.message + ']', { severity: 'error' })
     }
   };
 
@@ -61,11 +61,11 @@ const RegisterScreen = () => {
     const surname = data.get('surname')?.toString();
 
     if (!password || !password2 || password !== password2) {
-      setAlertInfo({ message: 'Die Passwörter stimmen nicht überein.', severity: 'error' });
+      notifications.show('Die Passwörter stimmen nicht überein.', { severity: 'error' })
     } else if (!email || !/^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$/.test(email)) {
-      setAlertInfo({ message: 'Die angegebene Email-Adresse ist nicht korrekt.', severity: 'error' });
+      notifications.show('Die angegebene Email-Adresse ist nicht korrekt.', { severity: 'error' })
     } else if (!name || !surname || name.length < 2 || surname.length < 2) {
-      setAlertInfo({ message: 'Bitte gib deinen Vor-und Nachnamen an.', severity: 'error' });
+      notifications.show('Bitte gib deinen Vor-und Nachnamen an.', { severity: 'error' })
     } else {
       onRegister({ email, password, name: name.trim() + ' ' + surname.trim() });
     }
@@ -140,7 +140,6 @@ const RegisterScreen = () => {
             </Grid>
           </Box>
         </Box>
-        <AlertSnackbar alertInfo={alertInfo} />
       </Container>
     </Layout>
   );

@@ -40,11 +40,11 @@ export const KeyHandOverDialog = ({
         {selectedUser?.userId === user.userId
           ? t('confirmKeyTaken', {
               keyName: selectedKeyHolder?.name,
-              userName: selectedKeyHolder?.current_holder?.displayName ?? '',
+              userName: selectedKeyHolder?.full_current_holder?.displayName ?? '',
             })
           : t('confirmKeyHandover', {
               keyName: selectedKeyHolder?.name,
-              userName: selectedKeyHolder?.current_holder?.displayName ?? '',
+              userName: selectedKeyHolder?.full_current_holder?.displayName ?? '',
             })}
       </Typography>
     </SwipeableDialog>

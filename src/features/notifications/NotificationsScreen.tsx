@@ -16,11 +16,11 @@ import {
   Toolbar,
   Typography,
 } from '@mui/material';
+import { useNotifications } from '@toolpad/core/useNotifications';
 import { TFunction } from 'i18next';
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router';
-import { AlertMessage, AlertSnackbar } from '../../components/AlertSnackbar';
 import { LoadingIndicator } from '../../components/LoadingIndicator';
 import { SupabaseUserRepository } from '../../repository/UserRepository';
 import { useApplication } from '../auth/AuthContext';
@@ -42,9 +42,9 @@ type NotificationsScreenProps = {
 export const NotificationsScreen = ({ user, t }: NotificationsScreenProps) => {
   const [activeUserTags, setActiveUserTags] = useState<NotificationTags[]>(user.notifications ?? []);
   const [loading, setLoading] = useState(false);
-  const [alertInfo, setAlertInfo] = useState<AlertMessage | null>(null);
   const [notificationPermissionGranted, setNotificationPermissionGranted] = useState(false);
   const navigate = useNavigate();
+  const notifications = useNotifications();
 
   useEffect(() => {
     Notification.requestPermission().then((result) => {
@@ -65,9 +65,9 @@ export const NotificationsScreen = ({ user, t }: NotificationsScreenProps) => {
     SupabaseUserRepository.updateNotificationTags(activeUserTags, user).then((r) => {
       setLoading(false);
       if (!r.error) {
-        setAlertInfo({ message: 'Successfully updated your notification preferences', severity: 'info' });
+        notifications.show('Successfully updated your notification preferences', { severity: 'info' });
       } else {
-        setAlertInfo({ message: 'Something went wrong here: ' + r.error.message, severity: 'error' });
+        notifications.show('Something went wrong here: ' + r.error.message, { severity: 'error' });
       }
     });
   };
@@ -112,7 +112,6 @@ export const NotificationsScreen = ({ user, t }: NotificationsScreenProps) => {
         >
           {!loading ? <Save sx={{ color: 'white' }} /> : <CircularProgress />}
         </Fab>
-        <AlertSnackbar alertInfo={alertInfo} autoHideDuration={1500} close={() => setAlertInfo(null)} />
       </Box>
     </Dialog>
   );

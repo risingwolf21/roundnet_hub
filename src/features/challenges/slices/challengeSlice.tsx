@@ -148,7 +148,7 @@ export const fetchArchivedChallenges = createAsyncThunk('fetchArchivedChallenges
 
 export const fetchChallengeStatsSingleAsync = createAsyncThunk(
   'fetchChallengeStatsSingleAsync',
-  async ({ challengeId }: { challengeId: number }) => {
+  async ({ challengeId }: { challengeId: string }) => {
     const response = await ChallengeRepository.fetchChallengeStats(challengeId);
     return {
       challengeId,

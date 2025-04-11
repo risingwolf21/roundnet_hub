@@ -1,10 +1,9 @@
-import React, { useEffect } from "react";
+import React from "react";
 import { createBrowserRouter, Navigate, Outlet, RouterProvider } from "react-router";
 import ErrorRouteElement from "./components/ErrorRouteElement";
 import { useApplication } from "./features/auth/AuthContext";
 import { useServiceWorker } from "./hooks/useServiceWorker";
 
-const FeatureNotAvailable = React.lazy(() => import('./components/FeatureNotAvailable'));
 const HistoryScreenProvider = React.lazy(() => import('./features/drinks/HistoryScreenProvider'));
 const KeyHolderScreenProvider = React.lazy(() => import('./features/keys/provider'));
 const PayDrinksScreenProvider = React.lazy(() => import('./features/drinks/PayDrinksScreen'));
@@ -27,7 +26,6 @@ const RecurringEvents = React.lazy(() => import('./features/events/RecurringEven
 const GameList = React.lazy(() => import('./features/games/GameList'));
 const ReportScore = React.lazy(() => import('./features/games/ReportScore'));
 const UpdateAvailable = React.lazy(() => import('./components/UpdateAvailable'));
-const NotVerifiedScreen = React.lazy(() => import('./components/NotVerifiedScreen'));
 const HomePage = React.lazy(() => import('./features/homepage/HomePage'));
 const SupabaseClient = React.lazy(() => import('./features/supabase/SupabaseClient'));
 const UserScreenProvider = React.lazy(() => import('./features/profile/User'));
@@ -40,10 +38,7 @@ const PublicGroupList = React.lazy(() => import('./features/groups/PublicGroupLi
 const PublicGroupInformation = React.lazy(() => import('./features/groups/PublicGroupInformation'));
 
 export const AppRoutes = () => {
-  const { user } = useApplication();
   const { isUpdateAvailable, updateServiceWorker } = useServiceWorker();
-
-  const routes = user ? protectedRoutes : publicRoutes;
 
   const router = createBrowserRouter(routes)
 
@@ -52,41 +47,15 @@ export const AppRoutes = () => {
   return <RouterProvider router={router} />
 }
 
-const publicRoutes = [
-  {
-    path: "/",
-    element: <Outlet />,
-    errorElement: <ErrorRouteElement />,
-    children: [
-      {
-        index: true,
-        element: <Navigate to="/login" />
-      },
-      {
-        path: "/login",
-        element: <LoginScreen />,
-      },
-      {
-        path: "/signup",
-        element: <SignUpScreen />,
-      },
-      {
-        path: "/forgot-password",
-        element: <ForgotPasswordScreen />,
-      },
-      {
-        path: "/reset-password",
-        element: <ResetPasswordScreen />
-      },
-      {
-        path: "/auth/callback",
-        element: <AuthCallback />,
-      }
-    ]
-  }
-]
+const PrivateRoute = () => {
+  const { user } = useApplication();
 
-const protectedRoutes = [
+  if (!user)
+    return <Navigate to="/login" />
+  return <Outlet />
+}
+
+const routes = [
   {
     path: "/login",
     element: (
@@ -94,8 +63,24 @@ const protectedRoutes = [
     ),
   },
   {
+    path: "/signup",
+    element: <SignUpScreen />,
+  },
+  {
+    path: "/forgot-password",
+    element: <ForgotPasswordScreen />,
+  },
+  {
+    path: "/reset-password",
+    element: <ResetPasswordScreen />
+  },
+  {
+    path: "/auth/callback",
+    element: <AuthCallback />,
+  },
+  {
     path: "/",
-    element: <Outlet />,
+    element: <PrivateRoute />,
     errorElement: <ErrorRouteElement />,
     children: [
       {
@@ -105,14 +90,6 @@ const protectedRoutes = [
       {
         path: "/home",
         element: <HomePage />
-      },
-      {
-        path: "/not-verified",
-        element: <NotVerifiedScreen />
-      },
-      {
-        path: "/feature-not-available",
-        element: <FeatureNotAvailable />
       },
       {
         path: "/reset-password",

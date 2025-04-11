@@ -1,7 +1,5 @@
-import { logEvent } from 'firebase/analytics';
 import { useEffect, useMemo } from 'react';
 import { useSelector } from 'react-redux';
-import { analytics } from 'src/firebase/firebaseConfig';
 import { onServiceWorkerInitialized, onUpdateServiceWorker } from 'src/redux/applicationSlice';
 import { RootState, useAppDispatch } from 'src/redux/store';
 import * as serviceWorker from '../serviceWorkerRegistration';
@@ -9,7 +7,6 @@ import * as serviceWorker from '../serviceWorkerRegistration';
 export type ServiceWorkerConfig = {
   onUpdate: (registration: ServiceWorkerRegistration) => void;
   onSuccess: (registration: ServiceWorkerRegistration) => void;
-  onNotificationRecieved: (registration: ServiceWorkerRegistration) => void;
 };
 
 export const useServiceWorker = () => {
@@ -19,10 +16,7 @@ export const useServiceWorker = () => {
   useEffect(() => {
     serviceWorker.register({
       onUpdate: (registration: ServiceWorkerRegistration) => dispatch(onUpdateServiceWorker(registration)),
-      onSuccess: () => dispatch(onServiceWorkerInitialized()),
-      onNotificationRecieved: () => {
-        logEvent(analytics, "notification_recieved")
-      }
+      onSuccess: () => dispatch(onServiceWorkerInitialized())
     });
   }, [dispatch]);
 

@@ -1,9 +1,7 @@
 import { Send } from '@mui/icons-material';
 import { Box, IconButton, InputAdornment, List, TextField, Typography } from '@mui/material';
-import { logEvent } from 'firebase/analytics';
 import React, { createRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { analytics } from 'src/firebase/firebaseConfig';
 import { FullComment } from 'src/types/supabaseTypes';
 import { can } from '../../../utils/PermissionService';
 import { EventCommentConversationDialog } from '../dialogs/EventCommentConversationDialog';
@@ -54,7 +52,6 @@ const EventInformationComments = ({
     const commentValue = data.get('comment')?.toString();
     if (!commentValue) return;
 
-    logEvent(analytics, "event_comment_added", { comment: commentValue });
     handleCommentSubmit({ comment: commentValue, reply_to: null });
     event.currentTarget.reset();
   };
