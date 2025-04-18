@@ -46,7 +46,7 @@ Sentry.init({
     Sentry.browserTracingIntegration()
   ],
   tracesSampleRate: 1.0,
-  tracePropagationTargets: ["localhost", "https://roundnet-karlsruhe.web.app", /^https:\/\/roundnet-karlsruhe/\.web.app/],
+  tracePropagationTargets: ["localhost", "https://roundnet-karlsruhe.web.app"],
 });
 
 const root = ReactDOM.createRoot(document.getElementById('root') as HTMLElement, {
