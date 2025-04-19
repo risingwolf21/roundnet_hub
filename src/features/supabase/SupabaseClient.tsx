@@ -355,6 +355,12 @@ const SupabaseClient = () => {
       <ListItem onClick={() => setSelectTableOpen(true)} secondaryAction={<ExpandMoreOutlined />}>
         <ListItemText primary={selectedTable?.table_name} secondary={selectedTable?.table_schema} />
       </ListItem>
+      <button type="button"
+        onClick={() => {
+          throw new Error("Sentry Test Error");
+        }}
+      >Break the world</button>;
+
 
       {selectedTableData[0] && (
         <DataGrid
@@ -436,7 +442,7 @@ const SupabaseClient = () => {
             },
           }}
           sx={{
-            pb: "max(56px,env(safe-area-inset-bottom))"
+            pb: "min(56px,env(safe-area-inset-bottom))"
           }}
           processRowUpdate={processRowUpdate}
           onRowModesModelChange={handleRowModesModelChange}
