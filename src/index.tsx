@@ -36,13 +36,11 @@ Sentry.init({
       createRoutesFromChildren,
       matchRoutes,
     }),
-    Sentry.replayIntegration(),
     supabaseIntegration(supabase, Sentry, {
       tracing: true,
       breadcrumbs: true,
       errors: true,
     }),
-    captureConsoleIntegration(),
     Sentry.browserTracingIntegration()
   ],
   tracesSampleRate: 1.0,
