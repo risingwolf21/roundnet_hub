@@ -63,7 +63,6 @@ dayjs.updateLocale('en', {
 })
 
 root.render(
-  <Sentry.ErrorBoundary>
     <ThemeProvider theme={mainTheme}>
       <AppProvider branding={BRANDING} theme={mainTheme}>
         <DialogsProvider>
@@ -79,5 +78,4 @@ root.render(
         </DialogsProvider>
       </AppProvider>
     </ThemeProvider>
-  </Sentry.ErrorBoundary>
 );
