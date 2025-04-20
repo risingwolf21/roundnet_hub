@@ -29,22 +29,10 @@ Sentry.init({
   dsn: 'https://a06f63fae5ab4ce4ac291d0d6fb4e989@o4505379650666496.ingest.us.sentry.io/4505379651649536',
   debug: true,
   integrations: [
-    Sentry.reactRouterV6BrowserTracingIntegration({
-      useEffect,
-      useLocation,
-      useNavigationType,
-      createRoutesFromChildren,
-      matchRoutes,
-    }),
-    supabaseIntegration(supabase, Sentry, {
-      tracing: true,
-      breadcrumbs: true,
-      errors: true,
-    }),
     Sentry.browserTracingIntegration()
   ],
   tracesSampleRate: 1.0,
-  tracePropagationTargets: ["localhost", "https://roundnet-karlsruhe.web.app"],
+  tracePropagationTargets: ["https://roundnet-karlsruhe.web.app"],
 });
 
 const root = ReactDOM.createRoot(document.getElementById('root') as HTMLElement, {
