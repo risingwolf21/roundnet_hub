@@ -9,6 +9,7 @@ import { HOMEPAGE } from 'src/constants';
 import { supabase } from '../../components/services/supabase/supabaseClient';
 import { useApplication } from './AuthContext';
 import Layout from 'src/components/Layout';
+import { LocationSearching } from '@mui/icons-material';
 
 
 const LoginScreen = () => {
@@ -20,7 +21,7 @@ const LoginScreen = () => {
   const location = useLocation();
 
   if (user) {
-    return <Navigate to={location.state.path ?? HOMEPAGE} />
+    return <Navigate to={location.state.path !== "/login" ? location.state.path : HOMEPAGE} />
   }
 
   const signIn: (provider: AuthProvider, formData: FormData | undefined) => void = async (
