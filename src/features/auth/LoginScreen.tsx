@@ -21,7 +21,7 @@ const LoginScreen = () => {
   const location = useLocation();
 
   if (user) {
-    return <Navigate to={location.state.path !== "/login" ? location.state.path : HOMEPAGE} />
+    return <Navigate to={location.state?.path !== "/login" ? location.state?.path || HOMEPAGE : HOMEPAGE} />
   }
 
   const signIn: (provider: AuthProvider, formData: FormData | undefined) => void = async (
