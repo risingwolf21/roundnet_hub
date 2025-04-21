@@ -38,7 +38,7 @@ const UserScreen = () => {
       setLoading(true);
       loadUserData(userId).then(({ result, userResult }) => {
         setOverlappingGroups(
-          result.data?.groups?.filter((x: Group) => userResult.data?.groups.some((y: Group) => y.id === x.id)) ?? []
+          result.data?.groups?.filter((x: Group) => userResult.data?.groups.some((y: Group) => y?.id === x?.id)) ?? []
         );
         setCurrentUser(result.data);
         setLoading(false);
