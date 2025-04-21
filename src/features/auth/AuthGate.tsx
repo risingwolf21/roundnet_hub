@@ -137,6 +137,7 @@ export const AuthGate = () => {
         <CircularProgress variant={'indeterminate'} size={50}></CircularProgress>
       </Box>
     );
+    
   return (
     <ApplicationContext.Provider value={{ user: currentUser, signOut: signOut, deviceId, provider_token, version }}>
       <React.Suspense fallback={<LoadingScreen />}>

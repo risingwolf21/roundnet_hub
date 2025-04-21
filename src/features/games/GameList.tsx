@@ -48,7 +48,7 @@ const GameList = () => {
               }
             >
               {value.map((x, index) => (
-                <ListItem key={index} divider>
+                <ListItem key={x.id} divider>
                   <Box sx={{ display: 'flex', flexDirection: 'row', width: '100%' }}>
                     <Box
                       sx={{

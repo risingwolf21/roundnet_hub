@@ -1,5 +1,5 @@
 import React from "react";
-import { createBrowserRouter, Navigate, Outlet, RouterProvider } from "react-router";
+import { createBrowserRouter, Navigate, Outlet, RouterProvider, useLocation } from "react-router";
 import ErrorRouteElement from "./components/ErrorRouteElement";
 import { useApplication } from "./features/auth/AuthContext";
 import { useServiceWorker } from "./hooks/useServiceWorker";
@@ -49,9 +49,11 @@ export const AppRoutes = () => {
 
 const PrivateRoute = () => {
   const { user } = useApplication();
+  const location = useLocation();
+
 
   if (!user)
-    return <Navigate to="/login" />
+    return <Navigate to="/login" state={{ path: location.pathname }} />
   return <Outlet />
 }
 

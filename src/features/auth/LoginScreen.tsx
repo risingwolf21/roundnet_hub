@@ -19,10 +19,8 @@ const LoginScreen = () => {
   const [loading, setLoading] = useState(false);
   const location = useLocation();
 
-  console.log(location)
-
   if (user) {
-    return <Navigate to={HOMEPAGE} />
+    return <Navigate to={location.state.path ?? HOMEPAGE} />
   }
 
   const signIn: (provider: AuthProvider, formData: FormData | undefined) => void = async (

@@ -1,38 +1,15 @@
-import { ThemeProvider } from '@mui/material';
-import { LocalizationProvider } from '@mui/x-date-pickers';
-import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import "./instrument";
 import * as Sentry from '@sentry/react';
-import React, { useEffect } from 'react';
+import React from 'react';
 import ReactDOM from 'react-dom/client';
-import { Provider } from 'react-redux';
-import { Provider as SupabaseProvider } from 'react-supabase';
 import 'reflect-metadata';
-import { supabase } from './components/services/supabase/supabaseClient';
 import './global.css';
-import store from './redux/store';
-import { mainTheme } from './themes/themes';
 import './translation/i18n';
 //@ts-ignore
-import { captureConsoleIntegration } from '@sentry/integrations';
-import { supabaseIntegration } from '@supabase/sentry-js-integration';
-import { AppProvider } from '@toolpad/core/AppProvider';
-import { DialogsProvider } from '@toolpad/core/useDialogs';
-import { NotificationsProvider } from '@toolpad/core/useNotifications';
-import { createRoutesFromChildren, matchRoutes, useLocation, useNavigationType } from 'react-router';
-import { BRANDING } from './utils';
-import { AuthGate } from './features/auth/AuthGate';
-import dayjs from 'dayjs'
-import updateLocale from 'dayjs/plugin/updateLocale'
+import dayjs from 'dayjs';
+import updateLocale from 'dayjs/plugin/updateLocale';
+import { App } from "./App";
 
-Sentry.init({
-  dsn: 'https://a06f63fae5ab4ce4ac291d0d6fb4e989@o4505379650666496.ingest.us.sentry.io/4505379651649536',
-  debug: true,
-  integrations: [
-    Sentry.browserTracingIntegration()
-  ],
-  tracesSampleRate: 1.0,
-  tracePropagationTargets: ["https://roundnet-karlsruhe.web.app"],
-});
 
 const root = ReactDOM.createRoot(document.getElementById('root') as HTMLElement, {
   onUncaughtError: Sentry.reactErrorHandler((error, errorInfo) => {
@@ -48,19 +25,5 @@ dayjs.updateLocale('en', {
 })
 
 root.render(
-    <ThemeProvider theme={mainTheme}>
-      <AppProvider branding={BRANDING} theme={mainTheme}>
-        <DialogsProvider>
-          <NotificationsProvider>
-            <Provider store={store}>
-              <SupabaseProvider value={supabase}>
-                <LocalizationProvider dateAdapter={AdapterDayjs}>
-                  <AuthGate />
-                </LocalizationProvider>
-              </SupabaseProvider>
-            </Provider>
-          </NotificationsProvider>
-        </DialogsProvider>
-      </AppProvider>
-    </ThemeProvider>
+  <App />
 );
