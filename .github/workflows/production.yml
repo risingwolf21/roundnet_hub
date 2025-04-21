@@ -30,6 +30,9 @@ jobs:
           contents: |
             ${{github.sha}}
           write-mode: overwrite
+          
+      - name: "Write firebase service worker config file"
+        run: yarn run build-fcm-config
 
       - name: Build
         run: PUBLIC_URL=https://roundnet-karlsruhe.web.app yarn run build:production
