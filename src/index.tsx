@@ -19,7 +19,6 @@ import { AppProvider } from '@toolpad/core/AppProvider';
 import { DialogsProvider } from '@toolpad/core/useDialogs';
 import { NotificationsProvider } from '@toolpad/core/useNotifications';
 import { createRoutesFromChildren, matchRoutes, useLocation, useNavigationType } from 'react-router';
-import 'src/apocalypseHandler.js';
 import { BRANDING } from './utils';
 import { AuthGate } from './features/auth/AuthGate';
 import dayjs from 'dayjs'
