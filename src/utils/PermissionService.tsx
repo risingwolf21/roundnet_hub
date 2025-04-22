@@ -21,7 +21,7 @@ export type AppAbility = PureAbility<Ability, MongoQuery>;
 
 export const ability = createMongoAbility();
 export const can = (action: Actions, subject: Ability[1]) => ability.can(action, subject);
-export const canAny = (action: Actions, subject: Ability[1][]) => subject.reduce((prev, acc) => prev && can(action, acc), true)
+export const canAny = (action: Actions, subject: Ability[1][]) => subject.reduce((prev, acc) => prev || can(action, acc), false)
 
 export function defineRulesFor(userPermissions: AppPermission[], roles: AppRole[]) {
   const { can, rules } = new AbilityBuilder<AppAbility>(createMongoAbility);

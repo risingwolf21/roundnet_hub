@@ -335,7 +335,7 @@ const DrawerContent = ({
           </DrawerItem>
         )}
       </List>
-      {canAny('select', ['payments', 'drink', 'user', 'history', 'group']) && (
+      {canAny('update', ['payments', 'drink', 'user', 'history', 'group']) && (
         <>
           <Divider />
           <List
