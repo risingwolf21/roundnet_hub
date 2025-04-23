@@ -1,4 +1,4 @@
-type Json =
+export type Json =
   | string
   | number
   | boolean
@@ -225,92 +225,6 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: undefined
       }
-    }
-    Enums: {
-      [_ in never]: never
-    }
-    CompositeTypes: {
-      [_ in never]: never
-    }
-  }
-  graphql_public: {
-    Tables: {
-      [_ in never]: never
-    }
-    Views: {
-      [_ in never]: never
-    }
-    Functions: {
-      graphql: {
-        Args: {
-          operationName?: string
-          query?: string
-          variables?: Json
-          extensions?: Json
-        }
-        Returns: Json
-      }
-    }
-    Enums: {
-      [_ in never]: never
-    }
-    CompositeTypes: {
-      [_ in never]: never
-    }
-  }
-  logs: {
-    Tables: {
-      events: {
-        Row: {
-          author: string | null
-          created_at: string
-          data: Json
-          id: number
-          type: string
-        }
-        Insert: {
-          author?: string | null
-          created_at?: string
-          data: Json
-          id?: number
-          type: string
-        }
-        Update: {
-          author?: string | null
-          created_at?: string
-          data?: Json
-          id?: number
-          type?: string
-        }
-        Relationships: []
-      }
-      player_info: {
-        Row: {
-          content: string
-          created_at: string
-          id: string
-          type: string
-        }
-        Insert: {
-          content: string
-          created_at?: string
-          id?: string
-          type: string
-        }
-        Update: {
-          content?: string
-          created_at?: string
-          id?: string
-          type?: string
-        }
-        Relationships: []
-      }
-    }
-    Views: {
-      [_ in never]: never
-    }
-    Functions: {
-      [_ in never]: never
     }
     Enums: {
       [_ in never]: never
@@ -1386,6 +1300,17 @@ export type Database = {
         Args: { event_id: number }
         Returns: string[]
       }
+      get_column_info: {
+        Args: { schema_name: string; selected_table: string }
+        Returns: {
+          column_name: string
+          data_type: string
+          is_nullable: boolean
+          foreign_key_schema_name: string
+          foreign_key_table_name: string
+          foreign_key_column_name: string
+        }[]
+      }
       get_enum_types: {
         Args: Record<PropertyKey, never>
         Returns: {
@@ -1591,7 +1516,7 @@ export type Enums<
     ? DefaultSchema["Enums"][DefaultSchemaEnumNameOrOptions]
     : never
 
-type CompositeTypes<
+export type CompositeTypes<
   PublicCompositeTypeNameOrOptions extends
     | keyof DefaultSchema["CompositeTypes"]
     | { schema: keyof Database },
@@ -1606,14 +1531,8 @@ type CompositeTypes<
     ? DefaultSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
     : never
 
-const Constants = {
+export const Constants = {
   games: {
-    Enums: {},
-  },
-  graphql_public: {
-    Enums: {},
-  },
-  logs: {
     Enums: {},
   },
   permissions: {

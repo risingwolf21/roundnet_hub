@@ -51,7 +51,8 @@ export const formatDateFromDatabase = (date: string) => {
   return result;
 };
 
-export const dayjsToDb = (date: Dayjs) => {
+export const dayjsToDb = (date: Dayjs | null) => {
+  if (!date) return null;
   return formatDateToDatabase(date.toDate());
 }
 
