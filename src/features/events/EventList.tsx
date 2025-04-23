@@ -28,7 +28,7 @@ import { useApplication } from '../auth/AuthContext';
 import { EventItem } from './components/EventItem';
 import { LoadingEventItem } from './components/LoadingEventItem';
 
-export type EventScreenProps = {
+type EventScreenProps = {
   events: SliceEvent[];
   loading: boolean;
   error: AlertMessage | null;

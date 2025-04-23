@@ -482,23 +482,6 @@ const DrawerContent = ({
                 />
               </DrawerItem>
             )}
-            {can('view', 'postgres') && (
-              <DrawerItem
-                key="sentryIssues"
-                selected={tab === 'admin/sentry-issues'}
-                onClick={() => handleChange('admin/sentry-issues')}
-              >
-                <ListItemAvatar>
-                  <ListItemIcon>
-                    <StorageOutlined />
-                  </ListItemIcon>
-                </ListItemAvatar>
-                <ListItemText
-                  primaryTypographyProps={{ fontWeight: 'bold', fontSize: '0.9rem' }}
-                  primary={t('browse.sentryIssues')}
-                />
-              </DrawerItem>
-            )}
           </List>
           <Divider />
         </>

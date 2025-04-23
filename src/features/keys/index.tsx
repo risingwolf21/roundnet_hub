@@ -1,7 +1,7 @@
 import { AddOutlined, EditOffOutlined, EditOutlined } from '@mui/icons-material';
 import { Alert, Box, Fab, List } from '@mui/material';
 import { useNotifications } from '@toolpad/core/useNotifications';
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router';
 import { fetchItemsAsync } from 'src/features/keys/slices/keysSlice';
 import { FullItemHolder } from 'src/types/supabaseTypes';
@@ -16,7 +16,7 @@ import { KeyHandOverDialog } from './dialogs/KeyHandOverDialog';
 import { SearchUserDialog } from './dialogs/SearchUserDialog';
 import { ItemHolderScreenProps } from './types';
 
-export const EMPTY_KEY: ItemUpdate = { name: '', color: '#000000', created_at: '', current_holder: null };
+const EMPTY_KEY: ItemUpdate = { name: '', color: '#000000', created_at: '', current_holder: null };
 
 export const ItemHolderScreen = ({ dispatch, keyHolders, loading, user, t }: ItemHolderScreenProps) => {
   const [searchUserOpen, setSearchUserOpen] = useState(false);
@@ -26,9 +26,19 @@ export const ItemHolderScreen = ({ dispatch, keyHolders, loading, user, t }: Ite
   const [isEditingMode, setEditingMode] = useState(false);
   const [itemToEdit, setItemToEdit] = useState<ItemUpdate | null>(null);
   const [itemHistoryDialogOpen, setItemHistoryDialogOpen] = useState(false);
-  const [searchParams, setSearchParams] = useSearchParams();
+  const [searchParams] = useSearchParams();
 
   const notifications = useNotifications();
+
+  const selectKeyToHandOver = useCallback((key: FullItemHolder) => {
+    setSearchUserOpen(true);
+    setSelectedKeyHolder(key);
+  }, []);
+
+  const selectKeyToReceive = useCallback((key: FullItemHolder) => {
+    setSelectedKeyHolder(key);
+    setSelectedUser(user);
+  }, [user]);
 
   useEffect(() => {
     const type = searchParams.get("type");
@@ -44,7 +54,7 @@ export const ItemHolderScreen = ({ dispatch, keyHolders, loading, user, t }: Ite
     if (type === "take") {
       selectKeyToReceive(keyHolder);
     }
-  }, [searchParams, keyHolders, user]);
+  }, [searchParams, keyHolders, user, selectKeyToReceive, selectKeyToHandOver]);
 
   useEffect(() => {
     dispatch(fetchItemsAsync());
@@ -71,15 +81,6 @@ export const ItemHolderScreen = ({ dispatch, keyHolders, loading, user, t }: Ite
     });
   };
 
-  const selectKeyToHandOver = (key: FullItemHolder) => {
-    setSearchUserOpen(true);
-    setSelectedKeyHolder(key);
-  };
-
-  const selectKeyToReceive = (key: FullItemHolder) => {
-    setSelectedKeyHolder(key);
-    setSelectedUser(user);
-  };
 
   return (
     <Layout>

@@ -20,7 +20,7 @@ export const ContactInformation = ({ payload, open, onClose }: DialogProps<Conta
   </Dialog>
 }
 
-export const Content = ({ payload, onClose }: DialogProps<ContactInformationPayload, string | null>) => {
+const Content = ({ payload, onClose }: DialogProps<ContactInformationPayload, string | null>) => {
 
   const notifications = useNotifications();
   const [displayName, setDisplayName] = useState(payload.user.displayName);

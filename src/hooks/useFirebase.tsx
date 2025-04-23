@@ -6,7 +6,7 @@ import { captureException } from '@sentry/react';
 import { toast } from 'react-toastify';
 import { Notification as NotificationComponent } from '../features/notifications/Notification';
 
-export async function requestNotificationPermission(user: User, deviceId: string, messaging: Messaging) {
+async function requestNotificationPermission(user: User, deviceId: string, messaging: Messaging) {
   //requesting permission using Notification API
   const permission = await Notification.requestPermission();
 

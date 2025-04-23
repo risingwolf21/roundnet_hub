@@ -24,7 +24,7 @@ const mergeSlotSx = (defaultSx: SxProps<Theme>, slotProps?: { sx?: SxProps<Theme
   return [defaultSx];
 };
 
-export const getCommonTextFieldProps = (theme: Theme, baseProps: TextFieldProps = {}): TextFieldProps => ({
+const getCommonTextFieldProps = (theme: Theme, baseProps: TextFieldProps = {}): TextFieldProps => ({
   required: true,
   fullWidth: true,
   ...baseProps,

@@ -42,7 +42,7 @@ const initialState = {
   paymentDrinksError: undefined,
 } as DrinksSliceState;
 
-export const drinksSlice = createSlice({
+const drinksSlice = createSlice({
   name: 'drinks',
   initialState,
   reducers: {
@@ -223,7 +223,7 @@ export const fetchHistoryAsync = createAsyncThunk(
   }
 );
 
-export const { onHistoryUpdate, onHistoryDelete, onHistoryInsert, onDrinkUpdated, onDrinkInserted, onDrinkDeleted } =
+export const {       } =
   drinksSlice.actions;
 
 export default drinksSlice.reducer;

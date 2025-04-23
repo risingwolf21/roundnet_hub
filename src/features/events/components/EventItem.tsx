@@ -18,9 +18,8 @@ import { TFunction } from 'i18next';
 import React from 'react';
 import { SliceEvent } from 'src/features/events/slices/eventsSlice';
 import { answerDeadlineExpired, eventInThePast } from 'src/types/supabaseTypes';
-import { EventEmitter } from 'stream';
 
-export type EventItemProps = {
+type EventItemProps = {
   attendanceUpdating: boolean;
   event: SliceEvent;
   t: TFunction;

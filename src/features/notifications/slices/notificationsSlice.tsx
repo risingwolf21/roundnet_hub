@@ -70,6 +70,4 @@ export const fetchNotificationsAsync = createAsyncThunk('fetchNotificationsAsync
   return response.data ?? [];
 });
 
-export const { onNotificationDelete, onNotificationUpdate, onNotificationInsert } = notificationsSlice.actions;
-
 export default notificationsSlice.reducer;

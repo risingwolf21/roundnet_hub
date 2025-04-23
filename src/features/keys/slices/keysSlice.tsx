@@ -47,7 +47,7 @@ export const fetchItemsAsync = createAsyncThunk('fetchKeysAsync', async () => {
   return response.data ?? [];
 });
 
-export const fetchInsertedItemsAsync = createAsyncThunk(
+const fetchInsertedItemsAsync = createAsyncThunk(
   'fetchInsertedItemsAsync',
   async ({ key, user }: { key: number; user: string }) => {
     const response = await SupabaseKeysRepository.fetchInsertedItem(key, user);
@@ -55,7 +55,5 @@ export const fetchInsertedItemsAsync = createAsyncThunk(
     return response.data;
   }
 );
-
-export const { onKeyHoldersDelete } = keysSlice.actions;
 
 export default keysSlice.reducer;

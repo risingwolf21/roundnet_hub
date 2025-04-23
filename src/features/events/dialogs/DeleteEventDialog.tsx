@@ -3,9 +3,6 @@ import React, { useState } from 'react';
 import { DeleteEventDialogProps, DeleteEventType, DeletionType } from '../types';
 import { SwipeableDialog } from '../../../components/SwipeableDialog';
 
-export const THIS_EVENT = 'THIS_EVENT';
-export const THIS_AND_FOLLOWING_EVENT = 'THIS_AND_FOLLOWING_EVENT';
-
 export const DeleteEventDialog = ({ open, handleClose, setOpen, selectedEvent }: DeleteEventDialogProps) => {
   const [deletion, setDeletion] = useState<DeleteEventType>('This Event');
 

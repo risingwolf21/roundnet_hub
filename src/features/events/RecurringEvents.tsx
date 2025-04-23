@@ -75,7 +75,7 @@ const ExpandMore = styled((props: ExpandMoreProps) => {
   ],
 }));
 
-export type RecurringEventsProps = {
+type RecurringEventsProps = {
   recurringEvents: EventWithGroup[];
   loading: boolean;
   error: AlertMessage | null;

@@ -1,7 +1,7 @@
 import { AbilityBuilder, createMongoAbility, MongoQuery, PureAbility } from '@casl/ability';
 
-export type Actions = 'select' | 'insert' | 'update' | 'delete' | 'view';
-export type Ability =
+type Actions = 'select' | 'insert' | 'update' | 'delete' | 'view';
+type Ability =
   | [Actions, 'event']
   | [Actions, 'drink']
   | [Actions, 'payments']
@@ -17,7 +17,7 @@ export type Ability =
   | [Actions, 'browseAdmin']
   | [Actions, 'postgres'];
 
-export type AppAbility = PureAbility<Ability, MongoQuery>;
+type AppAbility = PureAbility<Ability, MongoQuery>;
 
 export const ability = createMongoAbility();
 export const can = (action: Actions, subject: Ability[1]) => ability.can(action, subject);

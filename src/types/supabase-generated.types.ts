@@ -1,4 +1,4 @@
-export type Json =
+type Json =
   | string
   | number
   | boolean
@@ -1591,7 +1591,7 @@ export type Enums<
     ? DefaultSchema["Enums"][DefaultSchemaEnumNameOrOptions]
     : never
 
-export type CompositeTypes<
+type CompositeTypes<
   PublicCompositeTypeNameOrOptions extends
     | keyof DefaultSchema["CompositeTypes"]
     | { schema: keyof Database },
@@ -1606,7 +1606,7 @@ export type CompositeTypes<
     ? DefaultSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
     : never
 
-export const Constants = {
+const Constants = {
   games: {
     Enums: {},
   },

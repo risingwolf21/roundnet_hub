@@ -273,7 +273,7 @@ const SignUpScreen = () => {
 
 export default SignUpScreen;
 
-export function GoogleIcon() {
+function GoogleIcon() {
   return (
     <SvgIcon>
       <svg

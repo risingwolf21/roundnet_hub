@@ -6,14 +6,12 @@ import {
   GridActionsCellItem,
   GridColDef,
   GridColType,
-  GridFilterModel,
   GridRowId,
   GridRowModel,
   GridRowModes,
   GridRowModesModel,
   GridRowsProp,
   GridSlots,
-  GridSortModel,
   GridToolbarContainer,
   GridValidRowModel,
 } from '@mui/x-data-grid';
@@ -63,8 +61,6 @@ const SupabaseClient = () => {
   const [loading, setLoading] = useState(false);
   const [selectedTableData, setSelectedTableData] = useState<any[]>([]);
   const [rowModesModel, setRowModesModel] = React.useState<GridRowModesModel>({});
-  const [rowFilterModel, setRowFilterModel] = React.useState<GridFilterModel>({ items: [] });
-  const [rowSortModel, setRowSortModel] = React.useState<GridSortModel>();
   const [users, setUsers] = useState<{ displayName: string; userId: string }[]>([]);
   const [groups, setGroups] = useState<{ name: string; id: number }[]>([]);
 
@@ -124,7 +120,7 @@ const SupabaseClient = () => {
             setLoading(false);
           }
         });
-  }, [selectedTable, rowSortModel]);
+  }, [selectedTable]);
 
   function getRowId(row: any) {
     switch (selectedTable?.table_name) {
@@ -288,7 +284,7 @@ const SupabaseClient = () => {
       query = query.eq(element[0], element[1])
     });
 
-    const result = await query;
+    await query;
 
     setSelectedTableData(selectedTableData.filter((row) => getRowId(row) !== id));
   };
@@ -431,7 +427,6 @@ const SupabaseClient = () => {
           density={'compact'}
           editMode={'row'}
           rowModesModel={rowModesModel}
-          filterModel={rowFilterModel}
           getRowId={getRowId}
           showCellVerticalBorder
           initialState={{
