@@ -26,7 +26,7 @@ const initialState = {
   drinksLoading: false,
 } as AdminDrinkSliceState;
 
-export const adminDrinksSlice = createSlice({
+const adminDrinksSlice = createSlice({
   name: 'admin-drinks',
   initialState,
   reducers: {
@@ -135,8 +135,4 @@ export const fetchAdminHistoryAsync = createAsyncThunk(
     }
   }
 );
-
-export const { onHistoryUpdate, onHistoryDelete, onHistoryInsert, onDrinkUpdated, onDrinkInserted, onDrinkDeleted } =
-  adminDrinksSlice.actions;
-
 export default adminDrinksSlice.reducer;

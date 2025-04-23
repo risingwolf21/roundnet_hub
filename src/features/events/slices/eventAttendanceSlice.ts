@@ -209,6 +209,6 @@ export const updateAttendanceAsync = createAsyncThunk(
   }
 );
 
-export const { onEventAttendanceDelete, onEventAttendanceUpdate } = eventAttendanceSlice.actions;
+export const {  onEventAttendanceUpdate } = eventAttendanceSlice.actions;
 
 export default eventAttendanceSlice.reducer;

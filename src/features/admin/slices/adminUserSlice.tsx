@@ -17,7 +17,7 @@ const initialState = {
   error: null,
 } as AdminUsersSliceState;
 
-export const adminUsersSlice = createSlice({
+const adminUsersSlice = createSlice({
   name: 'admin-users',
   initialState,
   reducers: {
@@ -86,7 +86,5 @@ export const fetchNotVerifiedUsersAsync = createAsyncThunk(
     }
   }
 );
-
-export const { onUserDeleted, onUserInserted, onUserUpdate } = adminUsersSlice.actions;
 
 export default adminUsersSlice.reducer;

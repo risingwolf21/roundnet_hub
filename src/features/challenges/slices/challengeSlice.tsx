@@ -5,7 +5,7 @@ import { TablesUpdate } from '../../../types/supabase-generated.types';
 import { ChallengeStatWithUser } from '../../../types/supabaseTypes';
 
 
-export type ChallengeSlice = ChallengeWithFullGroup & {
+type ChallengeSlice = ChallengeWithFullGroup & {
   stats: ChallengeStatWithUser[]
 }
 
@@ -141,7 +141,7 @@ export const fetchChallengesAsync = createAsyncThunk('fetchChallengesAsync', asy
   return response.data ?? [];
 });
 
-export const fetchArchivedChallenges = createAsyncThunk('fetchArchivedChallenges', async () => {
+const fetchArchivedChallenges = createAsyncThunk('fetchArchivedChallenges', async () => {
   const response = await ChallengeRepository.fetchArchivedChallenges();
   return response.data ?? [];
 });
@@ -161,12 +161,12 @@ export const fetchChallengeStatsSingleAsync = createAsyncThunk(
 );
 
 export const {
-  onChallengeStatsUpdate,
+  
   onChallengeStatsInsert,
-  onChallengeStatsDelete,
-  onChallengeDelete,
-  onChallengeInsert,
-  onChallengeUpdate
+  
+  
+  
+  
 } = challengeSlice.actions;
 
 export default challengeSlice.reducer;

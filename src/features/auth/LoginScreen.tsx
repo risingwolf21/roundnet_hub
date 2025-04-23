@@ -9,8 +9,6 @@ import { HOMEPAGE } from 'src/constants';
 import { supabase } from '../../components/services/supabase/supabaseClient';
 import { useApplication } from './AuthContext';
 import Layout from 'src/components/Layout';
-import { LocationSearching } from '@mui/icons-material';
-
 
 const LoginScreen = () => {
   const theme = useTheme();

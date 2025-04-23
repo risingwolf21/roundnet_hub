@@ -14,7 +14,7 @@ const initialState = {
   error: undefined,
 } as AdminPaymentsSliceState;
 
-export const adminPaymentsSlice = createSlice({
+const adminPaymentsSlice = createSlice({
   name: 'admin-payments',
   initialState,
   reducers: {},

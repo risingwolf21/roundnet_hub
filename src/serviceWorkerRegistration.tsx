@@ -170,7 +170,8 @@ function checkValidServiceWorker(swUrl: string, config: ServiceWorkerConfig) {
     });
 }
 
-export function unregister() {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+function unregister() {
   if ('serviceWorker' in navigator) {
     navigator.serviceWorker.ready
       .then((registration) => {

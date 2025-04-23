@@ -25,7 +25,7 @@ import EnterPointDialog from './dialogs/EnterPointDialog';
 import { challengeSelector, fetchChallengeStatsSingleAsync, onChallengeStatsInsert } from './slices/challengeSlice';
 
 
-export const ChallengeInformation = ({ t }: { t: TFunction }) => {
+const ChallengeInformation = ({ t }: { t: TFunction }) => {
   const { challengeId } = useParams();
   const challenge = useSelector((root: RootState) => challengeSelector.selectById(root, challengeId ?? 0));
   const { user } = useApplication();
