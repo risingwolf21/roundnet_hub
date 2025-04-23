@@ -93,6 +93,7 @@ const DialogContent = ({ payload, open, onClose }: DialogProps<EditEntryDialogPa
 
             if (x.foreign_key_schema_name && x.foreign_key_table_name) {
               const options = selectOptions.get(x.foreign_key_schema_name + "/" + x.foreign_key_table_name) ?? [];
+
               if (options.length <= 0) {
                 return <ListItem>
                   <ListItemText primary={<pre style={{ margin: 0 }}>{value}</pre>} secondary={x.column_name}></ListItemText>
@@ -101,8 +102,7 @@ const DialogContent = ({ payload, open, onClose }: DialogProps<EditEntryDialogPa
               return <ListItem>
                 <ListItemText primary={<Select fullWidth onChange={(e) => { }} value={value}>
                   {
-                    selectOptions.get(x.foreign_key_schema_name + "/" + x.foreign_key_table_name)
-                      ?.map(y => <MenuItem value={y[x.foreign_key_column_name]}>{JSON.stringify(_.omit(y, [x.foreign_key_column_name]))}</MenuItem>)
+                    options.map(y => <MenuItem value={y[x.foreign_key_column_name]}>{JSON.stringify(_.omit(y, [x.foreign_key_column_name]))}</MenuItem>)
                   }
                 </Select>} secondary={x.column_name} />
               </ListItem>

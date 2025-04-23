@@ -1,29 +1,24 @@
-import { Cancel, Edit, ExpandMoreOutlined, Save, Visibility } from '@mui/icons-material';
+import { Edit, ExpandMoreOutlined, Visibility } from '@mui/icons-material';
 import { Box, List, ListItem, ListItemButton, ListItemText, ListSubheader, styled } from '@mui/material';
 import {
   DataGrid,
   GridActionsCellItem,
   GridColDef,
-  GridColType,
   GridFilterModel,
   GridPaginationModel,
   GridRowId,
-  GridRowModel,
-  GridRowModes,
-  GridRowModesModel,
   GridSortModel,
   GridValidRowModel
 } from '@mui/x-data-grid';
 import { useDialogs } from '@toolpad/core';
 import { useNotifications } from '@toolpad/core/useNotifications';
-import { groupBy, isNull, omit, omitBy } from 'lodash';
+import { groupBy } from 'lodash';
 import React, { useEffect, useState } from 'react';
 import { useClient } from 'react-supabase';
 import Layout from 'src/components/Layout';
 import { LoadingIndicator } from 'src/components/LoadingIndicator';
 import { supabase } from 'src/components/services/supabase/supabaseClient';
 import { SwipeableDialog } from 'src/components/SwipeableDialog';
-import { formatDateFromDatabase } from 'src/utils';
 import { EditEntryDialog } from './EditEntryDialog';
 import { ViewEntryDialog } from './ViewEntryDialog';
 
@@ -82,7 +77,6 @@ function CustomNoRowsOverlay() {
 
 const SupabaseClient = () => {
   const [tables, setTables] = useState<{ table_name: string, table_schema: string }[]>([]);
-  const [enums, setEnums] = useState<Map<string, string[]>>(new Map<string, string[]>());
   const [selectedTable, setSelectedTable] = useState<{ table_name: string, table_schema: string } | null>(null);
   const [selectTableOpen, setSelectTableOpen] = useState(false);
   const client = useClient();
@@ -90,9 +84,6 @@ const SupabaseClient = () => {
   const dialog = useDialogs();
   const [loading, setLoading] = useState(false);
   const [selectedTableData, setSelectedTableData] = useState<any[]>([]);
-  const [rowModesModel, setRowModesModel] = React.useState<GridRowModesModel>({});
-  const [users, setUsers] = useState<{ displayName: string; userId: string }[]>([]);
-  const [groups, setGroups] = useState<{ name: string; id: number }[]>([]);
   const [rowCount, setRowCount] = useState(0);
 
   const [paginationModel, setPaginationModel] = React.useState<GridPaginationModel>({ page: 0, pageSize: 50 });
@@ -109,7 +100,7 @@ const SupabaseClient = () => {
   }[]>([]);
 
   const fetcher = async (table_name: string, table_schema: string) => {
-    setLoading(true); 
+    setLoading(true);
     const columnsResult = await supabase.rpc("get_column_info", { schema_name: table_schema, selected_table: table_name });
 
     let query = supabase
@@ -164,37 +155,7 @@ const SupabaseClient = () => {
       .then((result) => {
         if (result.data) {
           setTables(result.data);
-          setSelectedTable(result.data[0] ?? null);
         }
-      });
-    supabase
-      .rpc('get_enum_types')
-      .select('*')
-      .then((result) => {
-        if (result.data) {
-          let loaded = new Map<string, string[]>();
-          result.data.forEach((x) => loaded.set(x.enum_name, x.enum_values));
-          setEnums(loaded);
-        }
-      });
-    supabase
-      .from('user')
-      .select('displayName,userId')
-      .returns<
-        {
-          displayName: string;
-          userId: string;
-        }[]
-      >()
-      .then((result) => {
-        setUsers(result.data ?? []);
-      });
-    supabase
-      .from('event_group')
-      .select('*')
-      .returns<{ name: string; id: number }[]>()
-      .then((result) => {
-        setGroups(result.data ?? []);
       });
   }, [client]);
 
@@ -230,141 +191,133 @@ const SupabaseClient = () => {
   }
 
   // 'string' | 'number' | 'date' | 'dateTime' | 'boolean' | 'singleSelect' | 'actions';
-  function getRowTypeOptions(key: {
-    column_name: string;
-    data_type: string;
-    is_nullable: boolean;
-  }): {
-    type?: GridColType;
-    valueOptions?: any[];
-    valueGetter?: (params: any) => any;
-    editable?: boolean;
-  } | null {
-    switch (key.column_name) {
-      case 'type':
-        if (selectedTable?.table_name === 'items') {
-          return {
-            type: 'singleSelect',
-            valueOptions: enums.get('ItemType'),
-            editable: true,
-          };
-        } else if (selectedTable?.table_name === 'drink') {
-          return {
-            type: 'singleSelect',
-            valueOptions: enums.get('ProductType'),
-            editable: true,
-          };
-        } else {
-          return { editable: false };
-        }
-      case 'paymentState':
-        return {
-          type: 'singleSelect',
-          valueOptions: enums.get('PaymentState'),
-          editable: true,
-        };
-      case 'state':
-        return {
-          type: 'singleSelect',
-          valueOptions: enums.get('EventAttendance'),
-          editable: true,
-        };
-      case 'recurrence':
-        return {
-          type: 'singleSelect',
-          valueOptions: enums.get('EventRecurrence'),
-          editable: true,
-        };
-      case 'role':
-        return {
-          type: 'singleSelect',
-          valueOptions: enums.get('UserRole'),
-          editable: true,
-        };
-      case 'created_at':
-      case 'lastUpdate':
-      case 'meetingDateTime':
-      case 'startingDateTime':
-      case 'answerDeadline':
-      case 'endDateTime':
-      case 'recurrenceEnd':
-        return {
-          type: 'dateTime',
-          valueGetter: (params) => {
-            return params ? formatDateFromDatabase(params) : null;
-          },
-          editable: true,
-        };
-      case 'active':
-      case 'deleted':
-      case 'isCancelled':
-      case 'verified':
-      case 'disabled':
-        return {
-          type: 'boolean',
-          editable: true,
-        };
-      case 'displayName':
-      case 'description':
-      case 'color':
-      case 'imageUrl':
-      case 'name':
-      case 'body':
-      case 'title':
-        return {
-          type: 'string',
-          editable: true,
-        };
-      case 'price':
-      case 'stock':
-      case 'minutes_to_remind':
-        return {
-          type: 'number',
-          editable: true,
-        };
-      case 'user':
-      case 'author':
-      case 'currentUser':
-      case 'pastUser':
-      case 'current_holder':
-        return {
-          type: 'singleSelect',
-          editable: true,
-          valueOptions: users.map((x) => ({
-            value: x.userId,
-            label: x.displayName,
-          })),
-          valueGetter: (params) => users.find((x) => x.userId === params)?.userId ?? 'Not found',
-        };
-      case 'group':
-        return {
-          type: 'singleSelect',
-          editable: true,
-          valueOptions: groups.map((x) => ({
-            value: x.id,
-            label: x.name,
-          })),
-          valueGetter: (params) => groups.find((x) => x.id === params)?.id,
-        };
-      case 'drink':
-      case 'event':
-      case 'payment':
-      case 'key':
-      case 'place':
-      default:
-        return { editable: false };
-    }
-  }
+  // function getRowTypeOptions(key: {
+  //   column_name: string;
+  //   data_type: string;
+  //   is_nullable: boolean;
+  // }): {
+  //   type?: GridColType;
+  //   valueOptions?: any[];
+  //   valueGetter?: (params: any) => any;
+  //   editable?: boolean;
+  // } | null {
+  //   switch (key.column_name) {
+  //     case 'type':
+  //       if (selectedTable?.table_name === 'items') {
+  //         return {
+  //           type: 'singleSelect',
+  //           valueOptions: enums.get('ItemType'),
+  //           editable: true,
+  //         };
+  //       } else if (selectedTable?.table_name === 'drink') {
+  //         return {
+  //           type: 'singleSelect',
+  //           valueOptions: enums.get('ProductType'),
+  //           editable: true,
+  //         };
+  //       } else {
+  //         return { editable: false };
+  //       }
+  //     case 'paymentState':
+  //       return {
+  //         type: 'singleSelect',
+  //         valueOptions: enums.get('PaymentState'),
+  //         editable: true,
+  //       };
+  //     case 'state':
+  //       return {
+  //         type: 'singleSelect',
+  //         valueOptions: enums.get('EventAttendance'),
+  //         editable: true,
+  //       };
+  //     case 'recurrence':
+  //       return {
+  //         type: 'singleSelect',
+  //         valueOptions: enums.get('EventRecurrence'),
+  //         editable: true,
+  //       };
+  //     case 'role':
+  //       return {
+  //         type: 'singleSelect',
+  //         valueOptions: enums.get('UserRole'),
+  //         editable: true,
+  //       };
+  //     case 'created_at':
+  //     case 'lastUpdate':
+  //     case 'meetingDateTime':
+  //     case 'startingDateTime':
+  //     case 'answerDeadline':
+  //     case 'endDateTime':
+  //     case 'recurrenceEnd':
+  //       return {
+  //         type: 'dateTime',
+  //         valueGetter: (params) => {
+  //           return params ? formatDateFromDatabase(params) : null;
+  //         },
+  //         editable: true,
+  //       };
+  //     case 'active':
+  //     case 'deleted':
+  //     case 'isCancelled':
+  //     case 'verified':
+  //     case 'disabled':
+  //       return {
+  //         type: 'boolean',
+  //         editable: true,
+  //       };
+  //     case 'displayName':
+  //     case 'description':
+  //     case 'color':
+  //     case 'imageUrl':
+  //     case 'name':
+  //     case 'body':
+  //     case 'title':
+  //       return {
+  //         type: 'string',
+  //         editable: true,
+  //       };
+  //     case 'price':
+  //     case 'stock':
+  //     case 'minutes_to_remind':
+  //       return {
+  //         type: 'number',
+  //         editable: true,
+  //       };
+  //     case 'user':
+  //     case 'author':
+  //     case 'currentUser':
+  //     case 'pastUser':
+  //     case 'current_holder':
+  //       return {
+  //         type: 'singleSelect',
+  //         editable: true,
+  //         valueOptions: users.map((x) => ({
+  //           value: x.userId,
+  //           label: x.displayName,
+  //         })),
+  //         valueGetter: (params) => users.find((x) => x.userId === params)?.userId ?? 'Not found',
+  //       };
+  //     case 'group':
+  //       return {
+  //         type: 'singleSelect',
+  //         editable: true,
+  //         valueOptions: groups.map((x) => ({
+  //           value: x.id,
+  //           label: x.name,
+  //         })),
+  //         valueGetter: (params) => groups.find((x) => x.id === params)?.id,
+  //       };
+  //     case 'drink':
+  //     case 'event':
+  //     case 'payment':
+  //     case 'key':
+  //     case 'place':
+  //     default:
+  //       return { editable: false };
+  //   }
+  // }
 
-  const handleEditClick = (id: GridRowId) => () => {
-    setRowModesModel({ ...rowModesModel, [id]: { mode: GridRowModes.Edit } });
-  };
-
-  const handleSaveClick = (id: GridRowId) => () => {
-    setRowModesModel({ ...rowModesModel, [id]: { mode: GridRowModes.View } });
-  };
-
-  const handleDeleteClick = (id: GridRowId, row: GridValidRowModel) => async () => {
+  const handleDelete = (id: GridRowId, row: GridValidRowModel) => async () => {
 
     let query = supabase
       // @ts-ignore
@@ -382,67 +335,29 @@ const SupabaseClient = () => {
     setSelectedTableData(selectedTableData.filter((row) => getRowId(row) !== id));
   };
 
-  const handleCancelClick = (id: GridRowId) => () => {
-    setRowModesModel({
-      ...rowModesModel,
-      [id]: { mode: GridRowModes.View, ignoreModifications: true },
-    });
+  const handleUpdate = (id: GridRowId, row: GridValidRowModel, update: any) => async () => {
 
-    const editedRow = selectedTableData.find((row) => row.id === id);
-    if (editedRow && editedRow!.isNew) {
-      setSelectedTableData(selectedTableData.filter((row) => row.id !== id));
-    }
-  };
-
-  const processRowUpdate = (newRow: GridRowModel) => {
-    let updatedRow = { ...newRow, isNew: false };
-
-    // @ts-ignore
-    if (updatedRow['id'] === -1) {
-      // @ts-ignore
-      updatedRow = omitBy(omit(updatedRow, ['id']), isNull);
-      supabase
-        // @ts-ignore
-        .schema(selectedTable?.table_schema)
-        // @ts-ignore
-        .from(selectedTable?.table_name)
-        // @ts-ignore
-        .insert(omit(updatedRow, ['isNew']))
-        .select('*')
-        .single()
-        .then((result) => {
-          if (!result.error) {
-            // @ts-ignore
-            updatedRow = { ...result.data, isNew: false };
-            setSelectedTableData(selectedTableData.map((row) => (row.id === -1 ? result.data : row)));
-          } else notifications.show(result.error.message, { severity: 'error' });
-        });
-    }
-
-    supabase
+    let query = supabase
       // @ts-ignore
       .schema(selectedTable?.table_schema)
       // @ts-ignore
       .from(selectedTable?.table_name)
-      // @ts-ignore
-      .upsert(omit(updatedRow, ['isNew']))
-      .then((result) => {
-        if (!result.error)
-          setSelectedTableData(selectedTableData.map((row) => (row.id === newRow.id ? updatedRow : row)));
-        else notifications.show(result.error.message, { severity: 'error' });
-      });
-    return updatedRow;
-  };
+      .insert(update)
 
-  const handleRowModesModelChange = (newRowModesModel: GridRowModesModel) => {
-    setRowModesModel(newRowModesModel);
+    Object.entries(row).forEach(element => {
+      query = query.eq(element[0], element[1])
+    });
+
+    await query;
+
+    setSelectedTableData([...selectedTableData.filter((row) => getRowId(row) !== id), { ...row, ...update }]);
   };
 
   return (
     <Layout>
       <LoadingIndicator loading={loading} />
       <ListItem dense onClick={() => setSelectTableOpen(true)} secondaryAction={<ExpandMoreOutlined />}>
-        <ListItemText primary={selectedTable?.table_name} secondary={selectedTable?.table_schema} />
+        <ListItemText primary={selectedTable?.table_name ?? "Nicht gewählt"} secondary={selectedTable?.table_schema ?? "Nicht gewählt"} />
       </ListItem>
 
       <DataGrid
@@ -452,8 +367,7 @@ const SupabaseClient = () => {
               field: x.column_name,
               headerName: x.column_name,
               hideable: true,
-              width: 150,
-              ...getRowTypeOptions(x),
+              width: 150
             } as GridColDef;
           })
         ].concat(columns.length > 0 ? [{
@@ -462,54 +376,31 @@ const SupabaseClient = () => {
           headerName: 'Actions',
           width: 100,
           cellClassName: 'actions',
-          getActions: ({ id, row }) => {
-            const isInEditMode = row.mode === GridRowModes.Edit;
-
-            if (isInEditMode) {
-              return [
-                <GridActionsCellItem
-                  icon={<Save />}
-                  label="Save"
-                  sx={{
-                    color: 'primary.main',
-                  }}
-                  onClick={handleSaveClick(id)}
-                />,
-                <GridActionsCellItem
-                  icon={<Cancel />}
-                  label="Cancel"
-                  className="textPrimary"
-                  onClick={handleCancelClick(id)}
-                  color="inherit"
-                />,
-              ];
-            }
-
-            return [
-              <GridActionsCellItem
-                icon={<Visibility />}
-                label="View"
-                onClick={async () => {
-                  const result = await dialog.open(ViewEntryDialog, { entry: row });
-                  if (result === "delete") {
-                    handleDeleteClick(id, row)
-                  }
-                }}
-                color="inherit"
-              />,
-              <GridActionsCellItem
-                icon={<Edit />}
-                label="Edit"
-                className="textPrimary"
-                onClick={async () => {
-                  const result = await dialog.open(EditEntryDialog, { entry: row, columns });
-                  if(result)
-                    console.log(result)
-                }}
-                color="inherit"
-              />
-            ];
-          },
+          getActions: ({ id, row }) => [
+            <GridActionsCellItem
+              icon={<Visibility />}
+              label="View"
+              onClick={async () => {
+                const result = await dialog.open(ViewEntryDialog, { entry: row });
+                if (result === "delete") {
+                  handleDelete(id, row)
+                }
+              }}
+              color="inherit"
+            />,
+            <GridActionsCellItem
+              icon={<Edit />}
+              label="Edit"
+              className="textPrimary"
+              onClick={async () => {
+                const result = await dialog.open(EditEntryDialog, { entry: row, columns });
+                if (result) {
+                  handleUpdate(id, row, result)
+                }
+              }}
+              color="inherit"
+            />
+          ]
         }] : [])}
         slots={{ noRowsOverlay: CustomNoRowsOverlay }}
         loading={loading}
@@ -532,10 +423,8 @@ const SupabaseClient = () => {
         sx={{
           '--DataGrid-overlayHeight': '300px',
           mb: "max(56px,env(safe-area-inset-bottom))",
-          maxHeight: "calc(100% - 61px)"
+          maxHeight: "calc(100% - 61px - env(safe-area-inset-bottom))"
         }}
-        processRowUpdate={processRowUpdate}
-        onRowModesModelChange={handleRowModesModelChange}
       />
 
       <SwipeableDialog
