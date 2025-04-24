@@ -317,7 +317,7 @@ const SupabaseClient = () => {
   //   }
   // }
 
-  const handleDelete = (id: GridRowId, row: GridValidRowModel) => async () => {
+  const handleDelete = async (id: GridRowId, row: GridValidRowModel) => {
 
     let query = supabase
       // @ts-ignore
@@ -330,27 +330,36 @@ const SupabaseClient = () => {
       query = query.eq(element[0], element[1])
     });
 
-    await query;
+    const result = await query;
 
-    setSelectedTableData(selectedTableData.filter((row) => getRowId(row) !== id));
+    if (!result.error)
+      setSelectedTableData(selectedTableData.filter((row) => getRowId(row) !== id));
+    else
+      notifications.show("Could not update row. " + result.error, { severity: "error" })
   };
 
-  const handleUpdate = (id: GridRowId, row: GridValidRowModel, update: any) => async () => {
-
+  const handleUpdate = async (id: GridRowId, row: GridValidRowModel, update: any) => {
+    console.log(update)
     let query = supabase
       // @ts-ignore
       .schema(selectedTable?.table_schema)
       // @ts-ignore
       .from(selectedTable?.table_name)
-      .insert(update)
+      // @ts-ignore
+      .update(update)
 
     Object.entries(row).forEach(element => {
       query = query.eq(element[0], element[1])
     });
 
-    await query;
+    const result = await query.select("*");
 
-    setSelectedTableData([...selectedTableData.filter((row) => getRowId(row) !== id), { ...row, ...update }]);
+    if (result.data) {
+      const index = selectedTableData.findIndex((row) => getRowId(row) !== id)
+      setSelectedTableData([...selectedTableData.slice(0, index), { ...result.data }, ...selectedTableData.slice(index)]);
+    } else {
+      notifications.show("Could not update row. " + result.error, { severity: "error" })
+    }
   };
 
   return (

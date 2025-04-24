@@ -22,6 +22,86 @@ type EditEntryDialogPayload = {
   }[]
 }
 
+const displayKeysForForeign = (c: {
+  column_name: string;
+  data_type: string;
+  is_nullable: boolean;
+  foreign_key_schema_name: string;
+  foreign_key_table_name: string;
+  foreign_key_column_name: string;
+}) => {
+  switch (true) {
+    case c.foreign_key_schema_name === "public" && c.foreign_key_table_name === "user":
+      return ["displayName", "userId"];
+    case c.foreign_key_schema_name === "public" && c.foreign_key_table_name === "event_group":
+    case c.foreign_key_schema_name === "public" && c.foreign_key_table_name === "challenge":
+    case c.foreign_key_schema_name === "public" && c.foreign_key_table_name === "drink":
+      return ["name", "id"];
+    case c.foreign_key_schema_name === "public" && c.foreign_key_table_name === "events":
+      return ["name", "id"];
+    case c.foreign_key_schema_name === "public" && c.foreign_key_table_name === "items":
+      return ["name", "type", "id"];
+    case c.foreign_key_schema_name === "public" && c.foreign_key_table_name === "payments":
+      return ["userId", "paymentState"];
+    case c.foreign_key_schema_name === "public" && c.foreign_key_table_name === "event_comments":
+      return ["displayName", "comment"];
+    case c.foreign_key_schema_name === "public" && c.foreign_key_table_name === "vouchers":
+      return ["user", "title"];
+    default:
+      return [];
+  }
+}
+
+const ForeignSelection = ({ value, column }: {
+  value: any, column: {
+    column_name: string;
+    data_type: string;
+    is_nullable: boolean;
+    foreign_key_schema_name: string;
+    foreign_key_table_name: string;
+    foreign_key_column_name: string;
+  }
+}) => {
+  const [options, setOptions] = useState([]);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    setLoading(true);
+    supabase
+      // @ts-ignore
+      .schema(column.foreign_key_schema_name)
+      // @ts-ignore
+      .from(column.foreign_key_table_name)
+      .select("*")
+      .then(result => {
+        if (result.data) {
+          setOptions(result.data)
+        }
+        setLoading(false)
+      });
+  }, [column]);
+
+  if (loading) {
+    return <ListItem>
+      <ListItemText primary={<pre>Wird geladen...</pre>} secondary={column.column_name} />
+    </ListItem>
+  }
+
+  if (options.length <= 0) {
+    return <ListItem>
+      <ListItemText primary={<pre>{value}</pre>} secondary={column.column_name} />
+    </ListItem>
+  }
+
+  return <ListItem>
+    <ListItemText primary={<Select fullWidth onChange={(e) => { }} value={value}>
+      {
+        options.map(y => <MenuItem value={y[column.foreign_key_column_name]}>{JSON.stringify(Object.values(_.pick(y, displayKeysForForeign(column))))}</MenuItem>)
+      }
+    </Select>} secondary={column.column_name} />
+  </ListItem>
+}
+
 const DialogContent = ({ payload, open, onClose }: DialogProps<EditEntryDialogPayload, any | null>) => {
 
   const [selectOptions, setSelectOptions] = useState<Map<string, any[]>>(new Map())
@@ -92,20 +172,7 @@ const DialogContent = ({ payload, open, onClose }: DialogProps<EditEntryDialogPa
             }
 
             if (x.foreign_key_schema_name && x.foreign_key_table_name) {
-              const options = selectOptions.get(x.foreign_key_schema_name + "/" + x.foreign_key_table_name) ?? [];
-
-              if (options.length <= 0) {
-                return <ListItem>
-                  <ListItemText primary={<pre style={{ margin: 0 }}>{value}</pre>} secondary={x.column_name}></ListItemText>
-                </ListItem>
-              }
-              return <ListItem>
-                <ListItemText primary={<Select fullWidth onChange={(e) => { }} value={value}>
-                  {
-                    options.map(y => <MenuItem value={y[x.foreign_key_column_name]}>{JSON.stringify(_.omit(y, [x.foreign_key_column_name]))}</MenuItem>)
-                  }
-                </Select>} secondary={x.column_name} />
-              </ListItem>
+              return <ForeignSelection value={value} column={x} />
             }
 
             if (x.data_type === "timestamp with time zone") {
