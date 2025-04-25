@@ -1,5 +1,5 @@
 import { AccountBox } from '@mui/icons-material';
-import { Avatar, Card, CardActionArea, CardContent, ListItem, ListItemAvatar, ListItemText, Typography } from '@mui/material';
+import { Avatar, Card, CardContent, ListItem, ListItemAvatar, ListItemText, Typography } from '@mui/material';
 import React from 'react';
 import { ChallengeStatWithUser } from '../../../types/supabaseTypes';
 
