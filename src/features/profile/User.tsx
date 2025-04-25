@@ -113,7 +113,7 @@ const UserScreen = ({ user, dispatch, provider_token }: UserScreenProps) => {
             </ListItem>
           </CardActionArea>
         </Card>
-        <Card sx={{ borderRadius: 2, py: 0, px: 0, mt: 1 }}>
+        {/* <Card sx={{ borderRadius: 2, py: 0, px: 0, mt: 1 }}>
           <CardActionArea sx={{ px: 1 }}>
             <ListItem
               onClick={async () => {
@@ -128,7 +128,7 @@ const UserScreen = ({ user, dispatch, provider_token }: UserScreenProps) => {
               <ListItemText primary="Kalender-Einstellungen" />
             </ListItem>
           </CardActionArea>
-        </Card>
+        </Card> */}
         <Card sx={{ borderRadius: 2, py: 0, px: 0, mt: 1 }}>
           <CardActionArea sx={{ px: 1 }}>
             <ListItem
