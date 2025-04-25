@@ -18,6 +18,8 @@ jobs:
       - uses: supabase/setup-cli@v1
         with:
           version: latest
+      - name: Full Backup (roles, schema & data)
+        run: supabase db dump --db-url "$supabase_prod_db_url" -f supabase/backup/full_dump.sql
       - name: Backup roles
         run: supabase db dump --db-url "$supabase_prod_db_url" -f supabase/backup/roles.sql --role-only
       - name: Backup schema
@@ -41,13 +43,10 @@ jobs:
       - name: Install PostgreSQL client
         run: sudo apt-get install postgresql-client -y
 
-      - name: Wipe target DB
+      - name: Wipe staging DB
         run: psql "$supabase_staging_db_url" -f supabase/backup/wipe.sql
 
-      - name: Restore schema
-        run: psql "$supabase_staging_db_url" -f supabase/backup/schema.sql
-
-      - name: Restore data
-        run: psql "$supabase_staging_db_url" -f supabase/backup/data.sql
+      - name: Restore to staging DB
+        run: psql "$target_db_url" < supabase/backup/full_dump.sql
   
     
