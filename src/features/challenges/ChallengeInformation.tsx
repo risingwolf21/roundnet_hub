@@ -156,7 +156,6 @@ const ChallengeInformation = ({ t }: { t: TFunction }) => {
         )}
         <Tabs value={value} onChange={(e, v) => setValue(v)} indicatorColor="primary" textColor="inherit" variant="fullWidth">
           <Tab label="Aktivität" />
-          <Tab label="Kalender" />
           <Tab label="Leaderboard" />
         </Tabs>
         <TabPanel value={value} index={0}>
@@ -197,7 +196,7 @@ const ChallengeInformation = ({ t }: { t: TFunction }) => {
             }
           </Stack>
         </TabPanel>
-        <TabPanel value={value} index={1}>
+        {/* <TabPanel value={value} index={1}>
           <StyledDateCalendar
             showDaysOutsideCurrentMonth
             fixedWeekNumber={6}
@@ -207,8 +206,8 @@ const ChallengeInformation = ({ t }: { t: TFunction }) => {
                 entries: challenge.stats
               } as any
             }} />
-        </TabPanel>
-        <TabPanel value={value} index={2}>
+        </TabPanel> */}
+        <TabPanel value={value} index={1}>
           <List sx={{ width: '100%' }}>
             {[...challengeStatMap.values()]
               .sort((a, b) => b.reduce((p, c) => p + c.count, 0) - a.reduce((p, c) => p + c.count, 0))
