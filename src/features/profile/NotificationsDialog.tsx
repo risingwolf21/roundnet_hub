@@ -1,46 +1,39 @@
 import { Close } from "@mui/icons-material";
-import { AppBar, Box, Button, Dialog, IconButton, ListItem, ListItemText, Switch, Toolbar, Typography } from "@mui/material";
+import { AppBar, Box, Button, CircularProgress, Dialog, IconButton, ListItem, ListItemText, Switch, Toolbar, Typography } from "@mui/material";
 import { DialogProps } from "@toolpad/core/useDialogs";
-import React from "react";
-import { addNotificationPermissionAsync, removeNotificationPermissionAsync } from "src/redux/applicationSlice";
+import { useNotifications } from "@toolpad/core/useNotifications";
+import React, { useEffect, useState } from "react";
 import { AppDispatch } from "src/redux/store";
+import { SupabaseUserRepository } from "src/repository/UserRepository";
 import { UserWithRolesAndPermissions } from "src/types/supabaseTypes";
 
 const NotificationSwitch = ({
   title,
   tag,
-  user,
-  dispatch,
+  userId,
+  active,
+  update,
+  loading
 }: {
   title: string;
-  tag: NotificationTags;
-  user: User;
-  dispatch: AppDispatch;
+  tag: string;
+  userId: string;
+  active: boolean;
+  loading: boolean;
+  update: (newValue: boolean) => void;
 }) => {
   return (
     <ListItem
       secondaryAction={
-        <Switch
-          checked={user.notifications?.includes(tag) ?? false}
-          onChange={(event) => {
-            event.stopPropagation();
-            if (!event.target.checked) {
-              dispatch(
-                removeNotificationPermissionAsync({
-                  user,
-                  notificationToRemove: tag,
-                })
-              );
-            } else {
-              dispatch(
-                addNotificationPermissionAsync({
-                  user,
-                  notificationToAdd: tag,
-                })
-              );
-            }
-          }}
-        />
+        loading
+          ? <CircularProgress />
+          : <Switch
+            checked={active}
+            onChange={(event) => {
+              event.stopPropagation();
+              update(event.target.checked);
+            }}
+          />
       }
     >
       <ListItemText primary={title} />
@@ -57,6 +50,17 @@ type NotificationsDialogPayload = {
 }
 
 export const NotificationsDialog = ({ payload, open, onClose }: DialogProps<NotificationsDialogPayload, string | null>) => {
+
+  const [loading, setLoading] = useState<boolean>(false);
+  const [notificationTags, setNotificationTags] = useState<string[]>([]);
+  const notifications = useNotifications();
+
+  useEffect(() => {
+    setLoading(true);
+    SupabaseUserRepository.fetchNotificationSettings(payload.user.userId)
+      .then(setNotificationTags)
+      .finally(() => setLoading(false))
+  }, [payload.user])
 
   return <Dialog fullScreen open={open} onClose={() => onClose(null)}>
     <AppBar sx={{ position: 'static', pt: "env(safe-area-inset-top)" }}>
@@ -85,27 +89,40 @@ export const NotificationsDialog = ({ payload, open, onClose }: DialogProps<Noti
     {
       isNotificationSupported() && Notification.permission === 'granted' && (
         <Box sx={{ pt: 2 }}>
-          <NotificationSwitch
-            title={'Event Kommentare'}
-            tag={'eventComments'}
-            user={payload.user}
-            dispatch={payload.dispatch}
-          />
-
-          <NotificationSwitch
-            title={'Event abgesagt'}
-            tag={'eventCancelled'}
-            user={payload.user}
-            dispatch={payload.dispatch}
-          />
-
-          <NotificationSwitch
-            title={'Event aktualisiert'}
-            tag={'eventUpdated'}
-            user={payload.user}
-            dispatch={payload.dispatch}
-          />
-
+          {
+            [
+              { tag: "eventComments", title: "Event Kommentare" },
+              { tag: "eventCancelled", title: "Event abgesagt" },
+              { tag: "eventUpdated", title: "Event aktualisiert" },
+              { tag: "challengeStatAdded", title: "Challenge Eintrag hinzugfügt" },
+            ].map(x => <NotificationSwitch
+              title={x.title}
+              tag={x.tag}
+              userId={payload.user.userId}
+              active={notificationTags.includes(x.tag)}
+              update={(newValue) => {
+                if (newValue) {
+                  SupabaseUserRepository.addNotificationTag(x.tag, payload.user.userId).then(result => {
+                    console.log(result)
+                    if (!result.error) {
+                      setNotificationTags([...notificationTags, x.tag])
+                    } else {
+                      notifications.show("Es ist ein Fehler beim hinzufügen aufgetreten", { severity: "error" });
+                    }
+                  })
+                } else {
+                  SupabaseUserRepository.deleteNotificationTag(x.tag, payload.user.userId).then(result => {
+                    if (!result.error) {
+                      setNotificationTags(notificationTags.filter(y => y !== x.tag))
+                    } else {
+                      notifications.show("Es ist ein Fehler beim hinzufügen aufgetreten", { severity: "error" });
+                    }
+                  })
+                }
+              }}
+              loading={loading}
+            />)
+          }
         </Box>
       )
     }

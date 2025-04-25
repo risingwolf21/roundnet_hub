@@ -3,6 +3,7 @@ import { formatDateToDatabase } from 'src/utils';
 import { Notification } from 'types/supabase';
 import { supabase } from '../components/services/supabase/supabaseClient';
 import { CalendarSettingsResult } from 'src/features/profile/CalendarSettings';
+import { Tables } from 'src/types/supabase-generated.types';
 
 export const fetchGroups = () => supabase.schema("public").from('group_user_mapping').select('*, event_group(*)');
 export const fetchUserWithGroups = () => supabase
@@ -60,16 +61,26 @@ export const SupabaseUserRepository = {
     return supabase.schema('games').from('players').select('*').eq('player', userId).maybeSingle();
   },
 
-  async updateNotificationTags(
-    notificationTags: NotificationTags[],
-    user: User
-  ): Promise<PostgrestSingleResponse<User>> {
+  async deleteNotificationTag(
+    notificationTag: string,
+    userId: string
+  ): Promise<PostgrestSingleResponse<Tables<'user_notification_settings'>[]>> {
     return supabase
-      .from('user')
-      .update({ notifications: notificationTags })
-      .eq('userId', user.userId)
+      .from('user_notification_settings')
+      .delete()
+      .eq('user', userId)
+      .eq("notification_tag", notificationTag)
       .select()
-      .single();
+  },
+
+  async addNotificationTag(
+    notificationTag: string,
+    userId: string
+  ): Promise<PostgrestSingleResponse<Tables<'user_notification_settings'>[]>> {
+    return supabase
+      .from('user_notification_settings')
+      .insert({ user: userId, notification_tag: notificationTag })
+      .select("*");
   },
 
   async updateFCMToken(fcmToken: string, deviceId: string, userId: string): Promise<PostgrestSingleResponse<any>> {
@@ -106,5 +117,17 @@ export const SupabaseUserRepository = {
       })
       .select("*")
       .returns<CalendarSettings>();
+  },
+  async fetchNotificationSettings(
+    userId: string
+  ): Promise<string[]> {
+    const result = await supabase
+      .from('user_notification_settings')
+      .select("notification_tag")
+      .eq("user", userId);
+    console.log(result);
+    if (result.error)
+      return [];
+    return result.data.map(x => x.notification_tag);
   },
 };

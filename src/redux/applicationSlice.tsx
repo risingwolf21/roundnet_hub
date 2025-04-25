@@ -75,17 +75,15 @@ export const applicationReducer = createSlice({
 
 export const removeNotificationPermissionAsync = createAsyncThunk(
   'removeNotificationPermissionAsync',
-  async ({ user, notificationToRemove }: { user: User; notificationToRemove: NotificationTags }) => {
-    let newNotificationTags = user.notifications?.filter((x: NotificationTags) => x !== notificationToRemove) ?? [];
-    return await SupabaseUserRepository.updateNotificationTags(newNotificationTags, user);
+  async ({ userId, notificationToRemove }: { userId: string; notificationToRemove: string }) => {
+    return await SupabaseUserRepository.deleteNotificationTag(notificationToRemove, userId);
   }
 );
 
 export const addNotificationPermissionAsync = createAsyncThunk(
   'addNotificationPermissionAsync',
-  async ({ user, notificationToAdd }: { user: User; notificationToAdd: NotificationTags }) => {
-    let newNotificationTags = new Set([...(user?.notifications ?? []), notificationToAdd]);
-    return await SupabaseUserRepository.updateNotificationTags([...newNotificationTags], user);
+  async ({ userId, notificationToAdd }: { userId: string; notificationToAdd: string }) => {
+    return await SupabaseUserRepository.addNotificationTag(notificationToAdd, userId);
   }
 );
 
