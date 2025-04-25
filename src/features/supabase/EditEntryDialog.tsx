@@ -234,7 +234,7 @@ const DialogContent = ({ payload, open, onClose }: DialogProps<EditEntryDialogPa
               return <ListItem key={x.column_name + index}>
                 <ListItemText primary={<Checkbox
                   sx={{ pl: 0 }}
-                  checked={(updatedObject[x.column_name] ?? value) !== null}
+                  checked={(updatedObject[x.column_name] ?? value) !== null && (updatedObject[x.column_name] ?? value)}
                   onChange={(e, c) =>
                     setUpdatedObject({
                       ...updatedObject,
@@ -251,7 +251,7 @@ const DialogContent = ({ payload, open, onClose }: DialogProps<EditEntryDialogPa
                   x.is_nullable && <ListItemAvatar>
                     <Checkbox
                       sx={{ pl: 0 }}
-                      checked={(updatedObject[x.column_name] ?? value) !== null}
+                      checked={(updatedObject[x.column_name] ?? value) !== null && (updatedObject[x.column_name] ?? value) !== ""}
                       onChange={(e, c) =>
                         setUpdatedObject({
                           ...updatedObject,
