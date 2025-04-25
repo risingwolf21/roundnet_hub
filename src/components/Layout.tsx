@@ -1,6 +1,6 @@
 import { AccountCircle, ArrowBack, Menu } from '@mui/icons-material';
 import { AppBar, Avatar, Box, IconButton, TextField, Toolbar, Typography } from '@mui/material';
-import React, { ReactNode, useState } from 'react';
+import React, { ReactNode, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { useApplication } from '../features/auth/AuthContext';
 import { FirebaseMessaging } from '../features/notifications/FirebaseMessaging';
@@ -32,6 +32,26 @@ const Layout = ({
   const navigate = useNavigate();
   const { user } = useApplication();
   const [drawerOpen, setDrawerOpen] = useState(false);
+
+  const iOS =
+    typeof navigator !== 'undefined' && /iPad|iPhone|iPod/.test(navigator.userAgent);
+
+  useEffect(() => {
+    if (!iOS)
+      return;
+    const preventSwipeBack = (e: TouchEvent) => {
+      if (e.touches[0].clientX < 25) {
+        e.preventDefault();
+        setDrawerOpen(true)
+      }
+    };
+
+    document.addEventListener('touchstart', preventSwipeBack, { passive: false });
+
+    return () => {
+      document.removeEventListener('touchstart', preventSwipeBack);
+    };
+  }, [iOS]);
 
   return (
     <Box
@@ -130,7 +150,7 @@ const Layout = ({
       </AppBar>
 
       {/* Drawer  */}
-      <Drawer open={drawerOpen} onClose={() => setDrawerOpen(false)} />
+      <Drawer open={drawerOpen} onClose={() => setDrawerOpen(false)} onOpen={() => setDrawerOpen(true)} />
 
       <FirebaseMessaging />
 

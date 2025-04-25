@@ -32,6 +32,7 @@ import {
   ListSubheader,
   Drawer as MuiDrawer,
   DrawerProps as MuiDrawerProps,
+  SwipeableDrawer,
   Theme,
   Typography,
 } from '@mui/material';
@@ -53,6 +54,7 @@ export const drawerWidth = 360;
 type Props = {
   open: boolean;
   onClose: () => void;
+  onOpen: () => void;
 };
 
 interface StyledDrawerItemProps extends ListItemProps {
@@ -106,7 +108,7 @@ const DrawerBox = styled(Box)<BoxProps>(({ theme }) => ({
   overflow: 'auto',
 }));
 
-const CustomDrawer = styled(MuiDrawer)<MuiDrawerProps>(({ theme }) => ({
+const CustomDrawer = styled(SwipeableDrawer)<MuiDrawerProps>(({ theme }) => ({
   '& .MuiPaper-root': {
     borderTopRightRadius: 24,
     borderBottomRightRadius: 24,
@@ -532,13 +534,17 @@ const DrawerContent = ({
   );
 };
 
-export const Drawer = ({ open, onClose }: Props) => {
+export const Drawer = ({ open, onClose, onOpen }: Props) => {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const [tab, setTab] = useState<string>(HOMEPAGE);
   const notifications = useSelector((state: RootState) => notificationsSelector.selectAll(state));
   const { notVerifiedUsers } = useSelector((state: RootState) => state.adminUsers);
   const [version, setVersion] = useState<string>('');
+
+  
+  const iOS =
+    typeof navigator !== 'undefined' && /iPad|iPhone|iPod/.test(navigator.userAgent);
 
   useEffect(() => {
     fetch(raw)
@@ -582,7 +588,10 @@ export const Drawer = ({ open, onClose }: Props) => {
         variant="temporary"
         anchor={'left'}
         open={open}
+        onOpen={onOpen}
         onClose={onClose}
+        disableBackdropTransition={!iOS} 
+        disableDiscovery={iOS}
         ModalProps={{
           keepMounted: true, // Better open performance on mobile.
         }}
@@ -620,6 +629,10 @@ export const Drawer = ({ open, onClose }: Props) => {
           },
         })}
         open
+        onOpen={onOpen}
+        onClose={onClose}
+        disableBackdropTransition={!iOS} 
+        disableDiscovery={iOS}
       >
         <DrawerContent
           tab={tab}

@@ -16,6 +16,7 @@ import { AuthGate } from './features/auth/AuthGate';
 import { BRANDING } from './utils';
 
 export const App = () => {
+
   return <ThemeProvider theme={mainTheme}>
     <AppProvider branding={BRANDING} theme={mainTheme}>
       <DialogsProvider>
