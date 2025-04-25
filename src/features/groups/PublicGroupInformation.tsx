@@ -1,5 +1,5 @@
 import { AccountBox } from "@mui/icons-material";
-import { Avatar, Chip, Divider, List, ListItem, ListItemAvatar, ListItemButton, ListItemText, Stack, Typography } from "@mui/material";
+import { Avatar, Chip, Divider, List, ListItemAvatar, ListItemButton, ListItemText, Stack, Typography } from "@mui/material";
 import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router";
 import Layout from "src/components/Layout";

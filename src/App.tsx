@@ -19,7 +19,13 @@ export const App = () => {
   return <ThemeProvider theme={mainTheme}>
     <AppProvider branding={BRANDING} theme={mainTheme}>
       <DialogsProvider>
-        <NotificationsProvider>
+        <NotificationsProvider slotProps={{
+          snackbar: {
+            sx: {
+              bottom: "calc(8px + env(safe-area-inset-bottom))"
+            }
+          }
+        }}>
           <Provider store={store}>
             <SupabaseProvider value={supabase}>
               <LocalizationProvider dateAdapter={AdapterDayjs}>

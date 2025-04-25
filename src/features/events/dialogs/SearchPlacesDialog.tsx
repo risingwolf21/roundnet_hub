@@ -19,7 +19,7 @@ import L, { LatLng } from 'leaflet';
 import { OpenStreetMapProvider } from 'leaflet-geosearch';
 import { SearchResult } from 'leaflet-geosearch/dist/providers/provider';
 import { toNumber } from 'lodash';
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { SlideUpTransition } from '../../../utils';
 import { PlaceType, SearchPlacesDialogProps } from '../types';
 
@@ -30,9 +30,33 @@ const SearchPlacesDialog = ({ open, handleClose, placeSelected }: SearchPlacesDi
   const notifications = useNotifications();
   const [userLocation, setUserLocation] = useState<{ latitude: number; longitude: number } | null>(null);
 
+
+  const getUserLocation = useCallback(() => {
+    if (navigator.geolocation) {
+      navigator.permissions.query({ name: 'geolocation' }).then((permissionStatus) => {
+        if (permissionStatus.state === 'denied') {
+          window.location.href = 'app-settings:location';
+        } else {
+          navigator.geolocation.getCurrentPosition(
+            (position) => {
+              const { latitude, longitude } = position.coords;
+              setUserLocation({ latitude, longitude });
+            },
+            (error) => {
+              notifications.show(`Error getting user location: \n ${error.message}`, { severity: 'error' });
+            }
+          );
+        }
+      });
+    }
+    else {
+      notifications.show(`Geolocation is not supported by this browser.`, { severity: 'error' });
+    }
+  }, [notifications])
+
   useEffect(() => {
     getUserLocation();
-  }, []);
+  }, [getUserLocation]);
 
   const provider = new OpenStreetMapProvider({ params: { "addressdetails": 1 } });
 
@@ -52,36 +76,6 @@ const SearchPlacesDialog = ({ open, handleClose, placeSelected }: SearchPlacesDi
     }
   };
 
-  // define the function that finds the users geolocation
-  const getUserLocation = () => {
-    // if geolocation is supported by the users browser
-    if (navigator.geolocation) {
-      navigator.permissions.query({ name: 'geolocation' }).then((permissionStatus) => {
-        if (permissionStatus.state === 'denied') {
-          window.location.href = 'app-settings:location';
-        } else {
-          // get the current users location
-          navigator.geolocation.getCurrentPosition(
-            (position) => {
-              // save the geolocation coordinates in two variables
-              const { latitude, longitude } = position.coords;
-              // update the value of userlocation variable
-              setUserLocation({ latitude, longitude });
-            },
-            // if there was an error getting the users location
-            (error) => {
-              notifications.show(`Error getting user location: \n ${error.message}`, { severity: 'error' });
-            }
-          );
-        }
-      });
-    }
-    // if geolocation is not supported by the users browser
-    else {
-      notifications.show(`Geolocation is not supported by this browser.`, { severity: 'error' });
-      console.error('Geolocation is not supported by this browser.');
-    }
-  };
 
   return (
     <Dialog fullScreen open={open} onClose={handleClose} TransitionComponent={SlideUpTransition}>

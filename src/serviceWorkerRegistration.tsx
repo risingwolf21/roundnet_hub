@@ -65,9 +65,6 @@ function registerValidSW(swUrl: string, config: ServiceWorkerConfig) {
   navigator.serviceWorker
     .register(`${process.env.PUBLIC_URL}/firebase-messaging-sw.js`)
     .then(registration => {
-      setInterval(() => {
-        registration.update();
-      }, 1000 * 30);
       if (registration.waiting) {
         config.onUpdate(registration);
       }
@@ -97,9 +94,6 @@ function registerValidSW(swUrl: string, config: ServiceWorkerConfig) {
   navigator.serviceWorker
     .register(swUrl)
     .then((registration) => {
-      setInterval(() => {
-        registration.update();
-      }, 1000 * 30);
       if (registration.waiting) {
         config.onUpdate(registration);
       }
@@ -170,7 +164,8 @@ function checkValidServiceWorker(swUrl: string, config: ServiceWorkerConfig) {
     });
 }
 
-export function unregister() {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+function unregister() {
   if ('serviceWorker' in navigator) {
     navigator.serviceWorker.ready
       .then((registration) => {

@@ -1,6 +1,7 @@
 import { AccountBox } from '@mui/icons-material';
 import EditIcon from '@mui/icons-material/Edit';
-import { Alert, Avatar, Box, Card, CardMedia, Fab, List, ListItem, ListItemAvatar, ListItemText, Stack, Tab, Tabs, Typography } from '@mui/material';
+import { Alert, Avatar, Badge, Box, Card, CardMedia, Fab, List, ListItem, ListItemAvatar, ListItemText, Stack, styled, Tab, Tabs, Typography } from '@mui/material';
+import { DateCalendar, PickersDay, PickersDayProps } from '@mui/x-date-pickers';
 import { captureException } from '@sentry/react';
 import { useNotifications } from '@toolpad/core/useNotifications';
 import { Dayjs } from 'dayjs';
@@ -14,7 +15,7 @@ import { PullToRefresh } from 'src/components/pull-to-refresh/PullToRefresh';
 import { supabase } from 'src/components/services/supabase/supabaseClient';
 import { RootState, useAppDispatch } from 'src/redux/store';
 import { ChallengeStatWithUser } from 'src/types/supabaseTypes';
-import { dataURLtoFile, formatDateFromDatabase } from 'src/utils';
+import { dataURLtoFile, dayjsFromDb, formatDateFromDatabase } from 'src/utils';
 import Layout from '../../components/Layout';
 import { ChallengeRepository } from '../../repository/ChallengeRepository';
 import { can } from '../../utils/PermissionService';
@@ -24,8 +25,46 @@ import { ChallengeStatItem } from './components/ChallengeStatItem';
 import EnterPointDialog from './dialogs/EnterPointDialog';
 import { challengeSelector, fetchChallengeStatsSingleAsync, onChallengeStatsInsert } from './slices/challengeSlice';
 
+const StyledDateCalendar = styled(DateCalendar<Dayjs>)({
+  '&.MuiDateCalendar-root': {
+    height: '800px',
+    width: '100%',
+    maxHeight: 'none',
+    '& div[role="row"]': {
+      justifyContent: 'space-around'
+    },
+    '& div[role="rowgroup"]': {
+      display: "flex",
+      height: "100%",
+      flexDirection: "column",
+      justifyContent: 'space-around'
+    },
+    '& .MuiDayCalendar-slideTransition': {
+      minHeight: '500px',
+    },
+  },
+});
 
-export const ChallengeInformation = ({ t }: { t: TFunction }) => {
+function Day(props: PickersDayProps<Dayjs> & { entries?: ChallengeStats[] }) {
+  const { entries = [], day, outsideCurrentMonth, ...other } = props;
+
+  const dayEntries = entries.filter(x => dayjsFromDb(x.created_at)?.isSame(props.day, "D"));
+
+  return (
+    <Badge
+      key={props.day.toString()}
+      color='primary'
+      overlap="circular"
+      badgeContent={dayEntries.length}
+    >
+      <Card sx={{borderRadius: 1}}>
+        <PickersDay {...other} selected={false} outsideCurrentMonth={outsideCurrentMonth} day={day} />
+      </Card>
+    </Badge>
+  );
+}
+
+const ChallengeInformation = ({ t }: { t: TFunction }) => {
   const { challengeId } = useParams();
   const challenge = useSelector((root: RootState) => challengeSelector.selectById(root, challengeId ?? 0));
   const { user } = useApplication();
@@ -157,6 +196,17 @@ export const ChallengeInformation = ({ t }: { t: TFunction }) => {
             }
           </Stack>
         </TabPanel>
+        {/* <TabPanel value={value} index={1}>
+          <StyledDateCalendar
+            showDaysOutsideCurrentMonth
+            fixedWeekNumber={6}
+            slots={{ day: Day }}
+            slotProps={{
+              day: {
+                entries: challenge.stats
+              } as any
+            }} />
+        </TabPanel> */}
         <TabPanel value={value} index={1}>
           <List sx={{ width: '100%' }}>
             {[...challengeStatMap.values()]

@@ -233,92 +233,6 @@ export type Database = {
       [_ in never]: never
     }
   }
-  graphql_public: {
-    Tables: {
-      [_ in never]: never
-    }
-    Views: {
-      [_ in never]: never
-    }
-    Functions: {
-      graphql: {
-        Args: {
-          operationName?: string
-          query?: string
-          variables?: Json
-          extensions?: Json
-        }
-        Returns: Json
-      }
-    }
-    Enums: {
-      [_ in never]: never
-    }
-    CompositeTypes: {
-      [_ in never]: never
-    }
-  }
-  logs: {
-    Tables: {
-      events: {
-        Row: {
-          author: string | null
-          created_at: string
-          data: Json
-          id: number
-          type: string
-        }
-        Insert: {
-          author?: string | null
-          created_at?: string
-          data: Json
-          id?: number
-          type: string
-        }
-        Update: {
-          author?: string | null
-          created_at?: string
-          data?: Json
-          id?: number
-          type?: string
-        }
-        Relationships: []
-      }
-      player_info: {
-        Row: {
-          content: string
-          created_at: string
-          id: string
-          type: string
-        }
-        Insert: {
-          content: string
-          created_at?: string
-          id?: string
-          type: string
-        }
-        Update: {
-          content?: string
-          created_at?: string
-          id?: string
-          type?: string
-        }
-        Relationships: []
-      }
-    }
-    Views: {
-      [_ in never]: never
-    }
-    Functions: {
-      [_ in never]: never
-    }
-    Enums: {
-      [_ in never]: never
-    }
-    CompositeTypes: {
-      [_ in never]: never
-    }
-  }
   permissions: {
     Tables: {
       app_permissions: {
@@ -1386,6 +1300,17 @@ export type Database = {
         Args: { event_id: number }
         Returns: string[]
       }
+      get_column_info: {
+        Args: { schema_name: string; selected_table: string }
+        Returns: {
+          column_name: string
+          data_type: string
+          is_nullable: boolean
+          foreign_key_schema_name: string
+          foreign_key_table_name: string
+          foreign_key_column_name: string
+        }[]
+      }
       get_enum_types: {
         Args: Record<PropertyKey, never>
         Returns: {
@@ -1608,12 +1533,6 @@ export type CompositeTypes<
 
 export const Constants = {
   games: {
-    Enums: {},
-  },
-  graphql_public: {
-    Enums: {},
-  },
-  logs: {
     Enums: {},
   },
   permissions: {

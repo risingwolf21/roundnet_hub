@@ -196,6 +196,4 @@ export const fetchEventCommentsAsync = createAsyncThunk(
   }
 );
 
-export const { onEventCommentUpdate, onEventCommentDelete, onEventCommentInsert } = eventCommentsSlice.actions;
-
 export default eventCommentsSlice.reducer;

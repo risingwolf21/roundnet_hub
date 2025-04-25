@@ -67,7 +67,6 @@ const CreateEvent = ({ t, eventToEdit, option }: CreateEventProps) => {
   const notifications = useNotifications();
 
   const [editedEvent, setEditedEvent] = useState<FullEvent>(eventToEdit ?? emptyEvent);
-  const [loading, setLoading] = useState(false);
   const [dialogOpen, setDialogOpen] = useState<'group' | 'stopRepeat' | 'repeat' | 'places' | null>(null);
 
   const ref = useRef<HTMLFormElement>(null);
@@ -83,7 +82,6 @@ const CreateEvent = ({ t, eventToEdit, option }: CreateEventProps) => {
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     try {
-      setLoading(true);
 
       if (!editedEvent.meetingDateTime)
         setEditedEvent({ ...editedEvent, meetingDateTime: editedEvent.startingDateTime });
@@ -132,7 +130,6 @@ const CreateEvent = ({ t, eventToEdit, option }: CreateEventProps) => {
           'There was no option provided wether this is a new event, to update only this or every recurring event. Please try again!'
         );
       }
-      setLoading(false);
       navigate('/training/list', { replace: true });
     } catch (error: unknown) {
       const message = error instanceof Error ? (error as Error).message : 'Unknown error.';

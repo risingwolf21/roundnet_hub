@@ -27,7 +27,7 @@ type ManageGroupsScreenProps = {
   client: SupabaseClient;
 };
 
-export const EMPTY_GROUP: Group = { name: '', color: '#000000', id: '', description: '', created_at: '', is_public: false };
+const EMPTY_GROUP: Group = { name: '', color: '#000000', id: '', description: '', created_at: '', is_public: false };
 
 const ManageGroupsScreen = ({ groups, loading, client }: ManageGroupsScreenProps) => {
   const { user } = useApplication();

@@ -233,7 +233,7 @@ const ReportScore = () => {
               onClick={() =>
                 setSets([
                   ...sets,
-                  { id: '', created_at: '', set_number: sets.length + 1, match: '', team_a_score: 0, team_b_score: 0 },
+                  { id: (sets.length + 1).toString(), created_at: '', set_number: sets.length + 1, match: '', team_a_score: 0, team_b_score: 0 },
                 ])
               }
             >

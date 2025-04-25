@@ -25,7 +25,7 @@ const initialState = {
   serviceWorkerRegistration: null,
 } as ApplicationSliceState;
 
-export const applicationReducer = createSlice({
+const applicationReducer = createSlice({
   name: 'application',
   initialState,
   reducers: {
@@ -94,7 +94,7 @@ export const updateCalenderSettingsAsync = createAsyncThunk(
   }
 );
 
-export const { onUserChange, onUserDatabaseUpdate, onUpdateServiceWorker, onServiceWorkerInitialized } =
+export const { onUserChange,  onUpdateServiceWorker, onServiceWorkerInitialized } =
   applicationReducer.actions;
 
 export default applicationReducer.reducer;

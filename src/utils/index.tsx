@@ -1,5 +1,5 @@
 import { Slide, SlideProps } from '@mui/material';
-import { add, Duration, format, parse } from 'date-fns';
+import { format, parse } from 'date-fns';
 import dayjs, { Dayjs } from 'dayjs';
 import React, { forwardRef } from 'react';
 import Logo from '../images/Karlsruher_Kojoten_Logo.svg';
@@ -51,7 +51,8 @@ export const formatDateFromDatabase = (date: string) => {
   return result;
 };
 
-export const dayjsToDb = (date: Dayjs) => {
+export const dayjsToDb = (date: Dayjs | null) => {
+  if (!date) return null;
   return formatDateToDatabase(date.toDate());
 }
 
@@ -59,19 +60,6 @@ export const dayjsFromDb = (date: string | null) => {
   if (!date) return null;
   return dayjs(formatDateFromDatabase(date));
 };
-
-export class RegistrationError extends Error { }
-
-export class MultiplePaymentsError extends Error { }
-
-export class FetchingError extends Error {
-  private screen: string;
-
-  constructor(message: string, screen: string) {
-    super(message);
-    this.screen = screen;
-  }
-}
 
 export const translationKeyOfItemType = (type: ItemType | null) => {
   switch (type) {
@@ -110,23 +98,6 @@ export const nameOfRecurrence = (type: EventRecurrence) => {
     case 'None':
       return 'Keine';
   }
-};
-
-export const calculateEventDateWith = (
-  eventDateTime: string | null,
-  eventUpdateDateTime: string | null,
-  difference: Duration,
-  recurrence: EventRecurrence,
-  index: number
-) => {
-  // if the current event has this date we can simply add our calculated difference
-  if (eventDateTime) {
-    return formatDateToDatabase(add(eventDateTime, difference));
-  }
-  //
-  if (eventUpdateDateTime) {
-  }
-  return null;
 };
 
 export const dataURLtoFile = (dataurl: string, filename: string): File => {

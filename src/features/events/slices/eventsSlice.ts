@@ -11,7 +11,7 @@ export type SliceEvent = FullEvent & {
   attendanceUpdating: boolean;
 };
 
-export const eventsAdapter = createEntityAdapter({
+const eventsAdapter = createEntityAdapter({
   selectId: (event: SliceEvent) => event.id,
 });
 export const eventsSelector = eventsAdapter.getSelectors((st: RootState) => st.events);
@@ -183,7 +183,7 @@ export const fetchEventsAsync = createAsyncThunk(
   }
 );
 
-export type ClientEventId = { eventId: string };
+type ClientEventId = { eventId: string };
 
 export const fetchSingleEventAsync = createAsyncThunk(
   'fetchSingleEventAsync',
@@ -208,6 +208,6 @@ export const fetchRecurringEventsAsync = createAsyncThunk('fetchRecurringEvents'
   return response.data;
 });
 
-export const { selectEvent, editEvent, onEventErrorRead, onEventDelete, onEventUpdate, onEventsUpdate, updateFetchMode } = eventsSlice.actions;
+export const {  editEvent, onEventErrorRead,  onEventUpdate, onEventsUpdate, updateFetchMode } = eventsSlice.actions;
 
 export default eventsSlice.reducer;
