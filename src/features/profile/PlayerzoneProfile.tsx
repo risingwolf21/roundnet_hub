@@ -1,14 +1,14 @@
-import { AddPhotoAlternateOutlined, Close, Link } from "@mui/icons-material";
-import { Alert, AppBar, Avatar, Button, CircularProgress, Container, Dialog, IconButton, List, ListItem, ListItemAvatar, TextField, Toolbar, Typography } from "@mui/material";
-import { DialogProps } from "@toolpad/core/useDialogs";
-import React, { useState } from "react";
-import rg_small from "../../images/rgx_small.png";
-import { supabase } from "src/components/services/supabase/supabaseClient";
-import { NotificationsProvider, useNotifications } from "@toolpad/core/useNotifications";
+import { AddPhotoAlternateOutlined, Close, ContentCopy, Link } from "@mui/icons-material";
+import { Alert, AppBar, Avatar, Button, Chip, CircularProgress, Container, Dialog, IconButton, List, ListItem, ListItemAvatar, ListItemText, TextField, Toolbar, Typography } from "@mui/material";
 import { captureException } from "@sentry/react";
+import { DialogProps } from "@toolpad/core/useDialogs";
+import { NotificationsProvider, useNotifications } from "@toolpad/core/useNotifications";
+import React, { useState } from "react";
+import { supabase } from "src/components/services/supabase/supabaseClient";
+import rg_small from "../../images/rgx_small.png";
 
 type PlayerzoneProfilePayload = {
-  player_data: Player | null
+  player_data: Player | null;
   user: User;
 }
 
@@ -76,6 +76,7 @@ const Content = ({ payload, onClose }: DialogProps<PlayerzoneProfilePayload, str
             m: 2,
             p: 0,
             width: 'auto',
+            maxWidth: "unset!important"
           }}>
           <Avatar sx={{ borderRadius: 2, width: '150px', height: '150px' }}>
             <img src={payload.player_data.rg_avatar_url} alt="logo" width={'150px'} height={'150px'} />
@@ -111,35 +112,28 @@ const Content = ({ payload, onClose }: DialogProps<PlayerzoneProfilePayload, str
           margin="normal"
         />
       </ListItem>
-      <ListItem key={'id'} sx={{ '&.MuiListItem-root': { p: 0 } }}>
+      <ListItem
+        key={'id'}
+        sx={{ '&.MuiListItem-root': { p: 0 } }}
+        secondaryAction={payload.player_data?.rg_id ? <IconButton onClick={() => navigator.clipboard.writeText(payload.player_data?.rg_id ?? "")}><ContentCopy /></IconButton> : undefined}>
         <ListItemAvatar sx={{ flexDirection: 'row', display: 'flex', alignItems: 'center' }}>
           <Link sx={{ color: 'rgba(0,0,0,0.54)' }} />
         </ListItemAvatar>
-        <TextField
-          fullWidth
-          disabled
-          size="small"
-          variant="outlined"
-          value={payload.player_data?.rg_id}
-          label="Playerzone ID"
-          margin="normal"
-        />
+        <ListItemText primary={payload.player_data?.rg_id} secondary={'Roundnet Germany ID'} />
       </ListItem>
-      <ListItem key={'index'} sx={{ '&.MuiListItem-root': { p: 0 } }}>
-        <ListItemAvatar sx={{ flexDirection: 'row', display: 'flex', alignItems: 'center' }}>
-          <img src={rg_small} alt="rgx logo" width={24} height={24} />
+      <ListItem
+        key={'rgx'}
+        disableGutters
+        sx={{
+          '&.MuiListItem-root': { p: 0 },
+        }}
+        secondaryAction={payload.player_data?.pro_status ? <Chip variant='outlined' label="Pro Status" sx={{ mx: 2, borderRadius: 3, background: "black", color: "white" }} /> : undefined}>
+        <ListItemAvatar>
+          <img src={rg_small} alt={'pz logo'} width="25" height="25" />
         </ListItemAvatar>
-        <TextField
-          fullWidth
-          disabled
-          size="small"
-          variant="outlined"
-          value={payload.player_data?.rg_index}
-          label="RG Index"
-          margin="normal"
-        />
+        <ListItemText primary={payload.player_data?.rg_index} secondary={'Roundnet Germany Index'} />
       </ListItem>
-    </List>
+    </List >
   </>)
 }
 export const PlayerzoneProfileDialog = ({ payload, open, onClose }: DialogProps<PlayerzoneProfilePayload, string | null>) => {

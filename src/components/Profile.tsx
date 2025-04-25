@@ -1,5 +1,6 @@
 import {
   Avatar,
+  Chip,
   Container,
   IconButton,
   List,
@@ -10,7 +11,7 @@ import {
   Typography,
 } from '@mui/material';
 import React, { useEffect, useState } from 'react';
-import { AddPhotoAlternateOutlined, FiberManualRecord, Launch } from '@mui/icons-material';
+import { AddPhotoAlternateOutlined, ContentCopy, FiberManualRecord, Launch } from '@mui/icons-material';
 import { useParams } from 'react-router';
 import { LoadingIndicator } from './LoadingIndicator';
 import { SupabaseUserRepository } from '../repository/UserRepository';
@@ -81,7 +82,7 @@ const UserScreen = () => {
               sx={{
                 '&.MuiListItem-root': { p: 0 },
               }}
-              secondaryAction={
+              secondaryAction={<>
                 <IconButton
                   onClick={() =>
                     window.open(currentUser.player_data?.rg_link ?? undefined, '_blank', 'noopener,noreferrer')
@@ -89,6 +90,8 @@ const UserScreen = () => {
                 >
                   <Launch />
                 </IconButton>
+                <IconButton onClick={() => navigator.clipboard.writeText(currentUser.player_data?.rg_id ?? "")}><ContentCopy /></IconButton>
+              </>
               }
             >
               <ListItemAvatar>
@@ -102,7 +105,7 @@ const UserScreen = () => {
               sx={{
                 '&.MuiListItem-root': { p: 0 },
               }}
-            >
+              secondaryAction={currentUser.player_data?.pro_status ? <Chip variant='outlined' label="Pro Status" sx={{ mx: 2, borderRadius: 3, background: "black", color: "white" }} /> : undefined}>
               <ListItemAvatar>
                 <img src={pzLogo} alt={'pz logo'} width="25" height="25" />
               </ListItemAvatar>
