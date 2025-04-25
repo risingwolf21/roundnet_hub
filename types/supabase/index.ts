@@ -17,9 +17,6 @@ export type NonNullableFields<T, K extends keyof T> = Omit<T, K> & {
   [P in K]-?: NonNullable<T[P]>;
 };
 
-type ResolveProperty<T, K extends keyof T> =
-  T[K] extends Array<infer U> ? (U extends { [key: string]: any } ? { [P in keyof U]: U[P] } : T[K]) : T[K];
-
 declare global {
   type Challenge = Tables<'challenge'>;
   type ChallengeStats = Tables<'challenge_stats'>;
