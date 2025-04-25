@@ -10,7 +10,7 @@ jobs:
     permissions:
       contents: write
     env:
-      supabase_db_url: ${{ secrets.SUPABASE_PRODUCTION_URL }}   # For example: postgresql://postgres:[YOUR-PASSWORD]@db.<ref>.supabase.co:5432/postgres
+      supabase_prod_db_url: ${{ secrets.SUPABASE_PRODUCTION_URL }}   # For example: postgresql://postgres:[YOUR-PASSWORD]@db.<ref>.supabase.co:5432/postgres
     steps:
       - uses: actions/checkout@v3
         with:
@@ -19,14 +19,35 @@ jobs:
         with:
           version: latest
       - name: Backup roles
-        run: supabase db dump --db-url "$supabase_db_url" -f supabase/backup/roles.sql --role-only
+        run: supabase db dump --db-url "$supabase_prod_db_url" -f supabase/backup/roles.sql --role-only
       - name: Backup schema
-        run: supabase db dump --db-url "$supabase_db_url" -f supabase/backup/schema.sql
+        run: supabase db dump --db-url "$supabase_prod_db_url" -f supabase/backup/schema.sql
       - name: Backup data
-        run: supabase db dump --db-url "$supabase_db_url" -f supabase/backup/data.sql --data-only --use-copy
+        run: supabase db dump --db-url "$supabase_prod_db_url" -f supabase/backup/data.sql --data-only --use-copy
 
       - uses: stefanzweifel/git-auto-commit-action@v4
         with:
-          commit_message: Supabase backup
-    
+          commit_message: Supabase backup $(date +'%Y-%m-%d')
+          file_pattern: supabase/backup/*
+  
+  restore_to_other_db:
+    runs-on: ubuntu-latest
+    needs: run_db_backup
+    env:
+      supabase_staging_db_url: ${{ secrets.SUPABASE_STAGING_URL }}
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Install PostgreSQL client
+        run: sudo apt-get install postgresql-client -y
+
+      - name: Wipe target DB
+        run: psql "$supabase_staging_db_url" -f supabase/backup/wipe.sql
+
+      - name: Restore schema
+        run: psql "$supabase_staging_db_url" -f supabase/backup/schema.sql
+
+      - name: Restore data
+        run: psql "$supabase_staging_db_url" -f supabase/backup/data.sql
+  
     
