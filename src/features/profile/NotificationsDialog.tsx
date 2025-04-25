@@ -103,7 +103,6 @@ export const NotificationsDialog = ({ payload, open, onClose }: DialogProps<Noti
               update={(newValue) => {
                 if (newValue) {
                   SupabaseUserRepository.addNotificationTag(x.tag, payload.user.userId).then(result => {
-                    console.log(result)
                     if (!result.error) {
                       setNotificationTags([...notificationTags, x.tag])
                     } else {
