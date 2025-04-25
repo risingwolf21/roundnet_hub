@@ -31,6 +31,11 @@ jobs:
         with:
           commit_message: Supabase backup $(date +'%Y-%m-%d')
           file_pattern: supabase/backup/*
+          
+      - uses: actions/upload-artifact@v4
+        with:
+          name: backup
+          path: supabase/backup
   
   restore_to_other_db:
     runs-on: ubuntu-latest
@@ -39,6 +44,11 @@ jobs:
       supabase_staging_db_url: ${{ secrets.SUPABASE_STAGING_URL }}
     steps:
       - uses: actions/checkout@v3
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: backup
+          path: supabase/backup
 
       - name: Install PostgreSQL client
         run: sudo apt-get install postgresql-client -y
