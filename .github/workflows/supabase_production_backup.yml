@@ -29,7 +29,7 @@ jobs:
 
       - uses: stefanzweifel/git-auto-commit-action@v4
         with:
-          commit_message: Supabase backup $(date +'%Y-%m-%d')
+          commit_message: "Supabase Backup $(date +'%Y-%m-%d')"
           file_pattern: supabase/backup/*
           
       - uses: actions/upload-artifact@v4
