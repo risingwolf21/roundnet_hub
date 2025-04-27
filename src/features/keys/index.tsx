@@ -4,7 +4,6 @@ import { useNotifications } from '@toolpad/core/useNotifications';
 import React, { useCallback, useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router';
 import { fetchItemsAsync } from 'src/features/keys/slices/keysSlice';
-import { FullItemHolder } from 'src/types/supabaseTypes';
 import Layout from '../../components/Layout';
 import { LoadingIndicator } from '../../components/LoadingIndicator';
 import { SupabaseKeysRepository } from '../../repository/KeysRepository';

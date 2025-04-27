@@ -24,11 +24,6 @@ export type DrinkCounter = Drink & {
     count: number;
 };
 
-export type FullItemHolder = Item & {
-    full_current_holder: User | null;
-    lastUpdate: string | null;
-};
-
 export type FullPayment = Payment & {
     user: User;
     history: History[];

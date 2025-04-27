@@ -1,7 +1,6 @@
 import { Button, Typography } from '@mui/material';
 import { SwipeableDialog } from '../../../components/SwipeableDialog';
 import React from 'react';
-import { FullItemHolder } from '../../../types/supabaseTypes';
 import { TFunction } from 'i18next';
 
 type KeyHandOverDialogProps = {

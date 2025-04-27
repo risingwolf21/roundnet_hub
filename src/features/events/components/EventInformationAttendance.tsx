@@ -28,7 +28,6 @@ import {
   answerDeadlineExpired,
   eventInThePast,
   FullAttendance,
-  FullItemHolder,
   maxAttendeesExceeded,
 } from 'src/types/supabaseTypes';
 import EventAttendanceDialog from '../dialogs/EventAttendanceDialog';

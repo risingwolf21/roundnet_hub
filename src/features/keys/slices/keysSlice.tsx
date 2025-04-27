@@ -1,5 +1,4 @@
 import { createAsyncThunk, createEntityAdapter, createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { FullItemHolder } from '../../../types/supabaseTypes';
 import { RootState } from '../../../redux/store';
 import { SupabaseKeysRepository } from '../../../repository/KeysRepository';
 
