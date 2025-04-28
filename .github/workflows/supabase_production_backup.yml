@@ -57,6 +57,6 @@ jobs:
         run: psql "$supabase_staging_db_url" -f supabase/backup/wipe.sql
 
       - name: Restore to staging DB
-        run: psql "$target_db_url" < supabase/backup/full_dump.sql
+        run: psql "$supabase_staging_db_url" < supabase/backup/full_dump.sql
   
     
