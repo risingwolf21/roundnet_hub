@@ -18,8 +18,15 @@ jobs:
       - uses: supabase/setup-cli@v1
         with:
           version: latest
-      - name: Full Backup (roles, schema & data)
+          
+      - name: Full Backup (schema)
         run: supabase db dump --schema public,games,permissions,logs --db-url "$supabase_prod_db_url" -f supabase/backup/full_dump.sql
+
+      - name: Full Backup (roles)
+        run: supabase db dump --schema public,games,permissions,logs --db-url "$supabase_prod_db_url" -f supabase/backup/full_dump_roles.sql --roles-only
+
+      - name: Full Backup (data)
+        run: supabase db dump --schema public,games,permissions,logs --db-url "$supabase_prod_db_url" -f supabase/backup/full_dump_data.sql --data-only
 
       - uses: stefanzweifel/git-auto-commit-action@v4
         with:
@@ -50,7 +57,13 @@ jobs:
       - name: Wipe staging DB
         run: psql "$supabase_staging_db_url" -f supabase/backup/wipe.sql
 
-      - name: Restore to staging DB
+      - name: Restore schema to staging DB
         run: psql "$supabase_staging_db_url" < supabase/backup/full_dump.sql
+        
+      - name: Restore roles to staging DB
+        run: psql "$supabase_staging_db_url" < supabase/backup/full_dump_roles.sql
+        
+      - name: Restore data to staging DB
+        run: psql "$supabase_staging_db_url" < supabase/backup/full_dump_data.sql
   
     
