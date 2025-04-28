@@ -42,7 +42,6 @@ const Layout = ({
     const preventSwipeBack = (e: TouchEvent) => {
       if (e.touches[0].clientX < 25) {
         e.preventDefault();
-        setDrawerOpen(true)
       }
     };
 
