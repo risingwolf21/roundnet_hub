@@ -28,10 +28,10 @@ jobs:
         run: supabase db dump --schema public,games,permissions,logs --db-url "$supabase_prod_db_url" -f supabase/backup/full_dump.sql
 
       - name: Full Backup (roles)
-        run: supabase db dump --schema public,games,permissions,logs --db-url "$supabase_prod_db_url" -f supabase/backup/full_dump_roles.sql --role-only
+        run: supabase db dump --db-url "$supabase_prod_db_url" -f supabase/backup/full_dump_roles.sql --role-only
 
       - name: Full Backup (data)
-        run: supabase db dump --schema public,games,permissions,logs --db-url "$supabase_prod_db_url" -f supabase/backup/full_dump_data.sql --data-only
+        run: supabase db dump --db-url "$supabase_prod_db_url" -f supabase/backup/full_dump_data.sql --data-only
 
       - uses: stefanzweifel/git-auto-commit-action@v4
         with:
