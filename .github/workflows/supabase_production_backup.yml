@@ -20,12 +20,6 @@ jobs:
           version: latest
       - name: Full Backup (roles, schema & data)
         run: supabase db dump --schema public,games,permissions,logs --db-url "$supabase_prod_db_url" -f supabase/backup/full_dump.sql
-      - name: Backup roles
-        run: supabase db dump --schema public,games,permissions,logs --db-url "$supabase_prod_db_url" -f supabase/backup/roles.sql --role-only
-      - name: Backup schema
-        run: supabase db dump --schema public,games,permissions,logs --db-url "$supabase_prod_db_url" -f supabase/backup/schema.sql
-      - name: Backup data
-        run: supabase db dump --schema public,games,permissions,logs --db-url "$supabase_prod_db_url" -f supabase/backup/data.sql --data-only --use-copy
 
       - uses: stefanzweifel/git-auto-commit-action@v4
         with:
