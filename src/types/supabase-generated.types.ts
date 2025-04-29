@@ -379,6 +379,13 @@ export type Database = {
             referencedRelation: "event_group"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "challenge_group_fkey"
+            columns: ["group"]
+            isOneToOne: false
+            referencedRelation: "event_groups_view"
+            referencedColumns: ["id"]
+          },
         ]
       }
       challenge_stats: {
@@ -589,6 +596,7 @@ export type Database = {
           id: string
           is_public: boolean
           name: string
+          need_request_to_join: boolean
         }
         Insert: {
           color?: string
@@ -597,6 +605,7 @@ export type Database = {
           id?: string
           is_public?: boolean
           name?: string
+          need_request_to_join?: boolean
         }
         Update: {
           color?: string
@@ -605,6 +614,7 @@ export type Database = {
           id?: string
           is_public?: boolean
           name?: string
+          need_request_to_join?: boolean
         }
         Relationships: []
       }
@@ -671,6 +681,13 @@ export type Database = {
             referencedRelation: "event_group"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "events_group_fkey"
+            columns: ["group"]
+            isOneToOne: false
+            referencedRelation: "event_groups_view"
+            referencedColumns: ["id"]
+          },
         ]
       }
       group_user_mapping: {
@@ -695,6 +712,13 @@ export type Database = {
             columns: ["group"]
             isOneToOne: false
             referencedRelation: "event_group"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "group_user_mapping_group_fkey"
+            columns: ["group"]
+            isOneToOne: false
+            referencedRelation: "event_groups_view"
             referencedColumns: ["id"]
           },
           {
@@ -966,11 +990,7 @@ export type Database = {
           disabled: boolean
           displayName: string
           email: string
-          fcm_token: string | null
           name: string
-          notifications:
-            | Database["public"]["Enums"]["NotificationTags"][]
-            | null
           role: Database["public"]["Enums"]["UserRole"]
           userId: string
           verified: boolean
@@ -981,11 +1001,7 @@ export type Database = {
           disabled?: boolean
           displayName?: string
           email?: string
-          fcm_token?: string | null
           name?: string
-          notifications?:
-            | Database["public"]["Enums"]["NotificationTags"][]
-            | null
           role?: Database["public"]["Enums"]["UserRole"]
           userId?: string
           verified?: boolean
@@ -996,11 +1012,7 @@ export type Database = {
           disabled?: boolean
           displayName?: string
           email?: string
-          fcm_token?: string | null
           name?: string
-          notifications?:
-            | Database["public"]["Enums"]["NotificationTags"][]
-            | null
           role?: Database["public"]["Enums"]["UserRole"]
           userId?: string
           verified?: boolean
@@ -1166,6 +1178,13 @@ export type Database = {
             referencedRelation: "event_group"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "events_group_fkey"
+            columns: ["group"]
+            isOneToOne: false
+            referencedRelation: "event_groups_view"
+            referencedColumns: ["id"]
+          },
         ]
       }
       distinct_drinks: {
@@ -1208,7 +1227,27 @@ export type Database = {
             referencedRelation: "event_group"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "events_group_fkey"
+            columns: ["group"]
+            isOneToOne: false
+            referencedRelation: "event_groups_view"
+            referencedColumns: ["id"]
+          },
         ]
+      }
+      event_groups_view: {
+        Row: {
+          color: string | null
+          created_at: string | null
+          description: string | null
+          id: string | null
+          is_public: boolean | null
+          name: string | null
+          need_request_to_join: boolean | null
+          role: Database["public"]["Enums"]["GroupRole"] | null
+        }
+        Relationships: []
       }
       readable_history: {
         Row: {
@@ -1256,10 +1295,6 @@ export type Database = {
           team_b: string
           match_sets: Json
         }
-        Returns: undefined
-      }
-      add_notificationtags_to_all_users: {
-        Args: { notification: Database["public"]["Enums"]["NotificationTags"] }
         Returns: undefined
       }
       authorize: {
@@ -1353,10 +1388,6 @@ export type Database = {
           image_url: string | null
           user: string
         }
-      }
-      remove_notificationtags_from_all_users: {
-        Args: { notification: Database["public"]["Enums"]["NotificationTags"] }
-        Returns: undefined
       }
       update_attendance: {
         Args: {

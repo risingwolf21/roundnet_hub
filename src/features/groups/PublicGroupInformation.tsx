@@ -1,5 +1,5 @@
 import { AccountBox } from "@mui/icons-material";
-import { Avatar, Chip, Divider, List, ListItemAvatar, ListItemButton, ListItemText, Stack, Typography } from "@mui/material";
+import { Avatar, Chip, Divider, List, ListItem, ListItemAvatar, ListItemButton, ListItemText, Stack, Typography } from "@mui/material";
 import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router";
 import Layout from "src/components/Layout";
@@ -10,7 +10,7 @@ const PublicGroupInformation = () => {
 
   const { groupId } = useParams();
   const navigate = useNavigate();
-  const [group, setGroup] = useState<GroupWithUsersBase | null>(null)
+  const [group, setGroup] = useState<GroupWithUsers | null>(null)
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -34,10 +34,27 @@ const PublicGroupInformation = () => {
       </Typography>
       <Divider />
       <Typography pl={2} pt={1} variant="h6" fontWeight="bold">
-        Mitglieder{group && " · " + group?.users.length}
+        Mitglieder{group && " · " + group?.mapping.length}
       </Typography>
       {
-        group?.users.sort((a, b) => a.user.displayName.localeCompare(b.user.displayName)).map(x => <ListItemButton
+        group?.mapping.filter(x => x.role === "joinRequested").sort((a, b) => a.user.displayName.localeCompare(b.user.displayName)).map(x => 
+        <ListItem secondaryAction={<Button>
+
+        </Button>}>
+          <ListItemAvatar>
+            <Avatar sx={{ borderRadius: 2 }}>
+              {x.user.avatarUrl ? (
+                <img src={x.user.avatarUrl} alt="logo" width={'100%'} height={'100%'} />
+              ) : (
+                <AccountBox />
+              )}
+            </Avatar>
+          </ListItemAvatar>
+          <ListItemText primary={x.user.name} />
+        </ListItem>)
+      }
+      {
+        group?.mapping.filter(x => x.role !== "joinRequested").sort((a, b) => a.user.displayName.localeCompare(b.user.displayName)).map(x => <ListItemButton
           divider
           onClick={() => navigate("/user/" + x.user.userId)}
         >
