@@ -24,45 +24,6 @@ import { ChallengeStatItem } from './components/ChallengeStatItem';
 import EnterPointDialog from './dialogs/EnterPointDialog';
 import { challengeSelector, fetchChallengeStatsSingleAsync, onChallengeStatsInsert } from './slices/challengeSlice';
 
-// const StyledDateCalendar = styled(DateCalendar<Dayjs>)({
-//   '&.MuiDateCalendar-root': {
-//     height: '800px',
-//     width: '100%',
-//     maxHeight: 'none',
-//     '& div[role="row"]': {
-//       justifyContent: 'space-around'
-//     },
-//     '& div[role="rowgroup"]': {
-//       display: "flex",
-//       height: "100%",
-//       flexDirection: "column",
-//       justifyContent: 'space-around'
-//     },
-//     '& .MuiDayCalendar-slideTransition': {
-//       minHeight: '500px',
-//     },
-//   },
-// });
-
-// function Day(props: PickersDayProps<Dayjs> & { entries?: ChallengeStats[] }) {
-//   const { entries = [], day, outsideCurrentMonth, ...other } = props;
-
-//   const dayEntries = entries.filter(x => dayjsFromDb(x.created_at)?.isSame(props.day, "D"));
-
-//   return (
-//     <Badge
-//       key={props.day.toString()}
-//       color='primary'
-//       overlap="circular"
-//       badgeContent={dayEntries.length}
-//     >
-//       <Card sx={{borderRadius: 1}}>
-//         <PickersDay {...other} selected={false} outsideCurrentMonth={outsideCurrentMonth} day={day} />
-//       </Card>
-//     </Badge>
-//   );
-// }
-
 const ChallengeInformation = ({ t }: { t: TFunction }) => {
   const { challengeId } = useParams();
   const challenge = useSelector((root: RootState) => challengeSelector.selectById(root, challengeId ?? 0));
@@ -164,9 +125,9 @@ const ChallengeInformation = ({ t }: { t: TFunction }) => {
                 .sort(([key_a], [key_b]) => new Date(key_b) > new Date(key_a) ? 1 : -1)
                 .map(([key, value]) => <Stack spacing={1} direction={"column"} key={key}>
                   <Typography sx={{ textAlign: "center", color: 'rgba(0,0,0,0.6)', }}>{key}</Typography>
-                  {
-                    value.map(x => <Card sx={{ dsplay: "flex", p: 0 }} key={x.id}>
-                      <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+                  <List>
+                    {
+                      value.map(x => <ListItem divider sx={{ display: "flex", p: 0 }} key={x.id}>
                         <ListItem sx={{ mr: 4 }}>
                           <ListItemAvatar>
                             <Avatar sx={{ borderRadius: 2 }}>
@@ -188,24 +149,13 @@ const ChallengeInformation = ({ t }: { t: TFunction }) => {
                             alt="Challengestat images"
                           />
                         }
-                      </Box>
-                    </Card>)
-                  }
+                      </ListItem>)
+                    }
+                  </List>
                 </Stack>)
             }
           </Stack>
         </TabPanel>
-        {/* <TabPanel value={value} index={1}>
-          <StyledDateCalendar
-            showDaysOutsideCurrentMonth
-            fixedWeekNumber={6}
-            slots={{ day: Day }}
-            slotProps={{
-              day: {
-                entries: challenge.stats
-              } as any
-            }} />
-        </TabPanel> */}
         <TabPanel value={value} index={1}>
           <List sx={{ width: '100%' }}>
             {[...challengeStatMap.values()]
