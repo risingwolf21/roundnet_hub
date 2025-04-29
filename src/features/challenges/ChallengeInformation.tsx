@@ -144,7 +144,7 @@ const ChallengeInformation = ({ t }: { t: TFunction }) => {
                           x.image_url &&
                           <CardMedia
                             component="img"
-                            sx={{ width: "100%", maxHeight: "250px" }}
+                            sx={{ width: "100%", maxWidth: "50%", maxHeight: "250px" }}
                             image={x.image_url}
                             alt="Challengestat images"
                           />
