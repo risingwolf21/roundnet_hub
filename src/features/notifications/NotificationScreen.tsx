@@ -20,6 +20,11 @@ const NotificationScreen = () => {
   const dialog = useNotifications();
 
   useEffect(() => {
+    if (user)
+      dispatch(fetchNotificationsAsync(user))
+  }, [user, dispatch])
+
+  useEffect(() => {
     if (error)
       dialog.show(error, { severity: "error" });
   }, [error, dialog]);
