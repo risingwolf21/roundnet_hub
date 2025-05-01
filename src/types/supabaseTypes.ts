@@ -90,7 +90,7 @@ export type FullUserMapping = {
 }
 
 export type GroupWithUserMappings = Group & {
-    user_group_role: GroupRole;
+    user_group_role: GroupRole | null;
     users: FullUserMapping[];
 };
 

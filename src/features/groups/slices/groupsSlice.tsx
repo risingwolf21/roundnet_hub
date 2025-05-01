@@ -4,7 +4,7 @@ import { supabase } from 'src/components/services/supabase/supabaseClient';
 import { AdminUsersRepository } from 'src/repository/AdminUsersRepository';
 import { Tables } from 'src/types/supabase-generated.types';
 import { RootState } from '../../../redux/store';
-import { GroupWithUserMappings } from 'src/types/supabaseTypes';
+import { FullUserMapping, GroupWithUserMappings } from 'src/types/supabaseTypes';
 
 const groupsAdapter = createEntityAdapter({
   selectId: (group: GroupWithUserMappings) => group.id,
@@ -26,7 +26,7 @@ const groupsSlice = createSlice({
       let changes = {
         id: groupsSlice.id,
         changes: {
-          users: [...groupsSlice.users, action.payload.user]
+          users: [...groupsSlice.users, { user: action.payload.user, map: action.payload.result }] as FullUserMapping[]
         }
       } as Update<GroupWithUserMappings>;
 

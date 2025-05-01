@@ -1,5 +1,5 @@
 import { Add, Groups } from "@mui/icons-material";
-import { Avatar, Button, Chip, Fab, ListItem, ListItemAvatar, ListItemText, Stack, Typography } from "@mui/material";
+import { Avatar, Button, Chip, Fab, ListItem, ListItemAvatar, ListItemText, Stack } from "@mui/material";
 import { useDialogs } from "@toolpad/core";
 import { useNotifications } from "@toolpad/core/useNotifications";
 import React, { useEffect } from "react";
@@ -8,11 +8,11 @@ import { useNavigate } from "react-router";
 import Layout from "src/components/Layout";
 import { RootState, useAppDispatch } from "src/redux/store";
 import { GroupsRepository } from "src/repository/GroupsRepository";
+import { GroupWithUserMappings } from "src/types/supabaseTypes";
 import { useApplication } from "../auth/AuthContext";
 import { CreateGroupDialog } from "./dialogs/CreateGroupDialog";
 import { LoadingGroupListItem } from "./LoadingGroupListItem";
 import { fetchGroupsAsync, groupsSelector, onEventMappingUserAdded } from "./slices/groupsSlice";
-import { GroupWithUserMappings } from "src/types/supabaseTypes";
 
 const PublicGroupList = () => {
   const groups = useSelector((state: RootState) => groupsSelector.selectAll(state));
