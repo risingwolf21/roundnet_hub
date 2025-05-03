@@ -1,5 +1,5 @@
 import { AccountCircle, ArrowBack, Menu } from '@mui/icons-material';
-import { AppBar, Avatar, Box, IconButton, TextField, Toolbar, Typography } from '@mui/material';
+import { AppBar, Avatar, Box, Chip, IconButton, Stack, TextField, Toolbar, Typography } from '@mui/material';
 import React, { ReactNode, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { useApplication } from '../features/auth/AuthContext';
@@ -113,9 +113,15 @@ const Layout = ({
           )}
 
           {/* Title */}
-          <Typography variant="h6" noWrap sx={{ flexGrow: 1 }}>
-            {title}
-          </Typography>
+          <Stack direction={"row"} spacing={2} sx={{ flexGrow: 1, alignItems: "center" }}>
+            <Typography variant="h6" noWrap >
+              {title}
+            </Typography>
+            {
+              process.env.REACT_APP_ENV !== "production" && <Chip variant='outlined' size='small' color='warning' label={process.env.REACT_APP_ENV} />
+            }
+          </Stack>
+
           {/* Profile */}
           {showProfile && (
             <IconButton
