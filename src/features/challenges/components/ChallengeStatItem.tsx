@@ -23,35 +23,31 @@ export const ChallengeStatItem = ({
   if (!user)
     return null
 
-  return <Card sx={{ m: 1, p: 0 }} elevation={3} key={user.userId}>
-    <CardContent>
-      <ListItem
-        sx={{ p: 0 }}
-        secondaryAction={<Typography>{statsForUser.reduce((p, c) => p + c.count, 0)}</Typography>}
-      >
-        <ListItemAvatar sx={{ flexDirection: 'row', display: 'flex', alignItems: 'center', mr: 2 }}>
-          <Avatar sx={{ borderRadius: 2, backgroundColor: 'transparent', width: "50px", height: "50px" }}>
-            <Typography
-              sx={{
-                fontSize: index < 3 ? '22pt' : '18pt',
-                fontWeight: 'bold',
-                color: 'black',
-                mr: 1
-              }}
-            >
-              {medalForPlace(index)}
-            </Typography>
-          </Avatar>
-          <Avatar sx={{ borderRadius: 2, width: "50px", height: "50px" }}>
-            {user.avatarUrl ? (
-              <img src={user.avatarUrl} alt="logo" width={'100%'} height={'100%'} />
-            ) : (
-              <AccountBox />
-            )}
-          </Avatar>
-        </ListItemAvatar>
-        <ListItemText primaryTypographyProps={{ fontWeight: 'bold' }} primary={user.displayName} />
-      </ListItem>
-    </CardContent>
-  </Card>
+  return <ListItem
+    divider
+    secondaryAction={<Typography>{statsForUser.reduce((p, c) => p + c.count, 0)}</Typography>}
+  >
+    <ListItemAvatar sx={{ flexDirection: 'row', display: 'flex', alignItems: 'center', mr: 2 }}>
+      <Avatar sx={{ borderRadius: 2, backgroundColor: 'transparent', width: "50px", height: "50px" }}>
+        <Typography
+          sx={{
+            fontSize: index < 3 ? '22pt' : '18pt',
+            fontWeight: 'bold',
+            color: 'black',
+            mr: 1
+          }}
+        >
+          {medalForPlace(index)}
+        </Typography>
+      </Avatar>
+      <Avatar sx={{ borderRadius: 2, width: "50px", height: "50px" }}>
+        {user.avatarUrl ? (
+          <img src={user.avatarUrl} alt="logo" width={'100%'} height={'100%'} />
+        ) : (
+          <AccountBox />
+        )}
+      </Avatar>
+    </ListItemAvatar>
+    <ListItemText primaryTypographyProps={{ fontWeight: 'bold' }} primary={user.displayName} />
+  </ListItem>
 };

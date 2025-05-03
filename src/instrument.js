@@ -21,7 +21,7 @@ Sentry.init({
     supabaseIntegration(supabase, Sentry, {
       tracing: true,
       breadcrumbs: true,
-      errors: true,
+      errors: true
     }),
     Sentry.browserTracingIntegration(),
   ],

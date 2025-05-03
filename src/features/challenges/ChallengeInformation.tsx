@@ -1,6 +1,6 @@
 import { AccountBox } from '@mui/icons-material';
 import EditIcon from '@mui/icons-material/Edit';
-import { Alert, Avatar, Box, Card, CardMedia, Fab, List, ListItem, ListItemAvatar, ListItemText, Stack, Tab, Tabs, Typography } from '@mui/material';
+import { Alert, Avatar, CardMedia, Fab, List, ListItem, ListItemAvatar, ListItemText, Stack, Tab, Tabs, Typography } from '@mui/material';
 import { captureException } from '@sentry/react';
 import { useNotifications } from '@toolpad/core/useNotifications';
 import { Dayjs } from 'dayjs';
@@ -23,45 +23,6 @@ import { TabPanel } from '../events/dialogs/EventAttendanceDialog';
 import { ChallengeStatItem } from './components/ChallengeStatItem';
 import EnterPointDialog from './dialogs/EnterPointDialog';
 import { challengeSelector, fetchChallengeStatsSingleAsync, onChallengeStatsInsert } from './slices/challengeSlice';
-
-// const StyledDateCalendar = styled(DateCalendar<Dayjs>)({
-//   '&.MuiDateCalendar-root': {
-//     height: '800px',
-//     width: '100%',
-//     maxHeight: 'none',
-//     '& div[role="row"]': {
-//       justifyContent: 'space-around'
-//     },
-//     '& div[role="rowgroup"]': {
-//       display: "flex",
-//       height: "100%",
-//       flexDirection: "column",
-//       justifyContent: 'space-around'
-//     },
-//     '& .MuiDayCalendar-slideTransition': {
-//       minHeight: '500px',
-//     },
-//   },
-// });
-
-// function Day(props: PickersDayProps<Dayjs> & { entries?: ChallengeStats[] }) {
-//   const { entries = [], day, outsideCurrentMonth, ...other } = props;
-
-//   const dayEntries = entries.filter(x => dayjsFromDb(x.created_at)?.isSame(props.day, "D"));
-
-//   return (
-//     <Badge
-//       key={props.day.toString()}
-//       color='primary'
-//       overlap="circular"
-//       badgeContent={dayEntries.length}
-//     >
-//       <Card sx={{borderRadius: 1}}>
-//         <PickersDay {...other} selected={false} outsideCurrentMonth={outsideCurrentMonth} day={day} />
-//       </Card>
-//     </Badge>
-//   );
-// }
 
 const ChallengeInformation = ({ t }: { t: TFunction }) => {
   const { challengeId } = useParams();
@@ -126,7 +87,7 @@ const ChallengeInformation = ({ t }: { t: TFunction }) => {
     }
 
     const uploadedImageUrl = await uploadImage(image);
-    if (uploadedImageUrl) {
+    if (!uploadedImageUrl) {
       notifications.show('Fehler beim hochladen des Bildes. Der Punkt wurde dennoch eingetragen', { severity: 'error' });
     }
     ChallengeRepository.increasePointForUser(user.userId, challenge.id, created_at, uploadedImageUrl)
@@ -164,9 +125,9 @@ const ChallengeInformation = ({ t }: { t: TFunction }) => {
                 .sort(([key_a], [key_b]) => new Date(key_b) > new Date(key_a) ? 1 : -1)
                 .map(([key, value]) => <Stack spacing={1} direction={"column"} key={key}>
                   <Typography sx={{ textAlign: "center", color: 'rgba(0,0,0,0.6)', }}>{key}</Typography>
-                  {
-                    value.map(x => <Card sx={{ dsplay: "flex", p: 0 }} key={x.id}>
-                      <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+                  <List>
+                    {
+                      value.map(x => <ListItem divider sx={{ display: "flex", p: 0 }} key={x.id}>
                         <ListItem sx={{ mr: 4 }}>
                           <ListItemAvatar>
                             <Avatar sx={{ borderRadius: 2 }}>
@@ -183,29 +144,18 @@ const ChallengeInformation = ({ t }: { t: TFunction }) => {
                           x.image_url &&
                           <CardMedia
                             component="img"
-                            sx={{ width: "100%", maxHeight: "250px" }}
+                            sx={{ width: "100%", maxWidth: "50%", maxHeight: "250px" }}
                             image={x.image_url}
                             alt="Challengestat images"
                           />
                         }
-                      </Box>
-                    </Card>)
-                  }
+                      </ListItem>)
+                    }
+                  </List>
                 </Stack>)
             }
           </Stack>
         </TabPanel>
-        {/* <TabPanel value={value} index={1}>
-          <StyledDateCalendar
-            showDaysOutsideCurrentMonth
-            fixedWeekNumber={6}
-            slots={{ day: Day }}
-            slotProps={{
-              day: {
-                entries: challenge.stats
-              } as any
-            }} />
-        </TabPanel> */}
         <TabPanel value={value} index={1}>
           <List sx={{ width: '100%' }}>
             {[...challengeStatMap.values()]

@@ -8,6 +8,7 @@ import { fetchGroups, fetchSimpleUser, fetchUserWithGroups } from 'src/repositor
 import { GamesTable, PermissionsTable } from 'src/types/supabaseTypes';
 import { Enums, Tables, TablesInsert, TablesUpdate } from '../../src/types/supabase-generated.types';
 import { fetchChallengeWithGroup } from 'src/repository/ChallengeRepository';
+import { fetchItems } from 'src/repository/KeysRepository';
 
 export type Event = Tables<'events'>;
 export type History = Tables<'history'>;
@@ -24,6 +25,7 @@ declare global {
   type Attendance = Tables<'event_attendance_user_mapping'>;
   type EventComment = Tables<'event_comments'>;
   type Group = Tables<'event_group'>;
+  type GroupUserMapping = Tables<'group_user_mapping'>;
   type Item = Tables<'items'>;
   type ItemHistory = Tables<'item_history'>;
   type Payment = Tables<'payments'>;
@@ -41,8 +43,10 @@ declare global {
   type CalendarSettings = Tables<'user_calender_settings'>;
   type PlayerWithSimpleUser = Player & { name: string; userId: string };
 
+  type FullItemHolder = QueryData<ReturnType<typeof fetchItems>> extends Array<infer U> ? U : never;
+
   type ChallengeWithFullGroup = QueryData<ReturnType<typeof fetchChallengeWithGroup>> extends Array<infer U> ? U : never;
-  type GroupWithUsersBase = QueryData<ReturnType<typeof fetchGroupWithUsers>> extends Array<infer U> ? U : never;
+  type GroupWithUsers = QueryData<ReturnType<typeof fetchGroupWithUsers>> extends Array<infer U> ? U : never;
   type FullHistory = QueryData<ReturnType<typeof fetchFullHistory>> extends Array<infer U> ? U : never;
   type SimpleUser = QueryData<ReturnType<typeof fetchSimpleUser>> extends Array<infer U> ? U : never;
   type OpenDrinksForUser = QueryData<ReturnType<typeof fetchDrinksToPay>> extends Array<infer U> ? U : never;
@@ -57,11 +61,6 @@ declare global {
     ? UserWithGroupsBase['groups'][number]['group'][]
     : UserWithGroupsBase[P];
   } & { player_data: Player | null };
-  type GroupWithUsers = {
-    [P in keyof GroupWithUsersBase]: P extends 'users'
-    ? GroupWithUsersBase['users'][number]['user'][]
-    : GroupWithUsersBase[P];
-  };
 
   type PaymentInsert = TablesInsert<'payments'>;
   type EventCommentInsert = TablesInsert<'event_comments'>;
