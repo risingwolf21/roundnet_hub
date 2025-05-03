@@ -51,9 +51,8 @@ const PrivateRoute = () => {
   const { user } = useApplication();
   const location = useLocation();
 
-
   if (!user)
-    return <Navigate to="/login" state={{ path: location.pathname }} />
+    return <Navigate to="/login" state={{ path: location.pathname + location.search }} />
   return <Outlet />
 }
 
