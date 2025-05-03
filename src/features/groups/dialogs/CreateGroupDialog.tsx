@@ -1,15 +1,16 @@
-import { Article, Close, Title } from "@mui/icons-material";
+import { Article, Close, ColorLens, Group, Title } from "@mui/icons-material";
 import { AppBar, Avatar, Button, Checkbox, Dialog, IconButton, List, ListItem, ListItemAvatar, ListItemText, TextField, Toolbar, Typography } from "@mui/material";
 import { LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import { captureException } from "@sentry/react";
 import { DialogProps, NotificationsProvider, useNotifications } from "@toolpad/core";
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import { supabase } from "src/components/services/supabase/supabaseClient";
 import { Tables } from "src/types/supabase-generated.types";
 
 const Content = ({ payload, onClose }: DialogProps<undefined, Group | null>) => {
   const notifications = useNotifications();
-
+  const inputRef = useRef<HTMLInputElement>(null);
   const [data, setData] = useState<Tables<'event_group'>>({ name: "", description: "", id: "", created_at: "", color: "#000", is_public: true, need_request_to_join: false });
 
   return <><AppBar sx={{ position: 'static', pt: "env(safe-area-inset-top)" }}>
@@ -45,12 +46,10 @@ const Content = ({ payload, onClose }: DialogProps<undefined, Group | null>) => 
           })
           .select("*")
           .single();
-        if (!result_data) {
-          notifications.show("Gruppe konnte nicht erstellt werden. " + error?.message, { severity: "error" });
-        } else {
-          notifications.show("Gruppe wurde erfolgreich erstellt.", { severity: "success" });
-          onClose(result_data);
+        if (error) {
+          captureException(error);
         }
+        onClose(result_data);
       }}>
         Erstellen
       </Button>
@@ -85,6 +84,53 @@ const Content = ({ payload, onClose }: DialogProps<undefined, Group | null>) => 
           value={data.description}
           onChange={e => setData({ ...data, description: e.target.value })}
           margin="normal"
+        />
+      </ListItem>
+      <ListItem
+        secondaryAction={
+          <IconButton
+            LinkComponent={'span'}
+            onClick={(e) => {
+              if (inputRef.current) {
+                inputRef.current.click();
+              }
+            }}
+          >
+            <input
+              ref={inputRef}
+              hidden
+              type="color"
+              value={data.color}
+              onChange={(e) => setData({ ...data, color: e.target.value })}
+            />
+            <ColorLens />
+          </IconButton>
+        }
+      >
+        <ListItemAvatar>
+          <Avatar sx={{ background: data.color, width: 40, height: 40, borderRadius: 2 }}>
+            <Group />
+          </Avatar>
+        </ListItemAvatar>
+        <ListItemText
+          sx={{ mr: 2 }}
+          slotProps={{
+            primary: {
+              whiteSpace: 'nowrap',
+              overflow: 'clip',
+              textOverflow: 'ellipsis',
+            },
+          }}
+          primary={
+            <TextField
+              fullWidth
+              variant="outlined"
+              value={data.color}
+              onChange={(e) => setData({ ...data, color: e.target.value })}
+              label="Farbe"
+              margin="normal"
+            />
+          }
         />
       </ListItem>
       <ListItem sx={{ pt: 0, pb: 0 }} key={'endDate'}>
