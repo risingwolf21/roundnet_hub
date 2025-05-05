@@ -1,11 +1,13 @@
-import { Article, Close, Event, FiberManualRecord, Groups, Title } from "@mui/icons-material";
-import { AppBar, Avatar, Button, Checkbox, Dialog, IconButton, InputAdornment, List, ListItem, ListItemAvatar, MenuItem, Select, TextField, Toolbar, Typography } from "@mui/material";
+import { Article, Close, Groups, Title } from "@mui/icons-material";
+import { AppBar, Avatar, Button, Checkbox, Dialog, IconButton, List, ListItem, ListItemAvatar, MenuItem, Select, TextField, Toolbar, Typography } from "@mui/material";
 import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
-import { DialogProps, NotificationsProvider, useNotifications } from "@toolpad/core";
+import { captureException } from "@sentry/react";
+import { DialogProps, NotificationsProvider, useDialogs, useNotifications } from "@toolpad/core";
 import dayjs from "dayjs";
 import React, { useEffect, useState } from "react";
 import { supabase } from "src/components/services/supabase/supabaseClient";
+import { CreateGroupDialog } from "src/features/groups/dialogs/CreateGroupDialog";
 import { SupabaseUserRepository } from "src/repository/UserRepository";
 import { Tables } from "src/types/supabase-generated.types";
 import { dayjsFromDb, dayjsToDb } from "src/utils";
@@ -14,8 +16,9 @@ type CreateChallengePayload = {
   user: User
 }
 
-const Content = ({ payload, onClose }: DialogProps<CreateChallengePayload, string | null>) => {
+const Content = ({ payload, onClose }: DialogProps<CreateChallengePayload, Challenge | null | "closed">) => {
   const notifications = useNotifications();
+  const dialogs = useDialogs();
   const [selectedGroup, setSelectedGroup] = useState<Group | null>(null);
   const [groups, setGroups] = useState<Group[]>([]);
   const [loading, setLoading] = useState(false);
@@ -35,7 +38,7 @@ const Content = ({ payload, onClose }: DialogProps<CreateChallengePayload, strin
       <IconButton
         edge="start"
         color="inherit"
-        onClick={() => onClose(null)}>
+        onClick={() => onClose("closed")}>
         <Close />
       </IconButton>
       <Typography sx={{ ml: 2, flex: 1 }} variant="h6" component="div">
@@ -56,7 +59,7 @@ const Content = ({ payload, onClose }: DialogProps<CreateChallengePayload, strin
           return;
         }
 
-        const { error } = await supabase
+        const { data: result, error } = await supabase
           .schema("public")
           .from("challenge")
           .insert({
@@ -64,12 +67,13 @@ const Content = ({ payload, onClose }: DialogProps<CreateChallengePayload, strin
             description: data.description,
             end_date: data.end_date,
             group: selectedGroup.id
-          });
-        if (error) {
-          notifications.show("Challenge konnte nicht erstellt werden. " + error.message, { severity: "error" });
-        } else {
-          notifications.show("Challenge wurde erfolgreich erstellt.", { severity: "success" });
+          })
+          .select("*")
+          .single();
+        if(error){
+          captureException(error)
         }
+        onClose(result)
       }}>
         Erstellen
       </Button>
@@ -118,7 +122,19 @@ const Content = ({ payload, onClose }: DialogProps<CreateChallengePayload, strin
           sx={{ mt: 2, mb: 1 }}
           fullWidth
           value={selectedGroup?.id ?? 'none'}
-          onChange={(e) => setSelectedGroup(groups.find(x => x.id === e.target.value) ?? null)}
+          onChange={async (e) => {
+            if (e.target.value === "create") {
+              const result = await dialogs.open(CreateGroupDialog);
+              if(result && result !== "closed"){
+                setGroups([...groups, result])
+                setSelectedGroup(result);
+              } else {
+                notifications.show("Es wurde keine Gruppe erstellt.", { severity: "error" });
+              }
+            } else {
+              setSelectedGroup(groups.find(x => x.id === e.target.value) ?? null)
+            }
+          }}
         >
           {
             groups.map(x => <MenuItem value={x.id}>{x.name}</MenuItem>)
@@ -128,6 +144,9 @@ const Content = ({ payload, onClose }: DialogProps<CreateChallengePayload, strin
           }
           {
             !loading && !selectedGroup && <MenuItem value="none">Keine</MenuItem>
+          }
+          {
+            <MenuItem value="create">Gruppe erstellen</MenuItem>
           }
         </Select>
       </ListItem>
@@ -163,7 +182,7 @@ const Content = ({ payload, onClose }: DialogProps<CreateChallengePayload, strin
   </>
 }
 
-export const CreateChallengeDialog = ({ payload, open, onClose }: DialogProps<CreateChallengePayload, string | null>) => {
+export const CreateChallengeDialog = ({ payload, open, onClose }: DialogProps<CreateChallengePayload, Challenge | null | "closed">) => {
   return <Dialog fullScreen open={open} onClose={() => onClose(null)}>
     <NotificationsProvider>
       <LocalizationProvider dateAdapter={AdapterDayjs}>

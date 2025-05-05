@@ -1,12 +1,13 @@
 import { createAsyncThunk, createEntityAdapter, createSlice, PayloadAction, Update } from '@reduxjs/toolkit';
-import { GroupWithUsers } from '../../../types/supabaseTypes';
-import { SupabaseClient } from '@supabase/supabase-js';
-import { AdminUsersRepository } from 'src/repository/AdminUsersRepository';
-import { RootState } from '../../../redux/store';
 import { captureException } from '@sentry/react';
+import { supabase } from 'src/components/services/supabase/supabaseClient';
+import { AdminUsersRepository } from 'src/repository/AdminUsersRepository';
+import { Tables } from 'src/types/supabase-generated.types';
+import { RootState } from '../../../redux/store';
+import { FullUserMapping, GroupWithUserMappings } from 'src/types/supabaseTypes';
 
 const groupsAdapter = createEntityAdapter({
-  selectId: (group: GroupWithUsers) => group.id,
+  selectId: (group: GroupWithUserMappings) => group.id,
 });
 
 export const groupsSelector = groupsAdapter.getSelectors((st: RootState) => st.groups);
@@ -18,16 +19,16 @@ const groupsSlice = createSlice({
     error: null as string | null,
   }),
   reducers: {
-    onEventMappingUserAdded(state, action: PayloadAction<{ user: User, group: string }>) {
-      let groupsSlice = groupsAdapter.getSelectors().selectById(state, action.payload.group);
+    onEventMappingUserAdded(state, action: PayloadAction<{ user: User, result: Tables<"group_user_mapping"> }>) {
+      let groupsSlice = groupsAdapter.getSelectors().selectById(state, action.payload.result.group);
       if (!groupsSlice) return;
 
       let changes = {
         id: groupsSlice.id,
         changes: {
-          users: [...groupsSlice.users, action.payload.user]
+          users: [...groupsSlice.users, { user: action.payload.user, map: action.payload.result }] as FullUserMapping[]
         }
-      } as Update<GroupWithUsers>;
+      } as Update<GroupWithUserMappings>;
 
       groupsAdapter.updateOne(state, changes);
     }
@@ -59,14 +60,14 @@ const groupsSlice = createSlice({
   },
 });
 
-export const fetchGroupsAsync = createAsyncThunk('fetchGroupsAsync', async ({ client }: { client: SupabaseClient }) => {
-  const response = await client
-    .from('event_group')
-    .select('*, users: group_user_mapping ( user (*), role )');
+export const fetchGroupsAsync = createAsyncThunk('fetchGroupsAsync', async () => {
+  const response = await supabase
+    .from('event_groups_view')
+    .select('*');
 
   return (
     response.data?.map((x) => {
-      return { ...x, users: x.users.map((y: any) => ({...y.user, role: y.role})) } as GroupWithUsers;
+      return { ...x, user_group_role: x.role, users: [] } as GroupWithUserMappings;
     }) ?? []
   );
 });
@@ -86,8 +87,8 @@ export const fetchSingleGroupAsync = createAsyncThunk(
         return {
           data: {
             ...response.data,
-            users: response.data?.users?.map((x: any) => ({...x.user, role: x.role})) ?? [],
-          } as GroupWithUsers,
+            users: response.data?.mapping?.map((x: any) => ({ user: x.user, map: { group: x.group, role: x.role } })) ?? [],
+          } as GroupWithUserMappings,
           id,
         };
       })

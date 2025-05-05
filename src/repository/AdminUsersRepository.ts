@@ -3,7 +3,7 @@ import { UserEdited } from 'src/features/admin/dialogs/EditUserDialog';
 import { UserWithGroups } from 'src/types/supabaseTypes';
 import { supabase } from '../components/services/supabase/supabaseClient';
 
-export const fetchGroupWithUsers = () => supabase.from('event_group').select('*, users: group_user_mapping ( role, user (*) )');
+export const fetchGroupWithUsers = () => supabase.from('event_group').select('*, mapping: group_user_mapping ( user: user(*), group, role )');
 
 export const AdminUsersRepository = {
   async removeUsersFromGroup(group: Group, users: User[]): Promise<PostgrestSingleResponse<null>> {
@@ -17,7 +17,7 @@ export const AdminUsersRepository = {
       )
       .throwOnError();
   },
-  async fetchSingleGroupWithUsers(groupId: string): Promise<PostgrestSingleResponse<GroupWithUsersBase>> {
+  async fetchSingleGroupWithUsers(groupId: string): Promise<PostgrestSingleResponse<GroupWithUsers>> {
     return fetchGroupWithUsers()
       .eq('id', groupId)
       .single()

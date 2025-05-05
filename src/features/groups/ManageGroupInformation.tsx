@@ -9,7 +9,7 @@ import { AlertMessage, AlertSnackbar } from '../../components/AlertSnackbar';
 import Layout from '../../components/Layout';
 import { RootState, useAppDispatch } from '../../redux/store';
 import { AdminUsersRepository } from '../../repository/AdminUsersRepository';
-import { GroupWithUsers, UserWithGroups } from '../../types/supabaseTypes';
+import { GroupWithUserMappings, UserWithGroups } from '../../types/supabaseTypes';
 import { fetchAdminUsersAsync } from '../admin/slices/adminUserSlice';
 import SearchAndSelectUserDialog from './dialogs/SearchAndSelectUserDialog';
 
@@ -38,7 +38,7 @@ const ManageGroupInformationProvider = () => {
 type GroupInformationProps = {
   users: UserWithGroups[];
   loading: boolean;
-  group: GroupWithUsers;
+  group: GroupWithUserMappings;
 };
 
 const ManageGroupInformation = ({ users, loading, group }: GroupInformationProps) => {
@@ -101,13 +101,13 @@ const ManageGroupInformation = ({ users, loading, group }: GroupInformationProps
         {group &&
           group.users &&
           [...group.users]
-            .sort((a, b) => a.displayName.localeCompare(b.displayName))
+            .sort((a, b) => a.user.displayName.localeCompare(b.user.displayName))
             .map((x, index: number) => (
               <ListItem key={index} divider>
                 <ListItemAvatar>
                   <AccountCircle />
                 </ListItemAvatar>
-                <ListItemText primary={x.displayName} />
+                <ListItemText primary={x.user.displayName} />
               </ListItem>
             ))}
       </List>
@@ -132,7 +132,7 @@ const ManageGroupInformation = ({ users, loading, group }: GroupInformationProps
         open={searchAndSelectUsersOpen}
         handleClose={() => setSearchAndSelectUsersOpen(false)}
         handleSubmit={handleUsersAdded}
-        users={users.filter((x: UserWithGroups) => !group.users.some((y) => y.userId === x.userId))}
+        users={users.filter((x: UserWithGroups) => !group.users.some((y) => y.user.userId === x.userId))}
         loading={loading}
       />
 
@@ -140,7 +140,7 @@ const ManageGroupInformation = ({ users, loading, group }: GroupInformationProps
         open={deleteUsersOpen}
         handleClose={() => setDeleteUsersOpen(false)}
         handleSubmit={handleUsersRemove}
-        users={group.users}
+        users={group.users.map(x => x.user)}
         loading={loading}
       />
 

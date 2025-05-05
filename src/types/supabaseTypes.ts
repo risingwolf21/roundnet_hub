@@ -1,6 +1,7 @@
 import { isBefore } from 'date-fns';
 import { Event, History } from 'types/supabase';
 import { Database } from './supabase-generated.types';
+import { U } from 'react-router/dist/development/route-data-BmvbmBej';
 
 export type FullChallenge = Challenge & {
     stats: ChallengeStatWithUser[];
@@ -83,8 +84,14 @@ export type UserWithRolesAndPermissions = User & {
     calendar_data: CalendarSettings | null;
 };
 
-export type GroupWithUsers = Group & {
-    users: User[];
+export type FullUserMapping = {
+    user: User;
+    map: GroupUserMapping
+}
+
+export type GroupWithUserMappings = Group & {
+    user_group_role: GroupRole | null;
+    users: FullUserMapping[];
 };
 
 type Modify<T, R> = Omit<T, keyof R> & R;

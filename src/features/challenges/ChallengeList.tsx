@@ -1,17 +1,17 @@
 import { Add } from '@mui/icons-material';
-import { Box, Card, CardActionArea, Fab, LinearProgress, List, ListItem, ListItemText, Typography } from '@mui/material';
-import { useDialogs } from '@toolpad/core';
+import { Box, Fab, LinearProgress, List, ListItem, ListItemText, Typography } from '@mui/material';
+import { useDialogs, useNotifications } from '@toolpad/core';
 import React, { useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router';
 import Layout from '../../components/Layout';
 import { RootState, useAppDispatch } from '../../redux/store';
+import { useApplication } from '../auth/AuthContext';
 import { CreateChallengeDialog } from './dialogs/CreateChallengeDialog';
 import {
   challengeSelector,
   fetchChallengesAsync
 } from './slices/challengeSlice';
-import { useApplication } from '../auth/AuthContext';
 
 const ChallengeListProvider = () => {
   const dispatch = useAppDispatch();
@@ -36,6 +36,7 @@ type ChallengeListProps = {
 
 const ChallengeList = ({ loading, challenges, user }: ChallengeListProps) => {
   const navigate = useNavigate();
+  const notifications = useNotifications();
   const dialogs = useDialogs();
 
   return (
@@ -63,7 +64,12 @@ const ChallengeList = ({ loading, challenges, user }: ChallengeListProps) => {
           bottom: 'calc(16px + env(safe-area-inset-bottom))',
         }}
         onClick={async () => {
-          await dialogs.open(CreateChallengeDialog, { user });
+          const result = await dialogs.open(CreateChallengeDialog, { user });
+          if (result && result !== "closed") {
+            notifications.show("Challenge wurde erfolgreich erstellt.", { severity: "success" });
+          } else if(!result) {
+            notifications.show("Challenge konnte nicht erstellt werden.", { severity: "error" });
+          }
         }}
       >
         <Add sx={{ color: 'white' }} />

@@ -12,6 +12,7 @@ import { can } from '../../utils/PermissionService';
 import { useApplication } from '../auth/AuthContext';
 import { EditOrAddGroupDialog } from './dialogs/EditOrAddGroupDialog';
 import { fetchGroupsAsync, groupsSelector } from './slices/groupsSlice';
+import { GroupWithUserMappings } from 'src/types/supabaseTypes';
 
 const ManageGroupsProvider = () => {
   const groups = useSelector((state: RootState) => groupsSelector.selectAll(state));
@@ -22,15 +23,14 @@ const ManageGroupsProvider = () => {
 };
 
 type ManageGroupsScreenProps = {
-  groups: GroupWithUsers[];
+  groups: GroupWithUserMappings[];
   loading: boolean;
   client: SupabaseClient;
 };
 
-const EMPTY_GROUP: Group = { name: '', color: '#000000', id: '', description: '', created_at: '', is_public: false };
+const EMPTY_GROUP: Group = { name: '', color: '#000000', id: '', description: '', created_at: '', is_public: false, need_request_to_join: false };
 
 const ManageGroupsScreen = ({ groups, loading, client }: ManageGroupsScreenProps) => {
-  const { user } = useApplication();
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const [isEditingMode, setEditingMode] = useState(false);
@@ -38,7 +38,7 @@ const ManageGroupsScreen = ({ groups, loading, client }: ManageGroupsScreenProps
   const [addOrUpdateGroupOpen, setAddOrUpdateGroupOpen] = useState(false);
 
   useEffect(() => {
-    dispatch(fetchGroupsAsync({ client }));
+    dispatch(fetchGroupsAsync());
   }, [client, dispatch]);
 
   return (
@@ -47,7 +47,6 @@ const ManageGroupsScreen = ({ groups, loading, client }: ManageGroupsScreenProps
       <List sx={{ width: '100%' }}>
         {groups &&
           groups
-            .filter((x) => user && x.users.some((x) => x.userId === user.userId))
             .map((x) => (
               <ListItem
                 key={x.id}
