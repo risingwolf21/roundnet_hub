@@ -1,5 +1,5 @@
 import { Edit, ExpandMoreOutlined, Visibility } from '@mui/icons-material';
-import { Box, List, ListItem, ListItemButton, ListItemText, ListSubheader, styled } from '@mui/material';
+import { Box, ListItem, ListItemText, styled } from '@mui/material';
 import {
   DataGrid,
   GridActionsCellItem,
@@ -10,15 +10,16 @@ import {
   GridSortModel,
   GridValidRowModel
 } from '@mui/x-data-grid';
+import { ErrorBoundary } from '@sentry/react';
 import { useDialogs } from '@toolpad/core';
 import { useNotifications } from '@toolpad/core/useNotifications';
-import { groupBy } from 'lodash';
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
+import { useSearchParams } from 'react-router';
 import { useClient } from 'react-supabase';
 import Layout from 'src/components/Layout';
 import { LoadingIndicator } from 'src/components/LoadingIndicator';
 import { supabase } from 'src/components/services/supabase/supabaseClient';
-import { SwipeableDialog } from 'src/components/SwipeableDialog';
+import { SelectTableDialog } from './dialogs/SelectTableDialog';
 import { EditEntryDialog } from './EditEntryDialog';
 import { ViewEntryDialog } from './ViewEntryDialog';
 
@@ -75,13 +76,15 @@ function CustomNoRowsOverlay() {
   );
 }
 
+export type Table = { name: string, schema: string }
+
 const SupabaseClient = () => {
-  const [tables, setTables] = useState<{ table_name: string, table_schema: string }[]>([]);
-  const [selectedTable, setSelectedTable] = useState<{ table_name: string, table_schema: string } | null>(null);
-  const [selectTableOpen, setSelectTableOpen] = useState(false);
+  const [tables, setTables] = useState<Table[]>([]);
+  const [selectedTable, setSelectedTable] = useState<Table | null>(null);
   const client = useClient();
   const notifications = useNotifications();
   const dialog = useDialogs();
+  const [searchParams] = useSearchParams();
   const [loading, setLoading] = useState(false);
   const [selectedTableData, setSelectedTableData] = useState<any[]>([]);
   const [rowCount, setRowCount] = useState(0);
@@ -99,15 +102,15 @@ const SupabaseClient = () => {
     foreign_key_column_name: string;
   }[]>([]);
 
-  const fetcher = async (table_name: string, table_schema: string) => {
+  const fetcher = useCallback(async (table: Table) => {
     setLoading(true);
-    const columnsResult = await supabase.rpc("get_column_info", { schema_name: table_schema, selected_table: table_name });
+    const columnsResult = await supabase.rpc("get_column_info", { schema_name: table.schema, selected_table: table.name });
 
     let query = supabase
       // @ts-ignore
-      .schema(table_schema)
+      .schema(table.schema)
       // @ts-ignore
-      .from(table_name)
+      .from(table.name)
       .select('*', { count: "exact" });
 
     for (const filter of filterModel?.items ?? []) {
@@ -146,7 +149,7 @@ const SupabaseClient = () => {
       setSelectedTableData(data);
     }
     setLoading(false);
-  }
+  }, [filterModel, paginationModel, sortModel, notifications])
 
   useEffect(() => {
     supabase
@@ -154,27 +157,36 @@ const SupabaseClient = () => {
       .select('*')
       .then((result) => {
         if (result.data) {
-          setTables(result.data);
+          setTables(result.data.map(x => ({ name: x.table_name, schema: x.table_schema })));
+
+          const table = searchParams.get("table");
+          const schema = searchParams.get("schema");
+
+          if (table && schema && result.data.filter(x => x.table_name === table && x.table_schema === schema).length > 0) {
+            setSelectedTable({ name: table, schema });
+          }
         }
       });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [client]);
 
   useEffect(() => {
     if (selectedTable)
-      fetcher(selectedTable.table_name, selectedTable.table_schema)
+      fetcher(selectedTable)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [paginationModel, sortModel, filterModel])
+  }, [paginationModel, sortModel, filterModel, selectedTable])
 
-  const tableSelectionChanged = (table_name: string, table_schema: string) => {
+  const tableSelectionChanged = (table: Table) => {
     setPaginationModel({ page: 0, pageSize: 50 });
     setFilterModel(undefined);
     setSortModel(undefined);
-    setSelectedTable({ table_name, table_schema });
-    fetcher(table_name, table_schema);
+    setSelectedTable(table);
+    var newurl = window.location.protocol + "//" + window.location.host + window.location.pathname + `?schema=${table.schema}&table=${table.name}`;
+    window.history.pushState({ path: newurl }, '', newurl);
   }
 
   function getRowId(row: any) {
-    switch (selectedTable?.table_name) {
+    switch (selectedTable?.name) {
       case 'event_attendance_user_mapping':
         return row.user + ' ' + row.event;
       case 'group_user_mapping':
@@ -185,145 +197,20 @@ const SupabaseClient = () => {
         return row.userId;
       case 'user_calender_settings':
         return row.user;
+      case 'players':
+        return row.player;
       default:
         return row.id;
     }
   }
 
-  // 'string' | 'number' | 'date' | 'dateTime' | 'boolean' | 'singleSelect' | 'actions';
-  // function getRowTypeOptions(key: {
-  //   column_name: string;
-  //   data_type: string;
-  //   is_nullable: boolean;
-  // }): {
-  //   type?: GridColType;
-  //   valueOptions?: any[];
-  //   valueGetter?: (params: any) => any;
-  //   editable?: boolean;
-  // } | null {
-  //   switch (key.column_name) {
-  //     case 'type':
-  //       if (selectedTable?.table_name === 'items') {
-  //         return {
-  //           type: 'singleSelect',
-  //           valueOptions: enums.get('ItemType'),
-  //           editable: true,
-  //         };
-  //       } else if (selectedTable?.table_name === 'drink') {
-  //         return {
-  //           type: 'singleSelect',
-  //           valueOptions: enums.get('ProductType'),
-  //           editable: true,
-  //         };
-  //       } else {
-  //         return { editable: false };
-  //       }
-  //     case 'paymentState':
-  //       return {
-  //         type: 'singleSelect',
-  //         valueOptions: enums.get('PaymentState'),
-  //         editable: true,
-  //       };
-  //     case 'state':
-  //       return {
-  //         type: 'singleSelect',
-  //         valueOptions: enums.get('EventAttendance'),
-  //         editable: true,
-  //       };
-  //     case 'recurrence':
-  //       return {
-  //         type: 'singleSelect',
-  //         valueOptions: enums.get('EventRecurrence'),
-  //         editable: true,
-  //       };
-  //     case 'role':
-  //       return {
-  //         type: 'singleSelect',
-  //         valueOptions: enums.get('UserRole'),
-  //         editable: true,
-  //       };
-  //     case 'created_at':
-  //     case 'lastUpdate':
-  //     case 'meetingDateTime':
-  //     case 'startingDateTime':
-  //     case 'answerDeadline':
-  //     case 'endDateTime':
-  //     case 'recurrenceEnd':
-  //       return {
-  //         type: 'dateTime',
-  //         valueGetter: (params) => {
-  //           return params ? formatDateFromDatabase(params) : null;
-  //         },
-  //         editable: true,
-  //       };
-  //     case 'active':
-  //     case 'deleted':
-  //     case 'isCancelled':
-  //     case 'verified':
-  //     case 'disabled':
-  //       return {
-  //         type: 'boolean',
-  //         editable: true,
-  //       };
-  //     case 'displayName':
-  //     case 'description':
-  //     case 'color':
-  //     case 'imageUrl':
-  //     case 'name':
-  //     case 'body':
-  //     case 'title':
-  //       return {
-  //         type: 'string',
-  //         editable: true,
-  //       };
-  //     case 'price':
-  //     case 'stock':
-  //     case 'minutes_to_remind':
-  //       return {
-  //         type: 'number',
-  //         editable: true,
-  //       };
-  //     case 'user':
-  //     case 'author':
-  //     case 'currentUser':
-  //     case 'pastUser':
-  //     case 'current_holder':
-  //       return {
-  //         type: 'singleSelect',
-  //         editable: true,
-  //         valueOptions: users.map((x) => ({
-  //           value: x.userId,
-  //           label: x.displayName,
-  //         })),
-  //         valueGetter: (params) => users.find((x) => x.userId === params)?.userId ?? 'Not found',
-  //       };
-  //     case 'group':
-  //       return {
-  //         type: 'singleSelect',
-  //         editable: true,
-  //         valueOptions: groups.map((x) => ({
-  //           value: x.id,
-  //           label: x.name,
-  //         })),
-  //         valueGetter: (params) => groups.find((x) => x.id === params)?.id,
-  //       };
-  //     case 'drink':
-  //     case 'event':
-  //     case 'payment':
-  //     case 'key':
-  //     case 'place':
-  //     default:
-  //       return { editable: false };
-  //   }
-  // }
-
   const handleDelete = async (id: GridRowId, row: GridValidRowModel) => {
 
     let query = supabase
       // @ts-ignore
-      .schema(selectedTable?.table_schema)
+      .schema(selectedTable?.schema)
       // @ts-ignore
-      .from(selectedTable?.table_name)
+      .from(selectedTable?.name)
       .delete()
 
     Object.entries(row).forEach(element => {
@@ -335,16 +222,15 @@ const SupabaseClient = () => {
     if (!result.error)
       setSelectedTableData(selectedTableData.filter((row) => getRowId(row) !== id));
     else
-      notifications.show("Could not update row. " + result.error, { severity: "error" })
+      notifications.show("Could not delete row. " + result.error, { severity: "error" })
   };
 
   const handleUpdate = async (id: GridRowId, row: GridValidRowModel, update: any) => {
-    console.log(update)
     let query = supabase
       // @ts-ignore
-      .schema(selectedTable?.table_schema)
+      .schema(selectedTable?.schema)
       // @ts-ignore
-      .from(selectedTable?.table_name)
+      .from(selectedTable?.name)
       // @ts-ignore
       .update(update)
 
@@ -365,102 +251,85 @@ const SupabaseClient = () => {
   return (
     <Layout>
       <LoadingIndicator loading={loading} />
-      <ListItem dense onClick={() => setSelectTableOpen(true)} secondaryAction={<ExpandMoreOutlined />}>
-        <ListItemText primary={selectedTable?.table_name ?? "Nicht gewählt"} secondary={selectedTable?.table_schema ?? "Nicht gewählt"} />
+      <ListItem dense onClick={async () => {
+        const result = await dialog.open(SelectTableDialog, { tables });
+        if(result)
+          tableSelectionChanged(result)
+      }} secondaryAction={<ExpandMoreOutlined />}>
+        <ListItemText primary={selectedTable?.name ?? "Nicht gewählt"} secondary={selectedTable?.schema ?? "Nicht gewählt"} />
       </ListItem>
-
-      <DataGrid
-        columns={[
-          ...columns.map((x) => {
-            return {
-              field: x.column_name,
-              headerName: x.column_name,
-              hideable: true,
-              width: 150
-            } as GridColDef;
-          })
-        ].concat(columns.length > 0 ? [{
-          field: 'actions',
-          type: 'actions',
-          headerName: 'Actions',
-          width: 100,
-          cellClassName: 'actions',
-          getActions: ({ id, row }) => [
-            <GridActionsCellItem
-              icon={<Visibility />}
-              label="View"
-              onClick={async () => {
-                const result = await dialog.open(ViewEntryDialog, { entry: row });
-                if (result === "delete") {
-                  handleDelete(id, row)
-                }
-              }}
-              color="inherit"
-            />,
-            <GridActionsCellItem
-              icon={<Edit />}
-              label="Edit"
-              className="textPrimary"
-              onClick={async () => {
-                const result = await dialog.open(EditEntryDialog, { entry: row, columns });
-                if (result) {
-                  handleUpdate(id, row, result)
-                }
-              }}
-              color="inherit"
-            />
-          ]
-        }] : [])}
-        slots={{ noRowsOverlay: CustomNoRowsOverlay }}
-        loading={loading}
-        rowCount={rowCount}
-        rows={selectedTableData}
-        density={'compact'}
-        editMode={'row'}
-        getRowId={getRowId}
-        showCellVerticalBorder
-        pagination
-        sortingMode="server"
-        filterMode="server"
-        paginationMode="server"
-        paginationModel={paginationModel}
-        sortModel={sortModel}
-        filterModel={filterModel}
-        onPaginationModelChange={setPaginationModel}
-        onSortModelChange={setSortModel}
-        onFilterModelChange={setFilterModel}
-        sx={{
-          '--DataGrid-overlayHeight': '300px',
-          mb: "max(56px,env(safe-area-inset-bottom))",
-          maxHeight: "calc(100% - 61px - env(safe-area-inset-bottom))"
-        }}
-      />
-
-      <SwipeableDialog
-        open={selectTableOpen}
-        onClose={() => setSelectTableOpen(false)}
-        setOpen={() => setSelectTableOpen(true)}
-        title={'Tablle auswählen'}
-      >
-        <List>
-          {Object.entries(groupBy(tables, (x) => x.table_schema)).map(([key, values]) => (
-            <List subheader={<ListSubheader sx={{ fontWeight: "bold", fontSize: "1rem" }}>{key}</ListSubheader>}>
-              {
-                values.sort((a, b) => a.table_name.localeCompare(b.table_name)).map(x => <ListItemButton
-                  divider
-                  key={x.table_schema + "/" + x.table_name}
-                  onClick={() => {
-                    tableSelectionChanged(x.table_name, x.table_schema);
-                    setSelectTableOpen(false);
-                  }}
-                >
-                  <ListItemText primary={x.table_name} secondary={x.table_schema} />
-                </ListItemButton>)
-              }
-            </List>
-          ))}
-        </List>
-      </SwipeableDialog>
+      <ErrorBoundary
+        fallback={CustomNoRowsOverlay}
+        onError={(error) => {
+          notifications.show(JSON.stringify(error), { severity: "error" });
+        }}>
+        <DataGrid
+          columns={[
+            ...columns.map((x) => {
+              return {
+                field: x.column_name,
+                headerName: x.column_name,
+                hideable: true,
+                width: 150
+              } as GridColDef;
+            })
+          ].concat(columns.length > 0 ? [{
+            field: 'actions',
+            type: 'actions',
+            headerName: 'Actions',
+            width: 100,
+            cellClassName: 'actions',
+            getActions: ({ id, row }) => [
+              <GridActionsCellItem
+                icon={<Visibility />}
+                label="View"
+                onClick={async () => {
+                  const result = await dialog.open(ViewEntryDialog, { entry: row });
+                  if (result === "delete") {
+                    handleDelete(id, row)
+                  }
+                }}
+                color="inherit"
+              />,
+              <GridActionsCellItem
+                icon={<Edit />}
+                label="Edit"
+                className="textPrimary"
+                onClick={async () => {
+                  const result = await dialog.open(EditEntryDialog, { entry: row, columns });
+                  if (result) {
+                    handleUpdate(id, row, result)
+                  }
+                }}
+                color="inherit"
+              />
+            ]
+          }] : [])}
+          slots={{ noRowsOverlay: CustomNoRowsOverlay }}
+          loading={loading}
+          rowCount={rowCount}
+          rows={selectedTableData}
+          density={'compact'}
+          editMode={'row'}
+          getRowId={getRowId}
+          showCellVerticalBorder
+          pagination
+          sortingMode="server"
+          filterMode="server"
+          paginationMode="server"
+          paginationModel={paginationModel}
+          sortModel={sortModel}
+          filterModel={filterModel}
+          onPaginationModelChange={setPaginationModel}
+          onSortModelChange={setSortModel}
+          onFilterModelChange={setFilterModel}
+          sx={{
+            '--DataGrid-overlayHeight': '300px',
+            mb: "max(56px,env(safe-area-inset-bottom))",
+            maxHeight: "calc(100% - 61px - env(safe-area-inset-bottom))"
+          }}
+        />
+      </ErrorBoundary>
     </Layout>
   );
 };

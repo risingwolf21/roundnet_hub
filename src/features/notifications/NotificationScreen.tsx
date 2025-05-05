@@ -22,7 +22,7 @@ const NotificationScreen = () => {
   useEffect(() => {
     if (user)
       dispatch(fetchNotificationsAsync(user))
-  }, [user, dispatch])
+  }, [dispatch, user])
 
   useEffect(() => {
     if (error)

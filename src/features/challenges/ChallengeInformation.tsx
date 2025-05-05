@@ -1,6 +1,6 @@
 import { AccountBox } from '@mui/icons-material';
 import EditIcon from '@mui/icons-material/Edit';
-import { Alert, Avatar, Box, Card, CardMedia, Fab, List, ListItem, ListItemAvatar, ListItemText, Stack, Tab, Tabs, Typography } from '@mui/material';
+import { Alert, Avatar, CardMedia, Fab, List, ListItem, ListItemAvatar, ListItemText, Stack, Tab, Tabs, Typography } from '@mui/material';
 import { captureException } from '@sentry/react';
 import { useNotifications } from '@toolpad/core/useNotifications';
 import { Dayjs } from 'dayjs';
@@ -104,7 +104,7 @@ const ChallengeInformation = ({ t }: { t: TFunction }) => {
   };
 
   return (
-    <Layout appBarConfig={{ title: challenge.name, showBackButton: true, showProfile: true }}>
+    <Layout appBarConfig={{ title: challenge.name, navigateBackPath: "/challenges", showProfile: true }}>
       <PullToRefresh onRefresh={() => dispatch(fetchChallengeStatsSingleAsync({ challengeId: challenge.id }))}>
         <Alert sx={{ m: 2 }} severity={'info'}>
           {challenge.description}
@@ -127,19 +127,17 @@ const ChallengeInformation = ({ t }: { t: TFunction }) => {
                   <Typography sx={{ textAlign: "center", color: 'rgba(0,0,0,0.6)', }}>{key}</Typography>
                   <List>
                     {
-                      value.map(x => <ListItem divider sx={{ display: "flex", p: 0 }} key={x.id}>
-                        <ListItem sx={{ mr: 4 }}>
-                          <ListItemAvatar>
-                            <Avatar sx={{ borderRadius: 2 }}>
-                              {x.fullUser.avatarUrl ? (
-                                <img src={x.fullUser.avatarUrl} alt="logo" width={'100%'} height={'100%'} />
-                              ) : (
-                                <AccountBox />
-                              )}
-                            </Avatar>
-                          </ListItemAvatar>
-                          <ListItemText primary={"+1"} secondary={x.fullUser.displayName} />
-                        </ListItem>
+                      value.map(x => <ListItem divider sx={{ display: "flex", p: 0, mr: 4 }} key={x.id}>
+                        <ListItemAvatar>
+                          <Avatar sx={{ borderRadius: 2 }}>
+                            {x.fullUser.avatarUrl ? (
+                              <img src={x.fullUser.avatarUrl} alt="logo" width={'100%'} height={'100%'} />
+                            ) : (
+                              <AccountBox />
+                            )}
+                          </Avatar>
+                        </ListItemAvatar>
+                        <ListItemText primary={"+1"} secondary={x.fullUser.displayName} />
                         {
                           x.image_url &&
                           <CardMedia

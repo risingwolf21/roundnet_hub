@@ -23,6 +23,7 @@ declare global {
   type ChallengeStats = Tables<'challenge_stats'>;
   type Drink = Tables<'drink'>;
   type Attendance = Tables<'event_attendance_user_mapping'>;
+  type GroupUserMapping = Tables<'group_user_mapping'>;
   type EventComment = Tables<'event_comments'>;
   type Group = Tables<'event_group'>;
   type Item = Tables<'items'>;
@@ -45,7 +46,7 @@ declare global {
   type FullItemHolder = QueryData<ReturnType<typeof fetchItems>> extends Array<infer U> ? U : never;
 
   type ChallengeWithFullGroup = QueryData<ReturnType<typeof fetchChallengeWithGroup>> extends Array<infer U> ? U : never;
-  type GroupWithUsersBase = QueryData<ReturnType<typeof fetchGroupWithUsers>> extends Array<infer U> ? U : never;
+  type GroupWithUsers = QueryData<ReturnType<typeof fetchGroupWithUsers>> extends Array<infer U> ? U : never;
   type FullHistory = QueryData<ReturnType<typeof fetchFullHistory>> extends Array<infer U> ? U : never;
   type SimpleUser = QueryData<ReturnType<typeof fetchSimpleUser>> extends Array<infer U> ? U : never;
   type OpenDrinksForUser = QueryData<ReturnType<typeof fetchDrinksToPay>> extends Array<infer U> ? U : never;
@@ -60,11 +61,6 @@ declare global {
     ? UserWithGroupsBase['groups'][number]['group'][]
     : UserWithGroupsBase[P];
   } & { player_data: Player | null };
-  type GroupWithUsers = {
-    [P in keyof GroupWithUsersBase]: P extends 'users'
-    ? GroupWithUsersBase['users'][number]['user'][]
-    : GroupWithUsersBase[P];
-  };
 
   type PaymentInsert = TablesInsert<'payments'>;
   type EventCommentInsert = TablesInsert<'event_comments'>;

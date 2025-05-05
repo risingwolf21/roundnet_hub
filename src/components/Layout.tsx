@@ -11,7 +11,7 @@ type Props = {
   appBarActions?: ReactNode;
   appBarConfig?: {
     title?: string;
-    showBackButton?: boolean;
+    navigateBackPath?: string;
     showProfile?: boolean;
     showSearch?: boolean;
     onSearchChange?: (value: string) => void;
@@ -23,11 +23,11 @@ const Layout = ({
   appBarActions,
   appBarConfig: {
     title = 'Roundnet Karlsruhe',
-    showBackButton = false,
     showProfile = true,
+    navigateBackPath,
     showSearch,
     onSearchChange,
-  } = { title: 'Roundnet Karlsruhe', showBackButton: false, showProfile: true },
+  } = { title: 'Roundnet Karlsruhe', showProfile: true },
 }: Props) => {
   const navigate = useNavigate();
   const { user } = useApplication();
@@ -82,10 +82,10 @@ const Layout = ({
         })}
       >
         <Toolbar>
-          {showBackButton ? (
+          {navigateBackPath ? (
             <IconButton
               color="inherit"
-              onClick={() => navigate(-1)}
+              onClick={() => navigate(navigateBackPath)}
               edge="start"
               sx={(theme) => ({
                 mr: 2,

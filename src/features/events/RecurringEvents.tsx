@@ -108,7 +108,7 @@ const RecurringEvents = ({ recurringEvents, loading, error }: RecurringEventsPro
   };
 
   return (
-    <Layout appBarConfig={{ showBackButton: true }}>
+    <Layout appBarConfig={{ navigateBackPath: "/training/list" }}>
       {loading && <LinearProgress sx={{ position: 'fixed', top: 56, left: 0, right: 0 }} />}
       <Grid container rowSpacing={2} sx={{ width: '100%', p: 1 }}>
         {recurringEvents.map((x, index) => (

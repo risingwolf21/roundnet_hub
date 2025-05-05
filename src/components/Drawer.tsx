@@ -433,23 +433,6 @@ const DrawerContent = ({
                 />
               </DrawerItem>
             )}
-            {can('update', 'group') && (
-              <DrawerItem
-                key="updateGroup"
-                selected={tab === 'admin/groups'}
-                onClick={() => handleChange('admin/groups')}
-              >
-                <ListItemAvatar>
-                  <ListItemIcon>
-                    <GroupOutlined />
-                  </ListItemIcon>
-                </ListItemAvatar>
-                <ListItemText
-                  primaryTypographyProps={{ fontWeight: 'bold', fontSize: '0.9rem' }}
-                  primary={t('browse.manageGroups')}
-                />
-              </DrawerItem>
-            )}
             {can('view', 'postgres') && (
               <DrawerItem
                 key="supabaseClient"
