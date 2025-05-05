@@ -8,7 +8,7 @@ import React, { useRef, useState } from "react";
 import { supabase } from "src/components/services/supabase/supabaseClient";
 import { Tables } from "src/types/supabase-generated.types";
 
-const Content = ({ payload, onClose }: DialogProps<undefined, Group | null>) => {
+const Content = ({ payload, onClose }: DialogProps<undefined, Group | null | "closed">) => {
   const notifications = useNotifications();
   const inputRef = useRef<HTMLInputElement>(null);
   const [data, setData] = useState<Tables<'event_group'>>({ name: "", description: "", id: "", created_at: "", color: "#000", is_public: true, need_request_to_join: false });
@@ -18,7 +18,7 @@ const Content = ({ payload, onClose }: DialogProps<undefined, Group | null>) => 
       <IconButton
         edge="start"
         color="inherit"
-        onClick={() => onClose(null)}>
+        onClick={() => onClose("closed")}>
         <Close />
       </IconButton>
       <Typography sx={{ ml: 2, flex: 1 }} variant="h6" component="div">
@@ -152,8 +152,8 @@ const Content = ({ payload, onClose }: DialogProps<undefined, Group | null>) => 
   </>
 }
 
-export const CreateGroupDialog = ({ payload, open, onClose }: DialogProps<undefined, Group | null>) => {
-  return <Dialog fullScreen open={open} onClose={() => onClose(null)}>
+export const CreateGroupDialog = ({ payload, open, onClose }: DialogProps<undefined, Group | null | "closed">) => {
+  return <Dialog fullScreen open={open} onClose={() => onClose("closed")}>
     <NotificationsProvider>
       <LocalizationProvider dateAdapter={AdapterDayjs}>
         <Content onClose={onClose} open={open} payload={payload} />

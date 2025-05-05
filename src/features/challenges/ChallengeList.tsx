@@ -65,10 +65,10 @@ const ChallengeList = ({ loading, challenges, user }: ChallengeListProps) => {
         }}
         onClick={async () => {
           const result = await dialogs.open(CreateChallengeDialog, { user });
-          if (result) {
-            notifications.show("Challenge konnte nicht erstellt werden. " + result.message, { severity: "error" });
-          } else {
+          if (result && result !== "closed") {
             notifications.show("Challenge wurde erfolgreich erstellt.", { severity: "success" });
+          } else if(!result) {
+            notifications.show("Challenge konnte nicht erstellt werden.", { severity: "error" });
           }
         }}
       >

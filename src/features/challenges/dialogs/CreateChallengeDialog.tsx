@@ -2,7 +2,7 @@ import { Article, Close, Groups, Title } from "@mui/icons-material";
 import { AppBar, Avatar, Button, Checkbox, Dialog, IconButton, List, ListItem, ListItemAvatar, MenuItem, Select, TextField, Toolbar, Typography } from "@mui/material";
 import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
-import { PostgrestError } from "@supabase/supabase-js";
+import { captureException } from "@sentry/react";
 import { DialogProps, NotificationsProvider, useDialogs, useNotifications } from "@toolpad/core";
 import dayjs from "dayjs";
 import React, { useEffect, useState } from "react";
@@ -16,7 +16,7 @@ type CreateChallengePayload = {
   user: User
 }
 
-const Content = ({ payload, onClose }: DialogProps<CreateChallengePayload, PostgrestError | null>) => {
+const Content = ({ payload, onClose }: DialogProps<CreateChallengePayload, Challenge | null | "closed">) => {
   const notifications = useNotifications();
   const dialogs = useDialogs();
   const [selectedGroup, setSelectedGroup] = useState<Group | null>(null);
@@ -38,7 +38,7 @@ const Content = ({ payload, onClose }: DialogProps<CreateChallengePayload, Postg
       <IconButton
         edge="start"
         color="inherit"
-        onClick={() => onClose(null)}>
+        onClick={() => onClose("closed")}>
         <Close />
       </IconButton>
       <Typography sx={{ ml: 2, flex: 1 }} variant="h6" component="div">
@@ -59,7 +59,7 @@ const Content = ({ payload, onClose }: DialogProps<CreateChallengePayload, Postg
           return;
         }
 
-        const { error } = await supabase
+        const { data: result, error } = await supabase
           .schema("public")
           .from("challenge")
           .insert({
@@ -67,8 +67,13 @@ const Content = ({ payload, onClose }: DialogProps<CreateChallengePayload, Postg
             description: data.description,
             end_date: data.end_date,
             group: selectedGroup.id
-          });
-        onClose(error)
+          })
+          .select("*")
+          .single();
+        if(error){
+          captureException(error)
+        }
+        onClose(result)
       }}>
         Erstellen
       </Button>
@@ -120,8 +125,12 @@ const Content = ({ payload, onClose }: DialogProps<CreateChallengePayload, Postg
           onChange={async (e) => {
             if (e.target.value === "create") {
               const result = await dialogs.open(CreateGroupDialog);
-              result && setGroups([...groups, result])
-              setSelectedGroup(result);
+              if(result && result !== "closed"){
+                setGroups([...groups, result])
+                setSelectedGroup(result);
+              } else {
+                notifications.show("Es wurde keine Gruppe erstellt.", { severity: "error" });
+              }
             } else {
               setSelectedGroup(groups.find(x => x.id === e.target.value) ?? null)
             }
@@ -173,7 +182,7 @@ const Content = ({ payload, onClose }: DialogProps<CreateChallengePayload, Postg
   </>
 }
 
-export const CreateChallengeDialog = ({ payload, open, onClose }: DialogProps<CreateChallengePayload, PostgrestError | null>) => {
+export const CreateChallengeDialog = ({ payload, open, onClose }: DialogProps<CreateChallengePayload, Challenge | null | "closed">) => {
   return <Dialog fullScreen open={open} onClose={() => onClose(null)}>
     <NotificationsProvider>
       <LocalizationProvider dateAdapter={AdapterDayjs}>

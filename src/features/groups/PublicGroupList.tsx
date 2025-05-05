@@ -89,10 +89,10 @@ const PublicGroupList = () => {
       }}
       onClick={async () => {
         const result = await dialogs.open(CreateGroupDialog);
-        if (result) {
+        if (result && result !== "closed") {
           dispatch(fetchGroupsAsync());
           notifications.show("Gruppe wurde erfolgreich erstellt.", { severity: "success" });
-        } else {
+        } else if (!result) {
           notifications.show("Gruppe konnte nicht erstellt werden.", { severity: "error" });
         }
       }}

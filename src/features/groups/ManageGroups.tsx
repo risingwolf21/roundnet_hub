@@ -31,7 +31,6 @@ type ManageGroupsScreenProps = {
 const EMPTY_GROUP: Group = { name: '', color: '#000000', id: '', description: '', created_at: '', is_public: false, need_request_to_join: false };
 
 const ManageGroupsScreen = ({ groups, loading, client }: ManageGroupsScreenProps) => {
-  const { user } = useApplication();
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const [isEditingMode, setEditingMode] = useState(false);
@@ -48,7 +47,6 @@ const ManageGroupsScreen = ({ groups, loading, client }: ManageGroupsScreenProps
       <List sx={{ width: '100%' }}>
         {groups &&
           groups
-            .filter((x) => user && x.users.some((x) => x.user.userId === user.userId))
             .map((x) => (
               <ListItem
                 key={x.id}
