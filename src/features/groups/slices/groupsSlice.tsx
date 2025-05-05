@@ -26,6 +26,7 @@ const groupsSlice = createSlice({
       let changes = {
         id: groupsSlice.id,
         changes: {
+          ...(action.payload.result.group === groupsSlice.id && { user_group_role: action.payload.result.role }),
           users: [...groupsSlice.users, { user: action.payload.user, map: action.payload.result }] as FullUserMapping[]
         }
       } as Update<GroupWithUserMappings>;

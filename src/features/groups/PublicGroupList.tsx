@@ -10,7 +10,7 @@ import { RootState, useAppDispatch } from "src/redux/store";
 import { GroupsRepository } from "src/repository/GroupsRepository";
 import { GroupWithUserMappings } from "src/types/supabaseTypes";
 import { useApplication } from "../auth/AuthContext";
-import { CreateGroupDialog } from "./dialogs/CreateGroupDialog";
+import { CreateOrUpdateGroupDialog } from "./dialogs/CreateOrUpdateGroupDialog";
 import { LoadingGroupListItem } from "./LoadingGroupListItem";
 import { fetchGroupsAsync, groupsSelector, onEventMappingUserAdded } from "./slices/groupsSlice";
 
@@ -88,7 +88,7 @@ const PublicGroupList = () => {
         bottom: 'calc(16px + env(safe-area-inset-bottom))',
       }}
       onClick={async () => {
-        const result = await dialogs.open(CreateGroupDialog);
+        const result = await dialogs.open(CreateOrUpdateGroupDialog);
         if (result && result !== "closed") {
           dispatch(fetchGroupsAsync());
           notifications.show("Gruppe wurde erfolgreich erstellt.", { severity: "success" });

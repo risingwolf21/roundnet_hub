@@ -14,8 +14,6 @@ const AdminDrinkListProvider = React.lazy(() => import('./features/admin/AdminDr
 const AdminHistoryScreenProvider = React.lazy(() => import('./features/admin/AdminHistoryScreen'));
 const AdminUserListProvider = React.lazy(() => import('./features/admin/AdminUserList'));
 const DrinkListScreenProvider = React.lazy(() => import('./pages/Drinklist.page'));
-const ManageGroupInformationProvider = React.lazy(() => import('./features/groups/ManageGroupInformation'));
-const ManageGroupsProvider = React.lazy(() => import('./features/groups/ManageGroups'));
 const EventInformationProvider = React.lazy(() => import('./pages/EventInformation.page'));
 const EventScreenProvider = React.lazy(() => import('./pages/EventList.page'));
 const ProfileScreen = React.lazy(() => import('./components/Profile'));
@@ -215,14 +213,6 @@ const routes = [
           {
             path: "permissions",
             element: <PermissionList />
-          },
-          {
-            path: "groups",
-            element: <ManageGroupsProvider />
-          },
-          {
-            path: "groups/:id",
-            element: <ManageGroupInformationProvider />
           }
         ]
       },

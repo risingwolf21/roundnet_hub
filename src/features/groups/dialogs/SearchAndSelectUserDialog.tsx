@@ -90,7 +90,7 @@ const SearchAndSelectUserDialog = ({
                       onChange={(e) => handleChange(e, user)}
                     />
                   </ListItemIcon>
-                  <ListItemText>{user.displayName}</ListItemText>
+                  <ListItemText primary={user.name}/>
                 </ListItem>
               ))}
         </List>

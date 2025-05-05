@@ -7,7 +7,7 @@ import { DialogProps, NotificationsProvider, useDialogs, useNotifications } from
 import dayjs from "dayjs";
 import React, { useEffect, useState } from "react";
 import { supabase } from "src/components/services/supabase/supabaseClient";
-import { CreateGroupDialog } from "src/features/groups/dialogs/CreateGroupDialog";
+import { CreateOrUpdateGroupDialog } from "src/features/groups/dialogs/CreateOrUpdateGroupDialog";
 import { SupabaseUserRepository } from "src/repository/UserRepository";
 import { Tables } from "src/types/supabase-generated.types";
 import { dayjsFromDb, dayjsToDb } from "src/utils";
@@ -124,7 +124,7 @@ const Content = ({ payload, onClose }: DialogProps<CreateChallengePayload, Chall
           value={selectedGroup?.id ?? 'none'}
           onChange={async (e) => {
             if (e.target.value === "create") {
-              const result = await dialogs.open(CreateGroupDialog);
+              const result = await dialogs.open(CreateOrUpdateGroupDialog);
               if(result && result !== "closed"){
                 setGroups([...groups, result])
                 setSelectedGroup(result);

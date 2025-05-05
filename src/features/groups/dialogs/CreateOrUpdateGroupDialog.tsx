@@ -6,12 +6,14 @@ import { captureException } from "@sentry/react";
 import { DialogProps, NotificationsProvider, useNotifications } from "@toolpad/core";
 import React, { useRef, useState } from "react";
 import { supabase } from "src/components/services/supabase/supabaseClient";
+import { useApplication } from "src/features/auth/AuthContext";
 import { Tables } from "src/types/supabase-generated.types";
 
-const Content = ({ payload, onClose }: DialogProps<undefined, Group | null | "closed">) => {
+const Content = ({ payload, onClose }: DialogProps<Group | undefined, Group | null | "closed">) => {
+  const { user } = useApplication();
   const notifications = useNotifications();
   const inputRef = useRef<HTMLInputElement>(null);
-  const [data, setData] = useState<Tables<'event_group'>>({ name: "", description: "", id: "", created_at: "", color: "#000", is_public: true, need_request_to_join: false });
+  const [data, setData] = useState<Tables<'event_group'>>(payload ?? { name: "", description: "", id: "", created_at: "", color: "#000", is_public: true, need_request_to_join: false });
 
   return <><AppBar sx={{ position: 'static', pt: "env(safe-area-inset-top)" }}>
     <Toolbar>
@@ -34,24 +36,52 @@ const Content = ({ payload, onClose }: DialogProps<undefined, Group | null | "cl
           return;
         }
 
-        const { error, data: result_data } = await supabase
-          .schema("public")
-          .from("event_group")
-          .insert({
-            name: data.name,
-            description: data.description,
-            is_public: data.is_public,
-            color: data.color,
-            need_request_to_join: data.need_request_to_join
-          })
-          .select("*")
-          .single();
-        if (error) {
-          captureException(error);
+        if (data.id === "") {
+          const { error, data: result_data } = await supabase
+            .schema("public")
+            .from("event_group")
+            .insert({
+              name: data.name,
+              description: data.description,
+              is_public: data.is_public,
+              color: data.color,
+              need_request_to_join: data.need_request_to_join
+            })
+            .select("*")
+            .single();
+
+          if (error) {
+            captureException(error);
+            onClose(result_data);
+          } else if (user) {
+            await supabase.schema("public").from("group_user_mapping").insert({
+              group: result_data.id,
+              user: user?.userId,
+              role: "admin"
+            })
+            onClose(result_data);
+          }
+        } else {
+          const { error, data: result_data } = await supabase
+            .schema("public")
+            .from("event_group")
+            .update({
+              name: data.name,
+              description: data.description,
+              is_public: data.is_public,
+              color: data.color,
+              need_request_to_join: data.need_request_to_join
+            })
+            .eq("id", data.id)
+            .select("*")
+            .single();
+          if (error) {
+            captureException(error);
+          }
+          onClose(result_data);
         }
-        onClose(result_data);
       }}>
-        Erstellen
+        {data.id === "" ? "Erstellen" : "Speichern"}
       </Button>
     </Toolbar>
   </AppBar>
@@ -152,7 +182,7 @@ const Content = ({ payload, onClose }: DialogProps<undefined, Group | null | "cl
   </>
 }
 
-export const CreateGroupDialog = ({ payload, open, onClose }: DialogProps<undefined, Group | null | "closed">) => {
+export const CreateOrUpdateGroupDialog = ({ payload, open, onClose }: DialogProps<Group | undefined, Group | null | "closed">) => {
   return <Dialog fullScreen open={open} onClose={() => onClose("closed")}>
     <NotificationsProvider>
       <LocalizationProvider dateAdapter={AdapterDayjs}>

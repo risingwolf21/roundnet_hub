@@ -1,5 +1,5 @@
 import { Close } from "@mui/icons-material"
-import { AppBar, Dialog, DialogContent, DialogTitle, IconButton, List, ListItemButton, ListItemText, ListSubheader, Toolbar, Typography } from "@mui/material"
+import { Dialog, DialogContent, DialogTitle, IconButton, List, ListItemButton, ListItemText, ListSubheader, Toolbar, Typography } from "@mui/material"
 import { DialogProps } from "@toolpad/core"
 import { groupBy } from "lodash"
 import React from "react"
