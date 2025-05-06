@@ -80,7 +80,7 @@ const PublicGroupInformation = () => {
   };
 
   return <Layout appBarConfig={{ navigateBackPath: "/groups/list" }}>
-    <List>
+    <List sx={{ pb: 'calc(64px + env(safe-area-inset-bottom))' }}>
       <LoadingIndicator loading={loading} />
       <Typography pl={2} variant="h6" fontWeight="bold">
         Beschreibung
@@ -93,7 +93,6 @@ const PublicGroupInformation = () => {
         Mitglieder{group && " · " + group?.users.length}
       </Typography>
       <Card sx={{ borderRadius: 2, py: 0, px: 0, m: 1 }}>
-
         {
           selectedUsers.length > 0 && can("update", "group")
             ? <CardActionArea onClick={() => handleUsersRemove(selectedUsers)}>

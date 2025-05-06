@@ -1,5 +1,5 @@
 import { Add, Groups } from "@mui/icons-material";
-import { Avatar, Button, Chip, Fab, ListItem, ListItemAvatar, ListItemText, Stack } from "@mui/material";
+import { Avatar, Button, Chip, Fab, List, ListItem, ListItemAvatar, ListItemText, Stack } from "@mui/material";
 import { useDialogs } from "@toolpad/core";
 import { useNotifications } from "@toolpad/core/useNotifications";
 import React, { useEffect } from "react";
@@ -41,45 +41,47 @@ const PublicGroupList = () => {
   }
 
   return <Layout>
-    {
-      loading
-        ? Array.from({ length: 10 }, (v, k) => k + 1).map((x) => <LoadingGroupListItem key={x} />)
-        : groups.map(x => <ListItem
-          key={x.id}
-          divider
-          onClick={() => {
-            if (x.user_group_role && x.user_group_role !== "joinRequested")
-              navigate('/groups/' + x.id)
-          }}
-          secondaryAction={
-            !x.user_group_role && (
-              <Button
-                onClick={(event) => {
-                  event.stopPropagation();
-                  joinGroup(x)
-                }}
-              >
-                {x.need_request_to_join ? "Beitritt anfragen" : "Beitreten"}
-              </Button>
-            )
-          }
-        >
-          <ListItemAvatar>
-            <Avatar sx={{ backgroundColor: x.color, borderRadius: 2 }}>
-              <Groups />
-            </Avatar>
-          </ListItemAvatar>
-          <Stack direction={"row"} spacing={2} sx={{ display: "flex", alignItems: "center" }}>
-            <ListItemText primary={x.name} secondary={x.description} />
-            {
-              x.user_group_role === "admin" && <Chip variant='outlined' size="small" label="Admin" color='info' />
+    <List sx={{ pb: 'calc(64px + env(safe-area-inset-bottom))' }}>
+      {
+        loading
+          ? Array.from({ length: 10 }, (v, k) => k + 1).map((x) => <LoadingGroupListItem key={x} />)
+          : groups.map(x => <ListItem
+            key={x.id}
+            divider
+            onClick={() => {
+              if (x.user_group_role && x.user_group_role !== "joinRequested")
+                navigate('/groups/' + x.id)
+            }}
+            secondaryAction={
+              !x.user_group_role && (
+                <Button
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    joinGroup(x)
+                  }}
+                >
+                  {x.need_request_to_join ? "Beitritt anfragen" : "Beitreten"}
+                </Button>
+              )
             }
-            {
-              x.user_group_role === "joinRequested" && <Chip variant='outlined' size="small" label="Angefragt" color='warning' />
-            }
-          </Stack>
-        </ListItem>)
-    }
+          >
+            <ListItemAvatar>
+              <Avatar sx={{ backgroundColor: x.color, borderRadius: 2 }}>
+                <Groups />
+              </Avatar>
+            </ListItemAvatar>
+            <Stack direction={"row"} spacing={2} sx={{ display: "flex", alignItems: "center" }}>
+              <ListItemText primary={x.name} secondary={x.description} />
+              {
+                x.user_group_role === "admin" && <Chip variant='outlined' size="small" label="Admin" color='info' />
+              }
+              {
+                x.user_group_role === "joinRequested" && <Chip variant='outlined' size="small" label="Angefragt" color='warning' />
+              }
+            </Stack>
+          </ListItem>)
+      }
+    </List>
     <Fab
       sx={{
         background: '#66bb6a',
@@ -99,6 +101,6 @@ const PublicGroupList = () => {
     >
       <Add sx={{ color: 'white' }} />
     </Fab>
-  </Layout>
+  </Layout >
 }
 export default PublicGroupList
