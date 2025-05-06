@@ -27,7 +27,10 @@ export const AuthGate = () => {
       .then((r) => r.text())
       .then((text) => {
         setVersion(text);
-      });
+      })
+      .catch(e => {
+        setVersion("???")
+      })
   }, []);
 
   const [session, setSession] = useState<Session | null>(null)
