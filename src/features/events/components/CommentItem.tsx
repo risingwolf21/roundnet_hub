@@ -1,8 +1,10 @@
 import { AccountBox } from '@mui/icons-material';
 import { Avatar, Box, Button, CircularProgress, ListItem, ListItemAvatar, Typography } from '@mui/material';
+import { useDialogs } from '@toolpad/core';
 import { TFunction } from 'i18next';
 import React from 'react';
-import { useNavigate } from 'react-router';
+import { ProfileDialog } from 'src/components/Profile';
+import { useAuthentication } from 'src/features/auth/AuthContext';
 import { FullComment } from '../../../types/supabaseTypes';
 
 type Props = {
@@ -12,7 +14,8 @@ type Props = {
 };
 
 export const CommentItem = ({ comment, t, replyToPressed }: Props) => {
-  const navigate = useNavigate();
+  const dialogs = useDialogs();
+  const { user } = useAuthentication();
   return (
     <ListItem
       divider
@@ -31,7 +34,7 @@ export const CommentItem = ({ comment, t, replyToPressed }: Props) => {
         sx={{ verticalAlign: 'top', display: 'flex' }}
         onClick={(e) => {
           e.stopPropagation();
-          navigate('/user/' + comment.user.userId);
+          dialogs.open(ProfileDialog, { user, userId: comment.userId })
         }}
       >
         <Avatar sx={{ borderRadius: 2 }}>

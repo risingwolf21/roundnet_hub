@@ -122,8 +122,8 @@ const Content = ({ payload, onClose }: DialogProps<CreateChallengePayload, strin
           value={selectedGroup?.id ?? 'none'}
           onChange={async (e) => {
             if (e.target.value === "create") {
-              const result = await dialogs.open(CreateOrUpdateGroupDialog);
-              if(result && result !== "closed"){
+              const result = await dialogs.open(CreateOrUpdateGroupDialog, { user: payload.user });
+              if (result && result !== "closed") {
                 setGroups([...groups, result])
                 setSelectedGroup(result);
               } else {

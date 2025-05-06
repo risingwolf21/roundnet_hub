@@ -8,11 +8,11 @@ import Typography from '@mui/material/Typography';
 import { useNotifications } from '@toolpad/core/useNotifications';
 import * as React from 'react';
 import { useState } from 'react';
-import { Navigate, useNavigate } from 'react-router';
+import { Navigate, useLocation, useNavigate } from 'react-router';
 import { supabase } from 'src/components/services/supabase/supabaseClient';
 import { HOMEPAGE } from 'src/constants';
 import { BRANDING } from 'src/utils';
-import { useApplication } from './AuthContext';
+import { useApplication } from './ApplicationContext';
 import { getCommonTextFieldProps } from './SignUpScreen';
 import Layout from 'src/components/Layout';
 
@@ -22,9 +22,10 @@ const ForgotPasswordScreen = () => {
   const theme = useTheme();
   const [loading, setLoading] = useState(false);
   const { version, user } = useApplication();
+  const location = useLocation();
 
   if (user) {
-    return <Navigate to={HOMEPAGE} />
+    return <Navigate to={location.state?.path !== "/login" ? location.state?.path || HOMEPAGE : HOMEPAGE} />
   }
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {

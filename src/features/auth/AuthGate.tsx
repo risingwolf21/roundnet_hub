@@ -13,7 +13,7 @@ import { AdminPermissionsRepository } from '../../repository/AdminPermissionsRep
 import { SupabaseUserRepository } from '../../repository/UserRepository';
 import { UserWithRolesAndPermissions } from '../../types/supabaseTypes';
 import { ability, defineRulesFor } from '../../utils/PermissionService';
-import { ApplicationContext } from './AuthContext';
+import { ApplicationContext } from './ApplicationContext';
 
 
 export const AuthGate = () => {
@@ -140,7 +140,7 @@ export const AuthGate = () => {
         <CircularProgress variant={'indeterminate'} size={50}></CircularProgress>
       </Box>
     );
-    
+
   return (
     <ApplicationContext.Provider value={{ user: currentUser, signOut: signOut, deviceId, provider_token, version }}>
       <React.Suspense fallback={<LoadingScreen />}>

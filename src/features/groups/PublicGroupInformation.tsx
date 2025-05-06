@@ -1,5 +1,5 @@
-import { AccountBox, Check, Edit, ExpandMore, GroupRemove, Groups, PersonAdd, PersonRemove } from "@mui/icons-material";
-import { Accordion, AccordionDetails, AccordionSummary, Avatar, Button, Card, CardActionArea, Chip, Divider, Fab, List, ListItem, ListItemAvatar, ListItemButton, ListItemText, Stack, Typography } from "@mui/material";
+import { AccountBox, Edit, ExpandMore, GroupRemove, Groups, PersonAdd, PersonRemove } from "@mui/icons-material";
+import { Accordion, AccordionDetails, AccordionSummary, Avatar, Button, Card, CardActionArea, Chip, Divider, Fab, List, ListItem, ListItemAvatar, ListItemText, Stack, Typography } from "@mui/material";
 import { captureException } from "@sentry/react";
 import { useDialogs, useNotifications } from "@toolpad/core";
 import React, { useCallback, useEffect, useState } from "react";
@@ -14,14 +14,15 @@ import { GroupsRepository } from "src/repository/GroupsRepository";
 import { GroupWithUserMappings } from "src/types/supabaseTypes";
 import { can } from "src/utils/PermissionService";
 import { fetchAdminUsersAsync } from "../admin/slices/adminUserSlice";
-import { useApplication } from "../auth/AuthContext";
+import { useAuthentication } from "../auth/AuthContext";
+import { GroupUserItem } from "./components/GroupUserItem";
 import { CreateOrUpdateGroupDialog } from "./dialogs/CreateOrUpdateGroupDialog";
 import SearchAndSelectUserDialog from "./dialogs/SearchAndSelectUserDialog";
 
 const PublicGroupInformation = () => {
 
   const { groupId } = useParams();
-  const { user } = useApplication();
+  const { user } = useAuthentication();
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const notifications = useNotifications();
@@ -166,12 +167,13 @@ const PublicGroupInformation = () => {
             .filter(x => x.map.role !== "joinRequested")
             .sort((a, b) => a.user.displayName.localeCompare(b.user.displayName))
             .slice(0, 10)
-            .map(x => <ListItemButton
-              key={x.user.userId}
-              divider
-              onClick={() => navigate("/user/" + x.user.userId)}
-            >
-              <ListItemAvatar onClick={(e) => {
+            .map(x => <GroupUserItem
+              groupUser={x.user}
+              user={user}
+              isAdmin={x.map.role === "admin"}
+              dialogs={dialogs}
+              selected={selectedUsers.includes(x.user)}
+              onAvatarClick={(e) => {
                 e.stopPropagation();
                 if (x.map.role === "admin")
                   return;
@@ -180,30 +182,7 @@ const PublicGroupInformation = () => {
                 } else {
                   setSelectedUsers([...selectedUsers, x.user])
                 }
-              }}>
-                {
-                  selectedUsers.includes(x.user)
-                    ? <Avatar sx={{ borderRadius: 2, background: "#0288d1" }}>
-                      <Check />
-                    </Avatar>
-                    : <Avatar sx={{ borderRadius: 2 }}>
-                      {x.user.avatarUrl ? (
-                        <img src={x.user.avatarUrl} alt="logo" width={'100%'} height={'100%'} />
-                      ) : (
-                        <AccountBox />
-                      )}
-                    </Avatar>
-                }
-              </ListItemAvatar>
-              <ListItemText
-                primary={<Stack direction={"row"} spacing={2}>
-                  <Typography>{x.user.name}</Typography>
-                  {
-                    x.map.role === "admin" && <Chip variant='outlined' size="small" label="Admin" color='info' />
-                  }
-                </Stack>} secondary={x.user.email}
-              />
-            </ListItemButton>)
+              }} />)
         }
         {
           group && group.users.length > 10 && <Accordion disableGutters sx={{ m: 0 }}>
@@ -223,12 +202,13 @@ const PublicGroupInformation = () => {
                   .filter(x => x.map.role !== "joinRequested")
                   .sort((a, b) => a.user.displayName.localeCompare(b.user.displayName))
                   .slice(10)
-                  .map(x => <ListItemButton
-                    key={x.user.userId}
-                    divider
-                    onClick={() => navigate("/user/" + x.user.userId)}
-                  >
-                    <ListItemAvatar onClick={(e) => {
+                  .map(x => <GroupUserItem
+                    groupUser={x.user}
+                    user={user}
+                    isAdmin={x.map.role === "admin"}
+                    dialogs={dialogs}
+                    selected={selectedUsers.includes(x.user)}
+                    onAvatarClick={(e) => {
                       e.stopPropagation();
                       if (x.map.role === "admin")
                         return;
@@ -237,30 +217,7 @@ const PublicGroupInformation = () => {
                       } else {
                         setSelectedUsers([...selectedUsers, x.user])
                       }
-                    }}>
-                      {
-                        selectedUsers.includes(x.user)
-                          ? <Avatar sx={{ borderRadius: 2, background: "#0288d1" }}>
-                            <Check />
-                          </Avatar>
-                          : <Avatar sx={{ borderRadius: 2 }}>
-                            {x.user.avatarUrl ? (
-                              <img src={x.user.avatarUrl} alt="logo" width={'100%'} height={'100%'} />
-                            ) : (
-                              <AccountBox />
-                            )}
-                          </Avatar>
-                      }
-                    </ListItemAvatar>
-                    <ListItemText
-                      primary={<Stack direction={"row"} spacing={2}>
-                        <Typography>{x.user.name}</Typography>
-                        {
-                          x.map.role === "admin" && <Chip variant='outlined' size="small" label="Admin" color='info' />
-                        }
-                      </Stack>} secondary={x.user.email}
-                    />
-                  </ListItemButton>)
+                    }} />)
               }
             </AccordionDetails>
           </Accordion>
@@ -305,7 +262,7 @@ const PublicGroupInformation = () => {
         bottom: 'calc(16px + env(safe-area-inset-bottom))',
       }}
       onClick={async () => {
-        const result = await dialogs.open(CreateOrUpdateGroupDialog, group ?? undefined);
+        const result = await dialogs.open(CreateOrUpdateGroupDialog, { user, group: group ?? undefined });
         if (result && result !== "closed") {
           loadGroup(result.id)
           notifications.show("Gruppe wurde erfolgreich bearbeitet.", { severity: "success" });

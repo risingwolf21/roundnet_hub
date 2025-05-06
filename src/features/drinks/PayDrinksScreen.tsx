@@ -13,14 +13,14 @@ import {
 } from '@mui/material';
 import React, { useEffect } from 'react';
 import { useSelector } from 'react-redux';
+import Layout from '../../components/Layout';
+import { LoadingScreen } from '../../components/LoadingScreen';
 import { PAYPAL_ME_ADDRESS } from '../../constants';
-import { fetchDrinksToPayAsync, fetchPaymentAsync } from './slices/drinksSlice';
 import { RootState, useAppDispatch } from '../../redux/store';
 import { PaymentHistory } from '../../types/supabaseTypes';
 import { groupBy } from '../../utils';
-import { LoadingScreen } from '../../components/LoadingScreen';
-import Layout from '../../components/Layout';
-import { useApplication } from '../auth/AuthContext';
+import { useAuthentication } from '../auth/AuthContext';
+import { fetchDrinksToPayAsync, fetchPaymentAsync } from './slices/drinksSlice';
 
 const PayDrinksButton = ({ amountToPay }: { amountToPay: number }) => {
   const onPayClick = () => {
@@ -69,12 +69,12 @@ const PayDrinksButton = ({ amountToPay }: { amountToPay: number }) => {
 };
 
 const PayDrinksScreenProvider = () => {
-  const { user } = useApplication();
+  const { user } = useAuthentication();
   const { paymentHistory, paymentError, paymentLoading } = useSelector((state: RootState) => state.drinks);
 
   return (
     <PayDrinksScreen
-      user={user!}
+      user={user}
       paymentHistory={paymentHistory ?? []}
       paymentError={paymentError ?? ''}
       paymentLoading={paymentLoading}

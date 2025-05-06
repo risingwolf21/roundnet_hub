@@ -7,7 +7,7 @@ import { useNavigate } from 'react-router';
 import { PullToRefresh } from 'src/components/pull-to-refresh/PullToRefresh';
 import Layout from '../../components/Layout';
 import { AppDispatch, RootState, useAppDispatch } from '../../redux/store';
-import { useApplication } from '../auth/AuthContext';
+import { useAuthentication } from '../auth/AuthContext';
 import { CreateChallengeDialog } from './dialogs/CreateChallengeDialog';
 import {
   challengeSelector,
@@ -16,16 +16,13 @@ import {
 
 const ChallengeListProvider = () => {
   const dispatch = useAppDispatch();
-  const { user } = useApplication();
+  const { user } = useAuthentication();
   const challenges = useSelector((state: RootState) => challengeSelector.selectAll(state));
   const { loading } = useSelector((state: RootState) => state.challenges);
 
   useEffect(() => {
     dispatch(fetchChallengesAsync());
   }, [dispatch]);
-
-  if (!user)
-    return <></>
 
   return <ChallengeList loading={loading} challenges={challenges} user={user} dispatch={dispatch} />;
 };

@@ -24,7 +24,7 @@ import { AlertMessage } from '../../components/AlertSnackbar';
 import Layout from '../../components/Layout';
 import { useAppDispatch } from '../../redux/store';
 import { can } from '../../utils/PermissionService';
-import { useApplication } from '../auth/AuthContext';
+import { useApplication } from '../auth/ApplicationContext';
 import { EventItem } from './components/EventItem';
 import { LoadingEventItem } from './components/LoadingEventItem';
 

@@ -2,7 +2,7 @@ import { AccountCircle, ArrowBack, Menu } from '@mui/icons-material';
 import { AppBar, Avatar, Box, IconButton, TextField, Toolbar, Typography } from '@mui/material';
 import React, { ReactNode, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
-import { useApplication } from '../features/auth/AuthContext';
+import { useApplication } from '../features/auth/ApplicationContext';
 import { FirebaseMessaging } from '../features/notifications/FirebaseMessaging';
 import { Drawer, drawerWidth } from './Drawer';
 
@@ -117,7 +117,7 @@ const Layout = ({
             {title}
           </Typography>
           {/* Profile */}
-          {showProfile && (
+          {showProfile && user && (
             <IconButton
               color="inherit"
               onClick={() => {
@@ -125,7 +125,7 @@ const Layout = ({
               }}
               sx={{ pr: 0 }}
             >
-              {user?.avatarUrl ? (
+              {user.avatarUrl ? (
                 <Avatar sx={{ borderRadius: 2, width: '35px', height: '35px' }}>
                   <img src={user?.avatarUrl} alt="logo" width={'35px'} height={'35px'} />
                 </Avatar>

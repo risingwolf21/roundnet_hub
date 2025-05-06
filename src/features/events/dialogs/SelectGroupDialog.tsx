@@ -12,20 +12,20 @@ import {
   Typography,
 } from '@mui/material';
 import { Box } from '@mui/system';
+import { PostgrestSingleResponse } from '@supabase/supabase-js';
 import React, { useEffect, useState } from 'react';
+import { useAuthentication } from 'src/features/auth/AuthContext';
+import { SupabaseEventRepository } from '../../../repository/EventRepository';
 import { SlideUpTransition } from '../../../utils';
 import { SelectGroupDialogProps } from '../types';
-import { PostgrestSingleResponse } from '@supabase/supabase-js';
-import { SupabaseEventRepository } from '../../../repository/EventRepository';
-import { useApplication } from '../../auth/AuthContext';
 
 export const SelectGroupDialog = ({ open, handleClose, handleSubmit }: SelectGroupDialogProps) => {
   const [groups, setGroups] = useState<Group[]>([]);
-  const { user } = useApplication();
+  const { user } = useAuthentication();
 
   useEffect(() => {
     if (open)
-      SupabaseEventRepository.fetchUserGroups(user!).then(
+      SupabaseEventRepository.fetchUserGroups(user).then(
         (
           x: PostgrestSingleResponse<
             {

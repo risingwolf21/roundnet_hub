@@ -2,8 +2,9 @@ import { wrapCreateBrowserRouterV7 } from "@sentry/react";
 import React from "react";
 import { createBrowserRouter, Navigate, Outlet, RouteObject, RouterProvider, useLocation } from "react-router";
 import ErrorRouteElement from "./components/ErrorRouteElement";
-import { useApplication } from "./features/auth/AuthContext";
+import { useApplication } from "./features/auth/ApplicationContext";
 import { useServiceWorker } from "./hooks/useServiceWorker";
+import { AuthContext } from "./features/auth/AuthContext";
 
 const HistoryScreenProvider = React.lazy(() => import('./features/drinks/HistoryScreenProvider'));
 const KeyHolderScreenProvider = React.lazy(() => import('./features/keys/provider'));
@@ -17,7 +18,6 @@ const AdminUserListProvider = React.lazy(() => import('./features/admin/AdminUse
 const DrinkListScreenProvider = React.lazy(() => import('./pages/Drinklist.page'));
 const EventInformationProvider = React.lazy(() => import('./pages/EventInformation.page'));
 const EventScreenProvider = React.lazy(() => import('./pages/EventList.page'));
-const ProfileScreen = React.lazy(() => import('./components/Profile'));
 const NotificationScreen = React.lazy(() => import('./features/notifications/NotificationScreen'));
 const ChallengeScreen = React.lazy(() => import('./features/challenges/ChallengeList'));
 const ChallengeInfoScreen = React.lazy(() => import('./features/challenges/ChallengeInformation'));
@@ -49,13 +49,15 @@ export const AppRoutes = () => {
 }
 
 const PrivateRoute = () => {
-  const { user } = useApplication();
+  const { user, signOut } = useApplication();
   const location = useLocation();
-
 
   if (!user)
     return <Navigate to="/login" state={{ path: location.pathname }} />
-  return <Outlet />
+
+  return <AuthContext.Provider value={{ user, signOut }}>
+    <Outlet />
+  </AuthContext.Provider>
 }
 
 const router = sentryCreateBrowserRouter([
@@ -131,10 +133,6 @@ const router = sentryCreateBrowserRouter([
               {
                 index: true,
                 element: <UserScreenProvider />
-              },
-              {
-                path: ":userId",
-                element: <ProfileScreen />
               }
             ]
           },

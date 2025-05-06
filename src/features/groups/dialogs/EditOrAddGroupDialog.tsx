@@ -21,10 +21,10 @@ import {
 import { Box } from '@mui/system';
 import { captureException } from '@sentry/react';
 import React, { useEffect, useRef, useState } from 'react';
+import { useAuthentication } from 'src/features/auth/AuthContext';
 import { GroupsRepository } from '../../../repository/GroupsRepository';
 import { TablesUpdate } from '../../../types/supabase-generated.types';
 import { SlideUpTransition } from '../../../utils';
-import { useApplication } from '../../auth/AuthContext';
 
 type EditOrAddGroupDialogProps = {
   open: boolean;
@@ -33,7 +33,7 @@ type EditOrAddGroupDialogProps = {
 };
 
 export const EditOrAddGroupDialog = ({ open, handleClose, groupToEdit }: EditOrAddGroupDialogProps) => {
-  const { user } = useApplication();
+  const { user } = useAuthentication();
   const inputRef = useRef<HTMLInputElement>(null);
   const [currentGroup, setCurrentGroup] = useState<TablesUpdate<'event_group'>>({
     id: groupToEdit.id,
@@ -61,10 +61,6 @@ export const EditOrAddGroupDialog = ({ open, handleClose, groupToEdit }: EditOrA
   const handleSubmit = async () => {
     if (!currentGroup.name || currentGroup.name.length < 6) {
       setErrorSnackbar({ message: 'Der Gruppenname ist zu kurz!', open: true });
-      return;
-    }
-    if (!user) {
-      setErrorSnackbar({ message: 'Something went wrong. Try again later!', open: true });
       return;
     }
     GroupsRepository.upsertGroup({

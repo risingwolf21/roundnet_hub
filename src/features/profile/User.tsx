@@ -17,13 +17,13 @@ import {
 } from '@mui/material';
 import { useDialogs } from '@toolpad/core/useDialogs';
 import React from 'react';
-import { Navigate, useNavigate } from 'react-router';
+import { useNavigate } from 'react-router';
 import { supabase } from 'src/components/services/supabase/supabaseClient';
 import Layout from '../../components/Layout';
 import pzLogo from '../../images/pz_logo.svg';
 import { AppDispatch, useAppDispatch } from '../../redux/store';
 import { UserWithRolesAndPermissions } from '../../types/supabaseTypes';
-import { useApplication } from '../auth/AuthContext';
+import { useAuthentication } from '../auth/AuthContext';
 import { ContactInformation } from './ContactInformation';
 import { isNotificationSupported, NotificationsDialog } from './NotificationsDialog';
 import { PlayerzoneProfileDialog } from './PlayerzoneProfile';
@@ -33,20 +33,16 @@ type UserScreenProps = {
   user: UserWithRolesAndPermissions;
   dispatch: AppDispatch;
   handleSignOut: () => void;
-  provider_token: string | null;
 };
 
 const UserScreenProvider = () => {
-  const { user, signOut, provider_token } = useApplication();
+  const { user, signOut } = useAuthentication();
   const dispatch = useAppDispatch();
 
-  if (!user)
-    return <Navigate to={"/"} replace />
-
-  return <UserScreen user={user} provider_token={provider_token} dispatch={dispatch} handleSignOut={signOut} />;
+  return <UserScreen user={user} dispatch={dispatch} handleSignOut={signOut} />;
 };
 
-const UserScreen = ({ user, dispatch, provider_token }: UserScreenProps) => {
+const UserScreen = ({ user, dispatch }: UserScreenProps) => {
   const dialogs = useDialogs();
   const navigate = useNavigate();
 
