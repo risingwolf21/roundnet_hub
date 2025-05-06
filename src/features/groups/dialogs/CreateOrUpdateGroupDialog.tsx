@@ -7,13 +7,14 @@ import { DialogProps, NotificationsProvider, useNotifications } from "@toolpad/c
 import React, { useRef, useState } from "react";
 import { supabase } from "src/components/services/supabase/supabaseClient";
 import { Tables } from "src/types/supabase-generated.types";
+import { GroupWithUserRole } from "src/types/supabaseTypes";
 
 type CreateOrUpdateGroupDialogProps = {
   group?: Group
   user: User
 }
 
-const Content = ({ payload, onClose }: DialogProps<CreateOrUpdateGroupDialogProps, Group | null | "closed">) => {
+const Content = ({ payload, onClose }: DialogProps<CreateOrUpdateGroupDialogProps, GroupWithUserRole | null | "closed">) => {
   const notifications = useNotifications();
   const inputRef = useRef<HTMLInputElement>(null);
   const [data, setData] = useState<Tables<'event_group'>>(payload.group ?? { name: "", description: "", id: "", created_at: "", color: "#000", is_public: true, need_request_to_join: false });
@@ -62,7 +63,7 @@ const Content = ({ payload, onClose }: DialogProps<CreateOrUpdateGroupDialogProp
               user: payload.user.userId,
               role: "admin"
             })
-            onClose(result_data);
+            onClose({ ...result_data, user_role: "admin" });
           }
         } else {
           const { error, data: result_data } = await supabase
@@ -80,8 +81,10 @@ const Content = ({ payload, onClose }: DialogProps<CreateOrUpdateGroupDialogProp
             .single();
           if (error) {
             captureException(error);
+            onClose(null);
+          } else {
+            onClose({ ...result_data, user_role: "admin" });
           }
-          onClose(result_data);
         }
       }}>
         {data.id === "" ? "Erstellen" : "Speichern"}
@@ -185,7 +188,7 @@ const Content = ({ payload, onClose }: DialogProps<CreateOrUpdateGroupDialogProp
   </>
 }
 
-export const CreateOrUpdateGroupDialog = ({ payload, open, onClose }: DialogProps<CreateOrUpdateGroupDialogProps, Group | null | "closed">) => {
+export const CreateOrUpdateGroupDialog = ({ payload, open, onClose }: DialogProps<CreateOrUpdateGroupDialogProps, GroupWithUserRole | null | "closed">) => {
   return <Dialog fullScreen open={open} onClose={() => onClose("closed")}>
     <NotificationsProvider>
       <LocalizationProvider dateAdapter={AdapterDayjs}>

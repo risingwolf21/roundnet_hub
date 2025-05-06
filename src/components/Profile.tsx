@@ -125,7 +125,7 @@ const Content = ({ payload, onClose }: DialogProps<ProfilePayload, null>) => {
       <List
         key={'groups'}
         subheader={
-          <ListSubheader sx={{ zIndex: '-1', fontWeight: 'bold', lineHeight: 'normal', my: 2, pl: 0 }}>
+          <ListSubheader sx={{ fontWeight: 'bold', lineHeight: 'normal', my: 2, pl: 0 }}>
             Gemeinsame Gruppen
           </ListSubheader>
         }

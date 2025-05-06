@@ -30,11 +30,10 @@ import {
   ListItemProps,
   ListItemText,
   ListSubheader,
-  Drawer as MuiDrawer,
   DrawerProps as MuiDrawerProps,
   SwipeableDrawer,
   Theme,
-  Typography,
+  Typography
 } from '@mui/material';
 import { styled } from '@mui/system';
 import { TFunction } from 'i18next';

@@ -9,6 +9,7 @@ import { supabase } from "src/components/services/supabase/supabaseClient";
 import { CreateOrUpdateGroupDialog } from "src/features/groups/dialogs/CreateOrUpdateGroupDialog";
 import { SupabaseUserRepository } from "src/repository/UserRepository";
 import { Tables } from "src/types/supabase-generated.types";
+import { GroupWithUserRole } from "src/types/supabaseTypes";
 import { dayjsFromDb, dayjsToDb } from "src/utils";
 
 type CreateChallengePayload = {
@@ -19,7 +20,7 @@ const Content = ({ payload, onClose }: DialogProps<CreateChallengePayload, strin
   const notifications = useNotifications();
   const dialogs = useDialogs();
   const [selectedGroup, setSelectedGroup] = useState<Group | null>(null);
-  const [groups, setGroups] = useState<Group[]>([]);
+  const [groups, setGroups] = useState<GroupWithUserRole[]>([]);
   const [loading, setLoading] = useState(false);
 
   const [data, setData] = useState<Tables<'challenge'>>({ name: "", automated: false, description: "", id: "", created_at: "", end_date: null, group: "", max_points_per_week: null });
@@ -135,13 +136,16 @@ const Content = ({ payload, onClose }: DialogProps<CreateChallengePayload, strin
           }}
         >
           {
-            groups.map(x => <MenuItem value={x.id}>{x.name}</MenuItem>)
+            groups.filter(x => x.user_role === "admin").map(x => <MenuItem value={x.id}>{x.name}</MenuItem>)
           }
           {
             loading && <MenuItem value="loading">Wird geladen...</MenuItem>
           }
           {
             !loading && !selectedGroup && <MenuItem value="none">Keine</MenuItem>
+          }
+          {
+            !loading && <MenuItem value="create">Gruppe erstellen</MenuItem>
           }
         </Select>
       </ListItem>

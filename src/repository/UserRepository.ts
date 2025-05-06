@@ -4,6 +4,7 @@ import { Notification } from 'types/supabase';
 import { supabase } from '../components/services/supabase/supabaseClient';
 import { CalendarSettingsResult } from 'src/features/profile/CalendarSettings';
 import { Tables } from 'src/types/supabase-generated.types';
+import { GroupWithUserRole } from 'src/types/supabaseTypes';
 
 export const fetchGroups = () => supabase.schema("public").from('group_user_mapping').select('*, event_group(*)');
 export const fetchUserWithGroups = () => supabase
@@ -51,10 +52,10 @@ export const SupabaseUserRepository = {
     return supabase.from('user').select('*').eq('userId', userId).single().throwOnError();
   },
 
-  async fetchGroupsForUser(userId: string): Promise<Group[]> {
+  async fetchGroupsForUser(userId: string): Promise<GroupWithUserRole[]> {
     const { data, error } = await fetchGroups().eq('user', userId);
     if (!data || error) return []
-    return data.map(x => x.event_group);
+    return data.map(x => ({ ...x.event_group, user_role: x.role } as GroupWithUserRole));
   },
 
   async fetchPlayer(userId: string): Promise<PostgrestSingleResponse<Player | null>> {
