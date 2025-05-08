@@ -1,7 +1,6 @@
 import { isBefore } from 'date-fns';
 import { Event, History } from 'types/supabase';
 import { Database } from './supabase-generated.types';
-import { U } from 'react-router/dist/development/route-data-BmvbmBej';
 
 export type FullChallenge = Challenge & {
     stats: ChallengeStatWithUser[];
