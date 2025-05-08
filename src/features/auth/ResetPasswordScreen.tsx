@@ -117,7 +117,7 @@ const ResetPasswordScreen = () => {
   };
 
   return (
-    <Layout appBarConfig={{ showBackButton: true }}>
+    <Layout appBarConfig={{ navigateBackPath: "/user" }}>
       <Container component="main" maxWidth="xs">
         <Box
           sx={(theme) => ({

@@ -1,6 +1,6 @@
 import { isBefore } from 'date-fns';
 import { Event, History } from 'types/supabase';
-import { Database } from './supabase-generated.types';
+import { Database, Enums } from './supabase-generated.types';
 
 export type FullChallenge = Challenge & {
     stats: ChallengeStatWithUser[];
@@ -75,11 +75,15 @@ export type UserWithGroups = User & {
     groups: Group[];
 };
 
+export type GroupWithUserRole = Group & {
+    user_role: Enums<'GroupRole'>
+}
+
 export type UserWithRolesAndPermissions = User & {
     roles: AppRole[];
     permissions: AppPermission[];
     player_data: Player | null;
-    groups: Group[];
+    groups: GroupWithUserRole[];
     calendar_data: CalendarSettings | null;
 };
 

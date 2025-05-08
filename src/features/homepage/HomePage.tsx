@@ -1,5 +1,6 @@
 import { AccessTime, AccountBox, Key, Place, ThumbDownAlt, ThumbDownOffAlt, ThumbUpAlt, ThumbUpOffAlt } from "@mui/icons-material"
 import { Avatar, Badge, Box, Button, Card, CardActionArea, CardActions, CardContent, CardHeader, CardMedia, IconButton, List, ListItem, ListItemAvatar, ListItemText, Typography } from "@mui/material"
+import { useNotifications } from "@toolpad/core/useNotifications"
 import { format } from "date-fns"
 import { t } from "i18next"
 import React, { useEffect } from "react"
@@ -10,18 +11,17 @@ import {
     fetchDrinksAsync
 } from 'src/features/drinks/slices/drinksSlice'
 import { RootState, useAppDispatch } from "src/redux/store"
+import { SupabaseDrinkRepository } from "src/repository/DrinkRepository"
 import { answerDeadlineExpired, eventInThePast } from "src/types/supabaseTypes"
 import { translationKeyOfItemType } from "src/utils"
-import { useApplication } from "../auth/AuthContext"
+import { useAuthentication } from "../auth/AuthContext"
 import { updateAttendanceAsync } from "../events/slices/eventAttendanceSlice"
 import { eventsSelector, fetchEventsAsync } from "../events/slices/eventsSlice"
 import { fetchItemsAsync, keyHoldersSelector } from "../keys/slices/keysSlice"
-import { SupabaseDrinkRepository } from "src/repository/DrinkRepository"
-import { useNotifications } from "@toolpad/core/useNotifications"
 
 const HomePage = () => {
 
-    const { user } = useApplication();
+    const { user } = useAuthentication();
     const events = useSelector(eventsSelector.selectAll);
     const { drinks } = useSelector((state: RootState) => state.drinks);
     const keys = useSelector(keyHoldersSelector.selectAll);
@@ -30,8 +30,7 @@ const HomePage = () => {
     const notifications = useNotifications();
 
     useEffect(() => {
-        if (user)
-            dispatch(fetchEventsAsync({ fetchMode: "upcoming", user }));
+        dispatch(fetchEventsAsync({ fetchMode: "upcoming", user }));
         dispatch(fetchDrinksAsync());
         dispatch(fetchItemsAsync())
     }, [dispatch, user]);

@@ -21,7 +21,7 @@
   </p>
 </p>
 
-[![Production](https://github.com/risingwolf21/roundnet_karlsruhe_app/actions/workflows/production.yml/badge.svg?branch=production)](https://github.com/risingwolf21/roundnet_karlsruhe_app/actions/workflows/production.yml) [![Staging](https://github.com/risingwolf21/roundnet_karlsruhe_app/actions/workflows/react_build_deploy_staging.yml/badge.svg)](https://github.com/risingwolf21/roundnet_karlsruhe_app/actions/workflows/react_build_deploy_staging.yml) [![Database Backup](https://github.com/risingwolf21/roundnet_karlsruhe_app/actions/workflows/supabase_production_backup.yml/badge.svg?branch=master)](https://github.com/risingwolf21/roundnet_karlsruhe_app/actions/workflows/supabase_production_backup.yml)
+[![Production](https://github.com/risingwolf21/roundnet_karlsruhe_app/actions/workflows/firebase_deployment.yml/badge.svg?branch=production)](https://github.com/risingwolf21/roundnet_karlsruhe_app/actions/workflows/firebase_deployment.yml) [![Staging](https://github.com/risingwolf21/roundnet_karlsruhe_app/actions/workflows/react_build_deploy_staging.yml/badge.svg)](https://github.com/risingwolf21/roundnet_karlsruhe_app/actions/workflows/react_build_deploy_staging.yml) [![Database Backup](https://github.com/risingwolf21/roundnet_karlsruhe_app/actions/workflows/supabase_production_backup.yml/badge.svg?branch=master)](https://github.com/risingwolf21/roundnet_karlsruhe_app/actions/workflows/supabase_production_backup.yml) [![Building](https://github.com/risingwolf21/roundnet_karlsruhe_app/actions/workflows/react_build_deploy_staging.yml/badge.svg)](https://github.com/risingwolf21/roundnet_karlsruhe_app/actions/workflows/react_build_deploy_staging.yml)
 
 ## Hosting
 <!---
@@ -43,6 +43,15 @@
 [https://roundnet-karlsruhe.web.app/](https://roundnet-karlsruhe.web.app/)
 
 [https://staging-roundnet-karlsruhe.web.app/](https://staging-roundnet-karlsruhe.web.app/)
+
+## Release
+
+To create a release you need to push a commit to the `production` branch. <br/>
+To prevent any unwanted releases, the pipeline only gets triggered when you merge via a Pull-Request.
+To create one, follow the link bellow:
+
+[<img src="images/pull-request-button.png" width="200"/>](https://github.com/risingwolf21/roundnet_karlsruhe_app/compare/production...master)
+
 
 # Development
 

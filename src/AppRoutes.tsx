@@ -1,8 +1,10 @@
+import { wrapCreateBrowserRouterV7 } from "@sentry/react";
 import React from "react";
-import { createBrowserRouter, Navigate, Outlet, RouterProvider, useLocation } from "react-router";
+import { createBrowserRouter, Navigate, Outlet, RouteObject, RouterProvider, useLocation } from "react-router";
 import ErrorRouteElement from "./components/ErrorRouteElement";
-import { useApplication } from "./features/auth/AuthContext";
+import { useApplication } from "./features/auth/ApplicationContext";
 import { useServiceWorker } from "./hooks/useServiceWorker";
+import { AuthContext } from "./features/auth/AuthContext";
 
 const HistoryScreenProvider = React.lazy(() => import('./features/drinks/HistoryScreenProvider'));
 const KeyHolderScreenProvider = React.lazy(() => import('./features/keys/provider'));
@@ -16,7 +18,6 @@ const AdminUserListProvider = React.lazy(() => import('./features/admin/AdminUse
 const DrinkListScreenProvider = React.lazy(() => import('./pages/Drinklist.page'));
 const EventInformationProvider = React.lazy(() => import('./pages/EventInformation.page'));
 const EventScreenProvider = React.lazy(() => import('./pages/EventList.page'));
-const ProfileScreen = React.lazy(() => import('./components/Profile'));
 const NotificationScreen = React.lazy(() => import('./features/notifications/NotificationScreen'));
 const ChallengeScreen = React.lazy(() => import('./features/challenges/ChallengeList'));
 const ChallengeInfoScreen = React.lazy(() => import('./features/challenges/ChallengeInformation'));
@@ -35,10 +36,12 @@ const AuthCallback = React.lazy(() => import('./features/auth/AuthCallback'));
 const PublicGroupList = React.lazy(() => import('./features/groups/PublicGroupList'));
 const PublicGroupInformation = React.lazy(() => import('./features/groups/PublicGroupInformation'));
 
+const sentryCreateBrowserRouter = wrapCreateBrowserRouterV7(
+  createBrowserRouter,
+);
+
 export const AppRoutes = () => {
   const { isUpdateAvailable, updateServiceWorker } = useServiceWorker();
-
-  const router = createBrowserRouter(routes)
 
   if (isUpdateAvailable) return <UpdateAvailable update={updateServiceWorker} />;
 
@@ -46,180 +49,188 @@ export const AppRoutes = () => {
 }
 
 const PrivateRoute = () => {
-  const { user } = useApplication();
+  const { user, signOut } = useApplication();
   const location = useLocation();
 
   if (!user)
-    return <Navigate to="/login" state={{ path: location.pathname + location.search }} />
-  return <Outlet />
+    return <Navigate to="/login" state={{ path: location.pathname }} />
+
+  return <AuthContext.Provider value={{ user, signOut }}>
+    <Outlet />
+  </AuthContext.Provider>
 }
 
-const routes = [
+const router = sentryCreateBrowserRouter([
   {
     path: "/login",
-    element: (
-      <LoginScreen />
-    ),
+    element: <LoginScreen />,
+    errorElement: <ErrorRouteElement />,
   },
   {
     path: "/signup",
     element: <SignUpScreen />,
+    errorElement: <ErrorRouteElement />,
   },
   {
     path: "/forgot-password",
     element: <ForgotPasswordScreen />,
+    errorElement: <ErrorRouteElement />,
   },
   {
     path: "/reset-password",
-    element: <ResetPasswordScreen />
+    element: <ResetPasswordScreen />,
+    errorElement: <ErrorRouteElement />,
   },
   {
     path: "/auth/callback",
     element: <AuthCallback />,
+    errorElement: <ErrorRouteElement />,
   },
   {
     path: "/",
     element: <PrivateRoute />,
-    errorElement: <ErrorRouteElement />,
     children: [
       {
-        index: true,
-        element: <Navigate to="/home" />
-      },
-      {
-        path: "/home",
-        element: <HomePage />
-      },
-      {
-        path: "/reset-password",
-        element: <ResetPasswordScreen />
-      },
-      {
-        path: "/drinks",
-        element: <DrinkListScreenProvider />
-      },
-      {
-        path: "/history",
-        element: <HistoryScreenProvider />
-      },
-      {
-        path: "/payments",
-        element: <PayDrinksScreenProvider />
-      },
-      {
-        path: "/keys",
-        element: <KeyHolderScreenProvider />
-      },
-      {
-        path: "/notifications",
-        element: <NotificationScreen />
-      },
-      {
-        path: "/user",
+        path: "",
+        element: <Outlet />,
+        errorElement: <ErrorRouteElement />,
         children: [
           {
             index: true,
-            element: <UserScreenProvider />
+            element: <Navigate to="/home" />
           },
           {
-            path: ":userId",
-            element: <ProfileScreen />
+            path: "/home",
+            element: <HomePage />
+          },
+          {
+            path: "/reset-password",
+            element: <ResetPasswordScreen />
+          },
+          {
+            path: "/drinks",
+            element: <DrinkListScreenProvider />
+          },
+          {
+            path: "/history",
+            element: <HistoryScreenProvider />
+          },
+          {
+            path: "/payments",
+            element: <PayDrinksScreenProvider />
+          },
+          {
+            path: "/keys",
+            element: <KeyHolderScreenProvider />
+          },
+          {
+            path: "/notifications",
+            element: <NotificationScreen />
+          },
+          {
+            path: "/user",
+            children: [
+              {
+                index: true,
+                element: <UserScreenProvider />
+              }
+            ]
+          },
+          {
+            path: "/challenges",
+            children: [
+              {
+                index: true,
+                element: <ChallengeScreen />
+              },
+              {
+                path: ":challengeId",
+                element: <ChallengeInfoScreen />
+              }
+            ]
+          },
+          {
+            path: "/groups",
+            children: [
+              {
+                path: "list",
+                element: <PublicGroupList />
+              },
+              {
+                path: ":groupId",
+                element: <PublicGroupInformation />
+              }
+            ]
+          },
+          {
+            path: "/training",
+            children: [
+              {
+                path: "list",
+                element: <EventScreenProvider />
+              },
+              {
+                path: "recurringEvents",
+                element: <RecurringEvents />
+              },
+              {
+                path: "event/:selectedEventId",
+                element: <EventInformationProvider />
+              },
+              {
+                path: "createOrUpdate/:option",
+                element: <CreateEventProvider />
+              }
+            ]
+          },
+          {
+            path: "/matches",
+            children: [
+              {
+                index: true,
+                element: <GameList />
+              },
+              {
+                path: "report",
+                element: <ReportScore />
+              }
+            ]
+          },
+          {
+            path: "/admin",
+            children: [
+              {
+                path: "drinks",
+                element: <AdminDrinkListProvider />
+              },
+              {
+                path: "drinks/history",
+                element: <AdminHistoryScreenProvider />
+              },
+              {
+                path: "drinks/payments",
+                element: <PaymentsPendingAdmin />
+              },
+              {
+                path: "users",
+                element: <AdminUserListProvider />
+              },
+              {
+                path: "supabase",
+                element: <SupabaseClient />
+              },
+              {
+                path: "permissions",
+                element: <PermissionList />
+              }
+            ]
+          },
+          {
+            path: "*",
+            element: <Navigate to="/home" replace />
           }
         ]
-      },
-      {
-        path: "/challenges",
-        children: [
-          {
-            index: true,
-            element: <ChallengeScreen />
-          },
-          {
-            path: ":challengeId",
-            element: <ChallengeInfoScreen />
-          }
-        ]
-      },
-      {
-        path: "/groups",
-        children: [
-          {
-            path: "list",
-            element: <PublicGroupList />
-          },
-          {
-            path: ":groupId",
-            element: <PublicGroupInformation />
-          }
-        ]
-      },
-      {
-        path: "/training",
-        children: [
-          {
-            path: "list",
-            element: <EventScreenProvider />
-          },
-          {
-            path: "recurringEvents",
-            element: <RecurringEvents />
-          },
-          {
-            path: "event/:selectedEventId",
-            element: <EventInformationProvider />
-          },
-          {
-            path: "createOrUpdate/:option",
-            element: <CreateEventProvider />
-          }
-        ]
-      },
-      {
-        path: "/matches",
-        children: [
-          {
-            index: true,
-            element: <GameList />
-          },
-          {
-            path: "report",
-            element: <ReportScore />
-          }
-        ]
-      },
-      {
-        path: "/admin",
-        children: [
-          {
-            path: "drinks",
-            element: <AdminDrinkListProvider />
-          },
-          {
-            path: "drinks/history",
-            element: <AdminHistoryScreenProvider />
-          },
-          {
-            path: "drinks/payments",
-            element: <PaymentsPendingAdmin />
-          },
-          {
-            path: "users",
-            element: <AdminUserListProvider />
-          },
-          {
-            path: "supabase",
-            element: <SupabaseClient />
-          },
-          {
-            path: "permissions",
-            element: <PermissionList />
-          }
-        ]
-      },
-      {
-        path: "*",
-        element: <Navigate to="/home" replace />
       }
     ]
   }
-]
+] as RouteObject[]);

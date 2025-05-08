@@ -12,10 +12,12 @@ import {
   Typography,
 } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
+import { useDialogs } from '@toolpad/core';
 import { compareDesc, isBefore } from 'date-fns';
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router';
+import { ProfileDialog } from 'src/components/Profile';
+import { useAuthentication } from 'src/features/auth/AuthContext';
 import { SwipeableDialog } from '../../../components/SwipeableDialog';
 import { FullAttendance } from '../../../types/supabaseTypes';
 import { EventAttendanceDialogProps } from '../types';
@@ -94,7 +96,8 @@ const EventAttendanceDialog = ({
 }: EventAttendanceDialogProps) => {
   const [value, setValue] = useState(index ?? 0);
   const theme = useTheme();
-  const navigate = useNavigate();
+  const dialogs = useDialogs();
+  const { user } = useAuthentication();
 
   useEffect(() => {
     setValue(index);
@@ -123,7 +126,7 @@ const EventAttendanceDialog = ({
                 <AttendanceItem
                   attendance={x}
                   key={x.user.userId + index}
-                  onClick={() => navigate('/user/' + x.user.userId)}
+                  onClick={() => dialogs.open(ProfileDialog, { user, userId: x.user.userId })}
                   required_item={usersWithRequiredItem.find((y) => y.user === x.user.userId)?.item}
                 />
               ))}
@@ -134,7 +137,7 @@ const EventAttendanceDialog = ({
                 <AttendanceItem
                   attendance={x}
                   key={x.user.userId + index}
-                  onClick={() => navigate('/user/' + x.user.userId)}
+                  onClick={() => dialogs.open(ProfileDialog, { user, userId: x.user.userId })}
                   required_item={usersWithRequiredItem.find((y) => y.user === x.user.userId)?.item}
                 />
               ))}
@@ -149,7 +152,7 @@ const EventAttendanceDialog = ({
                 <AttendanceItem
                   attendance={x}
                   key={x.user.userId + index}
-                  onClick={() => navigate('/user/' + x.user.userId)}
+                  onClick={() => dialogs.open(ProfileDialog, { user, userId: x.user.userId })}
                 />
               ))}
           </List>

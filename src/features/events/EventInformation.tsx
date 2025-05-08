@@ -159,7 +159,7 @@ const EventInformation = ({
   return (
     <Layout
       appBarConfig={{
-        showBackButton: true,
+        navigateBackPath: "/training/list",
         title: selectedEvent.title,
         showProfile: false,
       }}

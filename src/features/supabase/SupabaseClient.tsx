@@ -19,9 +19,9 @@ import { useClient } from 'react-supabase';
 import Layout from 'src/components/Layout';
 import { LoadingIndicator } from 'src/components/LoadingIndicator';
 import { supabase } from 'src/components/services/supabase/supabaseClient';
-import { EditEntryDialog } from './dialogs/EditEntryDialog';
 import { SelectTableDialog } from './dialogs/SelectTableDialog';
-import { ViewEntryDialog } from './dialogs/ViewEntryDialog';
+import { EditEntryDialog } from './EditEntryDialog';
+import { ViewEntryDialog } from './ViewEntryDialog';
 
 const StyledGridOverlay = styled('div')(({ theme }) => ({
   display: 'flex',
@@ -258,6 +258,11 @@ const SupabaseClient = () => {
       }} secondaryAction={<ExpandMoreOutlined />}>
         <ListItemText primary={selectedTable?.name ?? "Nicht gewählt"} secondary={selectedTable?.schema ?? "Nicht gewählt"} />
       </ListItem>
+      <button type="button"
+        onClick={() => {
+          throw new Error("Sentry Test Error");
+        }}>Break the world</button>
+
       <ErrorBoundary
         fallback={CustomNoRowsOverlay}
         onError={(error) => {

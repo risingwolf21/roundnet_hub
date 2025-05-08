@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 import { useParams } from 'react-router';
+import { useAuthentication } from 'src/features/auth/AuthContext';
 import {
   attendanceSelector
 } from 'src/features/events/slices/eventAttendanceSlice';
@@ -11,7 +12,6 @@ import {
   fetchSingleEventAsync
 } from 'src/features/events/slices/eventsSlice';
 import { AlertSnackbar } from '../components/AlertSnackbar';
-import { useApplication } from '../features/auth/AuthContext';
 import EventInformation from '../features/events/EventInformation';
 import { PlaceType } from '../features/events/types';
 import { fetchItemsAsync, keyHoldersSelector } from '../features/keys/slices/keysSlice';
@@ -30,7 +30,7 @@ const EventInformationProvider = () => {
   const { loading: attendanceLoading } = useSelector((state: RootState) => state.eventAttendance);
   const { loading: commentsLoading } = useSelector((state: RootState) => state.eventComments);
   const keyHolders = useSelector((state: RootState) => keyHoldersSelector.selectAll(state));
-  const { user } = useApplication();
+  const { user } = useAuthentication();
   const dispatch = useAppDispatch();
   const { t } = useTranslation();
   const [selectedEventPlace, setSelectedEventPlace] = useState<PlaceType | null>(null);
@@ -41,7 +41,7 @@ const EventInformationProvider = () => {
 
   useEffect(() => {
     if (!event) {
-      dispatch(fetchSingleEventAsync({ eventId: selectedEventId ?? '', userId: user!.userId }));
+      dispatch(fetchSingleEventAsync({ eventId: selectedEventId ?? '', userId: user.userId }));
     } else {
       setSelectedEventPlace(event.place ? (JSON.parse(event.place?.toString() ?? '') as PlaceType) : null);
     }

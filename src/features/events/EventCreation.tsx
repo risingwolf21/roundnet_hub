@@ -147,7 +147,7 @@ const CreateEvent = ({ t, eventToEdit, option }: CreateEventProps) => {
   return (
     <Layout
       appBarConfig={{
-        showBackButton: true,
+        navigateBackPath: "/training/list",
         showProfile: false,
         title: `Event ${eventToEdit ? 'bearbeiten' : 'erstellen'}`,
       }}

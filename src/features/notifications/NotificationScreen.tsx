@@ -9,19 +9,18 @@ import { HOMEPAGE } from '../../constants';
 import { RootState, useAppDispatch } from '../../redux/store';
 import { SupabaseUserRepository } from '../../repository/UserRepository';
 import { can } from '../../utils/PermissionService';
-import { useApplication } from '../auth/AuthContext';
+import { useAuthentication } from '../auth/AuthContext';
 import { fetchNotificationsAsync, notificationsSelector } from './slices/notificationsSlice';
 
 const NotificationScreen = () => {
   const { loading, error } = useSelector((state: RootState) => state.notifications);
-  const { user } = useApplication();
+  const { user } = useAuthentication();
   const notifications = useSelector((state: RootState) => notificationsSelector.selectAll(state));
   const dispatch = useAppDispatch();
   const dialog = useNotifications();
 
   useEffect(() => {
-    if (user)
-      dispatch(fetchNotificationsAsync(user))
+    dispatch(fetchNotificationsAsync(user))
   }, [dispatch, user])
 
   useEffect(() => {
@@ -32,7 +31,7 @@ const NotificationScreen = () => {
   if (!can('view', 'notifications')) return <Navigate to={`/${HOMEPAGE}`} replace={true} />;
 
   const markNotificationsAsRead = () => {
-    SupabaseUserRepository.markNotificationsAsRead(user!).then((result) => {
+    SupabaseUserRepository.markNotificationsAsRead(user).then((result) => {
       dispatch(fetchNotificationsAsync(user!));
     });
   };

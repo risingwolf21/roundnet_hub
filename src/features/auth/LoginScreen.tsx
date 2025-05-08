@@ -7,7 +7,7 @@ import React, { useState } from 'react';
 import { Navigate, useLocation, useNavigate } from 'react-router';
 import { HOMEPAGE } from 'src/constants';
 import { supabase } from '../../components/services/supabase/supabaseClient';
-import { useApplication } from './AuthContext';
+import { useApplication } from './ApplicationContext';
 import Layout from 'src/components/Layout';
 
 const LoginScreen = () => {

@@ -47,8 +47,6 @@ const displayKeysForForeign = (c: {
       return ["displayName", "comment"];
     case c.foreign_key_schema_name === "public" && c.foreign_key_table_name === "vouchers":
       return ["user", "title"];
-      case c.foreign_key_schema_name === "games" && c.foreign_key_table_name === "teams":
-        return ["name"];
     default:
       return [];
   }

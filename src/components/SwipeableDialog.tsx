@@ -48,7 +48,7 @@ export const SwipeableDialog = ({
           bottom: 0,
           width: '100%',
           alignItems: 'end',
-          paddingBottom: 'env(safe-area-inset-bottom)',
+          paddingBottom: 2,
         },
       }}
     >

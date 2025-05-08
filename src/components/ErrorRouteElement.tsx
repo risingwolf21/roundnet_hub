@@ -1,18 +1,17 @@
-import React from "react";
-import { isRouteErrorResponse, Navigate, useRouteError } from "react-router"
-import { useApplication } from "src/features/auth/AuthContext";
-import Layout from "./Layout";
 import { Box, Typography } from "@mui/material";
+import { captureException } from "@sentry/react";
+import React from "react";
+import { isRouteErrorResponse, useRouteError } from "react-router";
+import Layout from "./Layout";
 
 const ErrorRouteElement = () => {
   const error = useRouteError();
-  const { user } = useApplication();
 
-  if (!user) {
-    return <Navigate to="/login" replace />
-  }
+  React.useEffect(() => {
+    captureException(error);
+  }, [error]);
 
-  return <Layout appBarConfig={{ showProfile: false }}>
+  return <Layout appBarConfig={{ showProfile: false, navigateBackPath: "/home" }}>
     <Box sx={{ alignItems: 'center', display: 'flex', flexDirection: 'column', pt: 10 }}>
       <Typography sx={{ fontSize: '30pt', fontWeight: 'bold' }}>⚠️404⚠️</Typography>
       <Typography sx={{ fontSize: '18pt', fontWeight: 'bold', textAlign: "center" }}>Die Seite wurde nicht gefunden</Typography>

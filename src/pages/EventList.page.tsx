@@ -1,14 +1,14 @@
 import React, { useEffect } from 'react';
 import { useSelector } from 'react-redux';
+import { useAuthentication } from 'src/features/auth/AuthContext';
 import { eventsSelector, updateFetchMode } from 'src/features/events/slices/eventsSlice';
-import { useApplication } from '../features/auth/AuthContext';
 import EventScreen from '../features/events/EventList';
 import { RootState, useAppDispatch } from '../redux/store';
 
 const EventScreenProvider = () => {
   const { loading, error, fetchMode } = useSelector((state: RootState) => state.events);
   const events = useSelector(eventsSelector.selectAll);
-  const { user } = useApplication();
+  const { user } = useAuthentication();
   const dispatch = useAppDispatch();
 
   useEffect(() => {
@@ -21,7 +21,7 @@ const EventScreenProvider = () => {
       events={events}
       loading={loading}
       error={error ? { message: error, severity: 'error' } : null}
-      user={user!}
+      user={user}
       fetchMode={fetchMode}
     />
   );

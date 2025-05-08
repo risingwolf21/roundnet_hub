@@ -233,6 +233,92 @@ export type Database = {
       [_ in never]: never
     }
   }
+  graphql_public: {
+    Tables: {
+      [_ in never]: never
+    }
+    Views: {
+      [_ in never]: never
+    }
+    Functions: {
+      graphql: {
+        Args: {
+          operationName?: string
+          query?: string
+          variables?: Json
+          extensions?: Json
+        }
+        Returns: Json
+      }
+    }
+    Enums: {
+      [_ in never]: never
+    }
+    CompositeTypes: {
+      [_ in never]: never
+    }
+  }
+  logs: {
+    Tables: {
+      events: {
+        Row: {
+          author: string | null
+          created_at: string
+          data: Json
+          id: number
+          type: string
+        }
+        Insert: {
+          author?: string | null
+          created_at?: string
+          data: Json
+          id?: number
+          type: string
+        }
+        Update: {
+          author?: string | null
+          created_at?: string
+          data?: Json
+          id?: number
+          type?: string
+        }
+        Relationships: []
+      }
+      player_info: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          type: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          type: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          type?: string
+        }
+        Relationships: []
+      }
+    }
+    Views: {
+      [_ in never]: never
+    }
+    Functions: {
+      [_ in never]: never
+    }
+    Enums: {
+      [_ in never]: never
+    }
+    CompositeTypes: {
+      [_ in never]: never
+    }
+  }
   permissions: {
     Tables: {
       app_permissions: {
@@ -346,7 +432,7 @@ export type Database = {
           created_at: string
           description: string
           end_date: string | null
-          group: string | null
+          group: string
           id: string
           max_points_per_week: number | null
           name: string
@@ -356,7 +442,7 @@ export type Database = {
           created_at?: string
           description?: string
           end_date?: string | null
-          group?: string | null
+          group: string
           id?: string
           max_points_per_week?: number | null
           name?: string
@@ -366,7 +452,7 @@ export type Database = {
           created_at?: string
           description?: string
           end_date?: string | null
-          group?: string | null
+          group?: string
           id?: string
           max_points_per_week?: number | null
           name?: string
@@ -1405,48 +1491,48 @@ export type Database = {
     }
     Enums: {
       app_permission:
-        | "event.select"
-        | "event.update"
-        | "event.insert"
-        | "event.delete"
-        | "drink.select"
-        | "drink.update"
-        | "drink.insert"
-        | "drink.delete"
-        | "group.select"
-        | "group.update"
-        | "group.insert"
-        | "group.delete"
-        | "challenge.select"
-        | "challenge.update"
-        | "challenge.insert"
-        | "challenge.delete"
-        | "payments.select"
-        | "payments.update"
-        | "payments.insert"
-        | "payments.delete"
-        | "item.select"
-        | "item.update"
-        | "item.insert"
-        | "item.delete"
+      | "event.select"
+      | "event.update"
+      | "event.insert"
+      | "event.delete"
+      | "drink.select"
+      | "drink.update"
+      | "drink.insert"
+      | "drink.delete"
+      | "group.select"
+      | "group.update"
+      | "group.insert"
+      | "group.delete"
+      | "challenge.select"
+      | "challenge.update"
+      | "challenge.insert"
+      | "challenge.delete"
+      | "payments.select"
+      | "payments.update"
+      | "payments.insert"
+      | "payments.delete"
+      | "item.select"
+      | "item.update"
+      | "item.insert"
+      | "item.delete"
       EventAttendance:
-        | "Declined"
-        | "Attending"
-        | "Unanswered"
-        | "Waiting"
-        | "AttendingAsTrainer"
+      | "Declined"
+      | "Attending"
+      | "Unanswered"
+      | "Waiting"
+      | "AttendingAsTrainer"
       EventRecurrence: "Weekly" | "Fortnightly" | "Monthly" | "None"
       GroupRole: "user" | "admin" | "joinRequested"
       ItemType: "mtvStorage" | "mtvGym" | "mtvGymPalazzo" | "goethe"
       NotificationTags:
-        | "eventComments"
-        | "userRegistration"
-        | "paymentRequest"
-        | "paymentPending"
-        | "eventCancelled"
-        | "eventUpdated"
-        | "eventAttedanceChanged"
-        | "challengeUpdate"
+      | "eventComments"
+      | "userRegistration"
+      | "paymentRequest"
+      | "paymentPending"
+      | "eventCancelled"
+      | "eventUpdated"
+      | "eventAttedanceChanged"
+      | "challengeUpdate"
       PaymentState: "Open" | "Fulfilled"
       ProductType: "Drink" | "Special" | "None"
       UserRole: "user" | "admin" | "procure" | "finance" | "trainer"
@@ -1461,109 +1547,115 @@ type DefaultSchema = Database[Extract<keyof Database, "public">]
 
 export type Tables<
   DefaultSchemaTableNameOrOptions extends
-    | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
-    | { schema: keyof Database },
+  | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
+  | { schema: keyof Database },
   TableName extends DefaultSchemaTableNameOrOptions extends {
     schema: keyof Database
   }
-    ? keyof (Database[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
-        Database[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
-    : never = never,
+  ? keyof (Database[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+    Database[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
+  : never = never,
 > = DefaultSchemaTableNameOrOptions extends { schema: keyof Database }
   ? (Database[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
-      Database[DefaultSchemaTableNameOrOptions["schema"]]["Views"])[TableName] extends {
+    Database[DefaultSchemaTableNameOrOptions["schema"]]["Views"])[TableName] extends {
       Row: infer R
     }
-    ? R
-    : never
+  ? R
+  : never
   : DefaultSchemaTableNameOrOptions extends keyof (DefaultSchema["Tables"] &
-        DefaultSchema["Views"])
-    ? (DefaultSchema["Tables"] &
-        DefaultSchema["Views"])[DefaultSchemaTableNameOrOptions] extends {
-        Row: infer R
-      }
-      ? R
-      : never
-    : never
+    DefaultSchema["Views"])
+  ? (DefaultSchema["Tables"] &
+    DefaultSchema["Views"])[DefaultSchemaTableNameOrOptions] extends {
+      Row: infer R
+    }
+  ? R
+  : never
+  : never
 
 export type TablesInsert<
   DefaultSchemaTableNameOrOptions extends
-    | keyof DefaultSchema["Tables"]
-    | { schema: keyof Database },
+  | keyof DefaultSchema["Tables"]
+  | { schema: keyof Database },
   TableName extends DefaultSchemaTableNameOrOptions extends {
     schema: keyof Database
   }
-    ? keyof Database[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
-    : never = never,
+  ? keyof Database[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+  : never = never,
 > = DefaultSchemaTableNameOrOptions extends { schema: keyof Database }
   ? Database[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
-      Insert: infer I
-    }
-    ? I
-    : never
+    Insert: infer I
+  }
+  ? I
+  : never
   : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
-    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
-        Insert: infer I
-      }
-      ? I
-      : never
-    : never
+  ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
+    Insert: infer I
+  }
+  ? I
+  : never
+  : never
 
 export type TablesUpdate<
   DefaultSchemaTableNameOrOptions extends
-    | keyof DefaultSchema["Tables"]
-    | { schema: keyof Database },
+  | keyof DefaultSchema["Tables"]
+  | { schema: keyof Database },
   TableName extends DefaultSchemaTableNameOrOptions extends {
     schema: keyof Database
   }
-    ? keyof Database[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
-    : never = never,
+  ? keyof Database[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+  : never = never,
 > = DefaultSchemaTableNameOrOptions extends { schema: keyof Database }
   ? Database[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
-      Update: infer U
-    }
-    ? U
-    : never
+    Update: infer U
+  }
+  ? U
+  : never
   : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
-    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
-        Update: infer U
-      }
-      ? U
-      : never
-    : never
+  ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
+    Update: infer U
+  }
+  ? U
+  : never
+  : never
 
 export type Enums<
   DefaultSchemaEnumNameOrOptions extends
-    | keyof DefaultSchema["Enums"]
-    | { schema: keyof Database },
+  | keyof DefaultSchema["Enums"]
+  | { schema: keyof Database },
   EnumName extends DefaultSchemaEnumNameOrOptions extends {
     schema: keyof Database
   }
-    ? keyof Database[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
-    : never = never,
+  ? keyof Database[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
+  : never = never,
 > = DefaultSchemaEnumNameOrOptions extends { schema: keyof Database }
   ? Database[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"][EnumName]
   : DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema["Enums"]
-    ? DefaultSchema["Enums"][DefaultSchemaEnumNameOrOptions]
-    : never
+  ? DefaultSchema["Enums"][DefaultSchemaEnumNameOrOptions]
+  : never
 
 export type CompositeTypes<
   PublicCompositeTypeNameOrOptions extends
-    | keyof DefaultSchema["CompositeTypes"]
-    | { schema: keyof Database },
+  | keyof DefaultSchema["CompositeTypes"]
+  | { schema: keyof Database },
   CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
     schema: keyof Database
   }
-    ? keyof Database[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
-    : never = never,
+  ? keyof Database[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
+  : never = never,
 > = PublicCompositeTypeNameOrOptions extends { schema: keyof Database }
   ? Database[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
   : PublicCompositeTypeNameOrOptions extends keyof DefaultSchema["CompositeTypes"]
-    ? DefaultSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
-    : never
+  ? DefaultSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
+  : never
 
 export const Constants = {
   games: {
+    Enums: {},
+  },
+  graphql_public: {
+    Enums: {},
+  },
+  logs: {
     Enums: {},
   },
   permissions: {

@@ -30,11 +30,10 @@ import {
   ListItemProps,
   ListItemText,
   ListSubheader,
-  Drawer as MuiDrawer,
   DrawerProps as MuiDrawerProps,
   SwipeableDrawer,
   Theme,
-  Typography,
+  Typography
 } from '@mui/material';
 import { styled } from '@mui/system';
 import { TFunction } from 'i18next';
@@ -525,7 +524,7 @@ export const Drawer = ({ open, onClose, onOpen }: Props) => {
   const { notVerifiedUsers } = useSelector((state: RootState) => state.adminUsers);
   const [version, setVersion] = useState<string>('');
 
-  
+
   const iOS =
     typeof navigator !== 'undefined' && /iPad|iPhone|iPod/.test(navigator.userAgent);
 
@@ -534,7 +533,10 @@ export const Drawer = ({ open, onClose, onOpen }: Props) => {
       .then((r) => r.text())
       .then((text) => {
         setVersion(text);
-      });
+      })
+      .catch(e => {
+        setVersion("???")
+      })
   }, []);
 
   useEffect(() => {
@@ -573,7 +575,7 @@ export const Drawer = ({ open, onClose, onOpen }: Props) => {
         open={open}
         onOpen={onOpen}
         onClose={onClose}
-        disableBackdropTransition={!iOS} 
+        disableBackdropTransition={!iOS}
         disableDiscovery={iOS}
         ModalProps={{
           keepMounted: true, // Better open performance on mobile.
@@ -614,7 +616,7 @@ export const Drawer = ({ open, onClose, onOpen }: Props) => {
         open
         onOpen={onOpen}
         onClose={onClose}
-        disableBackdropTransition={!iOS} 
+        disableBackdropTransition={!iOS}
         disableDiscovery={iOS}
       >
         <DrawerContent

@@ -2,7 +2,7 @@ import { useFirebase } from '../../hooks/useFirebase';
 import { ToastContainer } from 'react-toastify';
 import React from 'react';
 import 'react-toastify/dist/ReactToastify.css';
-import { useApplication } from '../auth/AuthContext';
+import { useApplication } from '../auth/ApplicationContext';
 
 export const FirebaseMessaging = () => {
   const { user, deviceId } = useApplication();

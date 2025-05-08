@@ -11,9 +11,8 @@ import {
 } from '@mui/material';
 import { TFunction } from 'i18next';
 import React from 'react';
-import { useNavigate } from 'react-router';
+import { useAuthentication } from 'src/features/auth/AuthContext';
 import { FullComment } from '../../../types/supabaseTypes';
-import { useApplication } from '../../auth/AuthContext';
 
 type Props = {
   showDivider?: boolean;
@@ -23,7 +22,7 @@ type Props = {
 };
 
 export const CommentReplyText = ({ onClick }: { onClick: () => void }) => {
-  const { user } = useApplication();
+  const { user } = useAuthentication();
   return (
     <>
       <ListItem
@@ -41,7 +40,7 @@ export const CommentReplyText = ({ onClick }: { onClick: () => void }) => {
       >
         <ListItemAvatar sx={{ verticalAlign: 'top', display: 'flex' }}>
           <Avatar sx={{ borderRadius: 2 }}>
-            {user?.avatarUrl ? <img src={user?.avatarUrl} alt="logo" width={'100%'} height={'100%'} /> : <AccountBox />}
+            {user.avatarUrl ? <img src={user?.avatarUrl} alt="logo" width={'100%'} height={'100%'} /> : <AccountBox />}
           </Avatar>
         </ListItemAvatar>
         <ListItemText primaryTypographyProps={{ color: 'rgba(0,0,0,0.54)' }} primary={'Schreibe eine Antwort'} />
@@ -52,8 +51,6 @@ export const CommentReplyText = ({ onClick }: { onClick: () => void }) => {
 };
 
 export const CommentReplyItem = ({ reply, t, pl = 56 }: Props) => {
-  const navigate = useNavigate();
-
   return (
     <ListItem
       dense
@@ -68,10 +65,6 @@ export const CommentReplyItem = ({ reply, t, pl = 56 }: Props) => {
     >
       <ListItemAvatar
         sx={{ verticalAlign: 'top', display: 'flex' }}
-        onClick={(e) => {
-          e.stopPropagation();
-          navigate('/user/' + reply.user.userId);
-        }}
       >
         <Avatar sx={{ borderRadius: 2 }}>
           {reply.pending ? (

@@ -1,7 +1,7 @@
 import * as Sentry from "@sentry/react";
 import { supabaseIntegration } from '@supabase/sentry-js-integration';
 import { createRoutesFromChildren, matchRoutes, useLocation, useNavigationType } from 'react-router';
-import { useEffect } from 'react';
+import React from 'react';
 import { supabase } from './components/services/supabase/supabaseClient';
 
 
@@ -11,8 +11,8 @@ Sentry.init({
   environment: process.env.REACT_APP_ENV,
   release: process.env.REACT_APP_VERSION,
   integrations: [
-    Sentry.reactRouterV6BrowserTracingIntegration({
-      useEffect,
+    Sentry.reactRouterV7BrowserTracingIntegration({
+      useEffect: React.useEffect,
       useLocation,
       useNavigationType,
       createRoutesFromChildren,
@@ -21,7 +21,7 @@ Sentry.init({
     supabaseIntegration(supabase, Sentry, {
       tracing: true,
       breadcrumbs: true,
-      errors: true
+      errors: true,
     }),
     Sentry.browserTracingIntegration(),
   ],

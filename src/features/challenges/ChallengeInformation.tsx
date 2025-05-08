@@ -9,7 +9,7 @@ import { groupBy } from 'lodash';
 import React, { useEffect, useMemo, useState } from 'react';
 import { withTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
-import { Navigate, useParams } from 'react-router';
+import { useParams } from 'react-router';
 import { PullToRefresh } from 'src/components/pull-to-refresh/PullToRefresh';
 import { supabase } from 'src/components/services/supabase/supabaseClient';
 import { RootState, useAppDispatch } from 'src/redux/store';
@@ -18,7 +18,7 @@ import { dataURLtoFile, formatDateFromDatabase } from 'src/utils';
 import Layout from '../../components/Layout';
 import { ChallengeRepository } from '../../repository/ChallengeRepository';
 import { can } from '../../utils/PermissionService';
-import { useApplication } from '../auth/AuthContext';
+import { useAuthentication } from '../auth/AuthContext';
 import { TabPanel } from '../events/dialogs/EventAttendanceDialog';
 import { ChallengeStatItem } from './components/ChallengeStatItem';
 import EnterPointDialog from './dialogs/EnterPointDialog';
@@ -27,7 +27,7 @@ import { challengeSelector, fetchChallengeStatsSingleAsync, onChallengeStatsInse
 const ChallengeInformation = ({ t }: { t: TFunction }) => {
   const { challengeId } = useParams();
   const challenge = useSelector((root: RootState) => challengeSelector.selectById(root, challengeId ?? 0));
-  const { user } = useApplication();
+  const { user } = useAuthentication();
   const dispatch = useAppDispatch();
   const notifications = useNotifications();
   const [open, setOpen] = useState(false);
@@ -56,10 +56,8 @@ const ChallengeInformation = ({ t }: { t: TFunction }) => {
     return challenge.stats.reduce(reduceChallengeStats, new Map<string, { stats: ChallengeStatWithUser[], points: number }>())
   }, [challenge])
 
-  if (!challenge || !user) return <Navigate to={'/challenges'} replace={true} />;
-
   const uploadImage = async (image: { dataUrl: string, fileName: string } | null) => {
-    if (!image) return null;
+    if (!image || !challenge) return null;
     const { data: uploadData, error } = await supabase.storage
       .from('challenge')
       .upload(`${challenge.id}/${image.fileName}`, dataURLtoFile(image.dataUrl, image.fileName), {
@@ -81,13 +79,13 @@ const ChallengeInformation = ({ t }: { t: TFunction }) => {
 
   const increaseChallengePoint = async (created_at: Dayjs, image: { dataUrl: string, fileName: string } | null) => {
     setOpen(false);
-    if (!user) {
+    if (!user || !challenge) {
       notifications.show('Something went wrong! Try again later', { severity: 'error' });
       return;
     }
 
     const uploadedImageUrl = await uploadImage(image);
-    if (!uploadedImageUrl) {
+    if (uploadedImageUrl) {
       notifications.show('Fehler beim hochladen des Bildes. Der Punkt wurde dennoch eingetragen', { severity: 'error' });
     }
     ChallengeRepository.increasePointForUser(user.userId, challenge.id, created_at, uploadedImageUrl)
@@ -104,12 +102,15 @@ const ChallengeInformation = ({ t }: { t: TFunction }) => {
   };
 
   return (
-    <Layout appBarConfig={{ title: challenge.name, showBackButton: true, showProfile: true }}>
-      <PullToRefresh onRefresh={() => dispatch(fetchChallengeStatsSingleAsync({ challengeId: challenge.id }))}>
+    <Layout appBarConfig={{ title: challenge?.name, navigateBackPath: "/challenges", showProfile: true }}>
+      <PullToRefresh onRefresh={() => {
+        if (challenge)
+          dispatch(fetchChallengeStatsSingleAsync({ challengeId: challenge.id }))
+      }}>
         <Alert sx={{ m: 2 }} severity={'info'}>
-          {challenge.description}
+          {challenge?.description}
         </Alert>
-        {challenge.automated && (
+        {challenge?.automated && (
           <Alert sx={{ m: 2 }} severity={'info'}>
             {t('challenge.automatedChallenge')}
           </Alert>
@@ -121,25 +122,23 @@ const ChallengeInformation = ({ t }: { t: TFunction }) => {
         <TabPanel value={value} index={0}>
           <Stack spacing={1} direction={"column"} sx={{ m: 1, mb: 12 }}>
             {
-              Object.entries(groupBy(challenge.stats, (a) => formatDateFromDatabase(a.created_at).toDateString()))
+              Object.entries(groupBy(challenge?.stats ?? [], (a) => formatDateFromDatabase(a.created_at).toDateString()))
                 .sort(([key_a], [key_b]) => new Date(key_b) > new Date(key_a) ? 1 : -1)
                 .map(([key, value]) => <Stack spacing={1} direction={"column"} key={key}>
                   <Typography sx={{ textAlign: "center", color: 'rgba(0,0,0,0.6)', }}>{key}</Typography>
                   <List>
                     {
-                      value.map(x => <ListItem divider sx={{ display: "flex", p: 0 }} key={x.id}>
-                        <ListItem sx={{ mr: 4 }}>
-                          <ListItemAvatar>
-                            <Avatar sx={{ borderRadius: 2 }}>
-                              {x.fullUser.avatarUrl ? (
-                                <img src={x.fullUser.avatarUrl} alt="logo" width={'100%'} height={'100%'} />
-                              ) : (
-                                <AccountBox />
-                              )}
-                            </Avatar>
-                          </ListItemAvatar>
-                          <ListItemText primary={"+1"} secondary={x.fullUser.displayName} />
-                        </ListItem>
+                      value.map(x => <ListItem divider sx={{ display: "flex", p: 0, mr: 4 }} key={x.id}>
+                        <ListItemAvatar>
+                          <Avatar sx={{ borderRadius: 2 }}>
+                            {x.fullUser.avatarUrl ? (
+                              <img src={x.fullUser.avatarUrl} alt="logo" width={'100%'} height={'100%'} />
+                            ) : (
+                              <AccountBox />
+                            )}
+                          </Avatar>
+                        </ListItemAvatar>
+                        <ListItemText primary={"+1"} secondary={x.fullUser.displayName} />
                         {
                           x.image_url &&
                           <CardMedia
@@ -168,7 +167,7 @@ const ChallengeInformation = ({ t }: { t: TFunction }) => {
               ))}
           </List>
         </TabPanel>
-        {can('update', 'challenge') && !challenge.automated && (
+        {can('update', 'challenge') && !challenge?.automated && (
           <Fab
             sx={{
               background: '#66bb6a',
@@ -185,13 +184,15 @@ const ChallengeInformation = ({ t }: { t: TFunction }) => {
           </Fab>
         )}
 
-        <EnterPointDialog
-          open={open}
-          setOpen={setOpen}
-          maxEntriesPerWeek={challenge.max_points_per_week}
-          dates={challenge.stats.filter(x => x.fullUser.userId === user.userId).map(x => x.created_at)}
-          increaseChallengePoint={(created_at: Dayjs, image: { dataUrl: string, fileName: string } | null) => increaseChallengePoint(created_at, image)} />
+        {
+          challenge && <EnterPointDialog
+            open={open}
+            setOpen={setOpen}
+            maxEntriesPerWeek={challenge.max_points_per_week}
+            dates={challenge.stats.filter(x => x.fullUser.userId === user.userId).map(x => x.created_at)}
+            increaseChallengePoint={(created_at: Dayjs, image: { dataUrl: string, fileName: string } | null) => increaseChallengePoint(created_at, image)} />
 
+        }
       </PullToRefresh>
     </Layout >
   );

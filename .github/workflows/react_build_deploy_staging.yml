@@ -3,7 +3,6 @@ on:
   push:
     branches:
       - staging
-      - master
 
 env:
   CI: ''
@@ -22,24 +21,10 @@ jobs:
       - name: Install dependencies
         run: yarn install
 
-      - name: Write commit Version to file
-        uses: DamianReeves/write-file-action@master
-        with:
-          path: ${{github.workspace}}/src/git_commit.txt
-          contents: |
-            ${{github.sha}}
-          write-mode: overwrite
-
-      - name: 'Write firebase service worker config file'
-        run: yarn run build-fcm-config
-
       - name: Build
         run: PUBLIC_URL=https://staging-roundnet-karlsruhe.web.app yarn run build:staging
-        env:
-          REACT_APP_SUPABASE_API_KEY: ${{secrets.SUPABASE_STAGING_ANON_KEY}}
-          REACT_APP_SUPABASE_URL: ${{secrets.SUPABASE_STAGING_URL}}
 
-      - name: Deploy to staging environment
+      - name: Deploying to Staging Environment
         uses: FirebaseExtended/action-hosting-deploy@v0
         with:
           repoToken: '${{ secrets.GITHUB_TOKEN }}'

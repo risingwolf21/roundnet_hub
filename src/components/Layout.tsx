@@ -1,8 +1,8 @@
 import { AccountCircle, ArrowBack, Menu } from '@mui/icons-material';
-import { AppBar, Avatar, Box, Chip, IconButton, Stack, TextField, Toolbar, Typography } from '@mui/material';
+import { AppBar, Avatar, Box, IconButton, TextField, Toolbar, Typography } from '@mui/material';
 import React, { ReactNode, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
-import { useApplication } from '../features/auth/AuthContext';
+import { useApplication } from '../features/auth/ApplicationContext';
 import { FirebaseMessaging } from '../features/notifications/FirebaseMessaging';
 import { Drawer, drawerWidth } from './Drawer';
 
@@ -11,7 +11,7 @@ type Props = {
   appBarActions?: ReactNode;
   appBarConfig?: {
     title?: string;
-    showBackButton?: boolean;
+    navigateBackPath?: string;
     showProfile?: boolean;
     showSearch?: boolean;
     onSearchChange?: (value: string) => void;
@@ -23,11 +23,11 @@ const Layout = ({
   appBarActions,
   appBarConfig: {
     title = 'Roundnet Karlsruhe',
-    showBackButton = false,
     showProfile = true,
+    navigateBackPath,
     showSearch,
     onSearchChange,
-  } = { title: 'Roundnet Karlsruhe', showBackButton: false, showProfile: true },
+  } = { title: 'Roundnet Karlsruhe', showProfile: true },
 }: Props) => {
   const navigate = useNavigate();
   const { user } = useApplication();
@@ -82,10 +82,10 @@ const Layout = ({
         })}
       >
         <Toolbar>
-          {showBackButton ? (
+          {navigateBackPath ? (
             <IconButton
               color="inherit"
-              onClick={() => navigate(-1)}
+              onClick={() => navigate(navigateBackPath)}
               edge="start"
               sx={(theme) => ({
                 mr: 2,
@@ -113,17 +113,11 @@ const Layout = ({
           )}
 
           {/* Title */}
-          <Stack direction={"row"} spacing={2} sx={{ flexGrow: 1, alignItems: "center" }}>
-            <Typography variant="h6" noWrap >
-              {title}
-            </Typography>
-            {
-              process.env.REACT_APP_ENV !== "production" && <Chip variant='outlined' size='small' color='warning' label={process.env.REACT_APP_ENV} />
-            }
-          </Stack>
-
+          <Typography variant="h6" noWrap sx={{ flexGrow: 1 }}>
+            {title}
+          </Typography>
           {/* Profile */}
-          {showProfile && (
+          {showProfile && user && (
             <IconButton
               color="inherit"
               onClick={() => {
@@ -131,7 +125,7 @@ const Layout = ({
               }}
               sx={{ pr: 0 }}
             >
-              {user?.avatarUrl ? (
+              {user.avatarUrl ? (
                 <Avatar sx={{ borderRadius: 2, width: '35px', height: '35px' }}>
                   <img src={user?.avatarUrl} alt="logo" width={'35px'} height={'35px'} />
                 </Avatar>

@@ -23,9 +23,9 @@ declare global {
   type ChallengeStats = Tables<'challenge_stats'>;
   type Drink = Tables<'drink'>;
   type Attendance = Tables<'event_attendance_user_mapping'>;
+  type GroupUserMapping = Tables<'group_user_mapping'>;
   type EventComment = Tables<'event_comments'>;
   type Group = Tables<'event_group'>;
-  type GroupUserMapping = Tables<'group_user_mapping'>;
   type Item = Tables<'items'>;
   type ItemHistory = Tables<'item_history'>;
   type Payment = Tables<'payments'>;
