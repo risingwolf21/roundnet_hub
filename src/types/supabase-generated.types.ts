@@ -7,30 +7,367 @@ export type Json =
   | Json[]
 
 export type Database = {
+  games: {
+    Tables: {
+      match: {
+        Row: {
+          created_at: string
+          id: string
+          team_a: string
+          team_b: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          team_a: string
+          team_b: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          team_a?: string
+          team_b?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "match_team_a_fkey"
+            columns: ["team_a"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "match_team_b_fkey"
+            columns: ["team_b"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      players: {
+        Row: {
+          created_at: string
+          ka_index: number
+          player: string
+          pro_status: boolean
+          rg_avatar_url: string | null
+          rg_id: string | null
+          rg_index: number
+          rg_link: string | null
+        }
+        Insert: {
+          created_at?: string
+          ka_index?: number
+          player?: string
+          pro_status?: boolean
+          rg_avatar_url?: string | null
+          rg_id?: string | null
+          rg_index?: number
+          rg_link?: string | null
+        }
+        Update: {
+          created_at?: string
+          ka_index?: number
+          player?: string
+          pro_status?: boolean
+          rg_avatar_url?: string | null
+          rg_id?: string | null
+          rg_index?: number
+          rg_link?: string | null
+        }
+        Relationships: []
+      }
+      sets: {
+        Row: {
+          created_at: string
+          id: string
+          match: string
+          set_number: number
+          team_a_score: number
+          team_b_score: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          match: string
+          set_number: number
+          team_a_score: number
+          team_b_score: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          match?: string
+          set_number?: number
+          team_a_score?: number
+          team_b_score?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sets_match_fkey"
+            columns: ["match"]
+            isOneToOne: false
+            referencedRelation: "match"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sets_match_fkey"
+            columns: ["match"]
+            isOneToOne: false
+            referencedRelation: "user_matches"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      teams: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          normalized_players: string
+          player_1: string
+          player_2: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          normalized_players: string
+          player_1: string
+          player_2: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          normalized_players?: string
+          player_1?: string
+          player_2?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "teams_player_1_fkey"
+            columns: ["player_1"]
+            isOneToOne: false
+            referencedRelation: "players"
+            referencedColumns: ["player"]
+          },
+          {
+            foreignKeyName: "teams_player_2_fkey"
+            columns: ["player_2"]
+            isOneToOne: false
+            referencedRelation: "players"
+            referencedColumns: ["player"]
+          },
+        ]
+      }
+    }
+    Views: {
+      user_matches: {
+        Row: {
+          created_at: string | null
+          id: string | null
+          set_results: string | null
+          team_a_name: string | null
+          team_a_player_1: string | null
+          team_a_player_2: string | null
+          team_b_name: string | null
+          team_b_player_1: string | null
+          team_b_player_2: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "teams_player_1_fkey"
+            columns: ["team_a_player_1"]
+            isOneToOne: false
+            referencedRelation: "players"
+            referencedColumns: ["player"]
+          },
+          {
+            foreignKeyName: "teams_player_1_fkey"
+            columns: ["team_b_player_1"]
+            isOneToOne: false
+            referencedRelation: "players"
+            referencedColumns: ["player"]
+          },
+          {
+            foreignKeyName: "teams_player_2_fkey"
+            columns: ["team_a_player_2"]
+            isOneToOne: false
+            referencedRelation: "players"
+            referencedColumns: ["player"]
+          },
+          {
+            foreignKeyName: "teams_player_2_fkey"
+            columns: ["team_b_player_2"]
+            isOneToOne: false
+            referencedRelation: "players"
+            referencedColumns: ["player"]
+          },
+        ]
+      }
+    }
+    Functions: {
+      add_match_with_sets: {
+        Args: {
+          player_1a: string
+          player_2a: string
+          player_1b: string
+          player_2b: string
+          team_a: string
+          team_b: string
+          match_sets: Json
+        }
+        Returns: undefined
+      }
+      fetch_all_player_infos_from_pz: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
+    }
+    Enums: {
+      [_ in never]: never
+    }
+    CompositeTypes: {
+      [_ in never]: never
+    }
+  }
+  permissions: {
+    Tables: {
+      app_permissions: {
+        Row: {
+          id: string
+          name: string
+        }
+        Insert: {
+          id?: string
+          name: string
+        }
+        Update: {
+          id?: string
+          name?: string
+        }
+        Relationships: []
+      }
+      app_roles: {
+        Row: {
+          id: string
+          name: string
+        }
+        Insert: {
+          id?: string
+          name: string
+        }
+        Update: {
+          id?: string
+          name?: string
+        }
+        Relationships: []
+      }
+      role_permissions: {
+        Row: {
+          app_permission: string
+          app_role: string
+          id: string
+        }
+        Insert: {
+          app_permission: string
+          app_role: string
+          id?: string
+        }
+        Update: {
+          app_permission?: string
+          app_role?: string
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "role_permissions_app_permission_fkey"
+            columns: ["app_permission"]
+            isOneToOne: false
+            referencedRelation: "app_permissions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "role_permissions_app_role_fkey"
+            columns: ["app_role"]
+            isOneToOne: false
+            referencedRelation: "app_roles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_roles: {
+        Row: {
+          app_role: string
+          id: string
+          user: string
+        }
+        Insert: {
+          app_role: string
+          id?: string
+          user?: string
+        }
+        Update: {
+          app_role?: string
+          id?: string
+          user?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_roles_app_role_fkey"
+            columns: ["app_role"]
+            isOneToOne: false
+            referencedRelation: "app_roles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+    }
+    Views: {
+      [_ in never]: never
+    }
+    Functions: {
+      [_ in never]: never
+    }
+    Enums: {
+      [_ in never]: never
+    }
+    CompositeTypes: {
+      [_ in never]: never
+    }
+  }
   public: {
     Tables: {
       challenge: {
         Row: {
+          automated: boolean
           created_at: string
           description: string
-          group: number
-          id: number
+          end_date: string | null
+          group: string | null
+          id: string
           max_points_per_week: number | null
           name: string
         }
         Insert: {
+          automated?: boolean
           created_at?: string
           description?: string
-          group: number
-          id?: number
+          end_date?: string | null
+          group?: string | null
+          id?: string
           max_points_per_week?: number | null
           name?: string
         }
         Update: {
+          automated?: boolean
           created_at?: string
           description?: string
-          group?: number
-          id?: number
+          end_date?: string | null
+          group?: string | null
+          id?: string
           max_points_per_week?: number | null
           name?: string
         }
@@ -42,28 +379,38 @@ export type Database = {
             referencedRelation: "event_group"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "challenge_group_fkey"
+            columns: ["group"]
+            isOneToOne: false
+            referencedRelation: "event_groups_view"
+            referencedColumns: ["id"]
+          },
         ]
       }
       challenge_stats: {
         Row: {
-          challenge: number
+          challenge: string
           count: number
           created_at: string
           id: number
+          image_url: string | null
           user: string
         }
         Insert: {
-          challenge: number
+          challenge?: string
           count?: number
           created_at?: string
           id?: number
+          image_url?: string | null
           user: string
         }
         Update: {
-          challenge?: number
+          challenge?: string
           count?: number
           created_at?: string
           id?: number
+          image_url?: string | null
           user?: string
         }
         Relationships: [
@@ -121,19 +468,19 @@ export type Database = {
       }
       event_attendance_user_mapping: {
         Row: {
-          event: number
+          event: string
           lastUpdate: string
           state: Database["public"]["Enums"]["EventAttendance"]
           user: string
         }
         Insert: {
-          event: number
+          event?: string
           lastUpdate?: string
           state?: Database["public"]["Enums"]["EventAttendance"]
           user: string
         }
         Update: {
-          event?: number
+          event?: string
           lastUpdate?: string
           state?: Database["public"]["Enums"]["EventAttendance"]
           user?: string
@@ -174,24 +521,33 @@ export type Database = {
           comment: string
           created_at: string
           displayName: string
-          event: number
-          id: number
+          edited: boolean
+          event: string
+          id: string
+          last_update: string
+          reply_to: string | null
           user: string
         }
         Insert: {
           comment?: string
           created_at?: string
           displayName?: string
-          event: number
-          id?: number
+          edited?: boolean
+          event?: string
+          id?: string
+          last_update?: string
+          reply_to?: string | null
           user: string
         }
         Update: {
           comment?: string
           created_at?: string
           displayName?: string
-          event?: number
-          id?: number
+          edited?: boolean
+          event?: string
+          id?: string
+          last_update?: string
+          reply_to?: string | null
           user?: string
         }
         Relationships: [
@@ -217,6 +573,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "event_comments_reply_to_fkey"
+            columns: ["reply_to"]
+            isOneToOne: false
+            referencedRelation: "event_comments"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "event_comments_user_fkey"
             columns: ["user"]
             isOneToOne: false
@@ -230,22 +593,28 @@ export type Database = {
           color: string
           created_at: string
           description: string
-          id: number
+          id: string
+          is_public: boolean
           name: string
+          need_request_to_join: boolean
         }
         Insert: {
           color?: string
           created_at?: string
           description?: string
-          id?: number
+          id?: string
+          is_public?: boolean
           name?: string
+          need_request_to_join?: boolean
         }
         Update: {
           color?: string
           created_at?: string
           description?: string
-          id?: number
+          id?: string
+          is_public?: boolean
           name?: string
+          need_request_to_join?: boolean
         }
         Relationships: []
       }
@@ -254,9 +623,9 @@ export type Database = {
           answerDeadline: string | null
           created_at: string
           description: string
-          endDateTime: string | null
-          group: number | null
-          id: number
+          endDateTime: string
+          group: string
+          id: string
           isCancelled: boolean
           key: string
           maxAttendees: number | null
@@ -272,9 +641,9 @@ export type Database = {
           answerDeadline?: string | null
           created_at?: string
           description?: string
-          endDateTime?: string | null
-          group?: number | null
-          id?: number
+          endDateTime: string
+          group: string
+          id?: string
           isCancelled?: boolean
           key?: string
           maxAttendees?: number | null
@@ -290,9 +659,9 @@ export type Database = {
           answerDeadline?: string | null
           created_at?: string
           description?: string
-          endDateTime?: string | null
-          group?: number | null
-          id?: number
+          endDateTime?: string
+          group?: string
+          id?: string
           isCancelled?: boolean
           key?: string
           maxAttendees?: number | null
@@ -312,31 +681,48 @@ export type Database = {
             referencedRelation: "event_group"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "events_group_fkey"
+            columns: ["group"]
+            isOneToOne: false
+            referencedRelation: "event_groups_view"
+            referencedColumns: ["id"]
+          },
         ]
       }
       group_user_mapping: {
         Row: {
-          group: number
+          group: string
+          role: Database["public"]["Enums"]["GroupRole"]
           user: string
         }
         Insert: {
-          group: number
+          group: string
+          role?: Database["public"]["Enums"]["GroupRole"]
           user: string
         }
         Update: {
-          group?: number
+          group?: string
+          role?: Database["public"]["Enums"]["GroupRole"]
           user?: string
         }
         Relationships: [
           {
-            foreignKeyName: "public_group_user_mapping_group_fkey"
+            foreignKeyName: "group_user_mapping_group_fkey"
             columns: ["group"]
             isOneToOne: false
             referencedRelation: "event_group"
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "public_group_user_mapping_user_fkey"
+            foreignKeyName: "group_user_mapping_group_fkey"
+            columns: ["group"]
+            isOneToOne: false
+            referencedRelation: "event_groups_view"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "group_user_mapping_user_fkey"
             columns: ["user"]
             isOneToOne: false
             referencedRelation: "user"
@@ -353,6 +739,7 @@ export type Database = {
           id: number
           payment: number
           user: string
+          voucher: string | null
         }
         Insert: {
           amount?: number
@@ -362,6 +749,7 @@ export type Database = {
           id?: number
           payment: number
           user: string
+          voucher?: string | null
         }
         Update: {
           amount?: number
@@ -371,13 +759,28 @@ export type Database = {
           id?: number
           payment?: number
           user?: string
+          voucher?: string | null
         }
         Relationships: [
           {
             foreignKeyName: "history_drink_fkey"
             columns: ["drink"]
             isOneToOne: false
+            referencedRelation: "distinct_drinks"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "history_drink_fkey"
+            columns: ["drink"]
+            isOneToOne: false
             referencedRelation: "drink"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "history_payment_fkey"
+            columns: ["payment"]
+            isOneToOne: false
+            referencedRelation: "payments"
             referencedColumns: ["id"]
           },
           {
@@ -388,10 +791,17 @@ export type Database = {
             referencedColumns: ["userId"]
           },
           {
-            foreignKeyName: "public_history_payment_fkey"
-            columns: ["payment"]
+            foreignKeyName: "history_voucher_fkey"
+            columns: ["voucher"]
             isOneToOne: false
-            referencedRelation: "payments"
+            referencedRelation: "user_vouchers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "history_voucher_fkey"
+            columns: ["voucher"]
+            isOneToOne: false
+            referencedRelation: "vouchers"
             referencedColumns: ["id"]
           },
         ]
@@ -420,21 +830,21 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "key_history_currentuser_fkey"
+            foreignKeyName: "item_history_currentUser_fkey"
             columns: ["currentUser"]
             isOneToOne: false
             referencedRelation: "user"
             referencedColumns: ["userId"]
           },
           {
-            foreignKeyName: "key_history_key_fkey"
+            foreignKeyName: "item_history_key_fkey"
             columns: ["key"]
             isOneToOne: false
             referencedRelation: "items"
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "key_history_pastuser_fkey"
+            foreignKeyName: "item_history_pastUser_fkey"
             columns: ["pastUser"]
             isOneToOne: false
             referencedRelation: "user"
@@ -449,8 +859,8 @@ export type Database = {
           current_holder: string | null
           id: number
           lastUpdate: string
-          name: string | null
-          type: Database["public"]["Enums"]["ItemType"] | null
+          name: string
+          type: Database["public"]["Enums"]["ItemType"]
         }
         Insert: {
           color?: string
@@ -458,8 +868,8 @@ export type Database = {
           current_holder?: string | null
           id?: number
           lastUpdate?: string
-          name?: string | null
-          type?: Database["public"]["Enums"]["ItemType"] | null
+          name: string
+          type: Database["public"]["Enums"]["ItemType"]
         }
         Update: {
           color?: string
@@ -467,8 +877,8 @@ export type Database = {
           current_holder?: string | null
           id?: number
           lastUpdate?: string
-          name?: string | null
-          type?: Database["public"]["Enums"]["ItemType"] | null
+          name?: string
+          type?: Database["public"]["Enums"]["ItemType"]
         }
         Relationships: [
           {
@@ -480,12 +890,40 @@ export type Database = {
           },
         ]
       }
+      notification_token: {
+        Row: {
+          device_id: string
+          fcm_token: string
+          last_used: string
+          user: string
+        }
+        Insert: {
+          device_id: string
+          fcm_token: string
+          last_used?: string
+          user?: string
+        }
+        Update: {
+          device_id?: string
+          fcm_token?: string
+          last_used?: string
+          user?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notification_token_user_fkey"
+            columns: ["user"]
+            isOneToOne: false
+            referencedRelation: "user"
+            referencedColumns: ["userId"]
+          },
+        ]
+      }
       notifications: {
         Row: {
           body: string
           created_at: string
           id: string
-          issuer: string | null
           title: string
           user: string | null
         }
@@ -493,7 +931,6 @@ export type Database = {
           body?: string
           created_at?: string
           id?: string
-          issuer?: string | null
           title?: string
           user?: string | null
         }
@@ -501,18 +938,10 @@ export type Database = {
           body?: string
           created_at?: string
           id?: string
-          issuer?: string | null
           title?: string
           user?: string | null
         }
         Relationships: [
-          {
-            foreignKeyName: "public_notifications_issuer_fkey"
-            columns: ["issuer"]
-            isOneToOne: false
-            referencedRelation: "user"
-            referencedColumns: ["userId"]
-          },
           {
             foreignKeyName: "public_notifications_user_fkey"
             columns: ["user"]
@@ -557,50 +986,169 @@ export type Database = {
       user: {
         Row: {
           avatarUrl: string | null
-          created_at: string | null
+          created_at: string
           disabled: boolean
           displayName: string
           email: string
-          fcm_token: string | null
-          notifications:
-            | Database["public"]["Enums"]["NotificationTags"][]
-            | null
-          permissions: Database["public"]["Enums"]["Permissions"][] | null
+          name: string
           role: Database["public"]["Enums"]["UserRole"]
           userId: string
           verified: boolean
         }
         Insert: {
           avatarUrl?: string | null
-          created_at?: string | null
+          created_at?: string
           disabled?: boolean
           displayName?: string
           email?: string
-          fcm_token?: string | null
-          notifications?:
-            | Database["public"]["Enums"]["NotificationTags"][]
-            | null
-          permissions?: Database["public"]["Enums"]["Permissions"][] | null
+          name?: string
           role?: Database["public"]["Enums"]["UserRole"]
           userId?: string
           verified?: boolean
         }
         Update: {
           avatarUrl?: string | null
-          created_at?: string | null
+          created_at?: string
           disabled?: boolean
           displayName?: string
           email?: string
-          fcm_token?: string | null
-          notifications?:
-            | Database["public"]["Enums"]["NotificationTags"][]
-            | null
-          permissions?: Database["public"]["Enums"]["Permissions"][] | null
+          name?: string
           role?: Database["public"]["Enums"]["UserRole"]
           userId?: string
           verified?: boolean
         }
         Relationships: []
+      }
+      user_calendar_event_mapping: {
+        Row: {
+          calendar_event_id: string
+          event: string
+          user: string
+        }
+        Insert: {
+          calendar_event_id: string
+          event: string
+          user: string
+        }
+        Update: {
+          calendar_event_id?: string
+          event?: string
+          user?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_calendar_event_mapping_event_fkey"
+            columns: ["event"]
+            isOneToOne: false
+            referencedRelation: "current_distinct_event"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_calendar_event_mapping_event_fkey"
+            columns: ["event"]
+            isOneToOne: false
+            referencedRelation: "distinct_event"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_calendar_event_mapping_event_fkey"
+            columns: ["event"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_calendar_event_mapping_user_fkey"
+            columns: ["user"]
+            isOneToOne: false
+            referencedRelation: "user"
+            referencedColumns: ["userId"]
+          },
+        ]
+      }
+      user_calender_settings: {
+        Row: {
+          calender_id: string | null
+          minutes_to_remind: number | null
+          user: string
+        }
+        Insert: {
+          calender_id?: string | null
+          minutes_to_remind?: number | null
+          user: string
+        }
+        Update: {
+          calender_id?: string | null
+          minutes_to_remind?: number | null
+          user?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_calender_settings_user_fkey"
+            columns: ["user"]
+            isOneToOne: true
+            referencedRelation: "user"
+            referencedColumns: ["userId"]
+          },
+        ]
+      }
+      user_notification_settings: {
+        Row: {
+          id: number
+          notification_tag: string
+          user: string
+        }
+        Insert: {
+          id?: number
+          notification_tag: string
+          user: string
+        }
+        Update: {
+          id?: number
+          notification_tag?: string
+          user?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_notification_settings_user_fkey"
+            columns: ["user"]
+            isOneToOne: false
+            referencedRelation: "user"
+            referencedColumns: ["userId"]
+          },
+        ]
+      }
+      vouchers: {
+        Row: {
+          created_at: string
+          id: string
+          title: string | null
+          total_drinks: number
+          user: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          title?: string | null
+          total_drinks?: number
+          user?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          title?: string | null
+          total_drinks?: number
+          user?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "vouchers_user_fkey"
+            columns: ["user"]
+            isOneToOne: false
+            referencedRelation: "user"
+            referencedColumns: ["userId"]
+          },
+        ]
       }
     }
     Views: {
@@ -610,8 +1158,8 @@ export type Database = {
           created_at: string | null
           description: string | null
           endDateTime: string | null
-          group: number | null
-          id: number | null
+          group: string | null
+          id: string | null
           isCancelled: boolean | null
           key: string | null
           maxAttendees: number | null
@@ -630,7 +1178,28 @@ export type Database = {
             referencedRelation: "event_group"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "events_group_fkey"
+            columns: ["group"]
+            isOneToOne: false
+            referencedRelation: "event_groups_view"
+            referencedColumns: ["id"]
+          },
         ]
+      }
+      distinct_drinks: {
+        Row: {
+          active: boolean | null
+          deleted: boolean | null
+          id: number | null
+          imageUrl: string | null
+          name: string | null
+          previousDrink: number | null
+          price: number | null
+          stock: number | null
+          type: Database["public"]["Enums"]["ProductType"] | null
+        }
+        Relationships: []
       }
       distinct_event: {
         Row: {
@@ -638,8 +1207,8 @@ export type Database = {
           created_at: string | null
           description: string | null
           endDateTime: string | null
-          group: number | null
-          id: number | null
+          group: string | null
+          id: string | null
           isCancelled: boolean | null
           key: string | null
           maxAttendees: number | null
@@ -658,66 +1227,176 @@ export type Database = {
             referencedRelation: "event_group"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "events_group_fkey"
+            columns: ["group"]
+            isOneToOne: false
+            referencedRelation: "event_groups_view"
+            referencedColumns: ["id"]
+          },
         ]
+      }
+      event_groups_view: {
+        Row: {
+          color: string | null
+          created_at: string | null
+          description: string | null
+          id: string | null
+          is_public: boolean | null
+          name: string | null
+          need_request_to_join: boolean | null
+          role: Database["public"]["Enums"]["GroupRole"] | null
+        }
+        Relationships: []
+      }
+      readable_history: {
+        Row: {
+          amount: number | null
+          count: number | null
+          date: string | null
+          displayName: string | null
+          id: number | null
+          name: string | null
+          time: string | null
+        }
+        Relationships: []
+      }
+      user_vouchers: {
+        Row: {
+          available: number | null
+          created_at: string | null
+          id: string | null
+          title: string | null
+        }
+        Relationships: []
       }
     }
     Functions: {
-      add_notificationtags_to_all_users: {
+      add_drink_history: {
         Args: {
-          notification: Database["public"]["Enums"]["NotificationTags"]
+          drink_id: number
+          payment_id: number
+          count: number
+          amount: number
         }
         Returns: undefined
       }
-      add_permission_to_all_users: {
+      add_drinks_history: {
+        Args: { items: Json } | { items: Json; payment_id: number }
+        Returns: undefined
+      }
+      add_match_with_sets: {
         Args: {
-          permission: Database["public"]["Enums"]["Permissions"]
+          player_1a: string
+          player_2a: string
+          player_1b: string
+          player_2b: string
+          team_a: string
+          team_b: string
+          match_sets: Json
         }
         Returns: undefined
+      }
+      authorize: {
+        Args: { requested_permission: string }
+        Returns: boolean
+      }
+      authorizewithrole: {
+        Args: { requested_role: string }
+        Returns: boolean
+      }
+      check_reply_to: {
+        Args: { value: string }
+        Returns: boolean
+      }
+      check_version: {
+        Args: { input_version: string }
+        Returns: boolean
+      }
+      custom_access_token_hook: {
+        Args: { event: Json }
+        Returns: Json
       }
       eventcreation: {
         Args: Record<PropertyKey, never>
         Returns: number
       }
+      execute_query: {
+        Args: { query_text: string }
+        Returns: {
+          result: Json
+        }[]
+      }
+      execute_sql: {
+        Args: { query: string }
+        Returns: Json
+      }
       get_attending_users: {
-        Args: {
-          event_id: number
-        }
+        Args: { event_id: number }
         Returns: string[]
+      }
+      get_column_info: {
+        Args: { schema_name: string; selected_table: string }
+        Returns: {
+          column_name: string
+          data_type: string
+          is_nullable: boolean
+          foreign_key_schema_name: string
+          foreign_key_table_name: string
+          foreign_key_column_name: string
+        }[]
+      }
+      get_enum_types: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          enum_name: string
+          enum_values: string[]
+        }[]
       }
       get_or_create_payment_for_user: {
-        Args: {
-          user_id: string
-        }
+        Args: { user_id: string }
         Returns: number
       }
+      get_public_table_names: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          table_name: string
+          table_schema: string
+        }[]
+      }
       getattendingusers: {
-        Args: {
-          event_id: number
-        }
+        Args: { event_id: number }
         Returns: string[]
+      }
+      gettingjsonarray: {
+        Args: { items: Json }
+        Returns: undefined
       }
       increase_challenge_stats_count: {
         Args: {
           user_id: string
-          challenge_id: number
+          challenge_id: string
           amount: number
+          to_create_at: string
+          image_url: string
         }
-        Returns: undefined
-      }
-      remove_notificationtags_from_all_users: {
-        Args: {
-          notification: Database["public"]["Enums"]["NotificationTags"]
+        Returns: {
+          challenge: string
+          count: number
+          created_at: string
+          id: number
+          image_url: string | null
+          user: string
         }
-        Returns: undefined
       }
       update_attendance: {
         Args: {
-          eventid: number
+          eventid: string
           userid: string
           state: Database["public"]["Enums"]["EventAttendance"]
         }
         Returns: {
-          event: number
+          event: string
           lastUpdate: string
           state: Database["public"]["Enums"]["EventAttendance"]
           user: string
@@ -725,44 +1404,50 @@ export type Database = {
       }
     }
     Enums: {
-      EventAttendance: "Declined" | "Attending" | "Unanswered" | "Waiting"
+      app_permission:
+        | "event.select"
+        | "event.update"
+        | "event.insert"
+        | "event.delete"
+        | "drink.select"
+        | "drink.update"
+        | "drink.insert"
+        | "drink.delete"
+        | "group.select"
+        | "group.update"
+        | "group.insert"
+        | "group.delete"
+        | "challenge.select"
+        | "challenge.update"
+        | "challenge.insert"
+        | "challenge.delete"
+        | "payments.select"
+        | "payments.update"
+        | "payments.insert"
+        | "payments.delete"
+        | "item.select"
+        | "item.update"
+        | "item.insert"
+        | "item.delete"
+      EventAttendance:
+        | "Declined"
+        | "Attending"
+        | "Unanswered"
+        | "Waiting"
+        | "AttendingAsTrainer"
       EventRecurrence: "Weekly" | "Fortnightly" | "Monthly" | "None"
-      ItemType: "mtvStorage" | "mtvGym" | "mtvGymPalazzo"
+      GroupRole: "user" | "admin" | "joinRequested"
+      ItemType: "mtvStorage" | "mtvGym" | "mtvGymPalazzo" | "goethe"
       NotificationTags:
         | "eventComments"
         | "userRegistration"
         | "paymentRequest"
         | "paymentPending"
-          | "eventCancelled"
-          | "eventUpdated"
-          | "eventAttedanceChanged"
+        | "eventCancelled"
+        | "eventUpdated"
+        | "eventAttedanceChanged"
+        | "challengeUpdate"
       PaymentState: "Open" | "Fulfilled"
-      Permissions:
-        | "use;drink"
-        | "edit;drink"
-        | "delete;drink"
-        | "view;drink"
-        | "use;training"
-        | "edit;training"
-        | "delete;training"
-        | "view;training"
-        | "edit;groups"
-        | "delete;groups"
-        | "view;groups"
-        | "edit;payments"
-        | "edit;user"
-        | "view;keyFinder"
-        | "use;user"
-        | "view;user"
-        | "delete;user"
-        | "edit;keyFinder"
-        | "delete;keyFinder"
-        | "view;notifications"
-        | "edit;notifications"
-        | "edit;history"
-        | "edit;edgeFunctions"
-        | "view;challenges"
-          | "use;challenges"
       ProductType: "Drink" | "Special" | "None"
       UserRole: "user" | "admin" | "procure" | "finance" | "trainer"
     }
@@ -772,80 +1457,169 @@ export type Database = {
   }
 }
 
-type PublicSchema = Database[Extract<keyof Database, "public">]
+type DefaultSchema = Database[Extract<keyof Database, "public">]
 
 export type Tables<
-  PublicTableNameOrOptions extends | keyof (PublicSchema["Tables"] & PublicSchema["Views"])
+  DefaultSchemaTableNameOrOptions extends
+    | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
     | { schema: keyof Database },
-  TableName extends PublicTableNameOrOptions extends { schema: keyof Database }
-    ? keyof (Database[PublicTableNameOrOptions["schema"]]["Tables"] &
-        Database[PublicTableNameOrOptions["schema"]]["Views"])
-      : never = never,
-> = PublicTableNameOrOptions extends { schema: keyof Database }
-  ? (Database[PublicTableNameOrOptions["schema"]]["Tables"] &
-      Database[PublicTableNameOrOptions["schema"]]["Views"])[TableName] extends {
+  TableName extends DefaultSchemaTableNameOrOptions extends {
+    schema: keyof Database
+  }
+    ? keyof (Database[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+        Database[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
+    : never = never,
+> = DefaultSchemaTableNameOrOptions extends { schema: keyof Database }
+  ? (Database[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+      Database[DefaultSchemaTableNameOrOptions["schema"]]["Views"])[TableName] extends {
       Row: infer R
     }
     ? R
     : never
-    : PublicTableNameOrOptions extends keyof (PublicSchema["Tables"] &
-            PublicSchema["Views"])
-        ? (PublicSchema["Tables"] &
-            PublicSchema["Views"])[PublicTableNameOrOptions] extends {
-              Row: infer R
-            }
-            ? R
-            : never
-        : never
+  : DefaultSchemaTableNameOrOptions extends keyof (DefaultSchema["Tables"] &
+        DefaultSchema["Views"])
+    ? (DefaultSchema["Tables"] &
+        DefaultSchema["Views"])[DefaultSchemaTableNameOrOptions] extends {
+        Row: infer R
+      }
+      ? R
+      : never
+    : never
 
 export type TablesInsert<
-  PublicTableNameOrOptions extends | keyof PublicSchema["Tables"]
+  DefaultSchemaTableNameOrOptions extends
+    | keyof DefaultSchema["Tables"]
     | { schema: keyof Database },
-  TableName extends PublicTableNameOrOptions extends { schema: keyof Database }
-    ? keyof Database[PublicTableNameOrOptions["schema"]]["Tables"]
-      : never = never,
-> = PublicTableNameOrOptions extends { schema: keyof Database }
-  ? Database[PublicTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+  TableName extends DefaultSchemaTableNameOrOptions extends {
+    schema: keyof Database
+  }
+    ? keyof Database[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+    : never = never,
+> = DefaultSchemaTableNameOrOptions extends { schema: keyof Database }
+  ? Database[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
       Insert: infer I
     }
     ? I
     : never
-    : PublicTableNameOrOptions extends keyof PublicSchema["Tables"]
-        ? PublicSchema["Tables"][PublicTableNameOrOptions] extends {
-              Insert: infer I
-            }
-            ? I
-            : never
-        : never
+  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
+    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
+        Insert: infer I
+      }
+      ? I
+      : never
+    : never
 
 export type TablesUpdate<
-  PublicTableNameOrOptions extends | keyof PublicSchema["Tables"]
+  DefaultSchemaTableNameOrOptions extends
+    | keyof DefaultSchema["Tables"]
     | { schema: keyof Database },
-  TableName extends PublicTableNameOrOptions extends { schema: keyof Database }
-    ? keyof Database[PublicTableNameOrOptions["schema"]]["Tables"]
-      : never = never,
-> = PublicTableNameOrOptions extends { schema: keyof Database }
-  ? Database[PublicTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+  TableName extends DefaultSchemaTableNameOrOptions extends {
+    schema: keyof Database
+  }
+    ? keyof Database[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+    : never = never,
+> = DefaultSchemaTableNameOrOptions extends { schema: keyof Database }
+  ? Database[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
       Update: infer U
     }
     ? U
     : never
-    : PublicTableNameOrOptions extends keyof PublicSchema["Tables"]
-        ? PublicSchema["Tables"][PublicTableNameOrOptions] extends {
-              Update: infer U
-            }
-            ? U
-            : never
-        : never
+  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
+    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
+        Update: infer U
+      }
+      ? U
+      : never
+    : never
 
 export type Enums<
-  PublicEnumNameOrOptions extends | keyof PublicSchema["Enums"]
+  DefaultSchemaEnumNameOrOptions extends
+    | keyof DefaultSchema["Enums"]
     | { schema: keyof Database },
-  EnumName extends PublicEnumNameOrOptions extends { schema: keyof Database }
-    ? keyof Database[PublicEnumNameOrOptions["schema"]]["Enums"]
-      : never = never,
-> = PublicEnumNameOrOptions extends { schema: keyof Database }
-  ? Database[PublicEnumNameOrOptions["schema"]]["Enums"][EnumName]
-    : PublicEnumNameOrOptions extends keyof PublicSchema["Enums"]
-        ? PublicSchema["Enums"][PublicEnumNameOrOptions]
-        : never
+  EnumName extends DefaultSchemaEnumNameOrOptions extends {
+    schema: keyof Database
+  }
+    ? keyof Database[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
+    : never = never,
+> = DefaultSchemaEnumNameOrOptions extends { schema: keyof Database }
+  ? Database[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"][EnumName]
+  : DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema["Enums"]
+    ? DefaultSchema["Enums"][DefaultSchemaEnumNameOrOptions]
+    : never
+
+export type CompositeTypes<
+  PublicCompositeTypeNameOrOptions extends
+    | keyof DefaultSchema["CompositeTypes"]
+    | { schema: keyof Database },
+  CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
+    schema: keyof Database
+  }
+    ? keyof Database[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
+    : never = never,
+> = PublicCompositeTypeNameOrOptions extends { schema: keyof Database }
+  ? Database[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
+  : PublicCompositeTypeNameOrOptions extends keyof DefaultSchema["CompositeTypes"]
+    ? DefaultSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
+    : never
+
+export const Constants = {
+  games: {
+    Enums: {},
+  },
+  permissions: {
+    Enums: {},
+  },
+  public: {
+    Enums: {
+      app_permission: [
+        "event.select",
+        "event.update",
+        "event.insert",
+        "event.delete",
+        "drink.select",
+        "drink.update",
+        "drink.insert",
+        "drink.delete",
+        "group.select",
+        "group.update",
+        "group.insert",
+        "group.delete",
+        "challenge.select",
+        "challenge.update",
+        "challenge.insert",
+        "challenge.delete",
+        "payments.select",
+        "payments.update",
+        "payments.insert",
+        "payments.delete",
+        "item.select",
+        "item.update",
+        "item.insert",
+        "item.delete",
+      ],
+      EventAttendance: [
+        "Declined",
+        "Attending",
+        "Unanswered",
+        "Waiting",
+        "AttendingAsTrainer",
+      ],
+      EventRecurrence: ["Weekly", "Fortnightly", "Monthly", "None"],
+      GroupRole: ["user", "admin", "joinRequested"],
+      ItemType: ["mtvStorage", "mtvGym", "mtvGymPalazzo", "goethe"],
+      NotificationTags: [
+        "eventComments",
+        "userRegistration",
+        "paymentRequest",
+        "paymentPending",
+        "eventCancelled",
+        "eventUpdated",
+        "eventAttedanceChanged",
+        "challengeUpdate",
+      ],
+      PaymentState: ["Open", "Fulfilled"],
+      ProductType: ["Drink", "Special", "None"],
+      UserRole: ["user", "admin", "procure", "finance", "trainer"],
+    },
+  },
+} as const

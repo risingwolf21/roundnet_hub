@@ -1,0 +1,82 @@
+name: Production
+'on':
+  push:
+    branches:
+      - production
+env:
+  CI: ''
+
+jobs:
+  build_and_deploy_production:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Set up Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: Install dependencies
+        run: yarn install
+
+      - name: Write commit Version to file
+        uses: DamianReeves/write-file-action@master
+        with:
+          path: ${{github.workspace}}/src/git_commit.txt
+          contents: |
+            ${{github.sha}}
+          write-mode: overwrite
+
+      - name: 'Write firebase service worker config file'
+        run: yarn run build-fcm-config
+
+      - name: Build
+        run: PUBLIC_URL=https://roundnet-karlsruhe.web.app yarn run build:production
+        env:
+          REACT_APP_SUPABASE_API_KEY: ${{secrets.SUPABASE_PRODUCTION_ANON_KEY}}
+          REACT_APP_SUPABASE_URL: ${{secrets.SUPABASE_PRODUCTION_URL}}
+
+      - name: Deploy to production environment
+        uses: FirebaseExtended/action-hosting-deploy@v0
+        with:
+          repoToken: '${{ secrets.GITHUB_TOKEN }}'
+          firebaseServiceAccount: '${{ secrets.FIREBASE_SERVICE_ACCOUNT_ROUNDNET_KARLSRUHE }}'
+          channelId: live
+          projectId: roundnet-karlsruhe
+          target: production
+
+  build_admin:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Set up Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: Install dependencies
+        run: yarn install
+
+      - name: Write commit Version to file
+        uses: DamianReeves/write-file-action@master
+        with:
+          path: ${{github.workspace}}/src/git_commit.txt
+          contents: |
+            ${{github.sha}}
+          write-mode: overwrite
+
+      - name: Build
+        run: PUBLIC_URL=https://admin-roundnet-karlsruhe.web.app yarn run build:production:admin
+        env:
+          REACT_APP_SUPABASE_API_KEY: ${{secrets.SUPABASE_PRODUCTION_ADMIN_KEY}}
+          REACT_APP_SUPABASE_URL: ${{secrets.SUPABASE_PRODUCTION_URL}}
+
+      - uses: FirebaseExtended/action-hosting-deploy@v0
+        with:
+          repoToken: '${{ secrets.GITHUB_TOKEN }}'
+          firebaseServiceAccount: '${{ secrets.FIREBASE_SERVICE_ACCOUNT_ROUNDNET_KARLSRUHE }}'
+          channelId: live
+          projectId: roundnet-karlsruhe
+          target: admin-production

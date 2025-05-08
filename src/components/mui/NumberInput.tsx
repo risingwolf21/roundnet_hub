@@ -1,69 +1,70 @@
 import * as React from 'react';
 import {
-    numberInputClasses,
-    NumberInputProps,
-    Unstable_NumberInput as BaseNumberInput,
+  numberInputClasses,
+  NumberInputProps,
+  Unstable_NumberInput as BaseNumberInput,
 } from '@mui/base/Unstable_NumberInput';
-import {styled} from '@mui/system';
+import { styled } from '@mui/system';
 
 export const NumberInput = React.forwardRef(function CustomNumberInput(
-    props: NumberInputProps & { fullWidth?: boolean },
-    ref: React.ForwardedRef<HTMLDivElement>
+  props: NumberInputProps & { fullWidth?: boolean },
+  ref: React.ForwardedRef<HTMLDivElement>
 ) {
-    return (
-        <BaseNumberInput
-            disabled={props.disabled}
-            slots={{
-                root: StyledInputRoot(props.fullWidth ?? false),
-                input: StyledInputElement,
-                incrementButton: StyledButton,
-                decrementButton: StyledButton,
-            }}
-            slotProps={{
-                input: {
-                    disabled: props.disabled,
-                    readOnly: props.disabled ? true : false,
-                    width: props.fullWidth ? "100%" : undefined
-                },
-                incrementButton: {
-                    children: '▴',
-                    type: "button",
-                    disabled: props.disabled
-                },
-                decrementButton: {
-                    children: '▾',
-                    type: "button",
-                    disabled: props.disabled
-                },
-            }}
-            {...props}
-            ref={ref}
-        />
-    );
+  return (
+    <BaseNumberInput
+      disabled={props.disabled}
+      slots={{
+        root: StyledInputRoot(props.fullWidth ?? false),
+        input: StyledInputElement,
+        incrementButton: StyledButton,
+        decrementButton: StyledButton,
+      }}
+      slotProps={{
+        input: {
+          disabled: props.disabled,
+          readOnly: !!props.disabled,
+          width: props.fullWidth ? '100%' : undefined,
+        },
+        incrementButton: {
+          children: '▴',
+          type: 'button',
+          disabled: props.disabled,
+        },
+        decrementButton: {
+          children: '▾',
+          type: 'button',
+          disabled: props.disabled,
+        },
+      }}
+      {...props}
+      ref={ref}
+    />
+  );
 });
 
 const blue = {
-    100: '#DAECFF',
-    200: '#80BFFF',
-    400: '#3399FF',
-    500: '#007FFF',
-    600: '#0072E5',
+  100: '#DAECFF',
+  200: '#80BFFF',
+  400: '#3399FF',
+  500: '#007FFF',
+  600: '#0072E5',
 };
 
 const grey = {
-    50: '#F3F6F9',
-    100: '#E5EAF2',
-    200: '#DAE2ED',
-    300: '#C7D0DD',
-    400: '#B0B8C4',
-    500: '#9DA8B7',
-    600: '#6B7A90',
-    700: '#434D5B',
-    800: '#303740',
-    900: '#1C2025',
+  50: '#F3F6F9',
+  100: '#E5EAF2',
+  200: '#DAE2ED',
+  300: '#C7D0DD',
+  400: '#B0B8C4',
+  500: '#9DA8B7',
+  600: '#6B7A90',
+  700: '#434D5B',
+  800: '#303740',
+  900: '#1C2025',
 };
 
-const StyledInputRoot = (fullWidth: boolean) => styled('div')(
+const StyledInputRoot = (fullWidth: boolean) =>
+  styled('div')(
     ({ theme }) => `
   font-family: 'IBM Plex Sans', sans-serif;
   font-weight: 400;
@@ -94,11 +95,11 @@ const StyledInputRoot = (fullWidth: boolean) => styled('div')(
   &:focus-visible {
     outline: 0;
   }
-`,
-);
+`
+  );
 
 const StyledInputElement = styled('input')(
-    ({ theme }) => `
+  ({ theme }) => `
   font-size: 0.875rem;
   font-family: inherit;
   font-weight: 400;
@@ -115,11 +116,11 @@ const StyledInputElement = styled('input')(
   &.base-NumberInput-input base--disabled {
     rgba(0, 0, 0, 0.38);
   }
-`,
+`
 );
 
 const StyledButton = styled('button')(
-    ({ theme }) => `
+  ({ theme }) => `
   display: flex;
   type: button;
   flex-flow: row nowrap;
@@ -191,5 +192,5 @@ const StyledButton = styled('button')(
   & .arrow {
     transform: translateY(-1px);
   }
-`,
+`
 );

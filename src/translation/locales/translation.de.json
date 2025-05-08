@@ -1,0 +1,101 @@
+{
+  "format": {
+    "distanceToNow": "{{ date, ago }}"
+  },
+  "attendees": "Teilnehmer",
+  "browse": {
+    "account": "Konto",
+    "analyzeDrinkStocks": "Getränkenutzung analysieren",
+    "challenges": "Herausforderungen",
+    "completeHistory": "Gesamtverlauf",
+    "executeEdgeFunctions": "Edge-Funktionen ausführen",
+    "history": "Verlauf",
+    "keys": "Schlüsselfinder",
+    "manageDrinkStocks": "Getränkevorrat verwalten",
+    "manageDrinks": "Getränke verwalten",
+    "manageGroups": "Gruppen verwalten",
+    "managePayments": "Zahlungen verwalten",
+    "manageUsers": "Benutzer verwalten",
+    "notifications": "Benachrichtigungen",
+    "payment": "Zahlung",
+    "postgresClient": "Postgres Client",
+    "training": "Training",
+    "permissions": "Berechtigungen",
+    "supabaseQueries": "Supabase Query Client",
+    "sentryIssues": "Sentry Issues"
+  },
+  "cancel": "Abbrechen",
+  "confirm": "Bestätigen",
+  "confirmKeyHandover": "Bist du sicher das du den Schlüssel \"{{ keyName }}\" an \"{{ userName }}\" abgeben möchtest?",
+  "confirmKeyTaken": "Hiermit bestätigst du das du den Schlüssel \"{{ keyName }}\" von \"{{ userName }}\" erhalten hast!",
+  "events": {
+    "upcoming": "Anstehende",
+    "past": "Vergangene",
+    "creation": {
+      "answerDeadlineAfterStart": "Der Anmeldezeitraum kann nicht nach dem Start des Events sein",
+      "answerDeadlineBeforeNow": "Der Anmeldezeitraum kann nicht vor dem aktuellen Datum sein",
+      "descriptionEmpty": "Die Beschreibung des Events darf nicht leer sein",
+      "meetingTimeBeforeStartTime": "Die Treffpunktzeit darf nicht nach der Startzeit liegen",
+      "noGroupSelected": "Es ist keine Gruppe für dieses Event ausgewählt!",
+      "startDateCannotBeNull": "Die Startzeit des Events darf nicht leer sein",
+      "titleTooShort": "Der Titel des Events muss aus mindestens 6 Zeichen bestehen"
+    },
+    "information": {
+      "answerDeadlineExceeded": "Die Anmeldung für dieses Event ist am {{ answerDeadline, dd.MM.yyyy 'um' HH:mm}} verstrichen",
+      "answerDeadlineExceededTitle": "Anmeldezeitraum vorbei",
+      "eventSpotsTaken": "{{ taken }} von {{waitingListLength}} Plätzen vergeben",
+      "keyHolderAttending": "Jemand mit einem Schlüssel ist angemeldet",
+      "meetTime": "Treffen: {{ meetTime, ccc. dd.MM 'um' HH:mm }}",
+      "startTime": "Startet um {{ startTime, HH:mm }}",
+      "startTimeAndEndTime": "Startet um {{ startTime, HH:mm }} und endet um {{ endTime, HH:mm }}",
+      "waitingListAccepted": "Du bist auf Wartelisteplatz {{ place }} von {{ waitingListLength }} für dieses Event",
+      "waitingListPlace": "Warteliste Platz ({{ place }} / {{ waitingListLength }})",
+      "attending_one": "{{count}} Zusage",
+      "attending_other": "{{count}} Zusagen",
+      "declined_one": "{{count}} Absage",
+      "declined_other": "{{count}} Absagen",
+      "commentTimeAgo": "vor {{time}}"
+    },
+    "startDateShortMonth": "{{date, MMM}}",
+    "startDateDayString": "{{date, EEE}}",
+    "startDateDay": "{{date, d}}",
+    "startTime": "{{date, cccc}} um {{date, HH:mm}}",
+    "secondaryTextStart": "{{start, HH:mm}}",
+    "secondaryTextWithEnd": "- {{end, HH:mm}}",
+    "secondaryTextWithPlace": " am {{place}}"
+  },
+  "feature_not_available": "Diese Funktion ist noch nicht bereit. Versuche es später erneut!",
+  "handover_key": "Abgeben",
+  "keyHandOver": "Schlüsselübergabe",
+  "keyHandOverError": "Schlüsselübergabe fehlgeschlagen {{error}}",
+  "navigation": {
+    "admin": "Administrator",
+    "browse": "Browse",
+    "challenges": "Challenges",
+    "drinks": "Getränke",
+    "notifications": "Benachrichtigungen",
+    "training": "Training",
+    "matches": "Spiele",
+    "groups": "Gruppen"
+  },
+  "notificationTags": {
+    "eventComments": "Event Kommentare",
+    "paymentPending": "Zahlung wartend",
+    "paymentRequest": "Zahlungsaufforderung",
+    "userRegistration": "Benutzer Registierung"
+  },
+  "notification_actionMessage": "Du kannst Push-Benachrichtigungen zu den folgenden Themen erhalten",
+  "notification_updateMessage": "Update deine Push-Benachrichtigungs Segmente",
+  "take_key": "Annehmen",
+  "userName": "Benutzername",
+  "challenge": {
+    "automatedChallenge": "Bei dieser Challenge werden die Punkte automatisiert aktualisiert!"
+  },
+  "filter": "Filtern",
+  "itemType": {
+    "goethe": "Goethe",
+    "mtvGym": "MTV Gym",
+    "mtvGymPalazzo": "MTV Palazzo/Gym",
+    "mtvStorage": "MTV Keller"
+  }
+}

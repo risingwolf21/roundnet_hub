@@ -1,70 +1,133 @@
-import {PostgrestError, PostgrestSingleResponse} from "@supabase/supabase-js";
-import {Notification, NotificationTags, User, UserWithGroups} from "../types/supabaseTypes";
-import {supabase} from "../components/services/supabase/supabaseClient";
+import { PostgrestError, PostgrestSingleResponse } from '@supabase/supabase-js';
+import { formatDateToDatabase } from 'src/utils';
+import { Notification } from 'types/supabase';
+import { supabase } from '../components/services/supabase/supabaseClient';
+import { CalendarSettingsResult } from 'src/features/profile/CalendarSettings';
+import { Tables } from 'src/types/supabase-generated.types';
+
+export const fetchGroups = () => supabase.schema("public").from('group_user_mapping').select('*, event_group(*)');
+export const fetchUserWithGroups = () => supabase
+  .from('user')
+  .select('*, groups: group_user_mapping (group: event_group(*))')
+export const fetchSimpleUser = () => supabase.from("user").select("userId, name")
 
 export const SupabaseUserRepository = {
-    async fetchUserWithGroups(userId: string): Promise<PostgrestSingleResponse<UserWithGroups>> {
-        const response = await supabase
-            .from("user")
-            .select("*, groups: group_user_mapping ( group: event_group ( * ) )")
-            .eq("userId", userId)
-            .single();
 
-        if (!response.data)
-            return {
-                error: {
-                    code: "",
-                    details: "",
-                    hint: "",
-                    message: "Could not map groups for User"
-                } as PostgrestError, data: null, count: null, status: 400, statusText: ""
-            };
+  async fetchSimpleUsers(): Promise<PostgrestSingleResponse<SimpleUser[]>> {
+    return fetchSimpleUser();
+  },
 
-        return {
-            ...response,
-            data: {
-                ...response.data,
-                groups: response.data?.groups.map((x: any) => x.group) ?? []
-            }
-        }
-    },
+  async fetchUserWithGroups(userId: string): Promise<PostgrestSingleResponse<UserWithGroupsAndPlayerData>> {
+    const { data: player_data } = await SupabaseUserRepository.fetchPlayer(userId);
+    const response = await fetchUserWithGroups()
+      .eq('userId', userId)
+      .maybeSingle();
 
-    async fetchUser(userId: string): Promise<PostgrestSingleResponse<User>> {
-        return supabase
-            .from("user")
-            .select("*")
-            .eq("userId", userId)
-            .single();
-    },
+    if (!response.data || response.error)
+      return {
+        error: {
+          code: '',
+          details: '',
+          hint: '',
+          message: 'Could not load all information for user',
+        } as PostgrestError,
+        data: null,
+        count: null,
+        status: 400,
+        statusText: '',
+      };
 
-    async updateNotificationTags(notificationTags: NotificationTags[], user: User): Promise<PostgrestSingleResponse<User>> {
-        return supabase
-            .from("user")
-            .update({notifications: notificationTags})
-            .eq("userId", user.userId)
-            .select()
-            .single();
-    },
+    return {
+      ...response,
+      data: {
+        ...response.data,
+        groups: response.data?.groups.map((x: any) => x.group) ?? [],
+        player_data
+      },
+    };
+  },
 
-    async updateFCMToken(fcmToken: string, user: User): Promise<PostgrestSingleResponse<any>> {
-        return supabase
-            .from("user")
-            .update({fcm_token: fcmToken})
-            .eq("userId", user.userId);
-    },
+  async fetchUser(userId: string): Promise<PostgrestSingleResponse<User>> {
+    return supabase.from('user').select('*').eq('userId', userId).single().throwOnError();
+  },
 
-    async loadNotifications(user: User): Promise<PostgrestSingleResponse<Notification[]>> {
-        return supabase
-            .from("notifications")
-            .select("*")
-            .eq("user", user.userId)
-            .throwOnError()
-            .returns<Notification[]>()
-    },
-    async markNotificationsAsRead(user: User): Promise<PostgrestSingleResponse<null>> {
-        return supabase
-            .from("notifications")
-            .delete()
-            .eq("user", user.userId)
-    }
-}
+  async fetchGroupsForUser(userId: string): Promise<Group[]> {
+    const { data, error } = await fetchGroups().eq('user', userId);
+    if (!data || error) return []
+    return data.map(x => x.event_group);
+  },
+
+  async fetchPlayer(userId: string): Promise<PostgrestSingleResponse<Player | null>> {
+    return supabase.schema('games').from('players').select('*').eq('player', userId).maybeSingle();
+  },
+
+  async deleteNotificationTag(
+    notificationTag: string,
+    userId: string
+  ): Promise<PostgrestSingleResponse<Tables<'user_notification_settings'>[]>> {
+    return supabase
+      .from('user_notification_settings')
+      .delete()
+      .eq('user', userId)
+      .eq("notification_tag", notificationTag)
+      .select()
+  },
+
+  async addNotificationTag(
+    notificationTag: string,
+    userId: string
+  ): Promise<PostgrestSingleResponse<Tables<'user_notification_settings'>[]>> {
+    return supabase
+      .from('user_notification_settings')
+      .insert({ user: userId, notification_tag: notificationTag })
+      .select("*");
+  },
+
+  async updateFCMToken(fcmToken: string, deviceId: string, userId: string): Promise<PostgrestSingleResponse<any>> {
+    return supabase
+      .from('notification_token')
+      .upsert({ fcm_token: fcmToken, user: userId, device_id: deviceId, last_used: formatDateToDatabase(Date.now()) });
+  },
+
+  async loadNotifications(user: User): Promise<PostgrestSingleResponse<Notification[]>> {
+    return supabase.from('notifications').select('*').eq('user', user.userId).throwOnError().returns<Notification[]>();
+  },
+  async markNotificationsAsRead(user: User): Promise<PostgrestSingleResponse<null>> {
+    return supabase.from('notifications').delete().eq('user', user.userId);
+  },
+  async fetchCalendarSettings(
+    userId: string
+  ): Promise<PostgrestSingleResponse<CalendarSettings | null>> {
+    return supabase
+      .from('user_calender_settings')
+      .select("*")
+      .eq("user", userId)
+      .maybeSingle()
+  },
+  async updateCalenderSettings(
+    settings: CalendarSettingsResult,
+    user: User
+  ): Promise<PostgrestSingleResponse<CalendarSettings>> {
+    return supabase
+      .from('user_calender_settings')
+      .upsert({
+        user: user.userId,
+        calender_id: settings.calendar_id,
+        minutes_to_remind: settings.minutes_to_remind
+      })
+      .select("*")
+      .returns<CalendarSettings>();
+  },
+  async fetchNotificationSettings(
+    userId: string
+  ): Promise<string[]> {
+    const result = await supabase
+      .from('user_notification_settings')
+      .select("notification_tag")
+      .eq("user", userId);
+    console.log(result);
+    if (result.error)
+      return [];
+    return result.data.map(x => x.notification_tag);
+  },
+};

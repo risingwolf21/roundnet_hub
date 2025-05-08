@@ -1,84 +1,141 @@
 import {
-    Avatar,
-    Container,
-    Grid,
-    List,
-    ListItem,
-    ListItemAvatar,
-    ListItemText,
-    ListSubheader,
-    Typography
-} from "@mui/material";
-import CustomAppBar from "./AppBar";
-import React, {useEffect, useState} from "react";
-import {AddPhotoAlternateOutlined, FiberManualRecord} from "@mui/icons-material";
-import {useParams} from "react-router-dom";
-import {Group, UserWithGroups} from "../types/supabaseTypes";
-import {LoadingIndicator} from "./LoadingIndicator";
-import {useSelector} from "react-redux";
-import {RootState} from "../redux/store";
-import {SupabaseUserRepository} from "../repository/UserRepository";
+  Avatar,
+  Chip,
+  Container,
+  IconButton,
+  List,
+  ListItem,
+  ListItemAvatar,
+  ListItemText,
+  ListSubheader,
+  Typography,
+} from '@mui/material';
+import React, { useEffect, useState } from 'react';
+import { AddPhotoAlternateOutlined, ContentCopy, FiberManualRecord, Launch } from '@mui/icons-material';
+import { useParams } from 'react-router';
+import { LoadingIndicator } from './LoadingIndicator';
+import { SupabaseUserRepository } from '../repository/UserRepository';
+import Layout from './Layout';
+import { useApplication } from '../features/auth/AuthContext';
+import pzLogo from '../images/pz_logo.svg';
 
 const UserScreen = () => {
+  const { userId } = useParams();
+  const { user } = useApplication();
+  const [loading, setLoading] = useState<boolean>(false);
+  const [currentUser, setCurrentUser] = useState<UserWithGroupsAndPlayerData | null>(null);
+  const [overlappingGroups, setOverlappingGroups] = useState<Group[]>([]);
 
-    const {userId} = useParams();
-    const {user} = useSelector((state: RootState) => state.application);
-    const [loading, setLoading] = useState<boolean>(false);
-    const [currentUser, setCurrentUser] = useState<UserWithGroups | null>(null);
-    const [overlappingGroups, setOverlappingGroups] = useState<Group[]>([]);
+  const loadUserData = async (userId: string) => {
 
-    useEffect(() => {
-        if (userId && user) {
-            setLoading(true);
-            SupabaseUserRepository.fetchUserWithGroups(userId).then(result => {
-                SupabaseUserRepository.fetchUserWithGroups(user.userId).then(userResult => {
-                    setOverlappingGroups(result.data?.groups?.filter(x =>
-                        userResult.data?.groups.some(y => y.id === x.id)) ?? [])
-                    setCurrentUser(result.data);
-                    setLoading(false);
-                });
-            });
+    const userResult = await SupabaseUserRepository.fetchUserWithGroups(user!.userId);
+    const result = await SupabaseUserRepository.fetchUserWithGroups(userId);
+
+    return { result, userResult }
+  }
+
+  useEffect(() => {
+    if (userId) {
+      setLoading(true);
+      loadUserData(userId).then(({ result, userResult }) => {
+        setOverlappingGroups(
+          result.data?.groups?.filter((x: Group) => userResult.data?.groups.some((y: Group) => y?.id === x?.id)) ?? []
+        );
+        setCurrentUser(result.data);
+        setLoading(false);
+      });
+    }
+  }, [userId, user]);
+
+  return (
+    <Layout>
+      <LoadingIndicator loading={loading} />
+      <List sx={{ pl: 2, pr: 2, pb: 8 }}>
+        <Container
+          key={'avatar'}
+          sx={{
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            flexDirection: 'column',
+            m: 2,
+            p: 0,
+            width: 'auto',
+          }}
+        >
+          <Avatar sx={{ borderRadius: 2, width: '150px', height: '150px' }}>
+            {currentUser?.avatarUrl ? (
+              <img src={currentUser?.avatarUrl} alt="logo" width={'150px'} height={'150px'} />
+            ) : (
+              <AddPhotoAlternateOutlined sx={{ fontSize: '50px' }} />
+            )}
+          </Avatar>
+          <Typography variant={'h5'} sx={{ mt: 4 }}>
+            {currentUser?.displayName}
+          </Typography>
+        </Container>
+        {
+          currentUser?.player_data?.rg_id && currentUser.player_data?.rg_link && <>
+            <ListItem
+              key={'rg_id'}
+              disableGutters
+              sx={{
+                '&.MuiListItem-root': { p: 0 },
+              }}
+              secondaryAction={<>
+                <IconButton
+                  onClick={() =>
+                    window.open(currentUser.player_data?.rg_link ?? undefined, '_blank', 'noopener,noreferrer')
+                  }
+                >
+                  <Launch />
+                </IconButton>
+                <IconButton onClick={() => navigator.clipboard.writeText(currentUser.player_data?.rg_id ?? "")}><ContentCopy /></IconButton>
+              </>
+              }
+            >
+              <ListItemAvatar>
+                <img src={pzLogo} alt={'pz logo'} width="25" height="25" />
+              </ListItemAvatar>
+              <ListItemText primary={currentUser.player_data.rg_id} secondary={'Roundnet Germany ID'} />
+            </ListItem>
+            <ListItem
+              key={'rgx'}
+              disableGutters
+              sx={{
+                '&.MuiListItem-root': { p: 0 },
+              }}
+              secondaryAction={currentUser.player_data?.pro_status ? <Chip variant='outlined' label="Pro Status" sx={{ mx: 2, borderRadius: 3, background: "black", color: "white" }} /> : undefined}>
+              <ListItemAvatar>
+                <img src={pzLogo} alt={'pz logo'} width="25" height="25" />
+              </ListItemAvatar>
+              <ListItemText primary={currentUser.player_data.rg_index} secondary={'Roundnet Germany Index'} />
+            </ListItem>
+          </>
         }
-    }, [userId, user]);
-
-    return <Grid
-        width="100%">
-        <CustomAppBar navigateBack={true}/>
-        <LoadingIndicator loading={loading}/>
-        <List sx={{pl: 2, pr: 2, pb: 8}}>
-            <Container key={"avatar"} sx={{
-                display: "flex",
-                justifyContent: "center",
-                alignItems: "center",
-                flexDirection: "column",
-                m: 2,
-                p: 0,
-                width: "auto"
-            }}>
-                <Avatar sx={{borderRadius: 2, width: "150px", height: "150px"}}>
-                    {
-                        currentUser?.avatarUrl
-                            ? <img src={currentUser?.avatarUrl} alt="logo" width={"150px"} height={"150px"}/>
-                            : <AddPhotoAlternateOutlined sx={{fontSize: "50px"}}/>
-                    }
-                </Avatar>
-                <Typography variant={"h5"} sx={{mt: 4}}>{currentUser?.displayName}</Typography>
-            </Container>
-            <List key={"groups"} subheader={<ListSubheader
-                sx={{zIndex: "-1", fontWeight: "bold", lineHeight: "normal", my: 2, pl: 0}}>Gemeinsame
-                Gruppen</ListSubheader>}>
-                {
-                    overlappingGroups.map((group, index) => <ListItem key={`${group.name} ${index}`}
-                                                                      sx={{'&.MuiListItem-root': {p: 0}}}
-                                                                      divider={index !== overlappingGroups.length - 1}>
-                        <ListItemAvatar>
-                            <FiberManualRecord sx={{color: group.color}}/>
-                        </ListItemAvatar>
-                        <ListItemText primary={group.name} secondary={group.description}/>
-                    </ListItem>)
-                }
-            </List>
+        <List
+          key={'groups'}
+          subheader={
+            <ListSubheader sx={{ zIndex: '-1', fontWeight: 'bold', lineHeight: 'normal', my: 2, pl: 0 }}>
+              Gemeinsame Gruppen
+            </ListSubheader>
+          }
+        >
+          {overlappingGroups.map((group, index) => (
+            <ListItem
+              key={`${group.name} ${index}`}
+              sx={{ '&.MuiListItem-root': { p: 0 } }}
+              divider={index !== overlappingGroups.length - 1}
+            >
+              <ListItemAvatar>
+                <FiberManualRecord sx={{ color: group.color }} />
+              </ListItemAvatar>
+              <ListItemText primary={group.name} secondary={group.description} />
+            </ListItem>
+          ))}
         </List>
-    </Grid>
-}
+      </List>
+    </Layout>
+  );
+};
 export default UserScreen;

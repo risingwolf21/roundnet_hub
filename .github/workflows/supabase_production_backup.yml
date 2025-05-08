@@ -4,29 +4,117 @@ on:
   workflow_dispatch:
   schedule:
     - cron: '0 0 * * *' # Runs every day at midnight
-jobs:   
+jobs:
   run_db_backup:
     runs-on: ubuntu-latest
     permissions:
       contents: write
     env:
-      supabase_db_url: ${{ secrets.SUPABASE_DB_URL }}   # For example: postgresql://postgres:[YOUR-PASSWORD]@db.<ref>.supabase.co:5432/postgres
+      supabase_prod_db_url: ${{ secrets.SUPABASE_PRODUCTION_DB_URL }} # For example: postgresql://postgres:[YOUR-PASSWORD]@db.<ref>.supabase.co:5432/postgres
     steps:
       - uses: actions/checkout@v3
         with:
           ref: ${{ github.head_ref }}
+
       - uses: supabase/setup-cli@v1
         with:
           version: latest
-      - name: Backup roles
-        run: supabase db dump --db-url "$supabase_db_url" -f supabase/backup/roles.sql --role-only
-      - name: Backup schema
-        run: supabase db dump --db-url "$supabase_db_url" -f supabase/backup/schema.sql
-      - name: Backup data
-        run: supabase db dump --db-url "$supabase_db_url" -f supabase/backup/data.sql --data-only --use-copy
+
+      - name: Set current date
+        id: current_date
+        run: echo "date=$(date +'%Y-%m-%d')" >> $GITHUB_OUTPUT
+
+      - name: Full Backup (schema)
+        run: supabase db dump --schema public,games,permissions,logs --db-url "$supabase_prod_db_url" -f supabase/backup/full_dump.sql
+
+      - name: Full Backup (roles)
+        run: supabase db dump --db-url "$supabase_prod_db_url" -f supabase/backup/full_dump_roles.sql --role-only
+
+      - name: Full Backup (data)
+        run: supabase db dump --db-url "$supabase_prod_db_url" -f supabase/backup/full_dump_data.sql --data-only
 
       - uses: stefanzweifel/git-auto-commit-action@v4
         with:
-          commit_message: Supabase backup
-    
-    
+          commit_message: 'Supabase Backup ${{ steps.current_date.outputs.date }}'
+          file_pattern: supabase/backup/*
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: backup
+          path: supabase/backup
+
+  wipe_staging_db:
+    runs-on: ubuntu-latest
+    needs: run_db_backup
+    env:
+      supabase_staging_db_url: ${{ secrets.SUPABASE_STAGING_DB_URL }}
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: backup
+          path: supabase/backup
+
+      - name: Install PostgreSQL client
+        run: sudo apt-get install postgresql-client -y
+
+      - name: Wipe staging DB
+        run: psql "$supabase_staging_db_url" -f supabase/backup/wipe.sql
+
+  restore_schema_staging_db:
+    runs-on: ubuntu-latest
+    needs: wipe_staging_db
+    env:
+      supabase_staging_db_url: ${{ secrets.SUPABASE_STAGING_DB_URL }}
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: backup
+          path: supabase/backup
+
+      - name: Install PostgreSQL client
+        run: sudo apt-get install postgresql-client -y
+
+      - name: Restore schema to staging DB
+        run: psql "$supabase_staging_db_url" < supabase/backup/full_dump.sql
+
+  restore_roles_staging_db:
+    runs-on: ubuntu-latest
+    needs: wipe_staging_db
+    env:
+      supabase_staging_db_url: ${{ secrets.SUPABASE_STAGING_DB_URL }}
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: backup
+          path: supabase/backup
+
+      - name: Install PostgreSQL client
+        run: sudo apt-get install postgresql-client -y
+
+      - name: Restore roles to staging DB
+        run: psql "$supabase_staging_db_url" < supabase/backup/full_dump_roles.sql
+
+  restore_data_staging_db:
+    runs-on: ubuntu-latest
+    needs: [restore_roles_staging_db, restore_schema_staging_db]
+    env:
+      supabase_staging_db_url: ${{ secrets.SUPABASE_STAGING_DB_URL }}
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: backup
+          path: supabase/backup
+
+      - name: Install PostgreSQL client
+        run: sudo apt-get install postgresql-client -y
+
+      - name: Restore data to staging DB
+        run: psql "$supabase_staging_db_url" < supabase/backup/full_dump_data.sql
