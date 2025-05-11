@@ -13,6 +13,7 @@ import {
   challengeSelector,
   fetchChallengesAsync
 } from './slices/challengeSlice';
+import { withProfiler } from '@sentry/react';
 
 const ChallengeListProvider = () => {
   const dispatch = useAppDispatch();
@@ -74,4 +75,4 @@ const ChallengeList = ({ loading, challenges, user, dispatch }: ChallengeListPro
   );
 };
 
-export default ChallengeListProvider;
+export default withProfiler(ChallengeListProvider);

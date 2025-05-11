@@ -13,7 +13,7 @@ import {
   Skeleton,
   Typography,
 } from '@mui/material';
-import { captureException } from '@sentry/react';
+import { captureException, withProfiler } from '@sentry/react';
 import { useNotifications } from '@toolpad/core/useNotifications';
 import { isBefore } from 'date-fns';
 import React, { useEffect, useState } from 'react';
@@ -378,4 +378,4 @@ const EventInformation = ({
   );
 };
 
-export default EventInformation;
+export default withProfiler(EventInformation);

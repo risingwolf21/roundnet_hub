@@ -27,6 +27,7 @@ import { can } from '../../utils/PermissionService';
 import { useApplication } from '../auth/ApplicationContext';
 import { EventItem } from './components/EventItem';
 import { LoadingEventItem } from './components/LoadingEventItem';
+import { withProfiler } from '@sentry/react';
 
 type EventScreenProps = {
   events: SliceEvent[];
@@ -248,4 +249,4 @@ const EventScreen = ({ events, loading, error, user, fetchMode }: EventScreenPro
   );
 };
 
-export default EventScreen;
+export default withProfiler(EventScreen);

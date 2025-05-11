@@ -1,5 +1,5 @@
 import { Box, CircularProgress, Typography } from '@mui/material';
-import { captureException, setUser } from '@sentry/react';
+import { captureException, setUser, setTag } from '@sentry/react';
 import { Session } from '@supabase/supabase-js';
 import React, { useCallback, useEffect, useState } from 'react';
 import { useDispatch } from 'react-redux';
@@ -27,6 +27,7 @@ export const AuthGate = () => {
       .then((r) => r.text())
       .then((text) => {
         setVersion(text);
+        setTag("version", text);
       })
       .catch(e => {
         setVersion("???")
