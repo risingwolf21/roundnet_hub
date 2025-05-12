@@ -119,6 +119,10 @@ const Content = ({ payload, onClose }: DialogProps<ConstellationCreationDialogPr
   </AppBar>
     <List sx={{ pl: 2, pr: 2, pb: 10 }}>
       {
+        loading && <p>loading...</p>
+      }
+      <p>Spieler: {players.length} Matches: {matches.length}</p>
+      {
         matches.map(x => x.map(y => <ListItem divider>
           <Box sx={{ display: 'flex', flexDirection: 'row', width: '100%' }}>
             <Box
