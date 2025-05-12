@@ -254,25 +254,27 @@ const PublicGroupInformation = () => {
         </CardActionArea>
       </Card>
     </List>
-    <Fab
-      sx={{
-        background: '#66bb6a',
-        position: 'fixed',
-        right: '16px',
-        bottom: 'calc(16px + env(safe-area-inset-bottom))',
-      }}
-      onClick={async () => {
-        const result = await dialogs.open(CreateOrUpdateGroupDialog, { user, group: group ?? undefined });
-        if (result && result !== "closed") {
-          loadGroup(result.id)
-          notifications.show("Gruppe wurde erfolgreich bearbeitet.", { severity: "success" });
-        } else if (!result) {
-          notifications.show("Gruppe konnte nicht bearbeitet werden.", { severity: "error" });
-        }
-      }}
-    >
-      <Edit sx={{ color: 'white' }} />
-    </Fab>
+    {
+      group?.user_group_role === "admin" && <Fab
+        sx={{
+          background: '#66bb6a',
+          position: 'fixed',
+          right: '16px',
+          bottom: 'calc(16px + env(safe-area-inset-bottom))',
+        }}
+        onClick={async () => {
+          const result = await dialogs.open(CreateOrUpdateGroupDialog, { user, group: group ?? undefined });
+          if (result && result !== "closed") {
+            loadGroup(result.id)
+            notifications.show("Gruppe wurde erfolgreich bearbeitet.", { severity: "success" });
+          } else if (!result) {
+            notifications.show("Gruppe konnte nicht bearbeitet werden.", { severity: "error" });
+          }
+        }}
+      >
+        <Edit sx={{ color: 'white' }} />
+      </Fab>
+    }
     <SearchAndSelectUserDialog
       open={searchAndSelectUsersOpen}
       handleClose={() => setSearchAndSelectUsersOpen(false)}

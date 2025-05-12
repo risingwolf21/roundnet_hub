@@ -1,4 +1,4 @@
-import { Delete, DoNotDisturb, DoNotDisturbOff, Edit, Key, MoreVert } from '@mui/icons-material';
+import { Delete, DoNotDisturb, DoNotDisturbOff, Edit, Key, MoreVert, Sports } from '@mui/icons-material';
 import {
   Alert,
   Box,
@@ -6,6 +6,8 @@ import {
   Divider,
   IconButton,
   List,
+  ListItem,
+  ListItemAvatar,
   ListItemIcon,
   ListItemText,
   Menu,
@@ -34,6 +36,8 @@ import { CancelTrainingDialog } from './dialogs/CancelTrainingDialog';
 import { DeleteEventDialog } from './dialogs/DeleteEventDialog';
 import { EditEventOptionsDialog } from './dialogs/EditEventOptionsDialog';
 import { DeleteEventType, EventInformationProps } from './types';
+import { useDialogs } from '@toolpad/core';
+import { ConstellationCreationDialog } from './dialogs/ConstellationsCreationDialog';
 
 const EventInformation = ({
   dispatch,
@@ -52,6 +56,7 @@ const EventInformation = ({
   const [deleteTrainingOpen, setDeleteTrainingOpen] = useState(false);
   const [editEventOptionOpen, setEditEventOptionOpen] = useState(false);
   const navigate = useNavigate();
+  const dialogs = useDialogs();
   const notifications = useNotifications();
   const [anchorEl, setAnchorEl] = useState<(EventTarget & HTMLButtonElement) | null>(null);
 
@@ -327,6 +332,32 @@ const EventInformation = ({
                 </Alert>
               )}
             </Box>
+
+            {
+              user.roles.map(x => x.name).includes("admin") && <Box sx={{ p: 0, alignSelf: 'center' }}>
+                <Typography sx={{ fontSize: 16, fontWeight: 'bold' }} color="text.secondary" gutterBottom>
+                  Konstellationen
+                </Typography>
+                <ListItem
+                  key={'createConstellations'}
+                  sx={{ '&.MuiListItem-root': { paddingLeft: 0 } }}
+                  secondaryAction={
+                    <Button onClick={() => {
+                      dialogs.open(ConstellationCreationDialog, { users: attendance.filter(x => x.state === "Attending").map(x => x.user) })
+                    }}>Erstellen</Button>
+                  }
+                >
+                  <ListItemAvatar sx={{ justifyContent: 'left', alignItems: 'center', display: 'flex' }}>
+                    <Sports color="success" />
+                  </ListItemAvatar>
+                  <ListItemText
+                    primary={"Konstellationen erstellen"}
+                  />
+                </ListItem>
+                <Divider />
+
+              </Box>
+            }
             <EventInformationAttendance
               user={user}
               attendance={attendance}
