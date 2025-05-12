@@ -123,7 +123,7 @@ const Content = ({ payload, onClose }: DialogProps<ConstellationCreationDialogPr
       }
       <p>Spieler: {players.length} Matches: {matches.length}</p>
       {
-        matches.map(x => x.map(y => <ListItem divider>
+        matches.flatMap(x => x.map(y => <ListItem divider>
           <Box sx={{ display: 'flex', flexDirection: 'row', width: '100%' }}>
             <Box
               sx={{
