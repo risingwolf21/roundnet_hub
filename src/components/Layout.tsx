@@ -59,7 +59,7 @@ const Layout = ({
         top: 0,
         left: 0,
         width: '100%',
-        height: 'calc(100vh + env(safe-area-inset-top) + env(safe-area-inset-bottom))',
+        height: '100dvh',
         display: 'flex',
         overflowY: 'none', // Kein Overflow außerhalb des Containers
       }}
@@ -71,7 +71,6 @@ const Layout = ({
           zIndex: theme.zIndex.drawer + 1,
           background: 'primary',
           top: 0,
-          pt: 'env(safe-area-inset-top)',
           [theme.breakpoints.down('lg')]: {
             width: `100%`,
           },
@@ -81,6 +80,7 @@ const Layout = ({
           },
         })}
       >
+        <Box sx={{ height: 'env(safe-area-inset-top)' }} />
         <Toolbar>
           {navigateBackPath ? (
             <IconButton
@@ -179,7 +179,7 @@ const Layout = ({
             alignItems: 'center',
             pb: 'env(safe-area-inset-bottom)',
             flexGrow: 1,
-            flex: 1,
+            height: '100svh',
           }}
         >
           <Box sx={{ height: "100%" }}>{children}</Box>

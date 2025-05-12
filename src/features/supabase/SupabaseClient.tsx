@@ -258,6 +258,11 @@ const SupabaseClient = () => {
       }} secondaryAction={<ExpandMoreOutlined />}>
         <ListItemText primary={selectedTable?.name ?? "Nicht gewählt"} secondary={selectedTable?.schema ?? "Nicht gewählt"} />
       </ListItem>
+      <button type="button"
+        onClick={() => {
+          throw new Error("Sentry Test Error");
+        }}>Break the world</button>
+
       <ErrorBoundary
         fallback={CustomNoRowsOverlay}
         onError={(error) => {

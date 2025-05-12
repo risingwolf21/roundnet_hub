@@ -18,6 +18,7 @@ import { useAuthentication } from "../auth/AuthContext"
 import { updateAttendanceAsync } from "../events/slices/eventAttendanceSlice"
 import { eventsSelector, fetchEventsAsync } from "../events/slices/eventsSlice"
 import { fetchItemsAsync, keyHoldersSelector } from "../keys/slices/keysSlice"
+import { withProfiler } from "@sentry/react"
 
 const HomePage = () => {
 
@@ -259,4 +260,4 @@ const HomePage = () => {
         </List>
     </Layout >
 }
-export default HomePage;
+export default withProfiler(HomePage);

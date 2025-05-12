@@ -1,7 +1,7 @@
 import { AccountBox } from '@mui/icons-material';
 import EditIcon from '@mui/icons-material/Edit';
 import { Alert, Avatar, CardMedia, Fab, List, ListItem, ListItemAvatar, ListItemText, Stack, Tab, Tabs, Typography } from '@mui/material';
-import { captureException } from '@sentry/react';
+import { captureException, withProfiler } from '@sentry/react';
 import { useNotifications } from '@toolpad/core/useNotifications';
 import { Dayjs } from 'dayjs';
 import { TFunction } from 'i18next';
@@ -197,4 +197,4 @@ const ChallengeInformation = ({ t }: { t: TFunction }) => {
     </Layout >
   );
 };
-export default withTranslation()(ChallengeInformation);
+export default withProfiler(withTranslation()(ChallengeInformation));

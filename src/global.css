@@ -1,21 +1,8 @@
-html,
+html {
+  padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+  min-height: calc(100% + env(safe-area-inset-top));
+}
+
 body {
-  margin: 0;
-  overflow-y: none;
-  overscroll-behavior: none;
-  padding: 0;
-  height: calc(100% + env(safe-area-inset-top));
-}
-
-main {
-  overflow-y: none;
-  overscroll-behavior: none;
-  display: block; /* because <main/> is very new */
-}
-
-#root {
-  position: fixed;
-  width: 100%;
-  height: calc(100% + env(safe-area-inset-top));
-  overflow-y: none; /* Ermöglicht das Scrollen innerhalb der Wrapper-Komponente */
+  min-height: -webkit-fill-available;
 }

@@ -15,8 +15,12 @@ const root = ReactDOM.createRoot(document.getElementById('root') as HTMLElement,
   onUncaughtError: Sentry.reactErrorHandler((error, errorInfo) => {
     console.warn('Uncaught error', error, errorInfo.componentStack);
   }),
-  onCaughtError: Sentry.reactErrorHandler(),
-  onRecoverableError: Sentry.reactErrorHandler(),
+  onCaughtError: Sentry.reactErrorHandler((error, errorInfo) => {
+    console.warn('Caught error', error, errorInfo.componentStack);
+  }),
+  onRecoverableError: Sentry.reactErrorHandler((error, errorInfo) => {
+    console.warn('Recoverable error', error, errorInfo.componentStack);
+  }),
 });
 
 dayjs.extend(updateLocale)
