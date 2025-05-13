@@ -1,5 +1,5 @@
-import { ArrowDropDown, Close } from "@mui/icons-material";
-import { Accordion, AccordionDetails, AccordionSummary, AppBar, Box, Button, Checkbox, Dialog, IconButton, List, ListItem, ListItemAvatar, ListItemText, ListSubheader, Stack, Toolbar, Typography } from "@mui/material";
+import { ArrowDropDown, Close, Delete, Save } from "@mui/icons-material";
+import { Accordion, AccordionDetails, AccordionSummary, AppBar, Box, Button, Checkbox, Dialog, IconButton, List, ListItem, ListItemAvatar, ListItemText, MenuItem, Select, Stack, Toolbar, Typography } from "@mui/material";
 import { LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { DialogProps, NotificationsProvider, useNotifications } from "@toolpad/core";
@@ -30,7 +30,7 @@ export interface MatchResult {
 
 export interface MatchmakingOptions {
   players: PlayerWithUser[];
-  lockedTeams?: [string, string][];
+  lockedTeams?: [PlayerWithUser, PlayerWithUser][];
   matchupMode?: "any" | "separate";
   mustPlay?: string[];
   mode?: "balanced" | "random";
@@ -73,10 +73,10 @@ function isAllowedMatchup(t1: Team, t2: Team, mode: "any" | "separate"): boolean
   return !(types.has("mixed") && (types.has("men") || types.has("women")));
 }
 
-function generatePossibleTeams(players: PlayerWithUser[], lockedTeams: [string, string][] = []): Team[] {
+function generatePossibleTeams(players: PlayerWithUser[], lockedTeams: [PlayerWithUser, PlayerWithUser][] = []): Team[] {
   const map = new Map(players.map(p => [p.player, p]));
-  const locked = lockedTeams.map(([a, b]) => createTeam(map.get(a)!, map.get(b)!));
-  const lockedNames = new Set(lockedTeams.flat());
+  const locked = lockedTeams.map(([a, b]) => createTeam(map.get(a.player)!, map.get(b.player)!));
+  const lockedNames = new Set(lockedTeams.flat().map(x => x.player));
   const freePlayers = players.filter(p => !lockedNames.has(p.player));
   const teams = [...locked];
   for (let i = 0; i < freePlayers.length; i++) {
@@ -206,8 +206,8 @@ export function generateBalancedMatchesWithBench(options: MatchmakingOptions): M
   while (players.filter(p => !used.has(p.player)).length >= 4) {
     const remaining = players.filter(p => !used.has(p.player));
     const remainingLockedTeams = lockedTeams.filter(([a, b]) =>
-      remaining.find(p => p.player === a) &&
-      remaining.find(p => p.player === b)
+      remaining.find(p => p.player === a.player) &&
+      remaining.find(p => p.player === b.player)
     );
     const teams = shuffle(generatePossibleTeams(remaining, remainingLockedTeams));
 
@@ -237,6 +237,8 @@ const Content = ({ payload, onClose }: DialogProps<ConstellationCreationDialogPr
   const [loading, setLoading] = useState(false);
   const [players, setPlayers] = useState<PlayerWithUser[]>([]);
   const [foundPlayers, setFoundPlayers] = useState<PlayerWithUser[]>([]);
+  const [preSelectedPlayer1, setPreSelectedPlayer1] = useState<PlayerWithUser | null>(null);
+  const [preSelectedPlayer2, setPreSelectedPlayer2] = useState<PlayerWithUser | null>(null);
   const [rounds, setRounds] = useState<{
     game: MatchResult,
     options: MatchmakingOptions
@@ -246,8 +248,21 @@ const Content = ({ payload, onClose }: DialogProps<ConstellationCreationDialogPr
     setLoading(true);
     supabase.schema("games").from("players").select("*").in("player", payload.users.map(x => x.userId)).then(result => {
       if (result.data) {
-        setPlayers(result.data.map(x => ({ ...x, name: payload.users.find(y => y.userId === x.player)?.name })));
+        const loadedPlayers = result.data.map(x => ({ ...x, name: payload.users.find(y => y.userId === x.player)?.name }));
+        setPlayers(loadedPlayers);
         setFoundPlayers(result.data.map(x => ({ ...x, name: payload.users.find(y => y.userId === x.player)?.name })));
+
+        setRounds([{
+          game: {
+            matches: [],
+            bench: [],
+          },
+          options: {
+            players: loadedPlayers,
+            mode: "balanced",
+            matchupMode: "any"
+          }
+        }])
       }
       setLoading(false)
     })
@@ -269,7 +284,7 @@ const Content = ({ payload, onClose }: DialogProps<ConstellationCreationDialogPr
       </Button>
     </Toolbar>
   </AppBar>
-    <List sx={{ pl: 1, pr: 1, pb: 10 }}>
+    <List sx={{ pl: 0, pr: 0, pb: 10 }}>
       {
         loading && <p>loading...</p>
       }
@@ -298,7 +313,7 @@ const Content = ({ payload, onClose }: DialogProps<ConstellationCreationDialogPr
                       placeholder="Index"
                       step={10}
                       onChange={(event, val) => {
-                        if (val && val >= 0)
+                        if (val && val >= 0) {
                           setPlayers([...players.filter(y => x.userId !== y.player), {
                             gender: "m",
                             player: x.userId,
@@ -311,6 +326,8 @@ const Content = ({ payload, onClose }: DialogProps<ConstellationCreationDialogPr
                             rg_id: null,
                             rg_link: null
                           }])
+                          setRounds([...rounds.map((z) => ({ ...z, options: { ...z.options, players: players } as MatchmakingOptions }))])
+                        }
                       }}
                     />
                   </Box>
@@ -321,14 +338,17 @@ const Content = ({ payload, onClose }: DialogProps<ConstellationCreationDialogPr
         </Accordion>
       }
       {
-        rounds.map((x, index) => <>
-          <List subheader={<ListSubheader disableGutters disableSticky>Runde {index + 1}</ListSubheader>}>
+        rounds.map((x, index) => <Accordion defaultExpanded={index === 0} disableGutters>
+          <AccordionSummary expandIcon={<ArrowDropDown />}>
+            <Typography component="span">Runde {index + 1}</Typography>
+          </AccordionSummary>
+          <AccordionDetails sx={{ padding: 1 }}>
             <Accordion disableGutters>
               <AccordionSummary expandIcon={<ArrowDropDown />}>
                 <Typography component="span">Einstellungen</Typography>
               </AccordionSummary>
               <AccordionDetails>
-                <ListItem divider sx={{ '&.MuiListItem-root': { paddingLeft: 0 } }}>
+                <ListItem dense divider sx={{ '&.MuiListItem-root': { paddingLeft: 0 } }}>
                   <ListItemAvatar>
                     <Checkbox sx={{ pl: 0 }} checked={x.options.mode === "balanced"} onChange={(e) => {
                       e.stopPropagation();
@@ -340,7 +360,7 @@ const Content = ({ payload, onClose }: DialogProps<ConstellationCreationDialogPr
                   </ListItemAvatar>
                   <ListItemText primary={"Balanced Teams?"} />
                 </ListItem>
-                <ListItem divider sx={{ '&.MuiListItem-root': { paddingLeft: 0 } }}>
+                <ListItem dense divider sx={{ '&.MuiListItem-root': { paddingLeft: 0 } }}>
                   <ListItemAvatar>
                     <Checkbox sx={{ pl: 0 }} checked={x.options.matchupMode === "any"} onChange={(e) => {
                       if (e.target.checked)
@@ -352,7 +372,7 @@ const Content = ({ payload, onClose }: DialogProps<ConstellationCreationDialogPr
                   <ListItemText primary={"Gemischte Teams erlaubt?"} />
                 </ListItem>
                 {
-                  index > 0 && <ListItem divider sx={{ '&.MuiListItem-root': { paddingLeft: 0 } }}>
+                  index > 0 && <ListItem dense divider sx={{ '&.MuiListItem-root': { paddingLeft: 0 } }}>
                     <ListItemAvatar>
                       <Checkbox sx={{ pl: 0 }} checked={x.options.benchFromLastMatchMustPlay} onChange={(e) => {
                         setRounds([...rounds.map((z, i) => i === index ? { ...z, options: { ...z.options, benchFromLastMatchMustPlay: e.target.checked } as MatchmakingOptions } : z)])
@@ -361,9 +381,102 @@ const Content = ({ payload, onClose }: DialogProps<ConstellationCreationDialogPr
                     <ListItemText primary={"Setze zuvor ausgesetzte Spieler ein."} />
                   </ListItem>
                 }
+              </AccordionDetails>
+            </Accordion>
+            <Accordion disableGutters>
+              <AccordionSummary expandIcon={<ArrowDropDown />}>
+                <Typography component="span">Voreingestellte Teams</Typography>
+              </AccordionSummary>
+              <AccordionDetails>
+                <List>
+                  {
+                    x.options.lockedTeams && x.options.lockedTeams?.map(([player1, player2]) =>
+                      <Box sx={{ display: 'flex', flexDirection: 'row', justifyContent: "space-between", width: '100%' }}>
+                        <Box
+                          sx={{
+                            display: 'flex',
+                            flexDirection: 'column',
+                            overflow: 'hidden',
+                            flexGrow: 1,
+                            minWidth: 0,
+                          }}
+                        >
+                          <Typography
+                            sx={{
+                              whiteSpace: 'nowrap',
+                              overflow: 'hidden',
+                              textOverflow: 'ellipsis',
+                            }}
+                          >
+                            {player1.name}
+                          </Typography>
+                          <Typography
+                            sx={{
+                              whiteSpace: 'nowrap',
+                              overflow: 'hidden',
+                              textOverflow: 'ellipsis',
+                            }}
+                          >
+                            {player2.name}
+                          </Typography>
+                        </Box>
+                        <IconButton onClick={() => {
+                          setRounds([...rounds.map((z, i) => i === index ? {
+                            game: z.game,
+                            options: {
+                              ...z.options,
+                              lockedTeams: (z.options.lockedTeams ?? []).filter(y => y[0].player !== player1.player && y[1].player !== player2.player)
+                            } as MatchmakingOptions,
+                          } : z)]);
+                          setPreSelectedPlayer1(null);
+                          setPreSelectedPlayer2(null);
+                        }}>
+                          <Delete />
+                        </IconButton>
+                      </Box>)
+                  }
+                  <Box sx={{ display: 'flex', flexDirection: 'row', justifyContent: "end", width: '100%' }}>
+                    <Select size="small" value={preSelectedPlayer1?.player ?? "none"} onChange={(e) => setPreSelectedPlayer1(players.find(y => y.player === e.target.value) ?? null)}>
+                      {
+                        players
+                          .filter(y => y.player !== preSelectedPlayer2?.player)
+                          .filter(y => !x.options.lockedTeams?.flatMap(x => x).includes(y)).map(z => <MenuItem value={z.player}>{z.name}</MenuItem>)
+                      }
+                      <MenuItem value={"none"}>Kein Nutzer</MenuItem>
+                    </Select>
+                    <Select size="small" value={preSelectedPlayer2?.player ?? "none"} onChange={(e) => setPreSelectedPlayer2(players.find(y => y.player === e.target.value) ?? null)}>
+                      {
+                        players
+                          .filter(y => y.player !== preSelectedPlayer1?.player)
+                          .filter(y => !x.options.lockedTeams?.flatMap(x => x).includes(y)).map(z => <MenuItem value={z.player}>{z.name}</MenuItem>)
+                      }
+                      <MenuItem value={"none"}>Kein Nutzer</MenuItem>
+                    </Select>
+                    <IconButton onClick={() => {
+                      if (!preSelectedPlayer1 || !preSelectedPlayer2)
+                        return;
+                      setRounds([...rounds.map((z, i) => i === index ? {
+                        game: z.game,
+                        options: {
+                          ...z.options,
+                          lockedTeams: [...(z.options.lockedTeams ?? []), [preSelectedPlayer1, preSelectedPlayer2]]
+                        } as MatchmakingOptions,
+                      } : z)]);
+                      setPreSelectedPlayer1(null);
+                      setPreSelectedPlayer2(null);
+                    }}>
+                      <Save />
+                    </IconButton>
+                  </Box>
+                </List>
+              </AccordionDetails>
+            </Accordion>
+            <Accordion expanded={false} disableGutters>
+              <AccordionSummary>
                 <Box sx={{ display: 'flex', flexDirection: 'row', justifyContent: "end", width: '100%' }}>
                   <Button onClick={() => {
-                    const result = generateBalancedMatchesWithBench(x.options)
+                    const result = generateBalancedMatchesWithBench(x.options);
+                    console.log(result, x.options)
                     setRounds([...rounds.map((z, i) => i === index ? {
                       game: result,
                       options: {
@@ -371,9 +484,9 @@ const Content = ({ payload, onClose }: DialogProps<ConstellationCreationDialogPr
                         ...(z.options.benchFromLastMatchMustPlay && i > 0 && { mustPlay: rounds[i - 1].game.bench.map(x => x.player) })
                       },
                     } : z)])
-                  }}>Neu generieren</Button>
+                  }}>Generieren</Button>
                 </Box>
-              </AccordionDetails>
+              </AccordionSummary>
             </Accordion>
             {
               x.game.matches.map((y) => <Accordion disableGutters>
@@ -452,7 +565,7 @@ const Content = ({ payload, onClose }: DialogProps<ConstellationCreationDialogPr
                           textOverflow: 'ellipsis',
                         }}
                       >
-                        {y[0].strength}
+                        {`${y[0].adjustedStrength} (${y[0].strength})`}
                       </Typography>
                     </Stack>
                     <Stack direction="column" sx={{
@@ -485,56 +598,58 @@ const Content = ({ payload, onClose }: DialogProps<ConstellationCreationDialogPr
                           textOverflow: 'ellipsis',
                         }}
                       >
-                        {y[1].strength}
+                        {`${y[1].adjustedStrength} (${y[1].strength})`}
                       </Typography>
                     </Stack>
                   </Stack>
                 </AccordionDetails>
               </Accordion>)
             }
-          </List >
-          <Accordion disableGutters>
-            <AccordionSummary expandIcon={<ArrowDropDown />}>
-              <Box sx={{ display: 'flex', flexDirection: 'row', width: '100%', alignItems: 'center' }}>
-                <Box
-                  sx={{
-                    display: 'flex',
-                    flexDirection: 'column',
-                    overflow: 'hidden',
-                    flexGrow: 1,
-                    minWidth: 0,
-                  }}
-                >
-                  <Typography
-                    sx={{
-                      whiteSpace: 'nowrap',
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
-                    }}
-                  >
-                    Aussetzer
-                  </Typography>
-                  <Typography
-                    sx={{
-                      whiteSpace: 'nowrap',
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
-                    }}
-                  >
-                    {x.game.bench.map(x => x.name).join(", ")}
-                  </Typography>
-                </Box>
-              </Box>
-            </AccordionSummary>
-            <AccordionDetails>
-              {
-                x.game.bench.map(x => <ListItem dense disableGutters sx={{ '&.MuiListItem-root': { paddingLeft: 0 } }}>
-                  <ListItemText primary={x.name} secondary={x.rg_id} />
-                </ListItem>)
-              }
-            </AccordionDetails>
-          </Accordion>
-        </>)
+            {
+              x.game.bench.length > 0 && <Accordion disableGutters>
+                <AccordionSummary expandIcon={<ArrowDropDown />}>
+                  <Box sx={{ display: 'flex', flexDirection: 'row', width: '100%', alignItems: 'center' }}>
+                    <Box
+                      sx={{
+                        display: 'flex',
+                        flexDirection: 'column',
+                        overflow: 'hidden',
+                        flexGrow: 1,
+                        minWidth: 0,
+                      }}
+                    >
+                      <Typography
+                        sx={{
+                          whiteSpace: 'nowrap',
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                        }}
+                      >
+                        Aussetzer
+                      </Typography>
+                      <Typography
+                        sx={{
+                          whiteSpace: 'nowrap',
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                        }}
+                      >
+                        {x.game.bench.map(x => x.name).join(", ")}
+                      </Typography>
+                    </Box>
+                  </Box>
+                </AccordionSummary>
+                <AccordionDetails>
+                  {
+                    x.game.bench.map(x => <ListItem dense disableGutters sx={{ '&.MuiListItem-root': { paddingLeft: 0 } }}>
+                      <ListItemText primary={x.name} secondary={x.rg_id} />
+                    </ListItem>)
+                  }
+                </AccordionDetails>
+              </Accordion>
+            }
+          </AccordionDetails>
+        </Accordion>)
       }
       <ListItem
         sx={{ '&.MuiListItem-root': { paddingLeft: 0 } }}
