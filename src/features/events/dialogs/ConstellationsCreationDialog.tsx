@@ -1,5 +1,5 @@
 import { ArrowDropDown, Close } from "@mui/icons-material";
-import { Accordion, AccordionDetails, AccordionSummary, AppBar, Box, Button, Checkbox, Dialog, IconButton, List, ListItem, ListItemAvatar, ListItemText, ListSubheader, Toolbar, Typography } from "@mui/material";
+import { Accordion, AccordionDetails, AccordionSummary, AppBar, Box, Button, Checkbox, Dialog, IconButton, List, ListItem, ListItemAvatar, ListItemText, ListSubheader, Stack, Toolbar, Typography } from "@mui/material";
 import { LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { DialogProps, NotificationsProvider, useNotifications } from "@toolpad/core";
@@ -274,7 +274,7 @@ const Content = ({ payload, onClose }: DialogProps<ConstellationCreationDialogPr
         loading && <p>loading...</p>
       }
       {
-        payload.users.filter(x => !foundPlayers.map(y => y.player).includes(x.userId)).length > 0 && <Accordion disableGutters>
+        payload.users.filter(x => !foundPlayers.map(y => y.player).includes(x.userId)).length > 0 && <Accordion disableGutters defaultExpanded>
           <AccordionSummary expandIcon={<ArrowDropDown />}>
             <Typography component="span">Von {payload.users.filter(x => !foundPlayers.map(y => y.player).includes(x.userId)).length} Spielern kein Index gefunden</Typography>
           </AccordionSummary>
@@ -330,7 +330,8 @@ const Content = ({ payload, onClose }: DialogProps<ConstellationCreationDialogPr
               <AccordionDetails>
                 <ListItem divider sx={{ '&.MuiListItem-root': { paddingLeft: 0 } }}>
                   <ListItemAvatar>
-                    <Checkbox checked={x.options.mode === "balanced"} onChange={(e) => {
+                    <Checkbox sx={{ pl: 0 }} checked={x.options.mode === "balanced"} onChange={(e) => {
+                      e.stopPropagation();
                       if (e.target.checked)
                         setRounds([...rounds.map((z, i) => i === index ? { ...z, options: { ...z.options, mode: "balanced" } as MatchmakingOptions } : z)])
                       else
@@ -341,7 +342,7 @@ const Content = ({ payload, onClose }: DialogProps<ConstellationCreationDialogPr
                 </ListItem>
                 <ListItem divider sx={{ '&.MuiListItem-root': { paddingLeft: 0 } }}>
                   <ListItemAvatar>
-                    <Checkbox checked={x.options.matchupMode === "any"} onChange={(e) => {
+                    <Checkbox sx={{ pl: 0 }} checked={x.options.matchupMode === "any"} onChange={(e) => {
                       if (e.target.checked)
                         setRounds([...rounds.map((z, i) => i === index ? { ...z, options: { ...z.options, matchupMode: "any" } as MatchmakingOptions } : z)])
                       else
@@ -353,7 +354,7 @@ const Content = ({ payload, onClose }: DialogProps<ConstellationCreationDialogPr
                 {
                   index > 0 && <ListItem divider sx={{ '&.MuiListItem-root': { paddingLeft: 0 } }}>
                     <ListItemAvatar>
-                      <Checkbox checked={x.options.benchFromLastMatchMustPlay} onChange={(e) => {
+                      <Checkbox sx={{ pl: 0 }} checked={x.options.benchFromLastMatchMustPlay} onChange={(e) => {
                         setRounds([...rounds.map((z, i) => i === index ? { ...z, options: { ...z.options, benchFromLastMatchMustPlay: e.target.checked } as MatchmakingOptions } : z)])
                       }} />
                     </ListItemAvatar>
@@ -375,55 +376,164 @@ const Content = ({ payload, onClose }: DialogProps<ConstellationCreationDialogPr
               </AccordionDetails>
             </Accordion>
             {
-              x.game.matches.map((y) => <ListItem divider sx={{ '&.MuiListItem-root': { paddingLeft: 0 } }}>
-                <ListItemAvatar>
-                  <Checkbox checked={x.options.fixedMatches?.includes(y) ?? false} onChange={(e) => {
-                    if (e.target.checked)
-                      setRounds([...rounds.map((z, i) => i === index ? { ...z, options: { ...z.options, fixedMatches: [...z.options.fixedMatches ?? [], y] } as MatchmakingOptions } : z)])
-                    else
-                      setRounds([...rounds.map((z, i) => i === index ? { ...z, options: { ...z.options, fixedMatches: z.options.fixedMatches?.filter(x => x !== y) } as MatchmakingOptions } : z)])
-                  }} />
-                </ListItemAvatar>
-                <Box sx={{ display: 'flex', flexDirection: 'row', width: '100%', alignItems: 'center' }}>
-                  <Box
-                    sx={{
-                      display: 'flex',
-                      flexDirection: 'column',
+              x.game.matches.map((y) => <Accordion disableGutters>
+                <AccordionSummary expandIcon={<ArrowDropDown />}>
+                  <ListItem disableGutters disablePadding sx={{ '&.MuiListItem-root': { paddingLeft: 0 } }}>
+                    <ListItemAvatar>
+                      <Checkbox checked={x.options.fixedMatches?.includes(y) ?? false} onChange={(e) => {
+                        e.stopPropagation();
+                        if (e.target.checked)
+                          setRounds([...rounds.map((z, i) => i === index ? { ...z, options: { ...z.options, fixedMatches: [...z.options.fixedMatches ?? [], y] } as MatchmakingOptions } : z)])
+                        else
+                          setRounds([...rounds.map((z, i) => i === index ? { ...z, options: { ...z.options, fixedMatches: z.options.fixedMatches?.filter(x => x !== y) } as MatchmakingOptions } : z)])
+                      }} />
+                    </ListItemAvatar>
+                    <Box sx={{ display: 'flex', flexDirection: 'row', width: '100%', alignItems: 'center' }}>
+                      <Box
+                        sx={{
+                          display: 'flex',
+                          flexDirection: 'column',
+                          overflow: 'hidden',
+                          flexGrow: 1,
+                          minWidth: 0,
+                        }}
+                      >
+                        <Typography
+                          sx={{
+                            whiteSpace: 'nowrap',
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                          }}
+                        >
+                          {y[0].players.map(x => x.name?.split(" ")[0] ?? x.rg_id).join(" + ")}
+                        </Typography>
+                        <Typography
+                          sx={{
+                            whiteSpace: 'nowrap',
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                          }}
+                        >
+                          {y[1].players.map(x => x.name?.split(" ")[0] ?? x.rg_id).join(" + ")}
+                        </Typography>
+                      </Box>
+                    </Box>
+                  </ListItem>
+                </AccordionSummary>
+                <AccordionDetails>
+                  <Stack direction="row" spacing={2} sx={{ width: '100%' }}>
+                    <Stack direction="column" sx={{
+                      width: '50%',
+                      minWidth: 0, // nötig für ellipsis
                       overflow: 'hidden',
-                      flexGrow: 1,
-                      minWidth: 0,
-                    }}
-                  >
-                    <Typography
-                      sx={{
-                        whiteSpace: 'nowrap',
-                        overflow: 'hidden',
-                        textOverflow: 'ellipsis',
-                      }}
-                    >
-                      {y[0].players.map(x => x.name ?? x.rg_id).join(" + ")}
-                    </Typography>
-                    <Typography
-                      sx={{
-                        whiteSpace: 'nowrap',
-                        overflow: 'hidden',
-                        textOverflow: 'ellipsis',
-                      }}
-                    >
-                      {y[1].players.map(x => x.name ?? x.rg_id).join(" + ")}
-                    </Typography>
-                  </Box>
-                </Box>
-              </ListItem>)
+                    }}>
+                      <Typography
+                        sx={{
+                          whiteSpace: 'nowrap',
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                        }}
+                      >
+                        {y[0].players[0].name}
+                      </Typography>
+                      <Typography
+                        sx={{
+                          whiteSpace: 'nowrap',
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                        }}
+                      >
+                        {y[0].players[1].name}
+                      </Typography>
+                      <Typography
+                        sx={{
+                          whiteSpace: 'nowrap',
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                        }}
+                      >
+                        {y[0].strength}
+                      </Typography>
+                    </Stack>
+                    <Stack direction="column" sx={{
+                      width: '50%',
+                      minWidth: 0, // nötig für ellipsis
+                      overflow: 'hidden',
+                    }}>
+                      <Typography
+                        sx={{
+                          whiteSpace: 'nowrap',
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                        }}
+                      >
+                        {y[1].players[0].name}
+                      </Typography>
+                      <Typography
+                        sx={{
+                          whiteSpace: 'nowrap',
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                        }}
+                      >
+                        {y[1].players[1].name}
+                      </Typography>
+                      <Typography
+                        sx={{
+                          whiteSpace: 'nowrap',
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                        }}
+                      >
+                        {y[1].strength}
+                      </Typography>
+                    </Stack>
+                  </Stack>
+                </AccordionDetails>
+              </Accordion>)
             }
           </List >
-          <List subheader={<ListSubheader disableSticky disableGutters>Aussetzer</ListSubheader>}>
-            {
-              x.game.bench.map(x => <ListItem disableGutters sx={{ '&.MuiListItem-root': { paddingLeft: 0 } }}>
-                <ListItemText primary={x.name} secondary={x.rg_id} />
-              </ListItem>)
-            }
-          </List>
+          <Accordion disableGutters>
+            <AccordionSummary expandIcon={<ArrowDropDown />}>
+              <Box sx={{ display: 'flex', flexDirection: 'row', width: '100%', alignItems: 'center' }}>
+                <Box
+                  sx={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    overflow: 'hidden',
+                    flexGrow: 1,
+                    minWidth: 0,
+                  }}
+                >
+                  <Typography
+                    sx={{
+                      whiteSpace: 'nowrap',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                    }}
+                  >
+                    Aussetzer
+                  </Typography>
+                  <Typography
+                    sx={{
+                      whiteSpace: 'nowrap',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                    }}
+                  >
+                    {x.game.bench.map(x => x.name).join(", ")}
+                  </Typography>
+                </Box>
+              </Box>
+            </AccordionSummary>
+            <AccordionDetails>
+              {
+                x.game.bench.map(x => <ListItem dense disableGutters sx={{ '&.MuiListItem-root': { paddingLeft: 0 } }}>
+                  <ListItemText primary={x.name} secondary={x.rg_id} />
+                </ListItem>)
+              }
+            </AccordionDetails>
+          </Accordion>
         </>)
       }
       <ListItem
