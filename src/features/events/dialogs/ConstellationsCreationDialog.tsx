@@ -124,14 +124,16 @@ export function generateBalancedMatchesWithBench(options: MatchmakingOptions): M
       ...options,
       players: men,
       matchupMode: "any", // innerhalb Männer gemischt erlaubt
-      fixedMatches: undefined // keine FixedMatches doppelt einbauen
+      fixedMatches: undefined, // keine FixedMatches doppelt einbauen
+      mustPlay: men.filter(p => mustPlay.includes(p.player)).map(x => x.player) ?? []
     });
 
     const womenMatches = generateBalancedMatchesWithBench({
       ...options,
       players: women,
       matchupMode: "any",
-      fixedMatches: undefined
+      fixedMatches: undefined,
+      mustPlay: women.filter(p => mustPlay.includes(p.player)).map(x => x.player) ?? []
     });
 
     return {
