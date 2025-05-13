@@ -334,7 +334,7 @@ const EventInformation = ({
             </Box>
 
             {
-              user.roles.map(x => x.name).includes("admin") && <Box sx={{ p: 0, alignSelf: 'center' }}>
+              user.roles.map(x => x.name).includes("eventModerator") && <Box sx={{ p: 0, mt: 2, alignSelf: 'center' }}>
                 <Typography sx={{ fontSize: 16, fontWeight: 'bold' }} color="text.secondary" gutterBottom>
                   Konstellationen
                 </Typography>
@@ -355,7 +355,6 @@ const EventInformation = ({
                   />
                 </ListItem>
                 <Divider />
-
               </Box>
             }
             <EventInformationAttendance
