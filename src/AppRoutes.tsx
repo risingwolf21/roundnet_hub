@@ -41,9 +41,6 @@ const sentryCreateBrowserRouter = wrapCreateBrowserRouterV7(
 );
 
 export const AppRoutes = () => {
-  const { isUpdateAvailable, updateServiceWorker } = useServiceWorker();
-
-  if (isUpdateAvailable) return <UpdateAvailable update={updateServiceWorker} />;
 
   return <RouterProvider router={router} />
 }
