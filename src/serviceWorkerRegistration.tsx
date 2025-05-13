@@ -95,7 +95,7 @@ function registerValidSW(swUrl: string, config: ServiceWorkerConfig) {
     .register(swUrl)
     .then((registration) => {
       if (registration.waiting) {
-        config.onUpdate(registration);
+        registration.waiting.postMessage({ type: 'SKIP_WAITING' });
       }
 
       registration.onupdatefound = () => {
@@ -104,23 +104,15 @@ function registerValidSW(swUrl: string, config: ServiceWorkerConfig) {
           return;
         }
         installingWorker.onstatechange = () => {
-          if (registration.waiting) {
-            if (navigator.serviceWorker.controller) {
-              config.onUpdate(registration);
-            }
+          if (registration.waiting && navigator.serviceWorker.controller) {
+            registration.waiting.postMessage({ type: 'SKIP_WAITING' });
           }
           if (installingWorker.state === 'installed') {
             if (navigator.serviceWorker.controller) {
-              if (config && config.onUpdate) {
-                config.onUpdate(registration);
-              }
+              config?.onUpdate?.(registration);
             } else {
               console.log('Content is cached for offline use.');
-
-              // Execute callback
-              if (config && config.onSuccess) {
-                config.onSuccess(registration);
-              }
+              config?.onSuccess?.(registration);
             }
           }
         };
