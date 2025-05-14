@@ -193,7 +193,7 @@ export const SupabaseEventRepository = {
   async fetchEventAttendance(eventId: string): Promise<PostgrestSingleResponse<FullAttendance[]>> {
     return supabase
       .from('event_attendance_user_mapping')
-      .select('user(userId, displayName, avatarUrl), *')
+      .select('user(userId, displayName, avatarUrl, name), *')
       .eq('event', eventId)
       .returns<FullAttendance[]>()
       .throwOnError();
