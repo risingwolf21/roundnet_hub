@@ -13,6 +13,7 @@
     "@mui/x-data-grid": "7.19.0",
     "@mui/x-date-pickers": "^6.11.2",
     "@reduxjs/toolkit": "^1.9.5",
+    "@sentry/cli": "^2.45.0",
     "@sentry/react": "^9.13.0",
     "@supabase/sentry-js-integration": "^0.3.0",
     "@supabase/supabase-js": "^2.43.4",
@@ -52,13 +53,14 @@
     "start:production": "env-cmd -e main,production react-scripts start",
     "start:production_admin": "env-cmd -e main,production,admin react-scripts start",
     "build:staging": "env-cmd -e main,staging react-scripts build",
-    "build:production": "env-cmd -e main,production react-scripts build",
+    "build:production": "env-cmd -e main,production react-scripts build && yarn sentry:sourcemaps",
     "build:production:admin": "env-cmd -e main,production,admin react-scripts build",
     "deploy-functions:production": "npx supabase functions deploy --project-ref PROJECT_REF",
     "gen-types:production": "npx supabase gen types typescript --project-id PROJECT_REF --schema public --schema games --schema permissions > src/types/supabase-generated.types.ts",
     "format": "prettier --write \"src/**/*.{js,jsx,ts,tsx,css,md}\" --config ./.prettierrc.json",
     "build-fcm-config": "node src/firebase/build_firebase_sw.js",
-    "knip": "knip"
+    "knip": "knip",
+    "sentry:sourcemaps": "sentry-cli sourcemaps inject --org roundnet-karlsruhe --project roundnet-karlsruhe ./build && sentry-cli sourcemaps upload --org roundnet-karlsruhe --project roundnet-karlsruhe ./build"
   },
   "eslintConfig": {
     "extends": [

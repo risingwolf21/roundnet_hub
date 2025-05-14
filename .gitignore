@@ -31,3 +31,5 @@ package-lock.json
 /supabase/config.toml
 
 .env-cmdrc.json
+# Sentry Config File
+.sentryclirc
