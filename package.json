@@ -53,7 +53,7 @@
     "start:production": "env-cmd -e main,production react-scripts start",
     "start:production_admin": "env-cmd -e main,production,admin react-scripts start",
     "build:staging": "env-cmd -e main,staging react-scripts build",
-    "build:production": "env-cmd -e main,production react-scripts build && yarn sentry:sourcemaps",
+    "build:production": "env-cmd -e main,production react-scripts build",
     "build:production:admin": "env-cmd -e main,production,admin react-scripts build",
     "deploy-functions:production": "npx supabase functions deploy --project-ref PROJECT_REF",
     "gen-types:production": "npx supabase gen types typescript --project-id PROJECT_REF --schema public --schema games --schema permissions > src/types/supabase-generated.types.ts",
