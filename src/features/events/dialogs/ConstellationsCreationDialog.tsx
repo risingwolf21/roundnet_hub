@@ -31,17 +31,14 @@ export interface MatchResult {
 export interface MatchmakingOptions {
   players: PlayerWithUser[];
   lockedTeams?: [PlayerWithUser, PlayerWithUser][];
-  matchupMode?: "any" | "separate";
-  mustPlay?: string[];
+  matchupMode?: "any" | "separate" | "mixed";
+  mustPlay?: PlayerWithUser[];
   mode?: "balanced" | "random";
   maxStrengthDifference?: number | ((remainingPlayers: PlayerWithUser[]) => number);
   fixedMatches?: Match[];
-
-  // Nur für die UI, hat keine Auswirkungen auf die Logik
-  benchFromLastMatchMustPlay?: boolean;
+  benchFromLastMatchMustPlay?: boolean; // UI-only
+  matchHistory?: string[][];
 }
-
-// --- Utils
 
 function shuffle<T>(array: T[]): T[] {
   const copy = [...array];
@@ -61,14 +58,18 @@ function determineTeamType(players: [PlayerWithUser, PlayerWithUser]): TeamType 
 
 function createTeam(p1: PlayerWithUser, p2: PlayerWithUser): Team {
   const players: [PlayerWithUser, PlayerWithUser] = [p1, p2];
-  const base = (p1.rg_index + p2.rg_index) / 2;
+  const noise = Math.random() * 20 - 10; // -10 bis +10
+  const base = (p1.rg_index + p2.rg_index) / 2 + noise;
   const type = determineTeamType(players);
   const bonus = type === "mixed" ? -150 : type === "women" ? -300 : 0;
   return { players, strength: base, adjustedStrength: base + bonus, type };
 }
 
-function isAllowedMatchup(t1: Team, t2: Team, mode: "any" | "separate"): boolean {
+function isAllowedMatchup(t1: Team, t2: Team, mode: "any" | "separate" | "mixed"): boolean {
   if (mode === "any") return true;
+  if (mode === "mixed") {
+    return t1.type === "mixed" && t2.type === "mixed";
+  }
   const types = new Set([t1.type, t2.type]);
   return !(types.has("mixed") && (types.has("men") || types.has("women")));
 }
@@ -91,7 +92,18 @@ function hasMustPlayPlayer(match: Match, mustPlay: string[], used: Set<string>) 
   return [...match[0].players, ...match[1].players].some(p => mustPlay.includes(p.player) && !used.has(p.player));
 }
 
-// --- Main Function
+function getMatchKey(match: Match): string {
+  const allPlayers = [...match[0].players, ...match[1].players].map(p => p.player);
+  return allPlayers.sort().join("|");
+}
+
+function isSimilarToHistory(matchKey: string, history: string[][]): boolean {
+  const current = matchKey.split("|");
+  return history.some(prev => {
+    const intersection = prev.filter(p => current.includes(p));
+    return intersection.length >= 3;
+  });
+}
 
 export function generateBalancedMatchesWithBench(options: MatchmakingOptions): MatchResult {
   const {
@@ -102,20 +114,18 @@ export function generateBalancedMatchesWithBench(options: MatchmakingOptions): M
     mode = "balanced",
     maxStrengthDifference = 200,
     fixedMatches = [],
-    // benchFromLastMatchMustPlay wird nicht verwendet
+    matchHistory = [],
   } = options;
 
-  if (matchupMode === "separate") {
-    const fixedMatches = options.fixedMatches || [];
+  const seenMatches = new Set<string>(); // lokal pro Aufruf
 
-    // Extrahiere alle bereits in FixedMatches eingesetzten Spieler
+  if (matchupMode === "separate") {
     const fixedPlayers = new Set(
       fixedMatches.flatMap(match =>
         [...match[0].players, ...match[1].players].map(p => p.player)
       )
     );
 
-    // Filtere nur Spieler, die noch nicht in FixedMatches sind
     const remainingPlayers = players.filter(p => !fixedPlayers.has(p.player));
     const men = remainingPlayers.filter(p => p.gender === "m");
     const women = remainingPlayers.filter(p => p.gender === "w");
@@ -123,9 +133,9 @@ export function generateBalancedMatchesWithBench(options: MatchmakingOptions): M
     const menMatches = generateBalancedMatchesWithBench({
       ...options,
       players: men,
-      matchupMode: "any", // innerhalb Männer gemischt erlaubt
-      fixedMatches: undefined, // keine FixedMatches doppelt einbauen
-      mustPlay: men.filter(p => mustPlay.includes(p.player)).map(x => x.player) ?? []
+      matchupMode: "any",
+      fixedMatches: undefined,
+      mustPlay: mustPlay.filter(p => p.gender === "m")
     });
 
     const womenMatches = generateBalancedMatchesWithBench({
@@ -133,7 +143,7 @@ export function generateBalancedMatchesWithBench(options: MatchmakingOptions): M
       players: women,
       matchupMode: "any",
       fixedMatches: undefined,
-      mustPlay: women.filter(p => mustPlay.includes(p.player)).map(x => x.player) ?? []
+      mustPlay: mustPlay.filter(p => p.gender === "w")
     });
 
     return {
@@ -142,6 +152,7 @@ export function generateBalancedMatchesWithBench(options: MatchmakingOptions): M
     };
   }
 
+  const mustPlayNames = mustPlay.map(p => p.player);
   const used = new Set<string>(
     fixedMatches.flatMap(match =>
       [...match[0].players, ...match[1].players].map(p => p.player)
@@ -161,7 +172,7 @@ export function generateBalancedMatchesWithBench(options: MatchmakingOptions): M
     mustPlayOnly = false
   ) => {
     const limit = getDifferenceLimit(remaining);
-    const candidates: Match[] = [];
+    let candidates: Match[] = [];
 
     for (let i = 0; i < teams.length; i++) {
       const t1 = teams[i];
@@ -172,7 +183,11 @@ export function generateBalancedMatchesWithBench(options: MatchmakingOptions): M
         if (!isAllowedMatchup(t1, t2, matchupMode)) continue;
         const diff = Math.abs(t1.adjustedStrength - t2.adjustedStrength);
         if (mode === "balanced" && diff > limit) continue;
-        candidates.push([t1, t2]);
+        const match: Match = [t1, t2];
+        const key = getMatchKey(match);
+        if (seenMatches.has(key)) continue;
+        if (matchHistory && isSimilarToHistory(key, matchHistory)) continue;
+        candidates.push(match);
       }
     }
 
@@ -181,6 +196,9 @@ export function generateBalancedMatchesWithBench(options: MatchmakingOptions): M
         Math.abs(a[0].adjustedStrength - a[1].adjustedStrength) -
         Math.abs(b[0].adjustedStrength - b[1].adjustedStrength)
       );
+      const top = candidates.slice(0, 20);
+      shuffle(top);
+      candidates = top;
     } else {
       shuffle(candidates);
     }
@@ -188,21 +206,20 @@ export function generateBalancedMatchesWithBench(options: MatchmakingOptions): M
     for (const match of candidates) {
       const names = [...match[0].players, ...match[1].players].map(p => p.player);
       if (names.every(n => !used.has(n))) {
-        if (mustPlayOnly && !hasMustPlayPlayer(match, mustPlay, used)) {
+        if (mustPlayOnly && !hasMustPlayPlayer(match, mustPlayNames, used)) {
           continue;
         }
         matches.push(match);
+        seenMatches.add(getMatchKey(match));
         names.forEach(n => used.add(n));
       }
     }
   };
 
-  // Phase 1 – gezielt nur mustPlay-Spieler unterbringen
   const remaining1 = players.filter(p => !used.has(p.player));
   const teams1 = shuffle(generatePossibleTeams(remaining1, lockedTeams));
   tryAddMatches(teams1, remaining1, true);
 
-  // Phase 2 – beliebige Matches bilden mit restlichen Spielern
   while (players.filter(p => !used.has(p.player)).length >= 4) {
     const remaining = players.filter(p => !used.has(p.player));
     const remainingLockedTeams = lockedTeams.filter(([a, b]) =>
@@ -213,23 +230,23 @@ export function generateBalancedMatchesWithBench(options: MatchmakingOptions): M
 
     const matchCountBefore = matches.length;
 
-    tryAddMatches(teams, remaining, true); // bevorzugt mustPlay
+    tryAddMatches(teams, remaining, true);
 
     if (matches.length === matchCountBefore) {
-      tryAddMatches(teams, remaining); // wenn nichts ging, dann allgemein
+      tryAddMatches(teams, remaining);
     }
 
-    if (matches.length === matchCountBefore) break; // keine neuen Matches möglich
+    if (matches.length === matchCountBefore) break;
   }
 
   const bench = players.filter(p => !used.has(p.player));
   return { matches, bench };
 }
 
-// Typdefinition
 type PlayerWithUser = GamesTable<"players"> & {
   name?: string;
 };
+
 
 const Content = ({ payload, onClose }: DialogProps<ConstellationCreationDialogProps, null>) => {
 
@@ -239,6 +256,7 @@ const Content = ({ payload, onClose }: DialogProps<ConstellationCreationDialogPr
   const [foundPlayers, setFoundPlayers] = useState<PlayerWithUser[]>([]);
   const [preSelectedPlayer1, setPreSelectedPlayer1] = useState<PlayerWithUser | null>(null);
   const [preSelectedPlayer2, setPreSelectedPlayer2] = useState<PlayerWithUser | null>(null);
+  const [preMustPlay, setPreMustPlay] = useState<PlayerWithUser | null>(null);
   const [rounds, setRounds] = useState<{
     game: MatchResult,
     options: MatchmakingOptions
@@ -349,27 +367,13 @@ const Content = ({ payload, onClose }: DialogProps<ConstellationCreationDialogPr
               </AccordionSummary>
               <AccordionDetails>
                 <ListItem dense divider sx={{ '&.MuiListItem-root': { paddingLeft: 0 } }}>
-                  <ListItemAvatar>
-                    <Checkbox sx={{ pl: 0 }} checked={x.options.mode === "balanced"} onChange={(e) => {
-                      e.stopPropagation();
-                      if (e.target.checked)
-                        setRounds([...rounds.map((z, i) => i === index ? { ...z, options: { ...z.options, mode: "balanced" } as MatchmakingOptions } : z)])
-                      else
-                        setRounds([...rounds.map((z, i) => i === index ? { ...z, options: { ...z.options, mode: "random" } as MatchmakingOptions } : z)])
-                    }} />
-                  </ListItemAvatar>
-                  <ListItemText primary={"Balanced Teams?"} />
-                </ListItem>
-                <ListItem dense divider sx={{ '&.MuiListItem-root': { paddingLeft: 0 } }}>
-                  <ListItemAvatar>
-                    <Checkbox sx={{ pl: 0 }} checked={x.options.matchupMode === "any"} onChange={(e) => {
-                      if (e.target.checked)
-                        setRounds([...rounds.map((z, i) => i === index ? { ...z, options: { ...z.options, matchupMode: "any" } as MatchmakingOptions } : z)])
-                      else
-                        setRounds([...rounds.map((z, i) => i === index ? { ...z, options: { ...z.options, matchupMode: "separate" } as MatchmakingOptions } : z)])
-                    }} />
-                  </ListItemAvatar>
-                  <ListItemText primary={"Gemischte Teams erlaubt?"} />
+                  <Select fullWidth value={x.options.matchupMode ?? "any"} onChange={(e) => {
+                    setRounds([...rounds.map((z, i) => i === index ? { ...z, options: { ...z.options, matchupMode: e.target.value } as MatchmakingOptions } : z)])
+                  }}>
+                    <MenuItem value={"any"}>Random</MenuItem>
+                    <MenuItem value={"separate"}>Herren / Damen</MenuItem>
+                    <MenuItem value={"mixed"}>Mixed</MenuItem>
+                  </Select>
                 </ListItem>
                 {
                   index > 0 && <ListItem dense divider sx={{ '&.MuiListItem-root': { paddingLeft: 0 } }}>
@@ -385,7 +389,7 @@ const Content = ({ payload, onClose }: DialogProps<ConstellationCreationDialogPr
             </Accordion>
             <Accordion disableGutters>
               <AccordionSummary expandIcon={<ArrowDropDown />}>
-                <Typography component="span">Voreingestellte Teams</Typography>
+                <Typography component="span">Feste Teams</Typography>
               </AccordionSummary>
               <AccordionDetails>
                 <List>
@@ -471,6 +475,76 @@ const Content = ({ payload, onClose }: DialogProps<ConstellationCreationDialogPr
                 </List>
               </AccordionDetails>
             </Accordion>
+            <Accordion disableGutters>
+              <AccordionSummary expandIcon={<ArrowDropDown />}>
+                <Typography component="span">Feste Spieler</Typography>
+              </AccordionSummary>
+              <AccordionDetails>
+                <List>
+                  {
+                    x.options.mustPlay && x.options.mustPlay?.map((player) =>
+                      <Box sx={{ display: 'flex', flexDirection: 'row', justifyContent: "space-between", width: '100%' }}>
+                        <Box
+                          sx={{
+                            display: 'flex',
+                            flexDirection: 'column',
+                            overflow: 'hidden',
+                            flexGrow: 1,
+                            minWidth: 0,
+                          }}
+                        >
+                          <Typography
+                            sx={{
+                              whiteSpace: 'nowrap',
+                              overflow: 'hidden',
+                              textOverflow: 'ellipsis',
+                            }}
+                          >
+                            {player.name}
+                          </Typography>
+                        </Box>
+                        <IconButton onClick={() => {
+                          setRounds([...rounds.map((z, i) => i === index ? {
+                            game: z.game,
+                            options: {
+                              ...z.options,
+                              mustPlay: (z.options.mustPlay ?? []).filter(y => y.player !== player.player)
+                            } as MatchmakingOptions,
+                          } : z)]);
+                          setPreMustPlay(null);
+                        }}>
+                          <Delete />
+                        </IconButton>
+                      </Box>)
+                  }
+                  <Box sx={{ display: 'flex', flexDirection: 'row', justifyContent: "end", width: '100%' }}>
+                    <Select size="small" value={preMustPlay?.player ?? "none"} onChange={(e) => setPreMustPlay(players.find(y => y.player === e.target.value) ?? null)}>
+                      {
+                        players
+                          .filter(y => !x.options.mustPlay?.includes(y))
+                          .filter(y => !x.options.lockedTeams?.flatMap(x => x).includes(y))
+                          .map(z => <MenuItem value={z.player}>{z.name}</MenuItem>)
+                      }
+                      <MenuItem value={"none"}>Kein Nutzer</MenuItem>
+                    </Select>
+                    <IconButton onClick={() => {
+                      if (!preMustPlay)
+                        return;
+                      setRounds([...rounds.map((z, i) => i === index ? {
+                        game: z.game,
+                        options: {
+                          ...z.options,
+                          mustPlay: [...(z.options.mustPlay ?? []), preMustPlay]
+                        } as MatchmakingOptions,
+                      } : z)]);
+                      setPreMustPlay(null);
+                    }}>
+                      <Save />
+                    </IconButton>
+                  </Box>
+                </List>
+              </AccordionDetails>
+            </Accordion>
             <Accordion expanded={false} disableGutters>
               <AccordionSummary>
                 <Box sx={{ display: 'flex', flexDirection: 'row', justifyContent: "end", width: '100%' }}>
@@ -481,7 +555,7 @@ const Content = ({ payload, onClose }: DialogProps<ConstellationCreationDialogPr
                       game: result,
                       options: {
                         ...z.options,
-                        ...(z.options.benchFromLastMatchMustPlay && i > 0 && { mustPlay: rounds[i - 1].game.bench.map(x => x.player) })
+                        ...(z.options.benchFromLastMatchMustPlay && i > 0 && { mustPlay: rounds[i - 1].game.bench })
                       },
                     } : z)])
                   }}>Generieren</Button>
