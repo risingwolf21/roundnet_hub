@@ -85,7 +85,7 @@ const ChallengeInformation = ({ t }: { t: TFunction }) => {
     }
 
     const uploadedImageUrl = await uploadImage(image);
-    if (uploadedImageUrl) {
+    if (!uploadedImageUrl) {
       notifications.show('Fehler beim hochladen des Bildes. Der Punkt wurde dennoch eingetragen', { severity: 'error' });
     }
     ChallengeRepository.increasePointForUser(user.userId, challenge.id, created_at, uploadedImageUrl)
