@@ -14,6 +14,7 @@ import { SupabaseUserRepository } from '../../repository/UserRepository';
 import { UserWithRolesAndPermissions } from '../../types/supabaseTypes';
 import { ability, defineRulesFor } from '../../utils/PermissionService';
 import { ApplicationContext } from './ApplicationContext';
+import SentryCli from '@sentry/cli';
 
 
 export const AuthGate = () => {
@@ -67,23 +68,24 @@ export const AuthGate = () => {
   const fetchUserData = useCallback(async (session: Session, abortSignal: AbortSignal) => {
     try {
       const roles = await AdminPermissionsRepository.fetchRolesForUser(session.user.id);
-      const [permissions, { data: user, error }, groups, { data: player_data }, { data: calendar_data }] = await Promise.all([
+      const [permissions, { data: user, error }, groups, { data: player_data, error: player_error }] = await Promise.all([
         AdminPermissionsRepository.fetchPermissionsForRoles(roles),
         SupabaseUserRepository.fetchUser(session.user.id),
         SupabaseUserRepository.fetchGroupsForUser(session.user.id),
-        SupabaseUserRepository.fetchPlayer(session.user.id),
-        SupabaseUserRepository.fetchCalendarSettings(session.user.id),
+        SupabaseUserRepository.fetchPlayer(session.user.id)
       ])
-      if (!user || error)
+      if (error || player_error) {
+        captureException(error ?? player_error)
         return;
+      }
 
       const userData: UserWithRolesAndPermissions = {
         ...user,
         roles,
         permissions,
         player_data,
-        calendar_data,
         groups,
+        calendar_data: null
       };
       setProviderToken(session.user.user_metadata["provider_token"])
       setUser({ email: session.user.email, id: session.user.id, username: user.displayName });

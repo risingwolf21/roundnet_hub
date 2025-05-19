@@ -59,7 +59,7 @@ export const SupabaseUserRepository = {
   },
 
   async fetchPlayer(userId: string): Promise<PostgrestSingleResponse<Player | null>> {
-    return supabase.schema('games').from('players').select('*').eq('player', userId).maybeSingle();
+    return supabase.schema('games').from('players').select('*').eq('player', userId).maybeSingle().throwOnError();
   },
 
   async deleteNotificationTag(

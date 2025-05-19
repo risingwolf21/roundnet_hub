@@ -10,6 +10,7 @@ Sentry.init({
   sendDefaultPii: true,
   environment: process.env.REACT_APP_ENV,
   release: process.env.REACT_APP_VERSION,
+  _experiments: { enableLogs: true },
   integrations: [
     Sentry.reactRouterV7BrowserTracingIntegration({
       useEffect: React.useEffect,
@@ -24,6 +25,7 @@ Sentry.init({
       errors: true,
     }),
     Sentry.browserTracingIntegration(),
+    Sentry.consoleLoggingIntegration({ levels: ["log", "error", "warn"] }),
   ],
   tracesSampleRate: 1.0,
   tracePropagationTargets: ["https://roundnet-karlsruhe.web.app"],
