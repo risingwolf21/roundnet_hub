@@ -150,6 +150,10 @@ const router = sentryCreateBrowserRouter([
             path: "/groups",
             children: [
               {
+                index: true,
+                element: <Navigate to="/groups/list" />
+              },
+              {
                 path: "list",
                 element: <PublicGroupList />
               },
@@ -162,6 +166,10 @@ const router = sentryCreateBrowserRouter([
           {
             path: "/training",
             children: [
+              {
+                index: true,
+                element: <Navigate to="/training/list" />
+              },
               {
                 path: "list",
                 element: <EventScreenProvider />
