@@ -1,11 +1,10 @@
 import { createAsyncThunk, createEntityAdapter, createSlice, PayloadAction, Update } from '@reduxjs/toolkit';
-import { FullAttendance, UserWithRolesAndPermissions } from 'src/types/supabaseTypes';
+import { FullAttendance } from 'src/types/supabaseTypes';
 import { formatDateToDatabase } from 'src/utils';
-import { fetchSingleEventAsync } from './eventsSlice';
+import { Event } from 'types/supabase';
 import { SupabaseEventRepository } from '../../../repository/EventRepository';
 import { TablesUpdate } from '../../../types/supabase-generated.types';
-import { Event } from 'types/supabase';
-import { GoogleRepository } from 'src/repository/GoogleRepository';
+import { fetchSingleEventAsync } from './eventsSlice';
 
 type SliceAttendance = {
   id: string;
@@ -193,18 +192,12 @@ export const fetchEventAttendanceAsync = createAsyncThunk(
   }
 );
 
-type UpdateAttendanceProps = { user: UserWithRolesAndPermissions; event: Event; state: EventAttendance; oldState: EventAttendance, provider_token?: string | null };
+type UpdateAttendanceProps = { user: User; event: Event; state: EventAttendance; oldState: EventAttendance, provider_token?: string | null, ownUser?: boolean };
 export const updateAttendanceAsync = createAsyncThunk(
   'updateAttendanceAsync',
-  async ({ event, user, state, oldState, provider_token }: UpdateAttendanceProps) => {
+  async ({ event, user, state, oldState, ownUser = true }: UpdateAttendanceProps) => {
 
-    if (provider_token && (state === "Attending" || state === "AttendingAsTrainer")) {
-      await GoogleRepository.insertEventToCalendar(event, user.userId, provider_token, user.calendar_data);
-    } else if (provider_token && state === "Declined") {
-      await GoogleRepository.deleteEventFromGoogleCalendar(event, user.userId, provider_token, user.calendar_data);
-    }
-
-    const response = await SupabaseEventRepository.updateAttendance(user.userId, event.id, state);
+    const response = await SupabaseEventRepository.updateAttendance(user.userId, event.id, state, ownUser);
     return { data: response.data, error: response.error, oldState };
   }
 );

@@ -3,6 +3,7 @@ import {
   AppBar,
   Avatar,
   Box,
+  Button,
   List,
   ListItem,
   ListItemAvatar,
@@ -42,26 +43,34 @@ const AttendanceItem = ({
   attendance,
   onClick,
   required_item,
+  acceptAttendance
 }: {
   attendance: FullAttendance;
   onClick: () => void;
   required_item?: Item;
+  acceptAttendance?: ((value: FullAttendance) => void) | null;
 }) => {
   const { t } = useTranslation();
   return (
     <ListItem
       onClick={onClick}
       secondaryAction={
-        <Typography
-          style={{
-            fontSize: '10pt',
-            color: 'rgba(0,0,0,0.6)',
-            marginTop: '8px',
-            alignContent: 'baseline',
-          }}
-        >
-          {t('format.distanceToNow', { date: new Date(attendance.lastUpdate) })}
-        </Typography>
+        acceptAttendance ? <Button onClick={(event) => {
+          event.stopPropagation();
+          acceptAttendance(attendance);
+        }}>
+          Akzeptieren
+        </Button>
+          : <Typography
+            style={{
+              fontSize: '10pt',
+              color: 'rgba(0,0,0,0.6)',
+              marginTop: '8px',
+              alignContent: 'baseline',
+            }}
+          >
+            {t('format.distanceToNow', { date: new Date(attendance.lastUpdate) })}
+          </Typography>
       }
     >
       <ListItemAvatar>
@@ -93,6 +102,7 @@ const EventAttendanceDialog = ({
   attendance,
   hasWaitingList,
   usersWithRequiredItem,
+  acceptAttendance
 }: EventAttendanceDialogProps) => {
   const [value, setValue] = useState(index ?? 0);
   const theme = useTheme();
@@ -130,6 +140,20 @@ const EventAttendanceDialog = ({
                   required_item={usersWithRequiredItem.find((y) => y.user === x.user.userId)?.item}
                 />
               ))}
+            {
+              attendance
+                .filter((x: FullAttendance) => x.state === 'RequestedAttendance')
+                .sort((a, b) => compareDesc(a.lastUpdate, b.lastUpdate))
+                .map((x: FullAttendance, index: number) => (
+                  <AttendanceItem
+                    attendance={x}
+                    key={x.user.userId + index}
+                    onClick={() => dialogs.open(ProfileDialog, { user, userId: x.user.userId })}
+                    required_item={usersWithRequiredItem.find((y) => y.user === x.user.userId)?.item}
+                    acceptAttendance={user.roles.map(x => x.name).includes("eventModerator") ? acceptAttendance : null}
+                  />
+                ))
+            }
             {attendance
               .filter((x: FullAttendance) => x.state === 'Attending')
               .sort((a, b) => compareDesc(a.lastUpdate, b.lastUpdate))

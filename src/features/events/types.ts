@@ -46,6 +46,7 @@ export type EventAttendanceDialogProps = {
   attendance: FullAttendance[];
   hasWaitingList: boolean;
   usersWithRequiredItem: { user: string; item: Item }[];
+  acceptAttendance: (value: FullAttendance) => void;
 };
 
 export type SelectGroupDialogProps = {

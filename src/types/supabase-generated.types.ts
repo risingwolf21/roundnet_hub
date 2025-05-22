@@ -1524,6 +1524,7 @@ export type Database = {
         | "Unanswered"
         | "Waiting"
         | "AttendingAsTrainer"
+        | "RequestedAttendance"
       EventRecurrence: "Weekly" | "Fortnightly" | "Monthly" | "None"
       GroupRole: "user" | "admin" | "joinRequested"
       ItemType: "mtvStorage" | "mtvGym" | "mtvGymPalazzo" | "goethe"
@@ -1698,6 +1699,7 @@ export const Constants = {
         "Unanswered",
         "Waiting",
         "AttendingAsTrainer",
+        "RequestedAttendance",
       ],
       EventRecurrence: ["Weekly", "Fortnightly", "Monthly", "None"],
       GroupRole: ["user", "admin", "joinRequested"],

@@ -141,6 +141,8 @@ const eventsSlice = createSlice({
         eventsAdapter.updateOne(state, sliceEvent);
       })
       .addCase(updateAttendanceAsync.fulfilled, (state, action) => {
+        if (!action.meta.arg.ownUser)
+          return;
         let sliceEvent = {
           id: action.meta.arg.event.id,
           changes: {
@@ -208,6 +210,6 @@ export const fetchRecurringEventsAsync = createAsyncThunk('fetchRecurringEvents'
   return response.data;
 });
 
-export const {  editEvent, onEventErrorRead,  onEventUpdate, onEventsUpdate, updateFetchMode } = eventsSlice.actions;
+export const { editEvent, onEventErrorRead, onEventUpdate, onEventsUpdate, updateFetchMode } = eventsSlice.actions;
 
 export default eventsSlice.reducer;

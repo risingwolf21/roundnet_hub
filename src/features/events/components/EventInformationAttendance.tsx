@@ -2,6 +2,8 @@ import {
   CheckCircleOutline,
   HourglassBottom,
   Key,
+  Pending,
+  PendingOutlined,
   RecordVoiceOver,
   RecordVoiceOverOutlined,
   RemoveCircleOutline,
@@ -31,6 +33,8 @@ import {
   maxAttendeesExceeded,
 } from 'src/types/supabaseTypes';
 import EventAttendanceDialog from '../dialogs/EventAttendanceDialog';
+import { updateAttendanceAsync } from '../slices/eventAttendanceSlice';
+import { useAppDispatch } from 'src/redux/store';
 
 type EventInformationAttendanceProps = {
   user: User;
@@ -49,6 +53,7 @@ const EventInformationAttendance = ({
   user,
   keyHolders,
 }: EventInformationAttendanceProps) => {
+  const dispatch = useAppDispatch();
   const [eventAttendanceState, setEventAttendanceState] = useState({ open: false, index: 0 });
 
   return (
@@ -131,6 +136,25 @@ const EventInformationAttendance = ({
                   <ThumbUpOffAlt fontSize="inherit" sx={{ fontSize: '28px' }} />
                 )}
               </IconButton>
+              {
+                (maxAttendeesExceeded(selectedEvent, attendance) ||
+                  answerDeadlineExpired(selectedEvent))
+                && !eventInThePast(selectedEvent)
+                && (selectedEvent.userAttendance === "Unanswered" || selectedEvent.userAttendance === "Declined" || selectedEvent.userAttendance === "RequestedAttendance")
+                && <IconButton
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    updateAttendance('RequestedAttendance', selectedEvent.userAttendance);
+                  }}
+                  disabled={selectedEvent.isCancelled || eventInThePast(selectedEvent) || selectedEvent.userAttendance === "RequestedAttendance"}
+                >
+                  {selectedEvent.userAttendance === 'RequestedAttendance' ? (
+                    <Pending fontSize="inherit" sx={{ fontSize: '28px', color: '#125db2' }} />
+                  ) : (
+                    <PendingOutlined fontSize="inherit" sx={{ fontSize: '28px' }} />
+                  )}
+                </IconButton>
+              }
               {user.role === 'trainer' && (
                 <IconButton
                   onClick={(event) => {
@@ -233,6 +257,7 @@ const EventInformationAttendance = ({
             user: (x.full_current_holder)!.userId,
             item: x,
           }))}
+        acceptAttendance={(attendance) => dispatch(updateAttendanceAsync({ user: attendance.user, event: selectedEvent, state: "Attending", oldState: attendance.state, ownUser: false }))}
       />
     </Box>
   );

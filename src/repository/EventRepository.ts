@@ -120,7 +120,8 @@ export const SupabaseEventRepository = {
   async updateAttendance(
     userId: string,
     eventId: string,
-    state: EventAttendance
+    state: EventAttendance,
+    ownUser: boolean = true
   ): Promise<PostgrestSingleResponse<EventAttendance>> {
     return supabase
       .rpc('update_attendance', {
