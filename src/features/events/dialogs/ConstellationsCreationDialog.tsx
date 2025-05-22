@@ -558,11 +558,12 @@ const Content = ({ payload, onClose }: DialogProps<ConstellationCreationDialogPr
                       const [name2b, ...surname2b] = match[1].players[1].name!.split(' ');
                       let team_a_name = (surname1a.pop() ?? name1a) + '/' + (surname2a.pop() ?? name2a);
                       let team_b_name = (surname1b.pop() ?? name1b) + '/' + (surname2b.pop() ?? name2b);
+                      console.log(team_a_name, team_b_name)
                       GamesRepository.reportScores(
                         [],
                         match[0].players[0].player,
-                        match[0].players[1].player,
                         match[1].players[0].player,
+                        match[0].players[1].player,
                         match[1].players[1].player,
                         team_a_name,
                         team_b_name,
