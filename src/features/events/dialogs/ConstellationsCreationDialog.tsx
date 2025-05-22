@@ -6,10 +6,12 @@ import { DialogProps, NotificationsProvider, useNotifications } from "@toolpad/c
 import React, { useEffect, useState } from "react";
 import { NumberInput } from "src/components/mui/NumberInput";
 import { supabase } from "src/components/services/supabase/supabaseClient";
+import { GamesRepository } from "src/repository/GamesRepository";
 import { GamesTable } from "src/types/supabaseTypes";
 
 type ConstellationCreationDialogProps = {
   users: User[]
+  event: FullEvent
 }
 
 export type TeamType = "men" | "women" | "mixed";
@@ -547,7 +549,28 @@ const Content = ({ payload, onClose }: DialogProps<ConstellationCreationDialogPr
             </Accordion>
             <Accordion expanded={false} disableGutters>
               <AccordionSummary>
-                <Box sx={{ display: 'flex', flexDirection: 'row', justifyContent: "end", width: '100%' }}>
+                <Box sx={{ display: 'flex', flexDirection: 'row', justifyContent: "space-between", width: '100%' }}>
+                  <Button onClick={() => {
+                    for (const match of x.game.matches) {
+                      const [name1a, ...surname1a] = match[0].players[0].name!.split(' ');
+                      const [name2a, ...surname2a] = match[0].players[1].name!.split(' ');
+                      const [name1b, ...surname1b] = match[1].players[0].name!.split(' ');
+                      const [name2b, ...surname2b] = match[1].players[1].name!.split(' ');
+                      let team_a_name = (surname1a.pop() ?? name1a) + '/' + (surname2a.pop() ?? name2a);
+                      let team_b_name = (surname1b.pop() ?? name1b) + '/' + (surname2b.pop() ?? name2b);
+                      GamesRepository.reportScores(
+                        [],
+                        match[0].players[0].player,
+                        match[0].players[1].player,
+                        match[1].players[0].player,
+                        match[1].players[1].player,
+                        team_a_name,
+                        team_b_name,
+                        payload.event.id
+                      )
+                    }
+
+                  }}>Matches erstellen</Button>
                   <Button onClick={() => {
                     const result = generateBalancedMatchesWithBench(x.options);
                     console.log(result, x.options)

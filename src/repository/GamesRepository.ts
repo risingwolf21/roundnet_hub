@@ -37,7 +37,8 @@ export const GamesRepository = {
         player_2a: string,
         player_2b: string,
         team_a: string,
-        team_b: string
+        team_b: string,
+        event?: string
     ): Promise<PostgrestSingleResponse<undefined>> {
         return supabase
             .schema('games')
@@ -49,6 +50,7 @@ export const GamesRepository = {
                 player_2b,
                 team_a,
                 team_b,
+                event
             })
             .throwOnError();
     },

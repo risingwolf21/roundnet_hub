@@ -273,7 +273,7 @@ const DrawerContent = ({
           </DrawerItem>
         }
         {can('select', 'games') && (
-          <DrawerItem key="matches" selected={tab === 'matches'} onClick={() => handleChange('matches')}>
+          <DrawerItem key="matches" selected={tab === 'matches'} onClick={() => handleChange('matches/list')}>
             <ListItemAvatar>
               <ListItemIcon>
                 <Scoreboard />

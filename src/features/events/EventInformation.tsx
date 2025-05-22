@@ -343,7 +343,7 @@ const EventInformation = ({
                   sx={{ '&.MuiListItem-root': { paddingLeft: 0 } }}
                   secondaryAction={
                     <Button onClick={() => {
-                      dialogs.open(ConstellationCreationDialog, { users: attendance.filter(x => x.state === "Attending").map(x => x.user) })
+                      dialogs.open(ConstellationCreationDialog, { users: attendance.filter(x => x.state === "Attending").map(x => x.user), event: selectedEvent })
                     }}>Erstellen</Button>
                   }
                 >

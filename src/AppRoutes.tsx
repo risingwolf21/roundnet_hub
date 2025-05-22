@@ -138,6 +138,10 @@ const router = sentryCreateBrowserRouter([
             children: [
               {
                 index: true,
+                element: <Navigate to="/challenges/list" />
+              },
+              {
+                path: "list",
                 element: <ChallengeScreen />
               },
               {
@@ -193,6 +197,10 @@ const router = sentryCreateBrowserRouter([
             children: [
               {
                 index: true,
+                element: <Navigate to="/matches/list" />
+              },
+              {
+                path: "list",
                 element: <GameList />
               },
               {

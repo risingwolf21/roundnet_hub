@@ -12,18 +12,21 @@ export type Database = {
       match: {
         Row: {
           created_at: string
+          event: string | null
           id: string
           team_a: string
           team_b: string
         }
         Insert: {
           created_at?: string
+          event?: string | null
           id?: string
           team_a: string
           team_b: string
         }
         Update: {
           created_at?: string
+          event?: string | null
           id?: string
           team_a?: string
           team_b?: string
@@ -221,6 +224,7 @@ export type Database = {
           team_a: string
           team_b: string
           match_sets: Json
+          event?: string
         }
         Returns: undefined
       }

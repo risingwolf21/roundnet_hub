@@ -1,4 +1,4 @@
-import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
+import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { GamesRepository } from 'src/repository/GamesRepository';
 
 type GamesSliceState = {
@@ -22,7 +22,24 @@ const initialState = {
 const gamesSlice = createSlice({
   name: 'games',
   initialState: initialState,
-  reducers: {},
+  reducers: {
+    onSetsAdded: (state, action: PayloadAction<{ sets: MatchSet[], match: FullUserMatch }>) => {
+      const index = state.matches.findIndex(x => x.id === action.payload.match.id);
+      if (index === -1)
+        state.matches = [
+          ...state.matches,
+          {
+            ...action.payload.match,
+            set_results: action.payload.sets.map(x => `${x.team_a_score}:${x.team_b_score}`).join(",")
+          },
+        ]
+      else
+        state.matches = state.matches.map(x => x.id === action.payload.match.id ? {
+          ...action.payload.match,
+          set_results: action.payload.sets.map(x => `${x.team_a_score}:${x.team_b_score}`).join(",")
+        } : x)
+    }
+  },
   extraReducers: (builder) => {
     builder
       .addCase(fetchMatchesAsync.pending, (state, action) => {
@@ -64,5 +81,7 @@ export const fetchPlayersAsync = createAsyncThunk('fetchPlayersAsync', async () 
   const response = await GamesRepository.fetchAvailablePlayers();
   return response ?? [];
 });
+
+export const { onSetsAdded } = gamesSlice.actions;
 
 export default gamesSlice.reducer;

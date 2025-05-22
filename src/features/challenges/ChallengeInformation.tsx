@@ -102,7 +102,7 @@ const ChallengeInformation = ({ t }: { t: TFunction }) => {
   };
 
   return (
-    <Layout appBarConfig={{ title: challenge?.name, navigateBackPath: "/challenges", showProfile: true }}>
+    <Layout appBarConfig={{ title: challenge?.name, navigateBackPath: "/challenges/list", showProfile: true }}>
       <PullToRefresh onRefresh={() => {
         if (challenge)
           dispatch(fetchChallengeStatsSingleAsync({ challengeId: challenge.id }))

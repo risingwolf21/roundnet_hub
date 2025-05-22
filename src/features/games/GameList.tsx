@@ -1,5 +1,6 @@
-import { Add } from '@mui/icons-material';
-import { Box, Fab, List, ListItem, ListSubheader, Typography } from '@mui/material';
+import { Add, Warning } from '@mui/icons-material';
+import { Box, Button, Fab, List, ListItem, ListSubheader, Typography } from '@mui/material';
+import { useDialogs } from '@toolpad/core';
 import { t } from 'i18next';
 import moment from 'moment';
 import React, { useEffect } from 'react';
@@ -9,10 +10,12 @@ import Layout from 'src/components/Layout';
 import { PullToRefresh } from 'src/components/pull-to-refresh/PullToRefresh';
 import { RootState, useAppDispatch } from 'src/redux/store';
 import { groupBy } from 'src/utils';
-import { fetchMatchesAsync } from './slices/gamesSlice';
+import { ReportSetsDialog } from './dialogs/ReportSetsDialog';
+import { fetchMatchesAsync, onSetsAdded } from './slices/gamesSlice';
 
 const GameList = () => {
   const navigate = useNavigate();
+  const dialogs = useDialogs();
   const dispatch = useAppDispatch();
   const { matches, loadingMatches } = useSelector((state: RootState) => state.games);
 
@@ -83,6 +86,14 @@ const GameList = () => {
                         {x.team_b_name}
                       </Typography>
                     </Box>
+                    {
+                      !x.set_results && <Button startIcon={<Warning color='warning' />} onClick={async () => {
+                        const result = await dialogs.open(ReportSetsDialog, { match: x });
+                        if (result) {
+                          dispatch(onSetsAdded({ match: x, sets: result }))
+                        }
+                      }}>Score eintragen</Button>
+                    }
                     {x.set_results?.split(',').map((y, index) => {
                       const [team_a_score, team_b_score] = y.trim().split(':');
                       let teamAWon = team_a_score > team_b_score;
