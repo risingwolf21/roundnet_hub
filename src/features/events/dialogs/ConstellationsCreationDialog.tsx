@@ -60,11 +60,11 @@ function determineTeamType(players: [PlayerWithUser, PlayerWithUser]): TeamType 
 
 function createTeam(p1: PlayerWithUser, p2: PlayerWithUser): Team {
   const players: [PlayerWithUser, PlayerWithUser] = [p1, p2];
-  const noise = Math.random() * 20 - 10; // -10 bis +10
+  const noise = Math.random() * 50 - 50; // -10 bis +10
   const base = (p1.rg_index + p2.rg_index) / 2 + noise;
   const type = determineTeamType(players);
   const bonus = type === "mixed" ? -150 : type === "women" ? -300 : 0;
-  return { players, strength: base, adjustedStrength: base + bonus, type };
+  return { players, strength: Math.floor(base), adjustedStrength: base + bonus, type };
 }
 
 function isAllowedMatchup(t1: Team, t2: Team, mode: "any" | "separate" | "mixed"): boolean {
@@ -561,12 +561,16 @@ const Content = ({ payload, onClose }: DialogProps<ConstellationCreationDialogPr
                       console.log(team_a_name, team_b_name)
                       GamesRepository.reportScores(
                         [],
-                        match[0].players[0].player,
-                        match[1].players[0].player,
-                        match[0].players[1].player,
-                        match[1].players[1].player,
-                        team_a_name,
-                        team_b_name,
+                        {
+                          name: team_a_name,
+                          player_1: match[0].players[0].player,
+                          player_2: match[0].players[1].player,
+                        },
+                        {
+                          name: team_b_name,
+                          player_1: match[1].players[0].player,
+                          player_2: match[1].players[1].player,
+                        },
                         payload.event.id
                       )
                     }
@@ -574,7 +578,6 @@ const Content = ({ payload, onClose }: DialogProps<ConstellationCreationDialogPr
                   }}>Matches erstellen</Button>
                   <Button onClick={() => {
                     const result = generateBalancedMatchesWithBench(x.options);
-                    console.log(result, x.options)
                     setRounds([...rounds.map((z, i) => i === index ? {
                       game: result,
                       options: {
@@ -645,7 +648,7 @@ const Content = ({ payload, onClose }: DialogProps<ConstellationCreationDialogPr
                           textOverflow: 'ellipsis',
                         }}
                       >
-                        {y[0].players[0].name}
+                        {`${y[0].players[0].name} (${y[0].players[0].rg_id})`}
                       </Typography>
                       <Typography
                         sx={{
@@ -654,7 +657,7 @@ const Content = ({ payload, onClose }: DialogProps<ConstellationCreationDialogPr
                           textOverflow: 'ellipsis',
                         }}
                       >
-                        {y[0].players[1].name}
+                        {`${y[0].players[1].name} (${y[0].players[1].rg_id})`}
                       </Typography>
                       <Typography
                         sx={{
@@ -678,7 +681,7 @@ const Content = ({ payload, onClose }: DialogProps<ConstellationCreationDialogPr
                           textOverflow: 'ellipsis',
                         }}
                       >
-                        {y[1].players[0].name}
+                        {`${y[1].players[0].name} (${y[1].players[0].rg_id})`}
                       </Typography>
                       <Typography
                         sx={{
@@ -687,7 +690,7 @@ const Content = ({ payload, onClose }: DialogProps<ConstellationCreationDialogPr
                           textOverflow: 'ellipsis',
                         }}
                       >
-                        {y[1].players[1].name}
+                        {`${y[1].players[1].name} (${y[1].players[1].rg_id})`}
                       </Typography>
                       <Typography
                         sx={{

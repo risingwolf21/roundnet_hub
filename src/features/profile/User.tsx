@@ -15,9 +15,10 @@ import {
   ListItemText,
   Typography
 } from '@mui/material';
-import { useDialogs } from '@toolpad/core/useDialogs';
-import React from 'react';
-import { useNavigate } from 'react-router';
+import { DialogComponent, useDialogs } from '@toolpad/core/useDialogs';
+import { isSupported } from 'firebase/messaging';
+import React, { useCallback, useEffect, useState } from 'react';
+import { useNavigate, useSearchParams } from 'react-router';
 import { supabase } from 'src/components/services/supabase/supabaseClient';
 import Layout from '../../components/Layout';
 import pzLogo from '../../images/pz_logo.svg';
@@ -25,7 +26,7 @@ import { AppDispatch, useAppDispatch } from '../../redux/store';
 import { UserWithRolesAndPermissions } from '../../types/supabaseTypes';
 import { useAuthentication } from '../auth/AuthContext';
 import { ContactInformation } from './ContactInformation';
-import { isNotificationSupported, NotificationsDialog } from './NotificationsDialog';
+import { NotificationsDialog } from './NotificationsDialog';
 import { PlayerzoneProfileDialog } from './PlayerzoneProfile';
 import { ProfileImage } from './ProfileImage';
 
@@ -45,6 +46,35 @@ const UserScreenProvider = () => {
 const UserScreen = ({ user, dispatch }: UserScreenProps) => {
   const dialogs = useDialogs();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [notificationSupported, setNotificationSUpported] = useState(false);
+
+  const openDialog = useCallback(async (dialog: DialogComponent<any, unknown>, payload: any, name: string) => {
+    setSearchParams((prev) => {
+      prev.set("dialog", name);
+      return prev;
+    });
+    const result = await dialogs.open(dialog, payload)
+    setSearchParams((prev) => {
+      prev.delete("dialog");
+      return prev;
+    });
+    return result;
+  }, [dialogs, setSearchParams]);
+
+  useEffect(() => {
+    isSupported().then(result => {
+      setNotificationSUpported(result);
+      if (searchParams.get("dialog") === "playerzone") {
+        openDialog(PlayerzoneProfileDialog, { player_data: user.player_data, user }, "playerzone");
+      } else if (searchParams.get("dialog") === "contact_information") {
+        openDialog(ContactInformation, { user }, "contact_information");
+      } else if (searchParams.get("dialog") === "notifications") {
+        openDialog(NotificationsDialog, { user, dispatch, notificationSupported: result }, "notifications");
+      }
+    });
+  }, [dispatch, openDialog, searchParams, user]);
+
 
   return (
     <Layout appBarConfig={{ title: 'Profil', showProfile: false }}>
@@ -55,7 +85,7 @@ const UserScreen = ({ user, dispatch }: UserScreenProps) => {
           <CardActionArea sx={{ px: 1 }}>
             <ListItem
               onClick={async () => {
-                await dialogs.open(ContactInformation, { user });
+                await openDialog(ContactInformation, { user }, "contact_information");
               }}>
               <ListItemAvatar sx={{ flexDirection: 'row', display: 'flex', alignItems: 'center' }}>
                 <AccountCircle />
@@ -81,9 +111,9 @@ const UserScreen = ({ user, dispatch }: UserScreenProps) => {
           <CardActionArea sx={{ px: 1 }}>
             <ListItem
               onClick={async () => {
-                await dialogs.open(NotificationsDialog, { user, dispatch })
+                await openDialog(NotificationsDialog, { user, dispatch, notificationSupported }, "notifications");
               }}
-              secondaryAction={isNotificationSupported() && Notification.permission === 'granted' ? <CheckCircle color='success' /> : <Cancel color="error" />}>
+              secondaryAction={notificationSupported && Notification.permission === 'granted' ? <CheckCircle color='success' /> : <Cancel color="error" />}>
               <ListItemAvatar sx={{ flexDirection: 'row', display: 'flex', alignItems: 'center' }}>
                 <NotificationsRounded />
               </ListItemAvatar>
@@ -95,7 +125,7 @@ const UserScreen = ({ user, dispatch }: UserScreenProps) => {
           <CardActionArea sx={{ px: 1 }}>
             <ListItem
               onClick={async () => {
-                await dialogs.open(PlayerzoneProfileDialog, { player_data: user.player_data, user })
+                await openDialog(PlayerzoneProfileDialog, { player_data: user.player_data, user }, "playerzone");
               }}
               secondaryAction={user.player_data?.rg_id && user.player_data?.rg_link ? <CheckCircle color='success' /> : <Cancel color="error" />}>
               <ListItemAvatar sx={{ flexDirection: 'row', display: 'flex', alignItems: 'center' }}>

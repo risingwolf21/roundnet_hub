@@ -1,7 +1,7 @@
 import { PostgrestSingleResponse } from '@supabase/supabase-js';
 import { supabase } from 'src/components/services/supabase/supabaseClient';
 import { fetchSimpleUser } from './UserRepository';
-import _ from 'lodash';
+import _, { String } from 'lodash';
 
 export const fetchUserMatches = () =>
     supabase
@@ -32,24 +32,28 @@ export const GamesRepository = {
 
     async reportScores(
         sets: { team_a_score: number; team_b_score: number }[],
-        player_1a: string,
-        player_1b: string,
-        player_2a: string,
-        player_2b: string,
-        team_a: string,
-        team_b: string,
+        team_a: {
+            player_1: string,
+            player_2: string,
+            name: string,
+        },
+        team_b: {
+            player_1: string,
+            player_2: string,
+            name: string
+        },
         event?: string
     ): Promise<PostgrestSingleResponse<undefined>> {
         return supabase
             .schema('games')
             .rpc('add_match_with_sets', {
                 match_sets: sets.map((x) => ({ team_a_score: x.team_a_score, team_b_score: x.team_b_score })),
-                player_1a,
-                player_1b,
-                player_2a,
-                player_2b,
-                team_a,
-                team_b,
+                player_1a: team_a.player_1,
+                player_2a: team_a.player_2,
+                player_1b: team_b.player_1,
+                player_2b: team_b.player_2,
+                team_a: team_a.name,
+                team_b: team_b.name,
                 event
             })
             .throwOnError();

@@ -1,5 +1,5 @@
 import { Box, CircularProgress, Typography } from '@mui/material';
-import { captureException, setUser, setTag } from '@sentry/react';
+import { captureException, setTag, setUser } from '@sentry/react';
 import { Session } from '@supabase/supabase-js';
 import React, { useCallback, useEffect, useState } from 'react';
 import { useDispatch } from 'react-redux';
@@ -14,7 +14,6 @@ import { SupabaseUserRepository } from '../../repository/UserRepository';
 import { UserWithRolesAndPermissions } from '../../types/supabaseTypes';
 import { ability, defineRulesFor } from '../../utils/PermissionService';
 import { ApplicationContext } from './ApplicationContext';
-import SentryCli from '@sentry/cli';
 
 
 export const AuthGate = () => {

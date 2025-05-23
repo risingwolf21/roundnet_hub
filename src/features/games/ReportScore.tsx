@@ -110,12 +110,16 @@ const ReportScore = () => {
     let team_b_name = (surname1b.pop() ?? name1b) + '/' + (surname2b.pop() ?? name2b);
     GamesRepository.reportScores(
       sets,
-      player1a.userId,
-      player1b.userId,
-      player2a.userId,
-      player2b.userId,
-      team_a_name,
-      team_b_name
+      {
+        name: team_a_name,
+        player_1: player1a.userId,
+        player_2: player2a.userId
+      },
+      {
+        name: team_b_name,
+        player_1: player1b.userId,
+        player_2: player2b.userId
+      }
     )
       .then((result) => {
         navigate('/matches');

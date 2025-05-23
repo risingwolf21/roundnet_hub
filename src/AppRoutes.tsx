@@ -3,7 +3,6 @@ import React from "react";
 import { createBrowserRouter, Navigate, Outlet, RouteObject, RouterProvider, useLocation } from "react-router";
 import ErrorRouteElement from "./components/ErrorRouteElement";
 import { useApplication } from "./features/auth/ApplicationContext";
-import { useServiceWorker } from "./hooks/useServiceWorker";
 import { AuthContext } from "./features/auth/AuthContext";
 
 const HistoryScreenProvider = React.lazy(() => import('./features/drinks/HistoryScreenProvider'));
@@ -24,7 +23,6 @@ const ChallengeInfoScreen = React.lazy(() => import('./features/challenges/Chall
 const RecurringEvents = React.lazy(() => import('./features/events/RecurringEvents'));
 const GameList = React.lazy(() => import('./features/games/GameList'));
 const ReportScore = React.lazy(() => import('./features/games/ReportScore'));
-const UpdateAvailable = React.lazy(() => import('./components/UpdateAvailable'));
 const HomePage = React.lazy(() => import('./features/homepage/HomePage'));
 const SupabaseClient = React.lazy(() => import('./features/supabase/SupabaseClient'));
 const UserScreenProvider = React.lazy(() => import('./features/profile/User'));
@@ -48,9 +46,8 @@ export const AppRoutes = () => {
 const PrivateRoute = () => {
   const { user, signOut } = useApplication();
   const location = useLocation();
-
   if (!user)
-    return <Navigate to="/login" state={{ path: location.pathname }} />
+    return <Navigate to="/login" state={{ path: location.pathname + location.search }} />
 
   return <AuthContext.Provider value={{ user, signOut }}>
     <Outlet />

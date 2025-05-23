@@ -126,7 +126,6 @@ export const SupabaseUserRepository = {
       .from('user_notification_settings')
       .select("notification_tag")
       .eq("user", userId);
-    console.log(result);
     if (result.error)
       return [];
     return result.data.map(x => x.notification_tag);
