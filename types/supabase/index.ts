@@ -3,7 +3,7 @@ import { fetchRolePermissionMapping } from 'src/repository/AdminPermissionsRepos
 import { fetchGroupWithUsers } from 'src/repository/AdminUsersRepository';
 import { fetchDrinksToPay, fetchFullHistory } from 'src/repository/DrinkRepository';
 import { fetchEvents } from 'src/repository/EventRepository';
-import { fetchUserMatches } from 'src/repository/GamesRepository';
+import { fetchMatch, fetchUserMatches } from 'src/repository/GamesRepository';
 import { fetchGroups, fetchSimpleUser, fetchUserWithGroups } from 'src/repository/UserRepository';
 import { GamesTable, PermissionsTable } from 'src/types/supabaseTypes';
 import { Enums, Tables, TablesInsert, TablesUpdate } from '../../src/types/supabase-generated.types';
@@ -39,7 +39,6 @@ declare global {
   type Match = GamesTable<'match'>;
   type MatchSet = GamesTable<'sets'>;
   type Team = GamesTable<'teams'>;
-  type FullMatch = GamesTable<'user_matches'>;
   type CalendarSettings = Tables<'user_calender_settings'>;
   type PlayerWithSimpleUser = Player & { name: string; userId: string };
 
@@ -55,6 +54,7 @@ declare global {
   type Groups = QueryData<ReturnType<typeof fetchGroups>> extends Array<infer U> ? U : never;
   type FullEvent = QueryData<ReturnType<typeof fetchEvents>> extends Array<infer U> ? U : never;
   type FullUserMatch = QueryData<ReturnType<typeof fetchUserMatches>> extends Array<infer U> ? U : never;
+  type FullMatch = QueryData<ReturnType<typeof fetchMatch>> extends Array<infer U> ? U : never;
   type UserWithGroupsBase = QueryData<ReturnType<typeof fetchUserWithGroups>> extends Array<infer U> ? U : never;
   type UserWithGroupsAndPlayerData = {
     [P in keyof UserWithGroupsBase]: P extends 'groups'

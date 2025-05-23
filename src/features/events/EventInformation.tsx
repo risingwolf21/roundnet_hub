@@ -38,6 +38,7 @@ import { EditEventOptionsDialog } from './dialogs/EditEventOptionsDialog';
 import { DeleteEventType, EventInformationProps } from './types';
 import { useDialogs } from '@toolpad/core';
 import { ConstellationCreationDialog } from './dialogs/ConstellationsCreationDialog';
+import EventInformationGames from './components/EventInformationGames';
 
 const EventInformation = ({
   dispatch,
@@ -365,6 +366,8 @@ const EventInformation = ({
               selectedEvent={selectedEvent}
               updateAttendance={updateAttendance}
             />
+
+            <EventInformationGames eventId={selectedEvent.id} />
 
             <EventInformationComments
               eventId={selectedEvent.id}

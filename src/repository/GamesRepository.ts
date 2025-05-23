@@ -1,7 +1,7 @@
 import { PostgrestSingleResponse } from '@supabase/supabase-js';
+import _ from 'lodash';
 import { supabase } from 'src/components/services/supabase/supabaseClient';
 import { fetchSimpleUser } from './UserRepository';
-import _, { String } from 'lodash';
 
 export const fetchUserMatches = () =>
     supabase
@@ -12,9 +12,39 @@ export const fetchUserMatches = () =>
         )
         .order('created_at', { ascending: false });
 
+export const fetchMatch = () =>
+    supabase.schema("games")
+        .from("match")
+        .select(`
+     *,
+      team_a:teams!match_team_a_fkey (
+        name,
+        player1:players!player_1 (
+          *
+        ),
+        player2:players!player_2 (
+          *
+        )
+      ),
+      team_b:teams!match_team_b_fkey (
+        name,
+        player1:players!player_1 (
+          *
+        ),
+        player2:players!player_2 (
+          *
+        )
+      ),
+      sets(*)
+  `)
+
 export const GamesRepository = {
     async fetchGamesForUser(): Promise<PostgrestSingleResponse<FullUserMatch[]>> {
         return fetchUserMatches();
+    },
+
+    async fetchGamesForEvent(eventId: string): Promise<PostgrestSingleResponse<FullMatch[]>> {
+        return fetchMatch().eq("event", eventId)
     },
 
     async fetchAvailablePlayers(): Promise<PlayerWithSimpleUser[]> {

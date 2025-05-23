@@ -87,8 +87,8 @@ const GameList = () => {
                       </Typography>
                     </Box>
                     {
-                      !x.set_results && <Button startIcon={<Warning color='warning' />} onClick={async () => {
-                        const result = await dialogs.open(ReportSetsDialog, { match: x });
+                      !x.set_results && x.id && <Button startIcon={<Warning color='warning' />} onClick={async () => {
+                        const result = await dialogs.open(ReportSetsDialog, { matchId: x.id!, team_a_name: x.team_a_name!, team_b_name: x.team_b_name!, sets: null });
                         if (result) {
                           dispatch(onSetsAdded({ match: x, sets: result }))
                         }

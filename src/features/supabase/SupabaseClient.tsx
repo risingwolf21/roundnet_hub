@@ -1,5 +1,5 @@
-import { Edit, ExpandMoreOutlined, Visibility } from '@mui/icons-material';
-import { Box, ListItem, ListItemText, styled } from '@mui/material';
+import { Add, Edit, ExpandMoreOutlined, Visibility } from '@mui/icons-material';
+import { Box, Button, ListItem, ListItemText, styled, Toolbar } from '@mui/material';
 import {
   DataGrid,
   GridActionsCellItem,
@@ -101,6 +101,29 @@ const SupabaseClient = () => {
     foreign_key_table_name: string;
     foreign_key_column_name: string;
   }[]>([]);
+
+  const CustomToolbar = () => <Toolbar>
+    <Button size='small' startIcon={<Add />} onClick={async () => {
+      const result = await dialog.open(EditEntryDialog, { entry: {}, columns });
+      if (result && selectedTable) {
+        const r = await supabase
+          // @ts-ignore
+          .schema(selectedTable.schema)
+          // @ts-ignore
+          .from(selectedTable.name)
+          .insert(result)
+          .select("*");
+
+        if (!r.error) {
+          notifications.show("Erfolgreich erstellt.", { severity: "success" });
+        } else {
+          notifications.show("Der Eintrag konnte nicht erstellt werden. " + r.error.message, { severity: "error" })
+        }
+      }
+    }}>
+      Erstellen
+    </Button>
+  </Toolbar >
 
   const fetcher = useCallback(async (table: Table) => {
     setLoading(true);
@@ -253,16 +276,11 @@ const SupabaseClient = () => {
       <LoadingIndicator loading={loading} />
       <ListItem dense onClick={async () => {
         const result = await dialog.open(SelectTableDialog, { tables });
-        if(result)
+        if (result)
           tableSelectionChanged(result)
       }} secondaryAction={<ExpandMoreOutlined />}>
         <ListItemText primary={selectedTable?.name ?? "Nicht gewählt"} secondary={selectedTable?.schema ?? "Nicht gewählt"} />
       </ListItem>
-      <button type="button"
-        onClick={() => {
-          throw new Error("Sentry Test Error");
-        }}>Break the world</button>
-
       <ErrorBoundary
         fallback={CustomNoRowsOverlay}
         onError={(error) => {
@@ -310,7 +328,7 @@ const SupabaseClient = () => {
               />
             ]
           }] : [])}
-          slots={{ noRowsOverlay: CustomNoRowsOverlay }}
+          slots={{ noRowsOverlay: CustomNoRowsOverlay, toolbar: CustomToolbar }}
           loading={loading}
           rowCount={rowCount}
           rows={selectedTableData}

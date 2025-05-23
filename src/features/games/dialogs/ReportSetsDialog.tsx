@@ -7,14 +7,17 @@ import React, { useState } from "react";
 import { supabase } from "src/components/services/supabase/supabaseClient";
 
 type ReportSetsDialogProps = {
-  match: FullUserMatch
+  matchId: string
+  team_a_name: string
+  team_b_name: string
+  sets: MatchSet[] | null
 }
 
 const Content = ({ payload, onClose }: DialogProps<ReportSetsDialogProps, MatchSet[] | null>) => {
 
   const notifications = useNotifications();
 
-  const [sets, setSets] = useState<MatchSet[]>([
+  const [sets, setSets] = useState<MatchSet[]>(payload.sets ?? [
     { id: '0', created_at: '', set_number: 1, match: '', team_a_score: 0, team_b_score: 0 },
   ]);
 
@@ -33,7 +36,7 @@ const Content = ({ payload, onClose }: DialogProps<ReportSetsDialogProps, MatchS
         <Button color="inherit" onClick={async () => {
           const result = await supabase.schema("games").from("sets").upsert(sets.map(x => ({
             set_number: x.set_number,
-            match: payload.match.id!,
+            match: payload.matchId,
             team_a_score: x.team_a_score,
             team_b_score: x.team_b_score,
           })))
@@ -55,8 +58,8 @@ const Content = ({ payload, onClose }: DialogProps<ReportSetsDialogProps, MatchS
             <TextField
               size="small"
               fullWidth
-              defaultValue={payload.match.team_a_name}
-              value={payload.match.team_a_name}
+              defaultValue={payload.team_a_name}
+              value={payload.team_a_name}
               label={"Team A"}
               disabled
             />
@@ -65,8 +68,8 @@ const Content = ({ payload, onClose }: DialogProps<ReportSetsDialogProps, MatchS
             <TextField
               size="small"
               fullWidth
-              defaultValue={payload.match.team_b_name}
-              value={payload.match.team_b_name}
+              defaultValue={payload.team_b_name}
+              value={payload.team_b_name}
               label={"Team B"}
               disabled
             />
