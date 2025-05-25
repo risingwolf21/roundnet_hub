@@ -12,7 +12,6 @@ import eventAttendanceSlice from '../features/events/slices/eventAttendanceSlice
 import eventCommentsSlice from '../features/events/slices/eventCommentsSlice';
 import eventsSlice from '../features/events/slices/eventsSlice';
 import { createReduxEnhancer } from '@sentry/react';
-import challengeSlice from '../features/challenges/slices/challengeSlice';
 import gamesSlice from '../features/games/slices/gamesSlice';
 
 
@@ -32,7 +31,6 @@ const rootReducer = combineReducers({
   eventAttendance: eventAttendanceSlice,
   eventComments: eventCommentsSlice,
   notifications: notificationsSlice,
-  challenges: challengeSlice,
   games: gamesSlice,
 });
 

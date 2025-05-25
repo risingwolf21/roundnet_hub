@@ -14,6 +14,17 @@ import { DialogsProvider } from '@toolpad/core/useDialogs';
 import { NotificationsProvider } from '@toolpad/core/useNotifications';
 import { AuthGate } from './features/auth/AuthGate';
 import { BRANDING } from './utils';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+
+export const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 1000 * 60 * 5,
+      refetchOnWindowFocus: false,
+      retry: 2,
+    },
+  },
+});
 
 export const App = () => {
 
@@ -30,7 +41,9 @@ export const App = () => {
           <Provider store={store}>
             <SupabaseProvider value={supabase}>
               <LocalizationProvider dateAdapter={AdapterDayjs}>
-                <AuthGate />
+                <QueryClientProvider client={queryClient}>
+                  <AuthGate />
+                </QueryClientProvider>
               </LocalizationProvider>
             </SupabaseProvider>
           </Provider>

@@ -1,19 +1,19 @@
 import { AccountBox } from '@mui/icons-material';
 import EditIcon from '@mui/icons-material/Edit';
-import { Alert, Avatar, CardMedia, Fab, List, ListItem, ListItemAvatar, ListItemText, Stack, Tab, Tabs, Typography } from '@mui/material';
+import { Alert, Avatar, Box, CardMedia, Fab, List, ListItem, ListItemAvatar, ListItemText, Stack, Tab, Tabs, Typography } from '@mui/material';
 import { captureException, withProfiler } from '@sentry/react';
+import { useQuery } from '@tanstack/react-query';
 import { useNotifications } from '@toolpad/core/useNotifications';
 import { Dayjs } from 'dayjs';
 import { TFunction } from 'i18next';
 import { groupBy } from 'lodash';
 import React, { useEffect, useMemo, useState } from 'react';
 import { withTranslation } from 'react-i18next';
-import { useSelector } from 'react-redux';
-import { useParams } from 'react-router';
+import { Navigate, useParams } from 'react-router';
+import { queryClient } from 'src/App';
 import { PullToRefresh } from 'src/components/pull-to-refresh/PullToRefresh';
 import { supabase } from 'src/components/services/supabase/supabaseClient';
-import { RootState, useAppDispatch } from 'src/redux/store';
-import { ChallengeStatWithUser } from 'src/types/supabaseTypes';
+import { ChallengeStatWithUser, FullChallenge } from 'src/types/supabaseTypes';
 import { dataURLtoFile, formatDateFromDatabase } from 'src/utils';
 import Layout from '../../components/Layout';
 import { ChallengeRepository } from '../../repository/ChallengeRepository';
@@ -22,25 +22,43 @@ import { useAuthentication } from '../auth/AuthContext';
 import { TabPanel } from '../events/dialogs/EventAttendanceDialog';
 import { ChallengeStatItem } from './components/ChallengeStatItem';
 import EnterPointDialog from './dialogs/EnterPointDialog';
-import { challengeSelector, fetchChallengeStatsSingleAsync, onChallengeStatsInsert } from './slices/challengeSlice';
 
 const ChallengeInformation = ({ t }: { t: TFunction }) => {
   const { challengeId } = useParams();
-  const challenge = useSelector((root: RootState) => challengeSelector.selectById(root, challengeId ?? 0));
   const { user } = useAuthentication();
-  const dispatch = useAppDispatch();
   const notifications = useNotifications();
   const [open, setOpen] = useState(false);
   const [value, setValue] = useState(0);
 
-  useEffect(() => {
-    if (challengeId)
-      dispatch(fetchChallengeStatsSingleAsync({ challengeId: challengeId }));
+  const { data: challenge, isLoading, refetch } = useQuery<FullChallenge | null>({
+    queryKey: ["challenge_information_" + challengeId],
+    enabled: !!challengeId,
+    queryFn: () => ChallengeRepository.fetchChallengeStats(challengeId)
+  });
 
-  }, [dispatch, challengeId]);
+  useEffect(() => {
+    const channel = supabase
+      .channel('realtime:challenge')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'challenges',
+          filter: `id=eq.${challengeId}`
+        },
+        () => {
+          queryClient.invalidateQueries({ queryKey: ["challenge_information_" + challengeId] });
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [challengeId]);
 
   const challengeStatMap = useMemo(() => {
-
     const reduceChallengeStats = (acc: Map<string, { stats: ChallengeStatWithUser[], points: number }>, curr: ChallengeStatWithUser) => {
       let x = acc.get(curr.fullUser.userId);
       if (x) {
@@ -91,7 +109,7 @@ const ChallengeInformation = ({ t }: { t: TFunction }) => {
     ChallengeRepository.increasePointForUser(user.userId, challenge.id, created_at, uploadedImageUrl)
       .then((result) => {
         if (result.data) {
-          dispatch(onChallengeStatsInsert({ ...result.data, user: user.userId, fullUser: user as User }))
+          refetch();
           notifications.show('Success!', { severity: 'success' });
         }
       })
@@ -101,99 +119,108 @@ const ChallengeInformation = ({ t }: { t: TFunction }) => {
       });
   };
 
+  if (!challenge && !isLoading) {
+    return <Navigate to="/challenges/list" />
+  }
+
   return (
     <Layout appBarConfig={{ title: challenge?.name, navigateBackPath: "/challenges/list", showProfile: true }}>
-      <PullToRefresh onRefresh={() => {
-        if (challenge)
-          dispatch(fetchChallengeStatsSingleAsync({ challengeId: challenge.id }))
-      }}>
-        <Alert sx={{ m: 2 }} severity={'info'}>
-          {challenge?.description}
-        </Alert>
-        {challenge?.automated && (
-          <Alert sx={{ m: 2 }} severity={'info'}>
-            {t('challenge.automatedChallenge')}
-          </Alert>
-        )}
-        <Tabs value={value} onChange={(e, v) => setValue(v)} indicatorColor="primary" textColor="inherit" variant="fullWidth">
-          <Tab label="Aktivität" />
-          <Tab label="Leaderboard" />
-        </Tabs>
-        <TabPanel value={value} index={0}>
-          <Stack spacing={1} direction={"column"} sx={{ m: 1, mb: 12 }}>
-            {
-              Object.entries(groupBy(challenge?.stats ?? [], (a) => formatDateFromDatabase(a.created_at).toDateString()))
-                .sort(([key_a], [key_b]) => new Date(key_b) > new Date(key_a) ? 1 : -1)
-                .map(([key, value]) => <Stack spacing={1} direction={"column"} key={key}>
-                  <Typography sx={{ textAlign: "center", color: 'rgba(0,0,0,0.6)', }}>{key}</Typography>
-                  <List>
-                    {
-                      value.map(x => <ListItem divider sx={{ display: "flex", p: 0, mr: 4 }} key={x.id}>
-                        <ListItemAvatar>
-                          <Avatar sx={{ borderRadius: 2 }}>
-                            {x.fullUser.avatarUrl ? (
-                              <img src={x.fullUser.avatarUrl} alt="logo" width={'100%'} height={'100%'} />
-                            ) : (
-                              <AccountBox />
-                            )}
-                          </Avatar>
-                        </ListItemAvatar>
-                        <ListItemText primary={"+1"} secondary={x.fullUser.displayName} />
+      {
+        isLoading
+          ? <Box sx={{ alignItems: 'center', display: 'flex', flexDirection: 'column', pt: 10 }}>
+            <Typography sx={{ fontSize: '30pt', fontWeight: 'bold' }}>⌛</Typography>
+            <Typography sx={{ fontSize: '18pt', fontWeight: 'bold' }}>Challenge wird geladen...</Typography>
+          </Box>
+          : <PullToRefresh onRefresh={() => refetch()}>
+            <Alert sx={{ m: 2 }} severity={'info'}>
+              {challenge?.description}
+            </Alert>
+            {challenge?.automated && (
+              <Alert sx={{ m: 2 }} severity={'info'}>
+                {t('challenge.automatedChallenge')}
+              </Alert>
+            )}
+            <Tabs value={value} onChange={(e, v) => setValue(v)} indicatorColor="primary" textColor="inherit" variant="fullWidth">
+              <Tab label="Aktivität" />
+              <Tab label="Leaderboard" />
+            </Tabs>
+            <TabPanel value={value} index={0}>
+              <Stack spacing={1} direction={"column"} sx={{ m: 1, mb: 12 }}>
+                {
+                  Object.entries(groupBy(challenge?.stats ?? [], (a) => formatDateFromDatabase(a.created_at).toDateString()))
+                    .sort(([key_a], [key_b]) => new Date(key_b) > new Date(key_a) ? 1 : -1)
+                    .map(([key, value]) => <Stack spacing={1} direction={"column"} key={key}>
+                      <Typography sx={{ textAlign: "center", color: 'rgba(0,0,0,0.6)', }}>{key}</Typography>
+                      <List>
                         {
-                          x.image_url &&
-                          <CardMedia
-                            component="img"
-                            sx={{ width: "100%", maxWidth: "50%", maxHeight: "250px" }}
-                            image={x.image_url}
-                            alt="Challengestat images"
-                          />
+                          value.map(x => <ListItem divider sx={{ display: "flex", p: 0, mr: 4 }} key={x.id}>
+                            <ListItemAvatar>
+                              <Avatar sx={{ borderRadius: 2 }}>
+                                {x.fullUser.avatarUrl ? (
+                                  <img src={x.fullUser.avatarUrl} alt="logo" width={'100%'} height={'100%'} />
+                                ) : (
+                                  <AccountBox />
+                                )}
+                              </Avatar>
+                            </ListItemAvatar>
+                            <ListItemText primary={"+1"} secondary={x.fullUser.displayName} />
+                            {
+                              x.image_url &&
+                              <CardMedia
+                                component="img"
+                                sx={{ width: "100%", maxWidth: "50%", maxHeight: "250px" }}
+                                image={x.image_url}
+                                alt="Challengestat images"
+                              />
+                            }
+                          </ListItem>)
                         }
-                      </ListItem>)
-                    }
-                  </List>
-                </Stack>)
+                      </List>
+                    </Stack>)
+                }
+              </Stack>
+            </TabPanel>
+            <TabPanel value={value} index={1}>
+              <List sx={{ width: '100%' }}>
+                {[...challengeStatMap.values()]
+                  .sort((a, b) => b.points > a.points ? 1 : -1)
+                  .map((x, index) => (
+                    <ChallengeStatItem
+                      key={index}
+                      statsForUser={x.stats}
+                      index={[...new Set([...challengeStatMap.values()].map(x => x.points))].sort((a, b) => b > a ? 1 : -1).indexOf(x.points)} />
+                  ))}
+              </List>
+            </TabPanel>
+            {can('update', 'challenge') && !challenge?.automated && (
+              <Fab
+                sx={{
+                  background: '#66bb6a',
+                  position: 'fixed',
+                  right: '16px',
+                  bottom: 'calc(16px + env(safe-area-inset-bottom))',
+                  mb: '16px',
+                }}
+                onClick={() => {
+                  setOpen(true);
+                }}
+              >
+                {<EditIcon sx={{ color: 'white' }} />}
+              </Fab>
+            )}
+
+            {
+              challenge && <EnterPointDialog
+                open={open}
+                setOpen={setOpen}
+                maxEntriesPerWeek={challenge.max_points_per_week}
+                dates={challenge.stats.filter(x => x.fullUser.userId === user.userId).map(x => x.created_at)}
+                increaseChallengePoint={(created_at: Dayjs, image: { dataUrl: string, fileName: string } | null) => increaseChallengePoint(created_at, image)} />
+
             }
-          </Stack>
-        </TabPanel>
-        <TabPanel value={value} index={1}>
-          <List sx={{ width: '100%' }}>
-            {[...challengeStatMap.values()]
-              .sort((a, b) => b.points > a.points ? 1 : -1)
-              .map((x, index) => (
-                <ChallengeStatItem
-                  key={index}
-                  statsForUser={x.stats}
-                  index={[...new Set([...challengeStatMap.values()].map(x => x.points))].sort((a, b) => b > a ? 1 : -1).indexOf(x.points)} />
-              ))}
-          </List>
-        </TabPanel>
-        {can('update', 'challenge') && !challenge?.automated && (
-          <Fab
-            sx={{
-              background: '#66bb6a',
-              position: 'fixed',
-              right: '16px',
-              bottom: 'calc(16px + env(safe-area-inset-bottom))',
-              mb: '16px',
-            }}
-            onClick={() => {
-              setOpen(true);
-            }}
-          >
-            {<EditIcon sx={{ color: 'white' }} />}
-          </Fab>
-        )}
+          </PullToRefresh>
+      }
 
-        {
-          challenge && <EnterPointDialog
-            open={open}
-            setOpen={setOpen}
-            maxEntriesPerWeek={challenge.max_points_per_week}
-            dates={challenge.stats.filter(x => x.fullUser.userId === user.userId).map(x => x.created_at)}
-            increaseChallengePoint={(created_at: Dayjs, image: { dataUrl: string, fileName: string } | null) => increaseChallengePoint(created_at, image)} />
-
-        }
-      </PullToRefresh>
     </Layout >
   );
 };

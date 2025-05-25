@@ -10,47 +10,30 @@ export const fetchChallengeWithGroup = () => supabase
 
 
 export const ChallengeRepository = {
-  async fetchChallenges(): Promise<PostgrestSingleResponse<ChallengeWithFullGroup[]>> {
-    return fetchChallengeWithGroup()
+  async fetchChallenges() {
+    const { data, error } = await fetchChallengeWithGroup()
       .or(`end_date.is.null,end_date.gt.'${formatDateToDatabase(new Date())}'`)
       .order('name')
-      .throwOnError()
       .returns<ChallengeWithFullGroup[]>();
+
+    if (error) throw error;
+
+    return data ?? [];
   },
 
-  async fetchArchivedChallenges(): Promise<PostgrestSingleResponse<Challenge[]>> {
-    return supabase
-      .from('challenge')
-      .select('*')
-      .not('end_date', 'is', null)
-      .lt('end_date', formatDateToDatabase(new Date()))
-      .order('end_date')
-      .throwOnError()
-      .returns<Challenge[]>();
-  },
-
-  async fetchChallengeStats(id: string): Promise<PostgrestSingleResponse<FullChallenge>> {
-    return supabase
+  async fetchChallengeStats(challenge_id?: string): Promise<FullChallenge | null> {
+    if (!challenge_id) {
+      return null;
+    }
+    const { data } = await supabase
       .from('challenge')
       .select('*, group: group(*, users: group_user_mapping ( user ( userId, email, displayName ) )), stats: challenge_stats (*, fullUser: user(*))')
-      .eq('id', id)
+      .eq('id', challenge_id)
       .throwOnError()
       .returns<FullChallenge>()
       .single();
-  },
 
-  async fetchChallengeStatsSingle(
-    challenge_id: string,
-    user_id: string
-  ): Promise<PostgrestSingleResponse<ChallengeStatWithUser>> {
-    return supabase
-      .from('challenge_stats')
-      .select('*, fullUser: user(*)')
-      .eq('challenge', challenge_id)
-      .eq('fullUser.userId', user_id)
-      .throwOnError()
-      .returns<ChallengeStatWithUser>()
-      .single();
+    return data;
   },
 
   async increasePointForUser(userId: string, challenge: string, created_at: Dayjs, image_url: string | null): Promise<PostgrestSingleResponse<ChallengeStats>> {
