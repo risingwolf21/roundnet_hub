@@ -1,5 +1,5 @@
-import { Article, Close, ColorLens, Group, Title } from "@mui/icons-material";
-import { AppBar, Avatar, Button, Checkbox, Dialog, IconButton, List, ListItem, ListItemAvatar, ListItemText, TextField, Toolbar, Typography } from "@mui/material";
+import { Article, Close, ColorLens, Group, Groups, Title } from "@mui/icons-material";
+import { AppBar, Avatar, Button, Checkbox, Dialog, IconButton, List, ListItem, ListItemAvatar, ListItemText, MenuItem, Select, TextField, Toolbar, Typography } from "@mui/material";
 import { LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { captureException } from "@sentry/react";
@@ -11,13 +11,14 @@ import { GroupWithUserRole } from "src/types/supabaseTypes";
 
 type CreateOrUpdateGroupDialogProps = {
   group?: Group
-  user: User
+  user: User & { groups: GroupWithUserRole[]; roles: AppRole[]; }
 }
 
 const Content = ({ payload, onClose }: DialogProps<CreateOrUpdateGroupDialogProps, GroupWithUserRole | null | "closed">) => {
   const notifications = useNotifications();
   const inputRef = useRef<HTMLInputElement>(null);
-  const [data, setData] = useState<Tables<'event_group'>>(payload.group ?? { name: "", description: "", id: "", created_at: "", color: "#000", is_public: true, need_request_to_join: false });
+  const usersParentGroups = payload.user.groups.filter(x => x.parent_group === null);
+  const [data, setData] = useState<Tables<'event_group'>>(payload.group ?? { name: "", description: "", id: "", created_at: "", color: "#000", is_public: true, need_request_to_join: false, parent_group: usersParentGroups.length === 1 ? usersParentGroups[0].id : null });
 
   return <><AppBar sx={{ position: 'static', pt: "env(safe-area-inset-top)" }}>
     <Toolbar>
@@ -92,6 +93,36 @@ const Content = ({ payload, onClose }: DialogProps<CreateOrUpdateGroupDialogProp
     </Toolbar>
   </AppBar>
     <List sx={{ pl: 2, pr: 2, pb: 10 }}>
+      {
+        usersParentGroups.length > 0 && payload.user.roles.map(x => x.name).includes("admin") && <ListItem sx={{ pt: 0, pb: 0 }} key={'title'}>
+          <ListItemAvatar>
+            {
+              data.parent_group && <Avatar sx={{ borderRadius: 2 }}>
+                <Groups />
+              </Avatar>
+            }
+          </ListItemAvatar>
+          <Select
+            sx={{ mt: 2, mb: 1 }}
+            fullWidth
+            value={data.parent_group ?? 'none'}
+            disabled={usersParentGroups.length === 1}
+            onChange={async (e) => {
+              setData({
+                ...data,
+                parent_group: e.target.value === "none" ? null : e.target.value
+              })
+            }}
+          >
+            {
+              usersParentGroups.map(x => <MenuItem value={x.id}>{x.name}</MenuItem>)
+            }
+            {
+              <MenuItem value={"none"}>Neue Hauptgruppe</MenuItem>
+            }
+          </Select>
+        </ListItem>
+      }
       <ListItem sx={{ pt: 0, pb: 0 }} key={'title'}>
         <ListItemAvatar>
           <Avatar sx={{ borderRadius: 2 }}>
@@ -169,6 +200,23 @@ const Content = ({ payload, onClose }: DialogProps<CreateOrUpdateGroupDialogProp
           }
         />
       </ListItem>
+      {
+        payload.user.roles.map(x => x.name).includes("admin") && <ListItem sx={{ pt: 0, pb: 0 }} key={'public'}>
+          <ListItemAvatar>
+            <Checkbox
+              sx={{ pl: 0 }}
+              checked={data.is_public}
+              onChange={(e) =>
+                setData({
+                  ...data,
+                  is_public: e.target.checked,
+                })
+              }
+            />
+          </ListItemAvatar>
+          <ListItemText primary={"Öffentliche Gruppe"} />
+        </ListItem>
+      }
       <ListItem sx={{ pt: 0, pb: 0 }} key={'endDate'}>
         <ListItemAvatar>
           <Checkbox

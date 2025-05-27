@@ -13,7 +13,7 @@ import { GroupWithUserRole } from "src/types/supabaseTypes";
 import { dayjsFromDb, dayjsToDb } from "src/utils";
 
 type CreateChallengePayload = {
-  user: User
+  user: User & { groups: GroupWithUserRole[]; roles: AppRole[]; }
 }
 
 const Content = ({ payload, onClose }: DialogProps<CreateChallengePayload, string | null>) => {

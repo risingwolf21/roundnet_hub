@@ -1,23 +1,26 @@
 import { AccountBox, Edit, ExpandMore, GroupRemove, Groups, PersonAdd, PersonRemove } from "@mui/icons-material";
-import { Accordion, AccordionDetails, AccordionSummary, Avatar, Button, Card, CardActionArea, Chip, Divider, Fab, List, ListItem, ListItemAvatar, ListItemText, Stack, Typography } from "@mui/material";
+import { Accordion, AccordionDetails, AccordionSummary, Avatar, Card, CardActionArea, Chip, Divider, Fab, List, ListItem, ListItemAvatar, ListItemText, Stack, Typography } from "@mui/material";
 import { captureException } from "@sentry/react";
+import { useQuery } from "@tanstack/react-query";
 import { useDialogs, useNotifications } from "@toolpad/core";
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { useNavigate, useParams } from "react-router";
 import Layout from "src/components/Layout";
 import { LoadingIndicator } from "src/components/LoadingIndicator";
 import { supabase } from "src/components/services/supabase/supabaseClient";
 import { RootState, useAppDispatch } from "src/redux/store";
-import { AdminUsersRepository } from "src/repository/AdminUsersRepository";
 import { GroupsRepository } from "src/repository/GroupsRepository";
 import { GroupWithUserMappings } from "src/types/supabaseTypes";
 import { can } from "src/utils/PermissionService";
-import { fetchAdminUsersAsync } from "../admin/slices/adminUserSlice";
 import { useAuthentication } from "../auth/AuthContext";
+import { AcceptJoinButton } from "./components/AcceptJoinButton";
 import { GroupUserItem } from "./components/GroupUserItem";
 import { CreateOrUpdateGroupDialog } from "./dialogs/CreateOrUpdateGroupDialog";
 import SearchAndSelectUserDialog from "./dialogs/SearchAndSelectUserDialog";
+import { useAddUsersMutation } from "./query/addUsersMutation";
+import { useRemoveUsersMutation } from "./query/removeUsersMutation";
+import { fetchAdminUsersAsync } from "../admin/slices/adminUserSlice";
 
 const PublicGroupInformation = () => {
 
@@ -27,62 +30,66 @@ const PublicGroupInformation = () => {
   const dispatch = useAppDispatch();
   const notifications = useNotifications();
   const dialogs = useDialogs();
-  const [group, setGroup] = useState<GroupWithUserMappings | null>(null)
-  const [loading, setLoading] = useState(false);
   const [searchAndSelectUsersOpen, setSearchAndSelectUsersOpen] = useState(false);
   const [selectedUsers, setSelectedUsers] = useState<User[]>([])
 
   const { users, loading: adminUsersLoading } = useSelector((state: RootState) => state.adminUsers);
 
+  const { data: group = null, error, isLoading, refetch } = useQuery<GroupWithUserMappings | null>({
+    queryKey: ['group', groupId],
+    enabled: !!groupId,
+    queryFn: () => GroupsRepository.fetchSingleGroupWithUsers(groupId),
+  });
+
   useEffect(() => {
     dispatch(fetchAdminUsersAsync());
-  }, [dispatch]);
-
-  const loadGroup = useCallback((groupId?: string) => {
-    if (groupId) {
-      setLoading(true)
-      GroupsRepository.fetchSingleGroupWithUsers(groupId).then(result => {
-        setGroup(result);
-        setLoading(false)
-      })
-    }
-  }, [])
+  }, [dispatch])
 
   useEffect(() => {
-    loadGroup(groupId)
-  }, [groupId, loadGroup]);
+    if (error)
+      notifications.show(error.message, { severity: "error" })
+  }, [error, notifications])
+
+
+  const addUsersMutation = useAddUsersMutation(group);
+  const removeUsersMutation = useRemoveUsersMutation(group);
 
   const handleUsersAdded = async (users: User[]) => {
-    if (group)
-      await AdminUsersRepository.addUsersToGroup(group, users)
-        .then((r) => {
-          setSearchAndSelectUsersOpen(false);
-          notifications.show(`Successfully added ${users.length} users to the group ${group.name}`, { severity: 'success', });
-          loadGroup(group?.id)
-        })
-        .catch((error) => {
-          captureException(error);
-          notifications.show(`Failed to add ${users.length} user to the group ${group.name} ${error.message}`, { severity: 'error' });
-        });
+    addUsersMutation.mutate(users, {
+      onSuccess: () => {
+        notifications.show(`Successfully added ${users.length} users to the group ${group?.name}`, { severity: 'success', });
+        setSearchAndSelectUsersOpen(false);
+        setSelectedUsers([]);
+      },
+      onError: (error) => {
+        notifications.show(`Failed to add ${users.length} user to the group ${group?.name} ${error.message}`, { severity: 'error' });
+        captureException(error);
+        setSearchAndSelectUsersOpen(false);
+        setSelectedUsers([]);
+      }
+    });
   };
 
   const handleUsersRemove = async (users: User[]) => {
-    if (group)
-      await AdminUsersRepository.removeUsersFromGroup(group, users)
-        .then((r) => {
-          notifications.show(`Successfully removed ${users.length} users from the group ${group.name}`, { severity: 'success', });
-          loadGroup(group.id);
-          setSelectedUsers([])
-        })
-        .catch((error) => {
-          captureException(error);
-          notifications.show(`Failed to remove ${users.length} users from the group ${group.name} ${error.message}`, { severity: 'error' });
-        });
+    removeUsersMutation.mutate(users, {
+      onSuccess: () => {
+        notifications.show(`Successfully removed ${users.length} users from the group ${group?.name}`, { severity: 'success', });
+        setSearchAndSelectUsersOpen(false);
+        setSearchAndSelectUsersOpen(false);
+        setSelectedUsers([]);
+      },
+      onError: (error) => {
+        notifications.show(`Failed to remove ${users.length} user from the group ${group?.name} ${error.message}`, { severity: 'error' });
+        setSearchAndSelectUsersOpen(false);
+        setSearchAndSelectUsersOpen(false);
+        setSelectedUsers([]);
+      }
+    });
   };
 
   return <Layout appBarConfig={{ navigateBackPath: "/groups/list" }}>
     <List sx={{ pb: 'calc(64px + env(safe-area-inset-bottom))' }}>
-      <LoadingIndicator loading={loading} />
+      <LoadingIndicator loading={isLoading} />
       <Typography pl={2} variant="h6" fontWeight="bold">
         Beschreibung
       </Typography>
@@ -127,22 +134,7 @@ const PublicGroupInformation = () => {
             .sort((a, b) => a.user.displayName.localeCompare(b.user.displayName))
             .slice(0, 10)
             .map(x =>
-              <ListItem key={x.user.userId} secondaryAction={<Button
-                onClick={() => {
-                  supabase
-                    .from("group_user_mapping")
-                    .update({ role: "user" })
-                    .eq("group", group.id)
-                    .eq("user", x.user.userId)
-                    .eq("role", "joinRequested")
-                    .then(result => {
-                      if (!result.error) {
-                        loadGroup(group.id)
-                      }
-                    })
-                }}>
-                Anfrage akzeptieren
-              </Button>}>
+              <ListItem key={x.user.userId} secondaryAction={<AcceptJoinButton user={x.user} group={group} />}>
                 <ListItemAvatar>
                   <Avatar sx={{ borderRadius: 2 }}>
                     {x.user.avatarUrl ? (
@@ -265,7 +257,7 @@ const PublicGroupInformation = () => {
         onClick={async () => {
           const result = await dialogs.open(CreateOrUpdateGroupDialog, { user, group: group ?? undefined });
           if (result && result !== "closed") {
-            loadGroup(result.id)
+            refetch();
             notifications.show("Gruppe wurde erfolgreich bearbeitet.", { severity: "success" });
           } else if (!result) {
             notifications.show("Gruppe konnte nicht bearbeitet werden.", { severity: "error" });

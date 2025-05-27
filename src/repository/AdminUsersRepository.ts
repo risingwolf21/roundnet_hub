@@ -2,6 +2,7 @@ import { PostgrestSingleResponse } from '@supabase/supabase-js';
 import { UserEdited } from 'src/features/admin/dialogs/EditUserDialog';
 import { UserWithGroups } from 'src/types/supabaseTypes';
 import { supabase } from '../components/services/supabase/supabaseClient';
+import { Tables } from 'src/types/supabase-generated.types';
 
 export const fetchGroupWithUsers = () => supabase.from('event_group').select('*, mapping: group_user_mapping ( user: user(*), group, role )');
 
@@ -59,8 +60,8 @@ export const AdminUsersRepository = {
       .throwOnError();
   },
 
-  async addUsersToGroup(group: Group, users: User[]): Promise<PostgrestSingleResponse<null>> {
-    return supabase
+  async addUsersToGroup(group: Group, users: User[]): Promise<Tables<"group_user_mapping">[]> {
+    const result = await supabase
       .from('group_user_mapping')
       .upsert(
         users.map((x) => {
@@ -70,6 +71,9 @@ export const AdminUsersRepository = {
           };
         })
       )
+      .select("*")
       .throwOnError();
+
+      return result.data ?? [];
   },
 };

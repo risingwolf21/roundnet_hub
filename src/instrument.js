@@ -24,7 +24,6 @@ Sentry.init({
       breadcrumbs: true,
       errors: true,
     }),
-    Sentry.browserTracingIntegration(),
     Sentry.consoleLoggingIntegration({ levels: ["log", "error", "warn"] }),
   ],
   tracesSampleRate: 1.0,

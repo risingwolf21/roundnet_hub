@@ -20,7 +20,8 @@ const ChallengeList = () => {
 
   const { data: challenges, error, isLoading, refetch } = useQuery<ChallengeWithFullGroup[]>({
     queryKey: ['challenges'],
-    queryFn: ChallengeRepository.fetchChallenges
+    queryFn: ChallengeRepository.fetchChallenges,
+    initialData: []
   });
 
   useEffect(() => {
@@ -33,9 +34,9 @@ const ChallengeList = () => {
       {isLoading && <LinearProgress sx={{ position: 'fixed', top: 56, left: 0, right: 0 }} />}
       <PullToRefresh onRefresh={() => refetch()}>
         {
-          challenges
+          challenges.length > 0
             ? <List sx={{ width: '100%' }}>
-              {challenges.map((entry) => (
+              {challenges.map((entry: ChallengeWithFullGroup) => (
                 <ListItem divider onClick={() => navigate('/challenges/' + entry.id)}>
                   <ListItemText primary={entry.name} secondary={entry.description} />
                 </ListItem>

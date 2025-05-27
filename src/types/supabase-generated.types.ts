@@ -391,6 +391,41 @@ export type Database = {
           },
         ]
       }
+      roles: {
+        Row: {
+          name: string
+        }
+        Insert: {
+          name: string
+        }
+        Update: {
+          name?: string
+        }
+        Relationships: []
+      }
+      user_role_map: {
+        Row: {
+          role: string
+          user: string
+        }
+        Insert: {
+          role: string
+          user?: string
+        }
+        Update: {
+          role?: string
+          user?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_role_map_role_fkey"
+            columns: ["role"]
+            isOneToOne: false
+            referencedRelation: "roles"
+            referencedColumns: ["name"]
+          },
+        ]
+      }
       user_roles: {
         Row: {
           app_role: string
@@ -690,6 +725,7 @@ export type Database = {
           is_public: boolean
           name: string
           need_request_to_join: boolean
+          parent_group: string | null
         }
         Insert: {
           color?: string
@@ -699,6 +735,7 @@ export type Database = {
           is_public?: boolean
           name?: string
           need_request_to_join?: boolean
+          parent_group?: string | null
         }
         Update: {
           color?: string
@@ -708,8 +745,24 @@ export type Database = {
           is_public?: boolean
           name?: string
           need_request_to_join?: boolean
+          parent_group?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "event_group_parent_group_fkey"
+            columns: ["parent_group"]
+            isOneToOne: false
+            referencedRelation: "event_group"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "event_group_parent_group_fkey"
+            columns: ["parent_group"]
+            isOneToOne: false
+            referencedRelation: "event_groups_view"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       events: {
         Row: {
@@ -1338,9 +1391,25 @@ export type Database = {
           is_public: boolean | null
           name: string | null
           need_request_to_join: boolean | null
+          parent_group: string | null
           role: Database["public"]["Enums"]["GroupRole"] | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "event_group_parent_group_fkey"
+            columns: ["parent_group"]
+            isOneToOne: false
+            referencedRelation: "event_group"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "event_group_parent_group_fkey"
+            columns: ["parent_group"]
+            isOneToOne: false
+            referencedRelation: "event_groups_view"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       readable_history: {
         Row: {
@@ -1365,17 +1434,8 @@ export type Database = {
       }
     }
     Functions: {
-      add_drink_history: {
-        Args: {
-          drink_id: number
-          payment_id: number
-          count: number
-          amount: number
-        }
-        Returns: undefined
-      }
       add_drinks_history: {
-        Args: { items: Json } | { items: Json; payment_id: number }
+        Args: { items: Json }
         Returns: undefined
       }
       add_match_with_sets: {
@@ -1413,16 +1473,6 @@ export type Database = {
       eventcreation: {
         Args: Record<PropertyKey, never>
         Returns: number
-      }
-      execute_query: {
-        Args: { query_text: string }
-        Returns: {
-          result: Json
-        }[]
-      }
-      execute_sql: {
-        Args: { query: string }
-        Returns: Json
       }
       get_attending_users: {
         Args: { event_id: number }
