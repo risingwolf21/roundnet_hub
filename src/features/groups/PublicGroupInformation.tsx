@@ -4,15 +4,15 @@ import { captureException } from "@sentry/react";
 import { useQuery } from "@tanstack/react-query";
 import { useDialogs, useNotifications } from "@toolpad/core";
 import React, { useEffect, useState } from "react";
-import { useSelector } from "react-redux";
 import { useNavigate, useParams } from "react-router";
 import Layout from "src/components/Layout";
 import { LoadingIndicator } from "src/components/LoadingIndicator";
 import { supabase } from "src/components/services/supabase/supabaseClient";
-import { RootState, useAppDispatch } from "src/redux/store";
+import { useAppDispatch } from "src/redux/store";
 import { GroupsRepository } from "src/repository/GroupsRepository";
 import { GroupWithUserMappings } from "src/types/supabaseTypes";
 import { can } from "src/utils/PermissionService";
+import { fetchAdminUsersAsync } from "../admin/slices/adminUserSlice";
 import { useAuthentication } from "../auth/AuthContext";
 import { AcceptJoinButton } from "./components/AcceptJoinButton";
 import { GroupUserItem } from "./components/GroupUserItem";
@@ -20,7 +20,6 @@ import { CreateOrUpdateGroupDialog } from "./dialogs/CreateOrUpdateGroupDialog";
 import SearchAndSelectUserDialog from "./dialogs/SearchAndSelectUserDialog";
 import { useAddUsersMutation } from "./query/addUsersMutation";
 import { useRemoveUsersMutation } from "./query/removeUsersMutation";
-import { fetchAdminUsersAsync } from "../admin/slices/adminUserSlice";
 
 const PublicGroupInformation = () => {
 
@@ -30,10 +29,7 @@ const PublicGroupInformation = () => {
   const dispatch = useAppDispatch();
   const notifications = useNotifications();
   const dialogs = useDialogs();
-  const [searchAndSelectUsersOpen, setSearchAndSelectUsersOpen] = useState(false);
   const [selectedUsers, setSelectedUsers] = useState<User[]>([])
-
-  const { users, loading: adminUsersLoading } = useSelector((state: RootState) => state.adminUsers);
 
   const { data: group = null, error, isLoading, refetch } = useQuery<GroupWithUserMappings | null>({
     queryKey: ['group', groupId],
@@ -58,13 +54,11 @@ const PublicGroupInformation = () => {
     addUsersMutation.mutate(users, {
       onSuccess: () => {
         notifications.show(`Successfully added ${users.length} users to the group ${group?.name}`, { severity: 'success', });
-        setSearchAndSelectUsersOpen(false);
         setSelectedUsers([]);
       },
       onError: (error) => {
         notifications.show(`Failed to add ${users.length} user to the group ${group?.name} ${error.message}`, { severity: 'error' });
         captureException(error);
-        setSearchAndSelectUsersOpen(false);
         setSelectedUsers([]);
       }
     });
@@ -74,14 +68,10 @@ const PublicGroupInformation = () => {
     removeUsersMutation.mutate(users, {
       onSuccess: () => {
         notifications.show(`Successfully removed ${users.length} users from the group ${group?.name}`, { severity: 'success', });
-        setSearchAndSelectUsersOpen(false);
-        setSearchAndSelectUsersOpen(false);
         setSelectedUsers([]);
       },
       onError: (error) => {
         notifications.show(`Failed to remove ${users.length} user from the group ${group?.name} ${error.message}`, { severity: 'error' });
-        setSearchAndSelectUsersOpen(false);
-        setSearchAndSelectUsersOpen(false);
         setSelectedUsers([]);
       }
     });
@@ -113,7 +103,13 @@ const PublicGroupInformation = () => {
                 <ListItemText primary={"Gewählte Teilnehmer entfernen"} />
               </ListItem>
             </CardActionArea>
-            : can("update", "group") && group?.user_group_role === "admin" && <CardActionArea onClick={() => setSearchAndSelectUsersOpen(true)}>
+            : can("update", "group") && group?.user_group_role === "admin" && <CardActionArea onClick={() => {
+              dialogs.open(SearchAndSelectUserDialog, { usersToFilter: group.users.map(x => x.user.userId) })
+                .then(result => {
+                  if (result)
+                    handleUsersAdded(result)
+                })
+            }}>
               <ListItem>
                 <ListItemAvatar>
                   <Avatar sx={{ borderRadius: 2 }}>
@@ -267,13 +263,6 @@ const PublicGroupInformation = () => {
         <Edit sx={{ color: 'white' }} />
       </Fab>
     }
-    <SearchAndSelectUserDialog
-      open={searchAndSelectUsersOpen}
-      handleClose={() => setSearchAndSelectUsersOpen(false)}
-      handleSubmit={handleUsersAdded}
-      users={users.filter((x) => !(group?.users.map((x) => x.user) ?? []).some((y) => y.userId === x.userId))}
-      loading={adminUsersLoading}
-    />
   </Layout>
 }
 

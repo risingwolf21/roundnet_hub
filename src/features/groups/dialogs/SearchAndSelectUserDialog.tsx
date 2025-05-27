@@ -17,24 +17,33 @@ import {
 import { Search, SearchIconWrapper, StyledInputBase } from '../../../components/SearchBar';
 import React, { useState } from 'react';
 import { SlideUpTransition } from '../../../utils';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from 'src/components/services/supabase/supabaseClient';
+import { DialogProps } from '@toolpad/core';
 
 type SearchAndSelectUserDialogProps = {
-  open: boolean;
-  handleClose: () => void;
-  handleSubmit: (users: User[]) => void;
-  users: User[];
-  loading: boolean;
+  usersToFilter: string[];
 };
 
-const SearchAndSelectUserDialog = ({
-  open,
-  handleClose,
-  users,
-  loading,
-  handleSubmit,
-}: SearchAndSelectUserDialogProps) => {
+const SearchAndSelectUserDialog = ({ payload: { usersToFilter }, onClose, open }: DialogProps<SearchAndSelectUserDialogProps, User[] | null>) => {
   const [selectedUsers, setSelectedUsers] = useState<User[]>(Array.from<User>([]));
   const [searchString, setSearchString] = useState<string>('');
+
+  const { data: users = [], isLoading } = useQuery<User[]>({
+    queryKey: ['users', 'searchAndSelectDialog', ...usersToFilter],
+    queryFn: async () => {
+      const result = await supabase
+        .schema("public")
+        .from("user")
+        .select("*")
+        .not("userId", 'in', `(${usersToFilter.join(",")})`)
+        .returns<User[]>()
+        .throwOnError();
+
+      return result.data ?? [];
+    }
+  });
+
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>, user: User) => {
     if (selectedUsers.some((x: User) => x.userId === user.userId)) {
@@ -45,7 +54,7 @@ const SearchAndSelectUserDialog = ({
   };
 
   return (
-    <Dialog fullScreen open={open} onClose={handleClose} TransitionComponent={SlideUpTransition}>
+    <Dialog fullScreen open={open} onClose={() => onClose(null)} TransitionComponent={SlideUpTransition}>
       <Box
         component="form"
         noValidate
@@ -58,7 +67,7 @@ const SearchAndSelectUserDialog = ({
       >
         <AppBar position="sticky" sx={{ pt: 'env(safe-area-inset-top)' }}>
           <Toolbar>
-            <IconButton size="large" edge="start" color="inherit" onClick={handleClose}>
+            <IconButton size="large" edge="start" color="inherit" onClick={() => onClose(null)}>
               <ArrowBack />
             </IconButton>
             <Search sx={{ marginRight: 2 }}>
@@ -71,12 +80,12 @@ const SearchAndSelectUserDialog = ({
                 inputProps={{ 'aria-label': 'search' }}
               />
             </Search>
-            <Button autoFocus color="inherit" onClick={() => handleSubmit(selectedUsers)}>
+            <Button autoFocus color="inherit" onClick={() => onClose(selectedUsers)}>
               Speichern
             </Button>
           </Toolbar>
         </AppBar>
-        {loading && <LinearProgress style={{ position: 'fixed', left: 0, right: 0, top: 56 }} />}
+        {isLoading && <LinearProgress style={{ position: 'fixed', left: 0, right: 0, top: 56 }} />}
 
         <List sx={{ width: '100%' }}>
           {users &&
@@ -90,7 +99,7 @@ const SearchAndSelectUserDialog = ({
                       onChange={(e) => handleChange(e, user)}
                     />
                   </ListItemIcon>
-                  <ListItemText primary={user.name}/>
+                  <ListItemText primary={user.name} />
                 </ListItem>
               ))}
         </List>

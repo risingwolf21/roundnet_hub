@@ -29,26 +29,26 @@ export const queryClient = new QueryClient({
 export const App = () => {
 
   return <ThemeProvider theme={mainTheme}>
-    <AppProvider branding={BRANDING} theme={mainTheme}>
-      <DialogsProvider>
-        <NotificationsProvider slotProps={{
-          snackbar: {
-            sx: {
-              bottom: "calc(8px + env(safe-area-inset-bottom))"
+    <QueryClientProvider client={queryClient}>
+      <AppProvider branding={BRANDING} theme={mainTheme}>
+        <DialogsProvider>
+          <NotificationsProvider slotProps={{
+            snackbar: {
+              sx: {
+                bottom: "calc(8px + env(safe-area-inset-bottom))"
+              }
             }
-          }
-        }}>
-          <Provider store={store}>
-            <SupabaseProvider value={supabase}>
-              <LocalizationProvider dateAdapter={AdapterDayjs}>
-                <QueryClientProvider client={queryClient}>
+          }}>
+            <Provider store={store}>
+              <SupabaseProvider value={supabase}>
+                <LocalizationProvider dateAdapter={AdapterDayjs}>
                   <AuthGate />
-                </QueryClientProvider>
-              </LocalizationProvider>
-            </SupabaseProvider>
-          </Provider>
-        </NotificationsProvider>
-      </DialogsProvider>
-    </AppProvider>
+                </LocalizationProvider>
+              </SupabaseProvider>
+            </Provider>
+          </NotificationsProvider>
+        </DialogsProvider>
+      </AppProvider>
+    </QueryClientProvider>
   </ThemeProvider>
 }

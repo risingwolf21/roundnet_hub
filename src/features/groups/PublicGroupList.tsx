@@ -1,11 +1,10 @@
-import { Add, Error, Groups, Info, Refresh } from "@mui/icons-material";
-import { Avatar, Button, Chip, Fab, Grid2, List, ListItem, ListItemAvatar, ListItemText, Stack, Typography } from "@mui/material";
+import { Add, Groups } from "@mui/icons-material";
+import { Avatar, Chip, Fab, List, ListItem, ListItemAvatar, ListItemText, Stack } from "@mui/material";
 import { useQuery } from '@tanstack/react-query';
 import { useDialogs } from "@toolpad/core";
 import { useNotifications } from "@toolpad/core/useNotifications";
 import React, { useEffect } from "react";
 import { useNavigate } from "react-router";
-import Layout from "src/components/Layout";
 import { PullToRefresh } from "src/components/pull-to-refresh/PullToRefresh";
 import { GroupsRepository } from "src/repository/GroupsRepository";
 import { GroupWithUserMappings } from "src/types/supabaseTypes";

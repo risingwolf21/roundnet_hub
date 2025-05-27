@@ -1,11 +1,12 @@
 import { ArrowDropDown, Close, Delete, Save } from "@mui/icons-material";
-import { Accordion, AccordionDetails, AccordionSummary, AppBar, Box, Button, Checkbox, Dialog, IconButton, List, ListItem, ListItemAvatar, ListItemText, MenuItem, Select, Stack, Toolbar, Typography } from "@mui/material";
+import { Accordion, AccordionDetails, AccordionSummary, AppBar, Box, Button, Checkbox, Dialog, Divider, FormControl, FormHelperText, IconButton, List, ListItem, ListItemAvatar, ListItemText, MenuItem, Select, Stack, Toolbar, Typography } from "@mui/material";
 import { LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
-import { DialogProps, NotificationsProvider, useNotifications } from "@toolpad/core";
+import { DialogProps, NotificationsProvider, useDialogs, useNotifications } from "@toolpad/core";
 import React, { useEffect, useState } from "react";
 import { NumberInput } from "src/components/mui/NumberInput";
 import { supabase } from "src/components/services/supabase/supabaseClient";
+import SearchAndSelectUserDialog from "src/features/groups/dialogs/SearchAndSelectUserDialog";
 import { GamesRepository } from "src/repository/GamesRepository";
 import { GamesTable } from "src/types/supabaseTypes";
 
@@ -253,6 +254,7 @@ type PlayerWithUser = GamesTable<"players"> & {
 const Content = ({ payload, onClose }: DialogProps<ConstellationCreationDialogProps, null>) => {
 
   const notifications = useNotifications();
+  const dialogs = useDialogs();
   const [loading, setLoading] = useState(false);
   const [players, setPlayers] = useState<PlayerWithUser[]>([]);
   const [foundPlayers, setFoundPlayers] = useState<PlayerWithUser[]>([]);
@@ -299,9 +301,6 @@ const Content = ({ payload, onClose }: DialogProps<ConstellationCreationDialogPr
       <Typography sx={{ ml: 2, flex: 1 }} variant="h6" component="div">
         Konstellationen
       </Typography>
-      <Button color="inherit" onClick={() => onClose(null)}>
-        Speichern
-      </Button>
     </Toolbar>
   </AppBar>
     <List sx={{ pl: 0, pr: 0, pb: 10 }}>
@@ -357,6 +356,47 @@ const Content = ({ payload, onClose }: DialogProps<ConstellationCreationDialogPr
           </AccordionDetails>
         </Accordion>
       }
+      <Accordion disableGutters>
+        <AccordionSummary expandIcon={<ArrowDropDown />}>
+          <Typography component="span">{`Spieler bearbeiten - ${players.length}`}</Typography>
+        </AccordionSummary>
+        <AccordionDetails>
+          <List>
+            <Box sx={{ display: 'flex', flexDirection: 'row', justifyContent: "start", width: '100%' }}>
+              <Button onClick={() => {
+                dialogs.open(SearchAndSelectUserDialog, { usersToFilter: players.map(x => x.player) }).then(result => {
+                  if (result) {
+                    supabase
+                      .schema("games")
+                      .from("players")
+                      .select("*")
+                      .in("player", result.map(x => x.userId))
+                      .then(res => {
+                        if (res.data) {
+                          setPlayers([
+                            ...players.filter(x => !result.map(x => x.userId).includes(x.player)),
+                            ...res.data.map(x => ({ ...x, name: result.find(y => y.userId === x.player)?.name }))
+                          ])
+                        }
+                      })
+                  }
+                })
+              }}>Spieler hinzufügen</Button>
+            </Box>
+            <Divider />
+            {
+              players.map(x => <ListItem disableGutters disablePadding divider secondaryAction={
+                <IconButton onClick={() => setPlayers(players.filter(y => y.player !== x.player))}>
+                  <Delete />
+                </IconButton>
+              }>
+                <ListItemText primary={x.name} secondary={"Index: " + x.rg_index} />
+              </ListItem>)
+            }
+          </List>
+        </AccordionDetails>
+      </Accordion>
+      <Divider sx={{ my: 1 }} />
       {
         rounds.map((x, index) => <Accordion defaultExpanded={index === 0} disableGutters>
           <AccordionSummary expandIcon={<ArrowDropDown />}>
@@ -369,13 +409,27 @@ const Content = ({ payload, onClose }: DialogProps<ConstellationCreationDialogPr
               </AccordionSummary>
               <AccordionDetails>
                 <ListItem dense divider sx={{ '&.MuiListItem-root': { paddingLeft: 0 } }}>
-                  <Select fullWidth value={x.options.matchupMode ?? "any"} onChange={(e) => {
-                    setRounds([...rounds.map((z, i) => i === index ? { ...z, options: { ...z.options, matchupMode: e.target.value } as MatchmakingOptions } : z)])
-                  }}>
-                    <MenuItem value={"any"}>Random</MenuItem>
-                    <MenuItem value={"separate"}>Herren / Damen</MenuItem>
-                    <MenuItem value={"mixed"}>Mixed</MenuItem>
-                  </Select>
+                  <FormControl fullWidth>
+                    <Select fullWidth value={x.options.mode ?? "balanced"} onChange={(e) => {
+                      setRounds([...rounds.map((z, i) => i === index ? { ...z, options: { ...z.options, mode: e.target.value } as MatchmakingOptions } : z)])
+                    }}>
+                      <MenuItem value={"balanced"}>Balanced</MenuItem>
+                      <MenuItem value={"random"}>Random</MenuItem>
+                    </Select>
+                    <FormHelperText sx={{ ml: 0 }}>Spielmodus (heterogen/homogen)</FormHelperText>
+                  </FormControl>
+                </ListItem>
+                <ListItem dense divider sx={{ '&.MuiListItem-root': { paddingLeft: 0 } }}>
+                  <FormControl fullWidth>
+                    <Select fullWidth value={x.options.matchupMode ?? "any"} onChange={(e) => {
+                      setRounds([...rounds.map((z, i) => i === index ? { ...z, options: { ...z.options, matchupMode: e.target.value } as MatchmakingOptions } : z)])
+                    }}>
+                      <MenuItem value={"any"}>Gemischt</MenuItem>
+                      <MenuItem value={"separate"}>Herren / Damen</MenuItem>
+                      <MenuItem value={"mixed"}>Mixed</MenuItem>
+                    </Select>
+                    <FormHelperText sx={{ ml: 0 }}>Teammodus</FormHelperText>
+                  </FormControl>
                 </ListItem>
                 {
                   index > 0 && <ListItem dense divider sx={{ '&.MuiListItem-root': { paddingLeft: 0 } }}>
@@ -558,7 +612,6 @@ const Content = ({ payload, onClose }: DialogProps<ConstellationCreationDialogPr
                       const [name2b, ...surname2b] = match[1].players[1].name!.split(' ');
                       let team_a_name = (surname1a.pop() ?? name1a) + '/' + (surname2a.pop() ?? name2a);
                       let team_b_name = (surname1b.pop() ?? name1b) + '/' + (surname2b.pop() ?? name2b);
-                      console.log(team_a_name, team_b_name)
                       GamesRepository.reportScores(
                         [],
                         {
@@ -572,7 +625,7 @@ const Content = ({ payload, onClose }: DialogProps<ConstellationCreationDialogPr
                           player_2: match[1].players[1].player,
                         },
                         payload.event.id
-                      )
+                      ).catch(error => notifications.show(error.message, { severity: "error" }))
                     }
 
                   }}>Matches erstellen</Button>
