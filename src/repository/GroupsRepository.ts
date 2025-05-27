@@ -43,8 +43,6 @@ export const GroupsRepository = {
       .select('*')
       .throwOnError();
 
-    throw Error("test")
-
     return (
       response.data?.map((x) => {
         return { ...x, user_group_role: x.role, users: [] } as GroupWithUserMappings;
