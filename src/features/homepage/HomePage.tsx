@@ -1,7 +1,8 @@
-import { AccountBox, Key } from "@mui/icons-material"
-import { Avatar, Box, Button, Card, CardActionArea, CardActions, CardContent, CardMedia, List, Typography } from "@mui/material"
+import { AccessTime, AccountBox, Key, Place, ThumbDownAlt, ThumbDownOffAlt, ThumbUpAlt, ThumbUpOffAlt } from "@mui/icons-material"
+import { Avatar, Badge, Box, Button, Card, CardActionArea, CardActions, CardContent, CardHeader, CardMedia, IconButton, List, ListItem, ListItemAvatar, ListItemText, Typography } from "@mui/material"
 import { withProfiler } from "@sentry/react"
 import { useNotifications } from "@toolpad/core/useNotifications"
+import { format } from "date-fns"
 import { t } from "i18next"
 import React, { useEffect } from "react"
 import { useSelector } from "react-redux"
@@ -10,20 +11,28 @@ import Layout from "src/components/Layout"
 import {
     fetchDrinksAsync
 } from 'src/features/drinks/slices/drinksSlice'
+import { useFetchMode } from "src/hooks/useFetchMode"
 import { RootState, useAppDispatch } from "src/redux/store"
 import { SupabaseDrinkRepository } from "src/repository/DrinkRepository"
+import { answerDeadlineExpired, eventInThePast } from "src/types/supabaseTypes"
 import { translationKeyOfItemType } from "src/utils"
 import { useAuthentication } from "../auth/AuthContext"
+import { useEvents, useUpdateAttendanceMutation } from "../events/useAllEvents"
 import { fetchItemsAsync, keyHoldersSelector } from "../keys/slices/keysSlice"
 
 const HomePage = () => {
 
+    const [fetchMode] = useFetchMode();
+
     const { user } = useAuthentication();
     const { drinks } = useSelector((state: RootState) => state.drinks);
+    const { data: events = [] } = useEvents(fetchMode);
     const keys = useSelector(keyHoldersSelector.selectAll);
     const dispatch = useAppDispatch();
     const navigate = useNavigate();
     const notifications = useNotifications();
+
+    const updateAttendance = useUpdateAttendanceMutation(fetchMode);
 
     useEffect(() => {
         dispatch(fetchDrinksAsync());
@@ -35,7 +44,7 @@ const HomePage = () => {
             <Typography variant="h6" sx={{ mx: 2, mt: 2, fontWeight: "bold" }}>
                 Events
             </Typography>
-            {/* <Box
+            <Box
                 sx={{
                     display: "flex",
                     overflowX: "auto",
@@ -90,13 +99,13 @@ const HomePage = () => {
                         <CardActions disableSpacing sx={{ justifyContent: "start" }}>
                             <IconButton
                                 onClick={(e) => {
-                                    dispatch(updateAttendanceAsync({ user: user!, event, state: "Declined", oldState: event.userAttendance }))
+                                    updateAttendance.mutate({ user, event, newState: "Declined" })
                                     e.stopPropagation();
                                 }}
                                 disabled={event.isCancelled || eventInThePast(event)}
                             >
-                                <Badge badgeContent={event.attendance.filter(x => x.state === "Declined").length} color="error">
-                                    {event.userAttendance === 'Declined' ? (
+                                <Badge badgeContent={event.declined_count ?? 0} color="error">
+                                    {event.user_state === 'Declined' ? (
                                         <ThumbDownAlt fontSize="inherit" sx={{ fontSize: '28px', color: 'red' }} />
                                     ) : (
                                         <ThumbDownOffAlt fontSize="inherit" sx={{ fontSize: '28px' }} />
@@ -105,13 +114,13 @@ const HomePage = () => {
                             </IconButton>
                             <IconButton
                                 onClick={(e) => {
-                                    dispatch(updateAttendanceAsync({ user: user!, event, state: "Attending", oldState: event.userAttendance }));
+                                    updateAttendance.mutate({ user, event, newState: "Attending" })
                                     e.stopPropagation();
                                 }}
                                 disabled={event.isCancelled || answerDeadlineExpired(event) || eventInThePast(event)}
                             >
-                                <Badge badgeContent={event.attendance.filter(x => x.state === "Attending").length} color="success">
-                                    {event.userAttendance === 'Attending' ? (
+                                <Badge badgeContent={event.attending_count ?? 0} color="success">
+                                    {event.user_state === 'Attending' ? (
                                         <ThumbUpAlt fontSize="inherit" sx={{ fontSize: '28px', color: 'green' }} />
                                     ) : (
                                         <ThumbUpOffAlt fontSize="inherit" sx={{ fontSize: '28px' }} />
@@ -121,7 +130,7 @@ const HomePage = () => {
                         </CardActions>
                     </Card>
                 ))}
-            </Box> */}
+            </Box>
             <Typography variant="h6" sx={{ mx: 2, mt: 2, fontWeight: "bold" }}>
                 Getränke
             </Typography>

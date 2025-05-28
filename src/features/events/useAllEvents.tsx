@@ -1,5 +1,4 @@
 import { useMutation, useQuery } from "@tanstack/react-query"
-import { formatDate } from "date-fns"
 import { queryClient } from "src/App"
 import { SupabaseEventRepository } from "src/repository/EventRepository"
 import { EventsUserView, FullAttendance, FullComment } from "src/types/supabaseTypes"

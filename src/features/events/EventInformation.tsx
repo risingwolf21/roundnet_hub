@@ -7,7 +7,6 @@ import {
   Typography
 } from '@mui/material';
 import { withProfiler } from '@sentry/react';
-import { useDialogs } from '@toolpad/core';
 import { TFunction } from 'i18next';
 import React from 'react';
 import { MapContainer, Marker, TileLayer } from 'react-leaflet';
@@ -35,7 +34,6 @@ const EventInformation = ({
   keyHolders,
   fetchMode
 }: EventInformationProps) => {
-  const dialogs = useDialogs();
 
   const createCardSubHeader = () => {
     const { meetingDateTime, startingDateTime, endDateTime } = event;

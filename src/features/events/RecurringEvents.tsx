@@ -1,4 +1,19 @@
 import {
+  CalendarMonth,
+  Edit,
+  EventBusyRounded,
+  GroupRounded,
+  Key,
+  PersonOffRounded,
+  Place,
+  PlayCircle,
+  Repeat,
+  Stop,
+  StopCircleRounded,
+  WatchLaterRounded,
+} from '@mui/icons-material';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import {
   Box,
   Button,
   Card,
@@ -17,34 +32,22 @@ import {
   StepLabel,
   Stepper,
 } from '@mui/material';
-import { styled } from '@mui/material/styles';
-import IconButton, { IconButtonProps } from '@mui/material/IconButton';
 import Grid from '@mui/material/Grid2';
-import React, { useEffect } from 'react';
+import IconButton, { IconButtonProps } from '@mui/material/IconButton';
+import { styled } from '@mui/material/styles';
+import { useQuery } from '@tanstack/react-query';
+import { format } from 'date-fns';
+import React from 'react';
+import { useNavigate } from 'react-router';
+import { PullToRefresh } from 'src/components/pull-to-refresh/PullToRefresh';
+import { SupabaseEventRepository } from 'src/repository/EventRepository';
 import { AlertMessage } from '../../components/AlertSnackbar';
-import { RootState, useAppDispatch } from '../../redux/store';
-import { useSelector } from 'react-redux';
+import Layout from '../../components/Layout';
+import { EventWithGroup } from '../../types/supabaseTypes';
 import { nameOfRecurrence } from '../../utils';
 import { PlaceType } from './types';
-import {
-  CalendarMonth,
-  Edit,
-  EventBusyRounded,
-  GroupRounded,
-  Key,
-  PersonOffRounded,
-  Place,
-  PlayCircle,
-  Repeat,
-  Stop,
-  StopCircleRounded,
-  WatchLaterRounded,
-} from '@mui/icons-material';
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import { format } from 'date-fns';
-import { useNavigate } from 'react-router';
-import { EventWithGroup } from '../../types/supabaseTypes';
-import Layout from '../../components/Layout';
+import { useDialogs } from '@toolpad/core';
+import { CreateOrUpdateEventDialog } from './EventCreation';
 
 interface ExpandMoreProps extends IconButtonProps {
   expand: boolean;
@@ -81,24 +84,26 @@ type RecurringEventsProps = {
 };
 
 const RecurringEventsProvider = () => {
-  // const { recurringEventsLoading, error, recurringEvents } = useSelector((state: RootState) => state.events);
+  const { data: recurringEvents = [], isLoading, error, refetch } = useQuery({
+    queryKey: ["events", "recurring"],
+    queryFn: () => SupabaseEventRepository.fetchRecurringEvents()
+  })
 
-  // return (
-  //   <RecurringEvents
-  //     recurringEvents={recurringEvents}
-  //     loading={recurringEventsLoading}
-  //     error={error ? { message: error, severity: 'error' } : null}
-  //   />
-  // );
-  return null
+  return <Layout appBarConfig={{ navigateBackPath: "/training/list" }}>
+    <PullToRefresh onRefresh={() => refetch()}>
+      <RecurringEvents
+        recurringEvents={recurringEvents}
+        loading={isLoading}
+        error={error ? { message: error.message, severity: 'error' } : null}
+      />
+    </PullToRefresh>
+  </Layout>
 };
 
 const RecurringEvents = ({ recurringEvents, loading, error }: RecurringEventsProps) => {
-  const dispatch = useAppDispatch();
   const navigate = useNavigate();
+  const dialogs = useDialogs();
   const [expanded, setExpanded] = React.useState(-1);
-
-
 
   const handleExpandClick = (index: number) => {
     if (expanded === index) setExpanded(-1);
@@ -224,9 +229,8 @@ const RecurringEvents = ({ recurringEvents, loading, error }: RecurringEventsPro
                 <CardActions disableSpacing>
                   <Button
                     startIcon={<Edit />}
-                    onClick={() => {
-                      //dispatch(editEvent(x));
-                      navigate('/training/createOrUpdate/UpdateRecurrence', { replace: true });
+                    onClick={async () => {
+                      await dialogs.open(CreateOrUpdateEventDialog, { event: x, eventGroup: x.fullGroup, option: "UpdateRecurrence" })
                     }}
                   >
                     Bearbeiten

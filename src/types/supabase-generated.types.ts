@@ -1440,6 +1440,7 @@ export type Database = {
           declined_count: number | null
           description: string | null
           endDateTime: string | null
+          group: string | null
           id: string | null
           isCancelled: boolean | null
           key: string | null
@@ -1453,7 +1454,22 @@ export type Database = {
           title: string | null
           user_state: Database["public"]["Enums"]["EventAttendance"] | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "events_group_fkey"
+            columns: ["group"]
+            isOneToOne: false
+            referencedRelation: "event_group"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "events_group_fkey"
+            columns: ["group"]
+            isOneToOne: false
+            referencedRelation: "event_groups_view"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       readable_history: {
         Row: {

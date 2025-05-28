@@ -1,7 +1,5 @@
 import { TFunction } from 'i18next';
-import { AnyAction, ThunkDispatch } from '@reduxjs/toolkit';
-import { RootState } from 'src/redux/store';
-import { FullAttendance, FullComment, UserWithRolesAndPermissions } from 'src/types/supabaseTypes';
+import { FullAttendance } from 'src/types/supabaseTypes';
 
 export type CreateEventOption = 'UpdateSingle' | 'UpdateRecurrence' | 'InsertEvent';
 

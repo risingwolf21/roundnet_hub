@@ -11,23 +11,25 @@ import { groupBy } from 'lodash';
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { SwipeableDialog } from 'src/components/SwipeableDialog';
+import { useFetchMode } from 'src/hooks/useFetchMode';
+import { EventsUserView } from 'src/types/supabaseTypes';
 import Layout from '../../components/Layout';
-import { useAppDispatch } from '../../redux/store';
 import { can } from '../../utils/PermissionService';
 import { useAuthentication } from '../auth/AuthContext';
 import { EventItem } from './components/EventItem';
 import { LoadingEventItem } from './components/LoadingEventItem';
 import { useEvents, useUpdateAttendanceMutation } from './useAllEvents';
-import { EventsUserView } from 'src/types/supabaseTypes';
+import { useDialogs } from '@toolpad/core';
+import { CreateOrUpdateEventDialog } from './EventCreation';
 
 
 const EventScreen = () => {
   const { user } = useAuthentication();
-  const dispatch = useAppDispatch();
   const notifications = useNotifications();
+  const dialogs = useDialogs();
   const navigate = useNavigate();
   const [filterDialogOpen, setFilterDialogOpen] = useState(false);
-  const [fetchMode, setFetchMode] = useState<"past" | "upcoming">(localStorage.getItem('fetchMode') as 'upcoming' | 'past' ?? 'upcoming')
+  const [fetchMode, setFetchMode] = useFetchMode();
 
   const { data: events = [], isLoading, error, refetch } = useEvents(fetchMode);
 
@@ -128,9 +130,8 @@ const EventScreen = () => {
             bottom: 'max(16px, env(safe-area-inset-bottom))',
           }}
           color={'secondary'}
-          onClick={() => {
-            //dispatch(editEvent(null));
-            navigate('/training/createOrUpdate/InsertEvent');
+          onClick={async () => {
+            await dialogs.open(CreateOrUpdateEventDialog, { option: "InsertEvent" })
           }}
         >
           {<AddIcon sx={{ color: 'white' }} />}

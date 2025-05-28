@@ -1,5 +1,6 @@
 import { Delete, DoNotDisturb, DoNotDisturbOff, Edit, MoreVert } from '@mui/icons-material';
 import { IconButton, ListItemIcon, ListItemText, Menu, MenuItem } from '@mui/material';
+import { captureException } from '@sentry/react';
 import { useQuery } from '@tanstack/react-query';
 import { useDialogs, useNotifications } from '@toolpad/core';
 import React, { useEffect, useState } from 'react';
@@ -7,22 +8,24 @@ import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 import { useNavigate, useParams } from 'react-router';
 import Layout from 'src/components/Layout';
+import { PullToRefresh } from 'src/components/pull-to-refresh/PullToRefresh';
 import { useAuthentication } from 'src/features/auth/AuthContext';
 import EventInformationLoading from 'src/features/events/components/EventInformationLoading';
 import { CancelTrainingDialog } from 'src/features/events/dialogs/CancelTrainingDialog';
 import { DeleteEventDialog } from 'src/features/events/dialogs/DeleteEventDialog';
 import { EditEventOptionsDialog } from 'src/features/events/dialogs/EditEventOptionsDialog';
+import { CreateOrUpdateEventDialog } from 'src/features/events/EventCreation';
 import { useCancelTrainingMutation } from 'src/features/events/useCancelTraining';
+import { useDeleteTrainingMutation } from 'src/features/events/useDeleteTraining';
+import { useFetchMode } from 'src/hooks/useFetchMode';
 import { SupabaseEventRepository } from 'src/repository/EventRepository';
 import { EventsUserView } from 'src/types/supabaseTypes';
 import { can } from 'src/utils/PermissionService';
+import { EventTable } from 'types/supabase';
 import EventInformation from '../features/events/EventInformation';
 import { PlaceType } from '../features/events/types';
 import { fetchItemsAsync, keyHoldersSelector } from '../features/keys/slices/keysSlice';
 import { RootState, useAppDispatch } from '../redux/store';
-import { useDeleteTrainingMutation } from 'src/features/events/useDeleteTraining';
-import { captureException } from '@sentry/react';
-import { PullToRefresh } from 'src/components/pull-to-refresh/PullToRefresh';
 
 const EventInformationProvider = () => {
   const { selectedEventId } = useParams();
@@ -35,11 +38,11 @@ const EventInformationProvider = () => {
   const { t } = useTranslation();
   const [selectedEventPlace, setSelectedEventPlace] = useState<PlaceType | null>(null);
   const [anchorEl, setAnchorEl] = useState<(EventTarget & HTMLButtonElement) | null>(null);
-  const [fetchMode] = useState<"past" | "upcoming">(localStorage.getItem('fetchMode') as 'upcoming' | 'past' ?? 'upcoming')
+  const [fetchMode] = useFetchMode();
 
   const cancelTrainingMutation = useCancelTrainingMutation(fetchMode);
   const deleteTrainingMutation = useDeleteTrainingMutation(fetchMode);
-  const { data: event, isLoading, error, refetch } = useQuery<EventsUserView | null>({
+  const { data: event, isLoading, refetch } = useQuery<EventsUserView | null>({
     queryKey: ["events", selectedEventId],
     enabled: !!selectedEventId,
     queryFn: () => SupabaseEventRepository.fetchUserEvent(selectedEventId!)
@@ -87,7 +90,12 @@ const EventInformationProvider = () => {
               setAnchorEl(null)
               const result = await dialogs.open(EditEventOptionsDialog);
               if (result) {
-                navigate(`/training/event/${event.id}/createOrUpdate/${result}`, { replace: true });
+                await dialogs.open(CreateOrUpdateEventDialog, {
+                  event: {
+                    ...event,
+                    group: event.group?.id ?? null
+                  } as EventTable, eventGroup: event.group, option: result
+                })
               }
             }}
           >

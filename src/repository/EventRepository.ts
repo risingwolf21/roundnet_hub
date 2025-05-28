@@ -1,7 +1,7 @@
 import { PostgrestSingleResponse } from '@supabase/supabase-js';
 import { add, Duration, startOfDay } from 'date-fns';
 import moment from 'moment/moment';
-import { Event } from 'types/supabase';
+import { EventTable } from 'types/supabase';
 import { supabase } from '../components/services/supabase/supabaseClient';
 import { TablesInsert, TablesUpdate } from '../types/supabase-generated.types';
 import { EventsUserView, EventWithGroup, FullAttendance, FullComment } from '../types/supabaseTypes';
@@ -20,7 +20,7 @@ export const SupabaseEventRepository = {
       .select('*')
       .eq('key', key)
       .gte("startingDateTime", oldStartTime)
-      .returns<Event[]>();
+      .returns<EventTable[]>();
 
     if (!data || error) {
       throw new Error('Could not fetch events that need to be updated!')
@@ -175,7 +175,20 @@ export const SupabaseEventRepository = {
       .single()
       .throwOnError();
 
-    return result.data ? result.data as EventsUserView : null;
+    if (result.data) {
+      const { data: group } = await supabase
+        .schema("public")
+        .from("event_group")
+        .select("*")
+        .eq("id", result.data.group ?? "")
+        .maybeSingle();
+
+      return {
+        ...result.data,
+        group: group
+      } as EventsUserView
+    }
+    return null;
   },
 
   async fetchUserEvents(fetchMode: 'past' | 'upcoming'): Promise<EventsUserView[]> {
@@ -193,9 +206,24 @@ export const SupabaseEventRepository = {
         .order('startingDateTime', { ascending: true })
     }
 
-    const result = await query.returns<EventsUserView[]>();
+    const result = await query;
 
-    return result.data ?? [];
+    if (result.data) {
+      const foundGroups = [...new Set(result.data.map(x => x.group).filter(x => x !== null))]
+      const { data: groups } = await supabase
+        .schema("public")
+        .from("event_group")
+        .select("*")
+        .in("id", foundGroups);
+
+      return result.data.map(r => {
+        return {
+          ...r,
+          group: groups?.find(x => x.id === r.group) ?? null
+        } as EventsUserView
+      })
+    }
+    return [];
   },
 
   async fetchEvents(fetchMode: 'upcoming' | 'past'): Promise<PostgrestSingleResponse<FullEvent[]>> {
@@ -252,11 +280,13 @@ export const SupabaseEventRepository = {
     return fetchEvents().eq('id', eventId).single<FullEvent>().throwOnError();
   },
 
-  async fetchRecurringEvents(): Promise<PostgrestSingleResponse<EventWithGroup[]>> {
-    return supabase
+  async fetchRecurringEvents(): Promise<EventWithGroup[]> {
+    const result = await supabase
       .from('current_distinct_event')
       .select('*, fullGroup: event_group(id, created_at, description, name, color)')
       .returns<EventWithGroup[]>()
       .throwOnError();
+
+    return result.data ?? [];
   },
 };

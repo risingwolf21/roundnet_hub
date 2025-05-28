@@ -11,7 +11,6 @@ const KeyHolderScreenProvider = lazyWithRetry(() => import('./features/keys/prov
 const PayDrinksScreenProvider = lazyWithRetry(() => import('./features/drinks/PayDrinksScreen'));
 const ResetPasswordScreen = lazyWithRetry(() => import('./features/auth/ResetPasswordScreen'));
 const PaymentsPendingAdmin = lazyWithRetry(() => import('./features/admin/PaymentsPendingAdmin'));
-const CreateEventProvider = lazyWithRetry(() => import('./pages/EventCreation.page'));
 const AdminDrinkListProvider = lazyWithRetry(() => import('./features/admin/AdminDrinkList'));
 const AdminHistoryScreenProvider = lazyWithRetry(() => import('./features/admin/AdminHistoryScreen'));
 const AdminUserListProvider = lazyWithRetry(() => import('./features/admin/AdminUserList'));
@@ -183,10 +182,6 @@ const router = sentryCreateBrowserRouter([
               {
                 path: "event/:selectedEventId",
                 element: <EventInformationProvider />
-              },
-              {
-                path: "createOrUpdate/:option",
-                element: <CreateEventProvider />
               }
             ]
           },

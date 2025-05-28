@@ -1,5 +1,5 @@
 import { isBefore } from 'date-fns';
-import { Event, History } from 'types/supabase';
+import { EventTable, History } from 'types/supabase';
 import { Database, Enums } from './supabase-generated.types';
 
 export type FullChallenge = Challenge & {
@@ -38,7 +38,7 @@ export type PaymentHistory = Modify<
     }
 >;
 
-export type EventWithGroup = Event & {
+export type EventWithGroup = EventTable & {
     fullGroup: Group;
 };
 
@@ -115,6 +115,7 @@ export type EventsUserView = {
     required_item: Database["public"]["Enums"]["ItemType"] | null;
     startingDateTime: string;
     title: string;
+    group: Group | null;
     user_state: Database["public"]["Enums"]["EventAttendance"] | null;
 }
 

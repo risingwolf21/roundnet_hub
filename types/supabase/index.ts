@@ -10,7 +10,7 @@ import { Enums, Tables, TablesInsert, TablesUpdate } from '../../src/types/supab
 import { fetchChallengeWithGroup } from 'src/repository/ChallengeRepository';
 import { fetchItems } from 'src/repository/KeysRepository';
 
-export type Event = Tables<'events'>;
+export type EventTable = Tables<'events'>;
 export type History = Tables<'history'>;
 export type Notification = Tables<'notifications'>;
 
