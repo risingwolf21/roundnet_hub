@@ -13,20 +13,29 @@ import {
   ListItem,
   ListItemText
 } from '@mui/material';
-import { toDate } from 'date-fns';
+import { isBefore, toDate } from 'date-fns';
 import { TFunction } from 'i18next';
 import React from 'react';
-import { SliceEvent } from 'src/features/events/slices/eventsSlice';
-import { answerDeadlineExpired, eventInThePast } from 'src/types/supabaseTypes';
+import { EventsUserView } from 'src/types/supabaseTypes';
 
 type EventItemProps = {
   attendanceUpdating: boolean;
-  event: SliceEvent;
+  event: EventsUserView;
   t: TFunction;
   onClick: () => void;
   attendEvent: () => void;
   declineEvent: () => void;
 };
+
+
+function answerDeadlineExpired(x: EventsUserView) {
+    if (!x.answerDeadline) return false;
+    return isBefore(x.answerDeadline, Date.now());
+}
+
+function eventInThePast(x: EventsUserView) {
+    return isBefore(x.endDateTime !== null ? x.endDateTime : x.startingDateTime!, Date.now());
+}
 
 export const EventItem = ({ event, onClick, attendEvent, declineEvent, attendanceUpdating, t }: EventItemProps) => {
   return (
@@ -43,7 +52,7 @@ export const EventItem = ({ event, onClick, attendEvent, declineEvent, attendanc
       secondaryAction={
         attendanceUpdating ? (
           <CircularProgress size={'22px'} />
-        ) : event.userAttendance === 'Waiting' ? (
+        ) : event.user_state === 'Waiting' ? (
           <IconButton disabled={event.isCancelled || eventInThePast(event)}>
             <HourglassBottom fontSize="inherit" sx={{ fontSize: '28px', color: '#125db2' }} />
           </IconButton>
@@ -56,13 +65,13 @@ export const EventItem = ({ event, onClick, attendEvent, declineEvent, attendanc
               }}
               disabled={event.isCancelled || eventInThePast(event)}
             >
-              {event.userAttendance === 'Declined' ? (
+              {event.user_state === 'Declined' ? (
                 <ThumbDownAlt fontSize="inherit" sx={{ fontSize: '28px', color: 'red' }} />
               ) : (
                 <ThumbDownOffAlt fontSize="inherit" sx={{ fontSize: '28px' }} />
               )}
             </IconButton>
-            {event.userAttendance === 'AttendingAsTrainer' ? (
+            {event.user_state === 'AttendingAsTrainer' ? (
               <IconButton disabled={event.isCancelled || answerDeadlineExpired(event) || eventInThePast(event)}>
                 <RecordVoiceOver fontSize="inherit" sx={{ fontSize: '28px', color: 'green' }} />
               </IconButton>
@@ -74,7 +83,7 @@ export const EventItem = ({ event, onClick, attendEvent, declineEvent, attendanc
                 }}
                 disabled={event.isCancelled || answerDeadlineExpired(event) || eventInThePast(event)}
               >
-                {event.userAttendance === 'Attending' ? (
+                {event.user_state === 'Attending' ? (
                   <ThumbUpAlt fontSize="inherit" sx={{ fontSize: '28px', color: 'green' }} />
                 ) : (
                   <ThumbUpOffAlt fontSize="inherit" sx={{ fontSize: '28px' }} />
@@ -101,7 +110,7 @@ export const EventItem = ({ event, onClick, attendEvent, declineEvent, attendanc
         }}
         secondary={
           event.isCancelled ? 'Event abgesagt' : [
-            t('events.secondaryTextStart', { start: toDate(event.startingDateTime) }),
+            t('events.secondaryTextStart', { start: toDate(event.startingDateTime!) }),
             event.endDateTime && t('events.secondaryTextWithEnd', { end: toDate(event.endDateTime) })].join(" ")
         }
       />

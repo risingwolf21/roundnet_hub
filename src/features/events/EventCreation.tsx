@@ -41,7 +41,6 @@ import { SupabaseEventRepository } from '../../repository/EventRepository';
 import { Enums, TablesInsert, TablesUpdate } from '../../types/supabase-generated.types';
 import SearchPlacesDialog from './dialogs/SearchPlacesDialog';
 import { SelectGroupDialog } from './dialogs/SelectGroupDialog';
-import { onEventsUpdate } from './slices/eventsSlice';
 import { CreateEventProps, PlaceType } from './types';
 
 const emptyEvent = {
@@ -124,7 +123,7 @@ const CreateEvent = ({ t, eventToEdit, option }: CreateEventProps) => {
           editedEvent.key,
           editedEvent.startingDateTime
         )
-        dispatch(onEventsUpdate(result.filter(x => x.data !== null).map(x => x.data)))
+        //dispatch(onEventsUpdate(result.filter(x => x.data !== null).map(x => x.data)))
       } else {
         throw Error(
           'There was no option provided wether this is a new event, to update only this or every recurring event. Please try again!'

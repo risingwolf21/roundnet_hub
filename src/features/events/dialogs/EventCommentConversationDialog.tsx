@@ -15,7 +15,7 @@ type Props = {
   onClose?: () => void;
   t: TFunction;
   eventInThePast: boolean;
-  handleCommentSubmit: (value: { comment: string; reply_to: string | null }) => void;
+  handleCommentSubmit: (value: { comment: string; reply_to: FullComment | null }) => void;
 };
 
 export const EventCommentConversationDialog = ({
@@ -56,7 +56,7 @@ export const EventCommentConversationDialog = ({
     const commentValue = data.get('comment')?.toString();
     if (!commentValue || !comment) return;
 
-    handleCommentSubmit({ comment: commentValue, reply_to: comment.id });
+    handleCommentSubmit({ comment: commentValue, reply_to: comment });
     event.currentTarget.reset();
   };
 
@@ -73,9 +73,9 @@ export const EventCommentConversationDialog = ({
           }}
         >
           <List sx={{ width: '100%' }}>
-            {comment && <CommentItem key={comment.id} comment={comment} t={t} replyToPressed={() => {}} />}
+            {comment && <CommentItem key={comment.id} comment={comment} t={t} replyToPressed={() => { }} />}
             {comment &&
-              comment.replies.length > 0 &&
+              comment.replies && comment.replies.length > 0 &&
               comment.replies.map((x) => <CommentReplyItem key={x.id} pl={0} reply={x} t={t} />)}
           </List>
         </Box>
@@ -93,7 +93,6 @@ export const EventCommentConversationDialog = ({
         >
           <TextField
             ref={inputRef}
-            disabled={eventInThePast || !can('insert', 'eventComments')}
             id="comment"
             name="comment"
             fullWidth
@@ -104,7 +103,7 @@ export const EventCommentConversationDialog = ({
               input: {
                 endAdornment: (
                   <InputAdornment position="end">
-                    <IconButton edge="end" type="submit" disabled={eventInThePast || !can('insert', 'eventComments')}>
+                    <IconButton edge="end" type="submit">
                       <Send />
                     </IconButton>
                   </InputAdornment>

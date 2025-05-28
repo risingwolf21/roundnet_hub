@@ -1,31 +1,35 @@
 import { Add, Warning } from '@mui/icons-material';
 import { Box, Button, Fab, List, ListItem, ListSubheader, Typography } from '@mui/material';
-import { useDialogs } from '@toolpad/core';
+import { useQuery } from '@tanstack/react-query';
+import { useDialogs, useNotifications } from '@toolpad/core';
 import { t } from 'i18next';
 import moment from 'moment';
 import React, { useEffect } from 'react';
-import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router';
 import Layout from 'src/components/Layout';
 import { PullToRefresh } from 'src/components/pull-to-refresh/PullToRefresh';
-import { RootState, useAppDispatch } from 'src/redux/store';
+import { GamesRepository } from 'src/repository/GamesRepository';
 import { groupBy } from 'src/utils';
 import { ReportSetsDialog } from './dialogs/ReportSetsDialog';
-import { fetchMatchesAsync, onSetsAdded } from './slices/gamesSlice';
 
 const GameList = () => {
+  const notifications = useNotifications();
   const navigate = useNavigate();
   const dialogs = useDialogs();
-  const dispatch = useAppDispatch();
-  const { matches, loadingMatches } = useSelector((state: RootState) => state.games);
+
+  const { data: matches = [], error, isLoading, refetch } = useQuery<FullUserMatch[]>({
+    queryKey: ['games'],
+    queryFn: GamesRepository.fetchGamesForUser
+  })
 
   useEffect(() => {
-    dispatch(fetchMatchesAsync());
-  }, [dispatch]);
+    if (error)
+      notifications.show(error.message, { severity: "error", actionText: "Neu laden", onAction: () => refetch() })
+  }, [error, notifications, refetch])
 
   return (
     <Layout>
-      <PullToRefresh onRefresh={() => dispatch(fetchMatchesAsync())}>
+      <PullToRefresh onRefresh={() => refetch()}>
         <List sx={(theme) => ({
           overscrollBehavior: "none",
           [theme.breakpoints.down('xl')]: { pb: 12 },
@@ -90,7 +94,7 @@ const GameList = () => {
                       !x.set_results && x.id && <Button startIcon={<Warning color='warning' />} onClick={async () => {
                         const result = await dialogs.open(ReportSetsDialog, { matchId: x.id!, team_a_name: x.team_a_name!, team_b_name: x.team_b_name!, sets: null });
                         if (result) {
-                          dispatch(onSetsAdded({ match: x, sets: result }))
+                          refetch();
                         }
                       }}>Score eintragen</Button>
                     }
@@ -134,7 +138,7 @@ const GameList = () => {
             </List>
           ))}
 
-          {matches.length <= 0 && !loadingMatches && (
+          {matches.length <= 0 && !isLoading && (
             <Box key="noEntries" sx={{ alignItems: 'center', display: 'flex', flexDirection: 'column', pt: 10 }}>
               <Typography sx={{ fontSize: '30pt', fontWeight: 'bold' }}>📖</Typography>
               <Typography sx={{ fontSize: '18pt', fontWeight: 'bold' }}>Keine Einträge gefunden</Typography>

@@ -636,6 +636,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "event_attendance_user_mapping_event_fkey"
+            columns: ["event"]
+            isOneToOne: false
+            referencedRelation: "events_user_view"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "event_attendance_user_mapping_user_fkey"
             columns: ["user"]
             isOneToOne: false
@@ -698,6 +705,13 @@ export type Database = {
             columns: ["event"]
             isOneToOne: false
             referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "event_comments_event_fkey"
+            columns: ["event"]
+            isOneToOne: false
+            referencedRelation: "events_user_view"
             referencedColumns: ["id"]
           },
           {
@@ -1204,6 +1218,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "user_calendar_event_mapping_event_fkey"
+            columns: ["event"]
+            isOneToOne: false
+            referencedRelation: "events_user_view"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "user_calendar_event_mapping_user_fkey"
             columns: ["user"]
             isOneToOne: false
@@ -1410,6 +1431,29 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      events_user_view: {
+        Row: {
+          answerDeadline: string | null
+          attending_count: number | null
+          created_at: string | null
+          declined_count: number | null
+          description: string | null
+          endDateTime: string | null
+          id: string | null
+          isCancelled: boolean | null
+          key: string | null
+          maxAttendees: number | null
+          meetingDateTime: string | null
+          place: string | null
+          recurrence: Database["public"]["Enums"]["EventRecurrence"] | null
+          recurrenceEnd: string | null
+          required_item: Database["public"]["Enums"]["ItemType"] | null
+          startingDateTime: string | null
+          title: string | null
+          user_state: Database["public"]["Enums"]["EventAttendance"] | null
+        }
+        Relationships: []
       }
       readable_history: {
         Row: {

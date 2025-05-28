@@ -1,7 +1,7 @@
-import { AccessTime, AccountBox, Key, Place, ThumbDownAlt, ThumbDownOffAlt, ThumbUpAlt, ThumbUpOffAlt } from "@mui/icons-material"
-import { Avatar, Badge, Box, Button, Card, CardActionArea, CardActions, CardContent, CardHeader, CardMedia, IconButton, List, ListItem, ListItemAvatar, ListItemText, Typography } from "@mui/material"
+import { AccountBox, Key } from "@mui/icons-material"
+import { Avatar, Box, Button, Card, CardActionArea, CardActions, CardContent, CardMedia, List, Typography } from "@mui/material"
+import { withProfiler } from "@sentry/react"
 import { useNotifications } from "@toolpad/core/useNotifications"
-import { format } from "date-fns"
 import { t } from "i18next"
 import React, { useEffect } from "react"
 import { useSelector } from "react-redux"
@@ -12,18 +12,13 @@ import {
 } from 'src/features/drinks/slices/drinksSlice'
 import { RootState, useAppDispatch } from "src/redux/store"
 import { SupabaseDrinkRepository } from "src/repository/DrinkRepository"
-import { answerDeadlineExpired, eventInThePast } from "src/types/supabaseTypes"
 import { translationKeyOfItemType } from "src/utils"
 import { useAuthentication } from "../auth/AuthContext"
-import { updateAttendanceAsync } from "../events/slices/eventAttendanceSlice"
-import { eventsSelector, fetchEventsAsync } from "../events/slices/eventsSlice"
 import { fetchItemsAsync, keyHoldersSelector } from "../keys/slices/keysSlice"
-import { withProfiler } from "@sentry/react"
 
 const HomePage = () => {
 
     const { user } = useAuthentication();
-    const events = useSelector(eventsSelector.selectAll);
     const { drinks } = useSelector((state: RootState) => state.drinks);
     const keys = useSelector(keyHoldersSelector.selectAll);
     const dispatch = useAppDispatch();
@@ -31,7 +26,6 @@ const HomePage = () => {
     const notifications = useNotifications();
 
     useEffect(() => {
-        dispatch(fetchEventsAsync({ fetchMode: "upcoming", user }));
         dispatch(fetchDrinksAsync());
         dispatch(fetchItemsAsync())
     }, [dispatch, user]);
@@ -41,7 +35,7 @@ const HomePage = () => {
             <Typography variant="h6" sx={{ mx: 2, mt: 2, fontWeight: "bold" }}>
                 Events
             </Typography>
-            <Box
+            {/* <Box
                 sx={{
                     display: "flex",
                     overflowX: "auto",
@@ -127,7 +121,7 @@ const HomePage = () => {
                         </CardActions>
                     </Card>
                 ))}
-            </Box>
+            </Box> */}
             <Typography variant="h6" sx={{ mx: 2, mt: 2, fontWeight: "bold" }}>
                 Getränke
             </Typography>

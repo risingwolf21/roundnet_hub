@@ -42,16 +42,16 @@ export type EventWithGroup = Event & {
     fullGroup: Group;
 };
 
-export function answerDeadlineExpired(x: Event) {
+export function answerDeadlineExpired(x: EventsUserView) {
     if (!x.answerDeadline) return false;
     return isBefore(x.answerDeadline, Date.now());
 }
 
-export function eventInThePast(x: Event) {
-    return isBefore(x.endDateTime !== null ? x.endDateTime : x.startingDateTime, Date.now());
+export function eventInThePast(x: EventsUserView) {
+    return isBefore(x.endDateTime !== null ? x.endDateTime : x.startingDateTime!, Date.now());
 }
 
-export function maxAttendeesExceeded(x: Event, attendance: Attendance[]) {
+export function maxAttendeesExceeded(x: EventsUserView, attendance: Attendance[]) {
     if (!x.maxAttendees) return false;
     return attendance.filter((y) => y.state === 'Attending').length >= x.maxAttendees && x.maxAttendees > 0;
 }
@@ -96,6 +96,27 @@ export type GroupWithUserMappings = Group & {
     user_group_role: GroupRole | null;
     users: FullUserMapping[];
 };
+
+export type EventsUserView = {
+    answerDeadline: string | null;
+    attending_count: number | null;
+    created_at: string;
+    declined_count: number | null;
+    description: string;
+    endDateTime: string;
+    id: string;
+    isCancelled: boolean;
+    key: string;
+    maxAttendees: number | null;
+    meetingDateTime: string | null;
+    place: string | null;
+    recurrence: Database["public"]["Enums"]["EventRecurrence"];
+    recurrenceEnd: string | null;
+    required_item: Database["public"]["Enums"]["ItemType"] | null;
+    startingDateTime: string;
+    title: string;
+    user_state: Database["public"]["Enums"]["EventAttendance"] | null;
+}
 
 type Modify<T, R> = Omit<T, keyof R> & R;
 

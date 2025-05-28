@@ -1,79 +1,158 @@
+import { Delete, DoNotDisturb, DoNotDisturbOff, Edit, MoreVert } from '@mui/icons-material';
+import { IconButton, ListItemIcon, ListItemText, Menu, MenuItem } from '@mui/material';
+import { useQuery } from '@tanstack/react-query';
+import { useDialogs, useNotifications } from '@toolpad/core';
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
-import { useParams } from 'react-router';
+import { useNavigate, useParams } from 'react-router';
+import Layout from 'src/components/Layout';
 import { useAuthentication } from 'src/features/auth/AuthContext';
-import {
-  attendanceSelector
-} from 'src/features/events/slices/eventAttendanceSlice';
-import { eventsCommentsSelector } from 'src/features/events/slices/eventCommentsSlice';
-import {
-  eventsSelector,
-  fetchSingleEventAsync
-} from 'src/features/events/slices/eventsSlice';
-import { AlertSnackbar } from '../components/AlertSnackbar';
+import EventInformationLoading from 'src/features/events/components/EventInformationLoading';
+import { CancelTrainingDialog } from 'src/features/events/dialogs/CancelTrainingDialog';
+import { DeleteEventDialog } from 'src/features/events/dialogs/DeleteEventDialog';
+import { EditEventOptionsDialog } from 'src/features/events/dialogs/EditEventOptionsDialog';
+import { useCancelTrainingMutation } from 'src/features/events/useCancelTraining';
+import { SupabaseEventRepository } from 'src/repository/EventRepository';
+import { EventsUserView } from 'src/types/supabaseTypes';
+import { can } from 'src/utils/PermissionService';
 import EventInformation from '../features/events/EventInformation';
 import { PlaceType } from '../features/events/types';
 import { fetchItemsAsync, keyHoldersSelector } from '../features/keys/slices/keysSlice';
 import { RootState, useAppDispatch } from '../redux/store';
+import { useDeleteTrainingMutation } from 'src/features/events/useDeleteTraining';
+import { captureException } from '@sentry/react';
+import { PullToRefresh } from 'src/components/pull-to-refresh/PullToRefresh';
 
 const EventInformationProvider = () => {
   const { selectedEventId } = useParams();
-  const { error, loading } = useSelector((state: RootState) => state.events);
-  const attendance = useSelector((state: RootState) =>
-    attendanceSelector.selectById(state.eventAttendance, selectedEventId ?? '')
-  );
-  const comments = useSelector((state: RootState) =>
-    eventsCommentsSelector.selectById(state.eventComments, selectedEventId ?? '')
-  );
-  const event = useSelector((state: RootState) => eventsSelector.selectById(state, selectedEventId ?? ''));
-  const { loading: attendanceLoading } = useSelector((state: RootState) => state.eventAttendance);
-  const { loading: commentsLoading } = useSelector((state: RootState) => state.eventComments);
   const keyHolders = useSelector((state: RootState) => keyHoldersSelector.selectAll(state));
   const { user } = useAuthentication();
   const dispatch = useAppDispatch();
+  const navigate = useNavigate();
+  const notifications = useNotifications();
+  const dialogs = useDialogs();
   const { t } = useTranslation();
   const [selectedEventPlace, setSelectedEventPlace] = useState<PlaceType | null>(null);
+  const [anchorEl, setAnchorEl] = useState<(EventTarget & HTMLButtonElement) | null>(null);
+  const [fetchMode] = useState<"past" | "upcoming">(localStorage.getItem('fetchMode') as 'upcoming' | 'past' ?? 'upcoming')
+
+  const cancelTrainingMutation = useCancelTrainingMutation(fetchMode);
+  const deleteTrainingMutation = useDeleteTrainingMutation(fetchMode);
+  const { data: event, isLoading, error, refetch } = useQuery<EventsUserView | null>({
+    queryKey: ["events", selectedEventId],
+    enabled: !!selectedEventId,
+    queryFn: () => SupabaseEventRepository.fetchUserEvent(selectedEventId!)
+  });
 
   useEffect(() => {
     dispatch(fetchItemsAsync());
   }, [dispatch]);
 
   useEffect(() => {
-    if (!event) {
-      dispatch(fetchSingleEventAsync({ eventId: selectedEventId ?? '', userId: user.userId }));
-    } else {
+    if (event) {
       setSelectedEventPlace(event.place ? (JSON.parse(event.place?.toString() ?? '') as PlaceType) : null);
     }
-  }, [selectedEventId, dispatch, user, event]);
+  }, [event]);
 
-  if (!event)
-    return (
-      <AlertSnackbar
-        close={() => { }}
-        alertInfo={{
-          message: 'Fatal error occured. Repository, user or selectedEvent was null!',
-          severity: 'error',
-        }}
+  if (isLoading) {
+    return <Layout appBarConfig={{
+      navigateBackPath: "/training/list",
+      title: "",
+      showProfile: false,
+    }}>
+      <EventInformationLoading />
+    </Layout>
+  }
+
+  if (!event) {
+    return null;
+  }
+
+  return <Layout appBarConfig={{
+    navigateBackPath: "/training/list",
+    title: event.title!,
+    showProfile: false,
+  }}
+    appBarActions={
+      (can('update', 'event') || can('delete', 'event')) &&
+      <>
+        <IconButton sx={{ color: '#fff', pr: 0 }} onClick={(e) => setAnchorEl(e.currentTarget)}>
+          <MoreVert />
+        </IconButton>
+        <Menu id="simple-menu" anchorEl={anchorEl} keepMounted open={Boolean(anchorEl)} onClose={() => setAnchorEl(null)}>
+          <MenuItem
+            hidden={!can('update', 'event')}
+            onClick={async () => {
+              setAnchorEl(null)
+              const result = await dialogs.open(EditEventOptionsDialog);
+              if (result) {
+                navigate(`/training/event/${event.id}/createOrUpdate/${result}`, { replace: true });
+              }
+            }}
+          >
+            <ListItemIcon>
+              <Edit />
+            </ListItemIcon>
+            <ListItemText primary="Bearbeiten" />
+          </MenuItem>
+          <MenuItem
+            hidden={!can('update', 'event')}
+            onClick={async () => {
+              setAnchorEl(null)
+              const result = await dialogs.open(CancelTrainingDialog, event);
+              if (result) {
+                cancelTrainingMutation.mutate({ event, isCancelled: !event.isCancelled }, {
+                  onError: (error) => {
+                    captureException(error);
+                    notifications.show(error.message, { severity: 'error' });
+                  }
+                })
+              }
+            }}
+          >
+            <ListItemIcon>{event.isCancelled ? <DoNotDisturbOff /> : <DoNotDisturb />}</ListItemIcon>
+            <ListItemText primary={event.isCancelled ? 'Stattfinden' : 'Absagen'} />
+          </MenuItem>
+          <MenuItem
+            hidden={!can('delete', 'event')}
+            onClick={async () => {
+              setAnchorEl(null);
+              const result = await dialogs.open(DeleteEventDialog, event);
+              if (result) {
+                deleteTrainingMutation.mutate({ event, type: result }, {
+                  onSuccess: () => {
+                    navigate('/training/list', { replace: true });
+                  },
+                  onError: (error) => {
+                    captureException(error);
+                    notifications.show(error.message, { severity: 'error' });
+                  }
+                })
+              }
+            }}
+          >
+            <ListItemIcon>
+              <Delete />
+            </ListItemIcon>
+            <ListItemText primary="Löschen" />
+          </MenuItem>
+        </Menu>
+      </>
+    }>
+
+    <PullToRefresh onRefresh={() => refetch()}>
+      <EventInformation
+        t={t}
+        keyHolders={keyHolders}
+        event={event}
+        selectedEventPlace={selectedEventPlace}
+        user={user}
+        fetchMode={fetchMode}
       />
-    );
+    </PullToRefresh>
 
-  return (
-    <EventInformation
-      t={t}
-      keyHolders={keyHolders}
-      selectedEvent={event}
-      selectedEventPlace={selectedEventPlace}
-      attendance={attendance?.attendance ?? []}
-      attendanceLoading={attendanceLoading}
-      comments={comments?.comments ?? []}
-      commentsLoading={commentsLoading}
-      error={error}
-      user={user!}
-      dispatch={dispatch}
-      loading={loading || commentsLoading || attendanceLoading}
-    />
-  );
+  </Layout >
 };
 
 export default EventInformationProvider;

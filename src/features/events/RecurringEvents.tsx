@@ -22,7 +22,6 @@ import IconButton, { IconButtonProps } from '@mui/material/IconButton';
 import Grid from '@mui/material/Grid2';
 import React, { useEffect } from 'react';
 import { AlertMessage } from '../../components/AlertSnackbar';
-import { editEvent, fetchRecurringEventsAsync } from './slices/eventsSlice';
 import { RootState, useAppDispatch } from '../../redux/store';
 import { useSelector } from 'react-redux';
 import { nameOfRecurrence } from '../../utils';
@@ -82,15 +81,16 @@ type RecurringEventsProps = {
 };
 
 const RecurringEventsProvider = () => {
-  const { recurringEventsLoading, error, recurringEvents } = useSelector((state: RootState) => state.events);
+  // const { recurringEventsLoading, error, recurringEvents } = useSelector((state: RootState) => state.events);
 
-  return (
-    <RecurringEvents
-      recurringEvents={recurringEvents}
-      loading={recurringEventsLoading}
-      error={error ? { message: error, severity: 'error' } : null}
-    />
-  );
+  // return (
+  //   <RecurringEvents
+  //     recurringEvents={recurringEvents}
+  //     loading={recurringEventsLoading}
+  //     error={error ? { message: error, severity: 'error' } : null}
+  //   />
+  // );
+  return null
 };
 
 const RecurringEvents = ({ recurringEvents, loading, error }: RecurringEventsProps) => {
@@ -98,9 +98,7 @@ const RecurringEvents = ({ recurringEvents, loading, error }: RecurringEventsPro
   const navigate = useNavigate();
   const [expanded, setExpanded] = React.useState(-1);
 
-  useEffect(() => {
-    dispatch(fetchRecurringEventsAsync());
-  }, [dispatch]);
+
 
   const handleExpandClick = (index: number) => {
     if (expanded === index) setExpanded(-1);
@@ -227,7 +225,7 @@ const RecurringEvents = ({ recurringEvents, loading, error }: RecurringEventsPro
                   <Button
                     startIcon={<Edit />}
                     onClick={() => {
-                      dispatch(editEvent(x));
+                      //dispatch(editEvent(x));
                       navigate('/training/createOrUpdate/UpdateRecurrence', { replace: true });
                     }}
                   >

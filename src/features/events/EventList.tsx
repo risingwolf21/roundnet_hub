@@ -1,8 +1,9 @@
-import { Check, EventRepeat, FilterAlt } from '@mui/icons-material';
+import { EventRepeat, FilterAlt } from '@mui/icons-material';
 import AddIcon from '@mui/icons-material/Add';
 import { Button, Chip, Fab, List, ListSubheader, Typography } from '@mui/material';
 import Grid from '@mui/material/Grid2';
 import { Box, Stack } from '@mui/system';
+import { withProfiler } from '@sentry/react';
 import { useNotifications } from '@toolpad/core/useNotifications';
 import { format, parse } from 'date-fns';
 import { t } from 'i18next';
@@ -10,60 +11,53 @@ import { groupBy } from 'lodash';
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { SwipeableDialog } from 'src/components/SwipeableDialog';
-import { updateAttendanceAsync } from 'src/features/events/slices/eventAttendanceSlice';
-import {
-  editEvent,
-  fetchEventsAsync,
-  onEventErrorRead,
-  SliceEvent,
-  updateFetchMode
-} from 'src/features/events/slices/eventsSlice';
-import { UserWithRolesAndPermissions } from 'src/types/supabaseTypes';
-import { Event } from 'types/supabase';
-import { AlertMessage } from '../../components/AlertSnackbar';
 import Layout from '../../components/Layout';
 import { useAppDispatch } from '../../redux/store';
 import { can } from '../../utils/PermissionService';
-import { useApplication } from '../auth/ApplicationContext';
+import { useAuthentication } from '../auth/AuthContext';
 import { EventItem } from './components/EventItem';
 import { LoadingEventItem } from './components/LoadingEventItem';
-import { withProfiler } from '@sentry/react';
+import { useEvents, useUpdateAttendanceMutation } from './useAllEvents';
+import { EventsUserView } from 'src/types/supabaseTypes';
 
-type EventScreenProps = {
-  events: SliceEvent[];
-  loading: boolean;
-  error: AlertMessage | null;
-  user: UserWithRolesAndPermissions;
-  fetchMode: 'upcoming' | 'past';
-};
 
-const EventScreen = ({ events, loading, error, user, fetchMode }: EventScreenProps) => {
-  const { provider_token } = useApplication();
+const EventScreen = () => {
+  const { user } = useAuthentication();
   const dispatch = useAppDispatch();
   const notifications = useNotifications();
   const navigate = useNavigate();
   const [filterDialogOpen, setFilterDialogOpen] = useState(false);
-  const [selectedGroups, setSelectedGroups] = useState<string[]>(
-    (localStorage.getItem('selectedGroups')?.split(';') as string[]) || user.groups.map((x) => x.id)
-  );
+  const [fetchMode, setFetchMode] = useState<"past" | "upcoming">(localStorage.getItem('fetchMode') as 'upcoming' | 'past' ?? 'upcoming')
+
+  const { data: events = [], isLoading, error, refetch } = useEvents(fetchMode);
 
   useEffect(() => {
     if (error)
-      notifications.show(error.message, { severity: error.severity, onAction: () => dispatch(onEventErrorRead(null)) })
-  }, [error, notifications, dispatch])
-
-  useEffect(() => {
-    dispatch(fetchEventsAsync({ user, fetchMode }))
-  }, [dispatch, user, fetchMode]);
+      notifications.show(error.message, { severity: "error", actionText: "Neu laden", onAction: () => refetch() })
+  }, [error, notifications, refetch])
 
   const switchEventFetching = (mode: 'upcoming' | 'past') => {
     localStorage.setItem('fetchMode', mode);
-    dispatch(updateFetchMode(mode))
+    setFetchMode(mode);
   };
 
-  const updateAttendance = async (event: Event, state: EventAttendance, oldState: EventAttendance) => {
-    dispatch(updateAttendanceAsync({ user, event, state, oldState, provider_token }));
-  };
+  const updateAttendance = useUpdateAttendanceMutation(fetchMode);
+
+  if (isLoading) {
+    return <List>
+      {
+        Array.from({ length: 10 }, (v, k) => k + 1).map((x) => <LoadingEventItem key={x} />)
+      }
+    </List>
+  }
+
+  if (events.length === 0) {
+    return <Stack spacing={2} direction={"column"} sx={{ height: 300, alignItems: "center", justifyContent: "center" }}>
+      <Typography>Es sieht so aus als ob du keine Events siehst</Typography>
+      <Typography>Versuch einer Gruppe beizutreten um die Events dieser einzusehen</Typography>
+      <Button variant='contained' onClick={() => navigate("/groups/list")}>Gruppe beitreten</Button>
+    </Stack>
+  }
 
   return (
     <Layout>
@@ -74,50 +68,42 @@ const EventScreen = ({ events, loading, error, user, fetchMode }: EventScreenPro
           [theme.breakpoints.up('xl')]: { pb: 0 },
         })}
       >
-        {loading
-          ? Array.from({ length: 10 }, (v, k) => k + 1).map((x) => <LoadingEventItem key={x} />)
-          : events.length <= 0
-            ? <Stack spacing={2} direction={"column"} sx={{ height: 300, alignItems: "center", justifyContent: "center" }}>
-              <Typography>Es sieht so aus als ob du keine Events siehts</Typography>
-              <Typography>Versuch einer Gruppe beizutreten um die Events dieser einzusehen</Typography>
-              <Button variant='contained' onClick={() => navigate("/groups/list")}>Gruppe beitreten</Button>
-            </Stack>
-            : Object.entries(groupBy(events
-              .filter((x) => selectedGroups.includes(x.group)), x => format(x.startingDateTime, "dd-MM-yyyy")))
-              .map(([key, value]) => <table style={{ width: "100%", borderSpacing: 0 }} key={key}>
-                <tbody style={{ width: "100%" }}>
-                  {
-                    value.map((event, index) => <tr style={{ height: "1px" }} key={index + event.id}>
-                      {
-                        index === 0 ? <td style={{ position: "sticky", top: 0, padding: 0, height: "inherit" }}>
-                          <Box sx={{ display: 'flex', flexDirection: 'column', height: "100%", justifyContent: 'center', mx: 3, py: 1, width: 20 }}>
-                            <Typography fontSize={10} textAlign={'center'}>
-                              {t('events.startDateDayString', { date: parse(key, "dd-MM-yyyy", new Date()) }).toUpperCase()}
-                            </Typography>
-                            <Typography variant="h6" fontWeight={'bold'} textAlign={'center'}>
-                              {t('events.startDateDay', { date: parse(key, "dd-MM-yyyy", new Date()) }).toUpperCase()}
-                            </Typography>
-                          </Box>
-                        </td> : <td style={{ padding: 0 }}></td>
-                      }
-                      <td style={{ width: "100%", padding: 0 }}>
-                        <EventItem
-                          key={event.id}
-                          event={event}
-                          t={t}
-                          attendanceUpdating={event.attendanceUpdating}
-                          attendEvent={() => updateAttendance(event, 'Attending', event.userAttendance)}
-                          declineEvent={() => updateAttendance(event, 'Declined', event.userAttendance)}
-                          onClick={() => {
-                            navigate('/training/event/' + event.id);
-                          }}
-                        />
-                      </td>
-                    </tr>)
-                  }
-                </tbody>
-              </table>
-              )}
+        {
+          Object.entries(groupBy(events, x => format(x.startingDateTime!, "dd-MM-yyyy")))
+            .map(([key, value]) => <table style={{ width: "100%", borderSpacing: 0 }} key={key}>
+              <tbody style={{ width: "100%" }}>
+                {
+                  value.map((event: EventsUserView, index) => <tr style={{ height: "1px" }} key={index + event.id!}>
+                    {
+                      index === 0 ? <td style={{ position: "sticky", top: 0, padding: 0, height: "inherit" }}>
+                        <Box sx={{ display: 'flex', flexDirection: 'column', height: "100%", justifyContent: 'center', mx: 3, py: 1, width: 20 }}>
+                          <Typography fontSize={10} textAlign={'center'}>
+                            {t('events.startDateDayString', { date: parse(key, "dd-MM-yyyy", new Date()) }).toUpperCase()}
+                          </Typography>
+                          <Typography variant="h6" fontWeight={'bold'} textAlign={'center'}>
+                            {t('events.startDateDay', { date: parse(key, "dd-MM-yyyy", new Date()) }).toUpperCase()}
+                          </Typography>
+                        </Box>
+                      </td> : <td style={{ padding: 0 }}></td>
+                    }
+                    <td style={{ width: "100%", padding: 0 }}>
+                      <EventItem
+                        key={event.id}
+                        event={event}
+                        t={t}
+                        attendanceUpdating={updateAttendance.isPending && updateAttendance.context?.event.id! === event.id}
+                        attendEvent={() => updateAttendance.mutate({ event, user, newState: 'Attending' })}
+                        declineEvent={() => updateAttendance.mutate({ event, user, newState: 'Declined' })}
+                        onClick={() => {
+                          navigate('/training/event/' + event.id);
+                        }}
+                      />
+                    </td>
+                  </tr>)
+                }
+              </tbody>
+            </table>
+            )}
       </Box>
       {can('select', 'event') && (
         <Fab
@@ -143,7 +129,7 @@ const EventScreen = ({ events, loading, error, user, fetchMode }: EventScreenPro
           }}
           color={'secondary'}
           onClick={() => {
-            dispatch(editEvent(null));
+            //dispatch(editEvent(null));
             navigate('/training/createOrUpdate/InsertEvent');
           }}
         >
@@ -205,42 +191,6 @@ const EventScreen = ({ events, loading, error, user, fetchMode }: EventScreenPro
                   onClick={() => switchEventFetching('past')}
                 />
               </Grid>
-            </Grid>
-          </List>
-          <List
-            sx={{ mx: 2 }}
-            subheader={
-              <ListSubheader
-                sx={{
-                  fontWeight: 'bold',
-                  lineHeight: 'normal',
-                  color: 'black',
-                  mb: 2,
-                  pl: 0,
-                }}
-              >
-                Gruppen
-              </ListSubheader>
-            }
-          >
-            <Grid container spacing={2}>
-              {user.groups.map((x) => (
-                <Grid key={x.id}>
-                  <Chip
-                    variant={selectedGroups.includes(x.id) ? 'filled' : 'outlined'}
-                    color={'secondary'}
-                    onClick={() => {
-                      let newGroups = selectedGroups.includes(x.id)
-                        ? [...selectedGroups.filter((y) => y !== x.id)]
-                        : [...selectedGroups, x.id];
-                      setSelectedGroups(newGroups);
-                      localStorage.setItem('selectedGroups', newGroups.join(';'));
-                    }}
-                    icon={<Check fontSize="small" />}
-                    label={x.name}
-                  />
-                </Grid>
-              ))}
             </Grid>
           </List>
         </>

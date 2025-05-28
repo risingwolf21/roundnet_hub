@@ -13,6 +13,8 @@ import {
   ThumbUpOffAlt,
 } from '@mui/icons-material';
 import {
+  Alert,
+  Button,
   CircularProgress,
   Divider,
   IconButton,
@@ -23,41 +25,72 @@ import {
   Typography,
 } from '@mui/material';
 import Box from '@mui/material/Box';
+import { useQuery } from '@tanstack/react-query';
 import { t } from 'i18next';
 import React, { useState } from 'react';
-import { SliceEvent } from 'src/features/events/slices/eventsSlice';
+import { SupabaseEventRepository } from 'src/repository/EventRepository';
 import {
   answerDeadlineExpired,
   eventInThePast,
+  EventsUserView,
   FullAttendance,
   maxAttendeesExceeded,
 } from 'src/types/supabaseTypes';
 import EventAttendanceDialog from '../dialogs/EventAttendanceDialog';
-import { updateAttendanceAsync } from '../slices/eventAttendanceSlice';
-import { useAppDispatch } from 'src/redux/store';
+import { useUpdateAttendanceMutation } from '../useAllEvents';
+import { isBefore } from 'date-fns';
+import { EventInformationConstellations } from './EventInformationConstellations';
 
 type EventInformationAttendanceProps = {
   user: User;
-  selectedEvent: SliceEvent;
-  attendance: FullAttendance[];
+  fetchMode: "past" | "upcoming"
+  selectedEvent: EventsUserView;
   keyHolders: FullItemHolder[];
-  attendanceLoading: boolean;
-  updateAttendance: (newValue: EventAttendance, oldValue: EventAttendance) => void;
 };
 
 const EventInformationAttendance = ({
   selectedEvent,
-  attendance,
-  attendanceLoading,
-  updateAttendance,
+  fetchMode,
   user,
   keyHolders,
 }: EventInformationAttendanceProps) => {
-  const dispatch = useAppDispatch();
   const [eventAttendanceState, setEventAttendanceState] = useState({ open: false, index: 0 });
+
+  const { data: attendance = [], isLoading } = useQuery<FullAttendance[]>({
+    queryKey: ["events", selectedEvent.id, "attendance"],
+    queryFn: () => SupabaseEventRepository.fetchEventAttendance(selectedEvent.id!)
+  });
+
+  const updateAttendance = useUpdateAttendanceMutation(fetchMode)
 
   return (
     <Box sx={{ p: 0, alignSelf: 'center' }}>
+      {selectedEvent.user_state === 'Waiting' && (
+        <Alert
+          sx={{ mt: 2 }}
+          severity="warning"
+          action={
+            <Button
+              variant="contained"
+              size="small"
+              sx={{ backgroundColor: '#934b00' }}
+              onClick={() => updateAttendance.mutate({ user, event: selectedEvent, newState: 'Declined' })}
+            >
+              Verlassen
+            </Button>
+          }
+        >
+          {t('events.information.waitingListAccepted', {
+            place:
+              attendance
+                .filter((x) => x.state === 'Waiting')
+                .sort((a, b) => (isBefore(a.lastUpdate, b.lastUpdate) ? 1 : 0))
+                .findIndex((x) => x.user.userId === user.userId) + 1,
+            waitingListLength: attendance.filter((x) => x.state === 'Waiting').length,
+          })}
+        </Alert>
+      )}
+      <EventInformationConstellations attendance={attendance} event={selectedEvent} />
       <Typography sx={{ fontSize: 16, fontWeight: 'bold', mt: 2 }} color="text.secondary" gutterBottom>
         {t('attendees')}
       </Typography>
@@ -109,7 +142,7 @@ const EventInformationAttendance = ({
           key={'attendEvent'}
           sx={{ '&.MuiListItem-root': { paddingLeft: 0 } }}
           onClick={() =>
-            attendanceLoading
+            isLoading
               ? {}
               : setEventAttendanceState({
                 open: true,
@@ -120,7 +153,7 @@ const EventInformationAttendance = ({
             <>
               <IconButton
                 onClick={(event) => {
-                  updateAttendance('Attending', selectedEvent.userAttendance);
+                  updateAttendance.mutate({ event: selectedEvent, newState: 'Attending', user });
                   event.stopPropagation();
                 }}
                 disabled={
@@ -130,7 +163,7 @@ const EventInformationAttendance = ({
                   eventInThePast(selectedEvent)
                 }
               >
-                {selectedEvent.userAttendance === 'Attending' ? (
+                {selectedEvent.user_state === 'Attending' ? (
                   <ThumbUpAlt fontSize="inherit" sx={{ fontSize: '28px', color: 'green' }} />
                 ) : (
                   <ThumbUpOffAlt fontSize="inherit" sx={{ fontSize: '28px' }} />
@@ -140,15 +173,15 @@ const EventInformationAttendance = ({
                 (maxAttendeesExceeded(selectedEvent, attendance) ||
                   answerDeadlineExpired(selectedEvent))
                 && !eventInThePast(selectedEvent)
-                && (selectedEvent.userAttendance === "Unanswered" || selectedEvent.userAttendance === "Declined" || selectedEvent.userAttendance === "RequestedAttendance")
+                && (selectedEvent.user_state === "Unanswered" || selectedEvent.user_state === "Declined" || selectedEvent.user_state === "RequestedAttendance")
                 && <IconButton
                   onClick={(event) => {
                     event.stopPropagation();
-                    updateAttendance('RequestedAttendance', selectedEvent.userAttendance);
+                    updateAttendance.mutate({ event: selectedEvent, newState: 'RequestedAttendance', user });
                   }}
-                  disabled={selectedEvent.isCancelled || eventInThePast(selectedEvent) || selectedEvent.userAttendance === "RequestedAttendance"}
+                  disabled={selectedEvent.isCancelled || eventInThePast(selectedEvent) || selectedEvent.user_state === "RequestedAttendance"}
                 >
-                  {selectedEvent.userAttendance === 'RequestedAttendance' ? (
+                  {selectedEvent.user_state === 'RequestedAttendance' ? (
                     <Pending fontSize="inherit" sx={{ fontSize: '28px', color: '#125db2' }} />
                   ) : (
                     <PendingOutlined fontSize="inherit" sx={{ fontSize: '28px' }} />
@@ -158,12 +191,12 @@ const EventInformationAttendance = ({
               {user.role === 'trainer' && (
                 <IconButton
                   onClick={(event) => {
-                    updateAttendance('AttendingAsTrainer', selectedEvent.userAttendance);
                     event.stopPropagation();
+                    updateAttendance.mutate({ event: selectedEvent, newState: 'AttendingAsTrainer', user });
                   }}
                   disabled={selectedEvent.isCancelled || eventInThePast(selectedEvent)}
                 >
-                  {selectedEvent.userAttendance === 'AttendingAsTrainer' ? (
+                  {selectedEvent.user_state === 'AttendingAsTrainer' ? (
                     <RecordVoiceOver fontSize="inherit" sx={{ fontSize: '28px', color: 'green' }} />
                   ) : (
                     <RecordVoiceOverOutlined fontSize="inherit" sx={{ fontSize: '28px' }} />
@@ -174,7 +207,7 @@ const EventInformationAttendance = ({
           }
         >
           <ListItemAvatar sx={{ justifyContent: 'left', alignItems: 'center', display: 'flex' }}>
-            {attendanceLoading ? <CircularProgress size={'20px'} /> : <CheckCircleOutline color="success" />}
+            {isLoading ? <CircularProgress size={'20px'} /> : <CheckCircleOutline color="success" />}
           </ListItemAvatar>
           <ListItemText
             primary={t('events.information.attending', {
@@ -187,7 +220,7 @@ const EventInformationAttendance = ({
           key={'declineEvent'}
           sx={{ '&.MuiListItem-root': { paddingLeft: 0 } }}
           onClick={() =>
-            attendanceLoading
+            isLoading
               ? {}
               : setEventAttendanceState({
                 open: true,
@@ -197,12 +230,12 @@ const EventInformationAttendance = ({
           secondaryAction={
             <IconButton
               onClick={(event) => {
-                updateAttendance('Declined', selectedEvent.userAttendance);
                 event.stopPropagation();
+                updateAttendance.mutate({ event: selectedEvent, newState: 'Declined', user });
               }}
               disabled={selectedEvent.isCancelled || eventInThePast(selectedEvent)}
             >
-              {selectedEvent.userAttendance === 'Declined' ? (
+              {selectedEvent.user_state === 'Declined' ? (
                 <ThumbDownAlt fontSize="inherit" sx={{ fontSize: '28px', color: 'red' }} />
               ) : (
                 <ThumbDownOffAlt fontSize="inherit" sx={{ fontSize: '28px' }} />
@@ -211,7 +244,7 @@ const EventInformationAttendance = ({
           }
         >
           <ListItemAvatar sx={{ justifyContent: 'left', alignItems: 'center', display: 'flex' }}>
-            {attendanceLoading ? <CircularProgress size={'20px'} /> : <RemoveCircleOutline color="error" />}
+            {isLoading ? <CircularProgress size={'20px'} /> : <RemoveCircleOutline color="error" />}
           </ListItemAvatar>
           <ListItemText
             primary={t('events.information.declined', {
@@ -226,7 +259,7 @@ const EventInformationAttendance = ({
               key={'waitingEvent'}
               sx={{ '&.MuiListItem-root': { paddingLeft: 0 } }}
               onClick={() =>
-                attendanceLoading
+                isLoading
                   ? {}
                   : setEventAttendanceState({
                     open: true,
@@ -235,7 +268,7 @@ const EventInformationAttendance = ({
               }
             >
               <ListItemAvatar sx={{ justifyContent: 'left', alignItems: 'center', display: 'flex' }}>
-                {attendanceLoading ? <CircularProgress size={'20px'} /> : <HourglassBottom sx={{ color: '#125db2' }} />}
+                {isLoading ? <CircularProgress size={'20px'} /> : <HourglassBottom sx={{ color: '#125db2' }} />}
               </ListItemAvatar>
               <ListItemText primary={(attendance.filter((x) => x.state === 'Waiting').length ?? 0) + ' warten'} />
             </ListItem>
@@ -257,7 +290,9 @@ const EventInformationAttendance = ({
             user: (x.full_current_holder)!.userId,
             item: x,
           }))}
-        acceptAttendance={(attendance) => dispatch(updateAttendanceAsync({ user: attendance.user, event: selectedEvent, state: "Attending", oldState: attendance.state, ownUser: false }))}
+        acceptAttendance={(attendance) => {
+          updateAttendance.mutate({ event: selectedEvent, newState: "Attending", user: attendance.user })
+        }}
       />
     </Box>
   );

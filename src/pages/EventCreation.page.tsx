@@ -10,7 +10,6 @@ import { CreateEventOption } from '../features/events/types';
 
 const CreateEventProvider = ({ t }: { t: TFunction }) => {
   const { option } = useParams();
-  const eventToEdit = useSelector((state: RootState) => state.events.eventToEdit);
 
   if (!option)
     return (
@@ -20,7 +19,7 @@ const CreateEventProvider = ({ t }: { t: TFunction }) => {
       />
     );
 
-  return <CreateEvent t={t} eventToEdit={eventToEdit} option={option as CreateEventOption} />;
+  return <CreateEvent t={t} eventToEdit={null} option={option as CreateEventOption} />;
 };
 
 export default withTranslation()(CreateEventProvider);

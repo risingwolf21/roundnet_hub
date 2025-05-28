@@ -26,6 +26,7 @@ declare global {
   type GroupUserMapping = Tables<'group_user_mapping'>;
   type EventComment = Tables<'event_comments'>;
   type Group = Tables<'event_group'>;
+  type EventsUserViewNullable = Tables<'events_user_view'>;
   type Item = Tables<'items'>;
   type ItemHistory = Tables<'item_history'>;
   type Payment = Tables<'payments'>;
