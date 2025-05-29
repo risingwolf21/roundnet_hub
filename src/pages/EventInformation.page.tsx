@@ -5,7 +5,6 @@ import { useQuery } from '@tanstack/react-query';
 import { useDialogs, useNotifications } from '@toolpad/core';
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useSelector } from 'react-redux';
 import { useNavigate, useParams } from 'react-router';
 import Layout from 'src/components/Layout';
 import { PullToRefresh } from 'src/components/pull-to-refresh/PullToRefresh';
@@ -14,9 +13,10 @@ import EventInformationLoading from 'src/features/events/components/EventInforma
 import { CancelTrainingDialog } from 'src/features/events/dialogs/CancelTrainingDialog';
 import { DeleteEventDialog } from 'src/features/events/dialogs/DeleteEventDialog';
 import { EditEventOptionsDialog } from 'src/features/events/dialogs/EditEventOptionsDialog';
-import { CreateOrUpdateEventDialog } from 'src/features/events/EventCreation';
+import { CreateOrUpdateEventDialog } from 'src/features/events/dialogs/CreateOrUpdateEventDialog';
 import { useCancelTrainingMutation } from 'src/features/events/useCancelTraining';
 import { useDeleteTrainingMutation } from 'src/features/events/useDeleteTraining';
+import { useAllItems } from 'src/features/keys/query';
 import { useFetchMode } from 'src/hooks/useFetchMode';
 import { SupabaseEventRepository } from 'src/repository/EventRepository';
 import { EventsUserView } from 'src/types/supabaseTypes';
@@ -24,14 +24,10 @@ import { can } from 'src/utils/PermissionService';
 import { EventTable } from 'types/supabase';
 import EventInformation from '../features/events/EventInformation';
 import { PlaceType } from '../features/events/types';
-import { fetchItemsAsync, keyHoldersSelector } from '../features/keys/slices/keysSlice';
-import { RootState, useAppDispatch } from '../redux/store';
 
 const EventInformationProvider = () => {
   const { selectedEventId } = useParams();
-  const keyHolders = useSelector((state: RootState) => keyHoldersSelector.selectAll(state));
   const { user } = useAuthentication();
-  const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const notifications = useNotifications();
   const dialogs = useDialogs();
@@ -47,10 +43,7 @@ const EventInformationProvider = () => {
     enabled: !!selectedEventId,
     queryFn: () => SupabaseEventRepository.fetchUserEvent(selectedEventId!)
   });
-
-  useEffect(() => {
-    dispatch(fetchItemsAsync());
-  }, [dispatch]);
+  const { data: keyHolders = [] } = useAllItems();
 
   useEffect(() => {
     if (event) {

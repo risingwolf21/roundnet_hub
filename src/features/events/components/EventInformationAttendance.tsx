@@ -63,6 +63,8 @@ const EventInformationAttendance = ({
 
   const updateAttendance = useUpdateAttendanceMutation(fetchMode)
 
+  console.log(keyHolders)
+
   return (
     <Box sx={{ p: 0, alignSelf: 'center' }}>
       {selectedEvent.user_state === 'Waiting' && (

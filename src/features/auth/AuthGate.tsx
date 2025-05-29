@@ -14,6 +14,7 @@ import { SupabaseUserRepository } from '../../repository/UserRepository';
 import { UserWithRolesAndPermissions } from '../../types/supabaseTypes';
 import { ability, defineRulesFor } from '../../utils/PermissionService';
 import { ApplicationContext } from './ApplicationContext';
+import { DialogsProvider, NotificationsProvider } from '@toolpad/core';
 
 
 export const AuthGate = () => {
@@ -146,7 +147,17 @@ export const AuthGate = () => {
   return (
     <ApplicationContext.Provider value={{ user: currentUser, signOut: signOut, deviceId, provider_token, version }}>
       <React.Suspense fallback={<LoadingScreen />}>
-        <AppRoutes />
+        <DialogsProvider>
+          <NotificationsProvider slotProps={{
+            snackbar: {
+              sx: {
+                bottom: "calc(8px + env(safe-area-inset-bottom))"
+              }
+            }
+          }}>
+            <AppRoutes />
+          </NotificationsProvider>
+        </DialogsProvider>
       </React.Suspense>
     </ApplicationContext.Provider>
   );

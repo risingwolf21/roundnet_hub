@@ -255,13 +255,11 @@ export const SupabaseEventRepository = {
       .throwOnError();
   },
 
-  async fetchUserGroups(user: User): Promise<PostgrestSingleResponse<{ user: { userId: string }; group: Group }[]>> {
+  async fetchUserGroups(): Promise<PostgrestSingleResponse<Group[]>> {
     return supabase
-      .from('group_user_mapping')
-      .select('user(userId), group(*)')
-      .eq('user.userId', user.userId)
-      .not('user', 'is', null)
-      .returns<{ user: { userId: string }; group: Group }[]>()
+      .from('event_group')
+      .select('*')
+      .returns<Group[]>()
       .throwOnError();
   },
 

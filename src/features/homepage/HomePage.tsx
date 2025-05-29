@@ -18,7 +18,7 @@ import { answerDeadlineExpired, eventInThePast } from "src/types/supabaseTypes"
 import { translationKeyOfItemType } from "src/utils"
 import { useAuthentication } from "../auth/AuthContext"
 import { useEvents, useUpdateAttendanceMutation } from "../events/useAllEvents"
-import { fetchItemsAsync, keyHoldersSelector } from "../keys/slices/keysSlice"
+import { useAllItems } from "../keys/query"
 
 const HomePage = () => {
 
@@ -27,7 +27,7 @@ const HomePage = () => {
     const { user } = useAuthentication();
     const { drinks } = useSelector((state: RootState) => state.drinks);
     const { data: events = [] } = useEvents(fetchMode);
-    const keys = useSelector(keyHoldersSelector.selectAll);
+    const { data: keys = [] } = useAllItems();
     const dispatch = useAppDispatch();
     const navigate = useNavigate();
     const notifications = useNotifications();
@@ -36,7 +36,6 @@ const HomePage = () => {
 
     useEffect(() => {
         dispatch(fetchDrinksAsync());
-        dispatch(fetchItemsAsync())
     }, [dispatch, user]);
 
     return <Layout>

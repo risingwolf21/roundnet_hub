@@ -30,7 +30,7 @@ import {
 } from '@mui/material';
 import { DatePicker, DateTimePicker } from '@mui/x-date-pickers';
 import { TimePicker } from '@mui/x-date-pickers/TimePicker';
-import { DialogProps } from '@toolpad/core';
+import { DialogProps, DialogsProvider, useDialogs } from '@toolpad/core';
 import { useNotifications } from '@toolpad/core/useNotifications';
 import { format, isAfter, set } from 'date-fns';
 import _ from 'lodash';
@@ -38,13 +38,14 @@ import React, { FormEvent, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { MapContainer, Marker, TileLayer, useMap } from 'react-leaflet';
 import { dayjsFromDb, formatDateToDatabase } from 'src/utils';
-import { NumberInput } from '../../components/mui/NumberInput';
-import { SupabaseEventRepository } from '../../repository/EventRepository';
-import { Enums, TablesInsert, TablesUpdate } from '../../types/supabase-generated.types';
-import SearchPlacesDialog from './dialogs/SearchPlacesDialog';
-import { SelectGroupDialog } from './dialogs/SelectGroupDialog';
-import { CreateEventOption, PlaceType } from './types';
+import { NumberInput } from '../../../components/mui/NumberInput';
+import { SupabaseEventRepository } from '../../../repository/EventRepository';
+import { Enums, TablesInsert, TablesUpdate } from '../../../types/supabase-generated.types';
+import SearchPlacesDialog from './SearchPlacesDialog';
+import { SelectGroupDialog } from './SelectGroupDialog';
+import { CreateEventOption, PlaceType } from '../types';
 import { EventTable } from 'types/supabase';
+import { useAuthentication } from 'src/features/auth/AuthContext';
 
 const emptyEvent = {
   title: '',
@@ -71,6 +72,7 @@ type CreateEventProps = {
 
 export const CreateOrUpdateEventDialog = ({ payload: { event, eventGroup, option }, open, onClose }: DialogProps<CreateEventProps>) => {
   const notifications = useNotifications();
+  const dialogs = useDialogs();
   const { t } = useTranslation();
   const [editedEvent, setEditedEvent] = useState<EventTable>(event ?? emptyEvent);
   const [selectedGroup, setSelectedGroup] = useState<Group | null>(eventGroup ?? null);
@@ -207,7 +209,12 @@ export const CreateOrUpdateEventDialog = ({ payload: { event, eventGroup, option
             />
           </ListItem>
 
-          <ListItemButton onClick={() => setDialogOpen('group')} key={'group'}>
+          <ListItemButton onClick={async () => {
+            const result = await dialogs.open(SelectGroupDialog);
+            if (result) {
+              setSelectedGroup(result);
+            }
+          }} key={'group'}>
             <ListItemAvatar>
               {selectedGroup && <FiberManualRecord sx={{ color: selectedGroup.color }} />}
             </ListItemAvatar>
@@ -579,16 +586,6 @@ export const CreateOrUpdateEventDialog = ({ payload: { event, eventGroup, option
           <Button onClick={() => setDialogOpen(null)}>Bestätigen</Button>
         </DialogActions>
       </Dialog>
-
-      <SelectGroupDialog
-        open={dialogOpen === 'group'}
-        handleClose={() => setDialogOpen(null)}
-        handleSubmit={(group) => {
-          setSelectedGroup(group);
-          setEditedEvent({ ...editedEvent, group: group.id });
-          setDialogOpen(null);
-        }}
-      />
 
       <SearchPlacesDialog
         open={dialogOpen === 'places'}

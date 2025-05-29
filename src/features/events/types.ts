@@ -31,12 +31,6 @@ export type EventAttendanceDialogProps = {
   acceptAttendance: (value: FullAttendance) => void;
 };
 
-export type SelectGroupDialogProps = {
-  open: boolean;
-  handleClose: () => void;
-  handleSubmit: (group: Group) => void;
-};
-
 export type DeleteEventType = 'This Event' | 'This and following events';
 
 export enum DeletionType {

@@ -8,7 +8,7 @@ import { fetchGroups, fetchSimpleUser, fetchUserWithGroups } from 'src/repositor
 import { GamesTable, PermissionsTable } from 'src/types/supabaseTypes';
 import { Enums, Tables, TablesInsert, TablesUpdate } from '../../src/types/supabase-generated.types';
 import { fetchChallengeWithGroup } from 'src/repository/ChallengeRepository';
-import { fetchItems } from 'src/repository/KeysRepository';
+import { fetchItemHistory, fetchItems } from 'src/repository/KeysRepository';
 
 export type EventTable = Tables<'events'>;
 export type History = Tables<'history'>;
@@ -44,6 +44,7 @@ declare global {
   type PlayerWithSimpleUser = Player & { name: string; userId: string };
 
   type FullItemHolder = QueryData<ReturnType<typeof fetchItems>> extends Array<infer U> ? U : never;
+  type FullItemHistory = QueryData<ReturnType<typeof fetchItemHistory>> extends Array<infer U> ? U : never;
 
   type ChallengeWithFullGroup = QueryData<ReturnType<typeof fetchChallengeWithGroup>> extends Array<infer U> ? U : never;
   type GroupWithUsers = QueryData<ReturnType<typeof fetchGroupWithUsers>> extends Array<infer U> ? U : never;

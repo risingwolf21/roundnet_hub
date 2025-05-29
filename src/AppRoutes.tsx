@@ -7,7 +7,7 @@ import { AuthContext } from "./features/auth/AuthContext";
 import { lazyWithRetry } from "./hooks/lazyWithRetry";
 
 const HistoryScreenProvider = lazyWithRetry(() => import('./features/drinks/HistoryScreenProvider'));
-const KeyHolderScreenProvider = lazyWithRetry(() => import('./features/keys/provider'));
+const ItemHolderScreen = lazyWithRetry(() => import('./features/keys/ItemHolderScreen'));
 const PayDrinksScreenProvider = lazyWithRetry(() => import('./features/drinks/PayDrinksScreen'));
 const ResetPasswordScreen = lazyWithRetry(() => import('./features/auth/ResetPasswordScreen'));
 const PaymentsPendingAdmin = lazyWithRetry(() => import('./features/admin/PaymentsPendingAdmin'));
@@ -115,7 +115,7 @@ const router = sentryCreateBrowserRouter([
           },
           {
             path: "/keys",
-            element: <KeyHolderScreenProvider />
+            element: <ItemHolderScreen />
           },
           {
             path: "/notifications",

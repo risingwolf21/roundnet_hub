@@ -47,7 +47,7 @@ import { EventWithGroup } from '../../types/supabaseTypes';
 import { nameOfRecurrence } from '../../utils';
 import { PlaceType } from './types';
 import { useDialogs } from '@toolpad/core';
-import { CreateOrUpdateEventDialog } from './EventCreation';
+import { CreateOrUpdateEventDialog } from './dialogs/CreateOrUpdateEventDialog';
 
 interface ExpandMoreProps extends IconButtonProps {
   expand: boolean;

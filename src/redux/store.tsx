@@ -5,7 +5,6 @@ import adminPaymentsSlice from '../features/admin/slices/adminPaymentsSlice';
 import adminUsersSlice from '../features/admin/slices/adminUserSlice';
 import applicationSlice from './applicationSlice';
 import drinksSlice from '../features/drinks/slices/drinksSlice';
-import keysSlice from '../features/keys/slices/keysSlice';
 import notificationsSlice from '../features/notifications/slices/notificationsSlice';
 import { createReduxEnhancer } from '@sentry/react';
 
@@ -17,7 +16,6 @@ const sentryReduxEnhancer = createReduxEnhancer({
 const rootReducer = combineReducers({
   drinks: drinksSlice,
   application: applicationSlice,
-  keys: keysSlice,
   adminDrinks: adminDrinksSlice,
   adminPayments: adminPaymentsSlice,
   adminUsers: adminUsersSlice,

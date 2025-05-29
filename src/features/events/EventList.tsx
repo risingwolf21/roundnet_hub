@@ -20,7 +20,7 @@ import { EventItem } from './components/EventItem';
 import { LoadingEventItem } from './components/LoadingEventItem';
 import { useEvents, useUpdateAttendanceMutation } from './useAllEvents';
 import { useDialogs } from '@toolpad/core';
-import { CreateOrUpdateEventDialog } from './EventCreation';
+import { CreateOrUpdateEventDialog } from './dialogs/CreateOrUpdateEventDialog';
 
 
 const EventScreen = () => {
