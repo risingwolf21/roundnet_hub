@@ -18,10 +18,9 @@ const ChallengeList = () => {
   const dialogs = useDialogs();
   const { user } = useAuthentication();
 
-  const { data: challenges, error, isLoading, refetch } = useQuery<ChallengeWithFullGroup[]>({
+  const { data: challenges = [], error, isLoading, refetch } = useQuery<ChallengeWithFullGroup[]>({
     queryKey: ['challenges'],
-    queryFn: ChallengeRepository.fetchChallenges,
-    initialData: []
+    queryFn: ChallengeRepository.fetchChallenges
   });
 
   useEffect(() => {
