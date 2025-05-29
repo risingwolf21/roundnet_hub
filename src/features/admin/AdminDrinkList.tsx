@@ -11,16 +11,14 @@ import {
   Typography,
 } from '@mui/material';
 import { captureException } from '@sentry/react';
+import { useQuery } from '@tanstack/react-query';
 import { useNotifications } from '@toolpad/core/useNotifications';
 import _ from 'lodash';
-import React, { useEffect, useState } from 'react';
-import { useSelector } from 'react-redux';
+import React, { useState } from 'react';
 import Layout from '../../components/Layout';
-import { RootState, useAppDispatch } from '../../redux/store';
 import { AdminDrinksRepository } from '../../repository/AdminDrinksRepository';
 import { AdminDrinkItem } from './components/AdminDrinkItem';
 import EditDrinkDialog from './dialogs/EditDrinkDialog';
-import { fetchDrinksAsync } from './slices/adminDrinksSlice';
 
 const EMPTY_DRINK: Drink = {
   imageUrl: '',
@@ -34,18 +32,18 @@ const EMPTY_DRINK: Drink = {
   type: 'Drink',
 };
 
-const AdminDrinkList = () => {
-  const { drinks, drinksError, drinksLoading } = useSelector((state: RootState) => state.adminDrinks);
+export const useAllDrinksAsAdmin = () => useQuery<Drink[]>({
+  queryKey: ["drinks", "admin"],
+  queryFn: AdminDrinksRepository.fetchDrinks
+});
 
-  const dispatch = useAppDispatch();
+const AdminDrinkList = () => {
+  const { data: drinks = [], isLoading } = useAllDrinksAsAdmin();
+
   const [open, setOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [selectedDrink, setSelectedDrink] = useState<Drink>();
   const notifications = useNotifications();
-
-  useEffect(() => {
-    dispatch(fetchDrinksAsync());
-  }, [dispatch]);
 
   const selectDrink = (drink: Drink) => {
     setSelectedDrink(drink);
@@ -112,7 +110,7 @@ const AdminDrinkList = () => {
 
   return (
     <Layout>
-      {drinksLoading && <LinearProgress style={{ position: 'fixed', left: 0, top: 56, right: 0 }} />}
+      {isLoading && <LinearProgress style={{ position: 'fixed', left: 0, top: 56, right: 0 }} />}
       <List sx={{ width: '100%', paddingBottom: 12 }}>
         {drinks
           .filter((x: Drink) => !x.deleted)

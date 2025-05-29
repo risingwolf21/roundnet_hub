@@ -1,30 +1,19 @@
-import React, { useEffect } from 'react';
-import { useSelector } from 'react-redux';
-import {
-  fetchDrinksAsync
-} from 'src/features/drinks/slices/drinksSlice';
-import { RootState, useAppDispatch } from 'src/redux/store';
+import { useQuery } from '@tanstack/react-query';
+import React from 'react';
+import { SupabaseDrinkRepository } from 'src/repository/DrinkRepository';
 import DrinkListScreen from '../features/drinks/DrinkListScreen';
-import { useAuthentication } from 'src/features/auth/AuthContext';
+import Layout from 'src/components/Layout';
+
+export const useDrinks = () => useQuery({
+  queryKey: ["drinks"],
+  queryFn: SupabaseDrinkRepository.fetchDrinks
+})
 
 const DrinkListScreenProvider = () => {
-  const { user } = useAuthentication();
-  const { drinks, drinksLoading, drinksError } = useSelector((state: RootState) => state.drinks);
-  const dispatch = useAppDispatch();
 
-  useEffect(() => {
-    dispatch(fetchDrinksAsync());
-  }, [dispatch]);
-
-  return (
-    <DrinkListScreen
-      dispatch={dispatch}
-      user={user}
-      drinks={drinks}
-      drinksError={drinksError ?? ''}
-      drinksLoading={drinksLoading}
-    />
-  );
+  return <Layout>
+    <DrinkListScreen />
+  </Layout>
 };
 
 export default DrinkListScreenProvider;

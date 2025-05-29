@@ -1,17 +1,25 @@
-import { Avatar, Chip, List, ListItem, ListItemAvatar, ListItemText, ListSubheader } from '@mui/material';
-import React, { useEffect } from 'react';
-import { useSelector } from 'react-redux';
-import { RootState, useAppDispatch } from '../../../redux/store';
-import { fetchVouchersAsync } from '../slices/drinksSlice';
 import { Redeem } from '@mui/icons-material';
+import { Avatar, Chip, List, ListItem, ListItemAvatar, ListItemText, ListSubheader } from '@mui/material';
+import { useQuery } from '@tanstack/react-query';
+import { useNotifications } from '@toolpad/core';
+import React, { useEffect } from 'react';
+import { SupabaseDrinkRepository } from 'src/repository/DrinkRepository';
 
 const VoucherCard = () => {
-  const { vouchers } = useSelector((state: RootState) => state.drinks);
-  const dispatch = useAppDispatch();
+  const notifications = useNotifications();
+  const { data: vouchers = [], isLoading, error } = useQuery({
+    queryKey: ["vouchers"],
+    queryFn: SupabaseDrinkRepository.fetchVouchersForUser
+  });
 
   useEffect(() => {
-    dispatch(fetchVouchersAsync());
-  }, [dispatch]);
+    if (error)
+      notifications.show(error.message, { severity: "error" })
+  }, [error, notifications])
+
+  if (isLoading) {
+    return null;
+  }
 
   return (
     <>

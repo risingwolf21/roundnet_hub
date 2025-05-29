@@ -4,15 +4,11 @@ import { withProfiler } from "@sentry/react"
 import { useNotifications } from "@toolpad/core/useNotifications"
 import { format } from "date-fns"
 import { t } from "i18next"
-import React, { useEffect } from "react"
-import { useSelector } from "react-redux"
+import React from "react"
 import { useNavigate } from "react-router"
 import Layout from "src/components/Layout"
-import {
-    fetchDrinksAsync
-} from 'src/features/drinks/slices/drinksSlice'
 import { useFetchMode } from "src/hooks/useFetchMode"
-import { RootState, useAppDispatch } from "src/redux/store"
+import { useDrinks } from "src/pages/Drinklist.page"
 import { SupabaseDrinkRepository } from "src/repository/DrinkRepository"
 import { answerDeadlineExpired, eventInThePast } from "src/types/supabaseTypes"
 import { translationKeyOfItemType } from "src/utils"
@@ -25,18 +21,13 @@ const HomePage = () => {
     const [fetchMode] = useFetchMode();
 
     const { user } = useAuthentication();
-    const { drinks } = useSelector((state: RootState) => state.drinks);
+    const { data: drinks = [] } = useDrinks();
     const { data: events = [] } = useEvents(fetchMode);
     const { data: keys = [] } = useAllItems();
-    const dispatch = useAppDispatch();
     const navigate = useNavigate();
     const notifications = useNotifications();
 
     const updateAttendance = useUpdateAttendanceMutation(fetchMode);
-
-    useEffect(() => {
-        dispatch(fetchDrinksAsync());
-    }, [dispatch, user]);
 
     return <Layout>
         <List sx={{ pb: 10 }}>

@@ -31,7 +31,7 @@ export const AdminUsersRepository = {
     await supabase.from('user').update({ verified: false }).eq('userId', user.userId);
   },
 
-  async updateUser(user: UserEdited): Promise<PostgrestSingleResponse<null>> {
+  async updateUser(user: UserEdited): Promise<User | null> {
     await supabase.schema("permissions").from('user_roles').delete().eq('user', user.userId);
     await supabase.schema("permissions").from('user_roles').upsert(
       user.roles.map((x) => {
@@ -41,23 +41,29 @@ export const AdminUsersRepository = {
         };
       })
     );
-    return supabase
+    const result = await supabase
       .from('user')
       .update({ displayName: user.displayName, verified: user.verified })
-      .eq('userId', user.userId);
+      .eq('userId', user.userId)
+      .select("*")
+      .single();
+
+    return result.data ?? null
   },
 
   async fetchNotVerifiedUsers(): Promise<PostgrestSingleResponse<User[]>> {
     return supabase.from('user').select('*').eq('verified', false).returns<User[]>().throwOnError();
   },
 
-  async fetchAllUsersWithGroups(): Promise<PostgrestSingleResponse<UserWithGroups[]>> {
-    return supabase
+  async fetchAllUsersWithGroups(): Promise<UserWithGroups[]> {
+    const result = await supabase
       .from('user')
       .select('*, groups: group_user_mapping ( group: event_group ( * ))')
       .order('displayName', { ascending: true })
       .returns<UserWithGroups[]>()
       .throwOnError();
+
+    return result.data ?? [];
   },
 
   async addUsersToGroup(group: Group, users: User[]): Promise<Tables<"group_user_mapping">[]> {
@@ -74,6 +80,6 @@ export const AdminUsersRepository = {
       .select("*")
       .throwOnError();
 
-      return result.data ?? [];
+    return result.data ?? [];
   },
 };

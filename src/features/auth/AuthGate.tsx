@@ -1,24 +1,21 @@
 import { Box, CircularProgress, Typography } from '@mui/material';
 import { captureException, setTag, setUser } from '@sentry/react';
 import { Session } from '@supabase/supabase-js';
+import { DialogsProvider, NotificationsProvider } from '@toolpad/core';
 import React, { useCallback, useEffect, useState } from 'react';
-import { useDispatch } from 'react-redux';
 import { AppRoutes } from 'src/AppRoutes';
 import { LoadingScreen } from 'src/components/LoadingScreen';
 import { supabase } from 'src/components/services/supabase/supabaseClient';
 import useDeviceId from 'src/hooks/useDeviceId';
 import raw from '../../git_commit.txt';
-import { onUserChange } from '../../redux/applicationSlice';
 import { AdminPermissionsRepository } from '../../repository/AdminPermissionsRepository';
 import { SupabaseUserRepository } from '../../repository/UserRepository';
 import { UserWithRolesAndPermissions } from '../../types/supabaseTypes';
 import { ability, defineRulesFor } from '../../utils/PermissionService';
 import { ApplicationContext } from './ApplicationContext';
-import { DialogsProvider, NotificationsProvider } from '@toolpad/core';
 
 
 export const AuthGate = () => {
-  const dispatch = useDispatch();
   const deviceId = useDeviceId();
 
   const [version, setVersion] = React.useState("");
@@ -59,11 +56,10 @@ export const AuthGate = () => {
   const reset = useCallback(() => {
     setLoading(false);
     ability.update(defineRulesFor([], []));
-    dispatch(onUserChange(null));
     setUser(null);
     setCurrentUser(null);
     setProviderToken(null);
-  }, [dispatch]);
+  }, []);
 
   const fetchUserData = useCallback(async (session: Session, abortSignal: AbortSignal) => {
     try {

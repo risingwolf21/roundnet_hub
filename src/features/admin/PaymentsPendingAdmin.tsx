@@ -1,10 +1,7 @@
-import { Refresh } from '@mui/icons-material';
 import CheckIcon from '@mui/icons-material/Check';
 import SearchIcon from '@mui/icons-material/Search';
 import {
   Box,
-  Button,
-  Fab,
   Grid,
   IconButton,
   InputAdornment,
@@ -13,49 +10,81 @@ import {
   ListItem,
   ListItemAvatar,
   ListItemText,
-  Typography,
+  Typography
 } from '@mui/material';
 import TextField from '@mui/material/TextField';
-import React, { useEffect, useState } from 'react';
-import { useSelector } from 'react-redux';
-import { useClient } from 'react-supabase';
+import { useMutation, useQuery } from '@tanstack/react-query';
+import { useDialogs } from '@toolpad/core';
+import React, { useState } from 'react';
+import { queryClient } from 'src/App';
+import { PullToRefresh } from 'src/components/pull-to-refresh/PullToRefresh';
+import { supabase } from 'src/components/services/supabase/supabaseClient';
 import { History } from 'types/supabase';
 import Layout from '../../components/Layout';
-import { SwipeableDialog } from '../../components/SwipeableDialog';
-import { RootState, useAppDispatch } from '../../redux/store';
 import { FullPayment } from '../../types/supabaseTypes';
-import { fetchAdminsPaymentsAsync } from './slices/adminPaymentsSlice';
-import { PullToRefresh } from 'src/components/pull-to-refresh/PullToRefresh';
+import { ConfirmPaymentDialog } from './dialogs/ConfirmPaymentDialog';
 
-const PaymentsPendingAdmin = () => {
-  const [open, setOpen] = useState(false);
-  const [currentPayment, setPayment] = useState<FullPayment | null>(null);
-  const [searchString, setSearchString] = useState('');
-  const client = useClient();
-  const dispatch = useAppDispatch();
+export const useAllPayments = () => useQuery<FullPayment[]>({
+  queryKey: ["payments", "admin"],
+  queryFn: async () => {
+    const response = await supabase
+      .from('payments')
+      .select('id, created_at, paymentState, amountToPay, userId, user (userId, displayName, name, email), history (*)')
+      .eq('paymentState', 'Open' as PaymentState)
+      .order('displayName', { referencedTable: 'user', ascending: true })
+      .returns<FullPayment[]>();
+    return response.data ?? [];
+  }
+});
 
-  const { payments, error, loading } = useSelector((state: RootState) => state.adminPayments);
-
-  useEffect(() => {
-    dispatch(fetchAdminsPaymentsAsync({ client }));
-  }, [client, dispatch]);
-
-
-  const selectedPayment = (payment: FullPayment) => {
-    setPayment(payment);
-    setOpen(true);
-  };
-
-  const confirmPayment = (payment: FullPayment | null) => {
-    if (!payment) return;
-    client
+export const useConfirmPaymentMutation = () => useMutation({
+  mutationFn: async ({ payment }: { payment: FullPayment }) => {
+    const result = await supabase
       .from('payments')
       .update({ paymentState: 'Fulfilled' as PaymentState })
       .eq('userId', payment?.user?.userId)
-      .then((res) => {
-        setOpen(false);
-      });
-  };
+      .select("*")
+      .single();
+
+    return result.data;
+  },
+  onMutate: async ({ payment }) => {
+    await queryClient.cancelQueries({ queryKey: ["payments", "admin"] });
+
+    const previousPayments = queryClient.getQueryData<FullPayment[]>(["payments", "admin"]);
+
+    if (previousPayments) {
+      const newPayments = previousPayments.map(x => {
+        if (x.userId === payment.user.userId) {
+          return {
+            ...x,
+            paymentState: "FulFilled" as PaymentState
+          }
+        }
+        return x
+      })
+      queryClient.setQueryData(["payments", "admin"], newPayments);
+    }
+
+    return { previousPayments }
+  },
+  onError: (err, _vars, context) => {
+    if (context?.previousPayments) {
+      queryClient.setQueryData(["payments", "admin"], context.previousPayments);
+    }
+  },
+  onSettled: (data, error, variables, context) => {
+    queryClient.invalidateQueries({ queryKey: ["payments", "admin"] });
+  },
+})
+
+
+const PaymentsPendingAdmin = () => {
+  const [searchString, setSearchString] = useState('');
+  const dialogs = useDialogs();
+
+  const { data: payments = [], isLoading, refetch } = useAllPayments();
+  const confirmPayment = useConfirmPaymentMutation();
 
   return (
     <Layout>
@@ -77,9 +106,9 @@ const PaymentsPendingAdmin = () => {
           value={searchString}
         />
       </Box>
-      {loading && <LinearProgress style={{ position: 'fixed', left: 0, top: 56, right: 0 }} />}
+      {isLoading && <LinearProgress style={{ position: 'fixed', left: 0, top: 56, right: 0 }} />}
       {payments && payments.length > 0 && (
-        <PullToRefresh onRefresh={() => dispatch(fetchAdminsPaymentsAsync({ client }))}>
+        <PullToRefresh onRefresh={() => refetch()}>
           <List sx={{ width: '100%', pt: 0 }}>
             {Object.values(payments)
               .filter(
@@ -93,9 +122,12 @@ const PaymentsPendingAdmin = () => {
                   divider
                   secondaryAction={
                     <IconButton
-                      onClick={(event) => {
-                        selectedPayment(x);
+                      onClick={async (event) => {
                         event.stopPropagation();
+                        const result = await dialogs.open(ConfirmPaymentDialog, x);
+                        if (result) {
+                          confirmPayment.mutate({ payment: x })
+                        }
                       }}
                     >
                       <CheckIcon />
@@ -132,70 +164,6 @@ const PaymentsPendingAdmin = () => {
           <Typography>Keine aktiven Zahlungen gefunden</Typography>
         </Grid>
       )}
-      <SwipeableDialog
-        open={open}
-        setOpen={setOpen}
-        onClose={() => setOpen(false)}
-        title="Zahlung bestätigen"
-        actions={
-          <Box
-            sx={{
-              display: 'flex',
-              flexDirection: 'row',
-              flexGrow: 1,
-              position: 'absolute',
-              left: 0,
-              right: 0,
-              bottom: 0,
-            }}
-          >
-            <Button
-              variant="outlined"
-              fullWidth
-              sx={{
-                ml: 2,
-                mr: 1,
-                mb: 2,
-                borderRadius: '50px !important',
-                fontSize: '16px',
-                fontFamily: 'sans-serif',
-                lineSpacing: '24px',
-              }}
-              onClick={() => setOpen(false)}
-            >
-              Abbrechen
-            </Button>
-            <Button
-              variant="contained"
-              fullWidth
-              sx={{
-                ml: 1,
-                mr: 2,
-                mb: 2,
-                borderRadius: '50px !important',
-                fontSize: '16px',
-                fontFamily: 'sans-serif',
-                lineSpacing: '24px',
-              }}
-              onClick={() => confirmPayment(currentPayment)}
-              autoFocus
-            >
-              Bestätigen
-            </Button>
-          </Box>
-        }
-      >
-        <Box sx={{ justifyContent: 'center', alignItems: 'center', display: 'flex', flexDirection: 'column' }}>
-          <Typography>Hiermit bestätigst du, dass</Typography>
-          <Typography fontWeight={'bold'}>{`${currentPayment?.user?.displayName}`}</Typography>
-          <Typography fontWeight={'bold'}>{`${currentPayment?.user?.email}`}</Typography>
-          <Typography>eine Zahlung in Höhe von</Typography>
-          <Typography fontWeight={'bold'}>
-            {`${currentPayment?.history?.reduce((prev: number, curr: History) => prev + (curr.amount ?? 0), 0)} €`}
-          </Typography>
-          <Typography>getätigt hat.</Typography>
-        </Box>
-      </SwipeableDialog>
     </Layout>
   );
 };

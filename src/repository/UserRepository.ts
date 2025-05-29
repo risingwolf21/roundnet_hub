@@ -90,8 +90,10 @@ export const SupabaseUserRepository = {
       .upsert({ fcm_token: fcmToken, user: userId, device_id: deviceId, last_used: formatDateToDatabase(Date.now()) });
   },
 
-  async loadNotifications(user: User): Promise<PostgrestSingleResponse<Notification[]>> {
-    return supabase.from('notifications').select('*').eq('user', user.userId).throwOnError().returns<Notification[]>();
+  async loadNotifications(user: User): Promise<Notification[]> {
+    const result = await supabase.from('notifications').select('*').eq('user', user.userId).throwOnError().returns<Notification[]>();
+
+    return result.data ?? [];
   },
   async markNotificationsAsRead(user: User): Promise<PostgrestSingleResponse<null>> {
     return supabase.from('notifications').delete().eq('user', user.userId);

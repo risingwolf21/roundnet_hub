@@ -24,6 +24,7 @@ import { can } from 'src/utils/PermissionService';
 import { EventTable } from 'types/supabase';
 import EventInformation from '../features/events/EventInformation';
 import { PlaceType } from '../features/events/types';
+import { queryClient } from 'src/App';
 
 const EventInformationProvider = () => {
   const { selectedEventId } = useParams();
@@ -142,7 +143,11 @@ const EventInformationProvider = () => {
       </>
     }>
 
-    <PullToRefresh onRefresh={() => refetch()}>
+    <PullToRefresh onRefresh={() => {
+      refetch();
+      queryClient.invalidateQueries({ queryKey: ["events", selectedEventId, "comments"] })
+      queryClient.invalidateQueries({ queryKey: ["events", selectedEventId, "attendance"] })
+    }}>
       <EventInformation
         t={t}
         keyHolders={keyHolders}

@@ -3,16 +3,32 @@ import _ from 'lodash';
 import { supabase } from '../components/services/supabase/supabaseClient';
 import { fetchDrink, fetchFullHistory } from './DrinkRepository';
 
+const PAGE_SIZE = 20
+
+
 export const AdminDrinksRepository = {
-  async fetchDrinks(): Promise<PostgrestSingleResponse<Drink[]>> {
-    return fetchDrink().throwOnError();
+  async fetchDrinks(): Promise<Drink[]> {
+    const result = await fetchDrink().throwOnError();
+
+    return result.data ?? []
   },
 
-  async fetchAdminHistory(page: number = 0, count: number = 20): Promise<PostgrestSingleResponse<FullHistory[]>> {
-    return fetchFullHistory()
+  async fetchAdminHistory({ pageParam = 0 }: { pageParam?: number }) {
+    const from = pageParam * PAGE_SIZE
+    const to = from + PAGE_SIZE - 1
+
+    const { data } = await fetchFullHistory()
       .order('created_at', { ascending: false })
-      .range(page * count, page * count + count - 1)
+      .range(from, to)
+      .returns<FullHistory[]>()
       .throwOnError();
+
+    const hasMore = (data?.length ?? 0) === PAGE_SIZE
+
+    return {
+      data: data ?? [],
+      nextPage: hasMore ? pageParam + 1 : undefined,
+    }
   },
 
   async updateDrink(drink: Drink): Promise<PostgrestSingleResponse<null>> {

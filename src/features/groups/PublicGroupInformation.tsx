@@ -8,11 +8,9 @@ import { useNavigate, useParams } from "react-router";
 import Layout from "src/components/Layout";
 import { LoadingIndicator } from "src/components/LoadingIndicator";
 import { supabase } from "src/components/services/supabase/supabaseClient";
-import { useAppDispatch } from "src/redux/store";
 import { GroupsRepository } from "src/repository/GroupsRepository";
 import { GroupWithUserMappings } from "src/types/supabaseTypes";
 import { can } from "src/utils/PermissionService";
-import { fetchAdminUsersAsync } from "../admin/slices/adminUserSlice";
 import { useAuthentication } from "../auth/AuthContext";
 import { AcceptJoinButton } from "./components/AcceptJoinButton";
 import { GroupUserItem } from "./components/GroupUserItem";
@@ -26,7 +24,6 @@ const PublicGroupInformation = () => {
   const { groupId } = useParams();
   const { user } = useAuthentication();
   const navigate = useNavigate();
-  const dispatch = useAppDispatch();
   const notifications = useNotifications();
   const dialogs = useDialogs();
   const [selectedUsers, setSelectedUsers] = useState<User[]>([])
@@ -36,10 +33,6 @@ const PublicGroupInformation = () => {
     enabled: !!groupId,
     queryFn: () => GroupsRepository.fetchSingleGroupWithUsers(groupId),
   });
-
-  useEffect(() => {
-    dispatch(fetchAdminUsersAsync());
-  }, [dispatch])
 
   useEffect(() => {
     if (error)

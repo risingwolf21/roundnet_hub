@@ -5,43 +5,39 @@ import { captureException } from '@sentry/react';
 import { useNotifications } from '@toolpad/core/useNotifications';
 import React, { useEffect, useState } from 'react';
 import { AlertMessage } from 'src/components/AlertSnackbar';
+import { useDrinks } from 'src/pages/Drinklist.page';
 import { DrinkCounter } from 'src/types/supabaseTypes';
 import { nameOfProductType } from 'src/utils';
-import Layout from '../../components/Layout';
 import { SwipeableDialog } from '../../components/SwipeableDialog';
-import { useAppDispatch } from '../../redux/store';
 import { SupabaseDrinkRepository } from '../../repository/DrinkRepository';
 import DrinkList from './components/DrinkList';
 import { LoadingDrinkItem } from './components/LoadingDrinkItem';
 import VoucherCard from './components/Voucher';
-import { fetchVouchersAsync } from './slices/drinksSlice';
-import { DrinkListScreenProps } from './types';
 
 const SUCCESS_MESSAGE_INFO: AlertMessage = { message: 'Getränke erfolgreich gebucht!', severity: 'success' };
 
-const DrinkListScreen = ({ user, drinks, drinksLoading, drinksError }: DrinkListScreenProps) => {
-  const dispatch = useAppDispatch();
+const DrinkListScreen = () => {
+
+  const { data: drinks = [], error, isLoading } = useDrinks();
+
   const notifications = useNotifications();
   const [addedDrinks, setAddedDrinks] = useState<DrinkCounter[]>([]);
-  const [loading, setLoading] = useState(false);
   const [filterDialogOpen, setFilterDialogOpen] = useState(false);
   const [visibleTypes, setVisibleTypes] = useState<ProductType[]>(
     (localStorage.getItem('visibleTypes')?.split(';') as ProductType[]) ?? ['Drink']
   );
 
   useEffect(() => {
-    if (drinksError) {
-      notifications.show(drinksError, { severity: 'error' });
+    if (error) {
+      notifications.show(error.message, { severity: 'error' });
     }
-  }, [drinksError, notifications]);
+  }, [error, notifications]);
 
   const confirmDrinksDialog = (message: AlertMessage) => {
     notifications.show(message.message, { severity: message.severity });
-    setLoading(false);
   };
 
   const resetDrinks = (message: string) => {
-    setLoading(false);
     confirmDrinksDialog({ message, severity: 'error' });
     captureException(Error(message), (scope) => {
       scope.clear();
@@ -51,13 +47,10 @@ const DrinkListScreen = ({ user, drinks, drinksLoading, drinksError }: DrinkList
   };
 
   const confirmDrinks = async () => {
-    setLoading(true);
     SupabaseDrinkRepository.insertHistoryItems(Object.values(addedDrinks))
       .then(() => {
-        setLoading(false);
         setAddedDrinks([]);
         confirmDrinksDialog(SUCCESS_MESSAGE_INFO);
-        dispatch(fetchVouchersAsync());
       })
       .catch((error) => {
         captureException(error);
@@ -94,68 +87,67 @@ const DrinkListScreen = ({ user, drinks, drinksLoading, drinksError }: DrinkList
     localStorage.setItem('visibleTypes', newValue.join(';'));
   };
 
-  return (
-    <Layout>
-      <VoucherCard />
-      {loading ? (
-        Array.from({ length: 10 }, (v, k) => k + 1).map(() => <LoadingDrinkItem />)
-      ) : (
-        <DrinkList
-          drinks={drinks}
-          onAddDrinkClick={onAddDrinkClick}
-          onRemoveDrinkClick={onRemoveDrinkClick}
-          addedDrinks={addedDrinks}
-          visibleTypes={visibleTypes}
-        />
-      )}
-      {Object.values(addedDrinks).length > 0 ? (
-        <Fab
-          sx={{
-            position: 'fixed',
-            right: '16px',
-            bottom: 'calc(16px + env(safe-area-inset-bottom))',
-          }}
-          color={'secondary'}
-          onClick={confirmDrinks}
-        >
-          {loading ? <CircularProgress /> : <CheckIcon sx={{ color: 'white' }} />}
-        </Fab>
-      ) : (
-        <Fab
-          sx={{
-            position: 'fixed',
-            right: '16px',
-            bottom: 'calc(16px + env(safe-area-inset-bottom))',
-          }}
-          color={'secondary'}
-          onClick={() => setFilterDialogOpen(true)}
-        >
-          <Tune sx={{ color: 'white' }} />
-        </Fab>
-      )}
+  if (isLoading) {
+    return Array.from({ length: 10 }, (v, k) => k + 1).map(() => <LoadingDrinkItem />)
+  }
 
-      <SwipeableDialog
-        open={filterDialogOpen}
-        setOpen={setFilterDialogOpen}
-        onClose={() => setFilterDialogOpen(false)}
-        title="Filter"
+  return (<>
+    <VoucherCard />
+    <DrinkList
+      drinks={drinks}
+      onAddDrinkClick={onAddDrinkClick}
+      onRemoveDrinkClick={onRemoveDrinkClick}
+      addedDrinks={addedDrinks}
+      visibleTypes={visibleTypes}
+    />
+    {Object.values(addedDrinks).length > 0 ? (
+      <Fab
+        sx={{
+          position: 'fixed',
+          right: '16px',
+          bottom: 'calc(16px + env(safe-area-inset-bottom))',
+        }}
+        color={'secondary'}
+        onClick={confirmDrinks}
       >
-        <List>
-          {[...new Set(drinks.map((x) => x.type))].sort().map((x) => (
-            <ListItem key={x} divider>
-              <ListItemAvatar>
-                <Checkbox
-                  disabled={x === 'Drink'}
-                  checked={visibleTypes.some((y) => y === x)}
-                  onChange={(e) => changeVisibleTypes(e, x)}
-                />
-              </ListItemAvatar>
-              <ListItemText primary={nameOfProductType(x)} />
-            </ListItem>
-          ))}
-        </List>
-      </SwipeableDialog>
-    </Layout>
+        {isLoading ? <CircularProgress /> : <CheckIcon sx={{ color: 'white' }} />}
+      </Fab>
+    ) : (
+      <Fab
+        sx={{
+          position: 'fixed',
+          right: '16px',
+          bottom: 'calc(16px + env(safe-area-inset-bottom))',
+        }}
+        color={'secondary'}
+        onClick={() => setFilterDialogOpen(true)}
+      >
+        <Tune sx={{ color: 'white' }} />
+      </Fab>
+    )}
+
+    <SwipeableDialog
+      open={filterDialogOpen}
+      setOpen={setFilterDialogOpen}
+      onClose={() => setFilterDialogOpen(false)}
+      title="Filter"
+    >
+      <List>
+        {[...new Set(drinks.map((x) => x.type))].sort().map((x) => (
+          <ListItem key={x} divider>
+            <ListItemAvatar>
+              <Checkbox
+                disabled={x === 'Drink'}
+                checked={visibleTypes.some((y) => y === x)}
+                onChange={(e) => changeVisibleTypes(e, x)}
+              />
+            </ListItemAvatar>
+            <ListItemText primary={nameOfProductType(x)} />
+          </ListItem>
+        ))}
+      </List>
+    </SwipeableDialog>
+  </>
   );
 };
 

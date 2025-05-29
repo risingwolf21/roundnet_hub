@@ -32,19 +32,15 @@ import {
   ListSubheader,
   DrawerProps as MuiDrawerProps,
   SwipeableDrawer,
-  Theme,
-  Typography
+  Theme
 } from '@mui/material';
 import { styled } from '@mui/system';
 import { TFunction } from 'i18next';
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router';
 import { HOMEPAGE } from '../constants';
-import { notificationsSelector } from '../features/notifications/slices/notificationsSlice';
 import raw from '../git_commit.txt';
-import { RootState } from '../redux/store';
 import { can, canAny } from '../utils/PermissionService';
 import { InstallPWA } from './PwaInstallPromp';
 
@@ -128,16 +124,12 @@ type DrawerContentProps = {
   tab: string;
   handleChange: (value: string) => void;
   t: TFunction;
-  notificationsLength: number;
-  notVerifiedUsersLength: number;
   version: string;
 };
 const DrawerContent = ({
   tab,
   handleChange,
   t,
-  notificationsLength,
-  notVerifiedUsersLength,
   version,
 }: DrawerContentProps) => {
   return (
@@ -316,15 +308,10 @@ const DrawerContent = ({
             key="notifications"
             selected={tab === 'notifications'}
             onClick={() => handleChange('notifications')}
-            secondaryAction={
-              <Typography fontWeight={'bold'} fontSize={'0.9rem'}>
-                {notificationsLength || ''}
-              </Typography>
-            }
           >
             <ListItemAvatar>
               <ListItemIcon>
-                <Badge color={'secondary'} variant={'dot'} badgeContent={notificationsLength}>
+                <Badge color={'secondary'} variant={'dot'}>
                   <Notifications />
                 </Badge>
               </ListItemIcon>
@@ -396,17 +383,10 @@ const DrawerContent = ({
                 key="updateUser"
                 selected={tab === 'admin/users'}
                 onClick={() => handleChange('admin/users')}
-                secondaryAction={
-                  <Typography fontWeight={'bold'} fontSize={'0.9rem'}>
-                    {notVerifiedUsersLength || ''}
-                  </Typography>
-                }
               >
                 <ListItemAvatar>
                   <ListItemIcon>
-                    <Badge color={'secondary'} variant={'dot'} badgeContent={notVerifiedUsersLength}>
-                      <Group />
-                    </Badge>
+                    <Group />
                   </ListItemIcon>
                 </ListItemAvatar>
                 <ListItemText
@@ -520,10 +500,7 @@ export const Drawer = ({ open, onClose, onOpen }: Props) => {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const [tab, setTab] = useState<string>(HOMEPAGE);
-  const notifications = useSelector((state: RootState) => notificationsSelector.selectAll(state));
-  const { notVerifiedUsers } = useSelector((state: RootState) => state.adminUsers);
   const [version, setVersion] = useState<string>('');
-
 
   const iOS =
     typeof navigator !== 'undefined' && /iPad|iPhone|iPod/.test(navigator.userAgent);
@@ -595,8 +572,6 @@ export const Drawer = ({ open, onClose, onOpen }: Props) => {
           tab={tab}
           handleChange={handleChange}
           t={t}
-          notVerifiedUsersLength={notVerifiedUsers}
-          notificationsLength={notifications.length}
           version={version}
         />
       </CustomDrawer>
@@ -623,8 +598,6 @@ export const Drawer = ({ open, onClose, onOpen }: Props) => {
           tab={tab}
           handleChange={handleChange}
           t={t}
-          notVerifiedUsersLength={notVerifiedUsers}
-          notificationsLength={notifications.length}
           version={version}
         />
       </CustomDrawer>

@@ -18,14 +18,21 @@ export const SupabaseDrinkRepository = {
     userId: string,
     page: number = 0,
     count: number = 20
-  ): Promise<PostgrestSingleResponse<FullHistory[]>> {
-    return fetchFullHistory()
+  ): Promise<{ data: FullHistory[], nextPage?: number }> {
+    const { data } = await fetchFullHistory()
       .not('user', 'is', null)
       .eq('user.userId', userId)
       .range(page * count, page * count + count - 1)
       .order('created_at', { ascending: false })
       .returns<FullHistory[]>()
       .throwOnError();
+
+    const hasMore = (data?.length ?? 0) === count
+
+    return {
+      data: data ?? [],
+      nextPage: hasMore ? page + 1 : undefined,
+    }
   },
 
   async fetchCurrentPaymentForUser(userId: string): Promise<PostgrestSingleResponse<Payment[]>> {
@@ -55,20 +62,26 @@ export const SupabaseDrinkRepository = {
     return supabase.from('history').update({ count: count, amount: amount }).eq('id', id).throwOnError();
   },
 
-  async fetchDrinksToPay(userId: string): Promise<PostgrestSingleResponse<PaymentHistory[]>> {
-    return fetchDrinksToPay()
+  async fetchDrinksToPay(userId: string): Promise<PaymentHistory[]> {
+    const result = await fetchDrinksToPay()
       .eq('payments.paymentState', 'Open')
       .not('payments', 'is', null)
       .eq('user', userId)
       .returns<PaymentHistory[]>()
       .throwOnError();
+
+    return result.data ?? [];
   },
 
-  async fetchDrinks(): Promise<PostgrestSingleResponse<Drink[]>> {
-    return fetchDrink().order('id', { ascending: false }).returns<Drink[]>().throwOnError();
+  async fetchDrinks(): Promise<Drink[]> {
+    const result = await fetchDrink().order('id', { ascending: false }).returns<Drink[]>().throwOnError();
+
+    return result.data ?? []
   },
 
-  async fetchVouchersForUser(): Promise<PostgrestSingleResponse<Tables<'user_vouchers'>[]>> {
-    return supabase.from('user_vouchers').select('*').returns<Tables<'user_vouchers'>[]>().throwOnError();
+  async fetchVouchersForUser(): Promise<Tables<'user_vouchers'>[]> {
+    const result = await supabase.from('user_vouchers').select('*').returns<Tables<'user_vouchers'>[]>().throwOnError();
+
+    return result.data ?? [];
   },
 };
