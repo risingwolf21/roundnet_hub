@@ -100,7 +100,7 @@ const EventScreen = () => {
           )}
     </Box>
     {
-      can('select', 'event') && (
+      can('select', 'event') && !isLoading && (
         <Fab
           key="filter"
           sx={{
@@ -119,7 +119,7 @@ const EventScreen = () => {
       )
     }
     {
-      can('insert', 'event') && (
+      can('insert', 'event') && !isLoading && (
         <Fab
           key="insertEvent"
           sx={{
@@ -137,7 +137,7 @@ const EventScreen = () => {
       )
     }
     {
-      can('update', 'event') && (
+      can('update', 'event') && !isLoading && (
         <Fab
           key="updateEvent"
           sx={{

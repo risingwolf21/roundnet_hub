@@ -40,7 +40,7 @@ import { TFunction } from 'i18next';
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router';
-import { useAuthentication } from 'src/features/auth/AuthContext';
+import { useApplication } from 'src/features/auth/ApplicationContext';
 import { useRequestedUsersPerGroup } from 'src/tanstack/groups';
 import { useAllNotifications } from 'src/tanstack/notifications';
 import { HOMEPAGE } from '../constants';
@@ -519,7 +519,7 @@ const DrawerContent = ({
 export const Drawer = ({ open, onClose, onOpen }: Props) => {
   const navigate = useNavigate();
   const { t } = useTranslation();
-  const { user } = useAuthentication();
+  const { user } = useApplication();
   const [tab, setTab] = useState<string>(HOMEPAGE);
   const [version, setVersion] = useState<string>('');
 
