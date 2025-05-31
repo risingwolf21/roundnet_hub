@@ -1,10 +1,8 @@
 import { PostgrestError, PostgrestSingleResponse } from '@supabase/supabase-js';
-import { formatDateToDatabase } from 'src/utils';
-import { Notification } from 'types/supabase';
-import { supabase } from '../components/services/supabase/supabaseClient';
-import { CalendarSettingsResult } from 'src/features/profile/CalendarSettings';
 import { Tables } from 'src/types/supabase-generated.types';
 import { GroupWithUserRole } from 'src/types/supabaseTypes';
+import { formatDateToDatabase } from 'src/utils';
+import { supabase } from '../components/services/supabase/supabaseClient';
 
 export const fetchGroups = () => supabase.schema("public").from('group_user_mapping').select('*, event_group(*)');
 export const fetchUserWithGroups = () => supabase
@@ -13,10 +11,6 @@ export const fetchUserWithGroups = () => supabase
 export const fetchSimpleUser = () => supabase.from("user").select("userId, name")
 
 export const SupabaseUserRepository = {
-
-  async fetchSimpleUsers(): Promise<PostgrestSingleResponse<SimpleUser[]>> {
-    return fetchSimpleUser();
-  },
 
   async fetchUserWithGroups(userId: string): Promise<PostgrestSingleResponse<UserWithGroupsAndPlayerData>> {
     const { data: player_data } = await SupabaseUserRepository.fetchPlayer(userId);
@@ -90,37 +84,6 @@ export const SupabaseUserRepository = {
       .upsert({ fcm_token: fcmToken, user: userId, device_id: deviceId, last_used: formatDateToDatabase(Date.now()) });
   },
 
-  async loadNotifications(user: User): Promise<Notification[]> {
-    const result = await supabase.from('notifications').select('*').eq('user', user.userId).throwOnError().returns<Notification[]>();
-
-    return result.data ?? [];
-  },
-  async markNotificationsAsRead(user: User): Promise<PostgrestSingleResponse<null>> {
-    return supabase.from('notifications').delete().eq('user', user.userId);
-  },
-  async fetchCalendarSettings(
-    userId: string
-  ): Promise<PostgrestSingleResponse<CalendarSettings | null>> {
-    return supabase
-      .from('user_calender_settings')
-      .select("*")
-      .eq("user", userId)
-      .maybeSingle()
-  },
-  async updateCalenderSettings(
-    settings: CalendarSettingsResult,
-    user: User
-  ): Promise<PostgrestSingleResponse<CalendarSettings>> {
-    return supabase
-      .from('user_calender_settings')
-      .upsert({
-        user: user.userId,
-        calender_id: settings.calendar_id,
-        minutes_to_remind: settings.minutes_to_remind
-      })
-      .select("*")
-      .returns<CalendarSettings>();
-  },
   async fetchNotificationSettings(
     userId: string
   ): Promise<string[]> {

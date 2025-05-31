@@ -14,7 +14,7 @@ import { CancelTrainingDialog } from 'src/features/events/dialogs/CancelTraining
 import { DeleteEventDialog } from 'src/features/events/dialogs/DeleteEventDialog';
 import { EditEventOptionsDialog } from 'src/features/events/dialogs/EditEventOptionsDialog';
 import { CreateOrUpdateEventDialog } from 'src/features/events/dialogs/CreateOrUpdateEventDialog';
-import { useAllItems } from 'src/features/keys/query';
+import { useAllItems } from 'src/tanstack/items';
 import { useFetchMode } from 'src/hooks/useFetchMode';
 import { SupabaseEventRepository } from 'src/repository/EventRepository';
 import { EventsUserView } from 'src/types/supabaseTypes';

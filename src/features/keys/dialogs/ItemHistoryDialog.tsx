@@ -2,7 +2,7 @@ import { Alert, CircularProgress, List, ListItem, ListItemText } from '@mui/mate
 import { format } from 'date-fns';
 import React from 'react';
 import { SwipeableDialog } from '../../../components/SwipeableDialog';
-import { useItemHistory } from '../query';
+import { useItemHistory } from 'src/tanstack/items';
 import { DialogProps } from '@toolpad/core';
 
 export const ItemHistoryDialog = ({ payload, open, onClose }: DialogProps<Item>) => {

@@ -7,7 +7,7 @@ import { useFetchMode } from "src/hooks/useFetchMode"
 import { useDrinks, useInsertHistoryEntryMutation } from "src/tanstack/drinks"
 import { useEvents, useUpdateAttendanceMutation } from "src/tanstack/events"
 import { useAuthentication } from "../auth/AuthContext"
-import { useAllItems } from "../keys/query"
+import { useAllItems } from 'src/tanstack/items';
 import { DrinkCard } from "./DrinkCard"
 import { EventCard } from "./EventCard"
 import { ItemCard } from "./ItemCard"

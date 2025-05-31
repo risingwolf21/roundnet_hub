@@ -1,6 +1,4 @@
-import { PostgrestSingleResponse } from '@supabase/supabase-js';
 import { supabase } from '../components/services/supabase/supabaseClient';
-import { TablesInsert, TablesUpdate } from '../types/supabase-generated.types';
 import { formatDateToDatabase } from '../utils';
 
 export const fetchItems = () => supabase.from('items').select('*, full_current_holder: user!keys_user_fkey(*)')
@@ -24,14 +22,6 @@ export const SupabaseKeysRepository = {
     return result.data ?? [];
   },
 
-  async updateItem(item: TablesUpdate<'items'>, id: number): Promise<PostgrestSingleResponse<Item>> {
-    return supabase.from('items').update(item).eq('id', id).select().single();
-  },
-
-  async insertItem(item: TablesInsert<'items'>): Promise<PostgrestSingleResponse<Item>> {
-    return supabase.from('items').insert(item).select().single();
-  },
-
   async getItems(): Promise<FullItemHolder[]> {
     const result = await fetchItems().throwOnError();
 
@@ -49,14 +39,5 @@ export const SupabaseKeysRepository = {
       .throwOnError();
 
     return result.data;
-  },
-
-  async fetchInsertedItem(key: number, user: string): Promise<PostgrestSingleResponse<FullItemHolder[]>> {
-    return supabase
-      .from('items')
-      .select('*, user: user(*)')
-      .eq('id', key)
-      .eq('user.userId', user)
-      .returns<FullItemHolder[]>();
   },
 };

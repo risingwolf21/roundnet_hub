@@ -2,10 +2,9 @@ import { DoneAll } from '@mui/icons-material';
 import { Box, Fab, List, ListItem, ListItemText, Typography } from '@mui/material';
 import React from 'react';
 import { PullToRefresh } from 'src/components/pull-to-refresh/PullToRefresh';
+import { useAllNotifications, useMarkNotificationsAsRead } from 'src/tanstack/notifications';
 import Layout from '../../components/Layout';
-import { SupabaseUserRepository } from '../../repository/UserRepository';
 import { useAuthentication } from '../auth/AuthContext';
-import { useAllNotifications } from 'src/tanstack/notifications';
 
 const NotificationsPage = () => {
 
@@ -18,11 +17,7 @@ const NotificationScreen = () => {
   const { user } = useAuthentication();
   const { data: notifications = [], isLoading, refetch } = useAllNotifications(user);
 
-  const markNotificationsAsRead = () => {
-    SupabaseUserRepository.markNotificationsAsRead(user).then((result) => {
-      refetch()
-    });
-  };
+  const markNotificationsAsRead = useMarkNotificationsAsRead(user.userId);
 
   if (isLoading) {
     return <Box sx={{ alignItems: 'center', display: 'flex', flexDirection: 'column', pt: 10 }}>
@@ -52,7 +47,7 @@ const NotificationScreen = () => {
         bottom: 'calc(16px + env(safe-area-inset-bottom))',
         mb: '16px',
       }}
-      onClick={markNotificationsAsRead}
+      onClick={() => markNotificationsAsRead.mutate()}
     >
       <DoneAll sx={{ color: 'white', mr: 1 }} />
       Als gelesen markieren

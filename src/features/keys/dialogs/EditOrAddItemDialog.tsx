@@ -1,6 +1,6 @@
 import CloseIcon from '@mui/icons-material/Close';
+import KeyIcon from '@mui/icons-material/Key';
 import {
-  Alert,
   AppBar,
   Avatar,
   Button,
@@ -11,16 +11,15 @@ import {
   ListItemAvatar,
   MenuItem,
   Select,
-  Snackbar,
   TextField,
   Toolbar,
-  Typography,
+  Typography
 } from '@mui/material';
 import { Box } from '@mui/system';
+import { useNotifications } from '@toolpad/core';
 import React, { useEffect, useState } from 'react';
+import { useInsertItemMutation, useUpdateItemMutation } from 'src/tanstack/items';
 import { SlideUpTransition } from '../../../utils';
-import KeyIcon from '@mui/icons-material/Key';
-import { SupabaseKeysRepository } from '../../../repository/KeysRepository';
 
 type EditOrAddItemDialogProps = {
   open: boolean;
@@ -36,11 +35,10 @@ export const EditOrAddItemDialog = ({ open, handleClose, itemToEdit }: EditOrAdd
     current_holder: itemToEdit?.current_holder,
     type: itemToEdit?.type,
   });
-  const [errorSnackbar, setErrorSnackbar] = useState<{
-    open: boolean;
-    message: string;
-    severity?: 'error' | 'success';
-  }>({ open: false, message: '', severity: 'error' });
+  const notifications = useNotifications();
+
+  const updateItemMutation = useUpdateItemMutation();
+  const insertItemMutation = useInsertItemMutation();
 
   useEffect(() => {
     setCurrentItem({
@@ -54,37 +52,35 @@ export const EditOrAddItemDialog = ({ open, handleClose, itemToEdit }: EditOrAdd
 
   const handleSubmit = async () => {
     if (!currentItem.name || currentItem.name.length < 6) {
-      setErrorSnackbar({ message: 'Der Schlüsselname ist zu kurz!', open: true });
+      notifications.show('Der Schlüsselname ist zu kurz!', { severity: "warning" });
       return;
     }
     if (!currentItem.type) {
-      setErrorSnackbar({ message: 'Der Schlüssel braucht einen Typ', open: true });
+      notifications.show('Der Schlüssel braucht einen Typ', { severity: "warning" });
       return;
     }
-    let result;
     if (currentItem.id) {
-      result = await SupabaseKeysRepository.updateItem(
-        {
+      updateItemMutation.mutate({
+        item: {
+          ...currentItem,
+          id: currentItem.id
+        }
+      }, {
+        onError: (e) => notifications.show(e.message, { severity: "error" }),
+        onSuccess: () => handleClose()
+      })
+    } else {
+      insertItemMutation.mutate({
+        item: {
           name: currentItem.name,
           color: currentItem.color,
           type: currentItem.type,
           current_holder: currentItem.current_holder,
-        },
-        currentItem.id
-      );
-    } else {
-      result = await SupabaseKeysRepository.insertItem({
-        name: currentItem.name,
-        color: currentItem.color,
-        type: currentItem.type,
-        current_holder: currentItem.current_holder,
-      });
-    }
-    if (result.error) {
-      setErrorSnackbar({ message: result.error.message ?? '', open: true });
-    } else {
-      setErrorSnackbar({ message: '', open: false });
-      handleClose();
+        }
+      }, {
+        onError: (e) => notifications.show(e.message, { severity: "error" }),
+        onSuccess: () => handleClose()
+      })
     }
   };
 
@@ -155,16 +151,6 @@ export const EditOrAddItemDialog = ({ open, handleClose, itemToEdit }: EditOrAdd
           </List>
         </Box>
       </Box>
-      <Snackbar
-        sx={{ position: 'fixed', right: '16px', bottom: 'calc(16px + env(safe-area-inset-bottom))' }}
-        open={errorSnackbar.open}
-        autoHideDuration={5000}
-        onClose={() => setErrorSnackbar({ message: '', open: false })}
-      >
-        <Alert severity={errorSnackbar.severity ?? 'error'} sx={{ width: '100%' }}>
-          {errorSnackbar.message}
-        </Alert>
-      </Snackbar>
     </Dialog>
   );
 };
