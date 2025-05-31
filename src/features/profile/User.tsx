@@ -43,7 +43,7 @@ const UserScreenProvider = () => {
   return <UserScreen user={user} dispatch={dispatch} handleSignOut={signOut} />;
 };
 
-const UserScreen = ({ user, dispatch }: UserScreenProps) => {
+const UserScreen = ({ user, dispatch, handleSignOut }: UserScreenProps) => {
   const dialogs = useDialogs();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -138,9 +138,7 @@ const UserScreen = ({ user, dispatch }: UserScreenProps) => {
         <Card sx={{ color: "red", borderRadius: 2, py: 0, px: 0, mt: 1 }}>
           <CardActionArea sx={{ px: 1 }}>
             <ListItem
-              onClick={() => {
-                supabase.auth.signOut();
-              }}>
+              onClick={handleSignOut}>
               <ListItemAvatar sx={{ flexDirection: 'row', display: 'flex', alignItems: 'center' }}>
                 <Logout />
               </ListItemAvatar>

@@ -13,6 +13,7 @@ import { SupabaseUserRepository } from '../../repository/UserRepository';
 import { UserWithRolesAndPermissions } from '../../types/supabaseTypes';
 import { ability, defineRulesFor } from '../../utils/PermissionService';
 import { ApplicationContext } from './ApplicationContext';
+import { queryClient } from 'src/App';
 
 
 export const AuthGate = () => {
@@ -50,6 +51,8 @@ export const AuthGate = () => {
     } catch (error: any) {
       reset();
       captureException(error);
+    } finally {
+      await queryClient.invalidateQueries();
     }
   };
 

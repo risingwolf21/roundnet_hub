@@ -9,8 +9,8 @@ export const JoinGroupButton = ({ group, user }: { group: Group, user: User }) =
   return <Button
     disabled={joinGroup.isPending}
     onClick={(event) => {
-      event.stopPropagation();
       joinGroup.mutate();
+      event.stopPropagation();
     }}
   >
     {

@@ -8,27 +8,33 @@ export const useGroups = () => useQuery<GroupWithUserMappings[]>({
   queryFn: GroupsRepository.fetchGroups
 })
 
-export const useJoinGroup = (groupId: string, user: User, role: "user" | "admin" | "joinRequested") => {
-  return useMutation({
-    mutationFn: async () => {
-      const result = await GroupsRepository
-        .addUserToGroup(groupId, user.userId, role)
+export const useGroup = (groupId?: string) => useQuery<GroupWithUserMappings | null>({
+  queryKey: ['group', groupId],
+  enabled: !!groupId,
+  queryFn: () => GroupsRepository.fetchSingleGroupWithUsers(groupId),
+});
 
-      if (result.error) {
-        throw result.error;
-      }
-      return result.data;
-    },
-    onMutate: async () => {
-      await queryClient.cancelQueries({ queryKey: ['group', groupId] })
-      await queryClient.cancelQueries({ queryKey: ['groups'] })
+export const useJoinGroup = (groupId: string, user: User, role: "user" | "admin" | "joinRequested") => useMutation({
+  mutationFn: async () => {
+    const result = await GroupsRepository
+      .addUserToGroup(groupId, user.userId, role)
 
-      const prevGroup = queryClient.getQueryData(['group', groupId])
-      const prevGroups = queryClient.getQueryData(['groups'])
+    if (result.error) {
+      throw result.error;
+    }
+    return result.data;
+  },
+  onMutate: async () => {
+    await queryClient.cancelQueries({ queryKey: ['group', groupId] })
+    await queryClient.cancelQueries({ queryKey: ['groups'] })
 
-      queryClient.setQueryData(['group', groupId], (old: GroupWithUserMappings) => ({
-        ...old,
-        users: [...old.users, {
+    const prevGroup = queryClient.getQueryData<GroupWithUserMappings | null>(['group', groupId])
+    const prevGroups = queryClient.getQueryData<GroupWithUserMappings[]>(['groups'])
+
+    if (prevGroup) {
+      const newGroup = {
+        ...prevGroup,
+        users: [...prevGroup.users, {
           user: user,
           map: {
             group: groupId,
@@ -36,34 +42,37 @@ export const useJoinGroup = (groupId: string, user: User, role: "user" | "admin"
             user: user.userId
           }
         }],
-      }))
+      }
+      queryClient.setQueryData(['group', groupId], newGroup)
+    }
 
-      queryClient.setQueryData(['groups'], (old: GroupWithUserMappings[]) =>
-        old.map(group =>
-          group.id === groupId
-            ? {
-              ...group, users: [...group.users, {
-                user: user,
-                map: {
-                  group: groupId,
-                  role: role,
-                  user: user.userId
-                }
-              }]
-            }
-            : group
-        )
+    if (prevGroups) {
+      const newGroups = prevGroups.map(group =>
+        group.id === groupId
+          ? {
+            ...group, users: [...group.users, {
+              user: user,
+              map: {
+                group: groupId,
+                role: role,
+                user: user.userId
+              }
+            }]
+          }
+          : group
       )
+      queryClient.setQueryData(['groups'], newGroups);
+    }
 
-      return { prevGroup, prevGroups }
-    },
-    onError: (_err, _vars, context) => {
-      queryClient.setQueryData(['group', groupId], context?.prevGroup)
-      queryClient.setQueryData(['groups'], context?.prevGroups)
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['group', groupId] })
-      queryClient.invalidateQueries({ queryKey: ['groups'] })
-    },
-  })
-}
+
+    return { prevGroup, prevGroups }
+  },
+  onError: (_err, _vars, context) => {
+    queryClient.setQueryData(['group', groupId], context?.prevGroup)
+    queryClient.setQueryData(['groups'], context?.prevGroups)
+  },
+  onSuccess: () => {
+    queryClient.invalidateQueries({ queryKey: ['group', groupId] })
+    queryClient.invalidateQueries({ queryKey: ['groups'] })
+  },
+})

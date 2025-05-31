@@ -1,15 +1,13 @@
 import { AccountBox, Edit, ExpandMore, GroupRemove, Groups, PersonAdd, PersonRemove } from "@mui/icons-material";
 import { Accordion, AccordionDetails, AccordionSummary, Avatar, Card, CardActionArea, Chip, Divider, Fab, List, ListItem, ListItemAvatar, ListItemText, Stack, Typography } from "@mui/material";
 import { captureException } from "@sentry/react";
-import { useQuery } from "@tanstack/react-query";
 import { useDialogs, useNotifications } from "@toolpad/core";
 import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router";
 import Layout from "src/components/Layout";
 import { LoadingIndicator } from "src/components/LoadingIndicator";
 import { supabase } from "src/components/services/supabase/supabaseClient";
-import { GroupsRepository } from "src/repository/GroupsRepository";
-import { GroupWithUserMappings } from "src/types/supabaseTypes";
+import { useGroup } from "src/tanstack/groups";
 import { can } from "src/utils/PermissionService";
 import { useAuthentication } from "../auth/AuthContext";
 import { AcceptJoinButton } from "./components/AcceptJoinButton";
@@ -28,11 +26,7 @@ const PublicGroupInformation = () => {
   const dialogs = useDialogs();
   const [selectedUsers, setSelectedUsers] = useState<User[]>([])
 
-  const { data: group = null, error, isLoading, refetch } = useQuery<GroupWithUserMappings | null>({
-    queryKey: ['group', groupId],
-    enabled: !!groupId,
-    queryFn: () => GroupsRepository.fetchSingleGroupWithUsers(groupId),
-  });
+  const { data: group = null, error, isLoading, refetch } = useGroup(groupId);
 
   useEffect(() => {
     if (error)
