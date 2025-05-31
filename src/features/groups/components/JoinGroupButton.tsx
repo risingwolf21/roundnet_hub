@@ -1,6 +1,6 @@
 import { Button } from "@mui/material";
-import { useJoinGroup } from "../query/joinGroupMutation";
 import React from "react";
+import { useJoinGroup } from "src/tanstack/groups";
 
 export const JoinGroupButton = ({ group, user }: { group: Group, user: User }) => {
 

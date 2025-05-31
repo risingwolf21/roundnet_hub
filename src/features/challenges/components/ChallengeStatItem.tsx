@@ -1,7 +1,6 @@
 import { AccountBox } from '@mui/icons-material';
-import { Avatar, Card, CardContent, ListItem, ListItemAvatar, ListItemText, Typography } from '@mui/material';
+import { Avatar, ListItem, ListItemAvatar, ListItemText, Typography } from '@mui/material';
 import React from 'react';
-import { ChallengeStatWithUser } from '../../../types/supabaseTypes';
 
 const medalForPlace = (index: number) => {
   if (index === 0) return '🥇';
@@ -11,21 +10,20 @@ const medalForPlace = (index: number) => {
 };
 
 export const ChallengeStatItem = ({
-  statsForUser,
+  points,
+  displayName,
+  avatarUrl,
   index,
 }: {
-  statsForUser: ChallengeStatWithUser[];
+  displayName: string,
+  avatarUrl: string | null,
+  points: number;
   index: number;
 }) => {
 
-  const user = statsForUser[0]?.fullUser
-
-  if (!user)
-    return null
-
   return <ListItem
     divider
-    secondaryAction={<Typography>{statsForUser.reduce((p, c) => p + c.count, 0)}</Typography>}
+    secondaryAction={<Typography>{points}</Typography>}
   >
     <ListItemAvatar sx={{ flexDirection: 'row', display: 'flex', alignItems: 'center', mr: 2 }}>
       <Avatar sx={{ borderRadius: 2, backgroundColor: 'transparent', width: "50px", height: "50px" }}>
@@ -41,13 +39,13 @@ export const ChallengeStatItem = ({
         </Typography>
       </Avatar>
       <Avatar sx={{ borderRadius: 2, width: "50px", height: "50px" }}>
-        {user.avatarUrl ? (
-          <img src={user.avatarUrl} alt="logo" width={'100%'} height={'100%'} />
+        {avatarUrl ? (
+          <img src={avatarUrl} alt="logo" width={'100%'} height={'100%'} />
         ) : (
           <AccountBox />
         )}
       </Avatar>
     </ListItemAvatar>
-    <ListItemText primaryTypographyProps={{ fontWeight: 'bold' }} primary={user.displayName} />
+    <ListItemText primaryTypographyProps={{ fontWeight: 'bold' }} primary={displayName} />
   </ListItem>
 };

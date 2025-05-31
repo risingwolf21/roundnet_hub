@@ -1,15 +1,13 @@
 // hooks/useIncreaseChallengePoint.ts
-import { useCallback } from 'react';
+import { captureException } from '@sentry/react';
 import { useNotifications } from '@toolpad/core/useNotifications';
 import { Dayjs } from 'dayjs';
-import { ChallengeRepository } from 'src/repository/ChallengeRepository';
+import { useCallback } from 'react';
 import { supabase } from 'src/components/services/supabase/supabaseClient';
+import { ChallengeRepository } from 'src/repository/ChallengeRepository';
 import { dataURLtoFile } from 'src/utils';
-import { captureException } from '@sentry/react';
-import { FullChallenge } from 'src/types/supabaseTypes';
-import { QueryObserverResult } from '@tanstack/react-query';
 
-export function useIncreaseChallengePoint(challenge: Challenge | null, user: User, refetch: () => Promise<QueryObserverResult<FullChallenge | null, Error>>) {
+export function useIncreaseChallengePoint(challenge: Challenge | null, user: User, refetch: () => void) {
   const notifications = useNotifications();
 
   const uploadImage = useCallback(async (image: { dataUrl: string, fileName: string } | null) => {

@@ -8,9 +8,9 @@ import { SupabaseEventRepository } from 'src/repository/EventRepository';
 import { FullComment } from 'src/types/supabaseTypes';
 import { can } from '../../../utils/PermissionService';
 import { EventCommentConversationDialog } from '../dialogs/EventCommentConversationDialog';
-import { useAddCommentMutation } from '../useAllEvents';
 import { CommentItem } from './CommentItem';
 import { CommentReplyItem, CommentReplyText } from './CommentReplyItem';
+import { useAddCommentMutation } from 'src/tanstack/events';
 
 type EventInformationCommentsProps = {
   eventId: string;

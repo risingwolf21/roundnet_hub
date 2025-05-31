@@ -119,6 +119,14 @@ export type EventsUserView = {
     user_state: Database["public"]["Enums"]["EventAttendance"] | null;
 }
 
+export type ChallengePointsView = {
+    avatarUrl: string | null;
+    challenge: string;
+    displayName: string;
+    total_points: number;
+    user: string;
+}
+
 type Modify<T, R> = Omit<T, keyof R> & R;
 
 

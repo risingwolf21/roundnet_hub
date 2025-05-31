@@ -1,7 +1,7 @@
 import { InfiniteData, useInfiniteQuery, useMutation, useQuery } from "@tanstack/react-query";
 import { queryClient } from "src/App";
 import { supabase } from "src/components/services/supabase/supabaseClient";
-import { fetchFullHistory } from "src/repository/DrinkRepository";
+import { fetchFullHistory, SupabaseDrinkRepository } from "src/repository/DrinkRepository";
 import { PaymentHistory } from "src/types/supabaseTypes";
 
 export const usePaymentHistory = (userId: string) => useQuery({
@@ -65,6 +65,16 @@ export const useInfiniteUserHistory = (userId: string, count: number = 20) => us
   getNextPageParam: (lastPage) => lastPage.nextPage,
   initialPageParam: 0
 });
+
+export const useInsertHistoryEntryMutation = (userId: string) => useMutation({
+  mutationFn: async (drink: Drink) => SupabaseDrinkRepository.insertHistoryItems([{
+    ...drink,
+    count: 1
+  }]),
+  onSuccess: () => {
+    queryClient.invalidateQueries({ queryKey: ["history", userId] });
+  }
+})
 
 export const useUpdateHistoryEntryMutation = (userId: string) => useMutation({
   mutationFn: async (newEntry: FullHistory) => {

@@ -37,9 +37,9 @@ import {
   maxAttendeesExceeded,
 } from 'src/types/supabaseTypes';
 import EventAttendanceDialog from '../dialogs/EventAttendanceDialog';
-import { useUpdateAttendanceMutation } from '../useAllEvents';
 import { isBefore } from 'date-fns';
 import { EventInformationConstellations } from './EventInformationConstellations';
+import { useUpdateAttendanceMutation } from 'src/tanstack/events';
 
 type EventInformationAttendanceProps = {
   user: User;

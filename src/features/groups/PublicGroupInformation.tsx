@@ -204,36 +204,40 @@ const PublicGroupInformation = () => {
           </Accordion>
         }
       </Card>
-      <Divider />
-      <Card sx={{ color: "red", borderRadius: 2, py: 0, px: 0, m: 1 }}>
-        <CardActionArea sx={{ px: 1 }}>
-          <ListItem
-            onClick={() => {
-              if (!group || !user)
-                return;
-              dialogs.confirm(group.need_request_to_join
-                ? "Du kannst der Gruppe nicht mehr direkt beitreten, sondern musst bestätigt werden."
-                : "Die Gruppe ist öffentlich. Du kannst Ihr jederzeit wieder beitreten.",
-                { okText: "Verlassen", cancelText: "Abbrechen", title: "Möchtest du die Gruppe wirklich verlassen?" }).then(result => {
-                  if (result) {
-                    supabase.schema("public").from("group_user_mapping").delete().eq("group", group.id).eq("user", user.userId).then(result => {
-                      if (!result.error) {
-                        navigate("/groups/list", { replace: true })
-                      } else {
-                        captureException(result.error);
-                        notifications.show("Es ist ein Fehler aufgetreten.", { severity: "error" })
+      {
+        group?.parent_group !== null && <>
+          <Divider />
+          <Card sx={{ color: "red", borderRadius: 2, py: 0, px: 0, m: 1 }}>
+            <CardActionArea sx={{ px: 1 }}>
+              <ListItem
+                onClick={() => {
+                  if (!group || !user)
+                    return;
+                  dialogs.confirm(group.need_request_to_join
+                    ? "Du kannst der Gruppe nicht mehr direkt beitreten, sondern musst bestätigt werden."
+                    : "Die Gruppe ist öffentlich. Du kannst Ihr jederzeit wieder beitreten.",
+                    { okText: "Verlassen", cancelText: "Abbrechen", title: "Möchtest du die Gruppe wirklich verlassen?" }).then(result => {
+                      if (result) {
+                        supabase.schema("public").from("group_user_mapping").delete().eq("group", group.id).eq("user", user.userId).then(result => {
+                          if (!result.error) {
+                            navigate("/groups/list", { replace: true })
+                          } else {
+                            captureException(result.error);
+                            notifications.show("Es ist ein Fehler aufgetreten.", { severity: "error" })
+                          }
+                        })
                       }
                     })
-                  }
-                })
-            }}>
-            <ListItemAvatar sx={{ flexDirection: 'row', display: 'flex', alignItems: 'center' }}>
-              <GroupRemove />
-            </ListItemAvatar>
-            <ListItemText primary="Gruppe verlassen" />
-          </ListItem>
-        </CardActionArea>
-      </Card>
+                }}>
+                <ListItemAvatar sx={{ flexDirection: 'row', display: 'flex', alignItems: 'center' }}>
+                  <GroupRemove />
+                </ListItemAvatar>
+                <ListItemText primary="Gruppe verlassen" />
+              </ListItem>
+            </CardActionArea>
+          </Card>
+        </>
+      }
     </List>
     {
       group?.user_group_role === "admin" && <Fab

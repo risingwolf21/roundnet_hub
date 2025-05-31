@@ -1,74 +1,54 @@
 import { Edit as EditIcon } from '@mui/icons-material';
 import { Alert, Box, Fab, Tab, Tabs, Typography } from '@mui/material';
 import { withProfiler } from '@sentry/react';
-import { useQuery } from '@tanstack/react-query';
 import { useDialogs } from '@toolpad/core';
 import { TFunction } from 'i18next';
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { withTranslation } from 'react-i18next';
 import { Navigate, useParams } from 'react-router';
 import { queryClient } from 'src/App';
 import { PullToRefresh } from 'src/components/pull-to-refresh/PullToRefresh';
-import { supabase } from 'src/components/services/supabase/supabaseClient';
-import { FullChallenge } from 'src/types/supabaseTypes';
+import { useChallenge, useChallengeLeaderboard, useChallengeStatsForUser, useInfiniteChallengeStats } from 'src/tanstack/challenge';
 import Layout from '../../components/Layout';
-import { ChallengeRepository } from '../../repository/ChallengeRepository';
 import { can } from '../../utils/PermissionService';
 import { useAuthentication } from '../auth/AuthContext';
 import { TabPanel } from '../events/dialogs/EventAttendanceDialog';
 import { ChallengeActivityList } from './ChallengeActivityList';
 import { ChallengeLeaderboard } from './ChallengeLeaderboard';
 import EnterPointDialog from './dialogs/EnterPointDialog';
-import { useChallengeStats } from './hooks/useChallengeStats';
 import { useIncreaseChallengePoint } from './hooks/useIncreaseChallengePoint';
 
-const ChallengeInformation = ({ t }: { t: TFunction }) => {
+const ChallengeInformationProvider = ({ t }: { t: TFunction }) => {
   const { challengeId } = useParams();
+
+  if (!challengeId)
+    return <Navigate to="/challenges/list" />
+
+  return <ChallengeInformation t={t} challengeId={challengeId} />
+}
+
+const ChallengeInformation = ({ t, challengeId }: { t: TFunction, challengeId: string }) => {
   const { user } = useAuthentication();
   const dialogs = useDialogs();
   const [value, setValue] = useState(0);
 
-  const { data: challenge = null, isLoading, refetch } = useQuery<FullChallenge | null>({
-    queryKey: ["challenge_information_" + challengeId],
-    enabled: !!challengeId,
-    queryFn: () => ChallengeRepository.fetchChallengeStats(challengeId)
-  });
+  const { data: challenge = null, isLoading } = useChallenge(challengeId);
+  const { data: leaderboard = [], isLoading: isLeaderboardLoading } = useChallengeLeaderboard(challengeId);
+  const { data: challenge_stats, fetchNextPage, isFetchingNextPage, hasNextPage } = useInfiniteChallengeStats(challengeId);
+  const { data: user_challenge_stats = [] } = useChallengeStatsForUser(challengeId, user.userId);
 
-  useEffect(() => {
-    const channel = supabase
-      .channel('realtime:challenge')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'challenges',
-          filter: `id=eq.${challengeId}`
-        },
-        () => {
-          queryClient.invalidateQueries({ queryKey: ["challenge_information_" + challengeId] });
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [challengeId]);
-
-  const challengeStatMap = useChallengeStats(challenge);
+  const refetch = () => {
+    queryClient.invalidateQueries({ queryKey: ["challenge", challengeId] })
+  }
 
   const increaseChallengePoint = useIncreaseChallengePoint(challenge, user, refetch);
+
 
   if (isLoading) {
     return <Box sx={{ alignItems: 'center', display: 'flex', flexDirection: 'column', pt: 10 }}>
       <Typography sx={{ fontSize: '30pt', fontWeight: 'bold' }}>⌛</Typography>
       <Typography sx={{ fontSize: '18pt', fontWeight: 'bold' }}>Challenge wird geladen...</Typography>
     </Box>
-  }
-
-  if (!challenge && !isLoading) {
-    return <Navigate to="/challenges/list" />;
   }
 
   return (
@@ -79,7 +59,9 @@ const ChallengeInformation = ({ t }: { t: TFunction }) => {
         </Alert>
         {challenge?.automated && (
           <Alert sx={{ m: 2 }} severity={'info'}>
-            {t('challenge.automatedChallenge')}
+            {
+              isLoading ? "Challenge wird geladen..." : t('challenge.automatedChallenge')
+            }
           </Alert>
         )}
         <Tabs
@@ -93,10 +75,14 @@ const ChallengeInformation = ({ t }: { t: TFunction }) => {
           <Tab label="Leaderboard" />
         </Tabs>
         <TabPanel value={value} index={0}>
-          <ChallengeActivityList stats={challenge?.stats ?? []} />
+          <ChallengeActivityList
+            stats={challenge_stats}
+            hasNextPage={hasNextPage}
+            isFetchingNextPage={isFetchingNextPage}
+            fetchNextPage={fetchNextPage} />
         </TabPanel>
         <TabPanel value={value} index={1}>
-          <ChallengeLeaderboard challengeStatMap={challengeStatMap} />
+          <ChallengeLeaderboard isLoading={isLeaderboardLoading} challenge_points={leaderboard} />
         </TabPanel>
 
         {can('update', 'challenge') && !challenge?.automated && (
@@ -111,7 +97,7 @@ const ChallengeInformation = ({ t }: { t: TFunction }) => {
             onClick={async () => {
               if (challenge) {
                 const result = await dialogs.open(EnterPointDialog, {
-                  dates: challenge.stats.filter(x => x.fullUser.userId === user.userId).map(x => x.created_at),
+                  dates: user_challenge_stats.map(x => x.created_at),
                   maxEntriesPerWeek: challenge.max_points_per_week
                 });
 
@@ -129,4 +115,4 @@ const ChallengeInformation = ({ t }: { t: TFunction }) => {
   );
 };
 
-export default withProfiler(withTranslation()(ChallengeInformation));
+export default withProfiler(withTranslation()(ChallengeInformationProvider));
