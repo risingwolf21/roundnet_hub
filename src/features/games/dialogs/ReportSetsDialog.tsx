@@ -2,9 +2,10 @@ import { Close, Delete } from "@mui/icons-material";
 import { AppBar, Button, Dialog, Grid2, IconButton, List, ListItem, TextField, Toolbar, Typography } from "@mui/material";
 import { LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import { captureException } from "@sentry/react";
 import { DialogProps, NotificationsProvider, useNotifications } from "@toolpad/core";
 import React, { useState } from "react";
-import { supabase } from "src/components/services/supabase/supabaseClient";
+import { useUpsertSetsToMatch } from "src/tanstack/games";
 
 type ReportSetsDialogProps = {
   matchId: string
@@ -21,6 +22,8 @@ const Content = ({ payload, onClose }: DialogProps<ReportSetsDialogProps, MatchS
     { id: '0', created_at: '', set_number: 1, match: '', team_a_score: 0, team_b_score: 0 },
   ]);
 
+  const upsertSetsToMatch = useUpsertSetsToMatch(payload.matchId);
+
   return <>
     <AppBar sx={{ position: 'static', pt: "env(safe-area-inset-top)" }}>
       <Toolbar>
@@ -34,18 +37,13 @@ const Content = ({ payload, onClose }: DialogProps<ReportSetsDialogProps, MatchS
           Sätze eintragen
         </Typography>
         <Button color="inherit" onClick={async () => {
-          const result = await supabase.schema("games").from("sets").upsert(sets.map(x => ({
-            set_number: x.set_number,
-            match: payload.matchId,
-            team_a_score: x.team_a_score,
-            team_b_score: x.team_b_score,
-          })))
-            .select("*");
-          if (!result.error) {
-            onClose(result.data);
-          } else {
-            notifications.show("Die Sätze konnten nicht gespeichert werden.", { severity: "error" });
-          }
+          upsertSetsToMatch.mutate({ sets }, {
+            onSuccess: (result) => onClose(result),
+            onError: (error) => {
+              captureException(error);
+              notifications.show("Die Sätze konnten nicht gespeichert werden.", { severity: "error" });
+            }
+          })
         }}>
           Speichern
         </Button>

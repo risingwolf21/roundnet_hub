@@ -25,21 +25,18 @@ import {
   Typography,
 } from '@mui/material';
 import Box from '@mui/material/Box';
-import { useQuery } from '@tanstack/react-query';
+import { isBefore } from 'date-fns';
 import { t } from 'i18next';
 import React, { useState } from 'react';
-import { SupabaseEventRepository } from 'src/repository/EventRepository';
+import { useAttendance, useUpdateAttendanceMutation } from 'src/tanstack/events';
 import {
   answerDeadlineExpired,
   eventInThePast,
   EventsUserView,
-  FullAttendance,
-  maxAttendeesExceeded,
+  maxAttendeesExceeded
 } from 'src/types/supabaseTypes';
 import EventAttendanceDialog from '../dialogs/EventAttendanceDialog';
-import { isBefore } from 'date-fns';
 import { EventInformationConstellations } from './EventInformationConstellations';
-import { useUpdateAttendanceMutation } from 'src/tanstack/events';
 
 type EventInformationAttendanceProps = {
   user: User;
@@ -56,14 +53,9 @@ const EventInformationAttendance = ({
 }: EventInformationAttendanceProps) => {
   const [eventAttendanceState, setEventAttendanceState] = useState({ open: false, index: 0 });
 
-  const { data: attendance = [], isLoading } = useQuery<FullAttendance[]>({
-    queryKey: ["events", selectedEvent.id, "attendance"],
-    queryFn: () => SupabaseEventRepository.fetchEventAttendance(selectedEvent.id!)
-  });
+  const { data: attendance = [], isLoading } = useAttendance(selectedEvent.id);
 
   const updateAttendance = useUpdateAttendanceMutation(fetchMode)
-
-  console.log(keyHolders)
 
   return (
     <Box sx={{ p: 0, alignSelf: 'center' }}>

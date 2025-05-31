@@ -1,5 +1,6 @@
 import { useMutation, useQuery } from "@tanstack/react-query"
 import { queryClient } from "src/App"
+import { supabase } from "src/components/services/supabase/supabaseClient"
 import { DeleteEventType } from "src/features/events/types"
 import { SupabaseEventRepository } from "src/repository/EventRepository"
 import { EventsUserView, FullAttendance, FullComment } from "src/types/supabaseTypes"
@@ -12,6 +13,42 @@ export const useEvents = (filter: 'past' | 'upcoming') => {
     queryFn: () => SupabaseEventRepository.fetchUserEvents(filter)
   })
 }
+
+export const useComments = (eventId: string) => useQuery({
+  queryKey: ["events", eventId, "comments"],
+  queryFn: async () => {
+    const result = await supabase
+      .from('event_comments')
+      .select('user(userId, displayName, avatarUrl), *')
+      .eq('event', eventId)
+      .order("last_update", { ascending: false })
+      .returns<FullComment[]>()
+      .throwOnError();
+
+    let mainComments = (result.data ?? [])
+      .filter((x) => !x.reply_to)
+      .map((x) => ({
+        ...x,
+        replies: (result.data ?? []).filter((y) => y.reply_to === x.id),
+      }));
+
+    return mainComments;
+  }
+});
+
+export const useAttendance = (eventId: string) => useQuery({
+  queryKey: ["events", eventId, "attendance"],
+  queryFn: async () => {
+    const result = await supabase
+      .from('event_attendance_user_mapping')
+      .select('user(userId, displayName, avatarUrl, name), *')
+      .eq('event', eventId)
+      .returns<FullAttendance[]>()
+      .throwOnError();
+
+    return result.data ?? [];
+  }
+});
 
 export const useUpdateAttendanceMutation = (fetchMode: "past" | "upcoming") => {
   return useMutation({

@@ -1465,6 +1465,28 @@ export type Database = {
         Args: { input_version: string }
         Returns: boolean
       }
+      create_group_with_user: {
+        Args: {
+          group_name: string
+          group_description: string
+          group_color: string
+          is_public: boolean
+          need_request: boolean
+          user_id: string
+          role: Database["public"]["Enums"]["GroupRole"]
+          parent?: string
+        }
+        Returns: {
+          color: string
+          created_at: string
+          description: string
+          id: string
+          is_public: boolean
+          name: string
+          need_request_to_join: boolean
+          parent_group: string | null
+        }
+      }
       custom_access_token_hook: {
         Args: { event: Json }
         Returns: Json

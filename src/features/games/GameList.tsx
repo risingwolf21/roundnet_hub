@@ -1,6 +1,5 @@
 import { Add, Warning } from '@mui/icons-material';
 import { Box, Button, Fab, List, ListItem, ListSubheader, Typography } from '@mui/material';
-import { useQuery } from '@tanstack/react-query';
 import { useDialogs, useNotifications } from '@toolpad/core';
 import { t } from 'i18next';
 import moment from 'moment';
@@ -8,19 +7,17 @@ import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router';
 import Layout from 'src/components/Layout';
 import { PullToRefresh } from 'src/components/pull-to-refresh/PullToRefresh';
-import { GamesRepository } from 'src/repository/GamesRepository';
+import { useMatches } from 'src/tanstack/games';
 import { groupBy } from 'src/utils';
 import { ReportSetsDialog } from './dialogs/ReportSetsDialog';
+import { UserMatchesView } from 'src/types/supabaseTypes';
 
 const GameList = () => {
   const notifications = useNotifications();
   const navigate = useNavigate();
   const dialogs = useDialogs();
 
-  const { data: matches = [], error, isLoading, refetch } = useQuery<FullUserMatch[]>({
-    queryKey: ['games'],
-    queryFn: GamesRepository.fetchGamesForUser
-  })
+  const { data: matches = [], error, isLoading, refetch } = useMatches();
 
   useEffect(() => {
     if (error)
@@ -36,7 +33,7 @@ const GameList = () => {
           [theme.breakpoints.up('xl')]: { pb: 0 },
         })}>
           {Array.from(
-            groupBy(matches, (x: FullUserMatch) => moment(new Date(x.created_at ?? '')).format('DD MMMM yyyy'))
+            groupBy(matches, (x: UserMatchesView) => moment(new Date(x.created_at ?? '')).format('DD MMMM yyyy'))
           ).map(([key, value]) => (
             <List
               key={key}

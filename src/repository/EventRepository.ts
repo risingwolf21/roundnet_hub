@@ -4,7 +4,7 @@ import moment from 'moment/moment';
 import { EventTable } from 'types/supabase';
 import { supabase } from '../components/services/supabase/supabaseClient';
 import { TablesInsert, TablesUpdate } from '../types/supabase-generated.types';
-import { EventsUserView, EventWithGroup, FullAttendance, FullComment } from '../types/supabaseTypes';
+import { EventsUserView, EventWithGroup, FullComment } from '../types/supabaseTypes';
 import { formatDateToDatabase } from '../utils';
 
 export const fetchEvents = () => supabase
@@ -67,35 +67,6 @@ export const SupabaseEventRepository = {
       const result = await supabase.from('events').update(updatedChanges).eq("id", e.id).select("*").single().throwOnError();
       return result;
     }));
-  },
-
-  async fetchEventComments(eventId: string): Promise<FullComment[]> {
-    const result = await supabase
-      .from('event_comments')
-      .select('user(userId, displayName, avatarUrl), *')
-      .eq('event', eventId)
-      .order("last_update", { ascending: false })
-      .returns<FullComment[]>()
-      .throwOnError();
-
-    let mainComments = (result.data ?? [])
-      .filter((x) => !x.reply_to)
-      .map((x) => ({
-        ...x,
-        replies: (result.data ?? []).filter((y) => y.reply_to === x.id),
-      }));
-
-    return mainComments;
-  },
-
-  async fetchSingleComment(commentId: string): Promise<PostgrestSingleResponse<FullComment>> {
-    return supabase
-      .from('event_comments')
-      .select('user(userId, displayName, avatarUrl), *')
-      .eq('id', commentId)
-      .returns<FullComment>()
-      .single()
-      .throwOnError();
   },
 
   async updateEvent(eventId: string, event: TablesUpdate<'events'>): Promise<PostgrestSingleResponse<null>> {
@@ -224,58 +195,6 @@ export const SupabaseEventRepository = {
       })
     }
     return [];
-  },
-
-  async fetchEvents(fetchMode: 'upcoming' | 'past'): Promise<PostgrestSingleResponse<FullEvent[]>> {
-    if (fetchMode === "upcoming")
-      return this.fetchUpcomingEvents();
-    else
-      return this.fetchPastEvents();
-  },
-
-  async fetchUpcomingEvents(): Promise<PostgrestSingleResponse<FullEvent[]>> {
-    return (
-      fetchEvents()
-        // get events that are on the same day or later
-        .gt('startingDateTime', formatDateToDatabase(startOfDay(new Date())))
-        .or(`recurrenceEnd.is.null,recurrenceEnd.gt.'${formatDateToDatabase(new Date())}'`)
-        .lt('startingDateTime', formatDateToDatabase(add(new Date(), { weeks: 3 })))
-        .order('startingDateTime', { ascending: true })
-        .returns<FullEvent[]>()
-        .throwOnError()
-    );
-  },
-
-  async fetchPastEvents(): Promise<PostgrestSingleResponse<FullEvent[]>> {
-    return fetchEvents()
-      .lt('startingDateTime', formatDateToDatabase(new Date()))
-      .gt('startingDateTime', formatDateToDatabase(add(new Date(), { weeks: -3 })))
-      .order('startingDateTime', { ascending: false })
-      .returns<FullEvent[]>()
-      .throwOnError();
-  },
-
-  async fetchUserGroups(): Promise<PostgrestSingleResponse<Group[]>> {
-    return supabase
-      .from('event_group')
-      .select('*')
-      .returns<Group[]>()
-      .throwOnError();
-  },
-
-  async fetchEventAttendance(eventId: string): Promise<FullAttendance[]> {
-    const result = await supabase
-      .from('event_attendance_user_mapping')
-      .select('user(userId, displayName, avatarUrl, name), *')
-      .eq('event', eventId)
-      .returns<FullAttendance[]>()
-      .throwOnError();
-
-    return result.data ?? [];
-  },
-
-  async fetchSingleEvent(eventId: string): Promise<PostgrestSingleResponse<FullEvent>> {
-    return fetchEvents().eq('id', eventId).single<FullEvent>().throwOnError();
   },
 
   async fetchRecurringEvents(): Promise<EventWithGroup[]> {

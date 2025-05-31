@@ -1,7 +1,6 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { queryClient } from "src/App";
 import { supabase } from "src/components/services/supabase/supabaseClient";
-import { ItemCard } from "src/features/homepage/ItemCard";
 import { SupabaseKeysRepository } from "src/repository/KeysRepository";
 import { TablesInsert, TablesUpdate } from "src/types/supabase-generated.types";
 import { formatDateToDatabase } from "src/utils";

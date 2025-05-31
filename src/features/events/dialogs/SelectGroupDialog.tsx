@@ -13,21 +13,14 @@ import {
 } from '@mui/material';
 import { Box } from '@mui/system';
 import { DialogProps } from '@toolpad/core';
-import React, { useEffect, useState } from 'react';
-import { SupabaseEventRepository } from '../../../repository/EventRepository';
+import React from 'react';
+import { useGroups } from 'src/tanstack/groups';
 import { SlideUpTransition } from '../../../utils';
 
 
 export const SelectGroupDialog = ({ payload, open, onClose }: DialogProps<undefined, Group | null>) => {
-  const [groups, setGroups] = useState<Group[]>([]);
 
-  useEffect(() => {
-    SupabaseEventRepository.fetchUserGroups().then(
-      (r) => {
-        setGroups(r.data ?? []);
-      }
-    );
-  }, [payload]);
+  const { data: groups = [] } = useGroups();
 
   return (
     <Dialog fullScreen open={open} onClose={() => onClose(null)} TransitionComponent={SlideUpTransition}>

@@ -1,16 +1,14 @@
 import { Send } from '@mui/icons-material';
 import { Box, IconButton, InputAdornment, List, TextField, Typography } from '@mui/material';
-import { useQuery } from '@tanstack/react-query';
 import React, { createRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAuthentication } from 'src/features/auth/AuthContext';
-import { SupabaseEventRepository } from 'src/repository/EventRepository';
+import { useAddCommentMutation, useComments } from 'src/tanstack/events';
 import { FullComment } from 'src/types/supabaseTypes';
 import { can } from '../../../utils/PermissionService';
 import { EventCommentConversationDialog } from '../dialogs/EventCommentConversationDialog';
 import { CommentItem } from './CommentItem';
 import { CommentReplyItem, CommentReplyText } from './CommentReplyItem';
-import { useAddCommentMutation } from 'src/tanstack/events';
 
 type EventInformationCommentsProps = {
   eventId: string;
@@ -27,10 +25,7 @@ const EventInformationComments = ({
   const inputRef = createRef<HTMLInputElement>();
   const [replyDialogOpen, setReplyDialogOpen] = useState<FullComment | null>(null);
 
-  const { data: comments = [] } = useQuery({
-    queryKey: ["events", eventId, "comments"],
-    queryFn: () => SupabaseEventRepository.fetchEventComments(eventId)
-  });
+  const { data: comments = [] } = useComments(eventId);
 
   const addCommentMutation = useAddCommentMutation(user);
 

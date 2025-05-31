@@ -4,10 +4,10 @@ import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { DialogProps, NotificationsProvider, useDialogs, useNotifications } from "@toolpad/core";
 import dayjs from "dayjs";
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { supabase } from "src/components/services/supabase/supabaseClient";
 import { CreateOrUpdateGroupDialog } from "src/features/groups/dialogs/CreateOrUpdateGroupDialog";
-import { SupabaseUserRepository } from "src/repository/UserRepository";
+import { useGroups } from "src/tanstack/groups";
 import { Tables } from "src/types/supabase-generated.types";
 import { GroupWithUserRole } from "src/types/supabaseTypes";
 import { dayjsFromDb, dayjsToDb } from "src/utils";
@@ -20,18 +20,10 @@ const Content = ({ payload, onClose }: DialogProps<CreateChallengePayload, strin
   const notifications = useNotifications();
   const dialogs = useDialogs();
   const [selectedGroup, setSelectedGroup] = useState<Group | null>(null);
-  const [groups, setGroups] = useState<GroupWithUserRole[]>([]);
-  const [loading, setLoading] = useState(false);
 
   const [data, setData] = useState<Tables<'challenge'>>({ name: "", automated: false, description: "", id: "", created_at: "", end_date: null, group: "", max_points_per_week: null });
 
-  useEffect(() => {
-    setLoading(true);
-    SupabaseUserRepository.fetchGroupsForUser(payload.user.userId).then(result => {
-      setGroups(result);
-      setLoading(false);
-    })
-  }, [payload.user])
+  const { data: groups = [], isLoading } = useGroups();
 
   return <><AppBar sx={{ position: 'static', pt: "env(safe-area-inset-top)" }}>
     <Toolbar>
@@ -125,7 +117,6 @@ const Content = ({ payload, onClose }: DialogProps<CreateChallengePayload, strin
             if (e.target.value === "create") {
               const result = await dialogs.open(CreateOrUpdateGroupDialog, { user: payload.user });
               if (result && result !== "closed") {
-                setGroups([...groups, result])
                 setSelectedGroup(result);
               } else {
                 notifications.show("Es wurde keine Gruppe erstellt.", { severity: "error" });
@@ -136,16 +127,16 @@ const Content = ({ payload, onClose }: DialogProps<CreateChallengePayload, strin
           }}
         >
           {
-            groups.filter(x => x.user_role === "admin").map(x => <MenuItem value={x.id}>{x.name}</MenuItem>)
+            groups.filter(x => x.user_group_role === "admin").map(x => <MenuItem value={x.id}>{x.name}</MenuItem>)
           }
           {
-            loading && <MenuItem value="loading">Wird geladen...</MenuItem>
+            isLoading && <MenuItem value="loading">Wird geladen...</MenuItem>
           }
           {
-            !loading && !selectedGroup && <MenuItem value="none">Keine</MenuItem>
+            !isLoading && !selectedGroup && <MenuItem value="none">Keine</MenuItem>
           }
           {
-            !loading && <MenuItem value="create">Gruppe erstellen</MenuItem>
+            !isLoading && <MenuItem value="create">Gruppe erstellen</MenuItem>
           }
         </Select>
       </ListItem>

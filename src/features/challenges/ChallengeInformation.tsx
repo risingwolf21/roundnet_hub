@@ -1,14 +1,17 @@
 import { Edit as EditIcon } from '@mui/icons-material';
 import { Alert, Box, Fab, Tab, Tabs, Typography } from '@mui/material';
-import { withProfiler } from '@sentry/react';
-import { useDialogs } from '@toolpad/core';
+import { captureException, withProfiler } from '@sentry/react';
+import { useDialogs, useNotifications } from '@toolpad/core';
+import { Dayjs } from 'dayjs';
 import { TFunction } from 'i18next';
-import React, { useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import { withTranslation } from 'react-i18next';
 import { Navigate, useParams } from 'react-router';
 import { queryClient } from 'src/App';
 import { PullToRefresh } from 'src/components/pull-to-refresh/PullToRefresh';
-import { useChallenge, useChallengeLeaderboard, useChallengeStatsForUser, useInfiniteChallengeStats } from 'src/tanstack/challenge';
+import { supabase } from 'src/components/services/supabase/supabaseClient';
+import { useChallenge, useChallengeLeaderboard, useChallengeStatsForUser, useIncreasePointForUserMutation, useInfiniteChallengeStats } from 'src/tanstack/challenge';
+import { dataURLtoFile } from 'src/utils';
 import Layout from '../../components/Layout';
 import { can } from '../../utils/PermissionService';
 import { useAuthentication } from '../auth/AuthContext';
@@ -16,7 +19,6 @@ import { TabPanel } from '../events/dialogs/EventAttendanceDialog';
 import { ChallengeActivityList } from './ChallengeActivityList';
 import { ChallengeLeaderboard } from './ChallengeLeaderboard';
 import EnterPointDialog from './dialogs/EnterPointDialog';
-import { useIncreaseChallengePoint } from './hooks/useIncreaseChallengePoint';
 
 const ChallengeInformationProvider = ({ t }: { t: TFunction }) => {
   const { challengeId } = useParams();
@@ -30,6 +32,7 @@ const ChallengeInformationProvider = ({ t }: { t: TFunction }) => {
 const ChallengeInformation = ({ t, challengeId }: { t: TFunction, challengeId: string }) => {
   const { user } = useAuthentication();
   const dialogs = useDialogs();
+  const notifications = useNotifications();
   const [value, setValue] = useState(0);
 
   const { data: challenge = null, isLoading } = useChallenge(challengeId);
@@ -41,8 +44,46 @@ const ChallengeInformation = ({ t, challengeId }: { t: TFunction, challengeId: s
     queryClient.invalidateQueries({ queryKey: ["challenge", challengeId] })
   }
 
-  const increaseChallengePoint = useIncreaseChallengePoint(challenge, user, refetch);
+  const increasePointMutation = useIncreasePointForUserMutation(challengeId);
 
+  const uploadImage = useCallback(async (image: { dataUrl: string, fileName: string } | null) => {
+    if (!image || !challenge) return null;
+    const { data: uploadData, error } = await supabase.storage
+      .from('challenge')
+      .upload(`${challenge.id}/${image.fileName}`, dataURLtoFile(image.dataUrl, image.fileName), { upsert: true });
+    if (uploadData?.path && !error) {
+      const { data } = supabase.storage.from('challenge').getPublicUrl(uploadData.path);
+      return data?.publicUrl ?? null;
+    }
+    return null;
+  }, [challenge]);
+
+  const increaseChallengePoint = useCallback(
+    async (created_at: Dayjs, image: { dataUrl: string; fileName: string } | null) => {
+      if (!user || !challenge) {
+        notifications.show('Something went wrong! Try again later', { severity: 'error' });
+        return;
+      }
+
+      const uploadedImageUrl = await uploadImage(image);
+      if (!uploadedImageUrl && image) {
+        notifications.show('Fehler beim hochladen des Bildes. Der Punkt wurde dennoch eingetragen', { severity: 'error' });
+      }
+
+      increasePointMutation.mutate({
+        user,
+        challenge: challenge.id,
+        created_at,
+        image_url: uploadedImageUrl
+      }, {
+        onSuccess: () => notifications.show('Success!', { severity: 'success' }),
+        onError: (error) => {
+          captureException(error);
+          notifications.show(error.message, { severity: 'error' });
+        }
+      });
+    },
+    [challenge, notifications, user, increasePointMutation, uploadImage]);
 
   if (isLoading) {
     return <Box sx={{ alignItems: 'center', display: 'flex', flexDirection: 'column', pt: 10 }}>

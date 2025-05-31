@@ -12,12 +12,12 @@ import {
   TextField,
   Typography,
 } from '@mui/material';
-import { useQuery } from '@tanstack/react-query';
+import { captureException } from '@sentry/react';
 import { useNotifications } from '@toolpad/core/useNotifications';
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
 import Layout from 'src/components/Layout';
-import { GamesRepository } from 'src/repository/GamesRepository';
+import { useCreateMatch, usePlayers } from 'src/tanstack/games';
 
 type Props = { options: SimpleUser[]; loading: boolean; label: string; onSelect: (value: SimpleUser | null) => void };
 const SelectPlayer = ({ options, loading, label, onSelect }: Props) => {
@@ -58,15 +58,14 @@ const ReportScore = () => {
   const notifications = useNotifications();
   const navigate = useNavigate();
 
+  const createMatch = useCreateMatch();
+
   const [player1a, setPlayer1a] = useState<SimpleUser | null>();
   const [player2a, setPlayer2a] = useState<SimpleUser | null>();
   const [player1b, setPlayer1b] = useState<SimpleUser | null>();
   const [player2b, setPlayer2b] = useState<SimpleUser | null>();
 
-  const { data: players = [], error, isLoading, refetch } = useQuery<PlayerWithSimpleUser[]>({
-    queryKey: ['players'],
-    queryFn: GamesRepository.fetchAvailablePlayers
-  })
+  const { data: players = [], error, isLoading, refetch } = usePlayers();
 
   useEffect(() => {
     if (error)
@@ -110,23 +109,26 @@ const ReportScore = () => {
     const [name2b, ...surname2b] = player2b.name.split(' ');
     let team_a_name = (surname1a.pop() ?? name1a) + '/' + (surname2a.pop() ?? name2a);
     let team_b_name = (surname1b.pop() ?? name1b) + '/' + (surname2b.pop() ?? name2b);
-    GamesRepository.reportScores(
+
+    createMatch.mutate({
       sets,
-      {
+      team_a: {
         name: team_a_name,
         player_1: player1a.userId,
         player_2: player2a.userId
       },
-      {
+      team_b: {
         name: team_b_name,
         player_1: player1b.userId,
         player_2: player2b.userId
       }
-    )
-      .then((result) => {
-        navigate('/matches');
-      })
-      .catch((error) => notifications.show(error.message, { severity: 'error' }));
+    }, {
+      onSuccess: () => navigate("/matches"),
+      onError: (error) => {
+        captureException(error);
+        notifications.show(error.message, { severity: 'error' })
+      }
+    })
   };
 
   return (
