@@ -6,17 +6,16 @@ import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router";
 import Layout from "src/components/Layout";
 import { LoadingIndicator } from "src/components/LoadingIndicator";
-import { supabase } from "src/components/services/supabase/supabaseClient";
-import { useGroup } from "src/tanstack/groups";
+import { useGroup, useLeaveGroupMutation } from "src/tanstack/groups";
 import { can } from "src/utils/PermissionService";
 import { useAuthentication } from "../auth/AuthContext";
 import { AcceptJoinButton } from "./components/AcceptJoinButton";
+import { DeclineJoinButton } from "./components/DeclineJoinButton";
 import { GroupUserItem } from "./components/GroupUserItem";
 import { CreateOrUpdateGroupDialog } from "./dialogs/CreateOrUpdateGroupDialog";
 import SearchAndSelectUserDialog from "./dialogs/SearchAndSelectUserDialog";
 import { useAddUsersMutation } from "./query/addUsersMutation";
 import { useRemoveUsersMutation } from "./query/removeUsersMutation";
-import { DeclineJoinButton } from "./components/DeclineJoinButton";
 
 const PublicGroupInformation = () => {
 
@@ -37,6 +36,7 @@ const PublicGroupInformation = () => {
 
   const addUsersMutation = useAddUsersMutation(group);
   const removeUsersMutation = useRemoveUsersMutation(group);
+  const leaveGroupMutation = useLeaveGroupMutation();
 
   const handleUsersAdded = async (users: User[]) => {
     addUsersMutation.mutate(users, {
@@ -216,11 +216,10 @@ const PublicGroupInformation = () => {
                     : "Die Gruppe ist öffentlich. Du kannst Ihr jederzeit wieder beitreten.",
                     { okText: "Verlassen", cancelText: "Abbrechen", title: "Möchtest du die Gruppe wirklich verlassen?" }).then(result => {
                       if (result) {
-                        supabase.schema("public").from("group_user_mapping").delete().eq("group", group.id).eq("user", user.userId).then(result => {
-                          if (!result.error) {
-                            navigate("/groups/list", { replace: true })
-                          } else {
-                            captureException(result.error);
+                        leaveGroupMutation.mutate({ group, user }, {
+                          onSuccess: () => navigate("/groups/list", { replace: true }),
+                          onError: (error) => {
+                            captureException(error);
                             notifications.show("Es ist ein Fehler aufgetreten.", { severity: "error" })
                           }
                         })

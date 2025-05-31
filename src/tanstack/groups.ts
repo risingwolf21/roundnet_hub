@@ -91,6 +91,41 @@ export const useJoinGroup = (groupId: string, user: User, role: "user" | "admin"
     queryClient.invalidateQueries({ queryKey: ['group', groupId] })
     queryClient.invalidateQueries({ queryKey: ['groups'] })
   },
+});
+
+export const useLeaveGroupMutation = () => useMutation({
+  mutationFn: async ({ group, user }: { group: Group, user: User }) => {
+    const result = await supabase
+      .schema("public")
+      .from("group_user_mapping")
+      .delete()
+      .eq("group", group.id)
+      .eq("user", user.userId)
+      .throwOnError();
+    return result.data;
+  },
+  onMutate: async ({ group, user }) => {
+    await queryClient.cancelQueries({ queryKey: ['group', group.id] })
+    await queryClient.cancelQueries({ queryKey: ['groups'] })
+
+    const prevGroup = queryClient.getQueryData<GroupWithUserMappings | null>(['group', group.id])
+    const prevGroups = queryClient.getQueryData<GroupWithUserMappings[]>(['groups'])
+
+    if (prevGroups) {
+      const newGroups = prevGroups.filter(x => x.id !== group.id)
+      queryClient.setQueryData(['groups'], newGroups);
+    }
+
+    return { prevGroup, prevGroups }
+  },
+  onError: (_err, _vars, context) => {
+    queryClient.setQueryData(['group', _vars.group.id], context?.prevGroup)
+    queryClient.setQueryData(['groups'], context?.prevGroups)
+  },
+  onSuccess: (_data, vars) => {
+    queryClient.invalidateQueries({ queryKey: ['group', vars.group.id] })
+    queryClient.invalidateQueries({ queryKey: ['groups'] })
+  },
 })
 
 export const useCreateGroupMutation = () => useMutation({
