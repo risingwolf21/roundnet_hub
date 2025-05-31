@@ -5,7 +5,7 @@ import { PullToRefresh } from 'src/components/pull-to-refresh/PullToRefresh';
 import Layout from '../../components/Layout';
 import { SupabaseUserRepository } from '../../repository/UserRepository';
 import { useAuthentication } from '../auth/AuthContext';
-import { useAllNotifications } from './query';
+import { useAllNotifications } from 'src/tanstack/notifications';
 
 const NotificationsPage = () => {
 

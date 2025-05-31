@@ -40,11 +40,13 @@ import { TFunction } from 'i18next';
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router';
+import { useAuthentication } from 'src/features/auth/AuthContext';
+import { useRequestedUsersPerGroup } from 'src/tanstack/groups';
+import { useAllNotifications } from 'src/tanstack/notifications';
 import { HOMEPAGE } from '../constants';
 import raw from '../git_commit.txt';
 import { can, canAny } from '../utils/PermissionService';
 import { InstallPWA } from './PwaInstallPromp';
-import { useRequestedUsersPerGroup } from 'src/tanstack/groups';
 
 export const drawerWidth = 360;
 
@@ -128,13 +130,15 @@ type DrawerContentProps = {
   t: TFunction;
   version: string;
   request_group_joins: number;
+  notification_count: number;
 };
 const DrawerContent = ({
   tab,
   handleChange,
   t,
   version,
-  request_group_joins
+  request_group_joins,
+  notification_count
 }: DrawerContentProps) => {
   return (
     <DrawerBox>
@@ -319,10 +323,15 @@ const DrawerContent = ({
             key="notifications"
             selected={tab === 'notifications'}
             onClick={() => handleChange('notifications')}
+            secondaryAction={
+              <Typography fontWeight={'bold'} fontSize={'0.9rem'}>
+                {notification_count || ''}
+              </Typography>
+            }
           >
             <ListItemAvatar>
               <ListItemIcon>
-                <Badge color={'secondary'} variant={'dot'}>
+                <Badge color={'secondary'} variant={'dot'} badgeContent={notification_count}>
                   <Notifications />
                 </Badge>
               </ListItemIcon>
@@ -510,10 +519,12 @@ const DrawerContent = ({
 export const Drawer = ({ open, onClose, onOpen }: Props) => {
   const navigate = useNavigate();
   const { t } = useTranslation();
+  const { user } = useAuthentication();
   const [tab, setTab] = useState<string>(HOMEPAGE);
   const [version, setVersion] = useState<string>('');
 
   const { data: requested_group_joins = [] } = useRequestedUsersPerGroup();
+  const { data: notifications = [] } = useAllNotifications(user);
 
   const iOS =
     typeof navigator !== 'undefined' && /iPad|iPhone|iPod/.test(navigator.userAgent);
@@ -587,6 +598,7 @@ export const Drawer = ({ open, onClose, onOpen }: Props) => {
           t={t}
           version={version}
           request_group_joins={requested_group_joins.length}
+          notification_count={notifications.length}
         />
       </CustomDrawer>
       <CustomDrawer
@@ -614,6 +626,7 @@ export const Drawer = ({ open, onClose, onOpen }: Props) => {
           t={t}
           version={version}
           request_group_joins={requested_group_joins.length}
+          notification_count={notifications.length}
         />
       </CustomDrawer>
     </Box>
