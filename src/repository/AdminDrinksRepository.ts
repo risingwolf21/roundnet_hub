@@ -1,17 +1,11 @@
 import { PostgrestSingleResponse } from '@supabase/supabase-js';
 import _ from 'lodash';
 import { supabase } from '../components/services/supabase/supabaseClient';
-import { fetchDrink, fetchFullHistory } from './DrinkRepository';
+import { fetchFullHistory } from './DrinkRepository';
 
 const PAGE_SIZE = 20
 
-
 export const AdminDrinksRepository = {
-  async fetchDrinks(): Promise<Drink[]> {
-    const result = await fetchDrink().throwOnError();
-
-    return result.data ?? []
-  },
 
   async fetchAdminHistory({ pageParam = 0 }: { pageParam?: number }) {
     const from = pageParam * PAGE_SIZE

@@ -14,17 +14,16 @@ import { CancelTrainingDialog } from 'src/features/events/dialogs/CancelTraining
 import { DeleteEventDialog } from 'src/features/events/dialogs/DeleteEventDialog';
 import { EditEventOptionsDialog } from 'src/features/events/dialogs/EditEventOptionsDialog';
 import { CreateOrUpdateEventDialog } from 'src/features/events/dialogs/CreateOrUpdateEventDialog';
-import { useCancelTrainingMutation } from 'src/features/events/useCancelTraining';
-import { useDeleteTrainingMutation } from 'src/features/events/useDeleteTraining';
 import { useAllItems } from 'src/features/keys/query';
 import { useFetchMode } from 'src/hooks/useFetchMode';
 import { SupabaseEventRepository } from 'src/repository/EventRepository';
 import { EventsUserView } from 'src/types/supabaseTypes';
 import { can } from 'src/utils/PermissionService';
 import { EventTable } from 'types/supabase';
-import EventInformation from '../features/events/EventInformation';
-import { PlaceType } from '../features/events/types';
+import EventInformation from './EventInformation';
+import { PlaceType } from './types';
 import { queryClient } from 'src/App';
+import { useCancelTrainingMutation, useDeleteTrainingMutation } from 'src/tanstack/events';
 
 const EventInformationProvider = () => {
   const { selectedEventId } = useParams();

@@ -19,6 +19,7 @@ import Layout from '../../components/Layout';
 import { AdminDrinksRepository } from '../../repository/AdminDrinksRepository';
 import { AdminDrinkItem } from './components/AdminDrinkItem';
 import EditDrinkDialog from './dialogs/EditDrinkDialog';
+import { supabase } from 'src/components/services/supabase/supabaseClient';
 
 const EMPTY_DRINK: Drink = {
   imageUrl: '',
@@ -34,7 +35,12 @@ const EMPTY_DRINK: Drink = {
 
 export const useAllDrinksAsAdmin = () => useQuery<Drink[]>({
   queryKey: ["drinks", "admin"],
-  queryFn: AdminDrinksRepository.fetchDrinks
+  queryFn: async () => {
+    const result = await supabase
+      .from('drink')
+      .select('*');
+    return result.data ?? [];
+  }
 });
 
 const AdminDrinkList = () => {

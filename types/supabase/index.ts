@@ -1,7 +1,7 @@
 import { QueryData } from '@supabase/supabase-js';
 import { fetchRolePermissionMapping } from 'src/repository/AdminPermissionsRepository';
 import { fetchGroupWithUsers } from 'src/repository/AdminUsersRepository';
-import { fetchDrinksToPay, fetchFullHistory } from 'src/repository/DrinkRepository';
+import { fetchFullHistory } from 'src/repository/DrinkRepository';
 import { fetchEvents } from 'src/repository/EventRepository';
 import { fetchMatch, fetchUserMatches } from 'src/repository/GamesRepository';
 import { fetchGroups, fetchSimpleUser, fetchUserWithGroups } from 'src/repository/UserRepository';
@@ -50,7 +50,6 @@ declare global {
   type GroupWithUsers = QueryData<ReturnType<typeof fetchGroupWithUsers>> extends Array<infer U> ? U : never;
   type FullHistory = QueryData<ReturnType<typeof fetchFullHistory>> extends Array<infer U> ? U : never;
   type SimpleUser = QueryData<ReturnType<typeof fetchSimpleUser>> extends Array<infer U> ? U : never;
-  type OpenDrinksForUser = QueryData<ReturnType<typeof fetchDrinksToPay>> extends Array<infer U> ? U : never;
   type RolePermissionMapping =
     QueryData<ReturnType<typeof fetchRolePermissionMapping>> extends Array<infer U> ? U : never;
   type Groups = QueryData<ReturnType<typeof fetchGroups>> extends Array<infer U> ? U : never;

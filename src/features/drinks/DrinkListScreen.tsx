@@ -5,7 +5,6 @@ import { captureException } from '@sentry/react';
 import { useNotifications } from '@toolpad/core/useNotifications';
 import React, { useEffect, useState } from 'react';
 import { AlertMessage } from 'src/components/AlertSnackbar';
-import { useDrinks } from 'src/pages/Drinklist.page';
 import { DrinkCounter } from 'src/types/supabaseTypes';
 import { nameOfProductType } from 'src/utils';
 import { SwipeableDialog } from '../../components/SwipeableDialog';
@@ -13,6 +12,7 @@ import { SupabaseDrinkRepository } from '../../repository/DrinkRepository';
 import DrinkList from './components/DrinkList';
 import { LoadingDrinkItem } from './components/LoadingDrinkItem';
 import VoucherCard from './components/Voucher';
+import { useDrinks } from 'src/tanstack/drinks';
 
 const SUCCESS_MESSAGE_INFO: AlertMessage = { message: 'Getränke erfolgreich gebucht!', severity: 'success' };
 

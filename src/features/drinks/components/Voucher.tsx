@@ -1,16 +1,12 @@
 import { Redeem } from '@mui/icons-material';
 import { Avatar, Chip, List, ListItem, ListItemAvatar, ListItemText, ListSubheader } from '@mui/material';
-import { useQuery } from '@tanstack/react-query';
 import { useNotifications } from '@toolpad/core';
 import React, { useEffect } from 'react';
-import { SupabaseDrinkRepository } from 'src/repository/DrinkRepository';
+import { useVouchers } from 'src/tanstack/drinks';
 
 const VoucherCard = () => {
   const notifications = useNotifications();
-  const { data: vouchers = [], isLoading, error } = useQuery({
-    queryKey: ["vouchers"],
-    queryFn: SupabaseDrinkRepository.fetchVouchersForUser
-  });
+  const { data: vouchers = [], isLoading, error } = useVouchers();
 
   useEffect(() => {
     if (error)

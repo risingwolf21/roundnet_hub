@@ -8,13 +8,13 @@ import React from "react"
 import { useNavigate } from "react-router"
 import Layout from "src/components/Layout"
 import { useFetchMode } from "src/hooks/useFetchMode"
-import { useDrinks } from "src/pages/Drinklist.page"
 import { SupabaseDrinkRepository } from "src/repository/DrinkRepository"
 import { answerDeadlineExpired, eventInThePast } from "src/types/supabaseTypes"
 import { translationKeyOfItemType } from "src/utils"
 import { useAuthentication } from "../auth/AuthContext"
 import { useEvents, useUpdateAttendanceMutation } from "../events/useAllEvents"
 import { useAllItems } from "../keys/query"
+import { useDrinks } from "src/tanstack/drinks"
 
 const HomePage = () => {
 

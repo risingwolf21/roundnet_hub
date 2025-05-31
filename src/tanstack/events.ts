@@ -1,5 +1,6 @@
 import { useMutation, useQuery } from "@tanstack/react-query"
 import { queryClient } from "src/App"
+import { DeleteEventType } from "src/features/events/types"
 import { SupabaseEventRepository } from "src/repository/EventRepository"
 import { EventsUserView, FullAttendance, FullComment } from "src/types/supabaseTypes"
 import { formatDateToDatabase } from "src/utils"
@@ -163,6 +164,97 @@ export const useAddCommentMutation = (user: User) => {
     onSettled: (context) => {
       if (context?.event)
         queryClient.invalidateQueries({ queryKey: ["events", context.event, "comments"] });
+    },
+  })
+}
+
+export const useCancelTrainingMutation = (fetchMode: "past" | "upcoming") => {
+  return useMutation({
+    mutationFn: ({ event, isCancelled }: { event: EventsUserView, isCancelled: boolean }) => {
+      return SupabaseEventRepository.updateCancellationForEvent(event.id, isCancelled)
+    },
+    onMutate: async ({ event, isCancelled }) => {
+      await queryClient.cancelQueries({ queryKey: ["events", fetchMode] });
+      await queryClient.cancelQueries({ queryKey: ["events", event.id] });
+
+      const previousEvents = queryClient.getQueryData<EventsUserView[]>(["events", fetchMode]);
+      const previousEvent = queryClient.getQueryData<EventsUserView>(["events", event.id]);
+
+      if (previousEvents) {
+        const updatedEvents = previousEvents.map(ev => {
+          if (ev.id === event.id) {
+            return {
+              ...ev,
+              isCancelled: isCancelled
+            };
+          }
+          return ev;
+        });
+
+        queryClient.setQueryData(["events", fetchMode], updatedEvents);
+      }
+
+      if (previousEvent) {
+        const updatedEvent = {
+          ...previousEvent,
+          isCancelled: isCancelled
+        }
+
+        queryClient.setQueryData(["events", event.id], updatedEvent);
+      }
+
+      return { previousEvents, previousEvent, event }
+    },
+    onError: (err, _vars, context) => {
+      if (context?.previousEvents) {
+        queryClient.setQueryData(["events", fetchMode], context.previousEvents);
+      }
+      if (context?.previousEvent) {
+        queryClient.setQueryData(["events", _vars.event.id], context.previousEvent);
+      }
+    },
+
+    onSettled: (data, error, variables, context) => {
+      queryClient.invalidateQueries({ queryKey: ["events", fetchMode] });
+      queryClient.invalidateQueries({ queryKey: ["events", variables.event.id!] });
+    },
+  })
+}
+
+export const useDeleteTrainingMutation = (fetchMode: "past" | "upcoming") => {
+  return useMutation({
+    mutationFn: ({ event, type }: { event: EventsUserView, type: DeleteEventType }) => {
+      if (type === "This Event") {
+        return SupabaseEventRepository.deleteEvent(event.id)
+      } else {
+        return SupabaseEventRepository.deleteEventAndUpcomingEvents(
+          event.id,
+          event.key,
+          event.startingDateTime
+        )
+      }
+    },
+    onMutate: async ({ event, type }) => {
+      await queryClient.cancelQueries({ queryKey: ["events", fetchMode] });
+
+      const previousEvents = queryClient.getQueryData<EventsUserView[]>(["events", fetchMode]);
+
+      if (previousEvents) {
+        const updatedEvents = previousEvents.filter(x => x.id !== event.id)
+
+        queryClient.setQueryData(["events", fetchMode], updatedEvents);
+      }
+
+      return { previousEvents, event }
+    },
+    onError: (err, _vars, context) => {
+      if (context?.previousEvents) {
+        queryClient.setQueryData(["events", fetchMode], context.previousEvents);
+      }
+    },
+
+    onSettled: (data, error, variables, context) => {
+      queryClient.invalidateQueries({ queryKey: ["events", fetchMode] });
     },
   })
 }

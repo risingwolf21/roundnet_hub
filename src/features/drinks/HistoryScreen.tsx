@@ -1,10 +1,9 @@
 import { Box, LinearProgress, List, Typography } from '@mui/material';
 import { captureException } from '@sentry/react';
-import { useInfiniteQuery } from '@tanstack/react-query';
 import { useNotifications } from '@toolpad/core/useNotifications';
 import moment from 'moment/moment';
 import React, { useEffect, useRef, useState } from 'react';
-import { SupabaseDrinkRepository } from '../../repository/DrinkRepository';
+import { useInfiniteUserHistory, useUpdateHistoryEntryMutation } from 'src/tanstack/drinks';
 import { groupBy } from '../../utils';
 import { HistoryItem } from './components/HistoryItem';
 import EditHistoryEntryDialog from './dialog/EditHistoryEntryDialog';
@@ -17,26 +16,20 @@ export const HistoryScreen = ({
   const [editHistoryEntryOpen, setEditHistoryEntryOpen] = useState<boolean>(false);
   const [historyEntryToEdit, setHistoryEntryToEdit] = useState<FullHistory | null>(null);
 
-  const { data: history, isLoading, hasNextPage, fetchNextPage, isFetchingNextPage } = useInfiniteQuery({
-    queryKey: ["history", "admin"],
-    queryFn: ({ pageParam }) => SupabaseDrinkRepository.fetchHistoryForUser(user.userId, pageParam),
-    getNextPageParam: (lastPage) => lastPage.nextPage,
-    initialPageParam: 0
-  });
+  const { data: history, isLoading, hasNextPage, fetchNextPage, isFetchingNextPage } = useInfiniteUserHistory(user.userId)
+
+  const updateEntry = useUpdateHistoryEntryMutation(user.userId);
 
   const handleEntryUpdate = (newEntry: FullHistory) => {
-    SupabaseDrinkRepository.updateHistoryItem(
-      newEntry.id,
-      newEntry.count ?? 0,
-      (newEntry.count ?? 0) * (newEntry.drink.price ?? 1)
-    )
-      .then((result) => {
-        setEditHistoryEntryOpen(false);
-      })
-      .catch((error) => {
+    updateEntry.mutate(newEntry, {
+      onError: (error) => {
         captureException(error);
-        notifications.show(error, { severity: 'error' });
-      });
+        notifications.show(error.message, { severity: 'error' });
+      },
+      onSuccess: () => {
+        setEditHistoryEntryOpen(false);
+      }
+    });
   };
 
   const handleEntryOnClick = (entry: FullHistory) => {

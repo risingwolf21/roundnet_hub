@@ -1,6 +1,6 @@
 import React from 'react';
 import Layout from 'src/components/Layout';
-import EventScreen from '../features/events/EventList';
+import EventScreen from './EventList';
 
 const EventScreenProvider = () => {
 

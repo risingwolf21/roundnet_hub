@@ -9,10 +9,9 @@ import {
   ListItemText,
   Typography
 } from '@mui/material';
-import { useQuery } from '@tanstack/react-query';
 import { useNotifications } from '@toolpad/core';
 import React, { useEffect } from 'react';
-import { SupabaseDrinkRepository } from 'src/repository/DrinkRepository';
+import { usePaymentHistory } from 'src/tanstack/drinks';
 import Layout from '../../components/Layout';
 import { LoadingScreen } from '../../components/LoadingScreen';
 import { PAYPAL_ME_ADDRESS } from '../../constants';
@@ -60,10 +59,7 @@ const PayDrinksScreen = ({ user }: { user: User }) => {
 
   const notifications = useNotifications();
 
-  const { data: history = [], isLoading, error, refetch } = useQuery({
-    queryKey: ["payment"],
-    queryFn: () => SupabaseDrinkRepository.fetchDrinksToPay(user.userId)
-  });
+  const { data: history = [], isLoading, error, refetch } = usePaymentHistory(user.userId);
 
   useEffect(() => {
     if (error)

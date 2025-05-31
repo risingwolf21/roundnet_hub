@@ -14,9 +14,9 @@ const PaymentsPendingAdmin = lazyWithRetry(() => import('./features/admin/Paymen
 const AdminDrinkListProvider = lazyWithRetry(() => import('./features/admin/AdminDrinkList'));
 const AdminHistoryScreenProvider = lazyWithRetry(() => import('./features/admin/AdminHistoryScreen'));
 const AdminUserListProvider = lazyWithRetry(() => import('./features/admin/AdminUserList'));
-const DrinkListScreenProvider = lazyWithRetry(() => import('./pages/Drinklist.page'));
-const EventInformationProvider = lazyWithRetry(() => import('./pages/EventInformation.page'));
-const EventScreenProvider = lazyWithRetry(() => import('./pages/EventList.page'));
+const DrinkListScreenProvider = lazyWithRetry(() => import('./features/drinks/Drinklist.page'));
+const EventInformationProvider = lazyWithRetry(() => import('./features/events/EventInformation.page'));
+const EventScreenProvider = lazyWithRetry(() => import('./features/events/EventList.page'));
 const NotificationScreen = lazyWithRetry(() => import('./features/notifications/NotificationScreen'));
 const ChallengeScreen = lazyWithRetry(() => import('./features/challenges/ChallengeList'));
 const ChallengeInfoScreen = lazyWithRetry(() => import('./features/challenges/ChallengeInformation'));
