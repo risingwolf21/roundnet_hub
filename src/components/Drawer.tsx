@@ -32,7 +32,8 @@ import {
   ListSubheader,
   DrawerProps as MuiDrawerProps,
   SwipeableDrawer,
-  Theme
+  Theme,
+  Typography
 } from '@mui/material';
 import { styled } from '@mui/system';
 import { TFunction } from 'i18next';
@@ -43,6 +44,7 @@ import { HOMEPAGE } from '../constants';
 import raw from '../git_commit.txt';
 import { can, canAny } from '../utils/PermissionService';
 import { InstallPWA } from './PwaInstallPromp';
+import { useRequestedUsersPerGroup } from 'src/tanstack/groups';
 
 export const drawerWidth = 360;
 
@@ -125,12 +127,14 @@ type DrawerContentProps = {
   handleChange: (value: string) => void;
   t: TFunction;
   version: string;
+  request_group_joins: number;
 };
 const DrawerContent = ({
   tab,
   handleChange,
   t,
   version,
+  request_group_joins
 }: DrawerContentProps) => {
   return (
     <DrawerBox>
@@ -252,10 +256,17 @@ const DrawerContent = ({
           </DrawerItem>
         )}
         {
-          can("select", "group") && <DrawerItem key="groups" selected={tab === 'groups/list'} onClick={() => handleChange('groups/list')}>
+          can("select", "group") && <DrawerItem key="groups" selected={tab === 'groups/list'} onClick={() => handleChange('groups/list')}
+            secondaryAction={
+              <Typography fontWeight={'bold'} fontSize={'0.9rem'}>
+                {request_group_joins || ''}
+              </Typography>
+            }>
             <ListItemAvatar>
               <ListItemIcon>
-                <Groups />
+                <Badge color={'secondary'} variant={'dot'} badgeContent={request_group_joins}>
+                  <Groups />
+                </Badge>
               </ListItemIcon>
             </ListItemAvatar>
             <ListItemText
@@ -502,6 +513,8 @@ export const Drawer = ({ open, onClose, onOpen }: Props) => {
   const [tab, setTab] = useState<string>(HOMEPAGE);
   const [version, setVersion] = useState<string>('');
 
+  const { data: requested_group_joins = [] } = useRequestedUsersPerGroup();
+
   const iOS =
     typeof navigator !== 'undefined' && /iPad|iPhone|iPod/.test(navigator.userAgent);
 
@@ -573,6 +586,7 @@ export const Drawer = ({ open, onClose, onOpen }: Props) => {
           handleChange={handleChange}
           t={t}
           version={version}
+          request_group_joins={requested_group_joins.length}
         />
       </CustomDrawer>
       <CustomDrawer
@@ -599,6 +613,7 @@ export const Drawer = ({ open, onClose, onOpen }: Props) => {
           handleChange={handleChange}
           t={t}
           version={version}
+          request_group_joins={requested_group_joins.length}
         />
       </CustomDrawer>
     </Box>

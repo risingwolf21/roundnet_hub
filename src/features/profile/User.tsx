@@ -19,7 +19,6 @@ import { DialogComponent, useDialogs } from '@toolpad/core/useDialogs';
 import { isSupported } from 'firebase/messaging';
 import React, { useCallback, useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router';
-import { supabase } from 'src/components/services/supabase/supabaseClient';
 import Layout from '../../components/Layout';
 import pzLogo from '../../images/pz_logo.svg';
 import { AppDispatch, useAppDispatch } from '../../redux/store';

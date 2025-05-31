@@ -1,7 +1,21 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { queryClient } from "src/App";
+import { supabase } from "src/components/services/supabase/supabaseClient";
 import { GroupsRepository } from "src/repository/GroupsRepository";
 import { GroupWithUserMappings } from "src/types/supabaseTypes";
+
+
+export const useRequestedUsersPerGroup = () => useQuery<GroupUserMapping[]>({
+  queryKey: ['groups', 'joinRequested'],
+  queryFn: async () => {
+    const result = await supabase
+      .from("group_user_mapping")
+      .select("*")
+      .eq("role", "joinRequested");
+
+    return result.data ?? [];
+  }
+})
 
 export const useGroups = () => useQuery<GroupWithUserMappings[]>({
   queryKey: ['groups'],

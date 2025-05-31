@@ -5,7 +5,7 @@ import { useNotifications } from "@toolpad/core/useNotifications";
 import React, { useEffect } from "react";
 import { useNavigate } from "react-router";
 import { PullToRefresh } from "src/components/pull-to-refresh/PullToRefresh";
-import { useGroups } from "src/tanstack/groups";
+import { useGroups, useRequestedUsersPerGroup } from "src/tanstack/groups";
 import { useAuthentication } from "../auth/AuthContext";
 import { JoinGroupButton } from "./components/JoinGroupButton";
 import { CreateOrUpdateGroupDialog } from "./dialogs/CreateOrUpdateGroupDialog";
@@ -18,6 +18,7 @@ const PublicGroupList = () => {
   const dialogs = useDialogs();
 
   const { data: groups = [], error, isLoading, refetch } = useGroups();
+  const { data: requested_group_joins = [] } = useRequestedUsersPerGroup();
 
   useEffect(() => {
     if (error)
@@ -35,46 +36,50 @@ const PublicGroupList = () => {
   return <PullToRefresh onRefresh={() => refetch()}>
     {
       groups
-      .filter(x => x.parent_group === null)
-      .sort((a, b) => a.name.localeCompare(b.name))
-      .map(mainGroup =>
-        <List sx={{ pb: 'calc(64px + env(safe-area-inset-bottom))' }}
-          subheader={<ListSubheader>{mainGroup.name}</ListSubheader>}>
-          {
-            groups
-              .filter(x => x.parent_group === mainGroup.id || x.id === mainGroup.id)
-              .sort((a, b) => a.name.localeCompare(b.name))
-              .map(x => <ListItem
-                key={x.id}
-                divider
-                onClick={() => {
-                  if (x.user_group_role && x.user_group_role !== "joinRequested")
-                    navigate('/groups/' + x.id)
-                }}
-                secondaryAction={
-                  !x.user_group_role && (
-                    <JoinGroupButton group={x} user={user} />
-                  )
-                }
-              >
-                <ListItemAvatar>
-                  <Avatar sx={{ backgroundColor: x.color, borderRadius: 2 }}>
-                    <Groups />
-                  </Avatar>
-                </ListItemAvatar>
-                <Stack direction={"row"} spacing={2} sx={{ display: "flex", alignItems: "center" }}>
-                  <ListItemText primary={x.name} secondary={x.description} />
-                  {
-                    x.user_group_role === "admin" && <Chip variant='outlined' size="small" label="Admin" color='info' />
+        .filter(x => x.parent_group === null)
+        .sort((a, b) => a.name.localeCompare(b.name))
+        .map(mainGroup =>
+          <List sx={{ pb: 'calc(64px + env(safe-area-inset-bottom))' }}
+            subheader={<ListSubheader>{mainGroup.name}</ListSubheader>}>
+            {
+              groups
+                .filter(x => x.parent_group === mainGroup.id || x.id === mainGroup.id)
+                .sort((a, b) => a.name.localeCompare(b.name))
+                .map(x => <ListItem
+                  key={x.id}
+                  divider
+                  onClick={() => {
+                    if (x.user_group_role && x.user_group_role !== "joinRequested")
+                      navigate('/groups/' + x.id)
+                  }}
+                  secondaryAction={
+                    !x.user_group_role && (
+                      <JoinGroupButton group={x} user={user} />
+                    )
                   }
-                  {
-                    x.user_group_role === "joinRequested" && <Chip variant='outlined' size="small" label="Angefragt" color='warning' />
-                  }
-                </Stack>
-              </ListItem>)
-          }
-        </List>
-      )
+                >
+                  <ListItemAvatar>
+                    <Avatar sx={{ backgroundColor: x.color, borderRadius: 2 }}>
+                      <Groups />
+                    </Avatar>
+                  </ListItemAvatar>
+                  <Stack direction={"row"} spacing={2} sx={{ display: "flex", alignItems: "center", justifyContent: "end", width: "100%" }}>
+                    <ListItemText primary={x.name} secondary={x.description} />
+                    {
+                      x.user_group_role === "admin" && requested_group_joins.find(y => y.group === x.id)
+                      && <Chip variant='outlined' size="small" label={requested_group_joins.filter(y => y.group === x.id).length} color='warning' />
+                    }
+                    {
+                      x.user_group_role === "admin" && <Chip variant='outlined' size="small" label="Admin" color='info' />
+                    }
+                    {
+                      x.user_group_role === "joinRequested" && <Chip variant='outlined' size="small" label="Angefragt" color='warning' />
+                    }
+                  </Stack>
+                </ListItem>)
+            }
+          </List>
+        )
     }
     {
       !error && <Fab

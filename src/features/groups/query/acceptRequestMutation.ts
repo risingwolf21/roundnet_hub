@@ -24,8 +24,10 @@ export const useAcceptRequestMutation = (group: Group | null) => useMutation({
       return null;
 
     await queryClient.cancelQueries({ queryKey: ['group', group.id] });
+    await queryClient.cancelQueries({ queryKey: ['group', 'joinRequested'] });
 
     const previousGroup = queryClient.getQueryData<GroupWithUserMappings>(['group', group.id]);
+    const previousRequested = queryClient.getQueryData<GroupUserMapping[]>(['group', 'joinRequested']);
 
     if (previousGroup) {
       queryClient.setQueryData<GroupWithUserMappings>(['group', group.id], {
@@ -47,15 +49,23 @@ export const useAcceptRequestMutation = (group: Group | null) => useMutation({
       });
     }
 
-    return { previousGroup };
+    if (previousRequested) {
+      queryClient.setQueryData<GroupUserMapping[]>(['groups', 'joinRequested'], previousRequested.filter(x => x.user !== user.userId && x.group !== group.id));
+    }
+
+    return { previousGroup, previousRequested };
   },
   onError: (err, variables, context) => {
     if (context?.previousGroup && group) {
       queryClient.setQueryData(['group', group.id], context.previousGroup);
     }
+    if (context?.previousRequested) {
+      queryClient.setQueryData(['group', 'joinRequested'], context.previousRequested);
+    }
   },
   onSettled: () => {
     if (group)
       queryClient.invalidateQueries({ queryKey: ['group', group.id] });
+    queryClient.invalidateQueries({ queryKey: ['group', 'joinRequested'] });
   },
 });

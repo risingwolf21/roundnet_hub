@@ -16,6 +16,7 @@ import { CreateOrUpdateGroupDialog } from "./dialogs/CreateOrUpdateGroupDialog";
 import SearchAndSelectUserDialog from "./dialogs/SearchAndSelectUserDialog";
 import { useAddUsersMutation } from "./query/addUsersMutation";
 import { useRemoveUsersMutation } from "./query/removeUsersMutation";
+import { DeclineJoinButton } from "./components/DeclineJoinButton";
 
 const PublicGroupInformation = () => {
 
@@ -117,7 +118,10 @@ const PublicGroupInformation = () => {
             .sort((a, b) => a.user.displayName.localeCompare(b.user.displayName))
             .slice(0, 10)
             .map(x =>
-              <ListItem key={x.user.userId} secondaryAction={<AcceptJoinButton user={x.user} group={group} />}>
+              <ListItem key={x.user.userId} secondaryAction={<Stack direction={"row"} spacing={2}>
+                <DeclineJoinButton user={x.user} group={group} />
+                <AcceptJoinButton user={x.user} group={group} />
+              </Stack>}>
                 <ListItemAvatar>
                   <Avatar sx={{ borderRadius: 2 }}>
                     {x.user.avatarUrl ? (
