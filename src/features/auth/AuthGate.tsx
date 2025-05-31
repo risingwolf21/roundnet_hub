@@ -1,23 +1,22 @@
 import { Box, CircularProgress, Typography } from '@mui/material';
 import { captureException, setTag, setUser } from '@sentry/react';
 import { Session } from '@supabase/supabase-js';
+import { DialogsProvider, NotificationsProvider } from '@toolpad/core';
 import React, { useCallback, useEffect, useState } from 'react';
-import { useDispatch } from 'react-redux';
 import { AppRoutes } from 'src/AppRoutes';
 import { LoadingScreen } from 'src/components/LoadingScreen';
 import { supabase } from 'src/components/services/supabase/supabaseClient';
 import useDeviceId from 'src/hooks/useDeviceId';
 import raw from '../../git_commit.txt';
-import { onUserChange } from '../../redux/applicationSlice';
 import { AdminPermissionsRepository } from '../../repository/AdminPermissionsRepository';
 import { SupabaseUserRepository } from '../../repository/UserRepository';
 import { UserWithRolesAndPermissions } from '../../types/supabaseTypes';
 import { ability, defineRulesFor } from '../../utils/PermissionService';
 import { ApplicationContext } from './ApplicationContext';
+import { queryClient } from 'src/App';
 
 
 export const AuthGate = () => {
-  const dispatch = useDispatch();
   const deviceId = useDeviceId();
 
   const [version, setVersion] = React.useState("");
@@ -52,17 +51,18 @@ export const AuthGate = () => {
     } catch (error: any) {
       reset();
       captureException(error);
+    } finally {
+      await queryClient.invalidateQueries();
     }
   };
 
   const reset = useCallback(() => {
     setLoading(false);
     ability.update(defineRulesFor([], []));
-    dispatch(onUserChange(null));
     setUser(null);
     setCurrentUser(null);
     setProviderToken(null);
-  }, [dispatch]);
+  }, []);
 
   const fetchUserData = useCallback(async (session: Session, abortSignal: AbortSignal) => {
     try {
@@ -146,7 +146,17 @@ export const AuthGate = () => {
   return (
     <ApplicationContext.Provider value={{ user: currentUser, signOut: signOut, deviceId, provider_token, version }}>
       <React.Suspense fallback={<LoadingScreen />}>
-        <AppRoutes />
+        <DialogsProvider>
+          <NotificationsProvider slotProps={{
+            snackbar: {
+              sx: {
+                bottom: "calc(8px + env(safe-area-inset-bottom))"
+              }
+            }
+          }}>
+            <AppRoutes />
+          </NotificationsProvider>
+        </DialogsProvider>
       </React.Suspense>
     </ApplicationContext.Provider>
   );

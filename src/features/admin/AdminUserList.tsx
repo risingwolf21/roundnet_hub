@@ -4,16 +4,15 @@ import { Badge, Chip, InputAdornment, LinearProgress, List, TextFieldProps } fro
 import TextField from '@mui/material/TextField';
 import { styled } from '@mui/system';
 import { captureException } from '@sentry/react';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import { useNotifications } from '@toolpad/core/useNotifications';
-import React, { useEffect, useState } from 'react';
-import { useSelector } from 'react-redux';
+import React, { useState } from 'react';
+import { queryClient } from 'src/App';
 import Layout from '../../components/Layout';
-import { RootState, useAppDispatch } from '../../redux/store';
 import { AdminUsersRepository } from '../../repository/AdminUsersRepository';
 import { UserWithGroups } from '../../types/supabaseTypes';
 import { AdminUserItem } from './components/AdminUserItem';
 import EditUserDialog, { UserEdited } from './dialogs/EditUserDialog';
-import { fetchAdminUsersAsync } from './slices/adminUserSlice';
 
 const SearchBar = styled(TextField)<TextFieldProps>(({ theme }) => ({
   marginLeft: 16,
@@ -40,19 +39,56 @@ const SearchBar = styled(TextField)<TextFieldProps>(({ theme }) => ({
   },
 }));
 
+export const useAllUsersAsAdmin = () => useQuery<UserWithGroups[]>({
+  queryKey: ["users", "admin"],
+  queryFn: () => AdminUsersRepository.fetchAllUsersWithGroups()
+});
+
+export const useUpdateUserMutation = () => useMutation({
+  mutationFn: ({ update }: { update: UserEdited }) => {
+    return AdminUsersRepository.updateUser(update)
+  },
+  onMutate: async ({ update }) => {
+    await queryClient.cancelQueries({ queryKey: ["users", "admin"] });
+
+    const previousUsers = queryClient.getQueryData<UserWithGroups[]>(["users", "admin"]);
+
+    if (previousUsers) {
+      const newUsers = previousUsers.map(x => {
+        if (x.userId === update.userId) {
+          return {
+            ...x,
+            displayName: update.displayName,
+            verified: update.verified,
+            role: update.role
+          }
+        }
+        return x
+      })
+      queryClient.setQueryData(["events", "admin"], newUsers);
+    }
+
+    return { previousUsers }
+  },
+  onError: (err, _vars, context) => {
+    if (context?.previousUsers) {
+      queryClient.setQueryData(["users", "admin"], context.previousUsers);
+    }
+  },
+  onSettled: (data, error, variables, context) => {
+    queryClient.invalidateQueries({ queryKey: ["users", "admin"] });
+  },
+})
+
 const AdminUserList = () => {
   const [editUserOpen, setEditUserOpen] = useState(false);
   const [currentUser, setCurrentUser] = useState<UserWithGroups | null>();
   const [searchString, setSearchString] = useState('');
   const [showNotVerifiedUsers, setShowNotVerifiedUsers] = useState(false);
-  const dispatch = useAppDispatch();
   const notifications = useNotifications();
 
-  useEffect(() => {
-    dispatch(fetchAdminUsersAsync());
-  }, [dispatch]);
-
-  const { users, loading, error } = useSelector((state: RootState) => state.adminUsers);
+  const { data: users = [], isLoading } = useAllUsersAsAdmin();
+  const updateUserMutation = useUpdateUserMutation();
 
   const editUser = (user: UserWithGroups) => {
     setCurrentUser(user);
@@ -71,9 +107,8 @@ const AdminUserList = () => {
   };
 
   const onUserEditFinished = async (result: UserEdited) => {
-    await AdminUsersRepository.updateUser(result);
+    updateUserMutation.mutate({ update: result })
     setEditUserOpen(false);
-    dispatch(fetchAdminUsersAsync());
   };
 
   return (
@@ -93,7 +128,7 @@ const AdminUserList = () => {
         onChange={(e) => setSearchString(e.target.value)}
         value={searchString}
       />
-      {loading && <LinearProgress style={{ position: 'fixed', left: 0, right: 0, top: 56 }} />}
+      {isLoading && <LinearProgress style={{ position: 'fixed', left: 0, right: 0, top: 56 }} />}
 
       <Badge
         sx={{ m: 2 }}

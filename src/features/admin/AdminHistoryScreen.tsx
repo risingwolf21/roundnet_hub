@@ -1,39 +1,52 @@
-import { LinearProgress } from '@mui/material';
+import { LinearProgress, List } from '@mui/material';
+import { useInfiniteQuery } from '@tanstack/react-query';
 import moment from 'moment/moment';
-import React, { useCallback, useEffect } from 'react';
-import { useSelector } from 'react-redux';
-import { fetchAdminHistoryAsync } from './slices/adminDrinksSlice';
-import { RootState, useAppDispatch } from '../../redux/store';
-import { groupBy } from '../../utils';
-import { InfiniteScrollList } from '../../components/InfiniteScrollList';
-import { AdminHistoryItem } from './components/AdminHistoryItem';
+import React, { useEffect, useRef } from 'react';
+import { AdminDrinksRepository } from 'src/repository/AdminDrinksRepository';
 import Layout from '../../components/Layout';
+import { groupBy } from '../../utils';
+import { AdminHistoryItem } from './components/AdminHistoryItem';
 
 const AdminHistoryScreen = () => {
-  const { history, historyLoading, historyEndReached } = useSelector((state: RootState) => state.adminDrinks);
-  const dispatch = useAppDispatch();
 
-  const fetchForPage = useCallback(
-    (page: number) => {
-      dispatch(fetchAdminHistoryAsync({ page, count: 20 }));
-    },
-    [dispatch]
-  );
+  const { data: history, isLoading, hasNextPage, fetchNextPage, isFetchingNextPage } = useInfiniteQuery({
+    queryKey: ["history", "admin"],
+    queryFn: AdminDrinksRepository.fetchAdminHistory,
+    getNextPageParam: (lastPage) => lastPage.nextPage,
+    initialPageParam: 0
+  });
+
+  const loadMoreRef = useRef<HTMLDivElement | null>(null)
 
   useEffect(() => {
-    fetchForPage(0);
-  }, [fetchForPage]);
+    const observer = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting && hasNextPage && !isFetchingNextPage) {
+        fetchNextPage()
+      }
+    })
+
+    const node = loadMoreRef.current
+    if (node) observer.observe(node)
+
+    return () => {
+      if (node) observer.unobserve(node)
+    }
+  }, [fetchNextPage, hasNextPage, isFetchingNextPage])
 
   return (
     <Layout>
-      {historyLoading && <LinearProgress style={{ position: 'fixed', left: 0, top: 56, right: 0 }} />}
-      <InfiniteScrollList fetch={fetchForPage} loading={historyLoading} endReached={historyEndReached}>
-        {Array.from(
-          groupBy(history, (x: FullHistory) => moment(new Date(x.created_at ?? '')).format('DD MMMM yyyy'))
-        ).map(([key, value]) => (
-          <AdminHistoryItem key={key} items={value} header={key} />
-        ))}
-      </InfiniteScrollList>
+      {isLoading && <LinearProgress style={{ position: 'fixed', left: 0, top: 56, right: 0 }} />}
+      <List>
+        {
+          Array.from(
+            groupBy(history?.pages.flatMap(x => x.data) ?? [], (x: FullHistory) => moment(new Date(x.created_at ?? '')).format('DD MMMM yyyy'))
+          ).map(([key, value]) => (
+            <AdminHistoryItem key={key} items={value} header={key} />
+          ))
+        }
+      </List>
+      {isFetchingNextPage && <p style={{ padding: "12px" }}>Lade mehr...</p>}
+      <div ref={loadMoreRef} style={{ height: 40 }} />
     </Layout>
   );
 };

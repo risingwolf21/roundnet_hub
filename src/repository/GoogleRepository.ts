@@ -1,9 +1,9 @@
 import { toDate } from "date-fns";
 import { supabase } from "src/components/services/supabase/supabaseClient";
-import { Event } from "types/supabase";
+import { EventTable } from "types/supabase";
 
 export const GoogleRepository = {
-  async insertEventToCalendar(event: Event, userId: string, provider_token: string, calendarSettings: CalendarSettings | null): Promise<Response | null> {
+  async insertEventToCalendar(event: EventTable, userId: string, provider_token: string, calendarSettings: CalendarSettings | null): Promise<Response | null> {
     const place = JSON.parse(event.place ?? "{}");
 
     const googleEvent = {
@@ -45,7 +45,7 @@ export const GoogleRepository = {
     }
     return response;
   },
-  async deleteEventFromGoogleCalendar(event: Event, userId: string, provider_token: string, calendarSettings: CalendarSettings | null): Promise<Response | null> {
+  async deleteEventFromGoogleCalendar(event: EventTable, userId: string, provider_token: string, calendarSettings: CalendarSettings | null): Promise<Response | null> {
     if (!calendarSettings || !calendarSettings.calender_id)
       return null;
 

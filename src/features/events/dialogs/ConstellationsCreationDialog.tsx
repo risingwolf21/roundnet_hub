@@ -8,11 +8,11 @@ import { NumberInput } from "src/components/mui/NumberInput";
 import { supabase } from "src/components/services/supabase/supabaseClient";
 import SearchAndSelectUserDialog from "src/features/groups/dialogs/SearchAndSelectUserDialog";
 import { GamesRepository } from "src/repository/GamesRepository";
-import { GamesTable } from "src/types/supabaseTypes";
+import { EventsUserView, GamesTable } from "src/types/supabaseTypes";
 
 type ConstellationCreationDialogProps = {
   users: User[]
-  event: FullEvent
+  event: EventsUserView
 }
 
 export type TeamType = "men" | "women" | "mixed";

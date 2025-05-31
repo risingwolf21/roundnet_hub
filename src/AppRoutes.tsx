@@ -7,17 +7,16 @@ import { AuthContext } from "./features/auth/AuthContext";
 import { lazyWithRetry } from "./hooks/lazyWithRetry";
 
 const HistoryScreenProvider = lazyWithRetry(() => import('./features/drinks/HistoryScreenProvider'));
-const KeyHolderScreenProvider = lazyWithRetry(() => import('./features/keys/provider'));
+const ItemHolderScreen = lazyWithRetry(() => import('./features/keys/ItemHolderScreen'));
 const PayDrinksScreenProvider = lazyWithRetry(() => import('./features/drinks/PayDrinksScreen'));
 const ResetPasswordScreen = lazyWithRetry(() => import('./features/auth/ResetPasswordScreen'));
 const PaymentsPendingAdmin = lazyWithRetry(() => import('./features/admin/PaymentsPendingAdmin'));
-const CreateEventProvider = lazyWithRetry(() => import('./pages/EventCreation.page'));
 const AdminDrinkListProvider = lazyWithRetry(() => import('./features/admin/AdminDrinkList'));
 const AdminHistoryScreenProvider = lazyWithRetry(() => import('./features/admin/AdminHistoryScreen'));
 const AdminUserListProvider = lazyWithRetry(() => import('./features/admin/AdminUserList'));
-const DrinkListScreenProvider = lazyWithRetry(() => import('./pages/Drinklist.page'));
-const EventInformationProvider = lazyWithRetry(() => import('./pages/EventInformation.page'));
-const EventScreenProvider = lazyWithRetry(() => import('./pages/EventList.page'));
+const DrinkListScreenProvider = lazyWithRetry(() => import('./features/drinks/Drinklist.page'));
+const EventInformationProvider = lazyWithRetry(() => import('./features/events/EventInformation.page'));
+const EventScreenProvider = lazyWithRetry(() => import('./features/events/EventList.page'));
 const NotificationScreen = lazyWithRetry(() => import('./features/notifications/NotificationScreen'));
 const ChallengeScreen = lazyWithRetry(() => import('./features/challenges/ChallengeList'));
 const ChallengeInfoScreen = lazyWithRetry(() => import('./features/challenges/ChallengeInformation'));
@@ -116,7 +115,7 @@ const router = sentryCreateBrowserRouter([
           },
           {
             path: "/keys",
-            element: <KeyHolderScreenProvider />
+            element: <ItemHolderScreen />
           },
           {
             path: "/notifications",
@@ -183,10 +182,6 @@ const router = sentryCreateBrowserRouter([
               {
                 path: "event/:selectedEventId",
                 element: <EventInformationProvider />
-              },
-              {
-                path: "createOrUpdate/:option",
-                element: <CreateEventProvider />
               }
             ]
           },

@@ -1,31 +1,19 @@
 import { Box, Button, DialogContent, DialogContentText } from '@mui/material';
 import { SwipeableDialog } from '../../../components/SwipeableDialog';
 import React from 'react';
-import { SliceEvent } from 'src/features/events/slices/eventsSlice';
+import { EventsUserView } from 'src/types/supabaseTypes';
+import { DialogProps } from '@toolpad/core';
 
-type CancelTrainingDialogProps = {
-  cancelTrainingOpen: boolean;
-  setCancelTrainingOpen: (value: boolean) => void;
-  cancelTraining: () => void;
-  selectedEvent: SliceEvent;
-};
-
-export const CancelTrainingDialog = ({
-  cancelTrainingOpen,
-  setCancelTrainingOpen,
-  cancelTraining,
-  selectedEvent,
-}: CancelTrainingDialogProps) => {
+export const CancelTrainingDialog = ({ payload, open, onClose }: DialogProps<EventsUserView, boolean>) => {
   return (
     <SwipeableDialog
-      open={cancelTrainingOpen}
-      setOpen={setCancelTrainingOpen}
-      title={`Training ${selectedEvent.isCancelled ? 'aktivieren' : 'absagen'}`}
-      onClose={() => setCancelTrainingOpen(false)}
+      open={open}
+      title={`Training ${payload.isCancelled ? 'aktivieren' : 'absagen'}`}
+      onClose={() => onClose(false)}
     >
       <DialogContent>
         <DialogContentText>
-          {selectedEvent.isCancelled
+          {payload.isCancelled
             ? 'Möchtest du diese Training aktivieren? Spieler können anschließend dem Training wieder zu und absagen.'
             : 'Möchtest du diese Training wirklich absagen? Spieler können zu dem Training weder zu noch absagen.'}
         </DialogContentText>
@@ -33,10 +21,10 @@ export const CancelTrainingDialog = ({
       <Box
         sx={{ display: 'flex', flexDirection: 'row', flexGrow: 1, position: 'absolute', left: 0, right: 0, bottom: 0 }}
       >
-        <Button variant="outlined" fullWidth sx={{ ml: 2, mr: 1, mb: 2 }} onClick={() => setCancelTrainingOpen(false)}>
+        <Button variant="outlined" fullWidth sx={{ ml: 2, mr: 1, mb: 2 }} onClick={() => onClose(false)}>
           Abbrechen
         </Button>
-        <Button variant="contained" fullWidth sx={{ ml: 1, mr: 2, mb: 2 }} onClick={cancelTraining}>
+        <Button variant="contained" fullWidth sx={{ ml: 1, mr: 2, mb: 2 }} onClick={() => onClose(true)}>
           Bestätigen
         </Button>
       </Box>

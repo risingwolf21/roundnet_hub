@@ -1,11 +1,10 @@
 import { Warning } from '@mui/icons-material';
 import { Box, Button, List, ListItem, Typography } from '@mui/material';
+import { useQuery } from '@tanstack/react-query';
 import { useDialogs } from '@toolpad/core';
-import React, { useCallback, useEffect, useState } from 'react';
-import { useAuthStateChange } from 'react-supabase';
+import React from 'react';
 import { useAuthentication } from 'src/features/auth/AuthContext';
 import { ReportSetsDialog } from 'src/features/games/dialogs/ReportSetsDialog';
-import { onSetsAdded } from 'src/features/games/slices/gamesSlice';
 import { GamesRepository } from 'src/repository/GamesRepository';
 
 type EventInformationGamesProps = {
@@ -17,14 +16,15 @@ const EventInformationGames = ({
 }: EventInformationGamesProps) => {
   const dialogs = useDialogs();
   const { user } = useAuthentication();
-  const [matches, setMatches] = useState<FullMatch[]>([])
 
-  const fetchGames = useCallback((eventId: string) => GamesRepository.fetchGamesForEvent(eventId).then(result => setMatches(result.data ?? [])), [])
+  const { data: matches = [], isLoading, refetch } = useQuery<FullMatch[]>({
+    queryKey: ['events', eventId, "matches"],
+    enabled: !!eventId,
+    queryFn: () => GamesRepository.fetchGamesForEvent(eventId)
+  })
 
-  useEffect(() => {
-    fetchGames(eventId);
-  }, [eventId, fetchGames]);
-
+  if (matches.length === 0 || isLoading)
+    return null;
 
   return (
     <Box sx={{ p: 0, alignSelf: 'center' }}>
@@ -76,12 +76,12 @@ const EventInformationGames = ({
                   || x.team_b.player2.player === user.userId) && <Button startIcon={<Warning color='warning' />} onClick={async () => {
                     const result = await dialogs.open(ReportSetsDialog, { matchId: x.id, team_a_name: x.team_a.name, team_b_name: x.team_b.name, sets: null });
                     if (result) {
-                      fetchGames(eventId);
+                      refetch();
                     }
                   }}>Score eintragen</Button>
               }
               {
-                x.sets.sort((a, b) => a.set_number < b.set_number ? 1 : -1).map((y, index) => {
+                x.sets.sort((a, b) => a.set_number < b.set_number ? 1 : -1).map((y) => {
                   let teamAWon = y.team_a_score > y.team_b_score;
                   return (
                     <Box

@@ -4,20 +4,15 @@ import { DatePicker, PickersDay, PickersDayProps } from '@mui/x-date-pickers';
 import { uuid } from '@supabase/supabase-js/dist/main/lib/helpers';
 import Compressor from 'compressorjs';
 import dayjs, { Dayjs } from 'dayjs';
-import { TFunction } from 'i18next';
 import React, { useEffect, useState } from 'react';
-import { withTranslation } from 'react-i18next';
 import { dataURLtoFile, dayjsFromDb, readFile } from 'src/utils';
 import { SwipeableDialog } from '../../../components/SwipeableDialog';
+import { DialogProps } from '@toolpad/core';
 
 
 type EnterPointDialogProps = {
-  open: boolean;
-  t: TFunction;
-  setOpen: (value: boolean) => void;
-  increaseChallengePoint: (created_at: Dayjs, image: { dataUrl: string, fileName: string } | null) => void;
   dates: string[]
-  maxEntriesPerWeek: number
+  maxEntriesPerWeek: number | null
 };
 
 function ServerDay(props: PickersDayProps<Dayjs> & { highlightedDays?: Dayjs[], maxEntriesPerWeek?: number }) {
@@ -34,7 +29,15 @@ function ServerDay(props: PickersDayProps<Dayjs> & { highlightedDays?: Dayjs[], 
   );
 }
 
-const EnterPointDialog = ({ open, setOpen, t, increaseChallengePoint, dates, maxEntriesPerWeek }: EnterPointDialogProps) => {
+type EnterPointResult = {
+  date: dayjs.Dayjs,
+  image: {
+    dataUrl: string;
+    fileName: string;
+  } | null
+}
+
+const EnterPointDialog = ({ payload: { dates, maxEntriesPerWeek }, open, onClose }: DialogProps<EnterPointDialogProps, EnterPointResult | null>) => {
 
   const [date, setDate] = useState(dayjs());
   const [highlightedDays, setHightlightedDays] = useState(dates.map(x => dayjsFromDb(x)))
@@ -75,12 +78,11 @@ const EnterPointDialog = ({ open, setOpen, t, increaseChallengePoint, dates, max
     <SwipeableDialog
       title="Punkt hinzufügen"
       open={open}
-      onClose={() => setOpen(false)}
+      onClose={() => onClose(null)}
       minHeight={40}
-      setOpen={setOpen}
       actions={<>
-        <Button onClick={() => increaseChallengePoint(date, image)}>Bestätigen</Button>
-        <Button onClick={() => setOpen(false)}>Abbrechen</Button>
+        <Button onClick={() => onClose({ date, image })}>Bestätigen</Button>
+        <Button onClick={() => onClose(null)}>Abbrechen</Button>
       </>}
     >
       <Typography m={2}>Hiermit trägst du einen Punkt für die Serve Challenge ein</Typography>
@@ -147,4 +149,4 @@ const EnterPointDialog = ({ open, setOpen, t, increaseChallengePoint, dates, max
   );
 };
 
-export default withTranslation()(EnterPointDialog);
+export default EnterPointDialog;

@@ -240,92 +240,6 @@ export type Database = {
       [_ in never]: never
     }
   }
-  graphql_public: {
-    Tables: {
-      [_ in never]: never
-    }
-    Views: {
-      [_ in never]: never
-    }
-    Functions: {
-      graphql: {
-        Args: {
-          operationName?: string
-          query?: string
-          variables?: Json
-          extensions?: Json
-        }
-        Returns: Json
-      }
-    }
-    Enums: {
-      [_ in never]: never
-    }
-    CompositeTypes: {
-      [_ in never]: never
-    }
-  }
-  logs: {
-    Tables: {
-      events: {
-        Row: {
-          author: string | null
-          created_at: string
-          data: Json
-          id: number
-          type: string
-        }
-        Insert: {
-          author?: string | null
-          created_at?: string
-          data: Json
-          id?: number
-          type: string
-        }
-        Update: {
-          author?: string | null
-          created_at?: string
-          data?: Json
-          id?: number
-          type?: string
-        }
-        Relationships: []
-      }
-      player_info: {
-        Row: {
-          content: string
-          created_at: string
-          id: string
-          type: string
-        }
-        Insert: {
-          content: string
-          created_at?: string
-          id?: string
-          type: string
-        }
-        Update: {
-          content?: string
-          created_at?: string
-          id?: string
-          type?: string
-        }
-        Relationships: []
-      }
-    }
-    Views: {
-      [_ in never]: never
-    }
-    Functions: {
-      [_ in never]: never
-    }
-    Enums: {
-      [_ in never]: never
-    }
-    CompositeTypes: {
-      [_ in never]: never
-    }
-  }
   permissions: {
     Tables: {
       app_permissions: {
@@ -636,6 +550,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "event_attendance_user_mapping_event_fkey"
+            columns: ["event"]
+            isOneToOne: false
+            referencedRelation: "events_user_view"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "event_attendance_user_mapping_user_fkey"
             columns: ["user"]
             isOneToOne: false
@@ -698,6 +619,13 @@ export type Database = {
             columns: ["event"]
             isOneToOne: false
             referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "event_comments_event_fkey"
+            columns: ["event"]
+            isOneToOne: false
+            referencedRelation: "events_user_view"
             referencedColumns: ["id"]
           },
           {
@@ -1204,6 +1132,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "user_calendar_event_mapping_event_fkey"
+            columns: ["event"]
+            isOneToOne: false
+            referencedRelation: "events_user_view"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "user_calendar_event_mapping_user_fkey"
             columns: ["user"]
             isOneToOne: false
@@ -1298,6 +1233,31 @@ export type Database = {
       }
     }
     Views: {
+      challenge_user_points: {
+        Row: {
+          avatarUrl: string | null
+          challenge: string | null
+          displayName: string | null
+          total_points: number | null
+          user: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "challenge_stats_challenge_fkey"
+            columns: ["challenge"]
+            isOneToOne: false
+            referencedRelation: "challenge"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "challenge_stats_user_fkey"
+            columns: ["user"]
+            isOneToOne: false
+            referencedRelation: "user"
+            referencedColumns: ["userId"]
+          },
+        ]
+      }
       current_distinct_event: {
         Row: {
           answerDeadline: string | null
@@ -1411,6 +1371,45 @@ export type Database = {
           },
         ]
       }
+      events_user_view: {
+        Row: {
+          answerDeadline: string | null
+          attending_count: number | null
+          created_at: string | null
+          declined_count: number | null
+          description: string | null
+          endDateTime: string | null
+          group: string | null
+          id: string | null
+          isCancelled: boolean | null
+          key: string | null
+          maxAttendees: number | null
+          meetingDateTime: string | null
+          place: string | null
+          recurrence: Database["public"]["Enums"]["EventRecurrence"] | null
+          recurrenceEnd: string | null
+          required_item: Database["public"]["Enums"]["ItemType"] | null
+          startingDateTime: string | null
+          title: string | null
+          user_state: Database["public"]["Enums"]["EventAttendance"] | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "events_group_fkey"
+            columns: ["group"]
+            isOneToOne: false
+            referencedRelation: "event_group"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "events_group_fkey"
+            columns: ["group"]
+            isOneToOne: false
+            referencedRelation: "event_groups_view"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       readable_history: {
         Row: {
           amount: number | null
@@ -1465,6 +1464,28 @@ export type Database = {
       check_version: {
         Args: { input_version: string }
         Returns: boolean
+      }
+      create_group_with_user: {
+        Args: {
+          group_name: string
+          group_description: string
+          group_color: string
+          is_public: boolean
+          need_request: boolean
+          user_id: string
+          role: Database["public"]["Enums"]["GroupRole"]
+          parent?: string
+        }
+        Returns: {
+          color: string
+          created_at: string
+          description: string
+          id: string
+          is_public: boolean
+          name: string
+          need_request_to_join: boolean
+          parent_group: string | null
+        }
       }
       custom_access_token_hook: {
         Args: { event: Json }
@@ -1708,12 +1729,6 @@ export type CompositeTypes<
 
 export const Constants = {
   games: {
-    Enums: {},
-  },
-  graphql_public: {
-    Enums: {},
-  },
-  logs: {
     Enums: {},
   },
   permissions: {

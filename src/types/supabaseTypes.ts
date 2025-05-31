@@ -1,5 +1,5 @@
 import { isBefore } from 'date-fns';
-import { Event, History } from 'types/supabase';
+import { EventTable, History } from 'types/supabase';
 import { Database, Enums } from './supabase-generated.types';
 
 export type FullChallenge = Challenge & {
@@ -38,20 +38,20 @@ export type PaymentHistory = Modify<
     }
 >;
 
-export type EventWithGroup = Event & {
+export type EventWithGroup = EventTable & {
     fullGroup: Group;
 };
 
-export function answerDeadlineExpired(x: Event) {
+export function answerDeadlineExpired(x: EventsUserView) {
     if (!x.answerDeadline) return false;
     return isBefore(x.answerDeadline, Date.now());
 }
 
-export function eventInThePast(x: Event) {
-    return isBefore(x.endDateTime !== null ? x.endDateTime : x.startingDateTime, Date.now());
+export function eventInThePast(x: EventsUserView) {
+    return isBefore(x.endDateTime !== null ? x.endDateTime : x.startingDateTime!, Date.now());
 }
 
-export function maxAttendeesExceeded(x: Event, attendance: Attendance[]) {
+export function maxAttendeesExceeded(x: EventsUserView, attendance: Attendance[]) {
     if (!x.maxAttendees) return false;
     return attendance.filter((y) => y.state === 'Attending').length >= x.maxAttendees && x.maxAttendees > 0;
 }
@@ -96,6 +96,45 @@ export type GroupWithUserMappings = Group & {
     user_group_role: GroupRole | null;
     users: FullUserMapping[];
 };
+
+export type EventsUserView = {
+    answerDeadline: string | null;
+    attending_count: number | null;
+    created_at: string;
+    declined_count: number | null;
+    description: string;
+    endDateTime: string;
+    id: string;
+    isCancelled: boolean;
+    key: string;
+    maxAttendees: number | null;
+    meetingDateTime: string | null;
+    place: string | null;
+    recurrence: Database["public"]["Enums"]["EventRecurrence"];
+    recurrenceEnd: string | null;
+    required_item: Database["public"]["Enums"]["ItemType"] | null;
+    startingDateTime: string;
+    title: string;
+    group: Group | null;
+    user_state: Database["public"]["Enums"]["EventAttendance"] | null;
+}
+
+export type ChallengePointsView = {
+    avatarUrl: string | null;
+    challenge: string;
+    displayName: string;
+    total_points: number;
+    user: string;
+}
+
+export type UserMatchesView = {
+    created_at: string;
+    event: string | null;
+    id: string;
+    team_a_name: string;
+    team_b_name: string;
+    set_results: string;
+}
 
 type Modify<T, R> = Omit<T, keyof R> & R;
 

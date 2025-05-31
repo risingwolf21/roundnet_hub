@@ -53,6 +53,10 @@ export const formatDateFromDatabase = (date: string) => {
 
 export const dayjsToDb = (date: Dayjs | null) => {
   if (!date) return null;
+  return safeDayjsToDb(date);
+}
+
+export const safeDayjsToDb = (date: Dayjs) => {
   return formatDateToDatabase(date.toDate());
 }
 

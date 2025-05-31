@@ -1,16 +1,16 @@
 import { QueryData } from '@supabase/supabase-js';
 import { fetchRolePermissionMapping } from 'src/repository/AdminPermissionsRepository';
 import { fetchGroupWithUsers } from 'src/repository/AdminUsersRepository';
-import { fetchDrinksToPay, fetchFullHistory } from 'src/repository/DrinkRepository';
+import { fetchFullHistory } from 'src/repository/DrinkRepository';
 import { fetchEvents } from 'src/repository/EventRepository';
 import { fetchMatch, fetchUserMatches } from 'src/repository/GamesRepository';
 import { fetchGroups, fetchSimpleUser, fetchUserWithGroups } from 'src/repository/UserRepository';
 import { GamesTable, PermissionsTable } from 'src/types/supabaseTypes';
 import { Enums, Tables, TablesInsert, TablesUpdate } from '../../src/types/supabase-generated.types';
 import { fetchChallengeWithGroup } from 'src/repository/ChallengeRepository';
-import { fetchItems } from 'src/repository/KeysRepository';
+import { fetchItemHistory, fetchItems } from 'src/repository/KeysRepository';
 
-export type Event = Tables<'events'>;
+export type EventTable = Tables<'events'>;
 export type History = Tables<'history'>;
 export type Notification = Tables<'notifications'>;
 
@@ -26,6 +26,7 @@ declare global {
   type GroupUserMapping = Tables<'group_user_mapping'>;
   type EventComment = Tables<'event_comments'>;
   type Group = Tables<'event_group'>;
+  type EventsUserViewNullable = Tables<'events_user_view'>;
   type Item = Tables<'items'>;
   type ItemHistory = Tables<'item_history'>;
   type Payment = Tables<'payments'>;
@@ -43,12 +44,12 @@ declare global {
   type PlayerWithSimpleUser = Player & { name: string; userId: string };
 
   type FullItemHolder = QueryData<ReturnType<typeof fetchItems>> extends Array<infer U> ? U : never;
+  type FullItemHistory = QueryData<ReturnType<typeof fetchItemHistory>> extends Array<infer U> ? U : never;
 
   type ChallengeWithFullGroup = QueryData<ReturnType<typeof fetchChallengeWithGroup>> extends Array<infer U> ? U : never;
   type GroupWithUsers = QueryData<ReturnType<typeof fetchGroupWithUsers>> extends Array<infer U> ? U : never;
   type FullHistory = QueryData<ReturnType<typeof fetchFullHistory>> extends Array<infer U> ? U : never;
   type SimpleUser = QueryData<ReturnType<typeof fetchSimpleUser>> extends Array<infer U> ? U : never;
-  type OpenDrinksForUser = QueryData<ReturnType<typeof fetchDrinksToPay>> extends Array<infer U> ? U : never;
   type RolePermissionMapping =
     QueryData<ReturnType<typeof fetchRolePermissionMapping>> extends Array<infer U> ? U : never;
   type Groups = QueryData<ReturnType<typeof fetchGroups>> extends Array<infer U> ? U : never;

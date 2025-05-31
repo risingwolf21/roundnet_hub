@@ -14,9 +14,6 @@ import {
   Button,
   Checkbox,
   Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
   Divider,
   IconButton,
   List,
@@ -26,16 +23,14 @@ import {
   ListSubheader,
   TextField,
   Toolbar,
-  Typography,
+  Typography
 } from '@mui/material';
 import { Box } from '@mui/system';
 import { captureException } from '@sentry/react';
 import { useNotifications } from '@toolpad/core/useNotifications';
-import moment from 'moment';
 import React, { FormEvent, useEffect, useState } from 'react';
 import { AdminPermissionsRepository } from 'src/repository/AdminPermissionsRepository';
 import { supabase } from '../../../components/services/supabase/supabaseClient';
-import { SupabaseDrinkRepository } from '../../../repository/DrinkRepository';
 import { UserWithGroups } from '../../../types/supabaseTypes';
 import { SlideUpTransition } from '../../../utils';
 import { AppRolesDialog } from './AppRolesDialog';
@@ -63,25 +58,15 @@ const EditUserDialog = ({ user, open, handleClose, onUserEditFinished, deleteUse
   const [editRoleOpen, setEditRoleOpen] = useState(false);
   const [verified, setVerified] = useState(user.verified);
   const [password, setPassword] = useState('');
-  const [deleteUserOpen, setDeleteUserOpen] = useState(false);
   const [role, setRole] = useState(user.role);
   const [userRoles, setUserRoles] = useState<AppRole[]>([]);
-  const [userInfo, setUserInfo] = useState({ openAmount: 0 });
-  const [drinksForUser, setDrinksForUser] = useState<OpenDrinksForUser[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
 
   useEffect(() => {
     setUserRoles([]);
-    setUserInfo({ openAmount: 0 });
-    setDrinksForUser([]);
     const loadUserData = async (user: UserWithGroups) => {
       setLoading(true);
       setVerified(user.verified);
-      const result = await SupabaseDrinkRepository.fetchOpenDrinksForUser(user.userId);
-      setUserInfo({
-        openAmount: result.data?.reduce((prev, curr) => prev + (curr.count ?? 0) * (curr?.drink?.price ?? 1), 0) ?? 0,
-      });
-      setDrinksForUser(result.data ?? []);
       const roles = await AdminPermissionsRepository.fetchRolesForUser(user.userId);
       setUserRoles(roles);
     };
@@ -279,42 +264,7 @@ const EditUserDialog = ({ user, open, handleClose, onUserEditFinished, deleteUse
                 ))}
             </List>
             <Divider />
-            <Divider />
-            <List subheader={<ListSubheader sx={{ zIndex: 5 }}>Offene Getränke</ListSubheader>}>
-              {drinksForUser &&
-                drinksForUser.map((x: OpenDrinksForUser) => (
-                  <ListItem
-                    dense
-                    key={x.id}
-                    secondaryAction={<Typography>{(x.count ?? 0) * (x.drink?.price ?? 1)} €</Typography>}
-                  >
-                    <ListItemAvatar>
-                      <Typography>{x.count} x</Typography>
-                    </ListItemAvatar>
-                    <ListItemText
-                      primary={x.drink.name}
-                      secondary={moment(new Date(x.created_at ?? '')).format('HH:mm')}
-                    />
-                  </ListItem>
-                ))}
-            </List>
           </List>
-          <Box sx={{ position: 'fixed', bottom: 0, left: 0, right: 0, pl: 2, pr: 2, pb: 2, zIndex: 6 }}>
-            <Button
-              onClick={() => setDeleteUserOpen(true)}
-              fullWidth
-              color="error"
-              variant="contained"
-              sx={{
-                borderRadius: '50px !important',
-                fontSize: '16px',
-                fontFamily: 'sans-serif',
-                lineSpacing: '24px',
-              }}
-            >
-              Löschen
-            </Button>
-          </Box>
         </Box>
       </Box>
       <AppRolesDialog
@@ -335,30 +285,6 @@ const EditUserDialog = ({ user, open, handleClose, onUserEditFinished, deleteUse
           setEditRoleOpen(false);
         }}
       />
-      <Dialog open={deleteUserOpen}>
-        <DialogTitle>{`Benuter ${user.displayName} löschen?`}</DialogTitle>
-        <DialogContent>
-          <Typography>
-            {`Wenn du diesen Benutzer löscht, wird dieser sowohl in der Datenbank als auch bei Supabase gelöscht. Es werden alle offenen, bezahlten und Getränke in Zahlung gelöscht. Auch der Verlauf der Getränke wird gelöscht. 
-                    Der offene Betrag dieses Benutzers liegt bei`}
-          </Typography>
-          <Typography fontWeight={'bold'} variant="h5">
-            {`${userInfo.openAmount} €`}
-          </Typography>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setDeleteUserOpen(false)}>Abbrechen</Button>
-          <Button
-            onClick={() => {
-              setDeleteUserOpen(false);
-              deleteUser(user);
-            }}
-            autoFocus
-          >
-            Bestätigen
-          </Button>
-        </DialogActions>
-      </Dialog>
     </Dialog>
   );
 };

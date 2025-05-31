@@ -1,19 +1,20 @@
 import { Box, Button, DialogContent, FormControl, FormControlLabel, Radio, RadioGroup } from '@mui/material';
+import { DialogProps } from '@toolpad/core';
 import React, { useState } from 'react';
-import { DeleteEventDialogProps, DeleteEventType, DeletionType } from '../types';
+import { EventsUserView } from 'src/types/supabaseTypes';
 import { SwipeableDialog } from '../../../components/SwipeableDialog';
+import { DeleteEventType, DeletionType } from '../types';
 
-export const DeleteEventDialog = ({ open, handleClose, setOpen, selectedEvent }: DeleteEventDialogProps) => {
+export const DeleteEventDialog = ({ payload, open, onClose }: DialogProps<EventsUserView, DeleteEventType | null>) => {
   const [deletion, setDeletion] = useState<DeleteEventType>('This Event');
 
   return (
     <SwipeableDialog
       open={open}
-      setOpen={setOpen}
-      onClose={() => handleClose(null)}
-      title={selectedEvent.recurrence === 'None' ? 'Delete event' : 'Delete recurring event'}
+      onClose={() => onClose(null)}
+      title={payload.recurrence === 'None' ? 'Delete event' : 'Delete recurring event'}
     >
-      {selectedEvent.recurrence !== 'None' && (
+      {payload.recurrence !== 'None' && (
         <DialogContent>
           <FormControl sx={{ m: 1, minWidth: 120 }}>
             <RadioGroup
@@ -43,10 +44,10 @@ export const DeleteEventDialog = ({ open, handleClose, setOpen, selectedEvent }:
       <Box
         sx={{ display: 'flex', flexDirection: 'row', flexGrow: 1, position: 'absolute', left: 0, right: 0, bottom: 0 }}
       >
-        <Button variant="outlined" fullWidth sx={{ ml: 2, mr: 1, mb: 2 }} onClick={() => handleClose(null)}>
+        <Button variant="outlined" fullWidth sx={{ ml: 2, mr: 1, mb: 2 }} onClick={() => onClose(null)}>
           Abbrechen
         </Button>
-        <Button variant="contained" fullWidth sx={{ ml: 1, mr: 2, mb: 2 }} onClick={() => handleClose(deletion)}>
+        <Button variant="contained" fullWidth sx={{ ml: 1, mr: 2, mb: 2 }} onClick={() => onClose(deletion)}>
           Bestätigen
         </Button>
       </Box>

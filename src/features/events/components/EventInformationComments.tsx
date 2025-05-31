@@ -2,6 +2,8 @@ import { Send } from '@mui/icons-material';
 import { Box, IconButton, InputAdornment, List, TextField, Typography } from '@mui/material';
 import React, { createRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useAuthentication } from 'src/features/auth/AuthContext';
+import { useAddCommentMutation, useComments } from 'src/tanstack/events';
 import { FullComment } from 'src/types/supabaseTypes';
 import { can } from '../../../utils/PermissionService';
 import { EventCommentConversationDialog } from '../dialogs/EventCommentConversationDialog';
@@ -9,21 +11,23 @@ import { CommentItem } from './CommentItem';
 import { CommentReplyItem, CommentReplyText } from './CommentReplyItem';
 
 type EventInformationCommentsProps = {
-  comments: FullComment[];
-  handleCommentSubmit: (value: { comment: string; reply_to: string | null }) => void;
   eventId: string;
   eventInThePast: boolean;
 };
 
 const EventInformationComments = ({
-  comments,
-  handleCommentSubmit,
   eventId,
   eventInThePast,
 }: EventInformationCommentsProps) => {
+
+  const { user } = useAuthentication();
   const { t } = useTranslation();
   const inputRef = createRef<HTMLInputElement>();
   const [replyDialogOpen, setReplyDialogOpen] = useState<FullComment | null>(null);
+
+  const { data: comments = [] } = useComments(eventId);
+
+  const addCommentMutation = useAddCommentMutation(user);
 
   const handleFocus = (e: any) => {
     e.preventDefault();
@@ -52,7 +56,7 @@ const EventInformationComments = ({
     const commentValue = data.get('comment')?.toString();
     if (!commentValue) return;
 
-    handleCommentSubmit({ comment: commentValue, reply_to: null });
+    addCommentMutation.mutate({ eventId, comment: commentValue, reply_to: null });
     event.currentTarget.reset();
   };
 
@@ -67,7 +71,7 @@ const EventInformationComments = ({
             comments.map((x, index) => (
               <>
                 <CommentItem comment={x} t={t} replyToPressed={() => setReplyDialogOpen(x)} />
-                {x.replies.length > 0 && (
+                {x.replies && x.replies.length > 0 && (
                   <>
                     {x.replies
                       .filter((x) => x)
@@ -109,7 +113,10 @@ const EventInformationComments = ({
           t={t}
           onClose={() => setReplyDialogOpen(null)}
           eventInThePast={eventInThePast}
-          handleCommentSubmit={handleCommentSubmit}
+          handleCommentSubmit={({ comment, reply_to }) => {
+            addCommentMutation.mutate({ eventId, comment, reply_to });
+            setReplyDialogOpen(null);
+          }}
         />
       </Box>
     </Box>

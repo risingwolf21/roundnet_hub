@@ -9,12 +9,11 @@ import { supabase } from './components/services/supabase/supabaseClient';
 import store from './redux/store';
 import { mainTheme } from './themes/themes';
 //@ts-ignore
+import { captureException, withScope } from '@sentry/react';
+import { MutationCache, QueryCache, QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AppProvider } from '@toolpad/core/AppProvider';
-import { DialogsProvider } from '@toolpad/core/useDialogs';
-import { NotificationsProvider } from '@toolpad/core/useNotifications';
 import { AuthGate } from './features/auth/AuthGate';
 import { BRANDING } from './utils';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 export const queryClient = new QueryClient({
   defaultOptions: {
@@ -24,31 +23,46 @@ export const queryClient = new QueryClient({
       retry: 2,
     },
   },
+  mutationCache: new MutationCache({
+    onError: (err, _variables, _context, mutation) => {
+      withScope((scope) => {
+        scope.setContext("mutation", {
+          mutationId: mutation.mutationId,
+          variables: mutation.state.variables,
+        });
+        if (mutation.options.mutationKey) {
+          scope.setFingerprint(
+            // Duplicate to prevent modification
+            Array.from(mutation.options.mutationKey) as string[],
+          );
+        }
+        captureException(err);
+      });
+    },
+  }),
+  queryCache: new QueryCache({
+    onError: (err, query) => {
+      withScope((scope) => {
+        scope.setContext("query", { queryHash: query.queryHash });
+        captureException(err);
+      })
+    }
+  })
 });
 
 export const App = () => {
 
   return <ThemeProvider theme={mainTheme}>
-    <QueryClientProvider client={queryClient}>
-      <AppProvider branding={BRANDING} theme={mainTheme}>
-        <DialogsProvider>
-          <NotificationsProvider slotProps={{
-            snackbar: {
-              sx: {
-                bottom: "calc(8px + env(safe-area-inset-bottom))"
-              }
-            }
-          }}>
-            <Provider store={store}>
-              <SupabaseProvider value={supabase}>
-                <LocalizationProvider dateAdapter={AdapterDayjs}>
-                  <AuthGate />
-                </LocalizationProvider>
-              </SupabaseProvider>
-            </Provider>
-          </NotificationsProvider>
-        </DialogsProvider>
-      </AppProvider>
-    </QueryClientProvider>
+    <LocalizationProvider dateAdapter={AdapterDayjs}>
+      <QueryClientProvider client={queryClient}>
+        <AppProvider branding={BRANDING} theme={mainTheme}>
+          <Provider store={store}>
+            <SupabaseProvider value={supabase}>
+              <AuthGate />
+            </SupabaseProvider>
+          </Provider>
+        </AppProvider>
+      </QueryClientProvider>
+    </LocalizationProvider>
   </ThemeProvider>
 }

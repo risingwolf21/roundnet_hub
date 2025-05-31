@@ -5,9 +5,10 @@ import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { captureException } from "@sentry/react";
 import { DialogProps, NotificationsProvider, useNotifications } from "@toolpad/core";
 import React, { useRef, useState } from "react";
-import { supabase } from "src/components/services/supabase/supabaseClient";
+import { useCreateGroupMutation, useUpdateGroupMutation } from "src/tanstack/groups";
 import { Tables } from "src/types/supabase-generated.types";
 import { GroupWithUserRole } from "src/types/supabaseTypes";
+import { formatDateToDatabase } from "src/utils";
 
 type CreateOrUpdateGroupDialogProps = {
   group?: Group
@@ -19,6 +20,8 @@ const Content = ({ payload, onClose }: DialogProps<CreateOrUpdateGroupDialogProp
   const inputRef = useRef<HTMLInputElement>(null);
   const usersParentGroups = payload.user.groups.filter(x => x.parent_group === null);
   const [data, setData] = useState<Tables<'event_group'>>(payload.group ?? { name: "", description: "", id: "", created_at: "", color: "#000", is_public: true, need_request_to_join: false, parent_group: usersParentGroups.length === 1 ? usersParentGroups[0].id : null });
+  const createGroup = useCreateGroupMutation();
+  const updateGroup = useUpdateGroupMutation(payload.group?.id);
 
   return <><AppBar sx={{ position: 'static', pt: "env(safe-area-inset-top)" }}>
     <Toolbar>
@@ -42,50 +45,30 @@ const Content = ({ payload, onClose }: DialogProps<CreateOrUpdateGroupDialogProp
         }
 
         if (data.id === "") {
-          const { error, data: result_data } = await supabase
-            .schema("public")
-            .from("event_group")
-            .insert({
+          createGroup.mutate({
+            group: {
               name: data.name,
               description: data.description,
               is_public: data.is_public,
               color: data.color,
-              need_request_to_join: data.need_request_to_join
-            })
-            .select("*")
-            .single();
-
-          if (error) {
-            captureException(error);
-            onClose(result_data);
-          } else {
-            await supabase.schema("public").from("group_user_mapping").insert({
-              group: result_data.id,
-              user: payload.user.userId,
-              role: "admin"
-            })
-            onClose({ ...result_data, user_role: "admin" });
-          }
+              need_request_to_join: data.need_request_to_join,
+              created_at: formatDateToDatabase(new Date()),
+              parent_group: data.parent_group
+            },
+            user: payload.user
+          }, {
+            onSuccess: (data) => onClose({ ...data, user_role: "admin" })
+          })
         } else {
-          const { error, data: result_data } = await supabase
-            .schema("public")
-            .from("event_group")
-            .update({
-              name: data.name,
-              description: data.description,
-              is_public: data.is_public,
-              color: data.color,
-              need_request_to_join: data.need_request_to_join
-            })
-            .eq("id", data.id)
-            .select("*")
-            .single();
-          if (error) {
-            captureException(error);
-            onClose(null);
-          } else {
-            onClose({ ...result_data, user_role: "admin" });
-          }
+          updateGroup.mutate({ group: data }, {
+            onError: (e) => {
+              captureException(e);
+              onClose(null);
+            },
+            onSuccess: (data) => {
+              onClose({ ...data, user_role: "admin" });
+            }
+          });
         }
       }}>
         {data.id === "" ? "Erstellen" : "Speichern"}

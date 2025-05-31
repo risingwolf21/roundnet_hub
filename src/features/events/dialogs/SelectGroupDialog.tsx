@@ -12,39 +12,22 @@ import {
   Typography,
 } from '@mui/material';
 import { Box } from '@mui/system';
-import { PostgrestSingleResponse } from '@supabase/supabase-js';
-import React, { useEffect, useState } from 'react';
-import { useAuthentication } from 'src/features/auth/AuthContext';
-import { SupabaseEventRepository } from '../../../repository/EventRepository';
+import { DialogProps } from '@toolpad/core';
+import React from 'react';
+import { useGroups } from 'src/tanstack/groups';
 import { SlideUpTransition } from '../../../utils';
-import { SelectGroupDialogProps } from '../types';
 
-export const SelectGroupDialog = ({ open, handleClose, handleSubmit }: SelectGroupDialogProps) => {
-  const [groups, setGroups] = useState<Group[]>([]);
-  const { user } = useAuthentication();
 
-  useEffect(() => {
-    if (open)
-      SupabaseEventRepository.fetchUserGroups(user).then(
-        (
-          x: PostgrestSingleResponse<
-            {
-              user: { userId: string };
-              group: Group;
-            }[]
-          >
-        ) => {
-          setGroups(x.data?.map((y) => y.group) ?? []);
-        }
-      );
-  }, [open, user]);
+export const SelectGroupDialog = ({ payload, open, onClose }: DialogProps<undefined, Group | null>) => {
+
+  const { data: groups = [] } = useGroups();
 
   return (
-    <Dialog fullScreen open={open} onClose={handleClose} TransitionComponent={SlideUpTransition}>
+    <Dialog fullScreen open={open} onClose={() => onClose(null)} TransitionComponent={SlideUpTransition}>
       <Box component="form" noValidate>
         <AppBar position="sticky" sx={{ pt: 'env(safe-area-inset-top)' }}>
           <Toolbar>
-            <IconButton edge="start" color="inherit" onClick={handleClose} aria-label="close">
+            <IconButton edge="start" color="inherit" onClick={() => onClose(null)} aria-label="close">
               <CloseIcon />
             </IconButton>
             <Typography sx={{ ml: 2, flex: 1 }} variant="h6" component="div">
@@ -55,7 +38,7 @@ export const SelectGroupDialog = ({ open, handleClose, handleSubmit }: SelectGro
         <Box>
           <List>
             {groups.map((x) => (
-              <ListItemButton key={x.id} divider onClick={() => handleSubmit(x)}>
+              <ListItemButton key={x.id} divider onClick={() => onClose(x)}>
                 <ListItemAvatar>
                   <FiberManualRecord sx={{ color: x.color }} />
                 </ListItemAvatar>
@@ -65,6 +48,6 @@ export const SelectGroupDialog = ({ open, handleClose, handleSubmit }: SelectGro
           </List>
         </Box>
       </Box>
-    </Dialog>
+    </Dialog >
   );
 };

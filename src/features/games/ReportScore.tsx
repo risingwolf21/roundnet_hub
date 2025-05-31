@@ -12,14 +12,12 @@ import {
   TextField,
   Typography,
 } from '@mui/material';
+import { captureException } from '@sentry/react';
 import { useNotifications } from '@toolpad/core/useNotifications';
 import React, { useEffect, useState } from 'react';
-import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router';
 import Layout from 'src/components/Layout';
-import { RootState, useAppDispatch } from 'src/redux/store';
-import { GamesRepository } from 'src/repository/GamesRepository';
-import { fetchPlayersAsync } from './slices/gamesSlice';
+import { useCreateMatch, usePlayers } from 'src/tanstack/games';
 
 type Props = { options: SimpleUser[]; loading: boolean; label: string; onSelect: (value: SimpleUser | null) => void };
 const SelectPlayer = ({ options, loading, label, onSelect }: Props) => {
@@ -54,22 +52,25 @@ const SelectPlayer = ({ options, loading, label, onSelect }: Props) => {
 };
 
 const ReportScore = () => {
-  const { players, loadingPlayers } = useSelector((state: RootState) => state.games);
   const [sets, setSets] = useState<MatchSet[]>([
     { id: '', created_at: '', set_number: 1, match: '', team_a_score: 0, team_b_score: 0 },
   ]);
   const notifications = useNotifications();
   const navigate = useNavigate();
-  const dispatch = useAppDispatch();
+
+  const createMatch = useCreateMatch();
 
   const [player1a, setPlayer1a] = useState<SimpleUser | null>();
   const [player2a, setPlayer2a] = useState<SimpleUser | null>();
   const [player1b, setPlayer1b] = useState<SimpleUser | null>();
   const [player2b, setPlayer2b] = useState<SimpleUser | null>();
 
+  const { data: players = [], error, isLoading, refetch } = usePlayers();
+
   useEffect(() => {
-    dispatch(fetchPlayersAsync());
-  }, [dispatch]);
+    if (error)
+      notifications.show(error.message, { severity: "error", actionText: "Neu laden", onAction: () => refetch() })
+  }, [error, notifications, refetch])
 
   const saveScores = () => {
     if (!player1a) {
@@ -108,23 +109,26 @@ const ReportScore = () => {
     const [name2b, ...surname2b] = player2b.name.split(' ');
     let team_a_name = (surname1a.pop() ?? name1a) + '/' + (surname2a.pop() ?? name2a);
     let team_b_name = (surname1b.pop() ?? name1b) + '/' + (surname2b.pop() ?? name2b);
-    GamesRepository.reportScores(
+
+    createMatch.mutate({
       sets,
-      {
+      team_a: {
         name: team_a_name,
         player_1: player1a.userId,
         player_2: player2a.userId
       },
-      {
+      team_b: {
         name: team_b_name,
         player_1: player1b.userId,
         player_2: player2b.userId
       }
-    )
-      .then((result) => {
-        navigate('/matches');
-      })
-      .catch((error) => notifications.show(error.message, { severity: 'error' }));
+    }, {
+      onSuccess: () => navigate("/matches"),
+      onError: (error) => {
+        captureException(error);
+        notifications.show(error.message, { severity: 'error' })
+      }
+    })
   };
 
   return (
@@ -140,7 +144,7 @@ const ReportScore = () => {
           <Grid size={6} sx={{ p: 2 }}>
             <SelectPlayer
               label="Player 1"
-              loading={loadingPlayers}
+              loading={isLoading}
               options={players.filter(
                 (x) =>
                   ![player1b, player2a, player2b]
@@ -154,7 +158,7 @@ const ReportScore = () => {
           <Grid size={6} sx={{ p: 2 }}>
             <SelectPlayer
               label="Player 1"
-              loading={loadingPlayers}
+              loading={isLoading}
               options={players.filter(
                 (x) =>
                   ![player1a, player2a, player2b]
@@ -168,7 +172,7 @@ const ReportScore = () => {
           <Grid size={6} sx={{ p: 2 }}>
             <SelectPlayer
               label="Player 2"
-              loading={loadingPlayers}
+              loading={isLoading}
               options={players.filter(
                 (x) =>
                   ![player1b, player1a, player2b]
@@ -182,7 +186,7 @@ const ReportScore = () => {
           <Grid size={6} sx={{ p: 2 }}>
             <SelectPlayer
               label="Player 2"
-              loading={loadingPlayers}
+              loading={isLoading}
               options={players.filter(
                 (x) =>
                   ![player1b, player1a, player2a]

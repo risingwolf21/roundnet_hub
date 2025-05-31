@@ -1,57 +1,35 @@
-import { Box, LinearProgress, Typography } from '@mui/material';
+import { Box, LinearProgress, List, Typography } from '@mui/material';
 import { captureException } from '@sentry/react';
 import { useNotifications } from '@toolpad/core/useNotifications';
 import moment from 'moment/moment';
-import React, { useEffect, useState } from 'react';
-import { InfiniteScrollList } from '../../components/InfiniteScrollList';
-import Layout from '../../components/Layout';
-import { useAppDispatch } from '../../redux/store';
-import { SupabaseDrinkRepository } from '../../repository/DrinkRepository';
+import React, { useEffect, useRef, useState } from 'react';
+import { useInfiniteUserHistory, useUpdateHistoryEntryMutation } from 'src/tanstack/drinks';
 import { groupBy } from '../../utils';
 import { HistoryItem } from './components/HistoryItem';
 import EditHistoryEntryDialog from './dialog/EditHistoryEntryDialog';
-import { fetchHistoryAsync } from './slices/drinksSlice';
-import { HistoryScreenProps } from './types';
 
 export const HistoryScreen = ({
-  history,
-  historyLoading,
-  historyError,
-  historyEndReached,
   user,
-}: HistoryScreenProps) => {
-  const dispatch = useAppDispatch();
+}: { user: User }) => {
   const notifications = useNotifications();
 
   const [editHistoryEntryOpen, setEditHistoryEntryOpen] = useState<boolean>(false);
   const [historyEntryToEdit, setHistoryEntryToEdit] = useState<FullHistory | null>(null);
 
-  useEffect(() => {
-    if (historyError)
-      notifications.show(historyError, { severity: "error" });
-  }, [historyError, notifications]);
+  const { data: history, isLoading, hasNextPage, fetchNextPage, isFetchingNextPage } = useInfiniteUserHistory(user.userId)
 
-  useEffect(() => {
-    fetchForPage(0);
-  }, []);
-
-  const fetchForPage = (page: number) => {
-    dispatch(fetchHistoryAsync({ userId: user.userId, page, count: 20 }));
-  };
+  const updateEntry = useUpdateHistoryEntryMutation(user.userId);
 
   const handleEntryUpdate = (newEntry: FullHistory) => {
-    SupabaseDrinkRepository.updateHistoryItem(
-      newEntry.id,
-      newEntry.count ?? 0,
-      (newEntry.count ?? 0) * (newEntry.drink.price ?? 1)
-    )
-      .then((result) => {
-        setEditHistoryEntryOpen(false);
-      })
-      .catch((error) => {
+    updateEntry.mutate(newEntry, {
+      onError: (error) => {
         captureException(error);
-        notifications.show(error, { severity: 'error' });
-      });
+        notifications.show(error.message, { severity: 'error' });
+      },
+      onSuccess: () => {
+        setEditHistoryEntryOpen(false);
+      }
+    });
   };
 
   const handleEntryOnClick = (entry: FullHistory) => {
@@ -59,32 +37,53 @@ export const HistoryScreen = ({
     setEditHistoryEntryOpen(true);
   };
 
-  return (
-    <Layout>
-      {historyLoading && <LinearProgress style={{ position: 'fixed', left: 0, top: 56, right: 0 }} />}
-      {!historyLoading && history.length <= 0 && (
-        <Box sx={{ alignItems: 'center', display: 'flex', flexDirection: 'column', pt: 10 }}>
-          <Typography sx={{ fontSize: '30pt', fontWeight: 'bold' }}>📖</Typography>
-          <Typography sx={{ fontSize: '18pt', fontWeight: 'bold' }}>Keine Einträge gefunden</Typography>
-        </Box>
-      )}
-      <InfiniteScrollList fetch={fetchForPage} loading={historyLoading} endReached={historyEndReached}>
-        {Array.from(
-          groupBy(
-            history.filter((x) => x.drink),
-            (x: FullHistory) => moment(new Date(x.created_at ?? '')).format('DD MMMM yyyy')
-          )
-        ).map(([key, value]) => (
-          <HistoryItem key={key} items={value} header={key} onClick={handleEntryOnClick} />
-        ))}
-      </InfiniteScrollList>
-      <EditHistoryEntryDialog
-        open={editHistoryEntryOpen}
-        setOpen={() => setEditHistoryEntryOpen(true)}
-        handleClose={() => setEditHistoryEntryOpen(false)}
-        entry={historyEntryToEdit}
-        handleSubmit={(newEntry) => handleEntryUpdate(newEntry)}
-      />
-    </Layout>
-  );
+  const loadMoreRef = useRef<HTMLDivElement | null>(null)
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting && hasNextPage && !isFetchingNextPage) {
+        fetchNextPage()
+      }
+    })
+
+    const node = loadMoreRef.current
+    if (node) observer.observe(node)
+
+    return () => {
+      if (node) observer.unobserve(node)
+    }
+  }, [fetchNextPage, hasNextPage, isFetchingNextPage])
+
+  if (isLoading) {
+    return <LinearProgress style={{ position: 'fixed', left: 0, top: 56, right: 0 }} />
+  }
+
+  if ((history?.pages.flatMap(x => x.data) ?? []).length <= 0) {
+    return <Box sx={{ alignItems: 'center', display: 'flex', flexDirection: 'column', pt: 10 }}>
+      <Typography sx={{ fontSize: '30pt', fontWeight: 'bold' }}>📖</Typography>
+      <Typography sx={{ fontSize: '18pt', fontWeight: 'bold' }}>Keine Einträge gefunden</Typography>
+    </Box>
+  }
+
+  return <>
+    <List>
+      {Array.from(
+        groupBy(
+          (history?.pages.flatMap(x => x.data) ?? []).filter((x) => x.drink),
+          (x: FullHistory) => moment(new Date(x.created_at ?? '')).format('DD MMMM yyyy')
+        )
+      ).map(([key, value]) => (
+        <HistoryItem key={key} items={value} header={key} onClick={handleEntryOnClick} />
+      ))}
+    </List>
+    {isFetchingNextPage && <p style={{ padding: "12px" }}>Lade mehr...</p>}
+    <div ref={loadMoreRef} style={{ height: 40 }} />
+    <EditHistoryEntryDialog
+      open={editHistoryEntryOpen}
+      setOpen={() => setEditHistoryEntryOpen(true)}
+      handleClose={() => setEditHistoryEntryOpen(false)}
+      entry={historyEntryToEdit}
+      handleSubmit={(newEntry) => handleEntryUpdate(newEntry)}
+    />
+  </>
 };

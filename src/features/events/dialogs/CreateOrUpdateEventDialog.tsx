@@ -1,7 +1,8 @@
-import { AccessTime, Article, FiberManualRecord, Map } from '@mui/icons-material';
+import { AccessTime, Article, Close, FiberManualRecord, Map } from '@mui/icons-material';
 import EventIcon from '@mui/icons-material/Event';
 import EventRepeatIcon from '@mui/icons-material/EventRepeat';
 import {
+  AppBar,
   Box,
   Button,
   Checkbox,
@@ -12,6 +13,7 @@ import {
   Divider,
   FormControl,
   FormControlLabel,
+  IconButton,
   InputAdornment,
   List,
   ListItem,
@@ -23,26 +25,27 @@ import {
   RadioGroup,
   Select,
   TextField,
+  Toolbar,
   Typography
 } from '@mui/material';
 import { DatePicker, DateTimePicker } from '@mui/x-date-pickers';
 import { TimePicker } from '@mui/x-date-pickers/TimePicker';
+import { DialogProps, DialogsProvider, useDialogs } from '@toolpad/core';
 import { useNotifications } from '@toolpad/core/useNotifications';
 import { format, isAfter, set } from 'date-fns';
 import _ from 'lodash';
-import React, { FormEvent, useEffect, useMemo, useRef, useState } from 'react';
+import React, { FormEvent, useMemo, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { MapContainer, Marker, TileLayer, useMap } from 'react-leaflet';
-import { useNavigate } from 'react-router';
-import Layout from 'src/components/Layout';
-import { useAppDispatch } from 'src/redux/store';
 import { dayjsFromDb, formatDateToDatabase } from 'src/utils';
-import { NumberInput } from '../../components/mui/NumberInput';
-import { SupabaseEventRepository } from '../../repository/EventRepository';
-import { Enums, TablesInsert, TablesUpdate } from '../../types/supabase-generated.types';
-import SearchPlacesDialog from './dialogs/SearchPlacesDialog';
-import { SelectGroupDialog } from './dialogs/SelectGroupDialog';
-import { onEventsUpdate } from './slices/eventsSlice';
-import { CreateEventProps, PlaceType } from './types';
+import { NumberInput } from '../../../components/mui/NumberInput';
+import { SupabaseEventRepository } from '../../../repository/EventRepository';
+import { Enums, TablesInsert, TablesUpdate } from '../../../types/supabase-generated.types';
+import SearchPlacesDialog from './SearchPlacesDialog';
+import { SelectGroupDialog } from './SelectGroupDialog';
+import { CreateEventOption, PlaceType } from '../types';
+import { EventTable } from 'types/supabase';
+import { useAuthentication } from 'src/features/auth/AuthContext';
 
 const emptyEvent = {
   title: '',
@@ -59,25 +62,25 @@ const emptyEvent = {
     lon: 8.416547971872856,
     name: 'MTV Karlsruhe, Kanalweg 1, 76131 Karlsruhe',
   })
-} as FullEvent;
+} as EventTable;
 
-const CreateEvent = ({ t, eventToEdit, option }: CreateEventProps) => {
-  const navigate = useNavigate();
-  const dispatch = useAppDispatch();
+type CreateEventProps = {
+  event?: EventTable | null;
+  eventGroup?: Group | null;
+  option: CreateEventOption;
+};
+
+export const CreateOrUpdateEventDialog = ({ payload: { event, eventGroup, option }, open, onClose }: DialogProps<CreateEventProps>) => {
   const notifications = useNotifications();
-
-  const [editedEvent, setEditedEvent] = useState<FullEvent>(eventToEdit ?? emptyEvent);
+  const dialogs = useDialogs();
+  const { t } = useTranslation();
+  const [editedEvent, setEditedEvent] = useState<EventTable>(event ?? emptyEvent);
+  const [selectedGroup, setSelectedGroup] = useState<Group | null>(eventGroup ?? null);
   const [dialogOpen, setDialogOpen] = useState<'group' | 'stopRepeat' | 'repeat' | 'places' | null>(null);
 
   const ref = useRef<HTMLFormElement>(null);
 
   const place = useMemo(() => JSON.parse(editedEvent.place ?? "{}"), [editedEvent])
-
-  useEffect(() => {
-    if (eventToEdit) {
-      setEditedEvent(eventToEdit);
-    }
-  }, [eventToEdit]);
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -88,7 +91,7 @@ const CreateEvent = ({ t, eventToEdit, option }: CreateEventProps) => {
 
       let event = _.omit(editedEvent, ['fullGroup', 'attendance', 'comments', 'userAttendance', 'attendanceUpdating']) as TablesInsert<"events">;
 
-      const changes = _.differenceWith(_.toPairs(event), _.toPairs(_.pick(eventToEdit ?? {}, Object.keys(event))), _.isEqual);
+      const changes = _.differenceWith(_.toPairs(event), _.toPairs(_.pick(event ?? {}, Object.keys(event))), _.isEqual);
       const eventChanges = _.fromPairs(changes) as TablesUpdate<"events">
 
       if (!event.startingDateTime) throw new Error(t('events.creation.startDateCannotBeNull'));
@@ -124,13 +127,13 @@ const CreateEvent = ({ t, eventToEdit, option }: CreateEventProps) => {
           editedEvent.key,
           editedEvent.startingDateTime
         )
-        dispatch(onEventsUpdate(result.filter(x => x.data !== null).map(x => x.data)))
+        //dispatch(onEventsUpdate(result.filter(x => x.data !== null).map(x => x.data)))
       } else {
         throw Error(
           'There was no option provided wether this is a new event, to update only this or every recurring event. Please try again!'
         );
       }
-      navigate('/training/list', { replace: true });
+      onClose()
     } catch (error: unknown) {
       const message = error instanceof Error ? (error as Error).message : 'Unknown error.';
       notifications.show(message, { severity: "error" })
@@ -145,24 +148,29 @@ const CreateEvent = ({ t, eventToEdit, option }: CreateEventProps) => {
   }
 
   return (
-    <Layout
-      appBarConfig={{
-        navigateBackPath: "/training/list",
-        showProfile: false,
-        title: `Event ${eventToEdit ? 'bearbeiten' : 'erstellen'}`,
-      }}
-      appBarActions={
-        <Button
-          autoFocus
-          color="inherit"
-          onClick={() => {
-            if (ref.current) ref.current.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
-          }}
-        >
-          Speichern
-        </Button>
-      }
-    >
+    <Dialog fullScreen open={open} onClose={() => onClose()}>
+      <AppBar sx={{ position: 'sticky', pt: "env(safe-area-inset-top)" }}>
+        <Toolbar>
+          <IconButton
+            edge="start"
+            color="inherit"
+            onClick={() => onClose()}>
+            <Close />
+          </IconButton>
+          <Typography sx={{ ml: 2, flex: 1 }} variant="h6" component="div">
+            {`Event ${event ? 'bearbeiten' : 'erstellen'}`}
+          </Typography>
+          <Button
+            autoFocus
+            color="inherit"
+            onClick={() => {
+              if (ref.current) ref.current.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
+            }}
+          >
+            Speichern
+          </Button>
+        </Toolbar>
+      </AppBar>
       <Box ref={ref} component="form" onSubmit={handleSubmit} noValidate>
         <List>
           <ListItem sx={{ pt: 0, pb: 0 }} key={'title'}>
@@ -201,13 +209,18 @@ const CreateEvent = ({ t, eventToEdit, option }: CreateEventProps) => {
             />
           </ListItem>
 
-          <ListItemButton onClick={() => setDialogOpen('group')} key={'group'}>
+          <ListItemButton onClick={async () => {
+            const result = await dialogs.open(SelectGroupDialog);
+            if (result) {
+              setSelectedGroup(result);
+            }
+          }} key={'group'}>
             <ListItemAvatar>
-              {editedEvent.fullGroup && <FiberManualRecord sx={{ color: editedEvent.fullGroup.color }} />}
+              {selectedGroup && <FiberManualRecord sx={{ color: selectedGroup.color }} />}
             </ListItemAvatar>
             <ListItemText
-              primary={editedEvent.fullGroup?.name ?? 'Keine Gruppe gewählt'}
-              secondary={editedEvent.fullGroup?.description}
+              primary={selectedGroup?.name ?? 'Keine Gruppe gewählt'}
+              secondary={selectedGroup?.description}
             />
           </ListItemButton>
 
@@ -574,15 +587,6 @@ const CreateEvent = ({ t, eventToEdit, option }: CreateEventProps) => {
         </DialogActions>
       </Dialog>
 
-      <SelectGroupDialog
-        open={dialogOpen === 'group'}
-        handleClose={() => setDialogOpen(null)}
-        handleSubmit={(group) => {
-          setEditedEvent({ ...editedEvent, group: group.id, fullGroup: group });
-          setDialogOpen(null);
-        }}
-      />
-
       <SearchPlacesDialog
         open={dialogOpen === 'places'}
         handleClose={() => setDialogOpen(null)}
@@ -598,8 +602,6 @@ const CreateEvent = ({ t, eventToEdit, option }: CreateEventProps) => {
           setDialogOpen(null);
         }}
       />
-    </Layout>
+    </Dialog>
   );
 };
-
-export default CreateEvent;

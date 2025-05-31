@@ -1,33 +1,40 @@
 import { AddOutlined, EditOffOutlined, EditOutlined } from '@mui/icons-material';
 import { Alert, Box, Fab, List } from '@mui/material';
+import { captureException } from '@sentry/react';
+import { useDialogs } from '@toolpad/core';
 import { useNotifications } from '@toolpad/core/useNotifications';
 import React, { useCallback, useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useSearchParams } from 'react-router';
-import { fetchItemsAsync } from 'src/features/keys/slices/keysSlice';
 import Layout from '../../components/Layout';
 import { LoadingIndicator } from '../../components/LoadingIndicator';
-import { SupabaseKeysRepository } from '../../repository/KeysRepository';
 import { can } from '../../utils/PermissionService';
+import { useAuthentication } from '../auth/AuthContext';
 import { ItemHolderItem } from './components/ItemHolderItem';
 import { EditOrAddItemDialog } from './dialogs/EditOrAddItemDialog';
 import { ItemHistoryDialog } from './dialogs/ItemHistoryDialog';
 import { KeyHandOverDialog } from './dialogs/KeyHandOverDialog';
 import { SearchUserDialog } from './dialogs/SearchUserDialog';
-import { ItemHolderScreenProps } from './types';
+import { useAllItems, useHandoverKeyMutation } from 'src/tanstack/items';
 
 const EMPTY_KEY: ItemUpdate = { name: '', color: '#000000', created_at: '', current_holder: null };
 
-export const ItemHolderScreen = ({ dispatch, keyHolders, loading, user, t }: ItemHolderScreenProps) => {
+const ItemHolderScreen = () => {
   const [searchUserOpen, setSearchUserOpen] = useState(false);
   const [addOrUpdateKeysOpen, setAddOrUpdateKeysOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [selectedKeyHolder, setSelectedKeyHolder] = useState<FullItemHolder | null>(null);
   const [isEditingMode, setEditingMode] = useState(false);
   const [itemToEdit, setItemToEdit] = useState<ItemUpdate | null>(null);
-  const [itemHistoryDialogOpen, setItemHistoryDialogOpen] = useState(false);
   const [searchParams] = useSearchParams();
 
   const notifications = useNotifications();
+  const dialogs = useDialogs();
+  const { user } = useAuthentication();
+  const { t } = useTranslation();
+
+  const handoverKeyMutation = useHandoverKeyMutation();
+  const { data: keyHolders = [], isLoading, refetch } = useAllItems();
 
   const selectKeyToHandOver = useCallback((key: FullItemHolder) => {
     setSearchUserOpen(true);
@@ -55,10 +62,6 @@ export const ItemHolderScreen = ({ dispatch, keyHolders, loading, user, t }: Ite
     }
   }, [searchParams, keyHolders, user, selectKeyToReceive, selectKeyToHandOver]);
 
-  useEffect(() => {
-    dispatch(fetchItemsAsync());
-  }, [dispatch]);
-
   const userSelected = (user: User) => {
     setSearchUserOpen(false);
     setSelectedUser(user);
@@ -69,21 +72,17 @@ export const ItemHolderScreen = ({ dispatch, keyHolders, loading, user, t }: Ite
       notifications.show(t('keyHandOverError', { error: '' }), { severity: 'error' });
       return;
     }
-    SupabaseKeysRepository.giveItemToUser(selectedKeyHolder, selectedUser).then((result) => {
-      if (result.error) {
-        notifications.show(t('keyHandOverError', { error: result.error }), { severity: 'error' });
-      } else {
-        setSelectedUser(null);
-        setSelectedKeyHolder(null);
-        dispatch(fetchItemsAsync());
+    handoverKeyMutation.mutate({ keyHolder: selectedKeyHolder, user: selectedUser }, {
+      onError: (error) => {
+        captureException(error);
+        notifications.show(t('keyHandOverError', { error: error.message }), { severity: 'error' });
       }
-    });
+    })
   };
-
 
   return (
     <Layout>
-      <LoadingIndicator loading={loading} />
+      <LoadingIndicator loading={isLoading} />
       <List sx={{ width: '100%', pb: 10 }}>
         <Alert key={'alert'} sx={{ ml: 2, mr: 2, mt: 2 }} severity="info">
           Bitte euren Schlüssel gut aufbewahren und Übergaben eintragen! Wer unverschuldet den Schlüssel verloren hat
@@ -100,7 +99,9 @@ export const ItemHolderScreen = ({ dispatch, keyHolders, loading, user, t }: Ite
             isEditingMode={isEditingMode}
             setItemToEdit={setItemToEdit}
             setAddOrUpdateKeysOpen={setAddOrUpdateKeysOpen}
-            setItemHistoryDialogOpen={setItemHistoryDialogOpen}
+            openHistoryDialog={async () => {
+              await dialogs.open(ItemHistoryDialog, x)
+            }}
             selectKeyToHandOver={selectKeyToHandOver}
             selectKeyToReceive={selectKeyToReceive}
           />
@@ -131,12 +132,6 @@ export const ItemHolderScreen = ({ dispatch, keyHolders, loading, user, t }: Ite
           </Fab>
         </Box>
       )}
-      <ItemHistoryDialog
-        open={itemHistoryDialogOpen}
-        handleClose={() => setItemHistoryDialogOpen(false)}
-        setOpen={() => setItemHistoryDialogOpen(true)}
-        item={itemToEdit}
-      />
 
       <SearchUserDialog
         open={searchUserOpen}
@@ -159,7 +154,7 @@ export const ItemHolderScreen = ({ dispatch, keyHolders, loading, user, t }: Ite
         handleClose={() => {
           setAddOrUpdateKeysOpen(false);
           setEditingMode(false);
-          dispatch(fetchItemsAsync());
+          refetch();
         }}
         itemToEdit={itemToEdit}
       />
@@ -167,3 +162,5 @@ export const ItemHolderScreen = ({ dispatch, keyHolders, loading, user, t }: Ite
     </Layout>
   );
 };
+
+export default ItemHolderScreen;

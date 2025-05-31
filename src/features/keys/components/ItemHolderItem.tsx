@@ -11,7 +11,7 @@ type ItemHolderItemProsp = {
   isEditingMode: boolean;
   setItemToEdit: (value: FullItemHolder) => void;
   setAddOrUpdateKeysOpen: (value: boolean) => void;
-  setItemHistoryDialogOpen: (value: boolean) => void;
+  openHistoryDialog: () => void;
   selectKeyToHandOver: (value: FullItemHolder) => void;
   selectKeyToReceive: (value: FullItemHolder) => void;
 };
@@ -23,7 +23,7 @@ export const ItemHolderItem = ({
   isEditingMode,
   setItemToEdit,
   setAddOrUpdateKeysOpen,
-  setItemHistoryDialogOpen,
+  openHistoryDialog,
   selectKeyToHandOver,
   selectKeyToReceive,
 }: ItemHolderItemProsp) => {
@@ -33,7 +33,7 @@ export const ItemHolderItem = ({
       divider
       onClick={() => {
         setItemToEdit(x);
-        setItemHistoryDialogOpen(true);
+        openHistoryDialog();
       }}
       secondaryAction={
         isEditingMode ? (

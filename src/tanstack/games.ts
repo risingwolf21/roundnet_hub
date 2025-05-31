@@ -1,0 +1,131 @@
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { queryClient } from "src/App";
+import { supabase } from "src/components/services/supabase/supabaseClient";
+import { GamesRepository } from "src/repository/GamesRepository";
+import { UserMatchesView } from "src/types/supabaseTypes";
+import { formatDateToDatabase } from "src/utils";
+
+export const useMatches = () => useQuery<UserMatchesView[]>({
+  queryKey: ['matches'],
+  queryFn: async () => {
+    const result = await supabase
+      .schema('games')
+      .from('user_matches')
+      .select("*")
+      .returns<UserMatchesView[]>();
+
+    return result.data ?? [];
+  }
+});
+
+export const usePlayers = () => useQuery<PlayerWithSimpleUser[]>({
+  queryKey: ['players'],
+  queryFn: GamesRepository.fetchAvailablePlayers
+})
+
+export const useCreateMatch = () => useMutation({
+  mutationFn: async ({ sets, team_a, team_b, event }: {
+    sets: { team_a_score: number; team_b_score: number }[],
+    team_a: {
+      player_1: string,
+      player_2: string,
+      name: string,
+    },
+    team_b: {
+      player_1: string,
+      player_2: string,
+      name: string
+    },
+    event?: string
+  }) => {
+    const result = await supabase
+      .schema('games')
+      .rpc('add_match_with_sets', {
+        match_sets: sets.map((x) => ({ team_a_score: x.team_a_score, team_b_score: x.team_b_score })),
+        player_1a: team_a.player_1,
+        player_2a: team_a.player_2,
+        player_1b: team_b.player_1,
+        player_2b: team_b.player_2,
+        team_a: team_a.name,
+        team_b: team_b.name,
+        event
+      })
+      .throwOnError();
+
+    return result.data;
+  },
+  onMutate: async ({ sets, team_a, team_b }) => {
+    await queryClient.cancelQueries({ queryKey: ['matches'] });
+
+    const previousMatches = queryClient.getQueryData<UserMatchesView[]>(['matches']);
+
+    if (previousMatches) {
+      const newMatches = [
+        ...previousMatches,
+        {
+          team_a_name: team_a.name,
+          team_b_name: team_b.name,
+          set_results: sets.map(x => x.team_a_score + ":" + x.team_b_score).join(", "),
+          created_at: formatDateToDatabase(new Date()),
+        }
+      ] as UserMatchesView[];
+      queryClient.setQueryData<UserMatchesView[]>(['matches'], newMatches);
+    }
+
+    return { previousMatches };
+  },
+  onError: (_e, _v, context) => {
+    if (context?.previousMatches) {
+      queryClient.setQueryData(['matches'], context.previousMatches);
+    }
+  },
+  onSettled: (_d, _e, _v, context) => {
+    queryClient.invalidateQueries({ queryKey: ['matches'] });
+  },
+})
+
+export const useUpsertSetsToMatch = (matchId: string) => useMutation({
+  mutationFn: async ({ sets }: { sets: MatchSet[] }) => {
+    const result = await supabase
+      .schema("games")
+      .from("sets")
+      .upsert(sets.map(x => ({
+        set_number: x.set_number,
+        match: matchId,
+        team_a_score: x.team_a_score,
+        team_b_score: x.team_b_score,
+      })))
+      .select("*")
+      .throwOnError();
+
+    return result.data;
+  },
+  onMutate: async ({ sets }) => {
+    await queryClient.cancelQueries({ queryKey: ['matches'] });
+
+    const previousMatches = queryClient.getQueryData<FullUserMatch[]>(['matches']);
+
+    if (previousMatches) {
+      const newMatches = previousMatches.map(x => {
+        if (x.id === matchId) {
+          return {
+            ...x,
+            set_results: sets.map(x => x.team_a_score + ":" + x.team_b_score).join(", ")
+          }
+        }
+        return x;
+      })
+      queryClient.setQueryData<FullUserMatch[]>(['matches'], newMatches);
+    }
+
+    return { previousMatches };
+  },
+  onError: (_e, _v, context) => {
+    if (context?.previousMatches) {
+      queryClient.setQueryData(['matches'], context.previousMatches);
+    }
+  },
+  onSettled: (_d, _e, _v, context) => {
+    queryClient.invalidateQueries({ queryKey: ['matches'] });
+  },
+})

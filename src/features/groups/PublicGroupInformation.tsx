@@ -1,20 +1,16 @@
 import { AccountBox, Edit, ExpandMore, GroupRemove, Groups, PersonAdd, PersonRemove } from "@mui/icons-material";
 import { Accordion, AccordionDetails, AccordionSummary, Avatar, Card, CardActionArea, Chip, Divider, Fab, List, ListItem, ListItemAvatar, ListItemText, Stack, Typography } from "@mui/material";
 import { captureException } from "@sentry/react";
-import { useQuery } from "@tanstack/react-query";
 import { useDialogs, useNotifications } from "@toolpad/core";
 import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router";
 import Layout from "src/components/Layout";
 import { LoadingIndicator } from "src/components/LoadingIndicator";
-import { supabase } from "src/components/services/supabase/supabaseClient";
-import { useAppDispatch } from "src/redux/store";
-import { GroupsRepository } from "src/repository/GroupsRepository";
-import { GroupWithUserMappings } from "src/types/supabaseTypes";
+import { useGroup, useLeaveGroupMutation } from "src/tanstack/groups";
 import { can } from "src/utils/PermissionService";
-import { fetchAdminUsersAsync } from "../admin/slices/adminUserSlice";
 import { useAuthentication } from "../auth/AuthContext";
 import { AcceptJoinButton } from "./components/AcceptJoinButton";
+import { DeclineJoinButton } from "./components/DeclineJoinButton";
 import { GroupUserItem } from "./components/GroupUserItem";
 import { CreateOrUpdateGroupDialog } from "./dialogs/CreateOrUpdateGroupDialog";
 import SearchAndSelectUserDialog from "./dialogs/SearchAndSelectUserDialog";
@@ -26,20 +22,11 @@ const PublicGroupInformation = () => {
   const { groupId } = useParams();
   const { user } = useAuthentication();
   const navigate = useNavigate();
-  const dispatch = useAppDispatch();
   const notifications = useNotifications();
   const dialogs = useDialogs();
   const [selectedUsers, setSelectedUsers] = useState<User[]>([])
 
-  const { data: group = null, error, isLoading, refetch } = useQuery<GroupWithUserMappings | null>({
-    queryKey: ['group', groupId],
-    enabled: !!groupId,
-    queryFn: () => GroupsRepository.fetchSingleGroupWithUsers(groupId),
-  });
-
-  useEffect(() => {
-    dispatch(fetchAdminUsersAsync());
-  }, [dispatch])
+  const { data: group = null, error, isLoading, refetch } = useGroup(groupId);
 
   useEffect(() => {
     if (error)
@@ -49,6 +36,7 @@ const PublicGroupInformation = () => {
 
   const addUsersMutation = useAddUsersMutation(group);
   const removeUsersMutation = useRemoveUsersMutation(group);
+  const leaveGroupMutation = useLeaveGroupMutation();
 
   const handleUsersAdded = async (users: User[]) => {
     addUsersMutation.mutate(users, {
@@ -130,7 +118,10 @@ const PublicGroupInformation = () => {
             .sort((a, b) => a.user.displayName.localeCompare(b.user.displayName))
             .slice(0, 10)
             .map(x =>
-              <ListItem key={x.user.userId} secondaryAction={<AcceptJoinButton user={x.user} group={group} />}>
+              <ListItem key={x.user.userId} secondaryAction={<Stack direction={"row"} spacing={2}>
+                <DeclineJoinButton user={x.user} group={group} />
+                <AcceptJoinButton user={x.user} group={group} />
+              </Stack>}>
                 <ListItemAvatar>
                   <Avatar sx={{ borderRadius: 2 }}>
                     {x.user.avatarUrl ? (
@@ -211,36 +202,39 @@ const PublicGroupInformation = () => {
           </Accordion>
         }
       </Card>
-      <Divider />
-      <Card sx={{ color: "red", borderRadius: 2, py: 0, px: 0, m: 1 }}>
-        <CardActionArea sx={{ px: 1 }}>
-          <ListItem
-            onClick={() => {
-              if (!group || !user)
-                return;
-              dialogs.confirm(group.need_request_to_join
-                ? "Du kannst der Gruppe nicht mehr direkt beitreten, sondern musst bestätigt werden."
-                : "Die Gruppe ist öffentlich. Du kannst Ihr jederzeit wieder beitreten.",
-                { okText: "Verlassen", cancelText: "Abbrechen", title: "Möchtest du die Gruppe wirklich verlassen?" }).then(result => {
-                  if (result) {
-                    supabase.schema("public").from("group_user_mapping").delete().eq("group", group.id).eq("user", user.userId).then(result => {
-                      if (!result.error) {
-                        navigate("/groups/list", { replace: true })
-                      } else {
-                        captureException(result.error);
-                        notifications.show("Es ist ein Fehler aufgetreten.", { severity: "error" })
+      {
+        group?.parent_group !== null && <>
+          <Divider />
+          <Card sx={{ color: "red", borderRadius: 2, py: 0, px: 0, m: 1 }}>
+            <CardActionArea sx={{ px: 1 }}>
+              <ListItem
+                onClick={() => {
+                  if (!group || !user)
+                    return;
+                  dialogs.confirm(group.need_request_to_join
+                    ? "Du kannst der Gruppe nicht mehr direkt beitreten, sondern musst bestätigt werden."
+                    : "Die Gruppe ist öffentlich. Du kannst Ihr jederzeit wieder beitreten.",
+                    { okText: "Verlassen", cancelText: "Abbrechen", title: "Möchtest du die Gruppe wirklich verlassen?" }).then(result => {
+                      if (result) {
+                        leaveGroupMutation.mutate({ group, user }, {
+                          onSuccess: () => navigate("/groups/list", { replace: true }),
+                          onError: (error) => {
+                            captureException(error);
+                            notifications.show("Es ist ein Fehler aufgetreten.", { severity: "error" })
+                          }
+                        })
                       }
                     })
-                  }
-                })
-            }}>
-            <ListItemAvatar sx={{ flexDirection: 'row', display: 'flex', alignItems: 'center' }}>
-              <GroupRemove />
-            </ListItemAvatar>
-            <ListItemText primary="Gruppe verlassen" />
-          </ListItem>
-        </CardActionArea>
-      </Card>
+                }}>
+                <ListItemAvatar sx={{ flexDirection: 'row', display: 'flex', alignItems: 'center' }}>
+                  <GroupRemove />
+                </ListItemAvatar>
+                <ListItemText primary="Gruppe verlassen" />
+              </ListItem>
+            </CardActionArea>
+          </Card>
+        </>
+      }
     </List>
     {
       group?.user_group_role === "admin" && <Fab

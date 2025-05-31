@@ -39,12 +39,12 @@ import { styled } from '@mui/system';
 import { TFunction } from 'i18next';
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router';
+import { useApplication } from 'src/features/auth/ApplicationContext';
+import { useRequestedUsersPerGroup } from 'src/tanstack/groups';
+import { useAllNotifications } from 'src/tanstack/notifications';
 import { HOMEPAGE } from '../constants';
-import { notificationsSelector } from '../features/notifications/slices/notificationsSlice';
 import raw from '../git_commit.txt';
-import { RootState } from '../redux/store';
 import { can, canAny } from '../utils/PermissionService';
 import { InstallPWA } from './PwaInstallPromp';
 
@@ -128,17 +128,17 @@ type DrawerContentProps = {
   tab: string;
   handleChange: (value: string) => void;
   t: TFunction;
-  notificationsLength: number;
-  notVerifiedUsersLength: number;
   version: string;
+  request_group_joins: number;
+  notification_count: number;
 };
 const DrawerContent = ({
   tab,
   handleChange,
   t,
-  notificationsLength,
-  notVerifiedUsersLength,
   version,
+  request_group_joins,
+  notification_count
 }: DrawerContentProps) => {
   return (
     <DrawerBox>
@@ -260,10 +260,17 @@ const DrawerContent = ({
           </DrawerItem>
         )}
         {
-          can("select", "group") && <DrawerItem key="groups" selected={tab === 'groups/list'} onClick={() => handleChange('groups/list')}>
+          can("select", "group") && <DrawerItem key="groups" selected={tab === 'groups/list'} onClick={() => handleChange('groups/list')}
+            secondaryAction={
+              <Typography fontWeight={'bold'} fontSize={'0.9rem'}>
+                {request_group_joins || ''}
+              </Typography>
+            }>
             <ListItemAvatar>
               <ListItemIcon>
-                <Groups />
+                <Badge color={'secondary'} variant={'dot'} badgeContent={request_group_joins}>
+                  <Groups />
+                </Badge>
               </ListItemIcon>
             </ListItemAvatar>
             <ListItemText
@@ -318,13 +325,13 @@ const DrawerContent = ({
             onClick={() => handleChange('notifications')}
             secondaryAction={
               <Typography fontWeight={'bold'} fontSize={'0.9rem'}>
-                {notificationsLength || ''}
+                {notification_count || ''}
               </Typography>
             }
           >
             <ListItemAvatar>
               <ListItemIcon>
-                <Badge color={'secondary'} variant={'dot'} badgeContent={notificationsLength}>
+                <Badge color={'secondary'} variant={'dot'} badgeContent={notification_count}>
                   <Notifications />
                 </Badge>
               </ListItemIcon>
@@ -396,17 +403,10 @@ const DrawerContent = ({
                 key="updateUser"
                 selected={tab === 'admin/users'}
                 onClick={() => handleChange('admin/users')}
-                secondaryAction={
-                  <Typography fontWeight={'bold'} fontSize={'0.9rem'}>
-                    {notVerifiedUsersLength || ''}
-                  </Typography>
-                }
               >
                 <ListItemAvatar>
                   <ListItemIcon>
-                    <Badge color={'secondary'} variant={'dot'} badgeContent={notVerifiedUsersLength}>
-                      <Group />
-                    </Badge>
+                    <Group />
                   </ListItemIcon>
                 </ListItemAvatar>
                 <ListItemText
@@ -519,11 +519,12 @@ const DrawerContent = ({
 export const Drawer = ({ open, onClose, onOpen }: Props) => {
   const navigate = useNavigate();
   const { t } = useTranslation();
+  const { user } = useApplication();
   const [tab, setTab] = useState<string>(HOMEPAGE);
-  const notifications = useSelector((state: RootState) => notificationsSelector.selectAll(state));
-  const { notVerifiedUsers } = useSelector((state: RootState) => state.adminUsers);
   const [version, setVersion] = useState<string>('');
 
+  const { data: requested_group_joins = [] } = useRequestedUsersPerGroup();
+  const { data: notifications = [] } = useAllNotifications(user);
 
   const iOS =
     typeof navigator !== 'undefined' && /iPad|iPhone|iPod/.test(navigator.userAgent);
@@ -595,9 +596,9 @@ export const Drawer = ({ open, onClose, onOpen }: Props) => {
           tab={tab}
           handleChange={handleChange}
           t={t}
-          notVerifiedUsersLength={notVerifiedUsers}
-          notificationsLength={notifications.length}
           version={version}
+          request_group_joins={requested_group_joins.length}
+          notification_count={notifications.length}
         />
       </CustomDrawer>
       <CustomDrawer
@@ -623,9 +624,9 @@ export const Drawer = ({ open, onClose, onOpen }: Props) => {
           tab={tab}
           handleChange={handleChange}
           t={t}
-          notVerifiedUsersLength={notVerifiedUsers}
-          notificationsLength={notifications.length}
           version={version}
+          request_group_joins={requested_group_joins.length}
+          notification_count={notifications.length}
         />
       </CustomDrawer>
     </Box>

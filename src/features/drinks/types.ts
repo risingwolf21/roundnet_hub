@@ -17,11 +17,3 @@ export type HistoryItemProps = {
   items: FullHistory[];
   onClick: (entry: FullHistory) => any;
 };
-
-export type HistoryScreenProps = {
-  history: FullHistory[];
-  historyLoading: boolean;
-  historyEndReached: boolean;
-  historyError: string;
-  user: User;
-};

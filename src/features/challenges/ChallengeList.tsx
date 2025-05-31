@@ -1,12 +1,11 @@
 import { Add } from '@mui/icons-material';
 import { Box, Fab, LinearProgress, List, ListItem, ListItemText, Typography } from '@mui/material';
 import { withProfiler } from '@sentry/react';
-import { useQuery } from '@tanstack/react-query';
 import { useDialogs, useNotifications } from '@toolpad/core';
 import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router';
 import { PullToRefresh } from 'src/components/pull-to-refresh/PullToRefresh';
-import { ChallengeRepository } from 'src/repository/ChallengeRepository';
+import { useChallenges } from 'src/tanstack/challenge';
 import Layout from '../../components/Layout';
 import { useAuthentication } from '../auth/AuthContext';
 import { CreateChallengeDialog } from './dialogs/CreateChallengeDialog';
@@ -18,10 +17,7 @@ const ChallengeList = () => {
   const dialogs = useDialogs();
   const { user } = useAuthentication();
 
-  const { data: challenges = [], error, isLoading, refetch } = useQuery<ChallengeWithFullGroup[]>({
-    queryKey: ['challenges'],
-    queryFn: ChallengeRepository.fetchChallenges
-  });
+  const { data: challenges = [], error, isLoading, refetch } = useChallenges();
 
   useEffect(() => {
     if (error)
