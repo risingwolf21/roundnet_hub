@@ -4,7 +4,6 @@ import { captureException } from "@sentry/react";
 import { useDialogs, useNotifications } from "@toolpad/core";
 import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router";
-import Layout from "src/components/Layout";
 import { LoadingIndicator } from "src/components/LoadingIndicator";
 import { useGroup, useLeaveGroupMutation } from "src/tanstack/groups";
 import { can } from "src/utils/PermissionService";
@@ -65,7 +64,7 @@ const PublicGroupInformation = () => {
     });
   };
 
-  return <Layout appBarConfig={{ navigateBackPath: "/groups/list" }}>
+  return <>
     <List sx={{ pb: 'calc(64px + env(safe-area-inset-bottom))' }}>
       <LoadingIndicator loading={isLoading} />
       <Typography pl={2} variant="h6" fontWeight="bold">
@@ -189,7 +188,7 @@ const PublicGroupInformation = () => {
                     selected={selectedUsers.includes(x.user)}
                     onAvatarClick={(e) => {
                       e.stopPropagation();
-                      if (x.map.role === "admin")
+                      if (x.map.role !== "admin")
                         return;
                       if (selectedUsers.includes(x.user)) {
                         setSelectedUsers([...selectedUsers.filter(y => y.userId !== x.user.userId)])
@@ -257,7 +256,7 @@ const PublicGroupInformation = () => {
         <Edit sx={{ color: 'white' }} />
       </Fab>
     }
-  </Layout>
+  </>
 }
 
 export default PublicGroupInformation
