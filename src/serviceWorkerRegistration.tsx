@@ -72,14 +72,14 @@ function registerValidSW(swUrl: string) {
           if (installingWorker.state === 'installed' &&
             navigator.serviceWorker.controller && registration.waiting) {
             console.log('New content is available, activating immediately...');
-            registration.waiting.postMessage({ type: 'SKIP_WAITING' });
+            // registration.waiting.postMessage({ type: 'SKIP_WAITING' });
           }
         };
       };
 
       if (registration.waiting) {
         console.log('Activating waiting service worker immediately...');
-        registration.waiting.postMessage({ type: 'SKIP_WAITING' });
+        // registration.waiting.postMessage({ type: 'SKIP_WAITING' });
       }
     })
     .catch((error) => {
