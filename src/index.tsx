@@ -9,6 +9,8 @@ import './translation/i18n';
 import dayjs from 'dayjs';
 import updateLocale from 'dayjs/plugin/updateLocale';
 import { App } from "./App";
+import "src/apocalypseHandler.js";
+import { ServiceWorkerProvider } from "./hooks/useServiceWorker";
 
 
 const root = ReactDOM.createRoot(document.getElementById('root') as HTMLElement, {
@@ -29,5 +31,7 @@ dayjs.updateLocale('en', {
 })
 
 root.render(
-  <App />
+  <ServiceWorkerProvider>
+    <App />
+  </ServiceWorkerProvider>
 );

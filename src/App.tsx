@@ -12,7 +12,9 @@ import { mainTheme } from './themes/themes';
 import { captureException, withScope } from '@sentry/react';
 import { MutationCache, QueryCache, QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AppProvider } from '@toolpad/core/AppProvider';
+import UpdateAvailable from './components/UpdateAvailable';
 import { AuthGate } from './features/auth/AuthGate';
+import { useServiceWorker } from './hooks/useServiceWorker';
 import { BRANDING } from './utils';
 
 export const queryClient = new QueryClient({
@@ -51,6 +53,12 @@ export const queryClient = new QueryClient({
 });
 
 export const App = () => {
+
+  const { isUpdateAvailable, updateAssets } = useServiceWorker();
+
+  if (isUpdateAvailable) {
+    return <UpdateAvailable update={updateAssets} />
+  }
 
   return <ThemeProvider theme={mainTheme}>
     <LocalizationProvider dateAdapter={AdapterDayjs}>

@@ -3,7 +3,6 @@
 
 type ServiceWorkerConfig = {
   onUpdate: (registration: ServiceWorkerRegistration) => void;
-  onSuccess: (registration: ServiceWorkerRegistration) => void;
 };
 
 // This lets the app load faster on subsequent visits in production, and gives
@@ -69,7 +68,7 @@ function registerValidSW(swUrl: string, config: ServiceWorkerConfig) {
     .register(`${process.env.PUBLIC_URL}/firebase-messaging-sw.js`)
     .then(registration => {
       if (registration.waiting) {
-        config.onUpdate(registration);
+        registration.waiting.postMessage({ type: 'SKIP_WAITING' });
       }
       registration.onupdatefound = () => {
         const installingWorker = registration.installing;
@@ -79,14 +78,14 @@ function registerValidSW(swUrl: string, config: ServiceWorkerConfig) {
         installingWorker.onstatechange = () => {
           if (registration.waiting) {
             if (navigator.serviceWorker.controller) {
-              config.onUpdate(registration);
+              registration.waiting.postMessage({ type: 'SKIP_WAITING' });
             }
           }
           if (installingWorker.state === 'installed') {
             if (navigator.serviceWorker.controller) {
-              if (config && config.onUpdate) {
-                config.onUpdate(registration);
-              }
+              config?.onUpdate?.(registration);
+            } else {
+              console.log('Content is cached for offline use.');
             }
           }
         };
@@ -115,7 +114,6 @@ function registerValidSW(swUrl: string, config: ServiceWorkerConfig) {
               config?.onUpdate?.(registration);
             } else {
               console.log('Content is cached for offline use.');
-              config?.onSuccess?.(registration);
             }
           }
         };
