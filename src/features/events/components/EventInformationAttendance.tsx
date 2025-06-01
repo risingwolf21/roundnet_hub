@@ -33,13 +33,14 @@ import {
   answerDeadlineExpired,
   eventInThePast,
   EventsUserView,
-  maxAttendeesExceeded
+  maxAttendeesExceeded,
+  UserWithRolesAndPermissions
 } from 'src/types/supabaseTypes';
 import EventAttendanceDialog from '../dialogs/EventAttendanceDialog';
 import { EventInformationConstellations } from './EventInformationConstellations';
 
 type EventInformationAttendanceProps = {
-  user: User;
+  user: UserWithRolesAndPermissions;
   fetchMode: "past" | "upcoming"
   selectedEvent: EventsUserView;
   keyHolders: FullItemHolder[];
@@ -84,7 +85,11 @@ const EventInformationAttendance = ({
           })}
         </Alert>
       )}
-      <EventInformationConstellations attendance={attendance} event={selectedEvent} />
+
+      {
+        user.roles.map(x => x.name).includes("eventModerator") && <EventInformationConstellations attendance={attendance} event={selectedEvent} />
+      }
+
       <Typography sx={{ fontSize: 16, fontWeight: 'bold', mt: 2 }} color="text.secondary" gutterBottom>
         {t('attendees')}
       </Typography>
