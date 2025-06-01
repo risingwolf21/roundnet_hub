@@ -62,6 +62,14 @@ registerRoute(({ request }) => request.destination === "image",
     ]
   }))
 
+self.addEventListener("install", (event) => {
+  self.skipWaiting(); // 👉 sofort aktivieren, ohne auf alte SW zu warten
+});
+
+self.addEventListener("activate", (event) => {
+  event.waitUntil(self.clients.claim()); // 👉 sofort Kontrolle über alle Seiten übernehmen
+});
+
 // This allows the web app to trigger skipWaiting via
 // registration.waiting.postMessage({type: 'SKIP_WAITING'})
 self.addEventListener('message', (event) => {
