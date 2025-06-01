@@ -61,7 +61,7 @@ function registerValidSW(swUrl: string) {
 
       setInterval(() => {
         registration.update();
-      }, 1 * 60 * 1000);
+      }, 5 * 60 * 1000);
 
       registration.onupdatefound = () => {
         const installingWorker = registration.installing;
@@ -70,9 +70,9 @@ function registerValidSW(swUrl: string) {
         }
         installingWorker.onstatechange = () => {
           if (installingWorker.state === 'installed' &&
-            navigator.serviceWorker.controller) {
+            navigator.serviceWorker.controller && registration.waiting) {
             console.log('New content is available, activating immediately...');
-            registration.waiting?.postMessage({ type: 'SKIP_WAITING' });
+            registration.waiting.postMessage({ type: 'SKIP_WAITING' });
           }
         };
       };
