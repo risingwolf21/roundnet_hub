@@ -113,6 +113,7 @@ self.addEventListener("install", (event) => {
         firebase.initializeApp(firebaseConfig);
         // eslint-disable-next-line no-undef
         if (firebase.messaging.isSupported()) {
+          console.log("Firebase messaging initialized and supported")
           // eslint-disable-next-line no-undef
           const messaging = firebase.messaging();
 
@@ -129,6 +130,8 @@ self.addEventListener("install", (event) => {
               },
             });
           });
+        } else {
+          console.error("Firebase messaging sw not supported")
         }
       })
       .catch((err) => {
