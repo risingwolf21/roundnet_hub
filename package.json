@@ -59,7 +59,6 @@
     "deploy-functions:production": "npx supabase functions deploy --project-ref PROJECT_REF",
     "gen-types:production": "npx supabase gen types typescript --project-id PROJECT_REF --schema public --schema games --schema permissions > src/types/supabase-generated.types.ts",
     "format": "prettier --write \"src/**/*.{js,jsx,ts,tsx,css,md}\" --config ./.prettierrc.json",
-    "build-fcm-config": "node src/firebase/build_firebase_sw.js",
     "knip": "knip",
     "sentry:sourcemaps": "sentry-cli sourcemaps inject --org roundnet-karlsruhe --project roundnet-karlsruhe ./build && sentry-cli sourcemaps upload --org roundnet-karlsruhe --project roundnet-karlsruhe ./build"
   },

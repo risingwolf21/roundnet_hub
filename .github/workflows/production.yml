@@ -26,21 +26,17 @@ jobs:
       - name: Write commit Version to file
         uses: DamianReeves/write-file-action@master
         with:
-          path: ${{github.workspace}}/src/git_commit.txt
+          path: ${{github.workspace}}/public/git_commit.txt
           contents: |
             ${{github.sha}}
           write-mode: overwrite
-          
-      - name: "Write firebase service worker config file"
-        run: yarn run build-fcm-config
 
       - name: Build
         run: PUBLIC_URL=https://roundnet-karlsruhe.web.app yarn run build:production
         env:
           REACT_APP_SUPABASE_API_KEY: ${{secrets.SUPABASE_PRODUCTION_ANON_KEY}}
           REACT_APP_SUPABASE_URL: ${{secrets.SUPABASE_PRODUCTION_URL}}
-      
-        
+
       - name: Sentry Sourcemaps
         run: yarn sentry:sourcemaps
         env:
