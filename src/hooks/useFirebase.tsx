@@ -11,30 +11,25 @@ async function requestNotificationPermission(user: User, deviceId: string, messa
   const permission = await Notification.requestPermission();
 
   if (permission === 'granted') {
-    getToken(messaging, {
-      vapidKey: process.env.REACT_APP_FIREBASE_VAPID_KEY,
-    })
-      .then((token) => {
-        if (user.userId)
-          SupabaseUserRepository.updateFCMToken(token, deviceId, user.userId).then((result) => {
-            if (result.error) {
-              captureException(result.error, (scope) => {
-                scope.setExtra('displayName', user.displayName);
-                scope.setExtra('email', user.email);
-                scope.setExtra('userId', user.userId);
-                return scope;
-              });
-            }
-          });
-      })
-      .catch((error) => {
-        captureException(error, (scope) => {
-          scope.setExtra('displayName', user.displayName);
-          scope.setExtra('email', user.email);
-          scope.setExtra('userId', user.userId);
-          return scope;
-        });
-      });
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.getRegistration()
+        .then(async (reg) => {
+          try {
+            const token = await getToken(messaging, {
+              vapidKey: process.env.REACT_APP_FIREBASE_VAPID_KEY,
+              serviceWorkerRegistration: reg
+            });
+            SupabaseUserRepository.updateFCMToken(token, deviceId, user.userId);
+          } catch (error) {
+            captureException(error, (scope) => {
+              scope.setExtra('displayName', user.displayName);
+              scope.setExtra('email', user.email);
+              scope.setExtra('userId', user.userId);
+              return scope;
+            });
+          }
+        })
+    }
   } else if (permission === 'denied') {
     //notifications are blocked
   }

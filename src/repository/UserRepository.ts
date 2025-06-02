@@ -81,7 +81,8 @@ export const SupabaseUserRepository = {
   async updateFCMToken(fcmToken: string, deviceId: string, userId: string): Promise<PostgrestSingleResponse<any>> {
     return supabase
       .from('notification_token')
-      .upsert({ fcm_token: fcmToken, user: userId, device_id: deviceId, last_used: formatDateToDatabase(Date.now()) });
+      .upsert({ fcm_token: fcmToken, user: userId, device_id: deviceId, last_used: formatDateToDatabase(Date.now()) })
+      .throwOnError();
   },
 
   async fetchNotificationSettings(
