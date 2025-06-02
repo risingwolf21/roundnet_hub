@@ -37,20 +37,6 @@ export function register() {
         registerValidSW(swUrl);
       }
     });
-
-    // 🟡 Optional: zusätzlicher Firebase-Messaging SW, wenn nötig
-    const firebaseSwUrl = `${process.env.PUBLIC_URL}/firebase-messaging-sw.js`;
-    navigator.serviceWorker
-      .register(firebaseSwUrl)
-      .then((reg) =>
-        console.log(
-          'Firebase Service Worker registered with scope:',
-          reg.scope
-        )
-      )
-      .catch((err) =>
-        console.warn('Firebase Service Worker registration failed:', err)
-      );
   }
 }
 
