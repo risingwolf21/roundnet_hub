@@ -99,7 +99,12 @@ self.addEventListener('notificationclick', (event) => {
   event.notification.close();
 });
 
+self.addEventListener("activate", (event) => {
+  event.waitUntil(self.clients.claim()); // 👉 sofort Kontrolle über alle Seiten übernehmen
+});
+
 self.addEventListener("install", (event) => {
+  self.skipWaiting(); // 👉 sofort aktivieren, ohne auf alte SW zu warten
   event.waitUntil(
     fetch("/firebase-config.json")
       .then((response) => response.json())
