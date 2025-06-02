@@ -44,7 +44,6 @@ import { useApplication } from 'src/features/auth/ApplicationContext';
 import { useRequestedUsersPerGroup } from 'src/tanstack/groups';
 import { useAllNotifications } from 'src/tanstack/notifications';
 import { HOMEPAGE } from '../constants';
-import raw from '../git_commit.txt';
 import { can, canAny } from '../utils/PermissionService';
 import { InstallPWA } from './PwaInstallPromp';
 
@@ -530,7 +529,7 @@ export const Drawer = ({ open, onClose, onOpen }: Props) => {
     typeof navigator !== 'undefined' && /iPad|iPhone|iPod/.test(navigator.userAgent);
 
   useEffect(() => {
-    fetch(raw)
+    fetch('/git_commit.txt')
       .then((r) => r.text())
       .then((text) => {
         setVersion(text);

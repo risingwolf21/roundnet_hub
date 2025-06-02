@@ -7,7 +7,6 @@ import { AppRoutes } from 'src/AppRoutes';
 import { LoadingScreen } from 'src/components/LoadingScreen';
 import { supabase } from 'src/components/services/supabase/supabaseClient';
 import useDeviceId from 'src/hooks/useDeviceId';
-import raw from '../../git_commit.txt';
 import { AdminPermissionsRepository } from '../../repository/AdminPermissionsRepository';
 import { SupabaseUserRepository } from '../../repository/UserRepository';
 import { UserWithRolesAndPermissions } from '../../types/supabaseTypes';
@@ -22,7 +21,7 @@ export const AuthGate = () => {
   const [version, setVersion] = React.useState("");
 
   React.useEffect(() => {
-    fetch(raw)
+    fetch('/git_commit.txt')
       .then((r) => r.text())
       .then((text) => {
         setVersion(text);
