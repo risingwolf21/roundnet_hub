@@ -6,6 +6,15 @@ import { captureException } from '@sentry/react';
 import { toast } from 'react-toastify';
 import { Notification as NotificationComponent } from '../features/notifications/Notification';
 
+class MissingServiceWorkerError extends Error {
+  constructor(msg: string) {
+    super(msg);
+
+    // Set the prototype explicitly.
+    Object.setPrototypeOf(this, MissingServiceWorkerError.prototype);
+  }
+}
+
 async function requestNotificationPermission(user: User, deviceId: string, messaging: Messaging) {
   //requesting permission using Notification API
   const permission = await Notification.requestPermission();
@@ -14,12 +23,32 @@ async function requestNotificationPermission(user: User, deviceId: string, messa
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.getRegistration()
         .then(async (reg) => {
-          try {
+          const retrieveAndUploadMessagingToken = async () => {
             const token = await getToken(messaging, {
               vapidKey: process.env.REACT_APP_FIREBASE_VAPID_KEY,
               serviceWorkerRegistration: reg
             });
             SupabaseUserRepository.updateFCMToken(token, deviceId, user.userId);
+          }
+          try {
+            var serviceWorker: ServiceWorker | null = null;
+            if (reg?.installing) serviceWorker = reg.installing;
+            else if (reg?.waiting) serviceWorker = reg.waiting;
+            else if (reg?.active) serviceWorker = reg.active;
+
+            if (serviceWorker) {
+              if (serviceWorker.state === "activated") {
+                await retrieveAndUploadMessagingToken();
+              } else {
+                serviceWorker.onstatechange = async (e) => {
+                  if (serviceWorker?.state === "activated") {
+                    await retrieveAndUploadMessagingToken();
+                  }
+                }
+              }
+            } else {
+              throw new MissingServiceWorkerError("No active ServiceWorker registration was found.")
+            }
           } catch (error) {
             captureException(error, (scope) => {
               scope.setExtra('displayName', user.displayName);
