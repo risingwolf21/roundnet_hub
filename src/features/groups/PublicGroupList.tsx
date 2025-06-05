@@ -44,6 +44,7 @@ const PublicGroupList = () => {
             {
               groups
                 .filter(x => x.parent_group === mainGroup.id || x.id === mainGroup.id)
+                .filter(x => x.visible)
                 .sort((a, b) => a.name.localeCompare(b.name))
                 .map(x => <ListItem
                   key={x.id}
