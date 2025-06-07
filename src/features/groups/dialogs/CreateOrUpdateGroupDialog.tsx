@@ -53,7 +53,8 @@ const Content = ({ payload, onClose }: DialogProps<CreateOrUpdateGroupDialogProp
               color: data.color,
               need_request_to_join: data.need_request_to_join,
               created_at: formatDateToDatabase(new Date()),
-              parent_group: data.parent_group
+              parent_group: data.parent_group,
+              visible: true
             },
             user: payload.user
           }, {
