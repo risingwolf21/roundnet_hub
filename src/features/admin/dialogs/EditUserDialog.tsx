@@ -29,7 +29,7 @@ import { Box } from '@mui/system';
 import { captureException } from '@sentry/react';
 import { useNotifications } from '@toolpad/core/useNotifications';
 import React, { FormEvent, useEffect, useState } from 'react';
-import { AdminPermissionsRepository } from 'src/repository/AdminPermissionsRepository';
+import { SupabaseUserRepository } from 'src/repository/UserRepository';
 import { supabase } from '../../../components/services/supabase/supabaseClient';
 import { UserWithGroups } from '../../../types/supabaseTypes';
 import { SlideUpTransition } from '../../../utils';
@@ -67,7 +67,7 @@ const EditUserDialog = ({ user, open, handleClose, onUserEditFinished, deleteUse
     const loadUserData = async (user: UserWithGroups) => {
       setLoading(true);
       setVerified(user.verified);
-      const roles = await AdminPermissionsRepository.fetchRolesForUser(user.userId);
+      const roles = await SupabaseUserRepository.fetchRolesForUser(user.userId);
       setUserRoles(roles);
     };
 
