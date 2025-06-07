@@ -19,7 +19,7 @@ const Content = ({ payload, onClose }: DialogProps<CreateOrUpdateGroupDialogProp
   const notifications = useNotifications();
   const inputRef = useRef<HTMLInputElement>(null);
   const usersParentGroups = payload.user.groups.filter(x => x.parent_group === null);
-  const [data, setData] = useState<Tables<'event_group'>>(payload.group ?? { name: "", description: "", id: "", created_at: "", color: "#000", is_public: true, need_request_to_join: false, parent_group: usersParentGroups.length === 1 ? usersParentGroups[0].id : null });
+  const [data, setData] = useState<Tables<'event_group'>>(payload.group ?? { name: "", description: "", id: "", created_at: "", color: "#000", is_public: true, need_request_to_join: false, parent_group: usersParentGroups.length === 1 ? usersParentGroups[0].id : null, visible: true });
   const createGroup = useCreateGroupMutation();
   const updateGroup = useUpdateGroupMutation(payload.group?.id);
 
