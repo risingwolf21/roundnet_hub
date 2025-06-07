@@ -8,7 +8,6 @@ import { Navigate, useLocation, useNavigate } from 'react-router';
 import { HOMEPAGE } from 'src/constants';
 import { supabase } from '../../components/services/supabase/supabaseClient';
 import { useApplication } from './ApplicationContext';
-import Layout from 'src/components/Layout';
 
 const LoginScreen = () => {
   const theme = useTheme();
@@ -19,7 +18,7 @@ const LoginScreen = () => {
   const location = useLocation();
 
   if (user) {
-    return <Navigate to={location.state?.path !== "/login" ? location.state?.path || HOMEPAGE : HOMEPAGE} />
+    return <Navigate to={location.state?.path !== "/auth/login" ? location.state?.path || HOMEPAGE : HOMEPAGE} />
   }
 
   const signIn: (provider: AuthProvider, formData: FormData | undefined) => void = async (
@@ -120,46 +119,44 @@ const LoginScreen = () => {
   }
 
   const SignUpLink = () => <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
-    <Link href="#" variant="body2" onClick={() => navigate('/signup', { replace: true })}>
+    <Link href="#" variant="body2" onClick={() => navigate('/auth/signup', { replace: true })}>
       {'Noch keinen Account?'}
     </Link>
     <Typography sx={{ mt: 1 }}>{`Version ${process.env.REACT_APP_VERSION}-${version.slice(0, 8)}`}</Typography>
   </div>
 
-  const ForgotPasswordLink = () => <Link href="#" variant="body2" onClick={() => navigate('/forgot-password', { replace: true })}>
+  const ForgotPasswordLink = () => <Link href="#" variant="body2" onClick={() => navigate('/auth/forgot-password', { replace: true })}>
     Passwort vergessen?
   </Link>
 
   const rememberMe = () => <div></div>
 
-  return <Layout appBarConfig={{ showProfile: false }}>
-    <SignInPage
-      providers={[{ id: 'credentials', name: 'Credentials' }]}
-      signIn={signIn}
-      slots={{
-        title: Title,
-        subtitle: Subtitle,
-        signUpLink: SignUpLink,
-        forgotPasswordLink: ForgotPasswordLink,
-        rememberMe: rememberMe,
-        submitButton: SubmitButton
-      }}
-      sx={{
-        "height": "100%",
-        "minHeight": "100%",
-        "verticalAlign": "middle",
-        "& .MuiContainer-root .MuiBox-root": {
-          [theme.breakpoints.down("sm")]: {
-            border: "none",
-            boxShadow: "none"
-          }
+  return <SignInPage
+    providers={[{ id: 'credentials', name: 'Credentials' }]}
+    signIn={signIn}
+    slots={{
+      title: Title,
+      subtitle: Subtitle,
+      signUpLink: SignUpLink,
+      forgotPasswordLink: ForgotPasswordLink,
+      rememberMe: rememberMe,
+      submitButton: SubmitButton
+    }}
+    sx={{
+      "height": "100%",
+      "minHeight": "100%",
+      "verticalAlign": "middle",
+      "& .MuiContainer-root .MuiBox-root": {
+        [theme.breakpoints.down("sm")]: {
+          border: "none",
+          boxShadow: "none"
         }
-      }}
-      slotProps={{
-        emailField: { autoFocus: false },
-        submitButton: { title: "Einloggen" },
-        rememberMe: { disabled: true, hidden: true }
-      }} />
-  </Layout>
+      }
+    }}
+    slotProps={{
+      emailField: { autoFocus: false },
+      submitButton: { title: "Einloggen" },
+      rememberMe: { disabled: true, hidden: true }
+    }} />
 };
 export default LoginScreen;

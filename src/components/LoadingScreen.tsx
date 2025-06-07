@@ -1,6 +1,6 @@
 import React from 'react';
 import { LoadingIndicator } from './LoadingIndicator';
-import Layout from './Layout';
+import Layout from './layout/Layout';
 import { Box, AppBar, Toolbar, Typography, Button } from '@mui/material';
 import { supabase } from './services/supabase/supabaseClient';
 

@@ -2,9 +2,9 @@ import { AccountCircle, ArrowBack, Menu } from '@mui/icons-material';
 import { AppBar, Avatar, Box, IconButton, TextField, Toolbar, Typography } from '@mui/material';
 import React, { ReactNode, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
-import { useApplication } from '../features/auth/ApplicationContext';
-import { FirebaseMessaging } from '../features/notifications/FirebaseMessaging';
-import { Drawer, drawerWidth } from './Drawer';
+import { useApplication } from '../../features/auth/ApplicationContext';
+import { FirebaseMessaging } from '../../features/notifications/FirebaseMessaging';
+import { Drawer, drawerWidth } from '../Drawer';
 
 type Props = {
   children: ReactNode;
@@ -13,8 +13,6 @@ type Props = {
     title?: string;
     navigateBackPath?: string;
     showProfile?: boolean;
-    showSearch?: boolean;
-    onSearchChange?: (value: string) => void;
   };
 };
 
@@ -24,9 +22,7 @@ const Layout = ({
   appBarConfig: {
     title = 'Roundnet Karlsruhe',
     showProfile = true,
-    navigateBackPath,
-    showSearch,
-    onSearchChange,
+    navigateBackPath
   } = { title: 'Roundnet Karlsruhe', showProfile: true },
 }: Props) => {
   const navigate = useNavigate();
@@ -133,16 +129,6 @@ const Layout = ({
                 <AccountCircle />
               )}
             </IconButton>
-          )}
-          {/* Optional Search */}
-          {showSearch && onSearchChange && (
-            <TextField
-              variant="outlined"
-              size="small"
-              placeholder="Search..."
-              onChange={(e) => onSearchChange(e.target.value)}
-              sx={{ backgroundColor: 'white', borderRadius: 1 }}
-            />
           )}
           {appBarActions}
         </Toolbar>

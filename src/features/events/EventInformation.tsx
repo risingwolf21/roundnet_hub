@@ -7,7 +7,7 @@ import {
 import { withProfiler } from '@sentry/react';
 import { TFunction } from 'i18next';
 import React from 'react';
-import { eventInThePast, EventsUserView, UserWithRolesAndPermissions } from '../../types/supabaseTypes';
+import { eventInThePast, EventsUserView, UserWithGroups } from '../../types/supabaseTypes';
 import EventAlerts from './components/EventAlerts';
 import EventDateInformation from './components/EventDateInformation';
 import EventInformationAttendance from './components/EventInformationAttendance';
@@ -18,7 +18,7 @@ import { PlaceType } from './types';
 
 
 type EventInformationProps = {
-  user: UserWithRolesAndPermissions;
+  user: UserWithGroups;
   event: EventsUserView;
   selectedEventPlace: PlaceType | null;
   keyHolders: FullItemHolder[];
@@ -49,7 +49,6 @@ const EventInformation = ({
       <Divider />
 
       <EventInformationAttendance
-        user={user}
         keyHolders={keyHolders}
         selectedEvent={event}
         fetchMode={fetchMode}

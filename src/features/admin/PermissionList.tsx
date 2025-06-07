@@ -13,7 +13,7 @@ import { useNotifications } from '@toolpad/core/useNotifications';
 import _ from 'lodash';
 import React, { useCallback, useEffect, useState } from 'react';
 import { NonNullableFields } from 'types/supabase';
-import Layout from '../../components/Layout';
+import Layout from '../../components/layout/Layout';
 import { SwipeableDialog } from '../../components/SwipeableDialog';
 import { supabase } from '../../components/services/supabase/supabaseClient';
 import { AdminPermissionsRepository } from '../../repository/AdminPermissionsRepository';

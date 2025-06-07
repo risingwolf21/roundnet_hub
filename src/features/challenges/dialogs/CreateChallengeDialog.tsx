@@ -9,11 +9,11 @@ import { supabase } from "src/components/services/supabase/supabaseClient";
 import { CreateOrUpdateGroupDialog } from "src/features/groups/dialogs/CreateOrUpdateGroupDialog";
 import { useGroups } from "src/tanstack/groups";
 import { Tables } from "src/types/supabase-generated.types";
-import { GroupWithUserRole } from "src/types/supabaseTypes";
+import { UserWithGroups } from "src/types/supabaseTypes";
 import { dayjsFromDb, dayjsToDb } from "src/utils";
 
 type CreateChallengePayload = {
-  user: User & { groups: GroupWithUserRole[]; roles: AppRole[]; }
+  user: UserWithGroups
 }
 
 const Content = ({ payload, onClose }: DialogProps<CreateChallengePayload, string | null>) => {

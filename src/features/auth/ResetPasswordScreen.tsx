@@ -7,7 +7,6 @@ import Typography from '@mui/material/Typography';
 import * as React from 'react';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
-import Layout from 'src/components/Layout';
 import { BRANDING } from 'src/utils';
 import { supabase } from '../../components/services/supabase/supabaseClient';
 import { HOMEPAGE } from '../../constants';
@@ -117,84 +116,82 @@ const ResetPasswordScreen = () => {
   };
 
   return (
-    <Layout appBarConfig={{ navigateBackPath: "/user" }}>
-      <Container component="main" maxWidth="xs">
+    <Container component="main" maxWidth="xs">
+      <Box
+        sx={(theme) => ({
+          display: 'flex',
+          flexDirection: 'column',
+          bgcolor: 'background.paper',
+          borderRadius: 1,
+          p: 4,
+          mb: 10,
+          [theme.breakpoints.up('sm')]: {
+            border: '1px solid',
+            alignItems: 'center',
+            borderColor: alpha(theme.palette.grey[400], 0.4),
+            boxShadow: theme.shadows[4],
+            marginBottom: 0,
+          },
+          [theme.breakpoints.down('xs')]: {
+            alignItems: 'start',
+            border: "none",
+            boxShadow: "none"
+          },
+        })}
+      >
+
+        {BRANDING.logo}
+
+        <Typography variant="h5" component={"h1"} color='textPrimary' sx={{
+          my: theme.spacing(1),
+          textAlign: 'center',
+          fontWeight: 600,
+        }}>
+          Passwort zurücksetzen<br></br>{BRANDING.title}
+        </Typography>
         <Box
-          sx={(theme) => ({
-            display: 'flex',
-            flexDirection: 'column',
-            bgcolor: 'background.paper',
-            borderRadius: 1,
-            p: 4,
-            mb: 10,
-            [theme.breakpoints.up('sm')]: {
-              border: '1px solid',
-              alignItems: 'center',
-              borderColor: alpha(theme.palette.grey[400], 0.4),
-              boxShadow: theme.shadows[4],
-              marginBottom: 0,
-            },
-            [theme.breakpoints.down('xs')]: {
-              alignItems: 'start',
-              border: "none",
-              boxShadow: "none"
-            },
-          })}
+          component="form"
+          onSubmit={handleSubmit}
+          sx={{ width: "100%" }}
         >
+          <Stack direction={"column"} spacing={2} sx={{ mb: 2, mt: 2 }}>
+            <TextField
+              {...getCommonTextFieldProps(theme, {
+                label: "Password",
+                id: 'password',
+                name: 'password',
+                type: "password"
+              })}
+            />
+            <TextField
+              {...getCommonTextFieldProps(theme, {
+                label: "Password",
+                id: 'password2',
+                name: 'password2',
+                type: "password"
+              })}
+            />
 
-          {BRANDING.logo}
+            {
+              error && <Alert sx={{ my: 2 }} severity="error">
+                {error}
+              </Alert>
+            }
+          </Stack>
 
-          <Typography variant="h5" component={"h1"} color='textPrimary' sx={{
-            my: theme.spacing(1),
-            textAlign: 'center',
-            fontWeight: 600,
-          }}>
-            Passwort zurücksetzen<br></br>{BRANDING.title}
-          </Typography>
-          <Box
-            component="form"
-            onSubmit={handleSubmit}
-            sx={{ width: "100%" }}
+          <Button
+            type="submit"
+            variant="contained"
+            fullWidth
+            disabled={loading}
+            sx={{ my: 2 }}
           >
-            <Stack direction={"column"} spacing={2} sx={{ mb: 2, mt: 2 }}>
-              <TextField
-                {...getCommonTextFieldProps(theme, {
-                  label: "Password",
-                  id: 'password',
-                  name: 'password',
-                  type: "password"
-                })}
-              />
-              <TextField
-                {...getCommonTextFieldProps(theme, {
-                  label: "Password",
-                  id: 'password2',
-                  name: 'password2',
-                  type: "password"
-                })}
-              />
-
-              {
-                error && <Alert sx={{ my: 2 }} severity="error">
-                  {error}
-                </Alert>
-              }
-            </Stack>
-
-            <Button
-              type="submit"
-              variant="contained"
-              fullWidth
-              disabled={loading}
-              sx={{ my: 2 }}
-            >
-              {
-                loading ? <CircularProgress color="inherit" size={25} /> : "Abschicken"
-              }
-            </Button>
-          </Box>
+            {
+              loading ? <CircularProgress color="inherit" size={25} /> : "Abschicken"
+            }
+          </Button>
         </Box>
-      </Container>
-    </Layout>)
+      </Box>
+    </Container>)
 };
 export default ResetPasswordScreen;

@@ -3,8 +3,8 @@ import { Box, Fab, List, ListItem, ListItemText, Typography } from '@mui/materia
 import React from 'react';
 import { PullToRefresh } from 'src/components/pull-to-refresh/PullToRefresh';
 import { useAllNotifications, useMarkNotificationsAsRead } from 'src/tanstack/notifications';
-import Layout from '../../components/Layout';
-import { useAuthentication } from '../auth/AuthContext';
+import Layout from '../../components/layout/Layout';
+import { useAuthentication } from '../auth/AuthProvider';
 
 const NotificationsPage = () => {
 

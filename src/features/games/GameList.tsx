@@ -5,7 +5,7 @@ import { t } from 'i18next';
 import moment from 'moment';
 import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router';
-import Layout from 'src/components/Layout';
+import Layout from 'src/components/layout/Layout';
 import { PullToRefresh } from 'src/components/pull-to-refresh/PullToRefresh';
 import { useMatches } from 'src/tanstack/games';
 import { groupBy } from 'src/utils';

@@ -6,8 +6,8 @@ import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router';
 import { PullToRefresh } from 'src/components/pull-to-refresh/PullToRefresh';
 import { useChallenges } from 'src/tanstack/challenge';
-import Layout from '../../components/Layout';
-import { useAuthentication } from '../auth/AuthContext';
+import Layout from '../../components/layout/Layout';
+import { useAuthentication } from '../auth/AuthProvider';
 import { CreateChallengeDialog } from './dialogs/CreateChallengeDialog';
 
 

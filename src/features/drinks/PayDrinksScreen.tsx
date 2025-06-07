@@ -12,11 +12,11 @@ import {
 import { useNotifications } from '@toolpad/core';
 import React, { useEffect } from 'react';
 import { usePaymentHistory } from 'src/tanstack/drinks';
-import Layout from '../../components/Layout';
+import Layout from '../../components/layout/Layout';
 import { LoadingScreen } from '../../components/LoadingScreen';
 import { PAYPAL_ME_ADDRESS } from '../../constants';
 import { groupBy } from '../../utils';
-import { useAuthentication } from '../auth/AuthContext';
+import { useAuthentication } from '../auth/AuthProvider';
 
 const PayDrinksButton = ({ amountToPay }: { amountToPay: number }) => {
   const onPayClick = () => {

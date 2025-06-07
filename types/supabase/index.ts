@@ -27,6 +27,7 @@ declare global {
   type EventComment = Tables<'event_comments'>;
   type Group = Tables<'event_group'>;
   type EventsUserViewNullable = Tables<'events_user_view'>;
+  type EventGroupsViewNullable = Tables<'event_groups_view'>;
   type Item = Tables<'items'>;
   type ItemHistory = Tables<'item_history'>;
   type Payment = Tables<'payments'>;
@@ -42,6 +43,8 @@ declare global {
   type Team = GamesTable<'teams'>;
   type CalendarSettings = Tables<'user_calender_settings'>;
   type PlayerWithSimpleUser = Player & { name: string; userId: string };
+  type Feature = Tables<'features'>;
+  type Permission = Tables<'permissions'>;
 
   type FullItemHolder = QueryData<ReturnType<typeof fetchItems>> extends Array<infer U> ? U : never;
   type FullItemHistory = QueryData<ReturnType<typeof fetchItemHistory>> extends Array<infer U> ? U : never;
@@ -72,7 +75,6 @@ declare global {
   type EventCommentUpdate = TablesUpdate<'event_comments'>;
   type UserUpdate = TablesUpdate<'user'>;
 
-  type NotificationTags = Enums<'NotificationTags'>;
   type ProductType = Enums<'ProductType'>;
   type EventAttendance = Enums<'EventAttendance'>;
   type EventRecurrence = Enums<'EventRecurrence'>;

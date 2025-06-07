@@ -1,6 +1,6 @@
 import React from 'react';
-import Layout from 'src/components/Layout';
-import { useAuthentication } from '../auth/AuthContext';
+import Layout from 'src/components/layout/Layout';
+import { useAuthentication } from '../auth/AuthProvider';
 import { HistoryScreen } from './HistoryScreen';
 
 const HistoryScreenProvider = () => {

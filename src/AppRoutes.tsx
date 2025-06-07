@@ -3,8 +3,9 @@ import React from "react";
 import { createBrowserRouter, Navigate, Outlet, RouteObject, RouterProvider, useLocation } from "react-router";
 import ErrorRouteElement from "./components/ErrorRouteElement";
 import { useApplication } from "./features/auth/ApplicationContext";
-import { AuthContext } from "./features/auth/AuthContext";
+import { AuthProvider } from "./features/auth/AuthProvider";
 import { lazyWithRetry } from "./hooks/lazyWithRetry";
+import AuthLayout from "./components/layout/AuthLayout";
 
 const HistoryScreenProvider = lazyWithRetry(() => import('./features/drinks/HistoryScreenProvider'));
 const ItemHolderScreen = lazyWithRetry(() => import('./features/keys/ItemHolderScreen'));
@@ -33,6 +34,7 @@ const ForgotPasswordScreen = lazyWithRetry(() => import('./features/auth/ForgotP
 const AuthCallback = lazyWithRetry(() => import('./features/auth/AuthCallback'));
 const PublicGroupList = lazyWithRetry(() => import('./features/groups/PublicGroupList.page'));
 const PublicGroupInformation = lazyWithRetry(() => import('./features/groups/PublicGroupInformation.page'));
+const GroupFeatureList = lazyWithRetry(() => import('./features/admin/GroupFeatureList'));
 
 const sentryCreateBrowserRouter = wrapCreateBrowserRouterV7(
   createBrowserRouter,
@@ -47,38 +49,44 @@ const PrivateRoute = () => {
   const { user, signOut } = useApplication();
   const location = useLocation();
   if (!user)
-    return <Navigate to="/login" state={{ path: location.pathname + location.search }} />
+    return <Navigate to="/auth/login" state={{ path: location.pathname + location.search }} />
 
-  return <AuthContext.Provider value={{ user, signOut }}>
+  return <AuthProvider user={user} signOut={signOut}>
     <Outlet />
-  </AuthContext.Provider>
+  </AuthProvider>
 }
 
 const router = sentryCreateBrowserRouter([
   {
-    path: "/login",
-    element: <LoginScreen />,
-    errorElement: <ErrorRouteElement />,
-  },
-  {
-    path: "/signup",
-    element: <SignUpScreen />,
-    errorElement: <ErrorRouteElement />,
-  },
-  {
-    path: "/forgot-password",
-    element: <ForgotPasswordScreen />,
-    errorElement: <ErrorRouteElement />,
-  },
-  {
-    path: "/reset-password",
-    element: <ResetPasswordScreen />,
-    errorElement: <ErrorRouteElement />,
-  },
-  {
-    path: "/auth/callback",
-    element: <AuthCallback />,
-    errorElement: <ErrorRouteElement />,
+    path: "/auth",
+    element: <AuthLayout />,
+    children: [
+      {
+        path: "login",
+        element: <LoginScreen />,
+        errorElement: <ErrorRouteElement />,
+      },
+      {
+        path: "signup",
+        element: <SignUpScreen />,
+        errorElement: <ErrorRouteElement />,
+      },
+      {
+        path: "forgot-password",
+        element: <ForgotPasswordScreen />,
+        errorElement: <ErrorRouteElement />,
+      },
+      {
+        path: "reset-password",
+        element: <ResetPasswordScreen />,
+        errorElement: <ErrorRouteElement />,
+      },
+      {
+        path: "callback",
+        element: <AuthCallback />,
+        errorElement: <ErrorRouteElement />,
+      }
+    ]
   },
   {
     path: "/",
@@ -228,6 +236,10 @@ const router = sentryCreateBrowserRouter([
               {
                 path: "permissions",
                 element: <PermissionList />
+              },
+              {
+                path: "group_features",
+                element: <GroupFeatureList />
               }
             ]
           },

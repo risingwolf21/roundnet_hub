@@ -52,6 +52,36 @@ export const SupabaseUserRepository = {
     return data.map(x => ({ ...x.event_group, user_role: x.role } as GroupWithUserRole));
   },
 
+  async fetchPermissionsForUser(): Promise<string[]> {
+    const { data, error } = await supabase
+      .from('user_permissions')
+      .select('*');
+
+    if (error || !data) return [];
+    return data.map(x => x.permission).filter(x => x !== null);
+  },
+
+
+  async fetchRolesForUser(userId: string): Promise<AppRole[]> {
+    const { data, error } = await supabase
+      .schema("permissions")
+      .from('user_roles')
+      .select('app_role (*)')
+      .eq('user', userId)
+      .returns<{ app_role: AppRole }[]>()
+    if (error || !data) return [];
+    return data.map((x) => x.app_role as AppRole);
+  },
+
+  async fetchFeaturesForUser(): Promise<string[]> {
+    const { data, error } = await supabase
+      .from('user_features')
+      .select('*');
+
+    if (error || !data) return [];
+    return data.map(x => x.feature).filter(x => x !== null);
+  },
+
   async fetchPlayer(userId: string): Promise<PostgrestSingleResponse<Player | null>> {
     return supabase.schema('games').from('players').select('*').eq('player', userId).maybeSingle().throwOnError();
   },

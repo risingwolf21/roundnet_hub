@@ -6,28 +6,27 @@ import { useDialogs, useNotifications } from '@toolpad/core';
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, useParams } from 'react-router';
-import Layout from 'src/components/Layout';
+import { queryClient } from 'src/App';
+import Layout from 'src/components/layout/Layout';
 import { PullToRefresh } from 'src/components/pull-to-refresh/PullToRefresh';
-import { useAuthentication } from 'src/features/auth/AuthContext';
+import { useAuthentication } from 'src/features/auth/AuthProvider';
 import EventInformationLoading from 'src/features/events/components/EventInformationLoading';
 import { CancelTrainingDialog } from 'src/features/events/dialogs/CancelTrainingDialog';
+import { CreateOrUpdateEventDialog } from 'src/features/events/dialogs/CreateOrUpdateEventDialog';
 import { DeleteEventDialog } from 'src/features/events/dialogs/DeleteEventDialog';
 import { EditEventOptionsDialog } from 'src/features/events/dialogs/EditEventOptionsDialog';
-import { CreateOrUpdateEventDialog } from 'src/features/events/dialogs/CreateOrUpdateEventDialog';
-import { useAllItems } from 'src/tanstack/items';
 import { useFetchMode } from 'src/hooks/useFetchMode';
 import { SupabaseEventRepository } from 'src/repository/EventRepository';
+import { useCancelTrainingMutation, useDeleteTrainingMutation } from 'src/tanstack/events';
+import { useAllItems } from 'src/tanstack/items';
 import { EventsUserView } from 'src/types/supabaseTypes';
-import { can } from 'src/utils/PermissionService';
 import { EventTable } from 'types/supabase';
 import EventInformation from './EventInformation';
 import { PlaceType } from './types';
-import { queryClient } from 'src/App';
-import { useCancelTrainingMutation, useDeleteTrainingMutation } from 'src/tanstack/events';
 
 const EventInformationProvider = () => {
   const { selectedEventId } = useParams();
-  const { user } = useAuthentication();
+  const { user, isAuthorized } = useAuthentication();
   const navigate = useNavigate();
   const notifications = useNotifications();
   const dialogs = useDialogs();
@@ -71,14 +70,14 @@ const EventInformationProvider = () => {
     showProfile: false,
   }}
     appBarActions={
-      (can('update', 'event') || can('delete', 'event')) &&
+      (isAuthorized("event.edit") || isAuthorized("event.cancel") || isAuthorized("event.delete")) &&
       <>
         <IconButton sx={{ color: '#fff', pr: 0 }} onClick={(e) => setAnchorEl(e.currentTarget)}>
           <MoreVert />
         </IconButton>
         <Menu id="simple-menu" anchorEl={anchorEl} keepMounted open={Boolean(anchorEl)} onClose={() => setAnchorEl(null)}>
           <MenuItem
-            hidden={!can('update', 'event')}
+            hidden={!isAuthorized("event.edit")}
             onClick={async () => {
               setAnchorEl(null)
               const result = await dialogs.open(EditEventOptionsDialog);
@@ -98,7 +97,7 @@ const EventInformationProvider = () => {
             <ListItemText primary="Bearbeiten" />
           </MenuItem>
           <MenuItem
-            hidden={!can('update', 'event')}
+            hidden={!isAuthorized("event.cancel")}
             onClick={async () => {
               setAnchorEl(null)
               const result = await dialogs.open(CancelTrainingDialog, event);
@@ -116,7 +115,7 @@ const EventInformationProvider = () => {
             <ListItemText primary={event.isCancelled ? 'Stattfinden' : 'Absagen'} />
           </MenuItem>
           <MenuItem
-            hidden={!can('delete', 'event')}
+            hidden={!isAuthorized("event.delete")}
             onClick={async () => {
               setAnchorEl(null);
               const result = await dialogs.open(DeleteEventDialog, event);

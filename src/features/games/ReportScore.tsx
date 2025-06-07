@@ -16,7 +16,7 @@ import { captureException } from '@sentry/react';
 import { useNotifications } from '@toolpad/core/useNotifications';
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
-import Layout from 'src/components/Layout';
+import Layout from 'src/components/layout/Layout';
 import { useCreateMatch, usePlayers } from 'src/tanstack/games';
 
 type Props = { options: SimpleUser[]; loading: boolean; label: string; onSelect: (value: SimpleUser | null) => void };

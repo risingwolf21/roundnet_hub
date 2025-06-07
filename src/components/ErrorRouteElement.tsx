@@ -2,7 +2,7 @@ import { Box, Typography } from "@mui/material";
 import { captureException } from "@sentry/react";
 import React from "react";
 import { isRouteErrorResponse, useRouteError } from "react-router";
-import Layout from "./Layout";
+import Layout from "./layout/Layout";
 
 const ErrorRouteElement = () => {
   const error = useRouteError();

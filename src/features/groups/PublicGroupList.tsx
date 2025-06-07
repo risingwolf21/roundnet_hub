@@ -6,7 +6,7 @@ import React, { useEffect } from "react";
 import { useNavigate } from "react-router";
 import { PullToRefresh } from "src/components/pull-to-refresh/PullToRefresh";
 import { useGroups, useRequestedUsersPerGroup } from "src/tanstack/groups";
-import { useAuthentication } from "../auth/AuthContext";
+import { useAuthentication } from "../auth/AuthProvider";
 import { JoinGroupButton } from "./components/JoinGroupButton";
 import { CreateOrUpdateGroupDialog } from "./dialogs/CreateOrUpdateGroupDialog";
 import { LoadingGroupListItem } from "./LoadingGroupListItem";
@@ -44,7 +44,7 @@ const PublicGroupList = () => {
             {
               groups
                 .filter(x => x.parent_group === mainGroup.id || x.id === mainGroup.id)
-                .filter(x => x.visible)
+                .filter(x => !x.visible)
                 .sort((a, b) => a.name.localeCompare(b.name))
                 .map(x => <ListItem
                   key={x.id}

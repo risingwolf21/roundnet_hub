@@ -5,21 +5,23 @@ import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { captureException } from "@sentry/react";
 import { DialogProps, NotificationsProvider, useNotifications } from "@toolpad/core";
 import React, { useRef, useState } from "react";
+import { useAuthentication } from "src/features/auth/AuthProvider";
 import { useCreateGroupMutation, useUpdateGroupMutation } from "src/tanstack/groups";
 import { Tables } from "src/types/supabase-generated.types";
-import { GroupWithUserRole } from "src/types/supabaseTypes";
+import { GroupWithUserRole, UserWithGroups } from "src/types/supabaseTypes";
 import { formatDateToDatabase } from "src/utils";
 
 type CreateOrUpdateGroupDialogProps = {
   group?: Group
-  user: User & { groups: GroupWithUserRole[]; roles: AppRole[]; }
+  user: UserWithGroups
 }
 
 const Content = ({ payload, onClose }: DialogProps<CreateOrUpdateGroupDialogProps, GroupWithUserRole | null | "closed">) => {
   const notifications = useNotifications();
+  const { isAuthorized } = useAuthentication();
   const inputRef = useRef<HTMLInputElement>(null);
   const usersParentGroups = payload.user.groups.filter(x => x.parent_group === null);
-  const [data, setData] = useState<Tables<'event_group'>>(payload.group ?? { name: "", description: "", id: "", created_at: "", color: "#000", is_public: true, need_request_to_join: false, parent_group: usersParentGroups.length === 1 ? usersParentGroups[0].id : null });
+  const [data, setData] = useState<Tables<'event_group'>>(payload.group ?? { name: "", description: "", id: "", created_at: "", color: "#000", is_public: true, need_request_to_join: false, parent_group: usersParentGroups.length === 1 ? usersParentGroups[0].id : null, visible: true });
   const createGroup = useCreateGroupMutation();
   const updateGroup = useUpdateGroupMutation(payload.group?.id);
 
@@ -53,7 +55,8 @@ const Content = ({ payload, onClose }: DialogProps<CreateOrUpdateGroupDialogProp
               color: data.color,
               need_request_to_join: data.need_request_to_join,
               created_at: formatDateToDatabase(new Date()),
-              parent_group: data.parent_group
+              parent_group: data.parent_group,
+              visible: true
             },
             user: payload.user
           }, {
@@ -77,7 +80,7 @@ const Content = ({ payload, onClose }: DialogProps<CreateOrUpdateGroupDialogProp
   </AppBar>
     <List sx={{ pl: 2, pr: 2, pb: 10 }}>
       {
-        usersParentGroups.length > 0 && payload.user.roles.map(x => x.name).includes("admin") && <ListItem sx={{ pt: 0, pb: 0 }} key={'title'}>
+        usersParentGroups.length > 0 && isAuthorized("groups.manage.admin") && <ListItem sx={{ pt: 0, pb: 0 }} key={'title'}>
           <ListItemAvatar>
             {
               data.parent_group && <Avatar sx={{ borderRadius: 2 }}>
@@ -184,7 +187,7 @@ const Content = ({ payload, onClose }: DialogProps<CreateOrUpdateGroupDialogProp
         />
       </ListItem>
       {
-        payload.user.roles.map(x => x.name).includes("admin") && <ListItem sx={{ pt: 0, pb: 0 }} key={'public'}>
+        isAuthorized("groups.manage.admin") && <ListItem sx={{ pt: 0, pb: 0 }} key={'public'}>
           <ListItemAvatar>
             <Checkbox
               sx={{ pl: 0 }}

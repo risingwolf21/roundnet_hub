@@ -6,16 +6,15 @@ import { useNotifications } from '@toolpad/core/useNotifications';
 import React, { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useSearchParams } from 'react-router';
-import Layout from '../../components/Layout';
+import { useAllItems, useHandoverKeyMutation } from 'src/tanstack/items';
+import Layout from '../../components/layout/Layout';
 import { LoadingIndicator } from '../../components/LoadingIndicator';
-import { can } from '../../utils/PermissionService';
-import { useAuthentication } from '../auth/AuthContext';
+import { useAuthentication } from '../auth/AuthProvider';
 import { ItemHolderItem } from './components/ItemHolderItem';
 import { EditOrAddItemDialog } from './dialogs/EditOrAddItemDialog';
 import { ItemHistoryDialog } from './dialogs/ItemHistoryDialog';
 import { KeyHandOverDialog } from './dialogs/KeyHandOverDialog';
 import { SearchUserDialog } from './dialogs/SearchUserDialog';
-import { useAllItems, useHandoverKeyMutation } from 'src/tanstack/items';
 
 const EMPTY_KEY: ItemUpdate = { name: '', color: '#000000', created_at: '', current_holder: null };
 
@@ -30,7 +29,7 @@ const ItemHolderScreen = () => {
 
   const notifications = useNotifications();
   const dialogs = useDialogs();
-  const { user } = useAuthentication();
+  const { user, isAuthorized } = useAuthentication();
   const { t } = useTranslation();
 
   const handoverKeyMutation = useHandoverKeyMutation();
@@ -47,6 +46,8 @@ const ItemHolderScreen = () => {
   }, [user]);
 
   useEffect(() => {
+    if (!isAuthorized("items.update.holder"))
+      return;
     const type = searchParams.get("type");
     const key = searchParams.get("key")
     if (!key || !type) { return; }
@@ -60,7 +61,7 @@ const ItemHolderScreen = () => {
     if (type === "take") {
       selectKeyToReceive(keyHolder);
     }
-  }, [searchParams, keyHolders, user, selectKeyToReceive, selectKeyToHandOver]);
+  }, [searchParams, keyHolders, user, selectKeyToReceive, selectKeyToHandOver, isAuthorized]);
 
   const userSelected = (user: User) => {
     setSearchUserOpen(false);
@@ -102,13 +103,17 @@ const ItemHolderScreen = () => {
             openHistoryDialog={async () => {
               await dialogs.open(ItemHistoryDialog, x)
             }}
-            selectKeyToHandOver={selectKeyToHandOver}
-            selectKeyToReceive={selectKeyToReceive}
+            {
+            ...(isAuthorized("items.update.holder") ? {
+              selectKeyToHandOver,
+              selectKeyToReceive
+            } : {})
+            }
           />
         ))}
       </List>
 
-      {can('update', 'item') && (
+      {isAuthorized("items.manage") && (
         <Box
           sx={{
             position: 'fixed',

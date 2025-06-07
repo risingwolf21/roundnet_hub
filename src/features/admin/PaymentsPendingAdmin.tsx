@@ -20,7 +20,7 @@ import { queryClient } from 'src/App';
 import { PullToRefresh } from 'src/components/pull-to-refresh/PullToRefresh';
 import { supabase } from 'src/components/services/supabase/supabaseClient';
 import { History } from 'types/supabase';
-import Layout from '../../components/Layout';
+import Layout from '../../components/layout/Layout';
 import { FullPayment } from '../../types/supabaseTypes';
 import { ConfirmPaymentDialog } from './dialogs/ConfirmPaymentDialog';
 

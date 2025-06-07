@@ -13,12 +13,14 @@ import DrinkList from './components/DrinkList';
 import { LoadingDrinkItem } from './components/LoadingDrinkItem';
 import VoucherCard from './components/Voucher';
 import { useDrinks } from 'src/tanstack/drinks';
+import { useAuthentication } from '../auth/AuthProvider';
 
 const SUCCESS_MESSAGE_INFO: AlertMessage = { message: 'Getränke erfolgreich gebucht!', severity: 'success' };
 
 const DrinkListScreen = () => {
 
   const { data: drinks = [], error, isLoading } = useDrinks();
+  const {isAuthorized} = useAuthentication();
 
   const notifications = useNotifications();
   const [addedDrinks, setAddedDrinks] = useState<DrinkCounter[]>([]);
@@ -100,7 +102,7 @@ const DrinkListScreen = () => {
       addedDrinks={addedDrinks}
       visibleTypes={visibleTypes}
     />
-    {Object.values(addedDrinks).length > 0 ? (
+    {Object.values(addedDrinks).length > 0  && isAuthorized("drinks.purchase") ? (
       <Fab
         sx={{
           position: 'fixed',

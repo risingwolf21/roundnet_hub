@@ -12,8 +12,8 @@ type ItemHolderItemProsp = {
   setItemToEdit: (value: FullItemHolder) => void;
   setAddOrUpdateKeysOpen: (value: boolean) => void;
   openHistoryDialog: () => void;
-  selectKeyToHandOver: (value: FullItemHolder) => void;
-  selectKeyToReceive: (value: FullItemHolder) => void;
+  selectKeyToHandOver?: (value: FullItemHolder) => void;
+  selectKeyToReceive?: (value: FullItemHolder) => void;
 };
 
 export const ItemHolderItem = ({
@@ -46,8 +46,8 @@ export const ItemHolderItem = ({
           >
             <EditIcon />
           </IconButton>
-        ) : x.full_current_holder?.userId === user.userId ? (
-          <Button
+        ) : x.full_current_holder?.userId === user.userId ?
+          selectKeyToHandOver && <Button
             color="primary"
             onClick={(event) => {
               selectKeyToHandOver(x);
@@ -56,17 +56,17 @@ export const ItemHolderItem = ({
           >
             {t('handover_key')}
           </Button>
-        ) : (
-          <Button
-            color="primary"
-            onClick={(event) => {
-              selectKeyToReceive(x);
-              event.stopPropagation();
-            }}
-          >
-            {t('take_key')}
-          </Button>
-        )
+          : (
+            selectKeyToReceive && <Button
+              color="primary"
+              onClick={(event) => {
+                selectKeyToReceive(x);
+                event.stopPropagation();
+              }}
+            >
+              {t('take_key')}
+            </Button>
+          )
       }
     >
       <ListItemAvatar>

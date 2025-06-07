@@ -1,6 +1,6 @@
 import { isBefore } from 'date-fns';
 import { EventTable, History } from 'types/supabase';
-import { Database, Enums } from './supabase-generated.types';
+import { Database, Enums, Tables } from './supabase-generated.types';
 
 export type FullChallenge = Challenge & {
     stats: ChallengeStatWithUser[];
@@ -84,7 +84,7 @@ export type UserWithRolesAndPermissions = User & {
     permissions: AppPermission[];
     player_data: Player | null;
     groups: GroupWithUserRole[];
-    calendar_data: CalendarSettings | null;
+    features: Feature[];
 };
 
 export type FullUserMapping = {
@@ -96,6 +96,10 @@ export type GroupWithUserMappings = Group & {
     user_group_role: GroupRole | null;
     users: FullUserMapping[];
 };
+
+export type FullGroupFeature = Tables<'group_feature'> & {
+    fullGroup: Group
+}
 
 export type EventsUserView = {
     answerDeadline: string | null;
@@ -117,6 +121,19 @@ export type EventsUserView = {
     title: string;
     group: Group | null;
     user_state: Database["public"]["Enums"]["EventAttendance"] | null;
+}
+
+export type EventGroupsView = {
+    color: string;
+    created_at: string;
+    description: string;
+    id: string;
+    is_public: boolean;
+    name: string;
+    need_request_to_join: boolean;
+    parent_group: string | null;
+    visible: boolean;
+    role: Database["public"]["Enums"]["GroupRole"] | null;
 }
 
 export type ChallengePointsView = {
