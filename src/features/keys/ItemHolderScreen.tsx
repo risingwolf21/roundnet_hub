@@ -124,7 +124,7 @@ const ItemHolderScreen = () => {
           }}
         >
           <Fab
-            sx={{ background: '#66bb6a', mr: 2 }}
+            sx={{ background: 'primary.light', mr: 2 }}
             onClick={() => {
               setItemToEdit(EMPTY_KEY);
               setAddOrUpdateKeysOpen(true);
@@ -132,7 +132,7 @@ const ItemHolderScreen = () => {
           >
             <AddOutlined sx={{ color: '#fff' }} />
           </Fab>
-          <Fab sx={{ background: '#66bb6a' }} onClick={() => setEditingMode(!isEditingMode)}>
+          <Fab sx={{ background: 'primary.light' }} onClick={() => setEditingMode(!isEditingMode)}>
             {isEditingMode ? <EditOffOutlined sx={{ color: '#fff' }} /> : <EditOutlined sx={{ color: '#fff' }} />}
           </Fab>
         </Box>

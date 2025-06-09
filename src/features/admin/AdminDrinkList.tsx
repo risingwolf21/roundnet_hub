@@ -131,7 +131,7 @@ const AdminDrinkList = () => {
       </List>
       <Fab
         sx={{
-          background: '#66bb6a',
+          background: '',
           position: 'fixed',
           right: '16px',
           bottom: 'calc(16px + env(safe-area-inset-bottom))',

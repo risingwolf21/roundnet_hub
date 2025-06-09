@@ -8,6 +8,7 @@ import { Navigate, useLocation, useNavigate } from 'react-router';
 import { HOMEPAGE } from 'src/constants';
 import { supabase } from '../../components/services/supabase/supabaseClient';
 import { useApplication } from './ApplicationContext';
+import { BRANDING } from 'src/utils';
 
 const LoginScreen = () => {
   const theme = useTheme();
@@ -95,7 +96,7 @@ const LoginScreen = () => {
   };
 
   function Title() {
-    return <h2 style={{ marginBottom: 8, textAlign: "center" }}>Login to<br></br>Roundnet Karlsruhe</h2>;
+    return <h2 style={{ marginBottom: 8, textAlign: "center" }}>Login to<br></br>{BRANDING.title}</h2>;
   }
 
   function Subtitle() {

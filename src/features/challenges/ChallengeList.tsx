@@ -45,7 +45,7 @@ const ChallengeList = () => {
       </PullToRefresh>
       <Fab
         sx={{
-          background: '#66bb6a',
+          background: 'primary.light',
           position: 'fixed',
           right: '16px',
           bottom: 'calc(16px + env(safe-area-inset-bottom))',

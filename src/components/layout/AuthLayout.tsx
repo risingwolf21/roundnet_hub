@@ -2,6 +2,7 @@ import { AppBar, Box, Toolbar, Typography } from '@mui/material';
 import React, { PropsWithChildren, useEffect } from 'react';
 import { drawerWidth } from '../Drawer';
 import { Outlet } from 'react-router';
+import { BRANDING } from 'src/utils';
 
 type Props = PropsWithChildren;
 
@@ -52,7 +53,7 @@ const AuthLayout = ({ children }: Props) => {
         <Toolbar>
           {/* Title */}
           <Typography variant="h6" noWrap sx={{ flexGrow: 1 }}>
-            Roundnet Karlsruhe
+            {BRANDING.title}
           </Typography>
         </Toolbar>
       </AppBar>

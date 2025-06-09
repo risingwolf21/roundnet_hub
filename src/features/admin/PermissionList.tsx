@@ -183,7 +183,7 @@ const PermissionList = () => {
           variant={'extended'}
           color={'primary'}
           sx={{
-            color: '#fff',
+            color: (theme) => theme.palette.primary.contrastText,
             backgroundColor: (theme) => theme.palette.primary.main,
             position: 'fixed',
             right: '16px',

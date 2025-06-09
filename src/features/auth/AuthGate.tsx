@@ -11,6 +11,7 @@ import useDeviceId from 'src/hooks/useDeviceId';
 import { SupabaseUserRepository } from '../../repository/UserRepository';
 import { UserWithGroups } from '../../types/supabaseTypes';
 import { ApplicationContext } from './ApplicationContext';
+import { BRANDING } from 'src/utils';
 
 
 export const AuthGate = () => {
@@ -125,7 +126,7 @@ export const AuthGate = () => {
         }}
       >
         <Typography variant="h5" component="div" sx={{ mb: 2, textAlign: 'center' }}>
-          🐺<br></br>Roundnet Karlsruhe
+          🐺<br></br>{BRANDING.title}
         </Typography>
         <CircularProgress variant={'indeterminate'} size={50}></CircularProgress>
       </Box>

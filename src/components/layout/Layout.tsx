@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router';
 import { useApplication } from '../../features/auth/ApplicationContext';
 import { FirebaseMessaging } from '../../features/notifications/FirebaseMessaging';
 import { Drawer, drawerWidth } from '../Drawer';
+import { BRANDING } from 'src/utils';
 
 type Props = {
   children: ReactNode;
@@ -20,10 +21,10 @@ const Layout = ({
   children,
   appBarActions,
   appBarConfig: {
-    title = 'Roundnet Karlsruhe',
+    title = BRANDING.title,
     showProfile = true,
     navigateBackPath
-  } = { title: 'Roundnet Karlsruhe', showProfile: true },
+  } = { title: BRANDING.title, showProfile: true },
 }: Props) => {
   const navigate = useNavigate();
   const { user } = useApplication();

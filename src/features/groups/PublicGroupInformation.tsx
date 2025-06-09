@@ -252,7 +252,7 @@ const PublicGroupInformation = () => {
     {
       group?.user_group_role === "admin" && <Fab
         sx={{
-          background: '#66bb6a',
+          background: 'primary.light',
           position: 'fixed',
           right: '16px',
           bottom: 'calc(16px + env(safe-area-inset-bottom))',

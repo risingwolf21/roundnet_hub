@@ -128,7 +128,7 @@ const ChallengeInformation = ({ t, challengeId }: { t: TFunction, challengeId: s
         { isAuthorized("challenges.edit.own-stats") && !challenge?.automated && (
           <Fab
             sx={{
-              background: '#66bb6a',
+              background: 'primary.light',
               position: 'fixed',
               right: '16px',
               bottom: 'calc(16px + env(safe-area-inset-bottom))',

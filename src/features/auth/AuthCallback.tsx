@@ -2,6 +2,7 @@ import { Box, CircularProgress, Typography } from "@mui/material";
 import React, { useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router";
 import { supabase } from "src/components/services/supabase/supabaseClient";
+import { BRANDING } from "src/utils";
 
 const AuthCallback = () => {
 
@@ -36,7 +37,7 @@ const AuthCallback = () => {
       }}
     >
       <Typography variant="h5" component="div" sx={{ mb: 2, textAlign: 'center' }}>
-        🐺<br></br>Roundnet Karlsruhe
+        🐺<br></br>{BRANDING.title}
       </Typography>
       <CircularProgress variant={'indeterminate'} size={50}></CircularProgress>
     </Box>

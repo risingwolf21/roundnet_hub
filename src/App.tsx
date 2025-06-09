@@ -7,13 +7,14 @@ import { Provider } from 'react-redux';
 import { Provider as SupabaseProvider } from 'react-supabase';
 import { supabase } from './components/services/supabase/supabaseClient';
 import store from './redux/store';
-import { mainTheme } from './themes/themes';
 //@ts-ignore
 import { captureException, withScope } from '@sentry/react';
 import { MutationCache, QueryCache, QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AppProvider } from '@toolpad/core/AppProvider';
 import { AuthGate } from './features/auth/AuthGate';
 import { BRANDING } from './utils';
+import { roundnet_karlsruhe_theme } from './themes/roundnet_karlsruhe_theme';
+import { munich_roundnet_theme } from './themes/munich_roundnet_theme';
 
 export const queryClient = new QueryClient({
   defaultOptions: {
@@ -52,10 +53,14 @@ export const queryClient = new QueryClient({
 
 export const App = () => {
 
-  return <ThemeProvider theme={mainTheme}>
+  const theme = window.location.hostname === "roundnet-karlsruhe.web.app"
+    ? roundnet_karlsruhe_theme
+    : munich_roundnet_theme;
+
+  return <ThemeProvider theme={theme}>
     <LocalizationProvider dateAdapter={AdapterDayjs}>
       <QueryClientProvider client={queryClient}>
-        <AppProvider branding={BRANDING} theme={mainTheme}>
+        <AppProvider branding={BRANDING} theme={theme}>
           <Provider store={store}>
             <SupabaseProvider value={supabase}>
               <AuthGate />

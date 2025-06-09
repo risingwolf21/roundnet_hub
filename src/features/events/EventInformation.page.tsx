@@ -72,7 +72,7 @@ const EventInformationProvider = () => {
     appBarActions={
       (isAuthorized("event.edit") || isAuthorized("event.cancel") || isAuthorized("event.delete")) &&
       <>
-        <IconButton sx={{ color: '#fff', pr: 0 }} onClick={(e) => setAnchorEl(e.currentTarget)}>
+        <IconButton sx={{ color: 'primary.contrastText', pr: 0 }} onClick={(e) => setAnchorEl(e.currentTarget)}>
           <MoreVert />
         </IconButton>
         <Menu id="simple-menu" anchorEl={anchorEl} keepMounted open={Boolean(anchorEl)} onClose={() => setAnchorEl(null)}>

@@ -2,15 +2,19 @@ import { Slide, SlideProps } from '@mui/material';
 import { format, parse } from 'date-fns';
 import dayjs, { Dayjs } from 'dayjs';
 import React, { forwardRef } from 'react';
-import Logo from '../images/Karlsruher_Kojoten_Logo.svg';
+import RoundnetKarlsruheLogo from '../images/Karlsruher_Kojoten_Logo.svg';
 
 export const BRANDING = {
   logo: (<img
-    src={Logo}
+    src={RoundnetKarlsruheLogo}
     alt="MUI logo"
     style={{ height: 96 }}
   />),
-  title: 'Roundnet Karlsruhe',
+  title: window.location.hostname === "roundnet-karlsruhe.web.app"
+    ? 'Roundnet Karlsruhe'
+    : window.location.hostname === "munich-roundnet.web.app"
+      ? "Munich Roundnet"
+      : "Roundnet Community Manager",
 }
 
 export const compareById = (x: any, y: any) => {

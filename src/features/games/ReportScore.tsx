@@ -252,8 +252,8 @@ const ReportScore = () => {
         <Fab
           key={'addScore'}
           sx={{
-            background: '#66bb6a',
-            color: '#fff',
+            background: 'primary.light',
+            color: 'primary.contrastLight',
             position: 'fixed',
             right: '16px',
             bottom: 'calc(16px + env(safe-area-inset-bottom))',
