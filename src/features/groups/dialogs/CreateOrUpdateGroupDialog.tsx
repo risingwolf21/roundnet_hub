@@ -80,7 +80,7 @@ const Content = ({ payload, onClose }: DialogProps<CreateOrUpdateGroupDialogProp
   </AppBar>
     <List sx={{ pl: 2, pr: 2, pb: 10 }}>
       {
-        usersParentGroups.length > 0 && isAuthorized("groups.manage.admin") && <ListItem sx={{ pt: 0, pb: 0 }} key={'title'}>
+        usersParentGroups.length > 0 && isAuthorized("groups.manage.admin") && <ListItem sx={{ pt: 0, pb: 0 }} key={'mainGroup'}>
           <ListItemAvatar>
             {
               data.parent_group && <Avatar sx={{ borderRadius: 2 }}>

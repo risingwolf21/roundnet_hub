@@ -6,6 +6,7 @@ import { useApplication } from "./features/auth/ApplicationContext";
 import { AuthProvider } from "./features/auth/AuthProvider";
 import { lazyWithRetry } from "./hooks/lazyWithRetry";
 import AuthLayout from "./components/layout/AuthLayout";
+import { DialogsProvider, NotificationsProvider } from "@toolpad/core";
 
 const HistoryScreenProvider = lazyWithRetry(() => import('./features/drinks/HistoryScreenProvider'));
 const ItemHolderScreen = lazyWithRetry(() => import('./features/keys/ItemHolderScreen'));
@@ -51,7 +52,17 @@ const PrivateRoute = () => {
     return <Navigate to="/auth/login" state={{ path: location.pathname + location.search }} />
 
   return <AuthProvider user={user} signOut={signOut}>
-    <Outlet />
+    <DialogsProvider>
+      <NotificationsProvider slotProps={{
+        snackbar: {
+          sx: {
+            bottom: "calc(8px + env(safe-area-inset-bottom))"
+          }
+        }
+      }}>
+        <Outlet />
+      </NotificationsProvider>
+    </DialogsProvider>
   </AuthProvider>
 }
 

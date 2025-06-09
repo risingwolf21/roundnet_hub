@@ -3,10 +3,15 @@ import { format, parse } from 'date-fns';
 import dayjs, { Dayjs } from 'dayjs';
 import React, { forwardRef } from 'react';
 import RoundnetKarlsruheLogo from '../images/Karlsruher_Kojoten_Logo.svg';
+import RoundnetMunichLogo from '../images/Roundnet_Munich_Logo.png';
 
 export const BRANDING = {
   logo: (<img
-    src={RoundnetKarlsruheLogo}
+    src={window.location.hostname === "roundnet-karlsruhe.web.app"
+      ? RoundnetKarlsruheLogo
+      : window.location.hostname === "munich-roundnet.web.app"
+        ? RoundnetMunichLogo
+        : undefined}
     alt="MUI logo"
     style={{ height: 96 }}
   />),

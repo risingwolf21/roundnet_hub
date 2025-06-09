@@ -1,17 +1,16 @@
 import { Box, CircularProgress, Typography } from '@mui/material';
 import { captureException, setTag, setUser } from '@sentry/react';
 import { Session } from '@supabase/supabase-js';
-import { DialogsProvider, NotificationsProvider } from '@toolpad/core';
 import React, { useCallback, useEffect, useState } from 'react';
 import { queryClient } from 'src/App';
 import { AppRoutes } from 'src/AppRoutes';
 import { LoadingScreen } from 'src/components/LoadingScreen';
 import { supabase } from 'src/components/services/supabase/supabaseClient';
 import useDeviceId from 'src/hooks/useDeviceId';
+import { BRANDING } from 'src/utils';
 import { SupabaseUserRepository } from '../../repository/UserRepository';
 import { UserWithGroups } from '../../types/supabaseTypes';
 import { ApplicationContext } from './ApplicationContext';
-import { BRANDING } from 'src/utils';
 
 
 export const AuthGate = () => {
@@ -135,17 +134,7 @@ export const AuthGate = () => {
   return (
     <ApplicationContext.Provider value={{ user: currentUser, signOut: signOut, deviceId, provider_token, version }}>
       <React.Suspense fallback={<LoadingScreen />}>
-        <DialogsProvider>
-          <NotificationsProvider slotProps={{
-            snackbar: {
-              sx: {
-                bottom: "calc(8px + env(safe-area-inset-bottom))"
-              }
-            }
-          }}>
-            <AppRoutes />
-          </NotificationsProvider>
-        </DialogsProvider>
+        <AppRoutes />
       </React.Suspense>
     </ApplicationContext.Provider>
   );

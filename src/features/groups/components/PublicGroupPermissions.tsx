@@ -1,4 +1,4 @@
-import { GroupRemove } from "@mui/icons-material"
+import { Edit } from "@mui/icons-material"
 import { Card, CardActionArea, ListItem, ListItemAvatar, ListItemText, Typography } from "@mui/material"
 import { useMutation, useQuery } from "@tanstack/react-query"
 import React, { useState } from "react"
@@ -67,14 +67,14 @@ export const PublicGroupPermissions = ({ group }: { group: Group }) => {
     }
   })
 
-  return <Card sx={{ color: "red", borderRadius: 2, py: 0, px: 0, m: 1 }}>
+  return <Card sx={{ borderRadius: 2, py: 0, px: 0, m: 1 }}>
     <CardActionArea sx={{ px: 1 }} onClick={() => {
       setOpen(true)
     }}>
       <ListItem
         secondaryAction={<Typography>{!isLoading ? permissions.length : "..."}</Typography>}>
         <ListItemAvatar sx={{ flexDirection: 'row', display: 'flex', alignItems: 'center' }}>
-          <GroupRemove />
+          <Edit />
         </ListItemAvatar>
         <ListItemText primary="Permissions bearbeiten" />
       </ListItem>
