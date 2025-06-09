@@ -10,7 +10,20 @@ env:
   CI: ''
 
 jobs:
+  test_supabase:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: supabase/setup-cli@v1
+        with:
+          version: latest
+      - name: Start database
+        run: supabase db start
+
+      - name: Test database
+        run: supabase db test
+
   build_and_deploy_production:
+    needs: test_supabase
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
