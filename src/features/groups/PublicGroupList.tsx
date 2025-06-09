@@ -39,12 +39,11 @@ const PublicGroupList = () => {
         .filter(x => x.parent_group === null)
         .sort((a, b) => a.name.localeCompare(b.name))
         .map(mainGroup =>
-          <List sx={{ pb: 'calc(64px + env(safe-area-inset-bottom))' }}
-            subheader={<ListSubheader>{mainGroup.name}</ListSubheader>}>
+          <List subheader={<ListSubheader>{mainGroup.name}</ListSubheader>}>
             {
               groups
                 .filter(x => x.parent_group === mainGroup.id || x.id === mainGroup.id)
-                .filter(x => x.visible)
+                .filter(x => x.visible || x.user_group_role !== null)
                 .sort((a, b) => a.name.localeCompare(b.name))
                 .map(x => <ListItem
                   key={x.id}
