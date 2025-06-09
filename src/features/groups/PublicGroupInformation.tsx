@@ -80,11 +80,11 @@ const PublicGroupInformation = () => {
           <Typography pl={2} variant="h6" fontWeight="bold">
             Features
           </Typography>
-          <PublicGroupfeatures groupId={group.id} />
+          <PublicGroupfeatures group={group} />
           <Typography pl={2} variant="h6" fontWeight="bold">
             Permissions
           </Typography>
-          <PublicGroupPermissions groupId={group.id} />
+          <PublicGroupPermissions group={group} />
           <Divider />
         </>
       }

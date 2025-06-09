@@ -1,5 +1,4 @@
 import { Checkbox, List, ListItemButton, ListItemIcon, ListItemText } from "@mui/material";
-import { DialogProps } from "@toolpad/core";
 import React from "react";
 import { SwipeableDialog } from "src/components/SwipeableDialog";
 
@@ -8,19 +7,21 @@ type SelectFeaturePermissionDialogProps = {
   list: Feature[] | Permission[];
   enabled: Feature[] | Permission[];
   title: string
+  open: boolean
+  onClose: () => void
 }
 
-export const SelectFeaturePermissionDialog = ({ payload, open, onClose }: DialogProps<SelectFeaturePermissionDialogProps, null>) => {
-  return <SwipeableDialog open={open} onClose={() => onClose(null)} title={payload.title}>
+export const SelectFeaturePermissionDialog = ({ toggle, list, enabled, title, open, onClose }: SelectFeaturePermissionDialogProps) => {
+  return <SwipeableDialog open={open} onClose={() => onClose()} title={title}>
     <List>
       {
-        payload.list.map(x => <ListItemButton role={undefined} onClick={() => {
-          payload.toggle(x, !payload.enabled.includes(x))
+        list.map(x => <ListItemButton role={undefined} onClick={() => {
+          toggle(x, !enabled.map(x => x.name).includes(x.name))
         }} dense>
           <ListItemIcon>
             <Checkbox
               edge="start"
-              checked={payload.enabled.includes(x)}
+              checked={enabled.map(x => x.name).includes(x.name)}
               tabIndex={-1}
               disableRipple
               inputProps={{ 'aria-labelledby': x.name }}

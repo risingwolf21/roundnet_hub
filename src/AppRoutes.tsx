@@ -34,7 +34,6 @@ const ForgotPasswordScreen = lazyWithRetry(() => import('./features/auth/ForgotP
 const AuthCallback = lazyWithRetry(() => import('./features/auth/AuthCallback'));
 const PublicGroupList = lazyWithRetry(() => import('./features/groups/PublicGroupList.page'));
 const PublicGroupInformation = lazyWithRetry(() => import('./features/groups/PublicGroupInformation.page'));
-const GroupFeatureList = lazyWithRetry(() => import('./features/admin/GroupFeatureList'));
 
 const sentryCreateBrowserRouter = wrapCreateBrowserRouterV7(
   createBrowserRouter,
@@ -236,10 +235,6 @@ const router = sentryCreateBrowserRouter([
               {
                 path: "permissions",
                 element: <PermissionList />
-              },
-              {
-                path: "group_features",
-                element: <GroupFeatureList />
               }
             ]
           },

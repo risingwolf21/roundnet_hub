@@ -97,7 +97,7 @@ export type GroupWithUserMappings = Group & {
     users: FullUserMapping[];
 };
 
-export type FullGroupFeature = Tables<'group_feature'> & {
+export type FullGroupFeature = Tables<'group_features'> & {
     fullGroup: Group
 }
 
