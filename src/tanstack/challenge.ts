@@ -118,9 +118,9 @@ export const useIncreasePointForUserMutation = (challengeId: string) => useMutat
         : {
           ...previousStats,
           pages: previousStats.pages.map((x, index) =>
-            index === 0 ? [
-              newStat,
+            index === 0 && Array.isArray(x) ? [
               ...x,
+              newStat,
             ] : x
           )
         }

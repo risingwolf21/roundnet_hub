@@ -2,10 +2,9 @@ import { Send } from '@mui/icons-material';
 import { Box, IconButton, InputAdornment, List, TextField, Typography } from '@mui/material';
 import React, { createRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useAuthentication } from 'src/features/auth/AuthContext';
+import { useAuthentication } from 'src/features/auth/AuthProvider';
 import { useAddCommentMutation, useComments } from 'src/tanstack/events';
 import { FullComment } from 'src/types/supabaseTypes';
-import { can } from '../../../utils/PermissionService';
 import { EventCommentConversationDialog } from '../dialogs/EventCommentConversationDialog';
 import { CommentItem } from './CommentItem';
 import { CommentReplyItem, CommentReplyText } from './CommentReplyItem';
@@ -20,7 +19,7 @@ const EventInformationComments = ({
   eventInThePast,
 }: EventInformationCommentsProps) => {
 
-  const { user } = useAuthentication();
+  const { user, isAuthorized } = useAuthentication();
   const { t } = useTranslation();
   const inputRef = createRef<HTMLInputElement>();
   const [replyDialogOpen, setReplyDialogOpen] = useState<FullComment | null>(null);
@@ -87,7 +86,7 @@ const EventInformationComments = ({
         <Box component={'form'} onSubmit={submit}>
           <TextField
             ref={inputRef}
-            disabled={eventInThePast || !can('insert', 'eventComments')}
+            disabled={eventInThePast || !isAuthorized("event.comment")}
             id="comment"
             name="comment"
             fullWidth
@@ -98,7 +97,7 @@ const EventInformationComments = ({
               input: {
                 endAdornment: (
                   <InputAdornment position="end">
-                    <IconButton edge="end" type="submit" disabled={eventInThePast || !can('insert', 'eventComments')}>
+                    <IconButton edge="end" type="submit" disabled={eventInThePast || !isAuthorized("event.comment")}>
                       <Send />
                     </IconButton>
                   </InputAdornment>

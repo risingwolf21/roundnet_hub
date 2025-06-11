@@ -52,6 +52,25 @@ export const SupabaseUserRepository = {
     return data.map(x => ({ ...x.event_group, user_role: x.role } as GroupWithUserRole));
   },
 
+  async fetchPermissionsForUser(): Promise<string[]> {
+    const { data, error } = await supabase
+      .from('user_permissions')
+      .select('*');
+
+    if (error || !data) return [];
+    return data.map(x => x.permission).filter(x => x !== null);
+  },
+
+
+  async fetchFeaturesForUser(): Promise<string[]> {
+    const { data, error } = await supabase
+      .from('user_features')
+      .select('*');
+
+    if (error || !data) return [];
+    return data.map(x => x.feature).filter(x => x !== null);
+  },
+
   async fetchPlayer(userId: string): Promise<PostgrestSingleResponse<Player | null>> {
     return supabase.schema('games').from('players').select('*').eq('player', userId).maybeSingle().throwOnError();
   },
@@ -81,7 +100,8 @@ export const SupabaseUserRepository = {
   async updateFCMToken(fcmToken: string, deviceId: string, userId: string): Promise<PostgrestSingleResponse<any>> {
     return supabase
       .from('notification_token')
-      .upsert({ fcm_token: fcmToken, user: userId, device_id: deviceId, last_used: formatDateToDatabase(Date.now()) });
+      .upsert({ fcm_token: fcmToken, user: userId, device_id: deviceId, last_used: formatDateToDatabase(Date.now()) })
+      .throwOnError();
   },
 
   async fetchNotificationSettings(

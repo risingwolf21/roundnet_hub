@@ -14,8 +14,7 @@ import { PullToRefresh } from 'src/components/pull-to-refresh/PullToRefresh';
 import { useFetchMode } from 'src/hooks/useFetchMode';
 import { useEvents, useUpdateAttendanceMutation } from 'src/tanstack/events';
 import { EventsUserView } from 'src/types/supabaseTypes';
-import { can } from '../../utils/PermissionService';
-import { useAuthentication } from '../auth/AuthContext';
+import { useAuthentication } from '../auth/AuthProvider';
 import { EventItem } from './components/EventItem';
 import { LoadingEventItem } from './components/LoadingEventItem';
 import { CreateOrUpdateEventDialog } from './dialogs/CreateOrUpdateEventDialog';
@@ -23,7 +22,7 @@ import { FilterEventListDialog } from './dialogs/FilterEventListDialog';
 
 
 const EventScreen = () => {
-  const { user } = useAuthentication();
+  const { user, isAuthorized } = useAuthentication();
   const notifications = useNotifications();
   const dialogs = useDialogs();
   const navigate = useNavigate();
@@ -100,7 +99,7 @@ const EventScreen = () => {
           )}
     </Box>
     {
-      can('select', 'event') && !isLoading && (
+      !isLoading && (
         <Fab
           key="filter"
           sx={{
@@ -119,7 +118,7 @@ const EventScreen = () => {
       )
     }
     {
-      can('insert', 'event') && !isLoading && (
+      isAuthorized("events.edit") && !isLoading && (
         <Fab
           key="insertEvent"
           sx={{
@@ -137,7 +136,7 @@ const EventScreen = () => {
       )
     }
     {
-      can('update', 'event') && !isLoading && (
+      isAuthorized("events.edit") && !isLoading && (
         <Fab
           key="updateEvent"
           sx={{

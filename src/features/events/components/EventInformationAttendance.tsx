@@ -28,6 +28,7 @@ import Box from '@mui/material/Box';
 import { isBefore } from 'date-fns';
 import { t } from 'i18next';
 import React, { useState } from 'react';
+import { useAuthentication } from 'src/features/auth/AuthProvider';
 import { useAttendance, useUpdateAttendanceMutation } from 'src/tanstack/events';
 import {
   answerDeadlineExpired,
@@ -39,7 +40,6 @@ import EventAttendanceDialog from '../dialogs/EventAttendanceDialog';
 import { EventInformationConstellations } from './EventInformationConstellations';
 
 type EventInformationAttendanceProps = {
-  user: User;
   fetchMode: "past" | "upcoming"
   selectedEvent: EventsUserView;
   keyHolders: FullItemHolder[];
@@ -48,9 +48,9 @@ type EventInformationAttendanceProps = {
 const EventInformationAttendance = ({
   selectedEvent,
   fetchMode,
-  user,
   keyHolders,
 }: EventInformationAttendanceProps) => {
+  const { user, isAuthorized } = useAuthentication();
   const [eventAttendanceState, setEventAttendanceState] = useState({ open: false, index: 0 });
 
   const { data: attendance = [], isLoading } = useAttendance(selectedEvent.id);
@@ -84,7 +84,11 @@ const EventInformationAttendance = ({
           })}
         </Alert>
       )}
-      <EventInformationConstellations attendance={attendance} event={selectedEvent} />
+
+      {
+        isAuthorized("events.create.constellations") && <EventInformationConstellations attendance={attendance} event={selectedEvent} />
+      }
+
       <Typography sx={{ fontSize: 16, fontWeight: 'bold', mt: 2 }} color="text.secondary" gutterBottom>
         {t('attendees')}
       </Typography>
@@ -106,32 +110,34 @@ const EventInformationAttendance = ({
               <ListItemText primary={t('events.information.keyHolderAttending')} />
             </ListItem>
           )}
-        {selectedEvent.maxAttendees && selectedEvent.maxAttendees >= 0 && (
-          <ListItem key={'spotsTaken'} sx={{ '&.MuiListItem-root': { paddingLeft: 0 } }} divider>
-            <ListItemAvatar sx={{ justifyContent: 'left', alignItems: 'center', display: 'flex' }}>
-              <CircularProgress
-                size={'24px'}
-                thickness={8}
-                sx={{ borderRadius: '100%', p: '2px', position: 'relative', zIndex: 2 }}
-                variant="determinate"
-                value={(attendance.filter((x) => x.state === 'Attending').length / selectedEvent.maxAttendees) * 100}
+        {
+          selectedEvent.maxAttendees && selectedEvent.maxAttendees >= 0 && (
+            <ListItem key={'spotsTaken'} sx={{ '&.MuiListItem-root': { paddingLeft: 0 } }} divider>
+              <ListItemAvatar sx={{ justifyContent: 'left', alignItems: 'center', display: 'flex' }}>
+                <CircularProgress
+                  size={'24px'}
+                  thickness={8}
+                  sx={{ borderRadius: '100%', p: '2px', position: 'relative', zIndex: 2 }}
+                  variant="determinate"
+                  value={(attendance.filter((x) => x.state === 'Attending').length / selectedEvent.maxAttendees) * 100}
+                />
+                <CircularProgress
+                  variant="determinate"
+                  size={'24px'}
+                  value={100}
+                  thickness={8}
+                  sx={{ color: '#eee', p: '2px', position: 'absolute', zIndex: 1 }}
+                />
+              </ListItemAvatar>
+              <ListItemText
+                primary={t('events.information.eventSpotsTaken', {
+                  taken: attendance.filter((x) => x.state === 'Attending').length,
+                  waitingListLength: selectedEvent.maxAttendees,
+                })}
               />
-              <CircularProgress
-                variant="determinate"
-                size={'24px'}
-                value={100}
-                thickness={8}
-                sx={{ color: '#eee', p: '2px', position: 'absolute', zIndex: 1 }}
-              />
-            </ListItemAvatar>
-            <ListItemText
-              primary={t('events.information.eventSpotsTaken', {
-                taken: attendance.filter((x) => x.state === 'Attending').length,
-                waitingListLength: selectedEvent.maxAttendees,
-              })}
-            />
-          </ListItem>
-        )}
+            </ListItem>
+          )
+        }
         <ListItem
           key={'attendEvent'}
           sx={{ '&.MuiListItem-root': { paddingLeft: 0 } }}
@@ -144,7 +150,7 @@ const EventInformationAttendance = ({
               })
           }
           secondaryAction={
-            <>
+            isAuthorized("event.signup") && <>
               <IconButton
                 onClick={(event) => {
                   updateAttendance.mutate({ event: selectedEvent, newState: 'Attending', user });
@@ -182,7 +188,7 @@ const EventInformationAttendance = ({
                   )}
                 </IconButton>
               }
-              {user.role === 'trainer' && (
+              {isAuthorized("event.signup.trainer") && (
                 <IconButton
                   onClick={(event) => {
                     event.stopPropagation();
@@ -222,7 +228,7 @@ const EventInformationAttendance = ({
               })
           }
           secondaryAction={
-            <IconButton
+            isAuthorized("event.signup") && <IconButton
               onClick={(event) => {
                 event.stopPropagation();
                 updateAttendance.mutate({ event: selectedEvent, newState: 'Declined', user });

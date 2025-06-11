@@ -12,9 +12,8 @@ import { PullToRefresh } from 'src/components/pull-to-refresh/PullToRefresh';
 import { supabase } from 'src/components/services/supabase/supabaseClient';
 import { useChallenge, useChallengeLeaderboard, useChallengeStatsForUser, useIncreasePointForUserMutation, useInfiniteChallengeStats } from 'src/tanstack/challenge';
 import { dataURLtoFile } from 'src/utils';
-import Layout from '../../components/Layout';
-import { can } from '../../utils/PermissionService';
-import { useAuthentication } from '../auth/AuthContext';
+import Layout from '../../components/layout/Layout';
+import { useAuthentication } from '../auth/AuthProvider';
 import { TabPanel } from '../events/dialogs/EventAttendanceDialog';
 import { ChallengeActivityList } from './ChallengeActivityList';
 import { ChallengeLeaderboard } from './ChallengeLeaderboard';
@@ -30,7 +29,7 @@ const ChallengeInformationProvider = ({ t }: { t: TFunction }) => {
 }
 
 const ChallengeInformation = ({ t, challengeId }: { t: TFunction, challengeId: string }) => {
-  const { user } = useAuthentication();
+  const { user, isAuthorized } = useAuthentication();
   const dialogs = useDialogs();
   const notifications = useNotifications();
   const [value, setValue] = useState(0);
@@ -126,10 +125,10 @@ const ChallengeInformation = ({ t, challengeId }: { t: TFunction, challengeId: s
           <ChallengeLeaderboard isLoading={isLeaderboardLoading} challenge_points={leaderboard} />
         </TabPanel>
 
-        {can('update', 'challenge') && !challenge?.automated && (
+        { isAuthorized("challenges.edit.own-stats") && !challenge?.automated && (
           <Fab
             sx={{
-              background: '#66bb6a',
+              background: 'primary.light',
               position: 'fixed',
               right: '16px',
               bottom: 'calc(16px + env(safe-area-inset-bottom))',

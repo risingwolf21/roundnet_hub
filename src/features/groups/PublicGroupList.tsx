@@ -6,7 +6,7 @@ import React, { useEffect } from "react";
 import { useNavigate } from "react-router";
 import { PullToRefresh } from "src/components/pull-to-refresh/PullToRefresh";
 import { useGroups, useRequestedUsersPerGroup } from "src/tanstack/groups";
-import { useAuthentication } from "../auth/AuthContext";
+import { useAuthentication } from "../auth/AuthProvider";
 import { JoinGroupButton } from "./components/JoinGroupButton";
 import { CreateOrUpdateGroupDialog } from "./dialogs/CreateOrUpdateGroupDialog";
 import { LoadingGroupListItem } from "./LoadingGroupListItem";
@@ -39,11 +39,11 @@ const PublicGroupList = () => {
         .filter(x => x.parent_group === null)
         .sort((a, b) => a.name.localeCompare(b.name))
         .map(mainGroup =>
-          <List sx={{ pb: 'calc(64px + env(safe-area-inset-bottom))' }}
-            subheader={<ListSubheader>{mainGroup.name}</ListSubheader>}>
+          <List subheader={<ListSubheader>{mainGroup.name}</ListSubheader>}>
             {
               groups
                 .filter(x => x.parent_group === mainGroup.id || x.id === mainGroup.id)
+                .filter(x => x.visible || x.user_group_role !== null)
                 .sort((a, b) => a.name.localeCompare(b.name))
                 .map(x => <ListItem
                   key={x.id}
@@ -84,7 +84,7 @@ const PublicGroupList = () => {
     {
       !error && <Fab
         sx={{
-          background: '#66bb6a',
+          background: 'primary.light',
           position: 'fixed',
           right: '16px',
           bottom: 'calc(16px + env(safe-area-inset-bottom))',

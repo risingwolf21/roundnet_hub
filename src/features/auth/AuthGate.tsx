@@ -1,19 +1,16 @@
 import { Box, CircularProgress, Typography } from '@mui/material';
 import { captureException, setTag, setUser } from '@sentry/react';
 import { Session } from '@supabase/supabase-js';
-import { DialogsProvider, NotificationsProvider } from '@toolpad/core';
 import React, { useCallback, useEffect, useState } from 'react';
+import { queryClient } from 'src/App';
 import { AppRoutes } from 'src/AppRoutes';
 import { LoadingScreen } from 'src/components/LoadingScreen';
 import { supabase } from 'src/components/services/supabase/supabaseClient';
 import useDeviceId from 'src/hooks/useDeviceId';
-import raw from '../../git_commit.txt';
-import { AdminPermissionsRepository } from '../../repository/AdminPermissionsRepository';
+import { BRANDING } from 'src/utils';
 import { SupabaseUserRepository } from '../../repository/UserRepository';
-import { UserWithRolesAndPermissions } from '../../types/supabaseTypes';
-import { ability, defineRulesFor } from '../../utils/PermissionService';
+import { UserWithGroups } from '../../types/supabaseTypes';
 import { ApplicationContext } from './ApplicationContext';
-import { queryClient } from 'src/App';
 
 
 export const AuthGate = () => {
@@ -22,7 +19,7 @@ export const AuthGate = () => {
   const [version, setVersion] = React.useState("");
 
   React.useEffect(() => {
-    fetch(raw)
+    fetch('/git_commit.txt')
       .then((r) => r.text())
       .then((text) => {
         setVersion(text);
@@ -34,7 +31,7 @@ export const AuthGate = () => {
   }, []);
 
   const [session, setSession] = useState<Session | null>(null)
-  const [currentUser, setCurrentUser] = useState<UserWithRolesAndPermissions | null>(null);
+  const [currentUser, setCurrentUser] = useState<UserWithGroups | null>(null);
   const [loading, setLoading] = useState(false);
   const [provider_token, setProviderToken] = useState<string | null>(null);
 
@@ -58,7 +55,6 @@ export const AuthGate = () => {
 
   const reset = useCallback(() => {
     setLoading(false);
-    ability.update(defineRulesFor([], []));
     setUser(null);
     setCurrentUser(null);
     setProviderToken(null);
@@ -66,29 +62,21 @@ export const AuthGate = () => {
 
   const fetchUserData = useCallback(async (session: Session, abortSignal: AbortSignal) => {
     try {
-      const roles = await AdminPermissionsRepository.fetchRolesForUser(session.user.id);
-      const [permissions, { data: user, error }, groups, { data: player_data, error: player_error }] = await Promise.all([
-        AdminPermissionsRepository.fetchPermissionsForRoles(roles),
+      const [{ data: user, error }, groups] = await Promise.all([
         SupabaseUserRepository.fetchUser(session.user.id),
         SupabaseUserRepository.fetchGroupsForUser(session.user.id),
-        SupabaseUserRepository.fetchPlayer(session.user.id)
       ])
-      if (error || player_error) {
-        captureException(error ?? player_error)
+      if (error) {
+        captureException(error)
         return;
       }
 
-      const userData: UserWithRolesAndPermissions = {
+      const userData: UserWithGroups = {
         ...user,
-        roles,
-        permissions,
-        player_data,
-        groups,
-        calendar_data: null
+        groups
       };
       setProviderToken(session.user.user_metadata["provider_token"])
       setUser({ email: session.user.email, id: session.user.id, username: user.displayName });
-      ability.update(defineRulesFor(permissions, roles));
       setCurrentUser(userData);
     } finally {
       setLoading(false);
@@ -137,7 +125,7 @@ export const AuthGate = () => {
         }}
       >
         <Typography variant="h5" component="div" sx={{ mb: 2, textAlign: 'center' }}>
-          🐺<br></br>Roundnet Karlsruhe
+          🐺<br></br>{BRANDING.title}
         </Typography>
         <CircularProgress variant={'indeterminate'} size={50}></CircularProgress>
       </Box>
@@ -146,17 +134,7 @@ export const AuthGate = () => {
   return (
     <ApplicationContext.Provider value={{ user: currentUser, signOut: signOut, deviceId, provider_token, version }}>
       <React.Suspense fallback={<LoadingScreen />}>
-        <DialogsProvider>
-          <NotificationsProvider slotProps={{
-            snackbar: {
-              sx: {
-                bottom: "calc(8px + env(safe-area-inset-bottom))"
-              }
-            }
-          }}>
-            <AppRoutes />
-          </NotificationsProvider>
-        </DialogsProvider>
+        <AppRoutes />
       </React.Suspense>
     </ApplicationContext.Provider>
   );

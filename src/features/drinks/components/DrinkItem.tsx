@@ -3,6 +3,7 @@ import AddIcon from '@mui/icons-material/Add';
 import RemoveIcon from '@mui/icons-material/Remove';
 import LocalDrinkIcon from '@mui/icons-material/LocalDrink';
 import React, { Fragment } from 'react';
+import { useAuthentication } from 'src/features/auth/AuthProvider';
 
 type Props = {
   drink: Drink;
@@ -12,12 +13,13 @@ type Props = {
 };
 
 const DrinkItem = ({ drink, count, onAddClick, onMinusClick }: Props) => {
+  const { isAuthorized } = useAuthentication();
   return (
     <ListItem
       key={drink.name ?? '' + drink.id}
       onClick={() => onAddClick(drink)}
       secondaryAction={
-        <Box sx={{ display: 'flex', flexDirection: 'row' }}>
+        isAuthorized("drinks.purchase") && <Box sx={{ display: 'flex', flexDirection: 'row' }}>
           {count > 0 && (
             <>
               <IconButton

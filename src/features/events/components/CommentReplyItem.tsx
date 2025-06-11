@@ -11,7 +11,7 @@ import {
 } from '@mui/material';
 import { TFunction } from 'i18next';
 import React from 'react';
-import { useAuthentication } from 'src/features/auth/AuthContext';
+import { useAuthentication } from 'src/features/auth/AuthProvider';
 import { FullComment } from '../../../types/supabaseTypes';
 
 type Props = {

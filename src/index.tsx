@@ -9,7 +9,8 @@ import './translation/i18n';
 import dayjs from 'dayjs';
 import updateLocale from 'dayjs/plugin/updateLocale';
 import { App } from "./App";
-
+import "src/apocalypseHandler.js";
+import * as serviceWorkerRegistration from './serviceWorkerRegistration';
 
 const root = ReactDOM.createRoot(document.getElementById('root') as HTMLElement, {
   onUncaughtError: Sentry.reactErrorHandler((error, errorInfo) => {
@@ -31,3 +32,5 @@ dayjs.updateLocale('en', {
 root.render(
   <App />
 );
+
+serviceWorkerRegistration.register();

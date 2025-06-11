@@ -3,7 +3,7 @@ import { useInfiniteQuery } from '@tanstack/react-query';
 import moment from 'moment/moment';
 import React, { useEffect, useRef } from 'react';
 import { AdminDrinksRepository } from 'src/repository/AdminDrinksRepository';
-import Layout from '../../components/Layout';
+import Layout from '../../components/layout/Layout';
 import { groupBy } from '../../utils';
 import { AdminHistoryItem } from './components/AdminHistoryItem';
 

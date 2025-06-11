@@ -17,7 +17,6 @@ const EventInformationLoading = () => {
       primary={<Skeleton variant={'rectangular'} />}
       secondary={<Skeleton sx={{ mt: 1 }} variant={'rectangular'} />}
     />
-    );
     <LoadingEventInformation />
   </List>
 };

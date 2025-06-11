@@ -15,12 +15,29 @@
         }
       ],
       "headers": [
-        {"source": "/service-worker.js", "headers": [{"key": "Cache-Control", "value": "no-cache"}]}
+        {
+          "source": "/service-worker.js",
+          "headers": [
+            {
+              "key": "Cache-Control",
+              "value": "no-cache, no-store, must-revalidate"
+            }
+          ]
+        },
+        {
+          "source": "/git_commit.txt",
+          "headers": [
+            {
+              "key": "Cache-Control",
+              "value": "no-cache, no-store, must-revalidate"
+            }
+          ]
+        }
       ]
     },
     {
       "public": "build",
-      "target": "admin-production",
+      "target": "munich-roundnet-production",
       "ignore": [
         "firebase.json",
         "**/.*",
@@ -33,7 +50,24 @@
         }
       ],
       "headers": [
-        {"source": "/service-worker.js", "headers": [{"key": "Cache-Control", "value": "no-cache"}]}
+        {
+          "source": "/service-worker.js",
+          "headers": [
+            {
+              "key": "Cache-Control",
+              "value": "no-cache, no-store, must-revalidate"
+            }
+          ]
+        },
+        {
+          "source": "/git_commit.txt",
+          "headers": [
+            {
+              "key": "Cache-Control",
+              "value": "no-cache, no-store, must-revalidate"
+            }
+          ]
+        }
       ]
     },
     {
@@ -51,7 +85,24 @@
         }
       ],
       "headers": [
-        {"source": "/service-worker.js", "headers": [{"key": "Cache-Control", "value": "no-cache"}]}
+        {
+          "source": "/service-worker.js",
+          "headers": [
+            {
+              "key": "Cache-Control",
+              "value": "no-cache, no-store, must-revalidate"
+            }
+          ]
+        },
+        {
+          "source": "/git_commit.txt",
+          "headers": [
+            {
+              "key": "Cache-Control",
+              "value": "no-cache, no-store, must-revalidate"
+            }
+          ]
+        }
       ]
     }
   ]

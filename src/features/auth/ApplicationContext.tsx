@@ -1,8 +1,8 @@
 import { createContext, useContext } from 'react';
-import { UserWithRolesAndPermissions } from '../../types/supabaseTypes';
+import { UserWithGroups } from '../../types/supabaseTypes';
 
 export const ApplicationContext = createContext<{
-  user: UserWithRolesAndPermissions | null;
+  user: UserWithGroups | null;
   deviceId: string;
   signOut: () => void;
   provider_token: string | null;

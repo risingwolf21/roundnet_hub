@@ -9,7 +9,7 @@ export const EventCard = ({ index, event, user, updateAttendance }: {
   index: number,
   event: EventsUserView,
   user: User,
-  updateAttendance: (user: User, event: EventsUserView, newState: EventAttendance) => void
+  updateAttendance?: (user: User, event: EventsUserView, newState: EventAttendance) => void
 }) => {
 
   const navigate = useNavigate();
@@ -57,37 +57,39 @@ export const EventCard = ({ index, event, user, updateAttendance }: {
         }
       </CardContent>
     </CardActionArea>
-    <CardActions disableSpacing sx={{ justifyContent: "start" }}>
-      <IconButton
-        onClick={(e) => {
-          updateAttendance(user, event, "Declined")
-          e.stopPropagation();
-        }}
-        disabled={event.isCancelled || eventInThePast(event)}
-      >
-        <Badge badgeContent={event.declined_count ?? 0} color="error">
-          {event.user_state === 'Declined' ? (
-            <ThumbDownAlt fontSize="inherit" sx={{ fontSize: '28px', color: 'red' }} />
-          ) : (
-            <ThumbDownOffAlt fontSize="inherit" sx={{ fontSize: '28px' }} />
-          )}
-        </Badge>
-      </IconButton>
-      <IconButton
-        onClick={(e) => {
-          updateAttendance(user, event, "Attending")
-          e.stopPropagation();
-        }}
-        disabled={event.isCancelled || answerDeadlineExpired(event) || eventInThePast(event)}
-      >
-        <Badge badgeContent={event.attending_count ?? 0} color="success">
-          {event.user_state === 'Attending' ? (
-            <ThumbUpAlt fontSize="inherit" sx={{ fontSize: '28px', color: 'green' }} />
-          ) : (
-            <ThumbUpOffAlt fontSize="inherit" sx={{ fontSize: '28px' }} />
-          )}
-        </Badge>
-      </IconButton>
-    </CardActions>
+    {
+      updateAttendance && <CardActions disableSpacing sx={{ justifyContent: "start" }}>
+        <IconButton
+          onClick={(e) => {
+            updateAttendance(user, event, "Declined")
+            e.stopPropagation();
+          }}
+          disabled={event.isCancelled || eventInThePast(event)}
+        >
+          <Badge badgeContent={event.declined_count ?? 0} color="error">
+            {event.user_state === 'Declined' ? (
+              <ThumbDownAlt fontSize="inherit" sx={{ fontSize: '28px', color: 'red' }} />
+            ) : (
+              <ThumbDownOffAlt fontSize="inherit" sx={{ fontSize: '28px' }} />
+            )}
+          </Badge>
+        </IconButton>
+        <IconButton
+          onClick={(e) => {
+            updateAttendance(user, event, "Attending")
+            e.stopPropagation();
+          }}
+          disabled={event.isCancelled || answerDeadlineExpired(event) || eventInThePast(event)}
+        >
+          <Badge badgeContent={event.attending_count ?? 0} color="success">
+            {event.user_state === 'Attending' ? (
+              <ThumbUpAlt fontSize="inherit" sx={{ fontSize: '28px', color: 'green' }} />
+            ) : (
+              <ThumbUpOffAlt fontSize="inherit" sx={{ fontSize: '28px' }} />
+            )}
+          </Badge>
+        </IconButton>
+      </CardActions>
+    }
   </Card>
 }

@@ -36,18 +36,17 @@ import Grid from '@mui/material/Grid2';
 import IconButton, { IconButtonProps } from '@mui/material/IconButton';
 import { styled } from '@mui/material/styles';
 import { useQuery } from '@tanstack/react-query';
+import { useDialogs } from '@toolpad/core';
 import { format } from 'date-fns';
 import React from 'react';
-import { useNavigate } from 'react-router';
 import { PullToRefresh } from 'src/components/pull-to-refresh/PullToRefresh';
 import { SupabaseEventRepository } from 'src/repository/EventRepository';
 import { AlertMessage } from '../../components/AlertSnackbar';
-import Layout from '../../components/Layout';
+import Layout from '../../components/layout/Layout';
 import { EventWithGroup } from '../../types/supabaseTypes';
 import { nameOfRecurrence } from '../../utils';
-import { PlaceType } from './types';
-import { useDialogs } from '@toolpad/core';
 import { CreateOrUpdateEventDialog } from './dialogs/CreateOrUpdateEventDialog';
+import { PlaceType } from './types';
 
 interface ExpandMoreProps extends IconButtonProps {
   expand: boolean;
@@ -101,7 +100,6 @@ const RecurringEventsProvider = () => {
 };
 
 const RecurringEvents = ({ recurringEvents, loading, error }: RecurringEventsProps) => {
-  const navigate = useNavigate();
   const dialogs = useDialogs();
   const [expanded, setExpanded] = React.useState(-1);
 

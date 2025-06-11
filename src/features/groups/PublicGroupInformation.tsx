@@ -4,24 +4,23 @@ import { captureException } from "@sentry/react";
 import { useDialogs, useNotifications } from "@toolpad/core";
 import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router";
-import Layout from "src/components/Layout";
 import { LoadingIndicator } from "src/components/LoadingIndicator";
-import { supabase } from "src/components/services/supabase/supabaseClient";
-import { useGroup } from "src/tanstack/groups";
-import { can } from "src/utils/PermissionService";
-import { useAuthentication } from "../auth/AuthContext";
+import { useGroup, useLeaveGroupMutation } from "src/tanstack/groups";
+import { useAuthentication } from "../auth/AuthProvider";
 import { AcceptJoinButton } from "./components/AcceptJoinButton";
+import { DeclineJoinButton } from "./components/DeclineJoinButton";
 import { GroupUserItem } from "./components/GroupUserItem";
 import { CreateOrUpdateGroupDialog } from "./dialogs/CreateOrUpdateGroupDialog";
 import SearchAndSelectUserDialog from "./dialogs/SearchAndSelectUserDialog";
 import { useAddUsersMutation } from "./query/addUsersMutation";
 import { useRemoveUsersMutation } from "./query/removeUsersMutation";
-import { DeclineJoinButton } from "./components/DeclineJoinButton";
+import { PublicGroupPermissions } from "./components/PublicGroupPermissions";
+import { PublicGroupfeatures } from "./components/PublicGroupFeatures";
 
 const PublicGroupInformation = () => {
 
   const { groupId } = useParams();
-  const { user } = useAuthentication();
+  const { user, isAuthorized } = useAuthentication();
   const navigate = useNavigate();
   const notifications = useNotifications();
   const dialogs = useDialogs();
@@ -37,6 +36,7 @@ const PublicGroupInformation = () => {
 
   const addUsersMutation = useAddUsersMutation(group);
   const removeUsersMutation = useRemoveUsersMutation(group);
+  const leaveGroupMutation = useLeaveGroupMutation();
 
   const handleUsersAdded = async (users: User[]) => {
     addUsersMutation.mutate(users, {
@@ -65,7 +65,7 @@ const PublicGroupInformation = () => {
     });
   };
 
-  return <Layout appBarConfig={{ navigateBackPath: "/groups/list" }}>
+  return <>
     <List sx={{ pb: 'calc(64px + env(safe-area-inset-bottom))' }}>
       <LoadingIndicator loading={isLoading} />
       <Typography pl={2} variant="h6" fontWeight="bold">
@@ -75,12 +75,25 @@ const PublicGroupInformation = () => {
         {group?.description}
       </Typography>
       <Divider />
+      {
+        isAuthorized("supabase.admin") && group && <>
+          <Typography pl={2} variant="h6" fontWeight="bold">
+            Features
+          </Typography>
+          <PublicGroupfeatures group={group} />
+          <Typography pl={2} variant="h6" fontWeight="bold">
+            Permissions
+          </Typography>
+          <PublicGroupPermissions group={group} />
+          <Divider />
+        </>
+      }
       <Typography pl={2} pt={1} variant="h6" fontWeight="bold">
         Mitglieder{group && " · " + group?.users.length}
       </Typography>
       <Card sx={{ borderRadius: 2, py: 0, px: 0, m: 1 }}>
         {
-          selectedUsers.length > 0 && can("update", "group")
+          selectedUsers.length > 0 && group?.user_group_role === "admin"
             ? <CardActionArea onClick={() => handleUsersRemove(selectedUsers)}>
               <ListItem>
                 <ListItemAvatar>
@@ -91,7 +104,7 @@ const PublicGroupInformation = () => {
                 <ListItemText primary={"Gewählte Teilnehmer entfernen"} />
               </ListItem>
             </CardActionArea>
-            : can("update", "group") && group?.user_group_role === "admin" && <CardActionArea onClick={() => {
+            : group?.user_group_role === "admin" && <CardActionArea onClick={() => {
               dialogs.open(SearchAndSelectUserDialog, { usersToFilter: group.users.map(x => x.user.userId) })
                 .then(result => {
                   if (result)
@@ -189,7 +202,7 @@ const PublicGroupInformation = () => {
                     selected={selectedUsers.includes(x.user)}
                     onAvatarClick={(e) => {
                       e.stopPropagation();
-                      if (x.map.role === "admin")
+                      if (x.map.role !== "admin")
                         return;
                       if (selectedUsers.includes(x.user)) {
                         setSelectedUsers([...selectedUsers.filter(y => y.userId !== x.user.userId)])
@@ -216,11 +229,10 @@ const PublicGroupInformation = () => {
                     : "Die Gruppe ist öffentlich. Du kannst Ihr jederzeit wieder beitreten.",
                     { okText: "Verlassen", cancelText: "Abbrechen", title: "Möchtest du die Gruppe wirklich verlassen?" }).then(result => {
                       if (result) {
-                        supabase.schema("public").from("group_user_mapping").delete().eq("group", group.id).eq("user", user.userId).then(result => {
-                          if (!result.error) {
-                            navigate("/groups/list", { replace: true })
-                          } else {
-                            captureException(result.error);
+                        leaveGroupMutation.mutate({ group, user }, {
+                          onSuccess: () => navigate("/groups/list", { replace: true }),
+                          onError: (error) => {
+                            captureException(error);
                             notifications.show("Es ist ein Fehler aufgetreten.", { severity: "error" })
                           }
                         })
@@ -240,7 +252,7 @@ const PublicGroupInformation = () => {
     {
       group?.user_group_role === "admin" && <Fab
         sx={{
-          background: '#66bb6a',
+          background: 'primary.light',
           position: 'fixed',
           right: '16px',
           bottom: 'calc(16px + env(safe-area-inset-bottom))',
@@ -258,7 +270,7 @@ const PublicGroupInformation = () => {
         <Edit sx={{ color: 'white' }} />
       </Fab>
     }
-  </Layout>
+  </>
 }
 
 export default PublicGroupInformation

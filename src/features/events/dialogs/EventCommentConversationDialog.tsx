@@ -1,11 +1,10 @@
-import { SwipeableDialog } from '../../../components/SwipeableDialog';
-import React, { createRef } from 'react';
+import { Send } from '@mui/icons-material';
 import { Box, IconButton, InputAdornment, List, TextField } from '@mui/material';
+import { TFunction } from 'i18next';
+import React, { createRef } from 'react';
+import { SwipeableDialog } from '../../../components/SwipeableDialog';
 import { FullComment } from '../../../types/supabaseTypes';
 import { CommentItem } from '../components/CommentItem';
-import { TFunction } from 'i18next';
-import { can } from '../../../utils/PermissionService';
-import { Send } from '@mui/icons-material';
 import { CommentReplyItem } from '../components/CommentReplyItem';
 
 type Props = {

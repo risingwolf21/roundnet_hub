@@ -240,6 +240,92 @@ export type Database = {
       [_ in never]: never
     }
   }
+  graphql_public: {
+    Tables: {
+      [_ in never]: never
+    }
+    Views: {
+      [_ in never]: never
+    }
+    Functions: {
+      graphql: {
+        Args: {
+          operationName?: string
+          query?: string
+          variables?: Json
+          extensions?: Json
+        }
+        Returns: Json
+      }
+    }
+    Enums: {
+      [_ in never]: never
+    }
+    CompositeTypes: {
+      [_ in never]: never
+    }
+  }
+  logs: {
+    Tables: {
+      events: {
+        Row: {
+          author: string | null
+          created_at: string
+          data: Json
+          id: number
+          type: string
+        }
+        Insert: {
+          author?: string | null
+          created_at?: string
+          data: Json
+          id?: number
+          type: string
+        }
+        Update: {
+          author?: string | null
+          created_at?: string
+          data?: Json
+          id?: number
+          type?: string
+        }
+        Relationships: []
+      }
+      player_info: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          type: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          type: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          type?: string
+        }
+        Relationships: []
+      }
+    }
+    Views: {
+      [_ in never]: never
+    }
+    Functions: {
+      [_ in never]: never
+    }
+    Enums: {
+      [_ in never]: never
+    }
+    CompositeTypes: {
+      [_ in never]: never
+    }
+  }
   permissions: {
     Tables: {
       app_permissions: {
@@ -654,6 +740,7 @@ export type Database = {
           name: string
           need_request_to_join: boolean
           parent_group: string | null
+          visible: boolean
         }
         Insert: {
           color?: string
@@ -664,6 +751,7 @@ export type Database = {
           name?: string
           need_request_to_join?: boolean
           parent_group?: string | null
+          visible?: boolean
         }
         Update: {
           color?: string
@@ -674,6 +762,7 @@ export type Database = {
           name?: string
           need_request_to_join?: boolean
           parent_group?: string | null
+          visible?: boolean
         }
         Relationships: [
           {
@@ -761,6 +850,95 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "event_groups_view"
             referencedColumns: ["id"]
+          },
+        ]
+      }
+      features: {
+        Row: {
+          description: string | null
+          name: string
+        }
+        Insert: {
+          description?: string | null
+          name: string
+        }
+        Update: {
+          description?: string | null
+          name?: string
+        }
+        Relationships: []
+      }
+      group_features: {
+        Row: {
+          feature: string
+          group: string
+        }
+        Insert: {
+          feature: string
+          group?: string
+        }
+        Update: {
+          feature?: string
+          group?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "group_features_feature_fkey"
+            columns: ["feature"]
+            isOneToOne: false
+            referencedRelation: "features"
+            referencedColumns: ["name"]
+          },
+          {
+            foreignKeyName: "group_features_group_fkey"
+            columns: ["group"]
+            isOneToOne: false
+            referencedRelation: "event_group"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "group_features_group_fkey"
+            columns: ["group"]
+            isOneToOne: false
+            referencedRelation: "event_groups_view"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      group_permissions: {
+        Row: {
+          group: string
+          permission: string
+        }
+        Insert: {
+          group: string
+          permission: string
+        }
+        Update: {
+          group?: string
+          permission?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "group_permission_group_fkey"
+            columns: ["group"]
+            isOneToOne: false
+            referencedRelation: "event_group"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "group_permission_group_fkey"
+            columns: ["group"]
+            isOneToOne: false
+            referencedRelation: "event_groups_view"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "group_permission_permission_fkey"
+            columns: ["permission"]
+            isOneToOne: false
+            referencedRelation: "permissions"
+            referencedColumns: ["name"]
           },
         ]
       }
@@ -931,6 +1109,7 @@ export type Database = {
           color: string
           created_at: string
           current_holder: string | null
+          group: string | null
           id: number
           lastUpdate: string
           name: string
@@ -940,6 +1119,7 @@ export type Database = {
           color?: string
           created_at?: string
           current_holder?: string | null
+          group?: string | null
           id?: number
           lastUpdate?: string
           name: string
@@ -949,12 +1129,27 @@ export type Database = {
           color?: string
           created_at?: string
           current_holder?: string | null
+          group?: string | null
           id?: number
           lastUpdate?: string
           name?: string
           type?: Database["public"]["Enums"]["ItemType"]
         }
         Relationships: [
+          {
+            foreignKeyName: "items_group_fkey"
+            columns: ["group"]
+            isOneToOne: false
+            referencedRelation: "event_group"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "items_group_fkey"
+            columns: ["group"]
+            isOneToOne: false
+            referencedRelation: "event_groups_view"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "keys_user_fkey"
             columns: ["current_holder"]
@@ -1056,6 +1251,21 @@ export type Database = {
             referencedColumns: ["userId"]
           },
         ]
+      }
+      permissions: {
+        Row: {
+          description: string | null
+          name: string
+        }
+        Insert: {
+          description?: string | null
+          name: string
+        }
+        Update: {
+          description?: string | null
+          name?: string
+        }
+        Relationships: []
       }
       user: {
         Row: {
@@ -1422,6 +1632,34 @@ export type Database = {
         }
         Relationships: []
       }
+      user_features: {
+        Row: {
+          feature: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "group_features_feature_fkey"
+            columns: ["feature"]
+            isOneToOne: false
+            referencedRelation: "features"
+            referencedColumns: ["name"]
+          },
+        ]
+      }
+      user_permissions: {
+        Row: {
+          permission: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "group_permission_permission_fkey"
+            columns: ["permission"]
+            isOneToOne: false
+            referencedRelation: "permissions"
+            referencedColumns: ["name"]
+          },
+        ]
+      }
       user_vouchers: {
         Row: {
           available: number | null
@@ -1485,6 +1723,7 @@ export type Database = {
           name: string
           need_request_to_join: boolean
           parent_group: string | null
+          visible: boolean
         }
       }
       custom_access_token_hook: {
@@ -1553,6 +1792,14 @@ export type Database = {
           user: string
         }
       }
+      is_user_admin_in_group: {
+        Args: { group_id: string }
+        Returns: boolean
+      }
+      is_user_in_group: {
+        Args: { group_id: string }
+        Returns: boolean
+      }
       update_attendance: {
         Args: {
           eventid: string
@@ -1568,31 +1815,6 @@ export type Database = {
       }
     }
     Enums: {
-      app_permission:
-        | "event.select"
-        | "event.update"
-        | "event.insert"
-        | "event.delete"
-        | "drink.select"
-        | "drink.update"
-        | "drink.insert"
-        | "drink.delete"
-        | "group.select"
-        | "group.update"
-        | "group.insert"
-        | "group.delete"
-        | "challenge.select"
-        | "challenge.update"
-        | "challenge.insert"
-        | "challenge.delete"
-        | "payments.select"
-        | "payments.update"
-        | "payments.insert"
-        | "payments.delete"
-        | "item.select"
-        | "item.update"
-        | "item.insert"
-        | "item.delete"
       EventAttendance:
         | "Declined"
         | "Attending"
@@ -1601,17 +1823,15 @@ export type Database = {
         | "AttendingAsTrainer"
         | "RequestedAttendance"
       EventRecurrence: "Weekly" | "Fortnightly" | "Monthly" | "None"
+      Feature:
+        | "drinks"
+        | "events"
+        | "items"
+        | "challenges"
+        | "games"
+        | "events.constellations"
       GroupRole: "user" | "admin" | "joinRequested"
       ItemType: "mtvStorage" | "mtvGym" | "mtvGymPalazzo" | "goethe"
-      NotificationTags:
-        | "eventComments"
-        | "userRegistration"
-        | "paymentRequest"
-        | "paymentPending"
-        | "eventCancelled"
-        | "eventUpdated"
-        | "eventAttedanceChanged"
-        | "challengeUpdate"
       PaymentState: "Open" | "Fulfilled"
       ProductType: "Drink" | "Special" | "None"
       UserRole: "user" | "admin" | "procure" | "finance" | "trainer"
@@ -1731,37 +1951,17 @@ export const Constants = {
   games: {
     Enums: {},
   },
+  graphql_public: {
+    Enums: {},
+  },
+  logs: {
+    Enums: {},
+  },
   permissions: {
     Enums: {},
   },
   public: {
     Enums: {
-      app_permission: [
-        "event.select",
-        "event.update",
-        "event.insert",
-        "event.delete",
-        "drink.select",
-        "drink.update",
-        "drink.insert",
-        "drink.delete",
-        "group.select",
-        "group.update",
-        "group.insert",
-        "group.delete",
-        "challenge.select",
-        "challenge.update",
-        "challenge.insert",
-        "challenge.delete",
-        "payments.select",
-        "payments.update",
-        "payments.insert",
-        "payments.delete",
-        "item.select",
-        "item.update",
-        "item.insert",
-        "item.delete",
-      ],
       EventAttendance: [
         "Declined",
         "Attending",
@@ -1771,18 +1971,16 @@ export const Constants = {
         "RequestedAttendance",
       ],
       EventRecurrence: ["Weekly", "Fortnightly", "Monthly", "None"],
+      Feature: [
+        "drinks",
+        "events",
+        "items",
+        "challenges",
+        "games",
+        "events.constellations",
+      ],
       GroupRole: ["user", "admin", "joinRequested"],
       ItemType: ["mtvStorage", "mtvGym", "mtvGymPalazzo", "goethe"],
-      NotificationTags: [
-        "eventComments",
-        "userRegistration",
-        "paymentRequest",
-        "paymentPending",
-        "eventCancelled",
-        "eventUpdated",
-        "eventAttedanceChanged",
-        "challengeUpdate",
-      ],
       PaymentState: ["Open", "Fulfilled"],
       ProductType: ["Drink", "Special", "None"],
       UserRole: ["user", "admin", "procure", "finance", "trainer"],

@@ -30,7 +30,7 @@ import {
 } from '@mui/material';
 import { DatePicker, DateTimePicker } from '@mui/x-date-pickers';
 import { TimePicker } from '@mui/x-date-pickers/TimePicker';
-import { DialogProps, DialogsProvider, useDialogs } from '@toolpad/core';
+import { DialogProps, useDialogs } from '@toolpad/core';
 import { useNotifications } from '@toolpad/core/useNotifications';
 import { format, isAfter, set } from 'date-fns';
 import _ from 'lodash';
@@ -38,14 +38,13 @@ import React, { FormEvent, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { MapContainer, Marker, TileLayer, useMap } from 'react-leaflet';
 import { dayjsFromDb, formatDateToDatabase } from 'src/utils';
+import { EventTable } from 'types/supabase';
 import { NumberInput } from '../../../components/mui/NumberInput';
 import { SupabaseEventRepository } from '../../../repository/EventRepository';
 import { Enums, TablesInsert, TablesUpdate } from '../../../types/supabase-generated.types';
+import { CreateEventOption, PlaceType } from '../types';
 import SearchPlacesDialog from './SearchPlacesDialog';
 import { SelectGroupDialog } from './SelectGroupDialog';
-import { CreateEventOption, PlaceType } from '../types';
-import { EventTable } from 'types/supabase';
-import { useAuthentication } from 'src/features/auth/AuthContext';
 
 const emptyEvent = {
   title: '',
@@ -122,7 +121,7 @@ export const CreateOrUpdateEventDialog = ({ payload: { event, eventGroup, option
 
         if (error) throw error;
       } else if (option === 'UpdateRecurrence') {
-        const result = await SupabaseEventRepository.updateEventAndAllRecurrences(
+        await SupabaseEventRepository.updateEventAndAllRecurrences(
           eventChanges,
           editedEvent.key,
           editedEvent.startingDateTime
