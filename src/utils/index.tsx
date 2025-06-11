@@ -7,19 +7,15 @@ import RoundnetMunichLogo from '../images/Roundnet_Munich_Logo.png';
 
 export const BRANDING = {
   logo: (<img
-    src={window.location.hostname === "roundnet-karlsruhe.web.app"
-      ? RoundnetKarlsruheLogo
-      : window.location.hostname === "munich-roundnet.web.app"
-        ? RoundnetMunichLogo
-        : undefined}
+    src={window.location.hostname === "munich-roundnet.web.app"
+      ? RoundnetMunichLogo
+      : RoundnetKarlsruheLogo}
     alt="MUI logo"
     style={{ height: 96 }}
   />),
-  title: window.location.hostname === "roundnet-karlsruhe.web.app"
-    ? 'Roundnet Karlsruhe'
-    : window.location.hostname === "munich-roundnet.web.app"
+  title: window.location.hostname === "munich-roundnet.web.app"
       ? "Munich Roundnet"
-      : "Roundnet Community Manager",
+      : "Roundnet Karlsruhe",
 }
 
 export const compareById = (x: any, y: any) => {

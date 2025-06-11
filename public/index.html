@@ -24,7 +24,7 @@
 
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.0.1/dist/leaflet.css" />
 
-  <title>Default Title</title>
+  <title>Roundnet Karlsruhe</title>
 
   <script>
     const host = window.location.hostname;
@@ -34,15 +34,14 @@
     link.rel = 'manifest';
     let manifest = '/manifest.json';
 
-    if (host === "roundnet-karlsruhe.web.app") {
-      link.href = '%PUBLIC_URL%/manifest-roundnet-karlsruhe.json';
-      document.title = 'Roundnet Karlsruhe';
-      description.setAttribute('content', 'Web App für Roundnet Karlsruhe');
-    }
     if (host === "munich-roundnet.web.app") {
       link.href = '%PUBLIC_URL%/manifest-munich-roundnet.json';
       document.title = 'Munich Roundnet Community';
       description.setAttribute('content', 'Web App für Munich Roundnet Community');
+    } else {
+      link.href = '%PUBLIC_URL%/manifest-roundnet-karlsruhe.json';
+      document.title = 'Roundnet Karlsruhe';
+      description.setAttribute('content', 'Web App für Roundnet Karlsruhe');
     }
     document.head.appendChild(link);
   </script>

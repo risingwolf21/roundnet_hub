@@ -6,7 +6,7 @@ import React, { PropsWithChildren } from "react";
 import { PullToRefresh } from "src/components/pull-to-refresh/PullToRefresh";
 import { AppDispatch } from "src/redux/store";
 import { useAddNotificationTag, useNotificationTags, useRemoveNotificationTag } from "src/tanstack/notifications";
-import { UserWithRolesAndPermissions } from "src/types/supabaseTypes";
+import { UserWithGroups } from "src/types/supabaseTypes";
 import { BRANDING } from "src/utils";
 
 const NotificationSwitch = ({
@@ -44,7 +44,7 @@ export const isNotificationSupported = () =>
 
 type NotificationsDialogPayload = {
   dispatch: AppDispatch;
-  user: UserWithRolesAndPermissions;
+  user: UserWithGroups;
   notificationSupported: boolean
 }
 

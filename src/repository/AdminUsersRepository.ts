@@ -32,15 +32,6 @@ export const AdminUsersRepository = {
   },
 
   async updateUser(user: UserEdited): Promise<User | null> {
-    await supabase.schema("permissions").from('user_roles').delete().eq('user', user.userId);
-    await supabase.schema("permissions").from('user_roles').upsert(
-      user.roles.map((x) => {
-        return {
-          app_role: x.id,
-          user: user.userId,
-        };
-      })
-    );
     const result = await supabase
       .from('user')
       .update({ displayName: user.displayName, verified: user.verified })

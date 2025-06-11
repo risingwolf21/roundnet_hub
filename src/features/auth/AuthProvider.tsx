@@ -29,7 +29,6 @@ export type Permission =
 
 type AuthContextType = {
   user: UserWithGroups;
-  roles: string[];
   permissions: string[];
   features: string[];
   isAuthorized: (permission: string) => boolean;
@@ -49,21 +48,18 @@ type AuthProviderProps = PropsWithChildren & {
 }
 
 export const AuthProvider = ({ children, user, signOut }: AuthProviderProps) => {
-  const [roles, setRoles] = useState<string[]>([]);
   const [permissions, setPermissions] = useState<string[]>([]);
   const [features, setFeatures] = useState<string[]>([]);
 
   useEffect(() => {
     const fetchUserData = async () => {
-      const [roles, features, permissions] = await Promise.all([
-        SupabaseUserRepository.fetchRolesForUser(user.userId),
+      const [features, permissions] = await Promise.all([
         SupabaseUserRepository.fetchFeaturesForUser(),
         SupabaseUserRepository.fetchPermissionsForUser()
       ]);
 
       setPermissions(permissions);
       setFeatures(features);
-      setRoles(roles.map(x => x.name))
     };
 
     fetchUserData();
@@ -73,7 +69,7 @@ export const AuthProvider = ({ children, user, signOut }: AuthProviderProps) => 
   const hasFeature = (feature: string) => features.includes(feature);
 
   return (
-    <AuthContext.Provider value={{ user, roles, permissions, features, isAuthorized, hasFeature, signOut }}>
+    <AuthContext.Provider value={{ user, permissions, features, isAuthorized, hasFeature, signOut }}>
       {children}
     </AuthContext.Provider>
   );

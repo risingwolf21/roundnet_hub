@@ -85,10 +85,7 @@ const Layout = ({
               onClick={() => navigate(navigateBackPath)}
               edge="start"
               sx={(theme) => ({
-                mr: 2,
-                [theme.breakpoints.up('lg')]: {
-                  display: 'none',
-                },
+                mr: 2
               })}
             >
               <ArrowBack />

@@ -53,9 +53,9 @@ export const queryClient = new QueryClient({
 
 export const App = () => {
 
-  const theme = window.location.hostname === "roundnet-karlsruhe.web.app"
-    ? roundnet_karlsruhe_theme
-    : munich_roundnet_theme;
+  const theme = window.location.hostname === "munich-roundnet.web.app"
+    ? munich_roundnet_theme
+    : roundnet_karlsruhe_theme;
 
   return <ThemeProvider theme={theme}>
     <LocalizationProvider dateAdapter={AdapterDayjs}>

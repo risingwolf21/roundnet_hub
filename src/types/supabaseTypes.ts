@@ -79,14 +79,6 @@ export type GroupWithUserRole = Group & {
     user_role: Enums<'GroupRole'>
 }
 
-export type UserWithRolesAndPermissions = User & {
-    roles: AppRole[];
-    permissions: AppPermission[];
-    player_data: Player | null;
-    groups: GroupWithUserRole[];
-    features: Feature[];
-};
-
 export type FullUserMapping = {
     user: User;
     map: GroupUserMapping

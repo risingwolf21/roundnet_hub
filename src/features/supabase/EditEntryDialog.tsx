@@ -107,7 +107,7 @@ const ForeignSelection = ({ value, column, onChange }: {
         }
         setLoading(false)
       });
-  }, [column]);
+  }, [column, keys]);
 
   if (loading) {
     return <ListItem>

@@ -62,17 +62,6 @@ export const SupabaseUserRepository = {
   },
 
 
-  async fetchRolesForUser(userId: string): Promise<AppRole[]> {
-    const { data, error } = await supabase
-      .schema("permissions")
-      .from('user_roles')
-      .select('app_role (*)')
-      .eq('user', userId)
-      .returns<{ app_role: AppRole }[]>()
-    if (error || !data) return [];
-    return data.map((x) => x.app_role as AppRole);
-  },
-
   async fetchFeaturesForUser(): Promise<string[]> {
     const { data, error } = await supabase
       .from('user_features')

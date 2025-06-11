@@ -28,7 +28,6 @@ const ReportScore = lazyWithRetry(() => import('./features/games/ReportScore'));
 const HomePage = lazyWithRetry(() => import('./features/homepage/HomePage'));
 const SupabaseClient = lazyWithRetry(() => import('./features/supabase/SupabaseClient'));
 const UserScreenProvider = lazyWithRetry(() => import('./features/profile/User'));
-const PermissionList = lazyWithRetry(() => import('./features/admin/PermissionList'));
 const LoginScreen = lazyWithRetry(() => import('./features/auth/LoginScreen'));
 const SignUpScreen = lazyWithRetry(() => import('./features/auth/SignUpScreen'));
 const ForgotPasswordScreen = lazyWithRetry(() => import('./features/auth/ForgotPasswordScreen'));
@@ -242,10 +241,6 @@ const router = sentryCreateBrowserRouter([
               {
                 path: "supabase",
                 element: <SupabaseClient />
-              },
-              {
-                path: "permissions",
-                element: <PermissionList />
               }
             ]
           },
