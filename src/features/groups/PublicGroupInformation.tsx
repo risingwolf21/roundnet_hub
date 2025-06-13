@@ -5,7 +5,7 @@ import { useDialogs, useNotifications } from "@toolpad/core";
 import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router";
 import { LoadingIndicator } from "src/components/LoadingIndicator";
-import { useGroup, useLeaveGroupMutation } from "src/tanstack/groups";
+import { useGroup, useLeaveGroupMutation, useMakeUserAdminMutation } from "src/tanstack/groups";
 import { useAuthentication } from "../auth/AuthProvider";
 import { AcceptJoinButton } from "./components/AcceptJoinButton";
 import { DeclineJoinButton } from "./components/DeclineJoinButton";
@@ -37,6 +37,7 @@ const PublicGroupInformation = () => {
   const addUsersMutation = useAddUsersMutation(group);
   const removeUsersMutation = useRemoveUsersMutation(group);
   const leaveGroupMutation = useLeaveGroupMutation();
+  const makeUserAdminMutation = useMakeUserAdminMutation();
 
   const handleUsersAdded = async (users: User[]) => {
     addUsersMutation.mutate(users, {
@@ -165,16 +166,38 @@ const PublicGroupInformation = () => {
               isAdmin={x.map.role === "admin"}
               dialogs={dialogs}
               selected={selectedUsers.includes(x.user)}
-              onAvatarClick={(e) => {
-                e.stopPropagation();
-                if (x.map.role === "admin")
-                  return;
-                if (selectedUsers.includes(x.user)) {
-                  setSelectedUsers([...selectedUsers.filter(y => y.userId !== x.user.userId)])
-                } else {
-                  setSelectedUsers([...selectedUsers, x.user])
+              {
+              ...(group.user_group_role === "admin" && x.map.role !== "admin"
+                ? {
+                  makeAdmin: async (e) => {
+                    e.stopPropagation();
+                    const result = await dialogs.confirm(`Möchtest du wirklich ${x.user.name} zu einem Admin dieser Gruppe machen?`, {
+                      okText: "Bestätigen",
+                      cancelText: "Abbrechen"
+                    });
+                    if (result) {
+                      makeUserAdminMutation.mutate({ group: group, user: x.user })
+                    }
+                  }
                 }
-              }} />)
+                : {})
+              }
+              {
+              ...(group.user_group_role === "admin"
+                ? {
+                  onAvatarClick: (e) => {
+                    e.stopPropagation();
+                    if (group.user_group_role !== "admin")
+                      return;
+                    if (selectedUsers.includes(x.user)) {
+                      setSelectedUsers([...selectedUsers.filter(y => y.userId !== x.user.userId)])
+                    } else {
+                      setSelectedUsers([...selectedUsers, x.user])
+                    }
+                  }
+                }
+                : {})
+              } />)
         }
         {
           group && group.users.length > 10 && <Accordion disableGutters sx={{ m: 0 }}>
@@ -200,16 +223,38 @@ const PublicGroupInformation = () => {
                     isAdmin={x.map.role === "admin"}
                     dialogs={dialogs}
                     selected={selectedUsers.includes(x.user)}
-                    onAvatarClick={(e) => {
-                      e.stopPropagation();
-                      if (x.map.role !== "admin")
-                        return;
-                      if (selectedUsers.includes(x.user)) {
-                        setSelectedUsers([...selectedUsers.filter(y => y.userId !== x.user.userId)])
-                      } else {
-                        setSelectedUsers([...selectedUsers, x.user])
+                    {
+                    ...(group.user_group_role === "admin" && x.map.role !== "admin"
+                      ? {
+                        makeAdmin: async (e) => {
+                          e.stopPropagation();
+                          const result = await dialogs.confirm(`Möchtest du wirklich ${x.user.name} zu einem Admin dieser Gruppe machen?`, {
+                            okText: "Bestätigen",
+                            cancelText: "Abbrechen"
+                          });
+                          if (result) {
+                            makeUserAdminMutation.mutate({ group: group, user: x.user })
+                          }
+                        }
                       }
-                    }} />)
+                      : {})
+                    }
+                    {
+                    ...(group.user_group_role === "admin"
+                      ? {
+                        onAvatarClick: (e) => {
+                          e.stopPropagation();
+                          if (group.user_group_role !== "admin")
+                            return;
+                          if (selectedUsers.includes(x.user)) {
+                            setSelectedUsers([...selectedUsers.filter(y => y.userId !== x.user.userId)])
+                          } else {
+                            setSelectedUsers([...selectedUsers, x.user])
+                          }
+                        }
+                      }
+                      : {})
+                    } />)
               }
             </AccordionDetails>
           </Accordion>
