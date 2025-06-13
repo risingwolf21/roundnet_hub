@@ -1,4 +1,4 @@
-import { Box, List, Typography } from "@mui/material"
+import { Box, Button, List, Stack, Typography } from "@mui/material"
 import { withProfiler } from "@sentry/react"
 import { useNotifications } from "@toolpad/core/useNotifications"
 import React from "react"
@@ -15,6 +15,7 @@ import { LoadingDrinkCard } from "./LoadingDrinkCard"
 import { LoadingEventCard } from "./LoadingEventCard"
 import { LoadingItemCard } from "./LoadingItemCard"
 import { PullToRefresh } from "src/components/pull-to-refresh/PullToRefresh"
+import { useNavigate } from "react-router"
 
 const HomePage = () => {
 
@@ -25,6 +26,7 @@ const HomePage = () => {
     const { data: events = [], isLoading: isEventsLoading, refetch: refetchEvents } = useEvents(fetchMode);
     const { data: items = [], isLoading: isItemsLoading, refetch: refetchItems } = useAllItems();
     const notifications = useNotifications();
+    const navigate = useNavigate();
 
     const updateAttendance = useUpdateAttendanceMutation(fetchMode);
     const updateHistory = useInsertHistoryEntryMutation(user.userId);
@@ -35,6 +37,14 @@ const HomePage = () => {
             refetchEvents();
             refetchItems();
         }}>
+            {
+                user.groups.length === 0 && <Stack spacing={2} direction={"column"} sx={{ height: 300, alignItems: "center", justifyContent: "center" }}>
+                    <Typography>Es sieht so aus als ob du keine Events siehst</Typography>
+                    <Typography>Versuch einer Gruppe beizutreten um die Events dieser einzusehen</Typography>
+                    <Button variant='contained' onClick={() => navigate("/groups/list")}>Gruppe beitreten</Button>
+                </Stack>
+            }
+
             <List sx={{ pb: 10 }}>
                 {
                     hasFeature("events") && <>
