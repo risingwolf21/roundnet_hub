@@ -3,7 +3,7 @@ import { Box, Button, List, ListItem, Typography } from '@mui/material';
 import { useQuery } from '@tanstack/react-query';
 import { useDialogs } from '@toolpad/core';
 import React from 'react';
-import { useAuthentication } from 'src/features/auth/AuthContext';
+import { useAuthentication } from 'src/features/auth/AuthProvider';
 import { ReportSetsDialog } from 'src/features/games/dialogs/ReportSetsDialog';
 import { GamesRepository } from 'src/repository/GamesRepository';
 

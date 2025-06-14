@@ -3,11 +3,10 @@ import { Accordion, AccordionDetails, AccordionSummary, Avatar, Card, CardAction
 import { captureException } from "@sentry/react";
 import { useDialogs, useNotifications } from "@toolpad/core";
 import React, { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router";
+import { Navigate, useNavigate, useParams } from "react-router";
 import { LoadingIndicator } from "src/components/LoadingIndicator";
-import { useGroup, useLeaveGroupMutation } from "src/tanstack/groups";
-import { can } from "src/utils/PermissionService";
-import { useAuthentication } from "../auth/AuthContext";
+import { useGroup, useLeaveGroupMutation, useMakeUserAdminMutation } from "src/tanstack/groups";
+import { useAuthentication } from "../auth/AuthProvider";
 import { AcceptJoinButton } from "./components/AcceptJoinButton";
 import { DeclineJoinButton } from "./components/DeclineJoinButton";
 import { GroupUserItem } from "./components/GroupUserItem";
@@ -15,11 +14,13 @@ import { CreateOrUpdateGroupDialog } from "./dialogs/CreateOrUpdateGroupDialog";
 import SearchAndSelectUserDialog from "./dialogs/SearchAndSelectUserDialog";
 import { useAddUsersMutation } from "./query/addUsersMutation";
 import { useRemoveUsersMutation } from "./query/removeUsersMutation";
+import { PublicGroupPermissions } from "./components/PublicGroupPermissions";
+import { PublicGroupfeatures } from "./components/PublicGroupFeatures";
 
 const PublicGroupInformation = () => {
 
   const { groupId } = useParams();
-  const { user } = useAuthentication();
+  const { user, isAuthorized } = useAuthentication();
   const navigate = useNavigate();
   const notifications = useNotifications();
   const dialogs = useDialogs();
@@ -32,10 +33,14 @@ const PublicGroupInformation = () => {
       notifications.show(error.message, { severity: "error" })
   }, [error, notifications])
 
-
   const addUsersMutation = useAddUsersMutation(group);
   const removeUsersMutation = useRemoveUsersMutation(group);
   const leaveGroupMutation = useLeaveGroupMutation();
+  const makeUserAdminMutation = useMakeUserAdminMutation();
+
+  if (!isLoading && !group) {
+    return <Navigate to={"/groups/list"} />
+  }
 
   const handleUsersAdded = async (users: User[]) => {
     addUsersMutation.mutate(users, {
@@ -74,12 +79,25 @@ const PublicGroupInformation = () => {
         {group?.description}
       </Typography>
       <Divider />
+      {
+        isAuthorized("supabase.admin") && group && <>
+          <Typography pl={2} variant="h6" fontWeight="bold">
+            Features
+          </Typography>
+          <PublicGroupfeatures group={group} />
+          <Typography pl={2} variant="h6" fontWeight="bold">
+            Permissions
+          </Typography>
+          <PublicGroupPermissions group={group} />
+          <Divider />
+        </>
+      }
       <Typography pl={2} pt={1} variant="h6" fontWeight="bold">
         Mitglieder{group && " · " + group?.users.length}
       </Typography>
       <Card sx={{ borderRadius: 2, py: 0, px: 0, m: 1 }}>
         {
-          selectedUsers.length > 0 && can("update", "group")
+          selectedUsers.length > 0 && group?.user_group_role === "admin"
             ? <CardActionArea onClick={() => handleUsersRemove(selectedUsers)}>
               <ListItem>
                 <ListItemAvatar>
@@ -90,7 +108,7 @@ const PublicGroupInformation = () => {
                 <ListItemText primary={"Gewählte Teilnehmer entfernen"} />
               </ListItem>
             </CardActionArea>
-            : can("update", "group") && group?.user_group_role === "admin" && <CardActionArea onClick={() => {
+            : group?.user_group_role === "admin" && <CardActionArea onClick={() => {
               dialogs.open(SearchAndSelectUserDialog, { usersToFilter: group.users.map(x => x.user.userId) })
                 .then(result => {
                   if (result)
@@ -151,16 +169,38 @@ const PublicGroupInformation = () => {
               isAdmin={x.map.role === "admin"}
               dialogs={dialogs}
               selected={selectedUsers.includes(x.user)}
-              onAvatarClick={(e) => {
-                e.stopPropagation();
-                if (x.map.role === "admin")
-                  return;
-                if (selectedUsers.includes(x.user)) {
-                  setSelectedUsers([...selectedUsers.filter(y => y.userId !== x.user.userId)])
-                } else {
-                  setSelectedUsers([...selectedUsers, x.user])
+              {
+              ...(group.user_group_role === "admin" && x.map.role !== "admin"
+                ? {
+                  makeAdmin: async (e) => {
+                    e.stopPropagation();
+                    const result = await dialogs.confirm(`Möchtest du wirklich ${x.user.name} zu einem Admin dieser Gruppe machen?`, {
+                      okText: "Bestätigen",
+                      cancelText: "Abbrechen"
+                    });
+                    if (result) {
+                      makeUserAdminMutation.mutate({ group: group, user: x.user })
+                    }
+                  }
                 }
-              }} />)
+                : {})
+              }
+              {
+              ...(group.user_group_role === "admin"
+                ? {
+                  onAvatarClick: (e) => {
+                    e.stopPropagation();
+                    if (group.user_group_role !== "admin")
+                      return;
+                    if (selectedUsers.includes(x.user)) {
+                      setSelectedUsers([...selectedUsers.filter(y => y.userId !== x.user.userId)])
+                    } else {
+                      setSelectedUsers([...selectedUsers, x.user])
+                    }
+                  }
+                }
+                : {})
+              } />)
         }
         {
           group && group.users.length > 10 && <Accordion disableGutters sx={{ m: 0 }}>
@@ -186,16 +226,38 @@ const PublicGroupInformation = () => {
                     isAdmin={x.map.role === "admin"}
                     dialogs={dialogs}
                     selected={selectedUsers.includes(x.user)}
-                    onAvatarClick={(e) => {
-                      e.stopPropagation();
-                      if (x.map.role !== "admin")
-                        return;
-                      if (selectedUsers.includes(x.user)) {
-                        setSelectedUsers([...selectedUsers.filter(y => y.userId !== x.user.userId)])
-                      } else {
-                        setSelectedUsers([...selectedUsers, x.user])
+                    {
+                    ...(group.user_group_role === "admin" && x.map.role !== "admin"
+                      ? {
+                        makeAdmin: async (e) => {
+                          e.stopPropagation();
+                          const result = await dialogs.confirm(`Möchtest du wirklich ${x.user.name} zu einem Admin dieser Gruppe machen?`, {
+                            okText: "Bestätigen",
+                            cancelText: "Abbrechen"
+                          });
+                          if (result) {
+                            makeUserAdminMutation.mutate({ group: group, user: x.user })
+                          }
+                        }
                       }
-                    }} />)
+                      : {})
+                    }
+                    {
+                    ...(group.user_group_role === "admin"
+                      ? {
+                        onAvatarClick: (e) => {
+                          e.stopPropagation();
+                          if (group.user_group_role !== "admin")
+                            return;
+                          if (selectedUsers.includes(x.user)) {
+                            setSelectedUsers([...selectedUsers.filter(y => y.userId !== x.user.userId)])
+                          } else {
+                            setSelectedUsers([...selectedUsers, x.user])
+                          }
+                        }
+                      }
+                      : {})
+                    } />)
               }
             </AccordionDetails>
           </Accordion>
@@ -238,7 +300,7 @@ const PublicGroupInformation = () => {
     {
       group?.user_group_role === "admin" && <Fab
         sx={{
-          background: '#66bb6a',
+          background: 'primary.light',
           position: 'fixed',
           right: '16px',
           bottom: 'calc(16px + env(safe-area-inset-bottom))',

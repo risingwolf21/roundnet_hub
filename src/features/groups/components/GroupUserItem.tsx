@@ -1,5 +1,5 @@
-import { AccountBox, Check } from "@mui/icons-material";
-import { Avatar, Chip, ListItemAvatar, ListItemButton, ListItemText, Stack, Typography } from "@mui/material";
+import { AccountBox, AdminPanelSettings, Check } from "@mui/icons-material";
+import { Avatar, Chip, IconButton, ListItem, ListItemAvatar, ListItemText, Stack, Typography } from "@mui/material";
 import { DialogHook } from "@toolpad/core";
 import React from "react";
 import { ProfileDialog } from "src/components/Profile";
@@ -7,21 +7,25 @@ import { ProfileDialog } from "src/components/Profile";
 type Props = {
   user: User
   groupUser: User
-  onAvatarClick: (event: React.MouseEvent) => void
+  onAvatarClick?: (event: React.MouseEvent) => void
+  makeAdmin?: (event: React.MouseEvent) => void
   selected: boolean
   isAdmin: boolean
   dialogs: DialogHook
 }
 
-export const GroupUserItem = ({ user, groupUser, onAvatarClick, selected, isAdmin, dialogs }: Props) => {
+export const GroupUserItem = ({ user, groupUser, onAvatarClick, selected, makeAdmin, isAdmin, dialogs }: Props) => {
 
-  return <ListItemButton
+  return <ListItem
     key={groupUser.userId}
     divider
     onClick={() => dialogs.open(ProfileDialog, { user, userId: groupUser.userId })}
     sx={{
       ...(selected && { background: "rgba(2, 136, 209, 0.4)" })
     }}
+    secondaryAction={makeAdmin && <IconButton onClick={makeAdmin}>
+      <AdminPanelSettings />
+    </IconButton>}
   >
     <ListItemAvatar onClick={onAvatarClick}>
       {
@@ -46,5 +50,5 @@ export const GroupUserItem = ({ user, groupUser, onAvatarClick, selected, isAdmi
         }
       </Stack>} secondary={groupUser.email}
     />
-  </ListItemButton>
+  </ListItem>
 }

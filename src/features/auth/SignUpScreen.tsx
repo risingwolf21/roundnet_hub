@@ -6,7 +6,6 @@ import TextField, { TextFieldProps } from '@mui/material/TextField';
 import { captureException } from '@sentry/react';
 import React, { useState } from 'react';
 import { Navigate, useLocation, useNavigate } from 'react-router';
-import Layout from 'src/components/Layout';
 import { supabase } from 'src/components/services/supabase/supabaseClient';
 import { HOMEPAGE } from 'src/constants';
 import { BRANDING } from 'src/utils';
@@ -66,7 +65,7 @@ const SignUpScreen = () => {
   const location = useLocation();
 
   if (user) {
-    return <Navigate to={location.state?.path !== "/login" ? location.state?.path || HOMEPAGE : HOMEPAGE} />
+    return <Navigate to={location.state?.path !== "/auth/login" ? location.state?.path || HOMEPAGE : HOMEPAGE} />
   }
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
@@ -135,139 +134,137 @@ const SignUpScreen = () => {
   };
 
   return (
-    <Layout appBarConfig={{ showProfile: false }}>
-      <Box
-        sx={(theme) => ({
-          height: '100%',
-          minHeight: "100%",
-          mb: "env(safe-area-inset-bottom)",
-          mt: "env(safe-area-inset-top)",
-          display: 'flex',
-          flexDirection: 'column',
-          overflow: "hidden",
-          overflowY: "auto",
-          [theme.breakpoints.up('sm')]: {
-            justifyContent: 'center',
-            alignItems: 'center',
-          },
-          [theme.breakpoints.down('xs')]: {
-            justifyContent: 'start',
-            alignItems: 'start',
-          },
-        })}
-      >
-        <Container component="main" maxWidth="xs">
+    <Box
+      sx={(theme) => ({
+        height: '100%',
+        minHeight: "100%",
+        mb: "env(safe-area-inset-bottom)",
+        mt: "env(safe-area-inset-top)",
+        display: 'flex',
+        flexDirection: 'column',
+        overflow: "hidden",
+        overflowY: "auto",
+        [theme.breakpoints.up('sm')]: {
+          justifyContent: 'center',
+          alignItems: 'center',
+        },
+        [theme.breakpoints.down('xs')]: {
+          justifyContent: 'start',
+          alignItems: 'start',
+        },
+      })}
+    >
+      <Container component="main" maxWidth="xs">
+        <Box
+          sx={(theme) => ({
+            display: 'flex',
+            flexDirection: 'column',
+            bgcolor: 'background.paper',
+            borderRadius: 1,
+            p: 4,
+            mb: 10,
+            [theme.breakpoints.up('sm')]: {
+              border: '1px solid',
+              alignItems: 'center',
+              borderColor: alpha(theme.palette.grey[400], 0.4),
+              boxShadow: theme.shadows[4],
+              marginBottom: 0,
+            },
+            [theme.breakpoints.down('xs')]: {
+              alignItems: 'start',
+              border: "none",
+              boxShadow: "none"
+            },
+          })}
+        >
+
+          {BRANDING.logo}
+
+          <Typography variant="h5" component={"h1"} color='textPrimary' sx={{
+            my: theme.spacing(1),
+            textAlign: 'center',
+            fontWeight: 600,
+          }}>
+            Register at<br></br>{BRANDING.title}
+          </Typography>
           <Box
-            sx={(theme) => ({
-              display: 'flex',
-              flexDirection: 'column',
-              bgcolor: 'background.paper',
-              borderRadius: 1,
-              p: 4,
-              mb: 10,
-              [theme.breakpoints.up('sm')]: {
-                border: '1px solid',
-                alignItems: 'center',
-                borderColor: alpha(theme.palette.grey[400], 0.4),
-                boxShadow: theme.shadows[4],
-                marginBottom: 0,
-              },
-              [theme.breakpoints.down('xs')]: {
-                alignItems: 'start',
-                border: "none",
-                boxShadow: "none"
-              },
-            })}
+            component="form"
+            onSubmit={handleSubmit}
+            sx={{ width: "100%" }}
           >
+            <Stack direction={"column"} spacing={2} sx={{ mb: 2 }}>
+              <TextField
+                {...getCommonTextFieldProps(theme, {
+                  label: "Email",
+                  placeholder: 'your@email.com',
+                  id: 'email',
+                  name: 'email',
+                  type: 'email',
+                  autoComplete: 'email'
+                })}
+              />
+              <TextField
+                {...getCommonTextFieldProps(theme, {
+                  label: "Vorname",
+                  placeholder: 'Max',
+                  id: 'name',
+                  name: 'name'
+                })}
+              />
+              <TextField
+                {...getCommonTextFieldProps(theme, {
+                  label: "Nachname",
+                  placeholder: 'Mustermann',
+                  id: 'surname',
+                  name: 'surname'
+                })}
+              />
+              <TextField
+                {...getCommonTextFieldProps(theme, {
+                  label: "Password",
+                  id: 'password',
+                  name: 'password',
+                  type: "password"
+                })}
+              />
+              <TextField
+                {...getCommonTextFieldProps(theme, {
+                  label: "Password",
+                  id: 'password2',
+                  name: 'password2',
+                  type: "password"
+                })}
+              />
 
-            {BRANDING.logo}
+              {
+                error && <Alert sx={{ my: 2 }} severity="error">
+                  {error}
+                </Alert>
+              }
+            </Stack>
 
-            <Typography variant="h5" component={"h1"} color='textPrimary' sx={{
-              my: theme.spacing(1),
-              textAlign: 'center',
-              fontWeight: 600,
-            }}>
-              Register at<br></br>{BRANDING.title}
-            </Typography>
-            <Box
-              component="form"
-              onSubmit={handleSubmit}
-              sx={{ width: "100%" }}
+            <Button
+              type="submit"
+              variant="contained"
+              fullWidth
+              disabled={loading}
+              sx={{ my: 2 }}
             >
-              <Stack direction={"column"} spacing={2} sx={{ mb: 2 }}>
-                <TextField
-                  {...getCommonTextFieldProps(theme, {
-                    label: "Email",
-                    placeholder: 'your@email.com',
-                    id: 'email',
-                    name: 'email',
-                    type: 'email',
-                    autoComplete: 'email'
-                  })}
-                />
-                <TextField
-                  {...getCommonTextFieldProps(theme, {
-                    label: "Vorname",
-                    placeholder: 'Max',
-                    id: 'name',
-                    name: 'name'
-                  })}
-                />
-                <TextField
-                  {...getCommonTextFieldProps(theme, {
-                    label: "Nachname",
-                    placeholder: 'Mustermann',
-                    id: 'surname',
-                    name: 'surname'
-                  })}
-                />
-                <TextField
-                  {...getCommonTextFieldProps(theme, {
-                    label: "Password",
-                    id: 'password',
-                    name: 'password',
-                    type: "password"
-                  })}
-                />
-                <TextField
-                  {...getCommonTextFieldProps(theme, {
-                    label: "Password",
-                    id: 'password2',
-                    name: 'password2',
-                    type: "password"
-                  })}
-                />
+              {
+                loading ? <CircularProgress color="inherit" size={25} /> : "Registrieren"
+              }
+            </Button>
 
-                {
-                  error && <Alert sx={{ my: 2 }} severity="error">
-                    {error}
-                  </Alert>
-                }
-              </Stack>
-
-              <Button
-                type="submit"
-                variant="contained"
-                fullWidth
-                disabled={loading}
-                sx={{ my: 2 }}
-              >
-                {
-                  loading ? <CircularProgress color="inherit" size={25} /> : "Registrieren"
-                }
-              </Button>
-
-              <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
-                <Link href="#" variant="body2" onClick={() => navigate('/login', { replace: true })}>
-                  {'Account vorhanden? Hier einloggen'}
-                </Link>
-                <Typography sx={{ mt: 1 }}>{`Version ${process.env.REACT_APP_VERSION}-${version.slice(0, 8)}`}</Typography>
-              </div>
-            </Box>
+            <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
+              <Link href="#" variant="body2" onClick={() => navigate('/auth/login', { replace: true })}>
+                {'Account vorhanden? Hier einloggen'}
+              </Link>
+              <Typography sx={{ mt: 1 }}>{`Version ${process.env.REACT_APP_VERSION}-${version.slice(0, 8)}`}</Typography>
+            </div>
           </Box>
-        </Container>
-      </Box>
-    </Layout>
+        </Box>
+      </Container>
+    </Box>
   );
 }
 

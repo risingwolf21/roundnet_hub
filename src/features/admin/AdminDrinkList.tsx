@@ -15,7 +15,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useNotifications } from '@toolpad/core/useNotifications';
 import _ from 'lodash';
 import React, { useState } from 'react';
-import Layout from '../../components/Layout';
+import Layout from '../../components/layout/Layout';
 import { AdminDrinksRepository } from '../../repository/AdminDrinksRepository';
 import { AdminDrinkItem } from './components/AdminDrinkItem';
 import EditDrinkDialog from './dialogs/EditDrinkDialog';
@@ -131,7 +131,7 @@ const AdminDrinkList = () => {
       </List>
       <Fab
         sx={{
-          background: '#66bb6a',
+          background: '',
           position: 'fixed',
           right: '16px',
           bottom: 'calc(16px + env(safe-area-inset-bottom))',

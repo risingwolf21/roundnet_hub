@@ -42,7 +42,7 @@ import React from 'react';
 import { PullToRefresh } from 'src/components/pull-to-refresh/PullToRefresh';
 import { SupabaseEventRepository } from 'src/repository/EventRepository';
 import { AlertMessage } from '../../components/AlertSnackbar';
-import Layout from '../../components/Layout';
+import Layout from '../../components/layout/Layout';
 import { EventWithGroup } from '../../types/supabaseTypes';
 import { nameOfRecurrence } from '../../utils';
 import { CreateOrUpdateEventDialog } from './dialogs/CreateOrUpdateEventDialog';

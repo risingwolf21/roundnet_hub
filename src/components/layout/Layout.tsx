@@ -2,9 +2,10 @@ import { AccountCircle, ArrowBack, Menu } from '@mui/icons-material';
 import { AppBar, Avatar, Box, IconButton, TextField, Toolbar, Typography } from '@mui/material';
 import React, { ReactNode, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
-import { useApplication } from '../features/auth/ApplicationContext';
-import { FirebaseMessaging } from '../features/notifications/FirebaseMessaging';
-import { Drawer, drawerWidth } from './Drawer';
+import { useApplication } from '../../features/auth/ApplicationContext';
+import { FirebaseMessaging } from '../../features/notifications/FirebaseMessaging';
+import { Drawer, drawerWidth } from '../Drawer';
+import { BRANDING } from 'src/utils';
 
 type Props = {
   children: ReactNode;
@@ -13,8 +14,6 @@ type Props = {
     title?: string;
     navigateBackPath?: string;
     showProfile?: boolean;
-    showSearch?: boolean;
-    onSearchChange?: (value: string) => void;
   };
 };
 
@@ -22,12 +21,10 @@ const Layout = ({
   children,
   appBarActions,
   appBarConfig: {
-    title = 'Roundnet Karlsruhe',
+    title = BRANDING.title,
     showProfile = true,
-    navigateBackPath,
-    showSearch,
-    onSearchChange,
-  } = { title: 'Roundnet Karlsruhe', showProfile: true },
+    navigateBackPath
+  } = { title: BRANDING.title, showProfile: true },
 }: Props) => {
   const navigate = useNavigate();
   const { user } = useApplication();
@@ -88,10 +85,7 @@ const Layout = ({
               onClick={() => navigate(navigateBackPath)}
               edge="start"
               sx={(theme) => ({
-                mr: 2,
-                [theme.breakpoints.up('lg')]: {
-                  display: 'none',
-                },
+                mr: 2
               })}
             >
               <ArrowBack />
@@ -133,16 +127,6 @@ const Layout = ({
                 <AccountCircle />
               )}
             </IconButton>
-          )}
-          {/* Optional Search */}
-          {showSearch && onSearchChange && (
-            <TextField
-              variant="outlined"
-              size="small"
-              placeholder="Search..."
-              onChange={(e) => onSearchChange(e.target.value)}
-              sx={{ backgroundColor: 'white', borderRadius: 1 }}
-            />
           )}
           {appBarActions}
         </Toolbar>

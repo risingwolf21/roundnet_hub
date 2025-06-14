@@ -14,8 +14,7 @@ import { PullToRefresh } from 'src/components/pull-to-refresh/PullToRefresh';
 import { useFetchMode } from 'src/hooks/useFetchMode';
 import { useEvents, useUpdateAttendanceMutation } from 'src/tanstack/events';
 import { EventsUserView } from 'src/types/supabaseTypes';
-import { can } from '../../utils/PermissionService';
-import { useAuthentication } from '../auth/AuthContext';
+import { useAuthentication } from '../auth/AuthProvider';
 import { EventItem } from './components/EventItem';
 import { LoadingEventItem } from './components/LoadingEventItem';
 import { CreateOrUpdateEventDialog } from './dialogs/CreateOrUpdateEventDialog';
@@ -23,7 +22,7 @@ import { FilterEventListDialog } from './dialogs/FilterEventListDialog';
 
 
 const EventScreen = () => {
-  const { user } = useAuthentication();
+  const { user, isAuthorized } = useAuthentication();
   const notifications = useNotifications();
   const dialogs = useDialogs();
   const navigate = useNavigate();
@@ -47,9 +46,9 @@ const EventScreen = () => {
   }
 
   if (events.length === 0) {
-    return <Stack spacing={2} direction={"column"} sx={{ height: 300, alignItems: "center", justifyContent: "center" }}>
-      <Typography>Es sieht so aus als ob du keine Events siehst</Typography>
-      <Typography>Versuch einer Gruppe beizutreten um die Events dieser einzusehen</Typography>
+    return <Stack spacing={2} direction={"column"} sx={{ height: 300, m: 2, alignItems: "center", justifyContent: "center" }}>
+      <Typography sx={{ textAlign: "center" }}>Es sieht so aus als ob du keine Events siehst</Typography>
+      <Typography sx={{ textAlign: "center" }}>Versuch einer Gruppe beizutreten um die Events dieser einzusehen</Typography>
       <Button variant='contained' onClick={() => navigate("/groups/list")}>Gruppe beitreten</Button>
     </Stack>
   }
@@ -100,7 +99,7 @@ const EventScreen = () => {
           )}
     </Box>
     {
-      can('select', 'event') && !isLoading && (
+      !isLoading && (
         <Fab
           key="filter"
           sx={{
@@ -119,7 +118,7 @@ const EventScreen = () => {
       )
     }
     {
-      can('insert', 'event') && !isLoading && (
+      isAuthorized("events.edit") && !isLoading && (
         <Fab
           key="insertEvent"
           sx={{
@@ -137,7 +136,7 @@ const EventScreen = () => {
       )
     }
     {
-      can('update', 'event') && !isLoading && (
+      isAuthorized("events.edit") && !isLoading && (
         <Fab
           key="updateEvent"
           sx={{

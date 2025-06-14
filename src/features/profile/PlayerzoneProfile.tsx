@@ -5,17 +5,19 @@ import { DialogProps } from "@toolpad/core/useDialogs";
 import { NotificationsProvider, useNotifications } from "@toolpad/core/useNotifications";
 import React, { useState } from "react";
 import { supabase } from "src/components/services/supabase/supabaseClient";
+import { usePlayer } from "src/tanstack/player_data";
 import rg_small from "../../images/rgx_small.png";
 
 type PlayerzoneProfilePayload = {
-  player_data: Player | null;
   user: User;
 }
 
 const Content = ({ payload, onClose }: DialogProps<PlayerzoneProfilePayload, string | null>) => {
 
+  const { data: player_data } = usePlayer(payload.user)
+
   const notifications = useNotifications();
-  const [rgLink, setRgLink] = useState(payload.player_data?.rg_link ?? "");
+  const [rgLink, setRgLink] = useState(player_data?.rg_link ?? "");
   const [loading, setLoading] = useState(false);
 
   const handleChangeProfilePicture = async () => {
@@ -29,7 +31,7 @@ const Content = ({ payload, onClose }: DialogProps<PlayerzoneProfilePayload, str
 
     await supabase.storage.from('user').remove(filesToRemove);
 
-    await supabase.from('user').update({ avatarUrl: payload.player_data?.rg_avatar_url }).eq('userId', payload.user.userId);
+    await supabase.from('user').update({ avatarUrl: player_data?.rg_avatar_url }).eq('userId', payload.user.userId);
     setLoading(false);
   }
 
@@ -53,7 +55,7 @@ const Content = ({ payload, onClose }: DialogProps<PlayerzoneProfilePayload, str
           .schema("games")
           .from("players")
           .upsert({ player: payload.user.userId, rg_link: rgLink })
-          .eq("player", payload.player_data?.player ?? "");
+          .eq("player", player_data?.player ?? "");
         if (error) {
           notifications.show("Playerzone URL konnte nicht gesetzt werden. " + error.message, { severity: "error" });
         } else {
@@ -66,7 +68,7 @@ const Content = ({ payload, onClose }: DialogProps<PlayerzoneProfilePayload, str
   </AppBar>
     <List sx={{ pl: 2, pr: 2, pb: 10 }}>
       {
-        payload.player_data?.rg_avatar_url && <Container
+        player_data?.rg_avatar_url && <Container
           key={'avatar'}
           sx={{
             display: 'flex',
@@ -79,7 +81,7 @@ const Content = ({ payload, onClose }: DialogProps<PlayerzoneProfilePayload, str
             maxWidth: "unset!important"
           }}>
           <Avatar sx={{ borderRadius: 2, width: '150px', height: '150px' }}>
-            <img src={payload.player_data.rg_avatar_url} alt="logo" width={'150px'} height={'150px'} />
+            <img src={player_data.rg_avatar_url} alt="logo" width={'150px'} height={'150px'} />
           </Avatar>
           <Button
             component="label"
@@ -115,11 +117,11 @@ const Content = ({ payload, onClose }: DialogProps<PlayerzoneProfilePayload, str
       <ListItem
         key={'id'}
         sx={{ '&.MuiListItem-root': { p: 0 } }}
-        secondaryAction={payload.player_data?.rg_id ? <IconButton onClick={() => navigator.clipboard.writeText(payload.player_data?.rg_id ?? "")}><ContentCopy /></IconButton> : undefined}>
+        secondaryAction={player_data?.rg_id ? <IconButton onClick={() => navigator.clipboard.writeText(player_data?.rg_id ?? "")}><ContentCopy /></IconButton> : undefined}>
         <ListItemAvatar sx={{ flexDirection: 'row', display: 'flex', alignItems: 'center' }}>
           <Link sx={{ color: 'rgba(0,0,0,0.54)' }} />
         </ListItemAvatar>
-        <ListItemText primary={payload.player_data?.rg_id} secondary={'Roundnet Germany ID'} />
+        <ListItemText primary={player_data?.rg_id} secondary={'Roundnet Germany ID'} />
       </ListItem>
       <ListItem
         key={'rgx'}
@@ -127,11 +129,11 @@ const Content = ({ payload, onClose }: DialogProps<PlayerzoneProfilePayload, str
         sx={{
           '&.MuiListItem-root': { p: 0 },
         }}
-        secondaryAction={payload.player_data?.pro_status ? <Chip variant='outlined' label="Pro Status" sx={{ mx: 2, borderRadius: 3, background: "black", color: "white" }} /> : undefined}>
+        secondaryAction={player_data?.pro_status ? <Chip variant='outlined' label="Pro Status" sx={{ mx: 2, borderRadius: 3, background: "black", color: "white" }} /> : undefined}>
         <ListItemAvatar>
           <img src={rg_small} alt={'pz logo'} width="25" height="25" />
         </ListItemAvatar>
-        <ListItemText primary={payload.player_data?.rg_index} secondary={'Roundnet Germany Index'} />
+        <ListItemText primary={player_data?.rg_index} secondary={'Roundnet Germany Index'} />
       </ListItem>
     </List >
   </>)

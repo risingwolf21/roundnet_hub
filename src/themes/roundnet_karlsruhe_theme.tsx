@@ -1,6 +1,6 @@
 import { createTheme } from '@mui/material';
 
-export const mainTheme = createTheme({
+export const roundnet_karlsruhe_theme = createTheme({
     components: {
         MuiChip: {
             variants: [
@@ -225,6 +225,7 @@ export const mainTheme = createTheme({
     palette: {
         primary: {
             main: '#005b4a',
+            light: "#66bb6a",
             contrastText: '#ffffff',
         },
         secondary: {
@@ -235,6 +236,6 @@ export const mainTheme = createTheme({
             main: '#ba1a1a',
             contrastText: '#ffffff',
         },
-        mode: 'light',
+        mode: 'light'
     },
 });

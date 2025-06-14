@@ -2,6 +2,7 @@ import {
   AccountCircle,
   Cancel,
   CheckCircle,
+  Downloading,
   Logout,
   NotificationsRounded,
   Password
@@ -19,18 +20,19 @@ import { DialogComponent, useDialogs } from '@toolpad/core/useDialogs';
 import { isSupported } from 'firebase/messaging';
 import React, { useCallback, useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router';
-import Layout from '../../components/Layout';
+import { usePlayer } from 'src/tanstack/player_data';
 import pzLogo from '../../images/pz_logo.svg';
 import { AppDispatch, useAppDispatch } from '../../redux/store';
-import { UserWithRolesAndPermissions } from '../../types/supabaseTypes';
-import { useAuthentication } from '../auth/AuthContext';
+import { UserWithGroups } from '../../types/supabaseTypes';
+import { useAuthentication } from '../auth/AuthProvider';
 import { ContactInformation } from './ContactInformation';
 import { NotificationsDialog } from './NotificationsDialog';
 import { PlayerzoneProfileDialog } from './PlayerzoneProfile';
 import { ProfileImage } from './ProfileImage';
+import Layout from 'src/components/layout/Layout';
 
 type UserScreenProps = {
-  user: UserWithRolesAndPermissions;
+  user: UserWithGroups;
   dispatch: AppDispatch;
   handleSignOut: () => void;
 };
@@ -47,6 +49,7 @@ const UserScreen = ({ user, dispatch, handleSignOut }: UserScreenProps) => {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const [notificationSupported, setNotificationSUpported] = useState(false);
+  const { data: player_data, isLoading } = usePlayer(user)
 
   const openDialog = useCallback(async (dialog: DialogComponent<any, unknown>, payload: any, name: string) => {
     setSearchParams((prev) => {
@@ -65,7 +68,7 @@ const UserScreen = ({ user, dispatch, handleSignOut }: UserScreenProps) => {
     isSupported().then(result => {
       setNotificationSUpported(result);
       if (searchParams.get("dialog") === "playerzone") {
-        openDialog(PlayerzoneProfileDialog, { player_data: user.player_data, user }, "playerzone");
+        openDialog(PlayerzoneProfileDialog, { user }, "playerzone");
       } else if (searchParams.get("dialog") === "contact_information") {
         openDialog(ContactInformation, { user }, "contact_information");
       } else if (searchParams.get("dialog") === "notifications") {
@@ -97,7 +100,7 @@ const UserScreen = ({ user, dispatch, handleSignOut }: UserScreenProps) => {
           <CardActionArea sx={{ px: 1 }}>
             <ListItem
               onClick={() => {
-                navigate("/reset-password")
+                navigate("/auth/reset-password")
               }}>
               <ListItemAvatar sx={{ flexDirection: 'row', display: 'flex', alignItems: 'center' }}>
                 <Password />
@@ -124,9 +127,14 @@ const UserScreen = ({ user, dispatch, handleSignOut }: UserScreenProps) => {
           <CardActionArea sx={{ px: 1 }}>
             <ListItem
               onClick={async () => {
-                await openDialog(PlayerzoneProfileDialog, { player_data: user.player_data, user }, "playerzone");
+                await openDialog(PlayerzoneProfileDialog, { user }, "playerzone");
               }}
-              secondaryAction={user.player_data?.rg_id && user.player_data?.rg_link ? <CheckCircle color='success' /> : <Cancel color="error" />}>
+              secondaryAction={
+                isLoading
+                  ? <Downloading />
+                  : player_data?.rg_id && player_data?.rg_link
+                    ? <CheckCircle color='success' />
+                    : <Cancel color="error" />}>
               <ListItemAvatar sx={{ flexDirection: 'row', display: 'flex', alignItems: 'center' }}>
                 <img src={pzLogo} alt={'pz logo'} width="20" height="20" />
               </ListItemAvatar>

@@ -5,7 +5,7 @@ import { t } from 'i18next';
 import moment from 'moment';
 import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router';
-import Layout from 'src/components/Layout';
+import Layout from 'src/components/layout/Layout';
 import { PullToRefresh } from 'src/components/pull-to-refresh/PullToRefresh';
 import { useMatches } from 'src/tanstack/games';
 import { groupBy } from 'src/utils';
@@ -145,8 +145,8 @@ const GameList = () => {
           <Fab
             key={'addScore'}
             sx={{
-              background: '#66bb6a',
-              color: '#fff',
+              background: 'primary.light',
+              color: 'primary.contrastText',
               position: 'fixed',
               right: '16px',
               bottom: 'calc(16px + env(safe-area-inset-bottom))',

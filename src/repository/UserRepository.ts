@@ -43,6 +43,7 @@ export const SupabaseUserRepository = {
   },
 
   async fetchUser(userId: string): Promise<PostgrestSingleResponse<User>> {
+    console.log(userId)
     return supabase.from('user').select('*').eq('userId', userId).single().throwOnError();
   },
 
@@ -50,6 +51,25 @@ export const SupabaseUserRepository = {
     const { data, error } = await fetchGroups().eq('user', userId);
     if (!data || error) return []
     return data.map(x => ({ ...x.event_group, user_role: x.role } as GroupWithUserRole));
+  },
+
+  async fetchPermissionsForUser(): Promise<string[]> {
+    const { data, error } = await supabase
+      .from('user_permissions')
+      .select('*');
+
+    if (error || !data) return [];
+    return data.map(x => x.permission).filter(x => x !== null);
+  },
+
+
+  async fetchFeaturesForUser(): Promise<string[]> {
+    const { data, error } = await supabase
+      .from('user_features')
+      .select('*');
+
+    if (error || !data) return [];
+    return data.map(x => x.feature).filter(x => x !== null);
   },
 
   async fetchPlayer(userId: string): Promise<PostgrestSingleResponse<Player | null>> {

@@ -1,11 +1,10 @@
 import { QueryData } from '@supabase/supabase-js';
-import { fetchRolePermissionMapping } from 'src/repository/AdminPermissionsRepository';
 import { fetchGroupWithUsers } from 'src/repository/AdminUsersRepository';
 import { fetchFullHistory } from 'src/repository/DrinkRepository';
 import { fetchEvents } from 'src/repository/EventRepository';
 import { fetchMatch, fetchUserMatches } from 'src/repository/GamesRepository';
 import { fetchGroups, fetchSimpleUser, fetchUserWithGroups } from 'src/repository/UserRepository';
-import { GamesTable, PermissionsTable } from 'src/types/supabaseTypes';
+import { GamesTable } from 'src/types/supabaseTypes';
 import { Enums, Tables, TablesInsert, TablesUpdate } from '../../src/types/supabase-generated.types';
 import { fetchChallengeWithGroup } from 'src/repository/ChallengeRepository';
 import { fetchItemHistory, fetchItems } from 'src/repository/KeysRepository';
@@ -27,21 +26,20 @@ declare global {
   type EventComment = Tables<'event_comments'>;
   type Group = Tables<'event_group'>;
   type EventsUserViewNullable = Tables<'events_user_view'>;
+  type EventGroupsViewNullable = Tables<'event_groups_view'>;
   type Item = Tables<'items'>;
   type ItemHistory = Tables<'item_history'>;
   type Payment = Tables<'payments'>;
   type User = Tables<'user'>;
   type Voucher = Tables<'vouchers'>;
-  type RolePermissions = PermissionsTable<'role_permissions'>;
-  type UserRoles = PermissionsTable<'user_roles'>;
-  type AppPermission = PermissionsTable<'app_permissions'>;
-  type AppRole = PermissionsTable<'app_roles'>;
   type Player = GamesTable<'players'>;
   type Match = GamesTable<'match'>;
   type MatchSet = GamesTable<'sets'>;
   type Team = GamesTable<'teams'>;
   type CalendarSettings = Tables<'user_calender_settings'>;
   type PlayerWithSimpleUser = Player & { name: string; userId: string };
+  type Feature = Tables<'features'>;
+  type Permission = Tables<'permissions'>;
 
   type FullItemHolder = QueryData<ReturnType<typeof fetchItems>> extends Array<infer U> ? U : never;
   type FullItemHistory = QueryData<ReturnType<typeof fetchItemHistory>> extends Array<infer U> ? U : never;
@@ -50,8 +48,6 @@ declare global {
   type GroupWithUsers = QueryData<ReturnType<typeof fetchGroupWithUsers>> extends Array<infer U> ? U : never;
   type FullHistory = QueryData<ReturnType<typeof fetchFullHistory>> extends Array<infer U> ? U : never;
   type SimpleUser = QueryData<ReturnType<typeof fetchSimpleUser>> extends Array<infer U> ? U : never;
-  type RolePermissionMapping =
-    QueryData<ReturnType<typeof fetchRolePermissionMapping>> extends Array<infer U> ? U : never;
   type Groups = QueryData<ReturnType<typeof fetchGroups>> extends Array<infer U> ? U : never;
   type FullEvent = QueryData<ReturnType<typeof fetchEvents>> extends Array<infer U> ? U : never;
   type FullUserMatch = QueryData<ReturnType<typeof fetchUserMatches>> extends Array<infer U> ? U : never;
@@ -72,7 +68,6 @@ declare global {
   type EventCommentUpdate = TablesUpdate<'event_comments'>;
   type UserUpdate = TablesUpdate<'user'>;
 
-  type NotificationTags = Enums<'NotificationTags'>;
   type ProductType = Enums<'ProductType'>;
   type EventAttendance = Enums<'EventAttendance'>;
   type EventRecurrence = Enums<'EventRecurrence'>;

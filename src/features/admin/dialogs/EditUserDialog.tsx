@@ -4,9 +4,8 @@ import {
   Edit,
   Email,
   FiberManualRecord,
-  ManageAccounts,
   Password,
-  Verified,
+  Verified
 } from '@mui/icons-material';
 import {
   AppBar,
@@ -29,11 +28,9 @@ import { Box } from '@mui/system';
 import { captureException } from '@sentry/react';
 import { useNotifications } from '@toolpad/core/useNotifications';
 import React, { FormEvent, useEffect, useState } from 'react';
-import { AdminPermissionsRepository } from 'src/repository/AdminPermissionsRepository';
 import { supabase } from '../../../components/services/supabase/supabaseClient';
 import { UserWithGroups } from '../../../types/supabaseTypes';
 import { SlideUpTransition } from '../../../utils';
-import { AppRolesDialog } from './AppRolesDialog';
 import { UserRoleDialog } from './UserRoleDialog';
 
 type EditUserDialogProps = {
@@ -48,27 +45,21 @@ export type UserEdited = {
   displayName: string;
   verified: boolean;
   userId: string;
-  roles: AppRole[];
   role: UserRole;
 };
 
 const EditUserDialog = ({ user, open, handleClose, onUserEditFinished, deleteUser }: EditUserDialogProps) => {
   const notifications = useNotifications();
-  const [editUserRolesOpen, setEditUserRolesOpen] = useState(false);
   const [editRoleOpen, setEditRoleOpen] = useState(false);
   const [verified, setVerified] = useState(user.verified);
   const [password, setPassword] = useState('');
   const [role, setRole] = useState(user.role);
-  const [userRoles, setUserRoles] = useState<AppRole[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
 
   useEffect(() => {
-    setUserRoles([]);
     const loadUserData = async (user: UserWithGroups) => {
       setLoading(true);
       setVerified(user.verified);
-      const roles = await AdminPermissionsRepository.fetchRolesForUser(user.userId);
-      setUserRoles(roles);
     };
 
     loadUserData(user)
@@ -84,7 +75,6 @@ const EditUserDialog = ({ user, open, handleClose, onUserEditFinished, deleteUse
       userId: user.userId,
       displayName: data.get('displayName'),
       verified,
-      roles: userRoles,
       role: role,
     } as UserEdited);
   };
@@ -229,28 +219,6 @@ const EditUserDialog = ({ user, open, handleClose, onUserEditFinished, deleteUse
               </ListItemAvatar>
               <ListItemText primary={role} secondary={'User Role'} />
             </ListItem>
-            <ListItem
-              key={'user_roles'}
-              onClick={() => setEditUserRolesOpen(true)}
-              secondaryAction={
-                <IconButton
-                  disabled={loading}
-                  onClick={(event) => {
-                    setEditUserRolesOpen(true);
-                    event.stopPropagation();
-                  }}
-                >
-                  <Edit />
-                </IconButton>
-              }
-            >
-              <ListItemAvatar>
-                <Avatar>
-                  <ManageAccounts />
-                </Avatar>
-              </ListItemAvatar>
-              <ListItemText primary={userRoles.map((x) => x.name).join(', ')} secondary={'App Roles'} />
-            </ListItem>
             <Divider />
             <List subheader={<ListSubheader>Gruppen</ListSubheader>}>
               {user?.groups &&
@@ -267,15 +235,6 @@ const EditUserDialog = ({ user, open, handleClose, onUserEditFinished, deleteUse
           </List>
         </Box>
       </Box>
-      <AppRolesDialog
-        open={editUserRolesOpen}
-        roles={userRoles}
-        handleClose={() => setEditUserRolesOpen(false)}
-        handleSubmit={(roles: AppRole[]) => {
-          setUserRoles(roles);
-          setEditUserRolesOpen(false);
-        }}
-      />
       <UserRoleDialog
         open={editRoleOpen}
         role={role}

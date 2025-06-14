@@ -6,7 +6,7 @@ import React, { useEffect } from "react";
 import { useNavigate } from "react-router";
 import { PullToRefresh } from "src/components/pull-to-refresh/PullToRefresh";
 import { useGroups, useRequestedUsersPerGroup } from "src/tanstack/groups";
-import { useAuthentication } from "../auth/AuthContext";
+import { useAuthentication } from "../auth/AuthProvider";
 import { JoinGroupButton } from "./components/JoinGroupButton";
 import { CreateOrUpdateGroupDialog } from "./dialogs/CreateOrUpdateGroupDialog";
 import { LoadingGroupListItem } from "./LoadingGroupListItem";
@@ -48,15 +48,16 @@ const PublicGroupList = () => {
                 .map(x => <ListItem
                   key={x.id}
                   divider
-                  onClick={() => {
-                    if (x.user_group_role && x.user_group_role !== "joinRequested")
+                  {...(x.user_group_role && x.user_group_role !== "joinRequested"
+                    && {
+                    onClick: () => {
                       navigate('/groups/' + x.id)
-                  }}
-                  secondaryAction={
-                    !x.user_group_role && (
-                      <JoinGroupButton group={x} user={user} />
-                    )
-                  }
+                    }
+                  })}
+                  {...(!x.user_group_role
+                    && {
+                    secondaryAction: <JoinGroupButton group={x} user={user} />
+                  })}
                 >
                   <ListItemAvatar>
                     <Avatar sx={{ backgroundColor: x.color, borderRadius: 2 }}>
@@ -82,23 +83,26 @@ const PublicGroupList = () => {
         )
     }
     {
-      !error && <Fab
-        sx={{
-          background: '#66bb6a',
-          position: 'fixed',
-          right: '16px',
-          bottom: 'calc(16px + env(safe-area-inset-bottom))',
-        }}
-        onClick={async () => {
-          const result = await dialogs.open(CreateOrUpdateGroupDialog, { user });
-          if (result && result !== "closed") {
-            refetch();
-            notifications.show("Gruppe wurde erfolgreich erstellt.", { severity: "success" });
-          } else if (!result) {
-            notifications.show("Gruppe konnte nicht erstellt werden.", { severity: "error" });
-          }
-        }}
-      >
+      !error && groups
+        .filter(x => x.parent_group === null)
+        .filter(x => x.user_group_role === "user" || x.user_group_role === "admin")
+        .length > 0 && <Fab
+          sx={{
+            background: 'primary.light',
+            position: 'fixed',
+            right: '16px',
+            bottom: 'calc(16px + env(safe-area-inset-bottom))',
+          }}
+          onClick={async () => {
+            const result = await dialogs.open(CreateOrUpdateGroupDialog, { user });
+            if (result && result !== "closed") {
+              refetch();
+              notifications.show("Gruppe wurde erfolgreich erstellt.", { severity: "success" });
+            } else if (!result) {
+              notifications.show("Gruppe konnte nicht erstellt werden.", { severity: "error" });
+            }
+          }}
+        >
         <Add sx={{ color: 'white' }} />
       </Fab>
     }

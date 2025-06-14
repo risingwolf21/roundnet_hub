@@ -22,7 +22,8 @@
     "training": "Training",
     "permissions": "Berechtigungen",
     "supabaseQueries": "Supabase Query Client",
-    "sentryIssues": "Sentry Issues"
+    "sentryIssues": "Sentry Issues",
+    "group_features": "Gruppen Features"
   },
   "cancel": "Abbrechen",
   "confirm": "Bestätigen",

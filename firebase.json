@@ -37,7 +37,7 @@
     },
     {
       "public": "build",
-      "target": "admin-production",
+      "target": "munich-roundnet-production",
       "ignore": [
         "firebase.json",
         "**/.*",

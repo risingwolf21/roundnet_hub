@@ -16,12 +16,12 @@ import { useNotifications } from '@toolpad/core/useNotifications';
 import React, { useCallback, useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router';
 import { useClient } from 'react-supabase';
-import Layout from 'src/components/Layout';
 import { LoadingIndicator } from 'src/components/LoadingIndicator';
 import { supabase } from 'src/components/services/supabase/supabaseClient';
 import { SelectTableDialog } from './dialogs/SelectTableDialog';
 import { EditEntryDialog } from './EditEntryDialog';
 import { ViewEntryDialog } from './ViewEntryDialog';
+import Layout from 'src/components/layout/Layout';
 
 const StyledGridOverlay = styled('div')(({ theme }) => ({
   display: 'flex',

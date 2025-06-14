@@ -1,8 +1,9 @@
 import React from 'react';
 import { LoadingIndicator } from './LoadingIndicator';
-import Layout from './Layout';
+import Layout from './layout/Layout';
 import { Box, AppBar, Toolbar, Typography, Button } from '@mui/material';
 import { supabase } from './services/supabase/supabaseClient';
+import { BRANDING } from 'src/utils';
 
 export const LoadingScreen = () => {
   return (
@@ -16,7 +17,7 @@ export const LoadingScreen = () => {
           }}
         >
           <Typography variant="h6" sx={{ flexGrow: 1 }}>
-            Roundnet Karlsruhe
+            {BRANDING.title}
           </Typography>
         </Toolbar>
       </AppBar>

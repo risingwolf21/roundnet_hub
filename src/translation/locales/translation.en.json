@@ -20,9 +20,10 @@
     "payment": "Payment",
     "postgresClient": "Postgres Client",
     "training": "Training",
-    "permissions": "Berechtigungen",
+    "permissions": "Permissions",
     "supabaseQueries": "Supabase Query Client",
-    "sentryIssues": "Sentry issues"
+    "sentryIssues": "Sentry issues",
+    "group_features": "Group Features"
   },
   "cancel": "Cancel",
   "confirm": "Confirm",
