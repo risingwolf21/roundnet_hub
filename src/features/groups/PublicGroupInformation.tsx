@@ -3,7 +3,7 @@ import { Accordion, AccordionDetails, AccordionSummary, Avatar, Card, CardAction
 import { captureException } from "@sentry/react";
 import { useDialogs, useNotifications } from "@toolpad/core";
 import React, { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router";
+import { Navigate, useNavigate, useParams } from "react-router";
 import { LoadingIndicator } from "src/components/LoadingIndicator";
 import { useGroup, useLeaveGroupMutation, useMakeUserAdminMutation } from "src/tanstack/groups";
 import { useAuthentication } from "../auth/AuthProvider";
@@ -33,11 +33,14 @@ const PublicGroupInformation = () => {
       notifications.show(error.message, { severity: "error" })
   }, [error, notifications])
 
-
   const addUsersMutation = useAddUsersMutation(group);
   const removeUsersMutation = useRemoveUsersMutation(group);
   const leaveGroupMutation = useLeaveGroupMutation();
   const makeUserAdminMutation = useMakeUserAdminMutation();
+
+  if (!isLoading && !group) {
+    return <Navigate to={"/groups/list"} />
+  }
 
   const handleUsersAdded = async (users: User[]) => {
     addUsersMutation.mutate(users, {

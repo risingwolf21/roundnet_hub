@@ -46,9 +46,9 @@ const EventScreen = () => {
   }
 
   if (events.length === 0) {
-    return <Stack spacing={2} direction={"column"} sx={{ height: 300, alignItems: "center", justifyContent: "center" }}>
-      <Typography>Es sieht so aus als ob du keine Events siehst</Typography>
-      <Typography>Versuch einer Gruppe beizutreten um die Events dieser einzusehen</Typography>
+    return <Stack spacing={2} direction={"column"} sx={{ height: 300, m: 2, alignItems: "center", justifyContent: "center" }}>
+      <Typography sx={{ textAlign: "center" }}>Es sieht so aus als ob du keine Events siehst</Typography>
+      <Typography sx={{ textAlign: "center" }}>Versuch einer Gruppe beizutreten um die Events dieser einzusehen</Typography>
       <Button variant='contained' onClick={() => navigate("/groups/list")}>Gruppe beitreten</Button>
     </Stack>
   }

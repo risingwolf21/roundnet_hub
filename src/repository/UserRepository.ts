@@ -43,6 +43,7 @@ export const SupabaseUserRepository = {
   },
 
   async fetchUser(userId: string): Promise<PostgrestSingleResponse<User>> {
+    console.log(userId)
     return supabase.from('user').select('*').eq('userId', userId).single().throwOnError();
   },
 

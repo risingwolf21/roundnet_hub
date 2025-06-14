@@ -8,8 +8,8 @@ export const GroupsRepository = {
   async upsertGroup(group: TablesInsert<'event_group'>): Promise<PostgrestSingleResponse<Tables<'event_group'>>> {
     return supabase.from('event_group').upsert(group).select('*').single().throwOnError();
   },
-  async addUserToGroup(group: string, user: string, role?: "user" | "admin" | "joinRequested"): Promise<PostgrestSingleResponse<Tables<'group_user_mapping'>>> {
-    return supabase.from('group_user_mapping').insert({ group, user, role }).select("*").single().throwOnError();
+  async addUserToGroup(group: string, user: string, role: "user" | "admin" | "joinRequested"): Promise<PostgrestSingleResponse<null>> {
+    return supabase.from('group_user_mapping').insert({ group, user, role }).throwOnError();
   },
   async fetchSingleGroupWithUsers(groupId?: string): Promise<GroupWithUserMappings | null> {
 
@@ -24,7 +24,7 @@ export const GroupsRepository = {
 
     const { data } = await fetchGroupWithUsers()
       .eq('id', groupId)
-      .single()
+      .maybeSingle()
       .throwOnError();
 
     if (!group || !data)

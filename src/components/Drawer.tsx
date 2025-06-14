@@ -280,7 +280,7 @@ const DrawerContent = ({
           />
         </DrawerItem>
         {hasFeature("games") && (
-          <DrawerItem key="matches" selected={tab === 'matches'} onClick={() => handleChange('matches/list')}>
+          <DrawerItem key="matches" selected={tab === 'matches/list'} onClick={() => handleChange('matches/list')}>
             <ListItemAvatar>
               <ListItemIcon>
                 <Scoreboard />
@@ -293,7 +293,7 @@ const DrawerContent = ({
           </DrawerItem>
         )}
         {hasFeature("challenges") && (
-          <DrawerItem key="challenges" selected={tab === 'challenges'} onClick={() => handleChange('challenges')}>
+          <DrawerItem key="challenges" selected={tab === 'challenges/list'} onClick={() => handleChange('challenges')}>
             <ListItemAvatar>
               <ListItemIcon>
                 <EmojiEvents />
