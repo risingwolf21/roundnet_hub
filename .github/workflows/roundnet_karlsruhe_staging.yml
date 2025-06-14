@@ -1,4 +1,4 @@
-name: Staging
+name: Staging Roundnet Karlsruhe
 on:
   push:
     branches:
@@ -10,6 +10,7 @@ env:
 jobs:
   build_and_preview:
     runs-on: ubuntu-latest
+    environment: Roundnet Karlsruhe
     steps:
       - uses: actions/checkout@v2
 
@@ -24,8 +25,8 @@ jobs:
       - name: Build
         run: PUBLIC_URL=https://staging-roundnet-karlsruhe.web.app yarn run build:staging
         env:
-          REACT_APP_SUPABASE_API_KEY: ${{secrets.SUPABASE_STAGING_ANON_KEY}}
-          REACT_APP_SUPABASE_URL: ${{secrets.SUPABASE_STAGING_URL}}
+          REACT_APP_SUPABASE_API_KEY: ${{secrets.STAGING_ANON_KEY}}
+          REACT_APP_SUPABASE_URL: ${{secrets.STAGING_DB_URL}}
 
       - name: Deploying to Staging Environment
         uses: FirebaseExtended/action-hosting-deploy@v0

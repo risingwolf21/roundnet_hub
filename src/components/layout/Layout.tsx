@@ -1,11 +1,11 @@
 import { AccountCircle, ArrowBack, Menu } from '@mui/icons-material';
-import { AppBar, Avatar, Box, IconButton, TextField, Toolbar, Typography } from '@mui/material';
+import { AppBar, Avatar, Box, IconButton, Toolbar, Typography } from '@mui/material';
 import React, { ReactNode, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
+import { BRANDING } from 'src/utils';
 import { useApplication } from '../../features/auth/ApplicationContext';
 import { FirebaseMessaging } from '../../features/notifications/FirebaseMessaging';
 import { Drawer, drawerWidth } from '../Drawer';
-import { BRANDING } from 'src/utils';
 
 type Props = {
   children: ReactNode;
