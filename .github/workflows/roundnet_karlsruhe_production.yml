@@ -21,6 +21,16 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
 
+      - name: Output env vars
+        run: |
+          echo "KEY: $REACT_APP_SUPABASE_API_KEY"
+          echo "URL: $REACT_APP_SUPABASE_URL"
+          echo "PAYPAL: $REACT_APP_PAYPAL_ME_LINK"
+        env:
+          REACT_APP_SUPABASE_API_KEY: ${{ secrets.PRODUCTION_ANON_KEY }}
+          REACT_APP_SUPABASE_URL: ${{ secrets.PRODUCTION_URL }}
+          REACT_APP_PAYPAL_ME_LINK: ${{ secrets.PRODUCTION_PAYPAL_ME_LINK }}
+
       - name: Install dependencies
         run: yarn install
 
