@@ -1,7 +1,7 @@
 {
   "projects": {
     "default": "roundnet-karlsruhe"
-  }, 
+  },
   "targets": {
     "roundnet-karlsruhe": {
       "hosting": {
@@ -11,8 +11,8 @@
         "production": [
           "roundnet-karlsruhe"
         ],
-        "admin-production": [
-          "admin-roundnet-karlsruhe"
+        "munich-roundnet-production": [
+          "munich-roundnet"
         ]
       }
     }
