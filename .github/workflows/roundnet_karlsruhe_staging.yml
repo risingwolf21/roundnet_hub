@@ -27,6 +27,7 @@ jobs:
         env:
           REACT_APP_SUPABASE_API_KEY: ${{secrets.STAGING_ANON_KEY}}
           REACT_APP_SUPABASE_URL: ${{secrets.STAGING_DB_URL}}
+          REACT_APP_PAYPAL_ME_LINK: ${{secrets.STAGING_PAYPAL_ME_LINK}}
 
       - name: Deploying to Staging Environment
         uses: FirebaseExtended/action-hosting-deploy@v0

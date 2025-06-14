@@ -50,6 +50,7 @@ jobs:
         env:
           REACT_APP_SUPABASE_API_KEY: ${{secrets.PRODUCTION_ANON_KEY}}
           REACT_APP_SUPABASE_URL: ${{secrets.PRODUCTION_DB_URL}}
+          REACT_APP_PAYPAL_ME_LINK: ${{secrets.PRODUCTION_PAYPAL_ME_LINK}}
 
       - uses: FirebaseExtended/action-hosting-deploy@v0
         with:
