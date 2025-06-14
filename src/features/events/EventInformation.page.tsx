@@ -7,7 +7,6 @@ import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, useParams } from 'react-router';
 import { queryClient } from 'src/App';
-import Layout from 'src/components/layout/Layout';
 import { PullToRefresh } from 'src/components/pull-to-refresh/PullToRefresh';
 import { useAuthentication } from 'src/features/auth/AuthProvider';
 import EventInformationLoading from 'src/features/events/components/EventInformationLoading';
@@ -23,6 +22,7 @@ import { EventsUserView } from 'src/types/supabaseTypes';
 import { EventTable } from 'types/supabase';
 import EventInformation from './EventInformation';
 import { PlaceType } from './types';
+import Layout from 'src/components/layout/Layout';
 
 const EventInformationProvider = () => {
   const { selectedEventId } = useParams();

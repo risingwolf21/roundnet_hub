@@ -21,7 +21,6 @@ import { isSupported } from 'firebase/messaging';
 import React, { useCallback, useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router';
 import { usePlayer } from 'src/tanstack/player_data';
-import Layout from '../../components/layout/Layout';
 import pzLogo from '../../images/pz_logo.svg';
 import { AppDispatch, useAppDispatch } from '../../redux/store';
 import { UserWithGroups } from '../../types/supabaseTypes';
@@ -30,6 +29,7 @@ import { ContactInformation } from './ContactInformation';
 import { NotificationsDialog } from './NotificationsDialog';
 import { PlayerzoneProfileDialog } from './PlayerzoneProfile';
 import { ProfileImage } from './ProfileImage';
+import Layout from 'src/components/layout/Layout';
 
 type UserScreenProps = {
   user: UserWithGroups;
