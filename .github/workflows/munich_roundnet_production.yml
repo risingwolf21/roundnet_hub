@@ -12,9 +12,6 @@ env:
 jobs:
   build_and_deploy_production:
     runs-on: ubuntu-latest
-    environment:
-      name: 'Munich Roundnet'
-      url: https://munich-roundnet.web.app
     steps:
       - uses: actions/checkout@v2
 
@@ -38,8 +35,8 @@ jobs:
         run: yarn run build:production
         env:
           PUBLIC_URL: 'https://munich-roundnet.web.app'
-          REACT_APP_SUPABASE_API_KEY: ${{secrets.PRODUCTION_ANON_KEY}}
-          REACT_APP_SUPABASE_URL: ${{secrets.PRODUCTION_URL}}
+          REACT_APP_SUPABASE_API_KEY: ${{secrets.MRC_PRODUCTION_ANON_KEY}}
+          REACT_APP_SUPABASE_URL: ${{secrets.MRC_PRODUCTION_URL}}
 
       - uses: FirebaseExtended/action-hosting-deploy@v0
         with:

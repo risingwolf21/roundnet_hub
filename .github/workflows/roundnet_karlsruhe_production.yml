@@ -12,9 +12,6 @@ env:
 jobs:
   build_and_deploy_production:
     runs-on: ubuntu-latest
-    environment:
-      name: 'Roundnet Karlsruhe'
-      url: https://roundnet-karlsruhe.web.app
     steps:
       - uses: actions/checkout@v2
 
@@ -22,16 +19,6 @@ jobs:
         uses: actions/setup-node@v1
         with:
           node-version: ${{ matrix.node-version }}
-
-      - name: Output env vars
-        run: |
-          echo "KEY: $REACT_APP_SUPABASE_API_KEY"
-          echo "URL: $REACT_APP_SUPABASE_URL"
-          echo "PAYPAL: $REACT_APP_PAYPAL_ME_LINK"
-        env:
-          REACT_APP_SUPABASE_API_KEY: ${{ secrets.PRODUCTION_ANON_KEY }}
-          REACT_APP_SUPABASE_URL: ${{ secrets.PRODUCTION_URL }}
-          REACT_APP_PAYPAL_ME_LINK: ${{ secrets.PRODUCTION_PAYPAL_ME_LINK }}
 
       - name: Install dependencies
         run: yarn install
@@ -48,9 +35,9 @@ jobs:
         run: yarn run build:production
         env:
           PUBLIC_URL: 'https://roundnet-karlsruhe.web.app'
-          REACT_APP_SUPABASE_API_KEY: ${{secrets.PRODUCTION_ANON_KEY}}
-          REACT_APP_SUPABASE_URL: ${{secrets.PRODUCTION_URL}}
-          REACT_APP_PAYPAL_ME_LINK: ${{secrets.PRODUCTION_PAYPAL_ME_LINK}}
+          REACT_APP_SUPABASE_API_KEY: ${{secrets.RK_PRODUCTION_ANON_KEY}}
+          REACT_APP_SUPABASE_URL: ${{secrets.RK_PRODUCTION_URL}}
+          REACT_APP_PAYPAL_ME_LINK: ${{secrets.RK_PRODUCTION_PAYPAL_ME_LINK}}
 
       - uses: FirebaseExtended/action-hosting-deploy@v0
         with:

@@ -7,11 +7,10 @@ on:
 jobs:
   run_db_backup:
     runs-on: ubuntu-latest
-    environment: 'Roundnet Karlsruhe'
     permissions:
       contents: write
     env:
-      supabase_prod_db_url: ${{ secrets.PRODUCTION_CONNECTION_STRING }} # For example: postgresql://postgres:[YOUR-PASSWORD]@db.<ref>.supabase.co:5432/postgres
+      supabase_prod_db_url: ${{ secrets.RK_PRODUCTION_CONNECTION_STRING }} # For example: postgresql://postgres:[YOUR-PASSWORD]@db.<ref>.supabase.co:5432/postgres
     steps:
       - uses: actions/checkout@v3
         with:
@@ -40,10 +39,9 @@ jobs:
 
   restore_to_other_db:
     runs-on: ubuntu-latest
-    needs: run_roundnet_karlsruhe_db_backup
-    environment: 'Roundnet Karlsruhe'
+    needs: run_db_backup
     env:
-      supabase_staging_db_url: ${{ secrets.STAGING_CONNECTION_STRING }}
+      supabase_staging_db_url: ${{ secrets.RK_STAGING_CONNECTION_STRING }}
     steps:
       - uses: actions/checkout@v3
 
