@@ -7,7 +7,7 @@ on:
 jobs:
   run_db_backup:
     runs-on: ubuntu-latest
-    environment: Munich Roundnet
+    environment: 'Munich Roundnet'
     permissions:
       contents: write
     env:
@@ -41,7 +41,7 @@ jobs:
   restore_to_other_db:
     runs-on: ubuntu-latest
     needs: run_roundnet_karlsruhe_db_backup
-    environment: Munich Roundnet
+    environment: 'Munich Roundnet'
     env:
       supabase_staging_db_url: ${{ secrets.STAGING_CONNECTION_STRING }}
     steps:
