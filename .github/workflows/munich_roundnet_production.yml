@@ -12,7 +12,9 @@ env:
 jobs:
   build_and_deploy_production:
     runs-on: ubuntu-latest
-    environment: 'Munich Roundnet'
+    environment:
+      name: 'Munich Roundnet'
+      url: https://munich-roundnet.web.app
     steps:
       - uses: actions/checkout@v2
 

@@ -12,7 +12,9 @@ env:
 jobs:
   build_and_deploy_production:
     runs-on: ubuntu-latest
-    environment: 'Roundnet Karlsruhe'
+    environment:
+      name: 'Roundnet Karlsruhe'
+      url: https://roundnet-karlsruhe.web.app
     steps:
       - uses: actions/checkout@v2
 
