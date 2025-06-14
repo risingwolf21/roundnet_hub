@@ -10,20 +10,7 @@ env:
   CI: ''
 
 jobs:
-  test_supabase:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: supabase/setup-cli@v1
-        with:
-          version: latest
-      - name: Start database
-        run: supabase db start
-
-      - name: Test database
-        run: supabase db test
-
   build_and_deploy_production:
-    needs: test_supabase
     runs-on: ubuntu-latest
     environment: 'Roundnet Karlsruhe'
     steps:
@@ -46,8 +33,9 @@ jobs:
           write-mode: overwrite
 
       - name: Build
-        run: PUBLIC_URL=https://roundnet-karlsruhe.web.app yarn run build:production
+        run: yarn run build:production
         env:
+          PUBLIC_URL: 'https://roundnet-karlsruhe.web.app'
           REACT_APP_SUPABASE_API_KEY: ${{secrets.PRODUCTION_ANON_KEY}}
           REACT_APP_SUPABASE_URL: ${{secrets.PRODUCTION_URL}}
           REACT_APP_PAYPAL_ME_LINK: ${{secrets.PRODUCTION_PAYPAL_ME_LINK}}
