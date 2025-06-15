@@ -15,61 +15,17 @@
   <meta content="portrait" name="screen-orientation">
   <meta name="theme-color" content="#000000" />
 
-  <link rel="icon" href="%PUBLIC_URL%/favicon.ico" />
-  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
-  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
-  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
-  <link href="%PUBLIC_URL%/android-chrome-192x192.png" rel="icon" sizes="192x192" type="image/png"/>
+  <link rel="icon" href="/%REACT_APP_WEBSITE_PATH%/favicon.ico" />
+  <link rel="apple-touch-icon" sizes="180x180" href="/%REACT_APP_WEBSITE_PATH%/apple-touch-icon.png" />
+  <link rel="icon" type="image/png" sizes="32x32" href="/%REACT_APP_WEBSITE_PATH%/favicon-32x32.png" />
+  <link rel="icon" type="image/png" sizes="16x16" href="/%REACT_APP_WEBSITE_PATH%/favicon-16x16.png" />
+  <link rel="icon" type="image/png" sizes="192x192" href="/%REACT_APP_WEBSITE_PATH%/android-chrome-192x192.png"  />
+
+  <link rel="manifest" href="%PUBLIC_URL%/%REACT_APP_MANIFEST_JSON%"/>
 
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.0.1/dist/leaflet.css" />
 
-  <title>Roundnet Karlsruhe</title>
-
-  <script>
-    const host = window.location.hostname;
-    const link = document.createElement('link');
-    link.rel = 'manifest';
-    const androidChrome = document.createElement('link');
-    androidChrome.rel = 'icon';
-    androidChrome.sizes = '192x192';
-    androidChrome.type = 'image/png';
-    const appleTouchIcon = document.createElement('link');
-    appleTouchIcon.rel = 'apple-touch-icon';
-    appleTouchIcon.sizes = '180x180';
-    const icon32 = document.createElement('link');
-    icon32.rel = 'icon';
-    icon32.type = 'image/png';
-    icon32.sizes = '32x32';
-    const icon16 = document.createElement('link');
-    icon16.rel = 'icon';
-    icon16.type = 'image/png';
-    icon16.sizes = '16x16';
-    const favicon = document.createElement('link');
-    icon16.rel = 'icon';
-    const description = document.createElement('meta');
-    description.name = 'description'
-
-    if (host === "munich-roundnet.web.app") {
-      link.href = '%PUBLIC_URL%/manifest-munich-roundnet.json';
-      document.title = 'Munich Roundnet Community';
-      description.setAttribute('content', 'Web App für Munich Roundnet Community');
-      appleTouchIcon.href = '/munich-roundnet/apple-touch-icon.png'
-      androidChrome.href = '/munich-roundnet/android-chrome-192x192.png'
-      icon32.href = '/munich-roundnet/favicon-32x32.png'
-      icon16.href = '/munich-roundnet/favicon-16x16.png'
-      favicon.href = '/munich-roundnet/favicon.ico'
-    } else {
-      link.href = '%PUBLIC_URL%/manifest-roundnet-karlsruhe.json';
-      document.title = 'Roundnet Karlsruhe';
-      description.setAttribute('content', 'Web App für Roundnet Karlsruhe');
-      appleTouchIcon.href = '/roundnet-karlsruhe/apple-touch-icon.png'
-      androidChrome.href = '/roundnet-karlsruhe/android-chrome-192x192.png'
-      icon32.href = '/roundnet-karlsruhe/favicon-32x32.png'
-      icon16.href = '/roundnet-karlsruhe/favicon-16x16.png'
-      favicon.href = '/roundnet-karlsruhe/favicon.ico'
-    }
-    document.head.appendChild(link);
-  </script>
+  <title>%REACT_APP_WEBSITE_NAME%</title>
 </head>
 
 <body>
