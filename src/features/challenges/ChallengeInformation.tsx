@@ -125,7 +125,7 @@ const ChallengeInformation = ({ t, challengeId }: { t: TFunction, challengeId: s
           <ChallengeLeaderboard isLoading={isLeaderboardLoading} challenge_points={leaderboard} />
         </TabPanel>
 
-        { isAuthorized("challenges.edit.own-stats") && !challenge?.automated && (
+        { isAuthorized("challenges.stats.write") && !challenge?.automated && (
           <Fab
             sx={{
               background: 'primary.light',
