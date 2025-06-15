@@ -1,11 +1,11 @@
 import { Add } from '@mui/icons-material';
-import { Box, Fab, LinearProgress, List, ListItem, ListItemText, Typography } from '@mui/material';
+import { Box, Fab, LinearProgress, List, ListItem, ListItemText, ListSubheader, Typography } from '@mui/material';
 import { withProfiler } from '@sentry/react';
 import { useDialogs, useNotifications } from '@toolpad/core';
 import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router';
 import { PullToRefresh } from 'src/components/pull-to-refresh/PullToRefresh';
-import { useChallenges } from 'src/tanstack/challenge';
+import { useArchivedChallenges, useChallenges } from 'src/tanstack/challenge';
 import Layout from '../../components/layout/Layout';
 import { useAuthentication } from '../auth/AuthProvider';
 import { CreateChallengeDialog } from './dialogs/CreateChallengeDialog';
@@ -18,6 +18,7 @@ const ChallengeList = () => {
   const { user } = useAuthentication();
 
   const { data: challenges = [], error, isLoading, refetch } = useChallenges();
+  const { data: archived_challenges, refetch: archiveRefetch } = useArchivedChallenges();
 
   useEffect(() => {
     if (error)
@@ -27,20 +28,35 @@ const ChallengeList = () => {
   return (
     <Layout>
       {isLoading && <LinearProgress sx={{ position: 'fixed', top: 56, left: 0, right: 0 }} />}
-      <PullToRefresh onRefresh={() => refetch()}>
+      <PullToRefresh onRefresh={() => {
+        refetch();
+        archiveRefetch();
+      }}>
+        {
+          challenges.length === 0 && archived_challenges?.pages.length === 0 && <Box sx={{ alignItems: 'center', display: 'flex', flexDirection: 'column', pt: 10 }}>
+            <Typography sx={{ fontSize: '30pt', fontWeight: 'bold' }}>🏅</Typography>
+            <Typography sx={{ fontSize: '18pt', fontWeight: 'bold' }}>Keine Challenges gefunden</Typography>
+          </Box>
+        }
         {
           challenges.length > 0
-            ? <List sx={{ width: '100%' }}>
-              {challenges.map((entry: ChallengeWithFullGroup) => (
-                <ListItem divider onClick={() => navigate('/challenges/' + entry.id)}>
-                  <ListItemText primary={entry.name} secondary={entry.description} />
-                </ListItem>
-              ))}
-            </List>
-            : <Box sx={{ alignItems: 'center', display: 'flex', flexDirection: 'column', pt: 10 }}>
-              <Typography sx={{ fontSize: '30pt', fontWeight: 'bold' }}>🏅</Typography>
-              <Typography sx={{ fontSize: '18pt', fontWeight: 'bold' }}>Keine Challenges gefunden</Typography>
-            </Box>
+          && <List sx={{ width: '100%' }} subheader={<ListSubheader>Aktive Challenges</ListSubheader>}>
+            {challenges.map((entry: ChallengeWithFullGroup) => (
+              <ListItem divider onClick={() => navigate('/challenges/' + entry.id)}>
+                <ListItemText primary={entry.name} secondary={entry.description} />
+              </ListItem>
+            ))}
+          </List>
+        }
+        {
+          archived_challenges && archived_challenges.pages.length > 0
+          && <List sx={{ width: '100%' }} subheader={<ListSubheader>Archivierte Challenges</ListSubheader>}>
+            {archived_challenges.pages.flatMap(x => x.data).map((entry: ChallengeWithFullGroup) => (
+              <ListItem divider onClick={() => navigate('/challenges/' + entry.id)}>
+                <ListItemText primary={entry.name} secondary={entry.description} />
+              </ListItem>
+            ))}
+          </List>
         }
       </PullToRefresh>
       <Fab

@@ -70,6 +70,27 @@ export const useChallenges = () => useQuery<ChallengeWithFullGroup[]>({
   }
 });
 
+export const useArchivedChallenges = () => useInfiniteQuery({
+  queryKey: ["challenges", "archived"],
+  queryFn: async ({ pageParam = 0 }: { pageParam?: number }) => {
+    const { data } = await fetchChallengeWithGroup()
+      .not('end_date', 'is', null)
+      .lt('end_date', formatDateToDatabase(new Date()))
+      .order('end_date', { ascending: false })
+      .throwOnError()
+      .returns<ChallengeWithFullGroup[]>();
+
+    const hasMore = (data?.length ?? 0) === 20
+
+    return {
+      data: data ?? [],
+      nextPage: hasMore ? pageParam + 1 : undefined,
+    }
+  },
+  getNextPageParam: (lastPage) => lastPage.nextPage,
+  initialPageParam: 0
+});
+
 export const useChallengeStatsForUser = (challengeId: string, userId: string) => useQuery<ChallengeStats[]>({
   queryKey: ["challenge", challengeId, "stats", userId],
   queryFn: async () => {
