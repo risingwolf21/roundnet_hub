@@ -1,0 +1,76 @@
+name: Backup
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 0 */3 * *' # Runs every day at midnight
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        env:
+          - name: 'Roundnet Karlsruhe'
+            production_connection_string: PRODUCTION_CONNECTION_STRING
+            staging_connection_string: STAGING_CONNECTION_STRING
+            backup_path: 'roundnet-karlsruhe'
+
+          - name: 'Munich Roundnet'
+            production_connection_string: PRODUCTION_CONNECTION_STRING
+            staging_connection_string: STAGING_CONNECTION_STRING
+            backup_path: 'munich-roundnet'
+
+    environment:
+      name: ${{ matrix.env.name }}
+
+    permissions:
+      contents: write
+    env:
+      supabase_prod_db_url: ${{ secrets[matrix.env.production_connection_string] }} # For example: postgresql://postgres:[YOUR-PASSWORD]@db.<ref>.supabase.co:5432/postgres
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          ref: ${{ github.head_ref }}
+      - uses: supabase/setup-cli@v1
+        with:
+          version: latest
+      - name: Full Backup (roles, schema & data)
+        run: supabase db dump --db-url "$supabase_prod_db_url" -f supabase/backup/${{ matrix.env.backup_path }}/full_dump.sql
+      - name: Backup roles
+        run: supabase db dump --db-url "$supabase_prod_db_url" -f supabase/backup/${{ matrix.env.backup_path }}/roles.sql --role-only
+      - name: Backup schema
+        run: supabase db dump --db-url "$supabase_prod_db_url" -f supabase/backup/${{ matrix.env.backup_path }}/schema.sql
+      - name: Backup data
+        run: supabase db dump --db-url "$supabase_prod_db_url" -f supabase/backup/${{ matrix.env.backup_path }}/data.sql --data-only --use-copy
+
+      - uses: stefanzweifel/git-auto-commit-action@v4
+        with:
+          commit_message: "Munich Roundnet Supabase Backup $(date +'%Y-%m-%d')"
+          file_pattern: supabase/backup/${{ matrix.env.backup_path }}/*
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: backup
+          path: supabase/backup/${{ matrix.env.backup_path }}
+
+  restore:
+    runs-on: ubuntu-latest
+    needs: backup
+    env:
+      supabase_staging_db_url: ${{ secrets[matrix.env.staging_connection_string] }}
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: backup
+          path: supabase/${{ matrix.env.backup_path }}/backup
+
+      - name: Install PostgreSQL client
+        run: sudo apt-get install postgresql-client -y
+
+      - name: Wipe staging DB
+        run: psql "$supabase_staging_db_url" -f supabase/backup/${{ matrix.env.backup_path }}/wipe.sql
+
+      - name: Restore to staging DB
+        run: psql "$target_db_url" < supabase/backup/${{ matrix.env.backup_path }}/full_dump.sql
