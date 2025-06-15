@@ -12,6 +12,7 @@ env:
 jobs:
   build_and_deploy_production:
     runs-on: ubuntu-latest
+    environment: 'Roundet Karlsruhe'
     steps:
       - uses: actions/checkout@v2
 
@@ -35,9 +36,9 @@ jobs:
         run: yarn run build:production
         env:
           PUBLIC_URL: 'https://roundnet-karlsruhe.web.app'
-          REACT_APP_SUPABASE_API_KEY: ${{secrets.RK_PRODUCTION_ANON_KEY}}
-          REACT_APP_SUPABASE_URL: ${{vars.RK_PRODUCTION_URL}}
-          REACT_APP_PAYPAL_ME_LINK: ${{vars.RK_PRODUCTION_PAYPAL_ME_LINK}}
+          REACT_APP_SUPABASE_API_KEY: ${{secrets.PRODUCTION_ANON_KEY}}
+          REACT_APP_SUPABASE_URL: ${{vars.PRODUCTION_DB_URL}}
+          REACT_APP_PAYPAL_ME_LINK: ${{vars.PAYPAL_ME_LINK}}
 
       - uses: FirebaseExtended/action-hosting-deploy@v0
         with:

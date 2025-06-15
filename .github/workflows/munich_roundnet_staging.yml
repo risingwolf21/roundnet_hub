@@ -27,7 +27,7 @@ jobs:
         env:
           PUBLIC_URL: 'https://staging-munich-roundnet.web.app'
           REACT_APP_SUPABASE_API_KEY: ${{secrets.STAGING_ANON_KEY}}
-          REACT_APP_SUPABASE_URL: ${{vars.STAGING_URL}}
+          REACT_APP_SUPABASE_URL: ${{vars.STAGING_DB_URL}}
 
       - name: Deploying to Staging Environment
         uses: FirebaseExtended/action-hosting-deploy@v0
