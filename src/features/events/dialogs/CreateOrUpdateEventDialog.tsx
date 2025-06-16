@@ -79,7 +79,7 @@ export const CreateOrUpdateEventDialog = ({ payload: { event, eventGroup, option
 
   const ref = useRef<HTMLFormElement>(null);
 
-  const place = useMemo(() => JSON.parse(editedEvent.place ?? "{}"), [editedEvent])
+  const place = useMemo(() => JSON.parse(!editedEvent.place || editedEvent.place === '' ? "{}" : editedEvent.place), [editedEvent])
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
