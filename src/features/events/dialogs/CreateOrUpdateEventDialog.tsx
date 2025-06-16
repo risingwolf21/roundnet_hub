@@ -361,7 +361,8 @@ export const CreateOrUpdateEventDialog = ({ payload: { event, eventGroup, option
             key={'searchPlaceMap'}
           >
             <ListItemAvatar></ListItemAvatar>
-            <ListItemText>
+            { 
+              place && <ListItemText>
               <Box sx={{ width: '100%', height: '150px' }}>
                 <MapContainer
                   center={[place.lat, place.lon]}
@@ -379,6 +380,7 @@ export const CreateOrUpdateEventDialog = ({ payload: { event, eventGroup, option
                 </MapContainer>
               </Box>
             </ListItemText>
+            }
           </ListItem>
 
           <Divider />
