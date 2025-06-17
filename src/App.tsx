@@ -12,9 +12,16 @@ import { captureException, withScope } from '@sentry/react';
 import { MutationCache, QueryCache, QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AppProvider } from '@toolpad/core/AppProvider';
 import { AuthGate } from './features/auth/AuthGate';
-import { BRANDING } from './utils';
-import { roundnet_karlsruhe_theme } from './themes/roundnet_karlsruhe_theme';
 import { munich_roundnet_theme } from './themes/munich_roundnet_theme';
+import { roundnet_karlsruhe_theme } from './themes/roundnet_karlsruhe_theme';
+import { BRANDING } from './utils';
+
+const themeMap = {
+  "munich-roundnet": munich_roundnet_theme,
+  "roundnet-karlsruhe": roundnet_karlsruhe_theme
+}
+
+const theme = themeMap[process.env.REACT_APP_WEBSITE_PATH as keyof typeof themeMap || 'roundnet-karlsruhe']
 
 export const queryClient = new QueryClient({
   defaultOptions: {
@@ -52,10 +59,6 @@ export const queryClient = new QueryClient({
 });
 
 export const App = () => {
-
-  const theme = window.location.hostname === "munich-roundnet.web.app"
-    ? munich_roundnet_theme
-    : roundnet_karlsruhe_theme;
 
   return <ThemeProvider theme={theme}>
     <LocalizationProvider dateAdapter={AdapterDayjs}>

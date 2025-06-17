@@ -5,17 +5,20 @@ import React, { forwardRef } from 'react';
 import RoundnetKarlsruheLogo from '../images/Karlsruher_Kojoten_Logo.svg';
 import RoundnetMunichLogo from '../images/Roundnet_Munich_Logo.png';
 
+const logoMap = {
+  "roundnet-karlsruhe": RoundnetKarlsruheLogo,
+  "munich-roundnet": RoundnetMunichLogo
+}
+
+const logo = logoMap[process.env.REACT_APP_WEBSITE_PATH as keyof typeof logoMap || 'roundnet-karlsruhe']
+
 export const BRANDING = {
   logo: (<img
-    src={window.location.hostname === "munich-roundnet.web.app"
-      ? RoundnetMunichLogo
-      : RoundnetKarlsruheLogo}
+    src={logo}
     alt="MUI logo"
     style={{ height: 96 }}
   />),
-  title: window.location.hostname === "munich-roundnet.web.app"
-      ? "Munich Roundnet"
-      : "Roundnet Karlsruhe",
+  title: process.env.REACT_APP_WEBSITE_NAME,
 }
 
 export const compareById = (x: any, y: any) => {
