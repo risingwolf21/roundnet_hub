@@ -79,7 +79,7 @@ export const CreateOrUpdateEventDialog = ({ payload: { event, eventGroup, option
 
   const ref = useRef<HTMLFormElement>(null);
 
-  const place = useMemo(() => JSON.parse(editedEvent.place ?? "{}"), [editedEvent])
+  const place = useMemo(() => !editedEvent.place || editedEvent.place === '' ? null : JSON.parse(editedEvent.place), [editedEvent])
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -361,7 +361,8 @@ export const CreateOrUpdateEventDialog = ({ payload: { event, eventGroup, option
             key={'searchPlaceMap'}
           >
             <ListItemAvatar></ListItemAvatar>
-            <ListItemText>
+            { 
+              place && <ListItemText>
               <Box sx={{ width: '100%', height: '150px' }}>
                 <MapContainer
                   center={[place.lat, place.lon]}
@@ -379,6 +380,7 @@ export const CreateOrUpdateEventDialog = ({ payload: { event, eventGroup, option
                 </MapContainer>
               </Box>
             </ListItemText>
+            }
           </ListItem>
 
           <Divider />

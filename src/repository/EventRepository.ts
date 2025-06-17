@@ -168,12 +168,12 @@ export const SupabaseEventRepository = {
     if (fetchMode === "past") {
       query = query
         .lt('startingDateTime', formatDateToDatabase(new Date()))
-        .gt('startingDateTime', formatDateToDatabase(add(new Date(), { weeks: -3 })))
+        .gt('startingDateTime', formatDateToDatabase(add(new Date(), { weeks: -8 })))
         .order('startingDateTime', { ascending: false })
     } else {
       query = query
         .gt('startingDateTime', formatDateToDatabase(startOfDay(new Date())))
-        .lt('startingDateTime', formatDateToDatabase(add(new Date(), { weeks: 3 })))
+        .lt('startingDateTime', formatDateToDatabase(add(new Date(), { weeks: 8 })))
         .order('startingDateTime', { ascending: true })
     }
 
