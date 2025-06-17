@@ -37,6 +37,23 @@ const EventScreen = () => {
 
   const updateAttendance = useUpdateAttendanceMutation(fetchMode);
 
+  const createEventFab = isAuthorized("events.edit") && !isLoading && (
+    <Fab
+      key="insertEvent"
+      sx={{
+        position: 'fixed',
+        right: '88px',
+        bottom: 'max(16px, env(safe-area-inset-bottom))',
+      }}
+      color={'secondary'}
+      onClick={async () => {
+        await dialogs.open(CreateOrUpdateEventDialog, { option: "InsertEvent" })
+      }}
+    >
+      {<AddIcon sx={{ color: 'white' }} />}
+    </Fab>
+  )
+
   if (isLoading) {
     return <List>
       {
@@ -50,6 +67,8 @@ const EventScreen = () => {
       <Typography sx={{ textAlign: "center" }}>Es sieht so aus als ob du keine Events siehst</Typography>
       <Typography sx={{ textAlign: "center" }}>Versuch einer Gruppe beizutreten um die Events dieser einzusehen</Typography>
       <Button variant='contained' onClick={() => navigate("/groups/list")}>Gruppe beitreten</Button>
+
+      {createEventFab}
     </Stack>
   }
 
@@ -117,24 +136,7 @@ const EventScreen = () => {
         </Fab>
       )
     }
-    {
-      isAuthorized("events.edit") && !isLoading && (
-        <Fab
-          key="insertEvent"
-          sx={{
-            position: 'fixed',
-            right: '88px',
-            bottom: 'max(16px, env(safe-area-inset-bottom))',
-          }}
-          color={'secondary'}
-          onClick={async () => {
-            await dialogs.open(CreateOrUpdateEventDialog, { option: "InsertEvent" })
-          }}
-        >
-          {<AddIcon sx={{ color: 'white' }} />}
-        </Fab>
-      )
-    }
+    {createEventFab}
     {
       isAuthorized("events.edit") && !isLoading && (
         <Fab

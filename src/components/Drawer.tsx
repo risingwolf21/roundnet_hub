@@ -145,7 +145,7 @@ const DrawerContent = ({
     <DrawerBox>
       <List>
         {
-          hasFeature("drinks") && hasFeature("events") && hasFeature("items") && <DrawerItem key="homepage" selected={tab === ''} onClick={() => handleChange('')}>
+          (hasFeature("drinks") || hasFeature("events") || hasFeature("items")) && <DrawerItem key="homepage" selected={tab === ''} onClick={() => handleChange('')}>
             <ListItemAvatar>
               <ListItemIcon>
                 <Home />
