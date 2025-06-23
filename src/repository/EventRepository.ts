@@ -3,7 +3,7 @@ import { add, Duration, startOfDay } from 'date-fns';
 import moment from 'moment/moment';
 import { EventTable } from 'types/supabase';
 import { supabase } from '../components/services/supabase/supabaseClient';
-import { TablesInsert, TablesUpdate } from '../types/supabase-generated.types';
+import { Tables, TablesInsert, TablesUpdate } from '../types/supabase-generated.types';
 import { EventsUserView, EventWithGroup, FullComment } from '../types/supabaseTypes';
 import { formatDateToDatabase } from '../utils';
 
@@ -69,13 +69,14 @@ export const SupabaseEventRepository = {
     }));
   },
 
-  async updateEvent(eventId: string, event: TablesUpdate<'events'>): Promise<PostgrestSingleResponse<null>> {
-    return supabase.from('events').update(event).eq('id', eventId).throwOnError();
+  async updateEvent(eventId: string, event: TablesUpdate<'events'>): Promise<PostgrestSingleResponse<Tables<'events'>[]>> {
+    return supabase.from('events').update(event).eq('id', eventId).select("*").throwOnError();
   },
 
-  async insertEvent(event: TablesInsert<'events'>): Promise<PostgrestSingleResponse<null>> {
+  async insertEvent(event: TablesInsert<'events'>): Promise<PostgrestSingleResponse<Tables<'events'>[]>> {
     return supabase.from('events')
       .insert(event)
+      .select("*")
       .throwOnError();
   },
 
