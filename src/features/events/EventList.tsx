@@ -37,7 +37,7 @@ const EventScreen = () => {
 
   const updateAttendance = useUpdateAttendanceMutation(fetchMode);
 
-  const createEventFab = isAuthorized("events.edit") && !isLoading && (
+  const createEventFab = isAuthorized("event.edit") && !isLoading && (
     <Fab
       key="insertEvent"
       sx={{

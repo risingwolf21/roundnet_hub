@@ -34,13 +34,14 @@ import { DialogProps, useDialogs } from '@toolpad/core';
 import { useNotifications } from '@toolpad/core/useNotifications';
 import { format, isAfter, set } from 'date-fns';
 import _ from 'lodash';
-import React, { FormEvent, useMemo, useRef, useState } from 'react';
+import React, { FormEvent, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { MapContainer, Marker, TileLayer, useMap } from 'react-leaflet';
+import { useFetchMode } from 'src/hooks/useFetchMode';
+import { useInsertEventMutation, useUpdateRecurrenceMutation, useUpdateSingleMutation } from 'src/tanstack/events';
 import { dayjsFromDb, formatDateToDatabase } from 'src/utils';
 import { EventTable } from 'types/supabase';
 import { NumberInput } from '../../../components/mui/NumberInput';
-import { SupabaseEventRepository } from '../../../repository/EventRepository';
 import { Enums, TablesInsert, TablesUpdate } from '../../../types/supabase-generated.types';
 import { CreateEventOption, PlaceType } from '../types';
 import SearchPlacesDialog from './SearchPlacesDialog';
@@ -56,11 +57,7 @@ const emptyEvent = {
   maxAttendees: null,
   required_item: null,
   answerDeadline: null,
-  place: JSON.stringify({
-    lat: 49.0226481,
-    lon: 8.416547971872856,
-    name: 'MTV Karlsruhe, Kanalweg 1, 76131 Karlsruhe',
-  })
+  place: null
 } as EventTable;
 
 type CreateEventProps = {
@@ -71,15 +68,19 @@ type CreateEventProps = {
 
 export const CreateOrUpdateEventDialog = ({ payload: { event, eventGroup, option }, open, onClose }: DialogProps<CreateEventProps>) => {
   const notifications = useNotifications();
+  const [fetchMode] = useFetchMode();
   const dialogs = useDialogs();
   const { t } = useTranslation();
   const [editedEvent, setEditedEvent] = useState<EventTable>(event ?? emptyEvent);
   const [selectedGroup, setSelectedGroup] = useState<Group | null>(eventGroup ?? null);
   const [dialogOpen, setDialogOpen] = useState<'group' | 'stopRepeat' | 'repeat' | 'places' | null>(null);
+  const [place, setPlace] = useState<PlaceType | null>(event?.place ? JSON.parse(event.place) as PlaceType : null);
 
   const ref = useRef<HTMLFormElement>(null);
 
-  const place = useMemo(() => !editedEvent.place || editedEvent.place === '' ? null : JSON.parse(editedEvent.place), [editedEvent])
+  const insertEvent = useInsertEventMutation(fetchMode);
+  const updateSingleEvent = useUpdateSingleMutation(fetchMode);
+  const updateRecurrenceEvents = useUpdateRecurrenceMutation(fetchMode);
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -88,51 +89,47 @@ export const CreateOrUpdateEventDialog = ({ payload: { event, eventGroup, option
       if (!editedEvent.meetingDateTime)
         setEditedEvent({ ...editedEvent, meetingDateTime: editedEvent.startingDateTime });
 
-      let event = _.omit(editedEvent, ['fullGroup', 'attendance', 'comments', 'userAttendance', 'attendanceUpdating']) as TablesInsert<"events">;
+      let edited_event = _.omit(editedEvent, ['fullGroup', 'attendance', 'comments', 'userAttendance', 'attendanceUpdating']) as TablesInsert<"events">;
 
-      const changes = _.differenceWith(_.toPairs(event), _.toPairs(_.pick(event ?? {}, Object.keys(event))), _.isEqual);
+      const changes = _.differenceWith(_.toPairs(edited_event), _.toPairs(_.pick(event ?? {}, Object.keys(event ?? {}))), _.isEqual);
       const eventChanges = _.fromPairs(changes) as TablesUpdate<"events">
 
-      if (!event.startingDateTime) throw new Error(t('events.creation.startDateCannotBeNull'));
+      console.log("Event changes", eventChanges)
 
-      if (!event.group) throw new Error(t('events.creation.noGroupSelected'));
+      if (!edited_event.startingDateTime) throw new Error(t('events.creation.startDateCannotBeNull'));
 
-      if (event.answerDeadline && isAfter(event.answerDeadline, event.startingDateTime))
+      if (!edited_event.group) throw new Error(t('events.creation.noGroupSelected'));
+
+      if (edited_event.answerDeadline && isAfter(edited_event.answerDeadline, edited_event.startingDateTime))
         throw new Error(t('events.creation.answerDeadlineAfterStart'));
 
-      if (!event.title || event.title.length < 6) throw new Error(t('events.creation.titleTooShort'));
+      if (!edited_event.title || edited_event.title.length < 6) throw new Error(t('events.creation.titleTooShort'));
 
-      if (!event.description || event.description.length < 1) throw new Error(t('events.creation.descriptionEmpty'));
+      if (!edited_event.description || edited_event.description.length < 1) throw new Error(t('events.creation.descriptionEmpty'));
 
-      if (event.meetingDateTime)
-        if (isAfter(event.meetingDateTime, event.startingDateTime))
+      if (edited_event.meetingDateTime)
+        if (isAfter(edited_event.meetingDateTime, edited_event.startingDateTime))
           throw new Error(t('events.creation.meetingTimeBeforeStartTime'));
 
       if (option === 'InsertEvent') {
-        try {
-          const { error } = await SupabaseEventRepository.insertEvent(eventChanges as TablesInsert<"events">);
-
-          if (error) throw error;
-        } catch {
-          throw new Error("Event konnte nicht erstellt werden")
-        }
+        insertEvent.mutate({ event: eventChanges as TablesInsert<"events"> }, {
+          onError: (error) =>
+            notifications.show("Event konnte nicht erstellt werden: " + error.message, { severity: "error" }),
+          onSuccess: () => onClose()
+        })
       } else if (option === 'UpdateSingle') {
-        const { error } = await SupabaseEventRepository.updateEvent(event.id ?? '', eventChanges);
-
-        if (error) throw error;
+        updateSingleEvent.mutate({ eventChanges, id: edited_event.id ?? '' }, {
+          onError: (error) =>
+            notifications.show("Event konnte nicht aktualisiert werden: " + error.message, { severity: "error" }),
+          onSuccess: () => onClose()
+        })
       } else if (option === 'UpdateRecurrence') {
-        await SupabaseEventRepository.updateEventAndAllRecurrences(
-          eventChanges,
-          editedEvent.key,
-          editedEvent.startingDateTime
-        )
-        //dispatch(onEventsUpdate(result.filter(x => x.data !== null).map(x => x.data)))
-      } else {
-        throw Error(
-          'There was no option provided wether this is a new event, to update only this or every recurring event. Please try again!'
-        );
+        updateRecurrenceEvents.mutate({ eventChanges, key: editedEvent.key, startingDateTime: editedEvent.startingDateTime }, {
+          onError: (error) =>
+            notifications.show("Events konnten nicht aktualisiert werden: " + error.message, { severity: "error" }),
+          onSuccess: () => onClose()
+        })
       }
-      onClose()
     } catch (error: unknown) {
       const message = error instanceof Error ? (error as Error).message : 'Unknown error.';
       notifications.show(message, { severity: "error" })
@@ -212,6 +209,10 @@ export const CreateOrUpdateEventDialog = ({ payload: { event, eventGroup, option
             const result = await dialogs.open(SelectGroupDialog);
             if (result) {
               setSelectedGroup(result);
+              setEditedEvent({
+                ...editedEvent,
+                group: result.id
+              })
             }
           }} key={'group'}>
             <ListItemAvatar>
@@ -361,25 +362,25 @@ export const CreateOrUpdateEventDialog = ({ payload: { event, eventGroup, option
             key={'searchPlaceMap'}
           >
             <ListItemAvatar></ListItemAvatar>
-            { 
+            {
               place && <ListItemText>
-              <Box sx={{ width: '100%', height: '150px' }}>
-                <MapContainer
-                  center={[place.lat, place.lon]}
-                  zoom={15}
-                  dragging={false}
-                  doubleClickZoom={false}
-                  scrollWheelZoom={false}
-                  attributionControl={false}
-                  zoomControl={false}
-                  style={{ width: '100%', height: '150px', borderRadius: '16px', zIndex: -1 }}
-                >
-                  <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-                  <SetViewOnClick place={place} />
-                  <Marker position={[place.lat, place.lon]} />
-                </MapContainer>
-              </Box>
-            </ListItemText>
+                <Box sx={{ width: '100%', height: '150px' }}>
+                  <MapContainer
+                    center={[place.lat, place.lon]}
+                    zoom={15}
+                    dragging={false}
+                    doubleClickZoom={false}
+                    scrollWheelZoom={false}
+                    attributionControl={false}
+                    zoomControl={false}
+                    style={{ width: '100%', height: '150px', borderRadius: '16px' }}
+                  >
+                    <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+                    <SetViewOnClick place={place} />
+                    <Marker position={[place.lat, place.lon]} interactive={false} />
+                  </MapContainer>
+                </Box>
+              </ListItemText>
             }
           </ListItem>
 
@@ -592,6 +593,8 @@ export const CreateOrUpdateEventDialog = ({ payload: { event, eventGroup, option
         open={dialogOpen === 'places'}
         handleClose={() => setDialogOpen(null)}
         placeSelected={(place) => {
+          console.log("Place selected", place)
+          setPlace(place)
           setEditedEvent({
             ...editedEvent,
             place: JSON.stringify({

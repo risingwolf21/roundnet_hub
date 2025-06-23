@@ -20,6 +20,7 @@ import { OpenStreetMapProvider } from 'leaflet-geosearch';
 import { SearchResult } from 'leaflet-geosearch/dist/providers/provider';
 import { toNumber } from 'lodash';
 import React, { useCallback, useEffect, useState } from 'react';
+import { useSearchedPlaces } from 'src/hooks/useSearchedPlaces';
 import { SlideUpTransition } from '../../../utils';
 import { PlaceType, SearchPlacesDialogProps } from '../types';
 
@@ -30,6 +31,7 @@ const SearchPlacesDialog = ({ open, handleClose, placeSelected }: SearchPlacesDi
   const notifications = useNotifications();
   const [userLocation, setUserLocation] = useState<{ latitude: number; longitude: number } | null>(null);
 
+  const [searchedPlacesChache, setSearchedPlacesCache] = useSearchedPlaces();
 
   const getUserLocation = useCallback(() => {
     if (navigator.geolocation) {
@@ -128,11 +130,13 @@ const SearchPlacesDialog = ({ open, handleClose, placeSelected }: SearchPlacesDi
                   const name = address
                     ? `${result.raw.name}, ${address.road} ${address.house_number}, ${address.postcode} ${address.city}`
                     : result.raw.display_name;
-                  placeSelected({
+                  const place = {
                     name,
                     lat: toNumber(result.raw.lat),
                     lon: toNumber(result.raw.lon),
-                  } as PlaceType)
+                  } as PlaceType
+                  setSearchedPlacesCache([...(searchedPlacesChache ?? []), place])
+                  placeSelected(place)
                 }}
               >
                 <ListItemAvatar sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', pr: 2 }}>
@@ -168,6 +172,38 @@ const SearchPlacesDialog = ({ open, handleClose, placeSelected }: SearchPlacesDi
                 />
               </ListItem>
             ))}
+          {
+            (!results || results.length === 0) && searchedPlacesChache?.map((result, index) => <ListItem
+              divider
+              key={index}
+              onClick={() => {
+                placeSelected(result)
+              }}
+            >
+              <ListItemAvatar sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', pr: 2 }}>
+                <Avatar sx={{ width: 30, height: 30, backgroundColor: 'rgba(189, 189, 189, 0.5)' }}>
+                  <Place sx={{ width: 20, height: 20, color: 'rgba(0,0,0,0.8)' }} />
+                </Avatar>
+                {userLocation &&
+                  result.lat &&
+                  result.lon &&
+                  getDistance(
+                    L.latLng(userLocation.latitude, userLocation.longitude),
+                    L.latLng(Number(result.lat), Number(result.lon))
+                  )}
+              </ListItemAvatar>
+              <ListItemText
+                primary={result.name}
+                slotProps={{
+                  primary: {
+                    whiteSpace: 'nowrap',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                  }
+                }}
+              />
+            </ListItem>)
+          }
         </List>
       </Box>
     </Dialog>
