@@ -26,7 +26,7 @@ jobs:
 
           - name: 'Munich Roundnet'
             firebase_target: munich-roundnet-production
-            firebase_project: roundnet-munich
+            firebase_project: roundnet-karlsruhe
             firebase_url: https://staging-munich-roundnet.web.app
             website_path: munich-roundnet
             website_manifest: manifest-munich-roundnet.json
