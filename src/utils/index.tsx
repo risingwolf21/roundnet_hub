@@ -16,7 +16,7 @@ export const BRANDING = {
   logo: (<img
     src={logo}
     alt="MUI logo"
-    style={{ height: 96 }}
+    style={{ height: 96, objectFit: "contain" }}
   />),
   title: process.env.REACT_APP_WEBSITE_NAME,
 }
