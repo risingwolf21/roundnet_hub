@@ -338,7 +338,13 @@ export const useInsertEventMutation = (fetchMode: "past" | "upcoming") => {
 export const useUpdateSingleMutation = (fetchMode: "past" | "upcoming") => {
   return useMutation({
     mutationFn: async ({ eventChanges, id }: { id: string, eventChanges: TablesUpdate<"events"> }) => {
-      const result = await SupabaseEventRepository.updateEvent(id, eventChanges);
+      const result = await supabase
+        .from('events')
+        .update(eventChanges)
+        .eq('id', id)
+        .select()
+        .throwOnError();
+      console.log("updateSingleMutation", result)
       return result.data;
     },
     onMutate: async ({ eventChanges, id }) => {

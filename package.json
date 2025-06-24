@@ -50,8 +50,8 @@
   },
   "scripts": {
     "start": "env-cmd -e main,development react-scripts start",
-    "start:staging": "env-cmd -e main,staging react-scripts start",
-    "start:production": "env-cmd -e main,production react-scripts start",
+    "start:rk:prod": "env-cmd -e main,roundnet-karlsruhe,production react-scripts start",
+    "start:mrc:prod": "env-cmd -e main,munich-roundnet,production react-scripts start",
     "build:staging": "env-cmd -e main,staging react-scripts build",
     "build:production": "env-cmd -e main,production react-scripts build",
     "deploy-functions:production": "npx supabase functions deploy --project-ref PROJECT_REF",

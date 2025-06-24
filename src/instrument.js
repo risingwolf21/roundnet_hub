@@ -28,4 +28,7 @@ Sentry.init({
   ],
   tracesSampleRate: 1.0,
   tracePropagationTargets: ["https://roundnet-karlsruhe.web.app", "https://munich-roundnet.web.app"],
+  ignoreErrors: [
+    "TypeError: Load failed", "TypeError: Failed to fetch"
+  ]
 });

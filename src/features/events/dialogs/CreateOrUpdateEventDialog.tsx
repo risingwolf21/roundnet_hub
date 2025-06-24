@@ -94,7 +94,7 @@ export const CreateOrUpdateEventDialog = ({ payload: { event, eventGroup, option
       const changes = _.differenceWith(_.toPairs(edited_event), _.toPairs(_.pick(event ?? {}, Object.keys(event ?? {}))), _.isEqual);
       const eventChanges = _.fromPairs(changes) as TablesUpdate<"events">
 
-      console.log("Event changes", eventChanges)
+      console.log("Event changes", edited_event.id, eventChanges)
 
       if (!edited_event.startingDateTime) throw new Error(t('events.creation.startDateCannotBeNull'));
 
