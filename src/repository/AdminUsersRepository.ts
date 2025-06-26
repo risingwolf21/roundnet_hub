@@ -51,10 +51,12 @@ export const AdminUsersRepository = {
       .from('user')
       .select('*, groups: group_user_mapping ( group: event_group ( * ))')
       .order('displayName', { ascending: true })
-      .returns<UserWithGroups[]>()
       .throwOnError();
 
-    return result.data ?? [];
+    return result.data?.map(x => ({
+      ...x,
+      groups: x.groups.map((x: any) => x.group) ?? [],
+    })) ?? [];
   },
 
   async addUsersToGroup(group: Group, users: User[]): Promise<Tables<"group_user_mapping">[]> {

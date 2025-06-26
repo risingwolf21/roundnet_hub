@@ -1,6 +1,5 @@
-import { PersonOff } from '@mui/icons-material';
 import SearchIcon from '@mui/icons-material/Search';
-import { Badge, Chip, InputAdornment, LinearProgress, List, TextFieldProps } from '@mui/material';
+import { InputAdornment, LinearProgress, List, TextFieldProps } from '@mui/material';
 import TextField from '@mui/material/TextField';
 import { styled } from '@mui/system';
 import { captureException } from '@sentry/react';
@@ -84,7 +83,6 @@ const AdminUserList = () => {
   const [editUserOpen, setEditUserOpen] = useState(false);
   const [currentUser, setCurrentUser] = useState<UserWithGroups | null>();
   const [searchString, setSearchString] = useState('');
-  const [showNotVerifiedUsers, setShowNotVerifiedUsers] = useState(false);
   const notifications = useNotifications();
 
   const { data: users = [], isLoading } = useAllUsersAsAdmin();
@@ -130,23 +128,6 @@ const AdminUserList = () => {
       />
       {isLoading && <LinearProgress style={{ position: 'fixed', left: 0, right: 0, top: 56 }} />}
 
-      <Badge
-        sx={{ m: 2 }}
-        color="info"
-        badgeContent={
-          users
-            .filter((x) => searchString === '' || x.displayName?.toLowerCase().includes(searchString.toLowerCase()))
-            .filter((x) => !x.verified).length
-        }
-      >
-        <Chip
-          icon={<PersonOff aria-hidden={'false'} />}
-          label="Not verified"
-          onClick={() => setShowNotVerifiedUsers(!showNotVerifiedUsers)}
-          variant={showNotVerifiedUsers ? 'filled' : 'outlined'}
-        />
-      </Badge>
-
       <List sx={{ width: '100%', pb: 'calc(56px + env(safe-area-inset-bottom))' }}>
         {users &&
           users
@@ -154,7 +135,6 @@ const AdminUserList = () => {
               (x: UserWithGroups) =>
                 searchString === '' || x.displayName?.toLowerCase().includes(searchString.toLowerCase())
             )
-            .filter((x) => (showNotVerifiedUsers && !x.verified) || (!showNotVerifiedUsers && x.verified))
             .map((user, index) => (
               <AdminUserItem key={'user' + index} user={user} onEditClick={() => editUser(user)} />
             ))}

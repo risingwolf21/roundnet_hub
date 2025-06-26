@@ -24,10 +24,9 @@ import {
   Toolbar,
   Typography
 } from '@mui/material';
-import { Box } from '@mui/system';
-import { captureException } from '@sentry/react';
+import { Box, Stack } from '@mui/system';
 import { useNotifications } from '@toolpad/core/useNotifications';
-import React, { FormEvent, useEffect, useState } from 'react';
+import React, { FormEvent, useState } from 'react';
 import { supabase } from '../../../components/services/supabase/supabaseClient';
 import { UserWithGroups } from '../../../types/supabaseTypes';
 import { SlideUpTransition } from '../../../utils';
@@ -54,18 +53,6 @@ const EditUserDialog = ({ user, open, handleClose, onUserEditFinished, deleteUse
   const [verified, setVerified] = useState(user.verified);
   const [password, setPassword] = useState('');
   const [role, setRole] = useState(user.role);
-  const [loading, setLoading] = useState<boolean>(false);
-
-  useEffect(() => {
-    const loadUserData = async (user: UserWithGroups) => {
-      setLoading(true);
-      setVerified(user.verified);
-    };
-
-    loadUserData(user)
-      .catch((error) => captureException(error))
-      .finally(() => setLoading(false));
-  }, [user]);
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -105,7 +92,6 @@ const EditUserDialog = ({ user, open, handleClose, onUserEditFinished, deleteUse
               </ListItemAvatar>
               <ListItemText>
                 <TextField
-                  disabled={loading}
                   margin="normal"
                   required
                   fullWidth
@@ -138,9 +124,21 @@ const EditUserDialog = ({ user, open, handleClose, onUserEditFinished, deleteUse
             <ListItem
               key={'password'}
               sx={{ pt: 0, pb: 0 }}
-              secondaryAction={
+            >
+              <ListItemAvatar>
+                <Avatar>
+                  <Password />
+                </Avatar>
+              </ListItemAvatar>
+              <Stack direction={"row"} spacing={1}>
+                <TextField
+                  margin="normal"
+                  fullWidth
+                  label="Passwort ändern"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                />
                 <Button
-                  disabled={loading}
                   onClick={() => {
                     supabase.auth.admin
                       .updateUserById(user.userId, {
@@ -159,32 +157,7 @@ const EditUserDialog = ({ user, open, handleClose, onUserEditFinished, deleteUse
                 >
                   Speichern
                 </Button>
-              }
-            >
-              <ListItemAvatar>
-                <Avatar>
-                  <Password />
-                </Avatar>
-              </ListItemAvatar>
-              <ListItemText
-                primaryTypographyProps={{
-                  style: {
-                    whiteSpace: 'nowrap',
-                    overflow: 'clip',
-                    textOverflow: 'ellipsis',
-                  },
-                }}
-                primary={
-                  <TextField
-                    disabled={loading}
-                    margin="normal"
-                    fullWidth
-                    label="Passwort ändern"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                  />
-                }
-              />
+              </Stack>
             </ListItem>
             <ListItem
               key={'verified'}
@@ -202,7 +175,6 @@ const EditUserDialog = ({ user, open, handleClose, onUserEditFinished, deleteUse
               onClick={() => { }}
               secondaryAction={
                 <IconButton
-                  disabled={loading}
                   onClick={(event) => {
                     setEditRoleOpen(true);
                     event.stopPropagation();

@@ -74,6 +74,7 @@ const ItemHolderScreen = () => {
       return;
     }
     handoverKeyMutation.mutate({ keyHolder: selectedKeyHolder, user: selectedUser }, {
+      onSuccess: () => setSelectedUser(null),
       onError: (error) => {
         captureException(error);
         notifications.show(t('keyHandOverError', { error: error.message }), { severity: 'error' });

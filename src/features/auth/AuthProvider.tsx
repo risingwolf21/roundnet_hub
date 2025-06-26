@@ -1,31 +1,7 @@
+import { jwtDecode } from "jwt-decode";
 import React, { createContext, PropsWithChildren, useContext, useEffect, useState } from "react";
-import { SupabaseUserRepository } from "src/repository/UserRepository";
+import { supabase } from "src/components/services/supabase/supabaseClient";
 import { UserWithGroups } from "src/types/supabaseTypes";
-
-export type Permission =
-  'events:view'
-  | 'events:edit'
-  | 'events:delete'
-  | 'events:insert'
-  | 'events:comments:insert'
-  | 'events:constellations'
-  | 'drinks:order'
-  | 'groups:create:admin'
-  | 'event:attendance:admin'
-  | 'event:attendance:trainer'
-  | 'drinks:history:add'
-  | 'drinks:history:select'
-  | 'drinks:payments:select'
-  | 'payments:admin'
-  | 'drink:admin'
-  | 'user:admin'
-  | 'history:admin'
-  | 'group:admin'
-  | 'permissions:admin'
-  | 'feature:admin'
-  | 'supabase:admin'
-  | 'challenge:points:insert'
-  | 'items:update'
 
 type AuthContextType = {
   user: UserWithGroups;
@@ -53,13 +29,14 @@ export const AuthProvider = ({ children, user, signOut }: AuthProviderProps) => 
 
   useEffect(() => {
     const fetchUserData = async () => {
-      const [features, permissions] = await Promise.all([
-        SupabaseUserRepository.fetchFeaturesForUser(),
-        SupabaseUserRepository.fetchPermissionsForUser()
-      ]);
-
-      setPermissions(permissions);
-      setFeatures(features);
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        const jwt = jwtDecode(session.access_token)
+        //@ts-ignore
+        setPermissions(jwt.user_permissions)
+        //@ts-ignore
+        setFeatures(jwt.user_features)
+      }
     };
 
     fetchUserData();

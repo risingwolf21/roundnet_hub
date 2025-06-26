@@ -40,11 +40,6 @@ const EventScreen = () => {
   const createEventFab = isAuthorized("event.edit") && !isLoading && (
     <Fab
       key="insertEvent"
-      sx={{
-        position: 'fixed',
-        right: '88px',
-        bottom: 'max(16px, env(safe-area-inset-bottom))',
-      }}
       color={'secondary'}
       onClick={async () => {
         await dialogs.open(CreateOrUpdateEventDialog, { option: "InsertEvent" })
@@ -117,42 +112,35 @@ const EventScreen = () => {
           </table>
           )}
     </Box>
-    {
-      !isLoading && (
-        <Fab
-          key="filter"
-          sx={{
-            position: 'fixed',
-            right: '16px',
-            bottom: 'max(16px, env(safe-area-inset-bottom))',
-          }}
-          color={'secondary'}
-          onClick={async () => {
-            const result = await dialogs.open(FilterEventListDialog, { currentFetchMode: fetchMode });
-            setFetchMode(result);
-          }}
-        >
-          {<FilterAlt sx={{ color: 'white' }} />}
-        </Fab>
-      )
-    }
-    {createEventFab}
-    {
-      isAuthorized("events.edit") && !isLoading && (
-        <Fab
-          key="updateEvent"
-          sx={{
-            position: 'fixed',
-            right: '160px',
-            bottom: 'max(16px, env(safe-area-inset-bottom))',
-          }}
-          color={'secondary'}
-          onClick={() => navigate('/training/recurringEvents')}
-        >
-          {<EventRepeat sx={{ color: 'white' }} />}
-        </Fab>
-      )
-    }
+
+    <Stack direction={"row-reverse"} spacing={2} sx={{ position: "fixed", bottom: 'max(16px, env(safe-area-inset-bottom))', right: "16px" }}>
+      {
+        !isLoading && (
+          <Fab
+            key="filter"
+            color={'secondary'}
+            onClick={async () => {
+              const result = await dialogs.open(FilterEventListDialog, { currentFetchMode: fetchMode });
+              setFetchMode(result);
+            }}
+          >
+            {<FilterAlt sx={{ color: 'white' }} />}
+          </Fab>
+        )
+      }
+      {createEventFab}
+      {
+        isAuthorized("event.edit") && !isLoading && (
+          <Fab
+            key="updateEvent"
+            color={'secondary'}
+            onClick={() => navigate('/training/recurringEvents')}
+          >
+            {<EventRepeat sx={{ color: 'white' }} />}
+          </Fab>
+        )
+      }
+    </Stack>
   </PullToRefresh>
   );
 };
