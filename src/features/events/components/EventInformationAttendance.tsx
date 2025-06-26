@@ -86,7 +86,7 @@ const EventInformationAttendance = ({
       )}
 
       {
-        isAuthorized("events.create.constellations") && <EventInformationConstellations attendance={attendance} event={selectedEvent} />
+        isAuthorized("event.create.constellations") && <EventInformationConstellations attendance={attendance} event={selectedEvent} />
       }
 
       <Typography sx={{ fontSize: 16, fontWeight: 'bold', mt: 2 }} color="text.secondary" gutterBottom>
