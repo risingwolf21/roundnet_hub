@@ -11,6 +11,7 @@ env:
 
 jobs:
   setup:
+    name: 'Setup'
     runs-on: ubuntu-latest
     environment:
       name: 'Roundnet Karlsruhe'
@@ -24,6 +25,16 @@ jobs:
 
       - name: Install dependencies
         run: yarn install
+
+      - name: Cache node_modules
+        uses: actions/cache@v3
+        with:
+          path: |
+            node_modules
+            .yarn/cache
+          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-yarn-
 
       - name: Write commit Version to file
         uses: DamianReeves/write-file-action@master
@@ -41,8 +52,13 @@ jobs:
 
       - uses: actions/upload-artifact@v4
         with:
-          name: ready-to-build
-          path: .
+          name: git-commit-version
+          path: ${{github.workspace}}/public/git_commit.txt
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: supabase-generated-types
+          path: ${{github.workspace}}/src/generated/supabase-types.ts
 
   build:
     name: 'Build: ${{matrix.env.name}}'
@@ -74,10 +90,25 @@ jobs:
       url: ${{ matrix.env.firebase_url }}
 
     steps:
+      - name: Restore node_modules cache
+        uses: actions/cache@v3
+        with:
+          path: |
+            node_modules
+            .yarn/cache
+          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-yarn-
+
       - uses: actions/download-artifact@v4
         with:
-          name: ready-to-build
-          path: .
+          name: git-commit-version
+          path: ${{github.workspace}}/public/git_commit.txt
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: supabase-generated-types
+          path: ${{github.workspace}}/src/generated/supabase-types.ts
 
       - name: Build
         run: yarn run build:production
