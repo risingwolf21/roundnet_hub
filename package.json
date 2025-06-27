@@ -60,7 +60,8 @@
     "format": "prettier --write \"src/**/*.{js,jsx,ts,tsx,css,md}\" --config ./.prettierrc.json",
     "knip": "knip",
     "sentry:sourcemaps": "sentry-cli sourcemaps inject --org roundnet-karlsruhe --project roundnet-karlsruhe ./build && sentry-cli sourcemaps upload --org roundnet-karlsruhe --project roundnet-karlsruhe ./build",
-    "generate:supabase-types": "env-cmd -e roundnet-karlsruhe ts-node scripts/generate-types.ts"
+    "generate:supabase-types": "env-cmd -e roundnet-karlsruhe ts-node scripts/generate-types.ts",
+    "generate:supabase-types:production": "ts-node scripts/generate-types.ts"
   },
   "eslintConfig": {
     "extends": [
