@@ -110,12 +110,12 @@ jobs:
       - uses: actions/download-artifact@v4
         with:
           name: git-commit-version
-          path: ${{github.workspace}}/public/git_commit.txt
+          path: ${{github.workspace}}/public
 
       - uses: actions/download-artifact@v4
         with:
           name: supabase-generated-types
-          path: ${{github.workspace}}/src/generated/supabase-types.ts
+          path: ${{github.workspace}}/src/generated
 
       - name: Build
         run: yarn run build:production
