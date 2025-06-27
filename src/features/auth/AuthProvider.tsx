@@ -33,9 +33,9 @@ export const AuthProvider = ({ children, user, signOut }: AuthProviderProps) => 
       if (session) {
         const jwt = jwtDecode(session.access_token)
         //@ts-ignore
-        setPermissions(jwt.user_permissions)
+        setPermissions(jwt.user_permissions ?? [])
         //@ts-ignore
-        setFeatures(jwt.user_features)
+        setFeatures(jwt.user_features ?? [])
       }
     };
 
