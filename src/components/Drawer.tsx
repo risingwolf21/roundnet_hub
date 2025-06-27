@@ -44,6 +44,7 @@ import { useRequestedUsersPerGroup } from 'src/tanstack/groups';
 import { useAllNotifications } from 'src/tanstack/notifications';
 import { HOMEPAGE } from '../constants';
 import { InstallPWA } from './PwaInstallPromp';
+import { Permission, Feature } from "src/generated/supabase-types";
 
 export const drawerWidth = 360;
 
@@ -128,8 +129,8 @@ type DrawerContentProps = {
   version: string;
   request_group_joins: number;
   notification_count: number;
-  hasFeature: (feature: string) => boolean;
-  isAuthorized: (permission: string) => boolean
+  hasFeature: (feature: Feature) => boolean;
+  isAuthorized: (permission: Permission) => boolean
 };
 const DrawerContent = ({
   tab,
@@ -381,7 +382,7 @@ const DrawerContent = ({
                   />
                 </DrawerItem>
               )}
-              {isAuthorized("drink.manage") && (
+              {isAuthorized("drinks.manage") && (
                 <DrawerItem
                   key="updateDrink"
                   selected={tab === 'admin/drinks'}

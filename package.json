@@ -59,7 +59,8 @@
     "gen-types:production": "npx supabase gen types typescript --project-id PROJECT_REF --schema public --schema games --schema permissions > src/types/supabase-generated.types.ts",
     "format": "prettier --write \"src/**/*.{js,jsx,ts,tsx,css,md}\" --config ./.prettierrc.json",
     "knip": "knip",
-    "sentry:sourcemaps": "sentry-cli sourcemaps inject --org roundnet-karlsruhe --project roundnet-karlsruhe ./build && sentry-cli sourcemaps upload --org roundnet-karlsruhe --project roundnet-karlsruhe ./build"
+    "sentry:sourcemaps": "sentry-cli sourcemaps inject --org roundnet-karlsruhe --project roundnet-karlsruhe ./build && sentry-cli sourcemaps upload --org roundnet-karlsruhe --project roundnet-karlsruhe ./build",
+    "generate:supabase-types": "env-cmd -e roundnet-karlsruhe ts-node scripts/generate-types.ts"
   },
   "eslintConfig": {
     "extends": [
@@ -99,7 +100,8 @@
     "@types/lodash": "^4.17.13",
     "knip": "^5.50.5",
     "prettier": "^3.4.2",
-    "supabase": "^2.20.5"
+    "supabase": "^2.20.5",
+    "ts-node": "^10.9.2"
   },
   "overrides": {
     "@supabase/supabase-js": {
