@@ -32,30 +32,32 @@ const ForgotPasswordScreen = () => {
     const formData = new FormData(event.currentTarget);
     const email = formData.get('email')?.toString();
 
-    const { data, error } = await supabase.from("user").select("userId").eq("role", "admin");
+    if (email) {
+      supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: process.env.PUBLIC_URL + "/auth/reset-password"
+      })
+        .then((result) => {
+          if (result.error)
+            notifications.show(result.error.message, { severity: 'error' });
+          else
+            notifications.show('Schau in dein Email Postfach um dein Passwort zu ändern.', { severity: 'success' });
+        })
+        .catch((error) => {
+          notifications.show(error.message, { severity: 'error' });
+        });
+
+    }
+    const { data, error } = await supabase.from("group_user_mapping").select("*, user(*), group(*)").eq("group.name", "Super Admins");
     if (error || !data) {
-      notifications.show(
-        "Fehler beim Senden der Anfrage: " + error.message, { severity: "error" }
-      );
       setLoading(false);
       return;
     }
 
-    const { error: insertError } = await supabase.from("notifications").insert(data.map(x => ({
-      user: x.userId,
+    await supabase.from("notifications").insert(data.map(x => ({
+      user: x.user.userId,
       title: "Password reset request",
-      body: `${email} wants to reset his password.`
+      body: `${email} wants to reset the password.`
     })))
-
-    if (insertError) {
-      notifications.show(
-        "Fehler beim Senden der Anfrage: " + insertError.message, { severity: "error" }
-      );
-      setLoading(false);
-      return;
-    }
-
-    notifications.show("Anfrage erfolgreich versendet!", { severity: "success" })
   };
 
   return <Box
