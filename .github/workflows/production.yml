@@ -121,6 +121,7 @@ jobs:
         run: yarn run build:production
         env:
           PUBLIC_URL: ${{ matrix.env.firebase_url }}
+          REACT_APP_PUBLIC_URL: ${{ matrix.env.firebase_url }}
           REACT_APP_SUPABASE_API_KEY: ${{ secrets[matrix.env.supabase_key_secret] }}
           REACT_APP_SUPABASE_URL: ${{ vars[matrix.env.supabase_url_secret] }}
           REACT_APP_WEBSITE_PATH: ${{ matrix.env.website_path }}

@@ -34,7 +34,7 @@ const ForgotPasswordScreen = () => {
 
     if (email) {
       supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: process.env.PUBLIC_URL + "/auth/reset-password"
+        redirectTo: process.env.REACT_APP_PUBLIC_URL + "/auth/reset-password"
       })
         .then((result) => {
           if (result.error)
