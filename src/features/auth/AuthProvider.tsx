@@ -1,6 +1,5 @@
-import { jwtDecode } from "jwt-decode";
-import React, { createContext, PropsWithChildren, useContext, useEffect, useState } from "react";
-import { supabase } from "src/components/services/supabase/supabaseClient";
+import React, { createContext, PropsWithChildren, useCallback, useContext, useEffect, useState } from "react";
+import { SupabaseUserRepository } from "src/repository/UserRepository";
 import { UserWithGroups } from "src/types/supabaseTypes";
 
 type AuthContextType = {
@@ -10,6 +9,7 @@ type AuthContextType = {
   isAuthorized: (permission: string) => boolean;
   hasFeature: (feature: string) => boolean;
   signOut: () => void;
+  refetchPermissionsAndFeatures: () => void;
 };
 // export the useAuth hook
 export const useAuthentication = () => {
@@ -27,26 +27,25 @@ export const AuthProvider = ({ children, user, signOut }: AuthProviderProps) => 
   const [permissions, setPermissions] = useState<string[]>([]);
   const [features, setFeatures] = useState<string[]>([]);
 
-  useEffect(() => {
-    const fetchUserData = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session) {
-        const jwt = jwtDecode(session.access_token)
-        //@ts-ignore
-        setPermissions(jwt.user_permissions ?? [])
-        //@ts-ignore
-        setFeatures(jwt.user_features ?? [])
-      }
-    };
+  const fetchUserData = useCallback(async () => {
+    const [features, permissions] = await Promise.all([
+      SupabaseUserRepository.fetchFeaturesForUser(),
+      SupabaseUserRepository.fetchPermissionsForUser()
+    ]);
 
+    setPermissions(permissions);
+    setFeatures(features);
+  }, []);
+
+  useEffect(() => {
     fetchUserData();
-  }, [user]);
+  }, [fetchUserData, user]);
 
   const isAuthorized = (perm: string) => permissions.includes(perm);
   const hasFeature = (feature: string) => features.includes(feature);
 
   return (
-    <AuthContext.Provider value={{ user, permissions, features, isAuthorized, hasFeature, signOut }}>
+    <AuthContext.Provider value={{ user, permissions, features, isAuthorized, hasFeature, signOut, refetchPermissionsAndFeatures: fetchUserData }}>
       {children}
     </AuthContext.Provider>
   );

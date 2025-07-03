@@ -12,7 +12,7 @@ import { CreateOrUpdateGroupDialog } from "./dialogs/CreateOrUpdateGroupDialog";
 import { LoadingGroupListItem } from "./LoadingGroupListItem";
 
 const PublicGroupList = () => {
-  const { user } = useAuthentication();
+  const { user, refetchPermissionsAndFeatures } = useAuthentication();
   const navigate = useNavigate();
   const notifications = useNotifications();
   const dialogs = useDialogs();
@@ -33,7 +33,10 @@ const PublicGroupList = () => {
     </List>
   }
 
-  return <PullToRefresh onRefresh={() => refetch()}>
+  return <PullToRefresh onRefresh={() => {
+    refetch();
+    refetchPermissionsAndFeatures();
+  }}>
     {
       groups
         .filter(x => x.parent_group === null)
