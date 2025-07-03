@@ -72,6 +72,28 @@ npx supabase gen types typescript --project-id vsuhzabcrnmrljzecxee > src/types/
 npx supabase gen types typescript --project-id PROJECT_REF > src/types/supabase-generated.types.ts
 ```
 
+### Backup
+
+```sh
+docker run -it --name ubuntu ubuntu:latest
+
+apt update
+apt install postgresql-client
+
+// Dump schema only without any row data
+pg_dump --schema-only postgresql://postgres.[DB-ID]:[YOUR-PASSWORD]@aws-0-eu-central-1.pooler.supabase.com:6543/postgres > dump.sql
+
+// Delete everything from database
+psql postgresql://postgres.[DB-ID]:[YOUR-PASSWORD]@aws-0-eu-central-1.pooler.supabase.com:6543/postgres -f wipe.sql
+
+// Upload dump to database
+psql postgresql://postgres.[DB-ID]:[YOUR-PASSWORD]@aws-0-eu-central-1.pooler.supabase.com:6543/postgres < dump.sql
+
+// Upload features and permissions to database
+psql postgresql://postgres.[DB-ID]:[YOUR-PASSWORD]@aws-0-eu-central-1.pooler.supabase.com:6543/postgres < features_rows.sql
+psql postgresql://postgres.[DB-ID]:[YOUR-PASSWORD]@aws-0-eu-central-1.pooler.supabase.com:6543/postgres < permissions_rows.sql
+```
+
 ### Migrations
 
 ```

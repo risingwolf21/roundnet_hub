@@ -50,6 +50,7 @@ export const AuthGate = () => {
       captureException(error);
     } finally {
       await queryClient.invalidateQueries();
+      queryClient.removeQueries();
     }
   };
 
