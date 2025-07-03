@@ -16,6 +16,7 @@ import { useAddUsersMutation } from "./query/addUsersMutation";
 import { useRemoveUsersMutation } from "./query/removeUsersMutation";
 import { PublicGroupPermissions } from "./components/PublicGroupPermissions";
 import { PublicGroupfeatures } from "./components/PublicGroupFeatures";
+import { PullToRefresh } from "src/components/pull-to-refresh/PullToRefresh";
 
 const PublicGroupInformation = () => {
 
@@ -69,7 +70,7 @@ const PublicGroupInformation = () => {
     });
   };
 
-  return <>
+  return <PullToRefresh onRefresh={refetch}>
     <List sx={{ pb: 'calc(64px + env(safe-area-inset-bottom))' }}>
       <LoadingIndicator loading={isLoading} />
       <Typography pl={2} variant="h6" fontWeight="bold">
@@ -318,7 +319,7 @@ const PublicGroupInformation = () => {
         <Edit sx={{ color: 'white' }} />
       </Fab>
     }
-  </>
+  </PullToRefresh>
 }
 
 export default PublicGroupInformation
