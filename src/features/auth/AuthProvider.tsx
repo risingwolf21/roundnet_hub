@@ -1,4 +1,5 @@
 import React, { createContext, PropsWithChildren, useCallback, useContext, useEffect, useState } from "react";
+import { supabase } from "src/components/services/supabase/supabaseClient";
 import { SupabaseUserRepository } from "src/repository/UserRepository";
 import { UserWithGroups } from "src/types/supabaseTypes";
 
@@ -39,6 +40,27 @@ export const AuthProvider = ({ children, user, signOut }: AuthProviderProps) => 
 
   useEffect(() => {
     fetchUserData();
+
+    const subscription = supabase
+      .channel('table-db-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: "group_user_mapping",
+          filter: `user=eq.${user.userId}`
+        },
+        (payload) => {
+          fetchUserData();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      subscription.unsubscribe();
+    }
+
   }, [fetchUserData, user]);
 
   const isAuthorized = (perm: string) => permissions.includes(perm);
