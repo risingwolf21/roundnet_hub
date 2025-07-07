@@ -13,6 +13,8 @@ import { createHandlerBoundToURL, precacheAndRoute } from 'workbox-precaching';
 import { registerRoute } from 'workbox-routing';
 import { CacheFirst } from 'workbox-strategies';
 import { CacheableResponsePlugin } from 'workbox-cacheable-response';
+import ReactGA from 'react-ga4';
+
 
 // Scripts for firebase and firebase messaging
 // eslint-disable-next-line no-undef
@@ -123,11 +125,12 @@ firebase.initializeApp(firebaseConfig);
 const messaging = firebase.messaging();
 
 messaging.onBackgroundMessage(payload => {
+  ReactGA.event("notification_recieved")
   const notificationTitle = payload.data.title;
   self.registration.showNotification(notificationTitle, {
     body: payload.data.body,
-    icon: self.location.origin + "/android-chrome-192x192.png",
-    badge: self.location.origin + "/badge.png",
+    icon: self.location.origin + "/" + process.env.REACT_APP_WEBSITE_PATH + "/android-chrome-192x192.png",
+    badge: self.location.origin + "/" + process.env.REACT_APP_WEBSITE_PATH + "/badge.png",
     tag: payload.data.id,
     renotify: true,
     data: {
@@ -139,6 +142,9 @@ messaging.onBackgroundMessage(payload => {
 // optional: notificationclick-Handler, wie du ihn hast
 self.addEventListener('notificationclick', (event) => {
   const notificationData = event.notification.data;
+  ReactGA.event("notification_clicked", {
+    notificationData
+  });
   event.notification.close();
   if (notificationData?.url) {
     event.waitUntil(
