@@ -20,31 +20,28 @@ import { DialogComponent, useDialogs } from '@toolpad/core/useDialogs';
 import { isSupported } from 'firebase/messaging';
 import React, { useCallback, useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router';
+import Layout from 'src/components/layout/Layout';
 import { usePlayer } from 'src/tanstack/player_data';
 import pzLogo from '../../images/pz_logo.svg';
-import { AppDispatch, useAppDispatch } from '../../redux/store';
 import { UserWithGroups } from '../../types/supabaseTypes';
 import { useAuthentication } from '../auth/AuthProvider';
 import { ContactInformation } from './ContactInformation';
 import { NotificationsDialog } from './NotificationsDialog';
 import { PlayerzoneProfileDialog } from './PlayerzoneProfile';
 import { ProfileImage } from './ProfileImage';
-import Layout from 'src/components/layout/Layout';
 
 type UserScreenProps = {
   user: UserWithGroups;
-  dispatch: AppDispatch;
   handleSignOut: () => void;
 };
 
 const UserScreenProvider = () => {
   const { user, signOut } = useAuthentication();
-  const dispatch = useAppDispatch();
 
-  return <UserScreen user={user} dispatch={dispatch} handleSignOut={signOut} />;
+  return <UserScreen user={user} handleSignOut={signOut} />;
 };
 
-const UserScreen = ({ user, dispatch, handleSignOut }: UserScreenProps) => {
+const UserScreen = ({ user, handleSignOut }: UserScreenProps) => {
   const dialogs = useDialogs();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -72,10 +69,10 @@ const UserScreen = ({ user, dispatch, handleSignOut }: UserScreenProps) => {
       } else if (searchParams.get("dialog") === "contact_information") {
         openDialog(ContactInformation, { user }, "contact_information");
       } else if (searchParams.get("dialog") === "notifications") {
-        openDialog(NotificationsDialog, { user, dispatch, notificationSupported: result }, "notifications");
+        openDialog(NotificationsDialog, { user, notificationSupported: result }, "notifications");
       }
     });
-  }, [dispatch, openDialog, searchParams, user]);
+  }, [openDialog, searchParams, user]);
 
 
   return (
@@ -113,7 +110,7 @@ const UserScreen = ({ user, dispatch, handleSignOut }: UserScreenProps) => {
           <CardActionArea sx={{ px: 1 }}>
             <ListItem
               onClick={async () => {
-                await openDialog(NotificationsDialog, { user, dispatch, notificationSupported }, "notifications");
+                await openDialog(NotificationsDialog, { user, notificationSupported }, "notifications");
               }}
               secondaryAction={notificationSupported && Notification.permission === 'granted' ? <CheckCircle color='success' /> : <Cancel color="error" />}>
               <ListItemAvatar sx={{ flexDirection: 'row', display: 'flex', alignItems: 'center' }}>

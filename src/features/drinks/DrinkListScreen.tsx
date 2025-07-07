@@ -4,23 +4,21 @@ import { Checkbox, CircularProgress, Fab, List, ListItem, ListItemAvatar, ListIt
 import { captureException } from '@sentry/react';
 import { useNotifications } from '@toolpad/core/useNotifications';
 import React, { useEffect, useState } from 'react';
-import { AlertMessage } from 'src/components/AlertSnackbar';
+import { useDrinks } from 'src/tanstack/drinks';
 import { DrinkCounter } from 'src/types/supabaseTypes';
 import { nameOfProductType } from 'src/utils';
 import { SwipeableDialog } from '../../components/SwipeableDialog';
 import { SupabaseDrinkRepository } from '../../repository/DrinkRepository';
+import { useAuthentication } from '../auth/AuthProvider';
 import DrinkList from './components/DrinkList';
 import { LoadingDrinkItem } from './components/LoadingDrinkItem';
 import VoucherCard from './components/Voucher';
-import { useDrinks } from 'src/tanstack/drinks';
-import { useAuthentication } from '../auth/AuthProvider';
 
-const SUCCESS_MESSAGE_INFO: AlertMessage = { message: 'Getränke erfolgreich gebucht!', severity: 'success' };
 
 const DrinkListScreen = () => {
 
   const { data: drinks = [], error, isLoading } = useDrinks();
-  const {isAuthorized} = useAuthentication();
+  const { isAuthorized } = useAuthentication();
 
   const notifications = useNotifications();
   const [addedDrinks, setAddedDrinks] = useState<DrinkCounter[]>([]);
@@ -35,7 +33,7 @@ const DrinkListScreen = () => {
     }
   }, [error, notifications]);
 
-  const confirmDrinksDialog = (message: AlertMessage) => {
+  const confirmDrinksDialog = (message: { message: string, severity: "error" | "success" | "info" | "warning" | undefined }) => {
     notifications.show(message.message, { severity: message.severity });
   };
 
@@ -52,7 +50,7 @@ const DrinkListScreen = () => {
     SupabaseDrinkRepository.insertHistoryItems(Object.values(addedDrinks))
       .then(() => {
         setAddedDrinks([]);
-        confirmDrinksDialog(SUCCESS_MESSAGE_INFO);
+        confirmDrinksDialog({ message: 'Getränke erfolgreich gebucht!', severity: 'success' });
       })
       .catch((error) => {
         captureException(error);
@@ -102,7 +100,7 @@ const DrinkListScreen = () => {
       addedDrinks={addedDrinks}
       visibleTypes={visibleTypes}
     />
-    {Object.values(addedDrinks).length > 0  && isAuthorized("drinks.purchase") ? (
+    {Object.values(addedDrinks).length > 0 && isAuthorized("drinks.purchase") ? (
       <Fab
         sx={{
           position: 'fixed',

@@ -1,7 +1,5 @@
-import { AppDispatch } from 'src/redux/store';
 
 export type DrinkListScreenProps = {
-  dispatch: AppDispatch;
   user: User;
   drinks: Drink[];
   drinksLoading: boolean;

@@ -4,7 +4,6 @@ import { DialogProps } from "@toolpad/core/useDialogs";
 import { useNotifications } from "@toolpad/core/useNotifications";
 import React, { PropsWithChildren } from "react";
 import { PullToRefresh } from "src/components/pull-to-refresh/PullToRefresh";
-import { AppDispatch } from "src/redux/store";
 import { useAddNotificationTag, useNotificationTags, useRemoveNotificationTag } from "src/tanstack/notifications";
 import { UserWithGroups } from "src/types/supabaseTypes";
 import { BRANDING } from "src/utils";
@@ -43,7 +42,6 @@ export const isNotificationSupported = () =>
   'Notification' in window && 'serviceWorker' in navigator && 'PushManager' in window;
 
 type NotificationsDialogPayload = {
-  dispatch: AppDispatch;
   user: UserWithGroups;
   notificationSupported: boolean
 }

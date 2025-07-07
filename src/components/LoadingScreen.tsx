@@ -1,9 +1,7 @@
+import { AppBar, Box, Toolbar, Typography } from '@mui/material';
 import React from 'react';
-import { LoadingIndicator } from './LoadingIndicator';
-import Layout from './layout/Layout';
-import { Box, AppBar, Toolbar, Typography, Button } from '@mui/material';
-import { supabase } from './services/supabase/supabaseClient';
 import { BRANDING } from 'src/utils';
+import { LoadingIndicator } from './LoadingIndicator';
 
 export const LoadingScreen = () => {
   return (

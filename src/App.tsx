@@ -3,10 +3,8 @@ import { ThemeProvider } from '@mui/material';
 import { LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import React from 'react';
-import { Provider } from 'react-redux';
 import { Provider as SupabaseProvider } from 'react-supabase';
 import { supabase } from './components/services/supabase/supabaseClient';
-import store from './redux/store';
 //@ts-ignore
 import { captureException, withScope } from '@sentry/react';
 import { MutationCache, QueryCache, QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -64,11 +62,9 @@ export const App = () => {
     <LocalizationProvider dateAdapter={AdapterDayjs}>
       <QueryClientProvider client={queryClient}>
         <AppProvider branding={BRANDING} theme={theme}>
-          <Provider store={store}>
-            <SupabaseProvider value={supabase}>
-              <AuthGate />
-            </SupabaseProvider>
-          </Provider>
+          <SupabaseProvider value={supabase}>
+            <AuthGate />
+          </SupabaseProvider>
         </AppProvider>
       </QueryClientProvider>
     </LocalizationProvider>

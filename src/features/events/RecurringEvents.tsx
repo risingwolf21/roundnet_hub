@@ -41,7 +41,6 @@ import { format } from 'date-fns';
 import React from 'react';
 import { PullToRefresh } from 'src/components/pull-to-refresh/PullToRefresh';
 import { SupabaseEventRepository } from 'src/repository/EventRepository';
-import { AlertMessage } from '../../components/AlertSnackbar';
 import Layout from '../../components/layout/Layout';
 import { EventWithGroup } from '../../types/supabaseTypes';
 import { nameOfRecurrence } from '../../utils';
@@ -79,11 +78,10 @@ const ExpandMore = styled((props: ExpandMoreProps) => {
 type RecurringEventsProps = {
   recurringEvents: EventWithGroup[];
   loading: boolean;
-  error: AlertMessage | null;
 };
 
 const RecurringEventsProvider = () => {
-  const { data: recurringEvents = [], isLoading, error, refetch } = useQuery({
+  const { data: recurringEvents = [], isLoading, refetch } = useQuery({
     queryKey: ["events", "recurring"],
     queryFn: () => SupabaseEventRepository.fetchRecurringEvents()
   })
@@ -93,13 +91,12 @@ const RecurringEventsProvider = () => {
       <RecurringEvents
         recurringEvents={recurringEvents}
         loading={isLoading}
-        error={error ? { message: error.message, severity: 'error' } : null}
       />
     </PullToRefresh>
   </Layout>
 };
 
-const RecurringEvents = ({ recurringEvents, loading, error }: RecurringEventsProps) => {
+const RecurringEvents = ({ recurringEvents, loading }: RecurringEventsProps) => {
   const dialogs = useDialogs();
   const [expanded, setExpanded] = React.useState(-1);
 
