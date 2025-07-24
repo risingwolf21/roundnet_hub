@@ -23,6 +23,7 @@ jobs:
             website_manifest: manifest-roundnet-karlsruhe.json
             supabase_url_secret: STAGING_DB_URL
             supabase_key_secret: STAGING_ANON_KEY
+            openweather_api_key: OPENWEATHER_API_KEY
 
           - name: 'Munich Roundnet'
             firebase_target: munich-roundnet-production
@@ -32,6 +33,7 @@ jobs:
             website_manifest: manifest-munich-roundnet.json
             supabase_url_secret: STAGING_DB_URL
             supabase_key_secret: STAGING_ANON_KEY
+            openweather_api_key: OPENWEATHER_API_KEY
 
     environment:
       name: ${{ matrix.env.name }}
@@ -60,11 +62,13 @@ jobs:
         run: yarn run build:staging
         env:
           PUBLIC_URL: ${{ matrix.env.firebase_url }}
+          REACT_APP_PUBLIC_URL: ${{ matrix.env.firebase_url }}
           REACT_APP_SUPABASE_API_KEY: ${{ secrets[matrix.env.supabase_key_secret] }}
           REACT_APP_SUPABASE_URL: ${{ vars[matrix.env.supabase_url_secret] }}
           REACT_APP_WEBSITE_PATH: ${{ matrix.env.website_path }}
           REACT_APP_MANIFEST_JSON: ${{ matrix.env.website_manifest }}
           REACT_APP_WEBSITE_NAME: ${{ matrix.env.name }}
+          REACT_APP_OPENWEATHER_API_KEY: ${{secrets[matrix.env.openweather_api_key]}}
 
       - uses: FirebaseExtended/action-hosting-deploy@v0
         with:
