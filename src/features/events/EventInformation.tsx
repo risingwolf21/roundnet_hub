@@ -2,6 +2,7 @@ import {
   Box,
   Divider,
   List,
+  Stack,
   Typography
 } from '@mui/material';
 import { withProfiler } from '@sentry/react';
@@ -15,6 +16,8 @@ import EventInformationComments from './components/EventInformationComments';
 import EventInformationGames from './components/EventInformationGames';
 import EventMapPreview from './components/EventMapPreview';
 import { PlaceType } from './types';
+import EventWeatherForecast from './components/EventWeatherForecast';
+import { formatDateFromDatabase } from 'src/utils';
 
 
 type EventInformationProps = {
@@ -37,10 +40,15 @@ const EventInformation = ({
 
   return <List sx={{ p: 0, pb: "calc(16px + env(safe-area-inset-bottom))" }}>
     {selectedEventPlace && <EventMapPreview place={selectedEventPlace} />}
-    <Box sx={{ px: 2 }}>
+    <Stack sx={{ px: 2, pt: 1 }} spacing={1} direction={"column"}>
       <EventAlerts event={event} t={t} />
       <EventDateInformation event={event} t={t} />
-    </Box>
+      {
+        selectedEventPlace && <>
+          <EventWeatherForecast place={selectedEventPlace} date={formatDateFromDatabase(event?.startingDateTime)} />
+        </>
+      }
+    </Stack>
     <Box sx={{ px: 2 }}>
       <Typography sx={{ fontSize: 16, fontWeight: 'bold' }} color="text.secondary" gutterBottom>
         Beschreibung

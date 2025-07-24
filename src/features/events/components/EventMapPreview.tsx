@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Box } from '@mui/material';
 import { MapContainer, Marker, TileLayer } from 'react-leaflet';
 import { PlaceType } from '../types';
@@ -7,8 +7,9 @@ type Props = {
   place: PlaceType;
 };
 
-const EventMapPreview = ({ place }: Props) => (
-  <Box sx={{ p: 0, width: '100%', maxHeight: '10%' }}>
+const EventMapPreview = ({ place }: Props) => {
+
+  return <Box sx={{ p: 0, width: '100%', maxHeight: '10%' }}>
     <Box
       component="button"
       onClick={() => {
@@ -40,6 +41,6 @@ const EventMapPreview = ({ place }: Props) => (
       <Marker position={[place.lat, place.lon]} interactive={false} />
     </MapContainer>
   </Box>
-);
+}
 
 export default EventMapPreview;

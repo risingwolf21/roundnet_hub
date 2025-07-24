@@ -1,4 +1,5 @@
-import { ListItemText } from '@mui/material';
+import { CalendarMonth } from '@mui/icons-material';
+import { ListItem, ListItemAvatar, ListItemText } from '@mui/material';
 import { TFunction } from 'i18next';
 import React from 'react';
 import { EventsUserView } from 'src/types/supabaseTypes';
@@ -20,19 +21,21 @@ const EventDateInformation = ({ event, t }: Props) => {
       startTime: new Date(startingDateTime),
     });
 
-  if (meetingDateTime) {
-    return (
-      <ListItemText
-        sx={{ m: 0, mt: 2 }}
-        primary={t('events.information.meetTime', {
-          meetTime: new Date(meetingDateTime),
-        })}
-        secondary={startTimeTranslation}
-      />
-    );
-  }
-
-  return <ListItemText sx={{ m: 0, mt: 2 }} primary={startTimeTranslation} />;
+  return <ListItem sx={{ py: 0, '&.MuiListItem-root': { paddingLeft: 0 } }}>
+    <ListItemAvatar sx={{ justifyContent: 'left', alignItems: 'center', display: 'flex', minWidth: "40px" }}>
+      <CalendarMonth />
+    </ListItemAvatar>
+    {
+      meetingDateTime
+        ? <ListItemText
+          primary={t('events.information.meetTime', {
+            meetTime: new Date(meetingDateTime),
+          })}
+          secondary={startTimeTranslation}
+        />
+        : <ListItemText primary={startTimeTranslation} />
+    }
+  </ListItem>
 };
 
 export default EventDateInformation;
