@@ -1,5 +1,6 @@
 import {
   Box,
+  Container,
   Divider,
   List,
   Stack,
@@ -38,38 +39,40 @@ const EventInformation = ({
   fetchMode
 }: EventInformationProps) => {
 
-  return <List sx={{ p: 0, pb: "calc(16px + env(safe-area-inset-bottom))" }}>
-    {selectedEventPlace && <EventMapPreview place={selectedEventPlace} />}
-    <Stack sx={{ px: 2, pt: 1 }} spacing={1} direction={"column"}>
-      <EventAlerts event={event} t={t} />
-      <EventDateInformation event={event} t={t} />
-      {
-        selectedEventPlace && <>
-          <EventWeatherForecast place={selectedEventPlace} date={formatDateFromDatabase(event?.startingDateTime)} />
-        </>
-      }
-    </Stack>
-    <Box sx={{ px: 2 }}>
-      <Typography sx={{ fontSize: 16, fontWeight: 'bold' }} color="text.secondary" gutterBottom>
-        Beschreibung
-      </Typography>
-      <Typography pb={1}>{event?.description}</Typography>
-      <Divider />
+  return <Container sx={{ p: 0 }}>
+    <List sx={{ p: 0, pt: 1, pb: "calc(16px + env(safe-area-inset-bottom))" }}>
+      <Stack direction={"column"}>
+        <EventAlerts event={event} t={t} />
+        <EventDateInformation event={event} t={t} />
+        {
+          selectedEventPlace && <EventMapPreview place={selectedEventPlace} />
+        }
+        {
+          selectedEventPlace && <EventWeatherForecast place={selectedEventPlace} date={formatDateFromDatabase(event?.startingDateTime)} />
+        }
+      </Stack>
+      <Box sx={{ px: 2 }}>
+        <Typography sx={{ fontSize: 16, fontWeight: 'bold' }} color="text.secondary" gutterBottom>
+          Beschreibung
+        </Typography>
+        <Typography pb={1}>{event?.description}</Typography>
+        <Divider />
 
-      <EventInformationAttendance
-        keyHolders={keyHolders}
-        selectedEvent={event}
-        fetchMode={fetchMode}
-      />
+        <EventInformationAttendance
+          keyHolders={keyHolders}
+          selectedEvent={event}
+          fetchMode={fetchMode}
+        />
 
-      <EventInformationGames eventId={event.id} />
+        <EventInformationGames eventId={event.id} />
 
-      <EventInformationComments
-        eventId={event.id}
-        eventInThePast={eventInThePast(event)}
-      />
-    </Box>
-  </List>
+        <EventInformationComments
+          eventId={event.id}
+          eventInThePast={eventInThePast(event)}
+        />
+      </Box>
+    </List>
+  </Container>
 };
 
 export default withProfiler(EventInformation);

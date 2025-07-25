@@ -46,7 +46,7 @@
       "answerDeadlineExceededTitle": "Anmeldezeitraum vorbei",
       "eventSpotsTaken": "{{ taken }} von {{waitingListLength}} Plätzen vergeben",
       "keyHolderAttending": "Jemand mit einem Schlüssel ist angemeldet",
-      "meetTime": "Treffen: {{ meetTime, ccc dd.MM 'um' HH:mm }}",
+      "meetTime": "Treffen: {{ meetTime }}",
       "startTime": "Startet um {{ startTime, HH:mm }}",
       "startTimeAndEndTime": "Startet um {{ startTime, HH:mm }} und endet um {{ endTime, HH:mm }}",
       "waitingListAccepted": "Du bist auf Wartelisteplatz {{ place }} von {{ waitingListLength }} für dieses Event",
