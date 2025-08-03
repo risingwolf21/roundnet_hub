@@ -1,7 +1,9 @@
 import { CalendarMonth } from '@mui/icons-material';
-import { ListItem, ListItemAvatar, ListItemText } from '@mui/material';
+import { ListItem, ListItemAvatar, ListItemIcon, ListItemText } from '@mui/material';
+import { formatRelative } from 'date-fns';
 import { TFunction } from 'i18next';
 import React from 'react';
+import { LOCALE_DE } from 'src/translation/i18n';
 import { EventsUserView } from 'src/types/supabaseTypes';
 
 type Props = {
@@ -21,15 +23,17 @@ const EventDateInformation = ({ event, t }: Props) => {
       startTime: new Date(startingDateTime),
     });
 
-  return <ListItem sx={{ py: 0, '&.MuiListItem-root': { paddingLeft: 0 } }}>
+  return <ListItem sx={{ py: 0}} dense>
     <ListItemAvatar sx={{ justifyContent: 'left', alignItems: 'center', display: 'flex', minWidth: "40px" }}>
-      <CalendarMonth />
+      <ListItemIcon>
+        <CalendarMonth />
+      </ListItemIcon>
     </ListItemAvatar>
     {
       meetingDateTime
         ? <ListItemText
           primary={t('events.information.meetTime', {
-            meetTime: new Date(meetingDateTime),
+            meetTime: formatRelative(meetingDateTime, Date.now(), { locale: LOCALE_DE, weekStartsOn: 1 }),
           })}
           secondary={startTimeTranslation}
         />

@@ -46,7 +46,7 @@
       "answerDeadlineExceededTitle": "Registration period expired",
       "eventSpotsTaken": "{{ taken }} of {{waitingListLength}} spots taken",
       "keyHolderAttending": "Someone with a key attends this event",
-      "meetTime": "Meet: {{ meetTime, ccc dd.MM 'at' HH:mm }}",
+      "meetTime": "Meet: {{ meetTime }}",
       "startTime": "Starts at {{ startTime, HH:mm }}",
       "startTimeAndEndTime": "Starts at {{ startTime, HH:mm }} and ends at {{ endTime, HH:mm }}",
       "waitingListAccepted": "You are on waiting list place {{ place }} of {{ waitingListLength }} for this event",

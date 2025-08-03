@@ -1,8 +1,8 @@
+import { ListItem, ListItemAvatar, ListItemIcon, ListItemText } from '@mui/material';
+import { closestTo } from 'date-fns';
 import React, { useEffect, useState } from 'react';
-import { Box, ListItem, ListItemAvatar, ListItemText, Typography } from '@mui/material';
-import { MapContainer, Marker, TileLayer } from 'react-leaflet';
 import { PlaceType } from '../types';
-import { closestTo, format } from 'date-fns';
+import { toNumber } from 'lodash';
 
 type Props = {
   place: PlaceType;
@@ -11,8 +11,8 @@ type Props = {
 
 type WeatherData = {
   icon: string
-  temperature: number
-  wind_speed: number
+  temperature: string
+  wind_speed: string
   description: string
 }
 
@@ -22,6 +22,8 @@ const EventWeatherForecast = ({ place, date }: Props) => {
 
 
   useEffect(() => {
+    if (!process.env.REACT_APP_OPENWEATHER_API_KEY)
+      return;
     fetch(`https://api.openweathermap.org/data/2.5/forecast?lat=${place.lat}&lon=${place.lon}&appid=${process.env.REACT_APP_OPENWEATHER_API_KEY}&units=metric&lang=de`)
       .then(res => res.json())
       .then(async (json) => {
@@ -37,13 +39,13 @@ const EventWeatherForecast = ({ place, date }: Props) => {
 
           setWeatherData({
             icon: icon,
-            temperature: result.main.temp,
-            wind_speed: result.wind.speed,
+            temperature: toNumber(result.main.temp).toFixed(0),
+            wind_speed: toNumber(result.wind.speed).toFixed(0),
             description: result.weather[0].description
           })
         }
       })
-  }, [place])
+  }, [place, date])
 
   async function cropTransparentBorder(imageUrl: string) {
     const img = new Image();
@@ -91,11 +93,13 @@ const EventWeatherForecast = ({ place, date }: Props) => {
   if (!weatherData)
     return null;
 
-  return <ListItem sx={{ py: 0, '&.MuiListItem-root': { paddingLeft: 0 } }}>
+  return <ListItem sx={{ py: 0 }} dense>
     <ListItemAvatar sx={{ justifyContent: 'left', alignItems: 'center', display: 'flex', minWidth: "40px" }}>
-      <img alt="weather-icon" src={weatherData.icon} width={24} height={24} />
+      <ListItemIcon>
+        <img alt="weather-icon" src={weatherData.icon} width={24} height={24} />
+      </ListItemIcon>
     </ListItemAvatar>
-    <ListItemText primary={`${weatherData.temperature} °C - ${weatherData.wind_speed} km/h`} secondary={weatherData.description} />
+    <ListItemText primary={`${weatherData.temperature}°C · ${weatherData.wind_speed}km/h`} secondary={weatherData.description} />
   </ListItem>
 }
 

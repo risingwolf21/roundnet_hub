@@ -1,4 +1,4 @@
-import { format as formatDate, formatDistance, formatRelative, isDate } from 'date-fns';
+import { format as formatDate, formatDistance, formatRelative, isDate, Locale } from 'date-fns';
 import { de, enGB } from 'date-fns/locale';
 import i18n from 'i18next';
 import LanguageDetector from 'i18next-browser-languagedetector';
@@ -15,7 +15,39 @@ const resources = {
   },
 };
 
-const locales = { enGB, de };
+const formatRelativeLocaleDE = {
+  lastWeek: "'Letzten' dddd 'um' HH:mm",
+  yesterday: "'gestern um' HH:mm",
+  today: "'Heute um' HH:mm",
+  tomorrow: "'morgen um' HH:mm 'Uhr'",
+  nextWeek: "dddd 'um' HH:mm",
+  other: "dd MMM yyyy 'um' HH:mm",
+};
+
+const formatRelativeLocaleEN = {
+  lastWeek: "'Last' dddd 'at' HH:mm a",
+  yesterday: "'Yesterday at' HH:mm a",
+  today: "'Today at' HH:mm a",
+  tomorrow: "'Tomorrow at' HH:mm a",
+  nextWeek: "dddd 'at' HH:mm a",
+  other: "dd MMM yyyy 'at' HH:mm a",
+};
+
+export const LOCALE_DE: Locale = {
+  ...de,
+  formatRelative: (token, _date, _baseDate, _options) => {
+    return formatRelativeLocaleDE[token]
+  }
+}
+
+export const LOCALE_EN: Locale = {
+  ...enGB,
+  formatRelative: (token, _date, _baseDate, _options) => {
+    return formatRelativeLocaleEN[token]
+  }
+}
+
+const locales = { enGB: LOCALE_EN, de: LOCALE_DE };
 type Lang = keyof typeof locales;
 
 i18n
