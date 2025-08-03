@@ -1,47 +1,4 @@
 {
-  "files.associations": {
-    "*.react.js": "javascriptreact",
-    "*.stories.js": "javascriptreact",
-    "*.action.js": "javascriptreact",
-    "*.reducer.js": "javascriptreact",
-    "*.styles.js": "javascriptreact",
-    "*.styles.react.js": "javascriptreact",
-    "*.styles.jsx": "javascriptreact",
-    "*.svg.js": "javascriptreact",
-    "*.jsx": "javascriptreact",
-    "*.js": "javascriptreact",
-    ".stylelintrc": "jsonc"
-  },
-  "emmet.showExpandedAbbreviation": "never",
-  "deno.path": "C:\\Users\\Karl\\AppData\\Local\\Microsoft\\WinGet\\Packages\\DenoLand.Deno_Microsoft.Winget.Source_8wekyb3d8bbwe\\deno.exe",
-  "i18n-ally.localesPaths": [
-    "src/translation/locales"
-  ],
-  "i18n-ally.pathMatcher": "translation.{locale}.json",
-  "i18n-ally.displayLanguage": "de",
-  "i18n-ally.theme.annotation": "rgba(153, 153, 153, .8)",
-  "i18n-ally.theme.annotationBorder": "rgba(153, 153, 153, .8)",
-  "i18n-ally.theme.annotationMissing": "#d37070",
-  "i18n-ally.theme.annotationMissingBorder": "#d37070",
-  "i18n-ally.keystyle": "nested",
-  "typescript.tsdk": "node_modules\\typescript\\lib",
-  //"deno.enable": true,
-  // "deno.unstable": true,
-  "files.eol": "\n",
-  "editor.tabSize": 2,
-  "remote.extensionKind": {
-    "ms-azuretools.vscode-docker": "workspace"
-  },
-  "editor.codeActionsOnSave": {
-    "source.fixAll.eslint": "always"
-  },
-  "eslint.validate": [
-    "javascript",
-    "javascriptreact",
-    "typescript",
-    "typescriptreact"
-  ],
-  "editor.formatOnSave": true,
   "[javascript]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode",
     "editor.formatOnSave": false
@@ -51,12 +8,71 @@
     "editor.formatOnSave": false
   },
   "[typescript]": {
-    "editor.defaultFormatter": "vscode.typescript-language-features",
-    "editor.formatOnSave": false
+    "editor.defaultFormatter": "denoland.vscode-deno"
   },
   "[typescriptreact]": {
     "editor.defaultFormatter": "vscode.typescript-language-features",
     "editor.formatOnSave": false
   },
-  "prettier-eslint.eslintIntegration": true
+  "deno.enablePaths": [
+    "supabase/functions"
+  ],
+  "deno.lint": true,
+  "deno.path": "C:\\Users\\Karl\\AppData\\Local\\Microsoft\\WinGet\\Packages\\DenoLand.Deno_Microsoft.Winget.Source_8wekyb3d8bbwe\\deno.exe",
+  "deno.unstable": [
+    "bare-node-builtins",
+    "byonm",
+    "sloppy-imports",
+    "unsafe-proto",
+    "webgpu",
+    "broadcast-channel",
+    "worker-options",
+    "cron",
+    "kv",
+    "ffi",
+    "fs",
+    "http",
+    "net"
+  ],
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": "always"
+  },
+  "editor.formatOnSave": true,
+  "editor.tabSize": 2,
+  "emmet.showExpandedAbbreviation": "never",
+  "eslint.validate": [
+    "javascript",
+    "javascriptreact",
+    "typescript",
+    "typescriptreact"
+  ],
+  "files.associations": {
+    "*.action.js": "javascriptreact",
+    "*.js": "javascriptreact",
+    "*.jsx": "javascriptreact",
+    "*.react.js": "javascriptreact",
+    "*.reducer.js": "javascriptreact",
+    "*.stories.js": "javascriptreact",
+    "*.styles.js": "javascriptreact",
+    "*.styles.jsx": "javascriptreact",
+    "*.styles.react.js": "javascriptreact",
+    "*.svg.js": "javascriptreact",
+    ".stylelintrc": "jsonc"
+  },
+  "files.eol": "\n",
+  "i18n-ally.displayLanguage": "de",
+  "i18n-ally.keystyle": "nested",
+  "i18n-ally.localesPaths": [
+    "src/translation/locales"
+  ],
+  "i18n-ally.pathMatcher": "translation.{locale}.json",
+  "i18n-ally.theme.annotation": "rgba(153, 153, 153, .8)",
+  "i18n-ally.theme.annotationBorder": "rgba(153, 153, 153, .8)",
+  "i18n-ally.theme.annotationMissing": "#d37070",
+  "i18n-ally.theme.annotationMissingBorder": "#d37070",
+  "prettier-eslint.eslintIntegration": true,
+  "remote.extensionKind": {
+    "ms-azuretools.vscode-docker": "workspace"
+  },
+  "typescript.tsdk": "node_modules\\typescript\\lib"
 }
