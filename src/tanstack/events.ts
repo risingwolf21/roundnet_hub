@@ -1,3 +1,4 @@
+import { logger } from "@sentry/react"
 import { useMutation, useQuery } from "@tanstack/react-query"
 import { isAfter } from "date-fns"
 import { queryClient } from "src/App"
@@ -132,6 +133,11 @@ export const useUpdateAttendanceMutation = (fetchMode: "past" | "upcoming") => {
     },
 
     onSettled: (data, error, variables, context) => {
+      logger.info("Attendance updated.", {
+        event: variables.event.id,
+        user: variables.user.userId,
+        newState: variables.newState
+      })
       queryClient.invalidateQueries({ queryKey: ["events", fetchMode] });
       queryClient.invalidateQueries({ queryKey: ["events", variables.event.id!, "attendance"] });
     },
