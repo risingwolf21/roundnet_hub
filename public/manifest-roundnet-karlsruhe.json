@@ -20,6 +20,24 @@
       "purpose": "any maskable"
     }
   ],
+  "shortcuts": [
+    {
+      "name": "View account",
+      "url": "/user"
+    },
+    {
+      "name": "View challenges",
+      "url": "/challenges"
+    },
+    {
+      "name": "View upcoming events",
+      "url": "/training"
+    },
+    {
+      "name": "View groups",
+      "url": "/groups"
+    }
+  ],
   "related_applications": [
     {
       "platform": "webapp",
