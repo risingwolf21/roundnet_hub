@@ -67,7 +67,7 @@ const EventInformation = ({
         <EventInformationGames eventId={event.id} />
 
         <EventInformationComments
-          eventId={event.id}
+          event={event}
           eventInThePast={eventInThePast(event)}
         />
       </Box>

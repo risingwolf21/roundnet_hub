@@ -4,18 +4,18 @@ import React, { createRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAuthentication } from 'src/features/auth/AuthProvider';
 import { useAddCommentMutation, useComments } from 'src/tanstack/events';
-import { FullComment } from 'src/types/supabaseTypes';
+import { EventsUserView, FullComment } from 'src/types/supabaseTypes';
 import { EventCommentConversationDialog } from '../dialogs/EventCommentConversationDialog';
 import { CommentItem } from './CommentItem';
 import { CommentReplyItem, CommentReplyText } from './CommentReplyItem';
 
 type EventInformationCommentsProps = {
-  eventId: string;
+  event: EventsUserView;
   eventInThePast: boolean;
 };
 
 const EventInformationComments = ({
-  eventId,
+  event,
   eventInThePast,
 }: EventInformationCommentsProps) => {
 
@@ -24,7 +24,7 @@ const EventInformationComments = ({
   const inputRef = createRef<HTMLInputElement>();
   const [replyDialogOpen, setReplyDialogOpen] = useState<FullComment | null>(null);
 
-  const { data: comments = [] } = useComments(eventId);
+  const { data: comments = [] } = useComments(event.id);
 
   const addCommentMutation = useAddCommentMutation(user);
 
@@ -48,15 +48,15 @@ const EventInformationComments = ({
     }, 300);
   };
 
-  const submit = (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    const data = new FormData(event.currentTarget);
+  const submit = (formEvent: React.FormEvent<HTMLFormElement>) => {
+    formEvent.preventDefault();
+    const data = new FormData(formEvent.currentTarget);
 
     const commentValue = data.get('comment')?.toString();
     if (!commentValue) return;
 
-    addCommentMutation.mutate({ eventId, comment: commentValue, reply_to: null });
-    event.currentTarget.reset();
+    addCommentMutation.mutate({ event, comment: commentValue, reply_to: null });
+    formEvent.currentTarget.reset();
   };
 
   return (
@@ -113,7 +113,7 @@ const EventInformationComments = ({
           onClose={() => setReplyDialogOpen(null)}
           eventInThePast={eventInThePast}
           handleCommentSubmit={({ comment, reply_to }) => {
-            addCommentMutation.mutate({ eventId, comment, reply_to });
+            addCommentMutation.mutate({ event, comment, reply_to });
             setReplyDialogOpen(null);
           }}
         />
