@@ -1,6 +1,6 @@
 import { logger } from "@sentry/react"
 import { useMutation, useQuery } from "@tanstack/react-query"
-import { isAfter } from "date-fns"
+import { format, isAfter } from "date-fns"
 import { queryClient } from "src/App"
 import { supabase } from "src/components/services/supabase/supabaseClient"
 import { DeleteEventType } from "src/features/events/types"
@@ -123,19 +123,29 @@ export const useUpdateAttendanceMutation = (fetchMode: "past" | "upcoming") => {
 
       return { previousEvents, previousAttendance, event }
     },
-    onError: (err, _vars, context) => {
+    onError: (err, variables, context) => {
+      logger.error("Attendance update failed.", {
+        event: variables.event.id,
+        eventDate: format(variables.event.startingDateTime, "dd.MM.yyyy HH:mm"),
+        userId: variables.user.userId,
+        userEmail: variables.user.email,
+        newState: variables.newState,
+        error: err
+      })
       if (context?.previousEvents) {
         queryClient.setQueryData(["events", fetchMode], context.previousEvents);
       }
       if (context?.previousAttendance) {
-        queryClient.setQueryData(["events", _vars.event.id!, "attendance"], context.previousAttendance);
+        queryClient.setQueryData(["events", variables.event.id!, "attendance"], context.previousAttendance);
       }
     },
 
     onSettled: (data, error, variables, context) => {
-      logger.info("Attendance updated.", {
+      logger.info("Attendance update successful.", {
         event: variables.event.id,
-        user: variables.user.userId,
+        eventDate: format(variables.event.startingDateTime, "dd.MM.yyyy HH:mm"),
+        userId: variables.user.userId,
+        userEmail: variables.user.email,
         newState: variables.newState
       })
       queryClient.invalidateQueries({ queryKey: ["events", fetchMode] });
@@ -146,13 +156,13 @@ export const useUpdateAttendanceMutation = (fetchMode: "past" | "upcoming") => {
 
 export const useAddCommentMutation = (user: User) => {
   return useMutation({
-    mutationFn: ({ eventId, comment, reply_to }: { eventId: string, comment: string, reply_to: FullComment | null }) => {
-      return SupabaseEventRepository.insertComment(user, eventId, comment, reply_to?.id ?? null)
+    mutationFn: ({ event, comment, reply_to }: { event: EventsUserView, comment: string, reply_to: FullComment | null }) => {
+      return SupabaseEventRepository.insertComment(user, event.id, comment, reply_to?.id ?? null)
     },
-    onMutate: async ({ eventId, comment, reply_to }) => {
-      await queryClient.cancelQueries({ queryKey: ["events", eventId, "comments"] });
+    onMutate: async ({ event, comment, reply_to }) => {
+      await queryClient.cancelQueries({ queryKey: ["events", event.id, "comments"] });
 
-      const previousComments = queryClient.getQueryData<FullComment[]>(["events", eventId, "comments"]);
+      const previousComments = queryClient.getQueryData<FullComment[]>(["events", event.id, "comments"]);
 
       if (previousComments) {
         const newComment = {
@@ -161,7 +171,7 @@ export const useAddCommentMutation = (user: User) => {
           userId: user.userId,
           displayName: user.displayName,
           edited: false,
-          event: eventId,
+          event: event.id,
           pending: true,
           last_update: formatDateToDatabase(new Date()),
           created_at: formatDateToDatabase(new Date()),
@@ -184,7 +194,7 @@ export const useAddCommentMutation = (user: User) => {
             ...previousComments.splice(index)
           ] as FullComment[];
 
-          queryClient.setQueryData(["events", eventId, "comments"], updatedComments);
+          queryClient.setQueryData(["events", event.id, "comments"], updatedComments);
         } else {
           const updatedComments = [
             ...previousComments,
@@ -194,21 +204,36 @@ export const useAddCommentMutation = (user: User) => {
             }
           ] as FullComment[];
 
-          queryClient.setQueryData(["events", eventId, "comments"], updatedComments);
+          queryClient.setQueryData(["events", event.id, "comments"], updatedComments);
         }
       }
 
-      return { previousComments, eventId }
+      return { previousComments, eventId:event.id }
     },
-    onError: (err, _vars, context) => {
+    onError: (err, variables, context) => {
+      logger.error("Event comment failed.", {
+        event: variables.event.id,
+        eventDate: format(variables.event.startingDateTime, "dd.MM.yyyy HH:mm"),
+        userId: user.userId,
+        userEmail: user.email,
+        comment: variables.comment,
+        error: err
+      })
       if (context?.previousComments) {
         queryClient.setQueryData(["events", context.eventId, "comments"], context.previousComments);
       }
     },
 
-    onSettled: (context) => {
-      if (context?.event)
-        queryClient.invalidateQueries({ queryKey: ["events", context.event, "comments"] });
+    onSettled: (data, error, variables, context) => {
+      logger.info("Event comment successful.", {
+        event: variables.event.id,
+        eventDate: format(variables.event.startingDateTime, "dd.MM.yyyy HH:mm"),
+        userId: user.userId,
+        userEmail: user.email,
+        comment: variables.comment
+      })
+      if (context?.eventId)
+        queryClient.invalidateQueries({ queryKey: ["events", context.eventId, "comments"] });
     },
   })
 }
@@ -250,16 +275,25 @@ export const useCancelTrainingMutation = (fetchMode: "past" | "upcoming") => {
 
       return { previousEvents, previousEvent, event }
     },
-    onError: (err, _vars, context) => {
+    onError: (err, variables, context) => {
+      logger.error("Event could not be cancelled", {
+        event: variables.event.id,
+        eventDate: format(variables.event.startingDateTime, "dd.MM.yyyy HH:mm"),
+        error: err
+      })
       if (context?.previousEvents) {
         queryClient.setQueryData(["events", fetchMode], context.previousEvents);
       }
       if (context?.previousEvent) {
-        queryClient.setQueryData(["events", _vars.event.id], context.previousEvent);
+        queryClient.setQueryData(["events", variables.event.id], context.previousEvent);
       }
     },
 
     onSettled: (data, error, variables, context) => {
+      logger.info("Event cancelled successfully.", {
+        event: variables.event.id,
+        eventDate: format(variables.event.startingDateTime, "dd.MM.yyyy HH:mm")
+      })
       queryClient.invalidateQueries({ queryKey: ["events", fetchMode] });
       queryClient.invalidateQueries({ queryKey: ["events", variables.event.id!] });
     },
