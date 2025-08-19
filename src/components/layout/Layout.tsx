@@ -166,7 +166,7 @@ const Layout = ({
             height: '100svh',
           }}
         >
-          <Box sx={{ height: "100%" }}>{children}</Box>
+          {children}
         </Box>
       </Box>
     </Box>

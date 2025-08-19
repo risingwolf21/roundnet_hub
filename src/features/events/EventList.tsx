@@ -49,6 +49,17 @@ const EventScreen = () => {
     </Fab>
   )
 
+  const filterFab = !isLoading && <Fab
+    key="filter"
+    color={'secondary'}
+    onClick={async () => {
+      const result = await dialogs.open(FilterEventListDialog, { currentFetchMode: fetchMode });
+      setFetchMode(result);
+    }}
+  >
+    {<FilterAlt sx={{ color: 'white' }} />}
+  </Fab>
+
   if (isLoading) {
     return <List>
       {
@@ -62,8 +73,11 @@ const EventScreen = () => {
       <Typography sx={{ textAlign: "center" }}>Es sieht so aus als ob du keine Events siehst</Typography>
       <Typography sx={{ textAlign: "center" }}>Versuch einer Gruppe beizutreten um die Events dieser einzusehen</Typography>
       <Button variant='contained' onClick={() => navigate("/groups/list")}>Gruppe beitreten</Button>
-
-      {createEventFab}
+      
+      <Stack direction={"row-reverse"} spacing={2} sx={{ position: "fixed", bottom: 'max(16px, env(safe-area-inset-bottom))', right: "16px" }}>
+        {filterFab}
+        {createEventFab}
+      </Stack>
     </Stack>
   }
 
@@ -71,6 +85,7 @@ const EventScreen = () => {
     <Box
       sx={(theme) => ({
         overscrollBehavior: "none",
+        overscrollBehaviorY: "none",
         [theme.breakpoints.down('xl')]: { pb: 12 },
         [theme.breakpoints.up('xl')]: { pb: 0 },
       })}
@@ -114,20 +129,7 @@ const EventScreen = () => {
     </Box>
 
     <Stack direction={"row-reverse"} spacing={2} sx={{ position: "fixed", bottom: 'max(16px, env(safe-area-inset-bottom))', right: "16px" }}>
-      {
-        !isLoading && (
-          <Fab
-            key="filter"
-            color={'secondary'}
-            onClick={async () => {
-              const result = await dialogs.open(FilterEventListDialog, { currentFetchMode: fetchMode });
-              setFetchMode(result);
-            }}
-          >
-            {<FilterAlt sx={{ color: 'white' }} />}
-          </Fab>
-        )
-      }
+      {filterFab}
       {createEventFab}
       {
         isAuthorized("event.edit") && !isLoading && (

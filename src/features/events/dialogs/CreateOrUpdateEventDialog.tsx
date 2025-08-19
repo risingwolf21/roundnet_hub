@@ -506,6 +506,21 @@ export const CreateOrUpdateEventDialog = ({ payload: { event, eventGroup, option
               <MenuItem value={'none'}>Keiner</MenuItem>
             </Select>
           </ListItem>
+          <ListItem sx={{ pt: 0, pb: 0, mb: 2 }} key={'itemType'}>
+            <ListItemAvatar>
+              <Checkbox
+                sx={{ pl: 0 }}
+                checked={editedEvent.required_item !== null}
+                onChange={() =>
+                  setEditedEvent({
+                    ...editedEvent,
+                    required_item: editedEvent.required_item === null ? 'mtvStorage' : null,
+                  })
+                }
+              />
+            </ListItemAvatar>
+            <ListItemText primary={"Konstellationen"} secondary={"Soll es möglich sein für Trainer, Konstellationen zu erstellen?"} />
+          </ListItem>
         </List>
       </Box>
       <Dialog open={dialogOpen === 'repeat'} onClose={() => setDialogOpen(null)}>

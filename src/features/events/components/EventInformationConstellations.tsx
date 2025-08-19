@@ -2,7 +2,7 @@ import { Sports } from "@mui/icons-material"
 import { Box, Button, Divider, ListItem, ListItemAvatar, ListItemText, Typography } from "@mui/material"
 import { useDialogs } from "@toolpad/core"
 import React from "react"
-import { EventsUserView, FullAttendance } from "src/types/supabaseTypes"
+import { eventInThePast, EventsUserView, FullAttendance } from "src/types/supabaseTypes"
 import { ConstellationCreationDialog } from "../dialogs/ConstellationsCreationDialog"
 
 export const EventInformationConstellations = ({ attendance, event }: { attendance: FullAttendance[], event: EventsUserView }) => {
@@ -16,7 +16,7 @@ export const EventInformationConstellations = ({ attendance, event }: { attendan
       key={'createConstellations'}
       sx={{ '&.MuiListItem-root': { paddingLeft: 0 } }}
       secondaryAction={
-        <Button onClick={() => {
+        <Button disabled={eventInThePast(event)} onClick={() => {
           dialogs.open(ConstellationCreationDialog, { users: attendance.filter(x => x.state === "Attending").map(x => x.user), event: event })
         }}>Erstellen</Button>
       }
