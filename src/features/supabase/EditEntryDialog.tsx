@@ -89,7 +89,7 @@ const ForeignSelection = ({ value, column, onChange }: {
   onChange: (value: any) => void;
 }) => {
   const keys = displayKeysForForeign(column);
-  const [options, setOptions] = useState([]);
+  const [options, setOptions] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {

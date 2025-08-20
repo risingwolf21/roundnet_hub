@@ -1,5 +1,5 @@
 import { ListItem, ListItemAvatar, ListItemIcon, ListItemText } from '@mui/material';
-import { closestTo } from 'date-fns';
+import { closestTo, differenceInCalendarDays } from 'date-fns';
 import React, { useEffect, useState } from 'react';
 import { PlaceType } from '../types';
 import { toNumber } from 'lodash';
@@ -31,8 +31,7 @@ const EventWeatherForecast = ({ place, date }: Props) => {
 
         const closestDate = closestTo(date, dates);
 
-
-        const result = json?.list?.find((item: any) => new Date(item.dt * 1000).getTime() === closestDate?.getTime()) ?? null;
+        const result = json?.list?.find((item: any) => new Date(item.dt * 1000).getTime() === closestDate?.getTime() && Math.abs(differenceInCalendarDays(closestDate, date)) <= 1) ?? null;
 
         if (result) {
           const icon = await cropTransparentBorder(`https://openweathermap.org/img/wn/${result.weather[0].icon}@2x.png`)
@@ -96,7 +95,7 @@ const EventWeatherForecast = ({ place, date }: Props) => {
   return <ListItem sx={{ py: 0 }} dense>
     <ListItemAvatar sx={{ justifyContent: 'left', alignItems: 'center', display: 'flex', minWidth: "40px" }}>
       <ListItemIcon>
-        <img alt="weather-icon" src={weatherData.icon} width={24} height={24} />
+        <img alt="weather-icon" src={weatherData.icon} style={{ objectFit: "contain" }} width={24} height={24} />
       </ListItemIcon>
     </ListItemAvatar>
     <ListItemText primary={`${weatherData.temperature}°C · ${weatherData.wind_speed}km/h`} secondary={weatherData.description} />

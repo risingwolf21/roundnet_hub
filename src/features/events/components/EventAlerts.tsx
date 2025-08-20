@@ -10,13 +10,13 @@ type Props = {
 
 const EventAlerts = ({ event, t }: Props) => (
   <>
-    {event.isCancelled && (
-      <Alert sx={{ mt: 2 }} severity="error">
+    {event.isCancelled && !answerDeadlineExpired(event) && (
+      <Alert sx={{ mt: 2, mx: 2 }} severity="error">
         Dieses Event wurde <strong>abgesagt</strong>
       </Alert>
     )}
     {answerDeadlineExpired(event) && event.answerDeadline && (
-      <Alert sx={{ mt: 2 }} severity="info">
+      <Alert sx={{ mt: 2, mx: 2 }} severity="info">
         {t('events.information.answerDeadlineExceeded', {
           answerDeadline: new Date(event.answerDeadline),
         })}

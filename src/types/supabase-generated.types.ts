@@ -7,6 +7,11 @@ export type Json =
   | Json[]
 
 export type Database = {
+  // Allows to automatically instantiate createClient with right options
+  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
+  __InternalSupabase: {
+    PostgrestVersion: "13.0.4"
+  }
   games: {
     Tables: {
       match: {
@@ -14,6 +19,7 @@ export type Database = {
           created_at: string
           event: string | null
           id: string
+          is_public: boolean
           team_a: string
           team_b: string
         }
@@ -21,6 +27,7 @@ export type Database = {
           created_at?: string
           event?: string | null
           id?: string
+          is_public?: boolean
           team_a: string
           team_b: string
         }
@@ -28,6 +35,7 @@ export type Database = {
           created_at?: string
           event?: string | null
           id?: string
+          is_public?: boolean
           team_a?: string
           team_b?: string
         }
@@ -217,14 +225,14 @@ export type Database = {
     Functions: {
       add_match_with_sets: {
         Args: {
+          event?: string
+          match_sets: Json
           player_1a: string
-          player_2a: string
           player_1b: string
+          player_2a: string
           player_2b: string
           team_a: string
           team_b: string
-          match_sets: Json
-          event?: string
         }
         Returns: undefined
       }
@@ -232,232 +240,6 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: undefined
       }
-    }
-    Enums: {
-      [_ in never]: never
-    }
-    CompositeTypes: {
-      [_ in never]: never
-    }
-  }
-  graphql_public: {
-    Tables: {
-      [_ in never]: never
-    }
-    Views: {
-      [_ in never]: never
-    }
-    Functions: {
-      graphql: {
-        Args: {
-          operationName?: string
-          query?: string
-          variables?: Json
-          extensions?: Json
-        }
-        Returns: Json
-      }
-    }
-    Enums: {
-      [_ in never]: never
-    }
-    CompositeTypes: {
-      [_ in never]: never
-    }
-  }
-  logs: {
-    Tables: {
-      events: {
-        Row: {
-          author: string | null
-          created_at: string
-          data: Json
-          id: number
-          type: string
-        }
-        Insert: {
-          author?: string | null
-          created_at?: string
-          data: Json
-          id?: number
-          type: string
-        }
-        Update: {
-          author?: string | null
-          created_at?: string
-          data?: Json
-          id?: number
-          type?: string
-        }
-        Relationships: []
-      }
-      player_info: {
-        Row: {
-          content: string
-          created_at: string
-          id: string
-          type: string
-        }
-        Insert: {
-          content: string
-          created_at?: string
-          id?: string
-          type: string
-        }
-        Update: {
-          content?: string
-          created_at?: string
-          id?: string
-          type?: string
-        }
-        Relationships: []
-      }
-    }
-    Views: {
-      [_ in never]: never
-    }
-    Functions: {
-      [_ in never]: never
-    }
-    Enums: {
-      [_ in never]: never
-    }
-    CompositeTypes: {
-      [_ in never]: never
-    }
-  }
-  permissions: {
-    Tables: {
-      app_permissions: {
-        Row: {
-          id: string
-          name: string
-        }
-        Insert: {
-          id?: string
-          name: string
-        }
-        Update: {
-          id?: string
-          name?: string
-        }
-        Relationships: []
-      }
-      app_roles: {
-        Row: {
-          id: string
-          name: string
-        }
-        Insert: {
-          id?: string
-          name: string
-        }
-        Update: {
-          id?: string
-          name?: string
-        }
-        Relationships: []
-      }
-      role_permissions: {
-        Row: {
-          app_permission: string
-          app_role: string
-          id: string
-        }
-        Insert: {
-          app_permission: string
-          app_role: string
-          id?: string
-        }
-        Update: {
-          app_permission?: string
-          app_role?: string
-          id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "role_permissions_app_permission_fkey"
-            columns: ["app_permission"]
-            isOneToOne: false
-            referencedRelation: "app_permissions"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "role_permissions_app_role_fkey"
-            columns: ["app_role"]
-            isOneToOne: false
-            referencedRelation: "app_roles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      roles: {
-        Row: {
-          name: string
-        }
-        Insert: {
-          name: string
-        }
-        Update: {
-          name?: string
-        }
-        Relationships: []
-      }
-      user_role_map: {
-        Row: {
-          role: string
-          user: string
-        }
-        Insert: {
-          role: string
-          user?: string
-        }
-        Update: {
-          role?: string
-          user?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "user_role_map_role_fkey"
-            columns: ["role"]
-            isOneToOne: false
-            referencedRelation: "roles"
-            referencedColumns: ["name"]
-          },
-        ]
-      }
-      user_roles: {
-        Row: {
-          app_role: string
-          id: string
-          user: string
-        }
-        Insert: {
-          app_role: string
-          id?: string
-          user?: string
-        }
-        Update: {
-          app_role?: string
-          id?: string
-          user?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "user_roles_app_role_fkey"
-            columns: ["app_role"]
-            isOneToOne: false
-            referencedRelation: "app_roles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-    }
-    Views: {
-      [_ in never]: never
-    }
-    Functions: {
-      [_ in never]: never
     }
     Enums: {
       [_ in never]: never
@@ -784,6 +566,7 @@ export type Database = {
       events: {
         Row: {
           answerDeadline: string | null
+          constellations_enabled: boolean
           created_at: string
           description: string
           endDateTime: string
@@ -802,6 +585,7 @@ export type Database = {
         }
         Insert: {
           answerDeadline?: string | null
+          constellations_enabled?: boolean
           created_at?: string
           description?: string
           endDateTime: string
@@ -820,6 +604,7 @@ export type Database = {
         }
         Update: {
           answerDeadline?: string | null
+          constellations_enabled?: boolean
           created_at?: string
           description?: string
           endDateTime?: string
@@ -1471,6 +1256,7 @@ export type Database = {
       current_distinct_event: {
         Row: {
           answerDeadline: string | null
+          constellations_enabled: boolean | null
           created_at: string | null
           description: string | null
           endDateTime: string | null
@@ -1520,6 +1306,7 @@ export type Database = {
       distinct_event: {
         Row: {
           answerDeadline: string | null
+          constellations_enabled: boolean | null
           created_at: string | null
           description: string | null
           endDateTime: string | null
@@ -1586,6 +1373,7 @@ export type Database = {
         Row: {
           answerDeadline: string | null
           attending_count: number | null
+          constellations_enabled: boolean | null
           created_at: string | null
           declined_count: number | null
           description: string | null
@@ -1678,22 +1466,18 @@ export type Database = {
       }
       add_match_with_sets: {
         Args: {
+          match_sets: Json
           player_1a: string
-          player_2a: string
           player_1b: string
+          player_2a: string
           player_2b: string
           team_a: string
           team_b: string
-          match_sets: Json
         }
         Returns: undefined
       }
       authorize: {
         Args: { requested_permission: string }
-        Returns: boolean
-      }
-      authorizewithrole: {
-        Args: { requested_role: string }
         Returns: boolean
       }
       check_reply_to: {
@@ -1706,14 +1490,14 @@ export type Database = {
       }
       create_group_with_user: {
         Args: {
-          group_name: string
-          group_description: string
           group_color: string
+          group_description: string
+          group_name: string
           is_public: boolean
           need_request: boolean
-          user_id: string
-          role: Database["public"]["Enums"]["GroupRole"]
           parent?: string
+          role: Database["public"]["Enums"]["GroupRole"]
+          user_id: string
         }
         Returns: {
           color: string
@@ -1744,10 +1528,10 @@ export type Database = {
         Returns: {
           column_name: string
           data_type: string
-          is_nullable: boolean
+          foreign_key_column_name: string
           foreign_key_schema_name: string
           foreign_key_table_name: string
-          foreign_key_column_name: string
+          is_nullable: boolean
         }[]
       }
       get_enum_types: {
@@ -1778,11 +1562,11 @@ export type Database = {
       }
       increase_challenge_stats_count: {
         Args: {
-          user_id: string
-          challenge_id: string
           amount: number
-          to_create_at: string
+          challenge_id: string
           image_url: string
+          to_create_at: string
+          user_id: string
         }
         Returns: {
           challenge: string
@@ -1804,8 +1588,8 @@ export type Database = {
       update_attendance: {
         Args: {
           eventid: string
-          userid: string
           state: Database["public"]["Enums"]["EventAttendance"]
+          userid: string
         }
         Returns: {
           event: string
@@ -1843,21 +1627,25 @@ export type Database = {
   }
 }
 
-type DefaultSchema = Database[Extract<keyof Database, "public">]
+type DatabaseWithoutInternals = Omit<Database, "__InternalSupabase">
+
+type DefaultSchema = DatabaseWithoutInternals[Extract<keyof Database, "public">]
 
 export type Tables<
   DefaultSchemaTableNameOrOptions extends
     | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
-    | { schema: keyof Database },
+    | { schema: keyof DatabaseWithoutInternals },
   TableName extends DefaultSchemaTableNameOrOptions extends {
-    schema: keyof Database
+    schema: keyof DatabaseWithoutInternals
   }
-    ? keyof (Database[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
-        Database[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
+    ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+        DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
     : never = never,
-> = DefaultSchemaTableNameOrOptions extends { schema: keyof Database }
-  ? (Database[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
-      Database[DefaultSchemaTableNameOrOptions["schema"]]["Views"])[TableName] extends {
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+      DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])[TableName] extends {
       Row: infer R
     }
     ? R
@@ -1875,14 +1663,16 @@ export type Tables<
 export type TablesInsert<
   DefaultSchemaTableNameOrOptions extends
     | keyof DefaultSchema["Tables"]
-    | { schema: keyof Database },
+    | { schema: keyof DatabaseWithoutInternals },
   TableName extends DefaultSchemaTableNameOrOptions extends {
-    schema: keyof Database
+    schema: keyof DatabaseWithoutInternals
   }
-    ? keyof Database[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
     : never = never,
-> = DefaultSchemaTableNameOrOptions extends { schema: keyof Database }
-  ? Database[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
       Insert: infer I
     }
     ? I
@@ -1898,14 +1688,16 @@ export type TablesInsert<
 export type TablesUpdate<
   DefaultSchemaTableNameOrOptions extends
     | keyof DefaultSchema["Tables"]
-    | { schema: keyof Database },
+    | { schema: keyof DatabaseWithoutInternals },
   TableName extends DefaultSchemaTableNameOrOptions extends {
-    schema: keyof Database
+    schema: keyof DatabaseWithoutInternals
   }
-    ? keyof Database[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
     : never = never,
-> = DefaultSchemaTableNameOrOptions extends { schema: keyof Database }
-  ? Database[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
       Update: infer U
     }
     ? U
@@ -1921,14 +1713,16 @@ export type TablesUpdate<
 export type Enums<
   DefaultSchemaEnumNameOrOptions extends
     | keyof DefaultSchema["Enums"]
-    | { schema: keyof Database },
+    | { schema: keyof DatabaseWithoutInternals },
   EnumName extends DefaultSchemaEnumNameOrOptions extends {
-    schema: keyof Database
+    schema: keyof DatabaseWithoutInternals
   }
-    ? keyof Database[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
+    ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
     : never = never,
-> = DefaultSchemaEnumNameOrOptions extends { schema: keyof Database }
-  ? Database[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"][EnumName]
+> = DefaultSchemaEnumNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"][EnumName]
   : DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema["Enums"]
     ? DefaultSchema["Enums"][DefaultSchemaEnumNameOrOptions]
     : never
@@ -1936,29 +1730,22 @@ export type Enums<
 export type CompositeTypes<
   PublicCompositeTypeNameOrOptions extends
     | keyof DefaultSchema["CompositeTypes"]
-    | { schema: keyof Database },
+    | { schema: keyof DatabaseWithoutInternals },
   CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
-    schema: keyof Database
+    schema: keyof DatabaseWithoutInternals
   }
-    ? keyof Database[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
+    ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
     : never = never,
-> = PublicCompositeTypeNameOrOptions extends { schema: keyof Database }
-  ? Database[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
+> = PublicCompositeTypeNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
   : PublicCompositeTypeNameOrOptions extends keyof DefaultSchema["CompositeTypes"]
     ? DefaultSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
     : never
 
 export const Constants = {
   games: {
-    Enums: {},
-  },
-  graphql_public: {
-    Enums: {},
-  },
-  logs: {
-    Enums: {},
-  },
-  permissions: {
     Enums: {},
   },
   public: {

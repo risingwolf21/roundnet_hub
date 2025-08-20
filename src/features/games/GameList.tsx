@@ -11,6 +11,7 @@ import { useMatches } from 'src/tanstack/games';
 import { groupBy } from 'src/utils';
 import { ReportSetsDialog } from './dialogs/ReportSetsDialog';
 import { UserMatchesView } from 'src/types/supabaseTypes';
+import { isAfter } from 'date-fns';
 
 const GameList = () => {
   const notifications = useNotifications();
@@ -34,106 +35,108 @@ const GameList = () => {
         })}>
           {Array.from(
             groupBy(matches, (x: UserMatchesView) => moment(new Date(x.created_at ?? '')).format('DD MMMM yyyy'))
-          ).map(([key, value]) => (
-            <List
-              key={key}
-              subheader={
-                <ListSubheader
-                  sx={{
-                    zIndex: '-1',
-                    fontWeight: 'bold',
-                    lineHeight: 'normal',
-                    my: 2,
-                    color: 'rgba(0,0,0,0.87)',
-                  }}
-                >
-                  {t('format.distanceToNow', { date: new Date(key) })}
-                </ListSubheader>
-              }
-            >
-              {value.map((x, index) => (
-                <ListItem key={x.id} divider>
-                  <Box sx={{ display: 'flex', flexDirection: 'row', width: '100%' }}>
-                    <Box
-                      sx={{
-                        display: 'flex',
-                        flexGrow: 1,
-                        flexDirection: 'column',
-                        whiteSpace: 'nowrap',
-                        overflow: 'hidden',
-                        textOverflow: 'ellipsis',
-                      }}
-                    >
-                      <Typography
+          )
+            .sort(([key1, v1], [key2, v2]) => isAfter(key1, key2) ? -1 : 1)
+            .map(([key, value]) => (
+              <List
+                key={key}
+                subheader={
+                  <ListSubheader
+                    sx={{
+                      zIndex: '-1',
+                      fontWeight: 'bold',
+                      lineHeight: 'normal',
+                      my: 2,
+                      color: 'rgba(0,0,0,0.87)',
+                    }}
+                  >
+                    {t('format.distanceToNow', { date: new Date(key) })}
+                  </ListSubheader>
+                }
+              >
+                {value.map((x, index) => (
+                  <ListItem key={x.id} divider>
+                    <Box sx={{ display: 'flex', flexDirection: 'row', width: '100%' }}>
+                      <Box
                         sx={{
-                          fontSize: '1rem',
-                          color: 'rgba(0,0,0,0.87)',
+                          display: 'flex',
+                          flexGrow: 1,
+                          flexDirection: 'column',
                           whiteSpace: 'nowrap',
                           overflow: 'hidden',
                           textOverflow: 'ellipsis',
                         }}
                       >
-                        {x.team_a_name}
-                      </Typography>
-                      <Typography
-                        sx={{
-                          fontSize: '1rem',
-                          color: 'rgba(0,0,0,0.87)',
-                          whiteSpace: 'nowrap',
-                          overflow: 'hidden',
-                          textOverflow: 'ellipsis',
-                        }}
-                      >
-                        {x.team_b_name}
-                      </Typography>
-                    </Box>
-                    {
-                      !x.set_results && x.id && <Button startIcon={<Warning color='warning' />} onClick={async () => {
-                        const result = await dialogs.open(ReportSetsDialog, { matchId: x.id!, team_a_name: x.team_a_name!, team_b_name: x.team_b_name!, sets: null });
-                        if (result) {
-                          refetch();
-                        }
-                      }}>Score eintragen</Button>
-                    }
-                    {x.set_results?.split(',').map((y, index) => {
-                      const [team_a_score, team_b_score] = y.trim().split(':');
-                      let teamAWon = team_a_score > team_b_score;
-                      return (
-                        <Box
+                        <Typography
                           sx={{
-                            display: 'flex',
-                            ml: 2,
-                            flexDirection: 'column',
+                            fontSize: '1rem',
+                            color: 'rgba(0,0,0,0.87)',
+                            whiteSpace: 'nowrap',
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
                           }}
                         >
-                          <Typography
+                          {x.team_a_name}
+                        </Typography>
+                        <Typography
+                          sx={{
+                            fontSize: '1rem',
+                            color: 'rgba(0,0,0,0.87)',
+                            whiteSpace: 'nowrap',
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                          }}
+                        >
+                          {x.team_b_name}
+                        </Typography>
+                      </Box>
+                      {
+                        !x.set_results && x.id && <Button startIcon={<Warning color='warning' />} onClick={async () => {
+                          const result = await dialogs.open(ReportSetsDialog, { matchId: x.id!, team_a_name: x.team_a_name!, team_b_name: x.team_b_name!, sets: null });
+                          if (result) {
+                            refetch();
+                          }
+                        }}>Score eintragen</Button>
+                      }
+                      {x.set_results?.split(',').map((y, index) => {
+                        const [team_a_score, team_b_score] = y.trim().split(':');
+                        let teamAWon = team_a_score > team_b_score;
+                        return (
+                          <Box
                             sx={{
-                              textAlign: 'end',
-                              fontSize: '1rem',
-                              color: `rgba(0,0,0,${teamAWon ? '0.87' : '0.6'})`,
-                              fontWeight: teamAWon ? 'bold' : '400',
+                              display: 'flex',
+                              ml: 2,
+                              flexDirection: 'column',
                             }}
                           >
-                            {team_a_score}
-                          </Typography>
-                          <Typography
-                            sx={{
-                              textAlign: 'end',
-                              fontSize: '1rem',
-                              color: `rgba(0,0,0,${teamAWon ? '0.6' : '0.87'})`,
-                              fontWeight: teamAWon ? '400' : 'bold',
-                            }}
-                          >
-                            {team_b_score}
-                          </Typography>
-                        </Box>
-                      );
-                    })}
-                  </Box>
-                </ListItem>
-              ))}
-            </List>
-          ))}
+                            <Typography
+                              sx={{
+                                textAlign: 'end',
+                                fontSize: '1rem',
+                                color: `rgba(0,0,0,${teamAWon ? '0.87' : '0.6'})`,
+                                fontWeight: teamAWon ? 'bold' : '400',
+                              }}
+                            >
+                              {team_a_score}
+                            </Typography>
+                            <Typography
+                              sx={{
+                                textAlign: 'end',
+                                fontSize: '1rem',
+                                color: `rgba(0,0,0,${teamAWon ? '0.6' : '0.87'})`,
+                                fontWeight: teamAWon ? '400' : 'bold',
+                              }}
+                            >
+                              {team_b_score}
+                            </Typography>
+                          </Box>
+                        );
+                      })}
+                    </Box>
+                  </ListItem>
+                ))}
+              </List>
+            ))}
 
           {matches.length <= 0 && !isLoading && (
             <Box key="noEntries" sx={{ alignItems: 'center', display: 'flex', flexDirection: 'column', pt: 10 }}>

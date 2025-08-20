@@ -113,6 +113,7 @@ export type EventsUserView = {
     title: string;
     group: Group | null;
     user_state: Database["public"]["Enums"]["EventAttendance"] | null;
+    constellations_enabled: boolean;
 }
 
 export type EventGroupsView = {
@@ -147,55 +148,32 @@ export type UserMatchesView = {
 
 type Modify<T, R> = Omit<T, keyof R> & R;
 
-
+type DatabaseWithoutInternals = Omit<Database, "__InternalSupabase">
 type GamesSchema = Database[Extract<keyof Database, "games">]
 
 export type GamesTable<
-    PublicTableNameOrOptions extends
+    DefaultSchemaTableNameOrOptions extends
     | keyof (GamesSchema["Tables"] & GamesSchema["Views"])
-    | { schema: keyof Database },
-    TableName extends PublicTableNameOrOptions extends { schema: keyof Database }
-    ? keyof (Database[PublicTableNameOrOptions["schema"]]["Tables"] &
-        Database[PublicTableNameOrOptions["schema"]]["Views"])
+    | { schema: keyof DatabaseWithoutInternals },
+    TableName extends DefaultSchemaTableNameOrOptions extends {
+        schema: keyof DatabaseWithoutInternals
+    }
+    ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+        DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
     : never = never,
-> = PublicTableNameOrOptions extends { schema: keyof Database }
-    ? (Database[PublicTableNameOrOptions["schema"]]["Tables"] &
-        Database[PublicTableNameOrOptions["schema"]]["Views"])[TableName] extends {
+> = DefaultSchemaTableNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+}
+    ? (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+        DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])[TableName] extends {
             Row: infer R
         }
     ? R
     : never
-    : PublicTableNameOrOptions extends keyof (GamesSchema["Tables"] &
+    : DefaultSchemaTableNameOrOptions extends keyof (GamesSchema["Tables"] &
         GamesSchema["Views"])
     ? (GamesSchema["Tables"] &
-        GamesSchema["Views"])[PublicTableNameOrOptions] extends {
-            Row: infer R
-        }
-    ? R
-    : never
-    : never
-
-type PermissionsSchema = Database[Extract<keyof Database, "permissions">]
-
-export type PermissionsTable<
-    PublicTableNameOrOptions extends
-    | keyof (PermissionsSchema["Tables"] & PermissionsSchema["Views"])
-    | { schema: keyof Database },
-    TableName extends PublicTableNameOrOptions extends { schema: keyof Database }
-    ? keyof (Database[PublicTableNameOrOptions["schema"]]["Tables"] &
-        Database[PublicTableNameOrOptions["schema"]]["Views"])
-    : never = never,
-> = PublicTableNameOrOptions extends { schema: keyof Database }
-    ? (Database[PublicTableNameOrOptions["schema"]]["Tables"] &
-        Database[PublicTableNameOrOptions["schema"]]["Views"])[TableName] extends {
-            Row: infer R
-        }
-    ? R
-    : never
-    : PublicTableNameOrOptions extends keyof (PermissionsSchema["Tables"] &
-        PermissionsSchema["Views"])
-    ? (PermissionsSchema["Tables"] &
-        PermissionsSchema["Views"])[PublicTableNameOrOptions] extends {
+        GamesSchema["Views"])[DefaultSchemaTableNameOrOptions] extends {
             Row: infer R
         }
     ? R
