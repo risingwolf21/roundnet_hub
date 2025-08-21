@@ -55,7 +55,7 @@ const GameList = () => {
                 }
               >
                 {value.map((x, index) => (
-                  <ListItem key={x.id} divider>
+                  <ListItem key={x.id} divider onClick={() => navigate(`/matches/${x.id}`)}>
                     <Box sx={{ display: 'flex', flexDirection: 'row', width: '100%' }}>
                       <Box
                         sx={{

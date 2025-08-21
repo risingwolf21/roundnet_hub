@@ -34,6 +34,7 @@ const ForgotPasswordScreen = lazyWithRetry(() => import('./features/auth/ForgotP
 const AuthCallback = lazyWithRetry(() => import('./features/auth/AuthCallback'));
 const PublicGroupList = lazyWithRetry(() => import('./features/groups/PublicGroupList.page'));
 const PublicGroupInformation = lazyWithRetry(() => import('./features/groups/PublicGroupInformation.page'));
+const MatchInformation = lazyWithRetry(() => import('./features/games/MatchInformation'));
 
 const sentryCreateBrowserRouter = wrapCreateBrowserRouterV7(
   createBrowserRouter,
@@ -216,6 +217,10 @@ const router = sentryCreateBrowserRouter([
               {
                 path: "report",
                 element: <ReportScore />
+              },
+              {
+                path: ":matchId",
+                element: <MatchInformation />
               }
             ]
           },

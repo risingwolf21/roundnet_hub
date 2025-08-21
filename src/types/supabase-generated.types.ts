@@ -9,6 +9,165 @@ export type Json =
 export type Database = {
   games: {
     Tables: {
+      elo_calc_log: {
+        Row: {
+          calculated_at: string
+          category_a: string
+          category_b: string
+          eff_team_a: number
+          eff_team_b: number
+          expected_a: number
+          expected_b: number
+          k_base: number
+          k_eff: number
+          match: string
+          outcome_a: number
+          points_a: number
+          points_b: number
+          sets_a: number
+          sets_b: number
+          upset_levels: number
+          upset_multiplier: number
+        }
+        Insert: {
+          calculated_at?: string
+          category_a: string
+          category_b: string
+          eff_team_a: number
+          eff_team_b: number
+          expected_a: number
+          expected_b: number
+          k_base: number
+          k_eff: number
+          match: string
+          outcome_a: number
+          points_a: number
+          points_b: number
+          sets_a: number
+          sets_b: number
+          upset_levels: number
+          upset_multiplier: number
+        }
+        Update: {
+          calculated_at?: string
+          category_a?: string
+          category_b?: string
+          eff_team_a?: number
+          eff_team_b?: number
+          expected_a?: number
+          expected_b?: number
+          k_base?: number
+          k_eff?: number
+          match?: string
+          outcome_a?: number
+          points_a?: number
+          points_b?: number
+          sets_a?: number
+          sets_b?: number
+          upset_levels?: number
+          upset_multiplier?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "elo_calc_log_match_fkey"
+            columns: ["match"]
+            isOneToOne: true
+            referencedRelation: "match"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "elo_calc_log_match_fkey"
+            columns: ["match"]
+            isOneToOne: true
+            referencedRelation: "user_matches"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      elo_config: {
+        Row: {
+          id: number
+          k_factor: number
+          men_offset: number
+          mixed_offset: number
+          rg_offset: number
+          rg_scale: number
+          upset_bonus_per_level: number
+          w_ka: number
+          w_rg: number
+          women_offset: number
+        }
+        Insert: {
+          id?: number
+          k_factor?: number
+          men_offset?: number
+          mixed_offset?: number
+          rg_offset?: number
+          rg_scale?: number
+          upset_bonus_per_level?: number
+          w_ka?: number
+          w_rg?: number
+          women_offset?: number
+        }
+        Update: {
+          id?: number
+          k_factor?: number
+          men_offset?: number
+          mixed_offset?: number
+          rg_offset?: number
+          rg_scale?: number
+          upset_bonus_per_level?: number
+          w_ka?: number
+          w_rg?: number
+          women_offset?: number
+        }
+        Relationships: []
+      }
+      elo_history: {
+        Row: {
+          created_at: string
+          delta: number
+          id: string
+          match: string
+          new_rating: number
+          old_rating: number
+          user: string
+        }
+        Insert: {
+          created_at?: string
+          delta: number
+          id?: string
+          match: string
+          new_rating: number
+          old_rating: number
+          user: string
+        }
+        Update: {
+          created_at?: string
+          delta?: number
+          id?: string
+          match?: string
+          new_rating?: number
+          old_rating?: number
+          user?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "elo_history_match_fkey"
+            columns: ["match"]
+            isOneToOne: false
+            referencedRelation: "match"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "elo_history_match_fkey"
+            columns: ["match"]
+            isOneToOne: false
+            referencedRelation: "user_matches"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       match: {
         Row: {
           created_at: string
@@ -231,31 +390,48 @@ export type Database = {
         }
         Returns: undefined
       }
+      apply_elo_for_match: {
+        Args: { p_match: string }
+        Returns: undefined
+      }
+      category_offset: {
+        Args: { p_cat: string }
+        Returns: number
+      }
+      effective_rating_for_player: {
+        Args: { p_player: string }
+        Returns: number
+      }
+      effective_team_rating_with_category: {
+        Args: { p_p1: string; p_p2: string }
+        Returns: number
+      }
       fetch_all_player_infos_from_pz: {
         Args: Record<PropertyKey, never>
         Returns: undefined
       }
-      is_match_participant: {
+      preview_elo_for_match: {
         Args: { p_match: string }
-        Returns: boolean
-      }
-      is_team_participant: {
-        Args: { p_team: string }
-        Returns: boolean
-      }
-      user_for_player: {
-        Args: { p: Database["games"]["Tables"]["players"]["Row"] }
         Returns: {
-          avatarUrl: string | null
-          created_at: string
-          disabled: boolean
-          displayName: string
-          email: string
-          name: string
-          role: Database["public"]["Enums"]["UserRole"]
-          userId: string
-          verified: boolean
+          eff_team_a: number
+          eff_team_b: number
+          expected_a: number
+          expected_b: number
+          k_base: number
+          k_eff: number
+          category_a: string
+          category_b: string
+          upset_levels: number
+          upset_multiplier: number
         }[]
+      }
+      recompute_all_elo_from_scratch: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
+      team_category: {
+        Args: { p_p1: string; p_p2: string }
+        Returns: string
       }
     }
     Enums: {
@@ -1481,18 +1657,6 @@ export type Database = {
         Args: { items: Json }
         Returns: undefined
       }
-      add_match_with_sets: {
-        Args: {
-          match_sets: Json
-          player_1a: string
-          player_1b: string
-          player_2a: string
-          player_2b: string
-          team_a: string
-          team_b: string
-        }
-        Returns: undefined
-      }
       authorize: {
         Args: { requested_permission: string }
         Returns: boolean
@@ -1543,12 +1707,12 @@ export type Database = {
       get_column_info: {
         Args: { schema_name: string; selected_table: string }
         Returns: {
-          foreign_key_table_name: string
           foreign_key_column_name: string
-          column_name: string
-          data_type: string
-          is_nullable: boolean
           foreign_key_schema_name: string
+          is_nullable: boolean
+          foreign_key_table_name: string
+          data_type: string
+          column_name: string
         }[]
       }
       get_enum_types: {
@@ -1565,8 +1729,8 @@ export type Database = {
       get_public_table_names: {
         Args: Record<PropertyKey, never>
         Returns: {
-          table_name: string
           table_schema: string
+          table_name: string
         }[]
       }
       getattendingusers: {

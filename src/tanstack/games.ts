@@ -5,6 +5,39 @@ import { GamesRepository } from "src/repository/GamesRepository";
 import { UserMatchesView } from "src/types/supabaseTypes";
 import { formatDateToDatabase } from "src/utils";
 
+export const useMatch = (matchId?: string) => useQuery({
+  queryKey: ["matches", matchId],
+  queryFn: async () => {
+    if (!matchId)
+      return null;
+    const result = await supabase
+      .schema("games")
+      .from('match')
+      .select("*, team_a: teams!team_a(*, player_1: players!player_1(*), player_2: players!player_2(*)), team_b: teams!team_b(*, player_1: players!player_1(*), player_2: players!player_2(*)), sets: sets(*)")
+      .eq("id", matchId)
+      .maybeSingle();
+
+    if (!result.data)
+      return null;
+
+    const p1a = await supabase.from("user").select("*").eq("userId", result.data.team_a.player_1.player).single()
+    const p1b = await supabase.from("user").select("*").eq("userId", result.data.team_b.player_1.player).single()
+    const p2a = await supabase.from("user").select("*").eq("userId", result.data.team_a.player_2.player).single()
+    const p2b = await supabase.from("user").select("*").eq("userId", result.data.team_b.player_2.player).single()
+
+    const elo_calc = await supabase.schema("games").from("elo_calc_log").select("*").eq("match", matchId).maybeSingle();
+
+    return {
+      ...result.data,
+      player_1a: p1a.data,
+      player_1b: p1b.data,
+      player_2a: p2a.data,
+      player_2b: p2b.data,
+      elo_calc: elo_calc.data
+    }
+  }
+})
+
 export const useMatches = () => useQuery<UserMatchesView[]>({
   queryKey: ['matches'],
   queryFn: async () => {
