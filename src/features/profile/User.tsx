@@ -3,6 +3,7 @@ import {
   CalendarMonth,
   Cancel,
   CheckCircle,
+  ContentCopy,
   Downloading,
   Logout,
   NotificationsRounded,
@@ -11,6 +12,7 @@ import {
 import {
   Card,
   CardActionArea,
+  IconButton,
   List,
   ListItem,
   ListItemAvatar,
@@ -80,6 +82,9 @@ const UserScreen = ({ user, handleSignOut }: UserScreenProps) => {
     });
   }, [openDialog, searchParams, user]);
 
+  const copyIcalURLToClipboard = () => navigator.clipboard.writeText(
+    `https://${process.env.REACT_APP_SUPABASE_PROJECT_ID}.functions.supabase.co/ical?userId=${user.userId}`
+  );
 
   return (
     <Layout appBarConfig={{ title: 'Profil', showProfile: false }}>
@@ -152,16 +157,15 @@ const UserScreen = ({ user, handleSignOut }: UserScreenProps) => {
                 if (iOS) {
                   window.location.href = `webcal://${process.env.REACT_APP_SUPABASE_PROJECT_ID}.functions.supabase.co/ical?userId=${user.userId}`;
                 } else {
-                  navigator.clipboard.writeText(
-                    `https://${process.env.REACT_APP_SUPABASE_PROJECT_ID}.functions.supabase.co/ical?userId=${user.userId}`
-                  );
+                  copyIcalURLToClipboard()
                   notifications.show("URL in Zwischenablage kopiert - Abonniere den Kalendar jetzt selbst mit der URL", { severity: "info" })
                 }
-              }}>
+              }} secondaryAction={
+                iOS && <IconButton sx={{ pr: 0 }} onClick={copyIcalURLToClipboard}><ContentCopy /></IconButton>}>
               <ListItemAvatar sx={{ flexDirection: 'row', display: 'flex', alignItems: 'center' }}>
                 <CalendarMonth />
               </ListItemAvatar>
-              <ListItemText primary="Kalendar abonnieren" secondary="Zeige deine zugesagten Events in deinem Kalendar an" />
+              <ListItemText primary="Kalendar abonnieren" secondary="Zeige deine zugesagten Events in deinem Kalendar an. Klicke hier oder kopiere rechts den Link" />
             </ListItem>
           </CardActionArea>
         </Card>
