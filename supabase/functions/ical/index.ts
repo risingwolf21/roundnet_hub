@@ -23,7 +23,7 @@ function foldLines(s: string) {
     }
     out.push(rest);
   }
-  return out.join("\r\n");
+  return out.join("\r\n"); http://127.0.0.1:54323/project/default/editor/19064?schema=games
 }
 
 function formatDateUTC(d: string | Date) {
@@ -38,28 +38,15 @@ function icsLocationLines(loc: any): string[] {
   if (!loc) return [];
 
   // name
-  const name = typeof loc === "string" ? loc : loc.name;
   const lines: string[] = [];
-  if (name) {
-    lines.push(`LOCATION:${icsEscape(String(name))}`);
-  }
 
   // GEO (RFC5545: "lat;lon")
-  const lat = typeof loc?.lat === "number" ? loc.lat : null;
-  const lon = typeof loc?.lon === "number" ? loc.lon : null;
-  if (Number.isFinite(lat) && Number.isFinite(lon)) {
-    // keine Locale-Kommas – immer Punkt
-    const latStr = String(lat);
-    const lonStr = String(lon);
-    lines.push(`GEO:${latStr};${lonStr}`);
+  if (loc?.lat && loc?.lon && loc?.name) {
+    lines.push(`LOCATION:${loc.name}`);
+    lines.push(`GEO:${loc.lat};${loc.lon}`);
 
-    // Bonus: schöne Kartenintegration in Apple-Kalender
-    // X-ADDRESS: lieber nur die Adresse ohne Namen, falls du sie trennen kannst.
-    // Hier nehmen wir den Namen als Titel, und den Namen auch als Address-Fallback.
-    const xTitle = icsEscape(String(name ?? "Ort"));
-    const xAddr = icsEscape(String(name ?? ""));
     lines.push(
-      `X-APPLE-STRUCTURED-LOCATION;VALUE=URI;X-ADDRESS=${xAddr};X-APPLE-RADIUS=49;X-TITLE=${xTitle}:geo:${latStr},${lonStr}`
+      `X-APPLE-STRUCTURED-LOCATION;VALUE=URI;X-ADDRESS=${loc.name};X-APPLE-RADIUS=49;X-TITLE=${loc.name}:geo:${loc.lat},${loc.lon}`
     );
   }
 
@@ -113,7 +100,7 @@ Deno.serve(async (req) => {
     const dtStart = formatDateUTC(e.startingDateTime);
     const dtEnd = formatDateUTC(e.endDateTime);
 
-    const locLines = icsLocationLines(e.location);
+    const locLines = icsLocationLines(JSON.parse(e.place));
 
     ics += [
       "BEGIN:VEVENT",
