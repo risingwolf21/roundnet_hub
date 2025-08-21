@@ -1,5 +1,6 @@
 import {
   AccountCircle,
+  CalendarMonth,
   Cancel,
   CheckCircle,
   Downloading,
@@ -29,6 +30,7 @@ import { ContactInformation } from './ContactInformation';
 import { NotificationsDialog } from './NotificationsDialog';
 import { PlayerzoneProfileDialog } from './PlayerzoneProfile';
 import { ProfileImage } from './ProfileImage';
+import { useNotifications } from '@toolpad/core';
 
 type UserScreenProps = {
   user: UserWithGroups;
@@ -43,10 +45,14 @@ const UserScreenProvider = () => {
 
 const UserScreen = ({ user, handleSignOut }: UserScreenProps) => {
   const dialogs = useDialogs();
+  const notifications = useNotifications();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const [notificationSupported, setNotificationSUpported] = useState(false);
   const { data: player_data, isLoading } = usePlayer(user)
+
+  const iOS =
+    typeof navigator !== 'undefined' && /iPad|iPhone|iPod/.test(navigator.userAgent);
 
   const openDialog = useCallback(async (dialog: DialogComponent<any, unknown>, payload: any, name: string) => {
     setSearchParams((prev) => {
@@ -136,6 +142,26 @@ const UserScreen = ({ user, handleSignOut }: UserScreenProps) => {
                 <img src={pzLogo} alt={'pz logo'} width="20" height="20" />
               </ListItemAvatar>
               <ListItemText primary="Playerzone Profil" />
+            </ListItem>
+          </CardActionArea>
+        </Card>
+        <Card sx={{ borderRadius: 2, py: 0, px: 0, mt: 1 }}>
+          <CardActionArea sx={{ px: 1 }}>
+            <ListItem
+              onClick={() => {
+                if (iOS) {
+                  window.location.href = `webcal://gfvaurdkieqkehsuwotr.functions.supabase.co/ical?userId=${user.userId}`;
+                } else {
+                  navigator.clipboard.writeText(
+                    `https://gfvaurdkieqkehsuwotr.functions.supabase.co/ical?userId=${user.userId}`
+                  );
+                  notifications.show("URL in Zwischenablage kopiert - Abonniere den Kalendar jetzt selbst mit der URL", { severity: "info" })
+                }
+              }}>
+              <ListItemAvatar sx={{ flexDirection: 'row', display: 'flex', alignItems: 'center' }}>
+                <CalendarMonth />
+              </ListItemAvatar>
+              <ListItemText primary="Kalendar abonnieren" secondary="Zeige deine zugesagten Events in deinem Kalendar an" />
             </ListItem>
           </CardActionArea>
         </Card>

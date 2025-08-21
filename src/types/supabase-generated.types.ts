@@ -7,11 +7,6 @@ export type Json =
   | Json[]
 
 export type Database = {
-  // Allows to automatically instantiate createClient with right options
-  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
-  __InternalSupabase: {
-    PostgrestVersion: "13.0.4"
-  }
   games: {
     Tables: {
       match: {
@@ -239,6 +234,28 @@ export type Database = {
       fetch_all_player_infos_from_pz: {
         Args: Record<PropertyKey, never>
         Returns: undefined
+      }
+      is_match_participant: {
+        Args: { p_match: string }
+        Returns: boolean
+      }
+      is_team_participant: {
+        Args: { p_team: string }
+        Returns: boolean
+      }
+      user_for_player: {
+        Args: { p: Database["games"]["Tables"]["players"]["Row"] }
+        Returns: {
+          avatarUrl: string | null
+          created_at: string
+          disabled: boolean
+          displayName: string
+          email: string
+          name: string
+          role: Database["public"]["Enums"]["UserRole"]
+          userId: string
+          verified: boolean
+        }[]
       }
     }
     Enums: {
@@ -1526,12 +1543,12 @@ export type Database = {
       get_column_info: {
         Args: { schema_name: string; selected_table: string }
         Returns: {
+          foreign_key_table_name: string
+          foreign_key_column_name: string
           column_name: string
           data_type: string
-          foreign_key_column_name: string
-          foreign_key_schema_name: string
-          foreign_key_table_name: string
           is_nullable: boolean
+          foreign_key_schema_name: string
         }[]
       }
       get_enum_types: {
@@ -1775,3 +1792,4 @@ export const Constants = {
     },
   },
 } as const
+
