@@ -150,10 +150,10 @@ const UserScreen = ({ user, handleSignOut }: UserScreenProps) => {
             <ListItem
               onClick={() => {
                 if (iOS) {
-                  window.location.href = `webcal://gfvaurdkieqkehsuwotr.functions.supabase.co/ical?userId=${user.userId}`;
+                  window.location.href = `webcal://${process.env.REACT_APP_SUPABASE_PROJECT_ID}.functions.supabase.co/ical?userId=${user.userId}`;
                 } else {
                   navigator.clipboard.writeText(
-                    `https://gfvaurdkieqkehsuwotr.functions.supabase.co/ical?userId=${user.userId}`
+                    `https://${process.env.REACT_APP_SUPABASE_PROJECT_ID}.functions.supabase.co/ical?userId=${user.userId}`
                   );
                   notifications.show("URL in Zwischenablage kopiert - Abonniere den Kalendar jetzt selbst mit der URL", { severity: "info" })
                 }
