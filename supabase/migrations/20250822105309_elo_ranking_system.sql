@@ -523,3 +523,34 @@ CREATE TRIGGER trg_match_recalc_elo AFTER INSERT OR UPDATE OF team_a, team_b ON 
 CREATE TRIGGER trg_players_set_effective_cached BEFORE INSERT OR UPDATE OF ka_index, rg_index ON games.players FOR EACH ROW EXECUTE FUNCTION games.trg_players_set_effective_cached();
 
 CREATE TRIGGER trg_sets_recalc_elo AFTER INSERT OR DELETE OR UPDATE OF team_a_score, team_b_score ON games.sets FOR EACH ROW EXECUTE FUNCTION games.trg_recalc_sets_elo();
+
+drop policy "elo_calc_log_select_if_participant" on "games"."elo_calc_log";
+
+drop policy "el_history_if_participant" on "games"."elo_history";
+
+alter table "games"."players" alter column "rg_index" drop not null;
+alter table "games"."players" alter column "rg_index" drop default;
+
+create policy "elo_calc_log_select_if_participant"
+on "games"."elo_calc_log"
+as permissive
+for select
+to authenticated
+using ((EXISTS ( SELECT 1
+   FROM ((games.match m
+     JOIN games.teams ta ON ((ta.id = m.team_a)))
+     JOIN games.teams tb ON ((tb.id = m.team_b)))
+  WHERE ((m.id = elo_calc_log.match) AND (((((auth.uid())::text = ta.player_1) OR ((auth.uid())::text = ta.player_2)) OR ((auth.uid())::text = tb.player_1)) OR ((auth.uid())::text = tb.player_2))))));
+
+
+create policy "el_history_if_participant"
+on "games"."elo_history"
+as permissive
+for select
+to authenticated
+using ((EXISTS ( SELECT 1
+   FROM ((games.match m
+     JOIN games.teams ta ON ((ta.id = m.team_a)))
+     JOIN games.teams tb ON ((tb.id = m.team_b)))
+  WHERE ((m.id = elo_history.match) AND (((((auth.uid())::text = ta.player_1) OR ((auth.uid())::text = ta.player_2)) OR ((auth.uid())::text = tb.player_1)) OR ((auth.uid())::text = tb.player_2))))));
+

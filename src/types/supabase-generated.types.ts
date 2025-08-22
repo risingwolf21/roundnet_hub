@@ -24,6 +24,7 @@ export type Database = {
           outcome_a: number
           points_a: number
           points_b: number
+          rated: boolean
           sets_a: number
           sets_b: number
           upset_levels: number
@@ -43,6 +44,7 @@ export type Database = {
           outcome_a: number
           points_a: number
           points_b: number
+          rated?: boolean
           sets_a: number
           sets_b: number
           upset_levels: number
@@ -62,6 +64,7 @@ export type Database = {
           outcome_a?: number
           points_a?: number
           points_b?: number
+          rated?: boolean
           sets_a?: number
           sets_b?: number
           upset_levels?: number
@@ -127,6 +130,8 @@ export type Database = {
         Row: {
           created_at: string
           delta: number
+          eff_new_rating: number | null
+          eff_old_rating: number | null
           id: string
           match: string
           new_rating: number
@@ -136,6 +141,8 @@ export type Database = {
         Insert: {
           created_at?: string
           delta: number
+          eff_new_rating?: number | null
+          eff_old_rating?: number | null
           id?: string
           match: string
           new_rating: number
@@ -145,6 +152,8 @@ export type Database = {
         Update: {
           created_at?: string
           delta?: number
+          eff_new_rating?: number | null
+          eff_old_rating?: number | null
           id?: string
           match?: string
           new_rating?: number
@@ -171,25 +180,31 @@ export type Database = {
       match: {
         Row: {
           created_at: string
+          created_by: string | null
           event: string | null
           id: string
           is_public: boolean
+          rated: boolean
           team_a: string
           team_b: string
         }
         Insert: {
           created_at?: string
+          created_by?: string | null
           event?: string | null
           id?: string
           is_public?: boolean
+          rated?: boolean
           team_a: string
           team_b: string
         }
         Update: {
           created_at?: string
+          created_by?: string | null
           event?: string | null
           id?: string
           is_public?: boolean
+          rated?: boolean
           team_a?: string
           team_b?: string
         }
@@ -215,36 +230,39 @@ export type Database = {
           created_at: string
           effective_rating_cached: number
           gender: string
+          hide_rating: boolean
           ka_index: number
           player: string
           pro_status: boolean
           rg_avatar_url: string | null
           rg_id: string | null
-          rg_index: number
+          rg_index: number | null
           rg_link: string | null
         }
         Insert: {
           created_at?: string
           effective_rating_cached?: number
           gender?: string
+          hide_rating?: boolean
           ka_index?: number
           player?: string
           pro_status?: boolean
           rg_avatar_url?: string | null
           rg_id?: string | null
-          rg_index?: number
+          rg_index?: number | null
           rg_link?: string | null
         }
         Update: {
           created_at?: string
           effective_rating_cached?: number
           gender?: string
+          hide_rating?: boolean
           ka_index?: number
           player?: string
           pro_status?: boolean
           rg_avatar_url?: string | null
           rg_id?: string | null
-          rg_index?: number
+          rg_index?: number | null
           rg_link?: string | null
         }
         Relationships: []
@@ -325,16 +343,69 @@ export type Database = {
             referencedColumns: ["player"]
           },
           {
+            foreignKeyName: "teams_player_1_fkey"
+            columns: ["player_1"]
+            isOneToOne: false
+            referencedRelation: "players_public"
+            referencedColumns: ["player"]
+          },
+          {
             foreignKeyName: "teams_player_2_fkey"
             columns: ["player_2"]
             isOneToOne: false
             referencedRelation: "players"
             referencedColumns: ["player"]
           },
+          {
+            foreignKeyName: "teams_player_2_fkey"
+            columns: ["player_2"]
+            isOneToOne: false
+            referencedRelation: "players_public"
+            referencedColumns: ["player"]
+          },
         ]
       }
     }
     Views: {
+      players_public: {
+        Row: {
+          effective_rating_cached: number | null
+          gender: string | null
+          hide_rating: boolean | null
+          ka_index: number | null
+          player: string | null
+          pro_status: boolean | null
+          rg_avatar_url: string | null
+          rg_id: string | null
+          rg_index: number | null
+          rg_link: string | null
+        }
+        Insert: {
+          effective_rating_cached?: never
+          gender?: string | null
+          hide_rating?: boolean | null
+          ka_index?: never
+          player?: string | null
+          pro_status?: boolean | null
+          rg_avatar_url?: string | null
+          rg_id?: string | null
+          rg_index?: never
+          rg_link?: string | null
+        }
+        Update: {
+          effective_rating_cached?: never
+          gender?: string | null
+          hide_rating?: boolean | null
+          ka_index?: never
+          player?: string | null
+          pro_status?: boolean | null
+          rg_avatar_url?: string | null
+          rg_id?: string | null
+          rg_index?: never
+          rg_link?: string | null
+        }
+        Relationships: []
+      }
       user_matches: {
         Row: {
           created_at: string | null
@@ -363,6 +434,20 @@ export type Database = {
             referencedColumns: ["player"]
           },
           {
+            foreignKeyName: "teams_player_1_fkey"
+            columns: ["team_a_player_1"]
+            isOneToOne: false
+            referencedRelation: "players_public"
+            referencedColumns: ["player"]
+          },
+          {
+            foreignKeyName: "teams_player_1_fkey"
+            columns: ["team_b_player_1"]
+            isOneToOne: false
+            referencedRelation: "players_public"
+            referencedColumns: ["player"]
+          },
+          {
             foreignKeyName: "teams_player_2_fkey"
             columns: ["team_a_player_2"]
             isOneToOne: false
@@ -374,6 +459,20 @@ export type Database = {
             columns: ["team_b_player_2"]
             isOneToOne: false
             referencedRelation: "players"
+            referencedColumns: ["player"]
+          },
+          {
+            foreignKeyName: "teams_player_2_fkey"
+            columns: ["team_a_player_2"]
+            isOneToOne: false
+            referencedRelation: "players_public"
+            referencedColumns: ["player"]
+          },
+          {
+            foreignKeyName: "teams_player_2_fkey"
+            columns: ["team_b_player_2"]
+            isOneToOne: false
+            referencedRelation: "players_public"
             referencedColumns: ["player"]
           },
         ]
@@ -401,10 +500,6 @@ export type Database = {
         Args: { p_cat: string }
         Returns: number
       }
-      compute_effective_player_for_id: {
-        Args: { p_player: string }
-        Returns: number
-      }
       compute_effective_player_from_values: {
         Args: { ka: number; rg: number }
         Returns: number
@@ -425,19 +520,23 @@ export type Database = {
         Args: { p_match: string }
         Returns: boolean
       }
+      is_member_of_teams: {
+        Args: { p_team_a: string; p_team_b: string }
+        Returns: boolean
+      }
       preview_elo_for_match: {
         Args: { p_match: string }
         Returns: {
-          eff_team_a: number
           eff_team_b: number
+          eff_team_a: number
           expected_a: number
           expected_b: number
           k_base: number
           k_eff: number
+          category_a: string
           category_b: string
           upset_levels: number
           upset_multiplier: number
-          category_a: string
         }[]
       }
       recompute_all_effective_player_ratings: {
@@ -1728,17 +1827,17 @@ export type Database = {
         Returns: {
           foreign_key_table_name: string
           foreign_key_column_name: string
-          column_name: string
+          foreign_key_schema_name: string
           is_nullable: boolean
           data_type: string
-          foreign_key_schema_name: string
+          column_name: string
         }[]
       }
       get_enum_types: {
         Args: Record<PropertyKey, never>
         Returns: {
-          enum_values: string[]
           enum_name: string
+          enum_values: string[]
         }[]
       }
       get_or_create_payment_for_user: {

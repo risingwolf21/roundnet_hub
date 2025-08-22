@@ -33,6 +33,7 @@ declare global {
   type User = Tables<'user'>;
   type Voucher = Tables<'vouchers'>;
   type Player = GamesTable<'players'>;
+  type PlayerPublic = GamesTable<'players_public'>;
   type Match = GamesTable<'match'>;
   type MatchSet = GamesTable<'sets'>;
   type Team = GamesTable<'teams'>;

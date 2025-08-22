@@ -1,12 +1,13 @@
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { queryClient } from "src/App";
 import { supabase } from "src/components/services/supabase/supabaseClient";
 
-export const usePlayer = (user: User) => useQuery<Player | null>({
+export const usePlayer = (user: User) => useQuery<PlayerPublic | null>({
   queryKey: ["player_data", user.userId],
   queryFn: async () => {
     const result = await supabase
       .schema('games')
-      .from('players')
+      .from('players_public')
       .select('*')
       .eq('player', user.userId)
       .maybeSingle()
@@ -14,6 +15,43 @@ export const usePlayer = (user: User) => useQuery<Player | null>({
 
     return result.data;
   }
+})
+
+export const useUpdateIndexHidden = (user: User) => useMutation({
+  mutationFn: async ({ hide_rating }: { hide_rating: boolean }) => {
+    const result = await supabase
+      .schema("games")
+      .from("players")
+      .update({ hide_rating: hide_rating })
+      .eq("player", user.userId)
+      .select("*")
+      .throwOnError();
+
+    return result.data;
+  },
+  onMutate: async ({ hide_rating }) => {
+    await queryClient.cancelQueries({ queryKey: ["player_data", user.userId] });
+
+    const previousPlayer = queryClient.getQueryData<Player | null>(["player_data", user.userId]);
+
+    if (previousPlayer) {
+      const newPlayer = {
+        ...previousPlayer,
+        hide_rating: hide_rating
+      }
+      queryClient.setQueryData<Player | null>(["player_data", user.userId], newPlayer);
+    }
+
+    return { previousPlayer };
+  },
+  onError: (_e, _v, context) => {
+    if (context?.previousPlayer) {
+      queryClient.setQueryData(["player_data", user.userId], context.previousPlayer);
+    }
+  },
+  onSettled: (_d, _e, _v, context) => {
+    queryClient.invalidateQueries({ queryKey: ["player_data", user.userId] });
+  },
 })
 
 export const useEloHistory = (user: User) => useQuery({

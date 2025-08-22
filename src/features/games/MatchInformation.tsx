@@ -6,7 +6,6 @@ import { useNavigate, useParams } from 'react-router';
 import Layout from 'src/components/layout/Layout';
 import { LoadingIndicator } from 'src/components/LoadingIndicator';
 import { useMatch } from 'src/tanstack/games';
-import { GamesTable } from 'src/types/supabaseTypes';
 
 type Props = {
   title: string

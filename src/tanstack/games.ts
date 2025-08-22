@@ -2,7 +2,7 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import { queryClient } from "src/App";
 import { supabase } from "src/components/services/supabase/supabaseClient";
 import { GamesRepository } from "src/repository/GamesRepository";
-import { UserMatchesView } from "src/types/supabaseTypes";
+import { GamesTable, UserMatchesView } from "src/types/supabaseTypes";
 import { formatDateToDatabase } from "src/utils";
 
 export const useMatch = (matchId?: string) => useQuery({
@@ -51,6 +51,18 @@ export const useMatches = () => useQuery<UserMatchesView[]>({
 export const usePlayers = () => useQuery<PlayerWithSimpleUser[]>({
   queryKey: ['players'],
   queryFn: GamesRepository.fetchAvailablePlayers
+})
+
+export const useTeams = () => useQuery<GamesTable<'teams'>[]>({
+  queryKey: ['teams'],
+  queryFn: async () => {
+    const result = await supabase
+      .schema("games")
+      .from("teams")
+      .select("*");
+
+    return result.data ?? [];
+  }
 })
 
 export const useCreateMatch = () => useMutation({

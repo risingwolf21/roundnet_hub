@@ -1,11 +1,11 @@
-import { AddPhotoAlternateOutlined, Close, ContentCopy, Link } from "@mui/icons-material";
-import { Alert, AppBar, Avatar, Button, Chip, CircularProgress, Container, Dialog, IconButton, List, ListItem, ListItemAvatar, ListItemText, TextField, Toolbar, Typography } from "@mui/material";
+import { AddPhotoAlternateOutlined, CheckBox, Close, ContentCopy, Link } from "@mui/icons-material";
+import { Alert, AppBar, Avatar, Button, Checkbox, Chip, CircularProgress, Container, Dialog, Divider, IconButton, List, ListItem, ListItemAvatar, ListItemText, TextField, Toolbar, Typography } from "@mui/material";
 import { captureException } from "@sentry/react";
 import { DialogProps } from "@toolpad/core/useDialogs";
 import { NotificationsProvider, useNotifications } from "@toolpad/core/useNotifications";
 import React, { useState } from "react";
 import { supabase } from "src/components/services/supabase/supabaseClient";
-import { useEloHistory, usePlayer } from "src/tanstack/player_data";
+import { useEloHistory, usePlayer, useUpdateIndexHidden } from "src/tanstack/player_data";
 import rg_small from "../../images/rgx_small.png";
 
 type PlayerzoneProfilePayload = {
@@ -16,6 +16,8 @@ const Content = ({ payload, onClose }: DialogProps<PlayerzoneProfilePayload, str
 
   const { data: player_data } = usePlayer(payload.user);
   const { data: elo_history } = useEloHistory(payload.user);
+
+  const updateHideRatingMutation = useUpdateIndexHidden(payload.user);
 
   const notifications = useNotifications();
   const [rgLink, setRgLink] = useState(player_data?.rg_link ?? "");
@@ -135,6 +137,41 @@ const Content = ({ payload, onClose }: DialogProps<PlayerzoneProfilePayload, str
           <img src={rg_small} alt={'pz logo'} width="25" height="25" />
         </ListItemAvatar>
         <ListItemText primary={player_data?.rg_index} secondary={'Roundnet Germany Index'} />
+      </ListItem>
+      <Divider />
+      {
+        player_data?.ka_index && <ListItem
+          key={'kax'}
+          disableGutters
+          sx={{
+            '&.MuiListItem-root': { p: 0 },
+          }}>
+          <ListItemAvatar>
+          </ListItemAvatar>
+          <ListItemText primary={player_data?.ka_index.toFixed()} secondary={'Karlsruhe Index'} />
+        </ListItem>
+      }
+      {
+        player_data?.effective_rating_cached && <ListItem
+          key={'eff_idx'}
+          disableGutters
+          sx={{
+            '&.MuiListItem-root': { p: 0 },
+          }}>
+          <ListItemAvatar>
+          </ListItemAvatar>
+          <ListItemText primary={player_data?.effective_rating_cached.toFixed()} secondary={'Kombinierter Index'} />
+        </ListItem>
+      }<ListItem
+        key={'hide'}
+        disableGutters
+        sx={{
+          '&.MuiListItem-root': { p: 0 },
+        }}>
+        <ListItemAvatar>
+          <Checkbox disabled={updateHideRatingMutation.isPending} checked={player_data?.hide_rating ?? false} onChange={(e) => updateHideRatingMutation.mutate({ hide_rating: e.target.checked })} />
+        </ListItemAvatar>
+        <ListItemText primary={"Index verbergen?"} secondary={'Dein Index wird anderen Spielern verborgen. Für die Berechnung wird er aber weiterhin verwendet'} />
       </ListItem>
     </List >
   </>)

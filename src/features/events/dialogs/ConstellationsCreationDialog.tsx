@@ -62,7 +62,7 @@ function determineTeamType(players: [PlayerWithUser, PlayerWithUser]): TeamType 
 function createTeam(p1: PlayerWithUser, p2: PlayerWithUser): Team {
   const players: [PlayerWithUser, PlayerWithUser] = [p1, p2];
   const noise = Math.random() * 50 - 50; // -10 bis +10
-  const base = (p1.rg_index + p2.rg_index) / 2 + noise;
+  const base = ((p1.rg_index ?? 1000) + (p2.rg_index ?? 1000)) / 2 + noise;
   const type = determineTeamType(players);
   const bonus = type === "mixed" ? -150 : type === "women" ? -300 : 0;
   return { players, strength: Math.floor(base), adjustedStrength: base + bonus, type };
@@ -344,7 +344,8 @@ const Content = ({ payload, onClose }: DialogProps<ConstellationCreationDialogPr
                             rg_avatar_url: null,
                             rg_id: null,
                             rg_link: null,
-                            effective_rating_cached: 1000
+                            effective_rating_cached: 1000,
+                            hide_rating: false
                           }])
                           setRounds([...rounds.map((z) => ({ ...z, options: { ...z.options, players: players } as MatchmakingOptions }))])
                         }
