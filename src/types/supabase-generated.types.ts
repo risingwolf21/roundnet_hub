@@ -213,6 +213,7 @@ export type Database = {
       players: {
         Row: {
           created_at: string
+          effective_rating_cached: number
           gender: string
           ka_index: number
           player: string
@@ -224,6 +225,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          effective_rating_cached?: number
           gender?: string
           ka_index?: number
           player?: string
@@ -235,6 +237,7 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          effective_rating_cached?: number
           gender?: string
           ka_index?: number
           player?: string
@@ -398,6 +401,14 @@ export type Database = {
         Args: { p_cat: string }
         Returns: number
       }
+      compute_effective_player_for_id: {
+        Args: { p_player: string }
+        Returns: number
+      }
+      compute_effective_player_from_values: {
+        Args: { ka: number; rg: number }
+        Returns: number
+      }
       effective_rating_for_player: {
         Args: { p_player: string }
         Returns: number
@@ -410,6 +421,10 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: undefined
       }
+      is_match_participant: {
+        Args: { p_match: string }
+        Returns: boolean
+      }
       preview_elo_for_match: {
         Args: { p_match: string }
         Returns: {
@@ -419,11 +434,15 @@ export type Database = {
           expected_b: number
           k_base: number
           k_eff: number
-          category_a: string
           category_b: string
           upset_levels: number
           upset_multiplier: number
+          category_a: string
         }[]
+      }
+      recompute_all_effective_player_ratings: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
       }
       recompute_all_elo_from_scratch: {
         Args: Record<PropertyKey, never>
@@ -1707,19 +1726,19 @@ export type Database = {
       get_column_info: {
         Args: { schema_name: string; selected_table: string }
         Returns: {
-          foreign_key_column_name: string
-          foreign_key_schema_name: string
-          is_nullable: boolean
           foreign_key_table_name: string
-          data_type: string
+          foreign_key_column_name: string
           column_name: string
+          is_nullable: boolean
+          data_type: string
+          foreign_key_schema_name: string
         }[]
       }
       get_enum_types: {
         Args: Record<PropertyKey, never>
         Returns: {
-          enum_name: string
           enum_values: string[]
+          enum_name: string
         }[]
       }
       get_or_create_payment_for_user: {

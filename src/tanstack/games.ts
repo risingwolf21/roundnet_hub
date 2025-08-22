@@ -13,7 +13,7 @@ export const useMatch = (matchId?: string) => useQuery({
     const result = await supabase
       .schema("games")
       .from('match')
-      .select("*, team_a: teams!team_a(*, player_1: players!player_1(*), player_2: players!player_2(*)), team_b: teams!team_b(*, player_1: players!player_1(*), player_2: players!player_2(*)), sets: sets(*)")
+      .select("*, team_a: teams!team_a(*, player_1: players!player_1(*), player_2: players!player_2(*)), team_b: teams!team_b(*, player_1: players!player_1(*), player_2: players!player_2(*)), sets: sets(*), elo_calc_log: elo_calc_log(*), elo_history: elo_history!elo_history_match_fkey(*)")
       .eq("id", matchId)
       .maybeSingle();
 
@@ -25,15 +25,12 @@ export const useMatch = (matchId?: string) => useQuery({
     const p2a = await supabase.from("user").select("*").eq("userId", result.data.team_a.player_2.player).single()
     const p2b = await supabase.from("user").select("*").eq("userId", result.data.team_b.player_2.player).single()
 
-    const elo_calc = await supabase.schema("games").from("elo_calc_log").select("*").eq("match", matchId).maybeSingle();
-
     return {
       ...result.data,
       player_1a: p1a.data,
       player_1b: p1b.data,
       player_2a: p2a.data,
-      player_2b: p2b.data,
-      elo_calc: elo_calc.data
+      player_2b: p2b.data
     }
   }
 })

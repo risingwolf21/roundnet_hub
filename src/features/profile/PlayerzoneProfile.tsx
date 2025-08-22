@@ -5,7 +5,7 @@ import { DialogProps } from "@toolpad/core/useDialogs";
 import { NotificationsProvider, useNotifications } from "@toolpad/core/useNotifications";
 import React, { useState } from "react";
 import { supabase } from "src/components/services/supabase/supabaseClient";
-import { usePlayer } from "src/tanstack/player_data";
+import { useEloHistory, usePlayer } from "src/tanstack/player_data";
 import rg_small from "../../images/rgx_small.png";
 
 type PlayerzoneProfilePayload = {
@@ -14,7 +14,8 @@ type PlayerzoneProfilePayload = {
 
 const Content = ({ payload, onClose }: DialogProps<PlayerzoneProfilePayload, string | null>) => {
 
-  const { data: player_data } = usePlayer(payload.user)
+  const { data: player_data } = usePlayer(payload.user);
+  const { data: elo_history } = useEloHistory(payload.user);
 
   const notifications = useNotifications();
   const [rgLink, setRgLink] = useState(player_data?.rg_link ?? "");

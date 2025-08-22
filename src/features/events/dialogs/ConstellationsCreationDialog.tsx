@@ -343,7 +343,8 @@ const Content = ({ payload, onClose }: DialogProps<ConstellationCreationDialogPr
                             created_at: "",
                             rg_avatar_url: null,
                             rg_id: null,
-                            rg_link: null
+                            rg_link: null,
+                            effective_rating_cached: 1000
                           }])
                           setRounds([...rounds.map((z) => ({ ...z, options: { ...z.options, players: players } as MatchmakingOptions }))])
                         }

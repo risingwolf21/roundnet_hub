@@ -1,17 +1,156 @@
-import { AccountBox, Add, CalendarMonth, CardTravel, ContentCopy, Warning } from '@mui/icons-material';
-import { Alert, Avatar, Box, Button, Card, CardActionArea, CardContent, CardHeader, Chip, Fab, IconButton, List, ListItem, ListItemAvatar, ListItemText, ListSubheader, Paper, Stack, Table, TableBody, TableCell, TableHead, TableRow, Typography } from '@mui/material';
+import { AccountBox } from '@mui/icons-material';
+import { Alert, Avatar, Box, Card, CardContent, Chip, CircularProgress, Divider, ListItem, ListItemAvatar, ListItemText, Paper, Skeleton, Stack, Typography } from '@mui/material';
 import { useDialogs, useNotifications } from '@toolpad/core';
-import { t } from 'i18next';
-import moment from 'moment';
 import React, { useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router';
 import Layout from 'src/components/layout/Layout';
-import { PullToRefresh } from 'src/components/pull-to-refresh/PullToRefresh';
-import { useMatch, useMatches } from 'src/tanstack/games';
-import { groupBy } from 'src/utils';
-import { ReportSetsDialog } from './dialogs/ReportSetsDialog';
-import { UserMatchesView } from 'src/types/supabaseTypes';
-import { isAfter } from 'date-fns';
+import { LoadingIndicator } from 'src/components/LoadingIndicator';
+import { useMatch } from 'src/tanstack/games';
+import { GamesTable } from 'src/types/supabaseTypes';
+
+type Props = {
+  title: string
+  expected?: number
+  eff_team?: number
+  cat_team?: string
+  sets: { score: number, won: boolean }[]
+  p1_eff?: number
+  p2_eff?: number
+  p1_delta?: number
+  p2_delta?: number
+  p1: User | null
+  p2: User | null
+}
+
+const deltaChip = (delta?: number) => delta && <Chip color={delta > 0 ? 'success' : "error"} size='small' label={delta.toFixed()} />
+
+const LoadingTeamCard = () => {
+  return <Card elevation={3} sx={{ borderRadius: 2, py: 0, px: 0, mt: 1 }}>
+    <CardContent sx={{ p: 0 }}>
+      <Box sx={{ flexDirection: "row", display: "flex", justifyContent: "space-between", p: 2 }}>
+        <Stack direction={"row"} spacing={2}>
+          <Typography variant="h5" component="div">
+            <Skeleton variant="text" width={80} height={30} />
+          </Typography>
+          <Box sx={{ display: "flex", flexDirection: "column", justifyContent: "center" }}>
+            <Skeleton variant="rectangular" />
+          </Box>
+        </Stack>
+        <Box sx={{ display: "flex", flexDirection: "column", justifyContent: "center" }}>
+          <Skeleton variant="rectangular" />
+        </Box>
+      </Box>
+      <Divider />
+      <Box sx={{ display: "flex", justifyContent: "space-between", px: 2, py: 1 }}>
+        <Box sx={{ display: "flex", flexDirection: "column", justifyContent: "center" }}>
+          <Skeleton variant="text" width={100} />
+        </Box>
+        <Stack direction={"row"} spacing={1}>
+          {
+            [0, 0, 0]
+              .map(x => <Skeleton variant="rectangular" width={40} height={40} />)
+          }
+        </Stack>
+      </Box>
+      <Divider />
+      <Box sx={{ display: "flex", justifyContent: "space-between", px: 2, py: 1 }}>
+        <Box sx={{ display: "flex", flexDirection: "column", justifyContent: "center" }}>
+          <Skeleton variant="text" width={100}/>
+        </Box>
+        <Skeleton variant="rectangular" />
+      </Box>
+      <Divider />
+      <ListItem>
+        <ListItemAvatar>
+          <Avatar sx={{ borderRadius: 2 }}>
+            <Skeleton variant="rectangular" width={40} height={40} />
+          </Avatar>
+        </ListItemAvatar>
+        <ListItemText primary={<Skeleton variant="text" />} />
+      </ListItem>
+      <ListItem>
+        <ListItemAvatar>
+          <Avatar sx={{ borderRadius: 2 }}>
+            <Skeleton variant="rectangular" width={40} height={40} />
+          </Avatar>
+        </ListItemAvatar>
+        <ListItemText primary={<Skeleton variant="text" />} />
+      </ListItem>
+    </CardContent>
+
+  </Card>
+}
+
+const TeamCard = ({ title, expected, eff_team, cat_team, sets, p1_eff, p2_eff, p1_delta, p2_delta, p1, p2 }: Props) => {
+  return <Card elevation={3} sx={{ borderRadius: 2, py: 0, px: 0, mt: 1 }}>
+    <CardContent sx={{ p: 0 }}>
+      <Box sx={{ flexDirection: "row", display: "flex", justifyContent: "space-between", p: 2 }}>
+        <Stack direction={"row"} spacing={2}>
+          <Typography variant="h5" component="div">
+            {title}
+          </Typography>
+          <Box sx={{ display: "flex", flexDirection: "column", justifyContent: "center" }}>
+            <Chip color='primary' size='small' label={cat_team} />
+          </Box>
+        </Stack>
+        <Box sx={{ display: "flex", flexDirection: "column", justifyContent: "center" }}>
+          <Chip color='default' label={eff_team?.toFixed()} />
+        </Box>
+      </Box>
+      <Divider />
+      <Box sx={{ display: "flex", justifyContent: "space-between", px: 2, py: 1 }}>
+        <Box sx={{ display: "flex", flexDirection: "column", justifyContent: "center" }}>
+          <Typography fontWeight={"bold"}>Sätze</Typography>
+        </Box>
+        <Stack direction={"row"} spacing={1}>
+          {
+            sets
+              .map(x => <Chip color={x.won ? 'success' : 'default'} variant={"filled"} label={x.score} />)
+          }
+        </Stack>
+      </Box>
+      <Divider />
+      <Box sx={{ display: "flex", justifyContent: "space-between", px: 2, py: 1 }}>
+        <Box sx={{ display: "flex", flexDirection: "column", justifyContent: "center" }}>
+          <Typography fontWeight={"bold"}>Gewinnwahrscheinlichkeit</Typography>
+        </Box>
+        <Chip color={(expected ?? 0) > 0.5 ? 'success' : 'warning'} variant={"filled"} label={((expected ?? 0) * 100).toFixed() + " %"} />
+      </Box>
+      <Divider />
+      <ListItem secondaryAction={<Stack direction={"row"} spacing={1}>
+        <Typography sx={{ fontWeight: "bold" }}>{p1_eff?.toFixed(0)}</Typography>
+        {deltaChip(p1_delta)}
+      </Stack>}>
+        <ListItemAvatar>
+          <Avatar sx={{ borderRadius: 2 }}>
+            {p1?.avatarUrl ? (
+              <img src={p1?.avatarUrl} alt="logo" width={'100%'} height={'100%'} />
+            ) : (
+              <AccountBox />
+            )}
+          </Avatar>
+        </ListItemAvatar>
+        <ListItemText primary={p1?.displayName} />
+      </ListItem>
+      <ListItem secondaryAction={<Stack direction={"row"} spacing={1}>
+        <Typography sx={{ fontWeight: "bold" }}>{p2_eff?.toFixed(0)}</Typography>
+        {deltaChip(p2_delta)}
+      </Stack>}>
+        <ListItemAvatar>
+          <Avatar sx={{ borderRadius: 2 }}>
+            {p2?.avatarUrl ? (
+              <img src={p2?.avatarUrl} alt="logo" width={'100%'} height={'100%'} />
+            ) : (
+              <AccountBox />
+            )}
+          </Avatar>
+        </ListItemAvatar>
+        <ListItemText primary={p2?.displayName} />
+      </ListItem>
+    </CardContent>
+
+  </Card>
+}
 
 const MatchInformation = () => {
   const { matchId } = useParams();
@@ -21,10 +160,24 @@ const MatchInformation = () => {
 
   const { data: match = null, error, isLoading, refetch } = useMatch(matchId);
 
+  const player1a_delta = match?.elo_history.find(x => x.user === match.team_a.player_1.player)?.delta;
+  const player2a_delta = match?.elo_history.find(x => x.user === match.team_a.player_2.player)?.delta;
+  const player1b_delta = match?.elo_history.find(x => x.user === match.team_b.player_1.player)?.delta;
+  const player2b_delta = match?.elo_history.find(x => x.user === match.team_b.player_2.player)?.delta;
+
   useEffect(() => {
     if (error)
       notifications.show(error.message, { severity: "error", actionText: "Neu laden", onAction: () => refetch() })
   }, [error, notifications, refetch]);
+
+  if (isLoading)
+    return <Layout appBarConfig={{ navigateBackPath: "/matches" }}>
+      <LoadingIndicator loading={true} />
+       <Stack direction={"column"} spacing={2} sx={{ m: 1, justifyContent: "center" }}>
+        <LoadingTeamCard/>
+        <LoadingTeamCard/>
+       </Stack>
+    </Layout>
 
   if (!match)
     return <Layout>
@@ -32,90 +185,34 @@ const MatchInformation = () => {
     </Layout>
 
   return (
-    <Layout>
+    <Layout appBarConfig={{ navigateBackPath: "/matches" }}>
       <Stack direction={"column"} spacing={2} sx={{ m: 1, justifyContent: "center" }}>
-        <Card sx={{ borderRadius: 2, py: 0, px: 0, mt: 1 }}>
-          <CardContent>
-            <Stack direction={"row"} spacing={2}>
-              <Typography variant="h5" component="div">
-                Team - {match.elo_calc?.eff_team_a}
-              </Typography>
+        <TeamCard
+          title='Team A'
+          expected={match.elo_calc_log?.expected_a}
+          eff_team={match.elo_calc_log?.eff_team_a}
+          cat_team={match.elo_calc_log?.category_a}
+          sets={match.sets.reduce((curr, prev) => [...curr, { score: prev.team_a_score, won: prev.team_b_score < prev.team_a_score }], new Array<{ score: number, won: boolean }>())}
+          p1_eff={match.team_a.player_1.effective_rating_cached}
+          p2_eff={match.team_a.player_2.effective_rating_cached}
+          p1_delta={player1a_delta}
+          p2_delta={player2a_delta}
+          p1={match.player_1a}
+          p2={match.player_2a} />
 
-              <Box sx={{ display: "flex", flexDirection: "column", justifyContent: "center" }}>
-                <Chip color='primary' size='small' label={match.elo_calc?.category_a} />
-              </Box>
-            </Stack>
-            <ListItem sx={{ pl: 0 }} secondaryAction={<Typography sx={{ fontWeight: "bold" }}>{match.team_a.player_1.ka_index}</Typography>}>
-              <ListItemAvatar>
-                <Avatar sx={{ borderRadius: 2 }}>
-                  {match.player_1a?.avatarUrl ? (
-                    <img src={match.player_1a?.avatarUrl} alt="logo" width={'100%'} height={'100%'} />
-                  ) : (
-                    <AccountBox />
-                  )}
-                </Avatar>
-              </ListItemAvatar>
-              <ListItemText primary={match.player_1a?.displayName} />
-            </ListItem>
-            <ListItem sx={{ pl: 0 }} secondaryAction={<Typography sx={{ fontWeight: "bold" }}>{match.team_a.player_2.ka_index}</Typography>}>
-              <ListItemAvatar>
-                <Avatar sx={{ borderRadius: 2 }}>
-                  {match.player_2a?.avatarUrl ? (
-                    <img src={match.player_2a?.avatarUrl} alt="logo" width={'100%'} height={'100%'} />
-                  ) : (
-                    <AccountBox />
-                  )}
-                </Avatar>
-              </ListItemAvatar>
-              <ListItemText primary={match.player_2a?.displayName} />
-            </ListItem>
-          </CardContent>
+        <TeamCard
+          title='Team B'
+          expected={match.elo_calc_log?.expected_b}
+          eff_team={match.elo_calc_log?.eff_team_b}
+          cat_team={match.elo_calc_log?.category_b}
+          sets={match.sets.reduce((curr, prev) => [...curr, { score: prev.team_b_score, won: prev.team_b_score > prev.team_a_score }], new Array<{ score: number, won: boolean }>())}
+          p1_eff={match.team_b.player_1.effective_rating_cached}
+          p2_eff={match.team_b.player_2.effective_rating_cached}
+          p1_delta={player1b_delta}
+          p2_delta={player2b_delta}
+          p1={match.player_1b}
+          p2={match.player_2b} />
 
-        </Card>
-
-
-        <Paper sx={{ p: 0 }}>
-          <Typography variant='h4' fontWeight={"bold"}>Sätze 1:0</Typography>
-        </Paper>
-
-        <Card sx={{ borderRadius: 2, py: 0, px: 0, mt: 1 }}>
-          <CardContent>
-            <Stack direction={"row"} spacing={2}>
-              <Typography variant="h5" component="div">
-                Team - {match.elo_calc?.eff_team_b}
-              </Typography>
-
-              <Box sx={{ display: "flex", flexDirection: "column", justifyContent: "center" }}>
-                <Chip color='primary' size='small' label={match.elo_calc?.category_b} />
-              </Box>
-            </Stack>
-            <ListItem sx={{ pl: 0 }} secondaryAction={<Typography sx={{ fontWeight: "bold" }}>{match.team_b.player_1.ka_index}</Typography>}>
-              <ListItemAvatar>
-                <Avatar sx={{ borderRadius: 2 }}>
-                  {match.player_1b?.avatarUrl ? (
-                    <img src={match.player_1b?.avatarUrl} alt="logo" width={'100%'} height={'100%'} />
-                  ) : (
-                    <AccountBox />
-                  )}
-                </Avatar>
-              </ListItemAvatar>
-              <ListItemText primary={match.player_1b?.displayName} />
-            </ListItem>
-            <ListItem sx={{ pl: 0 }} secondaryAction={<Typography sx={{ fontWeight: "bold" }}>{match.team_b.player_2.ka_index}</Typography>}>
-              <ListItemAvatar>
-                <Avatar sx={{ borderRadius: 2 }}>
-                  {match.player_2b?.avatarUrl ? (
-                    <img src={match.player_2b?.avatarUrl} alt="logo" width={'100%'} height={'100%'} />
-                  ) : (
-                    <AccountBox />
-                  )}
-                </Avatar>
-              </ListItemAvatar>
-              <ListItemText primary={match.player_2b?.displayName} />
-            </ListItem>
-          </CardContent>
-
-        </Card>
       </Stack>
     </Layout>
   );
