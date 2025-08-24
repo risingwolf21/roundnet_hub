@@ -3,6 +3,7 @@
 
 name: Production
 'on':
+  workflow_dispatch:
   push:
     branches:
       - production

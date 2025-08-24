@@ -13,15 +13,15 @@ type Props = {
   eff_team?: number
   cat_team?: string
   sets: { score: number, won: boolean }[]
-  p1_eff?: number
-  p2_eff?: number
-  p1_delta?: number
-  p2_delta?: number
+  p1_eff?: number | null
+  p2_eff?: number | null
+  p1_delta?: number | null
+  p2_delta?: number | null
   p1: User | null
   p2: User | null
 }
 
-const deltaChip = (delta?: number) => delta && <Chip color={delta > 0 ? 'success' : "error"} size='small' label={delta.toFixed()} />
+const deltaChip = (delta?: number | null) => delta && <Chip color={delta > 0 ? 'success' : "error"} size='small' label={delta.toFixed()} />
 
 const LoadingTeamCard = () => {
   return <Card elevation={3} sx={{ borderRadius: 2, py: 0, px: 0, mt: 1 }}>
@@ -54,7 +54,7 @@ const LoadingTeamCard = () => {
       <Divider />
       <Box sx={{ display: "flex", justifyContent: "space-between", px: 2, py: 1 }}>
         <Box sx={{ display: "flex", flexDirection: "column", justifyContent: "center" }}>
-          <Skeleton variant="text" width={100}/>
+          <Skeleton variant="text" width={100} />
         </Box>
         <Skeleton variant="rectangular" />
       </Box>
@@ -159,10 +159,10 @@ const MatchInformation = () => {
 
   const { data: match = null, error, isLoading, refetch } = useMatch(matchId);
 
-  const player1a_delta = match?.elo_history.find(x => x.user === match.team_a.player_1.player)?.delta;
-  const player2a_delta = match?.elo_history.find(x => x.user === match.team_a.player_2.player)?.delta;
-  const player1b_delta = match?.elo_history.find(x => x.user === match.team_b.player_1.player)?.delta;
-  const player2b_delta = match?.elo_history.find(x => x.user === match.team_b.player_2.player)?.delta;
+  const player1a_history = match?.elo_history.find(x => x.user === match.team_a.player_1.player);
+  const player2a_history = match?.elo_history.find(x => x.user === match.team_a.player_2.player);
+  const player1b_history = match?.elo_history.find(x => x.user === match.team_b.player_1.player);
+  const player2b_history = match?.elo_history.find(x => x.user === match.team_b.player_2.player);
 
   useEffect(() => {
     if (error)
@@ -172,11 +172,14 @@ const MatchInformation = () => {
   if (isLoading)
     return <Layout appBarConfig={{ navigateBackPath: "/matches" }}>
       <LoadingIndicator loading={true} />
-       <Stack direction={"column"} spacing={2} sx={{ m: 1, justifyContent: "center" }}>
-        <LoadingTeamCard/>
-        <LoadingTeamCard/>
-       </Stack>
+      <Stack direction={"column"} spacing={2} sx={{ m: 1, justifyContent: "center" }}>
+        <LoadingTeamCard />
+        <LoadingTeamCard />
+      </Stack>
     </Layout>
+
+  if (!player1a_history || !player1b_history || !player2a_history || !player2b_history)
+    return
 
   if (!match)
     return <Layout>
@@ -192,10 +195,10 @@ const MatchInformation = () => {
           eff_team={match.elo_calc_log?.eff_team_a}
           cat_team={match.elo_calc_log?.category_a}
           sets={match.sets.reduce((curr, prev) => [...curr, { score: prev.team_a_score, won: prev.team_b_score < prev.team_a_score }], new Array<{ score: number, won: boolean }>())}
-          p1_eff={match.team_a.player_1.effective_rating_cached}
-          p2_eff={match.team_a.player_2.effective_rating_cached}
-          p1_delta={player1a_delta}
-          p2_delta={player2a_delta}
+          p1_eff={player1a_history?.eff_old_rating}
+          p2_eff={player2a_history?.eff_old_rating}
+          p1_delta={(player1a_history.eff_new_rating ?? 0) - (player1a_history.eff_old_rating ?? 0)}
+          p2_delta={(player2a_history.eff_new_rating ?? 0) - (player2a_history.eff_old_rating ?? 0)}
           p1={match.player_1a}
           p2={match.player_2a} />
 
@@ -205,10 +208,10 @@ const MatchInformation = () => {
           eff_team={match.elo_calc_log?.eff_team_b}
           cat_team={match.elo_calc_log?.category_b}
           sets={match.sets.reduce((curr, prev) => [...curr, { score: prev.team_b_score, won: prev.team_b_score > prev.team_a_score }], new Array<{ score: number, won: boolean }>())}
-          p1_eff={match.team_b.player_1.effective_rating_cached}
-          p2_eff={match.team_b.player_2.effective_rating_cached}
-          p1_delta={player1b_delta}
-          p2_delta={player2b_delta}
+          p1_eff={player1b_history?.eff_old_rating}
+          p2_eff={player2b_history?.eff_old_rating}
+          p1_delta={(player1b_history.eff_new_rating ?? 0) - (player1b_history.eff_old_rating ?? 0)}
+          p2_delta={(player2b_history.eff_new_rating ?? 0) - (player2b_history.eff_old_rating ?? 0)}
           p1={match.player_1b}
           p2={match.player_2b} />
 

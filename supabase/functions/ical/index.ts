@@ -23,7 +23,7 @@ function foldLines(s: string) {
     }
     out.push(rest);
   }
-  return out.join("\r\n"); http://127.0.0.1:54323/project/default/editor/19064?schema=games
+  return out.join("\r\n");
 }
 
 function formatDateUTC(d: string | Date) {

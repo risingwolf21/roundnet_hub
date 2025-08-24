@@ -4,6 +4,7 @@ import {
   Box,
   Button,
   CircularProgress,
+  Divider,
   Fab,
   Grid2 as Grid,
   IconButton,
@@ -17,10 +18,45 @@ import { useNotifications } from '@toolpad/core/useNotifications';
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
 import Layout from 'src/components/layout/Layout';
-import { useCreateMatch, usePlayers } from 'src/tanstack/games';
+import { useCreateMatch, usePlayers, useTeams } from 'src/tanstack/games';
+import { GamesTable } from 'src/types/supabaseTypes';
 
-type Props = { options: SimpleUser[]; loading: boolean; label: string; onSelect: (value: SimpleUser | null) => void };
-const SelectPlayer = ({ options, loading, label, onSelect }: Props) => {
+type Props = { options: SimpleUser[]; loading: boolean; label: string; value: SimpleUser | null; onSelect: (value: SimpleUser | null) => void };
+const SelectPlayer = ({ options, loading, label, value, onSelect }: Props) => {
+  return (
+    <Autocomplete
+      disablePortal
+      fullWidth
+      loading={loading}
+      options={options}
+      value={value}
+      getOptionLabel={(option) => option.name}
+      getOptionKey={(option) => option.userId}
+      isOptionEqualToValue={(o, v) => o.userId === v.userId}
+      onChange={(e, v) => onSelect(v)}
+      renderInput={(params) => (
+        <TextField
+          {...params}
+          label={label}
+          slotProps={{
+            input: {
+              ...params.InputProps,
+              endAdornment: (
+                <React.Fragment>
+                  {loading ? <CircularProgress color="inherit" size={20} /> : null}
+                  {params.InputProps.endAdornment}
+                </React.Fragment>
+              ),
+            },
+          }}
+        />
+      )}
+    />
+  );
+};
+
+type SelectTeamProps = { options: GamesTable<'teams'>[]; loading: boolean; label: string; onSelect: (value: GamesTable<'teams'> | null) => void };
+const SelectTeam = ({ options, loading, label, onSelect }: SelectTeamProps) => {
   return (
     <Autocomplete
       disablePortal
@@ -28,7 +64,6 @@ const SelectPlayer = ({ options, loading, label, onSelect }: Props) => {
       loading={loading}
       options={options}
       getOptionLabel={(option) => option.name}
-      getOptionKey={(option) => option.userId}
       onChange={(e, v) => onSelect(v)}
       renderInput={(params) => (
         <TextField
@@ -60,17 +95,21 @@ const ReportScore = () => {
 
   const createMatch = useCreateMatch();
 
-  const [player1a, setPlayer1a] = useState<SimpleUser | null>();
-  const [player2a, setPlayer2a] = useState<SimpleUser | null>();
-  const [player1b, setPlayer1b] = useState<SimpleUser | null>();
-  const [player2b, setPlayer2b] = useState<SimpleUser | null>();
+  const [player1a, setPlayer1a] = useState<SimpleUser | null>(null);
+  const [player2a, setPlayer2a] = useState<SimpleUser | null>(null);
+  const [player1b, setPlayer1b] = useState<SimpleUser | null>(null);
+  const [player2b, setPlayer2b] = useState<SimpleUser | null>(null);
 
   const { data: players = [], error, isLoading, refetch } = usePlayers();
+  const { data: teams = [], error: teamsError, isLoading: teamsLoading, refetch: teamsRefetch } = useTeams();
+
+  const blocked1 = [player1a, player1b].filter(Boolean).map(u => u!.userId);
+  const blocked2 = [player2a, player2b].filter(Boolean).map(u => u!.userId);
 
   useEffect(() => {
-    if (error)
-      notifications.show(error.message, { severity: "error", actionText: "Neu laden", onAction: () => refetch() })
-  }, [error, notifications, refetch])
+    if (error || teamsError)
+      notifications.show(error?.message ?? teamsError?.message, { severity: "error", actionText: "Neu laden", onAction: () => { refetch(); teamsRefetch(); } })
+  }, [error, teamsError, notifications, refetch])
 
   const saveScores = () => {
     if (!player1a) {
@@ -142,9 +181,43 @@ const ReportScore = () => {
             <Typography sx={{ fontWeight: 'bold' }}>Team B</Typography>
           </Grid>
           <Grid size={6} sx={{ p: 2 }}>
+            <SelectTeam
+              label="Wähle ein Team"
+              loading={isLoading}
+              options={teams.filter(t => !blocked1.includes(t.player_1) && !blocked1.includes(t.player_2))}
+              onSelect={(x) => {
+                const p1a = players.find(y => y.player === x?.player_1);
+                const p2a = players.find(y => y.player === x?.player_2);
+                if (p1a && p2a) {
+                  setPlayer1a({ userId: p1a.userId, name: p1a.name })
+                  setPlayer2a({ userId: p2a.userId, name: p2a.name })
+                }
+              }}
+            />
+          </Grid>
+          <Grid size={6} sx={{ p: 2 }}>
+            <SelectTeam
+              label="Wähle ein Team"
+              loading={isLoading}
+              options={teams.filter(t => !blocked2.includes(t.player_1) && !blocked2.includes(t.player_2))}
+              onSelect={(x) => {
+                const p1b = players.find(y => y.player === x?.player_1);
+                const p2b = players.find(y => y.player === x?.player_2);
+                if (p1b && p2b) {
+                  setPlayer1b({ userId: p1b.userId, name: p1b.name })
+                  setPlayer2b({ userId: p2b.userId, name: p2b.name })
+                }
+              }}
+            />
+          </Grid>
+          <Grid size={12}>
+            <Divider />
+          </Grid>
+          <Grid size={6} sx={{ p: 2 }}>
             <SelectPlayer
               label="Player 1"
               loading={isLoading}
+              value={player1a}
               options={players.filter(
                 (x) =>
                   ![player1b, player2a, player2b]
@@ -159,6 +232,7 @@ const ReportScore = () => {
             <SelectPlayer
               label="Player 1"
               loading={isLoading}
+              value={player1b}
               options={players.filter(
                 (x) =>
                   ![player1a, player2a, player2b]
@@ -173,6 +247,7 @@ const ReportScore = () => {
             <SelectPlayer
               label="Player 2"
               loading={isLoading}
+              value={player2a}
               options={players.filter(
                 (x) =>
                   ![player1b, player1a, player2b]
@@ -187,6 +262,7 @@ const ReportScore = () => {
             <SelectPlayer
               label="Player 2"
               loading={isLoading}
+              value={player2b}
               options={players.filter(
                 (x) =>
                   ![player1b, player1a, player2a]
@@ -211,7 +287,7 @@ const ReportScore = () => {
                       type="number"
                       value={x.team_a_score.toString()}
                       onChange={(e) => {
-                        setSets([...sets.filter((y) => y.id !== x.id), { ...x, team_a_score: Number(e.target.value) }]);
+                        setSets([...sets.filter((y) => y.set_number !== x.set_number), { ...x, team_a_score: Number(e.target.value) }]);
                       }}
                       label={`Satz ${x.set_number} - Team A`}
                     />
@@ -222,7 +298,7 @@ const ReportScore = () => {
                       type="number"
                       value={x.team_b_score.toString()}
                       onChange={(e) =>
-                        setSets([...sets.filter((y) => y.id !== x.id), { ...x, team_b_score: Number(e.target.value) }])
+                        setSets([...sets.filter((y) => y.set_number !== x.set_number), { ...x, team_b_score: Number(e.target.value) }])
                       }
                       label={`Satz ${x.set_number} - Team B`}
                     />
