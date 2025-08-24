@@ -19,6 +19,7 @@ type Props = {
   p2_delta?: number | null
   p1: User | null
   p2: User | null
+  rated: boolean
 }
 
 const deltaChip = (delta?: number | null) => delta && <Chip color={delta > 0 ? 'success' : "error"} size='small' label={delta.toFixed()} />
@@ -80,7 +81,7 @@ const LoadingTeamCard = () => {
   </Card>
 }
 
-const TeamCard = ({ title, expected, eff_team, cat_team, sets, p1_eff, p2_eff, p1_delta, p2_delta, p1, p2 }: Props) => {
+const TeamCard = ({ title, expected, eff_team, cat_team, sets, p1_eff, p2_eff, p1_delta, p2_delta, p1, p2, rated }: Props) => {
   return <Card elevation={3} sx={{ borderRadius: 2, py: 0, px: 0, mt: 1 }}>
     <CardContent sx={{ p: 0 }}>
       <Box sx={{ flexDirection: "row", display: "flex", justifyContent: "space-between", p: 2 }}>
@@ -88,13 +89,17 @@ const TeamCard = ({ title, expected, eff_team, cat_team, sets, p1_eff, p2_eff, p
           <Typography variant="h5" component="div">
             {title}
           </Typography>
-          <Box sx={{ display: "flex", flexDirection: "column", justifyContent: "center" }}>
-            <Chip color='primary' size='small' label={cat_team} />
-          </Box>
+          {
+            rated && <Box sx={{ display: "flex", flexDirection: "column", justifyContent: "center" }}>
+              <Chip color='primary' size='small' label={cat_team} />
+            </Box>
+          }
         </Stack>
-        <Box sx={{ display: "flex", flexDirection: "column", justifyContent: "center" }}>
-          <Chip color='default' label={eff_team?.toFixed()} />
-        </Box>
+        {
+          rated && <Box sx={{ display: "flex", flexDirection: "column", justifyContent: "center" }}>
+            <Chip color='default' label={eff_team?.toFixed()} />
+          </Box>
+        }
       </Box>
       <Divider />
       <Box sx={{ display: "flex", justifyContent: "space-between", px: 2, py: 1 }}>
@@ -109,14 +114,18 @@ const TeamCard = ({ title, expected, eff_team, cat_team, sets, p1_eff, p2_eff, p
         </Stack>
       </Box>
       <Divider />
-      <Box sx={{ display: "flex", justifyContent: "space-between", px: 2, py: 1 }}>
-        <Box sx={{ display: "flex", flexDirection: "column", justifyContent: "center" }}>
-          <Typography fontWeight={"bold"}>Gewinnwahrscheinlichkeit</Typography>
-        </Box>
-        <Chip color={(expected ?? 0) > 0.5 ? 'success' : 'warning'} variant={"filled"} label={((expected ?? 0) * 100).toFixed() + " %"} />
-      </Box>
-      <Divider />
-      <ListItem secondaryAction={<Stack direction={"row"} spacing={1}>
+      {
+        rated && <>
+          <Box sx={{ display: "flex", justifyContent: "space-between", px: 2, py: 1 }}>
+            <Box sx={{ display: "flex", flexDirection: "column", justifyContent: "center" }}>
+              <Typography fontWeight={"bold"}>Gewinnwahrscheinlichkeit</Typography>
+            </Box>
+            <Chip color={(expected ?? 0) > 0.5 ? 'success' : 'warning'} variant={"filled"} label={((expected ?? 0) * 100).toFixed() + " %"} />
+          </Box>
+          <Divider />
+        </>
+      }
+      <ListItem secondaryAction={rated && <Stack direction={"row"} spacing={1}>
         <Typography sx={{ fontWeight: "bold" }}>{p1_eff?.toFixed(0)}</Typography>
         {deltaChip(p1_delta)}
       </Stack>}>
@@ -131,7 +140,7 @@ const TeamCard = ({ title, expected, eff_team, cat_team, sets, p1_eff, p2_eff, p
         </ListItemAvatar>
         <ListItemText primary={p1?.displayName} />
       </ListItem>
-      <ListItem secondaryAction={<Stack direction={"row"} spacing={1}>
+      <ListItem secondaryAction={rated && <Stack direction={"row"} spacing={1}>
         <Typography sx={{ fontWeight: "bold" }}>{p2_eff?.toFixed(0)}</Typography>
         {deltaChip(p2_delta)}
       </Stack>}>
@@ -148,7 +157,7 @@ const TeamCard = ({ title, expected, eff_team, cat_team, sets, p1_eff, p2_eff, p
       </ListItem>
     </CardContent>
 
-  </Card>
+  </Card >
 }
 
 const MatchInformation = () => {
@@ -178,9 +187,6 @@ const MatchInformation = () => {
       </Stack>
     </Layout>
 
-  if (!player1a_history || !player1b_history || !player2a_history || !player2b_history)
-    return
-
   if (!match)
     return <Layout>
       <Alert severity='error'>Das Spiel konnte nicht gefunden werden oder wird gerade geladen.</Alert>
@@ -197,10 +203,11 @@ const MatchInformation = () => {
           sets={match.sets.reduce((curr, prev) => [...curr, { score: prev.team_a_score, won: prev.team_b_score < prev.team_a_score }], new Array<{ score: number, won: boolean }>())}
           p1_eff={player1a_history?.eff_old_rating}
           p2_eff={player2a_history?.eff_old_rating}
-          p1_delta={(player1a_history.eff_new_rating ?? 0) - (player1a_history.eff_old_rating ?? 0)}
-          p2_delta={(player2a_history.eff_new_rating ?? 0) - (player2a_history.eff_old_rating ?? 0)}
+          p1_delta={(player1a_history?.eff_new_rating ?? 0) - (player1a_history?.eff_old_rating ?? 0)}
+          p2_delta={(player2a_history?.eff_new_rating ?? 0) - (player2a_history?.eff_old_rating ?? 0)}
           p1={match.player_1a}
-          p2={match.player_2a} />
+          p2={match.player_2a}
+          rated={match.rated} />
 
         <TeamCard
           title='Team B'
@@ -210,10 +217,11 @@ const MatchInformation = () => {
           sets={match.sets.reduce((curr, prev) => [...curr, { score: prev.team_b_score, won: prev.team_b_score > prev.team_a_score }], new Array<{ score: number, won: boolean }>())}
           p1_eff={player1b_history?.eff_old_rating}
           p2_eff={player2b_history?.eff_old_rating}
-          p1_delta={(player1b_history.eff_new_rating ?? 0) - (player1b_history.eff_old_rating ?? 0)}
-          p2_delta={(player2b_history.eff_new_rating ?? 0) - (player2b_history.eff_old_rating ?? 0)}
+          p1_delta={(player1b_history?.eff_new_rating ?? 0) - (player1b_history?.eff_old_rating ?? 0)}
+          p2_delta={(player2b_history?.eff_new_rating ?? 0) - (player2b_history?.eff_old_rating ?? 0)}
           p1={match.player_1b}
-          p2={match.player_2b} />
+          p2={match.player_2b}
+          rated={match.rated} />
 
       </Stack>
     </Layout>

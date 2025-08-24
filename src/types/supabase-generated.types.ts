@@ -11,9 +11,14 @@ export type Database = {
     Tables: {
       elo_calc_log: {
         Row: {
+          a1_user: string | null
+          a2_user: string | null
+          b1_user: string | null
+          b2_user: string | null
           calculated_at: string
           category_a: string
           category_b: string
+          cfg_snapshot: Json | null
           eff_team_a: number
           eff_team_b: number
           expected_a: number
@@ -25,15 +30,24 @@ export type Database = {
           points_a: number
           points_b: number
           rated: boolean
+          rg_a1_used: number | null
+          rg_a2_used: number | null
+          rg_b1_used: number | null
+          rg_b2_used: number | null
           sets_a: number
           sets_b: number
           upset_levels: number
           upset_multiplier: number
         }
         Insert: {
+          a1_user?: string | null
+          a2_user?: string | null
+          b1_user?: string | null
+          b2_user?: string | null
           calculated_at?: string
           category_a: string
           category_b: string
+          cfg_snapshot?: Json | null
           eff_team_a: number
           eff_team_b: number
           expected_a: number
@@ -45,15 +59,24 @@ export type Database = {
           points_a: number
           points_b: number
           rated?: boolean
+          rg_a1_used?: number | null
+          rg_a2_used?: number | null
+          rg_b1_used?: number | null
+          rg_b2_used?: number | null
           sets_a: number
           sets_b: number
           upset_levels: number
           upset_multiplier: number
         }
         Update: {
+          a1_user?: string | null
+          a2_user?: string | null
+          b1_user?: string | null
+          b2_user?: string | null
           calculated_at?: string
           category_a?: string
           category_b?: string
+          cfg_snapshot?: Json | null
           eff_team_a?: number
           eff_team_b?: number
           expected_a?: number
@@ -65,6 +88,10 @@ export type Database = {
           points_a?: number
           points_b?: number
           rated?: boolean
+          rg_a1_used?: number | null
+          rg_a2_used?: number | null
+          rg_b1_used?: number | null
+          rg_b2_used?: number | null
           sets_a?: number
           sets_b?: number
           upset_levels?: number
@@ -410,6 +437,7 @@ export type Database = {
         Row: {
           created_at: string | null
           id: string | null
+          rated: boolean | null
           set_results: string | null
           team_a_name: string | null
           team_a_player_1: string | null
@@ -421,13 +449,6 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "teams_player_1_fkey"
-            columns: ["team_a_player_1"]
-            isOneToOne: false
-            referencedRelation: "players"
-            referencedColumns: ["player"]
-          },
-          {
-            foreignKeyName: "teams_player_1_fkey"
             columns: ["team_b_player_1"]
             isOneToOne: false
             referencedRelation: "players"
@@ -437,7 +458,7 @@ export type Database = {
             foreignKeyName: "teams_player_1_fkey"
             columns: ["team_a_player_1"]
             isOneToOne: false
-            referencedRelation: "players_public"
+            referencedRelation: "players"
             referencedColumns: ["player"]
           },
           {
@@ -448,10 +469,10 @@ export type Database = {
             referencedColumns: ["player"]
           },
           {
-            foreignKeyName: "teams_player_2_fkey"
-            columns: ["team_a_player_2"]
+            foreignKeyName: "teams_player_1_fkey"
+            columns: ["team_a_player_1"]
             isOneToOne: false
-            referencedRelation: "players"
+            referencedRelation: "players_public"
             referencedColumns: ["player"]
           },
           {
@@ -465,12 +486,19 @@ export type Database = {
             foreignKeyName: "teams_player_2_fkey"
             columns: ["team_a_player_2"]
             isOneToOne: false
-            referencedRelation: "players_public"
+            referencedRelation: "players"
             referencedColumns: ["player"]
           },
           {
             foreignKeyName: "teams_player_2_fkey"
             columns: ["team_b_player_2"]
+            isOneToOne: false
+            referencedRelation: "players_public"
+            referencedColumns: ["player"]
+          },
+          {
+            foreignKeyName: "teams_player_2_fkey"
+            columns: ["team_a_player_2"]
             isOneToOne: false
             referencedRelation: "players_public"
             referencedColumns: ["player"]
@@ -480,16 +508,29 @@ export type Database = {
     }
     Functions: {
       add_match_with_sets: {
-        Args: {
-          event?: string
-          match_sets: Json
-          player_1a: string
-          player_1b: string
-          player_2a: string
-          player_2b: string
-          team_a: string
-          team_b: string
-        }
+        Args:
+          | {
+              created_by?: string
+              event?: string
+              match_sets: Json
+              player_1a: string
+              player_1b: string
+              player_2a: string
+              player_2b: string
+              rated?: boolean
+              team_a: string
+              team_b: string
+            }
+          | {
+              event?: string
+              match_sets: Json
+              player_1a: string
+              player_1b: string
+              player_2a: string
+              player_2b: string
+              team_a: string
+              team_b: string
+            }
         Returns: undefined
       }
       apply_elo_for_match: {
@@ -527,16 +568,16 @@ export type Database = {
       preview_elo_for_match: {
         Args: { p_match: string }
         Returns: {
-          eff_team_b: number
-          eff_team_a: number
-          expected_a: number
+          upset_levels: number
           expected_b: number
           k_base: number
           k_eff: number
           category_a: string
           category_b: string
-          upset_levels: number
           upset_multiplier: number
+          eff_team_a: number
+          eff_team_b: number
+          expected_a: number
         }[]
       }
       recompute_all_effective_player_ratings: {
@@ -1825,19 +1866,19 @@ export type Database = {
       get_column_info: {
         Args: { schema_name: string; selected_table: string }
         Returns: {
-          foreign_key_table_name: string
           foreign_key_column_name: string
-          foreign_key_schema_name: string
-          is_nullable: boolean
-          data_type: string
           column_name: string
+          data_type: string
+          is_nullable: boolean
+          foreign_key_schema_name: string
+          foreign_key_table_name: string
         }[]
       }
       get_enum_types: {
         Args: Record<PropertyKey, never>
         Returns: {
-          enum_name: string
           enum_values: string[]
+          enum_name: string
         }[]
       }
       get_or_create_payment_for_user: {
@@ -1847,8 +1888,8 @@ export type Database = {
       get_public_table_names: {
         Args: Record<PropertyKey, never>
         Returns: {
-          table_schema: string
           table_name: string
+          table_schema: string
         }[]
       }
       getattendingusers: {
@@ -1875,6 +1916,10 @@ export type Database = {
           image_url: string | null
           user: string
         }
+      }
+      invoke_edge_function: {
+        Args: { p_body?: Json; p_function_name: string; p_timeout_ms?: number }
+        Returns: number
       }
       is_user_admin_in_group: {
         Args: { group_id: string }

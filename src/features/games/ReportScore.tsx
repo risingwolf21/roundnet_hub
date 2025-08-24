@@ -3,6 +3,7 @@ import {
   Autocomplete,
   Box,
   Button,
+  Checkbox,
   CircularProgress,
   Divider,
   Fab,
@@ -10,6 +11,8 @@ import {
   IconButton,
   List,
   ListItem,
+  ListItemAvatar,
+  ListItemText,
   TextField,
   Typography,
 } from '@mui/material';
@@ -20,6 +23,7 @@ import { useNavigate } from 'react-router';
 import Layout from 'src/components/layout/Layout';
 import { useCreateMatch, usePlayers, useTeams } from 'src/tanstack/games';
 import { GamesTable } from 'src/types/supabaseTypes';
+import { useApplication } from '../auth/ApplicationContext';
 
 type Props = { options: SimpleUser[]; loading: boolean; label: string; value: SimpleUser | null; onSelect: (value: SimpleUser | null) => void };
 const SelectPlayer = ({ options, loading, label, value, onSelect }: Props) => {
@@ -92,9 +96,11 @@ const ReportScore = () => {
   ]);
   const notifications = useNotifications();
   const navigate = useNavigate();
+  const { user } = useApplication();
 
   const createMatch = useCreateMatch();
 
+  const [rating_enabled, setRatingEnabled] = useState(true);
   const [player1a, setPlayer1a] = useState<SimpleUser | null>(null);
   const [player2a, setPlayer2a] = useState<SimpleUser | null>(null);
   const [player1b, setPlayer1b] = useState<SimpleUser | null>(null);
@@ -160,7 +166,9 @@ const ReportScore = () => {
         name: team_b_name,
         player_1: player1b.userId,
         player_2: player2b.userId
-      }
+      },
+      rating_enabled: rating_enabled,
+      created_by: user?.userId
     }, {
       onSuccess: () => navigate("/matches"),
       onError: (error) => {
@@ -272,6 +280,17 @@ const ReportScore = () => {
               )}
               onSelect={setPlayer2b}
             />
+          </Grid>
+          <Grid size={12} sx={{ p: 2 }}>
+            <Typography sx={{ fontWeight: 'bold' }}>Wertung</Typography>
+          </Grid>
+          <Grid size={12}>
+            <ListItem>
+              <ListItemAvatar>
+                <Checkbox checked={rating_enabled} onChange={(e, v) => setRatingEnabled(v)} />
+              </ListItemAvatar>
+              <ListItemText primary={"Soll das Spiel in die Index Wertung eingehen?"} />
+            </ListItem>
           </Grid>
           <Grid size={12} sx={{ p: 2 }}>
             <Typography sx={{ fontWeight: 'bold' }}>Scores</Typography>

@@ -144,6 +144,7 @@ export type UserMatchesView = {
     team_a_name: string;
     team_b_name: string;
     set_results: string;
+    rated: boolean;
 }
 
 type Modify<T, R> = Omit<T, keyof R> & R;

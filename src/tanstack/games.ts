@@ -66,7 +66,7 @@ export const useTeams = () => useQuery<GamesTable<'teams'>[]>({
 })
 
 export const useCreateMatch = () => useMutation({
-  mutationFn: async ({ sets, team_a, team_b, event }: {
+  mutationFn: async ({ sets, team_a, team_b, event, rating_enabled, created_by }: {
     sets: { team_a_score: number; team_b_score: number }[],
     team_a: {
       player_1: string,
@@ -78,7 +78,9 @@ export const useCreateMatch = () => useMutation({
       player_2: string,
       name: string
     },
-    event?: string
+    event?: string,
+    rating_enabled: boolean,
+    created_by?: string
   }) => {
     const result = await supabase
       .schema('games')
@@ -90,7 +92,9 @@ export const useCreateMatch = () => useMutation({
         player_2b: team_b.player_2,
         team_a: team_a.name,
         team_b: team_b.name,
-        event
+        event,
+        rated: rating_enabled,
+        created_by: created_by
       })
       .throwOnError();
 

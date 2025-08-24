@@ -1,5 +1,5 @@
 import { Add, Warning } from '@mui/icons-material';
-import { Box, Button, Fab, List, ListItem, ListSubheader, Typography } from '@mui/material';
+import { Box, Button, Chip, Fab, List, ListItem, ListSubheader, Typography } from '@mui/material';
 import { useDialogs, useNotifications } from '@toolpad/core';
 import { t } from 'i18next';
 import moment from 'moment';
@@ -59,36 +59,47 @@ const GameList = () => {
                     <Box sx={{ display: 'flex', flexDirection: 'row', width: '100%' }}>
                       <Box
                         sx={{
-                          display: 'flex',
                           flexGrow: 1,
-                          flexDirection: 'column',
-                          whiteSpace: 'nowrap',
-                          overflow: 'hidden',
-                          textOverflow: 'ellipsis',
+                          display: "flex",
+                          flexDirection: "row"
                         }}
                       >
-                        <Typography
+                        <Box
                           sx={{
-                            fontSize: '1rem',
-                            color: 'rgba(0,0,0,0.87)',
+                            display: 'flex',
+                            flexDirection: 'column',
                             whiteSpace: 'nowrap',
                             overflow: 'hidden',
                             textOverflow: 'ellipsis',
-                          }}
-                        >
-                          {x.team_a_name}
-                        </Typography>
-                        <Typography
-                          sx={{
-                            fontSize: '1rem',
-                            color: 'rgba(0,0,0,0.87)',
-                            whiteSpace: 'nowrap',
-                            overflow: 'hidden',
-                            textOverflow: 'ellipsis',
-                          }}
-                        >
-                          {x.team_b_name}
-                        </Typography>
+                          }}>
+                          <Typography
+                            sx={{
+                              fontSize: '1rem',
+                              color: 'rgba(0,0,0,0.87)',
+                              whiteSpace: 'nowrap',
+                              overflow: 'hidden',
+                              textOverflow: 'ellipsis',
+                            }}
+                          >
+                            {x.team_a_name}
+                          </Typography>
+                          <Typography
+                            sx={{
+                              fontSize: '1rem',
+                              color: 'rgba(0,0,0,0.87)',
+                              whiteSpace: 'nowrap',
+                              overflow: 'hidden',
+                              textOverflow: 'ellipsis',
+                            }}
+                          >
+                            {x.team_b_name}
+                          </Typography>
+                        </Box>
+                        {
+                          !x.rated && <Box sx={{ display: "flex", flexDirection: "column", justifyContent: "center", ml: 2 }}>
+                            <Chip color='info' variant='outlined' size='small' label="Ungewertet" />
+                          </Box>
+                        }
                       </Box>
                       {
                         !x.set_results && x.id && <Button startIcon={<Warning color='warning' />} onClick={async () => {
