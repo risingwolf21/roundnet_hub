@@ -7,6 +7,11 @@ export type Json =
   | Json[]
 
 export type Database = {
+  // Allows to automatically instantiate createClient with right options
+  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
+  __InternalSupabase: {
+    PostgrestVersion: "13.0.4"
+  }
   games: {
     Tables: {
       elo_calc_log: {
@@ -449,13 +454,6 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "teams_player_1_fkey"
-            columns: ["team_b_player_1"]
-            isOneToOne: false
-            referencedRelation: "players"
-            referencedColumns: ["player"]
-          },
-          {
-            foreignKeyName: "teams_player_1_fkey"
             columns: ["team_a_player_1"]
             isOneToOne: false
             referencedRelation: "players"
@@ -465,7 +463,7 @@ export type Database = {
             foreignKeyName: "teams_player_1_fkey"
             columns: ["team_b_player_1"]
             isOneToOne: false
-            referencedRelation: "players_public"
+            referencedRelation: "players"
             referencedColumns: ["player"]
           },
           {
@@ -476,10 +474,10 @@ export type Database = {
             referencedColumns: ["player"]
           },
           {
-            foreignKeyName: "teams_player_2_fkey"
-            columns: ["team_b_player_2"]
+            foreignKeyName: "teams_player_1_fkey"
+            columns: ["team_b_player_1"]
             isOneToOne: false
-            referencedRelation: "players"
+            referencedRelation: "players_public"
             referencedColumns: ["player"]
           },
           {
@@ -493,12 +491,19 @@ export type Database = {
             foreignKeyName: "teams_player_2_fkey"
             columns: ["team_b_player_2"]
             isOneToOne: false
-            referencedRelation: "players_public"
+            referencedRelation: "players"
             referencedColumns: ["player"]
           },
           {
             foreignKeyName: "teams_player_2_fkey"
             columns: ["team_a_player_2"]
+            isOneToOne: false
+            referencedRelation: "players_public"
+            referencedColumns: ["player"]
+          },
+          {
+            foreignKeyName: "teams_player_2_fkey"
+            columns: ["team_b_player_2"]
             isOneToOne: false
             referencedRelation: "players_public"
             referencedColumns: ["player"]
@@ -568,16 +573,16 @@ export type Database = {
       preview_elo_for_match: {
         Args: { p_match: string }
         Returns: {
-          upset_levels: number
-          expected_b: number
-          k_base: number
-          k_eff: number
           category_a: string
           category_b: string
-          upset_multiplier: number
           eff_team_a: number
           eff_team_b: number
           expected_a: number
+          expected_b: number
+          k_base: number
+          k_eff: number
+          upset_levels: number
+          upset_multiplier: number
         }[]
       }
       recompute_all_effective_player_ratings: {
@@ -785,6 +790,164 @@ export type Database = {
           },
         ]
       }
+      event_bring_items: {
+        Row: {
+          created_at: string
+          created_by: string
+          event: string
+          id: string
+          name: string
+          notes: string | null
+          required_qty: number
+          sort_order: number
+          unit: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string
+          event: string
+          id?: string
+          name: string
+          notes?: string | null
+          required_qty: number
+          sort_order?: number
+          unit?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          event?: string
+          id?: string
+          name?: string
+          notes?: string | null
+          required_qty?: number
+          sort_order?: number
+          unit?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_bring_items_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "user"
+            referencedColumns: ["userId"]
+          },
+          {
+            foreignKeyName: "event_bring_items_event_fkey"
+            columns: ["event"]
+            isOneToOne: false
+            referencedRelation: "current_distinct_event"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "event_bring_items_event_fkey"
+            columns: ["event"]
+            isOneToOne: false
+            referencedRelation: "distinct_event"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "event_bring_items_event_fkey"
+            columns: ["event"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "event_bring_items_event_fkey"
+            columns: ["event"]
+            isOneToOne: false
+            referencedRelation: "events_user_view"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      event_bring_pledges: {
+        Row: {
+          created_at: string
+          event: string
+          id: string
+          item: string
+          notes: string | null
+          qty: number
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          event: string
+          id?: string
+          item: string
+          notes?: string | null
+          qty: number
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          event?: string
+          id?: string
+          item?: string
+          notes?: string | null
+          qty?: number
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_bring_pledges_event_fkey"
+            columns: ["event"]
+            isOneToOne: false
+            referencedRelation: "current_distinct_event"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "event_bring_pledges_event_fkey"
+            columns: ["event"]
+            isOneToOne: false
+            referencedRelation: "distinct_event"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "event_bring_pledges_event_fkey"
+            columns: ["event"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "event_bring_pledges_event_fkey"
+            columns: ["event"]
+            isOneToOne: false
+            referencedRelation: "events_user_view"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "event_bring_pledges_item_fkey"
+            columns: ["item"]
+            isOneToOne: false
+            referencedRelation: "event_bring_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "event_bring_pledges_item_fkey"
+            columns: ["item"]
+            isOneToOne: false
+            referencedRelation: "event_bring_overview"
+            referencedColumns: ["item_id"]
+          },
+          {
+            foreignKeyName: "event_bring_pledges_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "user"
+            referencedColumns: ["userId"]
+          },
+        ]
+      }
       event_comments: {
         Row: {
           comment: string
@@ -925,6 +1088,7 @@ export type Database = {
           group: string
           id: string
           isCancelled: boolean
+          items_enabled: boolean
           key: string
           maxAttendees: number | null
           meetingDateTime: string | null
@@ -944,6 +1108,7 @@ export type Database = {
           group: string
           id?: string
           isCancelled?: boolean
+          items_enabled?: boolean
           key?: string
           maxAttendees?: number | null
           meetingDateTime?: string | null
@@ -963,6 +1128,7 @@ export type Database = {
           group?: string
           id?: string
           isCancelled?: boolean
+          items_enabled?: boolean
           key?: string
           maxAttendees?: number | null
           meetingDateTime?: string | null
@@ -1691,6 +1857,47 @@ export type Database = {
           },
         ]
       }
+      event_bring_overview: {
+        Row: {
+          event: string | null
+          item_id: string | null
+          name: string | null
+          pledged_qty: number | null
+          remaining_qty: number | null
+          required_qty: number | null
+          unit: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_bring_items_event_fkey"
+            columns: ["event"]
+            isOneToOne: false
+            referencedRelation: "current_distinct_event"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "event_bring_items_event_fkey"
+            columns: ["event"]
+            isOneToOne: false
+            referencedRelation: "distinct_event"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "event_bring_items_event_fkey"
+            columns: ["event"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "event_bring_items_event_fkey"
+            columns: ["event"]
+            isOneToOne: false
+            referencedRelation: "events_user_view"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       event_groups_view: {
         Row: {
           color: string | null
@@ -1866,19 +2073,19 @@ export type Database = {
       get_column_info: {
         Args: { schema_name: string; selected_table: string }
         Returns: {
-          foreign_key_column_name: string
           column_name: string
           data_type: string
-          is_nullable: boolean
+          foreign_key_column_name: string
           foreign_key_schema_name: string
           foreign_key_table_name: string
+          is_nullable: boolean
         }[]
       }
       get_enum_types: {
         Args: Record<PropertyKey, never>
         Returns: {
-          enum_values: string[]
           enum_name: string
+          enum_values: string[]
         }[]
       }
       get_or_create_payment_for_user: {
@@ -2119,4 +2326,3 @@ export const Constants = {
     },
   },
 } as const
-

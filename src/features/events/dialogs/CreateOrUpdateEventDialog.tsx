@@ -1,4 +1,4 @@
-import { AccessTime, Article, Close, FiberManualRecord, Map } from '@mui/icons-material';
+import { AccessTime, Article, Category, Close, FiberManualRecord, Map } from '@mui/icons-material';
 import EventIcon from '@mui/icons-material/Event';
 import EventRepeatIcon from '@mui/icons-material/EventRepeat';
 import {
@@ -520,6 +520,14 @@ export const CreateOrUpdateEventDialog = ({ payload: { event, eventGroup, option
               />
             </ListItemAvatar>
             <ListItemText primary={"Konstellationen aktiviert"} secondary={"Soll es möglich sein für Trainer, Konstellationen zu erstellen?"} />
+          </ListItem>
+          <ListItem sx={{ pt: 0, pb: 0, mb: 2 }} key={'pledges'} onClick={async () => {
+            
+          }}>
+            <ListItemAvatar>
+              <Category />
+            </ListItemAvatar>
+            <ListItemText primary={"Gegenstände mitbringen"} secondary={"Gegenstände mitbringen"} />
           </ListItem>
         </List>
       </Box>

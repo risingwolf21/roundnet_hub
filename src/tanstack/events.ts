@@ -5,9 +5,16 @@ import { queryClient } from "src/App"
 import { supabase } from "src/components/services/supabase/supabaseClient"
 import { DeleteEventType } from "src/features/events/types"
 import { SupabaseEventRepository } from "src/repository/EventRepository"
-import { TablesInsert, TablesUpdate } from "src/types/supabase-generated.types"
+import { Tables, TablesInsert, TablesUpdate } from "src/types/supabase-generated.types"
 import { EventsUserView, FullAttendance, FullComment } from "src/types/supabaseTypes"
 import { formatDateToDatabase } from "src/utils"
+
+
+export const fetchFullEventPledges = (eventId: String) => supabase
+  .from('event_bring_pledges')
+  .select('*, user: user_id(*)')
+  .eq('event', eventId);
+
 
 
 export const useEvents = (filter: 'past' | 'upcoming') => {
@@ -39,6 +46,27 @@ export const useComments = (eventId: string) => useQuery({
   }
 });
 
+export const useBringOverview = (eventId: string) => useQuery<Tables<'event_bring_overview'>[]>({
+  queryKey: ["events", eventId, "bringOverview"],
+  queryFn: async () => {
+    const result = await supabase
+      .from('event_bring_overview')
+      .select('*')
+      .eq('event', eventId);
+
+    return result.data ?? [];
+  }
+});
+
+export const useBringPledges = (eventId: string) => useQuery<FullEventPledges[]>({
+  queryKey: ["events", eventId, "bringPledges"],
+  queryFn: async () => {
+    const result = await fetchFullEventPledges(eventId);
+
+    return result.data ?? [];
+  }
+});
+
 export const useAttendance = (eventId: string) => useQuery({
   queryKey: ["events", eventId, "attendance"],
   queryFn: async () => {
@@ -52,6 +80,91 @@ export const useAttendance = (eventId: string) => useQuery({
     return result.data ?? [];
   }
 });
+
+export const useUpsetBringPledges = () => {
+  return useMutation({
+    mutationFn: async ({ event, item_id, user, quantity, status }: { event: EventsUserView, item_id: string | null, user: User, quantity: number, status: string }) => {
+      if (item_id === null)
+        return;
+      const result = await supabase
+        .from("event_bring_pledges")
+        .upsert({
+          event: event.id,
+          user_id: user.userId,
+          qty: quantity,
+          status: status,
+          item: item_id
+        }, { onConflict: "user_id, item" })
+        .select("*")
+        .maybeSingle();
+
+      return result.data;
+    },
+    onMutate: async ({ event, item_id, user, quantity, status }) => {
+      await queryClient.cancelQueries({ queryKey: ["events", event.id, "bringOverview"] });
+      await queryClient.cancelQueries({ queryKey: ["events", event.id, "bringPledges"] });
+
+      const previousBringOverview = queryClient.getQueryData<Tables<'event_bring_overview'>[]>(["events", event.id, "bringOverview"]);
+      const previousFullPledges = queryClient.getQueryData<FullEventPledges[]>(["events", event.id, "bringPledges"]);
+
+      if (previousBringOverview) {
+        const updatedBringOverview = previousBringOverview.map(ev => {
+          if (ev.item_id === item_id) {
+            return {
+              ...ev,
+              pledged_qty: (ev.pledged_qty ?? 0) + quantity,
+              remaining_qty: (ev.remaining_qty ?? 0) - (quantity),
+            };
+          }
+          return ev;
+        });
+
+        queryClient.setQueryData(["events", event.id, "bringOverview"], updatedBringOverview);
+      }
+      if (previousFullPledges) {
+        const updatedFullPledges = previousFullPledges.map(x => {
+          if (x.item === item_id && x.user_id === user.userId && x.event === event.id) {
+            return {
+              ...x,
+              qty: quantity,
+              status: status
+            }
+          } else {
+            return x;
+          }
+        })
+        queryClient.setQueryData(["events", event.id, "bringPledges"], updatedFullPledges);
+      }
+      return { previousBringOverview, previousFullPledges }
+    },
+    onError: (err, variables, context) => {
+      logger.error("Event pledges could not be upserted", {
+        event: variables.event.id,
+        eventDate: format(variables.event.startingDateTime, "dd.MM.yyyy HH:mm"),
+        pledge_item: variables.item_id,
+        error: err
+      })
+      if (context?.previousBringOverview) {
+        queryClient.setQueryData(["events", variables.event.id, "bringOverview"], context.previousBringOverview);
+      }
+      if (context?.previousFullPledges) {
+        queryClient.setQueryData(["events", variables.event.id, "bringPledges"], context.previousFullPledges);
+      }
+    },
+
+    onSettled: (data, error, variables, context) => {
+      logger.info("Event pledges upsertd successfully.", {
+        event: variables.event.id,
+        eventDate: format(variables.event.startingDateTime, "dd.MM.yyyy HH:mm"),
+        pledge_item: variables.item_id,
+        qunatity: variables.quantity,
+        user: variables.user
+      })
+      queryClient.invalidateQueries({ queryKey: ["events", variables.event.id, "bringOverview"] });
+      queryClient.invalidateQueries({ queryKey: ["events", variables.event.id, "bringPledges"] });
+    },
+  })
+}
 
 export const useUpdateAttendanceMutation = (fetchMode: "past" | "upcoming") => {
   return useMutation({
@@ -208,7 +321,7 @@ export const useAddCommentMutation = (user: User) => {
         }
       }
 
-      return { previousComments, eventId:event.id }
+      return { previousComments, eventId: event.id }
     },
     onError: (err, variables, context) => {
       logger.error("Event comment failed.", {

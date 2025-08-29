@@ -8,6 +8,7 @@ import { GamesTable } from 'src/types/supabaseTypes';
 import { Enums, Tables, TablesInsert, TablesUpdate } from '../../src/types/supabase-generated.types';
 import { fetchChallengeWithGroup } from 'src/repository/ChallengeRepository';
 import { fetchItemHistory, fetchItems } from 'src/repository/KeysRepository';
+import { fetchFullEventPledges } from 'src/tanstack/events';
 
 export type EventTable = Tables<'events'>;
 export type History = Tables<'history'>;
@@ -54,6 +55,7 @@ declare global {
   type FullUserMatch = QueryData<ReturnType<typeof fetchUserMatches>> extends Array<infer U> ? U : never;
   type FullMatch = QueryData<ReturnType<typeof fetchMatch>> extends Array<infer U> ? U : never;
   type UserWithGroupsBase = QueryData<ReturnType<typeof fetchUserWithGroups>> extends Array<infer U> ? U : never;
+  type FullEventPledges = QueryData<ReturnType<typeof fetchFullEventPledges>> extends Array<infer U> ? U : never;
   type UserWithGroupsAndPlayerData = {
     [P in keyof UserWithGroupsBase]: P extends 'groups'
     ? UserWithGroupsBase['groups'][number]['group'][]

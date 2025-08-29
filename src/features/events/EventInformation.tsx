@@ -19,6 +19,7 @@ import EventMapPreview from './components/EventMapPreview';
 import { PlaceType } from './types';
 import EventWeatherForecast from './components/EventWeatherForecast';
 import { formatDateFromDatabase } from 'src/utils';
+import EventInformationBringItems from './components/EventInformationBringItems';
 
 
 type EventInformationProps = {
@@ -63,6 +64,8 @@ const EventInformation = ({
           selectedEvent={event}
           fetchMode={fetchMode}
         />
+
+        <EventInformationBringItems selectedEvent={event} />
 
         <EventInformationGames eventId={event.id} />
 
