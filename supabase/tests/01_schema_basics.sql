@@ -79,14 +79,6 @@ SELECT
     'trg_user_to_player exists'
   );
 
-DO $$
-BEGIN
-  IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname='uq_events_key_start') THEN
-    ALTER TABLE public.events
-      ADD CONSTRAINT uq_events_key_start UNIQUE ("key","startingDateTime");
-  END IF;
-END $$;
-
 SELECT
   *
 FROM
