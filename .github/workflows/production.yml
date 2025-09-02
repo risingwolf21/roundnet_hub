@@ -50,6 +50,12 @@ jobs:
         env:
           REACT_APP_SUPABASE_API_KEY: ${{ secrets.PRODUCTION_ANON_KEY }}
           REACT_APP_SUPABASE_URL: ${{ vars.PRODUCTION_DB_URL }}
+      
+      - name: Generate supabase types
+        run: yarn run gen-types:production
+        env:
+          REACT_APP_SUPABASE_API_KEY: ${{ secrets.PRODUCTION_ANON_KEY }}
+          REACT_APP_SUPABASE_URL: ${{ vars.PRODUCTION_DB_URL }}
 
       - uses: actions/upload-artifact@v4
         with:

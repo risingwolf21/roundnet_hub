@@ -26,33 +26,41 @@ alter table "public"."event_comments" drop constraint "event_comments_event_fkey
 
 drop function if exists "public"."add_initial_user_data"();
 
-CREATE INDEX "events_startingDateTime_key_idx" ON public.events USING btree ("startingDateTime", key);
+CREATE INDEX if not exists "events_startingDateTime_key_idx" ON public.events USING btree ("startingDateTime", key);
 
-CREATE INDEX ix_items_event ON public.event_bring_items USING btree (event);
+CREATE INDEX if not exists ix_items_event ON public.event_bring_items USING btree (event);
 
-CREATE INDEX ix_pledges_item ON public.event_bring_pledges USING btree (item);
+CREATE INDEX if not exists ix_pledges_item ON public.event_bring_pledges USING btree (item);
 
-CREATE UNIQUE INDEX uq_events_key_start ON public.events USING btree (key, "startingDateTime");
+CREATE UNIQUE INDEX if not exists uq_events_key_start ON public.events USING btree (key, "startingDateTime");
+
+alter table "public"."event_bring_pledges" drop constraint if exists "pledges_qty_positive";
 
 alter table "public"."event_bring_pledges" add constraint "pledges_qty_positive" CHECK ((qty > (0)::numeric)) not valid;
 
 alter table "public"."event_bring_pledges" validate constraint "pledges_qty_positive";
 
+alter table "public"."events" drop constraint if exists "events_end_after_start";
+
 alter table "public"."events" add constraint "events_end_after_start" CHECK (("endDateTime" > "startingDateTime")) not valid;
 
 alter table "public"."events" validate constraint "events_end_after_start";
 
-alter table "public"."events" add constraint "uq_events_key_start" UNIQUE using index "uq_events_key_start";
+alter table "public"."event_attendance_user_mapping" drop constraint if exists "event_attendance_user_mapping_event_fkey";
 
 alter table "public"."event_attendance_user_mapping" add constraint "event_attendance_user_mapping_event_fkey" FOREIGN KEY (event) REFERENCES events(id) ON UPDATE CASCADE ON DELETE CASCADE not valid;
 
 alter table "public"."event_attendance_user_mapping" validate constraint "event_attendance_user_mapping_event_fkey";
+
+alter table "public"."event_comments" drop constraint if exists "event_comments_event_fkey";
 
 alter table "public"."event_comments" add constraint "event_comments_event_fkey" FOREIGN KEY (event) REFERENCES events(id) ON UPDATE CASCADE ON DELETE CASCADE not valid;
 
 alter table "public"."event_comments" validate constraint "event_comments_event_fkey";
 
 set check_function_bodies = off;
+
+drop function if exists public.create_next_occurrences;
 
 CREATE OR REPLACE FUNCTION public.create_next_occurrences(p_run_at timestamp with time zone, p_horizon interval)
  RETURNS integer

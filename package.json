@@ -58,7 +58,7 @@
     "build:production": "env-cmd -e main,production react-scripts build",
     "deploy-functions:production": "npx supabase functions deploy --project-ref gfvaurdkieqkehsuwotr",
     "gen-types:production": "npx supabase gen types typescript --project-id gfvaurdkieqkehsuwotr --schema public --schema games > src/types/supabase-generated.types.ts",
-    "gen-types:local": "npx supabase gen types typescript --local --schema public --schema games > src/types/supabase-generated.types.ts",
+    "gen-types:local": "npx supabase@2.34.0 gen types typescript --local --schema public --schema games > src/types/supabase-generated.types.ts",
     "format": "prettier --write \"src/**/*.{js,jsx,ts,tsx,css,md}\" --config ./.prettierrc.json",
     "knip": "knip",
     "sentry:sourcemaps": "sentry-cli sourcemaps inject --org roundnet-karlsruhe --project roundnet-karlsruhe ./build && sentry-cli sourcemaps upload --org roundnet-karlsruhe --project roundnet-karlsruhe ./build",

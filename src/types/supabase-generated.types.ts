@@ -7,11 +7,6 @@ export type Json =
   | Json[]
 
 export type Database = {
-  // Allows to automatically instantiate createClient with right options
-  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
-  __InternalSupabase: {
-    PostgrestVersion: "13.0.4"
-  }
   games: {
     Tables: {
       elo_calc_log: {
@@ -573,16 +568,16 @@ export type Database = {
       preview_elo_for_match: {
         Args: { p_match: string }
         Returns: {
-          category_a: string
+          k_eff: number
           category_b: string
+          upset_levels: number
+          upset_multiplier: number
           eff_team_a: number
           eff_team_b: number
           expected_a: number
           expected_b: number
           k_base: number
-          k_eff: number
-          upset_levels: number
-          upset_multiplier: number
+          category_a: string
         }[]
       }
       recompute_all_effective_player_ratings: {
@@ -924,6 +919,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "events_user_view"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "event_bring_pledges_item_fkey"
+            columns: ["item"]
+            isOneToOne: false
+            referencedRelation: "event_bring_item_status"
+            referencedColumns: ["item_id"]
           },
           {
             foreignKeyName: "event_bring_pledges_item_fkey"
@@ -1857,6 +1859,49 @@ export type Database = {
           },
         ]
       }
+      event_bring_item_status: {
+        Row: {
+          event_id: string | null
+          fulfilled: boolean | null
+          item_id: string | null
+          name: string | null
+          pledged_qty: number | null
+          required_qty: number | null
+          shortfall: number | null
+          surplus: number | null
+          unit: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_bring_items_event_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "current_distinct_event"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "event_bring_items_event_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "distinct_event"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "event_bring_items_event_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "event_bring_items_event_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events_user_view"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       event_bring_overview: {
         Row: {
           event: string | null
@@ -2023,6 +2068,10 @@ export type Database = {
         Args: { items: Json }
         Returns: undefined
       }
+      as_service: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
       authorize: {
         Args: { requested_permission: string }
         Returns: boolean
@@ -2058,6 +2107,10 @@ export type Database = {
           visible: boolean
         }
       }
+      create_next_occurrences: {
+        Args: { p_horizon: unknown; p_run_at: string }
+        Returns: number
+      }
       custom_access_token_hook: {
         Args: { event: Json }
         Returns: Json
@@ -2075,10 +2128,10 @@ export type Database = {
         Returns: {
           column_name: string
           data_type: string
-          foreign_key_column_name: string
-          foreign_key_schema_name: string
-          foreign_key_table_name: string
           is_nullable: boolean
+          foreign_key_schema_name: string
+          foreign_key_column_name: string
+          foreign_key_table_name: string
         }[]
       }
       get_enum_types: {
@@ -2095,8 +2148,8 @@ export type Database = {
       get_public_table_names: {
         Args: Record<PropertyKey, never>
         Returns: {
-          table_name: string
           table_schema: string
+          table_name: string
         }[]
       }
       getattendingusers: {
@@ -2136,11 +2189,23 @@ export type Database = {
         Args: { group_id: string }
         Returns: boolean
       }
+      test_login: {
+        Args: { uid: string }
+        Returns: undefined
+      }
+      test_seed_grant_feature: {
+        Args: { p_feature: string; p_group: string }
+        Returns: undefined
+      }
+      test_seed_grant_permission: {
+        Args: { p_group: string; p_perm: string }
+        Returns: undefined
+      }
       update_attendance: {
         Args: {
-          eventid: string
-          state: Database["public"]["Enums"]["EventAttendance"]
-          userid: string
+          p_event: string
+          p_state: Database["public"]["Enums"]["EventAttendance"]
+          p_user: string
         }
         Returns: {
           event: string
@@ -2326,3 +2391,4 @@ export const Constants = {
     },
   },
 } as const
+

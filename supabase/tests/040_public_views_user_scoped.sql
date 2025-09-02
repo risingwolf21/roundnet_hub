@@ -9,7 +9,7 @@ INSERT INTO public.event_group(id, name, visible, is_public) VALUES (:'g','ViewG
 INSERT INTO public.group_user_mapping("user","group","role") VALUES (:'u', :'g', 'user') ON CONFLICT DO NOTHING;
 
 INSERT INTO public.events("key","title","startingDateTime","endDateTime","group","recurrence")
-VALUES ('series-v','View','2025-03-01 18:00+00','2025-03-01 20:00+00', :'g', 'Weekly')
+VALUES ('series-v','View',now()+interval '1h',now()+interval '2h', :'g', 'Weekly')
 RETURNING id \gset
 
 -- Attendance setzen

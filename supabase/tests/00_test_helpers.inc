@@ -10,6 +10,13 @@ BEGIN
   PERFORM set_config('request.jwt.claims', json_build_object('sub', uid)::text, true);
 END; $$;
 
+CREATE OR REPLACE FUNCTION as_service() RETURNS void LANGUAGE plpgsql AS $$
+BEGIN
+  PERFORM set_config('role','service_role', true);
+  -- service_role hat keine sub-Claim – setzen wir leer
+  PERFORM set_config('request.jwt.claims','{}', true);
+END $$;
+
 -- Zwei Test-User (gültige UUIDs!)
 DO $$
 BEGIN
@@ -79,3 +86,43 @@ BEGIN
     END;
   END IF;
 END $$;
+
+-- Gruppenerlaubnis robust seeden (umgeht RLS)
+CREATE OR REPLACE FUNCTION public.test_seed_grant_permission(p_group uuid, p_perm text)
+RETURNS void
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+BEGIN
+  INSERT INTO public.permissions(name) VALUES (p_perm)
+  ON CONFLICT (name) DO NOTHING;
+
+  INSERT INTO public.group_permissions("group","permission")
+  VALUES (p_group, p_perm)
+  ON CONFLICT DO NOTHING;
+END;
+$$;
+
+REVOKE ALL ON FUNCTION public.test_seed_grant_permission(uuid,text) FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION public.test_seed_grant_permission(uuid,text) TO authenticated;
+
+-- Analog für Features, falls du sie in Tests brauchst
+CREATE OR REPLACE FUNCTION public.test_seed_grant_feature(p_group uuid, p_feature text)
+RETURNS void
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+BEGIN
+  INSERT INTO public.features(name) VALUES (p_feature)
+  ON CONFLICT (name) DO NOTHING;
+
+  INSERT INTO public.group_features("group","feature")
+  VALUES (p_group, p_feature)
+  ON CONFLICT DO NOTHING;
+END;
+$$;
+
+REVOKE ALL ON FUNCTION public.test_seed_grant_feature(uuid,text) FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION public.test_seed_grant_feature(uuid,text) TO authenticated;
