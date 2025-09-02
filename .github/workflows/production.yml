@@ -61,10 +61,22 @@ jobs:
           name: supabase-generated-types
           path: ${{github.workspace}}/src/generated/supabase-types.ts
 
+  db-test:
+    name: "Test database"
+    runs-on: ubuntu-latest
+    needs: setup
+    steps:
+      - uses: actions/checkout@v3
+      - uses: supabase/setup-cli@v1
+        with:
+          version: latest
+      - run: supabase db start
+      - run: supabase test db
+
   build:
     name: 'Build: ${{matrix.env.name}}'
     runs-on: ubuntu-latest
-    needs: setup
+    needs: db-test
     strategy:
       matrix:
         env:
