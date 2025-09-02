@@ -7,6 +7,11 @@ export type Json =
   | Json[]
 
 export type Database = {
+  // Allows to automatically instantiate createClient with right options
+  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
+  __InternalSupabase: {
+    PostgrestVersion: "13.0.4"
+  }
   games: {
     Tables: {
       elo_calc_log: {
@@ -568,16 +573,16 @@ export type Database = {
       preview_elo_for_match: {
         Args: { p_match: string }
         Returns: {
-          k_eff: number
+          category_a: string
           category_b: string
-          upset_levels: number
-          upset_multiplier: number
           eff_team_a: number
           eff_team_b: number
           expected_a: number
           expected_b: number
           k_base: number
-          category_a: string
+          k_eff: number
+          upset_levels: number
+          upset_multiplier: number
         }[]
       }
       recompute_all_effective_player_ratings: {
@@ -2128,10 +2133,10 @@ export type Database = {
         Returns: {
           column_name: string
           data_type: string
-          is_nullable: boolean
-          foreign_key_schema_name: string
           foreign_key_column_name: string
+          foreign_key_schema_name: string
           foreign_key_table_name: string
+          is_nullable: boolean
         }[]
       }
       get_enum_types: {
@@ -2148,8 +2153,8 @@ export type Database = {
       get_public_table_names: {
         Args: Record<PropertyKey, never>
         Returns: {
-          table_schema: string
           table_name: string
+          table_schema: string
         }[]
       }
       getattendingusers: {
@@ -2391,4 +2396,3 @@ export const Constants = {
     },
   },
 } as const
-
