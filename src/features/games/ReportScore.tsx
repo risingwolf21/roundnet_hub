@@ -188,7 +188,7 @@ const ReportScore = () => {
           <Grid size={6} sx={{ p: 2 }}>
             <Typography sx={{ fontWeight: 'bold' }}>Team B</Typography>
           </Grid>
-          <Grid size={6} sx={{ p: 2 }}>
+          {/* <Grid size={6} sx={{ p: 2 }}>
             <SelectTeam
               label="Wähle ein Team"
               loading={isLoading}
@@ -220,7 +220,7 @@ const ReportScore = () => {
           </Grid>
           <Grid size={12}>
             <Divider />
-          </Grid>
+          </Grid> */}
           <Grid size={6} sx={{ p: 2 }}>
             <SelectPlayer
               label="Player 1"

@@ -92,7 +92,7 @@ export const useCreateMatch = () => useMutation({
         player_2b: team_b.player_2,
         team_a: team_a.name,
         team_b: team_b.name,
-        event,
+        event: event,
         rated: rating_enabled,
         created_by: created_by
       })

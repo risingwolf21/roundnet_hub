@@ -1,11 +1,11 @@
 -- 030_public_bring_items_and_pledges.sql (angepasst)
-\i 00_test_helpers.inc
 BEGIN;
+\i 000_setup_tests_users.inc
 SET LOCAL TIME ZONE 'UTC';
 SELECT plan(7);
 
 -- u1 login & Basisdaten (wie bei dir)
-SELECT test_login('00000000-0000-0000-0000-0000000000a1');
+SELECT tests.authenticate_as('user_1a');
 
 -- Event (Items aktiviert)
 DELETE FROM public.events WHERE "key"='items-test-1';
@@ -34,19 +34,19 @@ WITH e AS (
   SELECT id AS item_id FROM public.event_bring_items WHERE event = (SELECT event_id FROM e)
 )
 INSERT INTO public.event_bring_pledges(item, "user_id", qty)
-SELECT (SELECT item_id FROM i), '00000000-0000-0000-0000-0000000000a1', 3;
+SELECT (SELECT item_id FROM i), tests.get_supabase_uid('user_1a'), 3;
 
 SELECT ok(true, 'u1 pledged 3');
 
 -- u2 login & pledge 2 -> Summe=5
-SELECT test_login('00000000-0000-0000-0000-0000000000b2');
+SELECT tests.authenticate_as('user_2a');
 
 WITH i AS (
   SELECT id AS item_id FROM public.event_bring_items
   WHERE event = (SELECT id FROM public.events WHERE "key"='items-test-1')
 )
 INSERT INTO public.event_bring_pledges(item, "user_id", qty)
-SELECT (SELECT item_id FROM i), '00000000-0000-0000-0000-0000000000b2', 2;
+SELECT (SELECT item_id FROM i), tests.get_supabase_uid('user_2a'), 2;
 
 SELECT ok(true, 'u2 pledged 2');
 
@@ -58,7 +58,7 @@ WITH i AS (
 UPDATE public.event_bring_pledges p
 SET qty = 3
 WHERE p.item = (SELECT item_id FROM i)
-  AND p."user_id" = '00000000-0000-0000-0000-0000000000b2';
+  AND p."user_id" = tests.get_supabase_uid('user_2a')::text;
 
 SELECT ok(true, 'u2 erhöht auf 3 (Überschuss erlaubt)');
 

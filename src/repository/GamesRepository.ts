@@ -80,7 +80,7 @@ export const GamesRepository = {
       name: string
     },
     event?: string
-  ): Promise<PostgrestSingleResponse<undefined>> {
+  ): Promise<PostgrestSingleResponse<string>> {
     return supabase
       .schema('games')
       .rpc('add_match_with_sets', {

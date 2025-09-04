@@ -30,14 +30,12 @@ export const SupabaseKeysRepository = {
 
   async giveItemToUser(key: Item, user: User): Promise<null> {
     const result = await supabase
-      .from('items')
-      .update({
-        current_holder: user.userId,
-        lastUpdate: formatDateToDatabase(new Date()),
+      .rpc("key_handover", {
+        p_key_id: key.id,
+        p_new_holder: user.userId
       })
-      .eq('id', key.id)
       .throwOnError();
 
-    return result.data;
+    return null;
   },
 };

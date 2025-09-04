@@ -57,41 +57,23 @@ To create one, follow the link bellow:
 
 ## Supabase
 
-### Generate Typescript Types
 
-> [!IMPORTANT]  
-> **Saving format**: This file will be generated as a `UTF-16 LE`. Make sure to save it as a `UTF-8` file!
+### Seed der lokalen Datenbank erstellen
 
-#### Staging
 ```
-npx supabase gen types typescript --project-id vsuhzabcrnmrljzecxee > src/types/supabase-generated.types.ts
+npx supabase@2.34.0 db dump --local --data-only -f seed.sql
 ```
 
-#### Production
+### Schema der lokalen Datenbank erstellen
+
 ```
-npx supabase gen types typescript --project-id PROJECT_REF > src/types/supabase-generated.types.ts
+npx supabase@2.34.0 db dump --local -f supabase/schema_test.sql
 ```
 
-### Backup
+### Aktuellen Diff der lokalen Datenbank zu der neusten Migration erstellen
 
-```sh
-docker run -it --name ubuntu ubuntu:latest
-
-apt update
-apt install postgresql-client
-
-// Dump schema only without any row data
-pg_dump --schema-only postgresql://postgres.[DB-ID]:[YOUR-PASSWORD]@aws-0-eu-central-1.pooler.supabase.com:6543/postgres > dump.sql
-
-// Delete everything from database
-psql postgresql://postgres.[DB-ID]:[YOUR-PASSWORD]@aws-0-eu-central-1.pooler.supabase.com:6543/postgres -f wipe.sql
-
-// Upload dump to database
-psql postgresql://postgres.[DB-ID]:[YOUR-PASSWORD]@aws-0-eu-central-1.pooler.supabase.com:6543/postgres < dump.sql
-
-// Upload features and permissions to database
-psql postgresql://postgres.[DB-ID]:[YOUR-PASSWORD]@aws-0-eu-central-1.pooler.supabase.com:6543/postgres < features_rows.sql
-psql postgresql://postgres.[DB-ID]:[YOUR-PASSWORD]@aws-0-eu-central-1.pooler.supabase.com:6543/postgres < permissions_rows.sql
+```
+npx supabase@2.34.0 db diff --local -f <migration_name>
 ```
 
 ### Migrations

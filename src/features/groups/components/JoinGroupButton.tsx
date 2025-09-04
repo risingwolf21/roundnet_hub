@@ -15,6 +15,7 @@ export const JoinGroupButton = ({ group, user }: { group: Group, user: User }) =
       joinGroup.mutate(undefined, {
         onError: (e) => {
           captureException(e);
+          console.log(e)
           notifications.show("Der Gruppe konnte nicht beigetreten werden.", { severity: "error" });
         }
       });

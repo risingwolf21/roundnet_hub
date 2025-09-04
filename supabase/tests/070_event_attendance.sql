@@ -1,5 +1,5 @@
-\i 00_test_helpers.inc
 BEGIN;
+\i 000_setup_tests_users.inc
 SET LOCAL TIME ZONE 'UTC';
 SELECT plan(10);
 
@@ -44,13 +44,13 @@ SELECT ok( (SELECT count(*) FROM e) = 3, '3 Test-Events vorbereitet');
 -- ------------------------------------------------------------------
 -- 1) Self-RSVP auf zukünftiges Event (erwartet: OK)
 -- ------------------------------------------------------------------
-SELECT test_login('00000000-0000-0000-0000-0000000000a1'); -- a1
+SELECT tests.authenticate_as('user_1a'); -- a1
 
 SELECT lives_ok(
   $$
   SELECT public.update_attendance(
     (SELECT id FROM public.events WHERE "key"='t-rsvp-future'),
-    '00000000-0000-0000-0000-0000000000a1',
+    tests.get_supabase_uid('user_1a')::text,
     'Attending'::public."EventAttendance"
   )
   $$,
@@ -62,7 +62,7 @@ SELECT is(
     SELECT state::text
     FROM public.event_attendance_user_mapping
     WHERE event=(SELECT id FROM public.events WHERE "key"='t-rsvp-future')
-      AND "user"='00000000-0000-0000-0000-0000000000a1'
+      AND "user"=tests.get_supabase_uid('user_1a')::text
   ),
   'Attending',
   'Status wurde als Attending gespeichert'
@@ -70,13 +70,13 @@ SELECT is(
 
 
 -- a1 versucht b2 -> Attending (ohne Permission)
-SELECT test_login('00000000-0000-0000-0000-0000000000a1');
+SELECT tests.authenticate_as('user_1a');
 
 SELECT throws_like(
   $$
   SELECT public.update_attendance(
     (SELECT id FROM public.events WHERE "key"='t-rsvp-future'),
-    '00000000-0000-0000-0000-0000000000b2',
+    tests.get_supabase_uid('user_2b')::text,
     'Attending'::public."EventAttendance"
   )
   $$,
@@ -92,14 +92,14 @@ SELECT throws_like(
 SELECT as_service();
 SELECT public.test_seed_grant_permission('00000000-0000-0000-0000-000000000042','event.attendance.manage');
 
-SELECT test_login('00000000-0000-0000-0000-0000000000c1'); -- a1
+SELECT tests.authenticate_as('user_1c'); -- a1
 
 
 SELECT throws_like(
   $$
   SELECT public.update_attendance(
     (SELECT id FROM public.events WHERE "key"='t-rsvp-future'),
-    '00000000-0000-0000-0000-0000000000b2',           -- anderer User
+    tests.get_supabase_uid('user_2b')::text,           -- anderer User
     'Attending'::public."EventAttendance"
   )
   $$,
@@ -110,12 +110,12 @@ SELECT throws_like(
 -- ------------------------------------------------------------------
 -- 3) Kein RSVP auf vergangenes Event (erwartet: Fehler)
 -- ------------------------------------------------------------------
-SELECT test_login('00000000-0000-0000-0000-0000000000a1');
+SELECT tests.authenticate_as('user_1a');
 SELECT throws_like(
   $$
   SELECT public.update_attendance(
     (SELECT id FROM public.events WHERE "key"='t-rsvp-past'),
-    '00000000-0000-0000-0000-0000000000a1',
+    tests.get_supabase_uid('user_1a')::text,
     'Attending'::public."EventAttendance"
   )
   $$,
@@ -130,7 +130,7 @@ SELECT throws_like(
   $$
   SELECT public.update_attendance(
     (SELECT id FROM public.events WHERE "key"='t-rsvp-cancel'),
-    '00000000-0000-0000-0000-0000000000a1',
+    tests.get_supabase_uid('user_1a')::text,
     'Attending'::public."EventAttendance"
   )
   $$,
@@ -142,29 +142,29 @@ SELECT throws_like(
 -- 5) Anfrage bestätigen: ohne Permission FAIL, mit Permission OK
 -- ------------------------------------------------------------------
 -- erst: b2 loggt sich ein und erstellt eigene Anfrage (Waiting)
-SELECT test_login('00000000-0000-0000-0000-0000000000b2');
+SELECT tests.authenticate_as('user_2a');
 
 SELECT lives_ok(
   $$
   SELECT public.update_attendance(
     (SELECT id FROM public.events WHERE "key"='t-rsvp-future'),
-    '00000000-0000-0000-0000-0000000000b2',
+    tests.get_supabase_uid('user_2a')::text,
     'Waiting'::public."EventAttendance"
   )
   $$,
-  'b2 setzt eigenen Status auf Waiting'
+  '2a setzt eigenen Status auf Waiting'
 );
 
 -- Permission vergeben und erneut versuchen
 SELECT as_service();
 SELECT public.test_seed_grant_permission('00000000-0000-0000-0000-000000000042','event.attendance.manage');
-SELECT test_login('00000000-0000-0000-0000-0000000000a1');
+SELECT tests.authenticate_as('user_1a');
 
 SELECT lives_ok(
   $$
   SELECT public.update_attendance(
     (SELECT id FROM public.events WHERE "key"='t-rsvp-future'),
-    '00000000-0000-0000-0000-0000000000b2',
+    tests.get_supabase_uid('user_2b')::text,
     'Attending'::public."EventAttendance"
   )
   $$,
@@ -176,7 +176,7 @@ SELECT is(
     SELECT state::text
     FROM public.event_attendance_user_mapping
     WHERE event=(SELECT id FROM public.events WHERE "key"='t-rsvp-future')
-      AND "user"='00000000-0000-0000-0000-0000000000b2'
+      AND "user"=tests.get_supabase_uid('user_2b')::text
   ),
   'Attending',
   'b2 wurde erfolgreich auf Attending gesetzt'

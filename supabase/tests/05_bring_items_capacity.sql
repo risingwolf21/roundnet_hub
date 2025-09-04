@@ -1,5 +1,5 @@
-\i 00_test_helpers.inc
 BEGIN;
+\i 000_setup_tests_users.inc
 SET LOCAL TIME ZONE 'UTC';
 SELECT plan(3);
 
@@ -7,13 +7,19 @@ SELECT plan(3);
 -- ... Block 0.2 ...
 
 -- u1 login, Event mit Items
-SELECT test_login('00000000-0000-0000-0000-0000000000a1');
+
+INSERT INTO public.permissions(name) VALUES ('event.edit') ON CONFLICT DO NOTHING;
+INSERT INTO public.group_permissions("group","permission")
+VALUES ('00000000-0000-0000-0000-000000000042','event.edit')
+ON CONFLICT DO NOTHING;
 
 DELETE FROM public.events WHERE "key"='items-cap-1';
 INSERT INTO public.events("key","title","description","recurrence",
   "startingDateTime","endDateTime","group",items_enabled)
 VALUES ('items-cap-1','C','D','None', now(), now()+interval '3h',
         '00000000-0000-0000-0000-000000000042', true);
+
+SELECT tests.authenticate_as('user_1a');
 
 -- Item require 4
 INSERT INTO public.event_bring_items(event, name, unit, required_qty)
@@ -26,11 +32,11 @@ WITH i AS (
   WHERE event = (SELECT id FROM public.events WHERE "key"='items-cap-1')
 )
 INSERT INTO public.event_bring_pledges(item,"user_id",qty)
-SELECT (SELECT item_id FROM i), '00000000-0000-0000-0000-0000000000a1', 3;
+SELECT (SELECT item_id FROM i), tests.get_supabase_uid('user_1a'), 3;
 
 SELECT ok(true,'u1 pledged 3');
 
-SELECT test_login('00000000-0000-0000-0000-0000000000b2');
+SELECT tests.authenticate_as('user_2a');
 
 -- u2 pledge 1 (Summe 4 erreicht, ok)
 WITH i AS (
@@ -38,7 +44,7 @@ WITH i AS (
   WHERE event = (SELECT id FROM public.events WHERE "key"='items-cap-1')
 )
 INSERT INTO public.event_bring_pledges(item,"user_id",qty)
-SELECT (SELECT item_id FROM i), '00000000-0000-0000-0000-0000000000b2', 1;
+SELECT (SELECT item_id FROM i), tests.get_supabase_uid('user_2a'), 1;
 
 SELECT ok(true,'u2 pledge 1 ok');
 

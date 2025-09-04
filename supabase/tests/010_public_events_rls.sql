@@ -1,5 +1,5 @@
-\i 00_test_helpers.inc
 BEGIN;
+\i 000_setup_tests_users.inc
 SET LOCAL TIME ZONE 'UTC';
 SELECT plan(4);
 
@@ -7,7 +7,7 @@ SELECT plan(4);
 -- ... (Block aus 0.2 hier einfügen) ...
 
 -- 1) u1 darf Event anlegen (hat event.edit via Gruppe)
-SELECT test_login('00000000-0000-0000-0000-0000000000a1');
+select tests.authenticate_as('user_1a');
 DELETE FROM public.events WHERE "key"='rls-events-1';
 
 INSERT INTO public.events("key","title","description","recurrence",
@@ -20,23 +20,23 @@ SELECT ok(true,
 );
 
 -- 2) u2 darf NICHT insert (keine Permission, kein Mitglied)
-SELECT test_login('00000000-0000-0000-0000-0000000000b2');
+SELECT tests.authenticate_as('user_group_empty');
 SELECT throws_like(
   $$ INSERT INTO public.events("key","title","description","recurrence","startingDateTime","endDateTime","group")
      VALUES ('rls-events-2','T','D','None', now()+interval '2d', now()+interval '4h',
              '00000000-0000-0000-0000-000000000042') $$,
-  '%check constraint%',
+  '%row-level security%',
   'u2 Insert geblockt (RLS/Permission)'
 );
 
 -- 3) u1 sieht sein Event, u2 sieht es nicht
-SELECT test_login('00000000-0000-0000-0000-0000000000a1');
+SELECT tests.authenticate_as('user_1a');
 SELECT cmp_ok(
   (SELECT count(*)::bigint FROM public.events WHERE "key"='rls-events-1'),
   '='::text, 1::bigint, 'u1 sieht Event'
 );
 
-SELECT test_login('00000000-0000-0000-0000-0000000000c1');
+SELECT tests.authenticate_as('user_group_empty');
 SELECT cmp_ok(
   (SELECT count(*)::bigint FROM public.events WHERE "key"='rls-events-1'),
   '='::text, 0::bigint, 'u2 sieht Event nicht'

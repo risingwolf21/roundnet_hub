@@ -1,5 +1,5 @@
-\i 00_test_helpers.inc
 BEGIN;
+\i 000_setup_tests_users.inc
 SET LOCAL TIME ZONE 'UTC';
 SELECT plan(2);
 
@@ -9,7 +9,7 @@ GRANT SELECT ON public.events_user_view TO authenticated; -- falls es diese View
 
 DELETE FROM public.events WHERE "key"='vis-evt';
 
-SELECT test_login('00000000-0000-0000-0000-0000000000a1');
+SELECT tests.authenticate_as('user_1a');
 INSERT INTO public.events("key","title","description","recurrence",
   "startingDateTime","endDateTime","group")
 VALUES ('vis-evt','V','D','None', now(), now()+interval '3h','00000000-0000-0000-0000-000000000042');
@@ -21,7 +21,8 @@ SELECT cmp_ok(
 );
 
 -- u2 nicht
-SELECT test_login('00000000-0000-0000-0000-0000000000c1');
+SELECT tests.authenticate_as('user_1c');
+
 SELECT cmp_ok(
  (SELECT count(*)::bigint FROM public.events_user_view WHERE "key"='vis-evt'),
  '='::text, 0::bigint, 'kein Fremdzugriff'

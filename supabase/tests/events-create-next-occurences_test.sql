@@ -1,5 +1,5 @@
-\i 00_test_helpers.inc
 BEGIN;
+\i 000_setup_tests_users.inc
 SET LOCAL TIME ZONE 'UTC';
 SELECT plan(3);
 
@@ -20,7 +20,7 @@ INSERT INTO public.events(
 );
 
 -- 1. Lauf
-SELECT test_login('00000000-0000-0000-0000-0000000000a1');
+SELECT tests.authenticate_as('user_1a');
 
 -- Erwartete Anzahl bis Horizon = 30 Tage ab "nächstem" Start (nicht „neuester“) berechnen
 WITH base AS (

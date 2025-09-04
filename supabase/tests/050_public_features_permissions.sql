@@ -1,5 +1,5 @@
-\i 00_test_helpers.inc
 BEGIN;
+\i 000_setup_tests_users.inc
 SET LOCAL TIME ZONE 'UTC';
 SELECT plan(4);
 
@@ -7,7 +7,7 @@ SELECT plan(4);
 -- ... (Block aus 0.2 hier einfügen) ...
 
 -- u1 eingeloggt
-SELECT test_login('00000000-0000-0000-0000-0000000000a1');
+SELECT tests.authenticate_as('user_1a');
 
 -- user_features enthält "items"
 SELECT cmp_ok(
@@ -24,7 +24,7 @@ SELECT cmp_ok(
 );
 
 -- Negativ: u2 hat diese nicht
-SELECT test_login('00000000-0000-0000-0000-0000000000c1');
+SELECT tests.authenticate_as('user_1c');
 SELECT cmp_ok(
   (SELECT count(*)::bigint FROM public.user_features WHERE feature='items'),
   '='::text, 0::bigint, 'c1 hat kein items'

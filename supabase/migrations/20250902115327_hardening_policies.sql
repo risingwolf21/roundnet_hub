@@ -619,31 +619,7 @@ with check (((("user" = (auth.uid())::text) OR authorize('event.attendance.manag
   WHERE ((e.id = event_attendance_user_mapping.event) AND (e."startingDateTime" > now()) AND (e."isCancelled" = false))))));
 
 
-create policy "items_select_group_when_enabled"
-on "public"."event_bring_items"
-as permissive
-for select
-to authenticated
-using ((EXISTS ( SELECT 1
-   FROM (events e
-     JOIN group_user_mapping gum ON ((gum."group" = e."group")))
-  WHERE ((e.id = event_bring_items.event) AND (gum."user" = (auth.uid())::text) AND (e.items_enabled = true)))));
-
-
-create policy "items_write_editors"
-on "public"."event_bring_items"
-as permissive
-for all
-to authenticated
-using ((authorize('event.edit'::text) AND (EXISTS ( SELECT 1
-   FROM (events e
-     JOIN group_user_mapping gum ON ((gum."group" = e."group")))
-  WHERE ((e.id = event_bring_items.event) AND (gum."user" = (auth.uid())::text))))))
-with check ((authorize('event.edit'::text) AND (EXISTS ( SELECT 1
-   FROM (events e
-     JOIN group_user_mapping gum ON ((gum."group" = e."group")))
-  WHERE ((e.id = event_bring_items.event) AND (gum."user" = (auth.uid())::text))))));
-
+ 
 
 create policy "bring_pledges_delete_owner_or_editors"
 on "public"."event_bring_pledges"

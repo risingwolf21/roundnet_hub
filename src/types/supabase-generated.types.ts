@@ -7,11 +7,6 @@ export type Json =
   | Json[]
 
 export type Database = {
-  // Allows to automatically instantiate createClient with right options
-  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
-  __InternalSupabase: {
-    PostgrestVersion: "13.0.4"
-  }
   games: {
     Tables: {
       elo_calc_log: {
@@ -513,30 +508,19 @@ export type Database = {
     }
     Functions: {
       add_match_with_sets: {
-        Args:
-          | {
-              created_by?: string
-              event?: string
-              match_sets: Json
-              player_1a: string
-              player_1b: string
-              player_2a: string
-              player_2b: string
-              rated?: boolean
-              team_a: string
-              team_b: string
-            }
-          | {
-              event?: string
-              match_sets: Json
-              player_1a: string
-              player_1b: string
-              player_2a: string
-              player_2b: string
-              team_a: string
-              team_b: string
-            }
-        Returns: undefined
+        Args: {
+          created_by?: string
+          event?: string
+          match_sets: Json
+          player_1a: string
+          player_1b: string
+          player_2a: string
+          player_2b: string
+          rated?: boolean
+          team_a: string
+          team_b: string
+        }
+        Returns: string
       }
       apply_elo_for_match: {
         Args: { p_match: string }
@@ -573,16 +557,16 @@ export type Database = {
       preview_elo_for_match: {
         Args: { p_match: string }
         Returns: {
+          k_eff: number
+          expected_b: number
+          k_base: number
           category_a: string
           category_b: string
+          upset_levels: number
+          upset_multiplier: number
           eff_team_a: number
           eff_team_b: number
           expected_a: number
-          expected_b: number
-          k_base: number
-          k_eff: number
-          upset_levels: number
-          upset_multiplier: number
         }[]
       }
       recompute_all_effective_player_ratings: {
@@ -2120,6 +2104,24 @@ export type Database = {
         Args: { event: Json }
         Returns: Json
       }
+      edit_item: {
+        Args: {
+          p_color?: string
+          p_id: number
+          p_name?: string
+          p_type?: Database["public"]["Enums"]["ItemType"]
+        }
+        Returns: {
+          color: string
+          created_at: string
+          current_holder: string | null
+          group: string | null
+          id: number
+          lastUpdate: string
+          name: string
+          type: Database["public"]["Enums"]["ItemType"]
+        }
+      }
       eventcreation: {
         Args: Record<PropertyKey, never>
         Returns: number
@@ -2131,12 +2133,12 @@ export type Database = {
       get_column_info: {
         Args: { schema_name: string; selected_table: string }
         Returns: {
-          column_name: string
-          data_type: string
-          foreign_key_column_name: string
-          foreign_key_schema_name: string
-          foreign_key_table_name: string
           is_nullable: boolean
+          column_name: string
+          foreign_key_schema_name: string
+          foreign_key_column_name: string
+          foreign_key_table_name: string
+          data_type: string
         }[]
       }
       get_enum_types: {
@@ -2193,6 +2195,13 @@ export type Database = {
       is_user_in_group: {
         Args: { group_id: string }
         Returns: boolean
+      }
+      key_handover: {
+        Args: { p_key_id: number; p_new_holder: string }
+        Returns: {
+          holder: string
+          key_id: number
+        }[]
       }
       test_login: {
         Args: { uid: string }
@@ -2396,3 +2405,4 @@ export const Constants = {
     },
   },
 } as const
+
