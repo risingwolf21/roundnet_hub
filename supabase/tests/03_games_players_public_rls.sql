@@ -1,7 +1,7 @@
 BEGIN;
 \i 000_setup_tests_users.inc
 SET LOCAL TIME ZONE 'UTC';
-SELECT plan(3);
+SELECT plan(4);
 
 SELECT tests.authenticate_as('user_1a');
 
@@ -53,6 +53,13 @@ SELECT throws_like(
   $$,
   '%Benutzer muss selbst im Match vorkommen%',
   'function blocks when caller is not a participant'
+);
+
+
+SELECT cmp_ok(
+ (SELECT count(*)::bigint FROM games.teams WHERE player_1 = tests.get_supabase_uid('user_2b')::text 
+  or player_2 = tests.get_supabase_uid('user_2b')::text),
+ '='::text, 1::bigint, 'spieler sieht anderes team'
 );
 
 SELECT * FROM finish();

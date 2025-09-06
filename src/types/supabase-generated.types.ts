@@ -550,6 +550,10 @@ export type Database = {
         Args: { p_match: string }
         Returns: boolean
       }
+      is_member_of_match: {
+        Args: { p_team_a: string; p_team_b: string }
+        Returns: boolean
+      }
       is_member_of_teams: {
         Args: { p_team_a: string; p_team_b: string }
         Returns: boolean
@@ -557,16 +561,16 @@ export type Database = {
       preview_elo_for_match: {
         Args: { p_match: string }
         Returns: {
-          k_eff: number
-          expected_b: number
           k_base: number
-          category_a: string
           category_b: string
-          upset_levels: number
           upset_multiplier: number
-          eff_team_a: number
-          eff_team_b: number
+          category_a: string
+          k_eff: number
+          upset_levels: number
+          expected_b: number
           expected_a: number
+          eff_team_b: number
+          eff_team_a: number
         }[]
       }
       recompute_all_effective_player_ratings: {
@@ -2134,11 +2138,11 @@ export type Database = {
         Args: { schema_name: string; selected_table: string }
         Returns: {
           is_nullable: boolean
-          column_name: string
-          foreign_key_schema_name: string
           foreign_key_column_name: string
-          foreign_key_table_name: string
+          foreign_key_schema_name: string
           data_type: string
+          foreign_key_table_name: string
+          column_name: string
         }[]
       }
       get_enum_types: {

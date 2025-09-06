@@ -78,11 +78,12 @@ export const useHandoverKeyMutation = () => useMutation({
 export const useUpdateItemMutation = () => useMutation({
   mutationFn: async ({ item }: { item: TablesUpdate<'items'> & { id: number } }) => {
     const result = await supabase
-      .from('items')
-      .update(item)
-      .eq('id', item.id)
-      .select()
-      .single()
+      .rpc("edit_item", {
+        p_color: item.color,
+        p_id: item.id,
+        p_name: item.name,
+        p_type: item.type
+      })
       .throwOnError();
 
     return result.data;
