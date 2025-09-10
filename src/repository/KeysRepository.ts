@@ -1,5 +1,4 @@
 import { supabase } from '../components/services/supabase/supabaseClient';
-import { formatDateToDatabase } from '../utils';
 
 export const fetchItems = () => supabase.from('items').select('*, full_current_holder: user!keys_user_fkey(*)')
 export const fetchItemHistory = () => supabase
@@ -29,7 +28,7 @@ export const SupabaseKeysRepository = {
   },
 
   async giveItemToUser(key: Item, user: User): Promise<null> {
-    const result = await supabase
+    await supabase
       .rpc("key_handover", {
         p_key_id: key.id,
         p_new_holder: user.userId

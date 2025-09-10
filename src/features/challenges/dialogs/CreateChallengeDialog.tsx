@@ -21,7 +21,7 @@ const Content = ({ payload, onClose }: DialogProps<CreateChallengePayload, strin
   const dialogs = useDialogs();
   const [selectedGroup, setSelectedGroup] = useState<Group | null>(null);
 
-  const [data, setData] = useState<Tables<'challenge'>>({ name: "", automated: false, description: "", id: "", created_at: "", end_date: null, group: "", max_points_per_week: null });
+  const [data, setData] = useState<Tables<'challenge'>>({ name: "", automated: false, description: "", id: "", created_at: "", end_date: null, group: "", max_points_per_week: null, max_points_per_day: 0 });
 
   const { data: groups = [], isLoading } = useGroups();
 

@@ -10,9 +10,9 @@ export const fetchChallengeWithGroup = () => supabase
 
 export const ChallengeRepository = {
 
-  async increasePointForUser(userId: string, challenge: string, created_at: Dayjs, image_url: string | null): Promise<PostgrestSingleResponse<ChallengeStats>> {
+  async increasePointForUser(challenge: string, created_at: Dayjs, image_url: string | null): Promise<PostgrestSingleResponse<ChallengeStats>> {
     return supabase
-      .rpc('increase_challenge_stats_count', { user_id: userId, amount: 1, challenge_id: challenge, to_create_at: dayjsToDb(created_at)!, image_url: image_url ?? "" })
+      .rpc('increase_challenge_stats_count', { amount: 1, challenge_id: challenge, to_create_at: dayjsToDb(created_at)!, image_url: image_url ?? "" })
       .throwOnError();
   }
 };

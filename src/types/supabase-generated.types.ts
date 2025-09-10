@@ -7,6 +7,11 @@ export type Json =
   | Json[]
 
 export type Database = {
+  // Allows to automatically instantiate createClient with right options
+  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
+  __InternalSupabase: {
+    PostgrestVersion: "13.0.4"
+  }
   games: {
     Tables: {
       elo_calc_log: {
@@ -561,16 +566,16 @@ export type Database = {
       preview_elo_for_match: {
         Args: { p_match: string }
         Returns: {
-          k_base: number
-          category_b: string
-          upset_multiplier: number
           category_a: string
+          category_b: string
+          eff_team_a: number
+          eff_team_b: number
+          expected_a: number
+          expected_b: number
+          k_base: number
           k_eff: number
           upset_levels: number
-          expected_b: number
-          expected_a: number
-          eff_team_b: number
-          eff_team_a: number
+          upset_multiplier: number
         }[]
       }
       recompute_all_effective_player_ratings: {
@@ -603,6 +608,7 @@ export type Database = {
           end_date: string | null
           group: string
           id: string
+          max_points_per_day: number
           max_points_per_week: number | null
           name: string
         }
@@ -613,6 +619,7 @@ export type Database = {
           end_date?: string | null
           group: string
           id?: string
+          max_points_per_day?: number
           max_points_per_week?: number | null
           name?: string
         }
@@ -623,6 +630,7 @@ export type Database = {
           end_date?: string | null
           group?: string
           id?: string
+          max_points_per_day?: number
           max_points_per_week?: number | null
           name?: string
         }
@@ -2057,6 +2065,15 @@ export type Database = {
       }
     }
     Functions: {
+      _sum_challenge_points_for_self: {
+        Args: {
+          challenge_id: string
+          from_ts: string
+          to_ts: string
+          uid: string
+        }
+        Returns: number
+      }
       add_drinks_history: {
         Args: { items: Json }
         Returns: undefined
@@ -2137,12 +2154,12 @@ export type Database = {
       get_column_info: {
         Args: { schema_name: string; selected_table: string }
         Returns: {
-          is_nullable: boolean
+          column_name: string
+          data_type: string
           foreign_key_column_name: string
           foreign_key_schema_name: string
-          data_type: string
           foreign_key_table_name: string
-          column_name: string
+          is_nullable: boolean
         }[]
       }
       get_enum_types: {
@@ -2175,9 +2192,8 @@ export type Database = {
         Args: {
           amount: number
           challenge_id: string
-          image_url: string
+          image_url?: string
           to_create_at: string
-          user_id: string
         }
         Returns: {
           challenge: string
@@ -2409,4 +2425,3 @@ export const Constants = {
     },
   },
 } as const
-
