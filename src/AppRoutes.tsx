@@ -1,13 +1,16 @@
 import { wrapCreateBrowserRouterV7 } from "@sentry/react";
+import { DialogsProvider, NotificationsProvider } from "@toolpad/core";
 import React from "react";
 import { createBrowserRouter, Navigate, Outlet, RouteObject, RouterProvider, useLocation } from "react-router";
 import ErrorRouteElement from "./components/ErrorRouteElement";
-import { useApplication } from "./features/auth/ApplicationContext";
-import { AuthProvider } from "./features/auth/AuthProvider";
-import { lazyWithRetry } from "./hooks/lazyWithRetry";
 import AuthLayout from "./components/layout/AuthLayout";
-import { DialogsProvider, NotificationsProvider } from "@toolpad/core";
+import { useApplication } from "./features/auth/ApplicationContext";
+import { FeatureNotAvailable, PermissionDeniedPage } from "./features/auth/ErrorPage";
 import { GrantsProvider } from "./features/auth/GrantsContext";
+import GrantsManager from "./features/grants/GrantsManager";
+import { GrantsManager as G1 } from "./features/grants/Teset";
+import { lazyWithRetry } from "./hooks/lazyWithRetry";
+import { Has } from "./hooks/useGrants";
 
 const HistoryScreenProvider = lazyWithRetry(() => import('./features/drinks/HistoryScreenProvider'));
 const ItemHolderScreen = lazyWithRetry(() => import('./features/keys/ItemHolderScreen'));
@@ -121,18 +124,6 @@ const router = sentryCreateBrowserRouter([
             element: <ResetPasswordScreen />
           },
           {
-            path: "/drinks",
-            element: <DrinkListScreenProvider />
-          },
-          {
-            path: "/history",
-            element: <HistoryScreenProvider />
-          },
-          {
-            path: "/payments",
-            element: <PayDrinksScreenProvider />
-          },
-          {
             path: "/keys",
             element: <ItemHolderScreen />
           },
@@ -150,7 +141,34 @@ const router = sentryCreateBrowserRouter([
             ]
           },
           {
+            path: "/drinks",
+            element: <Has feat={"drinks"} fallback={<FeatureNotAvailable />}>
+              <Outlet />
+            </Has>,
+            children: [
+              {
+                index: true,
+                element: <Navigate to="/drinks/list" />
+              },
+              {
+                path: "list",
+                element: <DrinkListScreenProvider />
+              },
+              {
+                path: "history",
+                element: <HistoryScreenProvider />
+              },
+              {
+                path: "payments",
+                element: <PayDrinksScreenProvider />
+              },
+            ]
+          },
+          {
             path: "/challenges",
+            element: <Has feat={"challenges"} fallback={<FeatureNotAvailable />}>
+              <Outlet />
+            </Has>,
             children: [
               {
                 index: true,
@@ -185,6 +203,9 @@ const router = sentryCreateBrowserRouter([
           },
           {
             path: "/training",
+            element: <Has feat={"events"} fallback={<FeatureNotAvailable />}>
+              <Outlet />
+            </Has>,
             children: [
               {
                 index: true,
@@ -206,6 +227,9 @@ const router = sentryCreateBrowserRouter([
           },
           {
             path: "/matches",
+            element: <Has feat={"games"} fallback={<FeatureNotAvailable />}>
+              <Outlet />
+            </Has>,
             children: [
               {
                 index: true,
@@ -246,8 +270,18 @@ const router = sentryCreateBrowserRouter([
               },
               {
                 path: "supabase",
-                element: <SupabaseClient />
-              }
+                element: <Has perm={"supabase.admin"} fallback={<PermissionDeniedPage />}>
+                  <SupabaseClient />
+                </Has>
+              },
+              {
+                path: "grants",
+                element: <GrantsManager />
+              },
+              {
+                path: "grants1",
+                element:  <G1 />
+              },
             ]
           },
           {

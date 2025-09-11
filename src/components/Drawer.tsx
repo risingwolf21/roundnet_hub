@@ -201,7 +201,7 @@ const DrawerContent = ({
           }
         >
           <Has perm={"drinks.select"}>
-            <DrawerItem key="drinks" selected={tab === 'drinks'} onClick={() => handleChange('drinks')}>
+            <DrawerItem key="drinks" selected={tab === 'drinks/list'} onClick={() => handleChange('drinks/list')}>
               <ListItemAvatar>
                 <ListItemIcon>
                   <Liquor />
@@ -214,7 +214,7 @@ const DrawerContent = ({
             </DrawerItem>
           </Has>
           <Has perm={"drinks.view.own-history"}>
-            <DrawerItem key="history" selected={tab === 'history'} onClick={() => handleChange('history')}>
+            <DrawerItem key="history" selected={tab === 'drinks/history'} onClick={() => handleChange('drinks/history')}>
               <ListItemAvatar>
                 <ListItemIcon>
                   <History />
@@ -227,7 +227,7 @@ const DrawerContent = ({
             </DrawerItem>
           </Has>
           <Has perm={"drinks.view.own-payments"}>
-            <DrawerItem key="payments" selected={tab === 'payments'} onClick={() => handleChange('payments')}>
+            <DrawerItem key="payments" selected={tab === 'drinks/payments'} onClick={() => handleChange('drinks/payments')}>
               <ListItemAvatar>
                 <ListItemIcon>
                   <Euro />
@@ -423,6 +423,23 @@ const DrawerContent = ({
                 <ListItemText
                   primaryTypographyProps={{ fontWeight: 'bold', fontSize: '0.9rem' }}
                   primary={t('browse.completeHistory')}
+                />
+              </DrawerItem>
+            </Has>
+            <Has perm={"grants.manage"}>
+              <DrawerItem
+                key="grantsManager"
+                selected={tab === 'admin/grants'}
+                onClick={() => handleChange('admin/grants')}
+              >
+                <ListItemAvatar>
+                  <ListItemIcon>
+                    <Key />
+                  </ListItemIcon>
+                </ListItemAvatar>
+                <ListItemText
+                  primaryTypographyProps={{ fontWeight: 'bold', fontSize: '0.9rem' }}
+                  primary={"Grants-Manager"}
                 />
               </DrawerItem>
             </Has>

@@ -80,80 +80,33 @@ self.addEventListener('message', (event) => {
   }
 });
 
-self.addEventListener('notificationclick', (event) => {
-  const notificationData = event.notification.data;
-  if (notificationData.url) {
-    event.waitUntil(
-      self.clients
-        .matchAll({
-          type: 'window',
-        })
-        .then((clients) => {
-          for (let i = 0; i < clients.length; i++) {
-            const client = clients[i];
-            if (client.url === '/' && 'focus' in client) return client.focus();
-          }
-          if (clients.openWindow) return clients.openWindow('/');
-        })
-    );
-  }
+self.addEventListener('install', () => self.skipWaiting());
+self.addEventListener('activate', (e) => e.waitUntil(self.clients.claim()));
 
-  event.notification.close();
-});
-
-self.addEventListener('install', event => {
-  self.skipWaiting();
-});
-
-self.addEventListener('activate', event => {
-  event.waitUntil(self.clients.claim());
-});
-
-// Firebase config statisch hier rein kopieren oder per Build-Tool ersetzen lassen
-const firebaseConfig = {
-  "apiKey": "AIzaSyAuIt0oWJLryFKTs6wDX6NSyTGEdca5vsA",
-  "authDomain": "roundnet-karlsruhe.firebaseapp.com",
-  "projectId": "roundnet-karlsruhe",
-  "storageBucket": "roundnet-karlsruhe.appspot.com",
-  "messagingSenderId": "199912526233",
-  "appId": "1:199912526233:web:c161e92b7551c5b4e90308",
-  "measurementId": "G-9T2HR2Z3R7"
-};
-// eslint-disable-next-line no-undef
-firebase.initializeApp(firebaseConfig);
-// eslint-disable-next-line no-undef
-const messaging = firebase.messaging();
-
-messaging.onBackgroundMessage(payload => {
-  ReactGA.event("notification_recieved")
-  const notificationTitle = payload.data.title;
-  self.registration.showNotification(notificationTitle, {
-    body: payload.data.body,
-    icon: self.location.origin + "/" + process.env.REACT_APP_WEBSITE_PATH + "/android-chrome-192x192.png",
-    badge: self.location.origin + "/" + process.env.REACT_APP_WEBSITE_PATH + "/badge.png",
-    tag: payload.data.id,
-    renotify: true,
-    data: {
-      url: self.location.origin,
-    },
-  });
-});
-
-// optional: notificationclick-Handler, wie du ihn hast
-self.addEventListener('notificationclick', (event) => {
-  const notificationData = event.notification.data;
-  ReactGA.event("notification_clicked", {
-    notificationData
-  });
-  event.notification.close();
-  if (notificationData?.url) {
-    event.waitUntil(
-      self.clients.matchAll({ type: 'window' }).then(clients => {
-        for (const client of clients) {
-          if ('focus' in client) return client.focus();
-        }
-        if (self.clients.openWindow) return self.clients.openWindow(notificationData.url);
-      })
-    );
+self.addEventListener('push', (event) => {
+  try {
+    const payload = event.data ? event.data.json() : {};
+    const title = payload.title || 'Benachrichtigung';
+    const options = {
+      body: payload.body || '',
+      data: payload.data || {},
+      badge: '/icons/badge.png',
+      icon: '/icons/icon-192.png',
+    };
+    event.waitUntil(self.registration.showNotification(title, options));
+  } catch (e) {
+    event.waitUntil(self.registration.showNotification('Nachricht', { body: event.data?.text() }));
   }
 });
+
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close();
+  const url = event.notification.data?.url || '/';
+  event.waitUntil(clients.matchAll({ type: 'window', includeUncontrolled: true }).then((list) => {
+    for (const client of list) {
+      if ('focus' in client) { client.navigate(url); return client.focus(); }
+    }
+    if (clients.openWindow) return clients.openWindow(url);
+  }));
+});
+

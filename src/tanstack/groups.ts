@@ -20,7 +20,7 @@ export const useRequestedUsersPerGroup = () => useQuery<GroupUserMapping[]>({
 })
 
 export const useGroups = () => useQuery<GroupWithUserMappings[]>({
-  queryKey: ['groups'],
+  queryKey: ['grants', 'groups'],
   queryFn: GroupsRepository.fetchGroups
 })
 

@@ -561,16 +561,16 @@ export type Database = {
       preview_elo_for_match: {
         Args: { p_match: string }
         Returns: {
-          expected_a: number
-          eff_team_a: number
-          category_b: string
-          upset_levels: number
+          category_a: string
           upset_multiplier: number
+          upset_levels: number
+          eff_team_a: number
+          eff_team_b: number
+          expected_a: number
           expected_b: number
           k_base: number
           k_eff: number
-          category_a: string
-          eff_team_b: number
+          category_b: string
         }[]
       }
       recompute_all_effective_player_ratings: {
@@ -1460,66 +1460,185 @@ export type Database = {
           },
         ]
       }
-      notification_token: {
+      notification_outbox: {
         Row: {
-          device_id: string
-          fcm_token: string
-          last_used: string
+          attempt_count: number
+          body: string | null
+          created_at: string
+          data: Json | null
+          dedupe_key: string | null
+          id: number
+          last_error: string | null
+          next_attempt_at: string
+          notification: string | null
+          sent_at: string | null
+          status: string
+          tenant: string
+          title: string
+          ttl_seconds: number | null
+          urgency: string
           user: string
         }
         Insert: {
-          device_id: string
-          fcm_token: string
-          last_used?: string
-          user?: string
+          attempt_count?: number
+          body?: string | null
+          created_at?: string
+          data?: Json | null
+          dedupe_key?: string | null
+          id?: number
+          last_error?: string | null
+          next_attempt_at?: string
+          notification?: string | null
+          sent_at?: string | null
+          status?: string
+          tenant?: string
+          title: string
+          ttl_seconds?: number | null
+          urgency?: string
+          user: string
         }
         Update: {
-          device_id?: string
-          fcm_token?: string
-          last_used?: string
+          attempt_count?: number
+          body?: string | null
+          created_at?: string
+          data?: Json | null
+          dedupe_key?: string | null
+          id?: number
+          last_error?: string | null
+          next_attempt_at?: string
+          notification?: string | null
+          sent_at?: string | null
+          status?: string
+          tenant?: string
+          title?: string
+          ttl_seconds?: number | null
+          urgency?: string
           user?: string
+        }
+        Relationships: []
+      }
+      notification_outbox_targets: {
+        Row: {
+          attempt_count: number
+          last_error: string | null
+          last_status: number | null
+          next_attempt_at: string
+          outbox_id: number
+          status: string
+          subscription_id: string
+        }
+        Insert: {
+          attempt_count?: number
+          last_error?: string | null
+          last_status?: number | null
+          next_attempt_at?: string
+          outbox_id: number
+          status?: string
+          subscription_id: string
+        }
+        Update: {
+          attempt_count?: number
+          last_error?: string | null
+          last_status?: number | null
+          next_attempt_at?: string
+          outbox_id?: number
+          status?: string
+          subscription_id?: string
         }
         Relationships: [
           {
-            foreignKeyName: "notification_token_user_fkey"
-            columns: ["user"]
+            foreignKeyName: "notification_outbox_targets_outbox_id_fkey"
+            columns: ["outbox_id"]
             isOneToOne: false
-            referencedRelation: "user"
-            referencedColumns: ["userId"]
+            referencedRelation: "notification_outbox"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "notification_outbox_targets_subscription_id_fkey"
+            columns: ["subscription_id"]
+            isOneToOne: false
+            referencedRelation: "web_push_subscriptions"
+            referencedColumns: ["id"]
           },
         ]
       }
       notifications: {
         Row: {
-          body: string
+          body: string | null
           created_at: string
+          data: Json | null
+          dismissed_at: string | null
+          expires_at: string | null
           id: string
+          read_at: string | null
+          source_id: string | null
+          source_type: string | null
+          tenant: string
           title: string
-          user: string | null
+          topic: string
+          user: string
         }
         Insert: {
-          body?: string
+          body?: string | null
           created_at?: string
+          data?: Json | null
+          dismissed_at?: string | null
+          expires_at?: string | null
           id?: string
-          title?: string
-          user?: string | null
+          read_at?: string | null
+          source_id?: string | null
+          source_type?: string | null
+          tenant?: string
+          title: string
+          topic: string
+          user: string
         }
         Update: {
-          body?: string
+          body?: string | null
           created_at?: string
+          data?: Json | null
+          dismissed_at?: string | null
+          expires_at?: string | null
           id?: string
+          read_at?: string | null
+          source_id?: string | null
+          source_type?: string | null
+          tenant?: string
           title?: string
-          user?: string | null
+          topic?: string
+          user?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "public_notifications_user_fkey"
-            columns: ["user"]
-            isOneToOne: false
-            referencedRelation: "user"
-            referencedColumns: ["userId"]
-          },
-        ]
+        Relationships: []
+      }
+      object_subscriptions: {
+        Row: {
+          created_at: string | null
+          scope_id: string
+          scope_type: string
+          tenant: string
+          topic: string | null
+          topic_norm: string
+          user: string
+        }
+        Insert: {
+          created_at?: string | null
+          scope_id: string
+          scope_type: string
+          tenant?: string
+          topic?: string | null
+          topic_norm?: string
+          user: string
+        }
+        Update: {
+          created_at?: string | null
+          scope_id?: string
+          scope_type?: string
+          tenant?: string
+          topic?: string | null
+          topic_norm?: string
+          user?: string
+        }
+        Relationships: []
       }
       payments: {
         Row: {
@@ -1604,86 +1723,6 @@ export type Database = {
         }
         Relationships: []
       }
-      user_calendar_event_mapping: {
-        Row: {
-          calendar_event_id: string
-          event: string
-          user: string
-        }
-        Insert: {
-          calendar_event_id: string
-          event: string
-          user: string
-        }
-        Update: {
-          calendar_event_id?: string
-          event?: string
-          user?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "user_calendar_event_mapping_event_fkey"
-            columns: ["event"]
-            isOneToOne: false
-            referencedRelation: "current_distinct_event"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "user_calendar_event_mapping_event_fkey"
-            columns: ["event"]
-            isOneToOne: false
-            referencedRelation: "distinct_event"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "user_calendar_event_mapping_event_fkey"
-            columns: ["event"]
-            isOneToOne: false
-            referencedRelation: "events"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "user_calendar_event_mapping_event_fkey"
-            columns: ["event"]
-            isOneToOne: false
-            referencedRelation: "events_user_view"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "user_calendar_event_mapping_user_fkey"
-            columns: ["user"]
-            isOneToOne: false
-            referencedRelation: "user"
-            referencedColumns: ["userId"]
-          },
-        ]
-      }
-      user_calender_settings: {
-        Row: {
-          calender_id: string | null
-          minutes_to_remind: number | null
-          user: string
-        }
-        Insert: {
-          calender_id?: string | null
-          minutes_to_remind?: number | null
-          user: string
-        }
-        Update: {
-          calender_id?: string | null
-          minutes_to_remind?: number | null
-          user?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "user_calender_settings_user_fkey"
-            columns: ["user"]
-            isOneToOne: true
-            referencedRelation: "user"
-            referencedColumns: ["userId"]
-          },
-        ]
-      }
       user_direct_grants: {
         Row: {
           created_at: string
@@ -1709,7 +1748,15 @@ export type Database = {
           updated_at?: string
           user?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "user_direct_grants_user_fkey"
+            columns: ["user"]
+            isOneToOne: false
+            referencedRelation: "user"
+            referencedColumns: ["userId"]
+          },
+        ]
       }
       user_grants: {
         Row: {
@@ -1738,31 +1785,47 @@ export type Database = {
         }
         Relationships: []
       }
-      user_notification_settings: {
+      user_notification_preferences: {
         Row: {
-          id: number
-          notification_tag: string
+          channel: string
+          created_at: string
+          enabled: boolean
+          scope_id: string | null
+          scope_id_norm: string
+          scope_type: string | null
+          scope_type_norm: string
+          tenant: string
+          topic: string
+          updated_at: string
           user: string
         }
         Insert: {
-          id?: number
-          notification_tag: string
+          channel?: string
+          created_at?: string
+          enabled?: boolean
+          scope_id?: string | null
+          scope_id_norm?: string
+          scope_type?: string | null
+          scope_type_norm?: string
+          tenant?: string
+          topic: string
+          updated_at?: string
           user: string
         }
         Update: {
-          id?: number
-          notification_tag?: string
+          channel?: string
+          created_at?: string
+          enabled?: boolean
+          scope_id?: string | null
+          scope_id_norm?: string
+          scope_type?: string | null
+          scope_type_norm?: string
+          tenant?: string
+          topic?: string
+          updated_at?: string
           user?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "user_notification_settings_user_fkey"
-            columns: ["user"]
-            isOneToOne: false
-            referencedRelation: "user"
-            referencedColumns: ["userId"]
-          },
-        ]
+        Relationships: []
       }
       vouchers: {
         Row: {
@@ -1795,6 +1858,48 @@ export type Database = {
             referencedColumns: ["userId"]
           },
         ]
+      }
+      web_push_subscriptions: {
+        Row: {
+          auth: string
+          created_at: string
+          endpoint: string
+          expiration_time: string | null
+          id: string
+          last_seen: string
+          p256dh: string
+          platform: string | null
+          revoked_at: string | null
+          ua: string | null
+          user: string
+        }
+        Insert: {
+          auth: string
+          created_at?: string
+          endpoint: string
+          expiration_time?: string | null
+          id?: string
+          last_seen?: string
+          p256dh: string
+          platform?: string | null
+          revoked_at?: string | null
+          ua?: string | null
+          user: string
+        }
+        Update: {
+          auth?: string
+          created_at?: string
+          endpoint?: string
+          expiration_time?: string | null
+          id?: string
+          last_seen?: string
+          p256dh?: string
+          platform?: string | null
+          revoked_at?: string | null
+          ua?: string | null
+          user?: string
+        }
+        Relationships: []
       }
     }
     Views: {
@@ -2063,18 +2168,6 @@ export type Database = {
           },
         ]
       }
-      readable_history: {
-        Row: {
-          amount: number | null
-          count: number | null
-          date: string | null
-          displayName: string | null
-          id: number | null
-          name: string | null
-          time: string | null
-        }
-        Relationships: []
-      }
       user_features: {
         Row: {
           feature: string | null
@@ -2194,6 +2287,22 @@ export type Database = {
           type: Database["public"]["Enums"]["ItemType"]
         }
       }
+      enqueue_notification: {
+        Args: {
+          p_body?: string
+          p_data?: Json
+          p_dedupe_key?: string
+          p_source_id?: string
+          p_source_type?: string
+          p_tenant?: string
+          p_title: string
+          p_topic?: string
+          p_ttl_seconds?: number
+          p_urgency?: string
+          p_user: string
+        }
+        Returns: number
+      }
       eventcreation: {
         Args: Record<PropertyKey, never>
         Returns: number
@@ -2205,19 +2314,19 @@ export type Database = {
       get_column_info: {
         Args: { schema_name: string; selected_table: string }
         Returns: {
-          data_type: string
           foreign_key_schema_name: string
-          is_nullable: boolean
-          foreign_key_column_name: string
           foreign_key_table_name: string
+          foreign_key_column_name: string
           column_name: string
+          is_nullable: boolean
+          data_type: string
         }[]
       }
       get_enum_types: {
         Args: Record<PropertyKey, never>
         Returns: {
-          enum_name: string
           enum_values: string[]
+          enum_name: string
         }[]
       }
       get_or_create_payment_for_user: {
@@ -2227,8 +2336,8 @@ export type Database = {
       get_public_table_names: {
         Args: Record<PropertyKey, never>
         Returns: {
-          table_name: string
           table_schema: string
+          table_name: string
         }[]
       }
       getattendingusers: {
@@ -2237,6 +2346,28 @@ export type Database = {
       }
       gettingjsonarray: {
         Args: { items: Json }
+        Returns: undefined
+      }
+      grant_group_grants: {
+        Args: { p_feats?: string[]; p_group: string; p_perms?: string[] }
+        Returns: undefined
+      }
+      grant_user_grants: {
+        Args: {
+          p_feats?: string[]
+          p_perms?: string[]
+          p_tenant?: string
+          p_user: string
+        }
+        Returns: undefined
+      }
+      inc_target_attempt: {
+        Args: {
+          p_error: string
+          p_outbox_id: number
+          p_status: number
+          p_subscription_id: string
+        }
         Returns: undefined
       }
       increase_challenge_stats_count: {
@@ -2259,6 +2390,16 @@ export type Database = {
         Args: { p_body?: Json; p_function_name: string; p_timeout_ms?: number }
         Returns: number
       }
+      is_topic_enabled_for_user: {
+        Args: {
+          p_scope_id?: string
+          p_scope_type?: string
+          p_tenant: string
+          p_topic: string
+          p_user: string
+        }
+        Returns: boolean
+      }
       is_user_admin_in_group: {
         Args: { group_id: string }
         Returns: boolean
@@ -2274,8 +2415,44 @@ export type Database = {
           holder: string
         }[]
       }
+      mark_all_notifications_read: {
+        Args: { p_source_id?: string; p_source_type?: string; p_topic?: string }
+        Returns: number
+      }
+      mark_notification_read: {
+        Args: { p_id: string }
+        Returns: undefined
+      }
+      notify_event_canceled: {
+        Args: { p_actor?: string; p_event: string }
+        Returns: number
+      }
       refresh_user_grants: {
         Args: { p_user: string }
+        Returns: undefined
+      }
+      register_web_push_subscription: {
+        Args: {
+          p_auth: string
+          p_endpoint: string
+          p_expiration?: string
+          p_p256dh: string
+          p_platform?: string
+          p_ua?: string
+        }
+        Returns: string
+      }
+      revoke_group_grants: {
+        Args: { p_feats?: string[]; p_group: string; p_perms?: string[] }
+        Returns: undefined
+      }
+      revoke_user_grants: {
+        Args: {
+          p_feats?: string[]
+          p_perms?: string[]
+          p_tenant?: string
+          p_user: string
+        }
         Returns: undefined
       }
       test_login: {
@@ -2288,6 +2465,10 @@ export type Database = {
       }
       test_seed_grant_permission: {
         Args: { p_group: string; p_perm: string }
+        Returns: undefined
+      }
+      unregister_web_push_subscription: {
+        Args: { p_endpoint: string }
         Returns: undefined
       }
       update_attendance: {

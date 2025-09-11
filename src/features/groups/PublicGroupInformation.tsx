@@ -5,7 +5,9 @@ import { useDialogs, useNotifications } from "@toolpad/core";
 import React, { useEffect, useState } from "react";
 import { Navigate, useNavigate, useParams } from "react-router";
 import { LoadingIndicator } from "src/components/LoadingIndicator";
+import { PullToRefresh } from "src/components/pull-to-refresh/PullToRefresh";
 import { useGroup, useLeaveGroupMutation, useMakeUserAdminMutation } from "src/tanstack/groups";
+import { useGrants } from "../auth/GrantsContext";
 import { AcceptJoinButton } from "./components/AcceptJoinButton";
 import { DeclineJoinButton } from "./components/DeclineJoinButton";
 import { GroupUserItem } from "./components/GroupUserItem";
@@ -13,11 +15,6 @@ import { CreateOrUpdateGroupDialog } from "./dialogs/CreateOrUpdateGroupDialog";
 import SearchAndSelectUserDialog from "./dialogs/SearchAndSelectUserDialog";
 import { useAddUsersMutation } from "./query/addUsersMutation";
 import { useRemoveUsersMutation } from "./query/removeUsersMutation";
-import { PublicGroupPermissions } from "./components/PublicGroupPermissions";
-import { PublicGroupfeatures } from "./components/PublicGroupFeatures";
-import { PullToRefresh } from "src/components/pull-to-refresh/PullToRefresh";
-import { Has } from "src/hooks/useGrants";
-import { useGrants } from "../auth/GrantsContext";
 
 const PublicGroupInformation = () => {
 
@@ -81,21 +78,6 @@ const PublicGroupInformation = () => {
         {group?.description}
       </Typography>
       <Divider />
-      <Has perm={"supabase.admin"}>
-        {
-          group && <>
-            <Typography pl={2} variant="h6" fontWeight="bold">
-              Features
-            </Typography>
-            <PublicGroupfeatures group={group} />
-            <Typography pl={2} variant="h6" fontWeight="bold">
-              Permissions
-            </Typography>
-            <PublicGroupPermissions group={group} />
-            <Divider />
-          </>
-        }
-      </Has>
       <Typography pl={2} pt={1} variant="h6" fontWeight="bold">
         Mitglieder{group && " · " + group?.users.length}
       </Typography>

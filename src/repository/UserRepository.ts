@@ -75,44 +75,44 @@ export const SupabaseUserRepository = {
     return supabase.schema('games').from('players').select('*').eq('player', userId).maybeSingle().throwOnError();
   },
 
-  async deleteNotificationTag(
-    notificationTag: string,
-    userId: string
-  ): Promise<PostgrestSingleResponse<Tables<'user_notification_settings'>[]>> {
-    return supabase
-      .from('user_notification_settings')
-      .delete()
-      .eq('user', userId)
-      .eq("notification_tag", notificationTag)
-      .select()
-  },
+  // async deleteNotificationTag(
+  //   notificationTag: string,
+  //   userId: string
+  // ): Promise<PostgrestSingleResponse<Tables<'user_notification_settings'>[]>> {
+  //   return supabase
+  //     .from('user_notification_settings')
+  //     .delete()
+  //     .eq('user', userId)
+  //     .eq("notification_tag", notificationTag)
+  //     .select()
+  // },
 
-  async addNotificationTag(
-    notificationTag: string,
-    userId: string
-  ): Promise<PostgrestSingleResponse<Tables<'user_notification_settings'>[]>> {
-    return supabase
-      .from('user_notification_settings')
-      .insert({ user: userId, notification_tag: notificationTag })
-      .select("*");
-  },
+  // async addNotificationTag(
+  //   notificationTag: string,
+  //   userId: string
+  // ): Promise<PostgrestSingleResponse<Tables<'user_notification_settings'>[]>> {
+  //   return supabase
+  //     .from('user_notification_settings')
+  //     .insert({ user: userId, notification_tag: notificationTag })
+  //     .select("*");
+  // },
 
-  async updateFCMToken(fcmToken: string, deviceId: string, userId: string): Promise<PostgrestSingleResponse<any>> {
-    return supabase
-      .from('notification_token')
-      .upsert({ fcm_token: fcmToken, user: userId, device_id: deviceId, last_used: formatDateToDatabase(Date.now()) })
-      .throwOnError();
-  },
+  // async updateFCMToken(fcmToken: string, deviceId: string, userId: string): Promise<PostgrestSingleResponse<any>> {
+  //   return supabase
+  //     .from('notification_token')
+  //     .upsert({ fcm_token: fcmToken, user: userId, device_id: deviceId, last_used: formatDateToDatabase(Date.now()) })
+  //     .throwOnError();
+  // },
 
-  async fetchNotificationSettings(
-    userId: string
-  ): Promise<string[]> {
-    const result = await supabase
-      .from('user_notification_settings')
-      .select("notification_tag")
-      .eq("user", userId);
-    if (result.error)
-      return [];
-    return result.data.map(x => x.notification_tag);
-  },
+  // async fetchNotificationSettings(
+  //   userId: string
+  // ): Promise<string[]> {
+  //   const result = await supabase
+  //     .from('user_notification_settings')
+  //     .select("notification_tag")
+  //     .eq("user", userId);
+  //   if (result.error)
+  //     return [];
+  //   return result.data.map(x => x.notification_tag);
+  // },
 };
