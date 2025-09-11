@@ -25,6 +25,7 @@ jobs:
             supabase_key_secret: STAGING_ANON_KEY
             openweather_api_key: OPENWEATHER_API_KEY
             supabase_project_id: PROJECT_ID
+            vapid_public_key: VAPID_PUBLIC_STAGING_KEY
 
     environment:
       name: ${{ matrix.env.name }}
@@ -61,6 +62,7 @@ jobs:
           REACT_APP_WEBSITE_NAME: ${{ matrix.env.name }}
           REACT_APP_OPENWEATHER_API_KEY: ${{secrets[matrix.env.openweather_api_key]}}
           REACT_APP_SUPABASE_PROJECT_ID: ${{ vars[matrix.env.supabase_project_id] }}
+          REACT_APP_VAPID_PUBLIC_KEY: ${{ vars[matrix.env.vapid_public_key] }}
 
       - uses: FirebaseExtended/action-hosting-deploy@v0
         with:

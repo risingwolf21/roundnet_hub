@@ -23,7 +23,10 @@ function arrayBufferToBase64(buf: ArrayBuffer) {
 }
 
 export async function ensureWebPushSubscription(vapidPublicKey?: string) {
-  if (!('serviceWorker' in navigator) || !('PushManager' in window) || ! vapidPublicKey) return null;
+  if (!('serviceWorker' in navigator) || !('PushManager' in window) || ! vapidPublicKey) {
+    console.error("NOtifications recieving is not possible");
+    return null;
+  }
   const perm = await Notification.requestPermission();
   if (perm !== 'granted') return null;
 

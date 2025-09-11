@@ -80,6 +80,8 @@ jobs:
             supabase_key_secret: PRODUCTION_ANON_KEY
             openweather_api_key: OPENWEATHER_API_KEY
             supabase_project_id: PROJECT_ID
+            vapid_public_key: VAPID_PUBLIC_PRODUCTION_KEY
+
 
           - name: 'Munich Roundnet'
             firebase_target: munich-roundnet-production
@@ -91,6 +93,7 @@ jobs:
             supabase_key_secret: PRODUCTION_ANON_KEY
             openweather_api_key: OPENWEATHER_API_KEY
             supabase_project_id: PROJECT_ID
+            vapid_public_key: VAPID_PUBLIC_PRODUCTION_KEY
 
 
     environment:
@@ -132,6 +135,7 @@ jobs:
           REACT_APP_MANIFEST_JSON: ${{ matrix.env.website_manifest }}
           REACT_APP_WEBSITE_NAME: ${{ matrix.env.name }}
           REACT_APP_OPENWEATHER_API_KEY: ${{secrets[matrix.env.openweather_api_key]}}
+          REACT_APP_VAPID_PUBLIC_KEY: ${{ vars[matrix.env.vapid_public_key] }}
 
       - uses: FirebaseExtended/action-hosting-deploy@v0
         with:
