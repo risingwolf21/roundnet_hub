@@ -1,10 +1,10 @@
 import React from 'react';
 import Layout from 'src/components/layout/Layout';
-import { useAuthentication } from '../auth/AuthProvider';
+import { useGrants } from '../auth/GrantsContext';
 import { HistoryScreen } from './HistoryScreen';
 
 const HistoryScreenProvider = () => {
-  const { user } = useAuthentication();
+  const { user } = useGrants();
 
   return <Layout>
     <HistoryScreen user={user} />

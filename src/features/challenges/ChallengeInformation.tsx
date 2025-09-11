@@ -13,11 +13,12 @@ import { supabase } from 'src/components/services/supabase/supabaseClient';
 import { useChallenge, useChallengeLeaderboard, useChallengeStatsForUser, useIncreasePointForUserMutation, useInfiniteChallengeStats } from 'src/tanstack/challenge';
 import { dataURLtoFile } from 'src/utils';
 import Layout from '../../components/layout/Layout';
-import { useAuthentication } from '../auth/AuthProvider';
+import { useGrants } from '../auth/GrantsContext';
 import { TabPanel } from '../events/dialogs/EventAttendanceDialog';
 import { ChallengeActivityList } from './ChallengeActivityList';
 import { ChallengeLeaderboard } from './ChallengeLeaderboard';
 import EnterPointDialog from './dialogs/EnterPointDialog';
+import { Has } from 'src/hooks/useGrants';
 
 const ChallengeInformationProvider = ({ t }: { t: TFunction }) => {
   const { challengeId } = useParams();
@@ -29,7 +30,7 @@ const ChallengeInformationProvider = ({ t }: { t: TFunction }) => {
 }
 
 const ChallengeInformation = ({ t, challengeId }: { t: TFunction, challengeId: string }) => {
-  const { user, isAuthorized } = useAuthentication();
+  const { user } = useGrants();
   const dialogs = useDialogs();
   const notifications = useNotifications();
   const [value, setValue] = useState(0);
@@ -124,30 +125,32 @@ const ChallengeInformation = ({ t, challengeId }: { t: TFunction, challengeId: s
         <TabPanel value={value} index={1}>
           <ChallengeLeaderboard isLoading={isLeaderboardLoading} challenge_points={leaderboard} />
         </TabPanel>
+        <Has perm={"challenges.stats.write"}>
+          {
+            !challenge?.automated && (
+              <Fab
+                sx={{
+                  background: 'primary.light',
+                  position: 'fixed',
+                  right: '16px',
+                  bottom: 'calc(16px + env(safe-area-inset-bottom))',
+                  mb: '16px',
+                }}
+                onClick={async () => {
+                  if (challenge) {
+                    const result = await dialogs.open(EnterPointDialog, {
+                      dates: user_challenge_stats.map(x => x.created_at),
+                      maxEntriesPerWeek: challenge.max_points_per_week
+                    });
 
-        { isAuthorized("challenges.stats.write") && !challenge?.automated && (
-          <Fab
-            sx={{
-              background: 'primary.light',
-              position: 'fixed',
-              right: '16px',
-              bottom: 'calc(16px + env(safe-area-inset-bottom))',
-              mb: '16px',
-            }}
-            onClick={async () => {
-              if (challenge) {
-                const result = await dialogs.open(EnterPointDialog, {
-                  dates: user_challenge_stats.map(x => x.created_at),
-                  maxEntriesPerWeek: challenge.max_points_per_week
-                });
-
-                if (result) increaseChallengePoint(result.date, result.image);
-              }
-            }}
-          >
-            <EditIcon sx={{ color: 'white' }} />
-          </Fab>
-        )}
+                    if (result) increaseChallengePoint(result.date, result.image);
+                  }
+                }}
+              >
+                <EditIcon sx={{ color: 'white' }} />
+              </Fab>
+            )}
+        </Has>
 
 
       </PullToRefresh>

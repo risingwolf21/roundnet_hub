@@ -7,11 +7,6 @@ export type Json =
   | Json[]
 
 export type Database = {
-  // Allows to automatically instantiate createClient with right options
-  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
-  __InternalSupabase: {
-    PostgrestVersion: "13.0.4"
-  }
   games: {
     Tables: {
       elo_calc_log: {
@@ -566,16 +561,16 @@ export type Database = {
       preview_elo_for_match: {
         Args: { p_match: string }
         Returns: {
-          category_a: string
-          category_b: string
-          eff_team_a: number
-          eff_team_b: number
           expected_a: number
+          eff_team_a: number
+          category_b: string
+          upset_levels: number
+          upset_multiplier: number
           expected_b: number
           k_base: number
           k_eff: number
-          upset_levels: number
-          upset_multiplier: number
+          category_a: string
+          eff_team_b: number
         }[]
       }
       recompute_all_effective_player_ratings: {
@@ -1689,6 +1684,60 @@ export type Database = {
           },
         ]
       }
+      user_direct_grants: {
+        Row: {
+          created_at: string
+          key: string
+          kind: Database["public"]["Enums"]["grant_kind"]
+          tenant: string
+          updated_at: string
+          user: string
+        }
+        Insert: {
+          created_at?: string
+          key: string
+          kind: Database["public"]["Enums"]["grant_kind"]
+          tenant?: string
+          updated_at?: string
+          user: string
+        }
+        Update: {
+          created_at?: string
+          key?: string
+          kind?: Database["public"]["Enums"]["grant_kind"]
+          tenant?: string
+          updated_at?: string
+          user?: string
+        }
+        Relationships: []
+      }
+      user_grants: {
+        Row: {
+          granted_by: string
+          key: string
+          kind: Database["public"]["Enums"]["grant_kind"]
+          tenant: string
+          updated_at: string
+          user: string
+        }
+        Insert: {
+          granted_by: string
+          key: string
+          kind: Database["public"]["Enums"]["grant_kind"]
+          tenant?: string
+          updated_at?: string
+          user: string
+        }
+        Update: {
+          granted_by?: string
+          key?: string
+          kind?: Database["public"]["Enums"]["grant_kind"]
+          tenant?: string
+          updated_at?: string
+          user?: string
+        }
+        Relationships: []
+      }
       user_notification_settings: {
         Row: {
           id: number
@@ -2083,7 +2132,9 @@ export type Database = {
         Returns: undefined
       }
       authorize: {
-        Args: { requested_permission: string }
+        Args:
+          | { p_tenant: string; requested_permission: string }
+          | { requested_permission: string }
         Returns: boolean
       }
       check_reply_to: {
@@ -2154,12 +2205,12 @@ export type Database = {
       get_column_info: {
         Args: { schema_name: string; selected_table: string }
         Returns: {
-          column_name: string
           data_type: string
-          foreign_key_column_name: string
           foreign_key_schema_name: string
-          foreign_key_table_name: string
           is_nullable: boolean
+          foreign_key_column_name: string
+          foreign_key_table_name: string
+          column_name: string
         }[]
       }
       get_enum_types: {
@@ -2219,9 +2270,13 @@ export type Database = {
       key_handover: {
         Args: { p_key_id: number; p_new_holder: string }
         Returns: {
-          holder: string
           key_id: number
+          holder: string
         }[]
+      }
+      refresh_user_grants: {
+        Args: { p_user: string }
+        Returns: undefined
       }
       test_login: {
         Args: { uid: string }
@@ -2265,6 +2320,7 @@ export type Database = {
         | "challenges"
         | "games"
         | "events.constellations"
+      grant_kind: "perm" | "feat"
       GroupRole: "user" | "admin" | "joinRequested"
       ItemType: "mtvStorage" | "mtvGym" | "mtvGymPalazzo" | "goethe"
       PaymentState: "Open" | "Fulfilled"
@@ -2417,6 +2473,7 @@ export const Constants = {
         "games",
         "events.constellations",
       ],
+      grant_kind: ["perm", "feat"],
       GroupRole: ["user", "admin", "joinRequested"],
       ItemType: ["mtvStorage", "mtvGym", "mtvGymPalazzo", "goethe"],
       PaymentState: ["Open", "Fulfilled"],
@@ -2425,3 +2482,4 @@ export const Constants = {
     },
   },
 } as const
+

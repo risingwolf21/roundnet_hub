@@ -28,7 +28,7 @@ import Box from '@mui/material/Box';
 import { isBefore } from 'date-fns';
 import { t } from 'i18next';
 import React, { useState } from 'react';
-import { useAuthentication } from 'src/features/auth/AuthProvider';
+import { useGrants } from 'src/features/auth/GrantsContext';
 import { useAttendance, useUpdateAttendanceMutation } from 'src/tanstack/events';
 import {
   answerDeadlineExpired,
@@ -38,6 +38,8 @@ import {
 } from 'src/types/supabaseTypes';
 import EventAttendanceDialog from '../dialogs/EventAttendanceDialog';
 import { EventInformationConstellations } from './EventInformationConstellations';
+import { Has } from 'src/hooks/useGrants';
+import { useNotifications } from '@toolpad/core';
 
 type EventInformationAttendanceProps = {
   fetchMode: "past" | "upcoming"
@@ -50,12 +52,21 @@ const EventInformationAttendance = ({
   fetchMode,
   keyHolders,
 }: EventInformationAttendanceProps) => {
-  const { user, isAuthorized } = useAuthentication();
+  const { user } = useGrants();
+  const notifications = useNotifications();
   const [eventAttendanceState, setEventAttendanceState] = useState({ open: false, index: 0 });
 
   const { data: attendance = [], isLoading } = useAttendance(selectedEvent.id);
 
-  const updateAttendance = useUpdateAttendanceMutation(fetchMode)
+  const updateAttendance = useUpdateAttendanceMutation(fetchMode);
+
+  const changeAttendance = ({ user, event, newState }: { user: User, event: EventsUserView, newState: EventAttendance }) => {
+    updateAttendance.mutate({ user, event, newState }, {
+      onError: (error, vars) => {
+        notifications.show("An/Abweseneheit konnte nicht aktualisiert werden.", { severity: "error" });
+      }
+    })
+  }
 
   return (
     <Box sx={{ p: 0, alignSelf: 'center' }}>
@@ -68,7 +79,7 @@ const EventInformationAttendance = ({
               variant="contained"
               size="small"
               sx={{ backgroundColor: '#934b00' }}
-              onClick={() => updateAttendance.mutate({ user, event: selectedEvent, newState: 'Declined' })}
+              onClick={() => changeAttendance({ user, event: selectedEvent, newState: 'Declined' })}
             >
               Verlassen
             </Button>
@@ -86,7 +97,9 @@ const EventInformationAttendance = ({
       )}
 
       {
-        isAuthorized("event.create.constellations") && selectedEvent.constellations_enabled && <EventInformationConstellations attendance={attendance} event={selectedEvent} />
+        selectedEvent.constellations_enabled && <Has perm={"event.create.constellations"}>
+          <EventInformationConstellations attendance={attendance} event={selectedEvent} />
+        </Has>
       }
 
       <Typography sx={{ fontSize: 16, fontWeight: 'bold', mt: 2 }} color="text.secondary" gutterBottom>
@@ -150,60 +163,62 @@ const EventInformationAttendance = ({
               })
           }
           secondaryAction={
-            isAuthorized("event.signup") && <>
-              <IconButton
-                onClick={(event) => {
-                  updateAttendance.mutate({ event: selectedEvent, newState: 'Attending', user });
-                  event.stopPropagation();
-                }}
-                disabled={
-                  selectedEvent.isCancelled ||
-                  maxAttendeesExceeded(selectedEvent, attendance) ||
-                  answerDeadlineExpired(selectedEvent) ||
-                  eventInThePast(selectedEvent)
-                }
-              >
-                {selectedEvent.user_state === 'Attending' ? (
-                  <ThumbUpAlt fontSize="inherit" sx={{ fontSize: '28px', color: 'green' }} />
-                ) : (
-                  <ThumbUpOffAlt fontSize="inherit" sx={{ fontSize: '28px' }} />
-                )}
-              </IconButton>
-              {
-                (maxAttendeesExceeded(selectedEvent, attendance) ||
-                  answerDeadlineExpired(selectedEvent))
-                && !eventInThePast(selectedEvent)
-                && (selectedEvent.user_state === "Unanswered" || selectedEvent.user_state === "Declined" || selectedEvent.user_state === "RequestedAttendance")
-                && <IconButton
-                  onClick={(event) => {
-                    event.stopPropagation();
-                    updateAttendance.mutate({ event: selectedEvent, newState: 'RequestedAttendance', user });
-                  }}
-                  disabled={selectedEvent.isCancelled || eventInThePast(selectedEvent) || selectedEvent.user_state === "RequestedAttendance"}
-                >
-                  {selectedEvent.user_state === 'RequestedAttendance' ? (
-                    <Pending fontSize="inherit" sx={{ fontSize: '28px', color: '#125db2' }} />
-                  ) : (
-                    <PendingOutlined fontSize="inherit" sx={{ fontSize: '28px' }} />
-                  )}
-                </IconButton>
-              }
-              {isAuthorized("event.signup.trainer") && (
+            <Has perm={"event.signup"}>
+              <>
                 <IconButton
                   onClick={(event) => {
+                    changeAttendance({ event: selectedEvent, newState: 'Attending', user });
                     event.stopPropagation();
-                    updateAttendance.mutate({ event: selectedEvent, newState: 'AttendingAsTrainer', user });
                   }}
-                  disabled={selectedEvent.isCancelled || eventInThePast(selectedEvent)}
+                  disabled={
+                    selectedEvent.isCancelled ||
+                    maxAttendeesExceeded(selectedEvent, attendance) ||
+                    answerDeadlineExpired(selectedEvent) ||
+                    eventInThePast(selectedEvent)
+                  }
                 >
-                  {selectedEvent.user_state === 'AttendingAsTrainer' ? (
-                    <RecordVoiceOver fontSize="inherit" sx={{ fontSize: '28px', color: 'green' }} />
+                  {selectedEvent.user_state === 'Attending' ? (
+                    <ThumbUpAlt fontSize="inherit" sx={{ fontSize: '28px', color: 'green' }} />
                   ) : (
-                    <RecordVoiceOverOutlined fontSize="inherit" sx={{ fontSize: '28px' }} />
+                    <ThumbUpOffAlt fontSize="inherit" sx={{ fontSize: '28px' }} />
                   )}
                 </IconButton>
-              )}
-            </>
+                {
+                  (maxAttendeesExceeded(selectedEvent, attendance) ||
+                    answerDeadlineExpired(selectedEvent))
+                  && !eventInThePast(selectedEvent)
+                  && (selectedEvent.user_state === "Unanswered" || selectedEvent.user_state === "Declined" || selectedEvent.user_state === "RequestedAttendance")
+                  && <IconButton
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      changeAttendance({ event: selectedEvent, newState: 'RequestedAttendance', user });
+                    }}
+                    disabled={selectedEvent.isCancelled || eventInThePast(selectedEvent) || selectedEvent.user_state === "RequestedAttendance"}
+                  >
+                    {selectedEvent.user_state === 'RequestedAttendance' ? (
+                      <Pending fontSize="inherit" sx={{ fontSize: '28px', color: '#125db2' }} />
+                    ) : (
+                      <PendingOutlined fontSize="inherit" sx={{ fontSize: '28px' }} />
+                    )}
+                  </IconButton>
+                }
+                <Has perm={"event.signup.trainer"}>
+                  <IconButton
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      changeAttendance({ event: selectedEvent, newState: 'AttendingAsTrainer', user });
+                    }}
+                    disabled={selectedEvent.isCancelled || eventInThePast(selectedEvent)}
+                  >
+                    {selectedEvent.user_state === 'AttendingAsTrainer' ? (
+                      <RecordVoiceOver fontSize="inherit" sx={{ fontSize: '28px', color: 'green' }} />
+                    ) : (
+                      <RecordVoiceOverOutlined fontSize="inherit" sx={{ fontSize: '28px' }} />
+                    )}
+                  </IconButton>
+                </Has>
+              </>
+            </Has>
           }
         >
           <ListItemAvatar sx={{ justifyContent: 'left', alignItems: 'center', display: 'flex' }}>
@@ -228,19 +243,21 @@ const EventInformationAttendance = ({
               })
           }
           secondaryAction={
-            isAuthorized("event.signup") && <IconButton
-              onClick={(event) => {
-                event.stopPropagation();
-                updateAttendance.mutate({ event: selectedEvent, newState: 'Declined', user });
-              }}
-              disabled={selectedEvent.isCancelled || eventInThePast(selectedEvent)}
-            >
-              {selectedEvent.user_state === 'Declined' ? (
-                <ThumbDownAlt fontSize="inherit" sx={{ fontSize: '28px', color: 'red' }} />
-              ) : (
-                <ThumbDownOffAlt fontSize="inherit" sx={{ fontSize: '28px' }} />
-              )}
-            </IconButton>
+            <Has perm={"event.signup"}>
+              <IconButton
+                onClick={(event) => {
+                  event.stopPropagation();
+                  changeAttendance({ event: selectedEvent, newState: 'Declined', user });
+                }}
+                disabled={selectedEvent.isCancelled || eventInThePast(selectedEvent)}
+              >
+                {selectedEvent.user_state === 'Declined' ? (
+                  <ThumbDownAlt fontSize="inherit" sx={{ fontSize: '28px', color: 'red' }} />
+                ) : (
+                  <ThumbDownOffAlt fontSize="inherit" sx={{ fontSize: '28px' }} />
+                )}
+              </IconButton>
+            </Has>
           }
         >
           <ListItemAvatar sx={{ justifyContent: 'left', alignItems: 'center', display: 'flex' }}>
@@ -291,7 +308,7 @@ const EventInformationAttendance = ({
             item: x,
           }))}
         acceptAttendance={(attendance) => {
-          updateAttendance.mutate({ event: selectedEvent, newState: "Attending", user: attendance.user })
+          changeAttendance({ event: selectedEvent, newState: "Attending", user: attendance.user })
         }}
       />
     </Box>

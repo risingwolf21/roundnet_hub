@@ -11,7 +11,7 @@ import {
 import Box from '@mui/material/Box';
 import { useDialogs } from '@toolpad/core';
 import React from 'react';
-import { useAuthentication } from 'src/features/auth/AuthProvider';
+import { useGrants } from 'src/features/auth/GrantsContext';
 import { useBringOverview, useBringPledges, useUpsetBringPledges } from 'src/tanstack/events';
 import {
   EventsUserView
@@ -25,7 +25,7 @@ type EventInformationAttendanceProps = {
 const EventInformationBringItems = ({
   selectedEvent,
 }: EventInformationAttendanceProps) => {
-  const { user, isAuthorized } = useAuthentication();
+  const { user } = useGrants();
   const dialogs = useDialogs();
 
   const { data: bringOverview = [], isLoading } = useBringOverview(selectedEvent.id);

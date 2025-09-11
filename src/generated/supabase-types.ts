@@ -28,7 +28,8 @@ export type Permission = "event.comment"|
 "event.signup.trainer"|
 "drinks.manage"|
 "groups.manage.admin"|
-"drinks.edit";
+"drinks.edit"|
+"challenge.manage";
 
 export type Feature = "games"|
 "events"|

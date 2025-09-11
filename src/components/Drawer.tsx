@@ -39,12 +39,12 @@ import { TFunction } from 'i18next';
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router';
-import { useAuthentication } from 'src/features/auth/AuthProvider';
+import { useGrants } from 'src/features/auth/GrantsContext';
 import { useRequestedUsersPerGroup } from 'src/tanstack/groups';
 import { useAllNotifications } from 'src/tanstack/notifications';
 import { HOMEPAGE } from '../constants';
 import { InstallPWA } from './PwaInstallPromp';
-import { Permission, Feature } from "src/generated/supabase-types";
+import { Has } from 'src/hooks/useGrants';
 
 export const drawerWidth = 360;
 
@@ -129,8 +129,6 @@ type DrawerContentProps = {
   version: string;
   request_group_joins: number;
   notification_count: number;
-  hasFeature: (feature: Feature) => boolean;
-  isAuthorized: (permission: Permission) => boolean
 };
 const DrawerContent = ({
   tab,
@@ -138,22 +136,22 @@ const DrawerContent = ({
   t,
   version,
   request_group_joins,
-  notification_count,
-  isAuthorized,
-  hasFeature
+  notification_count
 }: DrawerContentProps) => {
   return (
     <DrawerBox>
       <List>
         {
-          (hasFeature("drinks") || hasFeature("events") || hasFeature("items")) && <DrawerItem key="homepage" selected={tab === ''} onClick={() => handleChange('')}>
-            <ListItemAvatar>
-              <ListItemIcon>
-                <Home />
-              </ListItemIcon>
-            </ListItemAvatar>
-            <ListItemText primaryTypographyProps={{ fontWeight: 'bold', fontSize: '0.9rem' }} primary={'Home'} />
-          </DrawerItem>
+          <Has feat={["drinks", "events", "items"]} any>
+            <DrawerItem key="homepage" selected={tab === ''} onClick={() => handleChange('')}>
+              <ListItemAvatar>
+                <ListItemIcon>
+                  <Home />
+                </ListItemIcon>
+              </ListItemAvatar>
+              <ListItemText primaryTypographyProps={{ fontWeight: 'bold', fontSize: '0.9rem' }} primary={'Home'} />
+            </DrawerItem>
+          </Has>
         }
         {
           <DrawerItem key="user" selected={tab === 'user'} onClick={() => handleChange('user')}>
@@ -183,73 +181,70 @@ const DrawerContent = ({
         />
       </List>
       <Divider />
-      {
-        hasFeature("drinks") && (
-          <>
-            <List
-              key="drinkList"
-              subheader={
-                <ListSubheader
-                  disableSticky
-                  sx={{
-                    zIndex: '-1',
-                    fontWeight: 'bold',
-                    lineHeight: 'normal',
-                    my: 2,
-                    mx: 2,
-                    backgroundColor: '#f2ecf1',
-                  }}
-                >
-                  {t('navigation.drinks')}
-                </ListSubheader>
-              }
+      <Has feat={"drinks"}>
+        <List
+          key="drinkList"
+          subheader={
+            <ListSubheader
+              disableSticky
+              sx={{
+                zIndex: '-1',
+                fontWeight: 'bold',
+                lineHeight: 'normal',
+                my: 2,
+                mx: 2,
+                backgroundColor: '#f2ecf1',
+              }}
             >
-              {isAuthorized("drinks.select") && (
-                <DrawerItem key="drinks" selected={tab === 'drinks'} onClick={() => handleChange('drinks')}>
-                  <ListItemAvatar>
-                    <ListItemIcon>
-                      <Liquor />
-                    </ListItemIcon>
-                  </ListItemAvatar>
-                  <ListItemText
-                    primaryTypographyProps={{ fontWeight: 'bold', fontSize: '0.9rem' }}
-                    primary={t('navigation.drinks')}
-                  />
-                </DrawerItem>
-              )}
-              {isAuthorized("drinks.view.own-history") && (
-                <DrawerItem key="history" selected={tab === 'history'} onClick={() => handleChange('history')}>
-                  <ListItemAvatar>
-                    <ListItemIcon>
-                      <History />
-                    </ListItemIcon>
-                  </ListItemAvatar>
-                  <ListItemText
-                    primaryTypographyProps={{ fontWeight: 'bold', fontSize: '0.9rem' }}
-                    primary={t('browse.history')}
-                  />
-                </DrawerItem>
-              )}
-              {isAuthorized("drinks.view.own-payments") && (
-                <DrawerItem key="payments" selected={tab === 'payments'} onClick={() => handleChange('payments')}>
-                  <ListItemAvatar>
-                    <ListItemIcon>
-                      <Euro />
-                    </ListItemIcon>
-                  </ListItemAvatar>
-                  <ListItemText
-                    primaryTypographyProps={{ fontWeight: 'bold', fontSize: '0.9rem' }}
-                    primary={t('browse.payment')}
-                  />
-                </DrawerItem>
-              )}
-              <Divider />
-            </List>
-          </>
-        )}
+              {t('navigation.drinks')}
+            </ListSubheader>
+          }
+        >
+          <Has perm={"drinks.select"}>
+            <DrawerItem key="drinks" selected={tab === 'drinks'} onClick={() => handleChange('drinks')}>
+              <ListItemAvatar>
+                <ListItemIcon>
+                  <Liquor />
+                </ListItemIcon>
+              </ListItemAvatar>
+              <ListItemText
+                primaryTypographyProps={{ fontWeight: 'bold', fontSize: '0.9rem' }}
+                primary={t('navigation.drinks')}
+              />
+            </DrawerItem>
+          </Has>
+          <Has perm={"drinks.view.own-history"}>
+            <DrawerItem key="history" selected={tab === 'history'} onClick={() => handleChange('history')}>
+              <ListItemAvatar>
+                <ListItemIcon>
+                  <History />
+                </ListItemIcon>
+              </ListItemAvatar>
+              <ListItemText
+                primaryTypographyProps={{ fontWeight: 'bold', fontSize: '0.9rem' }}
+                primary={t('browse.history')}
+              />
+            </DrawerItem>
+          </Has>
+          <Has perm={"drinks.view.own-payments"}>
+            <DrawerItem key="payments" selected={tab === 'payments'} onClick={() => handleChange('payments')}>
+              <ListItemAvatar>
+                <ListItemIcon>
+                  <Euro />
+                </ListItemIcon>
+              </ListItemAvatar>
+              <ListItemText
+                primaryTypographyProps={{ fontWeight: 'bold', fontSize: '0.9rem' }}
+                primary={t('browse.payment')}
+              />
+            </DrawerItem>
+          </Has>
+          <Divider />
+        </List>
+      </Has>
 
       <List key="mainList">
-        {hasFeature("events") && (
+        <Has feat={"events"}>
           <DrawerItem key="events" selected={tab === 'training/list'} onClick={() => handleChange('training/list')}>
             <ListItemAvatar>
               <ListItemIcon>
@@ -261,7 +256,7 @@ const DrawerContent = ({
               primary={t('navigation.training')}
             />
           </DrawerItem>
-        )}
+        </Has>
         <DrawerItem key="groups" selected={tab === 'groups/list'} onClick={() => handleChange('groups/list')}
           secondaryAction={
             <Typography fontWeight={'bold'} fontSize={'0.9rem'}>
@@ -280,7 +275,7 @@ const DrawerContent = ({
             primary={t('navigation.groups')}
           />
         </DrawerItem>
-        {hasFeature("games") && (
+        <Has feat={"games"}>
           <DrawerItem key="matches" selected={tab === 'matches/list'} onClick={() => handleChange('matches/list')}>
             <ListItemAvatar>
               <ListItemIcon>
@@ -292,8 +287,8 @@ const DrawerContent = ({
               primary={t('navigation.matches')}
             />
           </DrawerItem>
-        )}
-        {hasFeature("challenges") && (
+        </Has>
+        <Has feat={"challenges"}>
           <DrawerItem key="challenges" selected={tab === 'challenges/list'} onClick={() => handleChange('challenges')}>
             <ListItemAvatar>
               <ListItemIcon>
@@ -305,8 +300,8 @@ const DrawerContent = ({
               primary={t('navigation.challenges')}
             />
           </DrawerItem>
-        )}
-        {hasFeature("items") && (
+        </Has>
+        <Has feat={"items"}>
           <DrawerItem key="keys" selected={tab === 'keys'} onClick={() => handleChange('keys')}>
             <ListItemAvatar>
               <ListItemIcon>
@@ -318,7 +313,7 @@ const DrawerContent = ({
               primary={t('browse.keys')}
             />
           </DrawerItem>
-        )}
+        </Has>
         <DrawerItem
           key="notifications"
           selected={tab === 'notifications'}
@@ -342,118 +337,116 @@ const DrawerContent = ({
           />
         </DrawerItem>
       </List>
-      {
-        isAuthorized("drinks.confirm.payments") &&
-        isAuthorized("drinks.manage") && (
-          <>
-            <Divider />
-            <List
-              key="adminList"
-              subheader={
-                <ListSubheader
-                  disableSticky
-                  sx={{
-                    zIndex: '-1',
-                    fontWeight: 'bold',
-                    lineHeight: 'normal',
-                    my: 2,
-                    mx: 2,
-                    backgroundColor: '#f2ecf1',
-                  }}
-                >
-                  Admin
-                </ListSubheader>
-              }
-            >
-              {isAuthorized("drinks.confirm.payments") && (
-                <DrawerItem
-                  key="updatePayements"
-                  selected={tab === 'admin/drinks/payments'}
-                  onClick={() => handleChange('admin/drinks/payments')}
-                >
-                  <ListItemAvatar>
-                    <ListItemIcon>
-                      <Euro />
-                    </ListItemIcon>
-                  </ListItemAvatar>
-                  <ListItemText
-                    primaryTypographyProps={{ fontWeight: 'bold', fontSize: '0.9rem' }}
-                    primary={t('browse.managePayments')}
-                  />
-                </DrawerItem>
-              )}
-              {isAuthorized("drinks.manage") && (
-                <DrawerItem
-                  key="updateDrink"
-                  selected={tab === 'admin/drinks'}
-                  onClick={() => handleChange('admin/drinks')}
-                >
-                  <ListItemAvatar>
-                    <ListItemIcon>
-                      <Liquor />
-                    </ListItemIcon>
-                  </ListItemAvatar>
-                  <ListItemText
-                    primaryTypographyProps={{ fontWeight: 'bold', fontSize: '0.9rem' }}
-                    primary={t('browse.manageDrinks')}
-                  />
-                </DrawerItem>
-              )}
-              {isAuthorized("users.manage") && (
-                <DrawerItem
-                  key="updateUser"
-                  selected={tab === 'admin/users'}
-                  onClick={() => handleChange('admin/users')}
-                >
-                  <ListItemAvatar>
-                    <ListItemIcon>
-                      <Group />
-                    </ListItemIcon>
-                  </ListItemAvatar>
-                  <ListItemText
-                    primaryTypographyProps={{ fontWeight: 'bold', fontSize: '0.9rem' }}
-                    primary={t('browse.manageUsers')}
-                  />
-                </DrawerItem>
-              )}
-              {isAuthorized("drinks.history.admin") && (
-                <DrawerItem
-                  key="updateHistory"
-                  selected={tab === 'admin/drinks/history'}
-                  onClick={() => handleChange('admin/drinks/history')}
-                >
-                  <ListItemAvatar>
-                    <ListItemIcon>
-                      <History />
-                    </ListItemIcon>
-                  </ListItemAvatar>
-                  <ListItemText
-                    primaryTypographyProps={{ fontWeight: 'bold', fontSize: '0.9rem' }}
-                    primary={t('browse.completeHistory')}
-                  />
-                </DrawerItem>
-              )}
-              {isAuthorized("supabase.admin") && (
-                <DrawerItem
-                  key="supabaseClient"
-                  selected={tab === 'admin/supabase'}
-                  onClick={() => handleChange('admin/supabase')}
-                >
-                  <ListItemAvatar>
-                    <ListItemIcon>
-                      <StorageOutlined />
-                    </ListItemIcon>
-                  </ListItemAvatar>
-                  <ListItemText
-                    primaryTypographyProps={{ fontWeight: 'bold', fontSize: '0.9rem' }}
-                    primary={t('browse.postgresClient')}
-                  />
-                </DrawerItem>
-              )}
-            </List>
-            <Divider />
-          </>
-        )}
+      <Has perm={["drinks.confirm.payments", "drinks.manage"]}>
+        <>
+          <Divider />
+          <List
+            key="adminList"
+            subheader={
+              <ListSubheader
+                disableSticky
+                sx={{
+                  zIndex: '-1',
+                  fontWeight: 'bold',
+                  lineHeight: 'normal',
+                  my: 2,
+                  mx: 2,
+                  backgroundColor: '#f2ecf1',
+                }}
+              >
+                Admin
+              </ListSubheader>
+            }
+          >
+            <Has perm={"drinks.confirm.payments"}>
+              <DrawerItem
+                key="updatePayements"
+                selected={tab === 'admin/drinks/payments'}
+                onClick={() => handleChange('admin/drinks/payments')}
+              >
+                <ListItemAvatar>
+                  <ListItemIcon>
+                    <Euro />
+                  </ListItemIcon>
+                </ListItemAvatar>
+                <ListItemText
+                  primaryTypographyProps={{ fontWeight: 'bold', fontSize: '0.9rem' }}
+                  primary={t('browse.managePayments')}
+                />
+              </DrawerItem>
+            </Has>
+            <Has perm={"drinks.manage"}>
+              <DrawerItem
+                key="updateDrink"
+                selected={tab === 'admin/drinks'}
+                onClick={() => handleChange('admin/drinks')}
+              >
+                <ListItemAvatar>
+                  <ListItemIcon>
+                    <Liquor />
+                  </ListItemIcon>
+                </ListItemAvatar>
+                <ListItemText
+                  primaryTypographyProps={{ fontWeight: 'bold', fontSize: '0.9rem' }}
+                  primary={t('browse.manageDrinks')}
+                />
+              </DrawerItem>
+            </Has>
+            <Has perm={"users.manage"}>
+              <DrawerItem
+                key="updateUser"
+                selected={tab === 'admin/users'}
+                onClick={() => handleChange('admin/users')}
+              >
+                <ListItemAvatar>
+                  <ListItemIcon>
+                    <Group />
+                  </ListItemIcon>
+                </ListItemAvatar>
+                <ListItemText
+                  primaryTypographyProps={{ fontWeight: 'bold', fontSize: '0.9rem' }}
+                  primary={t('browse.manageUsers')}
+                />
+              </DrawerItem>
+            </Has>
+            <Has perm={"drinks.history.admin"}>
+              <DrawerItem
+                key="updateHistory"
+                selected={tab === 'admin/drinks/history'}
+                onClick={() => handleChange('admin/drinks/history')}
+              >
+                <ListItemAvatar>
+                  <ListItemIcon>
+                    <History />
+                  </ListItemIcon>
+                </ListItemAvatar>
+                <ListItemText
+                  primaryTypographyProps={{ fontWeight: 'bold', fontSize: '0.9rem' }}
+                  primary={t('browse.completeHistory')}
+                />
+              </DrawerItem>
+            </Has>
+            <Has perm={"supabase.admin"}>
+              <DrawerItem
+                key="supabaseClient"
+                selected={tab === 'admin/supabase'}
+                onClick={() => handleChange('admin/supabase')}
+              >
+                <ListItemAvatar>
+                  <ListItemIcon>
+                    <StorageOutlined />
+                  </ListItemIcon>
+                </ListItemAvatar>
+                <ListItemText
+                  primaryTypographyProps={{ fontWeight: 'bold', fontSize: '0.9rem' }}
+                  primary={t('browse.postgresClient')}
+                />
+              </DrawerItem>
+            </Has>
+          </List>
+          <Divider />
+        </>
+      </Has>
       <List
         key="infolist"
         subheader={
@@ -503,7 +496,7 @@ const DrawerContent = ({
 export const Drawer = ({ open, onClose, onOpen }: Props) => {
   const navigate = useNavigate();
   const { t } = useTranslation();
-  const { user, isAuthorized, hasFeature } = useAuthentication();
+  const { user } = useGrants();
   const [tab, setTab] = useState<string>(HOMEPAGE);
   const [version, setVersion] = useState<string>('');
 
@@ -541,8 +534,6 @@ export const Drawer = ({ open, onClose, onOpen }: Props) => {
     version={version}
     request_group_joins={requested_group_joins.length}
     notification_count={notifications.length}
-    isAuthorized={isAuthorized}
-    hasFeature={hasFeature}
   />
 
   return (

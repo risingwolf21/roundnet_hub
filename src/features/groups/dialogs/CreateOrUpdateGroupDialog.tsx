@@ -5,7 +5,7 @@ import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { captureException } from "@sentry/react";
 import { DialogProps, NotificationsProvider, useNotifications } from "@toolpad/core";
 import React, { useRef, useState } from "react";
-import { useAuthentication } from "src/features/auth/AuthProvider";
+import { Has } from "src/hooks/useGrants";
 import { useCreateGroupMutation, useUpdateGroupMutation } from "src/tanstack/groups";
 import { Tables } from "src/types/supabase-generated.types";
 import { GroupWithUserRole, UserWithGroups } from "src/types/supabaseTypes";
@@ -18,7 +18,6 @@ type CreateOrUpdateGroupDialogProps = {
 
 const Content = ({ payload, onClose }: DialogProps<CreateOrUpdateGroupDialogProps, GroupWithUserRole | null | "closed">) => {
   const notifications = useNotifications();
-  const { isAuthorized } = useAuthentication();
   const inputRef = useRef<HTMLInputElement>(null);
   const usersParentGroups = payload.user.groups.filter(x => x.parent_group === null);
   const [data, setData] = useState<Tables<'event_group'>>(payload.group ?? { name: "", description: "", id: "", created_at: "", color: "#000", is_public: true, need_request_to_join: false, parent_group: usersParentGroups.length === 1 ? usersParentGroups[0].id : null, visible: true });
@@ -79,36 +78,38 @@ const Content = ({ payload, onClose }: DialogProps<CreateOrUpdateGroupDialogProp
     </Toolbar>
   </AppBar>
     <List sx={{ pl: 2, pr: 2, pb: 10 }}>
-      {
-        usersParentGroups.length > 0 && isAuthorized("groups.manage.admin") && <ListItem sx={{ pt: 0, pb: 0 }} key={'mainGroup'}>
-          <ListItemAvatar>
-            {
-              data.parent_group && <Avatar sx={{ borderRadius: 2 }}>
-                <Groups />
-              </Avatar>
-            }
-          </ListItemAvatar>
-          <Select
-            sx={{ mt: 2, mb: 1 }}
-            fullWidth
-            value={data.parent_group ?? 'none'}
-            disabled={usersParentGroups.length === 1}
-            onChange={async (e) => {
-              setData({
-                ...data,
-                parent_group: e.target.value === "none" ? null : e.target.value
-              })
-            }}
-          >
-            {
-              usersParentGroups.map(x => <MenuItem value={x.id}>{x.name}</MenuItem>)
-            }
-            {
-              <MenuItem value={"none"}>Neue Hauptgruppe</MenuItem>
-            }
-          </Select>
-        </ListItem>
-      }
+      <Has perm={"groups.manage.admin"}>
+        {
+          usersParentGroups.length > 0 && <ListItem sx={{ pt: 0, pb: 0 }} key={'mainGroup'}>
+            <ListItemAvatar>
+              {
+                data.parent_group && <Avatar sx={{ borderRadius: 2 }}>
+                  <Groups />
+                </Avatar>
+              }
+            </ListItemAvatar>
+            <Select
+              sx={{ mt: 2, mb: 1 }}
+              fullWidth
+              value={data.parent_group ?? 'none'}
+              disabled={usersParentGroups.length === 1}
+              onChange={async (e) => {
+                setData({
+                  ...data,
+                  parent_group: e.target.value === "none" ? null : e.target.value
+                })
+              }}
+            >
+              {
+                usersParentGroups.map(x => <MenuItem value={x.id}>{x.name}</MenuItem>)
+              }
+              {
+                <MenuItem value={"none"}>Neue Hauptgruppe</MenuItem>
+              }
+            </Select>
+          </ListItem>
+        }
+      </Has>
       <ListItem sx={{ pt: 0, pb: 0 }} key={'title'}>
         <ListItemAvatar>
           <Avatar sx={{ borderRadius: 2 }}>
@@ -186,8 +187,8 @@ const Content = ({ payload, onClose }: DialogProps<CreateOrUpdateGroupDialogProp
           }
         />
       </ListItem>
-      {
-        isAuthorized("groups.manage.admin") && <ListItem sx={{ pt: 0, pb: 0 }} key={'public'}>
+      <Has perm={"groups.manage.admin"}>
+        <ListItem sx={{ pt: 0, pb: 0 }} key={'public'}>
           <ListItemAvatar>
             <Checkbox
               sx={{ pl: 0 }}
@@ -202,7 +203,7 @@ const Content = ({ payload, onClose }: DialogProps<CreateOrUpdateGroupDialogProp
           </ListItemAvatar>
           <ListItemText primary={"Öffentliche Gruppe"} />
         </ListItem>
-      }
+      </Has>
       <ListItem sx={{ pt: 0, pb: 0 }} key={'endDate'}>
         <ListItemAvatar>
           <Checkbox

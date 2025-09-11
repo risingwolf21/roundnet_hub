@@ -7,10 +7,7 @@ type AuthContextType = {
   user: UserWithGroups;
   permissions: string[];
   features: string[];
-  isAuthorized: (permission: string) => boolean;
-  hasFeature: (feature: string) => boolean;
   signOut: () => void;
-  refetchPermissionsAndFeatures: () => void;
 };
 // export the useAuth hook
 export const useAuthentication = () => {
@@ -63,11 +60,8 @@ export const AuthProvider = ({ children, user, signOut }: AuthProviderProps) => 
 
   }, [fetchUserData, user]);
 
-  const isAuthorized = (perm: string) => permissions.includes(perm);
-  const hasFeature = (feature: string) => features.includes(feature);
-
   return (
-    <AuthContext.Provider value={{ user, permissions, features, isAuthorized, hasFeature, signOut, refetchPermissionsAndFeatures: fetchUserData }}>
+    <AuthContext.Provider value={{ user, permissions, features, signOut }}>
       {children}
     </AuthContext.Provider>
   );

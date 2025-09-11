@@ -18,7 +18,7 @@ import { compareDesc, isBefore } from 'date-fns';
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ProfileDialog } from 'src/components/Profile';
-import { useAuthentication } from 'src/features/auth/AuthProvider';
+import { useGrants } from 'src/features/auth/GrantsContext';
 import { SwipeableDialog } from '../../../components/SwipeableDialog';
 import { FullAttendance } from '../../../types/supabaseTypes';
 import { EventAttendanceDialogProps } from '../types';
@@ -107,7 +107,7 @@ const EventAttendanceDialog = ({
   const [value, setValue] = useState(index ?? 0);
   const theme = useTheme();
   const dialogs = useDialogs();
-  const { user, isAuthorized } = useAuthentication();
+  const { user, hasPerm } = useGrants();
 
   useEffect(() => {
     setValue(index);
@@ -150,7 +150,7 @@ const EventAttendanceDialog = ({
                     key={x.user.userId + index}
                     onClick={() => dialogs.open(ProfileDialog, { user, userId: x.user.userId })}
                     required_item={usersWithRequiredItem.find((y) => y.user === x.user.userId)?.item}
-                    acceptAttendance={isAuthorized("event.manage.attendees") ? acceptAttendance : null}
+                    acceptAttendance={hasPerm("event.manage.attendees") ? acceptAttendance : null}
                   />
                 ))
             }

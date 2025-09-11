@@ -16,7 +16,7 @@ import Layout from '../../components/layout/Layout';
 import { LoadingScreen } from '../../components/LoadingScreen';
 import { PAYPAL_ME_ADDRESS } from '../../constants';
 import { groupBy } from '../../utils';
-import { useAuthentication } from '../auth/AuthProvider';
+import { useGrants } from '../auth/GrantsContext';
 
 const PayDrinksButton = ({ amountToPay }: { amountToPay: number }) => {
   const onPayClick = () => {
@@ -46,7 +46,7 @@ const PayDrinksButton = ({ amountToPay }: { amountToPay: number }) => {
 };
 
 const PayDrinksScreenProvider = () => {
-  const { user } = useAuthentication();
+  const { user } = useGrants();
 
   return <Layout>
     <PayDrinksScreen

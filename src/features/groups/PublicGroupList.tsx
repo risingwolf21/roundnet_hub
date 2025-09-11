@@ -6,13 +6,13 @@ import React, { useEffect } from "react";
 import { useNavigate } from "react-router";
 import { PullToRefresh } from "src/components/pull-to-refresh/PullToRefresh";
 import { useGroups, useRequestedUsersPerGroup } from "src/tanstack/groups";
-import { useAuthentication } from "../auth/AuthProvider";
 import { JoinGroupButton } from "./components/JoinGroupButton";
 import { CreateOrUpdateGroupDialog } from "./dialogs/CreateOrUpdateGroupDialog";
 import { LoadingGroupListItem } from "./LoadingGroupListItem";
+import { useGrants } from "../auth/GrantsContext";
 
 const PublicGroupList = () => {
-  const { user, refetchPermissionsAndFeatures } = useAuthentication();
+  const { user } = useGrants();
   const navigate = useNavigate();
   const notifications = useNotifications();
   const dialogs = useDialogs();
@@ -36,7 +36,6 @@ const PublicGroupList = () => {
   return <PullToRefresh onRefresh={() => {
     refetch();
     refetchRequested();
-    refetchPermissionsAndFeatures();
   }}>
     {
       groups

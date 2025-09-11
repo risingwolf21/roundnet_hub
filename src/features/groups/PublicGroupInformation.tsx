@@ -6,7 +6,6 @@ import React, { useEffect, useState } from "react";
 import { Navigate, useNavigate, useParams } from "react-router";
 import { LoadingIndicator } from "src/components/LoadingIndicator";
 import { useGroup, useLeaveGroupMutation, useMakeUserAdminMutation } from "src/tanstack/groups";
-import { useAuthentication } from "../auth/AuthProvider";
 import { AcceptJoinButton } from "./components/AcceptJoinButton";
 import { DeclineJoinButton } from "./components/DeclineJoinButton";
 import { GroupUserItem } from "./components/GroupUserItem";
@@ -17,11 +16,13 @@ import { useRemoveUsersMutation } from "./query/removeUsersMutation";
 import { PublicGroupPermissions } from "./components/PublicGroupPermissions";
 import { PublicGroupfeatures } from "./components/PublicGroupFeatures";
 import { PullToRefresh } from "src/components/pull-to-refresh/PullToRefresh";
+import { Has } from "src/hooks/useGrants";
+import { useGrants } from "../auth/GrantsContext";
 
 const PublicGroupInformation = () => {
 
   const { groupId } = useParams();
-  const { user, isAuthorized } = useAuthentication();
+  const { user } = useGrants();
   const navigate = useNavigate();
   const notifications = useNotifications();
   const dialogs = useDialogs();
@@ -80,19 +81,21 @@ const PublicGroupInformation = () => {
         {group?.description}
       </Typography>
       <Divider />
-      {
-        isAuthorized("supabase.admin") && group && <>
-          <Typography pl={2} variant="h6" fontWeight="bold">
-            Features
-          </Typography>
-          <PublicGroupfeatures group={group} />
-          <Typography pl={2} variant="h6" fontWeight="bold">
-            Permissions
-          </Typography>
-          <PublicGroupPermissions group={group} />
-          <Divider />
-        </>
-      }
+      <Has perm={"supabase.admin"}>
+        {
+          group && <>
+            <Typography pl={2} variant="h6" fontWeight="bold">
+              Features
+            </Typography>
+            <PublicGroupfeatures group={group} />
+            <Typography pl={2} variant="h6" fontWeight="bold">
+              Permissions
+            </Typography>
+            <PublicGroupPermissions group={group} />
+            <Divider />
+          </>
+        }
+      </Has>
       <Typography pl={2} pt={1} variant="h6" fontWeight="bold">
         Mitglieder{group && " · " + group?.users.length}
       </Typography>

@@ -27,7 +27,7 @@ import Layout from 'src/components/layout/Layout';
 import { usePlayer } from 'src/tanstack/player_data';
 import pzLogo from '../../images/pz_logo.svg';
 import { UserWithGroups } from '../../types/supabaseTypes';
-import { useAuthentication } from '../auth/AuthProvider';
+import { useGrants } from '../auth/GrantsContext';
 import { ContactInformation } from './ContactInformation';
 import { NotificationsDialog } from './NotificationsDialog';
 import { PlayerzoneProfileDialog } from './PlayerzoneProfile';
@@ -40,7 +40,7 @@ type UserScreenProps = {
 };
 
 const UserScreenProvider = () => {
-  const { user, signOut } = useAuthentication();
+  const { user, signOut } = useGrants();
 
   return <UserScreen user={user} handleSignOut={signOut} />;
 };

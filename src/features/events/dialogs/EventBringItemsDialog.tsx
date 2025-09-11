@@ -8,13 +8,12 @@ import {
   ListSubheader,
   Typography
 } from '@mui/material';
-import { useTheme } from '@mui/material/styles';
-import { DialogProps, useDialogs } from '@toolpad/core';
-import React, { useCallback, useMemo, useState } from 'react';
-import { useAuthentication } from 'src/features/auth/AuthProvider';
+import Slider from '@mui/material/Slider';
+import { DialogProps } from '@toolpad/core';
+import React, { useMemo, useState } from 'react';
+import { useGrants } from 'src/features/auth/GrantsContext';
 import { Tables } from 'src/types/supabase-generated.types';
 import { SwipeableDialog } from '../../../components/SwipeableDialog';
-import Slider from '@mui/material/Slider';
 
 type Props = {
   overview: Tables<"event_bring_overview">
@@ -25,9 +24,7 @@ const EventBringItemsDialog = ({
   payload, open, onClose
 }: DialogProps<Props, number | null>) => {
 
-  const theme = useTheme();
-  const dialogs = useDialogs();
-  const { user, isAuthorized } = useAuthentication();
+  const { user } = useGrants();
 
   const userPledge = useMemo(() => payload.pledges.find(x => x.user_id === user.userId), [user])
 

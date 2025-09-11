@@ -4,7 +4,7 @@ import React from 'react';
 import { PullToRefresh } from 'src/components/pull-to-refresh/PullToRefresh';
 import { useAllNotifications, useMarkNotificationsAsRead } from 'src/tanstack/notifications';
 import Layout from '../../components/layout/Layout';
-import { useAuthentication } from '../auth/AuthProvider';
+import { useGrants } from '../auth/GrantsContext';
 
 const NotificationsPage = () => {
 
@@ -14,7 +14,7 @@ const NotificationsPage = () => {
 }
 
 const NotificationScreen = () => {
-  const { user } = useAuthentication();
+  const { user } = useGrants();
   const { data: notifications = [], isLoading, refetch } = useAllNotifications(user);
 
   const markNotificationsAsRead = useMarkNotificationsAsRead(user.userId);

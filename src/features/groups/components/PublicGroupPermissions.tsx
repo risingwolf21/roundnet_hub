@@ -38,7 +38,10 @@ export const PublicGroupPermissions = ({ group }: { group: Group }) => {
   const updatePermissionMutation = useMutation({
     mutationFn: async ({ permission, value }: { permission: Permission, value: boolean }) => {
       if (value) {
-        const result = await supabase.from("group_permissions").upsert({ permission: permission.name, group: group.id });
+        const result = await supabase.from("group_permissions").upsert({ permission: permission.name, group: group.id }, {
+          onConflict: 'group,permission',
+          ignoreDuplicates: true,
+        });
         return result.data;
       } else {
         const result = await supabase.from("group_permissions").delete().eq("permission", permission.name).eq("group", group.id);

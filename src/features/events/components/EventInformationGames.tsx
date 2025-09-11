@@ -3,7 +3,7 @@ import { Box, Button, List, ListItem, Typography } from '@mui/material';
 import { useQuery } from '@tanstack/react-query';
 import { useDialogs } from '@toolpad/core';
 import React from 'react';
-import { useAuthentication } from 'src/features/auth/AuthProvider';
+import { useGrants } from 'src/features/auth/GrantsContext';
 import { ReportSetsDialog } from 'src/features/games/dialogs/ReportSetsDialog';
 import { GamesRepository } from 'src/repository/GamesRepository';
 
@@ -15,7 +15,7 @@ const EventInformationGames = ({
   eventId,
 }: EventInformationGamesProps) => {
   const dialogs = useDialogs();
-  const { user } = useAuthentication();
+  const { user } = useGrants();
 
   const { data: matches = [], isLoading, refetch } = useQuery<FullMatch[]>({
     queryKey: ['events', eventId, "matches"],

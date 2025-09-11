@@ -4,7 +4,7 @@ import { useDialogs } from '@toolpad/core';
 import { TFunction } from 'i18next';
 import React from 'react';
 import { ProfileDialog } from 'src/components/Profile';
-import { useAuthentication } from 'src/features/auth/AuthProvider';
+import { useGrants } from 'src/features/auth/GrantsContext';
 import { FullComment } from '../../../types/supabaseTypes';
 
 type Props = {
@@ -15,7 +15,7 @@ type Props = {
 
 export const CommentItem = ({ comment, t, replyToPressed }: Props) => {
   const dialogs = useDialogs();
-  const { user } = useAuthentication();
+  const { user } = useGrants();
   return (
     <ListItem
       divider

@@ -7,7 +7,7 @@ import { useNavigate } from 'react-router';
 import { PullToRefresh } from 'src/components/pull-to-refresh/PullToRefresh';
 import { useArchivedChallenges, useChallenges } from 'src/tanstack/challenge';
 import Layout from '../../components/layout/Layout';
-import { useAuthentication } from '../auth/AuthProvider';
+import { useGrants } from '../auth/GrantsContext';
 import { CreateChallengeDialog } from './dialogs/CreateChallengeDialog';
 
 
@@ -15,7 +15,7 @@ const ChallengeList = () => {
   const notifications = useNotifications();
   const navigate = useNavigate();
   const dialogs = useDialogs();
-  const { user } = useAuthentication();
+  const { user } = useGrants();
 
   const { data: challenges = [], error, isLoading, refetch } = useChallenges();
   const { data: archived_challenges, refetch: archiveRefetch } = useArchivedChallenges();

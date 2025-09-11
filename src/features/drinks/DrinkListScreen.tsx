@@ -9,16 +9,16 @@ import { DrinkCounter } from 'src/types/supabaseTypes';
 import { nameOfProductType } from 'src/utils';
 import { SwipeableDialog } from '../../components/SwipeableDialog';
 import { SupabaseDrinkRepository } from '../../repository/DrinkRepository';
-import { useAuthentication } from '../auth/AuthProvider';
+import { useGrants } from '../auth/GrantsContext';
 import DrinkList from './components/DrinkList';
 import { LoadingDrinkItem } from './components/LoadingDrinkItem';
 import VoucherCard from './components/Voucher';
+import { Has } from 'src/hooks/useGrants';
 
 
 const DrinkListScreen = () => {
 
   const { data: drinks = [], error, isLoading } = useDrinks();
-  const { isAuthorized } = useAuthentication();
 
   const notifications = useNotifications();
   const [addedDrinks, setAddedDrinks] = useState<DrinkCounter[]>([]);
@@ -100,32 +100,34 @@ const DrinkListScreen = () => {
       addedDrinks={addedDrinks}
       visibleTypes={visibleTypes}
     />
-    {Object.values(addedDrinks).length > 0 && isAuthorized("drinks.purchase") ? (
-      <Fab
-        sx={{
-          position: 'fixed',
-          right: '16px',
-          bottom: 'calc(16px + env(safe-area-inset-bottom))',
-        }}
-        color={'secondary'}
-        onClick={confirmDrinks}
-      >
-        {isLoading ? <CircularProgress /> : <CheckIcon sx={{ color: 'white' }} />}
-      </Fab>
-    ) : (
-      <Fab
-        sx={{
-          position: 'fixed',
-          right: '16px',
-          bottom: 'calc(16px + env(safe-area-inset-bottom))',
-        }}
-        color={'secondary'}
-        onClick={() => setFilterDialogOpen(true)}
-      >
-        <Tune sx={{ color: 'white' }} />
-      </Fab>
-    )}
-
+    <Has perm={"drinks.purchase"}>
+      {
+        Object.values(addedDrinks).length > 0 ? (
+          <Fab
+            sx={{
+              position: 'fixed',
+              right: '16px',
+              bottom: 'calc(16px + env(safe-area-inset-bottom))',
+            }}
+            color={'secondary'}
+            onClick={confirmDrinks}
+          >
+            {isLoading ? <CircularProgress /> : <CheckIcon sx={{ color: 'white' }} />}
+          </Fab>
+        ) : (
+          <Fab
+            sx={{
+              position: 'fixed',
+              right: '16px',
+              bottom: 'calc(16px + env(safe-area-inset-bottom))',
+            }}
+            color={'secondary'}
+            onClick={() => setFilterDialogOpen(true)}
+          >
+            <Tune sx={{ color: 'white' }} />
+          </Fab>
+        )}
+    </Has>
     <SwipeableDialog
       open={filterDialogOpen}
       setOpen={setFilterDialogOpen}

@@ -9,12 +9,13 @@ import { useSearchParams } from 'react-router';
 import { useAllItems, useHandoverKeyMutation } from 'src/tanstack/items';
 import Layout from '../../components/layout/Layout';
 import { LoadingIndicator } from '../../components/LoadingIndicator';
-import { useAuthentication } from '../auth/AuthProvider';
+import { useGrants } from '../auth/GrantsContext';
 import { ItemHolderItem } from './components/ItemHolderItem';
 import { EditOrAddItemDialog } from './dialogs/EditOrAddItemDialog';
 import { ItemHistoryDialog } from './dialogs/ItemHistoryDialog';
 import { KeyHandOverDialog } from './dialogs/KeyHandOverDialog';
 import { SearchUserDialog } from './dialogs/SearchUserDialog';
+import { Has } from 'src/hooks/useGrants';
 
 const EMPTY_KEY: ItemUpdate = { name: '', color: '#000000', created_at: '', current_holder: null };
 
@@ -29,7 +30,7 @@ const ItemHolderScreen = () => {
 
   const notifications = useNotifications();
   const dialogs = useDialogs();
-  const { user, isAuthorized } = useAuthentication();
+  const { user, hasPerm } = useGrants();
   const { t } = useTranslation();
 
   const handoverKeyMutation = useHandoverKeyMutation();
@@ -46,7 +47,7 @@ const ItemHolderScreen = () => {
   }, [user]);
 
   useEffect(() => {
-    if (!isAuthorized("items.update.holder"))
+    if (!hasPerm("items.update.holder"))
       return;
     const type = searchParams.get("type");
     const key = searchParams.get("key")
@@ -61,7 +62,7 @@ const ItemHolderScreen = () => {
     if (type === "take") {
       selectKeyToReceive(keyHolder);
     }
-  }, [searchParams, keyHolders, user, selectKeyToReceive, selectKeyToHandOver, isAuthorized]);
+  }, [searchParams, keyHolders, user, selectKeyToReceive, selectKeyToHandOver, hasPerm]);
 
   const userSelected = (user: User) => {
     setSearchUserOpen(false);
@@ -105,7 +106,7 @@ const ItemHolderScreen = () => {
               await dialogs.open(ItemHistoryDialog, x)
             }}
             {
-            ...(isAuthorized("items.update.holder") ? {
+            ...(hasPerm("items.update.holder") ? {
               selectKeyToHandOver,
               selectKeyToReceive
             } : {})
@@ -114,7 +115,7 @@ const ItemHolderScreen = () => {
         ))}
       </List>
 
-      {isAuthorized("items.manage") && (
+      <Has perm={"items.manage"}>
         <Box
           sx={{
             position: 'fixed',
@@ -137,7 +138,7 @@ const ItemHolderScreen = () => {
             {isEditingMode ? <EditOffOutlined sx={{ color: '#fff' }} /> : <EditOutlined sx={{ color: '#fff' }} />}
           </Fab>
         </Box>
-      )}
+      </Has>
 
       <SearchUserDialog
         open={searchUserOpen}

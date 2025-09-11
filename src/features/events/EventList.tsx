@@ -14,15 +14,16 @@ import { PullToRefresh } from 'src/components/pull-to-refresh/PullToRefresh';
 import { useFetchMode } from 'src/hooks/useFetchMode';
 import { useEvents, useUpdateAttendanceMutation } from 'src/tanstack/events';
 import { EventsUserView } from 'src/types/supabaseTypes';
-import { useAuthentication } from '../auth/AuthProvider';
+import { useGrants } from '../auth/GrantsContext';
 import { EventItem } from './components/EventItem';
 import { LoadingEventItem } from './components/LoadingEventItem';
 import { CreateOrUpdateEventDialog } from './dialogs/CreateOrUpdateEventDialog';
 import { FilterEventListDialog } from './dialogs/FilterEventListDialog';
+import { Has } from 'src/hooks/useGrants';
 
 
 const EventScreen = () => {
-  const { user, isAuthorized } = useAuthentication();
+  const { user } = useGrants();
   const notifications = useNotifications();
   const dialogs = useDialogs();
   const navigate = useNavigate();
@@ -37,8 +38,9 @@ const EventScreen = () => {
 
   const updateAttendance = useUpdateAttendanceMutation(fetchMode);
 
-  const createEventFab = isAuthorized("event.edit") && !isLoading && (
+  const createEventFab = <Has perm={"event.edit"}>
     <Fab
+      hidden={isLoading}
       key="insertEvent"
       color={'secondary'}
       onClick={async () => {
@@ -47,7 +49,7 @@ const EventScreen = () => {
     >
       {<AddIcon sx={{ color: 'white' }} />}
     </Fab>
-  )
+  </Has>
 
   const filterFab = !isLoading && <Fab
     key="filter"
@@ -73,7 +75,7 @@ const EventScreen = () => {
       <Typography sx={{ textAlign: "center" }}>Es sieht so aus als ob du keine Events siehst</Typography>
       <Typography sx={{ textAlign: "center" }}>Versuch einer Gruppe beizutreten um die Events dieser einzusehen</Typography>
       <Button variant='contained' onClick={() => navigate("/groups/list")}>Gruppe beitreten</Button>
-      
+
       <Stack direction={"row-reverse"} spacing={2} sx={{ position: "fixed", bottom: 'max(16px, env(safe-area-inset-bottom))', right: "16px" }}>
         {filterFab}
         {createEventFab}
@@ -131,17 +133,15 @@ const EventScreen = () => {
     <Stack direction={"row-reverse"} spacing={2} sx={{ position: "fixed", bottom: 'max(16px, env(safe-area-inset-bottom))', right: "16px" }}>
       {filterFab}
       {createEventFab}
-      {
-        isAuthorized("event.edit") && !isLoading && (
-          <Fab
-            key="updateEvent"
-            color={'secondary'}
-            onClick={() => navigate('/training/recurringEvents')}
-          >
-            {<EventRepeat sx={{ color: 'white' }} />}
-          </Fab>
-        )
-      }
+      <Has perm={"event.edit"}>
+        <Fab
+          hidden={isLoading}
+          key="updateEvent"
+          color={'secondary'}
+          onClick={() => navigate('/training/recurringEvents')}>
+          {<EventRepeat sx={{ color: 'white' }} />}
+        </Fab>
+      </Has>
     </Stack>
   </PullToRefresh>
   );

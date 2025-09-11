@@ -11,7 +11,7 @@ import {
 } from '@mui/material';
 import { TFunction } from 'i18next';
 import React from 'react';
-import { useAuthentication } from 'src/features/auth/AuthProvider';
+import { useGrants } from 'src/features/auth/GrantsContext';
 import { FullComment } from '../../../types/supabaseTypes';
 
 type Props = {
@@ -22,7 +22,7 @@ type Props = {
 };
 
 export const CommentReplyText = ({ onClick }: { onClick: () => void }) => {
-  const { user } = useAuthentication();
+  const { user } = useGrants();
   return (
     <>
       <ListItem

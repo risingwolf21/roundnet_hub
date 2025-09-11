@@ -1,9 +1,9 @@
-import { Avatar, Box, IconButton, ListItem, ListItemAvatar, ListItemText, Typography } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
-import RemoveIcon from '@mui/icons-material/Remove';
 import LocalDrinkIcon from '@mui/icons-material/LocalDrink';
-import React, { Fragment } from 'react';
-import { useAuthentication } from 'src/features/auth/AuthProvider';
+import RemoveIcon from '@mui/icons-material/Remove';
+import { Avatar, Box, IconButton, ListItem, ListItemAvatar, ListItemText, Typography } from '@mui/material';
+import React from 'react';
+import { Has } from 'src/hooks/useGrants';
 
 type Props = {
   drink: Drink;
@@ -13,37 +13,38 @@ type Props = {
 };
 
 const DrinkItem = ({ drink, count, onAddClick, onMinusClick }: Props) => {
-  const { isAuthorized } = useAuthentication();
   return (
     <ListItem
       key={drink.name ?? '' + drink.id}
       onClick={() => onAddClick(drink)}
       secondaryAction={
-        isAuthorized("drinks.purchase") && <Box sx={{ display: 'flex', flexDirection: 'row' }}>
-          {count > 0 && (
-            <>
-              <IconButton
-                disableRipple
-                onClick={(event) => {
-                  onMinusClick(drink);
-                  event.stopPropagation();
-                }}
-              >
-                <RemoveIcon fontSize="inherit" sx={{ fontSize: '28px' }} />
-              </IconButton>
-              <Typography sx={{ p: 1, fontSize: '20px', color: 'rgba(0,0,0,0.54)' }}>{count}</Typography>
-            </>
-          )}
-          <IconButton
-            disableRipple
-            onClick={(event) => {
-              onAddClick(drink);
-              event.stopPropagation();
-            }}
-          >
-            <AddIcon fontSize="inherit" sx={{ fontSize: '28px' }} />
-          </IconButton>
-        </Box>
+        <Has perm={"drinks.purchase"}>
+          <Box sx={{ display: 'flex', flexDirection: 'row' }}>
+            {count > 0 && (
+              <>
+                <IconButton
+                  disableRipple
+                  onClick={(event) => {
+                    onMinusClick(drink);
+                    event.stopPropagation();
+                  }}
+                >
+                  <RemoveIcon fontSize="inherit" sx={{ fontSize: '28px' }} />
+                </IconButton>
+                <Typography sx={{ p: 1, fontSize: '20px', color: 'rgba(0,0,0,0.54)' }}>{count}</Typography>
+              </>
+            )}
+            <IconButton
+              disableRipple
+              onClick={(event) => {
+                onAddClick(drink);
+                event.stopPropagation();
+              }}
+            >
+              <AddIcon fontSize="inherit" sx={{ fontSize: '28px' }} />
+            </IconButton>
+          </Box>
+        </Has>
       }
     >
       <ListItemAvatar>

@@ -7,6 +7,7 @@ import { AuthProvider } from "./features/auth/AuthProvider";
 import { lazyWithRetry } from "./hooks/lazyWithRetry";
 import AuthLayout from "./components/layout/AuthLayout";
 import { DialogsProvider, NotificationsProvider } from "@toolpad/core";
+import { GrantsProvider } from "./features/auth/GrantsContext";
 
 const HistoryScreenProvider = lazyWithRetry(() => import('./features/drinks/HistoryScreenProvider'));
 const ItemHolderScreen = lazyWithRetry(() => import('./features/keys/ItemHolderScreen'));
@@ -46,12 +47,12 @@ export const AppRoutes = () => {
 }
 
 const PrivateRoute = () => {
-  const { user, signOut } = useApplication();
+  const { user } = useApplication();
   const location = useLocation();
   if (!user)
     return <Navigate to="/auth/login" state={{ path: location.pathname + location.search }} />
 
-  return <AuthProvider user={user} signOut={signOut}>
+  return <GrantsProvider user={user}>
     <DialogsProvider>
       <NotificationsProvider slotProps={{
         snackbar: {
@@ -63,7 +64,7 @@ const PrivateRoute = () => {
         <Outlet />
       </NotificationsProvider>
     </DialogsProvider>
-  </AuthProvider>
+  </GrantsProvider>
 }
 
 const router = sentryCreateBrowserRouter([
