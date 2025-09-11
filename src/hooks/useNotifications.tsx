@@ -4,7 +4,13 @@ import { supabase } from 'src/components/services/supabase/supabaseClient';
 
 export function useNotifications(user: User) {
   useEffect(() => {
-    ensureWebPushSubscription(process.env.REACT_APP_VAPID_PUBLIC_KEY)
+    const run = async () => {
+      const reg = await navigator.serviceWorker.ready;
+      const old = await reg.pushManager.getSubscription();
+      if (old) await old.unsubscribe();
+      await ensureWebPushSubscription(process.env.REACT_APP_VAPID_PUBLIC_KEY)
+    }
+    run();
   }, [user]);
 }
 
@@ -23,7 +29,7 @@ function arrayBufferToBase64(buf: ArrayBuffer) {
 }
 
 export async function ensureWebPushSubscription(vapidPublicKey?: string) {
-  if (!('serviceWorker' in navigator) || !('PushManager' in window) || ! vapidPublicKey) {
+  if (!('serviceWorker' in navigator) || !('PushManager' in window) || !vapidPublicKey) {
     console.error("NOtifications recieving is not possible");
     return null;
   }
@@ -47,6 +53,9 @@ export async function ensureWebPushSubscription(vapidPublicKey?: string) {
       : /iPhone|iPad|iPod/i.test(navigator.userAgent) ? 'ios' : 'desktop',
   };
   const { error } = await supabase.rpc('register_web_push_subscription', body);
-  if (error) throw error;
+  if (error) {
+    console.error(error);
+    throw error;
+  }
   return sub;
 }

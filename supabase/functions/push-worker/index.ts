@@ -45,7 +45,6 @@ const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 const VAPID_PUBLIC_KEY = Deno.env.get("VAPID_PUBLIC_KEY")!;
 const VAPID_PRIVATE_KEY = Deno.env.get("VAPID_PRIVATE_KEY")!;
-const CRON_SECRET = Deno.env.get("CRON_SECRET") ?? "";
 
 const BATCH = parseInt(Deno.env.get("PUSH_WORKER_BATCH") ?? "100", 10);
 const MAX_JOB_ATTEMPTS = parseInt(Deno.env.get("PUSH_WORKER_MAX_JOB_ATTEMPTS") ?? "8", 10);
@@ -57,15 +56,6 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
 });
 
 webpush.setVapidDetails("mailto:admin@example.com", VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY);
-
-// simple protection for schedules/manual calls
-function isAuthorized(req: Request) {
-  if (!CRON_SECRET) return true; // optional
-  const hdr = req.headers.get("authorization") || req.headers.get("x-cron-secret");
-  if (!hdr) return false;
-  if (hdr.startsWith("Bearer ")) return hdr.slice(7) === CRON_SECRET;
-  return hdr === CRON_SECRET;
-}
 
 function nowIso() {
   return new Date().toISOString();
@@ -308,8 +298,6 @@ async function handleRun(): Promise<Response> {
 
 Deno.serve(async (req) => {
   try {
-    // optional: nur mit Secret ausführen lassen
-    if (!isAuthorized(req)) return new Response("forbidden", { status: 403 });
 
     // einfache health-check route
     const url = new URL(req.url);
