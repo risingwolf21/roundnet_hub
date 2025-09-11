@@ -16,22 +16,11 @@ jobs:
       matrix:
         env:
           - name: 'Roundnet Karlsruhe'
-            firebase_target: production
+            firebase_target: staging
             firebase_project: roundnet-karlsruhe
             firebase_url: https://staging-roundnet-karlsruhe.web.app
             website_path: roundnet-karlsruhe
             website_manifest: manifest-roundnet-karlsruhe.json
-            supabase_url_secret: STAGING_DB_URL
-            supabase_key_secret: STAGING_ANON_KEY
-            openweather_api_key: OPENWEATHER_API_KEY
-            supabase_project_id: PROJECT_ID
-
-          - name: 'Munich Roundnet'
-            firebase_target: munich-roundnet-production
-            firebase_project: roundnet-karlsruhe
-            firebase_url: https://staging-munich-roundnet.web.app
-            website_path: munich-roundnet
-            website_manifest: manifest-munich-roundnet.json
             supabase_url_secret: STAGING_DB_URL
             supabase_key_secret: STAGING_ANON_KEY
             openweather_api_key: OPENWEATHER_API_KEY
