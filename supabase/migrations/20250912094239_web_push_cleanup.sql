@@ -30,6 +30,8 @@ CREATE INDEX idx_notifications_user_read ON public.notifications USING btree ("u
 
 set check_function_bodies = off;
 
+drop function public.set_notification_pref;
+
 CREATE OR REPLACE FUNCTION public.set_notification_pref(p_topic text, p_enabled boolean, p_channel text DEFAULT 'webpush'::text, p_scope_type text DEFAULT NULL::text, p_scope_id uuid DEFAULT NULL::uuid)
  RETURNS user_notification_preferences
  LANGUAGE plpgsql
