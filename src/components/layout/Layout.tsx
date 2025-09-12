@@ -134,9 +134,7 @@ const Layout = ({
 
       {/* Drawer  */}
       <Drawer open={drawerOpen} onClose={() => setDrawerOpen(false)} onOpen={() => setDrawerOpen(true)} />
-
-      <FirebaseMessaging />
-
+        
       {/* Main Content */}
       <Box
         component="main"

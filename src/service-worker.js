@@ -90,8 +90,8 @@ self.addEventListener('push', (event) => {
     const options = {
       body: payload.body || '',
       data: payload.data || {},
-      badge: '/icons/badge.png',
-      icon: '/icons/icon-192.png',
+      icon: self.location.origin + "/" + process.env.REACT_APP_WEBSITE_PATH + "/android-chrome-192x192.png",
+      badge: self.location.origin + "/" + process.env.REACT_APP_WEBSITE_PATH + "/badge.png",
     };
     event.waitUntil(self.registration.showNotification(title, options));
   } catch (e) {

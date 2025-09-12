@@ -477,13 +477,6 @@ export type Database = {
           },
           {
             foreignKeyName: "teams_player_2_fkey"
-            columns: ["team_a_player_2"]
-            isOneToOne: false
-            referencedRelation: "players"
-            referencedColumns: ["player"]
-          },
-          {
-            foreignKeyName: "teams_player_2_fkey"
             columns: ["team_b_player_2"]
             isOneToOne: false
             referencedRelation: "players"
@@ -492,13 +485,20 @@ export type Database = {
           {
             foreignKeyName: "teams_player_2_fkey"
             columns: ["team_a_player_2"]
+            isOneToOne: false
+            referencedRelation: "players"
+            referencedColumns: ["player"]
+          },
+          {
+            foreignKeyName: "teams_player_2_fkey"
+            columns: ["team_b_player_2"]
             isOneToOne: false
             referencedRelation: "players_public"
             referencedColumns: ["player"]
           },
           {
             foreignKeyName: "teams_player_2_fkey"
-            columns: ["team_b_player_2"]
+            columns: ["team_a_player_2"]
             isOneToOne: false
             referencedRelation: "players_public"
             referencedColumns: ["player"]
@@ -562,15 +562,15 @@ export type Database = {
         Args: { p_match: string }
         Returns: {
           upset_multiplier: number
-          eff_team_a: number
+          k_base: number
           k_eff: number
           category_a: string
           category_b: string
           upset_levels: number
-          k_base: number
-          expected_b: number
-          expected_a: number
+          eff_team_a: number
           eff_team_b: number
+          expected_a: number
+          expected_b: number
         }[]
       }
       recompute_all_effective_player_ratings: {
@@ -1522,8 +1522,6 @@ export type Database = {
           attempt_count: number
           last_error: string | null
           last_status: number | null
-          leased_at: string | null
-          leased_by: string | null
           next_attempt_at: string
           outbox_id: number
           status: string
@@ -1533,8 +1531,6 @@ export type Database = {
           attempt_count?: number
           last_error?: string | null
           last_status?: number | null
-          leased_at?: string | null
-          leased_by?: string | null
           next_attempt_at?: string
           outbox_id: number
           status?: string
@@ -1544,8 +1540,6 @@ export type Database = {
           attempt_count?: number
           last_error?: string | null
           last_status?: number | null
-          leased_at?: string | null
-          leased_by?: string | null
           next_attempt_at?: string
           outbox_id?: number
           status?: string
@@ -2258,25 +2252,6 @@ export type Database = {
       }
     }
     Functions: {
-      _enqueue_notification: {
-        Args: {
-          p_data: Json
-          p_source_id: string
-          p_source_type: string
-          p_tenant: string
-          p_title: string
-          p_topic: string
-          p_urgency?: string
-          p_user: string
-        }
-        Returns: undefined
-      }
-      _match_participants_uids: {
-        Args: { p_match: string }
-        Returns: {
-          uid: string
-        }[]
-      }
       _sum_challenge_points_for_self: {
         Args: {
           challenge_id: string
@@ -2307,45 +2282,6 @@ export type Database = {
       check_version: {
         Args: { input_version: string }
         Returns: boolean
-      }
-      claim_outbox_targets: {
-        Args: { p_lease_seconds?: number; p_limit?: number; p_worker?: string }
-        Returns: {
-          payload: Json
-          target_id: number
-          outbox_id: number
-          user_id: string
-          endpoint: string
-          p256dh: string
-          auth: string
-        }[]
-      }
-      cleanup_all_notifications: {
-        Args: Record<PropertyKey, never>
-        Returns: Json
-      }
-      cleanup_notifications: {
-        Args: Record<PropertyKey, never>
-        Returns: number
-      }
-      cleanup_outbox: {
-        Args: Record<PropertyKey, never>
-        Returns: {
-          deleted_targets: number
-          deleted_outbox: number
-        }[]
-      }
-      cleanup_revoked_subscriptions: {
-        Args: Record<PropertyKey, never>
-        Returns: number
-      }
-      complete_target_failed: {
-        Args: { p_error: string; p_status: number; p_target_id: number }
-        Returns: undefined
-      }
-      complete_target_sent: {
-        Args: { p_target_id: number }
-        Returns: undefined
       }
       create_group_with_user: {
         Args: {
@@ -2423,12 +2359,12 @@ export type Database = {
       get_column_info: {
         Args: { schema_name: string; selected_table: string }
         Returns: {
-          is_nullable: boolean
-          foreign_key_column_name: string
           foreign_key_table_name: string
-          foreign_key_schema_name: string
+          foreign_key_column_name: string
           column_name: string
+          is_nullable: boolean
           data_type: string
+          foreign_key_schema_name: string
         }[]
       }
       get_enum_types: {
@@ -2520,8 +2456,8 @@ export type Database = {
       key_handover: {
         Args: { p_key_id: number; p_new_holder: string }
         Returns: {
-          holder: string
           key_id: number
+          holder: string
         }[]
       }
       mark_all_notifications_read: {

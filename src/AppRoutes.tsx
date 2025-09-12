@@ -11,6 +11,7 @@ import GrantsManager from "./features/grants/GrantsManager";
 import { GrantsManager as G1 } from "./features/grants/Teset";
 import { lazyWithRetry } from "./hooks/lazyWithRetry";
 import { Has } from "./hooks/useGrants";
+import { useNotifications } from "./hooks/useNotifications";
 
 const HistoryScreenProvider = lazyWithRetry(() => import('./features/drinks/HistoryScreenProvider'));
 const ItemHolderScreen = lazyWithRetry(() => import('./features/keys/ItemHolderScreen'));
@@ -70,6 +71,13 @@ const PrivateRoute = () => {
   </GrantsProvider>
 }
 
+const NotificationProvider = () => {
+  const { user } = useApplication();
+  useNotifications(user!);
+
+  return <Outlet />
+}
+
 const router = sentryCreateBrowserRouter([
   {
     path: "/auth",
@@ -108,7 +116,7 @@ const router = sentryCreateBrowserRouter([
     children: [
       {
         path: "",
-        element: <Outlet />,
+        element: <NotificationProvider />,
         errorElement: <ErrorRouteElement />,
         children: [
           {
@@ -280,7 +288,7 @@ const router = sentryCreateBrowserRouter([
               },
               {
                 path: "grants1",
-                element:  <G1 />
+                element: <G1 />
               },
             ]
           },
