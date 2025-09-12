@@ -29,7 +29,7 @@ import pzLogo from '../../images/pz_logo.svg';
 import { UserWithGroups } from '../../types/supabaseTypes';
 import { useGrants } from '../auth/GrantsContext';
 import { ContactInformation } from './ContactInformation';
-// import { NotificationsDialog } from './NotificationsDialog';
+import { NotificationsDialog } from './NotificationsDialog';
 import { PlayerzoneProfileDialog } from './PlayerzoneProfile';
 import { ProfileImage } from './ProfileImage';
 import { useNotifications } from '@toolpad/core';
@@ -118,7 +118,7 @@ const UserScreen = ({ user, handleSignOut }: UserScreenProps) => {
             </ListItem>
           </CardActionArea>
         </Card>
-        {/* <Card sx={{ borderRadius: 2, py: 0, px: 0, mt: 1 }}>
+        <Card sx={{ borderRadius: 2, py: 0, px: 0, mt: 1 }}>
           <CardActionArea sx={{ px: 1 }}>
             <ListItem
               onClick={async () => {
@@ -131,7 +131,7 @@ const UserScreen = ({ user, handleSignOut }: UserScreenProps) => {
               <ListItemText primary="Benachrichtigungen" />
             </ListItem>
           </CardActionArea>
-        </Card> */}
+        </Card>
         <Card sx={{ borderRadius: 2, py: 0, px: 0, mt: 1 }}>
           <CardActionArea sx={{ px: 1 }}>
             <ListItem

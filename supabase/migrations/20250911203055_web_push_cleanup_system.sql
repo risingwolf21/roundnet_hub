@@ -1,5 +1,3 @@
-create extension if not exists pg_cron;
-
 revoke delete on table "public"."notification_outbox" from "authenticated";
 
 revoke insert on table "public"."notification_outbox" from "authenticated";

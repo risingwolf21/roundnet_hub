@@ -1,6 +1,7 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { queryClient } from "src/App";
 import { supabase } from "src/components/services/supabase/supabaseClient";
+import { Tables } from "src/types/supabase-generated.types";
 import { Notification } from "types/supabase";
 
 export const useAllNotifications = (user: User | null) => useQuery<Notification[]>({
@@ -46,82 +47,70 @@ export const useMarkNotificationsAsRead = (userId: string) => useMutation({
   },
 })
 
-// export const useNotificationTags = (user: User) => useQuery<string[]>({
-//   queryKey: ["notifications", user.userId, "tags"],
-//   queryFn: async () => {
-//     const result = await supabase
-//       .from('user_notification_settings')
-//       .select("notification_tag")
-//       .eq("user", user.userId)
-//       .throwOnError();
+export const useNotificationTags = (user: User) => useQuery<Tables<"user_notification_preferences">[]>({
+  queryKey: ["notifications", user.userId, "tags"],
+  queryFn: async () => {
+    const result = await supabase
+      .from('user_notification_preferences')
+      .select("*")
+      .eq("user", user.userId)
+      .throwOnError();
 
-//     return (result.data ?? []).map(x => x.notification_tag);
-//   }
-// })
+    return result.data ?? []
+  }
+})
 
-// export const useAddNotificationTag = (user: User) => useMutation({
-//   mutationFn: async ({ tag }: { tag: string }) => {
-//     const result = await supabase
-//       .from('user_notification_settings')
-//       .insert({ user: user.userId, notification_tag: tag })
-//       .select("*")
-//       .throwOnError();
+export const useNotificationTopics = () => useQuery<Tables<"notification_topics">[]>({
+  queryKey: ["notifications", "topics"],
+  queryFn: async () => {
+    const result = await supabase
+      .from('notification_topics')
+      .select("*")
+      .throwOnError();
 
-//     return result;
-//   },
-//   onMutate: async ({ tag }) => {
-//     await queryClient.cancelQueries({ queryKey: ["notifications", user.userId, "tags"] });
-//     const previousNotificationTags = queryClient.getQueryData<string[]>(["notifications", user.userId, "tags"]);
+    return result.data ?? []
+  }
+})
 
-//     if (previousNotificationTags) {
-//       const newNotificationTags = [
-//         ...previousNotificationTags,
-//         tag
-//       ]
-//       queryClient.setQueriesData({ queryKey: ["notifications", user.userId, "tags"] }, newNotificationTags);
-//     }
+export const useUpdateNotificationPreferences = (user: User) => useMutation({
+  mutationFn: async ({ topic, enabled, channel = 'webpush', scopeType, scopeId }: { topic: string, enabled: boolean, channel?: string, scopeType: string, scopeId?: string }) => {
+    const result = await supabase.rpc('set_notification_pref', {
+      p_topic: topic,
+      p_enabled: enabled,
+      p_channel: channel,
+      p_scope_type: scopeType,
+      p_scope_id: scopeId
+    })
+      .throwOnError();
 
-//     return { previousNotificationTags }
-//   },
-//   onError: (err, _vars, context) => {
-//     if (context?.previousNotificationTags) {
-//       queryClient.setQueryData(["notifications", user.userId, "tags"], context.previousNotificationTags);
-//     }
-//   },
-//   onSettled: (data, error, variables, context) => {
-//     queryClient.invalidateQueries({ queryKey: ["notifications", user.userId, "tags"] });
-//   },
-// })
+    return result;
+  },
+  onMutate: async ({ topic, enabled, channel, scopeType, scopeId }) => {
+    await queryClient.cancelQueries({ queryKey: ["notifications", user.userId, "tags"] });
+    const previousNotificationTags = queryClient.getQueryData<Tables<"user_notification_preferences">[]>(["notifications", user.userId, "preferences"]);
 
-// export const useRemoveNotificationTag = (user: User) => useMutation({
-//   mutationFn: async ({ tag }: { tag: string }) => {
-//     const result = await supabase
-//       .from('user_notification_settings')
-//       .delete()
-//       .eq('user', user.userId)
-//       .eq("notification_tag", tag)
-//       .select()
-//       .throwOnError();
+    if (previousNotificationTags) {
+      const newNotificationTags = [
+        ...previousNotificationTags,
+        {
+          topic,
+          enabled,
+          channel,
+          scope_id: scopeId,
+          scope_type: scopeType
+        }
+      ] as Tables<"user_notification_preferences">[]
+      queryClient.setQueriesData({ queryKey: ["notifications", user.userId, "preferences"] }, newNotificationTags);
+    }
 
-//     return result;
-//   },
-//   onMutate: async ({ tag }) => {
-//     await queryClient.cancelQueries({ queryKey: ["notifications", user.userId, "tags"] });
-//     const previousNotificationTags = queryClient.getQueryData<string[]>(["notifications", user.userId, "tags"]);
-
-//     if (previousNotificationTags) {
-//       const newNotificationTags = previousNotificationTags.filter(x => x !== tag)
-//       queryClient.setQueriesData({ queryKey: ["notifications", user.userId, "tags"] }, newNotificationTags);
-//     }
-
-//     return { previousNotificationTags }
-//   },
-//   onError: (err, _vars, context) => {
-//     if (context?.previousNotificationTags) {
-//       queryClient.setQueryData(["notifications", user.userId, "tags"], context.previousNotificationTags);
-//     }
-//   },
-//   onSettled: (data, error, variables, context) => {
-//     queryClient.invalidateQueries({ queryKey: ["notifications", user.userId, "tags"] });
-//   },
-// })
+    return { previousNotificationTags }
+  },
+  onError: (err, _vars, context) => {
+    if (context?.previousNotificationTags) {
+      queryClient.setQueryData(["notifications", user.userId, "preferences"], context.previousNotificationTags);
+    }
+  },
+  onSettled: (data, error, variables, context) => {
+    queryClient.invalidateQueries({ queryKey: ["notifications", user.userId, "preferences"] });
+  },
+})
