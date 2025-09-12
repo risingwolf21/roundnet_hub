@@ -48,7 +48,7 @@ export const useMarkNotificationsAsRead = (userId: string) => useMutation({
 })
 
 export const useNotificationTags = (user: User) => useQuery<Tables<"user_notification_preferences">[]>({
-  queryKey: ["notifications", user.userId, "tags"],
+  queryKey: ["notifications", user.userId, "preferences"],
   queryFn: async () => {
     const result = await supabase
       .from('user_notification_preferences')
@@ -83,7 +83,7 @@ export const useUpdateNotificationPreferences = (user: User) => useMutation({
     })
       .throwOnError();
 
-    return result;
+    return result.data;
   },
   onMutate: async ({ topic, enabled, channel, scopeType, scopeId }) => {
     await queryClient.cancelQueries({ queryKey: ["notifications", user.userId, "tags"] });

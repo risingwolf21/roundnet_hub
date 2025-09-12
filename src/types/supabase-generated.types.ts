@@ -2572,7 +2572,19 @@ export type Database = {
           p_scope_type?: string
           p_topic: string
         }
-        Returns: undefined
+        Returns: {
+          channel: string
+          created_at: string
+          enabled: boolean
+          scope_id: string | null
+          scope_id_norm: string
+          scope_type: string | null
+          scope_type_norm: string
+          tenant: string
+          topic: string
+          updated_at: string
+          user: string
+        }
       }
       test_login: {
         Args: { uid: string }
