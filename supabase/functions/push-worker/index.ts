@@ -171,7 +171,7 @@ async function backoffTarget(jobId: number, subId: string, attemptsNext: number,
 async function revokeSubscription(subId: string) {
   const { error } = await supabase
     .from("web_push_subscriptions")
-    .delete()
+    .update({ revoked_at: nowIso() })
     .eq("id", subId);
   if (error) throw error;
 }
@@ -294,6 +294,7 @@ async function handleRun(): Promise<Response> {
   summary.ms = Date.now() - start;
   return new Response(JSON.stringify(summary, null, 2), {
     headers: { "content-type": "application/json" },
+    status: 200
   });
 }
 

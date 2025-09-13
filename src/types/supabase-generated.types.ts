@@ -562,15 +562,15 @@ export type Database = {
         Args: { p_match: string }
         Returns: {
           upset_multiplier: number
+          eff_team_a: number
+          eff_team_b: number
+          expected_a: number
+          expected_b: number
           k_base: number
           k_eff: number
           category_a: string
           category_b: string
           upset_levels: number
-          eff_team_a: number
-          eff_team_b: number
-          expected_a: number
-          expected_b: number
         }[]
       }
       recompute_all_effective_player_ratings: {
@@ -1412,6 +1412,7 @@ export type Database = {
           current_holder: string | null
           group: string | null
           id: number
+          id_uuid: string
           lastUpdate: string
           name: string
           type: Database["public"]["Enums"]["ItemType"]
@@ -1422,6 +1423,7 @@ export type Database = {
           current_holder?: string | null
           group?: string | null
           id?: number
+          id_uuid?: string
           lastUpdate?: string
           name: string
           type: Database["public"]["Enums"]["ItemType"]
@@ -1432,6 +1434,7 @@ export type Database = {
           current_holder?: string | null
           group?: string | null
           id?: number
+          id_uuid?: string
           lastUpdate?: string
           name?: string
           type?: Database["public"]["Enums"]["ItemType"]
@@ -1690,6 +1693,7 @@ export type Database = {
           amountToPay: number
           created_at: string | null
           id: number
+          id_uuid: string
           paymentState: Database["public"]["Enums"]["PaymentState"]
           userId: string
         }
@@ -1697,6 +1701,7 @@ export type Database = {
           amountToPay?: number
           created_at?: string | null
           id?: number
+          id_uuid?: string
           paymentState?: Database["public"]["Enums"]["PaymentState"]
           userId: string
         }
@@ -1704,6 +1709,7 @@ export type Database = {
           amountToPay?: number
           created_at?: string | null
           id?: number
+          id_uuid?: string
           paymentState?: Database["public"]["Enums"]["PaymentState"]
           userId?: string
         }
@@ -1908,41 +1914,53 @@ export type Database = {
         Row: {
           auth: string
           created_at: string
+          device_id: string | null
           endpoint: string
           expiration_time: string | null
+          failure_count: number | null
           id: string
+          last_error: string | null
           last_seen: string
+          last_status: number | null
           p256dh: string
           platform: string | null
           revoked_at: string | null
-          ua: string | null
           user: string
+          user_agent: string | null
         }
         Insert: {
           auth: string
           created_at?: string
+          device_id?: string | null
           endpoint: string
           expiration_time?: string | null
+          failure_count?: number | null
           id?: string
+          last_error?: string | null
           last_seen?: string
+          last_status?: number | null
           p256dh: string
           platform?: string | null
           revoked_at?: string | null
-          ua?: string | null
           user: string
+          user_agent?: string | null
         }
         Update: {
           auth?: string
           created_at?: string
+          device_id?: string | null
           endpoint?: string
           expiration_time?: string | null
+          failure_count?: number | null
           id?: string
+          last_error?: string | null
           last_seen?: string
+          last_status?: number | null
           p256dh?: string
           platform?: string | null
           revoked_at?: string | null
-          ua?: string | null
           user?: string
+          user_agent?: string | null
         }
         Relationships: []
       }
@@ -2327,6 +2345,7 @@ export type Database = {
           current_holder: string | null
           group: string | null
           id: number
+          id_uuid: string
           lastUpdate: string
           name: string
           type: Database["public"]["Enums"]["ItemType"]
@@ -2359,12 +2378,12 @@ export type Database = {
       get_column_info: {
         Args: { schema_name: string; selected_table: string }
         Returns: {
-          foreign_key_table_name: string
-          foreign_key_column_name: string
           column_name: string
+          foreign_key_column_name: string
+          foreign_key_table_name: string
+          foreign_key_schema_name: string
           is_nullable: boolean
           data_type: string
-          foreign_key_schema_name: string
         }[]
       }
       get_enum_types: {
@@ -2381,8 +2400,8 @@ export type Database = {
       get_public_table_names: {
         Args: Record<PropertyKey, never>
         Returns: {
-          table_schema: string
           table_name: string
+          table_schema: string
         }[]
       }
       getattendingusers: {
@@ -2456,8 +2475,8 @@ export type Database = {
       key_handover: {
         Args: { p_key_id: number; p_new_holder: string }
         Returns: {
-          key_id: number
           holder: string
+          key_id: number
         }[]
       }
       mark_all_notifications_read: {
@@ -2468,8 +2487,47 @@ export type Database = {
         Args: { p_id: string }
         Returns: undefined
       }
+      notify_challenge_added: {
+        Args: { p_actor?: string; p_challenge: string }
+        Returns: number
+      }
+      notify_challenge_entry_added: {
+        Args: { p_actor?: string; p_challenge: string }
+        Returns: number
+      }
+      notify_drink_payment_fulfilled: {
+        Args: { p_payment: number } | { p_payment: string }
+        Returns: number
+      }
       notify_event_canceled: {
         Args: { p_actor?: string; p_event: string }
+        Returns: number
+      }
+      notify_event_comment_created: {
+        Args: {
+          p_author: string
+          p_comment: string
+          p_event: string
+          p_text: string
+        }
+        Returns: number
+      }
+      notify_event_updated: {
+        Args: { p_actor?: string; p_body: string; p_event: string }
+        Returns: number
+      }
+      notify_game_added: {
+        Args: { p_actor?: string; p_match: string }
+        Returns: number
+      }
+      notify_group_request_confirmed: {
+        Args: { p_actor?: string; p_group: string; p_user: string }
+        Returns: number
+      }
+      notify_item_handover: {
+        Args:
+          | { p_actor?: string; p_from: string; p_item: number; p_to: string }
+          | { p_actor?: string; p_from: string; p_item: string; p_to: string }
         Returns: number
       }
       refresh_user_grants: {
@@ -2534,10 +2592,6 @@ export type Database = {
         Args: { p_group: string; p_perm: string }
         Returns: undefined
       }
-      unregister_web_push_subscription: {
-        Args: { p_endpoint: string }
-        Returns: undefined
-      }
       update_attendance: {
         Args: {
           p_event: string
@@ -2550,6 +2604,33 @@ export type Database = {
           state: Database["public"]["Enums"]["EventAttendance"]
           user: string
         }[]
+      }
+      upsert_webpush_subscription: {
+        Args: {
+          p_auth: string
+          p_device_id: string
+          p_endpoint: string
+          p_p256dh: string
+          p_platform: string
+          p_user_agent: string
+        }
+        Returns: {
+          auth: string
+          created_at: string
+          device_id: string | null
+          endpoint: string
+          expiration_time: string | null
+          failure_count: number | null
+          id: string
+          last_error: string | null
+          last_seen: string
+          last_status: number | null
+          p256dh: string
+          platform: string | null
+          revoked_at: string | null
+          user: string
+          user_agent: string | null
+        }
       }
     }
     Enums: {

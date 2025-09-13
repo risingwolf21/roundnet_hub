@@ -1,6 +1,14 @@
 import { useEffect } from 'react';
 import { supabase } from 'src/components/services/supabase/supabaseClient';
 
+function getOrCreateDeviceId(): string {
+  let id = localStorage.getItem("device_id");
+  if (!id) {
+    id = crypto.randomUUID();
+    localStorage.setItem("device_id", id);
+  }
+  return id;
+}
 
 export function useNotifications(user: User) {
   useEffect(() => {
@@ -47,15 +55,18 @@ export async function ensureWebPushSubscription(vapidPublicKey?: string) {
       applicationServerKey: urlBase64ToUint8Array(vapidPublicKey),
     });
   }
+  const deviceId = getOrCreateDeviceId();
+
   const body = {
     p_endpoint: sub.endpoint,
     p_p256dh: arrayBufferToBase64(sub.getKey('p256dh')!),
     p_auth: arrayBufferToBase64(sub.getKey('auth')!),
-    p_ua: navigator.userAgent,
+    p_user_agent: navigator.userAgent,
     p_platform: /Android/i.test(navigator.userAgent) ? 'android'
       : /iPhone|iPad|iPod/i.test(navigator.userAgent) ? 'ios' : 'desktop',
+    p_device_id: deviceId,
   };
-  const { error } = await supabase.rpc('register_web_push_subscription', body);
+  const { data, error } = await supabase.rpc("upsert_webpush_subscription", body);
   if (error) {
     console.error(error);
     throw error;

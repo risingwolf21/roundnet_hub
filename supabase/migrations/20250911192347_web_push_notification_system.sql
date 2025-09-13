@@ -235,7 +235,6 @@ create table "public"."web_push_subscriptions" (
     "endpoint" text not null,
     "p256dh" text not null,
     "auth" text not null,
-    "ua" text,
     "platform" text,
     "expiration_time" timestamp with time zone,
     "last_seen" timestamp with time zone not null default now(),
@@ -533,19 +532,6 @@ end;
 $function$
 ;
 
-CREATE OR REPLACE FUNCTION public.unregister_web_push_subscription(p_endpoint text)
- RETURNS void
- LANGUAGE plpgsql
- SET search_path TO ''
-AS $function$
-begin
-  update public.web_push_subscriptions
-     set revoked_at = now()
-   where endpoint = p_endpoint
-     and "user" = auth.uid()::text;
-end;
-$function$
-;
 
 grant delete on table "public"."notification_outbox" to "anon";
 
@@ -1918,3 +1904,169 @@ after update on public.group_user_mapping
 for each row
 execute function public._trg_group_request_confirmed_to_notify();
 
+-- A) Schema-Verbesserungen
+ALTER TABLE public.web_push_subscriptions
+  ADD COLUMN IF NOT EXISTS device_id   text,
+  ADD COLUMN IF NOT EXISTS user_agent  text,
+  ADD COLUMN IF NOT EXISTS last_seen   timestamptz DEFAULT now(),
+  ADD COLUMN IF NOT EXISTS failure_count integer   DEFAULT 0,
+  ADD COLUMN IF NOT EXISTS last_status   integer,
+  ADD COLUMN IF NOT EXISTS last_error    text;
+
+-- Eindeutigkeit: ein endpoint ist global eindeutig ⇒ harte Dedupe
+CREATE UNIQUE INDEX IF NOT EXISTS webpush_unique_endpoint
+  ON public.web_push_subscriptions (endpoint);
+
+-- Ein aktiver Eintrag pro (user, device) reicht:
+-- (partial unique geht nicht direkt für ON CONFLICT, aber verhindert Mehrfach-Active)
+CREATE UNIQUE INDEX IF NOT EXISTS webpush_one_active_per_device
+  ON public.web_push_subscriptions ("user", COALESCE(device_id, ''))
+  WHERE revoked_at IS NULL;
+
+-- B) RLS (nur wenn noch nicht da)
+ALTER TABLE public.web_push_subscriptions ENABLE ROW LEVEL SECURITY;
+
+-- nur eigener Kram sichtbar
+CREATE POLICY "webpush_select_self"
+  ON public.web_push_subscriptions
+  FOR SELECT TO authenticated
+  USING ("user" = auth.uid()::text);
+
+-- eigene Einträge anlegen
+CREATE POLICY "webpush_insert_self"
+  ON public.web_push_subscriptions
+  FOR INSERT TO authenticated
+  WITH CHECK ("user" = auth.uid()::text);
+
+-- nur eigene updaten (z.B. last_seen, user_agent)
+CREATE POLICY "webpush_update_self"
+  ON public.web_push_subscriptions
+  FOR UPDATE TO authenticated
+  USING ("user" = auth.uid()::text)
+  WITH CHECK ("user" = auth.uid()::text);
+
+CREATE OR REPLACE FUNCTION public.upsert_webpush_subscription(
+  p_endpoint   text,
+  p_p256dh     text,
+  p_auth       text,
+  p_device_id  text,
+  p_user_agent text,
+  p_platform   text
+)
+RETURNS public.web_push_subscriptions
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = ''
+AS $$
+DECLARE
+  v_user text := auth.uid()::text;
+  v_row  public.web_push_subscriptions;
+BEGIN
+  IF v_user IS NULL THEN
+    RAISE EXCEPTION 'unauthenticated' USING ERRCODE = '28P01';
+  END IF;
+
+  -- 1) Upsert per endpoint (global eindeutig)
+  INSERT INTO public.web_push_subscriptions("user", endpoint, p256dh, auth, platform, device_id, user_agent, revoked_at, last_seen)
+  VALUES (v_user, p_endpoint, p_p256dh, p_auth, p_platform, p_device_id, p_user_agent, NULL, now())
+  ON CONFLICT (endpoint) DO UPDATE
+     SET "user"      = EXCLUDED."user",
+         p256dh      = EXCLUDED.p256dh,
+         auth        = EXCLUDED.auth,
+         platform    = EXCLUDED.platform,
+         device_id   = EXCLUDED.device_id,
+         user_agent  = EXCLUDED.user_agent,
+         revoked_at  = NULL,
+         last_seen   = now()
+  RETURNING * INTO v_row;
+
+  -- 2) Sicherstellen: nur 1 aktiver Eintrag pro (user, device_id)
+  DELETE FROM public.web_push_subscriptions s
+   WHERE s."user" = v_user
+     AND COALESCE(s.device_id, '') = COALESCE(p_device_id, '')
+     AND s.revoked_at IS NULL
+     AND s.id <> v_row.id;
+
+  -- Aktuelle Zeile zurück
+  RETURN v_row;
+END;
+$$;
+
+-- Cleanup-Funktion
+CREATE OR REPLACE FUNCTION public.webpush_prune_subscriptions(
+  p_inactive_days int DEFAULT 30,
+  p_revoked_days  int DEFAULT 10,
+  p_failures      int DEFAULT 10
+)
+RETURNS int
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = ''
+AS $$
+DECLARE
+  v_cnt int := 0;
+  v_cnt2 int := 0;
+BEGIN
+  -- 1) alte, widerrufene Zeilen weg
+  DELETE FROM public.web_push_subscriptions
+   WHERE revoked_at IS NOT NULL
+     AND revoked_at < now() - (p_revoked_days || ' days')::interval;
+  GET DIAGNOSTICS v_cnt = ROW_COUNT;
+
+  -- 2) nie wieder gesehen + viele Fehler → weg
+  DELETE FROM public.web_push_subscriptions
+   WHERE revoked_at IS NULL
+     AND COALESCE(last_seen, created_at) < now() - (p_inactive_days || ' days')::interval
+     AND failure_count >= p_failures;
+
+  GET DIAGNOSTICS v_cnt2 = ROW_COUNT;
+  RETURN v_cnt + v_cnt2;
+END;
+$$;
+
+create extension if not exists pg_cron with schema pg_catalog;
+
+grant usage on schema cron to postgres; 
+grant all privileges on all tables in schema cron to postgres;
+
+-- pg_cron (in Supabase: schema "extensions") – täglich um 03:00 UTC
+SELECT
+  cron.schedule(
+    'webpush_prune_daily',
+    '0 3 * * *',
+    $$SELECT public.webpush_prune_subscriptions();$$
+  );
+
+create or replace function public.run_push_worker_if_needed()
+returns jsonb
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare
+  v_has_work boolean;
+begin
+  select exists (
+    select 1
+      from public.notification_outbox_targets t
+      join public.notification_outbox o on o.id = t.outbox_id
+     where (t.last_status is null or t.last_status >= 400)           -- nie versucht oder fehlgeschlagen
+       and (t.next_attempt_at is null or t.next_attempt_at <= now()) -- fällig
+       and (t.claimed_at is null or t.claimed_at < now() - interval '60 seconds') -- Lease abgelaufen
+       and o.status = 'pending'                                      -- Outbox noch offen
+  )
+  into v_has_work;
+
+  if v_has_work then
+    return public.invoke_edge_function('push-worker');
+  else
+    return jsonb_build_object('processed', 0, 'skipped', true);
+  end if;
+end;
+$$;
+
+select cron.schedule(
+  'push_worker_quick',
+  '* * * * *',  -- alle 15 Sekunden (falls auf deiner Instanz erlaubt)
+  $$select public.run_push_worker_if_needed();$$
+);
