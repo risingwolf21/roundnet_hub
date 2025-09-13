@@ -440,12 +440,20 @@ export const useDeleteTrainingMutation = (fetchMode: "past" | "upcoming") => {
       return { previousEvents, event }
     },
     onError: (err, _vars, context) => {
+      logger.error("Deleting event failed.", {
+        event: _vars.event.id,
+        eventDate: format(_vars.event.startingDateTime, "dd.MM.yyyy HH:mm")
+      })
       if (context?.previousEvents) {
         queryClient.setQueryData(["events", fetchMode], context.previousEvents);
       }
     },
 
     onSettled: (data, error, variables, context) => {
+      logger.info("Deleting event successful.", {
+        event: variables.event.id,
+        eventDate: format(variables.event.startingDateTime, "dd.MM.yyyy HH:mm")
+      })
       queryClient.invalidateQueries({ queryKey: ["events", fetchMode] });
     },
   })
@@ -478,11 +486,21 @@ export const useInsertEventMutation = (fetchMode: "past" | "upcoming") => {
       return { previousEvents, event }
     },
     onError: (err, _vars, context) => {
+      logger.error("Inserting event failed.", {
+        event: _vars.event.id,
+        eventDate: format(_vars.event.startingDateTime, "dd.MM.yyyy HH:mm"),
+        error: err.message
+      })
       if (context?.previousEvents) {
         queryClient.setQueryData(["events", fetchMode], context.previousEvents);
       }
     },
     onSettled: (data, error, variables, context) => {
+      logger.info("Inserting event successful.", {
+        event: variables.event.id,
+        eventDate: format(variables.event.startingDateTime, "dd.MM.yyyy HH:mm"),
+        origin: "ui"
+      });
       queryClient.invalidateQueries({ queryKey: ["events", fetchMode] });
     },
   })
@@ -521,11 +539,21 @@ export const useUpdateSingleMutation = (fetchMode: "past" | "upcoming") => {
       return { previousEvents }
     },
     onError: (err, _vars, context) => {
+      logger.error("Updating recurring event failed.", {
+        changes: _vars.eventChanges,
+        key: _vars.id,
+        error: err.message
+      })
       if (context?.previousEvents) {
         queryClient.setQueryData(["events", fetchMode], context.previousEvents);
       }
     },
     onSettled: (data, error, variables, context) => {
+      logger.info("Updating single event successful.", {
+        changes: variables.eventChanges,
+        id: variables.id,
+        origin: "ui"
+      });
       queryClient.invalidateQueries({ queryKey: ["events", fetchMode] });
     },
   })
@@ -561,11 +589,23 @@ export const useUpdateRecurrenceMutation = (fetchMode: "past" | "upcoming") => {
       return { previousEvents }
     },
     onError: (err, _vars, context) => {
+      logger.error("Updating recurring event failed.", {
+        changes: _vars.eventChanges,
+        key: _vars.key,
+        eventDate: format(_vars.startingDateTime, "dd.MM.yyyy HH:mm"),
+        error: err.message
+      })
       if (context?.previousEvents) {
         queryClient.setQueryData(["events", fetchMode], context.previousEvents);
       }
     },
     onSettled: (data, error, variables, context) => {
+      logger.info("Updating recurring event successful.", {
+        changes: variables.eventChanges,
+        key: variables.key,
+        eventDate: format(variables.startingDateTime, "dd.MM.yyyy HH:mm"),
+        origin: "ui"
+      });
       queryClient.invalidateQueries({ queryKey: ["events", fetchMode] });
     },
   })

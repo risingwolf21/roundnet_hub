@@ -13,16 +13,6 @@ import { createHandlerBoundToURL, precacheAndRoute } from 'workbox-precaching';
 import { registerRoute } from 'workbox-routing';
 import { CacheFirst } from 'workbox-strategies';
 import { CacheableResponsePlugin } from 'workbox-cacheable-response';
-import ReactGA from 'react-ga4';
-
-
-// Scripts for firebase and firebase messaging
-// eslint-disable-next-line no-undef
-importScripts("https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js");
-// eslint-disable-next-line no-undef
-importScripts(
-  "https://www.gstatic.com/firebasejs/9.6.1/firebase-messaging-compat.js"
-);
 
 clientsClaim();
 
