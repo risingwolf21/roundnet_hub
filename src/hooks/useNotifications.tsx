@@ -42,11 +42,14 @@ export async function ensureWebPushSubscription(vapidPublicKey?: string) {
     console.error("Notifications recieving is not possible");
     return null;
   }
-  const perm = await Notification.requestPermission();
-  if (perm !== 'granted') {
-    console.warn("Notification permission not granted")
-    return null;
+  if (Notification.permission !== 'granted') {
+    const perm = await Notification.requestPermission();
+    if (perm !== 'granted') {
+      console.warn("Notification permission not granted")
+      return null;
+    }
   }
+
 
   const reg = await navigator.serviceWorker.ready;
   let sub = await reg.pushManager.getSubscription();

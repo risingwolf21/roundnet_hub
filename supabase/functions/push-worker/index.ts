@@ -240,36 +240,12 @@ async function processJob(job: OutboxRow) {
             payload,
             opts,
           );
-          const status = res.statusCode ?? 0;
-          const headers = (res.headers ?? {}) as Record<string, string>;
-
-          const { data, error } = await supabase.from('push_delivery_attempts').insert({
-            target_id: t.outbox_id,
-            endpoint: sub.endpoint,
-            status,
-            ok: status >= 200 && status < 300,
-            error: typeof (res as any).body === 'string' ? (res as any).body : null,
-            headers,
-            payload: payloadObj
-          }).select();
-          console.log(data, error);
 
           // res has statusCode; web-push resolves on 201/204 typically
           await markTargetSent(job.id, sub.id, (res as any)?.statusCode ?? 201);
           results.push({ subId: sub.id, ok: true, status: (res as any)?.statusCode ?? 201 });
         } catch (e: any) {
           const status = e?.statusCode ?? 0;
-          const body = typeof e?.body === 'string' ? e.body : (e?.message ?? 'unknown');
-          const { data, error } = await supabase.from('push_delivery_attempts').insert({
-            target_id: t.outbox_id,
-            endpoint: sub.endpoint,
-            status,
-            ok: false,
-            error: body,
-            headers: e?.headers ?? null,
-            payload: payloadObj
-          }).select();
-          console.log(data, error);
 
           allSent = false;
           const msg = e?.message ?? "send error";
