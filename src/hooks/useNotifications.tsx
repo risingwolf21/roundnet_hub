@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { supabase } from 'src/components/services/supabase/supabaseClient';
+import * as Sentry from '@sentry/browser';
 
 function getOrCreateDeviceId(): string {
   let id = localStorage.getItem("device_id");
@@ -68,9 +69,13 @@ export async function ensureWebPushSubscription(vapidPublicKey?: string) {
   };
   const { data, error } = await supabase.rpc("upsert_webpush_subscription", body);
   if (error) {
-    console.error(error);
+    Sentry.logger.error('Subscription to Notifications failed', {
+      error,
+      body
+    });
     throw error;
+  } else {
+    Sentry.logger.info('Subscribed to Notifications');
+    return sub;
   }
-  console.log("Subscribed to Notifications");
-  return sub;
 }

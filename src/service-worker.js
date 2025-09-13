@@ -73,20 +73,44 @@ self.addEventListener('message', (event) => {
 self.addEventListener('install', () => self.skipWaiting());
 self.addEventListener('activate', (e) => e.waitUntil(self.clients.claim()));
 
+function safeParseJSON(data) {
+  try { return data ? data.json() : {}; } catch { return {}; }
+}
+
+function extractPayload(raw) {
+  const p = raw || {};
+  // Akzeptiere sowohl top-level (url) als auch data.url
+  const title = p.title || 'Benachrichtigung';
+  const body = p.body || '';
+  const data = p.data || {};
+  const url = p.url ?? data.url ?? '/';
+  const tag = p.tag;
+  const renotify = !!p.renotify;
+
+  return { title, body, url, tag, renotify };
+}
+
 self.addEventListener('push', (event) => {
-  try {
-    const payload = event.data ? event.data.json() : {};
-    const title = payload.title || 'Benachrichtigung';
-    const options = {
-      body: payload.body || '',
-      data: payload.data || {},
-      icon: self.location.origin + "/" + process.env.REACT_APP_WEBSITE_PATH + "/android-chrome-192x192.png",
-      badge: self.location.origin + "/" + process.env.REACT_APP_WEBSITE_PATH + "/badge.png",
-    };
-    event.waitUntil(self.registration.showNotification(title, options));
-  } catch (e) {
-    event.waitUntil(self.registration.showNotification('Nachricht', { body: event.data?.text() }));
-  }
+  const raw = safeParseJSON(event.data);
+  const { title, body, url, tag, renotify } = extractPayload(raw);
+
+  const icon = self.location.origin + "/" + process.env.REACT_APP_WEBSITE_PATH + "/android-chrome-192x192.png";
+  const badge = self.location.origin + "/" + process.env.REACT_APP_WEBSITE_PATH + "/badge.png";
+
+  const options = {
+    body,
+    data: { url },
+    icon,
+    badge,
+    tag,
+    renotify,
+  };
+
+  self.clients.matchAll({ type: 'window', includeUncontrolled: true })
+    .then(clients => clients.forEach(c => c.postMessage({ type: 'push_received', payload: { title, body, url }, sw: SW_VERSION })))
+    .catch(() => { });
+
+  event.waitUntil(self.registration.showNotification(title, options));
 });
 
 self.addEventListener('notificationclick', (event) => {
@@ -94,9 +118,34 @@ self.addEventListener('notificationclick', (event) => {
   const url = event.notification.data?.url || '/';
   event.waitUntil(self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((list) => {
     for (const client of list) {
+      client.postMessage({ type: 'notification_click', url, sw: SW_VERSION })
       if ('focus' in client) { client.navigate(url); return client.focus(); }
     }
     if (self.clients.openWindow) return self.clients.openWindow(url);
   }));
 });
 
+self.addEventListener('pushsubscriptionchange', (event) => {
+  event.waitUntil((async () => {
+    try {
+      const vapid = process.env.REACT_APP_VAPID_PUBLIC_KEY
+      const reg = await self.registration;
+      const sub = await reg.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: vapid
+      });
+
+      const params = {
+        p_endpoint: sub.endpoint,
+        p_p256dh: arrayBufferToBase64(sub.getKey('p256dh')),
+        p_auth: arrayBufferToBase64(sub.getKey('auth')),
+      };
+
+      const clients = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
+      clients.forEach(c => c.postMessage({ type: 'push_resubscribe_needed', params, sw: self.SW_VERSION }));
+    } catch (e) {
+      const clients = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
+      clients.forEach(c => c.postMessage({ type: 'push_resubscribe_failed', error: String(e), sw: self.SW_VERSION }));
+    }
+  })());
+});

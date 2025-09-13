@@ -12,10 +12,12 @@ import { SupabaseUserRepository } from '../../repository/UserRepository';
 import { UserWithGroups } from '../../types/supabaseTypes';
 import { ApplicationContext } from './ApplicationContext';
 import ReactGA from 'react-ga4';
+import { useSwSentryMessaging } from 'src/hooks/useSwSentryMessaging';
 
 
 export const AuthGate = () => {
   const deviceId = useDeviceId();
+  useSwSentryMessaging(deviceId);
 
   const [version, setVersion] = React.useState("");
 
