@@ -93,6 +93,11 @@ self.addEventListener('push', (event) => {
       icon: self.location.origin + "/" + process.env.REACT_APP_WEBSITE_PATH + "/android-chrome-192x192.png",
       badge: self.location.origin + "/" + process.env.REACT_APP_WEBSITE_PATH + "/badge.png",
     };
+    if (navigator.setAppBadge) {
+      self.registration.getNotifications().then(result => {
+        navigator.setAppBadge((result?.length ?? 0) + 1);
+      })
+    }
     event.waitUntil(self.registration.showNotification(title, options));
   } catch (e) {
     event.waitUntil(self.registration.showNotification('Nachricht', { body: event.data?.text() }));
