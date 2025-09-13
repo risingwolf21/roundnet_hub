@@ -1,8 +1,8 @@
 // useSwSentryMessaging.ts
 import { useEffect } from 'react';
-import * as Sentry from '@sentry/browser';
 import useDeviceId from './useDeviceId';
 import { supabase } from 'src/components/services/supabase/supabaseClient';
+import { logger, captureMessage } from '@sentry/react';
 
 type SwMessage =
   | { type: 'push_received'; payload?: any; sw?: string }
@@ -53,19 +53,19 @@ export function useSwSentryMessaging(deviceId: string) {
       if (!m || typeof m !== 'object') return;
 
       if (m.type === 'push_recieved') {
-        Sentry.logger.info('Push Notification recieved', {
+        logger.info('Push Notification recieved', {
           category: 'push',
           message: 'push_received',
           data: { payload: m.payload, sw: m.sw },
         });
       } else if (m.type === 'notification_click') {
-        Sentry.logger.info('Push Notification clicked', {
+        logger.info('Push Notification clicked', {
           category: 'push',
           message: 'notification_click',
           data: { url: m.url, sw: m.sw },
         });
       } else if (m.type === 'push_resubscribe_failed') {
-        Sentry.logger.info('Push Notification resubscribe failed', {
+        logger.info('Push Notification resubscribe failed', {
           category: 'push',
           message: 'notification_click',
           data: { error: m.error, sw: m.sw },
@@ -85,12 +85,12 @@ export function useSwSentryMessaging(deviceId: string) {
           };
           const { error } = await supabase.rpc('upsert_webpush_subscription', fullParams);
           if (error) {
-            Sentry.logger.error('RPC register failed (resubscribe)', {
+            logger.error('RPC register failed (resubscribe)', {
               error,
               fullParams
             });
           } else {
-            Sentry.logger.info('RPC register succesful (resubscribe)')
+            logger.info('RPC register succesful (resubscribe)')
           }
         } catch (err) {
           console.error('resubscribe handle failed', err);

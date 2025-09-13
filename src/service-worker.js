@@ -94,6 +94,7 @@ function extractPayload(raw) {
 
 self.addEventListener('push', (event) => {
   const raw = safeParseJSON(event.data);
+  console.log('[SW] push event raw=', raw);
   const { title, body, url, tag, renotify } = extractPayload(raw);
 
   const icon = self.location.origin + "/" + process.env.REACT_APP_WEBSITE_PATH + "/android-chrome-192x192.png";
@@ -116,6 +117,7 @@ self.addEventListener('push', (event) => {
 });
 
 self.addEventListener('notificationclick', (event) => {
+  console.log("[SW] notificationclick",  event.notification?.data);
   event.notification.close();
   const url = event.notification.data?.url || '/';
   event.waitUntil(self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((list) => {

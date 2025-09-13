@@ -11,7 +11,6 @@ import { BRANDING } from 'src/utils';
 import { SupabaseUserRepository } from '../../repository/UserRepository';
 import { UserWithGroups } from '../../types/supabaseTypes';
 import { ApplicationContext } from './ApplicationContext';
-import ReactGA from 'react-ga4';
 import { useSwSentryMessaging } from 'src/hooks/useSwSentryMessaging';
 
 
@@ -82,7 +81,6 @@ export const AuthGate = () => {
       setProviderToken(session.user.user_metadata["provider_token"])
       setUser({ email: session.user.email, id: session.user.id, username: user.displayName });
       setCurrentUser(userData);
-      ReactGA.set({ userId: user.userId, displayName: user.displayName });
     } finally {
       setLoading(false);
     }

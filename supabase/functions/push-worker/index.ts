@@ -225,8 +225,9 @@ async function processJob(job: OutboxRow) {
     await Promise.all(
       chunk.map(async (t) => {
         const sub = t.web_push_subscriptions!;
+        const payloadObj = { title: job.title, body: job.body, data: job.data ?? {} }
+        const payload = JSON.stringify(payloadObj);
         try {
-          const payload = JSON.stringify({ title: job.title, body: job.body, data: job.data ?? {} });
           const opts: any = {
             TTL: job.ttl_seconds ?? undefined,
             urgency: job.urgency,
@@ -239,12 +240,38 @@ async function processJob(job: OutboxRow) {
             payload,
             opts,
           );
+          const status = res.statusCode ?? 0;
+          const headers = (res.headers ?? {}) as Record<string, string>;
+
+          const { data, error } = await supabase.from('push_delivery_attempts').insert({
+            target_id: t.outbox_id,
+            endpoint: sub.endpoint,
+            status,
+            ok: status >= 200 && status < 300,
+            error: typeof (res as any).body === 'string' ? (res as any).body : null,
+            headers,
+            payload: payloadObj
+          }).select();
+          console.log(data, error);
+
           // res has statusCode; web-push resolves on 201/204 typically
           await markTargetSent(job.id, sub.id, (res as any)?.statusCode ?? 201);
           results.push({ subId: sub.id, ok: true, status: (res as any)?.statusCode ?? 201 });
         } catch (e: any) {
+          const status = e?.statusCode ?? 0;
+          const body = typeof e?.body === 'string' ? e.body : (e?.message ?? 'unknown');
+          const { data, error } = await supabase.from('push_delivery_attempts').insert({
+            target_id: t.outbox_id,
+            endpoint: sub.endpoint,
+            status,
+            ok: false,
+            error: body,
+            headers: e?.headers ?? null,
+            payload: payloadObj
+          }).select();
+          console.log(data, error);
+
           allSent = false;
-          const status = e?.statusCode ?? null;
           const msg = e?.message ?? "send error";
           // 404/410: endpoint gone → revoke + skip
           if (status === 404 || status === 410) {
