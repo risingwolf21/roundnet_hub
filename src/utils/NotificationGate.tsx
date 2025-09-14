@@ -51,7 +51,7 @@ async function registerOnServer(sub: PushSubscription) {
   const user_agent = navigator.userAgent;
 
   // Prefer RPC if available
-  const { error } = await supabase.rpc('register_web_push_subscription', {
+  const { error } = await supabase.rpc('upsert_web_push_subscription', {
     p_endpoint: endpoint,
     p_p256dh: p256dh,
     p_auth: auth,
@@ -59,14 +59,6 @@ async function registerOnServer(sub: PushSubscription) {
     p_device_id: device_id,
     p_user_agent: user_agent,
   });
-
-  if (error) {
-    // fallback: best-effort insert (may be blocked by RLS; okay for diagnostics)
-    await supabase
-      .from('web_push_subscriptions')
-      .upsert({ endpoint, p256dh, auth, platform, device_id, user_agent, revoked_at: null, last_seen: new Date().toISOString() }, { onConflict: 'endpoint' })
-      .catch(() => {});
-  }
 }
 
 async function revokeOnServer(endpoint?: string | null) {
