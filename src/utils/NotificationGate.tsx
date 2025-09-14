@@ -62,14 +62,7 @@ async function registerOnServer(sub: PushSubscription) {
 }
 
 async function revokeOnServer(endpoint?: string | null) {
-  try {
-    if (!endpoint) return;
-    const { error } = await supabase.rpc('revoke_web_push_subscription', { p_endpoint: endpoint, p_device_id: getDeviceId() }).catch(() => ({ error: null } as any));
-    if (error) throw error;
-  } catch {
-    // fallback: soft-revoke
-    await supabase.from('web_push_subscriptions').update({ revoked_at: new Date().toISOString() }).eq('endpoint', endpoint).catch(() => {});
-  }
+  await supabase.from('web_push_subscriptions').update({ revoked_at: new Date().toISOString() }).eq('endpoint', endpoint).catch(() => {});
 }
 
 async function ensurePermissionFromGesture(): Promise<NotificationPermission> {
