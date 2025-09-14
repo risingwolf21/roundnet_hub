@@ -63,7 +63,7 @@ async function registerOnServer(sub: PushSubscription) {
 
 async function revokeOnServer(endpoint?: string | null) {
   if(endpoint)
-    await supabase.from('web_push_subscriptions').update({ revoked_at: new Date().toISOString() }).eq('endpoint', endpoint).catch(() => {});
+    await supabase.from('web_push_subscriptions').update({ revoked_at: new Date().toISOString() }).eq('endpoint', endpoint);
 }
 
 async function ensurePermissionFromGesture(): Promise<NotificationPermission> {
