@@ -17,6 +17,7 @@ import { ItemCard } from "./ItemCard"
 import { LoadingDrinkCard } from "./LoadingDrinkCard"
 import { LoadingEventCard } from "./LoadingEventCard"
 import { LoadingItemCard } from "./LoadingItemCard"
+import NotificationGate from "src/utils/NotificationGate";
 
 const HomePage = () => {
 
@@ -38,6 +39,8 @@ const HomePage = () => {
             refetchEvents();
             refetchItems();
         }}>
+
+            <NotificationGate allowDecline />
             {
                 user.groups.length === 0 && <Stack spacing={2} direction={"column"} sx={{ height: 300, m: 2, alignItems: "center", justifyContent: "center" }}>
                     <Typography sx={{ textAlign: "center" }}>Es sieht so aus als ob du keine Events siehst</Typography>
