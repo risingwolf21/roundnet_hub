@@ -15,7 +15,7 @@ export function useNotifications(user: User) {
   useEffect(() => {
     const run = async () => {
       const reg = await navigator.serviceWorker.ready;
-      const old = await reg.pushManager.getSubscription();
+      const old = await reg?.pushManager?.getSubscription();
       if (old) await old.unsubscribe();
       await ensureWebPushSubscription(process.env.REACT_APP_VAPID_PUBLIC_KEY)
     }

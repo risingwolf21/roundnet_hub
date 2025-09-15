@@ -16,7 +16,7 @@ import { useSwSentryMessaging } from 'src/hooks/useSwSentryMessaging';
 
 export const AuthGate = () => {
   const deviceId = useDeviceId();
-  useSwSentryMessaging(deviceId);
+
 
   const [version, setVersion] = React.useState("");
 
