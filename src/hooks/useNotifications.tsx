@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { supabase } from 'src/components/services/supabase/supabaseClient';
-import * as Sentry from '@sentry/browser';
+import * as Sentry from '@sentry/react';
 
 function getOrCreateDeviceId(): string {
   let id = localStorage.getItem("device_id");
@@ -45,7 +45,7 @@ export async function ensureWebPushSubscription(vapidPublicKey?: string) {
   if (Notification.permission !== 'granted') {
     const perm = await Notification.requestPermission();
     if (perm !== 'granted') {
-      console.warn("Notification permission not granted")
+      console.warn("Notification permission not granted");
       return null;
     }
   }
