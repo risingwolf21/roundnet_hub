@@ -1,14 +1,12 @@
-import {
-  AccountCircle,
-  CalendarMonth,
-  Cancel,
-  CheckCircle,
-  ContentCopy,
-  Downloading,
-  Logout,
-  NotificationsRounded,
-  Password
-} from '@mui/icons-material';
+import AccountCircle from '@mui/icons-material/AccountCircle';
+import CalendarMonth from '@mui/icons-material/CalendarMonth';
+import Cancel from '@mui/icons-material/Cancel';
+import CheckCircle from '@mui/icons-material/CheckCircle';
+import ContentCopy from '@mui/icons-material/ContentCopy';
+import Downloading from '@mui/icons-material/Downloading';
+import Logout from '@mui/icons-material/Logout';
+import NotificationsRounded from '@mui/icons-material/NotificationsRounded';
+import Password from '@mui/icons-material/Password';
 import {
   Card,
   CardActionArea,

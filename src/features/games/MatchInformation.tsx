@@ -1,8 +1,8 @@
 import { AccountBox } from '@mui/icons-material';
-import { Alert, Avatar, Box, Card, CardContent, Chip, CircularProgress, Divider, ListItem, ListItemAvatar, ListItemText, Paper, Skeleton, Stack, Typography } from '@mui/material';
-import { useDialogs, useNotifications } from '@toolpad/core';
+import { Alert, Avatar, Box, Card, CardContent, Chip, Divider, ListItem, ListItemAvatar, ListItemText, Skeleton, Stack, Typography } from '@mui/material';
+import { useNotifications } from '@toolpad/core';
 import React, { useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router';
+import { useParams } from 'react-router';
 import Layout from 'src/components/layout/Layout';
 import { LoadingIndicator } from 'src/components/LoadingIndicator';
 import { useMatch } from 'src/tanstack/games';
@@ -163,8 +163,6 @@ const TeamCard = ({ title, expected, eff_team, cat_team, sets, p1_eff, p2_eff, p
 const MatchInformation = () => {
   const { matchId } = useParams();
   const notifications = useNotifications();
-  const navigate = useNavigate();
-  const dialogs = useDialogs();
 
   const { data: match = null, error, isLoading, refetch } = useMatch(matchId);
 

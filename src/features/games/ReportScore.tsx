@@ -5,7 +5,6 @@ import {
   Button,
   Checkbox,
   CircularProgress,
-  Divider,
   Fab,
   Grid2 as Grid,
   IconButton,
@@ -14,7 +13,7 @@ import {
   ListItemAvatar,
   ListItemText,
   TextField,
-  Typography,
+  Typography
 } from '@mui/material';
 import { captureException } from '@sentry/react';
 import { useNotifications } from '@toolpad/core/useNotifications';

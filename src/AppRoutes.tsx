@@ -8,10 +8,11 @@ import { useApplication } from "./features/auth/ApplicationContext";
 import { FeatureNotAvailable, PermissionDeniedPage } from "./features/auth/ErrorPage";
 import { GrantsProvider } from "./features/auth/GrantsContext";
 import GrantsManager from "./features/grants/GrantsManager";
-import { GrantsManager as G1 } from "./features/grants/Teset";
 import { lazyWithRetry } from "./hooks/lazyWithRetry";
 import { Has } from "./hooks/useGrants";
 import { useNotifications } from "./hooks/useNotifications";
+import UserScreenProvider from './features/profile/User';
+import HomePage from './features/homepage/HomePage';
 
 const HistoryScreenProvider = lazyWithRetry(() => import('./features/drinks/HistoryScreenProvider'));
 const ItemHolderScreen = lazyWithRetry(() => import('./features/keys/ItemHolderScreen'));
@@ -30,9 +31,7 @@ const ChallengeInfoScreen = lazyWithRetry(() => import('./features/challenges/Ch
 const RecurringEvents = lazyWithRetry(() => import('./features/events/RecurringEvents'));
 const GameList = lazyWithRetry(() => import('./features/games/GameList'));
 const ReportScore = lazyWithRetry(() => import('./features/games/ReportScore'));
-const HomePage = lazyWithRetry(() => import('./features/homepage/HomePage'));
 const SupabaseClient = lazyWithRetry(() => import('./features/supabase/SupabaseClient'));
-const UserScreenProvider = lazyWithRetry(() => import('./features/profile/User'));
 const LoginScreen = lazyWithRetry(() => import('./features/auth/LoginScreen'));
 const SignUpScreen = lazyWithRetry(() => import('./features/auth/SignUpScreen'));
 const ForgotPasswordScreen = lazyWithRetry(() => import('./features/auth/ForgotPasswordScreen'));
@@ -141,12 +140,7 @@ const router = sentryCreateBrowserRouter([
           },
           {
             path: "/user",
-            children: [
-              {
-                index: true,
-                element: <UserScreenProvider />
-              }
-            ]
+            element: <UserScreenProvider />
           },
           {
             path: "/drinks",
@@ -284,11 +278,9 @@ const router = sentryCreateBrowserRouter([
               },
               {
                 path: "grants",
-                element: <GrantsManager />
-              },
-              {
-                path: "grants1",
-                element: <G1 />
+                element: <Has perm={"grants.manage"}>
+                  <GrantsManager />
+                </Has>
               },
             ]
           },

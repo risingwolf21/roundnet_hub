@@ -7,6 +7,7 @@ import { PullToRefresh } from "src/components/pull-to-refresh/PullToRefresh";
 import { useNotificationTags, useNotificationTopics, useUpdateNotificationPreferences } from "src/tanstack/notifications";
 import { UserWithGroups } from "src/types/supabaseTypes";
 import { BRANDING } from "src/utils";
+import NotificationGate from "./NotificationGate";
 
 const NotificationSwitch = ({
   primary,
@@ -83,6 +84,7 @@ export const NotificationsDialog = ({ payload, open, onClose }: DialogProps<Noti
         </Typography>
       </Toolbar>
     </AppBar>
+    <NotificationGate />
     <PullToRefresh onRefresh={() => refetch()}>
       {
         !payload.notificationSupported && <CenterContainer>

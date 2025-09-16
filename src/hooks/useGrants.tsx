@@ -1,8 +1,6 @@
-import { isArray } from "lodash";
 import React from "react";
-import { supabase } from "src/components/services/supabase/supabaseClient";
 import { useGrants } from "src/features/auth/GrantsContext";
-import { Permission, Feature } from "src/generated/supabase-types";
+import { Feature, Permission } from "src/generated/supabase-types";
 
 type HasProps = {
   perm?: Permission | Permission[];

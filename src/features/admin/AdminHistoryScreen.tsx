@@ -1,11 +1,11 @@
 import { LinearProgress, List } from '@mui/material';
 import { useInfiniteQuery } from '@tanstack/react-query';
-import moment from 'moment/moment';
 import React, { useEffect, useRef } from 'react';
 import { AdminDrinksRepository } from 'src/repository/AdminDrinksRepository';
 import Layout from '../../components/layout/Layout';
 import { groupBy } from '../../utils';
 import { AdminHistoryItem } from './components/AdminHistoryItem';
+import { format } from 'date-fns';
 
 const AdminHistoryScreen = () => {
 
@@ -39,7 +39,7 @@ const AdminHistoryScreen = () => {
       <List>
         {
           Array.from(
-            groupBy(history?.pages.flatMap(x => x.data) ?? [], (x: FullHistory) => moment(new Date(x.created_at ?? '')).format('DD MMMM yyyy'))
+            groupBy(history?.pages.flatMap(x => x.data) ?? [], (x: FullHistory) => format(x.created_at ?? '' , 'DD MMMM yyyy'))
           ).map(([key, value]) => (
             <AdminHistoryItem key={key} items={value} header={key} />
           ))

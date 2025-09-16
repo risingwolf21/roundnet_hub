@@ -1,12 +1,12 @@
 import { Box, LinearProgress, List, Typography } from '@mui/material';
 import { captureException } from '@sentry/react';
 import { useNotifications } from '@toolpad/core/useNotifications';
-import moment from 'moment/moment';
 import React, { useEffect, useRef, useState } from 'react';
 import { useInfiniteUserHistory, useUpdateHistoryEntryMutation } from 'src/tanstack/drinks';
 import { groupBy } from '../../utils';
 import { HistoryItem } from './components/HistoryItem';
 import EditHistoryEntryDialog from './dialog/EditHistoryEntryDialog';
+import { format } from 'date-fns';
 
 export const HistoryScreen = ({
   user,
@@ -70,7 +70,7 @@ export const HistoryScreen = ({
       {Array.from(
         groupBy(
           (history?.pages.flatMap(x => x.data) ?? []).filter((x) => x.drink),
-          (x: FullHistory) => moment(new Date(x.created_at ?? '')).format('DD MMMM yyyy')
+          (x: FullHistory) => format(x.created_at ?? '', 'DD MMMM yyyy')
         )
       ).map(([key, value]) => (
         <HistoryItem key={key} items={value} header={key} onClick={handleEntryOnClick} />

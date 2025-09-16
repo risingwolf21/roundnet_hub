@@ -50,6 +50,10 @@ registerRoute(
   createHandlerBoundToURL(process.env.PUBLIC_URL + '/index.html')
 );
 
+registerRoute(({request}) => request.mode === 'navigate',
+  new NetworkFirst({ cacheName: 'html' })
+);
+
 registerRoute(({ request }) => request.destination === "image",
   new CacheFirst({
     cacheName: "images",

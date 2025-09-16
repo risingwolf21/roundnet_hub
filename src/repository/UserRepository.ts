@@ -1,7 +1,5 @@
 import { PostgrestError, PostgrestSingleResponse } from '@supabase/supabase-js';
-import { Tables } from 'src/types/supabase-generated.types';
 import { GroupWithUserRole } from 'src/types/supabaseTypes';
-import { formatDateToDatabase } from 'src/utils';
 import { supabase } from '../components/services/supabase/supabaseClient';
 
 export const fetchGroups = () => supabase.schema("public").from('group_user_mapping').select('*, event_group(*)');

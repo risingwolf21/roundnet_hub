@@ -1,6 +1,5 @@
 import { PostgrestSingleResponse } from '@supabase/supabase-js';
-import { add, Duration, startOfDay } from 'date-fns';
-import moment from 'moment/moment';
+import { add, Duration, format, startOfDay } from 'date-fns';
 import { EventTable } from 'types/supabase';
 import { supabase } from '../components/services/supabase/supabaseClient';
 import { Tables, TablesInsert, TablesUpdate } from '../types/supabase-generated.types';
@@ -129,7 +128,7 @@ export const SupabaseEventRepository = {
     await supabase
       .from('events')
       .update({
-        recurrenceEnd: moment().format('yyyy-MM-DD HH:mm:ssZ'),
+        recurrenceEnd: format(Date.now(), 'yyyy-MM-DD HH:mm:ssZ'),
       })
       .eq('id', eventId);
   },

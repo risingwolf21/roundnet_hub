@@ -2,7 +2,6 @@ import { Add, Warning } from '@mui/icons-material';
 import { Box, Button, Chip, Fab, List, ListItem, ListSubheader, Typography } from '@mui/material';
 import { useDialogs, useNotifications } from '@toolpad/core';
 import { t } from 'i18next';
-import moment from 'moment';
 import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router';
 import Layout from 'src/components/layout/Layout';
@@ -11,7 +10,7 @@ import { useMatches } from 'src/tanstack/games';
 import { groupBy } from 'src/utils';
 import { ReportSetsDialog } from './dialogs/ReportSetsDialog';
 import { UserMatchesView } from 'src/types/supabaseTypes';
-import { isAfter } from 'date-fns';
+import { format, isAfter } from 'date-fns';
 
 const GameList = () => {
   const notifications = useNotifications();
@@ -34,7 +33,7 @@ const GameList = () => {
           [theme.breakpoints.up('xl')]: { pb: 0 },
         })}>
           {Array.from(
-            groupBy(matches, (x: UserMatchesView) => moment(new Date(x.created_at ?? '')).format('DD MMMM yyyy'))
+            groupBy(matches, (x: UserMatchesView) => format(x.created_at ?? '', 'DD MMMM yyyy'))
           )
             .sort(([key1, v1], [key2, v2]) => isAfter(key1, key2) ? -1 : 1)
             .map(([key, value]) => (

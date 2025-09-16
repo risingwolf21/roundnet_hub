@@ -62,7 +62,7 @@ async function registerOnServer(sub: PushSubscription) {
 }
 
 async function revokeOnServer(endpoint?: string | null) {
-  if(endpoint)
+  if (endpoint)
     await supabase.from('web_push_subscriptions').update({ revoked_at: new Date().toISOString() }).eq('endpoint', endpoint);
 }
 
@@ -75,16 +75,12 @@ async function ensurePermissionFromGesture(): Promise<NotificationPermission> {
 // --- Component -------------------------------------------------------------
 
 type Props = {
-  title?: string;
-  description?: string;
   allowDecline?: boolean;
   onReady?: (sub: PushSubscription) => void; // called when successfully registered
   vapidPublicKey?: string; // override env
 };
 
 export default function NotificationGate({
-  title = 'Benachrichtigungen',
-  description = 'Aktiviere Push-Benachrichtigungen, um über Änderungen sofort informiert zu werden.',
   allowDecline = true,
   onReady,
   vapidPublicKey,
@@ -93,7 +89,6 @@ export default function NotificationGate({
   const [loading, setLoading] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
   const [registered, setRegistered] = React.useState(false);
-  const [lastMsg, setLastMsg] = React.useState<{ title?: string; url?: string; at?: string } | null>(null);
   const [isPWA, setIsPWA] = React.useState<boolean>(false);
   const [scope, setScope] = React.useState<string | null>(null);
 
@@ -112,14 +107,6 @@ export default function NotificationGate({
         setError(e?.message ?? String(e));
       }
     })();
-
-    const onMsg = (e: MessageEvent) => {
-      if (e?.data?.type === 'push_received') {
-        setLastMsg({ title: e.data.payload?.title, url: e.data.payload?.url, at: new Date().toISOString() });
-      }
-    };
-    navigator.serviceWorker?.addEventListener?.('message', onMsg as any);
-    return () => navigator.serviceWorker?.removeEventListener?.('message', onMsg as any);
   }, []);
 
   const handleEnable = async () => {
@@ -135,7 +122,7 @@ export default function NotificationGate({
 
       // Always create a fresh subscription (prevents stale endpoints)
       const old = await reg.pushManager.getSubscription();
-      await old?.unsubscribe().catch(() => {});
+      await old?.unsubscribe().catch(() => { });
 
       const sub = await reg.pushManager.subscribe({
         userVisibleOnly: true,
@@ -160,7 +147,7 @@ export default function NotificationGate({
       const reg = await getSW();
       const old = await reg.pushManager.getSubscription();
       await revokeOnServer(old?.endpoint);
-      await old?.unsubscribe().catch(() => {});
+      await old?.unsubscribe().catch(() => { });
 
       const sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: urlBase64ToUint8Array(VAPID) });
       await registerOnServer(sub);
@@ -192,15 +179,14 @@ export default function NotificationGate({
   const installingHint = !isPWA ? 'Für iOS Web Push die App über „Zum Home-Bildschirm“ installieren.' : undefined;
 
   return (
-    <Card sx={{ borderRadius: 3, boxShadow: 6 }}>
-      <CardHeader title={title} subheader={description} />
+    <Card sx={{ borderRadius: 3, boxShadow: 6, m: 2 }}>
       <CardContent>
         <Stack spacing={2}>
           <Stack direction="row" spacing={1} alignItems="center" flexWrap="wrap">
-            <Chip label={`Permission: ${permission}`} color={permission === 'granted' ? 'success' : permission === 'default' ? 'info' : 'warning'} variant="outlined" />
+            <Chip label={`Berechtigung: ${permission}`} color={permission === 'granted' ? 'success' : permission === 'default' ? 'info' : 'warning'} variant="outlined" />
             <Chip label={`Registriert: ${registered ? 'Ja' : 'Nein'}`} color={registered ? 'success' : 'default'} variant="outlined" />
             {scope && <Chip label={`SW: ${scope}`} variant="outlined" />}
-            <Chip label={`Device: ${getDeviceId().slice(0,8)}`} variant="outlined" />
+            <Chip label={`Gerät: ${getDeviceId().slice(0, 8)}`} variant="outlined" />
           </Stack>
 
           {installingHint && <Alert severity="info">{installingHint}</Alert>}
@@ -235,22 +221,9 @@ export default function NotificationGate({
             )}
           </Stack>
 
-          <Divider />
-
-          <Stack spacing={1}>
-            <Typography variant="subtitle2">Letzte empfangene Nachricht</Typography>
-            {lastMsg ? (
-              <Typography variant="body2">
-                {lastMsg.title || '—'} {lastMsg.url ? `(${lastMsg.url})` : ''} – {new Date(lastMsg.at!).toLocaleString()}
-              </Typography>
-            ) : (
-              <Typography variant="body2" color="text.secondary">Noch keine Nachricht empfangen.</Typography>
-            )}
-          </Stack>
-
           {permission === 'denied' && (
             <Alert severity="warning">
-              Mitteilungen sind für diese Web‑App deaktiviert. Öffne die iOS Einstellungen → Mitteilungen → <b>App</b> und erlaube Mitteilungen. 
+              Mitteilungen sind für diese Web‑App deaktiviert. Öffne die iOS Einstellungen → Mitteilungen → <b>App</b> und erlaube Mitteilungen.
               Falls die App dort nicht erscheint: App vom Homescreen entfernen, Seite in Safari öffnen, „Zum Home‑Bildschirm“ hinzufügen und hier erneut aktivieren.
             </Alert>
           )}
