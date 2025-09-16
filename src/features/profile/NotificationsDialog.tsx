@@ -1,5 +1,5 @@
 import { Close, NotificationsOff } from "@mui/icons-material";
-import { AppBar, Box, CircularProgress, Dialog, Grid2, IconButton, ListItem, ListItemText, Switch, Toolbar, Typography } from "@mui/material";
+import { AppBar, Box, CircularProgress, Container, Dialog, Divider, Grid2, IconButton, ListItem, ListItemText, Switch, Toolbar, Typography } from "@mui/material";
 import { DialogProps } from "@toolpad/core/useDialogs";
 import { useNotifications } from "@toolpad/core/useNotifications";
 import React, { PropsWithChildren } from "react";
@@ -17,7 +17,7 @@ const NotificationSwitch = ({
   loading
 }: {
   primary: string;
-  secondary: string | null;
+  secondary?: string;
   active: boolean;
   loading: boolean;
   update: (newValue: boolean) => void;
@@ -50,18 +50,11 @@ type NotificationsDialogPayload = {
 }
 
 
-const CenterContainer = ({ children }: PropsWithChildren) => <Grid2
-  container
-  spacing={0}
-  direction="column"
-  alignItems="center"
-  justifyContent="center"
-  style={{ minHeight: '100%' }}
->{children}</Grid2>
+const CenterContainer = ({ children }: PropsWithChildren) => <Container
+  style={{ minHeight: '100%', display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}
+>{children}</Container>
 
 export const NotificationsDialog = ({ payload, open, onClose }: DialogProps<NotificationsDialogPayload, string | null>) => {
-
-  const notifications = useNotifications();
 
   const iOS = typeof navigator !== 'undefined' && /iPad|iPhone|iPod/.test(navigator.userAgent);
   const android = typeof navigator !== 'undefined' && /android/i.test(navigator.userAgent);
@@ -84,8 +77,15 @@ export const NotificationsDialog = ({ payload, open, onClose }: DialogProps<Noti
         </Typography>
       </Toolbar>
     </AppBar>
-    <NotificationGate />
-    <PullToRefresh onRefresh={() => refetch()}>
+    <Container sx={{ p: 0 }}>
+      <Typography sx={{ fontSize: 16, fontWeight: 'bold', mt: 2  }} color="text.secondary" gutterBottom>
+        Einstellungen
+      </Typography>
+      <NotificationGate />
+      <Divider />
+      <Typography sx={{ fontSize: 16, fontWeight: 'bold', mt: 2 }} color="text.secondary" gutterBottom>
+        Abonnierte Benachrichtigungen
+      </Typography>
       {
         !payload.notificationSupported && <CenterContainer>
           <NotificationsOff color="error" fontSize="large" />
@@ -105,65 +105,14 @@ export const NotificationsDialog = ({ payload, open, onClose }: DialogProps<Noti
         </CenterContainer>
       }
       {
-        (payload.notificationSupported && Notification.permission !== 'granted') && (
-          <CenterContainer>
-            <NotificationsOff color="warning" fontSize="large" />
-            <Typography
-              sx={{
-                mt: 2,
-                wordWrap: 'normal',
-                textAlign: 'center',
-                fontWeight: 'bold',
-                fontSize: '16pt',
-                color: 'primary',
-                padding: 2,
-              }}
-            >
-              Benachrichtigungen sind derzeit für dieses Gerät deaktiviert. Gehe in die Einstellungen und aktiviere Sie.
-            </Typography>
-            {
-              (iOS || android) && <Typography sx={{
-                mt: 2,
-                wordWrap: 'normal',
-                textAlign: 'center',
-                fontWeight: 'bold',
-                fontSize: '14pt',
-                color: 'primary',
-                padding: 2,
-              }}>Aktivierung der Benachrichtigungen:</Typography>
-            }
-            {
-              iOS && <Typography sx={{
-                mt: 2,
-                wordWrap: 'normal',
-                textAlign: 'center',
-                fontWeight: 'bold',
-                fontSize: '12pt',
-                color: 'primary',
-                padding: 2,
-              }}>{`Einstellungen > Apps > ${BRANDING.title} Web App > Benachrichtigungen`}</Typography>
-            }
-            {
-              android && <Typography sx={{
-                mt: 2,
-                wordWrap: 'normal',
-                textAlign: 'center',
-                fontWeight: 'bold',
-                fontSize: '12pt',
-                color: 'primary',
-                padding: 2,
-              }}>{`Drücken und halten des App Icons auf dem Home Bildschirm > Einstellungen > Benachrichtigungen`}</Typography>
-            }
-          </CenterContainer>
-        )
-      }
-      {
         payload.notificationSupported && Notification.permission === 'granted' && (
           <Box sx={{ pt: 2 }}>
             {
               topics.map(x => <NotificationSwitch
-                primary={x.topic}
-                secondary={x.description}
+                primary={x.description ?? x.topic}
+                {
+                ...(x.description && { secondary: x.topic })
+                }
                 active={notificationTags.find(y => y.topic === x.topic)?.enabled ?? false}
                 update={(newValue) => {
                   updateNotificationPreferences.mutate({
@@ -178,6 +127,6 @@ export const NotificationsDialog = ({ payload, open, onClose }: DialogProps<Noti
           </Box>
         )
       }
-    </PullToRefresh>
+    </Container>
   </Dialog>
 }

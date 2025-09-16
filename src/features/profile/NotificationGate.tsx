@@ -1,6 +1,8 @@
+import { Info, Warning } from '@mui/icons-material';
+import Cancel from '@mui/icons-material/Cancel';
+import CheckCircle from '@mui/icons-material/CheckCircle';
+import { Alert, Button, Chip, CircularProgress, Container, ListItem, ListItemText, Stack } from '@mui/material';
 import React from 'react';
-import { Card, CardContent, CardHeader } from '@mui/material';
-import { Button, Stack, Typography, Alert, Chip, Divider, CircularProgress, Tooltip } from '@mui/material';
 import { supabase } from 'src/components/services/supabase/supabaseClient';
 
 // --- Helpers ---------------------------------------------------------------
@@ -90,7 +92,6 @@ export default function NotificationGate({
   const [error, setError] = React.useState<string | null>(null);
   const [registered, setRegistered] = React.useState(false);
   const [isPWA, setIsPWA] = React.useState<boolean>(false);
-  const [scope, setScope] = React.useState<string | null>(null);
 
   const VAPID = (vapidPublicKey || (process.env.REACT_APP_VAPID_PUBLIC_KEY as string))?.trim();
 
@@ -100,7 +101,6 @@ export default function NotificationGate({
     (async () => {
       try {
         const reg = await getSW();
-        setScope(reg.scope ?? null);
         const sub = await getCurrentSubscription(reg);
         setRegistered(!!sub);
       } catch (e: any) {
@@ -117,7 +117,7 @@ export default function NotificationGate({
       setPermission(perm);
       if (perm !== 'granted') return; // user denied or default
 
-      if (!VAPID) throw new Error('VAPID Public Key fehlt (REACT_APP_VAPID_PUBLIC_KEY)');
+      if (!VAPID) throw new Error('Vapid Public Key fehlt.');
       const reg = await getSW();
 
       // Always create a fresh subscription (prevents stale endpoints)
@@ -176,59 +176,58 @@ export default function NotificationGate({
     }
   };
 
-  const installingHint = !isPWA ? 'Für iOS Web Push die App über „Zum Home-Bildschirm“ installieren.' : undefined;
+  const iOS = typeof navigator !== 'undefined' && /iPad|iPhone|iPod/.test(navigator.userAgent);
+  const installingHint = !isPWA ? iOS ? 'Für iOS Web Push die App über Teilen > „Zum Home-Bildschirm hinzufügen“ installieren.' : 'Für Android Web Push die App über "Zum Home-Bildschirm hinzufügen" installieren' : undefined;
 
-  return (
-    <Card sx={{ borderRadius: 3, boxShadow: 6, m: 2 }}>
-      <CardContent>
-        <Stack spacing={2}>
-          <Stack direction="row" spacing={1} alignItems="center" flexWrap="wrap">
-            <Chip label={`Berechtigung: ${permission}`} color={permission === 'granted' ? 'success' : permission === 'default' ? 'info' : 'warning'} variant="outlined" />
-            <Chip label={`Registriert: ${registered ? 'Ja' : 'Nein'}`} color={registered ? 'success' : 'default'} variant="outlined" />
-            {scope && <Chip label={`SW: ${scope}`} variant="outlined" />}
-            <Chip label={`Gerät: ${getDeviceId().slice(0, 8)}`} variant="outlined" />
-          </Stack>
+  return (<Container>
+    <Stack direction={"column"} spacing={1} sx={{ p: 2 }}>
+      <ListItem disablePadding secondaryAction={permission === 'granted' ? <CheckCircle color='success' /> : permission === 'default' ? <Info color='info' /> : <Warning color='warning' />}>
+        <ListItemText primary={`Berechtigung`} />
+      </ListItem>
+      <ListItem disablePadding secondaryAction={registered ? <CheckCircle color='success' /> : <Cancel color='warning' />}>
+        <ListItemText primary={`Registriert`} />
+      </ListItem>
+      <ListItem disablePadding secondaryAction={<Chip label={`${getDeviceId().slice(0, 8)}`} variant="outlined" />}>
+        <ListItemText primary={`Gerät`} />
+      </ListItem>
 
-          {installingHint && <Alert severity="info">{installingHint}</Alert>}
+      {installingHint && <Alert severity="info">{installingHint}</Alert>}
 
-          {error && <Alert severity="error">{error}</Alert>}
+      {error && <Alert severity="error">{error}</Alert>}
 
-          {/* Actions */}
-          <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1}>
-            {permission !== 'granted' && (
-              <Button variant="contained" onClick={handleEnable} disabled={loading}>
-                {loading ? <CircularProgress size={20} /> : 'Benachrichtigungen aktivieren'}
-              </Button>
-            )}
+      {/* Actions */}
+      {permission !== 'granted' && (
+        <Button variant="contained" onClick={handleEnable} disabled={loading}>
+          {loading ? <CircularProgress size={20} /> : 'Benachrichtigungen aktivieren'}
+        </Button>
+      )}
 
-            {permission === 'granted' && !registered && (
-              <Button variant="contained" onClick={handleEnable} disabled={loading}>
-                {loading ? <CircularProgress size={20} /> : 'Gerät registrieren'}
-              </Button>
-            )}
+      {permission === 'granted' && !registered && (
+        <Button sx={{ m: 2 }} variant="contained" onClick={handleEnable} disabled={loading}>
+          {loading ? <CircularProgress size={20} /> : 'Gerät registrieren'}
+        </Button>
+      )}
 
-            {permission === 'granted' && registered && (
-              <>
-                <Button variant="outlined" onClick={handleRebind} disabled={loading}>
-                  {loading ? <CircularProgress size={20} /> : 'Neu koppeln'}
-                </Button>
-                {allowDecline && (
-                  <Button color="error" variant="text" onClick={handleDisable} disabled={loading}>
-                    {loading ? <CircularProgress size={20} /> : 'Keine Benachrichtigungen'}
-                  </Button>
-                )}
-              </>
-            )}
-          </Stack>
-
-          {permission === 'denied' && (
-            <Alert severity="warning">
-              Mitteilungen sind für diese Web‑App deaktiviert. Öffne die iOS Einstellungen → Mitteilungen → <b>App</b> und erlaube Mitteilungen.
-              Falls die App dort nicht erscheint: App vom Homescreen entfernen, Seite in Safari öffnen, „Zum Home‑Bildschirm“ hinzufügen und hier erneut aktivieren.
-            </Alert>
+      {permission === 'granted' && registered && (
+        <>
+          <Button variant="outlined" onClick={handleRebind} disabled={loading}>
+            {loading ? <CircularProgress size={20} /> : 'Neu koppeln'}
+          </Button>
+          {allowDecline && (
+            <Button color="error" variant="text" onClick={handleDisable} disabled={loading}>
+              {loading ? <CircularProgress size={20} /> : 'Keine Benachrichtigungen'}
+            </Button>
           )}
-        </Stack>
-      </CardContent>
-    </Card>
+        </>
+      )}
+
+      {permission === 'denied' && (
+        <Alert severity="warning">
+          Mitteilungen sind für diese Web‑App deaktiviert. Öffne die iOS Einstellungen → Mitteilungen → <b>App</b> und erlaube Mitteilungen.
+          Falls die App dort nicht erscheint: App vom Homescreen entfernen, Seite in Safari öffnen, „Zum Home‑Bildschirm“ hinzufügen und hier erneut aktivieren.
+        </Alert>
+      )}
+    </Stack>
+  </Container>
   );
 }
