@@ -10,7 +10,6 @@ import { GrantsProvider } from "./features/auth/GrantsContext";
 import GrantsManager from "./features/grants/GrantsManager";
 import { lazyWithRetry } from "./hooks/lazyWithRetry";
 import { Has } from "./hooks/useGrants";
-import { useNotifications } from "./hooks/useNotifications";
 import UserScreenProvider from './features/profile/User';
 import HomePage from './features/homepage/HomePage';
 
@@ -72,7 +71,6 @@ const PrivateRoute = () => {
 
 const NotificationProvider = () => {
   const { user } = useApplication();
-  useNotifications(user!);
 
   return <Outlet />
 }

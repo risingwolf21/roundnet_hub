@@ -1,12 +1,9 @@
 import { Close, NotificationsOff } from "@mui/icons-material";
-import { AppBar, Box, CircularProgress, Container, Dialog, Divider, Grid2, IconButton, ListItem, ListItemText, Switch, Toolbar, Typography } from "@mui/material";
+import { AppBar, Box, CircularProgress, Container, Dialog, Divider, IconButton, ListItem, ListItemText, Switch, Toolbar, Typography } from "@mui/material";
 import { DialogProps } from "@toolpad/core/useDialogs";
-import { useNotifications } from "@toolpad/core/useNotifications";
 import React, { PropsWithChildren } from "react";
-import { PullToRefresh } from "src/components/pull-to-refresh/PullToRefresh";
 import { useNotificationTags, useNotificationTopics, useUpdateNotificationPreferences } from "src/tanstack/notifications";
 import { UserWithGroups } from "src/types/supabaseTypes";
-import { BRANDING } from "src/utils";
 import NotificationGate from "./NotificationGate";
 
 const NotificationSwitch = ({
@@ -56,10 +53,7 @@ const CenterContainer = ({ children }: PropsWithChildren) => <Container
 
 export const NotificationsDialog = ({ payload, open, onClose }: DialogProps<NotificationsDialogPayload, string | null>) => {
 
-  const iOS = typeof navigator !== 'undefined' && /iPad|iPhone|iPod/.test(navigator.userAgent);
-  const android = typeof navigator !== 'undefined' && /android/i.test(navigator.userAgent);
-
-  const { data: notificationTags = [], isLoading, refetch } = useNotificationTags(payload.user);
+  const { data: notificationTags = [], isLoading } = useNotificationTags(payload.user);
   const { data: topics = [] } = useNotificationTopics();
   const updateNotificationPreferences = useUpdateNotificationPreferences(payload.user);
 

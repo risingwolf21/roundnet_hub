@@ -53,7 +53,7 @@ async function registerOnServer(sub: PushSubscription) {
   const user_agent = navigator.userAgent;
 
   // Prefer RPC if available
-  const { error } = await supabase.rpc('upsert_webpush_subscription', {
+  await supabase.rpc('upsert_webpush_subscription', {
     p_endpoint: endpoint,
     p_p256dh: p256dh,
     p_auth: auth,

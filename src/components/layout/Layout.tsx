@@ -4,7 +4,6 @@ import React, { ReactNode, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { BRANDING } from 'src/utils';
 import { useApplication } from '../../features/auth/ApplicationContext';
-import { FirebaseMessaging } from '../../features/notifications/FirebaseMessaging';
 import { Drawer, drawerWidth } from '../Drawer';
 
 type Props = {

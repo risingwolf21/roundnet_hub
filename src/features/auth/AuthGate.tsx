@@ -11,7 +11,7 @@ import { BRANDING } from 'src/utils';
 import { SupabaseUserRepository } from '../../repository/UserRepository';
 import { UserWithGroups } from '../../types/supabaseTypes';
 import { ApplicationContext } from './ApplicationContext';
-import { useSwSentryMessaging } from 'src/hooks/useSwSentryMessaging';
+import WebPushKeeper from '../push/WebPushKeeper';
 
 
 export const AuthGate = () => {
@@ -137,7 +137,9 @@ export const AuthGate = () => {
   return (
     <ApplicationContext.Provider value={{ user: currentUser, signOut: signOut, deviceId, provider_token, version }}>
       <React.Suspense fallback={<LoadingScreen />}>
-        <AppRoutes />
+        <WebPushKeeper session={session} vapidPublicKey={process.env.REACT_APP_VAPID_PUBLIC_KEY!}>
+          <AppRoutes />
+        </WebPushKeeper>
       </React.Suspense>
     </ApplicationContext.Provider>
   );

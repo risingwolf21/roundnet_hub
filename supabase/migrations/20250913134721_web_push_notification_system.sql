@@ -1474,6 +1474,140 @@ END;
 $function$
 ;
 
+create or replace function public.webpush_mark_hard_bounces(
+  p_lookback_days int default 30
+) returns integer
+language sql
+security definer
+set search_path = ''
+as $$
+  with bad_targets as (
+    select distinct t.subscription_id
+    from public.notification_outbox_targets t
+    join public.push_delivery_attempts a on a.target_id = t.id
+    where a.created_at >= now() - (p_lookback_days || ' days')::interval
+      and a.status in (404, 410)   -- GONE/Not Found → Endpoint ungültig
+  ),
+  upd as (
+    update public.web_push_subscriptions s
+       set revoked_at = coalesce(s.revoked_at, now())
+     where s.id in (select subscription_id from bad_targets)
+    returning 1
+  )
+  select count(*) from upd;
+$$;
+
+create or replace function public.webpush_compact_duplicates()
+returns jsonb
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare
+  v_deleted int := 0;
+begin
+  -- Wähle je (user,device_id) die neueste aktive, lösche ältere aktive Duplikate
+  with ranked as (
+    select id, "user", device_id, revoked_at,
+           row_number() over (partition by "user", coalesce(device_id,'') order by coalesce(last_seen, 'epoch'::timestamptz) desc, id desc) as rn
+    from public.web_push_subscriptions
+    where revoked_at is null
+  ),
+  killed as (
+    delete from public.web_push_subscriptions s
+     using ranked r
+     where s.id = r.id and r.rn > 1
+    returning s.id
+  )
+  select count(*) into v_deleted from killed;
+
+  return jsonb_build_object('deleted_active_dupes', v_deleted);
+end;
+$$;
+
+create or replace function public.webpush_prune_subscriptions(
+  p_revoked_ttl_days int default 7,
+  p_stale_days int default 90
+) returns jsonb
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare
+  v_sub_del int := 0;
+  v_tgt_del int := 0;
+  v_att_del int := 0;
+begin
+  -- Kandidaten bestimmen
+  with candidates as (
+    select s.id
+    from public.web_push_subscriptions s
+    where
+      (s.revoked_at is not null and s.revoked_at < now() - (p_revoked_ttl_days || ' days')::interval)
+      or (
+        coalesce(s.last_seen, 'epoch'::timestamptz) < now() - (p_stale_days || ' days')::interval
+        and not exists (
+          select 1
+          from public.notification_outbox_targets t
+          where t.subscription_id = s.id
+            and t.last_status between 200 and 299
+            and t.claimed_at >= now() - interval '60 days'
+        )
+      )
+  ),
+  -- Alle Targets & Attempts dazu
+  tgt as (
+    select t.id
+    from public.notification_outbox_targets t
+    join candidates c on c.id = t.subscription_id
+  ),
+  del_targets as (
+    delete from public.notification_outbox_targets t
+    using candidates c
+    where t.subscription_id = c.id
+    returning t.id
+  ),
+  del_subs as (
+    delete from public.web_push_subscriptions s
+    using candidates c
+    where s.id = c.id
+    returning s.id
+  )
+  select
+    (select count(*) from del_targets),
+    (select count(*) from del_subs)
+  into v_tgt_del, v_sub_del;
+
+  return jsonb_build_object(
+    'targets_deleted',  v_tgt_del,
+    'subs_deleted',     v_sub_del
+  );
+end;
+$$;
+
+create or replace function public.webpush_sweep()
+returns jsonb
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare
+  v_marked int;
+  v_compact jsonb;
+  v_prune   jsonb;
+begin
+  select public.webpush_mark_hard_bounces() into v_marked;
+  select public.webpush_compact_duplicates() into v_compact;
+  select public.webpush_prune_subscriptions() into v_prune;
+
+  return jsonb_build_object(
+    'marked_hard_bounces', v_marked,
+    'compact', v_compact,
+    'prune',   v_prune
+  );
+end;
+$$;
+
 grant delete on table "public"."notification_outbox" to "anon";
 
 grant insert on table "public"."notification_outbox" to "anon";
@@ -1995,6 +2129,20 @@ select cron.schedule(
   'push_worker_quick',
   '* * * * *',  -- alle 15 Sekunden (falls auf deiner Instanz erlaubt)
   $$select public.run_push_worker_if_needed();$$
+);
+
+-- 1x pro Stunde harte Bounces markieren
+select cron.schedule(
+  'webpush_mark_bounces',
+  '0 * * * *',
+  $$select public.webpush_mark_hard_bounces();$$
+);
+
+-- täglich um 03:15 aufräumen
+select cron.schedule(
+  'webpush_prune_daily',
+  '15 3 * * *',
+  $$select public.webpush_sweep();$$
 );
 
 revoke delete on table "public"."notification_retention" from "authenticated";

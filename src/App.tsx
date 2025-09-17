@@ -13,7 +13,6 @@ import { AuthGate } from './features/auth/AuthGate';
 import { munich_roundnet_theme } from './themes/munich_roundnet_theme';
 import { roundnet_karlsruhe_theme } from './themes/roundnet_karlsruhe_theme';
 import { BRANDING } from './utils';
-import { useSwSentryMessaging } from './hooks/useSwSentryMessaging';
 
 const themeMap = {
   "munich-roundnet": munich_roundnet_theme,
