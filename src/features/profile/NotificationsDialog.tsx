@@ -78,12 +78,12 @@ export const NotificationsDialog = ({ payload, open, onClose }: DialogProps<Noti
       </Toolbar>
     </AppBar>
     <Container sx={{ p: 0 }}>
-      <Typography sx={{ fontSize: 16, fontWeight: 'bold', mt: 2  }} color="text.secondary" gutterBottom>
+      <Typography sx={{ fontSize: 16, fontWeight: 'bold', m: 2  }} color="text.secondary">
         Einstellungen
       </Typography>
       <NotificationGate />
       <Divider />
-      <Typography sx={{ fontSize: 16, fontWeight: 'bold', mt: 2 }} color="text.secondary" gutterBottom>
+      <Typography sx={{ fontSize: 16, fontWeight: 'bold', m: 2 }} color="text.secondary">
         Abonnierte Benachrichtigungen
       </Typography>
       {

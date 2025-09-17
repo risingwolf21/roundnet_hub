@@ -77,69 +77,71 @@ const Content = ({ payload, onClose }: DialogProps<ContactInformationPayload, st
         </Button>
       </Toolbar>
     </AppBar>
-    <List sx={{ pl: 2, pr: 2, pb: 10 }}>
-      <Container
-        key={'avatar'}
-        sx={{
-          display: 'flex',
-          justifyContent: 'center',
-          m: 2,
-          p: 0,
-          width: 'auto',
-        }}>
-        <Avatar sx={{ borderRadius: 2, width: '150px', height: '150px' }}>
-          {payload.user.avatarUrl ? (
-            <img src={payload.user.avatarUrl} alt="logo" width={'150px'} height={'150px'} />
-          ) : (
-            <AddPhotoAlternateOutlined sx={{ fontSize: '50px' }} />
-          )}
-        </Avatar>
-      </Container>
+    <Container>
+      <List sx={{ pl: 2, pr: 2, pb: 10 }}>
+        <Container
+          key={'avatar'}
+          sx={{
+            display: 'flex',
+            justifyContent: 'center',
+            m: 2,
+            p: 0,
+            width: 'auto',
+          }}>
+          <Avatar sx={{ borderRadius: 2, width: '150px', height: '150px' }}>
+            {payload.user.avatarUrl ? (
+              <img src={payload.user.avatarUrl} alt="logo" width={'150px'} height={'150px'} />
+            ) : (
+              <AddPhotoAlternateOutlined sx={{ fontSize: '50px' }} />
+            )}
+          </Avatar>
+        </Container>
 
-      <ListItem key={'firstName'} sx={{ '&.MuiListItem-root': { p: 0 } }}>
-        <ListItemAvatar>
-          <PersonOutlineOutlined sx={{ color: 'rgba(0,0,0,0.54)' }} />
-        </ListItemAvatar>
-        <TextField
-          fullWidth
-          size="small"
-          variant="outlined"
-          value={displayName}
-          onChange={(e) => setDisplayName(e.target.value)}
-          label="Anzeigename"
-          margin="normal"
-        />
-      </ListItem>
-      <ListItem key={'name'} sx={{ '&.MuiListItem-root': { p: 0 } }}>
-        <ListItemAvatar />
-        <TextField
-          fullWidth
-          size="small"
-          variant="outlined"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          label="Vorname"
-          margin="normal"
-        />
-      </ListItem>
-      <ListItem key={'surname'} sx={{ '&.MuiListItem-root': { p: 0 } }}>
-        <ListItemAvatar />
-        <TextField
-          fullWidth
-          size="small"
-          variant="outlined"
-          value={surname}
-          onChange={(e) => setSurname(e.target.value)}
-          label="Nachame"
-          margin="normal"
-        />
-      </ListItem>
-      <ListItem key={'email'} sx={{ '&.MuiListItem-root': { p: 0 } }}>
-        <ListItemAvatar>
-          <EmailOutlined sx={{ color: 'rgba(0,0,0,0.54)' }} />
-        </ListItemAvatar>
-        <ListItemText primary={payload.user.email} secondary={'Email'} />
-      </ListItem>
-    </List>
+        <ListItem key={'firstName'} sx={{ '&.MuiListItem-root': { p: 0 } }}>
+          <ListItemAvatar>
+            <PersonOutlineOutlined sx={{ color: 'rgba(0,0,0,0.54)' }} />
+          </ListItemAvatar>
+          <TextField
+            fullWidth
+            size="small"
+            variant="outlined"
+            value={displayName}
+            onChange={(e) => setDisplayName(e.target.value)}
+            label="Anzeigename"
+            margin="normal"
+          />
+        </ListItem>
+        <ListItem key={'name'} sx={{ '&.MuiListItem-root': { p: 0 } }}>
+          <ListItemAvatar />
+          <TextField
+            fullWidth
+            size="small"
+            variant="outlined"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            label="Vorname"
+            margin="normal"
+          />
+        </ListItem>
+        <ListItem key={'surname'} sx={{ '&.MuiListItem-root': { p: 0 } }}>
+          <ListItemAvatar />
+          <TextField
+            fullWidth
+            size="small"
+            variant="outlined"
+            value={surname}
+            onChange={(e) => setSurname(e.target.value)}
+            label="Nachame"
+            margin="normal"
+          />
+        </ListItem>
+        <ListItem key={'email'} sx={{ '&.MuiListItem-root': { p: 0 } }}>
+          <ListItemAvatar>
+            <EmailOutlined sx={{ color: 'rgba(0,0,0,0.54)' }} />
+          </ListItemAvatar>
+          <ListItemText primary={payload.user.email} secondary={'Email'} />
+        </ListItem>
+      </List>
+    </Container>
   </>
 }

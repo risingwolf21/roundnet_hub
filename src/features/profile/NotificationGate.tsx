@@ -179,8 +179,8 @@ export default function NotificationGate({
   const iOS = typeof navigator !== 'undefined' && /iPad|iPhone|iPod/.test(navigator.userAgent);
   const installingHint = !isPWA ? iOS ? 'Für iOS Web Push die App über Teilen > „Zum Home-Bildschirm hinzufügen“ installieren.' : 'Für Android Web Push die App über "Zum Home-Bildschirm hinzufügen" installieren' : undefined;
 
-  return (<Container>
-    <Stack direction={"column"} spacing={1} sx={{ p: 2 }}>
+  return (<Container sx={{ mb: 2 }}>
+    <Stack direction={"column"} spacing={1}>
       <ListItem disablePadding secondaryAction={permission === 'granted' ? <CheckCircle color='success' /> : permission === 'default' ? <Info color='info' /> : <Warning color='warning' />}>
         <ListItemText primary={`Berechtigung`} />
       </ListItem>

@@ -1,28 +1,74 @@
-import { ArrowBack, MyLocation, Place } from '@mui/icons-material';
+import { ArrowBack, Place, Save } from '@mui/icons-material';
+import SearchIcon from '@mui/icons-material/Search';
 import {
+  alpha,
+  AppBar,
   Avatar,
   Box,
   Dialog,
+  Fab,
   IconButton,
-  InputAdornment,
+  InputBase,
   LinearProgress,
   List,
   ListItem,
   ListItemAvatar,
+  ListItemButton,
   ListItemText,
-  TextField,
+  Popper,
+  styled,
   Toolbar,
-  Typography,
+  Typography
 } from '@mui/material';
 import { useNotifications } from '@toolpad/core/useNotifications';
 import L, { LatLng } from 'leaflet';
 import { OpenStreetMapProvider } from 'leaflet-geosearch';
 import { SearchResult } from 'leaflet-geosearch/dist/providers/provider';
-import { toNumber } from 'lodash';
 import React, { useCallback, useEffect, useState } from 'react';
-import { useSearchedPlaces } from 'src/hooks/useSearchedPlaces';
+import { MapContainer, Marker, TileLayer, useMap, useMapEvents } from 'react-leaflet';
 import { SlideUpTransition } from '../../../utils';
-import { PlaceType, SearchPlacesDialogProps } from '../types';
+import { SearchPlacesDialogProps } from '../types';
+import { result } from 'lodash';
+
+const Search = styled('div')(({ theme }) => ({
+  position: 'relative',
+  borderRadius: theme.shape.borderRadius,
+  backgroundColor: alpha(theme.palette.common.white, 0.15),
+  '&:hover': {
+    backgroundColor: alpha(theme.palette.common.white, 0.25),
+  },
+  marginRight: theme.spacing(2),
+  marginLeft: 0,
+  width: '100%',
+  [theme.breakpoints.up('sm')]: {
+    marginLeft: theme.spacing(3),
+    width: 'auto',
+  },
+}));
+
+const SearchIconWrapper = styled('div')(({ theme }) => ({
+  padding: theme.spacing(0, 2),
+  height: '100%',
+  position: 'absolute',
+  pointerEvents: 'none',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+}));
+
+const StyledInputBase = styled(InputBase)(({ theme }) => ({
+  color: 'inherit',
+  '& .MuiInputBase-input': {
+    padding: theme.spacing(1, 1, 1, 0),
+    // vertical padding + font size from searchIcon
+    paddingLeft: `calc(1em + ${theme.spacing(4)})`,
+    transition: theme.transitions.create('width'),
+    width: '100%',
+    [theme.breakpoints.up('md')]: {
+      width: '20ch',
+    },
+  },
+}));
 
 const SearchPlacesDialog = ({ open, handleClose, placeSelected }: SearchPlacesDialogProps) => {
   const [value, setValue] = useState('');
@@ -30,8 +76,9 @@ const SearchPlacesDialog = ({ open, handleClose, placeSelected }: SearchPlacesDi
   const [loading, setLoading] = useState(false);
   const notifications = useNotifications();
   const [userLocation, setUserLocation] = useState<{ latitude: number; longitude: number } | null>(null);
+  const [selectedPlace, setSelectedPlace] = useState<SearchResult | null>(null);
 
-  const [searchedPlacesChache, setSearchedPlacesCache] = useSearchedPlaces();
+  const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
 
   const getUserLocation = useCallback(() => {
     if (navigator.geolocation) {
@@ -60,7 +107,7 @@ const SearchPlacesDialog = ({ open, handleClose, placeSelected }: SearchPlacesDi
     getUserLocation();
   }, [getUserLocation]);
 
-  const provider = new OpenStreetMapProvider({ params: { "addressdetails": 1 } });
+  const provider = new OpenStreetMapProvider({ params: { "addressdetails": 1, 'accept-language': 'de' } });
 
   const search = () => {
     setLoading(true);
@@ -68,143 +115,138 @@ const SearchPlacesDialog = ({ open, handleClose, placeSelected }: SearchPlacesDi
       .search({ query: value })
       .then(function (results) {
         setResults(results);
+        console.log(results)
       })
       .finally(() => setLoading(false));
   };
 
-  const keyPress = (e: any) => {
-    if (e.keyCode === 13) {
+  const keyPress = (e: React.KeyboardEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    if (e.key === 'Enter') {
       search();
+      setAnchorEl(e.currentTarget)
     }
   };
 
+  const setPlaceFromLatLon = (lat: number, lon: number) => {
+    setLoading(true);
+    fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lon}`)
+      .then(res => res.json())
+      .then(res => {
+        setSelectedPlace({
+          x: res.lon,
+          y: res.lat,
+          label: res.display_name,
+          raw: res,
+          bounds: null
+        });
+      })
+      .finally(() => setLoading(false))
+  }
+
+  function MyComponent() {
+    const map = useMapEvents({
+      click: (event) => {
+        if (loading)
+          return
+        map.locate()
+        setPlaceFromLatLon(event.latlng.lat, event.latlng.lng)
+        map.setView([event.latlng.lat, event.latlng.lng], map.getZoom())
+      }
+    })
+    return null
+  }
+
+  const SearchResults = () => {
+    const map = useMap();
+    if (!results || results?.length < 1)
+      return null;
+    return <Popper
+      sx={(theme) => ({ zIndex: 1400, background: "white", borderRadius: theme.shape.borderRadius })}
+      open={openPopOver}
+      anchorEl={anchorEl}
+      placement={'bottom-start'}>
+      <List>
+        {
+          results?.map(x => <ListItemButton onClick={(e) => {
+            setAnchorEl(null);
+            setPlaceFromLatLon(x.y, x.x)
+            map.setView([x.y, x.x], map.getZoom())
+          }}>
+            <ListItemAvatar sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', pr: 2 }}>
+              <Avatar sx={{ width: 30, height: 30, backgroundColor: 'rgba(189, 189, 189, 0.5)' }}>
+                <Place sx={{ width: 20, height: 20, color: 'rgba(0,0,0,0.8)' }} />
+              </Avatar>
+              {userLocation &&
+                x.y &&
+                x.x &&
+                getDistance(
+                  L.latLng(userLocation.latitude, userLocation.longitude),
+                  L.latLng(Number(x.y), Number(x.x))
+                )}
+            </ListItemAvatar>
+            <ListItemText primary={x.label} />
+          </ListItemButton>)
+        }
+      </List>
+    </Popper>
+  }
+
+  const openPopOver = Boolean(anchorEl);
 
   return (
     <Dialog fullScreen open={open} onClose={handleClose} TransitionComponent={SlideUpTransition}>
-      <Box>
-        <Toolbar sx={{ pt: 'env(safe-area-inset-top)' }}>
-          <TextField
-            fullWidth
-            slotProps={{
-              input: {
-                style: { paddingLeft: 0 },
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <IconButton onClick={handleClose}>
-                      <ArrowBack />
-                    </IconButton>
-                  </InputAdornment>
-                ),
-                endAdornment: (
-                  <InputAdornment position="end">
-                    <IconButton onClick={getUserLocation}>
-                      <MyLocation />
-                    </IconButton>
-                  </InputAdornment>
-                ),
-              },
-            }}
-            sx={{
-              pt: 1,
-              pb: 1,
-              pl: 0,
-              '& fieldset': { borderRadius: '30px' },
-              '& input': { pt: 1.5, pb: 1.5 },
-              '& div': { pl: 1 },
-            }}
-            placeholder="Search here"
-            value={value}
-            onKeyDown={keyPress}
-            onChange={(e) => setValue(e.target.value)}
-          />
-        </Toolbar>
-        {loading && <LinearProgress style={{ position: 'fixed', left: 0, top: 64, right: 0 }} />}
-        <List>
-          {results &&
-            results.map((result, index) => (
-              <ListItem
-                divider
-                key={index}
-                onClick={() => {
-                  const address = result.raw.address;
-                  const name = address
-                    ? `${result.raw.name}, ${address.road} ${address.house_number}, ${address.postcode} ${address.city}`
-                    : result.raw.display_name;
-                  const place = {
-                    name,
-                    lat: toNumber(result.raw.lat),
-                    lon: toNumber(result.raw.lon),
-                  } as PlaceType
-                  setSearchedPlacesCache([...(searchedPlacesChache ?? []), place])
-                  placeSelected(place)
-                }}
-              >
-                <ListItemAvatar sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', pr: 2 }}>
-                  <Avatar sx={{ width: 30, height: 30, backgroundColor: 'rgba(189, 189, 189, 0.5)' }}>
-                    <Place sx={{ width: 20, height: 20, color: 'rgba(0,0,0,0.8)' }} />
-                  </Avatar>
-                  {userLocation &&
-                    result.raw.lat &&
-                    result.raw.lon &&
-                    getDistance(
-                      L.latLng(userLocation.latitude, userLocation.longitude),
-                      L.latLng(Number(result.raw.lat), Number(result.raw.lon))
-                    )}
-                </ListItemAvatar>
-                <ListItemText
-                  primary={result.raw.name ?? result.raw.display_name}
-                  secondary={result.raw.display_name
-                    .split(',')
-                    .filter((y: any) => y.trim() !== result.raw.name)
-                    .join(', ')}
-                  slotProps={{
-                    primary: {
-                      whiteSpace: 'nowrap',
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
-                    },
-                    secondary: {
-                      whiteSpace: 'nowrap',
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
-                    },
-                  }}
-                />
-              </ListItem>
-            ))}
-          {
-            (!results || results.length === 0) && searchedPlacesChache?.map((result, index) => <ListItem
-              divider
-              key={index}
-              onClick={() => {
-                placeSelected(result)
-              }}
+      <Box sx={{ flexGrow: 1 }}>
+        <AppBar position="static">
+          <Toolbar>
+            <IconButton
+              size="large"
+              edge="start"
+              color="inherit"
+              aria-label="close dialog"
+              onClick={handleClose}
             >
-              <ListItemAvatar sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', pr: 2 }}>
-                <Avatar sx={{ width: 30, height: 30, backgroundColor: 'rgba(189, 189, 189, 0.5)' }}>
-                  <Place sx={{ width: 20, height: 20, color: 'rgba(0,0,0,0.8)' }} />
-                </Avatar>
-                {userLocation &&
-                  result.lat &&
-                  result.lon &&
-                  getDistance(
-                    L.latLng(userLocation.latitude, userLocation.longitude),
-                    L.latLng(Number(result.lat), Number(result.lon))
-                  )}
-              </ListItemAvatar>
-              <ListItemText
-                primary={result.name}
-                slotProps={{
-                  primary: {
-                    whiteSpace: 'nowrap',
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                  }
-                }}
-              />
-            </ListItem>)
-          }
-        </List>
+              <ArrowBack />
+            </IconButton>
+            <Search sx={{ flexGrow: 1 }}>
+              <SearchIconWrapper>
+                <SearchIcon />
+              </SearchIconWrapper>
+              <div>
+                <StyledInputBase
+                  sx={{ width: "100% !important" }}
+                  placeholder="Suche nach einem Ort"
+                  inputProps={{ 'aria-label': 'search' }}
+                  value={value}
+                  onKeyDown={(e) => keyPress(e)}
+                  onFocus={(e) => setAnchorEl(e.currentTarget)}
+                  onChange={(e) => setValue(e.target.value)}
+                />
+              </div>
+            </Search>
+
+          </Toolbar>
+        </AppBar>
+        {loading && <LinearProgress style={{ position: 'fixed', left: 0, top: 64, right: 0 }} />}
+        <Box>
+          <MapContainer style={{ width: '100%', height: 'calc(100svh - 64px)' }} center={userLocation ? [userLocation?.latitude, userLocation?.longitude] : undefined} zoom={16}>
+            <MyComponent />
+            <SearchResults />
+            {
+              selectedPlace && <Marker position={[selectedPlace.y, selectedPlace.x]} />
+            }
+
+            <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+          </MapContainer>
+        </Box>
+        {
+          selectedPlace && <Fab sx={{ position: "absolute", right: "16px", bottom: "16px" }} onClick={() => placeSelected({
+            name: selectedPlace.label,
+            lat: selectedPlace.y,
+            lon: selectedPlace.x
+          })}>
+            <Save></Save>
+          </Fab>
+        }
       </Box>
     </Dialog>
   );
