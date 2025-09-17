@@ -80,6 +80,7 @@ jobs:
             supabase_key_secret: PRODUCTION_ANON_KEY
             openweather_api_key: OPENWEATHER_API_KEY
             supabase_project_id: PROJECT_ID
+            paypal_me_link: PAYPAL_ME_LINK
 
           - name: 'Munich Roundnet'
             firebase_target: munich-roundnet-production
@@ -132,6 +133,7 @@ jobs:
           REACT_APP_MANIFEST_JSON: ${{ matrix.env.website_manifest }}
           REACT_APP_WEBSITE_NAME: ${{ matrix.env.name }}
           REACT_APP_OPENWEATHER_API_KEY: ${{secrets[matrix.env.openweather_api_key]}}
+          REACT_APP_PAYPAL_ME_LINK: ${{ vars[matrix.env.paypal_me_link] }}
 
       - uses: FirebaseExtended/action-hosting-deploy@v0
         with:
