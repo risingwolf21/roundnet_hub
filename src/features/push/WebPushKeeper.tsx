@@ -32,41 +32,24 @@ export default function WebPushKeeper({
   const deviceId = useDeviceId();
 
   useEffect(() => {
-    const onMsg = async (ev: MessageEvent) => {
-      const data = ev.data || {};
-      if (data.type === "push_resubscribe_needed") {
-        try {
-          const { p_endpoint, p_p256dh, p_auth } = data.params || {};
-          await upsertToDb(p_endpoint, p_p256dh, p_auth, "service-worker");
-        } catch (e: any) {
-        }
-      } else if (data.type === "push_resubscribe_failed") {
-        console.error(data);
-      }
-    };
-    navigator.serviceWorker?.addEventListener("message", onMsg);
-    return () => navigator.serviceWorker?.removeEventListener("message", onMsg);
-  }, []);
-
-  useEffect(() => {
     (async () => {
       try {
         if (!session?.user) {
-          console.error("Cannot recieve Notifications without a user present.");
+          console.error("webpush", "not_available_without_a_user");
           return;
         }
         if (!('serviceWorker' in navigator) || !('PushManager' in window) || !vapidPublicKey) {
-          console.error("Notifications recieving is not possible");
+          console.error("webpush", "not_available");
           return;
         }
         if (Notification.permission === 'default') {
           const perm = await Notification.requestPermission();
           if (perm !== 'granted') {
-            console.error("Notification permission not granted");
+            console.error("webpush", "notification_permission_denied");
             return;
           }
         } else if (Notification.permission === "denied") {
-          console.error("Notification permission not granted");
+          console.error("webpush", "notification_permission_denied");
           return;
         }
         const reg = await navigator.serviceWorker.ready;
@@ -84,14 +67,14 @@ export default function WebPushKeeper({
         if (!p256dh || !auth) {
           throw new Error("missing_keys");
         }
-        await upsertToDb(endpoint, p256dh, auth, "useEffect");
+        await upsertToDb(endpoint, p256dh, auth, `user: ${session.user.id}`, "origin: useEffect");
       } catch (e: any) {
         captureException(e);
       }
     })();
-  }, [session?.user?.id, vapidPublicKey]);
+  }, [session?.user]);
 
-  async function upsertToDb(p_endpoint: string, p_p256dh: string, p_auth: string, origin: string) {
+  async function upsertToDb(p_endpoint: string, p_p256dh: string, p_auth: string, ...params: string[]) {
     const { error } = await supabase.rpc("upsert_webpush_subscription", {
       p_endpoint,
       p_p256dh,
@@ -102,7 +85,7 @@ export default function WebPushKeeper({
         : /iPhone|iPad|iPod/i.test(navigator.userAgent) ? 'ios' : 'desktop',
     });
     if (error) throw error;
-    console.log("Successfully subscribed to Notifications", origin)
+    console.log("webpush", "subscribe_successful", params)
   }
 
   return children;
