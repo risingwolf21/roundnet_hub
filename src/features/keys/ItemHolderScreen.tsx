@@ -6,7 +6,7 @@ import { useNotifications } from '@toolpad/core/useNotifications';
 import React, { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useSearchParams } from 'react-router';
-import { useAllItems, useHandoverKeyMutation } from 'src/tanstack/items';
+import { useAllItems, useHandoverKeyMutation } from '@/tanstack/items';
 import Layout from '../../components/layout/Layout';
 import { LoadingIndicator } from '../../components/LoadingIndicator';
 import { useGrants } from '../auth/GrantsContext';
@@ -15,7 +15,7 @@ import { EditOrAddItemDialog } from './dialogs/EditOrAddItemDialog';
 import { ItemHistoryDialog } from './dialogs/ItemHistoryDialog';
 import { KeyHandOverDialog } from './dialogs/KeyHandOverDialog';
 import { SearchUserDialog } from './dialogs/SearchUserDialog';
-import { Has } from 'src/hooks/useGrants';
+import { Has } from '@/hooks/useGrants';
 
 const EMPTY_KEY: ItemUpdate = { name: '', color: '#000000', created_at: '', current_holder: null };
 
@@ -41,25 +41,29 @@ const ItemHolderScreen = () => {
     setSelectedKeyHolder(key);
   }, []);
 
-  const selectKeyToReceive = useCallback((key: FullItemHolder) => {
-    setSelectedKeyHolder(key);
-    setSelectedUser(user);
-  }, [user]);
+  const selectKeyToReceive = useCallback(
+    (key: FullItemHolder) => {
+      setSelectedKeyHolder(key);
+      setSelectedUser(user);
+    },
+    [user]
+  );
 
   useEffect(() => {
-    if (!hasPerm("items.update.holder"))
+    if (!hasPerm('items.update.holder')) return;
+    const type = searchParams.get('type');
+    const key = searchParams.get('key');
+    if (!key || !type) {
       return;
-    const type = searchParams.get("type");
-    const key = searchParams.get("key")
-    if (!key || !type) { return; }
+    }
     const keyId = +key;
-    const keyHolder = keyHolders.find(x => x.id === keyId);
+    const keyHolder = keyHolders.find((x) => x.id === keyId);
     if (!keyHolder) return;
 
-    if (type === "handover") {
+    if (type === 'handover') {
       selectKeyToHandOver(keyHolder);
     }
-    if (type === "take") {
+    if (type === 'take') {
       selectKeyToReceive(keyHolder);
     }
   }, [searchParams, keyHolders, user, selectKeyToReceive, selectKeyToHandOver, hasPerm]);
@@ -74,13 +78,16 @@ const ItemHolderScreen = () => {
       notifications.show(t('keyHandOverError', { error: '' }), { severity: 'error' });
       return;
     }
-    handoverKeyMutation.mutate({ keyHolder: selectedKeyHolder, user: selectedUser }, {
-      onSuccess: () => setSelectedUser(null),
-      onError: (error) => {
-        captureException(error);
-        notifications.show(t('keyHandOverError', { error: error.message }), { severity: 'error' });
+    handoverKeyMutation.mutate(
+      { keyHolder: selectedKeyHolder, user: selectedUser },
+      {
+        onSuccess: () => setSelectedUser(null),
+        onError: (error) => {
+          captureException(error);
+          notifications.show(t('keyHandOverError', { error: error.message }), { severity: 'error' });
+        },
       }
-    })
+    );
   };
 
   return (
@@ -103,19 +110,19 @@ const ItemHolderScreen = () => {
             setItemToEdit={setItemToEdit}
             setAddOrUpdateKeysOpen={setAddOrUpdateKeysOpen}
             openHistoryDialog={async () => {
-              await dialogs.open(ItemHistoryDialog, x)
+              await dialogs.open(ItemHistoryDialog, x);
             }}
-            {
-            ...(hasPerm("items.update.holder") ? {
-              selectKeyToHandOver,
-              selectKeyToReceive
-            } : {})
-            }
+            {...(hasPerm('items.update.holder')
+              ? {
+                  selectKeyToHandOver,
+                  selectKeyToReceive,
+                }
+              : {})}
           />
         ))}
       </List>
 
-      <Has perm={"items.manage"}>
+      <Has perm={'items.manage'}>
         <Box
           sx={{
             position: 'fixed',
@@ -165,7 +172,6 @@ const ItemHolderScreen = () => {
         }}
         itemToEdit={itemToEdit}
       />
-
     </Layout>
   );
 };

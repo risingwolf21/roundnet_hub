@@ -3,7 +3,7 @@ import LocalDrinkIcon from '@mui/icons-material/LocalDrink';
 import RemoveIcon from '@mui/icons-material/Remove';
 import { Avatar, Box, IconButton, ListItem, ListItemAvatar, ListItemText, Typography } from '@mui/material';
 import React from 'react';
-import { Has } from 'src/hooks/useGrants';
+import { Has } from '@/hooks/useGrants';
 
 type Props = {
   drink: Drink;
@@ -18,7 +18,7 @@ const DrinkItem = ({ drink, count, onAddClick, onMinusClick }: Props) => {
       key={drink.name ?? '' + drink.id}
       onClick={() => onAddClick(drink)}
       secondaryAction={
-        <Has perm={"drinks.purchase"}>
+        <Has perm={'drinks.purchase'}>
           <Box sx={{ display: 'flex', flexDirection: 'row' }}>
             {count > 0 && (
               <>

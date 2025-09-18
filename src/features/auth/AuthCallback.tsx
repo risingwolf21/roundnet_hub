@@ -1,11 +1,10 @@
-import { Box, CircularProgress, Typography } from "@mui/material";
-import React, { useEffect } from "react";
-import { useNavigate, useSearchParams } from "react-router";
-import { supabase } from "src/lib/supabase";
-import { BRANDING } from "src/utils";
+import { Box, CircularProgress, Typography } from '@mui/material';
+import React, { useEffect } from 'react';
+import { useNavigate, useSearchParams } from 'react-router';
+import { supabase } from '@/lib/supabase';
+import { BRANDING } from '@/utils';
 
 const AuthCallback = () => {
-
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -14,15 +13,13 @@ const AuthCallback = () => {
 
     const parsedParams: Map<string, string> = new Map();
     for (const [key, value] of hashParams.entries()) {
-      parsedParams.set(key, value)
+      parsedParams.set(key, value);
     }
 
-    supabase.auth.refreshSession({ refresh_token: parsedParams.get("refresh_token")! }).then(result => {
-      const provider_token = parsedParams.get("provider_token");
-      if (provider_token)
-        supabase.auth.updateUser({ data: { provider_token: provider_token } })
-    })
-
+    supabase.auth.refreshSession({ refresh_token: parsedParams.get('refresh_token')! }).then((result) => {
+      const provider_token = parsedParams.get('provider_token');
+      if (provider_token) supabase.auth.updateUser({ data: { provider_token: provider_token } });
+    });
   }, [navigate]);
 
   return (
@@ -37,10 +34,11 @@ const AuthCallback = () => {
       }}
     >
       <Typography variant="h5" component="div" sx={{ mb: 2, textAlign: 'center' }}>
-        🐺<br></br>{BRANDING.title}
+        🐺<br></br>
+        {BRANDING.title}
       </Typography>
       <CircularProgress variant={'indeterminate'} size={50}></CircularProgress>
     </Box>
   );
-}
+};
 export default AuthCallback;

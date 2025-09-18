@@ -83,7 +83,7 @@ const EditHistoryEntryDialog = ({ open, handleClose, setOpen, entry, handleSubmi
           position: 'absolute',
           left: 0,
           right: 0,
-          bottom: "env(safe-area-inset-bottom)",
+          bottom: 'env(safe-area-inset-bottom)',
         }}
       >
         <Button

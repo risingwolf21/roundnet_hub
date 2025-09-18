@@ -2,37 +2,35 @@ import { Box, CircularProgress, Typography } from '@mui/material';
 import { captureException, setTag, setUser } from '@sentry/react';
 import { Session } from '@supabase/supabase-js';
 import React, { useCallback, useEffect, useState } from 'react';
-import { queryClient } from 'src/lib/queryClient';
-import { AppRoutes } from 'src/AppRoutes';
-import { LoadingScreen } from 'src/components/LoadingScreen';
-import { supabase } from 'src/lib/supabase';
-import useDeviceId from 'src/hooks/useDeviceId';
-import { BRANDING } from 'src/utils';
+import { queryClient } from '@/lib/queryClient';
+import { AppRoutes } from '@/AppRoutes';
+import { LoadingScreen } from '@/components/LoadingScreen';
+import { supabase } from '@/lib/supabase';
+import useDeviceId from '@/hooks/useDeviceId';
+import { BRANDING } from '@/utils';
 import { SupabaseUserRepository } from '../../repository/UserRepository';
 import { UserWithGroups } from '../../types/supabaseTypes';
 import { ApplicationContext } from './ApplicationContext';
 import WebPushKeeper from '../push/WebPushKeeper';
 
-
 export const AuthGate = () => {
   const deviceId = useDeviceId();
 
-
-  const [version, setVersion] = React.useState("");
+  const [version, setVersion] = React.useState('');
 
   React.useEffect(() => {
     fetch('/git_commit.txt')
       .then((r) => r.text())
       .then((text) => {
         setVersion(text);
-        setTag("version", text);
+        setTag('version', text);
       })
-      .catch(e => {
-        setVersion("???")
-      })
+      .catch((e) => {
+        setVersion('???');
+      });
   }, []);
 
-  const [session, setSession] = useState<Session | null>(null)
+  const [session, setSession] = useState<Session | null>(null);
   const [currentUser, setCurrentUser] = useState<UserWithGroups | null>(null);
   const [loading, setLoading] = useState(false);
   const [provider_token, setProviderToken] = useState<string | null>(null);
@@ -68,17 +66,17 @@ export const AuthGate = () => {
       const [{ data: user, error }, groups] = await Promise.all([
         SupabaseUserRepository.fetchUser(session.user.id),
         SupabaseUserRepository.fetchGroupsForUser(session.user.id),
-      ])
+      ]);
       if (error) {
-        captureException(error)
+        captureException(error);
         return;
       }
 
       const userData: UserWithGroups = {
         ...user,
-        groups
+        groups,
       };
-      setProviderToken(session.user.user_metadata["provider_token"])
+      setProviderToken(session.user.user_metadata['provider_token']);
       setUser({ email: session.user.email, id: session.user.id, username: user.displayName });
       setCurrentUser(userData);
     } finally {
@@ -91,8 +89,8 @@ export const AuthGate = () => {
     if (!session) {
       reset();
     } else if (!loading && (!currentUser || session.user.id !== currentUser?.userId)) {
-      setLoading(true)
-      fetchUserData(session, abortController.signal)
+      setLoading(true);
+      fetchUserData(session, abortController.signal);
     }
 
     return () => abortController.abort();
@@ -102,17 +100,21 @@ export const AuthGate = () => {
   useEffect(() => {
     // Fetch initial session and user data
     const getInitialSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
       setSession(session);
     };
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      setSession(session)
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange(async (event, session) => {
+      setSession(session);
     });
     getInitialSession();
     return () => {
       subscription.unsubscribe();
-    }
+    };
   }, []);
 
   if (loading)
@@ -128,7 +130,8 @@ export const AuthGate = () => {
         }}
       >
         <Typography variant="h5" component="div" sx={{ mb: 2, textAlign: 'center' }}>
-          🐺<br></br>{BRANDING.title}
+          🐺<br></br>
+          {BRANDING.title}
         </Typography>
         <CircularProgress variant={'indeterminate'} size={50}></CircularProgress>
       </Box>
@@ -137,7 +140,7 @@ export const AuthGate = () => {
   return (
     <ApplicationContext.Provider value={{ user: currentUser, signOut: signOut, deviceId, provider_token, version }}>
       <React.Suspense fallback={<LoadingScreen />}>
-        <WebPushKeeper session={session} vapidPublicKey={process.env.REACT_APP_VAPID_PUBLIC_KEY!}>
+        <WebPushKeeper session={session} vapidPublicKey={import.meta.env.VITE_VAPID_PUBLIC_KEY!}>
           <AppRoutes />
         </WebPushKeeper>
       </React.Suspense>

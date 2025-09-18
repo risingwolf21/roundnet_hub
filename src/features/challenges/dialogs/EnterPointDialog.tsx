@@ -5,47 +5,58 @@ import { uuid } from '@supabase/supabase-js/dist/main/lib/helpers';
 import Compressor from 'compressorjs';
 import dayjs, { Dayjs } from 'dayjs';
 import React, { useEffect, useState } from 'react';
-import { dataURLtoFile, dayjsFromDb, readFile } from 'src/utils';
+import { dataURLtoFile, dayjsFromDb, readFile } from '@/utils';
 import { SwipeableDialog } from '../../../components/SwipeableDialog';
 import { DialogProps } from '@toolpad/core';
 
-
 type EnterPointDialogProps = {
-  dates: string[]
-  maxEntriesPerWeek: number | null
+  dates: string[];
+  maxEntriesPerWeek: number | null;
 };
 
-function ServerDay(props: PickersDayProps<Dayjs> & { highlightedDays?: Dayjs[], maxEntriesPerWeek?: number }) {
+function ServerDay(props: PickersDayProps<Dayjs> & { highlightedDays?: Dayjs[]; maxEntriesPerWeek?: number }) {
   const { highlightedDays = [], maxEntriesPerWeek = 0, day, outsideCurrentMonth, ...other } = props;
 
-  const isHighlighted = highlightedDays.filter(x => day.isSame(x, "day")).length > 0;
-  const isDisabled = day.isAfter(dayjs(), "day") || isHighlighted || highlightedDays.filter(x => day.isSame(x, "week")).length > maxEntriesPerWeek;
+  const isHighlighted = highlightedDays.filter((x) => day.isSame(x, 'day')).length > 0;
+  const isDisabled =
+    day.isAfter(dayjs(), 'day') ||
+    isHighlighted ||
+    highlightedDays.filter((x) => day.isSame(x, 'week')).length > maxEntriesPerWeek;
 
   return (
-    <PickersDay  {...other} outsideCurrentMonth={outsideCurrentMonth} day={day} sx={(theme) => ({
-      ...(isHighlighted && { backgroundColor: theme.palette.primary.main }),
-      ...(isHighlighted && { color: theme.palette.primary.contrastText })
-    })} disabled={isDisabled} />
+    <PickersDay
+      {...other}
+      outsideCurrentMonth={outsideCurrentMonth}
+      day={day}
+      sx={(theme) => ({
+        ...(isHighlighted && { backgroundColor: theme.palette.primary.main }),
+        ...(isHighlighted && { color: theme.palette.primary.contrastText }),
+      })}
+      disabled={isDisabled}
+    />
   );
 }
 
 type EnterPointResult = {
-  date: dayjs.Dayjs,
+  date: dayjs.Dayjs;
   image: {
     dataUrl: string;
     fileName: string;
-  } | null
-}
+  } | null;
+};
 
-const EnterPointDialog = ({ payload: { dates, maxEntriesPerWeek }, open, onClose }: DialogProps<EnterPointDialogProps, EnterPointResult | null>) => {
-
+const EnterPointDialog = ({
+  payload: { dates, maxEntriesPerWeek },
+  open,
+  onClose,
+}: DialogProps<EnterPointDialogProps, EnterPointResult | null>) => {
   const [date, setDate] = useState(dayjs());
-  const [highlightedDays, setHightlightedDays] = useState(dates.map(x => dayjsFromDb(x)))
-  const [image, setImage] = useState<{ dataUrl: string, fileName: string } | null>(null);
+  const [highlightedDays, setHightlightedDays] = useState(dates.map((x) => dayjsFromDb(x)));
+  const [image, setImage] = useState<{ dataUrl: string; fileName: string } | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    setHightlightedDays(dates.map(dayjsFromDb))
+    setHightlightedDays(dates.map(dayjsFromDb));
   }, [dates]);
 
   const onImageInputChange = async (event: React.ChangeEvent<HTMLInputElement>): Promise<void> => {
@@ -54,7 +65,7 @@ const EnterPointDialog = ({ payload: { dates, maxEntriesPerWeek }, open, onClose
     let imageDataUrl = await readFile(event.target.files[0]);
 
     if (typeof imageDataUrl !== 'string') {
-      setError('Something went wrong uploading your image. Please try again.')
+      setError('Something went wrong uploading your image. Please try again.');
       return;
     }
 
@@ -64,9 +75,9 @@ const EnterPointDialog = ({ payload: { dates, maxEntriesPerWeek }, open, onClose
       success: async (file) => {
         let compressedFile = await readFile(file);
         if (compressedFile && typeof compressedFile === 'string') {
-          setImage({ dataUrl: compressedFile, fileName })
+          setImage({ dataUrl: compressedFile, fileName });
         } else {
-          setError('Something went wrong compressing your image. Please try again.')
+          setError('Something went wrong compressing your image. Please try again.');
         }
       },
     });
@@ -80,16 +91,18 @@ const EnterPointDialog = ({ payload: { dates, maxEntriesPerWeek }, open, onClose
       open={open}
       onClose={() => onClose(null)}
       minHeight={40}
-      actions={<>
-        <Button onClick={() => onClose({ date, image })}>Bestätigen</Button>
-        <Button onClick={() => onClose(null)}>Abbrechen</Button>
-      </>}
+      actions={
+        <>
+          <Button onClick={() => onClose({ date, image })}>Bestätigen</Button>
+          <Button onClick={() => onClose(null)}>Abbrechen</Button>
+        </>
+      }
     >
       <Typography m={2}>Hiermit trägst du einen Punkt für die Serve Challenge ein</Typography>
       <DatePicker
         sx={{
           width: '100%',
-          p: 2
+          p: 2,
         }}
         slots={{
           day: ServerDay,
@@ -97,15 +110,14 @@ const EnterPointDialog = ({ payload: { dates, maxEntriesPerWeek }, open, onClose
         slotProps={{
           day: {
             highlightedDays,
-            maxEntriesPerWeek
-          } as any
+            maxEntriesPerWeek,
+          } as any,
         }}
         label="Datum"
         disableFuture
         format="DD MMMM YYYY"
         onChange={(val) => {
-          if (val)
-            setDate(val)
+          if (val) setDate(val);
         }}
         value={date}
       />
@@ -121,10 +133,7 @@ const EnterPointDialog = ({ payload: { dates, maxEntriesPerWeek }, open, onClose
               <input accept="image/*" type="file" hidden onChange={onImageInputChange} />
               Change
             </Button>
-            <Button
-              startIcon={<DeleteOutline />}
-              onClick={() => setImage(null)}
-            >
+            <Button startIcon={<DeleteOutline />} onClick={() => setImage(null)}>
               Remove
             </Button>
           </>
@@ -139,13 +148,13 @@ const EnterPointDialog = ({ payload: { dates, maxEntriesPerWeek }, open, onClose
           </Button>
         )}
       </Box>
-      {
-        image && <Box sx={{ m: 2, borderRadius: 2 }}>
-          <img src={image.dataUrl} width="100%" alt='Selected' style={{ borderRadius: "16px" }} />
+      {image && (
+        <Box sx={{ m: 2, borderRadius: 2 }}>
+          <img src={image.dataUrl} width="100%" alt="Selected" style={{ borderRadius: '16px' }} />
         </Box>
-      }
-      {error && <Typography color='error'>{error}</Typography>}
-    </SwipeableDialog >
+      )}
+      {error && <Typography color="error">{error}</Typography>}
+    </SwipeableDialog>
   );
 };
 

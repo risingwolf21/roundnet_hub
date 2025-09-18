@@ -4,7 +4,11 @@ import { CreateEventOption } from '../types';
 import { SwipeableDialog } from '../../../components/SwipeableDialog';
 import { DialogProps } from '@toolpad/core';
 
-export const EditEventOptionsDialog = ({ payload, open, onClose }: DialogProps<undefined, null | CreateEventOption>) => {
+export const EditEventOptionsDialog = ({
+  payload,
+  open,
+  onClose,
+}: DialogProps<undefined, null | CreateEventOption>) => {
   const [saveEventOption, setSaveEventOption] = useState<CreateEventOption>('UpdateSingle');
 
   return (

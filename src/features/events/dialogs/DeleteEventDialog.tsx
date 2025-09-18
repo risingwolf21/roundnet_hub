@@ -1,7 +1,7 @@
 import { Box, Button, DialogContent, FormControl, FormControlLabel, Radio, RadioGroup } from '@mui/material';
 import { DialogProps } from '@toolpad/core';
 import React, { useState } from 'react';
-import { EventsUserView } from 'src/types/supabaseTypes';
+import { EventsUserView } from '@/types/supabaseTypes';
 import { SwipeableDialog } from '../../../components/SwipeableDialog';
 import { DeleteEventType, DeletionType } from '../types';
 

@@ -1,3 +1,7 @@
+import { useGrants } from '@/features/auth/GrantsContext';
+import { Has } from '@/hooks/useGrants';
+import { useRequestedUsersPerGroup } from '@/tanstack/groups';
+import { useAllNotifications } from '@/tanstack/notifications';
 import {
   EmojiEvents,
   Euro,
@@ -14,7 +18,7 @@ import {
   Scoreboard,
   SportsHandball,
   StorageOutlined,
-  Update
+  Update,
 } from '@mui/icons-material';
 import {
   alpha,
@@ -32,19 +36,15 @@ import {
   DrawerProps as MuiDrawerProps,
   SwipeableDrawer,
   Theme,
-  Typography
+  Typography,
 } from '@mui/material';
 import { styled } from '@mui/system';
 import { TFunction } from 'i18next';
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router';
-import { useGrants } from 'src/features/auth/GrantsContext';
-import { useRequestedUsersPerGroup } from 'src/tanstack/groups';
-import { useAllNotifications } from 'src/tanstack/notifications';
 import { HOMEPAGE } from '../constants';
 import { InstallPWA } from './PwaInstallPromp';
-import { Has } from 'src/hooks/useGrants';
 
 export const drawerWidth = 360;
 
@@ -73,7 +73,7 @@ const DrawerItem = styled(ListItem, {
     background: alpha('#808080', 0.2),
   },
   '&:active': {
-    backgroundColor: "unset"
+    backgroundColor: 'unset',
   },
   '& .MuiListItemSecondaryAction-root': {
     right: 24,
@@ -96,7 +96,7 @@ const DrawerItem = styled(ListItem, {
   }),
 }));
 
-const DrawerBox = styled(Box)<BoxProps>(({ theme }) => ({
+const DrawerBox = styled(Box)<BoxProps>(({}) => ({
   width: '100%',
   height: 'calc(100% + env(safe-area-inset-top))',
   paddingTop: 'env(safe-area-inset-top)',
@@ -136,13 +136,13 @@ const DrawerContent = ({
   t,
   version,
   request_group_joins,
-  notification_count
+  notification_count,
 }: DrawerContentProps) => {
   return (
     <DrawerBox>
       <List>
         {
-          <Has feat={["drinks", "events", "items"]} any>
+          <Has feat={['drinks', 'events', 'items']} any>
             <DrawerItem key="homepage" selected={tab === ''} onClick={() => handleChange('')}>
               <ListItemAvatar>
                 <ListItemIcon>
@@ -181,7 +181,7 @@ const DrawerContent = ({
         />
       </List>
       <Divider />
-      <Has feat={"drinks"}>
+      <Has feat={'drinks'}>
         <List
           key="drinkList"
           subheader={
@@ -200,7 +200,7 @@ const DrawerContent = ({
             </ListSubheader>
           }
         >
-          <Has perm={"drinks.select"}>
+          <Has perm={'drinks.select'}>
             <DrawerItem key="drinks" selected={tab === 'drinks/list'} onClick={() => handleChange('drinks/list')}>
               <ListItemAvatar>
                 <ListItemIcon>
@@ -213,8 +213,12 @@ const DrawerContent = ({
               />
             </DrawerItem>
           </Has>
-          <Has perm={"drinks.view.own-history"}>
-            <DrawerItem key="history" selected={tab === 'drinks/history'} onClick={() => handleChange('drinks/history')}>
+          <Has perm={'drinks.view.own-history'}>
+            <DrawerItem
+              key="history"
+              selected={tab === 'drinks/history'}
+              onClick={() => handleChange('drinks/history')}
+            >
               <ListItemAvatar>
                 <ListItemIcon>
                   <History />
@@ -226,8 +230,12 @@ const DrawerContent = ({
               />
             </DrawerItem>
           </Has>
-          <Has perm={"drinks.view.own-payments"}>
-            <DrawerItem key="payments" selected={tab === 'drinks/payments'} onClick={() => handleChange('drinks/payments')}>
+          <Has perm={'drinks.view.own-payments'}>
+            <DrawerItem
+              key="payments"
+              selected={tab === 'drinks/payments'}
+              onClick={() => handleChange('drinks/payments')}
+            >
               <ListItemAvatar>
                 <ListItemIcon>
                   <Euro />
@@ -244,7 +252,7 @@ const DrawerContent = ({
       </Has>
 
       <List key="mainList">
-        <Has feat={"events"}>
+        <Has feat={'events'}>
           <DrawerItem key="events" selected={tab === 'training/list'} onClick={() => handleChange('training/list')}>
             <ListItemAvatar>
               <ListItemIcon>
@@ -257,12 +265,16 @@ const DrawerContent = ({
             />
           </DrawerItem>
         </Has>
-        <DrawerItem key="groups" selected={tab === 'groups/list'} onClick={() => handleChange('groups/list')}
+        <DrawerItem
+          key="groups"
+          selected={tab === 'groups/list'}
+          onClick={() => handleChange('groups/list')}
           secondaryAction={
             <Typography fontWeight={'bold'} fontSize={'0.9rem'}>
               {request_group_joins || ''}
             </Typography>
-          }>
+          }
+        >
           <ListItemAvatar>
             <ListItemIcon>
               <Badge color={'secondary'} variant={'dot'} badgeContent={request_group_joins}>
@@ -275,7 +287,7 @@ const DrawerContent = ({
             primary={t('navigation.groups')}
           />
         </DrawerItem>
-        <Has feat={"games"}>
+        <Has feat={'games'}>
           <DrawerItem key="matches" selected={tab === 'matches/list'} onClick={() => handleChange('matches/list')}>
             <ListItemAvatar>
               <ListItemIcon>
@@ -288,7 +300,7 @@ const DrawerContent = ({
             />
           </DrawerItem>
         </Has>
-        <Has feat={"challenges"}>
+        <Has feat={'challenges'}>
           <DrawerItem key="challenges" selected={tab === 'challenges/list'} onClick={() => handleChange('challenges')}>
             <ListItemAvatar>
               <ListItemIcon>
@@ -301,7 +313,7 @@ const DrawerContent = ({
             />
           </DrawerItem>
         </Has>
-        <Has feat={"items"}>
+        <Has feat={'items'}>
           <DrawerItem key="keys" selected={tab === 'keys'} onClick={() => handleChange('keys')}>
             <ListItemAvatar>
               <ListItemIcon>
@@ -337,7 +349,7 @@ const DrawerContent = ({
           />
         </DrawerItem>
       </List>
-      <Has perm={["drinks.confirm.payments", "drinks.manage"]}>
+      <Has perm={['drinks.confirm.payments', 'drinks.manage']}>
         <>
           <Divider />
           <List
@@ -358,7 +370,7 @@ const DrawerContent = ({
               </ListSubheader>
             }
           >
-            <Has perm={"drinks.confirm.payments"}>
+            <Has perm={'drinks.confirm.payments'}>
               <DrawerItem
                 key="updatePayements"
                 selected={tab === 'admin/drinks/payments'}
@@ -375,7 +387,7 @@ const DrawerContent = ({
                 />
               </DrawerItem>
             </Has>
-            <Has perm={"drinks.manage"}>
+            <Has perm={'drinks.manage'}>
               <DrawerItem
                 key="updateDrink"
                 selected={tab === 'admin/drinks'}
@@ -392,12 +404,8 @@ const DrawerContent = ({
                 />
               </DrawerItem>
             </Has>
-            <Has perm={"users.manage"}>
-              <DrawerItem
-                key="updateUser"
-                selected={tab === 'admin/users'}
-                onClick={() => handleChange('admin/users')}
-              >
+            <Has perm={'users.manage'}>
+              <DrawerItem key="updateUser" selected={tab === 'admin/users'} onClick={() => handleChange('admin/users')}>
                 <ListItemAvatar>
                   <ListItemIcon>
                     <Group />
@@ -409,7 +417,7 @@ const DrawerContent = ({
                 />
               </DrawerItem>
             </Has>
-            <Has perm={"drinks.history.admin"}>
+            <Has perm={'drinks.history.admin'}>
               <DrawerItem
                 key="updateHistory"
                 selected={tab === 'admin/drinks/history'}
@@ -426,7 +434,7 @@ const DrawerContent = ({
                 />
               </DrawerItem>
             </Has>
-            <Has perm={"grants.manage"}>
+            <Has perm={'grants.manage'}>
               <DrawerItem
                 key="grantsManager"
                 selected={tab === 'admin/grants'}
@@ -439,11 +447,11 @@ const DrawerContent = ({
                 </ListItemAvatar>
                 <ListItemText
                   primaryTypographyProps={{ fontWeight: 'bold', fontSize: '0.9rem' }}
-                  primary={"Grants-Manager"}
+                  primary={'Grants-Manager'}
                 />
               </DrawerItem>
             </Has>
-            <Has perm={"supabase.admin"}>
+            <Has perm={'supabase.admin'}>
               <DrawerItem
                 key="supabaseClient"
                 selected={tab === 'admin/supabase'}
@@ -502,7 +510,7 @@ const DrawerContent = ({
           <ListItemText
             primaryTypographyProps={{ fontWeight: 'bold', fontSize: '0.9rem' }}
             secondary={'App Version'}
-            primary={process.env.REACT_APP_VERSION + '.' + version.slice(0, 6)}
+            primary={import.meta.env.VITE_APP_VERSION + '.' + version.slice(0, 6)}
           />
         </DrawerItem>
       </List>
@@ -520,8 +528,7 @@ export const Drawer = ({ open, onClose, onOpen }: Props) => {
   const { data: requested_group_joins = [] } = useRequestedUsersPerGroup();
   const { data: notifications = [] } = useAllNotifications(user);
 
-  const iOS =
-    typeof navigator !== 'undefined' && /iPad|iPhone|iPod/.test(navigator.userAgent);
+  const iOS = typeof navigator !== 'undefined' && /iPad|iPhone|iPod/.test(navigator.userAgent);
 
   useEffect(() => {
     fetch('/git_commit.txt')
@@ -529,9 +536,9 @@ export const Drawer = ({ open, onClose, onOpen }: Props) => {
       .then((text) => {
         setVersion(text);
       })
-      .catch(e => {
-        setVersion("???")
-      })
+      .catch((e) => {
+        setVersion('???');
+      });
   }, []);
 
   useEffect(() => {
@@ -544,14 +551,16 @@ export const Drawer = ({ open, onClose, onOpen }: Props) => {
     navigate('/' + newValue);
   };
 
-  const drawerContent = <DrawerContent
-    tab={tab}
-    handleChange={handleChange}
-    t={t}
-    version={version}
-    request_group_joins={requested_group_joins.length}
-    notification_count={notifications.length}
-  />
+  const drawerContent = (
+    <DrawerContent
+      tab={tab}
+      handleChange={handleChange}
+      t={t}
+      version={version}
+      request_group_joins={requested_group_joins.length}
+      notification_count={notifications.length}
+    />
+  );
 
   return (
     <Box

@@ -13,12 +13,12 @@ import {
   Select,
   TextField,
   Toolbar,
-  Typography
+  Typography,
 } from '@mui/material';
 import { Box } from '@mui/system';
 import { useNotifications } from '@toolpad/core';
 import React, { useEffect, useState } from 'react';
-import { useInsertItemMutation, useUpdateItemMutation } from 'src/tanstack/items';
+import { useInsertItemMutation, useUpdateItemMutation } from '@/tanstack/items';
 import { SlideUpTransition } from '../../../utils';
 
 type EditOrAddItemDialogProps = {
@@ -52,35 +52,41 @@ export const EditOrAddItemDialog = ({ open, handleClose, itemToEdit }: EditOrAdd
 
   const handleSubmit = async () => {
     if (!currentItem.name || currentItem.name.length < 6) {
-      notifications.show('Der Schlüsselname ist zu kurz!', { severity: "warning" });
+      notifications.show('Der Schlüsselname ist zu kurz!', { severity: 'warning' });
       return;
     }
     if (!currentItem.type) {
-      notifications.show('Der Schlüssel braucht einen Typ', { severity: "warning" });
+      notifications.show('Der Schlüssel braucht einen Typ', { severity: 'warning' });
       return;
     }
     if (currentItem.id) {
-      updateItemMutation.mutate({
-        item: {
-          ...currentItem,
-          id: currentItem.id
+      updateItemMutation.mutate(
+        {
+          item: {
+            ...currentItem,
+            id: currentItem.id,
+          },
+        },
+        {
+          onError: (e) => notifications.show(e.message, { severity: 'error' }),
+          onSuccess: () => handleClose(),
         }
-      }, {
-        onError: (e) => notifications.show(e.message, { severity: "error" }),
-        onSuccess: () => handleClose()
-      })
+      );
     } else {
-      insertItemMutation.mutate({
-        item: {
-          name: currentItem.name,
-          color: currentItem.color,
-          type: currentItem.type,
-          current_holder: currentItem.current_holder,
+      insertItemMutation.mutate(
+        {
+          item: {
+            name: currentItem.name,
+            color: currentItem.color,
+            type: currentItem.type,
+            current_holder: currentItem.current_holder,
+          },
+        },
+        {
+          onError: (e) => notifications.show(e.message, { severity: 'error' }),
+          onSuccess: () => handleClose(),
         }
-      }, {
-        onError: (e) => notifications.show(e.message, { severity: "error" }),
-        onSuccess: () => handleClose()
-      })
+      );
     }
   };
 
@@ -95,10 +101,7 @@ export const EditOrAddItemDialog = ({ open, handleClose, itemToEdit }: EditOrAdd
             <Typography sx={{ ml: 2, flex: 1 }} variant="h6" component="div">
               {`Schlüssel ${(currentItem.id ?? 0) > 0 ? 'bearbeiten' : 'erstellen'}`}
             </Typography>
-            <Button
-              sx={{ color: 'white' }}
-              onClick={handleSubmit}
-            >
+            <Button sx={{ color: 'white' }} onClick={handleSubmit}>
               Speichern
             </Button>
           </Toolbar>

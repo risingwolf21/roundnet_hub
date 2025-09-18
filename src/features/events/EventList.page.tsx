@@ -1,13 +1,12 @@
 import React from 'react';
 import EventScreen from './EventList';
-import Layout from 'src/components/layout/Layout';
+import Layout from '@/components/layout/Layout';
 
 const EventScreenProvider = () => {
-
-  return (<Layout>
-    <EventScreen
-    />
-  </Layout>
+  return (
+    <Layout>
+      <EventScreen />
+    </Layout>
   );
 };
 

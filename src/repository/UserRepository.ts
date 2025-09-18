@@ -1,20 +1,16 @@
 import { PostgrestError, PostgrestSingleResponse } from '@supabase/supabase-js';
-import { GroupWithUserRole } from 'src/types/supabaseTypes';
-import { supabase } from 'src/lib/supabase';
+import { GroupWithUserRole } from '@/types/supabaseTypes';
+import { supabase } from '@/lib/supabase';
 
-export const fetchGroups = () => supabase.schema("public").from('group_user_mapping').select('*, event_group(*)');
-export const fetchUserWithGroups = () => supabase
-  .from('user')
-  .select('*, groups: group_user_mapping (group: event_group(*))')
-export const fetchSimpleUser = () => supabase.from("user").select("userId, name")
+export const fetchGroups = () => supabase.schema('public').from('group_user_mapping').select('*, event_group(*)');
+export const fetchUserWithGroups = () =>
+  supabase.from('user').select('*, groups: group_user_mapping (group: event_group(*))');
+export const fetchSimpleUser = () => supabase.from('user').select('userId, name');
 
 export const SupabaseUserRepository = {
-
   async fetchUserWithGroups(userId: string): Promise<PostgrestSingleResponse<UserWithGroupsAndPlayerData>> {
     const { data: player_data } = await SupabaseUserRepository.fetchPlayer(userId);
-    const response = await fetchUserWithGroups()
-      .eq('userId', userId)
-      .maybeSingle();
+    const response = await fetchUserWithGroups().eq('userId', userId).maybeSingle();
 
     if (!response.data || response.error)
       return {
@@ -35,7 +31,7 @@ export const SupabaseUserRepository = {
       data: {
         ...response.data,
         groups: response.data?.groups.map((x: any) => x.group) ?? [],
-        player_data
+        player_data,
       },
     };
   },
@@ -46,27 +42,22 @@ export const SupabaseUserRepository = {
 
   async fetchGroupsForUser(userId: string): Promise<GroupWithUserRole[]> {
     const { data, error } = await fetchGroups().eq('user', userId);
-    if (!data || error) return []
-    return data.map(x => ({ ...x.event_group, user_role: x.role } as GroupWithUserRole));
+    if (!data || error) return [];
+    return data.map((x) => ({ ...x.event_group, user_role: x.role }) as GroupWithUserRole);
   },
 
   async fetchPermissionsForUser(): Promise<string[]> {
-    const { data, error } = await supabase
-      .from('user_permissions')
-      .select('*');
+    const { data, error } = await supabase.from('user_permissions').select('*');
 
     if (error || !data) return [];
-    return data.map(x => x.permission).filter(x => x !== null);
+    return data.map((x) => x.permission).filter((x) => x !== null);
   },
 
-
   async fetchFeaturesForUser(): Promise<string[]> {
-    const { data, error } = await supabase
-      .from('user_features')
-      .select('*');
+    const { data, error } = await supabase.from('user_features').select('*');
 
     if (error || !data) return [];
-    return data.map(x => x.feature).filter(x => x !== null);
+    return data.map((x) => x.feature).filter((x) => x !== null);
   },
 
   async fetchPlayer(userId: string): Promise<PostgrestSingleResponse<Player | null>> {

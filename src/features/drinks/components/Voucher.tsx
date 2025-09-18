@@ -2,16 +2,15 @@ import { Redeem } from '@mui/icons-material';
 import { Avatar, Chip, List, ListItem, ListItemAvatar, ListItemText, ListSubheader } from '@mui/material';
 import { useNotifications } from '@toolpad/core';
 import React, { useEffect } from 'react';
-import { useVouchers } from 'src/tanstack/drinks';
+import { useVouchers } from '@/tanstack/drinks';
 
 const VoucherCard = () => {
   const notifications = useNotifications();
   const { data: vouchers = [], isLoading, error } = useVouchers();
 
   useEffect(() => {
-    if (error)
-      notifications.show(error.message, { severity: "error" })
-  }, [error, notifications])
+    if (error) notifications.show(error.message, { severity: 'error' });
+  }, [error, notifications]);
 
   if (isLoading) {
     return null;

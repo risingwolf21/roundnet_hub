@@ -1,25 +1,21 @@
 import { Slide, SlideProps } from '@mui/material';
 import { format, parse } from 'date-fns';
 import dayjs, { Dayjs } from 'dayjs';
-import React, { forwardRef } from 'react';
+import { forwardRef } from 'react';
 import RoundnetKarlsruheLogo from '../images/Karlsruher_Kojoten_Logo.svg';
 import RoundnetMunichLogo from '../images/Roundnet_Munich_Logo.png';
 
 const logoMap = {
-  "roundnet-karlsruhe": RoundnetKarlsruheLogo,
-  "munich-roundnet": RoundnetMunichLogo
-}
+  'roundnet-karlsruhe': RoundnetKarlsruheLogo,
+  'munich-roundnet': RoundnetMunichLogo,
+};
 
-const logo = logoMap[process.env.REACT_APP_WEBSITE_PATH as keyof typeof logoMap || 'roundnet-karlsruhe']
+const logo = logoMap[(import.meta.env.VITE_WEBSITE_PATH as keyof typeof logoMap) || 'roundnet-karlsruhe'];
 
 export const BRANDING = {
-  logo: (<img
-    src={logo}
-    alt="MUI logo"
-    style={{ height: 96, objectFit: "contain" }}
-  />),
-  title: process.env.REACT_APP_WEBSITE_NAME,
-}
+  logo: <img src={logo} alt="MUI logo" style={{ height: 96, objectFit: 'contain' }} />,
+  title: import.meta.env.VITE_WEBSITE_NAME,
+};
 
 export const compareById = (x: any, y: any) => {
   return x.id === y.id;
@@ -54,7 +50,7 @@ export const formatDateToDatabase = (date: string | number | Date) => {
 export const formatDateFromDatabase = (date: string) => {
   const result = parse(date, "yyyy-MM-dd'T'HH:mm:ssXXX", new Date());
   if (isNaN(result.getTime())) {
-    return parse(date, "yyyy-MM-dd'T'HH:mm:ss.SSSSSSxxx", new Date())
+    return parse(date, "yyyy-MM-dd'T'HH:mm:ss.SSSSSSxxx", new Date());
   }
   return result;
 };
@@ -62,11 +58,11 @@ export const formatDateFromDatabase = (date: string) => {
 export const dayjsToDb = (date: Dayjs | null) => {
   if (!date) return null;
   return safeDayjsToDb(date);
-}
+};
 
 export const safeDayjsToDb = (date: Dayjs) => {
   return formatDateToDatabase(date.toDate());
-}
+};
 
 export const dayjsFromDb = (date: string | null) => {
   if (!date) return null;
@@ -75,18 +71,18 @@ export const dayjsFromDb = (date: string | null) => {
 
 export const translationKeyOfItemType = (type: ItemType | null) => {
   switch (type) {
-    case "goethe":
-      return "itemType.goethe";
-    case "mtvGym":
-      return "itemType.mtvGym";
-    case "mtvGymPalazzo":
-      return "itemType.mtvGymPalazzo";
-    case "mtvStorage":
-      return "itemType.mtvStorage";
+    case 'goethe':
+      return 'itemType.goethe';
+    case 'mtvGym':
+      return 'itemType.mtvGym';
+    case 'mtvGymPalazzo':
+      return 'itemType.mtvGymPalazzo';
+    case 'mtvStorage':
+      return 'itemType.mtvStorage';
     default:
-      return "Not found"
+      return 'Not found';
   }
-}
+};
 
 export const nameOfProductType = (type: ProductType) => {
   switch (type) {

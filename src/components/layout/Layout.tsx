@@ -2,7 +2,7 @@ import { AccountCircle, ArrowBack, Menu } from '@mui/icons-material';
 import { AppBar, Avatar, Box, IconButton, Toolbar, Typography } from '@mui/material';
 import React, { ReactNode, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
-import { BRANDING } from 'src/utils';
+import { BRANDING } from '@/utils';
 import { useApplication } from '../../features/auth/ApplicationContext';
 import { Drawer, drawerWidth } from '../Drawer';
 
@@ -19,22 +19,19 @@ type Props = {
 const Layout = ({
   children,
   appBarActions,
-  appBarConfig: {
-    title = BRANDING.title,
-    showProfile = true,
-    navigateBackPath
-  } = { title: BRANDING.title, showProfile: true },
+  appBarConfig: { title = BRANDING.title, showProfile = true, navigateBackPath } = {
+    title: BRANDING.title,
+    showProfile: true,
+  },
 }: Props) => {
   const navigate = useNavigate();
   const { user } = useApplication();
   const [drawerOpen, setDrawerOpen] = useState(false);
 
-  const iOS =
-    typeof navigator !== 'undefined' && /iPad|iPhone|iPod/.test(navigator.userAgent);
+  const iOS = typeof navigator !== 'undefined' && /iPad|iPhone|iPod/.test(navigator.userAgent);
 
   useEffect(() => {
-    if (!iOS)
-      return;
+    if (!iOS) return;
     const preventSwipeBack = (e: TouchEvent) => {
       if (e.touches[0].clientX < 25) {
         e.preventDefault();
@@ -84,7 +81,7 @@ const Layout = ({
               onClick={() => navigate(navigateBackPath)}
               edge="start"
               sx={(theme) => ({
-                mr: 2
+                mr: 2,
               })}
             >
               <ArrowBack />
@@ -133,7 +130,7 @@ const Layout = ({
 
       {/* Drawer  */}
       <Drawer open={drawerOpen} onClose={() => setDrawerOpen(false)} onOpen={() => setDrawerOpen(true)} />
-        
+
       {/* Main Content */}
       <Box
         component="main"

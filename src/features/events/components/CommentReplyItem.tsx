@@ -11,7 +11,7 @@ import {
 } from '@mui/material';
 import { TFunction } from 'i18next';
 import React from 'react';
-import { useGrants } from 'src/features/auth/GrantsContext';
+import { useGrants } from '@/features/auth/GrantsContext';
 import { FullComment } from '../../../types/supabaseTypes';
 
 type Props = {
@@ -63,9 +63,7 @@ export const CommentReplyItem = ({ reply, t, pl = 56 }: Props) => {
         },
       }}
     >
-      <ListItemAvatar
-        sx={{ verticalAlign: 'top', display: 'flex' }}
-      >
+      <ListItemAvatar sx={{ verticalAlign: 'top', display: 'flex' }}>
         <Avatar sx={{ borderRadius: 2 }}>
           {reply.pending ? (
             <CircularProgress size={'20px'} />

@@ -1,17 +1,18 @@
 import { DoneAll } from '@mui/icons-material';
 import { Box, Fab, List, ListItem, ListItemText, Typography } from '@mui/material';
 import React from 'react';
-import { PullToRefresh } from 'src/components/pull-to-refresh/PullToRefresh';
-import { useAllNotifications, useMarkNotificationsAsRead } from 'src/tanstack/notifications';
+import { PullToRefresh } from '@/components/pull-to-refresh/PullToRefresh';
+import { useAllNotifications, useMarkNotificationsAsRead } from '@/tanstack/notifications';
 import Layout from '../../components/layout/Layout';
 import { useGrants } from '../auth/GrantsContext';
 
 const NotificationsPage = () => {
-
-  return <Layout>
-    <NotificationScreen />
-  </Layout>
-}
+  return (
+    <Layout>
+      <NotificationScreen />
+    </Layout>
+  );
+};
 
 const NotificationScreen = () => {
   const { user } = useGrants();
@@ -20,39 +21,42 @@ const NotificationScreen = () => {
   const markNotificationsAsRead = useMarkNotificationsAsRead(user.userId);
 
   if (isLoading) {
-    return <Box sx={{ alignItems: 'center', display: 'flex', flexDirection: 'column', pt: 10 }}>
-      <Typography sx={{ fontSize: '30pt', fontWeight: 'bold' }}>⌛</Typography>
-      <Typography sx={{ fontSize: '18pt', fontWeight: 'bold' }}>Challenge wird geladen...</Typography>
-    </Box>
+    return (
+      <Box sx={{ alignItems: 'center', display: 'flex', flexDirection: 'column', pt: 10 }}>
+        <Typography sx={{ fontSize: '30pt', fontWeight: 'bold' }}>⌛</Typography>
+        <Typography sx={{ fontSize: '18pt', fontWeight: 'bold' }}>Challenge wird geladen...</Typography>
+      </Box>
+    );
   }
 
-  return (<PullToRefresh onRefresh={() => refetch()}>
-    <List sx={{ width: '100%' }}>
-      {notifications.map((notification) => {
-        return (
-          <ListItem key={notification.id}>
-            <ListItemText primary={notification.title} secondary={notification.body} />
-          </ListItem>
-        );
-      })}
-    </List>
-    <Fab
-      variant={'extended'}
-      color={'primary'}
-      sx={{
-        color: '#fff',
-        backgroundColor: (theme) => theme.palette.primary.main,
-        position: 'fixed',
-        right: '16px',
-        bottom: 'calc(16px + env(safe-area-inset-bottom))',
-        mb: '16px',
-      }}
-      onClick={() => markNotificationsAsRead.mutate()}
-    >
-      <DoneAll sx={{ color: 'white', mr: 1 }} />
-      Als gelesen markieren
-    </Fab>
-  </PullToRefresh>
+  return (
+    <PullToRefresh onRefresh={() => refetch()}>
+      <List sx={{ width: '100%' }}>
+        {notifications.map((notification) => {
+          return (
+            <ListItem key={notification.id}>
+              <ListItemText primary={notification.title} secondary={notification.body} />
+            </ListItem>
+          );
+        })}
+      </List>
+      <Fab
+        variant={'extended'}
+        color={'primary'}
+        sx={{
+          color: '#fff',
+          backgroundColor: (theme) => theme.palette.primary.main,
+          position: 'fixed',
+          right: '16px',
+          bottom: 'calc(16px + env(safe-area-inset-bottom))',
+          mb: '16px',
+        }}
+        onClick={() => markNotificationsAsRead.mutate()}
+      >
+        <DoneAll sx={{ color: 'white', mr: 1 }} />
+        Als gelesen markieren
+      </Fab>
+    </PullToRefresh>
   );
 };
 

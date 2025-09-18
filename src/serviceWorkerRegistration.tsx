@@ -9,29 +9,26 @@
 
 const isLocalhost = Boolean(
   window.location.hostname === 'localhost' ||
-  // [::1] is the IPv6 localhost address.
-  window.location.hostname === '[::1]' ||
-  // 127.0.0.0/8 are considered localhost for IPv4.
-  window.location.hostname.match(/^127(?:\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)){3}$/)
+    // [::1] is the IPv6 localhost address.
+    window.location.hostname === '[::1]' ||
+    // 127.0.0.0/8 are considered localhost for IPv4.
+    window.location.hostname.match(/^127(?:\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)){3}$/)
 );
 
 export function register() {
-  if ('serviceWorker' in navigator && process.env.PUBLIC_URL) {
-
-    const publicUrl = new URL(process.env.PUBLIC_URL, window.location.href);
+  if ('serviceWorker' in navigator && import.meta.env.PUBLIC_URL) {
+    const publicUrl = new URL(import.meta.env.PUBLIC_URL, window.location.href);
     if (publicUrl.origin !== window.location.origin) {
       return;
     }
 
     window.addEventListener('load', () => {
-      const swUrl = `${process.env.PUBLIC_URL}/service-worker.js`;
+      const swUrl = `${import.meta.env.PUBLIC_URL}/service-worker.js`;
       if (isLocalhost) {
         checkValidServiceWorker(swUrl);
 
         navigator.serviceWorker.ready.then(() => {
-          console.log(
-            'App is served by a service worker (localhost, cache-first).'
-          );
+          console.log('App is served by a service worker (localhost, cache-first).');
         });
       } else {
         registerValidSW(swUrl);
@@ -44,10 +41,12 @@ function registerValidSW(swUrl: string) {
   navigator.serviceWorker
     .register(swUrl)
     .then((registration) => {
-
-      setInterval(() => {
-        registration.update();
-      }, 5 * 60 * 1000);
+      setInterval(
+        () => {
+          registration.update();
+        },
+        5 * 60 * 1000
+      );
 
       registration.onupdatefound = () => {
         const installingWorker = registration.installing;
@@ -55,8 +54,7 @@ function registerValidSW(swUrl: string) {
           return;
         }
         installingWorker.onstatechange = () => {
-          if (installingWorker.state === 'installed' &&
-            navigator.serviceWorker.controller && registration.waiting) {
+          if (installingWorker.state === 'installed' && navigator.serviceWorker.controller && registration.waiting) {
             console.log('New content is available, activating immediately...');
             registration.waiting.postMessage({ type: 'SKIP_WAITING' });
           }
@@ -72,7 +70,7 @@ function registerValidSW(swUrl: string) {
       console.error('Error during service worker registration:', error);
     });
   let refreshing = false;
-  navigator.serviceWorker.addEventListener("controllerchange", () => {
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
     console.log('Service worker controller changed. Reloading...');
     if (!refreshing) {
       window.location.reload();

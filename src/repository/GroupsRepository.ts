@@ -1,6 +1,6 @@
 import { PostgrestSingleResponse } from '@supabase/supabase-js';
-import { EventGroupsView, GroupWithUserMappings } from 'src/types/supabaseTypes';
-import { supabase } from 'src/lib/supabase';
+import { EventGroupsView, GroupWithUserMappings } from '@/types/supabaseTypes';
+import { supabase } from '@/lib/supabase';
 import { Tables, TablesInsert } from '../types/supabase-generated.types';
 import { fetchGroupWithUsers } from './AdminUsersRepository';
 
@@ -8,46 +8,33 @@ export const GroupsRepository = {
   async upsertGroup(group: TablesInsert<'event_group'>): Promise<PostgrestSingleResponse<Tables<'event_group'>>> {
     return supabase.from('event_group').upsert(group).select('*').single().throwOnError();
   },
-  async addUserToGroup(group: string, user: string, role: "user" | "admin" | "joinRequested"): Promise<PostgrestSingleResponse<null>> {
+  async addUserToGroup(
+    group: string,
+    user: string,
+    role: 'user' | 'admin' | 'joinRequested'
+  ): Promise<PostgrestSingleResponse<null>> {
     return supabase.from('group_user_mapping').insert({ group, user, role }).throwOnError();
   },
   async fetchSingleGroupWithUsers(groupId?: string): Promise<GroupWithUserMappings | null> {
+    if (!groupId) return null;
 
-    if (!groupId)
-      return null;
+    const { data: group } = await supabase.from('event_groups_view').select('*').eq('id', groupId).single();
 
-    const { data: group } = await supabase
-      .from('event_groups_view')
-      .select('*')
-      .eq("id", groupId)
-      .single();
+    const { data } = await fetchGroupWithUsers().eq('id', groupId).maybeSingle().throwOnError();
 
-    const { data } = await fetchGroupWithUsers()
-      .eq('id', groupId)
-      .maybeSingle()
-      .throwOnError();
-
-    if (!group || !data)
-      return null;
-
+    if (!group || !data) return null;
 
     return {
       ...data,
       user_group_role: group.role,
-      users: data.mapping.map(x => ({ user: x.user, map: { group: x.group, role: x.role, user: x.user.userId } }))
-    }
+      users: data.mapping.map((x) => ({ user: x.user, map: { group: x.group, role: x.role, user: x.user.userId } })),
+    };
   },
   async fetchGroups(): Promise<GroupWithUserMappings[]> {
-    const response = await supabase
-      .from('event_groups_view')
-      .select('*')
-      .returns<EventGroupsView[]>()
-      .throwOnError();
+    const response = await supabase.from('event_groups_view').select('*').returns<EventGroupsView[]>().throwOnError();
 
-    return (
-      (response.data ?? []).map((x) => {
-        return { ...x, user_group_role: x.role, users: [] } as GroupWithUserMappings;
-      })
-    );
-  }
+    return (response.data ?? []).map((x) => {
+      return { ...x, user_group_role: x.role, users: [] } as GroupWithUserMappings;
+    });
+  },
 };

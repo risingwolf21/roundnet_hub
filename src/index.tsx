@@ -1,15 +1,14 @@
-import "./instrument";
 import * as Sentry from '@sentry/react';
-import React, { Suspense } from 'react';
+import { Suspense } from 'react';
 import ReactDOM from 'react-dom/client';
 import 'reflect-metadata';
 import './global.css';
+import './instrument';
 import './translation/i18n';
-//@ts-ignore
 import dayjs from 'dayjs';
 import updateLocale from 'dayjs/plugin/updateLocale';
-import { App } from "./App";
-import "src/apocalypseHandler.js";
+import './apocalypseHandler';
+import { App } from './App';
 import * as serviceWorkerRegistration from './serviceWorkerRegistration';
 
 const root = ReactDOM.createRoot(document.getElementById('root') as HTMLElement, {
@@ -24,8 +23,8 @@ const root = ReactDOM.createRoot(document.getElementById('root') as HTMLElement,
   }),
 });
 
-dayjs.extend(updateLocale)
-dayjs.updateLocale('en', { weekStart: 1 })
+dayjs.extend(updateLocale);
+dayjs.updateLocale('en', { weekStart: 1 });
 
 root.render(
   <Sentry.ErrorBoundary fallback={<div>Etwas ist schiefgelaufen. Bitte neu laden.</div>}>

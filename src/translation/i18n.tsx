@@ -36,16 +36,16 @@ const formatRelativeLocaleEN = {
 export const LOCALE_DE: Locale = {
   ...de,
   formatRelative: (token, _date, _baseDate, _options) => {
-    return formatRelativeLocaleDE[token]
-  }
-}
+    return formatRelativeLocaleDE[token];
+  },
+};
 
 export const LOCALE_EN: Locale = {
   ...enGB,
   formatRelative: (token, _date, _baseDate, _options) => {
-    return formatRelativeLocaleEN[token]
-  }
-}
+    return formatRelativeLocaleEN[token];
+  },
+};
 
 const locales = { enGB: LOCALE_EN, de: LOCALE_DE };
 type Lang = keyof typeof locales;
@@ -80,5 +80,3 @@ i18n
       },
     },
   });
-
-

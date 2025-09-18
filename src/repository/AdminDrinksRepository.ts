@@ -1,15 +1,14 @@
 import { PostgrestSingleResponse } from '@supabase/supabase-js';
 import _ from 'lodash';
-import { supabase } from 'src/lib/supabase';
+import { supabase } from '@/lib/supabase';
 import { fetchFullHistory } from './DrinkRepository';
 
-const PAGE_SIZE = 20
+const PAGE_SIZE = 20;
 
 export const AdminDrinksRepository = {
-
   async fetchAdminHistory({ pageParam = 0 }: { pageParam?: number }) {
-    const from = pageParam * PAGE_SIZE
-    const to = from + PAGE_SIZE - 1
+    const from = pageParam * PAGE_SIZE;
+    const to = from + PAGE_SIZE - 1;
 
     const { data } = await fetchFullHistory()
       .order('created_at', { ascending: false })
@@ -17,12 +16,12 @@ export const AdminDrinksRepository = {
       .returns<FullHistory[]>()
       .throwOnError();
 
-    const hasMore = (data?.length ?? 0) === PAGE_SIZE
+    const hasMore = (data?.length ?? 0) === PAGE_SIZE;
 
     return {
       data: data ?? [],
       nextPage: hasMore ? pageParam + 1 : undefined,
-    }
+    };
   },
 
   async updateDrink(drink: Drink): Promise<PostgrestSingleResponse<null>> {

@@ -26,7 +26,7 @@ import {
   Select,
   TextField,
   Toolbar,
-  Typography
+  Typography,
 } from '@mui/material';
 import { DatePicker, DateTimePicker } from '@mui/x-date-pickers';
 import { TimePicker } from '@mui/x-date-pickers/TimePicker';
@@ -37,9 +37,9 @@ import _ from 'lodash';
 import React, { FormEvent, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { MapContainer, Marker, TileLayer, useMap } from 'react-leaflet';
-import { useFetchMode } from 'src/hooks/useFetchMode';
-import { useInsertEventMutation, useUpdateRecurrenceMutation, useUpdateSingleMutation } from 'src/tanstack/events';
-import { dayjsFromDb, formatDateToDatabase } from 'src/utils';
+import { useFetchMode } from '@/hooks/useFetchMode';
+import { useInsertEventMutation, useUpdateRecurrenceMutation, useUpdateSingleMutation } from '@/tanstack/events';
+import { dayjsFromDb, formatDateToDatabase } from '@/utils';
 import { EventTable } from 'types/supabase';
 import { NumberInput } from '../../../components/mui/NumberInput';
 import { Enums, TablesInsert, TablesUpdate } from '../../../types/supabase-generated.types';
@@ -57,7 +57,7 @@ const emptyEvent = {
   maxAttendees: null,
   required_item: null,
   answerDeadline: null,
-  place: null
+  place: null,
 } as EventTable;
 
 type CreateEventProps = {
@@ -66,7 +66,11 @@ type CreateEventProps = {
   option: CreateEventOption;
 };
 
-export const CreateOrUpdateEventDialog = ({ payload: { event, eventGroup, option }, open, onClose }: DialogProps<CreateEventProps>) => {
+export const CreateOrUpdateEventDialog = ({
+  payload: { event, eventGroup, option },
+  open,
+  onClose,
+}: DialogProps<CreateEventProps>) => {
   const notifications = useNotifications();
   const [fetchMode] = useFetchMode();
   const dialogs = useDialogs();
@@ -74,7 +78,7 @@ export const CreateOrUpdateEventDialog = ({ payload: { event, eventGroup, option
   const [editedEvent, setEditedEvent] = useState<EventTable>(event ?? emptyEvent);
   const [selectedGroup, setSelectedGroup] = useState<Group | null>(eventGroup ?? null);
   const [dialogOpen, setDialogOpen] = useState<'group' | 'stopRepeat' | 'repeat' | 'places' | null>(null);
-  const [place, setPlace] = useState<PlaceType | null>(event?.place ? JSON.parse(event.place) as PlaceType : null);
+  const [place, setPlace] = useState<PlaceType | null>(event?.place ? (JSON.parse(event.place) as PlaceType) : null);
 
   const ref = useRef<HTMLFormElement>(null);
 
@@ -85,16 +89,25 @@ export const CreateOrUpdateEventDialog = ({ payload: { event, eventGroup, option
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     try {
-
       if (!editedEvent.meetingDateTime)
         setEditedEvent({ ...editedEvent, meetingDateTime: editedEvent.startingDateTime });
 
-      let edited_event = _.omit(editedEvent, ['fullGroup', 'attendance', 'comments', 'userAttendance', 'attendanceUpdating']) as TablesInsert<"events">;
+      let edited_event = _.omit(editedEvent, [
+        'fullGroup',
+        'attendance',
+        'comments',
+        'userAttendance',
+        'attendanceUpdating',
+      ]) as TablesInsert<'events'>;
 
-      const changes = _.differenceWith(_.toPairs(edited_event), _.toPairs(_.pick(event ?? {}, Object.keys(event ?? {}))), _.isEqual);
-      const eventChanges = _.fromPairs(changes) as TablesUpdate<"events">
+      const changes = _.differenceWith(
+        _.toPairs(edited_event),
+        _.toPairs(_.pick(event ?? {}, Object.keys(event ?? {}))),
+        _.isEqual
+      );
+      const eventChanges = _.fromPairs(changes) as TablesUpdate<'events'>;
 
-      console.log("Event changes", edited_event.id, eventChanges)
+      console.log('Event changes', edited_event.id, eventChanges);
 
       if (!edited_event.startingDateTime) throw new Error(t('events.creation.startDateCannotBeNull'));
 
@@ -105,34 +118,44 @@ export const CreateOrUpdateEventDialog = ({ payload: { event, eventGroup, option
 
       if (!edited_event.title || edited_event.title.length < 6) throw new Error(t('events.creation.titleTooShort'));
 
-      if (!edited_event.description || edited_event.description.length < 1) throw new Error(t('events.creation.descriptionEmpty'));
+      if (!edited_event.description || edited_event.description.length < 1)
+        throw new Error(t('events.creation.descriptionEmpty'));
 
       if (edited_event.meetingDateTime)
         if (isAfter(edited_event.meetingDateTime, edited_event.startingDateTime))
           throw new Error(t('events.creation.meetingTimeBeforeStartTime'));
 
       if (option === 'InsertEvent') {
-        insertEvent.mutate({ event: eventChanges as TablesInsert<"events"> }, {
-          onError: (error) =>
-            notifications.show("Event konnte nicht erstellt werden: " + error.message, { severity: "error" }),
-          onSuccess: () => onClose()
-        })
+        insertEvent.mutate(
+          { event: eventChanges as TablesInsert<'events'> },
+          {
+            onError: (error) =>
+              notifications.show('Event konnte nicht erstellt werden: ' + error.message, { severity: 'error' }),
+            onSuccess: () => onClose(),
+          }
+        );
       } else if (option === 'UpdateSingle') {
-        updateSingleEvent.mutate({ eventChanges, id: edited_event.id ?? '' }, {
-          onError: (error) =>
-            notifications.show("Event konnte nicht aktualisiert werden: " + error.message, { severity: "error" }),
-          onSuccess: () => onClose()
-        })
+        updateSingleEvent.mutate(
+          { eventChanges, id: edited_event.id ?? '' },
+          {
+            onError: (error) =>
+              notifications.show('Event konnte nicht aktualisiert werden: ' + error.message, { severity: 'error' }),
+            onSuccess: () => onClose(),
+          }
+        );
       } else if (option === 'UpdateRecurrence') {
-        updateRecurrenceEvents.mutate({ eventChanges, key: editedEvent.key, startingDateTime: editedEvent.startingDateTime }, {
-          onError: (error) =>
-            notifications.show("Events konnten nicht aktualisiert werden: " + error.message, { severity: "error" }),
-          onSuccess: () => onClose()
-        })
+        updateRecurrenceEvents.mutate(
+          { eventChanges, key: editedEvent.key, startingDateTime: editedEvent.startingDateTime },
+          {
+            onError: (error) =>
+              notifications.show('Events konnten nicht aktualisiert werden: ' + error.message, { severity: 'error' }),
+            onSuccess: () => onClose(),
+          }
+        );
       }
     } catch (error: unknown) {
       const message = error instanceof Error ? (error as Error).message : 'Unknown error.';
-      notifications.show(message, { severity: "error" })
+      notifications.show(message, { severity: 'error' });
     }
   };
 
@@ -145,12 +168,9 @@ export const CreateOrUpdateEventDialog = ({ payload: { event, eventGroup, option
 
   return (
     <Dialog fullScreen open={open} onClose={() => onClose()}>
-      <AppBar sx={{ position: 'sticky', pt: "env(safe-area-inset-top)" }}>
+      <AppBar sx={{ position: 'sticky', pt: 'env(safe-area-inset-top)' }}>
         <Toolbar>
-          <IconButton
-            edge="start"
-            color="inherit"
-            onClick={() => onClose()}>
+          <IconButton edge="start" color="inherit" onClick={() => onClose()}>
             <Close />
           </IconButton>
           <Typography sx={{ ml: 2, flex: 1 }} variant="h6" component="div">
@@ -175,7 +195,7 @@ export const CreateOrUpdateEventDialog = ({ payload: { event, eventGroup, option
               variant="standard"
               label="Event-Titel"
               value={editedEvent.title}
-              onChange={e => setEditedEvent({ ...editedEvent, title: e.target.value })}
+              onChange={(e) => setEditedEvent({ ...editedEvent, title: e.target.value })}
               InputProps={{
                 startAdornment: (
                   <InputAdornment position="start">
@@ -191,7 +211,7 @@ export const CreateOrUpdateEventDialog = ({ payload: { event, eventGroup, option
               fullWidth
               multiline
               value={editedEvent.description}
-              onChange={e => setEditedEvent({ ...editedEvent, description: e.target.value })}
+              onChange={(e) => setEditedEvent({ ...editedEvent, description: e.target.value })}
               variant="standard"
               label="Beschreibung"
               InputProps={{
@@ -205,16 +225,19 @@ export const CreateOrUpdateEventDialog = ({ payload: { event, eventGroup, option
             />
           </ListItem>
 
-          <ListItemButton onClick={async () => {
-            const result = await dialogs.open(SelectGroupDialog);
-            if (result) {
-              setSelectedGroup(result);
-              setEditedEvent({
-                ...editedEvent,
-                group: result.id
-              })
-            }
-          }} key={'group'}>
+          <ListItemButton
+            onClick={async () => {
+              const result = await dialogs.open(SelectGroupDialog);
+              if (result) {
+                setSelectedGroup(result);
+                setEditedEvent({
+                  ...editedEvent,
+                  group: result.id,
+                });
+              }
+            }}
+            key={'group'}
+          >
             <ListItemAvatar>
               {selectedGroup && <FiberManualRecord sx={{ color: selectedGroup.color }} />}
             </ListItemAvatar>
@@ -270,7 +293,7 @@ export const CreateOrUpdateEventDialog = ({ payload: { event, eventGroup, option
                       hours: val?.hour(),
                       minutes: val?.minute(),
                       seconds: 0,
-                      milliseconds: 0
+                      milliseconds: 0,
                     })
                   ),
                 })
@@ -319,7 +342,6 @@ export const CreateOrUpdateEventDialog = ({ payload: { event, eventGroup, option
           </ListItem>
 
           <ListItem sx={{ pt: 0, pb: 0, mb: 2 }} key={'endDateTime'}>
-
             <DateTimePicker
               slotProps={{ textField: { error: false } }}
               disabled={editedEvent.endDateTime === null}
@@ -362,8 +384,8 @@ export const CreateOrUpdateEventDialog = ({ payload: { event, eventGroup, option
             key={'searchPlaceMap'}
           >
             <ListItemAvatar></ListItemAvatar>
-            {
-              place && <ListItemText>
+            {place && (
+              <ListItemText>
                 <Box sx={{ width: '100%', height: '150px' }}>
                   <MapContainer
                     center={[place.lat, place.lon]}
@@ -381,7 +403,7 @@ export const CreateOrUpdateEventDialog = ({ payload: { event, eventGroup, option
                   </MapContainer>
                 </Box>
               </ListItemText>
-            }
+            )}
           </ListItem>
 
           <Divider />
@@ -412,11 +434,11 @@ export const CreateOrUpdateEventDialog = ({ payload: { event, eventGroup, option
                     answerDeadline: editedEvent.answerDeadline
                       ? null
                       : formatDateToDatabase(
-                        set(Date.now(), {
-                          seconds: 0,
-                          milliseconds: 0,
-                        })
-                      ),
+                          set(Date.now(), {
+                            seconds: 0,
+                            milliseconds: 0,
+                          })
+                        ),
                   })
                 }
               />
@@ -519,15 +541,16 @@ export const CreateOrUpdateEventDialog = ({ payload: { event, eventGroup, option
                 }
               />
             </ListItemAvatar>
-            <ListItemText primary={"Konstellationen aktiviert"} secondary={"Soll es möglich sein für Trainer, Konstellationen zu erstellen?"} />
+            <ListItemText
+              primary={'Konstellationen aktiviert'}
+              secondary={'Soll es möglich sein für Trainer, Konstellationen zu erstellen?'}
+            />
           </ListItem>
-          <ListItem sx={{ pt: 0, pb: 0, mb: 2 }} key={'pledges'} onClick={async () => {
-            
-          }}>
+          <ListItem sx={{ pt: 0, pb: 0, mb: 2 }} key={'pledges'} onClick={async () => {}}>
             <ListItemAvatar>
               <Category />
             </ListItemAvatar>
-            <ListItemText primary={"Gegenstände mitbringen"} secondary={"Gegenstände mitbringen"} />
+            <ListItemText primary={'Gegenstände mitbringen'} secondary={'Gegenstände mitbringen'} />
           </ListItem>
         </List>
       </Box>
@@ -570,11 +593,11 @@ export const CreateOrUpdateEventDialog = ({ payload: { event, eventGroup, option
                     recurrenceEnd: editedEvent.recurrenceEnd
                       ? null
                       : formatDateToDatabase(
-                        set(Date.now(), {
-                          seconds: 0,
-                          milliseconds: 0,
-                        })
-                      ),
+                          set(Date.now(), {
+                            seconds: 0,
+                            milliseconds: 0,
+                          })
+                        ),
                   })
                 }
               />
@@ -616,15 +639,15 @@ export const CreateOrUpdateEventDialog = ({ payload: { event, eventGroup, option
         open={dialogOpen === 'places'}
         handleClose={() => setDialogOpen(null)}
         placeSelected={(place) => {
-          console.log("Place selected", place)
-          setPlace(place)
+          console.log('Place selected', place);
+          setPlace(place);
           setEditedEvent({
             ...editedEvent,
             place: JSON.stringify({
               name: place.name,
               lat: place.lat,
-              lon: place.lon
-            })
+              lon: place.lon,
+            }),
           });
           setDialogOpen(null);
         }}

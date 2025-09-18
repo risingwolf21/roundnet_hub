@@ -3,7 +3,7 @@ import Cancel from '@mui/icons-material/Cancel';
 import CheckCircle from '@mui/icons-material/CheckCircle';
 import { Alert, Button, Chip, CircularProgress, Container, ListItem, ListItemText, Stack } from '@mui/material';
 import React from 'react';
-import { supabase } from 'src/lib/supabase';
+import { supabase } from '@/lib/supabase';
 
 // --- Helpers ---------------------------------------------------------------
 function urlBase64ToUint8Array(base64String: string) {
@@ -24,7 +24,10 @@ function bufferToBase64Url(buf: ArrayBuffer) {
 
 function getDeviceId() {
   let id = localStorage.getItem('device_id');
-  if (!id) { id = crypto.randomUUID(); localStorage.setItem('device_id', id); }
+  if (!id) {
+    id = crypto.randomUUID();
+    localStorage.setItem('device_id', id);
+  }
   return id;
 }
 
@@ -41,7 +44,11 @@ async function getSW() {
 }
 
 async function getCurrentSubscription(reg: ServiceWorkerRegistration) {
-  try { return await reg.pushManager.getSubscription(); } catch { return null; }
+  try {
+    return await reg.pushManager.getSubscription();
+  } catch {
+    return null;
+  }
 }
 
 async function registerOnServer(sub: PushSubscription) {
@@ -65,7 +72,10 @@ async function registerOnServer(sub: PushSubscription) {
 
 async function revokeOnServer(endpoint?: string | null) {
   if (endpoint)
-    await supabase.from('web_push_subscriptions').update({ revoked_at: new Date().toISOString() }).eq('endpoint', endpoint);
+    await supabase
+      .from('web_push_subscriptions')
+      .update({ revoked_at: new Date().toISOString() })
+      .eq('endpoint', endpoint);
 }
 
 async function ensurePermissionFromGesture(): Promise<NotificationPermission> {
@@ -82,21 +92,19 @@ type Props = {
   vapidPublicKey?: string; // override env
 };
 
-export default function NotificationGate({
-  allowDecline = true,
-  onReady,
-  vapidPublicKey,
-}: Props) {
+export default function NotificationGate({ allowDecline = true, onReady, vapidPublicKey }: Props) {
   const [permission, setPermission] = React.useState<NotificationPermission>(Notification.permission);
   const [loading, setLoading] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
   const [registered, setRegistered] = React.useState(false);
   const [isPWA, setIsPWA] = React.useState<boolean>(false);
 
-  const VAPID = (vapidPublicKey || (process.env.REACT_APP_VAPID_PUBLIC_KEY as string))?.trim();
+  const VAPID = (vapidPublicKey || (import.meta.env.VITE_VAPID_PUBLIC_KEY as string))?.trim();
 
   React.useEffect(() => {
-    const standalone = (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) || (navigator as any).standalone === true;
+    const standalone =
+      (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) ||
+      (navigator as any).standalone === true;
     setIsPWA(standalone);
     (async () => {
       try {
@@ -122,7 +130,7 @@ export default function NotificationGate({
 
       // Always create a fresh subscription (prevents stale endpoints)
       const old = await reg.pushManager.getSubscription();
-      await old?.unsubscribe().catch(() => { });
+      await old?.unsubscribe().catch(() => {});
 
       const sub = await reg.pushManager.subscribe({
         userVisibleOnly: true,
@@ -143,13 +151,16 @@ export default function NotificationGate({
     setError(null);
     setLoading(true);
     try {
-      if (!VAPID) throw new Error('VAPID Public Key fehlt (REACT_APP_VAPID_PUBLIC_KEY)');
+      if (!VAPID) throw new Error('VAPID Public Key fehlt (VITE_VAPID_PUBLIC_KEY)');
       const reg = await getSW();
       const old = await reg.pushManager.getSubscription();
       await revokeOnServer(old?.endpoint);
-      await old?.unsubscribe().catch(() => { });
+      await old?.unsubscribe().catch(() => {});
 
-      const sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: urlBase64ToUint8Array(VAPID) });
+      const sub = await reg.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: urlBase64ToUint8Array(VAPID),
+      });
       await registerOnServer(sub);
       setRegistered(true);
       onReady?.(sub);
@@ -177,57 +188,77 @@ export default function NotificationGate({
   };
 
   const iOS = typeof navigator !== 'undefined' && /iPad|iPhone|iPod/.test(navigator.userAgent);
-  const installingHint = !isPWA ? iOS ? 'Für iOS Web Push die App über Teilen > „Zum Home-Bildschirm hinzufügen“ installieren.' : 'Für Android Web Push die App über "Zum Home-Bildschirm hinzufügen" installieren' : undefined;
+  const installingHint = !isPWA
+    ? iOS
+      ? 'Für iOS Web Push die App über Teilen > „Zum Home-Bildschirm hinzufügen“ installieren.'
+      : 'Für Android Web Push die App über "Zum Home-Bildschirm hinzufügen" installieren'
+    : undefined;
 
-  return (<Container sx={{ mb: 2 }}>
-    <Stack direction={"column"} spacing={1}>
-      <ListItem disablePadding secondaryAction={permission === 'granted' ? <CheckCircle color='success' /> : permission === 'default' ? <Info color='info' /> : <Warning color='warning' />}>
-        <ListItemText primary={`Berechtigung`} />
-      </ListItem>
-      <ListItem disablePadding secondaryAction={registered ? <CheckCircle color='success' /> : <Cancel color='warning' />}>
-        <ListItemText primary={`Registriert`} />
-      </ListItem>
-      <ListItem disablePadding secondaryAction={<Chip label={`${getDeviceId().slice(0, 8)}`} variant="outlined" />}>
-        <ListItemText primary={`Gerät`} />
-      </ListItem>
+  return (
+    <Container sx={{ mb: 2 }}>
+      <Stack direction={'column'} spacing={1}>
+        <ListItem
+          disablePadding
+          secondaryAction={
+            permission === 'granted' ? (
+              <CheckCircle color="success" />
+            ) : permission === 'default' ? (
+              <Info color="info" />
+            ) : (
+              <Warning color="warning" />
+            )
+          }
+        >
+          <ListItemText primary={`Berechtigung`} />
+        </ListItem>
+        <ListItem
+          disablePadding
+          secondaryAction={registered ? <CheckCircle color="success" /> : <Cancel color="warning" />}
+        >
+          <ListItemText primary={`Registriert`} />
+        </ListItem>
+        <ListItem disablePadding secondaryAction={<Chip label={`${getDeviceId().slice(0, 8)}`} variant="outlined" />}>
+          <ListItemText primary={`Gerät`} />
+        </ListItem>
 
-      {installingHint && <Alert severity="info">{installingHint}</Alert>}
+        {installingHint && <Alert severity="info">{installingHint}</Alert>}
 
-      {error && <Alert severity="error">{error}</Alert>}
+        {error && <Alert severity="error">{error}</Alert>}
 
-      {/* Actions */}
-      {permission !== 'granted' && (
-        <Button variant="contained" onClick={handleEnable} disabled={loading}>
-          {loading ? <CircularProgress size={20} /> : 'Benachrichtigungen aktivieren'}
-        </Button>
-      )}
-
-      {permission === 'granted' && !registered && (
-        <Button sx={{ m: 2 }} variant="contained" onClick={handleEnable} disabled={loading}>
-          {loading ? <CircularProgress size={20} /> : 'Gerät registrieren'}
-        </Button>
-      )}
-
-      {permission === 'granted' && registered && (
-        <>
-          <Button variant="outlined" onClick={handleRebind} disabled={loading}>
-            {loading ? <CircularProgress size={20} /> : 'Neu koppeln'}
+        {/* Actions */}
+        {permission !== 'granted' && (
+          <Button variant="contained" onClick={handleEnable} disabled={loading}>
+            {loading ? <CircularProgress size={20} /> : 'Benachrichtigungen aktivieren'}
           </Button>
-          {allowDecline && (
-            <Button color="error" variant="text" onClick={handleDisable} disabled={loading}>
-              {loading ? <CircularProgress size={20} /> : 'Keine Benachrichtigungen'}
-            </Button>
-          )}
-        </>
-      )}
+        )}
 
-      {permission === 'denied' && (
-        <Alert severity="warning">
-          Mitteilungen sind für diese Web‑App deaktiviert. Öffne die iOS Einstellungen → Mitteilungen → <b>App</b> und erlaube Mitteilungen.
-          Falls die App dort nicht erscheint: App vom Homescreen entfernen, Seite in Safari öffnen, „Zum Home‑Bildschirm“ hinzufügen und hier erneut aktivieren.
-        </Alert>
-      )}
-    </Stack>
-  </Container>
+        {permission === 'granted' && !registered && (
+          <Button sx={{ m: 2 }} variant="contained" onClick={handleEnable} disabled={loading}>
+            {loading ? <CircularProgress size={20} /> : 'Gerät registrieren'}
+          </Button>
+        )}
+
+        {permission === 'granted' && registered && (
+          <>
+            <Button variant="outlined" onClick={handleRebind} disabled={loading}>
+              {loading ? <CircularProgress size={20} /> : 'Neu koppeln'}
+            </Button>
+            {allowDecline && (
+              <Button color="error" variant="text" onClick={handleDisable} disabled={loading}>
+                {loading ? <CircularProgress size={20} /> : 'Keine Benachrichtigungen'}
+              </Button>
+            )}
+          </>
+        )}
+
+        {permission === 'denied' && (
+          <Alert severity="warning">
+            Mitteilungen sind für diese Web‑App deaktiviert. Öffne die iOS Einstellungen → Mitteilungen → <b>App</b> und
+            erlaube Mitteilungen. Falls die App dort nicht erscheint: App vom Homescreen entfernen, Seite in Safari
+            öffnen, „Zum Home‑Bildschirm“ hinzufügen und hier erneut aktivieren.
+          </Alert>
+        )}
+      </Stack>
+    </Container>
   );
 }

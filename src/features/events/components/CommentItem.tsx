@@ -3,8 +3,8 @@ import { Avatar, Box, Button, CircularProgress, ListItem, ListItemAvatar, Typogr
 import { useDialogs } from '@toolpad/core';
 import { TFunction } from 'i18next';
 import React from 'react';
-import { ProfileDialog } from 'src/components/Profile';
-import { useGrants } from 'src/features/auth/GrantsContext';
+import { ProfileDialog } from '@/components/Profile';
+import { useGrants } from '@/features/auth/GrantsContext';
 import { FullComment } from '../../../types/supabaseTypes';
 
 type Props = {
@@ -34,7 +34,7 @@ export const CommentItem = ({ comment, t, replyToPressed }: Props) => {
         sx={{ verticalAlign: 'top', display: 'flex' }}
         onClick={(e) => {
           e.stopPropagation();
-          dialogs.open(ProfileDialog, { user, userId: comment.userId })
+          dialogs.open(ProfileDialog, { user, userId: comment.userId });
         }}
       >
         <Avatar sx={{ borderRadius: 2 }}>

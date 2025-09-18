@@ -6,25 +6,21 @@ import {
   ListItemAvatar,
   ListItemText,
   Slider,
-  Typography
+  Typography,
 } from '@mui/material';
 import Box from '@mui/material/Box';
 import { useDialogs } from '@toolpad/core';
 import React from 'react';
-import { useGrants } from 'src/features/auth/GrantsContext';
-import { useBringOverview, useBringPledges, useUpsetBringPledges } from 'src/tanstack/events';
-import {
-  EventsUserView
-} from 'src/types/supabaseTypes';
+import { useGrants } from '@/features/auth/GrantsContext';
+import { useBringOverview, useBringPledges, useUpsetBringPledges } from '@/tanstack/events';
+import { EventsUserView } from '@/types/supabaseTypes';
 import EventBringItemsDialog from '../dialogs/EventBringItemsDialog';
 
 type EventInformationAttendanceProps = {
   selectedEvent: EventsUserView;
 };
 
-const EventInformationBringItems = ({
-  selectedEvent,
-}: EventInformationAttendanceProps) => {
+const EventInformationBringItems = ({ selectedEvent }: EventInformationAttendanceProps) => {
   const { user } = useGrants();
   const dialogs = useDialogs();
 
@@ -33,8 +29,7 @@ const EventInformationBringItems = ({
 
   const upsertPledgeItems = useUpsetBringPledges();
 
-  if(isLoading || pledgesLoading || bringOverview.length === 0)
-    return null;
+  if (isLoading || pledgesLoading || bringOverview.length === 0) return null;
 
   return (
     <Box sx={{ p: 0, alignSelf: 'center' }}>
@@ -42,27 +37,34 @@ const EventInformationBringItems = ({
         Gegenstände
       </Typography>
       <List sx={{ p: 0 }}>
-        {
-          bringOverview.map(x => <ListItem key={'spotsTaken'} sx={{ '&.MuiListItem-root': { paddingLeft: 0 } }} divider onClick={() => {
-            dialogs.open(EventBringItemsDialog, { overview: x, pledges: bringPledges.filter(y => y.item === x.item_id) }).then(result => {
-              if (result) {
-                upsertPledgeItems.mutate({
-                  user: user,
-                  item_id: x.item_id,
-                  event: selectedEvent,
-                  quantity: result,
-                  status: "pledged"
-                })
-              }
-            })
-          }}>
+        {bringOverview.map((x) => (
+          <ListItem
+            key={'spotsTaken'}
+            sx={{ '&.MuiListItem-root': { paddingLeft: 0 } }}
+            divider
+            onClick={() => {
+              dialogs
+                .open(EventBringItemsDialog, { overview: x, pledges: bringPledges.filter((y) => y.item === x.item_id) })
+                .then((result) => {
+                  if (result) {
+                    upsertPledgeItems.mutate({
+                      user: user,
+                      item_id: x.item_id,
+                      event: selectedEvent,
+                      quantity: result,
+                      status: 'pledged',
+                    });
+                  }
+                });
+            }}
+          >
             <ListItemAvatar sx={{ justifyContent: 'left', alignItems: 'center', display: 'flex' }}>
               <CircularProgress
                 size={'24px'}
                 thickness={8}
                 sx={{ borderRadius: '100%', p: '2px', position: 'relative', zIndex: 2 }}
                 variant="determinate"
-                value={Math.min((x.pledged_qty! / x.required_qty!), 1) * 100}
+                value={Math.min(x.pledged_qty! / x.required_qty!, 1) * 100}
               />
               <CircularProgress
                 variant="determinate"
@@ -72,11 +74,9 @@ const EventInformationBringItems = ({
                 sx={{ color: '#eee', p: '2px', position: 'absolute', zIndex: 1 }}
               />
             </ListItemAvatar>
-            <ListItemText
-              primary={x.name + ` (${x.pledged_qty!}/${x.required_qty})`}
-            />
-          </ListItem>)
-        }
+            <ListItemText primary={x.name + ` (${x.pledged_qty!}/${x.required_qty})`} />
+          </ListItem>
+        ))}
       </List>
       <Divider />
     </Box>

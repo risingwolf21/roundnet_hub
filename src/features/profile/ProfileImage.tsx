@@ -1,20 +1,19 @@
-import { AddPhotoAlternateOutlined, DeleteOutline, EditOutlined, Restore, Save } from "@mui/icons-material";
-import { Avatar, Box, Button, CircularProgress, Container } from "@mui/material";
-import { captureException } from "@sentry/react";
-import { uuid } from "@supabase/supabase-js/dist/main/lib/helpers";
-import { useNotifications } from "@toolpad/core/useNotifications";
+import { AddPhotoAlternateOutlined, DeleteOutline, EditOutlined, Restore, Save } from '@mui/icons-material';
+import { Avatar, Box, Button, CircularProgress, Container } from '@mui/material';
+import { captureException } from '@sentry/react';
+import { uuid } from '@supabase/supabase-js/dist/main/lib/helpers';
+import { useNotifications } from '@toolpad/core/useNotifications';
 import Compressor from 'compressorjs';
-import React, { useState } from "react";
-import CropImageDialog from "src/components/CropImageDialog";
-import { supabase } from "src/lib/supabase";
-import { dataURLtoFile, readFile } from "src/utils";
+import React, { useState } from 'react';
+import CropImageDialog from '@/components/CropImageDialog';
+import { supabase } from '@/lib/supabase';
+import { dataURLtoFile, readFile } from '@/utils';
 
 type Props = {
   user: User;
-}
+};
 
 export const ProfileImage = ({ user }: Props) => {
-
   const notifications = useNotifications();
 
   const [loadingSave, setLoadingSave] = useState(false);
@@ -36,7 +35,7 @@ export const ProfileImage = ({ user }: Props) => {
             await uploadAvatarImage(fileName, compressedFile);
             setCroppedImage(null);
           } else {
-            notifications.show('Something went wrong compressing your image. Please try again.', { severity: "error" })
+            notifications.show('Something went wrong compressing your image. Please try again.', { severity: 'error' });
           }
         },
       });
@@ -72,7 +71,7 @@ export const ProfileImage = ({ user }: Props) => {
       setCurrentUser({ ...currentUser, avatarUrl: data.publicUrl });
       setCroppedImage(null);
     } else {
-      notifications.show('Something went wrong uploading your image. Please try it again.', { severity: "error" });
+      notifications.show('Something went wrong uploading your image. Please try it again.', { severity: 'error' });
     }
   };
 
@@ -86,70 +85,63 @@ export const ProfileImage = ({ user }: Props) => {
     event.target.value = '';
   };
 
-  return <Container
-    key={'avatar'}
-    sx={{
-      display: 'flex',
-      justifyContent: 'center',
-      flexDirection: 'column',
-      m: 2,
-      p: 0,
-      width: 'auto',
-      maxWidth: 'unset!important'
-    }}
-  >
-    <Button component="label" sx={{ border: 'none', background: 'transparent' }}>
-      <input accept="image/*" type="file" hidden onChange={onImageInputChange} />
-      <Avatar sx={{ borderRadius: 2, width: '150px', height: '150px' }}>
-        {croppedImage ? (
-          <img src={croppedImage} alt="logo" width={'150px'} height={'150px'} />
-        ) : currentUser.avatarUrl ? (
-          <img src={currentUser.avatarUrl} alt="logo" width={'150px'} height={'150px'} />
+  return (
+    <Container
+      key={'avatar'}
+      sx={{
+        display: 'flex',
+        justifyContent: 'center',
+        flexDirection: 'column',
+        m: 2,
+        p: 0,
+        width: 'auto',
+        maxWidth: 'unset!important',
+      }}
+    >
+      <Button component="label" sx={{ border: 'none', background: 'transparent' }}>
+        <input accept="image/*" type="file" hidden onChange={onImageInputChange} />
+        <Avatar sx={{ borderRadius: 2, width: '150px', height: '150px' }}>
+          {croppedImage ? (
+            <img src={croppedImage} alt="logo" width={'150px'} height={'150px'} />
+          ) : currentUser.avatarUrl ? (
+            <img src={currentUser.avatarUrl} alt="logo" width={'150px'} height={'150px'} />
+          ) : (
+            <AddPhotoAlternateOutlined sx={{ fontSize: '50px' }} />
+          )}
+        </Avatar>
+      </Button>
+      <Box sx={{ display: 'flex', justifyContent: 'center', mt: 1 }}>
+        {currentUser.avatarUrl ? (
+          <>
+            <Button
+              component="label"
+              sx={{ border: 'none', background: 'transparent', mr: 2 }}
+              startIcon={<EditOutlined />}
+            >
+              <input accept="image/*" type="file" hidden onChange={onImageInputChange} />
+              Change
+            </Button>
+            <Button startIcon={<DeleteOutline />} onClick={() => setCurrentUser({ ...currentUser, avatarUrl: null })}>
+              Remove
+            </Button>
+          </>
         ) : (
-          <AddPhotoAlternateOutlined sx={{ fontSize: '50px' }} />
-        )}
-      </Avatar>
-    </Button>
-    <Box sx={{ display: 'flex', justifyContent: 'center', mt: 1 }}>
-      {currentUser.avatarUrl ? (
-        <>
           <Button
             component="label"
-            sx={{ border: 'none', background: 'transparent', mr: 2 }}
-            startIcon={<EditOutlined />}
+            sx={{ border: 'none', background: 'transparent' }}
+            startIcon={<AddPhotoAlternateOutlined />}
           >
             <input accept="image/*" type="file" hidden onChange={onImageInputChange} />
-            Change
+            Add picture
           </Button>
-          <Button
-            startIcon={<DeleteOutline />}
-            onClick={() => setCurrentUser({ ...currentUser, avatarUrl: null })}
-          >
-            Remove
-          </Button>
-        </>
-      ) : (
-        <Button
-          component="label"
-          sx={{ border: 'none', background: 'transparent' }}
-          startIcon={<AddPhotoAlternateOutlined />}
-        >
-          <input accept="image/*" type="file" hidden onChange={onImageInputChange} />
-          Add picture
-        </Button>
-      )}
-    </Box>
-    {(croppedImage ||
-      (user.avatarUrl !== null && currentUser.avatarUrl === null)) && (
+        )}
+      </Box>
+      {(croppedImage || (user.avatarUrl !== null && currentUser.avatarUrl === null)) && (
         <Box sx={{ display: 'flex', justifyContent: 'center', mt: 1 }}>
           <Button
             key={'saveButton'}
             onClick={handleSubmit}
-            startIcon={loadingSave ? (
-              <CircularProgress size={'20px'} />
-            ) : (
-              <Save />
-            )}
+            startIcon={loadingSave ? <CircularProgress size={'20px'} /> : <Save />}
           >
             Speichern
           </Button>
@@ -165,8 +157,7 @@ export const ProfileImage = ({ user }: Props) => {
           </Button>
         </Box>
       )}
-    {
-      selectedImage && typeof selectedImage === 'string' && (
+      {selectedImage && typeof selectedImage === 'string' && (
         <CropImageDialog
           open={cropImageDialogOpen}
           handleClose={() => setCropImageDialogOpen(false)}
@@ -176,7 +167,7 @@ export const ProfileImage = ({ user }: Props) => {
             setCropImageDialogOpen(false);
           }}
         />
-      )
-    }
-  </Container>
-}
+      )}
+    </Container>
+  );
+};

@@ -3,8 +3,8 @@ import { createClient } from '@supabase/supabase-js';
 import * as fs from 'fs';
 import * as path from 'path';
 
-const supabaseUrl = process.env.REACT_APP_SUPABASE_URL!;
-const supabaseKey = process.env.REACT_APP_SUPABASE_API_KEY!;
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL!;
+const supabaseKey = import.meta.env.VITE_SUPABASE_API_KEY!;
 const supabase = createClient(supabaseUrl, supabaseKey);
 
 type TableConfig = {

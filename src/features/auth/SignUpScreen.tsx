@@ -6,9 +6,9 @@ import TextField, { TextFieldProps } from '@mui/material/TextField';
 import { captureException } from '@sentry/react';
 import React, { useState } from 'react';
 import { Navigate, useLocation, useNavigate } from 'react-router';
-import { supabase } from 'src/lib/supabase';
-import { HOMEPAGE } from 'src/constants';
-import { BRANDING } from 'src/utils';
+import { supabase } from '@/lib/supabase';
+import { HOMEPAGE } from '@/constants';
+import { BRANDING } from '@/utils';
 import { useApplication } from './ApplicationContext';
 
 const mergeSlotSx = (defaultSx: SxProps<Theme>, slotProps?: { sx?: SxProps<Theme> }) => {
@@ -36,7 +36,7 @@ export const getCommonTextFieldProps = (theme: Theme, baseProps: TextFieldProps 
           paddingTop: theme.spacing(1),
           paddingBottom: theme.spacing(1),
         },
-        typeof baseProps.slotProps?.htmlInput === 'function' ? {} : baseProps.slotProps?.htmlInput,
+        typeof baseProps.slotProps?.htmlInput === 'function' ? {} : baseProps.slotProps?.htmlInput
       ),
     },
     inputLabel: {
@@ -46,9 +46,7 @@ export const getCommonTextFieldProps = (theme: Theme, baseProps: TextFieldProps 
           lineHeight: theme.typography.pxToRem(12),
           fontSize: theme.typography.pxToRem(14),
         },
-        typeof baseProps.slotProps?.inputLabel === 'function'
-          ? {}
-          : baseProps.slotProps?.inputLabel,
+        typeof baseProps.slotProps?.inputLabel === 'function' ? {} : baseProps.slotProps?.inputLabel
       ),
     },
   },
@@ -65,7 +63,7 @@ const SignUpScreen = () => {
   const location = useLocation();
 
   if (user) {
-    return <Navigate to={location.state?.path !== "/auth/login" ? location.state?.path || HOMEPAGE : HOMEPAGE} />
+    return <Navigate to={location.state?.path !== '/auth/login' ? location.state?.path || HOMEPAGE : HOMEPAGE} />;
   }
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
@@ -113,12 +111,12 @@ const SignUpScreen = () => {
       password,
       options: {
         data: {
-          name: name + " " + surname,
+          name: name + ' ' + surname,
           displayName: name,
           email,
           role: 'user',
-        }
-      }
+        },
+      },
     });
     if (error || !data || !data.user) {
       captureException(new Error('Could not sign up user.'), (scope) => {
@@ -137,13 +135,13 @@ const SignUpScreen = () => {
     <Box
       sx={(theme) => ({
         height: '100%',
-        minHeight: "100%",
-        mb: "env(safe-area-inset-bottom)",
-        mt: "env(safe-area-inset-top)",
+        minHeight: '100%',
+        mb: 'env(safe-area-inset-bottom)',
+        mt: 'env(safe-area-inset-top)',
         display: 'flex',
         flexDirection: 'column',
-        overflow: "hidden",
-        overflowY: "auto",
+        overflow: 'hidden',
+        overflowY: 'auto',
         [theme.breakpoints.up('sm')]: {
           justifyContent: 'center',
           alignItems: 'center',
@@ -172,100 +170,93 @@ const SignUpScreen = () => {
             },
             [theme.breakpoints.down('xs')]: {
               alignItems: 'start',
-              border: "none",
-              boxShadow: "none"
+              border: 'none',
+              boxShadow: 'none',
             },
           })}
         >
-
           {BRANDING.logo}
 
-          <Typography variant="h5" component={"h1"} color='textPrimary' sx={{
-            my: theme.spacing(1),
-            textAlign: 'center',
-            fontWeight: 600,
-          }}>
-            Register at<br></br>{BRANDING.title}
-          </Typography>
-          <Box
-            component="form"
-            onSubmit={handleSubmit}
-            sx={{ width: "100%" }}
+          <Typography
+            variant="h5"
+            component={'h1'}
+            color="textPrimary"
+            sx={{
+              my: theme.spacing(1),
+              textAlign: 'center',
+              fontWeight: 600,
+            }}
           >
-            <Stack direction={"column"} spacing={2} sx={{ mb: 2 }}>
+            Register at<br></br>
+            {BRANDING.title}
+          </Typography>
+          <Box component="form" onSubmit={handleSubmit} sx={{ width: '100%' }}>
+            <Stack direction={'column'} spacing={2} sx={{ mb: 2 }}>
               <TextField
                 {...getCommonTextFieldProps(theme, {
-                  label: "Email",
+                  label: 'Email',
                   placeholder: 'your@email.com',
                   id: 'email',
                   name: 'email',
                   type: 'email',
-                  autoComplete: 'email'
+                  autoComplete: 'email',
                 })}
               />
               <TextField
                 {...getCommonTextFieldProps(theme, {
-                  label: "Vorname",
+                  label: 'Vorname',
                   placeholder: 'Max',
                   id: 'name',
-                  name: 'name'
+                  name: 'name',
                 })}
               />
               <TextField
                 {...getCommonTextFieldProps(theme, {
-                  label: "Nachname",
+                  label: 'Nachname',
                   placeholder: 'Mustermann',
                   id: 'surname',
-                  name: 'surname'
+                  name: 'surname',
                 })}
               />
               <TextField
                 {...getCommonTextFieldProps(theme, {
-                  label: "Password",
+                  label: 'Password',
                   id: 'password',
                   name: 'password',
-                  type: "password"
+                  type: 'password',
                 })}
               />
               <TextField
                 {...getCommonTextFieldProps(theme, {
-                  label: "Password",
+                  label: 'Password',
                   id: 'password2',
                   name: 'password2',
-                  type: "password"
+                  type: 'password',
                 })}
               />
 
-              {
-                error && <Alert sx={{ my: 2 }} severity="error">
+              {error && (
+                <Alert sx={{ my: 2 }} severity="error">
                   {error}
                 </Alert>
-              }
+              )}
             </Stack>
 
-            <Button
-              type="submit"
-              variant="contained"
-              fullWidth
-              disabled={loading}
-              sx={{ my: 2 }}
-            >
-              {
-                loading ? <CircularProgress color="inherit" size={25} /> : "Registrieren"
-              }
+            <Button type="submit" variant="contained" fullWidth disabled={loading} sx={{ my: 2 }}>
+              {loading ? <CircularProgress color="inherit" size={25} /> : 'Registrieren'}
             </Button>
 
-            <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
               <Link href="#" variant="body2" onClick={() => navigate('/auth/login', { replace: true })}>
                 {'Account vorhanden? Hier einloggen'}
               </Link>
-              <Typography sx={{ mt: 1 }}>{`Version ${process.env.REACT_APP_VERSION}-${version.slice(0, 8)}`}</Typography>
+              <Typography sx={{ mt: 1 }}>{`Version ${import.meta.env.VITE_VERSION}-${version.slice(0, 8)}`}</Typography>
             </div>
           </Box>
         </Box>
       </Container>
     </Box>
   );
-}
+};
 
 export default SignUpScreen;

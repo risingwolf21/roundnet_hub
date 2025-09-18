@@ -46,18 +46,21 @@ export const ItemHolderItem = ({
           >
             <EditIcon />
           </IconButton>
-        ) : x.full_current_holder?.userId === user.userId ?
-          selectKeyToHandOver && <Button
-            color="primary"
-            onClick={(event) => {
-              selectKeyToHandOver(x);
-              event.stopPropagation();
-            }}
-          >
-            {t('handover_key')}
-          </Button>
-          : (
-            selectKeyToReceive && <Button
+        ) : x.full_current_holder?.userId === user.userId ? (
+          selectKeyToHandOver && (
+            <Button
+              color="primary"
+              onClick={(event) => {
+                selectKeyToHandOver(x);
+                event.stopPropagation();
+              }}
+            >
+              {t('handover_key')}
+            </Button>
+          )
+        ) : (
+          selectKeyToReceive && (
+            <Button
               color="primary"
               onClick={(event) => {
                 selectKeyToReceive(x);
@@ -67,6 +70,7 @@ export const ItemHolderItem = ({
               {t('take_key')}
             </Button>
           )
+        )
       }
     >
       <ListItemAvatar>

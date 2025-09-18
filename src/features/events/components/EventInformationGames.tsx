@@ -3,28 +3,29 @@ import { Box, Button, List, ListItem, Typography } from '@mui/material';
 import { useQuery } from '@tanstack/react-query';
 import { useDialogs } from '@toolpad/core';
 import React from 'react';
-import { useGrants } from 'src/features/auth/GrantsContext';
-import { ReportSetsDialog } from 'src/features/games/dialogs/ReportSetsDialog';
-import { GamesRepository } from 'src/repository/GamesRepository';
+import { useGrants } from '@/features/auth/GrantsContext';
+import { ReportSetsDialog } from '@/features/games/dialogs/ReportSetsDialog';
+import { GamesRepository } from '@/repository/GamesRepository';
 
 type EventInformationGamesProps = {
   eventId: string;
 };
 
-const EventInformationGames = ({
-  eventId,
-}: EventInformationGamesProps) => {
+const EventInformationGames = ({ eventId }: EventInformationGamesProps) => {
   const dialogs = useDialogs();
   const { user } = useGrants();
 
-  const { data: matches = [], isLoading, refetch } = useQuery<FullMatch[]>({
-    queryKey: ['events', eventId, "matches"],
+  const {
+    data: matches = [],
+    isLoading,
+    refetch,
+  } = useQuery<FullMatch[]>({
+    queryKey: ['events', eventId, 'matches'],
     enabled: !!eventId,
-    queryFn: () => GamesRepository.fetchGamesForEvent(eventId)
-  })
+    queryFn: () => GamesRepository.fetchGamesForEvent(eventId),
+  });
 
-  if (matches.length === 0 || isLoading)
-    return null;
+  if (matches.length === 0 || isLoading) return null;
 
   return (
     <Box sx={{ p: 0, alignSelf: 'center' }}>
@@ -32,8 +33,8 @@ const EventInformationGames = ({
         Spiele
       </Typography>
       <List sx={{ p: 0 }}>
-        {
-          matches.map(x => <ListItem key={x.id} divider sx={{ px: 0 }}>
+        {matches.map((x) => (
+          <ListItem key={x.id} divider sx={{ px: 0 }}>
             <Box sx={{ display: 'flex', flexDirection: 'row', width: '100%' }}>
               <Box
                 sx={{
@@ -68,20 +69,31 @@ const EventInformationGames = ({
                   {x.team_b.name}
                 </Typography>
               </Box>
-              {
-                x.sets.length === 0
-                && (x.team_a.player1.player === user.userId
-                  || x.team_a.player2.player === user.userId
-                  || x.team_b.player1.player === user.userId
-                  || x.team_b.player2.player === user.userId) && <Button startIcon={<Warning color='warning' />} onClick={async () => {
-                    const result = await dialogs.open(ReportSetsDialog, { matchId: x.id, team_a_name: x.team_a.name, team_b_name: x.team_b.name, sets: null });
-                    if (result) {
-                      refetch();
-                    }
-                  }}>Score eintragen</Button>
-              }
-              {
-                x.sets.sort((a, b) => a.set_number < b.set_number ? 1 : -1).map((y) => {
+              {x.sets.length === 0 &&
+                (x.team_a.player1.player === user.userId ||
+                  x.team_a.player2.player === user.userId ||
+                  x.team_b.player1.player === user.userId ||
+                  x.team_b.player2.player === user.userId) && (
+                  <Button
+                    startIcon={<Warning color="warning" />}
+                    onClick={async () => {
+                      const result = await dialogs.open(ReportSetsDialog, {
+                        matchId: x.id,
+                        team_a_name: x.team_a.name,
+                        team_b_name: x.team_b.name,
+                        sets: null,
+                      });
+                      if (result) {
+                        refetch();
+                      }
+                    }}
+                  >
+                    Score eintragen
+                  </Button>
+                )}
+              {x.sets
+                .sort((a, b) => (a.set_number < b.set_number ? 1 : -1))
+                .map((y) => {
                   let teamAWon = y.team_a_score > y.team_b_score;
                   return (
                     <Box
@@ -115,8 +127,8 @@ const EventInformationGames = ({
                   );
                 })}
             </Box>
-          </ListItem>)
-        }
+          </ListItem>
+        ))}
       </List>
     </Box>
   );

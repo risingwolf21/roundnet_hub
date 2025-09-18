@@ -1,12 +1,4 @@
-import {
-  AccountCircle,
-  Close,
-  Edit,
-  Email,
-  FiberManualRecord,
-  Password,
-  Verified
-} from '@mui/icons-material';
+import { AccountCircle, Close, Edit, Email, FiberManualRecord, Password, Verified } from '@mui/icons-material';
 import {
   AppBar,
   Avatar,
@@ -22,12 +14,12 @@ import {
   ListSubheader,
   TextField,
   Toolbar,
-  Typography
+  Typography,
 } from '@mui/material';
 import { Box, Stack } from '@mui/system';
 import { useNotifications } from '@toolpad/core/useNotifications';
 import React, { FormEvent, useState } from 'react';
-import { supabase } from 'src/lib/supabase';
+import { supabase } from '@/lib/supabase';
 import { UserWithGroups } from '../../../types/supabaseTypes';
 import { SlideUpTransition } from '../../../utils';
 import { UserRoleDialog } from './UserRoleDialog';
@@ -121,16 +113,13 @@ const EditUserDialog = ({ user, open, handleClose, onUserEditFinished, deleteUse
                 />
               </ListItemText>
             </ListItem>
-            <ListItem
-              key={'password'}
-              sx={{ pt: 0, pb: 0 }}
-            >
+            <ListItem key={'password'} sx={{ pt: 0, pb: 0 }}>
               <ListItemAvatar>
                 <Avatar>
                   <Password />
                 </Avatar>
               </ListItemAvatar>
-              <Stack direction={"row"} spacing={1}>
+              <Stack direction={'row'} spacing={1}>
                 <TextField
                   margin="normal"
                   fullWidth
@@ -145,10 +134,8 @@ const EditUserDialog = ({ user, open, handleClose, onUserEditFinished, deleteUse
                         password: password,
                       })
                       .then((result) => {
-                        if (result.error)
-                          notifications.show(result.error.message, { severity: 'error' });
-                        else
-                          notifications.show('Passwort erfolgreich geändert', { severity: 'success' });
+                        if (result.error) notifications.show(result.error.message, { severity: 'error' });
+                        else notifications.show('Passwort erfolgreich geändert', { severity: 'success' });
                       })
                       .catch((error) => {
                         notifications.show(error.message, { severity: 'error' });
@@ -172,7 +159,7 @@ const EditUserDialog = ({ user, open, handleClose, onUserEditFinished, deleteUse
             </ListItem>
             <ListItem
               key={'role'}
-              onClick={() => { }}
+              onClick={() => {}}
               secondaryAction={
                 <IconButton
                   onClick={(event) => {

@@ -25,10 +25,7 @@ export const HistoryItem = ({ items, header, onClick }: HistoryItemProps) => {
           <ListItemAvatar>
             <Typography>{item.count} x</Typography>
           </ListItemAvatar>
-          <ListItemText
-            primary={item.drink?.name}
-            secondary={format(item.created_at ?? '', 'HH:mm')}
-          />
+          <ListItemText primary={item.drink?.name} secondary={format(item.created_at ?? '', 'HH:mm')} />
         </ListItem>
       ))}
     </List>

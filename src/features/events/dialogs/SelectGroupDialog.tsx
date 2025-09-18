@@ -14,12 +14,10 @@ import {
 import { Box } from '@mui/system';
 import { DialogProps } from '@toolpad/core';
 import React from 'react';
-import { useGroups } from 'src/tanstack/groups';
+import { useGroups } from '@/tanstack/groups';
 import { SlideUpTransition } from '../../../utils';
 
-
 export const SelectGroupDialog = ({ payload, open, onClose }: DialogProps<undefined, Group | null>) => {
-
   const { data: groups = [] } = useGroups();
 
   return (
@@ -48,6 +46,6 @@ export const SelectGroupDialog = ({ payload, open, onClose }: DialogProps<undefi
           </List>
         </Box>
       </Box>
-    </Dialog >
+    </Dialog>
   );
 };

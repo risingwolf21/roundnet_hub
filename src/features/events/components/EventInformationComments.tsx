@@ -2,9 +2,9 @@ import { Send } from '@mui/icons-material';
 import { Box, IconButton, InputAdornment, List, TextField, Typography } from '@mui/material';
 import React, { createRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useGrants } from 'src/features/auth/GrantsContext';
-import { useAddCommentMutation, useComments } from 'src/tanstack/events';
-import { EventsUserView, FullComment } from 'src/types/supabaseTypes';
+import { useGrants } from '@/features/auth/GrantsContext';
+import { useAddCommentMutation, useComments } from '@/tanstack/events';
+import { EventsUserView, FullComment } from '@/types/supabaseTypes';
 import { EventCommentConversationDialog } from '../dialogs/EventCommentConversationDialog';
 import { CommentItem } from './CommentItem';
 import { CommentReplyItem, CommentReplyText } from './CommentReplyItem';
@@ -15,11 +15,7 @@ type EventInformationCommentsProps = {
   eventInThePast: boolean;
 };
 
-const EventInformationComments = ({
-  event,
-  eventInThePast,
-}: EventInformationCommentsProps) => {
-
+const EventInformationComments = ({ event, eventInThePast }: EventInformationCommentsProps) => {
   const notifications = useNotifications();
 
   const { user, hasPerm } = useGrants();
@@ -58,11 +54,14 @@ const EventInformationComments = ({
     const commentValue = data.get('comment')?.toString();
     if (!commentValue) return;
 
-    addCommentMutation.mutate({ event, comment: commentValue, reply_to: null }, {
-      onError: (error, vars) => {
-        notifications.show("Kommentar konnte nicht hinzugefügt werden.", { severity: "error" });
+    addCommentMutation.mutate(
+      { event, comment: commentValue, reply_to: null },
+      {
+        onError: (error, vars) => {
+          notifications.show('Kommentar konnte nicht hinzugefügt werden.', { severity: 'error' });
+        },
       }
-    });
+    );
     formEvent.currentTarget.reset();
   };
 
@@ -93,7 +92,7 @@ const EventInformationComments = ({
         <Box component={'form'} onSubmit={submit}>
           <TextField
             ref={inputRef}
-            disabled={eventInThePast || !hasPerm("event.comment")}
+            disabled={eventInThePast || !hasPerm('event.comment')}
             id="comment"
             name="comment"
             fullWidth
@@ -104,7 +103,7 @@ const EventInformationComments = ({
               input: {
                 endAdornment: (
                   <InputAdornment position="end">
-                    <IconButton edge="end" type="submit" disabled={eventInThePast || !hasPerm("event.comment")}>
+                    <IconButton edge="end" type="submit" disabled={eventInThePast || !hasPerm('event.comment')}>
                       <Send />
                     </IconButton>
                   </InputAdornment>

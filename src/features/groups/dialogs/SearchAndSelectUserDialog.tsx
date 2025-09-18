@@ -18,14 +18,18 @@ import { Search, SearchIconWrapper, StyledInputBase } from '../../../components/
 import React, { useState } from 'react';
 import { SlideUpTransition } from '../../../utils';
 import { useQuery } from '@tanstack/react-query';
-import { supabase } from 'src/lib/supabase';
+import { supabase } from '@/lib/supabase';
 import { DialogProps } from '@toolpad/core';
 
 type SearchAndSelectUserDialogProps = {
   usersToFilter: string[];
 };
 
-const SearchAndSelectUserDialog = ({ payload: { usersToFilter }, onClose, open }: DialogProps<SearchAndSelectUserDialogProps, User[] | null>) => {
+const SearchAndSelectUserDialog = ({
+  payload: { usersToFilter },
+  onClose,
+  open,
+}: DialogProps<SearchAndSelectUserDialogProps, User[] | null>) => {
   const [selectedUsers, setSelectedUsers] = useState<User[]>(Array.from<User>([]));
   const [searchString, setSearchString] = useState<string>('');
 
@@ -33,17 +37,16 @@ const SearchAndSelectUserDialog = ({ payload: { usersToFilter }, onClose, open }
     queryKey: ['users', 'searchAndSelectDialog', ...usersToFilter],
     queryFn: async () => {
       const result = await supabase
-        .schema("public")
-        .from("user")
-        .select("*")
-        .not("userId", 'in', `(${usersToFilter.join(",")})`)
+        .schema('public')
+        .from('user')
+        .select('*')
+        .not('userId', 'in', `(${usersToFilter.join(',')})`)
         .returns<User[]>()
         .throwOnError();
 
       return result.data ?? [];
-    }
+    },
   });
-
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>, user: User) => {
     if (selectedUsers.some((x: User) => x.userId === user.userId)) {

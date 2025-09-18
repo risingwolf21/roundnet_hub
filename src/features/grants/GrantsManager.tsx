@@ -1,8 +1,8 @@
-import { AppBar, Tab, Tabs, useTheme } from "@mui/material";
-import React, { useState } from "react";
-import Layout from "src/components/layout/Layout";
-import GroupGrantsPanel from "./GroupGrantsPanel";
-import UserGrantsPanel from "./UserGrantsPanel";
+import { AppBar, Tab, Tabs, useTheme } from '@mui/material';
+import React, { useState } from 'react';
+import Layout from '@/components/layout/Layout';
+import GroupGrantsPanel from './GroupGrantsPanel';
+import UserGrantsPanel from './UserGrantsPanel';
 
 export const TabPanel = (props: any) => {
   const { children, value, index, ...other } = props;
@@ -18,28 +18,38 @@ export const TabPanel = (props: any) => {
       {value === index && children}
     </div>
   );
-}
+};
 
 const GrantsManager = () => {
   const [value, setValue] = useState(0);
   const theme = useTheme();
 
-  return <Layout appBarConfig={{
-    showProfile: false,
-  }}>
-    <AppBar position="sticky" elevation={0} sx={{ '&.MuiAppBar-root': { backgroundColor: '#fff', color: '#000' } }}>
-      <Tabs value={value} onChange={(_, v) => setValue(v)} indicatorColor="primary" textColor="inherit" variant="fullWidth">
-        <Tab label="Gruppen-Grants" />
-        <Tab label="Direct-Grants" />
-      </Tabs>
-    </AppBar>
-    <TabPanel value={value} index={0} dir={theme.direction}>
-      <GroupGrantsPanel />
-    </TabPanel>
-    <TabPanel value={value} index={1} dir={theme.direction}>
-      <UserGrantsPanel />
-    </TabPanel>
-  </Layout >
+  return (
+    <Layout
+      appBarConfig={{
+        showProfile: false,
+      }}
+    >
+      <AppBar position="sticky" elevation={0} sx={{ '&.MuiAppBar-root': { backgroundColor: '#fff', color: '#000' } }}>
+        <Tabs
+          value={value}
+          onChange={(_, v) => setValue(v)}
+          indicatorColor="primary"
+          textColor="inherit"
+          variant="fullWidth"
+        >
+          <Tab label="Gruppen-Grants" />
+          <Tab label="Direct-Grants" />
+        </Tabs>
+      </AppBar>
+      <TabPanel value={value} index={0} dir={theme.direction}>
+        <GroupGrantsPanel />
+      </TabPanel>
+      <TabPanel value={value} index={1} dir={theme.direction}>
+        <UserGrantsPanel />
+      </TabPanel>
+    </Layout>
+  );
 };
 
 export default GrantsManager;

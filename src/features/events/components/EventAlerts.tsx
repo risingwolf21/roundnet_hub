@@ -1,5 +1,5 @@
 import { Alert } from '@mui/material';
-import { EventsUserView, answerDeadlineExpired } from 'src/types/supabaseTypes';
+import { EventsUserView, answerDeadlineExpired } from '@/types/supabaseTypes';
 import { TFunction } from 'i18next';
 import React from 'react';
 

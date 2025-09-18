@@ -138,15 +138,15 @@ jobs:
         run: yarn run build:production
         env:
           PUBLIC_URL: ${{ matrix.env.firebase_url }}
-          REACT_APP_PUBLIC_URL: ${{ matrix.env.firebase_url }}
-          REACT_APP_SUPABASE_API_KEY: ${{ secrets[matrix.env.supabase_key_secret] }}
-          REACT_APP_SUPABASE_URL: ${{ vars[matrix.env.supabase_url_secret] }}
-          REACT_APP_SUPABASE_PROJECT_ID: ${{ vars[matrix.env.supabase_project_id] }}
-          REACT_APP_WEBSITE_PATH: ${{ matrix.env.website_path }}
-          REACT_APP_MANIFEST_JSON: ${{ matrix.env.website_manifest }}
-          REACT_APP_WEBSITE_NAME: ${{ matrix.env.name }}
-          REACT_APP_OPENWEATHER_API_KEY: ${{secrets[matrix.env.openweather_api_key]}}
-          REACT_APP_VAPID_PUBLIC_KEY: ${{ vars[matrix.env.vapid_public_key] }}
+          VITE_PUBLIC_URL: ${{ matrix.env.firebase_url }}
+          VITE_SUPABASE_API_KEY: ${{ secrets[matrix.env.supabase_key_secret] }}
+          VITE_SUPABASE_URL: ${{ vars[matrix.env.supabase_url_secret] }}
+          VITE_SUPABASE_PROJECT_ID: ${{ vars[matrix.env.supabase_project_id] }}
+          VITE_WEBSITE_PATH: ${{ matrix.env.website_path }}
+          VITE_MANIFEST_JSON: ${{ matrix.env.website_manifest }}
+          VITE_WEBSITE_NAME: ${{ matrix.env.name }}
+          VITE_OPENWEATHER_API_KEY: ${{secrets[matrix.env.openweather_api_key]}}
+          VITE_VAPID_PUBLIC_KEY: ${{ vars[matrix.env.vapid_public_key] }}
 
       - uses: actions/upload-artifact@v4
         with:

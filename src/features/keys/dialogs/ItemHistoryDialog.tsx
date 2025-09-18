@@ -2,11 +2,10 @@ import { Alert, CircularProgress, List, ListItem, ListItemText } from '@mui/mate
 import { format } from 'date-fns';
 import React from 'react';
 import { SwipeableDialog } from '../../../components/SwipeableDialog';
-import { useItemHistory } from 'src/tanstack/items';
+import { useItemHistory } from '@/tanstack/items';
 import { DialogProps } from '@toolpad/core';
 
 export const ItemHistoryDialog = ({ payload, open, onClose }: DialogProps<Item>) => {
-
   const { data: history = [], error, isLoading } = useItemHistory(payload.id);
 
   return (
@@ -22,7 +21,7 @@ export const ItemHistoryDialog = ({ payload, open, onClose }: DialogProps<Item>)
         </Alert>
       )}
       {isLoading && <CircularProgress />}
-      <List sx={{ maxHeight: '70%', overflow: 'auto', pb: "env(safe-area-inset-bottom)" }}>
+      <List sx={{ maxHeight: '70%', overflow: 'auto', pb: 'env(safe-area-inset-bottom)' }}>
         {history.map((x) => (
           <ListItem key={x.id} divider>
             <ListItemText

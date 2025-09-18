@@ -6,7 +6,7 @@ import { captureException } from '@sentry/react';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { useNotifications } from '@toolpad/core/useNotifications';
 import React, { useState } from 'react';
-import { queryClient } from 'src/lib/queryClient';
+import { queryClient } from '@/lib/queryClient';
 import Layout from '../../components/layout/Layout';
 import { AdminUsersRepository } from '../../repository/AdminUsersRepository';
 import { UserWithGroups } from '../../types/supabaseTypes';
@@ -38,46 +38,48 @@ const SearchBar = styled(TextField)<TextFieldProps>(({ theme }) => ({
   },
 }));
 
-export const useAllUsersAsAdmin = () => useQuery<UserWithGroups[]>({
-  queryKey: ["users", "admin"],
-  queryFn: () => AdminUsersRepository.fetchAllUsersWithGroups()
-});
+export const useAllUsersAsAdmin = () =>
+  useQuery<UserWithGroups[]>({
+    queryKey: ['users', 'admin'],
+    queryFn: () => AdminUsersRepository.fetchAllUsersWithGroups(),
+  });
 
-export const useUpdateUserMutation = () => useMutation({
-  mutationFn: ({ update }: { update: UserEdited }) => {
-    return AdminUsersRepository.updateUser(update)
-  },
-  onMutate: async ({ update }) => {
-    await queryClient.cancelQueries({ queryKey: ["users", "admin"] });
+export const useUpdateUserMutation = () =>
+  useMutation({
+    mutationFn: ({ update }: { update: UserEdited }) => {
+      return AdminUsersRepository.updateUser(update);
+    },
+    onMutate: async ({ update }) => {
+      await queryClient.cancelQueries({ queryKey: ['users', 'admin'] });
 
-    const previousUsers = queryClient.getQueryData<UserWithGroups[]>(["users", "admin"]);
+      const previousUsers = queryClient.getQueryData<UserWithGroups[]>(['users', 'admin']);
 
-    if (previousUsers) {
-      const newUsers = previousUsers.map(x => {
-        if (x.userId === update.userId) {
-          return {
-            ...x,
-            displayName: update.displayName,
-            verified: update.verified,
-            role: update.role
+      if (previousUsers) {
+        const newUsers = previousUsers.map((x) => {
+          if (x.userId === update.userId) {
+            return {
+              ...x,
+              displayName: update.displayName,
+              verified: update.verified,
+              role: update.role,
+            };
           }
-        }
-        return x
-      })
-      queryClient.setQueryData(["events", "admin"], newUsers);
-    }
+          return x;
+        });
+        queryClient.setQueryData(['events', 'admin'], newUsers);
+      }
 
-    return { previousUsers }
-  },
-  onError: (err, _vars, context) => {
-    if (context?.previousUsers) {
-      queryClient.setQueryData(["users", "admin"], context.previousUsers);
-    }
-  },
-  onSettled: (data, error, variables, context) => {
-    queryClient.invalidateQueries({ queryKey: ["users", "admin"] });
-  },
-})
+      return { previousUsers };
+    },
+    onError: (err, _vars, context) => {
+      if (context?.previousUsers) {
+        queryClient.setQueryData(['users', 'admin'], context.previousUsers);
+      }
+    },
+    onSettled: (data, error, variables, context) => {
+      queryClient.invalidateQueries({ queryKey: ['users', 'admin'] });
+    },
+  });
 
 const AdminUserList = () => {
   const [editUserOpen, setEditUserOpen] = useState(false);
@@ -105,7 +107,7 @@ const AdminUserList = () => {
   };
 
   const onUserEditFinished = async (result: UserEdited) => {
-    updateUserMutation.mutate({ update: result })
+    updateUserMutation.mutate({ update: result });
     setEditUserOpen(false);
   };
 

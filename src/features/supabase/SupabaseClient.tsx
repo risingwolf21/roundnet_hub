@@ -8,7 +8,7 @@ import {
   GridPaginationModel,
   GridRowId,
   GridSortModel,
-  GridValidRowModel
+  GridValidRowModel,
 } from '@mui/x-data-grid';
 import { ErrorBoundary } from '@sentry/react';
 import { useDialogs } from '@toolpad/core';
@@ -16,12 +16,12 @@ import { useNotifications } from '@toolpad/core/useNotifications';
 import React, { useCallback, useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router';
 import { useClient } from 'react-supabase';
-import { LoadingIndicator } from 'src/components/LoadingIndicator';
-import { supabase } from 'src/lib/supabase';
+import { LoadingIndicator } from '@/components/LoadingIndicator';
+import { supabase } from '@/lib/supabase';
 import { SelectTableDialog } from './dialogs/SelectTableDialog';
 import { EditEntryDialog } from './EditEntryDialog';
 import { ViewEntryDialog } from './ViewEntryDialog';
-import Layout from 'src/components/layout/Layout';
+import Layout from '@/components/layout/Layout';
 
 const StyledGridOverlay = styled('div')(({ theme }) => ({
   display: 'flex',
@@ -76,7 +76,7 @@ function CustomNoRowsOverlay() {
   );
 }
 
-export type Table = { name: string, schema: string }
+export type Table = { name: string; schema: string };
 
 const SupabaseClient = () => {
   const [tables, setTables] = useState<Table[]>([]);
@@ -93,86 +93,100 @@ const SupabaseClient = () => {
   const [filterModel, setFilterModel] = React.useState<GridFilterModel>();
   const [sortModel, setSortModel] = React.useState<GridSortModel>();
 
-  const [columns, setColumns] = useState<{
-    column_name: string;
-    data_type: string;
-    is_nullable: boolean;
-    foreign_key_schema_name: string;
-    foreign_key_table_name: string;
-    foreign_key_column_name: string;
-  }[]>([]);
+  const [columns, setColumns] = useState<
+    {
+      column_name: string;
+      data_type: string;
+      is_nullable: boolean;
+      foreign_key_schema_name: string;
+      foreign_key_table_name: string;
+      foreign_key_column_name: string;
+    }[]
+  >([]);
 
-  const CustomToolbar = () => <Toolbar>
-    <Button size='small' startIcon={<Add />} onClick={async () => {
-      const result = await dialog.open(EditEntryDialog, { entry: {}, columns });
-      if (result && selectedTable) {
-        const r = await supabase
-          // @ts-ignore
-          .schema(selectedTable.schema)
-          // @ts-ignore
-          .from(selectedTable.name)
-          .insert(result)
-          .select("*");
+  const CustomToolbar = () => (
+    <Toolbar>
+      <Button
+        size="small"
+        startIcon={<Add />}
+        onClick={async () => {
+          const result = await dialog.open(EditEntryDialog, { entry: {}, columns });
+          if (result && selectedTable) {
+            const r = await supabase
+              // @ts-ignore
+              .schema(selectedTable.schema)
+              // @ts-ignore
+              .from(selectedTable.name)
+              .insert(result)
+              .select('*');
 
-        if (!r.error) {
-          notifications.show("Erfolgreich erstellt.", { severity: "success" });
-        } else {
-          notifications.show("Der Eintrag konnte nicht erstellt werden. " + r.error.message, { severity: "error" })
+            if (!r.error) {
+              notifications.show('Erfolgreich erstellt.', { severity: 'success' });
+            } else {
+              notifications.show('Der Eintrag konnte nicht erstellt werden. ' + r.error.message, { severity: 'error' });
+            }
+          }
+        }}
+      >
+        Erstellen
+      </Button>
+    </Toolbar>
+  );
+
+  const fetcher = useCallback(
+    async (table: Table) => {
+      setLoading(true);
+      const columnsResult = await supabase.rpc('get_column_info', {
+        schema_name: table.schema,
+        selected_table: table.name,
+      });
+
+      let query = supabase
+        // @ts-ignore
+        .schema(table.schema)
+        // @ts-ignore
+        .from(table.name)
+        .select('*', { count: 'exact' });
+
+      for (const filter of filterModel?.items ?? []) {
+        const { field, operator, value } = filter;
+        if (operator === 'contains') {
+          query = query.ilike(field, `%${value}%`);
+        } else if (operator === '=') {
+          query = query.eq(field, value);
+        } else if (operator === '!=') {
+          query = query.neq(field, value);
+        }
+        // Weitere Operatoren bei Bedarf
+      }
+
+      if (sortModel?.length) {
+        for (const sort of sortModel) {
+          query = query.order(sort.field, { ascending: sort.sort === 'asc' });
         }
       }
-    }}>
-      Erstellen
-    </Button>
-  </Toolbar >
 
-  const fetcher = useCallback(async (table: Table) => {
-    setLoading(true);
-    const columnsResult = await supabase.rpc("get_column_info", { schema_name: table.schema, selected_table: table.name });
-
-    let query = supabase
-      // @ts-ignore
-      .schema(table.schema)
-      // @ts-ignore
-      .from(table.name)
-      .select('*', { count: "exact" });
-
-    for (const filter of filterModel?.items ?? []) {
-      const { field, operator, value } = filter;
-      if (operator === 'contains') {
-        query = query.ilike(field, `%${value}%`);
-      } else if (operator === '=') {
-        query = query.eq(field, value);
-      } else if (operator === '!=') {
-        query = query.neq(field, value);
+      if (paginationModel) {
+        const { page, pageSize } = paginationModel;
+        const from = page * pageSize;
+        const to = from + pageSize - 1;
+        query = query.range(from, to);
       }
-      // Weitere Operatoren bei Bedarf
-    }
 
-    if (sortModel?.length) {
-      for (const sort of sortModel) {
-        query = query.order(sort.field, { ascending: sort.sort === 'asc' });
+      const { data, error, count } = await query;
+
+      if (columnsResult.error || error) {
+        notifications.show(columnsResult.error?.message, { severity: 'error' });
+        notifications.show(error?.message, { severity: 'error' });
+      } else {
+        setColumns(columnsResult.data ?? []);
+        setRowCount(count ?? 0);
+        setSelectedTableData(data);
       }
-    }
-
-    if (paginationModel) {
-      const { page, pageSize } = paginationModel;
-      const from = page * pageSize;
-      const to = from + pageSize - 1;
-      query = query.range(from, to);
-    }
-
-    const { data, error, count } = await query;
-
-    if (columnsResult.error || error) {
-      notifications.show(columnsResult.error?.message, { severity: "error" });
-      notifications.show(error?.message, { severity: "error" });
-    } else {
-      setColumns(columnsResult.data ?? []);
-      setRowCount(count ?? 0);
-      setSelectedTableData(data);
-    }
-    setLoading(false);
-  }, [filterModel, paginationModel, sortModel, notifications])
+      setLoading(false);
+    },
+    [filterModel, paginationModel, sortModel, notifications]
+  );
 
   useEffect(() => {
     supabase
@@ -180,12 +194,16 @@ const SupabaseClient = () => {
       .select('*')
       .then((result) => {
         if (result.data) {
-          setTables(result.data.map(x => ({ name: x.table_name, schema: x.table_schema })));
+          setTables(result.data.map((x) => ({ name: x.table_name, schema: x.table_schema })));
 
-          const table = searchParams.get("table");
-          const schema = searchParams.get("schema");
+          const table = searchParams.get('table');
+          const schema = searchParams.get('schema');
 
-          if (table && schema && result.data.filter(x => x.table_name === table && x.table_schema === schema).length > 0) {
+          if (
+            table &&
+            schema &&
+            result.data.filter((x) => x.table_name === table && x.table_schema === schema).length > 0
+          ) {
             setSelectedTable({ name: table, schema });
           }
         }
@@ -194,19 +212,23 @@ const SupabaseClient = () => {
   }, [client]);
 
   useEffect(() => {
-    if (selectedTable)
-      fetcher(selectedTable)
+    if (selectedTable) fetcher(selectedTable);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [paginationModel, sortModel, filterModel, selectedTable])
+  }, [paginationModel, sortModel, filterModel, selectedTable]);
 
   const tableSelectionChanged = (table: Table) => {
     setPaginationModel({ page: 0, pageSize: 50 });
     setFilterModel(undefined);
     setSortModel(undefined);
     setSelectedTable(table);
-    var newurl = window.location.protocol + "//" + window.location.host + window.location.pathname + `?schema=${table.schema}&table=${table.name}`;
+    var newurl =
+      window.location.protocol +
+      '//' +
+      window.location.host +
+      window.location.pathname +
+      `?schema=${table.schema}&table=${table.name}`;
     window.history.pushState({ path: newurl }, '', newurl);
-  }
+  };
 
   function getRowId(row: any) {
     switch (selectedTable?.name) {
@@ -228,24 +250,21 @@ const SupabaseClient = () => {
   }
 
   const handleDelete = async (id: GridRowId, row: GridValidRowModel) => {
-
     let query = supabase
       // @ts-ignore
       .schema(selectedTable?.schema)
       // @ts-ignore
       .from(selectedTable?.name)
-      .delete()
+      .delete();
 
-    Object.entries(row).forEach(element => {
-      query = query.eq(element[0], element[1])
+    Object.entries(row).forEach((element) => {
+      query = query.eq(element[0], element[1]);
     });
 
     const result = await query;
 
-    if (!result.error)
-      setSelectedTableData(selectedTableData.filter((row) => getRowId(row) !== id));
-    else
-      notifications.show("Could not delete row. " + result.error, { severity: "error" })
+    if (!result.error) setSelectedTableData(selectedTableData.filter((row) => getRowId(row) !== id));
+    else notifications.show('Could not delete row. ' + result.error, { severity: 'error' });
   };
 
   const handleUpdate = async (id: GridRowId, row: GridValidRowModel, update: any) => {
@@ -255,37 +274,48 @@ const SupabaseClient = () => {
       // @ts-ignore
       .from(selectedTable?.name)
       // @ts-ignore
-      .update(update)
+      .update(update);
 
-    Object.entries(row).forEach(element => {
-      query = query.eq(element[0], element[1])
+    Object.entries(row).forEach((element) => {
+      query = query.eq(element[0], element[1]);
     });
 
-    const result = await query.select("*");
+    const result = await query.select('*');
 
     if (result.data) {
-      const index = selectedTableData.findIndex((row) => getRowId(row) !== id)
-      setSelectedTableData([...selectedTableData.slice(0, index), { ...result.data }, ...selectedTableData.slice(index)]);
+      const index = selectedTableData.findIndex((row) => getRowId(row) !== id);
+      setSelectedTableData([
+        ...selectedTableData.slice(0, index),
+        { ...result.data },
+        ...selectedTableData.slice(index),
+      ]);
     } else {
-      notifications.show("Could not update row. " + result.error, { severity: "error" })
+      notifications.show('Could not update row. ' + result.error, { severity: 'error' });
     }
   };
 
   return (
     <Layout>
       <LoadingIndicator loading={loading} />
-      <ListItem dense onClick={async () => {
-        const result = await dialog.open(SelectTableDialog, { tables });
-        if (result)
-          tableSelectionChanged(result)
-      }} secondaryAction={<ExpandMoreOutlined />}>
-        <ListItemText primary={selectedTable?.name ?? "Nicht gewählt"} secondary={selectedTable?.schema ?? "Nicht gewählt"} />
+      <ListItem
+        dense
+        onClick={async () => {
+          const result = await dialog.open(SelectTableDialog, { tables });
+          if (result) tableSelectionChanged(result);
+        }}
+        secondaryAction={<ExpandMoreOutlined />}
+      >
+        <ListItemText
+          primary={selectedTable?.name ?? 'Nicht gewählt'}
+          secondary={selectedTable?.schema ?? 'Nicht gewählt'}
+        />
       </ListItem>
       <ErrorBoundary
         fallback={CustomNoRowsOverlay}
         onError={(error) => {
-          notifications.show(JSON.stringify(error), { severity: "error" });
-        }}>
+          notifications.show(JSON.stringify(error), { severity: 'error' });
+        }}
+      >
         <DataGrid
           columns={[
             ...columns.map((x) => {
@@ -293,41 +323,47 @@ const SupabaseClient = () => {
                 field: x.column_name,
                 headerName: x.column_name,
                 hideable: true,
-                width: 150
+                width: 150,
               } as GridColDef;
-            })
-          ].concat(columns.length > 0 ? [{
-            field: 'actions',
-            type: 'actions',
-            headerName: 'Actions',
-            width: 100,
-            cellClassName: 'actions',
-            getActions: ({ id, row }) => [
-              <GridActionsCellItem
-                icon={<Visibility />}
-                label="View"
-                onClick={async () => {
-                  const result = await dialog.open(ViewEntryDialog, { entry: row });
-                  if (result === "delete") {
-                    handleDelete(id, row)
-                  }
-                }}
-                color="inherit"
-              />,
-              <GridActionsCellItem
-                icon={<Edit />}
-                label="Edit"
-                className="textPrimary"
-                onClick={async () => {
-                  const result = await dialog.open(EditEntryDialog, { entry: row, columns });
-                  if (result) {
-                    handleUpdate(id, row, result)
-                  }
-                }}
-                color="inherit"
-              />
-            ]
-          }] : [])}
+            }),
+          ].concat(
+            columns.length > 0
+              ? [
+                  {
+                    field: 'actions',
+                    type: 'actions',
+                    headerName: 'Actions',
+                    width: 100,
+                    cellClassName: 'actions',
+                    getActions: ({ id, row }) => [
+                      <GridActionsCellItem
+                        icon={<Visibility />}
+                        label="View"
+                        onClick={async () => {
+                          const result = await dialog.open(ViewEntryDialog, { entry: row });
+                          if (result === 'delete') {
+                            handleDelete(id, row);
+                          }
+                        }}
+                        color="inherit"
+                      />,
+                      <GridActionsCellItem
+                        icon={<Edit />}
+                        label="Edit"
+                        className="textPrimary"
+                        onClick={async () => {
+                          const result = await dialog.open(EditEntryDialog, { entry: row, columns });
+                          if (result) {
+                            handleUpdate(id, row, result);
+                          }
+                        }}
+                        color="inherit"
+                      />,
+                    ],
+                  },
+                ]
+              : []
+          )}
           slots={{ noRowsOverlay: CustomNoRowsOverlay, toolbar: CustomToolbar }}
           loading={loading}
           rowCount={rowCount}
@@ -348,8 +384,8 @@ const SupabaseClient = () => {
           onFilterModelChange={setFilterModel}
           sx={{
             '--DataGrid-overlayHeight': '300px',
-            mb: "max(56px,env(safe-area-inset-bottom))",
-            maxHeight: "calc(100% - 61px - env(safe-area-inset-bottom))"
+            mb: 'max(56px,env(safe-area-inset-bottom))',
+            maxHeight: 'calc(100% - 61px - env(safe-area-inset-bottom))',
           }}
         />
       </ErrorBoundary>

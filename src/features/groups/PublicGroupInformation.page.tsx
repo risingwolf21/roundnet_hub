@@ -1,12 +1,13 @@
-import React from "react";
-import Layout from "src/components/layout/Layout";
-import PublicGroupInformation from "./PublicGroupInformation";
+import React from 'react';
+import Layout from '@/components/layout/Layout';
+import PublicGroupInformation from './PublicGroupInformation';
 
 const PublicGroupInformationPage = () => {
+  return (
+    <Layout appBarConfig={{ navigateBackPath: '/groups/list' }}>
+      <PublicGroupInformation />
+    </Layout>
+  );
+};
 
-  return <Layout appBarConfig={{ navigateBackPath: "/groups/list" }}>
-    <PublicGroupInformation />
-  </Layout>
-}
-
-export default PublicGroupInformationPage
+export default PublicGroupInformationPage;

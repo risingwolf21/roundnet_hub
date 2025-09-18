@@ -1,6 +1,6 @@
 import { PostgrestSingleResponse } from '@supabase/supabase-js';
 import _ from 'lodash';
-import { supabase } from 'src/lib/supabase';
+import { supabase } from '@/lib/supabase';
 import { fetchSimpleUser } from './UserRepository';
 
 export const fetchUserMatches = () =>
@@ -13,9 +13,7 @@ export const fetchUserMatches = () =>
     .order('created_at', { ascending: false });
 
 export const fetchMatch = () =>
-  supabase.schema("games")
-    .from("match")
-    .select(`
+  supabase.schema('games').from('match').select(`
      *,
       team_a:teams!match_team_a_fkey (
         name,
@@ -36,20 +34,17 @@ export const fetchMatch = () =>
         )
       ),
       sets(*)
-  `)
+  `);
 
 export const GamesRepository = {
   async fetchGamesForUser(): Promise<FullUserMatch[]> {
-    const result = await fetchUserMatches()
-      .throwOnError();
+    const result = await fetchUserMatches().throwOnError();
 
     return result.data ?? [];
   },
 
   async fetchGamesForEvent(eventId: string): Promise<FullMatch[]> {
-    const result = await fetchMatch()
-      .eq("event", eventId)
-      .throwOnError();
+    const result = await fetchMatch().eq('event', eventId).throwOnError();
 
     return result.data ?? [];
   },
@@ -64,20 +59,20 @@ export const GamesRepository = {
       .values() // turn the combined dictionary to array
       .value()
       .map((x) => ({ ...x }) as PlayerWithSimpleUser)
-      .sort((x, y) => x.name.localeCompare(y.name))
+      .sort((x, y) => x.name.localeCompare(y.name));
   },
 
   async reportScores(
     sets: { team_a_score: number; team_b_score: number }[],
     team_a: {
-      player_1: string,
-      player_2: string,
-      name: string,
+      player_1: string;
+      player_2: string;
+      name: string;
     },
     team_b: {
-      player_1: string,
-      player_2: string,
-      name: string
+      player_1: string;
+      player_2: string;
+      name: string;
     },
     event?: string
   ): Promise<PostgrestSingleResponse<string>> {
@@ -91,7 +86,7 @@ export const GamesRepository = {
         player_2b: team_b.player_2,
         team_a: team_a.name,
         team_b: team_b.name,
-        event
+        event,
       })
       .throwOnError();
   },

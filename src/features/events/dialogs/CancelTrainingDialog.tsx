@@ -1,7 +1,7 @@
 import { Box, Button, DialogContent, DialogContentText } from '@mui/material';
 import { SwipeableDialog } from '../../../components/SwipeableDialog';
 import React from 'react';
-import { EventsUserView } from 'src/types/supabaseTypes';
+import { EventsUserView } from '@/types/supabaseTypes';
 import { DialogProps } from '@toolpad/core';
 
 export const CancelTrainingDialog = ({ payload, open, onClose }: DialogProps<EventsUserView, boolean>) => {

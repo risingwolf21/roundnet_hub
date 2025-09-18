@@ -13,18 +13,24 @@ import {
   ListItemAvatar,
   ListItemText,
   TextField,
-  Typography
+  Typography,
 } from '@mui/material';
 import { captureException } from '@sentry/react';
 import { useNotifications } from '@toolpad/core/useNotifications';
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
-import Layout from 'src/components/layout/Layout';
-import { useCreateMatch, usePlayers, useTeams } from 'src/tanstack/games';
-import { GamesTable } from 'src/types/supabaseTypes';
+import Layout from '@/components/layout/Layout';
+import { useCreateMatch, usePlayers, useTeams } from '@/tanstack/games';
+import { GamesTable } from '@/types/supabaseTypes';
 import { useApplication } from '../auth/ApplicationContext';
 
-type Props = { options: SimpleUser[]; loading: boolean; label: string; value: SimpleUser | null; onSelect: (value: SimpleUser | null) => void };
+type Props = {
+  options: SimpleUser[];
+  loading: boolean;
+  label: string;
+  value: SimpleUser | null;
+  onSelect: (value: SimpleUser | null) => void;
+};
 const SelectPlayer = ({ options, loading, label, value, onSelect }: Props) => {
   return (
     <Autocomplete
@@ -58,7 +64,12 @@ const SelectPlayer = ({ options, loading, label, value, onSelect }: Props) => {
   );
 };
 
-type SelectTeamProps = { options: GamesTable<'teams'>[]; loading: boolean; label: string; onSelect: (value: GamesTable<'teams'> | null) => void };
+type SelectTeamProps = {
+  options: GamesTable<'teams'>[];
+  loading: boolean;
+  label: string;
+  onSelect: (value: GamesTable<'teams'> | null) => void;
+};
 const SelectTeam = ({ options, loading, label, onSelect }: SelectTeamProps) => {
   return (
     <Autocomplete
@@ -108,13 +119,20 @@ const ReportScore = () => {
   const { data: players = [], error, isLoading, refetch } = usePlayers();
   const { data: teams = [], error: teamsError, isLoading: teamsLoading, refetch: teamsRefetch } = useTeams();
 
-  const blocked1 = [player1a, player1b].filter(Boolean).map(u => u!.userId);
-  const blocked2 = [player2a, player2b].filter(Boolean).map(u => u!.userId);
+  const blocked1 = [player1a, player1b].filter(Boolean).map((u) => u!.userId);
+  const blocked2 = [player2a, player2b].filter(Boolean).map((u) => u!.userId);
 
   useEffect(() => {
     if (error || teamsError)
-      notifications.show(error?.message ?? teamsError?.message, { severity: "error", actionText: "Neu laden", onAction: () => { refetch(); teamsRefetch(); } })
-  }, [error, teamsError, notifications, refetch])
+      notifications.show(error?.message ?? teamsError?.message, {
+        severity: 'error',
+        actionText: 'Neu laden',
+        onAction: () => {
+          refetch();
+          teamsRefetch();
+        },
+      });
+  }, [error, teamsError, notifications, refetch]);
 
   const saveScores = () => {
     if (!player1a) {
@@ -154,27 +172,30 @@ const ReportScore = () => {
     let team_a_name = (surname1a.pop() ?? name1a) + '/' + (surname2a.pop() ?? name2a);
     let team_b_name = (surname1b.pop() ?? name1b) + '/' + (surname2b.pop() ?? name2b);
 
-    createMatch.mutate({
-      sets,
-      team_a: {
-        name: team_a_name,
-        player_1: player1a.userId,
-        player_2: player2a.userId
+    createMatch.mutate(
+      {
+        sets,
+        team_a: {
+          name: team_a_name,
+          player_1: player1a.userId,
+          player_2: player2a.userId,
+        },
+        team_b: {
+          name: team_b_name,
+          player_1: player1b.userId,
+          player_2: player2b.userId,
+        },
+        rating_enabled: rating_enabled,
+        created_by: user?.userId,
       },
-      team_b: {
-        name: team_b_name,
-        player_1: player1b.userId,
-        player_2: player2b.userId
-      },
-      rating_enabled: rating_enabled,
-      created_by: user?.userId
-    }, {
-      onSuccess: () => navigate("/matches"),
-      onError: (error) => {
-        captureException(error);
-        notifications.show(error.message, { severity: 'error' })
+      {
+        onSuccess: () => navigate('/matches'),
+        onError: (error) => {
+          captureException(error);
+          notifications.show(error.message, { severity: 'error' });
+        },
       }
-    })
+    );
   };
 
   return (
@@ -288,7 +309,7 @@ const ReportScore = () => {
               <ListItemAvatar>
                 <Checkbox checked={rating_enabled} onChange={(e, v) => setRatingEnabled(v)} />
               </ListItemAvatar>
-              <ListItemText primary={"Soll das Spiel in die Index Wertung eingehen?"} />
+              <ListItemText primary={'Soll das Spiel in die Index Wertung eingehen?'} />
             </ListItem>
           </Grid>
           <Grid size={12} sx={{ p: 2 }}>
@@ -305,7 +326,10 @@ const ReportScore = () => {
                       type="number"
                       value={x.team_a_score.toString()}
                       onChange={(e) => {
-                        setSets([...sets.filter((y) => y.set_number !== x.set_number), { ...x, team_a_score: Number(e.target.value) }]);
+                        setSets([
+                          ...sets.filter((y) => y.set_number !== x.set_number),
+                          { ...x, team_a_score: Number(e.target.value) },
+                        ]);
                       }}
                       label={`Satz ${x.set_number} - Team A`}
                     />
@@ -316,7 +340,10 @@ const ReportScore = () => {
                       type="number"
                       value={x.team_b_score.toString()}
                       onChange={(e) =>
-                        setSets([...sets.filter((y) => y.set_number !== x.set_number), { ...x, team_b_score: Number(e.target.value) }])
+                        setSets([
+                          ...sets.filter((y) => y.set_number !== x.set_number),
+                          { ...x, team_b_score: Number(e.target.value) },
+                        ])
                       }
                       label={`Satz ${x.set_number} - Team B`}
                     />
@@ -335,7 +362,14 @@ const ReportScore = () => {
               onClick={() =>
                 setSets([
                   ...sets,
-                  { id: (sets.length + 1).toString(), created_at: '', set_number: sets.length + 1, match: '', team_a_score: 0, team_b_score: 0 },
+                  {
+                    id: (sets.length + 1).toString(),
+                    created_at: '',
+                    set_number: sets.length + 1,
+                    match: '',
+                    team_a_score: 0,
+                    team_b_score: 0,
+                  },
                 ])
               }
             >

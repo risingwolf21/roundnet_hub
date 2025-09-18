@@ -1,45 +1,46 @@
-import { useMutation } from "@tanstack/react-query";
-import { queryClient } from 'src/lib/queryClient';
-import { AdminUsersRepository } from "src/repository/AdminUsersRepository";
-import { GroupWithUserMappings } from "src/types/supabaseTypes";
+import { useMutation } from '@tanstack/react-query';
+import { queryClient } from '@/lib/queryClient';
+import { AdminUsersRepository } from '@/repository/AdminUsersRepository';
+import { GroupWithUserMappings } from '@/types/supabaseTypes';
 
-export const useAddUsersMutation = (group: Group | null) => useMutation({
-  mutationFn: (users: User[]) => {
-    if (!group) {
-      return Promise.resolve(null);
-    }
-    return AdminUsersRepository.addUsersToGroup(group, users)
-  },
-  onMutate: async (newUsers: User[] | null) => {
-    if (!group)
-      return null;
+export const useAddUsersMutation = (group: Group | null) =>
+  useMutation({
+    mutationFn: (users: User[]) => {
+      if (!group) {
+        return Promise.resolve(null);
+      }
+      return AdminUsersRepository.addUsersToGroup(group, users);
+    },
+    onMutate: async (newUsers: User[] | null) => {
+      if (!group) return null;
 
-    await queryClient.cancelQueries({ queryKey: ['group', group.id] });
+      await queryClient.cancelQueries({ queryKey: ['group', group.id] });
 
-    const previousGroup = queryClient.getQueryData<GroupWithUserMappings>(['group', group.id]);
+      const previousGroup = queryClient.getQueryData<GroupWithUserMappings>(['group', group.id]);
 
-    if (!newUsers)
-      return { previousGroup }
+      if (!newUsers) return { previousGroup };
 
-    if (previousGroup) {
-      queryClient.setQueryData<GroupWithUserMappings>(['group', group.id], {
-        ...previousGroup,
-        users: [...previousGroup.users, ...newUsers.map(user => ({
-          user,
-          map: { group: group.id, user: user.userId, role: 'user' } as GroupUserMapping
-        }))]
-      });
-    }
+      if (previousGroup) {
+        queryClient.setQueryData<GroupWithUserMappings>(['group', group.id], {
+          ...previousGroup,
+          users: [
+            ...previousGroup.users,
+            ...newUsers.map((user) => ({
+              user,
+              map: { group: group.id, user: user.userId, role: 'user' } as GroupUserMapping,
+            })),
+          ],
+        });
+      }
 
-    return { previousGroup };
-  },
-  onError: (err, variables, context) => {
-    if (context?.previousGroup && group) {
-      queryClient.setQueryData(['group', group.id], context.previousGroup);
-    }
-  },
-  onSettled: () => {
-    if (group)
-      queryClient.invalidateQueries({ queryKey: ['group', group.id] });
-  },
-});
+      return { previousGroup };
+    },
+    onError: (_err, _variables, context) => {
+      if (context?.previousGroup && group) {
+        queryClient.setQueryData(['group', group.id], context.previousGroup);
+      }
+    },
+    onSettled: () => {
+      if (group) queryClient.invalidateQueries({ queryKey: ['group', group.id] });
+    },
+  });

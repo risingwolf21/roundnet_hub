@@ -1,41 +1,30 @@
-import {
-  Box,
-  Button,
-  List,
-  ListItem,
-  ListItemAvatar,
-  ListItemText,
-  ListSubheader,
-  Typography
-} from '@mui/material';
+import { Box, Button, List, ListItem, ListItemAvatar, ListItemText, ListSubheader, Typography } from '@mui/material';
 import Slider from '@mui/material/Slider';
 import { DialogProps } from '@toolpad/core';
 import React, { useMemo, useState } from 'react';
-import { useGrants } from 'src/features/auth/GrantsContext';
-import { Tables } from 'src/types/supabase-generated.types';
+import { useGrants } from '@/features/auth/GrantsContext';
+import { Tables } from '@/types/supabase-generated.types';
 import { SwipeableDialog } from '../../../components/SwipeableDialog';
 
 type Props = {
-  overview: Tables<"event_bring_overview">
-  pledges: FullEventPledges[]
-}
+  overview: Tables<'event_bring_overview'>;
+  pledges: FullEventPledges[];
+};
 
-const EventBringItemsDialog = ({
-  payload, open, onClose
-}: DialogProps<Props, number | null>) => {
-
+const EventBringItemsDialog = ({ payload, open, onClose }: DialogProps<Props, number | null>) => {
   const { user } = useGrants();
 
-  const userPledge = useMemo(() => payload.pledges.find(x => x.user_id === user.userId), [user])
+  const userPledge = useMemo(() => payload.pledges.find((x) => x.user_id === user.userId), [user]);
 
-  const [value, setValue] = useState(payload.pledges.find(x => x.user_id === user.userId)?.qty ?? 0)
+  const [value, setValue] = useState(payload.pledges.find((x) => x.user_id === user.userId)?.qty ?? 0);
 
   return (
     <SwipeableDialog
       open={open}
       onClose={() => onClose(null)}
       title="Gegenstand mitbringen"
-      actions={<Button onClick={() => onClose(value)}>Speichern</Button>}>
+      actions={<Button onClick={() => onClose(value)}>Speichern</Button>}
+    >
       <Box sx={{ p: 2 }}>
         <Typography sx={{ fontSize: 16, fontWeight: 'bold', mt: 2 }} color="text.secondary" gutterBottom>
           {payload.overview.name}
@@ -51,15 +40,22 @@ const EventBringItemsDialog = ({
             marks={true}
           />
         </Box>
-        <List disablePadding subheader={<ListSubheader disableGutters sx={{ fontSize: 16, fontWeight: 'bold', mt: 2 }}>Beitragende</ListSubheader>}>
-          {
-            payload.pledges.map(x => <ListItem disableGutters divider>
+        <List
+          disablePadding
+          subheader={
+            <ListSubheader disableGutters sx={{ fontSize: 16, fontWeight: 'bold', mt: 2 }}>
+              Beitragende
+            </ListSubheader>
+          }
+        >
+          {payload.pledges.map((x) => (
+            <ListItem disableGutters divider>
               <ListItemAvatar>
                 <Typography>{x.qty}x</Typography>
               </ListItemAvatar>
-              <ListItemText primary={x.user?.displayName ?? ""} />
-            </ListItem>)
-          }
+              <ListItemText primary={x.user?.displayName ?? ''} />
+            </ListItem>
+          ))}
         </List>
       </Box>
     </SwipeableDialog>

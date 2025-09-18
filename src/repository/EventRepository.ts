@@ -1,16 +1,17 @@
 import { PostgrestSingleResponse } from '@supabase/supabase-js';
 import { add, Duration, format, startOfDay } from 'date-fns';
 import { EventTable } from 'types/supabase';
-import { supabase } from 'src/lib/supabase';
+import { supabase } from '@/lib/supabase';
 import { Tables, TablesInsert, TablesUpdate } from '../types/supabase-generated.types';
 import { EventsUserView, EventWithGroup, FullComment } from '../types/supabaseTypes';
-import { formatDateToDatabase } from '../utils';
+import { formatDateToDatabase } from '@/utils';
 
-export const fetchEvents = () => supabase
-  .from('events')
-  .select(
-    '*, fullGroup: event_group(id, created_at, description, name, color), attendance: event_attendance_user_mapping ( state , user(userId, displayName, avatarUrl)  ), comments: event_comments ( comment, created_at, displayName, event, user ( displayName, userId, avatarUrl))'
-  );
+export const fetchEvents = () =>
+  supabase
+    .from('events')
+    .select(
+      '*, fullGroup: event_group(id, created_at, description, name, color), attendance: event_attendance_user_mapping ( state , user(userId, displayName, avatarUrl)  ), comments: event_comments ( comment, created_at, displayName, event, user ( displayName, userId, avatarUrl))'
+    );
 
 export const SupabaseEventRepository = {
   async updateEventAndAllRecurrences(updates: TablesUpdate<'events'>, key: string, oldStartTime: string) {
@@ -18,11 +19,11 @@ export const SupabaseEventRepository = {
       .from('events')
       .select('*')
       .eq('key', key)
-      .gte("startingDateTime", oldStartTime)
+      .gte('startingDateTime', oldStartTime)
       .returns<EventTable[]>();
 
     if (!data || error) {
-      throw new Error('Could not fetch events that need to be updated!')
+      throw new Error('Could not fetch events that need to be updated!');
     }
 
     const recurrenceFrom = (recurrence: EventRecurrence, index: number): Duration => {
@@ -39,44 +40,52 @@ export const SupabaseEventRepository = {
       }
     };
 
-    return Promise.all(data.map(async (e, index) => {
-      const updatedChanges = {
-        ...updates,
-        ...((updates.startingDateTime) && {
-          startingDateTime: formatDateToDatabase(
-            add(updates.startingDateTime, recurrenceFrom(updates.recurrence ?? e.recurrence, index))
-          )
-        }),
-        ...((updates.endDateTime) && {
-          endDateTime: formatDateToDatabase(
-            add(updates.endDateTime, recurrenceFrom(updates.recurrence ?? e.recurrence, index))
-          )
-        }),
-        ...((updates.meetingDateTime) && {
-          meetingDateTime: formatDateToDatabase(
-            add(updates.meetingDateTime, recurrenceFrom(updates.recurrence ?? e.recurrence, index))
-          )
-        }),
-        ...((updates.answerDeadline) && {
-          answerDeadline: formatDateToDatabase(
-            add(updates.answerDeadline, recurrenceFrom(updates.recurrence ?? e.recurrence, index))
-          )
-        }),
-      } as TablesUpdate<'events'>;
-      const result = await supabase.from('events').update(updatedChanges).eq("id", e.id).select("*").single().throwOnError();
-      return result;
-    }));
+    return Promise.all(
+      data.map(async (e, index) => {
+        const updatedChanges = {
+          ...updates,
+          ...(updates.startingDateTime && {
+            startingDateTime: formatDateToDatabase(
+              add(updates.startingDateTime, recurrenceFrom(updates.recurrence ?? e.recurrence, index))
+            ),
+          }),
+          ...(updates.endDateTime && {
+            endDateTime: formatDateToDatabase(
+              add(updates.endDateTime, recurrenceFrom(updates.recurrence ?? e.recurrence, index))
+            ),
+          }),
+          ...(updates.meetingDateTime && {
+            meetingDateTime: formatDateToDatabase(
+              add(updates.meetingDateTime, recurrenceFrom(updates.recurrence ?? e.recurrence, index))
+            ),
+          }),
+          ...(updates.answerDeadline && {
+            answerDeadline: formatDateToDatabase(
+              add(updates.answerDeadline, recurrenceFrom(updates.recurrence ?? e.recurrence, index))
+            ),
+          }),
+        } as TablesUpdate<'events'>;
+        const result = await supabase
+          .from('events')
+          .update(updatedChanges)
+          .eq('id', e.id)
+          .select('*')
+          .single()
+          .throwOnError();
+        return result;
+      })
+    );
   },
 
-  async updateEvent(eventId: string, event: TablesUpdate<'events'>): Promise<PostgrestSingleResponse<Tables<'events'>[]>> {
-    return supabase.from('events').update(event).eq('id', eventId).select("*").throwOnError();
+  async updateEvent(
+    eventId: string,
+    event: TablesUpdate<'events'>
+  ): Promise<PostgrestSingleResponse<Tables<'events'>[]>> {
+    return supabase.from('events').update(event).eq('id', eventId).select('*').throwOnError();
   },
 
   async insertEvent(event: TablesInsert<'events'>): Promise<PostgrestSingleResponse<Tables<'events'>[]>> {
-    return supabase.from('events')
-      .insert(event)
-      .select("*")
-      .throwOnError();
+    return supabase.from('events').insert(event).select('*').throwOnError();
   },
 
   async insertComment(
@@ -141,60 +150,56 @@ export const SupabaseEventRepository = {
 
   async fetchUserEvent(eventId: string): Promise<EventsUserView | null> {
     const result = await supabase
-      .schema("public")
-      .from("events_user_view")
-      .select("*")
-      .eq("id", eventId)
+      .schema('public')
+      .from('events_user_view')
+      .select('*')
+      .eq('id', eventId)
       .single()
       .throwOnError();
 
     if (result.data) {
       const { data: group } = await supabase
-        .schema("public")
-        .from("event_group")
-        .select("*")
-        .eq("id", result.data.group ?? "")
+        .schema('public')
+        .from('event_group')
+        .select('*')
+        .eq('id', result.data.group ?? '')
         .maybeSingle();
 
       return {
         ...result.data,
-        group: group
-      } as EventsUserView
+        group: group,
+      } as EventsUserView;
     }
     return null;
   },
 
   async fetchUserEvents(fetchMode: 'past' | 'upcoming'): Promise<EventsUserView[]> {
-    let query = supabase.schema("public").from("events_user_view").select("*").throwOnError();
+    let query = supabase.schema('public').from('events_user_view').select('*').throwOnError();
 
-    if (fetchMode === "past") {
+    if (fetchMode === 'past') {
       query = query
         .lt('startingDateTime', formatDateToDatabase(new Date()))
         .gt('startingDateTime', formatDateToDatabase(add(new Date(), { weeks: -8 })))
-        .order('startingDateTime', { ascending: false })
+        .order('startingDateTime', { ascending: false });
     } else {
       query = query
         .gt('startingDateTime', formatDateToDatabase(startOfDay(new Date())))
         .lt('startingDateTime', formatDateToDatabase(add(new Date(), { weeks: 8 })))
-        .order('startingDateTime', { ascending: true })
+        .order('startingDateTime', { ascending: true });
     }
 
     const result = await query;
 
     if (result.data) {
-      const foundGroups = [...new Set(result.data.map(x => x.group).filter(x => x !== null))]
-      const { data: groups } = await supabase
-        .schema("public")
-        .from("event_group")
-        .select("*")
-        .in("id", foundGroups);
+      const foundGroups = [...new Set(result.data.map((x) => x.group).filter((x) => x !== null))];
+      const { data: groups } = await supabase.schema('public').from('event_group').select('*').in('id', foundGroups);
 
-      return result.data.map(r => {
+      return result.data.map((r) => {
         return {
           ...r,
-          group: groups?.find(x => x.id === r.group) ?? null
-        } as EventsUserView
-      })
+          group: groups?.find((x) => x.id === r.group) ?? null,
+        } as EventsUserView;
+      });
     }
     return [];
   },
