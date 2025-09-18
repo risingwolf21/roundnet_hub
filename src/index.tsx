@@ -1,6 +1,6 @@
 import "./instrument";
 import * as Sentry from '@sentry/react';
-import React from 'react';
+import React, { Suspense } from 'react';
 import ReactDOM from 'react-dom/client';
 import 'reflect-metadata';
 import './global.css';
@@ -25,12 +25,14 @@ const root = ReactDOM.createRoot(document.getElementById('root') as HTMLElement,
 });
 
 dayjs.extend(updateLocale)
-dayjs.updateLocale('en', {
-  weekStart: 1,
-})
+dayjs.updateLocale('en', { weekStart: 1 })
 
 root.render(
-  <App />
+  <Sentry.ErrorBoundary fallback={<div>Etwas ist schiefgelaufen. Bitte neu laden.</div>}>
+    <Suspense fallback={<div style={{ padding: 16 }}>Lade…</div>}>
+      <App />
+    </Suspense>
+  </Sentry.ErrorBoundary>
 );
 
 serviceWorkerRegistration.register();

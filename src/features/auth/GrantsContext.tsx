@@ -1,8 +1,8 @@
 // GrantsContext.tsx
 import { captureException } from "@sentry/react";
 import * as React from "react";
-import { queryClient } from "src/App";
-import { supabase } from "src/components/services/supabase/supabaseClient";
+import { queryClient } from 'src/lib/queryClient';
+import { supabase } from "src/lib/supabase";
 import { UserWithGroups } from "src/types/supabaseTypes";
 
 type GrantsState = { perm: Set<string>; feat: Set<string> };

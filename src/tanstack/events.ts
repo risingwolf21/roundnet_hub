@@ -1,8 +1,8 @@
 import { logger } from "@sentry/react"
 import { useMutation, useQuery } from "@tanstack/react-query"
 import { format, isAfter } from "date-fns"
-import { queryClient } from "src/App"
-import { supabase } from "src/components/services/supabase/supabaseClient"
+import { queryClient } from 'src/lib/queryClient';
+import { supabase } from "src/lib/supabase"
 import { DeleteEventType } from "src/features/events/types"
 import { SupabaseEventRepository } from "src/repository/EventRepository"
 import { Tables, TablesInsert, TablesUpdate } from "src/types/supabase-generated.types"

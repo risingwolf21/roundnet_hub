@@ -18,7 +18,7 @@ import { Search, SearchIconWrapper, StyledInputBase } from '../../../components/
 import React, { useState } from 'react';
 import { SlideUpTransition } from '../../../utils';
 import { useQuery } from '@tanstack/react-query';
-import { supabase } from 'src/components/services/supabase/supabaseClient';
+import { supabase } from 'src/lib/supabase';
 import { DialogProps } from '@toolpad/core';
 
 type SearchAndSelectUserDialogProps = {

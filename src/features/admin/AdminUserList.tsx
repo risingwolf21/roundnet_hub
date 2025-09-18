@@ -6,7 +6,7 @@ import { captureException } from '@sentry/react';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { useNotifications } from '@toolpad/core/useNotifications';
 import React, { useState } from 'react';
-import { queryClient } from 'src/App';
+import { queryClient } from 'src/lib/queryClient';
 import Layout from '../../components/layout/Layout';
 import { AdminUsersRepository } from '../../repository/AdminUsersRepository';
 import { UserWithGroups } from '../../types/supabaseTypes';

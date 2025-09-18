@@ -6,7 +6,7 @@ import { useNotifications } from "@toolpad/core/useNotifications";
 import Compressor from 'compressorjs';
 import React, { useState } from "react";
 import CropImageDialog from "src/components/CropImageDialog";
-import { supabase } from "src/components/services/supabase/supabaseClient";
+import { supabase } from "src/lib/supabase";
 import { dataURLtoFile, readFile } from "src/utils";
 
 type Props = {

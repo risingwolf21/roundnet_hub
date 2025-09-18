@@ -17,7 +17,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router';
 import { useClient } from 'react-supabase';
 import { LoadingIndicator } from 'src/components/LoadingIndicator';
-import { supabase } from 'src/components/services/supabase/supabaseClient';
+import { supabase } from 'src/lib/supabase';
 import { SelectTableDialog } from './dialogs/SelectTableDialog';
 import { EditEntryDialog } from './EditEntryDialog';
 import { ViewEntryDialog } from './ViewEntryDialog';

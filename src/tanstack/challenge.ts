@@ -1,7 +1,7 @@
 import { InfiniteData, useInfiniteQuery, useMutation, useQuery } from "@tanstack/react-query";
 import { Dayjs } from "dayjs";
-import { queryClient } from "src/App";
-import { supabase } from "src/components/services/supabase/supabaseClient";
+import { queryClient } from 'src/lib/queryClient';
+import { supabase } from "src/lib/supabase";
 import { fetchChallengeWithGroup } from "src/repository/ChallengeRepository";
 import { ChallengePointsView, ChallengeStatWithUser } from "src/types/supabaseTypes";
 import { dayjsToDb, formatDateToDatabase, safeDayjsToDb } from "src/utils";

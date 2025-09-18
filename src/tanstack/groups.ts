@@ -1,7 +1,7 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { Omit } from "lodash";
-import { queryClient } from "src/App";
-import { supabase } from "src/components/services/supabase/supabaseClient";
+import { queryClient } from 'src/lib/queryClient';
+import { supabase } from "src/lib/supabase";
 import { GroupsRepository } from "src/repository/GroupsRepository";
 import { TablesUpdate } from "src/types/supabase-generated.types";
 import { FullUserMapping, GroupWithUserMappings } from "src/types/supabaseTypes";

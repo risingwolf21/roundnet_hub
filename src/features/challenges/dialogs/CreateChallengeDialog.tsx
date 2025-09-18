@@ -5,7 +5,7 @@ import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { DialogProps, NotificationsProvider, useDialogs, useNotifications } from "@toolpad/core";
 import dayjs from "dayjs";
 import React, { useState } from "react";
-import { supabase } from "src/components/services/supabase/supabaseClient";
+import { supabase } from "src/lib/supabase";
 import { CreateOrUpdateGroupDialog } from "src/features/groups/dialogs/CreateOrUpdateGroupDialog";
 import { useGroups } from "src/tanstack/groups";
 import { Tables } from "src/types/supabase-generated.types";

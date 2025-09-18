@@ -69,12 +69,6 @@ const PrivateRoute = () => {
   </GrantsProvider>
 }
 
-const NotificationProvider = () => {
-  const { user } = useApplication();
-
-  return <Outlet />
-}
-
 const router = sentryCreateBrowserRouter([
   {
     path: "/auth",
@@ -113,7 +107,6 @@ const router = sentryCreateBrowserRouter([
     children: [
       {
         path: "",
-        element: <NotificationProvider />,
         errorElement: <ErrorRouteElement />,
         children: [
           {

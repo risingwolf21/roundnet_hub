@@ -3,7 +3,7 @@ import Cancel from '@mui/icons-material/Cancel';
 import CheckCircle from '@mui/icons-material/CheckCircle';
 import { Alert, Button, Chip, CircularProgress, Container, ListItem, ListItemText, Stack } from '@mui/material';
 import React from 'react';
-import { supabase } from 'src/components/services/supabase/supabaseClient';
+import { supabase } from 'src/lib/supabase';
 
 // --- Helpers ---------------------------------------------------------------
 function urlBase64ToUint8Array(base64String: string) {

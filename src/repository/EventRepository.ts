@@ -1,7 +1,7 @@
 import { PostgrestSingleResponse } from '@supabase/supabase-js';
 import { add, Duration, format, startOfDay } from 'date-fns';
 import { EventTable } from 'types/supabase';
-import { supabase } from '../components/services/supabase/supabaseClient';
+import { supabase } from 'src/lib/supabase';
 import { Tables, TablesInsert, TablesUpdate } from '../types/supabase-generated.types';
 import { EventsUserView, EventWithGroup, FullComment } from '../types/supabaseTypes';
 import { formatDateToDatabase } from '../utils';

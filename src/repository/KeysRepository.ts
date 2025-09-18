@@ -1,4 +1,4 @@
-import { supabase } from '../components/services/supabase/supabaseClient';
+import { supabase } from 'src/lib/supabase';
 
 export const fetchItems = () => supabase.from('items').select('*, full_current_holder: user!keys_user_fkey(*)')
 export const fetchItemHistory = () => supabase

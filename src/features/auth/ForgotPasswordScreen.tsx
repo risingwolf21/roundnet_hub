@@ -9,7 +9,7 @@ import { useNotifications } from '@toolpad/core/useNotifications';
 import * as React from 'react';
 import { useState } from 'react';
 import { Navigate, useLocation, useNavigate } from 'react-router';
-import { supabase } from 'src/components/services/supabase/supabaseClient';
+import { supabase } from 'src/lib/supabase';
 import { HOMEPAGE } from 'src/constants';
 import { BRANDING } from 'src/utils';
 import { useApplication } from './ApplicationContext';

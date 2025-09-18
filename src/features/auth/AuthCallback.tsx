@@ -1,7 +1,7 @@
 import { Box, CircularProgress, Typography } from "@mui/material";
 import React, { useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router";
-import { supabase } from "src/components/services/supabase/supabaseClient";
+import { supabase } from "src/lib/supabase";
 import { BRANDING } from "src/utils";
 
 const AuthCallback = () => {

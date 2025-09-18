@@ -19,7 +19,7 @@ import Layout from '../../components/layout/Layout';
 import { AdminDrinksRepository } from '../../repository/AdminDrinksRepository';
 import { AdminDrinkItem } from './components/AdminDrinkItem';
 import EditDrinkDialog from './dialogs/EditDrinkDialog';
-import { supabase } from 'src/components/services/supabase/supabaseClient';
+import { supabase } from 'src/lib/supabase';
 
 const EMPTY_DRINK: Drink = {
   imageUrl: '',

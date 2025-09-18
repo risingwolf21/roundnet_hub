@@ -4,7 +4,7 @@ import { captureException } from "@sentry/react";
 import { DialogProps } from "@toolpad/core/useDialogs";
 import { NotificationsProvider, useNotifications } from "@toolpad/core/useNotifications";
 import React, { useState } from "react";
-import { supabase } from "src/components/services/supabase/supabaseClient";
+import { supabase } from "src/lib/supabase";
 import { useEloHistory, usePlayer, useUpdateIndexHidden } from "src/tanstack/player_data";
 import rg_small from "../../images/rgx_small.png";
 

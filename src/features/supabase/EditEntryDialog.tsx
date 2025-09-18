@@ -7,7 +7,7 @@ import dayjs from "dayjs"
 import _ from "lodash"
 import React, { useEffect, useState } from "react"
 import { NumberInput } from "src/components/mui/NumberInput"
-import { supabase } from "src/components/services/supabase/supabaseClient"
+import { supabase } from "src/lib/supabase"
 import { dayjsFromDb, dayjsToDb } from "src/utils"
 
 type EditEntryDialogPayload = {

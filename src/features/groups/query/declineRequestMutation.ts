@@ -1,6 +1,6 @@
 import { useMutation } from "@tanstack/react-query";
-import { queryClient } from "src/App";
-import { supabase } from "src/components/services/supabase/supabaseClient";
+import { queryClient } from 'src/lib/queryClient';
+import { supabase } from "src/lib/supabase";
 import { GroupWithUserMappings } from "src/types/supabaseTypes";
 
 export const useDeclineRequestMutation = (group: Group | null) => useMutation({

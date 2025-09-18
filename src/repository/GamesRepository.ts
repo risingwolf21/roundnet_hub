@@ -1,6 +1,6 @@
 import { PostgrestSingleResponse } from '@supabase/supabase-js';
 import _ from 'lodash';
-import { supabase } from 'src/components/services/supabase/supabaseClient';
+import { supabase } from 'src/lib/supabase';
 import { fetchSimpleUser } from './UserRepository';
 
 export const fetchUserMatches = () =>

@@ -5,7 +5,7 @@ import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { DialogProps, NotificationsProvider, useDialogs, useNotifications } from "@toolpad/core";
 import React, { useEffect, useState } from "react";
 import { NumberInput } from "src/components/mui/NumberInput";
-import { supabase } from "src/components/services/supabase/supabaseClient";
+import { supabase } from "src/lib/supabase";
 import SearchAndSelectUserDialog from "src/features/groups/dialogs/SearchAndSelectUserDialog";
 import { GamesRepository } from "src/repository/GamesRepository";
 import { EventsUserView, GamesTable } from "src/types/supabaseTypes";

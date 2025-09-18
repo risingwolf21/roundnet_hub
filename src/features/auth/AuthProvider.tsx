@@ -1,5 +1,5 @@
 import React, { createContext, PropsWithChildren, useCallback, useContext, useEffect, useState } from "react";
-import { supabase } from "src/components/services/supabase/supabaseClient";
+import { supabase } from "src/lib/supabase";
 import { SupabaseUserRepository } from "src/repository/UserRepository";
 import { UserWithGroups } from "src/types/supabaseTypes";
 

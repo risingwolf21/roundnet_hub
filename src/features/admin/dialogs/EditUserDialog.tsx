@@ -27,7 +27,7 @@ import {
 import { Box, Stack } from '@mui/system';
 import { useNotifications } from '@toolpad/core/useNotifications';
 import React, { FormEvent, useState } from 'react';
-import { supabase } from '../../../components/services/supabase/supabaseClient';
+import { supabase } from 'src/lib/supabase';
 import { UserWithGroups } from '../../../types/supabaseTypes';
 import { SlideUpTransition } from '../../../utils';
 import { UserRoleDialog } from './UserRoleDialog';

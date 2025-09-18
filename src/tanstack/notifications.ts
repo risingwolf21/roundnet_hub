@@ -1,6 +1,6 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { queryClient } from "src/App";
-import { supabase } from "src/components/services/supabase/supabaseClient";
+import { queryClient } from 'src/lib/queryClient';
+import { supabase } from "src/lib/supabase";
 import { Tables } from "src/types/supabase-generated.types";
 import { Notification } from "types/supabase";
 

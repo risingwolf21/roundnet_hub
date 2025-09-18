@@ -2,7 +2,7 @@
 import { captureException, logger } from '@sentry/react';
 import type { Session } from '@supabase/supabase-js';
 import { PropsWithChildren, useEffect, useRef } from 'react';
-import { supabase } from 'src/components/services/supabase/supabaseClient';
+import { supabase } from 'src/lib/supabase';
 import useDeviceId from 'src/hooks/useDeviceId';
 
 type Props = PropsWithChildren & {

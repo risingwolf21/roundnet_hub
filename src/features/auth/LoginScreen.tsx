@@ -6,7 +6,7 @@ import { useNotifications } from '@toolpad/core/useNotifications';
 import React, { useState } from 'react';
 import { Navigate, useLocation, useNavigate } from 'react-router';
 import { HOMEPAGE } from 'src/constants';
-import { supabase } from '../../components/services/supabase/supabaseClient';
+import { supabase } from 'src/lib/supabase';
 import { useApplication } from './ApplicationContext';
 import { BRANDING } from 'src/utils';
 

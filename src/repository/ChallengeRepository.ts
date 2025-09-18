@@ -1,6 +1,6 @@
 import { PostgrestSingleResponse } from '@supabase/supabase-js';
 import { Dayjs } from 'dayjs';
-import { supabase } from '../components/services/supabase/supabaseClient';
+import { supabase } from 'src/lib/supabase';
 import { dayjsToDb } from '../utils';
 
 export const fetchChallengeWithGroup = () => supabase

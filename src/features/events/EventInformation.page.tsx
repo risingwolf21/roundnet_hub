@@ -6,7 +6,7 @@ import { useDialogs, useNotifications } from '@toolpad/core';
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, useParams } from 'react-router';
-import { queryClient } from 'src/App';
+import { queryClient } from 'src/lib/queryClient';
 import { PullToRefresh } from 'src/components/pull-to-refresh/PullToRefresh';
 import { useGrants } from 'src/features/auth/GrantsContext';
 import EventInformationLoading from 'src/features/events/components/EventInformationLoading';

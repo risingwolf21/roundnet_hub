@@ -1,5 +1,5 @@
 import { PostgrestSingleResponse } from '@supabase/supabase-js';
-import { supabase } from '../components/services/supabase/supabaseClient';
+import { supabase } from 'src/lib/supabase';
 import { DrinkCounter } from '../types/supabaseTypes';
 
 export const fetchFullHistory = () => supabase

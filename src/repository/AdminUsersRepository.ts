@@ -1,7 +1,7 @@
 import { PostgrestSingleResponse } from '@supabase/supabase-js';
 import { UserEdited } from 'src/features/admin/dialogs/EditUserDialog';
 import { UserWithGroups } from 'src/types/supabaseTypes';
-import { supabase } from '../components/services/supabase/supabaseClient';
+import { supabase } from 'src/lib/supabase';
 import { Tables } from 'src/types/supabase-generated.types';
 
 export const fetchGroupWithUsers = () => supabase.from('event_group').select('*, mapping: group_user_mapping ( user: user(*), group, role )');

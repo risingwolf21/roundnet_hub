@@ -8,7 +8,7 @@ import * as React from 'react';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { BRANDING } from 'src/utils';
-import { supabase } from '../../components/services/supabase/supabaseClient';
+import { supabase } from 'src/lib/supabase';
 import { HOMEPAGE } from '../../constants';
 
 const mergeSlotSx = (defaultSx: SxProps<Theme>, slotProps?: { sx?: SxProps<Theme> }) => {
