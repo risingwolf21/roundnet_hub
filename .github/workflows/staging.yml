@@ -71,15 +71,16 @@ jobs:
       - run: supabase test db
 
   build:
-    name: 'Build: ${{matrix.env.name}}'
-    if: inputs.publish == 'All' || inputs.publish == ${{matrix.env.name}}
-    runs-on: ubuntu-latest
-    needs: db-test
     strategy:
       fail-fast: false
       matrix:
         env:
           - { name: 'Roundnet Karlsruhe', mode: karlsruhe-stg }
+    name: 'Build: ${{matrix.env.name}}'
+    if: inputs.publish == 'All' || inputs.publish == ${{ matrix.env.name }}
+    runs-on: ubuntu-latest
+    needs: db-test
+    
 
     environment:
       name: ${{ matrix.env.name }}
@@ -123,15 +124,16 @@ jobs:
           path: ${{github.workspace}}/build
 
   deploy:
-    runs-on: ubuntu-latest
-    needs: build
-    if: inputs.publish == 'All' || inputs.publish == ${{matrix.env.name}}
-    name: 'Deploy: ${{matrix.env.name}}'
     strategy:
       fail-fast: false
       matrix:
         env:
           - { name: 'Roundnet Karlsruhe', firebase_project: roundnet-karlsruhe, firebase_target: staging }
+    runs-on: ubuntu-latest
+    needs: build
+    if: inputs.publish == 'All' || inputs.publish == ${{ matrix.env.name }}
+    name: 'Deploy: ${{matrix.env.name}}'
+
 
     environment:
       name: ${{ matrix.env.name }}
