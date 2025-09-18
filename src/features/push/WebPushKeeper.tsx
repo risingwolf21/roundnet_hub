@@ -36,21 +36,33 @@ export default function WebPushKeeper({
     (async () => {
       try {
         if (!session?.user) {
-          console.error("webpush", "not_available_without_a_user");
+          logger.error("webpush_not_available_without_a_user", {
+            type: "webpush",
+            message: "not_available_without_a_user"
+          })
           return;
         }
         if (!('serviceWorker' in navigator) || !('PushManager' in window) || !vapidPublicKey) {
-          console.error("webpush", "not_available");
+          logger.error("webpush_not_available", {
+            type: "webpush",
+            message: "not_available"
+          })
           return;
         }
         if (Notification.permission === 'default') {
           const perm = await Notification.requestPermission();
           if (perm !== 'granted') {
-            console.error("webpush", "notification_permission_denied");
+            logger.error("webpush_notification_permission_denied", {
+              type: "webpush",
+              message: "notification_permission_denied"
+            })
             return;
           }
         } else if (Notification.permission === "denied") {
-          console.error("webpush", "notification_permission_denied");
+          logger.error("webpush_notification_permission_denied", {
+            type: "webpush",
+            message: "notification_permission_denied"
+          })
           return;
         }
         const reg = await navigator.serviceWorker.ready;
@@ -78,14 +90,19 @@ export default function WebPushKeeper({
         if (persisted === sig) return;
         localStorage.setItem('push:lastSig', sig);
 
-        await upsertToDb(endpoint, p256dh, auth, `user: ${session.user.id}`, "origin: useEffect");
+        await upsertToDb(endpoint, p256dh, auth, { "user": session.user.id }, { "origin": "useEffect" });
       } catch (e: any) {
-        captureException(e);
+        logger.error("webpush_subscribe_failed", {
+          type: "webpush",
+          message: "subscribe_failed",
+          user: session?.user.id,
+          error: e
+        });
       }
     })();
   }, [session?.user?.id, vapidPublicKey]);
 
-  async function upsertToDb(p_endpoint: string, p_p256dh: string, p_auth: string, ...params: string[]) {
+  async function upsertToDb(p_endpoint: string, p_p256dh: string, p_auth: string, ...params: any[]) {
     const { error } = await supabase.rpc("upsert_webpush_subscription", {
       p_endpoint,
       p_p256dh,
@@ -96,7 +113,11 @@ export default function WebPushKeeper({
         : /iPhone|iPad|iPod/i.test(navigator.userAgent) ? 'ios' : 'desktop',
     });
     if (error) throw error;
-    console.log("webpush", "subscribe_successful", params)
+    logger.info("webpush_subscribe_successful", {
+      type: "webpush",
+      message: "subscribe_successful",
+      ...params
+    });
   }
 
   return children;
