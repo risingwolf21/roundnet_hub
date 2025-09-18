@@ -11,7 +11,7 @@ import { clientsClaim } from 'workbox-core';
 import { ExpirationPlugin } from 'workbox-expiration';
 import { createHandlerBoundToURL, precacheAndRoute } from 'workbox-precaching';
 import { registerRoute } from 'workbox-routing';
-import { CacheFirst, NetworkFirst } from 'workbox-strategies';
+import { CacheFirst } from 'workbox-strategies';
 import { CacheableResponsePlugin } from 'workbox-cacheable-response';
 
 const SW_VERSION = '2025-09-13T21-55';
@@ -24,6 +24,8 @@ clientsClaim();
 // even if you decide not to use precaching. See https://cra.link/PWA
 
 precacheAndRoute(self.__WB_MANIFEST);
+
+const SPA_INDEX = new URL('index.html', self.registration.scope).href;
 
 // Set up App Shell-style routing, so that all navigation requests
 // are fulfilled with your index.html shell. Learn more at
@@ -47,10 +49,9 @@ registerRoute(
 
     return true;
   },
-  createHandlerBoundToURL(import.meta.env.PUBLIC_URL + '/index.html')
+  createHandlerBoundToURL(SPA_INDEX)
 );
 
-registerRoute(({ request }) => request.mode === 'navigate', new NetworkFirst({ cacheName: 'html' }));
 
 registerRoute(
   ({ request }) => request.destination === 'image',
@@ -77,7 +78,6 @@ self.addEventListener('message', (event) => {
 });
 
 self.addEventListener('install', () => self.skipWaiting());
-self.addEventListener('activate', (e) => e.waitUntil(self.clients.claim()));
 
 function safeParseJSON(data) {
   try {
@@ -105,8 +105,11 @@ self.addEventListener('push', (event) => {
   console.log('[SW] push event raw=', raw);
   const { title, body, url, tag, renotify } = extractPayload(raw);
 
-  const icon = self.location.origin + '/' + import.meta.env.VITE_WEBSITE_PATH + '/android-chrome-192x192.png';
-  const badge = self.location.origin + '/' + import.meta.env.VITE_WEBSITE_PATH + '/badge.png';
+
+  const PREFIX = import.meta.env.VITE_ICON_PREFIX || new URL('.', self.registration.scope).pathname;
+  const icon = `${PREFIX.replace(/\/$/, '')}/android-chrome-192x192.png`;
+  const badge = `${PREFIX.replace(/\/$/, '')}/badge.png`;
+
 
   const options = {
     body,
@@ -122,7 +125,7 @@ self.addEventListener('push', (event) => {
     .then((clients) =>
       clients.forEach((c) => c.postMessage({ type: 'push_received', payload: { title, body, url }, sw: SW_VERSION }))
     )
-    .catch(() => {});
+    .catch(() => { });
 
   event.waitUntil(self.registration.showNotification(title, options));
 });
@@ -152,6 +155,15 @@ function arrayBufferToBase64(buf) {
   return btoa(str);
 }
 
+function urlBase64ToUint8Array(base64String) {
+  const padding = '='.repeat((4 - (base64String.length % 4)) % 4);
+  const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
+  const rawData = atob(base64);
+  const outputArray = new Uint8Array(rawData.length);
+  for (let i = 0; i < rawData.length; ++i) outputArray[i] = rawData.charCodeAt(i);
+  return outputArray;
+}
+
 self.addEventListener('pushsubscriptionchange', (event) => {
   event.waitUntil(
     (async () => {
@@ -160,7 +172,7 @@ self.addEventListener('pushsubscriptionchange', (event) => {
         const reg = await self.registration;
         const sub = await reg.pushManager.subscribe({
           userVisibleOnly: true,
-          applicationServerKey: vapid,
+          applicationServerKey: urlBase64ToUint8Array(vapid),
         });
 
         const params = {

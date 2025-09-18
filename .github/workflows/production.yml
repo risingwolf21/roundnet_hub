@@ -35,7 +35,7 @@ jobs:
           node-version: ${{ matrix.node-version }}
 
       - name: Install dependencies
-        run: yarn install
+        run: yarn install --frozen-lockfile
 
       - name: Cache node_modules
         uses: actions/cache@v3
@@ -79,37 +79,15 @@ jobs:
     runs-on: ubuntu-latest
     needs: db-test
     strategy:
+      fail-fast: false
       matrix:
         env:
-          - name: 'Roundnet Karlsruhe'
-            firebase_target: production
-            firebase_project: roundnet-karlsruhe
-            firebase_url: https://roundnet-karlsruhe.web.app
-            website_path: roundnet-karlsruhe
-            website_manifest: manifest-roundnet-karlsruhe.json
-            supabase_url_secret: PRODUCTION_DB_URL
-            supabase_key_secret: PRODUCTION_ANON_KEY
-            openweather_api_key: OPENWEATHER_API_KEY
-            supabase_project_id: PROJECT_ID
-            vapid_public_key: VAPID_PUBLIC_PRODUCTION_KEY
-
-
-          - name: 'Munich Roundnet'
-            firebase_target: munich-roundnet-production
-            firebase_project: roundnet-karlsruhe
-            firebase_url: https://munich-roundnet.web.app
-            website_path: munich-roundnet
-            website_manifest: manifest-munich-roundnet.json
-            supabase_url_secret: PRODUCTION_DB_URL
-            supabase_key_secret: PRODUCTION_ANON_KEY
-            openweather_api_key: OPENWEATHER_API_KEY
-            supabase_project_id: PROJECT_ID
-            vapid_public_key: VAPID_PUBLIC_PRODUCTION_KEY
-
+          - { name: 'Roundnet Karlsruhe', mode: karlsruhe, firebase_project: roundnet-karlsruhe, firebase_target: production }
+          - { name: 'Munich Roundnet',    mode: munich,    firebase_project: roundnet-karlsruhe, firebase_target: munich-roundnet-production }
 
     environment:
       name: ${{ matrix.env.name }}
-      url: ${{ matrix.env.firebase_url }}
+      url: ${{ vars.PUBLIC_URL }}
 
     steps:
       - uses: actions/checkout@v2
@@ -135,18 +113,20 @@ jobs:
           path: ${{github.workspace}}/public
 
       - name: Build
-        run: yarn run build:production
+        run: yarn build --mode ${{ matrix.env.mode }}
         env:
-          PUBLIC_URL: ${{ matrix.env.firebase_url }}
-          VITE_PUBLIC_URL: ${{ matrix.env.firebase_url }}
-          VITE_SUPABASE_API_KEY: ${{ secrets[matrix.env.supabase_key_secret] }}
-          VITE_SUPABASE_URL: ${{ vars[matrix.env.supabase_url_secret] }}
-          VITE_SUPABASE_PROJECT_ID: ${{ vars[matrix.env.supabase_project_id] }}
-          VITE_WEBSITE_PATH: ${{ matrix.env.website_path }}
-          VITE_MANIFEST_JSON: ${{ matrix.env.website_manifest }}
-          VITE_WEBSITE_NAME: ${{ matrix.env.name }}
-          VITE_OPENWEATHER_API_KEY: ${{secrets[matrix.env.openweather_api_key]}}
-          VITE_VAPID_PUBLIC_KEY: ${{ vars[matrix.env.vapid_public_key] }}
+          VITE_PUBLIC_URL:            ${{ vars.PUBLIC_URL }}
+          VITE_WEBSITE_NAME:          ${{ vars.WEBSITE_NAME }}
+          VITE_SHORT_NAME:            ${{ vars.SHORT_NAME }}
+          VITE_THEME_COLOR:           ${{ vars.THEME_COLOR }}
+          VITE_BG_COLOR:              ${{ vars.BG_COLOR }}
+          VITE_ICON_PREFIX:           ${{ vars.ICON_PREFIX }}
+
+          VITE_SUPABASE_URL:          ${{ vars.DB_URL }}
+          VITE_SUPABASE_ANON_KEY:     ${{ secrets.PRODUCTION_ANON_KEY }}
+          VITE_SUPABASE_PROJECT_ID:   ${{ vars.PROJECT_ID }}
+          VITE_OPENWEATHER_API_KEY:   ${{ secrets.OPENWEATHER_API_KEY }}
+          VITE_VAPID_PUBLIC_KEY:      ${{ vars.VAPID_PUBLIC_KEY }}
 
       - uses: actions/upload-artifact@v4
         with:
@@ -159,23 +139,15 @@ jobs:
     if: inputs.publish == 'All' || inputs.publish == matrix.env.name
     name: 'Deploy: ${{matrix.env.name}}'
     strategy:
+      fail-fast: false
       matrix:
         env:
-          - name: 'Roundnet Karlsruhe'
-            firebase_target: production
-            firebase_project: roundnet-karlsruhe
-            firebase_url: https://roundnet-karlsruhe.web.app
-            website_path: roundnet-karlsruhe
-
-          - name: 'Munich Roundnet'
-            firebase_target: munich-roundnet-production
-            firebase_project: roundnet-karlsruhe
-            firebase_url: https://munich-roundnet.web.app
-            website_path: munich-roundnet
+          - { name: 'Roundnet Karlsruhe', mode: karlsruhe, firebase_project: roundnet-karlsruhe, firebase_target: production }
+          - { name: 'Munich Roundnet',    mode: munich,    firebase_project: roundnet-karlsruhe, firebase_target: munich-roundnet-production }
 
     environment:
       name: ${{ matrix.env.name }}
-      url: ${{ matrix.env.firebase_url }}
+      url:  ${{ vars.PUBLIC_URL }}
 
     steps:
       - uses: actions/checkout@v2

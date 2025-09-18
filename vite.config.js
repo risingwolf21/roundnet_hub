@@ -1,41 +1,80 @@
-import { fileURLToPath, URL } from 'node:url'
-import { defineConfig } from 'vite';
+import { fileURLToPath, URL } from 'node:url';
+import { defineConfig, loadEnv } from 'vite';
 import react from '@vitejs/plugin-react';
 import { VitePWA } from 'vite-plugin-pwa';
+import { visualizer } from 'rollup-plugin-visualizer';
+
+function pathFromPublicUrl(publicUrl) {
+  try {
+    if (!publicUrl) return '/';
+    const u = new URL(publicUrl);
+    // leere oder "/" -> root
+    return u.pathname && u.pathname !== '/' ? (u.pathname.endsWith('/') ? u.pathname : `${u.pathname}/`) : '/';
+  } catch {
+    // falls nur ein Pfad übergeben wurde (z. B. "/foo/")
+    return publicUrl.startsWith('/') ? publicUrl : `/${publicUrl}`;
+  }
+}
 
 export default defineConfig(({ mode }) => {
-  const isAnalyze = mode === 'analyze';
+
+  const env = loadEnv(mode, process.cwd(), '');
+
+  const APP_NAME = env.VITE_WEBSITE_NAME ?? 'App';
+  const SHORT_NAME = env.VITE_SHORT_NAME ?? APP_NAME;
+  const THEME_COLOR = env.VITE_THEME_COLOR ?? '#0b5fff';
+  const BG_COLOR = env.VITE_BG_COLOR ?? '#ffffff';
+  const PUBLIC_URL = env.VITE_PUBLIC_URL; // z.B. https://munich-roundnet.web.app/  oder https://host/app/
+  const BASE_PATH = pathFromPublicUrl(PUBLIC_URL); // leitet base/scope/start_url ab
+  const START_URL = env.VITE_START_URL ?? BASE_PATH; // überschreibbar
+  const SCOPE = env.VITE_SCOPE ?? BASE_PATH;     // überschreibbar
+  const ICON_PREFIX = env.VITE_ICON_PREFIX ?? '/icons'; // z.B. /icons/roundnet-karlsruhe oder /icons/munich-roundnet
+  const ENABLE_PWA_DEV = env.VITE_PWA_DEV === 'true';      // SW im Dev aktiv? meist false
+  const IS_ANALYZE = mode === 'analyze';
+
 
   return {
+    base: BASE_PATH,
     plugins: [
       react(),
       VitePWA({
-        // wir verwenden DEINEN SW
+        strategies: 'injectManifest',
         srcDir: 'src',
         filename: 'service-worker.js',
-        strategies: 'injectManifest',
+        registerType: 'autoUpdate',
         injectManifest: {
-          globPatterns: ['**/*.{js,css,html,svg,png,ico}']
+          globPatterns: ['**/*.{js,css,html,svg,png,ico,webp,woff2}'],
         },
-        registerType: 'prompt', // zeigt Update-Prompt (siehe register)
         devOptions: {
-          enabled: true, // SW auch im dev für Tests (kannst du auf false setzen)
+          enabled: ENABLE_PWA_DEV,
           type: 'module'
         },
         manifest: {
-          name: 'Deine App',
-          short_name: 'App',
-          start_url: '/',
+          name: APP_NAME,
+          short_name: SHORT_NAME,
+          start_url: START_URL,
+          scope: SCOPE,
           display: 'standalone',
-          background_color: '#ffffff',
-          theme_color: '#0b5fff',
+          background_color: BG_COLOR,
+          theme_color: THEME_COLOR,
           icons: [
-            { src: '/icons/icon-192.png', sizes: '192x192', type: 'image/png' },
-            { src: '/icons/icon-512.png', sizes: '512x512', type: 'image/png' }
-          ]
-        }
+            { src: `${ICON_PREFIX}/favicon.ico`, sizes: '48x48', type: 'image/x-icon' },
+            { src: `${ICON_PREFIX}/android-chrome-192x192.png`, sizes: '192x192', type: 'image/png', purpose: 'any maskable' },
+            { src: `${ICON_PREFIX}/android-chrome-512x512.png`, sizes: '512x512', type: 'image/png', purpose: 'any maskable' },
+          ],
+          shortcuts: [
+            { name: 'View account', url: `${BASE_PATH}user` },
+            { name: 'View challenges', url: `${BASE_PATH}challenges` },
+            { name: 'View upcoming events', url: `${BASE_PATH}training` },
+            { name: 'View groups', url: `${BASE_PATH}groups` },
+          ],
+          ...(env.VITE_MANIFEST_CANONICAL_URL
+            ? { related_applications: [{ platform: 'webapp', url: env.VITE_MANIFEST_CANONICAL_URL }] }
+            : {}),
+        },
+        includeAssets: ['favicon.ico'],
       }),
-      isAnalyze && visualizer({ open: true, gzipSize: true })
+      IS_ANALYZE && visualizer({ open: true, gzipSize: true })
     ].filter(Boolean),
     build: {
       target: 'es2020',
