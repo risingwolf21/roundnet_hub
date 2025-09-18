@@ -70,22 +70,12 @@ jobs:
       - run: supabase db start
       - run: supabase test db
 
-  build:
-    strategy:
-      fail-fast: false
-      matrix:
-        env:
-          - { name: 'Roundnet Karlsruhe', mode: karlsruhe-stg }
-    name: 'Build: ${{matrix.env.name}}'
-    if: ${{ github.event_name != 'workflow_dispatch'
-        || github.event.inputs.publish == 'All'
-        || github.event.inputs.publish == matrix.env.name }}
+  build-karlsruhe:
+    name: 'Build Karlsruhe Staging'
     runs-on: ubuntu-latest
     needs: db-test
-    
-
     environment:
-      name: ${{ matrix.env.name }}
+      name: 'Roundnet Karlsruhe Staging'
       url: ${{ vars.PUBLIC_PRODUCTION_URL }}
 
     steps:
@@ -112,7 +102,7 @@ jobs:
           path: ${{github.workspace}}/public
 
       - name: Build
-        run: yarn build --mode ${{ matrix.env.mode }}
+        run: yarn build --mode karlsruhe-stg
         env:
           VITE_SUPABASE_URL:          ${{ vars.SUPABASE_DB_URL }}
           VITE_SUPABASE_ANON_KEY:     ${{ secrets.SUPABASE_ANON_KEY }}
@@ -122,25 +112,16 @@ jobs:
 
       - uses: actions/upload-artifact@v4
         with:
-          name: '${{ matrix.env.website_path }}-build'
+          name: '${{ vars.WEBSITE_PATH }}-build'
           path: ${{github.workspace}}/build
 
-  deploy:
-    strategy:
-      fail-fast: false
-      matrix:
-        env:
-          - { name: 'Roundnet Karlsruhe', firebase_project: roundnet-karlsruhe, firebase_target: staging }
+  deploy-karlsruhe:
     runs-on: ubuntu-latest
-    needs: build
-    if: ${{ github.event_name != 'workflow_dispatch'
-        || github.event.inputs.publish == 'All'
-        || github.event.inputs.publish == matrix.env.name }}
-    name: 'Deploy: ${{matrix.env.name}}'
-
+    needs: build-karlsruhe
+    name: 'Deploy Karlsruhe'
 
     environment:
-      name: ${{ matrix.env.name }}
+      name: 'Roundnet Karlsruhe Staging'
       url:  ${{ vars.PUBLIC_PRODUCTION_URL }}
 
     steps:
@@ -153,7 +134,7 @@ jobs:
 
       - uses: actions/download-artifact@v4
         with:
-          name: '${{ matrix.env.website_path }}-build'
+          name: '${{ vars.WEBSITE_PATH }}-build'
           path: ${{github.workspace}}/build
 
       - uses: FirebaseExtended/action-hosting-deploy@v0
@@ -161,5 +142,5 @@ jobs:
           repoToken: '${{ secrets.GITHUB_TOKEN }}'
           firebaseServiceAccount: '${{ secrets.FIREBASE_SERVICE_ACCOUNT_ROUNDNET_KARLSRUHE }}'
           channelId: live
-          projectId: ${{ matrix.env.firebase_project }}
-          target: ${{ matrix.env.firebase_target }}
+          projectId: ${{ vars.FIREBASE_PROJECT }}
+          target: ${{ vars.FIREBASE_TARGET }}

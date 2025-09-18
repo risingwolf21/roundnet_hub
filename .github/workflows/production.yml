@@ -73,23 +73,15 @@ jobs:
       - run: supabase db start
       - run: supabase test db
 
-  build:
-    strategy:
-      fail-fast: false
-      matrix:
-        env:
-          - { name: 'Roundnet Karlsruhe', mode: karlsruhe, firebase_project: roundnet-karlsruhe, firebase_target: production }
-          - { name: 'Munich Roundnet',    mode: munich,    firebase_project: roundnet-karlsruhe, firebase_target: munich-roundnet-production }
-
-    name: 'Build: ${{matrix.env.name}}'
+  build-karlsruhe:
+    name: 'Build Karlsruhe'
     if: ${{ github.event_name != 'workflow_dispatch'
         || github.event.inputs.publish == 'All'
-        || github.event.inputs.publish == matrix.env.name }}
+        || github.event.inputs.publish == 'Roundnet Karlsruhe' }}
     runs-on: ubuntu-latest
     needs: db-test
-
     environment:
-      name: ${{ matrix.env.name }}
+      name: 'Roundnet Karlsruhe'
       url: ${{ vars.PUBLIC_URL }}
 
     steps:
@@ -116,15 +108,8 @@ jobs:
           path: ${{github.workspace}}/public
 
       - name: Build
-        run: yarn build --mode ${{ matrix.env.mode }}
+        run: yarn build --mode karlsruhe
         env:
-          VITE_PUBLIC_URL:            ${{ vars.PUBLIC_URL }}
-          VITE_WEBSITE_NAME:          ${{ vars.WEBSITE_NAME }}
-          VITE_SHORT_NAME:            ${{ vars.SHORT_NAME }}
-          VITE_THEME_COLOR:           ${{ vars.THEME_COLOR }}
-          VITE_BG_COLOR:              ${{ vars.BG_COLOR }}
-          VITE_ICON_PREFIX:           ${{ vars.ICON_PREFIX }}
-
           VITE_SUPABASE_URL:          ${{ vars.DB_URL }}
           VITE_SUPABASE_ANON_KEY:     ${{ secrets.PRODUCTION_ANON_KEY }}
           VITE_SUPABASE_PROJECT_ID:   ${{ vars.PROJECT_ID }}
@@ -133,26 +118,18 @@ jobs:
 
       - uses: actions/upload-artifact@v4
         with:
-          name: '${{ matrix.env.website_path }}-build'
+          name: '${{ vars.WEBSITE_PATH }}-build'
           path: ${{github.workspace}}/build
 
-  deploy:
-    strategy:
-      fail-fast: false
-      matrix:
-        env:
-          - { name: 'Roundnet Karlsruhe', mode: karlsruhe, firebase_project: roundnet-karlsruhe, firebase_target: production }
-          - { name: 'Munich Roundnet',    mode: munich,    firebase_project: roundnet-karlsruhe, firebase_target: munich-roundnet-production }
+  deploy-karlsruhe:
     runs-on: ubuntu-latest
-    needs: build
+    needs: build-karlsruhe
     if: ${{ github.event_name != 'workflow_dispatch'
         || github.event.inputs.publish == 'All'
-        || github.event.inputs.publish == matrix.env.name }}
-    name: 'Deploy: ${{matrix.env.name}}'
-    
-
+        || github.event.inputs.publish == 'Roundnet Karlsruhe' }}
+    name: 'Deploy Karlsruhe'
     environment:
-      name: ${{ matrix.env.name }}
+      name: 'Roundnet Karlsruhe'
       url:  ${{ vars.PUBLIC_URL }}
 
     steps:
@@ -165,7 +142,7 @@ jobs:
 
       - uses: actions/download-artifact@v4
         with:
-          name: '${{ matrix.env.website_path }}-build'
+          name: '${{ vars.WEBSITE_PATH }}-build'
           path: ${{github.workspace}}/build
 
       - uses: FirebaseExtended/action-hosting-deploy@v0
@@ -173,5 +150,87 @@ jobs:
           repoToken: '${{ secrets.GITHUB_TOKEN }}'
           firebaseServiceAccount: '${{ secrets.FIREBASE_SERVICE_ACCOUNT_ROUNDNET_KARLSRUHE }}'
           channelId: live
-          projectId: ${{ matrix.env.firebase_project }}
-          target: ${{ matrix.env.firebase_target }}
+          projectId: ${{ vars.FIREBASE_PROJECT }}
+          target: ${{ vars.FIREBASE_TARGET }}
+
+  build-munich:
+    name: 'Build Munich Roundnet'
+    if: ${{ github.event_name != 'workflow_dispatch'
+        || github.event.inputs.publish == 'All'
+        || github.event.inputs.publish == 'Munich Roundnet' }}
+    runs-on: ubuntu-latest
+    needs: db-test
+    environment:
+      name: 'Munich Roundnet'
+      url: ${{ vars.PUBLIC_URL }}
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Set up Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: Restore node_modules cache
+        uses: actions/cache@v3
+        with:
+          path: |
+            node_modules
+            .yarn/cache
+          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-yarn-
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: git-commit-version
+          path: ${{github.workspace}}/public
+
+      - name: Build
+        run: yarn build --mode karlsruhe
+        env:
+          VITE_SUPABASE_URL:          ${{ vars.DB_URL }}
+          VITE_SUPABASE_ANON_KEY:     ${{ secrets.PRODUCTION_ANON_KEY }}
+          VITE_SUPABASE_PROJECT_ID:   ${{ vars.PROJECT_ID }}
+          VITE_OPENWEATHER_API_KEY:   ${{ secrets.OPENWEATHER_API_KEY }}
+          VITE_VAPID_PUBLIC_KEY:      ${{ vars.VAPID_PUBLIC_KEY }}
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: '${{ vars.WEBSITE_PATH }}-build'
+          path: ${{github.workspace}}/build
+
+  deploy-munich:
+    runs-on: ubuntu-latest
+    needs: build-munich
+    if: ${{ github.event_name != 'workflow_dispatch'
+        || github.event.inputs.publish == 'All'
+        || github.event.inputs.publish == 'Munich Roundnet' }}
+    name: 'Deploy Munich Roundnet'
+    environment:
+      name: 'Munich Roundnet'
+      url:  ${{ vars.PUBLIC_URL }}
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Set up Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: '${{ vars.WEBSITE_PATH }}-build'
+          path: ${{github.workspace}}/build
+
+      - uses: FirebaseExtended/action-hosting-deploy@v0
+        with:
+          repoToken: '${{ secrets.GITHUB_TOKEN }}'
+          firebaseServiceAccount: '${{ secrets.FIREBASE_SERVICE_ACCOUNT_ROUNDNET_KARLSRUHE }}'
+          channelId: live
+          projectId: ${{ vars.FIREBASE_PROJECT }}
+          target: ${{ vars.FIREBASE_TARGET }}
+
+   
