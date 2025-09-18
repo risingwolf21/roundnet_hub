@@ -37,7 +37,7 @@ export default function WebPushKeeper({
       if (data.type === "push_resubscribe_needed") {
         try {
           const { p_endpoint, p_p256dh, p_auth } = data.params || {};
-          await upsertToDb(p_endpoint, p_p256dh, p_auth);
+          await upsertToDb(p_endpoint, p_p256dh, p_auth, "service-worker");
         } catch (e: any) {
         }
       } else if (data.type === "push_resubscribe_failed") {
@@ -84,14 +84,14 @@ export default function WebPushKeeper({
         if (!p256dh || !auth) {
           throw new Error("missing_keys");
         }
-        await upsertToDb(endpoint, p256dh, auth);
+        await upsertToDb(endpoint, p256dh, auth, "useEffect");
       } catch (e: any) {
         captureException(e);
       }
     })();
   }, [session?.user?.id, vapidPublicKey]);
 
-  async function upsertToDb(p_endpoint: string, p_p256dh: string, p_auth: string) {
+  async function upsertToDb(p_endpoint: string, p_p256dh: string, p_auth: string, origin: string) {
     const { error } = await supabase.rpc("upsert_webpush_subscription", {
       p_endpoint,
       p_p256dh,
@@ -102,7 +102,7 @@ export default function WebPushKeeper({
         : /iPhone|iPad|iPod/i.test(navigator.userAgent) ? 'ios' : 'desktop',
     });
     if (error) throw error;
-    console.log("Successfulls subscribed to Notifications")
+    console.log("Successfully subscribed to Notifications", origin)
   }
 
   return children;
