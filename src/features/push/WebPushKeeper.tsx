@@ -45,7 +45,8 @@ export default function WebPushKeeper({
         if (!('serviceWorker' in navigator) || !('PushManager' in window) || !vapidPublicKey) {
           logger.error("webpush_not_available", {
             type: "webpush",
-            message: "not_available"
+            message: "not_available",
+            user: session.user.id
           })
           return;
         }
@@ -54,14 +55,16 @@ export default function WebPushKeeper({
           if (perm !== 'granted') {
             logger.error("webpush_notification_permission_denied", {
               type: "webpush",
-              message: "notification_permission_denied"
+              message: "notification_permission_denied",
+              user: session.user.id
             })
             return;
           }
         } else if (Notification.permission === "denied") {
           logger.error("webpush_notification_permission_denied", {
             type: "webpush",
-            message: "notification_permission_denied"
+            message: "notification_permission_denied",
+            user: session.user.id
           })
           return;
         }
@@ -116,6 +119,7 @@ export default function WebPushKeeper({
     logger.info("webpush_subscribe_successful", {
       type: "webpush",
       message: "subscribe_successful",
+      user: session?.user?.id,
       ...params
     });
   }
