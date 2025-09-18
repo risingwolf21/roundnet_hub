@@ -1,5 +1,5 @@
 // src/push/WebPushKeeper.tsx
-import { logger } from '@sentry/react';
+import { captureException, logger } from '@sentry/react';
 import type { Session } from '@supabase/supabase-js';
 import { PropsWithChildren, useEffect, useRef } from 'react';
 import { supabase } from 'src/components/services/supabase/supabaseClient';
@@ -62,11 +62,11 @@ export default function WebPushKeeper({
         if (Notification.permission === 'default') {
           const perm = await Notification.requestPermission();
           if (perm !== 'granted') {
-            console.warn("Notification permission not granted");
+            console.error("Notification permission not granted");
             return;
           }
         } else if (Notification.permission === "denied") {
-          console.log("Notification permission not granted");
+          console.error("Notification permission not granted");
           return;
         }
         const reg = await navigator.serviceWorker.ready;
@@ -86,7 +86,7 @@ export default function WebPushKeeper({
         }
         await upsertToDb(endpoint, p256dh, auth);
       } catch (e: any) {
-        console.log(e);
+        captureException(e);
       }
     })();
   }, [session?.user?.id, vapidPublicKey]);
@@ -102,6 +102,7 @@ export default function WebPushKeeper({
         : /iPhone|iPad|iPod/i.test(navigator.userAgent) ? 'ios' : 'desktop',
     });
     if (error) throw error;
+    console.log("Successfulls subscribed to Notifications")
   }
 
   return children;
