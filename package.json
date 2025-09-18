@@ -54,6 +54,7 @@
     "build:karlsruhe": "vite build --mode karlsruhe",
     "build:karlsruhe-stg": "vite build --mode karlsruhe-stg",
     "build:munich": "vite build --mode munich",
+    "analyze": "vite build --mode analyze",
     "gen-types:production": "npx supabase gen types typescript --project-id gfvaurdkieqkehsuwotr --schema public --schema games > src/types/supabase-generated.types.ts",
     "gen-types:local": "npx supabase@2.34.0 gen types typescript --local --schema public --schema games > src/types/supabase-generated.types.ts",
     "format": "prettier --write \"src/**/*.{js,jsx,ts,tsx,css,md}\" --config ./.prettierrc.json",

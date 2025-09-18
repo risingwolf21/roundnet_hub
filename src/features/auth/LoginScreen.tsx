@@ -18,6 +18,22 @@ const LoginScreen = () => {
   const [loading, setLoading] = useState(false);
   const location = useLocation();
 
+  // iOS-Standalone erkennen
+  const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+  const isStandalone = (navigator as any).standalone === true
+    || window.matchMedia('(display-mode: standalone)').matches;
+
+  if (isIOS && isStandalone) {
+    const unlockOnFocus = () => {
+      if (document.activeElement?.matches('input, textarea, [contenteditable="true"]')) {
+        document.body.style.overflow = 'auto'; // sicherstellen, dass kein Body-Lock aktiv ist
+      }
+    };
+    window.addEventListener('focusin', unlockOnFocus);
+    window.addEventListener('touchend', unlockOnFocus, { passive: true });
+  }
+
+
   if (user) {
     return <Navigate to={location.state?.path !== '/auth/login' ? location.state?.path || HOMEPAGE : HOMEPAGE} />;
   }

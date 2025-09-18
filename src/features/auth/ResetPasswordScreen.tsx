@@ -61,6 +61,21 @@ const ResetPasswordScreen = () => {
 
   const navigate = useNavigate();
 
+  // iOS-Standalone erkennen
+  const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+  const isStandalone = (navigator as any).standalone === true
+    || window.matchMedia('(display-mode: standalone)').matches;
+
+  if (isIOS && isStandalone) {
+    const unlockOnFocus = () => {
+      if (document.activeElement?.matches('input, textarea, [contenteditable="true"]')) {
+        document.body.style.overflow = 'auto'; // sicherstellen, dass kein Body-Lock aktiv ist
+      }
+    };
+    window.addEventListener('focusin', unlockOnFocus);
+    window.addEventListener('touchend', unlockOnFocus, { passive: true });
+  }
+
   useEffect(() => {
     // Get the access token and refresh token from the URL
     if (typeof window !== 'undefined') {
