@@ -108,7 +108,7 @@ jobs:
           path: ${{github.workspace}}/public
 
       - name: Build
-        run: yarn build --mode karlsruhe
+        run: yarn run build:karlsruhe
         env:
           VITE_SUPABASE_URL:          ${{ vars.DB_URL }}
           VITE_SUPABASE_ANON_KEY:     ${{ secrets.PRODUCTION_ANON_KEY }}
@@ -188,7 +188,7 @@ jobs:
           path: ${{github.workspace}}/public
 
       - name: Build
-        run: yarn build --mode karlsruhe
+        run: yarn run build:munich
         env:
           VITE_SUPABASE_URL:          ${{ vars.DB_URL }}
           VITE_SUPABASE_ANON_KEY:     ${{ secrets.PRODUCTION_ANON_KEY }}

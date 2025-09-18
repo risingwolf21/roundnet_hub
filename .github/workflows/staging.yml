@@ -90,7 +90,7 @@ jobs:
           path: ${{github.workspace}}/public
 
       - name: Build
-        run: yarn build --mode karlsruhe-stg
+        run: yarn run build:karlsruhe-stg
         env:
           VITE_SUPABASE_URL:          ${{ vars.SUPABASE_DB_URL }}
           VITE_SUPABASE_ANON_KEY:     ${{ secrets.SUPABASE_ANON_KEY }}
