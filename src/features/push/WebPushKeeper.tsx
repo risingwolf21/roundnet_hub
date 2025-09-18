@@ -30,6 +30,7 @@ export default function WebPushKeeper({
   vapidPublicKey
 }: Props) {
   const deviceId = useDeviceId();
+  const lastSigRef = useRef<string | null>(localStorage.getItem('push:lastSig'));
 
   useEffect(() => {
     (async () => {
@@ -67,12 +68,22 @@ export default function WebPushKeeper({
         if (!p256dh || !auth) {
           throw new Error("missing_keys");
         }
+
+        const sig = `${endpoint}|${deviceId}`;
+        if (lastSigRef.current === sig) return;        // in-memory Dedupe
+        lastSigRef.current = sig;
+
+        // optional: persistentes Dedupe über Reloads
+        const persisted = localStorage.getItem('push:lastSig');
+        if (persisted === sig) return;
+        localStorage.setItem('push:lastSig', sig);
+
         await upsertToDb(endpoint, p256dh, auth, `user: ${session.user.id}`, "origin: useEffect");
       } catch (e: any) {
         captureException(e);
       }
     })();
-  }, [session?.user]);
+  }, [session?.user?.id, vapidPublicKey]);
 
   async function upsertToDb(p_endpoint: string, p_p256dh: string, p_auth: string, ...params: string[]) {
     const { error } = await supabase.rpc("upsert_webpush_subscription", {
