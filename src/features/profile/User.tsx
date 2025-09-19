@@ -69,15 +69,14 @@ const UserScreen = ({ user, handleSignOut }: UserScreenProps) => {
   );
 
   useEffect(() => {
-    const notificationsSupported = !('serviceWorker' in navigator) || !('PushManager' in window)
+    const notificationsSupported = !('serviceWorker' in navigator) || !('PushManager' in window);
     setNotificationSUpported(notificationsSupported);
     if (searchParams.get('dialog') === 'playerzone') {
       openDialog(PlayerzoneProfileDialog, { user }, 'playerzone');
     } else if (searchParams.get('dialog') === 'contact_information') {
       openDialog(ContactInformation, { user }, 'contact_information');
-    }
-    else if (searchParams.get("dialog") === "notifications") {
-      openDialog(NotificationsDialog, { user, notificationSupported: notificationsSupported }, "notifications");
+    } else if (searchParams.get('dialog') === 'notifications') {
+      openDialog(NotificationsDialog, { user, notificationSupported: notificationsSupported }, 'notifications');
     }
   }, [openDialog, searchParams, user]);
 

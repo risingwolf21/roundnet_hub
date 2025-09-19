@@ -50,17 +50,20 @@ const DrinkListScreen = () => {
   };
 
   const confirmDrinks = async () => {
-    updateHistory.mutate({ drinks: Object.values(addedDrinks) }, {
-      onSuccess: () => {
-        setAddedDrinks([]);
-        confirmDrinksDialog({ message: 'Getränke erfolgreich gebucht!', severity: 'success' });
-      },
-      onError: (error) => {
-        captureException(error);
-        let message = error?.message ?? 'Drink could not be added';
-        resetDrinks(message);
+    updateHistory.mutate(
+      { drinks: Object.values(addedDrinks) },
+      {
+        onSuccess: () => {
+          setAddedDrinks([]);
+          confirmDrinksDialog({ message: 'Getränke erfolgreich gebucht!', severity: 'success' });
+        },
+        onError: (error) => {
+          captureException(error);
+          let message = error?.message ?? 'Drink could not be added';
+          resetDrinks(message);
+        },
       }
-    })
+    );
   };
 
   const onAddDrinkClick = (drink: Drink) => {

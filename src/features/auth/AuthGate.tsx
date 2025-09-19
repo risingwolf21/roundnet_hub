@@ -121,7 +121,15 @@ export const AuthGate = () => {
     );
 
   return (
-    <ApplicationContext.Provider value={{ user: currentUser, signOut: signOut, deviceId, provider_token, version: import.meta.env.VITE_GIT_COMMIT }}>
+    <ApplicationContext.Provider
+      value={{
+        user: currentUser,
+        signOut: signOut,
+        deviceId,
+        provider_token,
+        version: import.meta.env.VITE_GIT_COMMIT,
+      }}
+    >
       <React.Suspense fallback={<LoadingScreen />}>
         <WebPushKeeper session={session} vapidPublicKey={import.meta.env.VITE_VAPID_PUBLIC_KEY!}>
           <AppRoutes />

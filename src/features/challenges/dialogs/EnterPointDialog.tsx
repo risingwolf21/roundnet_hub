@@ -3,25 +3,25 @@ import { Box, Button, Typography } from '@mui/material';
 import { DatePicker, PickersDay, PickersDayProps } from '@mui/x-date-pickers';
 import { uuid } from '@supabase/supabase-js/dist/main/lib/helpers';
 import Compressor from 'compressorjs';
-import dayjs, { Dayjs } from 'dayjs';
 import React, { useEffect, useState } from 'react';
-import { dataURLtoFile, dayjsFromDb, readFile } from '@/utils';
+import { dataURLtoFile, formatDateFromDatabase, readFile } from '@/utils';
 import { SwipeableDialog } from '../../../components/SwipeableDialog';
 import { DialogProps } from '@toolpad/core';
+import { differenceInDays, isSameDay, isSameWeek } from 'date-fns';
 
 type EnterPointDialogProps = {
   dates: string[];
   maxEntriesPerWeek: number | null;
 };
 
-function ServerDay(props: PickersDayProps<Dayjs> & { highlightedDays?: Dayjs[]; maxEntriesPerWeek?: number }) {
+function ServerDay(props: PickersDayProps<Date> & { highlightedDays?: Date[]; maxEntriesPerWeek?: number }) {
   const { highlightedDays = [], maxEntriesPerWeek = 0, day, outsideCurrentMonth, ...other } = props;
 
-  const isHighlighted = highlightedDays.filter((x) => day.isSame(x, 'day')).length > 0;
+  const isHighlighted = highlightedDays.filter((x) => isSameDay(x, day)).length > 0;
   const isDisabled =
-    day.isAfter(dayjs(), 'day') ||
+    differenceInDays(day, Date.now()) > 1 ||
     isHighlighted ||
-    highlightedDays.filter((x) => day.isSame(x, 'week')).length > maxEntriesPerWeek;
+    highlightedDays.filter((x) => isSameWeek(x, day)).length > maxEntriesPerWeek;
 
   return (
     <PickersDay
@@ -38,7 +38,7 @@ function ServerDay(props: PickersDayProps<Dayjs> & { highlightedDays?: Dayjs[]; 
 }
 
 type EnterPointResult = {
-  date: dayjs.Dayjs;
+  date: Date;
   image: {
     dataUrl: string;
     fileName: string;
@@ -50,13 +50,13 @@ const EnterPointDialog = ({
   open,
   onClose,
 }: DialogProps<EnterPointDialogProps, EnterPointResult | null>) => {
-  const [date, setDate] = useState(dayjs());
-  const [highlightedDays, setHightlightedDays] = useState(dates.map((x) => dayjsFromDb(x)));
+  const [date, setDate] = useState<Date>(new Date());
+  const [highlightedDays, setHightlightedDays] = useState(dates.map((x) => formatDateFromDatabase(x)));
   const [image, setImage] = useState<{ dataUrl: string; fileName: string } | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    setHightlightedDays(dates.map(dayjsFromDb));
+    setHightlightedDays(dates.map(formatDateFromDatabase));
   }, [dates]);
 
   const onImageInputChange = async (event: React.ChangeEvent<HTMLInputElement>): Promise<void> => {

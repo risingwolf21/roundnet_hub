@@ -52,7 +52,6 @@ registerRoute(
   createHandlerBoundToURL(SPA_INDEX)
 );
 
-
 registerRoute(
   ({ request }) => request.destination === 'image',
   new CacheFirst({
@@ -105,11 +104,9 @@ self.addEventListener('push', (event) => {
   console.log('[SW] push event raw=', raw);
   const { title, body, url, tag, renotify } = extractPayload(raw);
 
-
   const PREFIX = import.meta.env.VITE_ICON_PREFIX || new URL('.', self.registration.scope).pathname;
   const icon = `${PREFIX.replace(/\/$/, '')}/android-chrome-192x192.png`;
   const badge = `${PREFIX.replace(/\/$/, '')}/badge.png`;
-
 
   const options = {
     body,
@@ -125,7 +122,7 @@ self.addEventListener('push', (event) => {
     .then((clients) =>
       clients.forEach((c) => c.postMessage({ type: 'push_received', payload: { title, body, url }, sw: SW_VERSION }))
     )
-    .catch(() => { });
+    .catch(() => {});
 
   event.waitUntil(self.registration.showNotification(title, options));
 });
@@ -185,9 +182,7 @@ self.addEventListener('pushsubscriptionchange', (event) => {
         clients.forEach((c) => c.postMessage({ type: 'push_resubscribe_needed', params, sw: SW_VERSION }));
       } catch (e) {
         const clients = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
-        clients.forEach((c) =>
-          c.postMessage({ type: 'push_resubscribe_failed', error: String(e), sw: SW_VERSION })
-        );
+        clients.forEach((c) => c.postMessage({ type: 'push_resubscribe_failed', error: String(e), sw: SW_VERSION }));
       }
     })()
   );

@@ -452,7 +452,9 @@ export const useDeleteTrainingMutation = (fetchMode: 'past' | 'upcoming') => {
           const updatedEvents = previousEvents.filter((x) => x.id !== event.id);
           queryClient.setQueryData(['events', fetchMode], updatedEvents);
         } else if (type === 'This and following events') {
-          const updatedEvents = previousEvents.filter((x) => x.key !== event.key && !isBefore(x.startingDateTime, event.startingDateTime));
+          const updatedEvents = previousEvents.filter(
+            (x) => x.key !== event.key && !isBefore(x.startingDateTime, event.startingDateTime)
+          );
 
           queryClient.setQueryData(['events', fetchMode], updatedEvents);
         }

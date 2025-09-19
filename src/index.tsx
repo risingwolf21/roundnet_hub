@@ -4,8 +4,6 @@ import ReactDOM from 'react-dom/client';
 import './global.css';
 import './instrument';
 import './translation/i18n';
-import dayjs from 'dayjs';
-import updateLocale from 'dayjs/plugin/updateLocale';
 import './apocalypseHandler';
 import { App } from './App';
 import { registerSW } from 'virtual:pwa-register';
@@ -21,10 +19,6 @@ const root = ReactDOM.createRoot(document.getElementById('root') as HTMLElement,
     console.warn('Recoverable error', error, errorInfo.componentStack);
   }),
 });
-
-dayjs.extend(updateLocale);
-dayjs.updateLocale('en', { weekStart: 1 });
-
 
 const updateSW = registerSW({
   immediate: true, // direkt registrieren
@@ -44,7 +38,6 @@ root.render(
     </Suspense>
   </Sentry.ErrorBoundary>
 );
-
 
 let refreshing = false;
 navigator.serviceWorker?.addEventListener('controllerchange', () => {

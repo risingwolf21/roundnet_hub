@@ -1,14 +1,6 @@
-import { Edit as EditIcon } from '@mui/icons-material';
-import { Alert, Box, Fab, Tab, Tabs, Typography } from '@mui/material';
-import { captureException, withProfiler } from '@sentry/react';
-import { useDialogs, useNotifications } from '@toolpad/core';
-import { Dayjs } from 'dayjs';
-import { TFunction } from 'i18next';
-import React, { useCallback, useState } from 'react';
-import { withTranslation } from 'react-i18next';
-import { Navigate, useParams } from 'react-router';
-import { queryClient } from '@/lib/queryClient';
 import { PullToRefresh } from '@/components/pull-to-refresh/PullToRefresh';
+import { Has } from '@/hooks/useGrants';
+import { queryClient } from '@/lib/queryClient';
 import { supabase } from '@/lib/supabase';
 import {
   useChallenge,
@@ -18,13 +10,20 @@ import {
   useInfiniteChallengeStats,
 } from '@/tanstack/challenge';
 import { dataURLtoFile } from '@/utils';
+import { Edit as EditIcon } from '@mui/icons-material';
+import { Alert, Box, Fab, Tab, Tabs, Typography } from '@mui/material';
+import { captureException, withProfiler } from '@sentry/react';
+import { useDialogs, useNotifications } from '@toolpad/core';
+import { TFunction } from 'i18next';
+import { useCallback, useState } from 'react';
+import { withTranslation } from 'react-i18next';
+import { Navigate, useParams } from 'react-router';
 import Layout from '../../components/layout/Layout';
 import { useGrants } from '../auth/GrantsContext';
 import { TabPanel } from '../events/dialogs/EventAttendanceDialog';
 import { ChallengeActivityList } from './ChallengeActivityList';
 import { ChallengeLeaderboard } from './ChallengeLeaderboard';
 import EnterPointDialog from './dialogs/EnterPointDialog';
-import { Has } from '@/hooks/useGrants';
 
 const ChallengeInformationProvider = ({ t }: { t: TFunction }) => {
   const { challengeId } = useParams();
@@ -72,7 +71,7 @@ const ChallengeInformation = ({ t, challengeId }: { t: TFunction; challengeId: s
   );
 
   const increaseChallengePoint = useCallback(
-    async (created_at: Dayjs, image: { dataUrl: string; fileName: string } | null) => {
+    async (created_at: Date, image: { dataUrl: string; fileName: string } | null) => {
       if (!user || !challenge) {
         notifications.show('Something went wrong! Try again later', { severity: 'error' });
         return;

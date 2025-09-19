@@ -63,8 +63,8 @@ const ResetPasswordScreen = () => {
 
   // iOS-Standalone erkennen
   const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
-  const isStandalone = (navigator as any).standalone === true
-    || window.matchMedia('(display-mode: standalone)').matches;
+  const isStandalone =
+    (navigator as any).standalone === true || window.matchMedia('(display-mode: standalone)').matches;
 
   if (isIOS && isStandalone) {
     const unlockOnFocus = () => {

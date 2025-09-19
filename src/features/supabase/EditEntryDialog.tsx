@@ -1,3 +1,7 @@
+import { NumberInput } from '@/components/mui/NumberInput';
+import { customEnLocale } from '@/lib/date-fns';
+import { supabase } from '@/lib/supabase';
+import { formatDateFromDatabase, formatSafeDateToDatabase } from '@/utils';
 import { Close } from '@mui/icons-material';
 import {
   AppBar,
@@ -16,14 +20,10 @@ import {
   Typography,
 } from '@mui/material';
 import { DateTimePicker, LocalizationProvider } from '@mui/x-date-pickers';
-import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFnsV3';
 import { DialogProps, DialogsProvider } from '@toolpad/core';
-import dayjs from 'dayjs';
 import _ from 'lodash';
-import React, { useEffect, useState } from 'react';
-import { NumberInput } from '@/components/mui/NumberInput';
-import { supabase } from '@/lib/supabase';
-import { dayjsFromDb, dayjsToDb } from '@/utils';
+import { useEffect, useState } from 'react';
 
 type EditEntryDialogPayload = {
   entry: any;
@@ -217,7 +217,7 @@ const DialogContent = ({ payload, open, onClose }: DialogProps<EditEntryDialogPa
           </Button>
         </Toolbar>
       </AppBar>
-      <LocalizationProvider dateAdapter={AdapterDayjs}>
+      <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={customEnLocale}>
         <List>
           {payload.columns.map((x, index) => {
             const value = payload.entry[x.column_name];
@@ -254,10 +254,10 @@ const DialogContent = ({ payload, open, onClose }: DialogProps<EditEntryDialogPa
                       <Checkbox
                         sx={{ pl: 0 }}
                         checked={(updatedObject[x.column_name] ?? value) !== null}
-                        onChange={(e, c) =>
+                        onChange={(_e, c) =>
                           setUpdatedObject({
                             ...updatedObject,
-                            [x.column_name]: c ? dayjsToDb(dayjs()) : null,
+                            [x.column_name]: c ? formatSafeDateToDatabase(Date.now()) : null,
                           })
                         }
                       />
@@ -268,11 +268,11 @@ const DialogContent = ({ payload, open, onClose }: DialogProps<EditEntryDialogPa
                       <DateTimePicker
                         sx={{ width: '100%' }}
                         disabled={(updatedObject[x.column_name] ?? value) === null}
-                        value={dayjsFromDb(updatedObject[x.column_name] ?? value)}
+                        value={formatDateFromDatabase(updatedObject[x.column_name] ?? value)}
                         onChange={(value) =>
                           setUpdatedObject({
                             ...updatedObject,
-                            [x.column_name]: dayjsToDb(value),
+                            [x.column_name]: formatSafeDateToDatabase(value),
                           })
                         }
                       />
@@ -291,7 +291,7 @@ const DialogContent = ({ payload, open, onClose }: DialogProps<EditEntryDialogPa
                       <Checkbox
                         sx={{ pl: 0 }}
                         checked={(updatedObject[x.column_name] ?? value) !== null}
-                        onChange={(e, c) =>
+                        onChange={(_e, c) =>
                           setUpdatedObject({
                             ...updatedObject,
                             [x.column_name]: c ? 0 : null,
@@ -328,7 +328,7 @@ const DialogContent = ({ payload, open, onClose }: DialogProps<EditEntryDialogPa
                         checked={
                           (updatedObject[x.column_name] ?? value) !== null && (updatedObject[x.column_name] ?? value)
                         }
-                        onChange={(e, c) =>
+                        onChange={(_e, c) =>
                           setUpdatedObject({
                             ...updatedObject,
                             [x.column_name]: c,
@@ -353,7 +353,7 @@ const DialogContent = ({ payload, open, onClose }: DialogProps<EditEntryDialogPa
                           (updatedObject[x.column_name] ?? value) !== null &&
                           (updatedObject[x.column_name] ?? value) !== ''
                         }
-                        onChange={(e, c) =>
+                        onChange={(_e, c) =>
                           setUpdatedObject({
                             ...updatedObject,
                             [x.column_name]: c ? '' : null,
@@ -388,7 +388,7 @@ const DialogContent = ({ payload, open, onClose }: DialogProps<EditEntryDialogPa
                       <Checkbox
                         sx={{ pl: 0 }}
                         checked={(updatedObject[x.column_name] ?? value) !== null}
-                        onChange={(e, c) =>
+                        onChange={(_e, c) =>
                           setUpdatedObject({
                             ...updatedObject,
                             [x.column_name]: c ? (enums.get(enumType)?.entries()?.next()?.value?.[1] ?? null) : null,
@@ -421,7 +421,7 @@ const DialogContent = ({ payload, open, onClose }: DialogProps<EditEntryDialogPa
                     <Checkbox
                       sx={{ pl: 0 }}
                       checked={(updatedObject[x.column_name] ?? value) !== null}
-                      onChange={(e, c) =>
+                      onChange={(_e, c) =>
                         setUpdatedObject({
                           ...updatedObject,
                           [x.column_name]: c ? 0 : null,

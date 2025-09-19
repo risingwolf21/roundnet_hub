@@ -1,3 +1,5 @@
+import { customEnLocale } from '@/lib/date-fns';
+import { useUpsertSetsToMatch } from '@/tanstack/games';
 import { Close, Delete } from '@mui/icons-material';
 import {
   AppBar,
@@ -12,11 +14,10 @@ import {
   Typography,
 } from '@mui/material';
 import { LocalizationProvider } from '@mui/x-date-pickers';
-import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFnsV3';
 import { captureException } from '@sentry/react';
 import { DialogProps, NotificationsProvider, useNotifications } from '@toolpad/core';
-import React, { useState } from 'react';
-import { useUpsertSetsToMatch } from '@/tanstack/games';
+import { useState } from 'react';
 
 type ReportSetsDialogProps = {
   matchId: string;
@@ -154,7 +155,7 @@ export const ReportSetsDialog = ({ payload, open, onClose }: DialogProps<ReportS
   return (
     <Dialog fullScreen open={open} onClose={() => onClose(null)}>
       <NotificationsProvider>
-        <LocalizationProvider dateAdapter={AdapterDayjs}>
+        <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={customEnLocale}>
           <Content onClose={onClose} open={open} payload={payload} />
         </LocalizationProvider>
       </NotificationsProvider>

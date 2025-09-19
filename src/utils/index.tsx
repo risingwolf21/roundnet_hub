@@ -1,6 +1,5 @@
 import { Slide, SlideProps } from '@mui/material';
 import { format, parse } from 'date-fns';
-import dayjs, { Dayjs } from 'dayjs';
 import { forwardRef } from 'react';
 import RoundnetKarlsruheLogo from '../images/Karlsruher_Kojoten_Logo.svg';
 import RoundnetMunichLogo from '../images/Roundnet_Munich_Logo.png';
@@ -43,30 +42,27 @@ export const SlideUpTransition = forwardRef(function Transition(props: SlideProp
   );
 });
 
+export const formatSafeDateToDatabase = (date: string | number | Date | null) => {
+  if (!date) return null;
+  return formatDateToDatabase(date);
+};
+
 export const formatDateToDatabase = (date: string | number | Date) => {
   return format(date, "yyyy-MM-dd'T'HH:mm:ss.SSSXXX");
 };
 
-export const formatDateFromDatabase = (date: string) => {
+export const formatSafeDateFromDatabase = (date: string | null) => {
+  if (date === null) return null;
+  return formatDateFromDatabase(date);
+};
+
+export const formatDateFromDatabase = (date: string | null) => {
+  if (date === null) return null;
   const result = parse(date, "yyyy-MM-dd'T'HH:mm:ssXXX", new Date());
   if (isNaN(result.getTime())) {
     return parse(date, "yyyy-MM-dd'T'HH:mm:ss.SSSSSSxxx", new Date());
   }
   return result;
-};
-
-export const dayjsToDb = (date: Dayjs | null) => {
-  if (!date) return null;
-  return safeDayjsToDb(date);
-};
-
-export const safeDayjsToDb = (date: Dayjs) => {
-  return formatDateToDatabase(date.toDate());
-};
-
-export const dayjsFromDb = (date: string | null) => {
-  if (!date) return null;
-  return dayjs(formatDateFromDatabase(date));
 };
 
 export const translationKeyOfItemType = (type: ItemType | null) => {

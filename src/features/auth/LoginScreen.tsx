@@ -20,8 +20,8 @@ const LoginScreen = () => {
 
   // iOS-Standalone erkennen
   const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
-  const isStandalone = (navigator as any).standalone === true
-    || window.matchMedia('(display-mode: standalone)').matches;
+  const isStandalone =
+    (navigator as any).standalone === true || window.matchMedia('(display-mode: standalone)').matches;
 
   if (isIOS && isStandalone) {
     const unlockOnFocus = () => {
@@ -32,7 +32,6 @@ const LoginScreen = () => {
     window.addEventListener('focusin', unlockOnFocus);
     window.addEventListener('touchend', unlockOnFocus, { passive: true });
   }
-
 
   if (user) {
     return <Navigate to={location.state?.path !== '/auth/login' ? location.state?.path || HOMEPAGE : HOMEPAGE} />;

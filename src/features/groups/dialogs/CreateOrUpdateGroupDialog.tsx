@@ -1,3 +1,9 @@
+import { Has } from '@/hooks/useGrants';
+import { customEnLocale } from '@/lib/date-fns';
+import { useCreateGroupMutation, useUpdateGroupMutation } from '@/tanstack/groups';
+import { Tables } from '@/types/supabase-generated.types';
+import { GroupWithUserRole, UserWithGroups } from '@/types/supabaseTypes';
+import { formatDateToDatabase } from '@/utils';
 import { Article, Close, ColorLens, Group, Groups, Title } from '@mui/icons-material';
 import {
   AppBar,
@@ -17,15 +23,10 @@ import {
   Typography,
 } from '@mui/material';
 import { LocalizationProvider } from '@mui/x-date-pickers';
-import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFnsV3';
 import { captureException } from '@sentry/react';
 import { DialogProps, NotificationsProvider, useNotifications } from '@toolpad/core';
-import React, { useRef, useState } from 'react';
-import { Has } from '@/hooks/useGrants';
-import { useCreateGroupMutation, useUpdateGroupMutation } from '@/tanstack/groups';
-import { Tables } from '@/types/supabase-generated.types';
-import { GroupWithUserRole, UserWithGroups } from '@/types/supabaseTypes';
-import { formatDateToDatabase } from '@/utils';
+import { useRef, useState } from 'react';
 
 type CreateOrUpdateGroupDialogProps = {
   group?: Group;
@@ -185,7 +186,7 @@ const Content = ({
           secondaryAction={
             <IconButton
               LinkComponent={'span'}
-              onClick={(e) => {
+              onClick={() => {
                 if (inputRef.current) {
                   inputRef.current.click();
                 }
@@ -273,7 +274,7 @@ export const CreateOrUpdateGroupDialog = ({
   return (
     <Dialog fullScreen open={open} onClose={() => onClose('closed')}>
       <NotificationsProvider>
-        <LocalizationProvider dateAdapter={AdapterDayjs}>
+        <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={customEnLocale}>
           <Content onClose={onClose} open={open} payload={payload} />
         </LocalizationProvider>
       </NotificationsProvider>

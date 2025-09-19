@@ -1,3 +1,6 @@
+import { useFetchMode } from '@/hooks/useFetchMode';
+import { useInsertEventMutation, useUpdateRecurrenceMutation, useUpdateSingleMutation } from '@/tanstack/events';
+import { formatDateFromDatabase, formatDateToDatabase, formatSafeDateFromDatabase } from '@/utils';
 import { AccessTime, Article, Category, Close, FiberManualRecord, Map } from '@mui/icons-material';
 import EventIcon from '@mui/icons-material/Event';
 import EventRepeatIcon from '@mui/icons-material/EventRepeat';
@@ -32,14 +35,11 @@ import { DatePicker, DateTimePicker } from '@mui/x-date-pickers';
 import { TimePicker } from '@mui/x-date-pickers/TimePicker';
 import { DialogProps, useDialogs } from '@toolpad/core';
 import { useNotifications } from '@toolpad/core/useNotifications';
-import { format, isAfter, set } from 'date-fns';
+import { format, formatDate, isAfter, set } from 'date-fns';
 import _ from 'lodash';
-import React, { FormEvent, useRef, useState } from 'react';
+import { FormEvent, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { MapContainer, Marker, TileLayer, useMap } from 'react-leaflet';
-import { useFetchMode } from '@/hooks/useFetchMode';
-import { useInsertEventMutation, useUpdateRecurrenceMutation, useUpdateSingleMutation } from '@/tanstack/events';
-import { dayjsFromDb, formatDateToDatabase } from '@/utils';
 import { EventTable } from 'types/supabase';
 import { NumberInput } from '../../../components/mui/NumberInput';
 import { Enums, TablesInsert, TablesUpdate } from '../../../types/supabase-generated.types';
@@ -259,21 +259,22 @@ export const CreateOrUpdateEventDialog = ({
               label="Datum"
               disablePast
               format="DD MMMM YYYY"
-              onChange={(val) =>
+              onChange={(val) => {
+                if (!val) return;
                 setEditedEvent({
                   ...editedEvent,
                   startingDateTime: formatDateToDatabase(
                     set(new Date(editedEvent.startingDateTime), {
-                      date: val?.date(),
-                      year: val?.year(),
-                      month: val?.month(),
+                      date: val.getDate(),
+                      year: val.getFullYear(),
+                      month: val.getMonth(),
                       seconds: 0,
                       milliseconds: 0,
                     })
                   ),
-                })
-              }
-              value={dayjsFromDb(editedEvent.startingDateTime)}
+                });
+              }}
+              value={formatDateFromDatabase(editedEvent.startingDateTime)}
             />
           </ListItem>
 
@@ -285,20 +286,21 @@ export const CreateOrUpdateEventDialog = ({
               views={['hours', 'minutes']}
               ampm={false}
               label="Startzeit"
-              onChange={(val) =>
+              onChange={(val) => {
+                if (!val) return;
                 setEditedEvent({
                   ...editedEvent,
                   startingDateTime: formatDateToDatabase(
                     set(new Date(editedEvent.startingDateTime), {
-                      hours: val?.hour(),
-                      minutes: val?.minute(),
+                      hours: val.getHours(),
+                      minutes: val.getMinutes(),
                       seconds: 0,
                       milliseconds: 0,
                     })
                   ),
-                })
-              }
-              value={dayjsFromDb(editedEvent.startingDateTime)}
+                });
+              }}
+              value={formatDateFromDatabase(editedEvent.startingDateTime)}
             />
           </ListItem>
 
@@ -322,22 +324,23 @@ export const CreateOrUpdateEventDialog = ({
               sx={{ width: '100%' }}
               views={['hours', 'minutes']}
               ampm={false}
-              maxTime={dayjsFromDb(editedEvent.startingDateTime)}
+              maxTime={formatDateFromDatabase(editedEvent.startingDateTime)}
               label="Treffpunkt"
-              onChange={(val) =>
+              onChange={(val) => {
+                if (!val) return;
                 setEditedEvent({
                   ...editedEvent,
                   meetingDateTime: formatDateToDatabase(
                     set(new Date(editedEvent.startingDateTime), {
-                      hours: val?.hour(),
-                      minutes: val?.minute(),
+                      hours: val.getHours(),
+                      minutes: val.getMinutes(),
                       seconds: 0,
                       milliseconds: 0,
                     })
                   ),
-                })
-              }
-              value={editedEvent.meetingDateTime ? dayjsFromDb(editedEvent.meetingDateTime) : null}
+                });
+              }}
+              value={editedEvent.meetingDateTime ? formatDateFromDatabase(editedEvent.meetingDateTime) : null}
             />
           </ListItem>
 
@@ -349,25 +352,26 @@ export const CreateOrUpdateEventDialog = ({
               views={['year', 'month', 'day', 'hours', 'minutes']}
               format={'DD MMMM YYYY HH:mm'}
               ampm={false}
-              minDateTime={dayjsFromDb(editedEvent.startingDateTime)}
+              minDateTime={formatDateFromDatabase(editedEvent.startingDateTime)}
               label="Ende"
-              onChange={(val) =>
+              onChange={(val) => {
+                if (!val) return;
                 setEditedEvent({
                   ...editedEvent,
                   endDateTime: formatDateToDatabase(
                     set(new Date(), {
-                      year: val?.year(),
-                      month: val?.month(),
-                      date: val?.date(),
-                      hours: val?.hour(),
-                      minutes: val?.minute(),
+                      date: val.getDate(),
+                      year: val.getFullYear(),
+                      month: val.getMonth(),
+                      hours: val.getHours(),
+                      minutes: val.getMinutes(),
                       seconds: 0,
                       milliseconds: 0,
                     })
                   ),
-                })
-              }
-              value={dayjsFromDb(editedEvent.endDateTime)}
+                });
+              }}
+              value={formatDateFromDatabase(editedEvent.endDateTime)}
             />
           </ListItem>
 
@@ -452,23 +456,24 @@ export const CreateOrUpdateEventDialog = ({
               disablePast
               ampm={false}
               format={'DD MMMM YYYY HH:mm'}
-              onChange={(val) =>
+              onChange={(val) => {
+                if (!val) return;
                 setEditedEvent({
                   ...editedEvent,
                   answerDeadline: formatDateToDatabase(
                     set(new Date(editedEvent.answerDeadline ?? ''), {
-                      date: val?.date(),
-                      month: val?.month(),
-                      year: val?.year(),
-                      hours: val?.hour(),
-                      minutes: val?.minute(),
+                      date: val.getDate(),
+                      year: val.getFullYear(),
+                      month: val.getMonth(),
+                      hours: val.getHours(),
+                      minutes: val.getMinutes(),
                       seconds: 0,
                       milliseconds: 0,
                     })
                   ),
-                })
-              }
-              value={editedEvent.answerDeadline ? dayjsFromDb(editedEvent.answerDeadline) : null}
+                });
+              }}
+              value={editedEvent.answerDeadline ? formatDateFromDatabase(editedEvent.answerDeadline) : null}
             />
           </ListItem>
 
@@ -609,23 +614,24 @@ export const CreateOrUpdateEventDialog = ({
             sx={{ mt: 2, mb: 2, width: '100%' }}
             label="Start"
             disabled={editedEvent.recurrenceEnd === null}
-            onChange={(val) =>
+            onChange={(val) => {
+              if (!val) return;
               setEditedEvent({
                 ...editedEvent,
                 recurrenceEnd: formatDateToDatabase(
                   set(editedEvent.recurrenceEnd ? new Date(editedEvent.recurrenceEnd) : Date.now(), {
-                    date: val?.date(),
-                    month: val?.month(),
-                    year: val?.year(),
+                    date: val.getDate(),
+                    year: val.getFullYear(),
+                    month: val.getMonth(),
                     hours: 0,
                     minutes: 0,
                     seconds: 0,
                     milliseconds: 0,
                   })
                 ),
-              })
-            }
-            value={editedEvent.recurrenceEnd ? dayjsFromDb(editedEvent.recurrenceEnd) : null}
+              });
+            }}
+            value={editedEvent.recurrenceEnd ? formatDateFromDatabase(editedEvent.recurrenceEnd) : null}
           />
 
           <Typography>Es werden Termine erstellt bis einschließlich diesem Tag. Alles danach entfällt</Typography>

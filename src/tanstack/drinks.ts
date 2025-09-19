@@ -81,7 +81,7 @@ export const useInsertHistoryEntryMutation = (user: User) => {
       queryClient.invalidateQueries({ queryKey: ['payment', user.userId] });
     },
   });
-}
+};
 
 export const useUpdateHistoryEntryMutation = (userId: string) =>
   useMutation({

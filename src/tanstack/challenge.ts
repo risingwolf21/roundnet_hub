@@ -1,10 +1,9 @@
 import { InfiniteData, useInfiniteQuery, useMutation, useQuery } from '@tanstack/react-query';
-import { Dayjs } from 'dayjs';
 import { queryClient } from '@/lib/queryClient';
 import { supabase } from '@/lib/supabase';
 import { fetchChallengeWithGroup } from '@/repository/ChallengeRepository';
 import { ChallengePointsView, ChallengeStatWithUser } from '@/types/supabaseTypes';
-import { dayjsToDb, formatDateToDatabase, safeDayjsToDb } from '@/utils';
+import { formatDateToDatabase, formatSafeDateToDatabase } from '@/utils';
 
 export const useInfiniteChallengeStats = (challengeId: string, count: number = 20) =>
   useInfiniteQuery({
@@ -115,14 +114,14 @@ export const useIncreasePointForUserMutation = (challengeId: string) =>
     }: {
       user: User;
       challenge: string;
-      created_at: Dayjs;
+      created_at: Date;
       image_url: string | null;
     }) => {
       const result = await supabase
         .rpc('increase_challenge_stats_count', {
           amount: 1,
           challenge_id: challenge,
-          to_create_at: dayjsToDb(created_at)!,
+          to_create_at: formatDateToDatabase(created_at)!,
           image_url: image_url ?? '',
         })
         .throwOnError();
@@ -153,7 +152,7 @@ export const useIncreasePointForUserMutation = (challengeId: string) =>
         const newStat = {
           challenge: challenge,
           count: 1,
-          created_at: safeDayjsToDb(created_at),
+          created_at: formatSafeDateToDatabase(created_at),
           image_url: image_url,
           user: user.userId,
           id: -1,
@@ -162,13 +161,13 @@ export const useIncreasePointForUserMutation = (challengeId: string) =>
         const newStats: InfiniteData<ChallengeStatWithUser[]> =
           previousStats.pages.length === 0
             ? {
-              ...previousStats,
-              pages: [[newStat]],
-            }
+                ...previousStats,
+                pages: [[newStat]],
+              }
             : {
-              ...previousStats,
-              pages: previousStats.pages.map((x, index) => (index === 0 && Array.isArray(x) ? [...x, newStat] : x)),
-            };
+                ...previousStats,
+                pages: previousStats.pages.map((x, index) => (index === 0 && Array.isArray(x) ? [...x, newStat] : x)),
+              };
 
         queryClient.setQueryData<InfiniteData<ChallengeStatWithUser[]>>(['challenge', challengeId, 'stats'], newStats);
       }
@@ -190,7 +189,7 @@ export const useIncreasePointForUserMutation = (challengeId: string) =>
           {
             challenge: challenge,
             count: 1,
-            created_at: safeDayjsToDb(created_at),
+            created_at: formatSafeDateToDatabase(created_at),
             image_url: image_url,
             user: user.userId,
           },

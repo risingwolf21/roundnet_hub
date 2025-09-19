@@ -1,7 +1,6 @@
 import { PostgrestSingleResponse } from '@supabase/supabase-js';
-import { Dayjs } from 'dayjs';
 import { supabase } from '@/lib/supabase';
-import { dayjsToDb } from '../utils';
+import { formatDateToDatabase } from '@/utils';
 
 export const fetchChallengeWithGroup = () =>
   supabase
@@ -11,14 +10,14 @@ export const fetchChallengeWithGroup = () =>
 export const ChallengeRepository = {
   async increasePointForUser(
     challenge: string,
-    created_at: Dayjs,
+    created_at: Date,
     image_url: string | null
   ): Promise<PostgrestSingleResponse<ChallengeStats>> {
     return supabase
       .rpc('increase_challenge_stats_count', {
         amount: 1,
         challenge_id: challenge,
-        to_create_at: dayjsToDb(created_at)!,
+        to_create_at: formatDateToDatabase(created_at)!,
         image_url: image_url ?? '',
       })
       .throwOnError();

@@ -1,3 +1,10 @@
+import { CreateOrUpdateGroupDialog } from '@/features/groups/dialogs/CreateOrUpdateGroupDialog';
+import { customEnLocale } from '@/lib/date-fns';
+import { supabase } from '@/lib/supabase';
+import { useGroups } from '@/tanstack/groups';
+import { Tables } from '@/types/supabase-generated.types';
+import { UserWithGroups } from '@/types/supabaseTypes';
+import { formatDateFromDatabase, formatDateToDatabase } from '@/utils';
 import { Article, Close, Groups, Title } from '@mui/icons-material';
 import {
   AppBar,
@@ -16,16 +23,9 @@ import {
   Typography,
 } from '@mui/material';
 import { DatePicker, LocalizationProvider } from '@mui/x-date-pickers';
-import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFnsV3';
 import { DialogProps, NotificationsProvider, useDialogs, useNotifications } from '@toolpad/core';
-import dayjs from 'dayjs';
-import React, { useState } from 'react';
-import { supabase } from '@/lib/supabase';
-import { CreateOrUpdateGroupDialog } from '@/features/groups/dialogs/CreateOrUpdateGroupDialog';
-import { useGroups } from '@/tanstack/groups';
-import { Tables } from '@/types/supabase-generated.types';
-import { UserWithGroups } from '@/types/supabaseTypes';
-import { dayjsFromDb, dayjsToDb } from '@/utils';
+import { useState } from 'react';
 
 type CreateChallengePayload = {
   user: UserWithGroups;
@@ -171,7 +171,7 @@ const Content = ({ payload, onClose }: DialogProps<CreateChallengePayload, strin
               onChange={() =>
                 setData({
                   ...data,
-                  end_date: data.end_date === null ? dayjsToDb(dayjs()) : null,
+                  end_date: data.end_date === null ? formatDateToDatabase(Date.now()) : null,
                 })
               }
             />
@@ -182,13 +182,14 @@ const Content = ({ payload, onClose }: DialogProps<CreateChallengePayload, strin
             disabled={data.end_date === null}
             disablePast
             format="DD MMMM YYYY"
-            onChange={(val) =>
+            onChange={(val) => {
+              if (!val) return;
               setData({
                 ...data,
-                end_date: dayjsToDb(val),
-              })
-            }
-            value={dayjsFromDb(data.end_date)}
+                end_date: formatDateToDatabase(val),
+              });
+            }}
+            value={formatDateFromDatabase(data.end_date)}
           />
         </ListItem>
       </List>
@@ -204,7 +205,7 @@ export const CreateChallengeDialog = ({
   return (
     <Dialog fullScreen open={open} onClose={() => onClose(null)}>
       <NotificationsProvider>
-        <LocalizationProvider dateAdapter={AdapterDayjs}>
+        <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={customEnLocale}>
           <Content onClose={onClose} open={open} payload={payload} />
         </LocalizationProvider>
       </NotificationsProvider>
