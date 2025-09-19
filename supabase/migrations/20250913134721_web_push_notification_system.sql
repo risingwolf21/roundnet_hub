@@ -1064,10 +1064,10 @@ AS $function$declare
   v_team_a_name text;
   v_team_b_name text;
 begin
-  select t."name" into v_team_a_name from games."teams" where id = (select m.team_a
+  select t."name" into v_team_a_name from games."teams" t where id = (select m.team_a
       from games."match" m
      where m.id = p_match );
-  select t."name" into v_team_b_name from games."teams" where id = (select m.team_b
+  select t."name" into v_team_b_name from games."teams" t where id = (select m.team_b
       from games."match" m
      where m.id = p_match );
 
