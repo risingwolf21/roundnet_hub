@@ -1,8 +1,6 @@
-import { supabase } from '@/lib/supabase';
 import { ThemeProvider } from '@mui/material';
 import { LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
-import { Provider as SupabaseProvider } from 'react-supabase';
 //@ts-ignore
 import { queryClient } from '@/lib/queryClient';
 import { QueryClientProvider } from '@tanstack/react-query';
@@ -25,9 +23,7 @@ export const App = () => {
       <LocalizationProvider dateAdapter={AdapterDayjs}>
         <QueryClientProvider client={queryClient}>
           <AppProvider branding={BRANDING} theme={theme}>
-            <SupabaseProvider value={supabase}>
-              <AuthGate />
-            </SupabaseProvider>
+            <AuthGate />
           </AppProvider>
         </QueryClientProvider>
       </LocalizationProvider>

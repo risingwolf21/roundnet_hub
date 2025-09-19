@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react';
-import { useClient } from 'react-supabase';
-import { useTranslation } from 'react-i18next';
+import { supabase } from '@/lib/supabase';
+import { ArrowBack } from '@mui/icons-material';
+import SearchIcon from '@mui/icons-material/Search';
 import {
   AppBar,
   Box,
@@ -12,10 +12,10 @@ import {
   ListItemText,
   Toolbar,
 } from '@mui/material';
-import { SlideUpTransition } from '../../../utils';
-import { ArrowBack } from '@mui/icons-material';
+import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Search, SearchIconWrapper, StyledInputBase } from '../../../components/SearchBar';
-import SearchIcon from '@mui/icons-material/Search';
+import { SlideUpTransition } from '../../../utils';
 
 export const SearchUserDialog = ({
   onUserSelected,
@@ -31,11 +31,10 @@ export const SearchUserDialog = ({
   const [loading, setLoading] = useState(true);
   const [searchString, setSearchString] = useState('');
   const [users, setUsers] = useState<User[]>([]);
-  const client = useClient();
   const { t } = useTranslation();
 
   useEffect(() => {
-    client
+    supabase
       .from('user')
       .select('*')
       .eq('verified', true)
@@ -44,7 +43,7 @@ export const SearchUserDialog = ({
         setUsers(result.data ?? []);
         setLoading(false);
       });
-  }, [client]);
+  }, [supabase]);
 
   return (
     <Dialog fullScreen open={open} onClose={handleClose} TransitionComponent={SlideUpTransition}>

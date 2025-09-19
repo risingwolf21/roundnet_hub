@@ -77,7 +77,7 @@ const UserScreen = ({ user, handleSignOut }: UserScreenProps) => {
       openDialog(ContactInformation, { user }, 'contact_information');
     }
     else if (searchParams.get("dialog") === "notifications") {
-      openDialog(NotificationsDialog, { user, notificationSupported: result }, "notifications");
+      openDialog(NotificationsDialog, { user, notificationSupported: notificationsSupported }, "notifications");
     }
   }, [openDialog, searchParams, user]);
 

@@ -1,3 +1,6 @@
+import Layout from '@/components/layout/Layout';
+import { LoadingIndicator } from '@/components/LoadingIndicator';
+import { supabase } from '@/lib/supabase';
 import { Add, Edit, ExpandMoreOutlined, Visibility } from '@mui/icons-material';
 import { Box, Button, ListItem, ListItemText, styled, Toolbar } from '@mui/material';
 import {
@@ -15,13 +18,9 @@ import { useDialogs } from '@toolpad/core';
 import { useNotifications } from '@toolpad/core/useNotifications';
 import React, { useCallback, useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router';
-import { useClient } from 'react-supabase';
-import { LoadingIndicator } from '@/components/LoadingIndicator';
-import { supabase } from '@/lib/supabase';
 import { SelectTableDialog } from './dialogs/SelectTableDialog';
 import { EditEntryDialog } from './EditEntryDialog';
 import { ViewEntryDialog } from './ViewEntryDialog';
-import Layout from '@/components/layout/Layout';
 
 const StyledGridOverlay = styled('div')(({ theme }) => ({
   display: 'flex',
@@ -81,7 +80,6 @@ export type Table = { name: string; schema: string };
 const SupabaseClient = () => {
   const [tables, setTables] = useState<Table[]>([]);
   const [selectedTable, setSelectedTable] = useState<Table | null>(null);
-  const client = useClient();
   const notifications = useNotifications();
   const dialog = useDialogs();
   const [searchParams] = useSearchParams();
@@ -209,7 +207,7 @@ const SupabaseClient = () => {
         }
       });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [client]);
+  }, [supabase]);
 
   useEffect(() => {
     if (selectedTable) fetcher(selectedTable);
