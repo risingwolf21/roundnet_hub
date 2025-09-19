@@ -1,3 +1,5 @@
+import Layout from '@/components/layout/Layout';
+import { usePlayer } from '@/tanstack/player_data';
 import AccountCircle from '@mui/icons-material/AccountCircle';
 import CalendarMonth from '@mui/icons-material/CalendarMonth';
 import Cancel from '@mui/icons-material/Cancel';
@@ -17,12 +19,10 @@ import {
   ListItemText,
   Typography,
 } from '@mui/material';
+import { useNotifications } from '@toolpad/core';
 import { DialogComponent, useDialogs } from '@toolpad/core/useDialogs';
-import { isSupported } from 'firebase/messaging';
-import React, { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router';
-import Layout from '@/components/layout/Layout';
-import { usePlayer } from '@/tanstack/player_data';
 import pzLogo from '../../images/pz_logo.svg';
 import { UserWithGroups } from '../../types/supabaseTypes';
 import { useGrants } from '../auth/GrantsContext';
@@ -30,7 +30,6 @@ import { ContactInformation } from './ContactInformation';
 import { NotificationsDialog } from './NotificationsDialog';
 import { PlayerzoneProfileDialog } from './PlayerzoneProfile';
 import { ProfileImage } from './ProfileImage';
-import { useNotifications } from '@toolpad/core';
 
 type UserScreenProps = {
   user: UserWithGroups;
@@ -70,17 +69,16 @@ const UserScreen = ({ user, handleSignOut }: UserScreenProps) => {
   );
 
   useEffect(() => {
-    isSupported().then((result) => {
-      setNotificationSUpported(result);
-      if (searchParams.get('dialog') === 'playerzone') {
-        openDialog(PlayerzoneProfileDialog, { user }, 'playerzone');
-      } else if (searchParams.get('dialog') === 'contact_information') {
-        openDialog(ContactInformation, { user }, 'contact_information');
-      }
-      // else if (searchParams.get("dialog") === "notifications") {
-      //   openDialog(NotificationsDialog, { user, notificationSupported: result }, "notifications");
-      // }
-    });
+    const notificationsSupported = !('serviceWorker' in navigator) || !('PushManager' in window)
+    setNotificationSUpported(notificationsSupported);
+    if (searchParams.get('dialog') === 'playerzone') {
+      openDialog(PlayerzoneProfileDialog, { user }, 'playerzone');
+    } else if (searchParams.get('dialog') === 'contact_information') {
+      openDialog(ContactInformation, { user }, 'contact_information');
+    }
+    else if (searchParams.get("dialog") === "notifications") {
+      openDialog(NotificationsDialog, { user, notificationSupported: result }, "notifications");
+    }
   }, [openDialog, searchParams, user]);
 
   const copyIcalURLToClipboard = () =>

@@ -5,7 +5,7 @@ import { fetchEvents } from '@/repository/EventRepository';
 import { fetchMatch, fetchUserMatches } from '@/repository/GamesRepository';
 import { fetchGroups, fetchSimpleUser, fetchUserWithGroups } from '@/repository/UserRepository';
 import { GamesTable } from '@/types/supabaseTypes';
-import { Enums, Tables, TablesInsert, TablesUpdate } from '../../@/types/supabase-generated.types';
+import { Enums, Tables, TablesInsert, TablesUpdate } from '@/types/supabase-generated.types';
 import { fetchChallengeWithGroup } from '@/repository/ChallengeRepository';
 import { fetchItemHistory, fetchItems } from '@/repository/KeysRepository';
 import { fetchFullEventPledges } from '@/tanstack/events';
@@ -38,7 +38,6 @@ declare global {
   type Match = GamesTable<'match'>;
   type MatchSet = GamesTable<'sets'>;
   type Team = GamesTable<'teams'>;
-  type CalendarSettings = Tables<'user_calender_settings'>;
   type PlayerWithSimpleUser = Player & { name: string; userId: string };
   type Feature = Tables<'features'>;
   type Permission = Tables<'permissions'>;

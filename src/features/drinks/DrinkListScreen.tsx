@@ -1,22 +1,22 @@
+import { Has } from '@/hooks/useGrants';
+import { useDrinks, useInsertHistoryEntryMutation } from '@/tanstack/drinks';
+import { DrinkCounter } from '@/types/supabaseTypes';
+import { nameOfProductType } from '@/utils';
 import { Tune } from '@mui/icons-material';
 import CheckIcon from '@mui/icons-material/Check';
 import { Checkbox, CircularProgress, Fab, List, ListItem, ListItemAvatar, ListItemText } from '@mui/material';
 import { captureException } from '@sentry/react';
 import { useNotifications } from '@toolpad/core/useNotifications';
 import React, { useEffect, useState } from 'react';
-import { useDrinks } from '@/tanstack/drinks';
-import { DrinkCounter } from '@/types/supabaseTypes';
-import { nameOfProductType } from '@/utils';
 import { SwipeableDialog } from '../../components/SwipeableDialog';
-import { SupabaseDrinkRepository } from '../../repository/DrinkRepository';
 import { useGrants } from '../auth/GrantsContext';
 import DrinkList from './components/DrinkList';
 import { LoadingDrinkItem } from './components/LoadingDrinkItem';
 import VoucherCard from './components/Voucher';
-import { Has } from '@/hooks/useGrants';
 
 const DrinkListScreen = () => {
   const { data: drinks = [], error, isLoading } = useDrinks();
+  const { user } = useGrants();
 
   const notifications = useNotifications();
   const [addedDrinks, setAddedDrinks] = useState<DrinkCounter[]>([]);
@@ -24,6 +24,8 @@ const DrinkListScreen = () => {
   const [visibleTypes, setVisibleTypes] = useState<ProductType[]>(
     (localStorage.getItem('visibleTypes')?.split(';') as ProductType[]) ?? ['Drink']
   );
+
+  const updateHistory = useInsertHistoryEntryMutation(user);
 
   useEffect(() => {
     if (error) {
@@ -48,16 +50,17 @@ const DrinkListScreen = () => {
   };
 
   const confirmDrinks = async () => {
-    SupabaseDrinkRepository.insertHistoryItems(Object.values(addedDrinks))
-      .then(() => {
+    updateHistory.mutate({ drinks: Object.values(addedDrinks) }, {
+      onSuccess: () => {
         setAddedDrinks([]);
         confirmDrinksDialog({ message: 'Getränke erfolgreich gebucht!', severity: 'success' });
-      })
-      .catch((error) => {
+      },
+      onError: (error) => {
         captureException(error);
         let message = error?.message ?? 'Drink could not be added';
         resetDrinks(message);
-      });
+      }
+    })
   };
 
   const onAddDrinkClick = (drink: Drink) => {
@@ -89,7 +92,7 @@ const DrinkListScreen = () => {
   };
 
   if (isLoading) {
-    return Array.from({ length: 10 }, (v, k) => k + 1).map(() => <LoadingDrinkItem />);
+    return Array.from({ length: 10 }, (_v, k) => k + 1).map(() => <LoadingDrinkItem />);
   }
 
   return (

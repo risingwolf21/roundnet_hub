@@ -1,8 +1,9 @@
-import { InfiniteData, useInfiniteQuery, useMutation, useQuery } from '@tanstack/react-query';
 import { queryClient } from '@/lib/queryClient';
 import { supabase } from '@/lib/supabase';
-import { fetchFullHistory, SupabaseDrinkRepository } from '@/repository/DrinkRepository';
-import { PaymentHistory } from '@/types/supabaseTypes';
+import { fetchFullHistory } from '@/repository/DrinkRepository';
+import { DrinkCounter, PaymentHistory } from '@/types/supabaseTypes';
+import { formatDateToDatabase } from '@/utils';
+import { InfiniteData, useInfiniteQuery, useMutation, useQuery } from '@tanstack/react-query';
 
 export const usePaymentHistory = (userId: string) =>
   useQuery({
@@ -69,19 +70,18 @@ export const useInfiniteUserHistory = (userId: string, count: number = 20) =>
     initialPageParam: 0,
   });
 
-export const useInsertHistoryEntryMutation = (userId: string) =>
-  useMutation({
-    mutationFn: async (drink: Drink) =>
-      SupabaseDrinkRepository.insertHistoryItems([
-        {
-          ...drink,
-          count: 1,
-        },
-      ]),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['history', userId] });
+export const useInsertHistoryEntryMutation = (user: User) => {
+  return useMutation({
+    mutationFn: async ({ drinks }: { drinks: DrinkCounter[] }) => {
+      const drinksToAdd = drinks.map((x) => ({ id: x.id, count: x.count, price: x.price }));
+      return supabase.rpc('add_drinks_history', { items: drinksToAdd }).throwOnError();
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ['history', user.userId] });
+      queryClient.invalidateQueries({ queryKey: ['payment', user.userId] });
     },
   });
+}
 
 export const useUpdateHistoryEntryMutation = (userId: string) =>
   useMutation({
@@ -115,5 +115,6 @@ export const useUpdateHistoryEntryMutation = (userId: string) =>
     },
     onSettled: (_data, _error, _variables, _context) => {
       queryClient.invalidateQueries({ queryKey: ['history', userId] });
+      queryClient.invalidateQueries({ queryKey: ['payment', userId] });
     },
   });

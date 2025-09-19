@@ -29,7 +29,7 @@ const HomePage = () => {
   const navigate = useNavigate();
 
   const updateAttendance = useUpdateAttendanceMutation(fetchMode);
-  const updateHistory = useInsertHistoryEntryMutation(user.userId);
+  const updateHistory = useInsertHistoryEntryMutation(user);
 
   return (
     <Layout>
