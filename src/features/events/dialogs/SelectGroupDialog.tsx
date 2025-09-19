@@ -1,3 +1,4 @@
+import { useGroups } from '@/tanstack/groups';
 import { FiberManualRecord } from '@mui/icons-material';
 import CloseIcon from '@mui/icons-material/Close';
 import {
@@ -13,8 +14,6 @@ import {
 } from '@mui/material';
 import { Box } from '@mui/system';
 import { DialogProps } from '@toolpad/core';
-import React from 'react';
-import { useGroups } from '@/tanstack/groups';
 import { SlideUpTransition } from '../../../utils';
 
 export const SelectGroupDialog = ({ payload, open, onClose }: DialogProps<undefined, Group | null>) => {

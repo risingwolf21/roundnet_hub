@@ -1,5 +1,4 @@
 import { Box, ListItem, ListItemAvatar, ListItemText, Skeleton } from '@mui/material';
-import React from 'react';
 
 export const LoadingGroupListItem = () => {
   return (

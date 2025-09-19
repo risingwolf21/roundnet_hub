@@ -1,7 +1,6 @@
 import { List, ListItem, ListItemAvatar, ListItemText, ListSubheader, Typography } from '@mui/material';
-import React from 'react';
-import { HistoryItemProps } from '../types';
 import { format } from 'date-fns';
+import { HistoryItemProps } from '../types';
 
 export const HistoryItem = ({ items, header, onClick }: HistoryItemProps) => {
   return (

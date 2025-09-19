@@ -1,18 +1,17 @@
+import { formatDateFromDatabase } from '@/utils';
 import { Box, Container, Divider, List, Stack, Typography } from '@mui/material';
 import { withProfiler } from '@sentry/react';
 import { TFunction } from 'i18next';
-import React from 'react';
 import { eventInThePast, EventsUserView, UserWithGroups } from '../../types/supabaseTypes';
 import EventAlerts from './components/EventAlerts';
 import EventDateInformation from './components/EventDateInformation';
 import EventInformationAttendance from './components/EventInformationAttendance';
+import EventInformationBringItems from './components/EventInformationBringItems';
 import EventInformationComments from './components/EventInformationComments';
 import EventInformationGames from './components/EventInformationGames';
 import EventMapPreview from './components/EventMapPreview';
-import { PlaceType } from './types';
 import EventWeatherForecast from './components/EventWeatherForecast';
-import { formatDateFromDatabase } from '@/utils';
-import EventInformationBringItems from './components/EventInformationBringItems';
+import { PlaceType } from './types';
 
 type EventInformationProps = {
   user: UserWithGroups;

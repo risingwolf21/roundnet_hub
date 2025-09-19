@@ -1,7 +1,6 @@
+import { BRANDING } from '@/utils';
 import { Info, Refresh } from '@mui/icons-material';
 import { AppBar, Button, Grid2, Toolbar, Typography } from '@mui/material';
-import React from 'react';
-import { BRANDING } from '@/utils';
 
 const UpdateAvailable = ({ update }: { update: () => void }) => {
   return (

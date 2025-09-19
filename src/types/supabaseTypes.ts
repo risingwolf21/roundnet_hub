@@ -154,27 +154,27 @@ type GamesSchema = Database[Extract<keyof Database, 'games'>];
 
 export type GamesTable<
   DefaultSchemaTableNameOrOptions extends
-    | keyof (GamesSchema['Tables'] & GamesSchema['Views'])
-    | { schema: keyof DatabaseWithoutInternals },
+  | keyof (GamesSchema['Tables'] & GamesSchema['Views'])
+  | { schema: keyof DatabaseWithoutInternals },
   TableName extends DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals;
   }
-    ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Tables'] &
-        DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Views'])
-    : never = never,
+  ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Tables'] &
+    DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Views'])
+  : never = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals;
 }
   ? (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Tables'] &
-      DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Views'])[TableName] extends {
+    DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Views'])[TableName] extends {
       Row: infer R;
     }
-    ? R
-    : never
+  ? R
+  : never
   : DefaultSchemaTableNameOrOptions extends keyof (GamesSchema['Tables'] & GamesSchema['Views'])
-    ? (GamesSchema['Tables'] & GamesSchema['Views'])[DefaultSchemaTableNameOrOptions] extends {
-        Row: infer R;
-      }
-      ? R
-      : never
-    : never;
+  ? (GamesSchema['Tables'] & GamesSchema['Views'])[DefaultSchemaTableNameOrOptions] extends {
+    Row: infer R;
+  }
+  ? R
+  : never
+  : never;

@@ -1,10 +1,10 @@
-import * as React from 'react';
 import {
+  Unstable_NumberInput as BaseNumberInput,
   numberInputClasses,
   NumberInputProps,
-  Unstable_NumberInput as BaseNumberInput,
 } from '@mui/base/Unstable_NumberInput';
 import { styled } from '@mui/system';
+import * as React from 'react';
 
 export const NumberInput = React.forwardRef(function CustomNumberInput(
   props: NumberInputProps & { fullWidth?: boolean },

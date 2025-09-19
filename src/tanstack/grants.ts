@@ -1,6 +1,6 @@
-import { useMutation, useQuery } from '@tanstack/react-query';
 import { queryClient } from '@/lib/queryClient';
 import { supabase } from '@/lib/supabase';
+import { useMutation, useQuery } from '@tanstack/react-query';
 
 export const useGroups = () => {
   return useQuery({

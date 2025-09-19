@@ -1,5 +1,4 @@
 import { List, ListItem, ListItemAvatar, ListItemText, Radio } from '@mui/material';
-import React from 'react';
 import { SwipeableDialog } from '../../../components/SwipeableDialog';
 
 type UserRoleDialogProps = {

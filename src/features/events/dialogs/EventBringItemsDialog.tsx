@@ -1,9 +1,9 @@
+import { useGrants } from '@/features/auth/GrantsContext';
+import { Tables } from '@/types/supabase-generated.types';
 import { Box, Button, List, ListItem, ListItemAvatar, ListItemText, ListSubheader, Typography } from '@mui/material';
 import Slider from '@mui/material/Slider';
 import { DialogProps } from '@toolpad/core';
-import React, { useMemo, useState } from 'react';
-import { useGrants } from '@/features/auth/GrantsContext';
-import { Tables } from '@/types/supabase-generated.types';
+import { useMemo, useState } from 'react';
 import { SwipeableDialog } from '../../../components/SwipeableDialog';
 
 type Props = {

@@ -1,4 +1,6 @@
-import { AddPhotoAlternateOutlined, CheckBox, Close, ContentCopy, Link } from '@mui/icons-material';
+import { supabase } from '@/lib/supabase';
+import { useEloHistory, usePlayer, useUpdateIndexHidden } from '@/tanstack/player_data';
+import { AddPhotoAlternateOutlined, Close, ContentCopy, Link } from '@mui/icons-material';
 import {
   Alert,
   AppBar,
@@ -22,9 +24,7 @@ import {
 import { captureException } from '@sentry/react';
 import { DialogProps } from '@toolpad/core/useDialogs';
 import { NotificationsProvider, useNotifications } from '@toolpad/core/useNotifications';
-import React, { useState } from 'react';
-import { supabase } from '@/lib/supabase';
-import { useEloHistory, usePlayer, useUpdateIndexHidden } from '@/tanstack/player_data';
+import { useState } from 'react';
 import rg_small from '../../images/rgx_small.png';
 
 type PlayerzoneProfilePayload = {

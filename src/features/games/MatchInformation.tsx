@@ -1,3 +1,6 @@
+import Layout from '@/components/layout/Layout';
+import { LoadingIndicator } from '@/components/LoadingIndicator';
+import { useMatch } from '@/tanstack/games';
 import { AccountBox } from '@mui/icons-material';
 import {
   Alert,
@@ -15,11 +18,8 @@ import {
   Typography,
 } from '@mui/material';
 import { useNotifications } from '@toolpad/core';
-import React, { useEffect } from 'react';
+import { useEffect } from 'react';
 import { useParams } from 'react-router';
-import Layout from '@/components/layout/Layout';
-import { LoadingIndicator } from '@/components/LoadingIndicator';
-import { useMatch } from '@/tanstack/games';
 
 type Props = {
   title: string;

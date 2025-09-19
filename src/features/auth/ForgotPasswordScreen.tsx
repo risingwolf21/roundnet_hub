@@ -1,3 +1,6 @@
+import { HOMEPAGE } from '@/constants';
+import { supabase } from '@/lib/supabase';
+import { BRANDING } from '@/utils';
 import { alpha, CircularProgress, Stack, useTheme } from '@mui/material';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
@@ -9,9 +12,6 @@ import { useNotifications } from '@toolpad/core/useNotifications';
 import * as React from 'react';
 import { useState } from 'react';
 import { Navigate, useLocation, useNavigate } from 'react-router';
-import { supabase } from '@/lib/supabase';
-import { HOMEPAGE } from '@/constants';
-import { BRANDING } from '@/utils';
 import { useApplication } from './ApplicationContext';
 import { getCommonTextFieldProps } from './SignUpScreen';
 

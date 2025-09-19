@@ -1,5 +1,5 @@
-import { PostgrestSingleResponse } from '@supabase/supabase-js';
 import { supabase } from '@/lib/supabase';
+import { PostgrestSingleResponse } from '@supabase/supabase-js';
 import { DrinkCounter } from '../types/supabaseTypes';
 
 export const fetchFullHistory = () => supabase.from('history').select('*, drinkId: drink, drink(*), user(*)');

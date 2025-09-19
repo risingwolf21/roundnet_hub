@@ -1,11 +1,10 @@
+import { useGrants } from '@/features/auth/GrantsContext';
+import { ReportSetsDialog } from '@/features/games/dialogs/ReportSetsDialog';
+import { GamesRepository } from '@/repository/GamesRepository';
 import { Warning } from '@mui/icons-material';
 import { Box, Button, List, ListItem, Typography } from '@mui/material';
 import { useQuery } from '@tanstack/react-query';
 import { useDialogs } from '@toolpad/core';
-import React from 'react';
-import { useGrants } from '@/features/auth/GrantsContext';
-import { ReportSetsDialog } from '@/features/games/dialogs/ReportSetsDialog';
-import { GamesRepository } from '@/repository/GamesRepository';
 
 type EventInformationGamesProps = {
   eventId: string;

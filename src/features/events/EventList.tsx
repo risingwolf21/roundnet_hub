@@ -1,3 +1,8 @@
+import { PullToRefresh } from '@/components/pull-to-refresh/PullToRefresh';
+import { useFetchMode } from '@/hooks/useFetchMode';
+import { Has } from '@/hooks/useGrants';
+import { useEvents, useUpdateAttendanceMutation } from '@/tanstack/events';
+import { EventsUserView } from '@/types/supabaseTypes';
 import { EventRepeat, FilterAlt } from '@mui/icons-material';
 import AddIcon from '@mui/icons-material/Add';
 import { Button, Fab, List, Typography } from '@mui/material';
@@ -8,18 +13,13 @@ import { useNotifications } from '@toolpad/core/useNotifications';
 import { format, parse } from 'date-fns';
 import { t } from 'i18next';
 import { groupBy } from 'lodash';
-import React, { useEffect } from 'react';
+import { useEffect } from 'react';
 import { useNavigate } from 'react-router';
-import { PullToRefresh } from '@/components/pull-to-refresh/PullToRefresh';
-import { useFetchMode } from '@/hooks/useFetchMode';
-import { useEvents, useUpdateAttendanceMutation } from '@/tanstack/events';
-import { EventsUserView } from '@/types/supabaseTypes';
 import { useGrants } from '../auth/GrantsContext';
 import { EventItem } from './components/EventItem';
 import { LoadingEventItem } from './components/LoadingEventItem';
 import { CreateOrUpdateEventDialog } from './dialogs/CreateOrUpdateEventDialog';
 import { FilterEventListDialog } from './dialogs/FilterEventListDialog';
-import { Has } from '@/hooks/useGrants';
 
 const EventScreen = () => {
   const { user } = useGrants();

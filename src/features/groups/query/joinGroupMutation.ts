@@ -1,7 +1,7 @@
-import { useMutation } from '@tanstack/react-query';
 import { queryClient } from '@/lib/queryClient';
 import { GroupsRepository } from '@/repository/GroupsRepository';
 import { GroupWithUserMappings } from '@/types/supabaseTypes';
+import { useMutation } from '@tanstack/react-query';
 
 export const useJoinGroup = (groupId: string, user: User, role: 'user' | 'admin' | 'joinRequested') => {
   return useMutation({
@@ -39,19 +39,19 @@ export const useJoinGroup = (groupId: string, user: User, role: 'user' | 'admin'
         old.map((group) =>
           group.id === groupId
             ? {
-                ...group,
-                users: [
-                  ...group.users,
-                  {
-                    user: user,
-                    map: {
-                      group: groupId,
-                      role: role,
-                      user: user.userId,
-                    },
+              ...group,
+              users: [
+                ...group.users,
+                {
+                  user: user,
+                  map: {
+                    group: groupId,
+                    role: role,
+                    user: user.userId,
                   },
-                ],
-              }
+                },
+              ],
+            }
             : group
         )
       );

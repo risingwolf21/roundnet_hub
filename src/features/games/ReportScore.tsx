@@ -1,3 +1,6 @@
+import Layout from '@/components/layout/Layout';
+import { useCreateMatch, usePlayers, useTeams } from '@/tanstack/games';
+import { GamesTable } from '@/types/supabaseTypes';
 import { Delete, Save } from '@mui/icons-material';
 import {
   Autocomplete,
@@ -19,9 +22,6 @@ import { captureException } from '@sentry/react';
 import { useNotifications } from '@toolpad/core/useNotifications';
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
-import Layout from '@/components/layout/Layout';
-import { useCreateMatch, usePlayers, useTeams } from '@/tanstack/games';
-import { GamesTable } from '@/types/supabaseTypes';
 import { useApplication } from '../auth/ApplicationContext';
 
 type Props = {

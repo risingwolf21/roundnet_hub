@@ -1,12 +1,12 @@
 import * as Sentry from '@sentry/react';
 import { Suspense } from 'react';
 import ReactDOM from 'react-dom/client';
+import { registerSW } from 'virtual:pwa-register';
+import './apocalypseHandler';
+import { App } from './App';
 import './global.css';
 import './instrument';
 import './translation/i18n';
-import './apocalypseHandler';
-import { App } from './App';
-import { registerSW } from 'virtual:pwa-register';
 
 const root = ReactDOM.createRoot(document.getElementById('root') as HTMLElement, {
   onUncaughtError: Sentry.reactErrorHandler((error, errorInfo) => {

@@ -4,12 +4,12 @@
 declare const APP_VERSION: string;
 
 interface ViteTypeOptions {
-  // By adding this line, you can make the type of ImportMetaEnv strict
+  // By adding this line, you can make the type of importMetaEnv strict
   // to disallow unknown keys.
-  strictImportMetaEnv: unknown;
+  strictimportMetaEnv: unknown;
 }
 
-interface ImportMetaEnv {
+interface importMetaEnv {
   readonly VITE_ENV: string;
   readonly VITE_GIT_COMMIT: string;
   readonly VITE_APP_TITLE: string;
@@ -26,6 +26,6 @@ interface ImportMetaEnv {
   readonly VITE_WEBSITE_NAME: string;
 }
 
-interface ImportMeta {
-  readonly env: ImportMetaEnv;
+interface importMeta {
+  readonly env: importMetaEnv;
 }

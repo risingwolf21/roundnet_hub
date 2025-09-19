@@ -1,6 +1,5 @@
-import { Box } from '@mui/system';
 import { ListItem, ListItemAvatar, ListItemText, Skeleton } from '@mui/material';
-import React from 'react';
+import { Box } from '@mui/system';
 
 export const LoadingEventItem = () => {
   return (

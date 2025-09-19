@@ -1,6 +1,6 @@
-import React from 'react';
 import { useGrants } from '@/features/auth/GrantsContext';
 import { Feature, Permission } from '@/generated/supabase-types';
+import React from 'react';
 
 type HasProps = {
   perm?: Permission | Permission[];

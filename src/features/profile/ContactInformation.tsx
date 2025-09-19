@@ -1,3 +1,5 @@
+import { supabase } from '@/lib/supabase';
+import { UserWithGroups } from '@/types/supabaseTypes';
 import { AddPhotoAlternateOutlined, Close, EmailOutlined, PersonOutlineOutlined } from '@mui/icons-material';
 import {
   AppBar,
@@ -17,9 +19,7 @@ import {
 import { captureException } from '@sentry/react';
 import { DialogProps } from '@toolpad/core/useDialogs';
 import { NotificationsProvider, useNotifications } from '@toolpad/core/useNotifications';
-import React, { useState } from 'react';
-import { supabase } from '@/lib/supabase';
-import { UserWithGroups } from '@/types/supabaseTypes';
+import { useState } from 'react';
 
 type ContactInformationPayload = {
   user: UserWithGroups;

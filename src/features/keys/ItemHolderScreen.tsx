@@ -1,12 +1,13 @@
+import { Has } from '@/hooks/useGrants';
+import { useAllItems, useHandoverKeyMutation } from '@/tanstack/items';
 import { AddOutlined, EditOffOutlined, EditOutlined } from '@mui/icons-material';
 import { Alert, Box, Fab, List } from '@mui/material';
 import { captureException } from '@sentry/react';
 import { useDialogs } from '@toolpad/core';
 import { useNotifications } from '@toolpad/core/useNotifications';
-import React, { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useSearchParams } from 'react-router';
-import { useAllItems, useHandoverKeyMutation } from '@/tanstack/items';
 import Layout from '../../components/layout/Layout';
 import { LoadingIndicator } from '../../components/LoadingIndicator';
 import { useGrants } from '../auth/GrantsContext';
@@ -15,7 +16,6 @@ import { EditOrAddItemDialog } from './dialogs/EditOrAddItemDialog';
 import { ItemHistoryDialog } from './dialogs/ItemHistoryDialog';
 import { KeyHandOverDialog } from './dialogs/KeyHandOverDialog';
 import { SearchUserDialog } from './dialogs/SearchUserDialog';
-import { Has } from '@/hooks/useGrants';
 
 const EMPTY_KEY: ItemUpdate = { name: '', color: '#000000', created_at: '', current_holder: null };
 
@@ -114,9 +114,9 @@ const ItemHolderScreen = () => {
             }}
             {...(hasPerm('items.update.holder')
               ? {
-                  selectKeyToHandOver,
-                  selectKeyToReceive,
-                }
+                selectKeyToHandOver,
+                selectKeyToReceive,
+              }
               : {})}
           />
         ))}

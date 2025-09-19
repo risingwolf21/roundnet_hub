@@ -96,7 +96,7 @@ const DrawerItem = styled(ListItem, {
   }),
 }));
 
-const DrawerBox = styled(Box)<BoxProps>(({}) => ({
+const DrawerBox = styled(Box)<BoxProps>(({ }) => ({
   width: '100%',
   height: 'calc(100% + env(safe-area-inset-top))',
   paddingTop: 'env(safe-area-inset-top)',

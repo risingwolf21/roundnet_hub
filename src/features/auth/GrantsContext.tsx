@@ -1,9 +1,9 @@
 // GrantsContext.tsx
-import { captureException } from '@sentry/react';
-import * as React from 'react';
 import { queryClient } from '@/lib/queryClient';
 import { supabase } from '@/lib/supabase';
 import { UserWithGroups } from '@/types/supabaseTypes';
+import { captureException } from '@sentry/react';
+import * as React from 'react';
 
 type GrantsState = { perm: Set<string>; feat: Set<string> };
 type Mode = 'all' | 'any';

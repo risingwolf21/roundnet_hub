@@ -1,6 +1,6 @@
-import { PostgrestSingleResponse } from '@supabase/supabase-js';
-import { EventGroupsView, GroupWithUserMappings } from '@/types/supabaseTypes';
 import { supabase } from '@/lib/supabase';
+import { EventGroupsView, GroupWithUserMappings } from '@/types/supabaseTypes';
+import { PostgrestSingleResponse } from '@supabase/supabase-js';
 import { Tables, TablesInsert } from '../types/supabase-generated.types';
 import { fetchGroupWithUsers } from './AdminUsersRepository';
 

@@ -1,12 +1,12 @@
+import { useInfiniteUserHistory, useUpdateHistoryEntryMutation } from '@/tanstack/drinks';
 import { Box, LinearProgress, List, Typography } from '@mui/material';
 import { captureException } from '@sentry/react';
 import { useNotifications } from '@toolpad/core/useNotifications';
-import React, { useEffect, useRef, useState } from 'react';
-import { useInfiniteUserHistory, useUpdateHistoryEntryMutation } from '@/tanstack/drinks';
+import { format } from 'date-fns';
+import { useEffect, useRef, useState } from 'react';
 import { groupBy } from '../../utils';
 import { HistoryItem } from './components/HistoryItem';
 import EditHistoryEntryDialog from './dialog/EditHistoryEntryDialog';
-import { format } from 'date-fns';
 
 export const HistoryScreen = ({ user }: { user: User }) => {
   const notifications = useNotifications();

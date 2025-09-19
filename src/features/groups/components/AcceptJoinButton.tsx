@@ -1,7 +1,6 @@
 import { ThumbUp } from '@mui/icons-material';
 import { IconButton } from '@mui/material';
 import { useNotifications } from '@toolpad/core';
-import React from 'react';
 import { useAcceptRequestMutation } from '../query/acceptRequestMutation';
 
 export const AcceptJoinButton = ({ group, user }: { group: Group; user: User }) => {

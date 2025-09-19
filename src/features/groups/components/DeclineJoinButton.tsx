@@ -1,7 +1,6 @@
 import { ThumbDown } from '@mui/icons-material';
 import { IconButton } from '@mui/material';
 import { useNotifications } from '@toolpad/core';
-import React from 'react';
 import { useDeclineRequestMutation } from '../query/declineRequestMutation';
 
 export const DeclineJoinButton = ({ group, user }: { group: Group; user: User }) => {

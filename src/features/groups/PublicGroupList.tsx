@@ -1,15 +1,15 @@
+import { PullToRefresh } from '@/components/pull-to-refresh/PullToRefresh';
+import { useGroups, useRequestedUsersPerGroup } from '@/tanstack/groups';
 import { Add, Groups } from '@mui/icons-material';
 import { Avatar, Chip, Fab, List, ListItem, ListItemAvatar, ListItemText, ListSubheader, Stack } from '@mui/material';
 import { useDialogs } from '@toolpad/core';
 import { useNotifications } from '@toolpad/core/useNotifications';
-import React, { useEffect } from 'react';
+import { useEffect } from 'react';
 import { useNavigate } from 'react-router';
-import { PullToRefresh } from '@/components/pull-to-refresh/PullToRefresh';
-import { useGroups, useRequestedUsersPerGroup } from '@/tanstack/groups';
+import { useGrants } from '../auth/GrantsContext';
 import { JoinGroupButton } from './components/JoinGroupButton';
 import { CreateOrUpdateGroupDialog } from './dialogs/CreateOrUpdateGroupDialog';
 import { LoadingGroupListItem } from './LoadingGroupListItem';
-import { useGrants } from '../auth/GrantsContext';
 
 const PublicGroupList = () => {
   const { user } = useGrants();
@@ -57,10 +57,10 @@ const PublicGroupList = () => {
                   divider
                   {...(x.user_group_role &&
                     x.user_group_role !== 'joinRequested' && {
-                      onClick: () => {
-                        navigate('/groups/' + x.id);
-                      },
-                    })}
+                    onClick: () => {
+                      navigate('/groups/' + x.id);
+                    },
+                  })}
                   {...(!x.user_group_role && {
                     secondaryAction: <JoinGroupButton group={x} user={user} />,
                   })}

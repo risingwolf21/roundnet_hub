@@ -1,3 +1,6 @@
+import { LoadingIndicator } from '@/components/LoadingIndicator';
+import { PullToRefresh } from '@/components/pull-to-refresh/PullToRefresh';
+import { useGroup, useLeaveGroupMutation, useMakeUserAdminMutation } from '@/tanstack/groups';
 import { AccountBox, Edit, ExpandMore, GroupRemove, Groups, PersonAdd, PersonRemove } from '@mui/icons-material';
 import {
   Accordion,
@@ -18,11 +21,8 @@ import {
 } from '@mui/material';
 import { captureException } from '@sentry/react';
 import { useDialogs, useNotifications } from '@toolpad/core';
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Navigate, useNavigate, useParams } from 'react-router';
-import { LoadingIndicator } from '@/components/LoadingIndicator';
-import { PullToRefresh } from '@/components/pull-to-refresh/PullToRefresh';
-import { useGroup, useLeaveGroupMutation, useMakeUserAdminMutation } from '@/tanstack/groups';
 import { useGrants } from '../auth/GrantsContext';
 import { AcceptJoinButton } from './components/AcceptJoinButton';
 import { DeclineJoinButton } from './components/DeclineJoinButton';
@@ -192,33 +192,33 @@ const PublicGroupInformation = () => {
                   selected={selectedUsers.includes(x.user)}
                   {...(group.user_group_role === 'admin' && x.map.role !== 'admin'
                     ? {
-                        makeAdmin: async (e) => {
-                          e.stopPropagation();
-                          const result = await dialogs.confirm(
-                            `Möchtest du wirklich ${x.user.name} zu einem Admin dieser Gruppe machen?`,
-                            {
-                              okText: 'Bestätigen',
-                              cancelText: 'Abbrechen',
-                            }
-                          );
-                          if (result) {
-                            makeUserAdminMutation.mutate({ group: group, user: x.user });
+                      makeAdmin: async (e) => {
+                        e.stopPropagation();
+                        const result = await dialogs.confirm(
+                          `Möchtest du wirklich ${x.user.name} zu einem Admin dieser Gruppe machen?`,
+                          {
+                            okText: 'Bestätigen',
+                            cancelText: 'Abbrechen',
                           }
-                        },
-                      }
+                        );
+                        if (result) {
+                          makeUserAdminMutation.mutate({ group: group, user: x.user });
+                        }
+                      },
+                    }
                     : {})}
                   {...(group.user_group_role === 'admin'
                     ? {
-                        onAvatarClick: (e) => {
-                          e.stopPropagation();
-                          if (group.user_group_role !== 'admin') return;
-                          if (selectedUsers.includes(x.user)) {
-                            setSelectedUsers([...selectedUsers.filter((y) => y.userId !== x.user.userId)]);
-                          } else {
-                            setSelectedUsers([...selectedUsers, x.user]);
-                          }
-                        },
-                      }
+                      onAvatarClick: (e) => {
+                        e.stopPropagation();
+                        if (group.user_group_role !== 'admin') return;
+                        if (selectedUsers.includes(x.user)) {
+                          setSelectedUsers([...selectedUsers.filter((y) => y.userId !== x.user.userId)]);
+                        } else {
+                          setSelectedUsers([...selectedUsers, x.user]);
+                        }
+                      },
+                    }
                     : {})}
                 />
               ))}
@@ -249,33 +249,33 @@ const PublicGroupInformation = () => {
                         selected={selectedUsers.includes(x.user)}
                         {...(group.user_group_role === 'admin' && x.map.role !== 'admin'
                           ? {
-                              makeAdmin: async (e) => {
-                                e.stopPropagation();
-                                const result = await dialogs.confirm(
-                                  `Möchtest du wirklich ${x.user.name} zu einem Admin dieser Gruppe machen?`,
-                                  {
-                                    okText: 'Bestätigen',
-                                    cancelText: 'Abbrechen',
-                                  }
-                                );
-                                if (result) {
-                                  makeUserAdminMutation.mutate({ group: group, user: x.user });
+                            makeAdmin: async (e) => {
+                              e.stopPropagation();
+                              const result = await dialogs.confirm(
+                                `Möchtest du wirklich ${x.user.name} zu einem Admin dieser Gruppe machen?`,
+                                {
+                                  okText: 'Bestätigen',
+                                  cancelText: 'Abbrechen',
                                 }
-                              },
-                            }
+                              );
+                              if (result) {
+                                makeUserAdminMutation.mutate({ group: group, user: x.user });
+                              }
+                            },
+                          }
                           : {})}
                         {...(group.user_group_role === 'admin'
                           ? {
-                              onAvatarClick: (e) => {
-                                e.stopPropagation();
-                                if (group.user_group_role !== 'admin') return;
-                                if (selectedUsers.includes(x.user)) {
-                                  setSelectedUsers([...selectedUsers.filter((y) => y.userId !== x.user.userId)]);
-                                } else {
-                                  setSelectedUsers([...selectedUsers, x.user]);
-                                }
-                              },
-                            }
+                            onAvatarClick: (e) => {
+                              e.stopPropagation();
+                              if (group.user_group_role !== 'admin') return;
+                              if (selectedUsers.includes(x.user)) {
+                                setSelectedUsers([...selectedUsers.filter((y) => y.userId !== x.user.userId)]);
+                              } else {
+                                setSelectedUsers([...selectedUsers, x.user]);
+                              }
+                            },
+                          }
                           : {})}
                       />
                     ))}

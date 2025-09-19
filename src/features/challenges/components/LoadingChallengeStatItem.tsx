@@ -1,5 +1,4 @@
 import { Avatar, ListItem, ListItemAvatar, ListItemText, Skeleton, Typography } from '@mui/material';
-import React from 'react';
 
 const medalForPlace = (index: number) => {
   if (index === 0) return '🥇';

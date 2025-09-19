@@ -1,8 +1,8 @@
+import { BRANDING } from '@/utils';
 import { AccountCircle, ArrowBack, Menu } from '@mui/icons-material';
 import { AppBar, Avatar, Box, IconButton, Toolbar, Typography } from '@mui/material';
-import React, { ReactNode, useEffect, useState } from 'react';
+import { ReactNode, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
-import { BRANDING } from '@/utils';
 import { useApplication } from '../../features/auth/ApplicationContext';
 import { Drawer, drawerWidth } from '../Drawer';
 

@@ -1,8 +1,7 @@
+import { useJoinGroup } from '@/tanstack/groups';
 import { Button } from '@mui/material';
 import { captureException } from '@sentry/react';
 import { useNotifications } from '@toolpad/core';
-import React from 'react';
-import { useJoinGroup } from '@/tanstack/groups';
 
 export const JoinGroupButton = ({ group, user }: { group: Group; user: User }) => {
   const notifications = useNotifications();

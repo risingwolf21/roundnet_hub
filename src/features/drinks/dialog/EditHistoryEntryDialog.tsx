@@ -1,3 +1,4 @@
+import { Add, LocalDrink, Remove } from '@mui/icons-material';
 import {
   Avatar,
   Box,
@@ -11,8 +12,7 @@ import {
   ListItemText,
   Typography,
 } from '@mui/material';
-import { Add, LocalDrink, Remove } from '@mui/icons-material';
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { SwipeableDialog } from '../../../components/SwipeableDialog';
 import { FullHistoryUpdate } from '../types';
 

@@ -1,8 +1,7 @@
-import { DoneAll } from '@mui/icons-material';
-import { Box, Fab, List, ListItem, ListItemText, Typography } from '@mui/material';
-import React from 'react';
 import { PullToRefresh } from '@/components/pull-to-refresh/PullToRefresh';
 import { useAllNotifications, useMarkNotificationsAsRead } from '@/tanstack/notifications';
+import { DoneAll } from '@mui/icons-material';
+import { Box, Fab, List, ListItem, ListItemText, Typography } from '@mui/material';
 import Layout from '../../components/layout/Layout';
 import { useGrants } from '../auth/GrantsContext';
 

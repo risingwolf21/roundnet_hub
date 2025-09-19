@@ -1,8 +1,8 @@
-import { ListSubheader, List, Chip, Grid2 } from '@mui/material';
+import { SwipeableDialog } from '@/components/SwipeableDialog';
+import { Chip, Grid2, List, ListSubheader } from '@mui/material';
 import { DialogProps } from '@toolpad/core';
 import { t } from 'i18next';
-import React, { useState } from 'react';
-import { SwipeableDialog } from '@/components/SwipeableDialog';
+import { useState } from 'react';
 
 type FilterEventListDialogProps = {
   currentFetchMode: 'past' | 'upcoming';

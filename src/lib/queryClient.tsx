@@ -1,4 +1,4 @@
-import { withScope, captureException } from '@sentry/react';
+import { captureException, withScope } from '@sentry/react';
 import { MutationCache, QueryCache, QueryClient } from '@tanstack/react-query';
 
 export const queryClient = new QueryClient({

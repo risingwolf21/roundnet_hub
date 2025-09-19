@@ -1,5 +1,5 @@
-import { useLocalStorageState } from '@toolpad/core';
 import { PlaceType } from '@/features/events/types';
+import { useLocalStorageState } from '@toolpad/core';
 
 export function useSearchedPlaces(): [PlaceType[], (places: PlaceType[]) => void] {
   const [places, setPlaces] = useLocalStorageState<PlaceType[]>('searchedPlacesCache', [], {

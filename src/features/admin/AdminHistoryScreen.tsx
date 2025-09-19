@@ -44,7 +44,7 @@ const AdminHistoryScreen = () => {
       <List>
         {Array.from(
           groupBy(history?.pages.flatMap((x) => x.data) ?? [], (x: FullHistory) =>
-            format(x.created_at ?? '', 'DD MMMM yyyy')
+            format(x.created_at ?? '', 'dd MMMM yyyy')
           )
         ).map(([key, value]) => (
           <AdminHistoryItem key={key} items={value} header={key} />

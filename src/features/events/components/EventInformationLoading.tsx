@@ -1,5 +1,4 @@
 import { List, ListItemText, Skeleton } from '@mui/material';
-import React from 'react';
 import { LoadingEventInformation } from './LoadingEventInformation';
 
 const EventInformationLoading = () => {

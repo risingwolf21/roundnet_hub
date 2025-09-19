@@ -1,14 +1,14 @@
-import { Send } from '@mui/icons-material';
-import { Box, IconButton, InputAdornment, List, TextField, Typography } from '@mui/material';
-import React, { createRef, useState } from 'react';
-import { useTranslation } from 'react-i18next';
 import { useGrants } from '@/features/auth/GrantsContext';
 import { useAddCommentMutation, useComments } from '@/tanstack/events';
 import { EventsUserView, FullComment } from '@/types/supabaseTypes';
+import { Send } from '@mui/icons-material';
+import { Box, IconButton, InputAdornment, List, TextField, Typography } from '@mui/material';
+import { useNotifications } from '@toolpad/core';
+import React, { createRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { EventCommentConversationDialog } from '../dialogs/EventCommentConversationDialog';
 import { CommentItem } from './CommentItem';
 import { CommentReplyItem, CommentReplyText } from './CommentReplyItem';
-import { useNotifications } from '@toolpad/core';
 
 type EventInformationCommentsProps = {
   event: EventsUserView;

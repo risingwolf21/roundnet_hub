@@ -1,9 +1,8 @@
+import { Has } from '@/hooks/useGrants';
 import AddIcon from '@mui/icons-material/Add';
 import LocalDrinkIcon from '@mui/icons-material/LocalDrink';
 import RemoveIcon from '@mui/icons-material/Remove';
 import { Avatar, Box, IconButton, ListItem, ListItemAvatar, ListItemText, Typography } from '@mui/material';
-import React from 'react';
-import { Has } from '@/hooks/useGrants';
 
 type Props = {
   drink: Drink;

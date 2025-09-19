@@ -1,6 +1,5 @@
-import { Checkbox, List, ListItemButton, ListItemIcon, ListItemText } from '@mui/material';
-import React from 'react';
 import { SwipeableDialog } from '@/components/SwipeableDialog';
+import { Checkbox, List, ListItemButton, ListItemIcon, ListItemText } from '@mui/material';
 
 type SelectFeaturePermissionDialogProps = {
   toggle: (feature: Feature | Permission, newValue: boolean) => void;

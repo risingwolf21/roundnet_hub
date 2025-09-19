@@ -1,6 +1,5 @@
 import { Map } from '@mui/icons-material';
 import { Box, ListItem, ListItemAvatar, ListItemIcon, ListItemText, Stack } from '@mui/material';
-import React from 'react';
 import { MapContainer, Marker, TileLayer } from 'react-leaflet';
 import { PlaceType } from '../types';
 

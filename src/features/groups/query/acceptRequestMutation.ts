@@ -1,7 +1,7 @@
-import { useMutation } from '@tanstack/react-query';
 import { queryClient } from '@/lib/queryClient';
 import { supabase } from '@/lib/supabase';
 import { FullUserMapping, GroupWithUserMappings } from '@/types/supabaseTypes';
+import { useMutation } from '@tanstack/react-query';
 
 export const useAcceptRequestMutation = (group: Group | null) =>
   useMutation({

@@ -1,10 +1,10 @@
-import React, { useEffect, useRef } from 'react';
-import { Stack, Typography, List, ListItem, ListItemAvatar, Avatar, ListItemText, CardMedia } from '@mui/material';
-import { AccountBox } from '@mui/icons-material';
-import { groupBy } from 'lodash';
-import { formatDateFromDatabase } from '@/utils';
 import { ChallengeStatWithUser } from '@/types/supabaseTypes';
+import { formatDateFromDatabase } from '@/utils';
+import { AccountBox } from '@mui/icons-material';
+import { Avatar, CardMedia, List, ListItem, ListItemAvatar, ListItemText, Stack, Typography } from '@mui/material';
 import { FetchNextPageOptions, InfiniteData, InfiniteQueryObserverResult } from '@tanstack/react-query';
+import { groupBy } from 'lodash';
+import { useEffect, useRef } from 'react';
 
 type ChallengeActivityListProps = {
   stats: InfiniteData<{ data: ChallengeStatWithUser[]; nextPage: number | undefined }, unknown> | undefined;

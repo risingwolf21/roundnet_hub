@@ -1,9 +1,9 @@
 // @/push/WebPushKeeper.tsx
+import useDeviceId from '@/hooks/useDeviceId';
+import { supabase } from '@/lib/supabase';
 import { logger } from '@sentry/react';
 import type { Session } from '@supabase/supabase-js';
 import { PropsWithChildren, useEffect, useRef } from 'react';
-import useDeviceId from '@/hooks/useDeviceId';
-import { supabase } from '@/lib/supabase';
 
 type Props = PropsWithChildren & {
   session: Session | null; // reingegeben aus deinem Auth-Context

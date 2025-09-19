@@ -1,3 +1,6 @@
+import { HOMEPAGE } from '@/constants';
+import { supabase } from '@/lib/supabase';
+import { BRANDING } from '@/utils';
 import { Alert, alpha, CircularProgress, Container, Stack, SxProps, Theme, Typography, useTheme } from '@mui/material';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
@@ -6,9 +9,6 @@ import TextField, { TextFieldProps } from '@mui/material/TextField';
 import { captureException } from '@sentry/react';
 import React, { useState } from 'react';
 import { Navigate, useLocation, useNavigate } from 'react-router';
-import { supabase } from '@/lib/supabase';
-import { HOMEPAGE } from '@/constants';
-import { BRANDING } from '@/utils';
 import { useApplication } from './ApplicationContext';
 
 const mergeSlotSx = (defaultSx: SxProps<Theme>, slotProps?: { sx?: SxProps<Theme> }) => {

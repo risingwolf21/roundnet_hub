@@ -22,11 +22,11 @@ import {
 import { useNotifications } from '@toolpad/core/useNotifications';
 import L, { LatLng } from 'leaflet';
 import { OpenStreetMapProvider } from 'leaflet-geosearch';
+import { SearchResult } from 'leaflet-geosearch/dist/providers/provider.js';
 import React, { useCallback, useEffect, useState } from 'react';
 import { MapContainer, Marker, TileLayer, useMap, useMapEvents } from 'react-leaflet';
 import { SlideUpTransition } from '../../../utils';
 import { SearchPlacesDialogProps } from '../types';
-import { SearchResult } from 'leaflet-geosearch/dist/providers/provider.js';
 
 const Search = styled('div')(({ theme }) => ({
   position: 'relative',

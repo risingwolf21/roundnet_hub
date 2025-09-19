@@ -1,7 +1,6 @@
 import { Button, Typography } from '@mui/material';
-import { SwipeableDialog } from '../../../components/SwipeableDialog';
-import React from 'react';
 import { TFunction } from 'i18next';
+import { SwipeableDialog } from '../../../components/SwipeableDialog';
 
 type KeyHandOverDialogProps = {
   user: User;
@@ -23,7 +22,7 @@ export const KeyHandOverDialog = ({
   return (
     <SwipeableDialog
       open={selectedUser !== null}
-      setOpen={() => {}}
+      setOpen={() => { }}
       onClose={() => setSelectedUser(null)}
       title={t('keyHandOver')}
       actions={
@@ -38,13 +37,13 @@ export const KeyHandOverDialog = ({
       <Typography m={2}>
         {selectedUser?.userId === user.userId
           ? t('confirmKeyTaken', {
-              keyName: selectedKeyHolder?.name,
-              userName: selectedKeyHolder?.full_current_holder?.displayName ?? '',
-            })
+            keyName: selectedKeyHolder?.name,
+            userName: selectedKeyHolder?.full_current_holder?.displayName ?? '',
+          })
           : t('confirmKeyHandover', {
-              keyName: selectedKeyHolder?.name,
-              userName: selectedKeyHolder?.full_current_holder?.displayName ?? '',
-            })}
+            keyName: selectedKeyHolder?.name,
+            userName: selectedKeyHolder?.full_current_holder?.displayName ?? '',
+          })}
       </Typography>
     </SwipeableDialog>
   );

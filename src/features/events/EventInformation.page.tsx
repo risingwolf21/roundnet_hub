@@ -1,12 +1,4 @@
-import { Delete, DoNotDisturb, DoNotDisturbOff, Edit, MoreVert } from '@mui/icons-material';
-import { IconButton, ListItemIcon, ListItemText, Menu, MenuItem } from '@mui/material';
-import { captureException } from '@sentry/react';
-import { useQuery } from '@tanstack/react-query';
-import { useDialogs, useNotifications } from '@toolpad/core';
-import React, { useEffect, useState } from 'react';
-import { useTranslation } from 'react-i18next';
-import { useNavigate, useParams } from 'react-router';
-import { queryClient } from '@/lib/queryClient';
+import Layout from '@/components/layout/Layout';
 import { PullToRefresh } from '@/components/pull-to-refresh/PullToRefresh';
 import { useGrants } from '@/features/auth/GrantsContext';
 import EventInformationLoading from '@/features/events/components/EventInformationLoading';
@@ -15,15 +7,23 @@ import { CreateOrUpdateEventDialog } from '@/features/events/dialogs/CreateOrUpd
 import { DeleteEventDialog } from '@/features/events/dialogs/DeleteEventDialog';
 import { EditEventOptionsDialog } from '@/features/events/dialogs/EditEventOptionsDialog';
 import { useFetchMode } from '@/hooks/useFetchMode';
+import { Has } from '@/hooks/useGrants';
+import { queryClient } from '@/lib/queryClient';
 import { SupabaseEventRepository } from '@/repository/EventRepository';
 import { useCancelTrainingMutation, useDeleteTrainingMutation } from '@/tanstack/events';
 import { useAllItems } from '@/tanstack/items';
 import { EventsUserView } from '@/types/supabaseTypes';
+import { Delete, DoNotDisturb, DoNotDisturbOff, Edit, MoreVert } from '@mui/icons-material';
+import { IconButton, ListItemIcon, ListItemText, Menu, MenuItem } from '@mui/material';
+import { captureException } from '@sentry/react';
+import { useQuery } from '@tanstack/react-query';
+import { useDialogs, useNotifications } from '@toolpad/core';
+import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { useNavigate, useParams } from 'react-router';
 import { EventTable } from 'types/supabase';
 import EventInformation from './EventInformation';
 import { PlaceType } from './types';
-import Layout from '@/components/layout/Layout';
-import { Has } from '@/hooks/useGrants';
 
 const EventInformationProvider = () => {
   const { selectedEventId } = useParams();

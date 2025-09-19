@@ -1,7 +1,7 @@
-import { useMutation, useQuery } from '@tanstack/react-query';
 import { queryClient } from '@/lib/queryClient';
 import { supabase } from '@/lib/supabase';
 import { Tables } from '@/types/supabase-generated.types';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import { Notification } from 'types/supabase';
 
 export const useAllNotifications = (user: User | null) =>

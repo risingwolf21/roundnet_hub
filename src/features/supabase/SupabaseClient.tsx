@@ -327,39 +327,39 @@ const SupabaseClient = () => {
           ].concat(
             columns.length > 0
               ? [
-                  {
-                    field: 'actions',
-                    type: 'actions',
-                    headerName: 'Actions',
-                    width: 100,
-                    cellClassName: 'actions',
-                    getActions: ({ id, row }) => [
-                      <GridActionsCellItem
-                        icon={<Visibility />}
-                        label="View"
-                        onClick={async () => {
-                          const result = await dialog.open(ViewEntryDialog, { entry: row });
-                          if (result === 'delete') {
-                            handleDelete(id, row);
-                          }
-                        }}
-                        color="inherit"
-                      />,
-                      <GridActionsCellItem
-                        icon={<Edit />}
-                        label="Edit"
-                        className="textPrimary"
-                        onClick={async () => {
-                          const result = await dialog.open(EditEntryDialog, { entry: row, columns });
-                          if (result) {
-                            handleUpdate(id, row, result);
-                          }
-                        }}
-                        color="inherit"
-                      />,
-                    ],
-                  },
-                ]
+                {
+                  field: 'actions',
+                  type: 'actions',
+                  headerName: 'Actions',
+                  width: 100,
+                  cellClassName: 'actions',
+                  getActions: ({ id, row }) => [
+                    <GridActionsCellItem
+                      icon={<Visibility />}
+                      label="View"
+                      onClick={async () => {
+                        const result = await dialog.open(ViewEntryDialog, { entry: row });
+                        if (result === 'delete') {
+                          handleDelete(id, row);
+                        }
+                      }}
+                      color="inherit"
+                    />,
+                    <GridActionsCellItem
+                      icon={<Edit />}
+                      label="Edit"
+                      className="textPrimary"
+                      onClick={async () => {
+                        const result = await dialog.open(EditEntryDialog, { entry: row, columns });
+                        if (result) {
+                          handleUpdate(id, row, result);
+                        }
+                      }}
+                      color="inherit"
+                    />,
+                  ],
+                },
+              ]
               : []
           )}
           slots={{ noRowsOverlay: CustomNoRowsOverlay, toolbar: CustomToolbar }}

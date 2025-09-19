@@ -1,10 +1,9 @@
+import { ProfileDialog } from '@/components/Profile';
+import { useGrants } from '@/features/auth/GrantsContext';
 import { AccountBox } from '@mui/icons-material';
 import { Avatar, Box, Button, CircularProgress, ListItem, ListItemAvatar, Typography } from '@mui/material';
 import { useDialogs } from '@toolpad/core';
 import { TFunction } from 'i18next';
-import React from 'react';
-import { ProfileDialog } from '@/components/Profile';
-import { useGrants } from '@/features/auth/GrantsContext';
 import { FullComment } from '../../../types/supabaseTypes';
 
 type Props = {

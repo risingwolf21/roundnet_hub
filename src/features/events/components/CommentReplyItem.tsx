@@ -1,3 +1,4 @@
+import { useGrants } from '@/features/auth/GrantsContext';
 import { AccountBox } from '@mui/icons-material';
 import {
   Avatar,
@@ -10,8 +11,6 @@ import {
   Typography,
 } from '@mui/material';
 import { TFunction } from 'i18next';
-import React from 'react';
-import { useGrants } from '@/features/auth/GrantsContext';
 import { FullComment } from '../../../types/supabaseTypes';
 
 type Props = {

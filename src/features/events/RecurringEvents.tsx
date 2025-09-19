@@ -1,3 +1,5 @@
+import { PullToRefresh } from '@/components/pull-to-refresh/PullToRefresh';
+import { SupabaseEventRepository } from '@/repository/EventRepository';
 import {
   CalendarMonth,
   Edit,
@@ -39,8 +41,6 @@ import { useQuery } from '@tanstack/react-query';
 import { useDialogs } from '@toolpad/core';
 import { format } from 'date-fns';
 import React from 'react';
-import { PullToRefresh } from '@/components/pull-to-refresh/PullToRefresh';
-import { SupabaseEventRepository } from '@/repository/EventRepository';
 import Layout from '../../components/layout/Layout';
 import { EventWithGroup } from '../../types/supabaseTypes';
 import { nameOfRecurrence } from '../../utils';

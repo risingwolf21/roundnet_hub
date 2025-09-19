@@ -1,10 +1,10 @@
-import { useMutation, useQuery } from '@tanstack/react-query';
-import { Omit } from 'lodash';
 import { queryClient } from '@/lib/queryClient';
 import { supabase } from '@/lib/supabase';
 import { GroupsRepository } from '@/repository/GroupsRepository';
 import { TablesUpdate } from '@/types/supabase-generated.types';
 import { FullUserMapping, GroupWithUserMappings } from '@/types/supabaseTypes';
+import { useMutation, useQuery } from '@tanstack/react-query';
+import { Omit } from 'lodash';
 
 export const useRequestedUsersPerGroup = () =>
   useQuery<GroupUserMapping[]>({
@@ -68,19 +68,19 @@ export const useJoinGroup = (groupId: string, user: User, role: 'user' | 'admin'
         const newGroups = prevGroups.map((group) =>
           group.id === groupId
             ? {
-                ...group,
-                users: [
-                  ...group.users,
-                  {
-                    user: user,
-                    map: {
-                      group: groupId,
-                      role: role,
-                      user: user.userId,
-                    },
+              ...group,
+              users: [
+                ...group.users,
+                {
+                  user: user,
+                  map: {
+                    group: groupId,
+                    role: role,
+                    user: user.userId,
                   },
-                ],
-              }
+                },
+              ],
+            }
             : group
         );
         queryClient.setQueryData(['groups'], newGroups);
@@ -267,9 +267,9 @@ export const useUpdateGroupMutation = (groupId?: string) =>
         const newGroups = prevGroups.map((x) =>
           x.id === groupId
             ? {
-                ...x,
-                ...group,
-              }
+              ...x,
+              ...group,
+            }
             : x
         );
         queryClient.setQueryData(['groups'], newGroups);

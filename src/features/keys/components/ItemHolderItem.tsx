@@ -1,7 +1,6 @@
-import { Avatar, Button, IconButton, ListItem, ListItemAvatar, ListItemText } from '@mui/material';
-import KeyIcon from '@mui/icons-material/Key';
 import EditIcon from '@mui/icons-material/Edit';
-import React from 'react';
+import KeyIcon from '@mui/icons-material/Key';
+import { Avatar, Button, IconButton, ListItem, ListItemAvatar, ListItemText } from '@mui/material';
 import { TFunction } from 'i18next';
 
 type ItemHolderItemProsp = {

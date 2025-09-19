@@ -1,3 +1,7 @@
+import { useGrants } from '@/features/auth/GrantsContext';
+import { Has } from '@/hooks/useGrants';
+import { useAttendance, useUpdateAttendanceMutation } from '@/tanstack/events';
+import { answerDeadlineExpired, eventInThePast, EventsUserView, maxAttendeesExceeded } from '@/types/supabaseTypes';
 import {
   CheckCircleOutline,
   HourglassBottom,
@@ -25,16 +29,12 @@ import {
   Typography,
 } from '@mui/material';
 import Box from '@mui/material/Box';
+import { useNotifications } from '@toolpad/core';
 import { isBefore } from 'date-fns';
 import { t } from 'i18next';
-import React, { useState } from 'react';
-import { useGrants } from '@/features/auth/GrantsContext';
-import { useAttendance, useUpdateAttendanceMutation } from '@/tanstack/events';
-import { answerDeadlineExpired, eventInThePast, EventsUserView, maxAttendeesExceeded } from '@/types/supabaseTypes';
+import { useState } from 'react';
 import EventAttendanceDialog from '../dialogs/EventAttendanceDialog';
 import { EventInformationConstellations } from './EventInformationConstellations';
-import { Has } from '@/hooks/useGrants';
-import { useNotifications } from '@toolpad/core';
 
 type EventInformationAttendanceProps = {
   fetchMode: 'past' | 'upcoming';
@@ -118,13 +118,13 @@ const EventInformationAttendance = ({ selectedEvent, fetchMode, keyHolders }: Ev
               .map((y) => y.full_current_holder?.userId)
               .includes(x)
           ) && (
-          <ListItem key={'keyAttendees'} sx={{ '&.MuiListItem-root': { paddingLeft: 0 } }} divider>
-            <ListItemAvatar sx={{ justifyContent: 'left', alignItems: 'center', display: 'flex' }}>
-              <Key sx={{ color: (theme) => theme.palette.success.main }} />
-            </ListItemAvatar>
-            <ListItemText primary={t('events.information.keyHolderAttending')} />
-          </ListItem>
-        )}
+            <ListItem key={'keyAttendees'} sx={{ '&.MuiListItem-root': { paddingLeft: 0 } }} divider>
+              <ListItemAvatar sx={{ justifyContent: 'left', alignItems: 'center', display: 'flex' }}>
+                <Key sx={{ color: (theme) => theme.palette.success.main }} />
+              </ListItemAvatar>
+              <ListItemText primary={t('events.information.keyHolderAttending')} />
+            </ListItem>
+          )}
         {selectedEvent.maxAttendees && selectedEvent.maxAttendees >= 0 && (
           <ListItem key={'spotsTaken'} sx={{ '&.MuiListItem-root': { paddingLeft: 0 } }} divider>
             <ListItemAvatar sx={{ justifyContent: 'left', alignItems: 'center', display: 'flex' }}>
@@ -158,9 +158,9 @@ const EventInformationAttendance = ({ selectedEvent, fetchMode, keyHolders }: Ev
             isLoading
               ? {}
               : setEventAttendanceState({
-                  open: true,
-                  index: 0,
-                })
+                open: true,
+                index: 0,
+              })
           }
           secondaryAction={
             <Has perm={'event.signup'}>
@@ -242,9 +242,9 @@ const EventInformationAttendance = ({ selectedEvent, fetchMode, keyHolders }: Ev
             isLoading
               ? {}
               : setEventAttendanceState({
-                  open: true,
-                  index: 1,
-                })
+                open: true,
+                index: 1,
+              })
           }
           secondaryAction={
             <Has perm={'event.signup'}>
@@ -283,9 +283,9 @@ const EventInformationAttendance = ({ selectedEvent, fetchMode, keyHolders }: Ev
                 isLoading
                   ? {}
                   : setEventAttendanceState({
-                      open: true,
-                      index: 2,
-                    })
+                    open: true,
+                    index: 2,
+                  })
               }
             >
               <ListItemAvatar sx={{ justifyContent: 'left', alignItems: 'center', display: 'flex' }}>

@@ -1,4 +1,3 @@
-import React from 'react';
 import Layout from '@/components/layout/Layout';
 import { useGrants } from '../auth/GrantsContext';
 import { HistoryScreen } from './HistoryScreen';

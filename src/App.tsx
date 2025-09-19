@@ -6,10 +6,10 @@ import { queryClient } from '@/lib/queryClient';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { AppProvider } from '@toolpad/core/AppProvider';
 import { AuthGate } from './features/auth/AuthGate';
+import { customEnLocale } from './lib/date-fns';
 import { munich_roundnet_theme } from './themes/munich_roundnet_theme';
 import { roundnet_karlsruhe_theme } from './themes/roundnet_karlsruhe_theme';
 import { BRANDING } from './utils';
-import { customEnLocale } from './lib/date-fns';
 
 const themeMap = {
   'munich-roundnet': munich_roundnet_theme,

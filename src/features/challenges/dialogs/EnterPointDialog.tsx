@@ -1,13 +1,13 @@
+import { dataURLtoFile, formatDateFromDatabase, readFile } from '@/utils';
 import { AddPhotoAlternateOutlined, DeleteOutline, EditOutlined } from '@mui/icons-material';
 import { Box, Button, Typography } from '@mui/material';
 import { DatePicker, PickersDay, PickersDayProps } from '@mui/x-date-pickers';
 import { uuid } from '@supabase/supabase-js/dist/main/lib/helpers';
-import Compressor from 'compressorjs';
-import React, { useEffect, useState } from 'react';
-import { dataURLtoFile, formatDateFromDatabase, readFile } from '@/utils';
-import { SwipeableDialog } from '../../../components/SwipeableDialog';
 import { DialogProps } from '@toolpad/core';
+import Compressor from 'compressorjs';
 import { differenceInDays, isSameDay, isSameWeek } from 'date-fns';
+import React, { useEffect, useState } from 'react';
+import { SwipeableDialog } from '../../../components/SwipeableDialog';
 
 type EnterPointDialogProps = {
   dates: string[];

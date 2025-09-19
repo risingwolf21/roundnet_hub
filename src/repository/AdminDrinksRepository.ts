@@ -1,6 +1,6 @@
+import { supabase } from '@/lib/supabase';
 import { PostgrestSingleResponse } from '@supabase/supabase-js';
 import _ from 'lodash';
-import { supabase } from '@/lib/supabase';
 import { fetchFullHistory } from './DrinkRepository';
 
 const PAGE_SIZE = 20;

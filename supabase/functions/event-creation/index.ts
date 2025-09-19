@@ -1,9 +1,9 @@
 // Follow this setup guide to integrate the Deno language server with your editor:
 // https://deno.land/manual/getting_started/setup_your_environment
 // This enables autocomplete, go to definition, etc.
+import * as Sentry from 'https://deno.land/x/sentry/index.mjs';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.7.1';
 import { addDays, addMonths, format, isAfter } from 'https://esm.sh/date-fns';
-import * as Sentry from 'https://deno.land/x/sentry/index.mjs';
 
 type EventRecurrence = 'Weekly' | 'Fortnightly' | 'Monthly' | 'None';
 type Event = {

@@ -1,16 +1,16 @@
-import { Add, Warning } from '@mui/icons-material';
-import { Box, Button, Chip, Fab, List, ListItem, ListSubheader, Typography } from '@mui/material';
-import { useDialogs, useNotifications } from '@toolpad/core';
-import { t } from 'i18next';
-import React, { useEffect } from 'react';
-import { useNavigate } from 'react-router';
 import Layout from '@/components/layout/Layout';
 import { PullToRefresh } from '@/components/pull-to-refresh/PullToRefresh';
 import { useMatches } from '@/tanstack/games';
-import { groupBy } from '@/utils';
-import { ReportSetsDialog } from './dialogs/ReportSetsDialog';
 import { UserMatchesView } from '@/types/supabaseTypes';
+import { groupBy } from '@/utils';
+import { Add, Warning } from '@mui/icons-material';
+import { Box, Button, Chip, Fab, List, ListItem, ListSubheader, Typography } from '@mui/material';
+import { useDialogs, useNotifications } from '@toolpad/core';
 import { format, isAfter } from 'date-fns';
+import { t } from 'i18next';
+import { useEffect } from 'react';
+import { useNavigate } from 'react-router';
+import { ReportSetsDialog } from './dialogs/ReportSetsDialog';
 
 const GameList = () => {
   const notifications = useNotifications();
@@ -34,7 +34,7 @@ const GameList = () => {
             [theme.breakpoints.up('xl')]: { pb: 0 },
           })}
         >
-          {Array.from(groupBy(matches, (x: UserMatchesView) => format(x.created_at ?? '', 'DD MMMM yyyy')))
+          {Array.from(groupBy(matches, (x: UserMatchesView) => format(x.created_at ?? '', 'dd MMMM yyyy')))
             .sort(([key1, v1], [key2, v2]) => (isAfter(key1, key2) ? -1 : 1))
             .map(([key, value]) => (
               <List

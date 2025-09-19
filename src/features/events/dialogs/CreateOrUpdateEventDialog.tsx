@@ -1,6 +1,6 @@
 import { useFetchMode } from '@/hooks/useFetchMode';
 import { useInsertEventMutation, useUpdateRecurrenceMutation, useUpdateSingleMutation } from '@/tanstack/events';
-import { formatDateFromDatabase, formatDateToDatabase, formatSafeDateFromDatabase } from '@/utils';
+import { formatDateFromDatabase, formatDateToDatabase } from '@/utils';
 import { AccessTime, Article, Category, Close, FiberManualRecord, Map } from '@mui/icons-material';
 import EventIcon from '@mui/icons-material/Event';
 import EventRepeatIcon from '@mui/icons-material/EventRepeat';
@@ -35,7 +35,7 @@ import { DatePicker, DateTimePicker } from '@mui/x-date-pickers';
 import { TimePicker } from '@mui/x-date-pickers/TimePicker';
 import { DialogProps, useDialogs } from '@toolpad/core';
 import { useNotifications } from '@toolpad/core/useNotifications';
-import { format, formatDate, isAfter, set } from 'date-fns';
+import { format, isAfter, set } from 'date-fns';
 import _ from 'lodash';
 import { FormEvent, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -438,11 +438,11 @@ export const CreateOrUpdateEventDialog = ({
                     answerDeadline: editedEvent.answerDeadline
                       ? null
                       : formatDateToDatabase(
-                          set(Date.now(), {
-                            seconds: 0,
-                            milliseconds: 0,
-                          })
-                        ),
+                        set(Date.now(), {
+                          seconds: 0,
+                          milliseconds: 0,
+                        })
+                      ),
                   })
                 }
               />
@@ -551,7 +551,7 @@ export const CreateOrUpdateEventDialog = ({
               secondary={'Soll es möglich sein für Trainer, Konstellationen zu erstellen?'}
             />
           </ListItem>
-          <ListItem sx={{ pt: 0, pb: 0, mb: 2 }} key={'pledges'} onClick={async () => {}}>
+          <ListItem sx={{ pt: 0, pb: 0, mb: 2 }} key={'pledges'} onClick={async () => { }}>
             <ListItemAvatar>
               <Category />
             </ListItemAvatar>
@@ -598,11 +598,11 @@ export const CreateOrUpdateEventDialog = ({
                     recurrenceEnd: editedEvent.recurrenceEnd
                       ? null
                       : formatDateToDatabase(
-                          set(Date.now(), {
-                            seconds: 0,
-                            milliseconds: 0,
-                          })
-                        ),
+                        set(Date.now(), {
+                          seconds: 0,
+                          milliseconds: 0,
+                        })
+                      ),
                   })
                 }
               />

@@ -13,7 +13,6 @@ import {
 } from '@mui/material';
 import { DialogProps } from '@toolpad/core';
 import { groupBy } from 'lodash';
-import React from 'react';
 import { Table } from '../SupabaseClient';
 
 type SelectTableDialogPayload = {

@@ -1,3 +1,4 @@
+import { supabase } from '@/lib/supabase';
 import { AccountCircle, Close, Edit, Email, FiberManualRecord, Password, Verified } from '@mui/icons-material';
 import {
   AppBar,
@@ -18,8 +19,7 @@ import {
 } from '@mui/material';
 import { Box, Stack } from '@mui/system';
 import { useNotifications } from '@toolpad/core/useNotifications';
-import React, { FormEvent, useState } from 'react';
-import { supabase } from '@/lib/supabase';
+import { FormEvent, useState } from 'react';
 import { UserWithGroups } from '../../../types/supabaseTypes';
 import { SlideUpTransition } from '../../../utils';
 import { UserRoleDialog } from './UserRoleDialog';
@@ -159,7 +159,7 @@ const EditUserDialog = ({ user, open, handleClose, onUserEditFinished, deleteUse
             </ListItem>
             <ListItem
               key={'role'}
-              onClick={() => {}}
+              onClick={() => { }}
               secondaryAction={
                 <IconButton
                   onClick={(event) => {

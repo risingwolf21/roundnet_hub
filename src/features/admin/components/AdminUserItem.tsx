@@ -1,6 +1,6 @@
-import { Avatar, Box, IconButton, ListItem, ListItemAvatar, ListItemText, Typography } from '@mui/material';
 import { AccountBox, Edit, Verified } from '@mui/icons-material';
-import React, { Fragment } from 'react';
+import { Avatar, Box, IconButton, ListItem, ListItemAvatar, ListItemText, Typography } from '@mui/material';
+import { Fragment } from 'react';
 
 export const AdminUserItem = ({ user, onEditClick }: { user: User; onEditClick: () => void }) => {
   return (

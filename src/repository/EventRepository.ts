@@ -1,10 +1,10 @@
+import { supabase } from '@/lib/supabase';
+import { formatDateToDatabase } from '@/utils';
 import { PostgrestSingleResponse } from '@supabase/supabase-js';
 import { add, Duration, format, startOfDay } from 'date-fns';
 import { EventTable } from 'types/supabase';
-import { supabase } from '@/lib/supabase';
 import { Tables, TablesInsert, TablesUpdate } from '../types/supabase-generated.types';
 import { EventsUserView, EventWithGroup, FullComment } from '../types/supabaseTypes';
-import { formatDateToDatabase } from '@/utils';
 
 export const fetchEvents = () =>
   supabase
@@ -137,7 +137,7 @@ export const SupabaseEventRepository = {
     await supabase
       .from('events')
       .update({
-        recurrenceEnd: format(Date.now(), 'yyyy-MM-DD HH:mm:ssZ'),
+        recurrenceEnd: format(Date.now(), 'yyyy-MM-dd HH:mm:ssZ'),
       })
       .eq('id', eventId);
   },

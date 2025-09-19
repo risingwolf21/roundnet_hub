@@ -1,8 +1,8 @@
+import { ProfileDialog } from '@/components/Profile';
 import { AccountBox, AdminPanelSettings, Check } from '@mui/icons-material';
 import { Avatar, Chip, IconButton, ListItem, ListItemAvatar, ListItemText, Stack, Typography } from '@mui/material';
 import { DialogHook } from '@toolpad/core';
 import React from 'react';
-import { ProfileDialog } from '@/components/Profile';
 
 type Props = {
   user: User;

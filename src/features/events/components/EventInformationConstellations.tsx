@@ -1,8 +1,7 @@
+import { eventInThePast, EventsUserView, FullAttendance } from '@/types/supabaseTypes';
 import { Sports } from '@mui/icons-material';
 import { Box, Button, Divider, ListItem, ListItemAvatar, ListItemText, Typography } from '@mui/material';
 import { useDialogs } from '@toolpad/core';
-import React from 'react';
-import { eventInThePast, EventsUserView, FullAttendance } from '@/types/supabaseTypes';
 import { ConstellationCreationDialog } from '../dialogs/ConstellationsCreationDialog';
 
 export const EventInformationConstellations = ({

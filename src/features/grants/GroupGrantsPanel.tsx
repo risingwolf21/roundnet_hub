@@ -1,7 +1,3 @@
-import { Groups } from '@mui/icons-material';
-import { Avatar, List, ListItem, ListItemAvatar, ListItemText } from '@mui/material';
-import { useDialogs, useNotifications } from '@toolpad/core';
-import React from 'react';
 import {
   useGrantGroupPermissions,
   useGroupFeatures,
@@ -9,6 +5,9 @@ import {
   useRevokeGroupPermissions,
 } from '@/tanstack/grants';
 import { useGroups } from '@/tanstack/groups';
+import { Groups } from '@mui/icons-material';
+import { Avatar, List, ListItem, ListItemAvatar, ListItemText } from '@mui/material';
+import { useDialogs, useNotifications } from '@toolpad/core';
 import { GrantsEditorDialog } from './GrantsEditorDialog';
 
 const GroupGrantsPanel = () => {

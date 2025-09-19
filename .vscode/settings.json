@@ -5,14 +5,15 @@
   },
   "[javascriptreact]": {
     "editor.defaultFormatter": "vscode.typescript-language-features",
-    "editor.formatOnSave": false
+    "editor.formatOnSave": true
   },
   "[typescript]": {
-    "editor.defaultFormatter": "vscode.typescript-language-features"
+    "editor.defaultFormatter": "vscode.typescript-language-features",
+    "editor.formatOnSave": true
   },
   "[typescriptreact]": {
     "editor.defaultFormatter": "vscode.typescript-language-features",
-    "editor.formatOnSave": false
+    "editor.formatOnSave": true
   },
   "deno.enablePaths": [
     "supabase/functions"
@@ -35,7 +36,8 @@
     "net"
   ],
   "editor.codeActionsOnSave": {
-    "source.fixAll.eslint": "always"
+    "source.fixAll.eslint": "always",
+    "source.organizeImports": "always"
   },
   "editor.formatOnSave": true,
   "editor.tabSize": 2,

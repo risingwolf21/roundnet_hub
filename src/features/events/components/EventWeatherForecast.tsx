@@ -1,8 +1,8 @@
 import { ListItem, ListItemAvatar, ListItemIcon, ListItemText } from '@mui/material';
 import { closestTo, differenceInCalendarDays } from 'date-fns';
-import React, { useEffect, useState } from 'react';
-import { PlaceType } from '../types';
 import { toNumber } from 'lodash';
+import { useEffect, useState } from 'react';
+import { PlaceType } from '../types';
 
 type Props = {
   place: PlaceType;

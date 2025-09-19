@@ -26,7 +26,7 @@ export function lazyWithRetry<T extends React.ComponentType<any>>(
                 try {
                   const keys = await caches?.keys?.();
                   await Promise.all((keys || []).map((k) => caches.delete(k)));
-                } catch {}
+                } catch { }
               } else {
                 onFinalFail?.(err);
                 reject(err);

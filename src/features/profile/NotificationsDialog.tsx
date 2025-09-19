@@ -1,3 +1,5 @@
+import { useNotificationTags, useNotificationTopics, useUpdateNotificationPreferences } from '@/tanstack/notifications';
+import { UserWithGroups } from '@/types/supabaseTypes';
 import { Close, NotificationsOff } from '@mui/icons-material';
 import {
   AppBar,
@@ -14,9 +16,7 @@ import {
   Typography,
 } from '@mui/material';
 import { DialogProps } from '@toolpad/core/useDialogs';
-import React, { PropsWithChildren } from 'react';
-import { useNotificationTags, useNotificationTopics, useUpdateNotificationPreferences } from '@/tanstack/notifications';
-import { UserWithGroups } from '@/types/supabaseTypes';
+import { PropsWithChildren } from 'react';
 import NotificationGate from './NotificationGate';
 
 const NotificationSwitch = ({

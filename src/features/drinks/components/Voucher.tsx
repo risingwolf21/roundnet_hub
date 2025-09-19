@@ -1,8 +1,8 @@
+import { useVouchers } from '@/tanstack/drinks';
 import { Redeem } from '@mui/icons-material';
 import { Avatar, Chip, List, ListItem, ListItemAvatar, ListItemText, ListSubheader } from '@mui/material';
 import { useNotifications } from '@toolpad/core';
-import React, { useEffect } from 'react';
-import { useVouchers } from '@/tanstack/drinks';
+import { useEffect } from 'react';
 
 const VoucherCard = () => {
   const notifications = useNotifications();

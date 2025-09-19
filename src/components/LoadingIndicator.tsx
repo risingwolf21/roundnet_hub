@@ -1,5 +1,4 @@
 import { LinearProgress } from '@mui/material';
-import React from 'react';
 
 export const LoadingIndicator = ({ loading }: { loading: Boolean }) => {
   if (loading) {

@@ -1,11 +1,11 @@
+import { PullToRefresh } from '@/components/pull-to-refresh/PullToRefresh';
+import { useArchivedChallenges, useChallenges } from '@/tanstack/challenge';
 import { Add } from '@mui/icons-material';
 import { Box, Fab, LinearProgress, List, ListItem, ListItemText, ListSubheader, Typography } from '@mui/material';
 import { withProfiler } from '@sentry/react';
 import { useDialogs, useNotifications } from '@toolpad/core';
-import React, { useEffect } from 'react';
+import { useEffect } from 'react';
 import { useNavigate } from 'react-router';
-import { PullToRefresh } from '@/components/pull-to-refresh/PullToRefresh';
-import { useArchivedChallenges, useChallenges } from '@/tanstack/challenge';
 import Layout from '../../components/layout/Layout';
 import { useGrants } from '../auth/GrantsContext';
 import { CreateChallengeDialog } from './dialogs/CreateChallengeDialog';

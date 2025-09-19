@@ -2,7 +2,6 @@ import { queryClient } from '@/lib/queryClient';
 import { supabase } from '@/lib/supabase';
 import { fetchFullHistory } from '@/repository/DrinkRepository';
 import { DrinkCounter, PaymentHistory } from '@/types/supabaseTypes';
-import { formatDateToDatabase } from '@/utils';
 import { InfiniteData, useInfiniteQuery, useMutation, useQuery } from '@tanstack/react-query';
 
 export const usePaymentHistory = (userId: string) =>

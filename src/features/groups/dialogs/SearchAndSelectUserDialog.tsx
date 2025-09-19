@@ -1,3 +1,4 @@
+import { supabase } from '@/lib/supabase';
 import { ArrowBack } from '@mui/icons-material';
 import SearchIcon from '@mui/icons-material/Search';
 import {
@@ -14,12 +15,11 @@ import {
   ListItemText,
   Toolbar,
 } from '@mui/material';
-import { Search, SearchIconWrapper, StyledInputBase } from '../../../components/SearchBar';
-import React, { useState } from 'react';
-import { SlideUpTransition } from '../../../utils';
 import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/lib/supabase';
 import { DialogProps } from '@toolpad/core';
+import React, { useState } from 'react';
+import { Search, SearchIconWrapper, StyledInputBase } from '../../../components/SearchBar';
+import { SlideUpTransition } from '../../../utils';
 
 type SearchAndSelectUserDialogProps = {
   usersToFilter: string[];

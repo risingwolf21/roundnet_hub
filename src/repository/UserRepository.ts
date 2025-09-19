@@ -1,6 +1,6 @@
-import { PostgrestError, PostgrestSingleResponse } from '@supabase/supabase-js';
-import { GroupWithUserRole } from '@/types/supabaseTypes';
 import { supabase } from '@/lib/supabase';
+import { GroupWithUserRole } from '@/types/supabaseTypes';
+import { PostgrestError, PostgrestSingleResponse } from '@supabase/supabase-js';
 
 export const fetchGroups = () => supabase.schema('public').from('group_user_mapping').select('*, event_group(*)');
 export const fetchUserWithGroups = () =>

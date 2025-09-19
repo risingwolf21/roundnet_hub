@@ -1,9 +1,8 @@
-import { Key, AccountBox } from '@mui/icons-material';
-import { Card, CardActionArea, Typography, Box, Avatar, CardActions, Button } from '@mui/material';
-import { t } from 'i18next';
-import React from 'react';
-import { useNavigate } from 'react-router';
 import { translationKeyOfItemType } from '@/utils';
+import { AccountBox, Key } from '@mui/icons-material';
+import { Avatar, Box, Button, Card, CardActionArea, CardActions, Typography } from '@mui/material';
+import { t } from 'i18next';
+import { useNavigate } from 'react-router';
 
 export const ItemCard = ({ index, item, user }: { index: number; item: FullItemHolder; user: User }) => {
   const navigate = useNavigate();

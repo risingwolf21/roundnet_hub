@@ -15,7 +15,7 @@ import {
   Typography,
 } from '@mui/material';
 import { DialogProps } from '@toolpad/core';
-import React, { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import pzLogo from '../images/pz_logo.svg';
 import { SupabaseUserRepository } from '../repository/UserRepository';
 

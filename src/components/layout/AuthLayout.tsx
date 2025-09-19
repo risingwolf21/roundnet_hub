@@ -1,8 +1,8 @@
-import { AppBar, Box, Toolbar, Typography } from '@mui/material';
-import React, { PropsWithChildren, useEffect } from 'react';
-import { drawerWidth } from '../Drawer';
-import { Outlet } from 'react-router';
 import { BRANDING } from '@/utils';
+import { AppBar, Box, Toolbar, Typography } from '@mui/material';
+import { PropsWithChildren, useEffect } from 'react';
+import { Outlet } from 'react-router';
+import { drawerWidth } from '../Drawer';
 
 type Props = PropsWithChildren;
 

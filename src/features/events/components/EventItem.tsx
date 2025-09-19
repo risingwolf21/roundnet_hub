@@ -1,3 +1,4 @@
+import { EventsUserView } from '@/types/supabaseTypes';
 import {
   HourglassBottom,
   RecordVoiceOver,
@@ -9,8 +10,6 @@ import {
 import { Box, CircularProgress, IconButton, ListItem, ListItemText } from '@mui/material';
 import { isBefore, toDate } from 'date-fns';
 import { TFunction } from 'i18next';
-import React from 'react';
-import { EventsUserView } from '@/types/supabaseTypes';
 
 type EventItemProps = {
   attendanceUpdating: boolean;
@@ -105,9 +104,9 @@ export const EventItem = ({ event, onClick, attendEvent, declineEvent, attendanc
           event.isCancelled
             ? 'Event abgesagt'
             : [
-                t('events.secondaryTextStart', { start: toDate(event.startingDateTime!) }),
-                event.endDateTime && t('events.secondaryTextWithEnd', { end: toDate(event.endDateTime) }),
-              ].join(' ')
+              t('events.secondaryTextStart', { start: toDate(event.startingDateTime!) }),
+              event.endDateTime && t('events.secondaryTextWithEnd', { end: toDate(event.endDateTime) }),
+            ].join(' ')
         }
       />
     </ListItem>

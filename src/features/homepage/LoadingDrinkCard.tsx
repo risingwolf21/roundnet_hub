@@ -1,5 +1,4 @@
 import { Box, Button, Card, CardActions, Skeleton } from '@mui/material';
-import React from 'react';
 
 export const LoadingDrinkCard = ({ index }: { index: number }) => {
   return (

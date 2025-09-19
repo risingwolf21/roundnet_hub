@@ -1,3 +1,6 @@
+import CropImageDialog from '@/components/CropImageDialog';
+import { supabase } from '@/lib/supabase';
+import { dataURLtoFile, readFile } from '@/utils';
 import { AddPhotoAlternateOutlined, DeleteOutline, EditOutlined, Restore, Save } from '@mui/icons-material';
 import { Avatar, Box, Button, CircularProgress, Container } from '@mui/material';
 import { captureException } from '@sentry/react';
@@ -5,9 +8,6 @@ import { uuid } from '@supabase/supabase-js/dist/main/lib/helpers';
 import { useNotifications } from '@toolpad/core/useNotifications';
 import Compressor from 'compressorjs';
 import React, { useState } from 'react';
-import CropImageDialog from '@/components/CropImageDialog';
-import { supabase } from '@/lib/supabase';
-import { dataURLtoFile, readFile } from '@/utils';
 
 type Props = {
   user: User;

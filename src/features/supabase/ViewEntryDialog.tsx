@@ -14,7 +14,6 @@ import {
 } from '@mui/material';
 import { DialogProps, DialogsProvider, useDialogs } from '@toolpad/core';
 import _ from 'lodash';
-import React from 'react';
 
 type ViewEntryDialogPayload = {
   entry: any;

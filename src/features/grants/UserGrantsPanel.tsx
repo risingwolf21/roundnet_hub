@@ -1,7 +1,3 @@
-import { AccountBox } from '@mui/icons-material';
-import { Avatar, List, ListItem, ListItemAvatar, ListItemText } from '@mui/material';
-import { useDialogs, useNotifications } from '@toolpad/core';
-import React from 'react';
 import {
   useDirectUserGrants,
   useGrantUserPermissions,
@@ -9,6 +5,9 @@ import {
   useUserFeatures,
   useUserPermissions,
 } from '@/tanstack/grants';
+import { AccountBox } from '@mui/icons-material';
+import { Avatar, List, ListItem, ListItemAvatar, ListItemText } from '@mui/material';
+import { useDialogs, useNotifications } from '@toolpad/core';
 import { GrantsEditorDialog } from './GrantsEditorDialog';
 
 const UserGrantsPanel = () => {

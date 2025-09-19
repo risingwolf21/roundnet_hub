@@ -1,3 +1,5 @@
+import { ProfileDialog } from '@/components/Profile';
+import { useGrants } from '@/features/auth/GrantsContext';
 import { AccountBox, Key, RecordVoiceOver } from '@mui/icons-material';
 import {
   AppBar,
@@ -17,8 +19,6 @@ import { useDialogs } from '@toolpad/core';
 import { compareDesc, isBefore } from 'date-fns';
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ProfileDialog } from '@/components/Profile';
-import { useGrants } from '@/features/auth/GrantsContext';
 import { SwipeableDialog } from '../../../components/SwipeableDialog';
 import { FullAttendance } from '../../../types/supabaseTypes';
 import { EventAttendanceDialogProps } from '../types';

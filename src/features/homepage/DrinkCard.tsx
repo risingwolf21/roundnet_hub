@@ -1,5 +1,4 @@
 import { Box, Button, Card, CardActions, CardContent, CardMedia, Typography } from '@mui/material';
-import React from 'react';
 
 export const DrinkCard = ({
   drink,

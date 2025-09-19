@@ -1,6 +1,6 @@
-import { AppBar, Tab, Tabs, useTheme } from '@mui/material';
-import React, { useState } from 'react';
 import Layout from '@/components/layout/Layout';
+import { AppBar, Tab, Tabs, useTheme } from '@mui/material';
+import { useState } from 'react';
 import GroupGrantsPanel from './GroupGrantsPanel';
 import UserGrantsPanel from './UserGrantsPanel';
 

@@ -1,9 +1,9 @@
+import { supabase } from '@/lib/supabase';
 import { Info, Warning } from '@mui/icons-material';
 import Cancel from '@mui/icons-material/Cancel';
 import CheckCircle from '@mui/icons-material/CheckCircle';
 import { Alert, Button, Chip, CircularProgress, Container, ListItem, ListItemText, Stack } from '@mui/material';
 import React from 'react';
-import { supabase } from '@/lib/supabase';
 
 // --- Helpers ---------------------------------------------------------------
 function urlBase64ToUint8Array(base64String: string) {
@@ -80,7 +80,7 @@ async function revokeOnServer(endpoint?: string | null) {
 
 async function ensurePermissionFromGesture(): Promise<NotificationPermission> {
   if (Notification.permission === 'granted') return 'granted';
-  // IMPORTANT: only call this inside a user gesture handler (e.g., onClick)
+  // importANT: only call this inside a user gesture handler (e.g., onClick)
   return await Notification.requestPermission();
 }
 
@@ -130,7 +130,7 @@ export default function NotificationGate({ allowDecline = true, onReady, vapidPu
 
       // Always create a fresh subscription (prevents stale endpoints)
       const old = await reg.pushManager.getSubscription();
-      await old?.unsubscribe().catch(() => {});
+      await old?.unsubscribe().catch(() => { });
 
       const sub = await reg.pushManager.subscribe({
         userVisibleOnly: true,
@@ -155,7 +155,7 @@ export default function NotificationGate({ allowDecline = true, onReady, vapidPu
       const reg = await getSW();
       const old = await reg.pushManager.getSubscription();
       await revokeOnServer(old?.endpoint);
-      await old?.unsubscribe().catch(() => {});
+      await old?.unsubscribe().catch(() => { });
 
       const sub = await reg.pushManager.subscribe({
         userVisibleOnly: true,

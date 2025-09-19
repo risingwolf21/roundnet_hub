@@ -1,3 +1,4 @@
+import { answerDeadlineExpired, eventInThePast, EventsUserView } from '@/types/supabaseTypes';
 import { AccessTime, Place, ThumbDownAlt, ThumbDownOffAlt, ThumbUpAlt, ThumbUpOffAlt } from '@mui/icons-material';
 import {
   Badge,
@@ -12,9 +13,7 @@ import {
   ListItemText,
 } from '@mui/material';
 import { format } from 'date-fns';
-import React from 'react';
 import { useNavigate } from 'react-router';
-import { answerDeadlineExpired, eventInThePast, EventsUserView } from '@/types/supabaseTypes';
 
 export const EventCard = ({
   index,
