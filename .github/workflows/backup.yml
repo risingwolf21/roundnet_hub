@@ -17,6 +17,9 @@ on:
 jobs:
   backup-karlsruhe:
     runs-on: ubuntu-latest
+    if: ${{ github.event_name != 'workflow_dispatch'
+        || github.event.inputs.publish == 'All'
+        || github.event.inputs.publish == 'Roundnet Karlsruhe' }}
     environment:
       name: 'Roundnet Karlsruhe'
     permissions:
@@ -50,6 +53,9 @@ jobs:
           path: supabase/backup/roundnet-karlsruhe
 
   backup-munich:
+    if: ${{ github.event_name != 'workflow_dispatch'
+        || github.event.inputs.publish == 'All'
+        || github.event.inputs.publish == 'Munich Roundnet' }}
     runs-on: ubuntu-latest
     environment:
       name: 'Munich Roundnet'
