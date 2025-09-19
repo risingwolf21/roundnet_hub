@@ -131,17 +131,6 @@ const TeamCard = ({
           )}
         </Box>
         <Divider />
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', px: 2, py: 1 }}>
-          <Box sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-            <Typography fontWeight={'bold'}>Sätze</Typography>
-          </Box>
-          <Stack direction={'row'} spacing={1}>
-            {sets.map((x) => (
-              <Chip color={x.won ? 'success' : 'default'} variant={'filled'} label={x.score} />
-            ))}
-          </Stack>
-        </Box>
-        <Divider />
         {rated && (
           <>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', px: 2, py: 1 }}>
@@ -250,6 +239,24 @@ const MatchInformation = () => {
           p2={match.player_2a}
           rated={match.rated}
         />
+
+        <Card elevation={3} sx={{ borderRadius: 2, py: 0, px: 0, mt: 1, pb: 0 }}>
+          <CardContent sx={{ p: 0 }}>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', px: 2, pt: 2 }}>
+              <Box sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+                <Typography fontWeight={'bold'}>Sätze</Typography>
+              </Box>
+              <Stack direction={'row'} spacing={1} sx={{ px: 2, py: 1, pb: 0 }}>
+                {match.sets.map((x) => (
+                  <Stack spacing={2}>
+                    <Chip color={x.team_b_score < x.team_a_score ? 'success' : 'default'} variant={'filled'} label={x.team_a_score} />
+                    <Chip color={x.team_b_score > x.team_a_score ? 'success' : 'default'} variant={'filled'} label={x.team_b_score} />
+                  </Stack>
+                ))}
+              </Stack>
+            </Box>
+          </CardContent>
+        </Card>
 
         <TeamCard
           title="Team B"
