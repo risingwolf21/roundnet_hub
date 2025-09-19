@@ -1,3 +1,4 @@
+import { queryClient } from '@/lib/queryClient';
 import SearchIcon from '@mui/icons-material/Search';
 import { InputAdornment, LinearProgress, List, TextFieldProps } from '@mui/material';
 import TextField from '@mui/material/TextField';
@@ -5,15 +6,14 @@ import { styled } from '@mui/system';
 import { captureException } from '@sentry/react';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { useNotifications } from '@toolpad/core/useNotifications';
-import React, { useState } from 'react';
-import { queryClient } from 'src/App';
+import { useState } from 'react';
 import Layout from '../../components/layout/Layout';
 import { AdminUsersRepository } from '../../repository/AdminUsersRepository';
 import { UserWithGroups } from '../../types/supabaseTypes';
 import { AdminUserItem } from './components/AdminUserItem';
 import EditUserDialog, { UserEdited } from './dialogs/EditUserDialog';
 
-const SearchBar = styled(TextField)<TextFieldProps>(({ theme }) => ({
+const SearchBar = styled(TextField)<TextFieldProps>(() => ({
   marginLeft: 16,
   marginRight: 16,
   marginTop: 16,
@@ -38,46 +38,48 @@ const SearchBar = styled(TextField)<TextFieldProps>(({ theme }) => ({
   },
 }));
 
-export const useAllUsersAsAdmin = () => useQuery<UserWithGroups[]>({
-  queryKey: ["users", "admin"],
-  queryFn: () => AdminUsersRepository.fetchAllUsersWithGroups()
-});
+export const useAllUsersAsAdmin = () =>
+  useQuery<UserWithGroups[]>({
+    queryKey: ['users', 'admin'],
+    queryFn: () => AdminUsersRepository.fetchAllUsersWithGroups(),
+  });
 
-export const useUpdateUserMutation = () => useMutation({
-  mutationFn: ({ update }: { update: UserEdited }) => {
-    return AdminUsersRepository.updateUser(update)
-  },
-  onMutate: async ({ update }) => {
-    await queryClient.cancelQueries({ queryKey: ["users", "admin"] });
+export const useUpdateUserMutation = () =>
+  useMutation({
+    mutationFn: ({ update }: { update: UserEdited }) => {
+      return AdminUsersRepository.updateUser(update);
+    },
+    onMutate: async ({ update }) => {
+      await queryClient.cancelQueries({ queryKey: ['users', 'admin'] });
 
-    const previousUsers = queryClient.getQueryData<UserWithGroups[]>(["users", "admin"]);
+      const previousUsers = queryClient.getQueryData<UserWithGroups[]>(['users', 'admin']);
 
-    if (previousUsers) {
-      const newUsers = previousUsers.map(x => {
-        if (x.userId === update.userId) {
-          return {
-            ...x,
-            displayName: update.displayName,
-            verified: update.verified,
-            role: update.role
+      if (previousUsers) {
+        const newUsers = previousUsers.map((x) => {
+          if (x.userId === update.userId) {
+            return {
+              ...x,
+              displayName: update.displayName,
+              verified: update.verified,
+              role: update.role,
+            };
           }
-        }
-        return x
-      })
-      queryClient.setQueryData(["events", "admin"], newUsers);
-    }
+          return x;
+        });
+        queryClient.setQueryData(['events', 'admin'], newUsers);
+      }
 
-    return { previousUsers }
-  },
-  onError: (err, _vars, context) => {
-    if (context?.previousUsers) {
-      queryClient.setQueryData(["users", "admin"], context.previousUsers);
-    }
-  },
-  onSettled: (data, error, variables, context) => {
-    queryClient.invalidateQueries({ queryKey: ["users", "admin"] });
-  },
-})
+      return { previousUsers };
+    },
+    onError: (_err, _vars, context) => {
+      if (context?.previousUsers) {
+        queryClient.setQueryData(['users', 'admin'], context.previousUsers);
+      }
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ['users', 'admin'] });
+    },
+  });
 
 const AdminUserList = () => {
   const [editUserOpen, setEditUserOpen] = useState(false);
@@ -105,7 +107,7 @@ const AdminUserList = () => {
   };
 
   const onUserEditFinished = async (result: UserEdited) => {
-    updateUserMutation.mutate({ update: result })
+    updateUserMutation.mutate({ update: result });
     setEditUserOpen(false);
   };
 

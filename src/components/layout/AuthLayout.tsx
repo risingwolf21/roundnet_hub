@@ -1,19 +1,16 @@
+import { BRANDING } from '@/utils';
 import { AppBar, Box, Toolbar, Typography } from '@mui/material';
-import React, { PropsWithChildren, useEffect } from 'react';
-import { drawerWidth } from '../Drawer';
+import { PropsWithChildren, useEffect } from 'react';
 import { Outlet } from 'react-router';
-import { BRANDING } from 'src/utils';
+import { drawerWidth } from '../Drawer';
 
 type Props = PropsWithChildren;
 
 const AuthLayout = ({ children }: Props) => {
-
-  const iOS =
-    typeof navigator !== 'undefined' && /iPad|iPhone|iPod/.test(navigator.userAgent);
+  const iOS = typeof navigator !== 'undefined' && /iPad|iPhone|iPod/.test(navigator.userAgent);
 
   useEffect(() => {
-    if (!iOS)
-      return;
+    if (!iOS) return;
     const preventSwipeBack = (e: TouchEvent) => {
       if (e.touches[0].clientX < 25) {
         e.preventDefault();
@@ -87,7 +84,7 @@ const AuthLayout = ({ children }: Props) => {
             height: '100svh',
           }}
         >
-          <Box sx={{ height: "100%" }}>
+          <Box sx={{ height: '100%' }}>
             <Outlet />
           </Box>
         </Box>

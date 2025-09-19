@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
-import { AppBar, Button, Dialog, IconButton, Toolbar, Typography } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
+import { AppBar, Button, Dialog, IconButton, Toolbar, Typography } from '@mui/material';
 import { Box } from '@mui/system';
+import { useState } from 'react';
 import Cropper from 'react-easy-crop';
 import { SlideUpTransition } from '../utils';
 

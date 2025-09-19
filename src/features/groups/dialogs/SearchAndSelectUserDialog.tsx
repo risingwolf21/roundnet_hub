@@ -1,3 +1,4 @@
+import { supabase } from '@/lib/supabase';
 import { ArrowBack } from '@mui/icons-material';
 import SearchIcon from '@mui/icons-material/Search';
 import {
@@ -14,18 +15,21 @@ import {
   ListItemText,
   Toolbar,
 } from '@mui/material';
-import { Search, SearchIconWrapper, StyledInputBase } from '../../../components/SearchBar';
-import React, { useState } from 'react';
-import { SlideUpTransition } from '../../../utils';
 import { useQuery } from '@tanstack/react-query';
-import { supabase } from 'src/components/services/supabase/supabaseClient';
 import { DialogProps } from '@toolpad/core';
+import React, { useState } from 'react';
+import { Search, SearchIconWrapper, StyledInputBase } from '../../../components/SearchBar';
+import { SlideUpTransition } from '../../../utils';
 
 type SearchAndSelectUserDialogProps = {
   usersToFilter: string[];
 };
 
-const SearchAndSelectUserDialog = ({ payload: { usersToFilter }, onClose, open }: DialogProps<SearchAndSelectUserDialogProps, User[] | null>) => {
+const SearchAndSelectUserDialog = ({
+  payload: { usersToFilter },
+  onClose,
+  open,
+}: DialogProps<SearchAndSelectUserDialogProps, User[] | null>) => {
   const [selectedUsers, setSelectedUsers] = useState<User[]>(Array.from<User>([]));
   const [searchString, setSearchString] = useState<string>('');
 
@@ -33,17 +37,16 @@ const SearchAndSelectUserDialog = ({ payload: { usersToFilter }, onClose, open }
     queryKey: ['users', 'searchAndSelectDialog', ...usersToFilter],
     queryFn: async () => {
       const result = await supabase
-        .schema("public")
-        .from("user")
-        .select("*")
-        .not("userId", 'in', `(${usersToFilter.join(",")})`)
+        .schema('public')
+        .from('user')
+        .select('*')
+        .not('userId', 'in', `(${usersToFilter.join(',')})`)
         .returns<User[]>()
         .throwOnError();
 
       return result.data ?? [];
-    }
+    },
   });
-
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>, user: User) => {
     if (selectedUsers.some((x: User) => x.userId === user.userId)) {

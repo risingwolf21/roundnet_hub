@@ -1,3 +1,4 @@
+import { EventsUserView } from '@/types/supabaseTypes';
 import {
   HourglassBottom,
   RecordVoiceOver,
@@ -6,17 +7,9 @@ import {
   ThumbUpAlt,
   ThumbUpOffAlt,
 } from '@mui/icons-material';
-import {
-  Box,
-  CircularProgress,
-  IconButton,
-  ListItem,
-  ListItemText
-} from '@mui/material';
+import { Box, CircularProgress, IconButton, ListItem, ListItemText } from '@mui/material';
 import { isBefore, toDate } from 'date-fns';
 import { TFunction } from 'i18next';
-import React from 'react';
-import { EventsUserView } from 'src/types/supabaseTypes';
 
 type EventItemProps = {
   attendanceUpdating: boolean;
@@ -27,14 +20,13 @@ type EventItemProps = {
   declineEvent: () => void;
 };
 
-
 function answerDeadlineExpired(x: EventsUserView) {
-    if (!x.answerDeadline) return false;
-    return isBefore(x.answerDeadline, Date.now());
+  if (!x.answerDeadline) return false;
+  return isBefore(x.answerDeadline, Date.now());
 }
 
 function eventInThePast(x: EventsUserView) {
-    return isBefore(x.endDateTime !== null ? x.endDateTime : x.startingDateTime!, Date.now());
+  return isBefore(x.endDateTime !== null ? x.endDateTime : x.startingDateTime!, Date.now());
 }
 
 export const EventItem = ({ event, onClick, attendEvent, declineEvent, attendanceUpdating, t }: EventItemProps) => {
@@ -46,7 +38,7 @@ export const EventItem = ({ event, onClick, attendEvent, declineEvent, attendanc
       divider={true}
       sx={{
         p: 1,
-        paddingLeft: "env(safe-area-inset-left)",
+        paddingLeft: 'env(safe-area-inset-left)',
         cursor: 'pointer',
       }}
       secondaryAction={
@@ -109,9 +101,12 @@ export const EventItem = ({ event, onClick, attendEvent, declineEvent, attendanc
           },
         }}
         secondary={
-          event.isCancelled ? 'Event abgesagt' : [
-            t('events.secondaryTextStart', { start: toDate(event.startingDateTime!) }),
-            event.endDateTime && t('events.secondaryTextWithEnd', { end: toDate(event.endDateTime) })].join(" ")
+          event.isCancelled
+            ? 'Event abgesagt'
+            : [
+              t('events.secondaryTextStart', { start: toDate(event.startingDateTime!) }),
+              event.endDateTime && t('events.secondaryTextWithEnd', { end: toDate(event.endDateTime) }),
+            ].join(' ')
         }
       />
     </ListItem>

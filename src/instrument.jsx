@@ -1,19 +1,14 @@
-import * as Sentry from "@sentry/react";
+import * as Sentry from '@sentry/react';
 import { supabaseIntegration } from '@supabase/sentry-js-integration';
 import { createRoutesFromChildren, matchRoutes, useLocation, useNavigationType } from 'react-router';
 import React from 'react';
-import { supabase } from './components/services/supabase/supabaseClient';
-import ReactGA from 'react-ga4';
-
-const TRACKING_ID = "G-9T2HR2Z3R7";
-
-ReactGA.initialize(TRACKING_ID);
+import { supabase } from '@/lib/supabase';
 
 Sentry.init({
   dsn: 'https://a06f63fae5ab4ce4ac291d0d6fb4e989@o4505379650666496.ingest.us.sentry.io/4505379651649536',
   sendDefaultPii: true,
-  environment: process.env.REACT_APP_WEBSITE_NAME + "-" + process.env.REACT_APP_ENV,
-  release: process.env.REACT_APP_VERSION,
+  environment: import.meta.env.VITE_WEBSITE_NAME + '-' + import.meta.env.VITE_ENV,
+  release: import.meta.env.VITE_VERSION,
   _experiments: { enableLogs: true },
   integrations: [
     Sentry.reactRouterV7BrowserTracingIntegration({
@@ -28,11 +23,13 @@ Sentry.init({
       breadcrumbs: true,
       errors: true,
     }),
-    Sentry.consoleLoggingIntegration({ levels: ["log", "error", "warn"] }),
+    Sentry.consoleLoggingIntegration({ levels: ['log', 'error', 'warn'] }),
   ],
   tracesSampleRate: 1.0,
-  tracePropagationTargets: ["https://roundnet-karlsruhe.web.app", "https://munich-roundnet.web.app"],
-  ignoreErrors: [
-    "TypeError: Load failed", "TypeError: Failed to fetch"
-  ]
+  tracePropagationTargets: [
+    'https://roundnet-karlsruhe.web.app',
+    'https://staging-roundnet-karlsruhe.web.app',
+    'https://munich-roundnet.web.app',
+  ],
+  ignoreErrors: ['TypeError: Load failed', 'TypeError: Failed to fetch'],
 });

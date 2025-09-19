@@ -1,3 +1,7 @@
+import { useGrants } from '@/features/auth/GrantsContext';
+import { Has } from '@/hooks/useGrants';
+import { useAttendance, useUpdateAttendanceMutation } from '@/tanstack/events';
+import { answerDeadlineExpired, eventInThePast, EventsUserView, maxAttendeesExceeded } from '@/types/supabaseTypes';
 import {
   CheckCircleOutline,
   HourglassBottom,
@@ -25,33 +29,20 @@ import {
   Typography,
 } from '@mui/material';
 import Box from '@mui/material/Box';
+import { useNotifications } from '@toolpad/core';
 import { isBefore } from 'date-fns';
 import { t } from 'i18next';
-import React, { useState } from 'react';
-import { useGrants } from 'src/features/auth/GrantsContext';
-import { useAttendance, useUpdateAttendanceMutation } from 'src/tanstack/events';
-import {
-  answerDeadlineExpired,
-  eventInThePast,
-  EventsUserView,
-  maxAttendeesExceeded
-} from 'src/types/supabaseTypes';
+import { useState } from 'react';
 import EventAttendanceDialog from '../dialogs/EventAttendanceDialog';
 import { EventInformationConstellations } from './EventInformationConstellations';
-import { Has } from 'src/hooks/useGrants';
-import { useNotifications } from '@toolpad/core';
 
 type EventInformationAttendanceProps = {
-  fetchMode: "past" | "upcoming"
+  fetchMode: 'past' | 'upcoming';
   selectedEvent: EventsUserView;
   keyHolders: FullItemHolder[];
 };
 
-const EventInformationAttendance = ({
-  selectedEvent,
-  fetchMode,
-  keyHolders,
-}: EventInformationAttendanceProps) => {
+const EventInformationAttendance = ({ selectedEvent, fetchMode, keyHolders }: EventInformationAttendanceProps) => {
   const { user } = useGrants();
   const notifications = useNotifications();
   const [eventAttendanceState, setEventAttendanceState] = useState({ open: false, index: 0 });
@@ -60,13 +51,24 @@ const EventInformationAttendance = ({
 
   const updateAttendance = useUpdateAttendanceMutation(fetchMode);
 
-  const changeAttendance = ({ user, event, newState }: { user: User, event: EventsUserView, newState: EventAttendance }) => {
-    updateAttendance.mutate({ user, event, newState }, {
-      onError: (error, vars) => {
-        notifications.show("An/Abweseneheit konnte nicht aktualisiert werden.", { severity: "error" });
+  const changeAttendance = ({
+    user,
+    event,
+    newState,
+  }: {
+    user: User;
+    event: EventsUserView;
+    newState: EventAttendance;
+  }) => {
+    updateAttendance.mutate(
+      { user, event, newState },
+      {
+        onError: (error, vars) => {
+          notifications.show('An/Abweseneheit konnte nicht aktualisiert werden.', { severity: 'error' });
+        },
       }
-    })
-  }
+    );
+  };
 
   return (
     <Box sx={{ p: 0, alignSelf: 'center' }}>
@@ -96,11 +98,11 @@ const EventInformationAttendance = ({
         </Alert>
       )}
 
-      {
-        selectedEvent.constellations_enabled && <Has perm={"event.create.constellations"}>
+      {selectedEvent.constellations_enabled && (
+        <Has perm={'event.create.constellations'}>
           <EventInformationConstellations attendance={attendance} event={selectedEvent} />
         </Has>
-      }
+      )}
 
       <Typography sx={{ fontSize: 16, fontWeight: 'bold', mt: 2 }} color="text.secondary" gutterBottom>
         {t('attendees')}
@@ -123,34 +125,32 @@ const EventInformationAttendance = ({
               <ListItemText primary={t('events.information.keyHolderAttending')} />
             </ListItem>
           )}
-        {
-          selectedEvent.maxAttendees && selectedEvent.maxAttendees >= 0 && (
-            <ListItem key={'spotsTaken'} sx={{ '&.MuiListItem-root': { paddingLeft: 0 } }} divider>
-              <ListItemAvatar sx={{ justifyContent: 'left', alignItems: 'center', display: 'flex' }}>
-                <CircularProgress
-                  size={'24px'}
-                  thickness={8}
-                  sx={{ borderRadius: '100%', p: '2px', position: 'relative', zIndex: 2 }}
-                  variant="determinate"
-                  value={(attendance.filter((x) => x.state === 'Attending').length / selectedEvent.maxAttendees) * 100}
-                />
-                <CircularProgress
-                  variant="determinate"
-                  size={'24px'}
-                  value={100}
-                  thickness={8}
-                  sx={{ color: '#eee', p: '2px', position: 'absolute', zIndex: 1 }}
-                />
-              </ListItemAvatar>
-              <ListItemText
-                primary={t('events.information.eventSpotsTaken', {
-                  taken: attendance.filter((x) => x.state === 'Attending').length,
-                  waitingListLength: selectedEvent.maxAttendees,
-                })}
+        {selectedEvent.maxAttendees && selectedEvent.maxAttendees >= 0 && (
+          <ListItem key={'spotsTaken'} sx={{ '&.MuiListItem-root': { paddingLeft: 0 } }} divider>
+            <ListItemAvatar sx={{ justifyContent: 'left', alignItems: 'center', display: 'flex' }}>
+              <CircularProgress
+                size={'24px'}
+                thickness={8}
+                sx={{ borderRadius: '100%', p: '2px', position: 'relative', zIndex: 2 }}
+                variant="determinate"
+                value={(attendance.filter((x) => x.state === 'Attending').length / selectedEvent.maxAttendees) * 100}
               />
-            </ListItem>
-          )
-        }
+              <CircularProgress
+                variant="determinate"
+                size={'24px'}
+                value={100}
+                thickness={8}
+                sx={{ color: '#eee', p: '2px', position: 'absolute', zIndex: 1 }}
+              />
+            </ListItemAvatar>
+            <ListItemText
+              primary={t('events.information.eventSpotsTaken', {
+                taken: attendance.filter((x) => x.state === 'Attending').length,
+                waitingListLength: selectedEvent.maxAttendees,
+              })}
+            />
+          </ListItem>
+        )}
         <ListItem
           key={'attendEvent'}
           sx={{ '&.MuiListItem-root': { paddingLeft: 0 } }}
@@ -163,7 +163,7 @@ const EventInformationAttendance = ({
               })
           }
           secondaryAction={
-            <Has perm={"event.signup"}>
+            <Has perm={'event.signup'}>
               <>
                 <IconButton
                   onClick={(event) => {
@@ -183,26 +183,30 @@ const EventInformationAttendance = ({
                     <ThumbUpOffAlt fontSize="inherit" sx={{ fontSize: '28px' }} />
                   )}
                 </IconButton>
-                {
-                  (maxAttendeesExceeded(selectedEvent, attendance) ||
-                    answerDeadlineExpired(selectedEvent))
-                  && !eventInThePast(selectedEvent)
-                  && (selectedEvent.user_state === "Unanswered" || selectedEvent.user_state === "Declined" || selectedEvent.user_state === "RequestedAttendance")
-                  && <IconButton
-                    onClick={(event) => {
-                      event.stopPropagation();
-                      changeAttendance({ event: selectedEvent, newState: 'RequestedAttendance', user });
-                    }}
-                    disabled={selectedEvent.isCancelled || eventInThePast(selectedEvent) || selectedEvent.user_state === "RequestedAttendance"}
-                  >
-                    {selectedEvent.user_state === 'RequestedAttendance' ? (
-                      <Pending fontSize="inherit" sx={{ fontSize: '28px', color: '#125db2' }} />
-                    ) : (
-                      <PendingOutlined fontSize="inherit" sx={{ fontSize: '28px' }} />
-                    )}
-                  </IconButton>
-                }
-                <Has perm={"event.signup.trainer"}>
+                {(maxAttendeesExceeded(selectedEvent, attendance) || answerDeadlineExpired(selectedEvent)) &&
+                  !eventInThePast(selectedEvent) &&
+                  (selectedEvent.user_state === 'Unanswered' ||
+                    selectedEvent.user_state === 'Declined' ||
+                    selectedEvent.user_state === 'RequestedAttendance') && (
+                    <IconButton
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        changeAttendance({ event: selectedEvent, newState: 'RequestedAttendance', user });
+                      }}
+                      disabled={
+                        selectedEvent.isCancelled ||
+                        eventInThePast(selectedEvent) ||
+                        selectedEvent.user_state === 'RequestedAttendance'
+                      }
+                    >
+                      {selectedEvent.user_state === 'RequestedAttendance' ? (
+                        <Pending fontSize="inherit" sx={{ fontSize: '28px', color: '#125db2' }} />
+                      ) : (
+                        <PendingOutlined fontSize="inherit" sx={{ fontSize: '28px' }} />
+                      )}
+                    </IconButton>
+                  )}
+                <Has perm={'event.signup.trainer'}>
                   <IconButton
                     onClick={(event) => {
                       event.stopPropagation();
@@ -243,7 +247,7 @@ const EventInformationAttendance = ({
               })
           }
           secondaryAction={
-            <Has perm={"event.signup"}>
+            <Has perm={'event.signup'}>
               <IconButton
                 onClick={(event) => {
                   event.stopPropagation();
@@ -304,11 +308,11 @@ const EventInformationAttendance = ({
           .filter((x) => x.type === selectedEvent.required_item)
           .filter((x) => x.full_current_holder !== null)
           .map((x) => ({
-            user: (x.full_current_holder)!.userId,
+            user: x.full_current_holder!.userId,
             item: x,
           }))}
         acceptAttendance={(attendance) => {
-          changeAttendance({ event: selectedEvent, newState: "Attending", user: attendance.user })
+          changeAttendance({ event: selectedEvent, newState: 'Attending', user: attendance.user });
         }}
       />
     </Box>

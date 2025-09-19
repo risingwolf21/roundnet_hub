@@ -1,7 +1,6 @@
-import { Avatar, Button, IconButton, ListItem, ListItemAvatar, ListItemText } from '@mui/material';
-import KeyIcon from '@mui/icons-material/Key';
 import EditIcon from '@mui/icons-material/Edit';
-import React from 'react';
+import KeyIcon from '@mui/icons-material/Key';
+import { Avatar, Button, IconButton, ListItem, ListItemAvatar, ListItemText } from '@mui/material';
 import { TFunction } from 'i18next';
 
 type ItemHolderItemProsp = {
@@ -46,18 +45,21 @@ export const ItemHolderItem = ({
           >
             <EditIcon />
           </IconButton>
-        ) : x.full_current_holder?.userId === user.userId ?
-          selectKeyToHandOver && <Button
-            color="primary"
-            onClick={(event) => {
-              selectKeyToHandOver(x);
-              event.stopPropagation();
-            }}
-          >
-            {t('handover_key')}
-          </Button>
-          : (
-            selectKeyToReceive && <Button
+        ) : x.full_current_holder?.userId === user.userId ? (
+          selectKeyToHandOver && (
+            <Button
+              color="primary"
+              onClick={(event) => {
+                selectKeyToHandOver(x);
+                event.stopPropagation();
+              }}
+            >
+              {t('handover_key')}
+            </Button>
+          )
+        ) : (
+          selectKeyToReceive && (
+            <Button
               color="primary"
               onClick={(event) => {
                 selectKeyToReceive(x);
@@ -67,6 +69,7 @@ export const ItemHolderItem = ({
               {t('take_key')}
             </Button>
           )
+        )
       }
     >
       <ListItemAvatar>

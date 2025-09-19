@@ -2,10 +2,10 @@
 // https://deno.land/manual/getting_started/setup_your_environment
 // This enables autocomplete, go to definition, etc.
 
-// Importiere benötigte Module
-import { createClient } from 'npm:@supabase/supabase-js@2';
-import cheerio from 'https://esm.sh/cheerio@1.0.0-rc.12';
+// importiere benötigte Module
 import * as Sentry from 'https://deno.land/x/sentry/index.mjs';
+import cheerio from 'https://esm.sh/cheerio@1.0.0-rc.12';
+import { createClient } from 'npm:@supabase/supabase-js@2';
 
 Sentry.init({
   dsn: 'https://a06f63fae5ab4ce4ac291d0d6fb4e989@o4505379650666496.ingest.sentry.io/4505379651649536',
@@ -66,7 +66,7 @@ Deno.serve(async (req) => {
     // Element mit der Klasse "rgx-value" abrufen
     const rgxValue = $('.player-card').find('.rgx-value').text();
     const idParts = rg_link.split("/").slice(-1)[0].split("-");
-    const rgId = idParts[1].slice(0,3).toUpperCase() + idParts[0];
+    const rgId = idParts[1].slice(0, 3).toUpperCase() + idParts[0];
 
     console.log(rg_link, rgxValue, rgId);
 

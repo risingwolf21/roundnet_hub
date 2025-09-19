@@ -1,5 +1,5 @@
 import { List } from '@mui/material';
-import React, { useEffect, useRef } from 'react';
+import { useEffect, useRef } from 'react';
 
 type InfiniteScrollListProps = {
   fetch: (page: number) => any;

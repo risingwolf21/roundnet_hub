@@ -1,3 +1,4 @@
+import { supabase } from '@/lib/supabase';
 import AddIcon from '@mui/icons-material/Add';
 import {
   Button,
@@ -14,12 +15,11 @@ import { captureException } from '@sentry/react';
 import { useQuery } from '@tanstack/react-query';
 import { useNotifications } from '@toolpad/core/useNotifications';
 import _ from 'lodash';
-import React, { useState } from 'react';
+import { useState } from 'react';
 import Layout from '../../components/layout/Layout';
 import { AdminDrinksRepository } from '../../repository/AdminDrinksRepository';
 import { AdminDrinkItem } from './components/AdminDrinkItem';
 import EditDrinkDialog from './dialogs/EditDrinkDialog';
-import { supabase } from 'src/components/services/supabase/supabaseClient';
 
 const EMPTY_DRINK: Drink = {
   imageUrl: '',
@@ -33,15 +33,14 @@ const EMPTY_DRINK: Drink = {
   type: 'Drink',
 };
 
-export const useAllDrinksAsAdmin = () => useQuery<Drink[]>({
-  queryKey: ["drinks", "admin"],
-  queryFn: async () => {
-    const result = await supabase
-      .from('drink')
-      .select('*');
-    return result.data ?? [];
-  }
-});
+export const useAllDrinksAsAdmin = () =>
+  useQuery<Drink[]>({
+    queryKey: ['drinks', 'admin'],
+    queryFn: async () => {
+      const result = await supabase.from('drink').select('*');
+      return result.data ?? [];
+    },
+  });
 
 const AdminDrinkList = () => {
   const { data: drinks = [], isLoading } = useAllDrinksAsAdmin();

@@ -1,5 +1,4 @@
 import { List, ListItem, ListItemAvatar, ListItemText, ListSubheader, Typography } from '@mui/material';
-import React from 'react';
 
 export const AdminHistoryItem = ({ items, header }: { items: FullHistory[]; header: string }) => {
   return (

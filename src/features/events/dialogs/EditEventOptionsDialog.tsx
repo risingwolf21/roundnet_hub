@@ -1,10 +1,14 @@
 import { Box, Button, DialogContent, FormControl, FormControlLabel, Radio, RadioGroup } from '@mui/material';
-import React, { useState } from 'react';
-import { CreateEventOption } from '../types';
-import { SwipeableDialog } from '../../../components/SwipeableDialog';
 import { DialogProps } from '@toolpad/core';
+import { useState } from 'react';
+import { SwipeableDialog } from '../../../components/SwipeableDialog';
+import { CreateEventOption } from '../types';
 
-export const EditEventOptionsDialog = ({ payload, open, onClose }: DialogProps<undefined, null | CreateEventOption>) => {
+export const EditEventOptionsDialog = ({
+  payload,
+  open,
+  onClose,
+}: DialogProps<undefined, null | CreateEventOption>) => {
   const [saveEventOption, setSaveEventOption] = useState<CreateEventOption>('UpdateSingle');
 
   return (

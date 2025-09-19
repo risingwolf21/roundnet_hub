@@ -1,7 +1,6 @@
 import { Alert, AlertTitle } from '@mui/material';
-import React from 'react';
-import './toastify.css';
 import { toast } from 'react-toastify';
+import './toastify.css';
 
 export const Notification = ({ title, body, toastId }: { title: string; body: string; toastId: string }) => {
   return (

@@ -1,8 +1,6 @@
-import { isArray } from "lodash";
-import React from "react";
-import { supabase } from "src/components/services/supabase/supabaseClient";
-import { useGrants } from "src/features/auth/GrantsContext";
-import { Permission, Feature } from "src/generated/supabase-types";
+import { useGrants } from '@/features/auth/GrantsContext';
+import { Feature, Permission } from '@/generated/supabase-types';
+import React from 'react';
 
 type HasProps = {
   perm?: Permission | Permission[];
@@ -17,8 +15,8 @@ export const Has: React.FC<HasProps> = ({ perm, feat, any = false, fallback = nu
   const { hasPerm, hasFeat, loading } = useGrants();
   if (loading) return null; // optional: oder Spinner/Fallback
 
-  const permOk = perm ? hasPerm(perm, any ? "any" : "all") : true;
-  const featOk = feat ? hasFeat(feat, any ? "any" : "all") : true;
+  const permOk = perm ? hasPerm(perm, any ? 'any' : 'all') : true;
+  const featOk = feat ? hasFeat(feat, any ? 'any' : 'all') : true;
 
   if (!permOk || !featOk) return <>{fallback}</>;
   return <>{children}</>;

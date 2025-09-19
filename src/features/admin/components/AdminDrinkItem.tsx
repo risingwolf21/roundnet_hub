@@ -1,8 +1,7 @@
-import { Avatar, Badge, IconButton, ListItem, ListItemAvatar, ListItemText } from '@mui/material';
-import LocalDrinkIcon from '@mui/icons-material/LocalDrink';
-import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
-import React from 'react';
+import EditIcon from '@mui/icons-material/Edit';
+import LocalDrinkIcon from '@mui/icons-material/LocalDrink';
+import { Avatar, Badge, IconButton, ListItem, ListItemAvatar, ListItemText } from '@mui/material';
 
 type AdminDrinkItemProps = {
   drink: Drink;

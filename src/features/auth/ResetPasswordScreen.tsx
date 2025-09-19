@@ -1,3 +1,5 @@
+import { supabase } from '@/lib/supabase';
+import { BRANDING } from '@/utils';
 import { Alert, alpha, CircularProgress, Stack, SxProps, Theme, useTheme } from '@mui/material';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
@@ -7,8 +9,6 @@ import Typography from '@mui/material/Typography';
 import * as React from 'react';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
-import { BRANDING } from 'src/utils';
-import { supabase } from '../../components/services/supabase/supabaseClient';
 import { HOMEPAGE } from '../../constants';
 
 const mergeSlotSx = (defaultSx: SxProps<Theme>, slotProps?: { sx?: SxProps<Theme> }) => {
@@ -36,7 +36,7 @@ const getCommonTextFieldProps = (theme: Theme, baseProps: TextFieldProps = {}): 
           paddingTop: theme.spacing(1),
           paddingBottom: theme.spacing(1),
         },
-        typeof baseProps.slotProps?.htmlInput === 'function' ? {} : baseProps.slotProps?.htmlInput,
+        typeof baseProps.slotProps?.htmlInput === 'function' ? {} : baseProps.slotProps?.htmlInput
       ),
     },
     inputLabel: {
@@ -46,9 +46,7 @@ const getCommonTextFieldProps = (theme: Theme, baseProps: TextFieldProps = {}): 
           lineHeight: theme.typography.pxToRem(12),
           fontSize: theme.typography.pxToRem(14),
         },
-        typeof baseProps.slotProps?.inputLabel === 'function'
-          ? {}
-          : baseProps.slotProps?.inputLabel,
+        typeof baseProps.slotProps?.inputLabel === 'function' ? {} : baseProps.slotProps?.inputLabel
       ),
     },
   },
@@ -62,6 +60,21 @@ const ResetPasswordScreen = () => {
   const [refreshToken, setRefreshToken] = useState('');
 
   const navigate = useNavigate();
+
+  // iOS-Standalone erkennen
+  const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+  const isStandalone =
+    (navigator as any).standalone === true || window.matchMedia('(display-mode: standalone)').matches;
+
+  if (isIOS && isStandalone) {
+    const unlockOnFocus = () => {
+      if (document.activeElement?.matches('input, textarea, [contenteditable="true"]')) {
+        document.body.style.overflow = 'auto'; // sicherstellen, dass kein Body-Lock aktiv ist
+      }
+    };
+    window.addEventListener('focusin', unlockOnFocus);
+    window.addEventListener('touchend', unlockOnFocus, { passive: true });
+  }
 
   useEffect(() => {
     // Get the access token and refresh token from the URL
@@ -119,13 +132,13 @@ const ResetPasswordScreen = () => {
     <Box
       sx={(theme) => ({
         height: '100%',
-        minHeight: "100%",
-        mb: "env(safe-area-inset-bottom)",
-        mt: "env(safe-area-inset-top)",
+        minHeight: '100%',
+        mb: 'env(safe-area-inset-bottom)',
+        mt: 'env(safe-area-inset-top)',
         display: 'flex',
         flexDirection: 'column',
-        overflow: "hidden",
-        overflowY: "auto",
+        overflow: 'hidden',
+        overflowY: 'auto',
         [theme.breakpoints.up('sm')]: {
           justifyContent: 'center',
           alignItems: 'center',
@@ -154,69 +167,63 @@ const ResetPasswordScreen = () => {
             },
             [theme.breakpoints.down('xs')]: {
               alignItems: 'start',
-              border: "none",
-              boxShadow: "none"
+              border: 'none',
+              boxShadow: 'none',
             },
           })}
         >
-
           {BRANDING.logo}
 
-          <Typography variant="h5" component={"h1"} color='textPrimary' sx={{
-            my: theme.spacing(1),
-            textAlign: 'center',
-            fontWeight: 600,
-          }}>
-            Passwort zurücksetzen<br></br>{BRANDING.title}
-          </Typography>
-          <Box
-            component="form"
-            onSubmit={handleSubmit}
-            sx={{ width: "100%" }}
+          <Typography
+            variant="h5"
+            component={'h1'}
+            color="textPrimary"
+            sx={{
+              my: theme.spacing(1),
+              textAlign: 'center',
+              fontWeight: 600,
+            }}
           >
-            <Stack direction={"column"} spacing={2} sx={{ mb: 2, mt: 2 }}>
+            Passwort zurücksetzen<br></br>
+            {BRANDING.title}
+          </Typography>
+          <Box component="form" onSubmit={handleSubmit} sx={{ width: '100%' }}>
+            <Stack direction={'column'} spacing={2} sx={{ mb: 2, mt: 2 }}>
               <TextField
                 {...getCommonTextFieldProps(theme, {
-                  label: "Password",
+                  label: 'Password',
                   id: 'password',
                   name: 'password',
-                  type: "password"
+                  type: 'password',
                 })}
               />
               <TextField
                 {...getCommonTextFieldProps(theme, {
-                  label: "Password",
+                  label: 'Password',
                   id: 'password1',
                   name: 'password1',
-                  type: "password"
+                  type: 'password',
                 })}
               />
-              {
-                loading && <Alert sx={{my: 2}} severity='info'>
+              {loading && (
+                <Alert sx={{ my: 2 }} severity="info">
                   Passwort wird geändert... Bitte warten
                 </Alert>
-              }
-              {
-                error && <Alert sx={{ my: 2 }} severity="error">
+              )}
+              {error && (
+                <Alert sx={{ my: 2 }} severity="error">
                   {error}
                 </Alert>
-              }
+              )}
             </Stack>
 
-            <Button
-              type="submit"
-              variant="contained"
-              fullWidth
-              disabled={loading}
-              sx={{ my: 2 }}
-            >
-              {
-                loading ? <CircularProgress color="inherit" size={25} /> : "Abschicken"
-              }
+            <Button type="submit" variant="contained" fullWidth disabled={loading} sx={{ my: 2 }}>
+              {loading ? <CircularProgress color="inherit" size={25} /> : 'Abschicken'}
             </Button>
           </Box>
         </Box>
       </Container>
-    </Box>)
+    </Box>
+  );
 };
 export default ResetPasswordScreen;

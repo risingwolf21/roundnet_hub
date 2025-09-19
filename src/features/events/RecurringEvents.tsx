@@ -1,3 +1,5 @@
+import { PullToRefresh } from '@/components/pull-to-refresh/PullToRefresh';
+import { SupabaseEventRepository } from '@/repository/EventRepository';
 import {
   CalendarMonth,
   Edit,
@@ -39,8 +41,6 @@ import { useQuery } from '@tanstack/react-query';
 import { useDialogs } from '@toolpad/core';
 import { format } from 'date-fns';
 import React from 'react';
-import { PullToRefresh } from 'src/components/pull-to-refresh/PullToRefresh';
-import { SupabaseEventRepository } from 'src/repository/EventRepository';
 import Layout from '../../components/layout/Layout';
 import { EventWithGroup } from '../../types/supabaseTypes';
 import { nameOfRecurrence } from '../../utils';
@@ -81,19 +81,22 @@ type RecurringEventsProps = {
 };
 
 const RecurringEventsProvider = () => {
-  const { data: recurringEvents = [], isLoading, refetch } = useQuery({
-    queryKey: ["events", "recurring"],
-    queryFn: () => SupabaseEventRepository.fetchRecurringEvents()
-  })
+  const {
+    data: recurringEvents = [],
+    isLoading,
+    refetch,
+  } = useQuery({
+    queryKey: ['events', 'recurring'],
+    queryFn: () => SupabaseEventRepository.fetchRecurringEvents(),
+  });
 
-  return <Layout appBarConfig={{ navigateBackPath: "/training/list" }}>
-    <PullToRefresh onRefresh={() => refetch()}>
-      <RecurringEvents
-        recurringEvents={recurringEvents}
-        loading={isLoading}
-      />
-    </PullToRefresh>
-  </Layout>
+  return (
+    <Layout appBarConfig={{ navigateBackPath: '/training/list' }}>
+      <PullToRefresh onRefresh={() => refetch()}>
+        <RecurringEvents recurringEvents={recurringEvents} loading={isLoading} />
+      </PullToRefresh>
+    </Layout>
+  );
 };
 
 const RecurringEvents = ({ recurringEvents, loading }: RecurringEventsProps) => {
@@ -106,7 +109,7 @@ const RecurringEvents = ({ recurringEvents, loading }: RecurringEventsProps) => 
   };
 
   return (
-    <Layout appBarConfig={{ navigateBackPath: "/training/list" }}>
+    <Layout appBarConfig={{ navigateBackPath: '/training/list' }}>
       {loading && <LinearProgress sx={{ position: 'fixed', top: 56, left: 0, right: 0 }} />}
       <Grid container rowSpacing={2} sx={{ width: '100%', p: 1 }}>
         {recurringEvents.map((x, index) => (
@@ -225,7 +228,11 @@ const RecurringEvents = ({ recurringEvents, loading }: RecurringEventsProps) => 
                   <Button
                     startIcon={<Edit />}
                     onClick={async () => {
-                      await dialogs.open(CreateOrUpdateEventDialog, { event: x, eventGroup: x.fullGroup, option: "UpdateRecurrence" })
+                      await dialogs.open(CreateOrUpdateEventDialog, {
+                        event: x,
+                        eventGroup: x.fullGroup,
+                        option: 'UpdateRecurrence',
+                      });
                     }}
                   >
                     Bearbeiten

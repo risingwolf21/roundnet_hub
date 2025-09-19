@@ -1,10 +1,11 @@
+import { UserEdited } from '@/features/admin/dialogs/EditUserDialog';
+import { supabase } from '@/lib/supabase';
+import { Tables } from '@/types/supabase-generated.types';
+import { UserWithGroups } from '@/types/supabaseTypes';
 import { PostgrestSingleResponse } from '@supabase/supabase-js';
-import { UserEdited } from 'src/features/admin/dialogs/EditUserDialog';
-import { UserWithGroups } from 'src/types/supabaseTypes';
-import { supabase } from '../components/services/supabase/supabaseClient';
-import { Tables } from 'src/types/supabase-generated.types';
 
-export const fetchGroupWithUsers = () => supabase.from('event_group').select('*, mapping: group_user_mapping ( user: user(*), group, role )');
+export const fetchGroupWithUsers = () =>
+  supabase.from('event_group').select('*, mapping: group_user_mapping ( user: user(*), group, role )');
 
 export const AdminUsersRepository = {
   async removeUsersFromGroup(group: Group, users: User[]): Promise<PostgrestSingleResponse<null>> {
@@ -19,10 +20,7 @@ export const AdminUsersRepository = {
       .throwOnError();
   },
   async fetchSingleGroupWithUsers(groupId: string): Promise<PostgrestSingleResponse<GroupWithUsers>> {
-    return fetchGroupWithUsers()
-      .eq('id', groupId)
-      .single()
-      .throwOnError();
+    return fetchGroupWithUsers().eq('id', groupId).single().throwOnError();
   },
 
   async deactivateUser(user: User): Promise<void> {
@@ -36,10 +34,10 @@ export const AdminUsersRepository = {
       .from('user')
       .update({ displayName: user.displayName, verified: user.verified })
       .eq('userId', user.userId)
-      .select("*")
+      .select('*')
       .single();
 
-    return result.data ?? null
+    return result.data ?? null;
   },
 
   async fetchNotVerifiedUsers(): Promise<PostgrestSingleResponse<User[]>> {
@@ -53,13 +51,15 @@ export const AdminUsersRepository = {
       .order('displayName', { ascending: true })
       .throwOnError();
 
-    return result.data?.map(x => ({
-      ...x,
-      groups: x.groups.map((x: any) => x.group) ?? [],
-    })) ?? [];
+    return (
+      result.data?.map((x) => ({
+        ...x,
+        groups: x.groups.map((x: any) => x.group) ?? [],
+      })) ?? []
+    );
   },
 
-  async addUsersToGroup(group: Group, users: User[]): Promise<Tables<"group_user_mapping">[]> {
+  async addUsersToGroup(group: Group, users: User[]): Promise<Tables<'group_user_mapping'>[]> {
     const result = await supabase
       .from('group_user_mapping')
       .upsert(
@@ -70,7 +70,7 @@ export const AdminUsersRepository = {
           };
         })
       )
-      .select("*")
+      .select('*')
       .throwOnError();
 
     return result.data ?? [];

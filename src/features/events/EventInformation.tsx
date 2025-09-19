@@ -1,26 +1,17 @@
-import {
-  Box,
-  Container,
-  Divider,
-  List,
-  Stack,
-  Typography
-} from '@mui/material';
+import { formatDateFromDatabase } from '@/utils';
+import { Box, Container, Divider, List, Stack, Typography } from '@mui/material';
 import { withProfiler } from '@sentry/react';
 import { TFunction } from 'i18next';
-import React from 'react';
 import { eventInThePast, EventsUserView, UserWithGroups } from '../../types/supabaseTypes';
 import EventAlerts from './components/EventAlerts';
 import EventDateInformation from './components/EventDateInformation';
 import EventInformationAttendance from './components/EventInformationAttendance';
+import EventInformationBringItems from './components/EventInformationBringItems';
 import EventInformationComments from './components/EventInformationComments';
 import EventInformationGames from './components/EventInformationGames';
 import EventMapPreview from './components/EventMapPreview';
-import { PlaceType } from './types';
 import EventWeatherForecast from './components/EventWeatherForecast';
-import { formatDateFromDatabase } from 'src/utils';
-import EventInformationBringItems from './components/EventInformationBringItems';
-
+import { PlaceType } from './types';
 
 type EventInformationProps = {
   user: UserWithGroups;
@@ -28,54 +19,39 @@ type EventInformationProps = {
   selectedEventPlace: PlaceType | null;
   keyHolders: FullItemHolder[];
   t: TFunction;
-  fetchMode: "past" | "upcoming"
+  fetchMode: 'past' | 'upcoming';
 };
 
-const EventInformation = ({
-  event,
-  user,
-  selectedEventPlace,
-  t,
-  keyHolders,
-  fetchMode
-}: EventInformationProps) => {
+const EventInformation = ({ event, user, selectedEventPlace, t, keyHolders, fetchMode }: EventInformationProps) => {
+  return (
+    <Container sx={{ p: 0 }}>
+      <List sx={{ p: 0, pt: 1, pb: 'calc(16px + env(safe-area-inset-bottom))' }}>
+        <Stack direction={'column'}>
+          <EventAlerts event={event} t={t} />
+          <EventDateInformation event={event} t={t} />
+          {selectedEventPlace && <EventMapPreview place={selectedEventPlace} />}
+          {selectedEventPlace && (
+            <EventWeatherForecast place={selectedEventPlace} date={formatDateFromDatabase(event?.startingDateTime)} />
+          )}
+        </Stack>
+        <Box sx={{ px: 2 }}>
+          <Typography sx={{ fontSize: 16, fontWeight: 'bold' }} color="text.secondary" gutterBottom>
+            Beschreibung
+          </Typography>
+          <Typography pb={1}>{event?.description}</Typography>
+          <Divider />
 
-  return <Container sx={{ p: 0 }}>
-    <List sx={{ p: 0, pt: 1, pb: "calc(16px + env(safe-area-inset-bottom))" }}>
-      <Stack direction={"column"}>
-        <EventAlerts event={event} t={t} />
-        <EventDateInformation event={event} t={t} />
-        {
-          selectedEventPlace && <EventMapPreview place={selectedEventPlace} />
-        }
-        {
-          selectedEventPlace && <EventWeatherForecast place={selectedEventPlace} date={formatDateFromDatabase(event?.startingDateTime)} />
-        }
-      </Stack>
-      <Box sx={{ px: 2 }}>
-        <Typography sx={{ fontSize: 16, fontWeight: 'bold' }} color="text.secondary" gutterBottom>
-          Beschreibung
-        </Typography>
-        <Typography pb={1}>{event?.description}</Typography>
-        <Divider />
+          <EventInformationAttendance keyHolders={keyHolders} selectedEvent={event} fetchMode={fetchMode} />
 
-        <EventInformationAttendance
-          keyHolders={keyHolders}
-          selectedEvent={event}
-          fetchMode={fetchMode}
-        />
+          <EventInformationBringItems selectedEvent={event} />
 
-        <EventInformationBringItems selectedEvent={event} />
+          <EventInformationGames eventId={event.id} />
 
-        <EventInformationGames eventId={event.id} />
-
-        <EventInformationComments
-          event={event}
-          eventInThePast={eventInThePast(event)}
-        />
-      </Box>
-    </List>
-  </Container>
+          <EventInformationComments event={event} eventInThePast={eventInThePast(event)} />
+        </Box>
+      </List>
+    </Container>
+  );
 };
 
 export default withProfiler(EventInformation);

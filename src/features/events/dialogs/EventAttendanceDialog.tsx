@@ -1,3 +1,5 @@
+import { ProfileDialog } from '@/components/Profile';
+import { useGrants } from '@/features/auth/GrantsContext';
 import { AccountBox, Key, RecordVoiceOver } from '@mui/icons-material';
 import {
   AppBar,
@@ -17,8 +19,6 @@ import { useDialogs } from '@toolpad/core';
 import { compareDesc, isBefore } from 'date-fns';
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ProfileDialog } from 'src/components/Profile';
-import { useGrants } from 'src/features/auth/GrantsContext';
 import { SwipeableDialog } from '../../../components/SwipeableDialog';
 import { FullAttendance } from '../../../types/supabaseTypes';
 import { EventAttendanceDialogProps } from '../types';
@@ -37,13 +37,13 @@ export const TabPanel = (props: any) => {
       {value === index && children}
     </div>
   );
-}
+};
 
 const AttendanceItem = ({
   attendance,
   onClick,
   required_item,
-  acceptAttendance
+  acceptAttendance,
 }: {
   attendance: FullAttendance;
   onClick: () => void;
@@ -55,13 +55,17 @@ const AttendanceItem = ({
     <ListItem
       onClick={onClick}
       secondaryAction={
-        acceptAttendance ? <Button onClick={(event) => {
-          event.stopPropagation();
-          acceptAttendance(attendance);
-        }}>
-          Akzeptieren
-        </Button>
-          : <Typography
+        acceptAttendance ? (
+          <Button
+            onClick={(event) => {
+              event.stopPropagation();
+              acceptAttendance(attendance);
+            }}
+          >
+            Akzeptieren
+          </Button>
+        ) : (
+          <Typography
             style={{
               fontSize: '10pt',
               color: 'rgba(0,0,0,0.6)',
@@ -71,6 +75,7 @@ const AttendanceItem = ({
           >
             {t('format.distanceToNow', { date: new Date(attendance.lastUpdate) })}
           </Typography>
+        )
       }
     >
       <ListItemAvatar>
@@ -102,7 +107,7 @@ const EventAttendanceDialog = ({
   attendance,
   hasWaitingList,
   usersWithRequiredItem,
-  acceptAttendance
+  acceptAttendance,
 }: EventAttendanceDialogProps) => {
   const [value, setValue] = useState(index ?? 0);
   const theme = useTheme();
@@ -140,20 +145,18 @@ const EventAttendanceDialog = ({
                   required_item={usersWithRequiredItem.find((y) => y.user === x.user.userId)?.item}
                 />
               ))}
-            {
-              attendance
-                .filter((x: FullAttendance) => x.state === 'RequestedAttendance')
-                .sort((a, b) => compareDesc(a.lastUpdate, b.lastUpdate))
-                .map((x: FullAttendance, index: number) => (
-                  <AttendanceItem
-                    attendance={x}
-                    key={x.user.userId + index}
-                    onClick={() => dialogs.open(ProfileDialog, { user, userId: x.user.userId })}
-                    required_item={usersWithRequiredItem.find((y) => y.user === x.user.userId)?.item}
-                    acceptAttendance={hasPerm("event.manage.attendees") ? acceptAttendance : null}
-                  />
-                ))
-            }
+            {attendance
+              .filter((x: FullAttendance) => x.state === 'RequestedAttendance')
+              .sort((a, b) => compareDesc(a.lastUpdate, b.lastUpdate))
+              .map((x: FullAttendance, index: number) => (
+                <AttendanceItem
+                  attendance={x}
+                  key={x.user.userId + index}
+                  onClick={() => dialogs.open(ProfileDialog, { user, userId: x.user.userId })}
+                  required_item={usersWithRequiredItem.find((y) => y.user === x.user.userId)?.item}
+                  acceptAttendance={hasPerm('event.manage.attendees') ? acceptAttendance : null}
+                />
+              ))}
             {attendance
               .filter((x: FullAttendance) => x.state === 'Attending')
               .sort((a, b) => compareDesc(a.lastUpdate, b.lastUpdate))

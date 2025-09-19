@@ -6,3 +6,7 @@ html {
 body {
   min-height: -webkit-fill-available;
 }
+
+#root {
+  min-height: 100dvh;
+}

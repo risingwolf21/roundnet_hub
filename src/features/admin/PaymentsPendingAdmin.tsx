@@ -1,3 +1,6 @@
+import { PullToRefresh } from '@/components/pull-to-refresh/PullToRefresh';
+import { queryClient } from '@/lib/queryClient';
+import { supabase } from '@/lib/supabase';
 import CheckIcon from '@mui/icons-material/Check';
 import SearchIcon from '@mui/icons-material/Search';
 import {
@@ -10,74 +13,74 @@ import {
   ListItem,
   ListItemAvatar,
   ListItemText,
-  Typography
+  Typography,
 } from '@mui/material';
 import TextField from '@mui/material/TextField';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { useDialogs } from '@toolpad/core';
-import React, { useState } from 'react';
-import { queryClient } from 'src/App';
-import { PullToRefresh } from 'src/components/pull-to-refresh/PullToRefresh';
-import { supabase } from 'src/components/services/supabase/supabaseClient';
+import { useState } from 'react';
 import { History } from 'types/supabase';
 import Layout from '../../components/layout/Layout';
 import { FullPayment } from '../../types/supabaseTypes';
 import { ConfirmPaymentDialog } from './dialogs/ConfirmPaymentDialog';
 
-export const useAllPayments = () => useQuery<FullPayment[]>({
-  queryKey: ["payments", "admin"],
-  queryFn: async () => {
-    const response = await supabase
-      .from('payments')
-      .select('id, created_at, paymentState, amountToPay, userId, user (userId, displayName, name, email), history (*)')
-      .eq('paymentState', 'Open' as PaymentState)
-      .order('displayName', { referencedTable: 'user', ascending: true })
-      .returns<FullPayment[]>();
-    return response.data ?? [];
-  }
-});
+export const useAllPayments = () =>
+  useQuery<FullPayment[]>({
+    queryKey: ['payments', 'admin'],
+    queryFn: async () => {
+      const response = await supabase
+        .from('payments')
+        .select(
+          'id, created_at, paymentState, amountToPay, userId, user (userId, displayName, name, email), history (*)'
+        )
+        .eq('paymentState', 'Open' as PaymentState)
+        .order('displayName', { referencedTable: 'user', ascending: true })
+        .returns<FullPayment[]>();
+      return response.data ?? [];
+    },
+  });
 
-export const useConfirmPaymentMutation = () => useMutation({
-  mutationFn: async ({ payment }: { payment: FullPayment }) => {
-    const result = await supabase
-      .from('payments')
-      .update({ paymentState: 'Fulfilled' as PaymentState })
-      .eq('userId', payment?.user?.userId)
-      .select("*")
-      .single();
+export const useConfirmPaymentMutation = () =>
+  useMutation({
+    mutationFn: async ({ payment }: { payment: FullPayment }) => {
+      const result = await supabase
+        .from('payments')
+        .update({ paymentState: 'Fulfilled' as PaymentState })
+        .eq('userId', payment?.user?.userId)
+        .select('*')
+        .single();
 
-    return result.data;
-  },
-  onMutate: async ({ payment }) => {
-    await queryClient.cancelQueries({ queryKey: ["payments", "admin"] });
+      return result.data;
+    },
+    onMutate: async ({ payment }) => {
+      await queryClient.cancelQueries({ queryKey: ['payments', 'admin'] });
 
-    const previousPayments = queryClient.getQueryData<FullPayment[]>(["payments", "admin"]);
+      const previousPayments = queryClient.getQueryData<FullPayment[]>(['payments', 'admin']);
 
-    if (previousPayments) {
-      const newPayments = previousPayments.map(x => {
-        if (x.userId === payment.user.userId) {
-          return {
-            ...x,
-            paymentState: "FulFilled" as PaymentState
+      if (previousPayments) {
+        const newPayments = previousPayments.map((x) => {
+          if (x.userId === payment.user.userId) {
+            return {
+              ...x,
+              paymentState: 'FulFilled' as PaymentState,
+            };
           }
-        }
-        return x
-      })
-      queryClient.setQueryData(["payments", "admin"], newPayments);
-    }
+          return x;
+        });
+        queryClient.setQueryData(['payments', 'admin'], newPayments);
+      }
 
-    return { previousPayments }
-  },
-  onError: (err, _vars, context) => {
-    if (context?.previousPayments) {
-      queryClient.setQueryData(["payments", "admin"], context.previousPayments);
-    }
-  },
-  onSettled: (data, error, variables, context) => {
-    queryClient.invalidateQueries({ queryKey: ["payments", "admin"] });
-  },
-})
-
+      return { previousPayments };
+    },
+    onError: (_err, _vars, context) => {
+      if (context?.previousPayments) {
+        queryClient.setQueryData(['payments', 'admin'], context.previousPayments);
+      }
+    },
+    onSettled: (_data, _error, _variables, _context) => {
+      queryClient.invalidateQueries({ queryKey: ['payments', 'admin'] });
+    },
+  });
 
 const PaymentsPendingAdmin = () => {
   const [searchString, setSearchString] = useState('');
@@ -113,10 +116,13 @@ const PaymentsPendingAdmin = () => {
             {Object.values(payments)
               .filter(
                 (x) =>
-                  searchString === '' || [(x.user?.displayName ?? '').toLowerCase(), (x.user?.name ?? '').toLowerCase()].includes(searchString.toLowerCase())
+                  searchString === '' ||
+                  [(x.user?.displayName ?? '').toLowerCase(), (x.user?.name ?? '').toLowerCase()].includes(
+                    searchString.toLowerCase()
+                  )
               )
-              .sort((a, b) => a.user.name > b.user.name ? 1 : -1)
-              .map((x, index) => (
+              .sort((a, b) => (a.user.name > b.user.name ? 1 : -1))
+              .map((x, _index) => (
                 <ListItem
                   key={x.user.userId}
                   divider
@@ -126,7 +132,7 @@ const PaymentsPendingAdmin = () => {
                         event.stopPropagation();
                         const result = await dialogs.open(ConfirmPaymentDialog, x);
                         if (result) {
-                          confirmPayment.mutate({ payment: x })
+                          confirmPayment.mutate({ payment: x });
                         }
                       }}
                     >
@@ -139,10 +145,7 @@ const PaymentsPendingAdmin = () => {
                       {x.history.reduce((prev: number, curr: History) => prev + (curr.amount ?? 0), 0)} €
                     </Typography>
                   </ListItemAvatar>
-                  <ListItemText
-                    primary={x.user?.name ?? x.user.email}
-                    secondary={x.user.name ? 'Name' : 'Email'}
-                  />
+                  <ListItemText primary={x.user?.name ?? x.user.email} secondary={x.user.name ? 'Name' : 'Email'} />
                 </ListItem>
               ))}
             <ListItem key="spacer" sx={{ visibility: 'hidden' }}>

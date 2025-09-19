@@ -1,24 +1,22 @@
+import { Has } from '@/hooks/useGrants';
+import { useDrinks, useInsertHistoryEntryMutation } from '@/tanstack/drinks';
+import { DrinkCounter } from '@/types/supabaseTypes';
+import { nameOfProductType } from '@/utils';
 import { Tune } from '@mui/icons-material';
 import CheckIcon from '@mui/icons-material/Check';
 import { Checkbox, CircularProgress, Fab, List, ListItem, ListItemAvatar, ListItemText } from '@mui/material';
 import { captureException } from '@sentry/react';
 import { useNotifications } from '@toolpad/core/useNotifications';
 import React, { useEffect, useState } from 'react';
-import { useDrinks } from 'src/tanstack/drinks';
-import { DrinkCounter } from 'src/types/supabaseTypes';
-import { nameOfProductType } from 'src/utils';
 import { SwipeableDialog } from '../../components/SwipeableDialog';
-import { SupabaseDrinkRepository } from '../../repository/DrinkRepository';
 import { useGrants } from '../auth/GrantsContext';
 import DrinkList from './components/DrinkList';
 import { LoadingDrinkItem } from './components/LoadingDrinkItem';
 import VoucherCard from './components/Voucher';
-import { Has } from 'src/hooks/useGrants';
-
 
 const DrinkListScreen = () => {
-
   const { data: drinks = [], error, isLoading } = useDrinks();
+  const { user } = useGrants();
 
   const notifications = useNotifications();
   const [addedDrinks, setAddedDrinks] = useState<DrinkCounter[]>([]);
@@ -27,13 +25,18 @@ const DrinkListScreen = () => {
     (localStorage.getItem('visibleTypes')?.split(';') as ProductType[]) ?? ['Drink']
   );
 
+  const updateHistory = useInsertHistoryEntryMutation(user);
+
   useEffect(() => {
     if (error) {
       notifications.show(error.message, { severity: 'error' });
     }
   }, [error, notifications]);
 
-  const confirmDrinksDialog = (message: { message: string, severity: "error" | "success" | "info" | "warning" | undefined }) => {
+  const confirmDrinksDialog = (message: {
+    message: string;
+    severity: 'error' | 'success' | 'info' | 'warning' | undefined;
+  }) => {
     notifications.show(message.message, { severity: message.severity });
   };
 
@@ -47,16 +50,20 @@ const DrinkListScreen = () => {
   };
 
   const confirmDrinks = async () => {
-    SupabaseDrinkRepository.insertHistoryItems(Object.values(addedDrinks))
-      .then(() => {
-        setAddedDrinks([]);
-        confirmDrinksDialog({ message: 'Getränke erfolgreich gebucht!', severity: 'success' });
-      })
-      .catch((error) => {
-        captureException(error);
-        let message = error?.message ?? 'Drink could not be added';
-        resetDrinks(message);
-      });
+    updateHistory.mutate(
+      { drinks: Object.values(addedDrinks) },
+      {
+        onSuccess: () => {
+          setAddedDrinks([]);
+          confirmDrinksDialog({ message: 'Getränke erfolgreich gebucht!', severity: 'success' });
+        },
+        onError: (error) => {
+          captureException(error);
+          let message = error?.message ?? 'Drink could not be added';
+          resetDrinks(message);
+        },
+      }
+    );
   };
 
   const onAddDrinkClick = (drink: Drink) => {
@@ -88,21 +95,21 @@ const DrinkListScreen = () => {
   };
 
   if (isLoading) {
-    return Array.from({ length: 10 }, (v, k) => k + 1).map(() => <LoadingDrinkItem />)
+    return Array.from({ length: 10 }, (_v, k) => k + 1).map(() => <LoadingDrinkItem />);
   }
 
-  return (<>
-    <VoucherCard />
-    <DrinkList
-      drinks={drinks}
-      onAddDrinkClick={onAddDrinkClick}
-      onRemoveDrinkClick={onRemoveDrinkClick}
-      addedDrinks={addedDrinks}
-      visibleTypes={visibleTypes}
-    />
-    <Has perm={"drinks.purchase"}>
-      {
-        Object.values(addedDrinks).length > 0 ? (
+  return (
+    <>
+      <VoucherCard />
+      <DrinkList
+        drinks={drinks}
+        onAddDrinkClick={onAddDrinkClick}
+        onRemoveDrinkClick={onRemoveDrinkClick}
+        addedDrinks={addedDrinks}
+        visibleTypes={visibleTypes}
+      />
+      <Has perm={'drinks.purchase'}>
+        {Object.values(addedDrinks).length > 0 ? (
           <Fab
             sx={{
               position: 'fixed',
@@ -127,29 +134,29 @@ const DrinkListScreen = () => {
             <Tune sx={{ color: 'white' }} />
           </Fab>
         )}
-    </Has>
-    <SwipeableDialog
-      open={filterDialogOpen}
-      setOpen={setFilterDialogOpen}
-      onClose={() => setFilterDialogOpen(false)}
-      title="Filter"
-    >
-      <List>
-        {[...new Set(drinks.map((x) => x.type))].sort().map((x) => (
-          <ListItem key={x} divider>
-            <ListItemAvatar>
-              <Checkbox
-                disabled={x === 'Drink'}
-                checked={visibleTypes.some((y) => y === x)}
-                onChange={(e) => changeVisibleTypes(e, x)}
-              />
-            </ListItemAvatar>
-            <ListItemText primary={nameOfProductType(x)} />
-          </ListItem>
-        ))}
-      </List>
-    </SwipeableDialog>
-  </>
+      </Has>
+      <SwipeableDialog
+        open={filterDialogOpen}
+        setOpen={setFilterDialogOpen}
+        onClose={() => setFilterDialogOpen(false)}
+        title="Filter"
+      >
+        <List>
+          {[...new Set(drinks.map((x) => x.type))].sort().map((x) => (
+            <ListItem key={x} divider>
+              <ListItemAvatar>
+                <Checkbox
+                  disabled={x === 'Drink'}
+                  checked={visibleTypes.some((y) => y === x)}
+                  onChange={(e) => changeVisibleTypes(e, x)}
+                />
+              </ListItemAvatar>
+              <ListItemText primary={nameOfProductType(x)} />
+            </ListItem>
+          ))}
+        </List>
+      </SwipeableDialog>
+    </>
   );
 };
 

@@ -1,8 +1,7 @@
+import { DrinkCounter } from '@/types/supabaseTypes';
+import { groupBy, nameOfProductType } from '@/utils';
 import { Divider, List, ListSubheader } from '@mui/material';
-import React from 'react';
-import { DrinkCounter } from 'src/types/supabaseTypes';
 import DrinkItem from './DrinkItem';
-import { groupBy, nameOfProductType } from 'src/utils';
 
 type DrinkListProps = {
   drinks: Drink[];

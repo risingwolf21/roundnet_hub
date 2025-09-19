@@ -2,6 +2,16 @@ name: Backup
 
 on:
   workflow_dispatch:
+    inputs:
+      publish:
+        description: 'Choose wich environment you would like to backup'
+        required: true
+        default: All
+        type: choice
+        options:
+          - Munich Roundnet
+          - Roundnet Karlsruhe
+          - All
   schedule:
     - cron: '0 0 */3 * *' # Runs every day at midnight
 jobs:

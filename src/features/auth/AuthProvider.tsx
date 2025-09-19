@@ -1,7 +1,7 @@
-import React, { createContext, PropsWithChildren, useCallback, useContext, useEffect, useState } from "react";
-import { supabase } from "src/components/services/supabase/supabaseClient";
-import { SupabaseUserRepository } from "src/repository/UserRepository";
-import { UserWithGroups } from "src/types/supabaseTypes";
+import { supabase } from '@/lib/supabase';
+import { SupabaseUserRepository } from '@/repository/UserRepository';
+import { UserWithGroups } from '@/types/supabaseTypes';
+import { createContext, PropsWithChildren, useCallback, useContext, useEffect, useState } from 'react';
 
 type AuthContextType = {
   user: UserWithGroups;
@@ -19,7 +19,7 @@ export const AuthContext = createContext<AuthContextType>(null!);
 type AuthProviderProps = PropsWithChildren & {
   user: UserWithGroups;
   signOut: () => void;
-}
+};
 
 export const AuthProvider = ({ children, user, signOut }: AuthProviderProps) => {
   const [permissions, setPermissions] = useState<string[]>([]);
@@ -28,7 +28,7 @@ export const AuthProvider = ({ children, user, signOut }: AuthProviderProps) => 
   const fetchUserData = useCallback(async () => {
     const [features, permissions] = await Promise.all([
       SupabaseUserRepository.fetchFeaturesForUser(),
-      SupabaseUserRepository.fetchPermissionsForUser()
+      SupabaseUserRepository.fetchPermissionsForUser(),
     ]);
 
     setPermissions(permissions);
@@ -45,8 +45,8 @@ export const AuthProvider = ({ children, user, signOut }: AuthProviderProps) => 
         {
           event: '*',
           schema: 'public',
-          table: "group_user_mapping",
-          filter: `user=eq.${user.userId}`
+          table: 'group_user_mapping',
+          filter: `user=eq.${user.userId}`,
         },
         (payload) => {
           fetchUserData();
@@ -56,13 +56,8 @@ export const AuthProvider = ({ children, user, signOut }: AuthProviderProps) => 
 
     return () => {
       subscription.unsubscribe();
-    }
-
+    };
   }, [fetchUserData, user]);
 
-  return (
-    <AuthContext.Provider value={{ user, permissions, features, signOut }}>
-      {children}
-    </AuthContext.Provider>
-  );
+  return <AuthContext.Provider value={{ user, permissions, features, signOut }}>{children}</AuthContext.Provider>;
 };

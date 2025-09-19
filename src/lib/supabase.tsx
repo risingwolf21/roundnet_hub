@@ -1,8 +1,8 @@
+import { Database } from '@/types/supabase-generated.types';
 import { createClient } from '@supabase/supabase-js';
-import { Database } from '../../../types/supabase-generated.types';
 
-const supabaseUrl = process.env.REACT_APP_SUPABASE_URL;
-const supabaseKey = process.env.REACT_APP_SUPABASE_API_KEY;
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
 export const supabase = createClient<Database>(supabaseUrl ?? '', supabaseKey ?? '', {
   auth: {
@@ -12,7 +12,7 @@ export const supabase = createClient<Database>(supabaseUrl ?? '', supabaseKey ??
   },
   global: {
     headers: {
-      app_version: process.env.REACT_APP_VERSION ?? '',
+      app_version: APP_VERSION ?? '',
     },
   },
 });

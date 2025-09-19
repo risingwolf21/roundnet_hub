@@ -1,14 +1,14 @@
+import { fetchGroupWithUsers } from '@/repository/AdminUsersRepository';
+import { fetchChallengeWithGroup } from '@/repository/ChallengeRepository';
+import { fetchFullHistory } from '@/repository/DrinkRepository';
+import { fetchEvents } from '@/repository/EventRepository';
+import { fetchMatch, fetchUserMatches } from '@/repository/GamesRepository';
+import { fetchItemHistory, fetchItems } from '@/repository/KeysRepository';
+import { fetchGroups, fetchSimpleUser, fetchUserWithGroups } from '@/repository/UserRepository';
+import { fetchFullEventPledges } from '@/tanstack/events';
+import { Enums, Tables, TablesInsert, TablesUpdate } from '@/types/supabase-generated.types';
+import { GamesTable } from '@/types/supabaseTypes';
 import { QueryData } from '@supabase/supabase-js';
-import { fetchGroupWithUsers } from 'src/repository/AdminUsersRepository';
-import { fetchFullHistory } from 'src/repository/DrinkRepository';
-import { fetchEvents } from 'src/repository/EventRepository';
-import { fetchMatch, fetchUserMatches } from 'src/repository/GamesRepository';
-import { fetchGroups, fetchSimpleUser, fetchUserWithGroups } from 'src/repository/UserRepository';
-import { GamesTable } from 'src/types/supabaseTypes';
-import { Enums, Tables, TablesInsert, TablesUpdate } from '../../src/types/supabase-generated.types';
-import { fetchChallengeWithGroup } from 'src/repository/ChallengeRepository';
-import { fetchItemHistory, fetchItems } from 'src/repository/KeysRepository';
-import { fetchFullEventPledges } from 'src/tanstack/events';
 
 export type EventTable = Tables<'events'>;
 export type History = Tables<'history'>;
@@ -38,7 +38,6 @@ declare global {
   type Match = GamesTable<'match'>;
   type MatchSet = GamesTable<'sets'>;
   type Team = GamesTable<'teams'>;
-  type CalendarSettings = Tables<'user_calender_settings'>;
   type PlayerWithSimpleUser = Player & { name: string; userId: string };
   type Feature = Tables<'features'>;
   type Permission = Tables<'permissions'>;

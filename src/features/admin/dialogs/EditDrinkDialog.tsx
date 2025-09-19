@@ -1,4 +1,10 @@
-import React, { FormEvent, useEffect, useState } from 'react';
+import { supabase } from '@/lib/supabase';
+import { Check } from '@mui/icons-material';
+import CloseIcon from '@mui/icons-material/Close';
+import EuroIcon from '@mui/icons-material/Euro';
+import FormatSizeIcon from '@mui/icons-material/FormatSize';
+import InventoryIcon from '@mui/icons-material/Inventory';
+import LocalDrinkIcon from '@mui/icons-material/LocalDrink';
 import {
   AppBar,
   Avatar,
@@ -14,18 +20,12 @@ import {
   Toolbar,
   Typography,
 } from '@mui/material';
-import CloseIcon from '@mui/icons-material/Close';
-import { Box } from '@mui/system';
 import Checkbox from '@mui/material/Checkbox';
-import LocalDrinkIcon from '@mui/icons-material/LocalDrink';
-import EuroIcon from '@mui/icons-material/Euro';
-import InventoryIcon from '@mui/icons-material/Inventory';
-import FormatSizeIcon from '@mui/icons-material/FormatSize';
-import CropImageDialog from '../../../components/CropImageDialog';
-import { useClient } from 'react-supabase';
-import { Check } from '@mui/icons-material';
-import { dataURLtoFile, readFile, SlideUpTransition } from '../../../utils';
+import { Box } from '@mui/system';
 import { uuid } from '@supabase/supabase-js/dist/main/lib/helpers';
+import { FormEvent, useEffect, useState } from 'react';
+import CropImageDialog from '../../../components/CropImageDialog';
+import { dataURLtoFile, readFile, SlideUpTransition } from '../../../utils';
 
 type EditDrinkDialogProps = {
   drink: Drink;
@@ -41,7 +41,6 @@ const EditDrinkDialog = ({ drink, onDrinkEditFinished, open, handleClose, drinkH
   }, [drink]);
 
   // image cropping
-  const client = useClient();
   const [selectedImage, setSelectedImage] = useState<string | ArrayBuffer | null>(null);
   const [croppedImage, setCroppedImage] = useState<string | null>(null);
 
@@ -69,7 +68,7 @@ const EditDrinkDialog = ({ drink, onDrinkEditFinished, open, handleClose, drinkH
       if (croppedImage) {
         let fileName = uuid() + '.jpg';
 
-        const { data: uploadData, error } = await client.storage
+        const { data: uploadData, error } = await supabase.storage
           .from('drink')
           .upload(`avatars/${fileName}`, dataURLtoFile(croppedImage, fileName), {
             cacheControl: '3600',
@@ -77,7 +76,7 @@ const EditDrinkDialog = ({ drink, onDrinkEditFinished, open, handleClose, drinkH
           });
 
         if (!error && uploadData && uploadData.path) {
-          const { data } = client.storage.from('drink').getPublicUrl(uploadData.path);
+          const { data } = supabase.storage.from('drink').getPublicUrl(uploadData.path);
           newDrink.imageUrl = data.publicUrl;
         }
       }
@@ -92,7 +91,7 @@ const EditDrinkDialog = ({ drink, onDrinkEditFinished, open, handleClose, drinkH
     <Box>
       <Dialog fullScreen open={open} onClose={handleClose} TransitionComponent={SlideUpTransition}>
         <Box component="form" onSubmit={handleSubmit} noValidate>
-        <AppBar position="sticky" sx={{ pt: 'env(safe-area-inset-top)' }}>
+          <AppBar position="sticky" sx={{ pt: 'env(safe-area-inset-top)' }}>
             <Toolbar>
               <IconButton edge="start" color="inherit" onClick={handleClose} aria-label="close">
                 <CloseIcon />

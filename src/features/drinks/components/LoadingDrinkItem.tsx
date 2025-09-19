@@ -1,5 +1,4 @@
 import { ListItem, ListItemAvatar, ListItemText, Skeleton } from '@mui/material';
-import React from 'react';
 
 export const LoadingDrinkItem = () => {
   return (

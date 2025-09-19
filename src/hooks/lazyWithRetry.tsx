@@ -1,36 +1,39 @@
-import { ComponentType, lazy } from "react";
+import * as React from 'react';
 
-export const lazyWithRetry = (componentImport: () => Promise<{ default: ComponentType<any>; }>) =>
-  lazy(async () => {
-    const pageHasAlreadyBeenForceRefreshed = JSON.parse(
-      window.localStorage.getItem(
-        'page-has-been-force-refreshed'
-      ) || 'false'
-    );
+function isChunkError(err: unknown) {
+  const msg = (err as any)?.message ?? '';
+  return /ChunkLoadError|Loading chunk \d+ failed|Failed to fetch dynamically imported module|imported module/i.test(
+    msg
+  );
+}
 
-    try {
-      const component = await componentImport();
+export function lazyWithRetry<T extends React.ComponentType<any>>(
+  loader: () => Promise<{ default: T }>,
+  opts: { retries?: number; delayMs?: number; onFinalFail?: (err: any) => void } = {}
+) {
+  const { retries = 2, delayMs = 400, onFinalFail } = opts;
 
-      window.localStorage.setItem(
-        'page-has-been-force-refreshed',
-        'false'
-      );
-
-      return component;
-    } catch (error) {
-      if (!pageHasAlreadyBeenForceRefreshed) {
-        // Assuming that the user is not on the latest version of the application.
-        // Let's refresh the page immediately.
-        window.localStorage.setItem(
-          'page-has-been-force-refreshed',
-          'true'
-        );
-        window.location.reload();
-      }
-
-      // The page has already been reloaded
-      // Assuming that user is already using the latest version of the application.
-      // Let's let the application crash and raise the error.
-      throw error;
-    }
-  });
+  return React.lazy(
+    () =>
+      new Promise<{ default: T }>((resolve, reject) => {
+        const attempt = async (n: number) => {
+          loader()
+            .then(resolve)
+            .catch(async (err) => {
+              if (isChunkError(err) && n > 0) {
+                setTimeout(() => attempt(n - 1), delayMs);
+              } else if (isChunkError(err)) {
+                try {
+                  const keys = await caches?.keys?.();
+                  await Promise.all((keys || []).map((k) => caches.delete(k)));
+                } catch { }
+              } else {
+                onFinalFail?.(err);
+                reject(err);
+              }
+            });
+        };
+        attempt(retries);
+      })
+  );
+}

@@ -1,4 +1,3 @@
-
 export type DrinkListScreenProps = {
   user: User;
   drinks: Drink[];

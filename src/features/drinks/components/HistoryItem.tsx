@@ -1,6 +1,5 @@
 import { List, ListItem, ListItemAvatar, ListItemText, ListSubheader, Typography } from '@mui/material';
-import moment from 'moment';
-import React from 'react';
+import { format } from 'date-fns';
 import { HistoryItemProps } from '../types';
 
 export const HistoryItem = ({ items, header, onClick }: HistoryItemProps) => {
@@ -25,10 +24,7 @@ export const HistoryItem = ({ items, header, onClick }: HistoryItemProps) => {
           <ListItemAvatar>
             <Typography>{item.count} x</Typography>
           </ListItemAvatar>
-          <ListItemText
-            primary={item.drink?.name}
-            secondary={moment(new Date(item.created_at ?? '')).format('HH:mm')}
-          />
+          <ListItemText primary={item.drink?.name} secondary={format(item.created_at ?? '', 'HH:mm')} />
         </ListItem>
       ))}
     </List>

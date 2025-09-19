@@ -1,17 +1,16 @@
+import Layout from '@/components/layout/Layout';
+import { PullToRefresh } from '@/components/pull-to-refresh/PullToRefresh';
+import { useMatches } from '@/tanstack/games';
+import { UserMatchesView } from '@/types/supabaseTypes';
+import { groupBy } from '@/utils';
 import { Add, Warning } from '@mui/icons-material';
 import { Box, Button, Chip, Fab, List, ListItem, ListSubheader, Typography } from '@mui/material';
 import { useDialogs, useNotifications } from '@toolpad/core';
+import { format, isAfter } from 'date-fns';
 import { t } from 'i18next';
-import moment from 'moment';
-import React, { useEffect } from 'react';
+import { useEffect } from 'react';
 import { useNavigate } from 'react-router';
-import Layout from 'src/components/layout/Layout';
-import { PullToRefresh } from 'src/components/pull-to-refresh/PullToRefresh';
-import { useMatches } from 'src/tanstack/games';
-import { groupBy } from 'src/utils';
 import { ReportSetsDialog } from './dialogs/ReportSetsDialog';
-import { UserMatchesView } from 'src/types/supabaseTypes';
-import { isAfter } from 'date-fns';
 
 const GameList = () => {
   const notifications = useNotifications();
@@ -22,21 +21,21 @@ const GameList = () => {
 
   useEffect(() => {
     if (error)
-      notifications.show(error.message, { severity: "error", actionText: "Neu laden", onAction: () => refetch() })
-  }, [error, notifications, refetch])
+      notifications.show(error.message, { severity: 'error', actionText: 'Neu laden', onAction: () => refetch() });
+  }, [error, notifications, refetch]);
 
   return (
     <Layout>
       <PullToRefresh onRefresh={() => refetch()}>
-        <List sx={(theme) => ({
-          overscrollBehavior: "none",
-          [theme.breakpoints.down('xl')]: { pb: 12 },
-          [theme.breakpoints.up('xl')]: { pb: 0 },
-        })}>
-          {Array.from(
-            groupBy(matches, (x: UserMatchesView) => moment(new Date(x.created_at ?? '')).format('DD MMMM yyyy'))
-          )
-            .sort(([key1, v1], [key2, v2]) => isAfter(key1, key2) ? -1 : 1)
+        <List
+          sx={(theme) => ({
+            overscrollBehavior: 'none',
+            [theme.breakpoints.down('xl')]: { pb: 12 },
+            [theme.breakpoints.up('xl')]: { pb: 0 },
+          })}
+        >
+          {Array.from(groupBy(matches, (x: UserMatchesView) => format(x.created_at ?? '', 'dd MMMM yyyy')))
+            .sort(([key1, v1], [key2, v2]) => (isAfter(key1, key2) ? -1 : 1))
             .map(([key, value]) => (
               <List
                 key={key}
@@ -60,8 +59,8 @@ const GameList = () => {
                       <Box
                         sx={{
                           flexGrow: 1,
-                          display: "flex",
-                          flexDirection: "row"
+                          display: 'flex',
+                          flexDirection: 'row',
                         }}
                       >
                         <Box
@@ -71,7 +70,8 @@ const GameList = () => {
                             whiteSpace: 'nowrap',
                             overflow: 'hidden',
                             textOverflow: 'ellipsis',
-                          }}>
+                          }}
+                        >
                           <Typography
                             sx={{
                               fontSize: '1rem',
@@ -95,20 +95,30 @@ const GameList = () => {
                             {x.team_b_name}
                           </Typography>
                         </Box>
-                        {
-                          !x.rated && <Box sx={{ display: "flex", flexDirection: "column", justifyContent: "center", ml: 2 }}>
-                            <Chip color='info' variant='outlined' size='small' label="Ungewertet" />
+                        {!x.rated && (
+                          <Box sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', ml: 2 }}>
+                            <Chip color="info" variant="outlined" size="small" label="Ungewertet" />
                           </Box>
-                        }
+                        )}
                       </Box>
-                      {
-                        !x.set_results && x.id && <Button startIcon={<Warning color='warning' />} onClick={async () => {
-                          const result = await dialogs.open(ReportSetsDialog, { matchId: x.id!, team_a_name: x.team_a_name!, team_b_name: x.team_b_name!, sets: null });
-                          if (result) {
-                            refetch();
-                          }
-                        }}>Score eintragen</Button>
-                      }
+                      {!x.set_results && x.id && (
+                        <Button
+                          startIcon={<Warning color="warning" />}
+                          onClick={async () => {
+                            const result = await dialogs.open(ReportSetsDialog, {
+                              matchId: x.id!,
+                              team_a_name: x.team_a_name!,
+                              team_b_name: x.team_b_name!,
+                              sets: null,
+                            });
+                            if (result) {
+                              refetch();
+                            }
+                          }}
+                        >
+                          Score eintragen
+                        </Button>
+                      )}
                       {x.set_results?.split(',').map((y, index) => {
                         const [team_a_score, team_b_score] = y.trim().split(':');
                         let teamAWon = team_a_score > team_b_score;

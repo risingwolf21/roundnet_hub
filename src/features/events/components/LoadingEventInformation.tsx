@@ -1,5 +1,4 @@
 import { Box, Divider, ListItem, ListItemAvatar, ListItemText, Skeleton } from '@mui/material';
-import React from 'react';
 
 export const LoadingEventInformation = () => (
   <Box sx={{ px: 2, pt: 1 }}>

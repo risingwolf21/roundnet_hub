@@ -1,6 +1,5 @@
 import { Refresh } from '@mui/icons-material';
 import { Button, Grid2, Typography } from '@mui/material';
-import React from 'react';
 
 export const FallbackComponent = ({ message, resetError }: { message: String; resetError: () => void }) => {
   return (

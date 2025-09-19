@@ -1,10 +1,9 @@
+import { LOCALE_DE } from '@/translation/i18n';
+import { EventsUserView } from '@/types/supabaseTypes';
 import { CalendarMonth } from '@mui/icons-material';
 import { ListItem, ListItemAvatar, ListItemIcon, ListItemText } from '@mui/material';
 import { formatRelative } from 'date-fns';
 import { TFunction } from 'i18next';
-import React from 'react';
-import { LOCALE_DE } from 'src/translation/i18n';
-import { EventsUserView } from 'src/types/supabaseTypes';
 
 type Props = {
   event: EventsUserView;
@@ -23,23 +22,25 @@ const EventDateInformation = ({ event, t }: Props) => {
       startTime: new Date(startingDateTime),
     });
 
-  return <ListItem sx={{ py: 0}} dense>
-    <ListItemAvatar sx={{ justifyContent: 'left', alignItems: 'center', display: 'flex', minWidth: "40px" }}>
-      <ListItemIcon>
-        <CalendarMonth />
-      </ListItemIcon>
-    </ListItemAvatar>
-    {
-      meetingDateTime
-        ? <ListItemText
+  return (
+    <ListItem sx={{ py: 0 }} dense>
+      <ListItemAvatar sx={{ justifyContent: 'left', alignItems: 'center', display: 'flex', minWidth: '40px' }}>
+        <ListItemIcon>
+          <CalendarMonth />
+        </ListItemIcon>
+      </ListItemAvatar>
+      {meetingDateTime ? (
+        <ListItemText
           primary={t('events.information.meetTime', {
             meetTime: formatRelative(meetingDateTime, Date.now(), { locale: LOCALE_DE, weekStartsOn: 1 }),
           })}
           secondary={startTimeTranslation}
         />
-        : <ListItemText primary={startTimeTranslation} />
-    }
-  </ListItem>
+      ) : (
+        <ListItemText primary={startTimeTranslation} />
+      )}
+    </ListItem>
+  );
 };
 
 export default EventDateInformation;
