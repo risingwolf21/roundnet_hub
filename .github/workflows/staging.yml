@@ -76,11 +76,6 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-yarn-
 
-      - uses: actions/download-artifact@v4
-        with:
-          name: git-commit-version
-          path: ${{github.workspace}}/public
-
       - name: Set short git commit
         id: vars
         run: echo "::set-output name=sha_short::$(git rev-parse --short ${{ github.sha }})"
