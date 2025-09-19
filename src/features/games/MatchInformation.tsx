@@ -26,7 +26,6 @@ type Props = {
   expected?: number;
   eff_team?: number;
   cat_team?: string;
-  sets: { score: number; won: boolean }[];
   p1_eff?: number | null;
   p2_eff?: number | null;
   p1_delta?: number | null;
@@ -62,7 +61,7 @@ const LoadingTeamCard = () => {
             <Skeleton variant="text" width={100} />
           </Box>
           <Stack direction={'row'} spacing={1}>
-            {[0, 0, 0].map((x) => (
+            {[0, 0, 0].map((_) => (
               <Skeleton variant="rectangular" width={40} height={40} />
             ))}
           </Stack>
@@ -101,7 +100,6 @@ const TeamCard = ({
   expected,
   eff_team,
   cat_team,
-  sets,
   p1_eff,
   p2_eff,
   p1_delta,
@@ -227,10 +225,6 @@ const MatchInformation = () => {
           expected={match.elo_calc_log?.expected_a}
           eff_team={match.elo_calc_log?.eff_team_a}
           cat_team={match.elo_calc_log?.category_a}
-          sets={match.sets.reduce(
-            (curr, prev) => [...curr, { score: prev.team_a_score, won: prev.team_b_score < prev.team_a_score }],
-            new Array<{ score: number; won: boolean }>()
-          )}
           p1_eff={player1a_history?.eff_old_rating}
           p2_eff={player2a_history?.eff_old_rating}
           p1_delta={(player1a_history?.eff_new_rating ?? 0) - (player1a_history?.eff_old_rating ?? 0)}
@@ -263,10 +257,6 @@ const MatchInformation = () => {
           expected={match.elo_calc_log?.expected_b}
           eff_team={match.elo_calc_log?.eff_team_b}
           cat_team={match.elo_calc_log?.category_b}
-          sets={match.sets.reduce(
-            (curr, prev) => [...curr, { score: prev.team_b_score, won: prev.team_b_score > prev.team_a_score }],
-            new Array<{ score: number; won: boolean }>()
-          )}
           p1_eff={player1b_history?.eff_old_rating}
           p2_eff={player2b_history?.eff_old_rating}
           p1_delta={(player1b_history?.eff_new_rating ?? 0) - (player1b_history?.eff_old_rating ?? 0)}
