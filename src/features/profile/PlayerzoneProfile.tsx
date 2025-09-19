@@ -1,6 +1,6 @@
 import { supabase } from '@/lib/supabase';
 import { useEloHistory, usePlayer, useUpdateIndexHidden } from '@/tanstack/player_data';
-import { AddPhotoAlternateOutlined, Close, ContentCopy, Link } from '@mui/icons-material';
+import { AddPhotoAlternateOutlined, Close, ContentCopy, Link, TrendingDown, TrendingFlat, TrendingUp } from '@mui/icons-material';
 import {
   Alert,
   AppBar,
@@ -19,11 +19,12 @@ import {
   ListItemText,
   TextField,
   Toolbar,
-  Typography,
+  Typography
 } from '@mui/material';
 import { captureException } from '@sentry/react';
 import { DialogProps } from '@toolpad/core/useDialogs';
 import { NotificationsProvider, useNotifications } from '@toolpad/core/useNotifications';
+import { addDays, isAfter } from 'date-fns';
 import { useState } from 'react';
 import rg_small from '../../images/rgx_small.png';
 
@@ -40,6 +41,8 @@ const Content = ({ payload, onClose }: DialogProps<PlayerzoneProfilePayload, str
   const notifications = useNotifications();
   const [rgLink, setRgLink] = useState(player_data?.rg_link ?? '');
   const [loading, setLoading] = useState(false);
+
+  const [elo_change_last_30_days, _] = useState(elo_history?.filter(x => isAfter(x.created_at, addDays(Date.now(), -30))).reduce((p, c) => p + c.delta, 0) ?? 0)
 
   const handleChangeProfilePicture = async () => {
     setLoading(false);
@@ -204,6 +207,10 @@ const Content = ({ payload, onClose }: DialogProps<PlayerzoneProfilePayload, str
               sx={{
                 '&.MuiListItem-root': { p: 0 },
               }}
+              secondaryAction={<Chip
+                color={elo_change_last_30_days > 0 ? 'success' : elo_change_last_30_days < 0 ? 'error' : 'info'}
+                label={elo_change_last_30_days}
+                icon={elo_change_last_30_days > 0 ? <TrendingUp /> : elo_change_last_30_days < 0 ? <TrendingDown /> : <TrendingFlat />} />}
             >
               <ListItemAvatar></ListItemAvatar>
               <ListItemText primary={player_data?.effective_rating_cached.toFixed()} secondary={'Kombinierter Index'} />
@@ -231,7 +238,7 @@ const Content = ({ payload, onClose }: DialogProps<PlayerzoneProfilePayload, str
             />
           </ListItem>
         </List>
-      </Container>
+      </Container >
     </>
   );
 };
