@@ -84,7 +84,7 @@ jobs:
           VITE_OPENWEATHER_API_KEY:   ${{ secrets.OPENWEATHER_API_KEY }}
           VITE_VAPID_PUBLIC_KEY:      ${{ vars.VAPID_PUBLIC_KEY }}
           VITE_PAYPAL_ME_LINK:        ${{ vars.PAYPAL_ME_LINK }}
-          VITE_GIT_COMMIT:            ${{ steps.vars.outputs.sha_short }}
+          VITE_GIT_COMMIT:            ${{ env.GITHUB_SHA_SHORT }}
 
       - uses: actions/upload-artifact@v4
         with:
