@@ -19,6 +19,7 @@ import {
   ListItemText,
   TextField,
   Toolbar,
+  Tooltip,
   Typography
 } from '@mui/material';
 import { captureException } from '@sentry/react';
@@ -207,10 +208,15 @@ const Content = ({ payload, onClose }: DialogProps<PlayerzoneProfilePayload, str
               sx={{
                 '&.MuiListItem-root': { p: 0 },
               }}
-              secondaryAction={<Chip
-                color={elo_change_last_30_days > 0 ? 'success' : elo_change_last_30_days < 0 ? 'error' : 'info'}
-                label={elo_change_last_30_days}
-                icon={elo_change_last_30_days > 0 ? <TrendingUp /> : elo_change_last_30_days < 0 ? <TrendingDown /> : <TrendingFlat />} />}
+              secondaryAction={<Tooltip title="Trend der letzten 30 Tage" enterTouchDelay={0}>
+                <span>
+                  <Chip
+                    sx={{ pointerEvents: 'none' }}
+                    color={elo_change_last_30_days > 0 ? 'success' : elo_change_last_30_days < 0 ? 'error' : 'info'}
+                    label={elo_change_last_30_days}
+                    icon={elo_change_last_30_days > 0 ? <TrendingUp /> : elo_change_last_30_days < 0 ? <TrendingDown /> : <TrendingFlat />} />
+                </span>
+              </Tooltip>}
             >
               <ListItemAvatar></ListItemAvatar>
               <ListItemText primary={player_data?.effective_rating_cached.toFixed()} secondary={'Kombinierter Index'} />
