@@ -47,11 +47,6 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-yarn-
 
-      - uses: actions/upload-artifact@v4
-        with:
-          name: git-commit-version
-          path: ${{github.workspace}}/public/git_commit.txt
-
 
   db-test:
     name: "Test database"
@@ -96,7 +91,7 @@ jobs:
 
       - name: Set short git commit
         id: vars
-        run: echo "::set-output name=sha_short::$(git rev-parse --short ${{ github.sha }})"
+        run: echo "$GITHUB_SHA_SHORT=$(git rev-parse --short ${{ github.sha }})"
 
       - name: Build
         run: yarn run build:karlsruhe
@@ -177,7 +172,7 @@ jobs:
 
       - name: Set short git commit
         id: vars
-        run: echo "::set-output name=sha_short::$(git rev-parse --short ${{ github.sha }})"
+        run: echo "$GITHUB_SHA_SHORT=$(git rev-parse --short ${{ github.sha }})"
 
       - name: Build
         run: yarn run build:munich
