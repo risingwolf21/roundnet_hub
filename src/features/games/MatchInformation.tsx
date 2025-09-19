@@ -240,7 +240,7 @@ const MatchInformation = () => {
               <Box sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
                 <Typography fontWeight={'bold'}>Sätze</Typography>
               </Box>
-              <Stack direction={'row'} spacing={1} sx={{ px: 2, py: 1, pb: 0 }}>
+              <Stack direction={'row'} spacing={1} sx={{ px: 0, py: 1, pb: 0 }}>
                 {match.sets.map((x) => (
                   <Stack spacing={2}>
                     <Chip color={x.team_b_score < x.team_a_score ? 'success' : 'default'} variant={'filled'} label={x.team_a_score} />
