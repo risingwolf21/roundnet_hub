@@ -69,7 +69,7 @@ const UserScreen = ({ user, handleSignOut }: UserScreenProps) => {
   );
 
   useEffect(() => {
-    const notificationsSupported = !('serviceWorker' in navigator) || !('PushManager' in window);
+    const notificationsSupported = ('serviceWorker' in navigator) && ('PushManager' in window);
     setNotificationSUpported(notificationsSupported);
     if (searchParams.get('dialog') === 'playerzone') {
       openDialog(PlayerzoneProfileDialog, { user }, 'playerzone');
