@@ -9,6 +9,7 @@ declare let self: ServiceWorkerGlobalScope
 
 const SW_VERSION = '2025-09-13T21-55';
 
+self.skipWaiting();
 clientsClaim();
 self.addEventListener('install', () => self.skipWaiting());
 
