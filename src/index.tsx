@@ -20,16 +20,7 @@ const root = ReactDOM.createRoot(document.getElementById('root') as HTMLElement,
   }),
 });
 
-const updateSW = registerSW({
-  immediate: true, // direkt registrieren
-  onNeedRefresh() {
-    // Statt Prompt: sofort updaten -> sendet 'SKIP_WAITING' an waiting SW
-    updateSW(true);
-  },
-  onOfflineReady() {
-    // optional: Toast "App ist offlinefähig"
-  },
-});
+registerSW({ immediate: true });
 
 root.render(
   <Sentry.ErrorBoundary fallback={<div>Etwas ist schiefgelaufen. Bitte neu laden.</div>}>
@@ -38,11 +29,3 @@ root.render(
     </Suspense>
   </Sentry.ErrorBoundary>
 );
-
-let refreshing = false;
-navigator.serviceWorker?.addEventListener('controllerchange', () => {
-  if (!refreshing) {
-    refreshing = true;
-    window.location.reload();
-  }
-});
