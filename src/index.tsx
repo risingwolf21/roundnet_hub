@@ -20,7 +20,26 @@ const root = ReactDOM.createRoot(document.getElementById('root') as HTMLElement,
   }),
 });
 
-registerSW({ immediate: true });
+registerSW({
+  immediate: true,
+  onRegisterError: (error) => {
+    Sentry.logger.info("Service Worker installation failed", {
+      type: 'service_worker',
+      message: 'instalation_failed',
+      error: JSON.stringify(error)
+    })
+  },
+  onRegisteredSW: (_, registration) => {
+    Sentry.logger.info("Service Worker installed succesfully", {
+      type: 'service_worker',
+      message: 'instalation_successful'
+    })
+    setInterval(() => {
+      if (registration)
+        registration.update();
+    }, 5000)
+  }
+});
 
 let reloading = false;
 navigator.serviceWorker?.addEventListener('controllerchange', () => {
