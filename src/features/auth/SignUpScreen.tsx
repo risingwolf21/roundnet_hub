@@ -250,7 +250,7 @@ const SignUpScreen = () => {
               <Link href="#" variant="body2" onClick={() => navigate('/auth/login', { replace: true })}>
                 {'Account vorhanden? Hier einloggen'}
               </Link>
-              <Typography sx={{ mt: 1 }}>{`Version ${import.meta.env.VITE_VERSION}-${version.slice(0, 8)}`}</Typography>
+              <Typography sx={{ mt: 1 }}>{`Version ${APP_VERSION}-${version.slice(0, 8)}`}</Typography>
             </div>
           </Box>
         </Box>

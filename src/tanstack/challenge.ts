@@ -162,13 +162,13 @@ export const useIncreasePointForUserMutation = (challengeId: string) =>
         const newStats: InfiniteData<ChallengeStatWithUser[]> =
           previousStats.pages.length === 0
             ? {
-                ...previousStats,
-                pages: [[newStat]],
-              }
+              ...previousStats,
+              pages: [[newStat]],
+            }
             : {
-                ...previousStats,
-                pages: previousStats.pages.map((x, index) => (index === 0 && Array.isArray(x) ? [...x, newStat] : x)),
-              };
+              ...previousStats,
+              pages: previousStats.pages.map((x, index) => (index === 0 && Array.isArray(x) ? [...x, newStat] : x)),
+            };
 
         queryClient.setQueryData<InfiniteData<ChallengeStatWithUser[]>>(['challenge', challengeId, 'stats'], newStats);
       }
@@ -200,7 +200,7 @@ export const useIncreasePointForUserMutation = (challengeId: string) =>
 
       return { previousLeaderboard, previousStats, previousStatsForUser };
     },
-    onError: (err, _vars, context) => {
+    onError: (_err, _vars, context) => {
       if (context?.previousLeaderboard) {
         queryClient.setQueryData(['challenge', challengeId, 'leaderboard'], context.previousLeaderboard);
       }
@@ -211,7 +211,7 @@ export const useIncreasePointForUserMutation = (challengeId: string) =>
         queryClient.setQueryData(['challenge', challengeId, 'stats', _vars.user.userId], context.previousStatsForUser);
       }
     },
-    onSettled: (data, error, variables, context) => {
+    onSettled: (_data, _error, variables, _context) => {
       queryClient.invalidateQueries({ queryKey: ['challenge', challengeId, 'leaderboard'] });
       queryClient.invalidateQueries({ queryKey: ['challenge', challengeId, 'stats'] });
       queryClient.invalidateQueries({ queryKey: ['challenge', challengeId, 'stats', variables.user.userId] });

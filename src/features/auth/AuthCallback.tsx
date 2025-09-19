@@ -1,8 +1,8 @@
-import { Box, CircularProgress, Typography } from '@mui/material';
-import React, { useEffect } from 'react';
-import { useNavigate, useSearchParams } from 'react-router';
 import { supabase } from '@/lib/supabase';
 import { BRANDING } from '@/utils';
+import { Box, CircularProgress, Typography } from '@mui/material';
+import { useEffect } from 'react';
+import { useNavigate } from 'react-router';
 
 const AuthCallback = () => {
   const navigate = useNavigate();
@@ -16,7 +16,7 @@ const AuthCallback = () => {
       parsedParams.set(key, value);
     }
 
-    supabase.auth.refreshSession({ refresh_token: parsedParams.get('refresh_token')! }).then((result) => {
+    supabase.auth.refreshSession({ refresh_token: parsedParams.get('refresh_token')! }).then(() => {
       const provider_token = parsedParams.get('provider_token');
       if (provider_token) supabase.auth.updateUser({ data: { provider_token: provider_token } });
     });

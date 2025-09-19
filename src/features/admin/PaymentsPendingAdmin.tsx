@@ -1,3 +1,6 @@
+import { PullToRefresh } from '@/components/pull-to-refresh/PullToRefresh';
+import { queryClient } from '@/lib/queryClient';
+import { supabase } from '@/lib/supabase';
 import CheckIcon from '@mui/icons-material/Check';
 import SearchIcon from '@mui/icons-material/Search';
 import {
@@ -15,10 +18,7 @@ import {
 import TextField from '@mui/material/TextField';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { useDialogs } from '@toolpad/core';
-import React, { useState } from 'react';
-import { queryClient } from '@/lib/queryClient';
-import { PullToRefresh } from '@/components/pull-to-refresh/PullToRefresh';
-import { supabase } from '@/lib/supabase';
+import { useState } from 'react';
 import { History } from 'types/supabase';
 import Layout from '../../components/layout/Layout';
 import { FullPayment } from '../../types/supabaseTypes';
@@ -72,12 +72,12 @@ export const useConfirmPaymentMutation = () =>
 
       return { previousPayments };
     },
-    onError: (err, _vars, context) => {
+    onError: (_err, _vars, context) => {
       if (context?.previousPayments) {
         queryClient.setQueryData(['payments', 'admin'], context.previousPayments);
       }
     },
-    onSettled: (data, error, variables, context) => {
+    onSettled: (_data, _error, _variables, _context) => {
       queryClient.invalidateQueries({ queryKey: ['payments', 'admin'] });
     },
   });
@@ -122,7 +122,7 @@ const PaymentsPendingAdmin = () => {
                   )
               )
               .sort((a, b) => (a.user.name > b.user.name ? 1 : -1))
-              .map((x, index) => (
+              .map((x, _index) => (
                 <ListItem
                   key={x.user.userId}
                   divider

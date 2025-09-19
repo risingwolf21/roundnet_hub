@@ -1,11 +1,11 @@
+import { AdminDrinksRepository } from '@/repository/AdminDrinksRepository';
 import { LinearProgress, List } from '@mui/material';
 import { useInfiniteQuery } from '@tanstack/react-query';
-import React, { useEffect, useRef } from 'react';
-import { AdminDrinksRepository } from '@/repository/AdminDrinksRepository';
+import { format } from 'date-fns';
+import { useEffect, useRef } from 'react';
 import Layout from '../../components/layout/Layout';
 import { groupBy } from '../../utils';
 import { AdminHistoryItem } from './components/AdminHistoryItem';
-import { format } from 'date-fns';
 
 const AdminHistoryScreen = () => {
   const {

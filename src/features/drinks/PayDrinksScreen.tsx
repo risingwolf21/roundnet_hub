@@ -1,18 +1,17 @@
+import { usePaymentHistory } from '@/tanstack/drinks';
 import EuroIcon from '@mui/icons-material/Euro';
 import { Box, Divider, Fab, List, ListItem, ListItemAvatar, ListItemText, Typography } from '@mui/material';
 import { useNotifications } from '@toolpad/core';
-import React, { useEffect } from 'react';
-import { usePaymentHistory } from '@/tanstack/drinks';
+import { useEffect } from 'react';
 import Layout from '../../components/layout/Layout';
 import { LoadingScreen } from '../../components/LoadingScreen';
-import { PAYPAL_ME_ADDRESS } from '../../constants';
 import { groupBy } from '../../utils';
 import { useGrants } from '../auth/GrantsContext';
 
 const PayDrinksButton = ({ amountToPay }: { amountToPay: number }) => {
   const onPayClick = () => {
     const newWindow = window.open(
-      `https://www.paypal.me/${PAYPAL_ME_ADDRESS}/${amountToPay}EUR`,
+      `https://www.paypal.me/${import.meta.env.VITE_PAYPAL_ME_LINK}/${amountToPay}EUR`,
       '_blank',
       'noopener,noreferrer'
     );

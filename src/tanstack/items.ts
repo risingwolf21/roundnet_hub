@@ -119,7 +119,7 @@ export const useUpdateItemMutation = () =>
         queryClient.setQueryData(['items'], context.previousItemHolders);
       }
     },
-    onSettled: (_d, _e, _v, context) => {
+    onSettled: (_d, _e, _v, _context) => {
       queryClient.invalidateQueries({ queryKey: ['items'] });
     },
   });
@@ -153,7 +153,7 @@ export const useInsertItemMutation = () =>
         queryClient.setQueryData(['items'], context.previousItemHolders);
       }
     },
-    onSettled: (_d, _e, _v, context) => {
+    onSettled: (_d, _e, _v, _context) => {
       queryClient.invalidateQueries({ queryKey: ['items'] });
     },
   });

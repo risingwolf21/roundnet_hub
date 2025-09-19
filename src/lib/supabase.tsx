@@ -12,7 +12,7 @@ export const supabase = createClient<Database>(supabaseUrl ?? '', supabaseKey ??
   },
   global: {
     headers: {
-      app_version: import.meta.env.VITE_VERSION ?? '',
+      app_version: APP_VERSION ?? '',
     },
   },
 });

@@ -77,7 +77,7 @@ export const HistoryScreen = ({ user }: { user: User }) => {
         {Array.from(
           groupBy(
             (history?.pages.flatMap((x) => x.data) ?? []).filter((x) => x.drink),
-            (x: FullHistory) => format(x.created_at ?? '', 'DD MMMM yyyy')
+            (x: FullHistory) => format(x.created_at ?? '', 'dd MMMM yyyy')
           )
         ).map(([key, value]) => (
           <HistoryItem key={key} items={value} header={key} onClick={handleEntryOnClick} />

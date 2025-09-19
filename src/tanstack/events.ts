@@ -1,6 +1,6 @@
 import { logger } from '@sentry/react';
 import { useMutation, useQuery } from '@tanstack/react-query';
-import { format, isAfter } from 'date-fns';
+import { format, isAfter, isBefore } from 'date-fns';
 import { queryClient } from '@/lib/queryClient';
 import { supabase } from '@/lib/supabase';
 import { DeleteEventType } from '@/features/events/types';
@@ -166,7 +166,7 @@ export const useUpsetBringPledges = () => {
       }
     },
 
-    onSettled: (data, error, variables, context) => {
+    onSettled: (_data, _error, variables, _context) => {
       logger.info('Event pledges upsertd successfully.', {
         event: variables.event.id,
         eventDate: format(variables.event.startingDateTime, 'dd.MM.yyyy HH:mm'),
@@ -266,7 +266,7 @@ export const useUpdateAttendanceMutation = (fetchMode: 'past' | 'upcoming') => {
       }
     },
 
-    onSettled: (data, error, variables, context) => {
+    onSettled: (_data, _error, variables, _context) => {
       logger.info('Attendance update successful.', {
         event: variables.event.id,
         eventDate: format(variables.event.startingDateTime, 'dd.MM.yyyy HH:mm'),
@@ -358,7 +358,7 @@ export const useAddCommentMutation = (user: User) => {
       }
     },
 
-    onSettled: (data, error, variables, context) => {
+    onSettled: (_data, _error, variables, context) => {
       logger.info('Event comment successful.', {
         event: variables.event.id,
         eventDate: format(variables.event.startingDateTime, 'dd.MM.yyyy HH:mm'),
@@ -422,7 +422,7 @@ export const useCancelTrainingMutation = (fetchMode: 'past' | 'upcoming') => {
       }
     },
 
-    onSettled: (data, error, variables, context) => {
+    onSettled: (_data, _error, variables, _context) => {
       logger.info('Event cancelled successfully.', {
         event: variables.event.id,
         eventDate: format(variables.event.startingDateTime, 'dd.MM.yyyy HH:mm'),
@@ -448,14 +448,19 @@ export const useDeleteTrainingMutation = (fetchMode: 'past' | 'upcoming') => {
       const previousEvents = queryClient.getQueryData<EventsUserView[]>(['events', fetchMode]);
 
       if (previousEvents) {
-        const updatedEvents = previousEvents.filter((x) => x.id !== event.id);
+        if (type === 'This Event') {
+          const updatedEvents = previousEvents.filter((x) => x.id !== event.id);
+          queryClient.setQueryData(['events', fetchMode], updatedEvents);
+        } else if (type === 'This and following events') {
+          const updatedEvents = previousEvents.filter((x) => x.key !== event.key && !isBefore(x.startingDateTime, event.startingDateTime));
 
-        queryClient.setQueryData(['events', fetchMode], updatedEvents);
+          queryClient.setQueryData(['events', fetchMode], updatedEvents);
+        }
       }
 
       return { previousEvents, event };
     },
-    onError: (err, _vars, context) => {
+    onError: (_err, _vars, context) => {
       logger.error('Deleting event failed.', {
         event: _vars.event.id,
         eventDate: format(_vars.event.startingDateTime, 'dd.MM.yyyy HH:mm'),
@@ -465,7 +470,7 @@ export const useDeleteTrainingMutation = (fetchMode: 'past' | 'upcoming') => {
       }
     },
 
-    onSettled: (data, error, variables, context) => {
+    onSettled: (_data, _error, variables, _context) => {
       logger.info('Deleting event successful.', {
         event: variables.event.id,
         eventDate: format(variables.event.startingDateTime, 'dd.MM.yyyy HH:mm'),
@@ -511,7 +516,7 @@ export const useInsertEventMutation = (fetchMode: 'past' | 'upcoming') => {
         queryClient.setQueryData(['events', fetchMode], context.previousEvents);
       }
     },
-    onSettled: (data, error, variables, context) => {
+    onSettled: (_data, _error, variables, _context) => {
       logger.info('Inserting event successful.', {
         event: variables.event.id,
         eventDate: format(variables.event.startingDateTime, 'dd.MM.yyyy HH:mm'),
@@ -559,7 +564,7 @@ export const useUpdateSingleMutation = (fetchMode: 'past' | 'upcoming') => {
         queryClient.setQueryData(['events', fetchMode], context.previousEvents);
       }
     },
-    onSettled: (data, error, variables, context) => {
+    onSettled: (_data, _error, variables, _context) => {
       logger.info('Updating single event successful.', {
         changes: variables.eventChanges,
         id: variables.id,
@@ -614,7 +619,7 @@ export const useUpdateRecurrenceMutation = (fetchMode: 'past' | 'upcoming') => {
         queryClient.setQueryData(['events', fetchMode], context.previousEvents);
       }
     },
-    onSettled: (data, error, variables, context) => {
+    onSettled: (_data, _error, variables, _context) => {
       logger.info('Updating recurring event successful.', {
         changes: variables.eventChanges,
         key: variables.key,

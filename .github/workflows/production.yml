@@ -47,14 +47,6 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-yarn-
 
-      - name: Write commit Version to file
-        uses: DamianReeves/write-file-action@master
-        with:
-          path: ${{github.workspace}}/public/git_commit.txt
-          contents: |
-            ${{github.sha}}
-          write-mode: overwrite
-
       - uses: actions/upload-artifact@v4
         with:
           name: git-commit-version
@@ -107,6 +99,10 @@ jobs:
           name: git-commit-version
           path: ${{github.workspace}}/public
 
+      - name: Set short git commit
+        id: vars
+        run: echo "::set-output name=sha_short::$(git rev-parse --short ${{ github.sha }})"
+
       - name: Build
         run: yarn run build:karlsruhe
         env:
@@ -115,6 +111,8 @@ jobs:
           VITE_SUPABASE_PROJECT_ID:   ${{ vars.PROJECT_ID }}
           VITE_OPENWEATHER_API_KEY:   ${{ secrets.OPENWEATHER_API_KEY }}
           VITE_VAPID_PUBLIC_KEY:      ${{ vars.VAPID_PUBLIC_KEY }}
+          VITE_PAYPAL_ME_LINK:        ${{ vars.PAYPAL_ME_LINK }}
+          VITE_GIT_COMMIT:            ${{ steps.vars.outputs.sha_short }}
 
       - uses: actions/upload-artifact@v4
         with:
@@ -187,14 +185,19 @@ jobs:
           name: git-commit-version
           path: ${{github.workspace}}/public
 
+      - name: Set short git commit
+        id: vars
+        run: echo "::set-output name=sha_short::$(git rev-parse --short ${{ github.sha }})"
+
       - name: Build
         run: yarn run build:munich
         env:
-          VITE_SUPABASE_URL:          ${{ vars.DB_URL }}
-          VITE_SUPABASE_ANON_KEY:     ${{ secrets.PRODUCTION_ANON_KEY }}
-          VITE_SUPABASE_PROJECT_ID:   ${{ vars.PROJECT_ID }}
+          VITE_SUPABASE_URL:          ${{ vars.SUPABASE_DB_URL }}
+          VITE_SUPABASE_ANON_KEY:     ${{ secrets.SUPABASE_ANON_KEY }}
+          VITE_SUPABASE_PROJECT_ID:   ${{ vars.SUPABASE_PROJECT_ID }}
           VITE_OPENWEATHER_API_KEY:   ${{ secrets.OPENWEATHER_API_KEY }}
           VITE_VAPID_PUBLIC_KEY:      ${{ vars.VAPID_PUBLIC_KEY }}
+          VITE_GIT_COMMIT:            ${{ steps.vars.outputs.sha_short }}
 
       - uses: actions/upload-artifact@v4
         with:

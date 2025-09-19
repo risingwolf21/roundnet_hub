@@ -510,7 +510,7 @@ const DrawerContent = ({
           <ListItemText
             primaryTypographyProps={{ fontWeight: 'bold', fontSize: '0.9rem' }}
             secondary={'App Version'}
-            primary={import.meta.env.VITE_APP_VERSION + '.' + version.slice(0, 6)}
+            primary={APP_VERSION + '.' + version.slice(0, 6)}
           />
         </DrawerItem>
       </List>
@@ -523,23 +523,11 @@ export const Drawer = ({ open, onClose, onOpen }: Props) => {
   const { t } = useTranslation();
   const { user } = useGrants();
   const [tab, setTab] = useState<string>(HOMEPAGE);
-  const [version, setVersion] = useState<string>('');
 
   const { data: requested_group_joins = [] } = useRequestedUsersPerGroup();
   const { data: notifications = [] } = useAllNotifications(user);
 
   const iOS = typeof navigator !== 'undefined' && /iPad|iPhone|iPod/.test(navigator.userAgent);
-
-  useEffect(() => {
-    fetch('/git_commit.txt')
-      .then((r) => r.text())
-      .then((text) => {
-        setVersion(text);
-      })
-      .catch((e) => {
-        setVersion('???');
-      });
-  }, []);
 
   useEffect(() => {
     setTab(window.location.pathname.substring(1));
@@ -556,7 +544,7 @@ export const Drawer = ({ open, onClose, onOpen }: Props) => {
       tab={tab}
       handleChange={handleChange}
       t={t}
-      version={version}
+      version={import.meta.env.VITE_GIT_COMMIT}
       request_group_joins={requested_group_joins.length}
       notification_count={notifications.length}
     />

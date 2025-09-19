@@ -1,14 +1,14 @@
+import { HOMEPAGE } from '@/constants';
+import { supabase } from '@/lib/supabase';
+import { BRANDING } from '@/utils';
 import { Button, CircularProgress, Typography, useTheme } from '@mui/material';
 import Link from '@mui/material/Link';
 import { captureException } from '@sentry/react';
 import { AuthResponse, SignInPage, type AuthProvider } from '@toolpad/core/SignInPage';
 import { useNotifications } from '@toolpad/core/useNotifications';
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Navigate, useLocation, useNavigate } from 'react-router';
-import { HOMEPAGE } from '@/constants';
-import { supabase } from '@/lib/supabase';
 import { useApplication } from './ApplicationContext';
-import { BRANDING } from '@/utils';
 
 const LoginScreen = () => {
   const theme = useTheme();
@@ -135,7 +135,7 @@ const LoginScreen = () => {
       <Link href="#" variant="body2" onClick={() => navigate('/auth/signup', { replace: true })}>
         {'Noch keinen Account?'}
       </Link>
-      <Typography sx={{ mt: 1 }}>{`Version ${import.meta.env.VITE_VERSION}-${version.slice(0, 8)}`}</Typography>
+      <Typography sx={{ mt: 1 }}>{`Version ${APP_VERSION}-${version.slice(0, 8)}`}</Typography>
     </div>
   );
 

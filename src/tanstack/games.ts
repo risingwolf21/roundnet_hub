@@ -130,7 +130,7 @@ export const useCreateMatch = () =>
         queryClient.setQueryData(['matches'], context.previousMatches);
       }
     },
-    onSettled: (_d, _e, _v, context) => {
+    onSettled: (_d, _e, _v, _context) => {
       queryClient.invalidateQueries({ queryKey: ['matches'] });
     },
   });
@@ -179,7 +179,7 @@ export const useUpsertSetsToMatch = (matchId: string) =>
         queryClient.setQueryData(['matches'], context.previousMatches);
       }
     },
-    onSettled: (_d, _e, _v, context) => {
+    onSettled: (_d, _e, _v, _context) => {
       queryClient.invalidateQueries({ queryKey: ['matches'] });
     },
   });

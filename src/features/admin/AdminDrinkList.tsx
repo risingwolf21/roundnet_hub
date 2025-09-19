@@ -1,3 +1,4 @@
+import { supabase } from '@/lib/supabase';
 import AddIcon from '@mui/icons-material/Add';
 import {
   Button,
@@ -14,12 +15,11 @@ import { captureException } from '@sentry/react';
 import { useQuery } from '@tanstack/react-query';
 import { useNotifications } from '@toolpad/core/useNotifications';
 import _ from 'lodash';
-import React, { useState } from 'react';
+import { useState } from 'react';
 import Layout from '../../components/layout/Layout';
 import { AdminDrinksRepository } from '../../repository/AdminDrinksRepository';
 import { AdminDrinkItem } from './components/AdminDrinkItem';
 import EditDrinkDialog from './dialogs/EditDrinkDialog';
-import { supabase } from '@/lib/supabase';
 
 const EMPTY_DRINK: Drink = {
   imageUrl: '',

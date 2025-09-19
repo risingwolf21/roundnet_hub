@@ -1,34 +1,20 @@
-import { Box, CircularProgress, Typography } from '@mui/material';
-import { captureException, setTag, setUser } from '@sentry/react';
-import { Session } from '@supabase/supabase-js';
-import React, { useCallback, useEffect, useState } from 'react';
-import { queryClient } from '@/lib/queryClient';
 import { AppRoutes } from '@/AppRoutes';
 import { LoadingScreen } from '@/components/LoadingScreen';
-import { supabase } from '@/lib/supabase';
 import useDeviceId from '@/hooks/useDeviceId';
+import { queryClient } from '@/lib/queryClient';
+import { supabase } from '@/lib/supabase';
 import { BRANDING } from '@/utils';
+import { Box, CircularProgress, Typography } from '@mui/material';
+import { captureException, setUser } from '@sentry/react';
+import { Session } from '@supabase/supabase-js';
+import React, { useCallback, useEffect, useState } from 'react';
 import { SupabaseUserRepository } from '../../repository/UserRepository';
 import { UserWithGroups } from '../../types/supabaseTypes';
-import { ApplicationContext } from './ApplicationContext';
 import WebPushKeeper from '../push/WebPushKeeper';
+import { ApplicationContext } from './ApplicationContext';
 
 export const AuthGate = () => {
   const deviceId = useDeviceId();
-
-  const [version, setVersion] = React.useState('');
-
-  React.useEffect(() => {
-    fetch('/git_commit.txt')
-      .then((r) => r.text())
-      .then((text) => {
-        setVersion(text);
-        setTag('version', text);
-      })
-      .catch((e) => {
-        setVersion('???');
-      });
-  }, []);
 
   const [session, setSession] = useState<Session | null>(null);
   const [currentUser, setCurrentUser] = useState<UserWithGroups | null>(null);
@@ -61,7 +47,7 @@ export const AuthGate = () => {
     setProviderToken(null);
   }, []);
 
-  const fetchUserData = useCallback(async (session: Session, abortSignal: AbortSignal) => {
+  const fetchUserData = useCallback(async (session: Session) => {
     try {
       const [{ data: user, error }, groups] = await Promise.all([
         SupabaseUserRepository.fetchUser(session.user.id),
@@ -85,15 +71,12 @@ export const AuthGate = () => {
   }, []);
 
   useEffect(() => {
-    const abortController = new AbortController();
     if (!session) {
       reset();
     } else if (!loading && (!currentUser || session.user.id !== currentUser?.userId)) {
       setLoading(true);
-      fetchUserData(session, abortController.signal);
+      fetchUserData(session);
     }
-
-    return () => abortController.abort();
     // eslint-disable-next-line
   }, [session]);
 
@@ -108,7 +91,7 @@ export const AuthGate = () => {
 
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (event, session) => {
+    } = supabase.auth.onAuthStateChange(async (_event, session) => {
       setSession(session);
     });
     getInitialSession();
@@ -138,7 +121,7 @@ export const AuthGate = () => {
     );
 
   return (
-    <ApplicationContext.Provider value={{ user: currentUser, signOut: signOut, deviceId, provider_token, version }}>
+    <ApplicationContext.Provider value={{ user: currentUser, signOut: signOut, deviceId, provider_token, version: import.meta.env.VITE_GIT_COMMIT }}>
       <React.Suspense fallback={<LoadingScreen />}>
         <WebPushKeeper session={session} vapidPublicKey={import.meta.env.VITE_VAPID_PUBLIC_KEY!}>
           <AppRoutes />

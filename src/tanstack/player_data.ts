@@ -51,7 +51,7 @@ export const useUpdateIndexHidden = (user: User) =>
         queryClient.setQueryData(['player_data', user.userId], context.previousPlayer);
       }
     },
-    onSettled: (_d, _e, _v, context) => {
+    onSettled: (_d, _e, _v, _context) => {
       queryClient.invalidateQueries({ queryKey: ['player_data', user.userId] });
     },
   });

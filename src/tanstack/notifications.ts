@@ -35,12 +35,12 @@ export const useMarkNotificationsAsRead = (userId: string) =>
 
       return { previousNotifications };
     },
-    onError: (err, _vars, context) => {
+    onError: (_err, _vars, context) => {
       if (context?.previousNotifications) {
         queryClient.setQueryData(['notifications'], context.previousNotifications);
       }
     },
-    onSettled: (data, error, variables, context) => {
+    onSettled: (_data, _error, _variables, _context) => {
       queryClient.invalidateQueries({ queryKey: ['notifications'] });
     },
   });
@@ -120,12 +120,12 @@ export const useUpdateNotificationPreferences = (user: User) =>
 
       return { previousNotificationTags };
     },
-    onError: (err, _vars, context) => {
+    onError: (_err, _vars, context) => {
       if (context?.previousNotificationTags) {
         queryClient.setQueryData(['notifications', user.userId, 'preferences'], context.previousNotificationTags);
       }
     },
-    onSettled: (data, error, variables, context) => {
+    onSettled: (_data, _error, _variables, _context) => {
       queryClient.invalidateQueries({ queryKey: ['notifications', user.userId, 'preferences'] });
     },
   });

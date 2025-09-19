@@ -108,12 +108,12 @@ export const useUpdateHistoryEntryMutation = (userId: string) =>
       }
       return { previousHistory };
     },
-    onError: (err, _vars, context) => {
+    onError: (_err, _vars, context) => {
       if (context?.previousHistory) {
         queryClient.setQueryData(['history', userId], context.previousHistory);
       }
     },
-    onSettled: (data, error, variables, context) => {
+    onSettled: (_data, _error, _variables, _context) => {
       queryClient.invalidateQueries({ queryKey: ['history', userId] });
     },
   });
