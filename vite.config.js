@@ -40,12 +40,8 @@ export default defineConfig(({ mode }) => {
       VitePWA({
         strategies: 'injectManifest',
         srcDir: 'src',
-        filename: 'service-worker.js',
+        filename: 'service-worker.ts',
         registerType: 'autoUpdate',
-        workbox: {
-          skipWaiting: true,
-          cleanupOutdatedCaches: true,
-        },
         injectManifest: {
           globPatterns: ['**/*.{js,css,html,svg,png,ico,webp,woff2}'],
         },

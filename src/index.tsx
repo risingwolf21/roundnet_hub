@@ -22,6 +22,14 @@ const root = ReactDOM.createRoot(document.getElementById('root') as HTMLElement,
 
 registerSW({ immediate: true });
 
+let reloading = false;
+navigator.serviceWorker?.addEventListener('controllerchange', () => {
+  if (!reloading) {
+    reloading = true;
+    window.location.reload();
+  }
+});
+
 root.render(
   <Sentry.ErrorBoundary fallback={<div>Etwas ist schiefgelaufen. Bitte neu laden.</div>}>
     <Suspense fallback={<div style={{ padding: 16 }}>Lade…</div>}>
