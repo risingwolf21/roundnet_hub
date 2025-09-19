@@ -42,8 +42,14 @@ export default defineConfig(({ mode }) => {
         srcDir: 'src',
         filename: 'service-worker.ts',
         registerType: 'autoUpdate',
+        injectRegister: "auto",
         injectManifest: {
           globPatterns: ['**/*.{js,css,html,svg,png,ico,webp,woff2}'],
+        },
+        workbox: {
+          cleanupOutdatedCaches: true,
+          skipWaiting: true,
+          globPatterns: ['**/*.{js,css,html,svg,png,ico,webp,woff2}']
         },
         devOptions: {
           enabled: ENABLE_PWA_DEV,
