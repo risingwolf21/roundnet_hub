@@ -21,7 +21,7 @@ const GroupGrantsPanel = ({ searchValue }: { searchValue: string }) => {
   return (
     <List>
       {data
-        .filter(x => searchValue === '' || x.name.includes(searchValue))
+        .filter(x => searchValue === '' || x.name.toLowerCase().includes(searchValue.toLowerCase()))
         .map((x) => (
           <ListItem
             divider

@@ -21,7 +21,9 @@ const UserGrantsPanel = ({ searchValue }: { searchValue: string }) => {
   return (
     <List>
       {data
-        .filter(x => x.name.includes(searchValue) || x.displayName.includes(searchValue) || x.email.includes(searchValue))
+        .filter(x => searchValue === '' || x.name.toLowerCase().includes(searchValue.toLowerCase())
+          || x.displayName.toLowerCase().includes(searchValue.toLowerCase())
+          || x.email.toLowerCase().includes(searchValue.toLowerCase()))
         .map((x) => (
           <ListItem
             divider
