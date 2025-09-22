@@ -24,11 +24,11 @@ import Add from '@mui/icons-material/Add';
 import Edit from '@mui/icons-material/Edit';
 import ExpandMoreOutlined from '@mui/icons-material/ExpandMoreOutlined';
 import Visibility from '@mui/icons-material/Visibility';
+import { styled } from '@mui/material';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';
-import styled from '@mui/material/styled';
 import Toolbar from '@mui/material/Toolbar';
 
 const StyledGridOverlay = styled('div')(({ theme }) => ({

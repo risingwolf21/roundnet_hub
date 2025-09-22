@@ -14,10 +14,9 @@ import { Navigate, useLocation, useNavigate } from 'react-router';
 import { useApplication } from './ApplicationContext';
 import { getCommonTextFieldProps } from './SignUpScreen';
 
+import { alpha, useTheme } from '@mui/material';
 import CircularProgress from '@mui/material/CircularProgress';
 import Stack from '@mui/material/Stack';
-import alpha from '@mui/material/alpha';
-import useTheme from '@mui/material/useTheme';
 
 const ForgotPasswordScreen = () => {
   const navigate = useNavigate();
