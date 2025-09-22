@@ -1,8 +1,11 @@
 import { SwipeableDialog } from '@/components/SwipeableDialog';
 import { FullPayment } from '@/types/supabaseTypes';
-import { Box, Button, Typography } from '@mui/material';
 import { DialogProps } from '@toolpad/core';
 import { History } from 'types/supabase';
+
+import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
+import Typography from '@mui/material/Typography';
 
 export const ConfirmPaymentDialog = ({ payload, open, onClose }: DialogProps<FullPayment, boolean>) => {
   return (

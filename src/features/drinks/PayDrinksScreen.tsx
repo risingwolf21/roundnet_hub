@@ -1,12 +1,20 @@
 import { usePaymentHistory } from '@/tanstack/drinks';
 import EuroIcon from '@mui/icons-material/Euro';
-import { Box, Divider, Fab, List, ListItem, ListItemAvatar, ListItemText, Typography } from '@mui/material';
 import { useNotifications } from '@toolpad/core';
 import { useEffect } from 'react';
 import Layout from '../../components/layout/Layout';
 import { LoadingScreen } from '../../components/LoadingScreen';
 import { groupBy } from '../../utils';
 import { useGrants } from '../auth/GrantsContext';
+
+import Box from '@mui/material/Box';
+import Divider from '@mui/material/Divider';
+import Fab from '@mui/material/Fab';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import ListItemAvatar from '@mui/material/ListItemAvatar';
+import ListItemText from '@mui/material/ListItemText';
+import Typography from '@mui/material/Typography';
 
 const PayDrinksButton = ({ amountToPay }: { amountToPay: number }) => {
   const onPayClick = () => {

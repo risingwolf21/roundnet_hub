@@ -1,8 +1,10 @@
-import { Slide, SlideProps } from '@mui/material';
 import { format, parse } from 'date-fns';
 import { forwardRef } from 'react';
 import RoundnetKarlsruheLogo from '../images/Karlsruher_Kojoten_Logo.svg';
 import RoundnetMunichLogo from '../images/Roundnet_Munich_Logo.png';
+
+import { SlideProps } from '@mui/material';
+import Slide from '@mui/material/Slide';
 
 const logoMap = {
   'roundnet-karlsruhe': RoundnetKarlsruheLogo,
@@ -30,6 +32,7 @@ export function groupBy<Type>(items: Type[], getter: (any: Type) => string): Map
     } else {
       result.set(key, [...entry, item]);
     }
+    return null;
   });
   return result;
 }

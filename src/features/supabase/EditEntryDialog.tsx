@@ -2,28 +2,27 @@ import { NumberInput } from '@/components/mui/NumberInput';
 import { customEnLocale } from '@/lib/date-fns';
 import { supabase } from '@/lib/supabase';
 import { formatDateFromDatabase, formatSafeDateToDatabase } from '@/utils';
-import { Close } from '@mui/icons-material';
-import {
-  AppBar,
-  Button,
-  Checkbox,
-  Dialog,
-  IconButton,
-  List,
-  ListItem,
-  ListItemAvatar,
-  ListItemText,
-  MenuItem,
-  Select,
-  TextField,
-  Toolbar,
-  Typography,
-} from '@mui/material';
 import { DateTimePicker, LocalizationProvider } from '@mui/x-date-pickers';
-import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFnsV3';
+import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { DialogProps, DialogsProvider } from '@toolpad/core';
 import _ from 'lodash';
 import { useEffect, useState } from 'react';
+
+import Close from '@mui/icons-material/Close';
+import AppBar from '@mui/material/AppBar';
+import Button from '@mui/material/Button';
+import Checkbox from '@mui/material/Checkbox';
+import Dialog from '@mui/material/Dialog';
+import IconButton from '@mui/material/IconButton';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import ListItemAvatar from '@mui/material/ListItemAvatar';
+import ListItemText from '@mui/material/ListItemText';
+import MenuItem from '@mui/material/MenuItem';
+import Select from '@mui/material/Select';
+import TextField from '@mui/material/TextField';
+import Toolbar from '@mui/material/Toolbar';
+import Typography from '@mui/material/Typography';
 
 type EditEntryDialogPayload = {
   entry: any;
@@ -306,8 +305,8 @@ const DialogContent = ({ payload, open, onClose }: DialogProps<EditEntryDialogPa
                         fullWidth
                         value={updatedObject[x.column_name] ?? value}
                         disabled={(updatedObject[x.column_name] ?? value) === null}
-                        onChange={(event, val) => {
-                          if (event.type === 'click' && val && val >= 0)
+                        onValueChange={(val) => {
+                          if (val && val >= 0)
                             setUpdatedObject({ ...updatedObject, [x.column_name]: val ?? 0 });
                         }}
                       />

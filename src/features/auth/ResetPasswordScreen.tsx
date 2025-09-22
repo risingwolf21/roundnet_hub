@@ -1,6 +1,5 @@
 import { supabase } from '@/lib/supabase';
 import { BRANDING } from '@/utils';
-import { Alert, alpha, CircularProgress, Stack, SxProps, Theme, useTheme } from '@mui/material';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Container from '@mui/material/Container';
@@ -10,6 +9,14 @@ import * as React from 'react';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { HOMEPAGE } from '../../constants';
+
+import Alert from '@mui/material/Alert';
+import CircularProgress from '@mui/material/CircularProgress';
+import Stack from '@mui/material/Stack';
+import SxProps from '@mui/material/SxProps';
+import Theme from '@mui/material/Theme';
+import alpha from '@mui/material/alpha';
+import useTheme from '@mui/material/useTheme';
 
 const mergeSlotSx = (defaultSx: SxProps<Theme>, slotProps?: { sx?: SxProps<Theme> }) => {
   if (Array.isArray(slotProps?.sx)) {

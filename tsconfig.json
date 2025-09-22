@@ -47,16 +47,15 @@
         "types/*"
       ]
     },
-    "plugins": [
-      {
-        "transform": "ts-reflection/transformer"
-      }
-    ],
+    // "plugins": [
+    //   {
+    //     "transform": "ts-reflection/transformer"
+    //   }
+    // ],
     /* Specify a set of entries that re-map imports to additional lookup locations. */
     // "rootDirs": [],                                   /* Allow multiple folders to be treated as one when resolving modules. */
     // "typeRoots": [],                                  /* Specify multiple folders that act like './node_modules/@types'. */
     "types": [
-      "reflect-metadata",
       "vite/client"
     ],
     /* Specify type package names to be included without being referenced in a source file. */

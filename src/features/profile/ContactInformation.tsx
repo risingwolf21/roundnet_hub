@@ -1,25 +1,27 @@
 import { supabase } from '@/lib/supabase';
 import { UserWithGroups } from '@/types/supabaseTypes';
-import { AddPhotoAlternateOutlined, Close, EmailOutlined, PersonOutlineOutlined } from '@mui/icons-material';
-import {
-  AppBar,
-  Avatar,
-  Button,
-  Container,
-  Dialog,
-  IconButton,
-  List,
-  ListItem,
-  ListItemAvatar,
-  ListItemText,
-  TextField,
-  Toolbar,
-  Typography,
-} from '@mui/material';
 import { captureException } from '@sentry/react';
 import { DialogProps } from '@toolpad/core/useDialogs';
 import { NotificationsProvider, useNotifications } from '@toolpad/core/useNotifications';
 import { useState } from 'react';
+
+import AddPhotoAlternateOutlined from '@mui/icons-material/AddPhotoAlternateOutlined';
+import Close from '@mui/icons-material/Close';
+import EmailOutlined from '@mui/icons-material/EmailOutlined';
+import PersonOutlineOutlined from '@mui/icons-material/PersonOutlineOutlined';
+import AppBar from '@mui/material/AppBar';
+import Avatar from '@mui/material/Avatar';
+import Button from '@mui/material/Button';
+import Container from '@mui/material/Container';
+import Dialog from '@mui/material/Dialog';
+import IconButton from '@mui/material/IconButton';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import ListItemAvatar from '@mui/material/ListItemAvatar';
+import ListItemText from '@mui/material/ListItemText';
+import TextField from '@mui/material/TextField';
+import Toolbar from '@mui/material/Toolbar';
+import Typography from '@mui/material/Typography';
 
 type ContactInformationPayload = {
   user: UserWithGroups;

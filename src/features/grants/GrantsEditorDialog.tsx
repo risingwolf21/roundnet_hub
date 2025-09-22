@@ -1,20 +1,19 @@
 import { SwipeableDialog } from '@/components/SwipeableDialog';
 import { useFeatures, usePermissions } from '@/tanstack/grants';
-import {
-  Box,
-  Button,
-  DialogActions,
-  DialogContent,
-  Divider,
-  List,
-  ListItem,
-  ListItemText,
-  Switch,
-  Typography,
-} from '@mui/material';
 import { UseQueryResult } from '@tanstack/react-query';
 import { DialogProps } from '@toolpad/core';
 import React from 'react';
+
+import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+import Divider from '@mui/material/Divider';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import ListItemText from '@mui/material/ListItemText';
+import Switch from '@mui/material/Switch';
+import Typography from '@mui/material/Typography';
 
 type GroupResult = {
   grantPerm: string[];

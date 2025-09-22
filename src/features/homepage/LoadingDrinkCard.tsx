@@ -1,4 +1,8 @@
-import { Box, Button, Card, CardActions, Skeleton } from '@mui/material';
+import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
+import Card from '@mui/material/Card';
+import CardActions from '@mui/material/CardActions';
+import Skeleton from '@mui/material/Skeleton';
 
 export const LoadingDrinkCard = ({ index }: { index: number }) => {
   return (

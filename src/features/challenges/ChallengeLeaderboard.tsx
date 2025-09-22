@@ -1,7 +1,8 @@
 import { ChallengePointsView } from '@/types/supabaseTypes';
-import { List } from '@mui/material';
 import { ChallengeStatItem } from './components/ChallengeStatItem';
 import { LoadingChallengeStatItem } from './components/LoadingChallengeStatItem';
+
+import List from '@mui/material/List';
 
 export const ChallengeLeaderboard = ({
   challenge_points,

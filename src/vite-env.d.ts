@@ -1,6 +1,7 @@
 /// <reference types="vite/client" />
 /// <reference types="vite-plugin-pwa/client" />
 
+
 declare const APP_VERSION: string;
 
 interface ViteTypeOptions {
@@ -9,7 +10,7 @@ interface ViteTypeOptions {
   strictimportMetaEnv: unknown;
 }
 
-interface importMetaEnv {
+interface ImportMetaEnv {
   readonly VITE_ENV: string;
   readonly VITE_GIT_COMMIT: string;
   readonly VITE_APP_TITLE: string;
@@ -26,6 +27,6 @@ interface importMetaEnv {
   readonly VITE_WEBSITE_NAME: string;
 }
 
-interface importMeta {
-  readonly env: importMetaEnv;
+interface ImportMeta {
+  readonly env: ImportMetaEnv;
 }

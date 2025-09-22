@@ -1,7 +1,6 @@
 import { HOMEPAGE } from '@/constants';
 import { supabase } from '@/lib/supabase';
 import { BRANDING } from '@/utils';
-import { Button, CircularProgress, Typography, useTheme } from '@mui/material';
 import Link from '@mui/material/Link';
 import { captureException } from '@sentry/react';
 import { AuthResponse, SignInPage, type AuthProvider } from '@toolpad/core/SignInPage';
@@ -9,6 +8,11 @@ import { useNotifications } from '@toolpad/core/useNotifications';
 import { useState } from 'react';
 import { Navigate, useLocation, useNavigate } from 'react-router';
 import { useApplication } from './ApplicationContext';
+
+import { useTheme } from '@mui/material';
+import Button from '@mui/material/Button';
+import CircularProgress from '@mui/material/CircularProgress';
+import Typography from '@mui/material/Typography';
 
 const LoginScreen = () => {
   const theme = useTheme();

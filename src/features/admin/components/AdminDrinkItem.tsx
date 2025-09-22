@@ -1,7 +1,12 @@
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
 import LocalDrinkIcon from '@mui/icons-material/LocalDrink';
-import { Avatar, Badge, IconButton, ListItem, ListItemAvatar, ListItemText } from '@mui/material';
+import Avatar from '@mui/material/Avatar';
+import Badge from '@mui/material/Badge';
+import IconButton from '@mui/material/IconButton';
+import ListItem from '@mui/material/ListItem';
+import ListItemAvatar from '@mui/material/ListItemAvatar';
+import ListItemText from '@mui/material/ListItemText';
 
 type AdminDrinkItemProps = {
   drink: Drink;

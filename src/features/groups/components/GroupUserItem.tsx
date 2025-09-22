@@ -1,8 +1,18 @@
 import { ProfileDialog } from '@/components/Profile';
-import { AccountBox, AdminPanelSettings, Check } from '@mui/icons-material';
-import { Avatar, Chip, IconButton, ListItem, ListItemAvatar, ListItemText, Stack, Typography } from '@mui/material';
 import { DialogHook } from '@toolpad/core';
 import React from 'react';
+
+import AccountBox from '@mui/icons-material/AccountBox';
+import AdminPanelSettings from '@mui/icons-material/AdminPanelSettings';
+import Check from '@mui/icons-material/Check';
+import Avatar from '@mui/material/Avatar';
+import Chip from '@mui/material/Chip';
+import IconButton from '@mui/material/IconButton';
+import ListItem from '@mui/material/ListItem';
+import ListItemAvatar from '@mui/material/ListItemAvatar';
+import ListItemText from '@mui/material/ListItemText';
+import Stack from '@mui/material/Stack';
+import Typography from '@mui/material/Typography';
 
 type Props = {
   user: User;

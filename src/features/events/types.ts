@@ -1,6 +1,7 @@
 import { FullAttendance } from '@/types/supabaseTypes';
 import { TFunction } from 'i18next';
 
+
 export type CreateEventOption = 'UpdateSingle' | 'UpdateRecurrence' | 'InsertEvent';
 
 export type CreateEventProps = {

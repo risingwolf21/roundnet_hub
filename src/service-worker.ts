@@ -5,6 +5,8 @@ import { cleanupOutdatedCaches, createHandlerBoundToURL, precacheAndRoute } from
 import { registerRoute } from 'workbox-routing';
 import { CacheFirst } from 'workbox-strategies';
 
+import { ThemeProvider } from '@mui/material/styles';
+
 declare let self: ServiceWorkerGlobalScope
 
 const SW_VERSION = '2025-09-13T21-55';

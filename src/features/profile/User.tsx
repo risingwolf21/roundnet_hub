@@ -9,16 +9,6 @@ import Downloading from '@mui/icons-material/Downloading';
 import Logout from '@mui/icons-material/Logout';
 import NotificationsRounded from '@mui/icons-material/NotificationsRounded';
 import Password from '@mui/icons-material/Password';
-import {
-  Card,
-  CardActionArea,
-  IconButton,
-  List,
-  ListItem,
-  ListItemAvatar,
-  ListItemText,
-  Typography,
-} from '@mui/material';
 import { useNotifications } from '@toolpad/core';
 import { DialogComponent, useDialogs } from '@toolpad/core/useDialogs';
 import { useCallback, useEffect, useState } from 'react';
@@ -30,6 +20,15 @@ import { ContactInformation } from './ContactInformation';
 import { NotificationsDialog } from './NotificationsDialog';
 import { PlayerzoneProfileDialog } from './PlayerzoneProfile';
 import { ProfileImage } from './ProfileImage';
+
+import Card from '@mui/material/Card';
+import CardActionArea from '@mui/material/CardActionArea';
+import IconButton from '@mui/material/IconButton';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import ListItemAvatar from '@mui/material/ListItemAvatar';
+import ListItemText from '@mui/material/ListItemText';
+import Typography from '@mui/material/Typography';
 
 type UserScreenProps = {
   user: UserWithGroups;

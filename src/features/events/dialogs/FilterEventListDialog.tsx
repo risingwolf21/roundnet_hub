@@ -1,8 +1,12 @@
 import { SwipeableDialog } from '@/components/SwipeableDialog';
-import { Chip, Grid2, List, ListSubheader } from '@mui/material';
 import { DialogProps } from '@toolpad/core';
 import { t } from 'i18next';
 import { useState } from 'react';
+
+import Chip from '@mui/material/Chip';
+import Grid from '@mui/material/Grid';
+import List from '@mui/material/List';
+import ListSubheader from '@mui/material/ListSubheader';
 
 type FilterEventListDialogProps = {
   currentFetchMode: 'past' | 'upcoming';
@@ -33,24 +37,24 @@ export const FilterEventListDialog = ({
           </ListSubheader>
         }
       >
-        <Grid2 container spacing={2}>
-          <Grid2>
+        <Grid container spacing={2}>
+          <Grid>
             <Chip
               variant={fetchMode === 'upcoming' ? 'filled' : 'outlined'}
               label={t('events.upcoming')}
               color={fetchMode === 'upcoming' ? 'primary' : 'default'}
               onClick={() => setFetchMode('upcoming')}
             />
-          </Grid2>
-          <Grid2>
+          </Grid>
+          <Grid>
             <Chip
               variant={fetchMode === 'past' ? 'filled' : 'outlined'}
               label={t('events.past')}
               color={fetchMode === 'past' ? 'primary' : 'default'}
               onClick={() => setFetchMode('past')}
             />
-          </Grid2>
-        </Grid2>
+          </Grid>
+        </Grid>
       </List>
     </SwipeableDialog>
   );

@@ -1,4 +1,8 @@
-import { Box, ListItem, ListItemAvatar, ListItemText, Skeleton } from '@mui/material';
+import Box from '@mui/material/Box';
+import ListItem from '@mui/material/ListItem';
+import ListItemAvatar from '@mui/material/ListItemAvatar';
+import ListItemText from '@mui/material/ListItemText';
+import Skeleton from '@mui/material/Skeleton';
 
 export const LoadingGroupListItem = () => {
   return (

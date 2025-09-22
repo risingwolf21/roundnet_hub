@@ -1,5 +1,6 @@
-import { Box } from '@mui/material';
 import { LoadingIndicator } from './LoadingIndicator';
+
+import Box from '@mui/material/Box';
 
 export const LoadingScreen = () => {
   return (

@@ -1,10 +1,18 @@
 import { BRANDING } from '@/utils';
-import { AccountCircle, ArrowBack, Menu } from '@mui/icons-material';
-import { AppBar, Avatar, Box, IconButton, Toolbar, Typography } from '@mui/material';
 import { ReactNode, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { useApplication } from '../../features/auth/ApplicationContext';
 import { Drawer, drawerWidth } from '../Drawer';
+
+import AccountCircle from '@mui/icons-material/AccountCircle';
+import ArrowBack from '@mui/icons-material/ArrowBack';
+import Menu from '@mui/icons-material/Menu';
+import AppBar from '@mui/material/AppBar';
+import Avatar from '@mui/material/Avatar';
+import Box from '@mui/material/Box';
+import IconButton from '@mui/material/IconButton';
+import Toolbar from '@mui/material/Toolbar';
+import Typography from '@mui/material/Typography';
 
 type Props = {
   children: ReactNode;
@@ -80,9 +88,9 @@ const Layout = ({
               color="inherit"
               onClick={() => navigate(navigateBackPath)}
               edge="start"
-              sx={(theme) => ({
+              sx={{
                 mr: 2,
-              })}
+              }}
             >
               <ArrowBack />
             </IconButton>

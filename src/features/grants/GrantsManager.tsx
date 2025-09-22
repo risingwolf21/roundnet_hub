@@ -1,8 +1,12 @@
 import Layout from '@/components/layout/Layout';
-import { AppBar, Tab, Tabs, useTheme } from '@mui/material';
 import { useState } from 'react';
 import GroupGrantsPanel from './GroupGrantsPanel';
 import UserGrantsPanel from './UserGrantsPanel';
+
+import { useTheme } from '@mui/material';
+import AppBar from '@mui/material/AppBar';
+import Tab from '@mui/material/Tab';
+import Tabs from '@mui/material/Tabs';
 
 export const TabPanel = (props: any) => {
   const { children, value, index, ...other } = props;

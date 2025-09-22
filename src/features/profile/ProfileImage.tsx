@@ -1,13 +1,22 @@
 import CropImageDialog from '@/components/CropImageDialog';
 import { supabase } from '@/lib/supabase';
 import { dataURLtoFile, readFile } from '@/utils';
-import { AddPhotoAlternateOutlined, DeleteOutline, EditOutlined, Restore, Save } from '@mui/icons-material';
-import { Avatar, Box, Button, CircularProgress, Container } from '@mui/material';
 import { captureException } from '@sentry/react';
 import { uuid } from '@supabase/supabase-js/dist/main/lib/helpers';
 import { useNotifications } from '@toolpad/core/useNotifications';
 import Compressor from 'compressorjs';
 import React, { useState } from 'react';
+
+import AddPhotoAlternateOutlined from '@mui/icons-material/AddPhotoAlternateOutlined';
+import DeleteOutline from '@mui/icons-material/DeleteOutline';
+import EditOutlined from '@mui/icons-material/EditOutlined';
+import Restore from '@mui/icons-material/Restore';
+import Save from '@mui/icons-material/Save';
+import Avatar from '@mui/material/Avatar';
+import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
+import CircularProgress from '@mui/material/CircularProgress';
+import Container from '@mui/material/Container';
 
 type Props = {
   user: User;

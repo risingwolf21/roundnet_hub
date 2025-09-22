@@ -1,6 +1,5 @@
 import { queryClient } from '@/lib/queryClient';
 import SearchIcon from '@mui/icons-material/Search';
-import { InputAdornment, LinearProgress, List, TextFieldProps } from '@mui/material';
 import TextField from '@mui/material/TextField';
 import { styled } from '@mui/system';
 import { captureException } from '@sentry/react';
@@ -12,6 +11,11 @@ import { AdminUsersRepository } from '../../repository/AdminUsersRepository';
 import { UserWithGroups } from '../../types/supabaseTypes';
 import { AdminUserItem } from './components/AdminUserItem';
 import EditUserDialog, { UserEdited } from './dialogs/EditUserDialog';
+
+import InputAdornment from '@mui/material/InputAdornment';
+import LinearProgress from '@mui/material/LinearProgress';
+import List from '@mui/material/List';
+import TextFieldProps from '@mui/material/TextFieldProps';
 
 const SearchBar = styled(TextField)<TextFieldProps>(() => ({
   marginLeft: 16,

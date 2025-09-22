@@ -2,7 +2,9 @@ import Layout from '@/components/layout/Layout';
 import FeatureNotAvailableImage from '@/images/feature_not_available.png';
 import PermissionDeniedImage from '@/images/no_permission.png';
 import NotFoundImage from '@/images/not_found.png';
-import { Box, Stack, Typography } from '@mui/material';
+import Box from '@mui/material/Box';
+import Stack from '@mui/material/Stack';
+import Typography from '@mui/material/Typography';
 
 export const ErrorPage = ({ title, message, imagePath }: { title: string; message: string; imagePath: string }) => {
   return (

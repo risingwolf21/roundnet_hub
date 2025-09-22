@@ -1,18 +1,17 @@
 import { useGrants } from '@/features/auth/GrantsContext';
 import { useBringOverview, useBringPledges, useUpsetBringPledges } from '@/tanstack/events';
 import { EventsUserView } from '@/types/supabaseTypes';
-import {
-  CircularProgress,
-  Divider,
-  List,
-  ListItem,
-  ListItemAvatar,
-  ListItemText,
-  Typography
-} from '@mui/material';
 import Box from '@mui/material/Box';
 import { useDialogs } from '@toolpad/core';
 import EventBringItemsDialog from '../dialogs/EventBringItemsDialog';
+
+import CircularProgress from '@mui/material/CircularProgress';
+import Divider from '@mui/material/Divider';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import ListItemAvatar from '@mui/material/ListItemAvatar';
+import ListItemText from '@mui/material/ListItemText';
+import Typography from '@mui/material/Typography';
 
 type EventInformationAttendanceProps = {
   selectedEvent: EventsUserView;

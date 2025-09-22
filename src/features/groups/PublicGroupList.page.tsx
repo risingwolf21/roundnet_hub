@@ -1,6 +1,7 @@
 import Layout from '@/components/layout/Layout';
 import PublicGroupList from './PublicGroupList';
 
+
 const PublicGroupListPage = () => {
   return (
     <Layout>

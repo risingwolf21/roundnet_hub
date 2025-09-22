@@ -1,28 +1,28 @@
 import Layout from '@/components/layout/Layout';
 import { useCreateMatch, usePlayers, useTeams } from '@/tanstack/games';
 import { GamesTable } from '@/types/supabaseTypes';
-import { Delete, Save } from '@mui/icons-material';
-import {
-  Autocomplete,
-  Box,
-  Button,
-  Checkbox,
-  CircularProgress,
-  Fab,
-  Grid2 as Grid,
-  IconButton,
-  List,
-  ListItem,
-  ListItemAvatar,
-  ListItemText,
-  TextField,
-  Typography,
-} from '@mui/material';
 import { captureException } from '@sentry/react';
 import { useNotifications } from '@toolpad/core/useNotifications';
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { useApplication } from '../auth/ApplicationContext';
+
+import Delete from '@mui/icons-material/Delete';
+import Save from '@mui/icons-material/Save';
+import Autocomplete from '@mui/material/Autocomplete';
+import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
+import Checkbox from '@mui/material/Checkbox';
+import CircularProgress from '@mui/material/CircularProgress';
+import Fab from '@mui/material/Fab';
+import Grid from '@mui/material/Grid';
+import IconButton from '@mui/material/IconButton';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import ListItemAvatar from '@mui/material/ListItemAvatar';
+import ListItemText from '@mui/material/ListItemText';
+import TextField from '@mui/material/TextField';
+import Typography from '@mui/material/Typography';
 
 type Props = {
   options: SimpleUser[];

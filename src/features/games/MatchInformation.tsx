@@ -1,25 +1,24 @@
 import Layout from '@/components/layout/Layout';
 import { LoadingIndicator } from '@/components/LoadingIndicator';
 import { useMatch } from '@/tanstack/games';
-import { AccountBox } from '@mui/icons-material';
-import {
-  Alert,
-  Avatar,
-  Box,
-  Card,
-  CardContent,
-  Chip,
-  Divider,
-  ListItem,
-  ListItemAvatar,
-  ListItemText,
-  Skeleton,
-  Stack,
-  Typography,
-} from '@mui/material';
 import { useNotifications } from '@toolpad/core';
 import { useEffect } from 'react';
 import { useParams } from 'react-router';
+
+import AccountBox from '@mui/icons-material/AccountBox';
+import Alert from '@mui/material/Alert';
+import Avatar from '@mui/material/Avatar';
+import Box from '@mui/material/Box';
+import Card from '@mui/material/Card';
+import CardContent from '@mui/material/CardContent';
+import Chip from '@mui/material/Chip';
+import Divider from '@mui/material/Divider';
+import ListItem from '@mui/material/ListItem';
+import ListItemAvatar from '@mui/material/ListItemAvatar';
+import ListItemText from '@mui/material/ListItemText';
+import Skeleton from '@mui/material/Skeleton';
+import Stack from '@mui/material/Stack';
+import Typography from '@mui/material/Typography';
 
 type Props = {
   title: string;

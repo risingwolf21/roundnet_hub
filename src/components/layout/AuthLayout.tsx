@@ -1,12 +1,14 @@
 import { BRANDING } from '@/utils';
-import { AppBar, Box, Toolbar, Typography } from '@mui/material';
-import { PropsWithChildren, useEffect } from 'react';
+import { useEffect } from 'react';
 import { Outlet } from 'react-router';
 import { drawerWidth } from '../Drawer';
 
-type Props = PropsWithChildren;
+import AppBar from '@mui/material/AppBar';
+import Box from '@mui/material/Box';
+import Toolbar from '@mui/material/Toolbar';
+import Typography from '@mui/material/Typography';
 
-const AuthLayout = ({ children }: Props) => {
+const AuthLayout = () => {
   const iOS = typeof navigator !== 'undefined' && /iPad|iPhone|iPod/.test(navigator.userAgent);
 
   useEffect(() => {

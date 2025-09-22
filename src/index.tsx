@@ -8,6 +8,7 @@ import './global.css';
 import './instrument';
 import './translation/i18n';
 
+
 const root = ReactDOM.createRoot(document.getElementById('root') as HTMLElement, {
   onUncaughtError: Sentry.reactErrorHandler((error, errorInfo) => {
     console.warn('Uncaught error', error, errorInfo.componentStack);

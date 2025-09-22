@@ -1,6 +1,15 @@
-import { AccountBox, Edit, Verified } from '@mui/icons-material';
-import { Avatar, Box, IconButton, ListItem, ListItemAvatar, ListItemText, Typography } from '@mui/material';
 import { Fragment } from 'react';
+
+import AccountBox from '@mui/icons-material/AccountBox';
+import Edit from '@mui/icons-material/Edit';
+import Verified from '@mui/icons-material/Verified';
+import Avatar from '@mui/material/Avatar';
+import Box from '@mui/material/Box';
+import IconButton from '@mui/material/IconButton';
+import ListItem from '@mui/material/ListItem';
+import ListItemAvatar from '@mui/material/ListItemAvatar';
+import ListItemText from '@mui/material/ListItemText';
+import Typography from '@mui/material/Typography';
 
 export const AdminUserItem = ({ user, onEditClick }: { user: User; onEditClick: () => void }) => {
   return (

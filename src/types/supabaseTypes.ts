@@ -2,6 +2,8 @@ import { isBefore } from 'date-fns';
 import { EventTable, History } from 'types/supabase';
 import { Database, Enums, Tables } from './supabase-generated.types';
 
+import { createTheme } from '@mui/material/styles';
+
 export type FullChallenge = Challenge & {
   stats: ChallengeStatWithUser[];
   group: GroupWithUsers;

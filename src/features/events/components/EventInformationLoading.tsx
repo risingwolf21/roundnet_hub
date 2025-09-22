@@ -1,5 +1,8 @@
-import { List, ListItemText, Skeleton } from '@mui/material';
 import { LoadingEventInformation } from './LoadingEventInformation';
+
+import List from '@mui/material/List';
+import ListItemText from '@mui/material/ListItemText';
+import Skeleton from '@mui/material/Skeleton';
 
 const EventInformationLoading = () => {
   return (

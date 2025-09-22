@@ -5,10 +5,15 @@ import {
   useUserFeatures,
   useUserPermissions,
 } from '@/tanstack/grants';
-import { AccountBox } from '@mui/icons-material';
-import { Avatar, List, ListItem, ListItemAvatar, ListItemText } from '@mui/material';
 import { useDialogs, useNotifications } from '@toolpad/core';
 import { GrantsEditorDialog } from './GrantsEditorDialog';
+
+import AccountBox from '@mui/icons-material/AccountBox';
+import Avatar from '@mui/material/Avatar';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import ListItemAvatar from '@mui/material/ListItemAvatar';
+import ListItemText from '@mui/material/ListItemText';
 
 const UserGrantsPanel = () => {
   const { data = [] } = useDirectUserGrants();

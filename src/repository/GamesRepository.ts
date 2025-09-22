@@ -58,7 +58,9 @@ export const GamesRepository = {
       .merge(_.keyBy(simpleUsers, 'userId')) // create a dictionary of the 2nd array, and merge it to the 1st
       .values() // turn the combined dictionary to array
       .value()
-      .map((x) => ({ ...x }) as PlayerWithSimpleUser)
+      .map((x) => (({
+      ...x,
+    }) as PlayerWithSimpleUser))
       .sort((x, y) => x.name.localeCompare(y.name));
   },
 

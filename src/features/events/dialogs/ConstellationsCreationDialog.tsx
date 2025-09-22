@@ -4,34 +4,36 @@ import { customEnLocale } from '@/lib/date-fns';
 import { supabase } from '@/lib/supabase';
 import { GamesRepository } from '@/repository/GamesRepository';
 import { EventsUserView, GamesTable } from '@/types/supabaseTypes';
-import { ArrowDropDown, Close, Delete, Save } from '@mui/icons-material';
-import {
-  Accordion,
-  AccordionDetails,
-  AccordionSummary,
-  AppBar,
-  Box,
-  Button,
-  Checkbox,
-  Dialog,
-  Divider,
-  FormControl,
-  FormHelperText,
-  IconButton,
-  List,
-  ListItem,
-  ListItemAvatar,
-  ListItemText,
-  MenuItem,
-  Select,
-  Stack,
-  Toolbar,
-  Typography,
-} from '@mui/material';
 import { LocalizationProvider } from '@mui/x-date-pickers';
-import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFnsV3';
+import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { DialogProps, NotificationsProvider, useDialogs, useNotifications } from '@toolpad/core';
 import { useEffect, useState } from 'react';
+
+import ArrowDropDown from '@mui/icons-material/ArrowDropDown';
+import Close from '@mui/icons-material/Close';
+import Delete from '@mui/icons-material/Delete';
+import Save from '@mui/icons-material/Save';
+import Accordion from '@mui/material/Accordion';
+import AccordionDetails from '@mui/material/AccordionDetails';
+import AccordionSummary from '@mui/material/AccordionSummary';
+import AppBar from '@mui/material/AppBar';
+import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
+import Checkbox from '@mui/material/Checkbox';
+import Dialog from '@mui/material/Dialog';
+import Divider from '@mui/material/Divider';
+import FormControl from '@mui/material/FormControl';
+import FormHelperText from '@mui/material/FormHelperText';
+import IconButton from '@mui/material/IconButton';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import ListItemAvatar from '@mui/material/ListItemAvatar';
+import ListItemText from '@mui/material/ListItemText';
+import MenuItem from '@mui/material/MenuItem';
+import Select from '@mui/material/Select';
+import Stack from '@mui/material/Stack';
+import Toolbar from '@mui/material/Toolbar';
+import Typography from '@mui/material/Typography';
 
 type ConstellationCreationDialogProps = {
   users: User[];
@@ -104,7 +106,7 @@ function generatePossibleTeams(
   players: PlayerWithUser[],
   lockedTeams: [PlayerWithUser, PlayerWithUser][] = []
 ): Team[] {
-  const map = new Map(players.map((p) => [p.player, p]));
+  const map = players.reduce((acc, p) => acc.set(p.player, p), {} as Map<string, PlayerWithUser>);
   const locked = lockedTeams.map(([a, b]) => createTeam(map.get(a.player)!, map.get(b.player)!));
   const lockedNames = new Set(lockedTeams.flat().map((x) => x.player));
   const freePlayers = players.filter((p) => !lockedNames.has(p.player));
@@ -370,9 +372,9 @@ const Content = ({ payload, onClose }: DialogProps<ConstellationCreationDialogPr
                         </Typography>
                         <NumberInput
                           value={players.find((y) => y.player === x.userId)?.rg_index ?? 0}
-                          placeholder="Index"
                           step={10}
-                          onChange={(event, val) => {
+                          placeholder='Initialer Index'
+                          onValueChange={(val) => {
                             if (val && val >= 0) {
                               setPlayers([
                                 ...players.filter((y) => x.userId !== y.player),

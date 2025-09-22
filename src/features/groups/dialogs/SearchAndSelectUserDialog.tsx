@@ -1,25 +1,24 @@
 import { supabase } from '@/lib/supabase';
-import { ArrowBack } from '@mui/icons-material';
 import SearchIcon from '@mui/icons-material/Search';
-import {
-  AppBar,
-  Box,
-  Button,
-  Checkbox,
-  Dialog,
-  IconButton,
-  LinearProgress,
-  List,
-  ListItem,
-  ListItemIcon,
-  ListItemText,
-  Toolbar,
-} from '@mui/material';
 import { useQuery } from '@tanstack/react-query';
 import { DialogProps } from '@toolpad/core';
 import React, { useState } from 'react';
 import { Search, SearchIconWrapper, StyledInputBase } from '../../../components/SearchBar';
 import { SlideUpTransition } from '../../../utils';
+
+import ArrowBack from '@mui/icons-material/ArrowBack';
+import AppBar from '@mui/material/AppBar';
+import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
+import Checkbox from '@mui/material/Checkbox';
+import Dialog from '@mui/material/Dialog';
+import IconButton from '@mui/material/IconButton';
+import LinearProgress from '@mui/material/LinearProgress';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import ListItemIcon from '@mui/material/ListItemIcon';
+import ListItemText from '@mui/material/ListItemText';
+import Toolbar from '@mui/material/Toolbar';
 
 type SearchAndSelectUserDialogProps = {
   usersToFilter: string[];

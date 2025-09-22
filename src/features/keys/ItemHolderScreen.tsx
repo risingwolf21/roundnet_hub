@@ -1,7 +1,5 @@
 import { Has } from '@/hooks/useGrants';
 import { useAllItems, useHandoverKeyMutation } from '@/tanstack/items';
-import { AddOutlined, EditOffOutlined, EditOutlined } from '@mui/icons-material';
-import { Alert, Box, Fab, List } from '@mui/material';
 import { captureException } from '@sentry/react';
 import { useDialogs } from '@toolpad/core';
 import { useNotifications } from '@toolpad/core/useNotifications';
@@ -16,6 +14,14 @@ import { EditOrAddItemDialog } from './dialogs/EditOrAddItemDialog';
 import { ItemHistoryDialog } from './dialogs/ItemHistoryDialog';
 import { KeyHandOverDialog } from './dialogs/KeyHandOverDialog';
 import { SearchUserDialog } from './dialogs/SearchUserDialog';
+
+import AddOutlined from '@mui/icons-material/AddOutlined';
+import EditOffOutlined from '@mui/icons-material/EditOffOutlined';
+import EditOutlined from '@mui/icons-material/EditOutlined';
+import Alert from '@mui/material/Alert';
+import Box from '@mui/material/Box';
+import Fab from '@mui/material/Fab';
+import List from '@mui/material/List';
 
 const EMPTY_KEY: ItemUpdate = { name: '', color: '#000000', created_at: '', current_holder: null };
 

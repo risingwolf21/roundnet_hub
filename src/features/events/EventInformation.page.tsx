@@ -1,6 +1,5 @@
 import Layout from '@/components/layout/Layout';
 import { PullToRefresh } from '@/components/pull-to-refresh/PullToRefresh';
-import { useGrants } from '@/features/auth/GrantsContext';
 import EventInformationLoading from '@/features/events/components/EventInformationLoading';
 import { CancelTrainingDialog } from '@/features/events/dialogs/CancelTrainingDialog';
 import { CreateOrUpdateEventDialog } from '@/features/events/dialogs/CreateOrUpdateEventDialog';
@@ -13,8 +12,6 @@ import { SupabaseEventRepository } from '@/repository/EventRepository';
 import { useCancelTrainingMutation, useDeleteTrainingMutation } from '@/tanstack/events';
 import { useAllItems } from '@/tanstack/items';
 import { EventsUserView } from '@/types/supabaseTypes';
-import { Delete, DoNotDisturb, DoNotDisturbOff, Edit, MoreVert } from '@mui/icons-material';
-import { IconButton, ListItemIcon, ListItemText, Menu, MenuItem } from '@mui/material';
 import { captureException } from '@sentry/react';
 import { useQuery } from '@tanstack/react-query';
 import { useDialogs, useNotifications } from '@toolpad/core';
@@ -25,9 +22,19 @@ import { EventTable } from 'types/supabase';
 import EventInformation from './EventInformation';
 import { PlaceType } from './types';
 
+import Delete from '@mui/icons-material/Delete';
+import DoNotDisturb from '@mui/icons-material/DoNotDisturb';
+import DoNotDisturbOff from '@mui/icons-material/DoNotDisturbOff';
+import Edit from '@mui/icons-material/Edit';
+import MoreVert from '@mui/icons-material/MoreVert';
+import IconButton from '@mui/material/IconButton';
+import ListItemIcon from '@mui/material/ListItemIcon';
+import ListItemText from '@mui/material/ListItemText';
+import Menu from '@mui/material/Menu';
+import MenuItem from '@mui/material/MenuItem';
+
 const EventInformationProvider = () => {
   const { selectedEventId } = useParams();
-  const { user } = useGrants();
   const navigate = useNavigate();
   const notifications = useNotifications();
   const dialogs = useDialogs();
@@ -183,7 +190,6 @@ const EventInformationProvider = () => {
           keyHolders={keyHolders}
           event={event}
           selectedEventPlace={selectedEventPlace}
-          user={user}
           fetchMode={fetchMode}
         />
       </PullToRefresh>

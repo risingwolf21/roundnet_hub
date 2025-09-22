@@ -1,5 +1,5 @@
-import { ThumbUp } from '@mui/icons-material';
-import { IconButton } from '@mui/material';
+import ThumbUp from '@mui/icons-material/ThumbUp';
+import IconButton from '@mui/material/IconButton';
 import { useNotifications } from '@toolpad/core';
 import { useAcceptRequestMutation } from '../query/acceptRequestMutation';
 

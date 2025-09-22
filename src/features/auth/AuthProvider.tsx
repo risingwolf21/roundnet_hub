@@ -3,6 +3,7 @@ import { SupabaseUserRepository } from '@/repository/UserRepository';
 import { UserWithGroups } from '@/types/supabaseTypes';
 import { createContext, PropsWithChildren, useCallback, useContext, useEffect, useState } from 'react';
 
+
 type AuthContextType = {
   user: UserWithGroups;
   permissions: string[];

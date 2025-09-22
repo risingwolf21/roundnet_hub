@@ -1,7 +1,5 @@
 import { PullToRefresh } from '@/components/pull-to-refresh/PullToRefresh';
 import { useArchivedChallenges, useChallenges } from '@/tanstack/challenge';
-import { Add } from '@mui/icons-material';
-import { Box, Fab, LinearProgress, List, ListItem, ListItemText, ListSubheader, Typography } from '@mui/material';
 import { withProfiler } from '@sentry/react';
 import { useDialogs, useNotifications } from '@toolpad/core';
 import { useEffect } from 'react';
@@ -9,6 +7,16 @@ import { useNavigate } from 'react-router';
 import Layout from '../../components/layout/Layout';
 import { useGrants } from '../auth/GrantsContext';
 import { CreateChallengeDialog } from './dialogs/CreateChallengeDialog';
+
+import Add from '@mui/icons-material/Add';
+import Box from '@mui/material/Box';
+import Fab from '@mui/material/Fab';
+import LinearProgress from '@mui/material/LinearProgress';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import ListItemText from '@mui/material/ListItemText';
+import ListSubheader from '@mui/material/ListSubheader';
+import Typography from '@mui/material/Typography';
 
 const ChallengeList = () => {
   const notifications = useNotifications();

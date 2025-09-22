@@ -1,36 +1,8 @@
 import { useFetchMode } from '@/hooks/useFetchMode';
 import { useInsertEventMutation, useUpdateRecurrenceMutation, useUpdateSingleMutation } from '@/tanstack/events';
 import { formatDateFromDatabase, formatDateToDatabase } from '@/utils';
-import { AccessTime, Article, Category, Close, FiberManualRecord, Map } from '@mui/icons-material';
 import EventIcon from '@mui/icons-material/Event';
 import EventRepeatIcon from '@mui/icons-material/EventRepeat';
-import {
-  AppBar,
-  Box,
-  Button,
-  Checkbox,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  Divider,
-  FormControl,
-  FormControlLabel,
-  IconButton,
-  InputAdornment,
-  List,
-  ListItem,
-  ListItemAvatar,
-  ListItemButton,
-  ListItemText,
-  MenuItem,
-  Radio,
-  RadioGroup,
-  Select,
-  TextField,
-  Toolbar,
-  Typography,
-} from '@mui/material';
 import { DatePicker, DateTimePicker } from '@mui/x-date-pickers';
 import { TimePicker } from '@mui/x-date-pickers/TimePicker';
 import { DialogProps, useDialogs } from '@toolpad/core';
@@ -46,6 +18,38 @@ import { Enums, TablesInsert, TablesUpdate } from '../../../types/supabase-gener
 import { CreateEventOption, PlaceType } from '../types';
 import SearchPlacesDialog from './SearchPlacesDialog';
 import { SelectGroupDialog } from './SelectGroupDialog';
+
+import AccessTime from '@mui/icons-material/AccessTime';
+import Article from '@mui/icons-material/Article';
+import Category from '@mui/icons-material/Category';
+import Close from '@mui/icons-material/Close';
+import FiberManualRecord from '@mui/icons-material/FiberManualRecord';
+import Map from '@mui/icons-material/Map';
+import AppBar from '@mui/material/AppBar';
+import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
+import Checkbox from '@mui/material/Checkbox';
+import Dialog from '@mui/material/Dialog';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+import DialogTitle from '@mui/material/DialogTitle';
+import Divider from '@mui/material/Divider';
+import FormControl from '@mui/material/FormControl';
+import FormControlLabel from '@mui/material/FormControlLabel';
+import IconButton from '@mui/material/IconButton';
+import InputAdornment from '@mui/material/InputAdornment';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import ListItemAvatar from '@mui/material/ListItemAvatar';
+import ListItemButton from '@mui/material/ListItemButton';
+import ListItemText from '@mui/material/ListItemText';
+import MenuItem from '@mui/material/MenuItem';
+import Radio from '@mui/material/Radio';
+import RadioGroup from '@mui/material/RadioGroup';
+import Select from '@mui/material/Select';
+import TextField from '@mui/material/TextField';
+import Toolbar from '@mui/material/Toolbar';
+import Typography from '@mui/material/Typography';
 
 const emptyEvent = {
   title: '',
@@ -258,7 +262,7 @@ export const CreateOrUpdateEventDialog = ({
               sx={{ width: '100%' }}
               label="Datum"
               disablePast
-              format="DD MMMM YYYY"
+              format="dd MMMM yyyy"
               onChange={(val) => {
                 if (!val) return;
                 setEditedEvent({
@@ -324,7 +328,7 @@ export const CreateOrUpdateEventDialog = ({
               sx={{ width: '100%' }}
               views={['hours', 'minutes']}
               ampm={false}
-              maxTime={formatDateFromDatabase(editedEvent.startingDateTime)}
+              maxTime={formatDateFromDatabase(editedEvent.startingDateTime) ?? undefined}
               label="Treffpunkt"
               onChange={(val) => {
                 if (!val) return;
@@ -350,9 +354,9 @@ export const CreateOrUpdateEventDialog = ({
               disabled={editedEvent.endDateTime === null}
               sx={{ width: '100%' }}
               views={['year', 'month', 'day', 'hours', 'minutes']}
-              format={'DD MMMM YYYY HH:mm'}
+              format={'dd MMMM yyyy HH:mm'}
               ampm={false}
-              minDateTime={formatDateFromDatabase(editedEvent.startingDateTime)}
+              minDateTime={formatDateFromDatabase(editedEvent.startingDateTime) ?? undefined}
               label="Ende"
               onChange={(val) => {
                 if (!val) return;
@@ -493,13 +497,13 @@ export const CreateOrUpdateEventDialog = ({
 
             <NumberInput
               fullWidth
+              placeholder='Maximale Teilnehmeranzahl'
               disabled={editedEvent.maxAttendees === null}
               value={editedEvent.maxAttendees}
-              onChange={(event, val) => {
-                if (event.type === 'click' && val && val >= 0)
+              onValueChange={(val) => {
+                if (val && val >= 0)
                   setEditedEvent({ ...editedEvent, maxAttendees: val ?? 0 });
               }}
-              placeholder="Maximale Teilnehmerzahl"
             />
           </ListItem>
 
@@ -533,7 +537,7 @@ export const CreateOrUpdateEventDialog = ({
               <MenuItem value={'none'}>Keiner</MenuItem>
             </Select>
           </ListItem>
-          <ListItem sx={{ pt: 0, pb: 0, mb: 2 }} key={'itemType'}>
+          <ListItem sx={{ pt: 0, pb: 0, mb: 2 }} key={'constellations_enabled'}>
             <ListItemAvatar>
               <Checkbox
                 sx={{ pl: 0 }}

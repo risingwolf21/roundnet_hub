@@ -1,33 +1,38 @@
 import { supabase } from '@/lib/supabase';
 import { useEloHistory, usePlayer, useUpdateIndexHidden } from '@/tanstack/player_data';
-import { AddPhotoAlternateOutlined, Close, ContentCopy, Link, TrendingDown, TrendingFlat, TrendingUp } from '@mui/icons-material';
-import {
-  Alert,
-  AppBar,
-  Avatar,
-  Button,
-  Checkbox,
-  Chip,
-  CircularProgress,
-  Container,
-  Dialog,
-  Divider,
-  IconButton,
-  List,
-  ListItem,
-  ListItemAvatar,
-  ListItemText,
-  TextField,
-  Toolbar,
-  Tooltip,
-  Typography
-} from '@mui/material';
 import { captureException } from '@sentry/react';
 import { DialogProps } from '@toolpad/core/useDialogs';
 import { NotificationsProvider, useNotifications } from '@toolpad/core/useNotifications';
 import { addDays, isAfter } from 'date-fns';
 import { useState } from 'react';
 import rg_small from '../../images/rgx_small.png';
+
+import AddPhotoAlternateOutlined from '@mui/icons-material/AddPhotoAlternateOutlined';
+import Close from '@mui/icons-material/Close';
+import ContentCopy from '@mui/icons-material/ContentCopy';
+import Link from '@mui/icons-material/Link';
+import TrendingDown from '@mui/icons-material/TrendingDown';
+import TrendingFlat from '@mui/icons-material/TrendingFlat';
+import TrendingUp from '@mui/icons-material/TrendingUp';
+import Alert from '@mui/material/Alert';
+import AppBar from '@mui/material/AppBar';
+import Avatar from '@mui/material/Avatar';
+import Button from '@mui/material/Button';
+import Checkbox from '@mui/material/Checkbox';
+import Chip from '@mui/material/Chip';
+import CircularProgress from '@mui/material/CircularProgress';
+import Container from '@mui/material/Container';
+import Dialog from '@mui/material/Dialog';
+import Divider from '@mui/material/Divider';
+import IconButton from '@mui/material/IconButton';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import ListItemAvatar from '@mui/material/ListItemAvatar';
+import ListItemText from '@mui/material/ListItemText';
+import TextField from '@mui/material/TextField';
+import Toolbar from '@mui/material/Toolbar';
+import Tooltip from '@mui/material/Tooltip';
+import Typography from '@mui/material/Typography';
 
 type PlayerzoneProfilePayload = {
   user: User;

@@ -1,7 +1,6 @@
 import { HOMEPAGE } from '@/constants';
 import { supabase } from '@/lib/supabase';
 import { BRANDING } from '@/utils';
-import { alpha, CircularProgress, Stack, useTheme } from '@mui/material';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Container from '@mui/material/Container';
@@ -14,6 +13,11 @@ import { useState } from 'react';
 import { Navigate, useLocation, useNavigate } from 'react-router';
 import { useApplication } from './ApplicationContext';
 import { getCommonTextFieldProps } from './SignUpScreen';
+
+import CircularProgress from '@mui/material/CircularProgress';
+import Stack from '@mui/material/Stack';
+import alpha from '@mui/material/alpha';
+import useTheme from '@mui/material/useTheme';
 
 const ForgotPasswordScreen = () => {
   const navigate = useNavigate();

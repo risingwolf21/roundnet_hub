@@ -3,9 +3,7 @@ import { useFetchMode } from '@/hooks/useFetchMode';
 import { Has } from '@/hooks/useGrants';
 import { useEvents, useUpdateAttendanceMutation } from '@/tanstack/events';
 import { EventsUserView } from '@/types/supabaseTypes';
-import { EventRepeat, FilterAlt } from '@mui/icons-material';
 import AddIcon from '@mui/icons-material/Add';
-import { Button, Fab, List, Typography } from '@mui/material';
 import { Box, Stack } from '@mui/system';
 import { withProfiler } from '@sentry/react';
 import { useDialogs } from '@toolpad/core';
@@ -20,6 +18,13 @@ import { EventItem } from './components/EventItem';
 import { LoadingEventItem } from './components/LoadingEventItem';
 import { CreateOrUpdateEventDialog } from './dialogs/CreateOrUpdateEventDialog';
 import { FilterEventListDialog } from './dialogs/FilterEventListDialog';
+
+import EventRepeat from '@mui/icons-material/EventRepeat';
+import FilterAlt from '@mui/icons-material/FilterAlt';
+import Button from '@mui/material/Button';
+import Fab from '@mui/material/Fab';
+import List from '@mui/material/List';
+import Typography from '@mui/material/Typography';
 
 const EventScreen = () => {
   const { user } = useGrants();
@@ -68,7 +73,7 @@ const EventScreen = () => {
   if (isLoading) {
     return (
       <List>
-        {Array.from({ length: 10 }, (v, k) => k + 1).map((x) => (
+        {Array.from({ length: 10 }, (_v, k) => k + 1).map((x) => (
           <LoadingEventItem key={x} />
         ))}
       </List>

@@ -1,19 +1,23 @@
 import { answerDeadlineExpired, eventInThePast, EventsUserView } from '@/types/supabaseTypes';
-import { AccessTime, Place, ThumbDownAlt, ThumbDownOffAlt, ThumbUpAlt, ThumbUpOffAlt } from '@mui/icons-material';
-import {
-  Badge,
-  Card,
-  CardActionArea,
-  CardActions,
-  CardContent,
-  CardHeader,
-  IconButton,
-  ListItem,
-  ListItemAvatar,
-  ListItemText,
-} from '@mui/material';
 import { format } from 'date-fns';
 import { useNavigate } from 'react-router';
+
+import AccessTime from '@mui/icons-material/AccessTime';
+import Place from '@mui/icons-material/Place';
+import ThumbDownAlt from '@mui/icons-material/ThumbDownAlt';
+import ThumbDownOffAlt from '@mui/icons-material/ThumbDownOffAlt';
+import ThumbUpAlt from '@mui/icons-material/ThumbUpAlt';
+import ThumbUpOffAlt from '@mui/icons-material/ThumbUpOffAlt';
+import Badge from '@mui/material/Badge';
+import Card from '@mui/material/Card';
+import CardActionArea from '@mui/material/CardActionArea';
+import CardActions from '@mui/material/CardActions';
+import CardContent from '@mui/material/CardContent';
+import CardHeader from '@mui/material/CardHeader';
+import IconButton from '@mui/material/IconButton';
+import ListItem from '@mui/material/ListItem';
+import ListItemAvatar from '@mui/material/ListItemAvatar';
+import ListItemText from '@mui/material/ListItemText';
 
 export const EventCard = ({
   index,

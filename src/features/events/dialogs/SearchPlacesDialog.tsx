@@ -1,24 +1,4 @@
-import { ArrowBack, Place, Save } from '@mui/icons-material';
 import SearchIcon from '@mui/icons-material/Search';
-import {
-  alpha,
-  AppBar,
-  Avatar,
-  Box,
-  Dialog,
-  Fab,
-  IconButton,
-  InputBase,
-  LinearProgress,
-  List,
-  ListItemAvatar,
-  ListItemButton,
-  ListItemText,
-  Popper,
-  styled,
-  Toolbar,
-  Typography,
-} from '@mui/material';
 import { useNotifications } from '@toolpad/core/useNotifications';
 import L, { LatLng } from 'leaflet';
 import { OpenStreetMapProvider } from 'leaflet-geosearch';
@@ -28,45 +8,25 @@ import { MapContainer, Marker, TileLayer, useMap, useMapEvents } from 'react-lea
 import { SlideUpTransition } from '../../../utils';
 import { SearchPlacesDialogProps } from '../types';
 
-const Search = styled('div')(({ theme }) => ({
-  position: 'relative',
-  borderRadius: theme.shape.borderRadius,
-  backgroundColor: alpha(theme.palette.common.white, 0.15),
-  '&:hover': {
-    backgroundColor: alpha(theme.palette.common.white, 0.25),
-  },
-  marginRight: theme.spacing(2),
-  marginLeft: 0,
-  width: '100%',
-  [theme.breakpoints.up('sm')]: {
-    marginLeft: theme.spacing(3),
-    width: 'auto',
-  },
-}));
+import { Search, SearchIconWrapper, StyledInputBase } from '@/components/SearchBar';
+import ArrowBack from '@mui/icons-material/ArrowBack';
+import Place from '@mui/icons-material/Place';
+import Save from '@mui/icons-material/Save';
+import AppBar from '@mui/material/AppBar';
+import Avatar from '@mui/material/Avatar';
+import Box from '@mui/material/Box';
+import Dialog from '@mui/material/Dialog';
+import Fab from '@mui/material/Fab';
+import IconButton from '@mui/material/IconButton';
+import LinearProgress from '@mui/material/LinearProgress';
+import List from '@mui/material/List';
+import ListItemAvatar from '@mui/material/ListItemAvatar';
+import ListItemButton from '@mui/material/ListItemButton';
+import ListItemText from '@mui/material/ListItemText';
+import Popper from '@mui/material/Popper';
+import Toolbar from '@mui/material/Toolbar';
+import Typography from '@mui/material/Typography';
 
-const SearchIconWrapper = styled('div')(({ theme }) => ({
-  padding: theme.spacing(0, 2),
-  height: '100%',
-  position: 'absolute',
-  pointerEvents: 'none',
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-}));
-
-const StyledInputBase = styled(InputBase)(({ theme }) => ({
-  color: 'inherit',
-  '& .MuiInputBase-input': {
-    padding: theme.spacing(1, 1, 1, 0),
-    // vertical padding + font size from searchIcon
-    paddingLeft: `calc(1em + ${theme.spacing(4)})`,
-    transition: theme.transitions.create('width'),
-    width: '100%',
-    [theme.breakpoints.up('md')]: {
-      width: '20ch',
-    },
-  },
-}));
 
 const SearchPlacesDialog = ({ open, handleClose, placeSelected }: SearchPlacesDialogProps) => {
   const [value, setValue] = useState('');
@@ -211,9 +171,9 @@ const SearchPlacesDialog = ({ open, handleClose, placeSelected }: SearchPlacesDi
                   placeholder="Suche nach einem Ort"
                   inputProps={{ 'aria-label': 'search' }}
                   value={value}
-                  onKeyDown={(e) => keyPress(e)}
-                  onFocus={(e) => setAnchorEl(e.currentTarget)}
-                  onChange={(e) => setValue(e.target.value)}
+                  onKeyDown={(e: React.KeyboardEvent<HTMLInputElement | HTMLTextAreaElement>) => keyPress(e)}
+                  onFocus={(e: { currentTarget: React.SetStateAction<HTMLElement | null>; }) => setAnchorEl(e.currentTarget)}
+                  onChange={(e: { target: { value: React.SetStateAction<string>; }; }) => setValue(e.target.value)}
                 />
               </div>
             </Search>

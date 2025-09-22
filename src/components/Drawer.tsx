@@ -2,42 +2,6 @@ import { useGrants } from '@/features/auth/GrantsContext';
 import { Has } from '@/hooks/useGrants';
 import { useRequestedUsersPerGroup } from '@/tanstack/groups';
 import { useAllNotifications } from '@/tanstack/notifications';
-import {
-  EmojiEvents,
-  Euro,
-  Group,
-  Groups,
-  History,
-  Home,
-  InfoOutlined,
-  InstallDesktop,
-  Key,
-  Liquor,
-  Notifications,
-  Person,
-  Scoreboard,
-  SportsHandball,
-  StorageOutlined,
-  Update,
-} from '@mui/icons-material';
-import {
-  alpha,
-  Badge,
-  Box,
-  BoxProps,
-  Divider,
-  List,
-  ListItem,
-  ListItemAvatar,
-  ListItemIcon,
-  ListItemProps,
-  ListItemText,
-  ListSubheader,
-  DrawerProps as MuiDrawerProps,
-  SwipeableDrawer,
-  Theme,
-  Typography,
-} from '@mui/material';
 import { styled } from '@mui/system';
 import { TFunction } from 'i18next';
 import { useEffect, useState } from 'react';
@@ -45,6 +9,35 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router';
 import { HOMEPAGE } from '../constants';
 import { InstallPWA } from './PwaInstallPromp';
+
+import EmojiEvents from '@mui/icons-material/EmojiEvents';
+import Euro from '@mui/icons-material/Euro';
+import Group from '@mui/icons-material/Group';
+import Groups from '@mui/icons-material/Groups';
+import History from '@mui/icons-material/History';
+import Home from '@mui/icons-material/Home';
+import InfoOutlined from '@mui/icons-material/InfoOutlined';
+import InstallDesktop from '@mui/icons-material/InstallDesktop';
+import Key from '@mui/icons-material/Key';
+import Liquor from '@mui/icons-material/Liquor';
+import Notifications from '@mui/icons-material/Notifications';
+import Person from '@mui/icons-material/Person';
+import Scoreboard from '@mui/icons-material/Scoreboard';
+import SportsHandball from '@mui/icons-material/SportsHandball';
+import StorageOutlined from '@mui/icons-material/StorageOutlined';
+import Update from '@mui/icons-material/Update';
+import { alpha, BoxProps, DrawerProps, ListItemProps, Theme } from '@mui/material';
+import Badge from '@mui/material/Badge';
+import Box from '@mui/material/Box';
+import Divider from '@mui/material/Divider';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import ListItemAvatar from '@mui/material/ListItemAvatar';
+import ListItemIcon from '@mui/material/ListItemIcon';
+import ListItemText from '@mui/material/ListItemText';
+import ListSubheader from '@mui/material/ListSubheader';
+import SwipeableDrawer from '@mui/material/SwipeableDrawer';
+import Typography from '@mui/material/Typography';
 
 export const drawerWidth = 360;
 
@@ -105,7 +98,7 @@ const DrawerBox = styled(Box)<BoxProps>(({ }) => ({
   overflow: 'auto',
 }));
 
-const CustomDrawer = styled(SwipeableDrawer)<MuiDrawerProps>(({ theme }) => ({
+const CustomDrawer = styled(SwipeableDrawer)<DrawerProps>(({ theme }) => ({
   '& .MuiPaper-root': {
     borderTopRightRadius: 24,
     borderBottomRightRadius: 24,
@@ -510,7 +503,7 @@ const DrawerContent = ({
           <ListItemText
             primaryTypographyProps={{ fontWeight: 'bold', fontSize: '0.9rem' }}
             secondary={'App Version'}
-            primary={APP_VERSION + '.' + version.slice(0, 6)}
+            primary={import.meta.env.VITE_APP_VERSION + '.' + version.slice(0, 6)}
           />
         </DrawerItem>
       </List>

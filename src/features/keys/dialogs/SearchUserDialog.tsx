@@ -1,21 +1,20 @@
 import { supabase } from '@/lib/supabase';
-import { ArrowBack } from '@mui/icons-material';
 import SearchIcon from '@mui/icons-material/Search';
-import {
-  AppBar,
-  Box,
-  Dialog,
-  IconButton,
-  LinearProgress,
-  List,
-  ListItemButton,
-  ListItemText,
-  Toolbar,
-} from '@mui/material';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Search, SearchIconWrapper, StyledInputBase } from '../../../components/SearchBar';
 import { SlideUpTransition } from '../../../utils';
+
+import ArrowBack from '@mui/icons-material/ArrowBack';
+import AppBar from '@mui/material/AppBar';
+import Box from '@mui/material/Box';
+import Dialog from '@mui/material/Dialog';
+import IconButton from '@mui/material/IconButton';
+import LinearProgress from '@mui/material/LinearProgress';
+import List from '@mui/material/List';
+import ListItemButton from '@mui/material/ListItemButton';
+import ListItemText from '@mui/material/ListItemText';
+import Toolbar from '@mui/material/Toolbar';
 
 export const SearchUserDialog = ({
   onUserSelected,

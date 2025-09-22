@@ -1,9 +1,15 @@
 import CloseIcon from '@mui/icons-material/Close';
-import { AppBar, Button, Dialog, IconButton, Toolbar, Typography } from '@mui/material';
 import { Box } from '@mui/system';
 import { useState } from 'react';
 import Cropper from 'react-easy-crop';
 import { SlideUpTransition } from '../utils';
+
+import AppBar from '@mui/material/AppBar';
+import Button from '@mui/material/Button';
+import Dialog from '@mui/material/Dialog';
+import IconButton from '@mui/material/IconButton';
+import Toolbar from '@mui/material/Toolbar';
+import Typography from '@mui/material/Typography';
 
 type CropImageDialogProps = {
   open: boolean;

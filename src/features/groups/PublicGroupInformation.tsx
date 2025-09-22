@@ -1,24 +1,6 @@
 import { LoadingIndicator } from '@/components/LoadingIndicator';
 import { PullToRefresh } from '@/components/pull-to-refresh/PullToRefresh';
 import { useGroup, useLeaveGroupMutation, useMakeUserAdminMutation } from '@/tanstack/groups';
-import { AccountBox, Edit, ExpandMore, GroupRemove, Groups, PersonAdd, PersonRemove } from '@mui/icons-material';
-import {
-  Accordion,
-  AccordionDetails,
-  AccordionSummary,
-  Avatar,
-  Card,
-  CardActionArea,
-  Chip,
-  Divider,
-  Fab,
-  List,
-  ListItem,
-  ListItemAvatar,
-  ListItemText,
-  Stack,
-  Typography,
-} from '@mui/material';
 import { captureException } from '@sentry/react';
 import { useDialogs, useNotifications } from '@toolpad/core';
 import { useEffect, useState } from 'react';
@@ -31,6 +13,29 @@ import { CreateOrUpdateGroupDialog } from './dialogs/CreateOrUpdateGroupDialog';
 import SearchAndSelectUserDialog from './dialogs/SearchAndSelectUserDialog';
 import { useAddUsersMutation } from './query/addUsersMutation';
 import { useRemoveUsersMutation } from './query/removeUsersMutation';
+
+import AccountBox from '@mui/icons-material/AccountBox';
+import Edit from '@mui/icons-material/Edit';
+import ExpandMore from '@mui/icons-material/ExpandMore';
+import GroupRemove from '@mui/icons-material/GroupRemove';
+import Groups from '@mui/icons-material/Groups';
+import PersonAdd from '@mui/icons-material/PersonAdd';
+import PersonRemove from '@mui/icons-material/PersonRemove';
+import Accordion from '@mui/material/Accordion';
+import AccordionDetails from '@mui/material/AccordionDetails';
+import AccordionSummary from '@mui/material/AccordionSummary';
+import Avatar from '@mui/material/Avatar';
+import Card from '@mui/material/Card';
+import CardActionArea from '@mui/material/CardActionArea';
+import Chip from '@mui/material/Chip';
+import Divider from '@mui/material/Divider';
+import Fab from '@mui/material/Fab';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import ListItemAvatar from '@mui/material/ListItemAvatar';
+import ListItemText from '@mui/material/ListItemText';
+import Stack from '@mui/material/Stack';
+import Typography from '@mui/material/Typography';
 
 const PublicGroupInformation = () => {
   const { groupId } = useParams();

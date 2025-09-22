@@ -1,5 +1,6 @@
 import * as React from 'react';
 
+
 function isChunkError(err: unknown) {
   const msg = (err as any)?.message ?? '';
   return /ChunkLoadError|Loading chunk \d+ failed|Failed to fetch dynamically imported module|imported module/i.test(

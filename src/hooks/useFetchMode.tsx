@@ -1,5 +1,6 @@
 import { useLocalStorageState } from '@toolpad/core';
 
+
 const isValidFetchMode = (value: unknown): value is 'past' | 'upcoming' => value === 'past' || value === 'upcoming';
 
 export function useFetchMode(): ['past' | 'upcoming', (newMode: 'past' | 'upcoming') => void] {

@@ -15,6 +15,9 @@
     "editor.defaultFormatter": "vscode.typescript-language-features",
     "editor.formatOnSave": true
   },
+  "typescript.preferences.autoImportSpecifierExcludeRegexes": [
+    "^@mui/[^/]+$"
+  ],
   "deno.enablePaths": [
     "supabase/functions"
   ],

@@ -1,7 +1,13 @@
-import { Map } from '@mui/icons-material';
-import { Box, ListItem, ListItemAvatar, ListItemIcon, ListItemText, Stack } from '@mui/material';
 import { MapContainer, Marker, TileLayer } from 'react-leaflet';
 import { PlaceType } from '../types';
+
+import Map from '@mui/icons-material/Map';
+import Box from '@mui/material/Box';
+import ListItem from '@mui/material/ListItem';
+import ListItemAvatar from '@mui/material/ListItemAvatar';
+import ListItemIcon from '@mui/material/ListItemIcon';
+import ListItemText from '@mui/material/ListItemText';
+import Stack from '@mui/material/Stack';
 
 type Props = {
   place: PlaceType;

@@ -1,14 +1,20 @@
 import { useGrants } from '@/features/auth/GrantsContext';
 import { useAddCommentMutation, useComments } from '@/tanstack/events';
 import { EventsUserView, FullComment } from '@/types/supabaseTypes';
-import { Send } from '@mui/icons-material';
-import { Box, IconButton, InputAdornment, List, TextField, Typography } from '@mui/material';
 import { useNotifications } from '@toolpad/core';
 import React, { createRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { EventCommentConversationDialog } from '../dialogs/EventCommentConversationDialog';
 import { CommentItem } from './CommentItem';
 import { CommentReplyItem, CommentReplyText } from './CommentReplyItem';
+
+import Send from '@mui/icons-material/Send';
+import Box from '@mui/material/Box';
+import IconButton from '@mui/material/IconButton';
+import InputAdornment from '@mui/material/InputAdornment';
+import List from '@mui/material/List';
+import TextField from '@mui/material/TextField';
+import Typography from '@mui/material/Typography';
 
 type EventInformationCommentsProps = {
   event: EventsUserView;

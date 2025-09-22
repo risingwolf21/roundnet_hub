@@ -1,8 +1,13 @@
 import { useItemHistory } from '@/tanstack/items';
-import { Alert, CircularProgress, List, ListItem, ListItemText } from '@mui/material';
 import { DialogProps } from '@toolpad/core';
 import { format } from 'date-fns';
 import { SwipeableDialog } from '../../../components/SwipeableDialog';
+
+import Alert from '@mui/material/Alert';
+import CircularProgress from '@mui/material/CircularProgress';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import ListItemText from '@mui/material/ListItemText';
 
 export const ItemHistoryDialog = ({ payload, open, onClose }: DialogProps<Item>) => {
   const { data: history = [], error, isLoading } = useItemHistory(payload.id);

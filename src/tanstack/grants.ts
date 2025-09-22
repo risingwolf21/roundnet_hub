@@ -138,7 +138,7 @@ export const useGrantUserPermissions = () =>
         queryClient.setQueryData(['grants', 'user-features', _v.user], context.previousGroupPermissions);
       }
     },
-    onSettled: (_d, _e, _v, context) => {
+    onSettled: (_d, _e, _v, _context) => {
       queryClient.invalidateQueries({ queryKey: ['grants', 'user-permissions', _v.user] });
       queryClient.invalidateQueries({ queryKey: ['grants', 'user-features', _v.user] });
     },
@@ -180,7 +180,7 @@ export const useRevokeUserPermissions = () =>
         queryClient.setQueryData(['grants', 'user-features', _v.user], context.previousGroupPermissions);
       }
     },
-    onSettled: (_d, _e, _v, context) => {
+    onSettled: (_d, _e, _v, _context) => {
       queryClient.invalidateQueries({ queryKey: ['grants', 'user-permissions', _v.user] });
       queryClient.invalidateQueries({ queryKey: ['grants', 'user-features', _v.user] });
     },
@@ -222,7 +222,7 @@ export const useGrantGroupPermissions = () =>
         queryClient.setQueryData(['grants', 'group-features', _v.group], context.previousGroupPermissions);
       }
     },
-    onSettled: (_d, _e, _v, context) => {
+    onSettled: (_d, _e, _v, _context) => {
       queryClient.invalidateQueries({ queryKey: ['grants', 'group-permissions', _v.group] });
       queryClient.invalidateQueries({ queryKey: ['grants', 'group-features', _v.group] });
     },
@@ -264,7 +264,7 @@ export const useRevokeGroupPermissions = () =>
         queryClient.setQueryData(['grants', 'group-features', _v.group], context.previousGroupPermissions);
       }
     },
-    onSettled: (_d, _e, _v, context) => {
+    onSettled: (_d, _e, _v, _context) => {
       queryClient.invalidateQueries({ queryKey: ['grants', 'group-permissions', _v.group] });
       queryClient.invalidateQueries({ queryKey: ['grants', 'group-features', _v.group] });
     },

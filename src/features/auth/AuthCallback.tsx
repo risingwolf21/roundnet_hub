@@ -1,8 +1,11 @@
 import { supabase } from '@/lib/supabase';
 import { BRANDING } from '@/utils';
-import { Box, CircularProgress, Typography } from '@mui/material';
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router';
+
+import Box from '@mui/material/Box';
+import CircularProgress from '@mui/material/CircularProgress';
+import Typography from '@mui/material/Typography';
 
 const AuthCallback = () => {
   const navigate = useNavigate();
