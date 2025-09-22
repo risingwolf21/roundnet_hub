@@ -8,6 +8,7 @@ import { Drawer, drawerWidth } from '../Drawer';
 
 type Props = {
   children: ReactNode;
+  appBarContent?: ReactNode;
   appBarActions?: ReactNode;
   appBarConfig?: {
     title?: string;
@@ -18,6 +19,7 @@ type Props = {
 
 const Layout = ({
   children,
+  appBarContent,
   appBarActions,
   appBarConfig: { title = BRANDING.title, showProfile = true, navigateBackPath } = {
     title: BRANDING.title,
@@ -74,58 +76,62 @@ const Layout = ({
         })}
       >
         <Box sx={{ height: 'env(safe-area-inset-top)' }} />
-        <Toolbar>
-          {navigateBackPath ? (
-            <IconButton
-              color="inherit"
-              onClick={() => navigate(navigateBackPath)}
-              edge="start"
-              sx={(theme) => ({
-                mr: 2,
-              })}
-            >
-              <ArrowBack />
-            </IconButton>
-          ) : (
-            <IconButton
-              color="inherit"
-              onClick={() => setDrawerOpen(true)}
-              edge="start"
-              sx={(theme) => ({
-                mr: 2,
-                [theme.breakpoints.up('lg')]: {
-                  display: 'none',
-                },
-              })}
-            >
-              <Menu />
-            </IconButton>
-          )}
-
-          {/* Title */}
-          <Typography variant="h6" noWrap sx={{ flexGrow: 1 }}>
-            {title}
-          </Typography>
-          {/* Profile */}
-          {showProfile && user && (
-            <IconButton
-              color="inherit"
-              onClick={() => {
-                navigate('/user');
-              }}
-              sx={{ pr: 0 }}
-            >
-              {user.avatarUrl ? (
-                <Avatar sx={{ borderRadius: 2, width: '35px', height: '35px' }}>
-                  <img src={user?.avatarUrl} alt="logo" width={'35px'} height={'35px'} />
-                </Avatar>
+        {
+          appBarContent
+            ? appBarContent
+            : <Toolbar>
+              {navigateBackPath ? (
+                <IconButton
+                  color="inherit"
+                  onClick={() => navigate(navigateBackPath)}
+                  edge="start"
+                  sx={{
+                    mr: 2,
+                  }}
+                >
+                  <ArrowBack />
+                </IconButton>
               ) : (
-                <AccountCircle />
+                <IconButton
+                  color="inherit"
+                  onClick={() => setDrawerOpen(true)}
+                  edge="start"
+                  sx={(theme) => ({
+                    mr: 2,
+                    [theme.breakpoints.up('lg')]: {
+                      display: 'none',
+                    },
+                  })}
+                >
+                  <Menu />
+                </IconButton>
               )}
-            </IconButton>
-          )}
-          {appBarActions}
-        </Toolbar>
+
+              {/* Title */}
+              <Typography variant="h6" noWrap sx={{ flexGrow: 1 }}>
+                {title}
+              </Typography>
+              {/* Profile */}
+              {showProfile && user && (
+                <IconButton
+                  color="inherit"
+                  onClick={() => {
+                    navigate('/user');
+                  }}
+                  sx={{ pr: 0 }}
+                >
+                  {user.avatarUrl ? (
+                    <Avatar sx={{ borderRadius: 2, width: '35px', height: '35px' }}>
+                      <img src={user?.avatarUrl} alt="logo" width={'35px'} height={'35px'} />
+                    </Avatar>
+                  ) : (
+                    <AccountCircle />
+                  )}
+                </IconButton>
+              )}
+              {appBarActions}
+            </Toolbar>
+        }
       </AppBar>
 
       {/* Drawer  */}

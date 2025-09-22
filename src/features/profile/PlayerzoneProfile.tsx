@@ -198,7 +198,7 @@ const Content = ({ payload, onClose }: DialogProps<PlayerzoneProfilePayload, str
               }}
             >
               <ListItemAvatar></ListItemAvatar>
-              <ListItemText primary={player_data?.ka_index.toFixed()} secondary={'Karlsruhe Index'} />
+              <ListItemText primary={player_data?.ka_index.toFixed()} secondary={'Interner Index'} />
             </ListItem>
           )}
           {player_data?.effective_rating_cached && (
