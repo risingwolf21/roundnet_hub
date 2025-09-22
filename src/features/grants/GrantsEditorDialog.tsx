@@ -1,22 +1,27 @@
-import { SwipeableDialog } from '@/components/SwipeableDialog';
 import { useFeatures, usePermissions } from '@/tanstack/grants';
+import { SlideUpTransition } from '@/utils';
+import { Close } from '@mui/icons-material';
 import {
+  AppBar,
   Box,
   Button,
+  Dialog,
   DialogActions,
   DialogContent,
   Divider,
+  IconButton,
   List,
   ListItem,
   ListItemText,
   Switch,
-  Typography,
+  Toolbar,
+  Typography
 } from '@mui/material';
 import { UseQueryResult } from '@tanstack/react-query';
 import { DialogProps } from '@toolpad/core';
 import React from 'react';
 
-type GroupResult = {
+export type GroupResult = {
   grantPerm: string[];
   revokePerm: string[];
   grantFeat: string[];
@@ -66,7 +71,17 @@ export const GrantsEditorDialog = ({ payload, open, onClose }: DialogProps<Grant
   };
 
   return (
-    <SwipeableDialog open={open} title={payload.title} onClose={() => onClose(null)}>
+    <Dialog fullScreen open={open} onClose={() => onClose(null)} TransitionComponent={SlideUpTransition}>
+      <AppBar position="sticky" sx={{ pt: 'env(safe-area-inset-top)' }}>
+        <Toolbar>
+          <IconButton size="large" edge="start" color="inherit" onClick={() => onClose(null)}>
+            <Close />
+          </IconButton>
+          <Typography variant="h6" noWrap sx={{ flexGrow: 1 }}>
+            {payload.title}
+          </Typography>
+        </Toolbar>
+      </AppBar>
       <DialogContent>
         <Box>
           <Typography variant="overline" color="text.secondary">
@@ -126,6 +141,6 @@ export const GrantsEditorDialog = ({ payload, open, onClose }: DialogProps<Grant
           </Button>
         </Box>
       </DialogActions>
-    </SwipeableDialog>
+    </Dialog>
   );
 };

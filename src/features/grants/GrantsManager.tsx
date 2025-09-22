@@ -1,7 +1,7 @@
 import Layout from '@/components/layout/Layout';
 import { Search, SearchIconWrapper, StyledInputBase } from '@/components/SearchBar';
 import SearchIcon from '@mui/icons-material/Search';
-import { Tab, Tabs, Toolbar, useTheme } from '@mui/material';
+import { Tab, Tabs, useTheme } from '@mui/material';
 import { useState } from 'react';
 import GroupGrantsPanel from './GroupGrantsPanel';
 import UserGrantsPanel from './UserGrantsPanel';
@@ -30,7 +30,7 @@ const GrantsManager = () => {
 
   return (
     <Layout
-      appBarContent={<><Toolbar sx={{ pl: "0 !important" }}>
+      appBarContent={
         <Search sx={{ flexGrow: 1 }}>
           <SearchIconWrapper>
             <SearchIcon />
@@ -44,19 +44,17 @@ const GrantsManager = () => {
               onChange={(e) => setSearchValue(e.target.value)}
             />
           </div>
-        </Search>
-      </Toolbar>
-        <Tabs
-          value={searchValue}
-          onChange={(_, v) => setValue(v)}
-          textColor="inherit"
-          variant="fullWidth"
-        >
-          <Tab label="Gruppen-Grants" />
-          <Tab label="Direct-Grants" />
-        </Tabs>
-      </>}>
-      <Tabs />
+        </Search>}>
+      <Tabs
+        value={value}
+        onChange={(_, v) => setValue(v)}
+        textColor="inherit"
+        indicatorColor='secondary'
+        variant="fullWidth"
+      >
+        <Tab label="Gruppen-Grants" />
+        <Tab label="Direct-Grants" />
+      </Tabs>
       <TabPanel value={value} index={0} dir={theme.direction}>
         <GroupGrantsPanel searchValue={searchValue} />
       </TabPanel>

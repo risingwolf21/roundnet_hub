@@ -5,10 +5,11 @@ import {
   useUserFeatures,
   useUserPermissions,
 } from '@/tanstack/grants';
-import { AccountBox } from '@mui/icons-material';
-import { Avatar, List, ListItem, ListItemAvatar, ListItemText } from '@mui/material';
+import { AccountBox, PersonAdd } from '@mui/icons-material';
+import { Avatar, Fab, List, ListItem, ListItemAvatar, ListItemText } from '@mui/material';
 import { useDialogs, useNotifications } from '@toolpad/core';
-import { GrantsEditorDialog } from './GrantsEditorDialog';
+import SearchAndSelectSingleUserDialog from '../groups/dialogs/SearchAndSelectSingleUserDialog';
+import { GrantsEditorDialog, GroupResult } from './GrantsEditorDialog';
 
 const UserGrantsPanel = ({ searchValue }: { searchValue: string }) => {
   const { data = [] } = useDirectUserGrants();
@@ -17,6 +18,31 @@ const UserGrantsPanel = ({ searchValue }: { searchValue: string }) => {
 
   const grant = useGrantUserPermissions();
   const revoke = useRevokeUserPermissions();
+
+  const mutationDialogs = {
+    onError: () =>
+      notifications.show('Berechtigungen konnten nicht aktualisiert werden', { severity: 'error' }),
+    onSettled: () => notifications.show('Berechtigungen wurden aktualisiert', { severity: 'success' }),
+  }
+
+  const updateGrantsWith = (result: GroupResult, user: User) => {
+    grant.mutate(
+      {
+        user: user.userId,
+        perms: result.grantPerm,
+        feats: result.grantFeat,
+      },
+      mutationDialogs
+    );
+    revoke.mutate(
+      {
+        user: user.userId,
+        perms: result.revokePerm,
+        feats: result.revokeFeat,
+      },
+      mutationDialogs
+    );
+  }
 
   return (
     <List>
@@ -35,30 +61,7 @@ const UserGrantsPanel = ({ searchValue }: { searchValue: string }) => {
                 currentFeatures: useUserFeatures,
               });
               if (result) {
-                grant.mutate(
-                  {
-                    user: x.userId,
-                    perms: result.grantPerm,
-                    feats: result.grantFeat,
-                  },
-                  {
-                    onError: () =>
-                      notifications.show('Berechtigungen konnten nicht aktualisiert werden', { severity: 'error' }),
-                    onSettled: () => notifications.show('Berechtigungen wurden aktualisiert', { severity: 'success' }),
-                  }
-                );
-                revoke.mutate(
-                  {
-                    user: x.userId,
-                    perms: result.revokePerm,
-                    feats: result.revokeFeat,
-                  },
-                  {
-                    onError: () =>
-                      notifications.show('Berechtigungen konnten nicht aktualisiert werden', { severity: 'error' }),
-                    onSettled: () => notifications.show('Berechtigungen wurden aktualisiert', { severity: 'success' }),
-                  }
-                );
+                updateGrantsWith(result, x);
               }
             }}
           >
@@ -70,6 +73,22 @@ const UserGrantsPanel = ({ searchValue }: { searchValue: string }) => {
             <ListItemText primary={x.name} secondary={x.email} />
           </ListItem>
         ))}
+      <Fab sx={{ position: "fixed", right: "16px", bottom: "16px" }} onClick={async () => {
+        const result = await dialogs.open(SearchAndSelectSingleUserDialog, { usersToFilter: [] });
+        if (result) {
+          const grantsResult = await dialogs.open(GrantsEditorDialog, {
+            title: `Benutzer ${result.displayName} hinzufügen`,
+            id: result.userId,
+            currentPermissions: useUserPermissions,
+            currentFeatures: useUserFeatures,
+          });
+          if (grantsResult) {
+            updateGrantsWith(grantsResult, result);
+          }
+        }
+      }}>
+        <PersonAdd />
+      </Fab>
     </List>
   );
 };

@@ -5,8 +5,8 @@ import {
   useRevokeGroupPermissions,
 } from '@/tanstack/grants';
 import { useGroups } from '@/tanstack/groups';
-import { Groups } from '@mui/icons-material';
-import { Avatar, List, ListItem, ListItemAvatar, ListItemText } from '@mui/material';
+import { GroupAdd, Groups } from '@mui/icons-material';
+import { Avatar, Fab, List, ListItem, ListItemAvatar, ListItemText } from '@mui/material';
 import { useDialogs, useNotifications } from '@toolpad/core';
 import { GrantsEditorDialog } from './GrantsEditorDialog';
 
@@ -68,6 +68,11 @@ const GroupGrantsPanel = ({ searchValue }: { searchValue: string }) => {
             <ListItemText primary={x.name} />
           </ListItem>
         ))}
+      <Fab sx={{ position: "fixed", right: "16px", bottom: "16px" }} onClick={() => {
+
+      }}>
+        <GroupAdd />
+      </Fab>
     </List>
   );
 };

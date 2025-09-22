@@ -76,37 +76,36 @@ const Layout = ({
         })}
       >
         <Box sx={{ height: 'env(safe-area-inset-top)' }} />
-        {
-          appBarContent
-            ? appBarContent
-            : <Toolbar>
-              {navigateBackPath ? (
-                <IconButton
-                  color="inherit"
-                  onClick={() => navigate(navigateBackPath)}
-                  edge="start"
-                  sx={{
-                    mr: 2,
-                  }}
-                >
-                  <ArrowBack />
-                </IconButton>
-              ) : (
-                <IconButton
-                  color="inherit"
-                  onClick={() => setDrawerOpen(true)}
-                  edge="start"
-                  sx={(theme) => ({
-                    mr: 2,
-                    [theme.breakpoints.up('lg')]: {
-                      display: 'none',
-                    },
-                  })}
-                >
-                  <Menu />
-                </IconButton>
-              )}
+        <Toolbar>
+          {navigateBackPath ? (
+            <IconButton
+              color="inherit"
+              onClick={() => navigate(navigateBackPath)}
+              edge="start"
+              sx={{
+                mr: 2,
+              }}
+            >
+              <ArrowBack />
+            </IconButton>
+          ) : (
+            <IconButton
+              color="inherit"
+              onClick={() => setDrawerOpen(true)}
+              edge="start"
+              sx={(theme) => ({
+                mr: 2,
+                [theme.breakpoints.up('lg')]: {
+                  display: 'none',
+                },
+              })}
+            >
+              <Menu />
+            </IconButton>
+          )}
 
+          {
+            appBarContent ? appBarContent : <>
               {/* Title */}
               <Typography variant="h6" noWrap sx={{ flexGrow: 1 }}>
                 {title}
@@ -130,8 +129,10 @@ const Layout = ({
                 </IconButton>
               )}
               {appBarActions}
-            </Toolbar>
-        }
+            </>
+          }
+        </Toolbar>
+
       </AppBar>
 
       {/* Drawer  */}
