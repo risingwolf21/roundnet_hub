@@ -9,6 +9,7 @@ import { useDialogs, useNotifications } from '@toolpad/core';
 import SearchAndSelectSingleUserDialog from '../groups/dialogs/SearchAndSelectSingleUserDialog';
 import { GrantsEditorDialog, GroupResult } from './GrantsEditorDialog';
 
+import { PullToRefresh } from '@/components/pull-to-refresh/PullToRefresh';
 import AccountBox from '@mui/icons-material/AccountBox';
 import PersonAdd from '@mui/icons-material/PersonAdd';
 import Avatar from '@mui/material/Avatar';
@@ -19,7 +20,7 @@ import ListItemAvatar from '@mui/material/ListItemAvatar';
 import ListItemText from '@mui/material/ListItemText';
 
 const UserGrantsPanel = ({ searchValue }: { searchValue: string }) => {
-  const { data = [] } = useDirectUserGrants();
+  const { data = [], refetch } = useDirectUserGrants();
   const dialogs = useDialogs();
   const notifications = useNotifications();
 
@@ -52,51 +53,53 @@ const UserGrantsPanel = ({ searchValue }: { searchValue: string }) => {
   }
 
   return (
-    <List>
-      {data
-        .filter(x => searchValue === '' || x.name.toLowerCase().includes(searchValue.toLowerCase())
-          || x.displayName.toLowerCase().includes(searchValue.toLowerCase())
-          || x.email.toLowerCase().includes(searchValue.toLowerCase()))
-        .map((x) => (
-          <ListItem
-            divider
-            onClick={async () => {
-              const result = await dialogs.open(GrantsEditorDialog, {
-                title: `Benutzer ${x.displayName} bearbeiten`,
-                id: x.userId,
-                currentPermissions: useUserPermissions,
-                currentFeatures: useUserFeatures,
-              });
-              if (result) {
-                updateGrantsWith(result, x);
-              }
-            }}
-          >
-            <ListItemAvatar>
-              <Avatar sx={{ borderRadius: 2 }}>
-                {x.avatarUrl ? <img src={x.avatarUrl} alt="logo" width={'100%'} height={'100%'} /> : <AccountBox />}
-              </Avatar>
-            </ListItemAvatar>
-            <ListItemText primary={x.name} secondary={x.email} />
-          </ListItem>
-        ))}
-      <Fab sx={{ position: "fixed", right: "16px", bottom: "16px" }} onClick={async () => {
-        const result = await dialogs.open(SearchAndSelectSingleUserDialog, { usersToFilter: [] });
-        if (result) {
-          const grantsResult = await dialogs.open(GrantsEditorDialog, {
-            title: `Benutzer ${result.displayName} hinzufügen`,
-            id: result.userId,
-            currentPermissions: useUserPermissions,
-            currentFeatures: useUserFeatures,
-          });
-          if (grantsResult) {
-            updateGrantsWith(grantsResult, result);
+    <PullToRefresh onRefresh={refetch}>
+      <List>
+        {data
+          .filter(x => searchValue === '' || x.name.toLowerCase().includes(searchValue.toLowerCase())
+            || x.displayName.toLowerCase().includes(searchValue.toLowerCase())
+            || x.email.toLowerCase().includes(searchValue.toLowerCase()))
+          .map((x) => (
+            <ListItem
+              divider
+              onClick={async () => {
+                const result = await dialogs.open(GrantsEditorDialog, {
+                  title: `Benutzer ${x.displayName} bearbeiten`,
+                  id: x.userId,
+                  currentPermissions: useUserPermissions,
+                  currentFeatures: useUserFeatures,
+                });
+                if (result) {
+                  updateGrantsWith(result, x);
+                }
+              }}
+            >
+              <ListItemAvatar>
+                <Avatar sx={{ borderRadius: 2 }}>
+                  {x.avatarUrl ? <img src={x.avatarUrl} alt="logo" width={'100%'} height={'100%'} /> : <AccountBox />}
+                </Avatar>
+              </ListItemAvatar>
+              <ListItemText primary={x.name} secondary={x.email} />
+            </ListItem>
+          ))}
+        <Fab sx={{ position: "fixed", right: "16px", bottom: "calc(env(safe-area-inset-top) + 16px)" }} onClick={async () => {
+          const result = await dialogs.open(SearchAndSelectSingleUserDialog, { usersToFilter: [] });
+          if (result) {
+            const grantsResult = await dialogs.open(GrantsEditorDialog, {
+              title: `Benutzer ${result.displayName} hinzufügen`,
+              id: result.userId,
+              currentPermissions: useUserPermissions,
+              currentFeatures: useUserFeatures,
+            });
+            if (grantsResult) {
+              updateGrantsWith(grantsResult, result);
+            }
           }
-        }
-      }}>
-        <PersonAdd />
-      </Fab>
-    </List>
+        }}>
+          <PersonAdd />
+        </Fab>
+      </List>
+    </PullToRefresh>
   );
 };
 

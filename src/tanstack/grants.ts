@@ -139,6 +139,7 @@ export const useGrantUserPermissions = () =>
       }
     },
     onSettled: (_d, _e, _v, _context) => {
+      queryClient.invalidateQueries({ queryKey: ['grants', 'user'] });
       queryClient.invalidateQueries({ queryKey: ['grants', 'user-permissions', _v.user] });
       queryClient.invalidateQueries({ queryKey: ['grants', 'user-features', _v.user] });
     },
@@ -181,6 +182,7 @@ export const useRevokeUserPermissions = () =>
       }
     },
     onSettled: (_d, _e, _v, _context) => {
+      queryClient.invalidateQueries({ queryKey: ['grants', 'user'] });
       queryClient.invalidateQueries({ queryKey: ['grants', 'user-permissions', _v.user] });
       queryClient.invalidateQueries({ queryKey: ['grants', 'user-features', _v.user] });
     },
