@@ -53,7 +53,7 @@ export const useUserPermissions = (userId: string) => {
   return useQuery({
     queryKey: ['grants', 'user-permissions', userId],
     queryFn: async () => {
-      const { data, error } = await supabase.from('user_direct_grants').select('*').eq('kind', 'perm');
+      const { data, error } = await supabase.from('user_direct_grants').select('*').eq('kind', 'perm').eq("user", userId);
       if (error) throw error;
       return data?.map((x) => x.key) ?? [];
     },
@@ -64,7 +64,7 @@ export const useUserFeatures = (userId: string) => {
   return useQuery({
     queryKey: ['grants', 'user-features', userId],
     queryFn: async () => {
-      const { data, error } = await supabase.from('user_direct_grants').select('*').eq('kind', 'feat');
+      const { data, error } = await supabase.from('user_direct_grants').select('*').eq('kind', 'feat').eq("user", userId);
       if (error) throw error;
       return data?.map((x) => x.key) ?? [];
     },

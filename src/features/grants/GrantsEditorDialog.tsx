@@ -1,21 +1,26 @@
-import { SwipeableDialog } from '@/components/SwipeableDialog';
 import { useFeatures, usePermissions } from '@/tanstack/grants';
 import { UseQueryResult } from '@tanstack/react-query';
 import { DialogProps } from '@toolpad/core';
 import React from 'react';
 
+import { SlideUpTransition } from '@/utils';
+import Close from '@mui/icons-material/Close';
+import AppBar from '@mui/material/AppBar';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
+import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import Divider from '@mui/material/Divider';
+import IconButton from '@mui/material/IconButton';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';
 import Switch from '@mui/material/Switch';
+import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
 
-type GroupResult = {
+export type GroupResult = {
   grantPerm: string[];
   revokePerm: string[];
   grantFeat: string[];
@@ -65,7 +70,17 @@ export const GrantsEditorDialog = ({ payload, open, onClose }: DialogProps<Grant
   };
 
   return (
-    <SwipeableDialog open={open} title={payload.title} onClose={() => onClose(null)}>
+    <Dialog fullScreen open={open} onClose={() => onClose(null)} TransitionComponent={SlideUpTransition}>
+      <AppBar position="sticky" sx={{ pt: 'env(safe-area-inset-top)' }}>
+        <Toolbar>
+          <IconButton size="large" edge="start" color="inherit" onClick={() => onClose(null)}>
+            <Close />
+          </IconButton>
+          <Typography variant="h6" noWrap sx={{ flexGrow: 1 }}>
+            {payload.title}
+          </Typography>
+        </Toolbar>
+      </AppBar>
       <DialogContent>
         <Box>
           <Typography variant="overline" color="text.secondary">
@@ -125,6 +140,6 @@ export const GrantsEditorDialog = ({ payload, open, onClose }: DialogProps<Grant
           </Button>
         </Box>
       </DialogActions>
-    </SwipeableDialog>
+    </Dialog>
   );
 };
