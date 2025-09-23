@@ -1,6 +1,5 @@
 import Layout from '@/components/layout/Layout';
-import { useCreateMatch, usePlayers, useTeams } from '@/tanstack/games';
-import { GamesTable } from '@/types/supabaseTypes';
+import { useCreateMatch, usePlayers } from '@/tanstack/games';
 import { captureException } from '@sentry/react';
 import { useNotifications } from '@toolpad/core/useNotifications';
 import React, { useEffect, useState } from 'react';
@@ -42,43 +41,7 @@ const SelectPlayer = ({ options, loading, label, value, onSelect }: Props) => {
       getOptionLabel={(option) => option.name}
       getOptionKey={(option) => option.userId}
       isOptionEqualToValue={(o, v) => o.userId === v.userId}
-      onChange={(e, v) => onSelect(v)}
-      renderInput={(params) => (
-        <TextField
-          {...params}
-          label={label}
-          slotProps={{
-            input: {
-              ...params.InputProps,
-              endAdornment: (
-                <React.Fragment>
-                  {loading ? <CircularProgress color="inherit" size={20} /> : null}
-                  {params.InputProps.endAdornment}
-                </React.Fragment>
-              ),
-            },
-          }}
-        />
-      )}
-    />
-  );
-};
-
-type SelectTeamProps = {
-  options: GamesTable<'teams'>[];
-  loading: boolean;
-  label: string;
-  onSelect: (value: GamesTable<'teams'> | null) => void;
-};
-const SelectTeam = ({ options, loading, label, onSelect }: SelectTeamProps) => {
-  return (
-    <Autocomplete
-      disablePortal
-      fullWidth
-      loading={loading}
-      options={options}
-      getOptionLabel={(option) => option.name}
-      onChange={(e, v) => onSelect(v)}
+      onChange={(_e, v) => onSelect(v)}
       renderInput={(params) => (
         <TextField
           {...params}
@@ -117,22 +80,17 @@ const ReportScore = () => {
   const [player2b, setPlayer2b] = useState<SimpleUser | null>(null);
 
   const { data: players = [], error, isLoading, refetch } = usePlayers();
-  const { data: teams = [], error: teamsError, isLoading: teamsLoading, refetch: teamsRefetch } = useTeams();
-
-  const blocked1 = [player1a, player1b].filter(Boolean).map((u) => u!.userId);
-  const blocked2 = [player2a, player2b].filter(Boolean).map((u) => u!.userId);
 
   useEffect(() => {
-    if (error || teamsError)
-      notifications.show(error?.message ?? teamsError?.message, {
+    if (error)
+      notifications.show(error?.message, {
         severity: 'error',
         actionText: 'Neu laden',
         onAction: () => {
           refetch();
-          teamsRefetch();
         },
       });
-  }, [error, teamsError, notifications, refetch]);
+  }, [error, notifications, refetch]);
 
   const saveScores = () => {
     if (!player1a) {
@@ -208,39 +166,6 @@ const ReportScore = () => {
           <Grid size={6} sx={{ p: 2 }}>
             <Typography sx={{ fontWeight: 'bold' }}>Team B</Typography>
           </Grid>
-          {/* <Grid size={6} sx={{ p: 2 }}>
-            <SelectTeam
-              label="Wähle ein Team"
-              loading={isLoading}
-              options={teams.filter(t => !blocked1.includes(t.player_1) && !blocked1.includes(t.player_2))}
-              onSelect={(x) => {
-                const p1a = players.find(y => y.player === x?.player_1);
-                const p2a = players.find(y => y.player === x?.player_2);
-                if (p1a && p2a) {
-                  setPlayer1a({ userId: p1a.userId, name: p1a.name })
-                  setPlayer2a({ userId: p2a.userId, name: p2a.name })
-                }
-              }}
-            />
-          </Grid>
-          <Grid size={6} sx={{ p: 2 }}>
-            <SelectTeam
-              label="Wähle ein Team"
-              loading={isLoading}
-              options={teams.filter(t => !blocked2.includes(t.player_1) && !blocked2.includes(t.player_2))}
-              onSelect={(x) => {
-                const p1b = players.find(y => y.player === x?.player_1);
-                const p2b = players.find(y => y.player === x?.player_2);
-                if (p1b && p2b) {
-                  setPlayer1b({ userId: p1b.userId, name: p1b.name })
-                  setPlayer2b({ userId: p2b.userId, name: p2b.name })
-                }
-              }}
-            />
-          </Grid>
-          <Grid size={12}>
-            <Divider />
-          </Grid> */}
           <Grid size={6} sx={{ p: 2 }}>
             <SelectPlayer
               label="Player 1"
@@ -307,7 +232,7 @@ const ReportScore = () => {
           <Grid size={12}>
             <ListItem>
               <ListItemAvatar>
-                <Checkbox checked={rating_enabled} onChange={(e, v) => setRatingEnabled(v)} />
+                <Checkbox checked={rating_enabled} onChange={(_e, v) => setRatingEnabled(v)} />
               </ListItemAvatar>
               <ListItemText primary={'Soll das Spiel in die Index Wertung eingehen?'} />
             </ListItem>
