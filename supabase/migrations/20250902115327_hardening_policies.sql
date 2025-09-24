@@ -464,40 +464,6 @@ BEGIN
 END $function$
 ;
 
-CREATE OR REPLACE FUNCTION public.test_seed_grant_feature(p_group uuid, p_feature text)
- RETURNS void
- LANGUAGE plpgsql
- SECURITY DEFINER
- SET search_path TO 'public'
-AS $function$
-BEGIN
-  INSERT INTO public.features(name) VALUES (p_feature)
-  ON CONFLICT (name) DO NOTHING;
-
-  INSERT INTO public.group_features("group","feature")
-  VALUES (p_group, p_feature)
-  ON CONFLICT DO NOTHING;
-END;
-$function$
-;
-
-CREATE OR REPLACE FUNCTION public.test_seed_grant_permission(p_group uuid, p_perm text)
- RETURNS void
- LANGUAGE plpgsql
- SECURITY DEFINER
- SET search_path TO 'public'
-AS $function$
-BEGIN
-  INSERT INTO public.permissions(name) VALUES (p_perm)
-  ON CONFLICT (name) DO NOTHING;
-
-  INSERT INTO public.group_permissions("group","permission")
-  VALUES (p_group, p_perm)
-  ON CONFLICT DO NOTHING;
-END;
-$function$
-;
-
 CREATE OR REPLACE FUNCTION public.update_attendance(p_event uuid, p_user text, p_state "EventAttendance")
  RETURNS SETOF event_attendance_user_mapping
  LANGUAGE plpgsql
