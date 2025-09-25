@@ -1,5 +1,7 @@
 set check_function_bodies = off;
 
+drop function if exists public.create_next_occurrences;
+
 CREATE OR REPLACE FUNCTION public.create_next_occurrences(p_run_at timestamp with time zone, p_horizon interval)
  RETURNS SETOF events
  LANGUAGE plpgsql
