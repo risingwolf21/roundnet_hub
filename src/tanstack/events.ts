@@ -9,7 +9,7 @@ import { logger } from '@sentry/react';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { format, isAfter, isBefore } from 'date-fns';
 
-export const fetchFullEventPledges = (eventId: String) =>
+export const fetchFullEventPledges = (eventId: string) =>
   supabase.from('event_bring_pledges').select('*, user: user_id(*)').eq('event', eventId);
 
 export const useEvents = (filter: 'past' | 'upcoming') => {
@@ -409,7 +409,10 @@ export const useCancelTrainingMutation = (fetchMode: 'past' | 'upcoming') => {
       return { previousEvents, previousEvent, event };
     },
     onError: (err, variables, context) => {
-      logger.error('Event could not be cancelled', {
+      logger.error('event_cancellation_failed', {
+        type: 'event_cancellation',
+        message: 'event_cancellation_failed',
+        origin: 'ui',
         event: variables.event.id,
         eventDate: format(variables.event.startingDateTime, 'dd.MM.yyyy HH:mm'),
         error: err,
@@ -423,7 +426,10 @@ export const useCancelTrainingMutation = (fetchMode: 'past' | 'upcoming') => {
     },
 
     onSettled: (_data, _error, variables, _context) => {
-      logger.info('Event cancelled successfully.', {
+      logger.info('event_cancellation_successful', {
+        type: 'event_cancellation',
+        message: 'event_cancellation_successful',
+        origin: 'ui',
         event: variables.event.id,
         eventDate: format(variables.event.startingDateTime, 'dd.MM.yyyy HH:mm'),
       });
@@ -435,7 +441,7 @@ export const useCancelTrainingMutation = (fetchMode: 'past' | 'upcoming') => {
 
 export const useDeleteTrainingMutation = (fetchMode: 'past' | 'upcoming') => {
   return useMutation({
-    mutationFn: ({ event, type }: { event: EventsUserView; type: DeleteEventType }) => {
+    mutationFn: ({ event, type, currentUser }: { event: EventsUserView; type: DeleteEventType, currentUser: User }) => {
       if (type === 'This Event') {
         return SupabaseEventRepository.deleteEvent(event.id);
       } else {
@@ -463,8 +469,13 @@ export const useDeleteTrainingMutation = (fetchMode: 'past' | 'upcoming') => {
       return { previousEvents, event };
     },
     onError: (_err, _vars, context) => {
-      logger.error('Deleting event failed.', {
+      logger.error('event_deletion_failed', {
+        type: 'event_deletion',
+        message: 'event_deletion_failed',
+        origin: 'ui',
+        error: JSON.stringify(_err),
         event: _vars.event.id,
+        user: JSON.stringify(_vars.currentUser),
         eventDate: format(_vars.event.startingDateTime, 'dd.MM.yyyy HH:mm'),
       });
       if (context?.previousEvents) {
@@ -473,8 +484,12 @@ export const useDeleteTrainingMutation = (fetchMode: 'past' | 'upcoming') => {
     },
 
     onSettled: (_data, _error, variables, _context) => {
-      logger.info('Deleting event successful.', {
+      logger.info('event_deletion_successful', {
+        type: 'event_deletion',
+        message: 'event_deletion_successful',
+        origin: 'ui',
         event: variables.event.id,
+        user: JSON.stringify(variables.currentUser),
         eventDate: format(variables.event.startingDateTime, 'dd.MM.yyyy HH:mm'),
       });
       queryClient.invalidateQueries({ queryKey: ['events', fetchMode] });
@@ -484,7 +499,7 @@ export const useDeleteTrainingMutation = (fetchMode: 'past' | 'upcoming') => {
 
 export const useInsertEventMutation = (fetchMode: 'past' | 'upcoming') => {
   return useMutation({
-    mutationFn: async ({ event }: { event: TablesInsert<'events'> }) => {
+    mutationFn: async ({ event, currentUser }: { event: TablesInsert<'events'>, currentUser: User }) => {
       const result = await SupabaseEventRepository.insertEvent(event);
       return result.data;
     },
@@ -509,18 +524,25 @@ export const useInsertEventMutation = (fetchMode: 'past' | 'upcoming') => {
       return { previousEvents, event };
     },
     onError: (err, _vars, context) => {
-      logger.error('Inserting event failed.', {
+      logger.error('event_creation_failed', {
+        type: 'event_creation',
+        message: 'event_creation_failed',
+        origin: 'ui',
         event: _vars.event.id,
+        user: JSON.stringify(_vars.currentUser),
         eventDate: format(_vars.event.startingDateTime, 'dd.MM.yyyy HH:mm'),
-        error: err.message,
+        error: JSON.stringify(err),
       });
       if (context?.previousEvents) {
         queryClient.setQueryData(['events', fetchMode], context.previousEvents);
       }
     },
     onSettled: (_data, _error, variables, _context) => {
-      logger.info('Inserting event successful.', {
+      logger.info('event_creation_successful', {
+        type: 'event_creation',
+        message: 'event_creation_successful',
         event: variables.event.id,
+        user: JSON.stringify(variables.currentUser),
         eventDate: format(variables.event.startingDateTime, 'dd.MM.yyyy HH:mm'),
         origin: 'ui',
       });
@@ -531,7 +553,7 @@ export const useInsertEventMutation = (fetchMode: 'past' | 'upcoming') => {
 
 export const useUpdateSingleMutation = (fetchMode: 'past' | 'upcoming') => {
   return useMutation({
-    mutationFn: async ({ eventChanges, id }: { id: string; eventChanges: TablesUpdate<'events'> }) => {
+    mutationFn: async ({ eventChanges, id, currentUser }: { id: string; eventChanges: TablesUpdate<'events'>, currentUser: User }) => {
       const result = await supabase.from('events').update(eventChanges).eq('id', id).select().throwOnError();
       console.log('updateSingleMutation', result);
       return result.data;
@@ -557,19 +579,26 @@ export const useUpdateSingleMutation = (fetchMode: 'past' | 'upcoming') => {
       return { previousEvents };
     },
     onError: (err, _vars, context) => {
-      logger.error('Updating recurring event failed.', {
+      logger.error('event_update_single_failed', {
+        type: 'event_update_single',
+        message: 'event_update_single_failed',
         changes: _vars.eventChanges,
         key: _vars.id,
-        error: err.message,
+        user: JSON.stringify(_vars.currentUser),
+        error: JSON.stringify(err),
+        origin: 'ui',
       });
       if (context?.previousEvents) {
         queryClient.setQueryData(['events', fetchMode], context.previousEvents);
       }
     },
     onSettled: (_data, _error, variables, _context) => {
-      logger.info('Updating single event successful.', {
+      logger.info('event_update_single_successful', {
+        type: 'event_update_single',
+        message: 'event_update_single_successful',
         changes: variables.eventChanges,
         id: variables.id,
+        user: JSON.stringify(variables.currentUser),
         origin: 'ui',
       });
       queryClient.invalidateQueries({ queryKey: ['events', fetchMode] });
@@ -583,10 +612,12 @@ export const useUpdateRecurrenceMutation = (fetchMode: 'past' | 'upcoming') => {
       eventChanges,
       key,
       startingDateTime,
+      currentUser
     }: {
       key: string;
       startingDateTime: string;
       eventChanges: TablesUpdate<'events'>;
+      currentUser: User
     }) => {
       return await SupabaseEventRepository.updateEventAndAllRecurrences(eventChanges, key, startingDateTime);
     },
@@ -611,19 +642,26 @@ export const useUpdateRecurrenceMutation = (fetchMode: 'past' | 'upcoming') => {
       return { previousEvents };
     },
     onError: (err, _vars, context) => {
-      logger.error('Updating recurring event failed.', {
+      logger.error('event_update_recurrence_failed', {
+        type: 'event_update_recurrence',
+        message: 'event_update_recurrence_failed',
         changes: _vars.eventChanges,
         key: _vars.key,
+        user: JSON.stringify(_vars.currentUser),
+        error: JSON.stringify(err),
         eventDate: format(_vars.startingDateTime, 'dd.MM.yyyy HH:mm'),
-        error: err.message,
+        origin: 'ui',
       });
       if (context?.previousEvents) {
         queryClient.setQueryData(['events', fetchMode], context.previousEvents);
       }
     },
     onSettled: (_data, _error, variables, _context) => {
-      logger.info('Updating recurring event successful.', {
+      logger.info('event_update_recurrence_successful', {
+        type: 'event_update_recurrence',
+        message: 'event_update_recurrence_successful',
         changes: variables.eventChanges,
+        user: JSON.stringify(variables.currentUser),
         key: variables.key,
         eventDate: format(variables.startingDateTime, 'dd.MM.yyyy HH:mm'),
         origin: 'ui',

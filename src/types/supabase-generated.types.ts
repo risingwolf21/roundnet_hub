@@ -1,4 +1,3 @@
-import { createTheme } from '@mui/material/styles';
 export type Json =
   | string
   | number
@@ -450,13 +449,6 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "teams_player_1_fkey"
-            columns: ["team_b_player_1"]
-            isOneToOne: false
-            referencedRelation: "players"
-            referencedColumns: ["player"]
-          },
-          {
-            foreignKeyName: "teams_player_1_fkey"
             columns: ["team_a_player_1"]
             isOneToOne: false
             referencedRelation: "players"
@@ -465,13 +457,20 @@ export type Database = {
           {
             foreignKeyName: "teams_player_1_fkey"
             columns: ["team_b_player_1"]
+            isOneToOne: false
+            referencedRelation: "players"
+            referencedColumns: ["player"]
+          },
+          {
+            foreignKeyName: "teams_player_1_fkey"
+            columns: ["team_a_player_1"]
             isOneToOne: false
             referencedRelation: "players_public"
             referencedColumns: ["player"]
           },
           {
             foreignKeyName: "teams_player_1_fkey"
-            columns: ["team_a_player_1"]
+            columns: ["team_b_player_1"]
             isOneToOne: false
             referencedRelation: "players_public"
             referencedColumns: ["player"]
@@ -562,16 +561,16 @@ export type Database = {
       preview_elo_for_match: {
         Args: { p_match: string }
         Returns: {
+          upset_multiplier: number
+          category_b: string
+          upset_levels: number
           eff_team_a: number
+          eff_team_b: number
           expected_a: number
           expected_b: number
           k_base: number
           k_eff: number
           category_a: string
-          category_b: string
-          upset_levels: number
-          upset_multiplier: number
-          eff_team_b: number
         }[]
       }
       recompute_all_effective_player_ratings: {
@@ -2305,10 +2304,6 @@ export type Database = {
         Args: { items: Json }
         Returns: undefined
       }
-      as_service: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
       authorize: {
         Args:
           | { p_tenant: string; requested_permission: string }
@@ -2317,10 +2312,6 @@ export type Database = {
       }
       check_reply_to: {
         Args: { value: string }
-        Returns: boolean
-      }
-      check_version: {
-        Args: { input_version: string }
         Returns: boolean
       }
       create_group_with_user: {
@@ -2348,7 +2339,26 @@ export type Database = {
       }
       create_next_occurrences: {
         Args: { p_horizon: unknown; p_run_at: string }
-        Returns: number
+        Returns: {
+          answerDeadline: string | null
+          constellations_enabled: boolean
+          created_at: string
+          description: string
+          endDateTime: string
+          group: string
+          id: string
+          isCancelled: boolean
+          items_enabled: boolean
+          key: string
+          maxAttendees: number | null
+          meetingDateTime: string | null
+          place: string | null
+          recurrence: Database["public"]["Enums"]["EventRecurrence"]
+          recurrenceEnd: string | null
+          required_item: Database["public"]["Enums"]["ItemType"] | null
+          startingDateTime: string
+          title: string
+        }[]
       }
       custom_access_token_hook: {
         Args: { event: Json }
@@ -2400,12 +2410,12 @@ export type Database = {
       get_column_info: {
         Args: { schema_name: string; selected_table: string }
         Returns: {
+          is_nullable: boolean
           data_type: string
-          foreign_key_column_name: string
+          column_name: string
           foreign_key_table_name: string
           foreign_key_schema_name: string
-          is_nullable: boolean
-          column_name: string
+          foreign_key_column_name: string
         }[]
       }
       get_enum_types: {
@@ -2425,10 +2435,6 @@ export type Database = {
           table_name: string
           table_schema: string
         }[]
-      }
-      getattendingusers: {
-        Args: { event_id: number }
-        Returns: string[]
       }
       gettingjsonarray: {
         Args: { items: Json }
@@ -2552,6 +2558,19 @@ export type Database = {
           | { p_actor?: string; p_from: string; p_item: string; p_to: string }
         Returns: number
       }
+      notify_users: {
+        Args: {
+          p_body: string
+          p_data?: Json
+          p_scope: string
+          p_source_id?: string
+          p_source_type?: string
+          p_title: string
+          p_topic: string
+          p_users: string[]
+        }
+        Returns: number
+      }
       refresh_user_grants: {
         Args: { p_user: string }
         Returns: undefined
@@ -2594,18 +2613,6 @@ export type Database = {
           updated_at: string
           user: string
         }
-      }
-      test_login: {
-        Args: { uid: string }
-        Returns: undefined
-      }
-      test_seed_grant_feature: {
-        Args: { p_feature: string; p_group: string }
-        Returns: undefined
-      }
-      test_seed_grant_permission: {
-        Args: { p_group: string; p_perm: string }
-        Returns: undefined
       }
       unregister_web_push_subscription: {
         Args: { p_endpoint: string }
