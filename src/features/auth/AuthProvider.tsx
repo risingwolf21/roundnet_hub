@@ -26,13 +26,10 @@ export const AuthProvider = ({ children, user, signOut }: AuthProviderProps) => 
   const [features, setFeatures] = useState<string[]>([]);
 
   const fetchUserData = useCallback(async () => {
-    const [features, permissions] = await Promise.all([
-      SupabaseUserRepository.fetchFeaturesForUser(),
-      SupabaseUserRepository.fetchPermissionsForUser(),
-    ]);
+    const grants = await SupabaseUserRepository.fetchGrantsForUser(user.userId);
 
-    setPermissions(permissions);
-    setFeatures(features);
+    setPermissions(grants.filter(x => x.kind === 'perm').map(x => x.key));
+    setFeatures(grants.filter(x => x.kind === 'feat').map(x => x.key));
   }, []);
 
   useEffect(() => {
