@@ -137,7 +137,7 @@ export const SupabaseEventRepository = {
     await supabase
       .from('events')
       .update({
-        recurrenceEnd: format(Date.now(), 'yyyy-MM-dd HH:mm:ssZ'),
+        recurrenceEnd: formatDateToDatabase(Date.now()),
       })
       .eq('id', eventId);
   },
