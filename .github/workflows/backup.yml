@@ -27,7 +27,9 @@ jobs:
     env:
       supabase_connection_string: ${{ vars.SUPABASE_CONNECTION_STRING }} # For example: postgresql://postgres:[YOUR-PASSWORD]@db.<ref>.supabase.co:5432/postgres
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
+        with:
+          ref: ${{ github.head_ref }}
       - uses: supabase/setup-cli@v1
         with:
           version: latest
@@ -57,7 +59,9 @@ jobs:
     env:
       supabase_connection_string: ${{ vars.SUPABASE_CONNECTION_STRING }} # For example: postgresql://postgres:[YOUR-PASSWORD]@db.<ref>.supabase.co:5432/postgres
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
+        with:
+          ref: ${{ github.head_ref }}
       - uses: supabase/setup-cli@v1
         with:
           version: latest
