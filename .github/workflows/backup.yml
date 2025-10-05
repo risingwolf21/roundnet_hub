@@ -25,7 +25,7 @@ jobs:
     permissions:
       contents: write
     env:
-      supabase_connection_string: ${{ vars.SUPABASE_CONNECTION_STRING }} # For example: postgresql://postgres:[YOUR-PASSWORD]@db.<ref>.supabase.co:5432/postgres
+      supabase_connection_string: ${{ secrets.SUPABASE_CONNECTION_STRING }} # For example: postgresql://postgres:[YOUR-PASSWORD]@db.<ref>.supabase.co:5432/postgres
     steps:
       - uses: actions/checkout@v3
         with:
@@ -57,7 +57,7 @@ jobs:
     permissions:
       contents: write
     env:
-      supabase_connection_string: ${{ vars.SUPABASE_CONNECTION_STRING }} # For example: postgresql://postgres:[YOUR-PASSWORD]@db.<ref>.supabase.co:5432/postgres
+      supabase_connection_string: ${{ secrets.SUPABASE_CONNECTION_STRING }} # For example: postgresql://postgres:[YOUR-PASSWORD]@db.<ref>.supabase.co:5432/postgres
     steps:
       - uses: actions/checkout@v3
         with:
