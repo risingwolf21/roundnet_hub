@@ -42,9 +42,12 @@ jobs:
       - name: Backup data
         run: supabase db dump --db-url "$supabase_connection_string" -f supabase/backup/roundnet-karlsruhe/data.sql --data-only --use-copy
 
+      - name: Set DATE env (Europe/Berlin)
+        run: echo "DATE=$(TZ=Europe/Berlin date +'%Y-%m-%d')" >> $GITHUB_ENV
+
       - uses: stefanzweifel/git-auto-commit-action@v4
         with:
-          commit_message: "Supabase Backup Roundnet Karlsruhe $(date +'%Y-%m-%d')"
+          commit_message: "📦 Supabase Backup (${{ github.environment }}) ${{ env.DATE }}"
           file_pattern: supabase/backup/roundnet-karlsruhe/*
 
   backup-munich:
@@ -74,7 +77,10 @@ jobs:
       - name: Backup data
         run: supabase db dump --db-url "$supabase_connection_string" -f supabase/backup/munich-roundnet/data.sql --data-only --use-copy
 
+      - name: Set DATE env (Europe/Berlin)
+        run: echo "DATE=$(TZ=Europe/Berlin date +'%Y-%m-%d')" >> $GITHUB_ENV
+
       - uses: stefanzweifel/git-auto-commit-action@v4
         with:
-          commit_message: "Supabase Backup $(date +'%Y-%m-%d')"
+          commit_message: "📦 Supabase Backup (${{ github.environment }}) ${{ env.DATE }}"
           file_pattern: supabase/backup/munich-roundnet/*
