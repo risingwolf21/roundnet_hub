@@ -1,12 +1,15 @@
 import { useGrants } from '@/features/auth/GrantsContext';
 import { Tables } from '@/types/supabase-generated.types';
-import Slider from '@mui/material/Slider';
 import { DialogProps } from '@toolpad/core';
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import { SwipeableDialog } from '../../../components/SwipeableDialog';
+
+import Add from "@mui/icons-material/Add";
+import Remove from "@mui/icons-material/Remove";
 
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
+import IconButton from '@mui/material/IconButton';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemAvatar from '@mui/material/ListItemAvatar';
@@ -22,8 +25,6 @@ type Props = {
 const EventBringItemsDialog = ({ payload, open, onClose }: DialogProps<Props, number | null>) => {
   const { user } = useGrants();
 
-  const userPledge = useMemo(() => payload.pledges.find((x) => x.user_id === user.userId), [user]);
-
   const [value, setValue] = useState(payload.pledges.find((x) => x.user_id === user.userId)?.qty ?? 0);
 
   return (
@@ -34,20 +35,35 @@ const EventBringItemsDialog = ({ payload, open, onClose }: DialogProps<Props, nu
       actions={<Button onClick={() => onClose(value)}>Speichern</Button>}
     >
       <Box sx={{ p: 2 }}>
-        <Typography sx={{ fontSize: 16, fontWeight: 'bold', mt: 2 }} color="text.secondary" gutterBottom>
-          {payload.overview.name}
-        </Typography>
-        <Box sx={{ px: 2, mt: 5 }}>
-          <Slider
-            value={value}
-            onChange={(_, v) => setValue(v as number)}
-            step={1}
-            min={0}
-            max={(userPledge ? payload.overview.required_qty : payload.overview.remaining_qty) ?? 0}
-            valueLabelDisplay="on"
-            marks={true}
-          />
-        </Box>
+        <ListItem secondaryAction={
+          <Box sx={{ display: 'flex', flexDirection: 'row' }}>
+            {value > 0 && (
+              <>
+                <IconButton
+                  disableRipple
+                  onClick={(event) => {
+                    setValue(value - 1);
+                    event.stopPropagation();
+                  }}
+                >
+                  <Remove fontSize="inherit" sx={{ fontSize: '28px' }} />
+                </IconButton>
+                <Typography sx={{ p: 1, fontSize: '20px', color: 'rgba(0,0,0,0.54)' }}>{value}</Typography>
+              </>
+            )}
+            <IconButton
+              disableRipple
+              onClick={(event) => {
+                setValue(value + 1);
+                event.stopPropagation();
+              }}
+            >
+              <Add fontSize="inherit" sx={{ fontSize: '28px' }} />
+            </IconButton>
+          </Box>
+        }>
+          <ListItemText primary={"Wie oft bringst du den Gegenstand mit?"} />
+        </ListItem>
         <List
           disablePadding
           subheader={

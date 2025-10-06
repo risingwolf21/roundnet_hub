@@ -39,36 +39,17 @@ export default function WebPushKeeper({ children, session, vapidPublicKey }: Pro
     (async () => {
       try {
         if (!session?.user) {
-          logger.error('webpush_not_available_without_a_user', {
-            type: 'webpush',
-            message: 'not_available_without_a_user',
-          });
           return;
         }
         if (!('serviceWorker' in navigator) || !('PushManager' in window) || !vapidPublicKey) {
-          logger.error('webpush_not_available', {
-            type: 'webpush',
-            message: 'not_available',
-            user: session.user.id,
-          });
           return;
         }
         if (Notification.permission === 'default') {
           const perm = await Notification.requestPermission();
           if (perm !== 'granted') {
-            logger.error('webpush_notification_permission_denied', {
-              type: 'webpush',
-              message: 'notification_permission_denied',
-              user: session.user.id,
-            });
             return;
           }
         } else if (Notification.permission === 'denied') {
-          logger.error('webpush_notification_permission_denied', {
-            type: 'webpush',
-            message: 'notification_permission_denied',
-            user: session.user.id,
-          });
           return;
         }
         const reg = await navigator.serviceWorker.ready;

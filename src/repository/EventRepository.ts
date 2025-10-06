@@ -114,14 +114,13 @@ export const SupabaseEventRepository = {
     userId: string,
     eventId: string,
     state: EventAttendance
-  ): Promise<PostgrestSingleResponse<EventAttendance>> {
+  ): Promise<PostgrestSingleResponse<Attendance[]>> {
     return supabase
       .rpc('update_attendance', {
         p_event: eventId,
         p_user: userId,
         p_state: state,
       })
-      .returns<EventAttendance>()
       .throwOnError();
   },
 

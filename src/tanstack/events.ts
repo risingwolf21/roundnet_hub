@@ -441,7 +441,7 @@ export const useCancelTrainingMutation = (fetchMode: 'past' | 'upcoming') => {
 
 export const useDeleteTrainingMutation = (fetchMode: 'past' | 'upcoming') => {
   return useMutation({
-    mutationFn: ({ event, type, currentUser }: { event: EventsUserView; type: DeleteEventType, currentUser: User }) => {
+    mutationFn: ({ event, type }: { event: EventsUserView; type: DeleteEventType, currentUser: User }) => {
       if (type === 'This Event') {
         return SupabaseEventRepository.deleteEvent(event.id);
       } else {
@@ -499,7 +499,7 @@ export const useDeleteTrainingMutation = (fetchMode: 'past' | 'upcoming') => {
 
 export const useInsertEventMutation = (fetchMode: 'past' | 'upcoming') => {
   return useMutation({
-    mutationFn: async ({ event, currentUser }: { event: TablesInsert<'events'>, currentUser: User }) => {
+    mutationFn: async ({ event }: { event: TablesInsert<'events'>, currentUser: User }) => {
       const result = await SupabaseEventRepository.insertEvent(event);
       return result.data;
     },
@@ -553,7 +553,7 @@ export const useInsertEventMutation = (fetchMode: 'past' | 'upcoming') => {
 
 export const useUpdateSingleMutation = (fetchMode: 'past' | 'upcoming') => {
   return useMutation({
-    mutationFn: async ({ eventChanges, id, currentUser }: { id: string; eventChanges: TablesUpdate<'events'>, currentUser: User }) => {
+    mutationFn: async ({ eventChanges, id }: { id: string; eventChanges: TablesUpdate<'events'>, currentUser: User }) => {
       const result = await supabase.from('events').update(eventChanges).eq('id', id).select().throwOnError();
       console.log('updateSingleMutation', result);
       return result.data;
@@ -611,8 +611,7 @@ export const useUpdateRecurrenceMutation = (fetchMode: 'past' | 'upcoming') => {
     mutationFn: async ({
       eventChanges,
       key,
-      startingDateTime,
-      currentUser
+      startingDateTime
     }: {
       key: string;
       startingDateTime: string;

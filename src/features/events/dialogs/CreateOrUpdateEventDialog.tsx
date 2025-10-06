@@ -19,16 +19,22 @@ import { CreateEventOption, PlaceType } from '../types';
 import SearchPlacesDialog from './SearchPlacesDialog';
 import { SelectGroupDialog } from './SelectGroupDialog';
 
+import { SwipeableDialog } from '@/components/SwipeableDialog';
+import { useGrants } from '@/features/auth/GrantsContext';
 import AccessTime from '@mui/icons-material/AccessTime';
+import Add from '@mui/icons-material/Add';
 import Article from '@mui/icons-material/Article';
 import Category from '@mui/icons-material/Category';
 import Close from '@mui/icons-material/Close';
+import Delete from '@mui/icons-material/Delete';
 import FiberManualRecord from '@mui/icons-material/FiberManualRecord';
 import Map from '@mui/icons-material/Map';
+import Remove from '@mui/icons-material/Remove';
 import AppBar from '@mui/material/AppBar';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Checkbox from '@mui/material/Checkbox';
+import Chip from '@mui/material/Chip';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
@@ -79,10 +85,12 @@ export const CreateOrUpdateEventDialog = ({
   const [fetchMode] = useFetchMode();
   const dialogs = useDialogs();
   const { t } = useTranslation();
+  const { user } = useGrants();
   const [editedEvent, setEditedEvent] = useState<EventTable>(event ?? emptyEvent);
   const [selectedGroup, setSelectedGroup] = useState<Group | null>(eventGroup ?? null);
-  const [dialogOpen, setDialogOpen] = useState<'group' | 'stopRepeat' | 'repeat' | 'places' | null>(null);
+  const [dialogOpen, setDialogOpen] = useState<'group' | 'stopRepeat' | 'repeat' | 'places' | 'bring_items' | null>(null);
   const [place, setPlace] = useState<PlaceType | null>(event?.place ? (JSON.parse(event.place) as PlaceType) : null);
+  const [bringItems, setBringItems] = useState<{ name: string, required_qty: number }[]>([]);
 
   const ref = useRef<HTMLFormElement>(null);
 
@@ -131,7 +139,7 @@ export const CreateOrUpdateEventDialog = ({
 
       if (option === 'InsertEvent') {
         insertEvent.mutate(
-          { event: eventChanges as TablesInsert<'events'> },
+          { event: eventChanges as TablesInsert<'events'>, currentUser: user },
           {
             onError: (error) =>
               notifications.show('Event konnte nicht erstellt werden: ' + error.message, { severity: 'error' }),
@@ -140,7 +148,7 @@ export const CreateOrUpdateEventDialog = ({
         );
       } else if (option === 'UpdateSingle') {
         updateSingleEvent.mutate(
-          { eventChanges, id: edited_event.id ?? '' },
+          { eventChanges, id: edited_event.id ?? '', currentUser: user },
           {
             onError: (error) =>
               notifications.show('Event konnte nicht aktualisiert werden: ' + error.message, { severity: 'error' }),
@@ -149,7 +157,7 @@ export const CreateOrUpdateEventDialog = ({
         );
       } else if (option === 'UpdateRecurrence') {
         updateRecurrenceEvents.mutate(
-          { eventChanges, key: editedEvent.key, startingDateTime: editedEvent.startingDateTime },
+          { eventChanges, key: editedEvent.key, startingDateTime: editedEvent.startingDateTime, currentUser: user },
           {
             onError: (error) =>
               notifications.show('Events konnten nicht aktualisiert werden: ' + error.message, { severity: 'error' }),
@@ -555,14 +563,86 @@ export const CreateOrUpdateEventDialog = ({
               secondary={'Soll es möglich sein für Trainer, Konstellationen zu erstellen?'}
             />
           </ListItem>
-          <ListItem sx={{ pt: 0, pb: 0, mb: 2 }} key={'pledges'} onClick={async () => { }}>
+          <ListItem sx={{ pt: 0, pb: 0, mb: 2 }} key={'pledges'} onClick={() => setDialogOpen('bring_items')}>
             <ListItemAvatar>
               <Category />
             </ListItemAvatar>
-            <ListItemText primary={'Gegenstände mitbringen'} secondary={'Gegenstände mitbringen'} />
+            <ListItemText primary={'Gegenstände mitbringen'} secondary={bringItems.map(x => x.name).filter(x => x).map(x => <Chip sx={{ mr: 1 }} size='small' label={x} />)} />
           </ListItem>
         </List>
       </Box>
+      <SwipeableDialog title='Gegenstände mitbringen' open={dialogOpen === 'bring_items'} onClose={() => setDialogOpen(null)}>
+
+        <List>
+          {
+            bringItems.map((item, index) => (
+              <ListItem divider key={index}>
+                <ListItemAvatar>
+                  <IconButton onClick={() => {
+                    const newItems = [...bringItems];
+                    newItems.splice(index, 1);
+                    setBringItems(newItems);
+                  }}>
+                    <Delete />
+                  </IconButton>
+                </ListItemAvatar>
+                <TextField
+                  fullWidth
+                  variant="outlined"
+                  label="Gegenstand"
+                  value={item.name}
+                  onChange={(e) => {
+                    const newItems = [...bringItems];
+                    newItems[index].name = e.target.value;
+                    setBringItems(newItems);
+                  }}
+                  sx={{ mr: 2 }}
+                  margin="normal"
+                />
+                <Box sx={{ display: 'flex', flexDirection: 'row' }}>
+                  {item.required_qty > 0 && (
+                    <>
+                      <IconButton
+                        disableRipple
+                        onClick={(event) => {
+                          const newItems = [...bringItems];
+                          newItems[index].required_qty = Math.max(1, newItems[index].required_qty - 1);
+                          setBringItems(newItems);
+                          event.stopPropagation();
+                        }}
+                      >
+                        <Remove fontSize="inherit" sx={{ fontSize: '28px' }} />
+                      </IconButton>
+                      <Typography sx={{ p: 1, fontSize: '20px', color: 'rgba(0,0,0,0.54)' }}>{item.required_qty}</Typography>
+                    </>
+                  )}
+                  <IconButton
+                    disableRipple
+                    onClick={(event) => {
+                      const newItems = [...bringItems];
+                      newItems[index].required_qty = newItems[index].required_qty + 1;
+                      setBringItems(newItems);
+                      event.stopPropagation();
+                    }}
+                  >
+                    <Add fontSize="inherit" sx={{ fontSize: '28px' }} />
+                  </IconButton>
+                </Box>
+              </ListItem>
+            ))
+          }
+          <ListItem onClick={() => {
+            setBringItems([...bringItems, { name: '', required_qty: 1 }]);
+          }}>
+            <ListItemAvatar>
+              <IconButton>
+                <Add />
+              </IconButton>
+            </ListItemAvatar>
+            <ListItemText primary={'Gegenstand hinzufügen'} />
+          </ListItem>
+        </List>
+      </SwipeableDialog>
       <Dialog open={dialogOpen === 'repeat'} onClose={() => setDialogOpen(null)}>
         <DialogTitle>Wiederholung</DialogTitle>
         <DialogContent>
