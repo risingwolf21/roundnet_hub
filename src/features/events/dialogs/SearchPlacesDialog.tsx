@@ -156,7 +156,7 @@ const SearchPlacesDialog = ({ open, handleClose, placeSelected }: SearchPlacesDi
   return (
     <Dialog fullScreen open={open} onClose={handleClose} TransitionComponent={SlideUpTransition}>
       <Box sx={{ flexGrow: 1 }}>
-        <AppBar position="static">
+        <AppBar position="sticky" sx={{ pt: 'env(safe-area-inset-top)' }}>
           <Toolbar>
             <IconButton size="large" edge="start" color="inherit" aria-label="close dialog" onClick={handleClose}>
               <ArrowBack />

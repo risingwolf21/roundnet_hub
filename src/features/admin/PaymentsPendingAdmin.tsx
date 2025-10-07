@@ -3,7 +3,6 @@ import { queryClient } from '@/lib/queryClient';
 import { supabase } from '@/lib/supabase';
 import CheckIcon from '@mui/icons-material/Check';
 import SearchIcon from '@mui/icons-material/Search';
-import TextField from '@mui/material/TextField';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { useDialogs } from '@toolpad/core';
 import { useState } from 'react';
@@ -12,10 +11,9 @@ import Layout from '../../components/layout/Layout';
 import { FullPayment } from '../../types/supabaseTypes';
 import { ConfirmPaymentDialog } from './dialogs/ConfirmPaymentDialog';
 
-import Box from '@mui/material/Box';
+import { Search, SearchIconWrapper, StyledInputBase } from '@/components/SearchBar';
 import Grid from '@mui/material/Grid';
 import IconButton from '@mui/material/IconButton';
-import InputAdornment from '@mui/material/InputAdornment';
 import LinearProgress from '@mui/material/LinearProgress';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
@@ -90,25 +88,20 @@ const PaymentsPendingAdmin = () => {
   const confirmPayment = useConfirmPaymentMutation();
 
   return (
-    <Layout>
-      <Box sx={{ px: 2, pt: 2 }}>
-        <TextField
-          fullWidth
-          variant={'outlined'}
-          placeholder={'Suche'}
-          slotProps={{
-            input: {
-              startAdornment: (
-                <InputAdornment position="start">
-                  <SearchIcon />
-                </InputAdornment>
-              ),
-            },
-          }}
-          onChange={(e) => setSearchString(e.target.value)}
+    <Layout appBarContent={<Search sx={{ flexGrow: 1 }}>
+      <SearchIconWrapper>
+        <SearchIcon />
+      </SearchIconWrapper>
+      <div>
+        <StyledInputBase
+          sx={{ width: '100% !important' }}
+          placeholder="Suche nach einem Nutzer"
+          inputProps={{ 'aria-label': 'search' }}
           value={searchString}
+          onChange={(e: { target: { value: React.SetStateAction<string>; }; }) => setSearchString(e.target.value)}
         />
-      </Box>
+      </div>
+    </Search>}>
       {isLoading && <LinearProgress style={{ position: 'fixed', left: 0, top: 56, right: 0 }} />}
       {payments && payments.length > 0 && (
         <PullToRefresh onRefresh={() => refetch()}>
@@ -117,7 +110,7 @@ const PaymentsPendingAdmin = () => {
               .filter(
                 (x) =>
                   searchString === '' ||
-                  [(x.user?.displayName ?? '').toLowerCase(), (x.user?.name ?? '').toLowerCase()].includes(
+                  ((x.user?.displayName ?? '').toLowerCase() + (x.user?.name ?? '').toLowerCase()).includes(
                     searchString.toLowerCase()
                   )
               )

@@ -7,6 +7,7 @@ import { LoadingScreen } from '../../components/LoadingScreen';
 import { groupBy } from '../../utils';
 import { useGrants } from '../auth/GrantsContext';
 
+
 import Box from '@mui/material/Box';
 import Divider from '@mui/material/Divider';
 import Fab from '@mui/material/Fab';
@@ -45,17 +46,9 @@ const PayDrinksButton = ({ amountToPay }: { amountToPay: number }) => {
   );
 };
 
-const PayDrinksScreenProvider = () => {
+
+const PayDrinksScreen = () => {
   const { user } = useGrants();
-
-  return (
-    <Layout>
-      <PayDrinksScreen user={user} />
-    </Layout>
-  );
-};
-
-const PayDrinksScreen = ({ user }: { user: User }) => {
   const notifications = useNotifications();
 
   const { data: history = [], isLoading, error, refetch } = usePaymentHistory(user.userId);
@@ -68,7 +61,7 @@ const PayDrinksScreen = ({ user }: { user: User }) => {
   if (isLoading) return <LoadingScreen />;
 
   return (
-    <>
+    <Layout>
       <Box>
         <List>
           {Array.from(
@@ -142,8 +135,8 @@ const PayDrinksScreen = ({ user }: { user: User }) => {
           amountToPay={history.filter((x) => !x.voucher).reduce((prev, curr) => prev + (curr.amount ?? 0), 0) ?? 0}
         />
       )}
-    </>
+    </Layout>
   );
 };
 
-export default PayDrinksScreenProvider;
+export default PayDrinksScreen;
