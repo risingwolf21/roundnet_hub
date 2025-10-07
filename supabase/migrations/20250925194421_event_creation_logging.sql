@@ -74,18 +74,29 @@ begin
   ),
   ins as (
     insert into public.events(
-    "key", title, description, recurrence,
-    "startingDateTime","endDateTime","group",
-    place, "answerDeadline","maxAttendees","recurrenceEnd",
-    items_enabled, constellations_enabled, required_item
-  )
-  select "key", title, description, recurrence,
-         start_time, end_time, "group",
-         place, "answerDeadline","maxAttendees","recurrenceEnd",
-         items_enabled, constellations_enabled, required_item
-  from to_insert
-  on conflict ("key","startingDateTime") do nothing
-  returning *
+      "key", title, description, recurrence,
+      "startingDateTime","endDateTime","group",
+      place, "answerDeadline","maxAttendees","recurrenceEnd",
+      items_enabled, constellations_enabled, required_item
+    )
+    select
+      m."key",
+      m.title,
+      m.description,
+      m.recurrence,
+      m.start_time,
+      m.end_time,
+      m.grp,
+      m.place,
+      m.answer_deadline_shifted,
+      m.max_attendees,
+      m.recurrence_end,
+      m.items_enabled,
+      m.constellations_enabled,
+      m.required_item
+    from missing m
+    on conflict ("key","startingDateTime") do nothing
+    returning *
   )
   select * from ins;
 end;

@@ -89,7 +89,7 @@ SELECT throws_like(
 -- ------------------------------------------------------------------
 -- sicherstellen, dass die Gruppe aktuell KEINE manage-Permission hat
 -- Grants/Features sauber als Service-Role setzen
-SELECT as_service();
+SELECT tests.authenticate_as_service_role();
 INSERT INTO public.group_permissions("group","permission")VALUES('00000000-0000-0000-0000-000000000042','event.attendance.manage')
 ON CONFLICT DO NOTHING;
 
@@ -157,7 +157,7 @@ SELECT lives_ok(
 );
 
 -- Permission vergeben und erneut versuchen
-SELECT as_service();
+SELECT tests.authenticate_as_service_role();
 INSERT INTO public.group_permissions("group","permission")VALUES('00000000-0000-0000-0000-000000000042','event.attendance.manage')
 ON CONFLICT DO NOTHING;
 SELECT tests.authenticate_as('user_1a');
