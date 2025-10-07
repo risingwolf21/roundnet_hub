@@ -1,5 +1,5 @@
 import { BRANDING } from '@/utils';
-import { useEffect } from 'react';
+import { ReactNode, useEffect } from 'react';
 import { Outlet } from 'react-router';
 import { drawerWidth } from '../Drawer';
 
@@ -8,7 +8,7 @@ import Box from '@mui/material/Box';
 import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
 
-const AuthLayout = () => {
+const AuthLayout = ({ children }: { children?: ReactNode }) => {
   const iOS = typeof navigator !== 'undefined' && /iPad|iPhone|iPod/.test(navigator.userAgent);
 
   useEffect(() => {
@@ -87,7 +87,9 @@ const AuthLayout = () => {
           }}
         >
           <Box sx={{ height: '100%' }}>
-            <Outlet />
+            {
+              children ? children : <Outlet />
+            }
           </Box>
         </Box>
       </Box>

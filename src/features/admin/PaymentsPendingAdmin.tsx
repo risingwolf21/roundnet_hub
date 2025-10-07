@@ -46,6 +46,7 @@ export const useConfirmPaymentMutation = () =>
         .from('payments')
         .update({ paymentState: 'Fulfilled' as PaymentState })
         .eq('userId', payment?.user?.userId)
+        .eq('paymentState', 'Open' as PaymentState)
         .select('*')
         .single();
 

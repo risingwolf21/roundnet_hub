@@ -4,17 +4,6 @@ import { Tables } from '@/types/supabase-generated.types';
 import { UserWithGroups } from '@/types/supabaseTypes';
 import { PostgrestSingleResponse } from '@supabase/supabase-js';
 
-import InputBase from '@mui/material/InputBase';
-import alpha from '@mui/material/alpha';
-import styled from '@mui/material/styled';
-import Dialog from '@mui/material/Dialog';
-import DialogActions from '@mui/material/DialogActions';
-import DialogContent from '@mui/material/DialogContent';
-import DialogTitle from '@mui/material/DialogTitle';
-import IconButton from '@mui/material/IconButton';
-import Toolbar from '@mui/material/Toolbar';
-import Typography from '@mui/material/Typography';
-import Close from '@mui/icons-material/Close';
 
 export const fetchGroupWithUsers = () =>
   supabase.from('event_group').select('*, mapping: group_user_mapping ( user: user(*), group, role )');
