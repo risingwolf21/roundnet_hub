@@ -1,7 +1,5 @@
 import { queryClient } from '@/lib/queryClient';
 import SearchIcon from '@mui/icons-material/Search';
-import TextField from '@mui/material/TextField';
-import { styled } from '@mui/system';
 import { captureException } from '@sentry/react';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { useNotifications } from '@toolpad/core/useNotifications';
@@ -12,35 +10,10 @@ import { UserWithGroups } from '../../types/supabaseTypes';
 import { AdminUserItem } from './components/AdminUserItem';
 import EditUserDialog, { UserEdited } from './dialogs/EditUserDialog';
 
-import InputAdornment from '@mui/material/InputAdornment';
+import { Search, SearchIconWrapper, StyledInputBase } from '@/components/SearchBar';
 import LinearProgress from '@mui/material/LinearProgress';
 import List from '@mui/material/List';
-import TextFieldProps from '@mui/material/TextFieldProps';
 
-const SearchBar = styled(TextField)<TextFieldProps>(() => ({
-  marginLeft: 16,
-  marginRight: 16,
-  marginTop: 16,
-  width: 'calc(100% - 32px)',
-  '& .MuiInputBase-root': {
-    borderRadius: 28,
-    border: 'none',
-    height: 56,
-    backgroundColor: 'rgba(202,196,208,0.4)',
-    '&:before, :after, :hover:not(.Mui-disabled):before': {
-      borderBottom: 0,
-    },
-    '& .MuiInputAdornment-root': {
-      marginLeft: 16,
-      marginRight: 16,
-    },
-  },
-  '& .Mui-focused': {
-    marginLeft: 0,
-    marginRight: 0,
-    marginTop: 0,
-  },
-}));
 
 export const useAllUsersAsAdmin = () =>
   useQuery<UserWithGroups[]>({
@@ -116,22 +89,20 @@ const AdminUserList = () => {
   };
 
   return (
-    <Layout>
-      <SearchBar
-        variant={'standard'}
-        placeholder={'Suche'}
-        slotProps={{
-          input: {
-            startAdornment: (
-              <InputAdornment position="start">
-                <SearchIcon />
-              </InputAdornment>
-            ),
-          },
-        }}
-        onChange={(e) => setSearchString(e.target.value)}
-        value={searchString}
-      />
+    <Layout appBarContent={<Search sx={{ flexGrow: 1 }}>
+      <SearchIconWrapper>
+        <SearchIcon />
+      </SearchIconWrapper>
+      <div>
+        <StyledInputBase
+          sx={{ width: '100% !important' }}
+          placeholder="Suche nach einem Nutzer"
+          inputProps={{ 'aria-label': 'search' }}
+          value={searchString}
+          onChange={(e: { target: { value: React.SetStateAction<string>; }; }) => setSearchString(e.target.value)}
+        />
+      </div>
+    </Search>}>
       {isLoading && <LinearProgress style={{ position: 'fixed', left: 0, right: 0, top: 56 }} />}
 
       <List sx={{ width: '100%', pb: 'calc(56px + env(safe-area-inset-bottom))' }}>
@@ -140,6 +111,7 @@ const AdminUserList = () => {
             .filter(
               (x: UserWithGroups) =>
                 searchString === '' || x.displayName?.toLowerCase().includes(searchString.toLowerCase())
+                || x.email?.toLowerCase().includes(searchString.toLowerCase()) || x.name?.toLowerCase().includes(searchString.toLowerCase())
             )
             .map((user, index) => (
               <AdminUserItem key={'user' + index} user={user} onEditClick={() => editUser(user)} />
