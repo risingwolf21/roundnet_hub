@@ -93,22 +93,24 @@ export const useUpsetBringPledges = () => {
       status: string;
     }) => {
       if (item_id === null) return;
-      const result = await supabase
-        .from('event_bring_pledges')
-        .upsert(
-          {
-            event: event.id,
-            user_id: user.userId,
-            qty: quantity,
-            status: status,
-            item: item_id,
-          },
-          { onConflict: 'user_id, item' }
-        )
-        .select('*')
-        .maybeSingle();
-
-      return result.data;
+      if (quantity === 0) {
+        return await supabase.from('event_bring_pledges').delete().eq('event', event.id).eq('user_id', user.userId).eq('item', item_id);
+      } else {
+        return await supabase
+          .from('event_bring_pledges')
+          .upsert(
+            {
+              event: event.id,
+              user_id: user.userId,
+              qty: quantity,
+              status: status,
+              item: item_id,
+            },
+            { onConflict: 'user_id, item' }
+          )
+          .select('*')
+          .maybeSingle();
+      }
     },
     onMutate: async ({ event, item_id, user, quantity, status }) => {
       await queryClient.cancelQueries({ queryKey: ['events', event.id, 'bringOverview'] });
@@ -499,8 +501,11 @@ export const useDeleteTrainingMutation = (fetchMode: 'past' | 'upcoming') => {
 
 export const useInsertEventMutation = (fetchMode: 'past' | 'upcoming') => {
   return useMutation({
-    mutationFn: async ({ event }: { event: TablesInsert<'events'>, currentUser: User }) => {
-      const result = await SupabaseEventRepository.insertEvent(event);
+    mutationFn: async ({ event, items }: { event: TablesInsert<'events'>, items: { name: string, required_qty: number, unit: string, notes: string | null, sort_order: number }[], currentUser: User }) => {
+      const result = await supabase.rpc("insert_event_with_bring_items", {
+        p_event: event,
+        p_items: items
+      })
       return result.data;
     },
     onMutate: async ({ event }) => {

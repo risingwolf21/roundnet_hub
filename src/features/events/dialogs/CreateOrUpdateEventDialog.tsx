@@ -13,8 +13,7 @@ import { FormEvent, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { MapContainer, Marker, TileLayer, useMap } from 'react-leaflet';
 import { EventTable } from 'types/supabase';
-import { NumberInput } from '../../../components/mui/NumberInput';
-import { Enums, TablesInsert, TablesUpdate } from '../../../types/supabase-generated.types';
+import { Enums, Tables, TablesInsert, TablesUpdate } from '../../../types/supabase-generated.types';
 import { CreateEventOption, PlaceType } from '../types';
 import SearchPlacesDialog from './SearchPlacesDialog';
 import { SelectGroupDialog } from './SelectGroupDialog';
@@ -56,6 +55,7 @@ import Select from '@mui/material/Select';
 import TextField from '@mui/material/TextField';
 import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
+import { logger } from '@sentry/react';
 
 const emptyEvent = {
   title: '',
@@ -104,6 +104,10 @@ export const CreateOrUpdateEventDialog = ({
       if (!editedEvent.meetingDateTime)
         setEditedEvent({ ...editedEvent, meetingDateTime: editedEvent.startingDateTime });
 
+      let bring_items = bringItems.filter(x => x.name && x.required_qty && x.required_qty > 0);
+
+      setEditedEvent({ ...editedEvent, items_enabled: bring_items.length > 0 });
+
       let edited_event = _.omit(editedEvent, [
         'fullGroup',
         'attendance',
@@ -139,11 +143,24 @@ export const CreateOrUpdateEventDialog = ({
 
       if (option === 'InsertEvent') {
         insertEvent.mutate(
-          { event: eventChanges as TablesInsert<'events'>, currentUser: user },
+          {
+            event: eventChanges as Tables<'events'>,
+            currentUser: user,
+            items: bring_items.map(x => ({ name: x.name, required_qty: x.required_qty, unit: "Stk.", sort_order: 0, notes: null }))
+          },
           {
             onError: (error) =>
               notifications.show('Event konnte nicht erstellt werden: ' + error.message, { severity: 'error' }),
-            onSuccess: () => onClose(),
+            onSuccess: () => {
+              logger.info("event_created_successfully",
+                {
+                  event: edited_event,
+                  user: user,
+                  items: bring_items,
+                }
+              );
+              onClose();
+            },
           }
         );
       } else if (option === 'UpdateSingle') {
@@ -467,6 +484,7 @@ export const CreateOrUpdateEventDialog = ({
               label="Answer deadline"
               disablePast
               ampm={false}
+              maxDateTime={formatDateFromDatabase(editedEvent.startingDateTime) ?? undefined}
               format={'DD MMMM YYYY HH:mm'}
               onChange={(val) => {
                 if (!val) return;
@@ -489,7 +507,39 @@ export const CreateOrUpdateEventDialog = ({
             />
           </ListItem>
 
-          <ListItem sx={{ pt: 0, pb: 0, mb: 2 }} key={'maxAttendees'}>
+          <ListItem sx={{ pt: 0, pb: 0, mb: 2 }} key={'maxAttendees'} secondaryAction={
+            <Box sx={{ display: 'flex', flexDirection: 'row' }}>
+              {
+                (editedEvent.maxAttendees !== null && editedEvent.maxAttendees >= 0) && <>
+                  <IconButton
+                    disableRipple
+                    onClick={(event) => {
+                      setEditedEvent({
+                        ...editedEvent,
+                        maxAttendees: editedEvent.maxAttendees !== null && editedEvent.maxAttendees - 1 > 0 ? editedEvent.maxAttendees - 1 : null,
+                      })
+                      event.stopPropagation();
+                    }}
+                  >
+                    <Remove fontSize="inherit" sx={{ fontSize: '28px' }} />
+                  </IconButton>
+                  <Typography sx={{ p: 1, fontSize: '20px', color: 'rgba(0,0,0,0.54)' }}>{editedEvent.maxAttendees}</Typography>
+                </>
+              }
+              <IconButton
+                disableRipple
+                onClick={(event) => {
+                  setEditedEvent({
+                    ...editedEvent,
+                    maxAttendees: editedEvent.maxAttendees !== null ? editedEvent.maxAttendees + 1 : 1,
+                  })
+                  event.stopPropagation();
+                }}
+              >
+                <Add fontSize="inherit" sx={{ fontSize: '28px' }} />
+              </IconButton>
+            </Box>
+          }>
             <ListItemAvatar>
               <Checkbox
                 sx={{ pl: 0 }}
@@ -497,22 +547,13 @@ export const CreateOrUpdateEventDialog = ({
                 onChange={() =>
                   setEditedEvent({
                     ...editedEvent,
-                    maxAttendees: editedEvent.maxAttendees === null ? 0 : null,
+                    maxAttendees: editedEvent.maxAttendees === null ? 1 : null,
                   })
                 }
               />
             </ListItemAvatar>
 
-            <NumberInput
-              fullWidth
-              placeholder='Maximale Teilnehmeranzahl'
-              disabled={editedEvent.maxAttendees === null}
-              value={editedEvent.maxAttendees}
-              onValueChange={(val) => {
-                if (val && val >= 0)
-                  setEditedEvent({ ...editedEvent, maxAttendees: val ?? 0 });
-              }}
-            />
+            <ListItemText primary={'Maximale Teilnehmerzahl'} />
           </ListItem>
 
           <ListItem sx={{ pt: 0, pb: 0, mb: 2 }} key={'itemType'}>

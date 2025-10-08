@@ -43,7 +43,7 @@ const EventInformationBringItems = ({ selectedEvent }: EventInformationAttendanc
               dialogs
                 .open(EventBringItemsDialog, { overview: x, pledges: bringPledges.filter((y) => y.item === x.item_id) })
                 .then((result) => {
-                  if (result) {
+                  if (result !== null && result >= 0) {
                     upsertPledgeItems.mutate({
                       user: user,
                       item_id: x.item_id,
