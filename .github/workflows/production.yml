@@ -99,6 +99,7 @@ jobs:
           VITE_VAPID_PUBLIC_KEY:      ${{ vars.VAPID_PUBLIC_KEY }}
           VITE_PAYPAL_ME_LINK:        ${{ vars.PAYPAL_ME_LINK }}
           VITE_GIT_COMMIT:            ${{ github.sha}}
+          VITE_ENV:                   'production'
 
       - uses: actions/upload-artifact@v4
         with:
@@ -176,6 +177,7 @@ jobs:
           VITE_VAPID_PUBLIC_KEY:      ${{ vars.VAPID_PUBLIC_KEY }}
           VITE_PAYPAL_ME_LINK:        ${{ vars.PAYPAL_ME_LINK }}
           VITE_GIT_COMMIT:            ${{ github.sha}}
+          VITE_ENV:                   'production'
 
       - uses: actions/upload-artifact@v4
         with:
