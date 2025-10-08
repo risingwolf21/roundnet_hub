@@ -27,7 +27,7 @@ export const App = () => {
             <AuthGate />
           </AppProvider>
         </QueryClientProvider>
-      </LocalizationProvider>yarn
+      </LocalizationProvider>
     </ThemeProvider>
   );
 };
