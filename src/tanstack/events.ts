@@ -505,7 +505,7 @@ export const useInsertEventMutation = (fetchMode: 'past' | 'upcoming') => {
       const result = await supabase.rpc("insert_event_with_bring_items", {
         p_event: event,
         p_items: items
-      })
+      }).throwOnError();
       return result.data;
     },
     onMutate: async ({ event }) => {
