@@ -1,4 +1,3 @@
-import { useGrants } from '@/features/auth/GrantsContext';
 import { Tables } from '@/types/supabase-generated.types';
 import { DialogProps } from '@toolpad/core';
 import { useState } from 'react';
@@ -22,48 +21,52 @@ type Props = {
   pledges: FullEventPledges[];
 };
 
-const EventBringItemsDialog = ({ payload, open, onClose }: DialogProps<Props, number | null>) => {
-  const { user } = useGrants();
-
-  const [value, setValue] = useState(payload.pledges.find((x) => x.user_id === user.userId)?.qty ?? 0);
+const EventBringItemsDialog = ({ payload, open, onClose }: DialogProps<Props, Tables<'event_bring_pledges'>[]>) => {
+  const [bringPledges, setBringPledges] = useState(payload.pledges);
 
   return (
     <SwipeableDialog
       open={open}
-      onClose={() => onClose(null)}
-      title="Gegenstand mitbringen"
-      actions={<Button onClick={() => onClose(value)}>Speichern</Button>}
+      onClose={() => onClose([])}
+      title={`${payload.pledges.length > 1 ? "Gegenstände" : "Gegenstand"} bringen`}
+      actions={<Button onClick={() => onClose(bringPledges.filter(x => x.qty > 0).map(x => ({ event: x.event, item: x.item.id, id: x.id, created_at: x.created_at, notes: x.notes, qty: x.qty, status: x.status, updated_at: x.updated_at, user_id: x.user_id })))}>Speichern</Button>}
     >
       <Box sx={{ p: 2 }}>
-        <ListItem secondaryAction={
-          <Box sx={{ display: 'flex', flexDirection: 'row' }}>
-            {value > 0 && (
-              <>
+        <List disablePadding>
+          {
+            bringPledges.map(x => <ListItem divider secondaryAction={
+              <Box sx={{ display: 'flex', flexDirection: 'row' }}>
+                {x.qty > 0 && (
+                  <>
+                    <IconButton
+                      disableRipple
+                      onClick={(event) => {
+                        const newQty = Math.max(0, x.qty - 1);
+                        setBringPledges(bringPledges.map(p => p.item === x.item ? { ...p, qty: newQty } : p));
+                        event.stopPropagation();
+                      }}
+                    >
+                      <Remove fontSize="inherit" sx={{ fontSize: '28px' }} />
+                    </IconButton>
+                    <Typography sx={{ p: 1, fontSize: '20px', textAlign: "center", width: "42px", color: 'rgba(0,0,0,0.54)' }}>{x.qty}</Typography>
+                  </>
+                )}
                 <IconButton
                   disableRipple
                   onClick={(event) => {
-                    setValue(value - 1);
+                    const newQty = x.qty + 1;
+                    setBringPledges(bringPledges.map(p => p.item === x.item ? { ...p, qty: newQty } : p));
                     event.stopPropagation();
                   }}
                 >
-                  <Remove fontSize="inherit" sx={{ fontSize: '28px' }} />
+                  <Add fontSize="inherit" sx={{ fontSize: '28px' }} />
                 </IconButton>
-                <Typography sx={{ p: 1, fontSize: '20px', color: 'rgba(0,0,0,0.54)' }}>{value}</Typography>
-              </>
-            )}
-            <IconButton
-              disableRipple
-              onClick={(event) => {
-                setValue(value + 1);
-                event.stopPropagation();
-              }}
-            >
-              <Add fontSize="inherit" sx={{ fontSize: '28px' }} />
-            </IconButton>
-          </Box>
-        }>
-          <ListItemText primary={"Wie oft bringst du den Gegenstand mit?"} />
-        </ListItem>
+              </Box>
+            }>
+              <ListItemText primary={x.item.name} />
+            </ListItem>)
+          }
+        </List>
         <List
           disablePadding
           subheader={

@@ -41,15 +41,13 @@ const EventInformationBringItems = ({ selectedEvent }: EventInformationAttendanc
             divider
             onClick={() => {
               dialogs
-                .open(EventBringItemsDialog, { overview: x, pledges: bringPledges.filter((y) => y.item === x.item_id) })
+                .open(EventBringItemsDialog, { overview: x, pledges: bringPledges })
                 .then((result) => {
-                  if (result !== null && result >= 0) {
+                  if (result.length > 0) {
                     upsertPledgeItems.mutate({
-                      user: user,
-                      item_id: x.item_id,
-                      event: selectedEvent,
-                      quantity: result,
-                      status: 'pledged',
+                      user: user.userId,
+                      event: selectedEvent.id,
+                      items: result.filter((r) => r.qty > 0).map((r) => ({ item_id: r.item, quantity: r.qty, status: r.status }))
                     });
                   }
                 });

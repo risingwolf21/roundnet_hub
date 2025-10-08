@@ -10,7 +10,7 @@ import { useMutation, useQuery } from '@tanstack/react-query';
 import { format, isAfter, isBefore } from 'date-fns';
 
 export const fetchFullEventPledges = (eventId: string) =>
-  supabase.from('event_bring_pledges').select('*, user: user_id(*)').eq('event', eventId);
+  supabase.from('event_bring_pledges').select('*, user: user_id(*), item: event_bring_items(*)').eq('event', eventId);
 
 export const useEvents = (filter: 'past' | 'upcoming') => {
   return useQuery<EventsUserView[]>({
@@ -81,103 +81,96 @@ export const useUpsetBringPledges = () => {
   return useMutation({
     mutationFn: async ({
       event,
-      item_id,
       user,
-      quantity,
-      status,
+      items
     }: {
-      event: EventsUserView;
-      item_id: string | null;
-      user: User;
-      quantity: number;
-      status: string;
+      event: string,
+      user: string,
+      items: {
+        item_id: string;
+        quantity: number;
+        status: string;
+      }[]
     }) => {
-      if (item_id === null) return;
-      if (quantity === 0) {
-        return await supabase.from('event_bring_pledges').delete().eq('event', event.id).eq('user_id', user.userId).eq('item', item_id);
-      } else {
-        return await supabase
-          .from('event_bring_pledges')
-          .upsert(
+      await Promise.all(items.filter(x => x.quantity <= 0).map(x => supabase.from('event_bring_pledges').delete().eq('event', event).eq('user_id', user).eq('item', x.item_id)));
+      await supabase
+        .from('event_bring_pledges')
+        .upsert(
+          items.filter(x => x.quantity > 0).map(x => (
             {
-              event: event.id,
-              user_id: user.userId,
-              qty: quantity,
-              status: status,
-              item: item_id,
-            },
-            { onConflict: 'user_id, item' }
-          )
-          .select('*')
-          .maybeSingle();
-      }
+              event: event,
+              user_id: user,
+              qty: x.quantity,
+              status: x.status,
+              item: x.item_id,
+            })
+          ),
+          { onConflict: 'user_id, item' }
+        );
+      return null
     },
-    onMutate: async ({ event, item_id, user, quantity, status }) => {
-      await queryClient.cancelQueries({ queryKey: ['events', event.id, 'bringOverview'] });
-      await queryClient.cancelQueries({ queryKey: ['events', event.id, 'bringPledges'] });
+    onMutate: async ({ items, event, user }) => {
+      await queryClient.cancelQueries({ queryKey: ['events', event, 'bringOverview'] });
+      await queryClient.cancelQueries({ queryKey: ['events', event, 'bringPledges'] });
 
       const previousBringOverview = queryClient.getQueryData<Tables<'event_bring_overview'>[]>([
         'events',
-        event.id,
+        event,
         'bringOverview',
       ]);
-      const previousFullPledges = queryClient.getQueryData<FullEventPledges[]>(['events', event.id, 'bringPledges']);
+      const previousFullPledges = queryClient.getQueryData<FullEventPledges[]>(['events', event, 'bringPledges']);
 
       if (previousBringOverview) {
         const updatedBringOverview = previousBringOverview.map((ev) => {
-          if (ev.item_id === item_id) {
-            return {
-              ...ev,
-              pledged_qty: (ev.pledged_qty ?? 0) + quantity,
-              remaining_qty: (ev.remaining_qty ?? 0) - quantity,
-            };
-          }
-          return ev;
+          return {
+            ...ev,
+            pledged_qty: (ev.pledged_qty ?? 0) + items.filter(x => x.item_id === ev.item_id).reduce((a, b) => a + b.quantity, 0),
+            remaining_qty: (ev.remaining_qty ?? 0) - items.filter(x => x.item_id === ev.item_id).reduce((a, b) => a + b.quantity, 0),
+          };
         });
 
-        queryClient.setQueryData(['events', event.id, 'bringOverview'], updatedBringOverview);
+        queryClient.setQueryData(['events', event, 'bringOverview'], updatedBringOverview);
       }
       if (previousFullPledges) {
         const updatedFullPledges = previousFullPledges.map((x) => {
-          if (x.item === item_id && x.user_id === user.userId && x.event === event.id) {
-            return {
-              ...x,
-              qty: quantity,
-              status: status,
-            };
-          } else {
-            return x;
-          }
+          return items.map(y => {
+            if (x.item === y.item_id && x.event === event && x.user.userId === user) {
+              return {
+                ...x,
+                qty: y.quantity,
+                status: y.status,
+              };
+            } else {
+              return x;
+            }
+          })
         });
-        queryClient.setQueryData(['events', event.id, 'bringPledges'], updatedFullPledges);
+        queryClient.setQueryData(['events', event, 'bringPledges'], updatedFullPledges);
       }
       return { previousBringOverview, previousFullPledges };
     },
     onError: (err, variables, context) => {
       logger.error('Event pledges could not be upserted', {
-        event: variables.event.id,
-        eventDate: format(variables.event.startingDateTime, 'dd.MM.yyyy HH:mm'),
-        pledge_item: variables.item_id,
+        event: variables.event,
+        items: variables.items,
         error: err,
       });
       if (context?.previousBringOverview) {
-        queryClient.setQueryData(['events', variables.event.id, 'bringOverview'], context.previousBringOverview);
+        queryClient.setQueryData(['events', variables.event, 'bringOverview'], context.previousBringOverview);
       }
       if (context?.previousFullPledges) {
-        queryClient.setQueryData(['events', variables.event.id, 'bringPledges'], context.previousFullPledges);
+        queryClient.setQueryData(['events', variables.event, 'bringPledges'], context.previousFullPledges);
       }
     },
 
     onSettled: (_data, _error, variables, _context) => {
       logger.info('Event pledges upsertd successfully.', {
-        event: variables.event.id,
-        eventDate: format(variables.event.startingDateTime, 'dd.MM.yyyy HH:mm'),
-        pledge_item: variables.item_id,
-        qunatity: variables.quantity,
+        event: variables.event,
+        items: variables.items,
         user: variables.user,
       });
-      queryClient.invalidateQueries({ queryKey: ['events', variables.event.id, 'bringOverview'] });
-      queryClient.invalidateQueries({ queryKey: ['events', variables.event.id, 'bringPledges'] });
+      queryClient.invalidateQueries({ queryKey: ['events', variables.event, 'bringOverview'] });
+      queryClient.invalidateQueries({ queryKey: ['events', variables.event, 'bringPledges'] });
     },
   });
 };
