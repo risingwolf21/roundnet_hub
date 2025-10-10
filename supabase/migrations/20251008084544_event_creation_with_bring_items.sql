@@ -244,8 +244,8 @@ begin
     select * from next_chain
   )
   , cloned as (
-    insert into public.event_bring_items(event, name, unit, required_qty, notes, sort_order)
-    select ch.new_event, bi.name, bi.unit, bi.required_qty, bi.notes, bi.sort_order
+    insert into public.event_bring_items(event, name, unit, required_qty, notes, sort_order, created_by)
+    select ch.new_event, bi.name, bi.unit, bi.required_qty, bi.notes, bi.sort_order, auth.uid()
       from chain ch
       join public.event_bring_items bi on bi.event = ch.src_event
     on conflict (event, name) do nothing

@@ -17,11 +17,12 @@ import ListSubheader from '@mui/material/ListSubheader';
 import Typography from '@mui/material/Typography';
 
 type Props = {
-  overview: Tables<'event_bring_overview'>;
-  pledges: FullEventPledges[];
+  overview: Tables<'event_bring_overview'>[];
+  pledges: { event: string, item: string, user: User, qty: number }[];
+  user: User;
 };
 
-const EventBringItemsDialog = ({ payload, open, onClose }: DialogProps<Props, Tables<'event_bring_pledges'>[]>) => {
+const EventBringItemsDialog = ({ payload, open, onClose }: DialogProps<Props, { event: string, item: string, user: User, qty: number }[]>) => {
   const [bringPledges, setBringPledges] = useState(payload.pledges);
 
   return (
@@ -29,42 +30,52 @@ const EventBringItemsDialog = ({ payload, open, onClose }: DialogProps<Props, Ta
       open={open}
       onClose={() => onClose([])}
       title={`${payload.pledges.length > 1 ? "Gegenstände" : "Gegenstand"} bringen`}
-      actions={<Button onClick={() => onClose(bringPledges.filter(x => x.qty > 0).map(x => ({ event: x.event, item: x.item.id, id: x.id, created_at: x.created_at, notes: x.notes, qty: x.qty, status: x.status, updated_at: x.updated_at, user_id: x.user_id })))}>Speichern</Button>}
+      actions={<Button onClick={() => onClose(bringPledges)}>Speichern</Button>}
     >
       <Box sx={{ p: 2 }}>
         <List disablePadding>
           {
-            bringPledges.map(x => <ListItem divider secondaryAction={
-              <Box sx={{ display: 'flex', flexDirection: 'row' }}>
-                {x.qty > 0 && (
-                  <>
-                    <IconButton
-                      disableRipple
-                      onClick={(event) => {
-                        const newQty = Math.max(0, x.qty - 1);
-                        setBringPledges(bringPledges.map(p => p.item === x.item ? { ...p, qty: newQty } : p));
-                        event.stopPropagation();
-                      }}
-                    >
-                      <Remove fontSize="inherit" sx={{ fontSize: '28px' }} />
-                    </IconButton>
-                    <Typography sx={{ p: 1, fontSize: '20px', textAlign: "center", width: "42px", color: 'rgba(0,0,0,0.54)' }}>{x.qty}</Typography>
-                  </>
-                )}
-                <IconButton
-                  disableRipple
-                  onClick={(event) => {
-                    const newQty = x.qty + 1;
-                    setBringPledges(bringPledges.map(p => p.item === x.item ? { ...p, qty: newQty } : p));
-                    event.stopPropagation();
-                  }}
-                >
-                  <Add fontSize="inherit" sx={{ fontSize: '28px' }} />
-                </IconButton>
-              </Box>
-            }>
-              <ListItemText primary={x.item.name} />
-            </ListItem>)
+            payload.overview.map(x => {
+              const pledge = bringPledges.find(p => p.item === x.item_id);
+              const qty = pledge?.qty ?? 0;
+              const item = pledge?.item ?? x.item_id;
+
+              return <ListItem divider secondaryAction={
+                <Box sx={{ display: 'flex', flexDirection: 'row' }}>
+                  {qty > 0 && (
+                    <>
+                      <IconButton
+                        disableRipple
+                        onClick={(event) => {
+                          const newQty = Math.max(0, qty - 1);
+                          setBringPledges(bringPledges.map(p => p.item === x.item_id ? { ...p, qty: newQty } : p));
+                          event.stopPropagation();
+                        }}
+                      >
+                        <Remove fontSize="inherit" sx={{ fontSize: '28px' }} />
+                      </IconButton>
+                      <Typography sx={{ p: 1, fontSize: '20px', textAlign: "center", width: "42px", color: 'rgba(0,0,0,0.54)' }}>{qty}</Typography>
+                    </>
+                  )}
+                  <IconButton
+                    disableRipple
+                    onClick={(event) => {
+                      const newQty = qty + 1;
+                      if (pledge) {
+                        setBringPledges(bringPledges.map(p => p.item === x.item_id ? { ...p, qty: newQty } : p));
+                      } else {
+                        setBringPledges([...bringPledges, { item: item!, qty: newQty, event: x.event!, user: payload.user }]);
+                      }
+                      event.stopPropagation();
+                    }}
+                  >
+                    <Add fontSize="inherit" sx={{ fontSize: '28px' }} />
+                  </IconButton>
+                </Box>
+              }>
+                <ListItemText primary={x.name} />
+              </ListItem>
+            })
           }
         </List>
         <List
@@ -85,7 +96,7 @@ const EventBringItemsDialog = ({ payload, open, onClose }: DialogProps<Props, Ta
           ))}
         </List>
       </Box>
-    </SwipeableDialog>
+    </SwipeableDialog >
   );
 };
 

@@ -15,7 +15,7 @@ import ListItemText from '@mui/material/ListItemText';
 import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
 
-export const SelectGroupDialog = ({ payload, open, onClose }: DialogProps<undefined, Group | null>) => {
+export const SelectGroupDialog = ({ open, onClose }: DialogProps<undefined, Group | null>) => {
   const { data: groups = [] } = useGroups();
 
   return (
@@ -33,7 +33,7 @@ export const SelectGroupDialog = ({ payload, open, onClose }: DialogProps<undefi
         </AppBar>
         <Box>
           <List>
-            {groups.map((x) => (
+            {groups.filter(x => x.user_group_role !== "joinRequested").map((x) => (
               <ListItemButton key={x.id} divider onClick={() => onClose(x)}>
                 <ListItemAvatar>
                   <FiberManualRecord sx={{ color: x.color }} />

@@ -92,7 +92,12 @@ export const useUpsetBringPledges = () => {
         status: string;
       }[]
     }) => {
-      await Promise.all(items.filter(x => x.quantity <= 0).map(x => supabase.from('event_bring_pledges').delete().eq('event', event).eq('user_id', user).eq('item', x.item_id)));
+      await supabase
+        .from('event_bring_pledges')
+        .delete()
+        .eq('event', event)
+        .eq('user_id', user)
+        .in('item', items.filter(x => x.quantity <= 0).map(x => x.item_id));
       await supabase
         .from('event_bring_pledges')
         .upsert(

@@ -6,7 +6,6 @@ import { useDialogs } from '@toolpad/core';
 import EventBringItemsDialog from '../dialogs/EventBringItemsDialog';
 
 import CircularProgress from '@mui/material/CircularProgress';
-import Divider from '@mui/material/Divider';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemAvatar from '@mui/material/ListItemAvatar';
@@ -41,13 +40,17 @@ const EventInformationBringItems = ({ selectedEvent }: EventInformationAttendanc
             divider
             onClick={() => {
               dialogs
-                .open(EventBringItemsDialog, { overview: x, pledges: bringPledges })
+                .open(EventBringItemsDialog, {
+                  overview: bringOverview, pledges: bringPledges.filter(x => x.user_id === user.userId).map(x => ({
+                    event: x.event, item: x.item.id, qty: x.qty, user: x.user
+                  })), user: user
+                })
                 .then((result) => {
                   if (result.length > 0) {
                     upsertPledgeItems.mutate({
                       user: user.userId,
                       event: selectedEvent.id,
-                      items: result.filter((r) => r.qty > 0).map((r) => ({ item_id: r.item, quantity: r.qty, status: r.status }))
+                      items: result.map((r) => ({ item_id: r.item, quantity: r.qty, status: 'pledged' }))
                     });
                   }
                 });
@@ -78,7 +81,6 @@ const EventInformationBringItems = ({ selectedEvent }: EventInformationAttendanc
           </ListItem>
         ))}
       </List>
-      <Divider />
     </Box>
   );
 };

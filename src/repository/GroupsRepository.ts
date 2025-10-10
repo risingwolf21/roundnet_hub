@@ -1,5 +1,5 @@
 import { supabase } from '@/lib/supabase';
-import { EventGroupsView, GroupWithUserMappings } from '@/types/supabaseTypes';
+import { GroupWithUserMappings } from '@/types/supabaseTypes';
 import { PostgrestSingleResponse } from '@supabase/supabase-js';
 import { Tables, TablesInsert } from '../types/supabase-generated.types';
 import { fetchGroupWithUsers } from './AdminUsersRepository';
@@ -31,7 +31,7 @@ export const GroupsRepository = {
     };
   },
   async fetchGroups(): Promise<GroupWithUserMappings[]> {
-    const response = await supabase.from('event_groups_view').select('*').returns<EventGroupsView[]>().throwOnError();
+    const response = await supabase.from('event_groups_view').select('*').throwOnError();
 
     return (response.data ?? []).map((x) => {
       return { ...x, user_group_role: x.role, users: [] } as GroupWithUserMappings;
