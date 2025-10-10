@@ -52,6 +52,22 @@ export const useBringOverview = (eventId: string) =>
     },
   });
 
+export const useBringItems = (eventId?: string) =>
+  useQuery<Tables<'event_bring_items'>[]>({
+    queryKey: ['events', eventId, 'bringPledges'],
+    enabled: !!eventId,
+    queryFn: async () => {
+      if (!eventId) return [];
+      const result = await supabase
+        .from("event_bring_items")
+        .select("*")
+        .eq("event", eventId);
+
+      return result.data ?? [];
+    },
+  });
+
+
 export const useBringPledges = (eventId: string) =>
   useQuery<FullEventPledges[]>({
     queryKey: ['events', eventId, 'bringPledges'],

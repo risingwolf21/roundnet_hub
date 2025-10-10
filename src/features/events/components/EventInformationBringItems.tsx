@@ -41,7 +41,7 @@ const EventInformationBringItems = ({ selectedEvent }: EventInformationAttendanc
             onClick={() => {
               dialogs
                 .open(EventBringItemsDialog, {
-                  overview: bringOverview, pledges: bringPledges.filter(x => x.user_id === user.userId).map(x => ({
+                  overview: bringOverview, pledges: bringPledges.map(x => ({
                     event: x.event, item: x.item.id, qty: x.qty, user: x.user
                   })), user: user
                 })

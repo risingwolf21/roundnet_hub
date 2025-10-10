@@ -23,13 +23,13 @@ type Props = {
 };
 
 const EventBringItemsDialog = ({ payload, open, onClose }: DialogProps<Props, { event: string, item: string, user: User, qty: number }[]>) => {
-  const [bringPledges, setBringPledges] = useState(payload.pledges);
+  const [bringPledges, setBringPledges] = useState(payload.pledges.filter(x => x.user.userId === payload.user.userId));
 
   return (
     <SwipeableDialog
       open={open}
       onClose={() => onClose([])}
-      title={`${payload.pledges.length > 1 ? "Gegenstände" : "Gegenstand"} bringen`}
+      title={`${payload.overview.length > 1 ? "Gegenstände" : "Gegenstand"} bringen`}
       actions={<Button onClick={() => onClose(bringPledges)}>Speichern</Button>}
     >
       <Box sx={{ p: 2 }}>

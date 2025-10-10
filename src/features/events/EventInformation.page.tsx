@@ -32,9 +32,11 @@ import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
+import { useGrants } from '../auth/GrantsContext';
 
 const EventInformationProvider = () => {
   const { selectedEventId } = useParams();
+  const { user } = useGrants();
   const navigate = useNavigate();
   const notifications = useNotifications();
   const dialogs = useDialogs();
@@ -110,7 +112,7 @@ const EventInformationProvider = () => {
                         event: {
                           ...event,
                           items_enabled: false,
-                          group: event.group?.id ?? null,
+                          group: event.group?.id ?? null
                         } as EventTable,
                         eventGroup: event.group,
                         option: result,
@@ -153,7 +155,7 @@ const EventInformationProvider = () => {
                     const result = await dialogs.open(DeleteEventDialog, event);
                     if (result) {
                       deleteTrainingMutation.mutate(
-                        { event, type: result },
+                        { event, type: result, currentUser: user },
                         {
                           onSuccess: () => {
                             navigate('/training/list', { replace: true });

@@ -1,5 +1,5 @@
 import { useFetchMode } from '@/hooks/useFetchMode';
-import { useInsertEventMutation, useUpdateRecurrenceMutation, useUpdateSingleMutation } from '@/tanstack/events';
+import { useBringItems, useInsertEventMutation, useUpdateRecurrenceMutation, useUpdateSingleMutation } from '@/tanstack/events';
 import { formatDateFromDatabase, formatDateToDatabase } from '@/utils';
 import EventIcon from '@mui/icons-material/Event';
 import EventRepeatIcon from '@mui/icons-material/EventRepeat';
@@ -9,7 +9,7 @@ import { DialogProps, useDialogs } from '@toolpad/core';
 import { useNotifications } from '@toolpad/core/useNotifications';
 import { format, isAfter, set } from 'date-fns';
 import _ from 'lodash';
-import { FormEvent, useRef, useState } from 'react';
+import { FormEvent, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { MapContainer, Marker, TileLayer, useMap } from 'react-leaflet';
 import { EventTable } from 'types/supabase';
@@ -34,6 +34,7 @@ import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Checkbox from '@mui/material/Checkbox';
 import Chip from '@mui/material/Chip';
+import CircularProgress from '@mui/material/CircularProgress';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
@@ -93,6 +94,12 @@ export const CreateOrUpdateEventDialog = ({
   const [bringItems, setBringItems] = useState<{ name: string, required_qty: number }[]>([]);
 
   const ref = useRef<HTMLFormElement>(null);
+
+  const { data: allItems = [], isLoading: bringItemsLoading } = useBringItems(event?.id);
+
+  useEffect(() => {
+    setBringItems(allItems.map(x => ({ name: x.name, required_qty: x.required_qty ?? 0 })));
+  }, [allItems]);
 
   const insertEvent = useInsertEventMutation(fetchMode);
   const updateSingleEvent = useUpdateSingleMutation(fetchMode);
@@ -485,7 +492,7 @@ export const CreateOrUpdateEventDialog = ({
               disablePast
               ampm={false}
               maxDateTime={formatDateFromDatabase(editedEvent.startingDateTime) ?? undefined}
-              format={'DD MMMM YYYY HH:mm'}
+              format={'dd MMMM yyyy HH:mm'}
               onChange={(val) => {
                 if (!val) return;
                 setEditedEvent({
@@ -604,11 +611,16 @@ export const CreateOrUpdateEventDialog = ({
               secondary={'Soll es möglich sein für Trainer, Konstellationen zu erstellen?'}
             />
           </ListItem>
-          <ListItem sx={{ pt: 0, pb: 0, mb: 2 }} key={'pledges'} onClick={() => setDialogOpen('bring_items')}>
+          <ListItem sx={{ pt: 0, pb: 0, mb: 2 }} key={'pledges'} onClick={() => {
+            if (bringItemsLoading) return;
+            setDialogOpen('bring_items');
+          }}>
             <ListItemAvatar>
-              <Category />
+              {
+                bringItemsLoading ? <CircularProgress size={24} /> : <Category />
+              }
             </ListItemAvatar>
-            <ListItemText primary={'Gegenstände mitbringen'} secondary={bringItems.map(x => x.name).filter(x => x).map(x => <Chip sx={{ mr: 1 }} size='small' label={x} />)} />
+            <ListItemText primary={'Gegenstände mitbringen'} secondary={bringItems.map(x => <Chip sx={{ mr: 1 }} size='small' label={`${x.required_qty}x ${x.name}`} />)} />
           </ListItem>
         </List>
       </Box>
