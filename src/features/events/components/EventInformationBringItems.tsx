@@ -42,7 +42,7 @@ const EventInformationBringItems = ({ selectedEvent }: EventInformationAttendanc
               dialogs
                 .open(EventBringItemsDialog, {
                   overview: bringOverview, pledges: bringPledges.map(x => ({
-                    event: x.event, item: x.item.id, qty: x.qty, user: x.user
+                    event: x.event, item: x.item.id, item_name: x.item.name, qty: x.qty, user: x.user
                   })), user: user
                 })
                 .then((result) => {

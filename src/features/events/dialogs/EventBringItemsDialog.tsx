@@ -11,18 +11,17 @@ import Button from '@mui/material/Button';
 import IconButton from '@mui/material/IconButton';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
-import ListItemAvatar from '@mui/material/ListItemAvatar';
 import ListItemText from '@mui/material/ListItemText';
 import ListSubheader from '@mui/material/ListSubheader';
 import Typography from '@mui/material/Typography';
 
 type Props = {
   overview: Tables<'event_bring_overview'>[];
-  pledges: { event: string, item: string, user: User, qty: number }[];
+  pledges: { event: string, item: string, item_name: string, user: User, qty: number }[];
   user: User;
 };
 
-const EventBringItemsDialog = ({ payload, open, onClose }: DialogProps<Props, { event: string, item: string, user: User, qty: number }[]>) => {
+const EventBringItemsDialog = ({ payload, open, onClose }: DialogProps<Props, { event: string, item: string, item_name: string, user: User, qty: number }[]>) => {
   const [bringPledges, setBringPledges] = useState(payload.pledges.filter(x => x.user.userId === payload.user.userId));
 
   return (
@@ -39,6 +38,7 @@ const EventBringItemsDialog = ({ payload, open, onClose }: DialogProps<Props, { 
               const pledge = bringPledges.find(p => p.item === x.item_id);
               const qty = pledge?.qty ?? 0;
               const item = pledge?.item ?? x.item_id;
+              const item_name = pledge?.item_name ?? '';
 
               return <ListItem divider secondaryAction={
                 <Box sx={{ display: 'flex', flexDirection: 'row' }}>
@@ -64,7 +64,7 @@ const EventBringItemsDialog = ({ payload, open, onClose }: DialogProps<Props, { 
                       if (pledge) {
                         setBringPledges(bringPledges.map(p => p.item === x.item_id ? { ...p, qty: newQty } : p));
                       } else {
-                        setBringPledges([...bringPledges, { item: item!, qty: newQty, event: x.event!, user: payload.user }]);
+                        setBringPledges([...bringPledges, { item: item!, qty: newQty, event: x.event!, item_name: item_name, user: payload.user }]);
                       }
                       event.stopPropagation();
                     }}
@@ -88,10 +88,7 @@ const EventBringItemsDialog = ({ payload, open, onClose }: DialogProps<Props, { 
         >
           {payload.pledges.map((x) => (
             <ListItem disableGutters divider>
-              <ListItemAvatar>
-                <Typography>{x.qty}x</Typography>
-              </ListItemAvatar>
-              <ListItemText primary={x.user?.displayName ?? ''} />
+              <ListItemText primary={`${x.qty} x ${x.item_name}`} secondary={x.user.displayName ?? x.user.name} />
             </ListItem>
           ))}
         </List>
