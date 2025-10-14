@@ -22,12 +22,10 @@ jobs:
     if: ${{ github.event_name != 'workflow_dispatch'
         || github.event.inputs.publish == 'All'
         || github.event.inputs.publish == 'Roundnet Karlsruhe' }}
-    environment:
-      name: 'Roundnet Karlsruhe'
+    environment: 'Roundnet Karlsruhe'
     steps:
-      - uses: actions/checkout@v3
-        with:
-          ref: ${{ github.head_ref }}
+      - uses: actions/checkout@v4
+      
       - uses: supabase/setup-cli@v1
         with:
           version: latest
@@ -56,12 +54,12 @@ jobs:
     runs-on: ubuntu-latest
     environment: 'Munich Roundnet'
     steps:
-      - uses: actions/checkout@v3
-        with:
-          ref: ${{ github.head_ref }}
+      - uses: actions/checkout@v4
+
       - uses: supabase/setup-cli@v1
         with:
           version: latest
+
       - name: Dump Munich (full/roles/schema/data)
         env:
           SUPABASE_DB_URL: ${{ secrets.SUPABASE_CONNECTION_STRING }} # For example: postgresql://postgres:[YOUR-PASSWORD]@db.<ref>.supabase.co:5432/postgres
@@ -72,14 +70,11 @@ jobs:
           supabase db dump --db-url "$SUPABASE_DB_URL" -f out/munich-roundnet/schema.sql
           supabase db dump --db-url "$SUPABASE_DB_URL" -f out/munich-roundnet/data.sql --data-only --use-copy
 
-      - name: Set DATE env (Europe/Berlin)
-        run: echo "DATE=$(TZ=Europe/Berlin date +'%Y-%m-%d')" >> $GITHUB_ENV
-
-      - uses: stefanzweifel/git-auto-commit-action@v4
+      - name: Upload artifact (Munich)
+        uses: actions/upload-artifact@v4
         with:
-          commit_message: "📦 Supabase Backup (${{ github.environment }}) ${{ env.DATE }}"
-          file_pattern: supabase/backup/munich-roundnet/*
-
+          name: backup-munich
+          path: out/munich-roundnet/*
   commit:
     name: Commit backups (single commit)
     runs-on: ubuntu-latest
