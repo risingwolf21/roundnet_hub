@@ -1,9 +1,14 @@
+import Button from '@mui/material/Button';
+import Stack from '@mui/material/Stack';
+import Typography from '@mui/material/Typography';
 import * as Sentry from '@sentry/react';
 import { Suspense } from 'react';
 import ReactDOM from 'react-dom/client';
 import { registerSW } from 'virtual:pwa-register';
 import './apocalypseHandler';
 import { App } from './App';
+import AuthLayout from './components/layout/AuthLayout';
+import { LoadingScreen } from './components/LoadingScreen';
 import './global.css';
 import './instrument';
 import './translation/i18n';
@@ -31,10 +36,6 @@ registerSW({
     })
   },
   onRegisteredSW: (_, registration) => {
-    Sentry.logger.info("Service Worker installed succesfully", {
-      type: 'service_worker',
-      message: 'instalation_successful'
-    })
     setInterval(() => {
       if (registration)
         registration.update();
@@ -50,9 +51,27 @@ navigator.serviceWorker?.addEventListener('controllerchange', () => {
   }
 });
 
+const Fallback = (e: {
+  error: unknown;
+  componentStack: string;
+  eventId: string;
+  resetError(): void;
+}) => <AuthLayout>
+    <Stack direction={'column'} sx={{ m: 6 }}>
+      <Typography sx={{ fontSize: 26, fontWeight: 'bold', mt: 3, textAlign: 'center' }}>Es ist ein Fehler aufgetreten!</Typography>
+      <Typography sx={{ fontSize: 20, mt: 3, textAlign: 'center' }}>Bitte lade die Seite neu.</Typography>
+      <Typography variant='overline' sx={{ fontSize: 20, mt: 3, textAlign: 'center' }}>{JSON.stringify(e.error, null, 2)}</Typography>
+
+      <Button variant='contained' color='primary' onClick={() => {
+        e.resetError();
+        window.location.reload();
+      }} sx={{ mt: 3, alignSelf: 'center' }}>Neu laden</Button>
+    </Stack>
+  </AuthLayout>
+
 root.render(
-  <Sentry.ErrorBoundary fallback={<div>Etwas ist schiefgelaufen. Bitte neu laden.</div>}>
-    <Suspense fallback={<div style={{ padding: 16 }}>Lade…</div>}>
+  <Sentry.ErrorBoundary fallback={Fallback}>
+    <Suspense fallback={<LoadingScreen />}>
       <App />
     </Suspense>
   </Sentry.ErrorBoundary>

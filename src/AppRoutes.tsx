@@ -33,7 +33,6 @@ const SupabaseClient = lazyWithRetry(() => import('./features/supabase/SupabaseC
 const LoginScreen = lazyWithRetry(() => import('./features/auth/LoginScreen'));
 const SignUpScreen = lazyWithRetry(() => import('./features/auth/SignUpScreen'));
 const ForgotPasswordScreen = lazyWithRetry(() => import('./features/auth/ForgotPasswordScreen'));
-const AuthCallback = lazyWithRetry(() => import('./features/auth/AuthCallback'));
 const PublicGroupList = lazyWithRetry(() => import('./features/groups/PublicGroupList.page'));
 const PublicGroupInformation = lazyWithRetry(() => import('./features/groups/PublicGroupInformation.page'));
 const MatchInformation = lazyWithRetry(() => import('./features/games/MatchInformation'));
@@ -93,12 +92,7 @@ const router = sentryCreateBrowserRouter([
         path: 'reset-password',
         element: <ResetPasswordScreen />,
         errorElement: <ErrorRouteElement />,
-      },
-      {
-        path: 'callback',
-        element: <AuthCallback />,
-        errorElement: <ErrorRouteElement />,
-      },
+      }
     ],
   },
   {
