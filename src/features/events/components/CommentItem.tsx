@@ -1,10 +1,17 @@
 import { ProfileDialog } from '@/components/Profile';
 import { useGrants } from '@/features/auth/GrantsContext';
-import { AccountBox } from '@mui/icons-material';
-import { Avatar, Box, Button, CircularProgress, ListItem, ListItemAvatar, Typography } from '@mui/material';
 import { useDialogs } from '@toolpad/core';
 import { TFunction } from 'i18next';
 import { FullComment } from '../../../types/supabaseTypes';
+
+import AccountBox from '@mui/icons-material/AccountBox';
+import Avatar from '@mui/material/Avatar';
+import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
+import CircularProgress from '@mui/material/CircularProgress';
+import ListItem from '@mui/material/ListItem';
+import ListItemAvatar from '@mui/material/ListItemAvatar';
+import Typography from '@mui/material/Typography';
 
 type Props = {
   comment: FullComment;

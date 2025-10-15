@@ -1,4 +1,9 @@
-import { Avatar, ListItem, ListItemAvatar, ListItemText, Skeleton, Typography } from '@mui/material';
+import Avatar from '@mui/material/Avatar';
+import ListItem from '@mui/material/ListItem';
+import ListItemAvatar from '@mui/material/ListItemAvatar';
+import ListItemText from '@mui/material/ListItemText';
+import Skeleton from '@mui/material/Skeleton';
+import Typography from '@mui/material/Typography';
 
 const medalForPlace = (index: number) => {
   if (index === 0) return '🥇';

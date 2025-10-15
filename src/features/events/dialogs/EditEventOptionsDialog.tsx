@@ -1,8 +1,15 @@
-import { Box, Button, DialogContent, FormControl, FormControlLabel, Radio, RadioGroup } from '@mui/material';
 import { DialogProps } from '@toolpad/core';
 import { useState } from 'react';
 import { SwipeableDialog } from '../../../components/SwipeableDialog';
 import { CreateEventOption } from '../types';
+
+import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
+import DialogContent from '@mui/material/DialogContent';
+import FormControl from '@mui/material/FormControl';
+import FormControlLabel from '@mui/material/FormControlLabel';
+import Radio from '@mui/material/Radio';
+import RadioGroup from '@mui/material/RadioGroup';
 
 export const EditEventOptionsDialog = ({
   payload,

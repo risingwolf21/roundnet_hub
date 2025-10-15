@@ -1,15 +1,18 @@
 import { EventsUserView } from '@/types/supabaseTypes';
-import {
-  HourglassBottom,
-  RecordVoiceOver,
-  ThumbDownAlt,
-  ThumbDownOffAlt,
-  ThumbUpAlt,
-  ThumbUpOffAlt,
-} from '@mui/icons-material';
-import { Box, CircularProgress, IconButton, ListItem, ListItemText } from '@mui/material';
 import { isBefore, toDate } from 'date-fns';
 import { TFunction } from 'i18next';
+
+import HourglassBottom from '@mui/icons-material/HourglassBottom';
+import RecordVoiceOver from '@mui/icons-material/RecordVoiceOver';
+import ThumbDownAlt from '@mui/icons-material/ThumbDownAlt';
+import ThumbDownOffAlt from '@mui/icons-material/ThumbDownOffAlt';
+import ThumbUpAlt from '@mui/icons-material/ThumbUpAlt';
+import ThumbUpOffAlt from '@mui/icons-material/ThumbUpOffAlt';
+import Box from '@mui/material/Box';
+import CircularProgress from '@mui/material/CircularProgress';
+import IconButton from '@mui/material/IconButton';
+import ListItem from '@mui/material/ListItem';
+import ListItemText from '@mui/material/ListItemText';
 
 type EventItemProps = {
   attendanceUpdating: boolean;

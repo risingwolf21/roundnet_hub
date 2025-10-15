@@ -1,18 +1,20 @@
 import { HOMEPAGE } from '@/constants';
 import { supabase } from '@/lib/supabase';
 import { BRANDING } from '@/utils';
-import { Button, CircularProgress, Typography, useTheme } from '@mui/material';
 import Link from '@mui/material/Link';
 import { captureException } from '@sentry/react';
 import { AuthResponse, SignInPage, type AuthProvider } from '@toolpad/core/SignInPage';
-import { useNotifications } from '@toolpad/core/useNotifications';
 import { useState } from 'react';
 import { Navigate, useLocation, useNavigate } from 'react-router';
 import { useApplication } from './ApplicationContext';
 
+import { useTheme } from '@mui/material';
+import Button from '@mui/material/Button';
+import CircularProgress from '@mui/material/CircularProgress';
+import Typography from '@mui/material/Typography';
+
 const LoginScreen = () => {
   const theme = useTheme();
-  const notifications = useNotifications();
   const navigate = useNavigate();
   const { version, user } = useApplication();
   const [loading, setLoading] = useState(false);
@@ -70,40 +72,6 @@ const LoginScreen = () => {
               setLoading(false);
             });
       }
-      if (provider.id === 'google')
-        supabase.auth
-          .signInWithOAuth({
-            provider: 'google',
-            options: {
-              scopes: 'https://www.googleapis.com/auth/calendar',
-              redirectTo: window.location.origin + '/auth/callback',
-              queryParams: {
-                access_type: 'offline',
-                prompt: 'consent',
-              },
-            },
-          })
-          .then((result) => {
-            if (import.meta.env.VITE_ENV === 'production_admin') {
-              throw Error('Cannot login if not user has not the admin role');
-            }
-            if (result.error) {
-              throw result.error;
-            } else if (!result.data) {
-              throw Error('Login failed without any error message. Please try again...');
-            }
-          })
-          .catch((error) => {
-            notifications.show(error.message, { severity: 'error' });
-            captureException(error);
-            resolve({
-              type: 'CredentialsSignin',
-              error: error.message,
-            });
-          })
-          .finally(() => {
-            setLoading(false);
-          });
     });
     return promise;
   };
@@ -150,6 +118,7 @@ const LoginScreen = () => {
     <SignInPage
       providers={[{ id: 'credentials', name: 'Credentials' }]}
       signIn={signIn}
+
       slots={{
         title: Title,
         subtitle: Subtitle,
@@ -162,7 +131,7 @@ const LoginScreen = () => {
         height: '100%',
         minHeight: '100%',
         verticalAlign: 'middle',
-        '& .MuiContainer-root .MuiBox-root': {
+        '& .MuiContainer-root .MuiStack-root': {
           [theme.breakpoints.down('sm')]: {
             border: 'none',
             boxShadow: 'none',

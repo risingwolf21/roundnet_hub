@@ -1,4 +1,9 @@
-import { List, ListItem, ListItemAvatar, ListItemText, ListSubheader, Typography } from '@mui/material';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import ListItemAvatar from '@mui/material/ListItemAvatar';
+import ListItemText from '@mui/material/ListItemText';
+import ListSubheader from '@mui/material/ListSubheader';
+import Typography from '@mui/material/Typography';
 
 export const AdminHistoryItem = ({ items, header }: { items: FullHistory[]; header: string }) => {
   return (

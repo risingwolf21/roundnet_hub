@@ -1,23 +1,23 @@
 import { customEnLocale } from '@/lib/date-fns';
 import { useUpsertSetsToMatch } from '@/tanstack/games';
-import { Close, Delete } from '@mui/icons-material';
-import {
-  AppBar,
-  Button,
-  Dialog,
-  Grid2,
-  IconButton,
-  List,
-  ListItem,
-  TextField,
-  Toolbar,
-  Typography,
-} from '@mui/material';
 import { LocalizationProvider } from '@mui/x-date-pickers';
-import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFnsV3';
+import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { captureException } from '@sentry/react';
 import { DialogProps, NotificationsProvider, useNotifications } from '@toolpad/core';
 import { useState } from 'react';
+
+import Close from '@mui/icons-material/Close';
+import Delete from '@mui/icons-material/Delete';
+import AppBar from '@mui/material/AppBar';
+import Button from '@mui/material/Button';
+import Dialog from '@mui/material/Dialog';
+import Grid from '@mui/material/Grid';
+import IconButton from '@mui/material/IconButton';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import TextField from '@mui/material/TextField';
+import Toolbar from '@mui/material/Toolbar';
+import Typography from '@mui/material/Typography';
 
 type ReportSetsDialogProps = {
   matchId: string;
@@ -67,7 +67,7 @@ const Content = ({ payload, onClose }: DialogProps<ReportSetsDialogProps, MatchS
       <List sx={{ pl: 2, pr: 2, pb: 10, width: '100%' }}>
         <ListItem divider disableGutters disablePadding sx={{ width: '100%' }}>
           <>
-            <Grid2 size={5} sx={{ p: 2 }}>
+            <Grid size={5} sx={{ p: 2 }}>
               <TextField
                 size="small"
                 fullWidth
@@ -76,8 +76,8 @@ const Content = ({ payload, onClose }: DialogProps<ReportSetsDialogProps, MatchS
                 label={'Team A'}
                 disabled
               />
-            </Grid2>
-            <Grid2 size={5} sx={{ p: 2 }}>
+            </Grid>
+            <Grid size={5} sx={{ p: 2 }}>
               <TextField
                 size="small"
                 fullWidth
@@ -86,14 +86,14 @@ const Content = ({ payload, onClose }: DialogProps<ReportSetsDialogProps, MatchS
                 label={'Team B'}
                 disabled
               />
-            </Grid2>
-            <Grid2 size={2} sx={{ p: 2 }}></Grid2>
+            </Grid>
+            <Grid size={2} sx={{ p: 2 }}></Grid>
           </>
         </ListItem>
         {sets.map((x, index) => (
           <ListItem divider disableGutters disablePadding>
             <>
-              <Grid2 size={5} sx={{ p: 2 }}>
+              <Grid size={5} sx={{ p: 2 }}>
                 <TextField
                   size="small"
                   type="number"
@@ -104,8 +104,8 @@ const Content = ({ payload, onClose }: DialogProps<ReportSetsDialogProps, MatchS
                   }
                   label={`Satz ${x.set_number} - Team A`}
                 />
-              </Grid2>
-              <Grid2 size={5} sx={{ p: 2 }}>
+              </Grid>
+              <Grid size={5} sx={{ p: 2 }}>
                 <TextField
                   size="small"
                   type="number"
@@ -116,18 +116,18 @@ const Content = ({ payload, onClose }: DialogProps<ReportSetsDialogProps, MatchS
                   }
                   label={`Satz ${x.set_number} - Team B`}
                 />
-              </Grid2>
-              <Grid2 size={2} sx={{ p: 2 }}>
+              </Grid>
+              <Grid size={2} sx={{ p: 2 }}>
                 {index > 0 && (
                   <IconButton onClick={() => setSets([...sets.filter((y) => y.set_number !== x.set_number)])}>
                     <Delete />
                   </IconButton>
                 )}
-              </Grid2>
+              </Grid>
             </>
           </ListItem>
         ))}
-        <Grid2 size={12} sx={{ p: 2 }}>
+        <Grid size={12} sx={{ p: 2 }}>
           <Button
             onClick={() =>
               setSets([
@@ -145,7 +145,7 @@ const Content = ({ payload, onClose }: DialogProps<ReportSetsDialogProps, MatchS
           >
             Neuen Satz erstellen
           </Button>
-        </Grid2>
+        </Grid>
       </List>
     </>
   );

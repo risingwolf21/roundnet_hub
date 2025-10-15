@@ -2118,12 +2118,6 @@ grant usage on schema cron to postgres;
 grant all privileges on all tables in schema cron to postgres;
 
 -- pg_cron (in Supabase: schema "extensions") – täglich um 03:00 UTC
-SELECT
-  cron.schedule(
-    'webpush_prune_daily',
-    '0 3 * * *',
-    $$SELECT public.webpush_prune_subscriptions();$$
-  );
 
 select cron.schedule(
   'push_worker_quick',
@@ -2131,19 +2125,6 @@ select cron.schedule(
   $$select public.run_push_worker_if_needed();$$
 );
 
--- 1x pro Stunde harte Bounces markieren
-select cron.schedule(
-  'webpush_mark_bounces',
-  '0 * * * *',
-  $$select public.webpush_mark_hard_bounces();$$
-);
-
--- täglich um 03:15 aufräumen
-select cron.schedule(
-  'webpush_prune_daily',
-  '15 3 * * *',
-  $$select public.webpush_sweep();$$
-);
 
 revoke delete on table "public"."notification_retention" from "authenticated";
 

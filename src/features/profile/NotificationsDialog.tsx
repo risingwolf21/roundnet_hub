@@ -1,23 +1,23 @@
 import { useNotificationTags, useNotificationTopics, useUpdateNotificationPreferences } from '@/tanstack/notifications';
 import { UserWithGroups } from '@/types/supabaseTypes';
-import { Close, NotificationsOff } from '@mui/icons-material';
-import {
-  AppBar,
-  Box,
-  CircularProgress,
-  Container,
-  Dialog,
-  Divider,
-  IconButton,
-  ListItem,
-  ListItemText,
-  Switch,
-  Toolbar,
-  Typography,
-} from '@mui/material';
 import { DialogProps } from '@toolpad/core/useDialogs';
 import { PropsWithChildren } from 'react';
 import NotificationGate from './NotificationGate';
+
+import Close from '@mui/icons-material/Close';
+import NotificationsOff from '@mui/icons-material/NotificationsOff';
+import AppBar from '@mui/material/AppBar';
+import Box from '@mui/material/Box';
+import CircularProgress from '@mui/material/CircularProgress';
+import Container from '@mui/material/Container';
+import Dialog from '@mui/material/Dialog';
+import Divider from '@mui/material/Divider';
+import IconButton from '@mui/material/IconButton';
+import ListItem from '@mui/material/ListItem';
+import ListItemText from '@mui/material/ListItemText';
+import Switch from '@mui/material/Switch';
+import Toolbar from '@mui/material/Toolbar';
+import Typography from '@mui/material/Typography';
 
 const NotificationSwitch = ({
   primary,

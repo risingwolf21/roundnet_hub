@@ -1,7 +1,13 @@
 import EditIcon from '@mui/icons-material/Edit';
 import KeyIcon from '@mui/icons-material/Key';
-import { Avatar, Button, IconButton, ListItem, ListItemAvatar, ListItemText } from '@mui/material';
 import { TFunction } from 'i18next';
+
+import Avatar from '@mui/material/Avatar';
+import Button from '@mui/material/Button';
+import IconButton from '@mui/material/IconButton';
+import ListItem from '@mui/material/ListItem';
+import ListItemAvatar from '@mui/material/ListItemAvatar';
+import ListItemText from '@mui/material/ListItemText';
 
 type ItemHolderItemProsp = {
   x: FullItemHolder;

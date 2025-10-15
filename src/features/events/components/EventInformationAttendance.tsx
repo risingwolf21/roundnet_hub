@@ -2,32 +2,6 @@ import { useGrants } from '@/features/auth/GrantsContext';
 import { Has } from '@/hooks/useGrants';
 import { useAttendance, useUpdateAttendanceMutation } from '@/tanstack/events';
 import { answerDeadlineExpired, eventInThePast, EventsUserView, maxAttendeesExceeded } from '@/types/supabaseTypes';
-import {
-  CheckCircleOutline,
-  HourglassBottom,
-  Key,
-  Pending,
-  PendingOutlined,
-  RecordVoiceOver,
-  RecordVoiceOverOutlined,
-  RemoveCircleOutline,
-  ThumbDownAlt,
-  ThumbDownOffAlt,
-  ThumbUpAlt,
-  ThumbUpOffAlt,
-} from '@mui/icons-material';
-import {
-  Alert,
-  Button,
-  CircularProgress,
-  Divider,
-  IconButton,
-  List,
-  ListItem,
-  ListItemAvatar,
-  ListItemText,
-  Typography,
-} from '@mui/material';
 import Box from '@mui/material/Box';
 import { useNotifications } from '@toolpad/core';
 import { isBefore } from 'date-fns';
@@ -35,6 +9,29 @@ import { t } from 'i18next';
 import { useState } from 'react';
 import EventAttendanceDialog from '../dialogs/EventAttendanceDialog';
 import { EventInformationConstellations } from './EventInformationConstellations';
+
+import CheckCircleOutline from '@mui/icons-material/CheckCircleOutline';
+import HourglassBottom from '@mui/icons-material/HourglassBottom';
+import Key from '@mui/icons-material/Key';
+import Pending from '@mui/icons-material/Pending';
+import PendingOutlined from '@mui/icons-material/PendingOutlined';
+import RecordVoiceOver from '@mui/icons-material/RecordVoiceOver';
+import RecordVoiceOverOutlined from '@mui/icons-material/RecordVoiceOverOutlined';
+import RemoveCircleOutline from '@mui/icons-material/RemoveCircleOutline';
+import ThumbDownAlt from '@mui/icons-material/ThumbDownAlt';
+import ThumbDownOffAlt from '@mui/icons-material/ThumbDownOffAlt';
+import ThumbUpAlt from '@mui/icons-material/ThumbUpAlt';
+import ThumbUpOffAlt from '@mui/icons-material/ThumbUpOffAlt';
+import Alert from '@mui/material/Alert';
+import Button from '@mui/material/Button';
+import CircularProgress from '@mui/material/CircularProgress';
+import Divider from '@mui/material/Divider';
+import IconButton from '@mui/material/IconButton';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import ListItemAvatar from '@mui/material/ListItemAvatar';
+import ListItemText from '@mui/material/ListItemText';
+import Typography from '@mui/material/Typography';
 
 type EventInformationAttendanceProps = {
   fetchMode: 'past' | 'upcoming';

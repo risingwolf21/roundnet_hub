@@ -1,20 +1,21 @@
-import { Add, LocalDrink, Remove } from '@mui/icons-material';
-import {
-  Avatar,
-  Box,
-  Button,
-  DialogContent,
-  Divider,
-  IconButton,
-  List,
-  ListItem,
-  ListItemAvatar,
-  ListItemText,
-  Typography,
-} from '@mui/material';
 import { useEffect, useState } from 'react';
 import { SwipeableDialog } from '../../../components/SwipeableDialog';
 import { FullHistoryUpdate } from '../types';
+
+import Add from '@mui/icons-material/Add';
+import LocalDrink from '@mui/icons-material/LocalDrink';
+import Remove from '@mui/icons-material/Remove';
+import Avatar from '@mui/material/Avatar';
+import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
+import DialogContent from '@mui/material/DialogContent';
+import Divider from '@mui/material/Divider';
+import IconButton from '@mui/material/IconButton';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import ListItemAvatar from '@mui/material/ListItemAvatar';
+import ListItemText from '@mui/material/ListItemText';
+import Typography from '@mui/material/Typography';
 
 type Props = {
   open: boolean;

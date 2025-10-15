@@ -1,19 +1,18 @@
-import { Close } from '@mui/icons-material';
-import {
-  Dialog,
-  DialogContent,
-  DialogTitle,
-  IconButton,
-  List,
-  ListItemButton,
-  ListItemText,
-  ListSubheader,
-  Toolbar,
-  Typography,
-} from '@mui/material';
 import { DialogProps } from '@toolpad/core';
 import { groupBy } from 'lodash';
 import { Table } from '../SupabaseClient';
+
+import Close from '@mui/icons-material/Close';
+import Dialog from '@mui/material/Dialog';
+import DialogContent from '@mui/material/DialogContent';
+import DialogTitle from '@mui/material/DialogTitle';
+import IconButton from '@mui/material/IconButton';
+import List from '@mui/material/List';
+import ListItemButton from '@mui/material/ListItemButton';
+import ListItemText from '@mui/material/ListItemText';
+import ListSubheader from '@mui/material/ListSubheader';
+import Toolbar from '@mui/material/Toolbar';
+import Typography from '@mui/material/Typography';
 
 type SelectTableDialogPayload = {
   tables: Table[];

@@ -1,25 +1,24 @@
 import { useFeatures, usePermissions } from '@/tanstack/grants';
-import { SlideUpTransition } from '@/utils';
-import { Close } from '@mui/icons-material';
-import {
-  AppBar,
-  Box,
-  Button,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  Divider,
-  IconButton,
-  List,
-  ListItem,
-  ListItemText,
-  Switch,
-  Toolbar,
-  Typography
-} from '@mui/material';
 import { UseQueryResult } from '@tanstack/react-query';
 import { DialogProps } from '@toolpad/core';
 import React from 'react';
+
+import { SlideUpTransition } from '@/utils';
+import Close from '@mui/icons-material/Close';
+import AppBar from '@mui/material/AppBar';
+import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
+import Dialog from '@mui/material/Dialog';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+import Divider from '@mui/material/Divider';
+import IconButton from '@mui/material/IconButton';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import ListItemText from '@mui/material/ListItemText';
+import Switch from '@mui/material/Switch';
+import Toolbar from '@mui/material/Toolbar';
+import Typography from '@mui/material/Typography';
 
 export type GroupResult = {
   grantPerm: string[];

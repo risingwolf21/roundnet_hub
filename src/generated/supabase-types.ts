@@ -1,7 +1,7 @@
 // Auto-generiert – nicht manuell bearbeiten
 
-export type Permission =
-  | 'event.comment'
+
+export type Permission = | 'event.comment'
   | 'event.manage.attendees'
   | 'event.cancel'
   | 'event.edit'
@@ -31,6 +31,7 @@ export type Permission =
   | 'groups.manage.admin'
   | 'drinks.edit'
   | 'grants.manage'
-  | 'challenge.manage';
+  | 'challenge.manage'
+  | 'notifications.send';
 
 export type Feature = 'games' | 'events' | 'items' | 'drinks' | 'challenges';

@@ -1,7 +1,5 @@
 import { PullToRefresh } from '@/components/pull-to-refresh/PullToRefresh';
 import { useGroups, useRequestedUsersPerGroup } from '@/tanstack/groups';
-import { Add, Groups } from '@mui/icons-material';
-import { Avatar, Chip, Fab, List, ListItem, ListItemAvatar, ListItemText, ListSubheader, Stack } from '@mui/material';
 import { useDialogs } from '@toolpad/core';
 import { useNotifications } from '@toolpad/core/useNotifications';
 import { useEffect } from 'react';
@@ -10,6 +8,18 @@ import { useGrants } from '../auth/GrantsContext';
 import { JoinGroupButton } from './components/JoinGroupButton';
 import { CreateOrUpdateGroupDialog } from './dialogs/CreateOrUpdateGroupDialog';
 import { LoadingGroupListItem } from './LoadingGroupListItem';
+
+import Add from '@mui/icons-material/Add';
+import Groups from '@mui/icons-material/Groups';
+import Avatar from '@mui/material/Avatar';
+import Chip from '@mui/material/Chip';
+import Fab from '@mui/material/Fab';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import ListItemAvatar from '@mui/material/ListItemAvatar';
+import ListItemText from '@mui/material/ListItemText';
+import ListSubheader from '@mui/material/ListSubheader';
+import Stack from '@mui/material/Stack';
 
 const PublicGroupList = () => {
   const { user } = useGrants();
@@ -28,7 +38,7 @@ const PublicGroupList = () => {
   if (isLoading) {
     return (
       <List>
-        {Array.from({ length: 10 }, (v, k) => k + 1).map((x) => (
+        {Array.from({ length: 10 }, (_v, k) => k + 1).map((x) => (
           <LoadingGroupListItem key={x} />
         ))}
       </List>

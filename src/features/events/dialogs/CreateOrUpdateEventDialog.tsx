@@ -1,51 +1,62 @@
 import { useFetchMode } from '@/hooks/useFetchMode';
-import { useInsertEventMutation, useUpdateRecurrenceMutation, useUpdateSingleMutation } from '@/tanstack/events';
+import { useBringItems, useInsertEventMutation, useUpdateRecurrenceMutation, useUpdateSingleMutation } from '@/tanstack/events';
 import { formatDateFromDatabase, formatDateToDatabase } from '@/utils';
-import { AccessTime, Article, Category, Close, FiberManualRecord, Map } from '@mui/icons-material';
 import EventIcon from '@mui/icons-material/Event';
 import EventRepeatIcon from '@mui/icons-material/EventRepeat';
-import {
-  AppBar,
-  Box,
-  Button,
-  Checkbox,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  Divider,
-  FormControl,
-  FormControlLabel,
-  IconButton,
-  InputAdornment,
-  List,
-  ListItem,
-  ListItemAvatar,
-  ListItemButton,
-  ListItemText,
-  MenuItem,
-  Radio,
-  RadioGroup,
-  Select,
-  TextField,
-  Toolbar,
-  Typography,
-} from '@mui/material';
 import { DatePicker, DateTimePicker } from '@mui/x-date-pickers';
 import { TimePicker } from '@mui/x-date-pickers/TimePicker';
 import { DialogProps, useDialogs } from '@toolpad/core';
 import { useNotifications } from '@toolpad/core/useNotifications';
 import { format, isAfter, set } from 'date-fns';
 import _ from 'lodash';
-import { FormEvent, useRef, useState } from 'react';
+import { FormEvent, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { MapContainer, Marker, TileLayer, useMap } from 'react-leaflet';
 import { EventTable } from 'types/supabase';
-import { NumberInput } from '../../../components/mui/NumberInput';
-import { Enums, TablesInsert, TablesUpdate } from '../../../types/supabase-generated.types';
+import { Enums, Tables, TablesInsert, TablesUpdate } from '../../../types/supabase-generated.types';
 import { CreateEventOption, PlaceType } from '../types';
 import SearchPlacesDialog from './SearchPlacesDialog';
 import { SelectGroupDialog } from './SelectGroupDialog';
+
+import { SwipeableDialog } from '@/components/SwipeableDialog';
+import { useGrants } from '@/features/auth/GrantsContext';
+import AccessTime from '@mui/icons-material/AccessTime';
+import Add from '@mui/icons-material/Add';
+import Article from '@mui/icons-material/Article';
+import Category from '@mui/icons-material/Category';
+import Close from '@mui/icons-material/Close';
+import Delete from '@mui/icons-material/Delete';
+import FiberManualRecord from '@mui/icons-material/FiberManualRecord';
+import Map from '@mui/icons-material/Map';
+import Remove from '@mui/icons-material/Remove';
+import AppBar from '@mui/material/AppBar';
+import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
+import Checkbox from '@mui/material/Checkbox';
+import Chip from '@mui/material/Chip';
+import CircularProgress from '@mui/material/CircularProgress';
+import Dialog from '@mui/material/Dialog';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+import DialogTitle from '@mui/material/DialogTitle';
+import Divider from '@mui/material/Divider';
+import FormControl from '@mui/material/FormControl';
+import FormControlLabel from '@mui/material/FormControlLabel';
+import IconButton from '@mui/material/IconButton';
+import InputAdornment from '@mui/material/InputAdornment';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import ListItemAvatar from '@mui/material/ListItemAvatar';
+import ListItemButton from '@mui/material/ListItemButton';
+import ListItemText from '@mui/material/ListItemText';
+import MenuItem from '@mui/material/MenuItem';
+import Radio from '@mui/material/Radio';
+import RadioGroup from '@mui/material/RadioGroup';
+import Select from '@mui/material/Select';
+import TextField from '@mui/material/TextField';
+import Toolbar from '@mui/material/Toolbar';
+import Typography from '@mui/material/Typography';
+import { logger } from '@sentry/react';
 
 const emptyEvent = {
   title: '',
@@ -75,12 +86,20 @@ export const CreateOrUpdateEventDialog = ({
   const [fetchMode] = useFetchMode();
   const dialogs = useDialogs();
   const { t } = useTranslation();
+  const { user } = useGrants();
   const [editedEvent, setEditedEvent] = useState<EventTable>(event ?? emptyEvent);
   const [selectedGroup, setSelectedGroup] = useState<Group | null>(eventGroup ?? null);
-  const [dialogOpen, setDialogOpen] = useState<'group' | 'stopRepeat' | 'repeat' | 'places' | null>(null);
+  const [dialogOpen, setDialogOpen] = useState<'group' | 'stopRepeat' | 'repeat' | 'places' | 'bring_items' | null>(null);
   const [place, setPlace] = useState<PlaceType | null>(event?.place ? (JSON.parse(event.place) as PlaceType) : null);
+  const [bringItems, setBringItems] = useState<{ name: string, required_qty: number }[]>([]);
 
   const ref = useRef<HTMLFormElement>(null);
+
+  const { data: allItems = [], isLoading: bringItemsLoading } = useBringItems(event?.id);
+
+  useEffect(() => {
+    setBringItems(allItems.map(x => ({ name: x.name, required_qty: x.required_qty ?? 0 })));
+  }, [allItems]);
 
   const insertEvent = useInsertEventMutation(fetchMode);
   const updateSingleEvent = useUpdateSingleMutation(fetchMode);
@@ -91,6 +110,10 @@ export const CreateOrUpdateEventDialog = ({
     try {
       if (!editedEvent.meetingDateTime)
         setEditedEvent({ ...editedEvent, meetingDateTime: editedEvent.startingDateTime });
+
+      let bring_items = bringItems.filter(x => x.name && x.required_qty && x.required_qty > 0);
+
+      setEditedEvent({ ...editedEvent, items_enabled: bring_items.length > 0 });
 
       let edited_event = _.omit(editedEvent, [
         'fullGroup',
@@ -127,16 +150,29 @@ export const CreateOrUpdateEventDialog = ({
 
       if (option === 'InsertEvent') {
         insertEvent.mutate(
-          { event: eventChanges as TablesInsert<'events'> },
+          {
+            event: eventChanges as Tables<'events'>,
+            currentUser: user,
+            items: bring_items.map(x => ({ name: x.name, required_qty: x.required_qty, unit: "Stk.", sort_order: 0, notes: null }))
+          },
           {
             onError: (error) =>
               notifications.show('Event konnte nicht erstellt werden: ' + error.message, { severity: 'error' }),
-            onSuccess: () => onClose(),
+            onSuccess: () => {
+              logger.info("event_created_successfully",
+                {
+                  event: edited_event,
+                  user: user,
+                  items: bring_items,
+                }
+              );
+              onClose();
+            },
           }
         );
       } else if (option === 'UpdateSingle') {
         updateSingleEvent.mutate(
-          { eventChanges, id: edited_event.id ?? '' },
+          { eventChanges, id: edited_event.id ?? '', currentUser: user },
           {
             onError: (error) =>
               notifications.show('Event konnte nicht aktualisiert werden: ' + error.message, { severity: 'error' }),
@@ -145,7 +181,7 @@ export const CreateOrUpdateEventDialog = ({
         );
       } else if (option === 'UpdateRecurrence') {
         updateRecurrenceEvents.mutate(
-          { eventChanges, key: editedEvent.key, startingDateTime: editedEvent.startingDateTime },
+          { eventChanges, key: editedEvent.key, startingDateTime: editedEvent.startingDateTime, currentUser: user },
           {
             onError: (error) =>
               notifications.show('Events konnten nicht aktualisiert werden: ' + error.message, { severity: 'error' }),
@@ -258,7 +294,7 @@ export const CreateOrUpdateEventDialog = ({
               sx={{ width: '100%' }}
               label="Datum"
               disablePast
-              format="DD MMMM YYYY"
+              format="dd MMMM yyyy"
               onChange={(val) => {
                 if (!val) return;
                 setEditedEvent({
@@ -324,7 +360,7 @@ export const CreateOrUpdateEventDialog = ({
               sx={{ width: '100%' }}
               views={['hours', 'minutes']}
               ampm={false}
-              maxTime={formatDateFromDatabase(editedEvent.startingDateTime)}
+              maxTime={formatDateFromDatabase(editedEvent.startingDateTime) ?? undefined}
               label="Treffpunkt"
               onChange={(val) => {
                 if (!val) return;
@@ -350,9 +386,9 @@ export const CreateOrUpdateEventDialog = ({
               disabled={editedEvent.endDateTime === null}
               sx={{ width: '100%' }}
               views={['year', 'month', 'day', 'hours', 'minutes']}
-              format={'DD MMMM YYYY HH:mm'}
+              format={'dd MMMM yyyy HH:mm'}
               ampm={false}
-              minDateTime={formatDateFromDatabase(editedEvent.startingDateTime)}
+              minDateTime={formatDateFromDatabase(editedEvent.startingDateTime) ?? undefined}
               label="Ende"
               onChange={(val) => {
                 if (!val) return;
@@ -455,7 +491,8 @@ export const CreateOrUpdateEventDialog = ({
               label="Answer deadline"
               disablePast
               ampm={false}
-              format={'DD MMMM YYYY HH:mm'}
+              maxDateTime={formatDateFromDatabase(editedEvent.startingDateTime) ?? undefined}
+              format={'dd MMMM yyyy HH:mm'}
               onChange={(val) => {
                 if (!val) return;
                 setEditedEvent({
@@ -477,7 +514,39 @@ export const CreateOrUpdateEventDialog = ({
             />
           </ListItem>
 
-          <ListItem sx={{ pt: 0, pb: 0, mb: 2 }} key={'maxAttendees'}>
+          <ListItem sx={{ pt: 0, pb: 0, mb: 2 }} key={'maxAttendees'} secondaryAction={
+            <Box sx={{ display: 'flex', flexDirection: 'row' }}>
+              {
+                (editedEvent.maxAttendees !== null && editedEvent.maxAttendees >= 0) && <>
+                  <IconButton
+                    disableRipple
+                    onClick={(event) => {
+                      setEditedEvent({
+                        ...editedEvent,
+                        maxAttendees: editedEvent.maxAttendees !== null && editedEvent.maxAttendees - 1 > 0 ? editedEvent.maxAttendees - 1 : null,
+                      })
+                      event.stopPropagation();
+                    }}
+                  >
+                    <Remove fontSize="inherit" sx={{ fontSize: '28px' }} />
+                  </IconButton>
+                  <Typography sx={{ p: 1, fontSize: '20px', color: 'rgba(0,0,0,0.54)' }}>{editedEvent.maxAttendees}</Typography>
+                </>
+              }
+              <IconButton
+                disableRipple
+                onClick={(event) => {
+                  setEditedEvent({
+                    ...editedEvent,
+                    maxAttendees: editedEvent.maxAttendees !== null ? editedEvent.maxAttendees + 1 : 1,
+                  })
+                  event.stopPropagation();
+                }}
+              >
+                <Add fontSize="inherit" sx={{ fontSize: '28px' }} />
+              </IconButton>
+            </Box>
+          }>
             <ListItemAvatar>
               <Checkbox
                 sx={{ pl: 0 }}
@@ -485,22 +554,13 @@ export const CreateOrUpdateEventDialog = ({
                 onChange={() =>
                   setEditedEvent({
                     ...editedEvent,
-                    maxAttendees: editedEvent.maxAttendees === null ? 0 : null,
+                    maxAttendees: editedEvent.maxAttendees === null ? 1 : null,
                   })
                 }
               />
             </ListItemAvatar>
 
-            <NumberInput
-              fullWidth
-              disabled={editedEvent.maxAttendees === null}
-              value={editedEvent.maxAttendees}
-              onChange={(event, val) => {
-                if (event.type === 'click' && val && val >= 0)
-                  setEditedEvent({ ...editedEvent, maxAttendees: val ?? 0 });
-              }}
-              placeholder="Maximale Teilnehmerzahl"
-            />
+            <ListItemText primary={'Maximale Teilnehmerzahl'} />
           </ListItem>
 
           <ListItem sx={{ pt: 0, pb: 0, mb: 2 }} key={'itemType'}>
@@ -533,7 +593,7 @@ export const CreateOrUpdateEventDialog = ({
               <MenuItem value={'none'}>Keiner</MenuItem>
             </Select>
           </ListItem>
-          <ListItem sx={{ pt: 0, pb: 0, mb: 2 }} key={'itemType'}>
+          <ListItem sx={{ pt: 0, pb: 0, mb: 2 }} key={'constellations_enabled'}>
             <ListItemAvatar>
               <Checkbox
                 sx={{ pl: 0 }}
@@ -551,14 +611,91 @@ export const CreateOrUpdateEventDialog = ({
               secondary={'Soll es möglich sein für Trainer, Konstellationen zu erstellen?'}
             />
           </ListItem>
-          <ListItem sx={{ pt: 0, pb: 0, mb: 2 }} key={'pledges'} onClick={async () => { }}>
+          <ListItem sx={{ pt: 0, pb: 0, mb: 2 }} key={'pledges'} onClick={() => {
+            if (bringItemsLoading) return;
+            setDialogOpen('bring_items');
+          }}>
             <ListItemAvatar>
-              <Category />
+              {
+                bringItemsLoading ? <CircularProgress size={24} /> : <Category />
+              }
             </ListItemAvatar>
-            <ListItemText primary={'Gegenstände mitbringen'} secondary={'Gegenstände mitbringen'} />
+            <ListItemText primary={'Gegenstände mitbringen'} secondary={bringItems.map(x => <Chip sx={{ mr: 1 }} size='small' label={`${x.required_qty}x ${x.name}`} />)} />
           </ListItem>
         </List>
       </Box>
+      <SwipeableDialog title='Gegenstände mitbringen' open={dialogOpen === 'bring_items'} onClose={() => setDialogOpen(null)}>
+
+        <List>
+          {
+            bringItems.map((item, index) => (
+              <ListItem divider key={index}>
+                <ListItemAvatar>
+                  <IconButton onClick={() => {
+                    const newItems = [...bringItems];
+                    newItems.splice(index, 1);
+                    setBringItems(newItems);
+                  }}>
+                    <Delete />
+                  </IconButton>
+                </ListItemAvatar>
+                <TextField
+                  fullWidth
+                  variant="outlined"
+                  label="Gegenstand"
+                  value={item.name}
+                  onChange={(e) => {
+                    const newItems = [...bringItems];
+                    newItems[index].name = e.target.value;
+                    setBringItems(newItems);
+                  }}
+                  sx={{ mr: 2 }}
+                  margin="normal"
+                />
+                <Box sx={{ display: 'flex', flexDirection: 'row' }}>
+                  {item.required_qty > 0 && (
+                    <>
+                      <IconButton
+                        disableRipple
+                        onClick={(event) => {
+                          const newItems = [...bringItems];
+                          newItems[index].required_qty = Math.max(1, newItems[index].required_qty - 1);
+                          setBringItems(newItems);
+                          event.stopPropagation();
+                        }}
+                      >
+                        <Remove fontSize="inherit" sx={{ fontSize: '28px' }} />
+                      </IconButton>
+                      <Typography sx={{ p: 1, fontSize: '20px', color: 'rgba(0,0,0,0.54)' }}>{item.required_qty}</Typography>
+                    </>
+                  )}
+                  <IconButton
+                    disableRipple
+                    onClick={(event) => {
+                      const newItems = [...bringItems];
+                      newItems[index].required_qty = newItems[index].required_qty + 1;
+                      setBringItems(newItems);
+                      event.stopPropagation();
+                    }}
+                  >
+                    <Add fontSize="inherit" sx={{ fontSize: '28px' }} />
+                  </IconButton>
+                </Box>
+              </ListItem>
+            ))
+          }
+          <ListItem onClick={() => {
+            setBringItems([...bringItems, { name: '', required_qty: 1 }]);
+          }}>
+            <ListItemAvatar>
+              <IconButton>
+                <Add />
+              </IconButton>
+            </ListItemAvatar>
+            <ListItemText primary={'Gegenstand hinzufügen'} />
+          </ListItem>
+        </List>
+      </SwipeableDialog>
       <Dialog open={dialogOpen === 'repeat'} onClose={() => setDialogOpen(null)}>
         <DialogTitle>Wiederholung</DialogTitle>
         <DialogContent>

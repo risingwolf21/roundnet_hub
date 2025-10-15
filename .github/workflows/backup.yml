@@ -14,77 +14,119 @@ on:
           - All
   schedule:
     - cron: '0 0 */3 * *' # Runs every day at midnight
+
 jobs:
   backup-karlsruhe:
+    name: Backup Roundnet Karlsruhe
     runs-on: ubuntu-latest
     if: ${{ github.event_name != 'workflow_dispatch'
         || github.event.inputs.publish == 'All'
         || github.event.inputs.publish == 'Roundnet Karlsruhe' }}
-    environment:
-      name: 'Roundnet Karlsruhe'
-    permissions:
-      contents: write
-    env:
-      supabase_connection_string: ${{ vars.SUPABASE_CONNECTION_STRING }} # For example: postgresql://postgres:[YOUR-PASSWORD]@db.<ref>.supabase.co:5432/postgres
+    environment: 'Roundnet Karlsruhe'
     steps:
-      - uses: actions/checkout@v3
-        with:
-          ref: ${{ github.head_ref }}
+      - uses: actions/checkout@v4
+      
       - uses: supabase/setup-cli@v1
         with:
           version: latest
-      - name: Full Backup (roles, schema & data)
-        run: supabase db dump --db-url "$supabase_connection_string" -f supabase/backup/${{ matrix.env.backup_path }}/full_dump.sql
-      - name: Backup roles
-        run: supabase db dump --db-url "$supabase_connection_string" -f supabase/backup/${{ matrix.env.backup_path }}/roles.sql --role-only
-      - name: Backup schema
-        run: supabase db dump --db-url "$supabase_connection_string" -f supabase/backup/${{ matrix.env.backup_path }}/schema.sql
-      - name: Backup data
-        run: supabase db dump --db-url "$supabase_connection_string" -f supabase/backup/${{ matrix.env.backup_path }}/data.sql --data-only --use-copy
 
-      - uses: stefanzweifel/git-auto-commit-action@v4
-        with:
-          commit_message: "Supabase Backup Roundnet Karlsruhe $(date +'%Y-%m-%d')"
-          file_pattern: supabase/backup/roundnet-karlsruhe/*
+      - name: Dump Karlsruhe (full/roles/schema/data)
+        env:
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_CONNECTION_STRING }} # For example: postgresql://postgres:[YOUR-PASSWORD]@db.<ref>.supabase.co:5432/postgres
+        run: |
+          mkdir -p out/roundnet-karlsruhe
+          supabase db dump --db-url "$SUPABASE_DB_URL" -f out/roundnet-karlsruhe/full_dump.sql
+          supabase db dump --db-url "$SUPABASE_DB_URL" -f out/roundnet-karlsruhe/roles.sql --role-only
+          supabase db dump --db-url "$SUPABASE_DB_URL" -f out/roundnet-karlsruhe/schema.sql
+          supabase db dump --db-url "$SUPABASE_DB_URL" -f out/roundnet-karlsruhe/data.sql --data-only --use-copy
 
-      - uses: actions/upload-artifact@v4
+      - name: Upload artifact (Karlsruhe)
+        uses: actions/upload-artifact@v4
         with:
-          name: backup
-          path: supabase/backup/roundnet-karlsruhe
+          name: backup-karlsruhe
+          path: out/roundnet-karlsruhe/*
 
   backup-munich:
+    name: Backup Munich Roundnet
     if: ${{ github.event_name != 'workflow_dispatch'
         || github.event.inputs.publish == 'All'
         || github.event.inputs.publish == 'Munich Roundnet' }}
     runs-on: ubuntu-latest
-    environment:
-      name: 'Munich Roundnet'
-    permissions:
-      contents: write
-    env:
-      supabase_connection_string: ${{ vars.SUPABASE_CONNECTION_STRING }} # For example: postgresql://postgres:[YOUR-PASSWORD]@db.<ref>.supabase.co:5432/postgres
+    environment: 'Munich Roundnet'
     steps:
-      - uses: actions/checkout@v3
-        with:
-          ref: ${{ github.head_ref }}
+      - uses: actions/checkout@v4
+
       - uses: supabase/setup-cli@v1
         with:
           version: latest
-      - name: Full Backup (roles, schema & data)
-        run: supabase db dump --db-url "$supabase_connection_string" -f supabase/backup/${{ matrix.env.backup_path }}/full_dump.sql
-      - name: Backup roles
-        run: supabase db dump --db-url "$supabase_connection_string" -f supabase/backup/${{ matrix.env.backup_path }}/roles.sql --role-only
-      - name: Backup schema
-        run: supabase db dump --db-url "$supabase_connection_string" -f supabase/backup/${{ matrix.env.backup_path }}/schema.sql
-      - name: Backup data
-        run: supabase db dump --db-url "$supabase_connection_string" -f supabase/backup/${{ matrix.env.backup_path }}/data.sql --data-only --use-copy
+
+      - name: Dump Munich (full/roles/schema/data)
+        env:
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_CONNECTION_STRING }} # For example: postgresql://postgres:[YOUR-PASSWORD]@db.<ref>.supabase.co:5432/postgres
+        run: |
+          mkdir -p out/munich-roundnet
+          supabase db dump --db-url "$SUPABASE_DB_URL" -f out/munich-roundnet/full_dump.sql
+          supabase db dump --db-url "$SUPABASE_DB_URL" -f out/munich-roundnet/roles.sql --role-only
+          supabase db dump --db-url "$SUPABASE_DB_URL" -f out/munich-roundnet/schema.sql
+          supabase db dump --db-url "$SUPABASE_DB_URL" -f out/munich-roundnet/data.sql --data-only --use-copy
+
+      - name: Upload artifact (Munich)
+        uses: actions/upload-artifact@v4
+        with:
+          name: backup-munich
+          path: out/munich-roundnet/*
+  commit:
+    name: Commit backups (single commit)
+    runs-on: ubuntu-latest
+    needs:
+      - backup-karlsruhe
+      - backup-munich
+    # Mindestens ein Backup muss gelaufen sein (success) – sonst skippen
+    if: ${{ needs.backup-karlsruhe.result == 'success' || needs.backup-munich.result == 'success' }}
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download artifact Karlsruhe
+        if: ${{ needs.backup-karlsruhe.result == 'success' }}
+        uses: actions/download-artifact@v4
+        with:
+          name: backup-karlsruhe
+          path: stage/roundnet-karlsruhe
+
+      - name: Download artifact Munich
+        if: ${{ needs.backup-munich.result == 'success' }}
+        uses: actions/download-artifact@v4
+        with:
+          name: backup-munich
+          path: stage/munich-roundnet
+
+      - name: Move files into repo paths
+        run: |
+          mkdir -p supabase/backup/roundnet-karlsruhe supabase/backup/munich-roundnet
+          if [ -d "stage/roundnet-karlsruhe" ]; then
+            cp -R stage/roundnet-karlsruhe/* supabase/backup/roundnet-karlsruhe/ || true
+          fi
+          if [ -d "stage/munich-roundnet" ]; then
+            cp -R stage/munich-roundnet/* supabase/backup/munich-roundnet/ || true
+          fi
+
+      - name: Set DATE env (Europe/Berlin)
+        run: echo "DATE=$(TZ=Europe/Berlin date +'%Y-%m-%d')" >> $GITHUB_ENV
+
+      - name: Determine CHOICE for commit message
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            choice="${{ github.event.inputs.publish }}"
+          else
+            choice="All"
+          fi
+          echo "CHOICE=$choice" >> $GITHUB_ENV
 
       - uses: stefanzweifel/git-auto-commit-action@v4
         with:
-          commit_message: "Supabase Backup $(date +'%Y-%m-%d')"
-          file_pattern: supabase/backup/munich-roundnet/*
-
-      - uses: actions/upload-artifact@v4
-        with:
-          name: backup
-          path: supabase/backup/munich-roundnet
+          commit_message: "📦 Supabase Backup (${{ env.CHOICE }}) ${{ env.DATE }}"
+          file_pattern: |
+            supabase/backup/roundnet-karlsruhe/*
+            supabase/backup/munich-roundnet/*

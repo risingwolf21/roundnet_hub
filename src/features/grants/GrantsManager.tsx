@@ -1,11 +1,13 @@
 import Layout from '@/components/layout/Layout';
-import { Search, SearchIconWrapper, StyledInputBase } from '@/components/SearchBar';
-import SearchIcon from '@mui/icons-material/Search';
-import { Tab, Tabs, useTheme } from '@mui/material';
 import { useState } from 'react';
 import GroupGrantsPanel from './GroupGrantsPanel';
 import UserGrantsPanel from './UserGrantsPanel';
 
+import { Search, SearchIconWrapper, StyledInputBase } from '@/components/SearchBar';
+import SearchIcon from '@mui/icons-material/Search';
+import { useTheme } from '@mui/material';
+import Tab from '@mui/material/Tab';
+import Tabs from '@mui/material/Tabs';
 
 export const TabPanel = (props: any) => {
   const { children, value, index, ...other } = props;

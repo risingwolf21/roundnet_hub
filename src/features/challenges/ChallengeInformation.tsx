@@ -10,8 +10,6 @@ import {
   useInfiniteChallengeStats,
 } from '@/tanstack/challenge';
 import { dataURLtoFile } from '@/utils';
-import { Edit as EditIcon } from '@mui/icons-material';
-import { Alert, Box, Fab, Tab, Tabs, Typography } from '@mui/material';
 import { captureException, withProfiler } from '@sentry/react';
 import { useDialogs, useNotifications } from '@toolpad/core';
 import { TFunction } from 'i18next';
@@ -24,6 +22,14 @@ import { TabPanel } from '../events/dialogs/EventAttendanceDialog';
 import { ChallengeActivityList } from './ChallengeActivityList';
 import { ChallengeLeaderboard } from './ChallengeLeaderboard';
 import EnterPointDialog from './dialogs/EnterPointDialog';
+
+import EditIcon from '@mui/icons-material/Edit';
+import Alert from '@mui/material/Alert';
+import Box from '@mui/material/Box';
+import Fab from '@mui/material/Fab';
+import Tab from '@mui/material/Tab';
+import Tabs from '@mui/material/Tabs';
+import Typography from '@mui/material/Typography';
 
 const ChallengeInformationProvider = ({ t }: { t: TFunction }) => {
   const { challengeId } = useParams();

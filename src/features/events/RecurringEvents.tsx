@@ -1,40 +1,6 @@
 import { PullToRefresh } from '@/components/pull-to-refresh/PullToRefresh';
 import { SupabaseEventRepository } from '@/repository/EventRepository';
-import {
-  CalendarMonth,
-  Edit,
-  EventBusyRounded,
-  GroupRounded,
-  Key,
-  PersonOffRounded,
-  Place,
-  PlayCircle,
-  Repeat,
-  Stop,
-  StopCircleRounded,
-  WatchLaterRounded,
-} from '@mui/icons-material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import {
-  Box,
-  Button,
-  Card,
-  CardActions,
-  CardContent,
-  CardHeader,
-  Chip,
-  Collapse,
-  Divider,
-  LinearProgress,
-  List,
-  ListItem,
-  ListItemAvatar,
-  ListItemText,
-  Step,
-  StepLabel,
-  Stepper,
-} from '@mui/material';
-import Grid from '@mui/material/Grid2';
 import IconButton, { IconButtonProps } from '@mui/material/IconButton';
 import { styled } from '@mui/material/styles';
 import { useQuery } from '@tanstack/react-query';
@@ -46,6 +12,37 @@ import { EventWithGroup } from '../../types/supabaseTypes';
 import { nameOfRecurrence } from '../../utils';
 import { CreateOrUpdateEventDialog } from './dialogs/CreateOrUpdateEventDialog';
 import { PlaceType } from './types';
+
+import CalendarMonth from '@mui/icons-material/CalendarMonth';
+import Edit from '@mui/icons-material/Edit';
+import EventBusyRounded from '@mui/icons-material/EventBusyRounded';
+import GroupRounded from '@mui/icons-material/GroupRounded';
+import Key from '@mui/icons-material/Key';
+import PersonOffRounded from '@mui/icons-material/PersonOffRounded';
+import Place from '@mui/icons-material/Place';
+import PlayCircle from '@mui/icons-material/PlayCircle';
+import Repeat from '@mui/icons-material/Repeat';
+import Stop from '@mui/icons-material/Stop';
+import StopCircleRounded from '@mui/icons-material/StopCircleRounded';
+import WatchLaterRounded from '@mui/icons-material/WatchLaterRounded';
+import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
+import Card from '@mui/material/Card';
+import CardActions from '@mui/material/CardActions';
+import CardContent from '@mui/material/CardContent';
+import CardHeader from '@mui/material/CardHeader';
+import Chip from '@mui/material/Chip';
+import Collapse from '@mui/material/Collapse';
+import Divider from '@mui/material/Divider';
+import Grid from '@mui/material/Grid';
+import LinearProgress from '@mui/material/LinearProgress';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import ListItemAvatar from '@mui/material/ListItemAvatar';
+import ListItemText from '@mui/material/ListItemText';
+import Step from '@mui/material/Step';
+import StepLabel from '@mui/material/StepLabel';
+import Stepper from '@mui/material/Stepper';
 
 interface ExpandMoreProps extends IconButtonProps {
   expand: boolean;
@@ -61,13 +58,13 @@ const ExpandMore = styled((props: ExpandMoreProps) => {
   }),
   variants: [
     {
-      props: ({ expand }) => !expand,
+      props: ({ expand }: ExpandMoreProps) => !expand,
       style: {
         transform: 'rotate(0deg)',
       },
     },
     {
-      props: ({ expand }) => !!expand,
+      props: ({ expand }: ExpandMoreProps) => !!expand,
       style: {
         transform: 'rotate(180deg)',
       },

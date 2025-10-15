@@ -1,12 +1,16 @@
-import { ListItem, ListItemAvatar, ListItemIcon, ListItemText } from '@mui/material';
 import { closestTo, differenceInCalendarDays } from 'date-fns';
 import { toNumber } from 'lodash';
 import { useEffect, useState } from 'react';
 import { PlaceType } from '../types';
 
+import ListItem from '@mui/material/ListItem';
+import ListItemAvatar from '@mui/material/ListItemAvatar';
+import ListItemIcon from '@mui/material/ListItemIcon';
+import ListItemText from '@mui/material/ListItemText';
+
 type Props = {
   place: PlaceType;
-  date: Date;
+  date: Date | null;
 };
 
 type WeatherData = {
@@ -20,7 +24,7 @@ const EventWeatherForecast = ({ place, date }: Props) => {
   const [weatherData, setWeatherData] = useState<WeatherData | null>(null);
 
   useEffect(() => {
-    if (!import.meta.env.VITE_OPENWEATHER_API_KEY) return;
+    if (!import.meta.env.VITE_OPENWEATHER_API_KEY || !date) return;
     fetch(
       `https://api.openweathermap.org/data/2.5/forecast?lat=${place.lat}&lon=${place.lon}&appid=${import.meta.env.VITE_OPENWEATHER_API_KEY}&units=metric&lang=de`
     )

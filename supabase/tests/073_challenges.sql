@@ -44,8 +44,8 @@ WITH g AS (
 )
 SELECT (g.grp).id AS managers_group_id FROM g \gset
 
-SELECT public.test_seed_grant_permission(:'managers_group_id'::uuid, 'challenge.manage');
-
+INSERT INTO public.group_permissions("group","permission")VALUES(:'managers_group_id'::uuid, 'challenge.manage')
+ON CONFLICT DO NOTHING;
 -- A second, unrelated group for negative visibility tests (admin is a member there)
 WITH g AS (
   SELECT public.create_group_with_user(

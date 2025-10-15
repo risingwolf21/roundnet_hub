@@ -1,9 +1,15 @@
 import { PullToRefresh } from '@/components/pull-to-refresh/PullToRefresh';
 import { useAllNotifications, useMarkNotificationsAsRead } from '@/tanstack/notifications';
-import { DoneAll } from '@mui/icons-material';
-import { Box, Fab, List, ListItem, ListItemText, Typography } from '@mui/material';
 import Layout from '../../components/layout/Layout';
 import { useGrants } from '../auth/GrantsContext';
+
+import DoneAll from '@mui/icons-material/DoneAll';
+import Box from '@mui/material/Box';
+import Fab from '@mui/material/Fab';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import ListItemText from '@mui/material/ListItemText';
+import Typography from '@mui/material/Typography';
 
 const NotificationsPage = () => {
   return (
@@ -23,7 +29,7 @@ const NotificationScreen = () => {
     return (
       <Box sx={{ alignItems: 'center', display: 'flex', flexDirection: 'column', pt: 10 }}>
         <Typography sx={{ fontSize: '30pt', fontWeight: 'bold' }}>⌛</Typography>
-        <Typography sx={{ fontSize: '18pt', fontWeight: 'bold' }}>Challenge wird geladen...</Typography>
+        <Typography sx={{ fontSize: '18pt', fontWeight: 'bold' }}>Nachrichten werden geladen...</Typography>
       </Box>
     );
   }

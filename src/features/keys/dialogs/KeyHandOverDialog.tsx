@@ -1,6 +1,8 @@
-import { Button, Typography } from '@mui/material';
 import { TFunction } from 'i18next';
 import { SwipeableDialog } from '../../../components/SwipeableDialog';
+
+import Button from '@mui/material/Button';
+import Typography from '@mui/material/Typography';
 
 type KeyHandOverDialogProps = {
   user: User;

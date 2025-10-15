@@ -4,29 +4,33 @@ import { useCreateGroupMutation, useUpdateGroupMutation } from '@/tanstack/group
 import { Tables } from '@/types/supabase-generated.types';
 import { GroupWithUserRole, UserWithGroups } from '@/types/supabaseTypes';
 import { formatDateToDatabase } from '@/utils';
-import { Article, Close, ColorLens, Group, Groups, Title } from '@mui/icons-material';
-import {
-  AppBar,
-  Avatar,
-  Button,
-  Checkbox,
-  Dialog,
-  IconButton,
-  List,
-  ListItem,
-  ListItemAvatar,
-  ListItemText,
-  MenuItem,
-  Select,
-  TextField,
-  Toolbar,
-  Typography,
-} from '@mui/material';
 import { LocalizationProvider } from '@mui/x-date-pickers';
-import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFnsV3';
+import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { captureException } from '@sentry/react';
 import { DialogProps, NotificationsProvider, useNotifications } from '@toolpad/core';
 import { useRef, useState } from 'react';
+
+import Article from '@mui/icons-material/Article';
+import Close from '@mui/icons-material/Close';
+import ColorLens from '@mui/icons-material/ColorLens';
+import Group from '@mui/icons-material/Group';
+import Groups from '@mui/icons-material/Groups';
+import Title from '@mui/icons-material/Title';
+import AppBar from '@mui/material/AppBar';
+import Avatar from '@mui/material/Avatar';
+import Button from '@mui/material/Button';
+import Checkbox from '@mui/material/Checkbox';
+import Dialog from '@mui/material/Dialog';
+import IconButton from '@mui/material/IconButton';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import ListItemAvatar from '@mui/material/ListItemAvatar';
+import ListItemText from '@mui/material/ListItemText';
+import MenuItem from '@mui/material/MenuItem';
+import Select from '@mui/material/Select';
+import TextField from '@mui/material/TextField';
+import Toolbar from '@mui/material/Toolbar';
+import Typography from '@mui/material/Typography';
 
 type CreateOrUpdateGroupDialogProps = {
   group?: Group;

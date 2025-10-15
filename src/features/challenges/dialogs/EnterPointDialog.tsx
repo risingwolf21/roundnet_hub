@@ -1,6 +1,4 @@
 import { dataURLtoFile, formatDateFromDatabase, readFile } from '@/utils';
-import { AddPhotoAlternateOutlined, DeleteOutline, EditOutlined } from '@mui/icons-material';
-import { Box, Button, Typography } from '@mui/material';
 import { DatePicker, PickersDay, PickersDayProps } from '@mui/x-date-pickers';
 import { uuid } from '@supabase/supabase-js/dist/main/lib/helpers';
 import { DialogProps } from '@toolpad/core';
@@ -8,6 +6,13 @@ import Compressor from 'compressorjs';
 import { differenceInDays, isSameDay, isSameWeek } from 'date-fns';
 import React, { useEffect, useState } from 'react';
 import { SwipeableDialog } from '../../../components/SwipeableDialog';
+
+import AddPhotoAlternateOutlined from '@mui/icons-material/AddPhotoAlternateOutlined';
+import DeleteOutline from '@mui/icons-material/DeleteOutline';
+import EditOutlined from '@mui/icons-material/EditOutlined';
+import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
+import Typography from '@mui/material/Typography';
 
 type EnterPointDialogProps = {
   dates: string[];

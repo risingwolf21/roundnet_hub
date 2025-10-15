@@ -1,5 +1,4 @@
 import { useInfiniteUserHistory, useUpdateHistoryEntryMutation } from '@/tanstack/drinks';
-import { Box, LinearProgress, List, Typography } from '@mui/material';
 import { captureException } from '@sentry/react';
 import { useNotifications } from '@toolpad/core/useNotifications';
 import { format } from 'date-fns';
@@ -7,6 +6,11 @@ import { useEffect, useRef, useState } from 'react';
 import { groupBy } from '../../utils';
 import { HistoryItem } from './components/HistoryItem';
 import EditHistoryEntryDialog from './dialog/EditHistoryEntryDialog';
+
+import Box from '@mui/material/Box';
+import LinearProgress from '@mui/material/LinearProgress';
+import List from '@mui/material/List';
+import Typography from '@mui/material/Typography';
 
 export const HistoryScreen = ({ user }: { user: User }) => {
   const notifications = useNotifications();

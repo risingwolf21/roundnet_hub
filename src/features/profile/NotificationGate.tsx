@@ -1,9 +1,18 @@
 import { supabase } from '@/lib/supabase';
-import { Info, Warning } from '@mui/icons-material';
 import Cancel from '@mui/icons-material/Cancel';
 import CheckCircle from '@mui/icons-material/CheckCircle';
-import { Alert, Button, Chip, CircularProgress, Container, ListItem, ListItemText, Stack } from '@mui/material';
 import React from 'react';
+
+import Info from '@mui/icons-material/Info';
+import Warning from '@mui/icons-material/Warning';
+import Alert from '@mui/material/Alert';
+import Button from '@mui/material/Button';
+import Chip from '@mui/material/Chip';
+import CircularProgress from '@mui/material/CircularProgress';
+import Container from '@mui/material/Container';
+import ListItem from '@mui/material/ListItem';
+import ListItemText from '@mui/material/ListItemText';
+import Stack from '@mui/material/Stack';
 
 // --- Helpers ---------------------------------------------------------------
 function urlBase64ToUint8Array(base64String: string) {

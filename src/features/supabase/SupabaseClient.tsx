@@ -1,8 +1,6 @@
 import Layout from '@/components/layout/Layout';
 import { LoadingIndicator } from '@/components/LoadingIndicator';
 import { supabase } from '@/lib/supabase';
-import { Add, Edit, ExpandMoreOutlined, Visibility } from '@mui/icons-material';
-import { Box, Button, ListItem, ListItemText, styled, Toolbar } from '@mui/material';
 import {
   DataGrid,
   GridActionsCellItem,
@@ -21,6 +19,17 @@ import { useSearchParams } from 'react-router';
 import { SelectTableDialog } from './dialogs/SelectTableDialog';
 import { EditEntryDialog } from './EditEntryDialog';
 import { ViewEntryDialog } from './ViewEntryDialog';
+
+import Add from '@mui/icons-material/Add';
+import Edit from '@mui/icons-material/Edit';
+import ExpandMoreOutlined from '@mui/icons-material/ExpandMoreOutlined';
+import Visibility from '@mui/icons-material/Visibility';
+import { styled } from '@mui/material';
+import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
+import ListItem from '@mui/material/ListItem';
+import ListItemText from '@mui/material/ListItemText';
+import Toolbar from '@mui/material/Toolbar';
 
 const StyledGridOverlay = styled('div')(({ theme }) => ({
   display: 'flex',

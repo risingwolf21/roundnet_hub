@@ -1,19 +1,28 @@
-import { Slide, SlideProps } from '@mui/material';
 import { format, parse } from 'date-fns';
 import { forwardRef } from 'react';
 import RoundnetKarlsruheLogo from '../images/Karlsruher_Kojoten_Logo.svg';
 import RoundnetMunichLogo from '../images/Roundnet_Munich_Logo.png';
+
+import { SlideProps } from '@mui/material';
+import Slide from '@mui/material/Slide';
 
 const logoMap = {
   'roundnet-karlsruhe': RoundnetKarlsruheLogo,
   'munich-roundnet': RoundnetMunichLogo,
 };
 
+const iconMap = {
+  'roundnet-karlsruhe': '🐺',
+  'munich-roundnet': '🏐',
+};
+
 const logo = logoMap[(import.meta.env.VITE_WEBSITE_PATH as keyof typeof logoMap) || 'roundnet-karlsruhe'];
+const icon = iconMap[(import.meta.env.VITE_WEBSITE_PATH as keyof typeof iconMap) || 'roundnet-karlsruhe'];
 
 export const BRANDING = {
   logo: <img src={logo} alt="MUI logo" style={{ height: 96, objectFit: 'contain' }} />,
   title: import.meta.env.VITE_WEBSITE_NAME,
+  icon: icon
 };
 
 export const compareById = (x: any, y: any) => {
@@ -30,6 +39,7 @@ export function groupBy<Type>(items: Type[], getter: (any: Type) => string): Map
     } else {
       result.set(key, [...entry, item]);
     }
+    return null;
   });
   return result;
 }

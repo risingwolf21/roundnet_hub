@@ -5,6 +5,7 @@ import { UserWithGroups } from '@/types/supabaseTypes';
 import { captureException } from '@sentry/react';
 import * as React from 'react';
 
+
 type GrantsState = { perm: Set<string>; feat: Set<string> };
 type Mode = 'all' | 'any';
 

@@ -1,28 +1,33 @@
 import { supabase } from '@/lib/supabase';
-import { AccountCircle, Close, Edit, Email, FiberManualRecord, Password, Verified } from '@mui/icons-material';
-import {
-  AppBar,
-  Avatar,
-  Button,
-  Checkbox,
-  Dialog,
-  Divider,
-  IconButton,
-  List,
-  ListItem,
-  ListItemAvatar,
-  ListItemText,
-  ListSubheader,
-  TextField,
-  Toolbar,
-  Typography,
-} from '@mui/material';
 import { Box, Stack } from '@mui/system';
 import { useNotifications } from '@toolpad/core/useNotifications';
 import { FormEvent, useState } from 'react';
 import { UserWithGroups } from '../../../types/supabaseTypes';
 import { SlideUpTransition } from '../../../utils';
 import { UserRoleDialog } from './UserRoleDialog';
+
+import AccountCircle from '@mui/icons-material/AccountCircle';
+import Close from '@mui/icons-material/Close';
+import Edit from '@mui/icons-material/Edit';
+import Email from '@mui/icons-material/Email';
+import FiberManualRecord from '@mui/icons-material/FiberManualRecord';
+import Password from '@mui/icons-material/Password';
+import Verified from '@mui/icons-material/Verified';
+import AppBar from '@mui/material/AppBar';
+import Avatar from '@mui/material/Avatar';
+import Button from '@mui/material/Button';
+import Checkbox from '@mui/material/Checkbox';
+import Dialog from '@mui/material/Dialog';
+import Divider from '@mui/material/Divider';
+import IconButton from '@mui/material/IconButton';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import ListItemAvatar from '@mui/material/ListItemAvatar';
+import ListItemText from '@mui/material/ListItemText';
+import ListSubheader from '@mui/material/ListSubheader';
+import TextField from '@mui/material/TextField';
+import Toolbar from '@mui/material/Toolbar';
+import Typography from '@mui/material/Typography';
 
 type EditUserDialogProps = {
   user: UserWithGroups;

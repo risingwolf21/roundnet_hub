@@ -1,31 +1,30 @@
 import { supabase } from '@/lib/supabase';
-import { Check } from '@mui/icons-material';
 import CloseIcon from '@mui/icons-material/Close';
 import EuroIcon from '@mui/icons-material/Euro';
 import FormatSizeIcon from '@mui/icons-material/FormatSize';
 import InventoryIcon from '@mui/icons-material/Inventory';
 import LocalDrinkIcon from '@mui/icons-material/LocalDrink';
-import {
-  AppBar,
-  Avatar,
-  Button,
-  Dialog,
-  IconButton,
-  List,
-  ListItem,
-  ListItemAvatar,
-  ListItemText,
-  ListSubheader,
-  TextField,
-  Toolbar,
-  Typography,
-} from '@mui/material';
 import Checkbox from '@mui/material/Checkbox';
 import { Box } from '@mui/system';
 import { uuid } from '@supabase/supabase-js/dist/main/lib/helpers';
 import { FormEvent, useEffect, useState } from 'react';
 import CropImageDialog from '../../../components/CropImageDialog';
 import { dataURLtoFile, readFile, SlideUpTransition } from '../../../utils';
+
+import Check from '@mui/icons-material/Check';
+import AppBar from '@mui/material/AppBar';
+import Avatar from '@mui/material/Avatar';
+import Button from '@mui/material/Button';
+import Dialog from '@mui/material/Dialog';
+import IconButton from '@mui/material/IconButton';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import ListItemAvatar from '@mui/material/ListItemAvatar';
+import ListItemText from '@mui/material/ListItemText';
+import ListSubheader from '@mui/material/ListSubheader';
+import TextField from '@mui/material/TextField';
+import Toolbar from '@mui/material/Toolbar';
+import Typography from '@mui/material/Typography';
 
 type EditDrinkDialogProps = {
   drink: Drink;

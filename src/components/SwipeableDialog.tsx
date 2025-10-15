@@ -1,6 +1,13 @@
-import { Close } from '@mui/icons-material';
-import { Dialog, DialogActions, DialogContent, DialogTitle, IconButton, Toolbar, Typography } from '@mui/material';
 import React from 'react';
+
+import Close from '@mui/icons-material/Close';
+import Dialog from '@mui/material/Dialog';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+import DialogTitle from '@mui/material/DialogTitle';
+import IconButton from '@mui/material/IconButton';
+import Toolbar from '@mui/material/Toolbar';
+import Typography from '@mui/material/Typography';
 
 type SwipeableDialogProps = {
   open: boolean;

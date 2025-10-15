@@ -1,19 +1,5 @@
 import { ProfileDialog } from '@/components/Profile';
 import { useGrants } from '@/features/auth/GrantsContext';
-import { AccountBox, Key, RecordVoiceOver } from '@mui/icons-material';
-import {
-  AppBar,
-  Avatar,
-  Box,
-  Button,
-  List,
-  ListItem,
-  ListItemAvatar,
-  ListItemText,
-  Tab,
-  Tabs,
-  Typography,
-} from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import { useDialogs } from '@toolpad/core';
 import { compareDesc, isBefore } from 'date-fns';
@@ -22,6 +8,21 @@ import { useTranslation } from 'react-i18next';
 import { SwipeableDialog } from '../../../components/SwipeableDialog';
 import { FullAttendance } from '../../../types/supabaseTypes';
 import { EventAttendanceDialogProps } from '../types';
+
+import AccountBox from '@mui/icons-material/AccountBox';
+import Key from '@mui/icons-material/Key';
+import RecordVoiceOver from '@mui/icons-material/RecordVoiceOver';
+import AppBar from '@mui/material/AppBar';
+import Avatar from '@mui/material/Avatar';
+import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import ListItemAvatar from '@mui/material/ListItemAvatar';
+import ListItemText from '@mui/material/ListItemText';
+import Tab from '@mui/material/Tab';
+import Tabs from '@mui/material/Tabs';
+import Typography from '@mui/material/Typography';
 
 export const TabPanel = (props: any) => {
   const { children, value, index, ...other } = props;

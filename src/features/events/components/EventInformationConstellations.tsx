@@ -1,8 +1,15 @@
 import { eventInThePast, EventsUserView, FullAttendance } from '@/types/supabaseTypes';
-import { Sports } from '@mui/icons-material';
-import { Box, Button, Divider, ListItem, ListItemAvatar, ListItemText, Typography } from '@mui/material';
 import { useDialogs } from '@toolpad/core';
 import { ConstellationCreationDialog } from '../dialogs/ConstellationsCreationDialog';
+
+import Sports from '@mui/icons-material/Sports';
+import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
+import Divider from '@mui/material/Divider';
+import ListItem from '@mui/material/ListItem';
+import ListItemAvatar from '@mui/material/ListItemAvatar';
+import ListItemText from '@mui/material/ListItemText';
+import Typography from '@mui/material/Typography';
 
 export const EventInformationConstellations = ({
   attendance,

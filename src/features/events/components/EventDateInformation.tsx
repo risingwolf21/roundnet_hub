@@ -1,9 +1,13 @@
 import { LOCALE_DE } from '@/translation/i18n';
 import { EventsUserView } from '@/types/supabaseTypes';
-import { CalendarMonth } from '@mui/icons-material';
-import { ListItem, ListItemAvatar, ListItemIcon, ListItemText } from '@mui/material';
 import { formatRelative } from 'date-fns';
 import { TFunction } from 'i18next';
+
+import CalendarMonth from '@mui/icons-material/CalendarMonth';
+import ListItem from '@mui/material/ListItem';
+import ListItemAvatar from '@mui/material/ListItemAvatar';
+import ListItemIcon from '@mui/material/ListItemIcon';
+import ListItemText from '@mui/material/ListItemText';
 
 type Props = {
   event: EventsUserView;

@@ -2,7 +2,13 @@ import { Has } from '@/hooks/useGrants';
 import AddIcon from '@mui/icons-material/Add';
 import LocalDrinkIcon from '@mui/icons-material/LocalDrink';
 import RemoveIcon from '@mui/icons-material/Remove';
-import { Avatar, Box, IconButton, ListItem, ListItemAvatar, ListItemText, Typography } from '@mui/material';
+import Avatar from '@mui/material/Avatar';
+import Box from '@mui/material/Box';
+import IconButton from '@mui/material/IconButton';
+import ListItem from '@mui/material/ListItem';
+import ListItemAvatar from '@mui/material/ListItemAvatar';
+import ListItemText from '@mui/material/ListItemText';
+import Typography from '@mui/material/Typography';
 
 type Props = {
   drink: Drink;

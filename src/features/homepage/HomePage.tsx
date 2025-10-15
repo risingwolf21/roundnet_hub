@@ -5,7 +5,6 @@ import { Has } from '@/hooks/useGrants';
 import { useDrinks, useInsertHistoryEntryMutation } from '@/tanstack/drinks';
 import { useEvents, useUpdateAttendanceMutation } from '@/tanstack/events';
 import { useAllItems } from '@/tanstack/items';
-import { Box, Button, List, Stack, Typography } from '@mui/material';
 import { withProfiler } from '@sentry/react';
 import { useNotifications } from '@toolpad/core/useNotifications';
 import { useNavigate } from 'react-router';
@@ -16,6 +15,12 @@ import { ItemCard } from './ItemCard';
 import { LoadingDrinkCard } from './LoadingDrinkCard';
 import { LoadingEventCard } from './LoadingEventCard';
 import { LoadingItemCard } from './LoadingItemCard';
+
+import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
+import List from '@mui/material/List';
+import Stack from '@mui/material/Stack';
+import Typography from '@mui/material/Typography';
 
 const HomePage = () => {
   const [fetchMode] = useFetchMode();

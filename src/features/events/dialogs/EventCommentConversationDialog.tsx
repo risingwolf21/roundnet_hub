@@ -1,11 +1,16 @@
-import { Send } from '@mui/icons-material';
-import { Box, IconButton, InputAdornment, List, TextField } from '@mui/material';
 import { TFunction } from 'i18next';
 import React, { createRef } from 'react';
 import { SwipeableDialog } from '../../../components/SwipeableDialog';
 import { FullComment } from '../../../types/supabaseTypes';
 import { CommentItem } from '../components/CommentItem';
 import { CommentReplyItem } from '../components/CommentReplyItem';
+
+import Send from '@mui/icons-material/Send';
+import Box from '@mui/material/Box';
+import IconButton from '@mui/material/IconButton';
+import InputAdornment from '@mui/material/InputAdornment';
+import List from '@mui/material/List';
+import TextField from '@mui/material/TextField';
 
 type Props = {
   comment: FullComment | null;

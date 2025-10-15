@@ -1,17 +1,16 @@
 import { useGrants } from '@/features/auth/GrantsContext';
-import { AccountBox } from '@mui/icons-material';
-import {
-  Avatar,
-  Box,
-  CircularProgress,
-  Divider,
-  ListItem,
-  ListItemAvatar,
-  ListItemText,
-  Typography,
-} from '@mui/material';
 import { TFunction } from 'i18next';
 import { FullComment } from '../../../types/supabaseTypes';
+
+import AccountBox from '@mui/icons-material/AccountBox';
+import Avatar from '@mui/material/Avatar';
+import Box from '@mui/material/Box';
+import CircularProgress from '@mui/material/CircularProgress';
+import Divider from '@mui/material/Divider';
+import ListItem from '@mui/material/ListItem';
+import ListItemAvatar from '@mui/material/ListItemAvatar';
+import ListItemText from '@mui/material/ListItemText';
+import Typography from '@mui/material/Typography';
 
 type Props = {
   showDivider?: boolean;

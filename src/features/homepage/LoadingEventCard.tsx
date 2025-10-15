@@ -1,15 +1,14 @@
-import { ThumbDownOffAlt, ThumbUpOffAlt } from '@mui/icons-material';
-import {
-  Card,
-  CardActions,
-  CardContent,
-  CardHeader,
-  IconButton,
-  ListItem,
-  ListItemAvatar,
-  ListItemText,
-  Skeleton,
-} from '@mui/material';
+import ThumbDownOffAlt from '@mui/icons-material/ThumbDownOffAlt';
+import ThumbUpOffAlt from '@mui/icons-material/ThumbUpOffAlt';
+import Card from '@mui/material/Card';
+import CardActions from '@mui/material/CardActions';
+import CardContent from '@mui/material/CardContent';
+import CardHeader from '@mui/material/CardHeader';
+import IconButton from '@mui/material/IconButton';
+import ListItem from '@mui/material/ListItem';
+import ListItemAvatar from '@mui/material/ListItemAvatar';
+import ListItemText from '@mui/material/ListItemText';
+import Skeleton from '@mui/material/Skeleton';
 
 export const LoadingEventCard = () => {
   return (

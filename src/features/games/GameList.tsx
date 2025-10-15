@@ -3,14 +3,23 @@ import { PullToRefresh } from '@/components/pull-to-refresh/PullToRefresh';
 import { useMatches } from '@/tanstack/games';
 import { UserMatchesView } from '@/types/supabaseTypes';
 import { groupBy } from '@/utils';
-import { Add, Warning } from '@mui/icons-material';
-import { Box, Button, Chip, Fab, List, ListItem, ListSubheader, Typography } from '@mui/material';
 import { useDialogs, useNotifications } from '@toolpad/core';
 import { format, isAfter } from 'date-fns';
 import { t } from 'i18next';
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router';
 import { ReportSetsDialog } from './dialogs/ReportSetsDialog';
+
+import Add from '@mui/icons-material/Add';
+import Warning from '@mui/icons-material/Warning';
+import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
+import Chip from '@mui/material/Chip';
+import Fab from '@mui/material/Fab';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import ListSubheader from '@mui/material/ListSubheader';
+import Typography from '@mui/material/Typography';
 
 const GameList = () => {
   const notifications = useNotifications();

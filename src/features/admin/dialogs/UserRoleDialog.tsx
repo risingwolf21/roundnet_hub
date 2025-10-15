@@ -1,5 +1,10 @@
-import { List, ListItem, ListItemAvatar, ListItemText, Radio } from '@mui/material';
 import { SwipeableDialog } from '../../../components/SwipeableDialog';
+
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import ListItemAvatar from '@mui/material/ListItemAvatar';
+import ListItemText from '@mui/material/ListItemText';
+import Radio from '@mui/material/Radio';
 
 type UserRoleDialogProps = {
   open: boolean;

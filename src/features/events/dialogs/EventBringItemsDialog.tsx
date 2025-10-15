@@ -1,45 +1,83 @@
-import { useGrants } from '@/features/auth/GrantsContext';
 import { Tables } from '@/types/supabase-generated.types';
-import { Box, Button, List, ListItem, ListItemAvatar, ListItemText, ListSubheader, Typography } from '@mui/material';
-import Slider from '@mui/material/Slider';
 import { DialogProps } from '@toolpad/core';
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import { SwipeableDialog } from '../../../components/SwipeableDialog';
 
+import Add from "@mui/icons-material/Add";
+import Remove from "@mui/icons-material/Remove";
+
+import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
+import IconButton from '@mui/material/IconButton';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import ListItemText from '@mui/material/ListItemText';
+import ListSubheader from '@mui/material/ListSubheader';
+import Typography from '@mui/material/Typography';
+
 type Props = {
-  overview: Tables<'event_bring_overview'>;
-  pledges: FullEventPledges[];
+  overview: Tables<'event_bring_overview'>[];
+  pledges: { event: string, item: string, item_name: string, user: User, qty: number }[];
+  user: User;
 };
 
-const EventBringItemsDialog = ({ payload, open, onClose }: DialogProps<Props, number | null>) => {
-  const { user } = useGrants();
-
-  const userPledge = useMemo(() => payload.pledges.find((x) => x.user_id === user.userId), [user]);
-
-  const [value, setValue] = useState(payload.pledges.find((x) => x.user_id === user.userId)?.qty ?? 0);
+const EventBringItemsDialog = ({ payload, open, onClose }: DialogProps<Props, { event: string, item: string, item_name: string, user: User, qty: number }[]>) => {
+  const [bringPledges, setBringPledges] = useState(payload.pledges.filter(x => x.user.userId === payload.user.userId));
 
   return (
     <SwipeableDialog
       open={open}
-      onClose={() => onClose(null)}
-      title="Gegenstand mitbringen"
-      actions={<Button onClick={() => onClose(value)}>Speichern</Button>}
+      onClose={() => onClose([])}
+      title={`${payload.overview.length > 1 ? "Gegenstände" : "Gegenstand"} bringen`}
+      actions={<Button onClick={() => onClose(bringPledges)}>Speichern</Button>}
     >
       <Box sx={{ p: 2 }}>
-        <Typography sx={{ fontSize: 16, fontWeight: 'bold', mt: 2 }} color="text.secondary" gutterBottom>
-          {payload.overview.name}
-        </Typography>
-        <Box sx={{ px: 2, mt: 5 }}>
-          <Slider
-            value={value}
-            onChange={(_, v) => setValue(v as number)}
-            step={1}
-            min={0}
-            max={(userPledge ? payload.overview.required_qty : payload.overview.remaining_qty) ?? 0}
-            valueLabelDisplay="on"
-            marks={true}
-          />
-        </Box>
+        <List disablePadding>
+          {
+            payload.overview.map(x => {
+              const pledge = bringPledges.find(p => p.item === x.item_id);
+              const qty = pledge?.qty ?? 0;
+              const item = pledge?.item ?? x.item_id;
+              const item_name = pledge?.item_name ?? '';
+
+              return <ListItem divider secondaryAction={
+                <Box sx={{ display: 'flex', flexDirection: 'row' }}>
+                  {qty > 0 && (
+                    <>
+                      <IconButton
+                        disableRipple
+                        onClick={(event) => {
+                          const newQty = Math.max(0, qty - 1);
+                          setBringPledges(bringPledges.map(p => p.item === x.item_id ? { ...p, qty: newQty } : p));
+                          event.stopPropagation();
+                        }}
+                      >
+                        <Remove fontSize="inherit" sx={{ fontSize: '28px' }} />
+                      </IconButton>
+                      <Typography sx={{ p: 1, fontSize: '20px', textAlign: "center", width: "42px", color: 'rgba(0,0,0,0.54)' }}>{qty}</Typography>
+                    </>
+                  )}
+                  <IconButton
+                    disableRipple
+                    onClick={(event) => {
+                      const newQty = qty + 1;
+                      if (pledge) {
+                        setBringPledges(bringPledges.map(p => p.item === x.item_id ? { ...p, qty: newQty } : p));
+                      } else {
+                        setBringPledges([...bringPledges, { item: item!, qty: newQty, event: x.event!, item_name: item_name, user: payload.user }]);
+                      }
+                      event.stopPropagation();
+                    }}
+                  >
+                    <Add fontSize="inherit" sx={{ fontSize: '28px' }} />
+                  </IconButton>
+                </Box>
+              }>
+                <ListItemText primary={x.name} />
+              </ListItem>
+            })
+          }
+        </List>
         <List
           disablePadding
           subheader={
@@ -50,15 +88,12 @@ const EventBringItemsDialog = ({ payload, open, onClose }: DialogProps<Props, nu
         >
           {payload.pledges.map((x) => (
             <ListItem disableGutters divider>
-              <ListItemAvatar>
-                <Typography>{x.qty}x</Typography>
-              </ListItemAvatar>
-              <ListItemText primary={x.user?.displayName ?? ''} />
+              <ListItemText primary={`${x.qty} x ${x.item_name}`} secondary={x.user.displayName ?? x.user.name} />
             </ListItem>
           ))}
         </List>
       </Box>
-    </SwipeableDialog>
+    </SwipeableDialog >
   );
 };
 

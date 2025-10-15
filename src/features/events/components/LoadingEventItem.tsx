@@ -1,5 +1,9 @@
-import { ListItem, ListItemAvatar, ListItemText, Skeleton } from '@mui/material';
 import { Box } from '@mui/system';
+
+import ListItem from '@mui/material/ListItem';
+import ListItemAvatar from '@mui/material/ListItemAvatar';
+import ListItemText from '@mui/material/ListItemText';
+import Skeleton from '@mui/material/Skeleton';
 
 export const LoadingEventItem = () => {
   return (

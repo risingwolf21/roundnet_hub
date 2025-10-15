@@ -5,6 +5,7 @@ import { logger } from '@sentry/react';
 import type { Session } from '@supabase/supabase-js';
 import { PropsWithChildren, useEffect, useRef } from 'react';
 
+
 type Props = PropsWithChildren & {
   session: Session | null; // reingegeben aus deinem Auth-Context
   vapidPublicKey: string;
@@ -30,39 +31,25 @@ export default function WebPushKeeper({ children, session, vapidPublicKey }: Pro
   const lastSigRef = useRef<string | null>(localStorage.getItem('push:lastSig'));
 
   useEffect(() => {
+    if (session?.user)
+      updateUserActivity(session.user.id)
+  }, [session?.user]);
+
+  useEffect(() => {
     (async () => {
       try {
         if (!session?.user) {
-          logger.error('webpush_not_available_without_a_user', {
-            type: 'webpush',
-            message: 'not_available_without_a_user',
-          });
           return;
         }
         if (!('serviceWorker' in navigator) || !('PushManager' in window) || !vapidPublicKey) {
-          logger.error('webpush_not_available', {
-            type: 'webpush',
-            message: 'not_available',
-            user: session.user.id,
-          });
           return;
         }
         if (Notification.permission === 'default') {
           const perm = await Notification.requestPermission();
           if (perm !== 'granted') {
-            logger.error('webpush_notification_permission_denied', {
-              type: 'webpush',
-              message: 'notification_permission_denied',
-              user: session.user.id,
-            });
             return;
           }
         } else if (Notification.permission === 'denied') {
-          logger.error('webpush_notification_permission_denied', {
-            type: 'webpush',
-            message: 'notification_permission_denied',
-            user: session.user.id,
-          });
           return;
         }
         const reg = await navigator.serviceWorker.ready;
@@ -101,6 +88,22 @@ export default function WebPushKeeper({ children, session, vapidPublicKey }: Pro
       }
     })();
   }, [session?.user?.id, vapidPublicKey]);
+
+  async function updateUserActivity(user: string) {
+    const { error } = await supabase.from("user_activity").upsert({
+      user: user,
+      commit_version: import.meta.env.VITE_GIT_COMMIT,
+      app_version: import.meta.env.VITE_APP_VERSION
+    });
+    if (error) throw error;
+    logger.info('user_activity_update_failed', {
+      type: 'user_activity',
+      message: 'update_failed',
+      user: user,
+      commit_version: import.meta.env.VITE_GIT_COMMIT,
+      app_version: import.meta.env.VITE_APP_VERSION
+    });
+  }
 
   async function upsertToDb(p_endpoint: string, p_p256dh: string, p_auth: string, ...params: any[]) {
     const { error } = await supabase.rpc('upsert_webpush_subscription', {

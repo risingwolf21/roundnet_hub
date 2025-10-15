@@ -1,23 +1,26 @@
-import { AddPhotoAlternateOutlined, Close, ContentCopy, FiberManualRecord, Launch } from '@mui/icons-material';
-import {
-  AppBar,
-  Avatar,
-  Chip,
-  Container,
-  Dialog,
-  IconButton,
-  List,
-  ListItem,
-  ListItemAvatar,
-  ListItemText,
-  ListSubheader,
-  Toolbar,
-  Typography,
-} from '@mui/material';
 import { DialogProps } from '@toolpad/core';
 import { useCallback, useEffect, useState } from 'react';
 import pzLogo from '../images/pz_logo.svg';
 import { SupabaseUserRepository } from '../repository/UserRepository';
+
+import AddPhotoAlternateOutlined from '@mui/icons-material/AddPhotoAlternateOutlined';
+import Close from '@mui/icons-material/Close';
+import ContentCopy from '@mui/icons-material/ContentCopy';
+import FiberManualRecord from '@mui/icons-material/FiberManualRecord';
+import Launch from '@mui/icons-material/Launch';
+import AppBar from '@mui/material/AppBar';
+import Avatar from '@mui/material/Avatar';
+import Chip from '@mui/material/Chip';
+import Container from '@mui/material/Container';
+import Dialog from '@mui/material/Dialog';
+import IconButton from '@mui/material/IconButton';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import ListItemAvatar from '@mui/material/ListItemAvatar';
+import ListItemText from '@mui/material/ListItemText';
+import ListSubheader from '@mui/material/ListSubheader';
+import Toolbar from '@mui/material/Toolbar';
+import Typography from '@mui/material/Typography';
 
 type ProfilePayload = {
   user: User;
@@ -25,7 +28,6 @@ type ProfilePayload = {
 };
 
 const Content = ({ payload, onClose }: DialogProps<ProfilePayload, null>) => {
-  const [loading, setLoading] = useState<boolean>(false);
   const [currentUser, setCurrentUser] = useState<UserWithGroupsAndPlayerData | null>(null);
   const [overlappingGroups, setOverlappingGroups] = useState<Group[]>([]);
 
@@ -40,13 +42,11 @@ const Content = ({ payload, onClose }: DialogProps<ProfilePayload, null>) => {
   );
 
   useEffect(() => {
-    setLoading(true);
     loadUserData(payload.userId).then(({ result, userResult }) => {
       setOverlappingGroups(
         result.data?.groups?.filter((x: Group) => userResult.data?.groups.some((y: Group) => y?.id === x?.id)) ?? []
       );
       setCurrentUser(result.data);
-      setLoading(false);
     });
   }, [payload.userId, loadUserData]);
 

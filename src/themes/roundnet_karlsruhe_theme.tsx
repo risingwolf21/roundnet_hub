@@ -1,4 +1,4 @@
-import { createTheme } from '@mui/material';
+import { createTheme } from '@mui/material/styles';
 
 export const roundnet_karlsruhe_theme = createTheme({
   components: {

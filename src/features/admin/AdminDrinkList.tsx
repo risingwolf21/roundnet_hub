@@ -1,16 +1,5 @@
 import { supabase } from '@/lib/supabase';
 import AddIcon from '@mui/icons-material/Add';
-import {
-  Button,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  Fab,
-  LinearProgress,
-  List,
-  Typography,
-} from '@mui/material';
 import { captureException } from '@sentry/react';
 import { useQuery } from '@tanstack/react-query';
 import { useNotifications } from '@toolpad/core/useNotifications';
@@ -20,6 +9,16 @@ import Layout from '../../components/layout/Layout';
 import { AdminDrinksRepository } from '../../repository/AdminDrinksRepository';
 import { AdminDrinkItem } from './components/AdminDrinkItem';
 import EditDrinkDialog from './dialogs/EditDrinkDialog';
+
+import Button from '@mui/material/Button';
+import Dialog from '@mui/material/Dialog';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+import DialogTitle from '@mui/material/DialogTitle';
+import Fab from '@mui/material/Fab';
+import LinearProgress from '@mui/material/LinearProgress';
+import List from '@mui/material/List';
+import Typography from '@mui/material/Typography';
 
 const EMPTY_DRINK: Drink = {
   imageUrl: '',

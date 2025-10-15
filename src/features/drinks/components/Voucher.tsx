@@ -1,8 +1,15 @@
 import { useVouchers } from '@/tanstack/drinks';
-import { Redeem } from '@mui/icons-material';
-import { Avatar, Chip, List, ListItem, ListItemAvatar, ListItemText, ListSubheader } from '@mui/material';
 import { useNotifications } from '@toolpad/core';
 import { useEffect } from 'react';
+
+import Redeem from '@mui/icons-material/Redeem';
+import Avatar from '@mui/material/Avatar';
+import Chip from '@mui/material/Chip';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import ListItemAvatar from '@mui/material/ListItemAvatar';
+import ListItemText from '@mui/material/ListItemText';
+import ListSubheader from '@mui/material/ListSubheader';
 
 const VoucherCard = () => {
   const notifications = useNotifications();

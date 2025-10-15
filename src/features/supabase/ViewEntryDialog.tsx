@@ -1,19 +1,19 @@
-import { Close, Delete } from '@mui/icons-material';
-import {
-  AppBar,
-  Card,
-  CardActionArea,
-  Dialog,
-  IconButton,
-  List,
-  ListItem,
-  ListItemAvatar,
-  ListItemText,
-  Toolbar,
-  Typography,
-} from '@mui/material';
 import { DialogProps, DialogsProvider, useDialogs } from '@toolpad/core';
 import _ from 'lodash';
+
+import Close from '@mui/icons-material/Close';
+import Delete from '@mui/icons-material/Delete';
+import AppBar from '@mui/material/AppBar';
+import Card from '@mui/material/Card';
+import CardActionArea from '@mui/material/CardActionArea';
+import Dialog from '@mui/material/Dialog';
+import IconButton from '@mui/material/IconButton';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import ListItemAvatar from '@mui/material/ListItemAvatar';
+import ListItemText from '@mui/material/ListItemText';
+import Toolbar from '@mui/material/Toolbar';
+import Typography from '@mui/material/Typography';
 
 type ViewEntryDialogPayload = {
   entry: any;

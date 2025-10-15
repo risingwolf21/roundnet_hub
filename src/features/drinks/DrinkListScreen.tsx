@@ -2,9 +2,7 @@ import { Has } from '@/hooks/useGrants';
 import { useDrinks, useInsertHistoryEntryMutation } from '@/tanstack/drinks';
 import { DrinkCounter } from '@/types/supabaseTypes';
 import { nameOfProductType } from '@/utils';
-import { Tune } from '@mui/icons-material';
 import CheckIcon from '@mui/icons-material/Check';
-import { Checkbox, CircularProgress, Fab, List, ListItem, ListItemAvatar, ListItemText } from '@mui/material';
 import { captureException } from '@sentry/react';
 import { useNotifications } from '@toolpad/core/useNotifications';
 import React, { useEffect, useState } from 'react';
@@ -13,6 +11,15 @@ import { useGrants } from '../auth/GrantsContext';
 import DrinkList from './components/DrinkList';
 import { LoadingDrinkItem } from './components/LoadingDrinkItem';
 import VoucherCard from './components/Voucher';
+
+import Tune from '@mui/icons-material/Tune';
+import Checkbox from '@mui/material/Checkbox';
+import CircularProgress from '@mui/material/CircularProgress';
+import Fab from '@mui/material/Fab';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import ListItemAvatar from '@mui/material/ListItemAvatar';
+import ListItemText from '@mui/material/ListItemText';
 
 const DrinkListScreen = () => {
   const { data: drinks = [], error, isLoading } = useDrinks();

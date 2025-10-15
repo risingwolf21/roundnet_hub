@@ -1,5 +1,6 @@
-import { CircularProgress } from '@mui/material';
 import React, { createRef, ReactNode, useState } from 'react';
+
+import CircularProgress from '@mui/material/CircularProgress';
 
 type Props = {
   children: ReactNode;

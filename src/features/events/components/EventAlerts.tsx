@@ -1,6 +1,7 @@
 import { EventsUserView, answerDeadlineExpired } from '@/types/supabaseTypes';
-import { Alert } from '@mui/material';
 import { TFunction } from 'i18next';
+
+import Alert from '@mui/material/Alert';
 
 type Props = {
   event: EventsUserView;

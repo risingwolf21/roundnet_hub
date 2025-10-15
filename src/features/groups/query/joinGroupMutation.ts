@@ -3,6 +3,42 @@ import { GroupsRepository } from '@/repository/GroupsRepository';
 import { GroupWithUserMappings } from '@/types/supabaseTypes';
 import { useMutation } from '@tanstack/react-query';
 
+import IconButton from '@mui/material/IconButton';
+import Avatar from '@mui/material/Avatar';
+import Chip from '@mui/material/Chip';
+import ListItem from '@mui/material/ListItem';
+import ListItemAvatar from '@mui/material/ListItemAvatar';
+import ListItemText from '@mui/material/ListItemText';
+import Stack from '@mui/material/Stack';
+import Typography from '@mui/material/Typography';
+import Button from '@mui/material/Button';
+import AppBar from '@mui/material/AppBar';
+import Checkbox from '@mui/material/Checkbox';
+import Dialog from '@mui/material/Dialog';
+import List from '@mui/material/List';
+import MenuItem from '@mui/material/MenuItem';
+import Select from '@mui/material/Select';
+import TextField from '@mui/material/TextField';
+import Toolbar from '@mui/material/Toolbar';
+import Box from '@mui/material/Box';
+import LinearProgress from '@mui/material/LinearProgress';
+import ListItemIcon from '@mui/material/ListItemIcon';
+import ListItemButton from '@mui/material/ListItemButton';
+import Grid from '@mui/material/Grid';
+import ThumbUp from '@mui/icons-material/ThumbUp';
+import AccountBox from '@mui/icons-material/AccountBox';
+import AdminPanelSettings from '@mui/icons-material/AdminPanelSettings';
+import Check from '@mui/icons-material/Check';
+import ThumbDown from '@mui/icons-material/ThumbDown';
+import Article from '@mui/icons-material/Article';
+import Close from '@mui/icons-material/Close';
+import ColorLens from '@mui/icons-material/ColorLens';
+import Group from '@mui/icons-material/Group';
+import Groups from '@mui/icons-material/Groups';
+import Title from '@mui/icons-material/Title';
+import ArrowBack from '@mui/icons-material/ArrowBack';
+import Delete from '@mui/icons-material/Delete';
+
 export const useJoinGroup = (groupId: string, user: User, role: 'user' | 'admin' | 'joinRequested') => {
   return useMutation({
     mutationFn: async () => {

@@ -1,22 +1,4 @@
-import { Search, SearchIconWrapper, StyledInputBase } from '@/components/SearchBar';
-import { ArrowBack, Place, Save } from '@mui/icons-material';
 import SearchIcon from '@mui/icons-material/Search';
-import {
-  AppBar,
-  Avatar,
-  Box,
-  Dialog,
-  Fab,
-  IconButton,
-  LinearProgress,
-  List,
-  ListItemAvatar,
-  ListItemButton,
-  ListItemText,
-  Popper,
-  Toolbar,
-  Typography
-} from '@mui/material';
 import { useNotifications } from '@toolpad/core/useNotifications';
 import L, { LatLng } from 'leaflet';
 import { OpenStreetMapProvider } from 'leaflet-geosearch';
@@ -25,6 +7,26 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { MapContainer, Marker, TileLayer, useMap, useMapEvents } from 'react-leaflet';
 import { SlideUpTransition } from '../../../utils';
 import { SearchPlacesDialogProps } from '../types';
+
+import { Search, SearchIconWrapper, StyledInputBase } from '@/components/SearchBar';
+import ArrowBack from '@mui/icons-material/ArrowBack';
+import Place from '@mui/icons-material/Place';
+import Save from '@mui/icons-material/Save';
+import AppBar from '@mui/material/AppBar';
+import Avatar from '@mui/material/Avatar';
+import Box from '@mui/material/Box';
+import Dialog from '@mui/material/Dialog';
+import Fab from '@mui/material/Fab';
+import IconButton from '@mui/material/IconButton';
+import LinearProgress from '@mui/material/LinearProgress';
+import List from '@mui/material/List';
+import ListItemAvatar from '@mui/material/ListItemAvatar';
+import ListItemButton from '@mui/material/ListItemButton';
+import ListItemText from '@mui/material/ListItemText';
+import Popper from '@mui/material/Popper';
+import Toolbar from '@mui/material/Toolbar';
+import Typography from '@mui/material/Typography';
+
 
 const SearchPlacesDialog = ({ open, handleClose, placeSelected }: SearchPlacesDialogProps) => {
   const [value, setValue] = useState('');
@@ -154,7 +156,7 @@ const SearchPlacesDialog = ({ open, handleClose, placeSelected }: SearchPlacesDi
   return (
     <Dialog fullScreen open={open} onClose={handleClose} TransitionComponent={SlideUpTransition}>
       <Box sx={{ flexGrow: 1 }}>
-        <AppBar position="static">
+        <AppBar position="sticky" sx={{ pt: 'env(safe-area-inset-top)' }}>
           <Toolbar>
             <IconButton size="large" edge="start" color="inherit" aria-label="close dialog" onClick={handleClose}>
               <ArrowBack />
@@ -169,9 +171,9 @@ const SearchPlacesDialog = ({ open, handleClose, placeSelected }: SearchPlacesDi
                   placeholder="Suche nach einem Ort"
                   inputProps={{ 'aria-label': 'search' }}
                   value={value}
-                  onKeyDown={(e) => keyPress(e)}
-                  onFocus={(e) => setAnchorEl(e.currentTarget)}
-                  onChange={(e) => setValue(e.target.value)}
+                  onKeyDown={(e: React.KeyboardEvent<HTMLInputElement | HTMLTextAreaElement>) => keyPress(e)}
+                  onFocus={(e: { currentTarget: React.SetStateAction<HTMLElement | null>; }) => setAnchorEl(e.currentTarget)}
+                  onChange={(e: { target: { value: React.SetStateAction<string>; }; }) => setValue(e.target.value)}
                 />
               </div>
             </Search>
