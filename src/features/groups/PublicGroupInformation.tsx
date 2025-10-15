@@ -37,6 +37,7 @@ import ListItemAvatar from '@mui/material/ListItemAvatar';
 import ListItemText from '@mui/material/ListItemText';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
+import { AcceptTrialJoinButton } from './components/AcceptTrialJoinButton';
 
 const PublicGroupInformation = () => {
   const { groupId } = useParams();
@@ -121,9 +122,6 @@ const PublicGroupInformation = () => {
           {group?.description}
         </Typography>
         <Divider />
-        <Typography pl={2} pt={1} variant="h6" fontWeight="bold">
-          Mitglieder{group && ' · ' + group?.users.length}
-        </Typography>
         <Card sx={{ borderRadius: 2, py: 0, px: 0, m: 1 }}>
           {selectedUsers.length > 0 && group?.user_group_role === 'admin' ? (
             <CardActionArea onClick={() => handleUsersRemove(selectedUsers)}>
@@ -159,61 +157,63 @@ const PublicGroupInformation = () => {
             )
           )}
         </Card>
-        <Card sx={{ borderRadius: 2, py: 1, px: 0, m: 1 }}>
-          <Stack direction={'row'} spacing={3} sx={{ px: 2, py: 1 }}>
-            <Badge color='primary' badgeContent={group_join_requested.length}>
-              <Chip
-                disabled={isLoadingJoinRequested}
-                icon={filter.joinRequested ? <Check /> : undefined}
-                color={filter.joinRequested ? 'secondary' : 'default'}
-                label='Anfragen'
-                onClick={() => setFilter({ ...filter, joinRequested: !filter.joinRequested })} />
-            </Badge>
+        {
+          group?.user_group_role === 'admin' && <Card sx={{ borderRadius: 2, py: 1, px: 0, m: 1 }}>
+            <Stack direction={'row'} spacing={3} sx={{ px: 2, py: 1 }}>
+              <Badge color='primary' badgeContent={group_join_requested.length}>
+                <Chip
+                  disabled={isLoadingJoinRequested}
+                  icon={filter.joinRequested ? <Check /> : undefined}
+                  color={filter.joinRequested ? 'secondary' : 'default'}
+                  label='Anfragen'
+                  onClick={() => setFilter({ ...filter, joinRequested: !filter.joinRequested })} />
+              </Badge>
 
-            <Badge color='primary' badgeContent={group_trials.length}>
-              <Chip
-                disabled={isLoadingTrials}
-                icon={filter.trials ? <Check /> : undefined}
-                color={filter.trials ? 'secondary' : 'default'}
-                label='Trials'
-                onClick={() => setFilter({ ...filter, trials: !filter.trials })} />
-            </Badge>
+              <Badge color='primary' badgeContent={group_trials.length}>
+                <Chip
+                  disabled={isLoadingTrials}
+                  icon={filter.trials ? <Check /> : undefined}
+                  color={filter.trials ? 'secondary' : 'default'}
+                  label='Trials'
+                  onClick={() => setFilter({ ...filter, trials: !filter.trials })} />
+              </Badge>
 
-            <Badge color='primary' badgeContent={group_admins.length}>
-              <Chip
-                disabled={isLoadingAdmins}
-                icon={filter.admin ? <Check /> : undefined}
-                color={filter.admin ? 'secondary' : 'default'}
-                label='Admins'
-                onClick={() => setFilter({ ...filter, admin: !filter.admin })} />
-            </Badge>
+              <Badge color='primary' badgeContent={group_admins.length}>
+                <Chip
+                  disabled={isLoadingAdmins}
+                  icon={filter.admin ? <Check /> : undefined}
+                  color={filter.admin ? 'secondary' : 'default'}
+                  label='Admins'
+                  onClick={() => setFilter({ ...filter, admin: !filter.admin })} />
+              </Badge>
 
 
-            <Badge color='primary' badgeContent={group_users.length}>
-              <Chip
-                disabled={isLoadingUsers}
-                icon={filter.user ? <Check /> : undefined}
-                color={filter.user ? 'secondary' : 'default'}
-                label='Nutzer'
-                onClick={() => setFilter({ ...filter, user: !filter.user })} />
-            </Badge>
+              <Badge color='primary' badgeContent={group_users.length}>
+                <Chip
+                  disabled={isLoadingUsers}
+                  icon={filter.user ? <Check /> : undefined}
+                  color={filter.user ? 'secondary' : 'default'}
+                  label='Nutzer'
+                  onClick={() => setFilter({ ...filter, user: !filter.user })} />
+              </Badge>
 
-          </Stack>
-        </Card>
+            </Stack>
+          </Card>
+        }
         {
           group?.user_group_role === 'admin' && filter.joinRequested && group_join_requested.length > 0 && <Card sx={{ borderRadius: 2, py: 0, px: 0, m: 1 }}>
+            <Typography sx={{ fontSize: 16, fontWeight: 'bold', m: 2, mb: 1 }}>
+              Beitrittsanfragen · {group_join_requested.length}
+            </Typography>
+            <Divider />
             {
               group_join_requested
                 .sort((a, b) => a.user.displayName.localeCompare(b.user.displayName))
                 .map((x) => (
                   <ListItem
+                    divider
                     key={x.user.userId}
-                    secondaryAction={
-                      <Stack direction={'row'} spacing={2}>
-                        <DeclineJoinButton user={x.user} group={group} />
-                        <AcceptJoinButton user={x.user} group={group} />
-                      </Stack>
-                    }
+                    sx={{ pr: 1 }}
                   >
                     <ListItemAvatar>
                       <Avatar sx={{ borderRadius: 2 }}>
@@ -224,16 +224,24 @@ const PublicGroupInformation = () => {
                         )}
                       </Avatar>
                     </ListItemAvatar>
-                    <ListItemText
-                      primary={
-                        <Stack direction={'row'} spacing={2}>
-                          <Typography>{x.user.name}</Typography>
-                          {group.user_group_role === 'admin' && (
-                            <Chip variant="outlined" size="small" label="Angefragt" color="warning" />
-                          )}
-                        </Stack>
-                      }
-                    />
+                    <Stack direction={'row'} spacing={2} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
+                      <ListItemText
+                        primary={
+                          <Stack direction={'row'} spacing={2}>
+                            <Typography>{x.user.name}</Typography>
+                            {group.user_group_role === 'admin' && (
+                              <Chip variant="outlined" size="small" label="Angefragt" color="warning" />
+                            )}
+                          </Stack>
+                        }
+                      />
+                      <Stack direction={'row'} spacing={0}>
+                        <DeclineJoinButton user={x.user} group={group} />
+                        <Divider orientation="vertical" flexItem sx={{ mx: 0.5 }} />
+                        <AcceptJoinButton user={x.user} group={group} />
+                        <AcceptTrialJoinButton user={x.user} group={group} />
+                      </Stack>
+                    </Stack>
                   </ListItem>
                 ))
             }
@@ -241,6 +249,10 @@ const PublicGroupInformation = () => {
         }
         {
           group?.user_group_role === 'admin' && filter.trials && group_trials.length > 0 && <Card sx={{ borderRadius: 2, py: 0, px: 0, m: 1 }}>
+            <Typography sx={{ fontSize: 16, fontWeight: 'bold', m: 2, mb: 1 }}>
+              Probenutzer · {group_trials.length}
+            </Typography>
+            <Divider />
             {
               group_trials
                 .sort((a, b) => a.user.displayName.localeCompare(b.user.displayName))
@@ -286,6 +298,10 @@ const PublicGroupInformation = () => {
         }
         {
           group && filter.admin && group_admins.length > 0 && <Card sx={{ borderRadius: 2, py: 0, px: 0, m: 1 }}>
+            <Typography sx={{ fontSize: 16, fontWeight: 'bold', m: 2, mb: 1 }}>
+              Administratoren · {group_admins.length}
+            </Typography>
+            <Divider />
             {
               group_admins
                 .sort((a, b) => a.user.displayName.localeCompare(b.user.displayName))
@@ -331,6 +347,10 @@ const PublicGroupInformation = () => {
         }
         {
           group && filter.user && group_users.length > 0 && <Card sx={{ borderRadius: 2, py: 0, px: 0, m: 1 }}>
+            <Typography sx={{ fontSize: 16, fontWeight: 'bold', m: 2, mb: 1 }}>
+              Benutzer · {group_users.length}
+            </Typography>
+            <Divider />
             {
               group_users
                 .sort((a, b) => a.user.displayName.localeCompare(b.user.displayName))
