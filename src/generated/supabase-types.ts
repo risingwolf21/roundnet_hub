@@ -34,4 +34,4 @@ export type Permission = | 'event.comment'
   | 'challenge.manage'
   | 'notifications.send';
 
-export type Feature = 'games' | 'events' | 'items' | 'drinks' | 'challenges';
+export type Feature = 'games' | 'events' | 'events.trials' | 'items' | 'drinks' | 'challenges';

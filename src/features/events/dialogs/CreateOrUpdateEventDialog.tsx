@@ -20,6 +20,7 @@ import { SelectGroupDialog } from './SelectGroupDialog';
 
 import { SwipeableDialog } from '@/components/SwipeableDialog';
 import { useGrants } from '@/features/auth/GrantsContext';
+import { Has } from '@/hooks/useGrants';
 import AccessTime from '@mui/icons-material/AccessTime';
 import Add from '@mui/icons-material/Add';
 import Article from '@mui/icons-material/Article';
@@ -562,6 +563,57 @@ export const CreateOrUpdateEventDialog = ({
 
             <ListItemText primary={'Maximale Teilnehmerzahl'} />
           </ListItem>
+
+          <Has feat={"events.trials"}>
+            <ListItem sx={{ pt: 0, pb: 0, mb: 2 }} key={'max_trial_attendees'} secondaryAction={
+              <Box sx={{ display: 'flex', flexDirection: 'row' }}>
+                {
+                  (editedEvent.max_trial_attendees !== null && editedEvent.max_trial_attendees >= 0) && <>
+                    <IconButton
+                      disableRipple
+                      onClick={(event) => {
+                        setEditedEvent({
+                          ...editedEvent,
+                          max_trial_attendees: editedEvent.max_trial_attendees !== null && editedEvent.max_trial_attendees - 1 > 0 ? editedEvent.max_trial_attendees - 1 : null,
+                        })
+                        event.stopPropagation();
+                      }}
+                    >
+                      <Remove fontSize="inherit" sx={{ fontSize: '28px' }} />
+                    </IconButton>
+                    <Typography sx={{ p: 1, fontSize: '20px', color: 'rgba(0,0,0,0.54)' }}>{editedEvent.max_trial_attendees}</Typography>
+                  </>
+                }
+                <IconButton
+                  disableRipple
+                  onClick={(event) => {
+                    setEditedEvent({
+                      ...editedEvent,
+                      maxAttendees: editedEvent.max_trial_attendees !== null ? editedEvent.max_trial_attendees + 1 : 1,
+                    })
+                    event.stopPropagation();
+                  }}
+                >
+                  <Add fontSize="inherit" sx={{ fontSize: '28px' }} />
+                </IconButton>
+              </Box>
+            }>
+              <ListItemAvatar>
+                <Checkbox
+                  sx={{ pl: 0 }}
+                  checked={editedEvent.max_trial_attendees !== null}
+                  onChange={() =>
+                    setEditedEvent({
+                      ...editedEvent,
+                      max_trial_attendees: editedEvent.max_trial_attendees === null ? 1 : null,
+                    })
+                  }
+                />
+              </ListItemAvatar>
+
+              <ListItemText primary={'Maximale Probe-Teilnehmerzahl'} />
+            </ListItem>
+          </Has>
 
           <ListItem sx={{ pt: 0, pb: 0, mb: 2 }} key={'itemType'}>
             <ListItemAvatar>

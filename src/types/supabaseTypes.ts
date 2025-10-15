@@ -2,7 +2,6 @@ import { isBefore } from 'date-fns';
 import { EventTable, History } from 'types/supabase';
 import { Database, Enums, Tables } from './supabase-generated.types';
 
-import { createTheme } from '@mui/material/styles';
 
 export type FullChallenge = Challenge & {
   stats: ChallengeStatWithUser[];
@@ -106,6 +105,7 @@ export type EventsUserView = {
   isCancelled: boolean;
   key: string;
   maxAttendees: number | null;
+  max_attendees_trials: number | null;
   meetingDateTime: string | null;
   place: string | null;
   recurrence: Database['public']['Enums']['EventRecurrence'];
@@ -115,6 +115,7 @@ export type EventsUserView = {
   title: string;
   group: Group | null;
   user_state: Database['public']['Enums']['EventAttendance'] | null;
+  user_group_role: GroupRole | null;
   constellations_enabled: boolean;
 };
 

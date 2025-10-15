@@ -69,7 +69,7 @@ const EventInformationAttendance = ({ selectedEvent, fetchMode, keyHolders }: Ev
 
   return (
     <Box sx={{ p: 0, alignSelf: 'center' }}>
-      {selectedEvent.user_state === 'Waiting' && (
+      {(selectedEvent.user_state === 'Waiting') && (
         <Alert
           sx={{ mt: 2 }}
           severity="warning"
@@ -94,6 +94,34 @@ const EventInformationAttendance = ({ selectedEvent, fetchMode, keyHolders }: Ev
           })}
         </Alert>
       )}
+
+      <Has feat={"events.trials"}>
+        {(selectedEvent.user_state === 'WaitingAsTrial') && (
+          <Alert
+            sx={{ mt: 2 }}
+            severity="warning"
+            action={
+              <Button
+                variant="contained"
+                size="small"
+                sx={{ backgroundColor: '#934b00' }}
+                onClick={() => changeAttendance({ user, event: selectedEvent, newState: 'Declined' })}
+              >
+                Verlassen
+              </Button>
+            }
+          >
+            {t('events.information.waitingListAccepted', {
+              place:
+                attendance
+                  .filter((x) => x.state === 'WaitingAsTrial')
+                  .sort((a, b) => (isBefore(a.lastUpdate, b.lastUpdate) ? 1 : 0))
+                  .findIndex((x) => x.user.userId === user.userId) + 1,
+              waitingListLength: attendance.filter((x) => x.state === 'WaitingAsTrial').length,
+            })}
+          </Alert>
+        )}
+      </Has>
 
       {selectedEvent.constellations_enabled && (
         <Has perm={'event.create.constellations'}>
@@ -148,6 +176,34 @@ const EventInformationAttendance = ({ selectedEvent, fetchMode, keyHolders }: Ev
             />
           </ListItem>
         )}
+        <Has feat={"events.trials"}>
+          {selectedEvent.max_attendees_trials && selectedEvent.max_attendees_trials >= 0 && (
+            <ListItem key={'spotsTakenTrial'} sx={{ '&.MuiListItem-root': { paddingLeft: 0 } }} divider>
+              <ListItemAvatar sx={{ justifyContent: 'left', alignItems: 'center', display: 'flex' }}>
+                <CircularProgress
+                  size={'24px'}
+                  thickness={8}
+                  sx={{ borderRadius: '100%', p: '2px', position: 'relative', zIndex: 2 }}
+                  variant="determinate"
+                  value={(attendance.filter((x) => x.state === 'AttendingAsTrial').length / selectedEvent.max_attendees_trials) * 100}
+                />
+                <CircularProgress
+                  variant="determinate"
+                  size={'24px'}
+                  value={100}
+                  thickness={8}
+                  sx={{ color: '#eee', p: '2px', position: 'absolute', zIndex: 1 }}
+                />
+              </ListItemAvatar>
+              <ListItemText
+                primary={t('events.information.eventSpotsTaken', {
+                  taken: attendance.filter((x) => x.state === 'AttendingAsTrial').length,
+                  waitingListLength: selectedEvent.max_attendees_trials,
+                })}
+              />
+            </ListItem>
+          )}
+        </Has>
         <ListItem
           key={'attendEvent'}
           sx={{ '&.MuiListItem-root': { paddingLeft: 0 } }}

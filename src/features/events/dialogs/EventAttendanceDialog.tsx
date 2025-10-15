@@ -9,6 +9,7 @@ import { SwipeableDialog } from '../../../components/SwipeableDialog';
 import { FullAttendance } from '../../../types/supabaseTypes';
 import { EventAttendanceDialogProps } from '../types';
 
+import { Has } from '@/hooks/useGrants';
 import AccountBox from '@mui/icons-material/AccountBox';
 import Key from '@mui/icons-material/Key';
 import RecordVoiceOver from '@mui/icons-material/RecordVoiceOver';
@@ -119,7 +120,7 @@ const EventAttendanceDialog = ({
     setValue(index);
   }, [index]);
 
-  const handleChange = (event: React.SyntheticEvent<Element, Event>, value: any) => {
+  const handleChange = (_event: React.SyntheticEvent<Element, Event>, value: any) => {
     setValue(value);
   };
 
@@ -130,6 +131,9 @@ const EventAttendanceDialog = ({
           <Tabs value={value} onChange={handleChange} indicatorColor="primary" textColor="inherit" variant="fullWidth">
             <Tab label="Zusagen" />
             <Tab label="Absagen" />
+            <Has feat={"events.trials"}>
+              {attendance.filter(x => x.state === "AttendingAsTrial").length > 0 && <Tab label="Probetraining" />}
+            </Has>
             {hasWaitingList && <Tab label="Warteliste" />}
           </Tabs>
         </AppBar>
@@ -185,8 +189,26 @@ const EventAttendanceDialog = ({
               ))}
           </List>
         </TabPanel>
+        <Has feat={"events.trials"}>
+          {
+            attendance.filter(x => x.state === "AttendingAsTrial").length > 0 && <TabPanel value={value} index={2} dir={theme.direction}>
+              <List sx={{ pb: 8 }}>
+                {attendance
+                  .filter((x: FullAttendance) => x.state === 'Declined')
+                  .sort((a, b) => compareDesc(a.lastUpdate, b.lastUpdate))
+                  .map((x: FullAttendance, index: number) => (
+                    <AttendanceItem
+                      attendance={x}
+                      key={x.user.userId + index}
+                      onClick={() => dialogs.open(ProfileDialog, { user, userId: x.user.userId })}
+                    />
+                  ))}
+              </List>
+            </TabPanel>
+          }
+        </Has>
         {hasWaitingList && (
-          <TabPanel value={value} index={2} dir={theme.direction}>
+          <TabPanel value={value} index={3} dir={theme.direction}>
             <List sx={{ pb: 8 }}>
               {attendance
                 .filter((x: FullAttendance) => x.state === 'Waiting')

@@ -151,19 +151,19 @@ export const useLeaveGroupMutation = () =>
     },
   });
 
-export const useMakeUserAdminMutation = () =>
+export const useChangeUserRoleMutation = () =>
   useMutation({
-    mutationFn: async ({ group, user }: { group: Group; user: User }) => {
+    mutationFn: async ({ group, user, new_role }: { group: Group; user: User, new_role: GroupRole }) => {
       const result = await supabase
         .schema('public')
         .from('group_user_mapping')
-        .update({ role: 'admin' })
+        .update({ role: new_role })
         .eq('group', group.id)
         .eq('user', user.userId)
         .throwOnError();
       return result.data;
     },
-    onMutate: async ({ group, user }) => {
+    onMutate: async ({ group, user, new_role }) => {
       await queryClient.cancelQueries({ queryKey: ['group', group.id] });
       await queryClient.cancelQueries({ queryKey: ['groups'] });
 
@@ -181,7 +181,7 @@ export const useMakeUserAdminMutation = () =>
                     ...y,
                     map: {
                       group: group.id,
-                      role: 'admin',
+                      role: new_role,
                       user: user.userId,
                     },
                   } as FullUserMapping;
@@ -204,7 +204,7 @@ export const useMakeUserAdminMutation = () =>
                 ...y,
                 map: {
                   group: group.id,
-                  role: 'admin',
+                  role: new_role,
                   user: user.userId,
                 },
               } as FullUserMapping;

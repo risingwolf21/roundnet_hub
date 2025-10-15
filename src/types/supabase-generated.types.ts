@@ -1088,6 +1088,7 @@ export type Database = {
           isCancelled: boolean
           items_enabled: boolean
           key: string
+          max_trial_attendees: number | null
           maxAttendees: number | null
           meetingDateTime: string | null
           place: string | null
@@ -1108,6 +1109,7 @@ export type Database = {
           isCancelled?: boolean
           items_enabled?: boolean
           key?: string
+          max_trial_attendees?: number | null
           maxAttendees?: number | null
           meetingDateTime?: string | null
           place?: string | null
@@ -1128,6 +1130,7 @@ export type Database = {
           isCancelled?: boolean
           items_enabled?: boolean
           key?: string
+          max_trial_attendees?: number | null
           maxAttendees?: number | null
           meetingDateTime?: string | null
           place?: string | null
@@ -2225,6 +2228,7 @@ export type Database = {
           id: string | null
           isCancelled: boolean | null
           key: string | null
+          max_trial_attendees: number | null
           maxAttendees: number | null
           meetingDateTime: string | null
           place: string | null
@@ -2350,6 +2354,7 @@ export type Database = {
           isCancelled: boolean
           items_enabled: boolean
           key: string
+          max_trial_attendees: number | null
           maxAttendees: number | null
           meetingDateTime: string | null
           place: string | null
@@ -2367,9 +2372,9 @@ export type Database = {
       delete_event: {
         Args: { p_event_id: string }
         Returns: {
+          deleted_bring_items: number
           deleted_event: number
           deleted_comments: number
-          deleted_bring_items: number
           deleted_bring_pledges: number
           deleted_attendance: number
         }[]
@@ -2514,8 +2519,8 @@ export type Database = {
       insert_event_with_bring_items: {
         Args: { p_event: Json; p_items: Json }
         Returns: {
-          event_id: string
           inserted_item_ids: string[]
+          event_id: string
         }[]
       }
       invoke_edge_function: {
@@ -2543,8 +2548,8 @@ export type Database = {
       key_handover: {
         Args: { p_key_id: number; p_new_holder: string }
         Returns: {
-          key_id: number
           holder: string
+          key_id: number
         }[]
       }
       mark_all_notifications_read: {
@@ -2715,6 +2720,8 @@ export type Database = {
         | "Waiting"
         | "AttendingAsTrainer"
         | "RequestedAttendance"
+        | "AttendingAsTrial"
+        | "WaitingAsTrial"
       EventRecurrence: "Weekly" | "Fortnightly" | "Monthly" | "None"
       Feature:
         | "drinks"
@@ -2724,7 +2731,7 @@ export type Database = {
         | "games"
         | "events.constellations"
       grant_kind: "perm" | "feat"
-      GroupRole: "user" | "admin" | "joinRequested"
+      GroupRole: "user" | "admin" | "joinRequested" | "trial"
       ItemType: "mtvStorage" | "mtvGym" | "mtvGymPalazzo" | "goethe"
       PaymentState: "Open" | "Fulfilled"
       ProductType: "Drink" | "Special" | "None"
@@ -2866,6 +2873,8 @@ export const Constants = {
         "Waiting",
         "AttendingAsTrainer",
         "RequestedAttendance",
+        "AttendingAsTrial",
+        "WaitingAsTrial",
       ],
       EventRecurrence: ["Weekly", "Fortnightly", "Monthly", "None"],
       Feature: [
@@ -2877,7 +2886,7 @@ export const Constants = {
         "events.constellations",
       ],
       grant_kind: ["perm", "feat"],
-      GroupRole: ["user", "admin", "joinRequested"],
+      GroupRole: ["user", "admin", "joinRequested", "trial"],
       ItemType: ["mtvStorage", "mtvGym", "mtvGymPalazzo", "goethe"],
       PaymentState: ["Open", "Fulfilled"],
       ProductType: ["Drink", "Special", "None"],
