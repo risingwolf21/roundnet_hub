@@ -38,7 +38,7 @@ const PublicGroupList = () => {
   if (isLoading) {
     return (
       <List>
-        {Array.from({ length: 10 }, (v, k) => k + 1).map((x) => (
+        {Array.from({ length: 10 }, (_v, k) => k + 1).map((x) => (
           <LoadingGroupListItem key={x} />
         ))}
       </List>

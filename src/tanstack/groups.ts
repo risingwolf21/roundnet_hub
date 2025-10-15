@@ -18,7 +18,7 @@ export const useRequestedUsersPerGroup = () =>
 
 export const useGroups = () =>
   useQuery<GroupWithUserMappings[]>({
-    queryKey: ['grants', 'groups'],
+    queryKey: ['groups'],
     queryFn: GroupsRepository.fetchGroups,
   });
 
@@ -27,6 +27,22 @@ export const useGroup = (groupId?: string) =>
     queryKey: ['group', groupId],
     enabled: !!groupId,
     queryFn: () => GroupsRepository.fetchSingleGroupWithUsers(groupId),
+  });
+
+
+export const useGroupUsers = (role: GroupRole, groupId?: string) =>
+  useQuery({
+    queryKey: ['group', groupId, role],
+    enabled: !!groupId,
+    queryFn: async () => {
+      const result = await supabase.from('group_user_mapping').select('*, user: user(*)').eq('group', groupId!).eq('role', role);
+
+      if (result.error) {
+        return [];
+      }
+
+      return result.data;
+    }
   });
 
 export const useJoinGroup = (groupId: string, user: User, role: 'user' | 'admin' | 'joinRequested') =>
@@ -42,6 +58,7 @@ export const useJoinGroup = (groupId: string, user: User, role: 'user' | 'admin'
     onMutate: async () => {
       await queryClient.cancelQueries({ queryKey: ['group', groupId] });
       await queryClient.cancelQueries({ queryKey: ['groups'] });
+      await queryClient.cancelQueries({ queryKey: ['groups', 'joinRequested'] });
 
       const prevGroup = queryClient.getQueryData<GroupWithUserMappings | null>(['group', groupId]);
       const prevGroups = queryClient.getQueryData<GroupWithUserMappings[]>(['groups']);

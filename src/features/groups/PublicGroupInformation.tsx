@@ -1,6 +1,6 @@
 import { LoadingIndicator } from '@/components/LoadingIndicator';
 import { PullToRefresh } from '@/components/pull-to-refresh/PullToRefresh';
-import { useGroup, useLeaveGroupMutation, useMakeUserAdminMutation } from '@/tanstack/groups';
+import { useGroup, useGroupUsers, useLeaveGroupMutation, useMakeUserAdminMutation } from '@/tanstack/groups';
 import { captureException } from '@sentry/react';
 import { useDialogs, useNotifications } from '@toolpad/core';
 import { useEffect, useState } from 'react';
@@ -15,16 +15,13 @@ import { useAddUsersMutation } from './query/addUsersMutation';
 import { useRemoveUsersMutation } from './query/removeUsersMutation';
 
 import AccountBox from '@mui/icons-material/AccountBox';
+import Check from '@mui/icons-material/Check';
 import Edit from '@mui/icons-material/Edit';
-import ExpandMore from '@mui/icons-material/ExpandMore';
 import GroupRemove from '@mui/icons-material/GroupRemove';
-import Groups from '@mui/icons-material/Groups';
 import PersonAdd from '@mui/icons-material/PersonAdd';
 import PersonRemove from '@mui/icons-material/PersonRemove';
-import Accordion from '@mui/material/Accordion';
-import AccordionDetails from '@mui/material/AccordionDetails';
-import AccordionSummary from '@mui/material/AccordionSummary';
 import Avatar from '@mui/material/Avatar';
+import Badge from '@mui/material/Badge';
 import Card from '@mui/material/Card';
 import CardActionArea from '@mui/material/CardActionArea';
 import Chip from '@mui/material/Chip';
@@ -44,8 +41,19 @@ const PublicGroupInformation = () => {
   const notifications = useNotifications();
   const dialogs = useDialogs();
   const [selectedUsers, setSelectedUsers] = useState<User[]>([]);
+  const [filter, setFilter] = useState<{ user: boolean, admin: boolean, joinRequested: boolean }>({ user: true, admin: true, joinRequested: true });
 
-  const { data: group = null, error, isLoading, refetch } = useGroup(groupId);
+  const { data: group = null, error, isLoading, refetch: refetchGroup } = useGroup(groupId);
+  const { data: group_users = [], isLoading: isLoadingUsers, refetch: refetchUsers } = useGroupUsers('user', groupId);
+  const { data: group_admins = [], isLoading: isLoadingAdmins, refetch: refetchAdmins } = useGroupUsers('admin', groupId);
+  const { data: group_join_requested = [], isLoading: isLoadingJoinRequested, refetch: refetchJoinRequested } = useGroupUsers('joinRequested', groupId);
+
+  const refetch = () => {
+    refetchGroup();
+    refetchUsers();
+    refetchAdmins();
+    refetchJoinRequested();
+  }
 
   useEffect(() => {
     if (error) notifications.show(error.message, { severity: 'error' });
@@ -144,150 +152,171 @@ const PublicGroupInformation = () => {
             )
           )}
         </Card>
-        <Card sx={{ borderRadius: 2, py: 0, px: 0, m: 1 }}>
-          {group?.user_group_role === 'admin' &&
-            group?.users
-              .filter((x) => x.map.role === 'joinRequested')
-              .sort((a, b) => a.user.displayName.localeCompare(b.user.displayName))
-              .slice(0, 10)
-              .map((x) => (
-                <ListItem
-                  key={x.user.userId}
-                  secondaryAction={
-                    <Stack direction={'row'} spacing={2}>
-                      <DeclineJoinButton user={x.user} group={group} />
-                      <AcceptJoinButton user={x.user} group={group} />
-                    </Stack>
-                  }
-                >
-                  <ListItemAvatar>
-                    <Avatar sx={{ borderRadius: 2 }}>
-                      {x.user.avatarUrl ? (
-                        <img src={x.user.avatarUrl} alt="logo" width={'100%'} height={'100%'} />
-                      ) : (
-                        <AccountBox />
-                      )}
-                    </Avatar>
-                  </ListItemAvatar>
-                  <ListItemText
-                    primary={
+        <Card sx={{ borderRadius: 2, py: 1, px: 0, m: 1 }}>
+          <Stack direction={'row'} spacing={3} sx={{ px: 2, py: 1 }}>
+            <Badge color='primary' badgeContent={group_join_requested.length}>
+              <Chip
+                disabled={isLoadingJoinRequested}
+                icon={filter.joinRequested ? <Check /> : undefined}
+                color={filter.joinRequested ? 'secondary' : 'default'}
+                label='Anfragen'
+                onClick={() => setFilter({ ...filter, joinRequested: !filter.joinRequested })} />
+            </Badge>
+
+            <Badge color='primary' badgeContent={group_admins.length}>
+              <Chip
+                disabled={isLoadingAdmins}
+                icon={filter.admin ? <Check /> : undefined}
+                color={filter.admin ? 'secondary' : 'default'}
+                label='Admins'
+                onClick={() => setFilter({ ...filter, admin: !filter.admin })} />
+            </Badge>
+
+
+            <Badge color='primary' badgeContent={group_users.length}>
+              <Chip
+                disabled={isLoadingUsers}
+                icon={filter.user ? <Check /> : undefined}
+                color={filter.user ? 'secondary' : 'default'}
+                label='Nutzer'
+                onClick={() => setFilter({ ...filter, user: !filter.user })} />
+            </Badge>
+
+          </Stack>
+        </Card>
+        {
+          group?.user_group_role === 'admin' && filter.joinRequested && group_join_requested.length > 0 && <Card sx={{ borderRadius: 2, py: 0, px: 0, m: 1 }}>
+            {
+              group_join_requested
+                .sort((a, b) => a.user.displayName.localeCompare(b.user.displayName))
+                .map((x) => (
+                  <ListItem
+                    key={x.user.userId}
+                    secondaryAction={
                       <Stack direction={'row'} spacing={2}>
-                        <Typography>{x.user.name}</Typography>
-                        {group.user_group_role === 'admin' && (
-                          <Chip variant="outlined" size="small" label="Angefragt" color="warning" />
-                        )}
+                        <DeclineJoinButton user={x.user} group={group} />
+                        <AcceptJoinButton user={x.user} group={group} />
                       </Stack>
                     }
+                  >
+                    <ListItemAvatar>
+                      <Avatar sx={{ borderRadius: 2 }}>
+                        {x.user.avatarUrl ? (
+                          <img src={x.user.avatarUrl} alt="logo" width={'100%'} height={'100%'} />
+                        ) : (
+                          <AccountBox />
+                        )}
+                      </Avatar>
+                    </ListItemAvatar>
+                    <ListItemText
+                      primary={
+                        <Stack direction={'row'} spacing={2}>
+                          <Typography>{x.user.name}</Typography>
+                          {group.user_group_role === 'admin' && (
+                            <Chip variant="outlined" size="small" label="Angefragt" color="warning" />
+                          )}
+                        </Stack>
+                      }
+                    />
+                  </ListItem>
+                ))
+            }
+          </Card>
+        }
+        {
+          group && filter.admin && group_admins.length > 0 && <Card sx={{ borderRadius: 2, py: 0, px: 0, m: 1 }}>
+            {
+              group_admins
+                .sort((a, b) => a.user.displayName.localeCompare(b.user.displayName))
+                .map((x) => (
+                  <GroupUserItem
+                    groupUser={x.user}
+                    user={user}
+                    isAdmin={x.role === 'admin'}
+                    dialogs={dialogs}
+                    selected={selectedUsers.includes(x.user)}
+                    {...(group.user_group_role === 'admin' && x.role !== 'admin'
+                      ? {
+                        makeAdmin: async (e) => {
+                          e.stopPropagation();
+                          const result = await dialogs.confirm(
+                            `Möchtest du wirklich ${x.user.name} zu einem Admin dieser Gruppe machen?`,
+                            {
+                              okText: 'Bestätigen',
+                              cancelText: 'Abbrechen',
+                            }
+                          );
+                          if (result) {
+                            makeUserAdminMutation.mutate({ group: group, user: x.user });
+                          }
+                        },
+                      }
+                      : {})}
+                    {...(group.user_group_role === 'admin'
+                      ? {
+                        onAvatarClick: (e) => {
+                          e.stopPropagation();
+                          if (group.user_group_role !== 'admin') return;
+                          if (selectedUsers.includes(x.user)) {
+                            setSelectedUsers([...selectedUsers.filter((y) => y.userId !== x.user.userId)]);
+                          } else {
+                            setSelectedUsers([...selectedUsers, x.user]);
+                          }
+                        },
+                      }
+                      : {})}
                   />
-                </ListItem>
-              ))}
-        </Card>
-        <Card sx={{ borderRadius: 2, py: 0, px: 0, m: 1 }}>
-          {group &&
-            group?.users
-              .filter((x) => x.map.role !== 'joinRequested')
-              .sort((a, b) => a.user.displayName.localeCompare(b.user.displayName))
-              .slice(0, 10)
-              .map((x) => (
-                <GroupUserItem
-                  groupUser={x.user}
-                  user={user}
-                  isAdmin={x.map.role === 'admin'}
-                  dialogs={dialogs}
-                  selected={selectedUsers.includes(x.user)}
-                  {...(group.user_group_role === 'admin' && x.map.role !== 'admin'
-                    ? {
-                      makeAdmin: async (e) => {
-                        e.stopPropagation();
-                        const result = await dialogs.confirm(
-                          `Möchtest du wirklich ${x.user.name} zu einem Admin dieser Gruppe machen?`,
-                          {
-                            okText: 'Bestätigen',
-                            cancelText: 'Abbrechen',
+                ))
+            }
+          </Card>
+        }
+        {
+          group && filter.user && group_users.length > 0 && <Card sx={{ borderRadius: 2, py: 0, px: 0, m: 1 }}>
+            {
+              group_users
+                .sort((a, b) => a.user.displayName.localeCompare(b.user.displayName))
+                .map((x) => (
+                  <GroupUserItem
+                    groupUser={x.user}
+                    user={user}
+                    isAdmin={x.role === 'admin'}
+                    dialogs={dialogs}
+                    selected={selectedUsers.includes(x.user)}
+                    {...(group.user_group_role === 'admin' && x.role !== 'admin'
+                      ? {
+                        makeAdmin: async (e) => {
+                          e.stopPropagation();
+                          const result = await dialogs.confirm(
+                            `Möchtest du wirklich ${x.user.name} zu einem Admin dieser Gruppe machen?`,
+                            {
+                              okText: 'Bestätigen',
+                              cancelText: 'Abbrechen',
+                            }
+                          );
+                          if (result) {
+                            makeUserAdminMutation.mutate({ group: group, user: x.user });
                           }
-                        );
-                        if (result) {
-                          makeUserAdminMutation.mutate({ group: group, user: x.user });
-                        }
-                      },
-                    }
-                    : {})}
-                  {...(group.user_group_role === 'admin'
-                    ? {
-                      onAvatarClick: (e) => {
-                        e.stopPropagation();
-                        if (group.user_group_role !== 'admin') return;
-                        if (selectedUsers.includes(x.user)) {
-                          setSelectedUsers([...selectedUsers.filter((y) => y.userId !== x.user.userId)]);
-                        } else {
-                          setSelectedUsers([...selectedUsers, x.user]);
-                        }
-                      },
-                    }
-                    : {})}
-                />
-              ))}
-          {group && group.users.length > 10 && (
-            <Accordion disableGutters sx={{ m: 0 }}>
-              <AccordionSummary sx={{ m: 0, pl: 0 }} expandIcon={<ExpandMore />}>
-                <ListItem>
-                  <ListItemAvatar>
-                    <Avatar sx={{ borderRadius: 2 }}>
-                      <Groups />
-                    </Avatar>
-                  </ListItemAvatar>
-                  <ListItemText primary={'Alle Mitglieder'} />
-                </ListItem>
-              </AccordionSummary>
-              <AccordionDetails sx={{ p: 0 }}>
-                {group &&
-                  group?.users
-                    .filter((x) => x.map.role !== 'joinRequested')
-                    .sort((a, b) => a.user.displayName.localeCompare(b.user.displayName))
-                    .slice(10)
-                    .map((x) => (
-                      <GroupUserItem
-                        groupUser={x.user}
-                        user={user}
-                        isAdmin={x.map.role === 'admin'}
-                        dialogs={dialogs}
-                        selected={selectedUsers.includes(x.user)}
-                        {...(group.user_group_role === 'admin' && x.map.role !== 'admin'
-                          ? {
-                            makeAdmin: async (e) => {
-                              e.stopPropagation();
-                              const result = await dialogs.confirm(
-                                `Möchtest du wirklich ${x.user.name} zu einem Admin dieser Gruppe machen?`,
-                                {
-                                  okText: 'Bestätigen',
-                                  cancelText: 'Abbrechen',
-                                }
-                              );
-                              if (result) {
-                                makeUserAdminMutation.mutate({ group: group, user: x.user });
-                              }
-                            },
+                        },
+                      }
+                      : {})}
+                    {...(group.user_group_role === 'admin'
+                      ? {
+                        onAvatarClick: (e) => {
+                          e.stopPropagation();
+                          if (group.user_group_role !== 'admin') return;
+                          if (selectedUsers.includes(x.user)) {
+                            setSelectedUsers([...selectedUsers.filter((y) => y.userId !== x.user.userId)]);
+                          } else {
+                            setSelectedUsers([...selectedUsers, x.user]);
                           }
-                          : {})}
-                        {...(group.user_group_role === 'admin'
-                          ? {
-                            onAvatarClick: (e) => {
-                              e.stopPropagation();
-                              if (group.user_group_role !== 'admin') return;
-                              if (selectedUsers.includes(x.user)) {
-                                setSelectedUsers([...selectedUsers.filter((y) => y.userId !== x.user.userId)]);
-                              } else {
-                                setSelectedUsers([...selectedUsers, x.user]);
-                              }
-                            },
-                          }
-                          : {})}
-                      />
-                    ))}
-              </AccordionDetails>
-            </Accordion>
-          )}
-        </Card>
+                        },
+                      }
+                      : {})}
+                  />
+                ))
+            }
+          </Card>
+        }
         {group?.parent_group !== null && (
           <>
             <Divider />
