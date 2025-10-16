@@ -197,6 +197,7 @@ export const SupabaseEventRepository = {
         return {
           ...r,
           group: groups?.find((x) => x.id === r.group) ?? null,
+          max_attendees_trials: r.max_trial_attendees,
         } as EventsUserView;
       });
     }

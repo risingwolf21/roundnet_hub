@@ -105,7 +105,7 @@ export type EventsUserView = {
   isCancelled: boolean;
   key: string;
   maxAttendees: number | null;
-  max_attendees_trials: number | null;
+  max_trial_attendees: number | null;
   meetingDateTime: string | null;
   place: string | null;
   recurrence: Database['public']['Enums']['EventRecurrence'];

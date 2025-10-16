@@ -389,10 +389,12 @@ const SupabaseClient = () => {
           onPaginationModelChange={setPaginationModel}
           onSortModelChange={setSortModel}
           onFilterModelChange={setFilterModel}
+          scrollbarSize={undefined}
           sx={{
             '--DataGrid-overlayHeight': '300px',
-            mb: 'max(56px,env(safe-area-inset-bottom))',
+            mb: 'min(56px,env(safe-area-inset-bottom))',
             maxHeight: 'calc(100% - 61px - env(safe-area-inset-bottom))',
+            height: 'calc(100% - 61px - env(safe-area-inset-bottom))',
           }}
         />
       </ErrorBoundary>

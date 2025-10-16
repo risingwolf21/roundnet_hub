@@ -177,7 +177,7 @@ const EventInformationAttendance = ({ selectedEvent, fetchMode, keyHolders }: Ev
           </ListItem>
         )}
         <Has feat={"events.trials"}>
-          {selectedEvent.max_attendees_trials && selectedEvent.max_attendees_trials >= 0 && (
+          {selectedEvent.max_trial_attendees && selectedEvent.max_trial_attendees >= 0 && (
             <ListItem key={'spotsTakenTrial'} sx={{ '&.MuiListItem-root': { paddingLeft: 0 } }} divider>
               <ListItemAvatar sx={{ justifyContent: 'left', alignItems: 'center', display: 'flex' }}>
                 <CircularProgress
@@ -185,7 +185,7 @@ const EventInformationAttendance = ({ selectedEvent, fetchMode, keyHolders }: Ev
                   thickness={8}
                   sx={{ borderRadius: '100%', p: '2px', position: 'relative', zIndex: 2 }}
                   variant="determinate"
-                  value={(attendance.filter((x) => x.state === 'AttendingAsTrial').length / selectedEvent.max_attendees_trials) * 100}
+                  value={(attendance.filter((x) => x.state === 'AttendingAsTrial').length / selectedEvent.max_trial_attendees) * 100}
                 />
                 <CircularProgress
                   variant="determinate"
@@ -198,7 +198,7 @@ const EventInformationAttendance = ({ selectedEvent, fetchMode, keyHolders }: Ev
               <ListItemText
                 primary={t('events.information.eventSpotsTaken', {
                   taken: attendance.filter((x) => x.state === 'AttendingAsTrial').length,
-                  waitingListLength: selectedEvent.max_attendees_trials,
+                  waitingListLength: selectedEvent.max_trial_attendees,
                 })}
               />
             </ListItem>

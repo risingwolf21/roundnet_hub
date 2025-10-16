@@ -2,7 +2,7 @@ import { LoadingIndicator } from '@/components/LoadingIndicator';
 import { PullToRefresh } from '@/components/pull-to-refresh/PullToRefresh';
 import { useChangeUserRoleMutation, useGroup, useGroupUsers, useLeaveGroupMutation } from '@/tanstack/groups';
 import { captureException } from '@sentry/react';
-import { useDialogs, useNotifications } from '@toolpad/core';
+import { useDialogs, useLocalStorageState, useNotifications } from '@toolpad/core';
 import { useEffect, useState } from 'react';
 import { Navigate, useNavigate, useParams } from 'react-router';
 import { useGrants } from '../auth/GrantsContext';
@@ -30,6 +30,7 @@ import CardActionArea from '@mui/material/CardActionArea';
 import Chip from '@mui/material/Chip';
 import Divider from '@mui/material/Divider';
 import Fab from '@mui/material/Fab';
+import Grid from '@mui/material/Grid';
 import IconButton from '@mui/material/IconButton';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
@@ -39,6 +40,9 @@ import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import { AcceptTrialJoinButton } from './components/AcceptTrialJoinButton';
 
+type Filter = { user: boolean, admin: boolean, joinRequested: boolean, trials: boolean }
+const DEFAULT_FILTER = { user: true, admin: true, joinRequested: true, trials: true };
+
 const PublicGroupInformation = () => {
   const { groupId } = useParams();
   const { user } = useGrants();
@@ -46,14 +50,20 @@ const PublicGroupInformation = () => {
   const notifications = useNotifications();
   const dialogs = useDialogs();
   const [selectedUsers, setSelectedUsers] = useState<User[]>([]);
-  const [filter, setFilter] = useState<{ user: boolean, admin: boolean, joinRequested: boolean, trials: boolean }>({ user: true, admin: true, joinRequested: true, trials: true });
+  const [filter, setFilter] = useLocalStorageState<Filter>(`filter-${groupId}`, DEFAULT_FILTER, {
+    codec: {
+      parse: (value): Filter => {
+        return JSON.parse(value) as Filter;
+      },
+      stringify: (value) => JSON.stringify(value),
+    },
+  });
 
   const { data: group = null, error, isLoading, refetch: refetchGroup } = useGroup(groupId);
   const { data: group_users = [], isLoading: isLoadingUsers, refetch: refetchUsers } = useGroupUsers('user', groupId);
   const { data: group_admins = [], isLoading: isLoadingAdmins, refetch: refetchAdmins } = useGroupUsers('admin', groupId);
   const { data: group_join_requested = [], isLoading: isLoadingJoinRequested, refetch: refetchJoinRequested } = useGroupUsers('joinRequested', groupId);
   const { data: group_trials = [], isLoading: isLoadingTrials, refetch: refetchTrials } = useGroupUsers('trial', groupId);
-
 
   const refetch = () => {
     refetchGroup();
@@ -123,8 +133,8 @@ const PublicGroupInformation = () => {
         </Typography>
         <Divider />
         <Card sx={{ borderRadius: 2, py: 0, px: 0, m: 1 }}>
-          {selectedUsers.length > 0 && group?.user_group_role === 'admin' ? (
-            <CardActionArea onClick={() => handleUsersRemove(selectedUsers)}>
+          {
+            selectedUsers.length > 0 && group?.user_group_role === 'admin' && <CardActionArea onClick={() => handleUsersRemove(selectedUsers)}>
               <ListItem>
                 <ListItemAvatar>
                   <Avatar sx={{ borderRadius: 2, background: '#ba1a1a' }}>
@@ -134,74 +144,53 @@ const PublicGroupInformation = () => {
                 <ListItemText primary={'Gewählte Teilnehmer entfernen'} />
               </ListItem>
             </CardActionArea>
-          ) : (
-            group?.user_group_role === 'admin' && (
-              <CardActionArea
-                onClick={() => {
-                  dialogs
-                    .open(SearchAndSelectUserDialog, { usersToFilter: group.users.map((x) => x.user.userId) })
-                    .then((result) => {
-                      if (result) handleUsersAdded(result);
-                    });
-                }}
-              >
-                <ListItem>
-                  <ListItemAvatar>
-                    <Avatar sx={{ borderRadius: 2 }}>
-                      <PersonAdd />
-                    </Avatar>
-                  </ListItemAvatar>
-                  <ListItemText primary={'Teilnehmer hinzufügen'} />
-                </ListItem>
-              </CardActionArea>
-            )
-          )}
+          }
         </Card>
         {
           group?.user_group_role === 'admin' && <Card sx={{ borderRadius: 2, py: 1, px: 0, m: 1 }}>
-            <Stack direction={'row'} spacing={3} sx={{ px: 2, py: 1 }}>
+            <Grid container direction={'row'} rowSpacing={3} columnSpacing={2} sx={{ px: 2, py: 1 }}>
               <Badge color='primary' badgeContent={group_join_requested.length}>
                 <Chip
                   disabled={isLoadingJoinRequested}
-                  icon={filter.joinRequested ? <Check /> : undefined}
-                  color={filter.joinRequested ? 'secondary' : 'default'}
+                  icon={filter?.joinRequested ? <Check /> : undefined}
+                  color={filter?.joinRequested ? 'secondary' : 'default'}
                   label='Anfragen'
-                  onClick={() => setFilter({ ...filter, joinRequested: !filter.joinRequested })} />
+                  onClick={() => setFilter({ ...filter ?? DEFAULT_FILTER, joinRequested: !filter?.joinRequested })} />
               </Badge>
 
               <Badge color='primary' badgeContent={group_trials.length}>
                 <Chip
                   disabled={isLoadingTrials}
-                  icon={filter.trials ? <Check /> : undefined}
-                  color={filter.trials ? 'secondary' : 'default'}
+                  icon={filter?.trials ? <Check /> : undefined}
+                  color={filter?.trials ? 'secondary' : 'default'}
                   label='Trials'
-                  onClick={() => setFilter({ ...filter, trials: !filter.trials })} />
+                  onClick={() => setFilter({ ...filter ?? DEFAULT_FILTER, trials: !filter?.trials })} />
               </Badge>
 
               <Badge color='primary' badgeContent={group_admins.length}>
                 <Chip
                   disabled={isLoadingAdmins}
-                  icon={filter.admin ? <Check /> : undefined}
-                  color={filter.admin ? 'secondary' : 'default'}
+                  icon={filter?.admin ? <Check /> : undefined}
+                  color={filter?.admin ? 'secondary' : 'default'}
                   label='Admins'
-                  onClick={() => setFilter({ ...filter, admin: !filter.admin })} />
+                  onClick={() => setFilter({ ...filter ?? DEFAULT_FILTER, admin: !filter?.admin })} />
               </Badge>
 
 
               <Badge color='primary' badgeContent={group_users.length}>
                 <Chip
                   disabled={isLoadingUsers}
-                  icon={filter.user ? <Check /> : undefined}
-                  color={filter.user ? 'secondary' : 'default'}
+                  icon={filter?.user ? <Check /> : undefined}
+                  color={filter?.user ? 'secondary' : 'default'}
                   label='Nutzer'
-                  onClick={() => setFilter({ ...filter, user: !filter.user })} />
+                  onClick={() => setFilter({ ...filter ?? DEFAULT_FILTER, user: !filter?.user })} />
               </Badge>
 
-            </Stack>
+            </Grid>
           </Card>
         }
         {
-          group?.user_group_role === 'admin' && filter.joinRequested && group_join_requested.length > 0 && <Card sx={{ borderRadius: 2, py: 0, px: 0, m: 1 }}>
+          group?.user_group_role === 'admin' && filter?.joinRequested && group_join_requested.length > 0 && <Card sx={{ borderRadius: 2, py: 0, px: 0, m: 1 }}>
             <Typography sx={{ fontSize: 16, fontWeight: 'bold', m: 2, mb: 1 }}>
               Beitrittsanfragen · {group_join_requested.length}
             </Typography>
@@ -248,7 +237,7 @@ const PublicGroupInformation = () => {
           </Card>
         }
         {
-          group?.user_group_role === 'admin' && filter.trials && group_trials.length > 0 && <Card sx={{ borderRadius: 2, py: 0, px: 0, m: 1 }}>
+          group?.user_group_role === 'admin' && filter?.trials && group_trials.length > 0 && <Card sx={{ borderRadius: 2, py: 0, px: 0, m: 1 }}>
             <Typography sx={{ fontSize: 16, fontWeight: 'bold', m: 2, mb: 1 }}>
               Probenutzer · {group_trials.length}
             </Typography>
@@ -297,7 +286,7 @@ const PublicGroupInformation = () => {
           </Card>
         }
         {
-          group && filter.admin && group_admins.length > 0 && <Card sx={{ borderRadius: 2, py: 0, px: 0, m: 1 }}>
+          group && filter?.admin && group_admins.length > 0 && <Card sx={{ borderRadius: 2, py: 0, px: 0, m: 1 }}>
             <Typography sx={{ fontSize: 16, fontWeight: 'bold', m: 2, mb: 1 }}>
               Administratoren · {group_admins.length}
             </Typography>
@@ -312,7 +301,7 @@ const PublicGroupInformation = () => {
                     isAdmin={x.role === 'admin'}
                     dialogs={dialogs}
                     selected={selectedUsers.includes(x.user)}
-                    {...(group.user_group_role === 'admin'
+                    {...(group.user_group_role === 'admin' && x.user.userId !== user?.userId
                       ? {
                         secondaryAction: <IconButton onClick={async (e) => {
                           e.stopPropagation();
@@ -346,7 +335,7 @@ const PublicGroupInformation = () => {
           </Card>
         }
         {
-          group && filter.user && group_users.length > 0 && <Card sx={{ borderRadius: 2, py: 0, px: 0, m: 1 }}>
+          group && filter?.user && group_users.length > 0 && <Card sx={{ borderRadius: 2, py: 0, px: 0, m: 1 }}>
             <Typography sx={{ fontSize: 16, fontWeight: 'bold', m: 2, mb: 1 }}>
               Benutzer · {group_users.length}
             </Typography>
@@ -444,25 +433,42 @@ const PublicGroupInformation = () => {
         )}
       </List>
       {group?.user_group_role === 'admin' && (
-        <Fab
-          sx={{
-            background: 'primary.light',
-            position: 'fixed',
-            right: '16px',
-            bottom: 'calc(16px + env(safe-area-inset-bottom))',
-          }}
-          onClick={async () => {
-            const result = await dialogs.open(CreateOrUpdateGroupDialog, { user, group: group ?? undefined });
-            if (result && result !== 'closed') {
-              refetch();
-              notifications.show('Gruppe wurde erfolgreich bearbeitet.', { severity: 'success' });
-            } else if (!result) {
-              notifications.show('Gruppe konnte nicht bearbeitet werden.', { severity: 'error' });
-            }
-          }}
-        >
-          <Edit sx={{ color: 'white' }} />
-        </Fab>
+        <Stack direction={"row"} spacing={2} sx={{
+          position: 'fixed',
+          right: '16px',
+          bottom: 'calc(16px + env(safe-area-inset-bottom))',
+        }}>
+          <Fab
+            sx={{
+              background: 'primary.light',
+            }}
+            onClick={async () => {
+              const result = await dialogs.open(CreateOrUpdateGroupDialog, { user, group: group ?? undefined });
+              if (result && result !== 'closed') {
+                refetch();
+                notifications.show('Gruppe wurde erfolgreich bearbeitet.', { severity: 'success' });
+              } else if (!result) {
+                notifications.show('Gruppe konnte nicht bearbeitet werden.', { severity: 'error' });
+              }
+            }}
+          >
+            <Edit sx={{ color: 'white' }} />
+          </Fab>
+          <Fab
+            sx={{
+              background: 'primary.light',
+            }}
+            onClick={() => {
+              dialogs
+                .open(SearchAndSelectUserDialog, { usersToFilter: group.users.map((x) => x.user.userId) })
+                .then((result) => {
+                  if (result) handleUsersAdded(result);
+                });
+            }}
+          >
+            <PersonAdd sx={{ color: 'white' }} />
+          </Fab>
+        </Stack>
       )}
     </PullToRefresh>
   );

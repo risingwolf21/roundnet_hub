@@ -561,16 +561,16 @@ export type Database = {
       preview_elo_for_match: {
         Args: { p_match: string }
         Returns: {
-          expected_a: number
-          eff_team_a: number
-          eff_team_b: number
+          upset_levels: number
           expected_b: number
           k_base: number
           k_eff: number
           category_a: string
           category_b: string
-          upset_levels: number
           upset_multiplier: number
+          eff_team_a: number
+          eff_team_b: number
+          expected_a: number
         }[]
       }
       recompute_all_effective_player_ratings: {
@@ -2237,6 +2237,7 @@ export type Database = {
           required_item: Database["public"]["Enums"]["ItemType"] | null
           startingDateTime: string | null
           title: string | null
+          user_group_role: Database["public"]["Enums"]["GroupRole"] | null
           user_state: Database["public"]["Enums"]["EventAttendance"] | null
         }
         Relationships: [
@@ -2382,24 +2383,24 @@ export type Database = {
       delete_event_and_children: {
         Args: { p_event_id: string }
         Returns: {
+          deleted_bring_pledges: number
+          deleted_attendance: number
           deleted_event: number
           deleted_comments: number
           deleted_bring_items: number
-          deleted_bring_pledges: number
-          deleted_attendance: number
         }[]
       }
       delete_recurring_events: {
         Args: { p_key: string; p_start_time: string }
         Returns: {
-          event_id: string
-          deleted_event: number
           deleted_comments: number
           deleted_bring_items: number
           deleted_bring_pledges: number
           deleted_attendance: number
           recurrence_updated: boolean
           recurrence_event_id: string
+          deleted_event: number
+          event_id: string
         }[]
       }
       edit_item: {
@@ -2448,19 +2449,19 @@ export type Database = {
       get_column_info: {
         Args: { schema_name: string; selected_table: string }
         Returns: {
-          data_type: string
           foreign_key_column_name: string
-          foreign_key_table_name: string
-          foreign_key_schema_name: string
-          is_nullable: boolean
           column_name: string
+          data_type: string
+          is_nullable: boolean
+          foreign_key_schema_name: string
+          foreign_key_table_name: string
         }[]
       }
       get_enum_types: {
         Args: Record<PropertyKey, never>
         Returns: {
-          enum_name: string
           enum_values: string[]
+          enum_name: string
         }[]
       }
       get_or_create_payment_for_user: {
@@ -2470,8 +2471,8 @@ export type Database = {
       get_public_table_names: {
         Args: Record<PropertyKey, never>
         Returns: {
-          table_schema: string
           table_name: string
+          table_schema: string
         }[]
       }
       gettingjsonarray: {
@@ -2519,8 +2520,8 @@ export type Database = {
       insert_event_with_bring_items: {
         Args: { p_event: Json; p_items: Json }
         Returns: {
-          inserted_item_ids: string[]
           event_id: string
+          inserted_item_ids: string[]
         }[]
       }
       invoke_edge_function: {
@@ -2548,8 +2549,8 @@ export type Database = {
       key_handover: {
         Args: { p_key_id: number; p_new_holder: string }
         Returns: {
-          holder: string
           key_id: number
+          holder: string
         }[]
       }
       mark_all_notifications_read: {
@@ -2606,10 +2607,10 @@ export type Database = {
       notify_users: {
         Args: {
           p_body: string
-          p_data?: Json
+          p_data: Json
           p_scope: string
-          p_source_id?: string
-          p_source_type?: string
+          p_source_id: string
+          p_source_type: string
           p_title: string
           p_topic: string
           p_users: string[]
