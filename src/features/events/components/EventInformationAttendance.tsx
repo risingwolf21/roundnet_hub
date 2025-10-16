@@ -6,7 +6,7 @@ import Box from '@mui/material/Box';
 import { useNotifications } from '@toolpad/core';
 import { isBefore } from 'date-fns';
 import { t } from 'i18next';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import EventAttendanceDialog from '../dialogs/EventAttendanceDialog';
 import { EventInformationConstellations } from './EventInformationConstellations';
 
@@ -46,6 +46,12 @@ const EventInformationAttendance = ({ selectedEvent, fetchMode, keyHolders }: Ev
 
   const { data: attendance = [], isLoading } = useAttendance(selectedEvent.id);
 
+  const attending = useMemo(() => attendance.filter(x => x.state === "Attending" || x.state === "AttendingAsTrainer"), [attendance]);
+  const declined = useMemo(() => attendance.filter(x => x.state === "Declined"), [attendance]);
+  const attendingAsTrial = useMemo(() => attendance.filter(x => x.state === "AttendingAsTrial"), [attendance]);
+  const waiting = useMemo(() => attendance.filter(x => x.state === "Waiting"), [attendance]);
+  const waitingAsTrial = useMemo(() => attendance.filter(x => x.state === "WaitingAsTrial"), [attendance]);
+
   const updateAttendance = useUpdateAttendanceMutation(fetchMode);
 
   const changeAttendance = ({
@@ -60,7 +66,7 @@ const EventInformationAttendance = ({ selectedEvent, fetchMode, keyHolders }: Ev
     updateAttendance.mutate(
       { user, event, newState },
       {
-        onError: (error, vars) => {
+        onError: () => {
           notifications.show('An/Abweseneheit konnte nicht aktualisiert werden.', { severity: 'error' });
         },
       }
@@ -215,6 +221,9 @@ const EventInformationAttendance = ({ selectedEvent, fetchMode, keyHolders }: Ev
                 index: 0,
               })
           }
+          {
+          ...(attendingAsTrial.length > 0 && { disablePadding: true })
+          }
           secondaryAction={
             <Has perm={'event.signup'}>
               <>
@@ -283,8 +292,15 @@ const EventInformationAttendance = ({ selectedEvent, fetchMode, keyHolders }: Ev
           </ListItemAvatar>
           <ListItemText
             primary={t('events.information.attending', {
-              count: attendance.filter((x) => x.state === 'Attending' || x.state === 'AttendingAsTrainer').length,
+              count: attending.length,
             })}
+            {
+            ...(attendingAsTrial.length > 0 && {
+              secondary: t('events.information.attending_trial', {
+                count: attendingAsTrial.length,
+              })
+            })
+            }
           />
         </ListItem>
         <Divider />
@@ -322,39 +338,50 @@ const EventInformationAttendance = ({ selectedEvent, fetchMode, keyHolders }: Ev
           </ListItemAvatar>
           <ListItemText
             primary={t('events.information.declined', {
-              count: attendance.filter((x) => x.state === 'Declined').length,
+              count: declined.length,
             })}
           />
         </ListItem>
-        {(attendance.filter((x) => x.state === 'Waiting').length ?? 0) > 0 && (
-          <>
-            <Divider />
-            <ListItem
-              key={'waitingEvent'}
-              sx={{ '&.MuiListItem-root': { paddingLeft: 0 } }}
-              onClick={() =>
-                isLoading
-                  ? {}
-                  : setEventAttendanceState({
-                    open: true,
-                    index: 2,
+        {
+          (waiting.length > 0 || waitingAsTrial.length > 0) && (
+            <>
+              <Divider />
+              <ListItem
+                key={'waitingEvent'}
+                sx={{ '&.MuiListItem-root': { paddingLeft: 0 } }}
+                {
+                ...(waitingAsTrial.length > 0 && { disablePadding: true })
+                }
+                onClick={() =>
+                  isLoading
+                    ? {}
+                    : setEventAttendanceState({
+                      open: true,
+                      index: 2,
+                    })
+                }
+              >
+                <ListItemAvatar sx={{ justifyContent: 'left', alignItems: 'center', display: 'flex' }}>
+                  {isLoading ? <CircularProgress size={'20px'} /> : <HourglassBottom sx={{ color: '#125db2' }} />}
+                </ListItemAvatar>
+                <ListItemText primary={waiting.length + ' warten'}
+                  {
+                  ...(waitingAsTrial.length > 0 && {
+                    secondary: t('events.information.waiting_trial', {
+                      count: waitingAsTrial.length,
+                    })
                   })
-              }
-            >
-              <ListItemAvatar sx={{ justifyContent: 'left', alignItems: 'center', display: 'flex' }}>
-                {isLoading ? <CircularProgress size={'20px'} /> : <HourglassBottom sx={{ color: '#125db2' }} />}
-              </ListItemAvatar>
-              <ListItemText primary={(attendance.filter((x) => x.state === 'Waiting').length ?? 0) + ' warten'} />
-            </ListItem>
-          </>
-        )}
+                  } />
+              </ListItem>
+            </>
+          )
+        }
       </List>
       <Divider />
 
       <EventAttendanceDialog
         open={eventAttendanceState.open}
         index={eventAttendanceState.index}
-        hasWaitingList={attendance.some((x) => x.state === 'Waiting')}
         setOpen={(value) => setEventAttendanceState({ open: value, index: eventAttendanceState.index })}
         attendance={attendance}
         usersWithRequiredItem={keyHolders

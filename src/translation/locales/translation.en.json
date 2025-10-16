@@ -53,6 +53,10 @@
       "waitingListPlace": "Waitlinglist Place ({{ place }} / {{ waitingListLength }})",
       "attending_one": "{{count}} attendance",
       "attending_other": "{{count}} attendances",
+      "attending_trial_one": "{{count}} trial attendance",
+      "attending_trial_other": "{{count}} trials attendances",
+      "waiting_trial_one": "{{count}} trial waiting",
+      "waiting_trial_other": "{{count}} trials waiting",
       "declined_one": "{{count}} declined",
       "declined_other": "{{count}} declined",
       "commentTimeAgo": "{{time}} ago"

@@ -3,7 +3,7 @@ import { useGrants } from '@/features/auth/GrantsContext';
 import { useTheme } from '@mui/material/styles';
 import { useDialogs } from '@toolpad/core';
 import { compareDesc, isBefore } from 'date-fns';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { SwipeableDialog } from '../../../components/SwipeableDialog';
 import { FullAttendance } from '../../../types/supabaseTypes';
@@ -17,10 +17,12 @@ import AppBar from '@mui/material/AppBar';
 import Avatar from '@mui/material/Avatar';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
+import Chip from '@mui/material/Chip';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemAvatar from '@mui/material/ListItemAvatar';
 import ListItemText from '@mui/material/ListItemText';
+import ListSubheader from '@mui/material/ListSubheader';
 import Tab from '@mui/material/Tab';
 import Tabs from '@mui/material/Tabs';
 import Typography from '@mui/material/Typography';
@@ -107,7 +109,6 @@ const EventAttendanceDialog = ({
   index,
   setOpen,
   attendance,
-  hasWaitingList,
   usersWithRequiredItem,
   acceptAttendance,
 }: EventAttendanceDialogProps) => {
@@ -115,6 +116,15 @@ const EventAttendanceDialog = ({
   const theme = useTheme();
   const dialogs = useDialogs();
   const { user, hasPerm } = useGrants();
+
+  const attending = useMemo(() => attendance.filter(x => x.state === "Attending" || x.state === "AttendingAsTrainer" || x.state === "RequestedAttendance"), [attendance]);
+  const declined = useMemo(() => attendance.filter(x => x.state === "Declined"), [attendance]);
+  const attendingAsTrial = useMemo(() => attendance.filter(x => x.state === "AttendingAsTrial"), [attendance]);
+  const waitingList = useMemo(() => attendance.filter(x => x.state === "Waiting"), [attendance]);
+  const waitingAsTrial = useMemo(() => attendance.filter(x => x.state === "WaitingAsTrial"), [attendance]);
+
+  const showWaitingListTab = useMemo(() => waitingList.length > 0 || waitingAsTrial.length > 0, [waitingAsTrial, waitingList]);
+  const showAttendingAsTrialTab = useMemo(() => attendingAsTrial.length > 0, [attendingAsTrial]);
 
   useEffect(() => {
     setValue(index);
@@ -129,12 +139,12 @@ const EventAttendanceDialog = ({
       <Box sx={{ paddingLeft: 0 }}>
         <AppBar position="sticky" elevation={0} sx={{ '&.MuiAppBar-root': { backgroundColor: '#fff', color: '#000' } }}>
           <Tabs value={value} onChange={handleChange} indicatorColor="primary" textColor="inherit" variant="fullWidth">
-            <Tab label="Zusagen" />
-            <Tab label="Absagen" />
+            <Tab sx={{ minHeight: "unset" }} label="Zusagen" icon={<Chip label={attending.length} size='small' />} iconPosition='end' />
+            <Tab sx={{ minHeight: "unset" }} label="Absagen" icon={<Chip label={declined.length} size='small' />} iconPosition='end' />
             <Has feat={"events.trials"}>
-              {attendance.filter(x => x.state === "AttendingAsTrial").length > 0 && <Tab label="Probetraining" />}
+              {showAttendingAsTrialTab && <Tab sx={{ minHeight: "unset" }} label="Probetraining" icon={<Chip label={attendingAsTrial.length} size='small' />} iconPosition='end' />}
             </Has>
-            {hasWaitingList && <Tab label="Warteliste" />}
+            {showWaitingListTab && <Tab sx={{ minHeight: "unset" }} label="Warteliste" icon={<Chip label={waitingList.length + waitingAsTrial.length} size='small' />} iconPosition='end' />}
           </Tabs>
         </AppBar>
         <TabPanel value={value} index={0} dir={theme.direction}>
@@ -191,7 +201,7 @@ const EventAttendanceDialog = ({
         </TabPanel>
         <Has feat={"events.trials"}>
           {
-            attendance.filter(x => x.state === "AttendingAsTrial").length > 0 && <TabPanel value={value} index={2} dir={theme.direction}>
+            showAttendingAsTrialTab && <TabPanel value={value} index={2} dir={theme.direction}>
               <List sx={{ pb: 8 }}>
                 {attendance
                   .filter((x: FullAttendance) => x.state === 'Declined')
@@ -207,29 +217,59 @@ const EventAttendanceDialog = ({
             </TabPanel>
           }
         </Has>
-        {hasWaitingList && (
-          <TabPanel value={value} index={3} dir={theme.direction}>
+        {showWaitingListTab && (
+          <TabPanel value={value} index={2 + (showAttendingAsTrialTab ? 1 : 0)} dir={theme.direction}>
             <List sx={{ pb: 8 }}>
-              {attendance
-                .filter((x: FullAttendance) => x.state === 'Waiting')
-                .sort((a, b) => (isBefore(a.lastUpdate, b.lastUpdate) ? 1 : 0))
-                .map((x: FullAttendance, index: number) => (
-                  <ListItem
-                    key={x.user.userId + index}
-                    secondaryAction={<Typography fontWeight={'bold'}>{`${index + 1}.)`}</Typography>}
-                  >
-                    <ListItemAvatar>
-                      <Avatar sx={{ borderRadius: 2 }}>
-                        {x.user.avatarUrl ? (
-                          <img src={x.user.avatarUrl} alt="logo" width={'100%'} height={'100%'} />
-                        ) : (
-                          <AccountBox />
-                        )}
-                      </Avatar>
-                    </ListItemAvatar>
-                    <ListItemText primary={x.user?.displayName} />
-                  </ListItem>
-                ))}
+              {
+                waitingList.length > 0 && <List subheader={<ListSubheader>Warteliste</ListSubheader>}>
+                  {
+                    waitingList
+                      .sort((a, b) => (isBefore(a.lastUpdate, b.lastUpdate) ? 1 : 0))
+                      .map((x: FullAttendance, index: number) => (
+                        <ListItem
+                          key={x.user.userId + index}
+                          secondaryAction={<Typography fontWeight={'bold'}>{`${index + 1}.)`}</Typography>}
+                        >
+                          <ListItemAvatar>
+                            <Avatar sx={{ borderRadius: 2 }}>
+                              {x.user.avatarUrl ? (
+                                <img src={x.user.avatarUrl} alt="logo" width={'100%'} height={'100%'} />
+                              ) : (
+                                <AccountBox />
+                              )}
+                            </Avatar>
+                          </ListItemAvatar>
+                          <ListItemText primary={x.user?.displayName} />
+                        </ListItem>
+                      ))
+                  }
+                </List>
+              }
+              {
+                waitingAsTrial.length > 0 && <List subheader={<ListSubheader>Warteliste Probetraining</ListSubheader>}>
+                  {
+                    waitingAsTrial
+                      .sort((a, b) => (isBefore(a.lastUpdate, b.lastUpdate) ? 1 : 0))
+                      .map((x: FullAttendance, index: number) => (
+                        <ListItem
+                          key={x.user.userId + index}
+                          secondaryAction={<Typography fontWeight={'bold'}>{`${index + 1}.)`}</Typography>}
+                        >
+                          <ListItemAvatar>
+                            <Avatar sx={{ borderRadius: 2 }}>
+                              {x.user.avatarUrl ? (
+                                <img src={x.user.avatarUrl} alt="logo" width={'100%'} height={'100%'} />
+                              ) : (
+                                <AccountBox />
+                              )}
+                            </Avatar>
+                          </ListItemAvatar>
+                          <ListItemText primary={x.user?.displayName} />
+                        </ListItem>
+                      ))
+                  }
+                </List>
+              }
             </List>
           </TabPanel>
         )}
