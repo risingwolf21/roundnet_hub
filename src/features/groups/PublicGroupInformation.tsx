@@ -352,21 +352,38 @@ const PublicGroupInformation = () => {
                     selected={selectedUsers.includes(x.user)}
                     {...(group.user_group_role === 'admin' && x.role !== 'admin'
                       ? {
-                        secondaryAction: <IconButton onClick={async (e) => {
-                          e.stopPropagation();
-                          const result = await dialogs.confirm(
-                            `Möchtest du wirklich ${x.user.name} zu einem Admin dieser Gruppe machen?`,
-                            {
-                              okText: 'Bestätigen',
-                              cancelText: 'Abbrechen',
+                        secondaryAction: <Stack direction={"row"}>
+                          <IconButton onClick={async (e) => {
+                            e.stopPropagation();
+                            const result = await dialogs.confirm(
+                              `Möchtest du wirklich ${x.user.name} zu einem Admin dieser Gruppe machen?`,
+                              {
+                                okText: 'Bestätigen',
+                                cancelText: 'Abbrechen',
+                              }
+                            );
+                            if (result) {
+                              changeUserRoleMutation.mutate({ group: group, user: x.user, new_role: "admin" });
                             }
-                          );
-                          if (result) {
-                            changeUserRoleMutation.mutate({ group: group, user: x.user, new_role: "admin" });
-                          }
-                        }}>
-                          <AdminPanelSettings />
-                        </IconButton>
+                          }}>
+                            <AdminPanelSettings />
+                          </IconButton>
+                          <IconButton onClick={async (e) => {
+                            e.stopPropagation();
+                            const result = await dialogs.confirm(
+                              `Möchtest du wirklich ${x.user.name} zu einem Probenutzer dieser Gruppe machen?`,
+                              {
+                                okText: 'Bestätigen',
+                                cancelText: 'Abbrechen',
+                              }
+                            );
+                            if (result) {
+                              changeUserRoleMutation.mutate({ group: group, user: x.user, new_role: "trial" });
+                            }
+                          }}>
+                            <MoveDownIcon />
+                          </IconButton>
+                        </Stack>
                       }
                       : {})}
                     {...(group.user_group_role === 'admin'

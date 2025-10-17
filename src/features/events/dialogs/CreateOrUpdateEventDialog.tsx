@@ -589,7 +589,7 @@ export const CreateOrUpdateEventDialog = ({
                   onClick={(event) => {
                     setEditedEvent({
                       ...editedEvent,
-                      maxAttendees: editedEvent.max_trial_attendees !== null ? editedEvent.max_trial_attendees + 1 : 1,
+                      max_trial_attendees: editedEvent.max_trial_attendees !== null ? editedEvent.max_trial_attendees + 1 : 1,
                     })
                     event.stopPropagation();
                   }}

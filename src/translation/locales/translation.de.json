@@ -45,6 +45,7 @@
       "answerDeadlineExceeded": "Die Anmeldung für dieses Event ist am {{ answerDeadline, dd.MM.yyyy 'um' HH:mm}} verstrichen",
       "answerDeadlineExceededTitle": "Anmeldezeitraum vorbei",
       "eventSpotsTaken": "{{ taken }} von {{waitingListLength}} Plätzen vergeben",
+      "eventTrialSpotsTaken": "{{ taken }} von {{waitingListLength}} Probetraining-Plätzen vergeben",
       "keyHolderAttending": "Jemand mit einem Schlüssel ist angemeldet",
       "meetTime": "Treffen: {{ meetTime }}",
       "startTime": "Startet um {{ startTime, HH:mm }}",

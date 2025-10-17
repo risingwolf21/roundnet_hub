@@ -202,7 +202,7 @@ const EventInformationAttendance = ({ selectedEvent, fetchMode, keyHolders }: Ev
                 />
               </ListItemAvatar>
               <ListItemText
-                primary={t('events.information.eventSpotsTaken', {
+                primary={t('events.information.eventTrialSpotsTaken', {
                   taken: attendance.filter((x) => x.state === 'AttendingAsTrial').length,
                   waitingListLength: selectedEvent.max_trial_attendees,
                 })}

@@ -115,7 +115,7 @@ const EventAttendanceDialog = ({
   const [value, setValue] = useState(index ?? 0);
   const theme = useTheme();
   const dialogs = useDialogs();
-  const { user, hasPerm } = useGrants();
+  const { user, hasPerm, hasFeat } = useGrants();
 
   const attending = useMemo(() => attendance.filter(x => x.state === "Attending" || x.state === "AttendingAsTrainer" || x.state === "RequestedAttendance"), [attendance]);
   const declined = useMemo(() => attendance.filter(x => x.state === "Declined"), [attendance]);
@@ -125,6 +125,8 @@ const EventAttendanceDialog = ({
 
   const showWaitingListTab = useMemo(() => waitingList.length > 0 || waitingAsTrial.length > 0, [waitingAsTrial, waitingList]);
   const showAttendingAsTrialTab = useMemo(() => attendingAsTrial.length > 0, [attendingAsTrial]);
+
+  const canSeeTrial = hasFeat('events.trials') && showAttendingAsTrialTab;
 
   useEffect(() => {
     setValue(index);
@@ -138,12 +140,10 @@ const EventAttendanceDialog = ({
     <SwipeableDialog title="Teilnehmer" open={open} onClose={() => setOpen(false)} minHeight={60} setOpen={setOpen}>
       <Box sx={{ paddingLeft: 0 }}>
         <AppBar position="sticky" elevation={0} sx={{ '&.MuiAppBar-root': { backgroundColor: '#fff', color: '#000' } }}>
-          <Tabs value={value} onChange={handleChange} indicatorColor="primary" textColor="inherit" variant="fullWidth">
+          <Tabs value={value} onChange={handleChange} indicatorColor="primary" textColor="inherit" variant="scrollable" scrollButtons allowScrollButtonsMobile>
             <Tab sx={{ minHeight: "unset" }} label="Zusagen" icon={<Chip label={attending.length} size='small' />} iconPosition='end' />
             <Tab sx={{ minHeight: "unset" }} label="Absagen" icon={<Chip label={declined.length} size='small' />} iconPosition='end' />
-            <Has feat={"events.trials"}>
-              {showAttendingAsTrialTab && <Tab sx={{ minHeight: "unset" }} label="Probetraining" icon={<Chip label={attendingAsTrial.length} size='small' />} iconPosition='end' />}
-            </Has>
+            {canSeeTrial && <Tab sx={{ minHeight: "unset" }} label="Probetraining" icon={<Chip label={attendingAsTrial.length} size='small' />} iconPosition='end' />}
             {showWaitingListTab && <Tab sx={{ minHeight: "unset" }} label="Warteliste" icon={<Chip label={waitingList.length + waitingAsTrial.length} size='small' />} iconPosition='end' />}
           </Tabs>
         </AppBar>
@@ -201,10 +201,9 @@ const EventAttendanceDialog = ({
         </TabPanel>
         <Has feat={"events.trials"}>
           {
-            showAttendingAsTrialTab && <TabPanel value={value} index={2} dir={theme.direction}>
+            attendingAsTrial.length > 0 && <TabPanel value={value} index={2} dir={theme.direction}>
               <List sx={{ pb: 8 }}>
-                {attendance
-                  .filter((x: FullAttendance) => x.state === 'Declined')
+                {attendingAsTrial
                   .sort((a, b) => compareDesc(a.lastUpdate, b.lastUpdate))
                   .map((x: FullAttendance, index: number) => (
                     <AttendanceItem
