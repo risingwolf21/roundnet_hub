@@ -54,8 +54,7 @@
     "gen-types:local": "npx supabase gen types typescript --local --schema public --schema games --schema audit > src/types/supabase-generated.types.ts",
     "format": "prettier --write \"src/**/*.{js,jsx,ts,tsx,css,md}\" --config ./.prettierrc.json",
     "sentry:sourcemaps": "sentry-cli sourcemaps inject --org roundnet-karlsruhe --project roundnet-karlsruhe ./build && sentry-cli sourcemaps upload --org roundnet-karlsruhe --project roundnet-karlsruhe ./build",
-    "gen-types:custom:local": "env-cmd -e development ts-node scripts/generate-types.ts",
-    "gen-types:custom:production": "env-cmd -e roundnet-karlsruhe ts-node scripts/generate-types.ts"
+    "gen-types:custom": "ts-node scripts/generate-types.ts"
   },
   "eslintConfig": {
     "extends": [
