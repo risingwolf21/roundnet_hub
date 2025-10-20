@@ -7,6 +7,95 @@ export type Json =
   | Json[]
 
 export type Database = {
+  // Allows to automatically instantiate createClient with right options
+  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
+  __InternalSupabase: {
+    PostgrestVersion: "13.0.5"
+  }
+  audit: {
+    Tables: {
+      log: {
+        Row: {
+          actor_id: string
+          at: string
+          changed_cols: string[]
+          id: number
+          new_data: Json | null
+          old_data: Json | null
+          op: string
+          request_id: string | null
+          row_pk: Json
+          schema_name: string
+          table_name: string
+          txid: number
+        }
+        Insert: {
+          actor_id: string
+          at?: string
+          changed_cols?: string[]
+          id?: number
+          new_data?: Json | null
+          old_data?: Json | null
+          op: string
+          request_id?: string | null
+          row_pk: Json
+          schema_name: string
+          table_name: string
+          txid?: number
+        }
+        Update: {
+          actor_id?: string
+          at?: string
+          changed_cols?: string[]
+          id?: number
+          new_data?: Json | null
+          old_data?: Json | null
+          op?: string
+          request_id?: string | null
+          row_pk?: Json
+          schema_name?: string
+          table_name?: string
+          txid?: number
+        }
+        Relationships: []
+      }
+    }
+    Views: {
+      [_ in never]: never
+    }
+    Functions: {
+      _changed_columns: {
+        Args: { new_row: Json; old_row: Json }
+        Returns: string[]
+      }
+      _current_actor: {
+        Args: Record<PropertyKey, never>
+        Returns: string
+      }
+      attach_trigger_for_table: {
+        Args: { p_schema: string; p_table: string }
+        Returns: undefined
+      }
+      attach_triggers_for_schema: {
+        Args: { p_schema: string }
+        Returns: undefined
+      }
+      retention_cleanup: {
+        Args: { days?: number }
+        Returns: number
+      }
+      run_retention: {
+        Args: Record<PropertyKey, never>
+        Returns: number
+      }
+    }
+    Enums: {
+      [_ in never]: never
+    }
+    CompositeTypes: {
+      [_ in never]: never
+    }
+  }
   games: {
     Tables: {
       elo_calc_log: {
@@ -449,13 +538,6 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "teams_player_1_fkey"
-            columns: ["team_a_player_1"]
-            isOneToOne: false
-            referencedRelation: "players"
-            referencedColumns: ["player"]
-          },
-          {
-            foreignKeyName: "teams_player_1_fkey"
             columns: ["team_b_player_1"]
             isOneToOne: false
             referencedRelation: "players"
@@ -465,7 +547,7 @@ export type Database = {
             foreignKeyName: "teams_player_1_fkey"
             columns: ["team_a_player_1"]
             isOneToOne: false
-            referencedRelation: "players_public"
+            referencedRelation: "players"
             referencedColumns: ["player"]
           },
           {
@@ -476,10 +558,10 @@ export type Database = {
             referencedColumns: ["player"]
           },
           {
-            foreignKeyName: "teams_player_2_fkey"
-            columns: ["team_a_player_2"]
+            foreignKeyName: "teams_player_1_fkey"
+            columns: ["team_a_player_1"]
             isOneToOne: false
-            referencedRelation: "players"
+            referencedRelation: "players_public"
             referencedColumns: ["player"]
           },
           {
@@ -493,12 +575,19 @@ export type Database = {
             foreignKeyName: "teams_player_2_fkey"
             columns: ["team_a_player_2"]
             isOneToOne: false
-            referencedRelation: "players_public"
+            referencedRelation: "players"
             referencedColumns: ["player"]
           },
           {
             foreignKeyName: "teams_player_2_fkey"
             columns: ["team_b_player_2"]
+            isOneToOne: false
+            referencedRelation: "players_public"
+            referencedColumns: ["player"]
+          },
+          {
+            foreignKeyName: "teams_player_2_fkey"
+            columns: ["team_a_player_2"]
             isOneToOne: false
             referencedRelation: "players_public"
             referencedColumns: ["player"]
@@ -561,16 +650,16 @@ export type Database = {
       preview_elo_for_match: {
         Args: { p_match: string }
         Returns: {
-          upset_levels: number
-          expected_b: number
-          k_base: number
-          k_eff: number
           category_a: string
           category_b: string
-          upset_multiplier: number
           eff_team_a: number
           eff_team_b: number
           expected_a: number
+          expected_b: number
+          k_base: number
+          k_eff: number
+          upset_levels: number
+          upset_multiplier: number
         }[]
       }
       recompute_all_effective_player_ratings: {
@@ -2373,34 +2462,34 @@ export type Database = {
       delete_event: {
         Args: { p_event_id: string }
         Returns: {
-          deleted_bring_items: number
-          deleted_event: number
-          deleted_comments: number
-          deleted_bring_pledges: number
           deleted_attendance: number
+          deleted_bring_items: number
+          deleted_bring_pledges: number
+          deleted_comments: number
+          deleted_event: number
         }[]
       }
       delete_event_and_children: {
         Args: { p_event_id: string }
         Returns: {
-          deleted_bring_pledges: number
           deleted_attendance: number
-          deleted_event: number
-          deleted_comments: number
           deleted_bring_items: number
+          deleted_bring_pledges: number
+          deleted_comments: number
+          deleted_event: number
         }[]
       }
       delete_recurring_events: {
         Args: { p_key: string; p_start_time: string }
         Returns: {
-          deleted_comments: number
+          deleted_attendance: number
           deleted_bring_items: number
           deleted_bring_pledges: number
-          deleted_attendance: number
-          recurrence_updated: boolean
-          recurrence_event_id: string
+          deleted_comments: number
           deleted_event: number
           event_id: string
+          recurrence_event_id: string
+          recurrence_updated: boolean
         }[]
       }
       edit_item: {
@@ -2449,19 +2538,19 @@ export type Database = {
       get_column_info: {
         Args: { schema_name: string; selected_table: string }
         Returns: {
-          foreign_key_column_name: string
           column_name: string
           data_type: string
-          is_nullable: boolean
+          foreign_key_column_name: string
           foreign_key_schema_name: string
           foreign_key_table_name: string
+          is_nullable: boolean
         }[]
       }
       get_enum_types: {
         Args: Record<PropertyKey, never>
         Returns: {
-          enum_values: string[]
           enum_name: string
+          enum_values: string[]
         }[]
       }
       get_or_create_payment_for_user: {
@@ -2549,8 +2638,8 @@ export type Database = {
       key_handover: {
         Args: { p_key_id: number; p_new_holder: string }
         Returns: {
-          key_id: number
           holder: string
+          key_id: number
         }[]
       }
       mark_all_notifications_read: {
@@ -2634,6 +2723,10 @@ export type Database = {
         }
         Returns: undefined
       }
+      revoke_web_push_subscription: {
+        Args: { p_device_id?: string; p_endpoint?: string }
+        Returns: number
+      }
       run_push_worker_if_needed: {
         Args: Record<PropertyKey, never>
         Returns: Json
@@ -2659,6 +2752,14 @@ export type Database = {
           updated_at: string
           user: string
         }
+      }
+      test_seed_grant_feature: {
+        Args: { p_feature: string; p_group: string }
+        Returns: undefined
+      }
+      test_seed_grant_permission: {
+        Args: { p_group: string; p_perm: string }
+        Returns: undefined
       }
       unregister_web_push_subscription: {
         Args: { p_endpoint: string }
@@ -2862,6 +2963,9 @@ export type CompositeTypes<
     : never
 
 export const Constants = {
+  audit: {
+    Enums: {},
+  },
   games: {
     Enums: {},
   },
@@ -2895,4 +2999,3 @@ export const Constants = {
     },
   },
 } as const
-
