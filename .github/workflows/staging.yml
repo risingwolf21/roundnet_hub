@@ -55,8 +55,10 @@ jobs:
       - run: supabase db start
       - run: supabase test db
       - name: Verify generated types match Postgres schema
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.STAGING_SUPABASE_ACCESS_TOKEN }}
         run: |
-          yarn gen-types:production
+          yarn gen-types:staging
           if ! git diff --ignore-space-at-eol --exit-code --quiet src/types/supabase-generated.types.ts; then
             echo "Detected uncommitted changes after build. See status below:"
             git diff
