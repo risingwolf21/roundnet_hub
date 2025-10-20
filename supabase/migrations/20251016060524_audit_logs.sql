@@ -303,12 +303,6 @@ using (( SELECT authorize('supabase.admin'::text) AS authorize));
 
 
 
-CREATE TRIGGER trg_audit_elo_calc_log AFTER INSERT OR DELETE OR UPDATE ON games.elo_calc_log FOR EACH ROW EXECUTE FUNCTION audit.log_change();
-
-CREATE TRIGGER trg_audit_elo_config AFTER INSERT OR DELETE OR UPDATE ON games.elo_config FOR EACH ROW EXECUTE FUNCTION audit.log_change();
-
-CREATE TRIGGER trg_audit_elo_history AFTER INSERT OR DELETE OR UPDATE ON games.elo_history FOR EACH ROW EXECUTE FUNCTION audit.log_change();
-
 CREATE TRIGGER trg_audit_match AFTER INSERT OR DELETE OR UPDATE ON games.match FOR EACH ROW EXECUTE FUNCTION audit.log_change();
 
 CREATE TRIGGER trg_audit_players AFTER INSERT OR DELETE OR UPDATE ON games.players FOR EACH ROW EXECUTE FUNCTION audit.log_change();
@@ -349,25 +343,11 @@ CREATE TRIGGER trg_audit_item_history AFTER INSERT OR DELETE OR UPDATE ON public
 
 CREATE TRIGGER trg_audit_items AFTER INSERT OR DELETE OR UPDATE ON public.items FOR EACH ROW EXECUTE FUNCTION audit.log_change();
 
-CREATE TRIGGER trg_audit_notification_outbox AFTER INSERT OR DELETE OR UPDATE ON public.notification_outbox FOR EACH ROW EXECUTE FUNCTION audit.log_change();
-
-CREATE TRIGGER trg_audit_notification_outbox_targets AFTER INSERT OR DELETE OR UPDATE ON public.notification_outbox_targets FOR EACH ROW EXECUTE FUNCTION audit.log_change();
-
-CREATE TRIGGER trg_audit_notification_retention AFTER INSERT OR DELETE OR UPDATE ON public.notification_retention FOR EACH ROW EXECUTE FUNCTION audit.log_change();
-
-CREATE TRIGGER trg_audit_notification_topics AFTER INSERT OR DELETE OR UPDATE ON public.notification_topics FOR EACH ROW EXECUTE FUNCTION audit.log_change();
-
-CREATE TRIGGER trg_audit_notifications AFTER INSERT OR DELETE OR UPDATE ON public.notifications FOR EACH ROW EXECUTE FUNCTION audit.log_change();
-
-CREATE TRIGGER trg_audit_object_subscriptions AFTER INSERT OR DELETE OR UPDATE ON public.object_subscriptions FOR EACH ROW EXECUTE FUNCTION audit.log_change();
-
 CREATE TRIGGER trg_audit_payments AFTER INSERT OR DELETE OR UPDATE ON public.payments FOR EACH ROW EXECUTE FUNCTION audit.log_change();
 
 CREATE TRIGGER trg_audit_permissions AFTER INSERT OR DELETE OR UPDATE ON public.permissions FOR EACH ROW EXECUTE FUNCTION audit.log_change();
 
 CREATE TRIGGER trg_audit_user AFTER INSERT OR DELETE OR UPDATE ON public."user" FOR EACH ROW EXECUTE FUNCTION audit.log_change();
-
-CREATE TRIGGER trg_audit_user_activity AFTER INSERT OR DELETE OR UPDATE ON public.user_activity FOR EACH ROW EXECUTE FUNCTION audit.log_change();
 
 CREATE TRIGGER trg_audit_user_direct_grants AFTER INSERT OR DELETE OR UPDATE ON public.user_direct_grants FOR EACH ROW EXECUTE FUNCTION audit.log_change();
 
@@ -376,7 +356,5 @@ CREATE TRIGGER trg_audit_user_grants AFTER INSERT OR DELETE OR UPDATE ON public.
 CREATE TRIGGER trg_audit_user_notification_preferences AFTER INSERT OR DELETE OR UPDATE ON public.user_notification_preferences FOR EACH ROW EXECUTE FUNCTION audit.log_change();
 
 CREATE TRIGGER trg_audit_vouchers AFTER INSERT OR DELETE OR UPDATE ON public.vouchers FOR EACH ROW EXECUTE FUNCTION audit.log_change();
-
-CREATE TRIGGER trg_audit_web_push_subscriptions AFTER INSERT OR DELETE OR UPDATE ON public.web_push_subscriptions FOR EACH ROW EXECUTE FUNCTION audit.log_change();
 
 
