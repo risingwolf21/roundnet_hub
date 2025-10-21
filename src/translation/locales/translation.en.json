@@ -45,6 +45,7 @@
       "answerDeadlineExceeded": "The registration for this event expired on {{ answerDeadline, MMMM dd, yyyy 'at' HH:mm}}",
       "answerDeadlineExceededTitle": "Registration period expired",
       "eventSpotsTaken": "{{ taken }} of {{waitingListLength}} spots taken",
+      "eventTrialSpotsTaken": "{{ taken }} of {{waitingListLength}} trial spots taken",
       "keyHolderAttending": "Someone with a key attends this event",
       "meetTime": "Meet: {{ meetTime }}",
       "startTime": "Starts at {{ startTime, HH:mm }}",
@@ -53,6 +54,10 @@
       "waitingListPlace": "Waitlinglist Place ({{ place }} / {{ waitingListLength }})",
       "attending_one": "{{count}} attendance",
       "attending_other": "{{count}} attendances",
+      "attending_trial_one": "{{count}} trial attendance",
+      "attending_trial_other": "{{count}} trials attendances",
+      "waiting_trial_one": "{{count}} trial waiting",
+      "waiting_trial_other": "{{count}} trials waiting",
       "declined_one": "{{count}} declined",
       "declined_other": "{{count}} declined",
       "commentTimeAgo": "{{time}} ago"

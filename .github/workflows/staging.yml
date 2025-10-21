@@ -8,8 +8,7 @@ name: Staging
         default: All
         type: choice
         options:
-          - Munich Roundnet
-          - Roundnet Karlsruhe
+          - Roundnet Karlsruhe Staging
           - All
   push:
     branches:
@@ -22,7 +21,7 @@ jobs:
     name: 'Setup'
     runs-on: ubuntu-latest
     environment:
-      name: 'Roundnet Karlsruhe'
+      name: 'Roundnet Karlsruhe Staging'
     steps:
       - uses: actions/checkout@v2
 
@@ -31,35 +30,48 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
 
-      - name: Get Yarn cache dir
-        id: yarn-cache-dir
-        shell: bash
-        run: echo "dir=$(yarn cache dir)" >> "$GITHUB_OUTPUT"
-
-      - name: Cache Yarn cache
-        uses: actions/cache@v3
-        with:
-          path: ${{ steps.yarn-cache-dir.outputs.dir }}
-          key: ${{ runner.os }}-node-${{ steps.node.outputs.node-version }}-yarncache-${{ hashFiles('**/yarn.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-node-${{ steps.node.outputs.node-version }}-yarncache-
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
 
       - name: Cache node_modules
-        id: node-modules-cache
         uses: actions/cache@v3
         with:
           path: |
             node_modules
-          key: ${{ runner.os }}-node-${{ steps.node.outputs.node-version }}-modules-${{ hashFiles('**/yarn.lock') }}
+            .yarn/cache
+          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-yarn-
 
-      - name: Install dependencies
-        run: yarn install --frozen-lockfile
-
+  db-test:
+    name: "Test database"
+    runs-on: ubuntu-latest
+    needs: setup
+    steps:
+      - uses: actions/checkout@v3
+      - uses: supabase/setup-cli@v1
+        with:
+          version: latest
+      - run: supabase db start
+      - run: supabase test db
+      - name: Verify generated types match Postgres schema
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.STAGING_SUPABASE_ACCESS_TOKEN }}
+        run: |
+          yarn gen-types:staging
+          if ! git diff --ignore-space-at-eol --exit-code --quiet src/types/supabase-generated.types.ts; then
+            echo "Detected uncommitted changes after build. See status below:"
+            git diff
+            exit 1
+          fi
 
   build-karlsruhe:
     name: 'Build Karlsruhe Staging'
+    if: ${{ github.event_name != 'workflow_dispatch'
+        || github.event.inputs.publish == 'All'
+        || github.event.inputs.publish == 'Roundnet Karlsruhe Staging' }}
     runs-on: ubuntu-latest
-    needs: setup
+    needs: db-test
     environment:
       name: 'Roundnet Karlsruhe Staging'
       url: ${{ vars.PUBLIC_URL }}
@@ -72,32 +84,27 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
 
-      - name: Restore Yarn cache
+      - name: Restore node_modules cache
         uses: actions/cache@v3
         with:
-          path: ${{ runner.temp }}/yarn-cache
-
-      - name: Get Yarn cache dir
-        id: yarn-cache-dir
-        run: echo "dir=$(yarn cache dir)" >> "$GITHUB_OUTPUT"
-
-      - name: Restore Yarn cache (actual)
-        uses: actions/cache@v3
-        with:
-          path: ${{ steps.yarn-cache-dir.outputs.dir }}
-          key: ${{ runner.os }}-node-${{ steps.node.outputs.node-version }}-yarncache-${{ hashFiles('**/yarn.lock') }}
+          path: |
+            node_modules
+            .yarn/cache
+          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
           restore-keys: |
-            ${{ runner.os }}-node-${{ steps.node.outputs.node-version }}-yarncache-
+            ${{ runner.os }}-yarn-
 
-      - name: Restore node_modules
-        uses: actions/cache@v3
-        with:
-          path: node_modules
-          key: ${{ runner.os }}-node-${{ steps.node.outputs.node-version }}-modules-${{ hashFiles('**/yarn.lock') }}
-
-      - name: Set short git commit
-        id: vars
-        run: echo "$GITHUB_SHA_SHORT=$(git rev-parse --short ${{ github.sha }})"
+      - name: Verify generated custom types match Postgres schema
+        env:
+          VITE_SUPABASE_URL:          ${{ vars.SUPABASE_DB_URL }}
+          VITE_SUPABASE_ANON_KEY:     ${{ secrets.SUPABASE_ANON_KEY }}
+        run: |
+          yarn gen-types:custom --mode staging
+          if ! git diff --ignore-space-at-eol --exit-code --quiet src/generated/supabase-types.ts; then
+            echo "Detected uncommitted changes after build. See status below:"
+            git diff
+            exit 1
+          fi
 
       - name: Build
         run: yarn run build:karlsruhe-stg
@@ -108,7 +115,7 @@ jobs:
           VITE_OPENWEATHER_API_KEY:   ${{ secrets.OPENWEATHER_API_KEY }}
           VITE_VAPID_PUBLIC_KEY:      ${{ vars.VAPID_PUBLIC_KEY }}
           VITE_PAYPAL_ME_LINK:        ${{ vars.PAYPAL_ME_LINK }}
-          VITE_GIT_COMMIT:            ${{ github.sha }}
+          VITE_GIT_COMMIT:            ${{ github.sha}}
           VITE_ENV:                   'staging'
 
       - uses: actions/upload-artifact@v4
@@ -119,8 +126,10 @@ jobs:
   deploy-karlsruhe:
     runs-on: ubuntu-latest
     needs: build-karlsruhe
-    name: 'Deploy Karlsruhe'
-
+    if: ${{ github.event_name != 'workflow_dispatch'
+        || github.event.inputs.publish == 'All'
+        || github.event.inputs.publish == 'Roundnet Karlsruhe Staging' }}
+    name: 'Deploy Karlsruhe Staging'
     environment:
       name: 'Roundnet Karlsruhe Staging'
       url:  ${{ vars.PUBLIC_URL }}

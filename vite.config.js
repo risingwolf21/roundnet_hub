@@ -35,6 +35,7 @@ export default defineConfig(({ mode }) => {
 
   return {
     base: BASE_PATH,
+    envDir: "./environments",
     plugins: [
       react(),
       VitePWA({

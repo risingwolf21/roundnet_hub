@@ -45,6 +45,7 @@
       "answerDeadlineExceeded": "Die Anmeldung für dieses Event ist am {{ answerDeadline, dd.MM.yyyy 'um' HH:mm}} verstrichen",
       "answerDeadlineExceededTitle": "Anmeldezeitraum vorbei",
       "eventSpotsTaken": "{{ taken }} von {{waitingListLength}} Plätzen vergeben",
+      "eventTrialSpotsTaken": "{{ taken }} von {{waitingListLength}} Probetraining-Plätzen vergeben",
       "keyHolderAttending": "Jemand mit einem Schlüssel ist angemeldet",
       "meetTime": "Treffen: {{ meetTime }}",
       "startTime": "Startet um {{ startTime, HH:mm }}",
@@ -53,6 +54,10 @@
       "waitingListPlace": "Warteliste Platz ({{ place }} / {{ waitingListLength }})",
       "attending_one": "{{count}} Zusage",
       "attending_other": "{{count}} Zusagen",
+      "attending_trial_one": "{{count}} Probetraining Zusage",
+      "attending_trial_other": "{{count}} Probetraining Zusagen",
+      "waiting_trial_one": "{{count}} Probetraining wartet",
+      "waiting_trial_other": "{{count}} Probetraining warten",
       "declined_one": "{{count}} Absage",
       "declined_other": "{{count}} Absagen",
       "commentTimeAgo": "vor {{time}}"

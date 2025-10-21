@@ -144,6 +144,6 @@
     "src/**/*",
     "types/**/*",
     "src/service-worker.ts",
-    "vite-env.d.ts"
+    "src/vite-env.d.ts"
   ]
 }

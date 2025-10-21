@@ -517,7 +517,7 @@ export const Drawer = ({ open, onClose, onOpen }: Props) => {
   const { user } = useGrants();
   const [tab, setTab] = useState<string>(HOMEPAGE);
 
-  const { data: requested_group_joins = [] } = useRequestedUsersPerGroup();
+  const { data: requested_group_joins = [] } = useRequestedUsersPerGroup(user);
   const { data: notifications = [] } = useAllNotifications(user);
 
   const iOS = typeof navigator !== 'undefined' && /iPad|iPhone|iPod/.test(navigator.userAgent);

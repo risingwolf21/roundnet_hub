@@ -21,7 +21,6 @@
     "@toolpad/core": "0.16.0",
     "compressorjs": "1.2.1",
     "date-fns": "3.2.0",
-    "env-cmd": "^10.1.0",
     "eslint": "9.36.0",
     "i18next": "25.5.2",
     "i18next-browser-languagedetector": "8.2.0",
@@ -40,22 +39,23 @@
     "workbox-window": "7.3.0"
   },
   "scripts": {
-    "start": "env-cmd -e main,development vite",
-    "start:rk:prod": "env-cmd -e main,roundnet-karlsruhe,production vite",
-    "start:mrc:prod": "env-cmd -e main,munich-roundnet,production vite",
-    "start:local": "env-cmd -e main,development vite",
-    "start:staging": "env-cmd -e main,staging vite",
+    "start": "vite",
+    "start:rk:prod": "vite --mode karlsruhe",
+    "start:mrc:prod": "vite --mode munich",
+    "start:staging": "vite --mode staging",
     "build": "vite build",
     "build:karlsruhe": "vite build --mode karlsruhe",
-    "build:karlsruhe-stg": "vite build --mode karlsruhe-stg",
+    "build:karlsruhe-stg": "vite build --mode staging",
     "build:munich": "vite build --mode munich",
     "analyze": "vite build --mode analyze",
-    "gen-types:production": "npx supabase gen types typescript --project-id gfvaurdkieqkehsuwotr --schema public --schema games > src/types/supabase-generated.types.ts",
-    "gen-types:local": "npx supabase@2.34.0 gen types typescript --local --schema public --schema games > src/types/supabase-generated.types.ts",
+    "gen-types:production": "npx supabase gen types typescript --project-id gfvaurdkieqkehsuwotr --schema public --schema games --schema audit > src/types/supabase-generated.types.ts",
+    "gen-types:staging": "npx supabase gen types typescript --project-id xqzwgleplmkcocfmvwsl --schema public --schema games --schema audit > src/types/supabase-generated.types.ts",
+    "gen-types:local": "npx supabase gen types typescript --local --schema public --schema games --schema audit > src/types/supabase-generated.types.ts",
     "format": "prettier --write \"src/**/*.{js,jsx,ts,tsx,css,md}\" --config ./.prettierrc.json",
     "sentry:sourcemaps": "sentry-cli sourcemaps inject --org roundnet-karlsruhe --project roundnet-karlsruhe ./build && sentry-cli sourcemaps upload --org roundnet-karlsruhe --project roundnet-karlsruhe ./build",
-    "gen-types:custom:local": "env-cmd -e development ts-node scripts/generate-types.ts",
-    "gen-types:custom:production": "env-cmd -e roundnet-karlsruhe ts-node scripts/generate-types.ts"
+    "gen-types:custom": "vite-node scripts/generate-types.ts",
+    "supabase:db:push:staging": "dotenv -e environments/.env.staging.local -- npx supabase db push --yes",
+    "supabase:db:push:production": "dotenv -e environments/.env.production.local -- npx supabase link -- npx supabase db push"
   },
   "eslintConfig": {
     "extends": [
@@ -97,11 +97,12 @@
     "@types/react": "19.0.0",
     "@types/react-dom": "19.0.0",
     "@vitejs/plugin-react": "^5.0.3",
+    "dotenv-cli": "^10.0.0",
     "prettier": "^3.4.2",
     "rollup-plugin-visualizer": "^6.0.3",
     "supabase": "^2.20.5",
-    "ts-node": "^10.9.2",
     "vite": "^7.1.6",
+    "vite-node": "3.2.4",
     "vite-plugin-pwa": "^1.0.3"
   }
 }

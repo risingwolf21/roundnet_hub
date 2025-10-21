@@ -112,7 +112,7 @@ const EventInformationProvider = () => {
                         event: {
                           ...event,
                           items_enabled: false,
-                          group: event.group?.id ?? null
+                          group: event.group?.id ?? null,
                         } as EventTable,
                         eventGroup: event.group,
                         option: result,
