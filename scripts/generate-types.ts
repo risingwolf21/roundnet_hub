@@ -4,7 +4,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL!;
-const supabaseKey = import.meta.env.VITE_SUPABASE_API_KEY!;
+const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY!;
 const supabase = createClient(supabaseUrl, supabaseKey);
 
 type TableConfig = {

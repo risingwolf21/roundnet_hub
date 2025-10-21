@@ -99,6 +99,18 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-yarn-
 
+      - name: Verify generated custom types match Postgres schema
+        env:
+          VITE_SUPABASE_URL:          ${{ vars.SUPABASE_DB_URL }}
+          VITE_SUPABASE_ANON_KEY:     ${{ secrets.SUPABASE_ANON_KEY }}
+        run: |
+          yarn gen-types:custom --mode karlsruhe
+          if ! git diff --ignore-space-at-eol --exit-code --quiet src/generated/supabase-types.ts; then
+            echo "Detected uncommitted changes after build. See status below:"
+            git diff
+            exit 1
+          fi
+
       - name: Build
         run: yarn run build:karlsruhe
         env:
