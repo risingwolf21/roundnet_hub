@@ -6,11 +6,14 @@ import { FullUserMapping, GroupWithUserMappings } from '@/types/supabaseTypes';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { Omit } from 'lodash';
 
-export const useRequestedUsersPerGroup = () =>
+export const useRequestedUsersPerGroup = (me: User) =>
   useQuery<GroupUserMapping[]>({
     queryKey: ['groups', 'joinRequested'],
     queryFn: async () => {
-      const result = await supabase.from('group_user_mapping').select('*').eq('role', 'joinRequested');
+      const result = await supabase.from('group_user_mapping')
+        .select('*')
+        .eq('role', 'joinRequested')
+        .neq('user', me.userId);
 
       return result.data ?? [];
     },
