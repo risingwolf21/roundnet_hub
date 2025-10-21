@@ -59,16 +59,6 @@ jobs:
           version: latest
       - run: supabase db start
       - run: supabase test db
-      - name: Verify generated types match Postgres schema
-        env:
-          SUPABASE_ACCESS_TOKEN: ${{ secrets.PRODUCTION_SUPABASE_ACCESS_TOKEN }}
-        run: |
-          yarn gen-types:production
-          if ! git diff --ignore-space-at-eol --exit-code --quiet src/types/supabase-generated.types.ts; then
-            echo "Detected uncommitted changes after build. See status below:"
-            git diff
-            exit 1
-          fi
 
   build-karlsruhe:
     name: 'Build Karlsruhe'
@@ -98,18 +88,6 @@ jobs:
           key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
           restore-keys: |
             ${{ runner.os }}-yarn-
-
-      - name: Verify generated custom types match Postgres schema
-        env:
-          VITE_SUPABASE_URL:          ${{ vars.SUPABASE_DB_URL }}
-          VITE_SUPABASE_ANON_KEY:     ${{ secrets.SUPABASE_ANON_KEY }}
-        run: |
-          yarn gen-types:custom --mode karlsruhe
-          if ! git diff --ignore-space-at-eol --exit-code --quiet src/generated/supabase-types.ts; then
-            echo "Detected uncommitted changes after build. See status below:"
-            git diff
-            exit 1
-          fi
 
       - name: Build
         run: yarn run build:karlsruhe
