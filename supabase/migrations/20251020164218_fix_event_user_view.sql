@@ -1,3 +1,5 @@
+drop view if exists "public"."events_user_view";
+
 create or replace view "public"."events_user_view" with (security_invoker = on) as SELECT e.id,
     e.created_at,
     e.title,
@@ -28,7 +30,9 @@ create or replace view "public"."events_user_view" with (security_invoker = on) 
      LEFT JOIN event_attendance_user_mapping eaus ON (((e.id = eaus.event) AND (eaus."user" = ( SELECT (auth.uid())::text AS uid)))))
      JOIN group_user_mapping gus ON (((e."group" = gus."group") AND (gus."user" = ( SELECT (auth.uid())::text AS uid)))));
 
-create view public.event_groups_view with (security_invoker = on) as
+drop view if exists "public"."event_groups_view";
+
+create view "public"."event_groups_view" with (security_invoker = on) as
  SELECT eg.created_at,
     eg.description,
     eg.name,
@@ -42,5 +46,5 @@ create view public.event_groups_view with (security_invoker = on) as
    FROM event_group eg
      LEFT JOIN group_user_mapping gum ON eg.id = gum."group" AND gum."user" = ((( SELECT auth.uid() AS uid))::text);
 
-grant select on table public.permissions to anon;
-grant select on table public.features to anon;
+grant select on table "public"."permissions" to anon;
+grant select on table "public"."features" to anon;
