@@ -53,7 +53,9 @@
     "gen-types:local": "npx supabase gen types typescript --local --schema public --schema games --schema audit > src/types/supabase-generated.types.ts",
     "format": "prettier --write \"src/**/*.{js,jsx,ts,tsx,css,md}\" --config ./.prettierrc.json",
     "sentry:sourcemaps": "sentry-cli sourcemaps inject --org roundnet-karlsruhe --project roundnet-karlsruhe ./build && sentry-cli sourcemaps upload --org roundnet-karlsruhe --project roundnet-karlsruhe ./build",
-    "gen-types:custom": "vite-node scripts/generate-types.ts"
+    "gen-types:custom": "vite-node scripts/generate-types.ts",
+    "supabase:db:push:staging": "dotenv -e environments/.env.staging.local -- npx supabase db push --yes",
+    "supabase:db:push:production": "dotenv -e environments/.env.production.local -- npx supabase link -- npx supabase db push"
   },
   "eslintConfig": {
     "extends": [
@@ -95,11 +97,12 @@
     "@types/react": "19.0.0",
     "@types/react-dom": "19.0.0",
     "@vitejs/plugin-react": "^5.0.3",
+    "dotenv-cli": "^10.0.0",
     "prettier": "^3.4.2",
     "rollup-plugin-visualizer": "^6.0.3",
     "supabase": "^2.20.5",
-    "vite-node": "3.2.4",
     "vite": "^7.1.6",
+    "vite-node": "3.2.4",
     "vite-plugin-pwa": "^1.0.3"
   }
 }
