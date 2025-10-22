@@ -26,6 +26,7 @@ import Scoreboard from '@mui/icons-material/Scoreboard';
 import SportsHandball from '@mui/icons-material/SportsHandball';
 import StorageOutlined from '@mui/icons-material/StorageOutlined';
 import Update from '@mui/icons-material/Update';
+import ViewStreamIcon from '@mui/icons-material/ViewStream';
 import { alpha, BoxProps, DrawerProps, ListItemProps, Theme } from '@mui/material';
 import Badge from '@mui/material/Badge';
 import Box from '@mui/material/Box';
@@ -342,7 +343,7 @@ const DrawerContent = ({
           />
         </DrawerItem>
       </List>
-      <Has perm={['drinks.confirm.payments', 'drinks.manage']}>
+      <Has perm={['drinks.confirm.payments', 'drinks.manage', 'users.manage', 'drinks.history.admin', 'grants.manage', 'supabase.admin']} any>
         <>
           <Divider />
           <List
@@ -441,6 +442,23 @@ const DrawerContent = ({
                 <ListItemText
                   primaryTypographyProps={{ fontWeight: 'bold', fontSize: '0.9rem' }}
                   primary={'Grants-Manager'}
+                />
+              </DrawerItem>
+            </Has>
+            <Has perm={'supabase.admin'}>
+              <DrawerItem
+                key="audit_logs"
+                selected={tab === 'admin/audit/logs'}
+                onClick={() => handleChange('admin/audit/logs')}
+              >
+                <ListItemAvatar>
+                  <ListItemIcon>
+                    <ViewStreamIcon />
+                  </ListItemIcon>
+                </ListItemAvatar>
+                <ListItemText
+                  primaryTypographyProps={{ fontWeight: 'bold', fontSize: '0.9rem' }}
+                  primary={t('browse.auditLogs')}
                 />
               </DrawerItem>
             </Has>

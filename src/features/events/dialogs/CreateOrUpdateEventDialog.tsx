@@ -1,35 +1,23 @@
-import { useFetchMode } from '@/hooks/useFetchMode';
-import { useBringItems, useInsertEventMutation, useUpdateRecurrenceMutation, useUpdateSingleMutation } from '@/tanstack/events';
-import { formatDateFromDatabase, formatDateToDatabase } from '@/utils';
-import EventIcon from '@mui/icons-material/Event';
-import EventRepeatIcon from '@mui/icons-material/EventRepeat';
-import { DatePicker, DateTimePicker } from '@mui/x-date-pickers';
-import { TimePicker } from '@mui/x-date-pickers/TimePicker';
-import { DialogProps, useDialogs } from '@toolpad/core';
-import { useNotifications } from '@toolpad/core/useNotifications';
-import { format, isAfter, set } from 'date-fns';
-import _ from 'lodash';
-import { FormEvent, useEffect, useRef, useState } from 'react';
-import { useTranslation } from 'react-i18next';
-import { MapContainer, Marker, TileLayer, useMap } from 'react-leaflet';
-import { EventTable } from 'types/supabase';
-import { Enums, Tables, TablesInsert, TablesUpdate } from '../../../types/supabase-generated.types';
-import { CreateEventOption, PlaceType } from '../types';
-import SearchPlacesDialog from './SearchPlacesDialog';
-import { SelectGroupDialog } from './SelectGroupDialog';
-
+import DurationAdder from '@/components/DurationInput';
 import { SwipeableDialog } from '@/components/SwipeableDialog';
 import { useGrants } from '@/features/auth/GrantsContext';
+import { useFetchMode } from '@/hooks/useFetchMode';
 import { Has } from '@/hooks/useGrants';
+import { useBringItems, useInsertEventMutation, useUpdateRecurrenceMutation, useUpdateSingleMutation } from '@/tanstack/events';
+import { formatDateFromDatabase, formatDateToDatabase } from '@/utils';
 import AccessTime from '@mui/icons-material/AccessTime';
 import Add from '@mui/icons-material/Add';
 import Article from '@mui/icons-material/Article';
 import Category from '@mui/icons-material/Category';
 import Close from '@mui/icons-material/Close';
 import Delete from '@mui/icons-material/Delete';
+import EventIcon from '@mui/icons-material/Event';
+import EventRepeatIcon from '@mui/icons-material/EventRepeat';
 import FiberManualRecord from '@mui/icons-material/FiberManualRecord';
+import InfoIcon from '@mui/icons-material/Info';
 import Map from '@mui/icons-material/Map';
 import Remove from '@mui/icons-material/Remove';
+import TimelapseIcon from '@mui/icons-material/Timelapse';
 import AppBar from '@mui/material/AppBar';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
@@ -56,9 +44,23 @@ import RadioGroup from '@mui/material/RadioGroup';
 import Select from '@mui/material/Select';
 import TextField from '@mui/material/TextField';
 import Toolbar from '@mui/material/Toolbar';
+import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
+import { DatePicker, DateTimePicker } from '@mui/x-date-pickers';
+import { TimePicker } from '@mui/x-date-pickers/TimePicker';
 import { logger } from '@sentry/react';
-
+import { DialogProps, useDialogs } from '@toolpad/core';
+import { useNotifications } from '@toolpad/core/useNotifications';
+import { add, format, isAfter, set } from 'date-fns';
+import _ from 'lodash';
+import { FormEvent, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { MapContainer, Marker, TileLayer, useMap } from 'react-leaflet';
+import { EventTable } from 'types/supabase';
+import { Enums, Tables, TablesInsert, TablesUpdate } from '../../../types/supabase-generated.types';
+import { CreateEventOption, PlaceType } from '../types';
+import SearchPlacesDialog from './SearchPlacesDialog';
+import { SelectGroupDialog } from './SelectGroupDialog';
 const emptyEvent = {
   title: '',
   description: '',
@@ -67,6 +69,7 @@ const emptyEvent = {
   endDateTime: formatDateToDatabase(set(new Date(), { seconds: 0, milliseconds: 0 })),
   recurrence: 'None',
   maxAttendees: null,
+  max_trial_attendees: null,
   required_item: null,
   answerDeadline: null,
   place: null,
@@ -98,9 +101,9 @@ export const CreateOrUpdateEventDialog = ({
 
   const { data: allItems = [], isLoading: bringItemsLoading } = useBringItems(event?.id);
 
-  useEffect(() => {
-    setBringItems(allItems.map(x => ({ name: x.name, required_qty: x.required_qty ?? 0 })));
-  }, [allItems]);
+  // useEffect(() => {
+  //   setBringItems(allItems.map(x => ({ name: x.name, required_qty: x.required_qty ?? 0 })));
+  // }, [allItems]);
 
   const insertEvent = useInsertEventMutation(fetchMode);
   const updateSingleEvent = useUpdateSingleMutation(fetchMode);
@@ -381,35 +384,20 @@ export const CreateOrUpdateEventDialog = ({
             />
           </ListItem>
 
-          <ListItem sx={{ pt: 0, pb: 0, mb: 2 }} key={'endDateTime'}>
-            <DateTimePicker
-              slotProps={{ textField: { error: false } }}
-              disabled={editedEvent.endDateTime === null}
-              sx={{ width: '100%' }}
-              views={['year', 'month', 'day', 'hours', 'minutes']}
-              format={'dd MMMM yyyy HH:mm'}
-              ampm={false}
-              minDateTime={formatDateFromDatabase(editedEvent.startingDateTime) ?? undefined}
-              label="Ende"
-              onChange={(val) => {
-                if (!val) return;
-                setEditedEvent({
-                  ...editedEvent,
-                  endDateTime: formatDateToDatabase(
-                    set(new Date(), {
-                      date: val.getDate(),
-                      year: val.getFullYear(),
-                      month: val.getMonth(),
-                      hours: val.getHours(),
-                      minutes: val.getMinutes(),
-                      seconds: 0,
-                      milliseconds: 0,
-                    })
-                  ),
-                });
-              }}
-              value={formatDateFromDatabase(editedEvent.endDateTime)}
-            />
+          <ListItem sx={{ pt: 0, pb: 0, mb: 2 }} key={'endDateTimeDurr'} secondaryAction={<Tooltip
+            sx={{ ml: 2 }}
+            title="'z.B. '1h30m'. Unterstützte Einheiten: h (Stunden), m (Minuten), s (Sekunden).'" >
+            <InfoIcon sx={{ color: 'rgba(0,0,0,0.54)' }} />
+          </Tooltip>}>
+            <ListItemAvatar sx={{ flexDirection: 'row', display: 'flex', alignItems: 'center' }}>
+              <TimelapseIcon />
+            </ListItemAvatar>
+            <DurationAdder defaultDuration='2h' durationChanged={(d) => {
+              setEditedEvent({
+                ...editedEvent,
+                endDateTime: formatDateToDatabase(add(editedEvent.startingDateTime, d))
+              });
+            }} />
           </ListItem>
 
           <ListItem onClick={() => setDialogOpen('places')} key={'searchPlace'}>
@@ -675,7 +663,7 @@ export const CreateOrUpdateEventDialog = ({
             <ListItemText primary={'Gegenstände mitbringen'} secondary={bringItems.map(x => <Chip sx={{ mr: 1 }} size='small' label={`${x.required_qty}x ${x.name}`} />)} />
           </ListItem>
         </List>
-      </Box>
+      </Box >
       <SwipeableDialog title='Gegenstände mitbringen' open={dialogOpen === 'bring_items'} onClose={() => setDialogOpen(null)}>
 
         <List>
@@ -847,6 +835,6 @@ export const CreateOrUpdateEventDialog = ({
           setDialogOpen(null);
         }}
       />
-    </Dialog>
+    </Dialog >
   );
 };
