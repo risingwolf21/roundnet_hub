@@ -384,15 +384,11 @@ export const CreateOrUpdateEventDialog = ({
             />
           </ListItem>
 
-          <ListItem sx={{ pt: 0, pb: 0, mb: 2 }} key={'endDateTimeDurr'} secondaryAction={<Tooltip
-            sx={{ ml: 2 }}
-            title="'z.B. '1h30m'. Unterstützte Einheiten: h (Stunden), m (Minuten), s (Sekunden).'" >
-            <InfoIcon sx={{ color: 'rgba(0,0,0,0.54)' }} />
-          </Tooltip>}>
+          <ListItem sx={{ pt: 0, pb: 0, mb: 2 }} key={'endDateTimeDurr'}>
             <ListItemAvatar sx={{ flexDirection: 'row', display: 'flex', alignItems: 'center' }}>
               <TimelapseIcon />
             </ListItemAvatar>
-            <DurationAdder defaultDuration='2h' durationChanged={(d) => {
+            <DurationAdder durationChanged={(d) => {
               setEditedEvent({
                 ...editedEvent,
                 endDateTime: formatDateToDatabase(add(editedEvent.startingDateTime, d))
