@@ -1,7 +1,6 @@
 import { ChallengeStatWithUser } from '@/types/supabaseTypes';
-import { formatDateFromDatabase } from '@/utils';
+import { formatDateFromDatabase, groupBy } from '@/utils';
 import { FetchNextPageOptions, InfiniteData, InfiniteQueryObserverResult } from '@tanstack/react-query';
-import { groupBy } from 'lodash';
 import { useEffect, useRef } from 'react';
 
 import AccountBox from '@mui/icons-material/AccountBox';
@@ -39,7 +38,7 @@ export const ChallengeActivityList = ({
   fetchNextPage,
 }: ChallengeActivityListProps) => {
   const grouped = groupBy(stats?.pages.flatMap((x) => x.data) ?? [], (a) =>
-    formatDateFromDatabase(a.created_at).toDateString()
+    formatDateFromDatabase(a.created_at)?.toDateString() ?? ""
   );
   const sortedEntries = Object.entries(grouped).sort(([a], [b]) => new Date(b).getTime() - new Date(a).getTime());
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
@@ -61,7 +60,7 @@ export const ChallengeActivityList = ({
 
   return (
     <Stack spacing={1} direction="column" sx={{ m: 1, mb: 12 }}>
-      {sortedEntries.map(([date, entries]) => (
+      {sortedEntries.map(([date, entries]: [string, ChallengeStatWithUser[]]) => (
         <Stack spacing={1} direction="column" key={date}>
           <Typography sx={{ textAlign: 'center', color: 'rgba(0,0,0,0.6)' }}>{date}</Typography>
           <List>

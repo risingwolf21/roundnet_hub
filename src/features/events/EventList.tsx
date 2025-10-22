@@ -3,6 +3,7 @@ import { useFetchMode } from '@/hooks/useFetchMode';
 import { Has } from '@/hooks/useGrants';
 import { useEvents, useUpdateAttendanceMutation } from '@/tanstack/events';
 import { EventsUserView } from '@/types/supabaseTypes';
+import { groupBy } from '@/utils';
 import { EventRepeat, FilterAlt } from '@mui/icons-material';
 import AddIcon from '@mui/icons-material/Add';
 import { Button, Fab, List, Typography } from '@mui/material';
@@ -12,7 +13,6 @@ import { useDialogs } from '@toolpad/core';
 import { useNotifications } from '@toolpad/core/useNotifications';
 import { format, parse } from 'date-fns';
 import { t } from 'i18next';
-import { groupBy } from 'lodash';
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router';
 import { useGrants } from '../auth/GrantsContext';
@@ -68,7 +68,7 @@ const EventScreen = () => {
   if (isLoading) {
     return (
       <List>
-        {Array.from({ length: 10 }, (v, k) => k + 1).map((x) => (
+        {Array.from({ length: 10 }, (_v, k) => k + 1).map((x) => (
           <LoadingEventItem key={x} />
         ))}
       </List>
@@ -112,7 +112,7 @@ const EventScreen = () => {
           [theme.breakpoints.up('xl')]: { pb: 0 },
         })}
       >
-        {Object.entries(groupBy(events, (x) => format(x.startingDateTime!, 'dd-MM-yyyy'))).map(([key, value]) => (
+        {Object.entries(groupBy(events, (x) => format(x.startingDateTime!, 'dd-MM-yyyy'))).map(([key, value]: [string, EventsUserView[]]) => (
           <table style={{ width: '100%', borderSpacing: 0 }} key={key}>
             <tbody style={{ width: '100%' }}>
               {value.map((event: EventsUserView, index) => (
