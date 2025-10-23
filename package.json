@@ -58,7 +58,8 @@
     "sentry:sourcemaps": "sentry-cli sourcemaps inject --org roundnet-karlsruhe --project roundnet-karlsruhe ./build && sentry-cli sourcemaps upload --org roundnet-karlsruhe --project roundnet-karlsruhe ./build",
     "gen-types:custom": "vite-node scripts/generate-types.ts",
     "supabase:db:push:staging": "dotenv -e environments/.env.staging.local -- npx supabase link --project-ref \"$SUPABASE_PROJECT_ID\" && npx supabase db push --linked",
-    "supabase:db:push:production": "dotenv -e environments/.env.production.local -- npx supabase link -- npx supabase db push"
+    "supabase:db:push:rk:prod": "dotenv -e environments/.env.production.local -e environments/.env.karlsruhe.local -- npx supabase link --project-ref \"$SUPABASE_PROJECT_ID\" && npx supabase db push",
+    "supabase:db:push:mrc:prod": "dotenv -e environments/.env.production.local -e environments/.env.munich.local -- npx supabase link --project-ref \"$SUPABASE_PROJECT_ID\" && npx supabase db push"
   },
   "eslintConfig": {
     "extends": [
