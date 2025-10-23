@@ -1,4 +1,4 @@
-import { format, parse } from 'date-fns';
+import { format, intervalToDuration, parse } from 'date-fns';
 import { forwardRef } from 'react';
 import RoundnetKarlsruheLogo from '../images/Karlsruher_Kojoten_Logo.svg';
 import RoundnetMunichLogo from '../images/Roundnet_Munich_Logo.png';
@@ -74,6 +74,20 @@ export const formatDateFromDatabase = (date: string | null) => {
   }
   return result;
 };
+
+export const getDurationFrom = (start: string | null, end: string | null) => {
+  const startDate = formatDateFromDatabase(start);
+  const endDate = formatDateFromDatabase(end);
+  if (startDate === null || endDate === null) {
+    return null;
+  }
+
+  return getDuration(startDate, endDate);
+}
+
+export const getDuration = (start: Date, end: Date) => {
+  return intervalToDuration({ start, end });
+}
 
 export const translationKeyOfItemType = (type: ItemType | null) => {
   switch (type) {

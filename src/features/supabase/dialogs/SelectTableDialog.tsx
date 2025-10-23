@@ -1,7 +1,7 @@
 import { DialogProps } from '@toolpad/core';
-import { groupBy } from 'lodash';
 import { Table } from '../SupabaseClient';
 
+import { groupBy } from '@/utils';
 import Close from '@mui/icons-material/Close';
 import Dialog from '@mui/material/Dialog';
 import DialogContent from '@mui/material/DialogContent';
@@ -65,7 +65,7 @@ export const SelectTableDialog = ({ payload, open, onClose }: DialogProps<Select
       </DialogTitle>
       <DialogContent sx={{ p: 0 }}>
         <List>
-          {Object.entries(groupBy(payload.tables, (x) => x.schema)).map(([key, values]) => (
+          {Object.entries(groupBy<Table>(payload.tables, (x) => x.schema)).map(([key, values]: [string, Table[]]) => (
             <List subheader={<ListSubheader sx={{ fontWeight: 'bold', fontSize: '1rem' }}>{key}</ListSubheader>}>
               {values
                 .sort((a, b) => a.name.localeCompare(b.name))

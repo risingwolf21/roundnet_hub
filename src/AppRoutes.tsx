@@ -37,6 +37,7 @@ const PublicGroupList = lazyWithRetry(() => import('./features/groups/PublicGrou
 const PublicGroupInformation = lazyWithRetry(() => import('./features/groups/PublicGroupInformation.page'));
 const MatchInformation = lazyWithRetry(() => import('./features/games/MatchInformation'));
 const SendNotifications = lazyWithRetry(() => import('./features/notifications/SendNotifications'));
+const LogsList = lazyWithRetry(() => import('./features/admin/LogsList'));
 
 const sentryCreateBrowserRouter = wrapCreateBrowserRouterV7(createBrowserRouter);
 
@@ -266,6 +267,12 @@ const router = sentryCreateBrowserRouter([
               {
                 path: 'send_notifications',
                 element: <SendNotifications />
+              },
+              {
+                path: 'audit/logs',
+                element: <Has perm={'supabase.admin'} fallback={<PermissionDeniedPage />}>
+                  <LogsList />
+                </Has>
               },
               {
                 path: 'supabase',

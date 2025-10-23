@@ -1,35 +1,22 @@
-import { useFetchMode } from '@/hooks/useFetchMode';
-import { useBringItems, useInsertEventMutation, useUpdateRecurrenceMutation, useUpdateSingleMutation } from '@/tanstack/events';
-import { formatDateFromDatabase, formatDateToDatabase } from '@/utils';
-import EventIcon from '@mui/icons-material/Event';
-import EventRepeatIcon from '@mui/icons-material/EventRepeat';
-import { DatePicker, DateTimePicker } from '@mui/x-date-pickers';
-import { TimePicker } from '@mui/x-date-pickers/TimePicker';
-import { DialogProps, useDialogs } from '@toolpad/core';
-import { useNotifications } from '@toolpad/core/useNotifications';
-import { format, isAfter, set } from 'date-fns';
-import _ from 'lodash';
-import { FormEvent, useEffect, useRef, useState } from 'react';
-import { useTranslation } from 'react-i18next';
-import { MapContainer, Marker, TileLayer, useMap } from 'react-leaflet';
-import { EventTable } from 'types/supabase';
-import { Enums, Tables, TablesInsert, TablesUpdate } from '../../../types/supabase-generated.types';
-import { CreateEventOption, PlaceType } from '../types';
-import SearchPlacesDialog from './SearchPlacesDialog';
-import { SelectGroupDialog } from './SelectGroupDialog';
-
+import DurationAdder from '@/components/DurationInput';
 import { SwipeableDialog } from '@/components/SwipeableDialog';
 import { useGrants } from '@/features/auth/GrantsContext';
+import { useFetchMode } from '@/hooks/useFetchMode';
 import { Has } from '@/hooks/useGrants';
+import { useBringItems, useInsertEventMutation, useUpdateRecurrenceMutation, useUpdateSingleMutation } from '@/tanstack/events';
+import { formatDateFromDatabase, formatDateToDatabase, getDurationFrom } from '@/utils';
 import AccessTime from '@mui/icons-material/AccessTime';
 import Add from '@mui/icons-material/Add';
 import Article from '@mui/icons-material/Article';
 import Category from '@mui/icons-material/Category';
 import Close from '@mui/icons-material/Close';
 import Delete from '@mui/icons-material/Delete';
+import EventIcon from '@mui/icons-material/Event';
+import EventRepeatIcon from '@mui/icons-material/EventRepeat';
 import FiberManualRecord from '@mui/icons-material/FiberManualRecord';
 import Map from '@mui/icons-material/Map';
 import Remove from '@mui/icons-material/Remove';
+import TimelapseIcon from '@mui/icons-material/Timelapse';
 import AppBar from '@mui/material/AppBar';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
@@ -57,16 +44,33 @@ import Select from '@mui/material/Select';
 import TextField from '@mui/material/TextField';
 import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
+import { DatePicker, DateTimePicker } from '@mui/x-date-pickers';
+import { TimePicker } from '@mui/x-date-pickers/TimePicker';
 import { logger } from '@sentry/react';
+import { DialogProps, useDialogs } from '@toolpad/core';
+import { useNotifications } from '@toolpad/core/useNotifications';
+import { add, Duration, format, isAfter, set } from 'date-fns';
+import { differenceWith, fromPairs, isEqual, toPairs } from 'lodash';
+import { FormEvent, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { MapContainer, Marker, TileLayer, useMap } from 'react-leaflet';
+import { EventTable } from 'types/supabase';
+import { Enums, Tables, TablesInsert, TablesUpdate } from '../../../types/supabase-generated.types';
+import { CreateEventOption, PlaceType } from '../types';
+import SearchPlacesDialog from './SearchPlacesDialog';
+import { SelectGroupDialog } from './SelectGroupDialog';
+
+const DEFAULT_DURATION: Duration = { hours: 2 };
 
 const emptyEvent = {
   title: '',
   description: '',
   startingDateTime: formatDateToDatabase(set(new Date(), { seconds: 0, milliseconds: 0 })),
   meetingDateTime: null,
-  endDateTime: formatDateToDatabase(set(new Date(), { seconds: 0, milliseconds: 0 })),
+  endDateTime: formatDateToDatabase(add(set(new Date(), { seconds: 0, milliseconds: 0 }), DEFAULT_DURATION)),
   recurrence: 'None',
   maxAttendees: null,
+  max_trial_attendees: null,
   required_item: null,
   answerDeadline: null,
   place: null,
@@ -98,9 +102,9 @@ export const CreateOrUpdateEventDialog = ({
 
   const { data: allItems = [], isLoading: bringItemsLoading } = useBringItems(event?.id);
 
-  useEffect(() => {
-    setBringItems(allItems.map(x => ({ name: x.name, required_qty: x.required_qty ?? 0 })));
-  }, [allItems]);
+  // useEffect(() => {
+  //   setBringItems(allItems.map(x => ({ name: x.name, required_qty: x.required_qty ?? 0 })));
+  // }, [allItems]);
 
   const insertEvent = useInsertEventMutation(fetchMode);
   const updateSingleEvent = useUpdateSingleMutation(fetchMode);
@@ -116,20 +120,14 @@ export const CreateOrUpdateEventDialog = ({
 
       setEditedEvent({ ...editedEvent, items_enabled: bring_items.length > 0 });
 
-      let edited_event = _.omit(editedEvent, [
-        'fullGroup',
-        'attendance',
-        'comments',
-        'userAttendance',
-        'attendanceUpdating',
-      ]) as TablesInsert<'events'>;
+      let edited_event = editedEvent as TablesInsert<'events'>;
 
-      const changes = _.differenceWith(
-        _.toPairs(edited_event),
-        _.toPairs(_.pick(event ?? {}, Object.keys(event ?? {}))),
-        _.isEqual
-      );
-      const eventChanges = _.fromPairs(changes) as TablesUpdate<'events'>;
+      const edited_event_pairs = toPairs(edited_event);
+      const event_pairs = event ? toPairs(event) : [];
+
+      const changes = differenceWith(edited_event_pairs, event_pairs, isEqual);
+
+      const eventChanges = fromPairs(changes) as TablesUpdate<'events'>;
 
       console.log('Event changes', edited_event.id, eventChanges);
 
@@ -381,35 +379,16 @@ export const CreateOrUpdateEventDialog = ({
             />
           </ListItem>
 
-          <ListItem sx={{ pt: 0, pb: 0, mb: 2 }} key={'endDateTime'}>
-            <DateTimePicker
-              slotProps={{ textField: { error: false } }}
-              disabled={editedEvent.endDateTime === null}
-              sx={{ width: '100%' }}
-              views={['year', 'month', 'day', 'hours', 'minutes']}
-              format={'dd MMMM yyyy HH:mm'}
-              ampm={false}
-              minDateTime={formatDateFromDatabase(editedEvent.startingDateTime) ?? undefined}
-              label="Ende"
-              onChange={(val) => {
-                if (!val) return;
-                setEditedEvent({
-                  ...editedEvent,
-                  endDateTime: formatDateToDatabase(
-                    set(new Date(), {
-                      date: val.getDate(),
-                      year: val.getFullYear(),
-                      month: val.getMonth(),
-                      hours: val.getHours(),
-                      minutes: val.getMinutes(),
-                      seconds: 0,
-                      milliseconds: 0,
-                    })
-                  ),
-                });
-              }}
-              value={formatDateFromDatabase(editedEvent.endDateTime)}
-            />
+          <ListItem sx={{ pt: 0, pb: 0, mb: 2 }} key={'endDateTimeDurr'}>
+            <ListItemAvatar sx={{ flexDirection: 'row', display: 'flex', alignItems: 'center' }}>
+              <TimelapseIcon />
+            </ListItemAvatar>
+            <DurationAdder duration={getDurationFrom(editedEvent.startingDateTime, editedEvent.endDateTime)} durationChanged={(d) => {
+              setEditedEvent({
+                ...editedEvent,
+                endDateTime: formatDateToDatabase(add(editedEvent.startingDateTime, d))
+              });
+            }} />
           </ListItem>
 
           <ListItem onClick={() => setDialogOpen('places')} key={'searchPlace'}>
@@ -675,7 +654,7 @@ export const CreateOrUpdateEventDialog = ({
             <ListItemText primary={'Gegenstände mitbringen'} secondary={bringItems.map(x => <Chip sx={{ mr: 1 }} size='small' label={`${x.required_qty}x ${x.name}`} />)} />
           </ListItem>
         </List>
-      </Box>
+      </Box >
       <SwipeableDialog title='Gegenstände mitbringen' open={dialogOpen === 'bring_items'} onClose={() => setDialogOpen(null)}>
 
         <List>
@@ -834,12 +813,12 @@ export const CreateOrUpdateEventDialog = ({
         open={dialogOpen === 'places'}
         handleClose={() => setDialogOpen(null)}
         placeSelected={(place) => {
-          console.log('Place selected', place);
           setPlace(place);
           setEditedEvent({
             ...editedEvent,
             place: JSON.stringify({
               name: place.name,
+              description: place.description,
               lat: place.lat,
               lon: place.lon,
             }),
@@ -847,6 +826,6 @@ export const CreateOrUpdateEventDialog = ({
           setDialogOpen(null);
         }}
       />
-    </Dialog>
+    </Dialog >
   );
 };

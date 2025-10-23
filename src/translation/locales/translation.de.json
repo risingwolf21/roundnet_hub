@@ -19,6 +19,7 @@
     "notifications": "Benachrichtigungen",
     "payment": "Zahlung",
     "postgresClient": "Postgres Client",
+    "auditLogs": "Audit Logs",
     "training": "Training",
     "permissions": "Berechtigungen",
     "supabaseQueries": "Supabase Query Client",

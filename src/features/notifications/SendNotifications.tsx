@@ -94,8 +94,8 @@ const SendNotifications = () => {
           p_topic: topic,
           p_scope: scope,
           p_data: JSON.parse(data || '{}'),
-          p_source_type: sourceType || undefined,
-          p_source_id: sourceId || undefined,
+          p_source_type: sourceType,
+          p_source_id: sourceId,
           p_users: selectedUsers.map(x => x.userId),
         }).then(({ error }) => {
           if (error) {

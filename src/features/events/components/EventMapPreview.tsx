@@ -16,14 +16,18 @@ type Props = {
 const EventMapPreview = ({ place }: Props) => {
   return (
     <Stack direction={'column'}>
-      <ListItem dense>
-        <ListItemAvatar>
-          <ListItemIcon>
-            <Map />
-          </ListItemIcon>
-        </ListItemAvatar>
-        <ListItemText primary={place.name} />
-      </ListItem>
+      {
+        place.name && <ListItem dense>
+          <ListItemAvatar>
+            <ListItemIcon>
+              <Map />
+            </ListItemIcon>
+          </ListItemAvatar>
+          <ListItemText
+            primary={place.name}
+            secondary={place.description} />
+        </ListItem>
+      }
       <ListItem>
         <ListItemAvatar />
         <Box

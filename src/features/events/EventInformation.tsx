@@ -34,10 +34,12 @@ const EventInformation = ({ event, selectedEventPlace, t, keyHolders, fetchMode 
         <Stack direction={'column'}>
           <EventAlerts event={event} t={t} />
           <EventDateInformation event={event} t={t} />
-          {selectedEventPlace && <EventMapPreview place={selectedEventPlace} />}
-          {selectedEventPlace && (
-            <EventWeatherForecast place={selectedEventPlace} date={formatSafeDateFromDatabase(event?.startingDateTime)} />
-          )}
+          {
+            selectedEventPlace && <EventMapPreview place={selectedEventPlace} />
+          }
+          {
+            selectedEventPlace && <EventWeatherForecast place={selectedEventPlace} date={formatSafeDateFromDatabase(event?.startingDateTime)} />
+          }
         </Stack>
         <Box sx={{ px: 2 }}>
           <Typography sx={{ fontSize: 16, fontWeight: 'bold' }} color="text.secondary" gutterBottom>

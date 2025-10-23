@@ -1,39 +1,40 @@
 // Auto-generiert – nicht manuell bearbeiten
 
-export type Permission = "challenge.manage"|
-"grants.manage"|
-"challenges.create.own-group"|
-"challenges.edit.own-group"|
-"challenges.stats.read"|
-"challenges.stats.write"|
-"drinks.confirm.payments"|
-"drinks.edit"|
-"drinks.history.admin"|
-"drinks.history.select"|
-"drinks.manage"|
-"drinks.purchase"|
-"drinks.select"|
-"drinks.view.own-history"|
-"drinks.view.own-payments"|
-"event.cancel"|
-"event.comment"|
-"event.create.constellations"|
-"event.delete"|
-"event.edit"|
-"event.manage.attendees"|
-"event.signup"|
-"event.signup.trainer"|
-"games.create"|
-"games.update.score"|
-"games.view.own"|
-"groups.manage.admin"|
-"items.manage"|
-"items.update.holder"|
-"supabase.admin"|
-"users.manage";
+export type Permission = "challenge.manage" |
+  "grants.manage" |
+  "challenges.create.own-group" |
+  "challenges.edit.own-group" |
+  "challenges.stats.read" |
+  "challenges.stats.write" |
+  "drinks.confirm.payments" |
+  "drinks.edit" |
+  "drinks.history.admin" |
+  "drinks.history.select" |
+  "drinks.manage" |
+  "drinks.purchase" |
+  "drinks.select" |
+  "drinks.view.own-history" |
+  "drinks.view.own-payments" |
+  "event.cancel" |
+  "event.comment" |
+  "event.create.constellations" |
+  "event.delete" |
+  "event.edit" |
+  "event.manage.attendees" |
+  "event.signup" |
+  "event.signup.trainer" |
+  "games.create" |
+  "games.update.score" |
+  "games.view.own" |
+  "groups.manage.admin" |
+  "items.manage" |
+  "items.update.holder" |
+  "supabase.admin" |
+  "users.manage";
 
-export type Feature = "challenges"|
-"drinks"|
-"events"|
-"games"|
-"items";
+export type Feature = "challenges" |
+  "drinks" |
+  "events" |
+  "events.trials" |
+  "games" |
+  "items";
