@@ -349,10 +349,6 @@ CREATE TRIGGER trg_audit_permissions AFTER INSERT OR DELETE OR UPDATE ON public.
 
 CREATE TRIGGER trg_audit_user AFTER INSERT OR DELETE OR UPDATE ON public."user" FOR EACH ROW EXECUTE FUNCTION audit.log_change();
 
-CREATE TRIGGER trg_audit_user_direct_grants AFTER INSERT OR DELETE OR UPDATE ON public.user_direct_grants FOR EACH ROW EXECUTE FUNCTION audit.log_change();
-
-CREATE TRIGGER trg_audit_user_grants AFTER INSERT OR DELETE OR UPDATE ON public.user_grants FOR EACH ROW EXECUTE FUNCTION audit.log_change();
-
 CREATE TRIGGER trg_audit_user_notification_preferences AFTER INSERT OR DELETE OR UPDATE ON public.user_notification_preferences FOR EACH ROW EXECUTE FUNCTION audit.log_change();
 
 CREATE TRIGGER trg_audit_vouchers AFTER INSERT OR DELETE OR UPDATE ON public.vouchers FOR EACH ROW EXECUTE FUNCTION audit.log_change();

@@ -270,4 +270,150 @@ BEGIN
 END;$function$
 ;
 
+DROP FUNCTION IF EXISTS public.create_next_occurrences;
+
+CREATE OR REPLACE FUNCTION public.create_next_occurrences(
+  p_run_at  timestamptz,
+  p_horizon interval
+)
+RETURNS SETOF public.events
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path TO 'public', 'extensions', 'pg_temp'
+AS $function$
+BEGIN
+  /*
+    Neue Regeln (deine Beschreibung):
+
+    - Basis ist IMMER das NEUSTE existierende Event der Serie (max startingDateTime per "key").
+    - Erzeuge neue Events ab (basis + step), falls zwischen Basis und "jetzt/horizont" noch Slots fehlen.
+    - Oberes Limit ist der Horizont: hz = p_run_at + p_horizon (inklusive).
+    - Wenn (basis + step) > hz  → es würde der erste mögliche Folgetermin den Horizont überschreiten → Serie überspringen (keine Inserts).
+    - answerDeadline wird relativ zum Basis-Offset berechnet (gleiches Delta wie in der Basis).
+    - Duplikate werden durch Anti-Join und ON CONFLICT verhindert.
+  */
+
+  RETURN QUERY
+  WITH
+  -- Horizon-Ende (absolut, nicht relativ zu ns)
+  params AS (
+    SELECT p_run_at AS run_at, p_run_at + p_horizon AS hz
+  ),
+
+  -- Alle Serien-Keys mit unterstützen Recurrences
+  series AS (
+    SELECT e."key"
+    FROM public.events e
+    WHERE e.recurrence IN ('Weekly','Fortnightly')
+    GROUP BY e."key"
+  ),
+
+  -- BASIS: neueste (max) existierende Instanz pro Serie
+  base AS (
+    SELECT DISTINCT ON (e."key")
+           e."key",
+           e."group",
+           e.title, e.description, e.place,
+           e.recurrence,
+           e."answerDeadline", e."maxAttendees", e."recurrenceEnd",
+           e.items_enabled, e.constellations_enabled, e.required_item,
+           e."startingDateTime" AS base_start,
+           (e."endDateTime" - e."startingDateTime") AS dur,
+           (e."answerDeadline" - e."startingDateTime") AS answer_offset
+    FROM public.events e
+    JOIN series       s USING ("key")
+    ORDER BY e."key", e."startingDateTime" DESC
+  ),
+
+  -- Schrittweite je Recurrence
+  expanded AS (
+    SELECT b.*,
+           CASE b.recurrence
+             WHEN 'Weekly'      THEN INTERVAL '7 days'
+             WHEN 'Fortnightly' THEN INTERVAL '14 days'
+           END AS step
+    FROM base b
+  ),
+
+  -- Erster möglicher NEUER Slot direkt hinter der Basis
+  seeds AS (
+    SELECT x.*,
+           x.base_start + x.step AS ns
+    FROM expanded x
+  ),
+
+  -- Serien sofort verwerfen, wenn der erste mögliche Slot schon hinter dem Horizont liegt
+  seeds_clamped AS (
+    SELECT s.*
+    FROM seeds s
+    CROSS JOIN params p
+    WHERE s.ns <= p.hz
+  ),
+
+  -- Kandidaten-Slots zwischen ns und hz (inkl.), zusätzlich "recurrenceEnd" respektieren
+  candidates AS (
+    SELECT
+      h."key",
+      h."group",
+      h.title,
+      h.description,
+      h.place,
+      h.recurrence,
+      -- answerDeadline immer relativ zum Basis-Offset; NULL bleibt NULL
+      CASE WHEN h.answer_offset IS NULL THEN NULL
+           ELSE (gs + h.answer_offset)
+      END AS answer_deadline_shifted,
+      h."maxAttendees",
+      h."recurrenceEnd",
+      h.items_enabled,
+      h.constellations_enabled,
+      h.required_item,
+      gs AS start_time,
+      (gs + h.dur) AS end_time
+    FROM seeds_clamped h
+    CROSS JOIN params p
+    CROSS JOIN LATERAL generate_series(h.ns, p.hz, h.step) AS gs
+    WHERE (h."recurrenceEnd" IS NULL OR gs <= h."recurrenceEnd")
+  ),
+
+  -- Nur die, die es noch nicht gibt (key + startingDateTime)
+  to_insert AS (
+    SELECT c.*
+    FROM candidates c
+    LEFT JOIN public.events e
+      ON e."key" = c."key"
+     AND e."startingDateTime" = c.start_time
+    WHERE e.id IS NULL
+  ),
+
+  -- Einfügen (Duplikatnetz: ON CONFLICT) und neu erzeugte Events zurückgeben
+  ins AS (
+    INSERT INTO public.events(
+      "key", title, description, recurrence,
+      "startingDateTime","endDateTime","group",
+      place, "answerDeadline","maxAttendees","recurrenceEnd",
+      items_enabled, constellations_enabled, required_item
+    )
+    SELECT
+      t."key",
+      t.title,
+      t.description,
+      t.recurrence,
+      t.start_time,
+      t.end_time,
+      t."group",
+      t.place,
+      t.answer_deadline_shifted,
+      t."maxAttendees",
+      t."recurrenceEnd",
+      t.items_enabled,
+      t.constellations_enabled,
+      t.required_item
+    FROM to_insert t
+    ON CONFLICT ("key","startingDateTime") DO NOTHING
+    RETURNING *
+  )
+  SELECT * FROM ins;
+END;
+$function$;
 
