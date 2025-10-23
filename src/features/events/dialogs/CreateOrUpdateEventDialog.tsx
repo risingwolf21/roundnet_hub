@@ -14,7 +14,6 @@ import Delete from '@mui/icons-material/Delete';
 import EventIcon from '@mui/icons-material/Event';
 import EventRepeatIcon from '@mui/icons-material/EventRepeat';
 import FiberManualRecord from '@mui/icons-material/FiberManualRecord';
-import InfoIcon from '@mui/icons-material/Info';
 import Map from '@mui/icons-material/Map';
 import Remove from '@mui/icons-material/Remove';
 import TimelapseIcon from '@mui/icons-material/Timelapse';
@@ -44,7 +43,6 @@ import RadioGroup from '@mui/material/RadioGroup';
 import Select from '@mui/material/Select';
 import TextField from '@mui/material/TextField';
 import Toolbar from '@mui/material/Toolbar';
-import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import { DatePicker, DateTimePicker } from '@mui/x-date-pickers';
 import { TimePicker } from '@mui/x-date-pickers/TimePicker';
@@ -381,11 +379,7 @@ export const CreateOrUpdateEventDialog = ({
             />
           </ListItem>
 
-          <ListItem sx={{ pt: 0, pb: 0, mb: 2 }} key={'endDateTimeDurr'} secondaryAction={<Tooltip
-            sx={{ ml: 2 }}
-            title="'z.B. '1h30m'. Unterstützte Einheiten: h (Stunden), m (Minuten), s (Sekunden).'" >
-            <InfoIcon sx={{ color: 'rgba(0,0,0,0.54)' }} />
-          </Tooltip>}>
+          <ListItem sx={{ pt: 0, pb: 0, mb: 2 }} key={'endDateTimeDurr'}>
             <ListItemAvatar sx={{ flexDirection: 'row', display: 'flex', alignItems: 'center' }}>
               <TimelapseIcon />
             </ListItemAvatar>
