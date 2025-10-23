@@ -86,12 +86,12 @@ function validateDuration(input: string): string | null {
 
 type Props = {
   durationChanged: (d: Duration) => void;
-  defaultDuration?: Duration;
+  duration: Duration | null;
 }
 
-export default function DurationAdder({ defaultDuration, durationChanged }: Props) {
+export default function DurationAdder({ duration, durationChanged }: Props) {
 
-  const [durationText, setDurationText] = useState<string>(defaultDuration ? formatDuration(defaultDuration) : "");
+  const [durationText, setDurationText] = useState<string>(duration ? formatDuration(duration) : "");
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {

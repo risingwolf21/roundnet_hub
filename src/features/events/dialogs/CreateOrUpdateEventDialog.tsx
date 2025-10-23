@@ -4,7 +4,7 @@ import { useGrants } from '@/features/auth/GrantsContext';
 import { useFetchMode } from '@/hooks/useFetchMode';
 import { Has } from '@/hooks/useGrants';
 import { useBringItems, useInsertEventMutation, useUpdateRecurrenceMutation, useUpdateSingleMutation } from '@/tanstack/events';
-import { formatDateFromDatabase, formatDateToDatabase } from '@/utils';
+import { formatDateFromDatabase, formatDateToDatabase, getDurationFrom } from '@/utils';
 import AccessTime from '@mui/icons-material/AccessTime';
 import Add from '@mui/icons-material/Add';
 import Article from '@mui/icons-material/Article';
@@ -383,7 +383,7 @@ export const CreateOrUpdateEventDialog = ({
             <ListItemAvatar sx={{ flexDirection: 'row', display: 'flex', alignItems: 'center' }}>
               <TimelapseIcon />
             </ListItemAvatar>
-            <DurationAdder defaultDuration={DEFAULT_DURATION} durationChanged={(d) => {
+            <DurationAdder duration={getDurationFrom(editedEvent.startingDateTime, editedEvent.endDateTime)} durationChanged={(d) => {
               setEditedEvent({
                 ...editedEvent,
                 endDateTime: formatDateToDatabase(add(editedEvent.startingDateTime, d))
