@@ -12,6 +12,7 @@ export type CreateEventProps = {
 
 export type PlaceType = {
   name: string;
+  description: string | null;
   lat: number;
   lon: number;
 };

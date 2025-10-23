@@ -57,7 +57,7 @@
     "format": "prettier --write \"src/**/*.{js,jsx,ts,tsx,css,md}\" --config ./.prettierrc.json",
     "sentry:sourcemaps": "sentry-cli sourcemaps inject --org roundnet-karlsruhe --project roundnet-karlsruhe ./build && sentry-cli sourcemaps upload --org roundnet-karlsruhe --project roundnet-karlsruhe ./build",
     "gen-types:custom": "vite-node scripts/generate-types.ts",
-    "supabase:db:push:staging": "dotenv -e environments/.env.staging.local -- npx supabase db push --yes",
+    "supabase:db:push:staging": "dotenv -e environments/.env.staging.local -- npx supabase link --project-ref \"$SUPABASE_PROJECT_ID\" && npx supabase db push --linked",
     "supabase:db:push:production": "dotenv -e environments/.env.production.local -- npx supabase link -- npx supabase db push"
   },
   "eslintConfig": {

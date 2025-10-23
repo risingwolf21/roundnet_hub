@@ -1,4 +1,4 @@
-import { closestTo, differenceInCalendarDays } from 'date-fns';
+import { add, closestTo, differenceInCalendarDays, isAfter } from 'date-fns';
 import { toNumber } from 'lodash';
 import { useEffect, useState } from 'react';
 import { PlaceType } from '../types';
@@ -25,6 +25,9 @@ const EventWeatherForecast = ({ place, date }: Props) => {
 
   useEffect(() => {
     if (!import.meta.env.VITE_OPENWEATHER_API_KEY || !date) return;
+
+    if (isAfter(date, add(date, { days: 5 }))) return;
+
     fetch(
       `https://api.openweathermap.org/data/2.5/forecast?lat=${place.lat}&lon=${place.lon}&appid=${import.meta.env.VITE_OPENWEATHER_API_KEY}&units=metric&lang=de`
     )

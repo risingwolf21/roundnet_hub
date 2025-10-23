@@ -10,20 +10,24 @@ type Props = {
 };
 
 const EventAlerts = ({ event, t }: Props) => (
-  <Stack direction={"column"} spacing={2} sx={{ m: 1 }}>
-    {event.isCancelled && (
-      <Alert severity="error">
-        Dieses Event wurde <strong>abgesagt</strong>
-      </Alert>
-    )}
-    {answerDeadlineExpired(event) && event.answerDeadline && (
-      <Alert severity="info">
-        {t('events.information.answerDeadlineExceeded', {
-          answerDeadline: new Date(event.answerDeadline),
-        })}
-      </Alert>
-    )}
-  </Stack>
+  <>
+    {
+      (answerDeadlineExpired(event) || event.answerDeadline) && <Stack direction={"column"} spacing={2} sx={{ m: 1 }}>
+        {event.isCancelled && (
+          <Alert severity="error">
+            Dieses Event wurde <strong>abgesagt</strong>
+          </Alert>
+        )}
+        {answerDeadlineExpired(event) && event.answerDeadline && (
+          <Alert severity="info">
+            {t('events.information.answerDeadlineExceeded', {
+              answerDeadline: new Date(event.answerDeadline),
+            })}
+          </Alert>
+        )}
+      </Stack>
+    }
+  </>
 );
 
 export default EventAlerts;

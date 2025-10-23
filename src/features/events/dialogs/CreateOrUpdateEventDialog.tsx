@@ -813,12 +813,12 @@ export const CreateOrUpdateEventDialog = ({
         open={dialogOpen === 'places'}
         handleClose={() => setDialogOpen(null)}
         placeSelected={(place) => {
-          console.log('Place selected', place);
           setPlace(place);
           setEditedEvent({
             ...editedEvent,
             place: JSON.stringify({
               name: place.name,
+              description: place.description,
               lat: place.lat,
               lon: place.lon,
             }),

@@ -27,6 +27,11 @@ import Popper from '@mui/material/Popper';
 import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
 
+type MySearchResult = Pick<SearchResult, 'x' | 'y'> & {
+  name: string;
+  description: string | null;
+};
+
 const locationMap = {
   'roundnet-karlsruhe': { latitude: 49.0069, longitude: 8.4037 },
   'munich-roundnet': { latitude: 48.1351, longitude: 11.5820 },
@@ -40,7 +45,7 @@ const SearchPlacesDialog = ({ open, handleClose, placeSelected }: SearchPlacesDi
   const [loading, setLoading] = useState(false);
   const notifications = useNotifications();
   const [userLocation, setUserLocation] = useState<{ latitude: number; longitude: number } | null>(defaultLocation);
-  const [selectedPlace, setSelectedPlace] = useState<SearchResult | null>(null);
+  const [selectedPlace, setSelectedPlace] = useState<MySearchResult | null>(null);
 
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
 
@@ -95,16 +100,19 @@ const SearchPlacesDialog = ({ open, handleClose, placeSelected }: SearchPlacesDi
     fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&addressdetails=1&accept-language=de`)
       .then((res) => res.json())
       .then((res) => {
-        const label = (res.address.road && res.address.city && res.address.house_number && res.address.postcode) ?
-          `${res.name}, ${res.address.road} ${res.address.house_number}, ${res.address.postcode} ${res.address.city}` :
-          res.display_name;
+        const street = (res.address.road && res.address.house_number) ? `${res.address.road} ${res.address.house_number}` : null;
 
+        const address = (res.address.road && res.address.city && res.address.house_number && res.address.postcode)
+          ? `${street}, ${res.address.postcode} ${res.address.city}`
+          : "";
+        const name = (res.name) ? res.name : (street) ? street : "Unbenannter Ort";
+
+        console.log(street, address, name)
         setSelectedPlace({
           x: res.lon,
           y: res.lat,
-          label: label,
-          raw: res,
-          bounds: null,
+          name: name,
+          description: address || null,
         });
       })
       .finally(() => setLoading(false));
@@ -208,7 +216,8 @@ const SearchPlacesDialog = ({ open, handleClose, placeSelected }: SearchPlacesDi
             sx={{ position: 'absolute', right: '16px', bottom: '16px' }}
             onClick={() =>
               placeSelected({
-                name: selectedPlace.label,
+                description: selectedPlace.description,
+                name: selectedPlace.name,
                 lat: selectedPlace.y,
                 lon: selectedPlace.x,
               })
