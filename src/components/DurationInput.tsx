@@ -64,7 +64,7 @@ function validateDuration(input: string): string | null {
   // nur erlaubte Zeichen?
   const allowed = /^[\d\swdhms]+$/i;
   if (!allowed.test(trimmed)) {
-    return "Nur Ziffern, Leerzeichen und Einheiten w/d/h/m/s sind erlaubt.";
+    return "Nur Zahlen, Leerzeichen und Einheiten w/d/h/m/s sind erlaubt.";
   }
 
   // alle Tokens müssen <zahl><einheit> sein, ggf. mit Leerraum dazwischen.
@@ -78,7 +78,7 @@ function validateDuration(input: string): string | null {
   }
 
   if (matchedConcat.length !== cleaned.length) {
-    return 'Ungültiges Format. Jede Zahl braucht eine Einheit (w, d, h, m, s). Beispiel: "1h30m".';
+    return 'Ungültiges Format. Jede Zahl braucht eine Einheit (h, m, s). Beispiel: "1h30m".';
   }
 
   return null;
@@ -113,53 +113,4 @@ export default function DurationAdder({ duration, durationChanged }: Props) {
     error={error !== null}
     helperText={error}
     onChange={(e) => setDurationText(e.target.value)} />
-
-  // return (
-  //   <div className="max-w-xl p-4 rounded-2xl shadow">
-  //     <div className="grid gap-4">
-  //       <label className="grid gap-2">
-  //         <span className="text-sm font-medium">
-  //           {labels?.start ?? "Start-Datum/-Zeit"}
-  //         </span>
-  //         <input
-  //           type="datetime-local"
-  //           className="border rounded-lg p-2"
-  //           value={startLocal}
-  //           onChange={(e) => setStartLocal(e.target.value)}
-  //         />
-  //       </label>
-
-  //       <label className="grid gap-2">
-  //         <span className="text-sm font-medium">
-  //           {labels?.duration ?? 'Dauer (z. B. "2w6d4h5m")'}
-  //         </span>
-  //         <input
-  //           type="text"
-  //           className="border rounded-lg p-2"
-  //           placeholder='z. B. "2w6d4h5m" oder "3d"'
-  //           value={durationText}
-  //           onChange={(e) => setDurationText(e.target.value)}
-  //         />
-  //         <p className="text-xs text-gray-500">
-  //           Unterstützte Einheiten: w (Wochen), d (Tage), h (Stunden), m
-  //           (Minuten), s (Sekunden). Reihenfolge beliebig, Wiederholungen
-  //           erlaubt: z. B. "1h30m", "90m", "1d 2h".
-  //         </p>
-  //       </label>
-
-  //       {error ? (
-  //         <div className="text-red-600 text-sm">{error}</div>
-  //       ) : (
-  //         <div className="bg-gray-50 rounded-lg p-3">
-  //           <div className="text-sm font-medium">
-  //             {labels?.result ?? "Ende (berechnet):"}
-  //           </div>
-  //           <div className="mt-1 font-mono">
-  //             {endDate ? formatLocal(endDate) : "—"}
-  //           </div>
-  //         </div>
-  //       )}
-  //     </div>
-  //   </div>
-  // );
 }
