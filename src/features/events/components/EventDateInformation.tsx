@@ -36,7 +36,7 @@ const EventDateInformation = ({ event, t }: Props) => {
       {meetingDateTime ? (
         <ListItemText
           primary={t('events.information.meetTime', {
-            meetTime: formatRelative(meetingDateTime, Date.now(), { locale: LOCALE_DE, weekStartsOn: 1 }),
+            meetTime: formatRelative(meetingDateTime, new Date(), { locale: LOCALE_DE }),
           })}
           secondary={startTimeTranslation}
         />

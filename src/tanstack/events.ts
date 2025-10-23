@@ -574,13 +574,23 @@ export const useUpdateSingleMutation = (fetchMode: 'past' | 'upcoming') => {
   return useMutation({
     mutationFn: async ({ eventChanges, id }: { id: string; eventChanges: TablesUpdate<'events'>, currentUser: User }) => {
       const result = await supabase.from('events').update(eventChanges).eq('id', id).select().throwOnError();
-      console.log('updateSingleMutation', result);
       return result.data;
     },
     onMutate: async ({ eventChanges, id }) => {
       await queryClient.cancelQueries({ queryKey: ['events', fetchMode] });
+      await queryClient.cancelQueries({ queryKey: ['events', id] });
 
       const previousEvents = queryClient.getQueryData<EventsUserView[]>(['events', fetchMode]);
+      const previousEvent = queryClient.getQueryData<EventsUserView>(['events', id]);
+
+      if (previousEvent) {
+        const updatedEvent = {
+          ...previousEvent,
+          ...eventChanges,
+        };
+
+        queryClient.setQueryData(['events', id], updatedEvent);
+      }
 
       if (previousEvents) {
         const updatedEvents = previousEvents.map((x) => {
@@ -595,7 +605,7 @@ export const useUpdateSingleMutation = (fetchMode: 'past' | 'upcoming') => {
         queryClient.setQueryData(['events', fetchMode], updatedEvents);
       }
 
-      return { previousEvents };
+      return { previousEvents, previousEvent };
     },
     onError: (err, _vars, context) => {
       logger.error('event_update_single_failed', {
@@ -610,6 +620,9 @@ export const useUpdateSingleMutation = (fetchMode: 'past' | 'upcoming') => {
       if (context?.previousEvents) {
         queryClient.setQueryData(['events', fetchMode], context.previousEvents);
       }
+      if (context?.previousEvent) {
+        queryClient.setQueryData(['events', _vars.id], context.previousEvent);
+      }
     },
     onSettled: (_data, _error, variables, _context) => {
       logger.info('event_update_single_successful', {
@@ -621,6 +634,7 @@ export const useUpdateSingleMutation = (fetchMode: 'past' | 'upcoming') => {
         origin: 'ui',
       });
       queryClient.invalidateQueries({ queryKey: ['events', fetchMode] });
+      queryClient.invalidateQueries({ queryKey: ['events', variables.id] });
     },
   });
 };

@@ -51,8 +51,8 @@ import { TimePicker } from '@mui/x-date-pickers/TimePicker';
 import { logger } from '@sentry/react';
 import { DialogProps, useDialogs } from '@toolpad/core';
 import { useNotifications } from '@toolpad/core/useNotifications';
-import { add, format, isAfter, set } from 'date-fns';
-import _ from 'lodash';
+import { add, Duration, format, isAfter, set } from 'date-fns';
+import { differenceWith, fromPairs, isEqual, toPairs } from 'lodash';
 import { FormEvent, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { MapContainer, Marker, TileLayer, useMap } from 'react-leaflet';
@@ -61,12 +61,15 @@ import { Enums, Tables, TablesInsert, TablesUpdate } from '../../../types/supaba
 import { CreateEventOption, PlaceType } from '../types';
 import SearchPlacesDialog from './SearchPlacesDialog';
 import { SelectGroupDialog } from './SelectGroupDialog';
+
+const DEFAULT_DURATION: Duration = { hours: 2 };
+
 const emptyEvent = {
   title: '',
   description: '',
   startingDateTime: formatDateToDatabase(set(new Date(), { seconds: 0, milliseconds: 0 })),
   meetingDateTime: null,
-  endDateTime: formatDateToDatabase(set(new Date(), { seconds: 0, milliseconds: 0 })),
+  endDateTime: formatDateToDatabase(add(set(new Date(), { seconds: 0, milliseconds: 0 }), DEFAULT_DURATION)),
   recurrence: 'None',
   maxAttendees: null,
   max_trial_attendees: null,
@@ -119,20 +122,14 @@ export const CreateOrUpdateEventDialog = ({
 
       setEditedEvent({ ...editedEvent, items_enabled: bring_items.length > 0 });
 
-      let edited_event = _.omit(editedEvent, [
-        'fullGroup',
-        'attendance',
-        'comments',
-        'userAttendance',
-        'attendanceUpdating',
-      ]) as TablesInsert<'events'>;
+      let edited_event = editedEvent as TablesInsert<'events'>;
 
-      const changes = _.differenceWith(
-        _.toPairs(edited_event),
-        _.toPairs(_.pick(event ?? {}, Object.keys(event ?? {}))),
-        _.isEqual
-      );
-      const eventChanges = _.fromPairs(changes) as TablesUpdate<'events'>;
+      const edited_event_pairs = toPairs(edited_event);
+      const event_pairs = event ? toPairs(event) : [];
+
+      const changes = differenceWith(edited_event_pairs, event_pairs, isEqual);
+
+      const eventChanges = fromPairs(changes) as TablesUpdate<'events'>;
 
       console.log('Event changes', edited_event.id, eventChanges);
 
@@ -392,7 +389,7 @@ export const CreateOrUpdateEventDialog = ({
             <ListItemAvatar sx={{ flexDirection: 'row', display: 'flex', alignItems: 'center' }}>
               <TimelapseIcon />
             </ListItemAvatar>
-            <DurationAdder defaultDuration='2h' durationChanged={(d) => {
+            <DurationAdder defaultDuration={DEFAULT_DURATION} durationChanged={(d) => {
               setEditedEvent({
                 ...editedEvent,
                 endDateTime: formatDateToDatabase(add(editedEvent.startingDateTime, d))

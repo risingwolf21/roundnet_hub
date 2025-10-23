@@ -47,6 +47,16 @@ export function parseDuration(input: string): Duration {
   return result;
 }
 
+const formatDuration = (d: Duration): string => {
+  let parts: string[] = [];
+  if (d.weeks && d.weeks > 0) parts.push(`${d.weeks}w`);
+  if (d.days && d.days > 0) parts.push(`${d.days}d`);
+  if (d.hours && d.hours > 0) parts.push(`${d.hours}h`);
+  if (d.minutes && d.minutes > 0) parts.push(`${d.minutes}m`);
+  if (d.seconds && d.seconds > 0) parts.push(`${d.seconds}s`);
+  return parts.join(" ");
+}
+
 function validateDuration(input: string): string | null {
   const trimmed = input.trim();
   if (trimmed === "") return null; // leere Eingabe = 0 Dauer
@@ -76,12 +86,12 @@ function validateDuration(input: string): string | null {
 
 type Props = {
   durationChanged: (d: Duration) => void;
-  defaultDuration?: string;
+  defaultDuration?: Duration;
 }
 
 export default function DurationAdder({ defaultDuration, durationChanged }: Props) {
 
-  const [durationText, setDurationText] = useState<string>(defaultDuration ?? "");
+  const [durationText, setDurationText] = useState<string>(defaultDuration ? formatDuration(defaultDuration) : "");
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
