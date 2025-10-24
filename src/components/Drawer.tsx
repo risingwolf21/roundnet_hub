@@ -26,6 +26,7 @@ import Scoreboard from '@mui/icons-material/Scoreboard';
 import SportsHandball from '@mui/icons-material/SportsHandball';
 import StorageOutlined from '@mui/icons-material/StorageOutlined';
 import Update from '@mui/icons-material/Update';
+import ViewStreamIcon from '@mui/icons-material/ViewStream';
 import { alpha, BoxProps, DrawerProps, ListItemProps, Theme } from '@mui/material';
 import Badge from '@mui/material/Badge';
 import Box from '@mui/material/Box';
@@ -342,7 +343,7 @@ const DrawerContent = ({
           />
         </DrawerItem>
       </List>
-      <Has perm={['drinks.confirm.payments', 'drinks.manage']}>
+      <Has perm={['drinks.confirm.payments', 'drinks.manage', 'users.manage', 'drinks.history.admin', 'grants.manage', 'supabase.admin']} any>
         <>
           <Divider />
           <List
@@ -446,6 +447,23 @@ const DrawerContent = ({
             </Has>
             <Has perm={'supabase.admin'}>
               <DrawerItem
+                key="audit_logs"
+                selected={tab === 'admin/audit/logs'}
+                onClick={() => handleChange('admin/audit/logs')}
+              >
+                <ListItemAvatar>
+                  <ListItemIcon>
+                    <ViewStreamIcon />
+                  </ListItemIcon>
+                </ListItemAvatar>
+                <ListItemText
+                  primaryTypographyProps={{ fontWeight: 'bold', fontSize: '0.9rem' }}
+                  primary={t('browse.auditLogs')}
+                />
+              </DrawerItem>
+            </Has>
+            <Has perm={'supabase.admin'}>
+              <DrawerItem
                 key="supabaseClient"
                 selected={tab === 'admin/supabase'}
                 onClick={() => handleChange('admin/supabase')}
@@ -517,7 +535,7 @@ export const Drawer = ({ open, onClose, onOpen }: Props) => {
   const { user } = useGrants();
   const [tab, setTab] = useState<string>(HOMEPAGE);
 
-  const { data: requested_group_joins = [] } = useRequestedUsersPerGroup();
+  const { data: requested_group_joins = [] } = useRequestedUsersPerGroup(user);
   const { data: notifications = [] } = useAllNotifications(user);
 
   const iOS = typeof navigator !== 'undefined' && /iPad|iPhone|iPod/.test(navigator.userAgent);

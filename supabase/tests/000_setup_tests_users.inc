@@ -19,7 +19,6 @@ select tests.create_supabase_user('user_2a', 'user_2a@test.com');
 select tests.create_supabase_user('user_1b', 'user_1b@test.com');
 select tests.create_supabase_user('user_2b', 'user_2b@test.com');
 select tests.create_supabase_user('user_1c', 'user_1c@test.com');
-select tests.create_supabase_user('user_no_group', 'user_no_group@test.com');
 select tests.create_supabase_user('user_group_empty', 'user_group_empty@test.com');
 select tests.create_supabase_user('admin', 'admin@test.com');
 

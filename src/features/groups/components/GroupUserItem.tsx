@@ -3,11 +3,9 @@ import { DialogHook } from '@toolpad/core';
 import React from 'react';
 
 import AccountBox from '@mui/icons-material/AccountBox';
-import AdminPanelSettings from '@mui/icons-material/AdminPanelSettings';
 import Check from '@mui/icons-material/Check';
 import Avatar from '@mui/material/Avatar';
 import Chip from '@mui/material/Chip';
-import IconButton from '@mui/material/IconButton';
 import ListItem from '@mui/material/ListItem';
 import ListItemAvatar from '@mui/material/ListItemAvatar';
 import ListItemText from '@mui/material/ListItemText';
@@ -18,13 +16,13 @@ type Props = {
   user: User;
   groupUser: User;
   onAvatarClick?: (event: React.MouseEvent) => void;
-  makeAdmin?: (event: React.MouseEvent) => void;
+  secondaryAction?: React.ReactNode;
   selected: boolean;
   isAdmin: boolean;
   dialogs: DialogHook;
 };
 
-export const GroupUserItem = ({ user, groupUser, onAvatarClick, selected, makeAdmin, isAdmin, dialogs }: Props) => {
+export const GroupUserItem = ({ user, groupUser, onAvatarClick, selected, secondaryAction, isAdmin, dialogs }: Props) => {
   return (
     <ListItem
       key={groupUser.userId}
@@ -34,11 +32,7 @@ export const GroupUserItem = ({ user, groupUser, onAvatarClick, selected, makeAd
         ...(selected && { background: 'rgba(2, 136, 209, 0.4)' }),
       }}
       secondaryAction={
-        makeAdmin && (
-          <IconButton onClick={makeAdmin}>
-            <AdminPanelSettings />
-          </IconButton>
-        )
+        secondaryAction && secondaryAction
       }
     >
       <ListItemAvatar onClick={onAvatarClick}>

@@ -1,7 +1,7 @@
 import { supabase } from '@/lib/supabase';
 import { formatDateToDatabase } from '@/utils';
 import { PostgrestSingleResponse } from '@supabase/supabase-js';
-import { add, Duration, format, startOfDay } from 'date-fns';
+import { add, Duration, startOfDay } from 'date-fns';
 import { EventTable } from 'types/supabase';
 import { Tables, TablesInsert, TablesUpdate } from '../types/supabase-generated.types';
 import { EventsUserView, EventWithGroup, FullComment } from '../types/supabaseTypes';
@@ -131,7 +131,7 @@ export const SupabaseEventRepository = {
   },
 
   async deleteEventAndUpcomingEvents(eventId: string, key: string, startDateTime: string | null): Promise<void> {
-    await supabase.from('events').delete().eq('key', key).gt('startingDateTime', startDateTime);
+    await supabase.from('events').delete().eq('key', key).gte('startingDateTime', startDateTime);
 
     await supabase
       .from('events')
@@ -197,6 +197,7 @@ export const SupabaseEventRepository = {
         return {
           ...r,
           group: groups?.find((x) => x.id === r.group) ?? null,
+          max_attendees_trials: r.max_trial_attendees,
         } as EventsUserView;
       });
     }

@@ -3,12 +3,13 @@ import { useGrants } from '@/features/auth/GrantsContext';
 import { useTheme } from '@mui/material/styles';
 import { useDialogs } from '@toolpad/core';
 import { compareDesc, isBefore } from 'date-fns';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { SwipeableDialog } from '../../../components/SwipeableDialog';
 import { FullAttendance } from '../../../types/supabaseTypes';
 import { EventAttendanceDialogProps } from '../types';
 
+import { Has } from '@/hooks/useGrants';
 import AccountBox from '@mui/icons-material/AccountBox';
 import Key from '@mui/icons-material/Key';
 import RecordVoiceOver from '@mui/icons-material/RecordVoiceOver';
@@ -16,10 +17,12 @@ import AppBar from '@mui/material/AppBar';
 import Avatar from '@mui/material/Avatar';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
+import Chip from '@mui/material/Chip';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemAvatar from '@mui/material/ListItemAvatar';
 import ListItemText from '@mui/material/ListItemText';
+import ListSubheader from '@mui/material/ListSubheader';
 import Tab from '@mui/material/Tab';
 import Tabs from '@mui/material/Tabs';
 import Typography from '@mui/material/Typography';
@@ -106,20 +109,30 @@ const EventAttendanceDialog = ({
   index,
   setOpen,
   attendance,
-  hasWaitingList,
   usersWithRequiredItem,
   acceptAttendance,
 }: EventAttendanceDialogProps) => {
   const [value, setValue] = useState(index ?? 0);
   const theme = useTheme();
   const dialogs = useDialogs();
-  const { user, hasPerm } = useGrants();
+  const { user, hasPerm, hasFeat } = useGrants();
+
+  const attending = useMemo(() => attendance.filter(x => x.state === "Attending" || x.state === "AttendingAsTrainer" || x.state === "RequestedAttendance"), [attendance]);
+  const declined = useMemo(() => attendance.filter(x => x.state === "Declined"), [attendance]);
+  const attendingAsTrial = useMemo(() => attendance.filter(x => x.state === "AttendingAsTrial"), [attendance]);
+  const waitingList = useMemo(() => attendance.filter(x => x.state === "Waiting"), [attendance]);
+  const waitingAsTrial = useMemo(() => attendance.filter(x => x.state === "WaitingAsTrial"), [attendance]);
+
+  const showWaitingListTab = useMemo(() => waitingList.length > 0 || waitingAsTrial.length > 0, [waitingAsTrial, waitingList]);
+  const showAttendingAsTrialTab = useMemo(() => attendingAsTrial.length > 0, [attendingAsTrial]);
+
+  const canSeeTrial = hasFeat('events.trials') && showAttendingAsTrialTab;
 
   useEffect(() => {
     setValue(index);
   }, [index]);
 
-  const handleChange = (event: React.SyntheticEvent<Element, Event>, value: any) => {
+  const handleChange = (_event: React.SyntheticEvent<Element, Event>, value: any) => {
     setValue(value);
   };
 
@@ -127,10 +140,11 @@ const EventAttendanceDialog = ({
     <SwipeableDialog title="Teilnehmer" open={open} onClose={() => setOpen(false)} minHeight={60} setOpen={setOpen}>
       <Box sx={{ paddingLeft: 0 }}>
         <AppBar position="sticky" elevation={0} sx={{ '&.MuiAppBar-root': { backgroundColor: '#fff', color: '#000' } }}>
-          <Tabs value={value} onChange={handleChange} indicatorColor="primary" textColor="inherit" variant="fullWidth">
-            <Tab label="Zusagen" />
-            <Tab label="Absagen" />
-            {hasWaitingList && <Tab label="Warteliste" />}
+          <Tabs value={value} onChange={handleChange} indicatorColor="primary" textColor="inherit" variant="scrollable" scrollButtons allowScrollButtonsMobile>
+            <Tab sx={{ minHeight: "unset" }} label="Zusagen" icon={<Chip label={attending.length} size='small' />} iconPosition='end' />
+            <Tab sx={{ minHeight: "unset" }} label="Absagen" icon={<Chip label={declined.length} size='small' />} iconPosition='end' />
+            {canSeeTrial && <Tab sx={{ minHeight: "unset" }} label="Probetraining" icon={<Chip label={attendingAsTrial.length} size='small' />} iconPosition='end' />}
+            {showWaitingListTab && <Tab sx={{ minHeight: "unset" }} label="Warteliste" icon={<Chip label={waitingList.length + waitingAsTrial.length} size='small' />} iconPosition='end' />}
           </Tabs>
         </AppBar>
         <TabPanel value={value} index={0} dir={theme.direction}>
@@ -185,29 +199,76 @@ const EventAttendanceDialog = ({
               ))}
           </List>
         </TabPanel>
-        {hasWaitingList && (
-          <TabPanel value={value} index={2} dir={theme.direction}>
+        <Has feat={"events.trials"}>
+          {
+            attendingAsTrial.length > 0 && <TabPanel value={value} index={2} dir={theme.direction}>
+              <List sx={{ pb: 8 }}>
+                {attendingAsTrial
+                  .sort((a, b) => compareDesc(a.lastUpdate, b.lastUpdate))
+                  .map((x: FullAttendance, index: number) => (
+                    <AttendanceItem
+                      attendance={x}
+                      key={x.user.userId + index}
+                      onClick={() => dialogs.open(ProfileDialog, { user, userId: x.user.userId })}
+                    />
+                  ))}
+              </List>
+            </TabPanel>
+          }
+        </Has>
+        {showWaitingListTab && (
+          <TabPanel value={value} index={2 + (showAttendingAsTrialTab ? 1 : 0)} dir={theme.direction}>
             <List sx={{ pb: 8 }}>
-              {attendance
-                .filter((x: FullAttendance) => x.state === 'Waiting')
-                .sort((a, b) => (isBefore(a.lastUpdate, b.lastUpdate) ? 1 : 0))
-                .map((x: FullAttendance, index: number) => (
-                  <ListItem
-                    key={x.user.userId + index}
-                    secondaryAction={<Typography fontWeight={'bold'}>{`${index + 1}.)`}</Typography>}
-                  >
-                    <ListItemAvatar>
-                      <Avatar sx={{ borderRadius: 2 }}>
-                        {x.user.avatarUrl ? (
-                          <img src={x.user.avatarUrl} alt="logo" width={'100%'} height={'100%'} />
-                        ) : (
-                          <AccountBox />
-                        )}
-                      </Avatar>
-                    </ListItemAvatar>
-                    <ListItemText primary={x.user?.displayName} />
-                  </ListItem>
-                ))}
+              {
+                waitingList.length > 0 && <List subheader={<ListSubheader>Warteliste</ListSubheader>}>
+                  {
+                    waitingList
+                      .sort((a, b) => (isBefore(a.lastUpdate, b.lastUpdate) ? 1 : 0))
+                      .map((x: FullAttendance, index: number) => (
+                        <ListItem
+                          key={x.user.userId + index}
+                          secondaryAction={<Typography fontWeight={'bold'}>{`${index + 1}.)`}</Typography>}
+                        >
+                          <ListItemAvatar>
+                            <Avatar sx={{ borderRadius: 2 }}>
+                              {x.user.avatarUrl ? (
+                                <img src={x.user.avatarUrl} alt="logo" width={'100%'} height={'100%'} />
+                              ) : (
+                                <AccountBox />
+                              )}
+                            </Avatar>
+                          </ListItemAvatar>
+                          <ListItemText primary={x.user?.displayName} />
+                        </ListItem>
+                      ))
+                  }
+                </List>
+              }
+              {
+                waitingAsTrial.length > 0 && <List subheader={<ListSubheader>Warteliste Probetraining</ListSubheader>}>
+                  {
+                    waitingAsTrial
+                      .sort((a, b) => (isBefore(a.lastUpdate, b.lastUpdate) ? 1 : 0))
+                      .map((x: FullAttendance, index: number) => (
+                        <ListItem
+                          key={x.user.userId + index}
+                          secondaryAction={<Typography fontWeight={'bold'}>{`${index + 1}.)`}</Typography>}
+                        >
+                          <ListItemAvatar>
+                            <Avatar sx={{ borderRadius: 2 }}>
+                              {x.user.avatarUrl ? (
+                                <img src={x.user.avatarUrl} alt="logo" width={'100%'} height={'100%'} />
+                              ) : (
+                                <AccountBox />
+                              )}
+                            </Avatar>
+                          </ListItemAvatar>
+                          <ListItemText primary={x.user?.displayName} />
+                        </ListItem>
+                      ))
+                  }
+                </List>
+              }
             </List>
           </TabPanel>
         )}

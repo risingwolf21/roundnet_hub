@@ -16,11 +16,11 @@ const resources = {
 };
 
 const formatRelativeLocaleDE = {
-  lastWeek: "'Letzten' dddd 'um' HH:mm",
+  lastWeek: "'Letzten' cccc 'um' HH:mm",
   yesterday: "'gestern um' HH:mm",
   today: "'Heute um' HH:mm",
   tomorrow: "'morgen um' HH:mm 'Uhr'",
-  nextWeek: "dddd 'um' HH:mm",
+  nextWeek: "cccc, dd.MM 'um' HH:mm",
   other: "dd MMM yyyy 'um' HH:mm",
 };
 
@@ -35,16 +35,12 @@ const formatRelativeLocaleEN = {
 
 export const LOCALE_DE: Locale = {
   ...de,
-  formatRelative: (token, _date, _baseDate, _options) => {
-    return formatRelativeLocaleDE[token];
-  },
+  formatRelative: token => formatRelativeLocaleDE[token]
 };
 
 export const LOCALE_EN: Locale = {
   ...enGB,
-  formatRelative: (token, _date, _baseDate, _options) => {
-    return formatRelativeLocaleEN[token];
-  },
+  formatRelative: token => formatRelativeLocaleEN[token]
 };
 
 const locales = { enGB: LOCALE_EN, de: LOCALE_DE };

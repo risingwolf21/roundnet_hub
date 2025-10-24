@@ -12,6 +12,7 @@ export type CreateEventProps = {
 
 export type PlaceType = {
   name: string;
+  description: string | null;
   lat: number;
   lon: number;
 };
@@ -27,7 +28,6 @@ export type EventAttendanceDialogProps = {
   index: number;
   setOpen: (value: boolean) => void;
   attendance: FullAttendance[];
-  hasWaitingList: boolean;
   usersWithRequiredItem: { user: string; item: Item }[];
   acceptAttendance: (value: FullAttendance) => void;
 };

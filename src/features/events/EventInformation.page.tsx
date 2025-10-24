@@ -59,8 +59,25 @@ const EventInformationProvider = () => {
   const { data: keyHolders = [] } = useAllItems();
 
   useEffect(() => {
-    if (event) {
-      setSelectedEventPlace(event.place ? (JSON.parse(event.place?.toString() ?? '') as PlaceType) : null);
+    if (event && event.place) {
+      try {
+        const parsed = JSON.parse(event.place.toString());
+        const place: PlaceType = {
+          name: parsed.name || parsed.label,
+          description: parsed.description || null,
+          lat: parsed.lat,
+          lon: parsed.lon,
+        };
+        setSelectedEventPlace(place);
+      } catch (error) {
+        captureException(error, (scope) => {
+          scope.clear();
+          scope.setExtra('place', JSON.stringify(event.place));
+          scope.setExtra('event', JSON.stringify(event));
+          return scope;
+        });
+        setSelectedEventPlace(null);
+      }
     }
   }, [event]);
 
@@ -112,7 +129,7 @@ const EventInformationProvider = () => {
                         event: {
                           ...event,
                           items_enabled: false,
-                          group: event.group?.id ?? null
+                          group: event.group?.id ?? null,
                         } as EventTable,
                         eventGroup: event.group,
                         option: result,
