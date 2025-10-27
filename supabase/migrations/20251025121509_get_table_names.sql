@@ -199,12 +199,7 @@ AS $function$BEGIN
     FROM information_schema.tables AS t
     WHERE (t.table_schema = 'public' OR t.table_schema = 'permissions' OR t.table_schema = 'games' OR t.table_schema = 'audit')
       AND t.table_type = 'BASE TABLE';
-END;$function$
-;
-
-CREATE TRIGGER trg_audit_user_direct_grants AFTER INSERT OR DELETE OR UPDATE ON public.user_direct_grants FOR EACH ROW EXECUTE FUNCTION audit.log_change();
-
-CREATE TRIGGER trg_audit_user_grants AFTER INSERT OR DELETE OR UPDATE ON public.user_grants FOR EACH ROW EXECUTE FUNCTION audit.log_change();
+END;$function$;
 
 create or replace function util_get_primary_keys(schema_name text, table_name text)
 returns table(column_name text)

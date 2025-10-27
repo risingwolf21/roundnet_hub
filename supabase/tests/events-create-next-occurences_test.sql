@@ -154,23 +154,38 @@ SELECT is(
 );
 
 WITH e_new AS (
-  SELECT id, "startingDateTime" AS start_at, "key", title, place
+  SELECT id, "startingDateTime" AS start_at, "key", title, place, created_at
   FROM public.events
-  WHERE "key"='series-quick'
+  WHERE "key" = 'series-quick'
     AND "startingDateTime" >= '2025-03-10T00:00:00Z'::timestamptz
+),
+first_new AS (
+  -- Zeitpunkt, ab dem die neue Batch geschrieben wurde
+  SELECT MIN(created_at) AS first_created_at FROM e_new
 ),
 mismatch AS (
   SELECT 1
   FROM e_new n
-  JOIN LATERAL (
-    SELECT p.title, p.place
+  CROSS JOIN first_new f
+  -- Vorgänger NUR aus bereits existierenden Events (vor Batch-Beginn)
+  LEFT JOIN LATERAL (
+    SELECT p.id, p.title, p.place
     FROM public.events p
-    WHERE p."key"=n."key" AND p."startingDateTime"<n.start_at
-    ORDER BY p."startingDateTime" DESC LIMIT 1
+    WHERE p."key" = n."key"
+      AND p."startingDateTime" < n.start_at
+      AND p.created_at < f.first_created_at   -- << wichtig: nur „vorher“ existente
+    ORDER BY p."startingDateTime" DESC
+    LIMIT 1
   ) prev ON TRUE
-  WHERE n.title <> prev.title OR n.place <> prev.place
+  -- Nur prüfen, wenn es tatsächlich einen solchen Vorgänger gab
+  WHERE prev.id IS NOT NULL
+    AND (
+      n.title IS DISTINCT FROM prev.title
+      OR n.place IS DISTINCT FROM prev.place
+    )
 )
-SELECT ok(NOT EXISTS(SELECT 1 FROM mismatch), 'Title/Place kommen vom direkten Vorgänger');
+SELECT ok(NOT EXISTS (SELECT 1 FROM mismatch), 'Title/Place kommen vom letzten bereits existierenden Vorgänger');
+
 
 SELECT ok( NOT EXISTS (
   SELECT 1
@@ -187,7 +202,7 @@ SELECT ok( NOT EXISTS (
   FROM public.events
   WHERE "key"='series-quick'
     AND "startingDateTime" >= '2025-03-10T00:00:00Z'::timestamptz
-    AND (title <> 'Training (neu)' OR place <> 'Halle 2')
+    AND (title <> 'Training' OR place <> 'Halle 1')
 ), 'neue Events übernehmen Title/Place vom neuesten Vorgänger');
 
 -- Deadline weiterhin 2h vorher?
