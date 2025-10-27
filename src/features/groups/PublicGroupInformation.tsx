@@ -159,14 +159,16 @@ const PublicGroupInformation = () => {
                   onClick={() => setFilter({ ...filter ?? DEFAULT_FILTER, joinRequested: !filter?.joinRequested })} />
               </Badge>
 
-              <Badge color='primary' badgeContent={group_trials.length}>
-                <Chip
-                  disabled={isLoadingTrials}
-                  icon={filter?.trials ? <Check /> : undefined}
-                  color={filter?.trials ? 'secondary' : 'default'}
-                  label='Trials'
-                  onClick={() => setFilter({ ...filter ?? DEFAULT_FILTER, trials: !filter?.trials })} />
-              </Badge>
+              <Has feat={"events.trials"}>
+                <Badge color='primary' badgeContent={group_trials.length}>
+                  <Chip
+                    disabled={isLoadingTrials}
+                    icon={filter?.trials ? <Check /> : undefined}
+                    color={filter?.trials ? 'secondary' : 'default'}
+                    label='Trials'
+                    onClick={() => setFilter({ ...filter ?? DEFAULT_FILTER, trials: !filter?.trials })} />
+                </Badge>
+              </Has>
 
               <Badge color='primary' badgeContent={group_admins.length}>
                 <Chip
