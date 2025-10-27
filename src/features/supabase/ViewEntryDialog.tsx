@@ -115,10 +115,12 @@ const DialogContent = ({ payload, open, onClose }: DialogProps<ViewEntryDialogPa
   );
 };
 
-export const ViewEntryDialog = (props: DialogProps<ViewEntryDialogPayload, 'delete' | null>) => {
+const ViewEntryDialog = (props: DialogProps<ViewEntryDialogPayload, 'delete' | null>) => {
   return (
     <DialogsProvider>
       <DialogContent {...props} />
     </DialogsProvider>
   );
 };
+
+export default ViewEntryDialog;

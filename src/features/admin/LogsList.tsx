@@ -1,16 +1,22 @@
 import Layout from "@/components/layout/Layout";
 import { useInfiniteLogsList } from "@/tanstack/admin";
+import CloseIcon from '@mui/icons-material/Close';
+import AppBar from "@mui/material/AppBar";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
+import Dialog from "@mui/material/Dialog";
+import IconButton from "@mui/material/IconButton";
 import LinearProgress from "@mui/material/LinearProgress";
 import List from "@mui/material/List";
 import ListItem from "@mui/material/ListItem";
+import Toolbar from "@mui/material/Toolbar";
 import Typography from "@mui/material/Typography";
+import { useDialogs } from "@toolpad/core";
 import { TFunction } from "i18next";
 import { withTranslation } from "react-i18next";
 
 const LogsList = ({ t }: { t: TFunction }) => {
-
+  const dialogs = useDialogs();
   const {
     data: logs,
     isLoading,
@@ -38,7 +44,32 @@ const LogsList = ({ t }: { t: TFunction }) => {
     <List>
       {
         logs?.pages.flatMap(page => page.data).map(log => (
-          <ListItem divider key={log.id} alignItems="flex-start">
+          <ListItem divider key={log.id} alignItems="flex-start" onClick={() => {
+            dialogs.open(({ payload: { log }, open, onClose }) => <Dialog open={open} onClose={onClose} fullScreen>
+              <AppBar position="sticky" sx={{ pt: 'env(safe-area-inset-top)' }}>
+                <Toolbar>
+                  <IconButton edge="start" color="inherit" onClick={onClose} aria-label="close">
+                    <CloseIcon />
+                  </IconButton>
+                  <Typography sx={{ ml: 2, flex: 1 }} variant="h6" component="div">
+                    Log Eintrag
+                  </Typography>
+                </Toolbar>
+              </AppBar>
+              <List>
+                {Object.entries(log).map(([key, value]) => (
+                  <ListItem key={key} divider>
+                    <Box sx={{ display: 'flex', flexDirection: 'column', width: '100%' }}>
+                      <Typography sx={{ fontWeight: 'bold' }}>{key}</Typography>
+                      <Typography sx={{ fontFamily: 'monospace', fontSize: "small", whiteSpace: 'pre-wrap' }}>
+                        {JSON.stringify(value, null, 2)}
+                      </Typography>
+                    </Box>
+                  </ListItem>
+                ))}
+              </List>
+            </Dialog>, { log })
+          }}>
             <Box
               sx={{
                 width: '100%',
@@ -65,7 +96,7 @@ const LogsList = ({ t }: { t: TFunction }) => {
                     color: 'rgba(0,0,0,0.8)',
                   }}
                 >
-                  {log.actor_id}
+                  {log.schema_name}.{log.table_name} - {log.op}
                 </Typography>
                 <Typography
                   style={{
