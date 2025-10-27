@@ -5,7 +5,7 @@ import { formatDateFromDatabase, formatSafeDateToDatabase } from '@/utils';
 import { DateTimePicker, LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { DialogProps, DialogsProvider } from '@toolpad/core';
-import _ from 'lodash';
+import { pick } from 'lodash';
 import { useEffect, useState } from 'react';
 
 import Close from '@mui/icons-material/Close';
@@ -23,27 +23,14 @@ import Select from '@mui/material/Select';
 import TextField from '@mui/material/TextField';
 import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
+import { ColumnInfo } from './SupabaseClient';
 
 type EditEntryDialogPayload = {
   entry: any;
-  columns: {
-    column_name: string;
-    data_type: string;
-    is_nullable: boolean;
-    foreign_key_schema_name: string;
-    foreign_key_table_name: string;
-    foreign_key_column_name: string;
-  }[];
+  columns: ColumnInfo[];
 };
 
-const displayKeysForForeign = (c: {
-  column_name: string;
-  data_type: string;
-  is_nullable: boolean;
-  foreign_key_schema_name: string;
-  foreign_key_table_name: string;
-  foreign_key_column_name: string;
-}) => {
+const displayKeysForForeign = (c: ColumnInfo) => {
   switch (true) {
     case c.foreign_key_schema_name === 'public' && c.foreign_key_table_name === 'user':
       return {
@@ -96,14 +83,7 @@ const ForeignSelection = ({
   onChange,
 }: {
   value: any;
-  column: {
-    column_name: string;
-    data_type: string;
-    is_nullable: boolean;
-    foreign_key_schema_name: string;
-    foreign_key_table_name: string;
-    foreign_key_column_name: string;
-  };
+  column: ColumnInfo;
   onChange: (value: any) => void;
 }) => {
   const keys = displayKeysForForeign(column);
@@ -125,7 +105,7 @@ const ForeignSelection = ({
         }
         setLoading(false);
       });
-  }, [column, keys]);
+  }, [column]);
 
   if (loading) {
     return (
@@ -148,11 +128,14 @@ const ForeignSelection = ({
       <ListItemText
         primary={
           <Select fullWidth onChange={(e) => onChange(e.target.value)} value={value ?? 'nothing'}>
-            {options.map((y) => (
-              <MenuItem value={y[column.foreign_key_column_name]}>
-                {JSON.stringify(Object.values(_.pick(y, keys.keys)))}
-              </MenuItem>
-            ))}
+            {
+              options.map((y) => {
+                if (column.foreign_key_column_name === null) return null;
+                return <MenuItem value={y[column.foreign_key_column_name]}>
+                  {JSON.stringify(Object.values(pick(y, keys.keys)))}
+                </MenuItem>
+              })
+            }
             {!value && <MenuItem value={'nothing'}>Nichts gewählt</MenuItem>}
           </Select>
         }
@@ -439,10 +422,11 @@ const DialogContent = ({ payload, open, onClose }: DialogProps<EditEntryDialogPa
   );
 };
 
-export const EditEntryDialog = (props: DialogProps<EditEntryDialogPayload, any | null>) => {
+const EditEntryDialog = (props: DialogProps<EditEntryDialogPayload, any | null>) => {
   return (
     <DialogsProvider>
       <DialogContent {...props} />
     </DialogsProvider>
   );
 };
+export default EditEntryDialog;
