@@ -188,7 +188,8 @@ export function useSupabaseTableQuery<Row = Record<string, unknown>>({
         // @ts-ignore
         .schema(schema).from(table)
         .select('*', { count: 'exact' })
-        .range(from, to);
+        .range(from, to)
+        .setHeader('x-app-client', '1');
 
       (sortModel ?? []).forEach(({ field, sort }) => {
         if (field && sort) qb = qb.order(field, { ascending: sort === 'asc', nullsFirst: false });
@@ -256,7 +257,8 @@ function useSupabaseTableMutations<Row = Record<string, unknown>>({
         .schema(schema).from(table)
         .insert(payload as any)
         .select('*')
-        .single();
+        .single()
+        .setHeader('x-app-client', '1');
       if (error) throw error;
       return data as Row;
     },
@@ -306,7 +308,8 @@ function useSupabaseTableMutations<Row = Record<string, unknown>>({
         .update(payload as never)
         .eq(primaryKey, id)
         .select('*')
-        .single();
+        .single()
+        .setHeader('x-app-client', '1');
       console.log('updateRow', { payload, data, error, primaryKey, schema, table });
       if (error) throw error;
       return data as Row;
@@ -339,7 +342,8 @@ function useSupabaseTableMutations<Row = Record<string, unknown>>({
       const { error } = await supabase
         // @ts-ignore
         .schema(schema).from(table)
-        .delete().eq(primaryKey, id);
+        .delete().eq(primaryKey, id)
+        .setHeader('x-app-client', '1');
       if (error) throw error;
       return id;
     },
@@ -365,7 +369,8 @@ function useSupabaseTableMutations<Row = Record<string, unknown>>({
       let qb = supabase
         // @ts-ignore
         .schema(schema).from(table)
-        .update(changes as never);
+        .update(changes as never)
+        .setHeader('x-app-client', '1');
       Object.entries(where).forEach(([k, v]) => (qb = qb.eq(k, v as any)));
       console.log(where, changes);
       const { data, error } = await qb.select('*');
@@ -393,7 +398,8 @@ function useSupabaseTableMutations<Row = Record<string, unknown>>({
       let qb = supabase
         // @ts-ignore
         .schema(schema).from(table)
-        .delete();
+        .delete()
+        .setHeader('x-app-client', '1');
       Object.entries(where).forEach(([k, v]) => (qb = qb.eq(k, v as any)));
       const { error } = await qb;
       if (error) throw error;
