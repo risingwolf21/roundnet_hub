@@ -33,8 +33,8 @@ BEGIN
            (e."answerDeadline" - e."startingDateTime") AS answer_offset
     FROM public.events e
     WHERE e.recurrence <> 'None'::"EventRecurrence"
-      AND e."startingDateTime" > p_run_at
-      AND e."endDateTime" > p_run_at
+      AND e."startingDateTime" < p_run_at
+      AND e."endDateTime" < p_run_at
     ORDER BY e."key", e."startingDateTime" ASC, e.id DESC
   ),
 
