@@ -56,6 +56,7 @@ export const useBringItems = (eventId?: string) =>
   useQuery<Tables<'event_bring_items'>[]>({
     queryKey: ['events', eventId, 'bringPledges'],
     enabled: !!eventId,
+    staleTime: 60_000,
     queryFn: async () => {
       if (!eventId) return [];
       const result = await supabase

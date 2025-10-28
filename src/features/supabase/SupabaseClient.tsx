@@ -15,7 +15,7 @@ import {
 } from '@mui/x-data-grid';
 import { ErrorBoundary } from '@sentry/react';
 import { keepPreviousData, QueryKey, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useDialogs } from '@toolpad/core';
+import { useDialogs, useLocalStorageState } from '@toolpad/core';
 import { useNotifications } from '@toolpad/core/useNotifications';
 import React, { lazy } from 'react';
 import { useSearchParams } from 'react-router';
@@ -478,7 +478,22 @@ function useSupabaseTableMutationsPkAware<Row = Record<string, unknown>>({
 
 
 export default function SupabaseClient() {
-  const [tables, setTables] = React.useState<Table[]>([]);
+  const [tables = [], setTables] = useLocalStorageState<Table[]>('supabase_tables', [], {
+    codec: {
+      stringify: (data: Table[]) => JSON.stringify(data),
+      parse: (raw: string): Table[] => {
+        try {
+          const parsed = JSON.parse(raw);
+          if (Array.isArray(parsed) && parsed.every((item) => typeof item.name === 'string' && typeof item.schema === 'string')) {
+            return parsed as Table[];
+          }
+        } catch {
+          // ignore
+        }
+        return [];
+      }
+    }
+  });
   const [selectedTable, setSelectedTable] = React.useState<Table | null>(null);
 
   const notifications = useNotifications();
@@ -521,7 +536,7 @@ export default function SupabaseClient() {
   }, []);
 
   const onSelectTable = async () => {
-    const result = await dialog.open(SelectTableDialog, { tables });
+    const result = await dialog.open(SelectTableDialog, { tables: tables ?? [] });
     if (!result) return;
     setPaginationModel({ page: 0, pageSize: 50 });
     setFilterModel({ items: [] });

@@ -24,11 +24,11 @@ import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 
 type Props = {
-  options: SimpleUser[];
+  options: PlayerWithSimpleUser[];
   loading: boolean;
   label: string;
-  value: SimpleUser | null;
-  onSelect: (value: SimpleUser | null) => void;
+  value: PlayerWithSimpleUser | null;
+  onSelect: (value: PlayerWithSimpleUser | null) => void;
 };
 const SelectPlayer = ({ options, loading, label, value, onSelect }: Props) => {
   return (
@@ -74,10 +74,10 @@ const ReportScore = () => {
   const createMatch = useCreateMatch();
 
   const [rating_enabled, setRatingEnabled] = useState(true);
-  const [player1a, setPlayer1a] = useState<SimpleUser | null>(null);
-  const [player2a, setPlayer2a] = useState<SimpleUser | null>(null);
-  const [player1b, setPlayer1b] = useState<SimpleUser | null>(null);
-  const [player2b, setPlayer2b] = useState<SimpleUser | null>(null);
+  const [player1a, setPlayer1a] = useState<PlayerWithSimpleUser | null>(null);
+  const [player2a, setPlayer2a] = useState<PlayerWithSimpleUser | null>(null);
+  const [player1b, setPlayer1b] = useState<PlayerWithSimpleUser | null>(null);
+  const [player2b, setPlayer2b] = useState<PlayerWithSimpleUser | null>(null);
 
   const { data: players = [], error, isLoading, refetch } = usePlayers();
 
@@ -136,12 +136,16 @@ const ReportScore = () => {
         team_a: {
           name: team_a_name,
           player_1: player1a.userId,
+          player_1_rating: player1a.ka_index,
           player_2: player2a.userId,
+          player_2_rating: player2a.ka_index,
         },
         team_b: {
           name: team_b_name,
           player_1: player1b.userId,
+          player_1_rating: player1b.ka_index,
           player_2: player2b.userId,
+          player_2_rating: player2b.ka_index,
         },
         rating_enabled: rating_enabled,
         created_by: user?.userId,

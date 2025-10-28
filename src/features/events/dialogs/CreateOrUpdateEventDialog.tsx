@@ -51,7 +51,7 @@ import { DialogProps, useDialogs } from '@toolpad/core';
 import { useNotifications } from '@toolpad/core/useNotifications';
 import { add, Duration, format, isAfter, set } from 'date-fns';
 import { differenceWith, fromPairs, isEqual, toPairs } from 'lodash';
-import { FormEvent, useRef, useState } from 'react';
+import { FormEvent, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { MapContainer, Marker, TileLayer, useMap } from 'react-leaflet';
 import { EventTable } from 'types/supabase';
@@ -102,9 +102,9 @@ export const CreateOrUpdateEventDialog = ({
 
   const { data: allItems = [], isLoading: bringItemsLoading } = useBringItems(event?.id);
 
-  // useEffect(() => {
-  //   setBringItems(allItems.map(x => ({ name: x.name, required_qty: x.required_qty ?? 0 })));
-  // }, [allItems]);
+  useEffect(() => {
+    setBringItems(allItems.map(x => ({ name: x.name, required_qty: x.required_qty ?? 0 })));
+  }, [allItems]);
 
   const insertEvent = useInsertEventMutation(fetchMode);
   const updateSingleEvent = useUpdateSingleMutation(fetchMode);

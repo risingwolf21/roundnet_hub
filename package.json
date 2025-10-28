@@ -59,26 +59,8 @@
     "gen-types:custom": "vite-node scripts/generate-types.ts",
     "supabase:db:push:staging": "dotenv -e environments/.env.staging.local -- npx supabase link --project-ref \"$SUPABASE_PROJECT_ID\" && npx supabase db push --linked",
     "supabase:db:push:rk:prod": "dotenv -e environments/.env.production.local -e environments/.env.karlsruhe.local -- npx supabase link --project-ref \"$SUPABASE_PROJECT_ID\" && npx supabase db push",
-    "supabase:db:push:mrc:prod": "dotenv -e environments/.env.production.local -e environments/.env.munich.local -- npx supabase link --project-ref \"$SUPABASE_PROJECT_ID\" && npx supabase db push"
-  },
-  "eslintConfig": {
-    "extends": [
-      "react-app",
-      "react-app/jest"
-    ],
-    "ignorePatterns": [
-      "src/types/supabase.ts"
-    ],
-    "rules": {
-      "no-restricted-imports": [
-        "error",
-        {
-          "patterns": [
-            "@mui/*/*/*"
-          ]
-        }
-      ]
-    }
+    "supabase:db:push:mrc:prod": "dotenv -e environments/.env.production.local -e environments/.env.munich.local -- npx supabase link --project-ref \"$SUPABASE_PROJECT_ID\" && npx supabase db push",
+    "supabase:db:push:prod": "yarn supabase:db:push:rk:prod && yarn supabase:db:push:mrc:prod"
   },
   "browserslist": {
     "production": [

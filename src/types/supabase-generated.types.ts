@@ -592,18 +592,35 @@ export type Database = {
     }
     Functions: {
       add_match_with_sets: {
-        Args: {
-          created_by?: string
-          event?: string
-          match_sets: Json
-          player_1a: string
-          player_1b: string
-          player_2a: string
-          player_2b: string
-          rated?: boolean
-          team_a: string
-          team_b: string
-        }
+        Args:
+          | {
+              created_by?: string
+              event?: string
+              match_sets: Json
+              player_1a: string
+              player_1a_rating: number
+              player_1b: string
+              player_1b_rating: number
+              player_2a: string
+              player_2a_rating: number
+              player_2b: string
+              player_2b_rating: number
+              rated?: boolean
+              team_a: string
+              team_b: string
+            }
+          | {
+              created_by?: string
+              event?: string
+              match_sets: Json
+              player_1a: string
+              player_1b: string
+              player_2a: string
+              player_2b: string
+              rated?: boolean
+              team_a: string
+              team_b: string
+            }
         Returns: string
       }
       apply_elo_for_match: {
@@ -2631,6 +2648,10 @@ export type Database = {
         Args: { p_body?: Json; p_function_name: string; p_timeout_ms?: number }
         Returns: number
       }
+      is_app_client: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
+      }
       is_topic_enabled_for_user: {
         Args: {
           p_scope_id?: string
@@ -2762,10 +2783,6 @@ export type Database = {
           updated_at: string
           user: string
         }
-      }
-      should_suppress_notifications: {
-        Args: Record<PropertyKey, never>
-        Returns: boolean
       }
       unregister_web_push_subscription: {
         Args: { p_endpoint: string }

@@ -106,7 +106,7 @@ function generatePossibleTeams(
   players: PlayerWithUser[],
   lockedTeams: [PlayerWithUser, PlayerWithUser][] = []
 ): Team[] {
-  const map = players.reduce((acc, p) => acc.set(p.player, p), {} as Map<string, PlayerWithUser>);
+  const map = players.reduce((acc, p) => acc.set(p.player, p), new Map<string, PlayerWithUser>());
   const locked = lockedTeams.map(([a, b]) => createTeam(map.get(a.player)!, map.get(b.player)!));
   const lockedNames = new Set(lockedTeams.flat().map((x) => x.player));
   const freePlayers = players.filter((p) => !lockedNames.has(p.player));
@@ -528,6 +528,7 @@ const Content = ({ payload, onClose }: DialogProps<ConstellationCreationDialogPr
                           sx={{ pl: 0 }}
                           checked={x.options.benchFromLastMatchMustPlay}
                           onChange={(e) => {
+                            console.log(rounds[index - 1].game.bench)
                             setRounds([
                               ...rounds.map((z, i) =>
                                 i === index
@@ -536,6 +537,7 @@ const Content = ({ payload, onClose }: DialogProps<ConstellationCreationDialogPr
                                     options: {
                                       ...z.options,
                                       benchFromLastMatchMustPlay: e.target.checked,
+                                      mustPlay: e.target.checked ? [...rounds[index - 1].game.bench] : [],
                                     } as MatchmakingOptions,
                                   }
                                   : z
@@ -783,12 +785,16 @@ const Content = ({ payload, onClose }: DialogProps<ConstellationCreationDialogPr
                             {
                               name: team_a_name,
                               player_1: match[0].players[0].player,
+                              player_1_rating: match[0].players[0].ka_index,
                               player_2: match[0].players[1].player,
+                              player_2_rating: match[0].players[1].ka_index,
                             },
                             {
                               name: team_b_name,
                               player_1: match[1].players[0].player,
+                              player_1_rating: match[1].players[0].ka_index,
                               player_2: match[1].players[1].player,
+                              player_2_rating: match[1].players[1].ka_index,
                             },
                             payload.event.id
                           ).catch((error) => notifications.show(error.message, { severity: 'error' }));
