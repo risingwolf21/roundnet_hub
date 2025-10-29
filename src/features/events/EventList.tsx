@@ -5,12 +5,12 @@ import { useEvents, useUpdateAttendanceMutation } from '@/tanstack/events';
 import { EventsUserView } from '@/types/supabaseTypes';
 import { EventRepeat, FilterAlt } from '@mui/icons-material';
 import AddIcon from '@mui/icons-material/Add';
-import { Button, Fab, List, Typography } from '@mui/material';
-import { Box, Stack } from '@mui/system';
+import { Button, Fab, List, ListSubheader, Typography } from '@mui/material';
+import { Stack } from '@mui/system';
 import { withProfiler } from '@sentry/react';
 import { useDialogs } from '@toolpad/core';
 import { useNotifications } from '@toolpad/core/useNotifications';
-import { format, parse } from 'date-fns';
+import { endOfISOWeek, format, getISOWeek, startOfISOWeek } from 'date-fns';
 import { t } from 'i18next';
 import groupBy from "lodash.groupby";
 import { useEffect } from 'react';
@@ -104,64 +104,39 @@ const EventScreen = () => {
 
   return (
     <PullToRefresh onRefresh={() => refetch()}>
-      <Box
-        sx={(theme) => ({
-          overscrollBehavior: 'none',
-          overscrollBehaviorY: 'none',
-          [theme.breakpoints.down('xl')]: { pb: 12 },
-          [theme.breakpoints.up('xl')]: { pb: 0 },
-        })}
-      >
-        {Object.entries(groupBy(events, (x) => format(x.startingDateTime!, 'dd-MM-yyyy'))).map(([key, value]: [string, EventsUserView[]]) => (
-          <table style={{ width: '100%', borderSpacing: 0 }} key={key}>
-            <tbody style={{ width: '100%' }}>
-              {value.map((event: EventsUserView, index) => (
-                <tr style={{ height: '1px' }} key={index + event.id!}>
-                  {index === 0 ? (
-                    <td style={{ position: 'sticky', top: 0, padding: 0, height: 'inherit' }}>
-                      <Box
-                        sx={{
-                          display: 'flex',
-                          flexDirection: 'column',
-                          height: '100%',
-                          justifyContent: 'center',
-                          mx: 3,
-                          py: 1,
-                          width: 20,
-                        }}
-                      >
-                        <Typography fontSize={10} textAlign={'center'}>
-                          {t('events.startDateDayString', { date: parse(key, 'dd-MM-yyyy', new Date()) }).toUpperCase()}
-                        </Typography>
-                        <Typography variant="h6" fontWeight={'bold'} textAlign={'center'}>
-                          {t('events.startDateDay', { date: parse(key, 'dd-MM-yyyy', new Date()) }).toUpperCase()}
-                        </Typography>
-                      </Box>
-                    </td>
-                  ) : (
-                    <td style={{ padding: 0 }}></td>
-                  )}
-                  <td style={{ width: '100%', padding: 0 }}>
-                    <EventItem
-                      key={event.id}
-                      event={event}
-                      t={t}
-                      attendanceUpdating={
-                        updateAttendance.isPending && updateAttendance.context?.event.id! === event.id
-                      }
-                      attendEvent={() => updateAttendance.mutate({ event, user, newState: 'Attending' })}
-                      declineEvent={() => updateAttendance.mutate({ event, user, newState: 'Declined' })}
-                      onClick={() => {
-                        navigate('/training/event/' + event.id);
-                      }}
-                    />
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        ))}
-      </Box>
+      <List>
+        {
+          Object.entries(groupBy(events, (x) => startOfISOWeek(x.startingDateTime))).map(([key, value]: [string, EventsUserView[]]) => (
+            <List subheader={<ListSubheader sx={{ fontWeight: 'bold', lineHeight: 'normal', my: 1, zIndex: -1 }} key={key}>
+              {
+                getISOWeek(key) === getISOWeek(new Date())
+                  ? 'Diese Woche'
+                  : getISOWeek(key) === (getISOWeek(new Date()) + 1)
+                    ? 'Nächste Woche'
+                    : format(key, 'dd.MM.yyyy') + " - " + format(endOfISOWeek(key), 'dd.MM.yyyy')
+              }
+            </ListSubheader>} key={key}>
+              {
+                value.map((event: EventsUserView) => (
+                  <EventItem
+                    key={event.id}
+                    event={event}
+                    t={t}
+                    attendanceUpdating={
+                      updateAttendance.isPending && updateAttendance.context?.event.id! === event.id
+                    }
+                    attendEvent={() => updateAttendance.mutate({ event, user, newState: 'Attending' })}
+                    declineEvent={() => updateAttendance.mutate({ event, user, newState: 'Declined' })}
+                    onClick={() => {
+                      navigate('/training/event/' + event.id);
+                    }}
+                  />
+                ))
+              }
+            </List>
+          ))
+        }
+      </List>
 
       <Stack
         direction={'row-reverse'}
