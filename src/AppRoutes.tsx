@@ -106,7 +106,7 @@ const router = sentryCreateBrowserRouter([
         children: [
           {
             index: true,
-            element: <Navigate to="/home" />,
+            element: <Navigate to={import.meta.env.VITE_APP_HOMEPAGE ?? '/home'} />,
           },
           {
             path: '/home',

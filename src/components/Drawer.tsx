@@ -137,7 +137,7 @@ const DrawerContent = ({
       <List>
         {
           <Has feat={['drinks', 'events', 'items']} any>
-            <DrawerItem key="homepage" selected={tab === ''} onClick={() => handleChange('')}>
+            <DrawerItem key="homepage" selected={tab === 'home'} onClick={() => handleChange('home')}>
               <ListItemAvatar>
                 <ListItemIcon>
                   <Home />
@@ -364,7 +364,7 @@ const DrawerContent = ({
               </ListSubheader>
             }
           >
-            <Has perm={'drinks.confirm.payments'}>
+            <Has feat={"drinks"} perm={'drinks.confirm.payments'}>
               <DrawerItem
                 key="updatePayements"
                 selected={tab === 'admin/drinks/payments'}
@@ -381,7 +381,7 @@ const DrawerContent = ({
                 />
               </DrawerItem>
             </Has>
-            <Has perm={'drinks.manage'}>
+            <Has feat={"drinks"} perm={'drinks.manage'}>
               <DrawerItem
                 key="updateDrink"
                 selected={tab === 'admin/drinks'}
@@ -411,7 +411,7 @@ const DrawerContent = ({
                 />
               </DrawerItem>
             </Has>
-            <Has perm={'drinks.history.admin'}>
+            <Has feat={"drinks"} perm={'drinks.history.admin'}>
               <DrawerItem
                 key="updateHistory"
                 selected={tab === 'admin/drinks/history'}
