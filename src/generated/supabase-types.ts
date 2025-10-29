@@ -30,6 +30,7 @@ export type Permission = "challenge.manage" |
   "items.manage" |
   "items.update.holder" |
   "supabase.admin" |
+  "reset_user_password" |
   "users.manage";
 
 export type Feature = "challenges" |
