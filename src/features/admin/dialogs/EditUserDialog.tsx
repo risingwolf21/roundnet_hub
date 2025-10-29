@@ -51,7 +51,7 @@ async function resetUserPassword(userId: string, newPassword: string) {
   if (!accessToken) throw new Error('Not authenticated');
 
   const resp = await fetch(
-    `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/reset-user-password`,
+    `https://${import.meta.env.VITE_SUPABASE_PROJECT_ID}.functions.supabase.co/reset-user-password`,
     {
       method: 'POST',
       headers: {
