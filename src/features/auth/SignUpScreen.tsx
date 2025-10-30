@@ -16,6 +16,7 @@ import CircularProgress from '@mui/material/CircularProgress';
 import Container from '@mui/material/Container';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
+import { useNotifications } from '@toolpad/core';
 
 const mergeSlotSx = (defaultSx: SxProps<Theme>, slotProps?: { sx?: SxProps<Theme> }) => {
   if (Array.isArray(slotProps?.sx)) {
@@ -65,6 +66,7 @@ const SignUpScreen = () => {
 
   const theme = useTheme();
   const navigate = useNavigate();
+  const notifications = useNotifications();
   const { version, user } = useApplication();
   const location = useLocation();
 
@@ -134,10 +136,13 @@ const SignUpScreen = () => {
       });
       setError('Could not sign up user. [' + error?.message + ']');
     }
+    notifications.show("Registrierung erfolgreich.", { severity: "success" });
+    setLoading(false);
     if (data.session) {
       await supabase.auth.setSession(data.session);
+    } else {
+      navigate('/auth/login');
     }
-    setLoading(false);
   };
 
   return (
