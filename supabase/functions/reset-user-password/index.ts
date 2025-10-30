@@ -24,25 +24,34 @@ Deno.serve(async (req) => {
   }
   try {
     if (req.method !== 'POST') {
-      return new Response('Method not allowed', { status: 405 });
+      return new Response('Method not allowed', { status: 405, headers: corsHeaders });
     }
 
     const authHeader = req.headers.get('Authorization') || '';
-    if (!authHeader.startsWith('Bearer ')) {
-      return new Response('Missing bearer token', { status: 401 });
+    const token = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : '';
+
+    if (!token) {
+      return new Response('Missing bearer token', { status: 401, headers: corsHeaders });
     }
 
     const { userId, newPassword } = await req.json();
-    if (!userId || typeof newPassword !== 'string' || newPassword.length < 12) {
-      return new Response('Invalid payload', { status: 400 });
+    if (!userId || typeof newPassword !== 'string') {
+      return new Response('Invalid payload', { status: 400, headers: corsHeaders });
+    }
+    if (newPassword.length < 6) {
+      return new Response('Das Passwort muss mindestens 6 Zeichen enthalten', { status: 400, headers: corsHeaders });
     }
 
     // 1) Client-ähnlicher Supabase-Client, um den aufrufenden User aus dem JWT zu lesen
     const supabase = createClient(url, Deno.env.get('SUPABASE_ANON_KEY')!, {
-      global: { headers: { Authorization: authHeader } },
+      global: { headers: { Authorization: `Bearer ${token}` } },
+      auth: { persistSession: false, autoRefreshToken: false },
     });
-    const { data: me, error: meErr } = await supabase.auth.getUser();
-    if (meErr || !me?.user) return new Response('Unauthorized', { status: 401 });
+    const { data: me, error: meErr } = await supabase.auth.getUser(token);
+    if (meErr || !me?.user) {
+      console.error(meErr);
+      return new Response('Unauthorized', { status: 401, headers: corsHeaders });
+    }
 
     // 2) Admin-Check gegen eure public.user-Tabelle (Role-Feld)
     const { data: adminRow, error: adminErr } = await supabase
@@ -52,7 +61,7 @@ Deno.serve(async (req) => {
       .single();
 
     if (adminErr || adminRow?.role !== 'admin') {
-      return new Response('Forbidden. User does not have the admin role.', { status: 403 });
+      return new Response('Forbidden. User does not have the admin role.', { status: 403, headers: corsHeaders });
     }
 
     const { data: permissions, error: permissionErr } = await supabase
@@ -60,7 +69,7 @@ Deno.serve(async (req) => {
       .select('permission');
 
     if (permissionErr || permissions.map((x: any) => x.permission).includes('reset_user_password')) {
-      return new Response('Forbidden. "reset_user_password" Permission is missing.', { status: 403 });
+      return new Response('Forbidden. "reset_user_password" Permission is missing.', { status: 403, headers: corsHeaders });
     }
 
     // 3) Admin-Client mit Service Role für Passwort-Update
@@ -68,16 +77,19 @@ Deno.serve(async (req) => {
     const { error: updErr } = await admin.auth.admin.updateUserById(userId, {
       password: newPassword,
     });
-    if (updErr) return new Response(updErr.message, { status: 400 });
+    if (updErr) return new Response(updErr.message, { status: 400, headers: corsHeaders });
 
     // Optional: Sessions des Zielnutzers invalidieren (Logout überall) – je nach Policy.
 
     return new Response(JSON.stringify({ ok: true }), {
-      headers: { 'Content-Type': 'application/json' },
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 200,
     });
   } catch (e) {
-    return new Response(`Server error: ${String(e)}`, { status: 500 });
+    return new Response(JSON.stringify({ error: String(e) }), {
+      status: 500,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
   }
 });
 

@@ -134,6 +134,9 @@ const SignUpScreen = () => {
       });
       setError('Could not sign up user. [' + error?.message + ']');
     }
+    if (data.session) {
+      await supabase.auth.setSession(data.session);
+    }
     setLoading(false);
   };
 

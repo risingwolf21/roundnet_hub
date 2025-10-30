@@ -49,28 +49,6 @@ export const SupabaseUserRepository = {
     }) as GroupWithUserRole));
   },
 
-  async fetchPermissionsForUser(): Promise<string[]> {
-    const { data, error } = await supabase.from('user_permissions').select('*');
-
-    if (error || !data) return [];
-    return data.map((x) => x.permission).filter((x) => x !== null);
-  },
-
-  async fetchFeaturesForUser(): Promise<string[]> {
-    const { data, error } = await supabase.from('user_features').select('*');
-
-    if (error || !data) return [];
-    return data.map((x) => x.feature).filter((x) => x !== null);
-  },
-
-  async fetchGrantsForUser(userId: string) {
-    const { data, error } = await supabase.from('user_grants').select('*').eq('user', userId);
-
-    if(error || !data) return [];
-
-    return data;
-  },
-
   async fetchPlayer(userId: string): Promise<PostgrestSingleResponse<Player | null>> {
     return supabase.schema('games').from('players').select('*').eq('player', userId).maybeSingle().throwOnError();
   },

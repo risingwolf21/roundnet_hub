@@ -61,9 +61,8 @@ async function resetUserPassword(userId: string, newPassword: string) {
       body: JSON.stringify({ userId, newPassword }),
     }
   );
-  console.log(resp.json());
   if (!resp.ok) throw new Error(await resp.text());
-  return resp.json();
+  return await resp.json();
 }
 
 const EditUserDialog = ({ user, open, handleClose, onUserEditFinished }: EditUserDialogProps) => {

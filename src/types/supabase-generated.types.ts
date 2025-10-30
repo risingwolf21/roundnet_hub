@@ -592,35 +592,22 @@ export type Database = {
     }
     Functions: {
       add_match_with_sets: {
-        Args:
-          | {
-              created_by?: string
-              event?: string
-              match_sets: Json
-              player_1a: string
-              player_1a_rating: number
-              player_1b: string
-              player_1b_rating: number
-              player_2a: string
-              player_2a_rating: number
-              player_2b: string
-              player_2b_rating: number
-              rated?: boolean
-              team_a: string
-              team_b: string
-            }
-          | {
-              created_by?: string
-              event?: string
-              match_sets: Json
-              player_1a: string
-              player_1b: string
-              player_2a: string
-              player_2b: string
-              rated?: boolean
-              team_a: string
-              team_b: string
-            }
+        Args: {
+          created_by?: string
+          event?: string
+          match_sets: Json
+          player_1a: string
+          player_1a_rating: number
+          player_1b: string
+          player_1b_rating: number
+          player_2a: string
+          player_2a_rating: number
+          player_2b: string
+          player_2b_rating: number
+          rated?: boolean
+          team_a: string
+          team_b: string
+        }
         Returns: string
       }
       apply_elo_for_match: {
@@ -1934,33 +1921,6 @@ export type Database = {
           },
         ]
       }
-      user_grants: {
-        Row: {
-          granted_by: string
-          key: string
-          kind: Database["public"]["Enums"]["grant_kind"]
-          tenant: string
-          updated_at: string
-          user: string
-        }
-        Insert: {
-          granted_by: string
-          key: string
-          kind: Database["public"]["Enums"]["grant_kind"]
-          tenant?: string
-          updated_at?: string
-          user: string
-        }
-        Update: {
-          granted_by?: string
-          key?: string
-          kind?: Database["public"]["Enums"]["grant_kind"]
-          tenant?: string
-          updated_at?: string
-          user?: string
-        }
-        Relationships: []
-      }
       user_notification_preferences: {
         Row: {
           channel: string
@@ -2358,33 +2318,15 @@ export type Database = {
           },
         ]
       }
-      user_features: {
+      user_grants_view: {
         Row: {
-          feature: string | null
+          granted_by: string | null
+          key: string | null
+          kind: Database["public"]["Enums"]["grant_kind"] | null
+          tenant: string | null
+          user: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "group_features_feature_fkey"
-            columns: ["feature"]
-            isOneToOne: false
-            referencedRelation: "features"
-            referencedColumns: ["name"]
-          },
-        ]
-      }
-      user_permissions: {
-        Row: {
-          permission: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "group_permission_permission_fkey"
-            columns: ["permission"]
-            isOneToOne: false
-            referencedRelation: "permissions"
-            referencedColumns: ["name"]
-          },
-        ]
+        Relationships: []
       }
       user_vouchers: {
         Row: {
@@ -2611,6 +2553,10 @@ export type Database = {
           p_user: string
         }
         Returns: undefined
+      }
+      group_has_no_members: {
+        Args: { p_group: string }
+        Returns: boolean
       }
       inc_target_attempt: {
         Args: {

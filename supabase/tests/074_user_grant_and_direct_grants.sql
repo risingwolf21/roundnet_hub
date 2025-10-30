@@ -96,7 +96,7 @@ ON CONFLICT DO NOTHING;
 -- Initial-Check: beide haben KEINE unserer dynamischen Test-Perms
 SELECT tests.authenticate_as('user_1a');
 SELECT is((
-  SELECT count(*)::bigint FROM public.user_grants
+  SELECT count(*)::bigint FROM public.user_grants_view
   WHERE "user" = (SELECT uidA FROM _v)
     AND kind='perm'
     AND key IN ((SELECT permA FROM _v),(SELECT permB FROM _v))
@@ -104,7 +104,7 @@ SELECT is((
 
 SELECT tests.authenticate_as('user_1b');
 SELECT is((
-  SELECT count(*)::bigint FROM public.user_grants
+  SELECT count(*)::bigint FROM public.user_grants_view
   WHERE "user" = (SELECT uidB FROM _v)
     AND kind='perm'
     AND key IN ((SELECT permA FROM _v),(SELECT permB FROM _v))
@@ -120,7 +120,7 @@ ON CONFLICT DO NOTHING;
 
 SELECT tests.authenticate_as('user_1a');
 SELECT is((
-  SELECT count(*)::bigint FROM public.user_grants
+  SELECT count(*)::bigint FROM public.user_grants_view
   WHERE "user"=(SELECT uidA FROM _v)
     AND kind='perm' AND key=(SELECT permA FROM _v)
     AND granted_by='group'
@@ -135,7 +135,7 @@ ON CONFLICT DO NOTHING;
 
 SELECT tests.authenticate_as('user_1b');
 SELECT is((
-  SELECT count(*)::bigint FROM public.user_grants
+  SELECT count(*)::bigint FROM public.user_grants_view
   WHERE "user"=(SELECT uidB FROM _v)
     AND kind='perm' AND key=(SELECT permA FROM _v)
     AND granted_by='group'
@@ -152,7 +152,7 @@ ON CONFLICT DO NOTHING;
 
 SELECT tests.authenticate_as('user_1a');
 SELECT is((
-  SELECT count(*)::bigint FROM public.user_grants
+  SELECT count(*)::bigint FROM public.user_grants_view
   WHERE "user"=(SELECT uidA FROM _v)
     AND kind='perm'
     AND key IN ((SELECT permA FROM _v),(SELECT permB FROM _v))
@@ -160,7 +160,7 @@ SELECT is((
 
 SELECT tests.authenticate_as('user_1b');
 SELECT is((
-  SELECT count(*)::bigint FROM public.user_grants
+  SELECT count(*)::bigint FROM public.user_grants_view
   WHERE "user"=(SELECT uidB FROM _v)
     AND kind='perm'
     AND key IN ((SELECT permA FROM _v),(SELECT permB FROM _v))
@@ -176,7 +176,7 @@ WHERE "group"=(SELECT gid FROM _v)
 
 SELECT tests.authenticate_as('user_1a');
 SELECT is((
-  SELECT count(*)::bigint FROM public.user_grants
+  SELECT count(*)::bigint FROM public.user_grants_view
   WHERE "user"=(SELECT uidA FROM _v)
     AND kind='perm'
     AND key IN ((SELECT permA FROM _v),(SELECT permB FROM _v))
@@ -184,7 +184,7 @@ SELECT is((
 
 SELECT tests.authenticate_as('user_1b');
 SELECT is((
-  SELECT count(*)::bigint FROM public.user_grants
+  SELECT count(*)::bigint FROM public.user_grants_view
   WHERE "user"=(SELECT uidB FROM _v)
     AND kind='perm'
     AND key IN ((SELECT permA FROM _v),(SELECT permB FROM _v))
@@ -200,7 +200,7 @@ WHERE "group"=(SELECT gid FROM _v)
 
 SELECT tests.authenticate_as('user_1b');
 SELECT is((
-  SELECT count(*)::bigint FROM public.user_grants
+  SELECT count(*)::bigint FROM public.user_grants_view
   WHERE "user"=(SELECT uidB FROM _v)
     AND kind='perm'
     AND key IN ((SELECT permA FROM _v),(SELECT permB FROM _v))
@@ -221,7 +221,7 @@ ON CONFLICT DO NOTHING;
 SELECT tests.authenticate_as('user_1a');
 SELECT CASE WHEN to_regclass('public.group_features') IS NOT NULL THEN
   is((
-    SELECT count(*)::bigint FROM public.user_grants
+    SELECT count(*)::bigint FROM public.user_grants_view
     WHERE "user"=(SELECT uidA FROM _v)
       AND kind='feat' AND key=(SELECT feat1 FROM _v)
       AND granted_by='group'
@@ -237,7 +237,7 @@ WHERE to_regclass('public.group_features') IS NOT NULL
 SELECT tests.authenticate_as('user_1a');
 SELECT CASE WHEN to_regclass('public.group_features') IS NOT NULL THEN
   is((
-    SELECT count(*)::bigint FROM public.user_grants
+    SELECT count(*)::bigint FROM public.user_grants_view
     WHERE "user"=(SELECT uidA FROM _v)
       AND kind='feat' AND key=(SELECT feat1 FROM _v)
   ), 0::bigint, 'uA: Feature feat1 nach Remove weg')
@@ -254,7 +254,7 @@ ON CONFLICT DO NOTHING;
 
 SELECT tests.authenticate_as('user_1b');
 SELECT is((
-  SELECT count(*)::bigint FROM public.user_grants
+  SELECT count(*)::bigint FROM public.user_grants_view
   WHERE "user"=(SELECT uidB FROM _v)
     AND kind='perm'
     AND key =(SELECT permA FROM _v)
@@ -272,7 +272,7 @@ WHERE "user" =(SELECT uidB FROM _v)
 
 SELECT tests.authenticate_as('user_1b');
 SELECT is((
-  SELECT count(*)::bigint FROM public.user_grants
+  SELECT count(*)::bigint FROM public.user_grants_view
   WHERE "user"=(SELECT uidB FROM _v)
     AND kind='perm'
     AND key =(SELECT permA FROM _v)
@@ -280,7 +280,7 @@ SELECT is((
 ), 0::bigint, 'uB: direct permA nach UPDATE verschwunden');
 
 SELECT is((
-  SELECT count(*)::bigint FROM public.user_grants
+  SELECT count(*)::bigint FROM public.user_grants_view
   WHERE "user"=(SELECT uidB FROM _v)
     AND kind='perm'
     AND key =(SELECT permB FROM _v)
@@ -297,7 +297,7 @@ WHERE "user" =(SELECT uidB FROM _v)
 
 SELECT tests.authenticate_as('user_1b');
 SELECT is((
-  SELECT count(*)::bigint FROM public.user_grants
+  SELECT count(*)::bigint FROM public.user_grants_view
   WHERE "user"=(SELECT uidB FROM _v)
     AND kind='perm'
     AND key =(SELECT permB FROM _v)
@@ -321,7 +321,7 @@ SELECT throws_like(
 -- uB sieht keine fremden Zeilen in user_grants
 SELECT ok(
   NOT EXISTS (
-    SELECT 1 FROM public.user_grants
+    SELECT 1 FROM public.user_grants_view
     WHERE "user" <> auth.uid()::text
   ),
   'uB sieht in user_grants keine fremden Zeilen (RLS)'
