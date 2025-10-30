@@ -1,8 +1,9 @@
 import { supabase } from '@/lib/supabase';
 import Cancel from '@mui/icons-material/Cancel';
 import CheckCircle from '@mui/icons-material/CheckCircle';
-import React from 'react';
+import React, { useMemo } from 'react';
 
+import { getErrorMessage } from '@/utils';
 import Info from '@mui/icons-material/Info';
 import Warning from '@mui/icons-material/Warning';
 import Alert from '@mui/material/Alert';
@@ -106,22 +107,19 @@ export default function NotificationGate({ allowDecline = true, onReady, vapidPu
   const [loading, setLoading] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
   const [registered, setRegistered] = React.useState(false);
-  const [isPWA, setIsPWA] = React.useState<boolean>(false);
+  const isPWA = useMemo(() => (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches), []);
 
   const VAPID = (vapidPublicKey || (import.meta.env.VITE_VAPID_PUBLIC_KEY as string))?.trim();
 
   React.useEffect(() => {
-    const standalone =
-      (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) ||
-      (navigator as any).standalone === true;
-    setIsPWA(standalone);
     (async () => {
       try {
         const reg = await getSW();
         const sub = await getCurrentSubscription(reg);
         setRegistered(!!sub);
-      } catch (e: any) {
-        setError(e?.message ?? String(e));
+      } catch (e: unknown) {
+        const message = getErrorMessage(e);
+        setError(message ?? String(e));
       }
     })();
   }, []);
@@ -149,8 +147,9 @@ export default function NotificationGate({ allowDecline = true, onReady, vapidPu
       await registerOnServer(sub);
       setRegistered(true);
       onReady?.(sub);
-    } catch (e: any) {
-      setError(e?.message ?? String(e));
+    } catch (e: unknown) {
+      const message = getErrorMessage(e);
+      setError(message ?? String(e));
     } finally {
       setLoading(false);
     }
@@ -173,8 +172,9 @@ export default function NotificationGate({ allowDecline = true, onReady, vapidPu
       await registerOnServer(sub);
       setRegistered(true);
       onReady?.(sub);
-    } catch (e: any) {
-      setError(e?.message ?? String(e));
+    } catch (e: unknown) {
+      const message = getErrorMessage(e);
+      setError(message ?? String(e));
     } finally {
       setLoading(false);
     }
@@ -189,8 +189,9 @@ export default function NotificationGate({ allowDecline = true, onReady, vapidPu
       await revokeOnServer(sub?.endpoint);
       await sub?.unsubscribe();
       setRegistered(false);
-    } catch (e: any) {
-      setError(e?.message ?? String(e));
+    } catch (e: unknown) {
+      const message = getErrorMessage(e);
+      setError(message ?? String(e));
     } finally {
       setLoading(false);
     }

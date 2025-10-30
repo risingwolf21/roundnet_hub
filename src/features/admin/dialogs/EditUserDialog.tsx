@@ -2,7 +2,6 @@ import { Box, Stack } from '@mui/system';
 import { useNotifications } from '@toolpad/core/useNotifications';
 import { FormEvent, useState } from 'react';
 import { UserWithGroups } from '../../../types/supabaseTypes';
-import { SlideUpTransition } from '../../../utils';
 import { UserRoleDialog } from './UserRoleDialog';
 
 import { supabase } from '@/lib/supabase';
@@ -85,7 +84,7 @@ const EditUserDialog = ({ user, open, handleClose, onUserEditFinished }: EditUse
   };
 
   return (
-    <Dialog fullScreen open={open} onClose={handleClose} TransitionComponent={SlideUpTransition}>
+    <Dialog fullScreen open={open} onClose={handleClose}>
       <Box component="form" onSubmit={handleSubmit} noValidate>
         <AppBar position="sticky" sx={{ pt: 'env(safe-area-inset-top)' }}>
           <Toolbar>
@@ -156,7 +155,7 @@ const EditUserDialog = ({ user, open, handleClose, onUserEditFinished }: EditUse
                 <Button
                   onClick={async () => {
                     try {
-                      const result = await resetUserPassword(user.userId, password);
+                      await resetUserPassword(user.userId, password);
                       notifications.show('Passwort erfolgreich zurückgesetzt', { severity: 'success' });
                       setPassword('');
                     } catch (error: any) {

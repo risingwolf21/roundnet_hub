@@ -23,7 +23,7 @@ import { ChallengeActivityList } from './ChallengeActivityList';
 import { ChallengeLeaderboard } from './ChallengeLeaderboard';
 import EnterPointDialog from './dialogs/EnterPointDialog';
 
-import EditIcon from '@mui/icons-material/Edit';
+import AddIcon from '@mui/icons-material/Add';
 import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
 import Fab from '@mui/material/Fab';
@@ -98,7 +98,6 @@ const ChallengeInformation = ({ t, challengeId }: { t: TFunction; challengeId: s
           image_url: uploadedImageUrl,
         },
         {
-          onSuccess: () => notifications.show('Success!', { severity: 'success' }),
           onError: (error) => {
             captureException(error);
             notifications.show(error.message, { severity: 'error' });
@@ -171,7 +170,7 @@ const ChallengeInformation = ({ t, challengeId }: { t: TFunction; challengeId: s
                 }
               }}
             >
-              <EditIcon sx={{ color: 'white' }} />
+              <AddIcon sx={{ color: 'white' }} />
             </Fab>
           )}
         </Has>

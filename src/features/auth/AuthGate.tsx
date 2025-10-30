@@ -76,7 +76,7 @@ export const AuthGate = () => {
       setLoading(true);
       fetchUserData(session);
     }
-    // eslint-disable-next-line
+     
   }, [session]);
 
   useEffect(() => {
@@ -103,7 +103,7 @@ export const AuthGate = () => {
     return <LoadingScreen />
 
   return (
-    <ApplicationContext.Provider
+    <ApplicationContext
       value={{
         user: currentUser,
         signOut: signOut,
@@ -117,6 +117,6 @@ export const AuthGate = () => {
           <AppRoutes />
         </WebPushKeeper>
       </React.Suspense>
-    </ApplicationContext.Provider>
+    </ApplicationContext>
   );
 };

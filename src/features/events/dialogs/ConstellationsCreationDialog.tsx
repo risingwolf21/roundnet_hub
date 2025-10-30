@@ -778,8 +778,8 @@ const Content = ({ payload, onClose }: DialogProps<ConstellationCreationDialogPr
                           const [name2a, ...surname2a] = match[0].players[1].name!.split(' ');
                           const [name1b, ...surname1b] = match[1].players[0].name!.split(' ');
                           const [name2b, ...surname2b] = match[1].players[1].name!.split(' ');
-                          let team_a_name = (surname1a.pop() ?? name1a) + '/' + (surname2a.pop() ?? name2a);
-                          let team_b_name = (surname1b.pop() ?? name1b) + '/' + (surname2b.pop() ?? name2b);
+                          const team_a_name = (surname1a.pop() ?? name1a) + '/' + (surname2a.pop() ?? name2a);
+                          const team_b_name = (surname1b.pop() ?? name1b) + '/' + (surname2b.pop() ?? name2b);
                           GamesRepository.reportScores(
                             [],
                             {

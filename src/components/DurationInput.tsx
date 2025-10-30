@@ -48,7 +48,7 @@ export function parseDuration(input: string): Duration {
 }
 
 const formatDuration = (d: Duration): string => {
-  let parts: string[] = [];
+  const parts: string[] = [];
   if (d.weeks && d.weeks > 0) parts.push(`${d.weeks}w`);
   if (d.days && d.days > 0) parts.push(`${d.days}d`);
   if (d.hours && d.hours > 0) parts.push(`${d.hours}h`);

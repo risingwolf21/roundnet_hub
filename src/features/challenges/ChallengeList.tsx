@@ -8,6 +8,7 @@ import Layout from '../../components/layout/Layout';
 import { useGrants } from '../auth/GrantsContext';
 import { CreateChallengeDialog } from './dialogs/CreateChallengeDialog';
 
+import { queryClient } from '@/lib/queryClient';
 import Add from '@mui/icons-material/Add';
 import Box from '@mui/material/Box';
 import Fab from '@mui/material/Fab';
@@ -75,7 +76,12 @@ const ChallengeList = () => {
           bottom: 'calc(16px + env(safe-area-inset-bottom))',
         }}
         onClick={async () => {
-          await dialogs.open(CreateChallengeDialog, { user });
+          const result = await dialogs.open(CreateChallengeDialog, { user });
+          if (result) {
+            await queryClient.invalidateQueries({ queryKey: ["challenges"] });
+            await queryClient.invalidateQueries({ queryKey: ["challenge", result.id] });
+            navigate('/challenges/' + result.id);
+          }
         }}
       >
         <Add sx={{ color: 'white' }} />

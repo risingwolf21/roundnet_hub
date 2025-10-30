@@ -98,7 +98,7 @@ const EventInformationGames = ({ eventId }: EventInformationGamesProps) => {
               {x.sets
                 .sort((a, b) => (a.set_number < b.set_number ? 1 : -1))
                 .map((y) => {
-                  let teamAWon = y.team_a_score > y.team_b_score;
+                  const teamAWon = y.team_a_score > y.team_b_score;
                   return (
                     <Box
                       sx={{

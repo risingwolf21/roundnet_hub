@@ -2,9 +2,8 @@ import { supabase } from '@/lib/supabase';
 import SearchIcon from '@mui/icons-material/Search';
 import { useQuery } from '@tanstack/react-query';
 import { DialogProps } from '@toolpad/core';
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Search, SearchIconWrapper, StyledInputBase } from '../../../components/SearchBar';
-import { SlideUpTransition } from '../../../utils';
 
 import ArrowBack from '@mui/icons-material/ArrowBack';
 import AppBar from '@mui/material/AppBar';
@@ -47,7 +46,7 @@ const SearchAndSelectUserDialog = ({
     },
   });
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>, user: User) => {
+  const handleChange = (user: User) => {
     if (selectedUsers.some((x: User) => x.userId === user.userId)) {
       setSelectedUsers(selectedUsers.filter((y) => y.userId !== user.userId));
     } else {
@@ -56,7 +55,7 @@ const SearchAndSelectUserDialog = ({
   };
 
   return (
-    <Dialog fullScreen open={open} onClose={() => onClose(null)} TransitionComponent={SlideUpTransition}>
+    <Dialog fullScreen open={open} onClose={() => onClose(null)}>
       <Box
         component="form"
         noValidate
@@ -98,7 +97,7 @@ const SearchAndSelectUserDialog = ({
                   <ListItemIcon>
                     <Checkbox
                       checked={selectedUsers.some((x: User) => x.userId === user.userId)}
-                      onChange={(e) => handleChange(e, user)}
+                      onChange={() => handleChange(user)}
                     />
                   </ListItemIcon>
                   <ListItemText primary={user.name} />

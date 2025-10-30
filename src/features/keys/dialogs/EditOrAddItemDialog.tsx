@@ -4,7 +4,6 @@ import KeyIcon from '@mui/icons-material/Key';
 import { Box } from '@mui/system';
 import { useNotifications } from '@toolpad/core';
 import { useEffect, useState } from 'react';
-import { SlideUpTransition } from '../../../utils';
 
 import AppBar from '@mui/material/AppBar';
 import Avatar from '@mui/material/Avatar';
@@ -90,7 +89,7 @@ export const EditOrAddItemDialog = ({ open, handleClose, itemToEdit }: EditOrAdd
   };
 
   return (
-    <Dialog fullScreen open={open} onClose={handleClose} TransitionComponent={SlideUpTransition}>
+    <Dialog fullScreen open={open} onClose={handleClose}>
       <Box component="form" noValidate>
         <AppBar position="sticky" sx={{ top: 0, pt: 'env(safe-area-inset-top)' }}>
           <Toolbar>

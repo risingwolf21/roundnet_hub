@@ -88,7 +88,7 @@ const Content = ({ payload, onClose }: DialogProps<PlayerzoneProfilePayload, str
               const { error } = await supabase
                 .schema('games')
                 .from('players')
-                .upsert({ player: payload.user.userId, rg_link: rgLink })
+                .update({ player: payload.user.userId, rg_link: rgLink })
                 .eq('player', player_data?.player ?? '');
               if (error) {
                 notifications.show('Playerzone URL konnte nicht gesetzt werden. ' + error.message, {

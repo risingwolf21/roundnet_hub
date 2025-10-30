@@ -28,7 +28,7 @@ export function GrantsProvider({ user, children }: Props) {
       try {
         await queryClient.cancelQueries();
         queryClient.clear();
-      } catch { }
+      } catch { /* empty */ }
     }
   }, []);
 
@@ -37,11 +37,11 @@ export function GrantsProvider({ user, children }: Props) {
     [user, grantsQuery]
   );
 
-  return <GrantsContext.Provider value={value}>{children}</GrantsContext.Provider>;
+  return <GrantsContext value={value}>{children}</GrantsContext>;
 }
 
 export function useGrants() {
-  const ctx = React.useContext(GrantsContext);
+  const ctx = React.use(GrantsContext);
   if (!ctx) throw new Error('useGrants must be used within <GrantsProvider>');
   return ctx;
 }

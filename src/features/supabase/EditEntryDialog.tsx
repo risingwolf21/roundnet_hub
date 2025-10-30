@@ -156,7 +156,7 @@ const DialogContent = ({ payload, open, onClose }: DialogProps<EditEntryDialogPa
       .select('*')
       .then((result) => {
         if (result.data) {
-          let loaded = new Map<string, string[]>();
+          const loaded = new Map<string, string[]>();
           result.data.forEach((x) => loaded.set(x.enum_name, x.enum_values));
           setEnums(loaded);
         }

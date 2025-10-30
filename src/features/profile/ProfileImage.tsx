@@ -34,11 +34,11 @@ export const ProfileImage = ({ user }: Props) => {
   const handleSubmit = async () => {
     setLoadingSave(true);
     if (croppedImage) {
-      let fileName = uuid() + '.jpg';
+      const fileName = uuid() + '.jpg';
       new Compressor(dataURLtoFile(croppedImage, fileName), {
         convertSize: 1000000, // 1 MB
         success: async (file) => {
-          let compressedFile = await readFile(file);
+          const compressedFile = await readFile(file);
           if (compressedFile && typeof compressedFile === 'string') {
             await removeOldAvatarImages();
             await uploadAvatarImage(fileName, compressedFile);
@@ -87,7 +87,7 @@ export const ProfileImage = ({ user }: Props) => {
   const onImageInputChange = async (event: React.ChangeEvent<HTMLInputElement>): Promise<void> => {
     if (!event.target.files || event.target.files.length === 0) return;
 
-    let imageDataUrl = await readFile(event.target.files[0]);
+    const imageDataUrl = await readFile(event.target.files[0]);
     setSelectedImage(imageDataUrl);
     setCropImageDialogOpen(true);
     event.target.files = null;

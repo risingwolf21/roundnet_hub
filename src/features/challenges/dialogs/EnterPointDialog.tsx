@@ -19,7 +19,7 @@ type EnterPointDialogProps = {
   maxEntriesPerWeek: number | null;
 };
 
-function ServerDay(props: PickersDayProps<Date> & { highlightedDays?: Date[]; maxEntriesPerWeek?: number }) {
+function ServerDay(props: PickersDayProps & { highlightedDays?: Date[]; maxEntriesPerWeek?: number }) {
   const { highlightedDays = [], maxEntriesPerWeek = 0, day, outsideCurrentMonth, ...other } = props;
 
   const isHighlighted = highlightedDays.filter((x) => isSameDay(x, day)).length > 0;
@@ -67,18 +67,18 @@ const EnterPointDialog = ({
   const onImageInputChange = async (event: React.ChangeEvent<HTMLInputElement>): Promise<void> => {
     if (!event.target.files || event.target.files.length === 0) return;
 
-    let imageDataUrl = await readFile(event.target.files[0]);
+    const imageDataUrl = await readFile(event.target.files[0]);
 
     if (typeof imageDataUrl !== 'string') {
       setError('Something went wrong uploading your image. Please try again.');
       return;
     }
 
-    let fileName = uuid() + '.jpg';
+    const fileName = uuid() + '.jpg';
     new Compressor(dataURLtoFile(imageDataUrl, fileName), {
       convertSize: 1000000, // 1 MB
       success: async (file) => {
-        let compressedFile = await readFile(file);
+        const compressedFile = await readFile(file);
         if (compressedFile && typeof compressedFile === 'string') {
           setImage({ dataUrl: compressedFile, fileName });
         } else {
@@ -103,7 +103,7 @@ const EnterPointDialog = ({
         </>
       }
     >
-      <Typography m={2}>Hiermit trägst du einen Punkt für die Serve Challenge ein</Typography>
+      <Typography m={2}>Hiermit trägst du einen Punkt für diese Challenge ein</Typography>
       <DatePicker
         sx={{
           width: '100%',
@@ -120,7 +120,7 @@ const EnterPointDialog = ({
         }}
         label="Datum"
         disableFuture
-        format="DD MMMM YYYY"
+        format="dd MMMM yyyy"
         onChange={(val) => {
           if (val) setDate(val);
         }}

@@ -74,7 +74,7 @@ const AdminDrinkList = () => {
   const getDrinksHistory = (drink: Drink): Drink[] => {
     if (!drinks || !drink.previousDrink) return [];
 
-    let prev: Drink | undefined = drinks
+    const prev: Drink | undefined = drinks
       .filter((x: Drink) => x.deleted)
       .find((x: Drink) => x.id === drink.previousDrink);
 

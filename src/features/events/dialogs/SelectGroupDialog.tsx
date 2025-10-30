@@ -2,7 +2,6 @@ import { useGroups } from '@/tanstack/groups';
 import CloseIcon from '@mui/icons-material/Close';
 import { Box } from '@mui/system';
 import { DialogProps } from '@toolpad/core';
-import { SlideUpTransition } from '../../../utils';
 
 import FiberManualRecord from '@mui/icons-material/FiberManualRecord';
 import AppBar from '@mui/material/AppBar';
@@ -19,7 +18,7 @@ export const SelectGroupDialog = ({ open, onClose }: DialogProps<undefined, Grou
   const { data: groups = [] } = useGroups();
 
   return (
-    <Dialog fullScreen open={open} onClose={() => onClose(null)} TransitionComponent={SlideUpTransition}>
+    <Dialog fullScreen open={open} onClose={() => onClose(null)}>
       <Box component="form" noValidate>
         <AppBar position="sticky" sx={{ pt: 'env(safe-area-inset-top)' }}>
           <Toolbar>

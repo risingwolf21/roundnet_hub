@@ -5,7 +5,6 @@ import { OpenStreetMapProvider } from 'leaflet-geosearch';
 import { SearchResult } from 'leaflet-geosearch/dist/providers/provider.js';
 import React, { useCallback, useEffect, useState } from 'react';
 import { MapContainer, Marker, TileLayer, useMap, useMapEvents } from 'react-leaflet';
-import { SlideUpTransition } from '../../../utils';
 import { SearchPlacesDialogProps } from '../types';
 
 import { Search, SearchIconWrapper, StyledInputBase } from '@/components/SearchBar';
@@ -184,7 +183,7 @@ const SearchPlacesDialog = ({ open, handleClose, placeSelected }: SearchPlacesDi
   }
 
   return (
-    <Dialog fullScreen open={open} onClose={handleClose} TransitionComponent={SlideUpTransition}>
+    <Dialog fullScreen open={open} onClose={handleClose}>
       <Box sx={{ flexGrow: 1 }}>
         <AppBar position="sticky" sx={{ pt: 'env(safe-area-inset-top)' }}>
           <Toolbar>

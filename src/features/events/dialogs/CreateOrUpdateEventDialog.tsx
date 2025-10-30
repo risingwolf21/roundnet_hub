@@ -116,11 +116,11 @@ export const CreateOrUpdateEventDialog = ({
       if (!editedEvent.meetingDateTime)
         setEditedEvent({ ...editedEvent, meetingDateTime: editedEvent.startingDateTime });
 
-      let bring_items = bringItems.filter(x => x.name && x.required_qty && x.required_qty > 0);
+      const bring_items = bringItems.filter(x => x.name && x.required_qty && x.required_qty > 0);
 
       setEditedEvent({ ...editedEvent, items_enabled: bring_items.length > 0 });
 
-      let edited_event = editedEvent as TablesInsert<'events'>;
+      const edited_event = editedEvent as TablesInsert<'events'>;
 
       const edited_event_pairs = toPairs(edited_event);
       const event_pairs = event ? toPairs(event) : [];

@@ -1,7 +1,7 @@
 // src/features/grants/useUserGrantsQuery.ts
 import { supabase } from '@/lib/supabase';
 import { QueryKey, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 
 export type GrantsState = { perm: Set<string>; feat: Set<string> };
 export type Mode = 'all' | 'any';
@@ -9,65 +9,88 @@ export type Mode = 'all' | 'any';
 const qk = (userId: string | null): QueryKey => ['user-grants', userId];
 const empty: GrantsState = { perm: new Set(), feat: new Set() };
 
-function rowsToSets(rows: Array<{ kind: 'perm' | 'feat'; key: string }>): GrantsState {
-  const perm = new Set<string>();
-  const feat = new Set<string>();
-  for (const r of rows ?? []) (r.kind === 'perm' ? perm : feat).add(r.key);
-  return { perm, feat };
-}
-
 export function useUserGrantsQuery(userId: string) {
   const qc = useQueryClient();
 
   const q = useQuery({
     queryKey: qk(userId),
+    enabled: true,
     queryFn: async () => {
       const { data, error } = await supabase
         .from("user_grants_view")
         .select('kind,key')
         .eq('user', userId);
-      console.log(data, error)
+
       if (error) throw error;
-      return rowsToSets((data ?? []) as any[]);
+
+      return data.reduce((prev, curr) => {
+        if (curr.key && curr.kind) {
+          switch (curr.kind) {
+            case 'perm': return { feat: prev.feat, perm: prev.perm.add(curr.key) }
+            case 'feat': return { feat: prev.feat.add(curr.key), perm: prev.perm }
+          }
+        }
+        return prev;
+      }, { perm: new Set<string>(), feat: new Set<string>() })
     },
+    placeholderData: empty,
     refetchOnWindowFocus: false,
   });
 
+  const timerRef = useRef<number | null>(null);
+  const invalidateSoon = () => {
+    if (timerRef.current) window.clearTimeout(timerRef.current);
+    timerRef.current = window.setTimeout(() => {
+      qc.invalidateQueries({ queryKey: qk(userId) });
+      timerRef.current = null;
+    }, 150);
+  };
+
   useEffect(() => {
-    const ch = supabase
-      .channel(`user_grants:${userId}`)
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'user_grants', filter: `user=eq.${userId}` },
-        (payload) => {
-          qc.setQueryData<GrantsState>(qk(userId), (prev) => {
-            const base = prev ?? empty;
-            const next: GrantsState = { perm: new Set(base.perm), feat: new Set(base.feat) };
-            const kind = ((payload.new as any)?.kind ?? (payload.old as any)?.kind) as 'perm' | 'feat' | undefined;
-            const keyNew = (payload.new as any)?.key as string | undefined;
-            const keyOld = (payload.old as any)?.key as string | undefined;
-            if (kind !== 'perm' && kind !== 'feat') return base;
-            const target = kind === 'perm' ? next.perm : next.feat;
-            switch (payload.eventType) {
-              case 'INSERT': if (keyNew) target.add(keyNew); break;
-              case 'UPDATE': if (keyOld) target.delete(keyOld); if (keyNew) target.add(keyNew); break;
-              case 'DELETE': if (keyOld) target.delete(keyOld); break;
-            }
-            return next;
-          });
-        }
-      )
-      .subscribe();
-    return () => { supabase.removeChannel(ch); };
+    const subs: ReturnType<typeof supabase.channel>[] = [];
+    let mounted = true;
+
+    (async () => {
+      const { data: me } = await supabase.auth.getUser();
+      const uid = me?.user?.id ?? null;
+      if (!mounted || !uid) return;
+
+      subs.push(supabase.channel(`rt:udg:${uid}`).on('postgres_changes',
+        { event: '*', schema: 'public', table: 'user_direct_grants', filter: `user=eq.${uid}` },
+        invalidateSoon
+      ).subscribe());
+      subs.push(supabase.channel(`rt:gum:${uid}`).on('postgres_changes',
+        { event: '*', schema: 'public', table: 'group_user_mapping', filter: `user=eq.${uid}` },
+        invalidateSoon
+      ).subscribe());
+
+      subs.push(supabase.channel(`rt:gp`).on('postgres_changes',
+        { event: '*', schema: 'public', table: 'group_permissions' },
+        invalidateSoon
+      ).subscribe());
+      subs.push(supabase.channel(`rt:gf`).on('postgres_changes',
+        { event: '*', schema: 'public', table: 'group_features' },
+        invalidateSoon
+      ).subscribe());
+    })();
+
+    return () => {
+      mounted = false;
+      subs.forEach((c) => supabase.removeChannel(c));
+      if (timerRef.current) {
+        window.clearTimeout(timerRef.current);
+        timerRef.current = null;
+      }
+    };
   }, [userId, qc]);
 
-  const toArr = (v?: string | string[]) => (v == null ? [] : Array.isArray(v) ? v : [v]);
+  const toArray = (v?: string | string[]) => (v == null ? [] : Array.isArray(v) ? v : [v]);
   const check = (need: string[], set: Set<string>, mode: Mode) =>
     need.length === 0 ? true : mode === 'any' ? need.some((k) => set.has(k)) : need.every((k) => set.has(k));
 
   const has = useMemo(() => {
-    const hasPerm = (k: string | string[], mode: Mode = 'all') => check(toArr(k), q.data?.perm ?? empty.perm, mode);
-    const hasFeat = (k: string | string[], mode: Mode = 'all') => check(toArr(k), q.data?.feat ?? empty.feat, mode);
+    const hasPerm = (k: string | string[], mode: Mode = 'all') => check(toArray(k), q.data?.perm ?? empty.perm, mode);
+    const hasFeat = (k: string | string[], mode: Mode = 'all') => check(toArray(k), q.data?.feat ?? empty.feat, mode);
     return { hasPerm, hasFeat };
   }, [q.data]);
 

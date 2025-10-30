@@ -2,7 +2,6 @@ import Layout from '@/components/layout/Layout';
 import { PullToRefresh } from '@/components/pull-to-refresh/PullToRefresh';
 import { useMatches } from '@/tanstack/games';
 import { UserMatchesView } from '@/types/supabaseTypes';
-import { groupBy } from '@/utils';
 import { useDialogs, useNotifications } from '@toolpad/core';
 import { format, isAfter } from 'date-fns';
 import { t } from 'i18next';
@@ -20,6 +19,7 @@ import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListSubheader from '@mui/material/ListSubheader';
 import Typography from '@mui/material/Typography';
+import groupBy from 'lodash.groupby';
 
 const GameList = () => {
   const notifications = useNotifications();
@@ -43,7 +43,7 @@ const GameList = () => {
             [theme.breakpoints.up('xl')]: { pb: 0 },
           })}
         >
-          {Array.from(groupBy(matches, (x: UserMatchesView) => format(x.created_at ?? '', 'dd MMMM yyyy')))
+          {Object.entries(groupBy(matches, (x: UserMatchesView) => format(x.created_at ?? '', 'dd MMMM yyyy')))
             .sort(([key1, v1], [key2, v2]) => (isAfter(key1, key2) ? -1 : 1))
             .map(([key, value]) => (
               <List
@@ -130,7 +130,7 @@ const GameList = () => {
                       )}
                       {x.set_results?.split(',').map((y, index) => {
                         const [team_a_score, team_b_score] = y.trim().split(':');
-                        let teamAWon = team_a_score > team_b_score;
+                        const teamAWon = team_a_score > team_b_score;
                         return (
                           <Box
                             sx={{

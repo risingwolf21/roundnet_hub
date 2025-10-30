@@ -127,8 +127,8 @@ const ReportScore = () => {
     const [name2a, ...surname2a] = player2a.name.split(' ');
     const [name1b, ...surname1b] = player1b.name.split(' ');
     const [name2b, ...surname2b] = player2b.name.split(' ');
-    let team_a_name = (surname1a.pop() ?? name1a) + '/' + (surname2a.pop() ?? name2a);
-    let team_b_name = (surname1b.pop() ?? name1b) + '/' + (surname2b.pop() ?? name2b);
+    const team_a_name = (surname1a.pop() ?? name1a) + '/' + (surname2a.pop() ?? name2a);
+    const team_b_name = (surname1b.pop() ?? name1b) + '/' + (surname2b.pop() ?? name2b);
 
     createMatch.mutate(
       {

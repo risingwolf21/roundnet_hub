@@ -66,7 +66,7 @@ const DrinkListScreen = () => {
         },
         onError: (error) => {
           captureException(error);
-          let message = error?.message ?? 'Drink could not be added';
+          const message = error?.message ?? 'Drink could not be added';
           resetDrinks(message);
         },
       }
@@ -74,7 +74,7 @@ const DrinkListScreen = () => {
   };
 
   const onAddDrinkClick = (drink: Drink) => {
-    var temp = addedDrinks;
+    const temp = addedDrinks;
     if (drink.id in temp) {
       temp[drink.id].count = temp[drink.id].count + 1;
     } else {
@@ -84,7 +84,7 @@ const DrinkListScreen = () => {
   };
 
   const onRemoveDrinkClick = (drink: Drink) => {
-    var temp = addedDrinks;
+    const temp = addedDrinks;
     if (drink.id in temp) {
       if (temp[drink.id].count - 1 === 0) {
         delete temp[drink.id];
@@ -96,7 +96,7 @@ const DrinkListScreen = () => {
   };
 
   const changeVisibleTypes = (e: React.ChangeEvent<HTMLInputElement>, x: 'Drink' | 'Special' | 'None') => {
-    let newValue = e.target.checked ? [...visibleTypes, x] : visibleTypes.filter((y) => y !== x);
+    const newValue = e.target.checked ? [...visibleTypes, x] : visibleTypes.filter((y) => y !== x);
     setVisibleTypes(newValue);
     localStorage.setItem('visibleTypes', newValue.join(';'));
   };

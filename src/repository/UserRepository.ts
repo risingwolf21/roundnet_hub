@@ -30,7 +30,7 @@ export const SupabaseUserRepository = {
       ...response,
       data: {
         ...response.data,
-        groups: response.data?.groups.map((x: any) => x.group) ?? [],
+        groups: response.data?.groups.map((x: { group: Group }) => x.group) ?? [],
         player_data,
       },
     };

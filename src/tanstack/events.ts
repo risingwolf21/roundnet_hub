@@ -31,7 +31,7 @@ export const useComments = (eventId: string) =>
         .returns<FullComment[]>()
         .throwOnError();
 
-      let mainComments = (result.data ?? [])
+      const mainComments = (result.data ?? [])
         .filter((x) => !x.reply_to)
         .map((x) => ({
           ...x,

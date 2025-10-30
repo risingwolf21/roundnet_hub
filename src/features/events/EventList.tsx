@@ -123,7 +123,7 @@ const EventScreen = () => {
                     event={event}
                     t={t}
                     attendanceUpdating={
-                      updateAttendance.isPending && updateAttendance.context?.event.id! === event.id
+                      updateAttendance.isPending && updateAttendance.context?.event.id === event.id
                     }
                     attendEvent={() => updateAttendance.mutate({ event, user, newState: 'Attending' })}
                     declineEvent={() => updateAttendance.mutate({ event, user, newState: 'Declined' })}
