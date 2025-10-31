@@ -61,6 +61,9 @@ const Layout = ({
         // Vollbild – dynamische Viewport-Höhe für Mobile
         height: '100dvh',
         width: '100vw',
+        position: 'fixed',
+        top: 0,
+        left: 0,
 
         // Safe-Area seitlich/unten am gesamten Layout
         pl: 'env(safe-area-inset-left)',
