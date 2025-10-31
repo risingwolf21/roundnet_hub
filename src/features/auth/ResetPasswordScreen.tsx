@@ -8,7 +8,6 @@ import Typography from '@mui/material/Typography';
 import * as React from 'react';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
-import { HOMEPAGE } from '../../constants';
 
 import { SxProps, Theme, alpha, useTheme } from '@mui/material';
 import Alert from '@mui/material/Alert';
@@ -128,7 +127,7 @@ const ResetPasswordScreen = () => {
       await new Promise((r) => setTimeout(r, 2000));
       setLoading(false);
       setError('');
-      navigate(`/${HOMEPAGE}`, { replace: true });
+      navigate(`/${import.meta.env.VITE_APP_HOMEPAGE}`, { replace: true });
     }
   };
 

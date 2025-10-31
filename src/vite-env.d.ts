@@ -25,6 +25,7 @@ interface ImportMetaEnv {
   readonly VITE_PAYPAL_ME_LINK: string;
   readonly VITE_WEBSITE_PATH: string;
   readonly VITE_WEBSITE_NAME: string;
+  readonly VITE_APP_HOMEPAGE: string;
 }
 
 interface ImportMeta {

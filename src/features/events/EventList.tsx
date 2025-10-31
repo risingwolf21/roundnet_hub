@@ -107,7 +107,7 @@ const EventScreen = () => {
       <List>
         {
           Object.entries(groupBy(events, (x) => startOfISOWeek(x.startingDateTime))).map(([key, value]: [string, EventsUserView[]]) => (
-            <List subheader={<ListSubheader sx={{ fontWeight: 'bold', lineHeight: 'normal', my: 1, zIndex: -1 }} key={key}>
+            <List subheader={<ListSubheader sx={{ fontWeight: 'bold', lineHeight: 'normal', my: 1 }} key={key}>
               {
                 getISOWeek(key) === getISOWeek(new Date())
                   ? 'Diese Woche'
@@ -136,26 +136,26 @@ const EventScreen = () => {
             </List>
           ))
         }
-      </List>
 
-      <Stack
-        direction={'row-reverse'}
-        spacing={2}
-        sx={{ position: 'fixed', bottom: 'max(16px, env(safe-area-inset-bottom))', right: '16px' }}
-      >
-        {filterFab}
-        {createEventFab}
-        <Has perm={'event.edit'}>
-          <Fab
-            hidden={isLoading}
-            key="updateEvent"
-            color={'secondary'}
-            onClick={() => navigate('/training/recurringEvents')}
-          >
-            {<EventRepeat sx={{ color: 'white' }} />}
-          </Fab>
-        </Has>
-      </Stack>
+        <Stack
+          direction={'row-reverse'}
+          spacing={2}
+          sx={{ position: 'fixed', bottom: 'max(16px, env(safe-area-inset-bottom))', right: '16px' }}
+        >
+          {filterFab}
+          {createEventFab}
+          <Has perm={'event.edit'}>
+            <Fab
+              hidden={isLoading}
+              key="updateEvent"
+              color={'secondary'}
+              onClick={() => navigate('/training/recurringEvents')}
+            >
+              {<EventRepeat sx={{ color: 'white' }} />}
+            </Fab>
+          </Has>
+        </Stack>
+      </List>
     </PullToRefresh>
   );
 };

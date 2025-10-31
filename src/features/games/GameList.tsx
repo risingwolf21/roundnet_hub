@@ -44,17 +44,16 @@ const GameList = () => {
           })}
         >
           {Object.entries(groupBy(matches, (x: UserMatchesView) => format(x.created_at ?? '', 'dd MMMM yyyy')))
-            .sort(([key1, v1], [key2, v2]) => (isAfter(key1, key2) ? -1 : 1))
+            .sort(([key1, _v1], [key2, _v2]) => (isAfter(key1, key2) ? -1 : 1))
             .map(([key, value]) => (
               <List
                 key={key}
                 subheader={
                   <ListSubheader
                     sx={{
-                      zIndex: '-1',
                       fontWeight: 'bold',
                       lineHeight: 'normal',
-                      my: 2,
+                      my: 1,
                       color: 'rgba(0,0,0,0.87)',
                     }}
                   >
@@ -62,7 +61,7 @@ const GameList = () => {
                   </ListSubheader>
                 }
               >
-                {value.map((x, index) => (
+                {value.map((x) => (
                   <ListItem key={x.id} divider onClick={() => navigate(`/matches/${x.id}`)}>
                     <Box sx={{ display: 'flex', flexDirection: 'row', width: '100%' }}>
                       <Box
@@ -128,7 +127,7 @@ const GameList = () => {
                           Score eintragen
                         </Button>
                       )}
-                      {x.set_results?.split(',').map((y, index) => {
+                      {x.set_results?.split(',').map((y) => {
                         const [team_a_score, team_b_score] = y.trim().split(':');
                         const teamAWon = team_a_score > team_b_score;
                         return (
