@@ -76,6 +76,7 @@ const Layout = ({
         },
         minHeight: 0, // wichtig für korrektes Scrollen im zweiten Grid-Track
         bgcolor: 'background.default',
+        overflow: "none"
       }}
     >
 
@@ -98,7 +99,7 @@ const Layout = ({
             pl: 'env(safe-area-inset-left)',
             pr: 'env(safe-area-inset-right)',
             zIndex: theme.zIndex.drawer - 1,
-            bgcolor: 'primary.main',
+            background: 'primary',
           })}
         >
           <Toolbar disableGutters sx={{ px: 2 }}>
@@ -168,10 +169,7 @@ const Layout = ({
           gridColumn: { xs: '1', lg: '2' },
           gridRow: '2',
           minHeight: 0,
-          overflow: 'auto',
-          overscrollBehaviorY: 'contain',
-          touchAction: 'pan-y',
-          WebkitOverflowScrolling: 'touch',
+          overflow: 'auto'
         }}
       >
         {children}
