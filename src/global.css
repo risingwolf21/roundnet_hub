@@ -5,21 +5,12 @@ html {
 
 body {
   min-height: -webkit-fill-available;
+  margin: 0;
+  overflow: hidden;
 }
 
 #root {
   min-height: 100dvh;
-}
-
-html,
-body,
-#root {
-  height: 100%;
-}
-
-body {
-  margin: 0;
-  overflow: hidden;
 }
 
 html,

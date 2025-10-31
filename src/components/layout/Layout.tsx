@@ -75,8 +75,8 @@ const Layout = ({
           lg: `${drawerWidth}px 1fr`, // >= lg: Drawer | Content
         },
         minHeight: 0, // wichtig für korrektes Scrollen im zweiten Grid-Track
-        background: 'background.default',
-        overflow: "none"
+        background: 'primary',
+        overflow: "hidden"
       }}
     >
 

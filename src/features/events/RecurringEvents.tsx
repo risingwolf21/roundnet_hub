@@ -8,7 +8,6 @@ import { EventWithGroup } from '../../types/supabaseTypes';
 import GroupIcon from '@mui/icons-material/Group';
 import PlaceIcon from '@mui/icons-material/Place';
 import Chip from '@mui/material/Chip';
-import LinearProgress from '@mui/material/LinearProgress';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';
@@ -46,57 +45,54 @@ const RecurringEvents = ({ recurringEvents, loading }: RecurringEventsProps) => 
   const { t } = useTranslation();
 
   return (
-    <Layout appBarConfig={{ navigateBackPath: '/training/list' }}>
-      {loading && <LinearProgress sx={{ position: 'fixed', top: 56, left: 0, right: 0 }} />}
-      <List>
-        {Object.entries(groupBy(recurringEvents, (x) => format(x.startingDateTime!, 'EEEE'))).sort((a, b) => isAfter(parse(a[0], 'EEEE', new Date(), { weekStartsOn: 1 }), parse(b[0], 'EEEE', new Date(), { weekStartsOn: 1 })) ? 1 : -1).map(([key, value]: [string, EventWithGroup[]]) => (
-          <List subheader={<ListSubheader sx={{ fontWeight: 'bold', fontSize: '1rem' }}>{key}</ListSubheader>}>
-            {value.map((event: EventWithGroup) => (
-              <ListItem
-                key={event.key}
-                divider={true}
-                onClick={() => console.log(getWeek(event.startingDateTime, { weekStartsOn: 1 }), getWeek(new Date(), { weekStartsOn: 1 }))}
-                secondaryAction={<Stack direction="column" spacing={1}>
-                  <Chip icon={<GroupIcon sx={{ color: event.fullGroup.color }} />} label={event.fullGroup.name} size="small" />
-                  <Chip icon={<PlaceIcon />} label={event.place ? JSON.parse(event.place ?? "{'name': 'Unkown place'}")?.name?.split(" ")[0] ?? '' : "Unkown place"} size="small" />
-                </Stack>}
-              >
-                <ListItemText
-                  primary={event.title}
-                  slotProps={{
-                    primary: {
-                      whiteSpace: 'nowrap',
-                      overflow: 'clip',
-                      textOverflow: 'ellipsis',
-                    },
-                    secondary: {
-                      whiteSpace: 'nowrap',
-                      overflow: 'clip',
-                      textOverflow: 'ellipsis',
-                    },
-                  }}
-                  secondary={
-                    <Stack direction="column">
-                      <Typography fontSize={14}>
-                        {
-                          [
-                            t('events.secondaryTextStart', { start: toDate(event.startingDateTime!) }),
-                            event.endDateTime && t('events.secondaryTextWithEnd', { end: toDate(event.endDateTime) }),
-                          ].join(' ') + " - " + format(event.startingDateTime, "dd.MM.yyyy")
-                        }
-                      </Typography>
-                      <Typography fontSize={14}>
-                        {event.recurrence === "Fortnightly" ? "Alle 2 Wochen" : event.recurrence === "Weekly" ? "Wöchentlich" : "Einmalig"}
-                      </Typography>
-                    </Stack>
-                  }
-                />
-              </ListItem>
-            ))}
-          </List>
-        ))}
-      </List>
-    </Layout>
+    <List>
+      {Object.entries(groupBy(recurringEvents, (x) => format(x.startingDateTime!, 'EEEE'))).sort((a, b) => isAfter(parse(a[0], 'EEEE', new Date(), { weekStartsOn: 1 }), parse(b[0], 'EEEE', new Date(), { weekStartsOn: 1 })) ? 1 : -1).map(([key, value]: [string, EventWithGroup[]]) => (
+        <List subheader={<ListSubheader sx={{ fontWeight: 'bold', fontSize: '1rem' }}>{key}</ListSubheader>}>
+          {value.map((event: EventWithGroup) => (
+            <ListItem
+              key={event.key}
+              divider={true}
+              onClick={() => console.log(getWeek(event.startingDateTime, { weekStartsOn: 1 }), getWeek(new Date(), { weekStartsOn: 1 }))}
+              secondaryAction={<Stack direction="column" spacing={1}>
+                <Chip icon={<GroupIcon sx={{ color: event.fullGroup.color }} />} label={event.fullGroup.name} size="small" />
+                <Chip icon={<PlaceIcon />} label={event.place ? JSON.parse(event.place ?? "{'name': 'Unkown place'}")?.name?.split(" ")[0] ?? '' : "Unkown place"} size="small" />
+              </Stack>}
+            >
+              <ListItemText
+                primary={event.title}
+                slotProps={{
+                  primary: {
+                    whiteSpace: 'nowrap',
+                    overflow: 'clip',
+                    textOverflow: 'ellipsis',
+                  },
+                  secondary: {
+                    whiteSpace: 'nowrap',
+                    overflow: 'clip',
+                    textOverflow: 'ellipsis',
+                  },
+                }}
+                secondary={
+                  <Stack direction="column">
+                    <Typography fontSize={14}>
+                      {
+                        [
+                          t('events.secondaryTextStart', { start: toDate(event.startingDateTime!) }),
+                          event.endDateTime && t('events.secondaryTextWithEnd', { end: toDate(event.endDateTime) }),
+                        ].join(' ') + " - " + format(event.startingDateTime, "dd.MM.yyyy")
+                      }
+                    </Typography>
+                    <Typography fontSize={14}>
+                      {event.recurrence === "Fortnightly" ? "Alle 2 Wochen" : event.recurrence === "Weekly" ? "Wöchentlich" : "Einmalig"}
+                    </Typography>
+                  </Stack>
+                }
+              />
+            </ListItem>
+          ))}
+        </List>
+      ))}
+    </List>
   );
 };
 export default RecurringEventsProvider;
