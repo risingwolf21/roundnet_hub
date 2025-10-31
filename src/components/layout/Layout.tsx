@@ -103,6 +103,7 @@ const Layout = ({
             pr: 'env(safe-area-inset-right)',
             zIndex: theme.zIndex.drawer - 1,
             background: 'primary',
+            top: 0
           })}
         >
           <Toolbar disableGutters sx={{ px: 2 }}>
