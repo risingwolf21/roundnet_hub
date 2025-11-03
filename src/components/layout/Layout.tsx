@@ -79,8 +79,7 @@ const Layout = ({
         },
         minHeight: 0, // wichtig für korrektes Scrollen im zweiten Grid-Track
         background: 'primary',
-        overflow: "none",
-        overscrollBehaviorY: "none"
+        overflow: "hidden"
       }}
     >
 
@@ -174,8 +173,7 @@ const Layout = ({
           gridColumn: { xs: '1', lg: '2' },
           gridRow: '2',
           minHeight: 0,
-          overflow: 'none',
-          overscrollBehaviorY: "none"
+          overflow: 'auto'
         }}
       >
         {children}
