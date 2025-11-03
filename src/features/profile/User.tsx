@@ -81,7 +81,7 @@ const UserScreen = ({ user, handleSignOut }: UserScreenProps) => {
 
   const copyIcalURLToClipboard = () => {
     if (iOS) {
-      window.location.href = `https://${import.meta.env.VITE_SUPABASE_PROJECT_ID}.functions.supabase.co/ical?userId=${user.userId}`;
+      window.location.href = `webcal://${import.meta.env.VITE_SUPABASE_PROJECT_ID}.functions.supabase.co/ical?userId=${user.userId}`;
     } else {
       navigator.clipboard.writeText(
         `https://${import.meta.env.VITE_SUPABASE_PROJECT_ID}.functions.supabase.co/ical?userId=${user.userId}`
