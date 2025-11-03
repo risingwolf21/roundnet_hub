@@ -76,7 +76,8 @@ const Layout = ({
         },
         minHeight: 0, // wichtig für korrektes Scrollen im zweiten Grid-Track
         background: 'primary',
-        overflow: "hidden"
+        overflow: "none",
+        overscrollBehaviorY: "none"
       }}
     >
 
@@ -133,7 +134,7 @@ const Layout = ({
             {
               appBarContent ? appBarContent : <>
                 {/* Title */}
-                <Typography variant="h6" noWrap sx={{ flexGrow: 1 }}>
+                <Typography variant="h6" sx={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>
                   {title}
                 </Typography>
                 {/* Profile */}
@@ -169,7 +170,8 @@ const Layout = ({
           gridColumn: { xs: '1', lg: '2' },
           gridRow: '2',
           minHeight: 0,
-          overflow: 'auto'
+          overflow: 'none',
+          overscrollBehaviorY: "none"
         }}
       >
         {children}

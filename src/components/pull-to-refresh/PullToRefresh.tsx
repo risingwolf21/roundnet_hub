@@ -33,6 +33,8 @@ export const PullToRefresh = ({
   };
 
   const onTouchStart = (event: React.TouchEvent<HTMLDivElement>) => {
+    // check if dialog container exists -> any dialog is open
+    if (document.querySelector(".MuiDialog-container")) return;
     if (!busy) {
       setTouchStart(event.touches[0]);
     }
