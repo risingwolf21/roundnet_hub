@@ -61,6 +61,9 @@ const Layout = ({
         // Vollbild – dynamische Viewport-Höhe für Mobile
         height: '100dvh',
         width: '100vw',
+        position: 'fixed',
+        top: 0,
+        left: 0,
 
         // Safe-Area seitlich/unten am gesamten Layout
         pl: 'env(safe-area-inset-left)',
@@ -101,6 +104,7 @@ const Layout = ({
             pr: 'env(safe-area-inset-right)',
             zIndex: theme.zIndex.drawer - 1,
             background: 'primary',
+            top: 0
           })}
         >
           <Toolbar disableGutters sx={{ px: 2 }}>
