@@ -137,7 +137,7 @@ const Layout = ({
             {
               appBarContent ? appBarContent : <>
                 {/* Title */}
-                <Typography variant="h6" sx={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                <Typography variant="h6" sx={{ flexGrow: 1, overflow: 'hidden', textOverflow: 'ellipsis' }}>
                   {title}
                 </Typography>
                 {/* Profile */}
