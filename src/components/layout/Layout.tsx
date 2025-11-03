@@ -173,7 +173,7 @@ const Layout = ({
           gridColumn: { xs: '1', lg: '2' },
           gridRow: '2',
           minHeight: 0,
-          overflow: 'auto'
+          overflow: 'hidden'
         }}
       >
         {children}
