@@ -86,7 +86,7 @@ export const NotificationsDialog = ({
 
   return (
     <Dialog fullScreen open={open} onClose={() => onClose(null)}>
-      <AppBar sx={{ position: 'static', pt: 'env(safe-area-inset-top)' }}>
+      <AppBar sx={{ position: 'sticky', pt: 'env(safe-area-inset-top)' }}>
         <Toolbar>
           <IconButton edge="start" color="inherit" onClick={() => onClose(null)}>
             <Close />
@@ -96,7 +96,7 @@ export const NotificationsDialog = ({
           </Typography>
         </Toolbar>
       </AppBar>
-      <Container sx={{ p: 0 }}>
+      <Container sx={{ p: 0, pb: 'env(safe-area-inset-bottom)' }}>
         <Typography sx={{ fontSize: 16, fontWeight: 'bold', m: 2 }} color="text.secondary">
           Einstellungen
         </Typography>
@@ -129,7 +129,7 @@ export const NotificationsDialog = ({
               <NotificationSwitch
                 primary={x.description ?? x.topic}
                 {...(x.description && { secondary: x.topic })}
-                active={notificationTags.find((y) => y.topic === x.topic)?.enabled ?? false}
+                active={notificationTags.find((y) => y.topic === x.topic)?.enabled ?? true}
                 update={(newValue) => {
                   updateNotificationPreferences.mutate({
                     topic: x.topic,
