@@ -12,10 +12,11 @@ import Category from '@mui/icons-material/Category';
 import Close from '@mui/icons-material/Close';
 import Delete from '@mui/icons-material/Delete';
 import EventIcon from '@mui/icons-material/Event';
-import EventRepeatIcon from '@mui/icons-material/EventRepeat';
-import FiberManualRecord from '@mui/icons-material/FiberManualRecord';
-import Map from '@mui/icons-material/Map';
+import Group from '@mui/icons-material/Group';
+import Place from '@mui/icons-material/Place';
 import Remove from '@mui/icons-material/Remove';
+import SyncIcon from '@mui/icons-material/Sync';
+import SyncProblemIcon from '@mui/icons-material/SyncProblem';
 import TimelapseIcon from '@mui/icons-material/Timelapse';
 import AppBar from '@mui/material/AppBar';
 import Box from '@mui/material/Box';
@@ -31,7 +32,6 @@ import Divider from '@mui/material/Divider';
 import FormControl from '@mui/material/FormControl';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import IconButton from '@mui/material/IconButton';
-import InputAdornment from '@mui/material/InputAdornment';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemAvatar from '@mui/material/ListItemAvatar';
@@ -51,7 +51,7 @@ import { DialogProps, useDialogs } from '@toolpad/core';
 import { useNotifications } from '@toolpad/core/useNotifications';
 import { add, Duration, format, isAfter, set } from 'date-fns';
 import { differenceWith, fromPairs, isEqual, toPairs } from 'lodash';
-import { FormEvent, useRef, useState } from 'react';
+import { FormEvent, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { MapContainer, Marker, TileLayer, useMap } from 'react-leaflet';
 import { EventTable } from 'types/supabase';
@@ -73,6 +73,7 @@ const emptyEvent = {
   max_trial_attendees: null,
   required_item: null,
   answerDeadline: null,
+  // answerStart: null,
   place: null,
 } as EventTable;
 
@@ -95,12 +96,13 @@ export const CreateOrUpdateEventDialog = ({
   const [editedEvent, setEditedEvent] = useState<EventTable>(event ?? emptyEvent);
   const [selectedGroup, setSelectedGroup] = useState<Group | null>(eventGroup ?? null);
   const [dialogOpen, setDialogOpen] = useState<'group' | 'stopRepeat' | 'repeat' | 'places' | 'bring_items' | null>(null);
-  const [place, setPlace] = useState<PlaceType | null>(event?.place ? (JSON.parse(event.place) as PlaceType) : null);
   const [bringItems, setBringItems] = useState<{ name: string, required_qty: number }[]>([]);
 
   const ref = useRef<HTMLFormElement>(null);
 
   const { data: allItems = [], isLoading: bringItemsLoading } = useBringItems(event?.id);
+
+  const place = useMemo(() => editedEvent.place ? (JSON.parse(editedEvent.place) as PlaceType) : null, [editedEvent]);
 
   // useEffect(() => {
   //   setBringItems(allItems.map(x => ({ name: x.name, required_qty: x.required_qty ?? 0 })));
@@ -224,43 +226,34 @@ export const CreateOrUpdateEventDialog = ({
       </AppBar>
       <Box ref={ref} component="form" onSubmit={handleSubmit} noValidate>
         <List>
-          <ListItem sx={{ pt: 0, pb: 0 }} key={'title'}>
+          <ListItem dense sx={{ pt: 0, pb: 0, mb: 2 }} key={'title'}>
+            <ListItemAvatar sx={{ flexDirection: 'row', display: 'flex', alignItems: 'center' }}>
+              <EventIcon />
+            </ListItemAvatar>
             <TextField
+              size='small'
               fullWidth
-              variant="standard"
               label="Event-Titel"
               value={editedEvent.title}
               onChange={(e) => setEditedEvent({ ...editedEvent, title: e.target.value })}
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <EventIcon />
-                  </InputAdornment>
-                ),
-              }}
-              margin="normal"
             />
           </ListItem>
-          <ListItem sx={{ pt: 0, pb: 0 }} key={'eventDescription'}>
+          <ListItem dense sx={{ pt: 0, pb: 0, mb: 2 }} key={'eventDescription'}>
+            <ListItemAvatar sx={{ flexDirection: 'row', display: 'flex', alignItems: 'center' }}>
+              <Article />
+            </ListItemAvatar>
             <TextField
+              size="small"
               fullWidth
               multiline
               value={editedEvent.description}
               onChange={(e) => setEditedEvent({ ...editedEvent, description: e.target.value })}
-              variant="standard"
               label="Beschreibung"
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <Article />
-                  </InputAdornment>
-                ),
-              }}
-              margin="normal"
             />
           </ListItem>
 
           <ListItemButton
+            sx={{ py: 0, mb: 1 }}
             onClick={async () => {
               const result = await dialogs.open(SelectGroupDialog);
               if (result) {
@@ -274,7 +267,7 @@ export const CreateOrUpdateEventDialog = ({
             key={'group'}
           >
             <ListItemAvatar>
-              {selectedGroup && <FiberManualRecord sx={{ color: selectedGroup.color }} />}
+              {selectedGroup && <Group sx={{ color: selectedGroup.color }} />}
             </ListItemAvatar>
             <ListItemText
               primary={selectedGroup?.name ?? 'Keine Gruppe gewählt'}
@@ -282,14 +275,15 @@ export const CreateOrUpdateEventDialog = ({
             />
           </ListItemButton>
 
-          <Divider sx={{ mb: 2, mt: 2 }} />
+          <Divider sx={{ mb: 2 }} />
 
-          <ListItem sx={{ pt: 0, pb: 0, mb: 2 }} key={'startDate'}>
+          <ListItem dense sx={{ pt: 0, pb: 0, mb: 2 }} key={'startDate'}>
             <ListItemAvatar>
               <AccessTime />
             </ListItemAvatar>
 
             <DatePicker
+              slotProps={{ textField: { error: false, size: "small" } }}
               sx={{ width: '100%' }}
               label="Datum"
               disablePast
@@ -313,10 +307,11 @@ export const CreateOrUpdateEventDialog = ({
             />
           </ListItem>
 
-          <ListItem sx={{ pt: 0, pb: 0, mb: 2 }} key={'startTime'}>
+          <ListItem dense sx={{ pt: 0, pb: 0, mb: 2 }} key={'startTime'}>
             <ListItemAvatar />
 
             <TimePicker
+              slotProps={{ textField: { error: false, size: "small" } }}
               sx={{ width: '100%' }}
               views={['hours', 'minutes']}
               ampm={false}
@@ -339,7 +334,7 @@ export const CreateOrUpdateEventDialog = ({
             />
           </ListItem>
 
-          <ListItem sx={{ pt: 0, pb: 0, mb: 2 }} key={'meetingTime'}>
+          <ListItem dense sx={{ pt: 0, pb: 0, mb: 2 }} key={'meetingTime'}>
             <ListItemAvatar>
               <Checkbox
                 sx={{ pl: 0 }}
@@ -354,7 +349,7 @@ export const CreateOrUpdateEventDialog = ({
             </ListItemAvatar>
 
             <TimePicker
-              slotProps={{ textField: { error: false } }}
+              slotProps={{ textField: { error: false, size: "small" } }}
               disabled={editedEvent.meetingDateTime === null}
               sx={{ width: '100%' }}
               views={['hours', 'minutes']}
@@ -379,7 +374,7 @@ export const CreateOrUpdateEventDialog = ({
             />
           </ListItem>
 
-          <ListItem sx={{ pt: 0, pb: 0, mb: 2 }} key={'endDateTimeDurr'}>
+          <ListItem dense sx={{ pt: 0, pb: 0, mb: 1 }} key={'endDateTimeDurr'}>
             <ListItemAvatar sx={{ flexDirection: 'row', display: 'flex', alignItems: 'center' }}>
               <TimelapseIcon />
             </ListItemAvatar>
@@ -391,14 +386,22 @@ export const CreateOrUpdateEventDialog = ({
             }} />
           </ListItem>
 
-          <ListItem onClick={() => setDialogOpen('places')} key={'searchPlace'}>
+          <ListItem onClick={() => setDialogOpen('places')} key={'searchPlace'} secondaryAction={place
+            ? <IconButton onClick={(e) => {
+              setEditedEvent({ ...editedEvent, place: null });
+              e.stopPropagation();
+            }}>
+              <Close />
+            </IconButton> : undefined}>
             <ListItemAvatar>
-              <Map />
+              <Place />
             </ListItemAvatar>
-
-            <ListItemText primary={place?.name ?? 'Nothing selected'} />
+            {
+              place ? <ListItemText primary={place.name} secondary={place.description} /> : <ListItemText primary={'Standort'} />
+            }
           </ListItem>
           <ListItem
+            dense
             sx={{ '&.MuiListItem-root': { pb: 1, pt: 0 } }}
             onClick={() => setDialogOpen('places')}
             key={'searchPlaceMap'}
@@ -428,22 +431,26 @@ export const CreateOrUpdateEventDialog = ({
 
           <Divider />
 
-          <ListItem onClick={() => setDialogOpen('repeat')} key={'recurrence'}>
+          <ListItem dense onClick={() => setDialogOpen('repeat')} key={'recurrence'}>
             <ListItemAvatar>
-              <EventRepeatIcon />
+              <SyncIcon />
             </ListItemAvatar>
             <ListItemText primary={'Wiederholung'} secondary={editedEvent.recurrence} />
           </ListItem>
 
-          <ListItem onClick={() => setDialogOpen('stopRepeat')} key={'stopRecurrence'}>
-            <ListItemAvatar />
+          <ListItem dense onClick={() => setDialogOpen('stopRepeat')} key={'stopRecurrence'}>
+            <ListItemAvatar>
+              <SyncProblemIcon />
+            </ListItemAvatar>
             <ListItemText
               primary={'Wiederholung stoppen'}
               secondary={!editedEvent.recurrenceEnd ? 'Niemals' : format(editedEvent.recurrenceEnd, 'dd MMM yyyy')}
             />
           </ListItem>
 
-          <ListItem sx={{ pt: 0, pb: 0, mb: 2 }} key={'answerDeadline'}>
+          <Divider sx={{ mb: 2 }} />
+
+          <ListItem sx={{ py: 0, mb: 2 }} key={'answerDeadline'}>
             <ListItemAvatar>
               <Checkbox
                 sx={{ pl: 0 }}
@@ -465,9 +472,8 @@ export const CreateOrUpdateEventDialog = ({
             </ListItemAvatar>
 
             <DateTimePicker
-              slotProps={{ textField: { error: false } }}
+              slotProps={{ textField: { error: false, size: "small", fullWidth: true } }}
               disabled={editedEvent.answerDeadline === null}
-              sx={{ width: '100%' }}
               label="Answer deadline"
               disablePast
               ampm={false}
@@ -494,7 +500,59 @@ export const CreateOrUpdateEventDialog = ({
             />
           </ListItem>
 
-          <ListItem sx={{ pt: 0, pb: 0, mb: 2 }} key={'maxAttendees'} secondaryAction={
+          {/* <ListItem sx={{ py: 0, mb: 2 }} key={'answerStart'}>
+            <ListItemAvatar>
+              <Checkbox
+                sx={{ pl: 0 }}
+                checked={editedEvent.answerStart !== null}
+                onChange={() =>
+                  setEditedEvent({
+                    ...editedEvent,
+                    answerStart: editedEvent.answerStart
+                      ? null
+                      : formatDateToDatabase(
+                        set(Date.now(), {
+                          seconds: 0,
+                          milliseconds: 0,
+                        })
+                      ),
+                  })
+                }
+              />
+            </ListItemAvatar>
+
+            <DateTimePicker
+              slotProps={{ textField: { error: false, size: "small", fullWidth: true } }}
+              disabled={editedEvent.answerStart === null}
+              label="Answer start"
+              disablePast
+              ampm={false}
+              maxDateTime={formatDateFromDatabase(editedEvent.startingDateTime) ?? undefined}
+              format={'dd MMMM yyyy HH:mm'}
+              onChange={(val) => {
+                if (!val) return;
+                setEditedEvent({
+                  ...editedEvent,
+                  answerStart: formatDateToDatabase(
+                    set(new Date(editedEvent.answerStart ?? ''), {
+                      date: val.getDate(),
+                      year: val.getFullYear(),
+                      month: val.getMonth(),
+                      hours: val.getHours(),
+                      minutes: val.getMinutes(),
+                      seconds: 0,
+                      milliseconds: 0,
+                    })
+                  ),
+                });
+              }}
+              value={editedEvent.answerStart ? formatDateFromDatabase(editedEvent.answerStart) : null}
+            />
+          </ListItem> */}
+
+          <Divider sx={{ mb: 1 }} />
+
+          <ListItem sx={{ py: 0, mb: 1 }} key={'maxAttendees'} secondaryAction={
             <Box sx={{ display: 'flex', flexDirection: 'row' }}>
               {
                 (editedEvent.maxAttendees !== null && editedEvent.maxAttendees >= 0) && <>
@@ -508,7 +566,7 @@ export const CreateOrUpdateEventDialog = ({
                       event.stopPropagation();
                     }}
                   >
-                    <Remove fontSize="inherit" sx={{ fontSize: '28px' }} />
+                    <Remove fontSize="inherit" sx={{ fontSize: '22px' }} />
                   </IconButton>
                   <Typography sx={{ p: 1, fontSize: '20px', color: 'rgba(0,0,0,0.54)' }}>{editedEvent.maxAttendees}</Typography>
                 </>
@@ -523,7 +581,7 @@ export const CreateOrUpdateEventDialog = ({
                   event.stopPropagation();
                 }}
               >
-                <Add fontSize="inherit" sx={{ fontSize: '28px' }} />
+                <Add fontSize="inherit" sx={{ fontSize: '22px' }} />
               </IconButton>
             </Box>
           }>
@@ -544,7 +602,7 @@ export const CreateOrUpdateEventDialog = ({
           </ListItem>
 
           <Has feat={"events.trials"}>
-            <ListItem sx={{ pt: 0, pb: 0, mb: 2 }} key={'max_trial_attendees'} secondaryAction={
+            <ListItem sx={{ py: 0, mb: 1 }} key={'max_trial_attendees'} secondaryAction={
               <Box sx={{ display: 'flex', flexDirection: 'row' }}>
                 {
                   (editedEvent.max_trial_attendees !== null && editedEvent.max_trial_attendees >= 0) && <>
@@ -558,7 +616,7 @@ export const CreateOrUpdateEventDialog = ({
                         event.stopPropagation();
                       }}
                     >
-                      <Remove fontSize="inherit" sx={{ fontSize: '28px' }} />
+                      <Remove fontSize="inherit" sx={{ fontSize: '22px' }} />
                     </IconButton>
                     <Typography sx={{ p: 1, fontSize: '20px', color: 'rgba(0,0,0,0.54)' }}>{editedEvent.max_trial_attendees}</Typography>
                   </>
@@ -573,7 +631,7 @@ export const CreateOrUpdateEventDialog = ({
                     event.stopPropagation();
                   }}
                 >
-                  <Add fontSize="inherit" sx={{ fontSize: '28px' }} />
+                  <Add fontSize="inherit" sx={{ fontSize: '22px' }} />
                 </IconButton>
               </Box>
             }>
@@ -594,55 +652,62 @@ export const CreateOrUpdateEventDialog = ({
             </ListItem>
           </Has>
 
-          <ListItem sx={{ pt: 0, pb: 0, mb: 2 }} key={'itemType'}>
-            <ListItemAvatar>
-              <Checkbox
-                sx={{ pl: 0 }}
-                checked={editedEvent.required_item !== null}
-                onChange={() =>
-                  setEditedEvent({
-                    ...editedEvent,
-                    required_item: editedEvent.required_item === null ? 'mtvStorage' : null,
-                  })
-                }
+          <Divider sx={{ mb: 1 }} />
+
+          <Has feat={"items"}>
+            <ListItem sx={{ pt: 0, pb: 0, mb: 2 }} key={'itemType'}>
+              <ListItemAvatar>
+                <Checkbox
+                  sx={{ pl: 0 }}
+                  checked={editedEvent.required_item !== null}
+                  onChange={() =>
+                    setEditedEvent({
+                      ...editedEvent,
+                      required_item: editedEvent.required_item === null ? 'mtvStorage' : null,
+                    })
+                  }
+                />
+              </ListItemAvatar>
+              <Select
+                size='small'
+                label={'Benötigter Schlüssel'}
+                disabled={editedEvent.required_item === null}
+                fullWidth
+                value={editedEvent.required_item ?? 'none'}
+                onChange={(e) => {
+                  if (e.target.value === 'none') setEditedEvent({ ...editedEvent, required_item: null });
+                  else setEditedEvent({ ...editedEvent, required_item: e.target.value as Enums<'ItemType'> });
+                }}
+              >
+                <MenuItem value={'goethe'}>Goethe Schlüssel</MenuItem>
+                <MenuItem value={'mtvStorage'}>MTV Kellerschlüssel</MenuItem>
+                <MenuItem value={'mtvGym'}>MTV Gymschlüssel</MenuItem>
+                <MenuItem value={'mtvGymPalazzo'}>MTV Gym/Palazzoschlüssel</MenuItem>
+                <MenuItem value={'none'}>Keiner</MenuItem>
+              </Select>
+            </ListItem>
+          </Has>
+          <Has feat={"games"}>
+            <ListItem dense sx={{ pt: 0, pb: 0, mb: 2 }} key={'constellations_enabled'}>
+              <ListItemAvatar>
+                <Checkbox
+                  sx={{ pl: 0 }}
+                  checked={editedEvent.constellations_enabled}
+                  onChange={() =>
+                    setEditedEvent({
+                      ...editedEvent,
+                      constellations_enabled: !editedEvent.constellations_enabled,
+                    })
+                  }
+                />
+              </ListItemAvatar>
+              <ListItemText
+                primary={'Konstellationen aktiviert'}
+                secondary={'Soll es möglich sein für Trainer, Konstellationen zu erstellen?'}
               />
-            </ListItemAvatar>
-            <Select
-              label={'Benötigter Schlüssel'}
-              disabled={editedEvent.required_item === null}
-              fullWidth
-              value={editedEvent.required_item ?? 'none'}
-              onChange={(e) => {
-                if (e.target.value === 'none') setEditedEvent({ ...editedEvent, required_item: null });
-                else setEditedEvent({ ...editedEvent, required_item: e.target.value as Enums<'ItemType'> });
-              }}
-            >
-              <MenuItem value={'goethe'}>Goethe Schlüssel</MenuItem>
-              <MenuItem value={'mtvStorage'}>MTV Kellerschlüssel</MenuItem>
-              <MenuItem value={'mtvGym'}>MTV Gymschlüssel</MenuItem>
-              <MenuItem value={'mtvGymPalazzo'}>MTV Gym/Palazzoschlüssel</MenuItem>
-              <MenuItem value={'none'}>Keiner</MenuItem>
-            </Select>
-          </ListItem>
-          <ListItem sx={{ pt: 0, pb: 0, mb: 2 }} key={'constellations_enabled'}>
-            <ListItemAvatar>
-              <Checkbox
-                sx={{ pl: 0 }}
-                checked={editedEvent.constellations_enabled}
-                onChange={() =>
-                  setEditedEvent({
-                    ...editedEvent,
-                    constellations_enabled: !editedEvent.constellations_enabled,
-                  })
-                }
-              />
-            </ListItemAvatar>
-            <ListItemText
-              primary={'Konstellationen aktiviert'}
-              secondary={'Soll es möglich sein für Trainer, Konstellationen zu erstellen?'}
-            />
-          </ListItem>
-          <ListItem sx={{ pt: 0, pb: 0, mb: 2 }} key={'pledges'} onClick={() => {
+            </ListItem>
+          </Has>
+          <ListItem dense sx={{ pt: 0, pb: 0, mb: 2 }} key={'pledges'} onClick={() => {
             if (bringItemsLoading) return;
             setDialogOpen('bring_items');
           }}>
@@ -813,7 +878,6 @@ export const CreateOrUpdateEventDialog = ({
         open={dialogOpen === 'places'}
         handleClose={() => setDialogOpen(null)}
         placeSelected={(place) => {
-          setPlace(place);
           setEditedEvent({
             ...editedEvent,
             place: JSON.stringify({

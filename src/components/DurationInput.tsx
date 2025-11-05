@@ -107,6 +107,7 @@ export default function DurationAdder({ duration, durationChanged }: Props) {
 
   return <TextField
     fullWidth
+    size="small"
     label={'Dauer'}
     placeholder="1h 30m"
     value={durationText}

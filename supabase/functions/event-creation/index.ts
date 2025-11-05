@@ -20,7 +20,7 @@ Deno.serve(async (req: Request) => {
     const { data: created_events, error } = await supabaseClient
       .rpc('create_next_occurrences', {
         p_run_at: format(new Date(), "yyyy-MM-dd'T'HH:mm:ss.SSSXXX"),
-        p_horizon: '2 months',
+        p_horizon: '30 days',
       })
       .throwOnError();
 
