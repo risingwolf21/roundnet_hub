@@ -22,6 +22,7 @@ import Liquor from '@mui/icons-material/Liquor';
 import Notifications from '@mui/icons-material/Notifications';
 import Person from '@mui/icons-material/Person';
 import Scoreboard from '@mui/icons-material/Scoreboard';
+import SendIcon from '@mui/icons-material/Send';
 import SportsHandball from '@mui/icons-material/SportsHandball';
 import StorageOutlined from '@mui/icons-material/StorageOutlined';
 import Update from '@mui/icons-material/Update';
@@ -442,6 +443,23 @@ const DrawerContent = ({
                 <ListItemText
                   primaryTypographyProps={{ fontWeight: 'bold', fontSize: '0.9rem' }}
                   primary={'Grants-Manager'}
+                />
+              </DrawerItem>
+            </Has>
+            <Has perm={'admin.notify_users'}>
+              <DrawerItem
+                key="notify_users"
+                selected={tab === 'admin/notify_users'}
+                onClick={() => handleChange('admin/notify_users')}
+              >
+                <ListItemAvatar>
+                  <ListItemIcon>
+                    <SendIcon />
+                  </ListItemIcon>
+                </ListItemAvatar>
+                <ListItemText
+                  primaryTypographyProps={{ fontWeight: 'bold', fontSize: '0.9rem' }}
+                  primary={t('browse.notifyUsers')}
                 />
               </DrawerItem>
             </Has>

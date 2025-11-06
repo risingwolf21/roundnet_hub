@@ -20,6 +20,7 @@
     "payment": "Zahlung",
     "postgresClient": "Postgres Client",
     "auditLogs": "Audit Logs",
+    "notifyUsers": "Nachrichten senden",
     "training": "Training",
     "permissions": "Berechtigungen",
     "supabaseQueries": "Supabase Query Client",

@@ -265,8 +265,10 @@ const router = sentryCreateBrowserRouter([
                 element: <AdminUserListProvider />,
               },
               {
-                path: 'send_notifications',
-                element: <SendNotifications />
+                path: 'notify_users',
+                element: <Has perm={'admin.notify_users'} fallback={<PermissionDeniedPage />}>
+                  <SendNotifications />
+                </Has>
               },
               {
                 path: 'audit/logs',
