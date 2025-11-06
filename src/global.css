@@ -9,8 +9,14 @@ body {
   overflow: hidden;
 }
 
+:root {
+  /* Fallback für alte Browser */
+  --app-vh: 100dvh;
+}
+
 #root {
-  min-height: 100dvh;
+  min-height: 100svh;
+  min-height: var(--app-vh);
 }
 
 html,
@@ -18,6 +24,12 @@ body,
 #root {
   overscroll-behavior-y: none;
   overflow: hidden;
+}
+
+.scroll-container {
+  overflow: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
 }
 
 .safe-top {

@@ -101,7 +101,9 @@ export const PullToRefresh = ({
           drag >= maxDrag * 0.9 && !busy && <ArrowUpwardIcon />
         }
       </div>
-      {children}
+      <div className="scroll-container">
+        {children}
+      </div>
     </div >
   );
 };
