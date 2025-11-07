@@ -101,7 +101,7 @@ export const PullToRefresh = ({
           drag >= maxDrag * 0.9 && !busy && <ArrowUpwardIcon />
         }
       </div>
-      <div className="scroll-container">
+      <div className="scroll-container" style={{ overscrollBehavior: "none" }}>
         {children}
       </div>
     </div >
