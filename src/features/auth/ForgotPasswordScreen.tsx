@@ -56,12 +56,6 @@ const ForgotPasswordScreen = () => {
       setLoading(false);
       return;
     }
-
-    // await supabase.from("notifications").insert(data.map(x => ({
-    //   user: x.user.userId,
-    //   title: "Password reset request",
-    //   body: `${email} wants to reset the password.`
-    // })))
   };
 
   return (

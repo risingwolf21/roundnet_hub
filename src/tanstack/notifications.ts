@@ -1,6 +1,6 @@
 import { queryClient } from '@/lib/queryClient';
 import { supabase } from '@/lib/supabase';
-import { Tables } from '@/types/supabase-generated.types';
+import { Tables } from '@/types/helpers';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { Notification } from 'types/supabase';
 
@@ -10,6 +10,7 @@ export const useAllNotifications = (user: User | null) =>
     enabled: !!user,
     queryFn: async () => {
       const result = await supabase
+        .schema('notifications')
         .from('notifications')
         .select('*')
         .eq('user', user!.userId)
@@ -23,7 +24,12 @@ export const useAllNotifications = (user: User | null) =>
 export const useMarkNotificationsAsRead = (userId: string) =>
   useMutation({
     mutationFn: async () => {
-      const result = await supabase.from('notifications').delete().eq('user', userId).throwOnError();
+      const result = await supabase
+        .schema('notifications')
+        .from('notifications')
+        .delete()
+        .eq('user', userId)
+        .throwOnError();
 
       return result;
     },
@@ -46,10 +52,11 @@ export const useMarkNotificationsAsRead = (userId: string) =>
   });
 
 export const useNotificationTags = (user: User) =>
-  useQuery<Tables<'user_notification_preferences'>[]>({
+  useQuery<Tables<'notifications', 'user_notification_preferences'>[]>({
     queryKey: ['notifications', user.userId, 'preferences'],
     queryFn: async () => {
       const result = await supabase
+        .schema('notifications')
         .from('user_notification_preferences')
         .select('*')
         .eq('user', user.userId)
@@ -60,10 +67,10 @@ export const useNotificationTags = (user: User) =>
   });
 
 export const useNotificationTopics = () =>
-  useQuery<Tables<'notification_topics'>[]>({
+  useQuery<Tables<'notifications', 'notification_topics'>[]>({
     queryKey: ['notifications', 'topics'],
     queryFn: async () => {
-      const result = await supabase.from('notification_topics').select('*').throwOnError();
+      const result = await supabase.schema('notifications').from('notification_topics').select('*').throwOnError();
 
       return result.data ?? [];
     },
@@ -85,6 +92,7 @@ export const useUpdateNotificationPreferences = (user: User) =>
       scopeId?: string;
     }) => {
       const result = await supabase
+        .schema("notifications")
         .rpc('set_notification_pref', {
           p_topic: topic,
           p_enabled: enabled,

@@ -152,6 +152,7 @@ const DialogContent = ({ payload, open, onClose }: DialogProps<EditEntryDialogPa
 
   useEffect(() => {
     supabase
+      .schema("util")
       .rpc('get_enum_types')
       .select('*')
       .then((result) => {

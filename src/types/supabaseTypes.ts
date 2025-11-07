@@ -1,6 +1,7 @@
 import { isBefore } from 'date-fns';
 import { EventTable, History } from 'types/supabase';
-import { Database, Enums, Tables } from './supabase-generated.types';
+import { Tables } from './helpers';
+import { Database, Enums } from './supabase-generated.types';
 
 
 export type FullChallenge = Challenge & {

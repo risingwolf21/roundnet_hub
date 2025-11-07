@@ -106,7 +106,7 @@ export default function WebPushKeeper({ children, session, vapidPublicKey }: Pro
   }
 
   async function upsertToDb(p_endpoint: string, p_p256dh: string, p_auth: string, ...params: any[]) {
-    const { error } = await supabase.rpc('upsert_webpush_subscription', {
+    const { error } = await supabase.schema('notifications').rpc('upsert_webpush_subscription', {
       p_endpoint,
       p_p256dh,
       p_auth,

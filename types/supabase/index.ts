@@ -6,13 +6,14 @@ import { fetchMatch, fetchUserMatches } from '@/repository/GamesRepository';
 import { fetchItemHistory, fetchItems } from '@/repository/KeysRepository';
 import { fetchGroups, fetchSimpleUser, fetchUserWithGroups } from '@/repository/UserRepository';
 import { fetchFullEventPledges } from '@/tanstack/events';
-import { Enums, Tables, TablesInsert, TablesUpdate } from '@/types/supabase-generated.types';
+import { Enums } from '@/types/supabase-generated.types';
 import { GamesTable } from '@/types/supabaseTypes';
 import { QueryData } from '@supabase/supabase-js';
+import { Tables, TablesInsert, TablesUpdate } from 'src/types/helpers';
 
 export type EventTable = Tables<'events'>;
 export type History = Tables<'history'>;
-export type Notification = Tables<'notifications'>;
+export type Notification = Tables<'notifications', 'notifications'>;
 
 export type NonNullableFields<T, K extends keyof T> = Omit<T, K> & {
   [P in K]-?: NonNullable<T[P]>;
@@ -66,10 +67,10 @@ declare global {
 
   type PaymentInsert = TablesInsert<'payments'>;
   type EventCommentInsert = TablesInsert<'event_comments'>;
-  type NotificationInsert = TablesInsert<'notifications'>;
+  type NotificationInsert = TablesInsert<'notifications', 'notifications'>;
 
   type ItemUpdate = TablesUpdate<'items'>;
-  type NotificationUpdate = TablesUpdate<'notifications'>;
+  type NotificationUpdate = TablesUpdate<'notifications', 'notifications'>;
   type EventCommentUpdate = TablesUpdate<'event_comments'>;
   type UserUpdate = TablesUpdate<'user'>;
 

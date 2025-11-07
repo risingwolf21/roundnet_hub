@@ -70,7 +70,7 @@ async function registerOnServer(sub: PushSubscription) {
   const user_agent = navigator.userAgent;
 
   // Prefer RPC if available
-  await supabase.rpc('upsert_webpush_subscription', {
+  await supabase.schema('notifications').rpc('upsert_webpush_subscription', {
     p_endpoint: endpoint,
     p_p256dh: p256dh,
     p_auth: auth,
@@ -83,6 +83,7 @@ async function registerOnServer(sub: PushSubscription) {
 async function revokeOnServer(endpoint?: string | null) {
   if (endpoint)
     await supabase
+      .schema('notifications')
       .from('web_push_subscriptions')
       .update({ revoked_at: new Date().toISOString() })
       .eq('endpoint', endpoint);

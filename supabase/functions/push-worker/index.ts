@@ -70,6 +70,7 @@ function calcBackoffSeconds(attempts: number) {
 
 async function fetchDueJobs(limit: number): Promise<OutboxRow[]> {
   const { data, error } = await supabase
+    .schema("notifications")
     .from("notification_outbox")
     .select("*")
     .eq("status", "pending")
@@ -84,6 +85,7 @@ async function fetchDueJobs(limit: number): Promise<OutboxRow[]> {
 async function claimJob(jobId: number): Promise<boolean> {
   // Optimistic locking: only claim if still 'pending'
   const { data, error } = await supabase
+    .schema("notifications")
     .from("notification_outbox")
     .update({ status: "processing" })
     .eq("id", jobId)
@@ -99,6 +101,7 @@ async function claimJob(jobId: number): Promise<boolean> {
 async function fetchPendingTargets(jobId: number): Promise<TargetRow[]> {
   // Join auf Subscriptions; filter revoked in code (PostgREST-Join-Filter ist mühsam)
   const { data, error } = await supabase
+    .schema("notifications")
     .from("notification_outbox_targets")
     .select(
       `
@@ -125,6 +128,7 @@ async function fetchPendingTargets(jobId: number): Promise<TargetRow[]> {
 
 async function markTargetSent(jobId: number, subId: string, statusCode: number) {
   const { error } = await supabase
+    .schema("notifications")
     .from("notification_outbox_targets")
     .update({
       status: "sent",
@@ -135,11 +139,12 @@ async function markTargetSent(jobId: number, subId: string, statusCode: number) 
   // supabase-js can't do "attempt_count = attempt_count + 1" directly in one statement
   // workaround: fetch & increment locally
   if (error) throw error;
-  await supabase.rpc("inc_target_attempt", { p_outbox_id: jobId, p_subscription_id: subId, p_status: statusCode, p_error: null });
+  await supabase.schema("notifications").rpc("inc_target_attempt", { p_outbox_id: jobId, p_subscription_id: subId, p_status: statusCode, p_error: null });
 }
 
 async function markTargetSkipped(jobId: number, subId: string, statusCode: number, message: string) {
   const { error } = await supabase
+    .schema("notifications")
     .from("notification_outbox_targets")
     .update({
       status: "skipped",
@@ -147,7 +152,7 @@ async function markTargetSkipped(jobId: number, subId: string, statusCode: numbe
     .eq("outbox_id", jobId)
     .eq("subscription_id", subId);
   if (error) throw error;
-  await supabase.rpc("inc_target_attempt", { p_outbox_id: jobId, p_subscription_id: subId, p_status: statusCode, p_error: message });
+  await supabase.schema("notifications").rpc("inc_target_attempt", { p_outbox_id: jobId, p_subscription_id: subId, p_status: statusCode, p_error: message });
 }
 
 async function backoffTarget(jobId: number, subId: string, attemptsNext: number, statusCode: number | null, message: string) {
@@ -155,6 +160,7 @@ async function backoffTarget(jobId: number, subId: string, attemptsNext: number,
   const next = new Date(Date.now() + delaySec * 1000).toISOString();
 
   const { error } = await supabase
+    .schema("notifications")
     .from("notification_outbox_targets")
     .update({
       attempt_count: attemptsNext,
@@ -170,6 +176,7 @@ async function backoffTarget(jobId: number, subId: string, attemptsNext: number,
 
 async function revokeSubscription(subId: string) {
   const { error } = await supabase
+    .schema("notifications")
     .from("web_push_subscriptions")
     .update({ revoked_at: nowIso() })
     .eq("id", subId);
@@ -179,6 +186,7 @@ async function revokeSubscription(subId: string) {
 async function finishJob(jobId: number, ok: boolean, attemptsNext: number) {
   if (ok) {
     const { error } = await supabase
+      .schema("notifications")
       .from("notification_outbox")
       .update({ status: "sent", sent_at: nowIso() })
       .eq("id", jobId);
@@ -186,6 +194,7 @@ async function finishJob(jobId: number, ok: boolean, attemptsNext: number) {
   } else {
     if (attemptsNext >= MAX_JOB_ATTEMPTS) {
       const { error } = await supabase
+        .schema("notifications")
         .from("notification_outbox")
         .update({ status: "dead", attempt_count: attemptsNext, last_error: "max attempts reached" })
         .eq("id", jobId);
@@ -194,6 +203,7 @@ async function finishJob(jobId: number, ok: boolean, attemptsNext: number) {
       const delaySec = calcBackoffSeconds(attemptsNext);
       const next = new Date(Date.now() + delaySec * 1000).toISOString();
       const { error } = await supabase
+        .schema("notifications")
         .from("notification_outbox")
         .update({ status: "pending", attempt_count: attemptsNext, next_attempt_at: next })
         .eq("id", jobId);

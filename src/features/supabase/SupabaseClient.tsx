@@ -143,7 +143,7 @@ function mapOperator(qb: any, field: string, operator: string, value: unknown) {
 }
 
 async function fetchColumns(schema: string, table: string): Promise<ColumnInfo[]> {
-  const { data, error } = await supabase.rpc('get_column_info', {
+  const { data, error } = await supabase.schema('util').rpc('get_column_info', {
     schema_name: schema,
     selected_table: table,
   });
@@ -425,7 +425,7 @@ function useSupabaseTableMutations<Row = Record<string, unknown>>({
 
 // Primary key discovery via RPC
 async function fetchPrimaryKeys(schema: string, table: string): Promise<string[]> {
-  const { data, error } = await supabase.rpc('util_get_primary_keys', { schema_name: schema, table_name: table });
+  const { data, error } = await supabase.schema('util').rpc('get_primary_keys', { schema_name: schema, table_name: table });
   if (error) throw error;
   return (data ?? []).map((r: { column_name: string }) => r.column_name);
 }
@@ -522,7 +522,7 @@ export default function SupabaseClient() {
   // Initial load of tables + deep-link selection
   React.useEffect(() => {
     (async () => {
-      const result = await supabase.rpc('get_public_table_names').select('*');
+      const result = await supabase.schema('util').rpc('get_public_table_names').select('*');
       const data = result.data ?? [];
       setTables(data.map((x: any) => ({ name: x.table_name, schema: x.table_schema })));
 

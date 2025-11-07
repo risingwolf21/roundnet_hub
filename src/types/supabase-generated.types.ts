@@ -561,13 +561,6 @@ export type Database = {
           },
           {
             foreignKeyName: "teams_player_2_fkey"
-            columns: ["team_a_player_2"]
-            isOneToOne: false
-            referencedRelation: "players"
-            referencedColumns: ["player"]
-          },
-          {
-            foreignKeyName: "teams_player_2_fkey"
             columns: ["team_b_player_2"]
             isOneToOne: false
             referencedRelation: "players"
@@ -576,13 +569,20 @@ export type Database = {
           {
             foreignKeyName: "teams_player_2_fkey"
             columns: ["team_a_player_2"]
+            isOneToOne: false
+            referencedRelation: "players"
+            referencedColumns: ["player"]
+          },
+          {
+            foreignKeyName: "teams_player_2_fkey"
+            columns: ["team_b_player_2"]
             isOneToOne: false
             referencedRelation: "players_public"
             referencedColumns: ["player"]
           },
           {
             foreignKeyName: "teams_player_2_fkey"
-            columns: ["team_b_player_2"]
+            columns: ["team_a_player_2"]
             isOneToOne: false
             referencedRelation: "players_public"
             referencedColumns: ["player"]
@@ -672,6 +672,497 @@ export type Database = {
       team_category: {
         Args: { p_p1: string; p_p2: string }
         Returns: string
+      }
+    }
+    Enums: {
+      [_ in never]: never
+    }
+    CompositeTypes: {
+      [_ in never]: never
+    }
+  }
+  notifications: {
+    Tables: {
+      notification_outbox: {
+        Row: {
+          attempt_count: number
+          body: string | null
+          created_at: string
+          data: Json | null
+          dedupe_key: string | null
+          id: number
+          last_error: string | null
+          next_attempt_at: string
+          notification: string | null
+          sent_at: string | null
+          status: string
+          tenant: string
+          title: string
+          ttl_seconds: number | null
+          urgency: string
+          user: string
+        }
+        Insert: {
+          attempt_count?: number
+          body?: string | null
+          created_at?: string
+          data?: Json | null
+          dedupe_key?: string | null
+          id?: number
+          last_error?: string | null
+          next_attempt_at?: string
+          notification?: string | null
+          sent_at?: string | null
+          status?: string
+          tenant?: string
+          title: string
+          ttl_seconds?: number | null
+          urgency?: string
+          user: string
+        }
+        Update: {
+          attempt_count?: number
+          body?: string | null
+          created_at?: string
+          data?: Json | null
+          dedupe_key?: string | null
+          id?: number
+          last_error?: string | null
+          next_attempt_at?: string
+          notification?: string | null
+          sent_at?: string | null
+          status?: string
+          tenant?: string
+          title?: string
+          ttl_seconds?: number | null
+          urgency?: string
+          user?: string
+        }
+        Relationships: []
+      }
+      notification_outbox_targets: {
+        Row: {
+          attempt_count: number
+          last_error: string | null
+          last_status: number | null
+          next_attempt_at: string
+          outbox_id: number
+          status: string
+          subscription_id: string
+        }
+        Insert: {
+          attempt_count?: number
+          last_error?: string | null
+          last_status?: number | null
+          next_attempt_at?: string
+          outbox_id: number
+          status?: string
+          subscription_id: string
+        }
+        Update: {
+          attempt_count?: number
+          last_error?: string | null
+          last_status?: number | null
+          next_attempt_at?: string
+          outbox_id?: number
+          status?: string
+          subscription_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notification_outbox_targets_outbox_id_fkey"
+            columns: ["outbox_id"]
+            isOneToOne: false
+            referencedRelation: "notification_outbox"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "notification_outbox_targets_subscription_id_fkey"
+            columns: ["subscription_id"]
+            isOneToOne: false
+            referencedRelation: "web_push_subscriptions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      notification_retention: {
+        Row: {
+          keep_read_for: unknown
+          keep_revoked_sub_for: unknown
+          keep_sent_outbox_for: unknown
+          keep_unread_for: unknown
+          tenant: string
+        }
+        Insert: {
+          keep_read_for?: unknown
+          keep_revoked_sub_for?: unknown
+          keep_sent_outbox_for?: unknown
+          keep_unread_for?: unknown
+          tenant: string
+        }
+        Update: {
+          keep_read_for?: unknown
+          keep_revoked_sub_for?: unknown
+          keep_sent_outbox_for?: unknown
+          keep_unread_for?: unknown
+          tenant?: string
+        }
+        Relationships: []
+      }
+      notification_topics: {
+        Row: {
+          default_enabled: boolean
+          description: string | null
+          scope_type: string
+          topic: string
+        }
+        Insert: {
+          default_enabled?: boolean
+          description?: string | null
+          scope_type: string
+          topic: string
+        }
+        Update: {
+          default_enabled?: boolean
+          description?: string | null
+          scope_type?: string
+          topic?: string
+        }
+        Relationships: []
+      }
+      notifications: {
+        Row: {
+          body: string | null
+          created_at: string
+          data: Json | null
+          dismissed_at: string | null
+          expires_at: string | null
+          id: string
+          read_at: string | null
+          source_id: string | null
+          source_type: string | null
+          tenant: string
+          title: string
+          topic: string
+          user: string
+        }
+        Insert: {
+          body?: string | null
+          created_at?: string
+          data?: Json | null
+          dismissed_at?: string | null
+          expires_at?: string | null
+          id?: string
+          read_at?: string | null
+          source_id?: string | null
+          source_type?: string | null
+          tenant?: string
+          title: string
+          topic: string
+          user: string
+        }
+        Update: {
+          body?: string | null
+          created_at?: string
+          data?: Json | null
+          dismissed_at?: string | null
+          expires_at?: string | null
+          id?: string
+          read_at?: string | null
+          source_id?: string | null
+          source_type?: string | null
+          tenant?: string
+          title?: string
+          topic?: string
+          user?: string
+        }
+        Relationships: []
+      }
+      object_subscriptions: {
+        Row: {
+          created_at: string | null
+          scope_id: string
+          scope_type: string
+          tenant: string
+          topic: string | null
+          topic_norm: string
+          user: string
+        }
+        Insert: {
+          created_at?: string | null
+          scope_id: string
+          scope_type: string
+          tenant?: string
+          topic?: string | null
+          topic_norm?: string
+          user: string
+        }
+        Update: {
+          created_at?: string | null
+          scope_id?: string
+          scope_type?: string
+          tenant?: string
+          topic?: string | null
+          topic_norm?: string
+          user?: string
+        }
+        Relationships: []
+      }
+      user_notification_preferences: {
+        Row: {
+          channel: string
+          created_at: string
+          enabled: boolean
+          scope_id: string | null
+          scope_id_norm: string
+          scope_type: string | null
+          scope_type_norm: string
+          tenant: string
+          topic: string
+          updated_at: string
+          user: string
+        }
+        Insert: {
+          channel?: string
+          created_at?: string
+          enabled?: boolean
+          scope_id?: string | null
+          scope_id_norm?: string
+          scope_type?: string | null
+          scope_type_norm?: string
+          tenant?: string
+          topic: string
+          updated_at?: string
+          user: string
+        }
+        Update: {
+          channel?: string
+          created_at?: string
+          enabled?: boolean
+          scope_id?: string | null
+          scope_id_norm?: string
+          scope_type?: string | null
+          scope_type_norm?: string
+          tenant?: string
+          topic?: string
+          updated_at?: string
+          user?: string
+        }
+        Relationships: []
+      }
+      web_push_subscriptions: {
+        Row: {
+          auth: string
+          created_at: string
+          device_id: string | null
+          endpoint: string
+          expiration_time: string | null
+          failure_count: number | null
+          id: string
+          last_error: string | null
+          last_seen: string
+          last_status: number | null
+          p256dh: string
+          platform: string | null
+          revoked_at: string | null
+          user: string
+          user_agent: string | null
+        }
+        Insert: {
+          auth: string
+          created_at?: string
+          device_id?: string | null
+          endpoint: string
+          expiration_time?: string | null
+          failure_count?: number | null
+          id?: string
+          last_error?: string | null
+          last_seen?: string
+          last_status?: number | null
+          p256dh: string
+          platform?: string | null
+          revoked_at?: string | null
+          user: string
+          user_agent?: string | null
+        }
+        Update: {
+          auth?: string
+          created_at?: string
+          device_id?: string | null
+          endpoint?: string
+          expiration_time?: string | null
+          failure_count?: number | null
+          id?: string
+          last_error?: string | null
+          last_seen?: string
+          last_status?: number | null
+          p256dh?: string
+          platform?: string | null
+          revoked_at?: string | null
+          user?: string
+          user_agent?: string | null
+        }
+        Relationships: []
+      }
+    }
+    Views: {
+      [_ in never]: never
+    }
+    Functions: {
+      enqueue_notification: {
+        Args: {
+          p_body?: string
+          p_data?: Json
+          p_dedupe_key?: string
+          p_source_id?: string
+          p_source_type?: string
+          p_tenant?: string
+          p_title: string
+          p_topic?: string
+          p_ttl_seconds?: number
+          p_urgency?: string
+          p_user: string
+        }
+        Returns: number
+      }
+      is_topic_enabled_for_user: {
+        Args: {
+          p_scope_id?: string
+          p_scope_type?: string
+          p_tenant: string
+          p_topic: string
+          p_user: string
+        }
+        Returns: boolean
+      }
+      mark_all_notifications_read: {
+        Args: { p_source_id?: string; p_source_type?: string; p_topic?: string }
+        Returns: number
+      }
+      mark_notification_read: {
+        Args: { p_id: string }
+        Returns: undefined
+      }
+      notify_challenge_added: {
+        Args: { p_actor?: string; p_challenge: string }
+        Returns: number
+      }
+      notify_challenge_entry_added: {
+        Args: { p_actor?: string; p_challenge: string }
+        Returns: number
+      }
+      notify_drink_payment_fulfilled: {
+        Args: { p_payment: number } | { p_payment: string }
+        Returns: number
+      }
+      notify_event_canceled: {
+        Args: { p_actor?: string; p_event: string }
+        Returns: number
+      }
+      notify_event_comment_created: {
+        Args: {
+          p_author: string
+          p_comment: string
+          p_event: string
+          p_text: string
+        }
+        Returns: number
+      }
+      notify_event_updated: {
+        Args: { p_actor?: string; p_body: string; p_event: string }
+        Returns: number
+      }
+      notify_game_added: {
+        Args: { p_actor?: string; p_match: string }
+        Returns: number
+      }
+      notify_group_join_requested: {
+        Args: { p_actor?: string; p_group: string; p_user: string }
+        Returns: number
+      }
+      notify_group_request_confirmed: {
+        Args: { p_actor?: string; p_group: string; p_user: string }
+        Returns: number
+      }
+      notify_item_handover: {
+        Args:
+          | { p_actor?: string; p_from: string; p_item: number; p_to: string }
+          | { p_actor?: string; p_from: string; p_item: string; p_to: string }
+        Returns: number
+      }
+      notify_users: {
+        Args: {
+          p_body: string
+          p_data: Json
+          p_scope: string
+          p_source_id: string
+          p_source_type: string
+          p_title: string
+          p_topic: string
+          p_users: string[]
+        }
+        Returns: number
+      }
+      set_notification_pref: {
+        Args: {
+          p_channel?: string
+          p_enabled: boolean
+          p_scope_id?: string
+          p_scope_type?: string
+          p_topic: string
+        }
+        Returns: {
+          channel: string
+          created_at: string
+          enabled: boolean
+          scope_id: string | null
+          scope_id_norm: string
+          scope_type: string | null
+          scope_type_norm: string
+          tenant: string
+          topic: string
+          updated_at: string
+          user: string
+        }
+      }
+      unregister_web_push_subscription: {
+        Args: { p_endpoint: string }
+        Returns: undefined
+      }
+      upsert_webpush_subscription: {
+        Args: {
+          p_auth: string
+          p_device_id: string
+          p_endpoint: string
+          p_p256dh: string
+          p_platform: string
+          p_user_agent: string
+        }
+        Returns: {
+          auth: string
+          created_at: string
+          device_id: string | null
+          endpoint: string
+          expiration_time: string | null
+          failure_count: number | null
+          id: string
+          last_error: string | null
+          last_seen: string
+          last_status: number | null
+          p256dh: string
+          platform: string | null
+          revoked_at: string | null
+          user: string
+          user_agent: string | null
+        }
+      }
+      webpush_prune_subscriptions: {
+        Args: {
+          p_failures?: number
+          p_inactive_days?: number
+          p_revoked_days?: number
+        }
+        Returns: number
       }
     }
     Enums: {
@@ -1554,231 +2045,6 @@ export type Database = {
           },
         ]
       }
-      notification_outbox: {
-        Row: {
-          attempt_count: number
-          body: string | null
-          created_at: string
-          data: Json | null
-          dedupe_key: string | null
-          id: number
-          last_error: string | null
-          next_attempt_at: string
-          notification: string | null
-          sent_at: string | null
-          status: string
-          tenant: string
-          title: string
-          ttl_seconds: number | null
-          urgency: string
-          user: string
-        }
-        Insert: {
-          attempt_count?: number
-          body?: string | null
-          created_at?: string
-          data?: Json | null
-          dedupe_key?: string | null
-          id?: number
-          last_error?: string | null
-          next_attempt_at?: string
-          notification?: string | null
-          sent_at?: string | null
-          status?: string
-          tenant?: string
-          title: string
-          ttl_seconds?: number | null
-          urgency?: string
-          user: string
-        }
-        Update: {
-          attempt_count?: number
-          body?: string | null
-          created_at?: string
-          data?: Json | null
-          dedupe_key?: string | null
-          id?: number
-          last_error?: string | null
-          next_attempt_at?: string
-          notification?: string | null
-          sent_at?: string | null
-          status?: string
-          tenant?: string
-          title?: string
-          ttl_seconds?: number | null
-          urgency?: string
-          user?: string
-        }
-        Relationships: []
-      }
-      notification_outbox_targets: {
-        Row: {
-          attempt_count: number
-          last_error: string | null
-          last_status: number | null
-          next_attempt_at: string
-          outbox_id: number
-          status: string
-          subscription_id: string
-        }
-        Insert: {
-          attempt_count?: number
-          last_error?: string | null
-          last_status?: number | null
-          next_attempt_at?: string
-          outbox_id: number
-          status?: string
-          subscription_id: string
-        }
-        Update: {
-          attempt_count?: number
-          last_error?: string | null
-          last_status?: number | null
-          next_attempt_at?: string
-          outbox_id?: number
-          status?: string
-          subscription_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "notification_outbox_targets_outbox_id_fkey"
-            columns: ["outbox_id"]
-            isOneToOne: false
-            referencedRelation: "notification_outbox"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "notification_outbox_targets_subscription_id_fkey"
-            columns: ["subscription_id"]
-            isOneToOne: false
-            referencedRelation: "web_push_subscriptions"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      notification_retention: {
-        Row: {
-          keep_read_for: unknown
-          keep_revoked_sub_for: unknown
-          keep_sent_outbox_for: unknown
-          keep_unread_for: unknown
-          tenant: string
-        }
-        Insert: {
-          keep_read_for?: unknown
-          keep_revoked_sub_for?: unknown
-          keep_sent_outbox_for?: unknown
-          keep_unread_for?: unknown
-          tenant: string
-        }
-        Update: {
-          keep_read_for?: unknown
-          keep_revoked_sub_for?: unknown
-          keep_sent_outbox_for?: unknown
-          keep_unread_for?: unknown
-          tenant?: string
-        }
-        Relationships: []
-      }
-      notification_topics: {
-        Row: {
-          default_enabled: boolean
-          description: string | null
-          scope_type: string
-          topic: string
-        }
-        Insert: {
-          default_enabled?: boolean
-          description?: string | null
-          scope_type: string
-          topic: string
-        }
-        Update: {
-          default_enabled?: boolean
-          description?: string | null
-          scope_type?: string
-          topic?: string
-        }
-        Relationships: []
-      }
-      notifications: {
-        Row: {
-          body: string | null
-          created_at: string
-          data: Json | null
-          dismissed_at: string | null
-          expires_at: string | null
-          id: string
-          read_at: string | null
-          source_id: string | null
-          source_type: string | null
-          tenant: string
-          title: string
-          topic: string
-          user: string
-        }
-        Insert: {
-          body?: string | null
-          created_at?: string
-          data?: Json | null
-          dismissed_at?: string | null
-          expires_at?: string | null
-          id?: string
-          read_at?: string | null
-          source_id?: string | null
-          source_type?: string | null
-          tenant?: string
-          title: string
-          topic: string
-          user: string
-        }
-        Update: {
-          body?: string | null
-          created_at?: string
-          data?: Json | null
-          dismissed_at?: string | null
-          expires_at?: string | null
-          id?: string
-          read_at?: string | null
-          source_id?: string | null
-          source_type?: string | null
-          tenant?: string
-          title?: string
-          topic?: string
-          user?: string
-        }
-        Relationships: []
-      }
-      object_subscriptions: {
-        Row: {
-          created_at: string | null
-          scope_id: string
-          scope_type: string
-          tenant: string
-          topic: string | null
-          topic_norm: string
-          user: string
-        }
-        Insert: {
-          created_at?: string | null
-          scope_id: string
-          scope_type: string
-          tenant?: string
-          topic?: string | null
-          topic_norm?: string
-          user: string
-        }
-        Update: {
-          created_at?: string | null
-          scope_id?: string
-          scope_type?: string
-          tenant?: string
-          topic?: string | null
-          topic_norm?: string
-          user?: string
-        }
-        Relationships: []
-      }
       payments: {
         Row: {
           amountToPay: number
@@ -1921,48 +2187,6 @@ export type Database = {
           },
         ]
       }
-      user_notification_preferences: {
-        Row: {
-          channel: string
-          created_at: string
-          enabled: boolean
-          scope_id: string | null
-          scope_id_norm: string
-          scope_type: string | null
-          scope_type_norm: string
-          tenant: string
-          topic: string
-          updated_at: string
-          user: string
-        }
-        Insert: {
-          channel?: string
-          created_at?: string
-          enabled?: boolean
-          scope_id?: string | null
-          scope_id_norm?: string
-          scope_type?: string | null
-          scope_type_norm?: string
-          tenant?: string
-          topic: string
-          updated_at?: string
-          user: string
-        }
-        Update: {
-          channel?: string
-          created_at?: string
-          enabled?: boolean
-          scope_id?: string | null
-          scope_id_norm?: string
-          scope_type?: string | null
-          scope_type_norm?: string
-          tenant?: string
-          topic?: string
-          updated_at?: string
-          user?: string
-        }
-        Relationships: []
-      }
       vouchers: {
         Row: {
           created_at: string
@@ -1994,60 +2218,6 @@ export type Database = {
             referencedColumns: ["userId"]
           },
         ]
-      }
-      web_push_subscriptions: {
-        Row: {
-          auth: string
-          created_at: string
-          device_id: string | null
-          endpoint: string
-          expiration_time: string | null
-          failure_count: number | null
-          id: string
-          last_error: string | null
-          last_seen: string
-          last_status: number | null
-          p256dh: string
-          platform: string | null
-          revoked_at: string | null
-          user: string
-          user_agent: string | null
-        }
-        Insert: {
-          auth: string
-          created_at?: string
-          device_id?: string | null
-          endpoint: string
-          expiration_time?: string | null
-          failure_count?: number | null
-          id?: string
-          last_error?: string | null
-          last_seen?: string
-          last_status?: number | null
-          p256dh: string
-          platform?: string | null
-          revoked_at?: string | null
-          user: string
-          user_agent?: string | null
-        }
-        Update: {
-          auth?: string
-          created_at?: string
-          device_id?: string | null
-          endpoint?: string
-          expiration_time?: string | null
-          failure_count?: number | null
-          id?: string
-          last_error?: string | null
-          last_seen?: string
-          last_status?: number | null
-          p256dh?: string
-          platform?: string | null
-          revoked_at?: string | null
-          user?: string
-          user_agent?: string | null
-        }
-        Relationships: []
       }
     }
     Views: {
@@ -2353,9 +2523,7 @@ export type Database = {
         Returns: undefined
       }
       authorize: {
-        Args:
-          | { p_tenant: string; requested_permission: string }
-          | { requested_permission: string }
+        Args: { requested_permission: string }
         Returns: boolean
       }
       check_reply_to: {
@@ -2484,22 +2652,6 @@ export type Database = {
           type: Database["public"]["Enums"]["ItemType"]
         }
       }
-      enqueue_notification: {
-        Args: {
-          p_body?: string
-          p_data?: Json
-          p_dedupe_key?: string
-          p_source_id?: string
-          p_source_type?: string
-          p_tenant?: string
-          p_title: string
-          p_topic?: string
-          p_ttl_seconds?: number
-          p_urgency?: string
-          p_user: string
-        }
-        Returns: number
-      }
       eventcreation: {
         Args: Record<PropertyKey, never>
         Returns: number
@@ -2508,34 +2660,9 @@ export type Database = {
         Args: { event_id: number }
         Returns: string[]
       }
-      get_column_info: {
-        Args: { schema_name: string; selected_table: string }
-        Returns: {
-          column_name: string
-          data_type: string
-          foreign_key_column_name: string
-          foreign_key_schema_name: string
-          foreign_key_table_name: string
-          is_nullable: boolean
-        }[]
-      }
-      get_enum_types: {
-        Args: Record<PropertyKey, never>
-        Returns: {
-          enum_name: string
-          enum_values: string[]
-        }[]
-      }
       get_or_create_payment_for_user: {
         Args: { user_id: string }
         Returns: number
-      }
-      get_public_table_names: {
-        Args: Record<PropertyKey, never>
-        Returns: {
-          table_name: string
-          table_schema: string
-        }[]
       }
       gettingjsonarray: {
         Args: { items: Json }
@@ -2598,16 +2725,6 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: boolean
       }
-      is_topic_enabled_for_user: {
-        Args: {
-          p_scope_id?: string
-          p_scope_type?: string
-          p_tenant: string
-          p_topic: string
-          p_user: string
-        }
-        Returns: boolean
-      }
       is_user_admin_in_group: {
         Args: { group_id: string }
         Returns: boolean
@@ -2622,70 +2739,6 @@ export type Database = {
           holder: string
           key_id: number
         }[]
-      }
-      mark_all_notifications_read: {
-        Args: { p_source_id?: string; p_source_type?: string; p_topic?: string }
-        Returns: number
-      }
-      mark_notification_read: {
-        Args: { p_id: string }
-        Returns: undefined
-      }
-      notify_challenge_added: {
-        Args: { p_actor?: string; p_challenge: string }
-        Returns: number
-      }
-      notify_challenge_entry_added: {
-        Args: { p_actor?: string; p_challenge: string }
-        Returns: number
-      }
-      notify_drink_payment_fulfilled: {
-        Args: { p_payment: number } | { p_payment: string }
-        Returns: number
-      }
-      notify_event_canceled: {
-        Args: { p_actor?: string; p_event: string }
-        Returns: number
-      }
-      notify_event_comment_created: {
-        Args: {
-          p_author: string
-          p_comment: string
-          p_event: string
-          p_text: string
-        }
-        Returns: number
-      }
-      notify_event_updated: {
-        Args: { p_actor?: string; p_body: string; p_event: string }
-        Returns: number
-      }
-      notify_game_added: {
-        Args: { p_actor?: string; p_match: string }
-        Returns: number
-      }
-      notify_group_request_confirmed: {
-        Args: { p_actor?: string; p_group: string; p_user: string }
-        Returns: number
-      }
-      notify_item_handover: {
-        Args:
-          | { p_actor?: string; p_from: string; p_item: number; p_to: string }
-          | { p_actor?: string; p_from: string; p_item: string; p_to: string }
-        Returns: number
-      }
-      notify_users: {
-        Args: {
-          p_body: string
-          p_data: Json
-          p_scope: string
-          p_source_id: string
-          p_source_type: string
-          p_title: string
-          p_topic: string
-          p_users: string[]
-        }
-        Returns: number
       }
       refresh_user_grants: {
         Args: { p_user: string }
@@ -2708,32 +2761,6 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: Json
       }
-      set_notification_pref: {
-        Args: {
-          p_channel?: string
-          p_enabled: boolean
-          p_scope_id?: string
-          p_scope_type?: string
-          p_topic: string
-        }
-        Returns: {
-          channel: string
-          created_at: string
-          enabled: boolean
-          scope_id: string | null
-          scope_id_norm: string
-          scope_type: string | null
-          scope_type_norm: string
-          tenant: string
-          topic: string
-          updated_at: string
-          user: string
-        }
-      }
-      unregister_web_push_subscription: {
-        Args: { p_endpoint: string }
-        Returns: undefined
-      }
       update_attendance: {
         Args: {
           p_event: string
@@ -2746,47 +2773,6 @@ export type Database = {
           state: Database["public"]["Enums"]["EventAttendance"]
           user: string
         }[]
-      }
-      upsert_webpush_subscription: {
-        Args: {
-          p_auth: string
-          p_device_id: string
-          p_endpoint: string
-          p_p256dh: string
-          p_platform: string
-          p_user_agent: string
-        }
-        Returns: {
-          auth: string
-          created_at: string
-          device_id: string | null
-          endpoint: string
-          expiration_time: string | null
-          failure_count: number | null
-          id: string
-          last_error: string | null
-          last_seen: string
-          last_status: number | null
-          p256dh: string
-          platform: string | null
-          revoked_at: string | null
-          user: string
-          user_agent: string | null
-        }
-      }
-      util_get_primary_keys: {
-        Args: { schema_name: string; table_name: string }
-        Returns: {
-          column_name: string
-        }[]
-      }
-      webpush_prune_subscriptions: {
-        Args: {
-          p_failures?: number
-          p_inactive_days?: number
-          p_revoked_days?: number
-        }
-        Returns: number
       }
     }
     Enums: {
@@ -2813,6 +2799,65 @@ export type Database = {
       PaymentState: "Open" | "Fulfilled"
       ProductType: "Drink" | "Special" | "None"
       UserRole: "user" | "admin" | "procure" | "finance" | "trainer"
+    }
+    CompositeTypes: {
+      [_ in never]: never
+    }
+  }
+  util: {
+    Tables: {
+      [_ in never]: never
+    }
+    Views: {
+      [_ in never]: never
+    }
+    Functions: {
+      custom_access_token_hook: {
+        Args: { event: Json }
+        Returns: Json
+      }
+      get_column_info: {
+        Args: { schema_name: string; selected_table: string }
+        Returns: {
+          column_name: string
+          data_type: string
+          foreign_key_column_name: string
+          foreign_key_schema_name: string
+          foreign_key_table_name: string
+          is_nullable: boolean
+        }[]
+      }
+      get_enum_types: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          enum_name: string
+          enum_values: string[]
+        }[]
+      }
+      get_primary_keys: {
+        Args: { schema_name: string; table_name: string }
+        Returns: {
+          column_name: string
+        }[]
+      }
+      get_public_table_names: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          table_name: string
+          table_schema: string
+        }[]
+      }
+      jwt_claims: {
+        Args: Record<PropertyKey, never>
+        Returns: Json
+      }
+      jwt_has_permission: {
+        Args: { p_perm: string }
+        Returns: boolean
+      }
+    }
+    Enums: {
+      [_ in never]: never
     }
     CompositeTypes: {
       [_ in never]: never
@@ -2944,6 +2989,9 @@ export const Constants = {
   games: {
     Enums: {},
   },
+  notifications: {
+    Enums: {},
+  },
   public: {
     Enums: {
       EventAttendance: [
@@ -2972,6 +3020,9 @@ export const Constants = {
       ProductType: ["Drink", "Special", "None"],
       UserRole: ["user", "admin", "procure", "finance", "trainer"],
     },
+  },
+  util: {
+    Enums: {},
   },
 } as const
 

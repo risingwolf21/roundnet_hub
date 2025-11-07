@@ -88,7 +88,7 @@ const SendNotifications = () => {
         <TextField label={'Source Id'} fullWidth variant="outlined" value={sourceId} onChange={(e) => setSourceId(e.target.value)} />
       </ListItem>
       <Button fullWidth variant="contained" sx={{ m: 2 }} onClick={() => {
-        supabase.rpc('notify_users', {
+        supabase.schema('notifications').rpc('notify_users', {
           p_body: body,
           p_title: title,
           p_topic: topic,

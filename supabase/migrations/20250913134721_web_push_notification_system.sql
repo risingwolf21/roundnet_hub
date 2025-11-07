@@ -600,7 +600,7 @@ CREATE OR REPLACE FUNCTION public.is_topic_enabled_for_user(p_user text, p_tenan
 AS $function$
   select coalesce((
     select enabled
-    from public.user_notification_preferences p
+    from notifications.user_notification_preferences p
     where p."user" = p_user
       and p.tenant  = p_tenant
       and p.topic   = p_topic
@@ -1301,14 +1301,14 @@ CREATE OR REPLACE FUNCTION public.set_notification_pref(p_topic text, p_enabled 
  SET search_path TO ''
 AS $function$
 declare
-  v_row public.user_notification_preferences;
+  v_row notifications.user_notification_preferences;
   v_tenant uuid := '00000000-0000-0000-0000-000000000000';
 begin
   if auth.uid() is null then
     raise exception 'unauthenticated' using errcode = '28P01';
   end if;
 
-  insert into public.user_notification_preferences(
+  insert into notifications.user_notification_preferences(
     "user", tenant, topic, channel, enabled, scope_type, scope_id
   ) values (
     auth.uid()::text, v_tenant, p_topic, coalesce(p_channel,'webpush'),
