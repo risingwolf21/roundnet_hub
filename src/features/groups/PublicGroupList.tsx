@@ -28,7 +28,7 @@ const PublicGroupList = () => {
   const dialogs = useDialogs();
 
   const { data: groups = [], error, isLoading, refetch } = useGroups();
-  const { data: requested_group_joins = [], refetch: refetchRequested } = useRequestedUsersPerGroup();
+  const { data: requested_group_joins = [], refetch: refetchRequested } = useRequestedUsersPerGroup(user);
 
   useEffect(() => {
     if (error)

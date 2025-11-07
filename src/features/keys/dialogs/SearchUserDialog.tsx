@@ -3,7 +3,6 @@ import SearchIcon from '@mui/icons-material/Search';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Search, SearchIconWrapper, StyledInputBase } from '../../../components/SearchBar';
-import { SlideUpTransition } from '../../../utils';
 
 import ArrowBack from '@mui/icons-material/ArrowBack';
 import AppBar from '@mui/material/AppBar';
@@ -45,7 +44,7 @@ export const SearchUserDialog = ({
   }, [supabase]);
 
   return (
-    <Dialog fullScreen open={open} onClose={handleClose} TransitionComponent={SlideUpTransition}>
+    <Dialog fullScreen open={open} onClose={handleClose}>
       <Box
         sx={{
           width: '100%',

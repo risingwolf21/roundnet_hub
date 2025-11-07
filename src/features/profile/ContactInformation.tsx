@@ -81,7 +81,7 @@ const Content = ({ payload, onClose }: DialogProps<ContactInformationPayload, st
 
   return (
     <>
-      <AppBar sx={{ position: 'static', pt: 'env(safe-area-inset-top)' }}>
+      <AppBar sx={{ position: 'sticky', pt: 'env(safe-area-inset-top)' }}>
         <Toolbar>
           <IconButton edge="start" color="inherit" onClick={() => onClose(null)}>
             <Close />

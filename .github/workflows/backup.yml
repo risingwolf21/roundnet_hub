@@ -75,6 +75,7 @@ jobs:
         with:
           name: backup-munich
           path: out/munich-roundnet/*
+
   commit:
     name: Commit backups (single commit)
     runs-on: ubuntu-latest
@@ -130,3 +131,9 @@ jobs:
           file_pattern: |
             supabase/backup/roundnet-karlsruhe/*
             supabase/backup/munich-roundnet/*
+
+      - uses: geekyeggo/delete-artifact@v5
+        with:
+          name: |
+            backup-karlsruhe
+            backup-munich

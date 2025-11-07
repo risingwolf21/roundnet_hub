@@ -12,9 +12,9 @@ import UserScreenProvider from './features/profile/User';
 import { lazyWithRetry } from './hooks/lazyWithRetry';
 import { Has } from './hooks/useGrants';
 
-const HistoryScreenProvider = lazyWithRetry(() => import('./features/drinks/HistoryScreenProvider'));
+const HistoryScreenProvider = lazyWithRetry(() => import('./features/drinks/HistoryScreen.page'));
 const ItemHolderScreen = lazyWithRetry(() => import('./features/keys/ItemHolderScreen'));
-const PayDrinksScreenProvider = lazyWithRetry(() => import('./features/drinks/PayDrinksScreen'));
+const PayDrinksScreenProvider = lazyWithRetry(() => import('./features/drinks/PayDrinks.page'));
 const ResetPasswordScreen = lazyWithRetry(() => import('./features/auth/ResetPasswordScreen'));
 const PaymentsPendingAdmin = lazyWithRetry(() => import('./features/admin/PaymentsPendingAdmin'));
 const AdminDrinkListProvider = lazyWithRetry(() => import('./features/admin/AdminDrinkList'));
@@ -24,7 +24,7 @@ const DrinkListScreenProvider = lazyWithRetry(() => import('./features/drinks/Dr
 const EventInformationProvider = lazyWithRetry(() => import('./features/events/EventInformation.page'));
 const EventScreenProvider = lazyWithRetry(() => import('./features/events/EventList.page'));
 const NotificationScreen = lazyWithRetry(() => import('./features/notifications/NotificationScreen'));
-const ChallengeScreen = lazyWithRetry(() => import('./features/challenges/ChallengeList'));
+const ChallengeScreen = lazyWithRetry(() => import('./features/challenges/ChallengeList.page'));
 const ChallengeInfoScreen = lazyWithRetry(() => import('./features/challenges/ChallengeInformation'));
 const RecurringEvents = lazyWithRetry(() => import('./features/events/RecurringEvents'));
 const GameList = lazyWithRetry(() => import('./features/games/GameList'));
@@ -106,7 +106,7 @@ const router = sentryCreateBrowserRouter([
         children: [
           {
             index: true,
-            element: <Navigate to="/home" />,
+            element: <Navigate to={import.meta.env.VITE_APP_HOMEPAGE ?? '/home'} />,
           },
           {
             path: '/home',
@@ -265,8 +265,10 @@ const router = sentryCreateBrowserRouter([
                 element: <AdminUserListProvider />,
               },
               {
-                path: 'send_notifications',
-                element: <SendNotifications />
+                path: 'notify_users',
+                element: <Has perm={'admin.notify_users'} fallback={<PermissionDeniedPage />}>
+                  <SendNotifications />
+                </Has>
               },
               {
                 path: 'audit/logs',

@@ -58,125 +58,125 @@ const Layout = ({
   return (
     <Box
       sx={{
+        // Vollbild – dynamische Viewport-Höhe für Mobile
+        height: '100dvh',
+        width: '100vw',
         position: 'fixed',
         top: 0,
         left: 0,
-        width: '100%',
-        height: '100dvh',
-        display: 'flex',
-        overflowY: 'none', // Kein Overflow außerhalb des Containers
+
+        // Safe-Area seitlich/unten am gesamten Layout
+        pl: 'env(safe-area-inset-left)',
+        pr: 'env(safe-area-inset-right)',
+        pb: 'env(safe-area-inset-bottom)',
+
+        // Layout: AppBar oben, Content füllt restliche Höhe
+        display: 'grid',
+        gridTemplateRows: 'min-content 1fr',
+        gridTemplateColumns: {
+          xs: '1fr',                // < lg: keine feste Drawer-Spalte
+          lg: `${drawerWidth}px 1fr`, // >= lg: Drawer | Content
+        },
+        minHeight: 0, // wichtig für korrektes Scrollen im zweiten Grid-Track
+        background: 'primary',
+        overflow: "hidden"
       }}
     >
-      {/* AppBar */}
-      <AppBar
-        position="fixed"
-        sx={(theme) => ({
-          zIndex: theme.zIndex.drawer + 1,
-          background: 'primary',
-          top: 0,
-          [theme.breakpoints.down('lg')]: {
-            width: `100%`,
-          },
-          [theme.breakpoints.up('lg')]: {
-            width: `calc(100% - ${drawerWidth}px)`,
-            ml: `${drawerWidth}px`,
-          },
-        })}
+
+      <Box
+        sx={{
+          display: { xs: 'none', lg: 'block' },
+          gridRow: '1 / span 2', // Drawer-Spalte über beide Reihen
+          gridColumn: 1,
+          minWidth: 0,
+        }}
       >
-        <Box sx={{ height: 'env(safe-area-inset-top)' }} />
-        <Toolbar>
-          {navigateBackPath ? (
-            <IconButton
-              color="inherit"
-              onClick={() => navigate(navigateBackPath)}
-              edge="start"
-              sx={{
-                mr: 2,
-              }}
-            >
-              <ArrowBack />
-            </IconButton>
-          ) : (
-            <IconButton
-              color="inherit"
-              onClick={() => setDrawerOpen(true)}
-              edge="start"
-              sx={(theme) => ({
-                mr: 2,
-                [theme.breakpoints.up('lg')]: {
-                  display: 'none',
-                },
-              })}
-            >
-              <Menu />
-            </IconButton>
-          )}
+        <Drawer open={drawerOpen} onClose={() => setDrawerOpen(false)} onOpen={() => setDrawerOpen(true)} />
+      </Box>
 
-          {
-            appBarContent ? appBarContent : <>
-              {/* Title */}
-              <Typography variant="h6" noWrap sx={{ flexGrow: 1 }}>
-                {title}
-              </Typography>
-              {/* Profile */}
-              {showProfile && user && (
-                <IconButton
-                  color="inherit"
-                  onClick={() => {
-                    navigate('/user');
-                  }}
-                  sx={{ pr: 0 }}
-                >
-                  {user.avatarUrl ? (
-                    <Avatar sx={{ borderRadius: 2, width: '35px', height: '35px' }}>
-                      <img src={user?.avatarUrl} alt="logo" width={'35px'} height={'35px'} />
-                    </Avatar>
-                  ) : (
-                    <AccountCircle />
-                  )}
-                </IconButton>
-              )}
-              {appBarActions}
-            </>
-          }
-        </Toolbar>
+      <Box sx={{ gridColumn: { xs: '1', lg: '2' }, gridRow: '1' }}>
+        <AppBar
+          position="sticky"
+          sx={(theme) => ({
+            pt: 'env(safe-area-inset-top)',
+            pl: 'env(safe-area-inset-left)',
+            pr: 'env(safe-area-inset-right)',
+            zIndex: theme.zIndex.drawer - 1,
+            background: 'primary',
+            top: 0
+          })}
+        >
+          <Toolbar disableGutters sx={{ px: 2 }}>
+            {navigateBackPath ? (
+              <IconButton
+                color="inherit"
+                onClick={() => navigate(navigateBackPath)}
+                edge="start"
+                sx={{
+                  mr: 2,
+                }}
+              >
+                <ArrowBack />
+              </IconButton>
+            ) : (
+              <IconButton
+                color="inherit"
+                onClick={() => setDrawerOpen(true)}
+                edge="start"
+                sx={(theme) => ({
+                  mr: 2,
+                  [theme.breakpoints.up('lg')]: {
+                    display: 'none',
+                  },
+                })}
+              >
+                <Menu />
+              </IconButton>
+            )}
 
-      </AppBar>
+            {
+              appBarContent ? appBarContent : <>
+                {/* Title */}
+                <Typography variant="h6" sx={{ flexGrow: 1, overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                  {title}
+                </Typography>
+                {/* Profile */}
+                {showProfile && user && (
+                  <IconButton
+                    color="inherit"
+                    onClick={() => {
+                      navigate('/user');
+                    }}
+                    sx={{ pr: 0 }}
+                  >
+                    {user.avatarUrl ? (
+                      <Avatar sx={{ borderRadius: 2, width: '35px', height: '35px' }}>
+                        <img src={user?.avatarUrl} alt="logo" width={'35px'} height={'35px'} />
+                      </Avatar>
+                    ) : (
+                      <AccountCircle />
+                    )}
+                  </IconButton>
+                )}
+                {appBarActions}
+              </>
+            }
+          </Toolbar>
 
-      {/* Drawer  */}
-      <Drawer open={drawerOpen} onClose={() => setDrawerOpen(false)} onOpen={() => setDrawerOpen(true)} />
+        </AppBar>
+      </Box>
 
       {/* Main Content */}
       <Box
         component="main"
-        sx={(theme) => ({
-          flexGrow: 1,
-          alignItems: 'center',
-          display: 'flex',
-          flexDirection: 'column',
-          pt: 'env(safe-area-inset-top)',
-          pb: 'env(safe-area-inset-bottom)',
-          [theme.breakpoints.down('lg')]: {
-            width: '100%',
-          },
-          [theme.breakpoints.up('lg')]: {
-            width: `calc(100% - ${drawerWidth}px)`,
-          },
-        })}
+        sx={{
+          gridColumn: { xs: '1', lg: '2' },
+          gridRow: '2',
+          minHeight: 0,
+          overflow: 'auto'
+        }}
       >
-        <Toolbar />
-        <Box
-          sx={{
-            width: '100%',
-            overflowY: 'auto',
-            alignItems: 'center',
-            pb: 'env(safe-area-inset-bottom)',
-            flexGrow: 1,
-            height: '100svh',
-          }}
-        >
-          {children}
-        </Box>
+        {children}
       </Box>
     </Box>
   );

@@ -14,6 +14,7 @@ import SearchAndSelectUserDialog from './dialogs/SearchAndSelectUserDialog';
 import { useAddUsersMutation } from './query/addUsersMutation';
 import { useRemoveUsersMutation } from './query/removeUsersMutation';
 
+import { Has } from '@/hooks/useGrants';
 import AccountBox from '@mui/icons-material/AccountBox';
 import AdminPanelSettings from '@mui/icons-material/AdminPanelSettings';
 import Check from '@mui/icons-material/Check';
@@ -158,14 +159,16 @@ const PublicGroupInformation = () => {
                   onClick={() => setFilter({ ...filter ?? DEFAULT_FILTER, joinRequested: !filter?.joinRequested })} />
               </Badge>
 
-              <Badge color='primary' badgeContent={group_trials.length}>
-                <Chip
-                  disabled={isLoadingTrials}
-                  icon={filter?.trials ? <Check /> : undefined}
-                  color={filter?.trials ? 'secondary' : 'default'}
-                  label='Trials'
-                  onClick={() => setFilter({ ...filter ?? DEFAULT_FILTER, trials: !filter?.trials })} />
-              </Badge>
+              <Has feat={"events.trials"}>
+                <Badge color='primary' badgeContent={group_trials.length}>
+                  <Chip
+                    disabled={isLoadingTrials}
+                    icon={filter?.trials ? <Check /> : undefined}
+                    color={filter?.trials ? 'secondary' : 'default'}
+                    label='Trials'
+                    onClick={() => setFilter({ ...filter ?? DEFAULT_FILTER, trials: !filter?.trials })} />
+                </Badge>
+              </Has>
 
               <Badge color='primary' badgeContent={group_admins.length}>
                 <Chip
@@ -228,7 +231,9 @@ const PublicGroupInformation = () => {
                         <DeclineJoinButton user={x.user} group={group} />
                         <Divider orientation="vertical" flexItem sx={{ mx: 0.5 }} />
                         <AcceptJoinButton user={x.user} group={group} />
-                        <AcceptTrialJoinButton user={x.user} group={group} />
+                        <Has feat={"events.trials"}>
+                          <AcceptTrialJoinButton user={x.user} group={group} />
+                        </Has>
                       </Stack>
                     </Stack>
                   </ListItem>
@@ -368,21 +373,23 @@ const PublicGroupInformation = () => {
                           }}>
                             <AdminPanelSettings />
                           </IconButton>
-                          <IconButton onClick={async (e) => {
-                            e.stopPropagation();
-                            const result = await dialogs.confirm(
-                              `Möchtest du wirklich ${x.user.name} zu einem Probenutzer dieser Gruppe machen?`,
-                              {
-                                okText: 'Bestätigen',
-                                cancelText: 'Abbrechen',
+                          <Has feat={"events.trials"}>
+                            <IconButton onClick={async (e) => {
+                              e.stopPropagation();
+                              const result = await dialogs.confirm(
+                                `Möchtest du wirklich ${x.user.name} zu einem Probenutzer dieser Gruppe machen?`,
+                                {
+                                  okText: 'Bestätigen',
+                                  cancelText: 'Abbrechen',
+                                }
+                              );
+                              if (result) {
+                                changeUserRoleMutation.mutate({ group: group, user: x.user, new_role: "trial" });
                               }
-                            );
-                            if (result) {
-                              changeUserRoleMutation.mutate({ group: group, user: x.user, new_role: "trial" });
-                            }
-                          }}>
-                            <MoveDownIcon />
-                          </IconButton>
+                            }}>
+                              <MoveDownIcon />
+                            </IconButton>
+                          </Has>
                         </Stack>
                       }
                       : {})}

@@ -1,76 +1,21 @@
 import { PullToRefresh } from '@/components/pull-to-refresh/PullToRefresh';
 import { SupabaseEventRepository } from '@/repository/EventRepository';
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import IconButton, { IconButtonProps } from '@mui/material/IconButton';
-import { styled } from '@mui/material/styles';
 import { useQuery } from '@tanstack/react-query';
-import { useDialogs } from '@toolpad/core';
-import { format } from 'date-fns';
-import React from 'react';
+import { format, getWeek, isAfter, parse, toDate } from 'date-fns';
 import Layout from '../../components/layout/Layout';
 import { EventWithGroup } from '../../types/supabaseTypes';
-import { nameOfRecurrence } from '../../utils';
-import { CreateOrUpdateEventDialog } from './dialogs/CreateOrUpdateEventDialog';
-import { PlaceType } from './types';
 
-import CalendarMonth from '@mui/icons-material/CalendarMonth';
-import Edit from '@mui/icons-material/Edit';
-import EventBusyRounded from '@mui/icons-material/EventBusyRounded';
-import GroupRounded from '@mui/icons-material/GroupRounded';
-import Key from '@mui/icons-material/Key';
-import PersonOffRounded from '@mui/icons-material/PersonOffRounded';
-import Place from '@mui/icons-material/Place';
-import PlayCircle from '@mui/icons-material/PlayCircle';
-import Repeat from '@mui/icons-material/Repeat';
-import Stop from '@mui/icons-material/Stop';
-import StopCircleRounded from '@mui/icons-material/StopCircleRounded';
-import WatchLaterRounded from '@mui/icons-material/WatchLaterRounded';
-import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
-import Card from '@mui/material/Card';
-import CardActions from '@mui/material/CardActions';
-import CardContent from '@mui/material/CardContent';
-import CardHeader from '@mui/material/CardHeader';
+import GroupIcon from '@mui/icons-material/Group';
+import PlaceIcon from '@mui/icons-material/Place';
 import Chip from '@mui/material/Chip';
-import Collapse from '@mui/material/Collapse';
-import Divider from '@mui/material/Divider';
-import Grid from '@mui/material/Grid';
-import LinearProgress from '@mui/material/LinearProgress';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
-import ListItemAvatar from '@mui/material/ListItemAvatar';
 import ListItemText from '@mui/material/ListItemText';
-import Step from '@mui/material/Step';
-import StepLabel from '@mui/material/StepLabel';
-import Stepper from '@mui/material/Stepper';
-
-interface ExpandMoreProps extends IconButtonProps {
-  expand: boolean;
-}
-
-const ExpandMore = styled((props: ExpandMoreProps) => {
-  const { expand, ...other } = props;
-  return <IconButton {...other} />;
-})(({ theme }) => ({
-  marginLeft: 'auto',
-  transition: theme.transitions.create('transform', {
-    duration: theme.transitions.duration.shortest,
-  }),
-  variants: [
-    {
-      props: ({ expand }: ExpandMoreProps) => !expand,
-      style: {
-        transform: 'rotate(0deg)',
-      },
-    },
-    {
-      props: ({ expand }: ExpandMoreProps) => !!expand,
-      style: {
-        transform: 'rotate(180deg)',
-      },
-    },
-  ],
-}));
+import ListSubheader from '@mui/material/ListSubheader';
+import Typography from '@mui/material/Typography';
+import Stack from '@mui/system/Stack';
+import groupBy from 'lodash.groupby';
+import { useTranslation } from 'react-i18next';
 
 type RecurringEventsProps = {
   recurringEvents: EventWithGroup[];
@@ -97,167 +42,57 @@ const RecurringEventsProvider = () => {
 };
 
 const RecurringEvents = ({ recurringEvents, loading }: RecurringEventsProps) => {
-  const dialogs = useDialogs();
-  const [expanded, setExpanded] = React.useState(-1);
-
-  const handleExpandClick = (index: number) => {
-    if (expanded === index) setExpanded(-1);
-    else setExpanded(index);
-  };
+  const { t } = useTranslation();
 
   return (
-    <Layout appBarConfig={{ navigateBackPath: '/training/list' }}>
-      {loading && <LinearProgress sx={{ position: 'fixed', top: 56, left: 0, right: 0 }} />}
-      <Grid container rowSpacing={2} sx={{ width: '100%', p: 1 }}>
-        {recurringEvents.map((x, index) => (
-          <Grid size={{ xs: 12, md: 12 }} key={x.id}>
-            <Box sx={{ display: 'flex' }}>
-              <Card elevation={4} sx={{ width: '100%' }}>
-                <CardHeader
-                  title={x.title}
-                  subheader={x.description}
-                  titleTypographyProps={{
-                    fontSize: '14pt',
+    <List>
+      {Object.entries(groupBy(recurringEvents, (x) => format(x.startingDateTime!, 'EEEE'))).sort((a, b) => isAfter(parse(a[0], 'EEEE', new Date(), { weekStartsOn: 1 }), parse(b[0], 'EEEE', new Date(), { weekStartsOn: 1 })) ? 1 : -1).map(([key, value]: [string, EventWithGroup[]]) => (
+        <List subheader={<ListSubheader sx={{ fontWeight: 'bold', fontSize: '1rem' }}>{key}</ListSubheader>}>
+          {value.map((event: EventWithGroup) => (
+            <ListItem
+              key={event.key}
+              divider={true}
+              onClick={() => console.log(getWeek(event.startingDateTime, { weekStartsOn: 1 }), getWeek(new Date(), { weekStartsOn: 1 }))}
+              secondaryAction={<Stack direction="column" spacing={1}>
+                <Chip icon={<GroupIcon sx={{ color: event.fullGroup.color }} />} label={event.fullGroup.name} size="small" />
+                <Chip icon={<PlaceIcon />} label={event.place ? JSON.parse(event.place ?? "{'name': 'Unkown place'}")?.name?.split(" ")[0] ?? '' : "Unkown place"} size="small" />
+              </Stack>}
+            >
+              <ListItemText
+                primary={event.title}
+                slotProps={{
+                  primary: {
                     whiteSpace: 'nowrap',
-                    overflow: 'hidden',
+                    overflow: 'clip',
                     textOverflow: 'ellipsis',
-                  }}
-                  subheaderTypographyProps={{
-                    fontSize: '10pt',
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
+                  },
+                  secondary: {
                     whiteSpace: 'nowrap',
-                  }}
-                  sx={{
-                    '& .MuiCardHeader-content': {
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
-                      whiteSpace: 'nowrap',
-                    },
-                  }}
-                  action={<Chip icon={<CalendarMonth />} label={format(x.startingDateTime, 'EEEE')} />}
-                />
-                <CardContent>
-                  <Grid>
-                    <Grid size={{ xs: 12, md: 12 }}>
-                      <Stepper alternativeLabel activeStep={4}>
-                        {x.answerDeadline && (
-                          <Step key={'deadline'}>
-                            <StepLabel icon={<EventBusyRounded color={'primary'} />}>
-                              <b>Deadline</b>
-                              <br></br>
-                              {format(x.answerDeadline, 'EEEE')}
-                              <br></br>
-                              {format(x.answerDeadline, 'HH:mm')}
-                            </StepLabel>
-                          </Step>
-                        )}
-                        {x.meetingDateTime && (
-                          <Step key={'meeting'}>
-                            <StepLabel icon={<WatchLaterRounded color={'primary'} />}>
-                              <b>Treffen</b>
-                              <br></br>
-                              {format(x.meetingDateTime, 'EEEE')}
-                              <br></br>
-                              {format(x.meetingDateTime, 'HH:mm')}
-                            </StepLabel>
-                          </Step>
-                        )}
-                        {x.startingDateTime && (
-                          <Step key={'start'}>
-                            <StepLabel icon={<PlayCircle color={'primary'} />}>
-                              <b>Start</b>
-                              <br></br>
-                              {format(x.startingDateTime, 'EEEE')}
-                              <br></br>
-                              {format(x.startingDateTime, 'HH:mm')}
-                            </StepLabel>
-                          </Step>
-                        )}
-                        {x.endDateTime && (
-                          <Step key={'end'}>
-                            <StepLabel icon={<StopCircleRounded color={'primary'} />}>
-                              <b>Ende</b>
-                              <br></br>
-                              {format(x.endDateTime, 'EEEE')}
-                              <br></br>
-                              {format(x.endDateTime, 'HH:mm')}
-                            </StepLabel>
-                          </Step>
-                        )}
-                      </Stepper>
-                    </Grid>
-                    <Divider sx={{ mt: 2, mb: 2 }} />
-                    <Grid size={{ xs: 12, md: 12 }}>
-                      <Grid container rowSpacing={2} columnSpacing={2}>
-                        <Grid>
-                          <Chip icon={<Repeat />} label={nameOfRecurrence(x.recurrence)} />
-                        </Grid>
-                        {x.recurrenceEnd && (
-                          <Grid>
-                            <Chip icon={<Stop />} label={format(x.recurrenceEnd, 'dd.MM.yyyy HH:mm')} />
-                          </Grid>
-                        )}
-                        <Grid>
-                          <Chip
-                            icon={<GroupRounded style={{ color: x.fullGroup?.color }} />}
-                            label={x.fullGroup?.name}
-                          />
-                        </Grid>
-                        <Grid>
-                          {
-                            <Chip
-                              icon={<PersonOffRounded />}
-                              label={x.maxAttendees && x.maxAttendees > 0 ? x.maxAttendees : 'Keine Begrenzung'}
-                            />
-                          }
-                        </Grid>
-                        <Grid>
-                          {x.place && (
-                            <Chip icon={<Place />} label={(JSON.parse(x.place?.toString() ?? '') as PlaceType).name} />
-                          )}
-                        </Grid>
-                      </Grid>
-                    </Grid>
-                  </Grid>
-                </CardContent>
-                <CardActions disableSpacing>
-                  <Button
-                    startIcon={<Edit />}
-                    onClick={async () => {
-                      await dialogs.open(CreateOrUpdateEventDialog, {
-                        event: x,
-                        eventGroup: x.fullGroup,
-                        option: 'UpdateRecurrence',
-                      });
-                    }}
-                  >
-                    Bearbeiten
-                  </Button>
-                  <ExpandMore
-                    expand={expanded === index}
-                    onClick={() => handleExpandClick(index)}
-                    aria-label="show more"
-                  >
-                    <ExpandMoreIcon />
-                  </ExpandMore>
-                </CardActions>
-                <Collapse in={expanded === index} timeout="auto" unmountOnExit>
-                  <List sx={{ width: '100%' }}>
-                    <ListItem>
-                      <ListItemAvatar>
-                        <Key />
-                      </ListItemAvatar>
-                      <ListItemText primary={x.key} />
-                    </ListItem>
-                  </List>
-                </Collapse>
-              </Card>
-            </Box>
-          </Grid>
-        ))}
-      </Grid>
-    </Layout>
+                    overflow: 'clip',
+                    textOverflow: 'ellipsis',
+                  },
+                }}
+                secondary={
+                  <Stack direction="column">
+                    <Typography fontSize={14}>
+                      {
+                        [
+                          t('events.secondaryTextStart', { start: toDate(event.startingDateTime!) }),
+                          event.endDateTime && t('events.secondaryTextWithEnd', { end: toDate(event.endDateTime) }),
+                        ].join(' ') + " - " + format(event.startingDateTime, "dd.MM.yyyy")
+                      }
+                    </Typography>
+                    <Typography fontSize={14}>
+                      {event.recurrence === "Fortnightly" ? "Alle 2 Wochen" : event.recurrence === "Weekly" ? "Wöchentlich" : "Einmalig"}
+                    </Typography>
+                  </Stack>
+                }
+              />
+            </ListItem>
+          ))}
+        </List>
+      ))}
+    </List>
   );
 };
 export default RecurringEventsProvider;

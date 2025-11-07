@@ -2,7 +2,6 @@ import Layout from '@/components/layout/Layout';
 import { PullToRefresh } from '@/components/pull-to-refresh/PullToRefresh';
 import { useMatches } from '@/tanstack/games';
 import { UserMatchesView } from '@/types/supabaseTypes';
-import { groupBy } from '@/utils';
 import { useDialogs, useNotifications } from '@toolpad/core';
 import { format, isAfter } from 'date-fns';
 import { t } from 'i18next';
@@ -20,6 +19,7 @@ import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListSubheader from '@mui/material/ListSubheader';
 import Typography from '@mui/material/Typography';
+import groupBy from 'lodash.groupby';
 
 const GameList = () => {
   const notifications = useNotifications();
@@ -43,18 +43,17 @@ const GameList = () => {
             [theme.breakpoints.up('xl')]: { pb: 0 },
           })}
         >
-          {Array.from(groupBy(matches, (x: UserMatchesView) => format(x.created_at ?? '', 'dd MMMM yyyy')))
-            .sort(([key1, v1], [key2, v2]) => (isAfter(key1, key2) ? -1 : 1))
+          {Object.entries(groupBy(matches, (x: UserMatchesView) => format(x.created_at ?? '', 'dd MMMM yyyy')))
+            .sort(([key1, _v1], [key2, _v2]) => (isAfter(key1, key2) ? -1 : 1))
             .map(([key, value]) => (
               <List
                 key={key}
                 subheader={
                   <ListSubheader
                     sx={{
-                      zIndex: '-1',
                       fontWeight: 'bold',
                       lineHeight: 'normal',
-                      my: 2,
+                      my: 1,
                       color: 'rgba(0,0,0,0.87)',
                     }}
                   >
@@ -62,7 +61,7 @@ const GameList = () => {
                   </ListSubheader>
                 }
               >
-                {value.map((x, index) => (
+                {value.map((x) => (
                   <ListItem key={x.id} divider onClick={() => navigate(`/matches/${x.id}`)}>
                     <Box sx={{ display: 'flex', flexDirection: 'row', width: '100%' }}>
                       <Box
@@ -128,9 +127,9 @@ const GameList = () => {
                           Score eintragen
                         </Button>
                       )}
-                      {x.set_results?.split(',').map((y, index) => {
+                      {x.set_results?.split(',').map((y) => {
                         const [team_a_score, team_b_score] = y.trim().split(':');
-                        let teamAWon = team_a_score > team_b_score;
+                        const teamAWon = team_a_score > team_b_score;
                         return (
                           <Box
                             sx={{

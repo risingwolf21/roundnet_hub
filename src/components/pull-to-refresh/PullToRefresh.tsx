@@ -1,37 +1,41 @@
 import React, { createRef, ReactNode, useState } from 'react';
 
+import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
+import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
 import CircularProgress from '@mui/material/CircularProgress';
-
 type Props = {
   children: ReactNode;
   indicatorSize?: number;
   maxDrag?: number;
   onRefresh: () => void;
-  topOffset?: number;
 };
 
 export const PullToRefresh = ({
   onRefresh,
   children = null,
-  indicatorSize = 50,
-  maxDrag = 200,
-  topOffset = 64,
+  indicatorSize = 80,
+  maxDrag = 350,
 }: Props) => {
   const ref = createRef<HTMLDivElement>();
   const [busy, setBusy] = useState<boolean>(false);
   const [touchStart, setTouchStart] = useState<React.Touch | null>(null);
   const [drag, setDrag] = useState<number>(0);
-  const [dragging, setDragging] = useState<boolean>(false);
+
+  const k = 2.5;
+  function appr(x: number) {
+    return maxDrag * (1 - Math.exp((-k * x) / maxDrag));
+  }
 
   const reset = () => {
     setBusy(false);
     setTouchStart(null);
     setDrag(0);
-    setDragging(false);
   };
 
   const onTouchStart = (event: React.TouchEvent<HTMLDivElement>) => {
-    if (!busy && ref.current && ref.current.scrollTop <= topOffset) {
+    // check if dialog container exists -> any dialog is open
+    if (document.querySelector(".MuiDialog-container")) return;
+    if (!busy) {
       setTouchStart(event.touches[0]);
     }
   };
@@ -41,13 +45,9 @@ export const PullToRefresh = ({
     if (!touchStart) {
       return;
     }
-    const drag = Math.max(0, event.touches[0].clientY - touchStart.clientY);
-    if (drag !== 0) {
-      setDrag(Math.min(drag, maxDrag));
-      setDragging(true);
-    } else if (!dragging) {
-      reset();
-    }
+    const dy = event.touches[0].clientY - touchStart.clientY;
+    if (dy < 0) setDrag(0);
+    else setDrag(appr(dy));
   };
 
   const onTouchEnd = () => {
@@ -56,7 +56,7 @@ export const PullToRefresh = ({
         setBusy(true);
         setDrag(maxDrag / 2);
         setTouchStart(null);
-        Promise.resolve().then(onRefresh).then(reset, reset);
+        new Promise(resolve => setTimeout(resolve, 1000)).then(onRefresh).finally(reset);
       } else {
         reset();
       }
@@ -77,19 +77,33 @@ export const PullToRefresh = ({
         style={{
           width: '100%',
           height: `${indicatorSize * (busy ? 1 : Math.min(drag, maxDrag) / maxDrag)}px`,
-          display: dragging || busy ? 'flex' : 'none',
+          display: drag > 0 || busy ? 'flex' : 'none',
           alignItems: 'center',
           justifyContent: 'center',
+          background: "white",
+          backgroundImage: "radial-gradient(#80888888 1px, transparent 0)",
+          backgroundSize: "20px 20px",
+          backgroundPosition: "-19px -19px",
         }}
       >
-        <CircularProgress
-          thickness={5}
-          size={indicatorSize * 0.6}
-          variant="indeterminate"
-          sx={{ transition: 'none' }}
-        />
+        {
+          busy && <CircularProgress
+            thickness={5}
+            size={30}
+            variant="indeterminate"
+            sx={{ transition: 'none' }}
+          />
+        }
+        {
+          drag < maxDrag * 0.9 && drag > 50 && !busy && <ArrowDownwardIcon />
+        }
+        {
+          drag >= maxDrag * 0.9 && !busy && <ArrowUpwardIcon />
+        }
       </div>
-      {children}
-    </div>
+      <div className="scroll-container">
+        {children}
+      </div>
+    </div >
   );
 };

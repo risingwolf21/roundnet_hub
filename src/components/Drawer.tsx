@@ -7,7 +7,6 @@ import { TFunction } from 'i18next';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router';
-import { HOMEPAGE } from '../constants';
 import { InstallPWA } from './PwaInstallPromp';
 
 import EmojiEvents from '@mui/icons-material/EmojiEvents';
@@ -23,6 +22,7 @@ import Liquor from '@mui/icons-material/Liquor';
 import Notifications from '@mui/icons-material/Notifications';
 import Person from '@mui/icons-material/Person';
 import Scoreboard from '@mui/icons-material/Scoreboard';
+import SendIcon from '@mui/icons-material/Send';
 import SportsHandball from '@mui/icons-material/SportsHandball';
 import StorageOutlined from '@mui/icons-material/StorageOutlined';
 import Update from '@mui/icons-material/Update';
@@ -92,10 +92,11 @@ const DrawerItem = styled(ListItem, {
 
 const DrawerBox = styled(Box)<BoxProps>(({ }) => ({
   width: '100%',
-  height: 'calc(100% + env(safe-area-inset-top))',
+  height: '100%',
   paddingTop: 'env(safe-area-inset-top)',
   paddingBottom: 'env(safe-area-inset-bottom)',
   paddingLeft: 'env(safe-area-inset-left)',
+  paddingRight: 'env(safe-area-inset-right)',
   overflow: 'auto',
 }));
 
@@ -105,11 +106,11 @@ const CustomDrawer = styled(SwipeableDrawer)<DrawerProps>(({ theme }) => ({
     borderBottomRightRadius: 24,
     background: '#f2ecf1',
     color: '#49454e',
-    [theme.breakpoints.down('lg')]: {
-      borderTopRightRadius: 24,
-      borderBottomRightRadius: 24,
-    },
     [theme.breakpoints.up('lg')]: {
+      // In der permanenten Variante kleben wir das Paper unter die Safe-Area-Top
+      position: 'sticky',
+      top: 'env(safe-area-inset-top)',
+      height: 'calc(100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom))',
       borderTopRightRadius: 0,
       borderBottomRightRadius: 0,
     },
@@ -137,7 +138,7 @@ const DrawerContent = ({
       <List>
         {
           <Has feat={['drinks', 'events', 'items']} any>
-            <DrawerItem key="homepage" selected={tab === ''} onClick={() => handleChange('')}>
+            <DrawerItem key="homepage" selected={tab === 'home'} onClick={() => handleChange('home')}>
               <ListItemAvatar>
                 <ListItemIcon>
                   <Home />
@@ -364,7 +365,7 @@ const DrawerContent = ({
               </ListSubheader>
             }
           >
-            <Has perm={'drinks.confirm.payments'}>
+            <Has feat={"drinks"} perm={'drinks.confirm.payments'}>
               <DrawerItem
                 key="updatePayements"
                 selected={tab === 'admin/drinks/payments'}
@@ -381,7 +382,7 @@ const DrawerContent = ({
                 />
               </DrawerItem>
             </Has>
-            <Has perm={'drinks.manage'}>
+            <Has feat={"drinks"} perm={'drinks.manage'}>
               <DrawerItem
                 key="updateDrink"
                 selected={tab === 'admin/drinks'}
@@ -411,7 +412,7 @@ const DrawerContent = ({
                 />
               </DrawerItem>
             </Has>
-            <Has perm={'drinks.history.admin'}>
+            <Has feat={"drinks"} perm={'drinks.history.admin'}>
               <DrawerItem
                 key="updateHistory"
                 selected={tab === 'admin/drinks/history'}
@@ -442,6 +443,23 @@ const DrawerContent = ({
                 <ListItemText
                   primaryTypographyProps={{ fontWeight: 'bold', fontSize: '0.9rem' }}
                   primary={'Grants-Manager'}
+                />
+              </DrawerItem>
+            </Has>
+            <Has perm={'admin.notify_users'}>
+              <DrawerItem
+                key="notify_users"
+                selected={tab === 'admin/notify_users'}
+                onClick={() => handleChange('admin/notify_users')}
+              >
+                <ListItemAvatar>
+                  <ListItemIcon>
+                    <SendIcon />
+                  </ListItemIcon>
+                </ListItemAvatar>
+                <ListItemText
+                  primaryTypographyProps={{ fontWeight: 'bold', fontSize: '0.9rem' }}
+                  primary={t('browse.notifyUsers')}
                 />
               </DrawerItem>
             </Has>
@@ -533,7 +551,7 @@ export const Drawer = ({ open, onClose, onOpen }: Props) => {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const { user } = useGrants();
-  const [tab, setTab] = useState<string>(HOMEPAGE);
+  const [tab, setTab] = useState<string>(import.meta.env.VITE_APP_HOMEPAGE);
 
   const { data: requested_group_joins = [] } = useRequestedUsersPerGroup(user);
   const { data: notifications = [] } = useAllNotifications(user);
@@ -577,7 +595,6 @@ export const Drawer = ({ open, onClose, onOpen }: Props) => {
         },
         [theme.breakpoints.up('lg')]: {
           width: `${drawerWidth}px`,
-          paddingRight: '24px',
         },
       })}
     >
@@ -594,13 +611,8 @@ export const Drawer = ({ open, onClose, onOpen }: Props) => {
         }}
         sx={(theme: Theme) => ({
           '& .MuiDrawer-paper': { boxSizing: 'border-box', width: drawerWidth },
-          [theme.breakpoints.down('lg')]: {
-            display: 'block',
-            overflow: 'auto',
-          },
-          [theme.breakpoints.up('lg')]: {
-            display: 'none',
-          },
+          [theme.breakpoints.down('lg')]: { display: 'block', overflow: 'auto' },
+          [theme.breakpoints.up('lg')]: { display: 'none' },
         })}
       >
         {drawerContent}
@@ -610,13 +622,8 @@ export const Drawer = ({ open, onClose, onOpen }: Props) => {
         variant="permanent"
         sx={(theme: Theme) => ({
           '& .MuiDrawer-paper': { boxSizing: 'border-box', width: drawerWidth },
-          [theme.breakpoints.down('lg')]: {
-            display: 'none',
-          },
-          [theme.breakpoints.up('lg')]: {
-            display: 'block',
-            overflow: 'none',
-          },
+          [theme.breakpoints.down('lg')]: { display: 'none' },
+          [theme.breakpoints.up('lg')]: { display: 'block' },
         })}
         open
         onOpen={onOpen}

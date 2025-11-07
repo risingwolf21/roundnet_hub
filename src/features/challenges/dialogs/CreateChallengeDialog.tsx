@@ -33,7 +33,7 @@ type CreateChallengePayload = {
   user: UserWithGroups;
 };
 
-const Content = ({ payload, onClose }: DialogProps<CreateChallengePayload, string | null>) => {
+const Content = ({ payload, onClose }: DialogProps<CreateChallengePayload, Challenge | null>) => {
   const notifications = useNotifications();
   const dialogs = useDialogs();
   const [selectedGroup, setSelectedGroup] = useState<Group | null>(null);
@@ -82,16 +82,17 @@ const Content = ({ payload, onClose }: DialogProps<CreateChallengePayload, strin
                 return;
               }
 
-              const { error } = await supabase.schema('public').from('challenge').insert({
+              const { data: challenge, error } = await supabase.schema('public').from('challenge').insert({
                 name: data.name,
                 description: data.description,
                 end_date: data.end_date,
                 group: selectedGroup.id,
-              });
+              }).select("*").single();
               if (error) {
                 notifications.show('Challenge konnte nicht erstellt werden. ' + error.message, { severity: 'error' });
               } else {
                 notifications.show('Challenge wurde erfolgreich erstellt.', { severity: 'success' });
+                onClose(challenge);
               }
             }}
           >
@@ -183,7 +184,7 @@ const Content = ({ payload, onClose }: DialogProps<CreateChallengePayload, strin
             label="Enddatum"
             disabled={data.end_date === null}
             disablePast
-            format="DD MMMM YYYY"
+            format="dd MMMM yyyy"
             onChange={(val) => {
               if (!val) return;
               setData({
@@ -203,7 +204,7 @@ export const CreateChallengeDialog = ({
   payload,
   open,
   onClose,
-}: DialogProps<CreateChallengePayload, string | null>) => {
+}: DialogProps<CreateChallengePayload, Challenge | null>) => {
   return (
     <Dialog fullScreen open={open} onClose={() => onClose(null)}>
       <NotificationsProvider>

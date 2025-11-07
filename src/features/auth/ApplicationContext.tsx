@@ -1,4 +1,4 @@
-import { createContext, useContext } from 'react';
+import { createContext, use } from 'react';
 import { UserWithGroups } from '../../types/supabaseTypes';
 
 
@@ -12,5 +12,5 @@ export const ApplicationContext = createContext<{
 
 // export the useAuth hook
 export const useApplication = () => {
-  return useContext(ApplicationContext);
+  return use(ApplicationContext);
 };

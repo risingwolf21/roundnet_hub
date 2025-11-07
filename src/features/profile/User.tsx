@@ -79,10 +79,19 @@ const UserScreen = ({ user, handleSignOut }: UserScreenProps) => {
     }
   }, [openDialog, searchParams, user]);
 
-  const copyIcalURLToClipboard = () =>
-    navigator.clipboard.writeText(
-      `https://${import.meta.env.VITE_SUPABASE_PROJECT_ID}.functions.supabase.co/ical?userId=${user.userId}`
-    );
+  const copyIcalURLToClipboard = () => {
+    if (iOS) {
+      window.location.href = `webcal://${import.meta.env.VITE_SUPABASE_PROJECT_ID}.functions.supabase.co/ical?userId=${user.userId}`;
+    } else {
+      navigator.clipboard.writeText(
+        `https://${import.meta.env.VITE_SUPABASE_PROJECT_ID}.functions.supabase.co/ical?userId=${user.userId}`
+      );
+      notifications.show(
+        'URL in Zwischenablage kopiert - Abonniere den Kalendar jetzt selbst mit der URL',
+        { severity: 'info' }
+      );
+    }
+  }
 
   return (
     <Layout appBarConfig={{ title: 'Profil', showProfile: false }}>
@@ -166,20 +175,15 @@ const UserScreen = ({ user, handleSignOut }: UserScreenProps) => {
         <Card sx={{ borderRadius: 2, py: 0, px: 0, mt: 1 }}>
           <CardActionArea sx={{ px: 1 }}>
             <ListItem
-              onClick={() => {
-                if (iOS) {
-                  window.location.href = `webcal://${import.meta.env.VITE_SUPABASE_PROJECT_ID}.functions.supabase.co/ical?userId=${user.userId}`;
-                } else {
-                  copyIcalURLToClipboard();
-                  notifications.show(
-                    'URL in Zwischenablage kopiert - Abonniere den Kalendar jetzt selbst mit der URL',
-                    { severity: 'info' }
-                  );
-                }
-              }}
               secondaryAction={
                 iOS && (
-                  <IconButton sx={{ pr: 0 }} onClick={copyIcalURLToClipboard}>
+                  <IconButton sx={{ pr: 0 }} onClick={() => {
+                    copyIcalURLToClipboard();
+                    notifications.show(
+                      'URL in Zwischenablage kopiert - Abonniere den Kalendar jetzt selbst mit der URL',
+                      { severity: 'info' }
+                    );
+                  }}>
                     <ContentCopy />
                   </IconButton>
                 )
@@ -206,7 +210,7 @@ const UserScreen = ({ user, handleSignOut }: UserScreenProps) => {
           </CardActionArea>
         </Card>
       </List>
-    </Layout>
+    </Layout >
   );
 };
 export default UserScreenProvider;

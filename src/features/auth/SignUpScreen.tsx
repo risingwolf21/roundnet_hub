@@ -1,4 +1,3 @@
-import { HOMEPAGE } from '@/constants';
 import { supabase } from '@/lib/supabase';
 import { BRANDING } from '@/utils';
 import Box from '@mui/material/Box';
@@ -16,6 +15,7 @@ import CircularProgress from '@mui/material/CircularProgress';
 import Container from '@mui/material/Container';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
+import { useNotifications } from '@toolpad/core';
 
 const mergeSlotSx = (defaultSx: SxProps<Theme>, slotProps?: { sx?: SxProps<Theme> }) => {
   if (Array.isArray(slotProps?.sx)) {
@@ -65,11 +65,13 @@ const SignUpScreen = () => {
 
   const theme = useTheme();
   const navigate = useNavigate();
+  const notifications = useNotifications();
   const { version, user } = useApplication();
   const location = useLocation();
+  const home = import.meta.env.VITE_APP_HOMEPAGE;
 
   if (user) {
-    return <Navigate to={location.state?.path !== '/auth/login' ? location.state?.path || HOMEPAGE : HOMEPAGE} />;
+    return <Navigate to={location.state?.path !== '/auth/login' ? location.state?.path || home : home} />;
   }
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
@@ -134,7 +136,13 @@ const SignUpScreen = () => {
       });
       setError('Could not sign up user. [' + error?.message + ']');
     }
+    notifications.show("Registrierung erfolgreich.", { severity: "success" });
     setLoading(false);
+    if (data.session) {
+      await supabase.auth.setSession(data.session);
+    } else {
+      navigate('/auth/login');
+    }
   };
 
   return (

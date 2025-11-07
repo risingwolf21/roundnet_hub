@@ -5,7 +5,6 @@ import { OpenStreetMapProvider } from 'leaflet-geosearch';
 import { SearchResult } from 'leaflet-geosearch/dist/providers/provider.js';
 import React, { useCallback, useEffect, useState } from 'react';
 import { MapContainer, Marker, TileLayer, useMap, useMapEvents } from 'react-leaflet';
-import { SlideUpTransition } from '../../../utils';
 import { SearchPlacesDialogProps } from '../types';
 
 import { Search, SearchIconWrapper, StyledInputBase } from '@/components/SearchBar';
@@ -38,6 +37,59 @@ const locationMap = {
 };
 
 const defaultLocation = locationMap[(import.meta.env.VITE_WEBSITE_PATH as keyof typeof locationMap) || 'roundnet-karlsruhe'];
+
+const SearchResults = ({ results, userLocation, anchorEl, onClick }: { results: SearchResult<any>[], onClick: (latLng: LatLng) => void, anchorEl: HTMLElement | null, userLocation: { latitude: number; longitude: number } | null }) => {
+  const map = useMap();
+  if (!results || results?.length < 1) return null;
+
+
+  function getDistance(from: LatLng, to: LatLng) {
+    const distance = from.distanceTo(to) / 1000;
+
+    if (distance > 1000) return null;
+
+    let distanceFixed = distance.toFixed(0);
+
+    if (distance < 10) distanceFixed = distance.toFixed(2);
+    else if (distance < 100) distanceFixed = distance.toFixed(1);
+
+    return <Typography sx={{ fontSize: '0.875rem', color: 'rgba(0,0,0,0.6)' }}>{`${distanceFixed}km`}</Typography>;
+  }
+
+  return (
+    <Popper
+      sx={(theme) => ({ zIndex: 1400, background: 'white', borderRadius: theme.shape.borderRadius })}
+      open={Boolean(anchorEl)}
+      anchorEl={anchorEl}
+      placement={'bottom-start'}
+    >
+      <List>
+        {results?.map((x) => (
+          <ListItemButton
+            onClick={() => {
+              onClick(L.latLng(Number(x.y), Number(x.x)));
+              map.setView([x.y, x.x], map.getZoom());
+            }}
+          >
+            <ListItemAvatar sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', pr: 2 }}>
+              <Avatar sx={{ width: 30, height: 30, backgroundColor: 'rgba(189, 189, 189, 0.5)' }}>
+                <Place sx={{ width: 20, height: 20, color: 'rgba(0,0,0,0.8)' }} />
+              </Avatar>
+              {userLocation &&
+                x.y &&
+                x.x &&
+                getDistance(
+                  L.latLng(userLocation.latitude, userLocation.longitude),
+                  L.latLng(Number(x.y), Number(x.x))
+                )}
+            </ListItemAvatar>
+            <ListItemText primary={x.label} />
+          </ListItemButton>
+        ))}
+      </List>
+    </Popper>
+  );
+};
 
 const SearchPlacesDialog = ({ open, handleClose, placeSelected }: SearchPlacesDialogProps) => {
   const [value, setValue] = useState('');
@@ -130,49 +182,8 @@ const SearchPlacesDialog = ({ open, handleClose, placeSelected }: SearchPlacesDi
     return null;
   }
 
-  const SearchResults = () => {
-    const map = useMap();
-    if (!results || results?.length < 1) return null;
-    return (
-      <Popper
-        sx={(theme) => ({ zIndex: 1400, background: 'white', borderRadius: theme.shape.borderRadius })}
-        open={openPopOver}
-        anchorEl={anchorEl}
-        placement={'bottom-start'}
-      >
-        <List>
-          {results?.map((x) => (
-            <ListItemButton
-              onClick={() => {
-                setAnchorEl(null);
-                setPlaceFromLatLon(x.y, x.x);
-                map.setView([x.y, x.x], map.getZoom());
-              }}
-            >
-              <ListItemAvatar sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', pr: 2 }}>
-                <Avatar sx={{ width: 30, height: 30, backgroundColor: 'rgba(189, 189, 189, 0.5)' }}>
-                  <Place sx={{ width: 20, height: 20, color: 'rgba(0,0,0,0.8)' }} />
-                </Avatar>
-                {userLocation &&
-                  x.y &&
-                  x.x &&
-                  getDistance(
-                    L.latLng(userLocation.latitude, userLocation.longitude),
-                    L.latLng(Number(x.y), Number(x.x))
-                  )}
-              </ListItemAvatar>
-              <ListItemText primary={x.label} />
-            </ListItemButton>
-          ))}
-        </List>
-      </Popper>
-    );
-  };
-
-  const openPopOver = Boolean(anchorEl);
-
   return (
-    <Dialog fullScreen open={open} onClose={handleClose} TransitionComponent={SlideUpTransition}>
+    <Dialog fullScreen open={open} onClose={handleClose}>
       <Box sx={{ flexGrow: 1 }}>
         <AppBar position="sticky" sx={{ pt: 'env(safe-area-inset-top)' }}>
           <Toolbar>
@@ -205,7 +216,10 @@ const SearchPlacesDialog = ({ open, handleClose, placeSelected }: SearchPlacesDi
             zoom={16}
           >
             <MyComponent />
-            <SearchResults />
+            <SearchResults results={results ?? []} userLocation={userLocation} anchorEl={anchorEl} onClick={(latlng) => {
+              setAnchorEl(null);
+              setPlaceFromLatLon(latlng.lat, latlng.lng);
+            }} />
             {selectedPlace && <Marker position={[selectedPlace.y, selectedPlace.x]} />}
 
             <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
@@ -229,19 +243,6 @@ const SearchPlacesDialog = ({ open, handleClose, placeSelected }: SearchPlacesDi
       </Box>
     </Dialog>
   );
-
-  function getDistance(from: LatLng, to: LatLng) {
-    const distance = from.distanceTo(to) / 1000;
-
-    if (distance > 1000) return null;
-
-    let distanceFixed = distance.toFixed(0);
-
-    if (distance < 10) distanceFixed = distance.toFixed(2);
-    else if (distance < 100) distanceFixed = distance.toFixed(1);
-
-    return <Typography sx={{ fontSize: '0.875rem', color: 'rgba(0,0,0,0.6)' }}>{`${distanceFixed}km`}</Typography>;
-  }
 };
 
 export default SearchPlacesDialog;

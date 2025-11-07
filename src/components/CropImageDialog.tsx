@@ -2,7 +2,6 @@ import CloseIcon from '@mui/icons-material/Close';
 import { Box } from '@mui/system';
 import { useState } from 'react';
 import Cropper from 'react-easy-crop';
-import { SlideUpTransition } from '../utils';
 
 import AppBar from '@mui/material/AppBar';
 import Button from '@mui/material/Button';
@@ -41,12 +40,12 @@ const CropImageDialog = ({ open, handleClose, selectedImage, onImageCropFinished
   const [rotation] = useState(0);
   const [croppedAreaPixels, setCroppedAreaPixels] = useState<CroppedAreaPixels>({ width: 0, height: 0, x: 0, y: 0 });
 
-  const onCropComplete = (croppedArea: any, croppedAreaPixels: CroppedAreaPixels) => {
+  const onCropComplete = (croppedAreaPixels: CroppedAreaPixels) => {
     setCroppedAreaPixels(croppedAreaPixels);
   };
 
   return (
-    <Dialog fullScreen open={open} onClose={handleClose} TransitionComponent={SlideUpTransition}>
+    <Dialog fullScreen open={open} onClose={handleClose}>
       <Box>
         <AppBar position="sticky" sx={{ pt: 'env(safe-area-inset-top)' }}>
           <Toolbar>

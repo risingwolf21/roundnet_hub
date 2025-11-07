@@ -1,10 +1,7 @@
 import { format, intervalToDuration, parse } from 'date-fns';
-import { forwardRef } from 'react';
 import RoundnetKarlsruheLogo from '../images/Karlsruher_Kojoten_Logo.svg';
 import RoundnetMunichLogo from '../images/Roundnet_Munich_Logo.png';
 
-import { SlideProps } from '@mui/material';
-import Slide from '@mui/material/Slide';
 
 const logoMap = {
   'roundnet-karlsruhe': RoundnetKarlsruheLogo,
@@ -25,15 +22,11 @@ export const BRANDING = {
   icon: icon
 };
 
-export const compareById = (x: any, y: any) => {
-  return x.id === y.id;
-};
-
 export function groupBy<Type>(items: Type[], getter: (any: Type) => string): Map<string, Type[]> {
-  let result = new Map<string, Type[]>();
+  const result = new Map<string, Type[]>();
   (items ?? []).forEach((item: Type) => {
-    let key = getter(item);
-    let entry = result.get(key);
+    const key = getter(item);
+    const entry = result.get(key);
     if (!entry) {
       return result.set(key, [item]);
     } else {
@@ -43,14 +36,6 @@ export function groupBy<Type>(items: Type[], getter: (any: Type) => string): Map
   });
   return result;
 }
-
-export const SlideUpTransition = forwardRef(function Transition(props: SlideProps, ref) {
-  return (
-    <Slide direction="up" ref={ref} {...props}>
-      {props.children}
-    </Slide>
-  );
-});
 
 export const formatSafeDateToDatabase = (date: string | number | Date | null) => {
   if (!date) return null;
@@ -129,11 +114,11 @@ export const nameOfRecurrence = (type: EventRecurrence) => {
 };
 
 export const dataURLtoFile = (dataurl: string, filename: string): File => {
-  var arr = dataurl.split(',');
-  var mime = ((arr[0] ?? '').match(/:(.*?);/) ?? [])[1] ?? null;
-  var bstr = atob(arr[arr.length - 1]);
-  var n = bstr.length;
-  var u8arr = new Uint8Array(n);
+  const arr = dataurl.split(',');
+  const mime = ((arr[0] ?? '').match(/:(.*?);/) ?? [])[1] ?? null;
+  const bstr = atob(arr[arr.length - 1]);
+  let n = bstr.length;
+  const u8arr = new Uint8Array(n);
   while (n--) {
     u8arr[n] = bstr.charCodeAt(n);
   }
@@ -146,4 +131,33 @@ export function readFile(file: Blob): Promise<string | ArrayBuffer | null> {
     reader.addEventListener('load', () => resolve(reader.result), false);
     reader.readAsDataURL(file);
   });
+}
+
+type ErrorWithMessage = {
+  message: string
+}
+
+function isErrorWithMessage(error: unknown): error is ErrorWithMessage {
+  return (
+    typeof error === 'object' &&
+    error !== null &&
+    'message' in error &&
+    typeof (error as Record<string, unknown>).message === 'string'
+  )
+}
+
+function toErrorWithMessage(maybeError: unknown): ErrorWithMessage {
+  if (isErrorWithMessage(maybeError)) return maybeError
+
+  try {
+    return new Error(JSON.stringify(maybeError))
+  } catch {
+    // fallback in case there's an error stringifying the maybeError
+    // like with circular references for example.
+    return new Error(String(maybeError))
+  }
+}
+
+export function getErrorMessage(error: unknown) {
+  return toErrorWithMessage(error).message
 }

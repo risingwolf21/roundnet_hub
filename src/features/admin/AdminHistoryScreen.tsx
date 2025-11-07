@@ -3,11 +3,11 @@ import { useInfiniteQuery } from '@tanstack/react-query';
 import { format } from 'date-fns';
 import { useEffect, useRef } from 'react';
 import Layout from '../../components/layout/Layout';
-import { groupBy } from '../../utils';
 import { AdminHistoryItem } from './components/AdminHistoryItem';
 
 import LinearProgress from '@mui/material/LinearProgress';
 import List from '@mui/material/List';
+import groupBy from 'lodash.groupby';
 
 const AdminHistoryScreen = () => {
   const {
@@ -44,7 +44,7 @@ const AdminHistoryScreen = () => {
     <Layout>
       {isLoading && <LinearProgress style={{ position: 'fixed', left: 0, top: 56, right: 0 }} />}
       <List>
-        {Array.from(
+        {Object.entries(
           groupBy(history?.pages.flatMap((x) => x.data) ?? [], (x: FullHistory) =>
             format(x.created_at ?? '', 'dd MMMM yyyy')
           )

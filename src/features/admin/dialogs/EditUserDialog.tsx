@@ -1,11 +1,10 @@
-import { supabase } from '@/lib/supabase';
 import { Box, Stack } from '@mui/system';
 import { useNotifications } from '@toolpad/core/useNotifications';
 import { FormEvent, useState } from 'react';
 import { UserWithGroups } from '../../../types/supabaseTypes';
-import { SlideUpTransition } from '../../../utils';
 import { UserRoleDialog } from './UserRoleDialog';
 
+import { supabase } from '@/lib/supabase';
 import AccountCircle from '@mui/icons-material/AccountCircle';
 import Close from '@mui/icons-material/Close';
 import Edit from '@mui/icons-material/Edit';
@@ -28,6 +27,7 @@ import ListSubheader from '@mui/material/ListSubheader';
 import TextField from '@mui/material/TextField';
 import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
+import { captureException } from '@sentry/react';
 
 type EditUserDialogProps = {
   user: UserWithGroups;
@@ -44,7 +44,27 @@ export type UserEdited = {
   role: UserRole;
 };
 
-const EditUserDialog = ({ user, open, handleClose, onUserEditFinished, deleteUser }: EditUserDialogProps) => {
+async function resetUserPassword(userId: string, newPassword: string) {
+  const { data: session } = await supabase.auth.getSession();
+  const accessToken = session?.session?.access_token;
+  if (!accessToken) throw new Error('Not authenticated');
+
+  const resp = await fetch(
+    `https://${import.meta.env.VITE_SUPABASE_PROJECT_ID}.functions.supabase.co/reset-user-password`,
+    {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${accessToken}`,
+      },
+      body: JSON.stringify({ userId, newPassword }),
+    }
+  );
+  if (!resp.ok) throw new Error(await resp.text());
+  return await resp.json();
+}
+
+const EditUserDialog = ({ user, open, handleClose, onUserEditFinished }: EditUserDialogProps) => {
   const notifications = useNotifications();
   const [editRoleOpen, setEditRoleOpen] = useState(false);
   const [verified, setVerified] = useState(user.verified);
@@ -64,7 +84,7 @@ const EditUserDialog = ({ user, open, handleClose, onUserEditFinished, deleteUse
   };
 
   return (
-    <Dialog fullScreen open={open} onClose={handleClose} TransitionComponent={SlideUpTransition}>
+    <Dialog fullScreen open={open} onClose={handleClose}>
       <Box component="form" onSubmit={handleSubmit} noValidate>
         <AppBar position="sticky" sx={{ pt: 'env(safe-area-inset-top)' }}>
           <Toolbar>
@@ -133,18 +153,15 @@ const EditUserDialog = ({ user, open, handleClose, onUserEditFinished, deleteUse
                   onChange={(e) => setPassword(e.target.value)}
                 />
                 <Button
-                  onClick={() => {
-                    supabase.auth.admin
-                      .updateUserById(user.userId, {
-                        password: password,
-                      })
-                      .then((result) => {
-                        if (result.error) notifications.show(result.error.message, { severity: 'error' });
-                        else notifications.show('Passwort erfolgreich geändert', { severity: 'success' });
-                      })
-                      .catch((error) => {
-                        notifications.show(error.message, { severity: 'error' });
-                      });
+                  onClick={async () => {
+                    try {
+                      await resetUserPassword(user.userId, password);
+                      notifications.show('Passwort erfolgreich zurückgesetzt', { severity: 'success' });
+                      setPassword('');
+                    } catch (error: any) {
+                      captureException(error);
+                      notifications.show(`Fehler beim Zurücksetzen des Passworts: ${error.message}`, { severity: 'error' });
+                    }
                   }}
                 >
                   Speichern

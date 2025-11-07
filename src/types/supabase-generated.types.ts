@@ -7,11 +7,6 @@ export type Json =
   | Json[]
 
 export type Database = {
-  // Allows to automatically instantiate createClient with right options
-  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
-  __InternalSupabase: {
-    PostgrestVersion: "13.0.5"
-  }
   audit: {
     Tables: {
       log: {
@@ -68,7 +63,10 @@ export type Database = {
         Args: { new_row: Json; old_row: Json }
         Returns: string[]
       }
-      _current_actor: { Args: never; Returns: string }
+      _current_actor: {
+        Args: Record<PropertyKey, never>
+        Returns: string
+      }
       attach_trigger_for_table: {
         Args: { p_schema: string; p_table: string }
         Returns: undefined
@@ -77,8 +75,14 @@ export type Database = {
         Args: { p_schema: string }
         Returns: undefined
       }
-      retention_cleanup: { Args: { days?: number }; Returns: number }
-      run_retention: { Args: never; Returns: number }
+      retention_cleanup: {
+        Args: { days?: number }
+        Returns: number
+      }
+      run_retention: {
+        Args: Record<PropertyKey, never>
+        Returns: number
+      }
     }
     Enums: {
       [_ in never]: never
@@ -529,13 +533,6 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "teams_player_1_fkey"
-            columns: ["team_b_player_1"]
-            isOneToOne: false
-            referencedRelation: "players"
-            referencedColumns: ["player"]
-          },
-          {
-            foreignKeyName: "teams_player_1_fkey"
             columns: ["team_a_player_1"]
             isOneToOne: false
             referencedRelation: "players"
@@ -544,13 +541,20 @@ export type Database = {
           {
             foreignKeyName: "teams_player_1_fkey"
             columns: ["team_b_player_1"]
+            isOneToOne: false
+            referencedRelation: "players"
+            referencedColumns: ["player"]
+          },
+          {
+            foreignKeyName: "teams_player_1_fkey"
+            columns: ["team_a_player_1"]
             isOneToOne: false
             referencedRelation: "players_public"
             referencedColumns: ["player"]
           },
           {
             foreignKeyName: "teams_player_1_fkey"
-            columns: ["team_a_player_1"]
+            columns: ["team_b_player_1"]
             isOneToOne: false
             referencedRelation: "players_public"
             referencedColumns: ["player"]
@@ -593,17 +597,27 @@ export type Database = {
           event?: string
           match_sets: Json
           player_1a: string
+          player_1a_rating: number
           player_1b: string
+          player_1b_rating: number
           player_2a: string
+          player_2a_rating: number
           player_2b: string
+          player_2b_rating: number
           rated?: boolean
           team_a: string
           team_b: string
         }
         Returns: string
       }
-      apply_elo_for_match: { Args: { p_match: string }; Returns: undefined }
-      category_offset: { Args: { p_cat: string }; Returns: number }
+      apply_elo_for_match: {
+        Args: { p_match: string }
+        Returns: undefined
+      }
+      category_offset: {
+        Args: { p_cat: string }
+        Returns: number
+      }
       compute_effective_player_from_values: {
         Args: { ka: number; rg: number }
         Returns: number
@@ -616,8 +630,14 @@ export type Database = {
         Args: { p_p1: string; p_p2: string }
         Returns: number
       }
-      fetch_all_player_infos_from_pz: { Args: never; Returns: undefined }
-      is_match_participant: { Args: { p_match: string }; Returns: boolean }
+      fetch_all_player_infos_from_pz: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
+      is_match_participant: {
+        Args: { p_match: string }
+        Returns: boolean
+      }
       is_member_of_match: {
         Args: { p_team_a: string; p_team_b: string }
         Returns: boolean
@@ -642,11 +662,17 @@ export type Database = {
         }[]
       }
       recompute_all_effective_player_ratings: {
-        Args: never
+        Args: Record<PropertyKey, never>
         Returns: undefined
       }
-      recompute_all_elo_from_scratch: { Args: never; Returns: undefined }
-      team_category: { Args: { p_p1: string; p_p2: string }; Returns: string }
+      recompute_all_elo_from_scratch: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
+      team_category: {
+        Args: { p_p1: string; p_p2: string }
+        Returns: string
+      }
     }
     Enums: {
       [_ in never]: never
@@ -1895,33 +1921,6 @@ export type Database = {
           },
         ]
       }
-      user_grants: {
-        Row: {
-          granted_by: string
-          key: string
-          kind: Database["public"]["Enums"]["grant_kind"]
-          tenant: string
-          updated_at: string
-          user: string
-        }
-        Insert: {
-          granted_by: string
-          key: string
-          kind: Database["public"]["Enums"]["grant_kind"]
-          tenant?: string
-          updated_at?: string
-          user: string
-        }
-        Update: {
-          granted_by?: string
-          key?: string
-          kind?: Database["public"]["Enums"]["grant_kind"]
-          tenant?: string
-          updated_at?: string
-          user?: string
-        }
-        Relationships: []
-      }
       user_notification_preferences: {
         Row: {
           channel: string
@@ -2319,33 +2318,15 @@ export type Database = {
           },
         ]
       }
-      user_features: {
+      user_grants_view: {
         Row: {
-          feature: string | null
+          granted_by: string | null
+          key: string | null
+          kind: Database["public"]["Enums"]["grant_kind"] | null
+          tenant: string | null
+          user: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "group_features_feature_fkey"
-            columns: ["feature"]
-            isOneToOne: false
-            referencedRelation: "features"
-            referencedColumns: ["name"]
-          },
-        ]
-      }
-      user_permissions: {
-        Row: {
-          permission: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "group_permission_permission_fkey"
-            columns: ["permission"]
-            isOneToOne: false
-            referencedRelation: "permissions"
-            referencedColumns: ["name"]
-          },
-        ]
+        Relationships: []
       }
       user_vouchers: {
         Row: {
@@ -2367,14 +2348,20 @@ export type Database = {
         }
         Returns: number
       }
-      add_drinks_history: { Args: { items: Json }; Returns: undefined }
-      authorize:
-        | {
-            Args: { p_tenant: string; requested_permission: string }
-            Returns: boolean
-          }
-        | { Args: { requested_permission: string }; Returns: boolean }
-      check_reply_to: { Args: { value: string }; Returns: boolean }
+      add_drinks_history: {
+        Args: { items: Json }
+        Returns: undefined
+      }
+      authorize: {
+        Args:
+          | { p_tenant: string; requested_permission: string }
+          | { requested_permission: string }
+        Returns: boolean
+      }
+      check_reply_to: {
+        Args: { value: string }
+        Returns: boolean
+      }
       create_group_with_user: {
         Args: {
           group_color: string
@@ -2397,15 +2384,9 @@ export type Database = {
           parent_group: string | null
           visible: boolean
         }
-        SetofOptions: {
-          from: "*"
-          to: "event_group"
-          isOneToOne: true
-          isSetofReturn: false
-        }
       }
       create_next_occurrences: {
-        Args: { p_horizon: unknown; p_run_at: string; p_tz?: string }
+        Args: { p_horizon: unknown; p_run_at: string }
         Returns: {
           answerDeadline: string | null
           constellations_enabled: boolean
@@ -2427,14 +2408,30 @@ export type Database = {
           startingDateTime: string
           title: string
         }[]
-        SetofOptions: {
-          from: "*"
-          to: "events"
-          isOneToOne: false
-          isSetofReturn: true
-        }
       }
-      custom_access_token_hook: { Args: { event: Json }; Returns: Json }
+      create_next_occurrences_candidates: {
+        Args: { p_horizon: unknown; p_run_at: string }
+        Returns: {
+          answerDeadline: string
+          constellations_enabled: boolean
+          description: string
+          endDateTime: string
+          group: string
+          items_enabled: boolean
+          key: string
+          maxAttendees: number
+          place: string
+          recurrence: Database["public"]["Enums"]["EventRecurrence"]
+          recurrenceEnd: string
+          required_item: Database["public"]["Enums"]["ItemType"]
+          startingDateTime: string
+          title: string
+        }[]
+      }
+      custom_access_token_hook: {
+        Args: { event: Json }
+        Returns: Json
+      }
       delete_event: {
         Args: { p_event_id: string }
         Returns: {
@@ -2486,12 +2483,6 @@ export type Database = {
           name: string
           type: Database["public"]["Enums"]["ItemType"]
         }
-        SetofOptions: {
-          from: "*"
-          to: "items"
-          isOneToOne: true
-          isSetofReturn: false
-        }
       }
       enqueue_notification: {
         Args: {
@@ -2509,8 +2500,14 @@ export type Database = {
         }
         Returns: number
       }
-      eventcreation: { Args: never; Returns: number }
-      get_attending_users: { Args: { event_id: number }; Returns: string[] }
+      eventcreation: {
+        Args: Record<PropertyKey, never>
+        Returns: number
+      }
+      get_attending_users: {
+        Args: { event_id: number }
+        Returns: string[]
+      }
       get_column_info: {
         Args: { schema_name: string; selected_table: string }
         Returns: {
@@ -2523,7 +2520,7 @@ export type Database = {
         }[]
       }
       get_enum_types: {
-        Args: never
+        Args: Record<PropertyKey, never>
         Returns: {
           enum_name: string
           enum_values: string[]
@@ -2534,13 +2531,16 @@ export type Database = {
         Returns: number
       }
       get_public_table_names: {
-        Args: never
+        Args: Record<PropertyKey, never>
         Returns: {
           table_name: string
           table_schema: string
         }[]
       }
-      gettingjsonarray: { Args: { items: Json }; Returns: undefined }
+      gettingjsonarray: {
+        Args: { items: Json }
+        Returns: undefined
+      }
       grant_group_grants: {
         Args: { p_feats?: string[]; p_group: string; p_perms?: string[] }
         Returns: undefined
@@ -2553,6 +2553,10 @@ export type Database = {
           p_user: string
         }
         Returns: undefined
+      }
+      group_has_no_members: {
+        Args: { p_group: string }
+        Returns: boolean
       }
       inc_target_attempt: {
         Args: {
@@ -2578,12 +2582,6 @@ export type Database = {
           image_url: string | null
           user: string
         }
-        SetofOptions: {
-          from: "*"
-          to: "challenge_stats"
-          isOneToOne: true
-          isSetofReturn: false
-        }
       }
       insert_event_with_bring_items: {
         Args: { p_event: Json; p_items: Json }
@@ -2596,6 +2594,10 @@ export type Database = {
         Args: { p_body?: Json; p_function_name: string; p_timeout_ms?: number }
         Returns: number
       }
+      is_app_client: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
+      }
       is_topic_enabled_for_user: {
         Args: {
           p_scope_id?: string
@@ -2606,8 +2608,14 @@ export type Database = {
         }
         Returns: boolean
       }
-      is_user_admin_in_group: { Args: { group_id: string }; Returns: boolean }
-      is_user_in_group: { Args: { group_id: string }; Returns: boolean }
+      is_user_admin_in_group: {
+        Args: { group_id: string }
+        Returns: boolean
+      }
+      is_user_in_group: {
+        Args: { group_id: string }
+        Returns: boolean
+      }
       key_handover: {
         Args: { p_key_id: number; p_new_holder: string }
         Returns: {
@@ -2619,7 +2627,10 @@ export type Database = {
         Args: { p_source_id?: string; p_source_type?: string; p_topic?: string }
         Returns: number
       }
-      mark_notification_read: { Args: { p_id: string }; Returns: undefined }
+      mark_notification_read: {
+        Args: { p_id: string }
+        Returns: undefined
+      }
       notify_challenge_added: {
         Args: { p_actor?: string; p_challenge: string }
         Returns: number
@@ -2628,19 +2639,10 @@ export type Database = {
         Args: { p_actor?: string; p_challenge: string }
         Returns: number
       }
-      notify_drink_payment_fulfilled:
-        | {
-            Args: { p_payment: number }
-            Returns: {
-              error: true
-            } & "Could not choose the best candidate function between: public.notify_drink_payment_fulfilled(p_payment => int8), public.notify_drink_payment_fulfilled(p_payment => uuid). Try renaming the parameters or the function itself in the database so function overloading can be resolved"
-          }
-        | {
-            Args: { p_payment: string }
-            Returns: {
-              error: true
-            } & "Could not choose the best candidate function between: public.notify_drink_payment_fulfilled(p_payment => int8), public.notify_drink_payment_fulfilled(p_payment => uuid). Try renaming the parameters or the function itself in the database so function overloading can be resolved"
-          }
+      notify_drink_payment_fulfilled: {
+        Args: { p_payment: number } | { p_payment: string }
+        Returns: number
+      }
       notify_event_canceled: {
         Args: { p_actor?: string; p_event: string }
         Returns: number
@@ -2666,25 +2668,12 @@ export type Database = {
         Args: { p_actor?: string; p_group: string; p_user: string }
         Returns: number
       }
-      notify_item_handover:
-        | {
-            Args: {
-              p_actor?: string
-              p_from: string
-              p_item: string
-              p_to: string
-            }
-            Returns: number
-          }
-        | {
-            Args: {
-              p_actor?: string
-              p_from: string
-              p_item: number
-              p_to: string
-            }
-            Returns: number
-          }
+      notify_item_handover: {
+        Args:
+          | { p_actor?: string; p_from: string; p_item: number; p_to: string }
+          | { p_actor?: string; p_from: string; p_item: string; p_to: string }
+        Returns: number
+      }
       notify_users: {
         Args: {
           p_body: string
@@ -2698,7 +2687,10 @@ export type Database = {
         }
         Returns: number
       }
-      refresh_user_grants: { Args: { p_user: string }; Returns: undefined }
+      refresh_user_grants: {
+        Args: { p_user: string }
+        Returns: undefined
+      }
       revoke_group_grants: {
         Args: { p_feats?: string[]; p_group: string; p_perms?: string[] }
         Returns: undefined
@@ -2712,11 +2704,10 @@ export type Database = {
         }
         Returns: undefined
       }
-      revoke_web_push_subscription: {
-        Args: { p_device_id?: string; p_endpoint?: string }
-        Returns: number
+      run_push_worker_if_needed: {
+        Args: Record<PropertyKey, never>
+        Returns: Json
       }
-      run_push_worker_if_needed: { Args: never; Returns: Json }
       set_notification_pref: {
         Args: {
           p_channel?: string
@@ -2738,20 +2729,6 @@ export type Database = {
           updated_at: string
           user: string
         }
-        SetofOptions: {
-          from: "*"
-          to: "user_notification_preferences"
-          isOneToOne: true
-          isSetofReturn: false
-        }
-      }
-      test_seed_grant_feature: {
-        Args: { p_feature: string; p_group: string }
-        Returns: undefined
-      }
-      test_seed_grant_permission: {
-        Args: { p_group: string; p_perm: string }
-        Returns: undefined
       }
       unregister_web_push_subscription: {
         Args: { p_endpoint: string }
@@ -2769,12 +2746,6 @@ export type Database = {
           state: Database["public"]["Enums"]["EventAttendance"]
           user: string
         }[]
-        SetofOptions: {
-          from: "*"
-          to: "event_attendance_user_mapping"
-          isOneToOne: false
-          isSetofReturn: true
-        }
       }
       upsert_webpush_subscription: {
         Args: {
@@ -2802,12 +2773,12 @@ export type Database = {
           user: string
           user_agent: string | null
         }
-        SetofOptions: {
-          from: "*"
-          to: "web_push_subscriptions"
-          isOneToOne: true
-          isSetofReturn: false
-        }
+      }
+      util_get_primary_keys: {
+        Args: { schema_name: string; table_name: string }
+        Returns: {
+          column_name: string
+        }[]
       }
       webpush_prune_subscriptions: {
         Args: {
@@ -3003,3 +2974,4 @@ export const Constants = {
     },
   },
 } as const
+

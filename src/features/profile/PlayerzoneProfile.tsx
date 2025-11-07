@@ -1,5 +1,5 @@
 import { supabase } from '@/lib/supabase';
-import { useEloHistory, usePlayer, useUpdateIndexHidden } from '@/tanstack/player_data';
+import { useEloHistory, usePlayer, useUpdateIndexHidden, useUpdatePlayer } from '@/tanstack/player_data';
 import { captureException } from '@sentry/react';
 import { DialogProps } from '@toolpad/core/useDialogs';
 import { NotificationsProvider, useNotifications } from '@toolpad/core/useNotifications';
@@ -7,6 +7,7 @@ import { addDays, isAfter } from 'date-fns';
 import { useState } from 'react';
 import rg_small from '../../images/rgx_small.png';
 
+import { GamesTableUpdate } from '@/types/supabaseTypes';
 import AddPhotoAlternateOutlined from '@mui/icons-material/AddPhotoAlternateOutlined';
 import Close from '@mui/icons-material/Close';
 import ContentCopy from '@mui/icons-material/ContentCopy';
@@ -17,6 +18,7 @@ import TrendingUp from '@mui/icons-material/TrendingUp';
 import Alert from '@mui/material/Alert';
 import AppBar from '@mui/material/AppBar';
 import Avatar from '@mui/material/Avatar';
+import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Checkbox from '@mui/material/Checkbox';
 import Chip from '@mui/material/Chip';
@@ -43,6 +45,7 @@ const Content = ({ payload, onClose }: DialogProps<PlayerzoneProfilePayload, str
   const { data: elo_history } = useEloHistory(payload.user);
 
   const updateHideRatingMutation = useUpdateIndexHidden(payload.user);
+  const updatePlayer = useUpdatePlayer(payload.user);
 
   const notifications = useNotifications();
   const [rgLink, setRgLink] = useState(player_data?.rg_link ?? '');
@@ -54,6 +57,7 @@ const Content = ({ payload, onClose }: DialogProps<PlayerzoneProfilePayload, str
     setLoading(false);
     const { data: list, error } = await supabase.storage.from('user').list(`${payload.user.userId}`);
     if (error || !list) {
+      notifications.show(error.message, { severity: "error" });
       captureException(error);
       return;
     }
@@ -65,9 +69,31 @@ const Content = ({ payload, onClose }: DialogProps<PlayerzoneProfilePayload, str
     setLoading(false);
   };
 
+  const onSafeRgLinkClick = async () => {
+    if (!rgLink.startsWith('https://playerzone.roundnetgermany.de/players/') && rgLink !== "") {
+      notifications.show(
+        'Bitte vergewissere dich, dass die URL stimmt. Kopiere die URL aus deinem Playerzone Profil.',
+        { severity: 'error' }
+      );
+      return;
+    }
+    const updates: GamesTableUpdate<'players'> = {
+      rg_link: rgLink ?? null,
+      rg_avatar_url: null,
+      rg_index: null,
+    }
+
+    updatePlayer.mutate({ updates }, {
+      onError: (error) => notifications.show('Playerzone URL konnte nicht gesetzt werden. ' + error.message, {
+        severity: 'error',
+      }),
+      onSuccess: () => notifications.show('Playerzone URL erfolgreich aktualisiert', { severity: 'success' })
+    });
+  }
+
   return (
     <>
-      <AppBar sx={{ position: 'static', pt: 'env(safe-area-inset-top)' }}>
+      <AppBar sx={{ position: 'sticky', pt: 'env(safe-area-inset-top)' }}>
         <Toolbar>
           <IconButton edge="start" color="inherit" onClick={() => onClose(null)}>
             <Close />
@@ -75,36 +101,10 @@ const Content = ({ payload, onClose }: DialogProps<PlayerzoneProfilePayload, str
           <Typography sx={{ ml: 2, flex: 1 }} variant="h6" component="div">
             Playerzone Profil
           </Typography>
-          <Button
-            color="inherit"
-            onClick={async () => {
-              if (!rgLink.startsWith('https://playerzone.roundnetgermany.de/players/')) {
-                notifications.show(
-                  'Bitte vergewissere dich, dass die URL stimmt. Kopiere die URL aus deinem Playerzone Profil.',
-                  { severity: 'error' }
-                );
-                return;
-              }
-              const { error } = await supabase
-                .schema('games')
-                .from('players')
-                .upsert({ player: payload.user.userId, rg_link: rgLink })
-                .eq('player', player_data?.player ?? '');
-              if (error) {
-                notifications.show('Playerzone URL konnte nicht gesetzt werden. ' + error.message, {
-                  severity: 'error',
-                });
-              } else {
-                notifications.show('Playerzone URL erfolgreich aktualisiert', { severity: 'success' });
-              }
-            }}
-          >
-            Speichern
-          </Button>
         </Toolbar>
       </AppBar>
       <Container>
-        <List sx={{ pl: 2, pr: 2, pb: 10 }}>
+        <List sx={{ pb: 10 }}>
           {player_data?.rg_avatar_url && (
             <Container
               key={'avatar'}
@@ -134,8 +134,7 @@ const Content = ({ payload, onClose }: DialogProps<PlayerzoneProfilePayload, str
             </Container>
           )}
           <Alert sx={{ mb: 1, mt: 2 }} severity="info">
-            Wenn du die Playerzone URL änderst, werden deine Daten überschrieben. Du kannst diese Daten jederzeit
-            ändern.
+            Mit deiner Playerzone-URL werden täglich deine Daten von der Playerzone abgeglichen und geladen.
           </Alert>
           <ListItem key={'url'} sx={{ '&.MuiListItem-root': { p: 0 } }}>
             <ListItemAvatar sx={{ flexDirection: 'row', display: 'flex', alignItems: 'center' }}>
@@ -152,6 +151,13 @@ const Content = ({ payload, onClose }: DialogProps<PlayerzoneProfilePayload, str
               margin="normal"
             />
           </ListItem>
+          {
+            player_data?.rg_link !== rgLink && <Box sx={{ display: "flex", justifyContent: "end" }}>
+              <Button disabled={loading} onClick={onSafeRgLinkClick}>
+                Speichern
+              </Button>
+            </Box>
+          }
           {player_data?.rg_id && (
             <ListItem
               key={'id'}
@@ -218,7 +224,7 @@ const Content = ({ payload, onClose }: DialogProps<PlayerzoneProfilePayload, str
                   <Chip
                     sx={{ pointerEvents: 'none' }}
                     color={elo_change_last_30_days > 0 ? 'success' : elo_change_last_30_days < 0 ? 'error' : 'info'}
-                    label={elo_change_last_30_days}
+                    label={elo_change_last_30_days.toFixed(2)}
                     icon={elo_change_last_30_days > 0 ? <TrendingUp /> : elo_change_last_30_days < 0 ? <TrendingDown /> : <TrendingFlat />} />
                 </span>
               </Tooltip>}

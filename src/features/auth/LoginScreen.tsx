@@ -1,4 +1,3 @@
-import { HOMEPAGE } from '@/constants';
 import { supabase } from '@/lib/supabase';
 import { BRANDING } from '@/utils';
 import Link from '@mui/material/Link';
@@ -20,6 +19,8 @@ const LoginScreen = () => {
   const [loading, setLoading] = useState(false);
   const location = useLocation();
 
+  const home = import.meta.env.VITE_APP_HOMEPAGE;
+
   // iOS-Standalone erkennen
   const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
   const isStandalone =
@@ -36,7 +37,7 @@ const LoginScreen = () => {
   }
 
   if (user) {
-    return <Navigate to={location.state?.path !== '/auth/login' ? location.state?.path || HOMEPAGE : HOMEPAGE} />;
+    return <Navigate to={location.state?.path !== '/auth/login' ? location.state?.path || home : home} />;
   }
 
   const signIn: (provider: AuthProvider, formData: FormData | undefined) => void = async (provider, formData) => {

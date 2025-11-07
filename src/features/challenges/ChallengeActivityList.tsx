@@ -1,5 +1,5 @@
 import { ChallengeStatWithUser } from '@/types/supabaseTypes';
-import { formatDateFromDatabase, groupBy } from '@/utils';
+import { formatDateFromDatabase } from '@/utils';
 import { FetchNextPageOptions, InfiniteData, InfiniteQueryObserverResult } from '@tanstack/react-query';
 import { useEffect, useRef } from 'react';
 
@@ -12,6 +12,7 @@ import ListItemAvatar from '@mui/material/ListItemAvatar';
 import ListItemText from '@mui/material/ListItemText';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
+import groupBy from 'lodash.groupby';
 
 type ChallengeActivityListProps = {
   stats: InfiniteData<{ data: ChallengeStatWithUser[]; nextPage: number | undefined }, unknown> | undefined;

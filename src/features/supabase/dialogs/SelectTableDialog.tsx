@@ -1,7 +1,6 @@
 import { DialogProps } from '@toolpad/core';
 import { Table } from '../SupabaseClient';
 
-import { groupBy } from '@/utils';
 import Close from '@mui/icons-material/Close';
 import Dialog from '@mui/material/Dialog';
 import DialogContent from '@mui/material/DialogContent';
@@ -13,12 +12,13 @@ import ListItemText from '@mui/material/ListItemText';
 import ListSubheader from '@mui/material/ListSubheader';
 import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
+import groupBy from 'lodash.groupby';
 
 type SelectTableDialogPayload = {
   tables: Table[];
 };
 
-export const SelectTableDialog = ({ payload, open, onClose }: DialogProps<SelectTableDialogPayload, Table | null>) => {
+const SelectTableDialog = ({ payload, open, onClose }: DialogProps<SelectTableDialogPayload, Table | null>) => {
   return (
     <Dialog
       open={open}
@@ -87,3 +87,4 @@ export const SelectTableDialog = ({ payload, open, onClose }: DialogProps<Select
     </Dialog>
   );
 };
+export default SelectTableDialog;

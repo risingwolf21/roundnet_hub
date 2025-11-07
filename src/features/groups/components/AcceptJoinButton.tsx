@@ -18,7 +18,7 @@ export const AcceptJoinButton = ({ group, user }: { group: Group; user: User }) 
           cancelText: "Abbrechen",
         });
         if (confirmed) {
-          acceptJoinMutation.mutate({ user: user, group: group, new_role: "trial" }, {
+          acceptJoinMutation.mutate({ user: user, group: group, new_role: "user" }, {
             onError: (error) => {
               notifications.show('Anfrage konnte nicht akzeptiert werden. ' + error.message, { severity: 'error' });
             },

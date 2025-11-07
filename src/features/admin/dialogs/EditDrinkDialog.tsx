@@ -9,7 +9,7 @@ import { Box } from '@mui/system';
 import { uuid } from '@supabase/supabase-js/dist/main/lib/helpers';
 import { FormEvent, useEffect, useState } from 'react';
 import CropImageDialog from '../../../components/CropImageDialog';
-import { dataURLtoFile, readFile, SlideUpTransition } from '../../../utils';
+import { dataURLtoFile, readFile } from '../../../utils';
 
 import Check from '@mui/icons-material/Check';
 import AppBar from '@mui/material/AppBar';
@@ -54,7 +54,7 @@ const EditDrinkDialog = ({ drink, onDrinkEditFinished, open, handleClose, drinkH
     const name = data.get('name')?.toString();
 
     if (name && price && stock) {
-      let newDrink = {
+      const newDrink = {
         id: drink.id,
         name,
         price: Number.parseFloat(price),
@@ -65,7 +65,7 @@ const EditDrinkDialog = ({ drink, onDrinkEditFinished, open, handleClose, drinkH
       };
 
       if (croppedImage) {
-        let fileName = uuid() + '.jpg';
+        const fileName = uuid() + '.jpg';
 
         const { data: uploadData, error } = await supabase.storage
           .from('drink')
@@ -88,7 +88,7 @@ const EditDrinkDialog = ({ drink, onDrinkEditFinished, open, handleClose, drinkH
 
   return (
     <Box>
-      <Dialog fullScreen open={open} onClose={handleClose} TransitionComponent={SlideUpTransition}>
+      <Dialog fullScreen open={open} onClose={handleClose}>
         <Box component="form" onSubmit={handleSubmit} noValidate>
           <AppBar position="sticky" sx={{ pt: 'env(safe-area-inset-top)' }}>
             <Toolbar>
@@ -170,7 +170,7 @@ const EditDrinkDialog = ({ drink, onDrinkEditFinished, open, handleClose, drinkH
                     hidden
                     onChange={async (event) => {
                       if (!event.target.files || event.target.files.length === 0) return;
-                      let imageDataUrl = await readFile(event.target.files[0]);
+                      const imageDataUrl = await readFile(event.target.files[0]);
                       setSelectedImage(imageDataUrl);
                       setCropImageDialogOpen(true);
                     }}

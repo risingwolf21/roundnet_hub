@@ -41,6 +41,9 @@ declare global {
   type PlayerWithSimpleUser = Player & { name: string; userId: string };
   type Feature = Tables<'features'>;
   type Permission = Tables<'permissions'>;
+  type UserDirectGrants = Tables<'user_direct_grants'>;
+  type GroupFeatures = Tables<'group_features'>;
+  type GroupPermissions = Tables<'group_permissions'>;
 
   type FullItemHolder = QueryData<ReturnType<typeof fetchItems>> extends Array<infer U> ? U : never;
   type FullItemHistory = QueryData<ReturnType<typeof fetchItemHistory>> extends Array<infer U> ? U : never;

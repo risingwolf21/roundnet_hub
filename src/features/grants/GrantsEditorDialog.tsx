@@ -3,7 +3,6 @@ import { UseQueryResult } from '@tanstack/react-query';
 import { DialogProps } from '@toolpad/core';
 import React from 'react';
 
-import { SlideUpTransition } from '@/utils';
 import Close from '@mui/icons-material/Close';
 import AppBar from '@mui/material/AppBar';
 import Box from '@mui/material/Box';
@@ -70,7 +69,7 @@ export const GrantsEditorDialog = ({ payload, open, onClose }: DialogProps<Grant
   };
 
   return (
-    <Dialog fullScreen open={open} onClose={() => onClose(null)} TransitionComponent={SlideUpTransition}>
+    <Dialog fullScreen open={open} onClose={() => onClose(null)}>
       <AppBar position="sticky" sx={{ pt: 'env(safe-area-inset-top)' }}>
         <Toolbar>
           <IconButton size="large" edge="start" color="inherit" onClick={() => onClose(null)}>

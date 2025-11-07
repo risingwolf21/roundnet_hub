@@ -16,7 +16,6 @@ import { useQuery } from '@tanstack/react-query';
 import { DialogProps } from '@toolpad/core';
 import { useState } from 'react';
 import { Search, SearchIconWrapper, StyledInputBase } from '../../../components/SearchBar';
-import { SlideUpTransition } from '../../../utils';
 
 type SearchAndSelectUserDialogProps = {
   usersToFilter: string[];
@@ -45,7 +44,7 @@ const SearchAndSelectUserDialog = ({
   });
 
   return (
-    <Dialog fullScreen open={open} onClose={() => onClose(null)} TransitionComponent={SlideUpTransition}>
+    <Dialog fullScreen open={open} onClose={() => onClose(null)}>
       <Box
         component="form"
         noValidate
