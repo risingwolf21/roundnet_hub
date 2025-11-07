@@ -43,7 +43,6 @@ export default defineConfig(({ mode }) => {
         srcDir: 'src',
         filename: 'service-worker.ts',
         registerType: 'autoUpdate',
-        injectRegister: "auto",
         injectManifest: {
           globPatterns: ['**/*.{js,css,html,svg,png,ico,webp,woff2}'],
         },
@@ -69,12 +68,6 @@ export default defineConfig(({ mode }) => {
             { src: `${ICON_PREFIX}/android-chrome-192x192.png`, sizes: '192x192', type: 'image/png', purpose: 'any maskable' },
             { src: `${ICON_PREFIX}/android-chrome-512x512.png`, sizes: '512x512', type: 'image/png', purpose: 'any maskable' },
           ],
-          shortcuts: [
-            { name: 'View account', url: `${BASE_PATH}user` },
-            { name: 'View challenges', url: `${BASE_PATH}challenges` },
-            { name: 'View upcoming events', url: `${BASE_PATH}training` },
-            { name: 'View groups', url: `${BASE_PATH}groups` },
-          ],
           ...(env.VITE_MANIFEST_CANONICAL_URL
             ? { related_applications: [{ platform: 'webapp', url: env.VITE_MANIFEST_CANONICAL_URL }] }
             : {}),
@@ -90,7 +83,7 @@ export default defineConfig(({ mode }) => {
     },
     server: {
       port: 5173,
-      strictPort: false
+      strictPort: true
     },
     preview: { port: 4173 },
     define: {

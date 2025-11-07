@@ -562,22 +562,6 @@ drop index if exists "public"."webpush_uq_endpoint";
 
 drop index if exists "public"."webpush_uq_user_device_active";
 
-drop table "public"."notification_outbox";
-
-drop table "public"."notification_outbox_targets";
-
-drop table "public"."notification_retention";
-
-drop table "public"."notification_topics";
-
-drop table "public"."notifications";
-
-drop table "public"."object_subscriptions";
-
-drop table "public"."user_notification_preferences";
-
-drop table "public"."web_push_subscriptions";
-
 
   create table "notifications"."notification_outbox" (
     "id" bigint not null default nextval('notifications.notification_outbox_id_seq'::regclass),
@@ -709,12 +693,9 @@ alter table "notifications"."user_notification_preferences" enable row level sec
     "last_error" text
       );
 
-
 alter table "notifications"."web_push_subscriptions" enable row level security;
 
 alter sequence "notifications"."notification_outbox_id_seq" owned by "notifications"."notification_outbox"."id";
-
-drop sequence if exists "public"."notification_outbox_id_seq";
 
 CREATE INDEX idx_notif_user_created ON notifications.notifications USING btree ("user", created_at DESC);
 

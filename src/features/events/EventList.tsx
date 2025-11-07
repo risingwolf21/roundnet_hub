@@ -107,7 +107,7 @@ const EventScreen = () => {
       <List>
         {
           Object.entries(groupBy(events, (x) => startOfISOWeek(x.startingDateTime))).map(([key, value]: [string, EventsUserView[]]) => (
-            <List subheader={<ListSubheader sx={{ fontWeight: 'bold', lineHeight: 'normal', my: 1 }} key={key}>
+            <List subheader={<ListSubheader sx={{ fontWeight: 'bold', lineHeight: 'normal', my: 1, zIndex: 0 }} key={key}>
               {
                 getISOWeek(key) === getISOWeek(new Date())
                   ? 'Diese Woche'
