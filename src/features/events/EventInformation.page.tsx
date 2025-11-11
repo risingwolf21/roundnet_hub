@@ -9,13 +9,13 @@ import { useFetchMode } from '@/hooks/useFetchMode';
 import { Has } from '@/hooks/useGrants';
 import { queryClient } from '@/lib/queryClient';
 import { SupabaseEventRepository } from '@/repository/EventRepository';
-import { useCancelTrainingMutation, useDeleteTrainingMutation } from '@/tanstack/events';
+import { useBringItems, useCancelTrainingMutation, useDeleteTrainingMutation } from '@/tanstack/events';
 import { useAllItems } from '@/tanstack/items';
 import { EventsUserView } from '@/types/supabaseTypes';
 import { captureException } from '@sentry/react';
 import { useQuery } from '@tanstack/react-query';
 import { useDialogs, useNotifications } from '@toolpad/core';
-import { useEffect, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, useParams } from 'react-router';
 import { EventTable } from 'types/supabase';
@@ -41,7 +41,6 @@ const EventInformationProvider = () => {
   const notifications = useNotifications();
   const dialogs = useDialogs();
   const { t } = useTranslation();
-  const [selectedEventPlace, setSelectedEventPlace] = useState<PlaceType | null>(null);
   const [anchorEl, setAnchorEl] = useState<(EventTarget & HTMLButtonElement) | null>(null);
   const [fetchMode] = useFetchMode();
 
@@ -56,9 +55,10 @@ const EventInformationProvider = () => {
     enabled: !!selectedEventId,
     queryFn: () => SupabaseEventRepository.fetchUserEvent(selectedEventId!),
   });
-  const { data: keyHolders = [] } = useAllItems();
+  const { data: allItems = [], isLoading: bringItemsLoading } = useBringItems(event?.id);
+  const { data: keyHolders = [], isLoading: keyHoldersLoading } = useAllItems();
 
-  useEffect(() => {
+  const selectedEventPlace = useMemo<PlaceType | null>(() => {
     if (event && event.place) {
       try {
         const parsed = JSON.parse(event.place.toString());
@@ -68,7 +68,7 @@ const EventInformationProvider = () => {
           lat: parsed.lat,
           lon: parsed.lon,
         };
-        setSelectedEventPlace(place);
+        return place;
       } catch (error) {
         captureException(error, (scope) => {
           scope.clear();
@@ -76,12 +76,14 @@ const EventInformationProvider = () => {
           scope.setExtra('event', JSON.stringify(event));
           return scope;
         });
-        setSelectedEventPlace(null);
+        return null;
       }
+    } else {
+      return null;
     }
   }, [event]);
 
-  if (isLoading) {
+  if (isLoading || bringItemsLoading || keyHoldersLoading) {
     return (
       <Layout
         appBarConfig={{
@@ -133,6 +135,7 @@ const EventInformationProvider = () => {
                         } as EventTable,
                         eventGroup: event.group,
                         option: result,
+                        items: allItems
                       });
                     }
                   }}
@@ -140,7 +143,7 @@ const EventInformationProvider = () => {
                   <ListItemIcon>
                     <Edit />
                   </ListItemIcon>
-                  <ListItemText primary="Bearbeiten" />
+                  <ListItemText primary={t('events.editEvent')} />
                 </MenuItem>
               </Has>
               <Has perm={'event.cancel'}>
@@ -189,7 +192,7 @@ const EventInformationProvider = () => {
                   <ListItemIcon>
                     <Delete />
                   </ListItemIcon>
-                  <ListItemText primary="Löschen" />
+                  <ListItemText primary={t('events.deleteEvent')} />
                 </MenuItem>
               </Has>
             </Menu>

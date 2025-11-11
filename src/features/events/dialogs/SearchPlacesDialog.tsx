@@ -38,7 +38,7 @@ const locationMap = {
 
 const defaultLocation = locationMap[(import.meta.env.VITE_WEBSITE_PATH as keyof typeof locationMap) || 'roundnet-karlsruhe'];
 
-const SearchResults = ({ results, userLocation, anchorEl, onClick }: { results: SearchResult<any>[], onClick: (latLng: LatLng) => void, anchorEl: HTMLElement | null, userLocation: { latitude: number; longitude: number } | null }) => {
+const SearchResults = ({ results, userLocation, anchorEl, onClick }: { results: SearchResult[], onClick: (latLng: LatLng) => void, anchorEl: HTMLElement | null, userLocation: { latitude: number; longitude: number } | null }) => {
   const map = useMap();
   if (!results || results?.length < 1) return null;
 
@@ -66,6 +66,7 @@ const SearchResults = ({ results, userLocation, anchorEl, onClick }: { results: 
       <List>
         {results?.map((x) => (
           <ListItemButton
+            key={x.raw}
             onClick={() => {
               onClick(L.latLng(Number(x.y), Number(x.x)));
               map.setView([x.y, x.x], map.getZoom());
@@ -93,7 +94,7 @@ const SearchResults = ({ results, userLocation, anchorEl, onClick }: { results: 
 
 const SearchPlacesDialog = ({ open, handleClose, placeSelected }: SearchPlacesDialogProps) => {
   const [value, setValue] = useState('');
-  const [results, setResults] = useState<SearchResult<any>[]>();
+  const [results, setResults] = useState<SearchResult[]>();
   const [loading, setLoading] = useState(false);
   const notifications = useNotifications();
   const [userLocation, setUserLocation] = useState<{ latitude: number; longitude: number } | null>(defaultLocation);

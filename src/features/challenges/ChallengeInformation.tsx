@@ -30,6 +30,7 @@ import Fab from '@mui/material/Fab';
 import Tab from '@mui/material/Tab';
 import Tabs from '@mui/material/Tabs';
 import Typography from '@mui/material/Typography';
+import { useTheme } from '@mui/material/styles';
 
 const ChallengeInformationProvider = ({ t }: { t: TFunction }) => {
   const { challengeId } = useParams();
@@ -42,6 +43,7 @@ const ChallengeInformationProvider = ({ t }: { t: TFunction }) => {
 const ChallengeInformation = ({ t, challengeId }: { t: TFunction; challengeId: string }) => {
   const { user } = useGrants();
   const dialogs = useDialogs();
+  const theme = useTheme();
   const notifications = useNotifications();
   const [value, setValue] = useState(0);
 
@@ -138,7 +140,7 @@ const ChallengeInformation = ({ t, challengeId }: { t: TFunction; challengeId: s
           <Tab label="Aktivität" />
           <Tab label="Leaderboard" />
         </Tabs>
-        <TabPanel value={value} index={0}>
+        <TabPanel value={value} index={0} dir={theme.direction}>
           <ChallengeActivityList
             stats={challenge_stats}
             hasNextPage={hasNextPage}
@@ -146,7 +148,7 @@ const ChallengeInformation = ({ t, challengeId }: { t: TFunction; challengeId: s
             fetchNextPage={fetchNextPage}
           />
         </TabPanel>
-        <TabPanel value={value} index={1}>
+        <TabPanel value={value} index={1} dir={theme.direction}>
           <ChallengeLeaderboard isLoading={isLeaderboardLoading} challenge_points={leaderboard} />
         </TabPanel>
         <Has perm={'challenges.stats.write'}>

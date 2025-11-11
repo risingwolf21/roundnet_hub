@@ -3,7 +3,7 @@ import { SwipeableDialog } from '@/components/SwipeableDialog';
 import { useGrants } from '@/features/auth/GrantsContext';
 import { useFetchMode } from '@/hooks/useFetchMode';
 import { Has } from '@/hooks/useGrants';
-import { useBringItems, useInsertEventMutation, useUpdateRecurrenceMutation, useUpdateSingleMutation } from '@/tanstack/events';
+import { useInsertEventMutation, useUpdateRecurrenceMutation, useUpdateSingleMutation } from '@/tanstack/events';
 import { formatDateFromDatabase, formatDateToDatabase, getDurationFrom } from '@/utils';
 import AccessTime from '@mui/icons-material/AccessTime';
 import Add from '@mui/icons-material/Add';
@@ -23,7 +23,6 @@ import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Checkbox from '@mui/material/Checkbox';
 import Chip from '@mui/material/Chip';
-import CircularProgress from '@mui/material/CircularProgress';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
@@ -81,10 +80,11 @@ type CreateEventProps = {
   event?: EventTable | null;
   eventGroup?: Group | null;
   option: CreateEventOption;
+  items?: BringItems[];
 };
 
 export const CreateOrUpdateEventDialog = ({
-  payload: { event, eventGroup, option },
+  payload: { event, eventGroup, option, items = [] },
   open,
   onClose,
 }: DialogProps<CreateEventProps>) => {
@@ -96,17 +96,11 @@ export const CreateOrUpdateEventDialog = ({
   const [editedEvent, setEditedEvent] = useState<EventTable>(event ?? emptyEvent);
   const [selectedGroup, setSelectedGroup] = useState<Group | null>(eventGroup ?? null);
   const [dialogOpen, setDialogOpen] = useState<'group' | 'stopRepeat' | 'repeat' | 'places' | 'bring_items' | null>(null);
-  const [bringItems, setBringItems] = useState<{ name: string, required_qty: number }[]>([]);
-
+  const [duration, setDuration] = useState<Duration>(event ? getDurationFrom(event.startingDateTime, event.endDateTime) ?? DEFAULT_DURATION : DEFAULT_DURATION)
+  const [bringItems, setBringItems] = useState(items);
   const ref = useRef<HTMLFormElement>(null);
 
-  const { data: allItems = [], isLoading: bringItemsLoading } = useBringItems(event?.id);
-
   const place = useMemo(() => editedEvent.place ? (JSON.parse(editedEvent.place) as PlaceType) : null, [editedEvent]);
-
-  // useEffect(() => {
-  //   setBringItems(allItems.map(x => ({ name: x.name, required_qty: x.required_qty ?? 0 })));
-  // }, [allItems]);
 
   const insertEvent = useInsertEventMutation(fetchMode);
   const updateSingleEvent = useUpdateSingleMutation(fetchMode);
@@ -154,7 +148,7 @@ export const CreateOrUpdateEventDialog = ({
           {
             event: eventChanges as Tables<'events'>,
             currentUser: user,
-            items: bring_items.map(x => ({ name: x.name, required_qty: x.required_qty, unit: "Stk.", sort_order: 0, notes: null }))
+            items: bring_items.map(x => ({ name: x.name, required_qty: x.required_qty ?? 0, unit: "Stk.", sort_order: 0, notes: null }))
           },
           {
             onError: (error) =>
@@ -301,6 +295,7 @@ export const CreateOrUpdateEventDialog = ({
                       milliseconds: 0,
                     })
                   ),
+                  endDateTime: formatDateToDatabase(add(editedEvent.startingDateTime, duration))
                 });
               }}
               value={formatDateFromDatabase(editedEvent.startingDateTime)}
@@ -378,7 +373,8 @@ export const CreateOrUpdateEventDialog = ({
             <ListItemAvatar sx={{ flexDirection: 'row', display: 'flex', alignItems: 'center' }}>
               <TimelapseIcon />
             </ListItemAvatar>
-            <DurationAdder duration={getDurationFrom(editedEvent.startingDateTime, editedEvent.endDateTime)} durationChanged={(d) => {
+            <DurationAdder duration={duration} durationChanged={(d) => {
+              setDuration(d);
               setEditedEvent({
                 ...editedEvent,
                 endDateTime: formatDateToDatabase(add(editedEvent.startingDateTime, d))
@@ -708,13 +704,10 @@ export const CreateOrUpdateEventDialog = ({
             </ListItem>
           </Has>
           <ListItem dense sx={{ pt: 0, pb: 0, mb: 2 }} key={'pledges'} onClick={() => {
-            if (bringItemsLoading) return;
             setDialogOpen('bring_items');
           }}>
             <ListItemAvatar>
-              {
-                bringItemsLoading ? <CircularProgress size={24} /> : <Category />
-              }
+              <Category />
             </ListItemAvatar>
             <ListItemText primary={'Gegenstände mitbringen'} secondary={bringItems.map(x => <Chip sx={{ mr: 1 }} size='small' label={`${x.required_qty}x ${x.name}`} />)} />
           </ListItem>
@@ -730,7 +723,7 @@ export const CreateOrUpdateEventDialog = ({
                   <IconButton onClick={() => {
                     const newItems = [...bringItems];
                     newItems.splice(index, 1);
-                    setBringItems(newItems);
+                    setBringItems(newItems)
                   }}>
                     <Delete />
                   </IconButton>
@@ -749,13 +742,13 @@ export const CreateOrUpdateEventDialog = ({
                   margin="normal"
                 />
                 <Box sx={{ display: 'flex', flexDirection: 'row' }}>
-                  {item.required_qty > 0 && (
+                  {item.required_qty && item.required_qty > 0 && (
                     <>
                       <IconButton
                         disableRipple
                         onClick={(event) => {
                           const newItems = [...bringItems];
-                          newItems[index].required_qty = Math.max(1, newItems[index].required_qty - 1);
+                          newItems[index].required_qty = Math.max(1, (newItems[index].required_qty ?? 0) - 1);
                           setBringItems(newItems);
                           event.stopPropagation();
                         }}
@@ -769,7 +762,7 @@ export const CreateOrUpdateEventDialog = ({
                     disableRipple
                     onClick={(event) => {
                       const newItems = [...bringItems];
-                      newItems[index].required_qty = newItems[index].required_qty + 1;
+                      newItems[index].required_qty = (newItems[index].required_qty ?? 0) + 1;
                       setBringItems(newItems);
                       event.stopPropagation();
                     }}
@@ -781,7 +774,17 @@ export const CreateOrUpdateEventDialog = ({
             ))
           }
           <ListItem onClick={() => {
-            setBringItems([...bringItems, { name: '', required_qty: 1 }]);
+            setBringItems([...bringItems, {
+              name: '',
+              required_qty: 1,
+              created_at: formatDateToDatabase(Date.now()),
+              created_by: user.userId,
+              event: editedEvent.id,
+              sort_order: 0,
+              id: '',
+              notes: '',
+              unit: 'Stk.'
+            }]);
           }}>
             <ListItemAvatar>
               <IconButton>

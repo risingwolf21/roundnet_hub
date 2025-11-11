@@ -3,13 +3,15 @@ import { useAllNotifications, useMarkNotificationsAsRead } from '@/tanstack/noti
 import Layout from '../../components/layout/Layout';
 import { useGrants } from '../auth/GrantsContext';
 
+import { Json } from '@/types/supabase-generated.types';
 import DoneAll from '@mui/icons-material/DoneAll';
 import Box from '@mui/material/Box';
 import Fab from '@mui/material/Fab';
 import List from '@mui/material/List';
-import ListItem from '@mui/material/ListItem';
+import ListItemButton from '@mui/material/ListItemButton';
 import ListItemText from '@mui/material/ListItemText';
 import Typography from '@mui/material/Typography';
+import { useNavigate } from 'react-router';
 
 const NotificationsPage = () => {
   return (
@@ -19,8 +21,18 @@ const NotificationsPage = () => {
   );
 };
 
+function hasStringUrl(value: Json): value is { url: string } {
+  return (
+    typeof value === "object" &&
+    value !== null &&
+    !Array.isArray(value) &&
+    typeof (value as any).url === "string"
+  );
+}
+
 const NotificationScreen = () => {
   const { user } = useGrants();
+  const navigate = useNavigate();
   const { data: notifications = [], isLoading, refetch } = useAllNotifications(user);
 
   const markNotificationsAsRead = useMarkNotificationsAsRead(user.userId);
@@ -39,9 +51,15 @@ const NotificationScreen = () => {
       <List sx={{ width: '100%' }}>
         {notifications.map((notification) => {
           return (
-            <ListItem key={notification.id}>
+            <ListItemButton
+              key={notification.id}
+              onClick={() => {
+                if (notification.data && hasStringUrl(notification.data)) {
+                  navigate(notification.data.url);
+                }
+              }}>
               <ListItemText primary={notification.title} secondary={notification.body} />
-            </ListItem>
+            </ListItemButton>
           );
         })}
       </List>

@@ -1,9 +1,9 @@
 import { ProfileDialog } from '@/components/Profile';
 import { useGrants } from '@/features/auth/GrantsContext';
-import { useTheme } from '@mui/material/styles';
+import { Direction, useTheme } from '@mui/material/styles';
 import { useDialogs } from '@toolpad/core';
 import { compareDesc, isBefore } from 'date-fns';
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { PropsWithChildren, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { SwipeableDialog } from '../../../components/SwipeableDialog';
 import { FullAttendance } from '../../../types/supabaseTypes';
@@ -27,7 +27,7 @@ import Tab from '@mui/material/Tab';
 import Tabs from '@mui/material/Tabs';
 import Typography from '@mui/material/Typography';
 
-export const TabPanel = (props: any) => {
+export const TabPanel = (props: PropsWithChildren & { value: number, index: number, dir: Direction }) => {
   const { children, value, index, ...other } = props;
 
   return (
@@ -132,7 +132,7 @@ const EventAttendanceDialog = ({
     setValue(index);
   }, [index]);
 
-  const handleChange = (_event: React.SyntheticEvent<Element, Event>, value: any) => {
+  const handleChange = (_event: React.SyntheticEvent<Element, Event>, value: number) => {
     setValue(value);
   };
 

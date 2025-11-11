@@ -24,7 +24,7 @@ function ServerDay(props: PickersDayProps & { highlightedDays?: Date[]; maxEntri
 
   const isHighlighted = highlightedDays.filter((x) => isSameDay(x, day)).length > 0;
   const isDisabled =
-    differenceInDays(day, Date.now()) > 1 ||
+    differenceInDays(day, new Date()) > 1 ||
     isHighlighted ||
     highlightedDays.filter((x) => isSameWeek(x, day)).length > maxEntriesPerWeek;
 

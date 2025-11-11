@@ -11,7 +11,7 @@ import NotificationsRounded from '@mui/icons-material/NotificationsRounded';
 import Password from '@mui/icons-material/Password';
 import { useNotifications } from '@toolpad/core';
 import { DialogComponent, useDialogs } from '@toolpad/core/useDialogs';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router';
 import pzLogo from '../../images/pz_logo.svg';
 import { UserWithGroups } from '../../types/supabaseTypes';
@@ -46,7 +46,7 @@ const UserScreen = ({ user, handleSignOut }: UserScreenProps) => {
   const notifications = useNotifications();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
-  const [notificationSupported, setNotificationSUpported] = useState(false);
+  const notificationSupported = ('serviceWorker' in navigator) && ('PushManager' in window);
   const { data: player_data, isLoading } = usePlayer(user);
 
   const iOS = typeof navigator !== 'undefined' && /iPad|iPhone|iPod/.test(navigator.userAgent);
@@ -68,16 +68,14 @@ const UserScreen = ({ user, handleSignOut }: UserScreenProps) => {
   );
 
   useEffect(() => {
-    const notificationsSupported = ('serviceWorker' in navigator) && ('PushManager' in window);
-    setNotificationSUpported(notificationsSupported);
     if (searchParams.get('dialog') === 'playerzone') {
       openDialog(PlayerzoneProfileDialog, { user }, 'playerzone');
     } else if (searchParams.get('dialog') === 'contact_information') {
       openDialog(ContactInformation, { user }, 'contact_information');
     } else if (searchParams.get('dialog') === 'notifications') {
-      openDialog(NotificationsDialog, { user, notificationSupported: notificationsSupported }, 'notifications');
+      openDialog(NotificationsDialog, { user, notificationSupported: notificationSupported }, 'notifications');
     }
-  }, [openDialog, searchParams, user]);
+  }, [openDialog, searchParams, user, notificationSupported]);
 
   const copyIcalURLToClipboard = () => {
     if (iOS) {

@@ -53,7 +53,7 @@ export const useBringOverview = (eventId: string) =>
   });
 
 export const useBringItems = (eventId?: string) =>
-  useQuery<Tables<'event_bring_items'>[]>({
+  useQuery<BringItems[]>({
     queryKey: ['events', eventId, 'bringPledges'],
     enabled: !!eventId,
     staleTime: 60_000,

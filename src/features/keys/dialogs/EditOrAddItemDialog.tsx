@@ -3,7 +3,7 @@ import CloseIcon from '@mui/icons-material/Close';
 import KeyIcon from '@mui/icons-material/Key';
 import { Box } from '@mui/system';
 import { useNotifications } from '@toolpad/core';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 
 import AppBar from '@mui/material/AppBar';
 import Avatar from '@mui/material/Avatar';
@@ -38,15 +38,15 @@ export const EditOrAddItemDialog = ({ open, handleClose, itemToEdit }: EditOrAdd
   const updateItemMutation = useUpdateItemMutation();
   const insertItemMutation = useInsertItemMutation();
 
-  useEffect(() => {
+  if (itemToEdit?.id !== currentItem.id) {
     setCurrentItem({
       id: itemToEdit?.id,
       name: itemToEdit?.name,
       color: itemToEdit?.color,
       current_holder: itemToEdit?.current_holder,
       type: itemToEdit?.type,
-    });
-  }, [itemToEdit]);
+    })
+  }
 
   const handleSubmit = async () => {
     if (!currentItem.name || currentItem.name.length < 6) {

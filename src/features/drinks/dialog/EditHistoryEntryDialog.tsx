@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { SwipeableDialog } from '../../../components/SwipeableDialog';
 import { FullHistoryUpdate } from '../types';
 
@@ -27,10 +27,12 @@ type Props = {
 
 const EditHistoryEntryDialog = ({ open, handleClose, setOpen, entry, handleSubmit }: Props) => {
   const [newCount, setNewCount] = useState<number>(0);
+  const [prevEntry, setPrevEntry] = useState(entry);
 
-  useEffect(() => {
+  if (entry?.id !== prevEntry?.id) {
     setNewCount(entry?.count ?? 0);
-  }, [entry]);
+    setPrevEntry(entry);
+  }
 
   if (!entry) return;
 

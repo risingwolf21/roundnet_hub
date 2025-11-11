@@ -29,6 +29,7 @@ declare global {
   type Group = Tables<'event_group'>;
   type EventsUserViewNullable = Tables<'events_user_view'>;
   type EventGroupsViewNullable = Tables<'event_groups_view'>;
+  type BringItems = Tables<'event_bring_items'>;
   type Item = Tables<'items'>;
   type ItemHistory = Tables<'item_history'>;
   type Payment = Tables<'payments'>;

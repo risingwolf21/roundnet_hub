@@ -4,7 +4,7 @@ import { captureException } from '@sentry/react';
 import { DialogProps } from '@toolpad/core/useDialogs';
 import { NotificationsProvider, useNotifications } from '@toolpad/core/useNotifications';
 import { addDays, isAfter } from 'date-fns';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import rg_small from '../../images/rgx_small.png';
 
 import { GamesTableUpdate } from '@/types/supabaseTypes';
@@ -51,7 +51,9 @@ const Content = ({ payload, onClose }: DialogProps<PlayerzoneProfilePayload, str
   const [rgLink, setRgLink] = useState(player_data?.rg_link ?? '');
   const [loading, setLoading] = useState(false);
 
-  const [elo_change_last_30_days, _] = useState(elo_history?.filter(x => isAfter(x.created_at, addDays(Date.now(), -30))).reduce((p, c) => p + c.delta, 0) ?? 0)
+  const elo_change_last_30_days = useMemo(() => {
+    return elo_history?.filter(x => isAfter(x.created_at, addDays(new Date(), -30))).reduce((p, c) => p + c.delta, 0) ?? 0
+  }, [elo_history])
 
   const handleChangeProfilePicture = async () => {
     setLoading(false);

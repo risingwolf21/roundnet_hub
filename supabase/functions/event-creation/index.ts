@@ -39,7 +39,7 @@ Deno.serve(async (_req: Request) => {
     }
 
     for (const event of created_events) {
-      Sentry.captureMessage('event_created', (context) => {
+      Sentry.captureMessage('event_created', (context: Sentry.Scope) => {
         context.setExtra("origin", "edge_function");
         context.setExtra("event", JSON.stringify(event, null, 2))
         return context;
