@@ -40,7 +40,7 @@ SELECT 1;
 
 -- Assert: u1 bekommt 1 Notification
 SELECT is(
-  (SELECT count(*)::int FROM notifications.notifications n
+  (SELECT count(*)::int FROM public.notifications n
    WHERE n.topic = 'event.comment.created'
      AND n."user" = tests.get_supabase_uid('user_1a')::text),
   1,
@@ -49,7 +49,7 @@ SELECT is(
 
 -- Assert: u2 ist Attending aber hat Preference disabled -> 0
 SELECT is(
-  (SELECT count(*)::int FROM notifications.notifications n
+  (SELECT count(*)::int FROM public.notifications n
    WHERE n.topic = 'event.comment.created'
      AND n."user" = tests.get_supabase_uid('user_2a')::text),
   0,
@@ -58,7 +58,7 @@ SELECT is(
 
 -- Assert: u3 ist nicht Attending -> 0
 SELECT is(
-  (SELECT count(*)::int FROM notifications.notifications n
+  (SELECT count(*)::int FROM public.notifications n
    WHERE n.topic = 'event.comment.created'
      AND n."user" = tests.get_supabase_uid('user_1b')::text),
   0,
@@ -66,7 +66,7 @@ SELECT is(
 );
 
 SELECT is(
-  (SELECT count(*)::int FROM notifications.notifications n
+  (SELECT count(*)::int FROM public.notifications n
    WHERE n.topic = 'event.comment.created'
      AND n."user" = tests.get_supabase_uid('user_2b')::text),
   0,
@@ -75,9 +75,9 @@ SELECT is(
 
 -- Assert: Outbox nur für u1 erzeugt
 SELECT is(
-  (SELECT count(*)::int FROM notifications.notification_outbox o
+  (SELECT count(*)::int FROM public.notification_outbox o
    WHERE o.notification IN (
-     SELECT id FROM notifications.notifications WHERE topic='event.comment.created'
+     SELECT id FROM public.notifications WHERE topic='event.comment.created'
    )),
   1,
   'exactly one outbox row created (for u1)'
