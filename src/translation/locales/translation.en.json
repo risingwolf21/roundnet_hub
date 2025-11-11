@@ -25,7 +25,8 @@
     "permissions": "Permissions",
     "supabaseQueries": "Supabase Query Client",
     "sentryIssues": "Sentry issues",
-    "group_features": "Group Features"
+    "group_features": "Group Features",
+    "helpAndInformation": "Help and information"
   },
   "cancel": "Cancel",
   "confirm": "Confirm",

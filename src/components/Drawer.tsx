@@ -2,17 +2,11 @@ import { useGrants } from '@/features/auth/GrantsContext';
 import { Has } from '@/hooks/useGrants';
 import { useRequestedUsersPerGroup } from '@/tanstack/groups';
 import { useAllNotifications } from '@/tanstack/notifications';
-import { styled } from '@mui/system';
-import { TFunction } from 'i18next';
-import { useEffect, useState } from 'react';
-import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router';
-import { InstallPWA } from './PwaInstallPromp';
-
 import EmojiEvents from '@mui/icons-material/EmojiEvents';
 import Euro from '@mui/icons-material/Euro';
 import Group from '@mui/icons-material/Group';
 import Groups from '@mui/icons-material/Groups';
+import HelpIcon from '@mui/icons-material/Help';
 import History from '@mui/icons-material/History';
 import Home from '@mui/icons-material/Home';
 import InfoOutlined from '@mui/icons-material/InfoOutlined';
@@ -39,6 +33,12 @@ import ListItemText from '@mui/material/ListItemText';
 import ListSubheader from '@mui/material/ListSubheader';
 import SwipeableDrawer from '@mui/material/SwipeableDrawer';
 import Typography from '@mui/material/Typography';
+import { styled } from '@mui/system';
+import { TFunction } from 'i18next';
+import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router';
+import { InstallPWA } from './PwaInstallPromp';
 
 export const drawerWidth = 360;
 
@@ -90,7 +90,7 @@ const DrawerItem = styled(ListItem, {
   }),
 }));
 
-const DrawerBox = styled(Box)<BoxProps>(({ }) => ({
+const DrawerBox = styled(Box)<BoxProps>(() => ({
   width: '100%',
   height: '100%',
   paddingTop: 'env(safe-area-inset-top)',
@@ -519,6 +519,17 @@ const DrawerContent = ({
           </ListSubheader>
         }
       >
+        <DrawerItem key="app info" selected={tab === 'help'} onClick={() => handleChange('help')}>
+          <ListItemAvatar>
+            <ListItemIcon>
+              <HelpIcon />
+            </ListItemIcon>
+          </ListItemAvatar>
+          <ListItemText
+            primaryTypographyProps={{ fontWeight: 'bold', fontSize: '0.9rem' }}
+            primary={t("browse.helpAndInformation")}
+          />
+        </DrawerItem>
         <DrawerItem key="update app" selected={false} onClick={() => window.location.reload()}>
           <ListItemAvatar>
             <ListItemIcon>
