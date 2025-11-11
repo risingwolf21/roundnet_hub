@@ -11,6 +11,7 @@ import HomePage from './features/homepage/HomePage';
 import UserScreenProvider from './features/profile/User';
 import { lazyWithRetry } from './hooks/lazyWithRetry';
 import { Has } from './hooks/useGrants';
+import { UserWithGroups } from './types/supabaseTypes';
 
 const HistoryScreenProvider = lazyWithRetry(() => import('./features/drinks/HistoryScreen.page'));
 const ItemHolderScreen = lazyWithRetry(() => import('./features/keys/ItemHolderScreen'));
@@ -42,6 +43,10 @@ const LogsList = lazyWithRetry(() => import('./features/admin/LogsList'));
 const sentryCreateBrowserRouter = wrapCreateBrowserRouterV7(createBrowserRouter);
 
 export const AppRoutes = () => {
+  const { user } = useApplication();
+
+  const router = createRouter(user)
+
   return <RouterProvider router={router} />;
 };
 
@@ -69,7 +74,7 @@ const PrivateRoute = () => {
   );
 };
 
-const router = sentryCreateBrowserRouter([
+const createRouter = (user: UserWithGroups | null) => sentryCreateBrowserRouter([
   {
     path: '/auth',
     element: <AuthLayout />,
@@ -106,7 +111,13 @@ const router = sentryCreateBrowserRouter([
         children: [
           {
             index: true,
-            element: <Navigate to={import.meta.env.VITE_APP_HOMEPAGE ?? '/home'} />,
+            element: <>
+              {
+                (user?.groups.length ?? 0) > 0
+                  ? <Navigate to={import.meta.env.VITE_APP_HOMEPAGE ?? '/home'} />
+                  : <Navigate to={'/groups/list'} />
+              }
+            </>
           },
           {
             path: '/home',
@@ -296,7 +307,7 @@ const router = sentryCreateBrowserRouter([
           },
           {
             path: '*',
-            element: <Navigate to="/home" replace />,
+            element: <Navigate to="/" replace />,
           },
         ],
       },
