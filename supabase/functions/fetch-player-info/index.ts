@@ -1,20 +1,25 @@
-// Follow this setup guide to integrate the Deno language server with your editor:
-// https://deno.land/manual/getting_started/setup_your_environment
-// This enables autocomplete, go to definition, etc.
+import { load } from 'cheerio';
+import * as Sentry from 'sentry';
+import { createClient } from 'supabase';
+import { Database } from '../_shared/supabase-generated.types.ts';
 
-// importiere benötigte Module
-import * as Sentry from 'https://deno.land/x/sentry/index.mjs';
-import cheerio from 'https://esm.sh/cheerio@1.0.0-rc.12';
-import { createClient } from 'npm:@supabase/supabase-js@2';
+const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
+const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+
+const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
+  auth: { persistSession: false },
+});
 
 Sentry.init({
   dsn: 'https://a06f63fae5ab4ce4ac291d0d6fb4e989@o4505379650666496.ingest.sentry.io/4505379651649536',
-  integrations: [],
-  // Performance Monitoring
+  defaultIntegrations: false,
   tracesSampleRate: 1.0,
-  // Set sampling rate for profiling - this is relative to tracesSampleRate
-  profilesSampleRate: 1.0,
+  sendDefaultPii: true,
+  integrations: [Sentry.supabaseIntegration({ supabaseClient: supabase })],
 });
+
+Sentry.setTag('region', Deno.env.get('SB_REGION'))
+Sentry.setTag('execution_id', Deno.env.get('SB_EXECUTION_ID'))
 
 class UpdatePlayerError extends Error {
   constructor(msg: string) {
@@ -25,22 +30,27 @@ class UpdatePlayerError extends Error {
   }
 }
 
+class RgLinkMissingError extends Error {
+  constructor(msg: string) {
+    super(msg);
+    Object.setPrototypeOf(this, RgLinkMissingError.prototype);
+  }
+}
+
+class RgUrlFetchError extends Error {
+  constructor(msg: string) {
+    super(msg);
+    Object.setPrototypeOf(this, RgUrlFetchError.prototype);
+  }
+}
+
 Deno.serve(async (req) => {
   const payload = await req.json();
-  const supabase = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!, {
-    global: {
-      headers: {
-        app_version: '1.6.0',
-      },
-    },
-  });
   try {
-    // Beispiel: Hole den "rg_link" aus der Anfrage
-
     const { rg_link, player } = payload;
 
     if (!rg_link) {
-      await supabase.schema("logs").from("player_info").insert({ type: "error", content: JSON.stringify({ payload, message: "rg_link ist erforderlich" }) });
+      Sentry.captureException(new RgLinkMissingError(JSON.stringify(payload)))
       return new Response(JSON.stringify({ error: 'rg_link ist erforderlich' }), {
         status: 400,
         headers: { 'Content-Type': 'application/json' },
@@ -49,7 +59,7 @@ Deno.serve(async (req) => {
     // HTML von der angegebenen URL abrufen
     const response = await fetch(rg_link);
     if (!response.ok) {
-      await supabase.schema("logs").from("player_info").insert({ type: "error", content: JSON.stringify({ response, message: "Fehler beim Abrufden der URL" }) });
+      Sentry.captureException(new RgUrlFetchError(JSON.stringify({ rg_link, ...response })));
       return new Response(JSON.stringify({ error: 'Fehler beim Abrufen der URL' }), {
         status: response.status,
         headers: { 'Content-Type': 'application/json' },
@@ -58,8 +68,7 @@ Deno.serve(async (req) => {
     const html = await response.text();
 
     // HTML mit Cheerio analysieren
-    const $ = cheerio.load(html);
-
+    const $ = load(html);
 
     const avatar_url = $(".player-card").find('.player-img').attr('src');
 
@@ -80,16 +89,13 @@ Deno.serve(async (req) => {
       })
       .eq('player', player);
 
-    if (error) console.error(error);
+    if (error) throw error;
 
-    await supabase.schema("logs").from("player_info").insert({ type: "success", content: JSON.stringify({ payload, rgxValue, message: "Successfully updated user with index" }) });
-    // Antwort mit dem extrahierten Wert zurückgeben
     return new Response('Successfully updated user with index ' + rgxValue, {
       status: 200,
       headers: { 'Content-Type': 'application/json' },
     });
-  } catch (error: any) {
-    await supabase.schema("logs").from("player_info").insert({ type: "error", content: JSON.stringify({ payload, error }) });
+  } catch (error: unknown) {
     console.error(error);
     Sentry.captureException(
       new UpdatePlayerError(
@@ -99,7 +105,7 @@ Deno.serve(async (req) => {
         })
       )
     );
-    return new Response(JSON.stringify({ error: 'Interner Serverfehler', details: error.message }), {
+    return new Response(JSON.stringify({ error: 'Interner Serverfehler', details: JSON.stringify(error) }), {
       status: 500,
       headers: { 'Content-Type': 'application/json' },
     });

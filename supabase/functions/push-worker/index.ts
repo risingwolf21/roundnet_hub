@@ -1,28 +1,25 @@
-// deno-lint-ignore-file no-explicit-any
-// Supabase Edge Function: push-worker
-// Läuft in Deno, arbeitet pending Outbox-Jobs ab, sendet Web Push (VAPID),
-// Backoff/Retry/Endpoint-Cleanup inklusive.
+import * as Sentry from 'sentry';
+import { createClient } from 'supabase';
+import webpush from "web-push";
+import { Database, Tables } from '../_shared/supabase-generated.types.ts';
 
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.4";
-import webpush from "npm:web-push@3.6.7";
+const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
+const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
-type OutboxRow = {
-  id: number;
-  user: string;
-  tenant: string;
-  title: string;
-  body: string | null;
-  data: any | null;
-  urgency: "very-low" | "low" | "normal" | "high";
-  ttl_seconds: number | null;
-  dedupe_key: string | null;
-  status: "pending" | "processing" | "sent" | "dead";
-  attempt_count: number;
-  next_attempt_at: string;
-  last_error: string | null;
-  created_at: string;
-  sent_at: string | null;
-};
+const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
+  auth: { persistSession: false },
+});
+
+Sentry.init({
+  dsn: 'https://a06f63fae5ab4ce4ac291d0d6fb4e989@o4505379650666496.ingest.sentry.io/4505379651649536',
+  defaultIntegrations: false,
+  tracesSampleRate: 1.0,
+  sendDefaultPii: true,
+  integrations: [Sentry.supabaseIntegration({ supabaseClient: supabase })],
+});
+
+Sentry.setTag('region', Deno.env.get('SB_REGION'))
+Sentry.setTag('execution_id', Deno.env.get('SB_EXECUTION_ID'))
 
 type TargetRow = {
   outbox_id: number;
@@ -41,20 +38,13 @@ type TargetRow = {
   } | null;
 };
 
-const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
-const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 const VAPID_PUBLIC_KEY = Deno.env.get("VAPID_PUBLIC_KEY")!;
 const VAPID_PRIVATE_KEY = Deno.env.get("VAPID_PRIVATE_KEY")!;
-const CRON_SECRET = Deno.env.get("CRON_SECRET") ?? "";
 
 const BATCH = parseInt(Deno.env.get("PUSH_WORKER_BATCH") ?? "100", 10);
 const MAX_JOB_ATTEMPTS = parseInt(Deno.env.get("PUSH_WORKER_MAX_JOB_ATTEMPTS") ?? "8", 10);
 const MAX_TARGET_ATTEMPTS = parseInt(Deno.env.get("PUSH_WORKER_MAX_TARGET_ATTEMPTS") ?? "5", 10);
 const BACKOFF_CAP_SECONDS = parseInt(Deno.env.get("PUSH_WORKER_BACKOFF_CAP_SECONDS") ?? "1800", 10); // 30 min
-
-const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
-  auth: { persistSession: false },
-});
 
 webpush.setVapidDetails("mailto:admin@example.com", VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY);
 
@@ -68,7 +58,7 @@ function calcBackoffSeconds(attempts: number) {
   return Math.min(BACKOFF_CAP_SECONDS, base);
 }
 
-async function fetchDueJobs(limit: number): Promise<OutboxRow[]> {
+async function fetchDueJobs(limit: number): Promise<Tables<'notification_outbox'>[]> {
   const { data, error } = await supabase
     .schema("notifications")
     .from("notification_outbox")
@@ -131,15 +121,13 @@ async function markTargetSent(jobId: number, subId: string, statusCode: number) 
     .schema("notifications")
     .from("notification_outbox_targets")
     .update({
-      status: "sent",
-      attempt_count: supabase.rpc, // placeholder to satisfy types; updated below via raw SQL RPC is better
+      status: "sent"
     })
     .eq("outbox_id", jobId)
     .eq("subscription_id", subId);
-  // supabase-js can't do "attempt_count = attempt_count + 1" directly in one statement
-  // workaround: fetch & increment locally
+
   if (error) throw error;
-  await supabase.schema("notifications").rpc("inc_target_attempt", { p_outbox_id: jobId, p_subscription_id: subId, p_status: statusCode, p_error: null });
+  await supabase.schema("notifications").rpc("inc_target_attempt", { p_outbox_id: jobId, p_subscription_id: subId, p_status: statusCode });
 }
 
 async function markTargetSkipped(jobId: number, subId: string, statusCode: number, message: string) {
@@ -212,7 +200,7 @@ async function finishJob(jobId: number, ok: boolean, attemptsNext: number) {
   }
 }
 
-async function processJob(job: OutboxRow) {
+async function processJob(job: Tables<'notification_outbox'>) {
   // fetch targets
   const targets = await fetchPendingTargets(job.id);
   if (targets.length === 0) {

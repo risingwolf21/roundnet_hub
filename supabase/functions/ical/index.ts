@@ -1,6 +1,24 @@
-// deno-lint-ignore-file no-explicit-any
-import "jsr:@supabase/functions-js/edge-runtime.d.ts";
-import { createClient } from "npm:@supabase/supabase-js@2";
+import * as Sentry from 'sentry';
+import { createClient } from 'supabase';
+import { Database } from '../_shared/supabase-generated.types.ts';
+
+const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
+const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+
+const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
+  auth: { persistSession: false },
+});
+
+Sentry.init({
+  dsn: 'https://a06f63fae5ab4ce4ac291d0d6fb4e989@o4505379650666496.ingest.sentry.io/4505379651649536',
+  defaultIntegrations: false,
+  tracesSampleRate: 1.0,
+  sendDefaultPii: true,
+  integrations: [Sentry.supabaseIntegration({ supabaseClient: supabase })],
+});
+
+Sentry.setTag('region', Deno.env.get('SB_REGION'))
+Sentry.setTag('execution_id', Deno.env.get('SB_EXECUTION_ID'))
 
 function icsEscape(text: string) {
   return (text ?? "")
@@ -57,11 +75,6 @@ Deno.serve(async (req) => {
   const url = new URL(req.url);
   const userId = url.searchParams.get("userId");
   if (!userId) return new Response("Missing userId", { status: 400 });
-
-  const supabase = createClient(
-    Deno.env.get("SUPABASE_URL")!,
-    Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")! // Service-Role, weil anonyme Kalender-Clients kein Login können
-  );
 
   // Events laden (nur accepted). Optional: Zeitfenster begrenzen (z. B. -6 Monate bis +18 Monate)
   const { data: rows, error } = await supabase

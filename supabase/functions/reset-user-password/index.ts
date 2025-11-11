@@ -1,13 +1,24 @@
-// Follow this setup guide to integrate the Deno language server with your editor:
-// https://deno.land/manual/getting_started/setup_your_environment
-// This enables autocomplete, go to definition, etc.
+import * as Sentry from 'sentry';
+import { createClient } from 'supabase';
+import { Database, Tables } from '../_shared/supabase-generated.types.ts';
 
-// Setup type definitions for built-in Supabase Runtime APIs
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.7.1';
-import "jsr:@supabase/functions-js/edge-runtime.d.ts";
+const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
+const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
-const url = Deno.env.get('SUPABASE_URL')!;
-const serviceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
+  auth: { persistSession: false },
+});
+
+Sentry.init({
+  dsn: 'https://a06f63fae5ab4ce4ac291d0d6fb4e989@o4505379650666496.ingest.sentry.io/4505379651649536',
+  defaultIntegrations: false,
+  tracesSampleRate: 1.0,
+  sendDefaultPii: true,
+  integrations: [Sentry.supabaseIntegration({ supabaseClient: supabase })],
+});
+
+Sentry.setTag('region', Deno.env.get('SB_REGION'))
+Sentry.setTag('execution_id', Deno.env.get('SB_EXECUTION_ID'))
 
 const corsHeaders = {
   // Im Dev: '*' oder 'http://localhost:5173'
@@ -16,6 +27,13 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
   'Access-Control-Allow-Methods': 'GET, POST, PUT, PATCH, DELETE, OPTIONS',
 };
+
+class UnauthorizedError extends Error {
+  constructor(msg: string) {
+    super(msg);
+    Object.setPrototypeOf(this, UnauthorizedError.prototype);
+  }
+}
 
 Deno.serve(async (req) => {
   // 1) Preflight beantworten
@@ -43,14 +61,9 @@ Deno.serve(async (req) => {
     }
 
     // 1) Client-ähnlicher Supabase-Client, um den aufrufenden User aus dem JWT zu lesen
-    const supabase = createClient(url, Deno.env.get('SUPABASE_ANON_KEY')!, {
-      global: { headers: { Authorization: `Bearer ${token}` } },
-      auth: { persistSession: false, autoRefreshToken: false },
-    });
     const { data: me, error: meErr } = await supabase.auth.getUser(token);
     if (meErr || !me?.user) {
-      console.error(meErr);
-      return new Response('Unauthorized', { status: 401, headers: corsHeaders });
+      throw meErr
     }
 
     // 2) Admin-Check gegen eure public.user-Tabelle (Role-Feld)
@@ -61,23 +74,27 @@ Deno.serve(async (req) => {
       .single();
 
     if (adminErr || adminRow?.role !== 'admin') {
-      return new Response('Forbidden. User does not have the admin role.', { status: 403, headers: corsHeaders });
+      throw adminErr;
     }
 
     const { data: permissions, error: permissionErr } = await supabase
-      .from('user_permissions')
-      .select('permission');
+      .from("user_grants_view")
+      .select("*");
 
-    if (permissionErr || permissions.map((x: any) => x.permission).includes('reset_user_password')) {
-      return new Response('Forbidden. "reset_user_password" Permission is missing.', { status: 403, headers: corsHeaders });
+    if (permissionErr || permissions.map((x: Tables<'user_grants_view'>) => x.key).includes('reset_user_password')) {
+      throw new UnauthorizedError(JSON.stringify({
+        user_email: me.user.email,
+        user_id: me.user.id,
+        for_user_id: userId
+      }))
     }
 
     // 3) Admin-Client mit Service Role für Passwort-Update
-    const admin = createClient(url, serviceKey);
+    const admin = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
     const { error: updErr } = await admin.auth.admin.updateUserById(userId, {
       password: newPassword,
     });
-    if (updErr) return new Response(updErr.message, { status: 400, headers: corsHeaders });
+    if (updErr) throw updErr;
 
     // Optional: Sessions des Zielnutzers invalidieren (Logout überall) – je nach Policy.
 
@@ -86,21 +103,10 @@ Deno.serve(async (req) => {
       status: 200,
     });
   } catch (e) {
+    Sentry.captureException(new UnauthorizedError(JSON.stringify(e)))
     return new Response(JSON.stringify({ error: String(e) }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   }
 });
-
-/* To invoke locally:
-
-  1. Run `supabase start` (see: https://supabase.com/docs/reference/cli/supabase-start)
-  2. Make an HTTP request:
-
-  curl -i --location --request POST 'http://127.0.0.1:54321/functions/v1/reset-user-password' \
-    --header 'Authorization: Bearer REMOVED_KEY' \
-    --header 'Content-Type: application/json' \
-    --data '{"name":"Functions"}'
-
-*/
