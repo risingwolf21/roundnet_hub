@@ -140,7 +140,7 @@ const SignUpScreen = () => {
     setLoading(false);
     if (data.session) {
       await supabase.auth.setSession(data.session);
-      navigate('/');
+      navigate('/help');
     } else {
       navigate('/auth/login');
     }

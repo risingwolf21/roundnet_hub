@@ -12,6 +12,15 @@ import Button from '@mui/material/Button';
 import CircularProgress from '@mui/material/CircularProgress';
 import Typography from '@mui/material/Typography';
 
+function Title() {
+  return (
+    <h2 style={{ marginBottom: 8, textAlign: 'center' }}>
+      Login to<br></br>
+      {BRANDING.title}
+    </h2>
+  );
+}
+
 const LoginScreen = () => {
   const theme = useTheme();
   const navigate = useNavigate();
@@ -77,20 +86,11 @@ const LoginScreen = () => {
     return promise;
   };
 
-  function Title() {
-    return (
-      <h2 style={{ marginBottom: 8, textAlign: 'center' }}>
-        Login to<br></br>
-        {BRANDING.title}
-      </h2>
-    );
-  }
+  const rememberMe = () => <div></div>;
 
-  function Subtitle() {
-    return <div></div>;
-  }
+  const subtitle = () => <div></div>;
 
-  function SubmitButton() {
+  const submitButton = () => {
     return (
       <Button type="submit" variant="contained" fullWidth disabled={loading} sx={{ my: 2 }}>
         {loading ? <CircularProgress color="inherit" size={25} /> : 'Login'}
@@ -98,7 +98,7 @@ const LoginScreen = () => {
     );
   }
 
-  const SignUpLink = () => (
+  const signUpLink = () => (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
       <Link href="#" variant="body2" onClick={() => navigate('/auth/signup', { replace: true })}>
         {'Noch keinen Account?'}
@@ -107,13 +107,11 @@ const LoginScreen = () => {
     </div>
   );
 
-  const ForgotPasswordLink = () => (
+  const forgotPasswordLink = () => (
     <Link href="#" variant="body2" onClick={() => navigate('/auth/forgot-password', { replace: true })}>
       Passwort vergessen?
     </Link>
   );
-
-  const rememberMe = () => <div></div>;
 
   return (
     <SignInPage
@@ -122,11 +120,11 @@ const LoginScreen = () => {
 
       slots={{
         title: Title,
-        subtitle: Subtitle,
-        signUpLink: SignUpLink,
-        forgotPasswordLink: ForgotPasswordLink,
+        subtitle: subtitle,
+        signUpLink: signUpLink,
+        forgotPasswordLink: forgotPasswordLink,
         rememberMe: rememberMe,
-        submitButton: SubmitButton,
+        submitButton: submitButton,
       }}
       sx={{
         height: '100%',

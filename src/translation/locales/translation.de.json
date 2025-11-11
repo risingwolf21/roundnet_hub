@@ -105,5 +105,32 @@
     "mtvGym": "MTV Gym",
     "mtvGymPalazzo": "MTV Palazzo/Gym",
     "mtvStorage": "MTV Keller"
+  },
+  "help": {
+    "titles": {
+      "installation": "📲 Installieren der Anwendung",
+      "groups": "🫂 Gruppen",
+      "events": "🤾 Events",
+      "faq": "⁉️ FAQ / Häufige Fragen"
+    },
+    "faq": {
+      "push": {
+        "title": "Warum funktionieren Push-Benachrichtigungen nicht?",
+        "answer": "Stelle sicher, dass du Push zugelassen hast und die App installiert ist (PWA). Manchmal blockiert der Browser Benachrichtigungen — überprüfe Browser-Einstellungen. Unter Account > Benachrichtigungen kannst du den aktuellen Status einsehen. Sollte dort ein Fehler sein, kopple dich erneut mit dem vorhandenen Button."
+      }
+    },
+    "updateAvailable": "💭 Sobald ein Update verfügbar ist wird dieses automatisch im Hintergrund heruntergeladen und angewand. Dabei aktualisiert sich die Seite der App einmal neu und es werden die erforderlichen Daten geladen",
+    "openShareMenuIOS": "Öffne das Teilen Menü, welches oben oder unten in deinem Browser verfügbar ist",
+    "clickAddToHomeScreen": "Klicke auf 'Zum Home-Bildschirm' hinzufügen",
+    "clickInstallApp": "Klicke auf 'App installieren'",
+    "confirmInstallation": "Es öffnet sich ein Dialog. Dieser muss mit 'Installieren' bestätigt werden.",
+    "confirmName": "Bestätige den Namen der App. Dieser ist editierbar.",
+    "clickAdd": "Klicke auf Hinzufügen. Auf iOS und iPadOS sehen Lesezeichen und Apps auf dem Homebildschirm gleich aus",
+    "openMenuAndroid": "Öffne das Menü in deinem Browser. Meistens drei Punkte auf der oberen Seite des Browsers",
+    "navigateToGroups": "Im Menü auf der linken Seite (☰) zu den Gruppen navigieren",
+    "listAllGroups": "Es werden alle verfügbaren Gruppen aufgelistet",
+    "joinGroup": "Bei manchen Gruppen kann man direkt beitreten, bei anderen muss ein Administrator der Gruppe die Anfrage bestätigen",
+    "eventsFromGroupInfo": "💭 Als Teilnehmer eine Gruppe sieht man die für diese Gruppe erstellen Events",
+    "challengesFromGroupInfo": "💭 Als Teilnehmer eine Gruppe sieht man die für diese Gruppe erstellen Challenges"
   }
 }

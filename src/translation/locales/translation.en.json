@@ -104,5 +104,32 @@
     "mtvGym": "MTV Gym",
     "mtvGymPalazzo": "MTV Palazzo/Gym",
     "mtvStorage": "MTV Storage"
+  },
+  "help": {
+    "titles": {
+      "installation": "📲 Installing the Application",
+      "groups": "🫂 Groups",
+      "events": "🤾 Events",
+      "faq": "⁉️ FAQ / Frequently Asked Questions"
+    },
+    "faq": {
+      "push": {
+        "title": "Why aren’t push notifications working?",
+        "answer": "Make sure you’ve allowed push notifications and that the app is installed (PWA). Sometimes your browser blocks notifications — check your browser settings. Under Account > Notifications you can view the current status. If there’s an error shown, reconnect using the available button."
+      }
+    },
+    "updateAvailable": "💭 As soon as an update is available, it will be automatically downloaded and applied in the background. The app page will reload once to apply it, and required data will be reloaded.",
+    "openShareMenuIOS": "Open the share menu, which is available at the top or bottom of your browser.",
+    "clickAddToHomeScreen": "Tap 'Add to Home Screen'.",
+    "clickInstallApp": "Tap 'Install App'.",
+    "confirmInstallation": "A dialog will open — confirm it by tapping 'Install'.",
+    "confirmName": "Confirm the app name. You can edit it if you want.",
+    "clickAdd": "Tap 'Add'. On iOS and iPadOS, bookmarks and home screen apps look the same.",
+    "openMenuAndroid": "Open your browser’s menu — usually shown as three dots at the top.",
+    "navigateToGroups": "In the left-side menu (☰), navigate to 'Groups'.",
+    "listAllGroups": "All available groups will be listed.",
+    "joinGroup": "Some groups can be joined directly, while others require approval from a group administrator.",
+    "eventsFromGroupInfo": "💭 As a member of a group, you’ll see all events created for that group.",
+    "challengesFromGroupInfo": "💭 As a member of a group, you’ll see all challenges created for that group."
   }
 }

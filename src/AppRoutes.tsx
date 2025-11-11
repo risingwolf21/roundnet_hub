@@ -39,6 +39,7 @@ const PublicGroupInformation = lazyWithRetry(() => import('./features/groups/Pub
 const MatchInformation = lazyWithRetry(() => import('./features/games/MatchInformation'));
 const SendNotifications = lazyWithRetry(() => import('./features/notifications/SendNotifications'));
 const LogsList = lazyWithRetry(() => import('./features/admin/LogsList'));
+const AppInformation = lazyWithRetry(() => import('./components/AppInformation'));
 
 const sentryCreateBrowserRouter = wrapCreateBrowserRouterV7(createBrowserRouter);
 
@@ -115,9 +116,13 @@ const createRouter = (user: UserWithGroups | null) => sentryCreateBrowserRouter(
               {
                 (user?.groups.length ?? 0) > 0
                   ? <Navigate to={import.meta.env.VITE_APP_HOMEPAGE ?? '/home'} />
-                  : <Navigate to={'/groups/list'} />
+                  : <Navigate to={'/help'} />
               }
             </>
+          },
+          {
+            path: '/help',
+            element: <AppInformation />
           },
           {
             path: '/home',
