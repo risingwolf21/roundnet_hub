@@ -516,22 +516,6 @@ drop index if exists "public"."idx_targets_due";
 
 drop index if exists "public"."idx_wps_user_active";
 
-drop index if exists "public"."notification_outbox_pkey";
-
-drop index if exists "public"."notification_outbox_targets_pkey";
-
-drop index if exists "public"."notification_topics_pkey";
-
-drop index if exists "public"."notifications_pkey";
-
-drop index if exists "public"."object_subscriptions_pkey";
-
-drop index if exists "public"."user_notification_preferences_pkey";
-
-drop index if exists "public"."web_push_subscriptions_pkey";
-
-drop index if exists "public"."web_push_subscriptions_user_endpoint_key";
-
 drop index if exists "public"."webpush_one_active_per_device";
 
 drop index if exists "public"."webpush_unique_endpoint";
@@ -561,3 +545,83 @@ CREATE TRIGGER trg_challenge_entry_added_to_notify AFTER INSERT ON public.challe
 CREATE TRIGGER trg_audit_user_notification_preferences AFTER INSERT OR DELETE OR UPDATE ON notifications.user_notification_preferences FOR EACH ROW EXECUTE FUNCTION audit.log_change();
 
 CREATE TRIGGER trg_game_added_to_notify AFTER INSERT ON games.match FOR EACH ROW EXECUTE FUNCTION notifications.trg_game_added_to_notify();
+
+CREATE OR REPLACE FUNCTION "public"."run_push_worker_if_needed"() RETURNS "jsonb"
+    LANGUAGE "plpgsql" SECURITY DEFINER
+    SET "search_path" TO ''
+    AS $$declare
+  v_has_work boolean;
+begin
+  select exists (
+    select 1
+      from notifications.notification_outbox_targets t
+      join notifications.notification_outbox o on o.id = t.outbox_id
+     where (t.last_status is null or t.last_status >= 400)           -- nie versucht oder fehlgeschlagen
+       and (t.next_attempt_at is null or t.next_attempt_at <= now()) -- fällig
+       and o.status = 'pending'
+  )
+  into v_has_work;
+
+  if v_has_work then
+    return public.invoke_edge_function('push-worker');
+  else
+    return jsonb_build_object('processed', 0, 'skipped', true);
+  end if;
+end;$$;
+
+-- ===============================================
+-- COPY DATA FROM public.* TO notifications.*
+-- (idempotente Inserts – doppelte Daten vermeiden)
+-- ===============================================
+
+-- -- 1️⃣ Topics zuerst
+-- insert into notifications.notification_topics
+-- select *
+-- from public.notification_topics
+-- on conflict do nothing;
+
+-- -- 2️⃣ Haupt-Tabelle für User Notifications
+-- insert into notifications.notifications
+-- select *
+-- from public.notifications
+-- on conflict do nothing;
+
+-- -- 3️⃣ Outbox (muss vor Targets kommen)
+-- insert into notifications.notification_outbox
+-- select *
+-- from public.notification_outbox
+-- on conflict do nothing;
+
+-- -- 4️⃣ Outbox Targets (referenziert Outbox IDs)
+-- insert into notifications.notification_outbox_targets
+-- select *
+-- from public.notification_outbox_targets
+-- on conflict do nothing;
+
+-- -- 5️⃣ Subscriptions / Preferences
+-- insert into notifications.object_subscriptions (
+--   "user","tenant","scope_type","scope_id","topic","created_at"
+-- )
+-- select
+--   "user","tenant","scope_type","scope_id","topic","created_at"
+-- from public.object_subscriptions
+-- on conflict ("user","tenant","scope_type","scope_id","topic_norm") do nothing;
+
+-- insert into notifications.user_notification_preferences (
+--   "user","tenant","topic","channel","enabled","scope_type","scope_id","created_at","updated_at"
+-- )
+-- select
+--   "user","tenant","topic","channel","enabled","scope_type","scope_id","created_at","updated_at"
+-- from public.user_notification_preferences
+-- on conflict ("user","tenant","topic","channel","scope_type_norm","scope_id_norm") do nothing;
+
+-- -- 6️⃣ Web Push Subscriptions (letzte, weil evtl. Referenz in Targets)
+-- insert into notifications.web_push_subscriptions
+-- select *
+-- from public.web_push_subscriptions
+-- on conflict do nothing;
+
+-- insert into notifications.notification_retention
+-- select *
+-- from public.notification_retention
+-- on conflict do nothing;

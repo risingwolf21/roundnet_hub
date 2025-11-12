@@ -239,10 +239,15 @@ async function processJob(job: Tables<'notification_outbox'>) {
             opts,
           );
 
+          if (res.statusCode < 200 || res.statusCode >= 300) {
+            Sentry.captureException(Error(JSON.stringify({ res })))
+          }
+
           // res has statusCode; web-push resolves on 201/204 typically
           await markTargetSent(job.id, sub.id, (res as any)?.statusCode ?? 201);
           results.push({ subId: sub.id, ok: true, status: (res as any)?.statusCode ?? 201 });
         } catch (e: any) {
+          Sentry.captureException(e);
           const status = e?.statusCode ?? 0;
 
           allSent = false;
