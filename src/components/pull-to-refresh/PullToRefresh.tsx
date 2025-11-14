@@ -1,4 +1,4 @@
-import React, { createRef, ReactNode, useState } from 'react';
+import React, { ReactNode, useRef, useState } from 'react';
 
 import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
 import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
@@ -14,9 +14,9 @@ export const PullToRefresh = ({
   onRefresh,
   children = null,
   indicatorSize = 80,
-  maxDrag = 350,
+  maxDrag = 250,
 }: Props) => {
-  const ref = createRef<HTMLDivElement>();
+  const ref = useRef<HTMLDivElement>(null);
   const [busy, setBusy] = useState<boolean>(false);
   const [touchStart, setTouchStart] = useState<React.Touch | null>(null);
   const [drag, setDrag] = useState<number>(0);
@@ -68,6 +68,7 @@ export const PullToRefresh = ({
       ref={ref}
       style={{
         overflowY: 'hidden',
+        height: "100%"
       }}
       onTouchStart={onTouchStart}
       onTouchMove={onTouchMove}
@@ -101,7 +102,7 @@ export const PullToRefresh = ({
           drag >= maxDrag * 0.9 && !busy && <ArrowUpwardIcon />
         }
       </div>
-      <div className="scroll-container" style={{ overscrollBehavior: "none" }}>
+      <div className="scroll-container" style={{ overscrollBehavior: "none", height: "100%" }}>
         {children}
       </div>
     </div >

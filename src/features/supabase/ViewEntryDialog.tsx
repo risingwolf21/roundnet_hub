@@ -1,4 +1,4 @@
-import { DialogProps, DialogsProvider, useDialogs } from '@toolpad/core';
+import { DialogProps, useDialogs } from '@toolpad/core';
 import _ from 'lodash';
 
 import Close from '@mui/icons-material/Close';
@@ -117,9 +117,7 @@ const DialogContent = ({ payload, open, onClose }: DialogProps<ViewEntryDialogPa
 
 const ViewEntryDialog = (props: DialogProps<ViewEntryDialogPayload, 'delete' | null>) => {
   return (
-    <DialogsProvider>
-      <DialogContent {...props} />
-    </DialogsProvider>
+    <DialogContent {...props} />
   );
 };
 

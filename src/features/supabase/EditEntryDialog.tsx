@@ -4,7 +4,7 @@ import { supabase } from '@/lib/supabase';
 import { formatDateFromDatabase, formatSafeDateToDatabase } from '@/utils';
 import { DateTimePicker, LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
-import { DialogProps, DialogsProvider } from '@toolpad/core';
+import { DialogProps } from '@toolpad/core';
 import { pick } from 'lodash';
 import { useEffect, useState } from 'react';
 
@@ -23,6 +23,7 @@ import Select from '@mui/material/Select';
 import TextField from '@mui/material/TextField';
 import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
+import { useQuery } from '@tanstack/react-query';
 import { ColumnInfo } from './SupabaseClient';
 
 type EditEntryDialogPayload = {
@@ -87,25 +88,20 @@ const ForeignSelection = ({
   onChange: (value: any) => void;
 }) => {
   const keys = displayKeysForForeign(column);
-  const [options, setOptions] = useState<any[]>([]);
-  const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    setLoading(true);
-    supabase
-      // @ts-ignore
-      .schema(column.foreign_key_schema_name)
-      // @ts-ignore
-      .from(column.foreign_key_table_name)
-      .select('*')
-      .order(keys.orderby)
-      .then((result) => {
-        if (result.data) {
-          setOptions(result.data);
-        }
-        setLoading(false);
-      });
-  }, [column]);
+  const { data: options = [], isLoading: loading } = useQuery({
+    queryKey: ["supabaseClient", "editEntry", column.foreign_key_schema_name, column.foreign_key_table_name],
+    queryFn: async () => {
+      const result = await supabase
+        // @ts-expect-error schema unknown
+        .schema(column.foreign_key_schema_name)
+        // @ts-expect-error table unknown
+        .from(column.foreign_key_table_name)
+        .select('*')
+        .order(keys.orderby);
+      return result.data ?? [];
+    }
+  })
 
   if (loading) {
     return (
@@ -169,9 +165,9 @@ const DialogContent = ({ payload, open, onClose }: DialogProps<EditEntryDialogPa
       payload.columns.forEach(async (x) => {
         if (x.foreign_key_schema_name && x.foreign_key_table_name) {
           const result = await supabase
-            // @ts-ignore
+            // @ts-expect-error schema unknown
             .schema(x.foreign_key_schema_name)
-            // @ts-ignore
+            // @ts-expect-error table unknown
             .from(x.foreign_key_table_name)
             .select('*');
 
@@ -191,7 +187,7 @@ const DialogContent = ({ payload, open, onClose }: DialogProps<EditEntryDialogPa
     <Dialog fullScreen open={open} onClose={() => onClose(null)}>
       <AppBar sx={{ position: 'sticky', pt: 'env(safe-area-inset-top)' }}>
         <Toolbar>
-          <IconButton edge="start" color="inherit" onClick={() => onClose(null)}>
+          <IconButton edge="start" color="inherit" onPointerDown={() => onClose(null)}>
             <Close />
           </IconButton>
           <Typography sx={{ ml: 2, flex: 1 }} variant="h6" component="div"></Typography>
@@ -425,9 +421,7 @@ const DialogContent = ({ payload, open, onClose }: DialogProps<EditEntryDialogPa
 
 const EditEntryDialog = (props: DialogProps<EditEntryDialogPayload, any | null>) => {
   return (
-    <DialogsProvider>
-      <DialogContent {...props} />
-    </DialogsProvider>
+    <DialogContent {...props} />
   );
 };
 export default EditEntryDialog;

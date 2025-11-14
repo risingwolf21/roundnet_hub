@@ -586,7 +586,7 @@ export const Drawer = ({ open, onClose, onOpen }: Props) => {
       t={t}
       version={import.meta.env.VITE_GIT_COMMIT}
       request_group_joins={requested_group_joins.length}
-      notification_count={notifications.length}
+      notification_count={notifications.filter(x => !x.dismissed_at).length}
     />
   );
 

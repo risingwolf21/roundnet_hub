@@ -1,6 +1,7 @@
 import { queryClient } from '@/lib/queryClient';
 import { supabase } from '@/lib/supabase';
 import { Tables } from '@/types/helpers';
+import { formatDateToDatabase } from '@/utils';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { Notification } from 'types/supabase';
 
@@ -18,6 +19,48 @@ export const useAllNotifications = (user: User | null) =>
         .returns<Notification[]>();
 
       return result.data ?? [];
+    },
+  });
+
+export const useDismissNotification = () =>
+  useMutation({
+    mutationFn: async (notficationId: string) => {
+      const result = await supabase
+        .schema('notifications')
+        .from('notifications')
+        .update({ dismissed_at: formatDateToDatabase(new Date()) })
+        .eq('id', notficationId)
+        .throwOnError();
+
+      return result;
+    },
+    onMutate: async (notficationId: string) => {
+      await queryClient.cancelQueries({ queryKey: ['notifications'] });
+      const previousNotifications = queryClient.getQueryData<Notification[]>(['notifications']);
+
+      if (previousNotifications) {
+        const newNotifications = previousNotifications
+          .map(x => {
+            if (x.id === notficationId) {
+              return {
+                ...x,
+                dismissed_at: formatDateToDatabase(new Date())
+              };
+            }
+            return x;
+          })
+        queryClient.setQueriesData({ queryKey: ['notifications'] }, newNotifications);
+      }
+
+      return { previousNotifications };
+    },
+    onError: (_err, _vars, context) => {
+      if (context?.previousNotifications) {
+        queryClient.setQueryData(['notifications'], context.previousNotifications);
+      }
+    },
+    onSettled: (_data, _error, _variables, _context) => {
+      queryClient.invalidateQueries({ queryKey: ['notifications'] });
     },
   });
 

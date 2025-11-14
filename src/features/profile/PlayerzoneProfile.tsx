@@ -2,7 +2,7 @@ import { supabase } from '@/lib/supabase';
 import { useEloHistory, usePlayer, useUpdateIndexHidden, useUpdatePlayer } from '@/tanstack/player_data';
 import { captureException } from '@sentry/react';
 import { DialogProps } from '@toolpad/core/useDialogs';
-import { NotificationsProvider, useNotifications } from '@toolpad/core/useNotifications';
+import { useNotifications } from '@toolpad/core/useNotifications';
 import { addDays, isAfter } from 'date-fns';
 import { useMemo, useState } from 'react';
 import rg_small from '../../images/rgx_small.png';
@@ -40,7 +40,12 @@ type PlayerzoneProfilePayload = {
   user: User;
 };
 
-const Content = ({ payload, onClose }: DialogProps<PlayerzoneProfilePayload, string | null>) => {
+export const PlayerzoneProfileDialog = ({
+  payload,
+  open,
+  onClose,
+}: DialogProps<PlayerzoneProfilePayload, string | null>) => {
+
   const { data: player_data } = usePlayer(payload.user);
   const { data: elo_history } = useEloHistory(payload.user);
 
@@ -94,7 +99,7 @@ const Content = ({ payload, onClose }: DialogProps<PlayerzoneProfilePayload, str
   }
 
   return (
-    <>
+    <Dialog open={open} onClose={() => onClose(null)} fullScreen>
       <AppBar sx={{ position: 'sticky', pt: 'env(safe-area-inset-top)' }}>
         <Toolbar>
           <IconButton edge="start" color="inherit" onClick={() => onClose(null)}>
@@ -258,19 +263,6 @@ const Content = ({ payload, onClose }: DialogProps<PlayerzoneProfilePayload, str
           </ListItem>
         </List>
       </Container >
-    </>
-  );
-};
-export const PlayerzoneProfileDialog = ({
-  payload,
-  open,
-  onClose,
-}: DialogProps<PlayerzoneProfilePayload, string | null>) => {
-  return (
-    <Dialog fullScreen open={open} onClose={() => onClose(null)}>
-      <NotificationsProvider>
-        <Content onClose={onClose} open={open} payload={payload} />
-      </NotificationsProvider>
     </Dialog>
   );
 };

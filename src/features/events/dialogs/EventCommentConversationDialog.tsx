@@ -1,5 +1,5 @@
 import { TFunction } from 'i18next';
-import React, { createRef } from 'react';
+import React, { useRef } from 'react';
 import { SwipeableDialog } from '../../../components/SwipeableDialog';
 import { FullComment } from '../../../types/supabaseTypes';
 import { CommentItem } from '../components/CommentItem';
@@ -31,7 +31,7 @@ export const EventCommentConversationDialog = ({
   eventInThePast,
   handleCommentSubmit,
 }: Props) => {
-  const inputRef = createRef<HTMLInputElement>();
+  const inputRef = useRef<HTMLInputElement>(null);
 
   const handleFocus = (e: any) => {
     e.preventDefault();

@@ -350,7 +350,7 @@ const Content = ({ payload, onClose }: DialogProps<ConstellationCreationDialogPr
                 {payload.users
                   .filter((x) => !foundPlayers.map((y) => y.player).includes(x.userId))
                   .map((x) => (
-                    <ListItem divider sx={{ '&.MuiListItem-root': { paddingLeft: 0 } }}>
+                    <ListItem key={"name"} divider sx={{ '&.MuiListItem-root': { paddingLeft: 0 } }}>
                       <Box
                         sx={{
                           display: 'flex',
@@ -451,6 +451,7 @@ const Content = ({ payload, onClose }: DialogProps<ConstellationCreationDialogPr
               <Divider />
               {players.map((x) => (
                 <ListItem
+                  key={x.player}
                   disableGutters
                   disablePadding
                   divider
@@ -468,7 +469,7 @@ const Content = ({ payload, onClose }: DialogProps<ConstellationCreationDialogPr
         </Accordion>
         <Divider sx={{ my: 1 }} />
         {rounds.map((x, index) => (
-          <Accordion defaultExpanded={index === 0} disableGutters>
+          <Accordion key={index} defaultExpanded={index === 0} disableGutters>
             <AccordionSummary expandIcon={<ArrowDropDown />}>
               <Typography component="span">Runde {index + 1}</Typography>
             </AccordionSummary>
@@ -560,6 +561,7 @@ const Content = ({ payload, onClose }: DialogProps<ConstellationCreationDialogPr
                     {x.options.lockedTeams &&
                       x.options.lockedTeams?.map(([player1, player2]) => (
                         <Box
+                          key={player1.player + player2.player}
                           sx={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', width: '100%' }}
                         >
                           <Box
@@ -627,7 +629,7 @@ const Content = ({ payload, onClose }: DialogProps<ConstellationCreationDialogPr
                           .filter((y) => y.player !== preSelectedPlayer2?.player)
                           .filter((y) => !x.options.lockedTeams?.flatMap((x) => x).includes(y))
                           .map((z) => (
-                            <MenuItem value={z.player}>{z.name}</MenuItem>
+                            <MenuItem key={z.player} value={z.player}>{z.name}</MenuItem>
                           ))}
                         <MenuItem value={'none'}>Kein Nutzer</MenuItem>
                       </Select>
@@ -642,7 +644,7 @@ const Content = ({ payload, onClose }: DialogProps<ConstellationCreationDialogPr
                           .filter((y) => y.player !== preSelectedPlayer1?.player)
                           .filter((y) => !x.options.lockedTeams?.flatMap((x) => x).includes(y))
                           .map((z) => (
-                            <MenuItem value={z.player}>{z.name}</MenuItem>
+                            <MenuItem key={z.player} value={z.player}>{z.name}</MenuItem>
                           ))}
                         <MenuItem value={'none'}>Kein Nutzer</MenuItem>
                       </Select>
@@ -684,6 +686,7 @@ const Content = ({ payload, onClose }: DialogProps<ConstellationCreationDialogPr
                     {x.options.mustPlay &&
                       x.options.mustPlay?.map((player) => (
                         <Box
+                          key={player.player}
                           sx={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', width: '100%' }}
                         >
                           <Box
@@ -739,7 +742,7 @@ const Content = ({ payload, onClose }: DialogProps<ConstellationCreationDialogPr
                           .filter((y) => !x.options.mustPlay?.includes(y))
                           .filter((y) => !x.options.lockedTeams?.flatMap((x) => x).includes(y))
                           .map((z) => (
-                            <MenuItem value={z.player}>{z.name}</MenuItem>
+                            <MenuItem key={z.player} value={z.player}>{z.name}</MenuItem>
                           ))}
                         <MenuItem value={'none'}>Kein Nutzer</MenuItem>
                       </Select>
@@ -827,8 +830,8 @@ const Content = ({ payload, onClose }: DialogProps<ConstellationCreationDialogPr
                   </Box>
                 </AccordionSummary>
               </Accordion>
-              {x.game.matches.map((y) => (
-                <Accordion disableGutters>
+              {x.game.matches.map((y, index) => (
+                <Accordion disableGutters key={index}>
                   <AccordionSummary expandIcon={<ArrowDropDown />}>
                     <ListItem disableGutters disablePadding sx={{ '&.MuiListItem-root': { paddingLeft: 0 } }}>
                       <ListItemAvatar>
@@ -1013,7 +1016,7 @@ const Content = ({ payload, onClose }: DialogProps<ConstellationCreationDialogPr
                   </AccordionSummary>
                   <AccordionDetails>
                     {x.game.bench.map((x) => (
-                      <ListItem dense disableGutters sx={{ '&.MuiListItem-root': { paddingLeft: 0 } }}>
+                      <ListItem key={x.player} dense disableGutters sx={{ '&.MuiListItem-root': { paddingLeft: 0 } }}>
                         <ListItemText primary={x.name} secondary={x.rg_id} />
                       </ListItem>
                     ))}

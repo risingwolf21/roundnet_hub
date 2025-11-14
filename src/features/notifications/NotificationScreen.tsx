@@ -1,16 +1,18 @@
 import { PullToRefresh } from '@/components/pull-to-refresh/PullToRefresh';
-import { useAllNotifications, useMarkNotificationsAsRead } from '@/tanstack/notifications';
+import { useAllNotifications, useDismissNotification, useMarkNotificationsAsRead } from '@/tanstack/notifications';
 import Layout from '../../components/layout/Layout';
 import { useGrants } from '../auth/GrantsContext';
 
 import { Json } from '@/types/supabase-generated.types';
 import DoneAll from '@mui/icons-material/DoneAll';
+import Badge from '@mui/material/Badge';
 import Box from '@mui/material/Box';
 import Fab from '@mui/material/Fab';
 import List from '@mui/material/List';
-import ListItemButton from '@mui/material/ListItemButton';
+import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';
 import Typography from '@mui/material/Typography';
+import Stack from '@mui/system/Stack';
 import { useNavigate } from 'react-router';
 
 const NotificationsPage = () => {
@@ -36,6 +38,7 @@ const NotificationScreen = () => {
   const { data: notifications = [], isLoading, refetch } = useAllNotifications(user);
 
   const markNotificationsAsRead = useMarkNotificationsAsRead(user.userId);
+  const dismissNotification = useDismissNotification();
 
   if (isLoading) {
     return (
@@ -51,15 +54,24 @@ const NotificationScreen = () => {
       <List sx={{ width: '100%' }}>
         {notifications.map((notification) => {
           return (
-            <ListItemButton
+            <ListItem
+              divider
               key={notification.id}
               onClick={() => {
                 if (notification.data && hasStringUrl(notification.data)) {
                   navigate(notification.data.url);
                 }
+                dismissNotification.mutate(notification.id);
               }}>
-              <ListItemText primary={notification.title} secondary={notification.body} />
-            </ListItemButton>
+              <Stack direction={"row"} sx={{ width: "100%", pr: 2 }}>
+                <ListItemText sx={{ flexGrow: 1 }} primary={notification.title} secondary={notification.body} />
+                {
+                  !notification.dismissed_at && <div style={{ display: "flex", flexDirection: "column", justifyContent: "center" }}>
+                    <Badge badgeContent=" " variant='dot' color='error' sx={{ '.MuiBadge-badge': { width: "12px", height: "12px", borderRadius: "6px" } }} />
+                  </div>
+                }
+              </Stack>
+            </ListItem>
           );
         })}
       </List>

@@ -55,7 +55,11 @@ export const GrantsEditorDialog = ({ payload, open, onClose }: DialogProps<Grant
   const onTogglePerm = (key: string, checked: boolean) => {
     setSelectedPerms((prev) => {
       const next = new Set(prev);
-      checked ? next.add(key) : next.delete(key);
+      if (checked) {
+        next.add(key);
+      } else {
+        next.delete(key);
+      }
       return next;
     });
   };
@@ -63,7 +67,11 @@ export const GrantsEditorDialog = ({ payload, open, onClose }: DialogProps<Grant
   const onToggleFeat = (key: string, checked: boolean) => {
     setSelectedFeats((prev) => {
       const next = new Set(prev);
-      checked ? next.add(key) : next.delete(key);
+      if (checked) {
+        next.add(key);
+      } else {
+        next.delete(key);
+      }
       return next;
     });
   };
@@ -72,7 +80,7 @@ export const GrantsEditorDialog = ({ payload, open, onClose }: DialogProps<Grant
     <Dialog fullScreen open={open} onClose={() => onClose(null)}>
       <AppBar position="sticky" sx={{ pt: 'env(safe-area-inset-top)' }}>
         <Toolbar>
-          <IconButton size="large" edge="start" color="inherit" onClick={() => onClose(null)}>
+          <IconButton size="large" edge="start" color="inherit" onPointerDown={() => onClose(null)}>
             <Close />
           </IconButton>
           <Typography variant="h6" noWrap sx={{ flexGrow: 1 }}>

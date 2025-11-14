@@ -10,8 +10,7 @@ import Logout from '@mui/icons-material/Logout';
 import NotificationsRounded from '@mui/icons-material/NotificationsRounded';
 import Password from '@mui/icons-material/Password';
 import { useNotifications } from '@toolpad/core';
-import { DialogComponent, useDialogs } from '@toolpad/core/useDialogs';
-import { useCallback, useEffect } from 'react';
+import { useDialogs } from '@toolpad/core/useDialogs';
 import { useNavigate, useSearchParams } from 'react-router';
 import pzLogo from '../../images/pz_logo.svg';
 import { UserWithGroups } from '../../types/supabaseTypes';
@@ -51,32 +50,6 @@ const UserScreen = ({ user, handleSignOut }: UserScreenProps) => {
 
   const iOS = typeof navigator !== 'undefined' && /iPad|iPhone|iPod/.test(navigator.userAgent);
 
-  const openDialog = useCallback(
-    async (dialog: DialogComponent<any, unknown>, payload: any, name: string) => {
-      setSearchParams((prev) => {
-        prev.set('dialog', name);
-        return prev;
-      });
-      const result = await dialogs.open(dialog, payload);
-      setSearchParams((prev) => {
-        prev.delete('dialog');
-        return prev;
-      });
-      return result;
-    },
-    [dialogs, setSearchParams]
-  );
-
-  useEffect(() => {
-    if (searchParams.get('dialog') === 'playerzone') {
-      openDialog(PlayerzoneProfileDialog, { user }, 'playerzone');
-    } else if (searchParams.get('dialog') === 'contact_information') {
-      openDialog(ContactInformation, { user }, 'contact_information');
-    } else if (searchParams.get('dialog') === 'notifications') {
-      openDialog(NotificationsDialog, { user, notificationSupported: notificationSupported }, 'notifications');
-    }
-  }, [openDialog, searchParams, user, notificationSupported]);
-
   const copyIcalURLToClipboard = () => {
     if (iOS) {
       window.location.href = `webcal://${import.meta.env.VITE_SUPABASE_PROJECT_ID}.functions.supabase.co/ical?userId=${user.userId}`;
@@ -102,7 +75,7 @@ const UserScreen = ({ user, handleSignOut }: UserScreenProps) => {
           <CardActionArea sx={{ px: 1 }}>
             <ListItem
               onClick={async () => {
-                await openDialog(ContactInformation, { user }, 'contact_information');
+                await dialogs.open(ContactInformation, { user });
               }}
             >
               <ListItemAvatar sx={{ flexDirection: 'row', display: 'flex', alignItems: 'center' }}>
@@ -130,7 +103,7 @@ const UserScreen = ({ user, handleSignOut }: UserScreenProps) => {
           <CardActionArea sx={{ px: 1 }}>
             <ListItem
               onClick={async () => {
-                await openDialog(NotificationsDialog, { user, notificationSupported }, 'notifications');
+                await dialogs.open(NotificationsDialog, { user, notificationSupported });
               }}
               secondaryAction={
                 notificationSupported && Notification.permission === 'granted' ? (
@@ -151,7 +124,7 @@ const UserScreen = ({ user, handleSignOut }: UserScreenProps) => {
           <CardActionArea sx={{ px: 1 }}>
             <ListItem
               onClick={async () => {
-                await openDialog(PlayerzoneProfileDialog, { user }, 'playerzone');
+                await dialogs.open(PlayerzoneProfileDialog, { user });
               }}
               secondaryAction={
                 isLoading ? (
