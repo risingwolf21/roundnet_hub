@@ -43,7 +43,7 @@ const Layout = ({
   useEffect(() => {
     if (!iOS) return;
     const preventSwipeBack = (e: TouchEvent) => {
-      if (e.touches[0].clientX < 25) {
+      if (e.touches[0].clientX < 25 && e.touches[0].clientY > 75) {
         e.preventDefault();
       }
     };

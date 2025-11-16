@@ -107,7 +107,7 @@ const EventScreen = () => {
       <List>
         {
           Object.entries(groupBy(events, (x) => startOfISOWeek(x.startingDateTime))).map(([key, value]: [string, EventsUserView[]]) => (
-            <List subheader={<ListSubheader sx={{ fontWeight: 'bold', lineHeight: 'normal', my: 1, zIndex: 0 }} key={key}>
+            <List subheader={<ListSubheader sx={{ fontWeight: 'bold' }} key={key}>
               {
                 getISOWeek(key) === getISOWeek(new Date())
                   ? 'Diese Woche'
@@ -140,7 +140,7 @@ const EventScreen = () => {
         <Stack
           direction={'row-reverse'}
           spacing={2}
-          sx={{ position: 'fixed', bottom: 'max(16px, env(safe-area-inset-bottom))', right: '16px' }}
+          sx={{ position: 'fixed', bottom: 'max(16px, env(safe-area-inset-bottom))', right: '16px', zIndex: 1 }}
         >
           {filterFab}
           {createEventFab}

@@ -78,7 +78,7 @@ export default function WebPushKeeper({ children, session, vapidPublicKey }: Pro
         localStorage.setItem('push:lastSig', sig);
 
         await upsertToDb(endpoint, p256dh, auth, { user: session.user.id }, { origin: 'useEffect' });
-      } catch (e: any) {
+      } catch (e: unknown) {
         logger.error('webpush_subscribe_failed', {
           type: 'webpush',
           message: 'subscribe_failed',
