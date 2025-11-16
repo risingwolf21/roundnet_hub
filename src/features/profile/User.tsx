@@ -4,7 +4,6 @@ import AccountCircle from '@mui/icons-material/AccountCircle';
 import CalendarMonth from '@mui/icons-material/CalendarMonth';
 import Cancel from '@mui/icons-material/Cancel';
 import CheckCircle from '@mui/icons-material/CheckCircle';
-import ContentCopy from '@mui/icons-material/ContentCopy';
 import Downloading from '@mui/icons-material/Downloading';
 import Logout from '@mui/icons-material/Logout';
 import NotificationsRounded from '@mui/icons-material/NotificationsRounded';
@@ -22,7 +21,6 @@ import { ProfileImage } from './ProfileImage';
 
 import Card from '@mui/material/Card';
 import CardActionArea from '@mui/material/CardActionArea';
-import IconButton from '@mui/material/IconButton';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemAvatar from '@mui/material/ListItemAvatar';
@@ -144,22 +142,14 @@ const UserScreen = ({ user, handleSignOut }: UserScreenProps) => {
           </CardActionArea>
         </Card>
         <Card sx={{ borderRadius: 2, py: 0, px: 0, mt: 1 }}>
-          <CardActionArea sx={{ px: 1 }}>
-            <ListItem
-              secondaryAction={
-                iOS && (
-                  <IconButton sx={{ pr: 0 }} onClick={() => {
-                    copyIcalURLToClipboard();
-                    notifications.show(
-                      'URL in Zwischenablage kopiert - Abonniere den Kalendar jetzt selbst mit der URL',
-                      { severity: 'info' }
-                    );
-                  }}>
-                    <ContentCopy />
-                  </IconButton>
-                )
-              }
-            >
+          <CardActionArea sx={{ px: 1 }} onClick={() => {
+            copyIcalURLToClipboard();
+            notifications.show(
+              'URL in Zwischenablage kopiert - Abonniere den Kalendar jetzt selbst mit der URL',
+              { severity: 'info' }
+            );
+          }}>
+            <ListItem>
               <ListItemAvatar sx={{ flexDirection: 'row', display: 'flex', alignItems: 'center' }}>
                 <CalendarMonth />
               </ListItemAvatar>

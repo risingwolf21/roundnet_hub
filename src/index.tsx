@@ -27,28 +27,7 @@ const root = ReactDOM.createRoot(document.getElementById('root') as HTMLElement,
 });
 
 registerSW({
-  immediate: true,
-  onRegisterError: (error) => {
-    Sentry.logger.info("Service Worker installation failed", {
-      type: 'service_worker',
-      message: 'instalation_failed',
-      error: JSON.stringify(error)
-    })
-  },
-  onRegisteredSW: (_, registration) => {
-    setInterval(() => {
-      if (registration)
-        registration.update();
-    }, 5000)
-  }
-});
-
-let reloading = false;
-navigator.serviceWorker?.addEventListener('controllerchange', () => {
-  if (!reloading) {
-    reloading = true;
-    window.location.reload();
-  }
+  immediate: true
 });
 
 const Fallback = (e: {

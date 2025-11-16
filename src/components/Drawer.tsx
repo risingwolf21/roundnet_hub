@@ -570,8 +570,9 @@ export const Drawer = ({ open, onClose, onOpen }: Props) => {
   const iOS = typeof navigator !== 'undefined' && /iPad|iPhone|iPod/.test(navigator.userAgent);
 
   useEffect(() => {
+    // eslint-disable-next-line
     setTab(window.location.pathname.substring(1));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line
   }, [window.location.pathname]);
 
   const handleChange = (newValue: string) => {

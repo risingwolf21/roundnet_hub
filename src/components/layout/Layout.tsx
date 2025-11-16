@@ -1,5 +1,5 @@
 import { BRANDING } from '@/utils';
-import { ReactNode, useEffect, useState } from 'react';
+import { ReactNode, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { useApplication } from '../../features/auth/ApplicationContext';
 import { Drawer, drawerWidth } from '../Drawer';
@@ -37,23 +37,6 @@ const Layout = ({
   const navigate = useNavigate();
   const { user } = useApplication();
   const [drawerOpen, setDrawerOpen] = useState(false);
-
-  const iOS = typeof navigator !== 'undefined' && /iPad|iPhone|iPod/.test(navigator.userAgent);
-
-  useEffect(() => {
-    if (!iOS) return;
-    const preventSwipeBack = (e: TouchEvent) => {
-      if (e.touches[0].clientX < 25 && e.touches[0].clientY > 75) {
-        e.preventDefault();
-      }
-    };
-
-    document.addEventListener('touchstart', preventSwipeBack, { passive: false });
-
-    return () => {
-      document.removeEventListener('touchstart', preventSwipeBack);
-    };
-  }, [iOS]);
 
   return (
     <Box

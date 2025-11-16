@@ -49,7 +49,7 @@ export default defineConfig(({ mode }) => {
         workbox: {
           cleanupOutdatedCaches: true,
           skipWaiting: true,
-          globPatterns: ['**/*.{js,css,html,svg,png,ico,webp,woff2}']
+          globPatterns: ['**/*']
         },
         devOptions: {
           enabled: ENABLE_PWA_DEV,
@@ -72,7 +72,7 @@ export default defineConfig(({ mode }) => {
             ? { related_applications: [{ platform: 'webapp', url: env.VITE_MANIFEST_CANONICAL_URL }] }
             : {}),
         },
-        includeAssets: ['favicon.ico'],
+        includeAssets: ['**/*'],
       }),
       IS_ANALYZE && visualizer({ open: true, gzipSize: true })
     ].filter(Boolean),
