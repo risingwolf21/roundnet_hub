@@ -1,4 +1,5 @@
 // src/features/grants/GrantsProvider.tsx
+import { LoadingScreen } from '@/components/LoadingScreen';
 import { queryClient } from '@/lib/queryClient';
 import { supabase } from '@/lib/supabase';
 import type { UserWithGroups } from '@/types/supabaseTypes';
@@ -34,8 +35,11 @@ export function GrantsProvider({ user, children }: Props) {
 
   const value = React.useMemo<GrantsContextValue>(
     () => ({ user, signOut, ...grantsQuery }),
-    [user, grantsQuery]
+    [user, grantsQuery, signOut]
   );
+
+  if (grantsQuery.loading)
+    return <LoadingScreen />
 
   return <GrantsContext value={value}>{children}</GrantsContext>;
 }

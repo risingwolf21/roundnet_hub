@@ -1,7 +1,7 @@
 // src/features/grants/useUserGrantsQuery.ts
 import { supabase } from '@/lib/supabase';
 import { QueryKey, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useEffect, useMemo, useRef } from 'react';
+import { useCallback, useEffect, useMemo, useRef } from 'react';
 
 export type GrantsState = { perm: Set<string>; feat: Set<string> };
 export type Mode = 'all' | 'any';
@@ -38,13 +38,13 @@ export function useUserGrantsQuery(userId: string) {
   });
 
   const timerRef = useRef<number | null>(null);
-  const invalidateSoon = () => {
+  const invalidateSoon = useCallback(() => {
     if (timerRef.current) window.clearTimeout(timerRef.current);
     timerRef.current = window.setTimeout(() => {
       qc.invalidateQueries({ queryKey: qk(userId) });
       timerRef.current = null;
     }, 150);
-  };
+  }, [qc, userId]);
 
   useEffect(() => {
     const subs: ReturnType<typeof supabase.channel>[] = [];
@@ -82,7 +82,7 @@ export function useUserGrantsQuery(userId: string) {
         timerRef.current = null;
       }
     };
-  }, [userId, qc]);
+  }, [userId, qc, invalidateSoon]);
 
   const toArray = (v?: string | string[]) => (v == null ? [] : Array.isArray(v) ? v : [v]);
   const check = (need: string[], set: Set<string>, mode: Mode) =>

@@ -10,7 +10,7 @@ import NotificationsRounded from '@mui/icons-material/NotificationsRounded';
 import Password from '@mui/icons-material/Password';
 import { useNotifications } from '@toolpad/core';
 import { useDialogs } from '@toolpad/core/useDialogs';
-import { useNavigate, useSearchParams } from 'react-router';
+import { useNavigate } from 'react-router';
 import pzLogo from '../../images/pz_logo.svg';
 import { UserWithGroups } from '../../types/supabaseTypes';
 import { useGrants } from '../auth/GrantsContext';
@@ -42,7 +42,6 @@ const UserScreen = ({ user, handleSignOut }: UserScreenProps) => {
   const dialogs = useDialogs();
   const notifications = useNotifications();
   const navigate = useNavigate();
-  const [searchParams, setSearchParams] = useSearchParams();
   const notificationSupported = ('serviceWorker' in navigator) && ('PushManager' in window);
   const { data: player_data, isLoading } = usePlayer(user);
 

@@ -30,7 +30,7 @@ export const AuthGate = () => {
       }
 
       await supabase.auth.signOut();
-    } catch (error: any) {
+    } catch (error: unknown) {
       reset();
       captureException(error);
     } finally {
@@ -76,7 +76,7 @@ export const AuthGate = () => {
       setLoading(true);
       fetchUserData(session);
     }
-     
+
   }, [session]);
 
   useEffect(() => {
