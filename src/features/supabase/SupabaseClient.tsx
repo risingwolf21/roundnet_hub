@@ -185,7 +185,7 @@ export function useSupabaseTableQuery<Row = Record<string, unknown>>({
     placeholderData: keepPreviousData,
     queryFn: async () => {
       let qb = supabase
-        // @ts-ignore
+        // @ts-expect-error unknown schema
         .schema(schema).from(table)
         .select('*', { count: 'exact' })
         .range(from, to)
@@ -253,7 +253,7 @@ function useSupabaseTableMutations<Row = Record<string, unknown>>({
     mutationFn: async (payload: Partial<Row>) => {
       if (!schema || !table) throw new Error('schema and table are required for createRow');
       const { data, error } = await supabase
-        // @ts-ignore
+        // @ts-expect-error unknown schema
         .schema(schema).from(table)
         .insert(payload as any)
         .select('*')
@@ -303,7 +303,7 @@ function useSupabaseTableMutations<Row = Record<string, unknown>>({
       if (id == null) throw new Error(`updateRow requires payload.${primaryKey}`);
       if (!schema || !table) throw new Error('schema and table are required for updateRow');
       const { data, error } = await supabase
-        // @ts-ignore
+        // @ts-expect-error unknown schema
         .schema(schema).from(table)
         .update(payload as never)
         .eq(primaryKey, id)
@@ -340,7 +340,7 @@ function useSupabaseTableMutations<Row = Record<string, unknown>>({
     mutationFn: async (id: string | number) => {
       if (!schema || !table) throw new Error('schema and table are required for deleteRow');
       const { error } = await supabase
-        // @ts-ignore
+        // @ts-expect-error unknown schema
         .schema(schema).from(table)
         .delete().eq(primaryKey, id)
         .setHeader('x-app-client', '1');
@@ -367,7 +367,7 @@ function useSupabaseTableMutations<Row = Record<string, unknown>>({
     mutationFn: async ({ where, changes }: { where: Record<string, any>; changes: Partial<Row> }) => {
       if (!schema || !table) throw new Error('schema and table are required for updateRowByMatch');
       let qb = supabase
-        // @ts-ignore
+        // @ts-expect-error unknown schema
         .schema(schema).from(table)
         .update(changes as never)
         .setHeader('x-app-client', '1');
@@ -396,7 +396,7 @@ function useSupabaseTableMutations<Row = Record<string, unknown>>({
     mutationFn: async (where: Record<string, any>) => {
       if (!schema || !table) throw new Error('schema and table are required for deleteByMatch');
       let qb = supabase
-        // @ts-ignore
+        // @ts-expect-error unknown schema
         .schema(schema).from(table)
         .delete()
         .setHeader('x-app-client', '1');
@@ -454,7 +454,6 @@ function useSupabaseTableMutationsPkAware<Row = Record<string, unknown>>({
       if (pkColumns.length > 1) {
         const where = Object.fromEntries(pkColumns.map((k) => [k, row[k]]));
         const { __temp, ...changes } = row;
-        console.log(where, changes);
         return base.updateRowByMatch.mutateAsync({ where, changes });
       }
       return base.updateRowByMatch.mutateAsync({ where: row, changes: row });
@@ -467,9 +466,9 @@ function useSupabaseTableMutationsPkAware<Row = Record<string, unknown>>({
       if (pkColumns.length === 1 && row[pkColumns[0]] != null) return base.deleteRow.mutateAsync(row[pkColumns[0]]);
       if (pkColumns.length > 1) {
         const where = Object.fromEntries(pkColumns.map((k) => [k, row[k]]));
-        return (base as any).deleteByMatch.mutateAsync(where);
+        return base.deleteByMatch.mutateAsync(where);
       }
-      return (base as any).deleteByMatch.mutateAsync(row);
+      return base.deleteByMatch.mutateAsync(row);
     },
   } as const;
 
@@ -524,11 +523,17 @@ export default function SupabaseClient() {
     (async () => {
       const result = await supabase.schema('util').rpc('get_public_table_names').select('*');
       const data = result.data ?? [];
-      setTables(data.map((x: any) => ({ name: x.table_name, schema: x.table_schema })));
+      setTables(data.map((x: {
+        table_name: string;
+        table_schema: string;
+      }) => ({ name: x.table_name, schema: x.table_schema })));
 
       const table = searchParams.get('table');
       const schema = searchParams.get('schema');
-      if (table && schema && data.some((x: any) => x.table_name === table && x.table_schema === schema)) {
+      if (table && schema && data.some((x: {
+        table_name: string;
+        table_schema: string;
+      }) => x.table_name === table && x.table_schema === schema)) {
         setSelectedTable({ name: table, schema });
       }
     })().catch((e) => notifications.show(String(e), { severity: 'error' }));
@@ -554,15 +559,15 @@ export default function SupabaseClient() {
     [pkColumns],
   );
 
-  const ToolbarButtons = () => (
+  const toolbarButtons = () => (
     <Toolbar>
       <Button size="small" startIcon={<Add />} onClick={async () => {
         const result = await dialog.open(EditEntryDialog, { entry: {}, columns });
         if (!result) return;
         try {
           await createRow.mutateAsync(result);
-        } catch (e: any) {
-          notifications.show('Der Eintrag konnte nicht erstellt werden. ' + e.message, { severity: 'error' });
+        } catch (e: unknown) {
+          notifications.show('Der Eintrag konnte nicht erstellt werden. ' + JSON.stringify(e), { severity: 'error' });
         }
       }}>Erstellen</Button>
     </Toolbar>
@@ -577,7 +582,7 @@ export default function SupabaseClient() {
       <ErrorBoundary fallback={NoRowsOverlay} onError={(error) => notifications.show(String(error), { severity: 'error' })}>
         <DataGrid
           sx={{ '--DataGrid-overlayHeight': '300px', mb: 'min(56px,env(safe-area-inset-bottom))', maxHeight: 'calc(100% - 61px - env(safe-area-inset-bottom))', height: 'calc(100% - 61px - env(safe-area-inset-bottom))' }}
-          slots={{ noRowsOverlay: NoRowsOverlay, toolbar: ToolbarButtons }}
+          slots={{ noRowsOverlay: NoRowsOverlay, toolbar: toolbarButtons }}
           rows={rows}
           columns={[
             ...columns.map((c) => ({ field: c.column_name, headerName: c.column_name, width: 150, hideable: true } as GridColDef)),
@@ -632,7 +637,7 @@ export default function SupabaseClient() {
             await updateSmart.mutateAsync(newRow);
             return newRow;
           }}
-          onProcessRowUpdateError={(err) => notifications.show('Update failed: ' + (err as any).message, { severity: 'error' })}
+          onProcessRowUpdateError={(err) => notifications.show('Update failed: ' + err.message, { severity: 'error' })}
         />
       </ErrorBoundary>
     </Layout>

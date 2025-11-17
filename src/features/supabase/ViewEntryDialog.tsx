@@ -2,6 +2,7 @@ import { DialogProps, useDialogs } from '@toolpad/core';
 import _ from 'lodash';
 
 import Close from '@mui/icons-material/Close';
+import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import Delete from '@mui/icons-material/Delete';
 import AppBar from '@mui/material/AppBar';
 import Card from '@mui/material/Card';
@@ -14,9 +15,10 @@ import ListItemAvatar from '@mui/material/ListItemAvatar';
 import ListItemText from '@mui/material/ListItemText';
 import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
+import React from 'react';
 
 type ViewEntryDialogPayload = {
-  entry: any;
+  entry: object;
 };
 
 const DialogContent = ({ payload, open, onClose }: DialogProps<ViewEntryDialogPayload, 'delete' | null>) => {
@@ -35,12 +37,12 @@ const DialogContent = ({ payload, open, onClose }: DialogProps<ViewEntryDialogPa
         </Toolbar>
       </AppBar>
       <List>
-        {Object.entries(payload.entry).map(([key, value], index) => {
+        {Object.entries(payload.entry).map(([key, value]) => {
           const obj = JSON.parse(JSON.stringify(value));
           if (obj && Object.keys(obj).includes('old') && Object.keys(obj).includes('new')) {
             return (
-              <>
-                <ListItem key={key + index + 'diff'}>
+              <React.Fragment key={key}>
+                <ListItem key={key + 'diff'}>
                   <ListItemText
                     primary={
                       <pre style={{ margin: 0 }}>
@@ -60,7 +62,7 @@ const DialogContent = ({ payload, open, onClose }: DialogProps<ViewEntryDialogPa
                     secondary={'Diff'}
                   />
                 </ListItem>
-                <ListItem key={key + index + 'obj'}>
+                <ListItem key={key + 'obj'}>
                   <ListItemText
                     primary={
                       <pre style={{ margin: 0 }}>
@@ -80,11 +82,15 @@ const DialogContent = ({ payload, open, onClose }: DialogProps<ViewEntryDialogPa
                     secondary={'Objekt'}
                   />
                 </ListItem>
-              </>
+              </React.Fragment>
             );
           }
           return (
-            <ListItem key={key + index}>
+            <ListItem key={key} secondaryAction={<IconButton onClick={() => {
+              navigator.clipboard.writeText(value);
+            }}>
+              <ContentCopyIcon />
+            </IconButton>}>
               <ListItemText
                 primary={<pre style={{ margin: 0 }}>{JSON.stringify(value, null, 2)}</pre>}
                 secondary={key}

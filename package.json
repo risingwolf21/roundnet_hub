@@ -44,7 +44,7 @@
   },
   "scripts": {
     "start": "vite",
-    "start:rk:prod": "vite --mode karlsruhe",
+    "start:rk:prod": "vite --mode karlsruhe --host",
     "start:mrc:prod": "vite --mode munich",
     "start:staging": "vite --mode staging",
     "build": "vite build",

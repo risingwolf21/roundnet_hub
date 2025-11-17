@@ -1,4 +1,4 @@
-import React, { ReactNode, useRef, useState } from 'react';
+import React, { ReactNode, useEffect, useRef, useState } from 'react';
 
 import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
 import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
@@ -20,6 +20,29 @@ export const PullToRefresh = ({
   const [busy, setBusy] = useState<boolean>(false);
   const [touchStart, setTouchStart] = useState<React.Touch | null>(null);
   const [drag, setDrag] = useState<number>(0);
+  const [isOnTop, setIsOnTop] = useState(true)
+
+  const observerTarget = useRef(null);
+
+  useEffect(() => {
+    const current = observerTarget.current;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        setIsOnTop(entries[0].isIntersecting)
+      },
+      { threshold: 1 }
+    );
+
+    if (current) {
+      observer.observe(current);
+    }
+
+    return () => {
+      if (current) {
+        observer.unobserve(current);
+      }
+    };
+  }, [observerTarget]);
 
   const k = 2.5;
   function appr(x: number) {
@@ -35,7 +58,7 @@ export const PullToRefresh = ({
   const onTouchStart = (event: React.TouchEvent<HTMLDivElement>) => {
     // check if dialog container exists -> any dialog is open
     if (document.querySelector(".MuiDialog-container")) return;
-    if (!busy) {
+    if (!busy && isOnTop) {
       setTouchStart(event.touches[0]);
     }
   };
@@ -103,6 +126,7 @@ export const PullToRefresh = ({
         }
       </div>
       <div className="scroll-container" style={{ overscrollBehavior: "none", height: "100%" }}>
+        <div ref={observerTarget}></div>
         {children}
       </div>
     </div >
