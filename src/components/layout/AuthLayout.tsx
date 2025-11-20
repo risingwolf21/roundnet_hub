@@ -1,4 +1,4 @@
-import { BRANDING } from '@/utils';
+import { BRANDING, iOS } from '@/utils';
 import { ReactNode, useEffect } from 'react';
 import { Outlet } from 'react-router';
 import { drawerWidth } from '../Drawer';
@@ -9,7 +9,6 @@ import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
 
 const AuthLayout = ({ children }: { children?: ReactNode }) => {
-  const iOS = typeof navigator !== 'undefined' && /iPad|iPhone|iPod/.test(navigator.userAgent);
 
   useEffect(() => {
     if (!iOS) return;

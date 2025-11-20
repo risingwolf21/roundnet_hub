@@ -3,7 +3,7 @@ import Cancel from '@mui/icons-material/Cancel';
 import CheckCircle from '@mui/icons-material/CheckCircle';
 import React, { useMemo } from 'react';
 
-import { getErrorMessage } from '@/utils';
+import { getErrorMessage, iOS } from '@/utils';
 import Info from '@mui/icons-material/Info';
 import Warning from '@mui/icons-material/Warning';
 import Alert from '@mui/material/Alert';
@@ -198,7 +198,6 @@ export default function NotificationGate({ allowDecline = true, onReady, vapidPu
     }
   };
 
-  const iOS = typeof navigator !== 'undefined' && /iPad|iPhone|iPod/.test(navigator.userAgent);
   const installingHint = !isPWA
     ? iOS
       ? 'Für iOS Web Push die App über Teilen > „Zum Home-Bildschirm hinzufügen“ installieren.'

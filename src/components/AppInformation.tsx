@@ -13,13 +13,13 @@ import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
 import Layout from "./layout/Layout";
 
+import { iOS } from "@/utils";
 import translations from "../translation/locales/translation.de.json";
 
 const AppInformation = () => {
   const { t: translate } = useTranslation();
   const navigate = useNavigate();
   const t = (key: string) => translate(`help.${key}`)
-  const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
 
   return <Layout appBarConfig={{ title: "Hilfe und Informationen" }}>
     <List sx={{ mx: 2, mb: "env(safe-area-inset-bottom)" }}>
@@ -42,7 +42,7 @@ const AppInformation = () => {
         {t("titles.installation")}
       </Typography>
       {
-        isIOS
+        iOS
           ? <ol>
             <li>{t("openShareMenuIOS")}</li>
             <li>{t("clickAddToHomeScreen")}</li>
@@ -73,11 +73,13 @@ const AppInformation = () => {
         {t("titles.events")}
       </Typography>
       <ol>
-        <li>{t("navigateToGroups")}</li>
-        <li>{t("listAllGroups")}</li>
-        <li>{t("joinGroup")}</li>
+        <li>{t("navigateToEvents")}</li>
+        <li>{t("listAllEvents")}</li>
+        <li>{t("eventInformation")}</li>
       </ol>
-
+      <Typography sx={{ mt: 1 }}>{t("eventComments")}</Typography>
+      <Typography sx={{ mt: 1 }}>{t("eventAttendance")}</Typography>
+      <Typography sx={{ mt: 1 }}>{t("eventMap")}</Typography>
       <Typography id="faq" variant="h6" sx={{ fontWeight: "bold", my: 1 }}>{t("titles.faq")}</Typography>
       {
         Object.entries(translations.help.faq).map(([key]) => <Accordion key={key}>

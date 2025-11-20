@@ -22,6 +22,8 @@ export const BRANDING = {
   icon: icon
 };
 
+export const iOS = typeof navigator !== 'undefined' && /iPad|iPhone|iPod/.test(navigator.userAgent);
+
 export function groupBy<Type>(items: Type[], getter: (any: Type) => string): Map<string, Type[]> {
   const result = new Map<string, Type[]>();
   (items ?? []).forEach((item: Type) => {

@@ -131,6 +131,12 @@
     "listAllGroups": "All available groups will be listed.",
     "joinGroup": "Some groups can be joined directly, while others require approval from a group administrator.",
     "eventsFromGroupInfo": "💭 As a member of a group, you’ll see all events created for that group.",
-    "challengesFromGroupInfo": "💭 As a member of a group, you’ll see all challenges created for that group."
+    "challengesFromGroupInfo": "💭 As a member of a group, you’ll see all challenges created for that group.",
+    "navigateToEvents": "In the menu on the left side (☰), navigate to the events.",
+    "listAllEvents": "All events from your groups are displayed. You can join or decline them using the thumbs up and thumbs down buttons.",
+    "eventInformation": "By clicking on an event, you can see all information about it.",
+    "eventComments": "✉️ Comments for the respective event can be viewed and created at the bottom.",
+    "eventAttendance": "🟢🔴 Attendance responses (yes/no) for the event can be viewed in detail by clicking on the respective row.",
+    "eventMap": "🏞️ If a location is assigned to the event, clicking on the map allows you to start (external) navigation to it."
   }
 }

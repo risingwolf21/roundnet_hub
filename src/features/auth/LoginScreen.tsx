@@ -1,5 +1,5 @@
 import { supabase } from '@/lib/supabase';
-import { BRANDING } from '@/utils';
+import { BRANDING, iOS } from '@/utils';
 import Link from '@mui/material/Link';
 import { captureException } from '@sentry/react';
 import { AuthResponse, SignInPage, type AuthProvider } from '@toolpad/core/SignInPage';
@@ -31,11 +31,10 @@ const LoginScreen = () => {
   const home = import.meta.env.VITE_APP_HOMEPAGE;
 
   // iOS-Standalone erkennen
-  const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
   const isStandalone =
     (navigator as any).standalone === true || window.matchMedia('(display-mode: standalone)').matches;
 
-  if (isIOS && isStandalone) {
+  if (iOS && isStandalone) {
     const unlockOnFocus = () => {
       if (document.activeElement?.matches('input, textarea, [contenteditable="true"]')) {
         document.body.style.overflow = 'auto'; // sicherstellen, dass kein Body-Lock aktiv ist

@@ -2,6 +2,7 @@ import { useGrants } from '@/features/auth/GrantsContext';
 import { Has } from '@/hooks/useGrants';
 import { useRequestedUsersPerGroup } from '@/tanstack/groups';
 import { useAllNotifications } from '@/tanstack/notifications';
+import { iOS } from '@/utils';
 import EmojiEvents from '@mui/icons-material/EmojiEvents';
 import Euro from '@mui/icons-material/Euro';
 import Group from '@mui/icons-material/Group';
@@ -566,8 +567,6 @@ export const Drawer = ({ open, onClose, onOpen }: Props) => {
 
   const { data: requested_group_joins = [] } = useRequestedUsersPerGroup(user);
   const { data: notifications = [] } = useAllNotifications(user);
-
-  const iOS = typeof navigator !== 'undefined' && /iPad|iPhone|iPod/.test(navigator.userAgent);
 
   useEffect(() => {
     // eslint-disable-next-line
