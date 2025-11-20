@@ -30,6 +30,14 @@ registerSW({
   immediate: true
 });
 
+let reloading = false;
+navigator.serviceWorker?.addEventListener('controllerchange', () => {
+  if (!reloading) {
+    reloading = true;
+    window.location.reload();
+  }
+});
+
 const Fallback = (e: {
   error: unknown;
   componentStack: string;
