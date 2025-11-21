@@ -2,11 +2,11 @@
 # https://github.com/firebase/firebase-tools
 
 name: Production
-'on':
+"on":
   workflow_dispatch:
     inputs:
       publish:
-        description: 'Choose wich environment you would like to publish'
+        description: "Choose wich environment you would like to publish"
         required: true
         default: All
         type: choice
@@ -18,14 +18,14 @@ name: Production
     branches:
       - production
 env:
-  CI: ''
+  CI: ""
 
 jobs:
   setup:
-    name: 'Setup'
+    name: "Setup"
     runs-on: ubuntu-latest
     environment:
-      name: 'Roundnet Karlsruhe'
+      name: "Roundnet Karlsruhe"
     steps:
       - uses: actions/checkout@v2
 
@@ -47,7 +47,6 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-yarn-
 
-
   db-test:
     name: "Test database"
     runs-on: ubuntu-latest
@@ -61,14 +60,14 @@ jobs:
       - run: supabase test db
 
   build-karlsruhe:
-    name: 'Build Karlsruhe'
+    name: "Build Karlsruhe"
     if: ${{ github.event_name != 'workflow_dispatch'
-        || github.event.inputs.publish == 'All'
-        || github.event.inputs.publish == 'Roundnet Karlsruhe' }}
+      || github.event.inputs.publish == 'All'
+      || github.event.inputs.publish == 'Roundnet Karlsruhe' }}
     runs-on: ubuntu-latest
     needs: db-test
     environment:
-      name: 'Roundnet Karlsruhe'
+      name: "Roundnet Karlsruhe"
       url: ${{ vars.PUBLIC_URL }}
 
     steps:
@@ -92,30 +91,31 @@ jobs:
       - name: Build
         run: yarn run build:karlsruhe
         env:
-          VITE_SUPABASE_URL:          ${{ vars.SUPABASE_DB_URL }}
-          VITE_SUPABASE_ANON_KEY:     ${{ secrets.SUPABASE_ANON_KEY }}
-          VITE_SUPABASE_PROJECT_ID:   ${{ vars.SUPABASE_PROJECT_ID }}
-          VITE_OPENWEATHER_API_KEY:   ${{ secrets.OPENWEATHER_API_KEY }}
-          VITE_VAPID_PUBLIC_KEY:      ${{ vars.VAPID_PUBLIC_KEY }}
-          VITE_PAYPAL_ME_LINK:        ${{ vars.PAYPAL_ME_LINK }}
-          VITE_GIT_COMMIT:            ${{ github.sha}}
-          VITE_ENV:                   'production'
+          VITE_SUPABASE_URL: ${{ vars.SUPABASE_DB_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+          VITE_SUPABASE_PROJECT_ID: ${{ vars.SUPABASE_PROJECT_ID }}
+          VITE_OPENWEATHER_API_KEY: ${{ secrets.OPENWEATHER_API_KEY }}
+          VITE_VAPID_PUBLIC_KEY: ${{ vars.VAPID_PUBLIC_KEY }}
+          VITE_PAYPAL_ME_LINK: ${{ vars.PAYPAL_ME_LINK }}
+          VITE_GIT_COMMIT: ${{ github.sha}}
+          VITE_ENV: "production"
 
       - uses: actions/upload-artifact@v4
         with:
-          name: '${{ vars.WEBSITE_PATH }}-build'
+          name: "${{ vars.WEBSITE_PATH }}-build"
           path: ${{github.workspace}}/build
+          retention-days: 1
 
   deploy-karlsruhe:
     runs-on: ubuntu-latest
     needs: build-karlsruhe
     if: ${{ github.event_name != 'workflow_dispatch'
-        || github.event.inputs.publish == 'All'
-        || github.event.inputs.publish == 'Roundnet Karlsruhe' }}
-    name: 'Deploy Karlsruhe'
+      || github.event.inputs.publish == 'All'
+      || github.event.inputs.publish == 'Roundnet Karlsruhe' }}
+    name: "Deploy Karlsruhe"
     environment:
-      name: 'Roundnet Karlsruhe'
-      url:  ${{ vars.PUBLIC_URL }}
+      name: "Roundnet Karlsruhe"
+      url: ${{ vars.PUBLIC_URL }}
 
     steps:
       - uses: actions/checkout@v2
@@ -127,26 +127,26 @@ jobs:
 
       - uses: actions/download-artifact@v4
         with:
-          name: '${{ vars.WEBSITE_PATH }}-build'
+          name: "${{ vars.WEBSITE_PATH }}-build"
           path: ${{github.workspace}}/build
 
       - uses: FirebaseExtended/action-hosting-deploy@v0
         with:
-          repoToken: '${{ secrets.GITHUB_TOKEN }}'
-          firebaseServiceAccount: '${{ secrets.FIREBASE_SERVICE_ACCOUNT_ROUNDNET_KARLSRUHE }}'
+          repoToken: "${{ secrets.GITHUB_TOKEN }}"
+          firebaseServiceAccount: "${{ secrets.FIREBASE_SERVICE_ACCOUNT_ROUNDNET_KARLSRUHE }}"
           channelId: live
           projectId: ${{ vars.FIREBASE_PROJECT }}
           target: ${{ vars.FIREBASE_TARGET }}
 
   build-munich:
-    name: 'Build Munich Roundnet'
+    name: "Build Munich Roundnet"
     if: ${{ github.event_name != 'workflow_dispatch'
-        || github.event.inputs.publish == 'All'
-        || github.event.inputs.publish == 'Munich Roundnet' }}
+      || github.event.inputs.publish == 'All'
+      || github.event.inputs.publish == 'Munich Roundnet' }}
     runs-on: ubuntu-latest
     needs: db-test
     environment:
-      name: 'Munich Roundnet'
+      name: "Munich Roundnet"
       url: ${{ vars.PUBLIC_URL }}
 
     steps:
@@ -170,30 +170,31 @@ jobs:
       - name: Build
         run: yarn run build:munich
         env:
-          VITE_SUPABASE_URL:          ${{ vars.SUPABASE_DB_URL }}
-          VITE_SUPABASE_ANON_KEY:     ${{ secrets.SUPABASE_ANON_KEY }}
-          VITE_SUPABASE_PROJECT_ID:   ${{ vars.SUPABASE_PROJECT_ID }}
-          VITE_OPENWEATHER_API_KEY:   ${{ secrets.OPENWEATHER_API_KEY }}
-          VITE_VAPID_PUBLIC_KEY:      ${{ vars.VAPID_PUBLIC_KEY }}
-          VITE_PAYPAL_ME_LINK:        ${{ vars.PAYPAL_ME_LINK }}
-          VITE_GIT_COMMIT:            ${{ github.sha}}
-          VITE_ENV:                   'production'
+          VITE_SUPABASE_URL: ${{ vars.SUPABASE_DB_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+          VITE_SUPABASE_PROJECT_ID: ${{ vars.SUPABASE_PROJECT_ID }}
+          VITE_OPENWEATHER_API_KEY: ${{ secrets.OPENWEATHER_API_KEY }}
+          VITE_VAPID_PUBLIC_KEY: ${{ vars.VAPID_PUBLIC_KEY }}
+          VITE_PAYPAL_ME_LINK: ${{ vars.PAYPAL_ME_LINK }}
+          VITE_GIT_COMMIT: ${{ github.sha}}
+          VITE_ENV: "production"
 
       - uses: actions/upload-artifact@v4
         with:
-          name: '${{ vars.WEBSITE_PATH }}-build'
+          name: "${{ vars.WEBSITE_PATH }}-build"
           path: ${{github.workspace}}/build
+          retention-days: 1
 
   deploy-munich:
     runs-on: ubuntu-latest
     needs: build-munich
     if: ${{ github.event_name != 'workflow_dispatch'
-        || github.event.inputs.publish == 'All'
-        || github.event.inputs.publish == 'Munich Roundnet' }}
-    name: 'Deploy Munich Roundnet'
+      || github.event.inputs.publish == 'All'
+      || github.event.inputs.publish == 'Munich Roundnet' }}
+    name: "Deploy Munich Roundnet"
     environment:
-      name: 'Munich Roundnet'
-      url:  ${{ vars.PUBLIC_URL }}
+      name: "Munich Roundnet"
+      url: ${{ vars.PUBLIC_URL }}
 
     steps:
       - uses: actions/checkout@v2
@@ -205,22 +206,22 @@ jobs:
 
       - uses: actions/download-artifact@v4
         with:
-          name: '${{ vars.WEBSITE_PATH }}-build'
+          name: "${{ vars.WEBSITE_PATH }}-build"
           path: ${{github.workspace}}/build
 
       - uses: FirebaseExtended/action-hosting-deploy@v0
         with:
-          repoToken: '${{ secrets.GITHUB_TOKEN }}'
-          firebaseServiceAccount: '${{ secrets.FIREBASE_SERVICE_ACCOUNT_ROUNDNET_KARLSRUHE }}'
+          repoToken: "${{ secrets.GITHUB_TOKEN }}"
+          firebaseServiceAccount: "${{ secrets.FIREBASE_SERVICE_ACCOUNT_ROUNDNET_KARLSRUHE }}"
           channelId: live
           projectId: ${{ vars.FIREBASE_PROJECT }}
           target: ${{ vars.FIREBASE_TARGET }}
-  
+
   cleanup-artifact-munich:
-    name: 'Cleanup Artifacts Munich'
+    name: "Cleanup Artifacts Munich"
     runs-on: ubuntu-latest
     needs: [deploy-munich]
-    environment: 'Munich Roundnet'
+    environment: "Munich Roundnet"
     steps:
       - uses: actions/checkout@v2
 
@@ -231,10 +232,10 @@ jobs:
             ${{ vars.WEBSITE_PATH }}-build
 
   cleanup-artifact-karlsruhe:
-    name: 'Cleanup Artifacts Karlsruhe'
+    name: "Cleanup Artifacts Karlsruhe"
     runs-on: ubuntu-latest
     needs: [deploy-karlsruhe]
-    environment: 'Roundnet Karlsruhe'
+    environment: "Roundnet Karlsruhe"
     steps:
       - uses: actions/checkout@v2
 
@@ -243,5 +244,3 @@ jobs:
         with:
           name: |
             ${{ vars.WEBSITE_PATH }}-build
-
-   

@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       publish:
-        description: 'Choose wich environment you would like to backup'
+        description: "Choose wich environment you would like to backup"
         required: true
         default: All
         type: choice
@@ -13,19 +13,19 @@ on:
           - Roundnet Karlsruhe
           - All
   schedule:
-    - cron: '0 0 */3 * *' # Runs every day at midnight
+    - cron: "0 0 */3 * *" # Runs every day at midnight
 
 jobs:
   backup-karlsruhe:
     name: Backup Roundnet Karlsruhe
     runs-on: ubuntu-latest
     if: ${{ github.event_name != 'workflow_dispatch'
-        || github.event.inputs.publish == 'All'
-        || github.event.inputs.publish == 'Roundnet Karlsruhe' }}
-    environment: 'Roundnet Karlsruhe'
+      || github.event.inputs.publish == 'All'
+      || github.event.inputs.publish == 'Roundnet Karlsruhe' }}
+    environment: "Roundnet Karlsruhe"
     steps:
       - uses: actions/checkout@v4
-      
+
       - uses: supabase/setup-cli@v1
         with:
           version: latest
@@ -45,14 +45,15 @@ jobs:
         with:
           name: backup-karlsruhe
           path: out/roundnet-karlsruhe/*
+          retention-days: 1
 
   backup-munich:
     name: Backup Munich Roundnet
     if: ${{ github.event_name != 'workflow_dispatch'
-        || github.event.inputs.publish == 'All'
-        || github.event.inputs.publish == 'Munich Roundnet' }}
+      || github.event.inputs.publish == 'All'
+      || github.event.inputs.publish == 'Munich Roundnet' }}
     runs-on: ubuntu-latest
-    environment: 'Munich Roundnet'
+    environment: "Munich Roundnet"
     steps:
       - uses: actions/checkout@v4
 
@@ -75,6 +76,7 @@ jobs:
         with:
           name: backup-munich
           path: out/munich-roundnet/*
+          retention-days: 1
 
   commit:
     name: Commit backups (single commit)
