@@ -26,7 +26,8 @@
     "supabaseQueries": "Supabase Query Client",
     "sentryIssues": "Sentry issues",
     "group_features": "Group Features",
-    "helpAndInformation": "Help and information"
+    "helpAndInformation": "Help and information",
+    "appRefresh": "Refresh Application"
   },
   "cancel": "Cancel",
   "confirm": "Confirm",
@@ -109,6 +110,7 @@
   "help": {
     "titles": {
       "installation": "📲 Installing the Application",
+      "refresh": "🔄 Refresh data",
       "groups": "🫂 Groups",
       "events": "🤾 Events",
       "faq": "⁉️ FAQ / Frequently Asked Questions"
@@ -137,6 +139,8 @@
     "eventInformation": "By clicking on an event, you can see all information about it.",
     "eventComments": "✉️ Comments for the respective event can be viewed and created at the bottom.",
     "eventAttendance": "🟢🔴 Attendance responses (yes/no) for the event can be viewed in detail by clicking on the respective row.",
-    "eventMap": "🏞️ If a location is assigned to the event, clicking on the map allows you to start (external) navigation to it."
+    "eventMap": "🏞️ If a location is assigned to the event, clicking on the map allows you to start (external) navigation to it.",
+    "pullToRefresh": "Most pages offer a pull-to-refresh feature. Simply pull the page down to refresh the data.",
+    "refreshApplication": "To refresh all application data, click 'App refresh' in the page navigation at the bottom."
   }
 }

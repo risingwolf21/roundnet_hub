@@ -6,14 +6,14 @@ import { useCallback, useEffect, useMemo, useRef } from 'react';
 export type GrantsState = { perm: Set<string>; feat: Set<string> };
 export type Mode = 'all' | 'any';
 
-const qk = (userId: string | null): QueryKey => ['user-grants', userId];
+export const grantsQk = (userId: string | null): QueryKey => ['user-grants', userId];
 const empty: GrantsState = { perm: new Set(), feat: new Set() };
 
 export function useUserGrantsQuery(userId: string) {
   const qc = useQueryClient();
 
   const q = useQuery({
-    queryKey: qk(userId),
+    queryKey: grantsQk(userId),
     enabled: true,
     queryFn: async () => {
       const { data, error } = await supabase
@@ -41,7 +41,7 @@ export function useUserGrantsQuery(userId: string) {
   const invalidateSoon = useCallback(() => {
     if (timerRef.current) window.clearTimeout(timerRef.current);
     timerRef.current = window.setTimeout(() => {
-      qc.invalidateQueries({ queryKey: qk(userId) });
+      qc.invalidateQueries({ queryKey: grantsQk(userId) });
       timerRef.current = null;
     }, 150);
   }, [qc, userId]);

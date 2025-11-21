@@ -26,7 +26,8 @@
     "supabaseQueries": "Supabase Query Client",
     "sentryIssues": "Sentry Issues",
     "group_features": "Gruppen Features",
-    "helpAndInformation": "Hilfe und Informationen"
+    "helpAndInformation": "Hilfe und Informationen",
+    "appRefresh": "App aktualisieren"
   },
   "cancel": "Abbrechen",
   "confirm": "Bestätigen",
@@ -110,6 +111,7 @@
   "help": {
     "titles": {
       "installation": "📲 Installieren der Anwendung",
+      "refresh": "🔄 Aktualisieren der Daten",
       "groups": "🫂 Gruppen",
       "events": "🤾 Events",
       "faq": "⁉️ FAQ / Häufige Fragen"
@@ -138,6 +140,8 @@
     "eventInformation": "Mit einem Klick auf ein Event siehst du alle Informationen zu diesem.",
     "eventComments": "✉️ Kommentare lassen sich unten für das jeweilige Event einsehen und erstellen.",
     "eventAttendance": "🟢🔴 Die Zu-und Absagen zu dem Event können detailliert durch einen Klick auf die jeweilige Zeile angezeigt werden.",
-    "eventMap": "🏞️ Ist dem Event ein Standort zugeordnet lässt sich durch ein Klick auf die Karte die (externe) Navigation dorthin starten"
+    "eventMap": "🏞️ Ist dem Event ein Standort zugeordnet lässt sich durch ein Klick auf die Karte die (externe) Navigation dorthin starten",
+    "pullToRefresh": "Auf den meisten Seiten gibt es eine Pull-to-Refresh Funktionalität. Ziehe die Seite einfach nach unten um die Daten zu aktualisieren.",
+    "refreshApplication": "Um alle Daten der Anwendung zu aktualisieren, klicke auf 'App aktualisieren' in der Seitennavigation ganz unten"
   }
 }

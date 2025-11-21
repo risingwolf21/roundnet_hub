@@ -24,6 +24,9 @@ const AppInformation = () => {
   return <Layout appBarConfig={{ title: "Hilfe und Informationen" }}>
     <List sx={{ mx: 2, mb: "env(safe-area-inset-bottom)" }}>
       <List subheader={<ListSubheader sx={{ m: 0, p: 0 }}>Inhalt dieser Seite</ListSubheader>}>
+        <ListItemButton dense href="#refresh">
+          <ListItemText primary={t("titles.refresh")} />
+        </ListItemButton>
         <ListItemButton dense href="#installation">
           <ListItemText primary={t("titles.installation")} />
         </ListItemButton>
@@ -38,6 +41,15 @@ const AppInformation = () => {
         </ListItemButton>
       </List>
       <Divider />
+      <Typography id="refresh" variant="h6" sx={{ fontWeight: 'bold', mt: 2 }}>
+        {t("titles.refresh")}
+      </Typography>
+
+      <ul>
+        <li>{t("pullToRefresh")}</li>
+        <li>{t("refreshApplication")}</li>
+      </ul>
+
       <Typography id="installation" variant="h6" sx={{ fontWeight: 'bold', mt: 2 }}>
         {t("titles.installation")}
       </Typography>
