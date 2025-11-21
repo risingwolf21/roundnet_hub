@@ -40,8 +40,8 @@ const CropImageDialog = ({ open, handleClose, selectedImage, onImageCropFinished
   const [rotation] = useState(0);
   const [croppedAreaPixels, setCroppedAreaPixels] = useState<CroppedAreaPixels>({ width: 0, height: 0, x: 0, y: 0 });
 
-  const onCropComplete = (croppedAreaPixels: CroppedAreaPixels) => {
-    setCroppedAreaPixels(croppedAreaPixels);
+  const onCropComplete = (_croppedArea: any, croppedAreaPixelsParam: CroppedAreaPixels) => {
+    setCroppedAreaPixels(croppedAreaPixelsParam);
   };
 
   return (
