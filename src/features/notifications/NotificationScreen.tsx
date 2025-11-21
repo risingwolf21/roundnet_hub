@@ -4,7 +4,7 @@ import Layout from '../../components/layout/Layout';
 import { useGrants } from '../auth/GrantsContext';
 
 import { Json } from '@/types/supabase-generated.types';
-import DoneAll from '@mui/icons-material/DoneAll';
+import DeleteIcon from '@mui/icons-material/Delete';
 import Badge from '@mui/material/Badge';
 import Box from '@mui/material/Box';
 import Fab from '@mui/material/Fab';
@@ -83,13 +83,12 @@ const NotificationScreen = () => {
           backgroundColor: (theme) => theme.palette.primary.main,
           position: 'fixed',
           right: '16px',
-          bottom: 'calc(16px + env(safe-area-inset-bottom))',
-          mb: '16px',
+          bottom: 'calc(16px + env(safe-area-inset-bottom))'
         }}
         onClick={() => markNotificationsAsRead.mutate()}
       >
-        <DoneAll sx={{ color: 'white', mr: 1 }} />
-        Als gelesen markieren
+        <DeleteIcon sx={{ color: 'white', mr: 1 }} />
+        Alle löschen
       </Fab>
     </PullToRefresh>
   );

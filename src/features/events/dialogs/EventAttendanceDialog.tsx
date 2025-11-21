@@ -152,10 +152,10 @@ const EventAttendanceDialog = ({
             {attendance
               .filter((x: FullAttendance) => x.state === 'AttendingAsTrainer')
               .sort((a, b) => compareDesc(a.lastUpdate, b.lastUpdate))
-              .map((x: FullAttendance, index: number) => (
+              .map((x: FullAttendance) => (
                 <AttendanceItem
                   attendance={x}
-                  key={x.user.userId + index}
+                  key={x.user.userId + "AttendingAsTrainer"}
                   onClick={() => dialogs.open(ProfileDialog, { user, userId: x.user.userId })}
                   required_item={usersWithRequiredItem.find((y) => y.user === x.user.userId)?.item}
                 />
@@ -163,10 +163,10 @@ const EventAttendanceDialog = ({
             {attendance
               .filter((x: FullAttendance) => x.state === 'RequestedAttendance')
               .sort((a, b) => compareDesc(a.lastUpdate, b.lastUpdate))
-              .map((x: FullAttendance, index: number) => (
+              .map((x: FullAttendance) => (
                 <AttendanceItem
                   attendance={x}
-                  key={x.user.userId + index}
+                  key={x.user.userId + "RequestedAttendance"}
                   onClick={() => dialogs.open(ProfileDialog, { user, userId: x.user.userId })}
                   required_item={usersWithRequiredItem.find((y) => y.user === x.user.userId)?.item}
                   acceptAttendance={hasPerm('event.manage.attendees') ? acceptAttendance : null}
@@ -175,10 +175,10 @@ const EventAttendanceDialog = ({
             {attendance
               .filter((x: FullAttendance) => x.state === 'Attending')
               .sort((a, b) => compareDesc(a.lastUpdate, b.lastUpdate))
-              .map((x: FullAttendance, index: number) => (
+              .map((x: FullAttendance) => (
                 <AttendanceItem
                   attendance={x}
-                  key={x.user.userId + index}
+                  key={x.user.userId + "Attending"}
                   onClick={() => dialogs.open(ProfileDialog, { user, userId: x.user.userId })}
                   required_item={usersWithRequiredItem.find((y) => y.user === x.user.userId)?.item}
                 />
@@ -190,10 +190,10 @@ const EventAttendanceDialog = ({
             {attendance
               .filter((x: FullAttendance) => x.state === 'Declined')
               .sort((a, b) => compareDesc(a.lastUpdate, b.lastUpdate))
-              .map((x: FullAttendance, index: number) => (
+              .map((x: FullAttendance) => (
                 <AttendanceItem
                   attendance={x}
-                  key={x.user.userId + index}
+                  key={x.user.userId + "Declined"}
                   onClick={() => dialogs.open(ProfileDialog, { user, userId: x.user.userId })}
                 />
               ))}
@@ -205,10 +205,10 @@ const EventAttendanceDialog = ({
               <List sx={{ pb: 8 }}>
                 {attendingAsTrial
                   .sort((a, b) => compareDesc(a.lastUpdate, b.lastUpdate))
-                  .map((x: FullAttendance, index: number) => (
+                  .map((x: FullAttendance) => (
                     <AttendanceItem
                       attendance={x}
-                      key={x.user.userId + index}
+                      key={x.user.userId + "AttendingAsTrial"}
                       onClick={() => dialogs.open(ProfileDialog, { user, userId: x.user.userId })}
                     />
                   ))}
@@ -226,7 +226,7 @@ const EventAttendanceDialog = ({
                       .sort((a, b) => (isBefore(a.lastUpdate, b.lastUpdate) ? 1 : 0))
                       .map((x: FullAttendance, index: number) => (
                         <ListItem
-                          key={x.user.userId + index}
+                          key={x.user.userId + "waitingList"}
                           secondaryAction={<Typography fontWeight={'bold'}>{`${index + 1}.)`}</Typography>}
                         >
                           <ListItemAvatar>
@@ -251,7 +251,7 @@ const EventAttendanceDialog = ({
                       .sort((a, b) => (isBefore(a.lastUpdate, b.lastUpdate) ? 1 : 0))
                       .map((x: FullAttendance, index: number) => (
                         <ListItem
-                          key={x.user.userId + index}
+                          key={x.user.userId + "WaitingTrialList"}
                           secondaryAction={<Typography fontWeight={'bold'}>{`${index + 1}.)`}</Typography>}
                         >
                           <ListItemAvatar>

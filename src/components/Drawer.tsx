@@ -1,7 +1,9 @@
 import { useGrants } from '@/features/auth/GrantsContext';
 import { Has } from '@/hooks/useGrants';
+import { queryClient } from '@/lib/queryClient';
 import { useRequestedUsersPerGroup } from '@/tanstack/groups';
 import { useAllNotifications } from '@/tanstack/notifications';
+import { iOS } from '@/utils';
 import EmojiEvents from '@mui/icons-material/EmojiEvents';
 import Euro from '@mui/icons-material/Euro';
 import Group from '@mui/icons-material/Group';
@@ -530,7 +532,10 @@ const DrawerContent = ({
             primary={t("browse.helpAndInformation")}
           />
         </DrawerItem>
-        <DrawerItem key="update app" selected={false} onClick={() => window.location.reload()}>
+        <DrawerItem key="update app" selected={false} onClick={async () => {
+          await queryClient.invalidateQueries();
+          window.location.reload();
+        }}>
           <ListItemAvatar>
             <ListItemIcon>
               <Update />
@@ -538,7 +543,7 @@ const DrawerContent = ({
           </ListItemAvatar>
           <ListItemText
             primaryTypographyProps={{ fontWeight: 'bold', fontSize: '0.9rem' }}
-            primary={'App aktualisieren'}
+            primary={t("browse.appRefresh")}
           />
         </DrawerItem>
         <DrawerItem key="app version" selected={false}>
@@ -566,8 +571,6 @@ export const Drawer = ({ open, onClose, onOpen }: Props) => {
 
   const { data: requested_group_joins = [] } = useRequestedUsersPerGroup(user);
   const { data: notifications = [] } = useAllNotifications(user);
-
-  const iOS = typeof navigator !== 'undefined' && /iPad|iPhone|iPod/.test(navigator.userAgent);
 
   useEffect(() => {
     // eslint-disable-next-line

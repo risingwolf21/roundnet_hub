@@ -1,6 +1,7 @@
 import { MapContainer, Marker, TileLayer } from 'react-leaflet';
 import { PlaceType } from '../types';
 
+import { iOS } from '@/utils';
 import Map from '@mui/icons-material/Map';
 import Box from '@mui/material/Box';
 import ListItem from '@mui/material/ListItem';
@@ -8,12 +9,15 @@ import ListItemAvatar from '@mui/material/ListItemAvatar';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import Stack from '@mui/material/Stack';
+import { useDialogs } from '@toolpad/core';
+import { MapsProviderDialog } from '../dialogs/MapsProviderDialog';
 
 type Props = {
   place: PlaceType;
 };
 
 const EventMapPreview = ({ place }: Props) => {
+  const dialogs = useDialogs();
   return (
     <Stack direction={'column'}>
       {
@@ -32,11 +36,26 @@ const EventMapPreview = ({ place }: Props) => {
         <ListItemAvatar />
         <Box
           component="button"
-          onClick={() => {
-            window.open(
-              `https://www.google.com/maps/dir/?api=1&travelmode=bicycling&destination=${place.lat},${place.lon}`,
-              '_blank'
-            );
+          onClick={async () => {
+            if (iOS) {
+              const result = await dialogs.open(MapsProviderDialog);
+              if (result === "apple_maps") {
+                window.open(
+                  `http://maps.apple.com/?daddr=${place.name}&sll=${place.lat},${place.lon}&z=10&t=s`,
+                  '_blank'
+                );
+              } else if (result === "google_maps") {
+                window.open(
+                  `https://www.google.com/maps/dir/?api=1&travelmode=bicycling&destination=${place.lat},${place.lon}`,
+                  '_blank'
+                );
+              }
+            } else {
+              window.open(
+                `https://www.google.com/maps/dir/?api=1&travelmode=bicycling&destination=${place.lat},${place.lon}`,
+                '_blank'
+              );
+            }
           }}
           sx={{
             p: 0,

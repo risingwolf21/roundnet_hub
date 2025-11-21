@@ -19,6 +19,7 @@ import { NotificationsDialog } from './NotificationsDialog';
 import { PlayerzoneProfileDialog } from './PlayerzoneProfile';
 import { ProfileImage } from './ProfileImage';
 
+import { iOS } from '@/utils';
 import Card from '@mui/material/Card';
 import CardActionArea from '@mui/material/CardActionArea';
 import List from '@mui/material/List';
@@ -44,8 +45,6 @@ const UserScreen = ({ user, handleSignOut }: UserScreenProps) => {
   const navigate = useNavigate();
   const notificationSupported = ('serviceWorker' in navigator) && ('PushManager' in window);
   const { data: player_data, isLoading } = usePlayer(user);
-
-  const iOS = typeof navigator !== 'undefined' && /iPad|iPhone|iPod/.test(navigator.userAgent);
 
   const copyIcalURLToClipboard = () => {
     if (iOS) {

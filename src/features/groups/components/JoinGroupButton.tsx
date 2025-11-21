@@ -27,7 +27,7 @@ export const JoinGroupButton = ({ group, user }: { group: Group; user: User }) =
         event.stopPropagation();
       }}
     >
-      {joinGroup.isPending ? 'Tritt bei...' : group.need_request_to_join ? 'Beitritt anfragen' : 'Beitreten'}
+      {joinGroup.isPending ? 'Tritt bei...' : group.need_request_to_join ? 'Anfragen' : 'Beitreten'}
     </Button>
   );
 };

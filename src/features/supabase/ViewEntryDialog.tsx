@@ -1,10 +1,11 @@
-import { DialogProps, useDialogs } from '@toolpad/core';
+import { DialogProps, useDialogs, useNotifications } from '@toolpad/core';
 import _ from 'lodash';
 
 import Close from '@mui/icons-material/Close';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import Delete from '@mui/icons-material/Delete';
 import AppBar from '@mui/material/AppBar';
+import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
 import CardActionArea from '@mui/material/CardActionArea';
 import Dialog from '@mui/material/Dialog';
@@ -16,13 +17,13 @@ import ListItemText from '@mui/material/ListItemText';
 import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
 import React from 'react';
-
 type ViewEntryDialogPayload = {
   entry: object;
 };
 
 const DialogContent = ({ payload, open, onClose }: DialogProps<ViewEntryDialogPayload, 'delete' | null>) => {
   const dialogs = useDialogs();
+  const notifications = useNotifications();
 
   return (
     <Dialog fullScreen open={open} onClose={() => onClose(null)}>
@@ -86,17 +87,20 @@ const DialogContent = ({ payload, open, onClose }: DialogProps<ViewEntryDialogPa
             );
           }
           return (
-            <ListItem key={key} secondaryAction={<IconButton onClick={() => {
+            <ListItem key={key} divider secondaryAction={<IconButton onClick={() => {
               navigator.clipboard.writeText(value);
+              notifications.show("In die Zwischenablage kopiert", { severity: "info" })
             }}>
               <ContentCopyIcon />
             </IconButton>}>
-              <ListItemText
-                primary={<pre style={{ margin: 0 }}>{JSON.stringify(value, null, 2)}</pre>}
-                secondary={key}
-              />
+              <Box sx={{ display: 'flex', flexDirection: 'column', width: '100%' }}>
+                <Typography sx={{ fontWeight: 'bold' }}>{JSON.stringify(value, null, 2)}</Typography>
+                <Typography sx={{ fontFamily: 'monospace', fontSize: "small", whiteSpace: 'pre-wrap' }}>
+                  {key}
+                </Typography>
+              </Box>
             </ListItem>
-          );
+          )
         })}
         <Card sx={{ color: 'red', borderRadius: 2, py: 0, px: 0, m: 1 }}>
           <CardActionArea sx={{ px: 1 }}>
