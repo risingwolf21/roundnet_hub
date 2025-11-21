@@ -1,7 +1,7 @@
 import CloseIcon from '@mui/icons-material/Close';
 import { Box } from '@mui/system';
 import { useState } from 'react';
-import Cropper from 'react-easy-crop';
+import Cropper, { Area } from 'react-easy-crop';
 
 import AppBar from '@mui/material/AppBar';
 import Button from '@mui/material/Button';
@@ -17,31 +17,24 @@ type CropImageDialogProps = {
   onImageCropFinished: (value: string | null) => void;
 };
 
-type CroppedAreaPixels = {
-  width: number;
-  height: number;
-  x: number;
-  y: number;
-};
-
 const CropImageDialog = ({ open, handleClose, selectedImage, onImageCropFinished }: CropImageDialogProps) => {
+  const [crop, setCrop] = useState({ x: 0, y: 0 });
+  const [zoom, setZoom] = useState(1);
+  const rotation = 0;
+  const [croppedAreaPixels, setCroppedAreaPixels] = useState<Area>({ width: 0, height: 0, x: 0, y: 0 });
+
+  const onCropComplete = (_croppedArea: Area, croppedAreaPixelsParam: Area) => {
+    setCroppedAreaPixels(croppedAreaPixelsParam);
+  };
+
   const cropImage = async () => {
     try {
       const croppedImage = await getCroppedImg(selectedImage, croppedAreaPixels, rotation);
       onImageCropFinished(croppedImage);
     } catch (e) {
-      console.error(e);
+      console.error('cropImage error', e);
+      onImageCropFinished(null);
     }
-  };
-
-  // image cropping
-  const [crop, setCrop] = useState({ x: 0, y: 0 });
-  const [zoom, setZoom] = useState(1);
-  const [rotation] = useState(0);
-  const [croppedAreaPixels, setCroppedAreaPixels] = useState<CroppedAreaPixels>({ width: 0, height: 0, x: 0, y: 0 });
-
-  const onCropComplete = (_croppedArea: any, croppedAreaPixelsParam: CroppedAreaPixels) => {
-    setCroppedAreaPixels(croppedAreaPixelsParam);
   };
 
   return (
@@ -79,7 +72,7 @@ export default CropImageDialog;
 
 async function getCroppedImg(
   imageSrc: string,
-  pixelCrop: CroppedAreaPixels,
+  pixelCrop: Area,
   rotation = 0,
   flip = { horizontal: false, vertical: false }
 ): Promise<string | null> {
@@ -117,32 +110,35 @@ async function getCroppedImg(
     return null;
   }
 
+  // If pixelCrop may be invalid (zero width/height), guard
+  const safeWidth = Math.max(0, Math.round(pixelCrop.width));
+  const safeHeight = Math.max(0, Math.round(pixelCrop.height));
+  const safeX = Math.round(pixelCrop.x);
+  const safeY = Math.round(pixelCrop.y);
+
   // Set the size of the cropped canvas
-  croppedCanvas.width = pixelCrop.width;
-  croppedCanvas.height = pixelCrop.height;
+  croppedCanvas.width = safeWidth;
+  croppedCanvas.height = safeHeight;
 
   // Draw the cropped image onto the new canvas
   croppedCtx.drawImage(
     canvas,
-    pixelCrop.x,
-    pixelCrop.y,
-    pixelCrop.width,
-    pixelCrop.height,
+    safeX,
+    safeY,
+    safeWidth,
+    safeHeight,
     0,
     0,
-    pixelCrop.width,
-    pixelCrop.height
+    safeWidth,
+    safeHeight
   );
 
-  // As Base64 string
-  return croppedCanvas.toDataURL('image/jpeg');
+  // detect original mime if possible to preserve png transparency
+  const mimeFromDataUrlMatch = (imageSrc || '').match(/^data:(image\/[a-zA-Z0-9.+-]+);base64,/);
+  const mime = mimeFromDataUrlMatch?.[1] ?? 'image/png'; // default to png to avoid losing transparency
 
-  // As a blob
-  // return new Promise((resolve, reject) => {
-  //     croppedCanvas.toBlob((file) => {
-  //         resolve(URL.createObjectURL(file))
-  //     }, 'image/jpeg')
-  // })
+  // As Base64 string, preserving mime if possible
+  return croppedCanvas.toDataURL(mime);
 }
 
 function createImage(url: string): Promise<HTMLImageElement> {
@@ -150,7 +146,10 @@ function createImage(url: string): Promise<HTMLImageElement> {
     const image = new Image();
     image.addEventListener('load', () => resolve(image));
     image.addEventListener('error', (error) => reject(error));
-    image.setAttribute('crossOrigin', 'anonymous'); // needed to avoid cross-origin issues on CodeSandbox
+    // only set crossOrigin for http(s) to avoid tainting issues with remote images that don't allow CORS
+    if (url.startsWith('http://') || url.startsWith('https://')) {
+      image.setAttribute('crossOrigin', 'anonymous');
+    }
     image.src = url;
   });
 }
