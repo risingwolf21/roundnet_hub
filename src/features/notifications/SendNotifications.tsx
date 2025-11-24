@@ -32,8 +32,8 @@ const SendNotifications = () => {
   const handleChange = (event: SelectChangeEvent<string[]>) => {
     setSelectedUsers(
       typeof event.target.value === 'string'
-        ? event.target.value.split(',').map(x => users.find(y => y.userId === x)).filter((x): x is SimpleUser => !!x)
-        : event.target.value.map(x => users.find(y => y.userId === x)).filter((x): x is SimpleUser => !!x)
+        ? event.target.value.split(',').map(x => users.find(y => y.id === x)).filter((x): x is SimpleUser => !!x)
+        : event.target.value.map(x => users.find(y => y.id === x)).filter((x): x is SimpleUser => !!x)
     );
   }
 
@@ -44,10 +44,10 @@ const SendNotifications = () => {
           id="demo-multiple-checkbox"
           multiple
           fullWidth
-          value={selectedUsers.map(x => x.userId)}
+          value={selectedUsers.map(x => x.id)}
           onChange={handleChange}
           input={<OutlinedInput label="Tag" />}
-          renderValue={(selected) => selected.map(x => users.find(y => x === y.userId)).filter(x => x).map(x => x?.name).join(', ')}
+          renderValue={(selected) => selected.map(x => users.find(y => x === y.id)).filter(x => x).map(x => x?.name).join(', ')}
           MenuProps={{
             PaperProps: {
               style: {
@@ -58,8 +58,8 @@ const SendNotifications = () => {
           }}
         >
           {users.map((x) => (
-            <MenuItem key={x.userId} value={x.userId}>
-              <Checkbox checked={selectedUsers.findIndex(y => y.userId === x.userId) !== -1} />
+            <MenuItem key={x.id} value={x.id}>
+              <Checkbox checked={selectedUsers.findIndex(y => y.id === x.id) !== -1} />
               <ListItemText primary={x.name} />
             </MenuItem>
           ))}
@@ -96,7 +96,7 @@ const SendNotifications = () => {
           p_data: JSON.parse(data || '{}'),
           p_source_type: sourceType,
           p_source_id: sourceId,
-          p_users: selectedUsers.map(x => x.userId),
+          p_users: selectedUsers.map(x => x.id),
         }).then(({ error }) => {
           if (error) {
             notifcations.show('Fehler: ' + error.message, { severity: 'error' });

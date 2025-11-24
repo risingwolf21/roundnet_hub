@@ -7,7 +7,7 @@ import PayDrinksScreen from './PayDrinksScreen';
 
 const PayDrinks = () => {
   const { user } = useGrants();
-  const result = usePaymentHistory(user.userId);
+  const result = usePaymentHistory(user.id);
 
   return (
     <Layout>

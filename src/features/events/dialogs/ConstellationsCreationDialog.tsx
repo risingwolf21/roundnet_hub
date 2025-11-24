@@ -292,17 +292,17 @@ const Content = ({ payload, onClose }: DialogProps<ConstellationCreationDialogPr
       .select('*')
       .in(
         'player',
-        payload.users.map((x) => x.userId)
+        payload.users.map((x) => x.id)
       )
       .then((result) => {
         if (result.data) {
           const loadedPlayers = result.data.map((x) => ({
             ...x,
-            name: payload.users.find((y) => y.userId === x.player)?.name,
+            name: payload.users.find((y) => y.id === x.player)?.name,
           }));
           setPlayers(loadedPlayers);
           setFoundPlayers(
-            result.data.map((x) => ({ ...x, name: payload.users.find((y) => y.userId === x.player)?.name }))
+            result.data.map((x) => ({ ...x, name: payload.users.find((y) => y.id === x.player)?.name }))
           );
 
           setRounds([
@@ -337,18 +337,18 @@ const Content = ({ payload, onClose }: DialogProps<ConstellationCreationDialogPr
       </AppBar>
       <List sx={{ pl: 0, pr: 0, pb: 10 }}>
         {loading && <p>loading...</p>}
-        {payload.users.filter((x) => !foundPlayers.map((y) => y.player).includes(x.userId)).length > 0 && (
+        {payload.users.filter((x) => !foundPlayers.map((y) => y.player).includes(x.id)).length > 0 && (
           <Accordion disableGutters defaultExpanded>
             <AccordionSummary expandIcon={<ArrowDropDown />}>
               <Typography component="span">
-                Von {payload.users.filter((x) => !foundPlayers.map((y) => y.player).includes(x.userId)).length} Spielern
+                Von {payload.users.filter((x) => !foundPlayers.map((y) => y.player).includes(x.id)).length} Spielern
                 kein Index gefunden
               </Typography>
             </AccordionSummary>
             <AccordionDetails>
               <List>
                 {payload.users
-                  .filter((x) => !foundPlayers.map((y) => y.player).includes(x.userId))
+                  .filter((x) => !foundPlayers.map((y) => y.player).includes(x.id))
                   .map((x) => (
                     <ListItem key={"name"} divider sx={{ '&.MuiListItem-root': { paddingLeft: 0 } }}>
                       <Box
@@ -371,16 +371,16 @@ const Content = ({ payload, onClose }: DialogProps<ConstellationCreationDialogPr
                           {x.name}
                         </Typography>
                         <NumberInput
-                          value={players.find((y) => y.player === x.userId)?.rg_index ?? 0}
+                          value={players.find((y) => y.player === x.id)?.rg_index ?? 0}
                           step={10}
                           placeholder='Initialer Index'
                           onValueChange={(val) => {
                             if (val && val >= 0) {
                               setPlayers([
-                                ...players.filter((y) => x.userId !== y.player),
+                                ...players.filter((y) => x.id !== y.player),
                                 {
                                   gender: 'm',
-                                  player: x.userId,
+                                  player: x.id,
                                   name: x.name,
                                   ka_index: 0,
                                   pro_status: false,
@@ -428,15 +428,15 @@ const Content = ({ payload, onClose }: DialogProps<ConstellationCreationDialogPr
                             .select('*')
                             .in(
                               'player',
-                              result.map((x) => x.userId)
+                              result.map((x) => x.id)
                             )
                             .then((res) => {
                               if (res.data) {
                                 setPlayers([
-                                  ...players.filter((x) => !result.map((x) => x.userId).includes(x.player)),
+                                  ...players.filter((x) => !result.map((x) => x.id).includes(x.player)),
                                   ...res.data.map((x) => ({
                                     ...x,
-                                    name: result.find((y) => y.userId === x.player)?.name,
+                                    name: result.find((y) => y.id === x.player)?.name,
                                   })),
                                 ]);
                               }

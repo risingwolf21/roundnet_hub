@@ -14,7 +14,7 @@ export const useDeclineRequestMutation = (group: Group | null) =>
         .from('group_user_mapping')
         .delete()
         .eq('group', group.id)
-        .eq('user', user.userId)
+        .eq('user', user.id)
         .eq('role', 'joinRequested')
         .throwOnError();
 
@@ -32,14 +32,14 @@ export const useDeclineRequestMutation = (group: Group | null) =>
       if (previousGroup) {
         queryClient.setQueryData<GroupWithUserMappings>(['group', group.id], {
           ...previousGroup,
-          users: previousGroup.users.filter((x: FullUserMapping) => x.user.userId === user.userId),
+          users: previousGroup.users.filter((x: FullUserMapping) => x.user.id === user.id),
         });
       }
 
       if (previousRequested) {
         queryClient.setQueryData<GroupUserMapping[]>(
           ['groups', 'joinRequested'],
-          previousRequested.filter((x) => x.user !== user.userId && x.group !== group.id)
+          previousRequested.filter((x) => x.user !== user.id && x.group !== group.id)
         );
       }
 

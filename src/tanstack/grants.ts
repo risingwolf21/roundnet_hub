@@ -43,7 +43,7 @@ export const useDirectUserGrants = () =>
 
       const users = new Map<string, User>();
 
-      result.data?.forEach((x) => !users.has(x.user.userId) && users.set(x.user.userId, x.user));
+      result.data?.forEach((x) => !users.has(x.user.id) && users.set(x.user.id, x.user));
 
       return [...users.values()];
     },

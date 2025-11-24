@@ -66,7 +66,7 @@ export const ItemCard = ({ index, item, user }: { index: number; item: FullItemH
         </Box>
       </CardActionArea>
       <CardActions>
-        {item.full_current_holder?.userId === user?.userId ? (
+        {item.full_current_holder?.id === user?.id ? (
           <Button
             color="primary"
             onClick={(event) => {

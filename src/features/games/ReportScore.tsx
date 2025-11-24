@@ -39,8 +39,8 @@ const SelectPlayer = ({ options, loading, label, value, onSelect }: Props) => {
       options={options}
       value={value}
       getOptionLabel={(option) => option.name}
-      getOptionKey={(option) => option.userId}
-      isOptionEqualToValue={(o, v) => o.userId === v.userId}
+      getOptionKey={(option) => option.id}
+      isOptionEqualToValue={(o, v) => o.id === v.id}
       onChange={(_e, v) => onSelect(v)}
       renderInput={(params) => (
         <TextField
@@ -135,20 +135,20 @@ const ReportScore = () => {
         sets,
         team_a: {
           name: team_a_name,
-          player_1: player1a.userId,
+          player_1: player1a.id,
           player_1_rating: player1a.ka_index,
-          player_2: player2a.userId,
+          player_2: player2a.id,
           player_2_rating: player2a.ka_index,
         },
         team_b: {
           name: team_b_name,
-          player_1: player1b.userId,
+          player_1: player1b.id,
           player_1_rating: player1b.ka_index,
-          player_2: player2b.userId,
+          player_2: player2b.id,
           player_2_rating: player2b.ka_index,
         },
         rating_enabled: rating_enabled,
-        created_by: user?.userId,
+        created_by: user?.id,
       },
       {
         onSuccess: () => navigate('/matches'),
@@ -179,8 +179,8 @@ const ReportScore = () => {
                 (x) =>
                   ![player1b, player2a, player2b]
                     .filter((x) => x)
-                    .map((x) => x?.userId)
-                    .includes(x.userId)
+                    .map((x) => x?.id)
+                    .includes(x.id)
               )}
               onSelect={setPlayer1a}
             />
@@ -194,8 +194,8 @@ const ReportScore = () => {
                 (x) =>
                   ![player1a, player2a, player2b]
                     .filter((x) => x)
-                    .map((x) => x?.userId)
-                    .includes(x.userId)
+                    .map((x) => x?.id)
+                    .includes(x.id)
               )}
               onSelect={setPlayer1b}
             />
@@ -209,8 +209,8 @@ const ReportScore = () => {
                 (x) =>
                   ![player1b, player1a, player2b]
                     .filter((x) => x)
-                    .map((x) => x?.userId)
-                    .includes(x.userId)
+                    .map((x) => x?.id)
+                    .includes(x.id)
               )}
               onSelect={setPlayer2a}
             />
@@ -224,8 +224,8 @@ const ReportScore = () => {
                 (x) =>
                   ![player1b, player1a, player2a]
                     .filter((x) => x)
-                    .map((x) => x?.userId)
-                    .includes(x.userId)
+                    .map((x) => x?.id)
+                    .includes(x.id)
               )}
               onSelect={setPlayer2b}
             />

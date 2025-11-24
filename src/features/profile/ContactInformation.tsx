@@ -59,7 +59,7 @@ const Content = ({ payload, onClose }: DialogProps<ContactInformationPayload, st
       return;
     }
 
-    const { error } = await supabase.from('user').update({ name, displayName }).eq('userId', payload.user.userId);
+    const { error } = await supabase.from('user').update({ name, displayName }).eq('userId', payload.user.id);
     if (error) {
       notifications.show(error.message, { severity: 'error' });
       captureException(error);

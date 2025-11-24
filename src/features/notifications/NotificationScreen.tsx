@@ -37,7 +37,7 @@ const NotificationScreen = () => {
   const navigate = useNavigate();
   const { data: notifications = [], isLoading, refetch } = useAllNotifications(user);
 
-  const markNotificationsAsRead = useMarkNotificationsAsRead(user.userId);
+  const markNotificationsAsRead = useMarkNotificationsAsRead(user.id);
   const dismissNotification = useDismissNotification();
 
   if (isLoading) {

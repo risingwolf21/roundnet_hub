@@ -22,7 +22,7 @@ type Props = {
 };
 
 const EventBringItemsDialog = ({ payload, open, onClose }: DialogProps<Props, { event: string, item: string, item_name: string, user: User, qty: number }[]>) => {
-  const [bringPledges, setBringPledges] = useState(payload.pledges.filter(x => x.user.userId === payload.user.userId));
+  const [bringPledges, setBringPledges] = useState(payload.pledges.filter(x => x.user.id === payload.user.id));
 
   return (
     <SwipeableDialog

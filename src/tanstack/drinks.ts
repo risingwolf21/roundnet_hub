@@ -52,7 +52,7 @@ export const useInfiniteUserHistory = (userId: string, count: number = 20) =>
     queryFn: async ({ pageParam }) => {
       const { data } = await fetchFullHistory()
         .not('user', 'is', null)
-        .eq('user.userId', userId)
+        .eq('user.id', userId)
         .range(pageParam * count, pageParam * count + count - 1)
         .order('created_at', { ascending: false })
         .returns<FullHistory[]>()
@@ -76,8 +76,8 @@ export const useInsertHistoryEntryMutation = (user: User) => {
       return supabase.rpc('add_drinks_history', { items: drinksToAdd }).throwOnError();
     },
     onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ['history', user.userId] });
-      queryClient.invalidateQueries({ queryKey: ['payment', user.userId] });
+      queryClient.invalidateQueries({ queryKey: ['history', user.id] });
+      queryClient.invalidateQueries({ queryKey: ['payment', user.id] });
     },
   });
 };

@@ -10,7 +10,7 @@ import { useMutation, useQuery } from '@tanstack/react-query';
 import { format, isAfter, isBefore } from 'date-fns';
 
 export const fetchFullEventPledges = (eventId: string) =>
-  supabase.from('event_bring_pledges').select('*, user: user_id(*), item: event_bring_items(*)').eq('event', eventId);
+  supabase.from('event_bring_pledges').select('*, user: user(*), item: event_bring_items(*)').eq('event', eventId);
 
 export const useEvents = (filter: 'past' | 'upcoming') => {
   return useQuery<EventsUserView[]>({
@@ -25,7 +25,7 @@ export const useComments = (eventId: string) =>
     queryFn: async () => {
       const result = await supabase
         .from('event_comments')
-        .select('user(userId, displayName, avatarUrl), *')
+        .select('user(id, displayName, avatarUrl), *')
         .eq('event', eventId)
         .order('last_update', { ascending: false })
         .returns<FullComment[]>()
@@ -85,7 +85,7 @@ export const useAttendance = (eventId: string) =>
     queryFn: async () => {
       const result = await supabase
         .from('event_attendance_user_mapping')
-        .select('user(userId, displayName, avatarUrl, name), *')
+        .select('user(id, displayName, avatarUrl, name), *')
         .eq('event', eventId)
         .returns<FullAttendance[]>()
         .throwOnError();
@@ -156,7 +156,7 @@ export const useUpsetBringPledges = () => {
       if (previousFullPledges) {
         const updatedFullPledges = previousFullPledges.map((x) => {
           return items.map(y => {
-            if (x.item === y.item_id && x.event === event && x.user.userId === user) {
+            if (x.item === y.item_id && x.event === event && x.user.id === user) {
               return {
                 ...x,
                 qty: y.quantity,
@@ -200,7 +200,7 @@ export const useUpsetBringPledges = () => {
 export const useUpdateAttendanceMutation = (fetchMode: 'past' | 'upcoming') => {
   return useMutation({
     mutationFn: ({ event, newState, user }: { user: User; event: EventsUserView; newState: EventAttendance }) => {
-      return SupabaseEventRepository.updateAttendance(user.userId, event.id!, newState);
+      return SupabaseEventRepository.updateAttendance(user.id, event.id!, newState);
     },
     onMutate: async ({ event, newState, user }) => {
       await queryClient.cancelQueries({ queryKey: ['events', fetchMode] });
@@ -235,7 +235,7 @@ export const useUpdateAttendanceMutation = (fetchMode: 'past' | 'upcoming') => {
       }
 
       if (previousAttendance) {
-        const attendance = previousAttendance.find((x) => x.event === event.id && x.user === user.userId);
+        const attendance = previousAttendance.find((x) => x.event === event.id && x.user === user.id);
         if (!attendance) {
           const updatedAttendance = [
             ...previousAttendance,
@@ -249,7 +249,7 @@ export const useUpdateAttendanceMutation = (fetchMode: 'past' | 'upcoming') => {
           queryClient.setQueryData(['events', event.id, 'attendance'], updatedAttendance);
         } else {
           const updatedAttendance = previousAttendance.map((x) => {
-            if (x.event === attendance.event && x.user === user.userId) {
+            if (x.event === attendance.event && x.user === user.id) {
               return {
                 event: event.id,
                 lastUpdate: formatDateToDatabase(new Date()),
@@ -270,7 +270,7 @@ export const useUpdateAttendanceMutation = (fetchMode: 'past' | 'upcoming') => {
       logger.error('Attendance update failed.', {
         event: variables.event.id,
         eventDate: format(variables.event.startingDateTime, 'dd.MM.yyyy HH:mm'),
-        userId: variables.user.userId,
+        userId: variables.user.id,
         userEmail: variables.user.email,
         newState: variables.newState,
         error: err,
@@ -287,7 +287,7 @@ export const useUpdateAttendanceMutation = (fetchMode: 'past' | 'upcoming') => {
       logger.info('Attendance update successful.', {
         event: variables.event.id,
         eventDate: format(variables.event.startingDateTime, 'dd.MM.yyyy HH:mm'),
-        userId: variables.user.userId,
+        userId: variables.user.id,
         userEmail: variables.user.email,
         newState: variables.newState,
       });
@@ -319,7 +319,7 @@ export const useAddCommentMutation = (user: User) => {
         const newComment = {
           comment,
           user,
-          userId: user.userId,
+          userId: user.id,
           displayName: user.displayName,
           edited: false,
           event: event.id,
@@ -365,7 +365,7 @@ export const useAddCommentMutation = (user: User) => {
       logger.error('Event comment failed.', {
         event: variables.event.id,
         eventDate: format(variables.event.startingDateTime, 'dd.MM.yyyy HH:mm'),
-        userId: user.userId,
+        userId: user.id,
         userEmail: user.email,
         comment: variables.comment,
         error: err,
@@ -379,7 +379,7 @@ export const useAddCommentMutation = (user: User) => {
       logger.info('Event comment successful.', {
         event: variables.event.id,
         eventDate: format(variables.event.startingDateTime, 'dd.MM.yyyy HH:mm'),
-        userId: user.userId,
+        userId: user.id,
         userEmail: user.email,
         comment: variables.comment,
       });

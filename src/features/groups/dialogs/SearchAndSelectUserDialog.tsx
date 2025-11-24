@@ -47,8 +47,8 @@ const SearchAndSelectUserDialog = ({
   });
 
   const handleChange = (user: User) => {
-    if (selectedUsers.some((x: User) => x.userId === user.userId)) {
-      setSelectedUsers(selectedUsers.filter((y) => y.userId !== user.userId));
+    if (selectedUsers.some((x: User) => x.id === user.id)) {
+      setSelectedUsers(selectedUsers.filter((y) => y.id !== user.id));
     } else {
       setSelectedUsers([...selectedUsers, user]);
     }
@@ -96,7 +96,7 @@ const SearchAndSelectUserDialog = ({
                 <ListItem key={index}>
                   <ListItemIcon>
                     <Checkbox
-                      checked={selectedUsers.some((x: User) => x.userId === user.userId)}
+                      checked={selectedUsers.some((x: User) => x.id === user.id)}
                       onChange={() => handleChange(user)}
                     />
                   </ListItemIcon>

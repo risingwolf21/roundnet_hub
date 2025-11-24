@@ -28,7 +28,7 @@ export const useAllPayments = () =>
       const response = await supabase
         .from('payments')
         .select(
-          'id, created_at, paymentState, amountToPay, userId, user (userId, displayName, name, email), history (*)'
+          'id, created_at, paymentState, amountToPay, userId: user, user (id, displayName, name, email), history (*)'
         )
         .eq('paymentState', 'Open' as PaymentState)
         .order('displayName', { referencedTable: 'user', ascending: true })
@@ -43,7 +43,7 @@ export const useConfirmPaymentMutation = () =>
       const result = await supabase
         .from('payments')
         .update({ paymentState: 'Fulfilled' as PaymentState })
-        .eq('userId', payment?.user?.userId)
+        .eq('user', payment?.user?.id)
         .eq('paymentState', 'Open' as PaymentState)
         .select('*')
         .single();
@@ -57,7 +57,7 @@ export const useConfirmPaymentMutation = () =>
 
       if (previousPayments) {
         const newPayments = previousPayments.map((x) => {
-          if (x.userId === payment.user.userId) {
+          if (x.user === payment.user.id) {
             return {
               ...x,
               paymentState: 'FulFilled' as PaymentState,
@@ -115,9 +115,9 @@ const PaymentsPendingAdmin = () => {
                   )
               )
               .sort((a, b) => (a.user.name > b.user.name ? 1 : -1))
-              .map((x, _index) => (
+              .map((x) => (
                 <ListItem
-                  key={x.user.userId}
+                  key={x.user.id}
                   divider
                   secondaryAction={
                     <IconButton

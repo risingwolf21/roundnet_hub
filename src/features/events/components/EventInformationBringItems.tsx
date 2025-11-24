@@ -48,7 +48,7 @@ const EventInformationBringItems = ({ selectedEvent }: EventInformationAttendanc
                 .then((result) => {
                   if (result.length > 0) {
                     upsertPledgeItems.mutate({
-                      user: user.userId,
+                      user: user.id,
                       event: selectedEvent.id,
                       items: result.map((r) => ({ item_id: r.item, quantity: r.qty, status: 'pledged' }))
                     });

@@ -52,7 +52,7 @@ const PublicGroupList = () => {
       onRefresh={() => {
         refetch();
         refetchRequested();
-        queryClient.invalidateQueries({ queryKey: grantsQk(user.userId) });
+        queryClient.invalidateQueries({ queryKey: grantsQk(user.id) });
       }}
     >
       {groups

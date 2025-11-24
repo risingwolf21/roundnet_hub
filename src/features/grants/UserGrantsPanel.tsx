@@ -36,7 +36,7 @@ const UserGrantsPanel = ({ searchValue }: { searchValue: string }) => {
   const updateGrantsWith = (result: GroupResult, user: User) => {
     grant.mutate(
       {
-        user: user.userId,
+        user: user.id,
         perms: result.grantPerm,
         feats: result.grantFeat,
       },
@@ -44,7 +44,7 @@ const UserGrantsPanel = ({ searchValue }: { searchValue: string }) => {
     );
     revoke.mutate(
       {
-        user: user.userId,
+        user: user.id,
         perms: result.revokePerm,
         feats: result.revokeFeat,
       },
@@ -61,11 +61,12 @@ const UserGrantsPanel = ({ searchValue }: { searchValue: string }) => {
             || x.email.toLowerCase().includes(searchValue.toLowerCase()))
           .map((x) => (
             <ListItem
+              key={x.id}
               divider
               onClick={async () => {
                 const result = await dialogs.open(GrantsEditorDialog, {
                   title: `Benutzer ${x.displayName} bearbeiten`,
-                  id: x.userId,
+                  id: x.id,
                   currentPermissions: useUserPermissions,
                   currentFeatures: useUserFeatures,
                 });
@@ -87,7 +88,7 @@ const UserGrantsPanel = ({ searchValue }: { searchValue: string }) => {
           if (result) {
             const grantsResult = await dialogs.open(GrantsEditorDialog, {
               title: `Benutzer ${result.displayName} hinzufügen`,
-              id: result.userId,
+              id: result.id,
               currentPermissions: useUserPermissions,
               currentFeatures: useUserFeatures,
             });

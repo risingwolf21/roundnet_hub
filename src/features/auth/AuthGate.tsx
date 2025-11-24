@@ -72,7 +72,7 @@ export const AuthGate = () => {
   useEffect(() => {
     if (!session) {
       reset();
-    } else if (!loading && (!currentUser || session.user.id !== currentUser?.userId)) {
+    } else if (!loading && (!currentUser || session.user.id !== currentUser?.id)) {
       setLoading(true);
       fetchUserData(session);
     }

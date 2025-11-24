@@ -17,7 +17,7 @@ const GrantsContext = React.createContext<GrantsContextValue | null>(null);
 type Props = { user: UserWithGroups; children: React.ReactNode };
 
 export function GrantsProvider({ user, children }: Props) {
-  const grantsQuery = useUserGrantsQuery(user.userId);
+  const grantsQuery = useUserGrantsQuery(user.id);
 
   const signOut = React.useCallback(async () => {
     try {
@@ -28,7 +28,7 @@ export function GrantsProvider({ user, children }: Props) {
       // Query Cache hart säubern – Nutzerkontext ist weg
       try {
         await queryClient.cancelQueries();
-        await queryClient.invalidateQueries({ queryKey: ['user-grants', user.userId] })
+        await queryClient.invalidateQueries({ queryKey: ['user-grants', user.id] })
         queryClient.clear();
       } catch { /* empty */ }
     }

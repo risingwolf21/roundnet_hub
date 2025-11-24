@@ -55,7 +55,7 @@ export const GamesRepository = {
 
     return _(players) // start sequence
       .keyBy('player') // create a dictionary of the 1st array
-      .merge(_.keyBy(simpleUsers, 'userId')) // create a dictionary of the 2nd array, and merge it to the 1st
+      .merge(_.keyBy(simpleUsers, 'id')) // create a dictionary of the 2nd array, and merge it to the 1st
       .values() // turn the combined dictionary to array
       .value()
       .map((x) => (({

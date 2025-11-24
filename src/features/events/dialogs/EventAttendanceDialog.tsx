@@ -155,9 +155,9 @@ const EventAttendanceDialog = ({
               .map((x: FullAttendance) => (
                 <AttendanceItem
                   attendance={x}
-                  key={x.user.userId + "AttendingAsTrainer"}
-                  onClick={() => dialogs.open(ProfileDialog, { user, userId: x.user.userId })}
-                  required_item={usersWithRequiredItem.find((y) => y.user === x.user.userId)?.item}
+                  key={x.user.id + "AttendingAsTrainer"}
+                  onClick={() => dialogs.open(ProfileDialog, { user, userId: x.user.id })}
+                  required_item={usersWithRequiredItem.find((y) => y.user === x.user.id)?.item}
                 />
               ))}
             {attendance
@@ -166,9 +166,9 @@ const EventAttendanceDialog = ({
               .map((x: FullAttendance) => (
                 <AttendanceItem
                   attendance={x}
-                  key={x.user.userId + "RequestedAttendance"}
-                  onClick={() => dialogs.open(ProfileDialog, { user, userId: x.user.userId })}
-                  required_item={usersWithRequiredItem.find((y) => y.user === x.user.userId)?.item}
+                  key={x.user.id + "RequestedAttendance"}
+                  onClick={() => dialogs.open(ProfileDialog, { user, userId: x.user.id })}
+                  required_item={usersWithRequiredItem.find((y) => y.user === x.user.id)?.item}
                   acceptAttendance={hasPerm('event.manage.attendees') ? acceptAttendance : null}
                 />
               ))}
@@ -178,9 +178,9 @@ const EventAttendanceDialog = ({
               .map((x: FullAttendance) => (
                 <AttendanceItem
                   attendance={x}
-                  key={x.user.userId + "Attending"}
-                  onClick={() => dialogs.open(ProfileDialog, { user, userId: x.user.userId })}
-                  required_item={usersWithRequiredItem.find((y) => y.user === x.user.userId)?.item}
+                  key={x.user.id + "Attending"}
+                  onClick={() => dialogs.open(ProfileDialog, { user, userId: x.user.id })}
+                  required_item={usersWithRequiredItem.find((y) => y.user === x.user.id)?.item}
                 />
               ))}
           </List>
@@ -193,8 +193,8 @@ const EventAttendanceDialog = ({
               .map((x: FullAttendance) => (
                 <AttendanceItem
                   attendance={x}
-                  key={x.user.userId + "Declined"}
-                  onClick={() => dialogs.open(ProfileDialog, { user, userId: x.user.userId })}
+                  key={x.user.id + "Declined"}
+                  onClick={() => dialogs.open(ProfileDialog, { user, userId: x.user.id })}
                 />
               ))}
           </List>
@@ -208,8 +208,8 @@ const EventAttendanceDialog = ({
                   .map((x: FullAttendance) => (
                     <AttendanceItem
                       attendance={x}
-                      key={x.user.userId + "AttendingAsTrial"}
-                      onClick={() => dialogs.open(ProfileDialog, { user, userId: x.user.userId })}
+                      key={x.user.id + "AttendingAsTrial"}
+                      onClick={() => dialogs.open(ProfileDialog, { user, userId: x.user.id })}
                     />
                   ))}
               </List>
@@ -226,7 +226,7 @@ const EventAttendanceDialog = ({
                       .sort((a, b) => (isBefore(a.lastUpdate, b.lastUpdate) ? 1 : 0))
                       .map((x: FullAttendance, index: number) => (
                         <ListItem
-                          key={x.user.userId + "waitingList"}
+                          key={x.user.id + "waitingList"}
                           secondaryAction={<Typography fontWeight={'bold'}>{`${index + 1}.)`}</Typography>}
                         >
                           <ListItemAvatar>
@@ -251,7 +251,7 @@ const EventAttendanceDialog = ({
                       .sort((a, b) => (isBefore(a.lastUpdate, b.lastUpdate) ? 1 : 0))
                       .map((x: FullAttendance, index: number) => (
                         <ListItem
-                          key={x.user.userId + "WaitingTrialList"}
+                          key={x.user.id + "WaitingTrialList"}
                           secondaryAction={<Typography fontWeight={'bold'}>{`${index + 1}.)`}</Typography>}
                         >
                           <ListItemAvatar>

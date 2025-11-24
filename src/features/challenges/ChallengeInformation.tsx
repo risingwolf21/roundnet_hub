@@ -55,7 +55,7 @@ const ChallengeInformation = ({ t, challengeId }: { t: TFunction; challengeId: s
     isFetchingNextPage,
     hasNextPage,
   } = useInfiniteChallengeStats(challengeId);
-  const { data: user_challenge_stats = [] } = useChallengeStatsForUser(challengeId, user.userId);
+  const { data: user_challenge_stats = [] } = useChallengeStatsForUser(challengeId, user.id);
 
   const refetch = () => {
     queryClient.invalidateQueries({ queryKey: ['challenge', challengeId] });

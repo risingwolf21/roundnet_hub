@@ -27,7 +27,7 @@ export const GroupsRepository = {
     return {
       ...data,
       user_group_role: group.role,
-      users: data.mapping.map((x) => ({ user: x.user, map: { group: x.group, role: x.role, user: x.user.userId } })),
+      users: data.mapping.map((x) => ({ user: x.user, map: { group: x.group, role: x.role, user: x.user.id } })),
     };
   },
   async fetchGroups(): Promise<GroupWithUserMappings[]> {

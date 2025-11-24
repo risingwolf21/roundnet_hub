@@ -51,7 +51,7 @@ export const ItemHolderItem = ({
           >
             <EditIcon />
           </IconButton>
-        ) : x.full_current_holder?.userId === user.userId ? (
+        ) : x.full_current_holder?.id === user.id ? (
           selectKeyToHandOver && (
             <Button
               color="primary"

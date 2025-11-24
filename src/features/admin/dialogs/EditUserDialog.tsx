@@ -76,7 +76,7 @@ const EditUserDialog = ({ user, open, handleClose, onUserEditFinished }: EditUse
     const data = new FormData(event.currentTarget);
 
     onUserEditFinished({
-      userId: user.userId,
+      userId: user.id,
       displayName: data.get('displayName'),
       verified,
       role: role,
@@ -155,7 +155,7 @@ const EditUserDialog = ({ user, open, handleClose, onUserEditFinished }: EditUse
                 <Button
                   onClick={async () => {
                     try {
-                      await resetUserPassword(user.userId, password);
+                      await resetUserPassword(user.id, password);
                       notifications.show('Passwort erfolgreich zurückgesetzt', { severity: 'success' });
                       setPassword('');
                     } catch (error: any) {

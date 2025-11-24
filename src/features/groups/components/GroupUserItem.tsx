@@ -25,9 +25,9 @@ type Props = {
 export const GroupUserItem = ({ user, groupUser, onAvatarClick, selected, secondaryAction, isAdmin, dialogs }: Props) => {
   return (
     <ListItem
-      key={groupUser.userId}
+      key={groupUser.id}
       divider
-      onClick={() => dialogs.open(ProfileDialog, { user, userId: groupUser.userId })}
+      onClick={() => dialogs.open(ProfileDialog, { user, userId: groupUser.id })}
       sx={{
         ...(selected && { background: 'rgba(2, 136, 209, 0.4)' }),
       }}

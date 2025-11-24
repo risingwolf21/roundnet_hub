@@ -37,7 +37,7 @@ export const KeyHandOverDialog = ({
       }
     >
       <Typography m={2}>
-        {selectedUser?.userId === user.userId
+        {selectedUser?.id === user.id
           ? t('confirmKeyTaken', {
             keyName: selectedKeyHolder?.name,
             userName: selectedKeyHolder?.full_current_holder?.displayName ?? '',

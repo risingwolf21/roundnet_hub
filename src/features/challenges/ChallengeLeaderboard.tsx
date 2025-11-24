@@ -16,12 +16,12 @@ export const ChallengeLeaderboard = ({
   return (
     <List sx={{ width: '100%' }}>
       {isLoading
-        ? Array.from({ length: 10 }, (v, k) => k + 1).map((x) => <LoadingChallengeStatItem index={x} />)
+        ? Array.from({ length: 10 }, (_v, k) => k + 1).map((x) => <LoadingChallengeStatItem key={x} index={x} />)
         : challenge_points
           .sort((a, b) => b.total_points - a.total_points)
-          .map((x, i) => (
+          .map((x) => (
             <ChallengeStatItem
-              key={i}
+              key={x.user}
               points={x.total_points}
               displayName={x.displayName}
               avatarUrl={x.avatarUrl}

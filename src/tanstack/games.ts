@@ -21,10 +21,10 @@ export const useMatch = (matchId?: string) =>
 
       if (!result.data) return null;
 
-      const p1a = await supabase.from('user').select('*').eq('userId', result.data.team_a.player_1.player).single();
-      const p1b = await supabase.from('user').select('*').eq('userId', result.data.team_b.player_1.player).single();
-      const p2a = await supabase.from('user').select('*').eq('userId', result.data.team_a.player_2.player).single();
-      const p2b = await supabase.from('user').select('*').eq('userId', result.data.team_b.player_2.player).single();
+      const p1a = await supabase.from('user').select('*').eq('id', result.data.team_a.player_1.player).single();
+      const p1b = await supabase.from('user').select('*').eq('id', result.data.team_b.player_1.player).single();
+      const p2a = await supabase.from('user').select('*').eq('id', result.data.team_a.player_2.player).single();
+      const p2b = await supabase.from('user').select('*').eq('id', result.data.team_b.player_2.player).single();
 
       return {
         ...result.data,

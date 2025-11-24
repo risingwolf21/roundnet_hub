@@ -49,7 +49,7 @@ const ChallengeList = ({ user, challenges, archived_challenges, isLoading, error
             color: 'rgba(0,0,0,0.87)',
           }}>Aktive Challenges</ListSubheader>}>
             {challenges.map((entry: ChallengeWithFullGroup) => (
-              <ListItem divider onClick={() => navigate('/challenges/' + entry.id)}>
+              <ListItem key={entry.id} divider onClick={() => navigate('/challenges/' + entry.id)}>
                 <ListItemText primary={entry.name} secondary={entry.description} />
               </ListItem>
             ))}
@@ -67,7 +67,7 @@ const ChallengeList = ({ user, challenges, archived_challenges, isLoading, error
             {archived_challenges.pages
               .flatMap((x) => x.data)
               .map((entry: ChallengeWithFullGroup) => (
-                <ListItem divider onClick={() => navigate('/challenges/' + entry.id)}>
+                <ListItem key={entry.id} divider onClick={() => navigate('/challenges/' + entry.id)}>
                   <ListItemText primary={entry.name} secondary={entry.description} />
                 </ListItem>
               ))}

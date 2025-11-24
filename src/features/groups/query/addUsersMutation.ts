@@ -28,7 +28,7 @@ export const useAddUsersMutation = (group: Group | null) =>
             ...previousGroup.users,
             ...newUsers.map((user) => ({
               user,
-              map: { group: group.id, user: user.userId, role: 'user' } as GroupUserMapping,
+              map: { group: group.id, user: user.id, role: 'user' } as GroupUserMapping,
             })),
           ],
         });

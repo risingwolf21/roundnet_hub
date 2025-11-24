@@ -62,17 +62,17 @@ export const PlayerzoneProfileDialog = ({
 
   const handleChangeProfilePicture = async () => {
     setLoading(false);
-    const { data: list, error } = await supabase.storage.from('user').list(`${payload.user.userId}`);
+    const { data: list, error } = await supabase.storage.from('user').list(`${payload.user.id}`);
     if (error || !list) {
       notifications.show(error.message, { severity: "error" });
       captureException(error);
       return;
     }
-    const filesToRemove = list.map((x) => `${payload.user.userId}/${x.name}`);
+    const filesToRemove = list.map((x) => `${payload.user.id}/${x.name}`);
 
     await supabase.storage.from('user').remove(filesToRemove);
 
-    await supabase.from('user').update({ avatarUrl: player_data?.rg_avatar_url }).eq('userId', payload.user.userId);
+    await supabase.from('user').update({ avatarUrl: player_data?.rg_avatar_url }).eq('userId', payload.user.id);
     setLoading(false);
   };
 

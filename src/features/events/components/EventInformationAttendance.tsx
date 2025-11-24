@@ -95,7 +95,7 @@ const EventInformationAttendance = ({ selectedEvent, fetchMode, keyHolders }: Ev
               attendance
                 .filter((x) => x.state === 'Waiting')
                 .sort((a, b) => (isBefore(a.lastUpdate, b.lastUpdate) ? 1 : 0))
-                .findIndex((x) => x.user.userId === user.userId) + 1,
+                .findIndex((x) => x.user.id === user.id) + 1,
             waitingListLength: attendance.filter((x) => x.state === 'Waiting').length,
           })}
         </Alert>
@@ -122,7 +122,7 @@ const EventInformationAttendance = ({ selectedEvent, fetchMode, keyHolders }: Ev
                 attendance
                   .filter((x) => x.state === 'WaitingAsTrial')
                   .sort((a, b) => (isBefore(a.lastUpdate, b.lastUpdate) ? 1 : 0))
-                  .findIndex((x) => x.user.userId === user.userId) + 1,
+                  .findIndex((x) => x.user.id === user.id) + 1,
               waitingListLength: attendance.filter((x) => x.state === 'WaitingAsTrial').length,
             })}
           </Alert>
@@ -141,12 +141,12 @@ const EventInformationAttendance = ({ selectedEvent, fetchMode, keyHolders }: Ev
       <List sx={{ p: 0 }}>
         {attendance
           .filter((x) => x.state === 'Attending')
-          .map((y) => y.user.userId)
+          .map((y) => y.user.id)
           .some((x) =>
             keyHolders
               .filter((y) => y.type === selectedEvent.required_item)
               .filter((y) => y.full_current_holder !== null)
-              .map((y) => y.full_current_holder?.userId)
+              .map((y) => y.full_current_holder?.id)
               .includes(x)
           ) && (
             <ListItem key={'keyAttendees'} sx={{ '&.MuiListItem-root': { paddingLeft: 0 } }} divider>
@@ -388,7 +388,7 @@ const EventInformationAttendance = ({ selectedEvent, fetchMode, keyHolders }: Ev
           .filter((x) => x.type === selectedEvent.required_item)
           .filter((x) => x.full_current_holder !== null)
           .map((x) => ({
-            user: x.full_current_holder!.userId,
+            user: x.full_current_holder!.id,
             item: x,
           }))}
         acceptAttendance={(attendance) => {

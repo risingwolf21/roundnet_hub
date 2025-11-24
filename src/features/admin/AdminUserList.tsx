@@ -33,7 +33,7 @@ export const useUpdateUserMutation = () =>
 
       if (previousUsers) {
         const newUsers = previousUsers.map((x) => {
-          if (x.userId === update.userId) {
+          if (x.id === update.userId) {
             return {
               ...x,
               displayName: update.displayName,

@@ -778,7 +778,7 @@ export const CreateOrUpdateEventDialog = ({
               name: '',
               required_qty: 1,
               created_at: formatDateToDatabase(Date.now()),
-              created_by: user.userId,
+              created_by: user.id,
               event: editedEvent.id,
               sort_order: 0,
               id: '',

@@ -204,7 +204,7 @@ const PublicGroupInformation = () => {
                 .map((x) => (
                   <ListItem
                     divider
-                    key={x.user.userId}
+                    key={x.user.id}
                     sx={{ pr: 1 }}
                   >
                     <ListItemAvatar>
@@ -252,7 +252,7 @@ const PublicGroupInformation = () => {
                 .sort((a, b) => a.user.displayName.localeCompare(b.user.displayName))
                 .map((x) => (
                   <ListItem
-                    key={x.user.userId}
+                    key={x.user.id}
                     secondaryAction={<IconButton onClick={async () => {
                       const confirmed = await dialogs.confirm(`Bist du sicher dass du ${x.user.name} zu einem vollwertigen Benutzer überführen möchtest?`, {
                         okText: 'Bestätigen',
@@ -301,12 +301,13 @@ const PublicGroupInformation = () => {
                 .sort((a, b) => a.user.displayName.localeCompare(b.user.displayName))
                 .map((x) => (
                   <GroupUserItem
+                    key={x.user}
                     groupUser={x.user}
                     user={user}
                     isAdmin={x.role === 'admin'}
                     dialogs={dialogs}
                     selected={selectedUsers.includes(x.user)}
-                    {...(group.user_group_role === 'admin' && x.user.userId !== user?.userId
+                    {...(group.user_group_role === 'admin' && x.user.id !== user?.id
                       ? {
                         secondaryAction: <IconButton onClick={async (e) => {
                           e.stopPropagation();
@@ -327,7 +328,7 @@ const PublicGroupInformation = () => {
                           e.stopPropagation();
                           if (group.user_group_role !== 'admin') return;
                           if (selectedUsers.includes(x.user)) {
-                            setSelectedUsers([...selectedUsers.filter((y) => y.userId !== x.user.userId)]);
+                            setSelectedUsers([...selectedUsers.filter((y) => y.id !== x.user.id)]);
                           } else {
                             setSelectedUsers([...selectedUsers, x.user]);
                           }
@@ -350,6 +351,7 @@ const PublicGroupInformation = () => {
                 .sort((a, b) => a.user.displayName.localeCompare(b.user.displayName))
                 .map((x) => (
                   <GroupUserItem
+                    key={x.user}
                     groupUser={x.user}
                     user={user}
                     isAdmin={x.role === 'admin'}
@@ -399,7 +401,7 @@ const PublicGroupInformation = () => {
                           e.stopPropagation();
                           if (group.user_group_role !== 'admin') return;
                           if (selectedUsers.includes(x.user)) {
-                            setSelectedUsers([...selectedUsers.filter((y) => y.userId !== x.user.userId)]);
+                            setSelectedUsers([...selectedUsers.filter((y) => y.id !== x.user.id)]);
                           } else {
                             setSelectedUsers([...selectedUsers, x.user]);
                           }
@@ -484,7 +486,7 @@ const PublicGroupInformation = () => {
             }}
             onClick={() => {
               dialogs
-                .open(SearchAndSelectUserDialog, { usersToFilter: group.users.map((x) => x.user.userId) })
+                .open(SearchAndSelectUserDialog, { usersToFilter: group.users.map((x) => x.user.id) })
                 .then((result) => {
                   if (result) handleUsersAdded(result);
                 });

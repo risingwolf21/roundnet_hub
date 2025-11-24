@@ -302,6 +302,10 @@ alter table "public"."user_direct_grants" drop constraint "pk_user_direct_grants
 
 alter table "notifications"."user_notification_preferences" drop constraint "user_notification_preferences_pkey";
 
+alter table "games"."players" drop constraint "players_pkey";
+
+alter table "games"."teams" drop constraint "unique_player_combination";
+
 drop index if exists "games"."players_player_key";
 
 drop index if exists "notifications"."idx_notif_user_created";
@@ -349,6 +353,8 @@ drop index if exists "games"."unique_player_combination";
 drop index if exists "notifications"."user_notification_preferences_pkey";
 
 drop table "notifications"."object_subscriptions";
+
+drop trigger if exists "trg_items_handover_log" on "public"."items";
 
 alter table "games"."elo_calc_log" alter column "a1_user" set data type uuid using "a1_user"::uuid;
 
@@ -416,9 +422,11 @@ alter table "public"."payments" drop column "userId";
 
 alter table "public"."payments" add column "user" uuid not null default gen_random_uuid();
 
-alter table "public"."user" drop column "userId";
+alter table "public"."user" add column "id" uuid not null default gen_random_uuid();
 
-alter table "public"."user" add column "id" uuid not null;
+update "public"."user" set "id" = "userId"::uuid;
+
+alter table "public"."user" alter column "id" drop default;
 
 alter table "public"."user_activity" alter column "user" set default gen_random_uuid();
 
@@ -2904,9 +2912,9 @@ CREATE OR REPLACE FUNCTION public.trg_items_handover_log()
  SECURITY DEFINER
  SET search_path TO ''
 AS $function$BEGIN
-  IF TG_OP = 'UPDATE' AND NEW.current_holder_uuid IS DISTINCT FROM OLD.current_holder_uuid THEN
+  IF TG_OP = 'UPDATE' AND NEW.current_holder IS DISTINCT FROM OLD.current_holder THEN
     INSERT INTO public.item_history("past_user", "current_user", key)
-    VALUES (OLD.current_holder_uuid, NEW.current_holder_uuid, NEW.id);
+    VALUES (OLD.current_holder, NEW.current_holder, NEW.id);
   END IF;
   RETURN NEW;
 END;$function$
@@ -3810,20 +3818,1254 @@ with check (("user" = auth.uid()));
 using (("user" = auth.uid()));
 
 
-update "public"."event_bring_pledges" set "user" = "user_id"::uuid;
+CREATE OR REPLACE TRIGGER "trg_items_handover_log" BEFORE UPDATE OF "current_holder" ON "public"."items" FOR EACH ROW EXECUTE FUNCTION "public"."trg_items_handover_log"();
 
-update "public"."item_history" set "current_user" = "currentUser"::uuid;
-
-update "public"."item_history" set "past_user" = "pastUser"::uuid;
-
-update "public"."payments" set "past_user" = "pastUser"::uuid;
-
-alter table "public"."event_bring_pledges" drop column "user_id";
 
 alter table "public"."user" drop column "userId";
 
-alter table "public"."item_history" drop column "currentUser";
+set check_function_bodies = off;
 
-alter table "public"."item_history" drop column "pastUser";
+CREATE OR REPLACE FUNCTION notifications.notify_challenge_added(p_challenge uuid, p_actor uuid DEFAULT NULL::uuid)
+ RETURNS integer
+ LANGUAGE plpgsql
+ SECURITY DEFINER
+ SET search_path TO ''
+AS $function$declare
+  v_group  uuid;
+  v_tenant uuid := '00000000-0000-0000-0000-000000000000';
+  v_topic  text := 'challenge.added';
+  v_cnt    int := 0;
+  v_url    text := '/challenges/' || p_challenge::text;
+  v_body  text := 'Es gibt eine neue Challenge für dich 💪';
+  v_title   text;
+begin
+  select c."group", c."name" into v_group, v_title from public.challenge c where c.id = p_challenge;
+  if v_group is null then raise exception 'challenge % not found', p_challenge; end if;
 
-alter table "public"."payments" drop column "userId";
+  with recipients as (
+    select distinct gum."user" as uid
+      from public.group_user_mapping gum
+     where gum."group" = v_group
+       and gum."user" <> coalesce(p_actor, '')
+  ),
+  allowed as (
+    select r.uid
+      from recipients r
+     where notifications.is_topic_enabled_for_user(r.uid, v_tenant, v_topic, 'challenge', p_challenge)
+  ),
+  ins as (
+    insert into notifications.notifications("user", tenant, topic, title, body, data, source_type, source_id)
+    select a.uid, v_tenant, v_topic,
+           v_title,
+           v_body,
+           jsonb_build_object('challenge', p_challenge, 'url', v_url),
+           'challenge', p_challenge
+      from allowed a
+    returning id,"user"
+  ),
+  outbox as (
+    insert into notifications.notification_outbox("user", tenant, title, body, data, urgency, notification)
+    select i."user", v_tenant,
+           v_title,
+           v_body,
+           jsonb_build_object('challenge', p_challenge, 'url', v_url),
+           'normal',
+           i.id
+      from ins i
+    returning id,"user"
+  )
+  insert into notifications.notification_outbox_targets(outbox_id, subscription_id)
+  select o.id, s.id
+    from outbox o
+    join notifications.web_push_subscriptions s on s."user" = o."user" and s.revoked_at is null;
+
+  get diagnostics v_cnt = row_count;
+  return v_cnt;
+end;$function$
+;
+
+CREATE OR REPLACE FUNCTION notifications.notify_event_canceled(p_event uuid, p_actor uuid DEFAULT NULL::uuid)
+ RETURNS integer
+ LANGUAGE plpgsql
+ SECURITY DEFINER
+ SET search_path TO ''
+AS $function$declare
+  v_group uuid;
+  v_tenant uuid := '00000000-0000-0000-0000-000000000000';
+  v_topic text := 'event.canceled';
+  v_cnt int := 0;
+  v_url    text := '/training/event/' || p_event::text;
+  v_title text := '';
+  v_body text := '🚫 Das Event wurde abgesagt 🚫';
+  v_start text;
+begin
+  select e."group", e."title", e."startingDateTime" into v_group, v_title, v_start from public.events e where e.id = p_event;
+  if v_group is null then raise exception 'event % not found', p_event; end if;
+
+  v_title := v_title || ' - 🗓️ ' || to_char(DATE(v_start), 'DD.MM.YYYY');
+
+  with recipients as (
+    select distinct gum."user" as uid
+      from public.group_user_mapping gum
+     where gum."group" = v_group and gum."user" <> coalesce(p_actor,'')
+  ),
+  allowed as (
+    select r.uid
+      from recipients r
+     where notifications.is_topic_enabled_for_user(r.uid, v_tenant, v_topic, 'event', p_event)
+  ),
+  ins as (
+    insert into notifications.notifications("user", tenant, topic, title, body, data, source_type, source_id)
+    select a.uid, v_tenant, v_topic, v_title, v_body, jsonb_build_object('event', p_event, 'url', v_url), 'event', p_event
+      from allowed a
+    returning id, "user"
+  ),
+  outbox as (
+    insert into notifications.notification_outbox("user", tenant, title, body, data, urgency, notification)
+    select i."user", v_tenant, v_title, v_body, jsonb_build_object('event', p_event, 'url', v_url), 'high', i.id
+      from ins i
+    returning id, "user"
+  )
+  insert into notifications.notification_outbox_targets(outbox_id, subscription_id)
+  select o.id, s.id
+    from outbox o
+    join notifications.web_push_subscriptions s on s."user" = o."user" and s.revoked_at is null;
+
+  get diagnostics v_cnt = row_count;
+  return v_cnt;
+end;$function$
+;
+
+CREATE OR REPLACE FUNCTION notifications.notify_event_comment_created(p_event uuid, p_comment uuid, p_text text, p_author uuid)
+ RETURNS integer
+ LANGUAGE plpgsql
+ SECURITY DEFINER
+ SET search_path TO ''
+AS $function$declare
+  v_tenant uuid := '00000000-0000-0000-0000-000000000000';
+  v_topic  text := 'event.comment.created';
+  v_cnt    int := 0;
+  v_url    text := '/training/event/' || p_event::text;
+  v_title  text := 'Neuer Kommentar';
+  v_body   text;
+  v_displayName text;
+  v_name text;
+  v_start text;
+begin
+
+  select e."title", e."startingDateTime" into v_title, v_start from public.events e where e.id = p_event;
+
+  v_title := v_title || ' - 🗓️ ' || to_char(DATE(v_start), 'DD.MM.YYYY');
+
+  select u."displayName", u."name"
+    into v_displayName, v_name
+    from public.user u
+    where u."user" = p_author;
+
+  if v_displayName is null and v_name is null then
+    raise exception 'event_comment author % not found', p_author;
+  end if;
+
+  v_body := coalesce(v_displayName, v_name) || ': ' || coalesce(p_text, '');
+
+  with recipients as (
+    -- alle Attending-User dieses Events, außer ggf. dem Actor
+    select distinct eum."user" as uid
+      from public.event_attendance_user_mapping eum
+     where eum.event = p_event
+       and eum.state = 'Attending'
+       and eum."user" <> coalesce(p_author, '')
+  ),
+  allowed as (
+    select r.uid
+      from recipients r
+     where notifications.is_topic_enabled_for_user(r.uid, v_tenant, v_topic, 'event', p_event)
+  ),
+  ins as (
+    insert into notifications.notifications("user", tenant, topic, title, body, data, source_type, source_id)
+    select a.uid, v_tenant, v_topic,
+           v_title,
+           v_body,
+           jsonb_build_object(
+             'event', p_event,
+             'comment', p_comment,
+             'author', p_author,
+             'text', p_text,
+             'url', v_url
+           ),
+           'event', p_event
+      from allowed a
+    returning id,"user"
+  ),
+  outbox as (
+    insert into notifications.notification_outbox("user", tenant, title, body, data, urgency, notification)
+    select i."user", v_tenant,
+           v_title,
+           v_body,
+           jsonb_build_object(
+             'event', p_event,
+             'comment', p_comment,
+             'author', p_author,
+             'text', p_text,
+             'url', v_url
+           ),
+           'normal',
+           i.id
+      from ins i
+    returning id,"user"
+  )
+  insert into notifications.notification_outbox_targets(outbox_id, subscription_id)
+  select o.id, s.id
+    from outbox o
+    join notifications.web_push_subscriptions s
+      on s."user" = o."user" and s.revoked_at is null;
+
+  get diagnostics v_cnt = row_count;
+  return v_cnt;
+end;$function$
+;
+
+CREATE OR REPLACE FUNCTION notifications.notify_event_updated(p_event uuid, p_body text, p_actor uuid DEFAULT NULL::uuid)
+ RETURNS integer
+ LANGUAGE plpgsql
+ SECURITY DEFINER
+ SET search_path TO ''
+AS $function$declare
+  v_tenant uuid := '00000000-0000-0000-0000-000000000000';
+  v_topic  text := 'event.updated';
+  v_cnt    int := 0;
+  v_url    text := '/training/event/' || p_event::text;
+  v_title   text := 'Ein Event wurde aktualisiert';
+  v_start text;
+begin
+
+  select e."title", e."startingDateTime" into v_title, v_start from public.events as e where e.id = p_event;
+
+  v_title := v_title || ' - 🗓️ ' || to_char(DATE(v_start), 'DD.MM.YYYY');
+
+  with recipients as (
+    select distinct eum."user" as uid
+      from public.event_attendance_user_mapping eum
+     where eum.event = p_event
+       and eum.state = 'Attending'
+       and eum."user" <> coalesce(p_actor, '')
+  ),
+  allowed as (
+    select r.uid
+      from recipients r
+     where notifications.is_topic_enabled_for_user(r.uid, v_tenant, v_topic, 'event', p_event)
+  ),
+  ins as (
+    insert into notifications.notifications("user", tenant, topic, title, body, data, source_type, source_id)
+    select a.uid, v_tenant, v_topic,
+           v_title,
+           p_body,
+           jsonb_build_object('event', p_event, 'url', v_url),
+           'event', p_event
+      from allowed a
+    returning id,"user"
+  ),
+  outbox as (
+    insert into notifications.notification_outbox("user", tenant, title, body, data, urgency, notification)
+    select i."user", v_tenant,
+           v_title,
+           p_body,
+           jsonb_build_object('event', p_event, 'url', v_url),
+           'normal',
+           i.id
+      from ins i
+    returning id,"user"
+  )
+  insert into notifications.notification_outbox_targets(outbox_id, subscription_id)
+  select o.id, s.id
+    from outbox o
+    join notifications.web_push_subscriptions s on s."user" = o."user" and s.revoked_at is null;
+
+  get diagnostics v_cnt = row_count;
+  return v_cnt;
+end;$function$
+;
+
+CREATE OR REPLACE FUNCTION notifications.notify_group_join_requested(p_group uuid, p_user uuid, p_actor uuid DEFAULT NULL::uuid)
+ RETURNS integer
+ LANGUAGE plpgsql
+ SECURITY DEFINER
+ SET search_path TO ''
+AS $function$declare
+  v_tenant uuid := '00000000-0000-0000-0000-000000000000';
+  v_topic  text := 'group.request.received';
+  v_cnt    int  := 0;
+  v_url    text := '/groups/' || p_group::text;
+  v_title  text := 'Neue Beitrittsanfrage';
+  v_body   text;
+  v_group_name text;
+  v_user_display text;
+begin
+  -- group name
+  select g.name into v_group_name
+  from public.event_group g
+  where g.id = p_group;
+
+  -- requester display (best-effort)
+  select coalesce(u."displayName", u."name", p_user::text)
+    into v_user_display
+    from public."user" u
+   where u."user_uuid" = p_user;
+
+  v_body := coalesce(v_user_display, p_user::text) || ' möchte der Gruppe "' || coalesce(v_group_name, '') || '" beitreten.';
+
+  with recipients as (
+      -- only admins of this group, exclude actor if present
+      select distinct gum."user" as uid
+        from public.group_user_mapping gum
+       where gum."group" = p_group
+         and gum.role = 'admin'
+         and gum."user" <> coalesce(p_actor, '')
+  ),
+  allowed as (
+      select r.uid
+        from recipients r
+       where notifications.is_topic_enabled_for_user(r.uid, v_tenant, v_topic, 'group', p_group)
+  ),
+  ins as (
+      insert into notifications.notifications("user", tenant, topic, title, body, data, source_type, source_id)
+      select a.uid, v_tenant, v_topic,
+             v_title,
+             v_body,
+             jsonb_build_object('group', p_group, 'requester', p_user, 'url', v_url),
+             'group', p_group
+        from allowed a
+      returning id,"user"
+  ),
+  outbox as (
+      insert into notifications.notification_outbox("user", tenant, title, body, data, urgency, notification)
+      select i."user", v_tenant,
+             v_title,
+             v_body,
+             jsonb_build_object('group', p_group, 'requester', p_user, 'url', v_url),
+             'normal',
+             i.id
+        from ins i
+      returning id,"user"
+  )
+  insert into notifications.notification_outbox_targets(outbox_id, subscription_id)
+  select o.id, s.id
+    from outbox o
+    join notifications.web_push_subscriptions s
+      on s."user" = o."user"
+     and s.revoked_at is null;
+
+  get diagnostics v_cnt = row_count;
+  return v_cnt;
+end;$function$
+;
+
+CREATE OR REPLACE FUNCTION notifications.notify_users(p_users uuid[], p_topic text, p_scope text, p_title text, p_body text, p_data jsonb, p_source_type text, p_source_id uuid)
+ RETURNS integer
+ LANGUAGE plpgsql
+ SET search_path TO ''
+AS $function$declare
+v_cnt    int  := 0;
+v_tenant uuid := '00000000-0000-0000-0000-000000000000';
+begin
+
+  with allowed as (
+    select distinct "user" as uid from public.user where "user" = any (p_users)
+    and notifications.is_topic_enabled_for_user("user", v_tenant, p_topic, p_scope, null)
+  ),
+  ins as (
+    insert into public.notifications("user", tenant, topic, title, body, data, source_type, source_id)
+    select a.uid, v_tenant, p_topic,
+           p_title,
+           p_body,
+           p_data,
+           p_source_type,
+           p_source_id
+      from allowed a
+    returning id,"user"
+  ),
+  outbox as (
+    insert into public.notification_outbox("user", tenant, title, body, data, urgency, notification)
+    select i."user", v_tenant,
+           p_title,
+           p_body,
+           p_data,
+           'normal',
+           i.id
+      from ins i
+    returning id,"user"
+  )
+  insert into public.notification_outbox_targets(outbox_id, subscription_id)
+  select o.id, s.id
+    from outbox o
+    join public.web_push_subscriptions s on s."user" = o."user" and s.revoked_at is null;
+
+  GET DIAGNOSTICS v_cnt = ROW_COUNT;
+  return v_cnt;
+end;$function$
+;
+
+CREATE OR REPLACE FUNCTION public.add_drinks_history(items json)
+ RETURNS void
+ LANGUAGE plpgsql
+ SET search_path TO 'public', 'pg_temp'
+AS $function$
+DECLARE
+    user_id uuid := auth.uid();
+    payment_id bigint;
+    drink_record json;
+    voucher_record RECORD;
+    total_drink_count numeric;
+    drink_id bigint;
+    drink_count numeric;
+    drink_price numeric;
+    drink_amount numeric;
+BEGIN
+    IF jsonb_typeof(items::jsonb) IS DISTINCT FROM 'array' THEN
+        RAISE EXCEPTION 'Eingabe ist kein JSON-Array %', items;
+    END IF;
+
+    -- get or create payment id
+    SELECT id
+    INTO payment_id
+    FROM payments
+    WHERE "user" = user_id
+    AND "paymentState" = 'Open';
+    IF
+    payment_id IS NULL THEN
+            INSERT INTO payments ("user", "amountToPay", "paymentState")
+            VALUES (user_id, 0, 'Open')
+            RETURNING id INTO payment_id;
+    END IF;
+
+    IF payment_id IS NULL THEN
+        RAISE EXCEPTION 'Es wurde kein Payment gefunden oder konnte nicht erstellt werden';
+    END IF;
+
+    -- Iterate over all drinks that need to be added
+    FOR drink_record IN SELECT * FROM json_array_elements(items)
+    LOOP
+        drink_id := (drink_record->>'id')::numeric;
+        drink_count := (drink_record->>'count')::numeric;
+        drink_price := (drink_record->>'price')::numeric;
+        raise log 'Adding drink %', drink_record;
+        total_drink_count := drink_count; -- Initialize remaining count for this drink
+        -- Loop over the vouchers of the user
+        FOR voucher_record IN SELECT id, available FROM user_vouchers
+        LOOP
+            -- If the remaining count is fulfilled, exit the loop
+            IF total_drink_count <= 0 THEN
+                EXIT;
+            END IF;
+            -- Check if the voucher has enough available count
+            IF voucher_record.available > 0 THEN
+                IF voucher_record.available < total_drink_count THEN
+                    -- Create a history entry with the voucher for the available amount
+                    drink_amount := drink_price * voucher_record.available;
+                    INSERT INTO history (drink, "user", payment, count, amount, voucher)
+                    VALUES (drink_id, user_id, payment_id, voucher_record.available, drink_amount, voucher_record.id);
+                    -- Decrease the remaining count
+                    total_drink_count := total_drink_count - voucher_record.available;
+                ELSE
+                    drink_amount := drink_price * total_drink_count;
+                    -- Create a history entry with the voucher for the remaining count
+                    INSERT INTO history (drink, "user", payment, count, amount, voucher)
+                    VALUES (drink_id, user_id, payment_id, total_drink_count, drink_amount, voucher_record.id);
+                    -- Set remaining count to zero as it is fulfilled
+                    total_drink_count := 0;
+                END IF;
+            END IF;
+        END LOOP;
+        -- If there is still remaining count, create a history entry without a voucher
+        IF total_drink_count > 0 THEN
+            drink_amount := drink_price * total_drink_count;
+            INSERT INTO history (drink, "user", payment, count, amount)
+            VALUES (drink_id, user_id, payment_id, total_drink_count, drink_amount);
+        END IF;
+    END LOOP;
+EXCEPTION
+    WHEN OTHERS THEN
+        RAISE EXCEPTION 'Fehler beim Hinzufügen von Drinks: %', SQLERRM;
+END;
+$function$
+;
+
+CREATE OR REPLACE FUNCTION public.create_group_with_user(group_name text, group_description text, group_color text, is_public boolean, need_request boolean, user_id uuid, role public."GroupRole", parent uuid DEFAULT NULL::uuid)
+ RETURNS public.event_group
+ LANGUAGE plpgsql
+ SET search_path TO 'public', 'pg_temp'
+AS $function$
+declare
+  new_group public.event_group;
+begin
+  -- Neue Gruppe anlegen und vollständiges Objekt in Variable speichern
+  insert into public.event_group (
+    name, description, color, is_public, need_request_to_join, parent_group
+  ) values (
+    group_name, group_description, group_color, is_public, need_request, parent
+  )
+  returning * into new_group;
+
+  -- Mapping mit dem Ersteller anlegen
+  insert into public.group_user_mapping ("user", "group", role)
+  values (user_id, new_group.id, role);
+
+  -- Ganze Gruppe zurückgeben
+  return new_group;
+
+exception
+  when others then
+    raise exception 'Fehler beim Erstellen der Gruppe: %', sqlerrm;
+end;
+$function$
+;
+
+CREATE OR REPLACE FUNCTION public.custom_access_token_hook(event jsonb)
+ RETURNS jsonb
+ LANGUAGE plpgsql
+ STABLE
+ SET search_path TO 'public', 'pg_temp'
+AS $function$declare
+    claims jsonb;
+    permissions text[];
+    features text[];
+  begin
+
+    Select array(select distinct gp."permission"::text from public."group_permissions" gp join public."group_user_mapping" gum on gp."group" = gum."group" where gum."user" = (event->>'user_id') and (gum.role = 'admin'::public."GroupRole" or gum.role = 'user'::public."GroupRole")) into permissions;
+
+    Select array(select distinct gp."feature"::text from public."group_features" gp join public."group_user_mapping" gum on gp."group" = gum."group" where gum."user" = (event->>'user_id') and (gum.role = 'admin'::public."GroupRole" or gum.role = 'user'::public."GroupRole")) into features;
+
+    claims := event->'claims';
+
+    if permissions is not null then
+      -- Set the claim
+      claims := jsonb_set(claims, '{user_permissions}', to_jsonb(permissions));
+    else
+      claims := jsonb_set(claims, '{user_permissions}', '[]'::jsonb);
+    end if;
+
+    if features is not null then
+      -- Set the claim
+      claims := jsonb_set(claims, '{user_features}', to_jsonb(features));
+    else
+      claims := jsonb_set(claims, '{user_features}', '[]'::jsonb);
+    end if;
+
+    -- Update the 'claims' object in the original event
+    event := jsonb_set(event, '{claims}', claims);
+
+    -- Return the modified or original event
+    return event;
+  end;$function$
+;
+
+CREATE OR REPLACE FUNCTION public.get_or_create_payment_for_user(user_id uuid)
+ RETURNS bigint
+ LANGUAGE plpgsql
+ SET search_path TO 'public', 'pg_temp'
+AS $function$
+DECLARE
+payment_id bigint;
+BEGIN
+SELECT id
+INTO payment_id
+FROM payments
+WHERE "user" = user_id
+  AND "paymentState" = 'Open';
+IF
+payment_id IS NULL THEN
+        INSERT INTO payments ("user", "amountToPay", "paymentState")
+        VALUES (user_id, 0, 'Open')
+        RETURNING id INTO payment_id;
+END IF;
+RETURN payment_id;
+END;
+$function$
+;
+
+CREATE OR REPLACE FUNCTION public.grant_group_grants(p_group uuid, p_perms text[] DEFAULT ARRAY[]::text[], p_feats text[] DEFAULT ARRAY[]::text[])
+ RETURNS void
+ LANGUAGE plpgsql
+ SECURITY DEFINER
+ SET search_path TO ''
+AS $function$declare
+  v_uid uuid := auth.uid();
+  v_is_admin boolean := coalesce(public.authorize('supabase.admin'), false)
+                     or coalesce(public.authorize('grants.manage'), false);
+  v_is_group_admin boolean;
+begin
+  if v_uid is null then
+    raise exception 'unauthenticated' using errcode = '28P01';
+  end if;
+
+  -- Gruppen-Admin?
+  select exists(
+           select 1
+             from public.group_user_mapping gum
+            where gum."group" = p_group
+              and gum."user"  = v_uid
+              and gum."role"  = 'admin'
+         )
+    into v_is_group_admin;
+
+  if not (v_is_admin or v_is_group_admin) then
+    raise exception 'forbidden (not group admin)' using errcode = '42501';
+  end if;
+
+  p_perms := coalesce(p_perms, array[]::text[]);
+  p_feats := coalesce(p_feats, array[]::text[]);
+
+  if array_length(p_perms,1) is not null then
+    insert into public.permissions(name)
+    select distinct k from unnest(p_perms) u(k)
+    on conflict do nothing;
+
+    insert into public.group_permissions("group","permission")
+    select p_group, k from unnest(p_perms) u(k)
+    on conflict do nothing;
+  end if;
+
+  if array_length(p_feats,1) is not null then
+    begin
+      insert into public.features(name)
+      select distinct k from unnest(p_feats) u(k)
+      on conflict do nothing;
+
+      insert into public.group_features("group","feature")
+      select p_group, k from unnest(p_feats) u(k)
+      on conflict do nothing;
+    exception
+      when undefined_table then
+        -- installations ohne group_features: ignorieren
+        raise notice 'group_features table not found – skipping feature grants for group %', p_group;
+    end;
+  end if;
+end;$function$
+;
+
+CREATE OR REPLACE FUNCTION public.grant_user_grants(p_user uuid, p_tenant uuid DEFAULT '00000000-0000-0000-0000-000000000000'::uuid, p_perms text[] DEFAULT ARRAY[]::text[], p_feats text[] DEFAULT ARRAY[]::text[])
+ RETURNS void
+ LANGUAGE plpgsql
+ SECURITY DEFINER
+ SET search_path TO ''
+AS $function$
+declare
+  v_uid uuid := auth.uid();
+  v_is_admin boolean := coalesce(public.authorize('supabase.admin'), false)
+                     or coalesce(public.authorize('grants.manage'), false);
+begin
+  if v_uid is null then
+    raise exception 'unauthenticated' using errcode = '28P01';
+  end if;
+  if not v_is_admin then
+    raise exception 'forbidden' using errcode = '42501';
+  end if;
+
+  -- Normalize: leere Arrays abfangen
+  p_perms := coalesce(p_perms, array[]::text[]);
+  p_feats := coalesce(p_feats, array[]::text[]);
+
+  -- (optional) fehlende Stammsätze anlegen – falls FK existiert
+  if array_length(p_perms,1) is not null then
+    insert into public.permissions(name)
+    select distinct k from unnest(p_perms) u(k)
+    on conflict do nothing;
+
+    insert into public.user_direct_grants("user", tenant, kind, key)
+    select p_user, p_tenant, 'perm', k from unnest(p_perms) u(k)
+    on conflict do nothing;
+  end if;
+
+  if array_length(p_feats,1) is not null then
+    insert into public.features(name)
+    select distinct k from unnest(p_feats) u(k)
+    on conflict do nothing;
+
+    insert into public.user_direct_grants("user", tenant, kind, key)
+    select p_user, p_tenant, 'feat', k from unnest(p_feats) u(k)
+    on conflict do nothing;
+  end if;
+end;
+$function$
+;
+
+CREATE OR REPLACE FUNCTION public.increase_challenge_stats_count(challenge_id uuid, amount numeric, to_create_at timestamp with time zone, image_url text DEFAULT NULL::text)
+ RETURNS public.challenge_stats
+ LANGUAGE plpgsql
+ SET search_path TO 'public', 'pg_temp'
+AS $function$DECLARE
+  c          public.challenge;
+  new_stat   public.challenge_stats;
+  uid        uuid := auth.uid();
+  week_start timestamptz;
+  week_end   timestamptz;
+  day_start  timestamptz;
+  day_end    timestamptz;
+  week_sum   numeric;
+  day_sum    numeric;
+BEGIN
+  -- Basic inputs
+  IF amount IS NULL OR amount <= 0 THEN
+    RAISE EXCEPTION 'amount must be > 0';
+  END IF;
+
+  SELECT * INTO c FROM public.challenge WHERE id = challenge_id;
+  IF c IS NULL THEN
+    RAISE EXCEPTION 'Could not select given challenge';
+  END IF;
+
+  IF c.automated THEN
+    RAISE EXCEPTION 'This challenge is automated. You can not add any points manually';
+  END IF;
+
+  -- Membership check (clear error instead of vague RLS failure)
+  IF NOT EXISTS (
+    SELECT 1 FROM public.group_user_mapping gum
+     WHERE gum."group" = c."group"
+       AND gum."user"  = uid
+  ) THEN
+    RAISE EXCEPTION 'forbidden: not a member of the challenge''s group' USING ERRCODE = '42501';
+  END IF;
+
+  -- Reject single-call overflow irrespective of prior rows
+  IF amount > c.max_points_per_day THEN
+    RAISE EXCEPTION 'Maximum points per day already reached';
+  END IF;
+  IF amount > c.max_points_per_week THEN
+    RAISE EXCEPTION 'Maximum points per week already reached';
+  END IF;
+
+  -- Windows anchored on the attempted timestamp
+  week_start := date_trunc('week', to_create_at);
+  week_end   := week_start + interval '7 days';
+  day_start  := date_trunc('day', to_create_at);
+  day_end    := day_start + interval '1 day';
+
+  -- RLS-immune sums (only for the caller's own uid)
+  week_sum := public._sum_challenge_points_for_self(uid, challenge_id, week_start, week_end);
+  day_sum  := public._sum_challenge_points_for_self(uid, challenge_id, day_start, day_end);
+
+  -- Cumulative caps
+  IF week_sum + amount > c.max_points_per_week THEN
+    RAISE EXCEPTION 'Maximum points per week already reached';
+  END IF;
+
+  IF day_sum + amount > c.max_points_per_day THEN
+    RAISE EXCEPTION 'Maximum points per day already reached';
+  END IF;
+
+  -- Insert for the actor (RLS still applies to the INSERT)
+  INSERT INTO public.challenge_stats ("user","challenge","count","created_at","image_url")
+  VALUES (uid, challenge_id, amount, to_create_at, image_url)
+  RETURNING * INTO new_stat;
+
+  RETURN new_stat;
+END;$function$
+;
+
+CREATE OR REPLACE FUNCTION public.is_user_admin_in_group(group_id uuid)
+ RETURNS boolean
+ LANGUAGE sql
+ SECURITY DEFINER
+ SET search_path TO 'public', 'pg_temp'
+AS $function$SELECT EXISTS (
+    SELECT 1
+    FROM group_user_mapping
+    WHERE "group" = group_id AND "user" = auth.uid()
+    AND "role" = 'admin'
+  );$function$
+;
+
+CREATE OR REPLACE FUNCTION public.is_user_in_group(group_id uuid)
+ RETURNS boolean
+ LANGUAGE sql
+ SECURITY DEFINER
+ SET search_path TO 'public', 'pg_temp'
+AS $function$SELECT EXISTS (
+    SELECT 1
+    FROM group_user_mapping
+    WHERE "group" = group_id AND "user" = auth.uid() AND ("role" = 'user'::public."GroupRole" OR "role" = 'admin'::public."GroupRole" OR "role" = 'trial'::public."GroupRole")
+  );$function$
+;
+
+CREATE OR REPLACE FUNCTION public.key_handover(p_key_id bigint, p_new_holder uuid)
+ RETURNS TABLE(key_id bigint, holder uuid)
+ LANGUAGE plpgsql
+ SECURITY DEFINER
+ SET search_path TO ''
+AS $function$DECLARE
+  v_old   uuid;
+  v_group uuid;
+BEGIN
+  -- Item laden & sperren
+  SELECT i."current_holder_uuid", i."group"
+    INTO v_old, v_group
+  FROM public.items AS i
+  WHERE i.id = p_key_id
+  FOR UPDATE;
+
+  IF NOT FOUND THEN
+    RAISE EXCEPTION 'item % not found', p_key_id
+      USING ERRCODE = '23503',
+            DETAIL   = format('key_id=%s new_holder=%s', p_key_id, p_new_holder);
+  END IF;
+
+  IF v_group IS NULL THEN
+    RAISE EXCEPTION 'item % has no group', p_key_id
+      USING ERRCODE = '23514',
+            DETAIL   = format('key_id=%s new_holder=%s', p_key_id, p_new_holder);
+  END IF;
+
+  -- Nur Gruppenmitglieder dürfen übergeben/übernehmen
+  IF NOT EXISTS (
+    SELECT 1
+    FROM public.group_user_mapping gum
+    WHERE gum."group" = v_group
+      AND gum."user"  = auth.uid()
+  ) THEN
+    RAISE EXCEPTION 'not in group for item %', p_key_id
+      USING ERRCODE = '42501',
+            DETAIL   = format('actor=%s group=%s', auth.uid()::text, v_group::text),
+            HINT     = 'membership in group required';
+  END IF;
+
+  -- Ziel-User existiert?
+  PERFORM 1 FROM public."user" u WHERE u."user" = p_new_holder;
+  IF NOT FOUND THEN
+    RAISE EXCEPTION 'new holder % not found', p_new_holder
+      USING ERRCODE = '23503',
+            DETAIL   = format('key_id=%s', p_key_id);
+  END IF;
+
+  IF NOT EXISTS (
+    SELECT 1
+    FROM public.group_user_mapping gum
+    WHERE gum."group" = v_group
+      AND gum."user"  = p_new_holder
+  ) THEN
+    RAISE EXCEPTION 'new holder % not in group', p_new_holder
+      USING ERRCODE = '23503',
+            DETAIL   = format('key_id=%s', p_key_id);
+  END IF;
+
+  -- Nur aktualisieren, wenn sich der Halter wirklich ändert
+  IF v_old IS DISTINCT FROM p_new_holder THEN
+    UPDATE public.items i
+       SET "current_holder_uuid" = p_new_holder,
+           "lastUpdate"     = now()
+     WHERE i.id = p_key_id;
+    -- dein bestehender Trigger auf UPDATE OF current_holder schreibt item_history
+  END IF;
+
+  RETURN QUERY
+  SELECT i.id, i."current_holder"
+  FROM public.items i
+  WHERE i.id = p_key_id;
+END;$function$
+;
+
+CREATE OR REPLACE FUNCTION public.revoke_group_grants(p_group uuid, p_perms text[] DEFAULT ARRAY[]::text[], p_feats text[] DEFAULT ARRAY[]::text[])
+ RETURNS void
+ LANGUAGE plpgsql
+ SECURITY DEFINER
+ SET search_path TO ''
+AS $function$declare
+  v_uid uuid := auth.uid();
+  v_is_admin boolean := coalesce(public.authorize('supabase.admin'), false)
+                     or coalesce(public.authorize('grants.manage'), false);
+  v_is_group_admin boolean;
+begin
+  if v_uid is null then
+    raise exception 'unauthenticated' using errcode = '28P01';
+  end if;
+
+  select exists(
+           select 1
+             from public.group_user_mapping gum
+            where gum."group" = p_group
+              and gum."user"  = v_uid
+              and gum."role"  = 'admin'
+         )
+    into v_is_group_admin;
+
+  if not (v_is_admin or v_is_group_admin) then
+    raise exception 'forbidden (not group admin)' using errcode = '42501';
+  end if;
+
+  p_perms := coalesce(p_perms, array[]::text[]);
+  p_feats := coalesce(p_feats, array[]::text[]);
+
+  if array_length(p_perms,1) is not null then
+    delete from public.group_permissions
+     where "group" = p_group
+       and "permission" = any(p_perms);
+  end if;
+
+  if array_length(p_feats,1) is not null then
+    begin
+      delete from public.group_features
+       where "group" = p_group
+         and "feature" = any(p_feats);
+    exception
+      when undefined_table then
+        raise notice 'group_features table not found – skipping feature revokes for group %', p_group;
+    end;
+  end if;
+end;$function$
+;
+
+CREATE OR REPLACE FUNCTION public.revoke_user_grants(p_user uuid, p_tenant uuid DEFAULT '00000000-0000-0000-0000-000000000000'::uuid, p_perms text[] DEFAULT ARRAY[]::text[], p_feats text[] DEFAULT ARRAY[]::text[])
+ RETURNS void
+ LANGUAGE plpgsql
+ SECURITY DEFINER
+ SET search_path TO ''
+AS $function$
+declare
+  v_uid uuid := auth.uid();
+  v_is_admin boolean := coalesce(public.authorize('supabase.admin'), false)
+                     or coalesce(public.authorize('grants.manage'), false);
+begin
+  if v_uid is null then
+    raise exception 'unauthenticated' using errcode = '28P01';
+  end if;
+  if not v_is_admin then
+    raise exception 'forbidden' using errcode = '42501';
+  end if;
+
+  p_perms := coalesce(p_perms, array[]::text[]);
+  p_feats := coalesce(p_feats, array[]::text[]);
+
+  if array_length(p_perms,1) is not null then
+    delete from public.user_direct_grants
+     where "user" = p_user
+       and tenant = p_tenant
+       and kind   = 'perm'
+       and key    = any(p_perms);
+  end if;
+
+  if array_length(p_feats,1) is not null then
+    delete from public.user_direct_grants
+     where "user" = p_user
+       and tenant = p_tenant
+       and kind   = 'feat'
+       and key    = any(p_feats);
+  end if;
+end;
+$function$
+;
+
+CREATE OR REPLACE FUNCTION public.trg_add_user_to_public()
+ RETURNS trigger
+ LANGUAGE plpgsql
+ SECURITY DEFINER
+ SET search_path TO ''
+AS $function$BEGIN
+  INSERT INTO public.user ("user", email, "displayName", name, role, created_at, verified)
+    VALUES (
+        NEW.id,
+        NEW.email,
+        COALESCE(NEW.raw_user_meta_data->>'displayName', ''),
+        COALESCE(NEW.raw_user_meta_data->>'name', COALESCE(NEW.raw_user_meta_data->>'displayName', '')),
+        COALESCE(NEW.raw_user_meta_data->>'role', 'user')::public."UserRole", -- Default role if not provided
+        NOW(),
+        TRUE
+    );
+    RETURN NEW;
+END;$function$
+;
+
+CREATE OR REPLACE FUNCTION public.trg_delete_user_from_subgroups()
+ RETURNS trigger
+ LANGUAGE plpgsql
+ SET search_path TO 'public', 'pg_temp'
+AS $function$DECLARE
+  is_root_group BOOLEAN;
+BEGIN
+  -- Prüfe, ob die gelöschte group_id eine Hauptgruppe ist
+  SELECT parent_group IS NULL INTO is_root_group
+  FROM event_group
+  WHERE id = OLD."group";
+
+  -- Wenn es keine Hauptgruppe ist, mache nichts
+  IF NOT is_root_group THEN
+    RETURN OLD;
+  END IF;
+
+  -- Lösche alle Mappings in Untergruppen rekursiv
+  DELETE FROM group_user_mapping
+  WHERE "user" = OLD."user"
+    AND "group" IN (
+      WITH RECURSIVE subgroups AS (
+        SELECT id FROM event_group WHERE parent_group = OLD."group"
+        UNION ALL
+        SELECT g.id
+        FROM event_group g
+        INNER JOIN subgroups sg ON g.parent_group = sg.id
+      )
+      SELECT id FROM subgroups
+    );
+
+  RETURN OLD;
+END;$function$
+;
+
+CREATE OR REPLACE FUNCTION public.trg_handle_new_auth_user()
+ RETURNS trigger
+ LANGUAGE plpgsql
+ SECURITY DEFINER
+ SET search_path TO ''
+AS $function$DECLARE
+  v_name    text;
+  v_display text;
+BEGIN
+  -- Aus Metadata sinnvolle Werte ziehen, mit Fallbacks
+  v_name    := COALESCE(
+                 NEW.raw_user_meta_data->>'name',
+                 NEW.raw_user_meta_data->>'displayName',
+                 'Anonymous'
+               );
+
+  v_display := COALESCE(
+                 NEW.raw_user_meta_data->>'displayName',
+                 v_name
+               );
+
+  -- In deine User-Tabelle eintragen (UUID als Text, wie bei dir üblich)
+  INSERT INTO public."user"("user","displayName","email","name")
+  VALUES (NEW.id, v_display, NEW.email, v_name)
+  ON CONFLICT ("user") DO NOTHING;
+
+  RETURN NEW;
+END;$function$
+;
+
+CREATE OR REPLACE FUNCTION public.trg_update_attendance_on_max_trial_attendees_change()
+ RETURNS trigger
+ LANGUAGE plpgsql
+AS $function$declare
+    newEvent public.events;
+begin
+    select * into newEvent from events where id = new.id limit 1;
+    if (new."max_trial_attendees" < old."max_trial_attendees") then
+        WITH users_to_update AS (SELECT event_attendance_user_mapping."user"
+                                 FROM event_attendance_user_mapping
+                                 WHERE event = new.id
+                                   AND state = 'AttendingAsTrial'
+                                 ORDER BY "lastUpdate"
+                                 OFFSET newEvent."maxAttendees")
+        UPDATE event_attendance_user_mapping
+        SET state = 'WaitingAsTrial'
+        WHERE event_attendance_user_mapping."event" = new.id
+          and event_attendance_user_mapping."user" IN (SELECT * FROM users_to_update);
+    else
+        if (new."max_trial_attendees" > old."max_trial_attendees") then
+            WITH users_to_update AS (SELECT event_attendance_user_mapping."user"
+                                     FROM event_attendance_user_mapping
+                                     WHERE event = new.id
+                                       AND state = 'WaitingAsTrial'
+                                     ORDER BY "lastUpdate"
+                                     LIMIT (new."maxAttendees" - old."maxAttendees"))
+            UPDATE event_attendance_user_mapping
+            SET state = 'AttendingAsTrial'
+            WHERE event_attendance_user_mapping."event" = new.id
+              and event_attendance_user_mapping."user" IN (SELECT * FROM users_to_update);
+        end if;
+    end if;
+    return new;
+end;$function$
+;
+
+CREATE OR REPLACE FUNCTION public.trg_update_attendance_on_maxattendees_change()
+ RETURNS trigger
+ LANGUAGE plpgsql
+ SET search_path TO 'public', 'pg_temp'
+AS $function$declare
+    newEvent public.events;
+begin
+    select * into newEvent from events where id = new.id limit 1;
+    if (new."maxAttendees" < old."maxAttendees") then
+        WITH users_to_update AS (SELECT event_attendance_user_mapping."user"
+                                 FROM event_attendance_user_mapping
+                                 WHERE event = new.id
+                                   AND state = 'Attending'
+                                 ORDER BY "lastUpdate"
+                                 OFFSET newEvent."maxAttendees")
+        UPDATE event_attendance_user_mapping
+        SET state = 'Waiting'
+        WHERE event_attendance_user_mapping."event" = new.id
+          and event_attendance_user_mapping."user" IN (SELECT * FROM users_to_update);
+    else
+        if (new."maxAttendees" > old."maxAttendees") then
+            WITH users_to_update AS (SELECT event_attendance_user_mapping."user"
+                                     FROM event_attendance_user_mapping
+                                     WHERE event = new.id
+                                       AND state = 'Waiting'
+                                     ORDER BY "lastUpdate"
+                                     LIMIT (new."maxAttendees" - old."maxAttendees"))
+            UPDATE event_attendance_user_mapping
+            SET state = 'Attending'
+            WHERE event_attendance_user_mapping."event" = new.id
+              and event_attendance_user_mapping."user" IN (SELECT * FROM users_to_update);
+        end if;
+    end if;
+    return new;
+end;$function$
+;
+
+CREATE OR REPLACE FUNCTION public.trg_update_waiting_list_attendance()
+ RETURNS trigger
+ LANGUAGE plpgsql
+ SECURITY DEFINER
+ SET search_path TO 'public', 'pg_temp'
+AS $function$declare
+  BEGIN
+    if((Select count(*) from event_attendance_user_mapping where event_attendance_user_mapping.event = NEW.event AND event_attendance_user_mapping.state = 'Attending') < (Select events."maxAttendees" from events where events.id = NEW.event LIMIT 1) AND NEW.state = 'Declined') then
+
+    UPDATE event_attendance_user_mapping
+    SET state = 'Attending'
+    WHERE event_attendance_user_mapping."user" = (SELECT event_attendance_user_mapping."user" from event_attendance_user_mapping where event_attendance_user_mapping.state = 'Waiting' AND event_attendance_user_mapping.event = NEW.event order by event_attendance_user_mapping."lastUpdate" Limit 1);
+    end if;
+    return NEW;
+  END;$function$
+;
+
+CREATE OR REPLACE FUNCTION public.update_attendance(p_event uuid, p_user uuid, p_state public."EventAttendance")
+ RETURNS SETOF public.event_attendance_user_mapping
+ LANGUAGE plpgsql
+ SET search_path TO ''
+AS $function$DECLARE
+  v_is_member   boolean;
+  v_event_open  boolean;
+  v_max         numeric;
+  v_max_trial   numeric;
+  v_accepted    bigint;
+  v_accepted_trial bigint;
+  v_final_state public."EventAttendance";
+BEGIN
+  -- 1) Actor muss Mitglied der Event-Gruppe sein
+  SELECT EXISTS (
+    SELECT 1
+    FROM public.events e
+    JOIN public.group_user_mapping gum ON gum."group" = e."group"
+    WHERE e.id = p_event
+      AND gum."user" = auth.uid()
+  ) INTO v_is_member;
+
+  IF NOT v_is_member THEN
+    RAISE EXCEPTION 'forbidden: not a member of the event''s group' USING ERRCODE = '42501';
+  END IF;
+
+  -- 2) Event offen & nicht abgesagt
+  SELECT (e."startingDateTime" > now() AND e."isCancelled" = FALSE)
+  FROM public.events e
+  WHERE e.id = p_event
+  INTO v_event_open;
+
+  IF COALESCE(v_event_open, false) = false THEN
+    RAISE EXCEPTION 'event closed: cannot change attendance' USING ERRCODE = '22023';
+  END IF;
+
+  -- 3) Für andere zu-/absagen nur mit Permission
+  IF p_user <> auth.uid() AND NOT public.authorize('event.attendance.manage') THEN
+    RAISE EXCEPTION 'forbidden: cannot update other user''s attendance' USING ERRCODE = '42501';
+  END IF;
+
+  -- 4) Kapazität (Accepted zählt)
+  SELECT e."maxAttendees" INTO v_max FROM public.events e WHERE e.id = p_event;
+  SELECT e."max_trial_attendees" INTO v_max_trial FROM public.events e WHERE e.id = p_event;
+
+  SELECT COUNT(*)::bigint
+  INTO v_accepted
+  FROM public.event_attendance_user_mapping m
+  WHERE m.event = p_event
+    AND m.state = 'Attending';
+
+  SELECT COUNT(*)::bigint
+  INTO v_accepted_trial
+  FROM public.event_attendance_user_mapping m
+  WHERE m.event = p_event
+    AND m.state = 'AttendingAsTrial';
+
+  -- 5) Ziel-State bestimmen
+  IF p_state = 'Declined' THEN
+    v_final_state := 'Declined';
+
+  ELSIF p_state = 'Attending' AND v_max IS NOT NULL AND v_accepted >= v_max THEN
+    -- Kapazität voll -> auf Waiting (außer Declined)
+    v_final_state := 'Waiting';
+
+  ELSIF p_state = 'AttendingAsTrial' AND v_max_trial IS NOT NULL AND v_accepted_trial >= v_max_trial THEN
+    -- Kapazität bei Trial voll -> auf WaitingAsTrial (außer Declined)
+    v_final_state := 'WaitingAsTrial';
+
+  ELSE
+    v_final_state := p_state;
+  END IF;
+
+  -- Letzte Sicherheit. Als Trial User darf ich nicht Attendning oder Waiting als State haben
+  IF (SELECT EXISTS (
+    SELECT 1
+    FROM public.events e
+    JOIN public.group_user_mapping gum ON gum."group" = e."group"
+    WHERE e.id = p_event
+      AND gum."user" = auth.uid()
+      AND gum."role" = 'trial'
+  )) THEN
+    IF v_final_state = 'Attending' THEN
+      v_final_state = 'AttendingAsTrial';
+    ELSIF v_final_state = 'Waiting' THEN
+      v_final_state = 'WaitingAsTrial';
+    END IF;
+  END IF;
+
+  -- 6) Upsert (RLS prüft zusätzlich INSERT/UPDATE-Policies)
+  RETURN QUERY
+  INSERT INTO public.event_attendance_user_mapping("user","event","state")
+  VALUES (p_user, p_event, v_final_state)
+  ON CONFLICT ("user","event") DO UPDATE
+  SET state = EXCLUDED.state
+  RETURNING *;
+END;$function$
+;
+
+CREATE OR REPLACE FUNCTION util.custom_access_token_hook(event jsonb)
+ RETURNS jsonb
+ LANGUAGE plpgsql
+ STABLE
+AS $function$declare
+    claims jsonb;
+    permissions text[];
+    features text[];
+  begin
+
+    Select array(select distinct gp.permission from group_user_mapping gum join group_permissions gp on gp."group" = gum."group" where gum."user" = (select auth.uid() as uid) and gum.role <> 'joinRequested'::"GroupRole") into permissions;
+
+    Select array(select distinct gf.feature from group_user_mapping gum join group_features gf on gf."group" = gum."group" where gum."user" = (select auth.uid() as uid) and gum.role <> 'joinRequested'::"GroupRole") into features;
+
+    claims := event->'claims';
+
+    if permissions is not null then
+      -- Set the claim
+      claims := jsonb_set(claims, '{user_permissions}', to_jsonb(permissions));
+    else
+      claims := jsonb_set(claims, '{user_permissions}', '[]'::jsonb);
+    end if;
+
+    if features is not null then
+      -- Set the claim
+      claims := jsonb_set(claims, '{user_features}', to_jsonb(features));
+    else
+      claims := jsonb_set(claims, '{user_features}', '[]'::jsonb);
+    end if;
+
+    -- Update the 'claims' object in the original event
+    event := jsonb_set(event, '{claims}', claims);
+
+    -- Return the modified or original event
+    return event;
+  end;$function$
+  ;
+
+CREATE UNIQUE INDEX event_attendance_user_mapping_pkey ON public.event_attendance_user_mapping USING btree ("user", event);
+
+alter table "public"."event_attendance_user_mapping" add constraint "event_attendance_user_mapping_pkey" PRIMARY KEY using index "event_attendance_user_mapping_pkey";

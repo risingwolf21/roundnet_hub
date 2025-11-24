@@ -53,12 +53,12 @@ export const ProfileImage = ({ user }: Props) => {
   };
 
   const removeOldAvatarImages = async () => {
-    const { data: list, error } = await supabase.storage.from('user').list(`${user.userId}`);
+    const { data: list, error } = await supabase.storage.from('user').list(`${user.id}`);
     if (error || !list) {
       captureException(error);
       return;
     }
-    const filesToRemove = list.map((x) => `${user.userId}/${x.name}`);
+    const filesToRemove = list.map((x) => `${user.id}/${x.name}`);
 
     await supabase.storage.from('user').remove(filesToRemove);
   };
@@ -66,14 +66,14 @@ export const ProfileImage = ({ user }: Props) => {
   const uploadAvatarImage = async (fileName: string, compressedImage: string) => {
     const { data: uploadData, error } = await supabase.storage
       .from('user')
-      .upload(`${user.userId}/${fileName}`, dataURLtoFile(compressedImage, fileName), {
+      .upload(`${user.id}/${fileName}`, dataURLtoFile(compressedImage, fileName), {
         upsert: true,
       });
 
     if (!error && uploadData && uploadData.path) {
       const { data } = supabase.storage.from('user').getPublicUrl(uploadData.path);
 
-      const { error } = await supabase.from('user').update({ avatarUrl: data.publicUrl }).eq('userId', user.userId);
+      const { error } = await supabase.from('user').update({ avatarUrl: data.publicUrl }).eq('userId', user.id);
       if (error) {
         supabase.storage.from('user').remove([uploadData.path]);
       }
