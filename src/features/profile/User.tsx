@@ -14,11 +14,9 @@ import { useNavigate } from 'react-router';
 import pzLogo from '../../images/pz_logo.svg';
 import { UserWithGroups } from '../../types/supabaseTypes';
 import { useGrants } from '../auth/GrantsContext';
-import { ContactInformation } from './ContactInformation';
-import { NotificationsDialog } from './NotificationsDialog';
-import { PlayerzoneProfileDialog } from './PlayerzoneProfile';
 import { ProfileImage } from './ProfileImage';
 
+import { PullToRefresh } from '@/components/pull-to-refresh/PullToRefresh';
 import { iOS } from '@/utils';
 import Card from '@mui/material/Card';
 import CardActionArea from '@mui/material/CardActionArea';
@@ -44,7 +42,7 @@ const UserScreen = ({ user, handleSignOut }: UserScreenProps) => {
   const notifications = useNotifications();
   const navigate = useNavigate();
   const notificationSupported = ('serviceWorker' in navigator) && ('PushManager' in window);
-  const { data: player_data, isLoading } = usePlayer(user);
+  const { data: player_data, isLoading, refetch: refetchPlayer } = usePlayer(user);
 
   const copyIcalURLToClipboard = () => {
     if (iOS) {
@@ -62,113 +60,109 @@ const UserScreen = ({ user, handleSignOut }: UserScreenProps) => {
 
   return (
     <Layout appBarConfig={{ title: 'Profil', showProfile: false }}>
-      <List sx={{ pl: 2, pr: 2, pb: 10 }}>
-        <ProfileImage user={user} />
-        <Typography variant="h5" component={'div'} sx={{ textAlign: 'center' }}>
-          {user.name}
-        </Typography>
-        <Card sx={{ borderRadius: 2, py: 0, px: 0, mt: 1 }}>
-          <CardActionArea sx={{ px: 1 }}>
-            <ListItem
-              onClick={async () => {
-                await dialogs.open(ContactInformation, { user });
-              }}
-            >
-              <ListItemAvatar sx={{ flexDirection: 'row', display: 'flex', alignItems: 'center' }}>
-                <AccountCircle />
-              </ListItemAvatar>
-              <ListItemText primary="Profil und Account" />
-            </ListItem>
-          </CardActionArea>
-        </Card>
-        <Card sx={{ borderRadius: 2, py: 0, px: 0, mt: 1 }}>
-          <CardActionArea sx={{ px: 1 }}>
-            <ListItem
-              onClick={() => {
-                navigate('/auth/reset-password');
-              }}
-            >
-              <ListItemAvatar sx={{ flexDirection: 'row', display: 'flex', alignItems: 'center' }}>
-                <Password />
-              </ListItemAvatar>
-              <ListItemText primary="Passwort ändern" />
-            </ListItem>
-          </CardActionArea>
-        </Card>
-        <Card sx={{ borderRadius: 2, py: 0, px: 0, mt: 1 }}>
-          <CardActionArea sx={{ px: 1 }}>
-            <ListItem
-              onClick={async () => {
-                await dialogs.open(NotificationsDialog, { user, notificationSupported });
-              }}
-              secondaryAction={
-                notificationSupported && Notification.permission === 'granted' ? (
-                  <CheckCircle color="success" />
-                ) : (
-                  <Cancel color="error" />
-                )
-              }
-            >
-              <ListItemAvatar sx={{ flexDirection: 'row', display: 'flex', alignItems: 'center' }}>
-                <NotificationsRounded />
-              </ListItemAvatar>
-              <ListItemText primary="Benachrichtigungen" />
-            </ListItem>
-          </CardActionArea>
-        </Card>
-        <Card sx={{ borderRadius: 2, py: 0, px: 0, mt: 1 }}>
-          <CardActionArea sx={{ px: 1 }}>
-            <ListItem
-              onClick={async () => {
-                await dialogs.open(PlayerzoneProfileDialog, { user });
-              }}
-              secondaryAction={
-                isLoading ? (
-                  <Downloading />
-                ) : player_data?.rg_id && player_data?.rg_link ? (
-                  <CheckCircle color="success" />
-                ) : (
-                  <Cancel color="error" />
-                )
-              }
-            >
-              <ListItemAvatar sx={{ flexDirection: 'row', display: 'flex', alignItems: 'center' }}>
-                <img src={pzLogo} alt={'pz logo'} width="20" height="20" />
-              </ListItemAvatar>
-              <ListItemText primary="Playerzone Profil" />
-            </ListItem>
-          </CardActionArea>
-        </Card>
-        <Card sx={{ borderRadius: 2, py: 0, px: 0, mt: 1 }}>
-          <CardActionArea sx={{ px: 1 }} onClick={() => {
-            copyIcalURLToClipboard();
-            notifications.show(
-              'URL in Zwischenablage kopiert - Abonniere den Kalendar jetzt selbst mit der URL',
-              { severity: 'info' }
-            );
-          }}>
-            <ListItem>
-              <ListItemAvatar sx={{ flexDirection: 'row', display: 'flex', alignItems: 'center' }}>
-                <CalendarMonth />
-              </ListItemAvatar>
-              <ListItemText
-                primary="Kalendar abonnieren"
-                secondary="Zeige deine zugesagten Events in deinem Kalendar an. Klicke hier oder kopiere rechts den Link"
-              />
-            </ListItem>
-          </CardActionArea>
-        </Card>
-        <Card sx={{ color: 'red', borderRadius: 2, py: 0, px: 0, mt: 1 }}>
-          <CardActionArea sx={{ px: 1 }}>
-            <ListItem onClick={handleSignOut}>
-              <ListItemAvatar sx={{ flexDirection: 'row', display: 'flex', alignItems: 'center' }}>
-                <Logout />
-              </ListItemAvatar>
-              <ListItemText primary="Logout" />
-            </ListItem>
-          </CardActionArea>
-        </Card>
-      </List>
+      <PullToRefresh onRefresh={() => refetchPlayer()}>
+        <List sx={{ pl: 2, pr: 2, pb: 10 }}>
+          <ProfileImage user={user} />
+          <Typography variant="h5" component={'div'} sx={{ textAlign: 'center' }}>
+            {user.name}
+          </Typography>
+          <Card sx={{ borderRadius: 2, py: 0, px: 0, mt: 1 }}>
+            <CardActionArea sx={{ px: 1 }}>
+              <ListItem
+                onClick={() => navigate('profile')}
+              >
+                <ListItemAvatar sx={{ flexDirection: 'row', display: 'flex', alignItems: 'center' }}>
+                  <AccountCircle />
+                </ListItemAvatar>
+                <ListItemText primary="Profil und Account" />
+              </ListItem>
+            </CardActionArea>
+          </Card>
+          <Card sx={{ borderRadius: 2, py: 0, px: 0, mt: 1 }}>
+            <CardActionArea sx={{ px: 1 }}>
+              <ListItem
+                onClick={() => {
+                  navigate('reset-password');
+                }}
+              >
+                <ListItemAvatar sx={{ flexDirection: 'row', display: 'flex', alignItems: 'center' }}>
+                  <Password />
+                </ListItemAvatar>
+                <ListItemText primary="Passwort ändern" />
+              </ListItem>
+            </CardActionArea>
+          </Card>
+          <Card sx={{ borderRadius: 2, py: 0, px: 0, mt: 1 }}>
+            <CardActionArea sx={{ px: 1 }}>
+              <ListItem
+                onClick={() => navigate('notifications')}
+                secondaryAction={
+                  notificationSupported && Notification.permission === 'granted' ? (
+                    <CheckCircle color="success" />
+                  ) : (
+                    <Cancel color="error" />
+                  )
+                }
+              >
+                <ListItemAvatar sx={{ flexDirection: 'row', display: 'flex', alignItems: 'center' }}>
+                  <NotificationsRounded />
+                </ListItemAvatar>
+                <ListItemText primary="Benachrichtigungen" />
+              </ListItem>
+            </CardActionArea>
+          </Card>
+          <Card sx={{ borderRadius: 2, py: 0, px: 0, mt: 1 }}>
+            <CardActionArea sx={{ px: 1 }}>
+              <ListItem
+                onClick={() => navigate('playerzone')}
+                secondaryAction={
+                  isLoading ? (
+                    <Downloading />
+                  ) : player_data?.rg_id && player_data?.rg_link ? (
+                    <CheckCircle color="success" />
+                  ) : (
+                    <Cancel color="error" />
+                  )
+                }
+              >
+                <ListItemAvatar sx={{ flexDirection: 'row', display: 'flex', alignItems: 'center' }}>
+                  <img src={pzLogo} alt={'pz logo'} width="20" height="20" />
+                </ListItemAvatar>
+                <ListItemText primary="Playerzone Profil" />
+              </ListItem>
+            </CardActionArea>
+          </Card>
+          <Card sx={{ borderRadius: 2, py: 0, px: 0, mt: 1 }}>
+            <CardActionArea sx={{ px: 1 }} onClick={() => {
+              copyIcalURLToClipboard();
+              notifications.show(
+                'URL in Zwischenablage kopiert - Abonniere den Kalendar jetzt selbst mit der URL',
+                { severity: 'info' }
+              );
+            }}>
+              <ListItem>
+                <ListItemAvatar sx={{ flexDirection: 'row', display: 'flex', alignItems: 'center' }}>
+                  <CalendarMonth />
+                </ListItemAvatar>
+                <ListItemText
+                  primary="Kalendar abonnieren"
+                  secondary="Zeige deine zugesagten Events in deinem Kalendar an. Klicke hier oder kopiere rechts den Link"
+                />
+              </ListItem>
+            </CardActionArea>
+          </Card>
+          <Card sx={{ color: 'red', borderRadius: 2, py: 0, px: 0, mt: 1 }}>
+            <CardActionArea sx={{ px: 1 }}>
+              <ListItem onClick={handleSignOut}>
+                <ListItemAvatar sx={{ flexDirection: 'row', display: 'flex', alignItems: 'center' }}>
+                  <Logout />
+                </ListItemAvatar>
+                <ListItemText primary="Logout" />
+              </ListItem>
+            </CardActionArea>
+          </Card>
+        </List>
+      </PullToRefresh>
     </Layout >
   );
 };

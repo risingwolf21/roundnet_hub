@@ -125,12 +125,16 @@ export const ProfileImage = ({ user }: Props) => {
             <Button
               component="label"
               sx={{ border: 'none', background: 'transparent', mr: 2 }}
-              startIcon={<EditOutlined />}
+              disabled={loadingSave}
+              startIcon={loadingSave ? <CircularProgress size={'20px'} /> : <EditOutlined />}
             >
               <input accept="image/*" type="file" hidden onChange={onImageInputChange} />
               Change
             </Button>
-            <Button startIcon={<DeleteOutline />} onClick={() => setCurrentUser({ ...currentUser, avatarUrl: null })}>
+            <Button
+              disabled={loadingSave}
+              startIcon={loadingSave ? <CircularProgress size={'20px'} /> : <DeleteOutline />}
+              onClick={() => setCurrentUser({ ...currentUser, avatarUrl: null })}>
               Remove
             </Button>
           </>
@@ -138,7 +142,8 @@ export const ProfileImage = ({ user }: Props) => {
           <Button
             component="label"
             sx={{ border: 'none', background: 'transparent' }}
-            startIcon={<AddPhotoAlternateOutlined />}
+            disabled={loadingSave}
+            startIcon={loadingSave ? <CircularProgress size={'20px'} /> : <AddPhotoAlternateOutlined />}
           >
             <input accept="image/*" type="file" hidden onChange={onImageInputChange} />
             Add picture
@@ -150,6 +155,7 @@ export const ProfileImage = ({ user }: Props) => {
           <Button
             key={'saveButton'}
             onClick={handleSubmit}
+            disabled={loadingSave}
             startIcon={loadingSave ? <CircularProgress size={'20px'} /> : <Save />}
           >
             Speichern
@@ -160,7 +166,8 @@ export const ProfileImage = ({ user }: Props) => {
               setCroppedImage(null);
               setCurrentUser(user);
             }}
-            startIcon={<Restore />}
+            disabled={loadingSave}
+            startIcon={loadingSave ? <CircularProgress size={'20px'} /> : <Restore />}
           >
             Rückgängig
           </Button>

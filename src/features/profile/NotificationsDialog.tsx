@@ -1,23 +1,18 @@
 import { useNotificationTags, useNotificationTopics, useUpdateNotificationPreferences } from '@/tanstack/notifications';
-import { UserWithGroups } from '@/types/supabaseTypes';
-import { DialogProps } from '@toolpad/core/useDialogs';
 import { PropsWithChildren } from 'react';
 import NotificationGate from './NotificationGate';
 
-import Close from '@mui/icons-material/Close';
+import Layout from '@/components/layout/Layout';
 import NotificationsOff from '@mui/icons-material/NotificationsOff';
-import AppBar from '@mui/material/AppBar';
 import Box from '@mui/material/Box';
 import CircularProgress from '@mui/material/CircularProgress';
 import Container from '@mui/material/Container';
-import Dialog from '@mui/material/Dialog';
 import Divider from '@mui/material/Divider';
-import IconButton from '@mui/material/IconButton';
 import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';
 import Switch from '@mui/material/Switch';
-import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
+import { useGrants } from '../auth/GrantsContext';
 
 const NotificationSwitch = ({
   primary,
@@ -53,13 +48,8 @@ const NotificationSwitch = ({
   );
 };
 
-export const isNotificationSupported = () =>
+export const isNotificationSupported =
   'Notification' in window && 'serviceWorker' in navigator && 'PushManager' in window;
-
-type NotificationsDialogPayload = {
-  user: UserWithGroups;
-  notificationSupported: boolean;
-};
 
 const CenterContainer = ({ children }: PropsWithChildren) => (
   <Container
@@ -75,27 +65,14 @@ const CenterContainer = ({ children }: PropsWithChildren) => (
   </Container>
 );
 
-export const NotificationsDialog = ({
-  payload,
-  open,
-  onClose,
-}: DialogProps<NotificationsDialogPayload, string | null>) => {
-  const { data: notificationTags = [], isLoading } = useNotificationTags(payload.user);
+const NotificationsDialog = () => {
+  const { user } = useGrants();
+  const { data: notificationTags = [], isLoading } = useNotificationTags(user);
   const { data: topics = [] } = useNotificationTopics();
-  const updateNotificationPreferences = useUpdateNotificationPreferences(payload.user);
+  const updateNotificationPreferences = useUpdateNotificationPreferences(user);
 
   return (
-    <Dialog fullScreen open={open} onClose={() => onClose(null)}>
-      <AppBar sx={{ position: 'sticky', pt: 'env(safe-area-inset-top)' }}>
-        <Toolbar>
-          <IconButton edge="start" color="inherit" onClick={() => onClose(null)}>
-            <Close />
-          </IconButton>
-          <Typography sx={{ ml: 2, flex: 1 }} variant="h6" component="div">
-            Benachrichtigungen
-          </Typography>
-        </Toolbar>
-      </AppBar>
+    <Layout appBarConfig={{ title: "Benachrichtigungen", showProfile: false, navigateBackPath: "/user" }}>
       <Container sx={{ p: 0, pb: 'env(safe-area-inset-bottom)' }}>
         <Typography sx={{ fontSize: 16, fontWeight: 'bold', m: 2 }} color="text.secondary">
           Einstellungen
@@ -105,7 +82,7 @@ export const NotificationsDialog = ({
         <Typography sx={{ fontSize: 16, fontWeight: 'bold', m: 2 }} color="text.secondary">
           Abonnierte Benachrichtigungen
         </Typography>
-        {!payload.notificationSupported && (
+        {!isNotificationSupported && (
           <CenterContainer>
             <NotificationsOff color="error" fontSize="large" />
             <Typography
@@ -123,10 +100,11 @@ export const NotificationsDialog = ({
             </Typography>
           </CenterContainer>
         )}
-        {payload.notificationSupported && Notification.permission === 'granted' && (
+        {isNotificationSupported && Notification.permission === 'granted' && (
           <Box sx={{ pt: 2 }}>
             {topics.map((x) => (
               <NotificationSwitch
+                key={x.topic}
                 primary={x.description ?? x.topic}
                 {...(x.description && { secondary: x.topic })}
                 active={notificationTags.find((y) => y.topic === x.topic)?.enabled ?? true}
@@ -143,6 +121,7 @@ export const NotificationsDialog = ({
           </Box>
         )}
       </Container>
-    </Dialog>
+    </Layout>
   );
 };
+export default NotificationsDialog;

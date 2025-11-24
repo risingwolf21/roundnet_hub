@@ -40,6 +40,10 @@ const MatchInformation = lazyWithRetry(() => import('./features/games/MatchInfor
 const SendNotifications = lazyWithRetry(() => import('./features/notifications/SendNotifications'));
 const LogsList = lazyWithRetry(() => import('./features/admin/LogsList'));
 const AppInformation = lazyWithRetry(() => import('./components/AppInformation'));
+const PlayerzoneProfileDialog = lazyWithRetry(() => import('./features/profile/PlayerzoneProfile'));
+const NotificationsDialog = lazyWithRetry(() => import('./features/profile/NotificationsDialog'));
+const ContactInformation = lazyWithRetry(() => import('./features/profile/ContactInformation'));
+const ResetPassword = lazyWithRetry(() => import('./features/profile/ResetPassword'));
 
 const sentryCreateBrowserRouter = wrapCreateBrowserRouterV7(createBrowserRouter);
 
@@ -142,7 +146,28 @@ const createRouter = (user: UserWithGroups | null) => sentryCreateBrowserRouter(
           },
           {
             path: '/user',
-            element: <UserScreenProvider />,
+            children: [
+              {
+                index: true,
+                element: <UserScreenProvider />,
+              },
+              {
+                path: 'playerzone',
+                element: <PlayerzoneProfileDialog />,
+              },
+              {
+                path: 'notifications',
+                element: <NotificationsDialog />,
+              },
+              {
+                path: 'profile',
+                element: <ContactInformation />,
+              },
+              {
+                path: 'reset-password',
+                element: <ResetPassword />,
+              },
+            ],
           },
           {
             path: '/drinks',
