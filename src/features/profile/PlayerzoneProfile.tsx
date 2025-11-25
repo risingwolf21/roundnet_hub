@@ -45,7 +45,6 @@ export const PlayerzoneProfileDialog = ({
   open,
   onClose,
 }: DialogProps<PlayerzoneProfilePayload, string | null>) => {
-
   const { data: player_data } = usePlayer(payload.user);
   const { data: elo_history } = useEloHistory(payload.user);
 
@@ -57,14 +56,16 @@ export const PlayerzoneProfileDialog = ({
   const [loading, setLoading] = useState(false);
 
   const elo_change_last_30_days = useMemo(() => {
-    return elo_history?.filter(x => isAfter(x.created_at, addDays(new Date(), -30))).reduce((p, c) => p + c.delta, 0) ?? 0
-  }, [elo_history])
+    return (
+      elo_history?.filter((x) => isAfter(x.created_at, addDays(new Date(), -30))).reduce((p, c) => p + c.delta, 0) ?? 0
+    );
+  }, [elo_history]);
 
   const handleChangeProfilePicture = async () => {
     setLoading(false);
     const { data: list, error } = await supabase.storage.from('user').list(`${payload.user.id}`);
     if (error || !list) {
-      notifications.show(error.message, { severity: "error" });
+      notifications.show(error.message, { severity: 'error' });
       captureException(error);
       return;
     }
@@ -77,7 +78,7 @@ export const PlayerzoneProfileDialog = ({
   };
 
   const onSafeRgLinkClick = async () => {
-    if (!rgLink.startsWith('https://playerzone.roundnetgermany.de/players/') && rgLink !== "") {
+    if (!rgLink.startsWith('https://playerzone.roundnetgermany.de/players/') && rgLink !== '') {
       notifications.show(
         'Bitte vergewissere dich, dass die URL stimmt. Kopiere die URL aus deinem Playerzone Profil.',
         { severity: 'error' }
@@ -88,15 +89,19 @@ export const PlayerzoneProfileDialog = ({
       rg_link: rgLink ?? null,
       rg_avatar_url: null,
       rg_index: null,
-    }
+    };
 
-    updatePlayer.mutate({ updates }, {
-      onError: (error) => notifications.show('Playerzone URL konnte nicht gesetzt werden. ' + error.message, {
-        severity: 'error',
-      }),
-      onSuccess: () => notifications.show('Playerzone URL erfolgreich aktualisiert', { severity: 'success' })
-    });
-  }
+    updatePlayer.mutate(
+      { updates },
+      {
+        onError: (error) =>
+          notifications.show('Playerzone URL konnte nicht gesetzt werden. ' + error.message, {
+            severity: 'error',
+          }),
+        onSuccess: () => notifications.show('Playerzone URL erfolgreich aktualisiert', { severity: 'success' }),
+      }
+    );
+  };
 
   return (
     <Dialog open={open} onClose={() => onClose(null)} fullScreen>
@@ -158,13 +163,13 @@ export const PlayerzoneProfileDialog = ({
               margin="normal"
             />
           </ListItem>
-          {
-            player_data?.rg_link !== rgLink && <Box sx={{ display: "flex", justifyContent: "end" }}>
+          {player_data?.rg_link !== rgLink && (
+            <Box sx={{ display: 'flex', justifyContent: 'end' }}>
               <Button disabled={loading} onClick={onSafeRgLinkClick}>
                 Speichern
               </Button>
             </Box>
-          }
+          )}
           {player_data?.rg_id && (
             <ListItem
               key={'id'}
@@ -226,15 +231,26 @@ export const PlayerzoneProfileDialog = ({
               sx={{
                 '&.MuiListItem-root': { p: 0 },
               }}
-              secondaryAction={<Tooltip title="Trend der letzten 30 Tage" enterTouchDelay={0}>
-                <span>
-                  <Chip
-                    sx={{ pointerEvents: 'none' }}
-                    color={elo_change_last_30_days > 0 ? 'success' : elo_change_last_30_days < 0 ? 'error' : 'info'}
-                    label={elo_change_last_30_days.toFixed(2)}
-                    icon={elo_change_last_30_days > 0 ? <TrendingUp /> : elo_change_last_30_days < 0 ? <TrendingDown /> : <TrendingFlat />} />
-                </span>
-              </Tooltip>}
+              secondaryAction={
+                <Tooltip title="Trend der letzten 30 Tage" enterTouchDelay={0}>
+                  <span>
+                    <Chip
+                      sx={{ pointerEvents: 'none' }}
+                      color={elo_change_last_30_days > 0 ? 'success' : elo_change_last_30_days < 0 ? 'error' : 'info'}
+                      label={elo_change_last_30_days.toFixed(2)}
+                      icon={
+                        elo_change_last_30_days > 0 ? (
+                          <TrendingUp />
+                        ) : elo_change_last_30_days < 0 ? (
+                          <TrendingDown />
+                        ) : (
+                          <TrendingFlat />
+                        )
+                      }
+                    />
+                  </span>
+                </Tooltip>
+              }
             >
               <ListItemAvatar></ListItemAvatar>
               <ListItemText primary={player_data?.effective_rating_cached.toFixed()} secondary={'Kombinierter Index'} />
@@ -262,7 +278,7 @@ export const PlayerzoneProfileDialog = ({
             />
           </ListItem>
         </List>
-      </Container >
+      </Container>
     </Dialog>
   );
 };

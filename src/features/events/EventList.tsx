@@ -12,7 +12,7 @@ import { useDialogs } from '@toolpad/core';
 import { useNotifications } from '@toolpad/core/useNotifications';
 import { endOfISOWeek, format, getISOWeek, startOfISOWeek } from 'date-fns';
 import { t } from 'i18next';
-import groupBy from "lodash.groupby";
+import groupBy from 'lodash.groupby';
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router';
 import { useGrants } from '../auth/GrantsContext';
@@ -105,37 +105,36 @@ const EventScreen = () => {
   return (
     <PullToRefresh onRefresh={() => refetch()}>
       <List>
-        {
-          Object.entries(groupBy(events, (x) => startOfISOWeek(x.startingDateTime))).map(([key, value]: [string, EventsUserView[]]) => (
-            <List subheader={<ListSubheader sx={{ fontWeight: 'bold' }} key={key}>
-              {
-                getISOWeek(key) === getISOWeek(new Date())
-                  ? 'Diese Woche'
-                  : getISOWeek(key) === (getISOWeek(new Date()) + 1)
-                    ? 'Nächste Woche'
-                    : format(key, 'dd.MM.yyyy') + " - " + format(endOfISOWeek(key), 'dd.MM.yyyy')
+        {Object.entries(groupBy(events, (x) => startOfISOWeek(x.startingDateTime))).map(
+          ([key, value]: [string, EventsUserView[]]) => (
+            <List
+              subheader={
+                <ListSubheader sx={{ fontWeight: 'bold' }} key={key}>
+                  {getISOWeek(key) === getISOWeek(new Date())
+                    ? 'Diese Woche'
+                    : getISOWeek(key) === getISOWeek(new Date()) + 1
+                      ? 'Nächste Woche'
+                      : format(key, 'dd.MM.yyyy') + ' - ' + format(endOfISOWeek(key), 'dd.MM.yyyy')}
+                </ListSubheader>
               }
-            </ListSubheader>} key={key}>
-              {
-                value.map((event: EventsUserView) => (
-                  <EventItem
-                    key={event.id}
-                    event={event}
-                    t={t}
-                    attendanceUpdating={
-                      updateAttendance.isPending && updateAttendance.context?.event.id === event.id
-                    }
-                    attendEvent={() => updateAttendance.mutate({ event, user, newState: 'Attending' })}
-                    declineEvent={() => updateAttendance.mutate({ event, user, newState: 'Declined' })}
-                    onClick={() => {
-                      navigate('/training/event/' + event.id);
-                    }}
-                  />
-                ))
-              }
+              key={key}
+            >
+              {value.map((event: EventsUserView) => (
+                <EventItem
+                  key={event.id}
+                  event={event}
+                  t={t}
+                  attendanceUpdating={updateAttendance.isPending && updateAttendance.context?.event.id === event.id}
+                  attendEvent={() => updateAttendance.mutate({ event, user, newState: 'Attending' })}
+                  declineEvent={() => updateAttendance.mutate({ event, user, newState: 'Declined' })}
+                  onClick={() => {
+                    navigate('/training/event/' + event.id);
+                  }}
+                />
+              ))}
             </List>
-          ))
-        }
+          )
+        )}
 
         <Stack
           direction={'row-reverse'}

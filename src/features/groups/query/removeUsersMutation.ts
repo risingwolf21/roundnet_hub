@@ -3,7 +3,6 @@ import { AdminUsersRepository } from '@/repository/AdminUsersRepository';
 import { GroupWithUserMappings } from '@/types/supabaseTypes';
 import { useMutation } from '@tanstack/react-query';
 
-
 export const useRemoveUsersMutation = (group: Group | null) =>
   useMutation({
     mutationFn: (users: User[]) => {

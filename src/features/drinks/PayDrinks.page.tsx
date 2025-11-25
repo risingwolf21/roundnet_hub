@@ -4,7 +4,6 @@ import Layout from '../../components/layout/Layout';
 import { useGrants } from '../auth/GrantsContext';
 import PayDrinksScreen from './PayDrinksScreen';
 
-
 const PayDrinks = () => {
   const { user } = useGrants();
   const result = usePaymentHistory(user.id);

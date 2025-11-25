@@ -120,9 +120,9 @@ const ItemHolderScreen = () => {
             }}
             {...(hasPerm('items.update.holder')
               ? {
-                selectKeyToHandOver,
-                selectKeyToReceive,
-              }
+                  selectKeyToHandOver,
+                  selectKeyToReceive,
+                }
               : {})}
           />
         ))}

@@ -20,18 +20,16 @@ const EventMapPreview = ({ place }: Props) => {
   const dialogs = useDialogs();
   return (
     <Stack direction={'column'}>
-      {
-        place.name && <ListItem dense>
+      {place.name && (
+        <ListItem dense>
           <ListItemAvatar>
             <ListItemIcon>
               <Map />
             </ListItemIcon>
           </ListItemAvatar>
-          <ListItemText
-            primary={place.name}
-            secondary={place.description} />
+          <ListItemText primary={place.name} secondary={place.description} />
         </ListItem>
-      }
+      )}
       <ListItem>
         <ListItemAvatar />
         <Box
@@ -39,12 +37,12 @@ const EventMapPreview = ({ place }: Props) => {
           onClick={async () => {
             if (iOS) {
               const result = await dialogs.open(MapsProviderDialog);
-              if (result === "apple_maps") {
+              if (result === 'apple_maps') {
                 window.open(
                   `http://maps.apple.com/?daddr=${place.name}&sll=${place.lat},${place.lon}&z=10&t=s`,
                   '_blank'
                 );
-              } else if (result === "google_maps") {
+              } else if (result === 'google_maps') {
                 window.open(
                   `https://www.google.com/maps/dir/?api=1&travelmode=bicycling&destination=${place.lat},${place.lon}`,
                   '_blank'

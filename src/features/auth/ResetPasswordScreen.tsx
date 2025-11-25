@@ -55,17 +55,19 @@ const getCommonTextFieldProps = (theme: Theme, baseProps: TextFieldProps = {}): 
   },
 });
 
-export const ResetPasswordLayout = ({ loadingState, theme, errorState, handleSubmit }: {
-  loadingState: [boolean, React.Dispatch<React.SetStateAction<boolean>>],
-  errorState: [string, React.Dispatch<React.SetStateAction<string>>],
-  theme: Theme,
-  handleSubmit: (password: string) => void
+export const ResetPasswordLayout = ({
+  loadingState,
+  theme,
+  errorState,
+  handleSubmit,
+}: {
+  loadingState: [boolean, React.Dispatch<React.SetStateAction<boolean>>];
+  errorState: [string, React.Dispatch<React.SetStateAction<string>>];
+  theme: Theme;
+  handleSubmit: (password: string) => void;
 }) => {
-
-
   const [loading, setLoading] = loadingState;
   const [error, setError] = errorState;
-
 
   const submit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -82,102 +84,104 @@ export const ResetPasswordLayout = ({ loadingState, theme, errorState, handleSub
     handleSubmit(password);
   };
 
-  return <Box
-    sx={(theme) => ({
-      height: '100%',
-      minHeight: '100%',
-      mb: 'env(safe-area-inset-bottom)',
-      mt: 'env(safe-area-inset-top)',
-      display: 'flex',
-      flexDirection: 'column',
-      overflow: 'hidden',
-      overflowY: 'auto',
-      [theme.breakpoints.up('sm')]: {
-        justifyContent: 'center',
-        alignItems: 'center',
-      },
-      [theme.breakpoints.down('xs')]: {
-        justifyContent: 'start',
-        alignItems: 'start',
-      },
-    })}
-  >
-    <Container component="main" maxWidth="xs">
-      <Box
-        sx={(theme) => ({
-          display: 'flex',
-          flexDirection: 'column',
-          bgcolor: 'background.paper',
-          borderRadius: 1,
-          p: 4,
-          mb: 10,
-          [theme.breakpoints.up('sm')]: {
-            border: '1px solid',
-            alignItems: 'center',
-            borderColor: alpha(theme.palette.grey[400], 0.4),
-            boxShadow: theme.shadows[4],
-            marginBottom: 0,
-          },
-          [theme.breakpoints.down('xs')]: {
-            alignItems: 'start',
-            border: 'none',
-            boxShadow: 'none',
-          },
-        })}
-      >
-        {BRANDING.logo}
-
-        <Typography
-          variant="h5"
-          component={'h1'}
-          color="textPrimary"
-          sx={{
-            my: theme.spacing(1),
-            textAlign: 'center',
-            fontWeight: 600,
-          }}
+  return (
+    <Box
+      sx={(theme) => ({
+        height: '100%',
+        minHeight: '100%',
+        mb: 'env(safe-area-inset-bottom)',
+        mt: 'env(safe-area-inset-top)',
+        display: 'flex',
+        flexDirection: 'column',
+        overflow: 'hidden',
+        overflowY: 'auto',
+        [theme.breakpoints.up('sm')]: {
+          justifyContent: 'center',
+          alignItems: 'center',
+        },
+        [theme.breakpoints.down('xs')]: {
+          justifyContent: 'start',
+          alignItems: 'start',
+        },
+      })}
+    >
+      <Container component="main" maxWidth="xs">
+        <Box
+          sx={(theme) => ({
+            display: 'flex',
+            flexDirection: 'column',
+            bgcolor: 'background.paper',
+            borderRadius: 1,
+            p: 4,
+            mb: 10,
+            [theme.breakpoints.up('sm')]: {
+              border: '1px solid',
+              alignItems: 'center',
+              borderColor: alpha(theme.palette.grey[400], 0.4),
+              boxShadow: theme.shadows[4],
+              marginBottom: 0,
+            },
+            [theme.breakpoints.down('xs')]: {
+              alignItems: 'start',
+              border: 'none',
+              boxShadow: 'none',
+            },
+          })}
         >
-          Passwort zurücksetzen<br></br>
-          {BRANDING.title}
-        </Typography>
-        <Box component="form" onSubmit={submit} sx={{ width: '100%' }}>
-          <Stack direction={'column'} spacing={2} sx={{ mb: 2, mt: 2 }}>
-            <TextField
-              {...getCommonTextFieldProps(theme, {
-                label: 'Password',
-                id: 'password',
-                name: 'password',
-                type: 'password',
-              })}
-            />
-            <TextField
-              {...getCommonTextFieldProps(theme, {
-                label: 'Password',
-                id: 'password1',
-                name: 'password1',
-                type: 'password',
-              })}
-            />
-            {loading && (
-              <Alert sx={{ my: 2 }} severity="info">
-                Passwort wird geändert... Bitte warten
-              </Alert>
-            )}
-            {error && (
-              <Alert sx={{ my: 2 }} severity="error">
-                {error}
-              </Alert>
-            )}
-          </Stack>
+          {BRANDING.logo}
 
-          <Button type="submit" variant="contained" fullWidth disabled={loading} sx={{ my: 2 }}>
-            {loading ? <CircularProgress color="inherit" size={25} /> : 'Abschicken'}
-          </Button>
+          <Typography
+            variant="h5"
+            component={'h1'}
+            color="textPrimary"
+            sx={{
+              my: theme.spacing(1),
+              textAlign: 'center',
+              fontWeight: 600,
+            }}
+          >
+            Passwort zurücksetzen<br></br>
+            {BRANDING.title}
+          </Typography>
+          <Box component="form" onSubmit={submit} sx={{ width: '100%' }}>
+            <Stack direction={'column'} spacing={2} sx={{ mb: 2, mt: 2 }}>
+              <TextField
+                {...getCommonTextFieldProps(theme, {
+                  label: 'Password',
+                  id: 'password',
+                  name: 'password',
+                  type: 'password',
+                })}
+              />
+              <TextField
+                {...getCommonTextFieldProps(theme, {
+                  label: 'Password',
+                  id: 'password1',
+                  name: 'password1',
+                  type: 'password',
+                })}
+              />
+              {loading && (
+                <Alert sx={{ my: 2 }} severity="info">
+                  Passwort wird geändert... Bitte warten
+                </Alert>
+              )}
+              {error && (
+                <Alert sx={{ my: 2 }} severity="error">
+                  {error}
+                </Alert>
+              )}
+            </Stack>
+
+            <Button type="submit" variant="contained" fullWidth disabled={loading} sx={{ my: 2 }}>
+              {loading ? <CircularProgress color="inherit" size={25} /> : 'Abschicken'}
+            </Button>
+          </Box>
         </Box>
-      </Box>
-    </Container>
-  </Box>
-}
+      </Container>
+    </Box>
+  );
+};
 
 const ResetPasswordScreen = () => {
   const hashParams = new URLSearchParams(window.location.hash.substring(1));
@@ -222,7 +226,12 @@ const ResetPasswordScreen = () => {
   };
 
   return (
-    <ResetPasswordLayout loadingState={[loading, setLoading]} theme={theme} errorState={[error, setError]} handleSubmit={handleSubmit} />
+    <ResetPasswordLayout
+      loadingState={[loading, setLoading]}
+      theme={theme}
+      errorState={[error, setError]}
+      handleSubmit={handleSubmit}
+    />
   );
 };
 export default ResetPasswordScreen;

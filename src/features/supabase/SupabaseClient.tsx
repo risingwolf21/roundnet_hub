@@ -6,13 +6,7 @@ import Button from '@mui/material/Button';
 import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';
 import Toolbar from '@mui/material/Toolbar';
-import {
-  GridColDef,
-  GridFilterModel,
-  GridPaginationModel,
-  GridSortModel,
-  GridValidRowModel,
-} from '@mui/x-data-grid';
+import { GridColDef, GridFilterModel, GridPaginationModel, GridSortModel, GridValidRowModel } from '@mui/x-data-grid';
 import { ErrorBoundary } from '@sentry/react';
 import { keepPreviousData, QueryKey, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useDialogs, useLocalStorageState } from '@toolpad/core';
@@ -30,8 +24,9 @@ const EditEntryDialog = lazy(() => import('./EditEntryDialog'));
 const ViewEntryDialog = lazy(() => import('./ViewEntryDialog'));
 
 const DataGrid = lazy(() => import('@mui/x-data-grid').then((mod) => ({ default: mod.DataGrid })));
-const GridActionsCellItem = lazy(() => import('@mui/x-data-grid').then((mod) => ({ default: mod.GridActionsCellItem })));
-
+const GridActionsCellItem = lazy(() =>
+  import('@mui/x-data-grid').then((mod) => ({ default: mod.GridActionsCellItem }))
+);
 
 export type Table = { name: string; schema: string };
 
@@ -83,16 +78,27 @@ function NoRowsOverlay() {
   return (
     <StyledGridOverlay>
       <svg xmlns="http://www.w3.org/2000/svg" fill="none" width={96} viewBox="0 0 452 257" aria-hidden>
-        <path className="no-rows-primary" d="M348 69c-46.392 0-84 37.608-84 84s37.608 84 84 84 84-37.608 84-84-37.608-84-84-84Zm-104 84c0-57.438 46.562-104 104-104s104 46.562 104 104-46.562 104-104 104-104-46.562-104-104Z" />
-        <path className="no-rows-primary" d="M308.929 113.929c3.905-3.905 10.237-3.905 14.142 0l63.64 63.64c3.905 3.905 3.905 10.236 0 14.142-3.906 3.905-10.237 3.905-14.142 0l-63.64-63.64c-3.905-3.905-3.905-10.237 0-14.142Z" />
-        <path className="no-rows-primary" d="M308.929 191.711c-3.905-3.906-3.905-10.237 0-14.142l63.64-63.64c3.905-3.905 10.236-3.905 14.142 0 3.905 3.905 3.905 10.237 0 14.142l-63.64 63.64c-3.905 3.905-10.237 3.905-14.142 0Z" />
-        <path className="no-rows-secondary" d="M0 10C0 4.477 4.477 0 10 0h380c5.523 0 10 4.477 10 10s-4.477 10-10 10H10C4.477 20 0 15.523 0 10ZM0 59c0-5.523 4.477-10 10-10h231c5.523 0 10 4.477 10 10s-4.477 10-10 10H10C4.477 69 0 64.523 0 59ZM0 106c0-5.523 4.477-10 10-10h203c5.523 0 10 4.477 10 10s-4.477 10-10 10H10c-5.523 0-10-4.477-10-10ZM0 153c0-5.523 4.477-10 10-10h195.5c5.523 0 10 4.477 10 10s-4.477 10-10 10H10c-5.523 0-10-4.477-10-10ZM0 200c0-5.523 4.477 10 10-10h203c5.523 0 10 4.477 10 10s-4.477 10-10 10H10c-5.523 0-10-4.477-10-10ZM0 247c0-5.523 4.477-10 10-10h231c5.523 0 10 4.477 10 10s-4.477 10-10 10H10c-5.523 0-10-4.477-10-10Z" />
+        <path
+          className="no-rows-primary"
+          d="M348 69c-46.392 0-84 37.608-84 84s37.608 84 84 84 84-37.608 84-84-37.608-84-84-84Zm-104 84c0-57.438 46.562-104 104-104s104 46.562 104 104-46.562 104-104 104-104-46.562-104-104Z"
+        />
+        <path
+          className="no-rows-primary"
+          d="M308.929 113.929c3.905-3.905 10.237-3.905 14.142 0l63.64 63.64c3.905 3.905 3.905 10.236 0 14.142-3.906 3.905-10.237 3.905-14.142 0l-63.64-63.64c-3.905-3.905-3.905-10.237 0-14.142Z"
+        />
+        <path
+          className="no-rows-primary"
+          d="M308.929 191.711c-3.905-3.906-3.905-10.237 0-14.142l63.64-63.64c3.905-3.905 10.236-3.905 14.142 0 3.905 3.905 3.905 10.237 0 14.142l-63.64 63.64c-3.905 3.905-10.237 3.905-14.142 0Z"
+        />
+        <path
+          className="no-rows-secondary"
+          d="M0 10C0 4.477 4.477 0 10 0h380c5.523 0 10 4.477 10 10s-4.477 10-10 10H10C4.477 20 0 15.523 0 10ZM0 59c0-5.523 4.477-10 10-10h231c5.523 0 10 4.477 10 10s-4.477 10-10 10H10C4.477 69 0 64.523 0 59ZM0 106c0-5.523 4.477-10 10-10h203c5.523 0 10 4.477 10 10s-4.477 10-10 10H10c-5.523 0-10-4.477-10-10ZM0 153c0-5.523 4.477-10 10-10h195.5c5.523 0 10 4.477 10 10s-4.477 10-10 10H10c-5.523 0-10-4.477-10-10ZM0 200c0-5.523 4.477 10 10-10h203c5.523 0 10 4.477 10 10s-4.477 10-10 10H10c-5.523 0-10-4.477-10-10ZM0 247c0-5.523 4.477-10 10-10h231c5.523 0 10 4.477 10 10s-4.477 10-10 10H10c-5.523 0-10-4.477-10-10Z"
+        />
       </svg>
       <Box sx={{ mt: 2 }}>No rows</Box>
     </StyledGridOverlay>
   );
 }
-
 
 const serializeSortKey = (sortModel?: GridSortModel) =>
   JSON.stringify((sortModel ?? []).map(({ field, sort }) => ({ field, sort })));
@@ -134,7 +140,10 @@ function mapOperator(qb: any, field: string, operator: string, value: unknown) {
     case '<=':
       return qb.lte(field, v);
     case 'in': {
-      const list = v.split(',').map((s) => s.trim()).filter(Boolean);
+      const list = v
+        .split(',')
+        .map((s) => s.trim())
+        .filter(Boolean);
       return qb.in(field, list);
     }
     default:
@@ -172,21 +181,14 @@ export function useSupabaseTableQuery<Row = Record<string, unknown>>({
   });
 
   const rowsQuery = useQuery({
-    queryKey: [
-      'sb',
-      'rows',
-      schema,
-      table,
-      { from, to },
-      serializeSortKey(sortModel),
-      serializeFilterKey(filterModel),
-    ],
+    queryKey: ['sb', 'rows', schema, table, { from, to }, serializeSortKey(sortModel), serializeFilterKey(filterModel)],
     enabled: enabled && Boolean(schema && table) && !colsQuery.isLoading && !colsQuery.error,
     placeholderData: keepPreviousData,
     queryFn: async () => {
       let qb = supabase
         // @ts-expect-error unknown schema
-        .schema(schema).from(table)
+        .schema(schema)
+        .from(table)
         .select('*', { count: 'exact' })
         .range(from, to)
         .setHeader('x-app-client', '1');
@@ -239,9 +241,7 @@ function useSupabaseTableMutations<Row = Record<string, unknown>>({
   const queryClient = useQueryClient();
   const rowsKeyPrefix = React.useMemo(() => ['sb', 'rows', schema, table], [schema, table]);
 
-  const patchCachedPages = (
-    patch: (page: { rows: Row[]; count: number }) => { rows: Row[]; count: number },
-  ) => {
+  const patchCachedPages = (patch: (page: { rows: Row[]; count: number }) => { rows: Row[]; count: number }) => {
     const caches = queryClient.getQueriesData<{ rows: Row[]; count: number }>({ queryKey: rowsKeyPrefix });
     for (const [key, old] of caches) {
       if (!old) continue;
@@ -254,7 +254,8 @@ function useSupabaseTableMutations<Row = Record<string, unknown>>({
       if (!schema || !table) throw new Error('schema and table are required for createRow');
       const { data, error } = await supabase
         // @ts-expect-error unknown schema
-        .schema(schema).from(table)
+        .schema(schema)
+        .from(table)
         .insert(payload as any)
         .select('*')
         .single()
@@ -304,7 +305,8 @@ function useSupabaseTableMutations<Row = Record<string, unknown>>({
       if (!schema || !table) throw new Error('schema and table are required for updateRow');
       const { data, error } = await supabase
         // @ts-expect-error unknown schema
-        .schema(schema).from(table)
+        .schema(schema)
+        .from(table)
         .update(payload as never)
         .eq(primaryKey, id)
         .select('*')
@@ -341,8 +343,10 @@ function useSupabaseTableMutations<Row = Record<string, unknown>>({
       if (!schema || !table) throw new Error('schema and table are required for deleteRow');
       const { error } = await supabase
         // @ts-expect-error unknown schema
-        .schema(schema).from(table)
-        .delete().eq(primaryKey, id)
+        .schema(schema)
+        .from(table)
+        .delete()
+        .eq(primaryKey, id)
         .setHeader('x-app-client', '1');
       if (error) throw error;
       return id;
@@ -368,7 +372,8 @@ function useSupabaseTableMutations<Row = Record<string, unknown>>({
       if (!schema || !table) throw new Error('schema and table are required for updateRowByMatch');
       let qb = supabase
         // @ts-expect-error unknown schema
-        .schema(schema).from(table)
+        .schema(schema)
+        .from(table)
         .update(changes as never)
         .setHeader('x-app-client', '1');
       Object.entries(where).forEach(([k, v]) => (qb = qb.eq(k, v as any)));
@@ -381,7 +386,9 @@ function useSupabaseTableMutations<Row = Record<string, unknown>>({
       await queryClient.cancelQueries({ queryKey: rowsKeyPrefix });
       const prevSnapshots = queryClient.getQueriesData<{ rows: Row[]; count: number }>({ queryKey: rowsKeyPrefix });
       patchCachedPages(({ rows, count }) => ({
-        rows: rows.map((r) => (Object.entries(where).every(([k, v]) => (r as any)[k] === v) ? { ...r, ...changes } : r)),
+        rows: rows.map((r) =>
+          Object.entries(where).every(([k, v]) => (r as any)[k] === v) ? { ...r, ...changes } : r
+        ),
         count,
       }));
       return { prevSnapshots };
@@ -397,7 +404,8 @@ function useSupabaseTableMutations<Row = Record<string, unknown>>({
       if (!schema || !table) throw new Error('schema and table are required for deleteByMatch');
       let qb = supabase
         // @ts-expect-error unknown schema
-        .schema(schema).from(table)
+        .schema(schema)
+        .from(table)
         .delete()
         .setHeader('x-app-client', '1');
       Object.entries(where).forEach(([k, v]) => (qb = qb.eq(k, v as any)));
@@ -425,7 +433,9 @@ function useSupabaseTableMutations<Row = Record<string, unknown>>({
 
 // Primary key discovery via RPC
 async function fetchPrimaryKeys(schema: string, table: string): Promise<string[]> {
-  const { data, error } = await supabase.schema('util').rpc('get_primary_keys', { schema_name: schema, table_name: table });
+  const { data, error } = await supabase
+    .schema('util')
+    .rpc('get_primary_keys', { schema_name: schema, table_name: table });
   if (error) throw error;
   return (data ?? []).map((r: { column_name: string }) => r.column_name);
 }
@@ -475,7 +485,6 @@ function useSupabaseTableMutationsPkAware<Row = Record<string, unknown>>({
   return { ...base, updateSmart, deleteSmart, pkColumns } as const;
 }
 
-
 export default function SupabaseClient() {
   const [tables = [], setTables] = useLocalStorageState<Table[]>('supabase_tables', [], {
     codec: {
@@ -483,15 +492,18 @@ export default function SupabaseClient() {
       parse: (raw: string): Table[] => {
         try {
           const parsed = JSON.parse(raw);
-          if (Array.isArray(parsed) && parsed.every((item) => typeof item.name === 'string' && typeof item.schema === 'string')) {
+          if (
+            Array.isArray(parsed) &&
+            parsed.every((item) => typeof item.name === 'string' && typeof item.schema === 'string')
+          ) {
             return parsed as Table[];
           }
         } catch {
           // ignore
         }
         return [];
-      }
-    }
+      },
+    },
   });
   const [selectedTable, setSelectedTable] = React.useState<Table | null>(null);
 
@@ -523,17 +535,19 @@ export default function SupabaseClient() {
     (async () => {
       const result = await supabase.schema('util').rpc('get_public_table_names').select('*');
       const data = result.data ?? [];
-      setTables(data.map((x: {
-        table_name: string;
-        table_schema: string;
-      }) => ({ name: x.table_name, schema: x.table_schema })));
+      setTables(
+        data.map((x: { table_name: string; table_schema: string }) => ({ name: x.table_name, schema: x.table_schema }))
+      );
 
       const table = searchParams.get('table');
       const schema = searchParams.get('schema');
-      if (table && schema && data.some((x: {
-        table_name: string;
-        table_schema: string;
-      }) => x.table_name === table && x.table_schema === schema)) {
+      if (
+        table &&
+        schema &&
+        data.some(
+          (x: { table_name: string; table_schema: string }) => x.table_name === table && x.table_schema === schema
+        )
+      ) {
         setSelectedTable({ name: table, schema });
       }
     })().catch((e) => notifications.show(String(e), { severity: 'error' }));
@@ -555,69 +569,88 @@ export default function SupabaseClient() {
   };
 
   const getRowId = React.useCallback(
-    (row: any) => (pkColumns.length ? pkColumns.map((k) => row[k]).join('|') : row.id ?? JSON.stringify(row)),
-    [pkColumns],
+    (row: any) => (pkColumns.length ? pkColumns.map((k) => row[k]).join('|') : (row.id ?? JSON.stringify(row))),
+    [pkColumns]
   );
 
   const toolbarButtons = () => (
     <Toolbar>
-      <Button size="small" startIcon={<Add />} onClick={async () => {
-        const result = await dialog.open(EditEntryDialog, { entry: {}, columns });
-        if (!result) return;
-        try {
-          await createRow.mutateAsync(result);
-        } catch (e: unknown) {
-          notifications.show('Der Eintrag konnte nicht erstellt werden. ' + JSON.stringify(e), { severity: 'error' });
-        }
-      }}>Erstellen</Button>
+      <Button
+        size="small"
+        startIcon={<Add />}
+        onClick={async () => {
+          const result = await dialog.open(EditEntryDialog, { entry: {}, columns });
+          if (!result) return;
+          try {
+            await createRow.mutateAsync(result);
+          } catch (e: unknown) {
+            notifications.show('Der Eintrag konnte nicht erstellt werden. ' + JSON.stringify(e), { severity: 'error' });
+          }
+        }}
+      >
+        Erstellen
+      </Button>
     </Toolbar>
   );
 
   return (
     <Layout>
       <ListItem dense onClick={onSelectTable} secondaryAction={<ExpandMoreOutlined />}>
-        <ListItemText primary={selectedTable?.name ?? 'Nicht gewählt'} secondary={selectedTable?.schema ?? 'Nicht gewählt'} />
+        <ListItemText
+          primary={selectedTable?.name ?? 'Nicht gewählt'}
+          secondary={selectedTable?.schema ?? 'Nicht gewählt'}
+        />
       </ListItem>
 
-      <ErrorBoundary fallback={NoRowsOverlay} onError={(error) => notifications.show(String(error), { severity: 'error' })}>
+      <ErrorBoundary
+        fallback={NoRowsOverlay}
+        onError={(error) => notifications.show(String(error), { severity: 'error' })}
+      >
         <DataGrid
-          sx={{ '--DataGrid-overlayHeight': '300px', mb: 'min(56px,env(safe-area-inset-bottom))', maxHeight: 'calc(100% - 61px - env(safe-area-inset-bottom))', height: 'calc(100% - 61px - env(safe-area-inset-bottom))' }}
+          sx={{
+            '--DataGrid-overlayHeight': '300px',
+            mb: 'min(56px,env(safe-area-inset-bottom))',
+            maxHeight: 'calc(100% - 61px - env(safe-area-inset-bottom))',
+            height: 'calc(100% - 61px - env(safe-area-inset-bottom))',
+          }}
           slots={{ noRowsOverlay: NoRowsOverlay, toolbar: toolbarButtons }}
           rows={rows}
           columns={[
-            ...columns.map((c) => ({ field: c.column_name, headerName: c.column_name, width: 150, hideable: true } as GridColDef)),
+            ...columns.map(
+              (c) => ({ field: c.column_name, headerName: c.column_name, width: 150, hideable: true }) as GridColDef
+            ),
             ...(columns.length
               ? [
-                {
-                  field: 'actions',
-                  type: 'actions',
-                  cellClassName: 'actions',
-                  headerName: 'Actions',
-                  width: 100,
-                  getActions: ({ row }) => [
-                    <GridActionsCellItem
-                      key="view"
-                      icon={<Visibility />}
-                      label="View"
-                      onClick={async () => {
-                        const result = await dialog.open(ViewEntryDialog, { entry: row });
-                        if (result === 'delete') await deleteSmart.mutateAsync(row);
-                      }}
-                      color="inherit"
-                    />,
-                    <GridActionsCellItem
-                      key="edit"
-                      icon={<Edit />}
-                      label="Edit"
-                      onClick={async () => {
-                        const updates = await dialog.open(EditEntryDialog, { entry: row, columns });
-                        if (updates) await updateSmart.mutateAsync({ ...row, ...updates });
-                      }}
-                      color="inherit"
-                    />,
-                  ],
-                } as GridColDef,
-              ]
+                  {
+                    field: 'actions',
+                    type: 'actions',
+                    cellClassName: 'actions',
+                    headerName: 'Actions',
+                    width: 100,
+                    getActions: ({ row }) => [
+                      <GridActionsCellItem
+                        key="view"
+                        icon={<Visibility />}
+                        label="View"
+                        onClick={async () => {
+                          const result = await dialog.open(ViewEntryDialog, { entry: row });
+                          if (result === 'delete') await deleteSmart.mutateAsync(row);
+                        }}
+                        color="inherit"
+                      />,
+                      <GridActionsCellItem
+                        key="edit"
+                        icon={<Edit />}
+                        label="Edit"
+                        onClick={async () => {
+                          const updates = await dialog.open(EditEntryDialog, { entry: row, columns });
+                          if (updates) await updateSmart.mutateAsync({ ...row, ...updates });
+                        }}
+                        color="inherit"
+                      />,
+                    ],
+                  } as GridColDef,
+                ]
               : []),
           ]}
           loading={isLoading}

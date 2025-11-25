@@ -35,12 +35,12 @@ const formatRelativeLocaleEN = {
 
 export const LOCALE_DE: Locale = {
   ...de,
-  formatRelative: token => formatRelativeLocaleDE[token]
+  formatRelative: (token) => formatRelativeLocaleDE[token],
 };
 
 export const LOCALE_EN: Locale = {
   ...enGB,
-  formatRelative: token => formatRelativeLocaleEN[token]
+  formatRelative: (token) => formatRelativeLocaleEN[token],
 };
 
 const locales = { enGB: LOCALE_EN, de: LOCALE_DE };

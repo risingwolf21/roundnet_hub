@@ -1,6 +1,7 @@
 import { supabase } from '@/lib/supabase';
 
-export const fetchItems = () => supabase.from('items').select('*, full_current_holder: user!items_current_holder_fkey(*)');
+export const fetchItems = () =>
+  supabase.from('items').select('*, full_current_holder: user!items_current_holder_fkey(*)');
 export const fetchItemHistory = () =>
   supabase
     .from('item_history')

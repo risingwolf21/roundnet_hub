@@ -43,10 +43,13 @@ export const SupabaseUserRepository = {
   async fetchGroupsForUser(userId: string): Promise<GroupWithUserRole[]> {
     const { data, error } = await fetchGroups().eq('user', userId);
     if (!data || error) return [];
-    return data.map((x) => (({
-      ...x.event_group,
-      user_role: x.role,
-    }) as GroupWithUserRole));
+    return data.map(
+      (x) =>
+        ({
+          ...x.event_group,
+          user_role: x.role,
+        }) as GroupWithUserRole
+    );
   },
 
   async fetchPlayer(userId: string): Promise<PostgrestSingleResponse<Player | null>> {

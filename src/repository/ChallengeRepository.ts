@@ -2,7 +2,6 @@ import { supabase } from '@/lib/supabase';
 import { formatDateToDatabase } from '@/utils';
 import { PostgrestSingleResponse } from '@supabase/supabase-js';
 
-
 export const fetchChallengeWithGroup = () =>
   supabase
     .from('challenge')

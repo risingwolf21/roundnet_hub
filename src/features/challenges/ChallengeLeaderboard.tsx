@@ -18,16 +18,16 @@ export const ChallengeLeaderboard = ({
       {isLoading
         ? Array.from({ length: 10 }, (_v, k) => k + 1).map((x) => <LoadingChallengeStatItem key={x} index={x} />)
         : challenge_points
-          .sort((a, b) => b.total_points - a.total_points)
-          .map((x) => (
-            <ChallengeStatItem
-              key={x.user}
-              points={x.total_points}
-              displayName={x.displayName}
-              avatarUrl={x.avatarUrl}
-              index={uniqueScores.indexOf(x.total_points)}
-            />
-          ))}
+            .sort((a, b) => b.total_points - a.total_points)
+            .map((x) => (
+              <ChallengeStatItem
+                key={x.user}
+                points={x.total_points}
+                displayName={x.displayName}
+                avatarUrl={x.avatarUrl}
+                index={uniqueScores.indexOf(x.total_points)}
+              />
+            ))}
     </List>
   );
 };

@@ -4,7 +4,6 @@ import { supabaseIntegration } from '@supabase/sentry-js-integration';
 import React from 'react';
 import { createRoutesFromChildren, matchRoutes, useLocation, useNavigationType } from 'react-router';
 
-
 Sentry.init({
   dsn: 'https://a06f63fae5ab4ce4ac291d0d6fb4e989@o4505379650666496.ingest.us.sentry.io/4505379651649536',
   sendDefaultPii: true,

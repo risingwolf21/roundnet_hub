@@ -27,7 +27,7 @@ import Tab from '@mui/material/Tab';
 import Tabs from '@mui/material/Tabs';
 import Typography from '@mui/material/Typography';
 
-export const TabPanel = (props: PropsWithChildren & { value: number, index: number, dir: Direction }) => {
+export const TabPanel = (props: PropsWithChildren & { value: number; index: number; dir: Direction }) => {
   const { children, value, index, ...other } = props;
 
   return (
@@ -117,13 +117,22 @@ const EventAttendanceDialog = ({
   const dialogs = useDialogs();
   const { user, hasPerm, hasFeat } = useGrants();
 
-  const attending = useMemo(() => attendance.filter(x => x.state === "Attending" || x.state === "AttendingAsTrainer" || x.state === "RequestedAttendance"), [attendance]);
-  const declined = useMemo(() => attendance.filter(x => x.state === "Declined"), [attendance]);
-  const attendingAsTrial = useMemo(() => attendance.filter(x => x.state === "AttendingAsTrial"), [attendance]);
-  const waitingList = useMemo(() => attendance.filter(x => x.state === "Waiting"), [attendance]);
-  const waitingAsTrial = useMemo(() => attendance.filter(x => x.state === "WaitingAsTrial"), [attendance]);
+  const attending = useMemo(
+    () =>
+      attendance.filter(
+        (x) => x.state === 'Attending' || x.state === 'AttendingAsTrainer' || x.state === 'RequestedAttendance'
+      ),
+    [attendance]
+  );
+  const declined = useMemo(() => attendance.filter((x) => x.state === 'Declined'), [attendance]);
+  const attendingAsTrial = useMemo(() => attendance.filter((x) => x.state === 'AttendingAsTrial'), [attendance]);
+  const waitingList = useMemo(() => attendance.filter((x) => x.state === 'Waiting'), [attendance]);
+  const waitingAsTrial = useMemo(() => attendance.filter((x) => x.state === 'WaitingAsTrial'), [attendance]);
 
-  const showWaitingListTab = useMemo(() => waitingList.length > 0 || waitingAsTrial.length > 0, [waitingAsTrial, waitingList]);
+  const showWaitingListTab = useMemo(
+    () => waitingList.length > 0 || waitingAsTrial.length > 0,
+    [waitingAsTrial, waitingList]
+  );
   const showAttendingAsTrialTab = useMemo(() => attendingAsTrial.length > 0, [attendingAsTrial]);
 
   const canSeeTrial = hasFeat('events.trials') && showAttendingAsTrialTab;
@@ -140,11 +149,43 @@ const EventAttendanceDialog = ({
     <SwipeableDialog title="Teilnehmer" open={open} onClose={() => setOpen(false)} minHeight={60} setOpen={setOpen}>
       <Box sx={{ paddingLeft: 0 }}>
         <AppBar position="sticky" elevation={0} sx={{ '&.MuiAppBar-root': { backgroundColor: '#fff', color: '#000' } }}>
-          <Tabs value={value} onChange={handleChange} indicatorColor="primary" textColor="inherit" variant="scrollable" scrollButtons allowScrollButtonsMobile>
-            <Tab sx={{ minHeight: "unset" }} label="Zusagen" icon={<Chip label={attending.length} size='small' />} iconPosition='end' />
-            <Tab sx={{ minHeight: "unset" }} label="Absagen" icon={<Chip label={declined.length} size='small' />} iconPosition='end' />
-            {canSeeTrial && <Tab sx={{ minHeight: "unset" }} label="Probetraining" icon={<Chip label={attendingAsTrial.length} size='small' />} iconPosition='end' />}
-            {showWaitingListTab && <Tab sx={{ minHeight: "unset" }} label="Warteliste" icon={<Chip label={waitingList.length + waitingAsTrial.length} size='small' />} iconPosition='end' />}
+          <Tabs
+            value={value}
+            onChange={handleChange}
+            indicatorColor="primary"
+            textColor="inherit"
+            variant="scrollable"
+            scrollButtons
+            allowScrollButtonsMobile
+          >
+            <Tab
+              sx={{ minHeight: 'unset' }}
+              label="Zusagen"
+              icon={<Chip label={attending.length} size="small" />}
+              iconPosition="end"
+            />
+            <Tab
+              sx={{ minHeight: 'unset' }}
+              label="Absagen"
+              icon={<Chip label={declined.length} size="small" />}
+              iconPosition="end"
+            />
+            {canSeeTrial && (
+              <Tab
+                sx={{ minHeight: 'unset' }}
+                label="Probetraining"
+                icon={<Chip label={attendingAsTrial.length} size="small" />}
+                iconPosition="end"
+              />
+            )}
+            {showWaitingListTab && (
+              <Tab
+                sx={{ minHeight: 'unset' }}
+                label="Warteliste"
+                icon={<Chip label={waitingList.length + waitingAsTrial.length} size="small" />}
+                iconPosition="end"
+              />
+            )}
           </Tabs>
         </AppBar>
         <TabPanel value={value} index={0} dir={theme.direction}>
@@ -155,7 +196,7 @@ const EventAttendanceDialog = ({
               .map((x: FullAttendance) => (
                 <AttendanceItem
                   attendance={x}
-                  key={x.user.id + "AttendingAsTrainer"}
+                  key={x.user.id + 'AttendingAsTrainer'}
                   onClick={() => dialogs.open(ProfileDialog, { user, userId: x.user.id })}
                   required_item={usersWithRequiredItem.find((y) => y.user === x.user.id)?.item}
                 />
@@ -166,7 +207,7 @@ const EventAttendanceDialog = ({
               .map((x: FullAttendance) => (
                 <AttendanceItem
                   attendance={x}
-                  key={x.user.id + "RequestedAttendance"}
+                  key={x.user.id + 'RequestedAttendance'}
                   onClick={() => dialogs.open(ProfileDialog, { user, userId: x.user.id })}
                   required_item={usersWithRequiredItem.find((y) => y.user === x.user.id)?.item}
                   acceptAttendance={hasPerm('event.manage.attendees') ? acceptAttendance : null}
@@ -178,7 +219,7 @@ const EventAttendanceDialog = ({
               .map((x: FullAttendance) => (
                 <AttendanceItem
                   attendance={x}
-                  key={x.user.id + "Attending"}
+                  key={x.user.id + 'Attending'}
                   onClick={() => dialogs.open(ProfileDialog, { user, userId: x.user.id })}
                   required_item={usersWithRequiredItem.find((y) => y.user === x.user.id)?.item}
                 />
@@ -193,82 +234,78 @@ const EventAttendanceDialog = ({
               .map((x: FullAttendance) => (
                 <AttendanceItem
                   attendance={x}
-                  key={x.user.id + "Declined"}
+                  key={x.user.id + 'Declined'}
                   onClick={() => dialogs.open(ProfileDialog, { user, userId: x.user.id })}
                 />
               ))}
           </List>
         </TabPanel>
-        <Has feat={"events.trials"}>
-          {
-            attendingAsTrial.length > 0 && <TabPanel value={value} index={2} dir={theme.direction}>
+        <Has feat={'events.trials'}>
+          {attendingAsTrial.length > 0 && (
+            <TabPanel value={value} index={2} dir={theme.direction}>
               <List sx={{ pb: 8 }}>
                 {attendingAsTrial
                   .sort((a, b) => compareDesc(a.lastUpdate, b.lastUpdate))
                   .map((x: FullAttendance) => (
                     <AttendanceItem
                       attendance={x}
-                      key={x.user.id + "AttendingAsTrial"}
+                      key={x.user.id + 'AttendingAsTrial'}
                       onClick={() => dialogs.open(ProfileDialog, { user, userId: x.user.id })}
                     />
                   ))}
               </List>
             </TabPanel>
-          }
+          )}
         </Has>
         {showWaitingListTab && (
           <TabPanel value={value} index={2 + (showAttendingAsTrialTab ? 1 : 0)} dir={theme.direction}>
             <List sx={{ pb: 8 }}>
-              {
-                waitingList.length > 0 && <List subheader={<ListSubheader>Warteliste</ListSubheader>}>
-                  {
-                    waitingList
-                      .sort((a, b) => (isBefore(a.lastUpdate, b.lastUpdate) ? 1 : 0))
-                      .map((x: FullAttendance, index: number) => (
-                        <ListItem
-                          key={x.user.id + "waitingList"}
-                          secondaryAction={<Typography fontWeight={'bold'}>{`${index + 1}.)`}</Typography>}
-                        >
-                          <ListItemAvatar>
-                            <Avatar sx={{ borderRadius: 2 }}>
-                              {x.user.avatarUrl ? (
-                                <img src={x.user.avatarUrl} alt="logo" width={'100%'} height={'100%'} />
-                              ) : (
-                                <AccountBox />
-                              )}
-                            </Avatar>
-                          </ListItemAvatar>
-                          <ListItemText primary={x.user?.displayName} />
-                        </ListItem>
-                      ))
-                  }
+              {waitingList.length > 0 && (
+                <List subheader={<ListSubheader>Warteliste</ListSubheader>}>
+                  {waitingList
+                    .sort((a, b) => (isBefore(a.lastUpdate, b.lastUpdate) ? 1 : 0))
+                    .map((x: FullAttendance, index: number) => (
+                      <ListItem
+                        key={x.user.id + 'waitingList'}
+                        secondaryAction={<Typography fontWeight={'bold'}>{`${index + 1}.)`}</Typography>}
+                      >
+                        <ListItemAvatar>
+                          <Avatar sx={{ borderRadius: 2 }}>
+                            {x.user.avatarUrl ? (
+                              <img src={x.user.avatarUrl} alt="logo" width={'100%'} height={'100%'} />
+                            ) : (
+                              <AccountBox />
+                            )}
+                          </Avatar>
+                        </ListItemAvatar>
+                        <ListItemText primary={x.user?.displayName} />
+                      </ListItem>
+                    ))}
                 </List>
-              }
-              {
-                waitingAsTrial.length > 0 && <List subheader={<ListSubheader>Warteliste Probetraining</ListSubheader>}>
-                  {
-                    waitingAsTrial
-                      .sort((a, b) => (isBefore(a.lastUpdate, b.lastUpdate) ? 1 : 0))
-                      .map((x: FullAttendance, index: number) => (
-                        <ListItem
-                          key={x.user.id + "WaitingTrialList"}
-                          secondaryAction={<Typography fontWeight={'bold'}>{`${index + 1}.)`}</Typography>}
-                        >
-                          <ListItemAvatar>
-                            <Avatar sx={{ borderRadius: 2 }}>
-                              {x.user.avatarUrl ? (
-                                <img src={x.user.avatarUrl} alt="logo" width={'100%'} height={'100%'} />
-                              ) : (
-                                <AccountBox />
-                              )}
-                            </Avatar>
-                          </ListItemAvatar>
-                          <ListItemText primary={x.user?.displayName} />
-                        </ListItem>
-                      ))
-                  }
+              )}
+              {waitingAsTrial.length > 0 && (
+                <List subheader={<ListSubheader>Warteliste Probetraining</ListSubheader>}>
+                  {waitingAsTrial
+                    .sort((a, b) => (isBefore(a.lastUpdate, b.lastUpdate) ? 1 : 0))
+                    .map((x: FullAttendance, index: number) => (
+                      <ListItem
+                        key={x.user.id + 'WaitingTrialList'}
+                        secondaryAction={<Typography fontWeight={'bold'}>{`${index + 1}.)`}</Typography>}
+                      >
+                        <ListItemAvatar>
+                          <Avatar sx={{ borderRadius: 2 }}>
+                            {x.user.avatarUrl ? (
+                              <img src={x.user.avatarUrl} alt="logo" width={'100%'} height={'100%'} />
+                            ) : (
+                              <AccountBox />
+                            )}
+                          </Avatar>
+                        </ListItemAvatar>
+                        <ListItemText primary={x.user?.displayName} />
+                      </ListItem>
+                    ))}
                 </List>
-              }
+              )}
             </List>
           </TabPanel>
         )}

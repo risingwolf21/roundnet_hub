@@ -2,7 +2,6 @@ import { format, intervalToDuration, parse } from 'date-fns';
 import RoundnetKarlsruheLogo from '../images/Karlsruher_Kojoten_Logo.svg';
 import RoundnetMunichLogo from '../images/Roundnet_Munich_Logo.png';
 
-
 const logoMap = {
   'roundnet-karlsruhe': RoundnetKarlsruheLogo,
   'munich-roundnet': RoundnetMunichLogo,
@@ -19,7 +18,7 @@ const icon = iconMap[(import.meta.env.VITE_WEBSITE_PATH as keyof typeof iconMap)
 export const BRANDING = {
   logo: <img src={logo} alt="MUI logo" style={{ height: 96, objectFit: 'contain' }} />,
   title: import.meta.env.VITE_WEBSITE_NAME,
-  icon: icon
+  icon: icon,
 };
 
 export const iOS = typeof navigator !== 'undefined' && /iPad|iPhone|iPod/.test(navigator.userAgent);
@@ -70,11 +69,11 @@ export const getDurationFrom = (start: string | null, end: string | null) => {
   }
 
   return getDuration(startDate, endDate);
-}
+};
 
 export const getDuration = (start: Date, end: Date) => {
   return intervalToDuration({ start, end });
-}
+};
 
 export const translationKeyOfItemType = (type: ItemType | null) => {
   switch (type) {
@@ -136,8 +135,8 @@ export function readFile(file: Blob): Promise<string | ArrayBuffer | null> {
 }
 
 type ErrorWithMessage = {
-  message: string
-}
+  message: string;
+};
 
 function isErrorWithMessage(error: unknown): error is ErrorWithMessage {
   return (
@@ -145,21 +144,21 @@ function isErrorWithMessage(error: unknown): error is ErrorWithMessage {
     error !== null &&
     'message' in error &&
     typeof (error as Record<string, unknown>).message === 'string'
-  )
+  );
 }
 
 function toErrorWithMessage(maybeError: unknown): ErrorWithMessage {
-  if (isErrorWithMessage(maybeError)) return maybeError
+  if (isErrorWithMessage(maybeError)) return maybeError;
 
   try {
-    return new Error(JSON.stringify(maybeError))
+    return new Error(JSON.stringify(maybeError));
   } catch {
     // fallback in case there's an error stringifying the maybeError
     // like with circular references for example.
-    return new Error(String(maybeError))
+    return new Error(String(maybeError));
   }
 }
 
 export function getErrorMessage(error: unknown) {
-  return toErrorWithMessage(error).message
+  return toErrorWithMessage(error).message;
 }

@@ -16,22 +16,24 @@ export function useUserGrantsQuery(userId: string) {
     queryKey: grantsQk(userId),
     enabled: true,
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("user_grants_view")
-        .select('kind,key')
-        .eq('user', userId);
+      const { data, error } = await supabase.from('user_grants_view').select('kind,key').eq('user', userId);
 
       if (error) throw error;
 
-      return data.reduce((prev, curr) => {
-        if (curr.key && curr.kind) {
-          switch (curr.kind) {
-            case 'perm': return { feat: prev.feat, perm: prev.perm.add(curr.key) }
-            case 'feat': return { feat: prev.feat.add(curr.key), perm: prev.perm }
+      return data.reduce(
+        (prev, curr) => {
+          if (curr.key && curr.kind) {
+            switch (curr.kind) {
+              case 'perm':
+                return { feat: prev.feat, perm: prev.perm.add(curr.key) };
+              case 'feat':
+                return { feat: prev.feat.add(curr.key), perm: prev.perm };
+            }
           }
-        }
-        return prev;
-      }, { perm: new Set<string>(), feat: new Set<string>() })
+          return prev;
+        },
+        { perm: new Set<string>(), feat: new Set<string>() }
+      );
     },
     placeholderData: empty,
     refetchOnWindowFocus: false,
@@ -55,23 +57,39 @@ export function useUserGrantsQuery(userId: string) {
       const uid = me?.user?.id ?? null;
       if (!mounted || !uid) return;
 
-      subs.push(supabase.channel(`rt:udg:${uid}`).on('postgres_changes',
-        { event: '*', schema: 'public', table: 'user_direct_grants', filter: `user=eq.${uid}` },
-        invalidateSoon
-      ).subscribe());
-      subs.push(supabase.channel(`rt:gum:${uid}`).on('postgres_changes',
-        { event: '*', schema: 'public', table: 'group_user_mapping', filter: `user=eq.${uid}` },
-        invalidateSoon
-      ).subscribe());
+      subs.push(
+        supabase
+          .channel(`rt:udg:${uid}`)
+          .on(
+            'postgres_changes',
+            { event: '*', schema: 'public', table: 'user_direct_grants', filter: `user=eq.${uid}` },
+            invalidateSoon
+          )
+          .subscribe()
+      );
+      subs.push(
+        supabase
+          .channel(`rt:gum:${uid}`)
+          .on(
+            'postgres_changes',
+            { event: '*', schema: 'public', table: 'group_user_mapping', filter: `user=eq.${uid}` },
+            invalidateSoon
+          )
+          .subscribe()
+      );
 
-      subs.push(supabase.channel(`rt:gp`).on('postgres_changes',
-        { event: '*', schema: 'public', table: 'group_permissions' },
-        invalidateSoon
-      ).subscribe());
-      subs.push(supabase.channel(`rt:gf`).on('postgres_changes',
-        { event: '*', schema: 'public', table: 'group_features' },
-        invalidateSoon
-      ).subscribe());
+      subs.push(
+        supabase
+          .channel(`rt:gp`)
+          .on('postgres_changes', { event: '*', schema: 'public', table: 'group_permissions' }, invalidateSoon)
+          .subscribe()
+      );
+      subs.push(
+        supabase
+          .channel(`rt:gf`)
+          .on('postgres_changes', { event: '*', schema: 'public', table: 'group_features' }, invalidateSoon)
+          .subscribe()
+      );
     })();
 
     return () => {
@@ -94,5 +112,11 @@ export function useUserGrantsQuery(userId: string) {
     return { hasPerm, hasFeat };
   }, [q.data]);
 
-  return { isEmpty: q.data?.perm.size === 0 && q.data.feat.size === 0, refetchUserGrants: q.refetch, loading: q.isLoading, grants: q.data ?? empty, ...has };
+  return {
+    isEmpty: q.data?.perm.size === 0 && q.data.feat.size === 0,
+    refetchUserGrants: q.refetch,
+    loading: q.isLoading,
+    grants: q.data ?? empty,
+    ...has,
+  };
 }

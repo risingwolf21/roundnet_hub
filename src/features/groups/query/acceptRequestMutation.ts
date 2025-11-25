@@ -3,7 +3,6 @@ import { supabase } from '@/lib/supabase';
 import { FullUserMapping, GroupWithUserMappings } from '@/types/supabaseTypes';
 import { useMutation } from '@tanstack/react-query';
 
-
 export const useAcceptRequestMutation = (group: Group | null) =>
   useMutation({
     mutationFn: async (user: User) => {

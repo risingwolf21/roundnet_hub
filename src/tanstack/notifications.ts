@@ -39,16 +39,15 @@ export const useDismissNotification = () =>
       const previousNotifications = queryClient.getQueryData<Notification[]>(['notifications']);
 
       if (previousNotifications) {
-        const newNotifications = previousNotifications
-          .map(x => {
-            if (x.id === notficationId) {
-              return {
-                ...x,
-                dismissed_at: formatDateToDatabase(new Date())
-              };
-            }
-            return x;
-          })
+        const newNotifications = previousNotifications.map((x) => {
+          if (x.id === notficationId) {
+            return {
+              ...x,
+              dismissed_at: formatDateToDatabase(new Date()),
+            };
+          }
+          return x;
+        });
         queryClient.setQueriesData({ queryKey: ['notifications'] }, newNotifications);
       }
 
@@ -135,7 +134,7 @@ export const useUpdateNotificationPreferences = (user: User) =>
       scopeId?: string;
     }) => {
       const result = await supabase
-        .schema("notifications")
+        .schema('notifications')
         .rpc('set_notification_pref', {
           p_topic: topic,
           p_enabled: enabled,

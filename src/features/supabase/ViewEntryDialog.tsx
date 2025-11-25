@@ -87,20 +87,28 @@ const DialogContent = ({ payload, open, onClose }: DialogProps<ViewEntryDialogPa
             );
           }
           return (
-            <ListItem key={key} divider secondaryAction={<IconButton onClick={() => {
-              navigator.clipboard.writeText(value);
-              notifications.show("In die Zwischenablage kopiert", { severity: "info" })
-            }}>
-              <ContentCopyIcon />
-            </IconButton>}>
+            <ListItem
+              key={key}
+              divider
+              secondaryAction={
+                <IconButton
+                  onClick={() => {
+                    navigator.clipboard.writeText(value);
+                    notifications.show('In die Zwischenablage kopiert', { severity: 'info' });
+                  }}
+                >
+                  <ContentCopyIcon />
+                </IconButton>
+              }
+            >
               <Box sx={{ display: 'flex', flexDirection: 'column', width: '100%' }}>
                 <Typography sx={{ fontWeight: 'bold' }}>{JSON.stringify(value, null, 2)}</Typography>
-                <Typography sx={{ fontFamily: 'monospace', fontSize: "small", whiteSpace: 'pre-wrap' }}>
+                <Typography sx={{ fontFamily: 'monospace', fontSize: 'small', whiteSpace: 'pre-wrap' }}>
                   {key}
                 </Typography>
               </Box>
             </ListItem>
-          )
+          );
         })}
         <Card sx={{ color: 'red', borderRadius: 2, py: 0, px: 0, m: 1 }}>
           <CardActionArea sx={{ px: 1 }}>
@@ -126,9 +134,7 @@ const DialogContent = ({ payload, open, onClose }: DialogProps<ViewEntryDialogPa
 };
 
 const ViewEntryDialog = (props: DialogProps<ViewEntryDialogPayload, 'delete' | null>) => {
-  return (
-    <DialogContent {...props} />
-  );
+  return <DialogContent {...props} />;
 };
 
 export default ViewEntryDialog;

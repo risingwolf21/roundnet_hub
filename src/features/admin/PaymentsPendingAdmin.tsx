@@ -88,20 +88,24 @@ const PaymentsPendingAdmin = () => {
   const confirmPayment = useConfirmPaymentMutation();
 
   return (
-    <Layout appBarContent={<Search sx={{ flexGrow: 1 }}>
-      <SearchIconWrapper>
-        <SearchIcon />
-      </SearchIconWrapper>
-      <div>
-        <StyledInputBase
-          sx={{ width: '100% !important' }}
-          placeholder="Suche nach einem Nutzer"
-          inputProps={{ 'aria-label': 'search' }}
-          value={searchString}
-          onChange={(e: { target: { value: React.SetStateAction<string>; }; }) => setSearchString(e.target.value)}
-        />
-      </div>
-    </Search>}>
+    <Layout
+      appBarContent={
+        <Search sx={{ flexGrow: 1 }}>
+          <SearchIconWrapper>
+            <SearchIcon />
+          </SearchIconWrapper>
+          <div>
+            <StyledInputBase
+              sx={{ width: '100% !important' }}
+              placeholder="Suche nach einem Nutzer"
+              inputProps={{ 'aria-label': 'search' }}
+              value={searchString}
+              onChange={(e: { target: { value: React.SetStateAction<string> } }) => setSearchString(e.target.value)}
+            />
+          </div>
+        </Search>
+      }
+    >
       {isLoading && <LinearProgress style={{ position: 'fixed', left: 0, top: 56, right: 0 }} />}
       {payments && payments.length > 0 && (
         <PullToRefresh onRefresh={() => refetch()}>

@@ -22,7 +22,15 @@ type Props = {
   dialogs: DialogHook;
 };
 
-export const GroupUserItem = ({ user, groupUser, onAvatarClick, selected, secondaryAction, isAdmin, dialogs }: Props) => {
+export const GroupUserItem = ({
+  user,
+  groupUser,
+  onAvatarClick,
+  selected,
+  secondaryAction,
+  isAdmin,
+  dialogs,
+}: Props) => {
   return (
     <ListItem
       key={groupUser.id}
@@ -31,9 +39,7 @@ export const GroupUserItem = ({ user, groupUser, onAvatarClick, selected, second
       sx={{
         ...(selected && { background: 'rgba(2, 136, 209, 0.4)' }),
       }}
-      secondaryAction={
-        secondaryAction && secondaryAction
-      }
+      secondaryAction={secondaryAction && secondaryAction}
     >
       <ListItemAvatar onClick={onAvatarClick}>
         {selected ? (

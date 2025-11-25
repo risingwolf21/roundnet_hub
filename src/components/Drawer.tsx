@@ -346,7 +346,17 @@ const DrawerContent = ({
           />
         </DrawerItem>
       </List>
-      <Has perm={['drinks.confirm.payments', 'drinks.manage', 'users.manage', 'drinks.history.admin', 'grants.manage', 'supabase.admin']} any>
+      <Has
+        perm={[
+          'drinks.confirm.payments',
+          'drinks.manage',
+          'users.manage',
+          'drinks.history.admin',
+          'grants.manage',
+          'supabase.admin',
+        ]}
+        any
+      >
         <>
           <Divider />
           <List
@@ -367,7 +377,7 @@ const DrawerContent = ({
               </ListSubheader>
             }
           >
-            <Has feat={"drinks"} perm={'drinks.confirm.payments'}>
+            <Has feat={'drinks'} perm={'drinks.confirm.payments'}>
               <DrawerItem
                 key="updatePayements"
                 selected={tab === 'admin/drinks/payments'}
@@ -384,7 +394,7 @@ const DrawerContent = ({
                 />
               </DrawerItem>
             </Has>
-            <Has feat={"drinks"} perm={'drinks.manage'}>
+            <Has feat={'drinks'} perm={'drinks.manage'}>
               <DrawerItem
                 key="updateDrink"
                 selected={tab === 'admin/drinks'}
@@ -414,7 +424,7 @@ const DrawerContent = ({
                 />
               </DrawerItem>
             </Has>
-            <Has feat={"drinks"} perm={'drinks.history.admin'}>
+            <Has feat={'drinks'} perm={'drinks.history.admin'}>
               <DrawerItem
                 key="updateHistory"
                 selected={tab === 'admin/drinks/history'}
@@ -529,13 +539,17 @@ const DrawerContent = ({
           </ListItemAvatar>
           <ListItemText
             primaryTypographyProps={{ fontWeight: 'bold', fontSize: '0.9rem' }}
-            primary={t("browse.helpAndInformation")}
+            primary={t('browse.helpAndInformation')}
           />
         </DrawerItem>
-        <DrawerItem key="update app" selected={false} onClick={async () => {
-          await queryClient.invalidateQueries();
-          window.location.reload();
-        }}>
+        <DrawerItem
+          key="update app"
+          selected={false}
+          onClick={async () => {
+            await queryClient.invalidateQueries();
+            window.location.reload();
+          }}
+        >
           <ListItemAvatar>
             <ListItemIcon>
               <Update />
@@ -543,7 +557,7 @@ const DrawerContent = ({
           </ListItemAvatar>
           <ListItemText
             primaryTypographyProps={{ fontWeight: 'bold', fontSize: '0.9rem' }}
-            primary={t("browse.appRefresh")}
+            primary={t('browse.appRefresh')}
           />
         </DrawerItem>
         <DrawerItem key="app version" selected={false}>
@@ -590,7 +604,7 @@ export const Drawer = ({ open, onClose, onOpen }: Props) => {
       t={t}
       version={import.meta.env.VITE_GIT_COMMIT}
       request_group_joins={requested_group_joins.length}
-      notification_count={notifications.filter(x => !x.dismissed_at).length}
+      notification_count={notifications.filter((x) => !x.dismissed_at).length}
     />
   );
 

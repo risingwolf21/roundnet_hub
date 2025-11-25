@@ -1,7 +1,6 @@
-import TextField from "@mui/material/TextField";
-import { Duration } from "date-fns";
-import { useEffect, useState } from "react";
-
+import TextField from '@mui/material/TextField';
+import { Duration } from 'date-fns';
+import { useEffect, useState } from 'react';
 
 /**
  * parseDuration("2w6d4h5m") -> {weeks:2, days:6, hours:4, minutes:5, seconds:0}
@@ -24,19 +23,19 @@ export function parseDuration(input: string): Duration {
     const value = parseInt(match[1], 10);
     const unit = match[2].toLowerCase();
     switch (unit) {
-      case "w":
+      case 'w':
         result.weeks = (result.weeks ?? 0) + value;
         break;
-      case "d":
+      case 'd':
         result.days = (result.days ?? 0) + value;
         break;
-      case "h":
+      case 'h':
         result.hours = (result.hours ?? 0) + value;
         break;
-      case "m":
+      case 'm':
         result.minutes = (result.minutes ?? 0) + value;
         break;
-      case "s":
+      case 's':
         result.seconds = (result.seconds ?? 0) + value;
         break;
       default:
@@ -54,24 +53,24 @@ const formatDuration = (d: Duration): string => {
   if (d.hours && d.hours > 0) parts.push(`${d.hours}h`);
   if (d.minutes && d.minutes > 0) parts.push(`${d.minutes}m`);
   if (d.seconds && d.seconds > 0) parts.push(`${d.seconds}s`);
-  return parts.join(" ");
-}
+  return parts.join(' ');
+};
 
 function validateDuration(input: string): string | null {
   const trimmed = input.trim();
-  if (trimmed === "") return null; // leere Eingabe = 0 Dauer
+  if (trimmed === '') return null; // leere Eingabe = 0 Dauer
 
   // nur erlaubte Zeichen?
   const allowed = /^[\d\swdhms]+$/i;
   if (!allowed.test(trimmed)) {
-    return "Nur Zahlen, Leerzeichen und Einheiten w/d/h/m/s sind erlaubt.";
+    return 'Nur Zahlen, Leerzeichen und Einheiten w/d/h/m/s sind erlaubt.';
   }
 
   // alle Tokens müssen <zahl><einheit> sein, ggf. mit Leerraum dazwischen.
-  const cleaned = trimmed.replace(/\s+/g, "");
+  const cleaned = trimmed.replace(/\s+/g, '');
   const tokenRe = /(\d+)([wdhms])/gi;
 
-  let matchedConcat = "";
+  let matchedConcat = '';
   let m: RegExpExecArray | null;
   while ((m = tokenRe.exec(cleaned))) {
     matchedConcat += m[1] + m[2];
@@ -87,12 +86,11 @@ function validateDuration(input: string): string | null {
 type Props = {
   durationChanged: (d: Duration) => void;
   duration: Duration | null;
-}
+};
 
 export default function DurationAdder({ duration, durationChanged }: Props) {
-
-  const [durationText, setDurationText] = useState<string>(duration ? formatDuration(duration) : "");
-  const [error, setError] = useState<string | null>(null)
+  const [durationText, setDurationText] = useState<string>(duration ? formatDuration(duration) : '');
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const error = validateDuration(durationText);
@@ -105,13 +103,16 @@ export default function DurationAdder({ duration, durationChanged }: Props) {
     durationChanged(d);
   }, [durationText]);
 
-  return <TextField
-    fullWidth
-    size="small"
-    label={'Dauer'}
-    placeholder="1h 30m"
-    value={durationText}
-    error={error !== null}
-    helperText={error}
-    onChange={(e) => setDurationText(e.target.value)} />
+  return (
+    <TextField
+      fullWidth
+      size="small"
+      label={'Dauer'}
+      placeholder="1h 30m"
+      value={durationText}
+      error={error !== null}
+      helperText={error}
+      onChange={(e) => setDurationText(e.target.value)}
+    />
+  );
 }

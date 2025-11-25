@@ -13,8 +13,14 @@ import List from '@mui/material/List';
 import Typography from '@mui/material/Typography';
 import { InfiniteData, UseInfiniteQueryResult } from '@tanstack/react-query';
 
-export const HistoryScreen = ({ user, data: history, isLoading, hasNextPage, fetchNextPage, isFetchingNextPage }
-  : UseInfiniteQueryResult<InfiniteData<{ data: FullHistory[], nextPage?: number }>> & { user: User }) => {
+export const HistoryScreen = ({
+  user,
+  data: history,
+  isLoading,
+  hasNextPage,
+  fetchNextPage,
+  isFetchingNextPage,
+}: UseInfiniteQueryResult<InfiniteData<{ data: FullHistory[]; nextPage?: number }>> & { user: User }) => {
   const notifications = useNotifications();
 
   const [editHistoryEntryOpen, setEditHistoryEntryOpen] = useState<boolean>(false);

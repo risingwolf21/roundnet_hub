@@ -10,7 +10,8 @@ export const useRequestedUsersPerGroup = (me: User) =>
   useQuery<GroupUserMapping[]>({
     queryKey: ['groups', 'joinRequested'],
     queryFn: async () => {
-      const result = await supabase.from('group_user_mapping')
+      const result = await supabase
+        .from('group_user_mapping')
         .select('*')
         .eq('role', 'joinRequested')
         .neq('user', me.id);
@@ -32,20 +33,23 @@ export const useGroup = (groupId?: string) =>
     queryFn: () => GroupsRepository.fetchSingleGroupWithUsers(groupId),
   });
 
-
 export const useGroupUsers = (role: GroupRole, groupId?: string) =>
   useQuery({
     queryKey: ['group', groupId, role],
     enabled: !!groupId,
     queryFn: async () => {
-      const result = await supabase.from('group_user_mapping').select('*, user: user(*)').eq('group', groupId!).eq('role', role);
+      const result = await supabase
+        .from('group_user_mapping')
+        .select('*, user: user(*)')
+        .eq('group', groupId!)
+        .eq('role', role);
 
       if (result.error) {
         return [];
       }
 
       return result.data;
-    }
+    },
   });
 
 export const useJoinGroup = (groupId: string, user: User, role: 'user' | 'admin' | 'joinRequested') =>
@@ -88,19 +92,19 @@ export const useJoinGroup = (groupId: string, user: User, role: 'user' | 'admin'
         const newGroups = prevGroups.map((group) =>
           group.id === groupId
             ? {
-              ...group,
-              users: [
-                ...group.users,
-                {
-                  user: user,
-                  map: {
-                    group: groupId,
-                    role: role,
-                    user: user.id,
+                ...group,
+                users: [
+                  ...group.users,
+                  {
+                    user: user,
+                    map: {
+                      group: groupId,
+                      role: role,
+                      user: user.id,
+                    },
                   },
-                },
-              ],
-            }
+                ],
+              }
             : group
         );
         queryClient.setQueryData(['groups'], newGroups);
@@ -156,7 +160,7 @@ export const useLeaveGroupMutation = () =>
 
 export const useChangeUserRoleMutation = () =>
   useMutation({
-    mutationFn: async ({ group, user, new_role }: { group: Group; user: User, new_role: GroupRole }) => {
+    mutationFn: async ({ group, user, new_role }: { group: Group; user: User; new_role: GroupRole }) => {
       const result = await supabase
         .schema('public')
         .from('group_user_mapping')
@@ -287,9 +291,9 @@ export const useUpdateGroupMutation = (groupId?: string) =>
         const newGroups = prevGroups.map((x) =>
           x.id === groupId
             ? {
-              ...x,
-              ...group,
-            }
+                ...x,
+                ...group,
+              }
             : x
         );
         queryClient.setQueryData(['groups'], newGroups);

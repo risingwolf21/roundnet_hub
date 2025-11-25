@@ -161,13 +161,13 @@ export const useIncreasePointForUserMutation = (challengeId: string) =>
         const newStats: InfiniteData<ChallengeStatWithUser[]> =
           previousStats.pages.length === 0
             ? {
-              ...previousStats,
-              pages: [[newStat]],
-            }
+                ...previousStats,
+                pages: [[newStat]],
+              }
             : {
-              ...previousStats,
-              pages: previousStats.pages.map((x, index) => (index === 0 && Array.isArray(x) ? [...x, newStat] : x)),
-            };
+                ...previousStats,
+                pages: previousStats.pages.map((x, index) => (index === 0 && Array.isArray(x) ? [...x, newStat] : x)),
+              };
 
         queryClient.setQueryData<InfiniteData<ChallengeStatWithUser[]>>(['challenge', challengeId, 'stats'], newStats);
       }

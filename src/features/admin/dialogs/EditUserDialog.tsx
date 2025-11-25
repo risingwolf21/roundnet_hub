@@ -160,7 +160,9 @@ const EditUserDialog = ({ user, open, handleClose, onUserEditFinished }: EditUse
                       setPassword('');
                     } catch (error: any) {
                       captureException(error);
-                      notifications.show(`Fehler beim Zurücksetzen des Passworts: ${error.message}`, { severity: 'error' });
+                      notifications.show(`Fehler beim Zurücksetzen des Passworts: ${error.message}`, {
+                        severity: 'error',
+                      });
                     }
                   }}
                 >
@@ -181,7 +183,7 @@ const EditUserDialog = ({ user, open, handleClose, onUserEditFinished }: EditUse
             </ListItem>
             <ListItem
               key={'role'}
-              onClick={() => { }}
+              onClick={() => {}}
               secondaryAction={
                 <IconButton
                   onClick={(event) => {

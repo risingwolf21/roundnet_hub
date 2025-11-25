@@ -19,12 +19,12 @@ const EventDateInformation = ({ event, t }: Props) => {
 
   const startTimeTranslation = endDateTime
     ? t('events.information.startTimeAndEndTime', {
-      startTime: new Date(startingDateTime),
-      endTime: new Date(endDateTime),
-    })
+        startTime: new Date(startingDateTime),
+        endTime: new Date(endDateTime),
+      })
     : t('events.information.startTime', {
-      startTime: new Date(startingDateTime),
-    });
+        startTime: new Date(startingDateTime),
+      });
 
   return (
     <ListItem sx={{ py: 0 }} dense>

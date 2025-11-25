@@ -23,8 +23,15 @@ import ListItemAvatar from '@mui/material/ListItemAvatar';
 import ListItemText from '@mui/material/ListItemText';
 import Typography from '@mui/material/Typography';
 
-const DrinkListScreen = ({ data: drinks = [], error, isLoading }: { data?: Drink[], isLoading: boolean, error: Error | null }) => {
-
+const DrinkListScreen = ({
+  data: drinks = [],
+  error,
+  isLoading,
+}: {
+  data?: Drink[];
+  isLoading: boolean;
+  error: Error | null;
+}) => {
   const { user } = useGrants();
 
   const notifications = useNotifications();
@@ -116,64 +123,65 @@ const DrinkListScreen = ({ data: drinks = [], error, isLoading }: { data?: Drink
     );
   }
 
-  return (<>
-    <VoucherCard />
-    <DrinkList
-      drinks={drinks}
-      onAddDrinkClick={onAddDrinkClick}
-      onRemoveDrinkClick={onRemoveDrinkClick}
-      addedDrinks={addedDrinks}
-      visibleTypes={visibleTypes}
-    />
-    <Has perm={'drinks.purchase'}>
-      {Object.values(addedDrinks).length > 0 ? (
-        <Fab
-          sx={{
-            position: 'fixed',
-            right: '16px',
-            bottom: 'calc(16px + env(safe-area-inset-bottom))',
-          }}
-          color={'secondary'}
-          onClick={confirmDrinks}
-        >
-          {isLoading ? <CircularProgress /> : <CheckIcon sx={{ color: 'white' }} />}
-        </Fab>
-      ) : (
-        <Fab
-          sx={{
-            position: 'fixed',
-            right: '16px',
-            bottom: 'calc(16px + env(safe-area-inset-bottom))',
-          }}
-          color={'secondary'}
-          onClick={() => setFilterDialogOpen(true)}
-        >
-          <Tune sx={{ color: 'white' }} />
-        </Fab>
-      )}
-    </Has>
-    <SwipeableDialog
-      open={filterDialogOpen}
-      setOpen={setFilterDialogOpen}
-      onClose={() => setFilterDialogOpen(false)}
-      title="Filter"
-    >
-      <List>
-        {[...new Set(drinks.map((x) => x.type))].sort().map((x) => (
-          <ListItem key={x} divider>
-            <ListItemAvatar>
-              <Checkbox
-                disabled={x === 'Drink'}
-                checked={visibleTypes.some((y) => y === x)}
-                onChange={(e) => changeVisibleTypes(e, x)}
-              />
-            </ListItemAvatar>
-            <ListItemText primary={nameOfProductType(x)} />
-          </ListItem>
-        ))}
-      </List>
-    </SwipeableDialog>
-  </>
+  return (
+    <>
+      <VoucherCard />
+      <DrinkList
+        drinks={drinks}
+        onAddDrinkClick={onAddDrinkClick}
+        onRemoveDrinkClick={onRemoveDrinkClick}
+        addedDrinks={addedDrinks}
+        visibleTypes={visibleTypes}
+      />
+      <Has perm={'drinks.purchase'}>
+        {Object.values(addedDrinks).length > 0 ? (
+          <Fab
+            sx={{
+              position: 'fixed',
+              right: '16px',
+              bottom: 'calc(16px + env(safe-area-inset-bottom))',
+            }}
+            color={'secondary'}
+            onClick={confirmDrinks}
+          >
+            {isLoading ? <CircularProgress /> : <CheckIcon sx={{ color: 'white' }} />}
+          </Fab>
+        ) : (
+          <Fab
+            sx={{
+              position: 'fixed',
+              right: '16px',
+              bottom: 'calc(16px + env(safe-area-inset-bottom))',
+            }}
+            color={'secondary'}
+            onClick={() => setFilterDialogOpen(true)}
+          >
+            <Tune sx={{ color: 'white' }} />
+          </Fab>
+        )}
+      </Has>
+      <SwipeableDialog
+        open={filterDialogOpen}
+        setOpen={setFilterDialogOpen}
+        onClose={() => setFilterDialogOpen(false)}
+        title="Filter"
+      >
+        <List>
+          {[...new Set(drinks.map((x) => x.type))].sort().map((x) => (
+            <ListItem key={x} divider>
+              <ListItemAvatar>
+                <Checkbox
+                  disabled={x === 'Drink'}
+                  checked={visibleTypes.some((y) => y === x)}
+                  onChange={(e) => changeVisibleTypes(e, x)}
+                />
+              </ListItemAvatar>
+              <ListItemText primary={nameOfProductType(x)} />
+            </ListItem>
+          ))}
+        </List>
+      </SwipeableDialog>
+    </>
   );
 };
 

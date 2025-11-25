@@ -28,9 +28,11 @@ export function GrantsProvider({ user, children }: Props) {
       // Query Cache hart säubern – Nutzerkontext ist weg
       try {
         await queryClient.cancelQueries();
-        await queryClient.invalidateQueries({ queryKey: ['user-grants', user.id] })
+        await queryClient.invalidateQueries({ queryKey: ['user-grants', user.id] });
         queryClient.clear();
-      } catch { /* empty */ }
+      } catch {
+        /* empty */
+      }
     }
   }, []);
 
@@ -39,8 +41,7 @@ export function GrantsProvider({ user, children }: Props) {
     [user, grantsQuery, signOut]
   );
 
-  if (grantsQuery.isEmpty && grantsQuery.loading)
-    return <LoadingScreen />
+  if (grantsQuery.isEmpty && grantsQuery.loading) return <LoadingScreen />;
 
   return <GrantsContext value={value}>{children}</GrantsContext>;
 }

@@ -77,7 +77,7 @@ export const EventCommentConversationDialog = ({
           }}
         >
           <List sx={{ width: '100%' }}>
-            {comment && <CommentItem key={comment.id} comment={comment} t={t} replyToPressed={() => { }} />}
+            {comment && <CommentItem key={comment.id} comment={comment} t={t} replyToPressed={() => {}} />}
             {comment &&
               comment.replies &&
               comment.replies.length > 0 &&

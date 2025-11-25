@@ -1,7 +1,7 @@
 import { queryClient } from '@/lib/queryClient';
 import { supabase } from '@/lib/supabase';
 import { useMutation, useQuery } from '@tanstack/react-query';
-import { GamesTableUpdate } from "../types/supabaseTypes";
+import { GamesTableUpdate } from '../types/supabaseTypes';
 
 export const usePlayer = (user: User) =>
   useQuery<PlayerPublic | null>({
@@ -23,11 +23,11 @@ export const useUpdatePlayer = (user: User) =>
   useMutation({
     mutationFn: async ({ updates }: { updates: GamesTableUpdate<'players'> }) => {
       const result = await supabase
-        .schema("games")
-        .from("players")
+        .schema('games')
+        .from('players')
         .update(updates)
-        .eq("player", user.id)
-        .select("*")
+        .eq('player', user.id)
+        .select('*')
         .throwOnError();
 
       return result.data;
@@ -55,7 +55,7 @@ export const useUpdatePlayer = (user: User) =>
     onSettled: (_d, _e, _v, _context) => {
       queryClient.invalidateQueries({ queryKey: ['player_data', user.id] });
     },
-  })
+  });
 
 export const useUpdateIndexHidden = (user: User) =>
   useMutation({

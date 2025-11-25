@@ -24,7 +24,7 @@ export const KeyHandOverDialog = ({
   return (
     <SwipeableDialog
       open={selectedUser !== null}
-      setOpen={() => { }}
+      setOpen={() => {}}
       onClose={() => setSelectedUser(null)}
       title={t('keyHandOver')}
       actions={
@@ -39,13 +39,13 @@ export const KeyHandOverDialog = ({
       <Typography m={2}>
         {selectedUser?.id === user.id
           ? t('confirmKeyTaken', {
-            keyName: selectedKeyHolder?.name,
-            userName: selectedKeyHolder?.full_current_holder?.displayName ?? '',
-          })
+              keyName: selectedKeyHolder?.name,
+              userName: selectedKeyHolder?.full_current_holder?.displayName ?? '',
+            })
           : t('confirmKeyHandover', {
-            keyName: selectedKeyHolder?.name,
-            userName: selectedKeyHolder?.full_current_holder?.displayName ?? '',
-          })}
+              keyName: selectedKeyHolder?.name,
+              userName: selectedKeyHolder?.full_current_holder?.displayName ?? '',
+            })}
       </Typography>
     </SwipeableDialog>
   );

@@ -5,7 +5,6 @@ import { logger } from '@sentry/react';
 import type { Session } from '@supabase/supabase-js';
 import { PropsWithChildren, useEffect, useRef } from 'react';
 
-
 type Props = PropsWithChildren & {
   session: Session | null; // reingegeben aus deinem Auth-Context
   vapidPublicKey: string;
@@ -31,8 +30,7 @@ export default function WebPushKeeper({ children, session, vapidPublicKey }: Pro
   const lastSigRef = useRef<string | null>(localStorage.getItem('push:lastSig'));
 
   useEffect(() => {
-    if (session?.user)
-      updateUserActivity(session.user.id)
+    if (session?.user) updateUserActivity(session.user.id);
   }, [session?.user]);
 
   useEffect(() => {
@@ -90,10 +88,10 @@ export default function WebPushKeeper({ children, session, vapidPublicKey }: Pro
   }, [session?.user?.id, vapidPublicKey]);
 
   async function updateUserActivity(user: string) {
-    const { error } = await supabase.from("user_activity").upsert({
+    const { error } = await supabase.from('user_activity').upsert({
       user: user,
       commit_version: import.meta.env.VITE_GIT_COMMIT,
-      app_version: import.meta.env.VITE_APP_VERSION
+      app_version: import.meta.env.VITE_APP_VERSION,
     });
     if (error) throw error;
     logger.info('user_activity_update_failed', {
@@ -101,7 +99,7 @@ export default function WebPushKeeper({ children, session, vapidPublicKey }: Pro
       message: 'update_failed',
       user: user,
       commit_version: import.meta.env.VITE_GIT_COMMIT,
-      app_version: import.meta.env.VITE_APP_VERSION
+      app_version: import.meta.env.VITE_APP_VERSION,
     });
   }
 

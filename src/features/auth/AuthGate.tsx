@@ -11,7 +11,6 @@ import { UserWithGroups } from '../../types/supabaseTypes';
 import WebPushKeeper from '../push/WebPushKeeper';
 import { ApplicationContext } from './ApplicationContext';
 
-
 export const AuthGate = () => {
   const deviceId = useDeviceId();
 
@@ -76,7 +75,6 @@ export const AuthGate = () => {
       setLoading(true);
       fetchUserData(session);
     }
-
   }, [session]);
 
   useEffect(() => {
@@ -99,8 +97,7 @@ export const AuthGate = () => {
     };
   }, []);
 
-  if (loading)
-    return <LoadingScreen />
+  if (loading) return <LoadingScreen />;
 
   return (
     <ApplicationContext
