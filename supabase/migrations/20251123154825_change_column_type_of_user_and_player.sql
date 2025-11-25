@@ -5069,3 +5069,1045 @@ AS $function$declare
 CREATE UNIQUE INDEX event_attendance_user_mapping_pkey ON public.event_attendance_user_mapping USING btree ("user", event);
 
 alter table "public"."event_attendance_user_mapping" add constraint "event_attendance_user_mapping_pkey" PRIMARY KEY using index "event_attendance_user_mapping_pkey";
+
+drop function if exists "public"."_sum_challenge_points_for_self"(uid text, challenge_id uuid, from_ts timestamp with time zone, to_ts timestamp with time zone);
+
+set check_function_bodies = off;
+
+CREATE OR REPLACE FUNCTION notifications.notify_challenge_entry_added(p_challenge uuid, p_actor uuid DEFAULT NULL::uuid)
+ RETURNS integer
+ LANGUAGE plpgsql
+ SECURITY DEFINER
+ SET search_path TO ''
+AS $function$declare
+  v_group  uuid;
+  v_tenant uuid := '00000000-0000-0000-0000-000000000000';
+  v_topic  text := 'challenge.entry.added';
+  v_cnt    int := 0;
+  v_url    text := '/challenges/' || p_challenge::text;
+  v_title  text;
+  v_body   text := 'Jemand hat einen neuen Punkt eingetragen 🔥';
+begin
+  select c."group", c."name" into v_group, v_title from public.challenge c where c.id = p_challenge;
+
+  if v_group is null then raise exception 'challenge % not found', p_challenge; end if;
+
+  with recipients as (
+    select distinct gum."user" as uid
+      from public.group_user_mapping gum
+     where gum."group" = v_group
+       and gum."user" <> p_actor
+  ),
+  allowed as (
+    select r.uid
+      from recipients r
+     where notifications.is_topic_enabled_for_user(r.uid, v_tenant, v_topic, 'challenge', p_challenge)
+  ),
+  ins as (
+    insert into notifications.notifications("user", tenant, topic, title, body, data, source_type, source_id)
+    select a.uid, v_tenant, v_topic,
+           v_title,
+           v_body,
+           jsonb_build_object('challenge', p_challenge, 'url', v_url),
+           'challenge', p_challenge
+      from allowed a
+    returning id,"user"
+  ),
+  outbox as (
+    insert into notifications.notification_outbox("user", tenant, title, body, data, urgency, notification)
+    select i."user", v_tenant,
+           v_title,
+           v_body,
+           jsonb_build_object('challenge', p_challenge, 'url', v_url),
+           'normal',
+           i.id
+      from ins i
+    returning id,"user"
+  )
+  insert into notifications.notification_outbox_targets(outbox_id, subscription_id)
+  select o.id, s.id
+    from outbox o
+    join notifications.web_push_subscriptions s on s."user" = o."user" and s.revoked_at is null;
+
+  get diagnostics v_cnt = row_count;
+  return v_cnt;
+end;$function$
+;
+
+CREATE OR REPLACE FUNCTION notifications.notify_item_handover(p_item bigint, p_from uuid, p_to uuid, p_actor uuid DEFAULT NULL::uuid)
+ RETURNS integer
+ LANGUAGE plpgsql
+ SECURITY DEFINER
+ SET search_path TO ''
+AS $function$declare
+  v_item uuid;
+begin
+  -- Erwartet, dass public.items.id_uuid existiert (siehe Vorbereitung oben)
+  select i.id_uuid into v_item
+    from public.items i
+   where i.id = p_item;
+
+  if v_item is null then
+    raise exception 'notify_item_handover: item % nicht gefunden oder id_uuid fehlt', p_item;
+  end if;
+
+  return notifications.notify_item_handover(v_item, p_from, p_to, p_actor);
+end;$function$
+;
+
+CREATE OR REPLACE FUNCTION public._sum_challenge_points_for_self(uid uuid, challenge_id uuid, from_ts timestamp with time zone, to_ts timestamp with time zone)
+ RETURNS numeric
+ LANGUAGE plpgsql
+ SECURITY DEFINER
+ SET search_path TO ''
+AS $function$
+DECLARE s numeric;
+BEGIN
+  IF uid IS NULL OR challenge_id IS NULL OR from_ts IS NULL OR to_ts IS NULL THEN
+    RAISE EXCEPTION 'invalid args';
+  END IF;
+
+  IF uid <> auth.uid() THEN
+    RAISE EXCEPTION 'forbidden' USING ERRCODE = '42501';
+  END IF;
+
+  SELECT COALESCE(SUM(cs."count"), 0)
+    INTO s
+    FROM public.challenge_stats cs
+   WHERE cs."user" = uid
+     AND cs."challenge" = challenge_id
+     AND cs.created_at >= from_ts
+     AND cs.created_at <  to_ts;
+
+  RETURN s;
+END;
+$function$
+;
+
+CREATE OR REPLACE FUNCTION games.add_match_with_sets(team_a text, player_1a uuid, player_1a_rating numeric, player_2a uuid, player_2a_rating numeric, team_b text, player_1b uuid, player_1b_rating numeric, player_2b uuid, player_2b_rating numeric, match_sets json, event uuid DEFAULT NULL::uuid, created_by uuid DEFAULT NULL::uuid, rated boolean DEFAULT true)
+ RETURNS uuid
+ LANGUAGE plpgsql
+ SECURITY DEFINER
+ SET search_path TO 'public', 'extensions', 'pg_temp'
+AS $function$DECLARE
+  team_a_id uuid;
+  team_b_id uuid;
+  match_id uuid;
+  set_count int := 1;
+  set_record json;
+  team_a_norm text;
+  team_b_norm text;
+BEGIN
+  IF jsonb_typeof(match_sets::jsonb) IS DISTINCT FROM 'array' THEN
+    RAISE EXCEPTION 'Eingabe ist kein JSON-Array %', match_sets;
+  END IF;
+
+  -- Caller muss Teilnehmer sein (mind. in einem Team) oder die Berechtigung haben
+  IF (NOT (Select public.authorize('event.create.constellations'))) THEN
+    IF auth.uid() NOT IN (player_1a, player_2a, player_1b, player_2b) THEN
+      RAISE EXCEPTION 'Benutzer muss selbst im Match vorkommen';
+    END IF;
+  END IF;
+
+  IF NOT EXISTS(SELECT 1 FROM games.players WHERE "player" = player_1a) THEN
+    INSERT INTO games.players(player, ka_index) VALUES (player_1a, player_1a_rating);
+  END IF;
+
+  IF NOT EXISTS(SELECT 1 FROM games.players WHERE "player" = player_2a) THEN
+    INSERT INTO games.players(player, ka_index) VALUES (player_2a, player_2a_rating);
+  END IF;
+
+  IF NOT EXISTS(SELECT 1 FROM games.players WHERE "player" = player_1b) THEN
+    INSERT INTO games.players(player, ka_index) VALUES (player_1b, player_1b_rating);
+  END IF;
+
+  IF NOT EXISTS(SELECT 1 FROM games.players WHERE "player" = player_2b) THEN
+    INSERT INTO games.players(player, ka_index) VALUES (player_2b, player_2b_rating);
+  END IF;
+
+  -- Team A
+  team_a_norm := CASE WHEN player_1a < player_2a THEN player_1a||','||player_2a ELSE player_2a||','||player_1a END;
+  INSERT INTO games.teams (player_1, player_2, name, normalized_players)
+  VALUES (player_1a, player_2a, team_a, team_a_norm)
+  ON CONFLICT (normalized_players) DO NOTHING;
+  SELECT id INTO team_a_id FROM games.teams WHERE normalized_players = team_a_norm;
+
+  -- Team B
+  team_b_norm := CASE WHEN player_1b < player_2b THEN player_1b||','||player_2b ELSE player_2b||','||player_1b END;
+  INSERT INTO games.teams (player_1, player_2, name, normalized_players)
+  VALUES (player_1b, player_2b, team_b, team_b_norm)
+  ON CONFLICT (normalized_players) DO NOTHING;
+  SELECT id INTO team_b_id FROM games.teams WHERE normalized_players = team_b_norm;
+
+  -- Match
+  INSERT INTO games.match (team_a, team_b, event, created_by, rated)
+  VALUES (team_a_id, team_b_id, event, CASE WHEN created_by = null THEN auth.uid() ELSE created_by END, rated)
+  RETURNING id INTO match_id;
+
+  -- Sets
+  FOR set_record IN SELECT * FROM json_array_elements(match_sets)
+  LOOP
+    INSERT INTO games.sets(match, set_number, team_a_score, team_b_score)
+    VALUES (
+      match_id,
+      set_count,
+      (set_record->>'team_a_score')::numeric,
+      (set_record->>'team_b_score')::numeric
+    );
+    set_count := set_count + 1;
+  END LOOP;
+
+  RETURN match_id;
+
+EXCEPTION WHEN OTHERS THEN
+  RAISE EXCEPTION 'Fehler beim Hinzufügen von Match: %', SQLERRM;
+END;$function$
+;
+
+CREATE OR REPLACE FUNCTION games.apply_elo_for_match(p_match uuid)
+ RETURNS void
+ LANGUAGE plpgsql
+ SECURITY DEFINER
+ SET search_path TO ''
+AS $function$DECLARE
+  cfg record;
+  v_rated boolean;
+  m_team_a uuid; m_team_b uuid;
+  a1 uuid; a2 uuid; b1 uuid; b2 uuid;
+
+  -- aktuelle KA-Indizes (nur fürs Logging)
+  r_a1 numeric; r_a2 numeric; r_b1 numeric; r_b2 numeric;
+  rg_a1 numeric; rg_a2 numeric; rg_b1 numeric; rg_b2 numeric;
+  eff_a1_old numeric; eff_a1_new numeric;
+  eff_a2_old numeric; eff_a2_new numeric;
+  eff_b1_old numeric; eff_b1_new numeric;
+  eff_b2_old numeric; eff_b2_new numeric;
+
+  eff_a numeric; eff_b numeric;          -- effektive Teamratings (rg+ka + Kategorie-Offset)
+  cat_a text; cat_b text;                 -- 'men' / 'mixed' / 'women'
+  rank_a int; rank_b int;                 -- men=3, mixed=2, women=1
+
+  a_sets int; b_sets int; a_pts int; b_pts int;
+  outcome_a numeric; exp_a numeric; delta numeric; k_eff numeric;
+
+  hist record;
+  log_rec games.elo_calc_log%ROWTYPE;
+BEGIN
+
+  SELECT * INTO log_rec FROM games.elo_calc_log WHERE match = p_match;
+
+  SELECT k_factor, upset_bonus_per_level INTO cfg
+  FROM games.elo_config WHERE id=1;
+
+  SELECT rated INTO v_rated
+  FROM games."match"
+  WHERE id = p_match
+  FOR UPDATE; 
+
+  -- Match + Teams
+  SELECT team_a, team_b INTO m_team_a, m_team_b
+  FROM games."match" WHERE id = p_match FOR UPDATE;
+
+  SELECT t.player_1, t.player_2 INTO a1, a2 FROM games.teams t WHERE t.id = m_team_a;
+  SELECT t.player_1, t.player_2 INTO b1, b2 FROM games.teams t WHERE t.id = m_team_b;
+
+  -- idempotent: Deltas zurückrollen & löschen
+  FOR hist IN SELECT * FROM games.elo_history WHERE match=p_match LOOP
+    UPDATE games.players SET ka_index = ka_index - hist.delta WHERE player = hist."user";
+  END LOOP;
+  DELETE FROM games.elo_history WHERE match=p_match;
+
+  INSERT INTO games.players (player) VALUES (a1) ON CONFLICT (player) DO NOTHING;
+  INSERT INTO games.players (player) VALUES (a2) ON CONFLICT (player) DO NOTHING;
+  INSERT INTO games.players (player) VALUES (b1) ON CONFLICT (player) DO NOTHING;
+  INSERT INTO games.players (player) VALUES (b2) ON CONFLICT (player) DO NOTHING;
+
+  -- aktueller KA-Wert, NICHT effective rating:
+  SELECT COALESCE(ka_index, 1000) INTO r_a1 FROM games.players WHERE player = a1;
+  SELECT COALESCE(ka_index, 1000) INTO r_a2 FROM games.players WHERE player = a2;
+  SELECT COALESCE(ka_index, 1000) INTO r_b1 FROM games.players WHERE player = b1;
+  SELECT COALESCE(ka_index, 1000) INTO r_b2 FROM games.players WHERE player = b2;
+
+  SELECT rg_index INTO rg_a1 FROM games.players WHERE player = a1;
+  SELECT rg_index INTO rg_a2 FROM games.players WHERE player = a2;
+  SELECT rg_index INTO rg_b1 FROM games.players WHERE player = b1;
+  SELECT rg_index INTO rg_b2 FROM games.players WHERE player = b2;
+
+  IF log_rec IS NOT NULL
+     AND log_rec.a1_user = a1
+     AND log_rec.a2_user = a2
+     AND log_rec.b1_user = b1
+     AND log_rec.b2_user = b2
+  THEN
+    rg_a1 := COALESCE(log_rec.rg_a1_used, rg_a1);
+    rg_a2 := COALESCE(log_rec.rg_a2_used, rg_a2);
+    rg_b1 := COALESCE(log_rec.rg_b1_used, rg_b1);
+    rg_b2 := COALESCE(log_rec.rg_b2_used, rg_b2);
+  END IF;
+
+  -- Kategorien & Ränge (men=3, mixed=2, women=1)
+  cat_a := games.team_category(a1,a2);
+  cat_b := games.team_category(b1,b2);
+  rank_a := CASE cat_a WHEN 'men' THEN 3 WHEN 'mixed' THEN 2 ELSE 1 END;
+  rank_b := CASE cat_b WHEN 'men' THEN 3 WHEN 'mixed' THEN 2 ELSE 1 END;
+
+  -- Ergebnis aus Sets (Siege, Punkte als Tie-Breaker)
+  SELECT
+    SUM(CASE WHEN s.team_a_score > s.team_b_score THEN 1 ELSE 0 END)::int,
+    SUM(CASE WHEN s.team_b_score > s.team_a_score THEN 1 ELSE 0 END)::int,
+    COALESCE(SUM(s.team_a_score),0)::int,
+    COALESCE(SUM(s.team_b_score),0)::int
+  INTO a_sets, b_sets, a_pts, b_pts
+  FROM games.sets s WHERE s.match = p_match;
+
+  IF COALESCE(a_sets,0)+COALESCE(b_sets,0)=0 AND COALESCE(a_pts,0)+COALESCE(b_pts,0)=0 THEN
+    RETURN;
+  END IF;
+
+  IF a_sets > b_sets THEN outcome_a := 1.0;
+  ELSIF a_sets < b_sets THEN outcome_a := 0.0;
+  ELSE
+    IF a_pts > b_pts THEN outcome_a := 1.0;
+    ELSIF a_pts < b_pts THEN outcome_a := 0.0;
+    ELSE outcome_a := 0.5;
+    END IF;
+  END IF;
+
+  eff_a1_old := games.compute_effective_player_from_values(r_a1, rg_a1);
+  eff_a2_old := games.compute_effective_player_from_values(r_a2, rg_a2);
+  eff_b1_old := games.compute_effective_player_from_values(r_b1, rg_b1);
+  eff_b2_old := games.compute_effective_player_from_values(r_b2, rg_b2);
+
+  -- Effektive Teamratings inkl. Kategorie
+  eff_a := (eff_a1_old + eff_a2_old)/2.0 + games.category_offset(games.team_category(a1,a2));
+  eff_b := (eff_b1_old + eff_b2_old)/2.0 + games.category_offset(games.team_category(b1,b2));
+
+  -- Erwartung mit Kategorie-Offsets
+  exp_a := 1.0 / (1.0 + POWER(10.0, (eff_b - eff_a)/400.0));
+
+  -- Optionaler Upset-Bonus, wenn "schwächerer" Kategorie-Rang gewinnt
+   k_eff := cfg.k_factor;
+  if (rank_a < rank_b and outcome_a = 1.0) then
+    k_eff := cfg.k_factor * (1 + cfg.upset_bonus_per_level * (rank_b - rank_a));
+  elsif (rank_b < rank_a and outcome_a = 0.0) then
+    k_eff := cfg.k_factor * (1 + cfg.upset_bonus_per_level * (rank_a - rank_b));
+  end if;
+
+  delta := k_eff * (outcome_a - exp_a);
+
+  eff_a1_new := games.compute_effective_player_from_values(r_a1 + delta, rg_a1);
+  eff_a2_new := games.compute_effective_player_from_values(r_a2 + delta, rg_a2);
+  eff_b1_new := games.compute_effective_player_from_values(r_b1 - delta, rg_b1);
+  eff_b2_new := games.compute_effective_player_from_values(r_b2 - delta, rg_b2);
+
+  IF NOT COALESCE(v_rated, true) THEN
+    RETURN;
+  END IF;
+
+  INSERT INTO games.elo_calc_log(
+    match, calculated_at,
+    eff_team_a, eff_team_b,
+    expected_a, expected_b,
+    k_base, k_eff,
+    category_a, category_b,
+    upset_levels, upset_multiplier,
+    outcome_a, sets_a, sets_b, points_a, points_b,
+    a1_user, a2_user, b1_user, b2_user,
+    rg_a1_used, rg_a2_used, rg_b1_used, rg_b2_used,
+    cfg_snapshot
+  )
+  VALUES (
+    p_match, now(),
+    eff_a, eff_b,
+    exp_a, 1 - exp_a,
+    cfg.k_factor, k_eff,
+    cat_a, cat_b,
+    greatest(abs(rank_a - rank_b), 0), 1.0,
+    outcome_a, a_sets, b_sets, a_pts, b_pts,
+    a1, a2, b1, b2,
+    rg_a1, rg_a2, rg_b1, rg_b2,
+    -- optionaler Konfig-Snapshot (oder NULL weglassen)
+    jsonb_build_object(
+      'w_rg',(SELECT w_rg FROM games.elo_config WHERE id=1),
+      'w_ka',(SELECT w_ka FROM games.elo_config WHERE id=1),
+      'rg_offset',(SELECT rg_offset FROM games.elo_config WHERE id=1),
+      'rg_scale',(SELECT rg_scale FROM games.elo_config WHERE id=1),
+      'k_factor', cfg.k_factor
+    )
+  )
+  ON CONFLICT (match) DO UPDATE SET
+  calculated_at = excluded.calculated_at,
+  eff_team_a    = excluded.eff_team_a,
+  eff_team_b    = excluded.eff_team_b,
+  expected_a    = excluded.expected_a,
+  expected_b    = excluded.expected_b,
+  k_base        = excluded.k_base,
+  k_eff         = excluded.k_eff,
+  category_a    = excluded.category_a,
+  category_b    = excluded.category_b,
+  upset_levels  = excluded.upset_levels,
+  upset_multiplier = excluded.upset_multiplier,
+  outcome_a     = excluded.outcome_a,
+  sets_a        = excluded.sets_a,
+  sets_b        = excluded.sets_b,
+  points_a      = excluded.points_a,
+  points_b      = excluded.points_b,
+  -- WICHTIG: RG-Snapshots & cfg nur setzen, wenn noch nicht vorhanden (bewahrt den Erst-Snapshot)
+  a1_user       = COALESCE(games.elo_calc_log.a1_user, excluded.a1_user),
+  a2_user       = COALESCE(games.elo_calc_log.a2_user, excluded.a2_user),
+  b1_user       = COALESCE(games.elo_calc_log.b1_user, excluded.b1_user),
+  b2_user       = COALESCE(games.elo_calc_log.b2_user, excluded.b2_user),
+  rg_a1_used    = COALESCE(games.elo_calc_log.rg_a1_used, excluded.rg_a1_used),
+  rg_a2_used    = COALESCE(games.elo_calc_log.rg_a2_used, excluded.rg_a2_used),
+  rg_b1_used    = COALESCE(games.elo_calc_log.rg_b1_used, excluded.rg_b1_used),
+  rg_b2_used    = COALESCE(games.elo_calc_log.rg_b2_used, excluded.rg_b2_used),
+  cfg_snapshot  = COALESCE(games.elo_calc_log.cfg_snapshot, excluded.cfg_snapshot);
+
+  -- nur KA-Index anpassen + History
+  UPDATE games.players SET ka_index = ka_index + delta WHERE player = a1;
+  INSERT INTO games.elo_history(match,"user",old_rating,new_rating,delta,eff_old_rating,eff_new_rating)
+    VALUES (p_match, a1, r_a1, r_a1 + delta,  delta, eff_a1_old, eff_a1_new);
+
+  UPDATE games.players SET ka_index = ka_index + delta WHERE player = a2;
+  INSERT INTO games.elo_history(match,"user",old_rating,new_rating,delta,eff_old_rating,eff_new_rating)
+    VALUES (p_match, a2, r_a2, r_a2 + delta,  delta, eff_a2_old, eff_a2_new);
+
+  UPDATE games.players SET ka_index = ka_index - delta WHERE player = b1;
+  INSERT INTO games.elo_history(match,"user",old_rating,new_rating,delta,eff_old_rating,eff_new_rating)
+    VALUES (p_match, b1, r_b1, r_b1 - delta, -delta, eff_b1_old, eff_b1_new);
+
+  UPDATE games.players SET ka_index = ka_index - delta WHERE player = b2;
+  INSERT INTO games.elo_history(match,"user",old_rating,new_rating,delta,eff_old_rating,eff_new_rating)
+    VALUES (p_match, b2, r_b2, r_b2 - delta, -delta, eff_b2_old, eff_b2_new);
+END;$function$
+;
+
+CREATE OR REPLACE FUNCTION games.effective_rating_for_player(p_player uuid)
+ RETURNS numeric
+ LANGUAGE sql
+ STABLE
+ SET search_path TO 'games', 'pg_temp'
+AS $function$select games.compute_effective_player_from_values(p.ka_index, p.rg_index)
+  from games.players p
+  where p.player = p_player;$function$
+;
+
+CREATE OR REPLACE FUNCTION games.is_match_participant(p_match uuid)
+ RETURNS boolean
+ LANGUAGE sql
+ STABLE
+ SET search_path TO 'games', 'pg_temp'
+AS $function$select exists (
+    select 1
+    from games."match" m
+    join games.teams ta on ta.id = m.team_a
+    join games.teams tb on tb.id = m.team_b
+    where m.id = p_match
+      and auth.uid() in (ta.player_1, ta.player_2, tb.player_1, tb.player_2)
+  );$function$
+;
+
+CREATE OR REPLACE FUNCTION games.is_member_of_match(p_team_a uuid, p_team_b uuid)
+ RETURNS boolean
+ LANGUAGE sql
+ SECURITY DEFINER
+ SET search_path TO ''
+ SET row_security TO 'off'
+AS $function$SELECT EXISTS (
+    SELECT 1
+    FROM games.teams t
+    WHERE t.id IN (p_team_a, p_team_b)
+      AND auth.uid() IN (t.player_1, t.player_2)
+  );$function$
+;
+
+CREATE OR REPLACE FUNCTION games.is_member_of_teams(p_team_a uuid, p_team_b uuid)
+ RETURNS boolean
+ LANGUAGE sql
+ SECURITY DEFINER
+ SET search_path TO ''
+ SET row_security TO 'off'
+AS $function$SELECT EXISTS (
+    SELECT 1
+    FROM games.teams t
+    WHERE (t.id = p_team_a OR t.id = p_team_b)
+      AND auth.uid() IN (t.player_1, t.player_2)
+  );$function$
+;
+
+CREATE OR REPLACE FUNCTION games.preview_elo_for_match(p_match uuid)
+ RETURNS TABLE(eff_team_a numeric, eff_team_b numeric, expected_a numeric, expected_b numeric, k_base integer, k_eff numeric, category_a text, category_b text, upset_levels integer, upset_multiplier numeric)
+ LANGUAGE sql
+ STABLE
+ SET search_path TO 'games', 'pg_temp'
+AS $function$with cfg as (select * from games.elo_config where id=1),
+  m as (select team_a, team_b from games."match" where id = p_match),
+  t as (
+    select
+      (select player_1 from games.teams where id = m.team_a) as a1,
+      (select player_2 from games.teams where id = m.team_a) as a2,
+      (select player_1 from games.teams where id = m.team_b) as b1,
+      (select player_2 from games.teams where id = m.team_b) as b2
+    from m
+  ),
+  cat as (
+    select
+      games.team_category(t.a1,t.a2) as cat_a,
+      games.team_category(t.b1,t.b2) as cat_b
+    from t
+  ),
+  eff as (
+    select
+      games.effective_team_rating_with_category(t.a1,t.a2) as eff_a,
+      games.effective_team_rating_with_category(t.b1,t.b2) as eff_b
+    from t
+  ),
+  exp as (
+    select
+      1.0 / (1.0 + power(10.0, (eff.eff_b - eff.eff_a)/400.0)) as ea
+    from eff
+  )
+  select
+    eff.eff_a, eff.eff_b,
+    exp.ea, 1-exp.ea,
+    cfg.k_factor as k_base,
+    cfg.k_factor::numeric as k_eff,  -- hier ohne Upset-Bonus (der hängt vom tatsächlichen Sieger ab)
+    cat.cat_a, cat.cat_b,
+    abs( (case cat.cat_a when 'men' then 3 when 'mixed' then 2 else 1 end)
+        - (case cat.cat_b when 'men' then 3 when 'mixed' then 2 else 1 end) ) as upset_levels,
+    1.0 as upset_multiplier
+  from cfg, eff, exp, cat;$function$
+;
+
+CREATE OR REPLACE FUNCTION games.team_category(p_p1 uuid, p_p2 uuid)
+ RETURNS text
+ LANGUAGE sql
+ STABLE
+ SET search_path TO 'games', 'pg_temp'
+AS $function$select case
+    when coalesce((select gender from games.players where player=p_p1),'m')='m'
+     and coalesce((select gender from games.players where player=p_p2),'m')='m'
+      then 'men'
+    when coalesce((select gender from games.players where player=p_p1),'w')='w'
+     and coalesce((select gender from games.players where player=p_p2),'w')='w'
+      then 'women'
+    else 'mixed'
+  end;$function$
+;
+
+CREATE OR REPLACE FUNCTION games.trg_user_to_player()
+ RETURNS trigger
+ LANGUAGE plpgsql
+ SECURITY DEFINER
+ SET search_path TO ''
+AS $function$BEGIN
+  -- Minimal: nur die Player-ID anlegen; Defaults (ka_index=1000 etc.) greifen.
+  INSERT INTO games.players (player)
+  VALUES (NEW."id")
+  ON CONFLICT (player) DO NOTHING;
+
+  RETURN NEW;
+END;$function$
+;
+
+CREATE OR REPLACE FUNCTION notifications._trg_item_handover_to_notify()
+ RETURNS trigger
+ LANGUAGE plpgsql
+ SECURITY DEFINER
+ SET search_path TO ''
+AS $function$begin
+  if new."current_holder" is distinct from old."current_holder" then
+    perform notifications.notify_item_handover(
+      new.id,
+      old."current_holder",
+      new."current_holder",
+      auth.uid()
+    );
+  end if;
+  return new;
+end;$function$
+;
+
+CREATE OR REPLACE FUNCTION notifications.notify_challenge_added(p_challenge uuid, p_actor uuid DEFAULT NULL::uuid)
+ RETURNS integer
+ LANGUAGE plpgsql
+ SECURITY DEFINER
+ SET search_path TO ''
+AS $function$declare
+  v_group  uuid;
+  v_tenant uuid := '00000000-0000-0000-0000-000000000000';
+  v_topic  text := 'challenge.added';
+  v_cnt    int := 0;
+  v_url    text := '/challenges/' || p_challenge::text;
+  v_body  text := 'Es gibt eine neue Challenge für dich 💪';
+  v_title   text;
+begin
+  select c."group", c."name" into v_group, v_title from public.challenge c where c.id = p_challenge;
+  if v_group is null then raise exception 'challenge % not found', p_challenge; end if;
+
+  with recipients as (
+    select distinct gum."user" as uid
+      from public.group_user_mapping gum
+     where gum."group" = v_group
+       and gum."user" <> p_actor
+  ),
+  allowed as (
+    select r.uid
+      from recipients r
+     where notifications.is_topic_enabled_for_user(r.uid, v_tenant, v_topic, 'challenge', p_challenge)
+  ),
+  ins as (
+    insert into notifications.notifications("user", tenant, topic, title, body, data, source_type, source_id)
+    select a.uid, v_tenant, v_topic,
+           v_title,
+           v_body,
+           jsonb_build_object('challenge', p_challenge, 'url', v_url),
+           'challenge', p_challenge
+      from allowed a
+    returning id,"user"
+  ),
+  outbox as (
+    insert into notifications.notification_outbox("user", tenant, title, body, data, urgency, notification)
+    select i."user", v_tenant,
+           v_title,
+           v_body,
+           jsonb_build_object('challenge', p_challenge, 'url', v_url),
+           'normal',
+           i.id
+      from ins i
+    returning id,"user"
+  )
+  insert into notifications.notification_outbox_targets(outbox_id, subscription_id)
+  select o.id, s.id
+    from outbox o
+    join notifications.web_push_subscriptions s on s."user" = o."user" and s.revoked_at is null;
+
+  get diagnostics v_cnt = row_count;
+  return v_cnt;
+end;$function$
+;
+
+CREATE OR REPLACE FUNCTION notifications.notify_event_comment_created(p_event uuid, p_comment uuid, p_text text, p_author uuid)
+ RETURNS integer
+ LANGUAGE plpgsql
+ SECURITY DEFINER
+ SET search_path TO ''
+AS $function$declare
+  v_tenant uuid := '00000000-0000-0000-0000-000000000000';
+  v_topic  text := 'event.comment.created';
+  v_cnt    int := 0;
+  v_url    text := '/training/event/' || p_event::text;
+  v_title  text := 'Neuer Kommentar';
+  v_body   text;
+  v_displayName text;
+  v_name text;
+  v_start text;
+begin
+
+  select e."title", e."startingDateTime" into v_title, v_start from public.events e where e.id = p_event;
+
+  v_title := v_title || ' - 🗓️ ' || to_char(DATE(v_start), 'DD.MM.YYYY');
+
+  select u."displayName", u."name"
+    into v_displayName, v_name
+    from public.user u
+    where u."id" = p_author;
+
+  if v_displayName is null and v_name is null then
+    raise exception 'event_comment author % not found', p_author;
+  end if;
+
+  v_body := coalesce(v_displayName, v_name) || ': ' || coalesce(p_text, '');
+
+  with recipients as (
+    -- alle Attending-User dieses Events, außer ggf. dem Actor
+    select distinct eum."user" as uid
+      from public.event_attendance_user_mapping eum
+     where eum.event = p_event
+       and eum.state = 'Attending'
+       and eum."user" <> p_author
+  ),
+  allowed as (
+    select r.uid
+      from recipients r
+     where notifications.is_topic_enabled_for_user(r.uid, v_tenant, v_topic, 'event', p_event)
+  ),
+  ins as (
+    insert into notifications.notifications("user", tenant, topic, title, body, data, source_type, source_id)
+    select a.uid, v_tenant, v_topic,
+           v_title,
+           v_body,
+           jsonb_build_object(
+             'event', p_event,
+             'comment', p_comment,
+             'author', p_author,
+             'text', p_text,
+             'url', v_url
+           ),
+           'event', p_event
+      from allowed a
+    returning id,"user"
+  ),
+  outbox as (
+    insert into notifications.notification_outbox("user", tenant, title, body, data, urgency, notification)
+    select i."user", v_tenant,
+           v_title,
+           v_body,
+           jsonb_build_object(
+             'event', p_event,
+             'comment', p_comment,
+             'author', p_author,
+             'text', p_text,
+             'url', v_url
+           ),
+           'normal',
+           i.id
+      from ins i
+    returning id,"user"
+  )
+  insert into notifications.notification_outbox_targets(outbox_id, subscription_id)
+  select o.id, s.id
+    from outbox o
+    join notifications.web_push_subscriptions s
+      on s."user" = o."user" and s.revoked_at is null;
+
+  get diagnostics v_cnt = row_count;
+  return v_cnt;
+end;$function$
+;
+
+CREATE OR REPLACE FUNCTION notifications.notify_event_updated(p_event uuid, p_body text, p_actor uuid DEFAULT NULL::uuid)
+ RETURNS integer
+ LANGUAGE plpgsql
+ SECURITY DEFINER
+ SET search_path TO ''
+AS $function$declare
+  v_tenant uuid := '00000000-0000-0000-0000-000000000000';
+  v_topic  text := 'event.updated';
+  v_cnt    int := 0;
+  v_url    text := '/training/event/' || p_event::text;
+  v_title   text := 'Ein Event wurde aktualisiert';
+  v_start text;
+begin
+
+  select e."title", e."startingDateTime" into v_title, v_start from public.events as e where e.id = p_event;
+
+  v_title := v_title || ' - 🗓️ ' || to_char(DATE(v_start), 'DD.MM.YYYY');
+
+  with recipients as (
+    select distinct eum."user" as uid
+      from public.event_attendance_user_mapping eum
+     where eum.event = p_event
+       and eum.state = 'Attending'
+       and eum."user" <> p_actor
+  ),
+  allowed as (
+    select r.uid
+      from recipients r
+     where notifications.is_topic_enabled_for_user(r.uid, v_tenant, v_topic, 'event', p_event)
+  ),
+  ins as (
+    insert into notifications.notifications("user", tenant, topic, title, body, data, source_type, source_id)
+    select a.uid, v_tenant, v_topic,
+           v_title,
+           p_body,
+           jsonb_build_object('event', p_event, 'url', v_url),
+           'event', p_event
+      from allowed a
+    returning id,"user"
+  ),
+  outbox as (
+    insert into notifications.notification_outbox("user", tenant, title, body, data, urgency, notification)
+    select i."user", v_tenant,
+           v_title,
+           p_body,
+           jsonb_build_object('event', p_event, 'url', v_url),
+           'normal',
+           i.id
+      from ins i
+    returning id,"user"
+  )
+  insert into notifications.notification_outbox_targets(outbox_id, subscription_id)
+  select o.id, s.id
+    from outbox o
+    join notifications.web_push_subscriptions s on s."user" = o."user" and s.revoked_at is null;
+
+  get diagnostics v_cnt = row_count;
+  return v_cnt;
+end;$function$
+;
+
+CREATE OR REPLACE FUNCTION notifications.notify_game_added(p_match uuid, p_actor uuid DEFAULT NULL::uuid)
+ RETURNS integer
+ LANGUAGE plpgsql
+ SECURITY DEFINER
+ SET search_path TO ''
+AS $function$declare
+  v_tenant uuid := '00000000-0000-0000-0000-000000000000';
+  v_topic  text := 'game.added';
+  v_cnt    int := 0;
+  v_url    text := '/matches/' || p_match::text;
+  v_title text;
+  v_body text := '🤾 Es wurde ein neues Spiel mit dir hinzugefügt 🤾';
+  v_team_a_name text;
+  v_team_b_name text;
+begin
+  select t."name" into v_team_a_name from games."teams" t where id = (select m.team_a
+      from games."match" m
+     where m.id = p_match );
+  select t."name" into v_team_b_name from games."teams" t where id = (select m.team_b
+      from games."match" m
+     where m.id = p_match );
+
+  v_title := v_team_a_name || ' vs. ' || v_team_b_name;
+
+  with mt as (
+    select m.team_a, m.team_b
+      from games."match" m
+     where m.id = p_match
+  ),
+  rec as (
+    select distinct uid from (
+      select t1.player_1 as uid from mt join games.teams t1 on t1.id = mt.team_a
+      union all
+      select t1.player_2       from mt join games.teams t1 on t1.id = mt.team_a
+      union all
+      select t2.player_1       from mt join games.teams t2 on t2.id = mt.team_b
+      union all
+      select t2.player_2       from mt join games.teams t2 on t2.id = mt.team_b
+    ) u
+    where uid is not null and uid <> p_actor
+  ),
+  allowed as (
+    select r.uid
+      from rec r
+     where notifications.is_topic_enabled_for_user(r.uid, v_tenant, v_topic, 'game', p_match)
+  ),
+  ins as (
+    insert into notifications.notifications("user", tenant, topic, title, data, source_type, source_id)
+    select a.uid, v_tenant, v_topic,
+           v_body,
+           jsonb_build_object('match', p_match, 'url', v_url),
+           'game', p_match
+      from allowed a
+    returning id,"user"
+  ),
+  outbox as (
+    insert into notifications.notification_outbox("user", tenant, title, data, urgency, notification)
+    select i."user", v_tenant,
+           v_body,
+           jsonb_build_object('match', p_match, 'url', v_url),
+           'normal',
+           i.id
+      from ins i
+    returning id,"user"
+  )
+  insert into notifications.notification_outbox_targets(outbox_id, subscription_id)
+  select o.id, s.id
+    from outbox o
+    join notifications.web_push_subscriptions s on s."user" = o."user" and s.revoked_at is null;
+
+  get diagnostics v_cnt = row_count;
+  return v_cnt;
+end;$function$
+;
+
+CREATE OR REPLACE FUNCTION notifications.notify_item_handover(p_item uuid, p_from uuid, p_to uuid, p_actor uuid DEFAULT NULL::uuid)
+ RETURNS integer
+ LANGUAGE plpgsql
+ SECURITY DEFINER
+ SET search_path TO ''
+AS $function$declare
+  v_tenant uuid := '00000000-0000-0000-0000-000000000000';
+  v_topic  text := 'item.handover';
+  v_cnt    int  := 0;
+  v_url    text := '/keys';
+  v_title text := 'Übergabe';
+  v_body text;
+  v_item_name text;
+begin
+
+  select i."name" into v_item_name from public.items i where id_uuid = p_item;
+
+  v_title := 'Übergabe von ' || v_item_name;
+
+  if p_to = p_actor then
+    v_body := 'Du bist jetzt der Besitzer von ' || v_item_name;
+  end if;
+
+  if p_from = p_actor then
+    v_body := 'Du hast ' || v_item_name || 'abgegeben';
+  end if;
+
+  with recipients as (
+    select uid from (values (p_from), (p_to)) v(uid)
+     where v.uid is not null and v.uid <> p_actor
+  ),
+  allowed as (
+    select r.uid
+      from recipients r
+     where notifications.is_topic_enabled_for_user(r.uid, v_tenant, v_topic, 'item', p_item)
+  ),
+  ins as (
+    insert into notifications.notifications("user", tenant, topic, title, body, data, source_type, source_id)
+    select a.uid, v_tenant, v_topic,
+           v_title,
+           v_body,
+           jsonb_build_object('item', p_item, 'from', p_from, 'to', p_to, 'url', v_url),
+           'item', p_item
+      from allowed a
+    returning id,"user"
+  ),
+  outbox as (
+    insert into notifications.notification_outbox("user", tenant, title, body, data, urgency, notification)
+    select i."user", v_tenant,
+           v_title,
+           v_body,
+           jsonb_build_object('item', p_item, 'from', p_from, 'to', p_to, 'url', v_url),
+           'normal',
+           i.id
+      from ins i
+    returning id,"user"
+  )
+  insert into notifications.notification_outbox_targets(outbox_id, subscription_id)
+  select o.id, s.id
+    from outbox o
+    join notifications.web_push_subscriptions s
+      on s."user" = o."user"
+     and s.revoked_at is null;
+
+  GET DIAGNOSTICS v_cnt = ROW_COUNT;
+  return v_cnt;
+end;$function$
+;
+
+CREATE OR REPLACE FUNCTION public.key_handover(p_key_id bigint, p_new_holder uuid)
+ RETURNS TABLE(key_id bigint, holder uuid)
+ LANGUAGE plpgsql
+ SECURITY DEFINER
+ SET search_path TO ''
+AS $function$DECLARE
+  v_old   uuid;
+  v_group uuid;
+BEGIN
+  -- Item laden & sperren
+  SELECT i."current_holder", i."group"
+    INTO v_old, v_group
+  FROM public.items AS i
+  WHERE i.id = p_key_id
+  FOR UPDATE;
+
+  IF NOT FOUND THEN
+    RAISE EXCEPTION 'item % not found', p_key_id
+      USING ERRCODE = '23503',
+            DETAIL   = format('key_id=%s new_holder=%s', p_key_id, p_new_holder);
+  END IF;
+
+  IF v_group IS NULL THEN
+    RAISE EXCEPTION 'item % has no group', p_key_id
+      USING ERRCODE = '23514',
+            DETAIL   = format('key_id=%s new_holder=%s', p_key_id, p_new_holder);
+  END IF;
+
+  -- Nur Gruppenmitglieder dürfen übergeben/übernehmen
+  IF NOT EXISTS (
+    SELECT 1
+    FROM public.group_user_mapping gum
+    WHERE gum."group" = v_group
+      AND gum."user"  = auth.uid()
+  ) THEN
+    RAISE EXCEPTION 'not in group for item %', p_key_id
+      USING ERRCODE = '42501',
+            DETAIL   = format('actor=%s group=%s', auth.uid()::text, v_group::text),
+            HINT     = 'membership in group required';
+  END IF;
+
+  -- Ziel-User existiert?
+  PERFORM 1 FROM public."user" u WHERE u."id" = p_new_holder;
+  IF NOT FOUND THEN
+    RAISE EXCEPTION 'new holder % not found', p_new_holder
+      USING ERRCODE = '23503',
+            DETAIL   = format('key_id=%s', p_key_id);
+  END IF;
+
+  IF NOT EXISTS (
+    SELECT 1
+    FROM public.group_user_mapping gum
+    WHERE gum."group" = v_group
+      AND gum."user"  = p_new_holder
+  ) THEN
+    RAISE EXCEPTION 'new holder % not in group', p_new_holder
+      USING ERRCODE = '23503',
+            DETAIL   = format('key_id=%s', p_key_id);
+  END IF;
+
+  -- Nur aktualisieren, wenn sich der Halter wirklich ändert
+  IF v_old IS DISTINCT FROM p_new_holder THEN
+    UPDATE public.items i
+       SET "current_holder" = p_new_holder,
+           "lastUpdate"     = now()
+     WHERE i.id = p_key_id;
+    -- dein bestehender Trigger auf UPDATE OF current_holder schreibt item_history
+  END IF;
+
+  RETURN QUERY
+  SELECT i.id, i."current_holder"
+  FROM public.items i
+  WHERE i.id = p_key_id;
+END;$function$
+;
+
+CREATE OR REPLACE FUNCTION public.trg_add_item_history_entry()
+ RETURNS trigger
+ LANGUAGE plpgsql
+ SET search_path TO 'public', 'pg_temp'
+AS $function$begin
+    insert into item_history("past_user", "current_user", key)
+    values (old."current_holder", new."current_holder", new.id);
+    return new;
+end;$function$
+;
+
+CREATE OR REPLACE FUNCTION public.trg_handle_new_auth_user()
+ RETURNS trigger
+ LANGUAGE plpgsql
+ SECURITY DEFINER
+ SET search_path TO ''
+AS $function$DECLARE
+  v_name    text;
+  v_display text;
+BEGIN
+  -- Aus Metadata sinnvolle Werte ziehen, mit Fallbacks
+  v_name    := COALESCE(
+                 NEW.raw_user_meta_data->>'name',
+                 NEW.raw_user_meta_data->>'displayName',
+                 'Anonymous'
+               );
+
+  v_display := COALESCE(
+                 NEW.raw_user_meta_data->>'displayName',
+                 v_name
+               );
+
+  -- In deine User-Tabelle eintragen (UUID als Text, wie bei dir üblich)
+  INSERT INTO public."user"("id","displayName","email","name")
+  VALUES (NEW.id, v_display, NEW.email, v_name)
+  ON CONFLICT ("id") DO NOTHING;
+
+  RETURN NEW;
+END;$function$
+;
+
+CREATE OR REPLACE FUNCTION public.trg_update_normalized_players()
+ RETURNS trigger
+ LANGUAGE plpgsql
+ SET search_path TO 'public', 'pg_temp'
+AS $function$BEGIN
+    NEW.normalized_players := 
+        CASE 
+            WHEN NEW.player_1 < NEW.player_2 THEN NEW.player_1 || ',' || NEW.player_2
+            ELSE NEW.player_2 || ',' || NEW.player_1
+        END;
+    RETURN NEW;
+END;$function$
+;
