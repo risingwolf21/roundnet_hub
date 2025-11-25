@@ -73,7 +73,7 @@ export const ProfileImage = ({ user }: Props) => {
     if (!error && uploadData && uploadData.path) {
       const { data } = supabase.storage.from('user').getPublicUrl(uploadData.path);
 
-      const { error } = await supabase.from('user').update({ avatarUrl: data.publicUrl }).eq('userId', user.id);
+      const { error } = await supabase.from('user').update({ avatarUrl: data.publicUrl }).eq('id', user.id);
       if (error) {
         supabase.storage.from('user').remove([uploadData.path]);
       }

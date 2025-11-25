@@ -72,7 +72,7 @@ export const PlayerzoneProfileDialog = ({
 
     await supabase.storage.from('user').remove(filesToRemove);
 
-    await supabase.from('user').update({ avatarUrl: player_data?.rg_avatar_url }).eq('userId', payload.user.id);
+    await supabase.from('user').update({ avatarUrl: player_data?.rg_avatar_url }).eq('id', payload.user.id);
     setLoading(false);
   };
 

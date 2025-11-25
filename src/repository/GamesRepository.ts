@@ -15,21 +15,21 @@ export const fetchUserMatches = () =>
 export const fetchMatch = () =>
   supabase.schema('games').from('match').select(`
      *,
-      team_a:teams!match_team_a_fkey (
+      team_a: teams!match_team_a_fkey (
         name,
-        player1:players!player_1 (
+        player1: players!player_1 (
           *
         ),
-        player2:players!player_2 (
+        player2: players!player_2 (
           *
         )
       ),
-      team_b:teams!match_team_b_fkey (
+      team_b: teams!match_team_b_fkey (
         name,
-        player1:players!player_1 (
+        player1: players!player_1 (
           *
         ),
-        player2:players!player_2 (
+        player2: players!player_2 (
           *
         )
       ),

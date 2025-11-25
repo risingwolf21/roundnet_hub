@@ -2,7 +2,7 @@ import { useGrants } from '@/features/auth/GrantsContext';
 import { useAddCommentMutation, useComments } from '@/tanstack/events';
 import { EventsUserView, FullComment } from '@/types/supabaseTypes';
 import { useNotifications } from '@toolpad/core';
-import React, { createRef, useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { EventCommentConversationDialog } from '../dialogs/EventCommentConversationDialog';
 import { CommentItem } from './CommentItem';
@@ -26,7 +26,7 @@ const EventInformationComments = ({ event, eventInThePast }: EventInformationCom
 
   const { user, hasPerm } = useGrants();
   const { t } = useTranslation();
-  const inputRef = createRef<HTMLInputElement>();
+  const inputRef = useRef<HTMLInputElement>(null);
   const [replyDialogOpen, setReplyDialogOpen] = useState<FullComment | null>(null);
 
   const { data: comments = [] } = useComments(event.id);
