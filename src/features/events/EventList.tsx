@@ -1,6 +1,7 @@
 import { PullToRefresh } from '@/components/pull-to-refresh/PullToRefresh';
 import { useFetchMode } from '@/hooks/useFetchMode';
 import { Has } from '@/hooks/useGrants';
+import { sendMetricsToSentry } from '@/instrument';
 import { useEvents, useUpdateAttendanceMutation } from '@/tanstack/events';
 import { EventsUserView } from '@/types/supabaseTypes';
 import { EventRepeat, FilterAlt } from '@mui/icons-material';
@@ -125,8 +126,14 @@ const EventScreen = () => {
                   event={event}
                   t={t}
                   attendanceUpdating={updateAttendance.isPending && updateAttendance.context?.event.id === event.id}
-                  attendEvent={() => updateAttendance.mutate({ event, user, newState: 'Attending' })}
-                  declineEvent={() => updateAttendance.mutate({ event, user, newState: 'Declined' })}
+                  attendEvent={() => {
+                    updateAttendance.mutate({ event, user, newState: 'Attending' });
+                    sendMetricsToSentry('event_attend_from_list', 1);
+                  }}
+                  declineEvent={() => {
+                    updateAttendance.mutate({ event, user, newState: 'Declined' });
+                    sendMetricsToSentry('event_decline_from_list', 1);
+                  }}
                   onClick={() => {
                     navigate('/training/event/' + event.id);
                   }}

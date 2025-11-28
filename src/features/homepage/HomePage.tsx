@@ -16,6 +16,7 @@ import { LoadingDrinkCard } from './LoadingDrinkCard';
 import { LoadingEventCard } from './LoadingEventCard';
 import { LoadingItemCard } from './LoadingItemCard';
 
+import { sendMetricsToSentry } from '@/instrument';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import List from '@mui/material/List';
@@ -74,21 +75,27 @@ const HomePage = () => {
               }}
             >
               {isEventsLoading
-                ? Array.from({ length: 5 }, (_v, k) => k + 1).map((_x) => <LoadingEventCard />)
+                ? Array.from({ length: 5 }, (_v, k) => k + 1).map((x) => <LoadingEventCard key={x} />)
                 : events.slice(0, 5).map((event, index) => (
-                    <EventCard
-                      index={index}
-                      user={user}
-                      event={event}
-                      {...(hasPerm('event.signup')
-                        ? {
-                            updateAttendance: (user, event, newState) => {
-                              updateAttendance.mutate({ user, event, newState });
-                            },
+                  <EventCard
+                    key={event.id}
+                    index={index}
+                    user={user}
+                    event={event}
+                    {...(hasPerm('event.signup')
+                      ? {
+                        updateAttendance: (user, event, newState) => {
+                          if (newState === 'Attending') {
+                            sendMetricsToSentry('event_attend_from_homepage', 1);
+                          } else if (newState === 'Declined') {
+                            sendMetricsToSentry('event_decline_from_homepage', 1);
                           }
-                        : {})}
-                    />
-                  ))}
+                          updateAttendance.mutate({ user, event, newState });
+                        },
+                      }
+                      : {})}
+                  />
+                ))}
             </Box>
           </Has>
           <Has feat={'drinks'} perm={'drinks.purchase'}>
@@ -106,31 +113,31 @@ const HomePage = () => {
               {isDrinksLoading
                 ? Array.from({ length: 5 }, (_v, k) => k + 1).map((x) => <LoadingDrinkCard index={x} />)
                 : drinks
-                    .filter((x: Drink) => !x.deleted && x.active && x.type === 'Drink')
-                    .map((drink, index) => (
-                      <DrinkCard
-                        index={index}
-                        drink={drink}
-                        insertHistory={(drink) =>
-                          updateHistory.mutate(
-                            { drinks: [{ ...drink, count: 1 }] },
-                            {
-                              onSuccess: () => {
-                                notifications.show('Getränk erfolgreich gebucht!', {
-                                  severity: 'success',
-                                  autoHideDuration: 1500,
-                                });
-                              },
-                              onError: (error) => {
-                                notifications.show(`Getränk konnte nicht gebucht werden. ${error.message}`, {
-                                  severity: 'error',
-                                });
-                              },
-                            }
-                          )
-                        }
-                      />
-                    ))}
+                  .filter((x: Drink) => !x.deleted && x.active && x.type === 'Drink')
+                  .map((drink, index) => (
+                    <DrinkCard
+                      index={index}
+                      drink={drink}
+                      insertHistory={(drink) =>
+                        updateHistory.mutate(
+                          { drinks: [{ ...drink, count: 1 }] },
+                          {
+                            onSuccess: () => {
+                              notifications.show('Getränk erfolgreich gebucht!', {
+                                severity: 'success',
+                                autoHideDuration: 1500,
+                              });
+                            },
+                            onError: (error) => {
+                              notifications.show(`Getränk konnte nicht gebucht werden. ${error.message}`, {
+                                severity: 'error',
+                              });
+                            },
+                          }
+                        )
+                      }
+                    />
+                  ))}
             </Box>
           </Has>
           <Has feat={'items'}>
