@@ -97,7 +97,7 @@
     "supabase": "^2.20.5",
     "typescript-eslint": "^8.46.4",
     "vite": "^7.1.6",
-    "vite-node": "3.2.4",
+    "vite-node": "5.2.0",
     "vite-plugin-pwa": "^1.0.3"
   }
 }
