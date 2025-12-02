@@ -96,16 +96,31 @@ drop policy "user_activity_all_self" on "public"."user_activity";
 
 drop policy "udg_self_read" on "public"."user_direct_grants";
 
+drop policy "Insert as user when group is public and needs no joni request" on "public"."group_user_mapping";
+
+drop policy "Insert when user requests to join" on "public"."group_user_mapping";
+
 drop index if exists "public"."ix_items_event";
 
 drop index if exists "public"."ix_pledges_item";
 
 drop index if exists "public"."uq_group_permissions_group_permission";
 
-CREATE UNIQUE INDEX players_pkey1 ON games.players USING btree (player);
+drop function if exists "public"."is_app_client";
 
-alter table "games"."players" add constraint "players_pkey1" PRIMARY KEY using index "players_pkey1";
+/*
+  Uninstall testing dependencies
+*/
 
+drop extension if exists "supabase-dbdev";
+
+drop extension if exists "pg_tle";
+
+drop extension if exists "pgtap";
+
+/*
+  ----------------------------------------------------------------------
+*/
 
   create policy "elo_calc_log_select_if_participant"
   on "games"."elo_calc_log"
@@ -429,10 +444,9 @@ using ((EXISTS ( SELECT 1
   as permissive
   for update
   to authenticated
-using ((EXISTS ( SELECT 1
-   FROM (public.events e
-     JOIN public.group_user_mapping gum ON ((gum."group" = e."group")))
-  WHERE ((e.id = event_attendance_user_mapping.event) AND (gum."user" = ( SELECT auth.uid() AS uid))))))
+using (((("user" = ( SELECT auth.uid() AS uid)) OR public.authorize('event.attendance.manage'::text)) AND (EXISTS ( SELECT 1
+   FROM public.events e
+  WHERE ((e.id = event_attendance_user_mapping.event) AND (e."startingDateTime" > now()) AND (e."isCancelled" = false))))))
 with check (((("user" = ( SELECT auth.uid() AS uid)) OR public.authorize('event.attendance.manage'::text)) AND (EXISTS ( SELECT 1
    FROM public.events e
   WHERE ((e.id = event_attendance_user_mapping.event) AND (e."startingDateTime" > now()) AND (e."isCancelled" = false))))));
@@ -576,17 +590,6 @@ with check ((public.authorize('event.edit'::text) AND (EXISTS ( SELECT 1
 
 
 
-  create policy "gum_insert_self_public_open"
-  on "public"."group_user_mapping"
-  as permissive
-  for insert
-  to authenticated
-with check ((("user" = ( SELECT auth.uid() AS uid)) AND (role = 'user'::public."GroupRole") AND (EXISTS ( SELECT 1
-   FROM public.event_group eg
-  WHERE ((eg.id = group_user_mapping."group") AND eg.is_public AND (NOT eg.need_request_to_join))))));
-
-
-
   create policy "gum_select_self"
   on "public"."group_user_mapping"
   as permissive
@@ -664,6 +667,42 @@ with check (("user" = ( SELECT auth.uid() AS uid)));
   to authenticated
 using (("user" = ( SELECT auth.uid() AS uid)));
 
+CREATE OR REPLACE FUNCTION public.is_group_public_joinable(p_group uuid)
+ RETURNS boolean
+ LANGUAGE plpgsql
+ SET "search_path" TO 'public', 'pg_temp'
+AS $function$begin
+return (EXISTS ( SELECT 1
+   FROM event_group eg
+  WHERE ((eg.id = p_group) AND eg.is_public AND (NOT eg.need_request_to_join))));
+  end;$function$
+;
+
+
+  create policy "Insert as user when group is public and needs no joni request"
+  on "public"."group_user_mapping"
+  as permissive
+  for insert
+  to authenticated
+with check (((role = 'user'::public."GroupRole") AND public.is_group_public_joinable("group")));
+
+
+
+  create policy "Insert when user requests to join"
+  on "public"."group_user_mapping"
+  as permissive
+  for insert
+  to authenticated
+with check (((role = 'joinRequested'::public."GroupRole") AND public.is_group_public_joinable("group")));
+
+
+
+  create policy "gum_insert_self_public_open"
+  on "public"."group_user_mapping"
+  as permissive
+  for insert
+  to authenticated
+with check ((("user" = ( SELECT auth.uid() AS uid)) AND (role = 'user'::public."GroupRole") AND public.is_group_public_joinable("group")));
 
 
 create or replace view public.user_grants_view with(security_invoker = on) as
