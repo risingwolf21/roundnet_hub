@@ -1,8 +1,8 @@
 drop policy "os_self" on "notifications"."object_subscriptions";
 
-drop policy "items_select_group_when_enabled" on "public"."event_bring_items";
+drop policy if exists "items_select_group_when_enabled" on "public"."event_bring_items";
 
-drop policy "items_write_editors" ON "public"."event_bring_items";
+drop policy if exists "items_write_editors" ON "public"."event_bring_items";
 
 drop policy "unp_insert_self" on "notifications"."user_notification_preferences";
 
