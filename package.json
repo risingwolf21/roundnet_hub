@@ -36,6 +36,7 @@
     "react-easy-crop": "5.5.3",
     "react-i18next": "15.7.3",
     "react-leaflet": "5.0.0",
+    "react-qr-code": "^2.0.18",
     "react-router": "7.9.1",
     "typescript": "5.9.2",
     "uuid": "13.0.0",

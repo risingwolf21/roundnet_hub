@@ -4,6 +4,21 @@ import Layout from '../../components/layout/Layout';
 import { useGrants } from '../auth/GrantsContext';
 import PayDrinksScreen from './PayDrinksScreen';
 
+export type PaymentDTO = {
+  type: 'paypal' | 'bank_transfer';
+}
+
+export type PayPalPaymentDTO = PaymentDTO & {
+  type: 'paypal';
+  paypalMeLink: string;
+}
+
+export type BankTransferDTo = PaymentDTO & {
+  type: 'bank_transfer';
+  recipient: string;
+  iban: string;
+  bic: string;
+}
 
 const PayDrinks = () => {
   const { user } = useGrants();
@@ -12,6 +27,23 @@ const PayDrinks = () => {
   return (
     <Layout>
       <PullToRefresh onRefresh={result.refetch}>
+        {/* <List>
+          <ListItem dense key={"recipient"} secondaryAction={<IconButton onClick={() => navigator.clipboard.writeText('')}>
+            <ContentCopy />
+          </IconButton>}>
+            <ListItemText primary={"Martin Wolfgang Marcks"} secondary={"Empfänger"} />
+          </ListItem>
+          <ListItem dense key={"iban"} secondaryAction={<IconButton onClick={() => navigator.clipboard.writeText('')}>
+            <ContentCopy />
+          </IconButton>}>
+            <ListItemText primary={"Martin Wolfgang Marcks"} secondary={"IBAN"} />
+          </ListItem>
+          <ListItem dense key={"bic"} secondaryAction={<IconButton onClick={() => navigator.clipboard.writeText('')}>
+            <ContentCopy />
+          </IconButton>}>
+            <ListItemText primary={"Martin Wolfgang Marcks"} secondary={"BIC"} />
+          </ListItem>
+        </List> */}
         <PayDrinksScreen {...result} />
       </PullToRefresh>
     </Layout>
