@@ -108,6 +108,28 @@ drop index if exists "public"."uq_group_permissions_group_permission";
 
 drop function if exists "public"."is_app_client";
 
+CREATE UNIQUE INDEX IF NOT EXISTS players_pkey ON games.players USING btree (player);
+
+alter table "games"."players" add constraint "players_pkey" PRIMARY KEY using index "players_pkey";
+
+alter table "games"."players" drop constraint "players_player_uuid_key" cascade;
+
+drop index if exists "games"."players_player_uuid_key";
+
+drop index if exists "games"."teams_normalized_players_uidx";
+
+alter table "games"."elo_history" add constraint "elo_history_user_fkey" FOREIGN KEY ("user") REFERENCES games.players(player) not valid;
+
+alter table "games"."elo_history" validate constraint "elo_history_user_fkey";
+
+alter table "games"."teams" add constraint "teams_player_1_fkey" FOREIGN KEY (player_1) REFERENCES games.players(player) not valid;
+
+alter table "games"."teams" validate constraint "teams_player_1_fkey";
+
+alter table "games"."teams" add constraint "teams_player_2_fkey" FOREIGN KEY (player_2) REFERENCES games.players(player) not valid;
+
+alter table "games"."teams" validate constraint "teams_player_2_fkey";
+
 /*
   Uninstall testing dependencies
 */
