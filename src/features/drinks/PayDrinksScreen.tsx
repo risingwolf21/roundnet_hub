@@ -1,48 +1,28 @@
 import EuroIcon from '@mui/icons-material/Euro';
-import { useNotifications } from '@toolpad/core';
+import { useDialogs, useNotifications } from '@toolpad/core';
 import { useEffect } from 'react';
 import { LoadingScreen } from '../../components/LoadingScreen';
 import { groupBy } from '../../utils';
 
 import { PaymentHistory } from '@/types/supabaseTypes';
+import ContentCopy from '@mui/icons-material/ContentCopy';
+import QrCodeIcon from '@mui/icons-material/QrCode';
 import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
 import Divider from '@mui/material/Divider';
-import Fab from '@mui/material/Fab';
+import IconButton from '@mui/material/IconButton';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemAvatar from '@mui/material/ListItemAvatar';
 import ListItemText from '@mui/material/ListItemText';
 import Typography from '@mui/material/Typography';
+import Stack from '@mui/system/Stack';
 import { UseQueryResult } from '@tanstack/react-query';
+import QRCode from 'react-qr-code';
 
-const PayDrinksButton = ({ amountToPay }: { amountToPay: number }) => {
-  const onPayClick = () => {
-    const newWindow = window.open(
-      `https://www.paypal.me/${import.meta.env.VITE_PAYPAL_ME_LINK}/${amountToPay}EUR`,
-      '_blank',
-      'noopener,noreferrer'
-    );
-    if (newWindow) newWindow.opener = null;
-  };
+import { BankTransferDTo, PayPalPaymentDTO } from './PayDrinks.page';
 
-  return (
-    <Fab
-      onClick={onPayClick}
-      variant="extended"
-      disabled={amountToPay === 0}
-      sx={{
-        color: '#fff',
-        backgroundColor: (theme) => theme.palette.primary.main,
-        position: 'fixed',
-        right: '16px',
-        bottom: 'calc(16px + env(safe-area-inset-bottom))',
-      }}
-    >
-      <EuroIcon sx={{ mr: 1 }} />
-      Mit Paypal bezahlen
-    </Fab>
-  );
-};
+const PAYMENT_INFO: PayPalPaymentDTO | BankTransferDTo = import.meta.env.VITE_PAYMENT_INFO ? JSON.parse(import.meta.env.VITE_PAYMENT_INFO) : undefined;
 
 const PayDrinksScreen = ({
   data: history = [],
@@ -51,6 +31,7 @@ const PayDrinksScreen = ({
   refetch,
 }: UseQueryResult<PaymentHistory[], Error>) => {
   const notifications = useNotifications();
+  const dialogs = useDialogs();
 
   useEffect(() => {
     if (error)
@@ -68,8 +49,73 @@ const PayDrinksScreen = ({
     );
   }
 
+  const amountToPay = history.filter((x) => !x.voucher).reduce((prev, curr) => prev + (curr.amount ?? 0), 0) ?? 0;
+
   return (
     <Box>
+      {
+        PAYMENT_INFO && <>
+          <List sx={{ px: 2 }}>
+            <Stack direction={"row"} justifyContent="space-between" alignItems="center">
+              <Typography fontWeight={"bold"}>Zahlungsinformationen</Typography>
+
+              {
+                PAYMENT_INFO.type === 'bank_transfer' && <IconButton onClick={() => {
+                  dialogs.confirm(<Box sx={{ display: "flex", flexDirection: "row", justifyContent: "center" }}>
+                    <QRCode value={`BCD\n002\n1\nINST\n${PAYMENT_INFO.bic}\n${PAYMENT_INFO.recipient}\n${PAYMENT_INFO.iban}\n\n\n\nGetränkezahlung Roundnet Karlsruhe App
+                    `} />
+                  </Box>, { title: 'Bankverbindung QR-Code' });
+                }}>
+                  <QrCodeIcon />
+                </IconButton>
+              }
+            </Stack>
+            {
+              PAYMENT_INFO.type === 'bank_transfer' && <>
+                <ListItem disablePadding disableGutters dense key={"recipient"} secondaryAction={<IconButton onClick={() => {
+                  navigator.clipboard.writeText(PAYMENT_INFO.recipient);
+                  notifications.show('Empfänger kopiert', { severity: 'info', autoHideDuration: 1500 });
+                }}>
+                  <ContentCopy />
+                </IconButton>}>
+                  <ListItemText primary={PAYMENT_INFO.recipient} secondary={"Empfänger"} />
+                </ListItem>
+
+                <ListItem disablePadding disableGutters dense key={"iban"} secondaryAction={<IconButton onClick={() => {
+                  navigator.clipboard.writeText(PAYMENT_INFO.iban);
+                  notifications.show('IBAN kopiert', { severity: 'info', autoHideDuration: 1500 });
+                }}>
+                  <ContentCopy />
+                </IconButton>}>
+                  <ListItemText primary={PAYMENT_INFO.iban} secondary={"IBAN"} />
+                </ListItem>
+
+                <ListItem disablePadding disableGutters dense key={"bic"} secondaryAction={<IconButton onClick={() => {
+                  navigator.clipboard.writeText(PAYMENT_INFO.bic);
+                  notifications.show('BIC kopiert', { severity: 'info', autoHideDuration: 1500 });
+                }}>
+                  <ContentCopy />
+                </IconButton>}>
+                  <ListItemText primary={PAYMENT_INFO.bic} secondary={"BIC"} />
+                </ListItem>
+              </>
+            }
+            {
+              PAYMENT_INFO.type === 'paypal' && <ListItem disableGutters dense key={"paypal"} secondaryAction={<Button variant='contained' startIcon={<EuroIcon />}>Senden</Button>} onClick={() => {
+                const newWindow = window.open(
+                  `https://www.paypal.me/${PAYMENT_INFO.paypalMeLink}/${amountToPay}EUR`,
+                  '_blank',
+                  'noopener,noreferrer'
+                );
+                if (newWindow) newWindow.opener = null;
+              }}>
+                <ListItemText primary={"Per PayPal senden"} />
+              </ListItem>
+            }
+          </List>
+          <Divider />
+        </>
+      }
       <List>
         {Array.from(
           groupBy(
@@ -85,8 +131,8 @@ const PayDrinksScreen = ({
               priceTotal: value.reduce((prev, curr) => prev + (curr.count ?? 0), 0),
             };
           })
-          .map((x, index) => (
-            <ListItem key={'drinks' + index} secondaryAction={<Typography>{x.priceTotal} €</Typography>}>
+          .map((x) => (
+            <ListItem key={'drinks' + x.name} secondaryAction={<Typography>{x.priceTotal} €</Typography>}>
               <ListItemAvatar>
                 <Typography>{x.count + ' x'}</Typography>
               </ListItemAvatar>
@@ -129,11 +175,6 @@ const PayDrinksScreen = ({
           </>
         )}
       </List>
-      {history.length > 0 && (
-        <PayDrinksButton
-          amountToPay={history.filter((x) => !x.voucher).reduce((prev, curr) => prev + (curr.amount ?? 0), 0) ?? 0}
-        />
-      )}
     </Box>
   );
 };

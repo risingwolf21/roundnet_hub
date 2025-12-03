@@ -2,11 +2,11 @@
 # https://github.com/firebase/firebase-tools
 
 name: Production without Artifacts
-'on':
+"on":
   workflow_dispatch:
     inputs:
       publish:
-        description: 'Choose wich environment you would like to publish'
+        description: "Choose wich environment you would like to publish"
         required: true
         default: All
         type: choice
@@ -15,7 +15,7 @@ name: Production without Artifacts
           - Roundnet Karlsruhe
           - All
 env:
-  CI: ''
+  CI: ""
 
 jobs:
   db-test:
@@ -30,14 +30,14 @@ jobs:
       - run: supabase test db
 
   karlsruhe:
-    name: 'Build Karlsruhe'
+    name: "Build Karlsruhe"
     if: ${{ github.event_name != 'workflow_dispatch'
-        || github.event.inputs.publish == 'All'
-        || github.event.inputs.publish == 'Roundnet Karlsruhe' }}
+      || github.event.inputs.publish == 'All'
+      || github.event.inputs.publish == 'Roundnet Karlsruhe' }}
     runs-on: ubuntu-latest
     needs: db-test
     environment:
-      name: 'Roundnet Karlsruhe'
+      name: "Roundnet Karlsruhe"
       url: ${{ vars.PUBLIC_URL }}
 
     steps:
@@ -54,33 +54,33 @@ jobs:
       - name: Build
         run: yarn run build:karlsruhe
         env:
-          VITE_SUPABASE_URL:          ${{ vars.SUPABASE_DB_URL }}
-          VITE_SUPABASE_ANON_KEY:     ${{ secrets.SUPABASE_ANON_KEY }}
-          VITE_SUPABASE_PROJECT_ID:   ${{ vars.SUPABASE_PROJECT_ID }}
-          VITE_OPENWEATHER_API_KEY:   ${{ secrets.OPENWEATHER_API_KEY }}
-          VITE_VAPID_PUBLIC_KEY:      ${{ vars.VAPID_PUBLIC_KEY }}
-          VITE_PAYPAL_ME_LINK:        ${{ vars.PAYPAL_ME_LINK }}
-          VITE_GIT_COMMIT:            ${{ github.sha}}
-          VITE_ENV:                   'production'
+          VITE_SUPABASE_URL: ${{ vars.SUPABASE_DB_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+          VITE_SUPABASE_PROJECT_ID: ${{ vars.SUPABASE_PROJECT_ID }}
+          VITE_OPENWEATHER_API_KEY: ${{ secrets.OPENWEATHER_API_KEY }}
+          VITE_VAPID_PUBLIC_KEY: ${{ vars.VAPID_PUBLIC_KEY }}
+          VITE_PAYPAL_ME_LINK: ${{ vars.PAYPAL_ME_LINK }}
+          VITE_PAYMENT_INFO: ${{ vars.PAYMENT_INFO }}
+          VITE_GIT_COMMIT: ${{ github.sha}}
+          VITE_ENV: "production"
 
       - uses: FirebaseExtended/action-hosting-deploy@v0
         with:
-          repoToken: '${{ secrets.GITHUB_TOKEN }}'
-          firebaseServiceAccount: '${{ secrets.FIREBASE_SERVICE_ACCOUNT_ROUNDNET_KARLSRUHE }}'
+          repoToken: "${{ secrets.GITHUB_TOKEN }}"
+          firebaseServiceAccount: "${{ secrets.FIREBASE_SERVICE_ACCOUNT_ROUNDNET_KARLSRUHE }}"
           channelId: live
           projectId: ${{ vars.FIREBASE_PROJECT }}
           target: ${{ vars.FIREBASE_TARGET }}
 
-
   munich:
-    name: 'Build Munich Roundnet'
+    name: "Build Munich Roundnet"
     if: ${{ github.event_name != 'workflow_dispatch'
-        || github.event.inputs.publish == 'All'
-        || github.event.inputs.publish == 'Munich Roundnet' }}
+      || github.event.inputs.publish == 'All'
+      || github.event.inputs.publish == 'Munich Roundnet' }}
     runs-on: ubuntu-latest
     needs: db-test
     environment:
-      name: 'Munich Roundnet'
+      name: "Munich Roundnet"
       url: ${{ vars.PUBLIC_URL }}
 
     steps:
@@ -97,19 +97,19 @@ jobs:
       - name: Build
         run: yarn run build:munich
         env:
-          VITE_SUPABASE_URL:          ${{ vars.SUPABASE_DB_URL }}
-          VITE_SUPABASE_ANON_KEY:     ${{ secrets.SUPABASE_ANON_KEY }}
-          VITE_SUPABASE_PROJECT_ID:   ${{ vars.SUPABASE_PROJECT_ID }}
-          VITE_OPENWEATHER_API_KEY:   ${{ secrets.OPENWEATHER_API_KEY }}
-          VITE_VAPID_PUBLIC_KEY:      ${{ vars.VAPID_PUBLIC_KEY }}
-          VITE_PAYPAL_ME_LINK:        ${{ vars.PAYPAL_ME_LINK }}
-          VITE_GIT_COMMIT:            ${{ github.sha}}
-          VITE_ENV:                   'production'
+          VITE_SUPABASE_URL: ${{ vars.SUPABASE_DB_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+          VITE_SUPABASE_PROJECT_ID: ${{ vars.SUPABASE_PROJECT_ID }}
+          VITE_OPENWEATHER_API_KEY: ${{ secrets.OPENWEATHER_API_KEY }}
+          VITE_VAPID_PUBLIC_KEY: ${{ vars.VAPID_PUBLIC_KEY }}
+          VITE_PAYPAL_ME_LINK: ${{ vars.PAYPAL_ME_LINK }}
+          VITE_GIT_COMMIT: ${{ github.sha}}
+          VITE_ENV: "production"
 
       - uses: FirebaseExtended/action-hosting-deploy@v0
         with:
-          repoToken: '${{ secrets.GITHUB_TOKEN }}'
-          firebaseServiceAccount: '${{ secrets.FIREBASE_SERVICE_ACCOUNT_ROUNDNET_KARLSRUHE }}'
+          repoToken: "${{ secrets.GITHUB_TOKEN }}"
+          firebaseServiceAccount: "${{ secrets.FIREBASE_SERVICE_ACCOUNT_ROUNDNET_KARLSRUHE }}"
           channelId: live
           projectId: ${{ vars.FIREBASE_PROJECT }}
           target: ${{ vars.FIREBASE_TARGET }}
