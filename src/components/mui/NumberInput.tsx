@@ -38,20 +38,27 @@ function MinusIcon(props: React.ComponentProps<'svg'>) {
 }
 
 export const NumberInput = React.forwardRef(function CustomNumberInput(
-  props: NumberField.Root.Props & { fullWidth?: boolean, placeholder?: string },
+  props: NumberField.Root.Props & { fullWidth?: boolean; placeholder?: string },
   ref: React.ForwardedRef<HTMLDivElement>
 ) {
-  return <NumberField.Root style={{ width: props.fullWidth ? "100%" : "unset" }} disabled={props.disabled} ref={ref} {...props}>
-    <NumberField.Group style={{ display: "flex", width: "100%" }}>
-      <StyledNumberFieldDecrement>
-        <MinusIcon />
-      </StyledNumberFieldDecrement>
-      <StyledNumberFielInput width={"100%"} placeholder={props.placeholder} />
-      <StyledNumberFieldIncrement>
-        <PlusIcon />
-      </StyledNumberFieldIncrement>
-    </NumberField.Group>
-  </NumberField.Root >
+  return (
+    <NumberField.Root
+      style={{ width: props.fullWidth ? '100%' : 'unset' }}
+      disabled={props.disabled}
+      ref={ref}
+      {...props}
+    >
+      <NumberField.Group style={{ display: 'flex', width: '100%' }}>
+        <StyledNumberFieldDecrement>
+          <MinusIcon />
+        </StyledNumberFieldDecrement>
+        <StyledNumberFielInput width={'100%'} placeholder={props.placeholder} />
+        <StyledNumberFieldIncrement>
+          <PlusIcon />
+        </StyledNumberFieldIncrement>
+      </NumberField.Group>
+    </NumberField.Root>
+  );
 });
 
 const StyledNumberFielInput = styled(NumberField.Input)(
@@ -138,4 +145,3 @@ const StyledNumberFieldIncrement = styled(NumberField.Increment)(
   }
 `
 );
-

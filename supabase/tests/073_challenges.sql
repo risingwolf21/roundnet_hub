@@ -17,7 +17,7 @@ WITH g AS (
     '#ff8800',
     true,
     false,
-    tests.get_supabase_uid('user_1a')::text,
+    tests.get_supabase_uid('user_1a'),
     'admin',
     NULL
   ) AS grp
@@ -26,7 +26,7 @@ SELECT (g.grp).id AS challenge_group_id FROM g \gset
 
 -- Add user_1b as member
 INSERT INTO public.group_user_mapping ("user","group","role")
-VALUES (tests.get_supabase_uid('user_1b')::text, :'challenge_group_id'::uuid, 'user')
+VALUES (tests.get_supabase_uid('user_1b'), :'challenge_group_id'::uuid, 'user')
 ON CONFLICT DO NOTHING;
 
 -- Managers group (admin has challenge.manage), BUT do not add admin to challenge_group yet.
@@ -37,7 +37,7 @@ WITH g AS (
     '#111111',
     true,
     false,
-    tests.get_supabase_uid('admin')::text,
+    tests.get_supabase_uid('admin'),
     'admin',
     NULL
   ) AS grp
@@ -54,7 +54,7 @@ WITH g AS (
     '#000000',
     true,
     false,
-    tests.get_supabase_uid('admin')::text,
+    tests.get_supabase_uid('admin'),
     'admin',
     NULL
   ) AS grp
@@ -119,7 +119,7 @@ SELECT cmp_ok(
   (
     SELECT COALESCE(SUM(cs."count"),0)
     FROM public.challenge_stats cs
-    WHERE cs."user" = tests.get_supabase_uid('user_1a')::text
+    WHERE cs."user" = tests.get_supabase_uid('user_1a')
       AND cs."challenge" = :'challenge_id'::uuid
       AND cs.created_at >= date_trunc('week', :'t0'::timestamptz)
       AND cs.created_at  < date_trunc('week', :'t0'::timestamptz) + interval '7 days'
@@ -145,14 +145,14 @@ SELECT throws_like(
 
 SELECT tests.authenticate_as('admin');
 INSERT INTO public.challenge_stats("challenge","user","count","created_at")
-VALUES (:'challenge_id'::uuid, tests.get_supabase_uid('user_1a')::text, 1, (:'t0'::timestamptz + interval '15 days'));
+VALUES (:'challenge_id'::uuid, tests.get_supabase_uid('user_1a'), 1, (:'t0'::timestamptz + interval '15 days'));
 SELECT ok(TRUE, 'admin (challenge.manage) can insert for another user');
 
 -- === RLS-proof: manager-seeded points still block daily cap ===============
 
 SELECT tests.authenticate_as('admin');
 INSERT INTO public.challenge_stats("challenge","user","count","created_at")
-VALUES (:'challenge_id'::uuid, tests.get_supabase_uid('user_1a')::text, 2, (:'t0'::timestamptz + interval '20 days'));
+VALUES (:'challenge_id'::uuid, tests.get_supabase_uid('user_1a'), 2, (:'t0'::timestamptz + interval '20 days'));
 
 SELECT tests.authenticate_as('user_1a');
 SELECT throws_like(
@@ -178,7 +178,7 @@ SELECT tests.authenticate_as('user_1b');
 SELECT cmp_ok(
   (SELECT COUNT(*) FROM public.challenge_stats
     WHERE "challenge" = :'challenge_id'::uuid
-      AND "user" = tests.get_supabase_uid('user_1a')::text),
+      AND "user" = tests.get_supabase_uid('user_1a')),
   '>='::text, 1::bigint,
   'user_1b can see user_1a stats within the same group'
 );
@@ -192,7 +192,7 @@ VALUES (:'challenge_id_2'::uuid, 'Other Challenge', 4, 2, :'other_group_id'::uui
 
 
 INSERT INTO public.challenge_stats("challenge","user","count","created_at")
-VALUES (:'challenge_id_2'::uuid, tests.get_supabase_uid('admin')::text, 1, :'t0'::timestamptz);
+VALUES (:'challenge_id_2'::uuid, tests.get_supabase_uid('admin'), 1, :'t0'::timestamptz);
 
 -- (B) Non-member cannot read other group’s stats
 SELECT tests.authenticate_as('user_1b');
@@ -219,7 +219,7 @@ WITH upd AS (
   UPDATE public.challenge_stats
      SET "count" = "count" + 1
    WHERE "challenge" = :'challenge_id'::uuid
-     AND "user" = tests.get_supabase_uid('user_1b')::text
+     AND "user" = tests.get_supabase_uid('user_1b')
    RETURNING 1
 )
 SELECT cmp_ok((SELECT COUNT(*) FROM upd), '='::text, 0::bigint, 'user_1a cannot update user_1b stats');
@@ -227,7 +227,7 @@ SELECT cmp_ok((SELECT COUNT(*) FROM upd), '='::text, 0::bigint, 'user_1a cannot 
 WITH del AS (
   DELETE FROM public.challenge_stats
    WHERE "challenge" = :'challenge_id'::uuid
-     AND "user" = tests.get_supabase_uid('user_1b')::text
+     AND "user" = tests.get_supabase_uid('user_1b')
    RETURNING 1
 )
 SELECT cmp_ok((SELECT COUNT(*) FROM del), '='::text, 0::bigint, 'user_1a cannot delete user_1b stats');
@@ -239,21 +239,21 @@ WITH upd AS (
   UPDATE public.challenge_stats
      SET "count" = "count" + 1
    WHERE "challenge" = :'challenge_id'::uuid
-     AND "user" = tests.get_supabase_uid('user_1b')::text
+     AND "user" = tests.get_supabase_uid('user_1b')
    RETURNING 1
 )
 SELECT cmp_ok((SELECT COUNT(*) FROM upd), '='::text, 0::bigint, 'admin (no membership) cannot update user_1b stats');
 
 -- Now add admin to the challenge group → update/delete must succeed
 INSERT INTO public.group_user_mapping("user","group","role")
-VALUES (tests.get_supabase_uid('admin')::text, :'challenge_group_id'::uuid, 'user')
+VALUES (tests.get_supabase_uid('admin'), :'challenge_group_id'::uuid, 'user')
 ON CONFLICT DO NOTHING;
 
 WITH upd2 AS (
   UPDATE public.challenge_stats
      SET "count" = "count" + 1
    WHERE "challenge" = :'challenge_id'::uuid
-     AND "user" = tests.get_supabase_uid('user_1b')::text
+     AND "user" = tests.get_supabase_uid('user_1b')
    RETURNING 1
 )
 SELECT cmp_ok((SELECT COUNT(*) FROM upd2), '>='::text, 1::bigint, 'admin (manager + member) can update user_1b stats');
@@ -261,7 +261,7 @@ SELECT cmp_ok((SELECT COUNT(*) FROM upd2), '>='::text, 1::bigint, 'admin (manage
 WITH del2 AS (
   DELETE FROM public.challenge_stats
    WHERE "challenge" = :'challenge_id'::uuid
-     AND "user" = tests.get_supabase_uid('user_1b')::text
+     AND "user" = tests.get_supabase_uid('user_1b')
    RETURNING 1
 )
 SELECT cmp_ok((SELECT COUNT(*) FROM del2), '>='::text, 1::bigint, 'admin (manager + member) can delete user_1b stats');

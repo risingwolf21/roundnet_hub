@@ -1,6 +1,5 @@
 import * as React from 'react';
 
-
 function isChunkError(err: unknown) {
   const msg = (err as any)?.message ?? '';
   return /ChunkLoadError|Loading chunk \d+ failed|Failed to fetch dynamically imported module|imported module/i.test(
@@ -27,7 +26,7 @@ export function lazyWithRetry<T extends React.ComponentType<any>>(
                 try {
                   const keys = await caches?.keys?.();
                   await Promise.all((keys || []).map((k) => caches.delete(k)));
-                } catch { }
+                } catch {}
               } else {
                 onFinalFail?.(err);
                 reject(err);

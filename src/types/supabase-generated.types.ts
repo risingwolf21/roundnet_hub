@@ -282,6 +282,20 @@ export type Database = {
             referencedRelation: "user_matches"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "elo_history_user_fkey"
+            columns: ["user"]
+            isOneToOne: false
+            referencedRelation: "players"
+            referencedColumns: ["player"]
+          },
+          {
+            foreignKeyName: "elo_history_user_fkey"
+            columns: ["user"]
+            isOneToOne: false
+            referencedRelation: "players_public"
+            referencedColumns: ["player"]
+          },
         ]
       }
       match: {
@@ -352,7 +366,7 @@ export type Database = {
           gender?: string
           hide_rating?: boolean
           ka_index?: number
-          player?: string
+          player: string
           pro_status?: boolean
           rg_avatar_url?: string | null
           rg_id?: string | null
@@ -557,13 +571,6 @@ export type Database = {
           },
           {
             foreignKeyName: "teams_player_2_fkey"
-            columns: ["team_a_player_2"]
-            isOneToOne: false
-            referencedRelation: "players"
-            referencedColumns: ["player"]
-          },
-          {
-            foreignKeyName: "teams_player_2_fkey"
             columns: ["team_b_player_2"]
             isOneToOne: false
             referencedRelation: "players"
@@ -572,13 +579,20 @@ export type Database = {
           {
             foreignKeyName: "teams_player_2_fkey"
             columns: ["team_a_player_2"]
+            isOneToOne: false
+            referencedRelation: "players"
+            referencedColumns: ["player"]
+          },
+          {
+            foreignKeyName: "teams_player_2_fkey"
+            columns: ["team_b_player_2"]
             isOneToOne: false
             referencedRelation: "players_public"
             referencedColumns: ["player"]
           },
           {
             foreignKeyName: "teams_player_2_fkey"
-            columns: ["team_b_player_2"]
+            columns: ["team_a_player_2"]
             isOneToOne: false
             referencedRelation: "players_public"
             referencedColumns: ["player"]
@@ -837,7 +851,7 @@ export type Database = {
           tenant?: string
           title: string
           topic: string
-          user: string
+          user?: string
         }
         Update: {
           body?: string | null
@@ -852,36 +866,6 @@ export type Database = {
           tenant?: string
           title?: string
           topic?: string
-          user?: string
-        }
-        Relationships: []
-      }
-      object_subscriptions: {
-        Row: {
-          created_at: string | null
-          scope_id: string
-          scope_type: string
-          tenant: string
-          topic: string | null
-          topic_norm: string
-          user: string
-        }
-        Insert: {
-          created_at?: string | null
-          scope_id: string
-          scope_type: string
-          tenant?: string
-          topic?: string | null
-          topic_norm?: string
-          user: string
-        }
-        Update: {
-          created_at?: string | null
-          scope_id?: string
-          scope_type?: string
-          tenant?: string
-          topic?: string | null
-          topic_norm?: string
           user?: string
         }
         Relationships: []
@@ -911,7 +895,7 @@ export type Database = {
           tenant?: string
           topic: string
           updated_at?: string
-          user: string
+          user?: string
         }
         Update: {
           channel?: string
@@ -1281,7 +1265,7 @@ export type Database = {
             columns: ["user"]
             isOneToOne: false
             referencedRelation: "user"
-            referencedColumns: ["userId"]
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -1374,14 +1358,14 @@ export type Database = {
             columns: ["user"]
             isOneToOne: false
             referencedRelation: "user"
-            referencedColumns: ["userId"]
+            referencedColumns: ["id"]
           },
         ]
       }
       event_bring_items: {
         Row: {
           created_at: string
-          created_by: string
+          created_by: string | null
           event: string
           id: string
           name: string
@@ -1392,7 +1376,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
-          created_by?: string
+          created_by?: string | null
           event: string
           id?: string
           name: string
@@ -1403,7 +1387,7 @@ export type Database = {
         }
         Update: {
           created_at?: string
-          created_by?: string
+          created_by?: string | null
           event?: string
           id?: string
           name?: string
@@ -1418,7 +1402,7 @@ export type Database = {
             columns: ["created_by"]
             isOneToOne: false
             referencedRelation: "user"
-            referencedColumns: ["userId"]
+            referencedColumns: ["id"]
           },
           {
             foreignKeyName: "event_bring_items_event_fkey"
@@ -1460,7 +1444,7 @@ export type Database = {
           qty: number
           status: string
           updated_at: string
-          user_id: string
+          user: string
         }
         Insert: {
           created_at?: string
@@ -1471,7 +1455,7 @@ export type Database = {
           qty: number
           status?: string
           updated_at?: string
-          user_id: string
+          user?: string
         }
         Update: {
           created_at?: string
@@ -1482,7 +1466,7 @@ export type Database = {
           qty?: number
           status?: string
           updated_at?: string
-          user_id?: string
+          user?: string
         }
         Relationships: [
           {
@@ -1535,11 +1519,11 @@ export type Database = {
             referencedColumns: ["item_id"]
           },
           {
-            foreignKeyName: "event_bring_pledges_user_id_fkey"
-            columns: ["user_id"]
+            foreignKeyName: "event_bring_pledges_user_fkey"
+            columns: ["user"]
             isOneToOne: false
             referencedRelation: "user"
-            referencedColumns: ["userId"]
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -1564,7 +1548,7 @@ export type Database = {
           id?: string
           last_update?: string
           reply_to?: string | null
-          user: string
+          user?: string
         }
         Update: {
           comment?: string
@@ -1618,7 +1602,7 @@ export type Database = {
             columns: ["user"]
             isOneToOne: false
             referencedRelation: "user"
-            referencedColumns: ["userId"]
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -1879,7 +1863,7 @@ export type Database = {
             columns: ["user"]
             isOneToOne: false
             referencedRelation: "user"
-            referencedColumns: ["userId"]
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -1937,11 +1921,11 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "history_user_fkey"
+            foreignKeyName: "history_user_uuid_fkey"
             columns: ["user"]
             isOneToOne: false
             referencedRelation: "user"
-            referencedColumns: ["userId"]
+            referencedColumns: ["id"]
           },
           {
             foreignKeyName: "history_voucher_fkey"
@@ -1962,32 +1946,32 @@ export type Database = {
       item_history: {
         Row: {
           created_at: string
-          currentUser: string | null
+          current_user: string | null
           id: number
           key: number | null
-          pastUser: string | null
+          past_user: string | null
         }
         Insert: {
           created_at?: string
-          currentUser?: string | null
+          current_user?: string | null
           id?: number
           key?: number | null
-          pastUser?: string | null
+          past_user?: string | null
         }
         Update: {
           created_at?: string
-          currentUser?: string | null
+          current_user?: string | null
           id?: number
           key?: number | null
-          pastUser?: string | null
+          past_user?: string | null
         }
         Relationships: [
           {
-            foreignKeyName: "item_history_currentUser_fkey"
-            columns: ["currentUser"]
+            foreignKeyName: "item_history_current_user_uuid_fkey"
+            columns: ["current_user"]
             isOneToOne: false
             referencedRelation: "user"
-            referencedColumns: ["userId"]
+            referencedColumns: ["id"]
           },
           {
             foreignKeyName: "item_history_key_fkey"
@@ -1997,11 +1981,11 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "item_history_pastUser_fkey"
-            columns: ["pastUser"]
+            foreignKeyName: "item_history_past_user_uuid_fkey"
+            columns: ["past_user"]
             isOneToOne: false
             referencedRelation: "user"
-            referencedColumns: ["userId"]
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -2041,6 +2025,13 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: "items_current_holder_fkey"
+            columns: ["current_holder"]
+            isOneToOne: false
+            referencedRelation: "user"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "items_group_fkey"
             columns: ["group"]
             isOneToOne: false
@@ -2054,224 +2045,7 @@ export type Database = {
             referencedRelation: "event_groups_view"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "keys_user_fkey"
-            columns: ["current_holder"]
-            isOneToOne: false
-            referencedRelation: "user"
-            referencedColumns: ["userId"]
-          },
         ]
-      }
-      notification_outbox: {
-        Row: {
-          attempt_count: number
-          body: string | null
-          created_at: string
-          data: Json | null
-          dedupe_key: string | null
-          id: number
-          last_error: string | null
-          next_attempt_at: string
-          notification: string | null
-          sent_at: string | null
-          status: string
-          tenant: string
-          title: string
-          ttl_seconds: number | null
-          urgency: string
-          user: string
-        }
-        Insert: {
-          attempt_count?: number
-          body?: string | null
-          created_at?: string
-          data?: Json | null
-          dedupe_key?: string | null
-          id?: number
-          last_error?: string | null
-          next_attempt_at?: string
-          notification?: string | null
-          sent_at?: string | null
-          status?: string
-          tenant?: string
-          title: string
-          ttl_seconds?: number | null
-          urgency?: string
-          user: string
-        }
-        Update: {
-          attempt_count?: number
-          body?: string | null
-          created_at?: string
-          data?: Json | null
-          dedupe_key?: string | null
-          id?: number
-          last_error?: string | null
-          next_attempt_at?: string
-          notification?: string | null
-          sent_at?: string | null
-          status?: string
-          tenant?: string
-          title?: string
-          ttl_seconds?: number | null
-          urgency?: string
-          user?: string
-        }
-        Relationships: []
-      }
-      notification_outbox_targets: {
-        Row: {
-          attempt_count: number
-          last_error: string | null
-          last_status: number | null
-          next_attempt_at: string
-          outbox_id: number
-          status: string
-          subscription_id: string
-        }
-        Insert: {
-          attempt_count?: number
-          last_error?: string | null
-          last_status?: number | null
-          next_attempt_at?: string
-          outbox_id: number
-          status?: string
-          subscription_id: string
-        }
-        Update: {
-          attempt_count?: number
-          last_error?: string | null
-          last_status?: number | null
-          next_attempt_at?: string
-          outbox_id?: number
-          status?: string
-          subscription_id?: string
-        }
-        Relationships: []
-      }
-      notification_retention: {
-        Row: {
-          keep_read_for: unknown
-          keep_revoked_sub_for: unknown
-          keep_sent_outbox_for: unknown
-          keep_unread_for: unknown
-          tenant: string
-        }
-        Insert: {
-          keep_read_for?: unknown
-          keep_revoked_sub_for?: unknown
-          keep_sent_outbox_for?: unknown
-          keep_unread_for?: unknown
-          tenant: string
-        }
-        Update: {
-          keep_read_for?: unknown
-          keep_revoked_sub_for?: unknown
-          keep_sent_outbox_for?: unknown
-          keep_unread_for?: unknown
-          tenant?: string
-        }
-        Relationships: []
-      }
-      notification_topics: {
-        Row: {
-          default_enabled: boolean
-          description: string | null
-          scope_type: string
-          topic: string
-        }
-        Insert: {
-          default_enabled?: boolean
-          description?: string | null
-          scope_type: string
-          topic: string
-        }
-        Update: {
-          default_enabled?: boolean
-          description?: string | null
-          scope_type?: string
-          topic?: string
-        }
-        Relationships: []
-      }
-      notifications: {
-        Row: {
-          body: string | null
-          created_at: string
-          data: Json | null
-          dismissed_at: string | null
-          expires_at: string | null
-          id: string
-          read_at: string | null
-          source_id: string | null
-          source_type: string | null
-          tenant: string
-          title: string
-          topic: string
-          user: string
-        }
-        Insert: {
-          body?: string | null
-          created_at?: string
-          data?: Json | null
-          dismissed_at?: string | null
-          expires_at?: string | null
-          id?: string
-          read_at?: string | null
-          source_id?: string | null
-          source_type?: string | null
-          tenant?: string
-          title: string
-          topic: string
-          user: string
-        }
-        Update: {
-          body?: string | null
-          created_at?: string
-          data?: Json | null
-          dismissed_at?: string | null
-          expires_at?: string | null
-          id?: string
-          read_at?: string | null
-          source_id?: string | null
-          source_type?: string | null
-          tenant?: string
-          title?: string
-          topic?: string
-          user?: string
-        }
-        Relationships: []
-      }
-      object_subscriptions: {
-        Row: {
-          created_at: string | null
-          scope_id: string
-          scope_type: string
-          tenant: string
-          topic: string | null
-          topic_norm: string
-          user: string
-        }
-        Insert: {
-          created_at?: string | null
-          scope_id: string
-          scope_type: string
-          tenant?: string
-          topic?: string | null
-          topic_norm?: string
-          user: string
-        }
-        Update: {
-          created_at?: string | null
-          scope_id?: string
-          scope_type?: string
-          tenant?: string
-          topic?: string | null
-          topic_norm?: string
-          user?: string
-        }
-        Relationships: []
       }
       payments: {
         Row: {
@@ -2280,7 +2054,7 @@ export type Database = {
           id: number
           id_uuid: string
           paymentState: Database["public"]["Enums"]["PaymentState"]
-          userId: string
+          user: string
         }
         Insert: {
           amountToPay?: number
@@ -2288,7 +2062,7 @@ export type Database = {
           id?: number
           id_uuid?: string
           paymentState?: Database["public"]["Enums"]["PaymentState"]
-          userId: string
+          user?: string
         }
         Update: {
           amountToPay?: number
@@ -2296,15 +2070,15 @@ export type Database = {
           id?: number
           id_uuid?: string
           paymentState?: Database["public"]["Enums"]["PaymentState"]
-          userId?: string
+          user?: string
         }
         Relationships: [
           {
-            foreignKeyName: "payments_userid_fkey"
-            columns: ["userId"]
+            foreignKeyName: "payments_user_uuid_fkey"
+            columns: ["user"]
             isOneToOne: false
             referencedRelation: "user"
-            referencedColumns: ["userId"]
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -2330,9 +2104,9 @@ export type Database = {
           disabled: boolean
           displayName: string
           email: string
+          id: string
           name: string
           role: Database["public"]["Enums"]["UserRole"]
-          userId: string
           verified: boolean
         }
         Insert: {
@@ -2341,9 +2115,9 @@ export type Database = {
           disabled?: boolean
           displayName?: string
           email?: string
+          id: string
           name?: string
           role?: Database["public"]["Enums"]["UserRole"]
-          userId?: string
           verified?: boolean
         }
         Update: {
@@ -2352,9 +2126,9 @@ export type Database = {
           disabled?: boolean
           displayName?: string
           email?: string
+          id?: string
           name?: string
           role?: Database["public"]["Enums"]["UserRole"]
-          userId?: string
           verified?: boolean
         }
         Relationships: []
@@ -2370,7 +2144,7 @@ export type Database = {
           app_version: string
           commit_version: string
           last_activity?: string
-          user: string
+          user?: string
         }
         Update: {
           app_version?: string
@@ -2378,7 +2152,15 @@ export type Database = {
           last_activity?: string
           user?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "user_activity_user_uuid_fkey"
+            columns: ["user"]
+            isOneToOne: false
+            referencedRelation: "user"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_direct_grants: {
         Row: {
@@ -2395,7 +2177,7 @@ export type Database = {
           kind: Database["public"]["Enums"]["grant_kind"]
           tenant?: string
           updated_at?: string
-          user: string
+          user?: string
         }
         Update: {
           created_at?: string
@@ -2407,55 +2189,13 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "user_direct_grants_user_fkey"
+            foreignKeyName: "user_direct_grants_user_uuid_fkey"
             columns: ["user"]
             isOneToOne: false
             referencedRelation: "user"
-            referencedColumns: ["userId"]
+            referencedColumns: ["id"]
           },
         ]
-      }
-      user_notification_preferences: {
-        Row: {
-          channel: string
-          created_at: string
-          enabled: boolean
-          scope_id: string | null
-          scope_id_norm: string
-          scope_type: string | null
-          scope_type_norm: string
-          tenant: string
-          topic: string
-          updated_at: string
-          user: string
-        }
-        Insert: {
-          channel?: string
-          created_at?: string
-          enabled?: boolean
-          scope_id?: string | null
-          scope_id_norm?: string
-          scope_type?: string | null
-          scope_type_norm?: string
-          tenant?: string
-          topic: string
-          updated_at?: string
-          user: string
-        }
-        Update: {
-          channel?: string
-          created_at?: string
-          enabled?: boolean
-          scope_id?: string | null
-          scope_id_norm?: string
-          scope_type?: string | null
-          scope_type_norm?: string
-          tenant?: string
-          topic?: string
-          updated_at?: string
-          user?: string
-        }
-        Relationships: []
       }
       vouchers: {
         Row: {
@@ -2463,21 +2203,21 @@ export type Database = {
           id: string
           title: string | null
           total_drinks: number
-          user: string | null
+          user: string
         }
         Insert: {
           created_at?: string
           id?: string
           title?: string | null
           total_drinks?: number
-          user?: string | null
+          user: string
         }
         Update: {
           created_at?: string
           id?: string
           title?: string | null
           total_drinks?: number
-          user?: string | null
+          user?: string
         }
         Relationships: [
           {
@@ -2485,63 +2225,9 @@ export type Database = {
             columns: ["user"]
             isOneToOne: false
             referencedRelation: "user"
-            referencedColumns: ["userId"]
+            referencedColumns: ["id"]
           },
         ]
-      }
-      web_push_subscriptions: {
-        Row: {
-          auth: string
-          created_at: string
-          device_id: string | null
-          endpoint: string
-          expiration_time: string | null
-          failure_count: number | null
-          id: string
-          last_error: string | null
-          last_seen: string
-          last_status: number | null
-          p256dh: string
-          platform: string | null
-          revoked_at: string | null
-          user: string
-          user_agent: string | null
-        }
-        Insert: {
-          auth: string
-          created_at?: string
-          device_id?: string | null
-          endpoint: string
-          expiration_time?: string | null
-          failure_count?: number | null
-          id?: string
-          last_error?: string | null
-          last_seen?: string
-          last_status?: number | null
-          p256dh: string
-          platform?: string | null
-          revoked_at?: string | null
-          user: string
-          user_agent?: string | null
-        }
-        Update: {
-          auth?: string
-          created_at?: string
-          device_id?: string | null
-          endpoint?: string
-          expiration_time?: string | null
-          failure_count?: number | null
-          id?: string
-          last_error?: string | null
-          last_seen?: string
-          last_status?: number | null
-          p256dh?: string
-          platform?: string | null
-          revoked_at?: string | null
-          user?: string
-          user_agent?: string | null
-        }
-        Relationships: []
       }
     }
     Views: {
@@ -2566,7 +2252,7 @@ export type Database = {
             columns: ["user"]
             isOneToOne: false
             referencedRelation: "user"
-            referencedColumns: ["userId"]
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -2982,7 +2668,6 @@ export type Database = {
           isSetofReturn: false
         }
       }
-      get_attending_users: { Args: { event_id: number }; Returns: string[] }
       get_or_create_payment_for_user: {
         Args: { user_id: string }
         Returns: number
@@ -3044,7 +2729,7 @@ export type Database = {
         Args: { p_body?: Json; p_function_name: string; p_timeout_ms?: number }
         Returns: number
       }
-      is_app_client: { Args: never; Returns: boolean }
+      is_group_public_joinable: { Args: { p_group: string }; Returns: boolean }
       is_user_admin_in_group: { Args: { group_id: string }; Returns: boolean }
       is_user_in_group: { Args: { group_id: string }; Returns: boolean }
       key_handover: {
@@ -3054,7 +2739,6 @@ export type Database = {
           key_id: number
         }[]
       }
-      refresh_user_grants: { Args: { p_user: string }; Returns: undefined }
       revoke_group_grants: {
         Args: { p_feats?: string[]; p_group: string; p_perms?: string[] }
         Returns: undefined

@@ -74,10 +74,10 @@ const EventInformationGames = ({ eventId }: EventInformationGamesProps) => {
                 </Typography>
               </Box>
               {x.sets.length === 0 &&
-                (x.team_a.player1.player === user.userId ||
-                  x.team_a.player2.player === user.userId ||
-                  x.team_b.player1.player === user.userId ||
-                  x.team_b.player2.player === user.userId) && (
+                (x.team_a.player1.player === user.id ||
+                  x.team_a.player2.player === user.id ||
+                  x.team_b.player1.player === user.id ||
+                  x.team_b.player2.player === user.id) && (
                   <Button
                     startIcon={<Warning color="warning" />}
                     onClick={async () => {

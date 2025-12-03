@@ -108,7 +108,7 @@ export default function NotificationGate({ allowDecline = true, onReady, vapidPu
   const [loading, setLoading] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
   const [registered, setRegistered] = React.useState(false);
-  const isPWA = useMemo(() => (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches), []);
+  const isPWA = useMemo(() => window.matchMedia && window.matchMedia('(display-mode: standalone)').matches, []);
 
   const VAPID = (vapidPublicKey || (import.meta.env.VITE_VAPID_PUBLIC_KEY as string))?.trim();
 
@@ -138,7 +138,7 @@ export default function NotificationGate({ allowDecline = true, onReady, vapidPu
 
       // Always create a fresh subscription (prevents stale endpoints)
       const old = await reg.pushManager.getSubscription();
-      await old?.unsubscribe().catch(() => { });
+      await old?.unsubscribe().catch(() => {});
 
       const sub = await reg.pushManager.subscribe({
         userVisibleOnly: true,
@@ -164,7 +164,7 @@ export default function NotificationGate({ allowDecline = true, onReady, vapidPu
       const reg = await getSW();
       const old = await reg.pushManager.getSubscription();
       await revokeOnServer(old?.endpoint);
-      await old?.unsubscribe().catch(() => { });
+      await old?.unsubscribe().catch(() => {});
 
       const sub = await reg.pushManager.subscribe({
         userVisibleOnly: true,

@@ -42,11 +42,11 @@ export const SwipeableDialog = ({
           maxHeight: '75vh',
           minHeight: `${minHeight}vh`,
           width: '100%',
-          pb: "env(safe-area-inset-bottom)",
+          pb: 'env(safe-area-inset-bottom)',
           borderTopLeftRadius: 16,
           borderTopRightRadius: 16,
           borderBottomRightRadius: 0,
-          borderBottomLeftRadius: 0
+          borderBottomLeftRadius: 0,
         },
         '.MuiDialog-container': {
           position: 'absolute',
@@ -55,7 +55,7 @@ export const SwipeableDialog = ({
           right: 0,
           bottom: 0,
           width: '100%',
-          alignItems: 'end'
+          alignItems: 'end',
         },
       }}
     >

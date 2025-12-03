@@ -36,6 +36,8 @@
   "events": {
     "upcoming": "Anstehende",
     "past": "Vergangene",
+    "editEvent": "Event bearbeiten",
+    "deleteEvent": "Event löschen",
     "creation": {
       "answerDeadlineAfterStart": "Der Anmeldezeitraum kann nicht nach dem Start des Events sein",
       "answerDeadlineBeforeNow": "Der Anmeldezeitraum kann nicht vor dem aktuellen Datum sein",

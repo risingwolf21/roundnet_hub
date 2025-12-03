@@ -95,7 +95,7 @@ const LoginScreen = () => {
         {loading ? <CircularProgress color="inherit" size={25} /> : 'Login'}
       </Button>
     );
-  }
+  };
 
   const signUpLink = () => (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
@@ -116,7 +116,6 @@ const LoginScreen = () => {
     <SignInPage
       providers={[{ id: 'credentials', name: 'Credentials' }]}
       signIn={signIn}
-
       slots={{
         title: Title,
         subtitle: subtitle,

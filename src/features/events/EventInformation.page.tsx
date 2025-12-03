@@ -135,7 +135,7 @@ const EventInformationProvider = () => {
                         } as EventTable,
                         eventGroup: event.group,
                         option: result,
-                        items: allItems
+                        items: allItems,
                       });
                     }
                   }}

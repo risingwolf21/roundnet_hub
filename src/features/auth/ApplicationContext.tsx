@@ -1,7 +1,6 @@
 import { createContext, use } from 'react';
 import { UserWithGroups } from '../../types/supabaseTypes';
 
-
 export const ApplicationContext = createContext<{
   user: UserWithGroups | null;
   deviceId: string;

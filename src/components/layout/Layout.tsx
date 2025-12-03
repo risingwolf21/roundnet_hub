@@ -57,15 +57,14 @@ const Layout = ({
         display: 'grid',
         gridTemplateRows: 'min-content 1fr',
         gridTemplateColumns: {
-          xs: '1fr',                // < lg: keine feste Drawer-Spalte
+          xs: '1fr', // < lg: keine feste Drawer-Spalte
           lg: `${drawerWidth}px 1fr`, // >= lg: Drawer | Content
         },
         minHeight: 0, // wichtig für korrektes Scrollen im zweiten Grid-Track
         background: 'primary',
-        overflow: "hidden"
+        overflow: 'hidden',
       }}
     >
-
       <Box
         sx={{
           display: { xs: 'none', lg: 'block' },
@@ -86,7 +85,7 @@ const Layout = ({
             pr: 'env(safe-area-inset-right)',
             zIndex: theme.zIndex.drawer - 1,
             background: 'primary',
-            top: 0
+            top: 0,
           })}
         >
           <Toolbar disableGutters sx={{ px: 2 }}>
@@ -117,8 +116,10 @@ const Layout = ({
               </IconButton>
             )}
 
-            {
-              appBarContent ? appBarContent : <>
+            {appBarContent ? (
+              appBarContent
+            ) : (
+              <>
                 {/* Title */}
                 <Typography variant="h6" sx={{ flexGrow: 1, overflow: 'hidden', textOverflow: 'ellipsis' }}>
                   {title}
@@ -143,9 +144,8 @@ const Layout = ({
                 )}
                 {appBarActions}
               </>
-            }
+            )}
           </Toolbar>
-
         </AppBar>
       </Box>
 
@@ -157,7 +157,7 @@ const Layout = ({
           gridRow: '2',
           minHeight: 0,
           overflow: 'auto',
-          overscrollBehavior: 'none'
+          overscrollBehavior: 'none',
         }}
       >
         {children}

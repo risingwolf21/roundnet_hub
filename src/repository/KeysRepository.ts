@@ -1,11 +1,12 @@
 import { supabase } from '@/lib/supabase';
 
-export const fetchItems = () => supabase.from('items').select('*, full_current_holder: user!keys_user_fkey(*)');
+export const fetchItems = () =>
+  supabase.from('items').select('*, full_current_holder: user!items_current_holder_fkey(*)');
 export const fetchItemHistory = () =>
   supabase
     .from('item_history')
     .select(
-      '*, pastUser: user!item_history_pastUser_fkey(*), currentUser: user!item_history_currentUser_fkey(*), key: key(*)'
+      '*, past_user: user!item_history_past_user_uuid_fkey(*), current_user: user!item_history_current_user_uuid_fkey(*), key: key(*)'
     );
 
 export const SupabaseKeysRepository = {
@@ -13,8 +14,8 @@ export const SupabaseKeysRepository = {
     const result = await fetchItemHistory()
       .eq('key.id', keyId)
       .not('key', 'is', null)
-      .not('pastUser', 'is', null)
-      .not('currentUser', 'is', null)
+      .not('past_user', 'is', null)
+      .not('current_user', 'is', null)
       .order('created_at', { ascending: false })
       .returns<FullItemHistory[]>()
       .throwOnError();
@@ -32,7 +33,7 @@ export const SupabaseKeysRepository = {
     await supabase
       .rpc('key_handover', {
         p_key_id: key.id,
-        p_new_holder: user.userId,
+        p_new_holder: user.id,
       })
       .throwOnError();
 

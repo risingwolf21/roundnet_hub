@@ -50,14 +50,16 @@ const PlayerzoneProfileDialog = () => {
   const [loading, setLoading] = useState(false);
 
   const elo_change_last_30_days = useMemo(() => {
-    return elo_history?.filter(x => isAfter(x.created_at, addDays(new Date(), -30))).reduce((p, c) => p + c.delta, 0) ?? 0
-  }, [elo_history])
+    return (
+      elo_history?.filter((x) => isAfter(x.created_at, addDays(new Date(), -30))).reduce((p, c) => p + c.delta, 0) ?? 0
+    );
+  }, [elo_history]);
 
   const handleChangeProfilePicture = async () => {
     setLoading(false);
     const { data: list, error } = await supabase.storage.from('user').list(`${user.userId}`);
     if (error || !list) {
-      notifications.show(error.message, { severity: "error" });
+      notifications.show(error.message, { severity: 'error' });
       captureException(error);
       return;
     }
@@ -70,7 +72,7 @@ const PlayerzoneProfileDialog = () => {
   };
 
   const onSafeRgLinkClick = async () => {
-    if (!rgLink.startsWith('https://playerzone.roundnetgermany.de/players/') && rgLink !== "") {
+    if (!rgLink.startsWith('https://playerzone.roundnetgermany.de/players/') && rgLink !== '') {
       notifications.show(
         'Bitte vergewissere dich, dass die URL stimmt. Kopiere die URL aus deinem Playerzone Profil.',
         { severity: 'error' }
@@ -81,15 +83,19 @@ const PlayerzoneProfileDialog = () => {
       rg_link: rgLink ?? null,
       rg_avatar_url: null,
       rg_index: null,
-    }
+    };
 
-    updatePlayer.mutate({ updates }, {
-      onError: (error) => notifications.show('Playerzone URL konnte nicht gesetzt werden. ' + error.message, {
-        severity: 'error',
-      }),
-      onSuccess: () => notifications.show('Playerzone URL erfolgreich aktualisiert', { severity: 'success' })
-    });
-  }
+    updatePlayer.mutate(
+      { updates },
+      {
+        onError: (error) =>
+          notifications.show('Playerzone URL konnte nicht gesetzt werden. ' + error.message, {
+            severity: 'error',
+          }),
+        onSuccess: () => notifications.show('Playerzone URL erfolgreich aktualisiert', { severity: 'success' }),
+      }
+    );
+  };
 
   return (
     <Layout appBarConfig={{ title: 'Playerzone Profil', showProfile: false, navigateBackPath: "/user" }}>

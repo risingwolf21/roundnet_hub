@@ -36,36 +36,44 @@ function eventInThePast(x: EventsUserView) {
   return isBefore(x.endDateTime !== null ? x.endDateTime : x.startingDateTime!, Date.now());
 }
 
-const EventItemSecondaryActions = ({ event, attendEvent, declineEvent, attendanceUpdating }: Pick<EventItemProps, 'event' | 'attendEvent' | 'declineEvent' | 'attendanceUpdating'>) => {
+const EventItemSecondaryActions = ({
+  event,
+  attendEvent,
+  declineEvent,
+  attendanceUpdating,
+}: Pick<EventItemProps, 'event' | 'attendEvent' | 'declineEvent' | 'attendanceUpdating'>) => {
   if (attendanceUpdating) {
-    return <CircularProgress size={'22px'} />
+    return <CircularProgress size={'22px'} />;
   }
   if (event.user_state === 'Waiting') {
-    return <IconButton disabled={event.isCancelled || eventInThePast(event)}>
-      <HourglassBottom fontSize="inherit" sx={{ fontSize: '28px', color: '#125db2' }} />
-    </IconButton>
+    return (
+      <IconButton disabled={event.isCancelled || eventInThePast(event)}>
+        <HourglassBottom fontSize="inherit" sx={{ fontSize: '28px', color: '#125db2' }} />
+      </IconButton>
+    );
   }
-  return <>
-    <IconButton
-      edge="end"
-      onClick={(event) => {
-        declineEvent();
-        event.stopPropagation();
-      }}
-      disabled={event.isCancelled || eventInThePast(event)}
-    >
-      {event.user_state === 'Declined' ? (
-        <ThumbDownAlt fontSize="inherit" sx={{ fontSize: '28px', color: 'red' }} />
-      ) : (
-        <ThumbDownOffAlt fontSize="inherit" sx={{ fontSize: '28px' }} />
-      )}
-    </IconButton>
-    {
-      event.user_state === 'AttendingAsTrainer'
-        ? <IconButton disabled={event.isCancelled || answerDeadlineExpired(event) || eventInThePast(event)}>
+  return (
+    <>
+      <IconButton
+        edge="end"
+        onClick={(event) => {
+          declineEvent();
+          event.stopPropagation();
+        }}
+        disabled={event.isCancelled || eventInThePast(event)}
+      >
+        {event.user_state === 'Declined' ? (
+          <ThumbDownAlt fontSize="inherit" sx={{ fontSize: '28px', color: 'red' }} />
+        ) : (
+          <ThumbDownOffAlt fontSize="inherit" sx={{ fontSize: '28px' }} />
+        )}
+      </IconButton>
+      {event.user_state === 'AttendingAsTrainer' ? (
+        <IconButton disabled={event.isCancelled || answerDeadlineExpired(event) || eventInThePast(event)}>
           <RecordVoiceOver fontSize="inherit" sx={{ fontSize: '28px', color: 'green' }} />
         </IconButton>
-        : <IconButton
+      ) : (
+        <IconButton
           edge="end"
           onClick={(event) => {
             attendEvent();
@@ -79,12 +87,12 @@ const EventItemSecondaryActions = ({ event, attendEvent, declineEvent, attendanc
             <ThumbUpOffAlt fontSize="inherit" sx={{ fontSize: '28px' }} />
           )}
         </IconButton>
-    }
-  </>
-}
+      )}
+    </>
+  );
+};
 
 export const EventItem = ({ event, onClick, attendEvent, declineEvent, attendanceUpdating, t }: EventItemProps) => {
-
   return (
     <ListItem
       key={event.id}
@@ -134,9 +142,9 @@ export const EventItem = ({ event, onClick, attendEvent, declineEvent, attendanc
             event.isCancelled
               ? 'Event abgesagt'
               : [
-                t('events.secondaryTextStart', { start: toDate(event.startingDateTime!) }),
-                event.endDateTime && t('events.secondaryTextWithEnd', { end: toDate(event.endDateTime) }),
-              ].join(' ')
+                  t('events.secondaryTextStart', { start: toDate(event.startingDateTime!) }),
+                  event.endDateTime && t('events.secondaryTextWithEnd', { end: toDate(event.endDateTime) }),
+                ].join(' ')
           }
           slotProps={{
             primary: {
@@ -146,7 +154,7 @@ export const EventItem = ({ event, onClick, attendEvent, declineEvent, attendanc
             secondary: {
               noWrap: true,
               sx: { overflow: 'hidden', textOverflow: 'ellipsis' },
-            }
+            },
           }}
         />
 

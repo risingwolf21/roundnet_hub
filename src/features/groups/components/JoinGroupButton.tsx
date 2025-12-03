@@ -22,7 +22,7 @@ export const JoinGroupButton = ({ group, user }: { group: Group; user: User }) =
           },
           onSuccess: () => {
             refetchUserGrants();
-          }
+          },
         });
         event.stopPropagation();
       }}

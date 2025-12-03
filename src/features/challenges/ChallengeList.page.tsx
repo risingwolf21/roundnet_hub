@@ -23,16 +23,17 @@ const ChallengeListPage = () => {
   }, [error, notifications]);
 
   if (isLoading) {
-    return <LinearProgress sx={{ position: 'fixed', top: 56, left: 0, right: 0 }} />
+    return <LinearProgress sx={{ position: 'fixed', top: 56, left: 0, right: 0 }} />;
   }
 
   if (challenges.length <= 0 && (archived_challenges?.pages?.length ?? 0) <= 0) {
-    return <Box sx={{ alignItems: 'center', display: 'flex', flexDirection: 'column', pt: 10 }}>
-      <Typography sx={{ fontSize: '30pt', fontWeight: 'bold' }}>🏅</Typography>
-      <Typography sx={{ fontSize: '18pt', fontWeight: 'bold' }}>Keine Challenges gefunden</Typography>
-    </Box>
+    return (
+      <Box sx={{ alignItems: 'center', display: 'flex', flexDirection: 'column', pt: 10 }}>
+        <Typography sx={{ fontSize: '30pt', fontWeight: 'bold' }}>🏅</Typography>
+        <Typography sx={{ fontSize: '18pt', fontWeight: 'bold' }}>Keine Challenges gefunden</Typography>
+      </Box>
+    );
   }
-
 
   return (
     <Layout>
@@ -42,7 +43,13 @@ const ChallengeListPage = () => {
           archiveRefetch();
         }}
       >
-        <ChallengeList user={user} challenges={challenges} archived_challenges={archived_challenges} error={error} isLoading={isLoading} />
+        <ChallengeList
+          user={user}
+          challenges={challenges}
+          archived_challenges={archived_challenges}
+          error={error}
+          isLoading={isLoading}
+        />
       </PullToRefresh>
     </Layout>
   );

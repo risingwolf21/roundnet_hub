@@ -31,11 +31,11 @@ export const useHandoverKeyMutation = () =>
 
       if (previousItemHolders) {
         const newItemHolders = previousItemHolders.map((x) => {
-          if (x.full_current_holder?.userId === keyHolder.full_current_holder?.userId) {
+          if (x.full_current_holder?.id === keyHolder.full_current_holder?.id) {
             return {
               ...keyHolder,
               full_current_holder: user,
-              current_holder: user.userId,
+              current_holder: user.id,
               lastUpdate: formatDateToDatabase(new Date()),
             };
           } else {

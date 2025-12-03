@@ -70,11 +70,7 @@ const AuthLayout = ({ children }: { children?: ReactNode }) => {
             height: '100svh',
           }}
         >
-          <Box sx={{ height: '100%' }}>
-            {
-              children ? children : <Outlet />
-            }
-          </Box>
+          <Box sx={{ height: '100%' }}>{children ? children : <Outlet />}</Box>
         </Box>
       </Box>
     </Box>

@@ -57,14 +57,14 @@ SELECT ok( (SELECT expected_a>0 AND expected_a<1 FROM games.elo_calc_log l
 SELECT ok( (SELECT min(delta)>0 FROM games.elo_history eh
             JOIN games.match m ON m.id=eh.match
             JOIN games.teams ta ON ta.id=m.team_a
-            WHERE eh."user" IN (tests.get_supabase_uid('user_1a')::text,tests.get_supabase_uid('user_2a')::text)),
+            WHERE eh."user" IN (tests.get_supabase_uid('user_1a'),tests.get_supabase_uid('user_2a'))),
            'winners got positive delta');
 
 -- Verlierer Delta < 0
 SELECT ok( (SELECT max(delta)<0 FROM games.elo_history eh
             JOIN games.match m ON m.id=eh.match
             JOIN games.teams tb ON tb.id=m.team_b
-            WHERE eh."user" IN (tests.get_supabase_uid('user_1b')::text,tests.get_supabase_uid('user_2b')::text)),
+            WHERE eh."user" IN (tests.get_supabase_uid('user_1b'),tests.get_supabase_uid('user_2b'))),
            'losers got negative delta');
 
 -- recompute_all setzt zurück und rechnet deterministisch neu

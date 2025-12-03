@@ -32,14 +32,16 @@ export const SelectGroupDialog = ({ open, onClose }: DialogProps<undefined, Grou
         </AppBar>
         <Box>
           <List>
-            {groups.filter(x => x.user_group_role !== "joinRequested").map((x) => (
-              <ListItemButton key={x.id} divider onClick={() => onClose(x)}>
-                <ListItemAvatar>
-                  <FiberManualRecord sx={{ color: x.color }} />
-                </ListItemAvatar>
-                <ListItemText primary={x.name} secondary={x.description} />
-              </ListItemButton>
-            ))}
+            {groups
+              .filter((x) => x.user_group_role !== 'joinRequested')
+              .map((x) => (
+                <ListItemButton key={x.id} divider onClick={() => onClose(x)}>
+                  <ListItemAvatar>
+                    <FiberManualRecord sx={{ color: x.color }} />
+                  </ListItemAvatar>
+                  <ListItemText primary={x.name} secondary={x.description} />
+                </ListItemButton>
+              ))}
           </List>
         </Box>
       </Box>

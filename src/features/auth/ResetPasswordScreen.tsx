@@ -222,7 +222,12 @@ const ResetPasswordScreen = () => {
   };
 
   return (
-    <ResetPasswordLayout loadingState={[loading, setLoading]} theme={theme} errorState={[error, setError]} handleSubmit={handleSubmit} />
+    <ResetPasswordLayout
+      loadingState={[loading, setLoading]}
+      theme={theme}
+      errorState={[error, setError]}
+      handleSubmit={handleSubmit}
+    />
   );
 };
 export default ResetPasswordScreen;

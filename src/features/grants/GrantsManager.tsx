@@ -46,12 +46,14 @@ const GrantsManager = () => {
               onChange={(e) => setSearchValue(e.target.value)}
             />
           </div>
-        </Search>}>
+        </Search>
+      }
+    >
       <Tabs
         value={value}
         onChange={(_, v) => setValue(v)}
         textColor="inherit"
-        indicatorColor='secondary'
+        indicatorColor="secondary"
         variant="fullWidth"
       >
         <Tab label="Gruppen-Grants" />

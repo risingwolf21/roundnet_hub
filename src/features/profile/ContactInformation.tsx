@@ -40,7 +40,7 @@ const ContactInformation = () => {
       return;
     }
 
-    const { error } = await supabase.from('user').update({ name: fullName, displayName }).eq('userId', user.userId);
+    const { error } = await supabase.from('user').update({ name: fullName, displayName }).eq('userId', user.id);
     if (error) {
       notifications.show(error.message, { severity: 'error' });
       captureException(error);

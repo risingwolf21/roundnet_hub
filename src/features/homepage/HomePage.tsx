@@ -16,6 +16,7 @@ import { LoadingDrinkCard } from './LoadingDrinkCard';
 import { LoadingEventCard } from './LoadingEventCard';
 import { LoadingItemCard } from './LoadingItemCard';
 
+import { sendMetricsToSentry } from '@/instrument';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import List from '@mui/material/List';
@@ -74,15 +75,21 @@ const HomePage = () => {
               }}
             >
               {isEventsLoading
-                ? Array.from({ length: 5 }, (_v, k) => k + 1).map((_x) => <LoadingEventCard />)
+                ? Array.from({ length: 5 }, (_v, k) => k + 1).map((x) => <LoadingEventCard key={x} />)
                 : events.slice(0, 5).map((event, index) => (
                   <EventCard
+                    key={event.id}
                     index={index}
                     user={user}
                     event={event}
                     {...(hasPerm('event.signup')
                       ? {
                         updateAttendance: (user, event, newState) => {
+                          if (newState === 'Attending') {
+                            sendMetricsToSentry('event_attend_from_homepage', 1);
+                          } else if (newState === 'Declined') {
+                            sendMetricsToSentry('event_decline_from_homepage', 1);
+                          }
                           updateAttendance.mutate({ user, event, newState });
                         },
                       }

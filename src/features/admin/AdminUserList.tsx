@@ -14,7 +14,6 @@ import { Search, SearchIconWrapper, StyledInputBase } from '@/components/SearchB
 import LinearProgress from '@mui/material/LinearProgress';
 import List from '@mui/material/List';
 
-
 export const useAllUsersAsAdmin = () =>
   useQuery<UserWithGroups[]>({
     queryKey: ['users', 'admin'],
@@ -33,7 +32,7 @@ export const useUpdateUserMutation = () =>
 
       if (previousUsers) {
         const newUsers = previousUsers.map((x) => {
-          if (x.userId === update.userId) {
+          if (x.id === update.userId) {
             return {
               ...x,
               displayName: update.displayName,
@@ -89,20 +88,24 @@ const AdminUserList = () => {
   };
 
   return (
-    <Layout appBarContent={<Search sx={{ flexGrow: 1 }}>
-      <SearchIconWrapper>
-        <SearchIcon />
-      </SearchIconWrapper>
-      <div>
-        <StyledInputBase
-          sx={{ width: '100% !important' }}
-          placeholder="Suche nach einem Nutzer"
-          inputProps={{ 'aria-label': 'search' }}
-          value={searchString}
-          onChange={(e: { target: { value: React.SetStateAction<string>; }; }) => setSearchString(e.target.value)}
-        />
-      </div>
-    </Search>}>
+    <Layout
+      appBarContent={
+        <Search sx={{ flexGrow: 1 }}>
+          <SearchIconWrapper>
+            <SearchIcon />
+          </SearchIconWrapper>
+          <div>
+            <StyledInputBase
+              sx={{ width: '100% !important' }}
+              placeholder="Suche nach einem Nutzer"
+              inputProps={{ 'aria-label': 'search' }}
+              value={searchString}
+              onChange={(e: { target: { value: React.SetStateAction<string> } }) => setSearchString(e.target.value)}
+            />
+          </div>
+        </Search>
+      }
+    >
       {isLoading && <LinearProgress style={{ position: 'fixed', left: 0, right: 0, top: 56 }} />}
 
       <List sx={{ width: '100%', pb: 'calc(56px + env(safe-area-inset-bottom))' }}>
@@ -110,8 +113,10 @@ const AdminUserList = () => {
           users
             .filter(
               (x: UserWithGroups) =>
-                searchString === '' || x.displayName?.toLowerCase().includes(searchString.toLowerCase())
-                || x.email?.toLowerCase().includes(searchString.toLowerCase()) || x.name?.toLowerCase().includes(searchString.toLowerCase())
+                searchString === '' ||
+                x.displayName?.toLowerCase().includes(searchString.toLowerCase()) ||
+                x.email?.toLowerCase().includes(searchString.toLowerCase()) ||
+                x.name?.toLowerCase().includes(searchString.toLowerCase())
             )
             .map((user, index) => (
               <AdminUserItem key={'user' + index} user={user} onEditClick={() => editUser(user)} />

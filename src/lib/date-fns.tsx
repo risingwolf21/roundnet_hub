@@ -1,7 +1,6 @@
 import { Locale } from 'date-fns';
 import { enUS } from 'date-fns/locale/en-US';
 
-
 export const customEnLocale: Locale = {
   ...enUS,
   options: {

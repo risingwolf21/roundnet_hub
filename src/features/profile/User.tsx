@@ -9,7 +9,6 @@ import Logout from '@mui/icons-material/Logout';
 import NotificationsRounded from '@mui/icons-material/NotificationsRounded';
 import Password from '@mui/icons-material/Password';
 import { useNotifications } from '@toolpad/core';
-import { useDialogs } from '@toolpad/core/useDialogs';
 import { useNavigate } from 'react-router';
 import pzLogo from '../../images/pz_logo.svg';
 import { UserWithGroups } from '../../types/supabaseTypes';
@@ -38,7 +37,6 @@ const UserScreenProvider = () => {
 };
 
 const UserScreen = ({ user, handleSignOut }: UserScreenProps) => {
-  const dialogs = useDialogs();
   const notifications = useNotifications();
   const navigate = useNavigate();
   const notificationSupported = ('serviceWorker' in navigator) && ('PushManager' in window);
@@ -46,17 +44,16 @@ const UserScreen = ({ user, handleSignOut }: UserScreenProps) => {
 
   const copyIcalURLToClipboard = () => {
     if (iOS) {
-      window.location.href = `webcal://${import.meta.env.VITE_SUPABASE_PROJECT_ID}.functions.supabase.co/ical?userId=${user.userId}`;
+      window.location.href = `webcal://${import.meta.env.VITE_SUPABASE_PROJECT_ID}.functions.supabase.co/ical?userId=${user.id}`;
     } else {
       navigator.clipboard.writeText(
-        `https://${import.meta.env.VITE_SUPABASE_PROJECT_ID}.functions.supabase.co/ical?userId=${user.userId}`
+        `https://${import.meta.env.VITE_SUPABASE_PROJECT_ID}.functions.supabase.co/ical?userId=${user.id}`
       );
-      notifications.show(
-        'URL in Zwischenablage kopiert - Abonniere den Kalendar jetzt selbst mit der URL',
-        { severity: 'info' }
-      );
+      notifications.show('URL in Zwischenablage kopiert - Abonniere den Kalendar jetzt selbst mit der URL', {
+        severity: 'info',
+      });
     }
-  }
+  };
 
   return (
     <Layout appBarConfig={{ title: 'Profil', showProfile: false }}>

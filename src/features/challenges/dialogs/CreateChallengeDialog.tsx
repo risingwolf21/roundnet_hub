@@ -82,12 +82,17 @@ const Content = ({ payload, onClose }: DialogProps<CreateChallengePayload, Chall
                 return;
               }
 
-              const { data: challenge, error } = await supabase.schema('public').from('challenge').insert({
-                name: data.name,
-                description: data.description,
-                end_date: data.end_date,
-                group: selectedGroup.id,
-              }).select("*").single();
+              const { data: challenge, error } = await supabase
+                .schema('public')
+                .from('challenge')
+                .insert({
+                  name: data.name,
+                  description: data.description,
+                  end_date: data.end_date,
+                  group: selectedGroup.id,
+                })
+                .select('*')
+                .single();
               if (error) {
                 notifications.show('Challenge konnte nicht erstellt werden. ' + error.message, { severity: 'error' });
               } else {

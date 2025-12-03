@@ -24,12 +24,7 @@ const NotificationsPage = () => {
 };
 
 function hasStringUrl(value: Json): value is { url: string } {
-  return (
-    typeof value === "object" &&
-    value !== null &&
-    !Array.isArray(value) &&
-    typeof (value as any).url === "string"
-  );
+  return typeof value === 'object' && value !== null && !Array.isArray(value) && typeof (value as any).url === 'string';
 }
 
 const NotificationScreen = () => {
@@ -37,7 +32,7 @@ const NotificationScreen = () => {
   const navigate = useNavigate();
   const { data: notifications = [], isLoading, refetch } = useAllNotifications(user);
 
-  const markNotificationsAsRead = useMarkNotificationsAsRead(user.userId);
+  const markNotificationsAsRead = useMarkNotificationsAsRead(user.id);
   const dismissNotification = useDismissNotification();
 
   if (isLoading) {
@@ -62,14 +57,20 @@ const NotificationScreen = () => {
                   navigate(notification.data.url);
                 }
                 dismissNotification.mutate(notification.id);
-              }}>
-              <Stack direction={"row"} sx={{ width: "100%", pr: 2 }}>
+              }}
+            >
+              <Stack direction={'row'} sx={{ width: '100%', pr: 2 }}>
                 <ListItemText sx={{ flexGrow: 1 }} primary={notification.title} secondary={notification.body} />
-                {
-                  !notification.dismissed_at && <div style={{ display: "flex", flexDirection: "column", justifyContent: "center" }}>
-                    <Badge badgeContent=" " variant='dot' color='error' sx={{ '.MuiBadge-badge': { width: "12px", height: "12px", borderRadius: "6px" } }} />
+                {!notification.dismissed_at && (
+                  <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+                    <Badge
+                      badgeContent=" "
+                      variant="dot"
+                      color="error"
+                      sx={{ '.MuiBadge-badge': { width: '12px', height: '12px', borderRadius: '6px' } }}
+                    />
                   </div>
-                }
+                )}
               </Stack>
             </ListItem>
           );
@@ -83,7 +84,7 @@ const NotificationScreen = () => {
           backgroundColor: (theme) => theme.palette.primary.main,
           position: 'fixed',
           right: '16px',
-          bottom: 'calc(16px + env(safe-area-inset-bottom))'
+          bottom: 'calc(16px + env(safe-area-inset-bottom))',
         }}
         onClick={() => markNotificationsAsRead.mutate()}
       >

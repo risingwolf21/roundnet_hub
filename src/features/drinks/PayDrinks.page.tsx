@@ -22,7 +22,7 @@ export type BankTransferDTo = PaymentDTO & {
 
 const PayDrinks = () => {
   const { user } = useGrants();
-  const result = usePaymentHistory(user.userId);
+  const result = usePaymentHistory(user.id);
 
   return (
     <Layout>

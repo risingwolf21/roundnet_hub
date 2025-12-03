@@ -4,7 +4,6 @@ import { useEffect } from 'react';
 import { LoadingScreen } from '../../components/LoadingScreen';
 import { groupBy } from '../../utils';
 
-
 import { PaymentHistory } from '@/types/supabaseTypes';
 import Box from '@mui/material/Box';
 import Divider from '@mui/material/Divider';
@@ -45,8 +44,12 @@ const PayDrinksButton = ({ amountToPay }: { amountToPay: number }) => {
   );
 };
 
-
-const PayDrinksScreen = ({ data: history = [], isLoading, error, refetch }: UseQueryResult<PaymentHistory[], Error>) => {
+const PayDrinksScreen = ({
+  data: history = [],
+  isLoading,
+  error,
+  refetch,
+}: UseQueryResult<PaymentHistory[], Error>) => {
   const notifications = useNotifications();
 
   useEffect(() => {
@@ -57,10 +60,12 @@ const PayDrinksScreen = ({ data: history = [], isLoading, error, refetch }: UseQ
   if (isLoading) return <LoadingScreen />;
 
   if (history.length <= 0) {
-    return <Box sx={{ alignItems: 'center', display: 'flex', flexDirection: 'column', pt: 10 }}>
-      <Typography sx={{ fontSize: '30pt', fontWeight: 'bold' }}>📖</Typography>
-      <Typography sx={{ fontSize: '18pt', fontWeight: 'bold' }}>Keine Einträge gefunden</Typography>
-    </Box>
+    return (
+      <Box sx={{ alignItems: 'center', display: 'flex', flexDirection: 'column', pt: 10 }}>
+        <Typography sx={{ fontSize: '30pt', fontWeight: 'bold' }}>📖</Typography>
+        <Typography sx={{ fontSize: '18pt', fontWeight: 'bold' }}>Keine Einträge gefunden</Typography>
+      </Box>
+    );
   }
 
   return (

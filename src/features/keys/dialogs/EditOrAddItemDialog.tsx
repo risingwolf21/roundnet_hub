@@ -45,7 +45,7 @@ export const EditOrAddItemDialog = ({ open, handleClose, itemToEdit }: EditOrAdd
       color: itemToEdit?.color,
       current_holder: itemToEdit?.current_holder,
       type: itemToEdit?.type,
-    })
+    });
   }
 
   const handleSubmit = async () => {

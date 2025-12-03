@@ -7,15 +7,25 @@ import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import { ReactNode } from 'react';
 
-export const ErrorPage = ({ title, message, imagePath, actions }: { title: string; message: string; imagePath?: string, actions?: ReactNode }) => {
+export const ErrorPage = ({
+  title,
+  message,
+  imagePath,
+  actions,
+}: {
+  title: string;
+  message: string;
+  imagePath?: string;
+  actions?: ReactNode;
+}) => {
   return (
     <Layout>
       <Stack direction={'column'} sx={{ m: 6 }}>
-        {
-          imagePath && <Box sx={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
+        {imagePath && (
+          <Box sx={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
             <img src={imagePath} width={'100%'} height={'350px'} style={{ objectFit: 'contain' }} />
           </Box>
-        }
+        )}
         <Typography sx={{ fontSize: 26, fontWeight: 'bold', mt: 3, textAlign: 'center' }}>{title}</Typography>
         <Typography sx={{ fontSize: 20, mt: 3, textAlign: 'center' }}>{message}</Typography>
 

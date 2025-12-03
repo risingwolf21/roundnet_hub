@@ -43,7 +43,7 @@ export const useDirectUserGrants = () =>
 
       const users = new Map<string, User>();
 
-      result.data?.forEach((x) => !users.has(x.user.userId) && users.set(x.user.userId, x.user));
+      result.data?.forEach((x) => !users.has(x.user.id) && users.set(x.user.id, x.user));
 
       return [...users.values()];
     },
@@ -53,7 +53,11 @@ export const useUserPermissions = (userId: string) => {
   return useQuery({
     queryKey: ['grants', 'user-permissions', userId],
     queryFn: async () => {
-      const { data, error } = await supabase.from('user_direct_grants').select('*').eq('kind', 'perm').eq("user", userId);
+      const { data, error } = await supabase
+        .from('user_direct_grants')
+        .select('*')
+        .eq('kind', 'perm')
+        .eq('user', userId);
       if (error) throw error;
       return data?.map((x) => x.key) ?? [];
     },
@@ -64,7 +68,11 @@ export const useUserFeatures = (userId: string) => {
   return useQuery({
     queryKey: ['grants', 'user-features', userId],
     queryFn: async () => {
-      const { data, error } = await supabase.from('user_direct_grants').select('*').eq('kind', 'feat').eq("user", userId);
+      const { data, error } = await supabase
+        .from('user_direct_grants')
+        .select('*')
+        .eq('kind', 'feat')
+        .eq('user', userId);
       if (error) throw error;
       return data?.map((x) => x.key) ?? [];
     },

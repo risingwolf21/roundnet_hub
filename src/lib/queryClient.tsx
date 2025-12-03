@@ -1,7 +1,6 @@
 import { captureException, withScope } from '@sentry/react';
 import { MutationCache, QueryCache, QueryClient } from '@tanstack/react-query';
 
-
 export const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -42,8 +41,7 @@ export const queryClient = new QueryClient({
 // This code is only for TypeScript
 declare global {
   interface Window {
-    __TANSTACK_QUERY_CLIENT__:
-    import("@tanstack/query-core").QueryClient;
+    __TANSTACK_QUERY_CLIENT__: import('@tanstack/query-core').QueryClient;
   }
 }
 

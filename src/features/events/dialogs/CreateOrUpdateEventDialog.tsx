@@ -95,12 +95,16 @@ export const CreateOrUpdateEventDialog = ({
   const { user } = useGrants();
   const [editedEvent, setEditedEvent] = useState<EventTable>(event ?? emptyEvent);
   const [selectedGroup, setSelectedGroup] = useState<Group | null>(eventGroup ?? null);
-  const [dialogOpen, setDialogOpen] = useState<'group' | 'stopRepeat' | 'repeat' | 'places' | 'bring_items' | null>(null);
-  const [duration, setDuration] = useState<Duration>(event ? getDurationFrom(event.startingDateTime, event.endDateTime) ?? DEFAULT_DURATION : DEFAULT_DURATION)
+  const [dialogOpen, setDialogOpen] = useState<'group' | 'stopRepeat' | 'repeat' | 'places' | 'bring_items' | null>(
+    null
+  );
+  const [duration, setDuration] = useState<Duration>(
+    event ? (getDurationFrom(event.startingDateTime, event.endDateTime) ?? DEFAULT_DURATION) : DEFAULT_DURATION
+  );
   const [bringItems, setBringItems] = useState(items);
   const ref = useRef<HTMLFormElement>(null);
 
-  const place = useMemo(() => editedEvent.place ? (JSON.parse(editedEvent.place) as PlaceType) : null, [editedEvent]);
+  const place = useMemo(() => (editedEvent.place ? (JSON.parse(editedEvent.place) as PlaceType) : null), [editedEvent]);
 
   const insertEvent = useInsertEventMutation(fetchMode);
   const updateSingleEvent = useUpdateSingleMutation(fetchMode);
@@ -112,7 +116,7 @@ export const CreateOrUpdateEventDialog = ({
       if (!editedEvent.meetingDateTime)
         setEditedEvent({ ...editedEvent, meetingDateTime: editedEvent.startingDateTime });
 
-      const bring_items = bringItems.filter(x => x.name && x.required_qty && x.required_qty > 0);
+      const bring_items = bringItems.filter((x) => x.name && x.required_qty && x.required_qty > 0);
 
       setEditedEvent({ ...editedEvent, items_enabled: bring_items.length > 0 });
 
@@ -148,19 +152,23 @@ export const CreateOrUpdateEventDialog = ({
           {
             event: eventChanges as Tables<'events'>,
             currentUser: user,
-            items: bring_items.map(x => ({ name: x.name, required_qty: x.required_qty ?? 0, unit: "Stk.", sort_order: 0, notes: null }))
+            items: bring_items.map((x) => ({
+              name: x.name,
+              required_qty: x.required_qty ?? 0,
+              unit: 'Stk.',
+              sort_order: 0,
+              notes: null,
+            })),
           },
           {
             onError: (error) =>
               notifications.show('Event konnte nicht erstellt werden: ' + error.message, { severity: 'error' }),
             onSuccess: () => {
-              logger.info("event_created_successfully",
-                {
-                  event: edited_event,
-                  user: user,
-                  items: bring_items,
-                }
-              );
+              logger.info('event_created_successfully', {
+                event: edited_event,
+                user: user,
+                items: bring_items,
+              });
               onClose();
             },
           }
@@ -225,7 +233,7 @@ export const CreateOrUpdateEventDialog = ({
               <EventIcon />
             </ListItemAvatar>
             <TextField
-              size='small'
+              size="small"
               fullWidth
               label="Event-Titel"
               value={editedEvent.title}
@@ -260,9 +268,7 @@ export const CreateOrUpdateEventDialog = ({
             }}
             key={'group'}
           >
-            <ListItemAvatar>
-              {selectedGroup && <Group sx={{ color: selectedGroup.color }} />}
-            </ListItemAvatar>
+            <ListItemAvatar>{selectedGroup && <Group sx={{ color: selectedGroup.color }} />}</ListItemAvatar>
             <ListItemText
               primary={selectedGroup?.name ?? 'Keine Gruppe gewählt'}
               secondary={selectedGroup?.description}
@@ -277,7 +283,7 @@ export const CreateOrUpdateEventDialog = ({
             </ListItemAvatar>
 
             <DatePicker
-              slotProps={{ textField: { error: false, size: "small" } }}
+              slotProps={{ textField: { error: false, size: 'small' } }}
               sx={{ width: '100%' }}
               label="Datum"
               disablePast
@@ -295,7 +301,7 @@ export const CreateOrUpdateEventDialog = ({
                       milliseconds: 0,
                     })
                   ),
-                  endDateTime: formatDateToDatabase(add(editedEvent.startingDateTime, duration))
+                  endDateTime: formatDateToDatabase(add(editedEvent.startingDateTime, duration)),
                 });
               }}
               value={formatDateFromDatabase(editedEvent.startingDateTime)}
@@ -306,7 +312,7 @@ export const CreateOrUpdateEventDialog = ({
             <ListItemAvatar />
 
             <TimePicker
-              slotProps={{ textField: { error: false, size: "small" } }}
+              slotProps={{ textField: { error: false, size: 'small' } }}
               sx={{ width: '100%' }}
               views={['hours', 'minutes']}
               ampm={false}
@@ -344,7 +350,7 @@ export const CreateOrUpdateEventDialog = ({
             </ListItemAvatar>
 
             <TimePicker
-              slotProps={{ textField: { error: false, size: "small" } }}
+              slotProps={{ textField: { error: false, size: 'small' } }}
               disabled={editedEvent.meetingDateTime === null}
               sx={{ width: '100%' }}
               views={['hours', 'minutes']}
@@ -373,28 +379,42 @@ export const CreateOrUpdateEventDialog = ({
             <ListItemAvatar sx={{ flexDirection: 'row', display: 'flex', alignItems: 'center' }}>
               <TimelapseIcon />
             </ListItemAvatar>
-            <DurationAdder duration={duration} durationChanged={(d) => {
-              setDuration(d);
-              setEditedEvent({
-                ...editedEvent,
-                endDateTime: formatDateToDatabase(add(editedEvent.startingDateTime, d))
-              });
-            }} />
+            <DurationAdder
+              duration={duration}
+              durationChanged={(d) => {
+                setDuration(d);
+                setEditedEvent({
+                  ...editedEvent,
+                  endDateTime: formatDateToDatabase(add(editedEvent.startingDateTime, d)),
+                });
+              }}
+            />
           </ListItem>
 
-          <ListItem onClick={() => setDialogOpen('places')} key={'searchPlace'} secondaryAction={place
-            ? <IconButton onClick={(e) => {
-              setEditedEvent({ ...editedEvent, place: null });
-              e.stopPropagation();
-            }}>
-              <Close />
-            </IconButton> : undefined}>
+          <ListItem
+            onClick={() => setDialogOpen('places')}
+            key={'searchPlace'}
+            secondaryAction={
+              place ? (
+                <IconButton
+                  onClick={(e) => {
+                    setEditedEvent({ ...editedEvent, place: null });
+                    e.stopPropagation();
+                  }}
+                >
+                  <Close />
+                </IconButton>
+              ) : undefined
+            }
+          >
             <ListItemAvatar>
               <Place />
             </ListItemAvatar>
-            {
-              place ? <ListItemText primary={place.name} secondary={place.description} /> : <ListItemText primary={'Standort'} />
-            }
+            {place ? (
+              <ListItemText primary={place.name} secondary={place.description} />
+            ) : (
+              <ListItemText primary={'Standort'} />
+            )}
           </ListItem>
           <ListItem
             dense
@@ -457,18 +477,18 @@ export const CreateOrUpdateEventDialog = ({
                     answerDeadline: editedEvent.answerDeadline
                       ? null
                       : formatDateToDatabase(
-                        set(Date.now(), {
-                          seconds: 0,
-                          milliseconds: 0,
-                        })
-                      ),
+                          set(Date.now(), {
+                            seconds: 0,
+                            milliseconds: 0,
+                          })
+                        ),
                   })
                 }
               />
             </ListItemAvatar>
 
             <DateTimePicker
-              slotProps={{ textField: { error: false, size: "small", fullWidth: true } }}
+              slotProps={{ textField: { error: false, size: 'small', fullWidth: true } }}
               disabled={editedEvent.answerDeadline === null}
               label="Answer deadline"
               disablePast
@@ -548,39 +568,48 @@ export const CreateOrUpdateEventDialog = ({
 
           <Divider sx={{ mb: 1 }} />
 
-          <ListItem sx={{ py: 0, mb: 1 }} key={'maxAttendees'} secondaryAction={
-            <Box sx={{ display: 'flex', flexDirection: 'row' }}>
-              {
-                (editedEvent.maxAttendees !== null && editedEvent.maxAttendees >= 0) && <>
-                  <IconButton
-                    disableRipple
-                    onClick={(event) => {
-                      setEditedEvent({
-                        ...editedEvent,
-                        maxAttendees: editedEvent.maxAttendees !== null && editedEvent.maxAttendees - 1 > 0 ? editedEvent.maxAttendees - 1 : null,
-                      })
-                      event.stopPropagation();
-                    }}
-                  >
-                    <Remove fontSize="inherit" sx={{ fontSize: '22px' }} />
-                  </IconButton>
-                  <Typography sx={{ p: 1, fontSize: '20px', color: 'rgba(0,0,0,0.54)' }}>{editedEvent.maxAttendees}</Typography>
-                </>
-              }
-              <IconButton
-                disableRipple
-                onClick={(event) => {
-                  setEditedEvent({
-                    ...editedEvent,
-                    maxAttendees: editedEvent.maxAttendees !== null ? editedEvent.maxAttendees + 1 : 1,
-                  })
-                  event.stopPropagation();
-                }}
-              >
-                <Add fontSize="inherit" sx={{ fontSize: '22px' }} />
-              </IconButton>
-            </Box>
-          }>
+          <ListItem
+            sx={{ py: 0, mb: 1 }}
+            key={'maxAttendees'}
+            secondaryAction={
+              <Box sx={{ display: 'flex', flexDirection: 'row' }}>
+                {editedEvent.maxAttendees !== null && editedEvent.maxAttendees >= 0 && (
+                  <>
+                    <IconButton
+                      disableRipple
+                      onClick={(event) => {
+                        setEditedEvent({
+                          ...editedEvent,
+                          maxAttendees:
+                            editedEvent.maxAttendees !== null && editedEvent.maxAttendees - 1 > 0
+                              ? editedEvent.maxAttendees - 1
+                              : null,
+                        });
+                        event.stopPropagation();
+                      }}
+                    >
+                      <Remove fontSize="inherit" sx={{ fontSize: '22px' }} />
+                    </IconButton>
+                    <Typography sx={{ p: 1, fontSize: '20px', color: 'rgba(0,0,0,0.54)' }}>
+                      {editedEvent.maxAttendees}
+                    </Typography>
+                  </>
+                )}
+                <IconButton
+                  disableRipple
+                  onClick={(event) => {
+                    setEditedEvent({
+                      ...editedEvent,
+                      maxAttendees: editedEvent.maxAttendees !== null ? editedEvent.maxAttendees + 1 : 1,
+                    });
+                    event.stopPropagation();
+                  }}
+                >
+                  <Add fontSize="inherit" sx={{ fontSize: '22px' }} />
+                </IconButton>
+              </Box>
+            }
+          >
             <ListItemAvatar>
               <Checkbox
                 sx={{ pl: 0 }}
@@ -597,40 +626,50 @@ export const CreateOrUpdateEventDialog = ({
             <ListItemText primary={'Maximale Teilnehmerzahl'} />
           </ListItem>
 
-          <Has feat={"events.trials"}>
-            <ListItem sx={{ py: 0, mb: 1 }} key={'max_trial_attendees'} secondaryAction={
-              <Box sx={{ display: 'flex', flexDirection: 'row' }}>
-                {
-                  (editedEvent.max_trial_attendees !== null && editedEvent.max_trial_attendees >= 0) && <>
-                    <IconButton
-                      disableRipple
-                      onClick={(event) => {
-                        setEditedEvent({
-                          ...editedEvent,
-                          max_trial_attendees: editedEvent.max_trial_attendees !== null && editedEvent.max_trial_attendees - 1 > 0 ? editedEvent.max_trial_attendees - 1 : null,
-                        })
-                        event.stopPropagation();
-                      }}
-                    >
-                      <Remove fontSize="inherit" sx={{ fontSize: '22px' }} />
-                    </IconButton>
-                    <Typography sx={{ p: 1, fontSize: '20px', color: 'rgba(0,0,0,0.54)' }}>{editedEvent.max_trial_attendees}</Typography>
-                  </>
-                }
-                <IconButton
-                  disableRipple
-                  onClick={(event) => {
-                    setEditedEvent({
-                      ...editedEvent,
-                      max_trial_attendees: editedEvent.max_trial_attendees !== null ? editedEvent.max_trial_attendees + 1 : 1,
-                    })
-                    event.stopPropagation();
-                  }}
-                >
-                  <Add fontSize="inherit" sx={{ fontSize: '22px' }} />
-                </IconButton>
-              </Box>
-            }>
+          <Has feat={'events.trials'}>
+            <ListItem
+              sx={{ py: 0, mb: 1 }}
+              key={'max_trial_attendees'}
+              secondaryAction={
+                <Box sx={{ display: 'flex', flexDirection: 'row' }}>
+                  {editedEvent.max_trial_attendees !== null && editedEvent.max_trial_attendees >= 0 && (
+                    <>
+                      <IconButton
+                        disableRipple
+                        onClick={(event) => {
+                          setEditedEvent({
+                            ...editedEvent,
+                            max_trial_attendees:
+                              editedEvent.max_trial_attendees !== null && editedEvent.max_trial_attendees - 1 > 0
+                                ? editedEvent.max_trial_attendees - 1
+                                : null,
+                          });
+                          event.stopPropagation();
+                        }}
+                      >
+                        <Remove fontSize="inherit" sx={{ fontSize: '22px' }} />
+                      </IconButton>
+                      <Typography sx={{ p: 1, fontSize: '20px', color: 'rgba(0,0,0,0.54)' }}>
+                        {editedEvent.max_trial_attendees}
+                      </Typography>
+                    </>
+                  )}
+                  <IconButton
+                    disableRipple
+                    onClick={(event) => {
+                      setEditedEvent({
+                        ...editedEvent,
+                        max_trial_attendees:
+                          editedEvent.max_trial_attendees !== null ? editedEvent.max_trial_attendees + 1 : 1,
+                      });
+                      event.stopPropagation();
+                    }}
+                  >
+                    <Add fontSize="inherit" sx={{ fontSize: '22px' }} />
+                  </IconButton>
+                </Box>
+              }
+            >
               <ListItemAvatar>
                 <Checkbox
                   sx={{ pl: 0 }}
@@ -650,7 +689,7 @@ export const CreateOrUpdateEventDialog = ({
 
           <Divider sx={{ mb: 1 }} />
 
-          <Has feat={"items"}>
+          <Has feat={'items'}>
             <ListItem sx={{ pt: 0, pb: 0, mb: 2 }} key={'itemType'}>
               <ListItemAvatar>
                 <Checkbox
@@ -665,7 +704,7 @@ export const CreateOrUpdateEventDialog = ({
                 />
               </ListItemAvatar>
               <Select
-                size='small'
+                size="small"
                 label={'Benötigter Schlüssel'}
                 disabled={editedEvent.required_item === null}
                 fullWidth
@@ -683,7 +722,7 @@ export const CreateOrUpdateEventDialog = ({
               </Select>
             </ListItem>
           </Has>
-          <Has feat={"games"}>
+          <Has feat={'games'}>
             <ListItem dense sx={{ pt: 0, pb: 0, mb: 2 }} key={'constellations_enabled'}>
               <ListItemAvatar>
                 <Checkbox
@@ -703,89 +742,109 @@ export const CreateOrUpdateEventDialog = ({
               />
             </ListItem>
           </Has>
-          <ListItem dense sx={{ pt: 0, pb: 0, mb: 2 }} key={'pledges'} onClick={() => {
-            setDialogOpen('bring_items');
-          }}>
+          <ListItem
+            dense
+            sx={{ pt: 0, pb: 0, mb: 2 }}
+            key={'pledges'}
+            onClick={() => {
+              setDialogOpen('bring_items');
+            }}
+          >
             <ListItemAvatar>
               <Category />
             </ListItemAvatar>
-            <ListItemText primary={'Gegenstände mitbringen'} secondary={bringItems.map(x => <Chip sx={{ mr: 1 }} size='small' label={`${x.required_qty}x ${x.name}`} />)} />
+            <ListItemText
+              primary={'Gegenstände mitbringen'}
+              secondary={bringItems.map((x) => (
+                <Chip sx={{ mr: 1 }} size="small" label={`${x.required_qty}x ${x.name}`} />
+              ))}
+            />
           </ListItem>
         </List>
-      </Box >
-      <SwipeableDialog title='Gegenstände mitbringen' open={dialogOpen === 'bring_items'} onClose={() => setDialogOpen(null)}>
-
+      </Box>
+      <SwipeableDialog
+        title="Gegenstände mitbringen"
+        open={dialogOpen === 'bring_items'}
+        onClose={() => setDialogOpen(null)}
+      >
         <List>
-          {
-            bringItems.map((item, index) => (
-              <ListItem divider key={index}>
-                <ListItemAvatar>
-                  <IconButton onClick={() => {
+          {bringItems.map((item, index) => (
+            <ListItem divider key={index}>
+              <ListItemAvatar>
+                <IconButton
+                  onClick={() => {
                     const newItems = [...bringItems];
                     newItems.splice(index, 1);
-                    setBringItems(newItems)
-                  }}>
-                    <Delete />
-                  </IconButton>
-                </ListItemAvatar>
-                <TextField
-                  fullWidth
-                  variant="outlined"
-                  label="Gegenstand"
-                  value={item.name}
-                  onChange={(e) => {
-                    const newItems = [...bringItems];
-                    newItems[index].name = e.target.value;
                     setBringItems(newItems);
                   }}
-                  sx={{ mr: 2 }}
-                  margin="normal"
-                />
-                <Box sx={{ display: 'flex', flexDirection: 'row' }}>
-                  {item.required_qty && item.required_qty > 0 && (
-                    <>
-                      <IconButton
-                        disableRipple
-                        onClick={(event) => {
-                          const newItems = [...bringItems];
-                          newItems[index].required_qty = Math.max(1, (newItems[index].required_qty ?? 0) - 1);
-                          setBringItems(newItems);
-                          event.stopPropagation();
-                        }}
-                      >
-                        <Remove fontSize="inherit" sx={{ fontSize: '28px' }} />
-                      </IconButton>
-                      <Typography sx={{ p: 1, fontSize: '20px', color: 'rgba(0,0,0,0.54)' }}>{item.required_qty}</Typography>
-                    </>
-                  )}
-                  <IconButton
-                    disableRipple
-                    onClick={(event) => {
-                      const newItems = [...bringItems];
-                      newItems[index].required_qty = (newItems[index].required_qty ?? 0) + 1;
-                      setBringItems(newItems);
-                      event.stopPropagation();
-                    }}
-                  >
-                    <Add fontSize="inherit" sx={{ fontSize: '28px' }} />
-                  </IconButton>
-                </Box>
-              </ListItem>
-            ))
-          }
-          <ListItem onClick={() => {
-            setBringItems([...bringItems, {
-              name: '',
-              required_qty: 1,
-              created_at: formatDateToDatabase(Date.now()),
-              created_by: user.userId,
-              event: editedEvent.id,
-              sort_order: 0,
-              id: '',
-              notes: '',
-              unit: 'Stk.'
-            }]);
-          }}>
+                >
+                  <Delete />
+                </IconButton>
+              </ListItemAvatar>
+              <TextField
+                fullWidth
+                variant="outlined"
+                label="Gegenstand"
+                value={item.name}
+                onChange={(e) => {
+                  const newItems = [...bringItems];
+                  newItems[index].name = e.target.value;
+                  setBringItems(newItems);
+                }}
+                sx={{ mr: 2 }}
+                margin="normal"
+              />
+              <Box sx={{ display: 'flex', flexDirection: 'row' }}>
+                {item.required_qty && item.required_qty > 0 && (
+                  <>
+                    <IconButton
+                      disableRipple
+                      onClick={(event) => {
+                        const newItems = [...bringItems];
+                        newItems[index].required_qty = Math.max(1, (newItems[index].required_qty ?? 0) - 1);
+                        setBringItems(newItems);
+                        event.stopPropagation();
+                      }}
+                    >
+                      <Remove fontSize="inherit" sx={{ fontSize: '28px' }} />
+                    </IconButton>
+                    <Typography sx={{ p: 1, fontSize: '20px', color: 'rgba(0,0,0,0.54)' }}>
+                      {item.required_qty}
+                    </Typography>
+                  </>
+                )}
+                <IconButton
+                  disableRipple
+                  onClick={(event) => {
+                    const newItems = [...bringItems];
+                    newItems[index].required_qty = (newItems[index].required_qty ?? 0) + 1;
+                    setBringItems(newItems);
+                    event.stopPropagation();
+                  }}
+                >
+                  <Add fontSize="inherit" sx={{ fontSize: '28px' }} />
+                </IconButton>
+              </Box>
+            </ListItem>
+          ))}
+          <ListItem
+            onClick={() => {
+              setBringItems([
+                ...bringItems,
+                {
+                  name: '',
+                  required_qty: 1,
+                  created_at: formatDateToDatabase(Date.now()),
+                  created_by: user.id,
+                  event: editedEvent.id,
+                  sort_order: 0,
+                  id: '',
+                  notes: '',
+                  unit: 'Stk.',
+                },
+              ]);
+            }}
+          >
             <ListItemAvatar>
               <IconButton>
                 <Add />
@@ -834,11 +893,11 @@ export const CreateOrUpdateEventDialog = ({
                     recurrenceEnd: editedEvent.recurrenceEnd
                       ? null
                       : formatDateToDatabase(
-                        set(Date.now(), {
-                          seconds: 0,
-                          milliseconds: 0,
-                        })
-                      ),
+                          set(Date.now(), {
+                            seconds: 0,
+                            milliseconds: 0,
+                          })
+                        ),
                   })
                 }
               />
@@ -893,6 +952,6 @@ export const CreateOrUpdateEventDialog = ({
           setDialogOpen(null);
         }}
       />
-    </Dialog >
+    </Dialog>
   );
 };
