@@ -20,6 +20,7 @@ import Stack from '@mui/system/Stack';
 import { UseQueryResult } from '@tanstack/react-query';
 import QRCode from 'react-qr-code';
 
+import Alert from '@mui/material/Alert';
 import { BankTransferDTo, PayPalPaymentDTO } from './PayDrinks.page';
 
 const PAYMENT_INFO: PayPalPaymentDTO | BankTransferDTo = import.meta.env.VITE_PAYMENT_INFO ? JSON.parse(import.meta.env.VITE_PAYMENT_INFO) : undefined;
@@ -61,9 +62,14 @@ const PayDrinksScreen = ({
 
               {
                 PAYMENT_INFO.type === 'bank_transfer' && <IconButton onClick={() => {
-                  dialogs.confirm(<Box sx={{ display: "flex", flexDirection: "row", justifyContent: "center" }}>
-                    <QRCode value={`BCD\n002\n1\nINST\n${PAYMENT_INFO.bic}\n${PAYMENT_INFO.recipient}\n${PAYMENT_INFO.iban}\n\n\n\nGetränkezahlung Roundnet Karlsruhe App
+                  dialogs.alert(<Box sx={{ display: "flex", flexDirection: "column", justifyContent: "center" }}>
+                    <Alert severity='info'>
+                      Scanne den QR-Code mit deiner Banking-App, um die Banküberweisung schnell und einfach durchzuführen.
+                    </Alert>
+                    <Box sx={{ display: "flex", flexDirection: "row", mt: 2, justifyContent: "center" }}>
+                      <QRCode value={`BCD\n002\n1\nINST\n${PAYMENT_INFO.bic}\n${PAYMENT_INFO.recipient}\n${PAYMENT_INFO.iban}\n\n\n\nGetränkezahlung Roundnet Karlsruhe App
                     `} />
+                    </Box>
                   </Box>, { title: 'Bankverbindung QR-Code' });
                 }}>
                   <QrCodeIcon />
