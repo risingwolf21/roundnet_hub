@@ -30,10 +30,6 @@ export default function WebPushKeeper({ children, session, vapidPublicKey }: Pro
   const lastSigRef = useRef<string | null>(localStorage.getItem('push:lastSig'));
 
   useEffect(() => {
-    if (session?.user) updateUserActivity(session.user.id);
-  }, [session?.user]);
-
-  useEffect(() => {
     (async () => {
       try {
         if (!session?.user) {
@@ -86,22 +82,6 @@ export default function WebPushKeeper({ children, session, vapidPublicKey }: Pro
       }
     })();
   }, [session?.user?.id, vapidPublicKey]);
-
-  async function updateUserActivity(user: string) {
-    const { error } = await supabase.from('user_activity').upsert({
-      user: user,
-      commit_version: import.meta.env.VITE_GIT_COMMIT,
-      app_version: import.meta.env.VITE_APP_VERSION,
-    });
-    if (error) throw error;
-    logger.info('user_activity_update_failed', {
-      type: 'user_activity',
-      message: 'update_failed',
-      user: user,
-      commit_version: import.meta.env.VITE_GIT_COMMIT,
-      app_version: import.meta.env.VITE_APP_VERSION,
-    });
-  }
 
   async function upsertToDb(p_endpoint: string, p_p256dh: string, p_auth: string, ...params: any[]) {
     const { error } = await supabase.schema('notifications').rpc('upsert_webpush_subscription', {
