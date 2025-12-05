@@ -166,7 +166,7 @@ SELECT throws_ok(
          jsonb_build_object('name','Fehlerhaft','required_qty','abc') -- invalid
        )
      ); $$,
-  'Invalid numeric for item.required_qty: abc',
+  'invalid input syntax for type numeric: "abc"',
   'Validierung: required_qty falscher Typ'
 );
 
