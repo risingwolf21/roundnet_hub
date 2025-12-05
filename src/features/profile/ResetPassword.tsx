@@ -1,9 +1,9 @@
-import Layout from "@/components/layout/Layout";
-import { supabase } from "@/lib/supabase";
-import { useTheme } from "@mui/material";
-import { useState } from "react";
-import { useNavigate } from "react-router";
-import { ResetPasswordLayout } from "../auth/ResetPasswordScreen";
+import Layout from '@/components/layout/Layout';
+import { supabase } from '@/lib/supabase';
+import { useTheme } from '@mui/material';
+import { useState } from 'react';
+import { useNavigate } from 'react-router';
+import { ResetPasswordLayout } from '../auth/ResetPasswordScreen';
 
 const ResetPassword = () => {
   const theme = useTheme();
@@ -22,8 +22,15 @@ const ResetPassword = () => {
     }
   };
 
-  return <Layout appBarConfig={{ title: "Passwort zurücksetzen", showProfile: false, navigateBackPath: "/user" }}>
-    <ResetPasswordLayout loadingState={[loading, setLoading]} theme={theme} errorState={[error, setError]} handleSubmit={handleSubmit} />
-  </Layout>
-}
+  return (
+    <Layout appBarConfig={{ title: 'Passwort zurücksetzen', showProfile: false, navigateBackPath: '/user' }}>
+      <ResetPasswordLayout
+        loadingState={[loading, setLoading]}
+        theme={theme}
+        errorState={[error, setError]}
+        handleSubmit={handleSubmit}
+      />
+    </Layout>
+  );
+};
 export default ResetPassword;

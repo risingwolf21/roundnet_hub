@@ -34,9 +34,7 @@ import TextField from '@mui/material/TextField';
 import Tooltip from '@mui/material/Tooltip';
 import { useGrants } from '../auth/GrantsContext';
 
-
 const PlayerzoneProfileDialog = () => {
-
   const { user } = useGrants();
 
   const { data: player_data, refetch: playerRefetch } = usePlayer(user);
@@ -57,17 +55,17 @@ const PlayerzoneProfileDialog = () => {
 
   const handleChangeProfilePicture = async () => {
     setLoading(false);
-    const { data: list, error } = await supabase.storage.from('user').list(`${user.userId}`);
+    const { data: list, error } = await supabase.storage.from('user').list(`${user.id}`);
     if (error || !list) {
       notifications.show(error.message, { severity: 'error' });
       captureException(error);
       return;
     }
-    const filesToRemove = list.map((x) => `${user.userId}/${x.name}`);
+    const filesToRemove = list.map((x) => `${user.id}/${x.name}`);
 
     await supabase.storage.from('user').remove(filesToRemove);
 
-    await supabase.from('user').update({ avatarUrl: player_data?.rg_avatar_url }).eq('userId', user.userId);
+    await supabase.from('user').update({ avatarUrl: player_data?.rg_avatar_url }).eq('id', user.id);
     setLoading(false);
   };
 
@@ -98,11 +96,13 @@ const PlayerzoneProfileDialog = () => {
   };
 
   return (
-    <Layout appBarConfig={{ title: 'Playerzone Profil', showProfile: false, navigateBackPath: "/user" }}>
-      <PullToRefresh onRefresh={() => {
-        playerRefetch();
-        eloRefetch();
-      }}>
+    <Layout appBarConfig={{ title: 'Playerzone Profil', showProfile: false, navigateBackPath: '/user' }}>
+      <PullToRefresh
+        onRefresh={() => {
+          playerRefetch();
+          eloRefetch();
+        }}
+      >
         <Container>
           <List sx={{ pb: 10 }}>
             {player_data?.rg_avatar_url && (
@@ -151,20 +151,25 @@ const PlayerzoneProfileDialog = () => {
                 margin="normal"
                 slotProps={{
                   input: {
-                    endAdornment: <Tooltip title="Den Link/URL findest du in deinem Playerzone Profil. Sie sieht in etwa so aus: https://playerzone.roundnetgermany.de/players/***" enterTouchDelay={0}>
-                      <InfoIcon />
-                    </Tooltip>
-                  }
+                    endAdornment: (
+                      <Tooltip
+                        title="Den Link/URL findest du in deinem Playerzone Profil. Sie sieht in etwa so aus: https://playerzone.roundnetgermany.de/players/***"
+                        enterTouchDelay={0}
+                      >
+                        <InfoIcon />
+                      </Tooltip>
+                    ),
+                  },
                 }}
               />
             </ListItem>
-            {
-              player_data?.rg_link !== rgLink && <Box sx={{ display: "flex", justifyContent: "end" }}>
+            {player_data?.rg_link !== rgLink && (
+              <Box sx={{ display: 'flex', justifyContent: 'end' }}>
                 <Button disabled={loading} onClick={onSafeRgLinkClick}>
                   Speichern
                 </Button>
               </Box>
-            }
+            )}
             {player_data?.rg_id && (
               <ListItem
                 key={'id'}
@@ -226,18 +231,32 @@ const PlayerzoneProfileDialog = () => {
                 sx={{
                   '&.MuiListItem-root': { p: 0 },
                 }}
-                secondaryAction={<Tooltip title="Trend der letzten 30 Tage" enterTouchDelay={0}>
-                  <span>
-                    <Chip
-                      sx={{ pointerEvents: 'none' }}
-                      color={elo_change_last_30_days > 0 ? 'success' : elo_change_last_30_days < 0 ? 'error' : 'info'}
-                      label={elo_change_last_30_days.toFixed(2)}
-                      icon={elo_change_last_30_days > 0 ? <TrendingUp /> : elo_change_last_30_days < 0 ? <TrendingDown /> : <TrendingFlat />} />
-                  </span>
-                </Tooltip>}
+                secondaryAction={
+                  <Tooltip title="Trend der letzten 30 Tage" enterTouchDelay={0}>
+                    <span>
+                      <Chip
+                        sx={{ pointerEvents: 'none' }}
+                        color={elo_change_last_30_days > 0 ? 'success' : elo_change_last_30_days < 0 ? 'error' : 'info'}
+                        label={elo_change_last_30_days.toFixed(2)}
+                        icon={
+                          elo_change_last_30_days > 0 ? (
+                            <TrendingUp />
+                          ) : elo_change_last_30_days < 0 ? (
+                            <TrendingDown />
+                          ) : (
+                            <TrendingFlat />
+                          )
+                        }
+                      />
+                    </span>
+                  </Tooltip>
+                }
               >
                 <ListItemAvatar></ListItemAvatar>
-                <ListItemText primary={player_data?.effective_rating_cached.toFixed()} secondary={'Kombinierter Index'} />
+                <ListItemText
+                  primary={player_data?.effective_rating_cached.toFixed()}
+                  secondary={'Kombinierter Index'}
+                />
               </ListItem>
             )}
             <ListItem

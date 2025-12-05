@@ -86,9 +86,10 @@ function validateDuration(input: string): string | null {
 type Props = {
   durationChanged: (d: Duration) => void;
   duration: Duration | null;
+  label?: string;
 };
 
-export default function DurationAdder({ duration, durationChanged }: Props) {
+export default function DurationAdder({ duration, durationChanged, label = 'Dauer' }: Props) {
   const [durationText, setDurationText] = useState<string>(duration ? formatDuration(duration) : '');
   const [error, setError] = useState<string | null>(null);
 
@@ -107,7 +108,7 @@ export default function DurationAdder({ duration, durationChanged }: Props) {
     <TextField
       fullWidth
       size="small"
-      label={'Dauer'}
+      label={label}
       placeholder="1h 30m"
       value={durationText}
       error={error !== null}

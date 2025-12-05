@@ -98,7 +98,7 @@ export const CreateOrUpdateEventDialog = ({
   const [dialogOpen, setDialogOpen] = useState<'group' | 'stopRepeat' | 'repeat' | 'places' | 'bring_items' | null>(
     null
   );
-  const [duration, setDuration] = useState<Duration>(
+  const [duration, setDuration] = useState<Duration>(() =>
     event ? (getDurationFrom(event.startingDateTime, event.endDateTime) ?? DEFAULT_DURATION) : DEFAULT_DURATION
   );
   const [bringItems, setBringItems] = useState(items);
@@ -756,7 +756,7 @@ export const CreateOrUpdateEventDialog = ({
             <ListItemText
               primary={'Gegenstände mitbringen'}
               secondary={bringItems.map((x) => (
-                <Chip sx={{ mr: 1 }} size="small" label={`${x.required_qty}x ${x.name}`} />
+                <Chip key={x.id} sx={{ mr: 1 }} size="small" label={`${x.required_qty}x ${x.name}`} />
               ))}
             />
           </ListItem>
@@ -769,7 +769,7 @@ export const CreateOrUpdateEventDialog = ({
       >
         <List>
           {bringItems.map((item, index) => (
-            <ListItem divider key={index}>
+            <ListItem divider key={item.created_at}>
               <ListItemAvatar>
                 <IconButton
                   onClick={() => {

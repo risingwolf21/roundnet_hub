@@ -1,4 +1,4 @@
-import { format, intervalToDuration, parse } from 'date-fns';
+import { Duration, format, intervalToDuration, parse } from 'date-fns';
 import RoundnetKarlsruheLogo from '../images/Karlsruher_Kojoten_Logo.svg';
 import RoundnetMunichLogo from '../images/Roundnet_Munich_Logo.png';
 
@@ -54,6 +54,14 @@ export const formatSafeDateFromDatabase = (date: string | null) => {
 
 export const formatDateFromDatabase = (date: string | null) => {
   if (date === null) return null;
+  const result = parse(date, "yyyy-MM-dd'T'HH:mm:ssXXX", new Date());
+  if (isNaN(result.getTime())) {
+    return parse(date, "yyyy-MM-dd'T'HH:mm:ss.SSSSSSxxx", new Date());
+  }
+  return result;
+};
+
+export const formatDateFromDatabaseNotNull = (date: string) => {
   const result = parse(date, "yyyy-MM-dd'T'HH:mm:ssXXX", new Date());
   if (isNaN(result.getTime())) {
     return parse(date, "yyyy-MM-dd'T'HH:mm:ss.SSSSSSxxx", new Date());
@@ -161,4 +169,21 @@ function toErrorWithMessage(maybeError: unknown): ErrorWithMessage {
 
 export function getErrorMessage(error: unknown) {
   return toErrorWithMessage(error).message;
+}
+
+export function durationToPostgresInterval(duration: Duration): string {
+  const parts: string[] = [];
+
+  if (duration.years) parts.push(`${duration.years} years`);
+  if (duration.months) parts.push(`${duration.months} months`);
+  if (duration.weeks) parts.push(`${duration.weeks} weeks`);
+  if (duration.days) parts.push(`${duration.days} days`);
+  if (duration.hours) parts.push(`${duration.hours} hours`);
+  if (duration.minutes) parts.push(`${duration.minutes} minutes`);
+  if (duration.seconds) parts.push(`${duration.seconds} seconds`);
+
+  // Wenn komplett leer → interpretiere als 0 seconds
+  if (parts.length === 0) return '0 seconds';
+
+  return parts.join(' ');
 }

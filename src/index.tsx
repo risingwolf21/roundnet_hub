@@ -4,7 +4,6 @@ import Typography from '@mui/material/Typography';
 import * as Sentry from '@sentry/react';
 import { Suspense } from 'react';
 import ReactDOM from 'react-dom/client';
-import { registerSW } from 'virtual:pwa-register';
 import './apocalypseHandler';
 import { App } from './App';
 import AuthLayout from './components/layout/AuthLayout';
@@ -23,10 +22,6 @@ const root = ReactDOM.createRoot(document.getElementById('root') as HTMLElement,
   onRecoverableError: Sentry.reactErrorHandler((error, errorInfo) => {
     console.warn('Recoverable error', error, errorInfo.componentStack);
   }),
-});
-
-registerSW({
-  immediate: true,
 });
 
 let reloading = false;

@@ -10,7 +10,7 @@ export const usePaymentHistory = (userId: string) =>
     queryFn: async () => {
       const result = await supabase
         .from('history')
-        .select('*, drink ( name, price ), payments ( paymentState ), voucher')
+        .select('*, drink ( id, name, price ), payments ( paymentState ), voucher')
         .eq('payments.paymentState', 'Open')
         .not('payments', 'is', null)
         .eq('user', userId)
