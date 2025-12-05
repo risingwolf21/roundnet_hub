@@ -103,7 +103,7 @@ export const SupabaseEventRepository = {
         displayName: user.displayName ?? '',
         reply_to: reply_to,
       })
-      .select('user(userId, displayName, avatarUrl), *')
+      .select('user(id, displayName, avatarUrl), *')
       .single<FullComment>()
       .throwOnError();
 
