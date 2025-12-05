@@ -126,6 +126,7 @@ type DrawerContentProps = {
   version: string;
   request_group_joins: number;
   notification_count: number;
+  update_app: () => void;
 };
 const DrawerContent = ({
   tab,
@@ -134,6 +135,7 @@ const DrawerContent = ({
   version,
   request_group_joins,
   notification_count,
+  update_app,
 }: DrawerContentProps) => {
   return (
     <DrawerBox>
@@ -542,14 +544,7 @@ const DrawerContent = ({
             primary={t('browse.helpAndInformation')}
           />
         </DrawerItem>
-        <DrawerItem
-          key="update app"
-          selected={false}
-          onClick={async () => {
-            await queryClient.invalidateQueries();
-            window.location.reload();
-          }}
-        >
+        <DrawerItem key="update app" selected={false} onClick={update_app}>
           <ListItemAvatar>
             <ListItemIcon>
               <Update />
@@ -605,6 +600,14 @@ export const Drawer = ({ open, onClose, onOpen }: Props) => {
       version={import.meta.env.VITE_GIT_COMMIT}
       request_group_joins={requested_group_joins.length}
       notification_count={notifications.filter((x) => !x.dismissed_at).length}
+      update_app={async () => {
+        if ('serviceWorker' in navigator) {
+          const sw = await navigator.serviceWorker.ready;
+          await sw.update();
+        }
+        await queryClient.invalidateQueries();
+        window.location.reload();
+      }}
     />
   );
 

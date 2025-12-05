@@ -39,7 +39,7 @@ const UserScreenProvider = () => {
 const UserScreen = ({ user, handleSignOut }: UserScreenProps) => {
   const notifications = useNotifications();
   const navigate = useNavigate();
-  const notificationSupported = ('serviceWorker' in navigator) && ('PushManager' in window);
+  const notificationSupported = 'serviceWorker' in navigator && 'PushManager' in window;
   const { data: player_data, isLoading, refetch: refetchPlayer } = usePlayer(user);
 
   const copyIcalURLToClipboard = () => {
@@ -65,9 +65,7 @@ const UserScreen = ({ user, handleSignOut }: UserScreenProps) => {
           </Typography>
           <Card sx={{ borderRadius: 2, py: 0, px: 0, mt: 1 }}>
             <CardActionArea sx={{ px: 1 }}>
-              <ListItem
-                onClick={() => navigate('profile')}
-              >
+              <ListItem onClick={() => navigate('profile')}>
                 <ListItemAvatar sx={{ flexDirection: 'row', display: 'flex', alignItems: 'center' }}>
                   <AccountCircle />
                 </ListItemAvatar>
@@ -130,13 +128,15 @@ const UserScreen = ({ user, handleSignOut }: UserScreenProps) => {
             </CardActionArea>
           </Card>
           <Card sx={{ borderRadius: 2, py: 0, px: 0, mt: 1 }}>
-            <CardActionArea sx={{ px: 1 }} onClick={() => {
-              copyIcalURLToClipboard();
-              notifications.show(
-                'URL in Zwischenablage kopiert - Abonniere den Kalendar jetzt selbst mit der URL',
-                { severity: 'info' }
-              );
-            }}>
+            <CardActionArea
+              sx={{ px: 1 }}
+              onClick={() => {
+                copyIcalURLToClipboard();
+                notifications.show('URL in Zwischenablage kopiert - Abonniere den Kalendar jetzt selbst mit der URL', {
+                  severity: 'info',
+                });
+              }}
+            >
               <ListItem>
                 <ListItemAvatar sx={{ flexDirection: 'row', display: 'flex', alignItems: 'center' }}>
                   <CalendarMonth />
@@ -160,7 +160,7 @@ const UserScreen = ({ user, handleSignOut }: UserScreenProps) => {
           </Card>
         </List>
       </PullToRefresh>
-    </Layout >
+    </Layout>
   );
 };
 export default UserScreenProvider;

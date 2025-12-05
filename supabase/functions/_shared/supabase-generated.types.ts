@@ -547,13 +547,6 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "teams_player_1_fkey"
-            columns: ["team_b_player_1"]
-            isOneToOne: false
-            referencedRelation: "players"
-            referencedColumns: ["player"]
-          },
-          {
-            foreignKeyName: "teams_player_1_fkey"
             columns: ["team_a_player_1"]
             isOneToOne: false
             referencedRelation: "players"
@@ -563,7 +556,7 @@ export type Database = {
             foreignKeyName: "teams_player_1_fkey"
             columns: ["team_b_player_1"]
             isOneToOne: false
-            referencedRelation: "players_public"
+            referencedRelation: "players"
             referencedColumns: ["player"]
           },
           {
@@ -574,10 +567,10 @@ export type Database = {
             referencedColumns: ["player"]
           },
           {
-            foreignKeyName: "teams_player_2_fkey"
-            columns: ["team_b_player_2"]
+            foreignKeyName: "teams_player_1_fkey"
+            columns: ["team_b_player_1"]
             isOneToOne: false
-            referencedRelation: "players"
+            referencedRelation: "players_public"
             referencedColumns: ["player"]
           },
           {
@@ -591,12 +584,19 @@ export type Database = {
             foreignKeyName: "teams_player_2_fkey"
             columns: ["team_b_player_2"]
             isOneToOne: false
-            referencedRelation: "players_public"
+            referencedRelation: "players"
             referencedColumns: ["player"]
           },
           {
             foreignKeyName: "teams_player_2_fkey"
             columns: ["team_a_player_2"]
+            isOneToOne: false
+            referencedRelation: "players_public"
+            referencedColumns: ["player"]
+          },
+          {
+            foreignKeyName: "teams_player_2_fkey"
+            columns: ["team_b_player_2"]
             isOneToOne: false
             referencedRelation: "players_public"
             referencedColumns: ["player"]
@@ -1040,6 +1040,10 @@ export type Database = {
         Args: { p_actor?: string; p_challenge: string }
         Returns: number
       }
+      notify_challenge_entry_added: {
+        Args: { p_actor?: string; p_challenge: string }
+        Returns: number
+      }
       notify_drink_payment_fulfilled: {
         Args: { p_payment: number } | { p_payment: string }
         Returns: number
@@ -1074,7 +1078,9 @@ export type Database = {
         Returns: number
       }
       notify_item_handover: {
-        Args: { p_actor?: string; p_from: string; p_item: string; p_to: string }
+        Args:
+          | { p_actor?: string; p_from: string; p_item: number; p_to: string }
+          | { p_actor?: string; p_from: string; p_item: string; p_to: string }
         Returns: number
       }
       notify_users: {
@@ -1641,6 +1647,114 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      event_transformation_applications: {
+        Row: {
+          created_at: string | null
+          created_by: string | null
+          event_id: string
+          id: string
+          next: Json
+          note: string | null
+          prev: Json
+          transformation_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          created_by?: string | null
+          event_id: string
+          id?: string
+          next: Json
+          note?: string | null
+          prev: Json
+          transformation_id: string
+        }
+        Update: {
+          created_at?: string | null
+          created_by?: string | null
+          event_id?: string
+          id?: string
+          next?: Json
+          note?: string | null
+          prev?: Json
+          transformation_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_transformation_applications_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "current_distinct_event"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "event_transformation_applications_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "distinct_event"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "event_transformation_applications_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "event_transformation_applications_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events_user_view"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "event_transformation_applications_transformation_id_fkey"
+            columns: ["transformation_id"]
+            isOneToOne: false
+            referencedRelation: "event_transformations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      event_transformations: {
+        Row: {
+          active: boolean
+          created_at: string
+          created_by: string | null
+          event_key: string
+          id: string
+          lead_time: unknown
+          next: Json
+          one_time: boolean
+          reason: string | null
+          trigger: Json | null
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          created_by?: string | null
+          event_key: string
+          id?: string
+          lead_time?: unknown
+          next: Json
+          one_time?: boolean
+          reason?: string | null
+          trigger?: Json | null
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          created_by?: string | null
+          event_key?: string
+          id?: string
+          lead_time?: unknown
+          next?: Json
+          one_time?: boolean
+          reason?: string | null
+          trigger?: Json | null
+        }
+        Relationships: []
       }
       events: {
         Row: {
@@ -2517,6 +2631,10 @@ export type Database = {
         Args: { items: Json }
         Returns: undefined
       }
+      apply_transformation_to_event: {
+        Args: { p_event_id: string; p_transformation_id: string }
+        Returns: undefined
+      }
       authorize: {
         Args: { requested_permission: string }
         Returns: boolean
@@ -2524,6 +2642,28 @@ export type Database = {
       check_reply_to: {
         Args: { value: string }
         Returns: boolean
+      }
+      create_event_transformation_by_key: {
+        Args: {
+          p_event_key: string
+          p_lead_time: unknown
+          p_next: Json
+          p_one_time?: boolean
+          p_reason?: string
+          p_trigger: Json
+        }
+        Returns: {
+          active: boolean
+          created_at: string
+          created_by: string | null
+          event_key: string
+          id: string
+          lead_time: unknown
+          next: Json
+          one_time: boolean
+          reason: string | null
+          trigger: Json | null
+        }
       }
       create_group_with_user: {
         Args: {
@@ -2708,8 +2848,8 @@ export type Database = {
         Args: { p_body?: Json; p_function_name: string; p_timeout_ms?: number }
         Returns: number
       }
-      is_app_client: {
-        Args: Record<PropertyKey, never>
+      is_group_public_joinable: {
+        Args: { p_group: string }
         Returns: boolean
       }
       is_user_admin_in_group: {
@@ -2727,6 +2867,10 @@ export type Database = {
           key_id: number
         }[]
       }
+      revert_transformation_application: {
+        Args: { p_application_id: string }
+        Returns: undefined
+      }
       revoke_group_grants: {
         Args: { p_feats?: string[]; p_group: string; p_perms?: string[] }
         Returns: undefined
@@ -2739,6 +2883,10 @@ export type Database = {
           p_user: string
         }
         Returns: undefined
+      }
+      run_event_transformations: {
+        Args: Record<PropertyKey, never>
+        Returns: number
       }
       run_push_worker_if_needed: {
         Args: Record<PropertyKey, never>

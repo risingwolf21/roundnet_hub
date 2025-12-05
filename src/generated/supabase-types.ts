@@ -20,6 +20,7 @@ export type Permission =
   | 'event.comment'
   | 'event.create.constellations'
   | 'event.delete'
+  | 'event.transform'
   | 'event.edit'
   | 'event.manage.attendees'
   | 'event.signup'
@@ -35,4 +36,11 @@ export type Permission =
   | 'admin.notify_users'
   | 'users.manage';
 
-export type Feature = 'challenges' | 'drinks' | 'events' | 'events.trials' | 'games' | 'items';
+export type Feature =
+  | 'challenges'
+  | 'drinks'
+  | 'events'
+  | 'events.trials'
+  | 'events.transformations'
+  | 'games'
+  | 'items';

@@ -58,6 +58,7 @@ jobs:
           version: latest
       - run: supabase db start
       - run: supabase test db
+      - run: supabase db lint --schema public,util,notificiations,games --fail-on error
 
   build-karlsruhe:
     name: "Build Karlsruhe"

@@ -72,7 +72,7 @@ const NotificationsDialog = () => {
   const updateNotificationPreferences = useUpdateNotificationPreferences(user);
 
   return (
-    <Layout appBarConfig={{ title: "Benachrichtigungen", showProfile: false, navigateBackPath: "/user" }}>
+    <Layout appBarConfig={{ title: 'Benachrichtigungen', showProfile: false, navigateBackPath: '/user' }}>
       <Container sx={{ p: 0, pb: 'env(safe-area-inset-bottom)' }}>
         <Typography sx={{ fontSize: 16, fontWeight: 'bold', m: 2 }} color="text.secondary">
           Einstellungen

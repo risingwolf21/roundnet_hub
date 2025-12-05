@@ -51,6 +51,7 @@
     "start:staging": "vite --mode staging",
     "test": "vitest",
     "build": "vite build",
+    "preview": "vite preview",
     "build:karlsruhe": "vite build --mode karlsruhe",
     "build:karlsruhe-stg": "vite build --mode staging",
     "build:munich": "vite build --mode munich",

@@ -25,7 +25,7 @@ const SearchAndSelectUserDialog = ({
         .schema('public')
         .from('user')
         .select('*')
-        .not('userId', 'in', `(${usersToFilter.join(',')})`)
+        .not('id', 'in', `(${usersToFilter.join(',')})`)
         .returns<User[]>()
         .throwOnError();
 

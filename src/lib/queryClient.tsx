@@ -13,6 +13,7 @@ export const queryClient = new QueryClient({
   },
   mutationCache: new MutationCache({
     onError: (err, _variables, _context, mutation) => {
+      console.log('Mutation error', err);
       withScope((scope) => {
         scope.setContext('mutation', {
           mutationId: mutation.mutationId,

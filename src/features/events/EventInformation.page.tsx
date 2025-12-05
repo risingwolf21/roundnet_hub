@@ -33,6 +33,7 @@ import ListItemText from '@mui/material/ListItemText';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import { useGrants } from '../auth/GrantsContext';
+import { TransformEventDialog } from './dialogs/TransformEventDialog';
 
 const EventInformationProvider = () => {
   const { selectedEventId } = useParams();
@@ -144,6 +145,24 @@ const EventInformationProvider = () => {
                     <Edit />
                   </ListItemIcon>
                   <ListItemText primary={t('events.editEvent')} />
+                </MenuItem>
+              </Has>
+              <Has perm={'event.transform'}>
+                <MenuItem
+                  onClick={async () => {
+                    console.log(event);
+
+                    setAnchorEl(null);
+                    await dialogs.open(TransformEventDialog, {
+                      user,
+                      event,
+                    });
+                  }}
+                >
+                  <ListItemIcon>
+                    <Edit />
+                  </ListItemIcon>
+                  <ListItemText primary={t('events.transformEventSeries')} />
                 </MenuItem>
               </Has>
               <Has perm={'event.cancel'}>

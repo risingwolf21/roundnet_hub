@@ -134,7 +134,8 @@ export const ProfileImage = ({ user }: Props) => {
             <Button
               disabled={loadingSave}
               startIcon={loadingSave ? <CircularProgress size={'20px'} /> : <DeleteOutline />}
-              onClick={() => setCurrentUser({ ...currentUser, avatarUrl: null })}>
+              onClick={() => setCurrentUser({ ...currentUser, avatarUrl: null })}
+            >
               Remove
             </Button>
           </>

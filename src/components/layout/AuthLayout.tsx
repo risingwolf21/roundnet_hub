@@ -9,7 +9,6 @@ import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
 
 const AuthLayout = ({ children }: { children?: ReactNode }) => {
-
   return (
     <Box
       sx={{

@@ -6,27 +6,29 @@ import Button from '@mui/material/Button';
 import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';
 import Toolbar from '@mui/material/Toolbar';
-import { GridColDef, GridFilterModel, GridPaginationModel, GridSortModel, GridValidRowModel } from '@mui/x-data-grid';
+import {
+  DataGrid,
+  GridActionsCellItem,
+  GridColDef,
+  GridFilterModel,
+  GridPaginationModel,
+  GridSortModel,
+  GridValidRowModel,
+} from '@mui/x-data-grid';
 import { ErrorBoundary } from '@sentry/react';
 import { keepPreviousData, QueryKey, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useDialogs, useLocalStorageState } from '@toolpad/core';
 import { useNotifications } from '@toolpad/core/useNotifications';
-import React, { lazy } from 'react';
+import React from 'react';
 import { useSearchParams } from 'react-router';
 
 import Add from '@mui/icons-material/Add';
 import Edit from '@mui/icons-material/Edit';
 import ExpandMoreOutlined from '@mui/icons-material/ExpandMoreOutlined';
 import Visibility from '@mui/icons-material/Visibility';
-
-const SelectTableDialog = lazy(() => import('./dialogs/SelectTableDialog'));
-const EditEntryDialog = lazy(() => import('./EditEntryDialog'));
-const ViewEntryDialog = lazy(() => import('./ViewEntryDialog'));
-
-const DataGrid = lazy(() => import('@mui/x-data-grid').then((mod) => ({ default: mod.DataGrid })));
-const GridActionsCellItem = lazy(() =>
-  import('@mui/x-data-grid').then((mod) => ({ default: mod.GridActionsCellItem }))
-);
+import SelectTableDialog from './dialogs/SelectTableDialog';
+import EditEntryDialog from './EditEntryDialog';
+import ViewEntryDialog from './ViewEntryDialog';
 
 export type Table = { name: string; schema: string };
 
@@ -188,6 +190,7 @@ export function useSupabaseTableQuery<Row = Record<string, unknown>>({
       let qb = supabase
         // @ts-expect-error unknown schema
         .schema(schema)
+        // @ts-expect-error unknown schema
         .from(table)
         .select('*', { count: 'exact' })
         .range(from, to)
@@ -255,6 +258,7 @@ function useSupabaseTableMutations<Row = Record<string, unknown>>({
       const { data, error } = await supabase
         // @ts-expect-error unknown schema
         .schema(schema)
+        // @ts-expect-error unknown schema
         .from(table)
         .insert(payload as any)
         .select('*')
@@ -306,6 +310,7 @@ function useSupabaseTableMutations<Row = Record<string, unknown>>({
       const { data, error } = await supabase
         // @ts-expect-error unknown schema
         .schema(schema)
+        // @ts-expect-error unknown schema
         .from(table)
         .update(payload as never)
         .eq(primaryKey, id)
@@ -344,6 +349,7 @@ function useSupabaseTableMutations<Row = Record<string, unknown>>({
       const { error } = await supabase
         // @ts-expect-error unknown schema
         .schema(schema)
+        // @ts-expect-error unknown schema
         .from(table)
         .delete()
         .eq(primaryKey, id)
@@ -373,6 +379,7 @@ function useSupabaseTableMutations<Row = Record<string, unknown>>({
       let qb = supabase
         // @ts-expect-error unknown schema
         .schema(schema)
+        // @ts-expect-error unknown schema
         .from(table)
         .update(changes as never)
         .setHeader('x-app-client', '1');
@@ -405,6 +412,7 @@ function useSupabaseTableMutations<Row = Record<string, unknown>>({
       let qb = supabase
         // @ts-expect-error unknown schema
         .schema(schema)
+        // @ts-expect-error unknown schema
         .from(table)
         .delete()
         .setHeader('x-app-client', '1');

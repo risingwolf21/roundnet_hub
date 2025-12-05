@@ -19,7 +19,6 @@ import ListItemText from '@mui/material/ListItemText';
 import TextField from '@mui/material/TextField';
 import { useGrants } from '../auth/GrantsContext';
 
-
 const ContactInformation = () => {
   const notifications = useNotifications();
   const { user } = useGrants();
@@ -40,7 +39,7 @@ const ContactInformation = () => {
       return;
     }
 
-    const { error } = await supabase.from('user').update({ name: fullName, displayName }).eq('userId', user.id);
+    const { error } = await supabase.from('user').update({ name: fullName, displayName }).eq('id', user.id);
     if (error) {
       notifications.show(error.message, { severity: 'error' });
       captureException(error);
@@ -61,7 +60,7 @@ const ContactInformation = () => {
   };
 
   return (
-    <Layout appBarConfig={{ title: "Profil und Account", showProfile: false, navigateBackPath: "/user" }}>
+    <Layout appBarConfig={{ title: 'Profil und Account', showProfile: false, navigateBackPath: '/user' }}>
       <Container>
         <List sx={{ pl: 2, pr: 2, pb: 10 }}>
           <Container
@@ -128,13 +127,15 @@ const ContactInformation = () => {
             <ListItemText primary={user.email} secondary={'Email'} />
           </ListItem>
         </List>
-        {
-          (user.displayName !== displayName || user.name !== `${name} ${surname}`) && <Fab onClick={updateDisplayName} sx={{ position: 'fixed', bottom: 16, right: 16, zIndex: 1000 }} aria-label="save">
-            {
-              loadingSave ? <CircularProgress size={25} color='inherit' /> : <SaveIcon />
-            }
+        {(user.displayName !== displayName || user.name !== `${name} ${surname}`) && (
+          <Fab
+            onClick={updateDisplayName}
+            sx={{ position: 'fixed', bottom: 16, right: 16, zIndex: 1000 }}
+            aria-label="save"
+          >
+            {loadingSave ? <CircularProgress size={25} color="inherit" /> : <SaveIcon />}
           </Fab>
-        }
+        )}
       </Container>
     </Layout>
   );
