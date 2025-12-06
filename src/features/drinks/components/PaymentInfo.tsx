@@ -53,8 +53,7 @@ export const PaymentInfo = ({ amountToPay }: { amountToPay: number }) => {
                   </Alert>
                   <Box sx={{ display: 'flex', flexDirection: 'row', mt: 2, justifyContent: 'center' }}>
                     <QRCode
-                      value={`BCD\n002\n1\nINST\n${PAYMENT_INFO.bic}\n${PAYMENT_INFO.recipient}\n${PAYMENT_INFO.iban}\n\n\n\nGetränkezahlung Roundnet Karlsruhe App
-                    `}
+                      value={`BCD\n002\n1\nINST\n${PAYMENT_INFO.bic}\n${PAYMENT_INFO.recipient}\n${PAYMENT_INFO.iban}\n\n\n\nGetränkezahlung Roundnet Karlsruhe App`}
                     />
                   </Box>
                 </Box>,
