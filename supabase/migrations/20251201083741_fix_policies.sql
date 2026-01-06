@@ -694,9 +694,9 @@ CREATE OR REPLACE FUNCTION public.is_group_public_joinable(p_group uuid)
  LANGUAGE plpgsql
  SET "search_path" TO 'public', 'pg_temp'
 AS $function$begin
-return (EXISTS ( SELECT 1
+return (SELECT EXISTS (SELECT 1
    FROM event_group eg
-  WHERE ((eg.id = p_group) AND eg.is_public AND (NOT eg.need_request_to_join))));
+  WHERE eg.id = p_group AND eg.is_public AND NOT eg.need_request_to_join));
   end;$function$
 ;
 

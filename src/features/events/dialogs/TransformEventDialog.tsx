@@ -1,15 +1,17 @@
 import DurationAdder from '@/components/DurationInput';
 import { supabase } from '@/lib/supabase';
 import { useGroups } from '@/tanstack/groups';
+import { Json } from '@/types/supabase-generated.types';
 import { EventsUserView, GroupWithUserMappings } from '@/types/supabaseTypes';
 import { durationToPostgresInterval } from '@/utils';
-import Article from '@mui/icons-material/Article';
+import Add from '@mui/icons-material/Add';
 import Close from '@mui/icons-material/Close';
-import EventIcon from '@mui/icons-material/Event';
 import Group from '@mui/icons-material/Group';
+import Remove from '@mui/icons-material/Remove';
 import TimelapseIcon from '@mui/icons-material/Timelapse';
 import AppBar from '@mui/material/AppBar';
 import Button from '@mui/material/Button';
+import Checkbox from '@mui/material/Checkbox';
 import Dialog from '@mui/material/Dialog';
 import Divider from '@mui/material/Divider';
 import IconButton from '@mui/material/IconButton';
@@ -27,6 +29,10 @@ import { differenceInCalendarDays, Duration, format, sub } from 'date-fns';
 import { FormEvent, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { SelectGroupDialog } from './SelectGroupDialog';
+
+export type TransformationTrigger = {
+  attending_lt?: number
+}
 
 export const TransformEventDialog = ({
   payload: { event, user },
@@ -86,6 +92,10 @@ const Content = ({
       (x) => x.id === (initialData?.next ? JSON.parse(initialData.next.toString()).group : event.group?.id)
     ) ?? null
   );
+  const [disableAnswerDeadline, setDisableAnswerDeadline] = useState<boolean>(initialData?.next ? (JSON.parse(initialData.next.toString())?.disableAnswerDeadline ?? false) : false);
+  const [trigger, setTrigger] = useState<TransformationTrigger>(
+    initialData?.trigger as TransformationTrigger ?? {});
+
   const dialogs = useDialogs();
   const notifications = useNotifications();
 
@@ -100,6 +110,8 @@ const Content = ({
       newTitle: string;
       newDescription: string;
       newGroupId: string | null;
+      disableAnswerDeadline: boolean;
+      trigger: Json;
     }) => {
       const result = await supabase
         .schema('public')
@@ -112,12 +124,13 @@ const Content = ({
             title: payload.newTitle,
             description: payload.newDescription,
             group: payload.newGroupId,
+            disableAnswerDeadline: payload.disableAnswerDeadline
           }),
           one_time: true,
           active: true,
-
-          trigger: '{}',
+          trigger: trigger,
         })
+        .eq('event_key', payload.eventKey)
         .select('*')
         .single();
 
@@ -127,11 +140,11 @@ const Content = ({
       return result.data;
     },
     onSuccess: () => {
-      notifications.show('Die Eventreihe wurde erfolgreich transformiert.', { severity: 'success' });
+      notifications.show('Die Transformation der Eventreihe wurde gespeichert.', { severity: 'success' });
       onClose();
     },
     onError: (error) => {
-      notifications.show(`Fehler beim Transformieren der Eventreihe: ${error.message}`, { severity: 'error' });
+      notifications.show(`Fehler beim speichern der Transformation der Eventreihe: ${error.message}`, { severity: 'error' });
     },
   });
 
@@ -153,6 +166,8 @@ const Content = ({
         newTitle,
         newDescription,
         newGroupId: newGroup.id,
+        trigger: JSON.stringify(trigger),
+        disableAnswerDeadline
       });
     } catch (error: unknown) {
       const message = error instanceof Error ? (error as Error).message : 'Unknown error.';
@@ -206,22 +221,22 @@ const Content = ({
           />
         </ListItem>
         <Divider sx={{ mb: 2 }} />
-        <ListItem dense sx={{ pt: 0, pb: 0, mb: 2 }} key={'title'}>
-          <ListItemAvatar sx={{ flexDirection: 'row', display: 'flex', alignItems: 'center' }}>
-            <EventIcon />
-          </ListItemAvatar>
+        <Typography sx={{ fontSize: 14, fontWeight: 'bold', m: 2 }} color="text.secondary" gutterBottom>
+          Event-Titel
+        </Typography>
+        <ListItem dense sx={{ pt: 0, pb: 0, mb: 2 }} key={'title2'}>
           <TextField
             size="small"
             fullWidth
-            label="Event-Titel"
             value={newTitle}
             onChange={(e) => setNewTitle(e.target.value)}
           />
         </ListItem>
-        <ListItem dense sx={{ pt: 0, pb: 0, mb: 2 }} key={'eventDescription'}>
-          <ListItemAvatar sx={{ flexDirection: 'row', display: 'flex', alignItems: 'center' }}>
-            <Article />
-          </ListItemAvatar>
+        <Divider />
+        <Typography sx={{ fontSize: 14, fontWeight: 'bold', m: 2 }} color="text.secondary" gutterBottom>
+          Event-Beschreibung
+        </Typography>
+        <ListItem dense sx={{ pt: 0, pb: 0, mb: 1 }} key={'eventDescription2'}>
           <TextField
             size="small"
             fullWidth
@@ -231,7 +246,12 @@ const Content = ({
             label="Beschreibung"
           />
         </ListItem>
+        <Divider />
+        <Typography sx={{ fontSize: 14, fontWeight: 'bold', m: 2 }} color="text.secondary" gutterBottom>
+          Event-Gruppe
+        </Typography>
         <ListItemButton
+          dense
           sx={{ py: 0, mb: 1 }}
           onClick={async () => {
             const result = await dialogs.open(SelectGroupDialog);
@@ -239,11 +259,67 @@ const Content = ({
               setNewGroup(result);
             }
           }}
-          key={'group'}
+          key={'group2'}
         >
           <ListItemAvatar>{newGroup && <Group sx={{ color: newGroup.color }} />}</ListItemAvatar>
           <ListItemText primary={newGroup?.name ?? 'Keine Gruppe gewählt'} secondary={newGroup?.description} />
         </ListItemButton>
+        <Divider />
+        <Typography sx={{ fontSize: 14, fontWeight: 'bold', m: 2 }} color="text.secondary" gutterBottom>
+          Anmelden Deadline entfernen?
+        </Typography>
+        <ListItem sx={{ py: 0, mb: 2 }} key={'answerDeadline'}>
+          <ListItemAvatar>
+            <Checkbox
+              sx={{ pl: 0 }}
+              checked={disableAnswerDeadline}
+              onChange={() =>
+                setDisableAnswerDeadline(!disableAnswerDeadline)
+              }
+            />
+          </ListItemAvatar>
+
+          <ListItemText primary={"Anmelde Deadline entfernen?"} />
+        </ListItem>
+        <Divider />
+        <Typography sx={{ fontSize: 16, fontWeight: 'bold', m: 2 }} color="text.secondary" gutterBottom>
+          Bedingung
+        </Typography>
+        <ListItem dense sx={{ pt: 0, pb: 0, mb: 2 }} key={'triggerAttendees'} secondaryAction={
+          <Box sx={{ display: 'flex', flexDirection: 'row' }}>
+            <IconButton
+              disableRipple
+              onClick={(event) => {
+                if (trigger.attending_lt && trigger.attending_lt > 0) {
+                  setTrigger({
+                    ...trigger,
+                    attending_lt: trigger.attending_lt - 1
+                  })
+                }
+                event.stopPropagation();
+              }}
+            >
+              <Remove fontSize="inherit" sx={{ fontSize: '22px' }} />
+            </IconButton>
+            <Typography sx={{ p: 1, fontSize: '20px', color: 'rgba(0,0,0,0.54)' }}>
+              {trigger.attending_lt ?? 0}
+            </Typography>
+            <IconButton
+              disableRipple
+              onClick={(event) => {
+                setTrigger({
+                  ...trigger,
+                  attending_lt: (trigger.attending_lt ?? 0) + 1
+                })
+                event.stopPropagation();
+              }}
+            >
+              <Add fontSize="inherit" sx={{ fontSize: '22px' }} />
+            </IconButton>
+          </Box>
+        }>
+          <ListItemText primary={"Teilnehmer weniger als"} />
+        </ListItem>
       </Box>
     </Dialog>
   );
