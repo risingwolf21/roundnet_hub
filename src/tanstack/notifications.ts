@@ -2,6 +2,7 @@ import { queryClient } from '@/lib/queryClient';
 import { supabase } from '@/lib/supabase';
 import { Tables } from '@/types/helpers';
 import { formatDateToDatabase } from '@/utils';
+import { captureException } from '@sentry/react';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { Notification } from 'types/supabase';
 
@@ -24,7 +25,7 @@ export const useAllNotifications = (user: User | null) =>
 
 export const useDismissNotification = () =>
   useMutation({
-    mutationFn: async (notficationId: string) => {
+    mutationFn: async ({ notficationId }: { notficationId: string }) => {
       const result = await supabase
         .schema('notifications')
         .from('notifications')
@@ -34,7 +35,7 @@ export const useDismissNotification = () =>
 
       return result;
     },
-    onMutate: async (notficationId: string) => {
+    onMutate: async ({ notficationId }) => {
       await queryClient.cancelQueries({ queryKey: ['notifications'] });
       const previousNotifications = queryClient.getQueryData<Notification[]>(['notifications']);
 
@@ -53,24 +54,31 @@ export const useDismissNotification = () =>
 
       return { previousNotifications };
     },
-    onError: (_err, _vars, context) => {
+    onError: (error, variables, context) => {
+      captureException(error, {
+        extra: {
+          ...variables,
+          ...error,
+        },
+        tags: { type: 'InsertItem', scope: 'items' },
+      });
       if (context?.previousNotifications) {
         queryClient.setQueryData(['notifications'], context.previousNotifications);
       }
     },
-    onSettled: (_data, _error, _variables, _context) => {
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ['notifications'] });
     },
   });
 
-export const useMarkNotificationsAsRead = (userId: string) =>
+export const useMarkNotificationsAsRead = (user: User) =>
   useMutation({
     mutationFn: async () => {
       const result = await supabase
         .schema('notifications')
         .from('notifications')
         .delete()
-        .eq('user', userId)
+        .eq('user', user.id)
         .throwOnError();
 
       return result;
@@ -83,12 +91,20 @@ export const useMarkNotificationsAsRead = (userId: string) =>
 
       return { previousNotifications };
     },
-    onError: (_err, _vars, context) => {
+    onError: (error, _vars, context) => {
+      captureException(error, {
+        extra: {
+          userName: user.name,
+          userId: user.id,
+          ...error,
+        },
+        tags: { type: 'MarkNotficiationsRead', scope: 'notifications' },
+      });
       if (context?.previousNotifications) {
         queryClient.setQueryData(['notifications'], context.previousNotifications);
       }
     },
-    onSettled: (_data, _error, _variables, _context) => {
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ['notifications'] });
     },
   });
@@ -170,12 +186,21 @@ export const useUpdateNotificationPreferences = (user: User) =>
 
       return { previousNotificationTags };
     },
-    onError: (_err, _vars, context) => {
+    onError: (error, variables, context) => {
+      captureException(error, {
+        extra: {
+          userName: user.name,
+          userId: user.id,
+          ...error,
+          ...variables
+        },
+        tags: { type: 'UpdateNotificationPerferences', scope: 'notifications' },
+      });
       if (context?.previousNotificationTags) {
         queryClient.setQueryData(['notifications', user.id, 'preferences'], context.previousNotificationTags);
       }
     },
-    onSettled: (_data, _error, _variables, _context) => {
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ['notifications', user.id, 'preferences'] });
     },
   });

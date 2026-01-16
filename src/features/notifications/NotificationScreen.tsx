@@ -32,7 +32,7 @@ const NotificationScreen = () => {
   const navigate = useNavigate();
   const { data: notifications = [], isLoading, refetch } = useAllNotifications(user);
 
-  const markNotificationsAsRead = useMarkNotificationsAsRead(user.id);
+  const markNotificationsAsRead = useMarkNotificationsAsRead(user);
   const dismissNotification = useDismissNotification();
 
   if (isLoading) {
@@ -56,7 +56,7 @@ const NotificationScreen = () => {
                 if (notification.data && hasStringUrl(notification.data)) {
                   navigate(notification.data.url);
                 }
-                dismissNotification.mutate(notification.id);
+                dismissNotification.mutate({ notficationId: notification.id });
               }}
             >
               <Stack direction={'row'} sx={{ width: '100%', pr: 2 }}>

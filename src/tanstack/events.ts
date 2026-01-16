@@ -5,7 +5,7 @@ import { SupabaseEventRepository } from '@/repository/EventRepository';
 import { Tables, TablesInsert, TablesUpdate } from '@/types/supabase-generated.types';
 import { EventsUserView, FullAttendance, FullComment } from '@/types/supabaseTypes';
 import { formatDateToDatabase } from '@/utils';
-import { logger } from '@sentry/react';
+import { captureException, logger } from '@sentry/react';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { format, isAfter, isBefore } from 'date-fns';
 
@@ -15,7 +15,7 @@ export const fetchFullEventPledges = (eventId: string) =>
 export const useEvents = (filter: 'past' | 'upcoming') => {
   return useQuery<EventsUserView[]>({
     queryKey: ['events', filter],
-    queryFn: () => SupabaseEventRepository.fetchUserEvents(filter),
+    queryFn: () => SupabaseEventRepository.fetchUserEvents(filter)
   });
 };
 
@@ -171,11 +171,13 @@ export const useUpsetBringPledges = () => {
       }
       return { previousBringOverview, previousFullPledges };
     },
-    onError: (err, variables, context) => {
-      logger.error('Event pledges could not be upserted', {
-        event: variables.event,
-        items: variables.items,
-        error: err,
+    onError: (error, variables, context) => {
+      captureException(error, {
+        extra: {
+          ...error,
+          ...variables
+        },
+        tags: { type: 'UpsertBringPledges', scope: 'events' },
       });
       if (context?.previousBringOverview) {
         queryClient.setQueryData(['events', variables.event, 'bringOverview'], context.previousBringOverview);
@@ -266,14 +268,16 @@ export const useUpdateAttendanceMutation = (fetchMode: 'past' | 'upcoming') => {
 
       return { previousEvents, previousAttendance, event };
     },
-    onError: (err, variables, context) => {
-      logger.error('Attendance update failed.', {
-        event: variables.event.id,
-        eventDate: format(variables.event.startingDateTime, 'dd.MM.yyyy HH:mm'),
-        userId: variables.user.id,
-        userEmail: variables.user.email,
-        newState: variables.newState,
-        error: err,
+    onError: (error, variables, context) => {
+      captureException(error, {
+        extra: {
+          event: variables.event.id,
+          eventDate: format(variables.event.startingDateTime, 'dd.MM.yyyy HH:mm'),
+          error,
+          userId: variables.user.id,
+          userName: variables.user.name
+        },
+        tags: { type: 'UpdateEventAttendanc', scope: 'events' },
       });
       if (context?.previousEvents) {
         queryClient.setQueryData(['events', fetchMode], context.previousEvents);
@@ -284,13 +288,6 @@ export const useUpdateAttendanceMutation = (fetchMode: 'past' | 'upcoming') => {
     },
 
     onSettled: (_data, _error, variables, _context) => {
-      logger.info('Attendance update successful.', {
-        event: variables.event.id,
-        eventDate: format(variables.event.startingDateTime, 'dd.MM.yyyy HH:mm'),
-        userId: variables.user.id,
-        userEmail: variables.user.email,
-        newState: variables.newState,
-      });
       queryClient.invalidateQueries({ queryKey: ['events', fetchMode] });
       queryClient.invalidateQueries({ queryKey: ['events', variables.event.id!, 'attendance'] });
     },
@@ -361,14 +358,17 @@ export const useAddCommentMutation = (user: User) => {
 
       return { previousComments, eventId: event.id };
     },
-    onError: (err, variables, context) => {
-      logger.error('Event comment failed.', {
-        event: variables.event.id,
-        eventDate: format(variables.event.startingDateTime, 'dd.MM.yyyy HH:mm'),
-        userId: user.id,
-        userEmail: user.email,
-        comment: variables.comment,
-        error: err,
+    onError: (error, variables, context) => {
+      captureException(error, {
+        extra: {
+          event: variables.event.id,
+          eventDate: format(variables.event.startingDateTime, 'dd.MM.yyyy HH:mm'),
+          error,
+          comment: variables.comment,
+          userId: user.id,
+          userName: user.name
+        },
+        tags: { type: 'AddEventComment', scope: 'events' },
       });
       if (context?.previousComments) {
         queryClient.setQueryData(['events', context.eventId, 'comments'], context.previousComments);
@@ -376,13 +376,6 @@ export const useAddCommentMutation = (user: User) => {
     },
 
     onSettled: (_data, _error, variables, context) => {
-      logger.info('Event comment successful.', {
-        event: variables.event.id,
-        eventDate: format(variables.event.startingDateTime, 'dd.MM.yyyy HH:mm'),
-        userId: user.id,
-        userEmail: user.email,
-        comment: variables.comment,
-      });
       if (context?.eventId) queryClient.invalidateQueries({ queryKey: ['events', context.eventId, 'comments'] });
     },
   });
@@ -425,14 +418,14 @@ export const useCancelTrainingMutation = (fetchMode: 'past' | 'upcoming') => {
 
       return { previousEvents, previousEvent, event };
     },
-    onError: (err, variables, context) => {
-      logger.error('event_cancellation_failed', {
-        type: 'event_cancellation',
-        message: 'event_cancellation_failed',
-        origin: 'ui',
-        event: variables.event.id,
-        eventDate: format(variables.event.startingDateTime, 'dd.MM.yyyy HH:mm'),
-        error: err,
+    onError: (error, variables, context) => {
+      captureException(error, {
+        extra: {
+          event: variables.event.id,
+          eventDate: format(variables.event.startingDateTime, 'dd.MM.yyyy HH:mm'),
+          error,
+        },
+        tags: { type: 'CancelEvent', scope: 'events' },
       });
       if (context?.previousEvents) {
         queryClient.setQueryData(['events', fetchMode], context.previousEvents);
@@ -443,13 +436,6 @@ export const useCancelTrainingMutation = (fetchMode: 'past' | 'upcoming') => {
     },
 
     onSettled: (_data, _error, variables, _context) => {
-      logger.info('event_cancellation_successful', {
-        type: 'event_cancellation',
-        message: 'event_cancellation_successful',
-        origin: 'ui',
-        event: variables.event.id,
-        eventDate: format(variables.event.startingDateTime, 'dd.MM.yyyy HH:mm'),
-      });
       queryClient.invalidateQueries({ queryKey: ['events', fetchMode] });
       queryClient.invalidateQueries({ queryKey: ['events', variables.event.id!] });
     },
@@ -485,30 +471,24 @@ export const useDeleteTrainingMutation = (fetchMode: 'past' | 'upcoming') => {
 
       return { previousEvents, event };
     },
-    onError: (_err, _vars, context) => {
-      logger.error('event_deletion_failed', {
-        type: 'event_deletion',
-        message: 'event_deletion_failed',
-        origin: 'ui',
-        error: JSON.stringify(_err),
-        event: _vars.event.id,
-        user: JSON.stringify(_vars.currentUser),
-        eventDate: format(_vars.event.startingDateTime, 'dd.MM.yyyy HH:mm'),
+    onError: (error, variables, context) => {
+      captureException(error, {
+        extra: {
+          fetchMode: fetchMode,
+          event: variables.event.id,
+          eventDate: format(variables.event.startingDateTime, 'dd.MM.yyyy HH:mm'),
+          userId: variables.currentUser.id,
+          userName: variables.currentUser.name,
+          error,
+        },
+        tags: { type: 'DeleteEvent', scope: 'events' },
       });
       if (context?.previousEvents) {
         queryClient.setQueryData(['events', fetchMode], context.previousEvents);
       }
     },
 
-    onSettled: (_data, _error, variables, _context) => {
-      logger.info('event_deletion_successful', {
-        type: 'event_deletion',
-        message: 'event_deletion_successful',
-        origin: 'ui',
-        event: variables.event.id,
-        user: JSON.stringify(variables.currentUser),
-        eventDate: format(variables.event.startingDateTime, 'dd.MM.yyyy HH:mm'),
-      });
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ['events', fetchMode] });
     },
   });

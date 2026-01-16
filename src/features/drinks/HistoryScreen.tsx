@@ -26,7 +26,7 @@ export const HistoryScreen = ({
   const [editHistoryEntryOpen, setEditHistoryEntryOpen] = useState<boolean>(false);
   const [historyEntryToEdit, setHistoryEntryToEdit] = useState<FullHistory | null>(null);
 
-  const updateEntry = useUpdateHistoryEntryMutation(user.id);
+  const updateEntry = useUpdateHistoryEntryMutation(user);
 
   const handleEntryUpdate = (newEntry: FullHistory) => {
     updateEntry.mutate(newEntry, {

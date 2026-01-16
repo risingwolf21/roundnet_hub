@@ -12,8 +12,7 @@ export const queryClient = new QueryClient({
     mutations: { retry: 1 },
   },
   mutationCache: new MutationCache({
-    onError: (err, _variables, _context, mutation) => {
-      console.log('Mutation error', err);
+    onError: (err, variables, context, mutation) => {
       withScope((scope) => {
         scope.setContext('mutation', {
           mutationId: mutation.mutationId,
@@ -25,7 +24,13 @@ export const queryClient = new QueryClient({
             Array.from(mutation.options.mutationKey) as string[]
           );
         }
-        captureException(err);
+        captureException(err, {
+          extra: {
+            variables,
+            context,
+            mutation
+          }
+        });
       });
     },
   }),

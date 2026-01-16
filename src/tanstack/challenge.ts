@@ -3,6 +3,7 @@ import { supabase } from '@/lib/supabase';
 import { fetchChallengeWithGroup } from '@/repository/ChallengeRepository';
 import { ChallengePointsView, ChallengeStatWithUser } from '@/types/supabaseTypes';
 import { formatDateToDatabase, formatSafeDateToDatabase } from '@/utils';
+import { captureException } from '@sentry/react';
 import { InfiniteData, useInfiniteQuery, useMutation, useQuery } from '@tanstack/react-query';
 
 export const useInfiniteChallengeStats = (challengeId: string, count: number = 20) =>
@@ -90,15 +91,15 @@ export const useArchivedChallenges = () =>
     initialPageParam: 0,
   });
 
-export const useChallengeStatsForUser = (challengeId: string, userId: string) =>
+export const useChallengeStatsForUser = (challengeId: string, user: User) =>
   useQuery<ChallengeStats[]>({
-    queryKey: ['challenge', challengeId, 'stats', userId],
+    queryKey: ['challenge', challengeId, 'stats', user.id],
     queryFn: async () => {
       const result = await supabase
         .from('challenge_stats')
         .select('*')
         .eq('challenge', challengeId)
-        .eq('user', userId)
+        .eq('user', user.id)
         .throwOnError();
 
       return result.data ?? [];
@@ -110,7 +111,7 @@ export const useIncreasePointForUserMutation = (challengeId: string) =>
     mutationFn: async ({
       challenge,
       created_at,
-      image_url,
+      image_url
     }: {
       user: User;
       challenge: string;
@@ -161,13 +162,13 @@ export const useIncreasePointForUserMutation = (challengeId: string) =>
         const newStats: InfiniteData<ChallengeStatWithUser[]> =
           previousStats.pages.length === 0
             ? {
-                ...previousStats,
-                pages: [[newStat]],
-              }
+              ...previousStats,
+              pages: [[newStat]],
+            }
             : {
-                ...previousStats,
-                pages: previousStats.pages.map((x, index) => (index === 0 && Array.isArray(x) ? [...x, newStat] : x)),
-              };
+              ...previousStats,
+              pages: previousStats.pages.map((x, index) => (index === 0 && Array.isArray(x) ? [...x, newStat] : x)),
+            };
 
         queryClient.setQueryData<InfiniteData<ChallengeStatWithUser[]>>(['challenge', challengeId, 'stats'], newStats);
       }
@@ -199,7 +200,16 @@ export const useIncreasePointForUserMutation = (challengeId: string) =>
 
       return { previousLeaderboard, previousStats, previousStatsForUser };
     },
-    onError: (_err, _vars, context) => {
+    onError: (error, variables, context) => {
+      captureException(error, {
+        extra: {
+          ...error,
+          userId: variables.user.id,
+          userName: variables.user.name,
+          challengeId: variables.challenge
+        },
+        tags: { type: 'IncreaseChallengePoint', scope: 'challenge' },
+      });
       if (context?.previousLeaderboard) {
         queryClient.setQueryData(['challenge', challengeId, 'leaderboard'], context.previousLeaderboard);
       }
@@ -207,7 +217,7 @@ export const useIncreasePointForUserMutation = (challengeId: string) =>
         queryClient.setQueryData(['challenge', challengeId, 'stats'], context.previousStats);
       }
       if (context?.previousStatsForUser) {
-        queryClient.setQueryData(['challenge', challengeId, 'stats', _vars.user.id], context.previousStatsForUser);
+        queryClient.setQueryData(['challenge', challengeId, 'stats', variables.user.id], context.previousStatsForUser);
       }
     },
     onSettled: (_data, _error, variables, _context) => {

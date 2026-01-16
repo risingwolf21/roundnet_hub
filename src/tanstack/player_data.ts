@@ -1,5 +1,6 @@
 import { queryClient } from '@/lib/queryClient';
 import { supabase } from '@/lib/supabase';
+import { captureException } from '@sentry/react';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { GamesTableUpdate } from '../types/supabaseTypes';
 
@@ -47,12 +48,21 @@ export const useUpdatePlayer = (user: User) =>
 
       return { previousPlayer };
     },
-    onError: (_e, _v, context) => {
+    onError: (error, variables, context) => {
+      captureException(error, {
+        extra: {
+          userName: user.name,
+          userId: user.id,
+          ...error,
+          ...variables
+        },
+        tags: { type: 'UpdatePlayer', scope: 'games' },
+      });
       if (context?.previousPlayer) {
         queryClient.setQueryData(['player_data', user.id], context.previousPlayer);
       }
     },
-    onSettled: (_d, _e, _v, _context) => {
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ['player_data', user.id] });
     },
   });
@@ -85,12 +95,21 @@ export const useUpdateIndexHidden = (user: User) =>
 
       return { previousPlayer };
     },
-    onError: (_e, _v, context) => {
+    onError: (error, variables, context) => {
+      captureException(error, {
+        extra: {
+          userName: user.name,
+          userId: user.id,
+          ...error,
+          ...variables
+        },
+        tags: { type: 'UpdateIndexHidden', scope: 'games' },
+      });
       if (context?.previousPlayer) {
         queryClient.setQueryData(['player_data', user.id], context.previousPlayer);
       }
     },
-    onSettled: (_d, _e, _v, _context) => {
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ['player_data', user.id] });
     },
   });
