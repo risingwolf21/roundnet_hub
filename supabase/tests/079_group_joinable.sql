@@ -23,9 +23,8 @@ SELECT is( (SELECT * FROM public.is_group_public_joinable(:'grp'::uuid)),
 
 SELECT tests.authenticate_as('user_2a');
 
-INSERT INTO public.group_user_mapping("user","group","role") VALUES
-  (tests.get_supabase_uid('user_2a'), :'grp1', 'user')
-ON CONFLICT DO NOTHING;
+SELECT is( !(SELECT * FROM public.is_group_public_joinable(:'grp1'::uuid)),
+           TRUE, 'Main Group is joinable');
 
 SELECT * FROM finish();
 ROLLBACK;
