@@ -1,6 +1,6 @@
 BEGIN;
 \i 000_setup_tests_users.inc
-SELECT plan(1);
+SELECT plan(2);
 
 \set grp   '00000000-0000-0000-0000-000000000004'
 \set grp1   '00000000-0000-0000-0000-000000000005'
@@ -23,7 +23,7 @@ SELECT is( (SELECT * FROM public.is_group_public_joinable(:'grp'::uuid)),
 
 SELECT tests.authenticate_as('user_2a');
 
-SELECT is( !(SELECT * FROM public.is_group_public_joinable(:'grp1'::uuid)),
+SELECT is( NOT (SELECT * FROM public.is_group_public_joinable(:'grp1'::uuid)),
            TRUE, 'Main Group is joinable');
 
 SELECT * FROM finish();
