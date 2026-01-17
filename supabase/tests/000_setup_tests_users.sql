@@ -1,3 +1,5 @@
+BEGIN;
+SELECT no_plan();
 
 select tests.create_supabase_user('user_1a', 'user_1a@test.com');
 select tests.create_supabase_user('user_2a', 'user_2a@test.com');
