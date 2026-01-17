@@ -1,5 +1,5 @@
 BEGIN;
-\i 000_setup_tests_users.inc
+
 SELECT plan(2);
 
 \set grp   '00000000-0000-0000-0000-000000000004'

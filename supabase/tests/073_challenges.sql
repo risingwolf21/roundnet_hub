@@ -5,7 +5,7 @@ SET LOCAL TIME ZONE 'UTC';
 SELECT plan(18);
 
 -- Test helpers + users
-\i 000_setup_tests_users.inc
+
 
 -- === Groups & permissions setup ===========================================
 

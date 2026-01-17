@@ -1,5 +1,5 @@
 BEGIN;
-\i 000_setup_tests_users.inc
+
 SELECT plan(4);
 
 \set u '00000000-0000-0000-0000-000000000001'

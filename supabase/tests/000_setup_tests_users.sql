@@ -1,19 +1,4 @@
 
-DO $$
-BEGIN
-  IF EXISTS (SELECT 1 FROM pg_available_extensions WHERE name='supabase-dbdev') THEN
-    IF NOT EXISTS (SELECT 1 FROM pg_extension WHERE extname='supabase-dbdev') THEN
-      EXECUTE 'CREATE EXTENSION "supabase-dbdev" WITH SCHEMA extensions';
-    END IF;
-  END IF;
-
-  IF EXISTS (SELECT 1 FROM pg_available_extensions WHERE name='basejump-supabase_test_helpers') THEN
-    IF NOT EXISTS (SELECT 1 FROM pg_extension WHERE extname='basejump-supabase_test_helpers') THEN
-      EXECUTE 'CREATE EXTENSION "basejump-supabase_test_helpers" WITH SCHEMA extensions';
-    END IF;
-  END IF;
-END $$;
-
 select tests.create_supabase_user('user_1a', 'user_1a@test.com');
 select tests.create_supabase_user('user_2a', 'user_2a@test.com');
 select tests.create_supabase_user('user_1b', 'user_1b@test.com');
