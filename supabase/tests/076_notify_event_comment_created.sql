@@ -1,6 +1,6 @@
 -- file: tests/notify_event_comment_created.sql
 BEGIN;
-\i 000_setup_tests_users.sql
+
 SET LOCAL TIME ZONE 'UTC';
 
 -- pgTAP

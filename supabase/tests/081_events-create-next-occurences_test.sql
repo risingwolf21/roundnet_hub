@@ -1,7 +1,7 @@
 BEGIN;
 SET LOCAL TIME ZONE 'UTC';
 SELECT plan(11);
-\i 000_setup_tests_users.sql
+
 
 CREATE TEMP TABLE _vars (base_event uuid);
 

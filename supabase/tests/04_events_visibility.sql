@@ -1,5 +1,5 @@
 BEGIN;
-\i 000_setup_tests_users.sql
+
 SET LOCAL TIME ZONE 'UTC';
 SELECT plan(2);
 
