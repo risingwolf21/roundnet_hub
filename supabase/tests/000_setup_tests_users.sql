@@ -1,4 +1,6 @@
-BEGIN;
+-- file: tests/000_setup_tests_users.sql
+
+SELECT plan(0);
 
 select tests.create_supabase_user('user_1a', 'user_1a@test.com');
 select tests.create_supabase_user('user_2a', 'user_2a@test.com');
@@ -61,5 +63,3 @@ VALUES ('00000000-0000-0000-0000-000000000044','items.manage'),
 ('00000000-0000-0000-0000-000000000044','challenge.manage'),
 ('00000000-0000-0000-0000-000000000044','event.edit')
        ON CONFLICT DO NOTHING;
-
-COMMIT;
