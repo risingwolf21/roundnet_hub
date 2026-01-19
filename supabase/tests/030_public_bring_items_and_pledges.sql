@@ -1,6 +1,6 @@
 -- 030_public_bring_items_and_pledges.sql (angepasst)
 BEGIN;
-
+\i 000_setup_tests_users.inc
 SET LOCAL TIME ZONE 'UTC';
 SELECT plan(7);
 

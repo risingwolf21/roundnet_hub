@@ -1,6 +1,6 @@
 -- pg_prove -d "$DATABASE_URL" test/insert_event_with_bring_items.sql
 BEGIN;
-
+\i 000_setup_tests_users.inc
 -- Simulierter Auth-Context, damit auth.uid() in der Funktion nicht NULL ist
 -- und "created_by" (NOT NULL) erfüllt wird.
 SELECT tests.authenticate_as('user_1a');
