@@ -5154,10 +5154,10 @@ react-dom@19.0.0:
   dependencies:
     scheduler "^0.25.0"
 
-react-easy-crop@5.5.3:
-  version "5.5.3"
-  resolved "https://registry.yarnpkg.com/react-easy-crop/-/react-easy-crop-5.5.3.tgz#d7f2f7fe628218b4ed7b0e42d5d32a5d22cc3f42"
-  integrity sha512-iKwFTnAsq+IVuyF6N0Q3zjRx9DG1NMySkwWxVfM/xAOeHYH1vhvM+V2kFiq5HOIQGWouITjfltCx54mbDpMpmA==
+react-easy-crop@5.5.6:
+  version "5.5.6"
+  resolved "https://registry.yarnpkg.com/react-easy-crop/-/react-easy-crop-5.5.6.tgz#1a1ea3a90f83559d93b0636a5d984df143b40fe4"
+  integrity sha512-Jw3/ozs8uXj3NpL511Suc4AHY+mLRO23rUgipXvNYKqezcFSYHxe4QXibBymkOoY6oOtLVMPO2HNPRHYvMPyTw==
   dependencies:
     normalize-wheel "^1.0.1"
     tslib "^2.0.1"
