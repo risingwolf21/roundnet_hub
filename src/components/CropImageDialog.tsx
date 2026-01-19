@@ -53,16 +53,18 @@ const CropImageDialog = ({ open, handleClose, selectedImage, onImageCropFinished
             </Button>
           </Toolbar>
         </AppBar>
-        <Cropper
-          image={selectedImage}
-          crop={crop}
-          zoom={zoom}
-          rotation={rotation}
-          aspect={1 / 1}
-          onCropChange={setCrop}
-          onCropComplete={onCropComplete}
-          onZoomChange={setZoom}
-        />
+        <Box sx={{ position: "relative", width: "100%", height: "calc(100dvh - 64px)", background: "#333" }}>
+          <Cropper
+            image={selectedImage}
+            crop={crop}
+            zoom={zoom}
+            rotation={rotation}
+            aspect={1 / 1}
+            onCropChange={setCrop}
+            onCropComplete={onCropComplete}
+            onZoomChange={setZoom}
+          />
+        </Box>
       </Box>
     </Dialog>
   );
