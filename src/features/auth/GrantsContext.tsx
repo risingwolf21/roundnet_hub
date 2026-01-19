@@ -41,7 +41,7 @@ export function GrantsProvider({ user, children }: Props) {
     [user, grantsQuery, signOut]
   );
 
-  if (grantsQuery.isEmpty && grantsQuery.loading) return <LoadingScreen />;
+  if (grantsQuery.loading) return <LoadingScreen />;
 
   return <GrantsContext value={value}>{children}</GrantsContext>;
 }

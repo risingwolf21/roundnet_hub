@@ -5,6 +5,7 @@ import { queryClient } from '@/lib/queryClient';
 import { supabase } from '@/lib/supabase';
 import { captureException, setUser } from '@sentry/react';
 import { Session } from '@supabase/supabase-js';
+import { useQuery } from '@tanstack/react-query';
 import React, { useCallback, useEffect, useState } from 'react';
 import { SupabaseUserRepository } from '../../repository/UserRepository';
 import { UserWithGroups } from '../../types/supabaseTypes';
@@ -15,9 +16,31 @@ export const AuthGate = () => {
   const deviceId = useDeviceId();
 
   const [session, setSession] = useState<Session | null>(null);
-  const [currentUser, setCurrentUser] = useState<UserWithGroups | null>(null);
   const [loading, setLoading] = useState(false);
   const [provider_token, setProviderToken] = useState<string | null>(null);
+
+  const { data: currentUser = null } = useQuery({
+    queryKey: ['current-user', session?.user.id],
+    enabled: !!session,
+    queryFn: async () => {
+      if (!session) return null;
+      const [{ data: user, error }, groups] = await Promise.all([
+        SupabaseUserRepository.fetchUser(session.user.id),
+        SupabaseUserRepository.fetchGroupsForUser(session.user.id),
+      ]);
+      if (error) {
+        captureException(error);
+        return null;
+      }
+
+      const userData: UserWithGroups = {
+        ...user,
+        groups,
+      };
+      setProviderToken(session.user.user_metadata['provider_token']);
+      return userData;
+    },
+  })
 
   const signOut = async () => {
     try {
@@ -41,39 +64,19 @@ export const AuthGate = () => {
   const reset = useCallback(() => {
     setLoading(false);
     setUser(null);
-    setCurrentUser(null);
+    queryClient.invalidateQueries({ queryKey: ['current-user'] });
     setProviderToken(null);
   }, []);
 
-  const fetchUserData = useCallback(async (session: Session) => {
-    try {
-      const [{ data: user, error }, groups] = await Promise.all([
-        SupabaseUserRepository.fetchUser(session.user.id),
-        SupabaseUserRepository.fetchGroupsForUser(session.user.id),
-      ]);
-      if (error) {
-        captureException(error);
-        return;
-      }
-
-      const userData: UserWithGroups = {
-        ...user,
-        groups,
-      };
-      setProviderToken(session.user.user_metadata['provider_token']);
-      setUser({ email: session.user.email, id: session.user.id, username: user.displayName });
-      setCurrentUser(userData);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
 
   useEffect(() => {
     if (!session) {
       reset();
     } else if (!loading && (!currentUser || session.user.id !== currentUser?.id)) {
       setLoading(true);
-      fetchUserData(session);
+      queryClient.refetchQueries({ queryKey: ['current-user', session.user.id] }).finally(() => {
+        setLoading(false);
+      });
     }
   }, [session]);
 
