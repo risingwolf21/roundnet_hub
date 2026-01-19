@@ -1,6 +1,6 @@
 -- 02_games_elo_core.sql
 BEGIN;
-\i 000_setup_tests_users.inc
+\i 000_setup_tests_users.sql
 SET LOCAL TIME ZONE 'UTC';
 SELECT plan(9);
 

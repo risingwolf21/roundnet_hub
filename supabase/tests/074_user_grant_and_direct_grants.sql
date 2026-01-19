@@ -4,7 +4,7 @@ BEGIN;
 SET LOCAL TIME ZONE 'UTC';
 
 -- Helper + Aliase/Logins
-\i 000_setup_tests_users.inc
+\i 000_setup_tests_users.sql
 
 -- Plan dynamisch: +2 wenn group_features existiert
 WITH hasf AS (SELECT to_regclass('public.group_features') IS NOT NULL AS has)

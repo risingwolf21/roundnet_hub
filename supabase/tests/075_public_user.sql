@@ -2,7 +2,7 @@ BEGIN;
 SET LOCAL TIME ZONE 'UTC';
 
 -- Helper + Aliase/Logins
-\i 000_setup_tests_users.inc
+\i 000_setup_tests_users.sql
 
 select plan(2);
 

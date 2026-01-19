@@ -1,7 +1,7 @@
 -- 073_challenges_policies_test.sql
 BEGIN;
 SET LOCAL TIME ZONE 'UTC';
-\i 000_setup_tests_users.inc
+\i 000_setup_tests_users.sql
 SELECT plan(18);
 
 -- Test helpers + users
