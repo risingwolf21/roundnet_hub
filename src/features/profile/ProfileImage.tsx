@@ -17,6 +17,7 @@ import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import CircularProgress from '@mui/material/CircularProgress';
 import Container from '@mui/material/Container';
+import { useDialogs } from '@toolpad/core';
 
 type Props = {
   user: User;
@@ -24,11 +25,10 @@ type Props = {
 
 export const ProfileImage = ({ user }: Props) => {
   const notifications = useNotifications();
+  const dialogs = useDialogs();
 
   const [loadingSave, setLoadingSave] = useState(false);
-  const [selectedImage, setSelectedImage] = useState<string | ArrayBuffer | null>(null);
   const [croppedImage, setCroppedImage] = useState<string | null>(null);
-  const [cropImageDialogOpen, setCropImageDialogOpen] = useState(false);
   const [currentUser, setCurrentUser] = useState(user);
 
   const handleSubmit = async () => {
@@ -88,10 +88,11 @@ export const ProfileImage = ({ user }: Props) => {
     if (!event.target.files || event.target.files.length === 0) return;
 
     const imageDataUrl = await readFile(event.target.files[0]);
-    setSelectedImage(imageDataUrl);
-    setCropImageDialogOpen(true);
     event.target.files = null;
     event.target.value = '';
+
+    const result = await dialogs.open(CropImageDialog, { selectedImage: imageDataUrl as string });
+    setCroppedImage(result);
   };
 
   return (
@@ -173,17 +174,6 @@ export const ProfileImage = ({ user }: Props) => {
             Rückgängig
           </Button>
         </Box>
-      )}
-      {selectedImage && typeof selectedImage === 'string' && (
-        <CropImageDialog
-          open={cropImageDialogOpen}
-          handleClose={() => setCropImageDialogOpen(false)}
-          selectedImage={selectedImage}
-          onImageCropFinished={(img) => {
-            setCroppedImage(img);
-            setCropImageDialogOpen(false);
-          }}
-        />
       )}
     </Container>
   );

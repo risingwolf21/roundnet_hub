@@ -9,15 +9,9 @@ import Dialog from '@mui/material/Dialog';
 import IconButton from '@mui/material/IconButton';
 import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
+import { DialogProps } from '@toolpad/core';
 
-type CropImageDialogProps = {
-  open: boolean;
-  handleClose: () => void;
-  selectedImage: string;
-  onImageCropFinished: (value: string | null) => void;
-};
-
-const CropImageDialog = ({ open, handleClose, selectedImage, onImageCropFinished }: CropImageDialogProps) => {
+const CropImageDialog = ({ open, onClose, payload: { selectedImage } }: DialogProps<{ selectedImage: string }, string | null>) => {
   const [crop, setCrop] = useState({ x: 0, y: 0 });
   const [zoom, setZoom] = useState(1);
   const rotation = 0;
@@ -30,19 +24,19 @@ const CropImageDialog = ({ open, handleClose, selectedImage, onImageCropFinished
   const cropImage = async () => {
     try {
       const croppedImage = await getCroppedImg(selectedImage, croppedAreaPixels, rotation);
-      onImageCropFinished(croppedImage);
+      onClose(croppedImage);
     } catch (e) {
       console.error('cropImage error', e);
-      onImageCropFinished(null);
+      onClose(null);
     }
   };
 
   return (
-    <Dialog fullScreen open={open} onClose={handleClose}>
+    <Dialog fullScreen open={open} onClose={() => onClose(null)}>
       <Box>
         <AppBar position="sticky" sx={{ pt: 'env(safe-area-inset-top)' }}>
           <Toolbar>
-            <IconButton edge="start" color="inherit" onClick={handleClose} aria-label="close">
+            <IconButton edge="start" color="inherit" onClick={() => onClose(null)} aria-label="close">
               <CloseIcon />
             </IconButton>
             <Typography sx={{ ml: 2, flex: 1 }} variant="h6" component="div">
@@ -58,6 +52,8 @@ const CropImageDialog = ({ open, handleClose, selectedImage, onImageCropFinished
             image={selectedImage}
             crop={crop}
             zoom={zoom}
+            minZoom={1}
+            maxZoom={5}
             rotation={rotation}
             aspect={1 / 1}
             onCropChange={setCrop}
