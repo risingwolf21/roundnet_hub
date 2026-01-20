@@ -19,7 +19,7 @@ export const AuthGate = () => {
   const [loading, setLoading] = useState(false);
   const [provider_token, setProviderToken] = useState<string | null>(null);
 
-  const { data: currentUser = null } = useQuery({
+  const { data: currentUser = null, isFetching } = useQuery({
     queryKey: ['current-user', session?.user.id],
     enabled: !!session,
     queryFn: async () => {
@@ -37,6 +37,7 @@ export const AuthGate = () => {
         ...user,
         groups,
       };
+      setUser({ email: userData.email, id: userData.id, username: userData.name });
       setProviderToken(session.user.user_metadata['provider_token']);
       return userData;
     },
@@ -100,7 +101,7 @@ export const AuthGate = () => {
     };
   }, []);
 
-  if (loading) return <LoadingScreen />;
+  if (loading || isFetching) return <LoadingScreen />;
 
   return (
     <ApplicationContext

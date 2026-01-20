@@ -1,4 +1,4 @@
-import { captureException, withScope } from '@sentry/react';
+import { captureException } from '@sentry/react';
 import { MutationCache, QueryCache, QueryClient } from '@tanstack/react-query';
 
 export const queryClient = new QueryClient({
@@ -13,7 +13,7 @@ export const queryClient = new QueryClient({
   },
   mutationCache: new MutationCache({
     onError: (err, variables, context, mutation) => {
-      withScope((scope) => {
+      captureException(err, (scope) => {
         scope.setContext('mutation', {
           mutationId: mutation.mutationId,
           variables: mutation.state.variables,
@@ -24,21 +24,17 @@ export const queryClient = new QueryClient({
             Array.from(mutation.options.mutationKey) as string[]
           );
         }
-        captureException(err, {
-          extra: {
-            variables,
-            context,
-            mutation
-          }
-        });
+        scope.setExtra('variables', variables);
+        scope.setExtra('context', context);
+        return scope;
       });
     },
   }),
   queryCache: new QueryCache({
     onError: (err, query) => {
-      withScope((scope) => {
+      captureException(err, (scope) => {
         scope.setContext('query', { queryHash: query.queryHash });
-        captureException(err);
+        return scope;
       });
     },
   }),
