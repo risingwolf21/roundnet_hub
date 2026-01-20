@@ -7,7 +7,7 @@ import LocalDrinkIcon from '@mui/icons-material/LocalDrink';
 import Checkbox from '@mui/material/Checkbox';
 import { Box } from '@mui/system';
 import { uuid } from '@supabase/supabase-js/dist/main/lib/helpers';
-import { FormEvent, useEffect, useState } from 'react';
+import { FormEvent, useState } from 'react';
 import CropImageDialog from '../../../components/CropImageDialog';
 import { dataURLtoFile, readFile } from '../../../utils';
 
@@ -25,6 +25,7 @@ import ListSubheader from '@mui/material/ListSubheader';
 import TextField from '@mui/material/TextField';
 import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
+import { useDialogs } from '@toolpad/core';
 
 type EditDrinkDialogProps = {
   drink: Drink;
@@ -35,16 +36,12 @@ type EditDrinkDialogProps = {
 };
 
 const EditDrinkDialog = ({ drink, onDrinkEditFinished, open, handleClose, drinkHistory }: EditDrinkDialogProps) => {
-  useEffect(() => {
-    setActiveDrink(drink.active);
-  }, [drink]);
 
-  // image cropping
-  const [selectedImage, setSelectedImage] = useState<string | ArrayBuffer | null>(null);
+  const dialogs = useDialogs();
+
   const [croppedImage, setCroppedImage] = useState<string | null>(null);
 
-  const [cropImageDialogOpen, setCropImageDialogOpen] = useState(false);
-  const [activeDrink, setActiveDrink] = useState<boolean>(false);
+  const [activeDrink, setActiveDrink] = useState<boolean>(drink.active);
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -81,7 +78,6 @@ const EditDrinkDialog = ({ drink, onDrinkEditFinished, open, handleClose, drinkH
       }
 
       setCroppedImage(null);
-      setSelectedImage(null);
       onDrinkEditFinished(newDrink as Drink);
     }
   };
@@ -171,8 +167,8 @@ const EditDrinkDialog = ({ drink, onDrinkEditFinished, open, handleClose, drinkH
                     onChange={async (event) => {
                       if (!event.target.files || event.target.files.length === 0) return;
                       const imageDataUrl = await readFile(event.target.files[0]);
-                      setSelectedImage(imageDataUrl);
-                      setCropImageDialogOpen(true);
+                      const result = await dialogs.open(CropImageDialog, { selectedImage: imageDataUrl as string });
+                      setCroppedImage(result);
                     }}
                   />
                 </Button>
@@ -211,7 +207,7 @@ const EditDrinkDialog = ({ drink, onDrinkEditFinished, open, handleClose, drinkH
                   .sort((a, b) => b.id - a.id)
                   .map((x, index) => {
                     return (
-                      <ListItem key={'drinkHistory' + index}>
+                      <ListItem key={'drinkHistory' + x.id}>
                         <ListItemAvatar>{index === 0 && <Check />}</ListItemAvatar>
                         <ListItemText primary={x.name} secondary={x.price + ' €'} />
                       </ListItem>
@@ -221,17 +217,6 @@ const EditDrinkDialog = ({ drink, onDrinkEditFinished, open, handleClose, drinkH
           </List>
         </Box>
       </Dialog>
-      {selectedImage && typeof selectedImage === 'string' && (
-        <CropImageDialog
-          open={cropImageDialogOpen}
-          handleClose={() => setCropImageDialogOpen(false)}
-          selectedImage={selectedImage}
-          onImageCropFinished={(img) => {
-            setCroppedImage(img);
-            setCropImageDialogOpen(false);
-          }}
-        />
-      )}
     </Box>
   );
 };
