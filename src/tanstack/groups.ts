@@ -3,6 +3,7 @@ import { supabase } from '@/lib/supabase';
 import { GroupsRepository } from '@/repository/GroupsRepository';
 import { TablesUpdate } from '@/types/supabase-generated.types';
 import { FullUserMapping, GroupWithUserMappings } from '@/types/supabaseTypes';
+import { captureException } from '@sentry/react';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { Omit } from 'lodash';
 
@@ -10,10 +11,11 @@ export const useRequestedUsersPerGroup = (me: User) =>
   useQuery<GroupUserMapping[]>({
     queryKey: ['groups', 'joinRequested'],
     queryFn: async () => {
-      const result = await supabase.from('group_user_mapping')
+      const result = await supabase
+        .from('group_user_mapping')
         .select('*')
         .eq('role', 'joinRequested')
-        .neq('user', me.userId);
+        .neq('user', me.id);
 
       return result.data ?? [];
     },
@@ -32,26 +34,29 @@ export const useGroup = (groupId?: string) =>
     queryFn: () => GroupsRepository.fetchSingleGroupWithUsers(groupId),
   });
 
-
 export const useGroupUsers = (role: GroupRole, groupId?: string) =>
   useQuery({
     queryKey: ['group', groupId, role],
     enabled: !!groupId,
     queryFn: async () => {
-      const result = await supabase.from('group_user_mapping').select('*, user: user(*)').eq('group', groupId!).eq('role', role);
+      const result = await supabase
+        .from('group_user_mapping')
+        .select('*, user: user(*)')
+        .eq('group', groupId!)
+        .eq('role', role);
 
       if (result.error) {
         return [];
       }
 
       return result.data;
-    }
+    },
   });
 
 export const useJoinGroup = (groupId: string, user: User, role: 'user' | 'admin' | 'joinRequested') =>
   useMutation({
     mutationFn: async () => {
-      const result = await GroupsRepository.addUserToGroup(groupId, user.userId, role);
+      const result = await GroupsRepository.addUserToGroup(groupId, user.id, role);
 
       if (result.error) {
         throw result.error;
@@ -76,7 +81,7 @@ export const useJoinGroup = (groupId: string, user: User, role: 'user' | 'admin'
               map: {
                 group: groupId,
                 role: role,
-                user: user.userId,
+                user: user.id,
               },
             },
           ],
@@ -96,7 +101,7 @@ export const useJoinGroup = (groupId: string, user: User, role: 'user' | 'admin'
                   map: {
                     group: groupId,
                     role: role,
-                    user: user.userId,
+                    user: user.id,
                   },
                 },
               ],
@@ -108,7 +113,13 @@ export const useJoinGroup = (groupId: string, user: User, role: 'user' | 'admin'
 
       return { prevGroup, prevGroups };
     },
-    onError: (_err, _vars, context) => {
+    onError: (error, _vars, context) => {
+      captureException(error, {
+        extra: {
+          ...error,
+        },
+        tags: { type: 'JoinGroup', scope: 'groups' },
+      });
       queryClient.setQueryData(['group', groupId], context?.prevGroup);
       queryClient.setQueryData(['groups'], context?.prevGroups);
     },
@@ -126,7 +137,7 @@ export const useLeaveGroupMutation = () =>
         .from('group_user_mapping')
         .delete()
         .eq('group', group.id)
-        .eq('user', user.userId)
+        .eq('user', user.id)
         .throwOnError();
       return result.data;
     },
@@ -144,8 +155,15 @@ export const useLeaveGroupMutation = () =>
 
       return { prevGroup, prevGroups };
     },
-    onError: (_err, _vars, context) => {
-      queryClient.setQueryData(['group', _vars.group.id], context?.prevGroup);
+    onError: (error, variables, context) => {
+      captureException(error, {
+        extra: {
+          ...variables,
+          ...error,
+        },
+        tags: { type: 'LeaveGroup', scope: 'groups' },
+      });
+      queryClient.setQueryData(['group', variables.group.id], context?.prevGroup);
       queryClient.setQueryData(['groups'], context?.prevGroups);
     },
     onSuccess: (_data, vars) => {
@@ -156,13 +174,13 @@ export const useLeaveGroupMutation = () =>
 
 export const useChangeUserRoleMutation = () =>
   useMutation({
-    mutationFn: async ({ group, user, new_role }: { group: Group; user: User, new_role: GroupRole }) => {
+    mutationFn: async ({ group, user, new_role }: { group: Group; user: User; new_role: GroupRole }) => {
       const result = await supabase
         .schema('public')
         .from('group_user_mapping')
         .update({ role: new_role })
         .eq('group', group.id)
-        .eq('user', user.userId)
+        .eq('user', user.id)
         .throwOnError();
       return result.data;
     },
@@ -179,13 +197,13 @@ export const useChangeUserRoleMutation = () =>
             return {
               ...x,
               users: x.users.map((y: FullUserMapping) => {
-                if (y.user.userId === user.userId) {
+                if (y.user.id === user.id) {
                   return {
                     ...y,
                     map: {
                       group: group.id,
                       role: new_role,
-                      user: user.userId,
+                      user: user.id,
                     },
                   } as FullUserMapping;
                 }
@@ -202,13 +220,13 @@ export const useChangeUserRoleMutation = () =>
         const newGroup = {
           ...prevGroup,
           users: prevGroup.users.map((y: FullUserMapping) => {
-            if (y.user.userId === user.userId) {
+            if (y.user.id === user.id) {
               return {
                 ...y,
                 map: {
                   group: group.id,
                   role: new_role,
-                  user: user.userId,
+                  user: user.id,
                 },
               } as FullUserMapping;
             }
@@ -220,8 +238,15 @@ export const useChangeUserRoleMutation = () =>
 
       return { prevGroup, prevGroups };
     },
-    onError: (_err, _vars, context) => {
-      queryClient.setQueryData(['group', _vars.group.id], context?.prevGroup);
+    onError: (error, variables, context) => {
+      captureException(error, {
+        extra: {
+          ...variables,
+          ...error,
+        },
+        tags: { type: 'ChangeUserRole', scope: 'groups' },
+      });
+      queryClient.setQueryData(['group', variables.group.id], context?.prevGroup);
       queryClient.setQueryData(['groups'], context?.prevGroups);
     },
     onSuccess: (_data, vars) => {
@@ -242,11 +267,20 @@ export const useCreateGroupMutation = () =>
           need_request: group.need_request_to_join,
           parent: group.parent_group ?? undefined,
           role: 'admin',
-          user_id: user.userId,
+          user_id: user.id,
         })
         .throwOnError();
 
       return result.data!;
+    },
+    onError: (error, variables) => {
+      captureException(error, {
+        extra: {
+          ...variables,
+          ...error,
+        },
+        tags: { type: 'CreateGroup', scope: 'groups' },
+      });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['groups'] });
@@ -297,7 +331,14 @@ export const useUpdateGroupMutation = (groupId?: string) =>
 
       return { prevGroup, prevGroups };
     },
-    onError: (_err, _vars, context) => {
+    onError: (error, variables, context) => {
+      captureException(error, {
+        extra: {
+          ...variables,
+          ...error,
+        },
+        tags: { type: 'CreateGroup', scope: 'groups' },
+      });
       if (groupId) queryClient.setQueryData(['group', groupId], context?.prevGroup);
       queryClient.setQueryData(['groups'], context?.prevGroups);
     },

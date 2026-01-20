@@ -10,17 +10,12 @@ type Props = {
   onRefresh: () => void;
 };
 
-export const PullToRefresh = ({
-  onRefresh,
-  children = null,
-  indicatorSize = 80,
-  maxDrag = 250,
-}: Props) => {
+export const PullToRefresh = ({ onRefresh, children = null, indicatorSize = 80, maxDrag = 250 }: Props) => {
   const ref = useRef<HTMLDivElement>(null);
   const [busy, setBusy] = useState<boolean>(false);
   const [touchStart, setTouchStart] = useState<React.Touch | null>(null);
   const [drag, setDrag] = useState<number>(0);
-  const [isOnTop, setIsOnTop] = useState(true)
+  const [isOnTop, setIsOnTop] = useState(true);
 
   const observerTarget = useRef(null);
 
@@ -28,7 +23,7 @@ export const PullToRefresh = ({
     const current = observerTarget.current;
     const observer = new IntersectionObserver(
       (entries) => {
-        setIsOnTop(entries[0].isIntersecting)
+        setIsOnTop(entries[0].isIntersecting);
       },
       { threshold: 1 }
     );
@@ -57,7 +52,7 @@ export const PullToRefresh = ({
 
   const onTouchStart = (event: React.TouchEvent<HTMLDivElement>) => {
     // check if dialog container exists -> any dialog is open
-    if (document.querySelector(".MuiDialog-container")) return;
+    if (document.querySelector('.MuiDialog-container')) return;
     if (!busy && isOnTop) {
       setTouchStart(event.touches[0]);
     }
@@ -79,7 +74,7 @@ export const PullToRefresh = ({
         setBusy(true);
         setDrag(maxDrag / 2);
         setTouchStart(null);
-        new Promise(resolve => setTimeout(resolve, 1000)).then(onRefresh).finally(reset);
+        new Promise((resolve) => setTimeout(resolve, 1000)).then(onRefresh).finally(reset);
       } else {
         reset();
       }
@@ -91,7 +86,7 @@ export const PullToRefresh = ({
       ref={ref}
       style={{
         overflowY: 'hidden',
-        height: "100%"
+        height: '100%',
       }}
       onTouchStart={onTouchStart}
       onTouchMove={onTouchMove}
@@ -104,31 +99,20 @@ export const PullToRefresh = ({
           display: drag > 0 || busy ? 'flex' : 'none',
           alignItems: 'center',
           justifyContent: 'center',
-          background: "white",
-          backgroundImage: "radial-gradient(#80888888 1px, transparent 0)",
-          backgroundSize: "20px 20px",
-          backgroundPosition: "-19px -19px",
+          background: 'white',
+          backgroundImage: 'radial-gradient(#80888888 1px, transparent 0)',
+          backgroundSize: '20px 20px',
+          backgroundPosition: '-19px -19px',
         }}
       >
-        {
-          busy && <CircularProgress
-            thickness={5}
-            size={30}
-            variant="indeterminate"
-            sx={{ transition: 'none' }}
-          />
-        }
-        {
-          drag < maxDrag * 0.9 && drag > 50 && !busy && <ArrowDownwardIcon />
-        }
-        {
-          drag >= maxDrag * 0.9 && !busy && <ArrowUpwardIcon />
-        }
+        {busy && <CircularProgress thickness={5} size={30} variant="indeterminate" sx={{ transition: 'none' }} />}
+        {drag < maxDrag * 0.9 && drag > 50 && !busy && <ArrowDownwardIcon />}
+        {drag >= maxDrag * 0.9 && !busy && <ArrowUpwardIcon />}
       </div>
-      <div className="scroll-container" style={{ overscrollBehavior: "none", height: "100%" }}>
+      <div className="scroll-container" style={{ overscrollBehavior: 'none', height: '100%' }}>
         <div ref={observerTarget}></div>
         {children}
       </div>
-    </div >
+    </div>
   );
 };

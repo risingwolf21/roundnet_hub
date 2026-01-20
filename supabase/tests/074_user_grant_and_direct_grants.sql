@@ -4,7 +4,7 @@ BEGIN;
 SET LOCAL TIME ZONE 'UTC';
 
 -- Helper + Aliase/Logins
-\i 000_setup_tests_users.inc
+
 
 -- Plan dynamisch: +2 wenn group_features existiert
 WITH hasf AS (SELECT to_regclass('public.group_features') IS NOT NULL AS has)
@@ -22,8 +22,8 @@ CREATE TEMP TABLE _v (
   adminPerm text,
   gname     text,
   tenant    uuid,
-  uidA      text,
-  uidB      text,
+  uidA      uuid,
+  uidB      uuid,
   gid       uuid
 ) ON COMMIT DROP;
 
@@ -37,8 +37,8 @@ SELECT
   'supabase.admin',
   '__test_user_grants_all__' || substr(md5(random()::text),1,8),
   '00000000-0000-0000-0000-000000000000'::uuid,
-  tests.get_supabase_uid('user_1a')::text,
-  tests.get_supabase_uid('user_1b')::text,
+  tests.get_supabase_uid('user_1a'),
+  tests.get_supabase_uid('user_1b'),
   NULL::uuid;
 
 -- Sanity
@@ -312,7 +312,7 @@ SELECT tests.authenticate_as('user_1b');
 SELECT throws_like(
   $q$
     INSERT INTO public.user_direct_grants("user", tenant, kind, key)
-    VALUES (auth.uid()::text, '00000000-0000-0000-0000-000000000000', 'perm', 'perm.forbidden.self');
+    VALUES (auth.uid(), '00000000-0000-0000-0000-000000000000', 'perm', 'perm.forbidden.self');
   $q$,
   '%policy%',
   'uB darf nicht in user_direct_grants schreiben (RLS/ACL greift)'
@@ -322,7 +322,7 @@ SELECT throws_like(
 SELECT ok(
   NOT EXISTS (
     SELECT 1 FROM public.user_grants_view
-    WHERE "user" <> auth.uid()::text
+    WHERE "user" <> auth.uid()
   ),
   'uB sieht in user_grants keine fremden Zeilen (RLS)'
 );
@@ -331,7 +331,7 @@ SELECT ok(
 SELECT ok(
   NOT EXISTS (
     SELECT 1 FROM public.user_direct_grants
-    WHERE "user" <> auth.uid()::text
+    WHERE "user" <> auth.uid()
   ),
   'uB sieht in user_direct_grants keine fremden Zeilen (RLS)'
 );

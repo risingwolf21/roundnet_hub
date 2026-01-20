@@ -1,17 +1,7 @@
 import { supabase } from '@/lib/supabase';
 import { ArrowBack } from '@mui/icons-material';
 import SearchIcon from '@mui/icons-material/Search';
-import {
-  AppBar,
-  Box,
-  Dialog,
-  IconButton,
-  LinearProgress,
-  List,
-  ListItem,
-  ListItemText,
-  Toolbar
-} from '@mui/material';
+import { AppBar, Box, Dialog, IconButton, LinearProgress, List, ListItem, ListItemText, Toolbar } from '@mui/material';
 import { useQuery } from '@tanstack/react-query';
 import { DialogProps } from '@toolpad/core';
 import { useState } from 'react';
@@ -35,7 +25,7 @@ const SearchAndSelectUserDialog = ({
         .schema('public')
         .from('user')
         .select('*')
-        .not('userId', 'in', `(${usersToFilter.join(',')})`)
+        .not('id', 'in', `(${usersToFilter.join(',')})`)
         .returns<User[]>()
         .throwOnError();
 

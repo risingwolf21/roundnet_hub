@@ -1,5 +1,5 @@
 BEGIN;
-\i 000_setup_tests_users.inc
+
 SET LOCAL TIME ZONE 'UTC';
 SELECT plan(10);
 
@@ -50,7 +50,7 @@ SELECT lives_ok(
   $$
   SELECT public.update_attendance(
     (SELECT id FROM public.events WHERE "key"='t-rsvp-future'),
-    tests.get_supabase_uid('user_1a')::text,
+    tests.get_supabase_uid('user_1a'),
     'Attending'::public."EventAttendance"
   )
   $$,
@@ -62,7 +62,7 @@ SELECT is(
     SELECT state::text
     FROM public.event_attendance_user_mapping
     WHERE event=(SELECT id FROM public.events WHERE "key"='t-rsvp-future')
-      AND "user"=tests.get_supabase_uid('user_1a')::text
+      AND "user"=tests.get_supabase_uid('user_1a')
   ),
   'Attending',
   'Status wurde als Attending gespeichert'
@@ -76,7 +76,7 @@ SELECT throws_like(
   $$
   SELECT public.update_attendance(
     (SELECT id FROM public.events WHERE "key"='t-rsvp-future'),
-    tests.get_supabase_uid('user_2b')::text,
+    tests.get_supabase_uid('user_2b'),
     'Attending'::public."EventAttendance"
   )
   $$,
@@ -100,7 +100,7 @@ SELECT throws_like(
   $$
   SELECT public.update_attendance(
     (SELECT id FROM public.events WHERE "key"='t-rsvp-future'),
-    tests.get_supabase_uid('user_2b')::text,           -- anderer User
+    tests.get_supabase_uid('user_2b'),           -- anderer User
     'Attending'::public."EventAttendance"
   )
   $$,
@@ -116,7 +116,7 @@ SELECT throws_like(
   $$
   SELECT public.update_attendance(
     (SELECT id FROM public.events WHERE "key"='t-rsvp-past'),
-    tests.get_supabase_uid('user_1a')::text,
+    tests.get_supabase_uid('user_1a'),
     'Attending'::public."EventAttendance"
   )
   $$,
@@ -131,7 +131,7 @@ SELECT throws_like(
   $$
   SELECT public.update_attendance(
     (SELECT id FROM public.events WHERE "key"='t-rsvp-cancel'),
-    tests.get_supabase_uid('user_1a')::text,
+    tests.get_supabase_uid('user_1a'),
     'Attending'::public."EventAttendance"
   )
   $$,
@@ -149,7 +149,7 @@ SELECT lives_ok(
   $$
   SELECT public.update_attendance(
     (SELECT id FROM public.events WHERE "key"='t-rsvp-future'),
-    tests.get_supabase_uid('user_2a')::text,
+    tests.get_supabase_uid('user_2a'),
     'Waiting'::public."EventAttendance"
   )
   $$,
@@ -166,7 +166,7 @@ SELECT lives_ok(
   $$
   SELECT public.update_attendance(
     (SELECT id FROM public.events WHERE "key"='t-rsvp-future'),
-    tests.get_supabase_uid('user_2b')::text,
+    tests.get_supabase_uid('user_2b'),
     'Attending'::public."EventAttendance"
   )
   $$,
@@ -178,7 +178,7 @@ SELECT is(
     SELECT state::text
     FROM public.event_attendance_user_mapping
     WHERE event=(SELECT id FROM public.events WHERE "key"='t-rsvp-future')
-      AND "user"=tests.get_supabase_uid('user_2b')::text
+      AND "user"=tests.get_supabase_uid('user_2b')
   ),
   'Attending',
   'b2 wurde erfolgreich auf Attending gesetzt'

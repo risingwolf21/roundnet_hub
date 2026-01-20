@@ -2,6 +2,11 @@
   "format": {
     "distanceToNow": "{{ date, ago }}"
   },
+  "date-fns": {
+    "diffInDaysPrior_zero": "Am selben Tag",
+    "diffInDaysPrior_one": "{{count}} Tag davor",
+    "diffInDaysPrior_other": "{{count}} Tage davor"
+  },
   "attendees": "Teilnehmer",
   "browse": {
     "account": "Konto",
@@ -36,6 +41,9 @@
   "events": {
     "upcoming": "Anstehende",
     "past": "Vergangene",
+    "editEvent": "Event bearbeiten",
+    "transformEventSeries": "Eventreihe transformieren",
+    "deleteEvent": "Event löschen",
     "creation": {
       "answerDeadlineAfterStart": "Der Anmeldezeitraum kann nicht nach dem Start des Events sein",
       "answerDeadlineBeforeNow": "Der Anmeldezeitraum kann nicht vor dem aktuellen Datum sein",
@@ -98,6 +106,8 @@
   "notification_updateMessage": "Update deine Push-Benachrichtigungs Segmente",
   "take_key": "Annehmen",
   "userName": "Benutzername",
+  "updateAvailableTitle": "Neue Version verfügbar",
+  "updateAvailableMessage": "Es sind neue Features verfügbar. Bitte aktualisiere die App.",
   "challenge": {
     "automatedChallenge": "Bei dieser Challenge werden die Punkte automatisiert aktualisiert!"
   },

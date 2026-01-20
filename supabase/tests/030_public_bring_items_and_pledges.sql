@@ -1,6 +1,6 @@
 -- 030_public_bring_items_and_pledges.sql (angepasst)
 BEGIN;
-\i 000_setup_tests_users.inc
+
 SET LOCAL TIME ZONE 'UTC';
 SELECT plan(7);
 
@@ -33,7 +33,7 @@ WITH e AS (
 ), i AS (
   SELECT id AS item_id FROM public.event_bring_items WHERE event = (SELECT event_id FROM e)
 )
-INSERT INTO public.event_bring_pledges(item, "user_id", qty)
+INSERT INTO public.event_bring_pledges(item, "user", qty)
 SELECT (SELECT item_id FROM i), tests.get_supabase_uid('user_1a'), 3;
 
 SELECT ok(true, 'u1 pledged 3');
@@ -45,7 +45,7 @@ WITH i AS (
   SELECT id AS item_id FROM public.event_bring_items
   WHERE event = (SELECT id FROM public.events WHERE "key"='items-test-1')
 )
-INSERT INTO public.event_bring_pledges(item, "user_id", qty)
+INSERT INTO public.event_bring_pledges(item, "user", qty)
 SELECT (SELECT item_id FROM i), tests.get_supabase_uid('user_2a'), 2;
 
 SELECT ok(true, 'u2 pledged 2');
@@ -58,7 +58,7 @@ WITH i AS (
 UPDATE public.event_bring_pledges p
 SET qty = 3
 WHERE p.item = (SELECT item_id FROM i)
-  AND p."user_id" = tests.get_supabase_uid('user_2a')::text;
+  AND p."user" = tests.get_supabase_uid('user_2a');
 
 SELECT ok(true, 'u2 erhöht auf 3 (Überschuss erlaubt)');
 

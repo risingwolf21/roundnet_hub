@@ -30,7 +30,7 @@ const GroupGrantsPanel = ({ searchValue }: { searchValue: string }) => {
     <PullToRefresh onRefresh={refetch}>
       <List>
         {data
-          .filter(x => searchValue === '' || x.name.toLowerCase().includes(searchValue.toLowerCase()))
+          .filter((x) => searchValue === '' || x.name.toLowerCase().includes(searchValue.toLowerCase()))
           .map((x) => (
             <ListItem
               divider
@@ -51,7 +51,8 @@ const GroupGrantsPanel = ({ searchValue }: { searchValue: string }) => {
                     {
                       onError: () =>
                         notifications.show('Berechtigungen konnten nicht aktualisiert werden', { severity: 'error' }),
-                      onSettled: () => notifications.show('Berechtigungen wurden aktualisiert', { severity: 'success' }),
+                      onSettled: () =>
+                        notifications.show('Berechtigungen wurden aktualisiert', { severity: 'success' }),
                     }
                   );
                   revoke.mutate(
@@ -63,7 +64,8 @@ const GroupGrantsPanel = ({ searchValue }: { searchValue: string }) => {
                     {
                       onError: () =>
                         notifications.show('Berechtigungen konnten nicht aktualisiert werden', { severity: 'error' }),
-                      onSettled: () => notifications.show('Berechtigungen wurden aktualisiert', { severity: 'success' }),
+                      onSettled: () =>
+                        notifications.show('Berechtigungen wurden aktualisiert', { severity: 'success' }),
                     }
                   );
                 }
@@ -77,9 +79,10 @@ const GroupGrantsPanel = ({ searchValue }: { searchValue: string }) => {
               <ListItemText primary={x.name} />
             </ListItem>
           ))}
-        <Fab sx={{ position: "fixed", right: "16px", bottom: "calc(env(safe-area-inset-top) + 16px)" }} onClick={() => {
-
-        }}>
+        <Fab
+          sx={{ position: 'fixed', right: '16px', bottom: 'calc(env(safe-area-inset-top) + 16px)' }}
+          onClick={() => {}}
+        >
           <GroupAdd />
         </Fab>
       </List>

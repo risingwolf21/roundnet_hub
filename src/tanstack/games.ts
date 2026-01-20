@@ -3,6 +3,7 @@ import { supabase } from '@/lib/supabase';
 import { GamesRepository } from '@/repository/GamesRepository';
 import { GamesTable, UserMatchesView } from '@/types/supabaseTypes';
 import { formatDateToDatabase } from '@/utils';
+import { captureException } from '@sentry/react';
 import { useMutation, useQuery } from '@tanstack/react-query';
 
 export const useMatch = (matchId?: string) =>
@@ -21,10 +22,10 @@ export const useMatch = (matchId?: string) =>
 
       if (!result.data) return null;
 
-      const p1a = await supabase.from('user').select('*').eq('userId', result.data.team_a.player_1.player).single();
-      const p1b = await supabase.from('user').select('*').eq('userId', result.data.team_b.player_1.player).single();
-      const p2a = await supabase.from('user').select('*').eq('userId', result.data.team_a.player_2.player).single();
-      const p2b = await supabase.from('user').select('*').eq('userId', result.data.team_b.player_2.player).single();
+      const p1a = await supabase.from('user').select('*').eq('id', result.data.team_a.player_1.player).single();
+      const p1b = await supabase.from('user').select('*').eq('id', result.data.team_b.player_1.player).single();
+      const p2a = await supabase.from('user').select('*').eq('id', result.data.team_a.player_2.player).single();
+      const p2b = await supabase.from('user').select('*').eq('id', result.data.team_b.player_2.player).single();
 
       return {
         ...result.data,
@@ -133,12 +134,19 @@ export const useCreateMatch = () =>
 
       return { previousMatches };
     },
-    onError: (_e, _v, context) => {
+    onError: (error, variables, context) => {
+      captureException(error, {
+        extra: {
+          ...variables,
+          ...error,
+        },
+        tags: { type: 'CreateMatch', scope: 'games' },
+      });
       if (context?.previousMatches) {
         queryClient.setQueryData(['matches'], context.previousMatches);
       }
     },
-    onSettled: (_d, _e, _v, _context) => {
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ['matches'] });
     },
   });
@@ -182,7 +190,14 @@ export const useUpsertSetsToMatch = (matchId: string) =>
 
       return { previousMatches };
     },
-    onError: (_e, _v, context) => {
+    onError: (error, variables, context) => {
+      captureException(error, {
+        extra: {
+          ...variables,
+          ...error,
+        },
+        tags: { type: 'UpsertSetsToMatch', scope: 'games' },
+      });
       if (context?.previousMatches) {
         queryClient.setQueryData(['matches'], context.previousMatches);
       }

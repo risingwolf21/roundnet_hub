@@ -40,13 +40,17 @@ const MatchInformation = lazyWithRetry(() => import('./features/games/MatchInfor
 const SendNotifications = lazyWithRetry(() => import('./features/notifications/SendNotifications'));
 const LogsList = lazyWithRetry(() => import('./features/admin/LogsList'));
 const AppInformation = lazyWithRetry(() => import('./components/AppInformation'));
+const PlayerzoneProfileDialog = lazyWithRetry(() => import('./features/profile/PlayerzoneProfile'));
+const NotificationsDialog = lazyWithRetry(() => import('./features/profile/NotificationsDialog'));
+const ContactInformation = lazyWithRetry(() => import('./features/profile/ContactInformation'));
+const ResetPassword = lazyWithRetry(() => import('./features/profile/ResetPassword'));
 
 const sentryCreateBrowserRouter = wrapCreateBrowserRouterV7(createBrowserRouter);
 
 export const AppRoutes = () => {
   const { user } = useApplication();
 
-  const router = createRouter(user)
+  const router = createRouter(user);
 
   return <RouterProvider router={router} />;
 };
@@ -75,247 +79,275 @@ const PrivateRoute = () => {
   );
 };
 
-const createRouter = (user: UserWithGroups | null) => sentryCreateBrowserRouter([
-  {
-    path: '/auth',
-    element: <AuthLayout />,
-    children: [
-      {
-        path: 'login',
-        element: <LoginScreen />,
-        errorElement: <ErrorRouteElement />,
-      },
-      {
-        path: 'signup',
-        element: <SignUpScreen />,
-        errorElement: <ErrorRouteElement />,
-      },
-      {
-        path: 'forgot-password',
-        element: <ForgotPasswordScreen />,
-        errorElement: <ErrorRouteElement />,
-      },
-      {
-        path: 'reset-password',
-        element: <ResetPasswordScreen />,
-        errorElement: <ErrorRouteElement />,
-      }
-    ],
-  },
-  {
-    path: '/',
-    element: <PrivateRoute />,
-    children: [
-      {
-        path: '',
-        errorElement: <ErrorRouteElement />,
-        children: [
-          {
-            index: true,
-            element: <>
-              {
-                (user?.groups.length ?? 0) > 0
-                  ? <Navigate to={import.meta.env.VITE_APP_HOMEPAGE ?? '/home'} />
-                  : <Navigate to={'/help'} />
-              }
-            </>
-          },
-          {
-            path: '/help',
-            element: <AppInformation />
-          },
-          {
-            path: '/home',
-            element: <HomePage />,
-          },
-          {
-            path: '/reset-password',
-            element: <ResetPasswordScreen />,
-          },
-          {
-            path: '/keys',
-            element: <ItemHolderScreen />,
-          },
-          {
-            path: '/notifications',
-            element: <NotificationScreen />,
-          },
-          {
-            path: '/user',
-            element: <UserScreenProvider />,
-          },
-          {
-            path: '/drinks',
-            element: (
-              <Has feat={'drinks'} fallback={<FeatureNotAvailable />}>
-                <Outlet />
-              </Has>
-            ),
-            children: [
-              {
-                index: true,
-                element: <Navigate to="/drinks/list" />,
-              },
-              {
-                path: 'list',
-                element: <DrinkListScreenProvider />,
-              },
-              {
-                path: 'history',
-                element: <HistoryScreenProvider />,
-              },
-              {
-                path: 'payments',
-                element: <PayDrinksScreenProvider />,
-              },
-            ],
-          },
-          {
-            path: '/challenges',
-            element: (
-              <Has feat={'challenges'} fallback={<FeatureNotAvailable />}>
-                <Outlet />
-              </Has>
-            ),
-            children: [
-              {
-                index: true,
-                element: <Navigate to="/challenges/list" />,
-              },
-              {
-                path: 'list',
-                element: <ChallengeScreen />,
-              },
-              {
-                path: ':challengeId',
-                element: <ChallengeInfoScreen />,
-              },
-            ],
-          },
-          {
-            path: '/groups',
-            children: [
-              {
-                index: true,
-                element: <Navigate to="/groups/list" />,
-              },
-              {
-                path: 'list',
-                element: <PublicGroupList />,
-              },
-              {
-                path: ':groupId',
-                element: <PublicGroupInformation />,
-              },
-            ],
-          },
-          {
-            path: '/training',
-            element: (
-              <Has feat={'events'} fallback={<FeatureNotAvailable />}>
-                <Outlet />
-              </Has>
-            ),
-            children: [
-              {
-                index: true,
-                element: <Navigate to="/training/list" />,
-              },
-              {
-                path: 'list',
-                element: <EventScreenProvider />,
-              },
-              {
-                path: 'recurringEvents',
-                element: <RecurringEvents />,
-              },
-              {
-                path: 'event/:selectedEventId',
-                element: <EventInformationProvider />,
-              },
-            ],
-          },
-          {
-            path: '/matches',
-            element: (
-              <Has feat={'games'} fallback={<FeatureNotAvailable />}>
-                <Outlet />
-              </Has>
-            ),
-            children: [
-              {
-                index: true,
-                element: <Navigate to="/matches/list" />,
-              },
-              {
-                path: 'list',
-                element: <GameList />,
-              },
-              {
-                path: 'report',
-                element: <ReportScore />,
-              },
-              {
-                path: ':matchId',
-                element: <MatchInformation />,
-              },
-            ],
-          },
-          {
-            path: '/admin',
-            children: [
-              {
-                path: 'drinks',
-                element: <AdminDrinkListProvider />,
-              },
-              {
-                path: 'drinks/history',
-                element: <AdminHistoryScreenProvider />,
-              },
-              {
-                path: 'drinks/payments',
-                element: <PaymentsPendingAdmin />,
-              },
-              {
-                path: 'users',
-                element: <AdminUserListProvider />,
-              },
-              {
-                path: 'notify_users',
-                element: <Has perm={'admin.notify_users'} fallback={<PermissionDeniedPage />}>
-                  <SendNotifications />
+const createRouter = (user: UserWithGroups | null) =>
+  sentryCreateBrowserRouter([
+    {
+      path: '/auth',
+      element: <AuthLayout />,
+      children: [
+        {
+          path: 'login',
+          element: <LoginScreen />,
+          errorElement: <ErrorRouteElement />,
+        },
+        {
+          path: 'signup',
+          element: <SignUpScreen />,
+          errorElement: <ErrorRouteElement />,
+        },
+        {
+          path: 'forgot-password',
+          element: <ForgotPasswordScreen />,
+          errorElement: <ErrorRouteElement />,
+        },
+        {
+          path: 'reset-password',
+          element: <ResetPasswordScreen />,
+          errorElement: <ErrorRouteElement />,
+        },
+      ],
+    },
+    {
+      path: '/',
+      element: <PrivateRoute />,
+      children: [
+        {
+          path: '',
+          errorElement: <ErrorRouteElement />,
+          children: [
+            {
+              index: true,
+              element: (
+                <>
+                  {(user?.groups.length ?? 0) > 0 ? (
+                    <Navigate to={import.meta.env.VITE_APP_HOMEPAGE ?? '/home'} />
+                  ) : (
+                    <Navigate to={'/help'} />
+                  )}
+                </>
+              ),
+            },
+            {
+              path: '/help',
+              element: <AppInformation />,
+            },
+            {
+              path: '/home',
+              element: <HomePage />,
+            },
+            {
+              path: '/reset-password',
+              element: <ResetPasswordScreen />,
+            },
+            {
+              path: '/keys',
+              element: <ItemHolderScreen />,
+            },
+            {
+              path: '/notifications',
+              element: <NotificationScreen />,
+            },
+            {
+              path: '/user',
+              children: [
+                {
+                  index: true,
+                  element: <UserScreenProvider />,
+                },
+                {
+                  path: 'playerzone',
+                  element: <PlayerzoneProfileDialog />,
+                },
+                {
+                  path: 'notifications',
+                  element: <NotificationsDialog />,
+                },
+                {
+                  path: 'profile',
+                  element: <ContactInformation />,
+                },
+                {
+                  path: 'reset-password',
+                  element: <ResetPassword />,
+                },
+              ],
+            },
+            {
+              path: '/drinks',
+              element: (
+                <Has feat={'drinks'} fallback={<FeatureNotAvailable />}>
+                  <Outlet />
                 </Has>
-              },
-              {
-                path: 'audit/logs',
-                element: <Has perm={'supabase.admin'} fallback={<PermissionDeniedPage />}>
-                  <LogsList />
+              ),
+              children: [
+                {
+                  index: true,
+                  element: <Navigate to="/drinks/list" />,
+                },
+                {
+                  path: 'list',
+                  element: <DrinkListScreenProvider />,
+                },
+                {
+                  path: 'history',
+                  element: <HistoryScreenProvider />,
+                },
+                {
+                  path: 'payments',
+                  element: <PayDrinksScreenProvider />,
+                },
+              ],
+            },
+            {
+              path: '/challenges',
+              element: (
+                <Has feat={'challenges'} fallback={<FeatureNotAvailable />}>
+                  <Outlet />
                 </Has>
-              },
-              {
-                path: 'supabase',
-                element: (
-                  <Has perm={'supabase.admin'} fallback={<PermissionDeniedPage />}>
-                    <SupabaseClient />
-                  </Has>
-                ),
-              },
-              {
-                path: 'grants',
-                element: (
-                  <Has perm={'grants.manage'}>
-                    <GrantsManager />
-                  </Has>
-                ),
-              },
-            ],
-          },
-          {
-            path: '*',
-            element: <Navigate to="/" replace />,
-          },
-        ],
-      },
-    ],
-  },
-] as RouteObject[]);
+              ),
+              children: [
+                {
+                  index: true,
+                  element: <Navigate to="/challenges/list" />,
+                },
+                {
+                  path: 'list',
+                  element: <ChallengeScreen />,
+                },
+                {
+                  path: ':challengeId',
+                  element: <ChallengeInfoScreen />,
+                },
+              ],
+            },
+            {
+              path: '/groups',
+              children: [
+                {
+                  index: true,
+                  element: <Navigate to="/groups/list" />,
+                },
+                {
+                  path: 'list',
+                  element: <PublicGroupList />,
+                },
+                {
+                  path: ':groupId',
+                  element: <PublicGroupInformation />,
+                },
+              ],
+            },
+            {
+              path: '/training',
+              element: (
+                <Has feat={'events'} fallback={<FeatureNotAvailable />}>
+                  <Outlet />
+                </Has>
+              ),
+              children: [
+                {
+                  index: true,
+                  element: <Navigate to="/training/list" />,
+                },
+                {
+                  path: 'list',
+                  element: <EventScreenProvider />,
+                },
+                {
+                  path: 'recurringEvents',
+                  element: <RecurringEvents />,
+                },
+                {
+                  path: 'event/:selectedEventId',
+                  element: <EventInformationProvider />,
+                },
+              ],
+            },
+            {
+              path: '/matches',
+              element: (
+                <Has feat={'games'} fallback={<FeatureNotAvailable />}>
+                  <Outlet />
+                </Has>
+              ),
+              children: [
+                {
+                  index: true,
+                  element: <Navigate to="/matches/list" />,
+                },
+                {
+                  path: 'list',
+                  element: <GameList />,
+                },
+                {
+                  path: 'report',
+                  element: <ReportScore />,
+                },
+                {
+                  path: ':matchId',
+                  element: <MatchInformation />,
+                },
+              ],
+            },
+            {
+              path: '/admin',
+              children: [
+                {
+                  path: 'drinks',
+                  element: <AdminDrinkListProvider />,
+                },
+                {
+                  path: 'drinks/history',
+                  element: <AdminHistoryScreenProvider />,
+                },
+                {
+                  path: 'drinks/payments',
+                  element: <PaymentsPendingAdmin />,
+                },
+                {
+                  path: 'users',
+                  element: <AdminUserListProvider />,
+                },
+                {
+                  path: 'notify_users',
+                  element: (
+                    <Has perm={'admin.notify_users'} fallback={<PermissionDeniedPage />}>
+                      <SendNotifications />
+                    </Has>
+                  ),
+                },
+                {
+                  path: 'audit/logs',
+                  element: (
+                    <Has perm={'supabase.admin'} fallback={<PermissionDeniedPage />}>
+                      <LogsList />
+                    </Has>
+                  ),
+                },
+                {
+                  path: 'supabase',
+                  element: (
+                    <Has perm={'supabase.admin'} fallback={<PermissionDeniedPage />}>
+                      <SupabaseClient />
+                    </Has>
+                  ),
+                },
+                {
+                  path: 'grants',
+                  element: (
+                    <Has perm={'grants.manage'}>
+                      <GrantsManager />
+                    </Has>
+                  ),
+                },
+              ],
+            },
+            {
+              path: '*',
+              element: <Navigate to="/" replace />,
+            },
+          ],
+        },
+      ],
+    },
+  ] as RouteObject[]);

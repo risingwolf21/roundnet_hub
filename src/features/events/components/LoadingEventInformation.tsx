@@ -27,9 +27,8 @@ export const LoadingEventInformation = () => (
         />
       </ListItem>
       <ListItem sx={{ py: 1 }} disablePadding>
-        <ListItemAvatar sx={{}}>
-        </ListItemAvatar>
-        <Skeleton sx={{ mt: 1, borderRadius: "16px" }} variant={'rectangular'} width={"100%"} height="150px" />
+        <ListItemAvatar sx={{}}></ListItemAvatar>
+        <Skeleton sx={{ mt: 1, borderRadius: '16px' }} variant={'rectangular'} width={'100%'} height="150px" />
       </ListItem>
 
       <Skeleton sx={{ mt: 2, mb: 2 }} width={'150px'} variant={'rectangular'} />

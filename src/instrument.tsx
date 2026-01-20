@@ -4,6 +4,9 @@ import { supabaseIntegration } from '@supabase/sentry-js-integration';
 import React from 'react';
 import { createRoutesFromChildren, matchRoutes, useLocation, useNavigationType } from 'react-router';
 
+export const sendMetricsToSentry = (name: string, value: number) => {
+  Sentry.metrics.count(name, value);
+};
 
 Sentry.init({
   dsn: 'https://a06f63fae5ab4ce4ac291d0d6fb4e989@o4505379650666496.ingest.us.sentry.io/4505379651649536',
@@ -13,6 +16,7 @@ Sentry.init({
   release: import.meta.env.VITE_VERSION,
   _experiments: { enableLogs: true },
   integrations: [
+    Sentry.browserTracingIntegration(),
     Sentry.reactRouterV7BrowserTracingIntegration({
       useEffect: React.useEffect,
       useLocation,
@@ -26,6 +30,9 @@ Sentry.init({
       errors: true,
     }),
     Sentry.consoleLoggingIntegration({ levels: ['log', 'error', 'warn'] }),
+    Sentry.eventFiltersIntegration({
+      ignoreErrors: ['Load failed', 'Failed to fetch'],
+    }),
   ],
   tracesSampleRate: 1.0,
   tracePropagationTargets: [
@@ -33,5 +40,4 @@ Sentry.init({
     'https://staging-roundnet-karlsruhe.web.app',
     'https://munich-roundnet.web.app',
   ],
-  ignoreErrors: ['TypeError: Load failed', 'TypeError: Failed to fetch'],
 });

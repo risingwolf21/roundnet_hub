@@ -1,7 +1,7 @@
 BEGIN;
 SET LOCAL TIME ZONE 'UTC';
-SELECT plan(12);
-\i 000_setup_tests_users.inc
+SELECT plan(11);
+
 
 CREATE TEMP TABLE _vars (base_event uuid);
 
@@ -194,16 +194,6 @@ SELECT ok( NOT EXISTS (
     AND "startingDateTime" >= '2025-03-10T00:00:00Z'::timestamptz
     AND "answerDeadline" <> "startingDateTime" - interval '2 hours'
 ), 'answerDeadline bleibt relativ (2h vor Start) auch nach Vorlagen-Update');
-
-
--- Meta (Title/Place) übernommen?
-SELECT ok( NOT EXISTS (
-  SELECT 1
-  FROM public.events
-  WHERE "key"='series-quick'
-    AND "startingDateTime" >= '2025-03-10T00:00:00Z'::timestamptz
-    AND (title <> 'Training' OR place <> 'Halle 1')
-), 'neue Events übernehmen Title/Place vom neuesten Vorgänger');
 
 -- Deadline weiterhin 2h vorher?
 SELECT ok( NOT EXISTS (

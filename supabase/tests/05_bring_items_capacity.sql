@@ -1,5 +1,5 @@
 BEGIN;
-\i 000_setup_tests_users.inc
+
 SET LOCAL TIME ZONE 'UTC';
 SELECT plan(3);
 
@@ -31,7 +31,7 @@ WITH i AS (
   SELECT id AS item_id FROM public.event_bring_items
   WHERE event = (SELECT id FROM public.events WHERE "key"='items-cap-1')
 )
-INSERT INTO public.event_bring_pledges(item,"user_id",qty)
+INSERT INTO public.event_bring_pledges(item,"user",qty)
 SELECT (SELECT item_id FROM i), tests.get_supabase_uid('user_1a'), 3;
 
 SELECT ok(true,'u1 pledged 3');
@@ -43,7 +43,7 @@ WITH i AS (
   SELECT id AS item_id FROM public.event_bring_items
   WHERE event = (SELECT id FROM public.events WHERE "key"='items-cap-1')
 )
-INSERT INTO public.event_bring_pledges(item,"user_id",qty)
+INSERT INTO public.event_bring_pledges(item,"user",qty)
 SELECT (SELECT item_id FROM i), tests.get_supabase_uid('user_2a'), 1;
 
 SELECT ok(true,'u2 pledge 1 ok');

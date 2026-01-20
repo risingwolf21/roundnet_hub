@@ -2,6 +2,11 @@
   "format": {
     "distanceToNow": "{{ date, ago }}"
   },
+  "date-fns": {
+    "diffInDaysPrior_zero": "The same day",
+    "diffInDaysPrior_one": "{{count}} day prior",
+    "diffInDaysPrior_other": "{{count}} days prior"
+  },
   "attendees": "Attendees",
   "browse": {
     "account": "Account",
@@ -36,6 +41,9 @@
   "events": {
     "upcoming": "Upcoming",
     "past": "Past",
+    "editEvent": "Edit Event",
+    "transformEventSeries": "Transform event series",
+    "deleteEvent": "Delete Event",
     "creation": {
       "answerDeadlineAfterStart": "The answer dead line can not be after the start of the event",
       "answerDeadlineBeforeNow": "The answer dead line can not be before now",
@@ -97,6 +105,8 @@
   "notification_updateMessage": "Update your push notification subscription preferences.",
   "take_key": "Take",
   "userName": "userName",
+  "updateAvailableTitle": "Update available",
+  "updateAvailableMessage": "There are new features available. Please update the app.",
   "challenge": {
     "automatedChallenge": "In this challenge, the points are updated automatically!"
   },

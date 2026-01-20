@@ -15,21 +15,21 @@ export const fetchUserMatches = () =>
 export const fetchMatch = () =>
   supabase.schema('games').from('match').select(`
      *,
-      team_a:teams!match_team_a_fkey (
+      team_a: teams!match_team_a_fkey (
         name,
-        player1:players!player_1 (
+        player1: players!player_1 (
           *
         ),
-        player2:players!player_2 (
+        player2: players!player_2 (
           *
         )
       ),
-      team_b:teams!match_team_b_fkey (
+      team_b: teams!match_team_b_fkey (
         name,
-        player1:players!player_1 (
+        player1: players!player_1 (
           *
         ),
-        player2:players!player_2 (
+        player2: players!player_2 (
           *
         )
       ),
@@ -55,12 +55,15 @@ export const GamesRepository = {
 
     return _(players) // start sequence
       .keyBy('player') // create a dictionary of the 1st array
-      .merge(_.keyBy(simpleUsers, 'userId')) // create a dictionary of the 2nd array, and merge it to the 1st
+      .merge(_.keyBy(simpleUsers, 'id')) // create a dictionary of the 2nd array, and merge it to the 1st
       .values() // turn the combined dictionary to array
       .value()
-      .map((x) => (({
-        ...x,
-      }) as PlayerWithSimpleUser))
+      .map(
+        (x) =>
+          ({
+            ...x,
+          }) as PlayerWithSimpleUser
+      )
       .sort((x, y) => x.name.localeCompare(y.name));
   },
 

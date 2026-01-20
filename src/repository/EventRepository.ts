@@ -10,7 +10,7 @@ export const fetchEvents = () =>
   supabase
     .from('events')
     .select(
-      '*, fullGroup: event_group(id, created_at, description, name, color), attendance: event_attendance_user_mapping ( state , user(userId, displayName, avatarUrl)  ), comments: event_comments ( comment, created_at, displayName, event, user ( displayName, userId, avatarUrl))'
+      '*, fullGroup: event_group(id, created_at, description, name, color), attendance: event_attendance_user_mapping ( state , user(id, displayName, avatarUrl)  ), comments: event_comments ( comment, created_at, displayName, event, user ( displayName, id, avatarUrl))'
     );
 
 export const SupabaseEventRepository = {
@@ -97,13 +97,13 @@ export const SupabaseEventRepository = {
     const result = await supabase
       .from('event_comments')
       .insert({
-        user: user.userId,
+        user: user.id,
         event: eventId,
         comment: comment,
         displayName: user.displayName ?? '',
         reply_to: reply_to,
       })
-      .select('user(userId, displayName, avatarUrl), *')
+      .select('user(id, displayName, avatarUrl), *')
       .single<FullComment>()
       .throwOnError();
 

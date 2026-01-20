@@ -33,7 +33,7 @@ const Content = ({ payload, onClose }: DialogProps<ProfilePayload, null>) => {
 
   const loadUserData = useCallback(
     async (userId: string) => {
-      const userResult = await SupabaseUserRepository.fetchUserWithGroups(payload.user.userId);
+      const userResult = await SupabaseUserRepository.fetchUserWithGroups(payload.user.id);
       const result = await SupabaseUserRepository.fetchUserWithGroups(userId);
 
       return { result, userResult };

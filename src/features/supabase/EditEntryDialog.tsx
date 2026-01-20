@@ -90,7 +90,7 @@ const ForeignSelection = ({
   const keys = displayKeysForForeign(column);
 
   const { data: options = [], isLoading: loading } = useQuery({
-    queryKey: ["supabaseClient", "editEntry", column.foreign_key_schema_name, column.foreign_key_table_name],
+    queryKey: ['supabaseClient', 'editEntry', column.foreign_key_schema_name, column.foreign_key_table_name],
     queryFn: async () => {
       const result = await supabase
         // @ts-expect-error schema unknown
@@ -100,8 +100,8 @@ const ForeignSelection = ({
         .select('*')
         .order(keys.orderby);
       return result.data ?? [];
-    }
-  })
+    },
+  });
 
   if (loading) {
     return (
@@ -124,14 +124,14 @@ const ForeignSelection = ({
       <ListItemText
         primary={
           <Select fullWidth onChange={(e) => onChange(e.target.value)} value={value ?? 'nothing'}>
-            {
-              options.map((y) => {
-                if (column.foreign_key_column_name === null) return null;
-                return <MenuItem value={y[column.foreign_key_column_name]}>
+            {options.map((y) => {
+              if (column.foreign_key_column_name === null) return null;
+              return (
+                <MenuItem value={y[column.foreign_key_column_name]}>
                   {JSON.stringify(Object.values(pick(y, keys.keys)))}
                 </MenuItem>
-              })
-            }
+              );
+            })}
             {!value && <MenuItem value={'nothing'}>Nichts gewählt</MenuItem>}
           </Select>
         }
@@ -148,7 +148,7 @@ const DialogContent = ({ payload, open, onClose }: DialogProps<EditEntryDialogPa
 
   useEffect(() => {
     supabase
-      .schema("util")
+      .schema('util')
       .rpc('get_enum_types')
       .select('*')
       .then((result) => {
@@ -286,8 +286,7 @@ const DialogContent = ({ payload, open, onClose }: DialogProps<EditEntryDialogPa
                         value={updatedObject[x.column_name] ?? value}
                         disabled={(updatedObject[x.column_name] ?? value) === null}
                         onValueChange={(val) => {
-                          if (val && val >= 0)
-                            setUpdatedObject({ ...updatedObject, [x.column_name]: val ?? 0 });
+                          if (val && val >= 0) setUpdatedObject({ ...updatedObject, [x.column_name]: val ?? 0 });
                         }}
                       />
                     }
@@ -383,7 +382,9 @@ const DialogContent = ({ payload, open, onClose }: DialogProps<EditEntryDialogPa
                         onChange={(e) => setUpdatedObject({ ...updatedObject, [x.column_name]: e.target.value })}
                         value={updatedObject[x.column_name] ?? value ?? ''}
                       >
-                        {enums.get(enumType)?.map((y) => <MenuItem value={y}>{y}</MenuItem>)}
+                        {enums.get(enumType)?.map((y) => (
+                          <MenuItem value={y}>{y}</MenuItem>
+                        ))}
                         <MenuItem value={''}></MenuItem>
                       </Select>
                     }
@@ -420,8 +421,6 @@ const DialogContent = ({ payload, open, onClose }: DialogProps<EditEntryDialogPa
 };
 
 const EditEntryDialog = (props: DialogProps<EditEntryDialogPayload, any | null>) => {
-  return (
-    <DialogContent {...props} />
-  );
+  return <DialogContent {...props} />;
 };
 export default EditEntryDialog;

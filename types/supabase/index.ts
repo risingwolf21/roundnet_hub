@@ -40,12 +40,13 @@ declare global {
   type Match = GamesTable<'match'>;
   type MatchSet = GamesTable<'sets'>;
   type Team = GamesTable<'teams'>;
-  type PlayerWithSimpleUser = Player & { name: string; userId: string };
+  type PlayerWithSimpleUser = Player & { name: string; id: string };
   type Feature = Tables<'features'>;
   type Permission = Tables<'permissions'>;
   type UserDirectGrants = Tables<'user_direct_grants'>;
   type GroupFeatures = Tables<'group_features'>;
   type GroupPermissions = Tables<'group_permissions'>;
+  type EventTransformation = Tables<'event_transformations'>;
 
   type FullItemHolder = QueryData<ReturnType<typeof fetchItems>> extends Array<infer U> ? U : never;
   type FullItemHistory = QueryData<ReturnType<typeof fetchItemHistory>> extends Array<infer U> ? U : never;

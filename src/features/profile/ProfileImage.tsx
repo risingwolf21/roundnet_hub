@@ -53,12 +53,12 @@ export const ProfileImage = ({ user }: Props) => {
   };
 
   const removeOldAvatarImages = async () => {
-    const { data: list, error } = await supabase.storage.from('user').list(`${user.userId}`);
+    const { data: list, error } = await supabase.storage.from('user').list(`${user.id}`);
     if (error || !list) {
       captureException(error);
       return;
     }
-    const filesToRemove = list.map((x) => `${user.userId}/${x.name}`);
+    const filesToRemove = list.map((x) => `${user.id}/${x.name}`);
 
     await supabase.storage.from('user').remove(filesToRemove);
   };
@@ -66,14 +66,14 @@ export const ProfileImage = ({ user }: Props) => {
   const uploadAvatarImage = async (fileName: string, compressedImage: string) => {
     const { data: uploadData, error } = await supabase.storage
       .from('user')
-      .upload(`${user.userId}/${fileName}`, dataURLtoFile(compressedImage, fileName), {
+      .upload(`${user.id}/${fileName}`, dataURLtoFile(compressedImage, fileName), {
         upsert: true,
       });
 
     if (!error && uploadData && uploadData.path) {
       const { data } = supabase.storage.from('user').getPublicUrl(uploadData.path);
 
-      const { error } = await supabase.from('user').update({ avatarUrl: data.publicUrl }).eq('userId', user.userId);
+      const { error } = await supabase.from('user').update({ avatarUrl: data.publicUrl }).eq('id', user.id);
       if (error) {
         supabase.storage.from('user').remove([uploadData.path]);
       }
@@ -125,12 +125,17 @@ export const ProfileImage = ({ user }: Props) => {
             <Button
               component="label"
               sx={{ border: 'none', background: 'transparent', mr: 2 }}
-              startIcon={<EditOutlined />}
+              disabled={loadingSave}
+              startIcon={loadingSave ? <CircularProgress size={'20px'} /> : <EditOutlined />}
             >
               <input accept="image/*" type="file" hidden onChange={onImageInputChange} />
               Change
             </Button>
-            <Button startIcon={<DeleteOutline />} onClick={() => setCurrentUser({ ...currentUser, avatarUrl: null })}>
+            <Button
+              disabled={loadingSave}
+              startIcon={loadingSave ? <CircularProgress size={'20px'} /> : <DeleteOutline />}
+              onClick={() => setCurrentUser({ ...currentUser, avatarUrl: null })}
+            >
               Remove
             </Button>
           </>
@@ -138,7 +143,8 @@ export const ProfileImage = ({ user }: Props) => {
           <Button
             component="label"
             sx={{ border: 'none', background: 'transparent' }}
-            startIcon={<AddPhotoAlternateOutlined />}
+            disabled={loadingSave}
+            startIcon={loadingSave ? <CircularProgress size={'20px'} /> : <AddPhotoAlternateOutlined />}
           >
             <input accept="image/*" type="file" hidden onChange={onImageInputChange} />
             Add picture
@@ -150,6 +156,7 @@ export const ProfileImage = ({ user }: Props) => {
           <Button
             key={'saveButton'}
             onClick={handleSubmit}
+            disabled={loadingSave}
             startIcon={loadingSave ? <CircularProgress size={'20px'} /> : <Save />}
           >
             Speichern
@@ -160,7 +167,8 @@ export const ProfileImage = ({ user }: Props) => {
               setCroppedImage(null);
               setCurrentUser(user);
             }}
-            startIcon={<Restore />}
+            disabled={loadingSave}
+            startIcon={loadingSave ? <CircularProgress size={'20px'} /> : <Restore />}
           >
             Rückgängig
           </Button>

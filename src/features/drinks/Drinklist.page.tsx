@@ -3,9 +3,7 @@ import { PullToRefresh } from '@/components/pull-to-refresh/PullToRefresh';
 import { useDrinks } from '@/tanstack/drinks';
 import DrinkListScreen from './DrinkListScreen';
 
-
 const DrinkListScreenProvider = () => {
-
   const drinks = useDrinks();
 
   return (

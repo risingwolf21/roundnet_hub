@@ -33,15 +33,25 @@ type MySearchResult = Pick<SearchResult, 'x' | 'y'> & {
 
 const locationMap = {
   'roundnet-karlsruhe': { latitude: 49.0069, longitude: 8.4037 },
-  'munich-roundnet': { latitude: 48.1351, longitude: 11.5820 },
+  'munich-roundnet': { latitude: 48.1351, longitude: 11.582 },
 };
 
-const defaultLocation = locationMap[(import.meta.env.VITE_WEBSITE_PATH as keyof typeof locationMap) || 'roundnet-karlsruhe'];
+const defaultLocation =
+  locationMap[(import.meta.env.VITE_WEBSITE_PATH as keyof typeof locationMap) || 'roundnet-karlsruhe'];
 
-const SearchResults = ({ results, userLocation, anchorEl, onClick }: { results: SearchResult[], onClick: (latLng: LatLng) => void, anchorEl: HTMLElement | null, userLocation: { latitude: number; longitude: number } | null }) => {
+const SearchResults = ({
+  results,
+  userLocation,
+  anchorEl,
+  onClick,
+}: {
+  results: SearchResult[];
+  onClick: (latLng: LatLng) => void;
+  anchorEl: HTMLElement | null;
+  userLocation: { latitude: number; longitude: number } | null;
+}) => {
   const map = useMap();
   if (!results || results?.length < 1) return null;
-
 
   function getDistance(from: LatLng, to: LatLng) {
     const distance = from.distanceTo(to) / 1000;
@@ -150,17 +160,21 @@ const SearchPlacesDialog = ({ open, handleClose, placeSelected }: SearchPlacesDi
 
   const setPlaceFromLatLon = (lat: number, lon: number) => {
     setLoading(true);
-    fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&addressdetails=1&accept-language=de`)
+    fetch(
+      `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&addressdetails=1&accept-language=de`
+    )
       .then((res) => res.json())
       .then((res) => {
-        const street = (res.address.road && res.address.house_number) ? `${res.address.road} ${res.address.house_number}` : null;
+        const street =
+          res.address.road && res.address.house_number ? `${res.address.road} ${res.address.house_number}` : null;
 
-        const address = (res.address.road && res.address.city && res.address.house_number && res.address.postcode)
-          ? `${street}, ${res.address.postcode} ${res.address.city}`
-          : "";
-        const name = (res.name) ? res.name : (street) ? street : "Unbenannter Ort";
+        const address =
+          res.address.road && res.address.city && res.address.house_number && res.address.postcode
+            ? `${street}, ${res.address.postcode} ${res.address.city}`
+            : '';
+        const name = res.name ? res.name : street ? street : 'Unbenannter Ort';
 
-        console.log(street, address, name)
+        console.log(street, address, name);
         setSelectedPlace({
           x: res.lon,
           y: res.lat,
@@ -202,8 +216,10 @@ const SearchPlacesDialog = ({ open, handleClose, placeSelected }: SearchPlacesDi
                   inputProps={{ 'aria-label': 'search' }}
                   value={value}
                   onKeyDown={(e: React.KeyboardEvent<HTMLInputElement | HTMLTextAreaElement>) => keyPress(e)}
-                  onFocus={(e: { currentTarget: React.SetStateAction<HTMLElement | null>; }) => setAnchorEl(e.currentTarget)}
-                  onChange={(e: { target: { value: React.SetStateAction<string>; }; }) => setValue(e.target.value)}
+                  onFocus={(e: { currentTarget: React.SetStateAction<HTMLElement | null> }) =>
+                    setAnchorEl(e.currentTarget)
+                  }
+                  onChange={(e: { target: { value: React.SetStateAction<string> } }) => setValue(e.target.value)}
                 />
               </div>
             </Search>
@@ -217,10 +233,15 @@ const SearchPlacesDialog = ({ open, handleClose, placeSelected }: SearchPlacesDi
             zoom={16}
           >
             <MyComponent />
-            <SearchResults results={results ?? []} userLocation={userLocation} anchorEl={anchorEl} onClick={(latlng) => {
-              setAnchorEl(null);
-              setPlaceFromLatLon(latlng.lat, latlng.lng);
-            }} />
+            <SearchResults
+              results={results ?? []}
+              userLocation={userLocation}
+              anchorEl={anchorEl}
+              onClick={(latlng) => {
+                setAnchorEl(null);
+                setPlaceFromLatLon(latlng.lat, latlng.lng);
+              }}
+            />
             {selectedPlace && <Marker position={[selectedPlace.y, selectedPlace.x]} />}
 
             <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />

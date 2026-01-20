@@ -1,18 +1,6 @@
+-- file: tests/000_setup_tests_users.sql
 
-DO $$
-BEGIN
-  IF EXISTS (SELECT 1 FROM pg_available_extensions WHERE name='supabase-dbdev') THEN
-    IF NOT EXISTS (SELECT 1 FROM pg_extension WHERE extname='supabase-dbdev') THEN
-      EXECUTE 'CREATE EXTENSION "supabase-dbdev" WITH SCHEMA extensions';
-    END IF;
-  END IF;
-
-  IF EXISTS (SELECT 1 FROM pg_available_extensions WHERE name='basejump-supabase_test_helpers') THEN
-    IF NOT EXISTS (SELECT 1 FROM pg_extension WHERE extname='basejump-supabase_test_helpers') THEN
-      EXECUTE 'CREATE EXTENSION "basejump-supabase_test_helpers" WITH SCHEMA extensions';
-    END IF;
-  END IF;
-END $$;
+SELECT plan(0);
 
 select tests.create_supabase_user('user_1a', 'user_1a@test.com');
 select tests.create_supabase_user('user_2a', 'user_2a@test.com');

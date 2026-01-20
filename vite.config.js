@@ -1,3 +1,4 @@
+import { sentryVitePlugin } from "@sentry/vite-plugin";
 import react from '@vitejs/plugin-react';
 import { fileURLToPath, URL } from 'node:url';
 import { visualizer } from 'rollup-plugin-visualizer';
@@ -17,7 +18,6 @@ function pathFromPublicUrl(publicUrl) {
 }
 
 export default defineConfig(({ mode }) => {
-
   const env = loadEnv(mode, process.cwd(), '');
 
   const APP_NAME = env.VITE_WEBSITE_NAME ?? 'App';
@@ -27,17 +27,21 @@ export default defineConfig(({ mode }) => {
   const PUBLIC_URL = env.VITE_PUBLIC_URL; // z.B. https://munich-roundnet.web.app/  oder https://host/app/
   const BASE_PATH = pathFromPublicUrl(PUBLIC_URL); // leitet base/scope/start_url ab
   const START_URL = env.VITE_START_URL ?? BASE_PATH; // überschreibbar
-  const SCOPE = env.VITE_SCOPE ?? BASE_PATH;     // überschreibbar
+  const SCOPE = env.VITE_SCOPE ?? BASE_PATH; // überschreibbar
   const ICON_PREFIX = env.VITE_ICON_PREFIX ?? '/icons'; // z.B. /icons/roundnet-karlsruhe oder /icons/munich-roundnet
-  const ENABLE_PWA_DEV = env.VITE_PWA_DEV === 'true';      // SW im Dev aktiv? meist false
+  const ENABLE_PWA_DEV = env.VITE_PWA_DEV === 'true'; // SW im Dev aktiv? meist false
   const IS_ANALYZE = mode === 'analyze';
-
 
   return {
     base: BASE_PATH,
-    envDir: "./environments",
+    envDir: './environments',
     plugins: [
       react(),
+      sentryVitePlugin({
+        authToken: process.env.SENTRY_AUTH_TOKEN,
+        org: "roundnet-karlsruhe",
+        project: "roundnet-karlsruhe",
+      }),
       VitePWA({
         strategies: 'injectManifest',
         srcDir: 'src',
@@ -49,11 +53,11 @@ export default defineConfig(({ mode }) => {
         workbox: {
           cleanupOutdatedCaches: true,
           skipWaiting: true,
-          globPatterns: ['**/*']
+          globPatterns: ['**/*'],
         },
         devOptions: {
           enabled: ENABLE_PWA_DEV,
-          type: 'module'
+          type: 'module',
         },
         manifest: {
           name: APP_NAME,
@@ -65,8 +69,18 @@ export default defineConfig(({ mode }) => {
           theme_color: THEME_COLOR,
           icons: [
             { src: `${ICON_PREFIX}/favicon.ico`, sizes: '48x48', type: 'image/x-icon' },
-            { src: `${ICON_PREFIX}/android-chrome-192x192.png`, sizes: '192x192', type: 'image/png', purpose: 'any maskable' },
-            { src: `${ICON_PREFIX}/android-chrome-512x512.png`, sizes: '512x512', type: 'image/png', purpose: 'any maskable' },
+            {
+              src: `${ICON_PREFIX}/android-chrome-192x192.png`,
+              sizes: '192x192',
+              type: 'image/png',
+              purpose: 'any maskable',
+            },
+            {
+              src: `${ICON_PREFIX}/android-chrome-512x512.png`,
+              sizes: '512x512',
+              type: 'image/png',
+              purpose: 'any maskable',
+            },
           ],
           ...(env.VITE_MANIFEST_CANONICAL_URL
             ? { related_applications: [{ platform: 'webapp', url: env.VITE_MANIFEST_CANONICAL_URL }] }
@@ -74,16 +88,21 @@ export default defineConfig(({ mode }) => {
         },
         includeAssets: ['**/*'],
       }),
-      IS_ANALYZE && visualizer({ open: true, gzipSize: true })
+      IS_ANALYZE && visualizer({ open: true, gzipSize: true }),
     ].filter(Boolean),
     build: {
       target: 'es2020',
       sourcemap: true,
       outDir: 'build', // CRA's default build output
     },
+    test: {
+      globals: true,
+      environment: 'jsdom',
+      setupFiles: './src/tests/setupTests.ts',
+    },
     server: {
       port: 5173,
-      strictPort: false
+      strictPort: false,
     },
     preview: { port: 4173 },
     define: {
@@ -91,8 +110,8 @@ export default defineConfig(({ mode }) => {
     },
     resolve: {
       alias: {
-        '@': fileURLToPath(new URL('./src', import.meta.url))
-      }
-    }
+        '@': fileURLToPath(new URL('./src', import.meta.url)),
+      },
+    },
   };
 });

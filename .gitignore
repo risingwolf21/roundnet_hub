@@ -31,3 +31,6 @@ package-lock.json
 .env-cmdrc.json
 # Sentry Config File
 .sentryclirc
+
+# Sentry Config File
+.env.sentry-build-plugin

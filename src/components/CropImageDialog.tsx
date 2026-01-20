@@ -53,16 +53,18 @@ const CropImageDialog = ({ open, handleClose, selectedImage, onImageCropFinished
             </Button>
           </Toolbar>
         </AppBar>
-        <Cropper
-          image={selectedImage}
-          crop={crop}
-          zoom={zoom}
-          rotation={rotation}
-          aspect={1 / 1}
-          onCropChange={setCrop}
-          onCropComplete={onCropComplete}
-          onZoomChange={setZoom}
-        />
+        <Box sx={{ position: "relative", width: "100%", height: "calc(100dvh - 64px)", background: "#333" }}>
+          <Cropper
+            image={selectedImage}
+            crop={crop}
+            zoom={zoom}
+            rotation={rotation}
+            aspect={1 / 1}
+            onCropChange={setCrop}
+            onCropComplete={onCropComplete}
+            onZoomChange={setZoom}
+          />
+        </Box>
       </Box>
     </Dialog>
   );
@@ -121,17 +123,7 @@ async function getCroppedImg(
   croppedCanvas.height = safeHeight;
 
   // Draw the cropped image onto the new canvas
-  croppedCtx.drawImage(
-    canvas,
-    safeX,
-    safeY,
-    safeWidth,
-    safeHeight,
-    0,
-    0,
-    safeWidth,
-    safeHeight
-  );
+  croppedCtx.drawImage(canvas, safeX, safeY, safeWidth, safeHeight, 0, 0, safeWidth, safeHeight);
 
   // detect original mime if possible to preserve png transparency
   const mimeFromDataUrlMatch = (imageSrc || '').match(/^data:(image\/[a-zA-Z0-9.+-]+);base64,/);

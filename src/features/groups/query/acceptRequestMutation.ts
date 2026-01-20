@@ -3,7 +3,6 @@ import { supabase } from '@/lib/supabase';
 import { FullUserMapping, GroupWithUserMappings } from '@/types/supabaseTypes';
 import { useMutation } from '@tanstack/react-query';
 
-
 export const useAcceptRequestMutation = (group: Group | null) =>
   useMutation({
     mutationFn: async (user: User) => {
@@ -14,7 +13,7 @@ export const useAcceptRequestMutation = (group: Group | null) =>
         .from('group_user_mapping')
         .update({ role: 'user' })
         .eq('group', group.id)
-        .eq('user', user.userId)
+        .eq('user', user.id)
         .eq('role', 'joinRequested')
         .select('*')
         .throwOnError();
@@ -35,13 +34,13 @@ export const useAcceptRequestMutation = (group: Group | null) =>
           ...previousGroup,
           users: [
             ...previousGroup.users.map((x: FullUserMapping) => {
-              if (x.user.userId === user.userId) {
+              if (x.user.id === user.id) {
                 return {
                   user: user,
                   map: {
                     group: group.id,
                     role: 'user',
-                    user: user.userId,
+                    user: user.id,
                   },
                 } as FullUserMapping;
               } else {
@@ -55,7 +54,7 @@ export const useAcceptRequestMutation = (group: Group | null) =>
       if (previousRequested) {
         queryClient.setQueryData<GroupUserMapping[]>(
           ['groups', 'joinRequested'],
-          previousRequested.filter((x) => x.user !== user.userId && x.group !== group.id)
+          previousRequested.filter((x) => x.user !== user.id && x.group !== group.id)
         );
       }
 

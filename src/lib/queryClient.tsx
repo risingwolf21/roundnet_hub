@@ -1,6 +1,5 @@
-import { captureException, withScope } from '@sentry/react';
+import { captureException } from '@sentry/react';
 import { MutationCache, QueryCache, QueryClient } from '@tanstack/react-query';
-
 
 export const queryClient = new QueryClient({
   defaultOptions: {
@@ -13,8 +12,8 @@ export const queryClient = new QueryClient({
     mutations: { retry: 1 },
   },
   mutationCache: new MutationCache({
-    onError: (err, _variables, _context, mutation) => {
-      withScope((scope) => {
+    onError: (err, variables, context, mutation) => {
+      captureException(err, (scope) => {
         scope.setContext('mutation', {
           mutationId: mutation.mutationId,
           variables: mutation.state.variables,
@@ -25,15 +24,17 @@ export const queryClient = new QueryClient({
             Array.from(mutation.options.mutationKey) as string[]
           );
         }
-        captureException(err);
+        scope.setExtra('variables', variables);
+        scope.setExtra('context', context);
+        return scope;
       });
     },
   }),
   queryCache: new QueryCache({
     onError: (err, query) => {
-      withScope((scope) => {
+      captureException(err, (scope) => {
         scope.setContext('query', { queryHash: query.queryHash });
-        captureException(err);
+        return scope;
       });
     },
   }),
@@ -42,8 +43,7 @@ export const queryClient = new QueryClient({
 // This code is only for TypeScript
 declare global {
   interface Window {
-    __TANSTACK_QUERY_CLIENT__:
-    import("@tanstack/query-core").QueryClient;
+    __TANSTACK_QUERY_CLIENT__: import('@tanstack/query-core').QueryClient;
   }
 }
 

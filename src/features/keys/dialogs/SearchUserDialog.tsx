@@ -75,13 +75,13 @@ export const SearchUserDialog = ({
         <List sx={{ width: '100%' }}>
           {users &&
             users
-              .filter((x: User) => x.userId !== user.userId)
+              .filter((x: User) => x.id !== user.id)
               .filter(
                 (x: User) =>
                   searchString === '' || (x.displayName ?? '').toLowerCase().includes(searchString.toLowerCase())
               )
               .map((user: User) => (
-                <ListItemButton key={user.userId} onClick={() => onUserSelected(user)}>
+                <ListItemButton key={user.id} onClick={() => onUserSelected(user)}>
                   <ListItemText primary={user.displayName} secondary={t('userName')} />
                 </ListItemButton>
               ))}

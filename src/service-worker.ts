@@ -5,9 +5,9 @@ import { cleanupOutdatedCaches, createHandlerBoundToURL, precacheAndRoute } from
 import { registerRoute } from 'workbox-routing';
 import { CacheFirst } from 'workbox-strategies';
 
-declare let self: ServiceWorkerGlobalScope
+declare let self: ServiceWorkerGlobalScope;
 
-self.skipWaiting()
+self.skipWaiting();
 clientsClaim();
 
 cleanupOutdatedCaches();
@@ -17,15 +17,12 @@ precacheAndRoute(self.__WB_MANIFEST);
 const SPA_INDEX = new URL('index.html', self.registration.scope).href;
 const fileExtensionRegexp = new RegExp('/[^/?]+\\.[^/]+$');
 
-registerRoute(
-  ({ request, url }) => {
-    if (request.mode !== 'navigate') return false;
-    if (url.pathname.startsWith('/_')) return false;
-    if (url.pathname.match(fileExtensionRegexp)) return false;
-    return true;
-  },
-  createHandlerBoundToURL(SPA_INDEX)
-);
+registerRoute(({ request, url }) => {
+  if (request.mode !== 'navigate') return false;
+  if (url.pathname.startsWith('/_')) return false;
+  if (url.pathname.match(fileExtensionRegexp)) return false;
+  return true;
+}, createHandlerBoundToURL(SPA_INDEX));
 
 registerRoute(
   ({ request }) => request.destination === 'image',
@@ -43,11 +40,9 @@ registerRoute(
   })
 );
 
-
 self.addEventListener('message', (event) => {
-  if (event.data && event.data.type === 'SKIP_WAITING')
-    self.skipWaiting()
-})
+  if (event.data && event.data.type === 'SKIP_WAITING') self.skipWaiting();
+});
 
 self.addEventListener('install', () => self.skipWaiting());
 

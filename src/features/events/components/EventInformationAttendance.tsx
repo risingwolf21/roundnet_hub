@@ -46,11 +46,14 @@ const EventInformationAttendance = ({ selectedEvent, fetchMode, keyHolders }: Ev
 
   const { data: attendance = [], isLoading } = useAttendance(selectedEvent.id);
 
-  const attending = useMemo(() => attendance.filter(x => x.state === "Attending" || x.state === "AttendingAsTrainer"), [attendance]);
-  const declined = useMemo(() => attendance.filter(x => x.state === "Declined"), [attendance]);
-  const attendingAsTrial = useMemo(() => attendance.filter(x => x.state === "AttendingAsTrial"), [attendance]);
-  const waiting = useMemo(() => attendance.filter(x => x.state === "Waiting"), [attendance]);
-  const waitingAsTrial = useMemo(() => attendance.filter(x => x.state === "WaitingAsTrial"), [attendance]);
+  const attending = useMemo(
+    () => attendance.filter((x) => x.state === 'Attending' || x.state === 'AttendingAsTrainer'),
+    [attendance]
+  );
+  const declined = useMemo(() => attendance.filter((x) => x.state === 'Declined'), [attendance]);
+  const attendingAsTrial = useMemo(() => attendance.filter((x) => x.state === 'AttendingAsTrial'), [attendance]);
+  const waiting = useMemo(() => attendance.filter((x) => x.state === 'Waiting'), [attendance]);
+  const waitingAsTrial = useMemo(() => attendance.filter((x) => x.state === 'WaitingAsTrial'), [attendance]);
 
   const updateAttendance = useUpdateAttendanceMutation(fetchMode);
 
@@ -75,7 +78,7 @@ const EventInformationAttendance = ({ selectedEvent, fetchMode, keyHolders }: Ev
 
   return (
     <Box sx={{ p: 0, alignSelf: 'center' }}>
-      {(selectedEvent.user_state === 'Waiting') && (
+      {selectedEvent.user_state === 'Waiting' && (
         <Alert
           sx={{ mt: 2 }}
           severity="warning"
@@ -95,14 +98,14 @@ const EventInformationAttendance = ({ selectedEvent, fetchMode, keyHolders }: Ev
               attendance
                 .filter((x) => x.state === 'Waiting')
                 .sort((a, b) => (isBefore(a.lastUpdate, b.lastUpdate) ? 1 : 0))
-                .findIndex((x) => x.user.userId === user.userId) + 1,
+                .findIndex((x) => x.user.id === user.id) + 1,
             waitingListLength: attendance.filter((x) => x.state === 'Waiting').length,
           })}
         </Alert>
       )}
 
-      <Has feat={"events.trials"}>
-        {(selectedEvent.user_state === 'WaitingAsTrial') && (
+      <Has feat={'events.trials'}>
+        {selectedEvent.user_state === 'WaitingAsTrial' && (
           <Alert
             sx={{ mt: 2 }}
             severity="warning"
@@ -122,7 +125,7 @@ const EventInformationAttendance = ({ selectedEvent, fetchMode, keyHolders }: Ev
                 attendance
                   .filter((x) => x.state === 'WaitingAsTrial')
                   .sort((a, b) => (isBefore(a.lastUpdate, b.lastUpdate) ? 1 : 0))
-                  .findIndex((x) => x.user.userId === user.userId) + 1,
+                  .findIndex((x) => x.user.id === user.id) + 1,
               waitingListLength: attendance.filter((x) => x.state === 'WaitingAsTrial').length,
             })}
           </Alert>
@@ -141,21 +144,21 @@ const EventInformationAttendance = ({ selectedEvent, fetchMode, keyHolders }: Ev
       <List sx={{ p: 0 }}>
         {attendance
           .filter((x) => x.state === 'Attending')
-          .map((y) => y.user.userId)
+          .map((y) => y.user.id)
           .some((x) =>
             keyHolders
               .filter((y) => y.type === selectedEvent.required_item)
               .filter((y) => y.full_current_holder !== null)
-              .map((y) => y.full_current_holder?.userId)
+              .map((y) => y.full_current_holder?.id)
               .includes(x)
           ) && (
-            <ListItem key={'keyAttendees'} sx={{ '&.MuiListItem-root': { paddingLeft: 0 } }} divider>
-              <ListItemAvatar sx={{ justifyContent: 'left', alignItems: 'center', display: 'flex' }}>
-                <Key sx={{ color: (theme) => theme.palette.success.main }} />
-              </ListItemAvatar>
-              <ListItemText primary={t('events.information.keyHolderAttending')} />
-            </ListItem>
-          )}
+          <ListItem key={'keyAttendees'} sx={{ '&.MuiListItem-root': { paddingLeft: 0 } }} divider>
+            <ListItemAvatar sx={{ justifyContent: 'left', alignItems: 'center', display: 'flex' }}>
+              <Key sx={{ color: (theme) => theme.palette.success.main }} />
+            </ListItemAvatar>
+            <ListItemText primary={t('events.information.keyHolderAttending')} />
+          </ListItem>
+        )}
         {selectedEvent.maxAttendees && selectedEvent.maxAttendees >= 0 && (
           <ListItem key={'spotsTaken'} sx={{ '&.MuiListItem-root': { paddingLeft: 0 } }} divider>
             <ListItemAvatar sx={{ justifyContent: 'left', alignItems: 'center', display: 'flex' }}>
@@ -182,7 +185,7 @@ const EventInformationAttendance = ({ selectedEvent, fetchMode, keyHolders }: Ev
             />
           </ListItem>
         )}
-        <Has feat={"events.trials"}>
+        <Has feat={'events.trials'}>
           {selectedEvent.max_trial_attendees && selectedEvent.max_trial_attendees >= 0 && (
             <ListItem key={'spotsTakenTrial'} sx={{ '&.MuiListItem-root': { paddingLeft: 0 } }} divider>
               <ListItemAvatar sx={{ justifyContent: 'left', alignItems: 'center', display: 'flex' }}>
@@ -191,7 +194,11 @@ const EventInformationAttendance = ({ selectedEvent, fetchMode, keyHolders }: Ev
                   thickness={8}
                   sx={{ borderRadius: '100%', p: '2px', position: 'relative', zIndex: 2 }}
                   variant="determinate"
-                  value={(attendance.filter((x) => x.state === 'AttendingAsTrial').length / selectedEvent.max_trial_attendees) * 100}
+                  value={
+                    (attendance.filter((x) => x.state === 'AttendingAsTrial').length /
+                      selectedEvent.max_trial_attendees) *
+                    100
+                  }
                 />
                 <CircularProgress
                   variant="determinate"
@@ -217,13 +224,11 @@ const EventInformationAttendance = ({ selectedEvent, fetchMode, keyHolders }: Ev
             isLoading
               ? {}
               : setEventAttendanceState({
-                open: true,
-                index: 0,
-              })
+                  open: true,
+                  index: 0,
+                })
           }
-          {
-          ...(attendingAsTrial.length > 0 && { disablePadding: true })
-          }
+          {...(attendingAsTrial.length > 0 && { disablePadding: true })}
           secondaryAction={
             <Has perm={'event.signup'}>
               <>
@@ -294,13 +299,11 @@ const EventInformationAttendance = ({ selectedEvent, fetchMode, keyHolders }: Ev
             primary={t('events.information.attending', {
               count: attending.length,
             })}
-            {
-            ...(attendingAsTrial.length > 0 && {
+            {...(attendingAsTrial.length > 0 && {
               secondary: t('events.information.attending_trial', {
                 count: attendingAsTrial.length,
-              })
-            })
-            }
+              }),
+            })}
           />
         </ListItem>
         <Divider />
@@ -311,9 +314,9 @@ const EventInformationAttendance = ({ selectedEvent, fetchMode, keyHolders }: Ev
             isLoading
               ? {}
               : setEventAttendanceState({
-                open: true,
-                index: 1,
-              })
+                  open: true,
+                  index: 1,
+                })
           }
           secondaryAction={
             <Has perm={'event.signup'}>
@@ -342,40 +345,36 @@ const EventInformationAttendance = ({ selectedEvent, fetchMode, keyHolders }: Ev
             })}
           />
         </ListItem>
-        {
-          (waiting.length > 0 || waitingAsTrial.length > 0) && (
-            <>
-              <Divider />
-              <ListItem
-                key={'waitingEvent'}
-                sx={{ '&.MuiListItem-root': { paddingLeft: 0 } }}
-                {
-                ...(waitingAsTrial.length > 0 && { disablePadding: true })
-                }
-                onClick={() =>
-                  isLoading
-                    ? {}
-                    : setEventAttendanceState({
+        {(waiting.length > 0 || waitingAsTrial.length > 0) && (
+          <>
+            <Divider />
+            <ListItem
+              key={'waitingEvent'}
+              sx={{ '&.MuiListItem-root': { paddingLeft: 0 } }}
+              {...(waitingAsTrial.length > 0 && { disablePadding: true })}
+              onClick={() =>
+                isLoading
+                  ? {}
+                  : setEventAttendanceState({
                       open: true,
                       index: 2,
                     })
-                }
-              >
-                <ListItemAvatar sx={{ justifyContent: 'left', alignItems: 'center', display: 'flex' }}>
-                  {isLoading ? <CircularProgress size={'20px'} /> : <HourglassBottom sx={{ color: '#125db2' }} />}
-                </ListItemAvatar>
-                <ListItemText primary={waiting.length + ' warten'}
-                  {
-                  ...(waitingAsTrial.length > 0 && {
-                    secondary: t('events.information.waiting_trial', {
-                      count: waitingAsTrial.length,
-                    })
-                  })
-                  } />
-              </ListItem>
-            </>
-          )
-        }
+              }
+            >
+              <ListItemAvatar sx={{ justifyContent: 'left', alignItems: 'center', display: 'flex' }}>
+                {isLoading ? <CircularProgress size={'20px'} /> : <HourglassBottom sx={{ color: '#125db2' }} />}
+              </ListItemAvatar>
+              <ListItemText
+                primary={waiting.length + ' warten'}
+                {...(waitingAsTrial.length > 0 && {
+                  secondary: t('events.information.waiting_trial', {
+                    count: waitingAsTrial.length,
+                  }),
+                })}
+              />
+            </ListItem>
+          </>
+        )}
       </List>
       <Divider />
 
@@ -388,7 +387,7 @@ const EventInformationAttendance = ({ selectedEvent, fetchMode, keyHolders }: Ev
           .filter((x) => x.type === selectedEvent.required_item)
           .filter((x) => x.full_current_holder !== null)
           .map((x) => ({
-            user: x.full_current_holder!.userId,
+            user: x.full_current_holder!.id,
             item: x,
           }))}
         acceptAttendance={(attendance) => {

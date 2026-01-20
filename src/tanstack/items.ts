@@ -3,6 +3,7 @@ import { supabase } from '@/lib/supabase';
 import { SupabaseKeysRepository } from '@/repository/KeysRepository';
 import { TablesInsert, TablesUpdate } from '@/types/supabase-generated.types';
 import { formatDateToDatabase } from '@/utils';
+import { captureException } from '@sentry/react';
 import { useMutation, useQuery } from '@tanstack/react-query';
 
 export const useAllItems = () =>
@@ -31,11 +32,11 @@ export const useHandoverKeyMutation = () =>
 
       if (previousItemHolders) {
         const newItemHolders = previousItemHolders.map((x) => {
-          if (x.full_current_holder?.userId === keyHolder.full_current_holder?.userId) {
+          if (x.full_current_holder?.id === keyHolder.full_current_holder?.id) {
             return {
               ...keyHolder,
               full_current_holder: user,
-              current_holder: user.userId,
+              current_holder: user.id,
               lastUpdate: formatDateToDatabase(new Date()),
             };
           } else {
@@ -62,7 +63,14 @@ export const useHandoverKeyMutation = () =>
 
       return { previousItemHolders, previousItemHistory, itemId: keyHolder.id };
     },
-    onError: (_e, _v, context) => {
+    onError: (error, variables, context) => {
+      captureException(error, {
+        extra: {
+          ...variables,
+          ...error,
+        },
+        tags: { type: 'HandoverKey', scope: 'items' },
+      });
       if (context?.previousItemHolders) {
         queryClient.setQueryData(['items'], context.previousItemHolders);
       }
@@ -114,12 +122,19 @@ export const useUpdateItemMutation = () =>
 
       return { previousItemHolders };
     },
-    onError: (_e, _v, context) => {
+    onError: (error, variables, context) => {
+      captureException(error, {
+        extra: {
+          ...variables,
+          ...error,
+        },
+        tags: { type: 'UpdateItem', scope: 'items' },
+      });
       if (context?.previousItemHolders) {
         queryClient.setQueryData(['items'], context.previousItemHolders);
       }
     },
-    onSettled: (_d, _e, _v, _context) => {
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ['items'] });
     },
   });
@@ -148,12 +163,19 @@ export const useInsertItemMutation = () =>
 
       return { previousItemHolders };
     },
-    onError: (_e, _v, context) => {
+    onError: (error, variables, context) => {
+      captureException(error, {
+        extra: {
+          ...variables,
+          ...error,
+        },
+        tags: { type: 'InsertItem', scope: 'items' },
+      });
       if (context?.previousItemHolders) {
         queryClient.setQueryData(['items'], context.previousItemHolders);
       }
     },
-    onSettled: (_d, _e, _v, _context) => {
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ['items'] });
     },
   });

@@ -1,5 +1,6 @@
 import { queryClient } from '@/lib/queryClient';
 import { supabase } from '@/lib/supabase';
+import { captureException } from '@sentry/react';
 import { useMutation, useQuery } from '@tanstack/react-query';
 
 export const useGroups = () => {
@@ -43,7 +44,7 @@ export const useDirectUserGrants = () =>
 
       const users = new Map<string, User>();
 
-      result.data?.forEach((x) => !users.has(x.user.userId) && users.set(x.user.userId, x.user));
+      result.data?.forEach((x) => !users.has(x.user.id) && users.set(x.user.id, x.user));
 
       return [...users.values()];
     },
@@ -53,7 +54,11 @@ export const useUserPermissions = (userId: string) => {
   return useQuery({
     queryKey: ['grants', 'user-permissions', userId],
     queryFn: async () => {
-      const { data, error } = await supabase.from('user_direct_grants').select('*').eq('kind', 'perm').eq("user", userId);
+      const { data, error } = await supabase
+        .from('user_direct_grants')
+        .select('*')
+        .eq('kind', 'perm')
+        .eq('user', userId);
       if (error) throw error;
       return data?.map((x) => x.key) ?? [];
     },
@@ -64,7 +69,11 @@ export const useUserFeatures = (userId: string) => {
   return useQuery({
     queryKey: ['grants', 'user-features', userId],
     queryFn: async () => {
-      const { data, error } = await supabase.from('user_direct_grants').select('*').eq('kind', 'feat').eq("user", userId);
+      const { data, error } = await supabase
+        .from('user_direct_grants')
+        .select('*')
+        .eq('kind', 'feat')
+        .eq('user', userId);
       if (error) throw error;
       return data?.map((x) => x.key) ?? [];
     },
@@ -130,15 +139,22 @@ export const useGrantUserPermissions = () =>
 
       return { previousGroupPermissions, previousGroupFeatures };
     },
-    onError: (_e, _v, context) => {
+    onError: (error, variables, context) => {
+      captureException(error, {
+        extra: {
+          ...variables,
+          ...error,
+        },
+        tags: { type: 'GrantUserPermissions', scope: 'grants' },
+      });
       if (context?.previousGroupFeatures) {
-        queryClient.setQueryData(['grants', 'user-permissions', _v.user], context.previousGroupFeatures);
+        queryClient.setQueryData(['grants', 'user-permissions', variables.user], context.previousGroupFeatures);
       }
       if (context?.previousGroupPermissions) {
-        queryClient.setQueryData(['grants', 'user-features', _v.user], context.previousGroupPermissions);
+        queryClient.setQueryData(['grants', 'user-features', variables.user], context.previousGroupPermissions);
       }
     },
-    onSettled: (_d, _e, _v, _context) => {
+    onSettled: (_d, _e, _v) => {
       queryClient.invalidateQueries({ queryKey: ['grants', 'user'] });
       queryClient.invalidateQueries({ queryKey: ['grants', 'user-permissions', _v.user] });
       queryClient.invalidateQueries({ queryKey: ['grants', 'user-features', _v.user] });
@@ -173,15 +189,22 @@ export const useRevokeUserPermissions = () =>
 
       return { previousGroupPermissions, previousGroupFeatures };
     },
-    onError: (_e, _v, context) => {
+    onError: (error, variables, context) => {
+      captureException(error, {
+        extra: {
+          ...variables,
+          ...error,
+        },
+        tags: { type: 'RevokeUserPermissions', scope: 'grants' },
+      });
       if (context?.previousGroupFeatures) {
-        queryClient.setQueryData(['grants', 'user-permissions', _v.user], context.previousGroupFeatures);
+        queryClient.setQueryData(['grants', 'user-permissions', variables.user], context.previousGroupFeatures);
       }
       if (context?.previousGroupPermissions) {
-        queryClient.setQueryData(['grants', 'user-features', _v.user], context.previousGroupPermissions);
+        queryClient.setQueryData(['grants', 'user-features', variables.user], context.previousGroupPermissions);
       }
     },
-    onSettled: (_d, _e, _v, _context) => {
+    onSettled: (_d, _e, _v) => {
       queryClient.invalidateQueries({ queryKey: ['grants', 'user'] });
       queryClient.invalidateQueries({ queryKey: ['grants', 'user-permissions', _v.user] });
       queryClient.invalidateQueries({ queryKey: ['grants', 'user-features', _v.user] });
@@ -216,15 +239,22 @@ export const useGrantGroupPermissions = () =>
 
       return { previousGroupPermissions, previousGroupFeatures };
     },
-    onError: (_e, _v, context) => {
+    onError: (error, variables, context) => {
+      captureException(error, {
+        extra: {
+          ...variables,
+          ...error,
+        },
+        tags: { type: 'GrantGroupPermissions', scope: 'grants' },
+      });
       if (context?.previousGroupFeatures) {
-        queryClient.setQueryData(['grants', 'group-permissions', _v.group], context.previousGroupFeatures);
+        queryClient.setQueryData(['grants', 'group-permissions', variables.group], context.previousGroupFeatures);
       }
       if (context?.previousGroupPermissions) {
-        queryClient.setQueryData(['grants', 'group-features', _v.group], context.previousGroupPermissions);
+        queryClient.setQueryData(['grants', 'group-features', variables.group], context.previousGroupPermissions);
       }
     },
-    onSettled: (_d, _e, _v, _context) => {
+    onSettled: (_d, _e, _v) => {
       queryClient.invalidateQueries({ queryKey: ['grants', 'group-permissions', _v.group] });
       queryClient.invalidateQueries({ queryKey: ['grants', 'group-features', _v.group] });
     },
@@ -258,15 +288,22 @@ export const useRevokeGroupPermissions = () =>
 
       return { previousGroupPermissions, previousGroupFeatures };
     },
-    onError: (_e, _v, context) => {
+    onError: (error, variables, context) => {
+      captureException(error, {
+        extra: {
+          ...variables,
+          ...error,
+        },
+        tags: { type: 'RevokeGroupPermissions', scope: 'grants' },
+      });
       if (context?.previousGroupFeatures) {
-        queryClient.setQueryData(['grants', 'group-permissions', _v.group], context.previousGroupFeatures);
+        queryClient.setQueryData(['grants', 'group-permissions', variables.group], context.previousGroupFeatures);
       }
       if (context?.previousGroupPermissions) {
-        queryClient.setQueryData(['grants', 'group-features', _v.group], context.previousGroupPermissions);
+        queryClient.setQueryData(['grants', 'group-features', variables.group], context.previousGroupPermissions);
       }
     },
-    onSettled: (_d, _e, _v, _context) => {
+    onSettled: (_d, _e, _v) => {
       queryClient.invalidateQueries({ queryKey: ['grants', 'group-permissions', _v.group] });
       queryClient.invalidateQueries({ queryKey: ['grants', 'group-features', _v.group] });
     },

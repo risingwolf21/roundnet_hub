@@ -15,6 +15,8 @@ jobs:
           version: latest
       - run: supabase db start
       - run: supabase test db
+      - run: supabase db lint --schema public,util,notificiations,games --fail-on error
+      - run: yarn test
 
   build-karlsruhe:
     name: "Build Karlsruhe Staging"
@@ -43,6 +45,7 @@ jobs:
           VITE_SUPABASE_PROJECT_ID: ${{ vars.SUPABASE_PROJECT_ID }}
           VITE_OPENWEATHER_API_KEY: ${{ secrets.OPENWEATHER_API_KEY }}
           VITE_VAPID_PUBLIC_KEY: ${{ vars.VAPID_PUBLIC_KEY }}
+          VITE_PAYMENT_INFO: ${{ vars.PAYMENT_INFO }}
           VITE_PAYPAL_ME_LINK: ${{ vars.PAYPAL_ME_LINK }}
           VITE_GIT_COMMIT: ${{ github.sha}}
           VITE_ENV: "staging"

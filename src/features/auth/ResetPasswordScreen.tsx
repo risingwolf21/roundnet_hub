@@ -1,5 +1,5 @@
 import { supabase } from '@/lib/supabase';
-import { BRANDING, iOS } from '@/utils';
+import { BRANDING } from '@/utils';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Container from '@mui/material/Container';
@@ -55,60 +55,21 @@ const getCommonTextFieldProps = (theme: Theme, baseProps: TextFieldProps = {}): 
   },
 });
 
-const ResetPasswordScreen = () => {
-  const theme = useTheme();
-  const [error, setError] = React.useState('');
-  const [loading, setLoading] = useState(false);
-  const [accessToken, setAccessToken] = useState('');
-  const [refreshToken, setRefreshToken] = useState('');
+export const ResetPasswordLayout = ({
+  loadingState,
+  theme,
+  errorState,
+  handleSubmit,
+}: {
+  loadingState: [boolean, React.Dispatch<React.SetStateAction<boolean>>];
+  errorState: [string, React.Dispatch<React.SetStateAction<string>>];
+  theme: Theme;
+  handleSubmit: (password: string) => void;
+}) => {
+  const [loading, setLoading] = loadingState;
+  const [error, setError] = errorState;
 
-  const navigate = useNavigate();
-
-  // iOS-Standalone erkennen
-  const isStandalone =
-    (navigator as any).standalone === true || window.matchMedia('(display-mode: standalone)').matches;
-
-  if (iOS && isStandalone) {
-    const unlockOnFocus = () => {
-      if (document.activeElement?.matches('input, textarea, [contenteditable="true"]')) {
-        document.body.style.overflow = 'auto'; // sicherstellen, dass kein Body-Lock aktiv ist
-      }
-    };
-    window.addEventListener('focusin', unlockOnFocus);
-    window.addEventListener('touchend', unlockOnFocus, { passive: true });
-  }
-
-  useEffect(() => {
-    // Get the access token and refresh token from the URL
-    if (typeof window !== 'undefined') {
-      const hashParams = new URLSearchParams(window.location.hash.substring(1));
-      setAccessToken(hashParams.get('access_token') || '');
-      setRefreshToken(hashParams.get('refresh_token') || '');
-    }
-  }, []);
-
-  useEffect(() => {
-    // Authenticate the user using the access token and refresh token
-    const getSessionWithTokens = async () => {
-      if (accessToken && refreshToken) {
-        const { error } = await supabase.auth.setSession({
-          access_token: accessToken,
-          refresh_token: refreshToken,
-        });
-
-        if (error) {
-          alert(`Error signing in: ${error.message}`);
-        }
-      }
-    };
-
-    // Call this function only when accessToken and refreshToken are available.
-    if (accessToken && refreshToken) {
-      getSessionWithTokens();
-    }
-  }, [accessToken, refreshToken]);
-
-  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+  const submit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setLoading(true);
     const data = new FormData(event.currentTarget);
@@ -120,14 +81,7 @@ const ResetPasswordScreen = () => {
       return;
     }
 
-    const { error } = await supabase.auth.updateUser({ password });
-    if (error) setError(error.message);
-    else {
-      await new Promise((r) => setTimeout(r, 2000));
-      setLoading(false);
-      setError('');
-      navigate(`/${import.meta.env.VITE_APP_HOMEPAGE}`, { replace: true });
-    }
+    handleSubmit(password);
   };
 
   return (
@@ -189,7 +143,7 @@ const ResetPasswordScreen = () => {
             Passwort zurücksetzen<br></br>
             {BRANDING.title}
           </Typography>
-          <Box component="form" onSubmit={handleSubmit} sx={{ width: '100%' }}>
+          <Box component="form" onSubmit={submit} sx={{ width: '100%' }}>
             <Stack direction={'column'} spacing={2} sx={{ mb: 2, mt: 2 }}>
               <TextField
                 {...getCommonTextFieldProps(theme, {
@@ -226,6 +180,58 @@ const ResetPasswordScreen = () => {
         </Box>
       </Container>
     </Box>
+  );
+};
+
+const ResetPasswordScreen = () => {
+  const hashParams = new URLSearchParams(window.location.hash.substring(1));
+  const theme = useTheme();
+  const [error, setError] = React.useState('');
+  const [loading, setLoading] = useState(false);
+  const accessTokenFromUrl = hashParams.get('access_token');
+  const refreshTokenFromUrl = hashParams.get('refresh_token');
+
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    // Authenticate the user using the access token and refresh token
+    const getSessionWithTokens = async () => {
+      if (accessTokenFromUrl && refreshTokenFromUrl) {
+        const { error } = await supabase.auth.setSession({
+          access_token: accessTokenFromUrl,
+          refresh_token: refreshTokenFromUrl,
+        });
+
+        if (error) {
+          alert(`Error signing in: ${error.message}`);
+        }
+      }
+    };
+
+    // Call this function only when accessToken and refreshToken are available.
+    if (accessTokenFromUrl && refreshTokenFromUrl) {
+      getSessionWithTokens();
+    }
+  }, [accessTokenFromUrl, refreshTokenFromUrl]);
+
+  const handleSubmit = async (password: string) => {
+    const { error } = await supabase.auth.updateUser({ password });
+    if (error) setError(error.message);
+    else {
+      await new Promise((r) => setTimeout(r, 2000));
+      setLoading(false);
+      setError('');
+      navigate(`/`, { replace: true });
+    }
+  };
+
+  return (
+    <ResetPasswordLayout
+      loadingState={[loading, setLoading]}
+      theme={theme}
+      errorState={[error, setError]}
+      handleSubmit={handleSubmit}
+    />
   );
 };
 export default ResetPasswordScreen;

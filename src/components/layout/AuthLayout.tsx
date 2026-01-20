@@ -1,5 +1,5 @@
-import { BRANDING, iOS } from '@/utils';
-import { ReactNode, useEffect } from 'react';
+import { BRANDING } from '@/utils';
+import { ReactNode } from 'react';
 import { Outlet } from 'react-router';
 import { drawerWidth } from '../Drawer';
 
@@ -9,22 +9,6 @@ import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
 
 const AuthLayout = ({ children }: { children?: ReactNode }) => {
-
-  useEffect(() => {
-    if (!iOS) return;
-    const preventSwipeBack = (e: TouchEvent) => {
-      if (e.touches[0].clientX < 25) {
-        e.preventDefault();
-      }
-    };
-
-    document.addEventListener('touchstart', preventSwipeBack, { passive: false });
-
-    return () => {
-      document.removeEventListener('touchstart', preventSwipeBack);
-    };
-  }, [iOS]);
-
   return (
     <Box
       sx={{
@@ -85,11 +69,7 @@ const AuthLayout = ({ children }: { children?: ReactNode }) => {
             height: '100svh',
           }}
         >
-          <Box sx={{ height: '100%' }}>
-            {
-              children ? children : <Outlet />
-            }
-          </Box>
+          <Box sx={{ height: '100%' }}>{children ? children : <Outlet />}</Box>
         </Box>
       </Box>
     </Box>

@@ -136,7 +136,7 @@ const SignUpScreen = () => {
       });
       setError('Could not sign up user. [' + error?.message + ']');
     }
-    notifications.show("Registrierung erfolgreich.", { severity: "success" });
+    notifications.show('Registrierung erfolgreich.', { severity: 'success' });
     setLoading(false);
     if (data.session) {
       await supabase.auth.setSession(data.session);

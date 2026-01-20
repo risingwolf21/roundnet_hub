@@ -52,7 +52,7 @@ const PublicGroupList = () => {
       onRefresh={() => {
         refetch();
         refetchRequested();
-        queryClient.invalidateQueries({ queryKey: grantsQk(user.userId) });
+        queryClient.invalidateQueries({ queryKey: grantsQk(user.id) });
       }}
     >
       {groups
@@ -70,10 +70,10 @@ const PublicGroupList = () => {
                   divider
                   {...(x.user_group_role &&
                     x.user_group_role !== 'joinRequested' && {
-                    onClick: () => {
-                      navigate('/groups/' + x.id);
-                    },
-                  })}
+                      onClick: () => {
+                        navigate('/groups/' + x.id);
+                      },
+                    })}
                   {...(!x.user_group_role && {
                     secondaryAction: <JoinGroupButton group={x} user={user} />,
                   })}

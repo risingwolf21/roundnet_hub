@@ -38,8 +38,9 @@ export const ChallengeActivityList = ({
   isFetchingNextPage,
   fetchNextPage,
 }: ChallengeActivityListProps) => {
-  const grouped = groupBy(stats?.pages.flatMap((x) => x.data) ?? [], (a) =>
-    formatDateFromDatabase(a.created_at)?.toDateString() ?? ""
+  const grouped = groupBy(
+    stats?.pages.flatMap((x) => x.data) ?? [],
+    (a) => formatDateFromDatabase(a.created_at)?.toDateString() ?? ''
   );
   const sortedEntries = Object.entries(grouped).sort(([a], [b]) => new Date(b).getTime() - new Date(a).getTime());
   const loadMoreRef = useRef<HTMLDivElement | null>(null);

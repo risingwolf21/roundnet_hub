@@ -1,5 +1,5 @@
 BEGIN;
-\i 000_setup_tests_users.inc
+
 SET LOCAL TIME ZONE 'UTC';
 SELECT plan(8);
 
@@ -24,8 +24,8 @@ SELECT tests.authenticate_as('user_1a');
 
 -- 2) Besitzer übernehmen (NULL -> a1) sollte gehen
 SELECT results_eq(
-  $$ SELECT key_id, holder FROM public.key_handover(1000::bigint, tests.get_supabase_uid('user_2a')::text) $$,
-  $$ VALUES (1000::bigint, tests.get_supabase_uid('user_2a')::text) $$,
+  $$ SELECT key_id, holder FROM public.key_handover(1000::bigint, tests.get_supabase_uid('user_2a')) $$,
+  $$ VALUES (1000::bigint, tests.get_supabase_uid('user_2a')) $$,
   'Besitzerwechsel (nehmen) durch Member erlaubt'
 );
 
@@ -39,7 +39,7 @@ SELECT cmp_ok(
 );
 
 SELECT throws_like(
-  $$ SELECT key_id, holder FROM public.key_handover(1000::bigint, tests.get_supabase_uid('user_2b')::text) $$,
+  $$ SELECT key_id, holder FROM public.key_handover(1000::bigint, tests.get_supabase_uid('user_2b')) $$,
   '%not in group%'::text,
   'Darf nicht an user außerhalb der Gruppe übergeben'
 );

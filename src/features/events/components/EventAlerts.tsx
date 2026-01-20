@@ -11,9 +11,8 @@ type Props = {
 
 const EventAlerts = ({ event, t }: Props) => (
   <>
-    {
-      (
-        answerDeadlineExpired(event) || event.isCancelled) && <Stack direction={"column"} spacing={2} sx={{ m: 1 }}>
+    {(answerDeadlineExpired(event) || event.isCancelled) && (
+      <Stack direction={'column'} spacing={2} sx={{ m: 1 }}>
         {event.isCancelled && (
           <Alert severity="error">
             Dieses Event wurde <strong>abgesagt</strong>
@@ -27,7 +26,7 @@ const EventAlerts = ({ event, t }: Props) => (
           </Alert>
         )}
       </Stack>
-    }
+    )}
   </>
 );
 

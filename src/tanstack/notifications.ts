@@ -2,6 +2,7 @@ import { queryClient } from '@/lib/queryClient';
 import { supabase } from '@/lib/supabase';
 import { Tables } from '@/types/helpers';
 import { formatDateToDatabase } from '@/utils';
+import { captureException } from '@sentry/react';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { Notification } from 'types/supabase';
 
@@ -14,7 +15,7 @@ export const useAllNotifications = (user: User | null) =>
         .schema('notifications')
         .from('notifications')
         .select('*')
-        .eq('user', user!.userId)
+        .eq('user', user!.id)
         .throwOnError()
         .returns<Notification[]>();
 
@@ -24,7 +25,7 @@ export const useAllNotifications = (user: User | null) =>
 
 export const useDismissNotification = () =>
   useMutation({
-    mutationFn: async (notficationId: string) => {
+    mutationFn: async ({ notficationId }: { notficationId: string }) => {
       const result = await supabase
         .schema('notifications')
         .from('notifications')
@@ -34,44 +35,50 @@ export const useDismissNotification = () =>
 
       return result;
     },
-    onMutate: async (notficationId: string) => {
+    onMutate: async ({ notficationId }) => {
       await queryClient.cancelQueries({ queryKey: ['notifications'] });
       const previousNotifications = queryClient.getQueryData<Notification[]>(['notifications']);
 
       if (previousNotifications) {
-        const newNotifications = previousNotifications
-          .map(x => {
-            if (x.id === notficationId) {
-              return {
-                ...x,
-                dismissed_at: formatDateToDatabase(new Date())
-              };
-            }
-            return x;
-          })
+        const newNotifications = previousNotifications.map((x) => {
+          if (x.id === notficationId) {
+            return {
+              ...x,
+              dismissed_at: formatDateToDatabase(new Date()),
+            };
+          }
+          return x;
+        });
         queryClient.setQueriesData({ queryKey: ['notifications'] }, newNotifications);
       }
 
       return { previousNotifications };
     },
-    onError: (_err, _vars, context) => {
+    onError: (error, variables, context) => {
+      captureException(error, {
+        extra: {
+          ...variables,
+          ...error,
+        },
+        tags: { type: 'InsertItem', scope: 'items' },
+      });
       if (context?.previousNotifications) {
         queryClient.setQueryData(['notifications'], context.previousNotifications);
       }
     },
-    onSettled: (_data, _error, _variables, _context) => {
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ['notifications'] });
     },
   });
 
-export const useMarkNotificationsAsRead = (userId: string) =>
+export const useMarkNotificationsAsRead = (user: User) =>
   useMutation({
     mutationFn: async () => {
       const result = await supabase
         .schema('notifications')
         .from('notifications')
         .delete()
-        .eq('user', userId)
+        .eq('user', user.id)
         .throwOnError();
 
       return result;
@@ -84,25 +91,33 @@ export const useMarkNotificationsAsRead = (userId: string) =>
 
       return { previousNotifications };
     },
-    onError: (_err, _vars, context) => {
+    onError: (error, _vars, context) => {
+      captureException(error, {
+        extra: {
+          userName: user.name,
+          userId: user.id,
+          ...error,
+        },
+        tags: { type: 'MarkNotficiationsRead', scope: 'notifications' },
+      });
       if (context?.previousNotifications) {
         queryClient.setQueryData(['notifications'], context.previousNotifications);
       }
     },
-    onSettled: (_data, _error, _variables, _context) => {
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ['notifications'] });
     },
   });
 
 export const useNotificationTags = (user: User) =>
   useQuery<Tables<'notifications', 'user_notification_preferences'>[]>({
-    queryKey: ['notifications', user.userId, 'preferences'],
+    queryKey: ['notifications', user.id, 'preferences'],
     queryFn: async () => {
       const result = await supabase
         .schema('notifications')
         .from('user_notification_preferences')
         .select('*')
-        .eq('user', user.userId)
+        .eq('user', user.id)
         .throwOnError();
 
       return result.data ?? [];
@@ -135,7 +150,7 @@ export const useUpdateNotificationPreferences = (user: User) =>
       scopeId?: string;
     }) => {
       const result = await supabase
-        .schema("notifications")
+        .schema('notifications')
         .rpc('set_notification_pref', {
           p_topic: topic,
           p_enabled: enabled,
@@ -148,10 +163,10 @@ export const useUpdateNotificationPreferences = (user: User) =>
       return result.data;
     },
     onMutate: async ({ topic, enabled, channel, scopeType, scopeId }) => {
-      await queryClient.cancelQueries({ queryKey: ['notifications', user.userId, 'tags'] });
+      await queryClient.cancelQueries({ queryKey: ['notifications', user.id, 'tags'] });
       const previousNotificationTags = queryClient.getQueryData<Tables<'user_notification_preferences'>[]>([
         'notifications',
-        user.userId,
+        user.id,
         'preferences',
       ]);
 
@@ -166,17 +181,26 @@ export const useUpdateNotificationPreferences = (user: User) =>
             scope_type: scopeType,
           },
         ] as Tables<'user_notification_preferences'>[];
-        queryClient.setQueriesData({ queryKey: ['notifications', user.userId, 'preferences'] }, newNotificationTags);
+        queryClient.setQueriesData({ queryKey: ['notifications', user.id, 'preferences'] }, newNotificationTags);
       }
 
       return { previousNotificationTags };
     },
-    onError: (_err, _vars, context) => {
+    onError: (error, variables, context) => {
+      captureException(error, {
+        extra: {
+          userName: user.name,
+          userId: user.id,
+          ...error,
+          ...variables
+        },
+        tags: { type: 'UpdateNotificationPerferences', scope: 'notifications' },
+      });
       if (context?.previousNotificationTags) {
-        queryClient.setQueryData(['notifications', user.userId, 'preferences'], context.previousNotificationTags);
+        queryClient.setQueryData(['notifications', user.id, 'preferences'], context.previousNotificationTags);
       }
     },
-    onSettled: (_data, _error, _variables, _context) => {
-      queryClient.invalidateQueries({ queryKey: ['notifications', user.userId, 'preferences'] });
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ['notifications', user.id, 'preferences'] });
     },
   });

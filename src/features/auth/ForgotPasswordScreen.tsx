@@ -36,6 +36,7 @@ const ForgotPasswordScreen = () => {
     const email = formData.get('email')?.toString();
 
     if (email) {
+      setLoading(true);
       supabase.auth
         .resetPasswordForEmail(email, {
           redirectTo: import.meta.env.VITE_PUBLIC_URL + '/auth/reset-password',
@@ -46,15 +47,10 @@ const ForgotPasswordScreen = () => {
         })
         .catch((error) => {
           notifications.show(error.message, { severity: 'error' });
-        });
-    }
-    const { data, error } = await supabase
-      .from('group_user_mapping')
-      .select('*, user(*), group(*)')
-      .eq('group.name', 'Super Admins');
-    if (error || !data) {
-      setLoading(false);
-      return;
+        })
+        .finally(() => {
+          setLoading(false);
+        })
     }
   };
 

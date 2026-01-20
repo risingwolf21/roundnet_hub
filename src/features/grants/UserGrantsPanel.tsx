@@ -28,15 +28,14 @@ const UserGrantsPanel = ({ searchValue }: { searchValue: string }) => {
   const revoke = useRevokeUserPermissions();
 
   const mutationDialogs = {
-    onError: () =>
-      notifications.show('Berechtigungen konnten nicht aktualisiert werden', { severity: 'error' }),
+    onError: () => notifications.show('Berechtigungen konnten nicht aktualisiert werden', { severity: 'error' }),
     onSettled: () => notifications.show('Berechtigungen wurden aktualisiert', { severity: 'success' }),
-  }
+  };
 
   const updateGrantsWith = (result: GroupResult, user: User) => {
     grant.mutate(
       {
-        user: user.userId,
+        user: user.id,
         perms: result.grantPerm,
         feats: result.grantFeat,
       },
@@ -44,28 +43,33 @@ const UserGrantsPanel = ({ searchValue }: { searchValue: string }) => {
     );
     revoke.mutate(
       {
-        user: user.userId,
+        user: user.id,
         perms: result.revokePerm,
         feats: result.revokeFeat,
       },
       mutationDialogs
     );
-  }
+  };
 
   return (
     <PullToRefresh onRefresh={refetch}>
       <List>
         {data
-          .filter(x => searchValue === '' || x.name.toLowerCase().includes(searchValue.toLowerCase())
-            || x.displayName.toLowerCase().includes(searchValue.toLowerCase())
-            || x.email.toLowerCase().includes(searchValue.toLowerCase()))
+          .filter(
+            (x) =>
+              searchValue === '' ||
+              x.name.toLowerCase().includes(searchValue.toLowerCase()) ||
+              x.displayName.toLowerCase().includes(searchValue.toLowerCase()) ||
+              x.email.toLowerCase().includes(searchValue.toLowerCase())
+          )
           .map((x) => (
             <ListItem
+              key={x.id}
               divider
               onClick={async () => {
                 const result = await dialogs.open(GrantsEditorDialog, {
                   title: `Benutzer ${x.displayName} bearbeiten`,
-                  id: x.userId,
+                  id: x.id,
                   currentPermissions: useUserPermissions,
                   currentFeatures: useUserFeatures,
                 });
@@ -82,20 +86,23 @@ const UserGrantsPanel = ({ searchValue }: { searchValue: string }) => {
               <ListItemText primary={x.name} secondary={x.email} />
             </ListItem>
           ))}
-        <Fab sx={{ position: "fixed", right: "16px", bottom: "calc(env(safe-area-inset-top) + 16px)" }} onClick={async () => {
-          const result = await dialogs.open(SearchAndSelectSingleUserDialog, { usersToFilter: [] });
-          if (result) {
-            const grantsResult = await dialogs.open(GrantsEditorDialog, {
-              title: `Benutzer ${result.displayName} hinzufügen`,
-              id: result.userId,
-              currentPermissions: useUserPermissions,
-              currentFeatures: useUserFeatures,
-            });
-            if (grantsResult) {
-              updateGrantsWith(grantsResult, result);
+        <Fab
+          sx={{ position: 'fixed', right: '16px', bottom: 'calc(env(safe-area-inset-top) + 16px)' }}
+          onClick={async () => {
+            const result = await dialogs.open(SearchAndSelectSingleUserDialog, { usersToFilter: [] });
+            if (result) {
+              const grantsResult = await dialogs.open(GrantsEditorDialog, {
+                title: `Benutzer ${result.displayName} hinzufügen`,
+                id: result.id,
+                currentPermissions: useUserPermissions,
+                currentFeatures: useUserFeatures,
+              });
+              if (grantsResult) {
+                updateGrantsWith(grantsResult, result);
+              }
             }
-          }
-        }}>
+          }}
+        >
           <PersonAdd />
         </Fab>
       </List>

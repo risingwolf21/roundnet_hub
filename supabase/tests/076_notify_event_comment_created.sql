@@ -1,6 +1,6 @@
 -- file: tests/notify_event_comment_created.sql
 BEGIN;
-\i 000_setup_tests_users.inc
+
 SET LOCAL TIME ZONE 'UTC';
 
 -- pgTAP
@@ -16,25 +16,25 @@ WITH e AS (
 attend AS (
   -- u1 und u2 sind Attending, u3 nicht
   INSERT INTO public.event_attendance_user_mapping ("user","state","event")
-  SELECT tests.get_supabase_uid('user_1a')::text, 'Attending'::public."EventAttendance", e.id FROM e
+  SELECT tests.get_supabase_uid('user_1a'), 'Attending'::public."EventAttendance", e.id FROM e
   UNION ALL
-  SELECT tests.get_supabase_uid('user_2a')::text, 'Attending'::public."EventAttendance", e.id FROM e
+  SELECT tests.get_supabase_uid('user_2a'), 'Attending'::public."EventAttendance", e.id FROM e
   UNION ALL
-  SELECT tests.get_supabase_uid('user_1b')::text, 'Unanswered'::public."EventAttendance", e.id FROM e
+  SELECT tests.get_supabase_uid('user_1b'), 'Unanswered'::public."EventAttendance", e.id FROM e
   UNION ALL
-  SELECT tests.get_supabase_uid('user_2b')::text, 'Declined'::public."EventAttendance", e.id FROM e
+  SELECT tests.get_supabase_uid('user_2b'), 'Declined'::public."EventAttendance", e.id FROM e
   RETURNING event
 ),
 prefs AS (
   INSERT INTO notifications.user_notification_preferences("user","tenant","topic","channel","enabled","scope_type") VALUES 
-  (tests.get_supabase_uid('user_1a')::text, '00000000-0000-0000-0000-000000000000', 'event.comment.created', 'webpush', true, 'event')
-  ,(tests.get_supabase_uid('user_2a')::text, '00000000-0000-0000-0000-000000000000', 'event.comment.created', 'webpush', false, 'event')
-  ,(tests.get_supabase_uid('user_2b')::text, '00000000-0000-0000-0000-000000000000', 'event.comment.created', 'webpush', true, 'event')
+  (tests.get_supabase_uid('user_1a'), '00000000-0000-0000-0000-000000000000', 'event.comment.created', 'webpush', true, 'event')
+  ,(tests.get_supabase_uid('user_2a'), '00000000-0000-0000-0000-000000000000', 'event.comment.created', 'webpush', false, 'event')
+  ,(tests.get_supabase_uid('user_2b'), '00000000-0000-0000-0000-000000000000', 'event.comment.created', 'webpush', true, 'event')
   RETURNING "user"
 ),
 comment as (
   INSERT INTO public.event_comments("user", "comment", "displayName", "event")
-  VALUES(tests.get_supabase_uid('user_1b')::text, 'Das ist ein Test', 'Test', (SELECT id from e))
+  VALUES(tests.get_supabase_uid('user_1b'), 'Das ist ein Test', 'Test', (SELECT id from e))
 )
 SELECT 1;
 
@@ -42,7 +42,7 @@ SELECT 1;
 SELECT is(
   (SELECT count(*)::int FROM notifications.notifications n
    WHERE n.topic = 'event.comment.created'
-     AND n."user" = tests.get_supabase_uid('user_1a')::text),
+     AND n."user" = tests.get_supabase_uid('user_1a')),
   1,
   'u1 receives event.comment.created'
 );
@@ -51,7 +51,7 @@ SELECT is(
 SELECT is(
   (SELECT count(*)::int FROM notifications.notifications n
    WHERE n.topic = 'event.comment.created'
-     AND n."user" = tests.get_supabase_uid('user_2a')::text),
+     AND n."user" = tests.get_supabase_uid('user_2a')),
   0,
   'u2 has disabled pref -> no notification'
 );
@@ -60,7 +60,7 @@ SELECT is(
 SELECT is(
   (SELECT count(*)::int FROM notifications.notifications n
    WHERE n.topic = 'event.comment.created'
-     AND n."user" = tests.get_supabase_uid('user_1b')::text),
+     AND n."user" = tests.get_supabase_uid('user_1b')),
   0,
   'u3 not attending -> no notification'
 );
@@ -68,7 +68,7 @@ SELECT is(
 SELECT is(
   (SELECT count(*)::int FROM notifications.notifications n
    WHERE n.topic = 'event.comment.created'
-     AND n."user" = tests.get_supabase_uid('user_2b')::text),
+     AND n."user" = tests.get_supabase_uid('user_2b')),
   0,
   'user 2b not attending -> with pref on -> no notification'
 );
