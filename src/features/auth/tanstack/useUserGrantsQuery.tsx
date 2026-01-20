@@ -115,7 +115,7 @@ export function useUserGrantsQuery(userId: string) {
   return {
     isEmpty: q.data?.perm.size === 0 && q.data.feat.size === 0,
     refetchUserGrants: q.refetch,
-    loading: q.isLoading,
+    loading: q.isFetching,
     grants: q.data ?? empty,
     ...has,
   };
