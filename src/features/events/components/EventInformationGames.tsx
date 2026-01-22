@@ -1,9 +1,8 @@
 import { useGrants } from '@/features/auth/GrantsContext';
 import { ReportSetsDialog } from '@/features/games/dialogs/ReportSetsDialog';
-import { GamesRepository } from '@/repository/GamesRepository';
-import { useQuery } from '@tanstack/react-query';
 import { useDialogs } from '@toolpad/core';
 
+import { useEventMatches } from '@/tanstack/events';
 import Warning from '@mui/icons-material/Warning';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
@@ -23,11 +22,7 @@ const EventInformationGames = ({ eventId }: EventInformationGamesProps) => {
     data: matches = [],
     isLoading,
     refetch,
-  } = useQuery<FullMatch[]>({
-    queryKey: ['events', eventId, 'matches'],
-    enabled: !!eventId,
-    queryFn: () => GamesRepository.fetchGamesForEvent(eventId),
-  });
+  } = useEventMatches(eventId);
 
   if (matches.length === 0 || isLoading) return null;
 

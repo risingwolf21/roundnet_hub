@@ -6,15 +6,22 @@ import { formatDateToDatabase } from '@/utils';
 import { captureException } from '@sentry/react';
 import { useMutation, useQuery } from '@tanstack/react-query';
 
+export const itemKeys = {
+  all: ['items'] as const,
+  list: () => [...itemKeys.all, 'list'] as const,
+  item: (itemId: number) => [...itemKeys.all, itemId] as const,
+  history: (itemId: number) => [...itemKeys.item(itemId), 'history'] as const,
+};
+
 export const useAllItems = () =>
   useQuery<FullItemHolder[]>({
-    queryKey: ['items'],
+    queryKey: itemKeys.list(),
     queryFn: () => SupabaseKeysRepository.getItems(),
   });
 
 export const useItemHistory = (id: number) =>
   useQuery<FullItemHistory[]>({
-    queryKey: ['items', id, 'history'],
+    queryKey: itemKeys.history(id),
     queryFn: () => SupabaseKeysRepository.loadKeyHistory(id),
   });
 
@@ -24,12 +31,11 @@ export const useHandoverKeyMutation = () =>
       return SupabaseKeysRepository.giveItemToUser(keyHolder, user);
     },
     onMutate: async ({ keyHolder, user }) => {
-      await queryClient.cancelQueries({ queryKey: ['items'] });
-      await queryClient.cancelQueries({ queryKey: ['items', keyHolder.id, 'history'] });
+      await queryClient.cancelQueries({ queryKey: itemKeys.list() });
+      await queryClient.cancelQueries({ queryKey: itemKeys.history(keyHolder.id) });
 
-      const previousItemHolders = queryClient.getQueryData<FullItemHolder[]>(['items']);
-      const previousItemHistory = queryClient.getQueryData<FullItemHistory[]>(['items', keyHolder.id, 'history']);
-
+      const previousItemHolders = queryClient.getQueryData<FullItemHolder[]>(itemKeys.list());
+      const previousItemHistory = queryClient.getQueryData<FullItemHistory[]>(itemKeys.history(keyHolder.id));
       if (previousItemHolders) {
         const newItemHolders = previousItemHolders.map((x) => {
           if (x.full_current_holder?.id === keyHolder.full_current_holder?.id) {
@@ -43,7 +49,7 @@ export const useHandoverKeyMutation = () =>
             return x;
           }
         });
-        queryClient.setQueryData<FullItemHolder[]>(['items'], newItemHolders);
+        queryClient.setQueryData<FullItemHolder[]>(itemKeys.list(), newItemHolders);
       }
 
       if (previousItemHistory) {
@@ -58,7 +64,7 @@ export const useHandoverKeyMutation = () =>
             pastUser: keyHolder.full_current_holder,
           },
         ] as FullItemHistory[];
-        queryClient.setQueryData<FullItemHistory[]>(['items', keyHolder.id, 'history'], newItemHistory);
+        queryClient.setQueryData<FullItemHistory[]>(itemKeys.history(keyHolder.id), newItemHistory);
       }
 
       return { previousItemHolders, previousItemHistory, itemId: keyHolder.id };
@@ -72,16 +78,16 @@ export const useHandoverKeyMutation = () =>
         tags: { type: 'HandoverKey', scope: 'items' },
       });
       if (context?.previousItemHolders) {
-        queryClient.setQueryData(['items'], context.previousItemHolders);
+        queryClient.setQueryData(itemKeys.list(), context.previousItemHolders);
       }
       if (context?.previousItemHistory && context?.itemId) {
-        queryClient.setQueryData(['items', context.itemId, 'history'], context.previousItemHistory);
+        queryClient.setQueryData(itemKeys.history(context.itemId), context.previousItemHistory);
       }
     },
     onSettled: (_d, _e, _v, context) => {
-      queryClient.invalidateQueries({ queryKey: ['items'] });
+      queryClient.invalidateQueries({ queryKey: itemKeys.list() });
       if (context?.itemId) {
-        queryClient.invalidateQueries({ queryKey: ['items', context.itemId, 'history'] });
+        queryClient.invalidateQueries({ queryKey: itemKeys.history(context.itemId) });
       }
     },
   });
@@ -101,9 +107,9 @@ export const useUpdateItemMutation = () =>
       return result.data;
     },
     onMutate: async ({ item }) => {
-      await queryClient.cancelQueries({ queryKey: ['items'] });
+      await queryClient.cancelQueries({ queryKey: itemKeys.list() });
 
-      const previousItemHolders = queryClient.getQueryData<FullItemHolder[]>(['items']);
+      const previousItemHolders = queryClient.getQueryData<FullItemHolder[]>(itemKeys.list());
 
       if (previousItemHolders) {
         const newItemHolders = previousItemHolders.map((x) => {
@@ -117,7 +123,7 @@ export const useUpdateItemMutation = () =>
             return x;
           }
         });
-        queryClient.setQueryData<FullItemHolder[]>(['items'], newItemHolders);
+        queryClient.setQueryData<FullItemHolder[]>(itemKeys.list(), newItemHolders);
       }
 
       return { previousItemHolders };
@@ -131,11 +137,11 @@ export const useUpdateItemMutation = () =>
         tags: { type: 'UpdateItem', scope: 'items' },
       });
       if (context?.previousItemHolders) {
-        queryClient.setQueryData(['items'], context.previousItemHolders);
+        queryClient.setQueryData(itemKeys.list(), context.previousItemHolders);
       }
     },
     onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ['items'] });
+      queryClient.invalidateQueries({ queryKey: itemKeys.list() });
     },
   });
 
@@ -147,9 +153,9 @@ export const useInsertItemMutation = () =>
       return result.data;
     },
     onMutate: async ({ item }) => {
-      await queryClient.cancelQueries({ queryKey: ['items'] });
+      await queryClient.cancelQueries({ queryKey: itemKeys.list() });
 
-      const previousItemHolders = queryClient.getQueryData<FullItemHolder[]>(['items']);
+      const previousItemHolders = queryClient.getQueryData<FullItemHolder[]>(itemKeys.list());
 
       if (previousItemHolders) {
         const newItemHolders = [
@@ -158,7 +164,7 @@ export const useInsertItemMutation = () =>
             ...item,
           },
         ] as FullItemHolder[];
-        queryClient.setQueryData<FullItemHolder[]>(['items'], newItemHolders);
+        queryClient.setQueryData<FullItemHolder[]>(itemKeys.list(), newItemHolders);
       }
 
       return { previousItemHolders };
@@ -172,10 +178,10 @@ export const useInsertItemMutation = () =>
         tags: { type: 'InsertItem', scope: 'items' },
       });
       if (context?.previousItemHolders) {
-        queryClient.setQueryData(['items'], context.previousItemHolders);
+        queryClient.setQueryData(itemKeys.list(), context.previousItemHolders);
       }
     },
     onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ['items'] });
+      queryClient.invalidateQueries({ queryKey: itemKeys.list() });
     },
   });

@@ -2,6 +2,7 @@ import { DeleteEventType } from '@/features/events/types';
 import { queryClient } from '@/lib/queryClient';
 import { supabase } from '@/lib/supabase';
 import { SupabaseEventRepository } from '@/repository/EventRepository';
+import { GamesRepository } from '@/repository/GamesRepository';
 import { Tables, TablesInsert, TablesUpdate } from '@/types/supabase-generated.types';
 import { EventsUserView, FullAttendance, FullComment } from '@/types/supabaseTypes';
 import { formatDateToDatabase } from '@/utils';
@@ -17,6 +18,8 @@ export const eventKeys = {
   eventBringOverview: (id?: string) => [...eventKeys.event(id), 'bringOverview'] as const,
   eventBringPledges: (id?: string) => [...eventKeys.event(id), 'bringPledges'] as const,
   eventAttendance: (id?: string) => [...eventKeys.event(id), 'attendance'] as const,
+  eventMatches: (id?: string) => [...eventKeys.event(id), 'matches'] as const,
+  recurring: () => [...eventKeys.all, 'recurring'] as const,
 }
 
 export const fetchFullEventPledges = (eventId: string) =>
@@ -28,6 +31,22 @@ export const useEvents = (filter: 'past' | 'upcoming') => {
     queryFn: () => SupabaseEventRepository.fetchUserEvents(filter)
   });
 };
+
+export const useEvent = (eventId?: string) => useQuery<EventsUserView | null>({
+  queryKey: eventKeys.event(eventId),
+  enabled: !!eventId,
+  queryFn: () => SupabaseEventRepository.fetchUserEvent(eventId!),
+});
+
+export const useRecurringEvents = () => useQuery({
+  queryKey: eventKeys.recurring(),
+  queryFn: () => SupabaseEventRepository.fetchRecurringEvents(),
+});
+
+export const useEventMatches = (eventId: string) => useQuery<FullMatch[]>({
+  queryKey: eventKeys.eventMatches(eventId),
+  queryFn: () => GamesRepository.fetchGamesForEvent(eventId),
+});
 
 export const useComments = (eventId: string) =>
   useQuery({

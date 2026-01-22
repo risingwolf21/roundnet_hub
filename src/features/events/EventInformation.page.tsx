@@ -8,12 +8,9 @@ import { EditEventOptionsDialog } from '@/features/events/dialogs/EditEventOptio
 import { useFetchMode } from '@/hooks/useFetchMode';
 import { Has } from '@/hooks/useGrants';
 import { queryClient } from '@/lib/queryClient';
-import { SupabaseEventRepository } from '@/repository/EventRepository';
-import { useBringItems, useCancelTrainingMutation, useDeleteTrainingMutation } from '@/tanstack/events';
+import { eventKeys, useBringItems, useCancelTrainingMutation, useDeleteTrainingMutation, useEvent } from '@/tanstack/events';
 import { useAllItems } from '@/tanstack/items';
-import { EventsUserView } from '@/types/supabaseTypes';
 import { captureException } from '@sentry/react';
-import { useQuery } from '@tanstack/react-query';
 import { useDialogs, useNotifications } from '@toolpad/core';
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -47,15 +44,7 @@ const EventInformationProvider = () => {
 
   const cancelTrainingMutation = useCancelTrainingMutation(fetchMode);
   const deleteTrainingMutation = useDeleteTrainingMutation(fetchMode);
-  const {
-    data: event,
-    isLoading,
-    refetch,
-  } = useQuery<EventsUserView | null>({
-    queryKey: ['events', selectedEventId],
-    enabled: !!selectedEventId,
-    queryFn: () => SupabaseEventRepository.fetchUserEvent(selectedEventId!),
-  });
+  const { data: event, isLoading, refetch } = useEvent(selectedEventId);
   const { data: allItems = [], isLoading: bringItemsLoading } = useBringItems(event?.id);
   const { data: keyHolders = [], isLoading: keyHoldersLoading } = useAllItems();
 
@@ -222,8 +211,9 @@ const EventInformationProvider = () => {
       <PullToRefresh
         onRefresh={() => {
           refetch();
-          queryClient.invalidateQueries({ queryKey: ['events', selectedEventId, 'comments'] });
-          queryClient.invalidateQueries({ queryKey: ['events', selectedEventId, 'attendance'] });
+          queryClient.invalidateQueries({ queryKey: eventKeys.eventComments(selectedEventId) });
+          queryClient.invalidateQueries({ queryKey: eventKeys.event(selectedEventId) });
+          queryClient.invalidateQueries({ queryKey: eventKeys.eventAttendance(selectedEventId) });
         }}
       >
         <EventInformation
