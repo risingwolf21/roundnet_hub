@@ -3,9 +3,21 @@ import { supabase } from '@/lib/supabase';
 import { captureException } from '@sentry/react';
 import { useMutation, useQuery } from '@tanstack/react-query';
 
+export const grantKeys = {
+  all: ['grants'] as const,
+  groups: () => [...grantKeys.all, 'groups'] as const,
+  permissions: () => [...grantKeys.all, 'permissions'] as const,
+  features: () => [...grantKeys.all, 'features'] as const,
+  user: () => [...grantKeys.all, 'user'] as const,
+  userPermissions: (userId: string) => [...grantKeys.all, 'user-permissions', userId] as const,
+  userFeatures: (userId: string) => [...grantKeys.all, 'user-features', userId] as const,
+  groupPermissions: (groupId?: string) => [...grantKeys.all, 'group-permissions', groupId] as const,
+  groupFeatures: (groupId?: string) => [...grantKeys.all, 'group-features', groupId] as const,
+};
+
 export const useGroups = () => {
   return useQuery({
-    queryKey: ['grants', 'groups'],
+    queryKey: grantKeys.groups(),
     queryFn: async () => {
       const result = await supabase.from('event_groups_view').select('*').eq('role', 'admin');
 
@@ -16,7 +28,7 @@ export const useGroups = () => {
 
 export const usePermissions = () => {
   return useQuery({
-    queryKey: ['grants', 'permissions'],
+    queryKey: grantKeys.permissions(),
     queryFn: async () => {
       const { data, error } = await supabase.from('permissions').select('name').order('name');
       if (error) throw error;
@@ -27,7 +39,7 @@ export const usePermissions = () => {
 
 export const useFeatures = () => {
   return useQuery({
-    queryKey: ['grants', 'features'],
+    queryKey: grantKeys.features(),
     queryFn: async () => {
       const { data, error } = await supabase.from('features').select('name').order('name');
       if (error) throw error;
@@ -38,7 +50,7 @@ export const useFeatures = () => {
 
 export const useDirectUserGrants = () =>
   useQuery({
-    queryKey: ['grants', 'user'],
+    queryKey: grantKeys.user(),
     queryFn: async () => {
       const result = await supabase.from('user_direct_grants').select('user:user(*)').throwOnError();
 
@@ -52,7 +64,7 @@ export const useDirectUserGrants = () =>
 
 export const useUserPermissions = (userId: string) => {
   return useQuery({
-    queryKey: ['grants', 'user-permissions', userId],
+    queryKey: grantKeys.userPermissions(userId),
     queryFn: async () => {
       const { data, error } = await supabase
         .from('user_direct_grants')
@@ -67,7 +79,7 @@ export const useUserPermissions = (userId: string) => {
 
 export const useUserFeatures = (userId: string) => {
   return useQuery({
-    queryKey: ['grants', 'user-features', userId],
+    queryKey: grantKeys.userFeatures(userId),
     queryFn: async () => {
       const { data, error } = await supabase
         .from('user_direct_grants')
@@ -82,7 +94,7 @@ export const useUserFeatures = (userId: string) => {
 
 export const useGroupPermissions = (groupId?: string) => {
   return useQuery({
-    queryKey: ['grants', 'group-permissions', groupId],
+    queryKey: grantKeys.groupPermissions(groupId),
     enabled: !!groupId,
     queryFn: async () => {
       const { data, error } = await supabase
@@ -97,7 +109,7 @@ export const useGroupPermissions = (groupId?: string) => {
 
 export const useGroupFeatures = (groupId?: string) => {
   return useQuery({
-    queryKey: ['grants', 'group-features', groupId],
+    queryKey: grantKeys.groupFeatures(groupId),
     enabled: !!groupId,
     queryFn: async () => {
       const { data, error } = await supabase
@@ -122,19 +134,19 @@ export const useGrantUserPermissions = () =>
       return result.data;
     },
     onMutate: async (args: { user: string; perms: string[]; feats: string[] }) => {
-      await queryClient.cancelQueries({ queryKey: ['matches'] });
+      await queryClient.cancelQueries({ queryKey: grantKeys.all });
 
-      const previousGroupPermissions = queryClient.getQueryData<string[]>(['grants', 'user-permissions', args.user]);
-      const previousGroupFeatures = queryClient.getQueryData<string[]>(['grants', 'user-features', args.user]);
+      const previousGroupPermissions = queryClient.getQueryData<string[]>(grantKeys.userPermissions(args.user));
+      const previousGroupFeatures = queryClient.getQueryData<string[]>(grantKeys.userFeatures(args.user));
 
       if (previousGroupPermissions) {
         const newGroupPermissions = [...previousGroupPermissions, ...args.perms];
-        queryClient.setQueryData(['grants', 'user-permissions', args.user], newGroupPermissions);
+        queryClient.setQueryData(grantKeys.userPermissions(args.user), newGroupPermissions);
       }
 
       if (previousGroupFeatures) {
         const newGroupFeatures = [...previousGroupFeatures, ...args.feats];
-        queryClient.setQueryData(['grants', 'user-features', args.user], newGroupFeatures);
+        queryClient.setQueryData(grantKeys.userFeatures(args.user), newGroupFeatures);
       }
 
       return { previousGroupPermissions, previousGroupFeatures };
@@ -148,16 +160,16 @@ export const useGrantUserPermissions = () =>
         tags: { type: 'GrantUserPermissions', scope: 'grants' },
       });
       if (context?.previousGroupFeatures) {
-        queryClient.setQueryData(['grants', 'user-permissions', variables.user], context.previousGroupFeatures);
+        queryClient.setQueryData(grantKeys.userPermissions(variables.user), context.previousGroupFeatures);
       }
       if (context?.previousGroupPermissions) {
-        queryClient.setQueryData(['grants', 'user-features', variables.user], context.previousGroupPermissions);
+        queryClient.setQueryData(grantKeys.userFeatures(variables.user), context.previousGroupPermissions);
       }
     },
     onSettled: (_d, _e, _v) => {
-      queryClient.invalidateQueries({ queryKey: ['grants', 'user'] });
-      queryClient.invalidateQueries({ queryKey: ['grants', 'user-permissions', _v.user] });
-      queryClient.invalidateQueries({ queryKey: ['grants', 'user-features', _v.user] });
+      queryClient.invalidateQueries({ queryKey: grantKeys.user() });
+      queryClient.invalidateQueries({ queryKey: grantKeys.userPermissions(_v.user) });
+      queryClient.invalidateQueries({ queryKey: grantKeys.userFeatures(_v.user) });
     },
   });
 
@@ -172,19 +184,19 @@ export const useRevokeUserPermissions = () =>
       return result.data;
     },
     onMutate: async (args: { user: string; perms: string[]; feats: string[] }) => {
-      await queryClient.cancelQueries({ queryKey: ['matches'] });
+      await queryClient.cancelQueries({ queryKey: grantKeys.all });
 
-      const previousGroupPermissions = queryClient.getQueryData<string[]>(['grants', 'user-permissions', args.user]);
-      const previousGroupFeatures = queryClient.getQueryData<string[]>(['grants', 'user-features', args.user]);
+      const previousGroupPermissions = queryClient.getQueryData<string[]>(grantKeys.userPermissions(args.user));
+      const previousGroupFeatures = queryClient.getQueryData<string[]>(grantKeys.userFeatures(args.user));
 
       if (previousGroupPermissions) {
         const newGroupPermissions = previousGroupPermissions.filter((x) => !args.perms.includes(x));
-        queryClient.setQueryData(['grants', 'user-permissions', args.user], newGroupPermissions);
+        queryClient.setQueryData(grantKeys.userPermissions(args.user), newGroupPermissions);
       }
 
       if (previousGroupFeatures) {
         const newGroupFeatures = previousGroupFeatures.filter((x) => !args.feats.includes(x));
-        queryClient.setQueryData(['grants', 'user-features', args.user], newGroupFeatures);
+        queryClient.setQueryData(grantKeys.userFeatures(args.user), newGroupFeatures);
       }
 
       return { previousGroupPermissions, previousGroupFeatures };
@@ -198,16 +210,16 @@ export const useRevokeUserPermissions = () =>
         tags: { type: 'RevokeUserPermissions', scope: 'grants' },
       });
       if (context?.previousGroupFeatures) {
-        queryClient.setQueryData(['grants', 'user-permissions', variables.user], context.previousGroupFeatures);
+        queryClient.setQueryData(grantKeys.userPermissions(variables.user), context.previousGroupFeatures);
       }
       if (context?.previousGroupPermissions) {
-        queryClient.setQueryData(['grants', 'user-features', variables.user], context.previousGroupPermissions);
+        queryClient.setQueryData(grantKeys.userFeatures(variables.user), context.previousGroupPermissions);
       }
     },
     onSettled: (_d, _e, _v) => {
-      queryClient.invalidateQueries({ queryKey: ['grants', 'user'] });
-      queryClient.invalidateQueries({ queryKey: ['grants', 'user-permissions', _v.user] });
-      queryClient.invalidateQueries({ queryKey: ['grants', 'user-features', _v.user] });
+      queryClient.invalidateQueries({ queryKey: grantKeys.user() });
+      queryClient.invalidateQueries({ queryKey: grantKeys.userPermissions(_v.user) });
+      queryClient.invalidateQueries({ queryKey: grantKeys.userFeatures(_v.user) });
     },
   });
 
@@ -222,19 +234,19 @@ export const useGrantGroupPermissions = () =>
       return result.data;
     },
     onMutate: async (args: { group: string; perms: string[]; feats: string[] }) => {
-      await queryClient.cancelQueries({ queryKey: ['matches'] });
+      await queryClient.cancelQueries({ queryKey: grantKeys.all });
 
-      const previousGroupPermissions = queryClient.getQueryData<string[]>(['grants', 'group-permissions', args.group]);
-      const previousGroupFeatures = queryClient.getQueryData<string[]>(['grants', 'group-features', args.group]);
+      const previousGroupPermissions = queryClient.getQueryData<string[]>(grantKeys.groupPermissions(args.group));
+      const previousGroupFeatures = queryClient.getQueryData<string[]>(grantKeys.groupFeatures(args.group));
 
       if (previousGroupPermissions) {
         const newGroupPermissions = [...previousGroupPermissions, ...args.perms];
-        queryClient.setQueryData(['grants', 'group-permissions', args.group], newGroupPermissions);
+        queryClient.setQueryData(grantKeys.groupPermissions(args.group), newGroupPermissions);
       }
 
       if (previousGroupFeatures) {
         const newGroupFeatures = [...previousGroupFeatures, ...args.feats];
-        queryClient.setQueryData(['grants', 'group-features', args.group], newGroupFeatures);
+        queryClient.setQueryData(grantKeys.groupFeatures(args.group), newGroupFeatures);
       }
 
       return { previousGroupPermissions, previousGroupFeatures };
@@ -248,15 +260,15 @@ export const useGrantGroupPermissions = () =>
         tags: { type: 'GrantGroupPermissions', scope: 'grants' },
       });
       if (context?.previousGroupFeatures) {
-        queryClient.setQueryData(['grants', 'group-permissions', variables.group], context.previousGroupFeatures);
+        queryClient.setQueryData(grantKeys.groupPermissions(variables.group), context.previousGroupFeatures);
       }
       if (context?.previousGroupPermissions) {
-        queryClient.setQueryData(['grants', 'group-features', variables.group], context.previousGroupPermissions);
+        queryClient.setQueryData(grantKeys.groupFeatures(variables.group), context.previousGroupPermissions);
       }
     },
     onSettled: (_d, _e, _v) => {
-      queryClient.invalidateQueries({ queryKey: ['grants', 'group-permissions', _v.group] });
-      queryClient.invalidateQueries({ queryKey: ['grants', 'group-features', _v.group] });
+      queryClient.invalidateQueries({ queryKey: grantKeys.groupPermissions(_v.group) });
+      queryClient.invalidateQueries({ queryKey: grantKeys.groupFeatures(_v.group) });
     },
   });
 
@@ -271,19 +283,19 @@ export const useRevokeGroupPermissions = () =>
       return result.data;
     },
     onMutate: async (args: { group: string; perms: string[]; feats: string[] }) => {
-      await queryClient.cancelQueries({ queryKey: ['matches'] });
+      await queryClient.cancelQueries({ queryKey: grantKeys.all });
 
-      const previousGroupPermissions = queryClient.getQueryData<string[]>(['grants', 'group-permissions', args.group]);
-      const previousGroupFeatures = queryClient.getQueryData<string[]>(['grants', 'group-features', args.group]);
+      const previousGroupPermissions = queryClient.getQueryData<string[]>(grantKeys.groupPermissions(args.group));
+      const previousGroupFeatures = queryClient.getQueryData<string[]>(grantKeys.groupFeatures(args.group));
 
       if (previousGroupPermissions) {
         const newGroupPermissions = previousGroupPermissions.filter((x) => !args.perms.includes(x));
-        queryClient.setQueryData(['grants', 'group-permissions', args.group], newGroupPermissions);
+        queryClient.setQueryData(grantKeys.groupPermissions(args.group), newGroupPermissions);
       }
 
       if (previousGroupFeatures) {
         const newGroupFeatures = previousGroupFeatures.filter((x) => !args.feats.includes(x));
-        queryClient.setQueryData(['grants', 'group-features', args.group], newGroupFeatures);
+        queryClient.setQueryData(grantKeys.groupFeatures(args.group), newGroupFeatures);
       }
 
       return { previousGroupPermissions, previousGroupFeatures };
@@ -297,14 +309,14 @@ export const useRevokeGroupPermissions = () =>
         tags: { type: 'RevokeGroupPermissions', scope: 'grants' },
       });
       if (context?.previousGroupFeatures) {
-        queryClient.setQueryData(['grants', 'group-permissions', variables.group], context.previousGroupFeatures);
+        queryClient.setQueryData(grantKeys.groupPermissions(variables.group), context.previousGroupFeatures);
       }
       if (context?.previousGroupPermissions) {
-        queryClient.setQueryData(['grants', 'group-features', variables.group], context.previousGroupPermissions);
+        queryClient.setQueryData(grantKeys.groupFeatures(variables.group), context.previousGroupPermissions);
       }
     },
     onSettled: (_d, _e, _v) => {
-      queryClient.invalidateQueries({ queryKey: ['grants', 'group-permissions', _v.group] });
-      queryClient.invalidateQueries({ queryKey: ['grants', 'group-features', _v.group] });
+      queryClient.invalidateQueries({ queryKey: grantKeys.groupPermissions(_v.group) });
+      queryClient.invalidateQueries({ queryKey: grantKeys.groupFeatures(_v.group) });
     },
   });

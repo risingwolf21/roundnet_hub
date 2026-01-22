@@ -1,7 +1,5 @@
-import { queryClient } from '@/lib/queryClient';
 import SearchIcon from '@mui/icons-material/Search';
 import { captureException } from '@sentry/react';
-import { useMutation, useQuery } from '@tanstack/react-query';
 import { useNotifications } from '@toolpad/core/useNotifications';
 import { useState } from 'react';
 import Layout from '../../components/layout/Layout';
@@ -11,51 +9,9 @@ import { AdminUserItem } from './components/AdminUserItem';
 import EditUserDialog, { UserEdited } from './dialogs/EditUserDialog';
 
 import { Search, SearchIconWrapper, StyledInputBase } from '@/components/SearchBar';
+import { useAllUsersAsAdmin, useUpdateUserMutation } from '@/tanstack/admin';
 import LinearProgress from '@mui/material/LinearProgress';
 import List from '@mui/material/List';
-
-export const useAllUsersAsAdmin = () =>
-  useQuery<UserWithGroups[]>({
-    queryKey: ['users', 'admin'],
-    queryFn: () => AdminUsersRepository.fetchAllUsersWithGroups(),
-  });
-
-export const useUpdateUserMutation = () =>
-  useMutation({
-    mutationFn: ({ update }: { update: UserEdited }) => {
-      return AdminUsersRepository.updateUser(update);
-    },
-    onMutate: async ({ update }) => {
-      await queryClient.cancelQueries({ queryKey: ['users', 'admin'] });
-
-      const previousUsers = queryClient.getQueryData<UserWithGroups[]>(['users', 'admin']);
-
-      if (previousUsers) {
-        const newUsers = previousUsers.map((x) => {
-          if (x.id === update.userId) {
-            return {
-              ...x,
-              displayName: update.displayName,
-              verified: update.verified,
-              role: update.role,
-            };
-          }
-          return x;
-        });
-        queryClient.setQueryData(['events', 'admin'], newUsers);
-      }
-
-      return { previousUsers };
-    },
-    onError: (_err, _vars, context) => {
-      if (context?.previousUsers) {
-        queryClient.setQueryData(['users', 'admin'], context.previousUsers);
-      }
-    },
-    onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ['users', 'admin'] });
-    },
-  });
 
 const AdminUserList = () => {
   const [editUserOpen, setEditUserOpen] = useState(false);
@@ -118,8 +74,8 @@ const AdminUserList = () => {
                 x.email?.toLowerCase().includes(searchString.toLowerCase()) ||
                 x.name?.toLowerCase().includes(searchString.toLowerCase())
             )
-            .map((user, index) => (
-              <AdminUserItem key={'user' + index} user={user} onEditClick={() => editUser(user)} />
+            .map((user) => (
+              <AdminUserItem key={'user' + user.id} user={user} onEditClick={() => editUser(user)} />
             ))}
       </List>
       {currentUser && (

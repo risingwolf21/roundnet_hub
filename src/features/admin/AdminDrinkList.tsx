@@ -1,7 +1,5 @@
-import { supabase } from '@/lib/supabase';
 import AddIcon from '@mui/icons-material/Add';
 import { captureException } from '@sentry/react';
-import { useQuery } from '@tanstack/react-query';
 import { useNotifications } from '@toolpad/core/useNotifications';
 import _ from 'lodash';
 import { useState } from 'react';
@@ -10,6 +8,7 @@ import { AdminDrinksRepository } from '../../repository/AdminDrinksRepository';
 import { AdminDrinkItem } from './components/AdminDrinkItem';
 import EditDrinkDialog from './dialogs/EditDrinkDialog';
 
+import { useAllDrinksAsAdmin } from '@/tanstack/drinks';
 import Button from '@mui/material/Button';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
@@ -31,15 +30,6 @@ const EMPTY_DRINK: Drink = {
   stock: 0,
   type: 'Drink',
 };
-
-export const useAllDrinksAsAdmin = () =>
-  useQuery<Drink[]>({
-    queryKey: ['drinks', 'admin'],
-    queryFn: async () => {
-      const result = await supabase.from('drink').select('*');
-      return result.data ?? [];
-    },
-  });
 
 const AdminDrinkList = () => {
   const { data: drinks = [], isLoading } = useAllDrinksAsAdmin();

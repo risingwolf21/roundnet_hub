@@ -7,9 +7,16 @@ import { captureException } from '@sentry/react';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { Omit } from 'lodash';
 
+export const groupKeys = {
+  all: ['groups'] as const,
+  joinRequested: () => [...groupKeys.all, 'joinRequested'] as const,
+  single: (groupId?: string) => [...groupKeys.all, groupId] as const,
+  singleForRole: (groupId: string, role: string) => [...groupKeys.all, groupId, role] as const,
+}
+
 export const useRequestedUsersPerGroup = (me: User) =>
   useQuery<GroupUserMapping[]>({
-    queryKey: ['groups', 'joinRequested'],
+    queryKey: groupKeys.joinRequested(),
     queryFn: async () => {
       const result = await supabase
         .from('group_user_mapping')
@@ -23,20 +30,20 @@ export const useRequestedUsersPerGroup = (me: User) =>
 
 export const useGroups = () =>
   useQuery<GroupWithUserMappings[]>({
-    queryKey: ['groups'],
+    queryKey: groupKeys.all,
     queryFn: GroupsRepository.fetchGroups,
   });
 
 export const useGroup = (groupId?: string) =>
   useQuery<GroupWithUserMappings | null>({
-    queryKey: ['group', groupId],
+    queryKey: groupKeys.single(groupId),
     enabled: !!groupId,
     queryFn: () => GroupsRepository.fetchSingleGroupWithUsers(groupId),
   });
 
 export const useGroupUsers = (role: GroupRole, groupId?: string) =>
   useQuery({
-    queryKey: ['group', groupId, role],
+    queryKey: groupKeys.singleForRole(groupId!, role),
     enabled: !!groupId,
     queryFn: async () => {
       const result = await supabase
@@ -64,12 +71,12 @@ export const useJoinGroup = (groupId: string, user: User, role: 'user' | 'admin'
       return result.data;
     },
     onMutate: async () => {
-      await queryClient.cancelQueries({ queryKey: ['group', groupId] });
-      await queryClient.cancelQueries({ queryKey: ['groups'] });
-      await queryClient.cancelQueries({ queryKey: ['groups', 'joinRequested'] });
+      await queryClient.cancelQueries({ queryKey: groupKeys.single(groupId) });
+      await queryClient.cancelQueries({ queryKey: groupKeys.all });
+      await queryClient.cancelQueries({ queryKey: groupKeys.joinRequested() });
 
-      const prevGroup = queryClient.getQueryData<GroupWithUserMappings | null>(['group', groupId]);
-      const prevGroups = queryClient.getQueryData<GroupWithUserMappings[]>(['groups']);
+      const prevGroup = queryClient.getQueryData<GroupWithUserMappings | null>(groupKeys.single(groupId));
+      const prevGroups = queryClient.getQueryData<GroupWithUserMappings[]>(groupKeys.all);
 
       if (prevGroup) {
         const newGroup = {
@@ -86,7 +93,7 @@ export const useJoinGroup = (groupId: string, user: User, role: 'user' | 'admin'
             },
           ],
         };
-        queryClient.setQueryData(['group', groupId], newGroup);
+        queryClient.setQueryData(groupKeys.single(groupId), newGroup);
       }
 
       if (prevGroups) {
@@ -108,7 +115,7 @@ export const useJoinGroup = (groupId: string, user: User, role: 'user' | 'admin'
             }
             : group
         );
-        queryClient.setQueryData(['groups'], newGroups);
+        queryClient.setQueryData(groupKeys.all, newGroups);
       }
 
       return { prevGroup, prevGroups };
@@ -120,12 +127,12 @@ export const useJoinGroup = (groupId: string, user: User, role: 'user' | 'admin'
         },
         tags: { type: 'JoinGroup', scope: 'groups' },
       });
-      queryClient.setQueryData(['group', groupId], context?.prevGroup);
-      queryClient.setQueryData(['groups'], context?.prevGroups);
+      queryClient.setQueryData(groupKeys.single(groupId), context?.prevGroup);
+      queryClient.setQueryData(groupKeys.all, context?.prevGroups);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['group', groupId] });
-      queryClient.invalidateQueries({ queryKey: ['groups'] });
+      queryClient.invalidateQueries({ queryKey: groupKeys.single(groupId) });
+      queryClient.invalidateQueries({ queryKey: groupKeys.all });
     },
   });
 
@@ -142,12 +149,11 @@ export const useLeaveGroupMutation = () =>
       return result.data;
     },
     onMutate: async ({ group }) => {
-      await queryClient.cancelQueries({ queryKey: ['group', group.id] });
-      await queryClient.cancelQueries({ queryKey: ['groups'] });
+      await queryClient.cancelQueries({ queryKey: groupKeys.single(group.id) });
+      await queryClient.cancelQueries({ queryKey: groupKeys.all });
 
-      const prevGroup = queryClient.getQueryData<GroupWithUserMappings | null>(['group', group.id]);
-      const prevGroups = queryClient.getQueryData<GroupWithUserMappings[]>(['groups']);
-
+      const prevGroup = queryClient.getQueryData<GroupWithUserMappings | null>(groupKeys.single(group.id));
+      const prevGroups = queryClient.getQueryData<GroupWithUserMappings[]>(groupKeys.all);
       if (prevGroups) {
         const newGroups = prevGroups.filter((x) => x.id !== group.id);
         queryClient.setQueryData(['groups'], newGroups);
@@ -163,12 +169,12 @@ export const useLeaveGroupMutation = () =>
         },
         tags: { type: 'LeaveGroup', scope: 'groups' },
       });
-      queryClient.setQueryData(['group', variables.group.id], context?.prevGroup);
-      queryClient.setQueryData(['groups'], context?.prevGroups);
+      queryClient.setQueryData(groupKeys.single(variables.group.id), context?.prevGroup);
+      queryClient.setQueryData(groupKeys.all, context?.prevGroups);
     },
     onSuccess: (_data, vars) => {
-      queryClient.invalidateQueries({ queryKey: ['group', vars.group.id] });
-      queryClient.invalidateQueries({ queryKey: ['groups'] });
+      queryClient.invalidateQueries({ queryKey: groupKeys.single(vars.group.id) });
+      queryClient.invalidateQueries({ queryKey: groupKeys.all });
     },
   });
 
@@ -185,12 +191,11 @@ export const useChangeUserRoleMutation = () =>
       return result.data;
     },
     onMutate: async ({ group, user, new_role }) => {
-      await queryClient.cancelQueries({ queryKey: ['group', group.id] });
-      await queryClient.cancelQueries({ queryKey: ['groups'] });
+      await queryClient.cancelQueries({ queryKey: groupKeys.single(group.id) });
+      await queryClient.cancelQueries({ queryKey: groupKeys.all });
 
-      const prevGroup = queryClient.getQueryData<GroupWithUserMappings | null>(['group', group.id]);
-      const prevGroups = queryClient.getQueryData<GroupWithUserMappings[]>(['groups']);
-
+      const prevGroup = queryClient.getQueryData<GroupWithUserMappings | null>(groupKeys.single(group.id));
+      const prevGroups = queryClient.getQueryData<GroupWithUserMappings[]>(groupKeys.all);
       if (prevGroups) {
         const newGroups = prevGroups.map((x) => {
           if (x.id === group.id) {
@@ -213,7 +218,7 @@ export const useChangeUserRoleMutation = () =>
           }
           return x;
         });
-        queryClient.setQueryData(['groups'], newGroups);
+        queryClient.setQueryData(groupKeys.all, newGroups);
       }
 
       if (prevGroup) {
@@ -233,7 +238,7 @@ export const useChangeUserRoleMutation = () =>
             return y;
           }),
         };
-        queryClient.setQueryData(['group', group.id], newGroup);
+        queryClient.setQueryData(groupKeys.single(group.id), newGroup);
       }
 
       return { prevGroup, prevGroups };
@@ -246,12 +251,12 @@ export const useChangeUserRoleMutation = () =>
         },
         tags: { type: 'ChangeUserRole', scope: 'groups' },
       });
-      queryClient.setQueryData(['group', variables.group.id], context?.prevGroup);
-      queryClient.setQueryData(['groups'], context?.prevGroups);
+      queryClient.setQueryData(groupKeys.single(variables.group.id), context?.prevGroup);
+      queryClient.setQueryData(groupKeys.all, context?.prevGroups);
     },
     onSuccess: (_data, vars) => {
-      queryClient.invalidateQueries({ queryKey: ['group', vars.group.id] });
-      queryClient.invalidateQueries({ queryKey: ['groups'] });
+      queryClient.invalidateQueries({ queryKey: groupKeys.single(vars.group.id) });
+      queryClient.invalidateQueries({ queryKey: groupKeys.all });
     },
   });
 
@@ -283,7 +288,7 @@ export const useCreateGroupMutation = () =>
       });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['groups'] });
+      queryClient.invalidateQueries({ queryKey: groupKeys.all });
     },
   });
 
@@ -303,18 +308,17 @@ export const useUpdateGroupMutation = (groupId?: string) =>
       return result.data!;
     },
     onMutate: async ({ group }) => {
-      await queryClient.cancelQueries({ queryKey: ['group', groupId] });
-      await queryClient.cancelQueries({ queryKey: ['groups'] });
+      await queryClient.cancelQueries({ queryKey: groupKeys.single(groupId) });
+      await queryClient.cancelQueries({ queryKey: groupKeys.all });
 
-      const prevGroup = queryClient.getQueryData<GroupWithUserMappings | null>(['group', groupId]);
-      const prevGroups = queryClient.getQueryData<GroupWithUserMappings[]>(['groups']);
-
+      const prevGroup = queryClient.getQueryData<GroupWithUserMappings | null>(groupKeys.single(groupId));
+      const prevGroups = queryClient.getQueryData<GroupWithUserMappings[]>(groupKeys.all);
       if (prevGroup) {
         const newGroup = {
           ...prevGroup,
           ...group,
         };
-        queryClient.setQueryData(['group', groupId], newGroup);
+        queryClient.setQueryData(groupKeys.single(groupId), newGroup);
       }
 
       if (prevGroups) {
@@ -339,11 +343,11 @@ export const useUpdateGroupMutation = (groupId?: string) =>
         },
         tags: { type: 'CreateGroup', scope: 'groups' },
       });
-      if (groupId) queryClient.setQueryData(['group', groupId], context?.prevGroup);
-      queryClient.setQueryData(['groups'], context?.prevGroups);
+      if (groupId) queryClient.setQueryData(groupKeys.single(groupId), context?.prevGroup);
+      queryClient.setQueryData(groupKeys.all, context?.prevGroups);
     },
     onSuccess: () => {
-      if (groupId) queryClient.invalidateQueries({ queryKey: ['group', groupId] });
-      queryClient.invalidateQueries({ queryKey: ['groups'] });
+      if (groupId) queryClient.invalidateQueries({ queryKey: groupKeys.single(groupId) });
+      queryClient.invalidateQueries({ queryKey: groupKeys.all });
     },
   });

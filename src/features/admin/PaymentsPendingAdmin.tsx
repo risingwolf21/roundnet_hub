@@ -1,17 +1,14 @@
 import { PullToRefresh } from '@/components/pull-to-refresh/PullToRefresh';
-import { queryClient } from '@/lib/queryClient';
-import { supabase } from '@/lib/supabase';
 import CheckIcon from '@mui/icons-material/Check';
 import SearchIcon from '@mui/icons-material/Search';
-import { useMutation, useQuery } from '@tanstack/react-query';
 import { useDialogs } from '@toolpad/core';
 import { useState } from 'react';
 import { History } from 'types/supabase';
 import Layout from '../../components/layout/Layout';
-import { FullPayment } from '../../types/supabaseTypes';
 import { ConfirmPaymentDialog } from './dialogs/ConfirmPaymentDialog';
 
 import { Search, SearchIconWrapper, StyledInputBase } from '@/components/SearchBar';
+import { useAllPayments, useConfirmPaymentMutation } from '@/tanstack/admin';
 import Grid from '@mui/material/Grid';
 import IconButton from '@mui/material/IconButton';
 import LinearProgress from '@mui/material/LinearProgress';
@@ -20,65 +17,6 @@ import ListItem from '@mui/material/ListItem';
 import ListItemAvatar from '@mui/material/ListItemAvatar';
 import ListItemText from '@mui/material/ListItemText';
 import Typography from '@mui/material/Typography';
-
-export const useAllPayments = () =>
-  useQuery<FullPayment[]>({
-    queryKey: ['payments', 'admin'],
-    queryFn: async () => {
-      const response = await supabase
-        .from('payments')
-        .select(
-          'id, created_at, paymentState, amountToPay, userId: user, user (id, displayName, name, email), history (*)'
-        )
-        .eq('paymentState', 'Open' as PaymentState)
-        .order('displayName', { referencedTable: 'user', ascending: true })
-        .returns<FullPayment[]>();
-      return response.data ?? [];
-    },
-  });
-
-export const useConfirmPaymentMutation = () =>
-  useMutation({
-    mutationFn: async ({ payment }: { payment: FullPayment }) => {
-      const result = await supabase
-        .from('payments')
-        .update({ paymentState: 'Fulfilled' as PaymentState })
-        .eq('user', payment?.user?.id)
-        .eq('paymentState', 'Open' as PaymentState)
-        .select('*')
-        .single();
-
-      return result.data;
-    },
-    onMutate: async ({ payment }) => {
-      await queryClient.cancelQueries({ queryKey: ['payments', 'admin'] });
-
-      const previousPayments = queryClient.getQueryData<FullPayment[]>(['payments', 'admin']);
-
-      if (previousPayments) {
-        const newPayments = previousPayments.map((x) => {
-          if (x.user === payment.user.id) {
-            return {
-              ...x,
-              paymentState: 'FulFilled' as PaymentState,
-            };
-          }
-          return x;
-        });
-        queryClient.setQueryData(['payments', 'admin'], newPayments);
-      }
-
-      return { previousPayments };
-    },
-    onError: (_err, _vars, context) => {
-      if (context?.previousPayments) {
-        queryClient.setQueryData(['payments', 'admin'], context.previousPayments);
-      }
-    },
-    onSettled: (_data, _error, _variables, _context) => {
-      queryClient.invalidateQueries({ queryKey: ['payments', 'admin'] });
-    },
-  });
 
 const PaymentsPendingAdmin = () => {
   const [searchString, setSearchString] = useState('');

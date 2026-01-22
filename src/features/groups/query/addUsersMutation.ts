@@ -1,27 +1,40 @@
 import { queryClient } from '@/lib/queryClient';
-import { AdminUsersRepository } from '@/repository/AdminUsersRepository';
+import { supabase } from '@/lib/supabase';
+import { groupKeys } from '@/tanstack/groups';
 import { GroupWithUserMappings } from '@/types/supabaseTypes';
 import { useMutation } from '@tanstack/react-query';
 
 export const useAddUsersMutation = (group: Group | null) =>
   useMutation({
-    mutationFn: (users: User[]) => {
+    mutationFn: async ({ newUsers }: { newUsers: User[] }) => {
       if (!group) {
         return Promise.resolve([]);
       }
-      return AdminUsersRepository.addUsersToGroup(group, users);
+      const result = await supabase
+        .from('group_user_mapping')
+        .upsert(
+          newUsers.map((x) => ({
+            user: x.id,
+            group: group.id,
+            role: "user" as GroupRole,
+          }))
+        )
+        .select('*')
+        .throwOnError();
+
+      return result.data ?? [];
     },
-    onMutate: async (newUsers: User[] | null) => {
+    onMutate: async ({ newUsers }) => {
       if (!group) return null;
 
-      await queryClient.cancelQueries({ queryKey: ['group', group.id] });
+      await queryClient.cancelQueries({ queryKey: groupKeys.single(group.id) });
 
-      const previousGroup = queryClient.getQueryData<GroupWithUserMappings>(['group', group.id]);
+      const previousGroup = queryClient.getQueryData<GroupWithUserMappings>(groupKeys.single(group.id));
 
       if (!newUsers) return { previousGroup };
 
       if (previousGroup) {
-        queryClient.setQueryData<GroupWithUserMappings>(['group', group.id], {
+        queryClient.setQueryData<GroupWithUserMappings>(groupKeys.single(group.id), {
           ...previousGroup,
           users: [
             ...previousGroup.users,
@@ -37,10 +50,10 @@ export const useAddUsersMutation = (group: Group | null) =>
     },
     onError: (_err, _variables, context) => {
       if (context?.previousGroup && group) {
-        queryClient.setQueryData(['group', group.id], context.previousGroup);
+        queryClient.setQueryData(groupKeys.single(group.id), context.previousGroup);
       }
     },
     onSettled: () => {
-      if (group) queryClient.invalidateQueries({ queryKey: ['group', group.id] });
+      if (group) queryClient.invalidateQueries({ queryKey: groupKeys.single(group.id) });
     },
   });

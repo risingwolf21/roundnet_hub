@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router';
 import { CreateChallengeDialog } from './dialogs/CreateChallengeDialog';
 
 import { queryClient } from '@/lib/queryClient';
+import { challengeKeys } from '@/tanstack/challenge';
 import { UserWithGroups } from '@/types/supabaseTypes';
 import Add from '@mui/icons-material/Add';
 import Box from '@mui/material/Box';
@@ -111,8 +112,8 @@ const ChallengeList = ({
         onClick={async () => {
           const result = await dialogs.open(CreateChallengeDialog, { user });
           if (result) {
-            await queryClient.invalidateQueries({ queryKey: ['challenges'] });
-            await queryClient.invalidateQueries({ queryKey: ['challenge', result.id] });
+            await queryClient.invalidateQueries({ queryKey: challengeKeys.list() });
+            await queryClient.invalidateQueries({ queryKey: challengeKeys.challengeInformation(result.id) });
             navigate('/challenges/' + result.id);
           }
         }}

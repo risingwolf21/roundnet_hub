@@ -1,10 +1,9 @@
-import { AdminDrinksRepository } from '@/repository/AdminDrinksRepository';
-import { useInfiniteQuery } from '@tanstack/react-query';
 import { format } from 'date-fns';
 import { useEffect, useRef } from 'react';
 import Layout from '../../components/layout/Layout';
 import { AdminHistoryItem } from './components/AdminHistoryItem';
 
+import { useInfiniteDrinkHistory } from '@/tanstack/admin';
 import LinearProgress from '@mui/material/LinearProgress';
 import List from '@mui/material/List';
 import groupBy from 'lodash.groupby';
@@ -16,12 +15,7 @@ const AdminHistoryScreen = () => {
     hasNextPage,
     fetchNextPage,
     isFetchingNextPage,
-  } = useInfiniteQuery({
-    queryKey: ['history', 'admin'],
-    queryFn: AdminDrinksRepository.fetchAdminHistory,
-    getNextPageParam: (lastPage) => lastPage.nextPage,
-    initialPageParam: 0,
-  });
+  } = useInfiniteDrinkHistory();
 
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
 

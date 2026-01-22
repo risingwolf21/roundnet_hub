@@ -5,7 +5,6 @@ export const ApplicationContext = createContext<{
   user: UserWithGroups | null;
   deviceId: string;
   signOut: () => void;
-  provider_token: string | null;
   version: string;
 }>(null!);
 

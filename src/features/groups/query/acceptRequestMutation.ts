@@ -1,5 +1,6 @@
 import { queryClient } from '@/lib/queryClient';
 import { supabase } from '@/lib/supabase';
+import { groupKeys } from '@/tanstack/groups';
 import { FullUserMapping, GroupWithUserMappings } from '@/types/supabaseTypes';
 import { useMutation } from '@tanstack/react-query';
 
@@ -23,14 +24,13 @@ export const useAcceptRequestMutation = (group: Group | null) =>
     onMutate: async (user: User) => {
       if (!group) return null;
 
-      await queryClient.cancelQueries({ queryKey: ['group', group.id] });
-      await queryClient.cancelQueries({ queryKey: ['group', 'joinRequested'] });
+      await queryClient.cancelQueries({ queryKey: groupKeys.single(group.id) });
+      await queryClient.cancelQueries({ queryKey: groupKeys.joinRequested() });
 
-      const previousGroup = queryClient.getQueryData<GroupWithUserMappings>(['group', group.id]);
-      const previousRequested = queryClient.getQueryData<GroupUserMapping[]>(['group', 'joinRequested']);
-
+      const previousGroup = queryClient.getQueryData<GroupWithUserMappings>(groupKeys.single(group.id));
+      const previousRequested = queryClient.getQueryData<GroupUserMapping[]>(groupKeys.joinRequested());
       if (previousGroup) {
-        queryClient.setQueryData<GroupWithUserMappings>(['group', group.id], {
+        queryClient.setQueryData<GroupWithUserMappings>(groupKeys.single(group.id), {
           ...previousGroup,
           users: [
             ...previousGroup.users.map((x: FullUserMapping) => {
@@ -62,14 +62,14 @@ export const useAcceptRequestMutation = (group: Group | null) =>
     },
     onError: (_err, _variables, context) => {
       if (context?.previousGroup && group) {
-        queryClient.setQueryData(['group', group.id], context.previousGroup);
+        queryClient.setQueryData(groupKeys.single(group.id), context.previousGroup);
       }
       if (context?.previousRequested) {
-        queryClient.setQueryData(['group', 'joinRequested'], context.previousRequested);
+        queryClient.setQueryData(groupKeys.joinRequested(), context.previousRequested);
       }
     },
     onSettled: () => {
-      if (group) queryClient.invalidateQueries({ queryKey: ['group', group.id] });
-      queryClient.invalidateQueries({ queryKey: ['group', 'joinRequested'] });
+      if (group) queryClient.invalidateQueries({ queryKey: groupKeys.single(group.id) });
+      queryClient.invalidateQueries({ queryKey: groupKeys.joinRequested() });
     },
   });

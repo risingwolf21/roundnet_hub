@@ -3,12 +3,10 @@ import { LoadingScreen } from '@/components/LoadingScreen';
 import useDeviceId from '@/hooks/useDeviceId';
 import { queryClient } from '@/lib/queryClient';
 import { supabase } from '@/lib/supabase';
+import { authKeys, useCurrentUser } from '@/tanstack/auth';
 import { captureException, setUser } from '@sentry/react';
 import { Session } from '@supabase/supabase-js';
-import { useQuery } from '@tanstack/react-query';
 import React, { useCallback, useEffect, useState } from 'react';
-import { SupabaseUserRepository } from '../../repository/UserRepository';
-import { UserWithGroups } from '../../types/supabaseTypes';
 import WebPushKeeper from '../push/WebPushKeeper';
 import { ApplicationContext } from './ApplicationContext';
 
@@ -17,31 +15,8 @@ export const AuthGate = () => {
 
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(false);
-  const [provider_token, setProviderToken] = useState<string | null>(null);
 
-  const { data: currentUser = null, isFetching } = useQuery({
-    queryKey: ['current-user', session?.user.id],
-    enabled: !!session,
-    queryFn: async () => {
-      if (!session) return null;
-      const [{ data: user, error }, groups] = await Promise.all([
-        SupabaseUserRepository.fetchUser(session.user.id),
-        SupabaseUserRepository.fetchGroupsForUser(session.user.id),
-      ]);
-      if (error) {
-        captureException(error);
-        return null;
-      }
-
-      const userData: UserWithGroups = {
-        ...user,
-        groups,
-      };
-      setUser({ email: userData.email, id: userData.id, username: userData.name });
-      setProviderToken(session.user.user_metadata['provider_token']);
-      return userData;
-    },
-  })
+  const { data: currentUser = null, isFetching } = useCurrentUser(session);
 
   const signOut = async () => {
     try {
@@ -65,21 +40,8 @@ export const AuthGate = () => {
   const reset = useCallback(() => {
     setLoading(false);
     setUser(null);
-    queryClient.invalidateQueries({ queryKey: ['current-user'] });
-    setProviderToken(null);
+    queryClient.invalidateQueries({ queryKey: authKeys.all });
   }, []);
-
-
-  useEffect(() => {
-    if (!session) {
-      reset();
-    } else if (!loading && (!currentUser || session.user.id !== currentUser?.id)) {
-      setLoading(true);
-      queryClient.refetchQueries({ queryKey: ['current-user', session.user.id] }).finally(() => {
-        setLoading(false);
-      });
-    }
-  }, [session]);
 
   useEffect(() => {
     // Fetch initial session and user data
@@ -109,7 +71,6 @@ export const AuthGate = () => {
         user: currentUser,
         signOut: signOut,
         deviceId,
-        provider_token,
         version: import.meta.env.VITE_GIT_COMMIT,
       }}
     >
