@@ -77,7 +77,7 @@ const LoginScreen = () => {
 
   const submitButton = () => {
     return (
-      <Button type="submit" variant="contained" fullWidth disabled={loading} sx={{ my: 2 }}>
+      <Button data-testid="login-button" type="submit" variant="contained" fullWidth disabled={loading} sx={{ my: 2 }}>
         {loading ? <CircularProgress color="inherit" size={25} /> : 'Login'}
       </Button>
     );
@@ -85,7 +85,7 @@ const LoginScreen = () => {
 
   const signUpLink = () => (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-      <Link href="#" variant="body2" onClick={() => navigate('/auth/signup', { replace: true })}>
+      <Link data-testid="signup-link" href="#" variant="body2" onClick={() => navigate('/auth/signup', { replace: true })}>
         {'Noch keinen Account?'}
       </Link>
       <Typography sx={{ mt: 1 }}>{`Version ${APP_VERSION}-${version.slice(0, 8)}`}</Typography>

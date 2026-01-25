@@ -142,6 +142,7 @@
     "sourceRoot": "/"
   },
   "include": [
+    "e2e/**/*",
     "src/**/*",
     "types/**/*",
     "src/service-worker.ts",

@@ -257,7 +257,7 @@ const SignUpScreen = () => {
               )}
             </Stack>
 
-            <Button type="submit" variant="contained" fullWidth disabled={loading} sx={{ my: 2 }}>
+            <Button data-testid="signup-button" type="submit" variant="contained" fullWidth disabled={loading} sx={{ my: 2 }}>
               {loading ? <CircularProgress color="inherit" size={25} /> : 'Registrieren'}
             </Button>
 
