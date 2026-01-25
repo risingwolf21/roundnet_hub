@@ -6,9 +6,17 @@ import { formatDateToDatabase } from '@/utils';
 import { captureException } from '@sentry/react';
 import { useMutation, useQuery } from '@tanstack/react-query';
 
+export const gamesKeys = {
+  all: ['games'] as const,
+  matches: () => [...gamesKeys.all, 'matches'] as const,
+  match: (matchId?: string) => [...gamesKeys.matches(), matchId] as const,
+  players: () => [...gamesKeys.all, 'players'] as const,
+  teams: () => [...gamesKeys.all, 'teams'] as const,
+}
+
 export const useMatch = (matchId?: string) =>
   useQuery({
-    queryKey: ['matches', matchId],
+    queryKey: gamesKeys.match(matchId),
     queryFn: async () => {
       if (!matchId) return null;
       const result = await supabase
@@ -39,7 +47,7 @@ export const useMatch = (matchId?: string) =>
 
 export const useMatches = () =>
   useQuery<UserMatchesView[]>({
-    queryKey: ['matches'],
+    queryKey: gamesKeys.matches(),
     queryFn: async () => {
       const result = await supabase.schema('games').from('user_matches').select('*').returns<UserMatchesView[]>();
 
@@ -49,13 +57,13 @@ export const useMatches = () =>
 
 export const usePlayers = () =>
   useQuery<PlayerWithSimpleUser[]>({
-    queryKey: ['players'],
+    queryKey: gamesKeys.players(),
     queryFn: GamesRepository.fetchAvailablePlayers,
   });
 
 export const useTeams = () =>
   useQuery<GamesTable<'teams'>[]>({
-    queryKey: ['teams'],
+    queryKey: gamesKeys.teams(),
     queryFn: async () => {
       const result = await supabase.schema('games').from('teams').select('*');
 
@@ -115,9 +123,9 @@ export const useCreateMatch = () =>
       return result.data;
     },
     onMutate: async ({ sets, team_a, team_b }) => {
-      await queryClient.cancelQueries({ queryKey: ['matches'] });
+      await queryClient.cancelQueries({ queryKey: gamesKeys.matches() });
 
-      const previousMatches = queryClient.getQueryData<UserMatchesView[]>(['matches']);
+      const previousMatches = queryClient.getQueryData<UserMatchesView[]>(gamesKeys.matches());
 
       if (previousMatches) {
         const newMatches = [
@@ -129,7 +137,7 @@ export const useCreateMatch = () =>
             created_at: formatDateToDatabase(new Date()),
           },
         ] as UserMatchesView[];
-        queryClient.setQueryData<UserMatchesView[]>(['matches'], newMatches);
+        queryClient.setQueryData<UserMatchesView[]>(gamesKeys.matches(), newMatches);
       }
 
       return { previousMatches };
@@ -143,11 +151,11 @@ export const useCreateMatch = () =>
         tags: { type: 'CreateMatch', scope: 'games' },
       });
       if (context?.previousMatches) {
-        queryClient.setQueryData(['matches'], context.previousMatches);
+        queryClient.setQueryData(gamesKeys.matches(), context.previousMatches);
       }
     },
     onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ['matches'] });
+      queryClient.invalidateQueries({ queryKey: gamesKeys.matches() });
     },
   });
 
@@ -171,9 +179,9 @@ export const useUpsertSetsToMatch = (matchId: string) =>
       return result.data;
     },
     onMutate: async ({ sets }) => {
-      await queryClient.cancelQueries({ queryKey: ['matches'] });
+      await queryClient.cancelQueries({ queryKey: gamesKeys.matches() });
 
-      const previousMatches = queryClient.getQueryData<FullUserMatch[]>(['matches']);
+      const previousMatches = queryClient.getQueryData<FullUserMatch[]>(gamesKeys.matches());
 
       if (previousMatches) {
         const newMatches = previousMatches.map((x) => {
@@ -185,7 +193,7 @@ export const useUpsertSetsToMatch = (matchId: string) =>
           }
           return x;
         });
-        queryClient.setQueryData<FullUserMatch[]>(['matches'], newMatches);
+        queryClient.setQueryData<FullUserMatch[]>(gamesKeys.matches(), newMatches);
       }
 
       return { previousMatches };
@@ -199,10 +207,10 @@ export const useUpsertSetsToMatch = (matchId: string) =>
         tags: { type: 'UpsertSetsToMatch', scope: 'games' },
       });
       if (context?.previousMatches) {
-        queryClient.setQueryData(['matches'], context.previousMatches);
+        queryClient.setQueryData(gamesKeys.matches(), context.previousMatches);
       }
     },
     onSettled: (_d, _e, _v, _context) => {
-      queryClient.invalidateQueries({ queryKey: ['matches'] });
+      queryClient.invalidateQueries({ queryKey: gamesKeys.matches() });
     },
   });

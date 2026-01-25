@@ -2,6 +2,7 @@
 import { LoadingScreen } from '@/components/LoadingScreen';
 import { queryClient } from '@/lib/queryClient';
 import { supabase } from '@/lib/supabase';
+import { authKeys } from '@/tanstack/auth';
 import type { UserWithGroups } from '@/types/supabaseTypes';
 import { captureException } from '@sentry/react';
 import * as React from 'react';
@@ -28,7 +29,7 @@ export function GrantsProvider({ user, children }: Props) {
       // Query Cache hart säubern – Nutzerkontext ist weg
       try {
         await queryClient.cancelQueries();
-        await queryClient.invalidateQueries({ queryKey: ['user-grants', user.id] });
+        await queryClient.invalidateQueries({ queryKey: authKeys.currentUserGrants(user.id) });
         queryClient.clear();
       } catch {
         /* empty */

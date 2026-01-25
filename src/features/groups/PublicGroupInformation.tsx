@@ -100,7 +100,7 @@ const PublicGroupInformation = () => {
   }
 
   const handleUsersAdded = async (users: User[]) => {
-    addUsersMutation.mutate(users, {
+    addUsersMutation.mutate({ newUsers: users }, {
       onSuccess: () => {
         notifications.show(`Successfully added ${users.length} users to the group ${group?.name}`, {
           severity: 'success',
@@ -118,7 +118,7 @@ const PublicGroupInformation = () => {
   };
 
   const handleUsersRemove = async (users: User[]) => {
-    removeUsersMutation.mutate(users, {
+    removeUsersMutation.mutate({ users }, {
       onSuccess: () => {
         notifications.show(`Successfully removed ${users.length} users from the group ${group?.name}`, {
           severity: 'success',
@@ -325,35 +325,35 @@ const PublicGroupInformation = () => {
                   selected={selectedUsers.includes(x.user)}
                   {...(group.user_group_role === 'admin' && x.user.id !== user?.id
                     ? {
-                        secondaryAction: (
-                          <IconButton
-                            onClick={async (e) => {
-                              e.stopPropagation();
-                              const result = await dialogs.confirm(
-                                `Möchtest du wirklich ${x.user.name} von den Admins dieser Gruppe entfernen?`,
-                                {
-                                  okText: 'Bestätigen',
-                                  cancelText: 'Abbrechen',
-                                }
-                              );
-                              if (result) {
-                                changeUserRoleMutation.mutate({ group: group, user: x.user, new_role: 'user' });
+                      secondaryAction: (
+                        <IconButton
+                          onClick={async (e) => {
+                            e.stopPropagation();
+                            const result = await dialogs.confirm(
+                              `Möchtest du wirklich ${x.user.name} von den Admins dieser Gruppe entfernen?`,
+                              {
+                                okText: 'Bestätigen',
+                                cancelText: 'Abbrechen',
                               }
-                            }}
-                          >
-                            <MoveDownIcon />
-                          </IconButton>
-                        ),
-                        onAvatarClick: (e) => {
-                          e.stopPropagation();
-                          if (group.user_group_role !== 'admin') return;
-                          if (selectedUsers.includes(x.user)) {
-                            setSelectedUsers([...selectedUsers.filter((y) => y.id !== x.user.id)]);
-                          } else {
-                            setSelectedUsers([...selectedUsers, x.user]);
-                          }
-                        },
-                      }
+                            );
+                            if (result) {
+                              changeUserRoleMutation.mutate({ group: group, user: x.user, new_role: 'user' });
+                            }
+                          }}
+                        >
+                          <MoveDownIcon />
+                        </IconButton>
+                      ),
+                      onAvatarClick: (e) => {
+                        e.stopPropagation();
+                        if (group.user_group_role !== 'admin') return;
+                        if (selectedUsers.includes(x.user)) {
+                          setSelectedUsers([...selectedUsers.filter((y) => y.id !== x.user.id)]);
+                        } else {
+                          setSelectedUsers([...selectedUsers, x.user]);
+                        }
+                      },
+                    }
                     : {})}
                 />
               ))}
@@ -377,60 +377,60 @@ const PublicGroupInformation = () => {
                   selected={selectedUsers.includes(x.user)}
                   {...(group.user_group_role === 'admin' && x.role !== 'admin'
                     ? {
-                        secondaryAction: (
-                          <Stack direction={'row'}>
+                      secondaryAction: (
+                        <Stack direction={'row'}>
+                          <IconButton
+                            onClick={async (e) => {
+                              e.stopPropagation();
+                              const result = await dialogs.confirm(
+                                `Möchtest du wirklich ${x.user.name} zu einem Admin dieser Gruppe machen?`,
+                                {
+                                  okText: 'Bestätigen',
+                                  cancelText: 'Abbrechen',
+                                }
+                              );
+                              if (result) {
+                                changeUserRoleMutation.mutate({ group: group, user: x.user, new_role: 'admin' });
+                              }
+                            }}
+                          >
+                            <AdminPanelSettings />
+                          </IconButton>
+                          <Has feat={'events.trials'}>
                             <IconButton
                               onClick={async (e) => {
                                 e.stopPropagation();
                                 const result = await dialogs.confirm(
-                                  `Möchtest du wirklich ${x.user.name} zu einem Admin dieser Gruppe machen?`,
+                                  `Möchtest du wirklich ${x.user.name} zu einem Probenutzer dieser Gruppe machen?`,
                                   {
                                     okText: 'Bestätigen',
                                     cancelText: 'Abbrechen',
                                   }
                                 );
                                 if (result) {
-                                  changeUserRoleMutation.mutate({ group: group, user: x.user, new_role: 'admin' });
+                                  changeUserRoleMutation.mutate({ group: group, user: x.user, new_role: 'trial' });
                                 }
                               }}
                             >
-                              <AdminPanelSettings />
+                              <MoveDownIcon />
                             </IconButton>
-                            <Has feat={'events.trials'}>
-                              <IconButton
-                                onClick={async (e) => {
-                                  e.stopPropagation();
-                                  const result = await dialogs.confirm(
-                                    `Möchtest du wirklich ${x.user.name} zu einem Probenutzer dieser Gruppe machen?`,
-                                    {
-                                      okText: 'Bestätigen',
-                                      cancelText: 'Abbrechen',
-                                    }
-                                  );
-                                  if (result) {
-                                    changeUserRoleMutation.mutate({ group: group, user: x.user, new_role: 'trial' });
-                                  }
-                                }}
-                              >
-                                <MoveDownIcon />
-                              </IconButton>
-                            </Has>
-                          </Stack>
-                        ),
-                      }
+                          </Has>
+                        </Stack>
+                      ),
+                    }
                     : {})}
                   {...(group.user_group_role === 'admin'
                     ? {
-                        onAvatarClick: (e) => {
-                          e.stopPropagation();
-                          if (group.user_group_role !== 'admin') return;
-                          if (selectedUsers.includes(x.user)) {
-                            setSelectedUsers([...selectedUsers.filter((y) => y.id !== x.user.id)]);
-                          } else {
-                            setSelectedUsers([...selectedUsers, x.user]);
-                          }
-                        },
-                      }
+                      onAvatarClick: (e) => {
+                        e.stopPropagation();
+                        if (group.user_group_role !== 'admin') return;
+                        if (selectedUsers.includes(x.user)) {
+                          setSelectedUsers([...selectedUsers.filter((y) => y.id !== x.user.id)]);
+                        } else {
+                          setSelectedUsers([...selectedUsers, x.user]);
+                        }
+                      },
+                    }
                     : {})}
                 />
               ))}

@@ -5,16 +5,29 @@ import { DrinkCounter, PaymentHistory } from '@/types/supabaseTypes';
 import { captureException } from '@sentry/react';
 import { InfiniteData, useInfiniteQuery, useMutation, useQuery } from '@tanstack/react-query';
 
-class InsertHistoryError extends Error {
-  constructor(msg: string) {
-    super(msg);
-    Object.setPrototypeOf(this, InsertHistoryError.prototype);
-  }
-}
+export const drinkKeys = {
+  all: ['drink'] as const,
+  allAdmin: ['admin', 'drink'] as const,
+  list: () => [...drinkKeys.all, 'list'] as const,
+  listAdmin: () => [...drinkKeys.allAdmin, 'list'] as const,
+  paymentHistory: (userId: string) => [...drinkKeys.all, 'payment', userId] as const,
+  vouchers: () => [...drinkKeys.all, 'vouchers'] as const,
+  drinks: () => [...drinkKeys.all, 'drinks'] as const,
+  userHistory: (userId: string) => [...drinkKeys.all, 'history', userId] as const,
+};
+
+export const useAllDrinksAsAdmin = () =>
+  useQuery<Drink[]>({
+    queryKey: drinkKeys.listAdmin(),
+    queryFn: async () => {
+      const result = await supabase.from('drink').select('*');
+      return result.data ?? [];
+    },
+  });
 
 export const usePaymentHistory = (userId: string) =>
   useQuery({
-    queryKey: ['payment', userId],
+    queryKey: drinkKeys.paymentHistory(userId),
     queryFn: async () => {
       const result = await supabase
         .from('history')
@@ -31,7 +44,7 @@ export const usePaymentHistory = (userId: string) =>
 
 export const useVouchers = () =>
   useQuery({
-    queryKey: ['vouchers'],
+    queryKey: drinkKeys.vouchers(),
     queryFn: async () => {
       const result = await supabase.from('user_vouchers').select('*').throwOnError();
 
@@ -41,7 +54,7 @@ export const useVouchers = () =>
 
 export const useDrinks = () =>
   useQuery({
-    queryKey: ['drinks'],
+    queryKey: drinkKeys.drinks(),
     queryFn: async () => {
       const result = await supabase
         .from('drink')
@@ -56,7 +69,7 @@ export const useDrinks = () =>
 
 export const useInfiniteUserHistory = (userId: string, count: number = 20) =>
   useInfiniteQuery({
-    queryKey: ['history', userId],
+    queryKey: drinkKeys.userHistory(userId),
     queryFn: async ({ pageParam }) => {
       const { data } = await fetchFullHistory()
         .not('user', 'is', null)
@@ -95,8 +108,8 @@ export const useInsertHistoryEntryMutation = (user: User) => {
       });
     },
     onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ['history', user.id] });
-      queryClient.invalidateQueries({ queryKey: ['payment', user.id] });
+      queryClient.invalidateQueries({ queryKey: drinkKeys.userHistory(user.id) });
+      queryClient.invalidateQueries({ queryKey: drinkKeys.paymentHistory(user.id) });
     },
   });
 };
@@ -112,8 +125,8 @@ export const useUpdateHistoryEntryMutation = (user: User) =>
       return result.data;
     },
     onMutate: async (newEntry: FullHistory) => {
-      await queryClient.cancelQueries({ queryKey: ['history', user.id] });
-      const previousHistory = queryClient.getQueryData<InfiniteData<FullHistory[]>>(['history', user.id]);
+      await queryClient.cancelQueries({ queryKey: drinkKeys.userHistory(user.id) });
+      const previousHistory = queryClient.getQueryData<InfiniteData<FullHistory[]>>(drinkKeys.userHistory(user.id));
 
       if (previousHistory) {
         const newHistory = {
@@ -122,7 +135,7 @@ export const useUpdateHistoryEntryMutation = (user: User) =>
             page.map((history) => (history.id === newEntry.id ? newEntry : history))
           ),
         };
-        queryClient.setQueriesData({ queryKey: ['history', user.id] }, newHistory);
+        queryClient.setQueriesData({ queryKey: drinkKeys.userHistory(user.id) }, newHistory);
       }
       return { previousHistory };
     },
@@ -137,11 +150,11 @@ export const useUpdateHistoryEntryMutation = (user: User) =>
         tags: { type: 'UpdateHistoryEntry', scope: 'drinks' },
       });
       if (context?.previousHistory) {
-        queryClient.setQueryData(['history', user.id], context.previousHistory);
+        queryClient.setQueryData(drinkKeys.userHistory(user.id), context.previousHistory);
       }
     },
     onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ['history', user.id] });
-      queryClient.invalidateQueries({ queryKey: ['payment', user.id] });
+      queryClient.invalidateQueries({ queryKey: drinkKeys.userHistory(user.id) });
+      queryClient.invalidateQueries({ queryKey: drinkKeys.paymentHistory(user.id) });
     },
   });

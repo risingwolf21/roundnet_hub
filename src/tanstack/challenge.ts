@@ -6,9 +6,19 @@ import { formatDateToDatabase, formatSafeDateToDatabase } from '@/utils';
 import { captureException } from '@sentry/react';
 import { InfiniteData, useInfiniteQuery, useMutation, useQuery } from '@tanstack/react-query';
 
+export const challengeKeys = {
+  all: ['challenge'] as const,
+  list: () => [...challengeKeys.all, 'list'] as const,
+  archivedList: () => [...challengeKeys.all, 'archived'] as const,
+  challengeLeaderboard: (id: string) => [...challengeKeys.all, id, 'leaderboard'] as const,
+  challengeStats: (id: string) => [...challengeKeys.all, id, 'stats'] as const,
+  challengeStatsForUser: (id: string, userId: string) => [...challengeKeys.all, id, 'stats', userId] as const,
+  challengeInformation: (id: string) => [...challengeKeys.all, id] as const,
+}
+
 export const useInfiniteChallengeStats = (challengeId: string, count: number = 20) =>
   useInfiniteQuery({
-    queryKey: ['challenge', challengeId, 'stats'],
+    queryKey: challengeKeys.challengeStats(challengeId),
     queryFn: async ({ pageParam }) => {
       const { data } = await supabase
         .schema('public')
@@ -32,7 +42,7 @@ export const useInfiniteChallengeStats = (challengeId: string, count: number = 2
 
 export const useChallengeLeaderboard = (challengeId: string) =>
   useQuery({
-    queryKey: ['challenge', challengeId, 'leaderboard'],
+    queryKey: challengeKeys.challengeLeaderboard(challengeId),
     queryFn: async () => {
       const result = await supabase
         .from('challenge_user_points')
@@ -47,7 +57,7 @@ export const useChallengeLeaderboard = (challengeId: string) =>
 
 export const useChallenge = (challengeId: string) =>
   useQuery<Challenge | null>({
-    queryKey: ['challenge', challengeId],
+    queryKey: challengeKeys.challengeInformation(challengeId),
     queryFn: async () => {
       const result = await supabase.from('challenge').select('*').eq('id', challengeId).maybeSingle().throwOnError();
 
@@ -57,7 +67,7 @@ export const useChallenge = (challengeId: string) =>
 
 export const useChallenges = () =>
   useQuery<ChallengeWithFullGroup[]>({
-    queryKey: ['challenges'],
+    queryKey: challengeKeys.list(),
     queryFn: async () => {
       const { data } = await fetchChallengeWithGroup()
         .or(`end_date.is.null,end_date.gt.'${formatDateToDatabase(new Date())}'`)
@@ -71,7 +81,7 @@ export const useChallenges = () =>
 
 export const useArchivedChallenges = () =>
   useInfiniteQuery({
-    queryKey: ['challenges', 'archived'],
+    queryKey: challengeKeys.archivedList(),
     queryFn: async ({ pageParam = 0 }: { pageParam?: number }) => {
       const { data } = await fetchChallengeWithGroup()
         .not('end_date', 'is', null)
@@ -93,7 +103,7 @@ export const useArchivedChallenges = () =>
 
 export const useChallengeStatsForUser = (challengeId: string, user: User) =>
   useQuery<ChallengeStats[]>({
-    queryKey: ['challenge', challengeId, 'stats', user.id],
+    queryKey: challengeKeys.challengeStatsForUser(challengeId, user.id),
     queryFn: async () => {
       const result = await supabase
         .from('challenge_stats')
@@ -130,24 +140,11 @@ export const useIncreasePointForUserMutation = (challengeId: string) =>
       return result.data;
     },
     onMutate: async ({ user, challenge, created_at, image_url }) => {
-      await queryClient.cancelQueries({ queryKey: ['challenge', challengeId] });
+      await queryClient.cancelQueries({ queryKey: challengeKeys.challengeInformation(challengeId) });
 
-      const previousStats = queryClient.getQueryData<InfiniteData<ChallengeStatWithUser[]>>([
-        'challenge',
-        challengeId,
-        'stats',
-      ]);
-      const previousLeaderboard = queryClient.getQueryData<ChallengePointsView[]>([
-        'challenge',
-        challengeId,
-        'leaderboard',
-      ]);
-      const previousStatsForUser = queryClient.getQueryData<ChallengeStats[]>([
-        'challenge',
-        challengeId,
-        'stats',
-        user.id,
-      ]);
+      const previousStats = queryClient.getQueryData<InfiniteData<ChallengeStatWithUser[]>>(challengeKeys.challengeStats(challengeId));
+      const previousLeaderboard = queryClient.getQueryData<ChallengePointsView[]>(challengeKeys.challengeLeaderboard(challengeId));
+      const previousStatsForUser = queryClient.getQueryData<ChallengeStats[]>(challengeKeys.challengeStatsForUser(challengeId, user.id));
 
       if (previousStats) {
         const newStat = {
@@ -170,7 +167,7 @@ export const useIncreasePointForUserMutation = (challengeId: string) =>
               pages: previousStats.pages.map((x, index) => (index === 0 && Array.isArray(x) ? [...x, newStat] : x)),
             };
 
-        queryClient.setQueryData<InfiniteData<ChallengeStatWithUser[]>>(['challenge', challengeId, 'stats'], newStats);
+        queryClient.setQueryData<InfiniteData<ChallengeStatWithUser[]>>(challengeKeys.challengeStats(challengeId), newStats);
       }
       if (previousLeaderboard) {
         const newLeaderBoard = previousLeaderboard.map((x) => {
@@ -182,7 +179,7 @@ export const useIncreasePointForUserMutation = (challengeId: string) =>
           }
           return x;
         });
-        queryClient.setQueryData<ChallengePointsView[]>(['challenge', challengeId, 'leaderboard'], newLeaderBoard);
+        queryClient.setQueryData<ChallengePointsView[]>(challengeKeys.challengeLeaderboard(challengeId), newLeaderBoard);
       }
       if (previousStatsForUser) {
         const newStatsForUser = [
@@ -195,7 +192,7 @@ export const useIncreasePointForUserMutation = (challengeId: string) =>
             user: user.id,
           },
         ] as ChallengeStats[];
-        queryClient.setQueryData<ChallengeStats[]>(['challenge', challengeId, 'stats', user.id], newStatsForUser);
+        queryClient.setQueryData<ChallengeStats[]>(challengeKeys.challengeStatsForUser(challengeId, user.id), newStatsForUser);
       }
 
       return { previousLeaderboard, previousStats, previousStatsForUser };
@@ -211,18 +208,18 @@ export const useIncreasePointForUserMutation = (challengeId: string) =>
         tags: { type: 'IncreaseChallengePoint', scope: 'challenge' },
       });
       if (context?.previousLeaderboard) {
-        queryClient.setQueryData(['challenge', challengeId, 'leaderboard'], context.previousLeaderboard);
+        queryClient.setQueryData(challengeKeys.challengeLeaderboard(challengeId), context.previousLeaderboard);
       }
       if (context?.previousStats) {
-        queryClient.setQueryData(['challenge', challengeId, 'stats'], context.previousStats);
+        queryClient.setQueryData(challengeKeys.challengeStats(challengeId), context.previousStats);
       }
       if (context?.previousStatsForUser) {
-        queryClient.setQueryData(['challenge', challengeId, 'stats', variables.user.id], context.previousStatsForUser);
+        queryClient.setQueryData(challengeKeys.challengeStatsForUser(challengeId, variables.user.id), context.previousStatsForUser);
       }
     },
     onSettled: (_data, _error, variables, _context) => {
-      queryClient.invalidateQueries({ queryKey: ['challenge', challengeId, 'leaderboard'] });
-      queryClient.invalidateQueries({ queryKey: ['challenge', challengeId, 'stats'] });
-      queryClient.invalidateQueries({ queryKey: ['challenge', challengeId, 'stats', variables.user.id] });
+      queryClient.invalidateQueries({ queryKey: challengeKeys.challengeLeaderboard(challengeId) });
+      queryClient.invalidateQueries({ queryKey: challengeKeys.challengeStats(challengeId) });
+      queryClient.invalidateQueries({ queryKey: challengeKeys.challengeStatsForUser(challengeId, variables.user.id) });
     },
   });

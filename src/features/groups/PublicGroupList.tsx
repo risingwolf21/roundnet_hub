@@ -10,6 +10,7 @@ import { CreateOrUpdateGroupDialog } from './dialogs/CreateOrUpdateGroupDialog';
 import { LoadingGroupListItem } from './LoadingGroupListItem';
 
 import { queryClient } from '@/lib/queryClient';
+import { authKeys } from '@/tanstack/auth';
 import Add from '@mui/icons-material/Add';
 import Groups from '@mui/icons-material/Groups';
 import Avatar from '@mui/material/Avatar';
@@ -21,7 +22,6 @@ import ListItemAvatar from '@mui/material/ListItemAvatar';
 import ListItemText from '@mui/material/ListItemText';
 import ListSubheader from '@mui/material/ListSubheader';
 import Stack from '@mui/material/Stack';
-import { grantsQk } from '../auth/tanstack/useUserGrantsQuery';
 
 const PublicGroupList = () => {
   const { user } = useGrants();
@@ -52,7 +52,7 @@ const PublicGroupList = () => {
       onRefresh={() => {
         refetch();
         refetchRequested();
-        queryClient.invalidateQueries({ queryKey: grantsQk(user.id) });
+        queryClient.invalidateQueries({ queryKey: authKeys.currentUserGrants(user.id) });
       }}
     >
       {groups
@@ -70,10 +70,10 @@ const PublicGroupList = () => {
                   divider
                   {...(x.user_group_role &&
                     x.user_group_role !== 'joinRequested' && {
-                      onClick: () => {
-                        navigate('/groups/' + x.id);
-                      },
-                    })}
+                    onClick: () => {
+                      navigate('/groups/' + x.id);
+                    },
+                  })}
                   {...(!x.user_group_role && {
                     secondaryAction: <JoinGroupButton group={x} user={user} />,
                   })}

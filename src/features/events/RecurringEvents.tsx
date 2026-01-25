@@ -1,10 +1,9 @@
 import { PullToRefresh } from '@/components/pull-to-refresh/PullToRefresh';
-import { SupabaseEventRepository } from '@/repository/EventRepository';
-import { useQuery } from '@tanstack/react-query';
 import { format, getWeek, isAfter, parse, toDate } from 'date-fns';
 import Layout from '../../components/layout/Layout';
 import { EventWithGroup } from '../../types/supabaseTypes';
 
+import { useRecurringEvents } from '@/tanstack/events';
 import GroupIcon from '@mui/icons-material/Group';
 import PlaceIcon from '@mui/icons-material/Place';
 import Chip from '@mui/material/Chip';
@@ -27,10 +26,7 @@ const RecurringEventsProvider = () => {
     data: recurringEvents = [],
     isLoading,
     refetch,
-  } = useQuery({
-    queryKey: ['events', 'recurring'],
-    queryFn: () => SupabaseEventRepository.fetchRecurringEvents(),
-  });
+  } = useRecurringEvents();
 
   return (
     <Layout appBarConfig={{ navigateBackPath: '/training/list' }}>

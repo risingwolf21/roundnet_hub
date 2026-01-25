@@ -1,49 +1,24 @@
 // src/features/grants/useUserGrantsQuery.ts
 import { supabase } from '@/lib/supabase';
-import { QueryKey, useQuery, useQueryClient } from '@tanstack/react-query';
+import { authKeys, useCurrentUserGrants } from '@/tanstack/auth';
+import { useQueryClient } from '@tanstack/react-query';
 import { useCallback, useEffect, useMemo, useRef } from 'react';
 
 export type GrantsState = { perm: Set<string>; feat: Set<string> };
 export type Mode = 'all' | 'any';
 
-export const grantsQk = (userId: string | null): QueryKey => ['user-grants', userId];
 const empty: GrantsState = { perm: new Set(), feat: new Set() };
 
 export function useUserGrantsQuery(userId: string) {
   const qc = useQueryClient();
 
-  const q = useQuery({
-    queryKey: grantsQk(userId),
-    enabled: true,
-    queryFn: async () => {
-      const { data, error } = await supabase.from('user_grants_view').select('kind,key').eq('user', userId);
-
-      if (error) throw error;
-
-      return data.reduce(
-        (prev, curr) => {
-          if (curr.key && curr.kind) {
-            switch (curr.kind) {
-              case 'perm':
-                return { feat: prev.feat, perm: prev.perm.add(curr.key) };
-              case 'feat':
-                return { feat: prev.feat.add(curr.key), perm: prev.perm };
-            }
-          }
-          return prev;
-        },
-        { perm: new Set<string>(), feat: new Set<string>() }
-      );
-    },
-    placeholderData: empty,
-    refetchOnWindowFocus: false,
-  });
+  const q = useCurrentUserGrants(userId);
 
   const timerRef = useRef<number | null>(null);
   const invalidateSoon = useCallback(() => {
     if (timerRef.current) window.clearTimeout(timerRef.current);
     timerRef.current = window.setTimeout(() => {
-      qc.invalidateQueries({ queryKey: grantsQk(userId) });
+      qc.invalidateQueries({ queryKey: authKeys.currentUserGrants(userId) });
       timerRef.current = null;
     }, 150);
   }, [qc, userId]);

@@ -1,5 +1,6 @@
 import { queryClient } from '@/lib/queryClient';
 import { GroupsRepository } from '@/repository/GroupsRepository';
+import { groupKeys } from '@/tanstack/groups';
 import { GroupWithUserMappings } from '@/types/supabaseTypes';
 import { useMutation } from '@tanstack/react-query';
 
@@ -14,13 +15,12 @@ export const useJoinGroup = (groupId: string, user: User, role: 'user' | 'admin'
       return result.data;
     },
     onMutate: async () => {
-      await queryClient.cancelQueries({ queryKey: ['group', groupId] });
-      await queryClient.cancelQueries({ queryKey: ['groups'] });
+      await queryClient.cancelQueries({ queryKey: groupKeys.single(groupId) });
+      await queryClient.cancelQueries({ queryKey: groupKeys.all });
 
-      const prevGroup = queryClient.getQueryData(['group', groupId]);
-      const prevGroups = queryClient.getQueryData(['groups']);
-
-      queryClient.setQueryData(['group', groupId], (old: GroupWithUserMappings) => ({
+      const prevGroup = queryClient.getQueryData(groupKeys.single(groupId));
+      const prevGroups = queryClient.getQueryData(groupKeys.all);
+      queryClient.setQueryData(groupKeys.single(groupId), (old: GroupWithUserMappings) => ({
         ...old,
         users: [
           ...old.users,
@@ -35,23 +35,23 @@ export const useJoinGroup = (groupId: string, user: User, role: 'user' | 'admin'
         ],
       }));
 
-      queryClient.setQueryData(['groups'], (old: GroupWithUserMappings[]) =>
+      queryClient.setQueryData(groupKeys.all, (old: GroupWithUserMappings[]) =>
         old.map((group) =>
           group.id === groupId
             ? {
-                ...group,
-                users: [
-                  ...group.users,
-                  {
-                    user: user,
-                    map: {
-                      group: groupId,
-                      role: role,
-                      user: user.id,
-                    },
+              ...group,
+              users: [
+                ...group.users,
+                {
+                  user: user,
+                  map: {
+                    group: groupId,
+                    role: role,
+                    user: user.id,
                   },
-                ],
-              }
+                },
+              ],
+            }
             : group
         )
       );
@@ -59,12 +59,12 @@ export const useJoinGroup = (groupId: string, user: User, role: 'user' | 'admin'
       return { prevGroup, prevGroups };
     },
     onError: (_err, _vars, context) => {
-      queryClient.setQueryData(['group', groupId], context?.prevGroup);
-      queryClient.setQueryData(['groups'], context?.prevGroups);
+      queryClient.setQueryData(groupKeys.single(groupId), context?.prevGroup);
+      queryClient.setQueryData(groupKeys.all, context?.prevGroups);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['group', groupId] });
-      queryClient.invalidateQueries({ queryKey: ['groups'] });
+      queryClient.invalidateQueries({ queryKey: groupKeys.single(groupId) });
+      queryClient.invalidateQueries({ queryKey: groupKeys.all });
     },
   });
 };

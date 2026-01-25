@@ -5,6 +5,7 @@ import { useState } from 'react';
 
 import Layout from '@/components/layout/Layout';
 import { queryClient } from '@/lib/queryClient';
+import { authKeys } from '@/tanstack/auth';
 import AddPhotoAlternateOutlined from '@mui/icons-material/AddPhotoAlternateOutlined';
 import EmailOutlined from '@mui/icons-material/EmailOutlined';
 import PersonOutlineOutlined from '@mui/icons-material/PersonOutlineOutlined';
@@ -56,7 +57,7 @@ const ContactInformation = () => {
       setLoadingSave(false);
       return;
     }
-    queryClient.invalidateQueries({ queryKey: ['current-user', user.id] });
+    queryClient.invalidateQueries({ queryKey: authKeys.currentUser(user.id) });
     notifications.show('Successfully updated your profile!', { severity: 'success' });
     setLoadingSave(false);
   };

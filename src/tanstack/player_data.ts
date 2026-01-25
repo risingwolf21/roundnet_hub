@@ -4,9 +4,26 @@ import { captureException } from '@sentry/react';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { GamesTableUpdate } from '../types/supabaseTypes';
 
+export const playerDataKeys = {
+  all: ['player_data'] as const,
+  player: (playerId: string) => [...playerDataKeys.all, playerId] as const,
+  eloHistory: (playerId: string) => [...playerDataKeys.player(playerId), 'elo_history'] as const,
+};
+
+
+export const useEloHistory = (user: User) =>
+  useQuery({
+    queryKey: playerDataKeys.eloHistory(user.id),
+    queryFn: async () => {
+      const result = await supabase.schema('games').from('elo_history').select('*').eq('user', user.id);
+
+      return result.data ?? [];
+    },
+  });
+
 export const usePlayer = (user: User) =>
   useQuery<PlayerPublic | null>({
-    queryKey: ['player_data', user.id],
+    queryKey: playerDataKeys.player(user.id),
     queryFn: async () => {
       const result = await supabase
         .schema('games')
@@ -34,16 +51,16 @@ export const useUpdatePlayer = (user: User) =>
       return result.data;
     },
     onMutate: async ({ updates }) => {
-      await queryClient.cancelQueries({ queryKey: ['player_data', user.id] });
+      await queryClient.cancelQueries({ queryKey: playerDataKeys.player(user.id) });
 
-      const previousPlayer = queryClient.getQueryData<Player | null>(['player_data', user.id]);
+      const previousPlayer = queryClient.getQueryData<Player | null>(playerDataKeys.player(user.id));
 
       if (previousPlayer) {
         const newPlayer = {
           ...previousPlayer,
           ...updates,
         };
-        queryClient.setQueryData<Player | null>(['player_data', user.id], newPlayer);
+        queryClient.setQueryData<Player | null>(playerDataKeys.player(user.id), newPlayer);
       }
 
       return { previousPlayer };
@@ -59,11 +76,11 @@ export const useUpdatePlayer = (user: User) =>
         tags: { type: 'UpdatePlayer', scope: 'games' },
       });
       if (context?.previousPlayer) {
-        queryClient.setQueryData(['player_data', user.id], context.previousPlayer);
+        queryClient.setQueryData(playerDataKeys.player(user.id), context.previousPlayer);
       }
     },
     onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ['player_data', user.id] });
+      queryClient.invalidateQueries({ queryKey: playerDataKeys.player(user.id) });
     },
   });
 
@@ -81,16 +98,16 @@ export const useUpdateIndexHidden = (user: User) =>
       return result.data;
     },
     onMutate: async ({ hide_rating }) => {
-      await queryClient.cancelQueries({ queryKey: ['player_data', user.id] });
+      await queryClient.cancelQueries({ queryKey: playerDataKeys.player(user.id) });
 
-      const previousPlayer = queryClient.getQueryData<Player | null>(['player_data', user.id]);
+      const previousPlayer = queryClient.getQueryData<Player | null>(playerDataKeys.player(user.id));
 
       if (previousPlayer) {
         const newPlayer = {
           ...previousPlayer,
           hide_rating: hide_rating,
         };
-        queryClient.setQueryData<Player | null>(['player_data', user.id], newPlayer);
+        queryClient.setQueryData<Player | null>(playerDataKeys.player(user.id), newPlayer);
       }
 
       return { previousPlayer };
@@ -110,16 +127,7 @@ export const useUpdateIndexHidden = (user: User) =>
       }
     },
     onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ['player_data', user.id] });
+      queryClient.invalidateQueries({ queryKey: playerDataKeys.player(user.id) });
     },
   });
 
-export const useEloHistory = (user: User) =>
-  useQuery({
-    queryKey: ['el_history', user.id],
-    queryFn: async () => {
-      const result = await supabase.schema('games').from('elo_history').select('*').eq('user', user.id);
-
-      return result.data ?? [];
-    },
-  });

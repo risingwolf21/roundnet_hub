@@ -3,6 +3,7 @@ import { Has } from '@/hooks/useGrants';
 import { queryClient } from '@/lib/queryClient';
 import { supabase } from '@/lib/supabase';
 import {
+  challengeKeys,
   useChallenge,
   useChallengeLeaderboard,
   useChallengeStatsForUser,
@@ -58,7 +59,7 @@ const ChallengeInformation = ({ t, challengeId }: { t: TFunction; challengeId: s
   const { data: user_challenge_stats = [] } = useChallengeStatsForUser(challengeId, user);
 
   const refetch = () => {
-    queryClient.invalidateQueries({ queryKey: ['challenge', challengeId] });
+    queryClient.invalidateQueries({ queryKey: challengeKeys.challengeInformation(challengeId) });
   };
 
   const increasePointMutation = useIncreasePointForUserMutation(challengeId);
