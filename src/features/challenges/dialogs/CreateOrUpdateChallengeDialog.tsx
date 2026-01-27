@@ -1,21 +1,22 @@
 import { CreateOrUpdateGroupDialog } from '@/features/groups/dialogs/CreateOrUpdateGroupDialog';
 import { customEnLocale } from '@/lib/date-fns';
-import { supabase } from '@/lib/supabase';
 import { useGroups } from '@/tanstack/groups';
-import { Tables } from '@/types/supabase-generated.types';
 import { UserWithGroups } from '@/types/supabaseTypes';
 import { formatDateFromDatabase, formatDateToDatabase } from '@/utils';
 import { DatePicker, LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { DialogProps, NotificationsProvider, useDialogs, useNotifications } from '@toolpad/core';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 
+import Add from '@mui/icons-material/Add';
 import Article from '@mui/icons-material/Article';
 import Close from '@mui/icons-material/Close';
 import Groups from '@mui/icons-material/Groups';
+import Remove from '@mui/icons-material/Remove';
 import Title from '@mui/icons-material/Title';
 import AppBar from '@mui/material/AppBar';
 import Avatar from '@mui/material/Avatar';
+import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Checkbox from '@mui/material/Checkbox';
 import Dialog from '@mui/material/Dialog';
@@ -23,6 +24,8 @@ import IconButton from '@mui/material/IconButton';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemAvatar from '@mui/material/ListItemAvatar';
+import ListItemText from '@mui/material/ListItemText';
+import ListSubheader from '@mui/material/ListSubheader';
 import MenuItem from '@mui/material/MenuItem';
 import Select from '@mui/material/Select';
 import TextField from '@mui/material/TextField';
@@ -31,26 +34,32 @@ import Typography from '@mui/material/Typography';
 
 type CreateChallengePayload = {
   user: UserWithGroups;
+  challenge?: Challenge | null;
+};
+
+const EMPTY_CHALLENGE: Challenge = {
+  name: '',
+  automated: false,
+  description: '',
+  id: '',
+  created_at: '',
+  end_date: null,
+  group: '',
+  max_points_per_week: null,
+  max_points_per_day: 0,
 };
 
 const Content = ({ payload, onClose }: DialogProps<CreateChallengePayload, Challenge | null>) => {
   const notifications = useNotifications();
   const dialogs = useDialogs();
-  const [selectedGroup, setSelectedGroup] = useState<Group | null>(null);
 
-  const [data, setData] = useState<Tables<'challenge'>>({
-    name: '',
-    automated: false,
-    description: '',
-    id: '',
-    created_at: '',
-    end_date: null,
-    group: '',
-    max_points_per_week: null,
-    max_points_per_day: 0,
-  });
+  const [data, setData] = useState<Challenge>(payload.challenge ?? EMPTY_CHALLENGE);
 
   const { data: groups = [], isLoading } = useGroups();
+
+  const selectedGroup = useMemo(() => {
+    return groups.find(g => g.id === data.group) ?? null;
+  }, [groups, data.group]);
 
   return (
     <>
@@ -60,7 +69,7 @@ const Content = ({ payload, onClose }: DialogProps<CreateChallengePayload, Chall
             <Close />
           </IconButton>
           <Typography sx={{ ml: 2, flex: 1 }} variant="h6" component="div">
-            Challenge erstellen
+            {payload.challenge ? 'Challenge aktualisieren' : 'Neue Challenge erstellen'}
           </Typography>
           <Button
             color="inherit"
@@ -82,26 +91,10 @@ const Content = ({ payload, onClose }: DialogProps<CreateChallengePayload, Chall
                 return;
               }
 
-              const { data: challenge, error } = await supabase
-                .schema('public')
-                .from('challenge')
-                .insert({
-                  name: data.name,
-                  description: data.description,
-                  end_date: data.end_date,
-                  group: selectedGroup.id,
-                })
-                .select('*')
-                .single();
-              if (error) {
-                notifications.show('Challenge konnte nicht erstellt werden. ' + error.message, { severity: 'error' });
-              } else {
-                notifications.show('Challenge wurde erfolgreich erstellt.', { severity: 'success' });
-                onClose(challenge);
-              }
+              onClose(data);
             }}
           >
-            Erstellen
+            {payload.challenge ? 'Aktualisieren' : 'Erstellen'}
           </Button>
         </Toolbar>
       </AppBar>
@@ -147,30 +140,130 @@ const Content = ({ payload, onClose }: DialogProps<CreateChallengePayload, Chall
           <Select
             sx={{ mt: 2, mb: 1 }}
             fullWidth
-            value={selectedGroup?.id ?? 'none'}
+            value={selectedGroup?.id ?? payload.challenge?.group ?? 'none'}
             onChange={async (e) => {
               if (e.target.value === 'create') {
                 const result = await dialogs.open(CreateOrUpdateGroupDialog, { user: payload.user });
                 if (result && result !== 'closed') {
-                  setSelectedGroup(result);
+                  setData({ ...data, group: result.id });
                 } else {
                   notifications.show('Es wurde keine Gruppe erstellt.', { severity: 'error' });
                 }
               } else {
-                setSelectedGroup(groups.find((x) => x.id === e.target.value) ?? null);
+                setData({ ...data, group: e.target.value });
               }
             }}
           >
             {groups
               .filter((x) => x.user_group_role === 'admin')
               .map((x) => (
-                <MenuItem value={x.id}>{x.name}</MenuItem>
+                <MenuItem key={x.id} value={x.id}>{x.name}</MenuItem>
               ))}
             {isLoading && <MenuItem value="loading">Wird geladen...</MenuItem>}
             {!isLoading && !selectedGroup && <MenuItem value="none">Keine</MenuItem>}
             {!isLoading && <MenuItem value="create">Gruppe erstellen</MenuItem>}
           </Select>
         </ListItem>
+
+        <ListSubheader
+          sx={{
+            fontWeight: 'bold',
+            lineHeight: 'normal',
+            my: 1,
+            color: 'rgba(0,0,0,0.87)',
+          }}
+        >
+          Optionale Einstellungen
+        </ListSubheader>
+
+        <ListItem sx={{ pt: 0, pb: 0 }} key={'maxPointsPerWeek'}
+          secondaryAction={data.max_points_per_week && <Box sx={{ width: '100%', display: 'flex', alignItems: 'center' }}>
+            <Box sx={{ display: 'flex', flexDirection: 'row' }}>
+              <IconButton
+                disableRipple
+                disabled={data.max_points_per_week <= 1}
+                onClick={(event) => {
+                  setData({
+                    ...data,
+                    max_points_per_week: (data.max_points_per_week ?? 1) - 1,
+                  })
+                  event.stopPropagation();
+                }}
+              >
+                <Remove fontSize="inherit" sx={{ fontSize: '28px' }} />
+              </IconButton>
+              <Typography sx={{ p: 1, fontSize: '20px', color: 'rgba(0,0,0,0.54)' }}>
+                {data.max_points_per_week}
+              </Typography>
+              <IconButton
+                disableRipple
+                disabled={data.max_points_per_week === null}
+                onClick={(event) => {
+                  setData({
+                    ...data,
+                    max_points_per_week: (data.max_points_per_week ?? 0) + 1,
+                  })
+                  event.stopPropagation();
+                }}
+              >
+                <Add fontSize="inherit" sx={{ fontSize: '28px' }} />
+              </IconButton>
+            </Box>
+          </Box>}>
+          <ListItemAvatar>
+            <Checkbox
+              sx={{ pl: 0 }}
+              checked={data.max_points_per_week !== null}
+              onChange={() =>
+                setData({
+                  ...data,
+                  max_points_per_week: data.max_points_per_week === null ? 1 : null,
+                })
+              }
+            />
+          </ListItemAvatar>
+          <ListItemText primary="Maximale Punkte pro Woche" secondary="Wie viele Punkte können pro Woche maximal erreicht werden?" />
+        </ListItem>
+
+        <ListItem sx={{ pt: 0, pb: 0 }} key={'maxPointsPerDay'}
+          secondaryAction={data.max_points_per_day && <Box sx={{ width: '100%', display: 'flex', alignItems: 'center' }}>
+            <Box sx={{ display: 'flex', flexDirection: 'row' }}>
+              <IconButton
+                disableRipple
+                disabled={data.max_points_per_day <= 1}
+                onClick={(event) => {
+                  setData({
+                    ...data,
+                    max_points_per_day: (data.max_points_per_day ?? 1) - 1,
+                  })
+                  event.stopPropagation();
+                }}
+              >
+                <Remove fontSize="inherit" sx={{ fontSize: '28px' }} />
+              </IconButton>
+              <Typography sx={{ p: 1, fontSize: '20px', color: 'rgba(0,0,0,0.54)' }}>
+                {data.max_points_per_day}
+              </Typography>
+              <IconButton
+                disableRipple
+                disabled={data.max_points_per_day === null}
+                onClick={(event) => {
+                  setData({
+                    ...data,
+                    max_points_per_day: (data.max_points_per_day ?? 0) + 1,
+                  })
+                  event.stopPropagation();
+                }}
+              >
+                <Add fontSize="inherit" sx={{ fontSize: '28px' }} />
+              </IconButton>
+            </Box>
+          </Box>}>
+          <ListItemAvatar>
+          </ListItemAvatar>
+          <ListItemText primary="Maximale Punkte pro Tag" secondary="Wie viele Punkte können pro Tag maximal erreicht werden?" />
+        </ListItem>
+
         <ListItem sx={{ pt: 0, pb: 0 }} key={'endDate'}>
           <ListItemAvatar>
             <Checkbox
@@ -205,7 +298,7 @@ const Content = ({ payload, onClose }: DialogProps<CreateChallengePayload, Chall
   );
 };
 
-export const CreateChallengeDialog = ({
+export const CreateOrUpdateChallengeDialog = ({
   payload,
   open,
   onClose,

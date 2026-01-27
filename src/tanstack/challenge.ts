@@ -1,6 +1,7 @@
 import { queryClient } from '@/lib/queryClient';
 import { supabase } from '@/lib/supabase';
 import { fetchChallengeWithGroup } from '@/repository/ChallengeRepository';
+import { TablesInsert, TablesUpdate } from '@/types/supabase-generated.types';
 import { ChallengePointsView, ChallengeStatWithUser } from '@/types/supabaseTypes';
 import { formatDateToDatabase, formatSafeDateToDatabase } from '@/utils';
 import { captureException } from '@sentry/react';
@@ -221,5 +222,80 @@ export const useIncreasePointForUserMutation = (challengeId: string) =>
       queryClient.invalidateQueries({ queryKey: challengeKeys.challengeLeaderboard(challengeId) });
       queryClient.invalidateQueries({ queryKey: challengeKeys.challengeStats(challengeId) });
       queryClient.invalidateQueries({ queryKey: challengeKeys.challengeStatsForUser(challengeId, variables.user.id) });
+    },
+  });
+
+export const useUpdateChallengeMutation = () =>
+  useMutation({
+    mutationFn: async ({ challenge }: { challenge: TablesUpdate<'challenge'> }) => {
+      const result = await supabase
+        .from('challenge')
+        .update(challenge)
+        .eq('id', challenge.id ?? '')
+        .throwOnError();
+
+      return result.data;
+    },
+    onMutate: async ({ challenge }) => {
+
+      const previousChallenge = queryClient.getQueryData<Challenge>(challengeKeys.challengeInformation(challenge.id!));
+
+      if (previousChallenge) {
+        const newChallenge = {
+          ...previousChallenge,
+          ...challenge,
+        };
+        queryClient.setQueryData<Challenge>(challengeKeys.challengeInformation(challenge.id!), newChallenge);
+      }
+
+      return { previousChallenge };
+    },
+    onError: (error, variables, context) => {
+      captureException(error, {
+        extra: {
+          ...error,
+          ...variables,
+        },
+        tags: { type: 'UpdateChallenge', scope: 'challenge' },
+      });
+      if (context?.previousChallenge && variables.challenge.id) {
+        queryClient.setQueryData(challengeKeys.challengeInformation(variables.challenge.id), context.previousChallenge);
+      }
+    },
+    onSettled: (_data, _error, variables) => {
+      if (variables.challenge.id) {
+        queryClient.invalidateQueries({ queryKey: challengeKeys.challengeInformation(variables.challenge.id) });
+      }
+      queryClient.invalidateQueries({ queryKey: challengeKeys.list() });
+      queryClient.invalidateQueries({ queryKey: challengeKeys.archivedList() });
+    },
+  });
+
+export const useInsertChallengeMutation = () =>
+  useMutation({
+    mutationFn: async (challenge: TablesInsert<'challenge'>) => {
+      const result = await supabase
+        .from('challenge')
+        .insert(challenge)
+        .select('*')
+        .throwOnError()
+
+      return result.data;
+    },
+    onError: (error, variables) => {
+      captureException(error, {
+        extra: {
+          ...error,
+          ...variables,
+        },
+        tags: { type: 'UpsertChallenge', scope: 'challenge' },
+      });
+    },
+    onSettled: (_data, _error, variables) => {
+      if (variables.id) {
+        queryClient.invalidateQueries({ queryKey: challengeKeys.challengeInformation(variables.id) });
+      }
+      queryClient.invalidateQueries({ queryKey: challengeKeys.list() });
+      queryClient.invalidateQueries({ queryKey: challengeKeys.archivedList() });
     },
   });

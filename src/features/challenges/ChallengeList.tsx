@@ -2,10 +2,9 @@ import { withProfiler } from '@sentry/react';
 import { useDialogs, useNotifications } from '@toolpad/core';
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router';
-import { CreateChallengeDialog } from './dialogs/CreateChallengeDialog';
+import { CreateOrUpdateChallengeDialog } from './dialogs/CreateOrUpdateChallengeDialog';
 
-import { queryClient } from '@/lib/queryClient';
-import { challengeKeys } from '@/tanstack/challenge';
+import { useInsertChallengeMutation } from '@/tanstack/challenge';
 import { UserWithGroups } from '@/types/supabaseTypes';
 import Add from '@mui/icons-material/Add';
 import Box from '@mui/material/Box';
@@ -34,6 +33,7 @@ const ChallengeList = ({
   const notifications = useNotifications();
   const navigate = useNavigate();
   const dialogs = useDialogs();
+  const insertChallengeMutation = useInsertChallengeMutation();
 
   useEffect(() => {
     if (error) notifications.show(error.message, { severity: 'error' });
@@ -110,11 +110,15 @@ const ChallengeList = ({
           bottom: 'calc(16px + env(safe-area-inset-bottom))',
         }}
         onClick={async () => {
-          const result = await dialogs.open(CreateChallengeDialog, { user });
+          const result = await dialogs.open(CreateOrUpdateChallengeDialog, { user });
           if (result) {
-            await queryClient.invalidateQueries({ queryKey: challengeKeys.list() });
-            await queryClient.invalidateQueries({ queryKey: challengeKeys.challengeInformation(result.id) });
-            navigate('/challenges/' + result.id);
+            await insertChallengeMutation.mutateAsync(result, {
+              onError: (error) => notifications.show('Challenge konnte nicht erstellt werden. ' + error.message, { severity: 'error' }),
+              onSuccess: () => {
+                notifications.show('Challenge wurde erfolgreich erstellt.', { severity: 'success' });
+                navigate('/challenges/' + result.id);
+              }
+            });
           }
         }}
       >

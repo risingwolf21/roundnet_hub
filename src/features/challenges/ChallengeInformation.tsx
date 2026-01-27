@@ -9,6 +9,7 @@ import {
   useChallengeStatsForUser,
   useIncreasePointForUserMutation,
   useInfiniteChallengeStats,
+  useUpdateChallengeMutation,
 } from '@/tanstack/challenge';
 import { dataURLtoFile } from '@/utils';
 import { captureException, withProfiler } from '@sentry/react';
@@ -25,13 +26,21 @@ import { ChallengeLeaderboard } from './ChallengeLeaderboard';
 import EnterPointDialog from './dialogs/EnterPointDialog';
 
 import AddIcon from '@mui/icons-material/Add';
+import Edit from '@mui/icons-material/Edit';
+import MoreVert from '@mui/icons-material/MoreVert';
 import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
 import Fab from '@mui/material/Fab';
+import IconButton from '@mui/material/IconButton';
+import ListItemIcon from '@mui/material/ListItemIcon';
+import ListItemText from '@mui/material/ListItemText';
+import Menu from '@mui/material/Menu';
+import MenuItem from '@mui/material/MenuItem';
 import Tab from '@mui/material/Tab';
 import Tabs from '@mui/material/Tabs';
 import Typography from '@mui/material/Typography';
 import { useTheme } from '@mui/material/styles';
+import { CreateOrUpdateChallengeDialog } from './dialogs/CreateOrUpdateChallengeDialog';
 
 const ChallengeInformationProvider = ({ t }: { t: TFunction }) => {
   const { challengeId } = useParams();
@@ -47,6 +56,7 @@ const ChallengeInformation = ({ t, challengeId }: { t: TFunction; challengeId: s
   const theme = useTheme();
   const notifications = useNotifications();
   const [value, setValue] = useState(0);
+  const [anchorEl, setAnchorEl] = useState<(EventTarget & HTMLButtonElement) | null>(null);
 
   const { data: challenge = null, isLoading } = useChallenge(challengeId);
   const { data: leaderboard = [], isLoading: isLeaderboardLoading } = useChallengeLeaderboard(challengeId);
@@ -63,6 +73,7 @@ const ChallengeInformation = ({ t, challengeId }: { t: TFunction; challengeId: s
   };
 
   const increasePointMutation = useIncreasePointForUserMutation(challengeId);
+  const updateChallengeMutation = useUpdateChallengeMutation();
 
   const uploadImage = useCallback(
     async (image: { dataUrl: string; fileName: string } | null) => {
@@ -121,7 +132,42 @@ const ChallengeInformation = ({ t, challengeId }: { t: TFunction; challengeId: s
   }
 
   return (
-    <Layout appBarConfig={{ title: challenge?.name, navigateBackPath: '/challenges/list', showProfile: true }}>
+    <Layout
+      appBarConfig={{ title: challenge?.name, navigateBackPath: '/challenges/list', showProfile: true }}
+      appBarActions={<Has perm={['challenge.manage']} any>
+        <>
+          <IconButton sx={{ color: 'primary.contrastText', pr: 0 }} onClick={(e) => setAnchorEl(e.currentTarget)}>
+            <MoreVert />
+          </IconButton>
+          <Menu
+            id="simple-menu"
+            anchorEl={anchorEl}
+            keepMounted
+            open={Boolean(anchorEl)}
+            onClose={() => setAnchorEl(null)}
+          >
+            <Has perm={'challenge.manage'}>
+              <MenuItem
+                onClick={async () => {
+                  setAnchorEl(null);
+                  const result = await dialogs.open(CreateOrUpdateChallengeDialog, { user, challenge });
+                  if (result) {
+                    await updateChallengeMutation.mutateAsync({ challenge: result }, {
+                      onError: (error) => notifications.show('Challenge konnte nicht aktualisiert werden. ' + error.message, { severity: 'error' }),
+                      onSuccess: () => notifications.show('Challenge wurde erfolgreich aktualisiert.', { severity: 'success' })
+                    })
+                  }
+                }}
+              >
+                <ListItemIcon>
+                  <Edit />
+                </ListItemIcon>
+                <ListItemText primary={t('events.editEvent')} />
+              </MenuItem>
+            </Has>
+          </Menu>
+        </>
+      </Has>}>
       <PullToRefresh onRefresh={() => refetch()}>
         <Alert sx={{ m: 2 }} severity={'info'}>
           {challenge?.description}
@@ -167,6 +213,7 @@ const ChallengeInformation = ({ t, challengeId }: { t: TFunction; challengeId: s
                   const result = await dialogs.open(EnterPointDialog, {
                     dates: user_challenge_stats.map((x) => x.created_at),
                     maxEntriesPerWeek: challenge.max_points_per_week,
+                    maxEntriesPerDay: challenge.max_points_per_day,
                   });
 
                   if (result) increaseChallengePoint(result.date, result.image);

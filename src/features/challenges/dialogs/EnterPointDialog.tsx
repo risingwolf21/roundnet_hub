@@ -7,16 +7,22 @@ import { differenceInDays, isSameDay, isSameWeek } from 'date-fns';
 import React, { useEffect, useState } from 'react';
 import { SwipeableDialog } from '../../../components/SwipeableDialog';
 
+import Add from '@mui/icons-material/Add';
 import AddPhotoAlternateOutlined from '@mui/icons-material/AddPhotoAlternateOutlined';
 import DeleteOutline from '@mui/icons-material/DeleteOutline';
 import EditOutlined from '@mui/icons-material/EditOutlined';
+import Remove from '@mui/icons-material/Remove';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
+import IconButton from '@mui/material/IconButton';
+import ListItem from '@mui/material/ListItem';
+import ListItemText from '@mui/material/ListItemText';
 import Typography from '@mui/material/Typography';
 
 type EnterPointDialogProps = {
   dates: string[];
   maxEntriesPerWeek: number | null;
+  maxEntriesPerDay: number | null;
 };
 
 function ServerDay(props: PickersDayProps & { highlightedDays?: Date[]; maxEntriesPerWeek?: number }) {
@@ -51,7 +57,7 @@ type EnterPointResult = {
 };
 
 const EnterPointDialog = ({
-  payload: { dates, maxEntriesPerWeek },
+  payload: { dates, maxEntriesPerWeek, maxEntriesPerDay },
   open,
   onClose,
 }: DialogProps<EnterPointDialogProps, EnterPointResult | null>) => {
@@ -59,6 +65,7 @@ const EnterPointDialog = ({
   const [highlightedDays, setHightlightedDays] = useState(dates.map((x) => formatDateFromDatabase(x)));
   const [image, setImage] = useState<{ dataUrl: string; fileName: string } | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [points, setPoints] = useState<number>(1);
 
   useEffect(() => {
     setHightlightedDays(dates.map(formatDateFromDatabase));
@@ -103,7 +110,40 @@ const EnterPointDialog = ({
         </>
       }
     >
-      <Typography m={2}>Hiermit trägst du einen Punkt für diese Challenge ein</Typography>
+      <ListItem secondaryAction={(maxEntriesPerDay ?? 0) > 1 && <Box sx={{ mx: 2, width: '100%', display: 'flex', alignItems: 'center' }}>
+        <Box sx={{ display: 'flex', flexDirection: 'row' }}>
+          <IconButton
+            disableRipple
+            disabled={points <= 1}
+            onClick={(event) => {
+              setPoints(points - 1);
+              event.stopPropagation();
+            }}
+          >
+            <Remove fontSize="inherit" sx={{ fontSize: '28px' }} />
+          </IconButton>
+          <Typography sx={{ p: 1, fontSize: '20px', color: 'rgba(0,0,0,0.54)' }}>
+            {points}
+          </Typography>
+          <IconButton
+            disableRipple
+            disabled={maxEntriesPerDay !== null && points >= maxEntriesPerDay}
+            onClick={(event) => {
+              setPoints(points + 1);
+              event.stopPropagation();
+            }}
+          >
+            <Add fontSize="inherit" sx={{ fontSize: '28px' }} />
+          </IconButton>
+        </Box>
+      </Box>}>
+        {
+          (maxEntriesPerDay ?? 0) > 1 ?
+            <ListItemText primary="Anzahl Punkte" secondary="Wie viele Punkte möchtest du eintragen?" />
+            : <ListItemText primary="Hiermit trägst du einen Punkt für diese Challenge ein" />
+        }
+      </ListItem>
+
       <DatePicker
         sx={{
           width: '100%',
