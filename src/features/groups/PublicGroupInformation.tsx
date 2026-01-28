@@ -14,12 +14,14 @@ import SearchAndSelectUserDialog from './dialogs/SearchAndSelectUserDialog';
 import { useAddUsersMutation } from './query/addUsersMutation';
 import { useRemoveUsersMutation } from './query/removeUsersMutation';
 
+import Layout from '@/components/layout/Layout';
 import { Has } from '@/hooks/useGrants';
 import AccountBox from '@mui/icons-material/AccountBox';
 import AdminPanelSettings from '@mui/icons-material/AdminPanelSettings';
 import Check from '@mui/icons-material/Check';
 import Edit from '@mui/icons-material/Edit';
 import GroupRemove from '@mui/icons-material/GroupRemove';
+import MoreVert from '@mui/icons-material/MoreVert';
 import MoveDownIcon from '@mui/icons-material/MoveDown';
 import MoveUpIcon from '@mui/icons-material/MoveUp';
 import PersonAdd from '@mui/icons-material/PersonAdd';
@@ -36,7 +38,10 @@ import IconButton from '@mui/material/IconButton';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemAvatar from '@mui/material/ListItemAvatar';
+import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
+import Menu from '@mui/material/Menu';
+import MenuItem from '@mui/material/MenuItem';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import { AcceptTrialJoinButton } from './components/AcceptTrialJoinButton';
@@ -59,6 +64,7 @@ const PublicGroupInformation = () => {
       stringify: (value) => JSON.stringify(value),
     },
   });
+  const [anchorEl, setAnchorEl] = useState<(EventTarget & HTMLButtonElement) | null>(null);
 
   const { data: group = null, error, isLoading, refetch: refetchGroup } = useGroup(groupId);
   const { data: group_users = [], isLoading: isLoadingUsers, refetch: refetchUsers } = useGroupUsers('user', groupId);
@@ -134,7 +140,38 @@ const PublicGroupInformation = () => {
     });
   };
 
-  return (
+  return (<Layout appBarConfig={{ navigateBackPath: '/groups/list' }}
+    appBarActions={group?.user_group_role === "admin" &&
+      <>
+        <IconButton sx={{ color: 'primary.contrastText', pr: 0 }} onClick={(e) => setAnchorEl(e.currentTarget)}>
+          <MoreVert />
+        </IconButton>
+        <Menu
+          id="simple-menu"
+          anchorEl={anchorEl}
+          keepMounted
+          open={Boolean(anchorEl)}
+          onClose={() => setAnchorEl(null)}
+        >
+          <MenuItem
+            onClick={async () => {
+              setAnchorEl(null);
+              const result = await dialogs.open(CreateOrUpdateGroupDialog, { user, group: group ?? undefined });
+              if (result && result !== 'closed') {
+                refetch();
+                notifications.show('Gruppe wurde erfolgreich bearbeitet.', { severity: 'success' });
+              } else if (!result) {
+                notifications.show('Gruppe konnte nicht bearbeitet werden.', { severity: 'error' });
+              }
+            }}
+          >
+            <ListItemIcon>
+              <Edit />
+            </ListItemIcon>
+            <ListItemText primary={"Gruppe bearbeiten"} />
+          </MenuItem>
+        </Menu>
+      </>}>
     <PullToRefresh onRefresh={refetch}>
       <List sx={{ pb: 'calc(64px + env(safe-area-inset-bottom))' }}>
         <LoadingIndicator loading={isLoading} />
@@ -495,22 +532,6 @@ const PublicGroupInformation = () => {
             sx={{
               background: 'primary.light',
             }}
-            onClick={async () => {
-              const result = await dialogs.open(CreateOrUpdateGroupDialog, { user, group: group ?? undefined });
-              if (result && result !== 'closed') {
-                refetch();
-                notifications.show('Gruppe wurde erfolgreich bearbeitet.', { severity: 'success' });
-              } else if (!result) {
-                notifications.show('Gruppe konnte nicht bearbeitet werden.', { severity: 'error' });
-              }
-            }}
-          >
-            <Edit sx={{ color: 'white' }} />
-          </Fab>
-          <Fab
-            sx={{
-              background: 'primary.light',
-            }}
             onClick={() => {
               dialogs
                 .open(SearchAndSelectUserDialog, { usersToFilter: group.users.map((x) => x.user.id) })
@@ -524,6 +545,7 @@ const PublicGroupInformation = () => {
         </Stack>
       )}
     </PullToRefresh>
+  </Layout >
   );
 };
 
