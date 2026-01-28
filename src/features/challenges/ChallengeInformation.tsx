@@ -149,6 +149,7 @@ const ChallengeInformation = ({ t, challengeId }: { t: TFunction; challengeId: s
           >
             <Has perm={'challenge.manage'}>
               <MenuItem
+                disabled={isLoading}
                 onClick={async () => {
                   setAnchorEl(null);
                   const result = await dialogs.open(CreateOrUpdateChallengeDialog, { user, challenge });

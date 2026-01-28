@@ -46,7 +46,7 @@ const EMPTY_CHALLENGE: Challenge = {
   end_date: null,
   group: '',
   max_points_per_week: null,
-  max_points_per_day: 0,
+  max_points_per_day: 1,
 };
 
 const Content = ({ payload, onClose }: DialogProps<CreateChallengePayload, Challenge | null>) => {
