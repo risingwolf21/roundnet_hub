@@ -116,7 +116,7 @@ export const useGroupFeatures = (groupId?: string) => {
         .from('group_features')
         .select('group, feature')
         .eq('group', groupId as string);
-      if (error && (error as any).code === '42P01') return [];
+      if (error && error.code === '42P01') return [];
       if (error) throw error;
       return data?.map((x) => x.feature) ?? [];
     },
