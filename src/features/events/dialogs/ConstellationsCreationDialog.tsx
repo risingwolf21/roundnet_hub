@@ -788,26 +788,29 @@ const Content = ({ payload, onClose }: DialogProps<ConstellationCreationDialogPr
                           const [name2b, ...surname2b] = match[1].players[1].name!.split(' ');
                           const team_a_name = (surname1a.pop() ?? name1a) + '/' + (surname2a.pop() ?? name2a);
                           const team_b_name = (surname1b.pop() ?? name1b) + '/' + (surname2b.pop() ?? name2b);
+
+                          const team_a = {
+                            name: team_a_name,
+                            player_1: match[0].players[0].player,
+                            player_1_rating: match[0].players[0].ka_index,
+                            player_2: match[0].players[1].player,
+                            player_2_rating: match[0].players[1].ka_index,
+                          };
+                          const team_b = {
+                            name: team_b_name,
+                            player_1: match[1].players[0].player,
+                            player_1_rating: match[1].players[0].ka_index,
+                            player_2: match[1].players[1].player,
+                            player_2_rating: match[1].players[1].ka_index,
+                          };
                           GamesRepository.reportScores(
                             [],
-                            {
-                              name: team_a_name,
-                              player_1: match[0].players[0].player,
-                              player_1_rating: match[0].players[0].ka_index,
-                              player_2: match[0].players[1].player,
-                              player_2_rating: match[0].players[1].ka_index,
-                            },
-                            {
-                              name: team_b_name,
-                              player_1: match[1].players[0].player,
-                              player_1_rating: match[1].players[0].ka_index,
-                              player_2: match[1].players[1].player,
-                              player_2_rating: match[1].players[1].ka_index,
-                            },
+                            team_a,
+                            team_b,
                             payload.event.id
                           ).catch((error) => {
                             captureException(error, {
-                              extra: { match, eventId: payload.event.id },
+                              extra: { match, eventId: payload.event.id, team_a, team_b },
                               tags: { feature: 'constellations' },
                             })
                             notifications.show(error.message, { severity: 'error' })
