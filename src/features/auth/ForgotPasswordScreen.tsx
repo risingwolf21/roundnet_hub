@@ -16,6 +16,7 @@ import { getCommonTextFieldProps } from './SignUpScreen';
 import { alpha, useTheme } from '@mui/material';
 import CircularProgress from '@mui/material/CircularProgress';
 import Stack from '@mui/material/Stack';
+import { captureException } from '@sentry/react';
 
 const ForgotPasswordScreen = () => {
   const navigate = useNavigate();
@@ -46,6 +47,7 @@ const ForgotPasswordScreen = () => {
           else notifications.show('Schau in dein Email Postfach um dein Passwort zu ändern.', { severity: 'success' });
         })
         .catch((error) => {
+          captureException(error);
           notifications.show(error.message, { severity: 'error' });
         })
         .finally(() => {
