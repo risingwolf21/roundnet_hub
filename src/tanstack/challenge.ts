@@ -280,6 +280,7 @@ export const useInsertChallengeMutation = () =>
         .from('challenge')
         .insert(challenge)
         .select('*')
+        .single()
         .throwOnError()
 
       return result.data;

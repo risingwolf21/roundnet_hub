@@ -114,9 +114,9 @@ const ChallengeList = ({
           if (result) {
             await insertChallengeMutation.mutateAsync(result, {
               onError: (error) => notifications.show('Challenge konnte nicht erstellt werden. ' + error.message, { severity: 'error' }),
-              onSuccess: () => {
+              onSuccess: (data) => {
                 notifications.show('Challenge wurde erfolgreich erstellt.', { severity: 'success' });
-                navigate('/challenges/' + result.id);
+                navigate('/challenges/' + data.id);
               }
             });
           }
