@@ -120,12 +120,12 @@ const Content = ({
           event_key: payload.eventKey,
           created_by: payload.userId,
           lead_time: durationToPostgresInterval(payload.leadTime),
-          next: JSON.stringify({
+          next: {
             title: payload.newTitle,
             description: payload.newDescription,
             group: payload.newGroupId,
             disableAnswerDeadline: payload.disableAnswerDeadline
-          }),
+          },
           one_time: true,
           active: true,
           trigger: trigger,

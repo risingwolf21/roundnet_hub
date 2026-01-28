@@ -25,7 +25,7 @@ export const useAllNotifications = (user: User | null) =>
         .select('*')
         .eq('user', user!.id)
         .throwOnError()
-        .returns<Notification[]>();
+        .order('created_at', { ascending: false });
 
       return result.data ?? [];
     },

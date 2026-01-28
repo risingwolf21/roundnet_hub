@@ -1,7 +1,7 @@
 // @/push/WebPushKeeper.tsx
 import useDeviceId from '@/hooks/useDeviceId';
 import { supabase } from '@/lib/supabase';
-import { logger } from '@sentry/react';
+import { captureException } from '@sentry/react';
 import type { Session } from '@supabase/supabase-js';
 import { PropsWithChildren, useEffect, useRef } from 'react';
 
@@ -72,13 +72,8 @@ export default function WebPushKeeper({ children, session, vapidPublicKey }: Pro
         localStorage.setItem('push:lastSig', sig);
 
         await upsertToDb(endpoint, p256dh, auth, { user: session.user.id }, { origin: 'useEffect' });
-      } catch (e: unknown) {
-        logger.error('webpush_subscribe_failed', {
-          type: 'webpush',
-          message: 'subscribe_failed',
-          user: session?.user.id,
-          error: e,
-        });
+      } catch (e: any) {
+        console.warn('WebPushKeeper failed to register push subscription', e);
       }
     })();
   }, [session?.user?.id, vapidPublicKey]);
@@ -96,13 +91,19 @@ export default function WebPushKeeper({ children, session, vapidPublicKey }: Pro
           ? 'ios'
           : 'desktop',
     });
-    if (error) throw error;
-    logger.info('webpush_subscribe_successful', {
-      type: 'webpush',
-      message: 'subscribe_successful',
-      user: session?.user?.id,
-      ...params,
-    });
+    if (error) {
+      captureException(error, {
+        extra: {
+          p_endpoint,
+          p_p256dh,
+          p_auth,
+          deviceId,
+          userAgent: navigator.userAgent,
+          ...params,
+        },
+        tags: { type: 'UpsertWebPushSubscription', scope: 'notifications' },
+      });
+    }
   }
 
   return children;

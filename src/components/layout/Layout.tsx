@@ -131,7 +131,6 @@ const Layout = ({
                     onClick={() => {
                       navigate('/user');
                     }}
-                    sx={{ pr: 0 }}
                   >
                     {user.avatarUrl ? (
                       <Avatar sx={{ borderRadius: 2, width: '35px', height: '35px' }}>

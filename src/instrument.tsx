@@ -31,7 +31,11 @@ Sentry.init({
     }),
     Sentry.consoleLoggingIntegration({ levels: ['log', 'error', 'warn'] }),
     Sentry.eventFiltersIntegration({
-      ignoreErrors: ['Load failed', 'Failed to fetch'],
+      ignoreErrors: [
+        'Load failed',
+        'Failed to fetch',
+        /Script .*service-worker\.js load failed/,
+        'Invalid login credentials'],
     }),
   ],
   tracesSampleRate: 1.0,

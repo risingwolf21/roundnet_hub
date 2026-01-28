@@ -28,10 +28,13 @@ const theme = themeMap[(import.meta.env.VITE_WEBSITE_PATH as keyof typeof themeM
 
 const ServiceWorkerGate = ({ children }: PropsWithChildren) => {
   const {
-    needRefresh: [needRefresh, _setNeedRefresh],
+    needRefresh: [needRefresh, setNeedRefresh],
     updateServiceWorker,
   } = useRegisterSW({
     immediate: true,
+    onNeedRefresh() {
+      setNeedRefresh(true);
+    }
   });
   const { t } = useTranslation();
 
@@ -49,7 +52,7 @@ const ServiceWorkerGate = ({ children }: PropsWithChildren) => {
 
           <Box sx={{ width: '100%', display: 'flex', justifyContent: 'center', mt: 4 }}>
             <Button fullWidth={false} variant="contained" onClick={() => updateServiceWorker(true)}>
-              Aktualisieren
+              {t('browse.appRefresh')}
             </Button>
           </Box>
         </Stack>

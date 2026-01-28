@@ -2884,6 +2884,10 @@ export type Database = {
         }
         Returns: undefined
       }
+      run_event_transformation_worker_if_needed: {
+        Args: Record<PropertyKey, never>
+        Returns: Json
+      }
       run_event_transformations: {
         Args: Record<PropertyKey, never>
         Returns: number

@@ -34,6 +34,7 @@ import Select from '@mui/material/Select';
 import Stack from '@mui/material/Stack';
 import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
+import { captureException } from '@sentry/react';
 
 type ConstellationCreationDialogProps = {
   users: User[];
@@ -532,13 +533,13 @@ const Content = ({ payload, onClose }: DialogProps<ConstellationCreationDialogPr
                               ...rounds.map((z, i) =>
                                 i === index
                                   ? {
-                                      ...z,
-                                      options: {
-                                        ...z.options,
-                                        benchFromLastMatchMustPlay: e.target.checked,
-                                        mustPlay: e.target.checked ? [...rounds[index - 1].game.bench] : [],
-                                      } as MatchmakingOptions,
-                                    }
+                                    ...z,
+                                    options: {
+                                      ...z.options,
+                                      benchFromLastMatchMustPlay: e.target.checked,
+                                      mustPlay: e.target.checked ? [...rounds[index - 1].game.bench] : [],
+                                    } as MatchmakingOptions,
+                                  }
                                   : z
                               ),
                             ]);
@@ -596,14 +597,14 @@ const Content = ({ payload, onClose }: DialogProps<ConstellationCreationDialogPr
                                 ...rounds.map((z, i) =>
                                   i === index
                                     ? {
-                                        game: z.game,
-                                        options: {
-                                          ...z.options,
-                                          lockedTeams: (z.options.lockedTeams ?? []).filter(
-                                            (y) => y[0].player !== player1.player && y[1].player !== player2.player
-                                          ),
-                                        } as MatchmakingOptions,
-                                      }
+                                      game: z.game,
+                                      options: {
+                                        ...z.options,
+                                        lockedTeams: (z.options.lockedTeams ?? []).filter(
+                                          (y) => y[0].player !== player1.player && y[1].player !== player2.player
+                                        ),
+                                      } as MatchmakingOptions,
+                                    }
                                     : z
                                 ),
                               ]);
@@ -657,15 +658,15 @@ const Content = ({ payload, onClose }: DialogProps<ConstellationCreationDialogPr
                             ...rounds.map((z, i) =>
                               i === index
                                 ? {
-                                    game: z.game,
-                                    options: {
-                                      ...z.options,
-                                      lockedTeams: [
-                                        ...(z.options.lockedTeams ?? []),
-                                        [preSelectedPlayer1, preSelectedPlayer2],
-                                      ],
-                                    } as MatchmakingOptions,
-                                  }
+                                  game: z.game,
+                                  options: {
+                                    ...z.options,
+                                    lockedTeams: [
+                                      ...(z.options.lockedTeams ?? []),
+                                      [preSelectedPlayer1, preSelectedPlayer2],
+                                    ],
+                                  } as MatchmakingOptions,
+                                }
                                 : z
                             ),
                           ]);
@@ -716,14 +717,14 @@ const Content = ({ payload, onClose }: DialogProps<ConstellationCreationDialogPr
                                 ...rounds.map((z, i) =>
                                   i === index
                                     ? {
-                                        game: z.game,
-                                        options: {
-                                          ...z.options,
-                                          mustPlay: (z.options.mustPlay ?? []).filter(
-                                            (y) => y.player !== player.player
-                                          ),
-                                        } as MatchmakingOptions,
-                                      }
+                                      game: z.game,
+                                      options: {
+                                        ...z.options,
+                                        mustPlay: (z.options.mustPlay ?? []).filter(
+                                          (y) => y.player !== player.player
+                                        ),
+                                      } as MatchmakingOptions,
+                                    }
                                     : z
                                 ),
                               ]);
@@ -757,12 +758,12 @@ const Content = ({ payload, onClose }: DialogProps<ConstellationCreationDialogPr
                             ...rounds.map((z, i) =>
                               i === index
                                 ? {
-                                    game: z.game,
-                                    options: {
-                                      ...z.options,
-                                      mustPlay: [...(z.options.mustPlay ?? []), preMustPlay],
-                                    } as MatchmakingOptions,
-                                  }
+                                  game: z.game,
+                                  options: {
+                                    ...z.options,
+                                    mustPlay: [...(z.options.mustPlay ?? []), preMustPlay],
+                                  } as MatchmakingOptions,
+                                }
                                 : z
                             ),
                           ]);
@@ -787,24 +788,33 @@ const Content = ({ payload, onClose }: DialogProps<ConstellationCreationDialogPr
                           const [name2b, ...surname2b] = match[1].players[1].name!.split(' ');
                           const team_a_name = (surname1a.pop() ?? name1a) + '/' + (surname2a.pop() ?? name2a);
                           const team_b_name = (surname1b.pop() ?? name1b) + '/' + (surname2b.pop() ?? name2b);
+
+                          const team_a = {
+                            name: team_a_name,
+                            player_1: match[0].players[0].player,
+                            player_1_rating: match[0].players[0].ka_index,
+                            player_2: match[0].players[1].player,
+                            player_2_rating: match[0].players[1].ka_index,
+                          };
+                          const team_b = {
+                            name: team_b_name,
+                            player_1: match[1].players[0].player,
+                            player_1_rating: match[1].players[0].ka_index,
+                            player_2: match[1].players[1].player,
+                            player_2_rating: match[1].players[1].ka_index,
+                          };
                           GamesRepository.reportScores(
                             [],
-                            {
-                              name: team_a_name,
-                              player_1: match[0].players[0].player,
-                              player_1_rating: match[0].players[0].ka_index,
-                              player_2: match[0].players[1].player,
-                              player_2_rating: match[0].players[1].ka_index,
-                            },
-                            {
-                              name: team_b_name,
-                              player_1: match[1].players[0].player,
-                              player_1_rating: match[1].players[0].ka_index,
-                              player_2: match[1].players[1].player,
-                              player_2_rating: match[1].players[1].ka_index,
-                            },
+                            team_a,
+                            team_b,
                             payload.event.id
-                          ).catch((error) => notifications.show(error.message, { severity: 'error' }));
+                          ).catch((error) => {
+                            captureException(error, {
+                              extra: { match, eventId: payload.event.id, team_a, team_b },
+                              tags: { feature: 'constellations' },
+                            })
+                            notifications.show(error.message, { severity: 'error' })
+                          });
                         }
                       }}
                     >
@@ -817,13 +827,13 @@ const Content = ({ payload, onClose }: DialogProps<ConstellationCreationDialogPr
                           ...rounds.map((z, i) =>
                             i === index
                               ? {
-                                  game: result,
-                                  options: {
-                                    ...z.options,
-                                    ...(z.options.benchFromLastMatchMustPlay &&
-                                      i > 0 && { mustPlay: rounds[i - 1].game.bench }),
-                                  },
-                                }
+                                game: result,
+                                options: {
+                                  ...z.options,
+                                  ...(z.options.benchFromLastMatchMustPlay &&
+                                    i > 0 && { mustPlay: rounds[i - 1].game.bench }),
+                                },
+                              }
                               : z
                           ),
                         ]);
@@ -848,12 +858,12 @@ const Content = ({ payload, onClose }: DialogProps<ConstellationCreationDialogPr
                                 ...rounds.map((z, i) =>
                                   i === index
                                     ? {
-                                        ...z,
-                                        options: {
-                                          ...z.options,
-                                          fixedMatches: [...(z.options.fixedMatches ?? []), y],
-                                        } as MatchmakingOptions,
-                                      }
+                                      ...z,
+                                      options: {
+                                        ...z.options,
+                                        fixedMatches: [...(z.options.fixedMatches ?? []), y],
+                                      } as MatchmakingOptions,
+                                    }
                                     : z
                                 ),
                               ]);
@@ -862,12 +872,12 @@ const Content = ({ payload, onClose }: DialogProps<ConstellationCreationDialogPr
                                 ...rounds.map((z, i) =>
                                   i === index
                                     ? {
-                                        ...z,
-                                        options: {
-                                          ...z.options,
-                                          fixedMatches: z.options.fixedMatches?.filter((x) => x !== y),
-                                        } as MatchmakingOptions,
-                                      }
+                                      ...z,
+                                      options: {
+                                        ...z.options,
+                                        fixedMatches: z.options.fixedMatches?.filter((x) => x !== y),
+                                      } as MatchmakingOptions,
+                                    }
                                     : z
                                 ),
                               ]);

@@ -45,7 +45,6 @@ import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
 import { DatePicker, DateTimePicker } from '@mui/x-date-pickers';
 import { TimePicker } from '@mui/x-date-pickers/TimePicker';
-import { logger } from '@sentry/react';
 import { DialogProps, useDialogs } from '@toolpad/core';
 import { useNotifications } from '@toolpad/core/useNotifications';
 import { add, Duration, format, isAfter, set } from 'date-fns';
@@ -164,11 +163,6 @@ export const CreateOrUpdateEventDialog = ({
             onError: (error) =>
               notifications.show('Event konnte nicht erstellt werden: ' + error.message, { severity: 'error' }),
             onSuccess: () => {
-              logger.info('event_created_successfully', {
-                event: edited_event,
-                user: user,
-                items: bring_items,
-              });
               onClose();
             },
           }
@@ -477,11 +471,11 @@ export const CreateOrUpdateEventDialog = ({
                     answerDeadline: editedEvent.answerDeadline
                       ? null
                       : formatDateToDatabase(
-                          set(Date.now(), {
-                            seconds: 0,
-                            milliseconds: 0,
-                          })
-                        ),
+                        set(Date.now(), {
+                          seconds: 0,
+                          milliseconds: 0,
+                        })
+                      ),
                   })
                 }
               />
@@ -893,11 +887,11 @@ export const CreateOrUpdateEventDialog = ({
                     recurrenceEnd: editedEvent.recurrenceEnd
                       ? null
                       : formatDateToDatabase(
-                          set(Date.now(), {
-                            seconds: 0,
-                            milliseconds: 0,
-                          })
-                        ),
+                        set(Date.now(), {
+                          seconds: 0,
+                          milliseconds: 0,
+                        })
+                      ),
                   })
                 }
               />

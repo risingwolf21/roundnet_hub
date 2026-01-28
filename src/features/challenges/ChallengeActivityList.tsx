@@ -77,7 +77,7 @@ export const ChallengeActivityList = ({
                     )}
                   </Avatar>
                 </ListItemAvatar>
-                <ListItemText primary={'+1'} secondary={x.fullUser.displayName} />
+                <ListItemText primary={`+${x.count}`} secondary={x.fullUser.displayName} />
                 {x.image_url && (
                   <CardMedia
                     component="img"
