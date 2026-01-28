@@ -6,7 +6,7 @@ import { GamesRepository } from '@/repository/GamesRepository';
 import { Tables, TablesInsert, TablesUpdate } from '@/types/supabase-generated.types';
 import { EventsUserView, FullAttendance, FullComment } from '@/types/supabaseTypes';
 import { formatDateToDatabase } from '@/utils';
-import { captureException, logger } from '@sentry/react';
+import { captureException } from '@sentry/react';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { format, isAfter, isBefore } from 'date-fns';
 
@@ -213,11 +213,6 @@ export const useUpsetBringPledges = () => {
     },
 
     onSettled: (_data, _error, variables) => {
-      logger.info('Event pledges upsertd successfully.', {
-        event: variables.event,
-        items: variables.items,
-        user: variables.user,
-      });
       queryClient.invalidateQueries({ queryKey: eventKeys.eventBringOverview(variables.event) });
       queryClient.invalidateQueries({ queryKey: eventKeys.eventBringPledges(variables.event) });
     },
@@ -556,28 +551,18 @@ export const useInsertEventMutation = (fetchMode: 'past' | 'upcoming') => {
       return { previousEvents, event };
     },
     onError: (err, _vars, context) => {
-      logger.error('event_creation_failed', {
-        type: 'event_creation',
-        message: 'event_creation_failed',
-        origin: 'ui',
-        event: _vars.event.id,
-        user: JSON.stringify(_vars.currentUser),
-        eventDate: format(_vars.event.startingDateTime, 'dd.MM.yyyy HH:mm'),
-        error: JSON.stringify(err),
+      captureException(err, {
+        extra: {
+          ..._vars,
+          error: err,
+        },
+        tags: { type: 'InsertEvent', scope: 'events' },
       });
       if (context?.previousEvents) {
         queryClient.setQueryData(eventKeys.list(fetchMode), context.previousEvents);
       }
     },
     onSettled: (_data, _error, variables) => {
-      logger.info('event_creation_successful', {
-        type: 'event_creation',
-        message: 'event_creation_successful',
-        event: variables.event.id,
-        user: JSON.stringify(variables.currentUser),
-        eventDate: format(variables.event.startingDateTime, 'dd.MM.yyyy HH:mm'),
-        origin: 'ui',
-      });
       queryClient.invalidateQueries({ queryKey: eventKeys.list(fetchMode) });
     },
   });
@@ -628,14 +613,12 @@ export const useUpdateSingleMutation = (fetchMode: 'past' | 'upcoming') => {
       return { previousEvents, previousEvent };
     },
     onError: (err, _vars, context) => {
-      logger.error('event_update_single_failed', {
-        type: 'event_update_single',
-        message: 'event_update_single_failed',
-        changes: _vars.eventChanges,
-        key: _vars.id,
-        user: JSON.stringify(_vars.currentUser),
-        error: JSON.stringify(err),
-        origin: 'ui',
+      captureException(err, {
+        extra: {
+          ...err,
+          ..._vars
+        },
+        tags: { type: 'UpdateSingleEvent', scope: 'events' },
       });
       if (context?.previousEvents) {
         queryClient.setQueryData(eventKeys.list(fetchMode), context.previousEvents);
@@ -645,14 +628,6 @@ export const useUpdateSingleMutation = (fetchMode: 'past' | 'upcoming') => {
       }
     },
     onSettled: (_data, _error, variables) => {
-      logger.info('event_update_single_successful', {
-        type: 'event_update_single',
-        message: 'event_update_single_successful',
-        changes: variables.eventChanges,
-        id: variables.id,
-        user: JSON.stringify(variables.currentUser),
-        origin: 'ui',
-      });
       queryClient.invalidateQueries({ queryKey: eventKeys.list(fetchMode) });
       queryClient.invalidateQueries({ queryKey: eventKeys.event(variables.id) });
     },
@@ -694,30 +669,18 @@ export const useUpdateRecurrenceMutation = (fetchMode: 'past' | 'upcoming') => {
       return { previousEvents };
     },
     onError: (err, _vars, context) => {
-      logger.error('event_update_recurrence_failed', {
-        type: 'event_update_recurrence',
-        message: 'event_update_recurrence_failed',
-        changes: _vars.eventChanges,
-        key: _vars.key,
-        user: JSON.stringify(_vars.currentUser),
-        error: JSON.stringify(err),
-        eventDate: format(_vars.startingDateTime, 'dd.MM.yyyy HH:mm'),
-        origin: 'ui',
+      captureException(err, {
+        extra: {
+          ..._vars,
+          error: err,
+        },
+        tags: { type: 'UpdateEventRecurrence', scope: 'events' },
       });
       if (context?.previousEvents) {
         queryClient.setQueryData(eventKeys.list(fetchMode), context.previousEvents);
       }
     },
     onSettled: (_data, _error, variables) => {
-      logger.info('event_update_recurrence_successful', {
-        type: 'event_update_recurrence',
-        message: 'event_update_recurrence_successful',
-        changes: variables.eventChanges,
-        user: JSON.stringify(variables.currentUser),
-        key: variables.key,
-        eventDate: format(variables.startingDateTime, 'dd.MM.yyyy HH:mm'),
-        origin: 'ui',
-      });
       queryClient.invalidateQueries({ queryKey: eventKeys.list(fetchMode) });
     },
   });
