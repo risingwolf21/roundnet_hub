@@ -91,7 +91,7 @@ const ChallengeInformation = ({ t, challengeId }: { t: TFunction; challengeId: s
   );
 
   const increaseChallengePoint = useCallback(
-    async (created_at: Date, image: { dataUrl: string; fileName: string } | null) => {
+    async (created_at: Date, image: { dataUrl: string; fileName: string } | null, count: number) => {
       if (!user || !challenge) {
         notifications.show('Something went wrong! Try again later', { severity: 'error' });
         return;
@@ -110,6 +110,7 @@ const ChallengeInformation = ({ t, challengeId }: { t: TFunction; challengeId: s
           challenge: challenge.id,
           created_at,
           image_url: uploadedImageUrl,
+          count
         },
         {
           onError: (error) => {
@@ -216,7 +217,7 @@ const ChallengeInformation = ({ t, challengeId }: { t: TFunction; challengeId: s
                     maxEntriesPerDay: challenge.max_points_per_day,
                   });
 
-                  if (result) increaseChallengePoint(result.date, result.image);
+                  if (result) increaseChallengePoint(result.date, result.image, result.count);
                 }
               }}
             >

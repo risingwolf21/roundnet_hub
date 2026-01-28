@@ -122,16 +122,18 @@ export const useIncreasePointForUserMutation = (challengeId: string) =>
     mutationFn: async ({
       challenge,
       created_at,
-      image_url
+      image_url,
+      count
     }: {
       user: User;
       challenge: string;
       created_at: Date;
       image_url: string | null;
+      count: number;
     }) => {
       const result = await supabase
         .rpc('increase_challenge_stats_count', {
-          amount: 1,
+          amount: count,
           challenge_id: challenge,
           to_create_at: formatDateToDatabase(created_at)!,
           image_url: image_url ?? '',

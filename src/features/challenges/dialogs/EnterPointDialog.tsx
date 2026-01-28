@@ -50,6 +50,7 @@ function ServerDay(props: PickersDayProps & { highlightedDays?: Date[]; maxEntri
 
 type EnterPointResult = {
   date: Date;
+  count: number;
   image: {
     dataUrl: string;
     fileName: string;
@@ -105,7 +106,7 @@ const EnterPointDialog = ({
       minHeight={40}
       actions={
         <>
-          <Button onClick={() => onClose({ date, image })}>Bestätigen</Button>
+          <Button onClick={() => onClose({ date, image, count: points })}>Bestätigen</Button>
           <Button onClick={() => onClose(null)}>Abbrechen</Button>
         </>
       }
