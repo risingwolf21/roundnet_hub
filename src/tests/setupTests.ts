@@ -1,6 +1,6 @@
-import { uuid } from '@supabase/supabase-js/dist/main/lib/helpers';
 import '@testing-library/jest-dom/vitest';
 import { cleanup } from '@testing-library/react';
+import { v4 as uuid } from 'uuid';
 import { afterEach } from 'vitest';
 
 export const GROUP_A_ID = uuid();

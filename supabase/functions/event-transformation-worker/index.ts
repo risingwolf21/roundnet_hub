@@ -1,5 +1,7 @@
-import * as Sentry from 'sentry';
+/// <reference lib="deno.ns" />
+
 import { createClient } from 'supabase';
+import * as Sentry from 'sentry';
 import { Database } from '../_shared/supabase-generated.types.ts';
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
@@ -127,7 +129,7 @@ Deno.serve(async (req) => {
   1. Run `supabase start` (see: https://supabase.com/docs/reference/cli/supabase-start)
   2. Make an HTTP request:
 
-  curl -i --location --request POST 'http://127.0.0.1:54321/functions/v1/apply-event-transformations' \
+  curl -i --location --request POST 'http://127.0.0.1:54321/functions/v1/event-transformation-worker' \
     --header 'Authorization: Bearer REMOVED_KEY' \
     --header 'Content-Type: application/json' \
     --data '{"name":"Functions"}'

@@ -1,10 +1,10 @@
 import { dataURLtoFile, formatDateFromDatabase, readFile } from '@/utils';
 import { DatePicker, PickersDay, PickersDayProps } from '@mui/x-date-pickers';
-import { uuid } from '@supabase/supabase-js/dist/main/lib/helpers';
 import { DialogProps } from '@toolpad/core';
 import Compressor from 'compressorjs';
 import { differenceInDays, isSameDay, isSameWeek } from 'date-fns';
 import React, { useEffect, useState } from 'react';
+import { v4 as uuid } from 'uuid';
 import { SwipeableDialog } from '../../../components/SwipeableDialog';
 
 import Add from '@mui/icons-material/Add';

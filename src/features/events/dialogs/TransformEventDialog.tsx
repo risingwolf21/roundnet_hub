@@ -65,6 +65,20 @@ export const TransformEventDialog = ({
   return <Content event={event} user={user} groups={groups} initialData={data} open={open} onClose={() => onClose()} />;
 };
 
+type EventTransformationNext = {
+  title?: string;
+  description?: string;
+  group?: string;
+  disableAnswerDeadline?: boolean;
+};
+
+function isNextObject(
+  next: unknown
+): next is EventTransformationNext {
+  return typeof next === "object" && next !== null && !Array.isArray(next);
+}
+
+
 const Content = ({
   event,
   user,
@@ -80,19 +94,47 @@ const Content = ({
   onClose: () => void;
   groups: GroupWithUserMappings[];
 }) => {
+
   const [leadTime, setLeadTime] = useState<Duration>({ hours: 18 });
-  const [newTitle, setNewTitle] = useState<string>(
-    initialData?.next ? (JSON.parse(initialData.next.toString()).title ?? event.title) : event.title
-  );
-  const [newDescription, setNewDescription] = useState<string>(
-    initialData?.next ? (JSON.parse(initialData.next.toString()).description ?? event.description) : event.description
-  );
-  const [newGroup, setNewGroup] = useState<Group | null>(
-    groups.find(
-      (x) => x.id === (initialData?.next ? JSON.parse(initialData.next.toString()).group : event.group?.id)
-    ) ?? null
-  );
-  const [disableAnswerDeadline, setDisableAnswerDeadline] = useState<boolean>(initialData?.next ? (JSON.parse(initialData.next.toString())?.disableAnswerDeadline ?? false) : false);
+  const [newTitle, setNewTitle] = useState<string>(() => {
+    const next = initialData?.next;
+
+    if (isNextObject(next) && typeof next.title === "string") {
+      return next.title;
+    }
+
+    return event.title;
+  });
+  const [newDescription, setNewDescription] = useState<string>(() => {
+    const next = initialData?.next;
+
+    if (isNextObject(next) && typeof next.description === "string") {
+      return next.description;
+    }
+
+    return event.description;
+  });
+  const [newGroup, setNewGroup] = useState<Group | null>(() => {
+    const next = initialData?.next;
+    let groupId;
+    if (isNextObject(next) && typeof next.group === "string") {
+      groupId = next.group;
+    } else {
+      groupId = event.group?.id;
+    }
+
+    return groups.find((x) => x.id === groupId) ?? null
+  });
+  const [disableAnswerDeadline, setDisableAnswerDeadline] = useState<boolean>(() => {
+    const next = initialData?.next;
+
+    if (isNextObject(next) && typeof next.disableAnswerDeadline === "boolean") {
+      return next.disableAnswerDeadline;
+    }
+
+    return false;
+  });
+  const [oneTime, setOneTime] = useState<boolean>(initialData?.one_time ?? true);
   const [trigger, setTrigger] = useState<TransformationTrigger>(
     initialData?.trigger as TransformationTrigger ?? {});
 
@@ -126,7 +168,7 @@ const Content = ({
             group: payload.newGroupId,
             disableAnswerDeadline: payload.disableAnswerDeadline
           },
-          one_time: true,
+          one_time: oneTime,
           active: true,
           trigger: trigger,
         })
@@ -280,6 +322,23 @@ const Content = ({
           </ListItemAvatar>
 
           <ListItemText primary={"Anmelde Deadline entfernen?"} />
+        </ListItem>
+        <Divider />
+        <Typography sx={{ fontSize: 14, fontWeight: 'bold', m: 2 }} color="text.secondary" gutterBottom>
+          Einmalige Ausführung?
+        </Typography>
+        <ListItem sx={{ py: 0, mb: 2 }} key={'answerDeadline'}>
+          <ListItemAvatar>
+            <Checkbox
+              sx={{ pl: 0 }}
+              checked={oneTime}
+              onChange={(e) =>
+                setOneTime(e.target.checked)
+              }
+            />
+          </ListItemAvatar>
+
+          <ListItemText primary={"Einmalige Ausführung?"} />
         </ListItem>
         <Divider />
         <Typography sx={{ fontSize: 16, fontWeight: 'bold', m: 2 }} color="text.secondary" gutterBottom>

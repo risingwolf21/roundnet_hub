@@ -13,8 +13,8 @@ Sentry.init({
   sendDefaultPii: true,
   enabled: import.meta.env.VITE_ENV !== 'development',
   environment: import.meta.env.VITE_WEBSITE_NAME + '-' + import.meta.env.VITE_ENV,
-  release: import.meta.env.VITE_VERSION,
-  _experiments: { enableLogs: true },
+  release: import.meta.env.VITE_APP_VERSION,
+  enableLogs: true,
   integrations: [
     Sentry.browserTracingIntegration(),
     Sentry.reactRouterV7BrowserTracingIntegration({
@@ -32,10 +32,10 @@ Sentry.init({
     Sentry.consoleLoggingIntegration({ levels: ['log', 'error', 'warn'] }),
     Sentry.eventFiltersIntegration({
       ignoreErrors: [
-        'Load failed',
-        'Failed to fetch',
+        /Load failed/,
+        /Failed to fetch/,
         /Script .*service-worker\.js load failed/,
-        'Invalid login credentials'],
+        /Invalid login credentials/],
     }),
   ],
   tracesSampleRate: 1.0,

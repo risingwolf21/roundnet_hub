@@ -139,8 +139,6 @@ const EventInformationProvider = () => {
               <Has perm={'event.transform'}>
                 <MenuItem
                   onClick={async () => {
-                    console.log(event);
-
                     setAnchorEl(null);
                     await dialogs.open(TransformEventDialog, {
                       user,
