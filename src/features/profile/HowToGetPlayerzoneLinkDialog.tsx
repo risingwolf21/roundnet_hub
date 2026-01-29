@@ -26,14 +26,14 @@ export const HowToGetPlayerLinkDialog = ({
       </Toolbar>
     </AppBar>
     <Box sx={{ p: 2 }}>
-      <Typography sx={{ fontSize: "16px" }} gutterBottom>1. In der Playerzone anmelden und rechts oben auf das Profilbild klicken</Typography>
-      <img src={PzHomePage} loading='lazy' width={'100%'} height={'225px'} style={{ objectFit: 'contain' }} />
+      <Typography sx={{ fontSize: "16px", fontWeight: "bold" }} gutterBottom>1. In der Playerzone anmelden und rechts oben auf das Profilbild klicken</Typography>
+      <img src={PzHomePage} loading='lazy' width={'100%'} style={{ objectFit: 'contain' }} />
 
-      <Typography sx={{ fontSize: "16px" }} gutterBottom>2. In Ihrem Account auf den Profilnamen klicken</Typography>
-      <img src={PzAccount} loading='lazy' width={'100%'} height={'225px'} style={{ objectFit: 'contain' }} />
+      <Typography sx={{ fontSize: "16px", fontWeight: "bold" }} gutterBottom>2. In Ihrem Account auf den Profilnamen klicken</Typography>
+      <img src={PzAccount} loading='lazy' width={'100%'} style={{ objectFit: 'contain' }} />
 
-      <Typography sx={{ fontSize: "16px" }} gutterBottom>3. Kopieren Sie die URL/Link von der Seite auf der Sie gerade sind.</Typography>
-      <img src={PzProfile} loading='lazy' width={'100%'} height={'225px'} style={{ objectFit: 'contain' }} />
+      <Typography sx={{ fontSize: "16px", fontWeight: "bold" }} gutterBottom>3. Kopieren Sie die URL/Link von der Seite auf der Sie gerade sind.</Typography>
+      <img src={PzProfile} loading='lazy' width={'100%'} style={{ objectFit: 'contain' }} />
     </Box>
   </Dialog>;
 };
