@@ -178,7 +178,7 @@ export const useUpsertEventTransformation = () => useMutation({
   onMutate: async (payload) => {
     await queryClient.cancelQueries({ queryKey: eventKeys.eventTranformation(payload.eventKey) });
 
-    const previousTransformation = queryClient.getQueryData<Tables<'event_transformations'>[]>(eventKeys.eventTranformation(payload.eventKey));
+    const previousTransformation = queryClient.getQueryData<EventTransformation | null>(eventKeys.eventTranformation(payload.eventKey));
 
     if (previousTransformation) {
       const updatedTransformation = {
