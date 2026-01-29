@@ -2576,31 +2576,31 @@
   resolved "https://registry.yarnpkg.com/@standard-schema/spec/-/spec-1.0.0.tgz#f193b73dc316c4170f2e82a881da0f550d551b9c"
   integrity sha512-m2bOd0f2RT9k8QJx1JN85cZYyH1RqFBdlwtkSlf4tBDYLCiiZnv1fIIwacK6cqwXavOydf0NPToMQgpKq+dVlA==
 
-"@supabase/auth-js@2.82.0":
-  version "2.82.0"
-  resolved "https://registry.yarnpkg.com/@supabase/auth-js/-/auth-js-2.82.0.tgz#6aea4226427a7f2dd11ae3e61c73ca4d2d328495"
-  integrity sha512-e9xR69lBBL9mAMZFG60bM4OsMQozdl07TwhryEbkLW69Yn+8OIPLndpWLdNU5JcxpZDMwdejQ+YabRzuLnFFww==
+"@supabase/auth-js@2.93.2":
+  version "2.93.2"
+  resolved "https://registry.yarnpkg.com/@supabase/auth-js/-/auth-js-2.93.2.tgz#8396a9b07dfcffc18567036f827c035c32e7c9ce"
+  integrity sha512-uifI5vkhvHCQjn+LUPL5QlsuDMP4oVBD5SiliREgYuTJvCkbPLOcAPGrw88q7VUX9S0J0QuJn+37hrcTITisuw==
   dependencies:
     tslib "2.8.1"
 
-"@supabase/functions-js@2.82.0":
-  version "2.82.0"
-  resolved "https://registry.yarnpkg.com/@supabase/functions-js/-/functions-js-2.82.0.tgz#8aecf02df0856ade9365a1b745a6f26fc63e9136"
-  integrity sha512-PM83fHsDHZTOS3wZp3+sd3swaLIyzAEyALoUoEHnE9ahb+mNEUKNoqHIwLCQKr/1w8s2yKtxxq4k5Pi2Lnbrng==
+"@supabase/functions-js@2.93.2":
+  version "2.93.2"
+  resolved "https://registry.yarnpkg.com/@supabase/functions-js/-/functions-js-2.93.2.tgz#426a37d7d18d34f97d00a13df9da85a12d20b433"
+  integrity sha512-reSp7yj4KmvAFfmN+N7vYsHXOIZQh9cmRBh+VrZlm7qgIIUdYmzKuD85TvFnWApqcdI2pPnuZGKWE/2B4GXT1A==
   dependencies:
     tslib "2.8.1"
 
-"@supabase/postgrest-js@2.82.0":
-  version "2.82.0"
-  resolved "https://registry.yarnpkg.com/@supabase/postgrest-js/-/postgrest-js-2.82.0.tgz#97761a467592c264cd91ea03ba0ada5c265c48a5"
-  integrity sha512-USknjvkWpElcTxuvfsfWdMplyjGvbrI4YGf2j9uJCh143W/FJksf83+jQi8Y/yLf1VSL3qXYUap5CV5Wwc6jVQ==
+"@supabase/postgrest-js@2.93.2":
+  version "2.93.2"
+  resolved "https://registry.yarnpkg.com/@supabase/postgrest-js/-/postgrest-js-2.93.2.tgz#44f446a0bdc2a02ce2cd9d1f09e05e7740e25847"
+  integrity sha512-W2AWDsYwRT217II5yD3jWaX3fJjB7DwyNi2KNi4sphdUI3DKY4fP2XYVDGfeb1clEFL18gw+GBhyQb3BcpNWkw==
   dependencies:
     tslib "2.8.1"
 
-"@supabase/realtime-js@2.82.0":
-  version "2.82.0"
-  resolved "https://registry.yarnpkg.com/@supabase/realtime-js/-/realtime-js-2.82.0.tgz#e638a009c7cea720b75070b2dc1fb23ee60bf4f5"
-  integrity sha512-3rB0D6yiUM0n9hoewXxpQysGc6MrIYirxLHuKwEj3u19aL4m8KsMmHRSsXVxn0jYOEEXgqtX9OkfbtdznwS91w==
+"@supabase/realtime-js@2.93.2":
+  version "2.93.2"
+  resolved "https://registry.yarnpkg.com/@supabase/realtime-js/-/realtime-js-2.93.2.tgz#515add6c18aab598f9748c817919e839071337f7"
+  integrity sha512-YpAmJn7DLbMeYfQilcf3f0DKoY8O8TRbTF2oRpWFzHXTlEA+YWms8fBqM13Mf7RE72ouSNKDYyf5K2pWRSHvFw==
   dependencies:
     "@types/phoenix" "^1.6.6"
     "@types/ws" "^8.18.1"
@@ -2612,23 +2612,24 @@
   resolved "https://registry.yarnpkg.com/@supabase/sentry-js-integration/-/sentry-js-integration-0.3.0.tgz#252137eb9a37c6186afa49ac468fdaa6f1656806"
   integrity sha512-L6tr+M9OlYu3Ge3G33Cf5BptYYs30feJmD3zovCSRQezJOdtkbA361WVNyzCpSoIbUo4rcDVY/apklAhBewFBw==
 
-"@supabase/storage-js@2.82.0":
-  version "2.82.0"
-  resolved "https://registry.yarnpkg.com/@supabase/storage-js/-/storage-js-2.82.0.tgz#002421c59e2b466b80d3a6403b832de50f19870c"
-  integrity sha512-aItcSXu5pZaGN0FeTvzolfjYS7gMGhZUVt6JZlkyOMBa2Zl9JO/ezBlG3R4fH4847EAsY/BwDZHVK9om9JguCA==
+"@supabase/storage-js@2.93.2":
+  version "2.93.2"
+  resolved "https://registry.yarnpkg.com/@supabase/storage-js/-/storage-js-2.93.2.tgz#e45193ba53cecd082457e5e9a41d7ac7f0270875"
+  integrity sha512-abRSVClfIQn+SqpdqL7S7b3VeyS8270/o0gqmGFtiidb7Lu0COsIV6Mor/mK9xE99KYWzyd37vwYYwv/jaANhw==
   dependencies:
+    iceberg-js "^0.8.1"
     tslib "2.8.1"
 
-"@supabase/supabase-js@2.82.0":
-  version "2.82.0"
-  resolved "https://registry.yarnpkg.com/@supabase/supabase-js/-/supabase-js-2.82.0.tgz#d23c19fde04c245c96558e6721f5ca1c529daea4"
-  integrity sha512-3Ie/n0EHAjrNRwK09xjhzmU6qL6wD2COSdLJYOwuK9apxCR9eZbvxmxzVNWsEXgPs4nlnXBkMsEBgT2xDKkovA==
+"@supabase/supabase-js@2.93.2":
+  version "2.93.2"
+  resolved "https://registry.yarnpkg.com/@supabase/supabase-js/-/supabase-js-2.93.2.tgz#c8e4e1d76a18bd59e47cc973f41e7a0ff35aa691"
+  integrity sha512-G3bZZi6rPwXcPtyHLXQTeHKa5ADZ2UW/+hv8YhwZFwngz4TlPnR4+TeO37EwU5+d/reD02qXozOZgz+QHv1Jtg==
   dependencies:
-    "@supabase/auth-js" "2.82.0"
-    "@supabase/functions-js" "2.82.0"
-    "@supabase/postgrest-js" "2.82.0"
-    "@supabase/realtime-js" "2.82.0"
-    "@supabase/storage-js" "2.82.0"
+    "@supabase/auth-js" "2.93.2"
+    "@supabase/functions-js" "2.93.2"
+    "@supabase/postgrest-js" "2.93.2"
+    "@supabase/realtime-js" "2.93.2"
+    "@supabase/storage-js" "2.93.2"
 
 "@surma/rollup-plugin-off-main-thread@^2.2.3":
   version "2.2.3"
@@ -5186,6 +5187,11 @@ i18next@25.5.2:
   integrity sha512-lW8Zeh37i/o0zVr+NoCHfNnfvVw+M6FQbRp36ZZ/NyHDJ3NJVpp2HhAUyU9WafL5AssymNoOjMRB48mmx2P6Hw==
   dependencies:
     "@babel/runtime" "^7.27.6"
+
+iceberg-js@^0.8.1:
+  version "0.8.1"
+  resolved "https://registry.yarnpkg.com/iceberg-js/-/iceberg-js-0.8.1.tgz#47d893468293a010385e1c70123f29d0fc1d9912"
+  integrity sha512-1dhVQZXhcHje7798IVM+xoo/1ZdVfzOMIc8/rgVSijRK38EDqOJoGula9N/8ZI5RD8QTxNQtK/Gozpr+qUqRRA==
 
 iconv-lite@0.6.3:
   version "0.6.3"
