@@ -2,10 +2,10 @@ import CropImageDialog from '@/components/CropImageDialog';
 import { supabase } from '@/lib/supabase';
 import { dataURLtoFile, readFile } from '@/utils';
 import { captureException } from '@sentry/react';
-import { uuid } from '@supabase/supabase-js/dist/main/lib/helpers';
 import { useNotifications } from '@toolpad/core/useNotifications';
 import Compressor from 'compressorjs';
 import React, { useState } from 'react';
+import { v4 as uuid } from 'uuid';
 
 import AddPhotoAlternateOutlined from '@mui/icons-material/AddPhotoAlternateOutlined';
 import DeleteOutline from '@mui/icons-material/DeleteOutline';

@@ -6,8 +6,8 @@ import InventoryIcon from '@mui/icons-material/Inventory';
 import LocalDrinkIcon from '@mui/icons-material/LocalDrink';
 import Checkbox from '@mui/material/Checkbox';
 import { Box } from '@mui/system';
-import { uuid } from '@supabase/supabase-js/dist/main/lib/helpers';
 import { FormEvent, useState } from 'react';
+import { v4 as uuid } from 'uuid';
 import CropImageDialog from '../../../components/CropImageDialog';
 import { dataURLtoFile, readFile } from '../../../utils';
 

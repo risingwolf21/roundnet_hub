@@ -1,5 +1,5 @@
-import { uuid } from '@supabase/supabase-js/dist/main/lib/helpers';
 import { By, until, WebDriver } from 'selenium-webdriver';
+import { v4 as uuid } from 'uuid';
 import { BASE_URL, createDriver } from '../config/driver';
 
 describe('Homepage', () => {
