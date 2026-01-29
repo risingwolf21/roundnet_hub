@@ -1,3 +1,4 @@
+import { TransformationTrigger } from '@/features/events/dialogs/TransformEventDialog';
 import { DeleteEventType } from '@/features/events/types';
 import { queryClient } from '@/lib/queryClient';
 import { supabase } from '@/lib/supabase';
@@ -5,10 +6,10 @@ import { SupabaseEventRepository } from '@/repository/EventRepository';
 import { GamesRepository } from '@/repository/GamesRepository';
 import { Tables, TablesInsert, TablesUpdate } from '@/types/supabase-generated.types';
 import { EventsUserView, FullAttendance, FullComment } from '@/types/supabaseTypes';
-import { formatDateToDatabase } from '@/utils';
+import { durationToPostgresInterval, formatDateToDatabase } from '@/utils';
 import { captureException } from '@sentry/react';
 import { useMutation, useQuery } from '@tanstack/react-query';
-import { format, isAfter, isBefore } from 'date-fns';
+import { Duration, format, isAfter, isBefore } from 'date-fns';
 
 export const eventKeys = {
   all: ['events'] as const,
@@ -20,6 +21,7 @@ export const eventKeys = {
   eventAttendance: (id?: string) => [...eventKeys.event(id), 'attendance'] as const,
   eventMatches: (id?: string) => [...eventKeys.event(id), 'matches'] as const,
   recurring: () => [...eventKeys.all, 'recurring'] as const,
+  eventTranformation: (eventKey: string) => [...eventKeys.all, 'transformation', eventKey] as const,
 }
 
 export const fetchFullEventPledges = (eventId: string) =>
@@ -118,6 +120,102 @@ export const useAttendance = (eventId: string) =>
       return result.data ?? [];
     },
   });
+
+export const useEventTransformation = (eventKey: string, open: boolean) => useQuery<EventTransformation | null>({
+  queryKey: eventKeys.eventTranformation(eventKey),
+  enabled: open,
+  queryFn: async () => {
+    const result = await supabase
+      .schema('public')
+      .from('event_transformations')
+      .select('*')
+      .eq('event_key', eventKey)
+      .maybeSingle();
+    return result.data;
+  },
+});
+
+export const useUpsertEventTransformation = () => useMutation({
+  mutationFn: async (payload: {
+    eventKey: string;
+    userId: string;
+    leadTime: Duration;
+    newTitle: string;
+    newDescription: string;
+    newGroupId: string | null;
+    disableAnswerDeadline: boolean;
+    trigger: TransformationTrigger;
+    oneTime: boolean;
+  }) => {
+    const result = await supabase
+      .schema('public')
+      .from('event_transformations')
+      .upsert({
+        event_key: payload.eventKey,
+        created_by: payload.userId,
+        lead_time: durationToPostgresInterval(payload.leadTime),
+        next: {
+          title: payload.newTitle,
+          description: payload.newDescription,
+          group: payload.newGroupId,
+          disableAnswerDeadline: payload.disableAnswerDeadline
+        },
+        one_time: payload.oneTime,
+        active: true,
+        trigger: {
+          attending_lt: payload.trigger.attending_lt
+        }
+      })
+      .eq('event_key', payload.eventKey)
+      .select('*')
+      .single();
+
+    if (result.error) {
+      throw result.error;
+    }
+    return result.data;
+  },
+  onMutate: async (payload) => {
+    await queryClient.cancelQueries({ queryKey: eventKeys.eventTranformation(payload.eventKey) });
+
+    const previousTransformation = queryClient.getQueryData<Tables<'event_transformations'>[]>(eventKeys.eventTranformation(payload.eventKey));
+
+    if (previousTransformation) {
+      const updatedTransformation = {
+        ...previousTransformation,
+        lead_time: durationToPostgresInterval(payload.leadTime),
+        next: {
+          title: payload.newTitle,
+          description: payload.newDescription,
+          group: payload.newGroupId,
+          disableAnswerDeadline: payload.disableAnswerDeadline
+        },
+        one_time: payload.oneTime,
+        active: true,
+        trigger: payload.trigger
+      }
+
+      queryClient.setQueryData(eventKeys.eventTranformation(payload.eventKey), updatedTransformation);
+    }
+    return { previousTransformation };
+  },
+  onError: (error, variables, context) => {
+    captureException(error, {
+      extra: {
+        ...error,
+        ...variables
+      },
+      tags: { type: 'UpsertEventTransformation', scope: 'events' },
+    });
+    if (context?.previousTransformation) {
+      queryClient.setQueryData(eventKeys.eventTranformation(variables.eventKey), context.previousTransformation);
+    }
+  },
+
+  onSettled: (_data, _error, variables) => {
+    queryClient.invalidateQueries({ queryKey: eventKeys.eventTranformation(variables.eventKey) });
+  },
+});
 
 export const useUpsetBringPledges = () => {
   return useMutation({
