@@ -1,9 +1,7 @@
 import DurationAdder from '@/components/DurationInput';
-import { supabase } from '@/lib/supabase';
+import { useEventTransformation, useUpsertEventTransformation } from '@/tanstack/events';
 import { useGroups } from '@/tanstack/groups';
-import { Json } from '@/types/supabase-generated.types';
 import { EventsUserView, GroupWithUserMappings } from '@/types/supabaseTypes';
-import { durationToPostgresInterval } from '@/utils';
 import Add from '@mui/icons-material/Add';
 import Close from '@mui/icons-material/Close';
 import Group from '@mui/icons-material/Group';
@@ -23,7 +21,6 @@ import TextField from '@mui/material/TextField';
 import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
 import Box from '@mui/system/Box';
-import { useMutation, useQuery } from '@tanstack/react-query';
 import { DialogProps, useDialogs, useNotifications } from '@toolpad/core';
 import { differenceInCalendarDays, Duration, format, sub } from 'date-fns';
 import { FormEvent, useRef, useState } from 'react';
@@ -43,19 +40,7 @@ export const TransformEventDialog = ({
     data = null,
     isLoading,
     error,
-  } = useQuery<EventTransformation | null>({
-    queryKey: ['eventTransformation', event.key],
-    enabled: open,
-    queryFn: async () => {
-      const result = await supabase
-        .schema('public')
-        .from('event_transformations')
-        .select('*')
-        .eq('event_key', event.key)
-        .maybeSingle();
-      return result.data;
-    },
-  });
+  } = useEventTransformation(event.key, open);
 
   const { data: groups = [], isLoading: groupsLoading, error: groupsError } = useGroups();
 
@@ -144,51 +129,7 @@ const Content = ({
   const ref = useRef<HTMLFormElement>(null);
   const { t } = useTranslation();
 
-  const mutation = useMutation({
-    mutationFn: async (payload: {
-      eventKey: string;
-      userId: string;
-      leadTime: Duration;
-      newTitle: string;
-      newDescription: string;
-      newGroupId: string | null;
-      disableAnswerDeadline: boolean;
-      trigger: Json;
-    }) => {
-      const result = await supabase
-        .schema('public')
-        .from('event_transformations')
-        .upsert({
-          event_key: payload.eventKey,
-          created_by: payload.userId,
-          lead_time: durationToPostgresInterval(payload.leadTime),
-          next: {
-            title: payload.newTitle,
-            description: payload.newDescription,
-            group: payload.newGroupId,
-            disableAnswerDeadline: payload.disableAnswerDeadline
-          },
-          one_time: oneTime,
-          active: true,
-          trigger: trigger,
-        })
-        .eq('event_key', payload.eventKey)
-        .select('*')
-        .single();
-
-      if (result.error) {
-        throw result.error;
-      }
-      return result.data;
-    },
-    onSuccess: () => {
-      notifications.show('Die Transformation der Eventreihe wurde gespeichert.', { severity: 'success' });
-      onClose();
-    },
-    onError: (error) => {
-      notifications.show(`Fehler beim speichern der Transformation der Eventreihe: ${error.message}`, { severity: 'error' });
-    },
-  });
+  const mutation = useUpsertEventTransformation();
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -208,8 +149,18 @@ const Content = ({
         newTitle,
         newDescription,
         newGroupId: newGroup.id,
-        trigger: JSON.stringify(trigger),
-        disableAnswerDeadline
+        trigger: trigger,
+        disableAnswerDeadline,
+        oneTime
+      }, {
+        onError: (error) => {
+          const message = error instanceof Error ? (error as Error).message : 'Unknown error.';
+          notifications.show(message, { severity: 'error' });
+        },
+        onSuccess: () => {
+          notifications.show('Die Eventreihe wurde erfolgreich transformiert.', { severity: 'success' });
+          onClose();
+        },
       });
     } catch (error: unknown) {
       const message = error instanceof Error ? (error as Error).message : 'Unknown error.';

@@ -11,7 +11,7 @@ import { PullToRefresh } from '@/components/pull-to-refresh/PullToRefresh';
 import { GamesTableUpdate } from '@/types/supabaseTypes';
 import AddPhotoAlternateOutlined from '@mui/icons-material/AddPhotoAlternateOutlined';
 import ContentCopy from '@mui/icons-material/ContentCopy';
-import InfoIcon from '@mui/icons-material/Info';
+import Info from '@mui/icons-material/Info';
 import Link from '@mui/icons-material/Link';
 import TrendingDown from '@mui/icons-material/TrendingDown';
 import TrendingFlat from '@mui/icons-material/TrendingFlat';
@@ -32,7 +32,9 @@ import ListItemAvatar from '@mui/material/ListItemAvatar';
 import ListItemText from '@mui/material/ListItemText';
 import TextField from '@mui/material/TextField';
 import Tooltip from '@mui/material/Tooltip';
+import { useDialogs } from '@toolpad/core';
 import { useGrants } from '../auth/GrantsContext';
+import { HowToGetPlayerLinkDialog } from './HowToGetPlayerzoneLinkDialog';
 
 const PlayerzoneProfileDialog = () => {
   const { user } = useGrants();
@@ -43,6 +45,7 @@ const PlayerzoneProfileDialog = () => {
   const updateHideRatingMutation = useUpdateIndexHidden(user);
   const updatePlayer = useUpdatePlayer(user);
 
+  const dialogs = useDialogs();
   const notifications = useNotifications();
   const [rgLink, setRgLink] = useState(player_data?.rg_link ?? '');
   const [loading, setLoading] = useState(false);
@@ -140,28 +143,23 @@ const PlayerzoneProfileDialog = () => {
               <ListItemAvatar sx={{ flexDirection: 'row', display: 'flex', alignItems: 'center' }}>
                 <Link sx={{ color: 'rgba(0,0,0,0.54)' }} />
               </ListItemAvatar>
-              <TextField
-                fullWidth
-                multiline
-                size="small"
-                variant="outlined"
-                value={rgLink}
-                onChange={(e) => setRgLink(e.target.value)}
-                label="Playerzone Link/URL"
-                margin="normal"
-                slotProps={{
-                  input: {
-                    endAdornment: (
-                      <Tooltip
-                        title="Den Link/URL findest du in deinem Playerzone Profil. Sie sieht in etwa so aus: https://playerzone.roundnetgermany.de/players/***"
-                        enterTouchDelay={0}
-                      >
-                        <InfoIcon />
-                      </Tooltip>
-                    ),
-                  },
-                }}
-              />
+              <Box sx={{ display: "flex", flexDirection: "row", width: "100%", alignItems: "center" }}>
+                <TextField
+                  sx={{ flexGrow: 1 }}
+                  multiline
+                  size="small"
+                  variant="outlined"
+                  value={rgLink}
+                  onChange={(e) => setRgLink(e.target.value)}
+                  label="Playerzone Link/URL"
+                  margin="normal"
+                />
+                <Box sx={{ ml: 1, display: "flex", flexDirection: "row", alignItems: "center" }}>
+                  <IconButton onClick={() => dialogs.open(HowToGetPlayerLinkDialog)}>
+                    <Info />
+                  </IconButton>
+                </Box>
+              </Box>
             </ListItem>
             {player_data?.rg_link !== rgLink && (
               <Box sx={{ display: 'flex', justifyContent: 'end' }}>
