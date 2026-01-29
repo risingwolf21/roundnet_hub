@@ -13,7 +13,7 @@ Sentry.init({
   sendDefaultPii: true,
   enabled: import.meta.env.VITE_ENV !== 'development',
   environment: import.meta.env.VITE_WEBSITE_NAME + '-' + import.meta.env.VITE_ENV,
-  release: import.meta.env.VITE_VERSION,
+  release: import.meta.env.VITE_APP_VERSION,
   _experiments: { enableLogs: true },
   integrations: [
     Sentry.browserTracingIntegration(),
