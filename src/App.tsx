@@ -34,7 +34,14 @@ const ServiceWorkerGate = ({ children }: PropsWithChildren) => {
     immediate: true,
     onNeedRefresh() {
       setNeedRefresh(true);
-    }
+    },
+    onRegistered: (registration) => {
+      if (registration) {
+        setInterval(() => {
+          registration.update();
+        }, 60_000);
+      }
+    },
   });
   const { t } = useTranslation();
 
