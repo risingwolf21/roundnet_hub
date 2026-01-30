@@ -1,5 +1,6 @@
 import { supabase } from '@/lib/supabase';
 import * as Sentry from '@sentry/react';
+import { EventHint } from '@sentry/react';
 import { supabaseIntegration } from '@supabase/sentry-js-integration';
 import React from 'react';
 import { createRoutesFromChildren, matchRoutes, useLocation, useNavigationType } from 'react-router';
@@ -44,4 +45,14 @@ Sentry.init({
     'https://staging-roundnet-karlsruhe.web.app',
     'https://munich-roundnet.web.app',
   ],
+  beforeSend: (event: Sentry.ErrorEvent, hint: EventHint) => {
+    // check if the originalException is your object and add the data as extras to the Sentry Event
+    if (typeof hint.originalException === 'object' && hint.originalException != null && 'key' in hint.originalException) {
+      event.extra = {
+        ...event.extra,
+        ...hint.originalException,
+      }
+    }
+    return event;
+  },
 });
