@@ -592,6 +592,19 @@ export const Drawer = ({ open, onClose, onOpen }: Props) => {
     navigate('/' + newValue);
   };
 
+  async function waitForServiceWorkerReady(timeoutMs: number): Promise<ServiceWorkerRegistration | null> {
+    if (!('serviceWorker' in navigator)) return null;
+
+    const readyPromise = navigator.serviceWorker.ready;
+
+    const timeoutPromise = new Promise<null>((resolve) =>
+      setTimeout(() => resolve(null), timeoutMs)
+    );
+
+    // Wenn timeout gewinnt → null
+    return Promise.race([readyPromise, timeoutPromise]) as Promise<ServiceWorkerRegistration | null>;
+  }
+
   const drawerContent = (
     <DrawerContent
       tab={tab}
@@ -601,12 +614,19 @@ export const Drawer = ({ open, onClose, onOpen }: Props) => {
       request_group_joins={requested_group_joins.length}
       notification_count={notifications.filter((x) => !x.dismissed_at).length}
       update_app={async () => {
-        if ('serviceWorker' in navigator) {
-          const sw = await navigator.serviceWorker.ready;
-          await sw.update();
+        try {
+          const reg = await waitForServiceWorkerReady(2000);
+
+          if (reg) {
+            await reg.update();
+          }
+
+          await queryClient.invalidateQueries();
+          window.location.reload();
+          console.log("App updated.");
+        } catch (e) {
+          console.error('Error updating app:', e);
         }
-        await queryClient.invalidateQueries();
-        window.location.reload();
       }}
     />
   );
