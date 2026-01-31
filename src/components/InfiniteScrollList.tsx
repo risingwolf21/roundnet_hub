@@ -1,46 +1,48 @@
-import { useEffect, useRef } from 'react';
+import { PropsWithChildren, useEffect, useRef } from 'react';
 
 import List from '@mui/material/List';
+import { FetchNextPageOptions, InfiniteData, InfiniteQueryObserverResult } from '@tanstack/react-query';
 
-type InfiniteScrollListProps = {
-  fetch: (page: number) => any;
-  loading: boolean;
-  endReached: boolean;
-  children: any;
+type InfiniteScrollListProps = PropsWithChildren & {
+  hasNextPage: boolean;
+  isFetchingNextPage: boolean;
+  fetchNextPage: (options?: FetchNextPageOptions) => Promise<
+    InfiniteQueryObserverResult<
+      InfiniteData<
+        {
+          data: unknown[];
+          nextPage: number | undefined;
+        },
+        unknown
+      >,
+      Error
+    >
+  >;
 };
 
-export const InfiniteScrollList = ({ children, fetch, loading, endReached }: InfiniteScrollListProps) => {
-  const observerTarget = useRef(null);
+export const InfiniteScrollList = ({ children, hasNextPage, isFetchingNextPage, fetchNextPage }: InfiniteScrollListProps) => {
+  const loadMoreRef = useRef<HTMLDivElement | null>(null);
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
-    let pagesCounter = 0;
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting && !endReached && !loading) {
-          fetch(pagesCounter);
-          pagesCounter++;
-        }
-      },
-      { threshold: 1 }
-    );
+    const observer = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting && hasNextPage && !isFetchingNextPage) {
+        fetchNextPage();
+      }
+    });
 
-    if (observerTarget.current) {
-      observer.observe(observerTarget.current);
-    }
+    const node = loadMoreRef.current;
+    if (node) observer.observe(node);
 
     return () => {
-      if (observerTarget.current) {
-        observer.unobserve(observerTarget.current);
-      }
+      if (node) observer.unobserve(node);
     };
-  }, [observerTarget]);
+  }, [fetchNextPage, hasNextPage, isFetchingNextPage]);
 
   return (
     <div style={{ width: '100%' }}>
       <List sx={{ overflowY: 'auto', pb: 10 }}>
         {children}
-        <div ref={observerTarget}></div>
+        <div ref={loadMoreRef} style={{ height: 40 }} />
       </List>
     </div>
   );
