@@ -107,7 +107,7 @@
     "jsdom": "^27.2.0",
     "msw": "^2.12.3",
     "prettier": "^3.4.2",
-    "rollup-plugin-visualizer": "^6.0.3",
+    "rollup-plugin-visualizer": "^6.0.5",
     "selenium-webdriver": "^4.40.0",
     "supabase": "^2.20.5",
     "ts-jest": "^29.4.6",
