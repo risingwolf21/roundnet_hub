@@ -129,9 +129,10 @@ const GameList = () => {
                       )}
                       {x.set_results?.split(',').map((y) => {
                         const [team_a_score, team_b_score] = y.trim().split(':');
-                        const teamAWon = team_a_score > team_b_score;
+                        const teamAWon = Number(team_a_score) > Number(team_b_score);
                         return (
                           <Box
+                            key={y}
                             sx={{
                               display: 'flex',
                               ml: 2,
