@@ -123,13 +123,17 @@ export const useIncreasePointForUserMutation = (challengeId: string) =>
       challenge,
       created_at,
       image,
-      count
+      count,
+      comment,
+      category
     }: {
       user: User;
       challenge: string;
       created_at: Date;
       image: { dataUrl: string; fileName: string } | null;
       count: number;
+      comment?: string;
+      category?: string;
     }) => {
       let image_url: string | null = null;
 
@@ -150,6 +154,8 @@ export const useIncreasePointForUserMutation = (challengeId: string) =>
           challenge_id: challenge,
           to_create_at: formatDateToDatabase(created_at)!,
           image_url: image_url ?? '',
+          category,
+          comment
         })
         .throwOnError();
 
@@ -308,6 +314,8 @@ export const useInsertChallengeMutation = () =>
           max_points_per_day: challenge.max_points_per_day,
           max_points_per_week: challenge.max_points_per_week,
           group: challenge.group,
+          comments_enabled: challenge.comments_enabled,
+          category_enabled: challenge.category_enabled
         })
         .select('*')
         .single()

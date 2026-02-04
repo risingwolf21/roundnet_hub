@@ -67,14 +67,11 @@ const ChallengeInformation = ({ t, challengeId }: { t: TFunction; challengeId: s
   const updateChallengeMutation = useUpdateChallengeMutation();
 
   const increaseChallengePoint = useCallback(
-    async (created_at: Date, image: { dataUrl: string; fileName: string } | null, count: number) => {
-      console.log('increaseChallengePoint called with:', { created_at, image, count });
+    async (created_at: Date, image: { dataUrl: string; fileName: string } | null, count: number, comment?: string, category?: string) => {
       if (!user || !challenge) {
         notifications.show('Something went wrong! Try again later', { severity: 'error' });
         return;
       }
-
-      console.log('Calling increaseChallengePoint mutation');
 
       increasePointMutation.mutate(
         {
@@ -82,7 +79,9 @@ const ChallengeInformation = ({ t, challengeId }: { t: TFunction; challengeId: s
           challenge: challenge.id,
           created_at,
           image,
-          count
+          count,
+          comment,
+          category
         },
         {
           onError: (error) => {
@@ -186,10 +185,11 @@ const ChallengeInformation = ({ t, challengeId }: { t: TFunction; challengeId: s
                     dates: user_challenge_stats.map((x) => x.created_at),
                     maxEntriesPerWeek: challenge.max_points_per_week,
                     maxEntriesPerDay: challenge.max_points_per_day,
+                    comments_enabled: challenge.comments_enabled,
+                    category_enabled: challenge.category_enabled
                   });
-                  console.log(result)
 
-                  if (result) increaseChallengePoint(result.date, result.image, result.count);
+                  if (result) increaseChallengePoint(result.date, result.image, result.count, result.category, result.comment);
                 }
               }}
             >

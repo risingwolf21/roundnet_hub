@@ -17,12 +17,15 @@ import Button from '@mui/material/Button';
 import IconButton from '@mui/material/IconButton';
 import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';
+import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 
 type EnterPointDialogProps = {
   dates: string[];
   maxEntriesPerWeek: number | null;
   maxEntriesPerDay: number | null;
+  comments_enabled?: boolean;
+  category_enabled?: boolean;
 };
 
 function ServerDay(props: PickersDayProps & { highlightedDays?: Date[]; maxEntriesPerWeek?: number }) {
@@ -55,10 +58,12 @@ type EnterPointResult = {
     dataUrl: string;
     fileName: string;
   } | null;
+  comment?: string
+  category?: string
 };
 
 const EnterPointDialog = ({
-  payload: { dates, maxEntriesPerWeek, maxEntriesPerDay },
+  payload: { dates, maxEntriesPerWeek, maxEntriesPerDay, comments_enabled = false, category_enabled = false },
   open,
   onClose,
 }: DialogProps<EnterPointDialogProps, EnterPointResult | null>) => {
@@ -67,6 +72,8 @@ const EnterPointDialog = ({
   const [image, setImage] = useState<{ dataUrl: string; fileName: string } | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [points, setPoints] = useState<number>(1);
+  const [comment, setComment] = useState<string>();
+  const [category, setCategory] = useState<string>();
 
   useEffect(() => {
     setHightlightedDays(dates.map(formatDateFromDatabase));
@@ -106,7 +113,7 @@ const EnterPointDialog = ({
       minHeight={40}
       actions={
         <>
-          <Button onClick={() => onClose({ date, image, count: points })}>Bestätigen</Button>
+          <Button onClick={() => onClose({ date, image, count: points, comment, category })}>Bestätigen</Button>
           <Button onClick={() => onClose(null)}>Abbrechen</Button>
         </>
       }
@@ -144,6 +151,30 @@ const EnterPointDialog = ({
             : <ListItemText primary="Hiermit trägst du einen Punkt für diese Challenge ein" />
         }
       </ListItem>
+
+      {
+        comments_enabled && <ListItem>
+          <TextField
+            fullWidth
+            variant='outlined'
+            label="Kommentar"
+            value={comment}
+            onChange={(e) => setComment(e.target.value)}
+          />
+        </ListItem>
+      }
+
+      {
+        category_enabled && <ListItem>
+          <TextField
+            fullWidth
+            variant='outlined'
+            label="Kategorie"
+            value={category}
+            onChange={(e) => setCategory(e.target.value)}
+          />
+        </ListItem>
+      }
 
       <DatePicker
         sx={{
