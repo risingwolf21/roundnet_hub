@@ -84,6 +84,13 @@ const ChallengeInformation = ({ t, challengeId }: { t: TFunction; challengeId: s
           category
         },
         {
+          onSuccess: (data) => {
+            let message = 'Punkt erfolgreich hinzugefügt';
+            if (!data.image_url) {
+              message += '. Das Bild konnte leider nicht gespeichert werden.';
+            }
+            notifications.show(message, { severity: 'success' });
+          },
           onError: (error) => {
             captureException(error);
             notifications.show(error.message, { severity: 'error' });
