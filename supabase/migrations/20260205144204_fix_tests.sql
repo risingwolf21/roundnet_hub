@@ -7,7 +7,7 @@ CREATE OR REPLACE FUNCTION notifications._trg_event_group_updated_to_notify()
  SET search_path TO ''
 AS $function$begin
   if (old."group" is distinct from new."group") then
-    perform notifications.notify_event_group_updated(new.id, old."group", auth.uid()::text);
+    perform notifications.notify_event_group_updated(new.id, old."group", auth.uid());
   end if;
   return new;
 end;$function$
@@ -188,7 +188,7 @@ CREATE OR REPLACE FUNCTION notifications._trg_event_group_updated_to_notify()
  SET search_path TO ''
 AS $function$begin
   if (old."group" is distinct from new."group") then
-    perform notifications.notify_event_group_updated(new.id, old."group", auth.uid()::text);
+    perform notifications.notify_event_group_updated(new.id, old."group", auth.uid());
   end if;
   return new;
 end;$function$
