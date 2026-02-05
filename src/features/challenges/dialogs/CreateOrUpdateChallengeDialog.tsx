@@ -47,6 +47,9 @@ const EMPTY_CHALLENGE: Challenge = {
   group: '',
   max_points_per_week: null,
   max_points_per_day: 1,
+  category_enabled: false,
+  comments_enabled: false,
+  show_all_members: false
 };
 
 const Content = ({ payload, onClose }: DialogProps<CreateChallengePayload, Challenge | null>) => {
@@ -292,6 +295,51 @@ const Content = ({ payload, onClose }: DialogProps<CreateChallengePayload, Chall
             }}
             value={formatDateFromDatabase(data.end_date)}
           />
+        </ListItem>
+        <ListItem key={"show_all_members"}>
+          <ListItemAvatar>
+            <Checkbox
+              sx={{ pl: 0 }}
+              checked={data.show_all_members}
+              onChange={(e) =>
+                setData({
+                  ...data,
+                  show_all_members: e.target.checked,
+                })
+              }
+            />
+          </ListItemAvatar>
+          <ListItemText primary="Zeigt alle Teilnehmer der Challenge an (auch mit 0 Punkten)" />
+        </ListItem>
+        <ListItem key={"comments_enabled"}>
+          <ListItemAvatar>
+            <Checkbox
+              sx={{ pl: 0 }}
+              checked={data.comments_enabled}
+              onChange={(e) =>
+                setData({
+                  ...data,
+                  comments_enabled: e.target.checked,
+                })
+              }
+            />
+          </ListItemAvatar>
+          <ListItemText primary="Kommentare aktiviert" />
+        </ListItem>
+        <ListItem key={"category_enabled"}>
+          <ListItemAvatar>
+            <Checkbox
+              sx={{ pl: 0 }}
+              checked={data.category_enabled}
+              onChange={(e) =>
+                setData({
+                  ...data,
+                  category_enabled: e.target.checked,
+                })
+              }
+            />
+          </ListItemAvatar>
+          <ListItemText primary="Kategorien aktiviert" />
         </ListItem>
       </List>
     </>

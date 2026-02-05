@@ -25,6 +25,7 @@ import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
 import { useQuery } from '@tanstack/react-query';
 import { ColumnInfo } from './SupabaseClient';
+import { JsonAwareTextField } from './components/JsonAwareTextField';
 
 type EditEntryDialogPayload = {
   entry: any;
@@ -127,7 +128,7 @@ const ForeignSelection = ({
             {options.map((y) => {
               if (column.foreign_key_column_name === null) return null;
               return (
-                <MenuItem value={y[column.foreign_key_column_name]}>
+                <MenuItem key={y[column.foreign_key_column_name]} value={y[column.foreign_key_column_name]}>
                   {JSON.stringify(Object.values(pick(y, keys.keys)))}
                 </MenuItem>
               );
@@ -203,7 +204,7 @@ const DialogContent = ({ payload, open, onClose }: DialogProps<EditEntryDialogPa
 
             if (x.column_name === 'id') {
               return (
-                <ListItem key={x.column_name + index}>
+                <ListItem key={x.column_name}>
                   <ListItemText primary={<pre style={{ margin: 0 }}>{value}</pre>} secondary={x.column_name} />
                 </ListItem>
               );
@@ -212,6 +213,7 @@ const DialogContent = ({ payload, open, onClose }: DialogProps<EditEntryDialogPa
             if (x.foreign_key_schema_name && x.foreign_key_table_name) {
               return (
                 <ForeignSelection
+                  key={x.column_name}
                   value={updatedObject[x.column_name] ?? value}
                   column={x}
                   onChange={(value: any) => {
@@ -227,7 +229,7 @@ const DialogContent = ({ payload, open, onClose }: DialogProps<EditEntryDialogPa
 
             if (x.data_type === 'timestamp with time zone') {
               return (
-                <ListItem key={x.column_name + index}>
+                <ListItem key={x.column_name}>
                   {x.is_nullable && (
                     <ListItemAvatar>
                       <Checkbox
@@ -264,7 +266,7 @@ const DialogContent = ({ payload, open, onClose }: DialogProps<EditEntryDialogPa
 
             if (x.data_type === 'numeric' || x.data_type === 'bigint') {
               return (
-                <ListItem key={x.column_name + index}>
+                <ListItem key={x.column_name}>
                   {x.is_nullable && (
                     <ListItemAvatar>
                       <Checkbox
@@ -298,7 +300,7 @@ const DialogContent = ({ payload, open, onClose }: DialogProps<EditEntryDialogPa
 
             if (x.data_type === 'boolean') {
               return (
-                <ListItem key={x.column_name + index}>
+                <ListItem key={x.column_name}>
                   <ListItemText
                     primary={
                       <Checkbox
@@ -322,7 +324,7 @@ const DialogContent = ({ payload, open, onClose }: DialogProps<EditEntryDialogPa
 
             if (x.data_type === 'text') {
               return (
-                <ListItem key={x.column_name + index}>
+                <ListItem key={x.column_name}>
                   {x.is_nullable && (
                     <ListItemAvatar>
                       <Checkbox
@@ -357,10 +359,41 @@ const DialogContent = ({ payload, open, onClose }: DialogProps<EditEntryDialogPa
               );
             }
 
+            if (x.data_type === 'jsonb') {
+              return (
+                <ListItem key={x.column_name}>
+                  {x.is_nullable && (
+                    <ListItemAvatar>
+                      <Checkbox
+                        sx={{ pl: 0 }}
+                        checked={
+                          (updatedObject[x.column_name] ?? value) !== null &&
+                          (updatedObject[x.column_name] ?? value) !== ''
+                        }
+                        onChange={(_e, c) =>
+                          setUpdatedObject({
+                            ...updatedObject,
+                            [x.column_name]: c ? '' : null,
+                          })
+                        }
+                      />
+                    </ListItemAvatar>
+                  )}
+                  <JsonAwareTextField
+                    label={x.column_name}
+                    value={updatedObject[x.column_name] ?? value}
+                    onCommit={(next) =>
+                      setUpdatedObject((prev: any) => ({ ...prev, [x.column_name]: next }))
+                    }
+                  />
+                </ListItem>
+              );
+            }
+
             if (x.data_type.startsWith('ENUM')) {
               const enumType = x.data_type.split(',')[1];
               return (
-                <ListItem>
+                <ListItem key={x.column_name}>
                   {x.is_nullable && (
                     <ListItemAvatar>
                       <Checkbox
@@ -383,7 +416,7 @@ const DialogContent = ({ payload, open, onClose }: DialogProps<EditEntryDialogPa
                         value={updatedObject[x.column_name] ?? value ?? ''}
                       >
                         {enums.get(enumType)?.map((y) => (
-                          <MenuItem value={y}>{y}</MenuItem>
+                          <MenuItem key={y} value={y}>{y}</MenuItem>
                         ))}
                         <MenuItem value={''}></MenuItem>
                       </Select>
@@ -395,7 +428,7 @@ const DialogContent = ({ payload, open, onClose }: DialogProps<EditEntryDialogPa
             }
 
             return (
-              <ListItem key={x.column_name + index}>
+              <ListItem key={x.column_name}>
                 {x.is_nullable && (
                   <ListItemAvatar>
                     <Checkbox

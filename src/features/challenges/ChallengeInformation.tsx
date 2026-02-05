@@ -1,17 +1,14 @@
 import { PullToRefresh } from '@/components/pull-to-refresh/PullToRefresh';
 import { Has } from '@/hooks/useGrants';
 import { queryClient } from '@/lib/queryClient';
-import { supabase } from '@/lib/supabase';
 import {
   challengeKeys,
   useChallenge,
   useChallengeLeaderboard,
   useChallengeStatsForUser,
   useIncreasePointForUserMutation,
-  useInfiniteChallengeStats,
-  useUpdateChallengeMutation,
+  useUpdateChallengeMutation
 } from '@/tanstack/challenge';
-import { dataURLtoFile } from '@/utils';
 import { captureException, withProfiler } from '@sentry/react';
 import { useDialogs, useNotifications } from '@toolpad/core';
 import { TFunction } from 'i18next';
@@ -60,12 +57,6 @@ const ChallengeInformation = ({ t, challengeId }: { t: TFunction; challengeId: s
 
   const { data: challenge = null, isLoading } = useChallenge(challengeId);
   const { data: leaderboard = [], isLoading: isLeaderboardLoading } = useChallengeLeaderboard(challengeId);
-  const {
-    data: challenge_stats,
-    fetchNextPage,
-    isFetchingNextPage,
-    hasNextPage,
-  } = useInfiniteChallengeStats(challengeId);
   const { data: user_challenge_stats = [] } = useChallengeStatsForUser(challengeId, user);
 
   const refetch = () => {
@@ -75,33 +66,11 @@ const ChallengeInformation = ({ t, challengeId }: { t: TFunction; challengeId: s
   const increasePointMutation = useIncreasePointForUserMutation(challengeId);
   const updateChallengeMutation = useUpdateChallengeMutation();
 
-  const uploadImage = useCallback(
-    async (image: { dataUrl: string; fileName: string } | null) => {
-      if (!image || !challenge) return null;
-      const { data: uploadData, error } = await supabase.storage
-        .from('challenge')
-        .upload(`${challenge.id}/${image.fileName}`, dataURLtoFile(image.dataUrl, image.fileName), { upsert: true });
-      if (uploadData?.path && !error) {
-        const { data } = supabase.storage.from('challenge').getPublicUrl(uploadData.path);
-        return data?.publicUrl ?? null;
-      }
-      return null;
-    },
-    [challenge]
-  );
-
   const increaseChallengePoint = useCallback(
-    async (created_at: Date, image: { dataUrl: string; fileName: string } | null, count: number) => {
+    async (created_at: Date, image: { dataUrl: string; fileName: string } | null, count: number, comment?: string, category?: string) => {
       if (!user || !challenge) {
         notifications.show('Something went wrong! Try again later', { severity: 'error' });
         return;
-      }
-
-      const uploadedImageUrl = await uploadImage(image);
-      if (!uploadedImageUrl && image) {
-        notifications.show('Fehler beim hochladen des Bildes. Der Punkt wurde dennoch eingetragen', {
-          severity: 'error',
-        });
       }
 
       increasePointMutation.mutate(
@@ -109,10 +78,19 @@ const ChallengeInformation = ({ t, challengeId }: { t: TFunction; challengeId: s
           user,
           challenge: challenge.id,
           created_at,
-          image_url: uploadedImageUrl,
-          count
+          image,
+          count,
+          comment,
+          category
         },
         {
+          onSuccess: (data) => {
+            let message = 'Punkt erfolgreich hinzugefügt';
+            if (!data.image_url) {
+              message += '. Das Bild konnte leider nicht gespeichert werden.';
+            }
+            notifications.show(message, { severity: 'success' });
+          },
           onError: (error) => {
             captureException(error);
             notifications.show(error.message, { severity: 'error' });
@@ -120,7 +98,7 @@ const ChallengeInformation = ({ t, challengeId }: { t: TFunction; challengeId: s
         }
       );
     },
-    [challenge, notifications, user, increasePointMutation, uploadImage]
+    [challenge, notifications, user, increasePointMutation]
   );
 
   if (isLoading) {
@@ -153,6 +131,7 @@ const ChallengeInformation = ({ t, challengeId }: { t: TFunction; challengeId: s
                 onClick={async () => {
                   setAnchorEl(null);
                   const result = await dialogs.open(CreateOrUpdateChallengeDialog, { user, challenge });
+                  console.log(result)
                   if (result) {
                     await updateChallengeMutation.mutateAsync({ challenge: result }, {
                       onError: (error) => notifications.show('Challenge konnte nicht aktualisiert werden. ' + error.message, { severity: 'error' }),
@@ -190,12 +169,9 @@ const ChallengeInformation = ({ t, challengeId }: { t: TFunction; challengeId: s
           <Tab label="Leaderboard" />
         </Tabs>
         <TabPanel value={value} index={0} dir={theme.direction}>
-          <ChallengeActivityList
-            stats={challenge_stats}
-            hasNextPage={hasNextPage}
-            isFetchingNextPage={isFetchingNextPage}
-            fetchNextPage={fetchNextPage}
-          />
+          {
+            challenge && <ChallengeActivityList challenge={challenge} />
+          }
         </TabPanel>
         <TabPanel value={value} index={1} dir={theme.direction}>
           <ChallengeLeaderboard isLoading={isLeaderboardLoading} challenge_points={leaderboard} />
@@ -216,9 +192,11 @@ const ChallengeInformation = ({ t, challengeId }: { t: TFunction; challengeId: s
                     dates: user_challenge_stats.map((x) => x.created_at),
                     maxEntriesPerWeek: challenge.max_points_per_week,
                     maxEntriesPerDay: challenge.max_points_per_day,
+                    comments_enabled: challenge.comments_enabled,
+                    category_enabled: challenge.category_enabled
                   });
 
-                  if (result) increaseChallengePoint(result.date, result.image, result.count);
+                  if (result) increaseChallengePoint(result.date, result.image, result.count, result.comment, result.category);
                 }
               }}
             >

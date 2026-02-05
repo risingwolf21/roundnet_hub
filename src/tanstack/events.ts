@@ -660,7 +660,7 @@ export const useInsertEventMutation = (fetchMode: 'past' | 'upcoming') => {
         queryClient.setQueryData(eventKeys.list(fetchMode), context.previousEvents);
       }
     },
-    onSettled: (_data, _error, variables) => {
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: eventKeys.list(fetchMode) });
     },
   });
@@ -778,7 +778,7 @@ export const useUpdateRecurrenceMutation = (fetchMode: 'past' | 'upcoming') => {
         queryClient.setQueryData(eventKeys.list(fetchMode), context.previousEvents);
       }
     },
-    onSettled: (_data, _error, variables) => {
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: eventKeys.list(fetchMode) });
     },
   });

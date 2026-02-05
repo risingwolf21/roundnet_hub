@@ -2,6 +2,7 @@ import DurationAdder from '@/components/DurationInput';
 import { useEventTransformation, useUpsertEventTransformation } from '@/tanstack/events';
 import { useGroups } from '@/tanstack/groups';
 import { EventsUserView, GroupWithUserMappings } from '@/types/supabaseTypes';
+import { postgresIntervalToDuration } from '@/utils';
 import Add from '@mui/icons-material/Add';
 import Close from '@mui/icons-material/Close';
 import Group from '@mui/icons-material/Group';
@@ -35,7 +36,7 @@ export const TransformEventDialog = ({
   payload: { event, user },
   open,
   onClose,
-}: DialogProps<{ event: EventsUserView; user: User }>) => {
+}: DialogProps<{ event: EventsUserView; user: User }, 'success' | 'failure'>) => {
   const {
     data = null,
     isLoading,
@@ -47,7 +48,7 @@ export const TransformEventDialog = ({
   if (isLoading || groupsLoading) return <div>Lädt…</div>;
   if (error || groupsError) return <div>Fehler</div>;
 
-  return <Content event={event} user={user} groups={groups} initialData={data} open={open} onClose={() => onClose()} />;
+  return <Content event={event} user={user} groups={groups} initialData={data} open={open} onClose={onClose} />;
 };
 
 type EventTransformationNext = {
@@ -63,6 +64,9 @@ function isNextObject(
   return typeof next === "object" && next !== null && !Array.isArray(next);
 }
 
+const toIntervalString = (v: unknown): string =>
+  typeof v === 'string' ? v : v == null ? '' : String(v);
+
 
 const Content = ({
   event,
@@ -76,11 +80,11 @@ const Content = ({
   user: User;
   initialData: EventTransformation | null;
   open: boolean;
-  onClose: () => void;
+  onClose: (value: 'success' | 'failure') => void;
   groups: GroupWithUserMappings[];
 }) => {
 
-  const [leadTime, setLeadTime] = useState<Duration>({ hours: 18 });
+  const [leadTime, setLeadTime] = useState<Duration>(() => postgresIntervalToDuration(toIntervalString(initialData?.lead_time)));
   const [newTitle, setNewTitle] = useState<string>(() => {
     const next = initialData?.next;
 
@@ -159,7 +163,7 @@ const Content = ({
         },
         onSuccess: () => {
           notifications.show('Die Eventreihe wurde erfolgreich transformiert.', { severity: 'success' });
-          onClose();
+          onClose('success');
         },
       });
     } catch (error: unknown) {
@@ -169,10 +173,10 @@ const Content = ({
   };
 
   return (
-    <Dialog fullScreen open={open} onClose={() => onClose()}>
+    <Dialog fullScreen open={open} onClose={() => onClose('failure')}>
       <AppBar sx={{ position: 'sticky', pt: 'env(safe-area-inset-top)' }}>
         <Toolbar>
-          <IconButton edge="start" color="inherit" onClick={() => onClose()}>
+          <IconButton edge="start" color="inherit" onClick={() => onClose('failure')}>
             <Close />
           </IconButton>
           <Typography sx={{ ml: 2, flex: 1 }} variant="h6" component="div">
@@ -278,7 +282,7 @@ const Content = ({
         <Typography sx={{ fontSize: 14, fontWeight: 'bold', m: 2 }} color="text.secondary" gutterBottom>
           Einmalige Ausführung?
         </Typography>
-        <ListItem sx={{ py: 0, mb: 2 }} key={'answerDeadline'}>
+        <ListItem sx={{ py: 0, mb: 2 }} key={'justOnce'}>
           <ListItemAvatar>
             <Checkbox
               sx={{ pl: 0 }}

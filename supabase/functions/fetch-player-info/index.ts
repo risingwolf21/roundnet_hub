@@ -25,24 +25,28 @@ class UpdatePlayerError extends Error {
   constructor(msg: string) {
     super(msg);
 
-    // Set the prototype explicitly.
-    Object.setPrototypeOf(this, UpdatePlayerError.prototype);
-  }
-}
-
-class RgLinkMissingError extends Error {
-  constructor(msg: string) {
-    super(msg);
-    Object.setPrototypeOf(this, RgLinkMissingError.prototype);
+    Object.setPrototypeOf(this, new.target.prototype);
   }
 }
 
 class RgUrlFetchError extends Error {
-  constructor(msg: string) {
-    super(msg);
-    Object.setPrototypeOf(this, RgUrlFetchError.prototype);
+
+  body: string;
+  status: number;
+  statusText: string;
+  message: string;
+
+  constructor(message: string, body: string, status: number, statusText: string) {
+    super(message);
+    this.message = message;
+    this.body = body;
+    this.status = status;
+    this.statusText = statusText;
+
+    Object.setPrototypeOf(this, new.target.prototype);
   }
 }
+
 
 Deno.serve(async (req) => {
   const payload = await req.json();
@@ -50,7 +54,6 @@ Deno.serve(async (req) => {
     const { rg_link, player } = payload;
 
     if (!rg_link) {
-      Sentry.captureException(new RgLinkMissingError(JSON.stringify(payload)))
       return new Response(JSON.stringify({ error: 'rg_link ist erforderlich' }), {
         status: 400,
         headers: { 'Content-Type': 'application/json' },
@@ -59,9 +62,14 @@ Deno.serve(async (req) => {
     // HTML von der angegebenen URL abrufen
     const response = await fetch(rg_link);
     if (!response.ok) {
-      Sentry.captureException(new RgUrlFetchError(JSON.stringify({ rg_link, ...response })));
-      return new Response(JSON.stringify({ error: 'Fehler beim Abrufen der URL' }), {
+      const body = await response.text();
+      const error = new RgUrlFetchError("Could not fetch playerzone profile", body, response.status, response.statusText);
+
+      Sentry.captureException(error);
+
+      return new Response(JSON.stringify(error), {
         status: response.status,
+        statusText: response.statusText,
         headers: { 'Content-Type': 'application/json' },
       });
     }
@@ -76,8 +84,6 @@ Deno.serve(async (req) => {
     const rgxValue = $('.player-card').find('.rgx-value').text();
     const idParts = rg_link.split("/").slice(-1)[0].split("-");
     const rgId = idParts[1].slice(0, 3).toUpperCase() + idParts[0];
-
-    console.log(rg_link, rgxValue, rgId);
 
     const { error } = await supabase
       .schema('games')
@@ -96,7 +102,6 @@ Deno.serve(async (req) => {
       headers: { 'Content-Type': 'application/json' },
     });
   } catch (error: unknown) {
-    console.error(error);
     Sentry.captureException(
       new UpdatePlayerError(
         JSON.stringify({

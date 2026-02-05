@@ -18,7 +18,7 @@ const ErrorRouteElement = () => {
       <Box sx={{ alignItems: 'center', display: 'flex', flexDirection: 'column', pt: 10 }}>
         <Typography sx={{ fontSize: '30pt', fontWeight: 'bold' }}>⚠️404⚠️</Typography>
         <Typography sx={{ fontSize: '18pt', fontWeight: 'bold', textAlign: 'center' }}>
-          Die Seite wurde nicht gefunden
+          Es ist ein Fehler aufgetreten
         </Typography>
         <Typography sx={{ fontSize: '14pt', fontWeight: 'bold', textAlign: 'center' }}>
           {isRouteErrorResponse(error) ? error.data || error.statusText : 'Unknown error message'}

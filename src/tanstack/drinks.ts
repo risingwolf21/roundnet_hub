@@ -135,7 +135,7 @@ export const useUpdateHistoryEntryMutation = (user: User) =>
             page.map((history) => (history.id === newEntry.id ? newEntry : history))
           ),
         };
-        queryClient.setQueriesData({ queryKey: drinkKeys.userHistory(user.id) }, newHistory);
+        queryClient.setQueryData<InfiniteData<FullHistory[]>>(drinkKeys.userHistory(user.id), newHistory);
       }
       return { previousHistory };
     },

@@ -26,6 +26,8 @@ export type Permission =
   | 'event.signup'
   | 'event.signup.trainer'
   | 'games.create'
+  | 'games.admin.view'
+  | 'games.delete.own'
   | 'games.update.score'
   | 'games.view.own'
   | 'groups.manage.admin'

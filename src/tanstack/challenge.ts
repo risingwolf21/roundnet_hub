@@ -3,7 +3,7 @@ import { supabase } from '@/lib/supabase';
 import { fetchChallengeWithGroup } from '@/repository/ChallengeRepository';
 import { TablesInsert, TablesUpdate } from '@/types/supabase-generated.types';
 import { ChallengePointsView, ChallengeStatWithUser } from '@/types/supabaseTypes';
-import { formatDateToDatabase, formatSafeDateToDatabase } from '@/utils';
+import { dataURLtoFile, formatDateToDatabase, formatSafeDateToDatabase } from '@/utils';
 import { captureException } from '@sentry/react';
 import { InfiniteData, useInfiniteQuery, useMutation, useQuery } from '@tanstack/react-query';
 
@@ -122,28 +122,50 @@ export const useIncreasePointForUserMutation = (challengeId: string) =>
     mutationFn: async ({
       challenge,
       created_at,
-      image_url,
-      count
+      image,
+      count,
+      comment,
+      category
     }: {
       user: User;
       challenge: string;
       created_at: Date;
-      image_url: string | null;
+      image: { dataUrl: string; fileName: string } | null;
       count: number;
+      comment?: string;
+      category?: string;
     }) => {
+      let image_url: string | null = null;
+
+      if (image) {
+        const { data: uploadData, error } = await supabase.storage
+          .from('challenge')
+          .upload(`${challenge}/${image.fileName}`, dataURLtoFile(image.dataUrl, image.fileName), { upsert: true });
+
+        if (uploadData?.path && !error) {
+          const { data } = supabase.storage.from('challenge').getPublicUrl(uploadData.path);
+          image_url = data?.publicUrl ?? null;
+        }
+      }
+
       const result = await supabase
         .rpc('increase_challenge_stats_count', {
           amount: count,
           challenge_id: challenge,
           to_create_at: formatDateToDatabase(created_at)!,
           image_url: image_url ?? '',
+          category,
+          comment
         })
         .throwOnError();
 
-      return result.data;
+      return { serverRow: result.data, image_url };
     },
-    onMutate: async ({ user, challenge, created_at, image_url }) => {
+    onMutate: async ({ user, count, challenge, created_at, image }) => {
+      const challengeStatId = Date.now();
       await queryClient.cancelQueries({ queryKey: challengeKeys.challengeInformation(challengeId) });
+      await queryClient.cancelQueries({ queryKey: challengeKeys.challengeLeaderboard(challengeId) });
+      await queryClient.cancelQueries({ queryKey: challengeKeys.challengeStatsForUser(challengeId, user.id) });
 
       const previousStats = queryClient.getQueryData<InfiniteData<ChallengeStatWithUser[]>>(challengeKeys.challengeStats(challengeId));
       const previousLeaderboard = queryClient.getQueryData<ChallengePointsView[]>(challengeKeys.challengeLeaderboard(challengeId));
@@ -152,32 +174,36 @@ export const useIncreasePointForUserMutation = (challengeId: string) =>
       if (previousStats) {
         const newStat = {
           challenge: challenge,
-          count: 1,
+          count: count,
           created_at: formatSafeDateToDatabase(created_at),
-          image_url: image_url,
+          image_url: image?.dataUrl ?? null,
           user: user.id,
           id: -1,
           fullUser: user,
         } as ChallengeStatWithUser;
-        const newStats: InfiniteData<ChallengeStatWithUser[]> =
-          previousStats.pages.length === 0
-            ? {
-              ...previousStats,
-              pages: [[newStat]],
-            }
-            : {
-              ...previousStats,
-              pages: previousStats.pages.map((x, index) => (index === 0 && Array.isArray(x) ? [...x, newStat] : x)),
-            };
 
-        queryClient.setQueryData<InfiniteData<ChallengeStatWithUser[]>>(challengeKeys.challengeStats(challengeId), newStats);
+        queryClient.setQueryData<InfiniteData<{ data: ChallengeStatWithUser[], nextPage: number | undefined }>>(challengeKeys.challengeStats(challengeId), (old) => {
+          if (!old || old.pages.length === 0) {
+            return {
+              pages: [{ data: [newStat], nextPage: undefined }],
+              pageParams: [undefined],
+            };
+          }
+
+          const [first, ...rest] = old.pages;
+          return {
+            pages: [{ ...first, data: [newStat, ...first.data] }, ...rest],
+            pageParams: old.pageParams,
+          };
+        });
       }
+
       if (previousLeaderboard) {
         const newLeaderBoard = previousLeaderboard.map((x) => {
           if (x.user === user.id) {
             return {
               ...x,
-              total_points: x.total_points + 1,
+              total_points: x.total_points + count,
             };
           }
           return x;
@@ -189,16 +215,16 @@ export const useIncreasePointForUserMutation = (challengeId: string) =>
           ...previousStatsForUser,
           {
             challenge: challenge,
-            count: 1,
+            count: count,
             created_at: formatSafeDateToDatabase(created_at),
-            image_url: image_url,
+            image_url: image?.dataUrl ?? null,
             user: user.id,
           },
         ] as ChallengeStats[];
         queryClient.setQueryData<ChallengeStats[]>(challengeKeys.challengeStatsForUser(challengeId, user.id), newStatsForUser);
       }
 
-      return { previousLeaderboard, previousStats, previousStatsForUser };
+      return { previousLeaderboard, previousStats, previousStatsForUser, tempId: challengeStatId };
     },
     onError: (error, variables, context) => {
       captureException(error, {
@@ -220,7 +246,7 @@ export const useIncreasePointForUserMutation = (challengeId: string) =>
         queryClient.setQueryData(challengeKeys.challengeStatsForUser(challengeId, variables.user.id), context.previousStatsForUser);
       }
     },
-    onSettled: (_data, _error, variables, _context) => {
+    onSettled: (_data, _error, variables) => {
       queryClient.invalidateQueries({ queryKey: challengeKeys.challengeLeaderboard(challengeId) });
       queryClient.invalidateQueries({ queryKey: challengeKeys.challengeStats(challengeId) });
       queryClient.invalidateQueries({ queryKey: challengeKeys.challengeStatsForUser(challengeId, variables.user.id) });
@@ -235,6 +261,8 @@ export const useUpdateChallengeMutation = () =>
         .update(challenge)
         .eq('id', challenge.id ?? '')
         .throwOnError();
+
+      console.log(result);
 
       return result.data;
     },
@@ -278,7 +306,18 @@ export const useInsertChallengeMutation = () =>
     mutationFn: async (challenge: TablesInsert<'challenge'>) => {
       const result = await supabase
         .from('challenge')
-        .insert(challenge)
+        .insert({
+          automated: challenge.automated,
+          name: challenge.name,
+          description: challenge.description,
+          end_date: challenge.end_date,
+          max_points_per_day: challenge.max_points_per_day,
+          max_points_per_week: challenge.max_points_per_week,
+          group: challenge.group,
+          comments_enabled: challenge.comments_enabled,
+          category_enabled: challenge.category_enabled,
+          show_all_members: challenge.show_all_members
+        })
         .select('*')
         .single()
         .throwOnError()

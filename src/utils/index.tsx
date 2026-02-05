@@ -171,19 +171,84 @@ export function getErrorMessage(error: unknown) {
   return toErrorWithMessage(error).message;
 }
 
-export function durationToPostgresInterval(duration: Duration): string {
+export function durationToPostgresInterval(d: Duration): string {
   const parts: string[] = [];
+  const add = (n: number | undefined, singular: string, plural?: string) => {
+    if (!n) return;
+    const abs = Math.abs(n);
+    parts.push(`${n} ${abs === 1 ? singular : (plural ?? singular + 's')}`);
+  };
 
-  if (duration.years) parts.push(`${duration.years} years`);
-  if (duration.months) parts.push(`${duration.months} months`);
-  if (duration.weeks) parts.push(`${duration.weeks} weeks`);
-  if (duration.days) parts.push(`${duration.days} days`);
-  if (duration.hours) parts.push(`${duration.hours} hours`);
-  if (duration.minutes) parts.push(`${duration.minutes} minutes`);
-  if (duration.seconds) parts.push(`${duration.seconds} seconds`);
+  add(d.years, 'year');
+  add(d.months, 'month');
+  add(d.weeks, 'week');
+  add(d.days, 'day');
+  add(d.hours, 'hour');
+  add(d.minutes, 'minute');
 
-  // Wenn komplett leer → interpretiere als 0 seconds
-  if (parts.length === 0) return '0 seconds';
+  if (d.seconds && !Object.is(d.seconds, -0)) {
+    const s = stripTrailingZeros(d.seconds);
+    const unit = Math.abs(d.seconds) === 1 ? 'second' : 'seconds';
+    parts.push(`${s} ${unit}`);
+  }
 
-  return parts.join(' ');
+  return parts.length ? parts.join(' ') : '0 seconds';
+}
+
+function stripTrailingZeros(n: number): string {
+  const s = String(n);
+  return s.includes('.') ? s.replace(/(\.\d*?[1-9])0+$/, '$1').replace(/\.$/, '') : s;
+}
+
+/** Postgres Interval (Standard) -> Duration */
+export function postgresIntervalToDuration(interval: string): Duration {
+  if (!interval?.trim()) return {};
+  let s = interval.trim();
+
+  const out: Required<Duration> = {
+    years: 0, months: 0, weeks: 0, days: 0, hours: 0, minutes: 0, seconds: 0
+  };
+
+  // 1) Zeitblock HH:MM:SS(.fff) mit optionalem Vorzeichen
+  const t = s.match(/([+-])?(\d{1,2}):(\d{2}):(\d{2}(?:\.\d+)?)/);
+  if (t) {
+    const sign = t[1] === '-' ? -1 : 1;
+    out.hours += sign * parseInt(t[2], 10);
+    out.minutes += sign * parseInt(t[3], 10);
+    out.seconds += sign * parseFloat(t[4]);
+    s = (s.slice(0, t.index!) + s.slice(t.index! + t[0].length)).trim();
+  }
+
+  // 2) Wert+Einheit-Paare (years/mon(s)/months/day(s)/hour(s)/minute(s)/second(s)/week(s))
+  const re = /([+-]?\d+(?:\.\d+)?)\s*(years?|year|mons?|months?|mon|month|weeks?|week|days?|day|hours?|hour|minutes?|minute|seconds?|second)\b/gi;
+  for (const m of s.matchAll(re)) {
+    const val = parseFloat(m[1]);
+    const u = m[2].toLowerCase();
+    if (u.startsWith('year')) out.years += val;
+    else if (u.startsWith('mon')) out.months += val;   // "mon" oder "months"
+    else if (u.startsWith('week')) out.weeks += val;
+    else if (u.startsWith('day')) out.days += val;
+    else if (u.startsWith('hour')) out.hours += val;
+    else if (u.startsWith('min')) out.minutes += val;
+    else out.seconds += val;   // seconds
+  }
+
+  // 3) Optional: Tage in Wochen bündeln (7er-Schritte)
+  if (Math.abs(out.days) >= 7 && Number.isInteger(out.days)) {
+    const w = (out.days / 7) | 0;          // trunc toward zero
+    out.weeks += w;
+    out.days -= w * 7;
+  }
+
+  // 4) Leere Felder auslassen
+  const d: Duration = {};
+  if (out.years) d.years = out.years;
+  if (out.months) d.months = out.months;
+  if (out.weeks) d.weeks = out.weeks;
+  if (out.days) d.days = out.days;
+  if (out.hours) d.hours = out.hours;
+  if (out.minutes) d.minutes = out.minutes;
+  if (out.seconds) d.seconds = out.seconds;
+
+  return d;
 }

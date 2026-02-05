@@ -2,7 +2,7 @@
 import useDeviceId from '@/hooks/useDeviceId';
 import { supabase } from '@/lib/supabase';
 import { captureException } from '@sentry/react';
-import type { Session } from '@supabase/supabase-js';
+import { type Session } from '@supabase/supabase-js';
 import { PropsWithChildren, useEffect, useRef } from 'react';
 
 type Props = PropsWithChildren & {
@@ -71,15 +71,21 @@ export default function WebPushKeeper({ children, session, vapidPublicKey }: Pro
         if (persisted === sig) return;
         localStorage.setItem('push:lastSig', sig);
 
-        await upsertToDb(endpoint, p256dh, auth, { user: session.user.id }, { origin: 'useEffect' });
-      } catch (e: any) {
-        console.warn('WebPushKeeper failed to register push subscription', e);
+        await upsertToDb(endpoint, p256dh, auth);
+      } catch (e) {
+        captureException(e, {
+          extra: {
+            deviceId,
+            userAgent: navigator.userAgent,
+          },
+          tags: { type: 'UpsertWebPushSubscription', scope: 'notifications' },
+        });
       }
     })();
   }, [session?.user?.id, vapidPublicKey]);
 
-  async function upsertToDb(p_endpoint: string, p_p256dh: string, p_auth: string, ...params: any[]) {
-    const { error } = await supabase.schema('notifications').rpc('upsert_webpush_subscription', {
+  async function upsertToDb(p_endpoint: string, p_p256dh: string, p_auth: string) {
+    await supabase.schema('notifications').rpc('upsert_webpush_subscription', {
       p_endpoint,
       p_p256dh,
       p_auth,
@@ -90,20 +96,7 @@ export default function WebPushKeeper({ children, session, vapidPublicKey }: Pro
         : /iPhone|iPad|iPod/i.test(navigator.userAgent)
           ? 'ios'
           : 'desktop',
-    });
-    if (error) {
-      captureException(error, {
-        extra: {
-          p_endpoint,
-          p_p256dh,
-          p_auth,
-          deviceId,
-          userAgent: navigator.userAgent,
-          ...params,
-        },
-        tags: { type: 'UpsertWebPushSubscription', scope: 'notifications' },
-      });
-    }
+    }).throwOnError();
   }
 
   return children;

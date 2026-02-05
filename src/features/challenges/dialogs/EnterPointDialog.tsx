@@ -3,7 +3,7 @@ import { DatePicker, PickersDay, PickersDayProps } from '@mui/x-date-pickers';
 import { DialogProps } from '@toolpad/core';
 import Compressor from 'compressorjs';
 import { differenceInDays, isSameDay, isSameWeek } from 'date-fns';
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { v4 as uuid } from 'uuid';
 import { SwipeableDialog } from '../../../components/SwipeableDialog';
 
@@ -17,12 +17,15 @@ import Button from '@mui/material/Button';
 import IconButton from '@mui/material/IconButton';
 import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';
+import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 
 type EnterPointDialogProps = {
   dates: string[];
   maxEntriesPerWeek: number | null;
   maxEntriesPerDay: number | null;
+  comments_enabled?: boolean;
+  category_enabled?: boolean;
 };
 
 function ServerDay(props: PickersDayProps & { highlightedDays?: Date[]; maxEntriesPerWeek?: number }) {
@@ -55,22 +58,22 @@ type EnterPointResult = {
     dataUrl: string;
     fileName: string;
   } | null;
+  comment?: string
+  category?: string
 };
 
 const EnterPointDialog = ({
-  payload: { dates, maxEntriesPerWeek, maxEntriesPerDay },
+  payload: { dates, maxEntriesPerWeek, maxEntriesPerDay, comments_enabled = false, category_enabled = false },
   open,
   onClose,
 }: DialogProps<EnterPointDialogProps, EnterPointResult | null>) => {
-  const [date, setDate] = useState<Date>(new Date());
-  const [highlightedDays, setHightlightedDays] = useState(dates.map((x) => formatDateFromDatabase(x)));
+  const [date, setDate] = useState<Date>(() => new Date());
+  const highlightedDays = dates.map((x) => formatDateFromDatabase(x));
   const [image, setImage] = useState<{ dataUrl: string; fileName: string } | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [points, setPoints] = useState<number>(1);
-
-  useEffect(() => {
-    setHightlightedDays(dates.map(formatDateFromDatabase));
-  }, [dates]);
+  const [comment, setComment] = useState<string>();
+  const [category, setCategory] = useState<string>();
 
   const onImageInputChange = async (event: React.ChangeEvent<HTMLInputElement>): Promise<void> => {
     if (!event.target.files || event.target.files.length === 0) return;
@@ -106,7 +109,7 @@ const EnterPointDialog = ({
       minHeight={40}
       actions={
         <>
-          <Button onClick={() => onClose({ date, image, count: points })}>Bestätigen</Button>
+          <Button onClick={() => onClose({ date, image, count: points, comment, category })}>Bestätigen</Button>
           <Button onClick={() => onClose(null)}>Abbrechen</Button>
         </>
       }
@@ -145,6 +148,30 @@ const EnterPointDialog = ({
         }
       </ListItem>
 
+      {
+        comments_enabled && <ListItem>
+          <TextField
+            fullWidth
+            variant='outlined'
+            label="Kommentar"
+            value={comment}
+            onChange={(e) => setComment(e.target.value)}
+          />
+        </ListItem>
+      }
+
+      {
+        category_enabled && <ListItem>
+          <TextField
+            fullWidth
+            variant='outlined'
+            label="Kategorie"
+            value={category}
+            onChange={(e) => setCategory(e.target.value)}
+          />
+        </ListItem>
+      }
+
       <DatePicker
         sx={{
           width: '100%',
@@ -157,7 +184,7 @@ const EnterPointDialog = ({
           day: {
             highlightedDays,
             maxEntriesPerWeek,
-          } as any,
+          } as unknown as PickersDayProps,
         }}
         label="Datum"
         disableFuture

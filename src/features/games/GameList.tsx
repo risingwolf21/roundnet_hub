@@ -44,7 +44,7 @@ const GameList = () => {
           })}
         >
           {Object.entries(groupBy(matches, (x: UserMatchesView) => format(x.created_at ?? '', 'dd MMMM yyyy')))
-            .sort(([key1, _v1], [key2, _v2]) => (isAfter(key1, key2) ? -1 : 1))
+            .sort(([key1], [key2]) => (isAfter(key1, key2) ? -1 : 1))
             .map(([key, value]) => (
               <List
                 key={key}
@@ -129,9 +129,10 @@ const GameList = () => {
                       )}
                       {x.set_results?.split(',').map((y) => {
                         const [team_a_score, team_b_score] = y.trim().split(':');
-                        const teamAWon = team_a_score > team_b_score;
+                        const teamAWon = Number(team_a_score) > Number(team_b_score);
                         return (
                           <Box
+                            key={y}
                             sx={{
                               display: 'flex',
                               ml: 2,

@@ -1170,6 +1170,8 @@ export type Database = {
       challenge: {
         Row: {
           automated: boolean
+          category_enabled: boolean
+          comments_enabled: boolean
           created_at: string
           description: string
           end_date: string | null
@@ -1178,9 +1180,12 @@ export type Database = {
           max_points_per_day: number
           max_points_per_week: number | null
           name: string
+          show_all_members: boolean
         }
         Insert: {
           automated?: boolean
+          category_enabled?: boolean
+          comments_enabled?: boolean
           created_at?: string
           description?: string
           end_date?: string | null
@@ -1189,9 +1194,12 @@ export type Database = {
           max_points_per_day?: number
           max_points_per_week?: number | null
           name?: string
+          show_all_members?: boolean
         }
         Update: {
           automated?: boolean
+          category_enabled?: boolean
+          comments_enabled?: boolean
           created_at?: string
           description?: string
           end_date?: string | null
@@ -1200,6 +1208,7 @@ export type Database = {
           max_points_per_day?: number
           max_points_per_week?: number | null
           name?: string
+          show_all_members?: boolean
         }
         Relationships: [
           {
@@ -2824,7 +2833,9 @@ export type Database = {
       increase_challenge_stats_count: {
         Args: {
           amount: number
+          category?: string
           challenge_id: string
+          comment?: string
           image_url?: string
           to_create_at: string
         }
@@ -2941,7 +2952,42 @@ export type Database = {
   }
   util: {
     Tables: {
-      [_ in never]: never
+      background_errors: {
+        Row: {
+          actor_user: string | null
+          at: string
+          details: Json | null
+          id: string
+          message: string | null
+          op: string
+          ref_id: string | null
+          reported: boolean
+          source: string
+        }
+        Insert: {
+          actor_user?: string | null
+          at?: string
+          details?: Json | null
+          id?: string
+          message?: string | null
+          op: string
+          ref_id?: string | null
+          reported?: boolean
+          source: string
+        }
+        Update: {
+          actor_user?: string | null
+          at?: string
+          details?: Json | null
+          id?: string
+          message?: string | null
+          op?: string
+          ref_id?: string | null
+          reported?: boolean
+          source?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -2989,6 +3035,10 @@ export type Database = {
       jwt_has_permission: {
         Args: { p_perm: string }
         Returns: boolean
+      }
+      sqlstate_label: {
+        Args: { p_state: string }
+        Returns: string
       }
     }
     Enums: {

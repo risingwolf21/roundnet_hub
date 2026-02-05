@@ -99,7 +99,7 @@ const EventInformationProvider = () => {
         showProfile: false,
       }}
       appBarActions={
-        <Has perm={['event.edit', 'event.cancel', 'event.delete']} any>
+        <Has perm={['event.edit', 'event.cancel', 'event.delete', 'event.transform']} any>
           <>
             <IconButton sx={{ color: 'primary.contrastText', pr: 0 }} onClick={(e) => setAnchorEl(e.currentTarget)}>
               <MoreVert />
