@@ -60,7 +60,7 @@ begin
     insert into notifications.notifications("user", tenant, topic, title, body, data, source_type, source_id)
     select a.uid, v_tenant, v_topic,
            v_title,
-           p_body,
+           v_body,
            jsonb_build_object('event', p_event, 'url', v_url),
            'event', p_event
       from allowed a
@@ -70,7 +70,7 @@ begin
     insert into notifications.notification_outbox("user", tenant, title, body, data, urgency, notification)
     select i."user", v_tenant,
            v_title,
-           p_body,
+           v_body,
            jsonb_build_object('event', p_event, 'url', v_url),
            'normal',
            i.id
@@ -241,7 +241,7 @@ begin
     insert into notifications.notifications("user", tenant, topic, title, body, data, source_type, source_id)
     select a.uid, v_tenant, v_topic,
            v_title,
-           p_body,
+           v_body,
            jsonb_build_object('event', p_event, 'url', v_url),
            'event', p_event
       from allowed a
@@ -251,7 +251,7 @@ begin
     insert into notifications.notification_outbox("user", tenant, title, body, data, urgency, notification)
     select i."user", v_tenant,
            v_title,
-           p_body,
+           v_body,
            jsonb_build_object('event', p_event, 'url', v_url),
            'normal',
            i.id
