@@ -3,7 +3,7 @@ import { DatePicker, PickersDay, PickersDayProps } from '@mui/x-date-pickers';
 import { DialogProps } from '@toolpad/core';
 import Compressor from 'compressorjs';
 import { differenceInDays, isSameDay, isSameWeek } from 'date-fns';
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { v4 as uuid } from 'uuid';
 import { SwipeableDialog } from '../../../components/SwipeableDialog';
 
@@ -67,17 +67,13 @@ const EnterPointDialog = ({
   open,
   onClose,
 }: DialogProps<EnterPointDialogProps, EnterPointResult | null>) => {
-  const [date, setDate] = useState<Date>(new Date());
-  const [highlightedDays, setHightlightedDays] = useState(dates.map((x) => formatDateFromDatabase(x)));
+  const [date, setDate] = useState<Date>(() => new Date());
+  const highlightedDays = dates.map((x) => formatDateFromDatabase(x));
   const [image, setImage] = useState<{ dataUrl: string; fileName: string } | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [points, setPoints] = useState<number>(1);
   const [comment, setComment] = useState<string>();
   const [category, setCategory] = useState<string>();
-
-  useEffect(() => {
-    setHightlightedDays(dates.map(formatDateFromDatabase));
-  }, [dates]);
 
   const onImageInputChange = async (event: React.ChangeEvent<HTMLInputElement>): Promise<void> => {
     if (!event.target.files || event.target.files.length === 0) return;
@@ -188,7 +184,7 @@ const EnterPointDialog = ({
           day: {
             highlightedDays,
             maxEntriesPerWeek,
-          } as any,
+          } as unknown as PickersDayProps,
         }}
         label="Datum"
         disableFuture

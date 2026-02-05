@@ -210,7 +210,7 @@ export const useUpsertSetsToMatch = (matchId: string) =>
         queryClient.setQueryData(gamesKeys.matches(), context.previousMatches);
       }
     },
-    onSettled: (_d, _e, _v, _context) => {
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: gamesKeys.matches() });
     },
   });
@@ -243,7 +243,7 @@ export const useDeleteMatch = (matchId?: string) =>
 
       return { previousMatches };
     },
-    onError: (error, variables, context) => {
+    onError: (error, _variables, context) => {
       captureException(error, {
         extra: {
           ...error,
@@ -254,7 +254,7 @@ export const useDeleteMatch = (matchId?: string) =>
         queryClient.setQueryData(gamesKeys.matches(), context.previousMatches);
       }
     },
-    onSettled: (_d, _e, _v, _context) => {
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: gamesKeys.matches() });
     },
   });

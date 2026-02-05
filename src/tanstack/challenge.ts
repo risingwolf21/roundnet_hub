@@ -246,7 +246,7 @@ export const useIncreasePointForUserMutation = (challengeId: string) =>
         queryClient.setQueryData(challengeKeys.challengeStatsForUser(challengeId, variables.user.id), context.previousStatsForUser);
       }
     },
-    onSettled: (_data, _error, variables, _context) => {
+    onSettled: (_data, _error, variables) => {
       queryClient.invalidateQueries({ queryKey: challengeKeys.challengeLeaderboard(challengeId) });
       queryClient.invalidateQueries({ queryKey: challengeKeys.challengeStats(challengeId) });
       queryClient.invalidateQueries({ queryKey: challengeKeys.challengeStatsForUser(challengeId, variables.user.id) });

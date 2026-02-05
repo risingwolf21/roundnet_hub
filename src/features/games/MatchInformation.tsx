@@ -64,8 +64,8 @@ const LoadingTeamCard = () => {
             <Skeleton variant="text" width={100} />
           </Box>
           <Stack direction={'row'} spacing={1}>
-            {[0, 0, 0].map((_) => (
-              <Skeleton variant="rectangular" width={40} height={40} />
+            {[0, 1, 2].map((x) => (
+              <Skeleton key={`skeleton-${x}`} variant="rectangular" width={40} height={40} />
             ))}
           </Stack>
         </Box>

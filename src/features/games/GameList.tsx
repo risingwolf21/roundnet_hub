@@ -44,7 +44,7 @@ const GameList = () => {
           })}
         >
           {Object.entries(groupBy(matches, (x: UserMatchesView) => format(x.created_at ?? '', 'dd MMMM yyyy')))
-            .sort(([key1, _v1], [key2, _v2]) => (isAfter(key1, key2) ? -1 : 1))
+            .sort(([key1], [key2]) => (isAfter(key1, key2) ? -1 : 1))
             .map(([key, value]) => (
               <List
                 key={key}
