@@ -189,7 +189,7 @@ const ChallengeInformation = ({ t, challengeId }: { t: TFunction; challengeId: s
                     category_enabled: challenge.category_enabled
                   });
 
-                  if (result) increaseChallengePoint(result.date, result.image, result.count, result.category, result.comment);
+                  if (result) increaseChallengePoint(result.date, result.image, result.count, result.comment, result.category);
                 }
               }}
             >

@@ -62,7 +62,7 @@ Deno.serve(async (req) => {
     // HTML von der angegebenen URL abrufen
     const response = await fetch(rg_link);
     if (!response.ok) {
-      const body = await response.json();
+      const body = await response.text();
       const error = new RgUrlFetchError("Could not fetch playerzone profile", body, response.status, response.statusText);
 
       Sentry.captureException(error);
