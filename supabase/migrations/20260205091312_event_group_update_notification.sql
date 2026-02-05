@@ -1,3 +1,15 @@
+drop policy "Allow authorized delete access" on "games"."match";
+
+drop policy "Allow authorized insert access" on "games"."match";
+
+drop policy "Allow authorized update access" on "games"."match";
+
+drop policy "Allow select when match is public" on "games"."match";
+
+drop policy "match_select_if_participant" on "games"."match";
+
+drop policy "match_delete_participant_or_admin" on "games"."match";
+
 set check_function_bodies = off;
 
 CREATE OR REPLACE FUNCTION notifications._trg_event_group_updated_to_notify()
@@ -89,4 +101,9 @@ end;$function$
 
 CREATE TRIGGER trg_event_group_updated_to_notify AFTER UPDATE ON public.events FOR EACH ROW EXECUTE FUNCTION notifications._trg_event_group_updated_to_notify();
 
-
+  create policy "match_delete_participant_or_admin"
+  on "games"."match"
+  as permissive
+  for delete
+  to authenticated
+using ((public.authorize('games.admin'::text) OR (games.is_member_of_teams(team_a, team_b) AND public.authorize('games.delete.own'::text))));

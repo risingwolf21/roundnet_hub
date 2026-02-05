@@ -203,7 +203,7 @@ export const useIncreasePointForUserMutation = (challengeId: string) =>
           if (x.user === user.id) {
             return {
               ...x,
-              total_points: x.total_points + 1,
+              total_points: x.total_points + count,
             };
           }
           return x;
