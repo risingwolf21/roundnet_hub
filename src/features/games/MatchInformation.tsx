@@ -1,16 +1,18 @@
 import Layout from '@/components/layout/Layout';
 import { LoadingIndicator } from '@/components/LoadingIndicator';
-import { useMatch } from '@/tanstack/games';
-import { useNotifications } from '@toolpad/core';
+import { useDeleteMatch, useMatch } from '@/tanstack/games';
+import { useDialogs, useNotifications } from '@toolpad/core';
 import { useEffect } from 'react';
-import { useParams } from 'react-router';
+import { useNavigate, useParams } from 'react-router';
 
 import { Has } from '@/hooks/useGrants';
 import AccountBox from '@mui/icons-material/AccountBox';
+import Delete from '@mui/icons-material/Delete';
 import Alert from '@mui/material/Alert';
 import Avatar from '@mui/material/Avatar';
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
+import CardActionArea from '@mui/material/CardActionArea';
 import CardContent from '@mui/material/CardContent';
 import Chip from '@mui/material/Chip';
 import Divider from '@mui/material/Divider';
@@ -186,9 +188,12 @@ const TeamCard = ({
 
 const MatchInformation = () => {
   const { matchId } = useParams();
+  const dialogs = useDialogs();
   const notifications = useNotifications();
+  const navigate = useNavigate();
 
   const { data: match = null, error, isLoading, refetch } = useMatch(matchId);
+  const useDeleteMatchMutation = useDeleteMatch(matchId);
 
   const player1a_history = match?.elo_history.find((x) => x.user === match.team_a.player_1.player);
   const player2a_history = match?.elo_history.find((x) => x.user === match.team_a.player_2.player);
@@ -274,6 +279,31 @@ const MatchInformation = () => {
           p2={match.player_2b}
           rated={match.rated}
         />
+
+        <Has perm={'games.delete.own'}>
+          <Card sx={{ color: 'red', borderRadius: 2, py: 0, px: 0, m: 1 }}>
+            <CardActionArea sx={{ px: 1 }}>
+              <ListItem
+                onClick={() =>
+                  dialogs.confirm(`Möchtest du das Spiel wirklich löschen? ${match.rated ? "Der Indexeintrag von diesem Spiel wird mit gelöscht." : ""}`, { title: "Spiel löschen" }).then((result) => {
+                    if (result) {
+                      useDeleteMatchMutation.mutate(undefined, {
+                        onSuccess: () => navigate('/matches'),
+                        onError: (error) => notifications.show("Spiel konnte nicht gelöscht werden. " + error.message, { severity: "error" })
+                      });
+
+                    }
+                  })
+                }
+              >
+                <ListItemAvatar sx={{ flexDirection: 'row', display: 'flex', alignItems: 'center' }}>
+                  <Delete />
+                </ListItemAvatar>
+                <ListItemText primary="Löschen" />
+              </ListItem>
+            </CardActionArea>
+          </Card>
+        </Has>
 
         <Has perm={'games.admin.view'}>
           <Card elevation={3} sx={{ borderRadius: 2, py: 0, px: 0, mt: 1 }}>

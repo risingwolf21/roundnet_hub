@@ -214,3 +214,47 @@ export const useUpsertSetsToMatch = (matchId: string) =>
       queryClient.invalidateQueries({ queryKey: gamesKeys.matches() });
     },
   });
+
+export const useDeleteMatch = (matchId?: string) =>
+  useMutation({
+    mutationFn: async () => {
+      if (!matchId) {
+        throw new Error("Match not found")
+      }
+      const result = await supabase
+        .schema('games')
+        .from('match')
+        .delete()
+        .eq("id", matchId)
+        .select("*")
+        .throwOnError();
+
+      return result.data;
+    },
+    onMutate: async () => {
+      await queryClient.cancelQueries({ queryKey: gamesKeys.matches() });
+
+      const previousMatches = queryClient.getQueryData<FullUserMatch[]>(gamesKeys.matches());
+
+      if (previousMatches) {
+        const newMatches = previousMatches.filter(x => x.id !== matchId);
+        queryClient.setQueryData<FullUserMatch[]>(gamesKeys.matches(), newMatches);
+      }
+
+      return { previousMatches };
+    },
+    onError: (error, variables, context) => {
+      captureException(error, {
+        extra: {
+          ...error,
+        },
+        tags: { type: 'DeleteMatch', scope: 'games' },
+      });
+      if (context?.previousMatches) {
+        queryClient.setQueryData(gamesKeys.matches(), context.previousMatches);
+      }
+    },
+    onSettled: (_d, _e, _v, _context) => {
+      queryClient.invalidateQueries({ queryKey: gamesKeys.matches() });
+    },
+  });

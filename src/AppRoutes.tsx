@@ -1,6 +1,5 @@
-import { wrapCreateBrowserRouterV7 } from '@sentry/react';
 import { DialogsProvider, NotificationsProvider } from '@toolpad/core';
-import { createBrowserRouter, Navigate, Outlet, RouteObject, RouterProvider, useLocation } from 'react-router';
+import { Navigate, Outlet, RouteObject, RouterProvider, useLocation } from 'react-router';
 import ErrorRouteElement from './components/ErrorRouteElement';
 import AuthLayout from './components/layout/AuthLayout';
 import { useApplication } from './features/auth/ApplicationContext';
@@ -11,6 +10,7 @@ import HomePage from './features/homepage/HomePage';
 import UserScreenProvider from './features/profile/User';
 import { lazyWithRetry } from './hooks/lazyWithRetry';
 import { Has } from './hooks/useGrants';
+import { sentryCreateBrowserRouter } from './instrument';
 import { UserWithGroups } from './types/supabaseTypes';
 
 const HistoryScreenProvider = lazyWithRetry(() => import('./features/drinks/HistoryScreen.page'));
@@ -44,8 +44,6 @@ const PlayerzoneProfileDialog = lazyWithRetry(() => import('./features/profile/P
 const NotificationsDialog = lazyWithRetry(() => import('./features/profile/NotificationsDialog'));
 const ContactInformation = lazyWithRetry(() => import('./features/profile/ContactInformation'));
 const ResetPassword = lazyWithRetry(() => import('./features/profile/ResetPassword'));
-
-const sentryCreateBrowserRouter = wrapCreateBrowserRouterV7(createBrowserRouter);
 
 export const AppRoutes = () => {
   const { user } = useApplication();
@@ -130,6 +128,7 @@ const createRouter = (user: UserWithGroups | null) =>
             {
               path: '/help',
               element: <AppInformation />,
+
             },
             {
               path: '/home',
@@ -149,6 +148,8 @@ const createRouter = (user: UserWithGroups | null) =>
             },
             {
               path: '/user',
+              element: <Outlet />,
+              errorElement: <ErrorRouteElement />,
               children: [
                 {
                   index: true,
@@ -179,6 +180,7 @@ const createRouter = (user: UserWithGroups | null) =>
                   <Outlet />
                 </Has>
               ),
+              errorElement: <ErrorRouteElement />,
               children: [
                 {
                   index: true,
@@ -205,6 +207,7 @@ const createRouter = (user: UserWithGroups | null) =>
                   <Outlet />
                 </Has>
               ),
+              errorElement: <ErrorRouteElement />,
               children: [
                 {
                   index: true,
@@ -222,6 +225,8 @@ const createRouter = (user: UserWithGroups | null) =>
             },
             {
               path: '/groups',
+              element: <Outlet />,
+              errorElement: <ErrorRouteElement />,
               children: [
                 {
                   index: true,
@@ -244,6 +249,7 @@ const createRouter = (user: UserWithGroups | null) =>
                   <Outlet />
                 </Has>
               ),
+              errorElement: <ErrorRouteElement />,
               children: [
                 {
                   index: true,
@@ -270,6 +276,7 @@ const createRouter = (user: UserWithGroups | null) =>
                   <Outlet />
                 </Has>
               ),
+              errorElement: <ErrorRouteElement />,
               children: [
                 {
                   index: true,
@@ -291,6 +298,8 @@ const createRouter = (user: UserWithGroups | null) =>
             },
             {
               path: '/admin',
+              element: <Outlet />,
+              errorElement: <ErrorRouteElement />,
               children: [
                 {
                   path: 'drinks',

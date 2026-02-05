@@ -3,7 +3,7 @@ import * as Sentry from '@sentry/react';
 import { EventHint } from '@sentry/react';
 import { supabaseIntegration } from '@supabase/sentry-js-integration';
 import React from 'react';
-import { createRoutesFromChildren, matchRoutes, useLocation, useNavigationType } from 'react-router';
+import { createBrowserRouter, createRoutesFromChildren, matchRoutes, useLocation, useNavigationType } from 'react-router';
 
 export const sendMetricsToSentry = (name: string, value: number) => {
   Sentry.metrics.count(name, value);
@@ -17,7 +17,6 @@ Sentry.init({
   release: import.meta.env.VITE_APP_VERSION,
   enableLogs: true,
   integrations: [
-    Sentry.browserTracingIntegration(),
     Sentry.reactRouterV7BrowserTracingIntegration({
       useEffect: React.useEffect,
       useLocation,
@@ -56,3 +55,7 @@ Sentry.init({
     return event;
   },
 });
+
+export const sentryCreateBrowserRouter = Sentry.wrapCreateBrowserRouterV7(
+  createBrowserRouter,
+);
