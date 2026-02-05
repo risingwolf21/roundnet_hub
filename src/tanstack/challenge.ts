@@ -315,7 +315,8 @@ export const useInsertChallengeMutation = () =>
           max_points_per_week: challenge.max_points_per_week,
           group: challenge.group,
           comments_enabled: challenge.comments_enabled,
-          category_enabled: challenge.category_enabled
+          category_enabled: challenge.category_enabled,
+          show_all_members: challenge.show_all_members
         })
         .select('*')
         .single()
