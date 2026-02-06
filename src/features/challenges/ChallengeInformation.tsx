@@ -86,7 +86,7 @@ const ChallengeInformation = ({ t, challengeId }: { t: TFunction; challengeId: s
         {
           onSuccess: (data) => {
             let message = 'Punkt erfolgreich hinzugefügt';
-            if (!data.image_url) {
+            if (data.imageFailedToUpload) {
               message += '. Das Bild konnte leider nicht gespeichert werden.';
             }
             notifications.show(message, { severity: 'success' });

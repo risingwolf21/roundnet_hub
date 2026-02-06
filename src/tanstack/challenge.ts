@@ -159,7 +159,7 @@ export const useIncreasePointForUserMutation = (challengeId: string) =>
         })
         .throwOnError();
 
-      return { serverRow: result.data, image_url };
+      return { serverRow: result.data, image_url, imageFailedToUpload: !!image && !image_url };
     },
     onMutate: async ({ user, count, challenge, created_at, image }) => {
       const challengeStatId = Date.now();
