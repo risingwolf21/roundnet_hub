@@ -52,7 +52,7 @@ const ForgotPasswordScreen = () => {
         })
         .finally(() => {
           setLoading(false);
-        })
+        });
     }
   };
 

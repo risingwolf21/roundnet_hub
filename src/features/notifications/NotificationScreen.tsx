@@ -43,7 +43,9 @@ const NotificationScreen = () => {
   return (
     <PullToRefresh onRefresh={() => refetch()}>
       <List sx={{ width: '100%' }}>
-        {notifications.map((notification) => <NotificationItem key={notification.id} notification={notification} />)}
+        {notifications.map((notification) => (
+          <NotificationItem key={notification.id} notification={notification} />
+        ))}
       </List>
       <Fab
         variant={'extended'}

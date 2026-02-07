@@ -85,18 +85,21 @@ export default function WebPushKeeper({ children, session, vapidPublicKey }: Pro
   }, [session?.user?.id, vapidPublicKey]);
 
   async function upsertToDb(p_endpoint: string, p_p256dh: string, p_auth: string) {
-    await supabase.schema('notifications').rpc('upsert_webpush_subscription', {
-      p_endpoint,
-      p_p256dh,
-      p_auth,
-      p_device_id: deviceId,
-      p_user_agent: navigator.userAgent,
-      p_platform: /Android/i.test(navigator.userAgent)
-        ? 'android'
-        : /iPhone|iPad|iPod/i.test(navigator.userAgent)
-          ? 'ios'
-          : 'desktop',
-    }).throwOnError();
+    await supabase
+      .schema('notifications')
+      .rpc('upsert_webpush_subscription', {
+        p_endpoint,
+        p_p256dh,
+        p_auth,
+        p_device_id: deviceId,
+        p_user_agent: navigator.userAgent,
+        p_platform: /Android/i.test(navigator.userAgent)
+          ? 'android'
+          : /iPhone|iPad|iPod/i.test(navigator.userAgent)
+            ? 'ios'
+            : 'desktop',
+      })
+      .throwOnError();
   }
 
   return children;

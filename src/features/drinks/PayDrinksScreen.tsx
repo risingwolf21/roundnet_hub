@@ -12,7 +12,6 @@ import Typography from '@mui/material/Typography';
 import { UseQueryResult } from '@tanstack/react-query';
 import groupBy from 'lodash.groupby';
 
-
 const PayDrinksScreen = ({
   data: history = [],
   isLoading,
@@ -39,7 +38,9 @@ const PayDrinksScreen = ({
 
   return (
     <>
-      <Typography sx={{ mx: 2, mt: 1 }} fontWeight={'bold'}>Verlauf</Typography>
+      <Typography sx={{ mx: 2, mt: 1 }} fontWeight={'bold'}>
+        Verlauf
+      </Typography>
       {Object.entries(
         groupBy(
           history.filter((x) => !x.voucher),
@@ -48,12 +49,12 @@ const PayDrinksScreen = ({
       )
         .map(([key, value]) => {
           const drink = JSON.parse(key) as { id: string; name: string; price: number };
-          console.log(drink)
+          console.log(drink);
           return {
             drink,
             count: value.reduce((prev, curr) => prev + (curr.count ?? 0), 0),
             priceSingle: drink.price ?? 'NaN',
-            priceTotal: value.reduce((prev, curr) => prev + (curr.count * drink.price), 0),
+            priceTotal: value.reduce((prev, curr) => prev + curr.count * drink.price, 0),
           };
         })
         .map((x) => (

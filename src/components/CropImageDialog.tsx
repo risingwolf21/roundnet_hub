@@ -11,7 +11,11 @@ import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
 import { DialogProps } from '@toolpad/core';
 
-const CropImageDialog = ({ open, onClose, payload: { selectedImage } }: DialogProps<{ selectedImage: string }, string | null>) => {
+const CropImageDialog = ({
+  open,
+  onClose,
+  payload: { selectedImage },
+}: DialogProps<{ selectedImage: string }, string | null>) => {
   const [crop, setCrop] = useState({ x: 0, y: 0 });
   const [zoom, setZoom] = useState(1);
   const rotation = 0;
@@ -47,7 +51,7 @@ const CropImageDialog = ({ open, onClose, payload: { selectedImage } }: DialogPr
             </Button>
           </Toolbar>
         </AppBar>
-        <Box sx={{ position: "relative", width: "100%", height: "calc(100dvh - 64px)", background: "#333" }}>
+        <Box sx={{ position: 'relative', width: '100%', height: 'calc(100dvh - 64px)', background: '#333' }}>
           <Cropper
             image={selectedImage}
             crop={crop}

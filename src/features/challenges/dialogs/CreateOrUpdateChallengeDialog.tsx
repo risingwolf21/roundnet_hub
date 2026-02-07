@@ -49,7 +49,7 @@ const EMPTY_CHALLENGE: Challenge = {
   max_points_per_day: 1,
   category_enabled: false,
   comments_enabled: false,
-  show_all_members: false
+  show_all_members: false,
 };
 
 const Content = ({ payload, onClose }: DialogProps<CreateChallengePayload, Challenge | null>) => {
@@ -61,7 +61,7 @@ const Content = ({ payload, onClose }: DialogProps<CreateChallengePayload, Chall
   const { data: groups = [], isLoading } = useGroups();
 
   const selectedGroup = useMemo(() => {
-    return groups.find(g => g.id === data.group) ?? null;
+    return groups.find((g) => g.id === data.group) ?? null;
   }, [groups, data.group]);
 
   return (
@@ -160,7 +160,9 @@ const Content = ({ payload, onClose }: DialogProps<CreateChallengePayload, Chall
             {groups
               .filter((x) => x.user_group_role === 'admin')
               .map((x) => (
-                <MenuItem key={x.id} value={x.id}>{x.name}</MenuItem>
+                <MenuItem key={x.id} value={x.id}>
+                  {x.name}
+                </MenuItem>
               ))}
             {isLoading && <MenuItem value="loading">Wird geladen...</MenuItem>}
             {!isLoading && !selectedGroup && <MenuItem value="none">Keine</MenuItem>}
@@ -179,40 +181,47 @@ const Content = ({ payload, onClose }: DialogProps<CreateChallengePayload, Chall
           Optionale Einstellungen
         </ListSubheader>
 
-        <ListItem sx={{ pt: 0, pb: 0 }} key={'maxPointsPerWeek'}
-          secondaryAction={data.max_points_per_week && <Box sx={{ width: '100%', display: 'flex', alignItems: 'center' }}>
-            <Box sx={{ display: 'flex', flexDirection: 'row' }}>
-              <IconButton
-                disableRipple
-                disabled={data.max_points_per_week <= 1}
-                onClick={(event) => {
-                  setData({
-                    ...data,
-                    max_points_per_week: (data.max_points_per_week ?? 1) - 1,
-                  })
-                  event.stopPropagation();
-                }}
-              >
-                <Remove fontSize="inherit" sx={{ fontSize: '28px' }} />
-              </IconButton>
-              <Typography sx={{ p: 1, fontSize: '20px', color: 'rgba(0,0,0,0.54)' }}>
-                {data.max_points_per_week}
-              </Typography>
-              <IconButton
-                disableRipple
-                disabled={data.max_points_per_week === null}
-                onClick={(event) => {
-                  setData({
-                    ...data,
-                    max_points_per_week: (data.max_points_per_week ?? 0) + 1,
-                  })
-                  event.stopPropagation();
-                }}
-              >
-                <Add fontSize="inherit" sx={{ fontSize: '28px' }} />
-              </IconButton>
-            </Box>
-          </Box>}>
+        <ListItem
+          sx={{ pt: 0, pb: 0 }}
+          key={'maxPointsPerWeek'}
+          secondaryAction={
+            data.max_points_per_week && (
+              <Box sx={{ width: '100%', display: 'flex', alignItems: 'center' }}>
+                <Box sx={{ display: 'flex', flexDirection: 'row' }}>
+                  <IconButton
+                    disableRipple
+                    disabled={data.max_points_per_week <= 1}
+                    onClick={(event) => {
+                      setData({
+                        ...data,
+                        max_points_per_week: (data.max_points_per_week ?? 1) - 1,
+                      });
+                      event.stopPropagation();
+                    }}
+                  >
+                    <Remove fontSize="inherit" sx={{ fontSize: '28px' }} />
+                  </IconButton>
+                  <Typography sx={{ p: 1, fontSize: '20px', color: 'rgba(0,0,0,0.54)' }}>
+                    {data.max_points_per_week}
+                  </Typography>
+                  <IconButton
+                    disableRipple
+                    disabled={data.max_points_per_week === null}
+                    onClick={(event) => {
+                      setData({
+                        ...data,
+                        max_points_per_week: (data.max_points_per_week ?? 0) + 1,
+                      });
+                      event.stopPropagation();
+                    }}
+                  >
+                    <Add fontSize="inherit" sx={{ fontSize: '28px' }} />
+                  </IconButton>
+                </Box>
+              </Box>
+            )
+          }
+        >
           <ListItemAvatar>
             <Checkbox
               sx={{ pl: 0 }}
@@ -225,46 +234,58 @@ const Content = ({ payload, onClose }: DialogProps<CreateChallengePayload, Chall
               }
             />
           </ListItemAvatar>
-          <ListItemText primary="Maximale Punkte pro Woche" secondary="Wie viele Punkte können pro Woche maximal erreicht werden?" />
+          <ListItemText
+            primary="Maximale Punkte pro Woche"
+            secondary="Wie viele Punkte können pro Woche maximal erreicht werden?"
+          />
         </ListItem>
 
-        <ListItem sx={{ pt: 0, pb: 0 }} key={'maxPointsPerDay'}
-          secondaryAction={data.max_points_per_day && <Box sx={{ width: '100%', display: 'flex', alignItems: 'center' }}>
-            <Box sx={{ display: 'flex', flexDirection: 'row' }}>
-              <IconButton
-                disableRipple
-                disabled={data.max_points_per_day <= 1}
-                onClick={(event) => {
-                  setData({
-                    ...data,
-                    max_points_per_day: (data.max_points_per_day ?? 1) - 1,
-                  })
-                  event.stopPropagation();
-                }}
-              >
-                <Remove fontSize="inherit" sx={{ fontSize: '28px' }} />
-              </IconButton>
-              <Typography sx={{ p: 1, fontSize: '20px', color: 'rgba(0,0,0,0.54)' }}>
-                {data.max_points_per_day}
-              </Typography>
-              <IconButton
-                disableRipple
-                disabled={data.max_points_per_day === null}
-                onClick={(event) => {
-                  setData({
-                    ...data,
-                    max_points_per_day: (data.max_points_per_day ?? 0) + 1,
-                  })
-                  event.stopPropagation();
-                }}
-              >
-                <Add fontSize="inherit" sx={{ fontSize: '28px' }} />
-              </IconButton>
-            </Box>
-          </Box>}>
-          <ListItemAvatar>
-          </ListItemAvatar>
-          <ListItemText primary="Maximale Punkte pro Tag" secondary="Wie viele Punkte können pro Tag maximal erreicht werden?" />
+        <ListItem
+          sx={{ pt: 0, pb: 0 }}
+          key={'maxPointsPerDay'}
+          secondaryAction={
+            data.max_points_per_day && (
+              <Box sx={{ width: '100%', display: 'flex', alignItems: 'center' }}>
+                <Box sx={{ display: 'flex', flexDirection: 'row' }}>
+                  <IconButton
+                    disableRipple
+                    disabled={data.max_points_per_day <= 1}
+                    onClick={(event) => {
+                      setData({
+                        ...data,
+                        max_points_per_day: (data.max_points_per_day ?? 1) - 1,
+                      });
+                      event.stopPropagation();
+                    }}
+                  >
+                    <Remove fontSize="inherit" sx={{ fontSize: '28px' }} />
+                  </IconButton>
+                  <Typography sx={{ p: 1, fontSize: '20px', color: 'rgba(0,0,0,0.54)' }}>
+                    {data.max_points_per_day}
+                  </Typography>
+                  <IconButton
+                    disableRipple
+                    disabled={data.max_points_per_day === null}
+                    onClick={(event) => {
+                      setData({
+                        ...data,
+                        max_points_per_day: (data.max_points_per_day ?? 0) + 1,
+                      });
+                      event.stopPropagation();
+                    }}
+                  >
+                    <Add fontSize="inherit" sx={{ fontSize: '28px' }} />
+                  </IconButton>
+                </Box>
+              </Box>
+            )
+          }
+        >
+          <ListItemAvatar></ListItemAvatar>
+          <ListItemText
+            primary="Maximale Punkte pro Tag"
+            secondary="Wie viele Punkte können pro Tag maximal erreicht werden?"
+          />
         </ListItem>
 
         <ListItem sx={{ pt: 0, pb: 0 }} key={'endDate'}>
@@ -296,7 +317,7 @@ const Content = ({ payload, onClose }: DialogProps<CreateChallengePayload, Chall
             value={formatDateFromDatabase(data.end_date)}
           />
         </ListItem>
-        <ListItem key={"show_all_members"}>
+        <ListItem key={'show_all_members'}>
           <ListItemAvatar>
             <Checkbox
               sx={{ pl: 0 }}
@@ -311,7 +332,7 @@ const Content = ({ payload, onClose }: DialogProps<CreateChallengePayload, Chall
           </ListItemAvatar>
           <ListItemText primary="Zeigt alle Teilnehmer der Challenge an (auch mit 0 Punkten)" />
         </ListItem>
-        <ListItem key={"comments_enabled"}>
+        <ListItem key={'comments_enabled'}>
           <ListItemAvatar>
             <Checkbox
               sx={{ pl: 0 }}
@@ -326,7 +347,7 @@ const Content = ({ payload, onClose }: DialogProps<CreateChallengePayload, Chall
           </ListItemAvatar>
           <ListItemText primary="Kommentare aktiviert" />
         </ListItem>
-        <ListItem key={"category_enabled"}>
+        <ListItem key={'category_enabled'}>
           <ListItemAvatar>
             <Checkbox
               sx={{ pl: 0 }}

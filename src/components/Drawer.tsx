@@ -597,9 +597,7 @@ export const Drawer = ({ open, onClose, onOpen }: Props) => {
 
     const readyPromise = navigator.serviceWorker.ready;
 
-    const timeoutPromise = new Promise<null>((resolve) =>
-      setTimeout(() => resolve(null), timeoutMs)
-    );
+    const timeoutPromise = new Promise<null>((resolve) => setTimeout(() => resolve(null), timeoutMs));
 
     // Wenn timeout gewinnt → null
     return Promise.race([readyPromise, timeoutPromise]) as Promise<ServiceWorkerRegistration | null>;
@@ -623,7 +621,7 @@ export const Drawer = ({ open, onClose, onOpen }: Props) => {
 
           await queryClient.invalidateQueries();
           window.location.reload();
-          console.log("App updated.");
+          console.log('App updated.');
         } catch (e) {
           console.error('Error updating app:', e);
         }

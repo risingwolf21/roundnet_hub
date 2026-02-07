@@ -382,9 +382,7 @@ const DialogContent = ({ payload, open, onClose }: DialogProps<EditEntryDialogPa
                   <JsonAwareTextField
                     label={x.column_name}
                     value={updatedObject[x.column_name] ?? value}
-                    onCommit={(next) =>
-                      setUpdatedObject((prev: any) => ({ ...prev, [x.column_name]: next }))
-                    }
+                    onCommit={(next) => setUpdatedObject((prev: any) => ({ ...prev, [x.column_name]: next }))}
                   />
                 </ListItem>
               );
@@ -416,7 +414,9 @@ const DialogContent = ({ payload, open, onClose }: DialogProps<EditEntryDialogPa
                         value={updatedObject[x.column_name] ?? value ?? ''}
                       >
                         {enums.get(enumType)?.map((y) => (
-                          <MenuItem key={y} value={y}>{y}</MenuItem>
+                          <MenuItem key={y} value={y}>
+                            {y}
+                          </MenuItem>
                         ))}
                         <MenuItem value={''}></MenuItem>
                       </Select>

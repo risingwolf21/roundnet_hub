@@ -56,12 +56,13 @@ export const useAllUsersAsAdmin = () =>
     queryFn: () => AdminUsersRepository.fetchAllUsersWithGroups(),
   });
 
-export const useInfiniteDrinkHistory = () => useInfiniteQuery({
-  queryKey: adminKeys.history(),
-  queryFn: AdminDrinksRepository.fetchAdminHistory,
-  getNextPageParam: (lastPage) => lastPage.nextPage,
-  initialPageParam: 0,
-});
+export const useInfiniteDrinkHistory = () =>
+  useInfiniteQuery({
+    queryKey: adminKeys.history(),
+    queryFn: AdminDrinksRepository.fetchAdminHistory,
+    getNextPageParam: (lastPage) => lastPage.nextPage,
+    initialPageParam: 0,
+  });
 
 export const useAllPayments = () =>
   useQuery<FullPayment[]>({

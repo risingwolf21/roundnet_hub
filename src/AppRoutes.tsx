@@ -128,7 +128,6 @@ const createRouter = (user: UserWithGroups | null) =>
             {
               path: '/help',
               element: <AppInformation />,
-
             },
             {
               path: '/home',

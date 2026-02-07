@@ -9,13 +9,7 @@ import List from '@mui/material/List';
 import groupBy from 'lodash.groupby';
 
 const AdminHistoryScreen = () => {
-  const {
-    data: history,
-    isLoading,
-    hasNextPage,
-    fetchNextPage,
-    isFetchingNextPage,
-  } = useInfiniteDrinkHistory();
+  const { data: history, isLoading, hasNextPage, fetchNextPage, isFetchingNextPage } = useInfiniteDrinkHistory();
 
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
 

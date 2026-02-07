@@ -22,11 +22,7 @@ type RecurringEventsProps = {
 };
 
 const RecurringEventsProvider = () => {
-  const {
-    data: recurringEvents = [],
-    isLoading,
-    refetch,
-  } = useRecurringEvents();
+  const { data: recurringEvents = [], isLoading, refetch } = useRecurringEvents();
 
   return (
     <Layout appBarConfig={{ navigateBackPath: '/training/list' }}>

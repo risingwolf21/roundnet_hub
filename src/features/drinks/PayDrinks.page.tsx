@@ -10,7 +10,8 @@ const PayDrinks = () => {
   const { user } = useGrants();
   const result = usePaymentHistory(user.id);
 
-  const amountToPay = (result.data ?? []).filter((x) => !x.voucher).reduce((prev, curr) => prev + (curr.amount ?? 0), 0) ?? 0;
+  const amountToPay =
+    (result.data ?? []).filter((x) => !x.voucher).reduce((prev, curr) => prev + (curr.amount ?? 0), 0) ?? 0;
 
   return (
     <Layout>

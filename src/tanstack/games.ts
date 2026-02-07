@@ -12,7 +12,7 @@ export const gamesKeys = {
   match: (matchId?: string) => [...gamesKeys.matches(), matchId] as const,
   players: () => [...gamesKeys.all, 'players'] as const,
   teams: () => [...gamesKeys.all, 'teams'] as const,
-}
+};
 
 export const useMatch = (matchId?: string) =>
   useQuery({
@@ -219,15 +219,9 @@ export const useDeleteMatch = (matchId?: string) =>
   useMutation({
     mutationFn: async () => {
       if (!matchId) {
-        throw new Error("Match not found")
+        throw new Error('Match not found');
       }
-      const result = await supabase
-        .schema('games')
-        .from('match')
-        .delete()
-        .eq("id", matchId)
-        .select("*")
-        .throwOnError();
+      const result = await supabase.schema('games').from('match').delete().eq('id', matchId).select('*').throwOnError();
 
       return result.data;
     },
@@ -237,7 +231,7 @@ export const useDeleteMatch = (matchId?: string) =>
       const previousMatches = queryClient.getQueryData<FullUserMatch[]>(gamesKeys.matches());
 
       if (previousMatches) {
-        const newMatches = previousMatches.filter(x => x.id !== matchId);
+        const newMatches = previousMatches.filter((x) => x.id !== matchId);
         queryClient.setQueryData<FullUserMatch[]>(gamesKeys.matches(), newMatches);
       }
 

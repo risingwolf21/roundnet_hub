@@ -20,7 +20,12 @@ type InfiniteScrollListProps = PropsWithChildren & {
   >;
 };
 
-export const InfiniteScrollList = ({ children, hasNextPage, isFetchingNextPage, fetchNextPage }: InfiniteScrollListProps) => {
+export const InfiniteScrollList = ({
+  children,
+  hasNextPage,
+  isFetchingNextPage,
+  fetchNextPage,
+}: InfiniteScrollListProps) => {
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {

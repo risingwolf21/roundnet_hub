@@ -102,7 +102,7 @@ export const useInsertHistoryEntryMutation = (user: User) => {
           ...error,
           userId: user.id,
           userName: user.name,
-          drinks: variables.drinks
+          drinks: variables.drinks,
         },
         tags: { type: 'InsertHistoryError', scope: 'drinks' },
       });
@@ -145,7 +145,7 @@ export const useUpdateHistoryEntryMutation = (user: User) =>
           ...error,
           userId: user.id,
           userName: user.name,
-          drinks: variables
+          drinks: variables,
         },
         tags: { type: 'UpdateHistoryEntry', scope: 'drinks' },
       });

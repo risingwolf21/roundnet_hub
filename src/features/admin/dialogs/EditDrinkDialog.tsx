@@ -36,7 +36,6 @@ type EditDrinkDialogProps = {
 };
 
 const EditDrinkDialog = ({ drink, onDrinkEditFinished, open, handleClose, drinkHistory }: EditDrinkDialogProps) => {
-
   const dialogs = useDialogs();
 
   const [croppedImage, setCroppedImage] = useState<string | null>(null);

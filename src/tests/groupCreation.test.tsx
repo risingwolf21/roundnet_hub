@@ -2,10 +2,16 @@ import { supabase } from '@/lib/supabase';
 import { expect, test } from 'vitest';
 import { SETUP } from './setupTests';
 
-
 test('main group is joinable without request', async () => {
-  const { data, error } = await supabase.from('event_group')
-    .insert({ id: SETUP.main_group.id, name: SETUP.main_group.name, visible: true, is_public: true, need_request_to_join: false })
+  const { data, error } = await supabase
+    .from('event_group')
+    .insert({
+      id: SETUP.main_group.id,
+      name: SETUP.main_group.name,
+      visible: true,
+      is_public: true,
+      need_request_to_join: false,
+    })
     .select('*');
 
   expect(error).toBeNull();

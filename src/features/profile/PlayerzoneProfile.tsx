@@ -143,7 +143,7 @@ const PlayerzoneProfileDialog = () => {
               <ListItemAvatar sx={{ flexDirection: 'row', display: 'flex', alignItems: 'center' }}>
                 <Link sx={{ color: 'rgba(0,0,0,0.54)' }} />
               </ListItemAvatar>
-              <Box sx={{ display: "flex", flexDirection: "row", width: "100%", alignItems: "center" }}>
+              <Box sx={{ display: 'flex', flexDirection: 'row', width: '100%', alignItems: 'center' }}>
                 <TextField
                   sx={{ flexGrow: 1 }}
                   multiline
@@ -154,7 +154,7 @@ const PlayerzoneProfileDialog = () => {
                   label="Playerzone Link/URL"
                   margin="normal"
                 />
-                <Box sx={{ ml: 1, display: "flex", flexDirection: "row", alignItems: "center" }}>
+                <Box sx={{ ml: 1, display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
                   <IconButton onClick={() => dialogs.open(HowToGetPlayerLinkDialog)}>
                     <Info />
                   </IconButton>

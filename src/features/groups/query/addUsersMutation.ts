@@ -16,7 +16,7 @@ export const useAddUsersMutation = (group: Group | null) =>
           newUsers.map((x) => ({
             user: x.id,
             group: group.id,
-            role: "user" as GroupRole,
+            role: 'user' as GroupRole,
           }))
         )
         .select('*')
