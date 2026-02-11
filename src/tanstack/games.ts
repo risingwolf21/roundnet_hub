@@ -161,22 +161,25 @@ export const useCreateMatch = () =>
 
 export const useUpsertSetsToMatch = (matchId: string) =>
   useMutation({
-    mutationFn: async ({ sets }: { sets: MatchSet[] }) => {
+    mutationFn: async ({ sets }: { sets: GamesTable<'sets'>[] }) => {
       const result = await supabase
         .schema('games')
         .from('sets')
         .upsert(
-          sets.map((x) => ({
-            set_number: x.set_number,
-            match: matchId,
-            team_a_score: x.team_a_score,
-            team_b_score: x.team_b_score,
-          }))
+          sets
         )
         .select('*')
         .throwOnError();
 
-      return result.data;
+      const result2 = await supabase
+        .schema('games')
+        .from('sets')
+        .delete()
+        .not('id', 'in', `(${sets.map((x) => `${x.id}`).join(',')})`)
+        .eq('match', matchId)
+        .throwOnError();
+
+      return { result: result.data, result2: result2.data };
     },
     onMutate: async ({ sets }) => {
       await queryClient.cancelQueries({ queryKey: gamesKeys.matches() });

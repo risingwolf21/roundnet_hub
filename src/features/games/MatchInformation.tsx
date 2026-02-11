@@ -8,6 +8,7 @@ import { useNavigate, useParams } from 'react-router';
 import { Has } from '@/hooks/useGrants';
 import AccountBox from '@mui/icons-material/AccountBox';
 import Delete from '@mui/icons-material/Delete';
+import Edit from '@mui/icons-material/Edit';
 import Alert from '@mui/material/Alert';
 import Avatar from '@mui/material/Avatar';
 import Box from '@mui/material/Box';
@@ -16,6 +17,7 @@ import CardActionArea from '@mui/material/CardActionArea';
 import CardContent from '@mui/material/CardContent';
 import Chip from '@mui/material/Chip';
 import Divider from '@mui/material/Divider';
+import Fab from '@mui/material/Fab';
 import ListItem from '@mui/material/ListItem';
 import ListItemAvatar from '@mui/material/ListItemAvatar';
 import ListItemButton from '@mui/material/ListItemButton';
@@ -23,6 +25,7 @@ import ListItemText from '@mui/material/ListItemText';
 import Skeleton from '@mui/material/Skeleton';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
+import { ReportSetsDialog } from './dialogs/ReportSetsDialog';
 
 type Props = {
   title: string;
@@ -279,6 +282,21 @@ const MatchInformation = () => {
           p2={match.player_2b}
           rated={match.rated}
         />
+
+        <Has perm={'games.update.score'}>
+          <Fab sx={{
+            background: 'primary.light',
+            position: 'fixed',
+            right: '16px',
+            bottom: 'calc(16px + env(safe-area-inset-bottom))',
+            mb: '16px',
+          }}
+            onClick={() => {
+              dialogs.open(ReportSetsDialog, { matchId: match.id, team_a_name: match.team_a.name, team_b_name: match.team_b.name, sets: match.sets });
+            }}>
+            <Edit />
+          </Fab>
+        </Has>
 
         <Has perm={'games.delete.own'}>
           <Card sx={{ color: 'red', borderRadius: 2, py: 0, px: 0, m: 1 }}>
