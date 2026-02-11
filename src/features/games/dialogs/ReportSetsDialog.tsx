@@ -1,11 +1,6 @@
 import { customEnLocale } from '@/lib/date-fns';
 import { useUpsertSetsToMatch } from '@/tanstack/games';
-import { LocalizationProvider } from '@mui/x-date-pickers';
-import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
-import { captureException } from '@sentry/react';
-import { DialogProps, NotificationsProvider, useNotifications } from '@toolpad/core';
-import { useState } from 'react';
-
+import { formatDateToDatabase } from '@/utils';
 import Close from '@mui/icons-material/Close';
 import Delete from '@mui/icons-material/Delete';
 import AppBar from '@mui/material/AppBar';
@@ -18,6 +13,12 @@ import ListItem from '@mui/material/ListItem';
 import TextField from '@mui/material/TextField';
 import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
+import { LocalizationProvider } from '@mui/x-date-pickers';
+import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
+import { captureException } from '@sentry/react';
+import { DialogProps, NotificationsProvider, useNotifications } from '@toolpad/core';
+import { useState } from 'react';
+import { v4 as uuid } from 'uuid';
 
 type ReportSetsDialogProps = {
   matchId: string;
@@ -30,7 +31,7 @@ const Content = ({ payload, onClose }: DialogProps<ReportSetsDialogProps, MatchS
   const notifications = useNotifications();
 
   const [sets, setSets] = useState<MatchSet[]>(
-    payload.sets ?? [{ id: '0', created_at: '', set_number: 1, match: '', team_a_score: 0, team_b_score: 0 }]
+    () => payload.sets?.map((x, i) => ({ ...x, set_number: i + 1 })) ?? [{ id: uuid(), created_at: formatDateToDatabase(new Date()), set_number: 1, match: payload.matchId, team_a_score: 0, team_b_score: 0 }]
   );
 
   const upsertSetsToMatch = useUpsertSetsToMatch(payload.matchId);
@@ -51,7 +52,7 @@ const Content = ({ payload, onClose }: DialogProps<ReportSetsDialogProps, MatchS
               upsertSetsToMatch.mutate(
                 { sets },
                 {
-                  onSuccess: (result) => onClose(result),
+                  onSuccess: (result) => onClose(result.result),
                   onError: (error) => {
                     captureException(error);
                     notifications.show('Die Sätze konnten nicht gespeichert werden.', { severity: 'error' });
@@ -91,7 +92,7 @@ const Content = ({ payload, onClose }: DialogProps<ReportSetsDialogProps, MatchS
           </>
         </ListItem>
         {sets.map((x, index) => (
-          <ListItem divider disableGutters disablePadding>
+          <ListItem key={x.id} divider disableGutters disablePadding>
             <>
               <Grid size={5} sx={{ p: 2 }}>
                 <TextField
@@ -119,7 +120,11 @@ const Content = ({ payload, onClose }: DialogProps<ReportSetsDialogProps, MatchS
               </Grid>
               <Grid size={2} sx={{ p: 2 }}>
                 {index > 0 && (
-                  <IconButton onClick={() => setSets([...sets.filter((y) => y.set_number !== x.set_number)])}>
+                  <IconButton onClick={() => setSets([
+                    ...sets
+                      .filter((y) => y.set_number !== x.set_number)
+                      .map((y, i) => ({ ...y, set_number: i + 1 }))
+                  ])}>
                     <Delete />
                   </IconButton>
                 )}
@@ -133,10 +138,10 @@ const Content = ({ payload, onClose }: DialogProps<ReportSetsDialogProps, MatchS
               setSets([
                 ...sets,
                 {
-                  id: (sets.length + 1).toString(),
-                  created_at: '',
+                  id: uuid(),
+                  created_at: formatDateToDatabase(new Date()),
                   set_number: sets.length + 1,
-                  match: '',
+                  match: payload.matchId,
                   team_a_score: 0,
                   team_b_score: 0,
                 },

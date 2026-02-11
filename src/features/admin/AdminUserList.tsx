@@ -74,9 +74,7 @@ const AdminUserList = () => {
                 x.email?.toLowerCase().includes(searchString.toLowerCase()) ||
                 x.name?.toLowerCase().includes(searchString.toLowerCase())
             )
-            .map((user) => (
-              <AdminUserItem key={'user' + user.id} user={user} onEditClick={() => editUser(user)} />
-            ))}
+            .map((user) => <AdminUserItem key={'user' + user.id} user={user} onEditClick={() => editUser(user)} />)}
       </List>
       {currentUser && (
         <EditUserDialog

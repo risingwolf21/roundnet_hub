@@ -113,11 +113,12 @@ const ChallengeList = ({
           const result = await dialogs.open(CreateOrUpdateChallengeDialog, { user });
           if (result) {
             await insertChallengeMutation.mutateAsync(result, {
-              onError: (error) => notifications.show('Challenge konnte nicht erstellt werden. ' + error.message, { severity: 'error' }),
+              onError: (error) =>
+                notifications.show('Challenge konnte nicht erstellt werden. ' + error.message, { severity: 'error' }),
               onSuccess: (data) => {
                 notifications.show('Challenge wurde erfolgreich erstellt.', { severity: 'success' });
                 navigate('/challenges/' + data.id);
-              }
+              },
             });
           }
         }}

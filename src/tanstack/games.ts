@@ -12,7 +12,7 @@ export const gamesKeys = {
   match: (matchId?: string) => [...gamesKeys.matches(), matchId] as const,
   players: () => [...gamesKeys.all, 'players'] as const,
   teams: () => [...gamesKeys.all, 'teams'] as const,
-}
+};
 
 export const useMatch = (matchId?: string) =>
   useQuery({
@@ -161,22 +161,25 @@ export const useCreateMatch = () =>
 
 export const useUpsertSetsToMatch = (matchId: string) =>
   useMutation({
-    mutationFn: async ({ sets }: { sets: MatchSet[] }) => {
+    mutationFn: async ({ sets }: { sets: GamesTable<'sets'>[] }) => {
       const result = await supabase
         .schema('games')
         .from('sets')
         .upsert(
-          sets.map((x) => ({
-            set_number: x.set_number,
-            match: matchId,
-            team_a_score: x.team_a_score,
-            team_b_score: x.team_b_score,
-          }))
+          sets
         )
         .select('*')
         .throwOnError();
 
-      return result.data;
+      const result2 = await supabase
+        .schema('games')
+        .from('sets')
+        .delete()
+        .not('id', 'in', `(${sets.map((x) => `${x.id}`).join(',')})`)
+        .eq('match', matchId)
+        .throwOnError();
+
+      return { result: result.data, result2: result2.data };
     },
     onMutate: async ({ sets }) => {
       await queryClient.cancelQueries({ queryKey: gamesKeys.matches() });
@@ -219,15 +222,9 @@ export const useDeleteMatch = (matchId?: string) =>
   useMutation({
     mutationFn: async () => {
       if (!matchId) {
-        throw new Error("Match not found")
+        throw new Error('Match not found');
       }
-      const result = await supabase
-        .schema('games')
-        .from('match')
-        .delete()
-        .eq("id", matchId)
-        .select("*")
-        .throwOnError();
+      const result = await supabase.schema('games').from('match').delete().eq('id', matchId).select('*').throwOnError();
 
       return result.data;
     },
@@ -237,7 +234,7 @@ export const useDeleteMatch = (matchId?: string) =>
       const previousMatches = queryClient.getQueryData<FullUserMatch[]>(gamesKeys.matches());
 
       if (previousMatches) {
-        const newMatches = previousMatches.filter(x => x.id !== matchId);
+        const newMatches = previousMatches.filter((x) => x.id !== matchId);
         queryClient.setQueryData<FullUserMatch[]>(gamesKeys.matches(), newMatches);
       }
 

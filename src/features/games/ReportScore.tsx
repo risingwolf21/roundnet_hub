@@ -4,8 +4,10 @@ import { captureException } from '@sentry/react';
 import { useNotifications } from '@toolpad/core/useNotifications';
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
+import { v4 as uuid } from 'uuid';
 import { useApplication } from '../auth/ApplicationContext';
 
+import { formatDateToDatabase } from '@/utils';
 import Delete from '@mui/icons-material/Delete';
 import Save from '@mui/icons-material/Save';
 import Autocomplete from '@mui/material/Autocomplete';
@@ -247,7 +249,7 @@ const ReportScore = () => {
 
           <List sx={{ width: '100%' }}>
             {sets.map((x) => (
-              <ListItem divider disableGutters disablePadding>
+              <ListItem key={x.id} divider disableGutters disablePadding>
                 <>
                   <Grid size={5} sx={{ p: 2 }}>
                     <TextField
@@ -256,9 +258,8 @@ const ReportScore = () => {
                       value={x.team_a_score.toString()}
                       onChange={(e) => {
                         setSets([
-                          ...sets.filter((y) => y.set_number !== x.set_number),
-                          { ...x, team_a_score: Number(e.target.value) },
-                        ]);
+                          ...sets.map((y) => y.set_number !== x.set_number ? y : { ...x, team_a_score: Number(e.target.value) }),
+                        ])
                       }}
                       label={`Satz ${x.set_number} - Team A`}
                     />
@@ -270,15 +271,18 @@ const ReportScore = () => {
                       value={x.team_b_score.toString()}
                       onChange={(e) =>
                         setSets([
-                          ...sets.filter((y) => y.set_number !== x.set_number),
-                          { ...x, team_b_score: Number(e.target.value) },
+                          ...sets.map((y) => y.set_number !== x.set_number ? y : { ...x, team_b_score: Number(e.target.value) }),
                         ])
                       }
                       label={`Satz ${x.set_number} - Team B`}
                     />
                   </Grid>
                   <Grid size={2} sx={{ p: 2 }}>
-                    <IconButton onClick={() => setSets([...sets.filter((y) => y.set_number !== x.set_number)])}>
+                    <IconButton onClick={() => setSets([
+                      ...sets
+                        .filter((y) => y.set_number !== x.set_number)
+                        .map((y, i) => ({ ...y, set_number: i + 1 }))
+                    ])}>
                       <Delete />
                     </IconButton>
                   </Grid>
@@ -292,8 +296,8 @@ const ReportScore = () => {
                 setSets([
                   ...sets,
                   {
-                    id: (sets.length + 1).toString(),
-                    created_at: '',
+                    id: uuid(),
+                    created_at: formatDateToDatabase(new Date()),
                     set_number: sets.length + 1,
                     match: '',
                     team_a_score: 0,

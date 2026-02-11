@@ -19,15 +19,8 @@ type ChallengeActivityListProps = {
   challenge: Challenge;
 };
 
-export const ChallengeActivityList = ({
-  challenge
-}: ChallengeActivityListProps) => {
-  const {
-    data: stats,
-    fetchNextPage,
-    isFetchingNextPage,
-    hasNextPage,
-  } = useInfiniteChallengeStats(challenge.id);
+export const ChallengeActivityList = ({ challenge }: ChallengeActivityListProps) => {
+  const { data: stats, fetchNextPage, isFetchingNextPage, hasNextPage } = useInfiniteChallengeStats(challenge.id);
 
   const sortedEntries = useMemo(() => {
     const grouped = groupBy(
@@ -39,7 +32,11 @@ export const ChallengeActivityList = ({
 
   return (
     <Stack spacing={1} direction="column" sx={{ p: 1, mb: 12 }}>
-      <InfiniteScrollList hasNextPage={hasNextPage} isFetchingNextPage={isFetchingNextPage} fetchNextPage={fetchNextPage}>
+      <InfiniteScrollList
+        hasNextPage={hasNextPage}
+        isFetchingNextPage={isFetchingNextPage}
+        fetchNextPage={fetchNextPage}
+      >
         {sortedEntries.map(([date, entries]: [string, ChallengeStatWithUser[]]) => (
           <Stack spacing={1} direction="column" key={date}>
             <Typography sx={{ textAlign: 'center', color: 'rgba(0,0,0,0.6)' }}>{date}</Typography>
@@ -59,7 +56,7 @@ export const ChallengeActivityList = ({
                   {x.image_url && (
                     <CardMedia
                       component="img"
-                      loading='lazy'
+                      loading="lazy"
                       sx={{ width: '100%', maxWidth: '50%', maxHeight: '250px' }}
                       image={x.image_url}
                       alt="Challenge image"

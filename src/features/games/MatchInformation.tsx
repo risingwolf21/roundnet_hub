@@ -8,6 +8,7 @@ import { useNavigate, useParams } from 'react-router';
 import { Has } from '@/hooks/useGrants';
 import AccountBox from '@mui/icons-material/AccountBox';
 import Delete from '@mui/icons-material/Delete';
+import Edit from '@mui/icons-material/Edit';
 import Alert from '@mui/material/Alert';
 import Avatar from '@mui/material/Avatar';
 import Box from '@mui/material/Box';
@@ -16,6 +17,7 @@ import CardActionArea from '@mui/material/CardActionArea';
 import CardContent from '@mui/material/CardContent';
 import Chip from '@mui/material/Chip';
 import Divider from '@mui/material/Divider';
+import Fab from '@mui/material/Fab';
 import ListItem from '@mui/material/ListItem';
 import ListItemAvatar from '@mui/material/ListItemAvatar';
 import ListItemButton from '@mui/material/ListItemButton';
@@ -23,6 +25,7 @@ import ListItemText from '@mui/material/ListItemText';
 import Skeleton from '@mui/material/Skeleton';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
+import { ReportSetsDialog } from './dialogs/ReportSetsDialog';
 
 type Props = {
   title: string;
@@ -280,20 +283,42 @@ const MatchInformation = () => {
           rated={match.rated}
         />
 
+        <Has perm={'games.update.score'}>
+          <Fab sx={{
+            background: 'primary.light',
+            position: 'fixed',
+            right: '16px',
+            bottom: 'calc(16px + env(safe-area-inset-bottom))',
+            mb: '16px',
+          }}
+            onClick={() => {
+              dialogs.open(ReportSetsDialog, { matchId: match.id, team_a_name: match.team_a.name, team_b_name: match.team_b.name, sets: match.sets });
+            }}>
+            <Edit />
+          </Fab>
+        </Has>
+
         <Has perm={'games.delete.own'}>
           <Card sx={{ color: 'red', borderRadius: 2, py: 0, px: 0, m: 1 }}>
             <CardActionArea sx={{ px: 1 }}>
               <ListItem
                 onClick={() =>
-                  dialogs.confirm(`Möchtest du das Spiel wirklich löschen? ${match.rated ? "Der Indexeintrag von diesem Spiel wird mit gelöscht." : ""}`, { title: "Spiel löschen" }).then((result) => {
-                    if (result) {
-                      useDeleteMatchMutation.mutate(undefined, {
-                        onSuccess: () => navigate('/matches'),
-                        onError: (error) => notifications.show("Spiel konnte nicht gelöscht werden. " + error.message, { severity: "error" })
-                      });
-
-                    }
-                  })
+                  dialogs
+                    .confirm(
+                      `Möchtest du das Spiel wirklich löschen? ${match.rated ? 'Der Indexeintrag von diesem Spiel wird mit gelöscht.' : ''}`,
+                      { title: 'Spiel löschen' }
+                    )
+                    .then((result) => {
+                      if (result) {
+                        useDeleteMatchMutation.mutate(undefined, {
+                          onSuccess: () => navigate('/matches'),
+                          onError: (error) =>
+                            notifications.show('Spiel konnte nicht gelöscht werden. ' + error.message, {
+                              severity: 'error',
+                            }),
+                        });
+                      }
+                    })
                 }
               >
                 <ListItemAvatar sx={{ flexDirection: 'row', display: 'flex', alignItems: 'center' }}>
@@ -309,55 +334,104 @@ const MatchInformation = () => {
           <Card elevation={3} sx={{ borderRadius: 2, py: 0, px: 0, mt: 1 }}>
             <CardContent sx={{ p: 0 }}>
               <Box sx={{ flexDirection: 'row', display: 'flex', justifyContent: 'space-between', px: 2, py: 1 }}>
-                <Typography sx={{ fontWeight: "bold" }}>
-                  Admin - Informationen
-                </Typography>
+                <Typography sx={{ fontWeight: 'bold' }}>Admin - Informationen</Typography>
               </Box>
               <Divider />
-              <ListItemButton dense onClick={() => navigator.clipboard.writeText(match.id).then(() => notifications.show("Erfolgreich kopiert"))}>
-                <ListItemText primary={<Typography variant="body2" style={{ userSelect: "text" }}>{match.id}</Typography>} secondary={"Match Id"} />
+              <ListItemButton
+                dense
+                onClick={() =>
+                  navigator.clipboard.writeText(match.id).then(() => notifications.show('Erfolgreich kopiert'))
+                }
+              >
+                <ListItemText
+                  primary={
+                    <Typography variant="body2" style={{ userSelect: 'text' }}>
+                      {match.id}
+                    </Typography>
+                  }
+                  secondary={'Match Id'}
+                />
               </ListItemButton>
               <Divider />
               <ListItem dense>
-                <Stack direction={"row"} spacing={2} width={"100%"}>
-                  <ListItemText sx={{ width: "50%" }} primary={match.elo_calc_log?.rg_a1_used ?? "not found"} secondary={"RG Team A - Player 1"} />
-                  <ListItemText sx={{ width: "50%" }} primary={match.elo_calc_log?.rg_b1_used ?? "not found"} secondary={"RG Team B - Player 1"} />
+                <Stack direction={'row'} spacing={2} width={'100%'}>
+                  <ListItemText
+                    sx={{ width: '50%' }}
+                    primary={match.elo_calc_log?.rg_a1_used ?? 'not found'}
+                    secondary={'RG Team A - Player 1'}
+                  />
+                  <ListItemText
+                    sx={{ width: '50%' }}
+                    primary={match.elo_calc_log?.rg_b1_used ?? 'not found'}
+                    secondary={'RG Team B - Player 1'}
+                  />
                 </Stack>
               </ListItem>
               <ListItem dense>
-                <Stack direction={"row"} spacing={2} width={"100%"}>
-                  <ListItemText sx={{ width: "50%" }} primary={match.elo_calc_log?.rg_a2_used ?? "not found"} secondary={"RG Team A - Player 2"} />
-                  <ListItemText sx={{ width: "50%" }} primary={match.elo_calc_log?.rg_b2_used ?? "not found"} secondary={"RG Team B - Player 2"} />
+                <Stack direction={'row'} spacing={2} width={'100%'}>
+                  <ListItemText
+                    sx={{ width: '50%' }}
+                    primary={match.elo_calc_log?.rg_a2_used ?? 'not found'}
+                    secondary={'RG Team A - Player 2'}
+                  />
+                  <ListItemText
+                    sx={{ width: '50%' }}
+                    primary={match.elo_calc_log?.rg_b2_used ?? 'not found'}
+                    secondary={'RG Team B - Player 2'}
+                  />
                 </Stack>
               </ListItem>
               <Divider />
               <ListItem dense>
-                <Stack direction={"row"} spacing={2} width={"100%"}>
-                  <ListItemText sx={{ width: "50%" }} primary={match.elo_calc_log?.eff_team_a.toFixed(2) ?? "not found"} secondary={"Effective Rating Team A"} />
-                  <ListItemText sx={{ width: "50%" }} primary={match.elo_calc_log?.eff_team_b.toFixed(2) ?? "not found"} secondary={"Effective Rating Team B"} />
+                <Stack direction={'row'} spacing={2} width={'100%'}>
+                  <ListItemText
+                    sx={{ width: '50%' }}
+                    primary={match.elo_calc_log?.eff_team_a.toFixed(2) ?? 'not found'}
+                    secondary={'Effective Rating Team A'}
+                  />
+                  <ListItemText
+                    sx={{ width: '50%' }}
+                    primary={match.elo_calc_log?.eff_team_b.toFixed(2) ?? 'not found'}
+                    secondary={'Effective Rating Team B'}
+                  />
                 </Stack>
               </ListItem>
               <Divider />
-              {
-                match.elo_history.map((elo) => {
-                  const player = [match.player_1a, match.player_2a, match.player_1b, match.player_2b].find(x => x?.id === elo.user);
-                  return <Stack key={elo.id}>
+              {match.elo_history.map((elo) => {
+                const player = [match.player_1a, match.player_2a, match.player_1b, match.player_2b].find(
+                  (x) => x?.id === elo.user
+                );
+                return (
+                  <Stack key={elo.id}>
                     <ListItem dense>
-                      <Stack direction={"row"} spacing={2} width={"100%"}>
-                        <ListItemText sx={{ width: "50%" }} primary={player?.name ?? "not found"} secondary={"Spieler"} primaryTypographyProps={{ fontWeight: "bold" }} />
-                        <ListItemText sx={{ width: "50%" }} primary={elo.delta.toFixed(2)} secondary={"Delta"} />
+                      <Stack direction={'row'} spacing={2} width={'100%'}>
+                        <ListItemText
+                          sx={{ width: '50%' }}
+                          primary={player?.name ?? 'not found'}
+                          secondary={'Spieler'}
+                          primaryTypographyProps={{ fontWeight: 'bold' }}
+                        />
+                        <ListItemText sx={{ width: '50%' }} primary={elo.delta.toFixed(2)} secondary={'Delta'} />
                       </Stack>
                     </ListItem>
                     <ListItem dense>
-                      <Stack direction={"row"} spacing={2} width={"100%"}>
-                        <ListItemText sx={{ width: "50%" }} primary={elo.eff_old_rating?.toFixed(2)} secondary={"Altes Rating"} />
-                        <ListItemText sx={{ width: "50%" }} primary={elo.eff_new_rating?.toFixed(2)} secondary={"Neues Rating"} />
+                      <Stack direction={'row'} spacing={2} width={'100%'}>
+                        <ListItemText
+                          sx={{ width: '50%' }}
+                          primary={elo.eff_old_rating?.toFixed(2)}
+                          secondary={'Altes Rating'}
+                        />
+                        <ListItemText
+                          sx={{ width: '50%' }}
+                          primary={elo.eff_new_rating?.toFixed(2)}
+                          secondary={'Neues Rating'}
+                        />
                       </Stack>
                     </ListItem>
                     <Divider />
                   </Stack>
-                })
-              }
+                );
+              })}
             </CardContent>
           </Card>
         </Has>

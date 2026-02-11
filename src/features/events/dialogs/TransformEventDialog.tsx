@@ -29,19 +29,15 @@ import { useTranslation } from 'react-i18next';
 import { SelectGroupDialog } from './SelectGroupDialog';
 
 export type TransformationTrigger = {
-  attending_lt?: number
-}
+  attending_lt?: number;
+};
 
 export const TransformEventDialog = ({
   payload: { event, user },
   open,
   onClose,
 }: DialogProps<{ event: EventsUserView; user: User }, 'success' | 'failure'>) => {
-  const {
-    data = null,
-    isLoading,
-    error,
-  } = useEventTransformation(event.key, open);
+  const { data = null, isLoading, error } = useEventTransformation(event.key, open);
 
   const { data: groups = [], isLoading: groupsLoading, error: groupsError } = useGroups();
 
@@ -58,15 +54,11 @@ type EventTransformationNext = {
   disableAnswerDeadline?: boolean;
 };
 
-function isNextObject(
-  next: unknown
-): next is EventTransformationNext {
-  return typeof next === "object" && next !== null && !Array.isArray(next);
+function isNextObject(next: unknown): next is EventTransformationNext {
+  return typeof next === 'object' && next !== null && !Array.isArray(next);
 }
 
-const toIntervalString = (v: unknown): string =>
-  typeof v === 'string' ? v : v == null ? '' : String(v);
-
+const toIntervalString = (v: unknown): string => (typeof v === 'string' ? v : v == null ? '' : String(v));
 
 const Content = ({
   event,
@@ -83,12 +75,13 @@ const Content = ({
   onClose: (value: 'success' | 'failure') => void;
   groups: GroupWithUserMappings[];
 }) => {
-
-  const [leadTime, setLeadTime] = useState<Duration>(() => postgresIntervalToDuration(toIntervalString(initialData?.lead_time)));
+  const [leadTime, setLeadTime] = useState<Duration>(() =>
+    postgresIntervalToDuration(toIntervalString(initialData?.lead_time))
+  );
   const [newTitle, setNewTitle] = useState<string>(() => {
     const next = initialData?.next;
 
-    if (isNextObject(next) && typeof next.title === "string") {
+    if (isNextObject(next) && typeof next.title === 'string') {
       return next.title;
     }
 
@@ -97,7 +90,7 @@ const Content = ({
   const [newDescription, setNewDescription] = useState<string>(() => {
     const next = initialData?.next;
 
-    if (isNextObject(next) && typeof next.description === "string") {
+    if (isNextObject(next) && typeof next.description === 'string') {
       return next.description;
     }
 
@@ -106,26 +99,25 @@ const Content = ({
   const [newGroup, setNewGroup] = useState<Group | null>(() => {
     const next = initialData?.next;
     let groupId;
-    if (isNextObject(next) && typeof next.group === "string") {
+    if (isNextObject(next) && typeof next.group === 'string') {
       groupId = next.group;
     } else {
       groupId = event.group?.id;
     }
 
-    return groups.find((x) => x.id === groupId) ?? null
+    return groups.find((x) => x.id === groupId) ?? null;
   });
   const [disableAnswerDeadline, setDisableAnswerDeadline] = useState<boolean>(() => {
     const next = initialData?.next;
 
-    if (isNextObject(next) && typeof next.disableAnswerDeadline === "boolean") {
+    if (isNextObject(next) && typeof next.disableAnswerDeadline === 'boolean') {
       return next.disableAnswerDeadline;
     }
 
     return false;
   });
   const [oneTime, setOneTime] = useState<boolean>(initialData?.one_time ?? true);
-  const [trigger, setTrigger] = useState<TransformationTrigger>(
-    initialData?.trigger as TransformationTrigger ?? {});
+  const [trigger, setTrigger] = useState<TransformationTrigger>((initialData?.trigger as TransformationTrigger) ?? {});
 
   const dialogs = useDialogs();
   const notifications = useNotifications();
@@ -146,26 +138,29 @@ const Content = ({
 
       if (!newDescription || newDescription.length < 1) throw new Error(t('events.creation.descriptionEmpty'));
 
-      mutation.mutate({
-        eventKey: event.key,
-        userId: user.id,
-        leadTime,
-        newTitle,
-        newDescription,
-        newGroupId: newGroup.id,
-        trigger: trigger,
-        disableAnswerDeadline,
-        oneTime
-      }, {
-        onError: (error) => {
-          const message = error instanceof Error ? (error as Error).message : 'Unknown error.';
-          notifications.show(message, { severity: 'error' });
+      mutation.mutate(
+        {
+          eventKey: event.key,
+          userId: user.id,
+          leadTime,
+          newTitle,
+          newDescription,
+          newGroupId: newGroup.id,
+          trigger: trigger,
+          disableAnswerDeadline,
+          oneTime,
         },
-        onSuccess: () => {
-          notifications.show('Die Eventreihe wurde erfolgreich transformiert.', { severity: 'success' });
-          onClose('success');
-        },
-      });
+        {
+          onError: (error) => {
+            const message = error instanceof Error ? (error as Error).message : 'Unknown error.';
+            notifications.show(message, { severity: 'error' });
+          },
+          onSuccess: () => {
+            notifications.show('Die Eventreihe wurde erfolgreich transformiert.', { severity: 'success' });
+            onClose('success');
+          },
+        }
+      );
     } catch (error: unknown) {
       const message = error instanceof Error ? (error as Error).message : 'Unknown error.';
       notifications.show(message, { severity: 'error' });
@@ -222,12 +217,7 @@ const Content = ({
           Event-Titel
         </Typography>
         <ListItem dense sx={{ pt: 0, pb: 0, mb: 2 }} key={'title2'}>
-          <TextField
-            size="small"
-            fullWidth
-            value={newTitle}
-            onChange={(e) => setNewTitle(e.target.value)}
-          />
+          <TextField size="small" fullWidth value={newTitle} onChange={(e) => setNewTitle(e.target.value)} />
         </ListItem>
         <Divider />
         <Typography sx={{ fontSize: 14, fontWeight: 'bold', m: 2 }} color="text.secondary" gutterBottom>
@@ -270,13 +260,11 @@ const Content = ({
             <Checkbox
               sx={{ pl: 0 }}
               checked={disableAnswerDeadline}
-              onChange={() =>
-                setDisableAnswerDeadline(!disableAnswerDeadline)
-              }
+              onChange={() => setDisableAnswerDeadline(!disableAnswerDeadline)}
             />
           </ListItemAvatar>
 
-          <ListItemText primary={"Anmelde Deadline entfernen?"} />
+          <ListItemText primary={'Anmelde Deadline entfernen?'} />
         </ListItem>
         <Divider />
         <Typography sx={{ fontSize: 14, fontWeight: 'bold', m: 2 }} color="text.secondary" gutterBottom>
@@ -284,55 +272,54 @@ const Content = ({
         </Typography>
         <ListItem sx={{ py: 0, mb: 2 }} key={'justOnce'}>
           <ListItemAvatar>
-            <Checkbox
-              sx={{ pl: 0 }}
-              checked={oneTime}
-              onChange={(e) =>
-                setOneTime(e.target.checked)
-              }
-            />
+            <Checkbox sx={{ pl: 0 }} checked={oneTime} onChange={(e) => setOneTime(e.target.checked)} />
           </ListItemAvatar>
 
-          <ListItemText primary={"Einmalige Ausführung?"} />
+          <ListItemText primary={'Einmalige Ausführung?'} />
         </ListItem>
         <Divider />
         <Typography sx={{ fontSize: 16, fontWeight: 'bold', m: 2 }} color="text.secondary" gutterBottom>
           Bedingung
         </Typography>
-        <ListItem dense sx={{ pt: 0, pb: 0, mb: 2 }} key={'triggerAttendees'} secondaryAction={
-          <Box sx={{ display: 'flex', flexDirection: 'row' }}>
-            <IconButton
-              disableRipple
-              onClick={(event) => {
-                if (trigger.attending_lt && trigger.attending_lt > 0) {
+        <ListItem
+          dense
+          sx={{ pt: 0, pb: 0, mb: 2 }}
+          key={'triggerAttendees'}
+          secondaryAction={
+            <Box sx={{ display: 'flex', flexDirection: 'row' }}>
+              <IconButton
+                disableRipple
+                onClick={(event) => {
+                  if (trigger.attending_lt && trigger.attending_lt > 0) {
+                    setTrigger({
+                      ...trigger,
+                      attending_lt: trigger.attending_lt - 1,
+                    });
+                  }
+                  event.stopPropagation();
+                }}
+              >
+                <Remove fontSize="inherit" sx={{ fontSize: '22px' }} />
+              </IconButton>
+              <Typography sx={{ p: 1, fontSize: '20px', color: 'rgba(0,0,0,0.54)' }}>
+                {trigger.attending_lt ?? 0}
+              </Typography>
+              <IconButton
+                disableRipple
+                onClick={(event) => {
                   setTrigger({
                     ...trigger,
-                    attending_lt: trigger.attending_lt - 1
-                  })
-                }
-                event.stopPropagation();
-              }}
-            >
-              <Remove fontSize="inherit" sx={{ fontSize: '22px' }} />
-            </IconButton>
-            <Typography sx={{ p: 1, fontSize: '20px', color: 'rgba(0,0,0,0.54)' }}>
-              {trigger.attending_lt ?? 0}
-            </Typography>
-            <IconButton
-              disableRipple
-              onClick={(event) => {
-                setTrigger({
-                  ...trigger,
-                  attending_lt: (trigger.attending_lt ?? 0) + 1
-                })
-                event.stopPropagation();
-              }}
-            >
-              <Add fontSize="inherit" sx={{ fontSize: '22px' }} />
-            </IconButton>
-          </Box>
-        }>
-          <ListItemText primary={"Teilnehmer weniger als"} />
+                    attending_lt: (trigger.attending_lt ?? 0) + 1,
+                  });
+                  event.stopPropagation();
+                }}
+              >
+                <Add fontSize="inherit" sx={{ fontSize: '22px' }} />
+              </IconButton>
+            </Box>
+          }
+        >
+          <ListItemText primary={'Teilnehmer weniger als'} />
         </ListItem>
       </Box>
     </Dialog>

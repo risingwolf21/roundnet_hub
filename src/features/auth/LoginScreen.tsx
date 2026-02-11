@@ -85,7 +85,12 @@ const LoginScreen = () => {
 
   const signUpLink = () => (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-      <Link data-testid="signup-link" href="#" variant="body2" onClick={() => navigate('/auth/signup', { replace: true })}>
+      <Link
+        data-testid="signup-link"
+        href="#"
+        variant="body2"
+        onClick={() => navigate('/auth/signup', { replace: true })}
+      >
         {'Noch keinen Account?'}
       </Link>
       <Typography sx={{ mt: 1 }}>{`Version ${APP_VERSION}-${version.slice(0, 8)}`}</Typography>

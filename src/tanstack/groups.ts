@@ -12,7 +12,7 @@ export const groupKeys = {
   joinRequested: () => [...groupKeys.all, 'joinRequested'] as const,
   single: (groupId?: string) => [...groupKeys.all, groupId] as const,
   singleForRole: (groupId: string, role: string) => [...groupKeys.all, groupId, role] as const,
-}
+};
 
 export const useRequestedUsersPerGroup = (me: User) =>
   useQuery<GroupUserMapping[]>({
@@ -100,19 +100,19 @@ export const useJoinGroup = (groupId: string, user: User, role: 'user' | 'admin'
         const newGroups = prevGroups.map((group) =>
           group.id === groupId
             ? {
-              ...group,
-              users: [
-                ...group.users,
-                {
-                  user: user,
-                  map: {
-                    group: groupId,
-                    role: role,
-                    user: user.id,
+                ...group,
+                users: [
+                  ...group.users,
+                  {
+                    user: user,
+                    map: {
+                      group: groupId,
+                      role: role,
+                      user: user.id,
+                    },
                   },
-                },
-              ],
-            }
+                ],
+              }
             : group
         );
         queryClient.setQueryData(groupKeys.all, newGroups);
@@ -325,9 +325,9 @@ export const useUpdateGroupMutation = (groupId?: string) =>
         const newGroups = prevGroups.map((x) =>
           x.id === groupId
             ? {
-              ...x,
-              ...group,
-            }
+                ...x,
+                ...group,
+              }
             : x
         );
         queryClient.setQueryData(['groups'], newGroups);

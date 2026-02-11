@@ -206,7 +206,13 @@ export function postgresIntervalToDuration(interval: string): Duration {
   let s = interval.trim();
 
   const out: Required<Duration> = {
-    years: 0, months: 0, weeks: 0, days: 0, hours: 0, minutes: 0, seconds: 0
+    years: 0,
+    months: 0,
+    weeks: 0,
+    days: 0,
+    hours: 0,
+    minutes: 0,
+    seconds: 0,
   };
 
   // 1) Zeitblock HH:MM:SS(.fff) mit optionalem Vorzeichen
@@ -220,22 +226,24 @@ export function postgresIntervalToDuration(interval: string): Duration {
   }
 
   // 2) Wert+Einheit-Paare (years/mon(s)/months/day(s)/hour(s)/minute(s)/second(s)/week(s))
-  const re = /([+-]?\d+(?:\.\d+)?)\s*(years?|year|mons?|months?|mon|month|weeks?|week|days?|day|hours?|hour|minutes?|minute|seconds?|second)\b/gi;
+  const re =
+    /([+-]?\d+(?:\.\d+)?)\s*(years?|year|mons?|months?|mon|month|weeks?|week|days?|day|hours?|hour|minutes?|minute|seconds?|second)\b/gi;
   for (const m of s.matchAll(re)) {
     const val = parseFloat(m[1]);
     const u = m[2].toLowerCase();
     if (u.startsWith('year')) out.years += val;
-    else if (u.startsWith('mon')) out.months += val;   // "mon" oder "months"
+    else if (u.startsWith('mon'))
+      out.months += val; // "mon" oder "months"
     else if (u.startsWith('week')) out.weeks += val;
     else if (u.startsWith('day')) out.days += val;
     else if (u.startsWith('hour')) out.hours += val;
     else if (u.startsWith('min')) out.minutes += val;
-    else out.seconds += val;   // seconds
+    else out.seconds += val; // seconds
   }
 
   // 3) Optional: Tage in Wochen bündeln (7er-Schritte)
   if (Math.abs(out.days) >= 7 && Number.isInteger(out.days)) {
-    const w = (out.days / 7) | 0;          // trunc toward zero
+    const w = (out.days / 7) | 0; // trunc toward zero
     out.weeks += w;
     out.days -= w * 7;
   }

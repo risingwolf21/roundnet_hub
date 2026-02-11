@@ -8,7 +8,13 @@ import { EditEventOptionsDialog } from '@/features/events/dialogs/EditEventOptio
 import { useFetchMode } from '@/hooks/useFetchMode';
 import { Has } from '@/hooks/useGrants';
 import { queryClient } from '@/lib/queryClient';
-import { eventKeys, useBringItems, useCancelTrainingMutation, useDeleteTrainingMutation, useEvent } from '@/tanstack/events';
+import {
+  eventKeys,
+  useBringItems,
+  useCancelTrainingMutation,
+  useDeleteTrainingMutation,
+  useEvent,
+} from '@/tanstack/events';
 import { useAllItems } from '@/tanstack/items';
 import { captureException } from '@sentry/react';
 import { useDialogs, useNotifications } from '@toolpad/core';

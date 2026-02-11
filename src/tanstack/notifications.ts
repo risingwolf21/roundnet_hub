@@ -200,7 +200,7 @@ export const useUpdateNotificationPreferences = (user: User) =>
           userName: user.name,
           userId: user.id,
           ...error,
-          ...variables
+          ...variables,
         },
         tags: { type: 'UpdateNotificationPerferences', scope: 'notifications' },
       });

@@ -15,7 +15,7 @@ export const challengeKeys = {
   challengeStats: (id: string) => [...challengeKeys.all, id, 'stats'] as const,
   challengeStatsForUser: (id: string, userId: string) => [...challengeKeys.all, id, 'stats', userId] as const,
   challengeInformation: (id: string) => [...challengeKeys.all, id] as const,
-}
+};
 
 export const useInfiniteChallengeStats = (challengeId: string, count: number = 20) =>
   useInfiniteQuery({
@@ -125,7 +125,7 @@ export const useIncreasePointForUserMutation = (challengeId: string) =>
       image,
       count,
       comment,
-      category
+      category,
     }: {
       user: User;
       challenge: string;
@@ -155,11 +155,11 @@ export const useIncreasePointForUserMutation = (challengeId: string) =>
           to_create_at: formatDateToDatabase(created_at)!,
           image_url: image_url ?? '',
           category,
-          comment
+          comment,
         })
         .throwOnError();
 
-      return { serverRow: result.data, image_url };
+      return { serverRow: result.data, image_url, imageFailedToUpload: !!image && !image_url };
     },
     onMutate: async ({ user, count, challenge, created_at, image }) => {
       const challengeStatId = Date.now();
@@ -167,9 +167,15 @@ export const useIncreasePointForUserMutation = (challengeId: string) =>
       await queryClient.cancelQueries({ queryKey: challengeKeys.challengeLeaderboard(challengeId) });
       await queryClient.cancelQueries({ queryKey: challengeKeys.challengeStatsForUser(challengeId, user.id) });
 
-      const previousStats = queryClient.getQueryData<InfiniteData<ChallengeStatWithUser[]>>(challengeKeys.challengeStats(challengeId));
-      const previousLeaderboard = queryClient.getQueryData<ChallengePointsView[]>(challengeKeys.challengeLeaderboard(challengeId));
-      const previousStatsForUser = queryClient.getQueryData<ChallengeStats[]>(challengeKeys.challengeStatsForUser(challengeId, user.id));
+      const previousStats = queryClient.getQueryData<InfiniteData<ChallengeStatWithUser[]>>(
+        challengeKeys.challengeStats(challengeId)
+      );
+      const previousLeaderboard = queryClient.getQueryData<ChallengePointsView[]>(
+        challengeKeys.challengeLeaderboard(challengeId)
+      );
+      const previousStatsForUser = queryClient.getQueryData<ChallengeStats[]>(
+        challengeKeys.challengeStatsForUser(challengeId, user.id)
+      );
 
       if (previousStats) {
         const newStat = {
@@ -182,20 +188,23 @@ export const useIncreasePointForUserMutation = (challengeId: string) =>
           fullUser: user,
         } as ChallengeStatWithUser;
 
-        queryClient.setQueryData<InfiniteData<{ data: ChallengeStatWithUser[], nextPage: number | undefined }>>(challengeKeys.challengeStats(challengeId), (old) => {
-          if (!old || old.pages.length === 0) {
+        queryClient.setQueryData<InfiniteData<{ data: ChallengeStatWithUser[]; nextPage: number | undefined }>>(
+          challengeKeys.challengeStats(challengeId),
+          (old) => {
+            if (!old || old.pages.length === 0) {
+              return {
+                pages: [{ data: [newStat], nextPage: undefined }],
+                pageParams: [undefined],
+              };
+            }
+
+            const [first, ...rest] = old.pages;
             return {
-              pages: [{ data: [newStat], nextPage: undefined }],
-              pageParams: [undefined],
+              pages: [{ ...first, data: [newStat, ...first.data] }, ...rest],
+              pageParams: old.pageParams,
             };
           }
-
-          const [first, ...rest] = old.pages;
-          return {
-            pages: [{ ...first, data: [newStat, ...first.data] }, ...rest],
-            pageParams: old.pageParams,
-          };
-        });
+        );
       }
 
       if (previousLeaderboard) {
@@ -208,7 +217,10 @@ export const useIncreasePointForUserMutation = (challengeId: string) =>
           }
           return x;
         });
-        queryClient.setQueryData<ChallengePointsView[]>(challengeKeys.challengeLeaderboard(challengeId), newLeaderBoard);
+        queryClient.setQueryData<ChallengePointsView[]>(
+          challengeKeys.challengeLeaderboard(challengeId),
+          newLeaderBoard
+        );
       }
       if (previousStatsForUser) {
         const newStatsForUser = [
@@ -221,7 +233,10 @@ export const useIncreasePointForUserMutation = (challengeId: string) =>
             user: user.id,
           },
         ] as ChallengeStats[];
-        queryClient.setQueryData<ChallengeStats[]>(challengeKeys.challengeStatsForUser(challengeId, user.id), newStatsForUser);
+        queryClient.setQueryData<ChallengeStats[]>(
+          challengeKeys.challengeStatsForUser(challengeId, user.id),
+          newStatsForUser
+        );
       }
 
       return { previousLeaderboard, previousStats, previousStatsForUser, tempId: challengeStatId };
@@ -232,7 +247,7 @@ export const useIncreasePointForUserMutation = (challengeId: string) =>
           ...error,
           userId: variables.user.id,
           userName: variables.user.name,
-          challengeId: variables.challenge
+          challengeId: variables.challenge,
         },
         tags: { type: 'IncreaseChallengePoint', scope: 'challenge' },
       });
@@ -243,7 +258,10 @@ export const useIncreasePointForUserMutation = (challengeId: string) =>
         queryClient.setQueryData(challengeKeys.challengeStats(challengeId), context.previousStats);
       }
       if (context?.previousStatsForUser) {
-        queryClient.setQueryData(challengeKeys.challengeStatsForUser(challengeId, variables.user.id), context.previousStatsForUser);
+        queryClient.setQueryData(
+          challengeKeys.challengeStatsForUser(challengeId, variables.user.id),
+          context.previousStatsForUser
+        );
       }
     },
     onSettled: (_data, _error, variables) => {
@@ -267,7 +285,6 @@ export const useUpdateChallengeMutation = () =>
       return result.data;
     },
     onMutate: async ({ challenge }) => {
-
       const previousChallenge = queryClient.getQueryData<Challenge>(challengeKeys.challengeInformation(challenge.id!));
 
       if (previousChallenge) {
@@ -316,11 +333,11 @@ export const useInsertChallengeMutation = () =>
           group: challenge.group,
           comments_enabled: challenge.comments_enabled,
           category_enabled: challenge.category_enabled,
-          show_all_members: challenge.show_all_members
+          show_all_members: challenge.show_all_members,
         })
         .select('*')
         .single()
-        .throwOnError()
+        .throwOnError();
 
       return result.data;
     },

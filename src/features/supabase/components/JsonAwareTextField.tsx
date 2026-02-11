@@ -7,7 +7,11 @@ function isJsonLike(v: unknown) {
 function pretty(v: unknown) {
   if (typeof v === 'undefined') return '';
   if (typeof v === 'string') return v;
-  try { return JSON.stringify(v, null, 2); } catch { return String(v); }
+  try {
+    return JSON.stringify(v, null, 2);
+  } catch {
+    return String(v);
+  }
 }
 function tryParseJson(s: string) {
   try {
@@ -20,8 +24,8 @@ function tryParseJson(s: string) {
 
 type JsonAwareTextFieldProps = {
   label?: string;
-  value: unknown;                      // kommt aus updatedObject[x.column_name]
-  onCommit: (next: unknown) => void;   // schreibt in updatedObject
+  value: unknown; // kommt aus updatedObject[x.column_name]
+  onCommit: (next: unknown) => void; // schreibt in updatedObject
   placeholder?: string;
   disabled?: boolean;
   minRows?: number;
@@ -35,7 +39,7 @@ export function JsonAwareTextField({
   disabled,
   minRows = 3,
 }: JsonAwareTextFieldProps) {
-  const displayValue = useMemo(() => (isJsonLike(value) ? pretty(value) : (value as any) ?? ''), [value]);
+  const displayValue = useMemo(() => (isJsonLike(value) ? pretty(value) : ((value as any) ?? '')), [value]);
 
   // nur im Editiermodus pflegen wir eigenen Raw-Text
   const [isEditing, setIsEditing] = useState(false);
@@ -44,7 +48,7 @@ export function JsonAwareTextField({
 
   const startEdit = () => {
     setIsEditing(true);
-    setRaw(displayValue);     // initial befüllen – kein Effect nötig
+    setRaw(displayValue); // initial befüllen – kein Effect nötig
     setError(null);
   };
 

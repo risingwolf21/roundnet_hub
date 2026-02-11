@@ -18,11 +18,7 @@ const EventInformationGames = ({ eventId }: EventInformationGamesProps) => {
   const dialogs = useDialogs();
   const { user } = useGrants();
 
-  const {
-    data: matches = [],
-    isLoading,
-    refetch,
-  } = useEventMatches(eventId);
+  const { data: matches = [], isLoading, refetch } = useEventMatches(eventId);
 
   if (matches.length === 0 || isLoading) return null;
 

@@ -58,8 +58,8 @@ type EnterPointResult = {
     dataUrl: string;
     fileName: string;
   } | null;
-  comment?: string
-  category?: string
+  comment?: string;
+  category?: string;
 };
 
 const EnterPointDialog = ({
@@ -114,63 +114,67 @@ const EnterPointDialog = ({
         </>
       }
     >
-      <ListItem secondaryAction={(maxEntriesPerDay ?? 0) > 1 && <Box sx={{ mx: 2, width: '100%', display: 'flex', alignItems: 'center' }}>
-        <Box sx={{ display: 'flex', flexDirection: 'row' }}>
-          <IconButton
-            disableRipple
-            disabled={points <= 1}
-            onClick={(event) => {
-              setPoints(points - 1);
-              event.stopPropagation();
-            }}
-          >
-            <Remove fontSize="inherit" sx={{ fontSize: '28px' }} />
-          </IconButton>
-          <Typography sx={{ p: 1, fontSize: '20px', color: 'rgba(0,0,0,0.54)' }}>
-            {points}
-          </Typography>
-          <IconButton
-            disableRipple
-            disabled={maxEntriesPerDay !== null && points >= maxEntriesPerDay}
-            onClick={(event) => {
-              setPoints(points + 1);
-              event.stopPropagation();
-            }}
-          >
-            <Add fontSize="inherit" sx={{ fontSize: '28px' }} />
-          </IconButton>
-        </Box>
-      </Box>}>
-        {
-          (maxEntriesPerDay ?? 0) > 1 ?
-            <ListItemText primary="Anzahl Punkte" secondary="Wie viele Punkte möchtest du eintragen?" />
-            : <ListItemText primary="Hiermit trägst du einen Punkt für diese Challenge ein" />
+      <ListItem
+        secondaryAction={
+          (maxEntriesPerDay ?? 0) > 1 && (
+            <Box sx={{ mx: 2, width: '100%', display: 'flex', alignItems: 'center' }}>
+              <Box sx={{ display: 'flex', flexDirection: 'row' }}>
+                <IconButton
+                  disableRipple
+                  disabled={points <= 1}
+                  onClick={(event) => {
+                    setPoints(points - 1);
+                    event.stopPropagation();
+                  }}
+                >
+                  <Remove fontSize="inherit" sx={{ fontSize: '28px' }} />
+                </IconButton>
+                <Typography sx={{ p: 1, fontSize: '20px', color: 'rgba(0,0,0,0.54)' }}>{points}</Typography>
+                <IconButton
+                  disableRipple
+                  disabled={maxEntriesPerDay !== null && points >= maxEntriesPerDay}
+                  onClick={(event) => {
+                    setPoints(points + 1);
+                    event.stopPropagation();
+                  }}
+                >
+                  <Add fontSize="inherit" sx={{ fontSize: '28px' }} />
+                </IconButton>
+              </Box>
+            </Box>
+          )
         }
+      >
+        {(maxEntriesPerDay ?? 0) > 1 ? (
+          <ListItemText primary="Anzahl Punkte" secondary="Wie viele Punkte möchtest du eintragen?" />
+        ) : (
+          <ListItemText primary="Hiermit trägst du einen Punkt für diese Challenge ein" />
+        )}
       </ListItem>
 
-      {
-        comments_enabled && <ListItem>
+      {comments_enabled && (
+        <ListItem>
           <TextField
             fullWidth
-            variant='outlined'
+            variant="outlined"
             label="Kommentar"
             value={comment}
             onChange={(e) => setComment(e.target.value)}
           />
         </ListItem>
-      }
+      )}
 
-      {
-        category_enabled && <ListItem>
+      {category_enabled && (
+        <ListItem>
           <TextField
             fullWidth
-            variant='outlined'
+            variant="outlined"
             label="Kategorie"
             value={category}
             onChange={(e) => setCategory(e.target.value)}
           />
         </ListItem>
-      }
+      )}
 
       <DatePicker
         sx={{

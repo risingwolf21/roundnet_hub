@@ -7,7 +7,7 @@ import {
   useChallengeLeaderboard,
   useChallengeStatsForUser,
   useIncreasePointForUserMutation,
-  useUpdateChallengeMutation
+  useUpdateChallengeMutation,
 } from '@/tanstack/challenge';
 import { captureException, withProfiler } from '@sentry/react';
 import { useDialogs, useNotifications } from '@toolpad/core';
@@ -67,7 +67,13 @@ const ChallengeInformation = ({ t, challengeId }: { t: TFunction; challengeId: s
   const updateChallengeMutation = useUpdateChallengeMutation();
 
   const increaseChallengePoint = useCallback(
-    async (created_at: Date, image: { dataUrl: string; fileName: string } | null, count: number, comment?: string, category?: string) => {
+    async (
+      created_at: Date,
+      image: { dataUrl: string; fileName: string } | null,
+      count: number,
+      comment?: string,
+      category?: string
+    ) => {
       if (!user || !challenge) {
         notifications.show('Something went wrong! Try again later', { severity: 'error' });
         return;
@@ -81,12 +87,12 @@ const ChallengeInformation = ({ t, challengeId }: { t: TFunction; challengeId: s
           image,
           count,
           comment,
-          category
+          category,
         },
         {
           onSuccess: (data) => {
             let message = 'Punkt erfolgreich hinzugefügt';
-            if (!data.image_url) {
+            if (data.imageFailedToUpload) {
               message += '. Das Bild konnte leider nicht gespeichert werden.';
             }
             notifications.show(message, { severity: 'success' });
@@ -113,42 +119,52 @@ const ChallengeInformation = ({ t, challengeId }: { t: TFunction; challengeId: s
   return (
     <Layout
       appBarConfig={{ title: challenge?.name, navigateBackPath: '/challenges/list', showProfile: true }}
-      appBarActions={<Has perm={['challenge.manage']} any>
-        <>
-          <IconButton sx={{ color: 'primary.contrastText', pr: 0 }} onClick={(e) => setAnchorEl(e.currentTarget)}>
-            <MoreVert />
-          </IconButton>
-          <Menu
-            id="simple-menu"
-            anchorEl={anchorEl}
-            keepMounted
-            open={Boolean(anchorEl)}
-            onClose={() => setAnchorEl(null)}
-          >
-            <Has perm={'challenge.manage'}>
-              <MenuItem
-                disabled={isLoading}
-                onClick={async () => {
-                  setAnchorEl(null);
-                  const result = await dialogs.open(CreateOrUpdateChallengeDialog, { user, challenge });
-                  console.log(result)
-                  if (result) {
-                    await updateChallengeMutation.mutateAsync({ challenge: result }, {
-                      onError: (error) => notifications.show('Challenge konnte nicht aktualisiert werden. ' + error.message, { severity: 'error' }),
-                      onSuccess: () => notifications.show('Challenge wurde erfolgreich aktualisiert.', { severity: 'success' })
-                    })
-                  }
-                }}
-              >
-                <ListItemIcon>
-                  <Edit />
-                </ListItemIcon>
-                <ListItemText primary={t('events.editEvent')} />
-              </MenuItem>
-            </Has>
-          </Menu>
-        </>
-      </Has>}>
+      appBarActions={
+        <Has perm={['challenge.manage']} any>
+          <>
+            <IconButton sx={{ color: 'primary.contrastText', pr: 0 }} onClick={(e) => setAnchorEl(e.currentTarget)}>
+              <MoreVert />
+            </IconButton>
+            <Menu
+              id="simple-menu"
+              anchorEl={anchorEl}
+              keepMounted
+              open={Boolean(anchorEl)}
+              onClose={() => setAnchorEl(null)}
+            >
+              <Has perm={'challenge.manage'}>
+                <MenuItem
+                  disabled={isLoading}
+                  onClick={async () => {
+                    setAnchorEl(null);
+                    const result = await dialogs.open(CreateOrUpdateChallengeDialog, { user, challenge });
+                    console.log(result);
+                    if (result) {
+                      await updateChallengeMutation.mutateAsync(
+                        { challenge: result },
+                        {
+                          onError: (error) =>
+                            notifications.show('Challenge konnte nicht aktualisiert werden. ' + error.message, {
+                              severity: 'error',
+                            }),
+                          onSuccess: () =>
+                            notifications.show('Challenge wurde erfolgreich aktualisiert.', { severity: 'success' }),
+                        }
+                      );
+                    }
+                  }}
+                >
+                  <ListItemIcon>
+                    <Edit />
+                  </ListItemIcon>
+                  <ListItemText primary={t('events.editEvent')} />
+                </MenuItem>
+              </Has>
+            </Menu>
+          </>
+        </Has>
+      }
+    >
       <PullToRefresh onRefresh={() => refetch()}>
         <Alert sx={{ m: 2 }} severity={'info'}>
           {challenge?.description}
@@ -169,9 +185,7 @@ const ChallengeInformation = ({ t, challengeId }: { t: TFunction; challengeId: s
           <Tab label="Leaderboard" />
         </Tabs>
         <TabPanel value={value} index={0} dir={theme.direction}>
-          {
-            challenge && <ChallengeActivityList challenge={challenge} />
-          }
+          {challenge && <ChallengeActivityList challenge={challenge} />}
         </TabPanel>
         <TabPanel value={value} index={1} dir={theme.direction}>
           <ChallengeLeaderboard isLoading={isLeaderboardLoading} challenge_points={leaderboard} />
@@ -193,10 +207,11 @@ const ChallengeInformation = ({ t, challengeId }: { t: TFunction; challengeId: s
                     maxEntriesPerWeek: challenge.max_points_per_week,
                     maxEntriesPerDay: challenge.max_points_per_day,
                     comments_enabled: challenge.comments_enabled,
-                    category_enabled: challenge.category_enabled
+                    category_enabled: challenge.category_enabled,
                   });
 
-                  if (result) increaseChallengePoint(result.date, result.image, result.count, result.comment, result.category);
+                  if (result)
+                    increaseChallengePoint(result.date, result.image, result.count, result.comment, result.category);
                 }
               }}
             >

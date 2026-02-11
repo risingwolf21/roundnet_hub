@@ -10,7 +10,6 @@ export const playerDataKeys = {
   eloHistory: (playerId: string) => [...playerDataKeys.player(playerId), 'elo_history'] as const,
 };
 
-
 export const useEloHistory = (user: User) =>
   useQuery({
     queryKey: playerDataKeys.eloHistory(user.id),
@@ -71,7 +70,7 @@ export const useUpdatePlayer = (user: User) =>
           userName: user.name,
           userId: user.id,
           ...error,
-          ...variables
+          ...variables,
         },
         tags: { type: 'UpdatePlayer', scope: 'games' },
       });
@@ -118,7 +117,7 @@ export const useUpdateIndexHidden = (user: User) =>
           userName: user.name,
           userId: user.id,
           ...error,
-          ...variables
+          ...variables,
         },
         tags: { type: 'UpdateIndexHidden', scope: 'games' },
       });
@@ -130,4 +129,3 @@ export const useUpdateIndexHidden = (user: User) =>
       queryClient.invalidateQueries({ queryKey: playerDataKeys.player(user.id) });
     },
   });
-

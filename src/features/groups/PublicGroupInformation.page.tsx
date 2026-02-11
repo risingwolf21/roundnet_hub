@@ -1,7 +1,7 @@
 import PublicGroupInformation from './PublicGroupInformation';
 
 const PublicGroupInformationPage = () => {
-  return <PublicGroupInformation />
+  return <PublicGroupInformation />;
 };
 
 export default PublicGroupInformationPage;
