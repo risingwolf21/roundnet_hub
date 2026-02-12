@@ -19,7 +19,7 @@
     "@supabase/sentry-js-integration": "0.3.0",
     "@supabase/supabase-js": "2.93.2",
     "@tanstack/react-query": "5.90.20",
-    "@tanstack/react-query-devtools": "5.90.2",
+    "@tanstack/react-query-devtools": "5.91.3",
     "@toolpad/core": "0.16.0",
     "compressorjs": "1.2.1",
     "date-fns": "3.2.0",
