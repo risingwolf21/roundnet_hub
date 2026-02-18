@@ -157,7 +157,7 @@ const ChallengeInformation = ({ t, challengeId }: { t: TFunction; challengeId: s
                   <ListItemIcon>
                     <Edit />
                   </ListItemIcon>
-                  <ListItemText primary={t('events.editEvent')} />
+                  <ListItemText primary={t('challenges.edit')} />
                 </MenuItem>
               </Has>
             </Menu>
@@ -208,6 +208,7 @@ const ChallengeInformation = ({ t, challengeId }: { t: TFunction; challengeId: s
                     maxEntriesPerDay: challenge.max_points_per_day,
                     comments_enabled: challenge.comments_enabled,
                     category_enabled: challenge.category_enabled,
+                    category_options: challenge.category_options
                   });
 
                   if (result)

@@ -24,7 +24,7 @@ export const useInfiniteChallengeStats = (challengeId: string, count: number = 2
       const { data } = await supabase
         .schema('public')
         .from('challenge_stats')
-        .select('*, fullUser: user(*)')
+        .select('*, fullUser: user(*), meta: challenge_stats_meta(*)')
         .eq('challenge', challengeId)
         .range(pageParam * count, pageParam * count + count - 1)
         .order('created_at', { ascending: false })

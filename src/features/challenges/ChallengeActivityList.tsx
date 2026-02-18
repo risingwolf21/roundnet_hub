@@ -31,7 +31,7 @@ export const ChallengeActivityList = ({ challenge }: ChallengeActivityListProps)
   }, [stats]);
 
   return (
-    <Stack spacing={1} direction="column" sx={{ p: 1, mb: 12 }}>
+    <Stack spacing={1} direction="column" sx={{ pl: 1, mb: 12 }}>
       <InfiniteScrollList
         hasNextPage={hasNextPage}
         isFetchingNextPage={isFetchingNextPage}
@@ -42,17 +42,24 @@ export const ChallengeActivityList = ({ challenge }: ChallengeActivityListProps)
             <Typography sx={{ textAlign: 'center', color: 'rgba(0,0,0,0.6)' }}>{date}</Typography>
             <List>
               {entries.map((x) => (
-                <ListItem divider sx={{ display: 'flex', p: 0, mr: 4 }} key={x.id}>
-                  <ListItemAvatar>
-                    <Avatar sx={{ borderRadius: 2 }}>
-                      {x.fullUser.avatarUrl ? (
-                        <img src={x.fullUser.avatarUrl} alt="avatar" width="100%" height="100%" />
-                      ) : (
-                        <AccountBox />
-                      )}
-                    </Avatar>
-                  </ListItemAvatar>
-                  <ListItemText primary={`+${x.count}`} secondary={x.fullUser.displayName} />
+                <ListItem divider sx={{ display: 'flex', p: 0, mr: 4, justifyContent: 'space-between' }} key={x.id}>
+                  <Stack direction={"row"}>
+                    <Stack sx={{ justifyContent: "center" }}>
+                      <ListItemAvatar>
+                        <Avatar sx={{ borderRadius: 2 }}>
+                          {x.fullUser.avatarUrl ? (
+                            <img src={x.fullUser.avatarUrl} alt="avatar" width="100%" height="100%" />
+                          ) : (
+                            <AccountBox />
+                          )}
+                        </Avatar>
+                      </ListItemAvatar>
+                    </Stack>
+                    <Stack>
+                      <ListItemText primary={`+${x.count}`} secondary={x.fullUser.displayName} />
+                      <ListItemText primary={x.meta?.category} secondary={x.meta?.comment} />
+                    </Stack>
+                  </Stack>
                   {x.image_url && (
                     <CardMedia
                       component="img"
