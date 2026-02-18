@@ -210,7 +210,7 @@ const MatchInformation = () => {
 
   if (isLoading)
     return (
-      <Layout appBarConfig={{ navigateBackPath: '/matches' }}>
+      <Layout appBarConfig={{ navigateBackPath: -1 }}>
         <LoadingIndicator loading={true} />
         <Stack direction={'column'} spacing={2} sx={{ m: 1, justifyContent: 'center' }}>
           <LoadingTeamCard />
@@ -221,13 +221,13 @@ const MatchInformation = () => {
 
   if (!match)
     return (
-      <Layout>
+      <Layout appBarConfig={{ navigateBackPath: -1 }}>
         <Alert severity="error">Das Spiel konnte nicht gefunden werden oder wird gerade geladen.</Alert>
       </Layout>
     );
 
   return (
-    <Layout appBarConfig={{ navigateBackPath: '/matches' }}>
+    <Layout appBarConfig={{ navigateBackPath: -1 }}>
       <Stack direction={'column'} spacing={2} sx={{ m: 1, justifyContent: 'center' }}>
         <TeamCard
           title="Team A"

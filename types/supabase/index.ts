@@ -22,6 +22,7 @@ export type NonNullableFields<T, K extends keyof T> = Omit<T, K> & {
 declare global {
   type Challenge = Tables<'challenge'>;
   type ChallengeStats = Tables<'challenge_stats'>;
+  type ChallengeStatsMeta = Tables<'challenge_stats_meta'>;
   type Drink = Tables<'drink'>;
   type Attendance = Tables<'event_attendance_user_mapping'>;
   type GroupUserMapping = Tables<'group_user_mapping'>;

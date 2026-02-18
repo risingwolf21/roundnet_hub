@@ -38,6 +38,9 @@
   "confirm": "Confirm",
   "confirmKeyHandover": "Are you sure you want to hand over the key \"{{ keyName }}\" to \"{{ userName }}\"?",
   "confirmKeyTaken": "Hereby you confirm that you have received the key \"{{ keyName }}\" from \"{{ userName }}\"!",
+  "challenges": {
+    "edit": "Edit challenge"
+  },
   "events": {
     "upcoming": "Upcoming",
     "past": "Past",

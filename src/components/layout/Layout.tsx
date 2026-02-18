@@ -20,7 +20,7 @@ type Props = {
   appBarActions?: ReactNode;
   appBarConfig?: {
     title?: string;
-    navigateBackPath?: string;
+    navigateBackPath?: string | number;
     showProfile?: boolean;
   };
 };
@@ -92,7 +92,7 @@ const Layout = ({
             {navigateBackPath ? (
               <IconButton
                 color="inherit"
-                onClick={() => navigate(navigateBackPath)}
+                onClick={() => typeof navigateBackPath === 'number' ? navigate(navigateBackPath) : navigate(navigateBackPath)}
                 edge="start"
                 sx={{
                   mr: 2,

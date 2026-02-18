@@ -38,6 +38,9 @@
   "confirm": "Bestätigen",
   "confirmKeyHandover": "Bist du sicher das du den Schlüssel \"{{ keyName }}\" an \"{{ userName }}\" abgeben möchtest?",
   "confirmKeyTaken": "Hiermit bestätigst du das du den Schlüssel \"{{ keyName }}\" von \"{{ userName }}\" erhalten hast!",
+  "challenges": {
+    "edit": "Challenge bearbeiten"
+  },
   "events": {
     "upcoming": "Anstehende",
     "past": "Vergangene",

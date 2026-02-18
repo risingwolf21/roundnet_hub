@@ -17,6 +17,8 @@ import Button from '@mui/material/Button';
 import IconButton from '@mui/material/IconButton';
 import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';
+import MenuItem from '@mui/material/MenuItem';
+import Select from '@mui/material/Select';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 
@@ -26,6 +28,7 @@ type EnterPointDialogProps = {
   maxEntriesPerDay: number | null;
   comments_enabled?: boolean;
   category_enabled?: boolean;
+  category_options?: string[];
 };
 
 function ServerDay(props: PickersDayProps & { highlightedDays?: Date[]; maxEntriesPerWeek?: number }) {
@@ -60,10 +63,11 @@ type EnterPointResult = {
   } | null;
   comment?: string;
   category?: string;
+  category_options?: string[];
 };
 
 const EnterPointDialog = ({
-  payload: { dates, maxEntriesPerWeek, maxEntriesPerDay, comments_enabled = false, category_enabled = false },
+  payload: { dates, maxEntriesPerWeek, maxEntriesPerDay, comments_enabled = false, category_enabled = false, category_options = [] },
   open,
   onClose,
 }: DialogProps<EnterPointDialogProps, EnterPointResult | null>) => {
@@ -164,15 +168,24 @@ const EnterPointDialog = ({
         </ListItem>
       )}
 
-      {category_enabled && (
+      {category_enabled && category_options.length > 0 && (
         <ListItem>
-          <TextField
-            fullWidth
-            variant="outlined"
+          <Select
+            sx={{ mt: 2, mb: 1 }}
             label="Kategorie"
+            fullWidth
             value={category}
-            onChange={(e) => setCategory(e.target.value)}
-          />
+            onChange={async (e) => {
+              setCategory(e.target.value)
+            }}
+          >
+            {category_options
+              .map((x) => (
+                <MenuItem key={x} value={x}>
+                  {x}
+                </MenuItem>
+              ))}
+          </Select>
         </ListItem>
       )}
 

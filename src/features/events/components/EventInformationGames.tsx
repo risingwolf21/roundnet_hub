@@ -9,6 +9,7 @@ import Button from '@mui/material/Button';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import Typography from '@mui/material/Typography';
+import { useNavigate } from 'react-router';
 
 type EventInformationGamesProps = {
   eventId: string;
@@ -16,6 +17,7 @@ type EventInformationGamesProps = {
 
 const EventInformationGames = ({ eventId }: EventInformationGamesProps) => {
   const dialogs = useDialogs();
+  const navigate = useNavigate();
   const { user } = useGrants();
 
   const { data: matches = [], isLoading, refetch } = useEventMatches(eventId);
@@ -28,8 +30,9 @@ const EventInformationGames = ({ eventId }: EventInformationGamesProps) => {
         Spiele
       </Typography>
       <List sx={{ p: 0 }}>
-        {matches.map((x) => (
-          <ListItem key={x.id} divider sx={{ px: 0 }}>
+        {matches.map((x) => {
+          const teamAWon = x.sets.reduce((acc, curr) => acc + curr.team_a_score, 0) > x.sets.reduce((acc, curr) => acc + curr.team_b_score, 0);
+          return <ListItem key={x.id} divider sx={{ px: 0 }} onClick={() => navigate(`/matches/${x.id}`)}>
             <Box sx={{ display: 'flex', flexDirection: 'row', width: '100%' }}>
               <Box
                 sx={{
@@ -44,7 +47,8 @@ const EventInformationGames = ({ eventId }: EventInformationGamesProps) => {
                 <Typography
                   sx={{
                     fontSize: '1rem',
-                    color: 'rgba(0,0,0,0.87)',
+                    color: `rgba(0,0,0,${teamAWon ? '0.87' : '0.6'})`,
+                    fontWeight: teamAWon ? 'bold' : '400',
                     whiteSpace: 'nowrap',
                     overflow: 'hidden',
                     textOverflow: 'ellipsis',
@@ -55,7 +59,8 @@ const EventInformationGames = ({ eventId }: EventInformationGamesProps) => {
                 <Typography
                   sx={{
                     fontSize: '1rem',
-                    color: 'rgba(0,0,0,0.87)',
+                    color: `rgba(0,0,0,${teamAWon ? '0.6' : '0.87'})`,
+                    fontWeight: teamAWon ? '400' : 'bold',
                     whiteSpace: 'nowrap',
                     overflow: 'hidden',
                     textOverflow: 'ellipsis',
@@ -87,11 +92,12 @@ const EventInformationGames = ({ eventId }: EventInformationGamesProps) => {
                   </Button>
                 )}
               {x.sets
-                .sort((a, b) => (a.set_number < b.set_number ? 1 : -1))
+                .sort((a, b) => (a.set_number > b.set_number ? 1 : -1))
                 .map((y) => {
                   const teamAWon = y.team_a_score > y.team_b_score;
                   return (
                     <Box
+                      key={y.id}
                       sx={{
                         display: 'flex',
                         ml: 2,
@@ -123,7 +129,7 @@ const EventInformationGames = ({ eventId }: EventInformationGamesProps) => {
                 })}
             </Box>
           </ListItem>
-        ))}
+        })}
       </List>
     </Box>
   );

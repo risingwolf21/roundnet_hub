@@ -12,7 +12,7 @@ DELETE FROM public.event_attendance_user_mapping
 WHERE event IN (SELECT id FROM public.events WHERE "key" IN ('t-rsvp-future','t-rsvp-past','t-rsvp-cancel'));
 
 -- nötige Permission (falls noch nicht da)
-INSERT INTO public.permissions(name) VALUES ('event.attendance.manage') ON CONFLICT DO NOTHING;
+INSERT INTO public.permissions(name) VALUES ('event.manage.attendees') ON CONFLICT DO NOTHING;
 
 -- Gruppe: aus 00_test_helpers.sql: 00000000-0000-0000-0000-000000000042
 -- Mitgliedschaften sind dort auch angelegt (a1=admin, b2=user).
@@ -81,7 +81,7 @@ SELECT throws_like(
   )
   $$,
   '%forbidden%',
-  'Ohne event.attendance.manage kann ich b2 nicht promoten'
+  'Ohne event.manage.attendees kann ich b2 nicht promoten'
 );
 
 -- ------------------------------------------------------------------
@@ -90,7 +90,7 @@ SELECT throws_like(
 -- sicherstellen, dass die Gruppe aktuell KEINE manage-Permission hat
 -- Grants/Features sauber als Service-Role setzen
 SELECT tests.authenticate_as_service_role();
-INSERT INTO public.group_permissions("group","permission")VALUES('00000000-0000-0000-0000-000000000042','event.attendance.manage')
+INSERT INTO public.group_permissions("group","permission")VALUES('00000000-0000-0000-0000-000000000042','event.manage.attendees')
 ON CONFLICT DO NOTHING;
 
 SELECT tests.authenticate_as('user_1c'); -- a1
@@ -158,7 +158,7 @@ SELECT lives_ok(
 
 -- Permission vergeben und erneut versuchen
 SELECT tests.authenticate_as_service_role();
-INSERT INTO public.group_permissions("group","permission")VALUES('00000000-0000-0000-0000-000000000042','event.attendance.manage')
+INSERT INTO public.group_permissions("group","permission")VALUES('00000000-0000-0000-0000-000000000042','event.manage.attendees')
 ON CONFLICT DO NOTHING;
 SELECT tests.authenticate_as('user_1a');
 
@@ -170,7 +170,7 @@ SELECT lives_ok(
     'Attending'::public."EventAttendance"
   )
   $$,
-  'Mit event.attendance.manage darf ich b2 promoten'
+  'Mit event.manage.attendees darf ich b2 promoten'
 );
 
 SELECT is(

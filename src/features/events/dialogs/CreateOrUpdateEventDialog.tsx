@@ -471,11 +471,11 @@ export const CreateOrUpdateEventDialog = ({
                     answerDeadline: editedEvent.answerDeadline
                       ? null
                       : formatDateToDatabase(
-                          set(Date.now(), {
-                            seconds: 0,
-                            milliseconds: 0,
-                          })
-                        ),
+                        set(Date.now(), {
+                          seconds: 0,
+                          milliseconds: 0,
+                        })
+                      ),
                   })
                 }
               />
@@ -887,11 +887,11 @@ export const CreateOrUpdateEventDialog = ({
                     recurrenceEnd: editedEvent.recurrenceEnd
                       ? null
                       : formatDateToDatabase(
-                          set(Date.now(), {
-                            seconds: 0,
-                            milliseconds: 0,
-                          })
-                        ),
+                        set(Date.now(), {
+                          seconds: 0,
+                          milliseconds: 0,
+                        })
+                      ),
                   })
                 }
               />

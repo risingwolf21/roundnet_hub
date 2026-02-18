@@ -11,6 +11,7 @@ import { useMemo, useState } from 'react';
 import Add from '@mui/icons-material/Add';
 import Article from '@mui/icons-material/Article';
 import Close from '@mui/icons-material/Close';
+import Delete from '@mui/icons-material/Delete';
 import Groups from '@mui/icons-material/Groups';
 import Remove from '@mui/icons-material/Remove';
 import Title from '@mui/icons-material/Title';
@@ -19,6 +20,7 @@ import Avatar from '@mui/material/Avatar';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Checkbox from '@mui/material/Checkbox';
+import Chip from '@mui/material/Chip';
 import Dialog from '@mui/material/Dialog';
 import IconButton from '@mui/material/IconButton';
 import List from '@mui/material/List';
@@ -50,11 +52,14 @@ const EMPTY_CHALLENGE: Challenge = {
   category_enabled: false,
   comments_enabled: false,
   show_all_members: false,
+  category_options: []
 };
 
 const Content = ({ payload, onClose }: DialogProps<CreateChallengePayload, Challenge | null>) => {
   const notifications = useNotifications();
   const dialogs = useDialogs();
+
+  const [categoryOptionsOpen, setCategoryOptionsOpen] = useState(false);
 
   const [data, setData] = useState<Challenge>(payload.challenge ?? EMPTY_CHALLENGE);
 
@@ -101,7 +106,7 @@ const Content = ({ payload, onClose }: DialogProps<CreateChallengePayload, Chall
           </Button>
         </Toolbar>
       </AppBar>
-      <List sx={{ pl: 2, pr: 2, pb: 10 }}>
+      <List sx={{ pb: 10 }}>
         <ListItem sx={{ pt: 0, pb: 0 }} key={'title'}>
           <ListItemAvatar>
             <Avatar sx={{ borderRadius: 2 }}>
@@ -189,6 +194,7 @@ const Content = ({ payload, onClose }: DialogProps<CreateChallengePayload, Chall
               <Box sx={{ width: '100%', display: 'flex', alignItems: 'center' }}>
                 <Box sx={{ display: 'flex', flexDirection: 'row' }}>
                   <IconButton
+                    sx={{ pr: 0 }}
                     disableRipple
                     disabled={data.max_points_per_week <= 1}
                     onClick={(event) => {
@@ -205,6 +211,7 @@ const Content = ({ payload, onClose }: DialogProps<CreateChallengePayload, Chall
                     {data.max_points_per_week}
                   </Typography>
                   <IconButton
+                    sx={{ pl: 0, pr: 0 }}
                     disableRipple
                     disabled={data.max_points_per_week === null}
                     onClick={(event) => {
@@ -235,8 +242,7 @@ const Content = ({ payload, onClose }: DialogProps<CreateChallengePayload, Chall
             />
           </ListItemAvatar>
           <ListItemText
-            primary="Maximale Punkte pro Woche"
-            secondary="Wie viele Punkte können pro Woche maximal erreicht werden?"
+            primary="Max. Punkte pro Woche"
           />
         </ListItem>
 
@@ -248,6 +254,7 @@ const Content = ({ payload, onClose }: DialogProps<CreateChallengePayload, Chall
               <Box sx={{ width: '100%', display: 'flex', alignItems: 'center' }}>
                 <Box sx={{ display: 'flex', flexDirection: 'row' }}>
                   <IconButton
+                    sx={{ pr: 0 }}
                     disableRipple
                     disabled={data.max_points_per_day <= 1}
                     onClick={(event) => {
@@ -264,6 +271,7 @@ const Content = ({ payload, onClose }: DialogProps<CreateChallengePayload, Chall
                     {data.max_points_per_day}
                   </Typography>
                   <IconButton
+                    sx={{ pl: 0, pr: 0 }}
                     disableRipple
                     disabled={data.max_points_per_day === null}
                     onClick={(event) => {
@@ -283,8 +291,7 @@ const Content = ({ payload, onClose }: DialogProps<CreateChallengePayload, Chall
         >
           <ListItemAvatar></ListItemAvatar>
           <ListItemText
-            primary="Maximale Punkte pro Tag"
-            secondary="Wie viele Punkte können pro Tag maximal erreicht werden?"
+            primary="Max. Punkte pro Tag"
           />
         </ListItem>
 
@@ -362,7 +369,68 @@ const Content = ({ payload, onClose }: DialogProps<CreateChallengePayload, Chall
           </ListItemAvatar>
           <ListItemText primary="Kategorien aktiviert" />
         </ListItem>
+        <ListItem key={'category_options'} onClick={() => setCategoryOptionsOpen(true)}>
+          <ListItemText
+            primary={"Kategorien"}
+            secondary={data.category_options.map((x) => (
+              <Chip key={x} sx={{ mr: 1 }} size="small" label={x} />
+            ))}
+          />
+        </ListItem>
       </List>
+      <Dialog open={categoryOptionsOpen} onClose={() => setCategoryOptionsOpen(false)}>
+        <List>
+          {data.category_options.map((item, index) => (
+            <ListItem divider key={item}>
+              <ListItemAvatar>
+                <IconButton
+                  onClick={() => {
+                    const newItems = [...data.category_options];
+                    newItems.splice(index, 1);
+                    setData({
+                      ...data,
+                      category_options: newItems
+                    });
+                  }}
+                >
+                  <Delete />
+                </IconButton>
+              </ListItemAvatar>
+              <TextField
+                fullWidth
+                variant="outlined"
+                label="Gegenstand"
+                value={item}
+                onChange={(e) => {
+                  const newItems = [...data.category_options];
+                  newItems[index] = e.target.value;
+                  setData({
+                    ...data,
+                    category_options: newItems
+                  });
+                }}
+                sx={{ mr: 2 }}
+                margin="normal"
+              />
+            </ListItem>
+          ))}
+          <ListItem
+            onClick={() => {
+              setData({
+                ...data,
+                category_options: [...data.category_options, ""]
+              })
+            }}
+          >
+            <ListItemAvatar>
+              <IconButton>
+                <Add />
+              </IconButton>
+            </ListItemAvatar>
+            <ListItemText primary={'Kategorie hinzufügen'} />
+          </ListItem>
+        </List>
+      </Dialog>
     </>
   );
 };

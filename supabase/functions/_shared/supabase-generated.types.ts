@@ -1048,6 +1048,21 @@ export type Database = {
         Args: { p_payment: number } | { p_payment: string }
         Returns: number
       }
+      notify_emit: {
+        Args: {
+          p_body: string
+          p_data: Json
+          p_recipients: string[]
+          p_scope_id: string
+          p_scope_type: string
+          p_source_id: string
+          p_source_type: string
+          p_title: string
+          p_topic: string
+          p_urgency: string
+        }
+        Returns: number
+      }
       notify_event_canceled: {
         Args: { p_actor?: string; p_event: string }
         Returns: number
@@ -1059,6 +1074,10 @@ export type Database = {
           p_event: string
           p_text: string
         }
+        Returns: number
+      }
+      notify_event_group_updated: {
+        Args: { p_actor?: string; p_event: string; p_old_group: string }
         Returns: number
       }
       notify_event_updated: {
@@ -1171,6 +1190,7 @@ export type Database = {
         Row: {
           automated: boolean
           category_enabled: boolean
+          category_options: string[]
           comments_enabled: boolean
           created_at: string
           description: string
@@ -1185,6 +1205,7 @@ export type Database = {
         Insert: {
           automated?: boolean
           category_enabled?: boolean
+          category_options?: string[]
           comments_enabled?: boolean
           created_at?: string
           description?: string
@@ -1199,6 +1220,7 @@ export type Database = {
         Update: {
           automated?: boolean
           category_enabled?: boolean
+          category_options?: string[]
           comments_enabled?: boolean
           created_at?: string
           description?: string
@@ -1261,10 +1283,43 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "challenge_stats_challenge_fkey"
+            columns: ["challenge"]
+            isOneToOne: false
+            referencedRelation: "challenge_user_points"
+            referencedColumns: ["challenge"]
+          },
+          {
             foreignKeyName: "challenge_stats_user_fkey"
             columns: ["user"]
             isOneToOne: false
             referencedRelation: "user"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      challenge_stats_meta: {
+        Row: {
+          category: string | null
+          challenge_stat: number
+          comment: string | null
+        }
+        Insert: {
+          category?: string | null
+          challenge_stat: number
+          comment?: string | null
+        }
+        Update: {
+          category?: string | null
+          challenge_stat?: number
+          comment?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "challenge_stats_meta_challenge_stat_fkey"
+            columns: ["challenge_stat"]
+            isOneToOne: true
+            referencedRelation: "challenge_stats"
             referencedColumns: ["id"]
           },
         ]
@@ -2349,14 +2404,7 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "challenge_stats_challenge_fkey"
-            columns: ["challenge"]
-            isOneToOne: false
-            referencedRelation: "challenge"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "challenge_stats_user_fkey"
+            foreignKeyName: "group_user_mapping_user_fkey"
             columns: ["user"]
             isOneToOne: false
             referencedRelation: "user"
