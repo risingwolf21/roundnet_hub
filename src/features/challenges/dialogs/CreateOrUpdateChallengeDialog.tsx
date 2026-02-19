@@ -8,6 +8,7 @@ import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { DialogProps, NotificationsProvider, useDialogs, useNotifications } from '@toolpad/core';
 import { useMemo, useState } from 'react';
 
+import { SwipeableDialog } from '@/components/SwipeableDialog';
 import Add from '@mui/icons-material/Add';
 import Article from '@mui/icons-material/Article';
 import Close from '@mui/icons-material/Close';
@@ -369,7 +370,13 @@ const Content = ({ payload, onClose }: DialogProps<CreateChallengePayload, Chall
           </ListItemAvatar>
           <ListItemText primary="Kategorien aktiviert" />
         </ListItem>
-        <ListItem key={'category_options'} onClick={() => setCategoryOptionsOpen(true)}>
+        <ListItem key={'category_options'} onClick={async () => {
+          const result = await dialogs.open(EditChallengeCategoriesDialog, data.category_options);
+          setData({
+            ...data,
+            category_options: result.filter(x => x !== '')
+          });
+        }}>
           <ListItemText
             primary={"Kategorien"}
             secondary={data.category_options.map((x) => (
@@ -378,59 +385,6 @@ const Content = ({ payload, onClose }: DialogProps<CreateChallengePayload, Chall
           />
         </ListItem>
       </List>
-      <Dialog open={categoryOptionsOpen} onClose={() => setCategoryOptionsOpen(false)}>
-        <List>
-          {data.category_options.map((item, index) => (
-            <ListItem divider key={item}>
-              <ListItemAvatar>
-                <IconButton
-                  onClick={() => {
-                    const newItems = [...data.category_options];
-                    newItems.splice(index, 1);
-                    setData({
-                      ...data,
-                      category_options: newItems
-                    });
-                  }}
-                >
-                  <Delete />
-                </IconButton>
-              </ListItemAvatar>
-              <TextField
-                fullWidth
-                variant="outlined"
-                label="Gegenstand"
-                value={item}
-                onChange={(e) => {
-                  const newItems = [...data.category_options];
-                  newItems[index] = e.target.value;
-                  setData({
-                    ...data,
-                    category_options: newItems
-                  });
-                }}
-                sx={{ mr: 2 }}
-                margin="normal"
-              />
-            </ListItem>
-          ))}
-          <ListItem
-            onClick={() => {
-              setData({
-                ...data,
-                category_options: [...data.category_options, ""]
-              })
-            }}
-          >
-            <ListItemAvatar>
-              <IconButton>
-                <Add />
-              </IconButton>
-            </ListItemAvatar>
-            <ListItemText primary={'Kategorie hinzufügen'} />
-          </ListItem>
-        </List>
-      </Dialog>
     </>
   );
 };
@@ -450,3 +404,56 @@ export const CreateOrUpdateChallengeDialog = ({
     </Dialog>
   );
 };
+
+const EditChallengeCategoriesDialog = ({ payload, open, onClose }: DialogProps<string[], string[]>) => {
+
+  const [categories, setCategories] = useState(payload);
+
+  return <SwipeableDialog title='Kategorien' open={open} onClose={() => onClose(categories)}
+    actions={
+      <>
+        <Button onClick={() => onClose(categories)}>Bestätigen</Button>
+        <Button onClick={() => onClose(payload)}>Abbrechen</Button>
+      </>
+    }>
+    <List>
+      {categories.map((item, index) => (
+        <ListItem divider key={index}>
+          <ListItemAvatar>
+            <IconButton
+              onClick={() => {
+                const newItems = [...categories];
+                newItems.splice(index, 1);
+                setCategories(newItems);
+              }}
+            >
+              <Delete />
+            </IconButton>
+          </ListItemAvatar>
+          <TextField
+            fullWidth
+            variant="outlined"
+            value={item}
+            onChange={(e) => {
+              setCategories(categories.map((x, i) => index === i ? e.target.value : x));
+            }}
+            sx={{ mr: 2 }}
+            margin="normal"
+          />
+        </ListItem>
+      ))}
+      <ListItem
+        onClick={() => {
+          setCategories([...categories, ""])
+        }}
+      >
+        <ListItemAvatar>
+          <IconButton>
+            <Add />
+          </IconButton>
+        </ListItemAvatar>
+        <ListItemText primary={'Kategorie hinzufügen'} />
+      </ListItem>
+    </List>
+  </SwipeableDialog>
+}
