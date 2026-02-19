@@ -60,8 +60,6 @@ const Content = ({ payload, onClose }: DialogProps<CreateChallengePayload, Chall
   const notifications = useNotifications();
   const dialogs = useDialogs();
 
-  const [categoryOptionsOpen, setCategoryOptionsOpen] = useState(false);
-
   const [data, setData] = useState<Challenge>(payload.challenge ?? EMPTY_CHALLENGE);
 
   const { data: groups = [], isLoading } = useGroups();
@@ -377,6 +375,11 @@ const Content = ({ payload, onClose }: DialogProps<CreateChallengePayload, Chall
             category_options: result.filter(x => x !== '')
           });
         }}>
+          <ListItemAvatar>
+            <IconButton sx={{ pl: 0 }}>
+              <Add />
+            </IconButton>
+          </ListItemAvatar>
           <ListItemText
             primary={"Kategorien"}
             secondary={data.category_options.map((x) => (
