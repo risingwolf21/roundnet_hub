@@ -31,8 +31,8 @@ const ADMIN_FUNCTONS: { title: string, rpc: RpcName }[] = [
 export const AdminAnalytics = () => {
   const dialogs = useDialogs();
 
-  const [from, setFrom] = useState(() => new Date());
-  const [to, setTo] = useState(() => add(new Date(), { years: -1 }));
+  const [from, setFrom] = useState(() => add(new Date(), { years: -1 }));
+  const [to, setTo] = useState(() => new Date());
 
   const [selectedRpc, setSelectedRpc] = useState(ADMIN_FUNCTONS[0])
 
@@ -56,8 +56,8 @@ export const AdminAnalytics = () => {
     <Stack direction={"row"} sx={{ p: 1 }} spacing={1}>
       <DatePicker
         format="dd.MM.yyyy"
-        value={to}
-        onChange={(v) => v && setTo(new Date(v.getUTCFullYear(), v.getUTCMonth(), v.getUTCDay()))}
+        value={from}
+        onChange={(v) => v && setFrom(new Date(v.getUTCFullYear(), v.getUTCMonth(), v.getUTCDay()))}
         formatDensity="dense"
         slotProps={{
           textField: {
@@ -66,8 +66,8 @@ export const AdminAnalytics = () => {
         }} />
       <DatePicker
         format="dd.MM.yyyy"
-        value={from}
-        onChange={(v) => v && setFrom(new Date(v.getUTCFullYear(), v.getUTCMonth(), v.getUTCDay()))}
+        value={to}
+        onChange={(v) => v && setTo(new Date(v.getUTCFullYear(), v.getUTCMonth(), v.getUTCDay()))}
         formatDensity="dense"
         slotProps={{
           textField: {
