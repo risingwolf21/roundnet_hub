@@ -412,7 +412,7 @@ const EditChallengeCategoriesDialog = ({ payload, open, onClose }: DialogProps<s
 
   const [categories, setCategories] = useState(payload);
 
-  return <SwipeableDialog title='Kategorien' open={open} onClose={() => onClose(categories)}
+  return <SwipeableDialog title='Kategorien' open={open} onClose={() => onClose(payload)}
     actions={
       <>
         <Button onClick={() => onClose(categories)}>Bestätigen</Button>

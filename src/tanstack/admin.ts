@@ -17,7 +17,7 @@ export const adminKeys = {
   },
   simpleUsers: () => [...adminKeys.all, 'simpleUsers'] as const,
   logs: () => [...adminKeys.all, 'logs'] as const,
-  analytics: (rpc: string) => [...adminKeys.all, 'analytics', rpc]
+  analytics: (rpc: string, from: string, to: string) => [...adminKeys.all, 'analytics', rpc, from, to]
 };
 
 export const useUsers = () =>
@@ -31,7 +31,7 @@ export const useUsers = () =>
   });
 
 export const useAdminAnalytics = (rpc: RpcName, from: Date, to: Date) => useQuery({
-  queryKey: adminKeys.analytics(rpc),
+  queryKey: adminKeys.analytics(rpc, formatDateToDatabase(from), formatDateToDatabase(to)),
   queryFn: async () => {
     const result = await supabase.rpc(rpc, { p_from: formatDateToDatabase(from), p_to: formatDateToDatabase(to) });
 
