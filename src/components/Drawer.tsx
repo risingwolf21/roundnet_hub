@@ -4,6 +4,7 @@ import { queryClient } from '@/lib/queryClient';
 import { useRequestedUsersPerGroup } from '@/tanstack/groups';
 import { useAllNotifications } from '@/tanstack/notifications';
 import { iOS } from '@/utils';
+import Analytics from '@mui/icons-material/Analytics';
 import EmojiEvents from '@mui/icons-material/EmojiEvents';
 import Euro from '@mui/icons-material/Euro';
 import Group from '@mui/icons-material/Group';
@@ -379,6 +380,23 @@ const DrawerContent = ({
               </ListSubheader>
             }
           >
+            <Has perm={'admin.analytics.view'}>
+              <DrawerItem
+                key="adminAnalytics"
+                selected={tab === 'admin/analytics'}
+                onClick={() => handleChange('admin/analytics')}
+              >
+                <ListItemAvatar>
+                  <ListItemIcon>
+                    <Analytics />
+                  </ListItemIcon>
+                </ListItemAvatar>
+                <ListItemText
+                  primaryTypographyProps={{ fontWeight: 'bold', fontSize: '0.9rem' }}
+                  primary={t('browse.analytics')}
+                />
+              </DrawerItem>
+            </Has>
             <Has feat={'drinks'} perm={'drinks.confirm.payments'}>
               <DrawerItem
                 key="updatePayements"

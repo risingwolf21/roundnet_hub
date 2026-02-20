@@ -2688,6 +2688,20 @@ export type Database = {
         Args: { items: Json }
         Returns: undefined
       }
+      admin_attendance_leaderboard: {
+        Args: {
+          p_from: string
+          p_group?: string
+          p_limit?: number
+          p_to: string
+        }
+        Returns: {
+          avatar_url: string
+          signups: number
+          user_id: string
+          user_name: string
+        }[]
+      }
       apply_transformation_to_event: {
         Args: { p_event_id: string; p_transformation_id: string }
         Returns: undefined

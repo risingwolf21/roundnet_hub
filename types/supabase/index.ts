@@ -6,7 +6,7 @@ import { fetchMatch, fetchUserMatches } from '@/repository/GamesRepository';
 import { fetchItemHistory, fetchItems } from '@/repository/KeysRepository';
 import { fetchGroups, fetchSimpleUser, fetchUserWithGroups } from '@/repository/UserRepository';
 import { fetchFullEventPledges } from '@/tanstack/events';
-import { Enums } from '@/types/supabase-generated.types';
+import { Database, Enums } from '@/types/supabase-generated.types';
 import { GamesTable } from '@/types/supabaseTypes';
 import { QueryData } from '@supabase/supabase-js';
 import { Tables, TablesInsert, TablesUpdate } from 'src/types/helpers';
@@ -84,6 +84,9 @@ declare global {
   type ItemType = Enums<'ItemType'>;
   type UserRole = Enums<'UserRole'>;
   type GroupRole = Enums<'GroupRole'>;
+
+  type PublicFunctions = Database["public"]["Functions"];
+  type RpcName = keyof PublicFunctions & string;
 }
 
 export { };
