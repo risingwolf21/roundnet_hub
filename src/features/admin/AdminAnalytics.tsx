@@ -57,7 +57,7 @@ export const AdminAnalytics = () => {
       <DatePicker
         format="dd.MM.yyyy"
         value={from}
-        onChange={(v) => v && setFrom(new Date(v.getUTCFullYear(), v.getUTCMonth(), v.getUTCDay()))}
+        onChange={(v) => v && setFrom(new Date(v.getUTCFullYear(), v.getUTCMonth(), v.getUTCDate()))}
         formatDensity="dense"
         slotProps={{
           textField: {
@@ -67,7 +67,7 @@ export const AdminAnalytics = () => {
       <DatePicker
         format="dd.MM.yyyy"
         value={to}
-        onChange={(v) => v && setTo(new Date(v.getUTCFullYear(), v.getUTCMonth(), v.getUTCDay()))}
+        onChange={(v) => v && setTo(new Date(v.getUTCFullYear(), v.getUTCMonth(), v.getUTCDate()))}
         formatDensity="dense"
         slotProps={{
           textField: {
