@@ -2,6 +2,7 @@ import { DialogsProvider, NotificationsProvider } from '@toolpad/core';
 import { Navigate, Outlet, RouteObject, RouterProvider, useLocation } from 'react-router';
 import ErrorRouteElement from './components/ErrorRouteElement';
 import AuthLayout from './components/layout/AuthLayout';
+import { AdminAnalytics } from './features/admin/AdminAnalytics';
 import { useApplication } from './features/auth/ApplicationContext';
 import { FeatureNotAvailable, PermissionDeniedPage } from './features/auth/ErrorPage';
 import { GrantsProvider } from './features/auth/GrantsContext';
@@ -315,6 +316,10 @@ const createRouter = (user: UserWithGroups | null) =>
                 {
                   path: 'users',
                   element: <AdminUserListProvider />,
+                },
+                {
+                  path: 'analytics',
+                  element: <AdminAnalytics />
                 },
                 {
                   path: 'notify_users',

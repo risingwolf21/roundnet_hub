@@ -36,7 +36,8 @@ export type Permission =
   | 'supabase.admin'
   | 'reset_user_password'
   | 'admin.notify_users'
-  | 'users.manage';
+  | 'users.manage'
+  | 'admin.analytics.view';
 
 export type Feature =
   | 'challenges'

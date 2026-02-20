@@ -76,7 +76,7 @@ const StyledGridOverlay = styled('div')(({ theme }) => ({
   },
 }));
 
-function NoRowsOverlay() {
+export function NoRowsOverlay() {
   return (
     <StyledGridOverlay>
       <svg xmlns="http://www.w3.org/2000/svg" fill="none" width={96} viewBox="0 0 452 257" aria-hidden>
@@ -629,36 +629,36 @@ export default function SupabaseClient() {
             ),
             ...(columns.length
               ? [
-                  {
-                    field: 'actions',
-                    type: 'actions',
-                    cellClassName: 'actions',
-                    headerName: 'Actions',
-                    width: 100,
-                    getActions: ({ row }) => [
-                      <GridActionsCellItem
-                        key="view"
-                        icon={<Visibility />}
-                        label="View"
-                        onClick={async () => {
-                          const result = await dialog.open(ViewEntryDialog, { entry: row });
-                          if (result === 'delete') await deleteSmart.mutateAsync(row);
-                        }}
-                        color="inherit"
-                      />,
-                      <GridActionsCellItem
-                        key="edit"
-                        icon={<Edit />}
-                        label="Edit"
-                        onClick={async () => {
-                          const updates = await dialog.open(EditEntryDialog, { entry: row, columns });
-                          if (updates) await updateSmart.mutateAsync({ ...row, ...updates });
-                        }}
-                        color="inherit"
-                      />,
-                    ],
-                  } as GridColDef,
-                ]
+                {
+                  field: 'actions',
+                  type: 'actions',
+                  cellClassName: 'actions',
+                  headerName: 'Actions',
+                  width: 100,
+                  getActions: ({ row }) => [
+                    <GridActionsCellItem
+                      key="view"
+                      icon={<Visibility />}
+                      label="View"
+                      onClick={async () => {
+                        const result = await dialog.open(ViewEntryDialog, { entry: row });
+                        if (result === 'delete') await deleteSmart.mutateAsync(row);
+                      }}
+                      color="inherit"
+                    />,
+                    <GridActionsCellItem
+                      key="edit"
+                      icon={<Edit />}
+                      label="Edit"
+                      onClick={async () => {
+                        const updates = await dialog.open(EditEntryDialog, { entry: row, columns });
+                        if (updates) await updateSmart.mutateAsync({ ...row, ...updates });
+                      }}
+                      color="inherit"
+                    />,
+                  ],
+                } as GridColDef,
+              ]
               : []),
           ]}
           loading={isLoading}
