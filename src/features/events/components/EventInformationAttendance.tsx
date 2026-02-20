@@ -251,10 +251,7 @@ const EventInformationAttendance = ({ selectedEvent, fetchMode, keyHolders }: Ev
                   )}
                 </IconButton>
                 {(maxAttendeesExceeded(selectedEvent, attendance) || answerDeadlineExpired(selectedEvent)) &&
-                  !eventInThePast(selectedEvent) &&
-                  (selectedEvent.user_state === 'Unanswered' ||
-                    selectedEvent.user_state === 'Declined' ||
-                    selectedEvent.user_state === 'RequestedAttendance') && (
+                  !eventInThePast(selectedEvent) && (
                     <IconButton
                       onClick={(event) => {
                         event.stopPropagation();
