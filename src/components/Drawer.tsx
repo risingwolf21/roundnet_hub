@@ -24,7 +24,7 @@ import SportsHandball from '@mui/icons-material/SportsHandball';
 import StorageOutlined from '@mui/icons-material/StorageOutlined';
 import Update from '@mui/icons-material/Update';
 import ViewStreamIcon from '@mui/icons-material/ViewStream';
-import { alpha, BoxProps, DrawerProps, ListItemProps, Theme } from '@mui/material';
+import { alpha, BoxProps, CircularProgress, DrawerProps, ListItemProps, Theme } from '@mui/material';
 import Badge from '@mui/material/Badge';
 import Box from '@mui/material/Box';
 import Divider from '@mui/material/Divider';
@@ -128,6 +128,7 @@ type DrawerContentProps = {
   request_group_joins: number;
   notification_count: number;
   update_app: () => void;
+  isUpdating: boolean;
 };
 const DrawerContent = ({
   tab,
@@ -137,6 +138,7 @@ const DrawerContent = ({
   request_group_joins,
   notification_count,
   update_app,
+  isUpdating
 }: DrawerContentProps) => {
   return (
     <DrawerBox>
@@ -562,15 +564,23 @@ const DrawerContent = ({
             primary={t('browse.helpAndInformation')}
           />
         </DrawerItem>
-        <DrawerItem key="update app" selected={false} onClick={update_app}>
+        <DrawerItem
+          key="update app"
+          selected={false}
+          onClick={() => !isUpdating && update_app()}
+        >
           <ListItemAvatar>
             <ListItemIcon>
-              <Update />
+              {isUpdating ? (
+                <CircularProgress size={24} color="inherit" />
+              ) : (
+                <Update />
+              )}
             </ListItemIcon>
           </ListItemAvatar>
           <ListItemText
             primaryTypographyProps={{ fontWeight: 'bold', fontSize: '0.9rem' }}
-            primary={t('browse.appRefresh')}
+            primary={isUpdating ? 'Aktualisiere...' : t('browse.appRefresh')}
           />
         </DrawerItem>
         <DrawerItem key="app version" selected={false}>
@@ -595,6 +605,7 @@ export const Drawer = ({ open, onClose, onOpen }: Props) => {
   const { t } = useTranslation();
   const { user } = useGrants();
   const [tab, setTab] = useState<string>(import.meta.env.VITE_APP_HOMEPAGE);
+  const [isUpdating, setIsUpdating] = useState(false);
 
   const { data: requested_group_joins = [] } = useRequestedUsersPerGroup(user);
   const { data: notifications = [] } = useAllNotifications(user);
@@ -610,16 +621,47 @@ export const Drawer = ({ open, onClose, onOpen }: Props) => {
     navigate('/' + newValue);
   };
 
-  async function waitForServiceWorkerReady(timeoutMs: number): Promise<ServiceWorkerRegistration | null> {
-    if (!('serviceWorker' in navigator)) return null;
+  const updateServiceWorkerWithTimeout = async (timeoutMs: number) => {
+    if (!('serviceWorker' in navigator)) return;
 
-    const readyPromise = navigator.serviceWorker.ready;
+    // Wir holen die Registration direkt, ohne auf 'ready' zu warten (das kann hängen)
+    const reg = await navigator.serviceWorker.getRegistration();
 
-    const timeoutPromise = new Promise<null>((resolve) => setTimeout(() => resolve(null), timeoutMs));
+    if (reg) {
+      console.log('Checking for SW update...');
+      try {
+        // Wir starten das Update, warten aber maximal timeoutMs darauf
+        await Promise.race([
+          reg.update(),
+          new Promise((resolve) => setTimeout(resolve, timeoutMs))
+        ]);
+      } catch (err) {
+        console.warn('SW update check failed or timed out', err);
+      }
+    }
+  };
 
-    // Wenn timeout gewinnt → null
-    return Promise.race([readyPromise, timeoutPromise]) as Promise<ServiceWorkerRegistration | null>;
-  }
+  const handleAppUpdate = async () => {
+    if (isUpdating) return;
+    setIsUpdating(true);
+
+    try {
+      await updateServiceWorkerWithTimeout(2000);
+
+      await queryClient.cancelQueries();
+
+      await queryClient.resetQueries();
+
+      await new Promise(r => setTimeout(r, 800));
+
+      window.location.reload();
+
+    } catch (e) {
+      console.error('Update failed:', e);
+    } finally {
+      setIsUpdating(false);
+    }
+  };
 
   const drawerContent = (
     <DrawerContent
@@ -629,21 +671,8 @@ export const Drawer = ({ open, onClose, onOpen }: Props) => {
       version={import.meta.env.VITE_GIT_COMMIT}
       request_group_joins={requested_group_joins.length}
       notification_count={notifications.filter((x) => !x.dismissed_at).length}
-      update_app={async () => {
-        try {
-          const reg = await waitForServiceWorkerReady(2000);
-
-          if (reg) {
-            await reg.update();
-          }
-
-          await queryClient.invalidateQueries();
-          window.location.reload();
-          console.log('App updated.');
-        } catch (e) {
-          console.error('Error updating app:', e);
-        }
-      }}
+      update_app={handleAppUpdate}
+      isUpdating={isUpdating}
     />
   );
 

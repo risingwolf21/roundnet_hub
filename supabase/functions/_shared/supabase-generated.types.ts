@@ -2702,6 +2702,13 @@ export type Database = {
           user_name: string
         }[]
       }
+      admin_challenge_zero_points_candidates: {
+        Args: { p_challenge_id: string; p_end: string; p_start: string }
+        Returns: {
+          attendance_count: number
+          user_name: string
+        }[]
+      }
       apply_transformation_to_event: {
         Args: { p_event_id: string; p_transformation_id: string }
         Returns: undefined
