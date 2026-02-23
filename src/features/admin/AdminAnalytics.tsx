@@ -94,19 +94,6 @@ export interface AnalyticsReportDef {
 
 const REPORTS: AnalyticsReportDef[] = [
   {
-    title: "Anmeldungen pro Nutzer (Zeitraum)",
-    rpc: "admin_attendance_leaderboard",
-    inputs: [
-      {
-        id: "range",
-        label: "Zeitraum",
-        type: "date-range",
-        rpcParamMapping: { from: "p_from", to: "p_to" },
-        defaultValue: { from: add(new Date(), { years: -1 }), to: new Date() }
-      }
-    ]
-  },
-  {
     title: "Inaktive Challenge Teilnehmer (Top Trainingsbesucher)",
     rpc: "admin_challenge_zero_points_candidates",
     description: "Zeigt User mit 0 Punkten in der Challenge, sortiert nach Trainingshäufigkeit.",
@@ -131,7 +118,35 @@ const REPORTS: AnalyticsReportDef[] = [
         }
       }
     ]
-  }
+  },
+  {
+    title: "Trainingsanmeldungen pro Nutzer (Zeitraum)",
+    rpc: "admin_analytics_attendance_ranking",
+    description: "Wer war im gewählten Zeitraum am häufigsten beim Training?",
+    inputs: [
+      {
+        id: "range",
+        label: "Zeitraum",
+        type: "date-range",
+        rpcParamMapping: { from: "p_start", to: "p_end" },
+        defaultValue: { from: add(new Date(), { months: -3 }), to: new Date() }
+      }
+    ]
+  },
+  {
+    title: "Getränke Buchungen pro Nutzer (Zeitraum)",
+    rpc: "admin_analytics_drinks_ranking",
+    description: "Wer hat die meisten Getränke konsumiert?",
+    inputs: [
+      {
+        id: "range",
+        label: "Zeitraum",
+        type: "date-range",
+        rpcParamMapping: { from: "p_start", to: "p_end" },
+        defaultValue: { from: add(new Date(), { months: -1 }), to: new Date() }
+      }
+    ]
+  },
 ]
 
 const AsyncSelect = ({
@@ -239,6 +254,7 @@ export const AdminAnalytics = () => {
       >
         <ListItemText
           primary={selectedReport.title}
+          secondary={selectedReport.description}
           slotProps={{ primary: { fontWeight: 'bold' } }}
         />
         <ExpandMoreOutlined />
@@ -406,7 +422,7 @@ const SelectRpcDialog = ({ payload, open, onClose }: DialogProps<{ reports: Anal
                 onClose(x);
               }}
             >
-              <ListItemText primary={x.title} />
+              <ListItemText primary={x.title} secondary={x.description} />
             </ListItemButton>)
           }
         </List>

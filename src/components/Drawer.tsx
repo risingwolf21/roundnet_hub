@@ -24,7 +24,7 @@ import SportsHandball from '@mui/icons-material/SportsHandball';
 import StorageOutlined from '@mui/icons-material/StorageOutlined';
 import Update from '@mui/icons-material/Update';
 import ViewStreamIcon from '@mui/icons-material/ViewStream';
-import { alpha, BoxProps, CircularProgress, DrawerProps, ListItemProps, Theme } from '@mui/material';
+import { alpha, BoxProps, CircularProgress, ListItemProps, useMediaQuery, useTheme } from '@mui/material';
 import Badge from '@mui/material/Badge';
 import Box from '@mui/material/Box';
 import Divider from '@mui/material/Divider';
@@ -36,12 +36,20 @@ import ListItemText from '@mui/material/ListItemText';
 import ListSubheader from '@mui/material/ListSubheader';
 import SwipeableDrawer from '@mui/material/SwipeableDrawer';
 import Typography from '@mui/material/Typography';
-import { styled } from '@mui/system';
+import { keyframes, styled } from '@mui/system';
 import { TFunction } from 'i18next';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router';
 import { InstallPWA } from './PwaInstallPromp';
+
+const bounceIn = keyframes`
+  0% { transform: translateX(-100%); }
+  25% { transform: translateX(-90%); }  /* Schaut 10% weit rein */
+  50% { transform: translateX(-100%); } /* Geht zurück */
+  75% { transform: translateX(-95%); }  /* Kleinerer Hopser */
+  100% { transform: translateX(-100%); }
+`;
 
 export const drawerWidth = 360;
 
@@ -96,6 +104,7 @@ const DrawerItem = styled(ListItem, {
 const DrawerBox = styled(Box)<BoxProps>(() => ({
   width: '100%',
   height: '100%',
+  overscrollBehaviorX: 'none',
   paddingTop: 'env(safe-area-inset-top)',
   paddingBottom: 'env(safe-area-inset-bottom)',
   paddingLeft: 'env(safe-area-inset-left)',
@@ -103,22 +112,21 @@ const DrawerBox = styled(Box)<BoxProps>(() => ({
   overflow: 'auto',
 }));
 
-const CustomDrawer = styled(SwipeableDrawer)<DrawerProps>(({ theme }) => ({
-  '& .MuiPaper-root': {
-    borderTopRightRadius: 24,
-    borderBottomRightRadius: 24,
-    background: '#f2ecf1',
-    color: '#49454e',
-    [theme.breakpoints.up('lg')]: {
-      // In der permanenten Variante kleben wir das Paper unter die Safe-Area-Top
-      position: 'sticky',
-      top: 'env(safe-area-inset-top)',
-      height: 'calc(100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom))',
-      borderTopRightRadius: 0,
-      borderBottomRightRadius: 0,
-    },
+const EdgeIndicator = styled(Box)(({ theme }) => ({
+  position: 'fixed',
+  top: '25%', // Mittig platziert, damit er nicht mit System-Icons kollidiert
+  left: 0,
+  width: 6,
+  height: '50%',
+  backgroundColor: alpha(theme.palette.secondary.main, 0.3),
+  borderRadius: '0 8px 8px 0',
+  zIndex: 1000, // Vor allem anderen
+  pointerEvents: 'none', // Damit er Klicks nicht blockiert, nur als visueller Hinweis
+  [theme.breakpoints.up('lg')]: {
+    display: 'none', // Auf Desktop ausblenden
   },
 }));
+
 
 type DrawerContentProps = {
   tab: string;
@@ -601,14 +609,26 @@ const DrawerContent = ({
 };
 
 export const Drawer = ({ open, onClose, onOpen }: Props) => {
+  const theme = useTheme();
   const navigate = useNavigate();
   const { t } = useTranslation();
   const { user } = useGrants();
+  const isLargeScreen = useMediaQuery(theme.breakpoints.up('lg'));
   const [tab, setTab] = useState<string>(import.meta.env.VITE_APP_HOMEPAGE);
   const [isUpdating, setIsUpdating] = useState(false);
 
   const { data: requested_group_joins = [] } = useRequestedUsersPerGroup(user);
   const { data: notifications = [] } = useAllNotifications(user);
+
+  const [shouldAnimate, setShouldAnimate] = useState(true);
+
+  console.log(isLargeScreen, open);
+
+  useEffect(() => {
+    // Nach 2 Sekunden Animation beenden, damit sie nicht bei jedem Re-Render triggert
+    const timer = setTimeout(() => setShouldAnimate(false), 2000);
+    return () => clearTimeout(timer);
+  }, []);
 
   useEffect(() => {
     // eslint-disable-next-line
@@ -619,18 +639,16 @@ export const Drawer = ({ open, onClose, onOpen }: Props) => {
   const handleChange = (newValue: string) => {
     setTab(newValue);
     navigate('/' + newValue);
+    if (!isLargeScreen) onClose();
   };
 
   const updateServiceWorkerWithTimeout = async (timeoutMs: number) => {
     if (!('serviceWorker' in navigator)) return;
 
-    // Wir holen die Registration direkt, ohne auf 'ready' zu warten (das kann hängen)
     const reg = await navigator.serviceWorker.getRegistration();
 
     if (reg) {
-      console.log('Checking for SW update...');
       try {
-        // Wir starten das Update, warten aber maximal timeoutMs darauf
         await Promise.race([
           reg.update(),
           new Promise((resolve) => setTimeout(resolve, timeoutMs))
@@ -677,25 +695,97 @@ export const Drawer = ({ open, onClose, onOpen }: Props) => {
   );
 
   return (
-    <Box
-      component="nav"
-      sx={(theme) => ({
-        flexGrow: 1,
-        alignItems: 'center',
-        display: 'flex',
-        flexDirection: 'column',
-        pt: 'env(safe-area-inset-top)',
-        pb: 'env(safe-area-inset-bottom)',
-        [theme.breakpoints.down('lg')]: {
-          width: 'unset',
-          flexShrink: 0,
-        },
-        [theme.breakpoints.up('lg')]: {
-          width: `${drawerWidth}px`,
-        },
-      })}
-    >
-      <CustomDrawer
+    <>
+      {/* Der visuelle Hinweis für den User */}
+      {!open && !isLargeScreen && <EdgeIndicator />}
+      <Box
+        component="nav"
+        sx={{
+          flexGrow: 1,
+          alignItems: 'center',
+          display: 'flex',
+          flexDirection: 'column',
+          pt: 'env(safe-area-inset-top)',
+          pb: 'env(safe-area-inset-bottom)',
+          width: { lg: `${drawerWidth}px` },
+          flexShrink: { lg: 0 },
+        }}
+      >
+        {
+          !isLargeScreen ? (
+            <SwipeableDrawer
+              variant="temporary"
+              anchor="left"
+              open={open}
+              onOpen={onOpen}
+              onClose={onClose}
+              // iOS Performance & Geste-Konflikt-Vermeidung
+              disableBackdropTransition={!iOS}
+              disableDiscovery={false}
+              swipeAreaWidth={60} // Ermöglicht das "Herausziehen" vom Rand
+              minFlingVelocity={300}
+              hysteresis={0.1}
+              ModalProps={{
+                keepMounted: true, // Erhöht Performance beim Wiederöffnen
+              }}
+              sx={{
+                '& .MuiSwipeableDrawer-swipeArea': {
+                  backgroundColor: 'transparent',
+                  pointerEvents: 'auto',
+                  touchAction: 'none',
+                },
+              }}
+              slotProps={{
+                paper: {
+                  sx: {
+                    width: drawerWidth,
+                    borderTopRightRadius: 24,
+                    borderBottomRightRadius: 24,
+                    background: '#f2ecf1',
+                    ...(!open && shouldAnimate && {
+                      animation: `${bounceIn} 1.2s ease-in-out`,
+                    }),
+                    // Verhindert Flackern auf iOS während der Animation
+                    backfaceVisibility: 'hidden',
+                    perspective: 1000,
+                    pointerEvents: 'auto !important',
+                    visibility: 'visible !important',
+                  }
+                },
+                docked: {
+                  sx: {
+                    pointerEvents: 'all !important',
+                  }
+                }
+              }}
+            >
+              {drawerContent}
+            </SwipeableDrawer>
+          ) : (
+            /* DESKTOP: Permanent Drawer */
+            <SwipeableDrawer
+              variant="permanent"
+              open
+              onOpen={() => { }} // Notwendig für TS, da SwipeableDrawer diese Props verlangt
+              onClose={() => { }}
+              sx={{
+                display: { xs: 'none', lg: 'block' },
+                '& .MuiDrawer-paper': {
+                  boxSizing: 'border-box',
+                  width: drawerWidth,
+                  background: '#f2ecf1',
+                  border: 'none',
+                  position: 'sticky',
+                  top: 0,
+                  height: '100vh',
+                },
+              }}
+            >
+              {drawerContent}
+            </SwipeableDrawer>
+          )
+        }
+        {/* <CustomDrawer
         variant="temporary"
         anchor={'left'}
         open={open}
@@ -729,7 +819,8 @@ export const Drawer = ({ open, onClose, onOpen }: Props) => {
         disableDiscovery={iOS}
       >
         {drawerContent}
-      </CustomDrawer>
-    </Box>
+      </CustomDrawer> */}
+      </Box>
+    </>
   );
 };

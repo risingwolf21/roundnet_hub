@@ -2688,6 +2688,21 @@ export type Database = {
         Args: { items: Json }
         Returns: undefined
       }
+      admin_analytics_attendance_ranking: {
+        Args: { p_end: string; p_start: string }
+        Returns: {
+          attendance_count: number
+          user_name: string
+        }[]
+      }
+      admin_analytics_drinks_ranking: {
+        Args: { p_end: string; p_start: string }
+        Returns: {
+          drinks_count: number
+          total_spend: number
+          user_name: string
+        }[]
+      }
       admin_attendance_leaderboard: {
         Args: {
           p_from: string
