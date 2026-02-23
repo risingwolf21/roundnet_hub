@@ -43,14 +43,6 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router';
 import { InstallPWA } from './PwaInstallPromp';
 
-const bounceIn = keyframes`
-  0% { transform: translateX(-100%); }
-  25% { transform: translateX(-90%); }  /* Schaut 10% weit rein */
-  50% { transform: translateX(-100%); } /* Geht zurück */
-  75% { transform: translateX(-95%); }  /* Kleinerer Hopser */
-  100% { transform: translateX(-100%); }
-`;
-
 export const drawerWidth = 360;
 
 type Props = {
@@ -110,21 +102,6 @@ const DrawerBox = styled(Box)<BoxProps>(() => ({
   paddingLeft: 'env(safe-area-inset-left)',
   paddingRight: 'env(safe-area-inset-right)',
   overflow: 'auto',
-}));
-
-const EdgeIndicator = styled(Box)(({ theme }) => ({
-  position: 'fixed',
-  top: '25%', // Mittig platziert, damit er nicht mit System-Icons kollidiert
-  left: 0,
-  width: 6,
-  height: '50%',
-  backgroundColor: alpha(theme.palette.secondary.main, 0.3),
-  borderRadius: '0 8px 8px 0',
-  zIndex: 1000, // Vor allem anderen
-  pointerEvents: 'none', // Damit er Klicks nicht blockiert, nur als visueller Hinweis
-  [theme.breakpoints.up('lg')]: {
-    display: 'none', // Auf Desktop ausblenden
-  },
 }));
 
 
@@ -620,16 +597,6 @@ export const Drawer = ({ open, onClose, onOpen }: Props) => {
   const { data: requested_group_joins = [] } = useRequestedUsersPerGroup(user);
   const { data: notifications = [] } = useAllNotifications(user);
 
-  const [shouldAnimate, setShouldAnimate] = useState(true);
-
-  console.log(isLargeScreen, open);
-
-  useEffect(() => {
-    // Nach 2 Sekunden Animation beenden, damit sie nicht bei jedem Re-Render triggert
-    const timer = setTimeout(() => setShouldAnimate(false), 2000);
-    return () => clearTimeout(timer);
-  }, []);
-
   useEffect(() => {
     // eslint-disable-next-line
     setTab(window.location.pathname.substring(1));
@@ -696,8 +663,6 @@ export const Drawer = ({ open, onClose, onOpen }: Props) => {
 
   return (
     <>
-      {/* Der visuelle Hinweis für den User */}
-      {!open && !isLargeScreen && <EdgeIndicator />}
       <Box
         component="nav"
         sx={{
@@ -742,9 +707,6 @@ export const Drawer = ({ open, onClose, onOpen }: Props) => {
                     borderTopRightRadius: 24,
                     borderBottomRightRadius: 24,
                     background: '#f2ecf1',
-                    ...(!open && shouldAnimate && {
-                      animation: `${bounceIn} 1.2s ease-in-out`,
-                    }),
                     // Verhindert Flackern auf iOS während der Animation
                     backfaceVisibility: 'hidden',
                     perspective: 1000,
