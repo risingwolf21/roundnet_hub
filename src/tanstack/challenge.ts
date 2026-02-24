@@ -161,7 +161,7 @@ export const useIncreasePointForUserMutation = (challengeId: string) =>
 
       return { serverRow: result.data, image_url, imageFailedToUpload: !!image && !image_url };
     },
-    onMutate: async ({ user, count, challenge, created_at, image }) => {
+    onMutate: async ({ user, count, challenge, created_at, image, category, comment }) => {
       const challengeStatId = Date.now();
       await queryClient.cancelQueries({ queryKey: challengeKeys.challengeInformation(challengeId) });
       await queryClient.cancelQueries({ queryKey: challengeKeys.challengeLeaderboard(challengeId) });
@@ -186,6 +186,10 @@ export const useIncreasePointForUserMutation = (challengeId: string) =>
           user: user.id,
           id: -1,
           fullUser: user,
+          meta: {
+            category,
+            comment,
+          },
         } as ChallengeStatWithUser;
 
         queryClient.setQueryData<InfiniteData<{ data: ChallengeStatWithUser[]; nextPage: number | undefined }>>(

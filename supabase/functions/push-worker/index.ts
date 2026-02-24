@@ -1,7 +1,9 @@
 import * as Sentry from 'sentry';
 import { createClient } from 'supabase';
 import webpush from "web-push";
-import { Database, Tables } from '../_shared/supabase-generated.types.ts';
+import { Database } from '../_shared/supabase-generated.types.ts';
+
+type NotificationOutbox = Database['notifications']['Tables']['notification_outbox']['Row'];
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
@@ -58,7 +60,7 @@ function calcBackoffSeconds(attempts: number) {
   return Math.min(BACKOFF_CAP_SECONDS, base);
 }
 
-async function fetchDueJobs(limit: number): Promise<Tables<'notification_outbox'>[]> {
+async function fetchDueJobs(limit: number): Promise<NotificationOutbox[]> {
   const { data, error } = await supabase
     .schema("notifications")
     .from("notification_outbox")
@@ -200,7 +202,7 @@ async function finishJob(jobId: number, ok: boolean, attemptsNext: number) {
   }
 }
 
-async function processJob(job: Tables<'notification_outbox'>) {
+async function processJob(job: NotificationOutbox) {
   // fetch targets
   const targets = await fetchPendingTargets(job.id);
   if (targets.length === 0) {
@@ -247,8 +249,39 @@ async function processJob(job: Tables<'notification_outbox'>) {
           await markTargetSent(job.id, sub.id, (res as any)?.statusCode ?? 201);
           results.push({ subId: sub.id, ok: true, status: (res as any)?.statusCode ?? 201 });
         } catch (e: any) {
-          Sentry.captureException(e);
-          const status = e?.statusCode ?? 0;
+          // Extract status code from various possible locations in the error object
+          // web-push library may store it in different places depending on the error type
+          const status = e?.statusCode ?? e?.response?.statusCode ?? e?.body?.statusCode ?? 0;
+
+          // Extract more diagnostic information
+          const errorDetails: any = {
+            message: e?.message ?? "send error",
+            statusCode: status,
+            errorName: e?.name,
+            errorStack: e?.stack,
+            endpoint: sub.endpoint,
+            jobId: job.id,
+            subId: sub.id,
+          };
+
+          // If this is the "Received unexpected response code" error, capture full error object
+          if (e?.message?.includes("Received unexpected response code")) {
+            errorDetails.rawError = {
+              ...e,
+              body: e?.body,
+              response: e?.response,
+              headers: e?.headers,
+            };
+          }
+
+          // Capture exception with additional context
+          Sentry.captureException(e, {
+            extra: errorDetails,
+            tags: {
+              pushErrorType: e?.name || 'unknown',
+              statusCode: String(status),
+            },
+          });
 
           allSent = false;
           const msg = e?.message ?? "send error";

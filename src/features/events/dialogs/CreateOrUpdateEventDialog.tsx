@@ -313,16 +313,16 @@ export const CreateOrUpdateEventDialog = ({
               label="Startzeit"
               onChange={(val) => {
                 if (!val) return;
+                const newStartingDateTime = set(new Date(editedEvent.startingDateTime), {
+                  hours: val.getHours(),
+                  minutes: val.getMinutes(),
+                  seconds: 0,
+                  milliseconds: 0,
+                });
                 setEditedEvent({
                   ...editedEvent,
-                  startingDateTime: formatDateToDatabase(
-                    set(new Date(editedEvent.startingDateTime), {
-                      hours: val.getHours(),
-                      minutes: val.getMinutes(),
-                      seconds: 0,
-                      milliseconds: 0,
-                    })
-                  ),
+                  startingDateTime: formatDateToDatabase(newStartingDateTime),
+                  endDateTime: formatDateToDatabase(add(newStartingDateTime, duration)),
                 });
               }}
               value={formatDateFromDatabase(editedEvent.startingDateTime)}

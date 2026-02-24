@@ -21,7 +21,7 @@ export function useUserGrantsQuery(userId: string | undefined | null) {
       qc.invalidateQueries({ queryKey: authKeys.currentUserGrants(userId) });
       timerRef.current = null;
     }, 150);
-  }, [qc, userId]);
+  }, [userId]);
 
   useEffect(() => {
     const subs: ReturnType<typeof supabase.channel>[] = [];
@@ -75,7 +75,7 @@ export function useUserGrantsQuery(userId: string | undefined | null) {
         timerRef.current = null;
       }
     };
-  }, [userId, qc, invalidateSoon]);
+  }, [userId]);
 
   const toArray = (v?: string | string[]) => (v == null ? [] : Array.isArray(v) ? v : [v]);
   const check = (need: string[], set: Set<string>, mode: Mode) =>
