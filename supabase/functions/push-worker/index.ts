@@ -48,7 +48,25 @@ const MAX_JOB_ATTEMPTS = parseInt(Deno.env.get("PUSH_WORKER_MAX_JOB_ATTEMPTS") ?
 const MAX_TARGET_ATTEMPTS = parseInt(Deno.env.get("PUSH_WORKER_MAX_TARGET_ATTEMPTS") ?? "5", 10);
 const BACKOFF_CAP_SECONDS = parseInt(Deno.env.get("PUSH_WORKER_BACKOFF_CAP_SECONDS") ?? "1800", 10); // 30 min
 
-webpush.setVapidDetails("mailto:admin@example.com", VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY);
+// Wrap VAPID setup with error handling to catch configuration issues early
+try {
+  if (!VAPID_PUBLIC_KEY || !VAPID_PRIVATE_KEY) {
+    throw new Error("VAPID_PUBLIC_KEY or VAPID_PRIVATE_KEY environment variables are not set");
+  }
+  webpush.setVapidDetails("mailto:admin@example.com", VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY);
+} catch (e: any) {
+  Sentry.captureException(e, {
+    extra: {
+      message: "Failed to set VAPID details",
+      vapidPublicKey: VAPID_PUBLIC_KEY ? "present" : "missing",
+      vapidPrivateKey: VAPID_PRIVATE_KEY ? "present" : "missing",
+    },
+    tags: {
+      errorType: "vapid_setup_failure",
+    },
+  });
+  throw e; // Re-throw to prevent the worker from starting with invalid config
+}
 
 function nowIso() {
   return new Date().toISOString();
@@ -58,6 +76,28 @@ function calcBackoffSeconds(attempts: number) {
   // capped exponential (1,2,4,8,... seconds), min 5s
   const base = Math.max(5, 2 ** attempts);
   return Math.min(BACKOFF_CAP_SECONDS, base);
+}
+
+function validateSubscription(sub: TargetRow['web_push_subscriptions']): { valid: boolean; reason?: string } {
+  if (!sub) {
+    return { valid: false, reason: "subscription is null" };
+  }
+  if (!sub.endpoint || typeof sub.endpoint !== 'string' || sub.endpoint.trim().length === 0) {
+    return { valid: false, reason: "invalid or missing endpoint" };
+  }
+  if (!sub.p256dh || typeof sub.p256dh !== 'string' || sub.p256dh.trim().length === 0) {
+    return { valid: false, reason: "invalid or missing p256dh key" };
+  }
+  if (!sub.auth || typeof sub.auth !== 'string' || sub.auth.trim().length === 0) {
+    return { valid: false, reason: "invalid or missing auth key" };
+  }
+  // Basic URL validation for endpoint
+  try {
+    new URL(sub.endpoint);
+  } catch {
+    return { valid: false, reason: "endpoint is not a valid URL" };
+  }
+  return { valid: true };
 }
 
 async function fetchDueJobs(limit: number): Promise<NotificationOutbox[]> {
@@ -225,6 +265,29 @@ async function processJob(job: NotificationOutbox) {
     await Promise.all(
       chunk.map(async (t) => {
         const sub = t.web_push_subscriptions!;
+        
+        // Validate subscription data before attempting to send
+        const validation = validateSubscription(sub);
+        if (!validation.valid) {
+          allSent = false;
+          const msg = `Invalid subscription: ${validation.reason}`;
+          Sentry.captureMessage(msg, {
+            level: 'warning',
+            extra: {
+              jobId: job.id,
+              subId: sub?.id,
+              reason: validation.reason,
+            },
+            tags: {
+              pushErrorType: 'invalid_subscription',
+            },
+          });
+          await revokeSubscription(sub.id);
+          await markTargetSkipped(job.id, sub.id, 0, msg);
+          results.push({ subId: sub.id, ok: false, status: 0, action: "revoke+skip", reason: validation.reason });
+          return;
+        }
+
         const payloadObj = { title: job.title, body: job.body, data: job.data ?? {} }
         const payload = JSON.stringify(payloadObj);
         try {
@@ -241,10 +304,6 @@ async function processJob(job: NotificationOutbox) {
             opts,
           );
 
-          if (res.statusCode < 200 || res.statusCode >= 300) {
-            Sentry.captureException(Error(JSON.stringify({ res })))
-          }
-
           // res has statusCode; web-push resolves on 201/204 typically
           await markTargetSent(job.id, sub.id, (res as any)?.statusCode ?? 201);
           results.push({ subId: sub.id, ok: true, status: (res as any)?.statusCode ?? 201 });
@@ -253,7 +312,7 @@ async function processJob(job: NotificationOutbox) {
           // web-push library may store it in different places depending on the error type
           const status = e?.statusCode ?? e?.response?.statusCode ?? e?.body?.statusCode ?? 0;
 
-          // Extract more diagnostic information
+          // Extract comprehensive diagnostic information
           const errorDetails: any = {
             message: e?.message ?? "send error",
             statusCode: status,
@@ -262,16 +321,14 @@ async function processJob(job: NotificationOutbox) {
             endpoint: sub.endpoint,
             jobId: job.id,
             subId: sub.id,
+            rawErrorBody: e?.body,
+            rawErrorHeaders: e?.headers,
+            rawErrorResponse: e?.response,
           };
 
           // If this is the "Received unexpected response code" error, capture full error object
           if (e?.message?.includes("Received unexpected response code")) {
-            errorDetails.rawError = {
-              ...e,
-              body: e?.body,
-              response: e?.response,
-              headers: e?.headers,
-            };
+            errorDetails.fullError = JSON.stringify(e, Object.getOwnPropertyNames(e));
           }
 
           // Capture exception with additional context
@@ -280,20 +337,45 @@ async function processJob(job: NotificationOutbox) {
             tags: {
               pushErrorType: e?.name || 'unknown',
               statusCode: String(status),
+              errorCategory: status >= 400 && status < 500 ? 'client_error' : status >= 500 ? 'server_error' : 'unknown',
             },
           });
 
           allSent = false;
           const msg = e?.message ?? "send error";
-          // 404/410: endpoint gone → revoke + skip
-          if (status === 404 || status === 410) {
+          
+          // Categorize errors and handle appropriately:
+          // 400-403: Invalid VAPID/auth, malformed request → permanent failure, revoke subscription
+          // 404/410: Endpoint gone → revoke subscription
+          // 429: Rate limit → retry with backoff
+          // 500-599: Server error → retry with backoff
+          // Other: Unknown error → retry with backoff but log
+          
+          if (status === 400 || status === 401 || status === 403) {
+            // Permanent authentication/authorization failures - revoke subscription
             await revokeSubscription(sub.id);
-            await markTargetSkipped(job.id, sub.id, status!, msg);
-            results.push({ subId: sub.id, ok: false, status, action: "revoke+skip" });
-          } else {
+            await markTargetSkipped(job.id, sub.id, status, msg);
+            results.push({ subId: sub.id, ok: false, status, action: "revoke+skip", reason: "auth_failure" });
+          } else if (status === 404 || status === 410) {
+            // Endpoint gone → revoke + skip
+            await revokeSubscription(sub.id);
+            await markTargetSkipped(job.id, sub.id, status, msg);
+            results.push({ subId: sub.id, ok: false, status, action: "revoke+skip", reason: "endpoint_gone" });
+          } else if (status === 429) {
+            // Rate limit - use longer backoff
             const attemptsNext = Math.min(t.attempt_count + 1, MAX_TARGET_ATTEMPTS);
             await backoffTarget(job.id, sub.id, attemptsNext, status, msg);
-            results.push({ subId: sub.id, ok: false, status, action: "backoff", attemptsNext });
+            results.push({ subId: sub.id, ok: false, status, action: "backoff", attemptsNext, reason: "rate_limit" });
+          } else if (status >= 500 && status < 600) {
+            // Server error - retry with backoff
+            const attemptsNext = Math.min(t.attempt_count + 1, MAX_TARGET_ATTEMPTS);
+            await backoffTarget(job.id, sub.id, attemptsNext, status, msg);
+            results.push({ subId: sub.id, ok: false, status, action: "backoff", attemptsNext, reason: "server_error" });
+          } else {
+            // Unknown error or no status code - retry with backoff
+            const attemptsNext = Math.min(t.attempt_count + 1, MAX_TARGET_ATTEMPTS);
+            await backoffTarget(job.id, sub.id, attemptsNext, status, msg);
+            results.push({ subId: sub.id, ok: false, status, action: "backoff", attemptsNext, reason: "unknown_error" });
           }
         }
       }),
