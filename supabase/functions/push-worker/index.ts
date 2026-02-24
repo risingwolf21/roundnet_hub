@@ -247,8 +247,39 @@ async function processJob(job: Tables<'notification_outbox'>) {
           await markTargetSent(job.id, sub.id, (res as any)?.statusCode ?? 201);
           results.push({ subId: sub.id, ok: true, status: (res as any)?.statusCode ?? 201 });
         } catch (e: any) {
-          Sentry.captureException(e);
-          const status = e?.statusCode ?? 0;
+          // Extract status code from various possible locations in the error object
+          // web-push library may store it in different places depending on the error type
+          const status = e?.statusCode ?? e?.response?.statusCode ?? e?.body?.statusCode ?? 0;
+          
+          // Extract more diagnostic information
+          const errorDetails: any = {
+            message: e?.message ?? "send error",
+            statusCode: status,
+            errorName: e?.name,
+            errorStack: e?.stack,
+            endpoint: sub.endpoint,
+            jobId: job.id,
+            subId: sub.id,
+          };
+
+          // If this is the "Received unexpected response code" error, capture full error object
+          if (e?.message?.includes("Received unexpected response code")) {
+            errorDetails.rawError = {
+              ...e,
+              body: e?.body,
+              response: e?.response,
+              headers: e?.headers,
+            };
+          }
+
+          // Capture exception with additional context
+          Sentry.captureException(e, {
+            extra: errorDetails,
+            tags: {
+              pushErrorType: e?.name || 'unknown',
+              statusCode: String(status),
+            },
+          });
 
           allSent = false;
           const msg = e?.message ?? "send error";
