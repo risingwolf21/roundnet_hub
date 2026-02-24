@@ -114,10 +114,44 @@ const SearchPlacesDialog = ({ open, handleClose, placeSelected }: SearchPlacesDi
 
   const getUserLocation = useCallback(() => {
     if (navigator.geolocation) {
-      navigator.permissions.query({ name: 'geolocation' }).then((permissionStatus) => {
-        if (permissionStatus.state === 'denied') {
-          window.location.href = 'app-settings:location';
-        } else {
+      // Check if navigator.permissions.query is supported and working
+      // iOS Safari has inconsistent support for this API
+      if (navigator.permissions && typeof navigator.permissions.query === 'function') {
+        try {
+          navigator.permissions
+            .query({ name: 'geolocation' } as PermissionDescriptor)
+            .then((permissionStatus) => {
+              if (permissionStatus.state === 'denied') {
+                // Only redirect to app settings if we're in a native app context
+                if (window.location.href.startsWith('app-settings:')) {
+                  window.location.href = 'app-settings:location';
+                }
+              } else {
+                navigator.geolocation.getCurrentPosition(
+                  (position) => {
+                    const { latitude, longitude } = position.coords;
+                    setUserLocation({ latitude, longitude });
+                  },
+                  (error) => {
+                    notifications.show(`Error getting user location: \n ${error.message}`, { severity: 'error' });
+                  }
+                );
+              }
+            })
+            .catch(() => {
+              // If permissions query fails (iOS Safari), just try to get location directly
+              navigator.geolocation.getCurrentPosition(
+                (position) => {
+                  const { latitude, longitude } = position.coords;
+                  setUserLocation({ latitude, longitude });
+                },
+                (error) => {
+                  notifications.show(`Error getting user location: \n ${error.message}`, { severity: 'error' });
+                }
+              );
+            });
+        } catch (error) {
+          // If permissions API throws synchronously (some iOS Safari versions), fallback to direct geolocation
           navigator.geolocation.getCurrentPosition(
             (position) => {
               const { latitude, longitude } = position.coords;
@@ -128,7 +162,18 @@ const SearchPlacesDialog = ({ open, handleClose, placeSelected }: SearchPlacesDi
             }
           );
         }
-      });
+      } else {
+        // Permissions API not supported, directly request location
+        navigator.geolocation.getCurrentPosition(
+          (position) => {
+            const { latitude, longitude } = position.coords;
+            setUserLocation({ latitude, longitude });
+          },
+          (error) => {
+            notifications.show(`Error getting user location: \n ${error.message}`, { severity: 'error' });
+          }
+        );
+      }
     } else {
       notifications.show(`Geolocation is not supported by this browser.`, { severity: 'error' });
     }
