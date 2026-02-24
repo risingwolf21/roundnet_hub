@@ -1,7 +1,7 @@
 // src/features/grants/useUserGrantsQuery.ts
+import { queryClient } from '@/lib/queryClient';
 import { supabase } from '@/lib/supabase';
 import { authKeys, useCurrentUserGrants } from '@/tanstack/auth';
-import { useQueryClient } from '@tanstack/react-query';
 import { useCallback, useEffect, useMemo, useRef } from 'react';
 
 export type GrantsState = { perm: Set<string>; feat: Set<string> };
@@ -10,15 +10,13 @@ export type Mode = 'all' | 'any';
 const empty: GrantsState = { perm: new Set(), feat: new Set() };
 
 export function useUserGrantsQuery(userId: string) {
-  const qc = useQueryClient();
-
   const q = useCurrentUserGrants(userId);
 
   const timerRef = useRef<number | null>(null);
   const invalidateSoon = useCallback(() => {
     if (timerRef.current) window.clearTimeout(timerRef.current);
     timerRef.current = window.setTimeout(() => {
-      qc.invalidateQueries({ queryKey: authKeys.currentUserGrants(userId) });
+      queryClient.invalidateQueries({ queryKey: authKeys.currentUserGrants(userId) });
       timerRef.current = null;
     }, 150);
   }, [userId]);
