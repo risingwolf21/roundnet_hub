@@ -1,4 +1,5 @@
 import { DialogsProvider, NotificationsProvider } from '@toolpad/core';
+import { useMemo } from 'react';
 import { Navigate, Outlet, RouteObject, RouterProvider, useLocation } from 'react-router';
 import ErrorRouteElement from './components/ErrorRouteElement';
 import AuthLayout from './components/layout/AuthLayout';
@@ -49,7 +50,7 @@ const ResetPassword = lazyWithRetry(() => import('./features/profile/ResetPasswo
 export const AppRoutes = () => {
   const { user } = useApplication();
 
-  const router = createRouter(user);
+  const router = useMemo(() => createRouter(user), [user]);
 
   return <RouterProvider router={router} />;
 };

@@ -18,7 +18,6 @@ import IconButton from '@mui/material/IconButton';
 import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';
 import MenuItem from '@mui/material/MenuItem';
-import Select from '@mui/material/Select';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 
@@ -170,14 +169,15 @@ const EnterPointDialog = ({
 
       {category_enabled && category_options.length > 0 && (
         <ListItem>
-          <Select
-            sx={{ mt: 2, mb: 1 }}
-            label="Kategorie"
-            fullWidth
+          <TextField
             value={category}
-            onChange={async (e) => {
+            onChange={(e) => {
               setCategory(e.target.value)
             }}
+            select
+            fullWidth
+            label="Kategorie"
+            sx={{ mt: 2, mb: 1 }}
           >
             {category_options
               .map((x) => (
@@ -185,7 +185,7 @@ const EnterPointDialog = ({
                   {x}
                 </MenuItem>
               ))}
-          </Select>
+          </TextField>
         </ListItem>
       )}
 

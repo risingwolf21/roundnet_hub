@@ -24,7 +24,7 @@ import SportsHandball from '@mui/icons-material/SportsHandball';
 import StorageOutlined from '@mui/icons-material/StorageOutlined';
 import Update from '@mui/icons-material/Update';
 import ViewStreamIcon from '@mui/icons-material/ViewStream';
-import { alpha, BoxProps, DrawerProps, ListItemProps, Theme } from '@mui/material';
+import { alpha, BoxProps, CircularProgress, ListItemProps, useMediaQuery, useTheme } from '@mui/material';
 import Badge from '@mui/material/Badge';
 import Box from '@mui/material/Box';
 import Divider from '@mui/material/Divider';
@@ -36,7 +36,7 @@ import ListItemText from '@mui/material/ListItemText';
 import ListSubheader from '@mui/material/ListSubheader';
 import SwipeableDrawer from '@mui/material/SwipeableDrawer';
 import Typography from '@mui/material/Typography';
-import { styled } from '@mui/system';
+import { keyframes, styled } from '@mui/system';
 import { TFunction } from 'i18next';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -96,6 +96,7 @@ const DrawerItem = styled(ListItem, {
 const DrawerBox = styled(Box)<BoxProps>(() => ({
   width: '100%',
   height: '100%',
+  overscrollBehaviorX: 'none',
   paddingTop: 'env(safe-area-inset-top)',
   paddingBottom: 'env(safe-area-inset-bottom)',
   paddingLeft: 'env(safe-area-inset-left)',
@@ -103,22 +104,6 @@ const DrawerBox = styled(Box)<BoxProps>(() => ({
   overflow: 'auto',
 }));
 
-const CustomDrawer = styled(SwipeableDrawer)<DrawerProps>(({ theme }) => ({
-  '& .MuiPaper-root': {
-    borderTopRightRadius: 24,
-    borderBottomRightRadius: 24,
-    background: '#f2ecf1',
-    color: '#49454e',
-    [theme.breakpoints.up('lg')]: {
-      // In der permanenten Variante kleben wir das Paper unter die Safe-Area-Top
-      position: 'sticky',
-      top: 'env(safe-area-inset-top)',
-      height: 'calc(100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom))',
-      borderTopRightRadius: 0,
-      borderBottomRightRadius: 0,
-    },
-  },
-}));
 
 type DrawerContentProps = {
   tab: string;
@@ -128,6 +113,7 @@ type DrawerContentProps = {
   request_group_joins: number;
   notification_count: number;
   update_app: () => void;
+  isUpdating: boolean;
 };
 const DrawerContent = ({
   tab,
@@ -137,6 +123,7 @@ const DrawerContent = ({
   request_group_joins,
   notification_count,
   update_app,
+  isUpdating
 }: DrawerContentProps) => {
   return (
     <DrawerBox>
@@ -562,15 +549,23 @@ const DrawerContent = ({
             primary={t('browse.helpAndInformation')}
           />
         </DrawerItem>
-        <DrawerItem key="update app" selected={false} onClick={update_app}>
+        <DrawerItem
+          key="update app"
+          selected={false}
+          onClick={() => !isUpdating && update_app()}
+        >
           <ListItemAvatar>
             <ListItemIcon>
-              <Update />
+              {isUpdating ? (
+                <CircularProgress size={24} color="inherit" />
+              ) : (
+                <Update />
+              )}
             </ListItemIcon>
           </ListItemAvatar>
           <ListItemText
             primaryTypographyProps={{ fontWeight: 'bold', fontSize: '0.9rem' }}
-            primary={t('browse.appRefresh')}
+            primary={isUpdating ? 'Aktualisiere...' : t('browse.appRefresh')}
           />
         </DrawerItem>
         <DrawerItem key="app version" selected={false}>
@@ -591,10 +586,13 @@ const DrawerContent = ({
 };
 
 export const Drawer = ({ open, onClose, onOpen }: Props) => {
+  const theme = useTheme();
   const navigate = useNavigate();
   const { t } = useTranslation();
   const { user } = useGrants();
+  const isLargeScreen = useMediaQuery(theme.breakpoints.up('lg'));
   const [tab, setTab] = useState<string>(import.meta.env.VITE_APP_HOMEPAGE);
+  const [isUpdating, setIsUpdating] = useState(false);
 
   const { data: requested_group_joins = [] } = useRequestedUsersPerGroup(user);
   const { data: notifications = [] } = useAllNotifications(user);
@@ -608,18 +606,47 @@ export const Drawer = ({ open, onClose, onOpen }: Props) => {
   const handleChange = (newValue: string) => {
     setTab(newValue);
     navigate('/' + newValue);
+    if (!isLargeScreen) onClose();
   };
 
-  async function waitForServiceWorkerReady(timeoutMs: number): Promise<ServiceWorkerRegistration | null> {
-    if (!('serviceWorker' in navigator)) return null;
+  const updateServiceWorkerWithTimeout = async (timeoutMs: number) => {
+    if (!('serviceWorker' in navigator)) return;
 
-    const readyPromise = navigator.serviceWorker.ready;
+    const reg = await navigator.serviceWorker.getRegistration();
 
-    const timeoutPromise = new Promise<null>((resolve) => setTimeout(() => resolve(null), timeoutMs));
+    if (reg) {
+      try {
+        await Promise.race([
+          reg.update(),
+          new Promise((resolve) => setTimeout(resolve, timeoutMs))
+        ]);
+      } catch (err) {
+        console.warn('SW update check failed or timed out', err);
+      }
+    }
+  };
 
-    // Wenn timeout gewinnt → null
-    return Promise.race([readyPromise, timeoutPromise]) as Promise<ServiceWorkerRegistration | null>;
-  }
+  const handleAppUpdate = async () => {
+    if (isUpdating) return;
+    setIsUpdating(true);
+
+    try {
+      await updateServiceWorkerWithTimeout(2000);
+
+      await queryClient.cancelQueries();
+
+      await queryClient.resetQueries();
+
+      await new Promise(r => setTimeout(r, 800));
+
+      window.location.reload();
+
+    } catch (e) {
+      console.error('Update failed:', e);
+    } finally {
+      setIsUpdating(false);
+    }
+  };
 
   const drawerContent = (
     <DrawerContent
@@ -629,44 +656,98 @@ export const Drawer = ({ open, onClose, onOpen }: Props) => {
       version={import.meta.env.VITE_GIT_COMMIT}
       request_group_joins={requested_group_joins.length}
       notification_count={notifications.filter((x) => !x.dismissed_at).length}
-      update_app={async () => {
-        try {
-          const reg = await waitForServiceWorkerReady(2000);
-
-          if (reg) {
-            await reg.update();
-          }
-
-          await queryClient.invalidateQueries();
-          window.location.reload();
-          console.log('App updated.');
-        } catch (e) {
-          console.error('Error updating app:', e);
-        }
-      }}
+      update_app={handleAppUpdate}
+      isUpdating={isUpdating}
     />
   );
 
   return (
-    <Box
-      component="nav"
-      sx={(theme) => ({
-        flexGrow: 1,
-        alignItems: 'center',
-        display: 'flex',
-        flexDirection: 'column',
-        pt: 'env(safe-area-inset-top)',
-        pb: 'env(safe-area-inset-bottom)',
-        [theme.breakpoints.down('lg')]: {
-          width: 'unset',
-          flexShrink: 0,
-        },
-        [theme.breakpoints.up('lg')]: {
-          width: `${drawerWidth}px`,
-        },
-      })}
-    >
-      <CustomDrawer
+    <>
+      <Box
+        component="nav"
+        sx={{
+          flexGrow: 1,
+          alignItems: 'center',
+          display: 'flex',
+          flexDirection: 'column',
+          pt: 'env(safe-area-inset-top)',
+          pb: 'env(safe-area-inset-bottom)',
+          width: { lg: `${drawerWidth}px` },
+          flexShrink: { lg: 0 },
+        }}
+      >
+        {
+          !isLargeScreen ? (
+            <SwipeableDrawer
+              variant="temporary"
+              anchor="left"
+              open={open}
+              onOpen={onOpen}
+              onClose={onClose}
+              // iOS Performance & Geste-Konflikt-Vermeidung
+              disableBackdropTransition={!iOS}
+              disableDiscovery={false}
+              swipeAreaWidth={60} // Ermöglicht das "Herausziehen" vom Rand
+              minFlingVelocity={300}
+              hysteresis={0.1}
+              ModalProps={{
+                keepMounted: true, // Erhöht Performance beim Wiederöffnen
+              }}
+              sx={{
+                '& .MuiSwipeableDrawer-swipeArea': {
+                  backgroundColor: 'transparent',
+                  pointerEvents: 'auto',
+                  touchAction: 'none',
+                },
+              }}
+              slotProps={{
+                paper: {
+                  sx: {
+                    width: drawerWidth,
+                    borderTopRightRadius: 24,
+                    borderBottomRightRadius: 24,
+                    background: '#f2ecf1',
+                    // Verhindert Flackern auf iOS während der Animation
+                    backfaceVisibility: 'hidden',
+                    perspective: 1000,
+                    pointerEvents: 'auto !important',
+                    visibility: 'visible !important',
+                  }
+                },
+                docked: {
+                  sx: {
+                    pointerEvents: 'all !important',
+                  }
+                }
+              }}
+            >
+              {drawerContent}
+            </SwipeableDrawer>
+          ) : (
+            /* DESKTOP: Permanent Drawer */
+            <SwipeableDrawer
+              variant="permanent"
+              open
+              onOpen={() => { }} // Notwendig für TS, da SwipeableDrawer diese Props verlangt
+              onClose={() => { }}
+              sx={{
+                display: { xs: 'none', lg: 'block' },
+                '& .MuiDrawer-paper': {
+                  boxSizing: 'border-box',
+                  width: drawerWidth,
+                  background: '#f2ecf1',
+                  border: 'none',
+                  position: 'sticky',
+                  top: 0,
+                  height: '100vh',
+                },
+              }}
+            >
+              {drawerContent}
+            </SwipeableDrawer>
+          )
+        }
+        {/* <CustomDrawer
         variant="temporary"
         anchor={'left'}
         open={open}
@@ -700,7 +781,8 @@ export const Drawer = ({ open, onClose, onOpen }: Props) => {
         disableDiscovery={iOS}
       >
         {drawerContent}
-      </CustomDrawer>
-    </Box>
+      </CustomDrawer> */}
+      </Box>
+    </>
   );
 };

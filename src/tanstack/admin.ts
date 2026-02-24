@@ -5,7 +5,6 @@ import { AdminDrinksRepository } from '@/repository/AdminDrinksRepository';
 import { AdminUsersRepository } from '@/repository/AdminUsersRepository';
 import { fetchSimpleUser } from '@/repository/UserRepository';
 import { FullPayment, UserWithGroups } from '@/types/supabaseTypes';
-import { formatDateToDatabase } from '@/utils';
 import { useInfiniteQuery, useMutation, useQuery } from '@tanstack/react-query';
 
 export const adminKeys = {
@@ -30,14 +29,34 @@ export const useUsers = () =>
     },
   });
 
-export const useAdminAnalytics = (rpc: RpcName, from: Date, to: Date) => useQuery({
-  queryKey: adminKeys.analytics(rpc, formatDateToDatabase(from), formatDateToDatabase(to)),
-  queryFn: async () => {
-    const result = await supabase.rpc(rpc, { p_from: formatDateToDatabase(from), p_to: formatDateToDatabase(to) });
+const cleanParams = (params: Record<string, any>) => {
+  return Object.fromEntries(
+    Object.entries(params).filter(([_, v]) => v !== null && v !== undefined && v !== '')
+  );
+};
 
-    return result.data;
+export const useAdminAnalytics = (
+  rpc: RpcName | undefined,
+  params: Record<string, any>,
+  enabled: boolean = true
+) => useQuery({
+  queryKey: ['admin', 'analytics', rpc, params],
+  enabled: !!rpc && enabled,
+  queryFn: async () => {
+    if (!rpc) return [];
+
+    const { data, error } = await supabase.rpc(
+      rpc as any,
+      cleanParams(params) as any
+    );
+
+    if (error) {
+      throw error;
+    }
+
+    return data as any[];
   }
-})
+});
 
 export const useInfiniteLogsList = (count: number = 50) =>
   useInfiniteQuery({
