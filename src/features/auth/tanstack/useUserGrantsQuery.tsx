@@ -9,7 +9,7 @@ export type Mode = 'all' | 'any';
 
 const empty: GrantsState = { perm: new Set(), feat: new Set() };
 
-export function useUserGrantsQuery(userId: string) {
+export function useUserGrantsQuery(userId: string | undefined | null) {
   const q = useCurrentUserGrants(userId);
 
   const timerRef = useRef<number | null>(null);
