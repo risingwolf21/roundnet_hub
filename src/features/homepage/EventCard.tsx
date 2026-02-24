@@ -19,6 +19,18 @@ import ListItem from '@mui/material/ListItem';
 import ListItemAvatar from '@mui/material/ListItemAvatar';
 import ListItemText from '@mui/material/ListItemText';
 
+const getPlaceName = (place: string | null): string | null => {
+  if (!place) return null;
+  
+  try {
+    const parsed = JSON.parse(place);
+    return parsed?.name || null;
+  } catch (error) {
+    // If parsing fails, return null to hide the place section
+    return null;
+  }
+};
+
 export const EventCard = ({
   index,
   event,
@@ -31,6 +43,7 @@ export const EventCard = ({
   updateAttendance?: (user: User, event: EventsUserView, newState: EventAttendance) => void;
 }) => {
   const navigate = useNavigate();
+  const placeName = getPlaceName(event.place);
 
   return (
     <Card
@@ -60,13 +73,13 @@ export const EventCard = ({
             </ListItemAvatar>
             <ListItemText primary={format(event.startingDateTime, 'EEE dd.MM HH:mm')} />
           </ListItem>
-          {event.place && (
+          {placeName && (
             <ListItem disablePadding dense>
               <ListItemAvatar sx={{ display: 'flex', minWidth: '40px' }}>
                 <Place />
               </ListItemAvatar>
               <ListItemText
-                primary={JSON.parse(event.place!)['name']}
+                primary={placeName}
                 slotProps={{
                   primary: {
                     whiteSpace: 'nowrap',
