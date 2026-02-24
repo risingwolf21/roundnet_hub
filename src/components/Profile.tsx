@@ -31,18 +31,17 @@ const Content = ({ payload, onClose }: DialogProps<ProfilePayload, null>) => {
   const [currentUser, setCurrentUser] = useState<UserWithGroupsAndPlayerData | null>(null);
   const [overlappingGroups, setOverlappingGroups] = useState<Group[]>([]);
 
-  const loadUserData = useCallback(
-    async (userId: string) => {
-      const userResult = await SupabaseUserRepository.fetchUserWithGroups(payload.user.id);
-      const result = await SupabaseUserRepository.fetchUserWithGroups(userId);
+  const loadUserData = useCallback(async () => {
+    const userResult = await SupabaseUserRepository.fetchUserWithGroups(payload.user.id);
+    const result = await SupabaseUserRepository.fetchUserWithGroups(payload.userId);
 
-      return { result, userResult };
-    },
-    [payload.user]
-  );
+    return { result, userResult };
+  }, [payload.user, payload.userId]);
 
   useEffect(() => {
-    loadUserData(payload.userId).then(({ result, userResult }) => {
+    if (!payload.userId) return;
+
+    loadUserData().then(({ result, userResult }) => {
       setOverlappingGroups(
         result.data?.groups?.filter((x: Group) => userResult.data?.groups.some((y: Group) => y?.id === x?.id)) ?? []
       );
