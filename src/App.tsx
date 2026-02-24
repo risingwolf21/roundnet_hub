@@ -37,8 +37,22 @@ const ServiceWorkerGate = ({ children }: PropsWithChildren) => {
     },
     onRegistered: (registration) => {
       if (registration) {
-        setInterval(() => {
-          registration.update();
+        let isUpdating = false;
+        setInterval(async () => {
+          // Prevent concurrent update attempts
+          if (isUpdating) {
+            return;
+          }
+          
+          try {
+            isUpdating = true;
+            await registration.update();
+          } catch (error) {
+            // Silently handle update errors to prevent unhandled promise rejections
+            console.debug('ServiceWorker update check failed:', error);
+          } finally {
+            isUpdating = false;
+          }
         }, 60_000);
       }
     },
