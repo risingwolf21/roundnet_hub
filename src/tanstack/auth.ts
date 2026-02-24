@@ -8,13 +8,14 @@ import { useQuery } from '@tanstack/react-query';
 export const authKeys = {
   all: ['auth'] as const,
   currentUser: (userId?: string) => [...authKeys.all, 'current-user', userId] as const,
-  currentUserGrants: (userId: string) => [...authKeys.all, 'current-user', userId, 'grants'] as const,
+  currentUserGrants: (userId: string | undefined | null) => [...authKeys.all, 'current-user', userId, 'grants'] as const,
 };
 
 export const useCurrentUser = (session: Session | null) =>
   useQuery({
     queryKey: authKeys.currentUser(session?.user.id),
-    enabled: !!session,
+    enabled: !!session?.user.id,
+    staleTime: Infinity,
     queryFn: async () => {
       if (!session) return null;
       const [{ data: user, error }, groups] = await Promise.all([
@@ -23,7 +24,7 @@ export const useCurrentUser = (session: Session | null) =>
       ]);
       if (error) {
         captureException(error);
-        return null;
+        throw error;
       }
 
       const userData: UserWithGroups = {
@@ -35,11 +36,13 @@ export const useCurrentUser = (session: Session | null) =>
     },
   });
 
-export const useCurrentUserGrants = (userId: string) =>
+export const useCurrentUserGrants = (userId?: string | null) =>
   useQuery({
     queryKey: authKeys.currentUserGrants(userId),
-    enabled: true,
+    enabled: !!userId,
     queryFn: async () => {
+      if (!userId) return { perm: new Set<string>(), feat: new Set<string>() };
+
       const { data, error } = await supabase.from('user_grants_view').select('kind,key').eq('user', userId);
 
       if (error) throw error;
