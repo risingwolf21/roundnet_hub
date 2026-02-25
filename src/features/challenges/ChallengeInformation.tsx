@@ -37,6 +37,7 @@ import Tab from '@mui/material/Tab';
 import Tabs from '@mui/material/Tabs';
 import Typography from '@mui/material/Typography';
 import { useTheme } from '@mui/material/styles';
+import { isAfter } from 'date-fns';
 import { CreateOrUpdateChallengeDialog } from './dialogs/CreateOrUpdateChallengeDialog';
 
 const ChallengeInformationProvider = ({ t }: { t: TFunction }) => {
@@ -191,7 +192,7 @@ const ChallengeInformation = ({ t, challengeId }: { t: TFunction; challengeId: s
           <ChallengeLeaderboard isLoading={isLeaderboardLoading} challenge_points={leaderboard} />
         </TabPanel>
         <Has perm={'challenges.stats.write'}>
-          {!challenge?.automated && (
+          {!challenge?.automated && (challenge?.start_date && isAfter(new Date(challenge.start_date), new Date())) && (
             <Fab
               sx={{
                 background: 'primary.light',

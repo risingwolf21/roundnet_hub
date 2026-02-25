@@ -2,7 +2,7 @@ import { dataURLtoFile, formatDateFromDatabase, readFile } from '@/utils';
 import { DatePicker, PickersDay, PickersDayProps } from '@mui/x-date-pickers';
 import { DialogProps } from '@toolpad/core';
 import Compressor from 'compressorjs';
-import { differenceInDays, isSameDay, isSameWeek } from 'date-fns';
+import { differenceInDays, isAfter, isBefore, isSameDay, isSameWeek } from 'date-fns';
 import React, { useState } from 'react';
 import { v4 as uuid } from 'uuid';
 import { SwipeableDialog } from '../../../components/SwipeableDialog';
@@ -28,6 +28,8 @@ type EnterPointDialogProps = {
   comments_enabled?: boolean;
   category_enabled?: boolean;
   category_options?: string[];
+  start_date?: string | null;
+  end_date?: string | null;
 };
 
 function ServerDay(props: PickersDayProps & { highlightedDays?: Date[]; maxEntriesPerWeek?: number }) {
@@ -66,7 +68,7 @@ type EnterPointResult = {
 };
 
 const EnterPointDialog = ({
-  payload: { dates, maxEntriesPerWeek, maxEntriesPerDay, comments_enabled = false, category_enabled = false, category_options = [] },
+  payload: { dates, maxEntriesPerWeek, maxEntriesPerDay, comments_enabled = false, category_enabled = false, category_options = [], start_date = null, end_date = null },
   open,
   onClose,
 }: DialogProps<EnterPointDialogProps, EnterPointResult | null>) => {
@@ -112,7 +114,7 @@ const EnterPointDialog = ({
       minHeight={40}
       actions={
         <>
-          <Button onClick={() => onClose({ date, image, count: points, comment, category })}>Bestätigen</Button>
+          <Button disabled={(start_date !== null && isAfter(new Date(start_date), date)) && (end_date !== null && isBefore(new Date(end_date), date))} onClick={() => onClose({ date, image, count: points, comment, category })}>Bestätigen</Button>
           <Button onClick={() => onClose(null)}>Abbrechen</Button>
         </>
       }

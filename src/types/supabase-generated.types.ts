@@ -1201,6 +1201,7 @@ export type Database = {
           max_points_per_week: number | null
           name: string
           show_all_members: boolean
+          start_date: string | null
         }
         Insert: {
           automated?: boolean
@@ -1216,6 +1217,7 @@ export type Database = {
           max_points_per_week?: number | null
           name?: string
           show_all_members?: boolean
+          start_date?: string | null
         }
         Update: {
           automated?: boolean
@@ -1231,6 +1233,7 @@ export type Database = {
           max_points_per_week?: number | null
           name?: string
           show_all_members?: boolean
+          start_date?: string | null
         }
         Relationships: [
           {
@@ -2700,20 +2703,6 @@ export type Database = {
         Returns: {
           drinks_count: number
           total_spend: number
-          user_name: string
-        }[]
-      }
-      admin_attendance_leaderboard: {
-        Args: {
-          p_from: string
-          p_group?: string
-          p_limit?: number
-          p_to: string
-        }
-        Returns: {
-          avatar_url: string
-          signups: number
-          user_id: string
           user_name: string
         }[]
       }
