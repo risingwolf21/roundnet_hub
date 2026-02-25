@@ -192,7 +192,7 @@ const ChallengeInformation = ({ t, challengeId }: { t: TFunction; challengeId: s
           <ChallengeLeaderboard isLoading={isLeaderboardLoading} challenge_points={leaderboard} />
         </TabPanel>
         <Has perm={'challenges.stats.write'}>
-          {!challenge?.automated && (challenge?.start_date && isAfter(new Date(challenge.start_date), new Date())) && (
+          {!challenge?.automated && (challenge?.start_date && isAfter(new Date(), new Date(challenge.start_date))) && (
             <Fab
               sx={{
                 background: 'primary.light',

@@ -114,7 +114,7 @@ const EnterPointDialog = ({
       minHeight={40}
       actions={
         <>
-          <Button disabled={(start_date !== null && isAfter(new Date(start_date), date)) && (end_date !== null && isBefore(new Date(end_date), date))} onClick={() => onClose({ date, image, count: points, comment, category })}>Bestätigen</Button>
+          <Button disabled={(start_date !== null && isBefore(new Date(start_date), date)) || (end_date !== null && isAfter(new Date(end_date), date))} onClick={() => onClose({ date, image, count: points, comment, category })}>Bestätigen</Button>
           <Button onClick={() => onClose(null)}>Abbrechen</Button>
         </>
       }
