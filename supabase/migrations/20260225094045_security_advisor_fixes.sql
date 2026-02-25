@@ -1,9 +1,3 @@
-create extension if not exists "pgtap" with schema "extensions";
-
-create extension if not exists "basejump-supabase_test_helpers" with schema "public";
-
-create extension if not exists "supabase-dbdev" with schema "public";
-
 set check_function_bodies = off;
 
 CREATE OR REPLACE FUNCTION public.admin_analytics_attendance_ranking(p_start timestamp with time zone, p_end timestamp with time zone)
