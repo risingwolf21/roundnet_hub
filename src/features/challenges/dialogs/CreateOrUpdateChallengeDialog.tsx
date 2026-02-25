@@ -47,6 +47,7 @@ const EMPTY_CHALLENGE: Challenge = {
   id: '',
   created_at: '',
   end_date: null,
+  start_date: null,
   group: '',
   max_points_per_week: null,
   max_points_per_day: 1,
@@ -293,7 +294,35 @@ const Content = ({ payload, onClose }: DialogProps<CreateChallengePayload, Chall
             primary="Max. Punkte pro Tag"
           />
         </ListItem>
-
+        <ListItem sx={{ pt: 0, pb: 0 }} key={'startDate'}>
+          <ListItemAvatar>
+            <Checkbox
+              sx={{ pl: 0 }}
+              checked={data.start_date !== null}
+              onChange={() =>
+                setData({
+                  ...data,
+                  start_date: data.start_date === null ? formatDateToDatabase(Date.now()) : null,
+                })
+              }
+            />
+          </ListItemAvatar>
+          <DatePicker
+            sx={{ width: '100%', mt: 2, mb: 1 }}
+            label="Startdatum"
+            disabled={data.start_date === null}
+            disablePast
+            format="dd MMMM yyyy"
+            onChange={(val) => {
+              if (!val) return;
+              setData({
+                ...data,
+                start_date: formatDateToDatabase(val),
+              });
+            }}
+            value={formatDateFromDatabase(data.start_date)}
+          />
+        </ListItem>
         <ListItem sx={{ pt: 0, pb: 0 }} key={'endDate'}>
           <ListItemAvatar>
             <Checkbox
