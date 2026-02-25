@@ -2,6 +2,7 @@ import { EventsUserView } from '@/types/supabaseTypes';
 import { isBefore, toDate } from 'date-fns';
 import { TFunction } from 'i18next';
 
+import { Has } from '@/hooks/useGrants';
 import { formatDateFromDatabase } from '@/utils';
 import HourglassBottom from '@mui/icons-material/HourglassBottom';
 import RecordVoiceOver from '@mui/icons-material/RecordVoiceOver';
@@ -142,9 +143,9 @@ export const EventItem = ({ event, onClick, attendEvent, declineEvent, attendanc
             event.isCancelled
               ? 'Event abgesagt'
               : [
-                  t('events.secondaryTextStart', { start: toDate(event.startingDateTime!) }),
-                  event.endDateTime && t('events.secondaryTextWithEnd', { end: toDate(event.endDateTime) }),
-                ].join(' ')
+                t('events.secondaryTextStart', { start: toDate(event.startingDateTime!) }),
+                event.endDateTime && t('events.secondaryTextWithEnd', { end: toDate(event.endDateTime) }),
+              ].join(' ')
           }
           slotProps={{
             primary: {
@@ -158,14 +159,16 @@ export const EventItem = ({ event, onClick, attendEvent, declineEvent, attendanc
           }}
         />
 
-        <Stack direction="row" spacing={0.1} sx={{ flexShrink: 0, alignItems: 'center' }}>
-          <EventItemSecondaryActions
-            event={event}
-            attendEvent={attendEvent}
-            declineEvent={declineEvent}
-            attendanceUpdating={attendanceUpdating}
-          />
-        </Stack>
+        <Has perm={'event.signup'}>
+          <Stack direction="row" spacing={0.1} sx={{ flexShrink: 0, alignItems: 'center' }}>
+            <EventItemSecondaryActions
+              event={event}
+              attendEvent={attendEvent}
+              declineEvent={declineEvent}
+              attendanceUpdating={attendanceUpdating}
+            />
+          </Stack>
+        </Has>
       </Stack>
     </ListItem>
   );

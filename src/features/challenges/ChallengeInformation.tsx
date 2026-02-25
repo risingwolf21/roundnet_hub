@@ -37,7 +37,7 @@ import Tab from '@mui/material/Tab';
 import Tabs from '@mui/material/Tabs';
 import Typography from '@mui/material/Typography';
 import { useTheme } from '@mui/material/styles';
-import { isAfter } from 'date-fns';
+import { isAfter, isBefore } from 'date-fns';
 import { CreateOrUpdateChallengeDialog } from './dialogs/CreateOrUpdateChallengeDialog';
 
 const ChallengeInformationProvider = ({ t }: { t: TFunction }) => {
@@ -170,6 +170,11 @@ const ChallengeInformation = ({ t, challengeId }: { t: TFunction; challengeId: s
         <Alert sx={{ m: 2 }} severity={'info'}>
           {challenge?.description}
         </Alert>
+        {challenge?.start_date && isBefore(new Date(), new Date(challenge.start_date)) && (
+          <Alert sx={{ m: 2 }} severity={'info'}>
+            {t('challenge.startsInFuture', { startDate: new Date(challenge.start_date) })}
+          </Alert>
+        )}
         {challenge?.automated && (
           <Alert sx={{ m: 2 }} severity={'info'}>
             {isLoading ? 'Challenge wird geladen...' : t('challenge.automatedChallenge')}

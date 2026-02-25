@@ -113,7 +113,8 @@
   "updateAvailableTitle": "Neue Version verfügbar",
   "updateAvailableMessage": "Es sind neue Features verfügbar. Bitte aktualisiere die App.",
   "challenge": {
-    "automatedChallenge": "Bei dieser Challenge werden die Punkte automatisiert aktualisiert!"
+    "automatedChallenge": "Bei dieser Challenge werden die Punkte automatisiert aktualisiert!",
+    "startsInFuture": "Diese Challenge startet am {{startDate, dd.MM.yyyy}}"
   },
   "filter": "Filtern",
   "itemType": {

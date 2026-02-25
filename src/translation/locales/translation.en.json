@@ -112,7 +112,8 @@
   "updateAvailableTitle": "Update available",
   "updateAvailableMessage": "There are new features available. Please update the app.",
   "challenge": {
-    "automatedChallenge": "In this challenge, the points are updated automatically!"
+    "automatedChallenge": "In this challenge, the points are updated automatically!",
+    "startsInFuture": "This challenge starts at {{startDate, dd.MM.yyyy}}"
   },
   "filter": "Filter",
   "itemType": {
