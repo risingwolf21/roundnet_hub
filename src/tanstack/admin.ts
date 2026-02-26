@@ -72,13 +72,13 @@ export const useLogsList = ({ paginationModel, sortModel, filterModel }: { pagin
         .select('*', { count: 'exact' })
         .range(paginationModel.page * paginationModel.pageSize, paginationModel.page * paginationModel.pageSize + paginationModel.pageSize - 1);
 
-      (sortModel ?? []).forEach(({ field, sort }) => {
-        if (field && sort) query = query.order(field, { ascending: sort === 'asc', nullsFirst: false });
-      });
 
       (filterModel?.items ?? []).forEach((item) => {
         if (!item.field || !item.operator || item.value === undefined) return;
         query = mapOperator(query, item.field, item.operator as string, item.value);
+      });
+      (sortModel ?? []).forEach(({ field, sort }) => {
+        if (field && sort) query = query.order(field, { ascending: sort === 'asc', nullsFirst: false });
       });
 
       const { data, error, count } = await query;
