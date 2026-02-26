@@ -1,42 +1,136 @@
 import Layout from '@/components/layout/Layout';
-import { useInfiniteLogsList } from '@/tanstack/admin';
+import { useLogsList } from '@/tanstack/admin';
+import { NoRowsOverlay } from '@/utils/mui-x-data-grid.utils';
 import CloseIcon from '@mui/icons-material/Close';
 import AppBar from '@mui/material/AppBar';
 import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
 import Dialog from '@mui/material/Dialog';
 import IconButton from '@mui/material/IconButton';
-import LinearProgress from '@mui/material/LinearProgress';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
+import { DataGrid } from '@mui/x-data-grid/DataGrid';
+import { GridColDef, GridFilterModel, GridPaginationModel, GridSortModel } from '@mui/x-data-grid/models';
 import { useDialogs } from '@toolpad/core';
-import { TFunction } from 'i18next';
+import { format } from 'date-fns';
+import { useState } from 'react';
 import { withTranslation } from 'react-i18next';
 
-const LogsList = ({ t }: { t: TFunction }) => {
+const LogsList = () => {
   const dialogs = useDialogs();
-  const { data: logs, isLoading, hasNextPage, fetchNextPage, isFetchingNextPage } = useInfiniteLogsList();
+  const [paginationModel, setPaginationModel] = useState<GridPaginationModel>({ page: 0, pageSize: 25 });
+  const [sortModel, setSortModel] = useState<GridSortModel>([
+    {
+      field: 'at',
+      sort: 'desc',
+    }
+  ]);
+  const [filterModel, setFilterModel] = useState<GridFilterModel>({ items: [] });
 
-  if (isLoading) {
-    return <LinearProgress style={{ position: 'fixed', left: 0, top: 56, right: 0 }} />;
-  }
-
-  if ((logs?.pages.flatMap((x) => x.data) ?? []).length <= 0) {
-    return (
-      <Layout>
-        <Box sx={{ alignItems: 'center', display: 'flex', flexDirection: 'column', pt: 10 }}>
-          <Typography sx={{ fontSize: '30pt', fontWeight: 'bold' }}>📖</Typography>
-          <Typography sx={{ fontSize: '18pt', fontWeight: 'bold' }}>Keine Einträge gefunden</Typography>
-        </Box>
-      </Layout>
-    );
-  }
+  const { data: logs = { rows: [], count: 0 }, isLoading, isFetching } = useLogsList({ paginationModel, sortModel, filterModel });
 
   return (
     <Layout>
-      <List>
+      <DataGrid
+        sx={{
+          '--DataGrid-overlayHeight': '300px',
+          mb: 'min(56px,env(safe-area-inset-bottom))',
+          height: 'calc(100% - env(safe-area-inset-bottom))',
+          '& .MuiDataGrid-virtualScroller': {
+            minHeight: 0,
+            overflow: 'auto',
+            overscrollBehavior: 'none',
+          },
+        }}
+        rows={logs.rows}
+        columns={logs.rows && logs.rows.length > 0
+          ? [
+            {
+              field: 'at',
+              headerName: 'Datum',
+              width: 180,
+              valueFormatter: (params: any) => format(params, 'dd.MM.yyyy HH:mm:ss'),
+            },
+            {
+              field: 'table_name',
+              headerName: 'Tabelle',
+              width: 110,
+            },
+            {
+              field: 'op',
+              headerName: 'Operation',
+              width: 150,
+            },
+            {
+              field: 'changed_cols',
+              headerName: 'Geänderte Spalten',
+              width: 150,
+              valueFormatter: (params: any) => {
+                if (Array.isArray(params)) {
+                  return params.join(', ');
+                }
+                return '';
+              },
+            }
+          ] as GridColDef[]
+          : [{ field: 'noData', headerName: 'Keine Daten', flex: 1 }]
+        }
+        loading={isLoading || isFetching}
+        slots={{
+          noRowsOverlay: NoRowsOverlay
+        }}
+        rowCount={logs?.count ?? 0}
+        paginationMode="server"
+        sortingMode='server'
+        filterMode='server'
+        sortModel={sortModel}
+        onSortModelChange={setSortModel}
+        filterModel={filterModel}
+        onFilterModelChange={setFilterModel}
+        paginationModel={paginationModel}
+        onPaginationModelChange={setPaginationModel}
+        density='compact'
+        getRowId={(row) => row.id || Object.values(row).join("_")} // Fallback ID
+        disableRowSelectionOnClick
+        onRowClick={(params) => {
+          dialogs.open(
+            ({ payload: { log }, open, onClose }) => (
+              <Dialog open={open} onClose={onClose} fullScreen>
+                <AppBar position="sticky" sx={{ pt: 'env(safe-area-inset-top)' }}>
+                  <Toolbar>
+                    <IconButton edge="start" color="inherit" onClick={onClose} aria-label="close">
+                      <CloseIcon />
+                    </IconButton>
+                    <Typography sx={{ ml: 2, flex: 1 }} variant="h6" component="div">
+                      Log Eintrag
+                    </Typography>
+                  </Toolbar>
+                </AppBar>
+                <List sx={{
+                  minHeight: 0,
+                  maxWidth: "100vw",
+                  overflow: 'auto',
+                  overscrollBehavior: 'none',
+                }}>
+                  {Object.entries(log).map(([key, value]) => (
+                    <ListItem key={key} divider>
+                      <Box sx={{ display: 'flex', flexDirection: 'column', width: '100%' }}>
+                        <Typography sx={{ fontWeight: 'bold' }}>{key}</Typography>
+                        <Typography sx={{ fontFamily: 'monospace', fontSize: 'small', whiteSpace: 'pre-wrap', maxWidth: "100vw", wordBreak: "break-word" }}>
+                          {JSON.stringify(value, null, 2)}
+                        </Typography>
+                      </Box>
+                    </ListItem>
+                  ))}
+                </List>
+              </Dialog>
+            ),
+            { log: params.row }
+          );
+        }}
+      />
+      {/* <List>
         {logs?.pages
           .flatMap((page) => page.data)
           .map((log) => (
@@ -135,7 +229,7 @@ const LogsList = ({ t }: { t: TFunction }) => {
             </Button>
           </Box>
         )}
-      </List>
+      </List> */}
     </Layout>
   );
 };

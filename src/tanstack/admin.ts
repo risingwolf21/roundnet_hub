@@ -5,7 +5,11 @@ import { AdminDrinksRepository } from '@/repository/AdminDrinksRepository';
 import { AdminUsersRepository } from '@/repository/AdminUsersRepository';
 import { fetchSimpleUser } from '@/repository/UserRepository';
 import { FullPayment, UserWithGroups } from '@/types/supabaseTypes';
+import { mapOperator, serializeFilterKey, serializePaginationKey, serializeSortKey } from '@/utils/mui-x-data-grid.utils';
+import { GridFilterModel } from '@mui/x-data-grid/models';
 import { useInfiniteQuery, useMutation, useQuery } from '@tanstack/react-query';
+import { GridPaginationModel } from 'node_modules/@mui/x-data-grid/esm/models/gridPaginationProps';
+import { GridSortModel } from 'node_modules/@mui/x-data-grid/esm/models/gridSortModel';
 
 export const adminKeys = {
   all: ['admin'] as const,
@@ -15,7 +19,7 @@ export const adminKeys = {
     list: () => [...adminKeys.all, 'payments', 'list'] as const,
   },
   simpleUsers: () => [...adminKeys.all, 'simpleUsers'] as const,
-  logs: () => [...adminKeys.all, 'logs'] as const,
+  logs: (pageKey: string, filterKey: string, sortKey: string) => [...adminKeys.all, 'logs', pageKey, filterKey, sortKey] as const,
   analytics: (rpc: string, from: string, to: string) => [...adminKeys.all, 'analytics', rpc, from, to]
 };
 
@@ -58,26 +62,33 @@ export const useAdminAnalytics = (
   }
 });
 
-export const useInfiniteLogsList = (count: number = 50) =>
-  useInfiniteQuery({
-    queryKey: adminKeys.logs(),
-    queryFn: async ({ pageParam }) => {
-      const result = await supabase
+export const useLogsList = ({ paginationModel, sortModel, filterModel }: { paginationModel: GridPaginationModel, sortModel?: GridSortModel, filterModel?: GridFilterModel }) =>
+  useQuery({
+    queryKey: adminKeys.logs(serializePaginationKey(paginationModel), serializeFilterKey(filterModel), serializeSortKey(sortModel)),
+    queryFn: async () => {
+      let query = supabase
         .schema('audit')
         .from('log')
-        .select('*')
-        .order('at', { ascending: false })
-        .range(pageParam * count, pageParam * count + count - 1);
+        .select('*', { count: 'exact' })
+        .range(paginationModel.page * paginationModel.pageSize, paginationModel.page * paginationModel.pageSize + paginationModel.pageSize - 1);
 
-      const hasMore = (result.data?.length ?? 0) === count;
+      (sortModel ?? []).forEach(({ field, sort }) => {
+        if (field && sort) query = query.order(field, { ascending: sort === 'asc', nullsFirst: false });
+      });
 
-      return {
-        data: result.data ?? [],
-        nextPage: hasMore ? pageParam + 1 : undefined,
-      };
+      (filterModel?.items ?? []).forEach((item) => {
+        if (!item.field || !item.operator || item.value === undefined) return;
+        query = mapOperator(query, item.field, item.operator as string, item.value);
+      });
+
+      const { data, error, count } = await query;
+
+      if (error) {
+        throw error;
+      }
+
+      return { rows: (data ?? []), count: count ?? 0 };
     },
-    getNextPageParam: (lastPage) => lastPage.nextPage,
-    initialPageParam: 0,
   });
 
 export const useAllUsersAsAdmin = () =>

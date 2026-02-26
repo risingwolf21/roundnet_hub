@@ -26,8 +26,8 @@ import { useQuery } from "@tanstack/react-query"
 import { DialogProps, useDialogs } from "@toolpad/core"
 import { add, format } from "date-fns"
 import { useState } from "react"
-import { NoRowsOverlay } from "../supabase/SupabaseClient"
 
+import { NoRowsOverlay } from "@/utils/mui-x-data-grid.utils"
 import { Paper } from '@mui/material'
 
 const ErrorDisplay = ({ error, onRetry }: { error: any, onRetry: () => void }) => (
@@ -104,7 +104,7 @@ const REPORTS: AnalyticsReportDef[] = [
         type: "challenge-select",
         rpcParamMapping: { value: "p_challenge_id" },
         defaultValue: {
-          p_challenge_id: ''
+          p_challenge_id: null
         }
       },
       {
@@ -202,7 +202,7 @@ export const AdminAnalytics = () => {
 
   const [queryParams, setQueryParams] = useState<Record<string, any> | null>(null);
 
-  const { data, isLoading, refetch, isError, error } = useAdminAnalytics(
+  const { data = [], isLoading, refetch, isError, error } = useAdminAnalytics(
     selectedReport.rpc,
     queryParams || {},
     !!queryParams
@@ -248,121 +248,135 @@ export const AdminAnalytics = () => {
   };
 
   return <Layout>
-    <Box sx={{ pb: 2 }}>
-      <ListItemButton
-        onClick={handleSelectReport}
-      >
-        <ListItemText
-          primary={selectedReport.title}
-          secondary={selectedReport.description}
-          slotProps={{ primary: { fontWeight: 'bold' } }}
+    <Box sx={{ display: 'flex', flexDirection: 'column', height: '100vh' }}>
+      <Box sx={{ pb: 2, flex: '0 0 auto' }}>
+        <ListItemButton
+          onClick={handleSelectReport}
+        >
+          <ListItemText
+            primary={selectedReport.title}
+            secondary={selectedReport.description}
+            slotProps={{ primary: { fontWeight: 'bold' } }}
+          />
+          <ExpandMoreOutlined />
+        </ListItemButton>
+
+        {/* Dynamic Inputs Rendering */}
+        <Stack direction={{ xs: 'column', md: 'row' }} spacing={1} sx={{ mt: 1 }}>
+
+          {selectedReport.inputs.map((input) => {
+            const val = formValues[input.id];
+
+            if (input.type === 'date-range') {
+              const currentVal = val || { from: null, to: null };
+              return (
+                <Stack key={input.id} direction="row" spacing={1} sx={{ px: 1 }}>
+                  <DatePicker
+                    label="Von"
+                    value={currentVal.from}
+                    onChange={(v) => updateFormValue(input.id, { ...currentVal, from: v })}
+                    format="dd.MM.yyyy"
+                    slotProps={{ textField: { size: 'small' } }}
+                  />
+                  <DatePicker
+                    label="Bis"
+                    value={currentVal.to}
+                    onChange={(v) => updateFormValue(input.id, { ...currentVal, to: v })}
+                    format="dd.MM.yyyy"
+                    slotProps={{ textField: { size: 'small' } }}
+                  />
+                </Stack>
+              );
+            }
+
+            if (input.type === 'challenge-select') {
+              return (
+                <Box key={input.id} sx={{ minWidth: 200, px: 1 }}>
+                  <AsyncSelect
+                    table="challenge"
+                    label={input.label}
+                    value={val}
+                    onChange={(newVal) => updateFormValue(input.id, newVal)}
+                  />
+                </Box>
+              );
+            }
+
+            if (input.type === 'user-select') {
+              return (
+                <Box key={input.id} sx={{ minWidth: 200, px: 1 }}>
+                  <AsyncSelect
+                    table="user" // oder 'profiles' je nach Schema
+                    label={input.label}
+                    value={val}
+                    labelField="displayName"
+                    onChange={(newVal) => updateFormValue(input.id, newVal)}
+                  />
+                </Box>
+              );
+            }
+
+            if (input.type === 'number') {
+              return (
+                <TextField
+                  key={input.id}
+                  label={input.label}
+                  type="number"
+                  size="small"
+                  value={val || ''}
+                  onChange={(e) => updateFormValue(input.id, Number(e.target.value))}
+                />
+              );
+            }
+
+            return null;
+          })}
+
+          <Box sx={{ justifyContent: "center", width: "100%", display: "flex" }}>
+            <Button
+              variant="contained"
+              startIcon={<PlayArrow />}
+              onClick={handleRunQuery}
+              disabled={isLoading || selectedReport.inputs.some((curr) => !formValues[curr.id])}
+              size="small"
+            >
+              Abrufen
+            </Button>
+          </Box>
+
+        </Stack>
+      </Box>
+
+      <Box sx={{ flex: 1 }}>
+        {isError ? (
+          <ErrorDisplay error={error} onRetry={refetch} />
+        ) : (<DataGrid
+          rows={isError ? [] : data}
+          rowCount={data.length}
+          columns={data && data.length > 0
+            ? Object.keys(data[0]).map(field => ({ field, headerName: field, flex: 1, minWidth: 150 } as GridColDef))
+            : [{ field: 'noData', headerName: 'Keine Daten', flex: 1 }]
+          }
+          loading={isLoading}
+          slots={{
+            noRowsOverlay: NoRowsOverlay
+          }}
+          getRowId={(row) => row.id || Object.values(row).join("_")} // Fallback ID
+          disableRowSelectionOnClick
+          sx={{
+            '--DataGrid-overlayHeight': '300px',
+            mb: 'min(56px,env(safe-area-inset-bottom))',
+            maxHeight: 'calc(100% - 61px - env(safe-area-inset-bottom))',
+            height: 'calc(100% - 61px - env(safe-area-inset-bottom))',
+            '& .MuiDataGrid-virtualScroller': {
+              minHeight: 0,
+              overflow: 'auto',
+              overscrollBehavior: 'none',
+            },
+          }}
         />
-        <ExpandMoreOutlined />
-      </ListItemButton>
-
-      {/* Dynamic Inputs Rendering */}
-      <Stack direction={{ xs: 'column', md: 'row' }} spacing={1} sx={{ mt: 1 }}>
-
-        {selectedReport.inputs.map((input) => {
-          const val = formValues[input.id];
-
-          if (input.type === 'date-range') {
-            const currentVal = val || { from: null, to: null };
-            return (
-              <Stack key={input.id} direction="row" spacing={1} sx={{ px: 1 }}>
-                <DatePicker
-                  label="Von"
-                  value={currentVal.from}
-                  onChange={(v) => updateFormValue(input.id, { ...currentVal, from: v })}
-                  format="dd.MM.yyyy"
-                  slotProps={{ textField: { size: 'small' } }}
-                />
-                <DatePicker
-                  label="Bis"
-                  value={currentVal.to}
-                  onChange={(v) => updateFormValue(input.id, { ...currentVal, to: v })}
-                  format="dd.MM.yyyy"
-                  slotProps={{ textField: { size: 'small' } }}
-                />
-              </Stack>
-            );
-          }
-
-          if (input.type === 'challenge-select') {
-            return (
-              <Box key={input.id} sx={{ minWidth: 200, px: 1 }}>
-                <AsyncSelect
-                  table="challenge"
-                  label={input.label}
-                  value={val}
-                  onChange={(newVal) => updateFormValue(input.id, newVal)}
-                />
-              </Box>
-            );
-          }
-
-          if (input.type === 'user-select') {
-            return (
-              <Box key={input.id} sx={{ minWidth: 200, px: 1 }}>
-                <AsyncSelect
-                  table="user" // oder 'profiles' je nach Schema
-                  label={input.label}
-                  value={val}
-                  labelField="displayName"
-                  onChange={(newVal) => updateFormValue(input.id, newVal)}
-                />
-              </Box>
-            );
-          }
-
-          if (input.type === 'number') {
-            return (
-              <TextField
-                key={input.id}
-                label={input.label}
-                type="number"
-                size="small"
-                value={val || ''}
-                onChange={(e) => updateFormValue(input.id, Number(e.target.value))}
-              />
-            );
-          }
-
-          return null;
-        })}
-
-        <Box sx={{ justifyContent: "center", width: "100%", display: "flex" }}>
-          <Button
-            variant="contained"
-            startIcon={<PlayArrow />}
-            onClick={handleRunQuery}
-            disabled={isLoading}
-            size="small"
-          >
-            Abrufen
-          </Button>
-        </Box>
-
-      </Stack>
-    </Box>
-
-    <Box sx={{ minHeight: "400px", width: '100%' }}>
-      {isError ? (
-        <ErrorDisplay error={error} onRetry={refetch} />
-      ) : (<DataGrid
-        rows={isError ? [] : (data ?? [])}
-        columns={data && data.length > 0
-          ? Object.keys(data[0]).map(field => ({ field, headerName: field, flex: 1, minWidth: 150 } as GridColDef))
-          : []
-        }
-        loading={isLoading}
-        slots={{
-          noRowsOverlay: NoRowsOverlay
-        }}
-        getRowId={(row) => row.id || Object.values(row).join("_")} // Fallback ID
-        disableRowSelectionOnClick
-      />
-      )}
+        )}
+      </Box>
     </Box>
   </Layout>
 }
