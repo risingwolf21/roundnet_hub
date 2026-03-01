@@ -1,7 +1,7 @@
 import { queryClient } from '@/lib/queryClient';
 import { supabase } from '@/lib/supabase';
 import { GamesRepository } from '@/repository/GamesRepository';
-import { GamesTable, UserMatchesView } from '@/types/supabaseTypes';
+import { GamesTable, UserMatchesView, UserWithGroups } from '@/types/supabaseTypes';
 import { formatDateToDatabase } from '@/utils';
 import { captureException } from '@sentry/react';
 import { useMutation, useQuery } from '@tanstack/react-query';
@@ -55,10 +55,19 @@ export const useMatches = () =>
     },
   });
 
-export const usePlayers = () =>
-  useQuery<PlayerWithSimpleUser[]>({
+export const usePlayers = (user: UserWithGroups | null) =>
+  useQuery<{ players: PlayerWithSimpleUser[], me: PlayerWithSimpleUser | null }>({
     queryKey: gamesKeys.players(),
-    queryFn: GamesRepository.fetchAvailablePlayers,
+    queryFn: async () => {
+      const result = await GamesRepository.fetchAvailablePlayers();
+
+      const me = result.find((x) => x.id === user?.id);
+
+      return {
+        players: result,
+        me: me ?? null,
+      }
+    }
   });
 
 export const useTeams = () =>
@@ -80,6 +89,7 @@ export const useCreateMatch = () =>
       event,
       rating_enabled,
       created_by,
+      playerNamesMapping,
     }: {
       sets: { team_a_score: number; team_b_score: number }[];
       team_a: {
@@ -99,6 +109,7 @@ export const useCreateMatch = () =>
       event?: string;
       rating_enabled: boolean;
       created_by?: string;
+      playerNamesMapping: { [key: string]: string };
     }) => {
       const result = await supabase
         .schema('games')
@@ -117,6 +128,7 @@ export const useCreateMatch = () =>
           event: event,
           rated: rating_enabled,
           created_by: created_by,
+          player_names: playerNamesMapping
         })
         .throwOnError();
 
