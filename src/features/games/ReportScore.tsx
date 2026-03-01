@@ -6,6 +6,7 @@ import { useNavigate } from 'react-router';
 import { v4 as uuid } from 'uuid';
 import { useApplication } from '../auth/ApplicationContext';
 
+import NumberField from '@/components/mui/NumberField';
 import { SearchIconWrapper, StyledInputBase } from '@/components/SearchBar';
 import { formatDateToDatabase } from '@/utils';
 import AccountBox from '@mui/icons-material/AccountBox';
@@ -107,6 +108,7 @@ const SelectPlayer = ({ options, selected, loading, label, value, disabled, onSe
 
 type PendingGuest = {
   isPending: true;
+  index: number;
   name: string;
 };
 
@@ -187,7 +189,7 @@ const ReportScore = () => {
     const resolveInfo = (p: PendingGuest | PlayerWithSimpleUser) => {
       if ('isPending' in p) {
         const newId = uuid();
-        return { id: newId, name: p.name, rating: 1000 };
+        return { id: newId, name: p.name, rating: p.index };
       }
       return { id: p.id, name: p.name, rating: p.ka_index };
     };
@@ -463,6 +465,7 @@ const SelectPlayerDialog = ({ open, onClose, payload }: DialogProps<{ options: P
 
 const CreatePlayerDialog = ({ open, onClose }: DialogProps<undefined, PendingGuest | null>) => {
   const [name, setName] = useState('');
+  const [index, setIndex] = useState(1000);
   return (
     <Dialog open={open} onClose={() => onClose(null)} fullScreen>
       <Box
@@ -481,13 +484,14 @@ const CreatePlayerDialog = ({ open, onClose }: DialogProps<undefined, PendingGue
             <Typography variant="h6" component="div">
               Spieler erstellen
             </Typography>
-            <Button color="inherit" sx={{ marginLeft: 'auto' }} onClick={() => onClose({ isPending: true, name })}>
+            <Button color="inherit" sx={{ marginLeft: 'auto' }} onClick={() => onClose({ isPending: true, index, name })}>
               Speichern
             </Button>
           </Toolbar>
         </AppBar>
         <Stack direction={'column'} sx={{ p: 2, gap: 2 }}>
           <TextField label={'Name'} fullWidth value={name} onChange={(e) => setName(e.target.value)} />
+          <NumberField step={50} label={'Index'} min={800} max={2000} defaultValue={1000} value={index} onValueChange={(e) => e && setIndex(e)} />
         </Stack>
       </Box>
     </Dialog>
