@@ -3,7 +3,7 @@ name: Backup
 on:
   workflow_dispatch:
   schedule:
-    - cron: '0 0 */3 * *' # Runs every day at midnight
+    - cron: '0 0 */2 * *' # Runs every day at midnight
 
 jobs:
   backup-karlsruhe:
