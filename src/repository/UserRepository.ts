@@ -5,7 +5,7 @@ import { PostgrestError, PostgrestSingleResponse } from '@supabase/supabase-js';
 export const fetchGroups = () => supabase.schema('public').from('group_user_mapping').select('*, event_group(*)');
 export const fetchUserWithGroups = () =>
   supabase.from('user').select('*, groups: group_user_mapping (group: event_group(*))');
-export const fetchSimpleUser = () => supabase.from('user').select('id, name');
+export const fetchSimpleUser = () => supabase.from('user').select('id, name, avatarUrl');
 
 export const SupabaseUserRepository = {
   async fetchUserWithGroups(userId: string): Promise<PostgrestSingleResponse<UserWithGroupsAndPlayerData>> {

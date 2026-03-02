@@ -30,6 +30,7 @@ import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemAvatar from '@mui/material/ListItemAvatar';
 import ListItemText from '@mui/material/ListItemText';
+import MenuItem from '@mui/material/MenuItem';
 import TextField from '@mui/material/TextField';
 import Tooltip from '@mui/material/Tooltip';
 import { useDialogs } from '@toolpad/core';
@@ -48,6 +49,7 @@ const PlayerzoneProfileDialog = () => {
   const dialogs = useDialogs();
   const notifications = useNotifications();
   const [rgLink, setRgLink] = useState(player_data?.rg_link ?? '');
+  const [gender, setGender] = useState(player_data?.gender ?? '');
   const [loading, setLoading] = useState(false);
 
   const elo_change_last_30_days = useMemo(() => {
@@ -80,20 +82,28 @@ const PlayerzoneProfileDialog = () => {
       );
       return;
     }
+    if (gender === "") {
+      notifications.show(
+        'Du musst ein Geschlecht auswählen, damit dein Profil korrekt angezeigt wird.',
+        { severity: 'error' }
+      );
+      return;
+    }
     const updates: GamesTableUpdate<'players'> = {
       rg_link: rgLink ?? null,
       rg_avatar_url: null,
       rg_index: null,
+      gender: gender
     };
 
     updatePlayer.mutate(
       { updates },
       {
         onError: (error) =>
-          notifications.show('Playerzone URL konnte nicht gesetzt werden. ' + error.message, {
+          notifications.show('Playerzone Profil konnte nicht aktualisiert werden. ' + error.message, {
             severity: 'error',
           }),
-        onSuccess: () => notifications.show('Playerzone URL erfolgreich aktualisiert', { severity: 'success' }),
+        onSuccess: () => notifications.show('Profil erfolgreich aktualisiert', { severity: 'success' }),
       }
     );
   };
@@ -158,6 +168,33 @@ const PlayerzoneProfileDialog = () => {
                   <IconButton onClick={() => dialogs.open(HowToGetPlayerLinkDialog)}>
                     <Info />
                   </IconButton>
+                </Box>
+              </Box>
+            </ListItem>
+            <ListItem key={'gender'} sx={{ '&.MuiListItem-root': { p: 0 }, mb: 1, mt: 1 }}>
+              <ListItemAvatar sx={{ flexDirection: 'row', display: 'flex', alignItems: 'center' }}>
+                <Link sx={{ color: 'rgba(0,0,0,0.54)' }} />
+              </ListItemAvatar>
+              <Box sx={{ display: 'flex', flexDirection: 'row', width: '100%', alignItems: 'center' }}>
+                <TextField
+                  select
+                  fullWidth
+                  size="small"
+                  variant="outlined"
+                  value={gender}
+                  onChange={(e) => setGender(e.target.value)}
+                  label="Geschlecht"
+                >
+                  {
+                    gender === "" && <MenuItem value="">Nichts gewählt</MenuItem>
+                  }
+                  <MenuItem value="m">Open</MenuItem>
+                  <MenuItem value="w">Women</MenuItem>
+                </TextField>
+                <Box sx={{ ml: 1, display: 'flex', flexDirection: 'row', justifyContent: 'center' }}>
+                  <Tooltip leaveDelay={2000} title="In welcher Division Gruppe spielst du hauptsächlich? Diese Information wird für die interne Indexberechnung verwendet.">
+                    <Info sx={{ color: 'rgba(0,0,0,0.54)' }} />
+                  </Tooltip>
                 </Box>
               </Box>
             </ListItem>

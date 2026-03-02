@@ -1,69 +1,119 @@
 import Layout from '@/components/layout/Layout';
 import { useCreateMatch, usePlayers } from '@/tanstack/games';
-import { captureException } from '@sentry/react';
 import { useNotifications } from '@toolpad/core/useNotifications';
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { v4 as uuid } from 'uuid';
 import { useApplication } from '../auth/ApplicationContext';
 
+import NumberField from '@/components/mui/NumberField';
+import { SearchIconWrapper, StyledInputBase } from '@/components/SearchBar';
 import { formatDateToDatabase } from '@/utils';
+import AccountBox from '@mui/icons-material/AccountBox';
+import Add from '@mui/icons-material/Add';
+import Close from '@mui/icons-material/Close';
 import Delete from '@mui/icons-material/Delete';
 import Save from '@mui/icons-material/Save';
-import Autocomplete from '@mui/material/Autocomplete';
+import { default as Search, default as SearchIcon } from '@mui/icons-material/Search';
+import AppBar from '@mui/material/AppBar';
+import Avatar from '@mui/material/Avatar';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
+import Card from '@mui/material/Card';
+import CardActionArea from '@mui/material/CardActionArea';
 import Checkbox from '@mui/material/Checkbox';
 import CircularProgress from '@mui/material/CircularProgress';
+import Dialog from '@mui/material/Dialog';
 import Fab from '@mui/material/Fab';
 import Grid from '@mui/material/Grid';
 import IconButton from '@mui/material/IconButton';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemAvatar from '@mui/material/ListItemAvatar';
+import ListItemButton from '@mui/material/ListItemButton';
 import ListItemText from '@mui/material/ListItemText';
 import TextField from '@mui/material/TextField';
+import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
+import Stack from '@mui/system/Stack';
+import { captureException } from '@sentry/react';
+import { DialogProps, useDialogs } from '@toolpad/core';
+import { t } from 'i18next';
 
 type Props = {
   options: PlayerWithSimpleUser[];
+  selected: PlayerWithSimpleUser[];
   loading: boolean;
   label: string;
-  value: PlayerWithSimpleUser | null;
-  onSelect: (value: PlayerWithSimpleUser | null) => void;
+  value: PlayerSelection;
+  disabled: boolean;
+  onSelect: (value: PlayerSelection) => void;
+  onRemove?: () => void;
 };
-const SelectPlayer = ({ options, loading, label, value, onSelect }: Props) => {
+const SelectPlayer = ({ options, selected, loading, label, value, disabled, onSelect, onRemove }: Props) => {
+  const dialogs = useDialogs();
+
+  const displayName = value && 'isPending' in value ? value.name : value?.name;
+  const avatarUrl = value && 'isPending' in value ? undefined : value?.avatarUrl ?? value?.rg_avatar_url ?? '';
+  const isGuest = value && 'isPending' in value;
+
   return (
-    <Autocomplete
-      disablePortal
-      fullWidth
-      loading={loading}
-      options={options}
-      value={value}
-      getOptionLabel={(option) => option.name}
-      getOptionKey={(option) => option.id}
-      isOptionEqualToValue={(o, v) => o.id === v.id}
-      onChange={(_e, v) => onSelect(v)}
-      renderInput={(params) => (
-        <TextField
-          {...params}
-          label={label}
-          slotProps={{
-            input: {
-              ...params.InputProps,
-              endAdornment: (
-                <React.Fragment>
-                  {loading ? <CircularProgress color="inherit" size={20} /> : null}
-                  {params.InputProps.endAdornment}
-                </React.Fragment>
-              ),
+    <Card sx={{ borderRadius: 1, p: 0 }}>
+      <CardActionArea sx={{ p: 1 }} disabled={disabled} onClick={async () => {
+        const result = await dialogs.open(SelectPlayerDialog, {
+          options: options,
+          selectedPlayers: selected,
+        });
+        if (result) {
+          onSelect(result);
+        }
+      }}>
+        <ListItem disablePadding>
+          <ListItemAvatar sx={(theme) => ({
+            [theme.breakpoints.down('xs')]: {
+              display: 'none',
             },
-          }}
-        />
-      )}
-    />
+          })}>
+            <Avatar sx={{ borderRadius: 2 }}>
+              {avatarUrl ? (
+                <img src={avatarUrl} alt="logo" width={'100%'} height={'100%'} />
+              ) : (
+                loading ? <CircularProgress size={24} /> : <AccountBox />
+              )}
+            </Avatar>
+          </ListItemAvatar>
+          <ListItemText primary={loading ? "Wird geladen..." : displayName ?? 'Nicht gewählt'} secondary={isGuest ? 'Gastspieler' : value?.rg_id ?? label} slotProps={{
+            primary: {
+              whiteSpace: 'nowrap',
+              overflow: 'clip',
+              textOverflow: 'ellipsis',
+            },
+            secondary: {
+              whiteSpace: 'nowrap',
+              overflow: 'clip',
+              textOverflow: 'ellipsis',
+            },
+          }} />
+          {onRemove && <IconButton sx={{ mr: 0 }} edge="end" onClick={(e) => {
+            e.stopPropagation();
+            onRemove();
+          }}>
+            <Close />
+          </IconButton>}
+        </ListItem>
+      </CardActionArea>
+    </Card>
   );
 };
+
+type PendingGuest = {
+  isPending: true;
+  index: number;
+  name: string;
+};
+
+// Unser State akzeptiert nun beides
+type PlayerSelection = PlayerWithSimpleUser | PendingGuest | null;
 
 const ReportScore = () => {
   const [sets, setSets] = useState<MatchSet[]>([
@@ -76,12 +126,16 @@ const ReportScore = () => {
   const createMatch = useCreateMatch();
 
   const [rating_enabled, setRatingEnabled] = useState(true);
-  const [player1a, setPlayer1a] = useState<PlayerWithSimpleUser | null>(null);
-  const [player2a, setPlayer2a] = useState<PlayerWithSimpleUser | null>(null);
-  const [player1b, setPlayer1b] = useState<PlayerWithSimpleUser | null>(null);
-  const [player2b, setPlayer2b] = useState<PlayerWithSimpleUser | null>(null);
+  const [player1a, setPlayer1a] = useState<PlayerSelection>(null);
+  const [player2a, setPlayer2a] = useState<PlayerSelection>(null);
+  const [player1b, setPlayer1b] = useState<PlayerSelection>(null);
+  const [player2b, setPlayer2b] = useState<PlayerSelection>(null);
 
-  const { data: players = [], error, isLoading, refetch } = usePlayers();
+  const { data, error, isLoading, refetch } = usePlayers(user);
+
+  if (data?.me && !player1a) {
+    setPlayer1a(data.me);
+  }
 
   useEffect(() => {
     if (error)
@@ -132,25 +186,44 @@ const ReportScore = () => {
     const team_a_name = (surname1a.pop() ?? name1a) + '/' + (surname2a.pop() ?? name2a);
     const team_b_name = (surname1b.pop() ?? name1b) + '/' + (surname2b.pop() ?? name2b);
 
+    const resolveInfo = (p: PendingGuest | PlayerWithSimpleUser) => {
+      if ('isPending' in p) {
+        const newId = uuid();
+        return { id: newId, name: p.name, rating: p.index };
+      }
+      return { id: p.id, name: p.name, rating: p.ka_index };
+    };
+
+    const p1a = resolveInfo(player1a);
+    const p2a = resolveInfo(player2a);
+    const p1b = resolveInfo(player1b);
+    const p2b = resolveInfo(player2b);
+
+    const playerNamesMapping: { [key: string]: string } = {};
+    [p1a, p2a, p1b, p2b].forEach(p => {
+      playerNamesMapping[p.id] = p.name;
+    });
+
     createMatch.mutate(
       {
         sets,
         team_a: {
           name: team_a_name,
-          player_1: player1a.id,
-          player_1_rating: player1a.ka_index,
-          player_2: player2a.id,
-          player_2_rating: player2a.ka_index,
+          player_1: p1a.id,
+          player_1_rating: p1a.rating,
+          player_2: p2a.id,
+          player_2_rating: p2a.rating,
         },
         team_b: {
           name: team_b_name,
-          player_1: player1b.id,
-          player_1_rating: player1b.ka_index,
-          player_2: player2b.id,
-          player_2_rating: player2b.ka_index,
+          player_1: p1b.id,
+          player_1_rating: p1b.rating,
+          player_2: p2b.id,
+          player_2_rating: p2b.rating,
         },
         rating_enabled: rating_enabled,
         created_by: user?.id,
+        playerNamesMapping,
       },
       {
         onSuccess: () => navigate('/matches'),
@@ -172,64 +245,51 @@ const ReportScore = () => {
           <Grid size={6} sx={{ p: 2 }}>
             <Typography sx={{ fontWeight: 'bold' }}>Team B</Typography>
           </Grid>
-          <Grid size={6} sx={{ p: 2 }}>
+          <Grid size={6} sx={{ p: 1 }}>
             <SelectPlayer
-              label="Player 1"
+              options={(data?.players ?? [])}
+              selected={[player1a, player2a, player2b, player1b].filter((x): x is PlayerWithSimpleUser => x !== null)}
               loading={isLoading}
+              label={'Player 1'}
               value={player1a}
-              options={players.filter(
-                (x) =>
-                  ![player1b, player2a, player2b]
-                    .filter((x) => x)
-                    .map((x) => x?.id)
-                    .includes(x.id)
-              )}
-              onSelect={setPlayer1a}
+              disabled={data?.me ? true : false}
+              onSelect={(value) => setPlayer1a(value)}
             />
           </Grid>
-          <Grid size={6} sx={{ p: 2 }}>
+          <Grid size={6} sx={{ p: 1 }}>
             <SelectPlayer
-              label="Player 1"
+              options={(data?.players ?? [])}
+              selected={[player1a, player2a, player2b, player1b].filter((x): x is PlayerWithSimpleUser => x !== null)}
               loading={isLoading}
+              label={'Player 1'}
               value={player1b}
-              options={players.filter(
-                (x) =>
-                  ![player1a, player2a, player2b]
-                    .filter((x) => x)
-                    .map((x) => x?.id)
-                    .includes(x.id)
-              )}
-              onSelect={setPlayer1b}
+              disabled={false}
+              onSelect={(value) => setPlayer1b(value)}
+              {...(player1b && { onRemove: () => setPlayer1b(null) })}
             />
           </Grid>
-          <Grid size={6} sx={{ p: 2 }}>
+          <Grid size={6} sx={{ p: 1 }}>
             <SelectPlayer
-              label="Player 2"
+              options={(data?.players ?? [])}
+              selected={[player1a, player2a, player2b, player1b].filter((x): x is PlayerWithSimpleUser => x !== null)}
               loading={isLoading}
+              label={'Player 2'}
               value={player2a}
-              options={players.filter(
-                (x) =>
-                  ![player1b, player1a, player2b]
-                    .filter((x) => x)
-                    .map((x) => x?.id)
-                    .includes(x.id)
-              )}
-              onSelect={setPlayer2a}
+              disabled={false}
+              onSelect={(value) => setPlayer2a(value)}
+              {...(player2a && { onRemove: () => setPlayer2a(null) })}
             />
           </Grid>
-          <Grid size={6} sx={{ p: 2 }}>
+          <Grid size={6} sx={{ p: 1 }}>
             <SelectPlayer
-              label="Player 2"
+              options={(data?.players ?? [])}
+              selected={[player1a, player2a, player2b, player1b].filter((x): x is PlayerWithSimpleUser => x !== null)}
               loading={isLoading}
+              label={'Player 2'}
               value={player2b}
-              options={players.filter(
-                (x) =>
-                  ![player1b, player1a, player2a]
-                    .filter((x) => x)
-                    .map((x) => x?.id)
-                    .includes(x.id)
-              )}
-              onSelect={setPlayer2b}
+              disabled={false}
+              onSelect={(value) => setPlayer2b(value)}
+              {...(player2b && { onRemove: () => setPlayer2b(null) })}
             />
           </Grid>
           <Grid size={12} sx={{ p: 2 }}>
@@ -328,3 +388,112 @@ const ReportScore = () => {
   );
 };
 export default ReportScore;
+
+
+const SelectPlayerDialog = ({ open, onClose, payload }: DialogProps<{ options: PlayerWithSimpleUser[], selectedPlayers: PlayerWithSimpleUser[] }, PlayerSelection>) => {
+
+  const [searchString, setSearchString] = useState('');
+  const dialogs = useDialogs();
+
+  return (
+    <Dialog open={open} onClose={() => onClose(null)} fullScreen>
+      <Box
+        sx={{
+          width: '100%',
+          direction: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}
+      >
+        <AppBar position="sticky" sx={{ pt: 'env(safe-area-inset-top)' }}>
+          <Toolbar>
+            <IconButton size="large" edge="start" color="inherit" onClick={() => onClose(null)}>
+              <Close />
+            </IconButton>
+            <Search sx={{ marginRight: 2 }}>
+              <SearchIconWrapper>
+                <SearchIcon />
+              </SearchIconWrapper>
+              <StyledInputBase
+                placeholder="Search…"
+                onChange={(e) => setSearchString(e.target.value)}
+                inputProps={{ 'aria-label': 'search' }}
+              />
+            </Search>
+          </Toolbar>
+        </AppBar>
+        <List sx={{ width: '100%' }}>
+          {payload.options
+            .filter(
+              (x: PlayerWithSimpleUser) =>
+                searchString === '' || (x.name ?? '').toLowerCase().includes(searchString.toLowerCase())
+            )
+            .map((user: PlayerWithSimpleUser) => (
+              <ListItemButton key={user.id} onClick={() => onClose(user)} disabled={payload.selectedPlayers.some((x) => x.id === user.id)}>
+                <ListItemAvatar>
+                  <Avatar sx={{ borderRadius: 2 }}>
+                    {user.avatarUrl || user.rg_avatar_url ? (
+                      <img src={user.avatarUrl ?? user.rg_avatar_url ?? ''} alt="logo" width={'100%'} height={'100%'} />
+                    ) : (
+                      <AccountBox />
+                    )}
+                  </Avatar>
+                </ListItemAvatar>
+                <ListItemText primary={user.name} secondary={t('userName')} />
+              </ListItemButton>
+            ))}
+        </List>
+        <Fab
+          sx={{
+            position: 'fixed',
+            right: '16px',
+            bottom: 'calc(16px + env(safe-area-inset-bottom))',
+          }}
+          onClick={async () => {
+            const result = await dialogs.open(CreatePlayerDialog);
+            if (result) {
+              onClose(result);
+            }
+          }}
+        >
+          <Add />
+        </Fab>
+      </Box>
+    </Dialog>
+  )
+};
+
+const CreatePlayerDialog = ({ open, onClose }: DialogProps<undefined, PendingGuest | null>) => {
+  const [name, setName] = useState('');
+  const [index, setIndex] = useState(1000);
+  return (
+    <Dialog open={open} onClose={() => onClose(null)} fullScreen>
+      <Box
+        sx={{
+          width: '100%',
+          direction: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}
+      >
+        <AppBar position="sticky" sx={{ pt: 'env(safe-area-inset-top)' }}>
+          <Toolbar>
+            <IconButton size="large" edge="start" color="inherit" onClick={() => onClose(null)}>
+              <Close />
+            </IconButton>
+            <Typography variant="h6" component="div">
+              Spieler erstellen
+            </Typography>
+            <Button color="inherit" sx={{ marginLeft: 'auto' }} onClick={() => onClose({ isPending: true, index, name })}>
+              Speichern
+            </Button>
+          </Toolbar>
+        </AppBar>
+        <Stack direction={'column'} sx={{ p: 2, gap: 2 }}>
+          <TextField label={'Name'} fullWidth value={name} onChange={(e) => setName(e.target.value)} />
+          <NumberField step={50} label={'Index'} min={800} max={2000} defaultValue={1000} value={index} onValueChange={(e) => e && setIndex(e)} />
+        </Stack>
+      </Box>
+    </Dialog>
+  )
+}

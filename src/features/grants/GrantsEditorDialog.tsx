@@ -96,6 +96,7 @@ export const GrantsEditorDialog = ({ payload, open, onClose }: DialogProps<Grant
           <List dense>
             {(perms || []).map((p) => (
               <ListItem
+                sx={{ ":nth-child(odd)": { backgroundColor: 'action.hover' } }}
                 key={p}
                 secondaryAction={
                   <Switch edge="end" checked={selectedPerms.has(p)} onChange={(_, on) => onTogglePerm(p, on)} />
@@ -114,6 +115,7 @@ export const GrantsEditorDialog = ({ payload, open, onClose }: DialogProps<Grant
           <List dense>
             {(feats || []).map((f) => (
               <ListItem
+                sx={{ ":nth-child(odd)": { backgroundColor: 'action.hover' } }}
                 key={f}
                 secondaryAction={
                   <Switch edge="end" checked={selectedFeats.has(f)} onChange={(_, on) => onToggleFeat(f, on)} />

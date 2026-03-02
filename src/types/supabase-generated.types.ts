@@ -300,6 +300,13 @@ export type Database = {
             referencedRelation: "players_public"
             referencedColumns: ["player"]
           },
+          {
+            foreignKeyName: "elo_history_user_fkey"
+            columns: ["user"]
+            isOneToOne: false
+            referencedRelation: "unified_player_profiles"
+            referencedColumns: ["player_id"]
+          },
         ]
       }
       match: {
@@ -353,10 +360,12 @@ export type Database = {
       players: {
         Row: {
           created_at: string
+          display_name: string | null
           effective_rating_cached: number
           gender: string
           hide_rating: boolean
           ka_index: number
+          linked_user_id: string | null
           player: string
           pro_status: boolean
           rg_avatar_url: string | null
@@ -366,11 +375,13 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          display_name?: string | null
           effective_rating_cached?: number
           gender?: string
           hide_rating?: boolean
           ka_index?: number
-          player: string
+          linked_user_id?: string | null
+          player?: string
           pro_status?: boolean
           rg_avatar_url?: string | null
           rg_id?: string | null
@@ -379,10 +390,12 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          display_name?: string | null
           effective_rating_cached?: number
           gender?: string
           hide_rating?: boolean
           ka_index?: number
+          linked_user_id?: string | null
           player?: string
           pro_status?: boolean
           rg_avatar_url?: string | null
@@ -475,6 +488,13 @@ export type Database = {
             referencedColumns: ["player"]
           },
           {
+            foreignKeyName: "teams_player_1_fkey"
+            columns: ["player_1"]
+            isOneToOne: false
+            referencedRelation: "unified_player_profiles"
+            referencedColumns: ["player_id"]
+          },
+          {
             foreignKeyName: "teams_player_2_fkey"
             columns: ["player_2"]
             isOneToOne: false
@@ -487,6 +507,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "players_public"
             referencedColumns: ["player"]
+          },
+          {
+            foreignKeyName: "teams_player_2_fkey"
+            columns: ["player_2"]
+            isOneToOne: false
+            referencedRelation: "unified_player_profiles"
+            referencedColumns: ["player_id"]
           },
         ]
       }
@@ -528,6 +555,17 @@ export type Database = {
           rg_id?: string | null
           rg_index?: never
           rg_link?: string | null
+        }
+        Relationships: []
+      }
+      unified_player_profiles: {
+        Row: {
+          effective_rating_cached: number | null
+          full_name: string | null
+          gender: string | null
+          linked_user_id: string | null
+          player_id: string | null
+          pro_status: boolean | null
         }
         Relationships: []
       }
@@ -574,6 +612,20 @@ export type Database = {
             referencedColumns: ["player"]
           },
           {
+            foreignKeyName: "teams_player_1_fkey"
+            columns: ["team_a_player_1"]
+            isOneToOne: false
+            referencedRelation: "unified_player_profiles"
+            referencedColumns: ["player_id"]
+          },
+          {
+            foreignKeyName: "teams_player_1_fkey"
+            columns: ["team_b_player_1"]
+            isOneToOne: false
+            referencedRelation: "unified_player_profiles"
+            referencedColumns: ["player_id"]
+          },
+          {
             foreignKeyName: "teams_player_2_fkey"
             columns: ["team_a_player_2"]
             isOneToOne: false
@@ -600,6 +652,20 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "players_public"
             referencedColumns: ["player"]
+          },
+          {
+            foreignKeyName: "teams_player_2_fkey"
+            columns: ["team_a_player_2"]
+            isOneToOne: false
+            referencedRelation: "unified_player_profiles"
+            referencedColumns: ["player_id"]
+          },
+          {
+            foreignKeyName: "teams_player_2_fkey"
+            columns: ["team_b_player_2"]
+            isOneToOne: false
+            referencedRelation: "unified_player_profiles"
+            referencedColumns: ["player_id"]
           },
         ]
       }
@@ -618,6 +684,7 @@ export type Database = {
           player_2a_rating: number
           player_2b: string
           player_2b_rating: number
+          player_names?: Json
           rated?: boolean
           team_a: string
           team_b: string
