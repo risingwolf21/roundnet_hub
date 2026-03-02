@@ -29,7 +29,7 @@ export type BankTransferDTo = PaymentDTO & {
   bic: string;
 };
 
-const PAYMENT_INFO: PayPalPaymentDTO | BankTransferDTo = import.meta.env.VITE_PAYMENT_INFO
+const PAYMENT_INFO: PayPalPaymentDTO | BankTransferDTo | undefined = import.meta.env.VITE_PAYMENT_INFO
   ? JSON.parse(import.meta.env.VITE_PAYMENT_INFO)
   : undefined;
 
@@ -42,7 +42,7 @@ export const PaymentInfo = ({ amountToPay }: { amountToPay: number }) => {
         <Stack direction={'row'} justifyContent="space-between" alignItems="center">
           <Typography fontWeight={'bold'}>Zahlungsinformationen</Typography>
 
-          {PAYMENT_INFO.type === 'bank_transfer' && (
+          {PAYMENT_INFO?.type === 'bank_transfer' && (
             <IconButton
               onClick={() => {
                 dialogs.alert(
@@ -65,7 +65,7 @@ export const PaymentInfo = ({ amountToPay }: { amountToPay: number }) => {
             </IconButton>
           )}
         </Stack>
-        {PAYMENT_INFO.type === 'bank_transfer' && (
+        {PAYMENT_INFO?.type === 'bank_transfer' && (
           <>
             <ListItem
               disablePadding
@@ -125,7 +125,7 @@ export const PaymentInfo = ({ amountToPay }: { amountToPay: number }) => {
             </ListItem>
           </>
         )}
-        {PAYMENT_INFO.type === 'paypal' && (
+        {PAYMENT_INFO?.type === 'paypal' && (
           <ListItem
             disableGutters
             dense
