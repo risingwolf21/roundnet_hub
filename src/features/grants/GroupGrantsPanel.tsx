@@ -33,6 +33,7 @@ const GroupGrantsPanel = ({ searchValue }: { searchValue: string }) => {
           .filter((x) => searchValue === '' || x.name.toLowerCase().includes(searchValue.toLowerCase()))
           .map((x) => (
             <ListItem
+              key={x.id}
               divider
               onClick={async () => {
                 const result = await dialogs.open(GrantsEditorDialog, {
@@ -81,7 +82,7 @@ const GroupGrantsPanel = ({ searchValue }: { searchValue: string }) => {
           ))}
         <Fab
           sx={{ position: 'fixed', right: '16px', bottom: 'calc(env(safe-area-inset-top) + 16px)' }}
-          onClick={() => {}}
+          onClick={() => { }}
         >
           <GroupAdd />
         </Fab>
