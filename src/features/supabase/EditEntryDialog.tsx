@@ -1,4 +1,3 @@
-import { NumberInput } from '@/components/mui/NumberInput';
 import { customEnLocale } from '@/lib/date-fns';
 import { supabase } from '@/lib/supabase';
 import { formatDateFromDatabase, formatSafeDateToDatabase } from '@/utils';
@@ -8,6 +7,7 @@ import { DialogProps } from '@toolpad/core';
 import { pick } from 'lodash';
 import { useEffect, useState } from 'react';
 
+import NumberField from '@/components/mui/NumberField';
 import Close from '@mui/icons-material/Close';
 import AppBar from '@mui/material/AppBar';
 import Button from '@mui/material/Button';
@@ -283,8 +283,7 @@ const DialogContent = ({ payload, open, onClose }: DialogProps<EditEntryDialogPa
                   )}
                   <ListItemText
                     primary={
-                      <NumberInput
-                        fullWidth
+                      <NumberField
                         value={updatedObject[x.column_name] ?? value}
                         disabled={(updatedObject[x.column_name] ?? value) === null}
                         onValueChange={(val) => {

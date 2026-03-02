@@ -1,15 +1,5 @@
 name: Staging
 "on":
-  workflow_dispatch:
-    inputs:
-      publish:
-        description: "Choose wich environment you would like to publish to staging"
-        required: true
-        default: All
-        type: choice
-        options:
-          - Roundnet Karlsruhe Staging
-          - All
   push:
     branches:
       - staging
@@ -34,7 +24,7 @@ jobs:
         run: yarn install --frozen-lockfile
 
       - name: Cache node_modules
-        uses: actions/cache@v3
+        uses: actions/cache@v3^
         with:
           path: |
             node_modules
@@ -58,9 +48,6 @@ jobs:
 
   build-karlsruhe:
     name: "Build Karlsruhe Staging"
-    if: ${{ github.event_name != 'workflow_dispatch'
-      || github.event.inputs.publish == 'All'
-      || github.event.inputs.publish == 'Roundnet Karlsruhe Staging' }}
     runs-on: ubuntu-latest
     needs: db-test
     environment:
@@ -106,9 +93,6 @@ jobs:
   deploy-karlsruhe:
     runs-on: ubuntu-latest
     needs: build-karlsruhe
-    if: ${{ github.event_name != 'workflow_dispatch'
-      || github.event.inputs.publish == 'All'
-      || github.event.inputs.publish == 'Roundnet Karlsruhe Staging' }}
     name: "Deploy Karlsruhe Staging"
     environment:
       name: "Roundnet Karlsruhe Staging"

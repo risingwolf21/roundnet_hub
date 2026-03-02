@@ -41,7 +41,7 @@ declare global {
   type Match = GamesTable<'match'>;
   type MatchSet = GamesTable<'sets'>;
   type Team = GamesTable<'teams'>;
-  type PlayerWithSimpleUser = Player & { name: string; id: string };
+  type PlayerWithSimpleUser = Player & { name: string; id: string; avatarUrl: string | null };
   type Feature = Tables<'features'>;
   type Permission = Tables<'permissions'>;
   type UserDirectGrants = Tables<'user_direct_grants'>;

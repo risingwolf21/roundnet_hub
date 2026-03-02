@@ -1,4 +1,3 @@
-import { NumberInput } from '@/components/mui/NumberInput';
 import SearchAndSelectUserDialog from '@/features/groups/dialogs/SearchAndSelectUserDialog';
 import { customEnLocale } from '@/lib/date-fns';
 import { supabase } from '@/lib/supabase';
@@ -9,6 +8,7 @@ import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { DialogProps, NotificationsProvider, useDialogs, useNotifications } from '@toolpad/core';
 import { useEffect, useState } from 'react';
 
+import NumberField from '@/components/mui/NumberField';
 import ArrowDropDown from '@mui/icons-material/ArrowDropDown';
 import Close from '@mui/icons-material/Close';
 import Delete from '@mui/icons-material/Delete';
@@ -286,7 +286,6 @@ const Content = ({ payload, onClose }: DialogProps<ConstellationCreationDialogPr
   >([]);
 
   useEffect(() => {
-    setLoading(true);
     supabase
       .schema('games')
       .from('players')
@@ -369,10 +368,10 @@ const Content = ({ payload, onClose }: DialogProps<ConstellationCreationDialogPr
                         >
                           {x.name}
                         </Typography>
-                        <NumberInput
+                        <NumberField
                           value={players.find((y) => y.player === x.id)?.rg_index ?? 0}
                           step={10}
-                          placeholder="Initialer Index"
+                          label="Initialer Index"
                           onValueChange={(val) => {
                             if (val && val >= 0) {
                               setPlayers([
@@ -390,6 +389,8 @@ const Content = ({ payload, onClose }: DialogProps<ConstellationCreationDialogPr
                                   rg_link: null,
                                   effective_rating_cached: 1000,
                                   hide_rating: false,
+                                  display_name: null,
+                                  linked_user_id: x.id,
                                 },
                               ]);
                               setRounds([
@@ -533,13 +534,13 @@ const Content = ({ payload, onClose }: DialogProps<ConstellationCreationDialogPr
                               ...rounds.map((z, i) =>
                                 i === index
                                   ? {
-                                      ...z,
-                                      options: {
-                                        ...z.options,
-                                        benchFromLastMatchMustPlay: e.target.checked,
-                                        mustPlay: e.target.checked ? [...rounds[index - 1].game.bench] : [],
-                                      } as MatchmakingOptions,
-                                    }
+                                    ...z,
+                                    options: {
+                                      ...z.options,
+                                      benchFromLastMatchMustPlay: e.target.checked,
+                                      mustPlay: e.target.checked ? [...rounds[index - 1].game.bench] : [],
+                                    } as MatchmakingOptions,
+                                  }
                                   : z
                               ),
                             ]);
@@ -597,14 +598,14 @@ const Content = ({ payload, onClose }: DialogProps<ConstellationCreationDialogPr
                                 ...rounds.map((z, i) =>
                                   i === index
                                     ? {
-                                        game: z.game,
-                                        options: {
-                                          ...z.options,
-                                          lockedTeams: (z.options.lockedTeams ?? []).filter(
-                                            (y) => y[0].player !== player1.player && y[1].player !== player2.player
-                                          ),
-                                        } as MatchmakingOptions,
-                                      }
+                                      game: z.game,
+                                      options: {
+                                        ...z.options,
+                                        lockedTeams: (z.options.lockedTeams ?? []).filter(
+                                          (y) => y[0].player !== player1.player && y[1].player !== player2.player
+                                        ),
+                                      } as MatchmakingOptions,
+                                    }
                                     : z
                                 ),
                               ]);
@@ -658,15 +659,15 @@ const Content = ({ payload, onClose }: DialogProps<ConstellationCreationDialogPr
                             ...rounds.map((z, i) =>
                               i === index
                                 ? {
-                                    game: z.game,
-                                    options: {
-                                      ...z.options,
-                                      lockedTeams: [
-                                        ...(z.options.lockedTeams ?? []),
-                                        [preSelectedPlayer1, preSelectedPlayer2],
-                                      ],
-                                    } as MatchmakingOptions,
-                                  }
+                                  game: z.game,
+                                  options: {
+                                    ...z.options,
+                                    lockedTeams: [
+                                      ...(z.options.lockedTeams ?? []),
+                                      [preSelectedPlayer1, preSelectedPlayer2],
+                                    ],
+                                  } as MatchmakingOptions,
+                                }
                                 : z
                             ),
                           ]);
@@ -717,14 +718,14 @@ const Content = ({ payload, onClose }: DialogProps<ConstellationCreationDialogPr
                                 ...rounds.map((z, i) =>
                                   i === index
                                     ? {
-                                        game: z.game,
-                                        options: {
-                                          ...z.options,
-                                          mustPlay: (z.options.mustPlay ?? []).filter(
-                                            (y) => y.player !== player.player
-                                          ),
-                                        } as MatchmakingOptions,
-                                      }
+                                      game: z.game,
+                                      options: {
+                                        ...z.options,
+                                        mustPlay: (z.options.mustPlay ?? []).filter(
+                                          (y) => y.player !== player.player
+                                        ),
+                                      } as MatchmakingOptions,
+                                    }
                                     : z
                                 ),
                               ]);
@@ -758,12 +759,12 @@ const Content = ({ payload, onClose }: DialogProps<ConstellationCreationDialogPr
                             ...rounds.map((z, i) =>
                               i === index
                                 ? {
-                                    game: z.game,
-                                    options: {
-                                      ...z.options,
-                                      mustPlay: [...(z.options.mustPlay ?? []), preMustPlay],
-                                    } as MatchmakingOptions,
-                                  }
+                                  game: z.game,
+                                  options: {
+                                    ...z.options,
+                                    mustPlay: [...(z.options.mustPlay ?? []), preMustPlay],
+                                  } as MatchmakingOptions,
+                                }
                                 : z
                             ),
                           ]);
@@ -822,13 +823,13 @@ const Content = ({ payload, onClose }: DialogProps<ConstellationCreationDialogPr
                           ...rounds.map((z, i) =>
                             i === index
                               ? {
-                                  game: result,
-                                  options: {
-                                    ...z.options,
-                                    ...(z.options.benchFromLastMatchMustPlay &&
-                                      i > 0 && { mustPlay: rounds[i - 1].game.bench }),
-                                  },
-                                }
+                                game: result,
+                                options: {
+                                  ...z.options,
+                                  ...(z.options.benchFromLastMatchMustPlay &&
+                                    i > 0 && { mustPlay: rounds[i - 1].game.bench }),
+                                },
+                              }
                               : z
                           ),
                         ]);
@@ -853,12 +854,12 @@ const Content = ({ payload, onClose }: DialogProps<ConstellationCreationDialogPr
                                 ...rounds.map((z, i) =>
                                   i === index
                                     ? {
-                                        ...z,
-                                        options: {
-                                          ...z.options,
-                                          fixedMatches: [...(z.options.fixedMatches ?? []), y],
-                                        } as MatchmakingOptions,
-                                      }
+                                      ...z,
+                                      options: {
+                                        ...z.options,
+                                        fixedMatches: [...(z.options.fixedMatches ?? []), y],
+                                      } as MatchmakingOptions,
+                                    }
                                     : z
                                 ),
                               ]);
@@ -867,12 +868,12 @@ const Content = ({ payload, onClose }: DialogProps<ConstellationCreationDialogPr
                                 ...rounds.map((z, i) =>
                                   i === index
                                     ? {
-                                        ...z,
-                                        options: {
-                                          ...z.options,
-                                          fixedMatches: z.options.fixedMatches?.filter((x) => x !== y),
-                                        } as MatchmakingOptions,
-                                      }
+                                      ...z,
+                                      options: {
+                                        ...z.options,
+                                        fixedMatches: z.options.fixedMatches?.filter((x) => x !== y),
+                                      } as MatchmakingOptions,
+                                    }
                                     : z
                                 ),
                               ]);

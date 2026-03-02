@@ -36,8 +36,8 @@ type Props = {
   p2_eff?: number | null;
   p1_delta?: number | null;
   p2_delta?: number | null;
-  p1: User | null;
-  p2: User | null;
+  p1: { displayName: string | null, avatarUrl: string | null, isGuest: boolean } | null;
+  p2: { displayName: string | null, avatarUrl: string | null, isGuest: boolean } | null;
   rated: boolean;
 };
 
@@ -165,7 +165,12 @@ const TeamCard = ({
               {p1?.avatarUrl ? <img src={p1?.avatarUrl} alt="logo" width={'100%'} height={'100%'} /> : <AccountBox />}
             </Avatar>
           </ListItemAvatar>
-          <ListItemText primary={p1?.displayName} />
+          <ListItemText primary={<Stack direction={'row'} spacing={2}>
+            <Typography>{p1?.displayName}</Typography>
+            {p1?.isGuest && (
+              <Chip variant="outlined" size="small" label="Gast" color="warning" />
+            )}
+          </Stack>} />
         </ListItem>
         <ListItem
           secondaryAction={
@@ -182,7 +187,12 @@ const TeamCard = ({
               {p2?.avatarUrl ? <img src={p2?.avatarUrl} alt="logo" width={'100%'} height={'100%'} /> : <AccountBox />}
             </Avatar>
           </ListItemAvatar>
-          <ListItemText primary={p2?.displayName} />
+          <ListItemText primary={<Stack direction={'row'} spacing={2}>
+            <Typography>{p2?.displayName}</Typography>
+            {p2?.isGuest && (
+              <Chip variant="outlined" size="small" label="Gast" color="warning" />
+            )}
+          </Stack>} />
         </ListItem>
       </CardContent>
     </Card>
@@ -238,8 +248,8 @@ const MatchInformation = () => {
           p2_eff={player2a_history?.eff_old_rating}
           p1_delta={(player1a_history?.eff_new_rating ?? 0) - (player1a_history?.eff_old_rating ?? 0)}
           p2_delta={(player2a_history?.eff_new_rating ?? 0) - (player2a_history?.eff_old_rating ?? 0)}
-          p1={match.player_1a}
-          p2={match.player_2a}
+          p1={({ displayName: match.team_a.player_1.display_name ?? match.player_1a?.name ?? '', avatarUrl: match.player_1a?.avatarUrl ?? null, isGuest: match.team_a.player_1.linked_user_id === null })}
+          p2={({ displayName: match.team_a.player_2.display_name ?? match.player_2a?.name ?? '', avatarUrl: match.player_2a?.avatarUrl ?? null, isGuest: match.team_a.player_2.linked_user_id === null })}
           rated={match.rated}
         />
 
@@ -278,8 +288,8 @@ const MatchInformation = () => {
           p2_eff={player2b_history?.eff_old_rating}
           p1_delta={(player1b_history?.eff_new_rating ?? 0) - (player1b_history?.eff_old_rating ?? 0)}
           p2_delta={(player2b_history?.eff_new_rating ?? 0) - (player2b_history?.eff_old_rating ?? 0)}
-          p1={match.player_1b}
-          p2={match.player_2b}
+          p1={({ displayName: match.team_b.player_1.display_name ?? match.player_1b?.name ?? '', avatarUrl: match.player_1b?.avatarUrl ?? null, isGuest: match.team_b.player_1.linked_user_id === null })}
+          p2={({ displayName: match.team_b.player_2.display_name ?? match.player_2b?.name ?? '', avatarUrl: match.player_2b?.avatarUrl ?? null, isGuest: match.team_b.player_2.linked_user_id === null })}
           rated={match.rated}
         />
 
