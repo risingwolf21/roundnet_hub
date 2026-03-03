@@ -36,7 +36,7 @@ import ListItemText from '@mui/material/ListItemText';
 import ListSubheader from '@mui/material/ListSubheader';
 import SwipeableDrawer from '@mui/material/SwipeableDrawer';
 import Typography from '@mui/material/Typography';
-import { keyframes, styled } from '@mui/system';
+import { styled } from '@mui/system';
 import { TFunction } from 'i18next';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -687,18 +687,8 @@ export const Drawer = ({ open, onClose, onOpen }: Props) => {
               // iOS Performance & Geste-Konflikt-Vermeidung
               disableBackdropTransition={!iOS}
               disableDiscovery={false}
-              swipeAreaWidth={60} // Ermöglicht das "Herausziehen" vom Rand
-              minFlingVelocity={300}
-              hysteresis={0.1}
               ModalProps={{
                 keepMounted: true, // Erhöht Performance beim Wiederöffnen
-              }}
-              sx={{
-                '& .MuiSwipeableDrawer-swipeArea': {
-                  backgroundColor: 'transparent',
-                  pointerEvents: 'auto',
-                  touchAction: 'none',
-                },
               }}
               slotProps={{
                 paper: {
@@ -707,16 +697,10 @@ export const Drawer = ({ open, onClose, onOpen }: Props) => {
                     borderTopRightRadius: 24,
                     borderBottomRightRadius: 24,
                     background: '#f2ecf1',
-                    // Verhindert Flackern auf iOS während der Animation
                     backfaceVisibility: 'hidden',
                     perspective: 1000,
                     pointerEvents: 'auto !important',
                     visibility: 'visible !important',
-                  }
-                },
-                docked: {
-                  sx: {
-                    pointerEvents: 'all !important',
                   }
                 }
               }}

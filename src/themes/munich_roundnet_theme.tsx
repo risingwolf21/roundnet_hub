@@ -222,15 +222,6 @@ export const munich_roundnet_theme = createTheme({
       ],
     },
   },
-  breakpoints: {
-    values: {
-      xs: 400,
-      sm: 600,
-      md: 900,
-      lg: 1200,
-      xl: 1536,
-    },
-  },
   palette: {
     primary: {
       main: '#6D0505',
