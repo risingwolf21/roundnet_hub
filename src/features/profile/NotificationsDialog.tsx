@@ -77,7 +77,7 @@ const NotificationsDialog = () => {
         <Typography sx={{ fontSize: 16, fontWeight: 'bold', m: 2 }} color="text.secondary">
           Einstellungen
         </Typography>
-        <NotificationGate />
+        {isNotificationSupported && <NotificationGate />}
         <Divider />
         <Typography sx={{ fontSize: 16, fontWeight: 'bold', m: 2 }} color="text.secondary">
           Abonnierte Benachrichtigungen
