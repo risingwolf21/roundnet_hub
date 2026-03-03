@@ -90,6 +90,7 @@ async function revokeOnServer(endpoint?: string | null) {
 }
 
 async function ensurePermissionFromGesture(): Promise<NotificationPermission> {
+  if (!('Notification' in window)) return 'denied';
   if (Notification.permission === 'granted') return 'granted';
   // importANT: only call this inside a user gesture handler (e.g., onClick)
   return await Notification.requestPermission();
@@ -104,7 +105,9 @@ type Props = {
 };
 
 export default function NotificationGate({ allowDecline = true, onReady, vapidPublicKey }: Props) {
-  const [permission, setPermission] = React.useState<NotificationPermission>(Notification.permission);
+  const [permission, setPermission] = React.useState<NotificationPermission>(
+    'Notification' in window ? Notification.permission : 'denied',
+  );
   const [loading, setLoading] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
   const [registered, setRegistered] = React.useState(false);
