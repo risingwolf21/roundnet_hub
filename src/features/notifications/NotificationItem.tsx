@@ -1,10 +1,12 @@
 import { useDismissNotification } from '@/tanstack/notifications';
 import { Json } from '@/types/supabase-generated.types';
-import Badge from '@mui/material/Badge';
+import { Circle as CircleIcon, Done as DoneIcon } from '@mui/icons-material';
+import IconButton from '@mui/material/IconButton';
 import ListItem from '@mui/material/ListItem';
-import Typography from '@mui/material/Typography';
+import ListItemButton from '@mui/material/ListItemButton';
+import ListItemText from '@mui/material/ListItemText';
+import Tooltip from '@mui/material/Tooltip';
 import Box from '@mui/system/Box';
-import { t } from 'i18next';
 import { useNavigate } from 'react-router';
 import { Notification } from 'types/supabase';
 
@@ -18,88 +20,48 @@ export const NotificationItem = ({ notification }: { notification: Notification 
 
   return (
     <ListItem
+      disablePadding
       divider
       key={notification.id}
-      onClick={() => {
+      sx={{
+        bgcolor: notification.dismissed_at ? 'transparent' : 'action.hover',
+        transition: '0.2s',
+        '&:hover': { bgcolor: 'action.selected' }
+      }}
+      secondaryAction={
+        !notification.dismissed_at && (
+          <Tooltip title="Als gelesen markieren">
+            <IconButton
+              edge="end"
+              onClick={() => dismissNotification.mutate({ notficationId: notification.id })}
+              color="primary"
+            >
+              <DoneIcon fontSize="small" />
+            </IconButton>
+          </Tooltip>
+        )
+      }
+    >
+      {
+        !notification.dismissed_at && (
+          <Box sx={{ ml: 2, display: 'flex', alignItems: 'center' }}>
+            <CircleIcon sx={{ fontSize: 12, color: 'primary.main' }} />
+          </Box>
+        )
+      }
+      <ListItemButton onClick={() => {
         if (notification.data && hasStringUrl(notification.data)) {
           navigate(notification.data.url);
         }
-        dismissNotification.mutate({ notficationId: notification.id });
-      }}
-      sx={{
-        justifyContent: 'space-between',
-      }}
-    >
-      <Box
-        sx={{
-          width: '100%',
-          display: 'flex',
-          flexDirection: 'column',
-          justifyContent: 'start',
-          alignContent: 'start',
-          mt: '6px',
-          mb: '6px',
-        }}
-      >
-        <Box
-          sx={{
-            display: 'flex',
-            flexDirection: 'row',
-            justifyContent: 'space-between',
-            width: '100%',
+      }} sx={{ py: 1.5 }}>
+        <ListItemText
+          primary={notification.title}
+          secondary={notification.body}
+          primaryTypographyProps={{
+            fontWeight: notification.dismissed_at ? 400 : 700
           }}
-        >
-          <Typography
-            sx={{
-              margin: 0,
-              fontFamily: '"Roboto", "Helvetica", "Arial"," sans-serif"',
-              fontSize: '16px',
-              color: '#000000DE',
-            }}
-          >
-            {notification.title}
-          </Typography>
-          <Typography
-            style={{
-              fontSize: '10pt',
-              color: 'rgba(0,0,0,0.6)',
-            }}
-          >
-            {t('format.distanceToNow', { date: new Date(notification.created_at) })}
-          </Typography>
-        </Box>
-        <Box
-          sx={{
-            display: 'flex',
-            flexDirection: 'row',
-            justifyContent: 'space-between',
-            width: '100%',
-          }}
-        >
-          <Typography
-            sx={{
-              margin: 0,
-              fontFamily: '"Roboto", "Helvetica", "Arial"," sans-serif"',
-              fontWeight: 400,
-              fontSize: '0.875rem',
-              lineHeight: '1.43',
-              color: 'rgba(0, 0, 0, 0.6)',
-            }}
-          >
-            {notification.body}
-          </Typography>
-          {!notification.dismissed_at && (
-            <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', marginRight: '8px' }}>
-              <Badge
-                badgeContent=" "
-                variant="dot"
-                color="error"
-                sx={{ '.MuiBadge-badge': { width: '12px', height: '12px', borderRadius: '6px' } }}
-              />
-            </div>
-          )}
-        </Box>
-      </Box>
+        />
+      </ListItemButton>
     </ListItem>
   );
 };

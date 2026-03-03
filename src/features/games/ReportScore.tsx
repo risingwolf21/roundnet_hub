@@ -7,14 +7,15 @@ import { v4 as uuid } from 'uuid';
 import { useApplication } from '../auth/ApplicationContext';
 
 import NumberField from '@/components/mui/NumberField';
-import { SearchIconWrapper, StyledInputBase } from '@/components/SearchBar';
+import { SearchIconWrapper, Search as SearchWrapper, StyledInputBase } from '@/components/SearchBar';
+import { Has } from '@/hooks/useGrants';
 import { formatDateToDatabase } from '@/utils';
 import AccountBox from '@mui/icons-material/AccountBox';
 import Add from '@mui/icons-material/Add';
 import Close from '@mui/icons-material/Close';
 import Delete from '@mui/icons-material/Delete';
 import Save from '@mui/icons-material/Save';
-import { default as Search, default as SearchIcon } from '@mui/icons-material/Search';
+import { default as SearchIcon } from '@mui/icons-material/Search';
 import AppBar from '@mui/material/AppBar';
 import Avatar from '@mui/material/Avatar';
 import Box from '@mui/material/Box';
@@ -410,16 +411,18 @@ const SelectPlayerDialog = ({ open, onClose, payload }: DialogProps<{ options: P
             <IconButton size="large" edge="start" color="inherit" onClick={() => onClose(null)}>
               <Close />
             </IconButton>
-            <Search sx={{ marginRight: 2 }}>
+            <SearchWrapper sx={{ flexGrow: 1 }}>
               <SearchIconWrapper>
                 <SearchIcon />
               </SearchIconWrapper>
               <StyledInputBase
-                placeholder="Search…"
-                onChange={(e) => setSearchString(e.target.value)}
+                sx={{ width: '100% !important', flexGrow: 1 }}
+                placeholder="Suche nach einem Nutzer"
                 inputProps={{ 'aria-label': 'search' }}
+                value={searchString}
+                onChange={(e: { target: { value: React.SetStateAction<string> } }) => setSearchString(e.target.value)}
               />
-            </Search>
+            </SearchWrapper>
           </Toolbar>
         </AppBar>
         <List sx={{ width: '100%' }}>
@@ -443,21 +446,23 @@ const SelectPlayerDialog = ({ open, onClose, payload }: DialogProps<{ options: P
               </ListItemButton>
             ))}
         </List>
-        <Fab
-          sx={{
-            position: 'fixed',
-            right: '16px',
-            bottom: 'calc(16px + env(safe-area-inset-bottom))',
-          }}
-          onClick={async () => {
-            const result = await dialogs.open(CreatePlayerDialog);
-            if (result) {
-              onClose(result);
-            }
-          }}
-        >
-          <Add />
-        </Fab>
+        <Has perm={"games.create.guest-player"}>
+          <Fab
+            sx={{
+              position: 'fixed',
+              right: '16px',
+              bottom: 'calc(16px + env(safe-area-inset-bottom))',
+            }}
+            onClick={async () => {
+              const result = await dialogs.open(CreatePlayerDialog);
+              if (result) {
+                onClose(result);
+              }
+            }}
+          >
+            <Add />
+          </Fab>
+        </Has>
       </Box>
     </Dialog>
   )
@@ -491,7 +496,9 @@ const CreatePlayerDialog = ({ open, onClose }: DialogProps<undefined, PendingGue
         </AppBar>
         <Stack direction={'column'} sx={{ p: 2, gap: 2 }}>
           <TextField label={'Name'} fullWidth value={name} onChange={(e) => setName(e.target.value)} />
-          <NumberField step={50} label={'Index'} min={800} max={2000} defaultValue={1000} value={index} onValueChange={(e) => e && setIndex(e)} />
+          <Has perm={"games.create.guest-player.with_index"}>
+            <NumberField step={50} label={'Index'} min={800} max={2000} defaultValue={1000} value={index} onValueChange={(e) => e && setIndex(e)} />
+          </Has>
         </Stack>
       </Box>
     </Dialog>
