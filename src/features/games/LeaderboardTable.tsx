@@ -53,7 +53,7 @@ export const LeaderboardTable = ({ leaderboard, loading = true }: { leaderboard:
               </Avatar>
             </ListItemAvatar>
             <ListItemText slotProps={{ primary: { fontWeight: "bold", fontSize: "1rem" } }} primary={entry.name} />
-            <Tooltip title={t('matches.leaderboardTooltip', { trend: entry.trend_30_days })}>
+            <Tooltip leaveDelay={1500} title={t('matches.leaderboardTooltip', { trend: entry.trend_30_days })} onClick={(e) => e.stopPropagation()}>
               <Chip color={'default'} size="small" sx={{ fontWeight: "bold", py: 2 }} label={entry.rating?.toFixed() + ' ' + ((entry.trend_30_days ?? 0) > 0 ? '↗️' : (entry.trend_30_days ?? 0) < 0 ? '↘️' : '↔️')} />
             </Tooltip>
           </ListItem>
