@@ -35,7 +35,7 @@ export const GroupUserItem = ({
     <ListItem
       key={groupUser.id}
       divider
-      onClick={() => dialogs.open(ProfileDialog, { user, userId: groupUser.id })}
+      onClick={() => dialogs.open(ProfileDialog, { userId: groupUser.id })}
       sx={{
         ...(selected && { background: 'rgba(2, 136, 209, 0.4)' }),
       }}

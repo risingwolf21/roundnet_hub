@@ -42,6 +42,10 @@
   "challenges": {
     "edit": "Edit challenge"
   },
+  "matches": {
+    "leaderboard": "Leaderboard",
+    "leaderboardTooltip": "Change of index in the last 30 days: {{trend}}"
+  },
   "events": {
     "upcoming": "Upcoming",
     "past": "Past",
@@ -96,6 +100,8 @@
     "challenges": "Challenges",
     "drinks": "Drinks",
     "notifications": "Notifications",
+    "leaderboard": "Leaderboard",
+    "matches": "Matches",
     "training": "Training",
     "groups": "Groups"
   },

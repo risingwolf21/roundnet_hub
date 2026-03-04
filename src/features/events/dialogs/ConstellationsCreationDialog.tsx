@@ -391,6 +391,7 @@ const Content = ({ payload, onClose }: DialogProps<ConstellationCreationDialogPr
                                   hide_rating: false,
                                   display_name: null,
                                   linked_user_id: x.id,
+                                  matches_played: 0,
                                 },
                               ]);
                               setRounds([

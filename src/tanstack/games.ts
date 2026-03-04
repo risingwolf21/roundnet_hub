@@ -12,6 +12,24 @@ export const gamesKeys = {
   match: (matchId?: string) => [...gamesKeys.matches(), matchId] as const,
   players: () => [...gamesKeys.all, 'players'] as const,
   teams: () => [...gamesKeys.all, 'teams'] as const,
+  Leaderboard: (minMatches: number) => [...gamesKeys.all, 'leaderboard', minMatches] as const,
+};
+
+export const useLeaderboard = (minMatches = 5) => {
+  return useQuery({
+    queryKey: gamesKeys.Leaderboard(minMatches),
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .schema('games')
+        .from('leaderboard')
+        .select('*')
+        .gte('matches_played', minMatches)
+        .order('rating', { ascending: false });
+
+      if (error) throw error;
+      return data;
+    }
+  });
 };
 
 export const useMatch = (matchId?: string) =>

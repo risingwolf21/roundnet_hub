@@ -11,7 +11,7 @@ import { useNavigate } from 'react-router';
 import { Notification } from 'types/supabase';
 
 function hasStringUrl(value: Json): value is { url: string } {
-  return typeof value === 'object' && value !== null && !Array.isArray(value) && typeof (value as any).url === 'string';
+  return typeof value === 'object' && value !== null && !Array.isArray(value) && 'url' in value && typeof value.url === 'string';
 }
 
 export const NotificationItem = ({ notification }: { notification: Notification }) => {
@@ -57,8 +57,10 @@ export const NotificationItem = ({ notification }: { notification: Notification 
         <ListItemText
           primary={notification.title}
           secondary={notification.body}
-          primaryTypographyProps={{
-            fontWeight: notification.dismissed_at ? 400 : 700
+          slotProps={{
+            primary: {
+              fontWeight: notification.dismissed_at ? 400 : 700
+            }
           }}
         />
       </ListItemButton>

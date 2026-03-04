@@ -3,13 +3,11 @@ import { useAllNotifications, useMarkNotificationsAsRead } from '@/tanstack/noti
 import Layout from '../../components/layout/Layout';
 import { useGrants } from '../auth/GrantsContext';
 
-import { Json } from '@/types/supabase-generated.types';
 import DeleteIcon from '@mui/icons-material/Delete';
 import Box from '@mui/material/Box';
 import Fab from '@mui/material/Fab';
 import List from '@mui/material/List';
 import Typography from '@mui/material/Typography';
-import { useNavigate } from 'react-router';
 import { NotificationItem } from './NotificationItem';
 
 const NotificationsPage = () => {
@@ -20,13 +18,8 @@ const NotificationsPage = () => {
   );
 };
 
-function hasStringUrl(value: Json): value is { url: string } {
-  return typeof value === 'object' && value !== null && !Array.isArray(value) && typeof (value as any).url === 'string';
-}
-
 const NotificationScreen = () => {
   const { user } = useGrants();
-  const navigate = useNavigate();
   const { data: notifications = [], isLoading, refetch } = useAllNotifications(user);
 
   const markNotificationsAsRead = useMarkNotificationsAsRead(user);

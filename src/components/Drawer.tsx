@@ -15,6 +15,7 @@ import Home from '@mui/icons-material/Home';
 import InfoOutlined from '@mui/icons-material/InfoOutlined';
 import InstallDesktop from '@mui/icons-material/InstallDesktop';
 import Key from '@mui/icons-material/Key';
+import LeaderboardIcon from '@mui/icons-material/Leaderboard';
 import Liquor from '@mui/icons-material/Liquor';
 import Notifications from '@mui/icons-material/Notifications';
 import Person from '@mui/icons-material/Person';
@@ -284,6 +285,17 @@ const DrawerContent = ({
             <ListItemText
               primaryTypographyProps={{ fontWeight: 'bold', fontSize: '0.9rem' }}
               primary={t('navigation.matches')}
+            />
+          </DrawerItem>
+          <DrawerItem key={"leaderboard"} selected={tab === 'matches/leaderboard'} onClick={() => handleChange('matches/leaderboard')}>
+            <ListItemAvatar>
+              <ListItemIcon>
+                <LeaderboardIcon />
+              </ListItemIcon>
+            </ListItemAvatar>
+            <ListItemText
+              primaryTypographyProps={{ fontWeight: 'bold', fontSize: '0.9rem' }}
+              primary={t('navigation.leaderboard')}
             />
           </DrawerItem>
         </Has>

@@ -38,6 +38,7 @@ declare global {
   type Voucher = Tables<'vouchers'>;
   type Player = GamesTable<'players'>;
   type PlayerPublic = GamesTable<'players_public'>;
+  type LeaderboardEntry = GamesTable<'leaderboard'>;
   type Match = GamesTable<'match'>;
   type MatchSet = GamesTable<'sets'>;
   type Team = GamesTable<'teams'>;

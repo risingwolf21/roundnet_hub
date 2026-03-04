@@ -46,6 +46,7 @@ const PlayerzoneProfileDialog = lazyWithRetry(() => import('./features/profile/P
 const NotificationsDialog = lazyWithRetry(() => import('./features/profile/NotificationsDialog'));
 const ContactInformation = lazyWithRetry(() => import('./features/profile/ContactInformation'));
 const ResetPassword = lazyWithRetry(() => import('./features/profile/ResetPassword'));
+const Leaderboard = lazyWithRetry(() => import('./features/games/Leaderboard'));
 
 export const AppRoutes = () => {
   const { user } = useApplication();
@@ -295,6 +296,10 @@ const createRouter = (user: UserWithGroups | null) =>
                   path: ':matchId',
                   element: <MatchInformation />,
                 },
+                {
+                  path: 'leaderboard',
+                  element: <Leaderboard />,
+                }
               ],
             },
             {

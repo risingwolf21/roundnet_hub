@@ -5,6 +5,7 @@ import { useDialogs, useNotifications } from '@toolpad/core';
 import { useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router';
 
+import { ProfileDialog } from '@/components/Profile';
 import { Has } from '@/hooks/useGrants';
 import AccountBox from '@mui/icons-material/AccountBox';
 import Delete from '@mui/icons-material/Delete';
@@ -36,8 +37,8 @@ type Props = {
   p2_eff?: number | null;
   p1_delta?: number | null;
   p2_delta?: number | null;
-  p1: { displayName: string | null, avatarUrl: string | null, isGuest: boolean } | null;
-  p2: { displayName: string | null, avatarUrl: string | null, isGuest: boolean } | null;
+  p1: { displayName: string | null, avatarUrl: string | null, isGuest: boolean, playerId: string | null, userId: string | null } | null;
+  p2: { displayName: string | null, avatarUrl: string | null, isGuest: boolean, playerId: string | null, userId: string | null } | null;
   rated: boolean;
 };
 
@@ -114,6 +115,7 @@ const TeamCard = ({
   p2,
   rated,
 }: Props) => {
+  const dialogs = useDialogs();
   return (
     <Card elevation={3} sx={{ borderRadius: 2, py: 0, px: 0, mt: 1 }}>
       <CardContent sx={{ p: 0 }}>
@@ -151,6 +153,7 @@ const TeamCard = ({
           </>
         )}
         <ListItem
+          onClick={() => dialogs.open(ProfileDialog, { userId: p1?.userId, playerId: p1?.playerId })}
           secondaryAction={
             rated && (
               <Stack direction={'row'} spacing={1}>
@@ -173,6 +176,7 @@ const TeamCard = ({
           </Stack>} />
         </ListItem>
         <ListItem
+          onClick={() => dialogs.open(ProfileDialog, { userId: p2?.userId, playerId: p2?.playerId })}
           secondaryAction={
             rated && (
               <Stack direction={'row'} spacing={1}>
@@ -248,8 +252,20 @@ const MatchInformation = () => {
           p2_eff={player2a_history?.eff_old_rating}
           p1_delta={(player1a_history?.eff_new_rating ?? 0) - (player1a_history?.eff_old_rating ?? 0)}
           p2_delta={(player2a_history?.eff_new_rating ?? 0) - (player2a_history?.eff_old_rating ?? 0)}
-          p1={({ displayName: match.team_a.player_1.display_name ?? match.player_1a?.name ?? '', avatarUrl: match.player_1a?.avatarUrl ?? null, isGuest: match.team_a.player_1.linked_user_id === null })}
-          p2={({ displayName: match.team_a.player_2.display_name ?? match.player_2a?.name ?? '', avatarUrl: match.player_2a?.avatarUrl ?? null, isGuest: match.team_a.player_2.linked_user_id === null })}
+          p1={({
+            displayName: match.team_a.player_1.display_name ?? match.player_1a?.name ?? '',
+            avatarUrl: match.player_1a?.avatarUrl ?? null,
+            isGuest: match.team_a.player_1.linked_user_id === null,
+            userId: match.team_a.player_1.linked_user_id,
+            playerId: match.team_a.player_1.player
+          })}
+          p2={({
+            displayName: match.team_a.player_2.display_name ?? match.player_2a?.name ?? '',
+            avatarUrl: match.player_2a?.avatarUrl ?? null,
+            isGuest: match.team_a.player_2.linked_user_id === null,
+            userId: match.team_a.player_2.linked_user_id,
+            playerId: match.team_a.player_2.player
+          })}
           rated={match.rated}
         />
 
@@ -288,8 +304,20 @@ const MatchInformation = () => {
           p2_eff={player2b_history?.eff_old_rating}
           p1_delta={(player1b_history?.eff_new_rating ?? 0) - (player1b_history?.eff_old_rating ?? 0)}
           p2_delta={(player2b_history?.eff_new_rating ?? 0) - (player2b_history?.eff_old_rating ?? 0)}
-          p1={({ displayName: match.team_b.player_1.display_name ?? match.player_1b?.name ?? '', avatarUrl: match.player_1b?.avatarUrl ?? null, isGuest: match.team_b.player_1.linked_user_id === null })}
-          p2={({ displayName: match.team_b.player_2.display_name ?? match.player_2b?.name ?? '', avatarUrl: match.player_2b?.avatarUrl ?? null, isGuest: match.team_b.player_2.linked_user_id === null })}
+          p1={({
+            displayName: match.team_b.player_1.display_name ?? match.player_1b?.name ?? '',
+            avatarUrl: match.player_1b?.avatarUrl ?? null,
+            isGuest: match.team_b.player_1.linked_user_id === null,
+            playerId: match.team_b.player_1.player,
+            userId: match.team_b.player_1.linked_user_id,
+          })}
+          p2={({
+            displayName: match.team_b.player_2.display_name ?? match.player_2b?.name ?? '',
+            avatarUrl: match.player_2b?.avatarUrl ?? null,
+            isGuest: match.team_b.player_2.linked_user_id === null,
+            playerId: match.team_b.player_2.player,
+            userId: match.team_b.player_2.linked_user_id,
+          })}
           rated={match.rated}
         />
 

@@ -197,7 +197,7 @@ const EventAttendanceDialog = ({
                 <AttendanceItem
                   attendance={x}
                   key={x.user.id + 'AttendingAsTrainer'}
-                  onClick={() => dialogs.open(ProfileDialog, { user, userId: x.user.id })}
+                  onClick={() => dialogs.open(ProfileDialog, { userId: x.user.id })}
                   required_item={usersWithRequiredItem.find((y) => y.user === x.user.id)?.item}
                 />
               ))}
@@ -208,7 +208,7 @@ const EventAttendanceDialog = ({
                 <AttendanceItem
                   attendance={x}
                   key={x.user.id + 'RequestedAttendance'}
-                  onClick={() => dialogs.open(ProfileDialog, { user, userId: x.user.id })}
+                  onClick={() => dialogs.open(ProfileDialog, { userId: x.user.id })}
                   required_item={usersWithRequiredItem.find((y) => y.user === x.user.id)?.item}
                   acceptAttendance={hasPerm('event.manage.attendees') ? acceptAttendance : null}
                 />
@@ -220,7 +220,7 @@ const EventAttendanceDialog = ({
                 <AttendanceItem
                   attendance={x}
                   key={x.user.id + 'Attending'}
-                  onClick={() => dialogs.open(ProfileDialog, { user, userId: x.user.id })}
+                  onClick={() => dialogs.open(ProfileDialog, { userId: x.user.id })}
                   required_item={usersWithRequiredItem.find((y) => y.user === x.user.id)?.item}
                 />
               ))}
@@ -235,7 +235,7 @@ const EventAttendanceDialog = ({
                 <AttendanceItem
                   attendance={x}
                   key={x.user.id + 'Declined'}
-                  onClick={() => dialogs.open(ProfileDialog, { user, userId: x.user.id })}
+                  onClick={() => dialogs.open(ProfileDialog, { userId: x.user.id })}
                 />
               ))}
           </List>
@@ -250,7 +250,7 @@ const EventAttendanceDialog = ({
                     <AttendanceItem
                       attendance={x}
                       key={x.user.id + 'AttendingAsTrial'}
-                      onClick={() => dialogs.open(ProfileDialog, { user, userId: x.user.id })}
+                      onClick={() => dialogs.open(ProfileDialog, { userId: x.user.id })}
                     />
                   ))}
               </List>

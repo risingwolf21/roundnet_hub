@@ -290,6 +290,13 @@ export type Database = {
             foreignKeyName: "elo_history_user_fkey"
             columns: ["user"]
             isOneToOne: false
+            referencedRelation: "leaderboard"
+            referencedColumns: ["player_id"]
+          },
+          {
+            foreignKeyName: "elo_history_user_fkey"
+            columns: ["user"]
+            isOneToOne: false
             referencedRelation: "players"
             referencedColumns: ["player"]
           },
@@ -366,6 +373,7 @@ export type Database = {
           hide_rating: boolean
           ka_index: number
           linked_user_id: string | null
+          matches_played: number | null
           player: string
           pro_status: boolean
           rg_avatar_url: string | null
@@ -381,6 +389,7 @@ export type Database = {
           hide_rating?: boolean
           ka_index?: number
           linked_user_id?: string | null
+          matches_played?: number | null
           player?: string
           pro_status?: boolean
           rg_avatar_url?: string | null
@@ -396,6 +405,7 @@ export type Database = {
           hide_rating?: boolean
           ka_index?: number
           linked_user_id?: string | null
+          matches_played?: number | null
           player?: string
           pro_status?: boolean
           rg_avatar_url?: string | null
@@ -477,6 +487,13 @@ export type Database = {
             foreignKeyName: "teams_player_1_fkey"
             columns: ["player_1"]
             isOneToOne: false
+            referencedRelation: "leaderboard"
+            referencedColumns: ["player_id"]
+          },
+          {
+            foreignKeyName: "teams_player_1_fkey"
+            columns: ["player_1"]
+            isOneToOne: false
             referencedRelation: "players"
             referencedColumns: ["player"]
           },
@@ -492,6 +509,13 @@ export type Database = {
             columns: ["player_1"]
             isOneToOne: false
             referencedRelation: "unified_player_profiles"
+            referencedColumns: ["player_id"]
+          },
+          {
+            foreignKeyName: "teams_player_2_fkey"
+            columns: ["player_2"]
+            isOneToOne: false
+            referencedRelation: "leaderboard"
             referencedColumns: ["player_id"]
           },
           {
@@ -519,6 +543,21 @@ export type Database = {
       }
     }
     Views: {
+      leaderboard: {
+        Row: {
+          activity_status: string | null
+          avatar_url: string | null
+          confidence_level: number | null
+          linked_user_id: string | null
+          matches_played: number | null
+          name: string | null
+          player_id: string | null
+          position: number | null
+          rating: number | null
+          trend_30_days: number | null
+        }
+        Relationships: []
+      }
       players_public: {
         Row: {
           effective_rating_cached: number | null
@@ -587,6 +626,20 @@ export type Database = {
             foreignKeyName: "teams_player_1_fkey"
             columns: ["team_a_player_1"]
             isOneToOne: false
+            referencedRelation: "leaderboard"
+            referencedColumns: ["player_id"]
+          },
+          {
+            foreignKeyName: "teams_player_1_fkey"
+            columns: ["team_b_player_1"]
+            isOneToOne: false
+            referencedRelation: "leaderboard"
+            referencedColumns: ["player_id"]
+          },
+          {
+            foreignKeyName: "teams_player_1_fkey"
+            columns: ["team_a_player_1"]
+            isOneToOne: false
             referencedRelation: "players"
             referencedColumns: ["player"]
           },
@@ -623,6 +676,20 @@ export type Database = {
             columns: ["team_b_player_1"]
             isOneToOne: false
             referencedRelation: "unified_player_profiles"
+            referencedColumns: ["player_id"]
+          },
+          {
+            foreignKeyName: "teams_player_2_fkey"
+            columns: ["team_a_player_2"]
+            isOneToOne: false
+            referencedRelation: "leaderboard"
+            referencedColumns: ["player_id"]
+          },
+          {
+            foreignKeyName: "teams_player_2_fkey"
+            columns: ["team_b_player_2"]
+            isOneToOne: false
+            referencedRelation: "leaderboard"
             referencedColumns: ["player_id"]
           },
           {
@@ -695,12 +762,16 @@ export type Database = {
         Args: { p_match: string }
         Returns: undefined
       }
+      calculate_effective_rating: {
+        Args: { ka: number; m_count?: number; rg: number }
+        Returns: number
+      }
       category_offset: {
         Args: { p_cat: string }
         Returns: number
       }
-      compute_effective_player_from_values: {
-        Args: { ka: number; rg: number }
+      determine_k_factor: {
+        Args: { base_k: number; m_count: number }
         Returns: number
       }
       effective_rating_for_player: {

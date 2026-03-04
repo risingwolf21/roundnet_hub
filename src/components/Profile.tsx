@@ -1,13 +1,13 @@
 import { DialogProps } from '@toolpad/core';
-import { useCallback, useEffect, useState } from 'react';
 import pzLogo from '../images/pz_logo.svg';
-import { SupabaseUserRepository } from '../repository/UserRepository';
 
+import { useProfile } from '@/tanstack/user';
 import AddPhotoAlternateOutlined from '@mui/icons-material/AddPhotoAlternateOutlined';
 import Close from '@mui/icons-material/Close';
 import ContentCopy from '@mui/icons-material/ContentCopy';
-import FiberManualRecord from '@mui/icons-material/FiberManualRecord';
+import Diamond from '@mui/icons-material/Diamond';
 import Launch from '@mui/icons-material/Launch';
+import SportsVolleyballIcon from '@mui/icons-material/SportsVolleyball';
 import AppBar from '@mui/material/AppBar';
 import Avatar from '@mui/material/Avatar';
 import Chip from '@mui/material/Chip';
@@ -18,36 +18,17 @@ import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemAvatar from '@mui/material/ListItemAvatar';
 import ListItemText from '@mui/material/ListItemText';
-import ListSubheader from '@mui/material/ListSubheader';
 import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
 
 type ProfilePayload = {
-  user: User;
-  userId: string;
+  userId?: string | null;
+  playerId?: string | null;
 };
 
 const Content = ({ payload, onClose }: DialogProps<ProfilePayload, null>) => {
-  const [currentUser, setCurrentUser] = useState<UserWithGroupsAndPlayerData | null>(null);
-  const [overlappingGroups, setOverlappingGroups] = useState<Group[]>([]);
 
-  const loadUserData = useCallback(async () => {
-    const userResult = await SupabaseUserRepository.fetchUserWithGroups(payload.user.id);
-    const result = await SupabaseUserRepository.fetchUserWithGroups(payload.userId);
-
-    return { result, userResult };
-  }, [payload.user, payload.userId]);
-
-  useEffect(() => {
-    if (!payload.userId) return;
-
-    loadUserData().then(({ result, userResult }) => {
-      setOverlappingGroups(
-        result.data?.groups?.filter((x: Group) => userResult.data?.groups.some((y: Group) => y?.id === x?.id)) ?? []
-      );
-      setCurrentUser(result.data);
-    });
-  }, [payload.userId, loadUserData]);
+  const { data: profile } = useProfile(payload);
 
   return (
     <>
@@ -72,88 +53,103 @@ const Content = ({ payload, onClose }: DialogProps<ProfilePayload, null>) => {
           }}
         >
           <Avatar sx={{ borderRadius: 2, width: '150px', height: '150px' }}>
-            {currentUser?.avatarUrl ? (
-              <img src={currentUser?.avatarUrl} alt="logo" width={'150px'} height={'150px'} />
-            ) : (
-              <AddPhotoAlternateOutlined sx={{ fontSize: '50px' }} />
-            )}
+            {
+              profile?.avatarUrl ? (
+                <img src={profile?.avatarUrl} alt="logo" width={'150px'} height={'150px'} />
+              ) : (
+                <AddPhotoAlternateOutlined sx={{ fontSize: '50px' }} />
+              )
+            }
           </Avatar>
           <Typography variant={'h5'} sx={{ mt: 4 }}>
-            {currentUser?.displayName}
+            {profile?.displayName}
           </Typography>
         </Container>
-        {currentUser?.player_data?.rg_id && currentUser.player_data?.rg_link && (
-          <>
+        {
+          profile?.player?.effective_rating_cached && (
             <ListItem
-              key={'rg_id'}
+              key={'effective_rating'}
               disableGutters
               sx={{
                 '&.MuiListItem-root': { p: 0 },
               }}
-              secondaryAction={
-                <>
-                  <IconButton
-                    onClick={() =>
-                      window.open(currentUser.player_data?.rg_link ?? undefined, '_blank', 'noopener,noreferrer')
-                    }
-                  >
-                    <Launch />
-                  </IconButton>
-                  <IconButton onClick={() => navigator.clipboard.writeText(currentUser.player_data?.rg_id ?? '')}>
-                    <ContentCopy />
-                  </IconButton>
-                </>
-              }
             >
               <ListItemAvatar>
-                <img src={pzLogo} alt={'pz logo'} width="25" height="25" />
+                <Diamond />
               </ListItemAvatar>
-              <ListItemText primary={currentUser.player_data.rg_id} secondary={'Roundnet Germany ID'} />
+              <ListItemText primary={profile.player.effective_rating_cached.toFixed()} secondary={'Effektiver Index'} />
             </ListItem>
+          )
+        }
+        {
+          profile?.player?.matches_played && (
             <ListItem
-              key={'rgx'}
+              key={'matches_played'}
               disableGutters
               sx={{
                 '&.MuiListItem-root': { p: 0 },
               }}
-              secondaryAction={
-                currentUser.player_data?.pro_status ? (
-                  <Chip
-                    variant="outlined"
-                    label="Pro Status"
-                    sx={{ mx: 2, borderRadius: 3, background: 'black', color: 'white' }}
-                  />
-                ) : undefined
-              }
             >
               <ListItemAvatar>
-                <img src={pzLogo} alt={'pz logo'} width="25" height="25" />
+                <SportsVolleyballIcon />
               </ListItemAvatar>
-              <ListItemText primary={currentUser.player_data.rg_index} secondary={'Roundnet Germany Index'} />
+              <ListItemText primary={profile.player.matches_played} secondary={'Gespielte Matches'} />
             </ListItem>
-          </>
-        )}
-        <List
-          key={'groups'}
-          subheader={
-            <ListSubheader sx={{ fontWeight: 'bold', lineHeight: 'normal', my: 2, pl: 0 }}>
-              Gemeinsame Gruppen
-            </ListSubheader>
-          }
-        >
-          {overlappingGroups.map((group, index) => (
-            <ListItem
-              key={`${group.name} ${index}`}
-              sx={{ '&.MuiListItem-root': { p: 0 } }}
-              divider={index !== overlappingGroups.length - 1}
-            >
-              <ListItemAvatar>
-                <FiberManualRecord sx={{ color: group.color }} />
-              </ListItemAvatar>
-              <ListItemText primary={group.name} secondary={group.description} />
-            </ListItem>
-          ))}
-        </List>
+          )
+        }
+        {
+          profile?.player?.rg_id && profile.player?.rg_link && (
+            <>
+              <ListItem
+                key={'rg_id'}
+                disableGutters
+                sx={{
+                  '&.MuiListItem-root': { p: 0 },
+                }}
+                secondaryAction={
+                  <>
+                    <IconButton
+                      onClick={() =>
+                        window.open(profile.player?.rg_link ?? undefined, '_blank', 'noopener,noreferrer')
+                      }
+                    >
+                      <Launch />
+                    </IconButton>
+                    <IconButton onClick={() => navigator.clipboard.writeText(profile.player?.rg_id ?? '')}>
+                      <ContentCopy />
+                    </IconButton>
+                  </>
+                }
+              >
+                <ListItemAvatar>
+                  <img src={pzLogo} alt={'pz logo'} width="25" height="25" />
+                </ListItemAvatar>
+                <ListItemText primary={profile.player.rg_id} secondary={'Roundnet Germany ID'} />
+              </ListItem>
+              <ListItem
+                key={'rgx'}
+                disableGutters
+                sx={{
+                  '&.MuiListItem-root': { p: 0 },
+                }}
+                secondaryAction={
+                  profile.player?.pro_status ? (
+                    <Chip
+                      variant="outlined"
+                      label="Pro Status"
+                      sx={{ mx: 2, borderRadius: 3, background: 'black', color: 'white' }}
+                    />
+                  ) : undefined
+                }
+              >
+                <ListItemAvatar>
+                  <img src={pzLogo} alt={'pz logo'} width="25" height="25" />
+                </ListItemAvatar>
+                <ListItemText primary={profile.player.rg_index} secondary={'Roundnet Germany Index'} />
+              </ListItem>
+            </>
+          )
+        }
       </List>
     </>
   );

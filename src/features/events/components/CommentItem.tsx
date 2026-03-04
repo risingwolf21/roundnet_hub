@@ -40,7 +40,7 @@ export const CommentItem = ({ comment, t, replyToPressed }: Props) => {
         sx={{ verticalAlign: 'top', display: 'flex' }}
         onClick={(e) => {
           e.stopPropagation();
-          dialogs.open(ProfileDialog, { user, userId: comment.userId });
+          dialogs.open(ProfileDialog, { userId: comment.userId });
         }}
       >
         <Avatar sx={{ borderRadius: 2 }}>
