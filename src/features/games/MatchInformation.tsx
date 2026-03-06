@@ -35,10 +35,8 @@ type Props = {
   cat_team?: string;
   p1_eff?: number | null;
   p2_eff?: number | null;
-  p1_delta?: number | null;
-  p2_delta?: number | null;
-  p1: { displayName: string | null, avatarUrl: string | null, isGuest: boolean, playerId: string | null, userId: string | null } | null;
-  p2: { displayName: string | null, avatarUrl: string | null, isGuest: boolean, playerId: string | null, userId: string | null } | null;
+  p1: { displayName: string | null, avatarUrl: string | null, isGuest: boolean, playerId: string | null, userId: string | null, delta?: number, effectiveChange: number } | null;
+  p2: { displayName: string | null, avatarUrl: string | null, isGuest: boolean, playerId: string | null, userId: string | null, delta?: number, effectiveChange: number } | null;
   rated: boolean;
 };
 
@@ -109,8 +107,6 @@ const TeamCard = ({
   cat_team,
   p1_eff,
   p2_eff,
-  p1_delta,
-  p2_delta,
   p1,
   p2,
   rated,
@@ -158,7 +154,7 @@ const TeamCard = ({
             rated && (
               <Stack direction={'row'} spacing={1}>
                 <Typography sx={{ fontWeight: 'bold' }}>{p1_eff?.toFixed(0)}</Typography>
-                {deltaChip(p1_delta)}
+                {deltaChip(p1?.delta)}
               </Stack>
             )
           }
@@ -181,7 +177,7 @@ const TeamCard = ({
             rated && (
               <Stack direction={'row'} spacing={1}>
                 <Typography sx={{ fontWeight: 'bold' }}>{p2_eff?.toFixed(0)}</Typography>
-                {deltaChip(p2_delta)}
+                {deltaChip(p2?.delta)}
               </Stack>
             )
           }
@@ -250,21 +246,23 @@ const MatchInformation = () => {
           cat_team={match.elo_calc_log?.category_a}
           p1_eff={player1a_history?.eff_old_rating}
           p2_eff={player2a_history?.eff_old_rating}
-          p1_delta={(player1a_history?.eff_new_rating ?? 0) - (player1a_history?.eff_old_rating ?? 0)}
-          p2_delta={(player2a_history?.eff_new_rating ?? 0) - (player2a_history?.eff_old_rating ?? 0)}
           p1={({
             displayName: match.team_a.player_1.display_name ?? match.player_1a?.name ?? '',
             avatarUrl: match.player_1a?.avatarUrl ?? null,
             isGuest: match.team_a.player_1.linked_user_id === null,
             userId: match.team_a.player_1.linked_user_id,
-            playerId: match.team_a.player_1.player
+            playerId: match.team_a.player_1.player,
+            delta: player1a_history?.delta,
+            effectiveChange: (player1a_history?.eff_new_rating ?? 0) - (player1a_history?.eff_old_rating ?? 0),
           })}
           p2={({
             displayName: match.team_a.player_2.display_name ?? match.player_2a?.name ?? '',
             avatarUrl: match.player_2a?.avatarUrl ?? null,
             isGuest: match.team_a.player_2.linked_user_id === null,
             userId: match.team_a.player_2.linked_user_id,
-            playerId: match.team_a.player_2.player
+            playerId: match.team_a.player_2.player,
+            delta: player2a_history?.delta,
+            effectiveChange: (player2a_history?.eff_new_rating ?? 0) - (player2a_history?.eff_old_rating ?? 0),
           })}
           rated={match.rated}
         />
@@ -302,14 +300,14 @@ const MatchInformation = () => {
           cat_team={match.elo_calc_log?.category_b}
           p1_eff={player1b_history?.eff_old_rating}
           p2_eff={player2b_history?.eff_old_rating}
-          p1_delta={(player1b_history?.eff_new_rating ?? 0) - (player1b_history?.eff_old_rating ?? 0)}
-          p2_delta={(player2b_history?.eff_new_rating ?? 0) - (player2b_history?.eff_old_rating ?? 0)}
           p1={({
             displayName: match.team_b.player_1.display_name ?? match.player_1b?.name ?? '',
             avatarUrl: match.player_1b?.avatarUrl ?? null,
             isGuest: match.team_b.player_1.linked_user_id === null,
             playerId: match.team_b.player_1.player,
             userId: match.team_b.player_1.linked_user_id,
+            delta: player1b_history?.delta,
+            effectiveChange: (player1b_history?.eff_new_rating ?? 0) - (player1b_history?.eff_old_rating ?? 0),
           })}
           p2={({
             displayName: match.team_b.player_2.display_name ?? match.player_2b?.name ?? '',
@@ -317,6 +315,8 @@ const MatchInformation = () => {
             isGuest: match.team_b.player_2.linked_user_id === null,
             playerId: match.team_b.player_2.player,
             userId: match.team_b.player_2.linked_user_id,
+            delta: player2b_history?.delta,
+            effectiveChange: (player2b_history?.eff_new_rating ?? 0) - (player2b_history?.eff_old_rating ?? 0),
           })}
           rated={match.rated}
         />

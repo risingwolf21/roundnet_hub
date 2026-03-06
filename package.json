@@ -1,6 +1,6 @@
 {
   "name": "roundnet_karlsruhe_app",
-  "version": "2.0.13",
+  "version": "2.0.14",
   "private": true,
   "homepage": ".",
   "dependencies": {
@@ -63,8 +63,8 @@
     "sentry:sourcemaps": "sentry-cli sourcemaps inject --org roundnet-karlsruhe --project roundnet-karlsruhe ./build && sentry-cli sourcemaps upload --org roundnet-karlsruhe --project roundnet-karlsruhe ./build",
     "gen-types:custom": "vite-node scripts/generate-types.ts",
     "supabase:db:push:staging": "dotenv -e environments/.env.staging.local -- npx supabase link --project-ref \"$SUPABASE_PROJECT_ID\" && npx supabase db push --linked",
-    "supabase:db:push:rk:prod": "dotenv -e environments/.env.production.local -e environments/.env.karlsruhe.local -- npx supabase link --project-ref \"$SUPABASE_PROJECT_ID\" && npx supabase db push",
-    "supabase:db:push:mrc:prod": "dotenv -e environments/.env.production.local -e environments/.env.munich.local -- npx supabase link --project-ref \"$SUPABASE_PROJECT_ID\" && npx supabase db push",
+    "supabase:db:push:rk:prod": "dotenv -e environments/.env.production.local -e environments/.env.karlsruhe.local -- npx supabase link --project-ref \"$SUPABASE_PROJECT_ID\" && npx supabase db push --yes",
+    "supabase:db:push:mrc:prod": "dotenv -e environments/.env.production.local -e environments/.env.munich.local -- npx supabase link --project-ref \"$SUPABASE_PROJECT_ID\" && npx supabase db push --yes",
     "supabase:db:push:prod": "yarn supabase:db:push:rk:prod && yarn supabase:db:push:mrc:prod",
     "supabase:func:deploy:prod": "dotenv -e environments/.env.production.local -e environments/.env.munich.local -- supabase functions deploy --project-ref \"$VITE_SUPABASE_PROJECT_ID\" && dotenv -e environments/.env.production.local -e environments/.env.karlsruhe.local -- supabase functions deploy --project-ref \"$VITE_SUPABASE_PROJECT_ID\"",
     "supabase:func:deploy:stag": "dotenv -e environments/.env.staging.local -- supabase functions deploy --project-ref \"$VITE_SUPABASE_PROJECT_ID\""
