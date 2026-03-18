@@ -141,16 +141,6 @@ export type ChallengePointsView = {
   user: string;
 };
 
-export type UserMatchesView = {
-  created_at: string;
-  event: string | null;
-  id: string;
-  team_a_name: string;
-  team_b_name: string;
-  set_results: string;
-  rated: boolean;
-};
-
 type Modify<T, R> = Omit<T, keyof R> & R;
 
 type DatabaseWithoutInternals = Omit<Database, '__InternalSupabase'>;

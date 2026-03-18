@@ -625,6 +625,7 @@ export type Database = {
           created_at: string | null
           event: string | null
           match_id: string | null
+          rated: boolean | null
           set_scores: string | null
           sets_won_a: number | null
           sets_won_b: number | null
@@ -656,13 +657,6 @@ export type Database = {
           },
           {
             foreignKeyName: "teams_player_1_fkey"
-            columns: ["team_b_p1"]
-            isOneToOne: false
-            referencedRelation: "leaderboard"
-            referencedColumns: ["player_id"]
-          },
-          {
-            foreignKeyName: "teams_player_1_fkey"
             columns: ["team_a_p1"]
             isOneToOne: false
             referencedRelation: "leaderboard"
@@ -672,8 +666,8 @@ export type Database = {
             foreignKeyName: "teams_player_1_fkey"
             columns: ["team_b_p1"]
             isOneToOne: false
-            referencedRelation: "players"
-            referencedColumns: ["player"]
+            referencedRelation: "leaderboard"
+            referencedColumns: ["player_id"]
           },
           {
             foreignKeyName: "teams_player_1_fkey"
@@ -686,7 +680,7 @@ export type Database = {
             foreignKeyName: "teams_player_1_fkey"
             columns: ["team_b_p1"]
             isOneToOne: false
-            referencedRelation: "players_public"
+            referencedRelation: "players"
             referencedColumns: ["player"]
           },
           {
@@ -699,13 +693,20 @@ export type Database = {
           {
             foreignKeyName: "teams_player_1_fkey"
             columns: ["team_b_p1"]
+            isOneToOne: false
+            referencedRelation: "players_public"
+            referencedColumns: ["player"]
+          },
+          {
+            foreignKeyName: "teams_player_1_fkey"
+            columns: ["team_a_p1"]
             isOneToOne: false
             referencedRelation: "unified_player_profiles"
             referencedColumns: ["player_id"]
           },
           {
             foreignKeyName: "teams_player_1_fkey"
-            columns: ["team_a_p1"]
+            columns: ["team_b_p1"]
             isOneToOne: false
             referencedRelation: "unified_player_profiles"
             referencedColumns: ["player_id"]

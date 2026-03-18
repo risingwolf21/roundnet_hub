@@ -1,7 +1,6 @@
 import Layout from '@/components/layout/Layout';
 import { PullToRefresh } from '@/components/pull-to-refresh/PullToRefresh';
 import { useMatches } from '@/tanstack/games';
-import { UserMatchesView } from '@/types/supabaseTypes';
 import { useDialogs, useNotifications } from '@toolpad/core';
 import { format, isAfter } from 'date-fns';
 import { t } from 'i18next';
@@ -45,7 +44,7 @@ const GameList = () => {
         >
           {Object.entries(groupBy(matches, (x: UserMatchesView) => format(x.created_at ?? '', 'dd MMMM yyyy')))
             .sort(([key1], [key2]) => (isAfter(key1, key2) ? -1 : 1))
-            .map(([key, value]) => (
+            .map(([key, value]: [string, UserMatchesView[]]) => (
               <List
                 key={key}
                 subheader={
@@ -62,7 +61,7 @@ const GameList = () => {
                 }
               >
                 {value.map((x) => (
-                  <ListItem key={x.id} divider onClick={() => navigate(`/matches/${x.id}`)}>
+                  <ListItem key={x.match_id} divider onClick={() => navigate(`/matches/${x.match_id}`)}>
                     <Box sx={{ display: 'flex', flexDirection: 'row', width: '100%' }}>
                       <Box
                         sx={{
@@ -109,12 +108,12 @@ const GameList = () => {
                           </Box>
                         )}
                       </Box>
-                      {!x.set_results && x.id && (
+                      {!x.set_scores && x.match_id && (
                         <Button
                           startIcon={<Warning color="warning" />}
                           onClick={async () => {
                             const result = await dialogs.open(ReportSetsDialog, {
-                              matchId: x.id!,
+                              matchId: x.match_id!,
                               team_a_name: x.team_a_name!,
                               team_b_name: x.team_b_name!,
                               sets: null,
@@ -127,7 +126,7 @@ const GameList = () => {
                           Score eintragen
                         </Button>
                       )}
-                      {x.set_results?.split(',').map((y) => {
+                      {x.set_scores?.split(',').map((y) => {
                         const [team_a_score, team_b_score] = y.trim().split(':');
                         const teamAWon = Number(team_a_score) > Number(team_b_score);
                         return (

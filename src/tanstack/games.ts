@@ -1,7 +1,7 @@
 import { queryClient } from '@/lib/queryClient';
 import { supabase } from '@/lib/supabase';
 import { GamesRepository } from '@/repository/GamesRepository';
-import { GamesTable, UserMatchesView, UserWithGroups } from '@/types/supabaseTypes';
+import { GamesTable, UserWithGroups } from '@/types/supabaseTypes';
 import { formatDateToDatabase } from '@/utils';
 import { captureException } from '@sentry/react';
 import { useMutation, useQuery } from '@tanstack/react-query';
@@ -233,10 +233,10 @@ export const useUpsertSetsToMatch = (matchId: string) =>
 
       if (previousMatches) {
         const newMatches = previousMatches.map((x) => {
-          if (x.id === matchId) {
+          if (x.match_id === matchId) {
             return {
               ...x,
-              set_results: sets.map((x) => x.team_a_score + ':' + x.team_b_score).join(', '),
+              set_scores: sets.map((x) => x.team_a_score + ':' + x.team_b_score).join(', '),
             };
           }
           return x;
@@ -279,7 +279,7 @@ export const useDeleteMatch = (matchId?: string) =>
       const previousMatches = queryClient.getQueryData<UserMatchesView[]>(gamesKeys.matches());
 
       if (previousMatches) {
-        const newMatches = previousMatches.filter((x) => x.id !== matchId);
+        const newMatches = previousMatches.filter((x) => x.match_id !== matchId);
         queryClient.setQueryData<UserMatchesView[]>(gamesKeys.matches(), newMatches);
       }
 
