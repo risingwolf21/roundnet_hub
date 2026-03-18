@@ -109,6 +109,10 @@ export type Database = {
           expected_b: number
           k_base: number
           k_eff: number
+          ka_a1_used: number | null
+          ka_a2_used: number | null
+          ka_b1_used: number | null
+          ka_b2_used: number | null
           match: string
           outcome_a: number
           points_a: number
@@ -138,6 +142,10 @@ export type Database = {
           expected_b: number
           k_base: number
           k_eff: number
+          ka_a1_used?: number | null
+          ka_a2_used?: number | null
+          ka_b1_used?: number | null
+          ka_b2_used?: number | null
           match: string
           outcome_a: number
           points_a: number
@@ -167,6 +175,10 @@ export type Database = {
           expected_b?: number
           k_base?: number
           k_eff?: number
+          ka_a1_used?: number | null
+          ka_a2_used?: number | null
+          ka_b1_used?: number | null
+          ka_b2_used?: number | null
           match?: string
           outcome_a?: number
           points_a?: number
@@ -194,7 +206,7 @@ export type Database = {
             columns: ["match"]
             isOneToOne: true
             referencedRelation: "user_matches"
-            referencedColumns: ["id"]
+            referencedColumns: ["match_id"]
           },
         ]
       }
@@ -284,7 +296,7 @@ export type Database = {
             columns: ["match"]
             isOneToOne: false
             referencedRelation: "user_matches"
-            referencedColumns: ["id"]
+            referencedColumns: ["match_id"]
           },
           {
             foreignKeyName: "elo_history_user_fkey"
@@ -453,7 +465,7 @@ export type Database = {
             columns: ["match"]
             isOneToOne: false
             referencedRelation: "user_matches"
-            referencedColumns: ["id"]
+            referencedColumns: ["match_id"]
           },
         ]
       }
@@ -611,125 +623,145 @@ export type Database = {
       user_matches: {
         Row: {
           created_at: string | null
-          id: string | null
-          rated: boolean | null
-          set_results: string | null
+          event: string | null
+          match_id: string | null
+          set_scores: string | null
+          sets_won_a: number | null
+          sets_won_b: number | null
+          team_a_id: string | null
           team_a_name: string | null
-          team_a_player_1: string | null
-          team_a_player_2: string | null
+          team_a_p1: string | null
+          team_a_p2: string | null
+          team_b_id: string | null
           team_b_name: string | null
-          team_b_player_1: string | null
-          team_b_player_2: string | null
+          team_b_p1: string | null
+          team_b_p2: string | null
+          winner_side: string | null
+          winner_team_id: string | null
         }
         Relationships: [
           {
+            foreignKeyName: "match_team_a_fkey"
+            columns: ["team_a_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "match_team_b_fkey"
+            columns: ["team_b_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "teams_player_1_fkey"
-            columns: ["team_a_player_1"]
+            columns: ["team_b_p1"]
             isOneToOne: false
             referencedRelation: "leaderboard"
             referencedColumns: ["player_id"]
           },
           {
             foreignKeyName: "teams_player_1_fkey"
-            columns: ["team_b_player_1"]
+            columns: ["team_a_p1"]
             isOneToOne: false
             referencedRelation: "leaderboard"
             referencedColumns: ["player_id"]
           },
           {
             foreignKeyName: "teams_player_1_fkey"
-            columns: ["team_a_player_1"]
+            columns: ["team_b_p1"]
             isOneToOne: false
             referencedRelation: "players"
             referencedColumns: ["player"]
           },
           {
             foreignKeyName: "teams_player_1_fkey"
-            columns: ["team_b_player_1"]
+            columns: ["team_a_p1"]
             isOneToOne: false
             referencedRelation: "players"
             referencedColumns: ["player"]
           },
           {
             foreignKeyName: "teams_player_1_fkey"
-            columns: ["team_a_player_1"]
+            columns: ["team_b_p1"]
             isOneToOne: false
             referencedRelation: "players_public"
             referencedColumns: ["player"]
           },
           {
             foreignKeyName: "teams_player_1_fkey"
-            columns: ["team_b_player_1"]
+            columns: ["team_a_p1"]
             isOneToOne: false
             referencedRelation: "players_public"
             referencedColumns: ["player"]
           },
           {
             foreignKeyName: "teams_player_1_fkey"
-            columns: ["team_a_player_1"]
+            columns: ["team_b_p1"]
             isOneToOne: false
             referencedRelation: "unified_player_profiles"
             referencedColumns: ["player_id"]
           },
           {
             foreignKeyName: "teams_player_1_fkey"
-            columns: ["team_b_player_1"]
+            columns: ["team_a_p1"]
             isOneToOne: false
             referencedRelation: "unified_player_profiles"
             referencedColumns: ["player_id"]
           },
           {
             foreignKeyName: "teams_player_2_fkey"
-            columns: ["team_a_player_2"]
+            columns: ["team_a_p2"]
             isOneToOne: false
             referencedRelation: "leaderboard"
             referencedColumns: ["player_id"]
           },
           {
             foreignKeyName: "teams_player_2_fkey"
-            columns: ["team_b_player_2"]
+            columns: ["team_b_p2"]
             isOneToOne: false
             referencedRelation: "leaderboard"
             referencedColumns: ["player_id"]
           },
           {
             foreignKeyName: "teams_player_2_fkey"
-            columns: ["team_a_player_2"]
+            columns: ["team_a_p2"]
             isOneToOne: false
             referencedRelation: "players"
             referencedColumns: ["player"]
           },
           {
             foreignKeyName: "teams_player_2_fkey"
-            columns: ["team_b_player_2"]
+            columns: ["team_b_p2"]
             isOneToOne: false
             referencedRelation: "players"
             referencedColumns: ["player"]
           },
           {
             foreignKeyName: "teams_player_2_fkey"
-            columns: ["team_a_player_2"]
+            columns: ["team_a_p2"]
             isOneToOne: false
             referencedRelation: "players_public"
             referencedColumns: ["player"]
           },
           {
             foreignKeyName: "teams_player_2_fkey"
-            columns: ["team_b_player_2"]
+            columns: ["team_b_p2"]
             isOneToOne: false
             referencedRelation: "players_public"
             referencedColumns: ["player"]
           },
           {
             foreignKeyName: "teams_player_2_fkey"
-            columns: ["team_a_player_2"]
+            columns: ["team_a_p2"]
             isOneToOne: false
             referencedRelation: "unified_player_profiles"
             referencedColumns: ["player_id"]
           },
           {
             foreignKeyName: "teams_player_2_fkey"
-            columns: ["team_b_player_2"]
+            columns: ["team_b_p2"]
             isOneToOne: false
             referencedRelation: "unified_player_profiles"
             referencedColumns: ["player_id"]
@@ -766,6 +798,24 @@ export type Database = {
         Args: { ka: number; m_count?: number; rg: number }
         Returns: number
       }
+      calculate_match_physics: {
+        Args: {
+          p_eff_a1: number
+          p_eff_a2: number
+          p_eff_b1: number
+          p_eff_b2: number
+          p_m_count_a1: number
+          p_m_count_a2: number
+          p_m_count_b1: number
+          p_m_count_b2: number
+          p_outcome_a: number
+          p_p1_id: string
+          p_p2_id: string
+          p_p3_id: string
+          p_p4_id: string
+        }
+        Returns: Database["games"]["CompositeTypes"]["elo_calculation_result"]
+      }
       category_offset: {
         Args: { p_cat: string }
         Returns: number
@@ -774,48 +824,25 @@ export type Database = {
         Args: { base_k: number; m_count: number }
         Returns: number
       }
-      effective_rating_for_player: {
-        Args: { p_player: string }
-        Returns: number
-      }
-      effective_team_rating_with_category: {
-        Args: { p_p1: string; p_p2: string }
-        Returns: number
-      }
       fetch_all_player_infos_from_pz: {
         Args: Record<PropertyKey, never>
         Returns: undefined
       }
+      get_confidence_level: {
+        Args: { p_matches_played: number }
+        Returns: number
+      }
       is_match_participant: {
         Args: { p_match: string }
-        Returns: boolean
-      }
-      is_member_of_match: {
-        Args: { p_team_a: string; p_team_b: string }
         Returns: boolean
       }
       is_member_of_teams: {
         Args: { p_team_a: string; p_team_b: string }
         Returns: boolean
       }
-      preview_elo_for_match: {
-        Args: { p_match: string }
-        Returns: {
-          category_a: string
-          category_b: string
-          eff_team_a: number
-          eff_team_b: number
-          expected_a: number
-          expected_b: number
-          k_base: number
-          k_eff: number
-          upset_levels: number
-          upset_multiplier: number
-        }[]
-      }
-      recompute_all_effective_player_ratings: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
+      predict_elo_for_match: {
+        Args: { p_match_id: string; p_simulated_outcome?: number }
+        Returns: Json
       }
       recompute_all_elo_from_scratch: {
         Args: Record<PropertyKey, never>
@@ -830,7 +857,13 @@ export type Database = {
       [_ in never]: never
     }
     CompositeTypes: {
-      [_ in never]: never
+      elo_calculation_result: {
+        v_outcome_a: number | null
+        base_delta: number | null
+        final_sync_delta: number | null
+        exp_a: number | null
+        global_conf: number | null
+      }
     }
   }
   notifications: {

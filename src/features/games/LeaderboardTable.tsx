@@ -7,10 +7,9 @@ import ListItem from "@mui/material/ListItem";
 import ListItemAvatar from "@mui/material/ListItemAvatar";
 import ListItemText from "@mui/material/ListItemText";
 import Skeleton from "@mui/material/Skeleton";
-import Tooltip from "@mui/material/Tooltip";
 import Typography from "@mui/material/Typography";
 import { useDialogs } from "@toolpad/core";
-import { t } from "i18next";
+import { GameHistoryDialog } from "./dialogs/GameHistoryDialog";
 
 export const LeaderboardTable = ({ leaderboard, loading = true }: { leaderboard: LeaderboardEntry[], loading: boolean }) => {
 
@@ -53,9 +52,18 @@ export const LeaderboardTable = ({ leaderboard, loading = true }: { leaderboard:
               </Avatar>
             </ListItemAvatar>
             <ListItemText slotProps={{ primary: { fontWeight: "bold", fontSize: "1rem" } }} primary={entry.name} />
-            <Tooltip leaveDelay={1500} title={t('matches.leaderboardTooltip', { trend: entry.trend_30_days })} onClick={(e) => e.stopPropagation()}>
-              <Chip color={'default'} size="small" sx={{ fontWeight: "bold", py: 2 }} label={entry.rating?.toFixed() + ' ' + ((entry.trend_30_days ?? 0) > 0 ? '↗️' : (entry.trend_30_days ?? 0) < 0 ? '↘️' : '↔️')} />
-            </Tooltip>
+            <Chip
+              color={'default'}
+              size="small"
+              sx={{ fontWeight: "bold", py: 2 }}
+              label={entry.rating?.toFixed() + ' ' + ((entry.trend_30_days ?? 0) > 0 ? '↗️' : (entry.trend_30_days ?? 0) < 0 ? '↘️' : '↔️')}
+              clickable={entry.player_id !== null}
+              onClick={(e) => {
+                e.stopPropagation();
+                if (entry.player_id && entry.name && entry.rating)
+                  dialogs.open(GameHistoryDialog, { player_id: entry.player_id, name: entry.name, rating: entry.rating.toFixed() })
+              }}
+            />
           </ListItem>
         ))
       }

@@ -1,15 +1,18 @@
 import DurationAdder from '@/components/DurationInput';
-import { useEventTransformation, useUpsertEventTransformation } from '@/tanstack/events';
+import { useDeleteEventTransformation, useEventTransformation, useUpsertEventTransformation } from '@/tanstack/events';
 import { useGroups } from '@/tanstack/groups';
 import { EventsUserView, GroupWithUserMappings } from '@/types/supabaseTypes';
 import { postgresIntervalToDuration } from '@/utils';
 import Add from '@mui/icons-material/Add';
 import Close from '@mui/icons-material/Close';
+import Delete from '@mui/icons-material/Delete';
 import Group from '@mui/icons-material/Group';
 import Remove from '@mui/icons-material/Remove';
 import TimelapseIcon from '@mui/icons-material/Timelapse';
 import AppBar from '@mui/material/AppBar';
 import Button from '@mui/material/Button';
+import Card from '@mui/material/Card';
+import CardActionArea from '@mui/material/CardActionArea';
 import Checkbox from '@mui/material/Checkbox';
 import Dialog from '@mui/material/Dialog';
 import Divider from '@mui/material/Divider';
@@ -126,6 +129,7 @@ const Content = ({
   const { t } = useTranslation();
 
   const mutation = useUpsertEventTransformation();
+  const deleteMutation = useDeleteEventTransformation();
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -321,6 +325,37 @@ const Content = ({
         >
           <ListItemText primary={'Teilnehmer weniger als'} />
         </ListItem>
+        <Divider />
+        <Typography sx={{ fontSize: 16, fontWeight: 'bold', m: 2 }} color="text.secondary" gutterBottom>
+          Löschen
+        </Typography>
+        <Card sx={{ color: 'red', borderRadius: 2, py: 0, px: 0, m: 1 }}>
+          <CardActionArea sx={{ px: 1 }}>
+            <ListItem
+              onClick={() =>
+                dialogs.confirm('Wirklich löschen?').then((result) => {
+                  if (result) {
+                    deleteMutation.mutate({ eventKey: event.key }, {
+                      onError: (error) => {
+                        const message = error instanceof Error ? (error as Error).message : 'Unknown error.';
+                        notifications.show(message, { severity: 'error' });
+                      },
+                      onSuccess: () => {
+                        notifications.show('Die Eventreihe wurde erfolgreich gelöscht.', { severity: 'success' });
+                        onClose('success');
+                      }
+                    });
+                  }
+                })
+              }
+            >
+              <ListItemAvatar sx={{ flexDirection: 'row', display: 'flex', alignItems: 'center' }}>
+                <Delete />
+              </ListItemAvatar>
+              <ListItemText primary="Löschen" />
+            </ListItem>
+          </CardActionArea>
+        </Card>
       </Box>
     </Dialog>
   );

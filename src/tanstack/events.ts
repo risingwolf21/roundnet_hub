@@ -139,6 +139,46 @@ export const useEventTransformation = (eventKey: string, open: boolean) =>
     },
   });
 
+export const useDeleteEventTransformation = () =>
+  useMutation({
+    mutationFn: async (payload: {
+      eventKey: string;
+    }) => {
+      const result = await supabase
+        .schema('public')
+        .from('event_transformations')
+        .delete()
+        .eq('event_key', payload.eventKey);
+
+      if (result.error) {
+        throw result.error;
+      }
+      return result.data;
+    },
+    onMutate: async (payload) => {
+      await queryClient.cancelQueries({ queryKey: eventKeys.eventTranformation(payload.eventKey) });
+
+      const previousTransformation = queryClient.getQueryData<EventTransformation | null>(
+        eventKeys.eventTranformation(payload.eventKey)
+      );
+
+      queryClient.removeQueries({ queryKey: eventKeys.eventTranformation(payload.eventKey) });
+      return { previousTransformation };
+    },
+    onError: (error, variables, context) => {
+      captureException(error, {
+        extra: {
+          ...error,
+          ...variables,
+        },
+        tags: { type: 'UpsertEventTransformation', scope: 'events' },
+      });
+      if (context?.previousTransformation) {
+        queryClient.setQueryData(eventKeys.eventTranformation(variables.eventKey), context.previousTransformation);
+      }
+    }
+  });
+
 export const useUpsertEventTransformation = () =>
   useMutation({
     mutationFn: async (payload: {

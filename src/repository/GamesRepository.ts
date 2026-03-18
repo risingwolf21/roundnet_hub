@@ -3,15 +3,6 @@ import { PostgrestSingleResponse } from '@supabase/supabase-js';
 import _ from 'lodash';
 import { fetchSimpleUser } from './UserRepository';
 
-export const fetchUserMatches = () =>
-  supabase
-    .schema('games')
-    .from('user_matches')
-    .select(
-      '*, team_a_player_1: players!team_a_player_1(*), team_a_player_2: players!team_a_player_2(*), team_b_player_1: players!team_b_player_1(*), team_b_player_2: players!team_b_player_2(*)'
-    )
-    .order('created_at', { ascending: false });
-
 export const fetchMatch = () =>
   supabase.schema('games').from('match').select(`
      *,
@@ -37,11 +28,6 @@ export const fetchMatch = () =>
   `);
 
 export const GamesRepository = {
-  async fetchGamesForUser(): Promise<FullUserMatch[]> {
-    const result = await fetchUserMatches().throwOnError();
-
-    return result.data ?? [];
-  },
 
   async fetchGamesForEvent(eventId: string): Promise<FullMatch[]> {
     const result = await fetchMatch().eq('event', eventId).throwOnError();

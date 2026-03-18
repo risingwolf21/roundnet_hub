@@ -1,40 +1,11 @@
 import { supabase } from '@/lib/supabase';
 import { GroupWithUserRole } from '@/types/supabaseTypes';
-import { PostgrestError, PostgrestSingleResponse } from '@supabase/supabase-js';
+import { PostgrestSingleResponse } from '@supabase/supabase-js';
 
 export const fetchGroups = () => supabase.schema('public').from('group_user_mapping').select('*, event_group(*)');
-export const fetchUserWithGroups = () =>
-  supabase.from('user').select('*, groups: group_user_mapping (group: event_group(*))');
 export const fetchSimpleUser = () => supabase.from('user').select('id, name, avatarUrl');
 
 export const SupabaseUserRepository = {
-  async fetchUserWithGroups(userId: string): Promise<PostgrestSingleResponse<UserWithGroupsAndPlayerData>> {
-    const { data: player_data } = await SupabaseUserRepository.fetchPlayer(userId);
-    const response = await fetchUserWithGroups().eq('id', userId).maybeSingle();
-
-    if (!response.data || response.error)
-      return {
-        error: {
-          code: '',
-          details: '',
-          hint: '',
-          message: 'Could not load all information for user',
-        } as PostgrestError,
-        data: null,
-        count: null,
-        status: 400,
-        statusText: '',
-      };
-
-    return {
-      ...response,
-      data: {
-        ...response.data,
-        groups: response.data?.groups.map((x: { group: Group }) => x.group) ?? [],
-        player_data,
-      },
-    };
-  },
 
   async fetchUser(userId: string): Promise<PostgrestSingleResponse<User>> {
     return supabase.from('user').select('*').eq('id', userId).single().throwOnError();
@@ -50,9 +21,5 @@ export const SupabaseUserRepository = {
           user_role: x.role,
         }) as GroupWithUserRole
     );
-  },
-
-  async fetchPlayer(userId: string): Promise<PostgrestSingleResponse<Player | null>> {
-    return supabase.schema('games').from('players').select('*').eq('player', userId).maybeSingle().throwOnError();
   },
 };
