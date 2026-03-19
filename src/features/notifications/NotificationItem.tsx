@@ -50,9 +50,12 @@ export const NotificationItem = ({ notification }: { notification: Notification 
         )
       }
       <ListItemButton onClick={() => {
-        if (notification.data && hasStringUrl(notification.data)) {
-          navigate(notification.data.url);
-        }
+        dismissNotification.mutate({ notficationId: notification.id }, {
+          onSettled: () => {
+            if (notification.data && hasStringUrl(notification.data))
+              navigate(notification.data.url)
+          }
+        })
       }} sx={{ py: 1.5 }}>
         <ListItemText
           primary={notification.title}

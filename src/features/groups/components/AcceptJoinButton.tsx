@@ -12,7 +12,7 @@ export const AcceptJoinButton = ({ group, user }: { group: Group; user: User }) 
     <IconButton
       disabled={acceptJoinMutation.isPending}
       onClick={async () => {
-        const confirmed = await dialogs.confirm('Willst du diesen Benutzer als Probenutzer annehmen?', {
+        const confirmed = await dialogs.confirm('Willst du diesen Benutzer annehmen?', {
           title: 'Beitrittsanfrage annehmen',
           okText: 'Annehmen',
           cancelText: 'Abbrechen',

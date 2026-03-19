@@ -1,9 +1,9 @@
 import Layout from '@/components/layout/Layout';
 import { PullToRefresh } from '@/components/pull-to-refresh/PullToRefresh';
 import { useMatches } from '@/tanstack/games';
+import LockIcon from '@mui/icons-material/Lock';
 import { useDialogs, useNotifications } from '@toolpad/core';
-import { format, isAfter } from 'date-fns';
-import { t } from 'i18next';
+import { format, intlFormatDistance, isAfter } from 'date-fns';
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router';
 import { ReportSetsDialog } from './dialogs/ReportSetsDialog';
@@ -56,11 +56,13 @@ const GameList = () => {
                       color: 'rgba(0,0,0,0.87)',
                     }}
                   >
-                    {t('format.distanceToNow', { date: new Date(key) })}
+                    {
+                      intlFormatDistance(new Date(key), new Date(), { unit: 'day' })
+                    }
                   </ListSubheader>
                 }
               >
-                {value.map((x) => (
+                {value.sort((a, b) => b.created_at && a.created_at && isAfter(b.created_at, a.created_at) ? 1 : -1).map((x) => (
                   <ListItem key={x.match_id} divider onClick={() => navigate(`/matches/${x.match_id}`)}>
                     <Box sx={{ display: 'flex', flexDirection: 'row', width: '100%' }}>
                       <Box
@@ -107,6 +109,11 @@ const GameList = () => {
                             <Chip color="info" variant="outlined" size="small" label="Ungewertet" />
                           </Box>
                         )}
+                        {!x.is_public && (
+                          <Box sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', ml: 2 }}>
+                            <Chip color="default" variant="outlined" size="small" label="Privat" icon={<LockIcon />} />
+                          </Box>
+                        )}
                       </Box>
                       {!x.set_scores && x.match_id && (
                         <Button
@@ -126,12 +133,12 @@ const GameList = () => {
                           Score eintragen
                         </Button>
                       )}
-                      {x.set_scores?.split(',').map((y) => {
+                      {x.set_scores?.split(',').map((y, i) => {
                         const [team_a_score, team_b_score] = y.trim().split(':');
                         const teamAWon = Number(team_a_score) > Number(team_b_score);
                         return (
                           <Box
-                            key={y}
+                            key={y + i}
                             sx={{
                               display: 'flex',
                               ml: 2,

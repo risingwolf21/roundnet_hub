@@ -623,7 +623,10 @@ export type Database = {
       user_matches: {
         Row: {
           created_at: string | null
+          elo_change_a: number | null
+          elo_change_b: number | null
           event: string | null
+          is_public: boolean | null
           match_id: string | null
           rated: boolean | null
           set_scores: string | null
@@ -775,6 +778,7 @@ export type Database = {
         Args: {
           created_by?: string
           event?: string
+          is_public?: boolean
           match_sets: Json
           player_1a: string
           player_1a_rating: number
@@ -834,6 +838,10 @@ export type Database = {
         Returns: number
       }
       is_match_participant: {
+        Args: { p_match: string }
+        Returns: boolean
+      }
+      is_match_public_or_match_member: {
         Args: { p_match: string }
         Returns: boolean
       }

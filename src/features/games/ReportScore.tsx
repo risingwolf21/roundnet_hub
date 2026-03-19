@@ -127,6 +127,7 @@ const ReportScore = () => {
   const createMatch = useCreateMatch();
 
   const [rating_enabled, setRatingEnabled] = useState(true);
+  const [is_public, setIsPublic] = useState(true);
   const [player1a, setPlayer1a] = useState<PlayerSelection>(null);
   const [player2a, setPlayer2a] = useState<PlayerSelection>(null);
   const [player1b, setPlayer1b] = useState<PlayerSelection>(null);
@@ -223,6 +224,7 @@ const ReportScore = () => {
           player_2_rating: p2b.rating,
         },
         rating_enabled: rating_enabled,
+        is_public: is_public,
         created_by: user?.id,
         playerNamesMapping,
       },
@@ -302,6 +304,17 @@ const ReportScore = () => {
                 <Checkbox checked={rating_enabled} onChange={(_e, v) => setRatingEnabled(v)} />
               </ListItemAvatar>
               <ListItemText primary={'Soll das Spiel in die Index Wertung eingehen?'} />
+            </ListItem>
+          </Grid>
+          <Grid size={12} sx={{ p: 2 }}>
+            <Typography sx={{ fontWeight: 'bold' }}>Sichtbarkeit</Typography>
+          </Grid>
+          <Grid size={12}>
+            <ListItem>
+              <ListItemAvatar>
+                <Checkbox checked={is_public} onChange={(_e, v) => setIsPublic(v)} />
+              </ListItemAvatar>
+              <ListItemText primary={'Soll das Spiel öffentlich sichtbar sein?'} />
             </ListItem>
           </Grid>
           <Grid size={12} sx={{ p: 2 }}>

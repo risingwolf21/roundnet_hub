@@ -154,7 +154,7 @@ const TeamCard = ({
             rated && (
               <Stack direction={'row'} spacing={1}>
                 <Typography sx={{ fontWeight: 'bold' }}>{p1_eff?.toFixed(0)}</Typography>
-                {deltaChip(p1?.delta)}
+                {deltaChip(p1?.effectiveChange)}
               </Stack>
             )
           }
@@ -177,7 +177,7 @@ const TeamCard = ({
             rated && (
               <Stack direction={'row'} spacing={1}>
                 <Typography sx={{ fontWeight: 'bold' }}>{p2_eff?.toFixed(0)}</Typography>
-                {deltaChip(p2?.delta)}
+                {deltaChip(p2?.effectiveChange)}
               </Stack>
             )
           }

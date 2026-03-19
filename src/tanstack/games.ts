@@ -121,6 +121,7 @@ export const useCreateMatch = () =>
       team_b,
       event,
       rating_enabled,
+      is_public,
       created_by,
       playerNamesMapping,
     }: {
@@ -141,6 +142,7 @@ export const useCreateMatch = () =>
       };
       event?: string;
       rating_enabled: boolean;
+      is_public: boolean;
       created_by?: string;
       playerNamesMapping: { [key: string]: string };
     }) => {
@@ -160,6 +162,7 @@ export const useCreateMatch = () =>
           team_b: team_b.name,
           event: event,
           rated: rating_enabled,
+          is_public: is_public,
           created_by: created_by,
           player_names: playerNamesMapping
         })

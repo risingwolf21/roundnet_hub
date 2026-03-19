@@ -49,7 +49,7 @@ declare global {
   type GroupFeatures = Tables<'group_features'>;
   type GroupPermissions = Tables<'group_permissions'>;
   type EventTransformation = Tables<'event_transformations'>;
-  type UserMatchesView = Database['games']['Views']['user_matches']['Row'];
+  type UserMatchesView = GamesTable<'user_matches'>;
 
   type FullItemHolder = QueryData<ReturnType<typeof fetchItems>> extends Array<infer U> ? U : never;
   type FullItemHistory = QueryData<ReturnType<typeof fetchItemHistory>> extends Array<infer U> ? U : never;
