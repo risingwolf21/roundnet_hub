@@ -37,7 +37,7 @@ import Typography from '@mui/material/Typography';
 import { captureException } from '@sentry/react';
 
 type ConstellationCreationDialogProps = {
-  users: User[];
+  users: { id: string; name: string }[];
   event: EventsUserView;
 };
 
@@ -46,8 +46,8 @@ export type TeamType = 'men' | 'women' | 'mixed';
 export interface Team {
   players: [PlayerWithUser, PlayerWithUser];
   strength: number;
-  adjustedStrength: number;
   type: TeamType;
+  teamId: string;
 }
 
 export type Match = [Team, Team];
@@ -63,11 +63,12 @@ export interface MatchmakingOptions {
   matchupMode?: 'any' | 'separate' | 'mixed';
   mustPlay?: PlayerWithUser[];
   mode?: 'balanced' | 'random';
-  maxStrengthDifference?: number | ((remainingPlayers: PlayerWithUser[]) => number);
+  maxStrengthDifference?: number;
   fixedMatches?: Match[];
-  benchFromLastMatchMustPlay?: boolean; // UI-only
-  matchHistory?: string[][];
+  benchFromLastMatchMustPlay?: boolean;
 }
+
+const getTeamId = (p1: PlayerWithUser, p2: PlayerWithUser) => [p1.player, p2.player].sort().join('-');
 
 function shuffle<T>(array: T[]): T[] {
   const copy = [...array];
@@ -79,247 +80,275 @@ function shuffle<T>(array: T[]): T[] {
 }
 
 function determineTeamType(players: [PlayerWithUser, PlayerWithUser]): TeamType {
-  const [g1, g2] = players.map((p) => p.gender);
-  if (g1 === 'w' && g2 === 'w') return 'women';
-  if (g1 === 'm' && g2 === 'm') return 'men';
+  const genders = players.map((p) => p.gender);
+  if (genders.every((g) => g === 'w')) return 'women';
+  if (genders.every((g) => g === 'm')) return 'men';
   return 'mixed';
 }
 
 function createTeam(p1: PlayerWithUser, p2: PlayerWithUser): Team {
-  const players: [PlayerWithUser, PlayerWithUser] = [p1, p2];
-  const noise = Math.random() * 50 - 50; // -10 bis +10
-  const base = ((p1.rg_index ?? 1000) + (p2.rg_index ?? 1000)) / 2 + noise;
-  const type = determineTeamType(players);
-  const bonus = type === 'mixed' ? -150 : type === 'women' ? -300 : 0;
-  return { players, strength: Math.floor(base), adjustedStrength: base + bonus, type };
+  const base = ((p1.rg_index ?? 1000) + (p2.rg_index ?? 1000)) / 2;
+  return {
+    players: [p1, p2],
+    strength: Math.floor(base),
+    type: determineTeamType([p1, p2]),
+    teamId: getTeamId(p1, p2),
+  };
 }
 
-function isAllowedMatchup(t1: Team, t2: Team, mode: 'any' | 'separate' | 'mixed'): boolean {
-  if (mode === 'any') return true;
-  if (mode === 'mixed') {
-    return t1.type === 'mixed' && t2.type === 'mixed';
-  }
-  const types = new Set([t1.type, t2.type]);
-  return !(types.has('mixed') && (types.has('men') || types.has('women')));
-}
-
-function generatePossibleTeams(
-  players: PlayerWithUser[],
-  lockedTeams: [PlayerWithUser, PlayerWithUser][] = []
-): Team[] {
-  const map = players.reduce((acc, p) => acc.set(p.player, p), new Map<string, PlayerWithUser>());
-  const locked = lockedTeams.map(([a, b]) => createTeam(map.get(a.player)!, map.get(b.player)!));
-  const lockedNames = new Set(lockedTeams.flat().map((x) => x.player));
-  const freePlayers = players.filter((p) => !lockedNames.has(p.player));
-  const teams = [...locked];
-  for (let i = 0; i < freePlayers.length; i++) {
-    for (let j = i + 1; j < freePlayers.length; j++) {
-      teams.push(createTeam(freePlayers[i], freePlayers[j]));
-    }
-  }
-  return teams;
-}
-
-function hasMustPlayPlayer(match: Match, mustPlay: string[], used: Set<string>) {
-  return [...match[0].players, ...match[1].players].some((p) => mustPlay.includes(p.player) && !used.has(p.player));
-}
-
-function getMatchKey(match: Match): string {
-  const allPlayers = [...match[0].players, ...match[1].players].map((p) => p.player);
-  return allPlayers.sort().join('|');
-}
-
-function isSimilarToHistory(matchKey: string, history: string[][]): boolean {
-  const current = matchKey.split('|');
-  return history.some((prev) => {
-    const intersection = prev.filter((p) => current.includes(p));
-    return intersection.length >= 3;
-  });
-}
-
-export function generateBalancedMatchesWithBench(options: MatchmakingOptions): MatchResult {
+// --- ALGORITHMUS ---
+export function generateMatches(options: MatchmakingOptions): MatchResult {
   const {
     players,
     lockedTeams = [],
-    matchupMode = 'any',
     mustPlay = [],
     mode = 'balanced',
-    maxStrengthDifference = 200,
+    matchupMode = 'any',
     fixedMatches = [],
-    matchHistory = [],
   } = options;
 
-  const seenMatches = new Set<string>(); // lokal pro Aufruf
+  let availablePlayers = [...players];
+  const finalMatches: Match[] = [...fixedMatches];
 
-  if (matchupMode === 'separate') {
-    const fixedPlayers = new Set(
-      fixedMatches.flatMap((match) => [...match[0].players, ...match[1].players].map((p) => p.player))
-    );
+  const playersInFixed = new Set(
+    fixedMatches.flatMap((m) => [...m[0].players, ...m[1].players].map((p) => p.player))
+  );
+  availablePlayers = availablePlayers.filter((p) => !playersInFixed.has(p.player));
 
-    const remainingPlayers = players.filter((p) => !fixedPlayers.has(p.player));
-    const men = remainingPlayers.filter((p) => p.gender === 'm');
-    const women = remainingPlayers.filter((p) => p.gender === 'w');
+  const mustPlayIds = new Set(mustPlay.map((p) => p.player));
+  availablePlayers.sort((a, b) => {
+    if (mustPlayIds.has(a.player) && !mustPlayIds.has(b.player)) return -1;
+    if (!mustPlayIds.has(a.player) && mustPlayIds.has(b.player)) return 1;
+    return Math.random() - 0.5;
+  });
 
-    const menMatches = generateBalancedMatchesWithBench({
-      ...options,
-      players: men,
-      matchupMode: 'any',
-      fixedMatches: undefined,
-      mustPlay: mustPlay.filter((p) => p.gender === 'm'),
-    });
+  const teams: Team[] = [];
+  const usedPlayersForTeams = new Set<string>();
 
-    const womenMatches = generateBalancedMatchesWithBench({
-      ...options,
-      players: women,
-      matchupMode: 'any',
-      fixedMatches: undefined,
-      mustPlay: mustPlay.filter((p) => p.gender === 'w'),
-    });
+  lockedTeams.forEach(([p1, p2]) => {
+    if (
+      availablePlayers.some((p) => p.player === p1.player) &&
+      availablePlayers.some((p) => p.player === p2.player) &&
+      !usedPlayersForTeams.has(p1.player) &&
+      !usedPlayersForTeams.has(p2.player)
+    ) {
+      teams.push(createTeam(p1, p2));
+      usedPlayersForTeams.add(p1.player);
+      usedPlayersForTeams.add(p2.player);
+    }
+  });
 
-    return {
-      matches: [...fixedMatches, ...menMatches.matches, ...womenMatches.matches],
-      bench: [...menMatches.bench, ...womenMatches.bench],
-    };
+  const freePlayers = availablePlayers.filter((p) => !usedPlayersForTeams.has(p.player));
+
+  if (mode === 'balanced') {
+    freePlayers.sort((a, b) => (b.rg_index ?? 1000) - (a.rg_index ?? 1000));
+    while (freePlayers.length >= 2) {
+      const p1 = freePlayers.shift()!;
+      const indexToPick = Math.min(Math.floor(Math.random() * 2), freePlayers.length - 1);
+      const p2 = freePlayers.splice(indexToPick, 1)[0];
+      teams.push(createTeam(p1, p2));
+    }
+  } else {
+    shuffle(freePlayers);
+    while (freePlayers.length >= 2) {
+      teams.push(createTeam(freePlayers.shift()!, freePlayers.shift()!));
+    }
   }
 
-  const mustPlayNames = mustPlay.map((p) => p.player);
-  const used = new Set<string>(
-    fixedMatches.flatMap((match) => [...match[0].players, ...match[1].players].map((p) => p.player))
-  );
+  const benchedPlayers = freePlayers;
 
-  const matches: Match[] = [...fixedMatches];
+  const scoreMatch = (t1: Team, t2: Team): number => {
+    if (mode === 'random') return Math.random();
 
-  const getDifferenceLimit = (remaining: PlayerWithUser[]) =>
-    typeof maxStrengthDifference === 'function' ? maxStrengthDifference(remaining) : maxStrengthDifference;
+    let score = 10000;
+    const diff = Math.abs(t1.strength - t2.strength);
+    score -= diff;
 
-  const tryAddMatches = (teams: Team[], remaining: PlayerWithUser[], mustPlayOnly = false) => {
-    const limit = getDifferenceLimit(remaining);
-    let candidates: Match[] = [];
-
-    for (let i = 0; i < teams.length; i++) {
-      const t1 = teams[i];
-      for (let j = i + 1; j < teams.length; j++) {
-        const t2 = teams[j];
-        const names = [...t1.players, ...t2.players].map((p) => p.player);
-        if (new Set(names).size < 4) continue;
-        if (!isAllowedMatchup(t1, t2, matchupMode)) continue;
-        const diff = Math.abs(t1.adjustedStrength - t2.adjustedStrength);
-        if (mode === 'balanced' && diff > limit) continue;
-        const match: Match = [t1, t2];
-        const key = getMatchKey(match);
-        if (seenMatches.has(key)) continue;
-        if (matchHistory && isSimilarToHistory(key, matchHistory)) continue;
-        candidates.push(match);
+    if (t1.type !== t2.type) {
+      if (matchupMode === 'separate') return -99999;
+      if (matchupMode === 'mixed') {
+        if (t1.type !== 'mixed' || t2.type !== 'mixed') return -99999;
       }
+      score -= 500;
     }
-
-    if (mode === 'balanced') {
-      candidates.sort(
-        (a, b) =>
-          Math.abs(a[0].adjustedStrength - a[1].adjustedStrength) -
-          Math.abs(b[0].adjustedStrength - b[1].adjustedStrength)
-      );
-      const top = candidates.slice(0, 20);
-      shuffle(top);
-      candidates = top;
-    } else {
-      shuffle(candidates);
-    }
-
-    for (const match of candidates) {
-      const names = [...match[0].players, ...match[1].players].map((p) => p.player);
-      if (names.every((n) => !used.has(n))) {
-        if (mustPlayOnly && !hasMustPlayPlayer(match, mustPlayNames, used)) {
-          continue;
-        }
-        matches.push(match);
-        seenMatches.add(getMatchKey(match));
-        names.forEach((n) => used.add(n));
-      }
-    }
+    return score;
   };
 
-  const remaining1 = players.filter((p) => !used.has(p.player));
-  const teams1 = shuffle(generatePossibleTeams(remaining1, lockedTeams));
-  tryAddMatches(teams1, remaining1, true);
+  const availableTeams = [...teams];
 
-  while (players.filter((p) => !used.has(p.player)).length >= 4) {
-    const remaining = players.filter((p) => !used.has(p.player));
-    const remainingLockedTeams = lockedTeams.filter(
-      ([a, b]) => remaining.find((p) => p.player === a.player) && remaining.find((p) => p.player === b.player)
-    );
-    const teams = shuffle(generatePossibleTeams(remaining, remainingLockedTeams));
+  while (availableTeams.length >= 2) {
+    const t1 = availableTeams.shift()!;
+    let bestMatchIndex = -1;
+    let bestScore = -Infinity;
 
-    const matchCountBefore = matches.length;
+    for (let i = 0; i < availableTeams.length; i++) {
+      const t2 = availableTeams[i];
+      const currentScore = scoreMatch(t1, t2);
+      const noise = Math.random() * 10;
 
-    tryAddMatches(teams, remaining, true);
-
-    if (matches.length === matchCountBefore) {
-      tryAddMatches(teams, remaining);
+      if (currentScore + noise > bestScore) {
+        bestScore = currentScore;
+        bestMatchIndex = i;
+      }
     }
 
-    if (matches.length === matchCountBefore) break;
+    if (bestMatchIndex !== -1 && bestScore > -50000) {
+      const t2 = availableTeams.splice(bestMatchIndex, 1)[0];
+      finalMatches.push([t1, t2]);
+    } else {
+      benchedPlayers.push(...t1.players);
+    }
   }
 
-  const bench = players.filter((p) => !used.has(p.player));
-  return { matches, bench };
+  availableTeams.forEach(team => benchedPlayers.push(...team.players));
+
+  return {
+    matches: finalMatches,
+    bench: benchedPlayers,
+  };
 }
 
-type PlayerWithUser = GamesTable<'players'> & {
+export type PlayerWithUser = GamesTable<'players'> & {
   name?: string;
 };
 
+// --- UI COMPONENT ---
 const Content = ({ payload, onClose }: DialogProps<ConstellationCreationDialogProps, null>) => {
   const notifications = useNotifications();
   const dialogs = useDialogs();
-  const [loading, setLoading] = useState(false);
+
+  const [loading, setLoading] = useState(true);
   const [players, setPlayers] = useState<PlayerWithUser[]>([]);
   const [foundPlayers, setFoundPlayers] = useState<PlayerWithUser[]>([]);
+
   const [preSelectedPlayer1, setPreSelectedPlayer1] = useState<PlayerWithUser | null>(null);
   const [preSelectedPlayer2, setPreSelectedPlayer2] = useState<PlayerWithUser | null>(null);
   const [preMustPlay, setPreMustPlay] = useState<PlayerWithUser | null>(null);
-  const [rounds, setRounds] = useState<
-    {
-      game: MatchResult;
-      options: MatchmakingOptions;
-    }[]
-  >([]);
+
+  const [rounds, setRounds] = useState<{ game: MatchResult; options: MatchmakingOptions }[]>([]);
 
   useEffect(() => {
-    supabase
-      .schema('games')
-      .from('players')
-      .select('*')
-      .in(
-        'player',
-        payload.users.map((x) => x.id)
-      )
-      .then((result) => {
-        if (result.data) {
-          const loadedPlayers = result.data.map((x) => ({
-            ...x,
-            name: payload.users.find((y) => y.id === x.player)?.name,
-          }));
-          setPlayers(loadedPlayers);
-          setFoundPlayers(result.data.map((x) => ({ ...x, name: payload.users.find((y) => y.id === x.player)?.name })));
+    const fetchPlayers = async () => {
+      const { data, error } = await supabase
+        .schema('games')
+        .from('players')
+        .select('*')
+        .in('player', payload.users.map((x) => x.id));
 
-          setRounds([
-            {
-              game: {
-                matches: [],
-                bench: [],
-              },
-              options: {
-                players: loadedPlayers,
-                mode: 'balanced',
-                matchupMode: 'any',
-              },
-            },
-          ]);
-        }
+      if (error) {
+        notifications.show('Fehler beim Laden der Spielerdaten', { severity: 'error' });
         setLoading(false);
-      });
-  }, [payload]);
+        return;
+      }
+
+      if (data) {
+        const loadedPlayers = data.map((x) => ({
+          ...x,
+          name: payload.users.find((y) => y.id === x.player)?.name,
+        }));
+        setPlayers(loadedPlayers);
+        setFoundPlayers(loadedPlayers);
+
+        setRounds([
+          {
+            game: { matches: [], bench: [] },
+            options: {
+              players: loadedPlayers,
+              mode: 'balanced',
+              matchupMode: 'any',
+            },
+          },
+        ]);
+      }
+      setLoading(false);
+    };
+    fetchPlayers();
+  }, [payload, notifications]);
+
+  // HELPER: Option einer bestimmten Runde sicher updaten
+  const updateRoundOption = (roundIndex: number, updates: Partial<MatchmakingOptions>) => {
+    setRounds(prevRounds => prevRounds.map((r, i) =>
+      i === roundIndex ? { ...r, options: { ...r.options, ...updates } } : r
+    ));
+  };
+
+  // HELPER: Matches in Supabase speichern
+  const handleSaveMatches = async (roundIndex: number) => {
+    const currentRound = rounds[roundIndex];
+    let hasError = false;
+
+    for (const match of currentRound.game.matches) {
+      try {
+        const t1Name = `${match[0].players[0].name?.split(' ')[0]}/${match[0].players[1].name?.split(' ')[0]}`;
+        const t2Name = `${match[1].players[0].name?.split(' ')[0]}/${match[1].players[1].name?.split(' ')[0]}`;
+
+        const team_a = {
+          name: t1Name,
+          player_1: match[0].players[0].player,
+          player_1_rating: match[0].players[0].ka_index,
+          player_2: match[0].players[1].player,
+          player_2_rating: match[0].players[1].ka_index,
+        };
+        const team_b = {
+          name: t2Name,
+          player_1: match[1].players[0].player,
+          player_1_rating: match[1].players[0].ka_index,
+          player_2: match[1].players[1].player,
+          player_2_rating: match[1].players[1].ka_index,
+        };
+
+        await GamesRepository.reportScores({
+          sets: [],
+          team_a, team_b,
+          event: payload.event.id,
+          is_public: true,
+          player_names: {
+            [match[0].players[0].player]: match[0].players[0].name ?? '',
+            [match[0].players[1].player]: match[0].players[1].name ?? '',
+            [match[1].players[0].player]: match[1].players[0].name ?? '',
+            [match[1].players[1].player]: match[1].players[1].name ?? '',
+          }
+        });
+      } catch (error: any) {
+        hasError = true;
+        captureException(error, { extra: { match, eventId: payload.event.id } });
+        notifications.show(`Fehler bei einem Match: ${error.message}`, { severity: 'error' });
+      }
+    }
+
+    if (!hasError) {
+      notifications.show('Alle Matches der Runde erfolgreich erstellt!', { severity: 'success' });
+    }
+  };
+
+  // HELPER: Matches für eine Runde generieren
+  const handleGenerate = (roundIndex: number) => {
+    setRounds(prevRounds => {
+      const currentRound = prevRounds[roundIndex];
+      let currentMustPlay = currentRound.options.mustPlay || [];
+
+      // Bench aus vorheriger Runde übernehmen falls gewünscht
+      if (currentRound.options.benchFromLastMatchMustPlay && roundIndex > 0) {
+        const merged = [...currentMustPlay];
+        prevRounds[roundIndex - 1].game.bench.forEach(p => {
+          if (!currentMustPlay.some(existing => existing.player === p.player)) {
+            merged.push(p);
+          }
+        });
+        currentMustPlay = merged;
+      }
+
+      const optionsToRun: MatchmakingOptions = {
+        ...currentRound.options,
+        players: players, // Wir nutzen immer die aktuelle, globale Liste
+        mustPlay: currentMustPlay
+      };
+
+      const newGame = generateMatches(optionsToRun);
+
+      return prevRounds.map((r, i) => i === roundIndex ? { ...r, game: newGame, options: optionsToRun } : r);
+    });
+  };
 
   return (
     <>
@@ -333,8 +362,11 @@ const Content = ({ payload, onClose }: DialogProps<ConstellationCreationDialogPr
           </Typography>
         </Toolbar>
       </AppBar>
+
       <List sx={{ pl: 0, pr: 0, pb: 10 }}>
-        {loading && <p>loading...</p>}
+        {loading && <p style={{ padding: '16px' }}>Lade Spielerdaten...</p>}
+
+        {/* FEHLENDE INDEXE */}
         {payload.users.filter((x) => !foundPlayers.map((y) => y.player).includes(x.id)).length > 0 && (
           <Accordion disableGutters defaultExpanded>
             <AccordionSummary expandIcon={<ArrowDropDown />}>
@@ -348,24 +380,9 @@ const Content = ({ payload, onClose }: DialogProps<ConstellationCreationDialogPr
                 {payload.users
                   .filter((x) => !foundPlayers.map((y) => y.player).includes(x.id))
                   .map((x) => (
-                    <ListItem key={'name'} divider sx={{ '&.MuiListItem-root': { paddingLeft: 0 } }}>
-                      <Box
-                        sx={{
-                          display: 'flex',
-                          flexDirection: 'row',
-                          justifyContent: 'space-between',
-                          alignItems: 'center',
-                          width: '100%',
-                        }}
-                      >
-                        <Typography
-                          sx={{
-                            textAlign: 'end',
-                            fontSize: '1rem',
-                            color: `rgba(0,0,0,1)`,
-                            fontWeight: '400',
-                          }}
-                        >
+                    <ListItem key={x.id} divider sx={{ '&.MuiListItem-root': { paddingLeft: 0 } }}>
+                      <Box sx={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
+                        <Typography sx={{ textAlign: 'end', fontSize: '1rem', color: `rgba(0,0,0,1)`, fontWeight: '400' }}>
                           {x.name}
                         </Typography>
                         <NumberField
@@ -374,8 +391,8 @@ const Content = ({ payload, onClose }: DialogProps<ConstellationCreationDialogPr
                           label="Initialer Index"
                           onValueChange={(val) => {
                             if (val && val >= 0) {
-                              setPlayers([
-                                ...players.filter((y) => x.id !== y.player),
+                              setPlayers((prev) => [
+                                ...prev.filter((y) => x.id !== y.player),
                                 {
                                   gender: 'm',
                                   player: x.id,
@@ -394,12 +411,6 @@ const Content = ({ payload, onClose }: DialogProps<ConstellationCreationDialogPr
                                   matches_played: 0,
                                 },
                               ]);
-                              setRounds([
-                                ...rounds.map((z) => ({
-                                  ...z,
-                                  options: { ...z.options, players: players } as MatchmakingOptions,
-                                })),
-                              ]);
                             }
                           }}
                         />
@@ -410,6 +421,8 @@ const Content = ({ payload, onClose }: DialogProps<ConstellationCreationDialogPr
             </AccordionDetails>
           </Accordion>
         )}
+
+        {/* SPIELER BEARBEITEN */}
         <Accordion disableGutters>
           <AccordionSummary expandIcon={<ArrowDropDown />}>
             <Typography component="span">{`Spieler bearbeiten - ${players.length}`}</Typography>
@@ -427,14 +440,11 @@ const Content = ({ payload, onClose }: DialogProps<ConstellationCreationDialogPr
                             .schema('games')
                             .from('players')
                             .select('*')
-                            .in(
-                              'player',
-                              result.map((x) => x.id)
-                            )
+                            .in('player', result.map((x) => x.id))
                             .then((res) => {
                               if (res.data) {
-                                setPlayers([
-                                  ...players.filter((x) => !result.map((x) => x.id).includes(x.player)),
+                                setPlayers((prev) => [
+                                  ...prev.filter((x) => !result.map((r) => r.id).includes(x.player)),
                                   ...res.data.map((x) => ({
                                     ...x,
                                     name: result.find((y) => y.id === x.player)?.name,
@@ -469,12 +479,16 @@ const Content = ({ payload, onClose }: DialogProps<ConstellationCreationDialogPr
           </AccordionDetails>
         </Accordion>
         <Divider sx={{ my: 1 }} />
+
+        {/* RUNDEN MAP */}
         {rounds.map((x, index) => (
           <Accordion key={index} defaultExpanded={index === 0} disableGutters>
             <AccordionSummary expandIcon={<ArrowDropDown />}>
-              <Typography component="span">Runde {index + 1}</Typography>
+              <Typography component="span" fontWeight="bold">Runde {index + 1}</Typography>
             </AccordionSummary>
             <AccordionDetails sx={{ padding: 1 }}>
+
+              {/* EINSTELLUNGEN */}
               <Accordion disableGutters>
                 <AccordionSummary expandIcon={<ArrowDropDown />}>
                   <Typography component="span">Einstellungen</Typography>
@@ -485,15 +499,7 @@ const Content = ({ payload, onClose }: DialogProps<ConstellationCreationDialogPr
                       <Select
                         fullWidth
                         value={x.options.mode ?? 'balanced'}
-                        onChange={(e) => {
-                          setRounds([
-                            ...rounds.map((z, i) =>
-                              i === index
-                                ? { ...z, options: { ...z.options, mode: e.target.value } as MatchmakingOptions }
-                                : z
-                            ),
-                          ]);
-                        }}
+                        onChange={(e) => updateRoundOption(index, { mode: e.target.value as 'balanced' | 'random' })}
                       >
                         <MenuItem value={'balanced'}>Balanced</MenuItem>
                         <MenuItem value={'random'}>Random</MenuItem>
@@ -506,15 +512,7 @@ const Content = ({ payload, onClose }: DialogProps<ConstellationCreationDialogPr
                       <Select
                         fullWidth
                         value={x.options.matchupMode ?? 'any'}
-                        onChange={(e) => {
-                          setRounds([
-                            ...rounds.map((z, i) =>
-                              i === index
-                                ? { ...z, options: { ...z.options, matchupMode: e.target.value } as MatchmakingOptions }
-                                : z
-                            ),
-                          ]);
-                        }}
+                        onChange={(e) => updateRoundOption(index, { matchupMode: e.target.value as 'any' | 'separate' | 'mixed' })}
                       >
                         <MenuItem value={'any'}>Gemischt</MenuItem>
                         <MenuItem value={'separate'}>Herren / Damen</MenuItem>
@@ -528,24 +526,8 @@ const Content = ({ payload, onClose }: DialogProps<ConstellationCreationDialogPr
                       <ListItemAvatar>
                         <Checkbox
                           sx={{ pl: 0 }}
-                          checked={x.options.benchFromLastMatchMustPlay}
-                          onChange={(e) => {
-                            console.log(rounds[index - 1].game.bench);
-                            setRounds([
-                              ...rounds.map((z, i) =>
-                                i === index
-                                  ? {
-                                    ...z,
-                                    options: {
-                                      ...z.options,
-                                      benchFromLastMatchMustPlay: e.target.checked,
-                                      mustPlay: e.target.checked ? [...rounds[index - 1].game.bench] : [],
-                                    } as MatchmakingOptions,
-                                  }
-                                  : z
-                              ),
-                            ]);
-                          }}
+                          checked={x.options.benchFromLastMatchMustPlay ?? false}
+                          onChange={(e) => updateRoundOption(index, { benchFromLastMatchMustPlay: e.target.checked })}
                         />
                       </ListItemAvatar>
                       <ListItemText primary={'Setze zuvor ausgesetzte Spieler ein.'} />
@@ -553,6 +535,8 @@ const Content = ({ payload, onClose }: DialogProps<ConstellationCreationDialogPr
                   )}
                 </AccordionDetails>
               </Accordion>
+
+              {/* FESTE TEAMS */}
               <Accordion disableGutters>
                 <AccordionSummary expandIcon={<ArrowDropDown />}>
                   <Typography component="span">Feste Teams</Typography>
@@ -565,53 +549,21 @@ const Content = ({ payload, onClose }: DialogProps<ConstellationCreationDialogPr
                           key={player1.player + player2.player}
                           sx={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', width: '100%' }}
                         >
-                          <Box
-                            sx={{
-                              display: 'flex',
-                              flexDirection: 'column',
-                              overflow: 'hidden',
-                              flexGrow: 1,
-                              minWidth: 0,
-                            }}
-                          >
-                            <Typography
-                              sx={{
-                                whiteSpace: 'nowrap',
-                                overflow: 'hidden',
-                                textOverflow: 'ellipsis',
-                              }}
-                            >
+                          <Box sx={{ display: 'flex', flexDirection: 'column', overflow: 'hidden', flexGrow: 1, minWidth: 0 }}>
+                            <Typography sx={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                               {player1.name}
                             </Typography>
-                            <Typography
-                              sx={{
-                                whiteSpace: 'nowrap',
-                                overflow: 'hidden',
-                                textOverflow: 'ellipsis',
-                              }}
-                            >
+                            <Typography sx={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                               {player2.name}
                             </Typography>
                           </Box>
                           <IconButton
                             onClick={() => {
-                              setRounds([
-                                ...rounds.map((z, i) =>
-                                  i === index
-                                    ? {
-                                      game: z.game,
-                                      options: {
-                                        ...z.options,
-                                        lockedTeams: (z.options.lockedTeams ?? []).filter(
-                                          (y) => y[0].player !== player1.player && y[1].player !== player2.player
-                                        ),
-                                      } as MatchmakingOptions,
-                                    }
-                                    : z
+                              updateRoundOption(index, {
+                                lockedTeams: (x.options.lockedTeams ?? []).filter(
+                                  (y) => y[0].player !== player1.player && y[1].player !== player2.player
                                 ),
-                              ]);
-                              setPreSelectedPlayer1(null);
-                              setPreSelectedPlayer2(null);
+                              });
                             }}
                           >
                             <Delete />
@@ -622,56 +574,35 @@ const Content = ({ payload, onClose }: DialogProps<ConstellationCreationDialogPr
                       <Select
                         size="small"
                         value={preSelectedPlayer1?.player ?? 'none'}
-                        onChange={(e) =>
-                          setPreSelectedPlayer1(players.find((y) => y.player === e.target.value) ?? null)
-                        }
+                        onChange={(e) => setPreSelectedPlayer1(players.find((y) => y.player === e.target.value) ?? null)}
                       >
                         {players
                           .filter((y) => y.player !== preSelectedPlayer2?.player)
-                          .filter((y) => !x.options.lockedTeams?.flatMap((x) => x).includes(y))
+                          .filter((y) => !x.options.lockedTeams?.flatMap((t) => t).includes(y))
                           .map((z) => (
-                            <MenuItem key={z.player} value={z.player}>
-                              {z.name}
-                            </MenuItem>
+                            <MenuItem key={z.player} value={z.player}>{z.name}</MenuItem>
                           ))}
                         <MenuItem value={'none'}>Kein Nutzer</MenuItem>
                       </Select>
                       <Select
                         size="small"
                         value={preSelectedPlayer2?.player ?? 'none'}
-                        onChange={(e) =>
-                          setPreSelectedPlayer2(players.find((y) => y.player === e.target.value) ?? null)
-                        }
+                        onChange={(e) => setPreSelectedPlayer2(players.find((y) => y.player === e.target.value) ?? null)}
                       >
                         {players
                           .filter((y) => y.player !== preSelectedPlayer1?.player)
-                          .filter((y) => !x.options.lockedTeams?.flatMap((x) => x).includes(y))
+                          .filter((y) => !x.options.lockedTeams?.flatMap((t) => t).includes(y))
                           .map((z) => (
-                            <MenuItem key={z.player} value={z.player}>
-                              {z.name}
-                            </MenuItem>
+                            <MenuItem key={z.player} value={z.player}>{z.name}</MenuItem>
                           ))}
                         <MenuItem value={'none'}>Kein Nutzer</MenuItem>
                       </Select>
                       <IconButton
                         onClick={() => {
                           if (!preSelectedPlayer1 || !preSelectedPlayer2) return;
-                          setRounds([
-                            ...rounds.map((z, i) =>
-                              i === index
-                                ? {
-                                  game: z.game,
-                                  options: {
-                                    ...z.options,
-                                    lockedTeams: [
-                                      ...(z.options.lockedTeams ?? []),
-                                      [preSelectedPlayer1, preSelectedPlayer2],
-                                    ],
-                                  } as MatchmakingOptions,
-                                }
-                                : z
-                            ),
-                          ]);
+                          updateRoundOption(index, {
+                            lockedTeams: [...(x.options.lockedTeams ?? []), [preSelectedPlayer1, preSelectedPlayer2]],
+                          });
                           setPreSelectedPlayer1(null);
                           setPreSelectedPlayer2(null);
                         }}
@@ -682,55 +613,27 @@ const Content = ({ payload, onClose }: DialogProps<ConstellationCreationDialogPr
                   </List>
                 </AccordionDetails>
               </Accordion>
+
+              {/* FESTE SPIELER */}
               <Accordion disableGutters>
                 <AccordionSummary expandIcon={<ArrowDropDown />}>
-                  <Typography component="span">Feste Spieler</Typography>
+                  <Typography component="span">Feste Spieler (Must Play)</Typography>
                 </AccordionSummary>
                 <AccordionDetails>
                   <List>
                     {x.options.mustPlay &&
                       x.options.mustPlay?.map((player) => (
-                        <Box
-                          key={player.player}
-                          sx={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', width: '100%' }}
-                        >
-                          <Box
-                            sx={{
-                              display: 'flex',
-                              flexDirection: 'column',
-                              overflow: 'hidden',
-                              flexGrow: 1,
-                              minWidth: 0,
-                            }}
-                          >
-                            <Typography
-                              sx={{
-                                whiteSpace: 'nowrap',
-                                overflow: 'hidden',
-                                textOverflow: 'ellipsis',
-                              }}
-                            >
+                        <Box key={player.player} sx={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', width: '100%' }}>
+                          <Box sx={{ display: 'flex', flexDirection: 'column', overflow: 'hidden', flexGrow: 1, minWidth: 0 }}>
+                            <Typography sx={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                               {player.name}
                             </Typography>
                           </Box>
                           <IconButton
                             onClick={() => {
-                              setRounds([
-                                ...rounds.map((z, i) =>
-                                  i === index
-                                    ? {
-                                      game: z.game,
-                                      options: {
-                                        ...z.options,
-                                        mustPlay: (z.options.mustPlay ?? []).filter(
-                                          (y) => y.player !== player.player
-                                        ),
-                                      } as MatchmakingOptions,
-                                    }
-                                    : z
-                                ),
-                              ]);
-                              setPreMustPlay(null);
+                              updateRoundOption(index, {
+                                mustPlay: (x.options.mustPlay ?? []).filter((y) => y.player !== player.player),
+                              });
                             }}
                           >
                             <Delete />
@@ -745,30 +648,18 @@ const Content = ({ payload, onClose }: DialogProps<ConstellationCreationDialogPr
                       >
                         {players
                           .filter((y) => !x.options.mustPlay?.includes(y))
-                          .filter((y) => !x.options.lockedTeams?.flatMap((x) => x).includes(y))
+                          .filter((y) => !x.options.lockedTeams?.flatMap((t) => t).includes(y))
                           .map((z) => (
-                            <MenuItem key={z.player} value={z.player}>
-                              {z.name}
-                            </MenuItem>
+                            <MenuItem key={z.player} value={z.player}>{z.name}</MenuItem>
                           ))}
                         <MenuItem value={'none'}>Kein Nutzer</MenuItem>
                       </Select>
                       <IconButton
                         onClick={() => {
                           if (!preMustPlay) return;
-                          setRounds([
-                            ...rounds.map((z, i) =>
-                              i === index
-                                ? {
-                                  game: z.game,
-                                  options: {
-                                    ...z.options,
-                                    mustPlay: [...(z.options.mustPlay ?? []), preMustPlay],
-                                  } as MatchmakingOptions,
-                                }
-                                : z
-                            ),
-                          ]);
+                          updateRoundOption(index, {
+                            mustPlay: [...(x.options.mustPlay ?? []), preMustPlay]
+                          });
                           setPreMustPlay(null);
                         }}
                       >
@@ -778,62 +669,27 @@ const Content = ({ payload, onClose }: DialogProps<ConstellationCreationDialogPr
                   </List>
                 </AccordionDetails>
               </Accordion>
+
+              {/* ACTION BUTTONS (GENERATE / SAVE) */}
               <Accordion expanded={false} disableGutters>
                 <AccordionSummary>
                   <Box sx={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', width: '100%' }}>
                     <Button
-                      onClick={() => {
-                        for (const match of x.game.matches) {
-                          const [name1a, ...surname1a] = match[0].players[0].name!.split(' ');
-                          const [name2a, ...surname2a] = match[0].players[1].name!.split(' ');
-                          const [name1b, ...surname1b] = match[1].players[0].name!.split(' ');
-                          const [name2b, ...surname2b] = match[1].players[1].name!.split(' ');
-                          const team_a_name = (surname1a.pop() ?? name1a) + '/' + (surname2a.pop() ?? name2a);
-                          const team_b_name = (surname1b.pop() ?? name1b) + '/' + (surname2b.pop() ?? name2b);
-
-                          const team_a = {
-                            name: team_a_name,
-                            player_1: match[0].players[0].player,
-                            player_1_rating: match[0].players[0].ka_index,
-                            player_2: match[0].players[1].player,
-                            player_2_rating: match[0].players[1].ka_index,
-                          };
-                          const team_b = {
-                            name: team_b_name,
-                            player_1: match[1].players[0].player,
-                            player_1_rating: match[1].players[0].ka_index,
-                            player_2: match[1].players[1].player,
-                            player_2_rating: match[1].players[1].ka_index,
-                          };
-                          GamesRepository.reportScores([], team_a, team_b, payload.event.id).catch((error) => {
-                            captureException(error, {
-                              extra: { match, eventId: payload.event.id, team_a, team_b },
-                              tags: { feature: 'constellations' },
-                            });
-                            notifications.show(error.message, { severity: 'error' });
-                          });
-                        }
+                      variant="outlined"
+                      color="primary"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleSaveMatches(index);
                       }}
+                      disabled={x.game.matches.length === 0}
                     >
-                      Matches erstellen
+                      Matches speichern
                     </Button>
                     <Button
-                      onClick={() => {
-                        const result = generateBalancedMatchesWithBench(x.options);
-                        setRounds([
-                          ...rounds.map((z, i) =>
-                            i === index
-                              ? {
-                                game: result,
-                                options: {
-                                  ...z.options,
-                                  ...(z.options.benchFromLastMatchMustPlay &&
-                                    i > 0 && { mustPlay: rounds[i - 1].game.bench }),
-                                },
-                              }
-                              : z
-                          ),
-                        ]);
+                      variant="contained"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleGenerate(index);
                       }}
                     >
                       Generieren
@@ -841,73 +697,32 @@ const Content = ({ payload, onClose }: DialogProps<ConstellationCreationDialogPr
                   </Box>
                 </AccordionSummary>
               </Accordion>
-              {x.game.matches.map((y, index) => (
-                <Accordion disableGutters key={index}>
+
+              {/* MATCHES ANZEIGE */}
+              {x.game.matches.map((matchData, matchIndex) => (
+                <Accordion disableGutters key={matchIndex}>
                   <AccordionSummary expandIcon={<ArrowDropDown />}>
                     <ListItem disableGutters disablePadding sx={{ '&.MuiListItem-root': { paddingLeft: 0 } }}>
                       <ListItemAvatar>
                         <Checkbox
-                          checked={x.options.fixedMatches?.includes(y) ?? false}
+                          checked={x.options.fixedMatches?.includes(matchData) ?? false}
                           onChange={(e) => {
                             e.stopPropagation();
-                            if (e.target.checked)
-                              setRounds([
-                                ...rounds.map((z, i) =>
-                                  i === index
-                                    ? {
-                                      ...z,
-                                      options: {
-                                        ...z.options,
-                                        fixedMatches: [...(z.options.fixedMatches ?? []), y],
-                                      } as MatchmakingOptions,
-                                    }
-                                    : z
-                                ),
-                              ]);
-                            else
-                              setRounds([
-                                ...rounds.map((z, i) =>
-                                  i === index
-                                    ? {
-                                      ...z,
-                                      options: {
-                                        ...z.options,
-                                        fixedMatches: z.options.fixedMatches?.filter((x) => x !== y),
-                                      } as MatchmakingOptions,
-                                    }
-                                    : z
-                                ),
-                              ]);
+                            if (e.target.checked) {
+                              updateRoundOption(index, { fixedMatches: [...(x.options.fixedMatches ?? []), matchData] });
+                            } else {
+                              updateRoundOption(index, { fixedMatches: x.options.fixedMatches?.filter((m) => m !== matchData) });
+                            }
                           }}
                         />
                       </ListItemAvatar>
                       <Box sx={{ display: 'flex', flexDirection: 'row', width: '100%', alignItems: 'center' }}>
-                        <Box
-                          sx={{
-                            display: 'flex',
-                            flexDirection: 'column',
-                            overflow: 'hidden',
-                            flexGrow: 1,
-                            minWidth: 0,
-                          }}
-                        >
-                          <Typography
-                            sx={{
-                              whiteSpace: 'nowrap',
-                              overflow: 'hidden',
-                              textOverflow: 'ellipsis',
-                            }}
-                          >
-                            {y[0].players.map((x) => x.name?.split(' ')[0] ?? x.rg_id).join(' + ')}
+                        <Box sx={{ display: 'flex', flexDirection: 'column', overflow: 'hidden', flexGrow: 1, minWidth: 0 }}>
+                          <Typography sx={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                            {matchData[0].players.map((p) => p.name?.split(' ')[0] ?? p.rg_id).join(' + ')}
                           </Typography>
-                          <Typography
-                            sx={{
-                              whiteSpace: 'nowrap',
-                              overflow: 'hidden',
-                              textOverflow: 'ellipsis',
-                            }}
-                          >
-                            {y[1].players.map((x) => x.name?.split(' ')[0] ?? x.rg_id).join(' + ')}
+                          <Typography sx={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                            {matchData[1].players.map((p) => p.name?.split(' ')[0] ?? p.rg_id).join(' + ')}
                           </Typography>
                         </Box>
                       </Box>
@@ -915,120 +730,52 @@ const Content = ({ payload, onClose }: DialogProps<ConstellationCreationDialogPr
                   </AccordionSummary>
                   <AccordionDetails>
                     <Stack direction="row" spacing={2} sx={{ width: '100%' }}>
-                      <Stack
-                        direction="column"
-                        sx={{
-                          width: '50%',
-                          minWidth: 0, // nötig für ellipsis
-                          overflow: 'hidden',
-                        }}
-                      >
-                        <Typography
-                          sx={{
-                            whiteSpace: 'nowrap',
-                            overflow: 'hidden',
-                            textOverflow: 'ellipsis',
-                          }}
-                        >
-                          {`${y[0].players[0].name} (${y[0].players[0].rg_id})`}
+                      <Stack direction="column" sx={{ width: '50%', minWidth: 0, overflow: 'hidden' }}>
+                        <Typography sx={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                          {`${matchData[0].players[0].name} (${matchData[0].players[0].rg_id})`}
                         </Typography>
-                        <Typography
-                          sx={{
-                            whiteSpace: 'nowrap',
-                            overflow: 'hidden',
-                            textOverflow: 'ellipsis',
-                          }}
-                        >
-                          {`${y[0].players[1].name} (${y[0].players[1].rg_id})`}
+                        <Typography sx={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                          {`${matchData[0].players[1].name} (${matchData[0].players[1].rg_id})`}
                         </Typography>
-                        <Typography
-                          sx={{
-                            whiteSpace: 'nowrap',
-                            overflow: 'hidden',
-                            textOverflow: 'ellipsis',
-                          }}
-                        >
-                          {`${y[0].adjustedStrength} (${y[0].strength})`}
+                        <Typography sx={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', fontWeight: 'bold' }}>
+                          Team Index: {matchData[0].strength}
                         </Typography>
                       </Stack>
-                      <Stack
-                        direction="column"
-                        sx={{
-                          width: '50%',
-                          minWidth: 0, // nötig für ellipsis
-                          overflow: 'hidden',
-                        }}
-                      >
-                        <Typography
-                          sx={{
-                            whiteSpace: 'nowrap',
-                            overflow: 'hidden',
-                            textOverflow: 'ellipsis',
-                          }}
-                        >
-                          {`${y[1].players[0].name} (${y[1].players[0].rg_id})`}
+                      <Stack direction="column" sx={{ width: '50%', minWidth: 0, overflow: 'hidden' }}>
+                        <Typography sx={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                          {`${matchData[1].players[0].name} (${matchData[1].players[0].rg_id})`}
                         </Typography>
-                        <Typography
-                          sx={{
-                            whiteSpace: 'nowrap',
-                            overflow: 'hidden',
-                            textOverflow: 'ellipsis',
-                          }}
-                        >
-                          {`${y[1].players[1].name} (${y[1].players[1].rg_id})`}
+                        <Typography sx={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                          {`${matchData[1].players[1].name} (${matchData[1].players[1].rg_id})`}
                         </Typography>
-                        <Typography
-                          sx={{
-                            whiteSpace: 'nowrap',
-                            overflow: 'hidden',
-                            textOverflow: 'ellipsis',
-                          }}
-                        >
-                          {`${y[1].adjustedStrength} (${y[1].strength})`}
+                        <Typography sx={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', fontWeight: 'bold' }}>
+                          Team Index: {matchData[1].strength}
                         </Typography>
                       </Stack>
                     </Stack>
                   </AccordionDetails>
                 </Accordion>
               ))}
+
+              {/* BENCH (AUSSETZER) ANZEIGE */}
               {x.game.bench.length > 0 && (
                 <Accordion disableGutters>
                   <AccordionSummary expandIcon={<ArrowDropDown />}>
                     <Box sx={{ display: 'flex', flexDirection: 'row', width: '100%', alignItems: 'center' }}>
-                      <Box
-                        sx={{
-                          display: 'flex',
-                          flexDirection: 'column',
-                          overflow: 'hidden',
-                          flexGrow: 1,
-                          minWidth: 0,
-                        }}
-                      >
-                        <Typography
-                          sx={{
-                            whiteSpace: 'nowrap',
-                            overflow: 'hidden',
-                            textOverflow: 'ellipsis',
-                          }}
-                        >
-                          Aussetzer
+                      <Box sx={{ display: 'flex', flexDirection: 'column', overflow: 'hidden', flexGrow: 1, minWidth: 0 }}>
+                        <Typography sx={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', fontWeight: 'bold', color: 'error.main' }}>
+                          Aussetzer ({x.game.bench.length})
                         </Typography>
-                        <Typography
-                          sx={{
-                            whiteSpace: 'nowrap',
-                            overflow: 'hidden',
-                            textOverflow: 'ellipsis',
-                          }}
-                        >
-                          {x.game.bench.map((x) => x.name).join(', ')}
+                        <Typography sx={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', color: 'text.secondary' }}>
+                          {x.game.bench.map((p) => p.name?.split(' ')[0]).join(', ')}
                         </Typography>
                       </Box>
                     </Box>
                   </AccordionSummary>
                   <AccordionDetails>
-                    {x.game.bench.map((x) => (
-                      <ListItem key={x.player} dense disableGutters sx={{ '&.MuiListItem-root': { paddingLeft: 0 } }}>
-                        <ListItemText primary={x.name} secondary={x.rg_id} />
+                    {x.game.bench.map((p) => (
+                      <ListItem key={p.player} dense disableGutters sx={{ '&.MuiListItem-root': { paddingLeft: 0 } }}>
+                        <ListItemText primary={p.name} secondary={`Index: ${p.rg_index}`} />
                       </ListItem>
                     ))}
                   </AccordionDetails>
@@ -1037,36 +784,32 @@ const Content = ({ payload, onClose }: DialogProps<ConstellationCreationDialogPr
             </AccordionDetails>
           </Accordion>
         ))}
+
+        {/* NEUE RUNDE BUTTON */}
         <ListItem
-          sx={{ '&.MuiListItem-root': { paddingLeft: 0 } }}
+          sx={{ '&.MuiListItem-root': { paddingLeft: 0, marginTop: 2 } }}
           secondaryAction={
             <Button
+              variant="outlined"
               onClick={() => {
                 if (players.length !== payload.users.length) {
-                  notifications.show('Einige Spieler haben einen ungültigen Index. Bitte passe diese an.', {
-                    severity: 'error',
-                  });
+                  notifications.show('Einige Spieler haben einen ungültigen Index. Bitte passe diese an.', { severity: 'error' });
                   return;
                 }
-                const options = {
+                const options: MatchmakingOptions = {
                   mode: 'balanced',
                   matchupMode: 'any',
                   players,
-                } as MatchmakingOptions;
-                const result = generateBalancedMatchesWithBench(options);
-                setRounds([
-                  ...rounds,
-                  {
-                    game: result,
-                    options,
-                  },
-                ]);
+                };
+                // Optionale Autogenerierung beim Erstellen der Runde:
+                // const result = generateMatches(options); 
+                setRounds([...rounds, { game: { matches: [], bench: [] }, options }]);
               }}
             >
-              Neue Runde
+              Neue Runde hinzufügen
             </Button>
           }
-        ></ListItem>
+        />
       </List>
     </>
   );

@@ -37,6 +37,7 @@ import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import { useGrants } from '../auth/GrantsContext';
 import { TransformEventDialog } from './dialogs/TransformEventDialog';
+import EventAdminInformation from './EventAdminInformation';
 
 const EventInformationProvider = () => {
   const { selectedEventId } = useParams();
@@ -227,6 +228,9 @@ const EventInformationProvider = () => {
           selectedEventPlace={selectedEventPlace}
           fetchMode={fetchMode}
         />
+        <Has perm={'event.admin.view'}>
+          <EventAdminInformation event={event} />
+        </Has>
       </PullToRefresh>
     </Layout>
   );

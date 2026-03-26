@@ -4,6 +4,7 @@ import { useGroups } from '@/tanstack/groups';
 import { EventsUserView, GroupWithUserMappings } from '@/types/supabaseTypes';
 import { postgresIntervalToDuration } from '@/utils';
 import Add from '@mui/icons-material/Add';
+import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import Close from '@mui/icons-material/Close';
 import Delete from '@mui/icons-material/Delete';
 import Group from '@mui/icons-material/Group';
@@ -19,14 +20,13 @@ import Divider from '@mui/material/Divider';
 import IconButton from '@mui/material/IconButton';
 import ListItem from '@mui/material/ListItem';
 import ListItemAvatar from '@mui/material/ListItemAvatar';
-import ListItemButton from '@mui/material/ListItemButton';
 import ListItemText from '@mui/material/ListItemText';
-import TextField from '@mui/material/TextField';
+import Stack from '@mui/material/Stack';
 import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
 import Box from '@mui/system/Box';
 import { DialogProps, useDialogs, useNotifications } from '@toolpad/core';
-import { differenceInCalendarDays, Duration, format, sub } from 'date-fns';
+import { differenceInCalendarDays, differenceInHours, Duration, format, sub } from 'date-fns';
 import { FormEvent, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { SelectGroupDialog } from './SelectGroupDialog';
@@ -81,31 +81,29 @@ const Content = ({
   const [leadTime, setLeadTime] = useState<Duration>(() =>
     postgresIntervalToDuration(toIntervalString(initialData?.lead_time))
   );
-  const [newTitle, setNewTitle] = useState<string>(() => {
+  const [newTitle, setNewTitle] = useState<string | null>(() => {
     const next = initialData?.next;
 
     if (isNextObject(next) && typeof next.title === 'string') {
       return next.title;
     }
 
-    return event.title;
+    return null;
   });
-  const [newDescription, setNewDescription] = useState<string>(() => {
+  const [newDescription, setNewDescription] = useState<string | null>(() => {
     const next = initialData?.next;
 
     if (isNextObject(next) && typeof next.description === 'string') {
       return next.description;
     }
 
-    return event.description;
+    return null;
   });
   const [newGroup, setNewGroup] = useState<Group | null>(() => {
     const next = initialData?.next;
-    let groupId;
+    let groupId = null;
     if (isNextObject(next) && typeof next.group === 'string') {
       groupId = next.group;
-    } else {
-      groupId = event.group?.id;
     }
 
     return groups.find((x) => x.id === groupId) ?? null;
@@ -207,54 +205,113 @@ const Content = ({
         </ListItem>
         <ListItem dense key={'leadTimeOfEventSeries'}>
           <ListItemAvatar sx={{ flexDirection: 'row', display: 'flex', alignItems: 'center' }}></ListItemAvatar>
-          <ListItemText
-            primary={
-              t('date-fns.diffInDaysPrior', {
-                count: differenceInCalendarDays(event.startingDateTime, sub(event.startingDateTime, leadTime)),
-              }) + format(sub(event.startingDateTime, leadTime), " 'um' HH:mm")
-            }
-            secondary={'Zu dieser Uhrzeit wird das Event geändert'}
-          />
+          {
+            leadTime.days !== 0 || leadTime.hours !== 0 && <ListItemText
+              primary={
+                t('date-fns.diffInDaysPrior', {
+                  count: differenceInCalendarDays(event.startingDateTime, sub(event.startingDateTime, leadTime)),
+                }) + format(sub(event.startingDateTime, leadTime), " 'um' HH:mm") + ` (${t('date-fns.diffInHoursPrior', {
+                  count: differenceInHours(event.startingDateTime, sub(event.startingDateTime, leadTime)),
+                })})`
+              }
+              secondary={'Zu dieser Uhrzeit wird das Event geändert, falls die Bedingung (unten) erfüllt ist'}
+            />
+          }
         </ListItem>
         <Divider sx={{ mb: 2 }} />
         <Typography sx={{ fontSize: 14, fontWeight: 'bold', m: 2 }} color="text.secondary" gutterBottom>
           Event-Titel
         </Typography>
-        <ListItem dense sx={{ pt: 0, pb: 0, mb: 2 }} key={'title2'}>
-          <TextField size="small" fullWidth value={newTitle} onChange={(e) => setNewTitle(e.target.value)} />
-        </ListItem>
+        <Stack spacing={2} direction={"row"}>
+          <Card>
+            <ListItem key={'title2'}>
+              <ListItemText primary={event.title} secondary={"Aktueller Event-Titel"} />
+            </ListItem>
+          </Card>
+          <Box sx={{ display: "flex", alignItems: "center" }}>
+            <ArrowForwardIcon />
+          </Box>
+          <Card sx={{ p: 0 }}>
+            <CardActionArea sx={{ height: "100%" }} onClick={async () => {
+              const result = await dialogs.prompt('Neuer Event Titel', {
+                title: 'Event-Titel',
+                okText: "Bestätigen",
+                cancelText: "Abbrechen"
+              });
+              if (result) {
+                setNewTitle(result)
+              }
+            }}>
+              <ListItem>
+                <ListItemText primary={newTitle ?? 'Kein neuer Titel gewählt'} secondary={newTitle ? 'Neuer Titel' : '-'} />
+              </ListItem>
+            </CardActionArea>
+          </Card>
+        </Stack>
         <Divider />
         <Typography sx={{ fontSize: 14, fontWeight: 'bold', m: 2 }} color="text.secondary" gutterBottom>
           Event-Beschreibung
         </Typography>
-        <ListItem dense sx={{ pt: 0, pb: 0, mb: 1 }} key={'eventDescription2'}>
-          <TextField
-            size="small"
-            fullWidth
-            multiline
-            value={newDescription}
-            onChange={(e) => setNewDescription(e.target.value)}
-            label="Beschreibung"
-          />
-        </ListItem>
+        <Stack key={'description'} spacing={2} direction={"row"}>
+          <Card>
+            <ListItem >
+              <ListItemText
+                primary={event.description}
+                secondary={"Aktuelle Eventbeschreibung"} />
+            </ListItem>
+          </Card>
+          <Box sx={{ display: "flex", alignItems: "center" }}>
+            <ArrowForwardIcon />
+          </Box>
+          <Card sx={{ p: 0 }}>
+            <CardActionArea sx={{ height: "100%" }} onClick={async () => {
+              const result = await dialogs.prompt('Neue Eventbeschreibung', {
+                title: 'Eventbeschreibung',
+                okText: "Bestätigen",
+                cancelText: "Abbrechen"
+              });
+              if (result) {
+                setNewDescription(result)
+              }
+            }}>
+              <ListItem>
+                <ListItemText primary={newDescription ?? 'Keine neue Beschreibung gewählt'} secondary={newDescription ? 'Neue Beschreibung' : '-'} />
+              </ListItem>
+            </CardActionArea>
+          </Card>
+        </Stack>
         <Divider />
         <Typography sx={{ fontSize: 14, fontWeight: 'bold', m: 2 }} color="text.secondary" gutterBottom>
           Event-Gruppe
         </Typography>
-        <ListItemButton
-          dense
-          sx={{ py: 0, mb: 1 }}
-          onClick={async () => {
-            const result = await dialogs.open(SelectGroupDialog);
-            if (result) {
-              setNewGroup(result);
-            }
-          }}
-          key={'group2'}
-        >
-          <ListItemAvatar>{newGroup && <Group sx={{ color: newGroup.color }} />}</ListItemAvatar>
-          <ListItemText primary={newGroup?.name ?? 'Keine Gruppe gewählt'} secondary={newGroup?.description} />
-        </ListItemButton>
+        <Stack spacing={2} direction={"row"}>
+          <Card>
+            <ListItem>
+              <ListItemAvatar sx={(t) => ({ [t.breakpoints.down('sm')]: { display: "none" } })}>{event.group && <Group sx={{ color: event.group.color }} />}</ListItemAvatar>
+              <ListItemText primary={event.group?.name} secondary={event.group?.description} />
+            </ListItem>
+          </Card>
+          <Box sx={{ display: "flex", alignItems: "center" }}>
+            <ArrowForwardIcon />
+          </Box>
+          <Card sx={{ p: 0 }}>
+            <CardActionArea sx={{ height: "100%" }} onClick={async () => {
+              const result = await dialogs.open(SelectGroupDialog);
+              if (result) {
+                setNewGroup(result);
+              }
+            }}>
+              <ListItem>
+                {
+                  newGroup && <ListItemAvatar sx={(t) => ({ [t.breakpoints.down('sm')]: { display: "none" } })}>
+                    <Group sx={{ color: newGroup.color }} />
+                  </ListItemAvatar>
+                }
+                <ListItemText primary={newGroup?.name ?? 'Keine Gruppe gewählt'} secondary={newGroup?.description ?? ' - '} />
+              </ListItem>
+            </CardActionArea>
+          </Card>
+        </Stack>
         <Divider />
         <Typography sx={{ fontSize: 14, fontWeight: 'bold', m: 2 }} color="text.secondary" gutterBottom>
           Anmelden Deadline entfernen?
@@ -325,38 +382,42 @@ const Content = ({
         >
           <ListItemText primary={'Teilnehmer weniger als'} />
         </ListItem>
-        <Divider />
-        <Typography sx={{ fontSize: 16, fontWeight: 'bold', m: 2 }} color="text.secondary" gutterBottom>
-          Löschen
-        </Typography>
-        <Card sx={{ color: 'red', borderRadius: 2, py: 0, px: 0, m: 1 }}>
-          <CardActionArea sx={{ px: 1 }}>
-            <ListItem
-              onClick={() =>
-                dialogs.confirm('Wirklich löschen?').then((result) => {
-                  if (result) {
-                    deleteMutation.mutate({ eventKey: event.key }, {
-                      onError: (error) => {
-                        const message = error instanceof Error ? (error as Error).message : 'Unknown error.';
-                        notifications.show(message, { severity: 'error' });
-                      },
-                      onSuccess: () => {
-                        notifications.show('Die Eventreihe wurde erfolgreich gelöscht.', { severity: 'success' });
-                        onClose('success');
+        {
+          initialData && <>
+            <Divider />
+            <Typography sx={{ fontSize: 16, fontWeight: 'bold', m: 2 }} color="text.secondary" gutterBottom>
+              Löschen
+            </Typography>
+            <Card sx={{ color: 'red', borderRadius: 2, py: 0, px: 0, m: 1 }}>
+              <CardActionArea sx={{ px: 1 }}>
+                <ListItem
+                  onClick={() =>
+                    dialogs.confirm('Wirklich löschen?').then((result) => {
+                      if (result) {
+                        deleteMutation.mutate({ eventKey: event.key }, {
+                          onError: (error) => {
+                            const message = error instanceof Error ? (error as Error).message : 'Unknown error.';
+                            notifications.show(message, { severity: 'error' });
+                          },
+                          onSuccess: () => {
+                            notifications.show('Die Eventreihe wurde erfolgreich gelöscht.', { severity: 'success' });
+                            onClose('success');
+                          }
+                        });
                       }
-                    });
+                    })
                   }
-                })
-              }
-            >
-              <ListItemAvatar sx={{ flexDirection: 'row', display: 'flex', alignItems: 'center' }}>
-                <Delete />
-              </ListItemAvatar>
-              <ListItemText primary="Löschen" />
-            </ListItem>
-          </CardActionArea>
-        </Card>
+                >
+                  <ListItemAvatar sx={{ flexDirection: 'row', display: 'flex', alignItems: 'center' }}>
+                    <Delete />
+                  </ListItemAvatar>
+                  <ListItemText primary="Löschen" />
+                </ListItem>
+              </CardActionArea>
+            </Card>
+          </>
+        }
       </Box>
-    </Dialog>
+    </Dialog >
   );
 };

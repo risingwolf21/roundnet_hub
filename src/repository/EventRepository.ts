@@ -4,7 +4,7 @@ import { PostgrestSingleResponse } from '@supabase/supabase-js';
 import { add, Duration, startOfDay } from 'date-fns';
 import { EventTable } from 'types/supabase';
 import { Tables, TablesInsert, TablesUpdate } from '../types/supabase-generated.types';
-import { EventsUserView, EventWithGroup, FullComment } from '../types/supabaseTypes';
+import { EventWithGroup, FullComment } from '../types/supabaseTypes';
 
 export const fetchEvents = () =>
   supabase

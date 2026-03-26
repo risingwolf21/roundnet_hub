@@ -164,6 +164,11 @@ export const roundnet_karlsruhe_theme = createTheme({
         },
       },
     },
+    "MuiAppBar": {
+      "defaultProps": {
+        "elevation": 0
+      }
+    },
     MuiCard: {
       styleOverrides: {
         root: {
@@ -221,21 +226,166 @@ export const roundnet_karlsruhe_theme = createTheme({
         },
       ],
     },
+    "MuiSwitch": {
+      "styleOverrides": {
+        "root": {
+          "width": 42,
+          "height": 26,
+          "padding": 0,
+          "marginLeft": 12,
+          "marginRight": 8,
+          "borderColor": "#847374",
+          "& .MuiSwitch-switchBase": {
+            "padding": 0,
+            "margin": 7,
+            "transitionDuration": "100ms",
+            "&.Mui-checked": {
+              "transform": "translateX(16px)",
+              "margin": 4,
+              "& + .MuiSwitch-track": {
+                "backgroundColor": "#a23950",
+                "opacity": 1,
+                "border": 0
+              },
+              "& .MuiSwitch-thumb": {
+                "color": "#ffffff",
+                "width": 18,
+                "height": 18
+              },
+              "&.Mui-disabled + .MuiSwitch-track": {
+                "backgroundColor": "rgba(32, 26, 27, 0.1)"
+              },
+              "&.Mui-disabled .MuiSwitch-thumb": {
+                "color": "rgba(255, 248, 247, 0.8)"
+              }
+            },
+            "&.Mui-focusVisible .MuiSwitch-thumb": {
+              "color": "#a23950",
+              "border": "6px solid #ffffff"
+            },
+            "&.Mui-disabled .MuiSwitch-thumb": {
+              "color": "rgba(32, 26, 27, 0.3)"
+            }
+          },
+          "& .MuiSwitch-thumb": {
+            "boxSizing": "border-box",
+            "color": "#847374",
+            "width": 12,
+            "height": 12,
+            "&:before": {
+              "content": "''",
+              "position": "absolute",
+              "width": "100%",
+              "height": "100%",
+              "left": 0,
+              "top": 0,
+              "backgroundRepeat": "no-repeat",
+              "backgroundPosition": "center"
+            }
+          },
+          "& .MuiSwitch-track": {
+            "borderRadius": 20,
+            "border": "2px solid #847374",
+            "backgroundColor": "#ece0e0",
+            "opacity": 1,
+            "transition": "background .2s"
+          }
+        }
+      }
+    },
+    "MuiListItem": {
+      "styleOverrides": {
+        "root": {
+          "paddingTop": 1,
+          "paddingBottom": 1,
+          "& .MuiListItemButton-root": {
+            "paddingTop": 8,
+            "paddingBottom": 8
+          }
+        }
+      }
+    },
+    "MuiListItemButton": {
+      "styleOverrides": {
+        "root": {
+          "borderRadius": 50,
+          "color": "#49454e",
+          "&:hover": {
+            "backgroundColor": "#e1dce1",
+            "color": "#45424a"
+          },
+          "&:active": {
+            "backgroundColor": "#d6d2d8",
+            "color": "#444048"
+          },
+          "&.Mui-selected": {
+            "color": "#1e192b",
+            "background": "#e8def8",
+            "& > .MuiListItemText-root > .MuiTypography-root": {
+              "fontWeight": "bold"
+            },
+            "&:hover": {
+              "backgroundColor": "#d4cbe4",
+              "color": "#2d283a"
+            },
+            "&:active": {
+              "backgroundColor": "#cbc1da",
+              "color": "#342f42"
+            }
+          }
+        }
+      }
+    },
+    "MuiListItemIcon": {
+      "styleOverrides": {
+        "root": {
+          "color": "inherit",
+          "minWidth": 32,
+          "&.Mui-selected": {
+            "fontWeight": "bold"
+          }
+        }
+      }
+    },
   },
   palette: {
     primary: {
       main: '#005b4a',
-      light: '#66bb6a',
+      light: '#337B6E',
+      dark: '#003F33',
       contrastText: '#ffffff',
     },
     secondary: {
       main: '#590a00',
+      light: '#7A3B33',
+      dark: '#3E0700',
       contrastText: '#ffffff',
     },
     error: {
-      main: '#ba1a1a',
+      main: '#D32F2F',
+      light: '#EF5350',
+      dark: '#C62828',
       contrastText: '#ffffff',
     },
+    warning: {
+      main: '#ed6c02',
+      light: '#ff9800',
+      dark: '#e65100',
+      contrastText: '#fff'
+    },
+    info: {
+      main: '#0288d1',
+      light: '#03a9f4',
+      dark: '#01579b',
+      contrastText: '#fff'
+    },
+    success: {
+      main: '#2e7d32',
+      light: '#4caf50',
+      dark: '#1b5e20',
+      contrastText: '#fff'
+    },
+    divider: 'rgba(0,0,0,0.12)',
     mode: 'light',
   },
 });

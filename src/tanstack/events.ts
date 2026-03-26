@@ -22,6 +22,7 @@ export const eventKeys = {
   eventMatches: (id?: string) => [...eventKeys.event(id), 'matches'] as const,
   recurring: () => [...eventKeys.all, 'recurring'] as const,
   eventTranformation: (eventKey: string) => [...eventKeys.all, 'transformation', eventKey] as const,
+  eventTranformationApplication: (event: string) => [...eventKeys.all, 'transformation-application', event] as const,
 };
 
 export const fetchFullEventPledges = (eventId: string) =>
@@ -138,6 +139,20 @@ export const useEventTransformation = (eventKey: string, open: boolean) =>
       return result.data;
     },
   });
+
+export const useEventTransformationApplication = (event: string) =>
+  useQuery({
+    queryKey: eventKeys.eventTranformationApplication(event),
+    queryFn: async () => {
+      const result = await supabase
+        .schema("public")
+        .from("event_transformation_applications")
+        .select("*")
+        .eq("event", event)
+        .maybeSingle();
+      return result.data;
+    }
+  })
 
 export const useDeleteEventTransformation = () =>
   useMutation({

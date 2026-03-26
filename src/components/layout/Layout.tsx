@@ -88,7 +88,7 @@ const Layout = ({
             top: 0,
           })}
         >
-          <Toolbar disableGutters sx={{ px: 2 }}>
+          <Toolbar disableGutters sx={{ px: 2, pr: 1 }}>
             {navigateBackPath ? (
               <IconButton
                 color="inherit"
@@ -124,6 +124,7 @@ const Layout = ({
                 <Typography variant="h6" sx={{ flexGrow: 1, overflow: 'hidden', textOverflow: 'ellipsis' }}>
                   {title}
                 </Typography>
+                {appBarActions}
                 {/* Profile */}
                 {showProfile && user && (
                   <IconButton
@@ -141,7 +142,6 @@ const Layout = ({
                     )}
                   </IconButton>
                 )}
-                {appBarActions}
               </>
             )}
           </Toolbar>

@@ -12,11 +12,11 @@ const iconMap = {
   'munich-roundnet': '🏐',
 };
 
-const logo = logoMap[(import.meta.env.VITE_WEBSITE_PATH as keyof typeof logoMap) || 'roundnet-karlsruhe'];
+export const TENANT_LOGO = logoMap[(import.meta.env.VITE_WEBSITE_PATH as keyof typeof logoMap) || 'roundnet-karlsruhe'];
 const icon = iconMap[(import.meta.env.VITE_WEBSITE_PATH as keyof typeof iconMap) || 'roundnet-karlsruhe'];
 
 export const BRANDING = {
-  logo: <img src={logo} alt="MUI logo" style={{ height: 96, objectFit: 'contain' }} />,
+  logo: <img src={TENANT_LOGO} alt="MUI logo" style={{ height: 96, objectFit: 'contain' }} />,
   title: import.meta.env.VITE_WEBSITE_NAME,
   icon: icon,
 };

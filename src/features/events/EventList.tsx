@@ -1,3 +1,4 @@
+import Layout from '@/components/layout/Layout';
 import { PullToRefresh } from '@/components/pull-to-refresh/PullToRefresh';
 import { useFetchMode } from '@/hooks/useFetchMode';
 import { Has } from '@/hooks/useGrants';
@@ -6,7 +7,7 @@ import { useEvents, useUpdateAttendanceMutation } from '@/tanstack/events';
 import { EventsUserView } from '@/types/supabaseTypes';
 import { EventRepeat, FilterAlt } from '@mui/icons-material';
 import AddIcon from '@mui/icons-material/Add';
-import { Button, Fab, List, ListSubheader, Typography } from '@mui/material';
+import { Button, Fab, IconButton, List, ListSubheader, Typography } from '@mui/material';
 import { Stack } from '@mui/system';
 import { withProfiler } from '@sentry/react';
 import { useDialogs } from '@toolpad/core';
@@ -53,19 +54,6 @@ const EventScreen = () => {
     </Has>
   );
 
-  const filterFab = !isLoading && (
-    <Fab
-      key="filter"
-      color={'secondary'}
-      onClick={async () => {
-        const result = await dialogs.open(FilterEventListDialog, { currentFetchMode: fetchMode });
-        setFetchMode(result);
-      }}
-    >
-      {<FilterAlt sx={{ color: 'white' }} />}
-    </Fab>
-  );
-
   if (isLoading) {
     return (
       <List>
@@ -96,7 +84,6 @@ const EventScreen = () => {
           spacing={2}
           sx={{ position: 'fixed', bottom: 'max(16px, env(safe-area-inset-bottom))', right: '16px' }}
         >
-          {filterFab}
           {createEventFab}
         </Stack>
       </Stack>
@@ -104,65 +91,74 @@ const EventScreen = () => {
   }
 
   return (
-    <PullToRefresh onRefresh={() => refetch()}>
-      <List>
-        {Object.entries(groupBy(events, (x) => startOfISOWeek(x.startingDateTime))).map(
-          ([key, value]: [string, EventsUserView[]]) => (
-            <List
-              subheader={
-                <ListSubheader sx={{ fontWeight: 'bold' }} key={key}>
-                  {getISOWeek(key) === getISOWeek(new Date())
-                    ? 'Diese Woche'
-                    : getISOWeek(key) === getISOWeek(new Date()) + 1
-                      ? 'Nächste Woche'
-                      : format(key, 'dd.MM.yyyy') + ' - ' + format(endOfISOWeek(key), 'dd.MM.yyyy')}
-                </ListSubheader>
-              }
-              key={key}
-            >
-              {value.map((event: EventsUserView) => (
-                <EventItem
-                  key={event.id}
-                  event={event}
-                  t={t}
-                  attendanceUpdating={updateAttendance.isPending && updateAttendance.context?.event.id === event.id}
-                  attendEvent={() => {
-                    updateAttendance.mutate({ event, user, newState: 'Attending' });
-                    sendMetricsToSentry('event_attend_from_list', 1);
-                  }}
-                  declineEvent={() => {
-                    updateAttendance.mutate({ event, user, newState: 'Declined' });
-                    sendMetricsToSentry('event_decline_from_list', 1);
-                  }}
-                  onClick={() => {
-                    navigate('/training/event/' + event.id);
-                  }}
-                />
-              ))}
-            </List>
-          )
-        )}
-
-        <Stack
-          direction={'row-reverse'}
-          spacing={2}
-          sx={{ position: 'fixed', bottom: 'max(16px, env(safe-area-inset-bottom))', right: '16px', zIndex: 1 }}
-        >
-          {filterFab}
-          {createEventFab}
-          <Has perm={'event.edit'}>
-            <Fab
-              hidden={isLoading}
-              key="updateEvent"
-              color={'secondary'}
-              onClick={() => navigate('/training/recurringEvents')}
-            >
-              {<EventRepeat sx={{ color: 'white' }} />}
-            </Fab>
+    <Layout appBarActions={
+      <>
+        {
+          !isLoading && <IconButton onClick={async () => {
+            const result = await dialogs.open(FilterEventListDialog, { currentFetchMode: fetchMode });
+            setFetchMode(result);
+          }}>
+            <FilterAlt sx={{ color: 'white' }} />
+          </IconButton>
+        }
+        {
+          !isLoading && <Has perm={'event.edit'}>
+            <IconButton onClick={() => navigate('/training/recurringEvents')}>
+              <EventRepeat sx={{ color: 'white' }} />
+            </IconButton>
           </Has>
-        </Stack>
-      </List>
-    </PullToRefresh>
+        }
+      </>
+    }>
+      <PullToRefresh onRefresh={() => refetch()}>
+        <List>
+          {Object.entries(groupBy(events, (x) => startOfISOWeek(x.startingDateTime))).map(
+            ([key, value]: [string, EventsUserView[]]) => (
+              <List
+                subheader={
+                  <ListSubheader sx={{ fontWeight: 'bold' }} key={key}>
+                    {getISOWeek(key) === getISOWeek(new Date())
+                      ? 'Diese Woche'
+                      : getISOWeek(key) === getISOWeek(new Date()) + 1
+                        ? 'Nächste Woche'
+                        : format(key, 'dd.MM.yyyy') + ' - ' + format(endOfISOWeek(key), 'dd.MM.yyyy')}
+                  </ListSubheader>
+                }
+                key={key}
+              >
+                {value.map((event: EventsUserView) => (
+                  <EventItem
+                    key={event.id}
+                    event={event}
+                    t={t}
+                    attendanceUpdating={updateAttendance.isPending && updateAttendance.context?.event.id === event.id}
+                    attendEvent={() => {
+                      updateAttendance.mutate({ event, user, newState: 'Attending' });
+                      sendMetricsToSentry('event_attend_from_list', 1);
+                    }}
+                    declineEvent={() => {
+                      updateAttendance.mutate({ event, user, newState: 'Declined' });
+                      sendMetricsToSentry('event_decline_from_list', 1);
+                    }}
+                    onClick={() => {
+                      navigate('/training/event/' + event.id);
+                    }}
+                  />
+                ))}
+              </List>
+            )
+          )}
+
+          <Stack
+            direction={'row-reverse'}
+            spacing={2}
+            sx={{ position: 'fixed', bottom: 'max(16px, env(safe-area-inset-bottom))', right: '16px', zIndex: 1 }}
+          >
+            {createEventFab}
+          </Stack>
+        </List>
+      </PullToRefresh>
+    </Layout>
   );
 };
 

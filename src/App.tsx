@@ -15,8 +15,8 @@ import { useRegisterSW } from 'virtual:pwa-register/react';
 import AuthLayout from './components/layout/AuthLayout';
 import { AuthGate } from './features/auth/AuthGate';
 import { customEnLocale } from './lib/date-fns';
-import { munich_roundnet_theme } from './themes/munich_roundnet_theme';
-import { roundnet_karlsruhe_theme } from './themes/roundnet_karlsruhe_theme';
+import { munich_roundnet_theme } from './theme/munich_roundnet_theme';
+import { roundnet_karlsruhe_theme } from './theme/roundnet_karlsruhe_theme';
 import { BRANDING } from './utils';
 
 const themeMap = {
@@ -43,7 +43,7 @@ const ServiceWorkerGate = ({ children }: PropsWithChildren) => {
           if (isUpdating) {
             return;
           }
-          
+
           try {
             isUpdating = true;
             await registration.update();

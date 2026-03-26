@@ -5,7 +5,10 @@
   "date-fns": {
     "diffInDaysPrior_zero": "Am selben Tag",
     "diffInDaysPrior_one": "{{count}} Tag davor",
-    "diffInDaysPrior_other": "{{count}} Tage davor"
+    "diffInDaysPrior_other": "{{count}} Tage davor",
+    "diffInHoursPrior_zero": "Am selben Tag",
+    "diffInHoursPrior_one": "{{count}} Stunde zuvor",
+    "diffInHoursPrior_other": "{{count}} Stunden zuvor"
   },
   "attendees": "Teilnehmer",
   "browse": {

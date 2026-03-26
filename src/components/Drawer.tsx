@@ -1,32 +1,49 @@
 import { useGrants } from '@/features/auth/GrantsContext';
+import { Feature, Permission } from '@/generated/supabase-types';
 import { Has } from '@/hooks/useGrants';
 import { queryClient } from '@/lib/queryClient';
 import { useRequestedUsersPerGroup } from '@/tanstack/groups';
 import { useAllNotifications } from '@/tanstack/notifications';
 import { iOS } from '@/utils';
+import { argbFromHex, Blend, hexFromArgb } from "@material/material-color-utilities";
 import Analytics from '@mui/icons-material/Analytics';
+import AnalyticsOutlined from '@mui/icons-material/AnalyticsOutlined';
 import EmojiEvents from '@mui/icons-material/EmojiEvents';
+import EmojiEventsOutlined from '@mui/icons-material/EmojiEventsOutlined';
 import Euro from '@mui/icons-material/Euro';
+import EuroOutlined from '@mui/icons-material/EuroOutlined';
 import Group from '@mui/icons-material/Group';
 import Groups from '@mui/icons-material/Groups';
+import GroupsOutlined from '@mui/icons-material/GroupsOutlined';
 import HelpIcon from '@mui/icons-material/Help';
+
 import History from '@mui/icons-material/History';
+import HistoryOutlined from '@mui/icons-material/HistoryOutlined';
 import Home from '@mui/icons-material/Home';
+import HomeOutlined from '@mui/icons-material/HomeOutlined';
 import InfoOutlined from '@mui/icons-material/InfoOutlined';
-import InstallDesktop from '@mui/icons-material/InstallDesktop';
 import Key from '@mui/icons-material/Key';
+import KeyOutlined from '@mui/icons-material/KeyOutlined';
 import LeaderboardIcon from '@mui/icons-material/Leaderboard';
+import LeaderboardOutlined from '@mui/icons-material/LeaderboardOutlined';
 import Liquor from '@mui/icons-material/Liquor';
+import LiquorOutlined from '@mui/icons-material/LiquorOutlined';
 import Notifications from '@mui/icons-material/Notifications';
+import NotificationsOutlined from '@mui/icons-material/NotificationsOutlined';
 import Person from '@mui/icons-material/Person';
+import PersonOutlined from '@mui/icons-material/PersonOutlined';
 import Scoreboard from '@mui/icons-material/Scoreboard';
+import ScoreboardOutlined from '@mui/icons-material/ScoreboardOutlined';
 import SendIcon from '@mui/icons-material/Send';
+import SendOutlined from '@mui/icons-material/SendOutlined';
 import SportsHandball from '@mui/icons-material/SportsHandball';
+import SportsHandballOutlined from '@mui/icons-material/SportsHandballOutlined';
+import Storage from '@mui/icons-material/Storage';
 import StorageOutlined from '@mui/icons-material/StorageOutlined';
 import Update from '@mui/icons-material/Update';
 import ViewStreamIcon from '@mui/icons-material/ViewStream';
-import { alpha, BoxProps, CircularProgress, ListItemProps, useMediaQuery, useTheme } from '@mui/material';
-import Badge from '@mui/material/Badge';
+import ViewStreamOutlined from '@mui/icons-material/ViewStreamOutlined';
+import { BoxProps, CircularProgress, ListItemButton, Typography, useMediaQuery, useTheme } from '@mui/material';
 import Box from '@mui/material/Box';
 import Divider from '@mui/material/Divider';
 import List from '@mui/material/List';
@@ -36,13 +53,11 @@ import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import ListSubheader from '@mui/material/ListSubheader';
 import SwipeableDrawer from '@mui/material/SwipeableDrawer';
-import Typography from '@mui/material/Typography';
 import { styled } from '@mui/system';
 import { TFunction } from 'i18next';
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router';
-import { InstallPWA } from './PwaInstallPromp';
 
 export const drawerWidth = 360;
 
@@ -52,46 +67,56 @@ type Props = {
   onOpen: () => void;
 };
 
-interface StyledDrawerItemProps extends ListItemProps {
-  selected?: boolean;
+export enum StateLayer {
+  Hover = 0.08,
+  Focus = 0.12,
+  Press = 0.121,
+  Drag = 0.16,
 }
 
-const DrawerItem = styled(ListItem, {
-  shouldForwardProp: (prop) => prop !== 'selected',
-})<StyledDrawerItemProps>(({ theme, selected = false }) => ({
-  borderRadius: 28,
-  height: 56,
-  marginRight: 12,
-  marginLeft: 12,
-  width: 'unset',
-  cursor: 'pointer',
-  backgroundPosition: 'center',
-  transition: 'background 0.2s',
+export const getStateLayerColor = (state: StateLayer, containerColor: string, contentColor: string) => {
+  return hexFromArgb(
+    Blend.cam16Ucs(
+      argbFromHex(containerColor),
+      argbFromHex(contentColor),
+      state
+    )
+  );
+}
+
+const DrawerItem = styled(ListItemButton)(({ theme }) => ({
+  borderRadius: 50,
+  color: theme.palette.secondary,
   '&:hover': {
-    background: alpha('#808080', 0.2),
+    backgroundColor: getStateLayerColor(StateLayer.Hover, '#F2F4F1', '#191C1B'),
+    color: getStateLayerColor(StateLayer.Hover, '#3F4945', '#191C1B')
   },
   '&:active': {
-    backgroundColor: 'unset',
+    backgroundColor: getStateLayerColor(StateLayer.Press, '#F2F4F1', '#072019'),
+    color: getStateLayerColor(StateLayer.Press, '#3F4945', '#191C1B')
   },
-  '& .MuiListItemSecondaryAction-root': {
-    right: 24,
+  '&.Mui-selected': {
+    color: '#072019',
+    background: '#CDE9DE',
+    '& > .MuiListItemText-root > .MuiTypography-root': {
+      fontWeight: 'bold'
+    },
+    '&:hover': {
+      backgroundColor: getStateLayerColor(StateLayer.Hover, '#CDE9DE', '#072019'),
+      color: getStateLayerColor(StateLayer.Hover, '#072019', '#CDE9DE')
+    },
+    '&:active': {
+      backgroundColor: getStateLayerColor(StateLayer.Press, '#CDE9DE', '#072019'),
+      color: getStateLayerColor(StateLayer.Press, '#072019', '#CDE9DE')
+    },
   },
   '& .MuiListItemAvatar-root': {
     display: 'flex',
-    width: '28px',
-    height: '28px',
-    marginRight: '12px',
-    minWidth: 'unset',
+    verticalAlign: "center"
   },
   '& .MuiListItemIcon-root': {
     alignItems: 'center',
   },
-  ...(selected && {
-    backgroundColor: alpha(theme.palette.secondary.main, 0.16),
-    '&:hover': {
-      backgroundColor: alpha(theme.palette.secondary.main, 0.3),
-    },
-  }),
 }));
 
 const DrawerBox = styled(Box)<BoxProps>(() => ({
@@ -105,6 +130,27 @@ const DrawerBox = styled(Box)<BoxProps>(() => ({
   overflow: 'auto',
 }));
 
+type DrawerCategoryType = {
+  key: string
+  header?: string
+  permission?: {
+    any?: boolean
+    perm?: Permission | Permission[];
+    feat?: Feature | Feature[];
+  }
+  children: {
+    title: string
+    icon: React.ReactNode
+    outlinedIcon: React.ReactNode
+    secondaryAction?: React.ReactNode
+    path: string
+    permission?: {
+      any?: boolean
+      perm?: Permission | Permission[];
+      feat?: Feature | Feature[];
+    }
+  }[]
+}
 
 type DrawerContentProps = {
   tab: string;
@@ -126,414 +172,294 @@ const DrawerContent = ({
   update_app,
   isUpdating
 }: DrawerContentProps) => {
-  return (
-    <DrawerBox>
-      <List>
-        {
-          <Has feat={['drinks', 'events', 'items']} any>
-            <DrawerItem key="homepage" selected={tab === 'home'} onClick={() => handleChange('home')}>
-              <ListItemAvatar>
-                <ListItemIcon>
-                  <Home />
-                </ListItemIcon>
-              </ListItemAvatar>
-              <ListItemText primaryTypographyProps={{ fontWeight: 'bold', fontSize: '0.9rem' }} primary={'Home'} />
-            </DrawerItem>
-          </Has>
-        }
-        {
-          <DrawerItem key="user" selected={tab === 'user'} onClick={() => handleChange('user')}>
-            <ListItemAvatar>
-              <ListItemIcon>
-                <Person />
-              </ListItemIcon>
-            </ListItemAvatar>
-            <ListItemText primaryTypographyProps={{ fontWeight: 'bold', fontSize: '0.9rem' }} primary={'Account'} />
-          </DrawerItem>
-        }
 
-        <InstallPWA
-          element={(onClick) => (
-            <DrawerItem key="installPWA" selected={false} onClick={onClick}>
-              <ListItemAvatar>
-                <ListItemIcon>
-                  <InstallDesktop />
-                </ListItemIcon>
-              </ListItemAvatar>
-              <ListItemText
-                primaryTypographyProps={{ fontWeight: 'bold', fontSize: '0.9rem' }}
-                primary={'Installieren'}
-              />
-            </DrawerItem>
-          )}
-        />
-      </List>
-      <Divider />
-      <Has feat={'drinks'}>
-        <List
-          key="drinkList"
-          subheader={
-            <ListSubheader
-              disableSticky
-              sx={{
-                zIndex: '-1',
-                fontWeight: 'bold',
-                lineHeight: 'normal',
-                my: 2,
-                mx: 2,
-                backgroundColor: '#f2ecf1',
-              }}
-            >
-              {t('navigation.drinks')}
-            </ListSubheader>
+  const categories: DrawerCategoryType[] = [
+    {
+      key: "headerList",
+      children: [
+        {
+          title: "Home",
+          icon: <Home />,
+          outlinedIcon: <HomeOutlined />,
+          path: 'home',
+          permission: {
+            any: true,
+            feat: ['drinks', 'events', 'items']
           }
-        >
-          <Has perm={'drinks.select'}>
-            <DrawerItem key="drinks" selected={tab === 'drinks/list'} onClick={() => handleChange('drinks/list')}>
-              <ListItemAvatar>
-                <ListItemIcon>
-                  <Liquor />
-                </ListItemIcon>
-              </ListItemAvatar>
-              <ListItemText
-                primaryTypographyProps={{ fontWeight: 'bold', fontSize: '0.9rem' }}
-                primary={t('navigation.drinks')}
-              />
-            </DrawerItem>
-          </Has>
-          <Has perm={'drinks.view.own-history'}>
-            <DrawerItem
-              key="history"
-              selected={tab === 'drinks/history'}
-              onClick={() => handleChange('drinks/history')}
-            >
-              <ListItemAvatar>
-                <ListItemIcon>
-                  <History />
-                </ListItemIcon>
-              </ListItemAvatar>
-              <ListItemText
-                primaryTypographyProps={{ fontWeight: 'bold', fontSize: '0.9rem' }}
-                primary={t('browse.history')}
-              />
-            </DrawerItem>
-          </Has>
-          <Has perm={'drinks.view.own-payments'}>
-            <DrawerItem
-              key="payments"
-              selected={tab === 'drinks/payments'}
-              onClick={() => handleChange('drinks/payments')}
-            >
-              <ListItemAvatar>
-                <ListItemIcon>
-                  <Euro />
-                </ListItemIcon>
-              </ListItemAvatar>
-              <ListItemText
-                primaryTypographyProps={{ fontWeight: 'bold', fontSize: '0.9rem' }}
-                primary={t('browse.payment')}
-              />
-            </DrawerItem>
-          </Has>
-          <Divider />
-        </List>
-      </Has>
-
-      <List key="mainList">
-        <Has feat={'events'}>
-          <DrawerItem key="events" selected={tab === 'training/list'} onClick={() => handleChange('training/list')}>
-            <ListItemAvatar>
-              <ListItemIcon>
-                <SportsHandball />
-              </ListItemIcon>
-            </ListItemAvatar>
-            <ListItemText
-              primaryTypographyProps={{ fontWeight: 'bold', fontSize: '0.9rem' }}
-              primary={t('navigation.training')}
-            />
-          </DrawerItem>
-        </Has>
-        <DrawerItem
-          key="groups"
-          selected={tab === 'groups/list'}
-          onClick={() => handleChange('groups/list')}
-          secondaryAction={
-            <Typography fontWeight={'bold'} fontSize={'0.9rem'}>
-              {request_group_joins || ''}
-            </Typography>
+        },
+        {
+          title: "Account",
+          icon: <Person />,
+          outlinedIcon: <PersonOutlined />,
+          path: 'user'
+        }
+      ]
+    },
+    {
+      header: t('navigation.drinks'),
+      key: "drinksList",
+      permission: {
+        feat: 'drinks'
+      },
+      children: [
+        {
+          title: t('navigation.drinks'),
+          icon: <Liquor />,
+          outlinedIcon: <LiquorOutlined />,
+          path: 'drinks/list',
+          permission: {
+            perm: 'drinks.select'
           }
-        >
-          <ListItemAvatar>
-            <ListItemIcon>
-              <Badge color={'secondary'} variant={'dot'} badgeContent={request_group_joins}>
-                <Groups />
-              </Badge>
-            </ListItemIcon>
-          </ListItemAvatar>
-          <ListItemText
-            primaryTypographyProps={{ fontWeight: 'bold', fontSize: '0.9rem' }}
-            primary={t('navigation.groups')}
-          />
-        </DrawerItem>
-        <Has feat={'games'}>
-          <DrawerItem key="matches" selected={tab === 'matches/list'} onClick={() => handleChange('matches/list')}>
-            <ListItemAvatar>
-              <ListItemIcon>
-                <Scoreboard />
-              </ListItemIcon>
-            </ListItemAvatar>
-            <ListItemText
-              primaryTypographyProps={{ fontWeight: 'bold', fontSize: '0.9rem' }}
-              primary={t('navigation.matches')}
-            />
-          </DrawerItem>
-          <DrawerItem key={"leaderboard"} selected={tab === 'matches/leaderboard'} onClick={() => handleChange('matches/leaderboard')}>
-            <ListItemAvatar>
-              <ListItemIcon>
-                <LeaderboardIcon />
-              </ListItemIcon>
-            </ListItemAvatar>
-            <ListItemText
-              primaryTypographyProps={{ fontWeight: 'bold', fontSize: '0.9rem' }}
-              primary={t('navigation.leaderboard')}
-            />
-          </DrawerItem>
-        </Has>
-        <Has feat={'challenges'}>
-          <DrawerItem key="challenges" selected={tab === 'challenges/list'} onClick={() => handleChange('challenges')}>
-            <ListItemAvatar>
-              <ListItemIcon>
-                <EmojiEvents />
-              </ListItemIcon>
-            </ListItemAvatar>
-            <ListItemText
-              primaryTypographyProps={{ fontWeight: 'bold', fontSize: '0.9rem' }}
-              primary={t('navigation.challenges')}
-            />
-          </DrawerItem>
-        </Has>
-        <Has feat={'items'}>
-          <DrawerItem key="keys" selected={tab === 'keys'} onClick={() => handleChange('keys')}>
-            <ListItemAvatar>
-              <ListItemIcon>
-                <Key />
-              </ListItemIcon>
-            </ListItemAvatar>
-            <ListItemText
-              primaryTypographyProps={{ fontWeight: 'bold', fontSize: '0.9rem' }}
-              primary={t('browse.keys')}
-            />
-          </DrawerItem>
-        </Has>
-        <DrawerItem
-          key="notifications"
-          selected={tab === 'notifications'}
-          onClick={() => handleChange('notifications')}
-          secondaryAction={
-            <Typography fontWeight={'bold'} fontSize={'0.9rem'}>
-              {notification_count || ''}
-            </Typography>
+        },
+        {
+          title: t('browse.history'),
+          icon: <History />,
+          outlinedIcon: <HistoryOutlined />,
+          path: 'drinks/history',
+          permission: {
+            perm: 'drinks.view.own-history'
           }
-        >
-          <ListItemAvatar>
-            <ListItemIcon>
-              <Badge color={'secondary'} variant={'dot'} badgeContent={notification_count}>
-                <Notifications />
-              </Badge>
-            </ListItemIcon>
-          </ListItemAvatar>
-          <ListItemText
-            primaryTypographyProps={{ fontWeight: 'bold', fontSize: '0.9rem' }}
-            primary={t('browse.notifications')}
-          />
-        </DrawerItem>
-      </List>
-      <Has
-        perm={[
+        },
+        {
+          title: t('browse.payment'),
+          icon: <Euro />,
+          outlinedIcon: <EuroOutlined />,
+          path: 'drinks/payments',
+          permission: {
+            perm: 'drinks.view.own-payments'
+          }
+        }
+      ]
+    },
+    {
+      key: "mainList",
+      children: [
+        {
+          title: t('navigation.training'),
+          icon: <SportsHandball />,
+          outlinedIcon: <SportsHandballOutlined />,
+          path: 'training/list',
+          permission: {
+            feat: 'events'
+          }
+        },
+        {
+          title: t('navigation.groups'),
+          icon: <Groups />,
+          outlinedIcon: <GroupsOutlined />,
+          path: 'groups/list',
+          secondaryAction: <Typography fontWeight={'bold'} fontSize={'0.9rem'}>
+            {
+              request_group_joins || ''
+            }
+          </Typography >
+        },
+        {
+          title: t('navigation.matches'),
+          icon: <Scoreboard />,
+          outlinedIcon: <ScoreboardOutlined />,
+          path: 'matches/list',
+          permission: {
+            feat: 'games'
+          }
+        },
+        {
+          title: t('navigation.leaderboard'),
+          icon: <LeaderboardIcon />,
+          outlinedIcon: <LeaderboardOutlined />,
+          path: 'matches/leaderboard',
+          permission: {
+            feat: 'games'
+          }
+        },
+        {
+          title: t('navigation.challenges'),
+          icon: <EmojiEvents />,
+          outlinedIcon: <EmojiEventsOutlined />,
+          path: 'challenges/list',
+          permission: {
+            feat: 'challenges'
+          }
+        },
+        {
+          title: t('browse.keys'),
+          icon: <Key />,
+          outlinedIcon: <Key />,
+          path: 'keys',
+          permission: {
+            feat: 'items'
+          }
+        },
+        {
+          title: t('browse.notifications'),
+          icon: <Notifications />,
+          outlinedIcon: <NotificationsOutlined />,
+          path: 'notifications',
+          secondaryAction: <Typography fontWeight={'bold'} fontSize={'0.9rem'} >
+            {notification_count || ''}
+          </Typography>
+        }
+      ]
+    },
+    {
+      key: "adminList",
+      header: "Admin",
+      permission: {
+        perm: [
           'drinks.confirm.payments',
           'drinks.manage',
           'users.manage',
           'drinks.history.admin',
           'grants.manage',
           'supabase.admin',
-        ]}
-        any
-      >
-        <>
-          <Divider />
-          <List
-            key="adminList"
-            subheader={
-              <ListSubheader
-                disableSticky
-                sx={{
-                  zIndex: '-1',
-                  fontWeight: 'bold',
-                  lineHeight: 'normal',
-                  my: 2,
-                  mx: 2,
-                  backgroundColor: '#f2ecf1',
-                }}
-              >
-                Admin
-              </ListSubheader>
-            }
-          >
-            <Has perm={'admin.analytics.view'}>
-              <DrawerItem
-                key="adminAnalytics"
-                selected={tab === 'admin/analytics'}
-                onClick={() => handleChange('admin/analytics')}
-              >
-                <ListItemAvatar>
-                  <ListItemIcon>
-                    <Analytics />
-                  </ListItemIcon>
-                </ListItemAvatar>
-                <ListItemText
-                  primaryTypographyProps={{ fontWeight: 'bold', fontSize: '0.9rem' }}
-                  primary={t('browse.analytics')}
-                />
-              </DrawerItem>
+        ],
+        any: true
+      },
+      children: [
+        {
+          title: t('browse.analytics'),
+          icon: <Analytics />,
+          outlinedIcon: <AnalyticsOutlined />,
+          path: 'admin/analytics',
+          permission: {
+            perm: 'admin.analytics.view'
+          }
+        },
+        {
+          title: t('browse.managePayments'),
+          icon: <Euro />,
+          outlinedIcon: <EuroOutlined />,
+          path: 'admin/drinks/payments',
+          permission: {
+            perm: 'drinks.confirm.payments',
+            feat: 'drinks'
+          }
+        },
+        {
+          title: t('browse.manageDrinks'),
+          icon: <Liquor />,
+          outlinedIcon: <LiquorOutlined />,
+          path: 'admin/drinks',
+          permission: {
+            perm: 'drinks.confirm.payments',
+            feat: 'drinks'
+          }
+        },
+        {
+          title: t('browse.manageUsers'),
+          icon: <Group />,
+          outlinedIcon: <GroupsOutlined />,
+          path: 'admin/users',
+          permission: {
+            perm: 'users.manage'
+          }
+        },
+        {
+          title: t('browse.completeHistory'),
+          icon: <History />,
+          outlinedIcon: <HistoryOutlined />,
+          path: 'admin/drinks/history',
+          permission: {
+            perm: 'drinks.history.admin',
+            feat: 'drinks'
+          }
+        },
+        {
+          title: 'Grants-Manager',
+          icon: <Key />,
+          outlinedIcon: <KeyOutlined />,
+          path: 'admin/grants',
+          permission: {
+            perm: 'grants.manage'
+          }
+        },
+        {
+          title: t('browse.notifyUsers'),
+          icon: <SendIcon />,
+          outlinedIcon: <SendOutlined />,
+          path: 'admin/notify_users',
+          permission: {
+            perm: 'admin.notify_users'
+          }
+        },
+        {
+          title: t('browse.auditLogs'),
+          icon: <ViewStreamIcon />,
+          outlinedIcon: <ViewStreamOutlined />,
+          path: 'admin/audit/logs',
+          permission: {
+            perm: 'supabase.admin'
+          }
+        },
+        {
+          title: t('browse.postgresClient'),
+          icon: <Storage />,
+          outlinedIcon: <StorageOutlined />,
+          path: 'admin/supabase',
+          permission: {
+            perm: 'supabase.admin'
+          }
+        }
+      ]
+    }
+  ]
+
+  return (
+    <DrawerBox>
+      {
+        categories.map(entry => {
+          const entryComponent = <React.Fragment key={entry.header}>
+            <List sx={{ p: 2 }}
+              {...(entry.header && {
+                subheader: <ListSubheader
+                  disableSticky
+                  sx={{
+                    zIndex: '-1',
+                    fontWeight: 'bold',
+                    lineHeight: 'normal',
+                    my: 1,
+                    backgroundColor: '#f2ecf1',
+                  }}
+                >
+                  {entry.header}
+                </ListSubheader>
+              })}>
+              {
+                entry.children.map(subEntry => {
+                  const component = <ListItem key={subEntry.path} disablePadding
+                    {...(subEntry.secondaryAction && { secondaryAction: subEntry.secondaryAction })}>
+                    <DrawerItem selected={tab == subEntry.path} onClick={() => handleChange(subEntry.path)}>
+                      <ListItemIcon>
+                        {
+                          tab == subEntry.path ? subEntry.icon : subEntry.outlinedIcon
+                        }
+                      </ListItemIcon>
+                      <ListItemText>{subEntry.title}</ListItemText>
+                    </DrawerItem>
+                  </ListItem>
+                  if (subEntry.permission) {
+                    return <Has key={subEntry.path} feat={subEntry.permission.feat} perm={subEntry.permission.perm} any={subEntry.permission.any}>
+                      {component}
+                    </Has>
+                  }
+                  return component
+                })
+              }
+            </List>
+            <Divider />
+          </React.Fragment>;
+
+          if (entry.permission) {
+            return <Has key={entry.key} feat={entry.permission.feat} perm={entry.permission.perm} any={entry.permission.any}>
+              {entryComponent}
             </Has>
-            <Has feat={'drinks'} perm={'drinks.confirm.payments'}>
-              <DrawerItem
-                key="updatePayements"
-                selected={tab === 'admin/drinks/payments'}
-                onClick={() => handleChange('admin/drinks/payments')}
-              >
-                <ListItemAvatar>
-                  <ListItemIcon>
-                    <Euro />
-                  </ListItemIcon>
-                </ListItemAvatar>
-                <ListItemText
-                  primaryTypographyProps={{ fontWeight: 'bold', fontSize: '0.9rem' }}
-                  primary={t('browse.managePayments')}
-                />
-              </DrawerItem>
-            </Has>
-            <Has feat={'drinks'} perm={'drinks.manage'}>
-              <DrawerItem
-                key="updateDrink"
-                selected={tab === 'admin/drinks'}
-                onClick={() => handleChange('admin/drinks')}
-              >
-                <ListItemAvatar>
-                  <ListItemIcon>
-                    <Liquor />
-                  </ListItemIcon>
-                </ListItemAvatar>
-                <ListItemText
-                  primaryTypographyProps={{ fontWeight: 'bold', fontSize: '0.9rem' }}
-                  primary={t('browse.manageDrinks')}
-                />
-              </DrawerItem>
-            </Has>
-            <Has perm={'users.manage'}>
-              <DrawerItem key="updateUser" selected={tab === 'admin/users'} onClick={() => handleChange('admin/users')}>
-                <ListItemAvatar>
-                  <ListItemIcon>
-                    <Group />
-                  </ListItemIcon>
-                </ListItemAvatar>
-                <ListItemText
-                  primaryTypographyProps={{ fontWeight: 'bold', fontSize: '0.9rem' }}
-                  primary={t('browse.manageUsers')}
-                />
-              </DrawerItem>
-            </Has>
-            <Has feat={'drinks'} perm={'drinks.history.admin'}>
-              <DrawerItem
-                key="updateHistory"
-                selected={tab === 'admin/drinks/history'}
-                onClick={() => handleChange('admin/drinks/history')}
-              >
-                <ListItemAvatar>
-                  <ListItemIcon>
-                    <History />
-                  </ListItemIcon>
-                </ListItemAvatar>
-                <ListItemText
-                  primaryTypographyProps={{ fontWeight: 'bold', fontSize: '0.9rem' }}
-                  primary={t('browse.completeHistory')}
-                />
-              </DrawerItem>
-            </Has>
-            <Has perm={'grants.manage'}>
-              <DrawerItem
-                key="grantsManager"
-                selected={tab === 'admin/grants'}
-                onClick={() => handleChange('admin/grants')}
-              >
-                <ListItemAvatar>
-                  <ListItemIcon>
-                    <Key />
-                  </ListItemIcon>
-                </ListItemAvatar>
-                <ListItemText
-                  primaryTypographyProps={{ fontWeight: 'bold', fontSize: '0.9rem' }}
-                  primary={'Grants-Manager'}
-                />
-              </DrawerItem>
-            </Has>
-            <Has perm={'admin.notify_users'}>
-              <DrawerItem
-                key="notify_users"
-                selected={tab === 'admin/notify_users'}
-                onClick={() => handleChange('admin/notify_users')}
-              >
-                <ListItemAvatar>
-                  <ListItemIcon>
-                    <SendIcon />
-                  </ListItemIcon>
-                </ListItemAvatar>
-                <ListItemText
-                  primaryTypographyProps={{ fontWeight: 'bold', fontSize: '0.9rem' }}
-                  primary={t('browse.notifyUsers')}
-                />
-              </DrawerItem>
-            </Has>
-            <Has perm={'supabase.admin'}>
-              <DrawerItem
-                key="audit_logs"
-                selected={tab === 'admin/audit/logs'}
-                onClick={() => handleChange('admin/audit/logs')}
-              >
-                <ListItemAvatar>
-                  <ListItemIcon>
-                    <ViewStreamIcon />
-                  </ListItemIcon>
-                </ListItemAvatar>
-                <ListItemText
-                  primaryTypographyProps={{ fontWeight: 'bold', fontSize: '0.9rem' }}
-                  primary={t('browse.auditLogs')}
-                />
-              </DrawerItem>
-            </Has>
-            <Has perm={'supabase.admin'}>
-              <DrawerItem
-                key="supabaseClient"
-                selected={tab === 'admin/supabase'}
-                onClick={() => handleChange('admin/supabase')}
-              >
-                <ListItemAvatar>
-                  <ListItemIcon>
-                    <StorageOutlined />
-                  </ListItemIcon>
-                </ListItemAvatar>
-                <ListItemText
-                  primaryTypographyProps={{ fontWeight: 'bold', fontSize: '0.9rem' }}
-                  primary={t('browse.postgresClient')}
-                />
-              </DrawerItem>
-            </Has>
-          </List>
-          <Divider />
-        </>
-      </Has>
+          }
+          return entryComponent
+        })
+      }
       <List
         key="infolist"
+        sx={{ p: 2 }}
         subheader={
           <ListSubheader
             disableSticky
@@ -541,8 +467,7 @@ const DrawerContent = ({
               zIndex: '-1',
               fontWeight: 'bold',
               lineHeight: 'normal',
-              my: 2,
-              mx: 2,
+              my: 1,
               backgroundColor: '#f2ecf1',
             }}
           >
@@ -550,48 +475,51 @@ const DrawerContent = ({
           </ListSubheader>
         }
       >
-        <DrawerItem key="app info" selected={tab === 'help'} onClick={() => handleChange('help')}>
-          <ListItemAvatar>
-            <ListItemIcon>
-              <HelpIcon />
-            </ListItemIcon>
-          </ListItemAvatar>
-          <ListItemText
-            primaryTypographyProps={{ fontWeight: 'bold', fontSize: '0.9rem' }}
-            primary={t('browse.helpAndInformation')}
-          />
-        </DrawerItem>
-        <DrawerItem
-          key="update app"
-          selected={false}
-          onClick={() => !isUpdating && update_app()}
-        >
-          <ListItemAvatar>
-            <ListItemIcon>
-              {isUpdating ? (
-                <CircularProgress size={24} color="inherit" />
-              ) : (
-                <Update />
-              )}
-            </ListItemIcon>
-          </ListItemAvatar>
-          <ListItemText
-            primaryTypographyProps={{ fontWeight: 'bold', fontSize: '0.9rem' }}
-            primary={isUpdating ? 'Aktualisiere...' : t('browse.appRefresh')}
-          />
-        </DrawerItem>
-        <DrawerItem key="app version" selected={false}>
-          <ListItemAvatar>
-            <ListItemIcon>
-              <InfoOutlined />
-            </ListItemIcon>
-          </ListItemAvatar>
-          <ListItemText
-            primaryTypographyProps={{ fontWeight: 'bold', fontSize: '0.9rem' }}
-            secondary={'App Version'}
-            primary={import.meta.env.VITE_APP_VERSION + '.' + version.slice(0, 6)}
-          />
-        </DrawerItem>
+        <ListItem disablePadding>
+          <DrawerItem key="app info" selected={tab === 'help'} onClick={() => handleChange('help')}>
+            <ListItemAvatar>
+              <ListItemIcon>
+                <HelpIcon />
+              </ListItemIcon>
+            </ListItemAvatar>
+            <ListItemText
+              primary={t('browse.helpAndInformation')}
+            />
+          </DrawerItem>
+        </ListItem>
+        <ListItem disablePadding>
+          <DrawerItem
+            key="update app"
+            selected={false}
+            onClick={() => !isUpdating && update_app()}
+          >
+            <ListItemAvatar>
+              <ListItemIcon>
+                {isUpdating ? (
+                  <CircularProgress size={24} color="inherit" />
+                ) : (
+                  <Update />
+                )}
+              </ListItemIcon>
+            </ListItemAvatar>
+            <ListItemText
+              primary={isUpdating ? 'Aktualisiere...' : t('browse.appRefresh')}
+            />
+          </DrawerItem>
+        </ListItem>
+        <ListItem disablePadding>
+          <DrawerItem key="app version" selected={false}>
+            <ListItemAvatar>
+              <ListItemIcon>
+                <InfoOutlined />
+              </ListItemIcon>
+            </ListItemAvatar>
+            <ListItemText
+              secondary={'App Version'}
+              primary={import.meta.env.VITE_APP_VERSION + '.' + version.slice(0, 6)}
+            />
+          </DrawerItem>
+        </ListItem>
       </List>
     </DrawerBox>
   );
@@ -599,6 +527,7 @@ const DrawerContent = ({
 
 export const Drawer = ({ open, onClose, onOpen }: Props) => {
   const theme = useTheme();
+  console.log(theme.palette)
   const navigate = useNavigate();
   const { t } = useTranslation();
   const { user } = useGrants();
@@ -743,41 +672,6 @@ export const Drawer = ({ open, onClose, onOpen }: Props) => {
             </SwipeableDrawer>
           )
         }
-        {/* <CustomDrawer
-        variant="temporary"
-        anchor={'left'}
-        open={open}
-        onOpen={onOpen}
-        onClose={onClose}
-        disableBackdropTransition={!iOS}
-        disableDiscovery={iOS}
-        ModalProps={{
-          keepMounted: true, // Better open performance on mobile.
-        }}
-        sx={(theme: Theme) => ({
-          '& .MuiDrawer-paper': { boxSizing: 'border-box', width: drawerWidth },
-          [theme.breakpoints.down('lg')]: { display: 'block', overflow: 'auto' },
-          [theme.breakpoints.up('lg')]: { display: 'none' },
-        })}
-      >
-        {drawerContent}
-      </CustomDrawer>
-      <CustomDrawer
-        anchor={'left'}
-        variant="permanent"
-        sx={(theme: Theme) => ({
-          '& .MuiDrawer-paper': { boxSizing: 'border-box', width: drawerWidth },
-          [theme.breakpoints.down('lg')]: { display: 'none' },
-          [theme.breakpoints.up('lg')]: { display: 'block' },
-        })}
-        open
-        onOpen={onOpen}
-        onClose={onClose}
-        disableBackdropTransition={!iOS}
-        disableDiscovery={iOS}
-      >
-        {drawerContent}
-      </CustomDrawer> */}
       </Box>
     </>
   );

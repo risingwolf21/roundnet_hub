@@ -54,22 +54,29 @@ export const GamesRepository = {
   },
 
   async reportScores(
-    sets: { team_a_score: number; team_b_score: number }[],
-    team_a: {
-      player_1: string;
-      player_1_rating: number;
-      player_2: string;
-      player_2_rating: number;
-      name: string;
-    },
-    team_b: {
-      player_1: string;
-      player_1_rating: number;
-      player_2: string;
-      player_2_rating: number;
-      name: string;
-    },
-    event?: string
+    {
+      sets, team_a, team_b, event, created_by, is_public, player_names
+    }: {
+      sets: { team_a_score: number; team_b_score: number }[],
+      team_a: {
+        player_1: string;
+        player_1_rating: number;
+        player_2: string;
+        player_2_rating: number;
+        name: string;
+      },
+      team_b: {
+        player_1: string;
+        player_1_rating: number;
+        player_2: string;
+        player_2_rating: number;
+        name: string;
+      },
+      event?: string,
+      created_by?: string,
+      is_public?: boolean,
+      player_names?: { [key: string]: string }
+    }
   ): Promise<PostgrestSingleResponse<string>> {
     return supabase
       .schema('games')
@@ -86,6 +93,9 @@ export const GamesRepository = {
         team_a: team_a.name,
         team_b: team_b.name,
         event,
+        created_by,
+        is_public,
+        player_names
       })
       .throwOnError();
   },

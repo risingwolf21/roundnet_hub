@@ -16,6 +16,7 @@ export type Permission =
   | 'drinks.select'
   | 'drinks.view.own-history'
   | 'drinks.view.own-payments'
+  | 'event.admin.view'
   | 'event.cancel'
   | 'event.comment'
   | 'event.create.constellations'
