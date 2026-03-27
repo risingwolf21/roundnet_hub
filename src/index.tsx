@@ -8,8 +8,9 @@ import './apocalypseHandler';
 import { App } from './App';
 import AuthLayout from './components/layout/AuthLayout';
 import { LoadingScreen } from './components/LoadingScreen';
-import './global.css';
+import { ThemeProvider } from './components/ui/theme-provider';
 import './instrument';
+import './styles/global.css';
 import './translation/i18n';
 
 const root = ReactDOM.createRoot(document.getElementById('root') as HTMLElement, {
@@ -61,7 +62,9 @@ const Fallback = (e: { error: unknown; componentStack: string; eventId: string; 
 root.render(
   <Sentry.ErrorBoundary fallback={Fallback}>
     <Suspense fallback={<LoadingScreen />}>
-      <App />
+      <ThemeProvider>
+        <App />
+      </ThemeProvider>
     </Suspense>
   </Sentry.ErrorBoundary>
 );

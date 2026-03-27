@@ -7,7 +7,7 @@ import { useEvents, useUpdateAttendanceMutation } from '@/tanstack/events';
 import { EventsUserView } from '@/types/supabaseTypes';
 import { EventRepeat, FilterAlt } from '@mui/icons-material';
 import AddIcon from '@mui/icons-material/Add';
-import { Button, Fab, IconButton, List, ListSubheader, Typography } from '@mui/material';
+import { Button, Fab, IconButton, List, Typography } from '@mui/material';
 import { Stack } from '@mui/system';
 import { withProfiler } from '@sentry/react';
 import { useDialogs } from '@toolpad/core';
@@ -111,21 +111,17 @@ const EventScreen = () => {
       </>
     }>
       <PullToRefresh onRefresh={() => refetch()}>
-        <List>
+        <div className="flex w-full max-w-lg flex-col gap-2">
           {Object.entries(groupBy(events, (x) => startOfISOWeek(x.startingDateTime))).map(
             ([key, value]: [string, EventsUserView[]]) => (
-              <List
-                subheader={
-                  <ListSubheader sx={{ fontWeight: 'bold' }} key={key}>
-                    {getISOWeek(key) === getISOWeek(new Date())
-                      ? 'Diese Woche'
-                      : getISOWeek(key) === getISOWeek(new Date()) + 1
-                        ? 'Nächste Woche'
-                        : format(key, 'dd.MM.yyyy') + ' - ' + format(endOfISOWeek(key), 'dd.MM.yyyy')}
-                  </ListSubheader>
-                }
-                key={key}
-              >
+              <div key={key} className="flex w-full max-w-lg gap-2 px-2 flex-col">
+                <div className="text-sm font-semibold">
+                  {getISOWeek(key) === getISOWeek(new Date())
+                    ? 'Diese Woche'
+                    : getISOWeek(key) === getISOWeek(new Date()) + 1
+                      ? 'Nächste Woche'
+                      : format(key, 'dd.MM.yyyy') + ' - ' + format(endOfISOWeek(key), 'dd.MM.yyyy')}
+                </div>
                 {value.map((event: EventsUserView) => (
                   <EventItem
                     key={event.id}
@@ -145,7 +141,7 @@ const EventScreen = () => {
                     }}
                   />
                 ))}
-              </List>
+              </div>
             )
           )}
 
@@ -156,7 +152,7 @@ const EventScreen = () => {
           >
             {createEventFab}
           </Stack>
-        </List>
+        </div>
       </PullToRefresh>
     </Layout>
   );
