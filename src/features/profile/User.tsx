@@ -1,6 +1,7 @@
 import Layout from '@/components/layout/Layout';
 import { usePlayer } from '@/tanstack/player_data';
 import AccountCircle from '@mui/icons-material/AccountCircle';
+import BuildIcon from '@mui/icons-material/Build';
 import CalendarMonth from '@mui/icons-material/CalendarMonth';
 import Cancel from '@mui/icons-material/Cancel';
 import CheckCircle from '@mui/icons-material/CheckCircle';
@@ -16,6 +17,8 @@ import { useGrants } from '../auth/GrantsContext';
 import { ProfileImage } from './ProfileImage';
 
 import { PullToRefresh } from '@/components/pull-to-refresh/PullToRefresh';
+import { useFeatureFlags } from '@/contexts/FeatureToggleContext';
+import { Has } from '@/hooks/useGrants';
 import { iOS } from '@/utils';
 import Card from '@mui/material/Card';
 import CardActionArea from '@mui/material/CardActionArea';
@@ -23,7 +26,9 @@ import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemAvatar from '@mui/material/ListItemAvatar';
 import ListItemText from '@mui/material/ListItemText';
+import Switch from '@mui/material/Switch';
 import Typography from '@mui/material/Typography';
+import { useState } from 'react';
 
 type UserScreenProps = {
   user: UserWithGroups;
@@ -41,6 +46,8 @@ const UserScreen = ({ user, handleSignOut }: UserScreenProps) => {
   const navigate = useNavigate();
   const notificationSupported = 'serviceWorker' in navigator && 'PushManager' in window;
   const { data: player_data, isLoading, refetch: refetchPlayer } = usePlayer(user);
+  const { toggleFeature, hasFeature } = useFeatureFlags();
+  const [isShadcn, setIsShadCn] = useState(() => hasFeature("enableShadcnUI"));
 
   const copyIcalURLToClipboard = () => {
     if (iOS) {
@@ -127,6 +134,22 @@ const UserScreen = ({ user, handleSignOut }: UserScreenProps) => {
               </ListItem>
             </CardActionArea>
           </Card>
+          <Has perm={"supabase.admin"}>
+            <Card sx={{ borderRadius: 2, py: 0, px: 0, mt: 1 }}>
+              <CardActionArea sx={{ pl: 1 }}>
+                <ListItem secondaryAction={
+                  <Switch
+                    checked={isShadcn}
+                    onChange={() => toggleFeature("enableShadcnUI")} />
+                }>
+                  <ListItemAvatar sx={{ flexDirection: 'row', display: 'flex', alignItems: 'center' }}>
+                    <BuildIcon />
+                  </ListItemAvatar>
+                  <ListItemText primary="shadcn/ui verwenden" />
+                </ListItem>
+              </CardActionArea>
+            </Card>
+          </Has>
           <Card sx={{ borderRadius: 2, py: 0, px: 0, mt: 1 }}>
             <CardActionArea
               sx={{ px: 1 }}

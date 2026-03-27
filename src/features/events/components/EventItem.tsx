@@ -105,8 +105,7 @@ const EventItemSecondaryActions = ({
   );
 };
 
-export const EventItem = ({ event, onClick, attendEvent, declineEvent, attendanceUpdating, t }: EventItemProps) => {
-
+export const EventItemShadcn = ({ event, onClick, attendEvent, declineEvent, attendanceUpdating, t }: EventItemProps) => {
   return <Item onClick={onClick} variant={"outline"}>
     <ItemMedia variant={"default"}>
       <div className="flex h-full w-10 flex-col justify-center py-2">
@@ -140,7 +139,9 @@ export const EventItem = ({ event, onClick, attendEvent, declineEvent, attendanc
       />
     </ItemActions>
   </Item>
+}
 
+export const EventItem = ({ event, onClick, attendEvent, declineEvent, attendanceUpdating, t }: EventItemProps) => {
   return (
     <ListItem
       key={event.id}

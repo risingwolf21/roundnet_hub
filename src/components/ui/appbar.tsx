@@ -1,8 +1,10 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
-import { Menu, Search } from "lucide-react";
+import { ArrowLeft, Search } from "lucide-react";
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router";
+import { SidebarTrigger } from "./sidebar";
 
 interface AppBarProps extends React.HTMLAttributes<HTMLElement> {
   /** Der Titel der aktuellen Seite */
@@ -11,6 +13,7 @@ interface AppBarProps extends React.HTMLAttributes<HTMLElement> {
   onDrawerToggle?: () => void;
   /** Soll die Suchleiste angezeigt werden? */
   showSearch?: boolean;
+  showBack?: boolean;
   /** Platzhaltertext für die Suche */
   searchPlaceholder?: string;
   /** Wert der Suche (Controlled Input) */
@@ -27,6 +30,7 @@ export function AppBar({
   title,
   onDrawerToggle,
   showSearch = false,
+  showBack = false,
   searchPlaceholder = "Suchen...",
   searchValue,
   onSearchChange,
@@ -36,6 +40,7 @@ export function AppBar({
   ...props
 }: AppBarProps) {
   const [scrolled, setScrolled] = useState(false);
+  const navigate = useNavigate();
 
   // Scroll-Effekt für den Schatten (Glas-Effekt)
   useEffect(() => {
@@ -48,24 +53,25 @@ export function AppBar({
   return (
     <header
       className={cn(
-        "sticky top-0 z-999 flex h-14 w-full items-center gap-4 bg-background/95 px-4 supports-[backdrop-filter]:bg-background md:px-6 transition-shadow",
+        "sticky top-0 z-500 flex h-14 w-full items-center gap-4 bg-background/95 px-4 supports-[backdrop-filter]:bg-background md:px-6 transition-shadow",
         scrolled ? "border-b shadow-sm" : "",
         className
       )}
       {...props}
     >
       <div className="flex items-center gap-2 md:gap-4 lg:w-1/3">
-        {onDrawerToggle && (
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={onDrawerToggle}
-            className="shrink-0 rounded-full md:hidden"
-            aria-label="Toggle Menu"
-          >
-            <Menu className="h-5 w-5" />
-          </Button>
-        )}
+        {
+          showBack
+            ? <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => navigate(-1)}
+              className="shrink-0 rounded-full md:hidden"
+            >
+              <ArrowLeft className="h-5 w-5" />
+            </Button>
+            : <SidebarTrigger className={"-ml-1"} />
+        }
         {title && (
           <div className="font-semibold tracking-tight sm:block text-lg">
             {title}

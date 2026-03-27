@@ -9,6 +9,7 @@ import { App } from './App';
 import AuthLayout from './components/layout/AuthLayout';
 import { LoadingScreen } from './components/LoadingScreen';
 import { ThemeProvider } from './components/ui/theme-provider';
+import { FeatureToggleProvider } from './contexts/FeatureToggleContext';
 import './instrument';
 import './styles/global.css';
 import './translation/i18n';
@@ -63,7 +64,9 @@ root.render(
   <Sentry.ErrorBoundary fallback={Fallback}>
     <Suspense fallback={<LoadingScreen />}>
       <ThemeProvider>
-        <App />
+        <FeatureToggleProvider>
+          <App />
+        </FeatureToggleProvider>
       </ThemeProvider>
     </Suspense>
   </Sentry.ErrorBoundary>
