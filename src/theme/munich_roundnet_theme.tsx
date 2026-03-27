@@ -221,60 +221,6 @@ export const munich_roundnet_theme = createTheme({
         },
       ],
     },
-    "MuiListItem": {
-      "styleOverrides": {
-        "root": {
-          "paddingTop": 1,
-          "paddingBottom": 1,
-          "& .MuiListItemButton-root": {
-            "paddingTop": 8,
-            "paddingBottom": 8
-          }
-        }
-      }
-    },
-    "MuiListItemButton": {
-      "styleOverrides": {
-        "root": {
-          "borderRadius": 50,
-          "color": "#49454e",
-          "&:hover": {
-            "backgroundColor": "#e1dce1",
-            "color": "#45424a"
-          },
-          "&:active": {
-            "backgroundColor": "#d6d2d8",
-            "color": "#444048"
-          },
-          "&.Mui-selected": {
-            "color": "#1e192b",
-            "background": "#e8def8",
-            "& > .MuiListItemText-root > .MuiTypography-root": {
-              "fontWeight": "bold"
-            },
-            "&:hover": {
-              "backgroundColor": "#d4cbe4",
-              "color": "#2d283a"
-            },
-            "&:active": {
-              "backgroundColor": "#cbc1da",
-              "color": "#342f42"
-            }
-          }
-        }
-      }
-    },
-    "MuiListItemIcon": {
-      "styleOverrides": {
-        "root": {
-          "color": "inherit",
-          "minWidth": 32,
-          "&.Mui-selected": {
-            "fontWeight": "bold"
-          }
-        }
-      }
-    },
   },
   palette: {
     primary: {

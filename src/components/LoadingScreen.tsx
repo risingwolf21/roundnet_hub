@@ -1,8 +1,7 @@
-import { BRANDING } from '@/utils';
-import CircularProgress from '@mui/material/CircularProgress';
-import Typography from '@mui/material/Typography';
 
+import { TENANT_LOGO } from '@/utils';
 import Box from '@mui/material/Box';
+import LinearProgress from '@mui/material/LinearProgress';
 
 export const LoadingScreen = () => {
   return (
@@ -16,12 +15,10 @@ export const LoadingScreen = () => {
         alignItems: 'center',
       }}
     >
-      <Typography variant="h5" component="div" sx={{ mb: 2, textAlign: 'center' }}>
-        {BRANDING.icon}
-        <br></br>
-        {BRANDING.title}
-      </Typography>
-      <CircularProgress variant={'indeterminate'} size={50}></CircularProgress>
+      <LinearProgress sx={{ position: "absolute", left: 0, right: 0, top: 0 }} variant='indeterminate' />
+      {
+        <img src={TENANT_LOGO} alt="MUI logo" style={{ height: 125, objectFit: 'contain' }} />
+      }
     </Box>
   );
 };
