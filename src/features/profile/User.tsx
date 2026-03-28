@@ -13,7 +13,6 @@ import { useNotifications } from '@toolpad/core';
 import { useNavigate } from 'react-router';
 import pzLogo from '../../images/pz_logo.svg';
 import { UserWithGroups } from '../../types/supabaseTypes';
-import { useGrants } from '../auth/GrantsContext';
 import { ProfileImage } from './ProfileImage';
 
 import { PullToRefresh } from '@/components/pull-to-refresh/PullToRefresh';
@@ -35,19 +34,13 @@ type UserScreenProps = {
   handleSignOut: () => void;
 };
 
-const UserScreenProvider = () => {
-  const { user, signOut } = useGrants();
-
-  return <UserScreen user={user} handleSignOut={signOut} />;
-};
-
-const UserScreen = ({ user, handleSignOut }: UserScreenProps) => {
+export const UserScreen = ({ user, handleSignOut }: UserScreenProps) => {
   const notifications = useNotifications();
   const navigate = useNavigate();
   const notificationSupported = 'serviceWorker' in navigator && 'PushManager' in window;
   const { data: player_data, isLoading, refetch: refetchPlayer } = usePlayer(user);
   const { toggleFeature, hasFeature } = useFeatureFlags();
-  const [isShadcn, setIsShadCn] = useState(() => hasFeature("enableShadcnUI"));
+  const [isShadcn] = useState(() => hasFeature("enableShadcnUI"));
 
   const copyIcalURLToClipboard = () => {
     if (iOS) {
@@ -136,7 +129,7 @@ const UserScreen = ({ user, handleSignOut }: UserScreenProps) => {
           </Card>
           <Has perm={"supabase.admin"}>
             <Card sx={{ borderRadius: 2, py: 0, px: 0, mt: 1 }}>
-              <CardActionArea sx={{ pl: 1 }}>
+              <CardActionArea sx={{ pl: 1 }} >
                 <ListItem secondaryAction={
                   <Switch
                     checked={isShadcn}
@@ -186,4 +179,3 @@ const UserScreen = ({ user, handleSignOut }: UserScreenProps) => {
     </Layout>
   );
 };
-export default UserScreenProvider;

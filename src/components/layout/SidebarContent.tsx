@@ -258,7 +258,7 @@ export function AppSidebar() {
                 <SidebarGroupLabel>{category.header}</SidebarGroupLabel>
               )}
               <SidebarGroupContent>
-                <SidebarMenu className='gap-y-2'>
+                <SidebarMenu className='gap-y-4'>
                   {category.children.map((item) => {
                     const isActive = tab === item.path
 
@@ -269,7 +269,7 @@ export function AppSidebar() {
                         tooltip={item.title} // Gut für eingeklappte (collapsed) Sidebars
                       >
                         {item.icon}
-                        <div className='text-lg'>{item.title}</div>
+                        <div className='text-lg ml-2'>{item.title}</div>
                       </SidebarMenuButton>
 
                       {/* Optionales Badge (z.B. für offene Anfragen) */}

@@ -11,7 +11,7 @@ import { FeatureNotAvailable, PermissionDeniedPage } from './features/auth/Error
 import { GrantsProvider } from './features/auth/GrantsContext';
 import GrantsManager from './features/grants/GrantsManager';
 import HomePage from './features/homepage/HomePage';
-import UserScreenProvider from './features/profile/User';
+import UserScreenProvider from './features/profile/UserScreenProvider';
 import { lazyWithRetry } from './hooks/lazyWithRetry';
 import { Has } from './hooks/useGrants';
 import { sentryCreateBrowserRouter } from './instrument';
@@ -277,7 +277,7 @@ const createRouter = (user: UserWithGroups | null, isShadcnUi: boolean) =>
                 },
                 {
                   path: 'event/:selectedEventId',
-                  element: <EventInformationProvider />,
+                  element: <EventInformationProvider isShadcn={isShadcnUi} />,
                 },
               ],
             },

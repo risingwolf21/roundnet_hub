@@ -17,7 +17,7 @@ import groupBy from 'lodash.groupby';
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router';
 import { useGrants } from '../auth/GrantsContext';
-import { EventItem } from './components/EventItem';
+import { EventItemShadcn } from './components/EventItem';
 import { LoadingEventItem } from './components/LoadingEventItem';
 import { CreateOrUpdateEventDialog } from './dialogs/CreateOrUpdateEventDialog';
 
@@ -99,7 +99,7 @@ const EventScreen = () => {
           {Object.entries(groupBy(events, (x) => startOfISOWeek(x.startingDateTime))).map(
             ([key, value]: [string, EventsUserView[]]) => (
               <div key={key} className="flex w-full max-w-lg gap-2 px-2 flex-col">
-                <div className="text-sm font-semibold">
+                <div className="text-sm font-semibold ml-2">
                   {getISOWeek(key) === getISOWeek(new Date())
                     ? 'Diese Woche'
                     : getISOWeek(key) === getISOWeek(new Date()) + 1
@@ -107,7 +107,7 @@ const EventScreen = () => {
                       : format(key, 'dd.MM.yyyy') + ' - ' + format(endOfISOWeek(key), 'dd.MM.yyyy')}
                 </div>
                 {value.map((event: EventsUserView) => (
-                  <EventItem
+                  <EventItemShadcn
                     key={event.id}
                     event={event}
                     t={t}

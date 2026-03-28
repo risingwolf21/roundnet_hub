@@ -13,7 +13,6 @@ interface AppBarProps extends React.HTMLAttributes<HTMLElement> {
   onDrawerToggle?: () => void;
   /** Soll die Suchleiste angezeigt werden? */
   showSearch?: boolean;
-  showBack?: boolean;
   /** Platzhaltertext für die Suche */
   searchPlaceholder?: string;
   /** Wert der Suche (Controlled Input) */
@@ -22,18 +21,32 @@ interface AppBarProps extends React.HTMLAttributes<HTMLElement> {
   onSearchChange?: (value: string) => void;
   /** Elemente auf der rechten Seite (z.B. Avatar, Buttons) */
   actions?: React.ReactNode;
+  primaryAction?: React.ReactNode | "back" | "default";
   /** Soll die Leiste beim Scrollen einen Schatten bekommen? */
   withScrollEffect?: boolean;
+}
+
+export const NavigateBackButton = () => {
+  const navigate = useNavigate();
+
+  return <Button
+    variant="ghost"
+    size="icon"
+    onClick={() => navigate(-1)}
+    className="shrink-0 rounded-full md:hidden"
+  >
+    <ArrowLeft className="h-5 w-5" />
+  </Button>
 }
 
 export function AppBar({
   title,
   onDrawerToggle,
   showSearch = false,
-  showBack = false,
   searchPlaceholder = "Suchen...",
   searchValue,
   onSearchChange,
+  primaryAction = "default",
   actions,
   withScrollEffect = true,
   className,
@@ -61,16 +74,20 @@ export function AppBar({
     >
       <div className="flex items-center gap-2 md:gap-4 lg:w-1/3">
         {
-          showBack
-            ? <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => navigate(-1)}
-              className="shrink-0 rounded-full md:hidden"
-            >
-              <ArrowLeft className="h-5 w-5" />
-            </Button>
-            : <SidebarTrigger className={"-ml-1"} />
+          primaryAction === "default" && <SidebarTrigger className={"-ml-1"} />
+        }
+        {
+          primaryAction === "back" && <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => navigate(-1)}
+            className="shrink-0 rounded-full md:hidden"
+          >
+            <ArrowLeft className="h-5 w-5" />
+          </Button>
+        }
+        {
+          React.isValidElement(primaryAction) && primaryAction
         }
         {title && (
           <div className="font-semibold tracking-tight sm:block text-lg">

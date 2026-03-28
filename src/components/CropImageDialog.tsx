@@ -3,6 +3,13 @@ import { Box } from '@mui/system';
 import { useState } from 'react';
 import Cropper, { Area } from 'react-easy-crop';
 
+import { AppBar as AppBarShadcn } from '@/components/ui/appbar';
+import { Button as ButtonShadcn } from '@/components/ui/button';
+import {
+  DialogContent,
+  DialogHeader,
+  Dialog as DialogShadcn
+} from "@/components/ui/dialog";
 import AppBar from '@mui/material/AppBar';
 import Button from '@mui/material/Button';
 import Dialog from '@mui/material/Dialog';
@@ -10,12 +17,14 @@ import IconButton from '@mui/material/IconButton';
 import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
 import { DialogProps } from '@toolpad/core';
+import { X } from 'lucide-react';
+
 
 const CropImageDialog = ({
   open,
   onClose,
-  payload: { selectedImage },
-}: DialogProps<{ selectedImage: string }, string | null>) => {
+  payload: { selectedImage, isShadcn = false },
+}: DialogProps<{ selectedImage: string, isShadcn?: boolean }, string | null>) => {
   const [crop, setCrop] = useState({ x: 0, y: 0 });
   const [zoom, setZoom] = useState(1);
   const rotation = 0;
@@ -34,6 +43,33 @@ const CropImageDialog = ({
       onClose(null);
     }
   };
+
+  if (isShadcn) {
+    return <DialogShadcn open={open}>
+      <DialogContent showCloseButton={false} className={"h-screen w-screen z-500 m-0 p-0 max-w-none rounded-none"}>
+        <DialogHeader>
+          <AppBarShadcn
+            title='Bild zuschneiden'
+            primaryAction={<ButtonShadcn variant={"ghost"} onClick={() => onClose(null)}>
+              <X />
+            </ButtonShadcn>}
+            actions={<ButtonShadcn onClick={cropImage}>Speichern</ButtonShadcn>} />
+        </DialogHeader>
+        <Cropper
+          image={selectedImage}
+          crop={crop}
+          zoom={zoom}
+          minZoom={1}
+          maxZoom={5}
+          rotation={rotation}
+          aspect={1 / 1}
+          onCropChange={setCrop}
+          onCropComplete={onCropComplete}
+          onZoomChange={setZoom}
+        />
+      </DialogContent>
+    </DialogShadcn>
+  }
 
   return (
     <Dialog fullScreen open={open} onClose={() => onClose(null)}>

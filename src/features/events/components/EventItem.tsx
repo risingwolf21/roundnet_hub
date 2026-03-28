@@ -1,11 +1,12 @@
 import { EventsUserView } from '@/types/supabaseTypes';
-import { isBefore, toDate } from 'date-fns';
+import { format, isBefore, toDate } from 'date-fns';
 import { TFunction } from 'i18next';
 
 import { Button } from '@/components/ui/button';
 import { Item, ItemActions, ItemContent, ItemDescription, ItemMedia, ItemTitle } from '@/components/ui/item';
 import { Spinner } from '@/components/ui/spinner';
 import { Has } from '@/hooks/useGrants';
+import { cn } from '@/lib/utils';
 import { formatDateFromDatabase } from '@/utils';
 import Box from '@mui/material/Box';
 import ListItem from '@mui/material/ListItem';
@@ -13,7 +14,8 @@ import ListItemAvatar from '@mui/material/ListItemAvatar';
 import ListItemText from '@mui/material/ListItemText';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
-import { Check, Hourglass, Megaphone, X } from 'lucide-react';
+import { Calendar, Check, Hourglass, MapPin, Megaphone, X } from 'lucide-react';
+import { PlaceType } from '../types';
 
 type EventItemProps = {
   attendanceUpdating: boolean;
@@ -105,7 +107,64 @@ const EventItemSecondaryActions = ({
   );
 };
 
+const formatDateRange = (start: Date, end: Date) => {
+  const sameDay = start.toDateString() === end.toDateString();
+  const sameTime = start.getHours() === end.getHours() && start.getMinutes() === end.getMinutes();
+
+  if (sameDay && sameTime) {
+    return format(start, "dd.MM.yyyy, HH:mm");
+  }
+
+  if (sameDay) {
+    return `${format(start, "dd.MM.yyyy, HH:mm")} - ${format(end, "HH:mm")}`;
+  }
+
+  return `${format(start, "dd.MM.yyyy, HH:mm")} - ${format(end, "dd.MM.yyyy, HH:mm")}`;
+}
+
 export const EventItemShadcn = ({ event, onClick, attendEvent, declineEvent, attendanceUpdating, t }: EventItemProps) => {
+
+  const place = JSON.parse(event?.place ?? '{}') as PlaceType;
+
+  return <Item key={event.id} onClick={onClick} variant={"outline"}>
+    <div
+      className={cn('w-full flex flex-row justify-between gap-4 relative rounded-md p-2 pl-4 text-sm after:absolute after:inset-y-2 after:left-0 after:w-1 after:rounded-full', {
+        'after:bg-warning/70': event.user_state === null,
+        'after:bg-success/70': event.user_state === 'Attending' || event.user_state === 'AttendingAsTrainer',
+        'after:bg-error/70': event.user_state === 'Declined',
+        'cursor-not-allowed opacity-50': event.isCancelled || eventInThePast(event),
+      })}
+    >
+      <div className='flex-1 min-w-0'>
+        <div className='font-semibold text-medium truncate'>
+          {event.title}
+        </div>
+
+        <div className='text-muted-foreground leading-7 flex items-center gap-2 min-w-0'>
+          <MapPin className='size-4 shrink-0' />
+          <span className='truncate'>
+            {place.name ?? 'Kein Ort angegeben'}
+          </span>
+        </div>
+
+        <div className='text-muted-foreground leading-7 flex items-center gap-2 min-w-0'>
+          <Calendar className='size-4 shrink-0' />
+          <span className='truncate'>
+            {formatDateRange(new Date(event.startingDateTime), new Date(event.endDateTime))}
+          </span>
+        </div>
+      </div>
+
+      <div className='flex items-center gap-2 shrink-0'>
+        <EventItemSecondaryActions
+          event={event}
+          attendEvent={attendEvent}
+          declineEvent={declineEvent}
+          attendanceUpdating={attendanceUpdating}
+        />
+      </div>
+    </div>
+  </Item>
   return <Item onClick={onClick} variant={"outline"}>
     <ItemMedia variant={"default"}>
       <div className="flex h-full w-10 flex-col justify-center py-2">
