@@ -206,7 +206,7 @@ const Playerzone = ({ user }: { user: UserWithGroups }) => {
           </div>
         </div>
         <div className='flex justify-end'>
-          <Button type='submit' className='max-sm:w-full' disabled={loading || rgLink === player_data?.rg_link || gender === player_data?.gender} onClick={onSafeRgLinkClick}>
+          <Button type='submit' className='max-sm:w-full' disabled={loading || (rgLink === player_data?.rg_link && gender === player_data?.gender)} onClick={onSafeRgLinkClick}>
             {
               loading && <Spinner />
             }
