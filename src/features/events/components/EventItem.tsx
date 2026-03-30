@@ -2,13 +2,21 @@ import { EventsUserView } from '@/types/supabaseTypes';
 import { format, isBefore, toDate } from 'date-fns';
 import { TFunction } from 'i18next';
 
-import { Button } from '@/components/ui/button';
+import { Button as ButtonShadcn } from '@/components/ui/button';
 import { Item, ItemActions, ItemContent, ItemDescription, ItemMedia, ItemTitle } from '@/components/ui/item';
 import { Spinner } from '@/components/ui/spinner';
 import { Has } from '@/hooks/useGrants';
 import { cn } from '@/lib/utils';
 import { formatDateFromDatabase } from '@/utils';
+import HourglassBottom from '@mui/icons-material/HourglassBottom';
+import RecordVoiceOver from '@mui/icons-material/RecordVoiceOver';
+import ThumbDownAlt from '@mui/icons-material/ThumbDownAlt';
+import ThumbDownOffAlt from '@mui/icons-material/ThumbDownOffAlt';
+import ThumbUpAlt from '@mui/icons-material/ThumbUpAlt';
+import ThumbUpOffAlt from '@mui/icons-material/ThumbUpOffAlt';
 import Box from '@mui/material/Box';
+import CircularProgress from '@mui/material/CircularProgress';
+import IconButton from '@mui/material/IconButton';
 import ListItem from '@mui/material/ListItem';
 import ListItemAvatar from '@mui/material/ListItemAvatar';
 import ListItemText from '@mui/material/ListItemText';
@@ -41,10 +49,66 @@ const EventItemSecondaryActions = ({
   declineEvent,
   attendanceUpdating,
 }: Pick<EventItemProps, 'event' | 'attendEvent' | 'declineEvent' | 'attendanceUpdating'>) => {
+  if (attendanceUpdating) {
+    return <CircularProgress size={'22px'} />;
+  }
+  if (event.user_state === 'Waiting') {
+    return (
+      <IconButton disabled={event.isCancelled || eventInThePast(event)}>
+        <HourglassBottom fontSize="inherit" sx={{ fontSize: '28px', color: '#125db2' }} />
+      </IconButton>
+    );
+  }
+  return (
+    <>
+      <IconButton
+        edge="end"
+        onClick={(event) => {
+          declineEvent();
+          event.stopPropagation();
+        }}
+        disabled={event.isCancelled || eventInThePast(event)}
+      >
+        {event.user_state === 'Declined' ? (
+          <ThumbDownAlt fontSize="inherit" sx={{ fontSize: '28px', color: 'red' }} />
+        ) : (
+          <ThumbDownOffAlt fontSize="inherit" sx={{ fontSize: '28px' }} />
+        )}
+      </IconButton>
+      {event.user_state === 'AttendingAsTrainer' ? (
+        <IconButton disabled={event.isCancelled || answerDeadlineExpired(event) || eventInThePast(event)}>
+          <RecordVoiceOver fontSize="inherit" sx={{ fontSize: '28px', color: 'green' }} />
+        </IconButton>
+      ) : (
+        <IconButton
+          edge="end"
+          onClick={(event) => {
+            attendEvent();
+            event.stopPropagation();
+          }}
+          disabled={event.isCancelled || answerDeadlineExpired(event) || eventInThePast(event)}
+        >
+          {event.user_state === 'Attending' ? (
+            <ThumbUpAlt fontSize="inherit" sx={{ fontSize: '28px', color: 'green' }} />
+          ) : (
+            <ThumbUpOffAlt fontSize="inherit" sx={{ fontSize: '28px' }} />
+          )}
+        </IconButton>
+      )}
+    </>
+  );
+};
+
+const EventItemSecondaryActionsShadcn = ({
+  event,
+  attendEvent,
+  declineEvent,
+  attendanceUpdating,
+}: Pick<EventItemProps, 'event' | 'attendEvent' | 'declineEvent' | 'attendanceUpdating'>) => {
 
   if (event.user_state === 'Waiting') {
     return (
-      <Button
+      <ButtonShadcn
         variant={"ghost"}
         size="icon-lg"
         className={`size-8 bg-info text-info-foreground`}
@@ -53,14 +117,14 @@ const EventItemSecondaryActions = ({
         {
           attendanceUpdating ? <Spinner /> : <Hourglass className="size-5" />
         }
-      </Button>
+      </ButtonShadcn>
     );
   }
 
   return (
     <div className="flex gap-1">
       {/* --- DECLINE BUTTON --- */}
-      <Button
+      <ButtonShadcn
         variant={event.user_state === "Declined" ? "ghost" : "outline"}
         size="icon-lg"
         className={`size-8 ${event.user_state === "Declined" && "bg-error text-error-foreground"}`}
@@ -73,11 +137,11 @@ const EventItemSecondaryActions = ({
         {
           attendanceUpdating ? <Spinner /> : <X className='size-5' />
         }
-      </Button>
+      </ButtonShadcn>
 
       {/* --- ATTEND / TRAINER BUTTON --- */}
       {event.user_state === 'AttendingAsTrainer' ? (
-        <Button
+        <ButtonShadcn
           variant={"ghost"}
           size="icon-lg"
           className={`size-8 bg-success text-success-foreground`}
@@ -86,9 +150,9 @@ const EventItemSecondaryActions = ({
           {
             attendanceUpdating ? <Spinner /> : <Megaphone className="size-5" />
           }
-        </Button>
+        </ButtonShadcn>
       ) : (
-        <Button
+        <ButtonShadcn
           variant={event.user_state === "Attending" ? "ghost" : "outline"}
           size="icon-lg"
           className={`size-8 ${event.user_state === "Attending" && "bg-success text-success-foreground"}`}
@@ -101,7 +165,7 @@ const EventItemSecondaryActions = ({
           {
             attendanceUpdating ? <Spinner /> : <Check className='size-5' />
           }
-        </Button>
+        </ButtonShadcn>
       )}
     </div>
   );
@@ -156,7 +220,7 @@ export const EventItemShadcn = ({ event, onClick, attendEvent, declineEvent, att
       </div>
 
       <div className='flex items-center gap-2 shrink-0'>
-        <EventItemSecondaryActions
+        <EventItemSecondaryActionsShadcn
           event={event}
           attendEvent={attendEvent}
           declineEvent={declineEvent}
