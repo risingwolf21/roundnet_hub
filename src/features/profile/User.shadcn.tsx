@@ -128,6 +128,7 @@ const Playerzone = ({ user }: { user: UserWithGroups }) => {
     if (error || !list) {
       toast.error('Fehler beim Laden des Profilbildes');
       captureException(error);
+      setLoading(false);
       return;
     }
     const filesToRemove = list.map((x) => `${user.id}/${x.name}`);
