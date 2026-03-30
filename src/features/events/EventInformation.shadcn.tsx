@@ -135,7 +135,7 @@ const EventInformationAttendanceState = ({ event, fetchMode }: Pick<EventInforma
                 place:
                   attendance
                     .filter((x) => x.state === 'WaitingAsTrial')
-                    .sort((a, b) => (isBefore(a.lastUpdate, b.lastUpdate) ? 1 : 0))
+                    .sort((a, b) => (isBefore(a.lastUpdate, b.lastUpdate) ? -1 : 1))
                     .findIndex((x) => x.user.id === user.id) + 1,
                 waitingListLength: attendance.filter((x) => x.state === 'WaitingAsTrial').length,
               })
