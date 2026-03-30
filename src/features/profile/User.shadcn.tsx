@@ -415,7 +415,7 @@ const Account = ({ user, handleSignOut }: { user: UserWithGroups, handleSignOut:
         return;
       }
 
-      updateUserMutation.mutate({
+      await updateUserMutation.mutateAsync({
         displayName,
         fullName,
         croppedImage,
