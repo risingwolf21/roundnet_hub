@@ -534,7 +534,7 @@ const EventWeatherData = ({ place, date }: { place: PlaceType; date: Date | null
   useEffect(() => {
     if (!import.meta.env.VITE_OPENWEATHER_API_KEY || !date) return;
 
-    if (isAfter(date, add(date, { days: 5 }))) return;
+    if (isAfter(date, add(new Date(), { days: 5 }))) return;
 
     fetch(
       `https://api.openweathermap.org/data/2.5/forecast?lat=${place.lat}&lon=${place.lon}&appid=${import.meta.env.VITE_OPENWEATHER_API_KEY}&units=metric&lang=de`
