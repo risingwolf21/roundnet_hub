@@ -18,10 +18,10 @@ const Toaster = ({ ...props }: ToasterProps) => {
       theme={theme as ToasterProps["theme"]}
       className="toaster group"
       icons={{
-        success: <CircleCheckIcon className="size-4" />,
-        info: <InfoIcon className="size-4" />,
-        warning: <TriangleAlertIcon className="size-4" />,
-        error: <OctagonXIcon className="size-4" />,
+        success: <CircleCheckIcon className="size-4 text-success-900" />, // Textfarbe angepasst an success-900
+        info: <InfoIcon className="size-4 text-info-500" />,
+        warning: <TriangleAlertIcon className="size-4 text-warning-900" />,
+        error: <OctagonXIcon className="size-4 text-error-900" />,
         loading: <Loader2Icon className="size-4 animate-spin" />,
       }}
       style={
@@ -34,11 +34,7 @@ const Toaster = ({ ...props }: ToasterProps) => {
       }
       toastOptions={{
         classNames: {
-          toast: "cn-toast",
-          success: "border-success-200 bg-success-50 text-success-900",
-          error: "border-destructive-200 bg-destructive-50 text-destructive-900",
-          warning: "border-warning-200 bg-warning-50 text-warning-900",
-          info: "border-info-200 bg-info-50 text-info-900",
+          toast: "group backdrop-blur-md"
         },
       }}
       {...props}

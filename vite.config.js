@@ -95,7 +95,7 @@ export default defineConfig(({ mode }) => {
     ].filter(Boolean),
     build: {
       target: 'es2020',
-      sourcemap: true,
+      sourcemap: false,
       outDir: 'build', // CRA's default build output
     },
     test: {
