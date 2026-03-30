@@ -162,7 +162,7 @@ export const PublicGroupInformationShadcn = () => {
               Object.entries(groupBy(group_users, (x) => x.role))
                 .sort(([roleA], [roleB]) => roleWeights[roleA] - roleWeights[roleB])
                 .map(([role, users]) => (
-                  <div key={role} className={cn("gap-2 flex w-full max-w-lg flex-col ", {
+                  <div key={role} className={cn("gap-2 flex w-full flex-col ", {
                     hidden: (role === 'admin' && !filter?.admin) ||
                       (role === 'user' && !filter?.user) ||
                       (role === 'joinRequested' && (group.user_group_role !== "admin" || !filter?.joinRequested)) ||
@@ -178,9 +178,26 @@ export const PublicGroupInformationShadcn = () => {
                       .map((x) => (
                         <div key={x.user.id} className="flex items-center justify-between rounded-md border p-2">
                           <div className="flex items-center gap-2">
-                            <Avatar>
-                              <AvatarImage src={x.user.avatarUrl || undefined} alt={x.user.name || undefined} />
-                              <AvatarFallback>{x.user.name ? x.user.name[0] : 'U'}</AvatarFallback>
+                            <Avatar {...(
+                              (role === "admin" || role === "trial" || role === "user" && group.user_group_role === "admin") && {
+                                onClick: () => {
+                                  if (selectedUsers.includes(x.user)) {
+                                    setSelectedUsers([...selectedUsers.filter((y) => y.id !== x.user.id)]);
+                                  } else {
+                                    setSelectedUsers([...selectedUsers, x.user]);
+                                  }
+                                }
+                              }
+                            )}>
+                              {
+                                selectedUsers.includes(x.user) ? <div className="flex flex-c items-center w-full h-full">
+                                  <CheckCircle2 />
+                                </div>
+                                  : <>
+                                    <AvatarImage src={x.user.avatarUrl || undefined} alt={x.user.name || undefined} />
+                                    <AvatarFallback>{x.user.name ? x.user.name[0] : 'U'}</AvatarFallback>
+                                  </>
+                              }
                             </Avatar>
                             <div>
                               <div>{x.user.name}</div>

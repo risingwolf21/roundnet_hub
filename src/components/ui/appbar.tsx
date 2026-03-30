@@ -53,7 +53,7 @@ export function AppBar({
   return (
     <header
       className={cn(
-        "sticky top-0 z-500 flex h-14 w-full items-center gap-4 bg-background/95 px-4 supports-[backdrop-filter]:bg-background md:px-6 transition-shadow",
+        "sticky top-0 z-500 flex h-14 w-full items-center gap-4 bg-background/95 px-4 supports-[backdrop-filter]:bg-background md:px-4 transition-shadow",
         scrolled ? "border-b shadow-sm" : "",
         className
       )}
@@ -61,14 +61,14 @@ export function AppBar({
     >
       <div className="flex items-center gap-2 md:gap-4 lg:w-1/3">
         {
-          primaryAction === "default" && <SidebarTrigger className={"-ml-1"} />
+          primaryAction === "default" && <SidebarTrigger className={"-ml-1 md:hidden"} />
         }
         {
           primaryAction === "back" && <Button
             variant="ghost"
             size="icon"
             onClick={() => navigate(-1)}
-            className="shrink-0 rounded-full md:hidden"
+            className="shrink-0 rounded-full -ml-1"
           >
             <ArrowLeft className="h-5 w-5" />
           </Button>
