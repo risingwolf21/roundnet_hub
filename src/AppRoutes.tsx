@@ -3,13 +3,15 @@ import { useMemo } from 'react';
 import { Navigate, Outlet, RouteObject, RouterProvider, useLocation } from 'react-router';
 import ErrorRouteElement from './components/ErrorRouteElement';
 import AuthLayout from './components/layout/AuthLayout';
+import { MainLayout } from './components/layout/MainLayout';
+import { useFeature } from './contexts/FeatureToggleContext';
 import { AdminAnalytics } from './features/admin/AdminAnalytics';
 import { useApplication } from './features/auth/ApplicationContext';
 import { FeatureNotAvailable, PermissionDeniedPage } from './features/auth/ErrorPage';
 import { GrantsProvider } from './features/auth/GrantsContext';
 import GrantsManager from './features/grants/GrantsManager';
 import HomePage from './features/homepage/HomePage';
-import UserScreenProvider from './features/profile/User';
+import UserScreenProvider from './features/profile/UserScreenProvider';
 import { lazyWithRetry } from './hooks/lazyWithRetry';
 import { Has } from './hooks/useGrants';
 import { sentryCreateBrowserRouter } from './instrument';
@@ -50,37 +52,45 @@ const Leaderboard = lazyWithRetry(() => import('./features/games/Leaderboard'));
 
 export const AppRoutes = () => {
   const { user } = useApplication();
+  const isShadcnUi = useFeature("enableShadcnUI");
 
-  const router = useMemo(() => createRouter(user), [user]);
+  const router = useMemo(() => createRouter(user, isShadcnUi), [user, isShadcnUi]);
 
   return <RouterProvider router={router} />;
 };
 
-const PrivateRoute = () => {
+const PrivateRoute = ({ isShadcn = false }: { isShadcn?: boolean }) => {
   const { user } = useApplication();
   const location = useLocation();
   if (!user) return <Navigate to="/auth/login" state={{ path: location.pathname + location.search }} />;
 
-  return (
-    <GrantsProvider user={user}>
-      <DialogsProvider>
-        <NotificationsProvider
-          slotProps={{
-            snackbar: {
-              sx: {
-                bottom: 'calc(8px + env(safe-area-inset-bottom))',
-              },
-            },
-          }}
-        >
-          <Outlet />
-        </NotificationsProvider>
-      </DialogsProvider>
+  const privateRoute = <DialogsProvider>
+    <NotificationsProvider
+      slotProps={{
+        snackbar: {
+          sx: {
+            bottom: 'calc(8px + env(safe-area-inset-bottom))',
+          },
+        },
+      }}
+    >
+      <Outlet />
+    </NotificationsProvider>
+  </DialogsProvider>
+
+  if (isShadcn) {
+    return <GrantsProvider user={user}>
+      <MainLayout>
+        {privateRoute}
+      </MainLayout>
     </GrantsProvider>
-  );
+  }
+  return <GrantsProvider user={user}>
+    {privateRoute}
+  </GrantsProvider>
 };
 
-const createRouter = (user: UserWithGroups | null) =>
+const createRouter = (user: UserWithGroups | null, isShadcnUi: boolean) =>
   sentryCreateBrowserRouter([
     {
       path: '/auth',
@@ -110,11 +120,11 @@ const createRouter = (user: UserWithGroups | null) =>
     },
     {
       path: '/',
-      element: <PrivateRoute />,
+      element: <PrivateRoute isShadcn={isShadcnUi} />,
       children: [
         {
           path: '',
-          errorElement: <ErrorRouteElement />,
+          errorElement: <ErrorRouteElement isShadcn={isShadcnUi} />,
           children: [
             {
               index: true,
@@ -151,7 +161,7 @@ const createRouter = (user: UserWithGroups | null) =>
             {
               path: '/user',
               element: <Outlet />,
-              errorElement: <ErrorRouteElement />,
+              errorElement: <ErrorRouteElement isShadcn={isShadcnUi} />,
               children: [
                 {
                   index: true,
@@ -182,7 +192,7 @@ const createRouter = (user: UserWithGroups | null) =>
                   <Outlet />
                 </Has>
               ),
-              errorElement: <ErrorRouteElement />,
+              errorElement: <ErrorRouteElement isShadcn={isShadcnUi} />,
               children: [
                 {
                   index: true,
@@ -209,7 +219,7 @@ const createRouter = (user: UserWithGroups | null) =>
                   <Outlet />
                 </Has>
               ),
-              errorElement: <ErrorRouteElement />,
+              errorElement: <ErrorRouteElement isShadcn={isShadcnUi} />,
               children: [
                 {
                   index: true,
@@ -228,7 +238,7 @@ const createRouter = (user: UserWithGroups | null) =>
             {
               path: '/groups',
               element: <Outlet />,
-              errorElement: <ErrorRouteElement />,
+              errorElement: <ErrorRouteElement isShadcn={isShadcnUi} />,
               children: [
                 {
                   index: true,
@@ -236,11 +246,11 @@ const createRouter = (user: UserWithGroups | null) =>
                 },
                 {
                   path: 'list',
-                  element: <PublicGroupList />,
+                  element: <PublicGroupList isShadcn={isShadcnUi} />,
                 },
                 {
                   path: ':groupId',
-                  element: <PublicGroupInformation />,
+                  element: <PublicGroupInformation isShadcn={isShadcnUi} />,
                 },
               ],
             },
@@ -251,7 +261,7 @@ const createRouter = (user: UserWithGroups | null) =>
                   <Outlet />
                 </Has>
               ),
-              errorElement: <ErrorRouteElement />,
+              errorElement: <ErrorRouteElement isShadcn={isShadcnUi} />,
               children: [
                 {
                   index: true,
@@ -259,7 +269,7 @@ const createRouter = (user: UserWithGroups | null) =>
                 },
                 {
                   path: 'list',
-                  element: <EventScreenProvider />,
+                  element: <EventScreenProvider isShadcn={isShadcnUi} />,
                 },
                 {
                   path: 'recurringEvents',
@@ -267,7 +277,7 @@ const createRouter = (user: UserWithGroups | null) =>
                 },
                 {
                   path: 'event/:selectedEventId',
-                  element: <EventInformationProvider />,
+                  element: <EventInformationProvider isShadcn={isShadcnUi} />,
                 },
               ],
             },
@@ -278,7 +288,7 @@ const createRouter = (user: UserWithGroups | null) =>
                   <Outlet />
                 </Has>
               ),
-              errorElement: <ErrorRouteElement />,
+              errorElement: <ErrorRouteElement isShadcn={isShadcnUi} />,
               children: [
                 {
                   index: true,
@@ -305,7 +315,7 @@ const createRouter = (user: UserWithGroups | null) =>
             {
               path: '/admin',
               element: <Outlet />,
-              errorElement: <ErrorRouteElement />,
+              errorElement: <ErrorRouteElement isShadcn={isShadcnUi} />,
               children: [
                 {
                   path: 'drinks',

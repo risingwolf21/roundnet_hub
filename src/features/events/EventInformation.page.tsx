@@ -18,7 +18,7 @@ import {
 import { useAllItems } from '@/tanstack/items';
 import { captureException } from '@sentry/react';
 import { useDialogs, useNotifications } from '@toolpad/core';
-import { useMemo, useState } from 'react';
+import { useMemo, useState } from "react";
 import { useTranslation } from 'react-i18next';
 import { useNavigate, useParams } from 'react-router';
 import { EventTable } from 'types/supabase';
@@ -38,8 +38,9 @@ import MenuItem from '@mui/material/MenuItem';
 import { useGrants } from '../auth/GrantsContext';
 import { TransformEventDialog } from './dialogs/TransformEventDialog';
 import EventAdminInformation from './EventAdminInformation';
+import EventInformationShadcn from './EventInformation.shadcn';
 
-const EventInformationProvider = () => {
+const EventInformationProvider = ({ isShadcn = false }: { isShadcn?: boolean }) => {
   const { selectedEventId } = useParams();
   const { user } = useGrants();
   const navigate = useNavigate();
@@ -96,6 +97,16 @@ const EventInformationProvider = () => {
 
   if (!event) {
     return null;
+  }
+
+  if (isShadcn) {
+    return <EventInformationShadcn
+      event={event}
+      selectedEventPlace={selectedEventPlace}
+      t={t}
+      keyHolders={keyHolders}
+      fetchMode={fetchMode}
+    />
   }
 
   return (

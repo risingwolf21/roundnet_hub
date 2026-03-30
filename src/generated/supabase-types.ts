@@ -40,7 +40,8 @@ export type Permission =
   | 'users.manage'
   | 'admin.analytics.view'
   | 'games.create.guest-player'
-  | 'games.create.guest-player.with_index';
+  | 'games.create.guest-player.with_index'
+  | 'testlab.shadcn';
 
 export type Feature =
   | 'challenges'

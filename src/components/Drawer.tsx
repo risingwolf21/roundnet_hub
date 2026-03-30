@@ -527,7 +527,6 @@ const DrawerContent = ({
 
 export const Drawer = ({ open, onClose, onOpen }: Props) => {
   const theme = useTheme();
-  console.log(theme.palette)
   const navigate = useNavigate();
   const { t } = useTranslation();
   const { user } = useGrants();

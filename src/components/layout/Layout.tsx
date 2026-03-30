@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router';
 import { useApplication } from '../../features/auth/ApplicationContext';
 import { Drawer, drawerWidth } from '../Drawer';
 
+import { useFeatureFlags } from '@/contexts/FeatureToggleContext';
 import AccountCircle from '@mui/icons-material/AccountCircle';
 import ArrowBack from '@mui/icons-material/ArrowBack';
 import Menu from '@mui/icons-material/Menu';
@@ -37,6 +38,7 @@ const Layout = ({
   const navigate = useNavigate();
   const { user } = useApplication();
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const { toggleFeature } = useFeatureFlags();
 
   return (
     <Box

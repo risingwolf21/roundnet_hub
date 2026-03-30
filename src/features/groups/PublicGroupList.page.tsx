@@ -1,7 +1,11 @@
 import Layout from '@/components/layout/Layout';
 import PublicGroupList from './PublicGroupList';
+import { PublicGroupListShadcn } from './PublicGroupList.shadcn';
 
-const PublicGroupListPage = () => {
+const PublicGroupListPage = ({ isShadcn }: { isShadcn: boolean }) => {
+  if (isShadcn) {
+    return <PublicGroupListShadcn />
+  }
   return (
     <Layout>
       <PublicGroupList />

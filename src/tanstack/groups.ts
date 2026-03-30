@@ -7,10 +7,17 @@ import { captureException } from '@sentry/react';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { Omit } from 'lodash';
 
+export const fetchGroupUsers = (groupId: string) =>
+  supabase
+    .from('group_user_mapping')
+    .select('*, user: user(*)').eq('group', groupId);
+
+
 export const groupKeys = {
   all: ['groups'] as const,
   joinRequested: () => [...groupKeys.all, 'joinRequested'] as const,
   single: (groupId?: string) => [...groupKeys.all, groupId] as const,
+  users: (groupId?: string) => [...groupKeys.all, groupId, 'users'] as const,
   singleForRole: (groupId: string, role: string) => [...groupKeys.all, groupId, role] as const,
 };
 
@@ -41,15 +48,27 @@ export const useGroup = (groupId?: string) =>
     queryFn: () => GroupsRepository.fetchSingleGroupWithUsers(groupId),
   });
 
+export const useGroupAllUsers = (groupId?: string) =>
+  useQuery<GroupUsers[]>({
+    queryKey: groupKeys.users(groupId!),
+    enabled: !!groupId,
+    queryFn: async () => {
+      const result = await fetchGroupUsers(groupId!);
+
+      if (result.error) {
+        return [];
+      }
+
+      return result.data;
+    },
+  });
+
 export const useGroupUsers = (role: GroupRole, groupId?: string) =>
   useQuery({
     queryKey: groupKeys.singleForRole(groupId!, role),
     enabled: !!groupId,
     queryFn: async () => {
-      const result = await supabase
-        .from('group_user_mapping')
-        .select('*, user: user(*)')
-        .eq('group', groupId!)
+      const result = await fetchGroupUsers(groupId!)
         .eq('role', role);
 
       if (result.error) {
@@ -100,19 +119,19 @@ export const useJoinGroup = (groupId: string, user: User, role: 'user' | 'admin'
         const newGroups = prevGroups.map((group) =>
           group.id === groupId
             ? {
-                ...group,
-                users: [
-                  ...group.users,
-                  {
-                    user: user,
-                    map: {
-                      group: groupId,
-                      role: role,
-                      user: user.id,
-                    },
+              ...group,
+              users: [
+                ...group.users,
+                {
+                  user: user,
+                  map: {
+                    group: groupId,
+                    role: role,
+                    user: user.id,
                   },
-                ],
-              }
+                },
+              ],
+            }
             : group
         );
         queryClient.setQueryData(groupKeys.all, newGroups);
@@ -325,9 +344,9 @@ export const useUpdateGroupMutation = (groupId?: string) =>
         const newGroups = prevGroups.map((x) =>
           x.id === groupId
             ? {
-                ...x,
-                ...group,
-              }
+              ...x,
+              ...group,
+            }
             : x
         );
         queryClient.setQueryData(['groups'], newGroups);
