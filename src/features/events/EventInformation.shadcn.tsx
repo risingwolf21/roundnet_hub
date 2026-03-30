@@ -385,7 +385,7 @@ const EventAttendanceTab = ({ event, attendance, changeAttendance }: { event: Ev
             </h4>
             <div className="space-y-3">
               {declined.map((attendance) => (
-                <div key={attendance.user} className="flex items-center gap-3 opacity-80">
+                <div key={attendance.user.id} className="flex items-center gap-3 opacity-80">
                   <Avatar>
                     <AvatarImage
                       src={attendance.user.avatarUrl || ""} />

@@ -165,7 +165,7 @@ export const PublicGroupInformationShadcn = () => {
                   <div key={role} className={cn("gap-2 flex w-full max-w-lg flex-col ", {
                     hidden: (role === 'admin' && !filter?.admin) ||
                       (role === 'user' && !filter?.user) ||
-                      (role === 'joinRequested' && !filter?.joinRequested && group.user_group_role !== "admin") ||
+                      (role === 'joinRequested' && (group.user_group_role !== "admin" || !filter?.joinRequested)) ||
                       (role === 'trial' && !filter?.trials)
                   })}>
                     <div className="text-sm font-semibold">
