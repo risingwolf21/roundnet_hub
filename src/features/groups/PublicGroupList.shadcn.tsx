@@ -71,7 +71,7 @@ export const PublicGroupListShadcn = () => {
             .filter((x) => x.parent_group === null)
             .sort((a, b) => a.name.localeCompare(b.name))
             .map((mainGroup) => (
-              <div key={mainGroup.id} className="gap-2 flex w-full max-w-lg flex-col">
+              <div key={mainGroup.id} className="gap-2 flex w-full flex-col">
                 {
                   groups.filter((x) => x.parent_group === null).length > 1 && <div className="text-sm font-semibold mb-2">
                     {mainGroup.name}

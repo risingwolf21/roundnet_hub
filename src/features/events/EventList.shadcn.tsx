@@ -77,10 +77,10 @@ const EventScreen = () => {
       />
 
       <PullToRefresh onRefresh={() => refetch()}>
-        <div className="flex w-full max-w-lg flex-col gap-2">
+        <div className="flex w-full items-center flex-col gap-2">
           {Object.entries(groupBy(events, (x) => startOfISOWeek(x.startingDateTime))).map(
             ([key, value]: [string, EventsUserView[]]) => (
-              <div key={key} className="flex w-full max-w-lg gap-2 px-2 flex-col">
+              <div key={key} className="flex w-full items-center gap-2 px-2 flex-col">
                 <div className="text-sm font-semibold ml-2">
                   {getISOWeek(key) === getISOWeek(new Date())
                     ? 'Diese Woche'
