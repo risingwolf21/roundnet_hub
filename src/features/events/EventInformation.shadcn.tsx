@@ -151,7 +151,7 @@ const EventInformationAttendanceState = ({ event, fetchMode }: Pick<EventInforma
     <Has perm={'event.signup'}>
       <div className="flex gap-2">
         {
-          (maxAttendeesExceeded(event, attendance) || answerDeadlineExpired(event)) &&
+          maxAttendeesExceeded(event, attendance) && !answerDeadlineExpired(event) &&
             !eventInThePast(event)
             ? <Button
               onClick={() => changeAttendance({ event: event, newState: 'Waiting', user })}
@@ -165,7 +165,7 @@ const EventInformationAttendanceState = ({ event, fetchMode }: Pick<EventInforma
               Warteliste
             </Button>
 
-            : (answerDeadlineExpired(event) && !eventInThePast(event))
+            : answerDeadlineExpired(event) && !eventInThePast(event)
               ? <Button
                 onClick={() => changeAttendance({ event: event, newState: 'RequestedAttendance', user })}
                 variant={event.user_state === 'RequestedAttendance' ? 'info' : 'outline'}

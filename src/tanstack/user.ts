@@ -67,6 +67,7 @@ const uploadAvatarImage = async (file: Blob, fileName: string, user: User) => {
 
     return data.publicUrl;
   }
+  return null;
 }
 
 export async function compress(file: Blob | File, convertSize: number) {
@@ -83,7 +84,7 @@ export const useUpdateUserProfile = (user: User) =>
   useMutation({
     mutationFn: async ({ displayName, fullName, avatarUrl, croppedImage }: { displayName: string, fullName: string, avatarUrl: string | null, croppedImage: string | null }) => {
 
-      let newAvatarUrl: string | undefined;
+      let newAvatarUrl: string | null = null;
       if (croppedImage) {
         const fileName = uuid() + '.jpg';
         const result = await compress(dataURLtoFile(croppedImage, fileName), 1000000)
