@@ -324,7 +324,7 @@ const EventAttendanceTab = ({ event, attendance, changeAttendance }: { event: Ev
           {attending.length > 0 ? (
             <div className="space-y-3">
               {attending.map((attendance) => (
-                <div key={attendance.user} className="flex items-center gap-3">
+                <div key={attendance.user.id} className="flex items-center gap-3">
                   <Avatar>
                     <AvatarImage
                       src={attendance.user.avatarUrl || ""} />
