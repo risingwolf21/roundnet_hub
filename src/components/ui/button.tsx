@@ -16,6 +16,10 @@ const buttonVariants = cva(
         ghost: "hover:bg-muted hover:text-foreground dark:hover:bg-muted/50 aria-expanded:bg-muted aria-expanded:text-foreground",
         destructive: "bg-destructive/10 hover:bg-destructive/20 focus-visible:ring-destructive/20 dark:focus-visible:ring-destructive/40 dark:bg-destructive/20 text-destructive focus-visible:border-destructive/40 dark:hover:bg-destructive/30",
         link: "text-primary underline-offset-4 hover:underline",
+        info: "bg-info-50 border-info-50 text-info-900 hover:bg-info-100 [&_svg]:text-info-500 dark:bg-info-200 dark:border-info-200 dark:text-info-900 dark:hover:bg-info-300",
+        success: "bg-success-50 border-success-50 text-success-900 hover:bg-success-100 [&_svg]:text-success-500 dark:bg-success-200 dark:border-success-200 dark:text-success-900 dark:hover:bg-success-300",
+        error: "bg-error-50 border-error-50 text-error-900 hover:bg-error-100 [&_svg]:text-error-500 dark:bg-error-200 dark:border-error-200 dark:text-error-900 dark:hover:bg-error-300",
+        warning: "bg-warning-50 border-warning-50 text-warning-900 hover:bg-warning-100 [&_svg]:text-warning-500 dark:bg-warning-200 dark:border-warning-200 dark:text-warning-900 dark:hover:bg-warning-300",
       },
       size: {
         default: "h-8 gap-1.5 px-2.5 has-data-[icon=inline-end]:pr-2 has-data-[icon=inline-start]:pl-2",

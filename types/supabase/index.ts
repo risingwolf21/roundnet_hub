@@ -6,6 +6,7 @@ import { fetchMatch } from '@/repository/GamesRepository';
 import { fetchItemHistory, fetchItems } from '@/repository/KeysRepository';
 import { fetchGroups, fetchSimpleUser } from '@/repository/UserRepository';
 import { fetchFullEventPledges } from '@/tanstack/events';
+import { fetchGroupUsers } from '@/tanstack/groups';
 import { Database, Enums } from '@/types/supabase-generated.types';
 import { GamesTable } from '@/types/supabaseTypes';
 import { QueryData } from '@supabase/supabase-js';
@@ -62,6 +63,7 @@ declare global {
   type FullEvent = QueryData<ReturnType<typeof fetchEvents>> extends Array<infer U> ? U : never;
   type FullMatch = QueryData<ReturnType<typeof fetchMatch>> extends Array<infer U> ? U : never;
   type FullEventPledges = QueryData<ReturnType<typeof fetchFullEventPledges>> extends Array<infer U> ? U : never;
+  type GroupUsers = QueryData<ReturnType<typeof fetchGroupUsers>> extends Array<infer U> ? U : never;
 
   type PaymentInsert = TablesInsert<'payments'>;
   type EventCommentInsert = TablesInsert<'event_comments'>;

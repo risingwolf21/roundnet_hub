@@ -1,12 +1,11 @@
 import { PullToRefresh } from '@/components/pull-to-refresh/PullToRefresh';
 import { AppBar } from '@/components/ui/appbar';
 import { useFetchMode } from '@/hooks/useFetchMode';
-import { Has } from '@/hooks/useGrants';
 import { sendMetricsToSentry } from '@/instrument';
 import { useEvents, useUpdateAttendanceMutation } from '@/tanstack/events';
 import { EventsUserView } from '@/types/supabaseTypes';
 import AddIcon from '@mui/icons-material/Add';
-import { Button, Fab, List, Typography } from '@mui/material';
+import { Button, List, Typography } from '@mui/material';
 import { Stack } from '@mui/system';
 import { withProfiler } from '@sentry/react';
 import { useDialogs } from '@toolpad/core';
@@ -37,21 +36,6 @@ const EventScreen = () => {
 
   const updateAttendance = useUpdateAttendanceMutation(fetchMode);
 
-  const createEventFab = (
-    <Has perm={'event.edit'}>
-      <Fab
-        hidden={isLoading}
-        key="insertEvent"
-        color={'secondary'}
-        onClick={async () => {
-          await dialogs.open(CreateOrUpdateEventDialog, { option: 'InsertEvent' });
-        }}
-      >
-        {<AddIcon sx={{ color: 'white' }} />}
-      </Fab>
-    </Has>
-  );
-
   if (isLoading) {
     return (
       <List>
@@ -76,14 +60,6 @@ const EventScreen = () => {
         <Button variant="contained" onClick={() => navigate('/groups/list')}>
           Gruppe beitreten
         </Button>
-
-        <Stack
-          direction={'row-reverse'}
-          spacing={2}
-          sx={{ position: 'fixed', bottom: 'max(16px, env(safe-area-inset-bottom))', right: '16px' }}
-        >
-          {createEventFab}
-        </Stack>
       </Stack>
     );
   }
@@ -92,6 +68,12 @@ const EventScreen = () => {
     <div className="flex flex-col h-full w-full">
       <AppBar
         title="Events Übersicht"
+        user={user}
+        actions={
+          <Button variant="text" color="inherit" onClick={() => dialogs.open(CreateOrUpdateEventDialog, { option: 'InsertEvent' })}>
+            <AddIcon />
+          </Button>
+        }
       />
 
       <PullToRefresh onRefresh={() => refetch()}>
@@ -128,14 +110,6 @@ const EventScreen = () => {
               </div>
             )
           )}
-
-          <Stack
-            direction={'row-reverse'}
-            spacing={2}
-            sx={{ position: 'fixed', bottom: 'max(16px, env(safe-area-inset-bottom))', right: '16px', zIndex: 1 }}
-          >
-            {createEventFab}
-          </Stack>
         </div>
       </PullToRefresh>
     </div>

@@ -127,7 +127,7 @@ export const UserScreen = ({ user, handleSignOut }: UserScreenProps) => {
               </ListItem>
             </CardActionArea>
           </Card>
-          <Has perm={"supabase.admin"}>
+          <Has perm={"testlab.shadcn"}>
             <Card sx={{ borderRadius: 2, py: 0, px: 0, mt: 1 }}>
               <CardActionArea sx={{ pl: 1 }} >
                 <ListItem secondaryAction={

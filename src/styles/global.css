@@ -85,17 +85,33 @@ body,
   --color-sidebar-ring: var(--sidebar-ring);
 
     
+  /* INFO */
+  --color-info-50: var(--info-50);
+  --color-info-500: var(--info-500);
+  --color-info-900: var(--info-900);
+  --color-info: var(--info);
+  --color-info-foreground: var(--info-foreground);
+
+  /* SUCCESS */
+  --color-success-50: var(--success-50);
+  --color-success-500: var(--success-500);
+  --color-success-900: var(--success-900);
   --color-success: var(--success);
   --color-success-foreground: var(--success-foreground);
 
+  /* ERROR */
+  --color-error-50: var(--error-50);
+  --color-error-500: var(--error-500);
+  --color-error-900: var(--error-900);
   --color-error: var(--error);
   --color-error-foreground: var(--error-foreground);
-  
+
+  /* WARNING */
+  --color-warning-50: var(--warning-50);
+  --color-warning-500: var(--warning-500);
+  --color-warning-900: var(--warning-900);
   --color-warning: var(--warning);
   --color-warning-foreground: var(--warning-foreground);
-  
-  --color-info: var(--info);
-  --color-info-foreground: var(--info-foreground);
 }
  
 :root {
@@ -144,17 +160,33 @@ body,
   --radius: 0.625rem;
 
 
-  --success: #2e7d32;
-  --success-foreground: #fff;
-
-  --error: #D32F2F;
-  --error-foreground: #fff;
-  
-  --warning: #ed6c02;
-  --warning-foreground: #fff;
-  
+/* INFO */
+  --info-50: #e5f6fd;
+  --info-500: #03a9f4;
+  --info-900: #01579b;
   --info: #0288d1;
-  --info-foreground: #fff;
+  --info-foreground: #ffffff;
+
+  /* SUCCESS */
+  --success-50: #edf7ed;
+  --success-500: #4caf50;
+  --success-900: #1b5e20;
+  --success: #2e7d32;
+  --success-foreground: #ffffff;
+
+  /* ERROR */
+  --error-50: #fdeded;
+  --error-500: #ef5350;
+  --error-900: #c62828;
+  --error: #d32f2f;
+  --error-foreground: #ffffff;
+
+  /* WARNING */
+  --warning-50: #fff4e5;
+  --warning-500: #ff9800;
+  --warning-900: #e65100;
+  --warning: #ed6c02;
+  --warning-foreground: #ffffff;
 }
 
 .dark {

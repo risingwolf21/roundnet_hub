@@ -3,7 +3,7 @@ import { Has } from '@/hooks/useGrants';
 import { Bell, ChartArea, Database, Euro, History, Home, KeyRound, Logs, Send, Swords, Trophy, User, Users, Volleyball, Wine } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useLocation, useNavigate } from "react-router";
-import { Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarMenu, SidebarMenuBadge, SidebarMenuButton, SidebarMenuItem, SidebarSeparator } from '../ui/sidebar';
+import { Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarMenu, SidebarMenuBadge, SidebarMenuButton, SidebarMenuItem, SidebarSeparator, useSidebar } from '../ui/sidebar';
 
 type DrawerCategoryType = {
   key: string
@@ -31,6 +31,7 @@ export function AppSidebar() {
   const navigate = useNavigate();
   const location = useLocation();
 
+  const { setOpenMobile } = useSidebar();
   const tab = location.pathname.substring(1) || "home";
 
   const categories: DrawerCategoryType[] = [
@@ -253,7 +254,7 @@ export function AppSidebar() {
         {categories.map((category, index) => {
 
           const CategoryContent = (
-            <SidebarGroup key={category.key}>
+            <SidebarGroup>
               {category.header && (
                 <SidebarGroupLabel>{category.header}</SidebarGroupLabel>
               )}
@@ -265,8 +266,11 @@ export function AppSidebar() {
                     const component = <SidebarMenuItem key={item.path}>
                       <SidebarMenuButton
                         isActive={isActive}
-                        onClick={() => navigate(`/${item.path}`)}
-                        tooltip={item.title} // Gut für eingeklappte (collapsed) Sidebars
+                        onClick={() => {
+                          setOpenMobile(false);
+                          navigate(`/${item.path}`);
+                        }}
+                        tooltip={item.title}
                       >
                         {item.icon}
                         <div className='text-lg ml-2'>{item.title}</div>
@@ -279,7 +283,7 @@ export function AppSidebar() {
                     </SidebarMenuItem>
                     if (item.permission) {
                       return (
-                        <Has key={category.key} feat={item.permission.feat} perm={item.permission.perm}>
+                        <Has key={item.path} feat={item.permission.feat} perm={item.permission.perm}>
                           {component}
                         </Has>
                       )

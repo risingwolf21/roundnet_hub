@@ -246,11 +246,11 @@ const createRouter = (user: UserWithGroups | null, isShadcnUi: boolean) =>
                 },
                 {
                   path: 'list',
-                  element: <PublicGroupList />,
+                  element: <PublicGroupList isShadcn={isShadcnUi} />,
                 },
                 {
                   path: ':groupId',
-                  element: <PublicGroupInformation />,
+                  element: <PublicGroupInformation isShadcn={isShadcnUi} />,
                 },
               ],
             },

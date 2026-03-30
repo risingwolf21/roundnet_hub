@@ -260,3 +260,11 @@ export function postgresIntervalToDuration(interval: string): Duration {
 
   return d;
 }
+
+export const getInitials = (name: string) => {
+  return name
+    .split(' ')
+    .map(n => n[0])
+    .join('')
+    .toUpperCase();
+};
