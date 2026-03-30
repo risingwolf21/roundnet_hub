@@ -151,7 +151,7 @@ const EventInformationAttendanceState = ({ event, fetchMode }: Pick<EventInforma
     <Has perm={'event.signup'}>
       <div className="flex gap-2">
         {
-          (maxAttendeesExceeded(event, attendance) && answerDeadlineExpired(event)) &&
+          (maxAttendeesExceeded(event, attendance) || answerDeadlineExpired(event)) &&
             !eventInThePast(event)
             ? <Button
               onClick={() => changeAttendance({ event: event, newState: 'Waiting', user })}

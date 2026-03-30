@@ -123,7 +123,7 @@ const Playerzone = ({ user }: { user: UserWithGroups }) => {
   };
 
   const handleChangeProfilePicture = async () => {
-    setLoading(false);
+    setLoading(true);
     const { data: list, error } = await supabase.storage.from('user').list(`${user.id}`);
     if (error || !list) {
       toast.error('Fehler beim Laden des Profilbildes');
