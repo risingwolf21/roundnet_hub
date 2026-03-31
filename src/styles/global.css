@@ -5,40 +5,10 @@
  
 @custom-variant dark (&:is(.dark *));
 
-html {
-  padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
-  min-height: calc(100% + env(safe-area-inset-top));
-}
-
-body {
-  min-height: -webkit-fill-available;
-  margin: 0;
-  /* overflow: hidden; */
-}
-
-:root {
-  /* Fallback für alte Browser */
-  --app-vh: 100dvh;
-}
-
-#root {
-  min-height: 100svh;
-  min-height: var(--app-vh);
-}
-
-/* html,
-body,
-#root {
-  overscroll-behavior-y: none;
+html, body {
   overscroll-behavior: none;
-  overflow: hidden;
-}
-
-.scroll-container {
-  overflow: auto;
   -webkit-overflow-scrolling: touch;
-  overscroll-behavior: contain;
-} */
+}
 
 
 @theme inline {

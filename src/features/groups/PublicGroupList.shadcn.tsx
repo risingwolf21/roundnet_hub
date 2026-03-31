@@ -51,14 +51,15 @@ export const PublicGroupListShadcn = () => {
 
 
 
-  return <div className="min-h-screen bg-background text-foreground overscroll-none">
+  return <div>
     <AppBar
       className='!border-b !shadow-sm'
       title={"Gruppen"}
       primaryAction="default"
       user={user}
     />
-    <main className='flex-1 overflow-y-auto'>
+
+    <main className='flex-1 size-full'>
       <PullToRefresh
         onRefresh={() => {
           refetch();
@@ -66,7 +67,10 @@ export const PublicGroupListShadcn = () => {
           queryClient.invalidateQueries({ queryKey: authKeys.currentUserGrants(user.id) });
         }}
       >
-        <div className="flex-1 overflow-y-auto p-4 space-y-2">
+        <div
+          className="flex flex-col p-4 space-y-2"
+          style={{ paddingBottom: 'calc(6rem + env(safe-area-inset-bottom))' }}
+        >
           {groups
             .filter((x) => x.parent_group === null)
             .sort((a, b) => a.name.localeCompare(b.name))
@@ -127,26 +131,28 @@ export const PublicGroupListShadcn = () => {
               </div>
             ))}
         </div>
-        <div className="absolute bottom-6 right-6">
-          <Button
-            size="icon"
-            className="h-14 w-14 rounded-full shadow-lg hover:shadow-xl bg-primary text-primary-foreground transition-all hover:-translate-y-1 active:translate-y-0 active:shadow-md"
-            onClick={async () => {
-              const result = await dialogs.open(CreateOrUpdateGroupDialog, { user });
-              if (result && result !== 'closed') {
-                refetch();
-                toast.success('Gruppe wurde erfolgreich erstellt.');
-              } else if (!result) {
-                toast.error('Gruppe konnte nicht erstellt werden.');
-              }
-            }}
-          >
-            <Plus className="h-6 w-6" />
-            <span className="sr-only">Neue Gruppe erstellen</span>
-          </Button>
-        </div>
       </PullToRefresh>
-
+      <div
+        className="absolute right-6 z-50"
+        style={{ bottom: 'calc(1.5rem + env(safe-area-inset-bottom))' }}
+      >
+        <Button
+          size="icon"
+          className="h-14 w-14 rounded-full shadow-lg hover:shadow-xl bg-primary text-primary-foreground transition-all hover:-translate-y-1 active:translate-y-0 active:shadow-md"
+          onClick={async () => {
+            const result = await dialogs.open(CreateOrUpdateGroupDialog, { user });
+            if (result && result !== 'closed') {
+              refetch();
+              toast.success('Gruppe wurde erfolgreich erstellt.');
+            } else if (!result) {
+              toast.error('Gruppe konnte nicht erstellt werden.');
+            }
+          }}
+        >
+          <Plus className="h-6 w-6" />
+          <span className="sr-only">Neue Gruppe erstellen</span>
+        </Button>
+      </div>
     </main>
   </div>
 }

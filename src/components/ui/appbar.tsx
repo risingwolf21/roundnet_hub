@@ -53,7 +53,7 @@ export function AppBar({
   return (
     <header
       className={cn(
-        "sticky top-0 z-500 flex h-14 w-full items-center gap-4 bg-background/95 px-4 supports-[backdrop-filter]:bg-background md:px-4 transition-shadow",
+        "sticky top-0 z-50 flex h-14 w-full items-center gap-4 bg-background/95 px-4 supports-[backdrop-filter]:bg-background md:px-4 transition-shadow",
         scrolled ? "border-b shadow-sm" : "",
         className
       )}

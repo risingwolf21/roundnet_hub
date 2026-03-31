@@ -1,3 +1,4 @@
+import { PullToRefresh } from "@/components/pull-to-refresh/PullToRefresh";
 import {
   Alert,
   AlertAction,
@@ -11,7 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Has } from "@/hooks/useGrants";
-import { useAddCommentMutation, useAttendance, useComments, useUpdateAttendanceMutation } from "@/tanstack/events";
+import { useAddCommentMutation, useAttendance, useComments, useEvent, useUpdateAttendanceMutation } from "@/tanstack/events";
 import { answerDeadlineExpired, eventInThePast, EventsUserView, FullAttendance, FullComment, maxAttendeesExceeded } from '@/types/supabaseTypes';
 import { formatSafeDateFromDatabase, getInitials } from "@/utils";
 import { Separator } from '@base-ui/react/separator';
@@ -304,6 +305,7 @@ const EventAttendanceTab = ({ event, attendance, changeAttendance }: { event: Ev
     [attendance]
   );
   const declined = useMemo(() => attendance.filter((x) => x.state === 'Declined'), [attendance]);
+  const requested = useMemo(() => attendance.filter((x) => x.state === 'RequestedAttendance'), [attendance]);
   const waiting = useMemo(() => attendance.filter((x) => x.state === 'Waiting' || x.state === 'WaitingAsTrial'), [attendance]);
 
   return <TabsContent value="attendance" className="m-0">
@@ -344,6 +346,34 @@ const EventAttendanceTab = ({ event, attendance, changeAttendance }: { event: Ev
             <p className="text-sm text-muted-foreground py-2">Noch keine Zusagen.</p>
           )}
         </div>
+        {/* Requested Group */}
+        {requested.length > 0 && (
+          <div className="p-4 border-b last:border-0 bg-secondary/5">
+            <h4 className="text-sm font-semibold text-muted-foreground mb-3 flex items-center justify-between">
+              <span>Anfragen ({requested.length})</span>
+            </h4>
+            <div className="space-y-3">
+              {requested.map((attendance) => (
+                <div key={attendance.user.id} className="flex items-center gap-3 opacity-80">
+                  <Avatar>
+                    <AvatarImage
+                      src={attendance.user.avatarUrl || ""} />
+                    <AvatarFallback className="bg-primary text-primary-foreground">{getInitials(attendance.user.name ?? "User")}</AvatarFallback>
+                  </Avatar>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium truncate">{attendance.user?.name}</p>
+                  </div>
+                  <Badge variant="secondary" className="text-[12px] h-6">Wartend</Badge>
+                  <Has perm={"event.manage.attendees"}>
+                    <Button variant="outline" size="icon" className="ml-1" onClick={() => changeAttendance({ user: attendance.user, event, newState: 'Attending' })}>
+                      <Check className="size-4" />
+                    </Button>
+                  </Has>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Waiting Group */}
         {waiting.length > 0 && (
@@ -583,8 +613,16 @@ const EventWeatherData = ({ place, date }: { place: PlaceType; date: Date | null
 const EventInformationShadcn = ({ event, selectedEventPlace, fetchMode }: EventInformationProps) => {
   const updateAttendance = useUpdateAttendanceMutation(fetchMode);
   const { user } = useGrants();
-  const { data: comments = [] } = useComments(event.id);
-  const { data: attendance = [], isLoading } = useAttendance(event.id);
+  const { data: comments = [], refetch: refetchComments } = useComments(event.id);
+  const { data: attendance = [], isLoading, refetch: refetchAttendance } = useAttendance(event.id);
+
+  const { refetch: refetchEvent } = useEvent(event.id);
+
+  const refetch = () => {
+    refetchEvent();
+    refetchComments();
+    refetchAttendance();
+  }
 
   const changeAttendance = ({
     user,
@@ -605,111 +643,226 @@ const EventInformationShadcn = ({ event, selectedEventPlace, fetchMode }: EventI
     );
   }
 
-  return <div className="min-h-screen bg-background text-foreground">
+  return <div>
     <AppBar
       className='!border-b !shadow-sm'
-      title={event.title}
+      title={"Eventdetails"}
       primaryAction="back"
-      actions={
-        <Button variant="ghost" className="relative h-8 w-8 rounded-full ml-1">
-          <Avatar className="h-8 w-8">
-            <AvatarImage src="/avatars/04.png" alt="@user" />
-            <AvatarFallback className="bg-primary text-primary-foreground">ZK</AvatarFallback>
-          </Avatar>
-        </Button>
-      }
+      user={user}
     />
-    <main className='flex-1 overflow-y-auto'>
-      <div className="mx-auto max-w-2xl w-full p-4 space-y-4">
-
-        <Card className="border-t-4 border-t-[color:var(--group-color)]"
-          style={{ "--group-color": event.group?.color ?? '#000000' } as React.CSSProperties}>
-          <CardHeader className="pb-4">
-            <div className="flex justify-between items-start gap-4">
-              <div className="space-y-1.5">
-                <Badge variant="outline" className="mb-2 w-fit font-medium border-[color:var(--group-color)] bg-[color:var(--group-color)]/5 text-[color:var(--group-color)]">
-                  {event.group?.name || "Allgemein"}
-                </Badge>
-                <CardTitle className="text-xl sm:text-2xl leading-tight">
-                  {event.title}
-                </CardTitle>
-                {event.isCancelled && (
-                  <Badge variant="destructive" className="mt-2 text-sm uppercase font-bold tracking-wider">
-                    Fällt aus
+    <main className='flex-1 size-full'>
+      <PullToRefresh onRefresh={() => refetch()}>
+        <div className="mx-auto max-w-2xl w-full p-4 space-y-4">
+          <Card className="border-t-4 border-t-[color:var(--group-color)]"
+            style={{ "--group-color": event.group?.color ?? '#000000' } as React.CSSProperties}>
+            <CardHeader className="pb-4">
+              <div className="flex justify-between items-start gap-4">
+                <div className="space-y-1.5">
+                  <Badge variant="outline" className="mb-2 w-fit font-medium border-[color:var(--group-color)] bg-[color:var(--group-color)]/5 text-[color:var(--group-color)]">
+                    {event.group?.name || "Allgemein"}
                   </Badge>
-                )}
-              </div>
-            </div>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid grid-cols-1 min-[400px]:grid-cols-2 gap-4">
-              <div className="flex items-start gap-3 text-sm text-foreground">
-                <Calendar className="h-5 w-5 text-muted-foreground shrink-0 mt-0.5" />
-                <div>
-                  <p className="font-medium">{format(event.startingDateTime, "dd.MM.yyyy HH:mm")}</p>
-                  <p className="text-muted-foreground text-xs mt-0.5">bis {format(event.endDateTime, "dd.MM.yyyy HH:mm")}</p>
+                  <CardTitle className="text-xl sm:text-2xl font-semibold leading-tight">
+                    {event.title}
+                  </CardTitle>
+                  {event.isCancelled && (
+                    <Badge variant="destructive" className="mt-2 text-sm uppercase font-bold tracking-wider">
+                      Fällt aus
+                    </Badge>
+                  )}
                 </div>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-1 min-[400px]:grid-cols-2 gap-4">
+                <div className="flex items-start gap-3 text-sm text-foreground">
+                  <Calendar className="h-5 w-5 text-muted-foreground shrink-0 mt-0.5" />
+                  <div>
+                    <p className="font-medium">{format(event.startingDateTime, "dd.MM.yyyy HH:mm")}</p>
+                    <p className="text-muted-foreground text-xs mt-0.5">bis {format(event.endDateTime, "dd.MM.yyyy HH:mm")}</p>
+                  </div>
+                </div>
+
+                {
+                  selectedEventPlace && (
+                    <EventWeatherData place={selectedEventPlace} date={formatSafeDateFromDatabase(event?.startingDateTime)} />
+                  )
+                }
+
+                {event.place && (
+                  <div className="flex items-start gap-3 text-sm text-foreground">
+                    <MapPin className="h-5 w-5 text-muted-foreground shrink-0 mt-0.5" />
+                    <div>
+                      <p className="font-medium">{selectedEventPlace?.name || event.place}</p>
+                      <a
+                        href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(event.place)}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-primary text-xs hover:underline mt-0.5 inline-block"
+                      >
+                        Route planen
+                      </a>
+                    </div>
+                  </div>
+                )}
               </div>
 
               {
-                selectedEventPlace && (
-                  <EventWeatherData place={selectedEventPlace} date={formatSafeDateFromDatabase(event?.startingDateTime)} />
+                event.isCancelled && (
+                  <Alert variant={"error"}>
+                    <InfoIcon />
+                    <AlertTitle>Dieses Event wurde <strong>abgesagt</strong></AlertTitle>
+                  </Alert>
                 )
               }
+              {answerDeadlineExpired(event) && event.answerDeadline && !event.isCancelled && (
+                <Alert variant={"info"}>
+                  <InfoIcon />
+                  <AlertTitle>{t('events.information.answerDeadlineExceeded', {
+                    answerDeadline: new Date(event.answerDeadline ?? new Date()),
+                  })}</AlertTitle>
+                </Alert>
+              )}
+              <EventInformationAttendanceState event={event} fetchMode={fetchMode} />
+            </CardContent>
+          </Card>
 
-              {event.place && (
-                <div className="flex items-start gap-3 text-sm text-foreground">
-                  <MapPin className="h-5 w-5 text-muted-foreground shrink-0 mt-0.5" />
-                  <div>
-                    <p className="font-medium">{selectedEventPlace?.name || event.place}</p>
-                    <a
-                      href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(event.place)}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-primary text-xs hover:underline mt-0.5 inline-block"
-                    >
-                      Route planen
-                    </a>
+          <Tabs defaultValue={"information"} className="w-full mt-6">
+            <TabsList className="grid w-full grid-cols-3 bg-white border !h-12 shadow-sm">
+              <TabsTrigger value="information" className="h-10 data-[state=active]:bg-primary/5">Information</TabsTrigger>
+              <TabsTrigger value="attendance" className="h-10 data-[state=active]:bg-primary/5">Teilnehmer ({attendance.filter(x => ["Attending", "AttendingAsTrainer"].includes(x.state)).length})</TabsTrigger>
+              <TabsTrigger value="comments" className="h-10 data-[state=active]:bg-primary/5">Kommentare ({comments.length})</TabsTrigger>
+            </TabsList>
+            <div className="pt-4">
+              <EventInformationTab event={event} selectedEventPlace={selectedEventPlace} />
+              <EventAttendanceTab event={event} attendance={attendance} changeAttendance={changeAttendance} />
+              <EventCommentsTab event={event} user={user} comments={comments} />
+            </div>
+          </Tabs>
+        </div>
+      </PullToRefresh>
+    </main>
+  </div >
+};
+
+import { Skeleton } from "@/components/ui/skeleton";
+
+export const EventInformationSkeleton = () => {
+  return (
+    <div className="flex flex-col h-full w-full bg-background text-foreground overscroll-none min-h-0">
+      {/* AppBar Skeleton */}
+      <div
+        className="shrink-0 bg-background relative z-10"
+        style={{ paddingTop: 'env(safe-area-inset-top)' }}
+      >
+        <AppBar
+          className='!border-b !shadow-sm'
+          title={""}
+          primaryAction="back"
+          user={null as any} // oder ein Mock-User Objekt
+        />
+      </div>
+
+      <main className='flex-1 relative flex flex-col min-h-0 overflow-hidden'>
+        <div className="flex-1 overflow-y-auto overscroll-none w-full relative min-h-0">
+          <div className="mx-auto max-w-2xl w-full p-4 space-y-4 pb-[calc(6rem+env(safe-area-inset-bottom))]">
+
+            {/* Top Card Skeleton */}
+            <Card className="border-t-4 border-t-muted">
+              <CardHeader className="pb-4">
+                <div className="space-y-3">
+                  <Skeleton className="h-5 w-24 rounded-full" /> {/* Badge */}
+                  <Skeleton className="h-7 w-3/4" /> {/* Title */}
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div className="grid grid-cols-1 min-[400px]:grid-cols-2 gap-4">
+                  {/* Date / Time */}
+                  <div className="flex items-start gap-3">
+                    <Skeleton className="h-5 w-5 rounded-full shrink-0" />
+                    <div className="space-y-2 flex-1">
+                      <Skeleton className="h-4 w-32" />
+                      <Skeleton className="h-3 w-24" />
+                    </div>
+                  </div>
+
+                  {/* Weather */}
+                  <div className="flex items-start gap-3">
+                    <Skeleton className="h-5 w-5 rounded-full shrink-0" />
+                    <div className="space-y-2 flex-1">
+                      <Skeleton className="h-4 w-28" />
+                      <Skeleton className="h-3 w-20" />
+                    </div>
+                  </div>
+
+                  {/* Location */}
+                  <div className="flex items-start gap-3">
+                    <Skeleton className="h-5 w-5 rounded-full shrink-0" />
+                    <div className="space-y-2 flex-1">
+                      <Skeleton className="h-4 w-40" />
+                      <Skeleton className="h-3 w-24" />
+                    </div>
                   </div>
                 </div>
-              )}
+
+                {/* Attendance Buttons Skeleton */}
+                <div className="flex flex-col gap-y-4 pt-2">
+                  <Skeleton className="h-4 w-32" /> {/* "Deine Teilnahme" Text */}
+                  <div className="flex gap-2">
+                    <Skeleton className="h-10 flex-1 rounded-md" /> {/* Teilnehmen Button */}
+                    <Skeleton className="h-10 flex-1 rounded-md" /> {/* Absagen Button */}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Tabs Skeleton */}
+            <div className="w-full mt-6 space-y-4">
+              <div className="flex w-full gap-2 h-12 p-1 bg-muted/50 rounded-md">
+                <Skeleton className="h-full w-1/3 rounded-sm" />
+                <Skeleton className="h-full w-1/3 rounded-sm" />
+                <Skeleton className="h-full w-1/3 rounded-sm" />
+              </div>
+
+              {/* Tab Content Skeleton (Information Tab) */}
+              <Card className="pt-0">
+                <CardHeader className="border-b !py-4">
+                  <Skeleton className="h-5 w-32" />
+                </CardHeader>
+                <CardContent className="space-y-4 pt-4">
+                  <div className="space-y-2">
+                    <Skeleton className="h-4 w-24" />
+                    <Skeleton className="h-4 w-full" />
+                    <Skeleton className="h-4 w-5/6" />
+                    <Skeleton className="h-4 w-4/6" />
+                  </div>
+
+                  <Skeleton className="h-[1px] w-full my-4" /> {/* Separator */}
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="flex items-center gap-2">
+                      <Skeleton className="h-4 w-4 rounded-full" />
+                      <div className="space-y-1">
+                        <Skeleton className="h-3 w-16" />
+                        <Skeleton className="h-4 w-24" />
+                      </div>
+                    </div>
+                  </div>
+
+                  <Skeleton className="h-[1px] w-full my-4" /> {/* Separator */}
+
+                  <div className="space-y-3">
+                    <Skeleton className="h-4 w-20" />
+                    <Skeleton className="h-48 w-full rounded-lg" /> {/* Map Skeleton */}
+                  </div>
+                </CardContent>
+              </Card>
             </div>
 
-            {
-              event.isCancelled && (
-                <Alert variant={"error"}>
-                  <InfoIcon />
-                  <AlertTitle>Dieses Event wurde <strong>abgesagt</strong></AlertTitle>
-                </Alert>
-              )
-            }
-            {answerDeadlineExpired(event) && event.answerDeadline && !event.isCancelled && (
-              <Alert variant={"info"}>
-                <InfoIcon />
-                <AlertTitle>{t('events.information.answerDeadlineExceeded', {
-                  answerDeadline: new Date(event.answerDeadline ?? new Date()),
-                })}</AlertTitle>
-              </Alert>
-            )}
-            <EventInformationAttendanceState event={event} fetchMode={fetchMode} />
-          </CardContent>
-        </Card>
-
-        <Tabs defaultValue={"information"} className="w-full mt-6">
-          <TabsList className="grid w-full grid-cols-3 bg-white border !h-12 shadow-sm">
-            <TabsTrigger value="information" className="h-10 data-[state=active]:bg-primary/5">Information</TabsTrigger>
-            <TabsTrigger value="attendance" className="h-10 data-[state=active]:bg-primary/5">Teilnehmer ({attendance.filter(x => ["Attending", "AttendingAsTrainer"].includes(x.state)).length})</TabsTrigger>
-            <TabsTrigger value="comments" className="h-10 data-[state=active]:bg-primary/5">Kommentare ({comments.length})</TabsTrigger>
-          </TabsList>
-          <div className="pt-4">
-            <EventInformationTab event={event} selectedEventPlace={selectedEventPlace} />
-            <EventAttendanceTab event={event} attendance={attendance} changeAttendance={changeAttendance} />
-            <EventCommentsTab event={event} user={user} comments={comments} />
           </div>
-        </Tabs>
-      </div>
-    </main >
-  </div >
+        </div>
+      </main>
+    </div>
+  );
 };
 
 export default EventInformationShadcn;

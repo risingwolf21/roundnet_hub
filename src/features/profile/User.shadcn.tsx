@@ -1,15 +1,15 @@
 import CropImageDialog from "@/components/CropImageDialog";
 import { AppBar } from "@/components/ui/appbar";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardTitle } from "@/components/ui/card";
+import { CardContent, CardTitle } from "@/components/ui/card";
 import { Field, FieldContent, FieldDescription, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
-import { SidebarMenu, SidebarMenuButton, SidebarMenuItem } from "@/components/ui/sidebar";
 import { Spinner } from "@/components/ui/spinner";
 import { Switch } from "@/components/ui/switch";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useFeatureFlags } from "@/contexts/FeatureToggleContext";
 import { supabase } from "@/lib/supabase";
 import { useNotificationTags, useNotificationTopics, useUpdateNotificationPreferences } from "@/tanstack/notifications";
@@ -61,7 +61,6 @@ type Tab = keyof typeof tabs
 
 const CalendarCard = () => {
   return <>
-    <CardTitle className="px-4 font-semibold">Kalender</CardTitle>
     <CardContent>
       <p className="mb-4">Abonniere deinen persönlichen Kalender, um immer über anstehende Turniere informiert zu sein.</p>
     </CardContent>
@@ -145,7 +144,6 @@ const Playerzone = ({ user }: { user: UserWithGroups }) => {
   ]
 
   return <>
-    <CardTitle className="px-4 font-semibold">Playerzone Profil</CardTitle>
     <CardContent>
       <div className='space-y-6 lg:col-span-2'>
         <div className='mb-6 w-full space-y-2'>
@@ -437,10 +435,10 @@ const Account = ({ user, handleSignOut }: { user: UserWithGroups, handleSignOut:
   }
 
   return <>
-    <CardTitle className="px-4 font-semibold">Account</CardTitle>
     <CardContent className="px-4">
       <div className='space-y-6 lg:col-span-2'>
         <div className='mb-6 w-full space-y-2'>
+          <Label className="mb-4">Profilbild</Label>
           <div className='flex items-center gap-4'>
             <div
               role='button'
@@ -525,7 +523,6 @@ const TestLabContent = () => {
   const isShadcn = hasFeature("enableShadcnUI");
 
   return <>
-    <CardTitle className="px-4 font-semibold">Testlabor</CardTitle>
     <CardContent className="px-0">
       <Field className="px-4 py-2" orientation="horizontal">
         <FieldContent>
@@ -549,7 +546,6 @@ const Notifications = ({ user }: { user: UserWithGroups }) => {
   const updateNotificationPreferences = useUpdateNotificationPreferences(user);
 
   return <>
-    <CardTitle className="px-4 font-semibold">Benachrichtigungen</CardTitle>
     <CardContent className="px-0">
       {
         (isNotificationSupported && Notification.permission === 'granted') && topics.flatMap((x, i) => [
@@ -583,45 +579,59 @@ export const UserShadcn = ({ user, handleSignOut }: UserScreenProps) => {
 
   const [tab, setTab] = useState<Tab>("account")
 
-  return <div className="flex flex-col h-full w-full">
+  return <div>
     <AppBar
       title="Profil"
     />
-    <div className="flex flex-col gap-y-4 p-4">
-      <Card>
-        <CardContent>
-          <SidebarMenu className='gap-y-2'>
-            {
-              Object.entries(tabs).map(([key, item]) => <SidebarMenuItem key={key}>
-                <SidebarMenuButton isActive={tab === key} onClick={() => setTab(key as Tab)}>
-                  {item.icon}
-                  <div className='text-lg'>{item.title}</div>
-                </SidebarMenuButton>
-              </SidebarMenuItem>)
-            }
-          </SidebarMenu>
-        </CardContent>
-      </Card>
-      <Card>
-        {
-          tab === "account" && <Account user={user} handleSignOut={handleSignOut} />
-        }
-        {
-          tab === "changePassword" && <ChangePassword />
-        }
-        {
-          tab === "playerzone" && <Playerzone user={user} />
-        }
-        {
-          tab === "calendar" && <CalendarCard />
-        }
-        {
-          tab === "notifications" && <Notifications user={user} />
-        }
-        {
-          tab === "testlab" && <TestLabContent />
-        }
-      </Card>
-    </div>
-  </div>
+    <main className='flex-1 size-full'>
+      <div className="flex flex-col px-4">
+        <Tabs defaultValue="overview" className="gap-4">
+          <TabsList variant="line" className="w-full justify-start overflow-x-auto no-scrollbar overscroll-none">
+            <TabsTrigger value="account">
+              <User />
+              Account
+            </TabsTrigger>
+            {/* <TabsTrigger value="changePassword">
+              <RectangleEllipsis />
+              Passwort ändern
+            </TabsTrigger> */}
+            <TabsTrigger value="playerzone">
+              <Volleyball />
+              Playerzone Profil
+            </TabsTrigger>
+            <TabsTrigger value="calendar">
+              <Calendar />
+              Kalender
+            </TabsTrigger>
+            <TabsTrigger value="notifications">
+              <Bell />
+              Benachrichtigungen
+            </TabsTrigger>
+            <TabsTrigger value="testlab">
+              <FlaskConical />
+              Test-Labor
+            </TabsTrigger>
+          </TabsList>
+          <TabsContent value="account">
+            <Account user={user} handleSignOut={handleSignOut} />
+          </TabsContent>
+          <TabsContent value="changePassword">
+            <ChangePassword />
+          </TabsContent>
+          <TabsContent value="playerzone">
+            <Playerzone user={user} />
+          </TabsContent>
+          <TabsContent value="calendar">
+            <CalendarCard />
+          </TabsContent>
+          <TabsContent value="notifications">
+            <Notifications user={user} />
+          </TabsContent>
+          <TabsContent value="testlab">
+            <TestLabContent />
+          </TabsContent>
+        </Tabs>
+      </div>
+    </main >
+  </div >
 }

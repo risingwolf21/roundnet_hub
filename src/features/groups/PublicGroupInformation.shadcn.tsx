@@ -100,8 +100,8 @@ export const PublicGroupInformationShadcn = () => {
           primaryAction="back"
           user={user}
         />
-        <main className='flex-1 overflow-y-auto'>
-        </main>
+        <div className='flex-1 overflow-y-auto'>
+        </div>
       </div>
     );
   }
@@ -116,143 +116,141 @@ export const PublicGroupInformationShadcn = () => {
         primaryAction="back"
         user={user}
       />
-      <main className='flex-1 overflow-y-auto'>
-        <PullToRefresh onRefresh={() => { refetch(); refetchGroup(); }}>
-          <div className="flex-1 overflow-y-auto p-4 space-y-2">
-            <div key={"info"} className="gap-2 flex w-full max-w-lg flex-col">
-              <div className="text-sm font-semibold">
-                Beschreibung
-              </div>
-              <div className="text-sm text-muted-background">
-                {group.description || "Keine Beschreibung vorhanden."}
+      <PullToRefresh onRefresh={() => { refetch(); refetchGroup(); }}>
+        <div className="flex-1 p-4 space-y-2">
+          <div key={"info"} className="gap-2 flex w-full max-w-lg flex-col">
+            <div className="text-sm font-semibold">
+              Beschreibung
+            </div>
+            <div className="text-sm text-muted-background">
+              {group.description || "Keine Beschreibung vorhanden."}
+            </div>
+          </div>
+          <Separator className="my-2" />
+          {
+            group.user_group_role === "admin" && <div>
+              <div className="flex flex-wrap items-center gap-2">
+                <Toggle variant="outline" aria-label="Toggle italic"
+                  pressed={filter?.joinRequested}
+                  onPressedChange={() => setFilter({ ...(filter ?? DEFAULT_FILTER), joinRequested: !filter?.joinRequested })}>
+                  <GitPullRequest />
+                  Anfragen
+                </Toggle>
+                <Toggle variant="outline" aria-label="Toggle bold"
+                  pressed={filter?.trials}
+                  onPressedChange={() => setFilter({ ...(filter ?? DEFAULT_FILTER), trials: !filter?.trials })}>
+                  <Shapes />
+                  Trials
+                </Toggle>
+                <Toggle variant="outline" aria-label="Toggle bold"
+                  pressed={filter?.admin}
+                  onPressedChange={() => setFilter({ ...(filter ?? DEFAULT_FILTER), admin: !filter?.admin })}>
+                  <UserStar />
+                  Admins
+                </Toggle>
+                <Toggle variant="outline" aria-label="Toggle bold"
+                  pressed={filter?.user}
+                  onPressedChange={() => setFilter({ ...(filter ?? DEFAULT_FILTER), user: !filter?.user })}>
+                  <User />
+                  Benutzer
+                </Toggle>
               </div>
             </div>
-            <Separator className="my-2" />
-            {
-              group.user_group_role === "admin" && <div>
-                <div className="flex flex-wrap items-center gap-2">
-                  <Toggle variant="outline" aria-label="Toggle italic"
-                    pressed={filter?.joinRequested}
-                    onPressedChange={() => setFilter({ ...(filter ?? DEFAULT_FILTER), joinRequested: !filter?.joinRequested })}>
-                    <GitPullRequest />
-                    Anfragen
-                  </Toggle>
-                  <Toggle variant="outline" aria-label="Toggle bold"
-                    pressed={filter?.trials}
-                    onPressedChange={() => setFilter({ ...(filter ?? DEFAULT_FILTER), trials: !filter?.trials })}>
-                    <Shapes />
-                    Trials
-                  </Toggle>
-                  <Toggle variant="outline" aria-label="Toggle bold"
-                    pressed={filter?.admin}
-                    onPressedChange={() => setFilter({ ...(filter ?? DEFAULT_FILTER), admin: !filter?.admin })}>
-                    <UserStar />
-                    Admins
-                  </Toggle>
-                  <Toggle variant="outline" aria-label="Toggle bold"
-                    pressed={filter?.user}
-                    onPressedChange={() => setFilter({ ...(filter ?? DEFAULT_FILTER), user: !filter?.user })}>
-                    <User />
-                    Benutzer
-                  </Toggle>
-                </div>
-              </div>
-            }
-            {
-              Object.entries(groupBy(group_users, (x) => x.role))
-                .sort(([roleA], [roleB]) => roleWeights[roleA] - roleWeights[roleB])
-                .map(([role, users]) => (
-                  <div key={role} className={cn("gap-2 flex w-full flex-col ", {
-                    hidden: (role === 'admin' && !filter?.admin) ||
-                      (role === 'user' && !filter?.user) ||
-                      (role === 'joinRequested' && (group.user_group_role !== "admin" || !filter?.joinRequested)) ||
-                      (role === 'trial' && !filter?.trials)
-                  })}>
-                    <div className="text-sm font-semibold">
-                      {role === 'admin' ? 'Admins' : role === 'user' ? 'Mitglieder' : role === 'joinRequested' ? 'Anfrage zum Beitritt' : 'Trial'}
-                      {` (${users.length})`}
-                    </div>
-                    {users
-                      .filter((x) => x.user.name.toLowerCase().includes(searchQuery.toLowerCase())
-                        || x.user.email.toLowerCase().includes(searchQuery.toLowerCase()))
-                      .map((x) => (
-                        <div key={x.user.id} className="flex items-center justify-between rounded-md border p-2">
-                          <div className="flex items-center gap-2">
-                            <Avatar {...(
-                              (role === "admin" || role === "trial" || role === "user" && group.user_group_role === "admin") && {
-                                onClick: () => {
-                                  if (selectedUsers.includes(x.user)) {
-                                    setSelectedUsers([...selectedUsers.filter((y) => y.id !== x.user.id)]);
-                                  } else {
-                                    setSelectedUsers([...selectedUsers, x.user]);
-                                  }
+          }
+          {
+            Object.entries(groupBy(group_users, (x) => x.role))
+              .sort(([roleA], [roleB]) => roleWeights[roleA] - roleWeights[roleB])
+              .map(([role, users]) => (
+                <div key={role} className={cn("gap-2 flex w-full flex-col ", {
+                  hidden: (role === 'admin' && !filter?.admin) ||
+                    (role === 'user' && !filter?.user) ||
+                    (role === 'joinRequested' && (group.user_group_role !== "admin" || !filter?.joinRequested)) ||
+                    (role === 'trial' && !filter?.trials)
+                })}>
+                  <div className="text-sm font-semibold">
+                    {role === 'admin' ? 'Admins' : role === 'user' ? 'Mitglieder' : role === 'joinRequested' ? 'Anfrage zum Beitritt' : 'Trial'}
+                    {` (${users.length})`}
+                  </div>
+                  {users
+                    .filter((x) => x.user.name.toLowerCase().includes(searchQuery.toLowerCase())
+                      || x.user.email.toLowerCase().includes(searchQuery.toLowerCase()))
+                    .map((x) => (
+                      <div key={x.user.id} className="flex items-center justify-between rounded-md border p-2">
+                        <div className="flex items-center gap-2">
+                          <Avatar {...(
+                            (role === "admin" || role === "trial" || role === "user" && group.user_group_role === "admin") && {
+                              onClick: () => {
+                                if (selectedUsers.includes(x.user)) {
+                                  setSelectedUsers([...selectedUsers.filter((y) => y.id !== x.user.id)]);
+                                } else {
+                                  setSelectedUsers([...selectedUsers, x.user]);
                                 }
                               }
-                            )}>
-                              {
-                                selectedUsers.includes(x.user) ? <div className="flex flex-c items-center w-full h-full">
-                                  <CheckCircle2 />
-                                </div>
-                                  : <>
-                                    <AvatarImage src={x.user.avatarUrl || undefined} alt={x.user.name || undefined} />
-                                    <AvatarFallback>{x.user.name ? x.user.name[0] : 'U'}</AvatarFallback>
-                                  </>
-                              }
-                            </Avatar>
-                            <div>
-                              <div>{x.user.name}</div>
-                              <div className="text-xs text-muted-foreground">{x.user.email}</div>
-                            </div>
+                            }
+                          )}>
+                            {
+                              selectedUsers.includes(x.user) ? <div className="flex flex-c items-center w-full h-full">
+                                <CheckCircle2 />
+                              </div>
+                                : <>
+                                  <AvatarImage src={x.user.avatarUrl || undefined} alt={x.user.name || undefined} />
+                                  <AvatarFallback>{x.user.name ? x.user.name[0] : 'U'}</AvatarFallback>
+                                </>
+                            }
+                          </Avatar>
+                          <div>
+                            <div>{x.user.name}</div>
+                            <div className="text-xs text-muted-foreground">{x.user.email}</div>
                           </div>
-                          {
-                            x.role === 'admin' && (
-                              <Badge variant="outline" className="text-green-500">Admin</Badge>
-                            )
-                          }
-                          {
-                            role === "trial" && (
-                              <Button variant={"ghost"} size={"icon-lg"} onClick={() => {
-
-                              }}>
-                                <CircleFadingArrowUp />
-                              </Button>
-                            )
-                          }
-                          {
-                            role === "joinRequested" && (
-                              <DropdownMenu >
-                                <DropdownMenuTrigger render={<Button variant={"outline"}>Bearbeiten</Button>} />
-                                <DropdownMenuContent className={"w-full"}>
-                                  <DropdownMenuItem variant="destructive" className={"text-md"}>
-                                    <XCircle />
-                                    Ablehnen
-                                  </DropdownMenuItem>
-                                  <DropdownMenuSeparator />
-                                  <DropdownMenuItem className={"text-md"}>
-                                    <CheckCircle2 />
-                                    Akzeptieren
-                                  </DropdownMenuItem>
-                                  <Has feat={"events.trials"}>
-                                    <>
-                                      <DropdownMenuSeparator />
-                                      <DropdownMenuItem className={"text-md"}>
-                                        <CheckCircle2 />
-                                        Probenutzer akzeptieren
-                                      </DropdownMenuItem>
-                                    </>
-                                  </Has>
-                                </DropdownMenuContent>
-                              </DropdownMenu>
-                            )
-                          }
                         </div>
-                      ))}
-                  </div>
-                ))
-            }
-          </div>
-        </PullToRefresh>
-      </main>
+                        {
+                          x.role === 'admin' && (
+                            <Badge variant="outline" className="text-green-500">Admin</Badge>
+                          )
+                        }
+                        {
+                          role === "trial" && (
+                            <Button variant={"ghost"} size={"icon-lg"} onClick={() => {
+
+                            }}>
+                              <CircleFadingArrowUp />
+                            </Button>
+                          )
+                        }
+                        {
+                          role === "joinRequested" && (
+                            <DropdownMenu >
+                              <DropdownMenuTrigger render={<Button variant={"outline"}>Bearbeiten</Button>} />
+                              <DropdownMenuContent className={"w-full"}>
+                                <DropdownMenuItem variant="destructive" className={"text-md"}>
+                                  <XCircle />
+                                  Ablehnen
+                                </DropdownMenuItem>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem className={"text-md"}>
+                                  <CheckCircle2 />
+                                  Akzeptieren
+                                </DropdownMenuItem>
+                                <Has feat={"events.trials"}>
+                                  <>
+                                    <DropdownMenuSeparator />
+                                    <DropdownMenuItem className={"text-md"}>
+                                      <CheckCircle2 />
+                                      Probenutzer akzeptieren
+                                    </DropdownMenuItem>
+                                  </>
+                                </Has>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
+                          )
+                        }
+                      </div>
+                    ))}
+                </div>
+              ))
+          }
+        </div>
+      </PullToRefresh>
     </div>
   );
 }
