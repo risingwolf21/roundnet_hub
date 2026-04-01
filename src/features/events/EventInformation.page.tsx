@@ -38,7 +38,7 @@ import MenuItem from '@mui/material/MenuItem';
 import { useGrants } from '../auth/GrantsContext';
 import { TransformEventDialog } from './dialogs/TransformEventDialog';
 import EventAdminInformation from './EventAdminInformation';
-import EventInformationShadcn from './EventInformation.shadcn';
+import EventInformationShadcn, { EventInformationSkeleton } from './EventInformation.shadcn';
 
 const EventInformationProvider = ({ isShadcn = false }: { isShadcn?: boolean }) => {
   const { selectedEventId } = useParams();
@@ -82,6 +82,9 @@ const EventInformationProvider = ({ isShadcn = false }: { isShadcn?: boolean }) 
   }, [event]);
 
   if (isLoading || bringItemsLoading || keyHoldersLoading) {
+    if (isShadcn) {
+      return <EventInformationSkeleton />
+    }
     return (
       <Layout
         appBarConfig={{

@@ -1,5 +1,8 @@
+import { useGrants } from '@/features/auth/GrantsContext';
 import { Feature, Permission } from '@/generated/supabase-types';
 import { Has } from '@/hooks/useGrants';
+import { useRequestedUsersPerGroup } from '@/tanstack/groups';
+import { useAllNotifications } from '@/tanstack/notifications';
 import { Bell, ChartArea, Database, Euro, History, Home, KeyRound, Logs, Send, Swords, Trophy, User, Users, Volleyball, Wine } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useLocation, useNavigate } from "react-router";
@@ -30,6 +33,9 @@ export function AppSidebar() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
+  const { user } = useGrants();
+  const { data: requested_group_joins = [] } = useRequestedUsersPerGroup(user);
+  const { data: notifications = [] } = useAllNotifications(user);
 
   const { setOpenMobile } = useSidebar();
   const tab = location.pathname.substring(1) || "home";
@@ -103,9 +109,8 @@ export function AppSidebar() {
           icon: <Users />,
           path: 'groups/list',
           secondaryAction: <div className="text-sm leading-none font-bold">
-            2
             {
-              // request_group_joins || ''
+              requested_group_joins.length || ''
             }
           </div >
         },
@@ -146,9 +151,8 @@ export function AppSidebar() {
           icon: <Bell />,
           path: 'notifications',
           secondaryAction: <div className="text-sm leading-none font-bold">
-            2
             {
-              // notification_count || ''
+              notifications.length || ''
             }
           </div>
         }
@@ -250,7 +254,7 @@ export function AppSidebar() {
 
   return (
     <Sidebar>
-      <SidebarContent className='overflow-x-none'>
+      <SidebarContent className='overscroll-none'>
         {categories.map((category, index) => {
 
           const CategoryContent = (

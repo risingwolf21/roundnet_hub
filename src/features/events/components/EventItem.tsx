@@ -3,7 +3,7 @@ import { format, isBefore, toDate } from 'date-fns';
 import { TFunction } from 'i18next';
 
 import { Button as ButtonShadcn } from '@/components/ui/button';
-import { Item, ItemActions, ItemContent, ItemDescription, ItemMedia, ItemTitle } from '@/components/ui/item';
+import { Item } from '@/components/ui/item';
 import { Spinner } from '@/components/ui/spinner';
 import { Has } from '@/hooks/useGrants';
 import { cn } from '@/lib/utils';
@@ -228,39 +228,6 @@ export const EventItemShadcn = ({ event, onClick, attendEvent, declineEvent, att
         />
       </div>
     </div>
-  </Item>
-  return <Item onClick={onClick} variant={"outline"}>
-    <ItemMedia variant={"default"}>
-      <div className="flex h-full w-10 flex-col justify-center py-2">
-        <p className="text-center text-[10px]">
-          {t('events.startDateDayString', { date: formatDateFromDatabase(event.startingDateTime) }).toUpperCase()}
-        </p>
-        <h6 className="text-center text-xl font-bold tracking-tight">
-          {t('events.startDateDay', { date: formatDateFromDatabase(event.startingDateTime) }).toUpperCase()}
-        </h6>
-      </div>
-    </ItemMedia>
-    <ItemContent>
-      <ItemTitle>{event.title}</ItemTitle>
-      <ItemDescription>
-        {
-          event.isCancelled
-            ? 'Event abgesagt'
-            : [
-              t('events.secondaryTextStart', { start: toDate(event.startingDateTime!) }),
-              event.endDateTime && t('events.secondaryTextWithEnd', { end: toDate(event.endDateTime) }),
-            ].join(' ')
-        }
-      </ItemDescription>
-    </ItemContent>
-    <ItemActions>
-      <EventItemSecondaryActions
-        event={event}
-        attendEvent={attendEvent}
-        declineEvent={declineEvent}
-        attendanceUpdating={attendanceUpdating}
-      />
-    </ItemActions>
   </Item>
 }
 

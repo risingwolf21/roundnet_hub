@@ -7,8 +7,13 @@ import { MainLayout } from './components/layout/MainLayout';
 import { useFeature } from './contexts/FeatureToggleContext';
 import { AdminAnalytics } from './features/admin/AdminAnalytics';
 import { useApplication } from './features/auth/ApplicationContext';
+import AuthLayoutShadcn from './features/auth/AuthLayout.shadcn';
 import { FeatureNotAvailable, PermissionDeniedPage } from './features/auth/ErrorPage';
+import ForgotPasswordShadcn from './features/auth/ForgotPassword.shadcn';
 import { GrantsProvider } from './features/auth/GrantsContext';
+import LoginFormShadcn from './features/auth/LoginForm.shadcn';
+import SignUpFormShadcn from './features/auth/SignUpForm.shadcn';
+import GameListShadcn from './features/games/GameList.shadcn';
 import GrantsManager from './features/grants/GrantsManager';
 import HomePage from './features/homepage/HomePage';
 import UserScreenProvider from './features/profile/UserScreenProvider';
@@ -94,21 +99,21 @@ const createRouter = (user: UserWithGroups | null, isShadcnUi: boolean) =>
   sentryCreateBrowserRouter([
     {
       path: '/auth',
-      element: <AuthLayout />,
+      element: isShadcnUi ? <AuthLayoutShadcn /> : <AuthLayout />,
       children: [
         {
           path: 'login',
-          element: <LoginScreen />,
+          element: isShadcnUi ? <LoginFormShadcn /> : <LoginScreen />,
           errorElement: <ErrorRouteElement />,
         },
         {
           path: 'signup',
-          element: <SignUpScreen />,
+          element: isShadcnUi ? <SignUpFormShadcn /> : <SignUpScreen />,
           errorElement: <ErrorRouteElement />,
         },
         {
           path: 'forgot-password',
-          element: <ForgotPasswordScreen />,
+          element: isShadcnUi ? <ForgotPasswordShadcn /> : <ForgotPasswordScreen />,
           errorElement: <ErrorRouteElement />,
         },
         {
@@ -296,7 +301,7 @@ const createRouter = (user: UserWithGroups | null, isShadcnUi: boolean) =>
                 },
                 {
                   path: 'list',
-                  element: <GameList />,
+                  element: isShadcnUi ? <GameListShadcn /> : <GameList />,
                 },
                 {
                   path: 'report',

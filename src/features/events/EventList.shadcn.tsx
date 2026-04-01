@@ -65,8 +65,9 @@ const EventScreen = () => {
   }
 
   return (
-    <div className="flex flex-col h-full w-full">
+    <div>
       <AppBar
+        className='!border-b !shadow-sm'
         title="Events Übersicht"
         user={user}
         actions={
@@ -75,43 +76,44 @@ const EventScreen = () => {
           </Button>
         }
       />
-
-      <PullToRefresh onRefresh={() => refetch()}>
-        <div className="flex w-full items-center flex-col gap-2">
-          {Object.entries(groupBy(events, (x) => startOfISOWeek(x.startingDateTime))).map(
-            ([key, value]: [string, EventsUserView[]]) => (
-              <div key={key} className="flex w-full items-center gap-2 px-2 flex-col">
-                <div className="text-sm font-semibold ml-2">
-                  {getISOWeek(key) === getISOWeek(new Date())
-                    ? 'Diese Woche'
-                    : getISOWeek(key) === getISOWeek(new Date()) + 1
-                      ? 'Nächste Woche'
-                      : format(key, 'dd.MM.yyyy') + ' - ' + format(endOfISOWeek(key), 'dd.MM.yyyy')}
+      <main className='flex-1 size-full'>
+        <PullToRefresh onRefresh={() => refetch()}>
+          <div className="flex p-4 flex-col space-y-2">
+            {Object.entries(groupBy(events, (x) => startOfISOWeek(x.startingDateTime))).map(
+              ([key, value]: [string, EventsUserView[]]) => (
+                <div key={key} className="flex w-full gap-2 flex-col">
+                  <div className="text-sm font-semibold ml-2">
+                    {getISOWeek(key) === getISOWeek(new Date())
+                      ? 'Diese Woche'
+                      : getISOWeek(key) === getISOWeek(new Date()) + 1
+                        ? 'Nächste Woche'
+                        : format(key, 'dd.MM.yyyy') + ' - ' + format(endOfISOWeek(key), 'dd.MM.yyyy')}
+                  </div>
+                  {value.map((event: EventsUserView) => (
+                    <EventItemShadcn
+                      key={event.id}
+                      event={event}
+                      t={t}
+                      attendanceUpdating={updateAttendance.isPending && updateAttendance.context?.event.id === event.id}
+                      attendEvent={() => {
+                        updateAttendance.mutate({ event, user, newState: 'Attending' });
+                        sendMetricsToSentry('event_attend_from_list', 1);
+                      }}
+                      declineEvent={() => {
+                        updateAttendance.mutate({ event, user, newState: 'Declined' });
+                        sendMetricsToSentry('event_decline_from_list', 1);
+                      }}
+                      onClick={() => {
+                        navigate('/training/event/' + event.id);
+                      }}
+                    />
+                  ))}
                 </div>
-                {value.map((event: EventsUserView) => (
-                  <EventItemShadcn
-                    key={event.id}
-                    event={event}
-                    t={t}
-                    attendanceUpdating={updateAttendance.isPending && updateAttendance.context?.event.id === event.id}
-                    attendEvent={() => {
-                      updateAttendance.mutate({ event, user, newState: 'Attending' });
-                      sendMetricsToSentry('event_attend_from_list', 1);
-                    }}
-                    declineEvent={() => {
-                      updateAttendance.mutate({ event, user, newState: 'Declined' });
-                      sendMetricsToSentry('event_decline_from_list', 1);
-                    }}
-                    onClick={() => {
-                      navigate('/training/event/' + event.id);
-                    }}
-                  />
-                ))}
-              </div>
-            )
-          )}
-        </div>
-      </PullToRefresh>
+              )
+            )}
+          </div>
+        </PullToRefresh>
+      </main>
     </div>
   );
 };

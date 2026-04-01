@@ -31,11 +31,6 @@ body,
 #root {
   overscroll-behavior-y: none;
   overscroll-behavior: none;
-  overflow: hidden;
-}
-
-.scroll-container {
-  overflow: auto;
   -webkit-overflow-scrolling: touch;
   overscroll-behavior: contain;
 }

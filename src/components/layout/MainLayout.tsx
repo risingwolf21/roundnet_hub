@@ -4,15 +4,15 @@ import { Toaster } from "../ui/sonner";
 import { AppSidebar } from "./SidebarContent";
 
 export function MainLayout({ children }: { children: React.ReactNode }) {
-
   return (
-    <SidebarProvider>
-      <AppSidebar />
-      <Toaster />
-      <main className="flex min-h-screen w-full flex-col bg-background">
-        {children}
-      </main>
-    </SidebarProvider>
-
+    <div className='flex min-h-dvh w-full'>
+      <SidebarProvider>
+        <AppSidebar />
+        <Toaster />
+        <div className='flex flex-1 flex-col size-full'>
+          {children}
+        </div>
+      </SidebarProvider>
+    </div>
   );
 }
