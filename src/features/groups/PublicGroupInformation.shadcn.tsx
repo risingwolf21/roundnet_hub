@@ -1,4 +1,6 @@
+import { useCustomDialogs } from "@/components/dialogs/useShadcnDialogs";
 import { PullToRefresh } from "@/components/pull-to-refresh/PullToRefresh";
+import { Alert, AlertAction, AlertTitle } from "@/components/ui/alert";
 import { AppBar } from "@/components/ui/appbar";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -12,12 +14,13 @@ import { useChangeUserRoleMutation, useGroup, useGroupAllUsers, useLeaveGroupMut
 import { captureException } from "@sentry/react";
 import { useLocalStorageState } from "@toolpad/core";
 import groupBy from "lodash.groupby";
-import { CheckCircle2, CircleFadingArrowUp, GitPullRequest, Shapes, User, UserStar, XCircle } from "lucide-react";
+import { AlertCircle, CheckCircle2, CircleFadingArrowUp, GitPullRequest, Plus, Shapes, User, UserStar, XCircle } from "lucide-react";
 import { useState } from "react";
 import { Navigate, useParams } from "react-router";
 import { toast } from "sonner";
 import { useGrants } from "../auth/GrantsContext";
 import { useAddUsersMutation } from "./query/addUsersMutation";
+import { useDeclineRequestMutation } from "./query/declineRequestMutation";
 import { useRemoveUsersMutation } from "./query/removeUsersMutation";
 
 type Filter = { user: boolean; admin: boolean; joinRequested: boolean; trials: boolean };
@@ -34,6 +37,7 @@ export const PublicGroupInformationShadcn = () => {
 
   const { groupId } = useParams();
   const { user } = useGrants();
+  const dialogs = useCustomDialogs();
 
   const [selectedUsers, setSelectedUsers] = useState<User[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
@@ -128,7 +132,10 @@ export const PublicGroupInformationShadcn = () => {
           </div>
           <Separator className="my-2" />
           {
-            group.user_group_role === "admin" && <div>
+            group.user_group_role === "admin" && <div className="space-y-2">
+              <div className="text-sm font-semibold">
+                Filter
+              </div>
               <div className="flex flex-wrap items-center gap-2">
                 <Toggle variant="outline" aria-label="Toggle italic"
                   pressed={filter?.joinRequested}
@@ -156,6 +163,24 @@ export const PublicGroupInformationShadcn = () => {
                 </Toggle>
               </div>
             </div>
+          }
+          {
+            selectedUsers.length > 0 && group?.user_group_role === 'admin' && <Alert className="my-4" variant={"error"}>
+              <AlertCircle />
+              <AlertTitle>Gewählte Benutzer aus der Gruppe entfernen?</AlertTitle>
+              <AlertAction>
+                <Button variant={"outline"} onClick={() => {
+                  dialogs.confirm(`Möchtest du die ${selectedUsers.length} ausgewählten Benutzer wirklich aus der Gruppe entfernen?`, {
+                    okText: "Entfernen",
+                    cancelText: "Abbrechen"
+                  }).then((result) => {
+                    if (result) {
+                      handleUsersRemove(selectedUsers);
+                    }
+                  })
+                }}>Entfernen</Button>
+              </AlertAction>
+            </Alert>
           }
           {
             Object.entries(groupBy(group_users, (x) => x.role))
@@ -189,9 +214,10 @@ export const PublicGroupInformationShadcn = () => {
                             }
                           )}>
                             {
-                              selectedUsers.includes(x.user) ? <div className="flex flex-c items-center w-full h-full">
-                                <CheckCircle2 />
-                              </div>
+                              selectedUsers.includes(x.user)
+                                ? <div className="flex items-center justify-center size-full bg-primary/10 text-primary rounded-full">
+                                  <CheckCircle2 className="size-6" />
+                                </div>
                                 : <>
                                   <AvatarImage src={x.user.avatarUrl || undefined} alt={x.user.name || undefined} />
                                   <AvatarFallback>{x.user.name ? x.user.name[0] : 'U'}</AvatarFallback>
@@ -209,40 +235,10 @@ export const PublicGroupInformationShadcn = () => {
                           )
                         }
                         {
-                          role === "trial" && (
-                            <Button variant={"ghost"} size={"icon-lg"} onClick={() => {
-
-                            }}>
-                              <CircleFadingArrowUp />
-                            </Button>
-                          )
+                          role === "trial" && <AcceptTrialButton group={group} user={x.user} />
                         }
                         {
-                          role === "joinRequested" && (
-                            <DropdownMenu >
-                              <DropdownMenuTrigger render={<Button variant={"outline"}>Bearbeiten</Button>} />
-                              <DropdownMenuContent className={"w-full"}>
-                                <DropdownMenuItem variant="destructive" className={"text-md"}>
-                                  <XCircle />
-                                  Ablehnen
-                                </DropdownMenuItem>
-                                <DropdownMenuSeparator />
-                                <DropdownMenuItem className={"text-md"}>
-                                  <CheckCircle2 />
-                                  Akzeptieren
-                                </DropdownMenuItem>
-                                <Has feat={"events.trials"}>
-                                  <>
-                                    <DropdownMenuSeparator />
-                                    <DropdownMenuItem className={"text-md"}>
-                                      <CheckCircle2 />
-                                      Probenutzer akzeptieren
-                                    </DropdownMenuItem>
-                                  </>
-                                </Has>
-                              </DropdownMenuContent>
-                            </DropdownMenu>
-                          )
+                          role === "joinRequested" && <RequestedGroupJoinButton group={group} user={x.user} />
                         }
                       </div>
                     ))}
@@ -251,6 +247,138 @@ export const PublicGroupInformationShadcn = () => {
           }
         </div>
       </PullToRefresh>
+      <div
+        className="fixed right-6 z-50"
+        style={{ bottom: 'calc(1.5rem + env(safe-area-inset-bottom))' }}
+      >
+        <Button
+          size="icon"
+          className="h-14 w-14 rounded-full shadow-lg hover:shadow-xl bg-primary text-primary-foreground transition-all hover:-translate-y-1 active:translate-y-0 active:shadow-md"
+          onClick={() => {
+            dialogs
+              .selectMultipleUsers(group.users.map((x) => x.user.id))
+              .then((result) => {
+                if (result) handleUsersAdded(result);
+              });
+          }}
+        >
+          <Plus className="h-6 w-6" />
+        </Button>
+      </div>
     </div>
   );
+}
+
+const AcceptTrialButton = ({ group, user }: { group: Group; user: User }) => {
+  const changeUserRoleMutation = useChangeUserRoleMutation();
+  const dialogs = useCustomDialogs();
+  return <Button variant={"ghost"} size={"icon-lg"} onClick={() => {
+    dialogs.confirm("Möchtest du den Benutzer wirklich als regulären Benutzer akzeptieren?", {
+      okText: "Akzeptieren",
+      cancelText: "Abbrechen"
+    }).then((result) => {
+      if (result) {
+        changeUserRoleMutation.mutate(
+          { user: user, group: group, new_role: 'user' },
+          {
+            onError: (error) => {
+              toast.error('Anfrage konnte nicht akzeptiert werden. ' + error.message);
+            },
+            onSuccess: () => {
+              toast.success('Anfrage erfolgreich akzeptiert.');
+            },
+          }
+        );
+      }
+    })
+  }}>
+    <CircleFadingArrowUp />
+  </Button>
+}
+
+const RequestedGroupJoinButton = ({ group, user }: { group: Group; user: User }) => {
+  const declineJoinMutation = useDeclineRequestMutation(group);
+  const changeUserRoleMutation = useChangeUserRoleMutation();
+  const dialogs = useCustomDialogs();
+
+  return <DropdownMenu >
+    <DropdownMenuTrigger render={<Button variant={"outline"}>Bearbeiten</Button>} />
+    <DropdownMenuContent className={"w-full"}>
+      <DropdownMenuItem variant="destructive" className={"text-md"}
+        onClick={() =>
+          dialogs.confirm("Möchtest du die Beitrittsanfrage wirklich ablehnen?", {
+            okText: "Ablehnen",
+            cancelText: "Abbrechen"
+          }).then((result) => {
+            if (result) {
+              declineJoinMutation.mutate(user, {
+                onError: (error) => {
+                  toast.error('Anfrage konnte nicht gelöscht werden. ' + error.message);
+                },
+                onSuccess: () => {
+                  toast.success('Anfrage erfolgreich gelöscht.');
+                },
+              })
+            }
+          })
+        }>
+        <XCircle />
+        Ablehnen
+      </DropdownMenuItem>
+      <DropdownMenuSeparator />
+      <DropdownMenuItem className={"text-md"}
+        onClick={() => {
+          dialogs.confirm("Möchtest du die Beitrittsanfrage wirklich akzeptieren?", {
+            okText: "Akzeptieren",
+            cancelText: "Abbrechen"
+          }).then((result) => {
+            if (result) {
+              changeUserRoleMutation.mutate(
+                { user: user, group: group, new_role: 'user' },
+                {
+                  onError: (error) => {
+                    toast.error('Anfrage konnte nicht akzeptiert werden. ' + error.message);
+                  },
+                  onSuccess: () => {
+                    toast.success('Anfrage erfolgreich akzeptiert.');
+                  },
+                }
+              );
+            }
+          })
+        }}>
+        <CheckCircle2 />
+        Akzeptieren
+      </DropdownMenuItem>
+      <Has feat={"events.trials"}>
+        <>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem className={"text-md"}
+            onClick={() => {
+              dialogs.confirm("Möchtest du den Benutzer wirklich als Probenutzer akzeptieren?", {
+                okText: "Akzeptieren",
+                cancelText: "Abbrechen"
+              }).then((result) => {
+                if (result) {
+                  changeUserRoleMutation.mutate(
+                    { user: user, group: group, new_role: 'trial' },
+                    {
+                      onError: (error) => {
+                        toast.error('Anfrage konnte nicht akzeptiert werden. ' + error.message);
+                      },
+                      onSuccess: () => {
+                        toast.success('Anfrage erfolgreich akzeptiert.');
+                      },
+                    }
+                  );
+                }
+              })
+            }}>
+            <CheckCircle2 />
+            Probenutzer akzeptieren
+          </DropdownMenuItem>
+        </>
+      </Has>
+    </DropdownMenuContent>
+  </DropdownMenu>
 }
