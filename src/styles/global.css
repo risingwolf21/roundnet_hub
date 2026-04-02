@@ -6,8 +6,6 @@
 @custom-variant dark (&:is(.dark *));
 
 html, body {
-  padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
-  min-height: calc(100% + env(safe-area-inset-top));
   overscroll-behavior: none;
   -webkit-overflow-scrolling: touch;
 }
@@ -56,6 +54,10 @@ html, body {
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
 
+  --spacing-safe-top: env(safe-area-inset-top);
+  --spacing-safe-bottom: env(safe-area-inset-bottom);
+  --spacing-safe-left: env(safe-area-inset-left);
+  --spacing-safe-right: env(safe-area-inset-right);
     
   /* INFO */
   --color-info-50: var(--info-50);

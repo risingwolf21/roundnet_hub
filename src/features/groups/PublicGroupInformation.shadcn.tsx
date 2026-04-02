@@ -120,151 +120,153 @@ export const PublicGroupInformationShadcn = () => {
         primaryAction="back"
         user={user}
       />
-      <PullToRefresh onRefresh={() => { refetch(); refetchGroup(); }}>
-        <div className="flex-1 p-4 space-y-2">
-          <div key={"info"} className="gap-2 flex w-full max-w-lg flex-col">
-            <div className="text-sm font-semibold">
-              Beschreibung
-            </div>
-            <div className="text-sm text-muted-background">
-              {group.description || "Keine Beschreibung vorhanden."}
-            </div>
-          </div>
-          <Separator className="my-2" />
-          {
-            group.user_group_role === "admin" && <div className="space-y-2">
+      <main className='flex-1 size-full pb-safe-bottom'>
+        <PullToRefresh onRefresh={() => { refetch(); refetchGroup(); }}>
+          <div className="flex-1 p-4 space-y-2">
+            <div key={"info"} className="gap-2 flex w-full max-w-lg flex-col">
               <div className="text-sm font-semibold">
-                Filter
+                Beschreibung
               </div>
-              <div className="flex flex-wrap items-center gap-2">
-                <Toggle variant="outline" aria-label="Toggle italic"
-                  pressed={filter?.joinRequested}
-                  onPressedChange={() => setFilter({ ...(filter ?? DEFAULT_FILTER), joinRequested: !filter?.joinRequested })}>
-                  <GitPullRequest />
-                  Anfragen
-                </Toggle>
-                <Toggle variant="outline" aria-label="Toggle bold"
-                  pressed={filter?.trials}
-                  onPressedChange={() => setFilter({ ...(filter ?? DEFAULT_FILTER), trials: !filter?.trials })}>
-                  <Shapes />
-                  Trials
-                </Toggle>
-                <Toggle variant="outline" aria-label="Toggle bold"
-                  pressed={filter?.admin}
-                  onPressedChange={() => setFilter({ ...(filter ?? DEFAULT_FILTER), admin: !filter?.admin })}>
-                  <UserStar />
-                  Admins
-                </Toggle>
-                <Toggle variant="outline" aria-label="Toggle bold"
-                  pressed={filter?.user}
-                  onPressedChange={() => setFilter({ ...(filter ?? DEFAULT_FILTER), user: !filter?.user })}>
-                  <User />
-                  Benutzer
-                </Toggle>
+              <div className="text-sm text-muted-background">
+                {group.description || "Keine Beschreibung vorhanden."}
               </div>
             </div>
-          }
-          {
-            selectedUsers.length > 0 && group?.user_group_role === 'admin' && <Alert className="my-4" variant={"error"}>
-              <AlertCircle />
-              <AlertTitle>Gewählte Benutzer aus der Gruppe entfernen?</AlertTitle>
-              <AlertAction>
-                <Button variant={"outline"} onClick={() => {
-                  dialogs.confirm(`Möchtest du die ${selectedUsers.length} ausgewählten Benutzer wirklich aus der Gruppe entfernen?`, {
-                    okText: "Entfernen",
-                    cancelText: "Abbrechen"
-                  }).then((result) => {
-                    if (result) {
-                      handleUsersRemove(selectedUsers);
-                    }
-                  })
-                }}>Entfernen</Button>
-              </AlertAction>
-            </Alert>
-          }
-          {
-            Object.entries(groupBy(group_users, (x) => x.role))
-              .sort(([roleA], [roleB]) => roleWeights[roleA] - roleWeights[roleB])
-              .map(([role, users]) => (
-                <div key={role} className={cn("gap-2 flex w-full flex-col ", {
-                  hidden: (role === 'admin' && !filter?.admin) ||
-                    (role === 'user' && !filter?.user) ||
-                    (role === 'joinRequested' && (group.user_group_role !== "admin" || !filter?.joinRequested)) ||
-                    (role === 'trial' && !filter?.trials)
-                })}>
-                  <div className="text-sm font-semibold">
-                    {role === 'admin' ? 'Admins' : role === 'user' ? 'Mitglieder' : role === 'joinRequested' ? 'Anfrage zum Beitritt' : 'Trial'}
-                    {` (${users.length})`}
-                  </div>
-                  {users
-                    .filter((x) => x.user.name.toLowerCase().includes(searchQuery.toLowerCase())
-                      || x.user.email.toLowerCase().includes(searchQuery.toLowerCase()))
-                    .map((x) => (
-                      <div key={x.user.id} className="flex items-center justify-between rounded-md border p-2">
-                        <div className="flex items-center gap-2">
-                          <Avatar {...(
-                            (role === "admin" || role === "trial" || role === "user" && group.user_group_role === "admin") && {
-                              onClick: () => {
-                                if (selectedUsers.includes(x.user)) {
-                                  setSelectedUsers([...selectedUsers.filter((y) => y.id !== x.user.id)]);
-                                } else {
-                                  setSelectedUsers([...selectedUsers, x.user]);
+            <Separator className="my-2" />
+            {
+              group.user_group_role === "admin" && <div className="space-y-2">
+                <div className="text-sm font-semibold">
+                  Filter
+                </div>
+                <div className="flex flex-wrap items-center gap-2">
+                  <Toggle variant="outline" aria-label="Toggle italic"
+                    pressed={filter?.joinRequested}
+                    onPressedChange={() => setFilter({ ...(filter ?? DEFAULT_FILTER), joinRequested: !filter?.joinRequested })}>
+                    <GitPullRequest />
+                    Anfragen
+                  </Toggle>
+                  <Toggle variant="outline" aria-label="Toggle bold"
+                    pressed={filter?.trials}
+                    onPressedChange={() => setFilter({ ...(filter ?? DEFAULT_FILTER), trials: !filter?.trials })}>
+                    <Shapes />
+                    Trials
+                  </Toggle>
+                  <Toggle variant="outline" aria-label="Toggle bold"
+                    pressed={filter?.admin}
+                    onPressedChange={() => setFilter({ ...(filter ?? DEFAULT_FILTER), admin: !filter?.admin })}>
+                    <UserStar />
+                    Admins
+                  </Toggle>
+                  <Toggle variant="outline" aria-label="Toggle bold"
+                    pressed={filter?.user}
+                    onPressedChange={() => setFilter({ ...(filter ?? DEFAULT_FILTER), user: !filter?.user })}>
+                    <User />
+                    Benutzer
+                  </Toggle>
+                </div>
+              </div>
+            }
+            {
+              selectedUsers.length > 0 && group?.user_group_role === 'admin' && <Alert className="my-4" variant={"error"}>
+                <AlertCircle />
+                <AlertTitle>Gewählte Benutzer aus der Gruppe entfernen?</AlertTitle>
+                <AlertAction>
+                  <Button variant={"outline"} onClick={() => {
+                    dialogs.confirm(`Möchtest du die ${selectedUsers.length} ausgewählten Benutzer wirklich aus der Gruppe entfernen?`, {
+                      okText: "Entfernen",
+                      cancelText: "Abbrechen"
+                    }).then((result) => {
+                      if (result) {
+                        handleUsersRemove(selectedUsers);
+                      }
+                    })
+                  }}>Entfernen</Button>
+                </AlertAction>
+              </Alert>
+            }
+            {
+              Object.entries(groupBy(group_users, (x) => x.role))
+                .sort(([roleA], [roleB]) => roleWeights[roleA] - roleWeights[roleB])
+                .map(([role, users]) => (
+                  <div key={role} className={cn("gap-2 flex w-full flex-col ", {
+                    hidden: (role === 'admin' && !filter?.admin) ||
+                      (role === 'user' && !filter?.user) ||
+                      (role === 'joinRequested' && (group.user_group_role !== "admin" || !filter?.joinRequested)) ||
+                      (role === 'trial' && !filter?.trials)
+                  })}>
+                    <div className="text-sm font-semibold">
+                      {role === 'admin' ? 'Admins' : role === 'user' ? 'Mitglieder' : role === 'joinRequested' ? 'Anfrage zum Beitritt' : 'Trial'}
+                      {` (${users.length})`}
+                    </div>
+                    {users
+                      .filter((x) => x.user.name.toLowerCase().includes(searchQuery.toLowerCase())
+                        || x.user.email.toLowerCase().includes(searchQuery.toLowerCase()))
+                      .map((x) => (
+                        <div key={x.user.id} className="flex items-center justify-between rounded-md border p-2">
+                          <div className="flex items-center gap-2">
+                            <Avatar {...(
+                              (role === "admin" || role === "trial" || role === "user" && group.user_group_role === "admin") && {
+                                onClick: () => {
+                                  if (selectedUsers.includes(x.user)) {
+                                    setSelectedUsers([...selectedUsers.filter((y) => y.id !== x.user.id)]);
+                                  } else {
+                                    setSelectedUsers([...selectedUsers, x.user]);
+                                  }
                                 }
                               }
-                            }
-                          )}>
-                            {
-                              selectedUsers.includes(x.user)
-                                ? <div className="flex items-center justify-center size-full bg-primary/10 text-primary rounded-full">
-                                  <CheckCircle2 className="size-6" />
-                                </div>
-                                : <>
-                                  <AvatarImage src={x.user.avatarUrl || undefined} alt={x.user.name || undefined} />
-                                  <AvatarFallback>{x.user.name ? x.user.name[0] : 'U'}</AvatarFallback>
-                                </>
-                            }
-                          </Avatar>
-                          <div>
-                            <div>{x.user.name}</div>
-                            <div className="text-xs text-muted-foreground">{x.user.email}</div>
+                            )}>
+                              {
+                                selectedUsers.includes(x.user)
+                                  ? <div className="flex items-center justify-center size-full bg-primary/10 text-primary rounded-full">
+                                    <CheckCircle2 className="size-6" />
+                                  </div>
+                                  : <>
+                                    <AvatarImage src={x.user.avatarUrl || undefined} alt={x.user.name || undefined} />
+                                    <AvatarFallback>{x.user.name ? x.user.name[0] : 'U'}</AvatarFallback>
+                                  </>
+                              }
+                            </Avatar>
+                            <div>
+                              <div>{x.user.name}</div>
+                              <div className="text-xs text-muted-foreground">{x.user.email}</div>
+                            </div>
                           </div>
+                          {
+                            x.role === 'admin' && (
+                              <Badge variant="outline" className="text-green-500">Admin</Badge>
+                            )
+                          }
+                          {
+                            role === "trial" && <AcceptTrialButton group={group} user={x.user} />
+                          }
+                          {
+                            role === "joinRequested" && <RequestedGroupJoinButton group={group} user={x.user} />
+                          }
                         </div>
-                        {
-                          x.role === 'admin' && (
-                            <Badge variant="outline" className="text-green-500">Admin</Badge>
-                          )
-                        }
-                        {
-                          role === "trial" && <AcceptTrialButton group={group} user={x.user} />
-                        }
-                        {
-                          role === "joinRequested" && <RequestedGroupJoinButton group={group} user={x.user} />
-                        }
-                      </div>
-                    ))}
-                </div>
-              ))
-          }
-        </div>
-      </PullToRefresh>
-      <div
-        className="fixed right-6 z-50"
-        style={{ bottom: 'calc(1.5rem + env(safe-area-inset-bottom))' }}
-      >
-        <Button
-          size="icon"
-          className="h-14 w-14 rounded-full shadow-lg hover:shadow-xl bg-primary text-primary-foreground transition-all hover:-translate-y-1 active:translate-y-0 active:shadow-md"
-          onClick={() => {
-            dialogs
-              .selectMultipleUsers(group.users.map((x) => x.user.id))
-              .then((result) => {
-                if (result) handleUsersAdded(result);
-              });
-          }}
+                      ))}
+                  </div>
+                ))
+            }
+          </div>
+        </PullToRefresh>
+        <div
+          className="fixed right-6 z-50"
+          style={{ bottom: 'calc(1.5rem + env(safe-area-inset-bottom))' }}
         >
-          <Plus className="h-6 w-6" />
-        </Button>
-      </div>
+          <Button
+            size="icon"
+            className="h-14 w-14 rounded-full shadow-lg hover:shadow-xl bg-primary text-primary-foreground transition-all hover:-translate-y-1 active:translate-y-0 active:shadow-md"
+            onClick={() => {
+              dialogs
+                .selectMultipleUsers(group.users.map((x) => x.user.id))
+                .then((result) => {
+                  if (result) handleUsersAdded(result);
+                });
+            }}
+          >
+            <Plus className="h-6 w-6" />
+          </Button>
+        </div>
+      </main>
     </div>
   );
 }

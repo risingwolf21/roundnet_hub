@@ -59,7 +59,7 @@ export const PublicGroupListShadcn = () => {
       user={user}
     />
 
-    <main className='flex-1 size-full'>
+    <main className='flex-1 size-full pb-safe-bottom'>
       <PullToRefresh
         onRefresh={() => {
           refetch();

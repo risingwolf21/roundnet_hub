@@ -650,7 +650,7 @@ const EventInformationShadcn = ({ event, selectedEventPlace, fetchMode }: EventI
       primaryAction="back"
       user={user}
     />
-    <main className='flex-1 size-full'>
+    <main className='flex-1 size-full pb-safe-bottom'>
       <PullToRefresh onRefresh={() => refetch()}>
         <div className="mx-auto max-w-2xl w-full p-4 space-y-4">
           <Card className="border-t-4 border-t-[color:var(--group-color)]"

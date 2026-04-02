@@ -76,7 +76,7 @@ const EventScreen = () => {
           </Button>
         }
       />
-      <main className='flex-1 size-full'>
+      <main className='flex-1 size-full pb-safe-bottom'>
         <PullToRefresh onRefresh={() => refetch()}>
           <div className="flex p-4 flex-col space-y-2">
             {Object.entries(groupBy(events, (x) => startOfISOWeek(x.startingDateTime))).map(

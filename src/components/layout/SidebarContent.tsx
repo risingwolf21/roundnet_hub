@@ -254,7 +254,7 @@ export function AppSidebar() {
 
   return (
     <Sidebar>
-      <SidebarContent className='overscroll-none'>
+      <SidebarContent className='pt-safe-top overscroll-none'>
         {categories.map((category, index) => {
 
           const CategoryContent = (
