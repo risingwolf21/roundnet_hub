@@ -86,27 +86,23 @@ const GameListShadcn = () => {
                                   )}
                                 </div>
                               </div>
-                              <div>
+                              <div className='flex flex-row gap-2'>
                                 {
                                   (sets.length === 0 && matchMember)
                                     ? <Button variant={"warning"}>
                                       <TriangleAlert />
                                       Scores eintragen</Button>
                                     : <>
-                                      <div className='flex flex-row gap-2'>
-                                        {
-                                          sets.map((x, i) => <div key={i} className={cn('text-md', {
+                                      {
+                                        sets.map((x, i) => <div key={i}>
+                                          <div className={cn('text-md', {
                                             "font-bold": x.teamAWon
-                                          })}>{x.team_a_score}</div>)
-                                        }
-                                      </div>
-                                      <div className='flex flex-row gap-2'>
-                                        {
-                                          sets.map((x, i) => <div key={i} className={cn('text-md', {
+                                          })}>{x.team_a_score}</div>
+                                          <div className={cn('text-md', {
                                             "font-bold": !x.teamAWon
-                                          })}>{x.team_b_score}</div>)
-                                        }
-                                      </div>
+                                          })}>{x.team_b_score}</div>
+                                        </div>)
+                                      }
                                     </>
                                 }
                               </div>
