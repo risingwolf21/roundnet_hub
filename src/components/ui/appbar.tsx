@@ -53,64 +53,66 @@ export function AppBar({
   return (
     <header
       className={cn(
-        "pt-safe-top sticky top-0 z-50 flex h-14 w-full items-center gap-4 bg-background/95 px-4 supports-[backdrop-filter]:bg-background md:px-4 transition-shadow",
+        "pt-safe-top sticky top-0 z-50 w-full bg-background/95 supports-[backdrop-filter]:bg-background transition-shadow",
         scrolled ? "border-b shadow-sm" : "",
         className
       )}
       {...props}
     >
-      <div className="flex items-center gap-2 md:gap-4 lg:w-1/3">
-        {
-          primaryAction === "default" && <SidebarTrigger className={"-ml-1 md:hidden"} />
-        }
-        {
-          primaryAction === "back" && <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => navigate(-1)}
-            className="shrink-0 rounded-full -ml-1"
-          >
-            <ArrowLeft className="h-5 w-5" />
-          </Button>
-        }
-        {
-          React.isValidElement(primaryAction) && primaryAction
-        }
-        {title && (
-          <div className="font-semibold tracking-tight sm:block text-lg">
-            {title}
-          </div>
-        )}
-      </div>
+      <div className="flex h-14 w-full items-center gap-4 px-4 md:px-4">
+        <div className="flex items-center gap-2 md:gap-4 lg:w-1/3">
+          {
+            primaryAction === "default" && <SidebarTrigger className={"-ml-1 md:hidden"} />
+          }
+          {
+            primaryAction === "back" && <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => navigate(-1)}
+              className="shrink-0 rounded-full -ml-1"
+            >
+              <ArrowLeft className="h-5 w-5" />
+            </Button>
+          }
+          {
+            React.isValidElement(primaryAction) && primaryAction
+          }
+          {title && (
+            <div className="font-semibold tracking-tight sm:block text-lg">
+              {title}
+            </div>
+          )}
+        </div>
 
-      <div className="flex flex-1 items-center justify-center lg:w-1/3">
-        {showSearch && (
-          <div className="relative w-full max-w-md flex-1">
-            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-            <Input
-              type="search"
-              placeholder={searchPlaceholder}
-              value={searchValue}
-              onChange={(e) => onSearchChange?.(e.target.value)}
-              className="w-full rounded-full bg-muted/50 pl-9 focus-visible:bg-background"
-            />
-          </div>
-        )}
-      </div>
+        <div className="flex flex-1 items-center justify-center lg:w-1/3">
+          {showSearch && (
+            <div className="relative w-full max-w-md flex-1">
+              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+              <Input
+                type="search"
+                placeholder={searchPlaceholder}
+                value={searchValue}
+                onChange={(e) => onSearchChange?.(e.target.value)}
+                className="w-full rounded-full bg-muted/50 pl-9 focus-visible:bg-background"
+              />
+            </div>
+          )}
+        </div>
 
-      <div className="flex items-center justify-end gap-2 lg:w-1/3">
-        {actions}
-        {
-          user && <Button variant="ghost" className="relative h-8 w-8 rounded-full ml-1" onClick={() => navigate("/user")}>
-            <Avatar className="h-8 w-8">
-              {
-                user.avatarUrl
-                  ? <AvatarImage src={user.avatarUrl} alt={user.name ?? "User Avatar"} />
-                  : <AvatarFallback className="bg-primary text-primary-foreground">{getInitials(user.name ?? "User")}</AvatarFallback>
-              }
-            </Avatar>
-          </Button>
-        }
+        <div className="flex items-center justify-end gap-2 lg:w-1/3">
+          {actions}
+          {
+            user && <Button variant="ghost" className="relative h-8 w-8 rounded-full ml-1" onClick={() => navigate("/user")}>
+              <Avatar className="h-8 w-8">
+                {
+                  user.avatarUrl
+                    ? <AvatarImage src={user.avatarUrl} alt={user.name ?? "User Avatar"} />
+                    : <AvatarFallback className="bg-primary text-primary-foreground">{getInitials(user.name ?? "User")}</AvatarFallback>
+                }
+              </Avatar>
+            </Button>
+          }
+        </div>
       </div>
     </header>
   );

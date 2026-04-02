@@ -1,12 +1,15 @@
 import { useGrants } from '@/features/auth/GrantsContext';
 import { Feature, Permission } from '@/generated/supabase-types';
 import { Has } from '@/hooks/useGrants';
+import { queryClient } from '@/lib/queryClient';
 import { useRequestedUsersPerGroup } from '@/tanstack/groups';
 import { useAllNotifications } from '@/tanstack/notifications';
-import { Bell, ChartArea, Database, Euro, History, Home, KeyRound, Logs, Send, Swords, Trophy, User, Users, Volleyball, Wine } from "lucide-react";
+import { Bell, ChartArea, Database, Euro, HelpCircle, History, Home, KeyRound, Logs, Package, RefreshCcw, Send, Swords, Trophy, User, Users, Volleyball, Wine } from "lucide-react";
+import { useState } from 'react';
 import { useTranslation } from "react-i18next";
 import { useLocation, useNavigate } from "react-router";
 import { Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarMenu, SidebarMenuBadge, SidebarMenuButton, SidebarMenuItem, SidebarSeparator, useSidebar } from '../ui/sidebar';
+import { Spinner } from '../ui/spinner';
 
 type DrawerCategoryType = {
   key: string
@@ -20,7 +23,8 @@ type DrawerCategoryType = {
     title: string
     icon: React.ReactNode
     secondaryAction?: React.ReactNode
-    path: string
+    path?: string
+    onClick?: () => void;
     permission?: {
       any?: boolean
       perm?: Permission | Permission[];
@@ -36,9 +40,49 @@ export function AppSidebar() {
   const { user } = useGrants();
   const { data: requested_group_joins = [] } = useRequestedUsersPerGroup(user);
   const { data: notifications = [] } = useAllNotifications(user);
+  const [isUpdating, setIsUpdating] = useState(false);
 
   const { setOpenMobile } = useSidebar();
   const tab = location.pathname.substring(1) || "home";
+
+  const updateServiceWorkerWithTimeout = async (timeoutMs: number) => {
+    if (!('serviceWorker' in navigator)) return;
+
+    const reg = await navigator.serviceWorker.getRegistration();
+
+    if (reg) {
+      try {
+        await Promise.race([
+          reg.update(),
+          new Promise((resolve) => setTimeout(resolve, timeoutMs))
+        ]);
+      } catch (err) {
+        console.warn('SW update check failed or timed out', err);
+      }
+    }
+  };
+
+  const handleAppUpdate = async () => {
+    if (isUpdating) return;
+    setIsUpdating(true);
+
+    try {
+      await updateServiceWorkerWithTimeout(2000);
+
+      await queryClient.cancelQueries();
+
+      await queryClient.resetQueries();
+
+      await new Promise(r => setTimeout(r, 800));
+
+      window.location.reload();
+
+    } catch (e) {
+      console.error('Update failed:', e);
+    } finally {
+      setIsUpdating(false);
+    }
+  };
 
   const categories: DrawerCategoryType[] = [
     {
@@ -249,6 +293,25 @@ export function AppSidebar() {
           }
         }
       ]
+    },
+    {
+      key: "infoList",
+      children: [
+        {
+          title: "Hilfe und Information",
+          path: "help",
+          icon: <HelpCircle />
+        },
+        {
+          title: "Aktualisieren",
+          onClick: handleAppUpdate,
+          icon: isUpdating ? <Spinner /> : <RefreshCcw />
+        },
+        {
+          title: import.meta.env.VITE_APP_VERSION + '.' + import.meta.env.VITE_GIT_COMMIT.slice(0, 6),
+          icon: <Package />
+        }
+      ]
     }
   ]
 
@@ -271,8 +334,12 @@ export function AppSidebar() {
                       <SidebarMenuButton
                         isActive={isActive}
                         onClick={() => {
-                          setOpenMobile(false);
-                          navigate(`/${item.path}`);
+                          if (item.path) {
+                            setOpenMobile(false);
+                            navigate(`/${item.path}`);
+                          } else if (item.onClick) {
+                            item.onClick();
+                          }
                         }}
                         tooltip={item.title}
                       >

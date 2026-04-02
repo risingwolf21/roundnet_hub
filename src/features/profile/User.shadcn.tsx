@@ -583,7 +583,7 @@ export const UserShadcn = ({ user, handleSignOut }: UserScreenProps) => {
     <AppBar
       title="Profil"
     />
-    <main className='flex-1 size-full'>
+    <main className='flex-1 size-full pb-safe-bottom'>
       <div className="flex flex-col px-4">
         <Tabs defaultValue="overview" className="gap-4">
           <TabsList variant="line" className="w-full justify-start overflow-x-auto no-scrollbar overscroll-none">
