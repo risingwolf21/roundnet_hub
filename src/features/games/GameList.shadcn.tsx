@@ -79,14 +79,14 @@ const GameListShadcn = () => {
                                 </div>
                                 <div className='flex justify-center flex-col'>
                                   {!x.rated && (
-                                    <Badge variant={"info"}>Ungewertet</Badge>
+                                    <Badge variant={"outline"}>Ungewertet</Badge>
                                   )}
                                   {!x.is_public && (
                                     <Badge variant={"outline"}><Lock />Privat</Badge>
                                   )}
                                 </div>
                               </div>
-                              <div className='flex flex-row gap-2'>
+                              <div className='flex flex-row h-full items-center gap-2'>
                                 {
                                   (sets.length === 0 && matchMember)
                                     ? <Button variant={"warning"}>
