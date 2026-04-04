@@ -13,8 +13,6 @@ import { captureException, withProfiler } from '@sentry/react';
 import { useDialogs, useNotifications } from '@toolpad/core';
 import { TFunction } from 'i18next';
 import { useCallback, useState } from 'react';
-import { withTranslation } from 'react-i18next';
-import { Navigate, useParams } from 'react-router';
 import Layout from '../../components/layout/Layout';
 import { useGrants } from '../auth/GrantsContext';
 import { TabPanel } from '../events/dialogs/EventAttendanceDialog';
@@ -39,14 +37,6 @@ import Typography from '@mui/material/Typography';
 import { useTheme } from '@mui/material/styles';
 import { isAfter, isBefore } from 'date-fns';
 import { CreateOrUpdateChallengeDialog } from './dialogs/CreateOrUpdateChallengeDialog';
-
-const ChallengeInformationProvider = ({ t }: { t: TFunction }) => {
-  const { challengeId } = useParams();
-
-  if (!challengeId) return <Navigate to="/challenges/list" />;
-
-  return <ChallengeInformation t={t} challengeId={challengeId} />;
-};
 
 const ChallengeInformation = ({ t, challengeId }: { t: TFunction; challengeId: string }) => {
   const { user } = useGrants();
@@ -231,4 +221,4 @@ const ChallengeInformation = ({ t, challengeId }: { t: TFunction; challengeId: s
   );
 };
 
-export default withProfiler(withTranslation()(ChallengeInformationProvider));
+export default withProfiler(ChallengeInformation);

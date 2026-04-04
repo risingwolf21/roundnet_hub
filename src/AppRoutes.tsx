@@ -13,7 +13,9 @@ import ForgotPasswordShadcn from './features/auth/ForgotPassword.shadcn';
 import { GrantsProvider } from './features/auth/GrantsContext';
 import LoginFormShadcn from './features/auth/LoginForm.shadcn';
 import SignUpFormShadcn from './features/auth/SignUpForm.shadcn';
+import ChallengeListShadcn from './features/challenges/ChallengeList.shadcn';
 import GameListShadcn from './features/games/GameList.shadcn';
+import LeaderboardShadcn from './features/games/Leaderboard.shadcn';
 import MatchInformationShadcn from './features/games/MatchInformation.shadcn';
 import GrantsManager from './features/grants/GrantsManager';
 import HomePage from './features/homepage/HomePage';
@@ -37,7 +39,7 @@ const EventInformationProvider = lazyWithRetry(() => import('./features/events/E
 const EventScreenProvider = lazyWithRetry(() => import('./features/events/EventList.page'));
 const NotificationScreen = lazyWithRetry(() => import('./features/notifications/NotificationScreen'));
 const ChallengeScreen = lazyWithRetry(() => import('./features/challenges/ChallengeList.page'));
-const ChallengeInfoScreen = lazyWithRetry(() => import('./features/challenges/ChallengeInformation'));
+const ChallengeInfoScreen = lazyWithRetry(() => import('./features/challenges/ChallengeInformation.provider'));
 const RecurringEvents = lazyWithRetry(() => import('./features/events/RecurringEvents'));
 const GameList = lazyWithRetry(() => import('./features/games/GameList'));
 const ReportScore = lazyWithRetry(() => import('./features/games/ReportScore'));
@@ -234,11 +236,11 @@ const createRouter = (user: UserWithGroups | null, isShadcnUi: boolean) =>
                 },
                 {
                   path: 'list',
-                  element: <ChallengeScreen />,
+                  element: isShadcnUi ? <ChallengeListShadcn /> : <ChallengeScreen />,
                 },
                 {
                   path: ':challengeId',
-                  element: <ChallengeInfoScreen />,
+                  element: <ChallengeInfoScreen isShadcn={isShadcnUi} />,
                 },
               ],
             },
@@ -315,7 +317,7 @@ const createRouter = (user: UserWithGroups | null, isShadcnUi: boolean) =>
                 },
                 {
                   path: 'leaderboard',
-                  element: <Leaderboard />,
+                  element: isShadcnUi ? <LeaderboardShadcn /> : <Leaderboard />,
                 }
               ],
             },
