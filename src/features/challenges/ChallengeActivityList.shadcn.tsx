@@ -4,6 +4,7 @@ import { useMemo } from 'react';
 
 import { InfiniteScrollList } from '@/components/InfiniteScrollList';
 import { Item, ItemContent, ItemDescription, ItemMedia, ItemTitle } from '@/components/ui/item';
+import { Separator } from '@/components/ui/separator';
 import { useInfiniteChallengeStats } from '@/tanstack/challenge';
 import groupBy from 'lodash.groupby';
 
@@ -29,19 +30,31 @@ export const ChallengeActivityListShadcn = ({ challenge }: ChallengeActivityList
   >
     {sortedEntries.map(([date, entries]: [string, ChallengeStatWithUser[]]) => (
       <div key={date}>
-        <div className="text-sm font-semibold ml-2">
+        <div className="text-sm font-semibold py-2 pl-1">
           {date}
         </div>
-        <div className='flex flex-col gap-2 p-2'>
+        <div className='flex flex-col gap-2 p-0'>
           {entries.map((x) => (
-            <Item key={x.fullUser.id} variant={"outline"} className='p-0'>
-              <ItemContent className='p-2'>
-                <ItemTitle className="line-clamp-1">
+            <Item key={x.fullUser.id} variant={"outline"} className='p-2'>
+              <ItemContent>
+                <ItemTitle className="line-clamp-1 px-2">
                   {x.fullUser.name}
                 </ItemTitle>
-                <ItemDescription>
+                <ItemDescription className='px-2'>
                   +{x.count}
                 </ItemDescription>
+
+                {
+                  (x.meta?.category || x.meta?.comment) && <>
+                    <Separator />
+                    <ItemTitle className="line-clamp-1 font-semibold px-2">
+                      {x.meta.category}
+                    </ItemTitle>
+                    <ItemDescription className='px-2'>
+                      {x.meta.comment}
+                    </ItemDescription>
+                  </>
+                }
               </ItemContent>
               {
                 x.image_url && <ItemMedia variant="image" className='h-75 w-full max-w-1/2'>
@@ -53,45 +66,6 @@ export const ChallengeActivityListShadcn = ({ challenge }: ChallengeActivityList
                 </ItemMedia>
               }
             </Item>
-            // <div key={x.fullUser.id} className="flex items-center justify-between rounded-md border p-2">
-            //   <div className="flex items-center gap-2">
-            //     <Avatar>
-            //       <AvatarImage src={x.fullUser.avatarUrl || undefined} alt={x.fullUser.name || undefined} />
-            //       <AvatarFallback>{x.fullUser.name ? x.fullUser.name[0] : 'U'}</AvatarFallback>
-            //     </Avatar>
-            //     <div>
-            //       <div>{x.fullUser.name}</div>
-            //     </div>
-            //   </div>
-            // </div>
-            // <ListItem divider sx={{ display: 'flex', p: 0, mr: 4, justifyContent: 'space-between' }} key={x.id}>
-            //   <Stack direction={"row"}>
-            //     <Stack sx={{ justifyContent: "center" }}>
-            //       <ListItemAvatar>
-            //         <Avatar sx={{ borderRadius: 2 }}>
-            //           {x.fullUser.avatarUrl ? (
-            //             <img src={x.fullUser.avatarUrl} alt="avatar" width="100%" height="100%" />
-            //           ) : (
-            //             <AccountBox />
-            //           )}
-            //         </Avatar>
-            //       </ListItemAvatar>
-            //     </Stack>
-            //     <Stack>
-            //       <ListItemText primary={`+${x.count}`} secondary={x.fullUser.displayName} />
-            //       <ListItemText primary={x.meta?.category} secondary={x.meta?.comment} />
-            //     </Stack>
-            //   </Stack>
-            //   {x.image_url && (
-            //     <CardMedia
-            //       component="img"
-            //       loading="lazy"
-            //       sx={{ width: '100%', maxWidth: '50%', maxHeight: '250px' }}
-            //       image={x.image_url}
-            //       alt="Challenge image"
-            //     />
-            //   )}
-            // </ListItem>
           ))}
         </div>
       </div>

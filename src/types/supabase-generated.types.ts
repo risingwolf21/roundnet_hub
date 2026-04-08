@@ -1377,7 +1377,7 @@ export type Database = {
           end_date: string | null
           group: string
           id: string
-          max_points_per_day: number
+          max_points_per_day: number | null
           max_points_per_week: number | null
           name: string
           show_all_members: boolean
@@ -1393,7 +1393,7 @@ export type Database = {
           end_date?: string | null
           group: string
           id?: string
-          max_points_per_day?: number
+          max_points_per_day?: number | null
           max_points_per_week?: number | null
           name?: string
           show_all_members?: boolean
@@ -1409,7 +1409,7 @@ export type Database = {
           end_date?: string | null
           group?: string
           id?: string
-          max_points_per_day?: number
+          max_points_per_day?: number | null
           max_points_per_week?: number | null
           name?: string
           show_all_members?: boolean

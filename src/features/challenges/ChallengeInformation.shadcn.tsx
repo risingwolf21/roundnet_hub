@@ -4,6 +4,7 @@ import { queryClient } from '@/lib/queryClient';
 import {
   challengeKeys,
   useChallenge,
+  useChallengeLeaderboard,
   useChallengeStatsForUser,
   useIncreasePointForUserMutation,
   useUpdateChallengeMutation
@@ -13,16 +14,20 @@ import { useDialogs } from '@toolpad/core';
 import { TFunction } from 'i18next';
 import { useCallback } from 'react';
 import { useGrants } from '../auth/GrantsContext';
-import EnterPointDialog from './dialogs/EnterPointDialog';
 
 import { AppBar } from '@/components/ui/appbar';
 import { Button } from '@/components/ui/button';
+import { Item } from '@/components/ui/item';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
-import { Plus } from 'lucide-react';
+import { cn } from '@/lib/utils';
+import { addDays, format, isSameDay, startOfWeek } from 'date-fns';
+import { BadgeCheck, Edit, Plus } from 'lucide-react';
 import { toast } from 'sonner';
 import { ChallengeActivityListShadcn } from './ChallengeActivityList.shadcn';
+import { ChallengeLeaderboardShadcn } from './ChallengeLeaderboard.shadcn';
+import { CreateOrUpdateChallengeDialogShadcn } from './dialogs/CreateOrUpdateChallengeDialog.shadcn';
+import EnterPointDialogShadcn from './dialogs/EnterPointDialog.shadcn';
+import { ChallengeInformationSkeleton } from './skeleton/ChallengeInformationSkeleton';
 
 const ChallengeInformationShadcn = ({ t, challengeId }: { t: TFunction; challengeId: string }) => {
   const { user } = useGrants();
@@ -30,6 +35,7 @@ const ChallengeInformationShadcn = ({ t, challengeId }: { t: TFunction; challeng
 
   const { data: challenge = null, isLoading } = useChallenge(challengeId);
   const { data: user_challenge_stats = [] } = useChallengeStatsForUser(challengeId, user);
+  const { data: leaderboard = [], isLoading: isLeaderboardLoading } = useChallengeLeaderboard(challengeId);
 
   const refetch = () => {
     queryClient.invalidateQueries({ queryKey: challengeKeys.challengeInformation(challengeId) });
@@ -80,12 +86,7 @@ const ChallengeInformationShadcn = ({ t, challengeId }: { t: TFunction; challeng
   );
 
   if (isLoading || !challenge) {
-    return (
-      <Box sx={{ alignItems: 'center', display: 'flex', flexDirection: 'column', pt: 10 }}>
-        <Typography sx={{ fontSize: '30pt', fontWeight: 'bold' }}>⌛</Typography>
-        <Typography sx={{ fontSize: '18pt', fontWeight: 'bold' }}>Challenge wird geladen...</Typography>
-      </Box>
-    );
+    return <ChallengeInformationSkeleton />
   }
 
   return <div>
@@ -93,21 +94,75 @@ const ChallengeInformationShadcn = ({ t, challengeId }: { t: TFunction; challeng
       className='!border-b !shadow-sm'
       title={challenge.name}
       user={user}
+      actions={
+        <Has perm={"challenge.manage"}>
+          <Button variant={"ghost"} size={"icon-lg"} onClick={async () => {
+            const result = await dialogs.open(CreateOrUpdateChallengeDialogShadcn, { user, challenge });
+            if (result) {
+              await updateChallengeMutation.mutateAsync(
+                { challenge: result },
+                {
+                  onError: (error) =>
+                    toast.error('Challenge konnte nicht aktualisiert werden. ' + error.message),
+                  onSuccess: () =>
+                    toast.success('Challenge wurde erfolgreich aktualisiert.'),
+                }
+              );
+            }
+          }}>
+            <Edit />
+          </Button>
+        </Has>
+      }
     />
-    <main className='flex-1 size-full pb-safe-bottom'>
+    <main className='flex-1 size-full pb-safe-bottom p-2'>
       <PullToRefresh onRefresh={() => refetch()}>
+        <div key={"info"} className="gap-2 flex w-full max-w-lg flex-col">
+          <div className="text-sm font-semibold">
+            Beschreibung
+          </div>
+          <div className="text-sm text-muted-background">
+            {challenge.description || "Keine Beschreibung vorhanden."}
+          </div>
+        </div>
         <Tabs defaultValue={"activity"} className="w-full mt-6">
           <TabsList className="grid w-full flex grid-cols-3 bg-white border !h-12 shadow-sm">
             <TabsTrigger value="activity" className="h-10 data-[state=active]:bg-primary/5 flex-1">Aktivität</TabsTrigger>
             <TabsTrigger value="leaderboard" className="h-10 data-[state=active]:bg-primary/5 flex-1">Leaderboard</TabsTrigger>
           </TabsList>
-          <div className="pt-4">
-            <TabsContent value={"activity"} className="space-y-4 m-0">
+          <div>
+            <TabsContent value={"activity"} className="m-0">
+              <Item variant={"outline"}>
+                <div className='flex flex-row w-full'>
+                  {
+                    Array.from({ length: 7 }, (_v, k) => k + 1)
+                      .map(x => addDays(startOfWeek(new Date()), x))
+                      .map(x => {
+                        const active = user_challenge_stats.some(y => isSameDay(y.created_at, x))
+                        return <div key={x.toISOString()} className='flex-1 flex justify-center'>
+                          <div className=''>
+                            <div className={cn('w-10 h-10 border-2 border-dashed rounded-full flex flex-col justify-center items-center', {
+                              "border-none": active,
+                            })}>
+                              <BadgeCheck className={cn("w-10 h-10", {
+                                "hidden": !active,
+                                "text-success": active
+                              })} />
+                            </div>
+                            <div className='font-bold mt-1'>
+                              {format(x, "dd.MM")}
+                            </div>
+                          </div>
+                        </div>
+                      })
+                  }
+                </div>
+              </Item>
               <ChallengeActivityListShadcn challenge={challenge} />
             </TabsContent>
 
-            <TabsContent value={"leaderboard"} className="space-y-4 m-0">
-              <div></div>
+            <TabsContent value={"leaderboard"} className="m-0">
+              <ChallengeLeaderboardShadcn challenge_points={leaderboard} isLoading={isLeaderboardLoading} />
             </TabsContent>
           </div>
         </Tabs>
@@ -123,7 +178,7 @@ const ChallengeInformationShadcn = ({ t, challengeId }: { t: TFunction; challeng
           className="h-14 w-14 rounded-full shadow-lg hover:shadow-xl bg-primary text-primary-foreground transition-all hover:-translate-y-1 active:translate-y-0 active:shadow-md"
           onClick={async () => {
             if (challenge) {
-              const result = await dialogs.open(EnterPointDialog, {
+              const result = await dialogs.open(EnterPointDialogShadcn, {
                 dates: user_challenge_stats.map((x) => x.created_at),
                 maxEntriesPerWeek: challenge.max_points_per_week,
                 maxEntriesPerDay: challenge.max_points_per_day,

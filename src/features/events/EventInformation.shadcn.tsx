@@ -764,7 +764,7 @@ export const EventInformationSkeleton = () => {
 
       <main className='flex-1 relative flex flex-col min-h-0 overflow-hidden'>
         <div className="flex-1 overflow-y-auto overscroll-none w-full relative min-h-0">
-          <div className="mx-auto max-w-2xl w-full p-4 space-y-4 pb-[calc(6rem+env(safe-area-inset-bottom))]">
+          <div className="mx-auto max-w-2xl w-full p-4 space-y-4 pb-[calc(2rem+env(safe-area-inset-bottom))]">
 
             {/* Top Card Skeleton */}
             <Card className="border-t-4 border-t-muted">
