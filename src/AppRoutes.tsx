@@ -20,7 +20,8 @@ import MatchInformationShadcn from './features/games/MatchInformation.shadcn';
 import GrantsManager from './features/grants/GrantsManager';
 import HomePage from './features/homepage/HomePage';
 import UserScreenProvider from './features/profile/UserScreenProvider';
-import { LogsManager } from './features/supabase/components/logs';
+import { DatabaseManager } from './features/supabase/components/database';
+import { SheetNavigationProvider } from './features/supabase/SheetNavigationContext';
 import { lazyWithRetry } from './hooks/lazyWithRetry';
 import { Has } from './hooks/useGrants';
 import { sentryCreateBrowserRouter } from './instrument';
@@ -358,8 +359,10 @@ const createRouter = (user: UserWithGroups | null, isShadcnUi: boolean) =>
                   path: 'audit/logs',
                   element: (
                     <Has perm={'supabase.admin'} fallback={<PermissionDeniedPage />}>
-                      <LogsManager projectRef='gfvaurdkieqkehsuwotr' />
-                    </Has>
+                      <SheetNavigationProvider>
+                        <DatabaseManager projectRef='gfvaurdkieqkehsuwotr' />
+                      </SheetNavigationProvider>
+                    </Has >
                   ),
                 },
                 {

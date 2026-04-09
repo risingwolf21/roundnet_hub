@@ -17,6 +17,9 @@ export const runQuery = async ({
   readOnly?: boolean
 }) => {
   const { data, error } = await client.POST('/v1/projects/{ref}/database/query', {
+    headers: {
+      "Authorization": "Bearer sbp_9de70eaf855f68d8965351cc3749365af6ce03b2"
+    },
     params: {
       path: {
         ref: projectRef,
@@ -29,6 +32,7 @@ export const runQuery = async ({
   })
 
   if (error) {
+    console.log(error, data)
     throw error
   }
 
