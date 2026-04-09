@@ -1,9 +1,30 @@
-import createClient from 'openapi-fetch'
+import { supabase } from "@/lib/supabase";
 
-import type { paths } from './management-api-schema'
+type HttpMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
 
-export const client = createClient<paths>({
-  baseUrl: 'https://api.supabase.com/',
-})
+/**
+ * A strongly-typed wrapper for the Universal Management API Proxy Edge Function.
+ * It uses the OpenAPI schema to ensure you pass valid paths and payloads.
+ */
+export async function invokeManagementApi<
+  Method extends HttpMethod
+>(
+  path: string, // We use string here because OpenAPI paths have variables like {ref} that you need to replace
+  method: Method,
+  payload?: any // You can narrow this type further using the schema if needed
+) {
+  const { data, error } = await supabase.functions.invoke('management-proxy', {
+    body: {
+      path,
+      method,
+      payload,
+    },
+  });
 
-// sbp_9de70eaf855f68d8965351cc3749365af6ce03b2
+  if (error) {
+    console.error(`[Management API] Failed calling ${method} ${path}`, error);
+    throw new Error(error.message || 'Failed to call Management API');
+  }
+
+  return data;
+}

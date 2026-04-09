@@ -3,7 +3,7 @@
 import { useMutation } from '@tanstack/react-query'
 import { type AxiosError } from 'axios'
 import { toast } from 'sonner'
-import { client } from '../lib/management-api'
+import { invokeManagementApi } from '../lib/management-api'
 
 
 // RUN SQL Query
@@ -16,23 +16,13 @@ export const runQuery = async ({
   query: string
   readOnly?: boolean
 }) => {
-  const { data, error } = await client.POST('/v1/projects/{ref}/database/query', {
-    headers: {
-      "Authorization": "Bearer sbp_9de70eaf855f68d8965351cc3749365af6ce03b2"
-    },
-    params: {
-      path: {
-        ref: projectRef,
-      },
-    },
-    body: {
-      query,
-      read_only: readOnly,
-    },
+  const { data, error } = await invokeManagementApi(`/v1/projects/${projectRef}/database/query`, 'POST', {
+    query,
+    read_only: readOnly,
   })
+  console.log(error, data)
 
   if (error) {
-    console.log(error, data)
     throw error
   }
 
