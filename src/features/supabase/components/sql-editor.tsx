@@ -3,17 +3,13 @@
 import { Editor } from '@monaco-editor/react'
 import {
   AlertTriangle,
-  ArrowUp,
   BarChart as BarChartIcon,
-  FileText,
-  Loader2,
-  Wand,
+  FileText
 } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import {
@@ -60,13 +56,9 @@ export function SqlEditor({
 }: SqlEditorProps) {
   const [sql, setSql] = useState(initialSql || '')
   const [isSqlVisible, setIsSqlVisible] = useState(!hideSql)
-  const [isNaturalLanguageMode, setIsNaturalLanguageMode] = useState(
-    process.env.NEXT_PUBLIC_ENABLE_AI_QUERIES === 'true' && initialNaturalLanguageMode
-  )
-  const [naturalLanguageQuery, setNaturalLanguageQuery] = useState('')
+
   const { mutate: runQuery, data, isPending, error } = useRunQuery()
-  const [isGeneratingSql, setIsGeneratingSql] = useState(false)
-  const [aiError, setAiError] = useState<string | null>(null)
+
   const [isChartVisible, setIsChartVisible] = useState(false)
   const [xAxisColumn, setXAxisColumn] = useState<string | null>(null)
   const [yAxisColumn, setYAxisColumn] = useState<string | null>(null)
@@ -78,42 +70,10 @@ export function SqlEditor({
 
   useEffect(() => {
     if (initialSql) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setSql(initialSql)
     }
   }, [initialSql])
-
-  const handleRunNaturalLanguageQuery = async () => {
-    if (!naturalLanguageQuery) return
-
-    setIsGeneratingSql(true)
-    setAiError(null)
-    try {
-      const response = await fetch('/api/ai/sql', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          prompt: naturalLanguageQuery,
-          projectRef,
-        }),
-      })
-
-      if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.message || 'Failed to generate SQL')
-      }
-
-      const { sql: generatedSql } = await response.json()
-      setSql(generatedSql)
-      runQuery({ projectRef, query: generatedSql, readOnly: true })
-    } catch (error: any) {
-      console.error(error)
-      setAiError(error.message)
-    } finally {
-      setIsGeneratingSql(false)
-    }
-  }
 
   const handleRunQuery = useCallback(() => {
     if (sql) {
@@ -122,6 +82,7 @@ export function SqlEditor({
   }, [sql, projectRef, runQuery])
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setIsSqlVisible(!hideSql)
   }, [hideSql])
 
@@ -145,10 +106,11 @@ export function SqlEditor({
 
   useEffect(() => {
     const noResults = !data || (Array.isArray(data) && data.length === 0)
-    if (noResults && !isSqlVisible && !isNaturalLanguageMode && !readOnly && !isPending) {
+    if (noResults && !isSqlVisible && !readOnly && !isPending) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setIsSqlVisible(true)
     }
-  }, [data, isSqlVisible, isNaturalLanguageMode])
+  }, [data, isSqlVisible])
 
   const serverErrorMessage = (error as any)?.response?.data?.message || ''
   const isReadOnlyError =
@@ -158,14 +120,12 @@ export function SqlEditor({
   // Build the toggle-group selection based on current UI state
   const toggleValues = useMemo(() => {
     const values: string[] = []
-    if (isNaturalLanguageMode) values.push('chat')
     if (isSqlVisible) values.push('sql')
     if (!hideChartOption && isChartVisible) values.push('chart')
     return values
-  }, [isNaturalLanguageMode, isSqlVisible, isChartVisible, hideChartOption])
+  }, [isSqlVisible, isChartVisible, hideChartOption])
 
   const handleToggleGroupChange = (values: string[]) => {
-    setIsNaturalLanguageMode(values.includes('chat'))
     setIsSqlVisible(values.includes('sql'))
     if (!hideChartOption) {
       setIsChartVisible(values.includes('chart'))
@@ -183,11 +143,6 @@ export function SqlEditor({
             onValueChange={handleToggleGroupChange}
             className="gap-1"
           >
-            {process.env.NEXT_PUBLIC_ENABLE_AI_QUERIES === 'true' && (
-              <ToggleGroupItem value="chat" aria-label="Chat">
-                <Wand className="h-4 w-4" />
-              </ToggleGroupItem>
-            )}
             <ToggleGroupItem value="sql" aria-label="SQL">
               <FileText className="h-4 w-4" />
             </ToggleGroupItem>
@@ -264,40 +219,6 @@ export function SqlEditor({
           </ToggleGroup>
         </div>
         <div>
-          {isNaturalLanguageMode && (
-            <div className="relative mb-4">
-              <Wand
-                strokeWidth={1.5}
-                size={16}
-                className="absolute left-4 top-1/2 -translate-y-1/2"
-              />
-              <Input
-                placeholder="e.g. Show me all users who signed up in the last 7 days"
-                value={naturalLanguageQuery}
-                onChange={(e) => setNaturalLanguageQuery(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' && !e.shiftKey) {
-                    e.preventDefault()
-                    handleRunNaturalLanguageQuery()
-                  }
-                }}
-                className="w-full px-10"
-              />
-              <Button
-                onClick={handleRunNaturalLanguageQuery}
-                disabled={isGeneratingSql || isPending}
-                className="h-7 w-7 rounded-full p-0 shrink-0 absolute right-1 top-1/2 -translate-y-1/2"
-              >
-                {isGeneratingSql ? (
-                  <Loader2 size={16} className="animate-spin" />
-                ) : isPending ? (
-                  <Loader2 size={16} className="animate-spin" />
-                ) : (
-                  <ArrowUp size={16} />
-                )}
-              </Button>
-            </div>
-          )}
           {isSqlVisible && (
             <div className="border-t border-b bg-muted overflow-hidden -mx-6 lg:-mx-8 mt-4 relative">
               <Editor
@@ -337,15 +258,6 @@ export function SqlEditor({
           <Skeleton className="h-6 w-full" />
           <Skeleton className="h-6 w-full" />
           <Skeleton className="h-6 w-full" />
-        </div>
-      )}
-      {aiError && (
-        <div className="px-6 lg:px-8 py-4">
-          <Alert variant="destructive">
-            <AlertTriangle className="h-4 w-4" />
-            <AlertTitle>Error generating SQL</AlertTitle>
-            <AlertDescription>{aiError}</AlertDescription>
-          </Alert>
         </div>
       )}
       {error && (

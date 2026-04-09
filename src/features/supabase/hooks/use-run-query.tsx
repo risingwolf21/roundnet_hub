@@ -20,7 +20,6 @@ export const runQuery = async ({
     query,
     read_only: readOnly,
   })
-  console.log(error, data)
 
   if (error) {
     throw error

@@ -1,6 +1,5 @@
 import { PullToRefresh } from '@/components/pull-to-refresh/PullToRefresh';
 import { useAllNotifications, useMarkNotificationsAsRead } from '@/tanstack/notifications';
-import Layout from '../../components/layout/Layout';
 import { useGrants } from '../auth/GrantsContext';
 
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -10,15 +9,7 @@ import List from '@mui/material/List';
 import Typography from '@mui/material/Typography';
 import { NotificationItem } from './NotificationItem';
 
-const NotificationsPage = () => {
-  return (
-    <Layout>
-      <NotificationScreen />
-    </Layout>
-  );
-};
-
-const NotificationScreen = () => {
+export const NotificationScreen = () => {
   const { user } = useGrants();
   const { data: notifications = [], isLoading, refetch } = useAllNotifications(user);
 
@@ -58,5 +49,3 @@ const NotificationScreen = () => {
     </PullToRefresh>
   );
 };
-
-export default NotificationsPage;

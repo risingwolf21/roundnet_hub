@@ -13,18 +13,31 @@ export async function invokeManagementApi<
   method: Method,
   payload?: any // You can narrow this type further using the schema if needed
 ) {
-  const { data, error } = await supabase.functions.invoke('management-proxy', {
-    body: {
+  const session = await supabase.auth.getSession();
+  const accessToken = session.data.session?.access_token;
+  if (!accessToken) throw new Error('Not authenticated');
+
+  const resp = await fetch(`https://${import.meta.env.VITE_SUPABASE_PROJECT_ID}.functions.supabase.co/management-proxy`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${accessToken}`,
+    },
+    body: JSON.stringify({
       path,
       method,
       payload,
-    },
-  });
-
-  if (error) {
+    }),
+  })
+  if (!resp.ok) {
+    const error = await resp.text();
     console.error(`[Management API] Failed calling ${method} ${path}`, error);
-    throw new Error(error.message || 'Failed to call Management API');
+    throw new Error(error || 'Failed to call Management API');
   }
+  const result = await resp.json();
 
-  return data;
+  return {
+    data: result,
+    error: null
+  };
 }

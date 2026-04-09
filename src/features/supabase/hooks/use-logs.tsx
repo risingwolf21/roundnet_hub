@@ -1,7 +1,7 @@
 'use client'
 
 import { useQuery } from '@tanstack/react-query'
-import { client } from '../lib/management-api'
+import { invokeManagementApi } from '../lib/management-api'
 
 
 // GET Logs
@@ -16,26 +16,26 @@ const getLogs = async ({
   iso_timestamp_end?: string
   sql?: string
 }) => {
-  const { data, error } = await client.GET('/v1/projects/{ref}/analytics/endpoints/logs.all', {
-    headers: {
-      "Authorization": "Bearer sbp_9de70eaf855f68d8965351cc3749365af6ce03b2"
-    },
-    params: {
-      path: {
-        ref: projectRef,
-      },
-      query: {
-        iso_timestamp_start,
-        iso_timestamp_end,
-        sql,
-      },
-    },
+  const queryString = Object.entries({
+    sql: sql,
+    iso_timestamp_start: iso_timestamp_start,
+    iso_timestamp_end: iso_timestamp_end
   })
+    .map(([k, v]) => {
+      if (v) {
+        return `${encodeURIComponent(k)}=${encodeURIComponent(v)}`
+      }
+      return '';
+    })
+    .join("&");
+
+  const { data, error } = await invokeManagementApi(`/v1/projects/${projectRef}/analytics/endpoints/logs.all?${queryString}`, 'GET')
+
   if (error) {
     throw error
   }
 
-  return data
+  return data as any
 }
 
 export const useGetLogs = (

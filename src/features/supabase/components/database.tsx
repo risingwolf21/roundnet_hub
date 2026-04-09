@@ -1,6 +1,6 @@
 'use client'
 
-import { AlertTriangle, Table, Wand } from 'lucide-react'
+import { AlertTriangle, Table } from 'lucide-react'
 import { useCallback, useMemo, useState } from 'react'
 import { toast } from 'sonner'
 import { z, type ZodTypeAny } from 'zod'
@@ -252,15 +252,6 @@ export function DatabaseManager({ projectRef }: { projectRef: string }) {
     [push, projectRef]
   )
 
-  const handleNaturalLanguageQueryClick = useCallback(() => {
-    push({
-      title: 'Talk to your database',
-      component: (
-        <SqlEditor projectRef={projectRef} initialNaturalLanguageMode={true} hideSql={true} />
-      ),
-    })
-  }, [push, projectRef])
-
   return (
     <div className="p-6 pt-4 lg:p-8 lg:pt-8">
       <div className="flex items-center justify-between mb-6 gap-6">
@@ -270,15 +261,6 @@ export function DatabaseManager({ projectRef }: { projectRef: string }) {
             View and manage the data stored in your app.
           </p>
         </div>
-        <Button
-          variant="outline"
-          key="talk-to-db"
-          className="flex-row justify-between"
-          onClick={handleNaturalLanguageQueryClick}
-        >
-          <Wand strokeWidth={1.5} size={16} />
-          Query your database
-        </Button>
       </div>
 
       {isError && (

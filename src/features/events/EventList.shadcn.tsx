@@ -1,23 +1,24 @@
 import { PullToRefresh } from '@/components/pull-to-refresh/PullToRefresh';
 import { AppBar } from '@/components/ui/appbar';
+import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
 import { useFetchMode } from '@/hooks/useFetchMode';
 import { sendMetricsToSentry } from '@/instrument';
 import { useEvents, useUpdateAttendanceMutation } from '@/tanstack/events';
 import { EventsUserView } from '@/types/supabaseTypes';
 import AddIcon from '@mui/icons-material/Add';
-import { Button, List, Typography } from '@mui/material';
-import { Stack } from '@mui/system';
 import { withProfiler } from '@sentry/react';
 import { useDialogs } from '@toolpad/core';
 import { useNotifications } from '@toolpad/core/useNotifications';
 import { endOfISOWeek, format, getISOWeek, startOfISOWeek } from 'date-fns';
 import { t } from 'i18next';
 import groupBy from 'lodash.groupby';
+import { CalendarX } from 'lucide-react';
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router';
+import { toast } from 'sonner';
 import { useGrants } from '../auth/GrantsContext';
 import { EventItemShadcn } from './components/EventItem';
-import { LoadingEventItem } from './components/LoadingEventItem';
 import { CreateOrUpdateEventDialog } from './dialogs/CreateOrUpdateEventDialog';
 
 const EventScreen = () => {
@@ -31,38 +32,15 @@ const EventScreen = () => {
 
   useEffect(() => {
     if (error)
-      notifications.show(error.message, { severity: 'error', actionText: 'Neu laden', onAction: () => refetch() });
+      toast.error(error.message, {
+        action: {
+          label: "Neu laden",
+          onClick: () => refetch()
+        }
+      });
   }, [error, notifications, refetch]);
 
   const updateAttendance = useUpdateAttendanceMutation(fetchMode);
-
-  if (isLoading) {
-    return (
-      <List>
-        {Array.from({ length: 10 }, (_v, k) => k + 1).map((x) => (
-          <LoadingEventItem key={x} />
-        ))}
-      </List>
-    );
-  }
-
-  if (events.length === 0) {
-    return (
-      <Stack
-        spacing={2}
-        direction={'column'}
-        sx={{ height: 300, m: 2, alignItems: 'center', justifyContent: 'center' }}
-      >
-        <Typography sx={{ textAlign: 'center' }}>Es sieht so aus als ob du keine Events siehst</Typography>
-        <Typography sx={{ textAlign: 'center' }}>
-          Versuch einer Gruppe beizutreten um die Events dieser einzusehen
-        </Typography>
-        <Button variant="contained" onClick={() => navigate('/groups/list')}>
-          Gruppe beitreten
-        </Button>
-      </Stack>
-    );
-  }
 
   return (
     <div>
@@ -71,7 +49,7 @@ const EventScreen = () => {
         title="Events Übersicht"
         user={user}
         actions={
-          <Button variant="text" color="inherit" onClick={() => dialogs.open(CreateOrUpdateEventDialog, { option: 'InsertEvent' })}>
+          <Button variant={"ghost"} onClick={() => dialogs.open(CreateOrUpdateEventDialog, { option: 'InsertEvent' })}>
             <AddIcon />
           </Button>
         }
@@ -79,7 +57,48 @@ const EventScreen = () => {
       <main className='flex-1 size-full pb-safe-bottom'>
         <PullToRefresh onRefresh={() => refetch()}>
           <div className="flex p-4 flex-col space-y-2">
-            {Object.entries(groupBy(events, (x) => startOfISOWeek(x.startingDateTime))).map(
+
+            {isLoading && (
+              <div className="flex flex-col space-y-6">
+                {/* Wir simulieren 2 Wochen-Gruppen */}
+                {Array.from({ length: 2 }).map((_, groupIndex) => (
+                  <div key={`skeleton-group-${groupIndex}`} className="flex w-full gap-2 flex-col">
+                    {/* Wochen-Überschrift Skeleton */}
+                    <Skeleton className="h-5 w-32 ml-2 mb-1" />
+
+                    {/* 2-3 Event-Karten Skeletons pro Woche */}
+                    {Array.from({ length: groupIndex === 0 ? 3 : 2 }).map((_, itemIndex) => (
+                      <div key={`skeleton-item-${itemIndex}`} className="flex flex-col p-4 border rounded-xl shadow-sm bg-background gap-3">
+                        <div className="flex justify-between items-start">
+                          <div className="space-y-2 w-2/3">
+                            <Skeleton className="h-5 w-3/4" />
+                            <Skeleton className="h-4 w-1/2" />
+                          </div>
+                          <Skeleton className="size-10 rounded-full" /> {/* Simuliertes Avatar/Icon */}
+                        </div>
+                        <div className="flex gap-2 mt-2">
+                          <Skeleton className="h-9 flex-1 rounded-md" /> {/* Button Platzhalter */}
+                          <Skeleton className="h-9 flex-1 rounded-md" /> {/* Button Platzhalter */}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Leerer Zustand (Empty State) */}
+            {!isLoading && events.length === 0 && (
+              <div className="flex flex-col items-center justify-center p-8 mt-12 text-center text-muted-foreground">
+                <CalendarX className="size-16 mb-4 opacity-20" />
+                <h3 className="font-semibold text-lg mb-1 text-foreground/70">Keine Events</h3>
+                <p className="text-sm mb-1">Aktuell stehen keine Termine an.</p>
+                <p className='text-sm mb-1'>Versuche einer Gruppe beizutreten um Events einzusehen</p>
+                <Button onClick={() => navigate('/groups/list')}>Gruppe beitreten</Button>
+              </div>
+            )}
+
+            {!isLoading && events.length > 0 && Object.entries(groupBy(events, (x) => startOfISOWeek(x.startingDateTime))).map(
               ([key, value]: [string, EventsUserView[]]) => (
                 <div key={key} className="flex w-full gap-2 flex-col">
                   <div className="text-sm font-semibold ml-2">

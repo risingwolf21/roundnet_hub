@@ -21,6 +21,7 @@ import GrantsManager from './features/grants/GrantsManager';
 import HomePage from './features/homepage/HomePage';
 import UserScreenProvider from './features/profile/UserScreenProvider';
 import { DatabaseManager } from './features/supabase/components/database';
+import { DialogView } from './features/supabase/components/DialogView';
 import { SheetNavigationProvider } from './features/supabase/SheetNavigationContext';
 import { lazyWithRetry } from './hooks/lazyWithRetry';
 import { Has } from './hooks/useGrants';
@@ -38,7 +39,7 @@ const AdminUserListProvider = lazyWithRetry(() => import('./features/admin/Admin
 const DrinkListScreenProvider = lazyWithRetry(() => import('./features/drinks/Drinklist.page'));
 const EventInformationProvider = lazyWithRetry(() => import('./features/events/EventInformation.page'));
 const EventScreenProvider = lazyWithRetry(() => import('./features/events/EventList.page'));
-const NotificationScreen = lazyWithRetry(() => import('./features/notifications/NotificationScreen'));
+const NotificationScreen = lazyWithRetry(() => import('./features/notifications/NotificationScreen.shadcn'));
 const ChallengeScreen = lazyWithRetry(() => import('./features/challenges/ChallengeList.page'));
 const ChallengeInfoScreen = lazyWithRetry(() => import('./features/challenges/ChallengeInformation.provider'));
 const RecurringEvents = lazyWithRetry(() => import('./features/events/RecurringEvents'));
@@ -166,7 +167,7 @@ const createRouter = (user: UserWithGroups | null, isShadcnUi: boolean) =>
             },
             {
               path: '/notifications',
-              element: <NotificationScreen />,
+              element: <NotificationScreen isShadcn={isShadcnUi} />,
             },
             {
               path: '/user',
@@ -359,8 +360,14 @@ const createRouter = (user: UserWithGroups | null, isShadcnUi: boolean) =>
                   path: 'audit/logs',
                   element: (
                     <Has perm={'supabase.admin'} fallback={<PermissionDeniedPage />}>
-                      <SheetNavigationProvider>
-                        <DatabaseManager projectRef='gfvaurdkieqkehsuwotr' />
+                      <SheetNavigationProvider onStackEmpty={() => { }}
+                        initialStack={[
+                          {
+                            title: 'Database',
+                            component: <DatabaseManager projectRef={"gfvaurdkieqkehsuwotr"} />,
+                          },
+                        ]}>
+                        <DialogView projectRef={"gfvaurdkieqkehsuwotr"} isMobile />
                       </SheetNavigationProvider>
                     </Has >
                   ),
