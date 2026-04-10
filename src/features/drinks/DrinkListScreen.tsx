@@ -83,25 +83,34 @@ const DrinkListScreen = ({
   };
 
   const onAddDrinkClick = (drink: Drink) => {
-    const temp = addedDrinks;
-    if (drink.id in temp) {
-      temp[drink.id].count = temp[drink.id].count + 1;
-    } else {
-      temp[drink.id] = { count: 1, ...drink };
-    }
-    setAddedDrinks({ ...temp });
+    setAddedDrinks((prev) => {
+      const existingDrink = prev[drink.id];
+
+      return {
+        ...prev,
+        [drink.id]: existingDrink
+          ? { ...existingDrink, count: existingDrink.count + 1 }
+          : { ...drink, count: 1 },
+      };
+    });
   };
 
   const onRemoveDrinkClick = (drink: Drink) => {
-    const temp = addedDrinks;
-    if (drink.id in temp) {
-      if (temp[drink.id].count - 1 === 0) {
-        delete temp[drink.id];
-      } else {
-        temp[drink.id].count = temp[drink.id].count - 1;
+    setAddedDrinks((prev) => {
+      const existingDrink = prev[drink.id];
+
+      if (!existingDrink) return prev;
+
+      if (existingDrink.count <= 1) {
+        const { [drink.id]: _removedItem, ...rest } = prev;
+        return rest;
       }
-    }
-    setAddedDrinks({ ...temp });
+
+      return {
+        ...prev,
+        [drink.id]: { ...existingDrink, count: existingDrink.count - 1 },
+      };
+    });
   };
 
   const changeVisibleTypes = (e: React.ChangeEvent<HTMLInputElement>, x: 'Drink' | 'Special' | 'None') => {

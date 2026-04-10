@@ -211,7 +211,7 @@ const createRouter = (user: UserWithGroups | null, isShadcnUi: boolean) =>
                 },
                 {
                   path: 'list',
-                  element: <DrinkListScreenProvider />,
+                  element: <DrinkListScreenProvider isShadcn={isShadcnUi} />,
                 },
                 {
                   path: 'history',

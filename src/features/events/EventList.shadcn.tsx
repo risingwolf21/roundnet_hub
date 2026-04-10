@@ -9,7 +9,6 @@ import { EventsUserView } from '@/types/supabaseTypes';
 import AddIcon from '@mui/icons-material/Add';
 import { withProfiler } from '@sentry/react';
 import { useDialogs } from '@toolpad/core';
-import { useNotifications } from '@toolpad/core/useNotifications';
 import { endOfISOWeek, format, getISOWeek, startOfISOWeek } from 'date-fns';
 import { t } from 'i18next';
 import groupBy from 'lodash.groupby';
@@ -23,7 +22,6 @@ import { CreateOrUpdateEventDialog } from './dialogs/CreateOrUpdateEventDialog';
 
 const EventScreen = () => {
   const { user } = useGrants();
-  const notifications = useNotifications();
   const dialogs = useDialogs();
   const navigate = useNavigate();
   const [fetchMode, setFetchMode] = useFetchMode();
@@ -38,7 +36,7 @@ const EventScreen = () => {
           onClick: () => refetch()
         }
       });
-  }, [error, notifications, refetch]);
+  }, [error, refetch]);
 
   const updateAttendance = useUpdateAttendanceMutation(fetchMode);
 
