@@ -5,7 +5,7 @@ import { useMemo, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
-import { Drawer, DrawerContent, DrawerFooter, DrawerHeader, DrawerTitle } from '@/components/ui/drawer';
+import { Dialog, DialogFooter, DialogHeader, DialogTitle, SlideUpDialogContent } from '@/components/ui/dialog';
 import { Field, FieldContent, FieldDescription, FieldLabel } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
 import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/input-group';
@@ -56,18 +56,17 @@ export const CreateOrUpdateChallengeDialogShadcn = ({
   }, [groups, data.group]);
 
   return (
-    <Drawer
-      repositionInputs={false}
+    <Dialog
       open={open}
       onOpenChange={(isOpen) => {
         if (!isOpen) onClose(null);
       }}>
-      <DrawerContent className='flex flex-col max-h-[95dvh]'>
-        <DrawerHeader className="p-4 pb-2 border-b text-left">
-          <DrawerTitle>
+      <SlideUpDialogContent className='flex flex-col max-h-[95dvh]'>
+        <DialogHeader className="p-4 pb-2 border-b text-left">
+          <DialogTitle>
             {payload.challenge ? 'Challenge aktualisieren' : 'Neue Challenge erstellen'}
-          </DrawerTitle>
-        </DrawerHeader>
+          </DialogTitle>
+        </DialogHeader>
         <div className="flex-1 overflow-y-auto overscroll-contain touch-pan-y p-4 gap-4 flex flex-col no-scrollbar">
           <Field>
             <FieldLabel htmlFor="challenge-title">Challenge Titel</FieldLabel>
@@ -384,7 +383,7 @@ export const CreateOrUpdateChallengeDialogShadcn = ({
             </>
           }
         </div>
-        <DrawerFooter className="p-4 pt-2 border-t mt-auto">
+        <DialogFooter className="m-0 p-4 pt-2 border-t mt-auto">
           <Button
             onClick={async () => {
               if (!selectedGroup) {
@@ -405,8 +404,8 @@ export const CreateOrUpdateChallengeDialogShadcn = ({
           >
             {payload.challenge ? 'Aktualisieren' : 'Erstellen'}
           </Button>
-        </DrawerFooter>
-      </DrawerContent>
-    </Drawer >
+        </DialogFooter>
+      </SlideUpDialogContent>
+    </Dialog >
   );
 };

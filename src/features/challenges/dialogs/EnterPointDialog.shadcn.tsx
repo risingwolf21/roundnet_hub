@@ -9,7 +9,7 @@ import { v4 as uuid } from 'uuid';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Calendar, CalendarDayButton } from '@/components/ui/calendar';
-import { Drawer, DrawerContent, DrawerFooter, DrawerHeader, DrawerTitle } from '@/components/ui/drawer';
+import { Dialog, DialogFooter, DialogHeader, DialogTitle, SlideUpDialogContent } from '@/components/ui/dialog';
 import { Field } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -102,17 +102,16 @@ const EnterPointDialogShadcn = ({
   };
 
   return (
-    <Drawer
-      repositionInputs={false}
+    <Dialog
       open={open}
       onOpenChange={(isOpen) => {
         if (!isOpen) onClose(null);
       }}
     >
-      <DrawerContent className="flex flex-col max-h-[95dvh] gap-0">
-        <DrawerHeader className="p-4 pb-2 border-b text-left">
-          <DrawerTitle>Punkt hinzufügen</DrawerTitle>
-        </DrawerHeader>
+      <SlideUpDialogContent className="flex flex-col max-h-[95dvh] gap-0">
+        <DialogHeader className="p-4 pb-2 border-b text-left">
+          <DialogTitle>Punkt hinzufügen</DialogTitle>
+        </DialogHeader>
 
         <div className='flex flex-col overflow-y-auto p-4 gap-6'>
 
@@ -248,7 +247,7 @@ const EnterPointDialogShadcn = ({
 
         </div>
 
-        <DrawerFooter className="p-4 pt-2 border-t mt-auto">
+        <DialogFooter className="p-4 border-t shrink-0 m-0">
           <Button
             className="w-full text-base"
             disabled={
@@ -260,9 +259,9 @@ const EnterPointDialogShadcn = ({
           >
             Bestätigen
           </Button>
-        </DrawerFooter>
-      </DrawerContent >
-    </Drawer >
+        </DialogFooter>
+      </SlideUpDialogContent >
+    </Dialog >
   );
 };
 
