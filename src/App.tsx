@@ -13,6 +13,7 @@ import { PropsWithChildren } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useRegisterSW } from 'virtual:pwa-register/react';
 import AuthLayout from './components/layout/AuthLayout';
+import { DialogsProvider } from './contexts/DialogsProvider';
 import { AuthGate } from './features/auth/AuthGate';
 import { customEnLocale } from './lib/date-fns';
 import { munich_roundnet_theme } from './theme/munich_roundnet_theme';
@@ -90,9 +91,11 @@ export const App = () => {
       <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={customEnLocale}>
         <ServiceWorkerGate>
           <QueryClientProvider client={queryClient}>
-            <AppProvider branding={BRANDING} theme={theme}>
-              <AuthGate />
-            </AppProvider>
+            <DialogsProvider>
+              <AppProvider branding={BRANDING} theme={theme}>
+                <AuthGate />
+              </AppProvider>
+            </DialogsProvider>
           </QueryClientProvider>
         </ServiceWorkerGate>
       </LocalizationProvider>

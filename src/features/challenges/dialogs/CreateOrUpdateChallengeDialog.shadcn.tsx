@@ -1,8 +1,6 @@
-import { CreateOrUpdateGroupDialog } from '@/features/groups/dialogs/CreateOrUpdateGroupDialog';
 import { useGroups } from '@/tanstack/groups';
 import { UserWithGroups } from '@/types/supabaseTypes';
 import { formatDateFromDatabase, formatDateToDatabase } from '@/utils';
-import { DialogProps, useDialogs } from '@toolpad/core';
 import { useMemo, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
@@ -15,6 +13,8 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
+import { DialogProps, useDialogs } from '@/contexts/DialogsProvider';
+import { CreateOrUpdateGroupDialogShadcn } from '@/features/groups/dialogs/CreateOrUpdateGroupDialog.shadcn';
 import { format, isBefore } from 'date-fns';
 import { Minus, Plus, Trash } from 'lucide-react';
 import { toast } from 'sonner';
@@ -91,7 +91,7 @@ export const CreateOrUpdateChallengeDialogShadcn = ({
               value={selectedGroup?.id ?? payload.challenge?.group ?? 'none'}
               onValueChange={async (val) => {
                 if (val === 'create') {
-                  const result = await dialogs.open(CreateOrUpdateGroupDialog, { user: payload.user });
+                  const result = await dialogs.open(CreateOrUpdateGroupDialogShadcn, { user: payload.user });
                   if (result && result !== 'closed') {
                     setData({ ...data, group: result.id });
                   } else {

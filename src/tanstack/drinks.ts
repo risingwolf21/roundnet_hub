@@ -4,6 +4,8 @@ import { fetchFullHistory } from '@/repository/DrinkRepository';
 import { DrinkCounter, PaymentHistory } from '@/types/supabaseTypes';
 import { captureException } from '@sentry/react';
 import { InfiniteData, useInfiniteQuery, useMutation, useQuery } from '@tanstack/react-query';
+import _ from "lodash";
+
 
 export const drinkKeys = {
   all: ['drink'] as const,
@@ -113,6 +115,168 @@ export const useInsertHistoryEntryMutation = (user: User) => {
     },
   });
 };
+
+export const useDeleteDrinkMutation = () => useMutation({
+  mutationFn: async (drink: Drink) => {
+    const result = await supabase
+      .from("drink")
+      .delete()
+      .eq("id", drink.id)
+      .throwOnError();
+
+    return result;
+  },
+  onMutate: async (drink) => {
+    await queryClient.cancelQueries({ queryKey: drinkKeys.drinks() });
+    await queryClient.cancelQueries({ queryKey: drinkKeys.listAdmin() });
+
+    const previousDrinkList = queryClient.getQueryData<Drink[]>(drinkKeys.drinks());
+
+    if (previousDrinkList) {
+      const newDrinkList = previousDrinkList.filter(x => x.id !== drink.id)
+      queryClient.setQueryData(drinkKeys.drinks(), newDrinkList);
+    }
+
+    const previousAdminDrinkList = queryClient.getQueryData<Drink[]>(drinkKeys.listAdmin());
+
+    if (previousAdminDrinkList) {
+      const newAdminDrinkList = previousAdminDrinkList.filter(x => x.id !== drink.id)
+      queryClient.setQueryData(drinkKeys.drinks(), newAdminDrinkList);
+    }
+
+    return { previousDrinkList, previousAdminDrinkList }
+  },
+  onError: (error, variables, context) => {
+    captureException(error, {
+      extra: {
+        ...error,
+        drink: variables,
+      },
+      tags: { type: 'DeleteDrink', scope: 'drinks' },
+    });
+    if (context?.previousDrinkList) {
+      queryClient.setQueryData(drinkKeys.drinks(), context.previousDrinkList);
+    }
+    if (context?.previousDrinkList) {
+      queryClient.setQueryData(drinkKeys.listAdmin(), context.previousAdminDrinkList);
+    }
+  },
+  onSettled: () => {
+    queryClient.invalidateQueries({ queryKey: drinkKeys.drinks() });
+    queryClient.invalidateQueries({ queryKey: drinkKeys.listAdmin() });
+  }
+})
+
+export const useInsertDrinkMutation = () => useMutation({
+  mutationFn: async (drink: Drink) => {
+    const drinkInsert = _.omit(drink, ['id']);
+    const result = await supabase
+      .from("drink")
+      .insert({ ...drinkInsert })
+      .throwOnError();
+
+    return result;
+  },
+  onMutate: async (drink) => {
+    await queryClient.cancelQueries({ queryKey: drinkKeys.drinks() });
+    await queryClient.cancelQueries({ queryKey: drinkKeys.listAdmin() });
+
+    const previousDrinkList = queryClient.getQueryData<Drink[]>(drinkKeys.drinks());
+
+    if (previousDrinkList) {
+      queryClient.setQueryData(drinkKeys.drinks(), [...previousDrinkList, drink]);
+    }
+
+    const previousAdminDrinkList = queryClient.getQueryData<Drink[]>(drinkKeys.listAdmin());
+
+    if (previousAdminDrinkList) {
+      queryClient.setQueryData(drinkKeys.drinks(), [...previousAdminDrinkList, drink]);
+    }
+
+    return { previousDrinkList, previousAdminDrinkList }
+  },
+  onError: (error, variables, context) => {
+    captureException(error, {
+      extra: {
+        ...error,
+        drink: variables,
+      },
+      tags: { type: 'UpdateDrink', scope: 'drinks' },
+    });
+    if (context?.previousDrinkList) {
+      queryClient.setQueryData(drinkKeys.drinks(), context.previousDrinkList);
+    }
+    if (context?.previousDrinkList) {
+      queryClient.setQueryData(drinkKeys.listAdmin(), context.previousAdminDrinkList);
+    }
+  },
+  onSettled: () => {
+    queryClient.invalidateQueries({ queryKey: drinkKeys.drinks() });
+    queryClient.invalidateQueries({ queryKey: drinkKeys.listAdmin() });
+  }
+})
+
+export const useUpdateDrinkMutation = () => useMutation({
+  mutationFn: async (drink: Drink) => {
+    const drinkUpdate = _.omit(drink, ['id']);
+    const result = await supabase
+      .from("drink")
+      .update({ ...drinkUpdate })
+      .eq("id", drink.id)
+      .throwOnError();
+
+    return result;
+  },
+  onMutate: async (drink) => {
+    await queryClient.cancelQueries({ queryKey: drinkKeys.drinks() });
+    await queryClient.cancelQueries({ queryKey: drinkKeys.listAdmin() });
+
+    const previousDrinkList = queryClient.getQueryData<Drink[]>(drinkKeys.drinks());
+
+    if (previousDrinkList) {
+      const newDrinkList = previousDrinkList.map(x => {
+        if (x.id === drink.id) {
+          return drink;
+        }
+        return x;
+      });
+      queryClient.setQueryData(drinkKeys.drinks(), newDrinkList);
+    }
+
+    const previousAdminDrinkList = queryClient.getQueryData<Drink[]>(drinkKeys.listAdmin());
+
+    if (previousAdminDrinkList) {
+      const newAdminDrinkList = previousAdminDrinkList.map(x => {
+        if (x.id === drink.id) {
+          return drink;
+        }
+        return x;
+      });
+      queryClient.setQueryData(drinkKeys.drinks(), newAdminDrinkList);
+    }
+
+    return { previousDrinkList, previousAdminDrinkList }
+  },
+  onError: (error, variables, context) => {
+    captureException(error, {
+      extra: {
+        ...error,
+        drink: variables,
+      },
+      tags: { type: 'UpdateDrink', scope: 'drinks' },
+    });
+    if (context?.previousDrinkList) {
+      queryClient.setQueryData(drinkKeys.drinks(), context.previousDrinkList);
+    }
+    if (context?.previousDrinkList) {
+      queryClient.setQueryData(drinkKeys.listAdmin(), context.previousAdminDrinkList);
+    }
+  },
+  onSettled: () => {
+    queryClient.invalidateQueries({ queryKey: drinkKeys.drinks() });
+    queryClient.invalidateQueries({ queryKey: drinkKeys.listAdmin() });
+  }
+})
 
 export const useUpdateHistoryEntryMutation = (user: User) =>
   useMutation({

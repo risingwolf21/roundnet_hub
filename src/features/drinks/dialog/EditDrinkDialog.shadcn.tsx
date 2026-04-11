@@ -1,23 +1,33 @@
 import { supabase } from '@/lib/supabase';
-import { FormEvent, useState } from 'react';
+import { FormEvent, useRef, useState } from 'react';
 import { v4 as uuid } from 'uuid';
-import { dataURLtoFile } from '../../../utils';
+import { dataURLtoFile, readFile } from '../../../utils';
 
-import { Drawer, DrawerContent, DrawerFooter, DrawerHeader, DrawerTitle } from '@/components/ui/drawer';
-import Button from '@mui/material/Button';
-import { DialogProps, useDialogs } from '@toolpad/core';
+import CropImageDialogShadcn from '@/components/CropImageDialog.shadcn';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Button } from '@/components/ui/button';
+import { Dialog, DialogFooter, DialogHeader, DialogTitle, SlideUpDialogContent } from '@/components/ui/dialog';
+import { Field, FieldContent, FieldDescription, FieldLabel } from '@/components/ui/field';
+import { Input } from '@/components/ui/input';
+import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/input-group';
+import { Switch } from '@/components/ui/switch';
+import { DialogProps, useDialogs } from '@/contexts/DialogsProvider';
+import { EuroIcon, Image, Trash2, UploadCloud } from 'lucide-react';
 
 type EditDrinkDialogProps = {
   drink: Drink;
-  drinkHistory: Drink[];
 };
 
-const EditDrinkDialogShadcn = ({ payload: { drink, drinkHistory }, open, onClose }: DialogProps<EditDrinkDialogProps, Drink | null>) => {
+const EditDrinkDialogShadcn = ({ payload: { drink }, open, onClose }: DialogProps<EditDrinkDialogProps, Drink | null>) => {
   const dialogs = useDialogs();
+  const inputRef = useRef<HTMLInputElement | null>(null)
 
   const [croppedImage, setCroppedImage] = useState<string | null>(null);
 
+  const [isCropping, setIsCropping] = useState<boolean>(false);
+
   const [activeDrink, setActiveDrink] = useState<boolean>(drink.active);
+  const [drinkImage, setDrinkImage] = useState<string | null>(drink.imageUrl);
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -31,7 +41,7 @@ const EditDrinkDialogShadcn = ({ payload: { drink, drinkHistory }, open, onClose
         id: drink.id,
         name,
         price: Number.parseFloat(price),
-        imageUrl: '',
+        imageUrl: drinkImage,
         active: activeDrink,
         stock: Number.parseFloat(stock),
         type: drink.type,
@@ -58,164 +68,126 @@ const EditDrinkDialogShadcn = ({ payload: { drink, drinkHistory }, open, onClose
     }
   };
 
-  return <Drawer
-    repositionInputs={false}
+  return <Dialog
     open={open}
     onOpenChange={(isOpen) => {
       if (!isOpen) onClose(null);
     }}>
-    <DrawerContent className='flex flex-col max-h-[95dvh]'>
-      <DrawerHeader className="p-4 pb-2 border-b text-left">
-        <DrawerTitle>
-          Getränk {drink?.id ? 'bearbeiten' : 'erstellen'}
-        </DrawerTitle>
-      </DrawerHeader>
-      <div className="flex-1 overflow-y-auto overscroll-contain touch-pan-y p-4 gap-4 flex flex-col no-scrollbar">
-      </div>
-    </DrawerContent>
-    <DrawerFooter>
-      <Button>
-        Speichern
-      </Button>
-    </DrawerFooter>
-  </Drawer>
+    <SlideUpDialogContent className="p-0">
+      <form onSubmit={handleSubmit} noValidate className="flex flex-col h-full overflow-hidden">
+        <DialogHeader className="p-4 pb-2 border-b text-left">
+          <DialogTitle>
+            Getränk {drink?.id ? 'bearbeiten' : 'erstellen'}
+          </DialogTitle>
+        </DialogHeader>
+        <div className="flex-1 overflow-y-auto min-h-0 p-4 gap-6 flex flex-col no-scrollbar">
+          <div className='flex flex-row gap-4'>
+            <Avatar className="size-12">
+              <AvatarImage src={croppedImage ?? drinkImage ?? undefined} />
+              <AvatarFallback>
+                <Image />
+              </AvatarFallback>
+            </Avatar>
+            <div className='flex items-center gap-2'>
+              <input ref={inputRef} type='file' accept='image/*' className='hidden' onChange={async (event) => {
+                if (!event.target.files || event.target.files.length === 0) return;
+                setIsCropping(true);
+                try {
+                  const imageDataUrl = await readFile(event.target.files[0]);
 
-  // return (
-  //   <Box>
-  //     <Dialog fullScreen open={open} onClose={handleClose}>
-  //       <Box component="form" onSubmit={handleSubmit} noValidate>
-  //         <AppBar position="sticky" sx={{ pt: 'env(safe-area-inset-top)' }}>
-  //           <Toolbar>
-  //             <IconButton edge="start" color="inherit" onClick={handleClose} aria-label="close">
-  //               <CloseIcon />
-  //             </IconButton>
-  //             <Typography sx={{ ml: 2, flex: 1 }} variant="h6" component="div">
-  //               Getränk {drink?.id ? 'bearbeiten' : 'erstellen'}
-  //             </Typography>
-  //             <Button autoFocus color="inherit" type="submit">
-  //               Speichern
-  //             </Button>
-  //           </Toolbar>
-  //         </AppBar>
-  //         <List>
-  //           <ListItem sx={{ pt: 0, pb: 0 }}>
-  //             <ListItemAvatar>
-  //               <Avatar>
-  //                 <FormatSizeIcon />
-  //               </Avatar>
-  //             </ListItemAvatar>
-  //             <ListItemText>
-  //               <TextField
-  //                 margin="normal"
-  //                 required
-  //                 fullWidth
-  //                 id="name"
-  //                 label="Name"
-  //                 name="name"
-  //                 defaultValue={drink?.name ? drink.name : ''}
-  //               />
-  //             </ListItemText>
-  //           </ListItem>
-  //           <ListItem sx={{ pt: 0, pb: 0 }}>
-  //             <ListItemAvatar>
-  //               <Avatar>
-  //                 <EuroIcon />
-  //               </Avatar>
-  //             </ListItemAvatar>
-  //             <ListItemText>
-  //               <TextField
-  //                 margin="normal"
-  //                 required
-  //                 fullWidth
-  //                 id="price"
-  //                 label="Preis"
-  //                 name="price"
-  //                 type={'number'}
-  //                 defaultValue={drink?.price ? drink.price : 0}
-  //               />
-  //             </ListItemText>
-  //           </ListItem>
-  //           <ListItem sx={{ pt: 0, pb: 0 }}>
-  //             <ListItemAvatar>
-  //               <Avatar>
-  //                 <InventoryIcon />
-  //               </Avatar>
-  //             </ListItemAvatar>
-  //             <ListItemText>
-  //               <TextField
-  //                 margin="normal"
-  //                 required
-  //                 fullWidth
-  //                 id="stock"
-  //                 label="Anzahl"
-  //                 name="stock"
-  //                 type={'number'}
-  //                 defaultValue={drink?.stock ? drink.stock : 0}
-  //               />
-  //             </ListItemText>
-  //           </ListItem>
-  //           <ListItem
-  //             secondaryAction={
-  //               <Button variant="contained" component="label">
-  //                 Upload
-  //                 <input
-  //                   accept="image/*"
-  //                   type="file"
-  //                   hidden
-  //                   onChange={async (event) => {
-  //                     if (!event.target.files || event.target.files.length === 0) return;
-  //                     const imageDataUrl = await readFile(event.target.files[0]);
-  //                     const result = await dialogs.open(CropImageDialog, { selectedImage: imageDataUrl as string });
-  //                     setCroppedImage(result);
-  //                   }}
-  //                 />
-  //               </Button>
-  //             }
-  //           >
-  //             <ListItemAvatar>
-  //               <Avatar sx={{ borderRadius: 2 }}>
-  //                 {croppedImage ? (
-  //                   <img src={croppedImage} alt="logo" width={40} height={40} />
-  //                 ) : drink?.imageUrl ? (
-  //                   <img src={drink.imageUrl} alt="logo" width={40} height={40} />
-  //                 ) : (
-  //                   <LocalDrinkIcon />
-  //                 )}
-  //               </Avatar>
-  //             </ListItemAvatar>
-  //           </ListItem>
-  //           <ListItem onClick={() => setActiveDrink(!activeDrink)}>
-  //             <ListItemAvatar>
-  //               <Checkbox checked={activeDrink} />
-  //             </ListItemAvatar>
-  //             <ListItemText>
-  //               <Typography>Aktiv</Typography>
-  //             </ListItemText>
-  //           </ListItem>
-  //           <List
-  //             subheader={
-  //               <ListSubheader component="div" id="nested-list-subheader">
-  //                 Verlauf
-  //               </ListSubheader>
-  //             }
-  //           >
-  //             {drinkHistory &&
-  //               drink &&
-  //               [drink, ...drinkHistory]
-  //                 .sort((a, b) => b.id - a.id)
-  //                 .map((x, index) => {
-  //                   return (
-  //                     <ListItem key={'drinkHistory' + x.id}>
-  //                       <ListItemAvatar>{index === 0 && <Check />}</ListItemAvatar>
-  //                       <ListItemText primary={x.name} secondary={x.price + ' €'} />
-  //                     </ListItem>
-  //                   );
-  //                 })}
-  //           </List>
-  //         </List>
-  //       </Box>
-  //     </Dialog>
-  //   </Box>
-  // );
+                  if (document.activeElement instanceof HTMLElement) {
+                    document.activeElement.blur();
+                  }
+                  document.body.focus();
+                  await new Promise(resolve => setTimeout(resolve, 10));
+
+                  const result = await dialogs.open(CropImageDialogShadcn, { imageUrl: imageDataUrl as string });
+                  setCroppedImage(result);
+                } finally {
+                  setTimeout(() => {
+                    setIsCropping(false);
+                    if (inputRef.current) {
+                      inputRef.current.value = '';
+                    }
+                  }, 350);
+                }
+              }} />
+              <Button type='button' disabled={isCropping} variant='outline' onClick={() => inputRef.current?.click()} className='flex items-center gap-2'>
+                <UploadCloud />
+                Bild hochladen
+              </Button>
+              <Button
+                type='button'
+                variant='ghost'
+                disabled={isCropping}
+                hidden={!croppedImage && !drinkImage}
+                onClick={() => {
+                  if (croppedImage) {
+                    setCroppedImage(null)
+                  } else if (drinkImage) {
+                    setDrinkImage(null);
+                  }
+                }}
+                className='text-destructive'>
+                <Trash2 />
+              </Button>
+            </div>
+          </div>
+
+
+          <Field>
+            <FieldLabel htmlFor="name">Name</FieldLabel>
+            <Input
+              id="name"
+              name='name'
+              placeholder="Name"
+              defaultValue={drink.name ?? ''} />
+          </Field>
+
+          <Field>
+            <FieldLabel htmlFor="name">Preis</FieldLabel>
+            <InputGroup>
+              <InputGroupInput id="price"
+                name='price'
+                type='number'
+                placeholder="Preis"
+                defaultValue={drink.price ?? ''} />
+              <InputGroupAddon align="inline-end">
+                <EuroIcon />
+              </InputGroupAddon>
+            </InputGroup>
+          </Field>
+
+          <Field>
+            <FieldLabel htmlFor="name">Anzahl</FieldLabel>
+            <Input
+              id="stock"
+              name='stock'
+              type="number"
+              placeholder="Anzahl"
+              defaultValue={drink.stock ?? ''} />
+          </Field>
+
+          <Field orientation="horizontal" className="max-w-sm">
+            <FieldContent>
+              <FieldLabel htmlFor="switch-active">
+                Aktiv
+              </FieldLabel>
+              <FieldDescription>
+                Wenn dieses Getränk nicht aktiv ist, wird es den Nutzern nicht angezeigt.
+              </FieldDescription>
+            </FieldContent>
+            <Switch id="switch-active" checked={activeDrink} onCheckedChange={(val) => setActiveDrink(val)} />
+          </Field>
+
+        </div>
+        <DialogFooter className="p-4 border-t shrink-0 m-0">
+          <Button type='submit'>
+            Speichern
+          </Button>
+        </DialogFooter>
+      </form>
+    </SlideUpDialogContent>
+  </Dialog >
 };
 export default EditDrinkDialogShadcn;

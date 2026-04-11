@@ -1,5 +1,5 @@
 import { Has } from '@/hooks/useGrants';
-import { useDrinks, useInsertHistoryEntryMutation } from '@/tanstack/drinks';
+import { useDeleteDrinkMutation, useDrinks, useInsertDrinkMutation, useInsertHistoryEntryMutation, useUpdateDrinkMutation } from '@/tanstack/drinks';
 import { DrinkCounter } from '@/types/supabaseTypes';
 import { groupBy, nameOfProductType } from '@/utils';
 import { captureException } from '@sentry/react';
@@ -11,16 +11,29 @@ import { PullToRefresh } from '@/components/pull-to-refresh/PullToRefresh';
 import { AppBar } from '@/components/ui/appbar';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
-import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerTrigger } from '@/components/ui/drawer';
+import { Dialog, DialogHeader, DialogTitle, DialogTrigger, SlideUpDialogContent } from '@/components/ui/dialog';
 import { Field, FieldContent, FieldLabel, FieldTitle } from '@/components/ui/field';
 import { Item, ItemActions, ItemContent, ItemDescription, ItemMedia, ItemTitle } from '@/components/ui/item';
 import { Separator } from '@/components/ui/separator';
+import { Skeleton } from '@/components/ui/skeleton';
 import { Spinner } from '@/components/ui/spinner';
 import { Switch } from '@/components/ui/switch';
-import { useDialogs } from '@toolpad/core';
-import { Check, Funnel, Image, Minus, Pencil, PencilOff, Plus, Trash2 } from 'lucide-react';
+import { useDialogs } from '@/contexts/DialogsProvider';
+import { Check, CupSoda, Funnel, Image, Minus, Pencil, PencilOff, Plus, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import EditDrinkDialogShadcn from './dialog/EditDrinkDialog.shadcn';
+
+const EMPTY_DRINK: Drink = {
+  imageUrl: '',
+  name: '',
+  price: 0,
+  active: false,
+  deleted: false,
+  id: 0,
+  previousDrink: null,
+  stock: 0,
+  type: 'Drink',
+};
 
 const DrinkListScreenShadcn = () => {
   const { user } = useGrants();
@@ -28,12 +41,15 @@ const DrinkListScreenShadcn = () => {
   const { data: drinks = [], error, refetch, isLoading } = useDrinks();
 
   const [toggleEdit, setToggleEdit] = useState(false);
-  const [addedDrinks, setAddedDrinks] = useState<DrinkCounter[]>([]);
+  const [addedDrinks, setAddedDrinks] = useState<Record<string, DrinkCounter>>({});
   const [visibleTypes, setVisibleTypes] = useState<ProductType[]>(
     (localStorage.getItem('visibleTypes')?.split(';') as ProductType[]) ?? ['Drink']
   );
 
   const updateHistory = useInsertHistoryEntryMutation(user);
+  const updateDrink = useUpdateDrinkMutation();
+  const insertDrink = useInsertDrinkMutation();
+  const deleteDrink = useDeleteDrinkMutation();
 
   useEffect(() => {
     if (error) {
@@ -55,7 +71,7 @@ const DrinkListScreenShadcn = () => {
       { drinks: Object.values(addedDrinks) },
       {
         onSuccess: () => {
-          setAddedDrinks([]);
+          setAddedDrinks({});
           toast.success('Getränke erfolgreich gebucht!');
         },
         onError: (error) => {
@@ -66,11 +82,9 @@ const DrinkListScreenShadcn = () => {
       }
     );
   };
-
   const onAddDrinkClick = (drink: Drink) => {
     setAddedDrinks((prev) => {
       const existingDrink = prev[drink.id];
-
       return {
         ...prev,
         [drink.id]: existingDrink
@@ -83,11 +97,9 @@ const DrinkListScreenShadcn = () => {
   const onRemoveDrinkClick = (drink: Drink) => {
     setAddedDrinks((prev) => {
       const existingDrink = prev[drink.id];
-
       if (!existingDrink) return prev;
 
       if (existingDrink.count <= 1) {
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const { [drink.id]: _removedItem, ...rest } = prev;
         return rest;
       }
@@ -105,6 +117,13 @@ const DrinkListScreenShadcn = () => {
     localStorage.setItem('visibleTypes', newValue.join(';'));
   };
 
+  const activeDrinks = drinks.filter((x: Drink) => !x.deleted && x.active);
+  const filteredDrinks = activeDrinks.filter((x: Drink) => visibleTypes.includes(x.type));
+  const groupedDrinks = groupBy(filteredDrinks, (x) => x.type).entries();
+
+  const addedDrinksCount = Object.keys(addedDrinks).length;
+  const hasMultipleTypes = new Set(activeDrinks.map((x) => x.type)).size > 1;
+
   return (
     <div>
       <AppBar
@@ -114,7 +133,17 @@ const DrinkListScreenShadcn = () => {
         actions={
           <>
             <Has perm={"drinks.edit"}>
-              <Button size={"icon-lg"} variant={"ghost"}>
+              <Button size={"icon-lg"} variant={"ghost"} onClick={async () => {
+                const result = await dialogs.open(EditDrinkDialogShadcn, {
+                  drink: EMPTY_DRINK
+                });
+                if (result) {
+                  insertDrink.mutate(result, {
+                    onSuccess: () => toast.success("Getränk erfolgreich hinzugefügt"),
+                    onError: (error) => toast.error("Beim hinzufügen ist ein Fehler aufgetreten. " + error.message)
+                  })
+                }
+              }}>
                 <Plus />
               </Button>
             </Has>
@@ -135,14 +164,51 @@ const DrinkListScreenShadcn = () => {
           }}>
           <VoucherCard />
           <div className='p-2'>
+
+            {isLoading && (
+              Array.from({ length: 2 }).map((_, groupIndex) => (
+                <div key={`skeleton-group-${groupIndex}`}>
+                  <Skeleton className="h-5 w-32 ml-2 mb-2" />
+                  {Array.from({ length: 3 }).map((_, itemIndex) => (
+                    <div key={`skeleton-item-${itemIndex}`}>
+                      <Item>
+                        <ItemMedia>
+                          <Skeleton className="size-10 rounded-full" />
+                        </ItemMedia>
+                        <ItemContent className="flex flex-col gap-2 w-full">
+                          <Skeleton className="h-4 w-1/2" />
+                          <Skeleton className="h-3 w-1/4" />
+                        </ItemContent>
+                        <ItemActions>
+                          <div className="flex gap-2">
+                            {toggleEdit ? (
+                              <>
+                                <Skeleton className="size-9 rounded-md" />
+                                <Skeleton className="size-9 rounded-md" />
+                              </>
+                            ) : (
+                              <Skeleton className="size-9 rounded-md" />
+                            )}
+                          </div>
+                        </ItemActions>
+                      </Item>
+                      <Separator />
+                    </div>
+                  ))}
+                </div>
+              ))
+            )}
+
+            {!isLoading && filteredDrinks.length === 0 && (
+              <div className="flex flex-col items-center justify-center p-8 mt-8 text-center text-muted-foreground">
+                <CupSoda className="size-16 mb-4 opacity-20" />
+                <h3 className="font-semibold text-lg mb-1 text-foreground/70">Keine Getränke</h3>
+                <p className="text-sm">Aktuell sind keine Getränke in den gewählten Kategorien verfügbar.</p>
+              </div>
+            )}
+
             {
-              Array.from(
-                groupBy(
-                  drinks.filter((x: Drink) => !x.deleted && x.active && visibleTypes.some((y) => y === x.type)),
-                  (x) => x.type
-                )
-              )
-                .sort()
+              !isLoading && groupedDrinks
                 .map(([key, mappedDrinks]) => (
                   <div key={key}>
                     <div className="text-sm font-semibold ml-2">
@@ -155,51 +221,68 @@ const DrinkListScreenShadcn = () => {
                             <Avatar className="size-10">
                               <AvatarImage src={drink.imageUrl ?? undefined} />
                               <AvatarFallback>
-                                <Image />
+                                <Image className="text-muted-foreground/50" />
                               </AvatarFallback>
                             </Avatar>
                           </ItemMedia>
                           <ItemContent>
                             <ItemTitle>{drink.name}</ItemTitle>
-                            <ItemDescription>{drink.price} €</ItemDescription>
+                            <ItemDescription>{(drink.price ?? 0).toFixed()} €</ItemDescription>
                           </ItemContent>
                           <ItemActions>
                             {
-                              !toggleEdit && <div className='flex flex-row items-center gap-2'>
-                                {
-                                  (addedDrinks[drink.id]?.count ?? 0) > 0 &&
-                                  <>
+                              !toggleEdit ? (
+                                <div className='flex flex-row items-center gap-2'>
+                                  {
+                                    (addedDrinks[drink.id]?.count ?? 0) > 0 &&
+                                    <>
+                                      <Button variant={"outline"} size="icon"
+                                        onClick={() => onRemoveDrinkClick(drink)}>
+                                        <Minus className="size-4" />
+                                      </Button>
+                                      <span className="text-xl font-semibold w-8 text-center">{addedDrinks[drink.id].count}</span>
+                                    </>
+                                  }
+                                  <Button
+                                    variant={"outline"} size="icon"
+                                    onClick={() => onAddDrinkClick(drink)}>
+                                    <Plus className="size-4" />
+                                  </Button>
+                                </div>
+                              )
+                                : (
+                                  <div className='flex flex-row items-center gap-2'>
                                     <Button variant={"outline"} size="icon"
-                                      onClick={() => onRemoveDrinkClick(drink)}>
-                                      <Minus className="h-4 w-4" />
+                                      onClick={async (e) => {
+                                        e.currentTarget.blur();
+                                        const result = await dialogs.open(EditDrinkDialogShadcn, {
+                                          drink: drink
+                                        });
+                                        if (result) {
+                                          updateDrink.mutate(result, {
+                                            onSuccess: () => toast.success("Getränk erfolgreich geupdatet"),
+                                            onError: (error) => toast.error("Beim aktualisieren ist ein Fehler aufgetreten. " + error.message)
+                                          })
+                                        }
+                                      }}>
+                                      <Pencil className="size-4" />
                                     </Button>
-                                    <span className="text-xl font-semibold w-8 text-center">{addedDrinks[drink.id].count}</span>
-                                  </>
-                                }
-                                <Button
-                                  variant={"outline"} size="icon"
-                                  onClick={() => onAddDrinkClick(drink)}>
-                                  <Plus className="h-4 w-4" />
-                                </Button>
-                              </div>
-                            }
-                            {
-                              toggleEdit && <div className='flex flex-row items-center gap-2'>
-                                <Button variant={"outline"} size="icon"
-                                  onClick={async () => {
-                                    const result = await dialogs.open(EditDrinkDialogShadcn, {
-                                      drink: drink,
-                                      drinkHistory: []
-                                    });
-                                  }}>
-                                  <Pencil className="h-4 w-4" />
-                                </Button>
-                                <Button
-                                  variant={"outline"} size="icon"
-                                  onClick={() => onAddDrinkClick(drink)}>
-                                  <Trash2 className="h-4 w-4" />
-                                </Button>
-                              </div>
+                                    <Button
+                                      variant={"destructive"} size="icon"
+                                      onClick={() => {
+                                        dialogs.confirm("Möchtest du das Getränk wirklich löschen?").then(result => {
+                                          if (result) {
+                                            deleteDrink.mutate(drink, {
+                                              onSuccess: () => toast.success("Getränk erfolgreich gelöscht"),
+                                              onError: (error) => toast.error("Beim löschen ist ein Fehler aufgetreten. " + error.message)
+                                            })
+                                          }
+                                        })
+                                      }}>
+                                      <Trash2 className="size-4" />
+                                    </Button>
+                                  </div>
+                                )
                             }
                           </ItemActions>
                         </Item>
@@ -218,28 +301,28 @@ const DrinkListScreenShadcn = () => {
           style={{ bottom: 'calc(1.5rem + env(safe-area-inset-bottom))' }}
         >
           {
-            addedDrinks.length > 0 && <Button
+            addedDrinksCount > 0 && <Button
               size="icon"
               className="h-14 w-14 rounded-full shadow-lg hover:shadow-xl bg-primary text-primary-foreground transition-all hover:-translate-y-1 active:translate-y-0 active:shadow-md"
               onClick={confirmDrinks}
             >
-              {isLoading ? <Spinner className='size-6' /> : <Check className="size-6" />}
+              {updateHistory.isPending ? <Spinner className='size-6' /> : <Check className="size-6" />}
             </Button>
           }
           {
-            addedDrinks.length < 1 && new Set(drinks.map(x => x.type)).size > 1 && <Drawer direction="bottom">
-              <DrawerTrigger asChild>
+            addedDrinksCount === 0 && hasMultipleTypes && <Dialog>
+              <DialogTrigger>
                 <Button
                   size="icon"
                   className="h-14 w-14 rounded-full shadow-lg hover:shadow-xl bg-primary text-primary-foreground transition-all hover:-translate-y-1 active:translate-y-0 active:shadow-md">
                   <Funnel className="size-6" />
                 </Button>
-              </DrawerTrigger>
-              <DrawerContent>
-                <DrawerHeader>
-                  <DrawerTitle>Filter</DrawerTitle>
-                </DrawerHeader>
-                <div className="no-scrollbar overflow-y-auto px-4">
+              </DialogTrigger>
+              <SlideUpDialogContent>
+                <DialogHeader className='px-4'>
+                  <DialogTitle>Filter</DialogTitle>
+                </DialogHeader>
+                <div className="no-scrollbar overflow-y-auto flex flex-col p-4 gap-4">
                   {[...new Set(drinks.map((x) => x.type))].sort().map((x) => (
                     <FieldLabel key={x} htmlFor={`switch-${x}`}>
                       <Field orientation="horizontal">
@@ -252,8 +335,8 @@ const DrinkListScreenShadcn = () => {
                     </FieldLabel>
                   ))}
                 </div>
-              </DrawerContent>
-            </Drawer>
+              </SlideUpDialogContent>
+            </Dialog>
           }
         </div>
       </Has>

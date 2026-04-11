@@ -39,6 +39,45 @@ function DialogOverlay({
   )
 }
 
+function SlideUpDialogContent({
+  className,
+  children,
+  showCloseButton = true,
+  ...props
+}: DialogPrimitive.Popup.Props & {
+  showCloseButton?: boolean
+}) {
+  return (
+    <DialogPortal>
+      <DialogOverlay />
+      <DialogPrimitive.Popup
+        data-slot="dialog-content-slide-up"
+        className={cn(
+          "fixed inset-x-0 bottom-0 z-50 flex flex-col w-full max-h-[95dvh] rounded-t-xl border-t bg-popover p-0 shadow-lg outline-none sm:max-w-lg sm:mx-auto",
+          "duration-300 data-open:animate-in data-open:fade-in-0 data-open:slide-in-from-bottom-full data-closed:animate-out data-closed:fade-out-0 data-closed:slide-out-to-bottom-full",
+          // --- DER FIX FÜR DIE SAFE AREA ---
+          "pb-[env(safe-area-inset-bottom)]",
+          className
+        )}
+        {...props}
+      >
+        <div className="mx-auto mt-3 h-1.5 w-12 shrink-0 rounded-full bg-muted/60" />
+
+        {/* Wir geben dem Wrapper-Div ein overflow-hidden, damit nichts aus dem Drawer rausragt */}
+        <div className="flex flex-col overflow-hidden h-full">
+          {children}
+        </div>
+
+        {showCloseButton && (
+          <DialogPrimitive.Close
+          // ...
+          />
+        )}
+      </DialogPrimitive.Popup>
+    </DialogPortal>
+  )
+}
+
 function DialogContent({
   className,
   children,
@@ -141,6 +180,7 @@ export {
   DialogOverlay,
   DialogPortal,
   DialogTitle,
-  DialogTrigger
+  DialogTrigger,
+  SlideUpDialogContent
 }
 
