@@ -22,6 +22,7 @@ import HomePage from './features/homepage/HomePage';
 import UserScreenProvider from './features/profile/UserScreenProvider';
 import { DatabaseManager } from './features/supabase/components/database';
 import { LogsManager } from './features/supabase/components/logs';
+import { UsersManager } from './features/supabase/components/users';
 import { lazyWithRetry } from './hooks/lazyWithRetry';
 import { Has } from './hooks/useGrants';
 import { sentryCreateBrowserRouter } from './instrument';
@@ -323,6 +324,36 @@ const createRouter = (user: UserWithGroups | null, isShadcnUi: boolean) =>
               ],
             },
             {
+              path: '/supabase',
+              errorElement: <ErrorRouteElement isShadcn={isShadcnUi} />,
+              children: [
+                {
+                  path: 'logs',
+                  element: (
+                    <Has perm={'supabase.admin'} fallback={<PermissionDeniedPage />}>
+                      <LogsManager />
+                    </Has >
+                  ),
+                },
+                {
+                  path: 'database',
+                  element: (
+                    <Has perm={'supabase.admin'} fallback={<PermissionDeniedPage />}>
+                      <DatabaseManager />
+                    </Has>
+                  ),
+                },
+                {
+                  path: 'users',
+                  element: (
+                    <Has perm={'supabase.admin'} fallback={<PermissionDeniedPage />}>
+                      <UsersManager />
+                    </Has>
+                  ),
+                },
+              ]
+            },
+            {
               path: '/admin',
               element: <Outlet />,
               errorElement: <ErrorRouteElement isShadcn={isShadcnUi} />,
@@ -352,22 +383,6 @@ const createRouter = (user: UserWithGroups | null, isShadcnUi: boolean) =>
                   element: (
                     <Has perm={'admin.notify_users'} fallback={<PermissionDeniedPage />}>
                       <SendNotifications />
-                    </Has>
-                  ),
-                },
-                {
-                  path: 'audit/logs',
-                  element: (
-                    <Has perm={'supabase.admin'} fallback={<PermissionDeniedPage />}>
-                      <LogsManager />
-                    </Has >
-                  ),
-                },
-                {
-                  path: 'supabase',
-                  element: (
-                    <Has perm={'supabase.admin'} fallback={<PermissionDeniedPage />}>
-                      <DatabaseManager />
                     </Has>
                   ),
                 },

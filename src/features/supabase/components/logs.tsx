@@ -120,16 +120,16 @@ export function LogsManager() {
       <main className='flex-1 size-full pb-safe-bottom'>
         <div className="p-6 pt-4 lg:p-8 lg:pt-8 border-b bg-background z-10 sticky top-0 flex items-center justify-between mb-6">
           <Popover open={open} onOpenChange={setOpen}>
-            <PopoverTrigger>
-              <Button
-                variant="outline"
-                role="combobox"
-                aria-expanded={open}
-                className="w-64 justify-between"
-              >
-                {selectedLogType ? selectedLogType.label : 'Select log type...'}
-                <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-              </Button>
+            <PopoverTrigger render={<Button
+              variant="outline"
+              role="combobox"
+              aria-expanded={open}
+              className="w-full justify-between"
+            >
+              {selectedLogType ? selectedLogType.label : 'Select log type...'}
+              <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+            </Button>}>
+
             </PopoverTrigger>
             <PopoverContent className="w-80 p-0" align="end">
               <Command>

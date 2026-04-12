@@ -4,7 +4,7 @@ import { Has } from '@/hooks/useGrants';
 import { queryClient } from '@/lib/queryClient';
 import { useRequestedUsersPerGroup } from '@/tanstack/groups';
 import { useAllNotifications } from '@/tanstack/notifications';
-import { Bell, ChartArea, Database, Euro, HelpCircle, History, Home, KeyRound, Logs, Package, RefreshCcw, Send, Swords, Trophy, User, Users, Volleyball, Wine } from "lucide-react";
+import { Bell, ChartArea, Database, Euro, HelpCircle, History, Home, KeyRound, Logs, Package, RefreshCcw, Send, Swords, Trophy, User, Users, Users2, Volleyball, Wine } from "lucide-react";
 import { useState } from 'react';
 import { useTranslation } from "react-i18next";
 import { useLocation, useNavigate } from "react-router";
@@ -275,19 +275,33 @@ export function AppSidebar() {
           permission: {
             perm: 'admin.notify_users'
           }
-        },
+        }
+      ]
+    },
+    {
+      key: "supabaseList",
+      header: "Supabase Admin",
+      children: [
         {
-          title: t('browse.auditLogs'),
+          title: t('browse.logs'),
           icon: <Logs />,
-          path: 'admin/audit/logs',
+          path: 'supabase/logs',
           permission: {
             perm: 'supabase.admin'
           }
         },
         {
-          title: t('browse.postgresClient'),
+          title: t('browse.database'),
           icon: <Database />,
-          path: 'admin/supabase',
+          path: 'supabase/database',
+          permission: {
+            perm: 'supabase.admin'
+          }
+        },
+        {
+          title: t('browse.user'),
+          icon: <Users2 />,
+          path: 'supabase/users',
           permission: {
             perm: 'supabase.admin'
           }
