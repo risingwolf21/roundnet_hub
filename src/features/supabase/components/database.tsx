@@ -1,7 +1,7 @@
 'use client'
 
 import { AlertTriangle, Table } from 'lucide-react'
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo } from 'react'
 import { toast } from 'sonner'
 import { z, type ZodTypeAny } from 'zod'
 
@@ -16,7 +16,7 @@ import { groupBy, SUPABASE_PROJECT_REF } from '@/utils'
 import { useRunQuery } from '../hooks/use-run-query'
 import { useListTables } from '../hooks/use-tables'
 import { DynamicForm } from './dynamic-form'
-import { SqlEditor } from './sql-editor'
+import { ResultsTable } from './results-table'
 
 // Helper to generate a Zod schema from the table's column definitions
 function generateZodSchema(table: any): z.ZodObject<any, any, any> {
@@ -183,7 +183,7 @@ function EditRowView({ payload: {
 
       const updateSql = `UPDATE public."${table.name}" SET ${setClauses} WHERE ${whereClauses};`
 
-      runUpdateQuery({ projectRef: SUPABASE_PROJECT_REF, query: updateSql, readOnly: false }, { onSuccess })
+      runUpdateQuery({ projectRef: SUPABASE_PROJECT_REF, query: updateSql }, { onSuccess })
     },
     [table, row, runUpdateQuery, onSuccess]
   )
@@ -211,26 +211,20 @@ type TableRecordsViewProps = {
 }
 
 function TableRecordsView({ payload: { table }, open, onClose }: DialogProps<TableRecordsViewProps>) {
-  const [refetchCounter, setRefetchCounter] = useState(0)
   const dialogs = useDialogs();
+
+  const { mutate: runQuery, data, isPending, error } = useRunQuery()
+
+  useEffect(() => {
+    runQuery({ projectRef: SUPABASE_PROJECT_REF, query: `SELECT * FROM "${table.schema}"."${table.name}" LIMIT 100;` })
+  }, [table, runQuery])
 
   const handleRowClick = (row: any) => dialogs.open(EditRowView, { table, row, onSuccess: () => { } })
 
   return (
     <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose()}>
       <DialogContent variant={"fullscreen"}>
-        <SqlEditor
-          hideChartOption={true}
-          projectRef={SUPABASE_PROJECT_REF}
-          label={`View records in ${table.name}`}
-          initialSql={`SELECT * FROM public."${table.name}" LIMIT 100;`}
-          queryKey={table.id}
-          onRowClick={handleRowClick}
-          hideSql={true}
-          runAutomatically={true}
-          refetch={refetchCounter}
-          readOnly
-        />
+        <ResultsTable data={data} onRowClick={(row) => handleRowClick(row)} />
       </DialogContent>
     </Dialog>
   )

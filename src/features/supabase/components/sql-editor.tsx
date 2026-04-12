@@ -77,7 +77,7 @@ export function SqlEditor({
 
   const handleRunQuery = useCallback(() => {
     if (sql) {
-      runQuery({ projectRef, query: sql, readOnly: true })
+      runQuery({ projectRef, query: sql })
     }
   }, [sql, projectRef, runQuery])
 
@@ -88,7 +88,7 @@ export function SqlEditor({
 
   useEffect(() => {
     if (runAutomatically && initialSql) {
-      runQuery({ projectRef, query: initialSql, readOnly: true })
+      runQuery({ projectRef, query: initialSql })
     }
   }, [runAutomatically, initialSql, projectRef, runQuery])
 

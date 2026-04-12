@@ -10,15 +10,12 @@ import { invokeManagementApi } from '../lib/management-api'
 export const runQuery = async ({
   projectRef,
   query,
-  readOnly,
 }: {
   projectRef: string
   query: string
-  readOnly?: boolean
 }) => {
   const { data, error } = await invokeManagementApi(`/v1/projects/${projectRef}/database/query`, 'POST', {
     query,
-    read_only: readOnly,
   })
 
   if (error) {

@@ -11,8 +11,7 @@ const listTables = ({ projectRef, schemas }: { projectRef: string; schemas?: str
   const sql = listTablesSql(schemas)
   return runQuery({
     projectRef,
-    query: sql,
-    readOnly: true,
+    query: sql
   })
 }
 
