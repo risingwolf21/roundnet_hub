@@ -12,7 +12,7 @@ import { Dialog, DialogContent } from '@/components/ui/dialog'
 import { Skeleton } from '@/components/ui/skeleton'
 import { DialogProps, useDialogs } from '@/contexts/DialogsProvider'
 import { useGrants } from '@/features/auth/GrantsContext'
-import { SUPABASE_PROJECT_REF } from '@/utils'
+import { groupBy, SUPABASE_PROJECT_REF } from '@/utils'
 import { useRunQuery } from '../hooks/use-run-query'
 import { useListTables } from '../hooks/use-tables'
 import { DynamicForm } from './dynamic-form'
@@ -190,7 +190,7 @@ function EditRowView({ payload: {
 
   return (
     <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose()}>
-      <DialogContent>
+      <DialogContent variant={"fullscreen"}>
         <div className="px-6 pt-4 pb-10 lg:px-12 lg:pt-10">
           <h2 className="text-base lg:text-xl font-semibold mb-4">Editing row in {table.name}</h2>
           <DynamicForm
@@ -218,7 +218,7 @@ function TableRecordsView({ payload: { table }, open, onClose }: DialogProps<Tab
 
   return (
     <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose()}>
-      <DialogContent>
+      <DialogContent variant={"fullscreen"}>
         <SqlEditor
           hideChartOption={true}
           projectRef={SUPABASE_PROJECT_REF}
@@ -239,7 +239,7 @@ function TableRecordsView({ payload: { table }, open, onClose }: DialogProps<Tab
 export function DatabaseManager() {
   const { user } = useGrants();
   const dialogs = useDialogs();
-  const { data: tables, isLoading, isError } = useListTables(['public'])
+  const { data: tables, isLoading, isError } = useListTables(['public', 'games', 'notifications'])
 
   const handleTableClick = (table: any) => {
     dialogs.open(TableRecordsView, { table })
@@ -273,21 +273,28 @@ export function DatabaseManager() {
           )}
 
           {tables && tables.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
-              {tables.map((table: any) => (
-                <Button
-                  variant="outline"
-                  key={table.id}
-                  size="lg"
-                  className="flex-row justify-between text-left"
-                  onClick={() => handleTableClick(table)}
-                >
-                  <Table className="h-4 w-4 text-muted-foreground" />
-                  <h2 className="text-sm font-medium font-mono truncate flex-1">{table.name}</h2>
-                  <div className="text-sm text-muted-foreground font-mono shrink-0">
-                    {table.live_rows_estimate} rows
+            <div>
+              {groupBy(tables, (x: any) => x.schema).entries().map(([key, groupedTables]) => (
+                <div key={key}>
+                  <div className='text-base font-bold'>{key}</div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
+                    {
+                      groupedTables.map(table => <Button
+                        variant="outline"
+                        key={table.id}
+                        size="lg"
+                        className="flex-row justify-between text-left"
+                        onClick={() => handleTableClick(table)}
+                      >
+                        <Table className="h-4 w-4 text-muted-foreground" />
+                        <h2 className="text-sm font-medium font-mono truncate flex-1">{table.name}</h2>
+                        <div className="text-sm text-muted-foreground font-mono shrink-0">
+                          {table.live_rows_estimate} rows
+                        </div>
+                      </Button>)
+                    }
                   </div>
-                </Button>
+                </div>
               ))}
             </div>
           ) : !isLoading && (!tables || tables.length === 0) ? (

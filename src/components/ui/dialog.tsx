@@ -6,6 +6,7 @@ import * as React from "react"
 
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
+import { cva, VariantProps } from "class-variance-authority"
 
 function Dialog({ ...props }: DialogPrimitive.Root.Props) {
   return <DialogPrimitive.Root data-slot="dialog" {...props} />
@@ -38,6 +39,27 @@ function DialogOverlay({
     />
   )
 }
+
+const dialogContentVariants = cva(
+  "fixed z-50 bg-popover duration-300 data-open:animate-in data-closed:animate-out data-open:fade-in-0 data-closed:fade-out-0 outline-none shadow-lg",
+  {
+    variants: {
+      variant: {
+        default:
+          "top-1/2 left-1/2 grid w-full max-w-[calc(100%-2rem)] -translate-x-1/2 -translate-y-1/2 gap-4 rounded-xl p-4 text-sm text-popover-foreground ring-1 ring-foreground/10 sm:max-w-sm data-open:zoom-in-95 data-closed:zoom-out-95",
+
+        drawer:
+          "inset-x-0 bottom-0 flex flex-col w-full max-h-[95dvh] rounded-t-xl border-t p-0 sm:max-w-lg sm:mx-auto data-open:slide-in-from-bottom-full data-closed:slide-out-to-bottom-full pb-[env(safe-area-inset-bottom)]",
+
+        fullscreen:
+          "inset-0 flex flex-col w-full h-[100dvh] max-w-none rounded-none border-0 p-0 data-open:zoom-in-95 data-closed:zoom-out-95 pb-[env(safe-area-inset-bottom)]"
+      }
+    },
+    defaultVariants: {
+      variant: "default",
+    },
+  }
+)
 
 function SlideUpDialogContent({
   className,
@@ -78,28 +100,53 @@ function SlideUpDialogContent({
   )
 }
 
+export interface DialogContentProps
+  extends React.ComponentPropsWithoutRef<typeof DialogPrimitive.Popup>,
+  VariantProps<typeof dialogContentVariants> {
+  showCloseButton?: boolean;
+}
+
 function DialogContent({
   className,
+  variant,
   children,
   showCloseButton = true,
   ...props
-}: DialogPrimitive.Popup.Props & {
-  showCloseButton?: boolean
-}) {
+}: DialogContentProps) {
+
+  const isDrawer = variant === "drawer";
+  const needsFlexWrapper = variant === "drawer" || variant === "fullscreen";
+
   return (
     <DialogPortal>
       <DialogOverlay />
       <DialogPrimitive.Popup
         data-slot="dialog-content"
-        className={cn(
-          "fixed top-1/2 left-1/2 z-50 grid w-full max-w-[calc(100%-2rem)] -translate-x-1/2 -translate-y-1/2 gap-4 rounded-xl bg-popover p-4 text-sm text-popover-foreground ring-1 ring-foreground/10 duration-100 outline-none sm:max-w-sm data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95",
-          className
-        )}
+        className={cn(dialogContentVariants({ variant }), className)}
         {...props}
       >
-        {children}
+        {isDrawer && (
+          <div className="mx-auto mt-3 h-1.5 w-12 shrink-0 rounded-full bg-muted/60" />
+        )}
+
+        {needsFlexWrapper ? (
+          <div className="flex flex-col overflow-hidden h-full w-full">
+            {children}
+          </div>
+        ) : (
+          children
+        )}
+
         {showCloseButton && (
-          <DialogPrimitive.Close data-slot="dialog-close" render={<Button variant="ghost" className="absolute top-2 right-2" size="icon-sm"><XIcon /><span className="sr-only">Close</span></Button>} />
+          <DialogPrimitive.Close
+            data-slot="dialog-close"
+            render={
+              <Button variant="ghost" className="absolute top-2 right-2 z-50" size="icon-sm">
+                <XIcon />
+                <span className="sr-only">Close</span>
+              </Button>
+            }
+          />
         )}
       </DialogPrimitive.Popup>
     </DialogPortal>
