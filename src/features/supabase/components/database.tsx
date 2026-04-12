@@ -6,11 +6,15 @@ import { toast } from 'sonner'
 import { z, type ZodTypeAny } from 'zod'
 
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
+import { AppBar } from '@/components/ui/appbar'
 import { Button } from '@/components/ui/button'
+import { Dialog, DialogContent } from '@/components/ui/dialog'
 import { Skeleton } from '@/components/ui/skeleton'
+import { DialogProps, useDialogs } from '@/contexts/DialogsProvider'
+import { useGrants } from '@/features/auth/GrantsContext'
+import { SUPABASE_PROJECT_REF } from '@/utils'
 import { useRunQuery } from '../hooks/use-run-query'
 import { useListTables } from '../hooks/use-tables'
-import { useSheetNavigation } from '../SheetNavigationContext'
 import { DynamicForm } from './dynamic-form'
 import { SqlEditor } from './sql-editor'
 
@@ -63,17 +67,17 @@ const getPrimaryKeys = (table: any): string[] => {
   return table.primary_keys.map((pk: any) => pk.name)
 }
 
-function EditRowView({
-  projectRef,
-  table,
-  row,
-  onSuccess,
-}: {
-  projectRef: string
+type EditRowViewProps = {
   table: any
   row: any
   onSuccess: () => void
-}) {
+}
+
+function EditRowView({ payload: {
+  table,
+  row,
+  onSuccess,
+}, open, onClose }: DialogProps<EditRowViewProps>) {
   const { mutate: runUpdateQuery, isPending: isUpdatePending } = useRunQuery()
   const formSchema = useMemo(() => generateZodSchema(table), [table])
 
@@ -179,132 +183,122 @@ function EditRowView({
 
       const updateSql = `UPDATE public."${table.name}" SET ${setClauses} WHERE ${whereClauses};`
 
-      runUpdateQuery({ projectRef, query: updateSql, readOnly: false }, { onSuccess })
+      runUpdateQuery({ projectRef: SUPABASE_PROJECT_REF, query: updateSql, readOnly: false }, { onSuccess })
     },
-    [projectRef, table, row, runUpdateQuery, onSuccess]
+    [table, row, runUpdateQuery, onSuccess]
   )
 
   return (
-    <div className="px-6 pt-4 pb-10 lg:px-12 lg:pt-10">
-      <h2 className="text-base lg:text-xl font-semibold mb-4">Editing row in {table.name}</h2>
-      <DynamicForm
-        schema={formSchema}
-        initialValues={row}
-        onSubmit={handleFormSubmit}
-        isLoading={isUpdatePending}
-        columnInfo={columnInfo}
-      />
-    </div>
-  )
-}
-
-function TableRecordsView({ projectRef, table }: { projectRef: string; table: any }) {
-  const { push, pop } = useSheetNavigation()
-  const [refetchCounter, setRefetchCounter] = useState(0)
-
-  const handleRowClick = useCallback(
-    (row: any) => {
-      push({
-        title: `Editing row`,
-        component: (
-          <EditRowView
-            projectRef={projectRef}
-            table={table}
-            row={row}
-            onSuccess={() => {
-              pop()
-              setRefetchCounter((c) => c + 1)
-            }}
+    <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose()}>
+      <DialogContent>
+        <div className="px-6 pt-4 pb-10 lg:px-12 lg:pt-10">
+          <h2 className="text-base lg:text-xl font-semibold mb-4">Editing row in {table.name}</h2>
+          <DynamicForm
+            schema={formSchema}
+            initialValues={row}
+            onSubmit={handleFormSubmit}
+            columnInfo={columnInfo}
+            isLoading={isUpdatePending}
           />
-        ),
-      })
-    },
-    [push, pop, projectRef, table]
-  )
-
-  return (
-    <SqlEditor
-      hideChartOption={true}
-      projectRef={projectRef}
-      label={`View records in ${table.name}`}
-      initialSql={`SELECT * FROM public."${table.name}" LIMIT 100;`}
-      queryKey={table.id}
-      onRowClick={handleRowClick}
-      hideSql={true}
-      runAutomatically={true}
-      refetch={refetchCounter}
-      readOnly
-    />
+        </div>
+      </DialogContent>
+    </Dialog >
   )
 }
 
-export function DatabaseManager({ projectRef }: { projectRef: string }) {
-  const { push } = useSheetNavigation()
-  const { data: tables, isLoading, isError } = useListTables(projectRef, ['public'])
+type TableRecordsViewProps = {
+  table: any
+}
 
-  const handleTableClick = useCallback(
-    (table: any) => {
-      push({
-        title: table.name,
-        component: <TableRecordsView projectRef={projectRef} table={table} />,
-      })
-    },
-    [push, projectRef]
-  )
+function TableRecordsView({ payload: { table }, open, onClose }: DialogProps<TableRecordsViewProps>) {
+  const [refetchCounter, setRefetchCounter] = useState(0)
+  const dialogs = useDialogs();
+
+  const handleRowClick = (row: any) => dialogs.open(EditRowView, { table, row, onSuccess: () => { } })
 
   return (
-    <div className="p-6 pt-4 lg:p-8 lg:pt-8">
-      <div className="flex items-center justify-between mb-6 gap-6">
-        <div className="flex-1">
-          <h1 className="text-base lg:text-xl font-semibold">Database</h1>
-          <p className="hidden lg:block text-sm lg:text-base text-muted-foreground mt-1">
-            View and manage the data stored in your app.
-          </p>
-        </div>
-      </div>
+    <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose()}>
+      <DialogContent>
+        <SqlEditor
+          hideChartOption={true}
+          projectRef={SUPABASE_PROJECT_REF}
+          label={`View records in ${table.name}`}
+          initialSql={`SELECT * FROM public."${table.name}" LIMIT 100;`}
+          queryKey={table.id}
+          onRowClick={handleRowClick}
+          hideSql={true}
+          runAutomatically={true}
+          refetch={refetchCounter}
+          readOnly
+        />
+      </DialogContent>
+    </Dialog>
+  )
+}
 
-      {isError && (
-        <Alert variant="destructive" className="mt-8">
-          <AlertTriangle className="h-4 w-4" />
-          <AlertTitle>Error loading tables</AlertTitle>
-          <AlertDescription>There was a problem loading your database tables.</AlertDescription>
-        </Alert>
-      )}
+export function DatabaseManager() {
+  const { user } = useGrants();
+  const dialogs = useDialogs();
+  const { data: tables, isLoading, isError } = useListTables(['public'])
 
-      {isLoading && (
-        <div className="mt-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          <Skeleton className="h-12 w-full" />
-          <Skeleton className="h-12 w-full" />
-          <Skeleton className="h-12 w-full" />
-          <Skeleton className="h-12 w-full" />
-        </div>
-      )}
+  const handleTableClick = (table: any) => {
+    dialogs.open(TableRecordsView, { table })
+  }
 
-      {tables && tables.length > 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
-          {tables.map((table: any) => (
-            <Button
-              variant="outline"
-              key={table.id}
-              size="lg"
-              className="flex-row justify-between text-left"
-              onClick={() => handleTableClick(table)}
-            >
-              <Table className="h-4 w-4 text-muted-foreground" />
-              <h2 className="text-sm font-medium font-mono truncate flex-1">{table.name}</h2>
-              <div className="text-sm text-muted-foreground font-mono shrink-0">
-                {table.live_rows_estimate} rows
-              </div>
-            </Button>
-          ))}
+  return (
+    <div>
+      <AppBar
+        className='!border-b !shadow-sm'
+        title={"Datenbank Manager"}
+        user={user}
+      />
+      <main className='flex-1 size-full pb-safe-bottom'>
+        <div className="p-6 pt-4 lg:p-8 lg:pt-8">
+
+          {isError && (
+            <Alert variant="destructive" className="mt-8">
+              <AlertTriangle className="h-4 w-4" />
+              <AlertTitle>Error loading tables</AlertTitle>
+              <AlertDescription>There was a problem loading your database tables.</AlertDescription>
+            </Alert>
+          )}
+
+          {isLoading && (
+            <div className="mt-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <Skeleton className="h-12 w-full" />
+              <Skeleton className="h-12 w-full" />
+              <Skeleton className="h-12 w-full" />
+              <Skeleton className="h-12 w-full" />
+            </div>
+          )}
+
+          {tables && tables.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
+              {tables.map((table: any) => (
+                <Button
+                  variant="outline"
+                  key={table.id}
+                  size="lg"
+                  className="flex-row justify-between text-left"
+                  onClick={() => handleTableClick(table)}
+                >
+                  <Table className="h-4 w-4 text-muted-foreground" />
+                  <h2 className="text-sm font-medium font-mono truncate flex-1">{table.name}</h2>
+                  <div className="text-sm text-muted-foreground font-mono shrink-0">
+                    {table.live_rows_estimate} rows
+                  </div>
+                </Button>
+              ))}
+            </div>
+          ) : !isLoading && (!tables || tables.length === 0) ? (
+            <Alert className="mt-8">
+              <Table className="h-4 w-4" />
+              <AlertTitle>No database tables</AlertTitle>
+              <AlertDescription>Create tables to store and organize your data.</AlertDescription>
+            </Alert>
+          ) : null}
         </div>
-      ) : !isLoading && (!tables || tables.length === 0) ? (
-        <Alert className="mt-8">
-          <Table className="h-4 w-4" />
-          <AlertTitle>No database tables</AlertTitle>
-          <AlertDescription>Create tables to store and organize your data.</AlertDescription>
-        </Alert>
-      ) : null}
+      </main>
     </div>
   )
 }

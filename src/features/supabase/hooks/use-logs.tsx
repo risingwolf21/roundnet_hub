@@ -1,17 +1,16 @@
 'use client'
 
+import { SUPABASE_PROJECT_REF } from '@/utils'
 import { useQuery } from '@tanstack/react-query'
 import { invokeManagementApi } from '../lib/management-api'
 
 
 // GET Logs
 const getLogs = async ({
-  projectRef,
   iso_timestamp_start,
   iso_timestamp_end,
   sql,
 }: {
-  projectRef: string
   iso_timestamp_start?: string
   iso_timestamp_end?: string
   sql?: string
@@ -29,7 +28,7 @@ const getLogs = async ({
     })
     .join("&");
 
-  const { data, error } = await invokeManagementApi(`/v1/projects/${projectRef}/analytics/endpoints/logs.all?${queryString}`, 'GET')
+  const { data, error } = await invokeManagementApi(`/v1/projects/${SUPABASE_PROJECT_REF}/analytics/endpoints/logs.all?${queryString}`, 'GET')
 
   if (error) {
     throw error
@@ -39,14 +38,13 @@ const getLogs = async ({
 }
 
 export const useGetLogs = (
-  projectRef: string,
   params: {
     iso_timestamp_start?: string
     iso_timestamp_end?: string
     sql?: string
   } = {}
 ) => {
-  const queryKey = ['logs', projectRef, params.sql]
+  const queryKey = ['logs', SUPABASE_PROJECT_REF, params.sql]
 
   return useQuery({
     queryKey: queryKey,
@@ -59,9 +57,9 @@ export const useGetLogs = (
         iso_timestamp_start: params.iso_timestamp_start ?? oneHourAgo.toISOString(),
         iso_timestamp_end: params.iso_timestamp_end ?? now.toISOString(),
       }
-      return getLogs({ projectRef, ...queryParams })
+      return getLogs({ ...queryParams })
     },
-    enabled: !!projectRef,
+    enabled: !!SUPABASE_PROJECT_REF,
     retry: false,
   })
 }

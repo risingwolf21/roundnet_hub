@@ -2,6 +2,8 @@ import { Duration, format, intervalToDuration, parse } from 'date-fns';
 import RoundnetKarlsruheLogo from '../images/Karlsruher_Kojoten_Logo.svg';
 import RoundnetMunichLogo from '../images/Roundnet_Munich_Logo.png';
 
+export const SUPABASE_PROJECT_REF = import.meta.env.VITE_SUPABASE_PROJECT_ID;
+
 const logoMap = {
   'roundnet-karlsruhe': RoundnetKarlsruheLogo,
   'munich-roundnet': RoundnetMunichLogo,

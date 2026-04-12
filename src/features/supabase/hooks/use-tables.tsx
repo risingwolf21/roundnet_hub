@@ -2,6 +2,7 @@
 
 import { useQuery } from '@tanstack/react-query';
 
+import { SUPABASE_PROJECT_REF } from '@/utils';
 import { listTablesSql } from '../lib/pg-meta';
 import { runQuery } from './use-run-query';
 
@@ -15,10 +16,10 @@ const listTables = ({ projectRef, schemas }: { projectRef: string; schemas?: str
   })
 }
 
-export const useListTables = (projectRef: string, schemas?: string[]) => {
+export const useListTables = (schemas?: string[]) => {
   return useQuery({
-    queryKey: ['tables', projectRef, schemas],
-    queryFn: () => listTables({ projectRef, schemas }),
-    enabled: !!projectRef,
+    queryKey: ['tables', SUPABASE_PROJECT_REF, schemas],
+    queryFn: () => listTables({ projectRef: SUPABASE_PROJECT_REF, schemas }),
+    enabled: !!SUPABASE_PROJECT_REF,
   })
 }

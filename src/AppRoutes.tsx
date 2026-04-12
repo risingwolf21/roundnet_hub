@@ -21,8 +21,7 @@ import GrantsManager from './features/grants/GrantsManager';
 import HomePage from './features/homepage/HomePage';
 import UserScreenProvider from './features/profile/UserScreenProvider';
 import { DatabaseManager } from './features/supabase/components/database';
-import { DialogView } from './features/supabase/components/DialogView';
-import { SheetNavigationProvider } from './features/supabase/SheetNavigationContext';
+import { LogsManager } from './features/supabase/components/logs';
 import { lazyWithRetry } from './hooks/lazyWithRetry';
 import { Has } from './hooks/useGrants';
 import { sentryCreateBrowserRouter } from './instrument';
@@ -215,11 +214,11 @@ const createRouter = (user: UserWithGroups | null, isShadcnUi: boolean) =>
                 },
                 {
                   path: 'history',
-                  element: <HistoryScreenProvider />,
+                  element: <HistoryScreenProvider isShadcn={isShadcnUi} />,
                 },
                 {
                   path: 'payments',
-                  element: <PayDrinksScreenProvider />,
+                  element: <PayDrinksScreenProvider isShadcn={isShadcnUi} />,
                 },
               ],
             },
@@ -360,15 +359,7 @@ const createRouter = (user: UserWithGroups | null, isShadcnUi: boolean) =>
                   path: 'audit/logs',
                   element: (
                     <Has perm={'supabase.admin'} fallback={<PermissionDeniedPage />}>
-                      <SheetNavigationProvider onStackEmpty={() => { }}
-                        initialStack={[
-                          {
-                            title: 'Database',
-                            component: <DatabaseManager projectRef={"gfvaurdkieqkehsuwotr"} />,
-                          },
-                        ]}>
-                        <DialogView projectRef={"gfvaurdkieqkehsuwotr"} isMobile />
-                      </SheetNavigationProvider>
+                      <LogsManager />
                     </Has >
                   ),
                 },
@@ -376,7 +367,7 @@ const createRouter = (user: UserWithGroups | null, isShadcnUi: boolean) =>
                   path: 'supabase',
                   element: (
                     <Has perm={'supabase.admin'} fallback={<PermissionDeniedPage />}>
-                      <SupabaseClient />
+                      <DatabaseManager />
                     </Has>
                   ),
                 },

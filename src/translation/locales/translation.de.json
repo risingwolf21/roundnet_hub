@@ -2,6 +2,11 @@
   "format": {
     "distanceToNow": "{{ date, ago }}"
   },
+  "common": {
+    "confirm": "Bestätigen",
+    "cancel": "Abbrechen",
+    "filter": "Filter"
+  },
   "date-fns": {
     "diffInDaysPrior_zero": "Am selben Tag",
     "diffInDaysPrior_one": "{{count}} Tag davor",
@@ -9,6 +14,16 @@
     "diffInHoursPrior_zero": "Am selben Tag",
     "diffInHoursPrior_one": "{{count}} Stunde zuvor",
     "diffInHoursPrior_other": "{{count}} Stunden zuvor"
+  },
+  "drinks": {
+    "drinks": "Getränke",
+    "noDrinks": "Keine Getränke",
+    "noDrinksDescription": "Aktuell sind keine Getränke in den gewählten Kategorien verfügbar.",
+    "confirmDrinkDeletion": "Möchtest du das Getränk wirklich löschen?",
+    "deletionSuccess": "Getränk erfolgreich gelöscht",
+    "deletionError": "Beim löschen ist ein Fehler aufgetreten. {{error}} ",
+    "updateSuccess": "Getränk erfolgreich aktualisiert",
+    "updateError": "Beim aktualisieren ist ein Fehler aufgetreten. {{error}} "
   },
   "attendees": "Teilnehmer",
   "browse": {

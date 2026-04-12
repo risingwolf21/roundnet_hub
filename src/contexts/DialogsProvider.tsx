@@ -34,7 +34,7 @@ export interface AlertOptions {
 interface DialogsContextType {
   open: <P, R>(Component: React.ComponentType<DialogProps<P, R>>, payload: P) => Promise<R | null>;
   confirm: (title: string, options?: ConfirmOptions) => Promise<boolean>;
-  alert: (options: AlertOptions) => Promise<void>;
+  alert: (content: React.ReactNode, options?: AlertOptions) => Promise<void>;
 }
 
 const DialogsContext = createContext<DialogsContextType | null>(null);
@@ -75,8 +75,13 @@ export function DialogsProvider({ children }: { children: React.ReactNode }) {
     return open(ConfirmDialogBase, { ...DEFAULT_CONFIRM_OPTIONS, ...options, title }).then((res) => res ?? false);
   }, [open]);
 
-  const alert = useCallback((options: AlertOptions) => {
-    return open(AlertDialogBase, options).then(() => undefined);
+  const alert = useCallback((content: React.ReactNode, options?: AlertOptions) => {
+    const DEFAULT_CONFIRM_OPTIONS: AlertOptions = {
+      title: "Sind Sie sich sicher?",
+      okText: "Schließen",
+      message: null,
+    }
+    return open(AlertDialogBase, { ...DEFAULT_CONFIRM_OPTIONS, ...options, message: content }).then(() => undefined);
   }, [open]);
 
   return (

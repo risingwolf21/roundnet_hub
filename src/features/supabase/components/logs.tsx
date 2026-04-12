@@ -97,25 +97,19 @@ const logTypes = [
   },
 ]
 
-export function LogsManager({ projectRef }: { projectRef: string }) {
+export function LogsManager() {
   const [activeTab, setActiveTab] = useState<LogsTableName>(LogsTableName.FN_EDGE)
   const [open, setOpen] = useState(false)
 
   const sql = useMemo(() => genDefaultQuery(activeTab), [activeTab])
 
-  const { data: logs, isLoading, error } = useGetLogs(projectRef, { sql })
+  const { data: logs, isLoading, error } = useGetLogs({ sql })
 
   const selectedLogType = logTypes.find((type) => type.value === activeTab)
 
   return (
     <>
       <div className="p-6 pt-4 lg:p-8 lg:pt-8 border-b bg-background z-10 sticky top-0 flex items-center justify-between mb-6">
-        <div className="flex-1">
-          <h1 className="text-base lg:text-xl font-semibold">Logs</h1>
-          <p className="hidden lg:block text-sm lg:text-base text-muted-foreground mt-1">
-            Debug errors and track activity in your app
-          </p>
-        </div>
         <Popover open={open} onOpenChange={setOpen}>
           <PopoverTrigger>
             <Button

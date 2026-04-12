@@ -19,6 +19,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Spinner } from '@/components/ui/spinner';
 import { Switch } from '@/components/ui/switch';
 import { useDialogs } from '@/contexts/DialogsProvider';
+import { t } from 'i18next';
 import { Check, CupSoda, Funnel, Image, Minus, Pencil, PencilOff, Plus, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import EditDrinkDialogShadcn from './dialog/EditDrinkDialog.shadcn';
@@ -128,7 +129,7 @@ const DrinkListScreenShadcn = () => {
     <div>
       <AppBar
         className='!border-b !shadow-sm'
-        title="Getränke"
+        title={t("drinks.drinks")}
         user={user}
         actions={
           <>
@@ -202,8 +203,8 @@ const DrinkListScreenShadcn = () => {
             {!isLoading && filteredDrinks.length === 0 && (
               <div className="flex flex-col items-center justify-center p-8 mt-8 text-center text-muted-foreground">
                 <CupSoda className="size-16 mb-4 opacity-20" />
-                <h3 className="font-semibold text-lg mb-1 text-foreground/70">Keine Getränke</h3>
-                <p className="text-sm">Aktuell sind keine Getränke in den gewählten Kategorien verfügbar.</p>
+                <h3 className="font-semibold text-lg mb-1 text-foreground/70">{t("drinks.noDrinks")}</h3>
+                <p className="text-sm">{t("drinks.noDrinksDescription")}</p>
               </div>
             )}
 
@@ -260,8 +261,8 @@ const DrinkListScreenShadcn = () => {
                                         });
                                         if (result) {
                                           updateDrink.mutate(result, {
-                                            onSuccess: () => toast.success("Getränk erfolgreich geupdatet"),
-                                            onError: (error) => toast.error("Beim aktualisieren ist ein Fehler aufgetreten. " + error.message)
+                                            onSuccess: () => toast.success(t("drinks.updateSuccess")),
+                                            onError: (error) => toast.error(t("drinks.updateError", { error: error.message }))
                                           })
                                         }
                                       }}>
@@ -270,11 +271,11 @@ const DrinkListScreenShadcn = () => {
                                     <Button
                                       variant={"destructive"} size="icon"
                                       onClick={() => {
-                                        dialogs.confirm("Möchtest du das Getränk wirklich löschen?").then(result => {
+                                        dialogs.confirm(t("drinks.confirmDrinkDeletion")).then(result => {
                                           if (result) {
                                             deleteDrink.mutate(drink, {
-                                              onSuccess: () => toast.success("Getränk erfolgreich gelöscht"),
-                                              onError: (error) => toast.error("Beim löschen ist ein Fehler aufgetreten. " + error.message)
+                                              onSuccess: () => toast.success(t("drinks.deletionSuccess")),
+                                              onError: (error) => toast.error(t("drinks.deletionError", { error: error.message }))
                                             })
                                           }
                                         })
@@ -320,7 +321,7 @@ const DrinkListScreenShadcn = () => {
               </DialogTrigger>
               <SlideUpDialogContent>
                 <DialogHeader className='px-4'>
-                  <DialogTitle>Filter</DialogTitle>
+                  <DialogTitle>{t("common.filter")}</DialogTitle>
                 </DialogHeader>
                 <div className="no-scrollbar overflow-y-auto flex flex-col p-4 gap-4">
                   {[...new Set(drinks.map((x) => x.type))].sort().map((x) => (

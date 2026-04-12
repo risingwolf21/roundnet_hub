@@ -2,6 +2,11 @@
   "format": {
     "distanceToNow": "{{ date, ago }}"
   },
+  "common": {
+    "confirm": "Confirm",
+    "cancel": "Cancel",
+    "filter": "Filter"
+  },
   "date-fns": {
     "diffInDaysPrior_zero": "The same day",
     "diffInDaysPrior_one": "{{count}} day prior",
@@ -9,6 +14,16 @@
     "diffInHoursPrior_zero": "Am selben Tag",
     "diffInHoursPrior_one": "{{count}} hour prior",
     "diffInHoursPrior_other": "{{count}} hours prior"
+  },
+  "drinks": {
+    "drinks": "Drinks",
+    "noDrinks": "No drinks",
+    "noDrinksDescription": "Currently, no drinks are available in the selected categories.",
+    "confirmDrinkDeletion": "Are you sure you want to delete this drink?",
+    "deletionSuccess": "Drink deleted successfully",
+    "deletionError": "An error occurred while deleting. {{error}} ",
+    "updateSuccess": "Drink updated successfully",
+    "updateError": "An error occurred while updating. {{error}} "
   },
   "attendees": "Attendees",
   "browse": {

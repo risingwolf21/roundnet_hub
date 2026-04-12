@@ -3,12 +3,17 @@ import { usePaymentHistory } from '@/tanstack/drinks';
 import List from '@mui/material/List';
 import Layout from '../../components/layout/Layout';
 import { useGrants } from '../auth/GrantsContext';
-import PayDrinksScreen from './PayDrinksScreen';
 import { PaymentInfo } from './components/PaymentInfo';
+import PayDrinksScreen from './PayDrinksScreen';
+import PayDrinksScreenShadcn from './PayDrinksScreen.shadcn';
 
-const PayDrinks = () => {
+const PayDrinks = ({ isShadcn }: { isShadcn: boolean }) => {
   const { user } = useGrants();
   const result = usePaymentHistory(user.id);
+
+  if (isShadcn) {
+    return <PayDrinksScreenShadcn />
+  }
 
   const amountToPay =
     (result.data ?? []).filter((x) => !x.voucher).reduce((prev, curr) => prev + (curr.amount ?? 0), 0) ?? 0;
