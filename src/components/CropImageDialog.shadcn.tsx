@@ -39,7 +39,7 @@ const CropImageDialogShadcn = ({ open, payload: { imageUrl }, onClose }: DialogP
   };
 
   return <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose(null)}>
-    <DialogContent className="!w-[100dvw] !h-[100dvh] max-w-[100%] max-h-[100%] rounded-none flex flex-col p-0 gap-0">
+    <DialogContent variant={"fullscreen"}>
       <DialogHeader className="p-4 border-b">
         <DialogTitle>Bild zuschneiden</DialogTitle>
       </DialogHeader>

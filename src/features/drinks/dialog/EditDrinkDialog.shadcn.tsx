@@ -6,7 +6,7 @@ import { dataURLtoFile, readFile } from '../../../utils';
 import CropImageDialogShadcn from '@/components/CropImageDialog.shadcn';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogFooter, DialogHeader, DialogTitle, SlideUpDialogContent } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Field, FieldContent, FieldDescription, FieldLabel } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
 import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/input-group';
@@ -73,7 +73,7 @@ const EditDrinkDialogShadcn = ({ payload: { drink }, open, onClose }: DialogProp
     onOpenChange={(isOpen) => {
       if (!isOpen) onClose(null);
     }}>
-    <SlideUpDialogContent className="p-0">
+    <DialogContent variant={"drawer"}>
       <form onSubmit={handleSubmit} noValidate className="flex flex-col h-full overflow-hidden">
         <DialogHeader className="p-4 pb-2 border-b text-left">
           <DialogTitle>
@@ -187,7 +187,7 @@ const EditDrinkDialogShadcn = ({ payload: { drink }, open, onClose }: DialogProp
           </Button>
         </DialogFooter>
       </form>
-    </SlideUpDialogContent>
+    </DialogContent>
   </Dialog >
 };
 export default EditDrinkDialogShadcn;
