@@ -14,11 +14,12 @@ import { useChangeUserRoleMutation, useGroup, useGroupAllUsers, useLeaveGroupMut
 import { captureException } from "@sentry/react";
 import { useLocalStorageState } from "@toolpad/core";
 import groupBy from "lodash.groupby";
-import { AlertCircle, CheckCircle2, CircleFadingArrowUp, GitPullRequest, Plus, Shapes, User, UserStar, XCircle } from "lucide-react";
+import { AlertCircle, CheckCircle2, CircleFadingArrowUp, GitPullRequest, Pencil, Plus, Shapes, User, UserStar, XCircle } from "lucide-react";
 import { useState } from "react";
 import { Navigate, useParams } from "react-router";
 import { toast } from "sonner";
 import { useGrants } from "../auth/GrantsContext";
+import { CreateOrUpdateGroupDialogShadcn } from "./dialogs/CreateOrUpdateGroupDialog.shadcn";
 import { useAddUsersMutation } from "./query/addUsersMutation";
 import { useDeclineRequestMutation } from "./query/declineRequestMutation";
 import { useRemoveUsersMutation } from "./query/removeUsersMutation";
@@ -119,6 +120,19 @@ export const PublicGroupInformationShadcn = () => {
         onSearchChange={setSearchQuery}
         primaryAction="back"
         user={user}
+        actions={
+          <Button variant={"ghost"} size={"icon-lg"} onClick={async () => {
+            const result = await dialogs.open(CreateOrUpdateGroupDialogShadcn, { user, group: group ?? undefined });
+            if (result && result !== 'closed') {
+              refetch();
+              toast.success('Gruppe wurde erfolgreich bearbeitet.');
+            } else if (!result) {
+              toast.error('Gruppe konnte nicht bearbeitet werden.');
+            }
+          }}>
+            <Pencil />
+          </Button>
+        }
       />
       <main className='flex-1 size-full pb-safe-bottom'>
         <PullToRefresh onRefresh={() => { refetch(); refetchGroup(); }}>

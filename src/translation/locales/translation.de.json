@@ -59,6 +59,7 @@
   "cancel": "Abbrechen",
   "confirm": "Bestätigen",
   "confirmKeyHandover": "Bist du sicher das du den Schlüssel \"{{ keyName }}\" an \"{{ userName }}\" abgeben möchtest?",
+  "confirmKeyTakenFromNull": "Bist du sicher das du den Schlüssel \"{{ keyName }}\" annehmen möchtest?",
   "confirmKeyTaken": "Hiermit bestätigst du das du den Schlüssel \"{{ keyName }}\" von \"{{ userName }}\" erhalten hast!",
   "challenges": {
     "edit": "Challenge bearbeiten"

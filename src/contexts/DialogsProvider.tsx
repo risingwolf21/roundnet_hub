@@ -1,3 +1,4 @@
+import SearchAndSelectUserDialogShadcn from '@/components/dialogs/SearchAndSelectUsersDialog.shadcn';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import React, { createContext, use, useCallback, useState } from 'react';
@@ -31,10 +32,17 @@ export interface AlertOptions {
   okText?: string;
 }
 
+export interface SearchAndSelectUserOptions {
+  usersToFilter: string[];
+  option: "single" | "multiple";
+}
+
 interface DialogsContextType {
   open: <P, R>(Component: React.ComponentType<DialogProps<P, R>>, payload: P) => Promise<R | null>;
   confirm: (title: string, options?: ConfirmOptions) => Promise<boolean>;
   alert: (content: React.ReactNode, options?: AlertOptions) => Promise<void>;
+  selectSingleUser: (usersToFilter?: string[]) => Promise<User | null>;
+  selectMultipleUser: (usersToFilter?: string[]) => Promise<User[] | null>;
 }
 
 const DialogsContext = createContext<DialogsContextType | null>(null);
@@ -84,8 +92,20 @@ export function DialogsProvider({ children }: { children: React.ReactNode }) {
     return open(AlertDialogBase, { ...DEFAULT_CONFIRM_OPTIONS, ...options, message: content }).then(() => undefined);
   }, [open]);
 
+  const selectSingleUser = useCallback(async (usersToFilter?: string[]) => {
+    const result = await open(SearchAndSelectUserDialogShadcn, { option: 'single', usersToFilter: usersToFilter ?? [] });
+
+    return result as User | null;
+  }, [open]);
+
+  const selectMultipleUser = useCallback(async (usersToFilter?: string[]) => {
+    const result = await open(SearchAndSelectUserDialogShadcn, { option: 'multiple', usersToFilter: usersToFilter ?? [] });
+
+    return result as User[] | null;
+  }, [open]);
+
   return (
-    <DialogsContext value={{ open, confirm, alert }}>
+    <DialogsContext value={{ open, confirm, alert, selectSingleUser, selectMultipleUser }}>
       {children}
       {dialogs.map(({ id, Component, payload, open, resolve }) => (
         <Component

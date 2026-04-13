@@ -1,8 +1,8 @@
 import { supabase } from '@/lib/supabase';
 import { useQuery } from '@tanstack/react-query';
-import { DialogProps } from '@toolpad/core';
 import { useState } from 'react';
 
+import { DialogProps } from '@/contexts/DialogsProvider';
 import { cn } from '@/lib/utils';
 import { Search, Users, X } from 'lucide-react';
 import { AlertDialog, AlertDialogContent } from '../ui/alert-dialog';
@@ -34,7 +34,6 @@ const SearchAndSelectUserDialogShadcn = (props: SearchAndSelectUserDialogProps) 
         .from('user')
         .select('*')
         .not('id', 'in', `(${usersToFilter.join(',')})`)
-        .returns<User[]>()
         .throwOnError();
 
       return result.data ?? [];
@@ -51,7 +50,7 @@ const SearchAndSelectUserDialogShadcn = (props: SearchAndSelectUserDialogProps) 
 
   return <AlertDialog open={open} onOpenChange={(isOpen) => !isOpen && props.onClose(null)}>
     <AlertDialogContent variant={"fullscreen"} className={"p-0 flex flex-col"}>
-      <div className={"shrink-0 sticky top-0 z-50 flex h-14 w-full items-center gap-4 bg-background/95 px-4 supports-[backdrop-filter]:bg-background md:px-4 transition-shadow border-b shadow-sm"}>
+      <div className={"pt-safe-top sticky top-0 flex h-14 w-full items-center gap-4 bg-background/95 px-4 supports-[backdrop-filter]:bg-background md:px-4 transition-shadow border-b shadow-sm"}>
 
         <div className="flex items-center gap-2 md:gap-4 lg:w-1/3">
           <Button
@@ -76,16 +75,16 @@ const SearchAndSelectUserDialogShadcn = (props: SearchAndSelectUserDialogProps) 
           </div>
         </div>
 
-        <div className="flex items-center justify-end gap-2 lg:w-1/3">
-          <Button className="ml-1" disabled={users.length <= 0} onClick={() => {
-            if (props.payload.option === "multiple") {
+        {
+          props.payload.option === "multiple" && <div className="flex items-center justify-end gap-2 lg:w-1/3">
+            <Button className="ml-1" disabled={users.length <= 0} onClick={() => {
               props.onClose(selectedUsers)
-            }
-          }}>
-            Speichern
-          </Button>
-        </div>
+            }}>
+              Speichern
+            </Button>
+          </div>
 
+        }
       </div>
 
       {isLoading && <Spinner className="m-4" />}

@@ -59,6 +59,7 @@
   "cancel": "Cancel",
   "confirm": "Confirm",
   "confirmKeyHandover": "Are you sure you want to hand over the key \"{{ keyName }}\" to \"{{ userName }}\"?",
+  "confirmKeyTakenFromNull": "Are you sure that you want to take the key \"{{ keyName }}\" ?",
   "confirmKeyTaken": "Hereby you confirm that you have received the key \"{{ keyName }}\" from \"{{ userName }}\"!",
   "challenges": {
     "edit": "Edit challenge"

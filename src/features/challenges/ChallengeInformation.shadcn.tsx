@@ -1,4 +1,3 @@
-import { PullToRefresh } from '@/components/pull-to-refresh/PullToRefresh';
 import { Has } from '@/hooks/useGrants';
 import { queryClient } from '@/lib/queryClient';
 import {
@@ -115,23 +114,30 @@ const ChallengeInformationShadcn = ({ t, challengeId }: { t: TFunction; challeng
         </Has>
       }
     />
-    <main className='flex-1 size-full pb-safe-bottom p-2'>
-      <PullToRefresh onRefresh={() => refetch()}>
-        <div key={"info"} className="gap-2 flex w-full max-w-lg flex-col">
-          <div className="text-sm font-semibold">
-            Beschreibung
-          </div>
-          <div className="text-sm text-muted-background">
-            {challenge.description || "Keine Beschreibung vorhanden."}
+    <main className="flex-1 flex flex-col size-full pb-safe-bottom">
+      <div>
+        <div className="p-2">
+          {/* Beschreibungs-Block (scrollt normal weg) */}
+          <div key={"info"} className="gap-2 flex w-full max-w-lg flex-col mb-6">
+            <div className="text-sm font-semibold">
+              Beschreibung
+            </div>
+            <div className="text-sm text-muted-foreground">
+              {challenge.description || "Keine Beschreibung vorhanden."}
+            </div>
           </div>
         </div>
-        <Tabs defaultValue={"activity"} className="w-full mt-6">
-          <TabsList className="grid w-full flex grid-cols-3 bg-white border !h-12 shadow-sm">
-            <TabsTrigger value="activity" className="h-10 data-[state=active]:bg-primary/5 flex-1">Aktivität</TabsTrigger>
-            <TabsTrigger value="leaderboard" className="h-10 data-[state=active]:bg-primary/5 flex-1">Leaderboard</TabsTrigger>
-          </TabsList>
-          <div>
-            <TabsContent value={"activity"} className="m-0">
+        <Tabs defaultValue={"activity"} className="w-full relative flex flex-col">
+
+          <div className="sticky top-14 p-2 z-40 w-full px-2 pb-2 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+            <TabsList className="grid w-full grid-cols-2 border !h-12 shadow-sm">
+              <TabsTrigger value="activity" className="h-10 data-[state=active]:bg-primary/5">Aktivität</TabsTrigger>
+              <TabsTrigger value="leaderboard" className="h-10 data-[state=active]:bg-primary/5">Leaderboard</TabsTrigger>
+            </TabsList>
+          </div>
+
+          <div className='px-2'>
+            <TabsContent value={"activity"} className="m-0 mt-2">
               <Item variant={"outline"}>
                 <div className='flex flex-row w-full'>
                   {
@@ -149,7 +155,7 @@ const ChallengeInformationShadcn = ({ t, challengeId }: { t: TFunction; challeng
                                 "text-success": active
                               })} />
                             </div>
-                            <div className='font-bold mt-1'>
+                            <div className='font-bold mt-1 text-center'>
                               {format(x, "dd.MM")}
                             </div>
                           </div>
@@ -158,15 +164,17 @@ const ChallengeInformationShadcn = ({ t, challengeId }: { t: TFunction; challeng
                   }
                 </div>
               </Item>
-              <ChallengeActivityListShadcn challenge={challenge} />
+              <div className="mt-4">
+                <ChallengeActivityListShadcn challenge={challenge} />
+              </div>
             </TabsContent>
 
-            <TabsContent value={"leaderboard"} className="m-0">
+            <TabsContent value={"leaderboard"} className="m-0 mt-2">
               <ChallengeLeaderboardShadcn challenge_points={leaderboard} isLoading={isLeaderboardLoading} />
             </TabsContent>
           </div>
         </Tabs>
-      </PullToRefresh>
+      </div>
     </main>
     <Has perm={'challenges.stats.write'}>
       <div

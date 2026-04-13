@@ -1,5 +1,5 @@
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Item, ItemContent, ItemTitle } from '@/components/ui/item';
+import { Item, ItemActions, ItemContent, ItemMedia, ItemTitle } from '@/components/ui/item';
 import { cn } from '@/lib/utils';
 import { ChallengePointsView } from '@/types/supabaseTypes';
 
@@ -7,7 +7,7 @@ const medalForPlace = (index: number) => {
   if (index === 0) return '🥇';
   else if (index === 1) return '🥈';
   else if (index === 2) return '🥉';
-  else return (index + 1).toString();
+  else return (index + 1).toString() + ".";
 };
 
 export const ChallengeLeaderboardShadcn = ({
@@ -27,24 +27,31 @@ export const ChallengeLeaderboardShadcn = ({
           .map((x) => {
             const place = uniqueScores.indexOf(x.total_points);
             return <Item key={x.user} variant={"outline"}>
-              <ItemContent className='flex flex-row'>
-                <div className={cn("font-bold mr-1",
-                  {
-                    "text-xl": place >= 3,
-                    "mx-2": place >= 3,
-                    "text-2xl": place < 3
-                  }
-                )}>
-                  {medalForPlace(uniqueScores.indexOf(x.total_points))}
-                </div>
+              <ItemMedia>
+                <Avatar className={"flex flex-row justify-center bg-none after:!border-none"}>
+                  <div className={cn("flex text-base flex-col justify-center",
+                    {
+                      "text-xl": place < 3
+                    }
+                  )}>
+                    {medalForPlace(uniqueScores.indexOf(x.total_points))}
+                  </div>
+                </Avatar>
+              </ItemMedia>
+              <ItemContent className='flex flex-row w-full'>
                 <Avatar className={"mr-2"}>
                   <AvatarImage src={x.avatarUrl || undefined} alt={x.displayName || undefined} />
                   <AvatarFallback>{x.displayName ? x.displayName[0] : 'U'}</AvatarFallback>
                 </Avatar>
-                <ItemTitle className="line-clamp-1 font-semibold flex px-2">
+                <ItemTitle className="line-clamp-1 font-semibold flex px-2 flex-1">
                   {x.displayName}
                 </ItemTitle>
               </ItemContent>
+              <ItemActions>
+                <div className='text-base font-bold'>
+                  {x.total_points}
+                </div>
+              </ItemActions>
             </Item>
           })
       }
