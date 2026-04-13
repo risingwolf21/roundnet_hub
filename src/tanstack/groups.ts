@@ -318,7 +318,15 @@ export const useUpdateGroupMutation = (groupId?: string) =>
       const result = await supabase
         .schema('public')
         .from('event_group')
-        .update(group)
+        .update({
+          name: group.name,
+          description: group.description,
+          color: group.color,
+          is_public: group.is_public,
+          need_request_to_join: group.need_request_to_join,
+          parent_group: group.parent_group,
+          visible: group.visible
+        })
         .eq('id', groupId)
         .select('*')
         .single()

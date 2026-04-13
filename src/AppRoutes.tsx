@@ -22,7 +22,6 @@ import HomePage from './features/homepage/HomePage';
 import UserScreenProvider from './features/profile/UserScreenProvider';
 import { DatabaseManager } from './features/supabase/components/database';
 import { LogsManager } from './features/supabase/components/logs';
-import { UsersManager } from './features/supabase/components/users';
 import { lazyWithRetry } from './hooks/lazyWithRetry';
 import { Has } from './hooks/useGrants';
 import { sentryCreateBrowserRouter } from './instrument';
@@ -342,15 +341,7 @@ const createRouter = (user: UserWithGroups | null, isShadcnUi: boolean) =>
                       <DatabaseManager />
                     </Has>
                   ),
-                },
-                {
-                  path: 'users',
-                  element: (
-                    <Has perm={'supabase.admin'} fallback={<PermissionDeniedPage />}>
-                      <UsersManager />
-                    </Has>
-                  ),
-                },
+                }
               ]
             },
             {
