@@ -3,15 +3,19 @@ import { AppBar } from '@/components/ui/appbar';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Item, ItemActions, ItemContent, ItemHeader, ItemMedia, ItemTitle } from '@/components/ui/item';
+import { Item, ItemActions, ItemContent, ItemDescription, ItemHeader, ItemMedia, ItemTitle } from '@/components/ui/item';
 import { Separator } from '@/components/ui/separator';
+import { useDialogs } from '@/contexts/DialogsProvider';
 import { Has } from '@/hooks/useGrants';
+import { supabase } from '@/lib/supabase';
 import { cn } from '@/lib/utils';
-import { useMatch } from '@/tanstack/games';
-import { Loader2, Pencil, SearchX } from 'lucide-react';
+import { useDeleteMatch, useMatch } from '@/tanstack/games';
+import { Loader2, Pencil, SearchX, Trash2 } from 'lucide-react';
 import React from 'react';
-import { useParams } from 'react-router';
+import { useNavigate, useParams } from 'react-router';
+import { toast } from 'sonner';
 import { useGrants } from '../auth/GrantsContext';
+import { ReportSetsDialogShadcn } from './dialogs/ReportSetsDialog.shadcn';
 
 // --- HILFSKOMPONENTEN (Machen den Hauptcode schön schlank) ---
 
@@ -63,8 +67,11 @@ const IndexRow = ({ player, fallback, history }: { player: any, fallback: any, h
 const MatchInformationShadcn = () => {
   const { matchId } = useParams();
   const { user, hasPerm } = useGrants();
+  const dialogs = useDialogs();
+  const navigate = useNavigate();
 
   const { data: match, isLoading, refetch } = useMatch(matchId);
+  const useDeleteMatchMutation = useDeleteMatch(matchId);
 
   if (isLoading) {
     return (
@@ -123,6 +130,21 @@ const MatchInformationShadcn = () => {
         title="Match Information"
         user={user}
         primaryAction="back"
+        actions={
+          <Button variant={"ghost"} size={"icon-lg"} onClick={async () => {
+            const result = await dialogs.confirm("Möchtest du dieses Spiel wirklich löschen?");
+
+            if (result) {
+              useDeleteMatchMutation.mutate(undefined, {
+                onSuccess: () => navigate('/matches'),
+                onError: (error) =>
+                  toast.error('Spiel konnte nicht gelöscht werden. ' + error.message),
+              });
+            }
+          }}>
+            <Trash2 />
+          </Button>
+        }
       />
       <main className='flex-1 size-full pb-safe-bottom'>
         <PullToRefresh onRefresh={() => refetch()}>
@@ -156,7 +178,14 @@ const MatchInformationShadcn = () => {
                   <ItemTitle className='font-semibold'>Sätze</ItemTitle>
                   {
                     matchMember && hasPerm("games.update.score") &&
-                    <Button variant={"ghost"} size={"icon"}>
+                    <Button variant={"ghost"} size={"icon"} onClick={() => {
+                      dialogs.open(ReportSetsDialogShadcn, {
+                        matchId: match.id,
+                        team_a_name: match.team_a.name,
+                        team_b_name: match.team_b.name,
+                        sets: match.sets
+                      })
+                    }}>
                       <Pencil />
                     </Button>
                   }
@@ -197,6 +226,28 @@ const MatchInformationShadcn = () => {
                 </div>
               </ItemContent>
             </Item>
+
+            <Has perm={["games.admin.view", "supabase.admin"]}>
+              <Separator />
+              <div className="text-sm font-semibold ml-2">
+                Admin - Aktionen
+              </div>
+              <Item variant="outline">
+                <ItemContent>
+                  <ItemTitle>Elo anwenden</ItemTitle>
+                  <ItemDescription>
+                    Startet die ELO Berechnung für dieses Spiel neu
+                  </ItemDescription>
+                </ItemContent>
+                <ItemActions>
+                  <Button variant="outline" size="sm" onClick={() => {
+                    supabase.schema("games").rpc("apply_elo_for_match", { p_match: match.id });
+                  }}>
+                    Start
+                  </Button>
+                </ItemActions>
+              </Item>
+            </Has>
 
             <Has perm={"games.admin.view"}>
               <Item variant={"outline"}>

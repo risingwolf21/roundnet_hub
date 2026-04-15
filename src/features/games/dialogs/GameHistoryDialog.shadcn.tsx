@@ -1,19 +1,12 @@
 import { usePlayerMatches } from "@/tanstack/games";
-import Box from "@mui/material/Box";
-import Chip from "@mui/material/Chip";
 import CircularProgress from "@mui/material/CircularProgress";
-import ListItem from "@mui/material/ListItem";
-import Typography from "@mui/material/Typography";
 import { DialogProps } from "@toolpad/core";
 import { useNavigate } from "react-router";
 
-import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Item } from "@/components/ui/item";
 import { cn } from "@/lib/utils";
-import TrendingDown from '@mui/icons-material/TrendingDown';
-import TrendingFlat from '@mui/icons-material/TrendingFlat';
-import TrendingUp from '@mui/icons-material/TrendingUp';
 
 type GameHistoryDialogProps = {
   player_id: string
@@ -25,15 +18,15 @@ export const GameHistoryDialogShadcn = ({ payload: { player_id, name, rating }, 
   const { data: games = [], isLoading, isFetching } = usePlayerMatches(player_id);
   const navigate = useNavigate();
 
-  return <AlertDialog open={open} onOpenChange={(isOpen) => !isOpen && onClose()}>
-    <AlertDialogContent variant={"default"} className={"p-0 flex flex-col"}>
-      <AlertDialogHeader className="p-4 pb-0">
-        <AlertDialogTitle className={"flex gap-2 items-center"}>
+  return <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose()}>
+    <DialogContent variant={"default"} className={"p-0 pb-4 flex flex-col max-h-[90dvh]"}>
+      <DialogHeader className="p-4 pb-0">
+        <DialogTitle className={"flex gap-2 items-center"}>
           {name}
           <Badge>{rating}</Badge>
-        </AlertDialogTitle>
-      </AlertDialogHeader>
-      <div className="flex flex-col gap-2 p-2 pt-0">
+        </DialogTitle>
+      </DialogHeader>
+      <div className="no-scrollbar overflow-y-auto px-4 flex flex-col gap-4 ">
         {
           (isLoading || isFetching) && <CircularProgress />
         }
@@ -77,120 +70,25 @@ export const GameHistoryDialogShadcn = ({ payload: { player_id, name, rating }, 
                       </div>
                     </div>
                   </div>
-                  {
-                    sets.map((x, i) => <div key={i}>
-                      <div className={cn('text-md', {
-                        "font-bold": x.teamAWon
-                      })}>{x.team_a_score}</div>
-                      <div className={cn('text-md', {
-                        "font-bold": !x.teamAWon
-                      })}>{x.team_b_score}</div>
-                    </div>)
-                  }
+                  <div className='flex flex-row h-full items-center gap-2'>
+                    {
+                      sets.map((x, i) => <div key={i}>
+                        <div className={cn('text-md', {
+                          "font-bold": x.teamAWon
+                        })}>{x.team_a_score}</div>
+                        <div className={cn('text-md', {
+                          "font-bold": !x.teamAWon
+                        })}>{x.team_b_score}</div>
+                      </div>)
+                    }
+                  </div>
                 </div>
 
               </div>
             </Item>
-            return <ListItem divider key={match.match_id} onClick={() => {
-              navigate(`/matches/${match.match_id}`);
-              onClose();
-            }}>
-              <Box sx={{ display: 'flex', flexDirection: 'row', width: '100%' }}>
-                <Box
-                  sx={{
-                    flexGrow: 1,
-                    display: 'flex',
-                    flexDirection: 'row',
-                  }}
-                >
-                  <Box
-                    sx={{
-                      display: 'flex',
-                      flexDirection: 'column',
-                      whiteSpace: 'nowrap',
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
-                    }}
-                  >
-                    <Typography
-                      sx={{
-                        fontSize: '1rem',
-                        color: `rgba(0,0,0,${match.winner_side === 'team_a' ? '0.87' : '0.6'})`,
-                        fontWeight: match.winner_side === 'team_a' ? 'bold' : '400',
-                        whiteSpace: 'nowrap',
-                        overflow: 'hidden',
-                        textOverflow: 'ellipsis',
-                      }}
-                    >
-                      {match.team_a_name}
-                    </Typography>
-                    <Typography
-                      sx={{
-                        fontSize: '1rem',
-                        color: `rgba(0,0,0,${match.winner_side === 'team_b' ? '0.87' : '0.6'})`,
-                        fontWeight: match.winner_side === 'team_b' ? 'bold' : '400',
-                        whiteSpace: 'nowrap',
-                        overflow: 'hidden',
-                        textOverflow: 'ellipsis',
-                      }}
-                    >
-                      {match.team_b_name}
-                    </Typography>
-                  </Box>
-                </Box>
-                <Box sx={{
-                  display: 'flex',
-                  ml: 2,
-                  flexDirection: 'column',
-                  justifyContent: "center"
-                }}>
-                  <Chip
-                    color={elo_change_a > 0 ? 'success' : elo_change_a < 0 ? 'warning' : 'default'}
-                    size="small"
-                    label={match.elo_change_a?.toFixed()}
-                    icon={elo_change_a > 0 ? <TrendingUp /> : elo_change_a < 0 ? <TrendingDown /> : <TrendingFlat />} />
-                </Box>
-                {match.set_scores?.split(',').map((y) => {
-                  const teamAScore = Number(y.split(':')[0]);
-                  const teamBScore = Number(y.split(':')[1]);
-                  const teamAWon = teamAScore > teamBScore;
-                  return (
-                    <Box
-                      key={y}
-                      sx={{
-                        display: 'flex',
-                        ml: 2,
-                        flexDirection: 'column',
-                      }}
-                    >
-                      <Typography
-                        sx={{
-                          textAlign: 'end',
-                          fontSize: '1rem',
-                          color: `rgba(0,0,0,${teamAWon ? '0.87' : '0.6'})`,
-                          fontWeight: teamAWon ? 'bold' : '400',
-                        }}
-                      >
-                        {teamAScore}
-                      </Typography>
-                      <Typography
-                        sx={{
-                          textAlign: 'end',
-                          fontSize: '1rem',
-                          color: `rgba(0,0,0,${teamAWon ? '0.6' : '0.87'})`,
-                          fontWeight: teamAWon ? '400' : 'bold',
-                        }}
-                      >
-                        {teamBScore}
-                      </Typography>
-                    </Box>
-                  );
-                })}
-              </Box>
-            </ListItem>
           })
         }
       </div>
-    </AlertDialogContent>
-  </AlertDialog>
+    </DialogContent>
+  </Dialog>
 }

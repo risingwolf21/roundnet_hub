@@ -52,7 +52,7 @@ const dialogContentVariants = cva(
           "inset-x-0 bottom-0 flex flex-col w-full max-h-[95dvh] rounded-t-xl border-t p-0 sm:max-w-lg sm:mx-auto data-open:slide-in-from-bottom-full data-closed:slide-out-to-bottom-full pb-[env(safe-area-inset-bottom)]",
 
         fullscreen:
-          "inset-0 flex flex-col w-full h-[100dvh] max-w-none rounded-none border-0 p-0 data-open:zoom-in-95 data-closed:zoom-out-95 pb-[env(safe-area-inset-bottom)]"
+          "inset-0 flex flex-col w-full h-[100dvh] max-w-none rounded-none border-0 p-0 data-open:zoom-in-95 data-closed:zoom-out-95 pt-safe-top pb-safe-bottom pl-safe-left pr-safe-right"
       }
     },
     defaultVariants: {
