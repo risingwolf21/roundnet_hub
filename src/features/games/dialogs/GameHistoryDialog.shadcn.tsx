@@ -18,7 +18,7 @@ export const GameHistoryDialogShadcn = ({ payload: { player_id, name, rating }, 
   const { data: games = [], isLoading, isFetching } = usePlayerMatches(player_id);
   const navigate = useNavigate();
 
-  return <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose()}>
+  return <Dialog modal open={open} onOpenChange={(isOpen) => !isOpen && onClose()}>
     <DialogContent variant={"default"} className={"p-0 pb-4 flex flex-col max-h-[90dvh]"}>
       <DialogHeader className="p-4 pb-0">
         <DialogTitle className={"flex gap-2 items-center"}>
@@ -42,7 +42,8 @@ export const GameHistoryDialogShadcn = ({ payload: { player_id, name, rating }, 
               }
             });
             const teamASetWins = sets.reduce((acc, curr) => acc + (curr.teamAWon ? 1 : -1), 0);
-            const elo_change_a = Number(match.elo_change_a?.toFixed() ?? 0);
+            const elo_change = player_id === match.team_a_p1 || player_id === match.team_a_p2
+              ? Number(match.elo_change_a) : Number(match.elo_change_b);
 
             return <Item key={match.match_id} variant={"outline"} className='p-1 pl-2' onClick={() => {
               onClose();
@@ -53,8 +54,8 @@ export const GameHistoryDialogShadcn = ({ payload: { player_id, name, rating }, 
                 'after:bg-error/70': teamASetWins < 0,
               })
               }>
-                <div className='flex-1 min-w-0 ml-2 flex flex-row justify-between'>
-                  <div className='flex flex-row gap-4'>
+                <div className='flex-1 min-w-0 ml-2 flex flex-row justify-between gap-2'>
+                  <div className='flex flex-row gap-4 flex-1'>
                     <div>
                       <div>
                         <div className={cn('text-md', {
@@ -70,7 +71,10 @@ export const GameHistoryDialogShadcn = ({ payload: { player_id, name, rating }, 
                       </div>
                     </div>
                   </div>
-                  <div className='flex flex-row h-full items-center gap-2'>
+                  <div className="flex-shrink flex flex-row h-full items-center">
+                    <Badge variant={elo_change > 0 ? "success" : "error"}>{elo_change}</Badge>
+                  </div>
+                  <div className='flex-shrink flex flex-row h-full items-center gap-2'>
                     {
                       sets.map((x, i) => <div key={i}>
                         <div className={cn('text-md', {

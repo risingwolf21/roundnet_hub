@@ -2,14 +2,18 @@ import { Has } from '@/hooks/useGrants';
 import { useCreateGroupMutation, useUpdateGroupMutation } from '@/tanstack/groups';
 import { Tables } from '@/types/supabase-generated.types';
 import { GroupWithUserRole, UserWithGroups } from '@/types/supabaseTypes';
-import { useRef, useState } from 'react';
+import { useState } from 'react';
 
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Field, FieldContent, FieldDescription, FieldLabel } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { DialogProps } from '@/contexts/DialogsProvider';
+import { formatDateToDatabase } from '@/utils';
+import { captureException } from '@sentry/react';
+import { toast } from 'sonner';
 
 type CreateOrUpdateGroupDialogProps = {
   group?: Group;
@@ -21,7 +25,6 @@ export const CreateOrUpdateGroupDialogShadcn = ({
   open,
   onClose,
 }: DialogProps<CreateOrUpdateGroupDialogProps, GroupWithUserRole | null | 'closed'>) => {
-  const inputRef = useRef<HTMLInputElement>(null);
   const usersParentGroups = payload.user.groups.filter((x) => x.parent_group === null);
   const [data, setData] = useState<Tables<'event_group'>>(
     payload.group ?? {
@@ -156,118 +159,54 @@ export const CreateOrUpdateGroupDialogShadcn = ({
               } />
           </Field>
         </div>
-        {/* <List sx={{ pl: 2, pr: 2, pb: 10 }}>
-
-          <ListItem sx={{ pt: 0, pb: 0 }} key={'title'}>
-            <ListItemAvatar>
-              <Avatar sx={{ borderRadius: 2 }}>
-                <Title />
-              </Avatar>
-            </ListItemAvatar>
-            <TextField
-              fullWidth
-              variant="outlined"
-              label="Gruppen Titel"
-              value={data.name}
-              onChange={(e) => setData({ ...data, name: e.target.value })}
-              margin="normal"
-            />
-          </ListItem>
-          <ListItem sx={{ pt: 0, pb: 0 }} key={'description'}>
-            <ListItemAvatar>
-              <Avatar sx={{ borderRadius: 2 }}>
-                <Article />
-              </Avatar>
-            </ListItemAvatar>
-            <TextField
-              fullWidth
-              variant="outlined"
-              label="Gruppen Beschreibung"
-              value={data.description}
-              onChange={(e) => setData({ ...data, description: e.target.value })}
-              margin="normal"
-            />
-          </ListItem>
-          <ListItem
-            secondaryAction={
-              <IconButton
-                LinkComponent={'span'}
-                onClick={() => {
-                  if (inputRef.current) {
-                    inputRef.current.click();
-                  }
-                }}
-              >
-                <input
-                  ref={inputRef}
-                  hidden
-                  type="color"
-                  value={data.color}
-                  onChange={(e) => setData({ ...data, color: e.target.value })}
-                />
-                <ColorLens />
-              </IconButton>
+        <DialogFooter>
+          <Button onClick={async () => {
+            if (data.name.length < 6) {
+              toast.warning('Der Name der Challenge muss aus mindestens 6 Zeichen bestehen.');
+              return;
             }
-          >
-            <ListItemAvatar>
-              <Avatar sx={{ background: data.color, width: 40, height: 40, borderRadius: 2 }}>
-                <Group />
-              </Avatar>
-            </ListItemAvatar>
-            <ListItemText
-              sx={{ mr: 2 }}
-              slotProps={{
-                primary: {
-                  whiteSpace: 'nowrap',
-                  overflow: 'clip',
-                  textOverflow: 'ellipsis',
+            if (data.description.length < 6) {
+              toast.warning('Die Beschreibung der Challenge muss aus mindestens 6 Zeichen bestehen.');
+              return;
+            }
+
+            if (data.id === '') {
+              createGroup.mutate(
+                {
+                  group: {
+                    name: data.name,
+                    description: data.description,
+                    is_public: data.is_public,
+                    color: data.color,
+                    need_request_to_join: data.need_request_to_join,
+                    created_at: formatDateToDatabase(new Date()),
+                    parent_group: data.parent_group,
+                    visible: true,
+                  },
+                  user: payload.user,
                 },
-              }}
-              primary={
-                <TextField
-                  fullWidth
-                  variant="outlined"
-                  value={data.color}
-                  onChange={(e) => setData({ ...data, color: e.target.value })}
-                  label="Farbe"
-                  margin="normal"
-                />
-              }
-            />
-          </ListItem>
-          <Has perm={'groups.manage.admin'}>
-            <ListItem sx={{ pt: 0, pb: 0 }} key={'public'}>
-              <ListItemAvatar>
-                <Checkbox
-                  sx={{ pl: 0 }}
-                  checked={data.is_public}
-                  onChange={(e) =>
-                    setData({
-                      ...data,
-                      is_public: e.target.checked,
-                    })
-                  }
-                />
-              </ListItemAvatar>
-              <ListItemText primary={'Öffentliche Gruppe'} />
-            </ListItem>
-          </Has>
-          <ListItem sx={{ pt: 0, pb: 0 }} key={'endDate'}>
-            <ListItemAvatar>
-              <Checkbox
-                sx={{ pl: 0 }}
-                checked={data.need_request_to_join}
-                onChange={(e) =>
-                  setData({
-                    ...data,
-                    need_request_to_join: e.target.checked,
-                  })
+                {
+                  onSuccess: (data) => onClose({ ...data, user_role: 'admin' }),
                 }
-              />
-            </ListItemAvatar>
-            <ListItemText primary={'Benutzer müssen bestätigt werden?'} />
-          </ListItem>
-        </List> */}
+              );
+            } else {
+              updateGroup.mutate(
+                { group: data },
+                {
+                  onError: (e) => {
+                    captureException(e);
+                    onClose(null);
+                  },
+                  onSuccess: (data) => {
+                    onClose({ ...data, user_role: 'admin' });
+                  },
+                }
+              );
+            }
+          }}>
+            {data.id === '' ? "Gruppe erstellen" : "Gruppe speichern"}
+          </Button>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   );
