@@ -16,11 +16,8 @@ import { useGrants } from '../auth/GrantsContext';
 
 import { AppBar } from '@/components/ui/appbar';
 import { Button } from '@/components/ui/button';
-import { Item } from '@/components/ui/item';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { cn } from '@/lib/utils';
-import { addDays, format, isSameDay, startOfWeek } from 'date-fns';
-import { BadgeCheck, Edit, Plus } from 'lucide-react';
+import { Edit, Plus } from 'lucide-react';
 import { toast } from 'sonner';
 import { ChallengeActivityListShadcn } from './ChallengeActivityList.shadcn';
 import { ChallengeLeaderboardShadcn } from './ChallengeLeaderboard.shadcn';
@@ -138,35 +135,7 @@ const ChallengeInformationShadcn = ({ t, challengeId }: { t: TFunction; challeng
 
           <div className='px-2'>
             <TabsContent value={"activity"} className="m-0 mt-2">
-              <Item variant={"outline"}>
-                <div className='flex flex-row w-full'>
-                  {
-                    Array.from({ length: 7 }, (_v, k) => k + 1)
-                      .map(x => addDays(startOfWeek(new Date()), x))
-                      .map(x => {
-                        const active = user_challenge_stats.some(y => isSameDay(y.created_at, x))
-                        return <div key={x.toISOString()} className='flex-1 flex justify-center'>
-                          <div className=''>
-                            <div className={cn('w-10 h-10 border-2 border-dashed rounded-full flex flex-col justify-center items-center', {
-                              "border-none": active,
-                            })}>
-                              <BadgeCheck className={cn("w-10 h-10", {
-                                "hidden": !active,
-                                "text-success": active
-                              })} />
-                            </div>
-                            <div className='font-bold mt-1 text-center'>
-                              {format(x, "dd.MM")}
-                            </div>
-                          </div>
-                        </div>
-                      })
-                  }
-                </div>
-              </Item>
-              <div className="mt-4">
-                <ChallengeActivityListShadcn challenge={challenge} />
-              </div>
+              <ChallengeActivityListShadcn challenge={challenge} user_challenge_stats={user_challenge_stats} />
             </TabsContent>
 
             <TabsContent value={"leaderboard"} className="m-0 mt-2">
