@@ -89,7 +89,7 @@ const SignUpFormShadcn = () => {
   return <Card className='z-1 w-full border-none shadow-md sm:max-w-lg'>
     <CardHeader className='gap-6'>
       <div className={'flex justify-center gap-2.5'}>
-        <img src={TENANT_LOGO} className='size-32' />
+        <img src={TENANT_LOGO} className='max-w-32 max-h-32 object-cover' />
       </div>
       <div>
         <CardTitle className="text-2xl">

@@ -149,7 +149,7 @@ const Content = ({
                 }}
               >
                 {usersParentGroups.map((x) => (
-                  <MenuItem value={x.id}>{x.name}</MenuItem>
+                  <MenuItem key={x.id} value={x.id}>{x.name}</MenuItem>
                 ))}
                 {<MenuItem value={'none'}>Neue Hauptgruppe</MenuItem>}
               </Select>
