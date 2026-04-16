@@ -16,7 +16,7 @@ import { cn } from '@/lib/utils';
 import { formatDateToDatabase } from '@/utils';
 import { captureException } from '@sentry/react';
 import { t } from 'i18next';
-import { Plus, Search, Trash2, X } from 'lucide-react';
+import { Minus, Plus, Search, Trash2, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { useGrants } from '../auth/GrantsContext';
 
@@ -522,11 +522,7 @@ const CreatePlayerDialog = ({ open, onClose }: DialogProps<null, Player | null>)
           } />
         </DialogHeader>
         <DialogBody>
-
-          <DialogHeader>
-            <DialogTitle>Gastspieler erstellen</DialogTitle>
-          </DialogHeader>
-          <div className='flex-1 min-h-0 overflow-y-auto flex flex-col gap-4 p-1 mt-4'>
+          <div className='flex-1 min-h-0 overflow-y-auto flex flex-col gap-4 p-1'>
             <Field key={"name"}>
               <FieldLabel htmlFor="name">
                 Spielername
@@ -544,14 +540,24 @@ const CreatePlayerDialog = ({ open, onClose }: DialogProps<null, Player | null>)
                 <FieldLabel htmlFor="index">
                   Index
                 </FieldLabel>
-                <Input
-                  id="index"
-                  value={index}
-                  type='number'
-                  step={50}
-                  onChange={(e) => Number.isInteger(Number(e.target.value)) && setIndex(Number(e.target.value))}
-                  required
-                />
+                <div className='flex flex-row gap-2 w-full'>
+                  <Input
+                    id="index"
+                    value={index}
+                    type='number'
+                    step={50}
+                    onChange={(e) => Number.isInteger(Number(e.target.value)) && setIndex(Number(e.target.value))}
+                    required
+                    className='flex-1'
+                  />
+                  <Button onClick={() => index > 600 && setIndex(index - 50)}>
+                    <Minus />
+                  </Button>
+                  <Button onClick={() => index < 2000 && setIndex(index + 50)}>
+                    <Plus />
+                  </Button>
+
+                </div>
               </Field>
             </Has>
           </div>
