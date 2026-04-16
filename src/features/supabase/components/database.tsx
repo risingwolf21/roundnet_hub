@@ -1,6 +1,6 @@
 'use client'
 
-import { AlertTriangle, Table } from 'lucide-react'
+import { AlertTriangle, Table, X } from 'lucide-react'
 import { useCallback, useEffect, useMemo } from 'react'
 import { toast } from 'sonner'
 import { z, type ZodTypeAny } from 'zod'
@@ -8,7 +8,7 @@ import { z, type ZodTypeAny } from 'zod'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { AppBar } from '@/components/ui/appbar'
 import { Button } from '@/components/ui/button'
-import { Dialog, DialogContent } from '@/components/ui/dialog'
+import { Dialog, DialogBody, DialogClose, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Skeleton } from '@/components/ui/skeleton'
 import { DialogProps, useDialogs } from '@/contexts/DialogsProvider'
 import { useGrants } from '@/features/auth/GrantsContext'
@@ -191,8 +191,17 @@ function EditRowView({ payload: {
   return (
     <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose()}>
       <DialogContent variant={"fullscreen"}>
-        <div className="px-6 pt-4 pb-10 lg:px-12 lg:pt-10">
-          <h2 className="text-base lg:text-xl font-semibold mb-4">Editing row in {table.name}</h2>
+        <DialogHeader variant={"appbar"}>
+          <DialogTitle className={"flex-1"}>
+            Editing row in {table.name}
+          </DialogTitle>
+          <DialogClose render={
+            <Button variant="ghost" size="icon" className="shrink-0 rounded-full -mr-2">
+              <X className="h-5 w-5" />
+            </Button>
+          } />
+        </DialogHeader>
+        <DialogBody>
           <DynamicForm
             schema={formSchema}
             initialValues={row}
@@ -200,7 +209,7 @@ function EditRowView({ payload: {
             columnInfo={columnInfo}
             isLoading={isUpdatePending}
           />
-        </div>
+        </DialogBody>
       </DialogContent>
     </Dialog >
   )
@@ -223,8 +232,20 @@ function TableRecordsView({ payload: { table }, open, onClose }: DialogProps<Tab
 
   return (
     <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose()}>
-      <DialogContent variant={"fullscreen"}>
-        <ResultsTable data={data} onRowClick={(row) => handleRowClick(row)} />
+      <DialogContent variant={"fullscreen"} showCloseButton={false}>
+        <DialogHeader variant={"appbar"}>
+          <DialogTitle className={"flex-1"}>
+            {table}
+          </DialogTitle>
+          <DialogClose render={
+            <Button variant="ghost" size="icon" className="shrink-0 rounded-full -mr-2">
+              <X className="h-5 w-5" />
+            </Button>
+          } />
+        </DialogHeader>
+        <DialogBody>
+          <ResultsTable data={data} onRowClick={(row) => handleRowClick(row)} />
+        </DialogBody>
       </DialogContent>
     </Dialog>
   )

@@ -4,12 +4,15 @@ import Cropper, { Area } from 'react-easy-crop';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
+  DialogBody,
+  DialogClose,
   DialogContent,
   DialogFooter,
   DialogHeader,
   DialogTitle
 } from "@/components/ui/dialog";
 import { DialogProps } from '@/contexts/DialogsProvider';
+import { X } from 'lucide-react';
 
 interface CropPayload {
   imageUrl: string;
@@ -39,31 +42,37 @@ const CropImageDialogShadcn = ({ open, payload: { imageUrl }, onClose }: DialogP
   };
 
   return <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose(null)}>
-    <DialogContent variant={"fullscreen"}>
-      <DialogHeader className="p-4 border-b">
-        <DialogTitle>Bild zuschneiden</DialogTitle>
-      </DialogHeader>
-
-      {/* Container für den Cropper */}
-      <div className="relative flex-1 bg-black/90 w-full h-full">
-        {
-          imageUrl && <Cropper
-            image={imageUrl}
-            crop={crop}
-            zoom={zoom}
-            aspect={1} // 1:1 Format
-            onCropChange={setCrop}
-            onCropComplete={onCropComplete}
-            onZoomChange={setZoom}
-          />
-        }
-      </div>
-
-      <DialogFooter className="p-4 m-0 border-t">
-        <div className='flex w-full justify-even gap-4'>
-          <Button variant="outline" className="flex-1" onClick={() => onClose(null)}>
-            Abbrechen
+    <DialogContent variant={"fullscreen"} showCloseButton={false}>
+      <DialogHeader variant={"appbar"}>
+        <DialogTitle className="flex-1">Spiel erstellen</DialogTitle>
+        <DialogClose render={
+          <Button variant="ghost" size="icon" className="shrink-0 rounded-full -mr-2">
+            <X className="h-5 w-5" />
           </Button>
+        } />
+      </DialogHeader>
+      <DialogBody>
+
+        {/* Container für den Cropper */}
+        <div className="relative flex-1 bg-black/90 w-full h-full">
+          {
+            imageUrl && <Cropper
+              image={imageUrl}
+              crop={crop}
+              zoom={zoom}
+              aspect={1} // 1:1 Format
+              onCropChange={setCrop}
+              onCropComplete={onCropComplete}
+              onZoomChange={setZoom}
+            />
+          }
+        </div>
+
+      </DialogBody>
+
+      <DialogFooter variant={"fullscreen"}>
+        <div className='flex w-full justify-even gap-4'>
+          <DialogClose render={<Button variant="outline">Abbrechen</Button>} />
           <Button className="flex-1" onClick={handleSave}>
             Zuschneiden & Speichern
           </Button>

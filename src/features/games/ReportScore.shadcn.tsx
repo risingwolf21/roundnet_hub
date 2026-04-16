@@ -1,13 +1,10 @@
 import { useCreateMatch, usePlayers } from '@/tanstack/games';
 import { useState } from 'react';
-import { useNavigate } from 'react-router';
 import { v4 as uuid } from 'uuid';
 
-import { PullToRefresh } from '@/components/pull-to-refresh/PullToRefresh';
-import { AppBar } from '@/components/ui/appbar';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogBody, DialogClose, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Field, FieldContent, FieldDescription, FieldLabel } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
 import { Item, ItemActions, ItemContent, ItemHeader, ItemMedia, ItemTitle } from '@/components/ui/item';
@@ -97,11 +94,10 @@ type PendingGuest = {
 
 type PlayerSelection = PlayerWithSimpleUser | PendingGuest | null;
 
-const ReportScoreShadcn = () => {
+const ReportScoreShadcn = ({ open, onClose }: DialogProps) => {
   const [sets, setSets] = useState<MatchSet[]>([
     { id: '', created_at: '', set_number: 1, match: '', team_a_score: 0, team_b_score: 0 },
   ]);
-  const navigate = useNavigate();
   const { user } = useGrants();
 
   const createMatch = useCreateMatch();
@@ -198,7 +194,7 @@ const ReportScoreShadcn = () => {
         playerNamesMapping,
       },
       {
-        onSuccess: () => navigate('/matches'),
+        onSuccess: () => onClose(),
         onError: (error) => {
           captureException(error);
           toast.error(error.message);
@@ -207,23 +203,26 @@ const ReportScoreShadcn = () => {
     );
   };
 
-  return <div className="min-h-screen bg-background text-foreground">
-    <AppBar
-      className='!border-b !shadow-sm'
-      primaryAction="back"
-      user={user}
-    />
-    <main className='flex-1 size-full pb-safe-bottom'>
-      <PullToRefresh onRefresh={() => refetch()}>
-        <div>
+  return <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose()}>
+    <DialogContent variant={"fullscreen"} showCloseButton={false}>
+      <DialogHeader variant={"appbar"}>
+        <DialogTitle className="flex-1">Spiel erstellen</DialogTitle>
+        <DialogClose render={
+          <Button variant="ghost" size="icon" className="shrink-0 rounded-full -mr-2">
+            <X className="h-5 w-5" />
+          </Button>
+        } />
+      </DialogHeader>
+      <DialogBody>
+        <div className='flex flex-col w-full gap-2'>
 
-          <div className='flex flex-row w-full'>
-            <div className='font-bold p-2 flex-1'>Team A</div>
-            <div className='font-bold p-2 flex-1'>Team B</div>
+          <div className='flex flex-row w-full px-2 gap-2'>
+            <div className='font-bold flex-1'>Team A</div>
+            <div className='font-bold flex-1'>Team B</div>
           </div>
 
-          <div className='flex flex-row w-full'>
-            <div className='font-bold p-2 flex-1 min-w-0'>
+          <div className='flex flex-row w-full gap-2'>
+            <div className='font-bold flex-1 min-w-0'>
               <SelectPlayer
                 options={(data?.players ?? [])}
                 selected={[player1a, player2a, player2b, player1b].filter((x): x is PlayerWithSimpleUser => x !== null)}
@@ -234,7 +233,7 @@ const ReportScoreShadcn = () => {
                 onSelect={(value) => setPlayer1a(value)}
               />
             </div>
-            <div className='font-bold p-2 flex-1 min-w-0'>
+            <div className='font-bold flex-1 min-w-0'>
               <SelectPlayer
                 options={(data?.players ?? [])}
                 selected={[player1a, player2a, player2b, player1b].filter((x): x is PlayerWithSimpleUser => x !== null)}
@@ -248,8 +247,8 @@ const ReportScoreShadcn = () => {
             </div>
           </div>
 
-          <div className='flex flex-row w-full'>
-            <div className='font-bold p-2 flex-1 min-w-0'>
+          <div className='flex flex-row w-full gap-2'>
+            <div className='font-bold flex-1 min-w-0'>
               <SelectPlayer
                 options={(data?.players ?? [])}
                 selected={[player1a, player2a, player2b, player1b].filter((x): x is PlayerWithSimpleUser => x !== null)}
@@ -261,7 +260,7 @@ const ReportScoreShadcn = () => {
                 {...(player2a && { onRemove: () => setPlayer2a(null) })}
               />
             </div>
-            <div className='font-bold p-2 flex-1 min-w-0'>
+            <div className='font-bold flex-1 min-w-0'>
               <SelectPlayer
                 options={(data?.players ?? [])}
                 selected={[player1a, player2a, player2b, player1b].filter((x): x is PlayerWithSimpleUser => x !== null)}
@@ -275,7 +274,7 @@ const ReportScoreShadcn = () => {
             </div>
           </div>
 
-          <div className='flex flex-col gap-2 p-2'>
+          <div className='flex flex-col gap-2'>
 
             <Item variant={"outline"}>
               <ItemHeader>
@@ -375,9 +374,15 @@ const ReportScoreShadcn = () => {
           </div>
 
         </div>
-      </PullToRefresh>
-    </main>
-  </div>
+      </DialogBody>
+      <DialogFooter variant="fullscreen">
+        <div className='flex w-full justify-even gap-4'>
+          <DialogClose render={<Button variant="outline">Abbrechen</Button>} />
+          <Button onClick={saveScores}>Speichern</Button>
+        </div>
+      </DialogFooter>
+    </DialogContent>
+  </Dialog >
 };
 export default ReportScoreShadcn;
 
@@ -390,20 +395,8 @@ const SelectPlayerDialog = ({ open, onClose, payload }: DialogProps<{ options: P
   return (
     <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose(null)}>
       <DialogContent variant={"fullscreen"} showCloseButton={false}>
-        <div className={"pt-safe-top sticky top-0 flex h-14 w-full items-center gap-4 bg-background/95 px-4 supports-[backdrop-filter]:bg-background md:px-4 transition-shadow border-b shadow-sm"}>
-
-          <div className="flex items-center gap-2 md:gap-4 lg:w-1/3">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => onClose(null)}
-              className="shrink-0 rounded-full -ml-1"
-            >
-              <X className="h-5 w-5" />
-            </Button>
-          </div>
-
-          <div className="flex flex-1 items-center justify-center lg:w-1/3">
+        <DialogHeader variant={"appbar"}>
+          <DialogTitle className="flex-1">
             <div className="relative w-full max-w-md flex-1">
               <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
               <Input
@@ -413,62 +406,69 @@ const SelectPlayerDialog = ({ open, onClose, payload }: DialogProps<{ options: P
                 className="w-full rounded-full bg-muted/50 pl-9 focus-visible:bg-background"
               />
             </div>
+          </DialogTitle>
+          <DialogClose render={
+            <Button variant="ghost" size="icon" className="shrink-0 rounded-full -mr-2">
+              <X className="h-5 w-5" />
+            </Button>
+          } />
+        </DialogHeader>
+        <DialogBody>
+
+          <div className='flex-1 min-h-0 overflow-y-auto flex flex-col'>
+
+            <Has perm={"games.create.guest-player"}>
+              <Item key={"guestplayer"}>
+                <ItemMedia>
+                  <Avatar className={"mr-2"}>
+                    <AvatarFallback className={"text-xs"}></AvatarFallback>
+                  </Avatar>
+                </ItemMedia>
+                <ItemContent className='flex flex-row w-full'>
+                  <ItemTitle className='flex-1'>
+                    Neuer Gastspieler
+                  </ItemTitle>
+                  <ItemActions className='flex-shrink'>
+                    <Button onClick={async () => {
+                      const result = await dialogs.open(CreatePlayerDialog, null);
+                      if (result) {
+                        onClose(result);
+                      }
+                    }}>
+                      Erstellen
+                    </Button>
+                  </ItemActions>
+                </ItemContent>
+              </Item>
+              <Separator />
+            </Has>
+
+            {
+              payload.options
+                .filter(
+                  (x: PlayerWithSimpleUser) =>
+                    searchString === '' || (x.name ?? '').toLowerCase().includes(searchString.toLowerCase())
+                )
+                .map((user: PlayerWithSimpleUser) => (
+                  <Item key={user.id} onClick={() => onClose(user)}>
+                    <ItemMedia>
+                      <Avatar className={"mr-2"}>
+                        <AvatarImage src={user.avatarUrl || undefined} alt={user.name || undefined} />
+                        <AvatarFallback>{user.name ? user.name[0] : user.display_name ? user.display_name[0] : 'U'}</AvatarFallback>
+                      </Avatar>
+                    </ItemMedia>
+                    <ItemContent>
+                      <div>
+                        <div className='truncate'>{user.name}</div>
+                        <div className="text-xs text-muted-foreground truncate">{t('userName')}</div>
+                      </div>
+                    </ItemContent>
+                  </Item>
+                ))
+            }
+
           </div>
-        </div>
-
-        <div className='flex-1 min-h-0 overflow-y-auto flex flex-col'>
-
-          <Has perm={"games.create.guest-player"}>
-            <Item key={"guestplayer"}>
-              <ItemMedia>
-                <Avatar className={"mr-2"}>
-                  <AvatarFallback className={"text-xs"}></AvatarFallback>
-                </Avatar>
-              </ItemMedia>
-              <ItemContent className='flex flex-row w-full'>
-                <ItemTitle className='flex-1'>
-                  Neuer Gastspieler
-                </ItemTitle>
-                <ItemActions className='flex-shrink'>
-                  <Button onClick={async () => {
-                    const result = await dialogs.open(CreatePlayerDialog, null);
-                    if (result) {
-                      onClose(result);
-                    }
-                  }}>
-                    Erstellen
-                  </Button>
-                </ItemActions>
-              </ItemContent>
-            </Item>
-            <Separator />
-          </Has>
-
-          {
-            payload.options
-              .filter(
-                (x: PlayerWithSimpleUser) =>
-                  searchString === '' || (x.name ?? '').toLowerCase().includes(searchString.toLowerCase())
-              )
-              .map((user: PlayerWithSimpleUser) => (
-                <Item key={user.id} onClick={() => onClose(user)}>
-                  <ItemMedia>
-                    <Avatar className={"mr-2"}>
-                      <AvatarImage src={user.avatarUrl || undefined} alt={user.name || undefined} />
-                      <AvatarFallback>{user.name ? user.name[0] : user.display_name ? user.display_name[0] : 'U'}</AvatarFallback>
-                    </Avatar>
-                  </ItemMedia>
-                  <ItemContent>
-                    <div>
-                      <div className='truncate'>{user.name}</div>
-                      <div className="text-xs text-muted-foreground truncate">{t('userName')}</div>
-                    </div>
-                  </ItemContent>
-                </Item>
-              ))
-          }
-
-        </div>
+        </DialogBody>
       </DialogContent>
     </Dialog >
   )
@@ -479,8 +479,17 @@ const CreatePlayerDialog = ({ open, onClose }: DialogProps<null, PendingGuest | 
   const [index, setIndex] = useState(1000);
   return (
     <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose(null)}>
-      <DialogContent variant={"fullscreen"}>
-        <div className='p-4 flex-1'>
+      <DialogContent variant={"fullscreen"} showCloseButton={false}>
+        <DialogHeader variant={"appbar"}>
+          <DialogTitle className="flex-1">Gastspieler erstellen</DialogTitle>
+          <DialogClose render={
+            <Button variant="ghost" size="icon" className="shrink-0 rounded-full -mr-2">
+              <X className="h-5 w-5" />
+            </Button>
+          } />
+        </DialogHeader>
+        <DialogBody>
+
           <DialogHeader>
             <DialogTitle>Gastspieler erstellen</DialogTitle>
           </DialogHeader>
@@ -513,8 +522,8 @@ const CreatePlayerDialog = ({ open, onClose }: DialogProps<null, PendingGuest | 
               </Field>
             </Has>
           </div>
-        </div>
-        <DialogFooter className="p-4 m-0 border-t">
+        </DialogBody>
+        <DialogFooter variant={"fullscreen"}>
           <Button onClick={() => onClose({ isPending: true, index, name })}>
             Speichern
           </Button>

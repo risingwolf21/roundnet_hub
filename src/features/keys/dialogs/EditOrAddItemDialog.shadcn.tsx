@@ -2,7 +2,7 @@ import { useInsertItemMutation, useUpdateItemMutation } from '@/tanstack/items';
 import { useState } from 'react';
 
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { Dialog, DialogBody, DialogClose, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Field, FieldLabel } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -86,29 +86,20 @@ export const EditOrAddItemDialogShadcn = ({ open, onClose, payload: { itemToEdit
 
   return <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose(null)}>
     <DialogContent variant={"fullscreen"} showCloseButton={false}>
-      <div className={"pt-safe-top sticky top-0 flex h-14 w-full items-center gap-4 bg-background/95 px-4 supports-[backdrop-filter]:bg-background md:px-4 transition-shadow border-b shadow-sm"}>
-
-        <div className="flex items-center gap-2 md:gap-4 lg:w-1/3">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => onClose(null)}
-            className="shrink-0 rounded-full -ml-1"
-          >
+      <DialogHeader variant={"appbar"}>
+        <DialogClose render={
+          <Button variant="ghost" size="icon" className="shrink-0 rounded-full -mr-2">
             <X className="h-5 w-5" />
           </Button>
-        </div>
-        <div className='flex-grow'>
+        } />
+        <DialogTitle className="flex-1">
           {`Schlüssel ${(currentItem.id ?? 0) > 0 ? 'bearbeiten' : 'erstellen'}`}
-        </div>
-
-        <div className="flex items-center justify-end gap-2 lg:w-1/3">
-          <Button className="ml-1" onClick={handleSubmit}>
-            Speichern
-          </Button>
-        </div>
-      </div>
-      <div className='flex-1 min-h-0 overflow-y-auto flex flex-col p-2 gap-2'>
+        </DialogTitle>
+        <Button className="ml-1" onClick={handleSubmit}>
+          Speichern
+        </Button>
+      </DialogHeader>
+      <DialogBody className='gap-4'>
         <Field>
           <FieldLabel htmlFor="item-name">
             Schlüsselname
@@ -157,7 +148,7 @@ export const EditOrAddItemDialogShadcn = ({ open, onClose, payload: { itemToEdit
             </SelectContent>
           </Select>
         </Field>
-      </div>
+      </DialogBody>
     </DialogContent>
   </Dialog>
 

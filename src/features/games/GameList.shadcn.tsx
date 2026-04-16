@@ -7,14 +7,17 @@ import { AppBar } from '@/components/ui/appbar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Item } from '@/components/ui/item';
+import { useDialogs } from '@/contexts/DialogsProvider';
 import { cn } from '@/lib/utils';
 import groupBy from 'lodash.groupby';
 import { AlertCircle, Loader2, Lock, Plus, SearchX, TriangleAlert } from 'lucide-react';
 import { v4 } from 'uuid';
 import { useGrants } from '../auth/GrantsContext';
+import ReportScoreShadcn from './ReportScore.shadcn';
 
 const GameListShadcn = () => {
   const navigate = useNavigate();
+  const dialogs = useDialogs();
   const { user } = useGrants();
 
   const { data: matches = [], error, isLoading, refetch } = useMatches();
@@ -146,7 +149,7 @@ const GameListShadcn = () => {
           <Button
             size="icon"
             className="h-14 w-14 rounded-full shadow-lg hover:shadow-xl bg-primary text-primary-foreground transition-all hover:-translate-y-1 active:translate-y-0 active:shadow-md"
-            onClick={() => navigate('/matches/report')}
+            onClick={() => dialogs.open(ReportScoreShadcn)}
           >
             <Plus className="h-6 w-6" />
           </Button>

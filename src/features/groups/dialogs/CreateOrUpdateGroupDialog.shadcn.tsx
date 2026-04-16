@@ -5,7 +5,7 @@ import { GroupWithUserRole, UserWithGroups } from '@/types/supabaseTypes';
 import { useState } from 'react';
 
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogBody, DialogClose, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Field, FieldContent, FieldDescription, FieldLabel } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -13,6 +13,7 @@ import { Switch } from '@/components/ui/switch';
 import { DialogProps } from '@/contexts/DialogsProvider';
 import { formatDateToDatabase } from '@/utils';
 import { captureException } from '@sentry/react';
+import { X } from 'lucide-react';
 import { toast } from 'sonner';
 
 type CreateOrUpdateGroupDialogProps = {
@@ -44,15 +45,21 @@ export const CreateOrUpdateGroupDialogShadcn = ({
 
   return (
     <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose('closed')}>
-      <DialogContent variant={"fullscreen"}>
-        <DialogHeader>
-          <DialogTitle className={"p-4"}>
+      <DialogContent variant={"fullscreen"} showCloseButton={false}>
+        <DialogHeader variant={"appbar"}>
+          <DialogTitle className={"flex-1"}>
             {
               data.id === '' ? "Gruppe erstellen" : "Gruppe bearbeiten"
             }
           </DialogTitle>
+          <DialogClose render={
+            <Button variant="ghost" size="icon" className="shrink-0 rounded-full -mr-2">
+              <X className="h-5 w-5" />
+            </Button>
+          } />
         </DialogHeader>
-        <div className="no-scrollbar overflow-y-auto px-4 flex flex-col gap-4 ">
+        <DialogBody className='gap-4'>
+
           <Has perm={'groups.manage.admin'}>
             {usersParentGroups.length > 0 && (
               <Field className="w-full">
@@ -158,8 +165,8 @@ export const CreateOrUpdateGroupDialogShadcn = ({
                 })
               } />
           </Field>
-        </div>
-        <DialogFooter className="p-4 border-t shrink-0 m-0">
+        </DialogBody>
+        <DialogFooter variant={"fullscreen"}>
           <Button onClick={async () => {
             if (data.name.length < 6) {
               toast.warning('Der Name der Challenge muss aus mindestens 6 Zeichen bestehen.');

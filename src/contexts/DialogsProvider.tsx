@@ -14,7 +14,7 @@ export interface DialogProps<Payload = void, Result = void> {
 interface ActiveDialog<P = any, R = any> {
   id: string;
   Component: React.ComponentType<DialogProps<P, R>>;
-  payload: P;
+  payload?: P;
   open: boolean;
   resolve: (value: R | null) => void;
 }
@@ -38,7 +38,7 @@ export interface SearchAndSelectUserOptions {
 }
 
 interface DialogsContextType {
-  open: <P, R>(Component: React.ComponentType<DialogProps<P, R>>, payload: P) => Promise<R | null>;
+  open: <P, R>(Component: React.ComponentType<DialogProps<P, R>>, payload?: P) => Promise<R | null>;
   confirm: (title: string, options?: ConfirmOptions) => Promise<boolean>;
   alert: (content: React.ReactNode, options?: AlertOptions) => Promise<void>;
   selectSingleUser: (usersToFilter?: string[]) => Promise<User | null>;
@@ -51,7 +51,7 @@ export function DialogsProvider({ children }: { children: React.ReactNode }) {
   const [dialogs, setDialogs] = useState<ActiveDialog[]>([]);
 
   // Die Kern-Logik: Öffnet eine beliebige Komponente
-  const open = useCallback(<P, R>(Component: React.ComponentType<DialogProps<P, R>>, payload: P) => {
+  const open = useCallback(<P, R>(Component: React.ComponentType<DialogProps<P, R>>, payload?: P) => {
     return new Promise<R | null>((resolvePromise) => {
       const id = Math.random().toString(36).substring(7);
 

@@ -19,7 +19,6 @@ import ChallengeListShadcn from './features/challenges/ChallengeList.shadcn';
 import GameListShadcn from './features/games/GameList.shadcn';
 import LeaderboardShadcn from './features/games/Leaderboard.shadcn';
 import MatchInformationShadcn from './features/games/MatchInformation.shadcn';
-import ReportScoreShadcn from './features/games/ReportScore.shadcn';
 import GrantsManager from './features/grants/GrantsManager';
 import HomePage from './features/homepage/HomePage';
 import ItemHolderScreenShadcn from './features/keys/ItemHolderScreen.shadcn';
@@ -316,7 +315,7 @@ const createRouter = (user: UserWithGroups | null, isShadcnUi: boolean) =>
                 },
                 {
                   path: 'report',
-                  element: isShadcnUi ? <ReportScoreShadcn /> : <ReportScore />,
+                  element: <ReportScore />,
                 },
                 {
                   path: ':matchId',

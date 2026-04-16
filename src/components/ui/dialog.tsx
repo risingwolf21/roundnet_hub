@@ -52,7 +52,9 @@ const dialogContentVariants = cva(
           "inset-x-0 bottom-0 flex flex-col w-full max-h-[95dvh] rounded-t-xl border-t p-0 sm:max-w-lg sm:mx-auto data-open:slide-in-from-bottom-full data-closed:slide-out-to-bottom-full pb-[env(safe-area-inset-bottom)]",
 
         fullscreen:
-          "inset-0 flex flex-col w-full h-[100dvh] max-w-none rounded-none border-0 p-0 data-open:zoom-in-95 data-closed:zoom-out-95 pt-safe-top pb-safe-bottom pl-safe-left"
+          // HIER GEÄNDERT: pt-safe-top und pb-safe-bottom entfernt. 
+          // Der Wrapper ist exakt inset-0, die Paddings übernehmen Header und Footer!
+          "inset-0 flex flex-col w-full h-[100dvh] max-w-none rounded-none border-0 p-0 data-open:zoom-in-95 data-closed:zoom-out-95 bg-background text-foreground"
       }
     },
     defaultVariants: {
@@ -60,45 +62,6 @@ const dialogContentVariants = cva(
     },
   }
 )
-
-function SlideUpDialogContent({
-  className,
-  children,
-  showCloseButton = true,
-  ...props
-}: DialogPrimitive.Popup.Props & {
-  showCloseButton?: boolean
-}) {
-  return (
-    <DialogPortal>
-      <DialogOverlay />
-      <DialogPrimitive.Popup
-        data-slot="dialog-content-slide-up"
-        className={cn(
-          "fixed inset-x-0 bottom-0 z-50 flex flex-col w-full max-h-[95dvh] rounded-t-xl border-t bg-popover p-0 shadow-lg outline-none sm:max-w-lg sm:mx-auto",
-          "duration-300 data-open:animate-in data-open:fade-in-0 data-open:slide-in-from-bottom-full data-closed:animate-out data-closed:fade-out-0 data-closed:slide-out-to-bottom-full",
-          // --- DER FIX FÜR DIE SAFE AREA ---
-          "pb-[env(safe-area-inset-bottom)]",
-          className
-        )}
-        {...props}
-      >
-        <div className="mx-auto mt-3 h-1.5 w-12 shrink-0 rounded-full bg-muted/60" />
-
-        {/* Wir geben dem Wrapper-Div ein overflow-hidden, damit nichts aus dem Drawer rausragt */}
-        <div className="flex flex-col overflow-hidden h-full">
-          {children}
-        </div>
-
-        {showCloseButton && (
-          <DialogPrimitive.Close
-          // ...
-          />
-        )}
-      </DialogPrimitive.Popup>
-    </DialogPortal>
-  )
-}
 
 export interface DialogContentProps
   extends React.ComponentPropsWithoutRef<typeof DialogPrimitive.Popup>,
@@ -113,7 +76,6 @@ function DialogContent({
   showCloseButton = true,
   ...props
 }: DialogContentProps) {
-
   const isDrawer = variant === "drawer";
   const needsFlexWrapper = variant === "drawer" || variant === "fullscreen";
 
@@ -137,7 +99,10 @@ function DialogContent({
           children
         )}
 
-        {showCloseButton && (
+        {/* Bei "fullscreen" sollte der Close-Button idealerweise im Header sitzen. 
+          Wenn du ihn nutzt, setze im Code <DialogContent variant="fullscreen" showCloseButton={false}> 
+        */}
+        {showCloseButton && variant !== "fullscreen" && (
           <DialogPrimitive.Close
             data-slot="dialog-close"
             render={
@@ -153,36 +118,72 @@ function DialogContent({
   )
 }
 
-function DialogHeader({ className, ...props }: React.ComponentProps<"div">) {
+// --- NEU: Dialog Header mit AppBar Variant ---
+const dialogHeaderVariants = cva("flex flex-col", {
+  variants: {
+    variant: {
+      default: "gap-2",
+      appbar: "pt-safe-top sticky top-0 z-50 w-full bg-background/95 supports-[backdrop-filter]:bg-background border-b shadow-sm shrink-0",
+    }
+  },
+  defaultVariants: { variant: "default" }
+});
+
+export interface DialogHeaderProps extends React.ComponentProps<"div">, VariantProps<typeof dialogHeaderVariants> { }
+
+function DialogHeader({ className, variant, children, ...props }: DialogHeaderProps) {
+  if (variant === "appbar") {
+    return (
+      <div data-slot="dialog-header" className={cn(dialogHeaderVariants({ variant }), className)} {...props}>
+        {/* Das innere div steuert die 56px (h-14) Höhe und das Padding (wie in deiner AppBar) */}
+        <div className="flex h-14 w-full items-center gap-4 px-4">
+          {children}
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div data-slot="dialog-header" className={cn(dialogHeaderVariants({ variant }), className)} {...props}>
+      {children}
+    </div>
+  )
+}
+
+// --- NEU: DialogBody für scrollbaren Content ---
+function DialogBody({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
-      data-slot="dialog-header"
-      className={cn("flex flex-col gap-2", className)}
+      data-slot="dialog-body"
+      // flex-1 sorgt dafür, dass sich der Bereich den Platz zwischen Header und Footer nimmt.
+      // overflow-y-auto macht genau diesen Zwischenbereich scrollbar.
+      className={cn("flex-1 flex flex-col overflow-y-auto p-4", className)}
       {...props}
     />
   )
 }
 
-function DialogFooter({
-  className,
-  showCloseButton = false,
-  children,
-  ...props
-}: React.ComponentProps<"div"> & {
-  showCloseButton?: boolean
-}) {
+// --- NEU: Dialog Footer mit Fullscreen Variant ---
+const dialogFooterVariants = cva("flex", {
+  variants: {
+    variant: {
+      default: "-mx-4 -mb-4 flex-col-reverse gap-2 rounded-b-xl border-t bg-muted/50 p-4 sm:flex-row sm:justify-end",
+      fullscreen: "mt-auto shrink-0 flex-col-reverse gap-2 border-t bg-background p-4 pb-[calc(1rem+env(safe-area-inset-bottom))] sm:flex-row sm:justify-end",
+    }
+  },
+  defaultVariants: { variant: "default" }
+});
+
+export interface DialogFooterProps extends React.ComponentProps<"div">, VariantProps<typeof dialogFooterVariants> {
+  showCloseButton?: boolean;
+}
+
+function DialogFooter({ className, variant, showCloseButton = false, children, ...props }: DialogFooterProps) {
   return (
-    <div
-      data-slot="dialog-footer"
-      className={cn(
-        "-mx-4 -mb-4 flex flex-col-reverse gap-2 rounded-b-xl border-t bg-muted/50 p-4 sm:flex-row sm:justify-end",
-        className
-      )}
-      {...props}
-    >
+    <div data-slot="dialog-footer" className={cn(dialogFooterVariants({ variant }), className)} {...props}>
       {children}
       {showCloseButton && (
-        <DialogPrimitive.Close render={<Button variant="outline">Close</Button>} />
+        <DialogPrimitive.Close render={<Button variant="outline">Schließen</Button>} />
       )}
     </div>
   )
@@ -192,10 +193,8 @@ function DialogTitle({ className, ...props }: DialogPrimitive.Title.Props) {
   return (
     <DialogPrimitive.Title
       data-slot="dialog-title"
-      className={cn(
-        "cn-font-heading text-base leading-none font-medium",
-        className
-      )}
+      // Etwas dicker und tracking-tight für den AppBar Look
+      className={cn("text-lg font-semibold tracking-tight", className)}
       {...props}
     />
   )
@@ -208,10 +207,7 @@ function DialogDescription({
   return (
     <DialogPrimitive.Description
       data-slot="dialog-description"
-      className={cn(
-        "text-sm text-muted-foreground *:[a]:underline *:[a]:underline-offset-3 *:[a]:hover:text-foreground",
-        className
-      )}
+      className={cn("text-sm text-muted-foreground *:[a]:underline *:[a]:underline-offset-3 *:[a]:hover:text-foreground", className)}
       {...props}
     />
   )
@@ -219,6 +215,7 @@ function DialogDescription({
 
 export {
   Dialog,
+  DialogBody, // Vergiss nicht den Export hier!
   DialogClose,
   DialogContent,
   DialogDescription,
@@ -227,7 +224,5 @@ export {
   DialogOverlay,
   DialogPortal,
   DialogTitle,
-  DialogTrigger,
-  SlideUpDialogContent
+  DialogTrigger
 }
-
