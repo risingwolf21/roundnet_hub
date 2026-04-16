@@ -19,7 +19,7 @@ export const GameHistoryDialogShadcn = ({ payload: { player_id, name, rating }, 
   const navigate = useNavigate();
 
   return <Dialog modal open={open} onOpenChange={(isOpen) => !isOpen && onClose()}>
-    <DialogContent variant={"default"} className={"p-0 pb-4 flex flex-col max-h-[90dvh]"}>
+    <DialogContent variant={"default"} className={"p-0 pb-4 flex flex-col max-h-[70dvh]"}>
       <DialogHeader className="p-4 pb-0">
         <DialogTitle className={"flex gap-2 items-center"}>
           {name}

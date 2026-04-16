@@ -49,17 +49,17 @@ export const useMatch = (matchId?: string) =>
 
       if (!result.data) return null;
 
-      const p1a = await supabase.from('user').select('*').eq('id', result.data.team_a.player_1.player).single();
-      const p1b = await supabase.from('user').select('*').eq('id', result.data.team_b.player_1.player).single();
-      const p2a = await supabase.from('user').select('*').eq('id', result.data.team_a.player_2.player).single();
-      const p2b = await supabase.from('user').select('*').eq('id', result.data.team_b.player_2.player).single();
+      const p1a = result.data.team_a.player_1.linked_user_id ? await supabase.from('user').select('*').eq('id', result.data.team_a.player_1.linked_user_id).maybeSingle() : null;
+      const p1b = result.data.team_b.player_1.linked_user_id ? await supabase.from('user').select('*').eq('id', result.data.team_b.player_1.linked_user_id ?? '').maybeSingle() : null;
+      const p2a = result.data.team_a.player_2.linked_user_id ? await supabase.from('user').select('*').eq('id', result.data.team_a.player_2.linked_user_id ?? '').maybeSingle() : null;
+      const p2b = result.data.team_b.player_2.linked_user_id ? await supabase.from('user').select('*').eq('id', result.data.team_b.player_2.linked_user_id ?? '').maybeSingle() : null;
 
       return {
         ...result.data,
-        player_1a: p1a.data,
-        player_1b: p1b.data,
-        player_2a: p2a.data,
-        player_2b: p2b.data,
+        player_1a: p1a?.data ?? null,
+        player_1b: p1b?.data ?? null,
+        player_2a: p2a?.data ?? null,
+        player_2b: p2b?.data ?? null,
       };
     },
   });
@@ -89,16 +89,16 @@ export const usePlayerMatches = (player_id: string) => useQuery({
 })
 
 export const usePlayers = (user: UserWithGroups | null) =>
-  useQuery<{ players: PlayerWithSimpleUser[], me: PlayerWithSimpleUser | null }>({
+  useQuery<{ players: (PlayerWithSimpleUser | Player)[], me: PlayerWithSimpleUser | null }>({
     queryKey: gamesKeys.players(),
     queryFn: async () => {
       const result = await GamesRepository.fetchAvailablePlayers();
 
-      const me = result.find((x) => x.id === user?.id);
+      const me = result.find((x) => 'id' in x && x.id === user?.id);
 
       return {
         players: result,
-        me: me ?? null,
+        me: me && 'id' in me ? me as PlayerWithSimpleUser : null,
       }
     }
   });

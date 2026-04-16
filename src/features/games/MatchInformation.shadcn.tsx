@@ -17,7 +17,6 @@ import { toast } from 'sonner';
 import { useGrants } from '../auth/GrantsContext';
 import { ReportSetsDialogShadcn } from './dialogs/ReportSetsDialog.shadcn';
 
-// --- HILFSKOMPONENTEN (Machen den Hauptcode schön schlank) ---
 
 const TeamBlock = ({ p1, p2, fallback1, fallback2 }: { p1: any, p2: any, fallback1: any, fallback2: any }) => (
   <div className="flex flex-1 flex-col gap-4 min-w-0">
@@ -61,8 +60,6 @@ const IndexRow = ({ player, fallback, history }: { player: any, fallback: any, h
     </ItemActions>
   </Item>
 );
-
-// --- HAUPTKOMPONENTE ---
 
 const MatchInformationShadcn = () => {
   const { matchId } = useParams();
