@@ -9,7 +9,7 @@ import { v4 as uuid } from 'uuid';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Calendar, CalendarDayButton } from '@/components/ui/calendar';
-import { Dialog, DialogFooter, DialogHeader, DialogTitle, SlideUpDialogContent } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Field } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -108,7 +108,7 @@ const EnterPointDialogShadcn = ({
         if (!isOpen) onClose(null);
       }}
     >
-      <SlideUpDialogContent className="flex flex-col gap-0">
+      <DialogContent variant={"drawer"} className="flex flex-col gap-0">
         <DialogHeader className="p-4 pb-2 border-b text-left">
           <DialogTitle>Punkt hinzufügen</DialogTitle>
         </DialogHeader>
@@ -260,7 +260,7 @@ const EnterPointDialogShadcn = ({
             Bestätigen
           </Button>
         </DialogFooter>
-      </SlideUpDialogContent >
+      </DialogContent >
     </Dialog >
   );
 };

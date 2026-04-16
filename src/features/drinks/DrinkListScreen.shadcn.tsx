@@ -11,7 +11,7 @@ import { PullToRefresh } from '@/components/pull-to-refresh/PullToRefresh';
 import { AppBar } from '@/components/ui/appbar';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogHeader, DialogTitle, DialogTrigger, SlideUpDialogContent } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Field, FieldContent, FieldLabel, FieldTitle } from '@/components/ui/field';
 import { Item, ItemActions, ItemContent, ItemDescription, ItemMedia, ItemTitle } from '@/components/ui/item';
 import { Separator } from '@/components/ui/separator';
@@ -319,7 +319,7 @@ const DrinkListScreenShadcn = () => {
                   <Funnel className="size-6" />
                 </Button>
               </DialogTrigger>
-              <SlideUpDialogContent>
+              <DialogContent variant={"drawer"}>
                 <DialogHeader className='px-4'>
                   <DialogTitle>{t("common.filter")}</DialogTitle>
                 </DialogHeader>
@@ -336,7 +336,7 @@ const DrinkListScreenShadcn = () => {
                     </FieldLabel>
                   ))}
                 </div>
-              </SlideUpDialogContent>
+              </DialogContent>
             </Dialog>
           }
         </div>

@@ -5,7 +5,7 @@ import { useMemo, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
-import { Dialog, DialogFooter, DialogHeader, DialogTitle, SlideUpDialogContent } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Field, FieldContent, FieldDescription, FieldLabel } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
 import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/input-group';
@@ -61,7 +61,7 @@ export const CreateOrUpdateChallengeDialogShadcn = ({
       onOpenChange={(isOpen) => {
         if (!isOpen) onClose(null);
       }}>
-      <SlideUpDialogContent className='flex flex-col max-h-[95dvh]'>
+      <DialogContent variant={"drawer"} className='flex flex-col max-h-[95dvh]'>
         <DialogHeader className="p-4 pb-2 border-b text-left">
           <DialogTitle>
             {payload.challenge ? 'Challenge aktualisieren' : 'Neue Challenge erstellen'}
@@ -405,7 +405,7 @@ export const CreateOrUpdateChallengeDialogShadcn = ({
             {payload.challenge ? 'Aktualisieren' : 'Erstellen'}
           </Button>
         </DialogFooter>
-      </SlideUpDialogContent>
+      </DialogContent>
     </Dialog >
   );
 };
