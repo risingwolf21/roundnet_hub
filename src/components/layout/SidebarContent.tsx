@@ -235,15 +235,6 @@ export function AppSidebar() {
           }
         },
         {
-          title: t('browse.manageDrinks'),
-          icon: <Wine />,
-          path: 'admin/drinks',
-          permission: {
-            perm: 'drinks.confirm.payments',
-            feat: 'drinks'
-          }
-        },
-        {
           title: t('browse.manageUsers'),
           icon: <Users />,
           path: 'admin/users',

@@ -1,4 +1,5 @@
 // src/features/grants/useUserGrantsQuery.ts
+import { Feature, Permission } from '@/generated/supabase-types';
 import { queryClient } from '@/lib/queryClient';
 import { supabase } from '@/lib/supabase';
 import { authKeys, useCurrentUserGrants } from '@/tanstack/auth';
@@ -75,13 +76,13 @@ export function useUserGrantsQuery(userId: string | undefined | null) {
     };
   }, [userId]);
 
-  const toArray = (v?: string | string[]) => (v == null ? [] : Array.isArray(v) ? v : [v]);
+  const toArray = (v?: Permission | Permission[] | Feature | Feature[]) => (v == null ? [] : Array.isArray(v) ? v : [v]);
   const check = (need: string[], set: Set<string>, mode: Mode) =>
     need.length === 0 ? true : mode === 'any' ? need.some((k) => set.has(k)) : need.every((k) => set.has(k));
 
   const has = useMemo(() => {
-    const hasPerm = (k: string | string[], mode: Mode = 'all') => check(toArray(k), q.data?.perm ?? empty.perm, mode);
-    const hasFeat = (k: string | string[], mode: Mode = 'all') => check(toArray(k), q.data?.feat ?? empty.feat, mode);
+    const hasPerm = (k: Permission | Permission[], mode: Mode = 'all') => check(toArray(k), q.data?.perm ?? empty.perm, mode);
+    const hasFeat = (k: Feature | Feature[], mode: Mode = 'all') => check(toArray(k), q.data?.feat ?? empty.feat, mode);
     return { hasPerm, hasFeat };
   }, [q.data]);
 

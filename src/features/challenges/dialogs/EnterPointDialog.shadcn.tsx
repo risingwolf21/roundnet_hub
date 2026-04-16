@@ -108,12 +108,12 @@ const EnterPointDialogShadcn = ({
         if (!isOpen) onClose(null);
       }}
     >
-      <SlideUpDialogContent className="flex flex-col max-h-[95dvh] gap-0">
+      <SlideUpDialogContent className="flex flex-col gap-0">
         <DialogHeader className="p-4 pb-2 border-b text-left">
           <DialogTitle>Punkt hinzufügen</DialogTitle>
         </DialogHeader>
 
-        <div className='flex flex-col overflow-y-auto p-4 gap-6'>
+        <div className='flex flex-col overflow-y-auto p-4 gap-6 flex-1'>
 
           <div className="flex">
             {(maxEntriesPerDay ?? 0) > 1 ? (
@@ -247,7 +247,7 @@ const EnterPointDialogShadcn = ({
 
         </div>
 
-        <DialogFooter className="p-4 border-t shrink-0 m-0">
+        <DialogFooter className="p-4 border-t flex-shrink m-0">
           <Button
             className="w-full text-base"
             disabled={

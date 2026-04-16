@@ -27,7 +27,7 @@ export const ChallengeCalendar = ({ user_challenge_stats }: { user_challenge_sta
 
   return (
     <Item variant={"outline"} className="flex flex-col gap-0" >
-      <ItemHeader className='flex justify-between w-full' onClick={() => {
+      <ItemHeader className='flex justify-between w-full pb-2' onClick={() => {
         setIsOpen(!isOpen);
         setMonth(new Date());
       }}>
@@ -78,7 +78,7 @@ export const ChallengeCalendar = ({ user_challenge_stats }: { user_challenge_sta
             DayButton: ({ children, modifiers, day, ...props }) => {
               const isActive = hasEntry(day.date);
               return <CalendarDayButton day={day} modifiers={modifiers} {...props} disabled
-                className='!opacity-100 !bg-white !rounded-none !border-0 h-10'>
+                className='!opacity-100 h-10'>
                 {
                   isActive ? <BadgeCheck className="size-8 text-success" /> : children
                 }

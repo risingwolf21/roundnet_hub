@@ -159,7 +159,7 @@ export const CreateOrUpdateGroupDialogShadcn = ({
               } />
           </Field>
         </div>
-        <DialogFooter>
+        <DialogFooter className="p-4 border-t shrink-0 m-0">
           <Button onClick={async () => {
             if (data.name.length < 6) {
               toast.warning('Der Name der Challenge muss aus mindestens 6 Zeichen bestehen.');

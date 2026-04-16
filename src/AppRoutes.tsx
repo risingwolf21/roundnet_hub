@@ -4,8 +4,10 @@ import { Navigate, Outlet, RouteObject, RouterProvider, useLocation } from 'reac
 import ErrorRouteElement from './components/ErrorRouteElement';
 import AuthLayout from './components/layout/AuthLayout';
 import { MainLayout } from './components/layout/MainLayout';
+import { DialogsProvider as ShadcnDialogsProvider } from './contexts/DialogsProvider';
 import { useFeature } from './contexts/FeatureToggleContext';
 import { AdminAnalytics } from './features/admin/AdminAnalytics';
+import AdminUserList from './features/admin/AdminUserList.shadcn';
 import { useApplication } from './features/auth/ApplicationContext';
 import AuthLayoutShadcn from './features/auth/AuthLayout.shadcn';
 import { FeatureNotAvailable, PermissionDeniedPage } from './features/auth/ErrorPage';
@@ -17,6 +19,7 @@ import ChallengeListShadcn from './features/challenges/ChallengeList.shadcn';
 import GameListShadcn from './features/games/GameList.shadcn';
 import LeaderboardShadcn from './features/games/Leaderboard.shadcn';
 import MatchInformationShadcn from './features/games/MatchInformation.shadcn';
+import ReportScoreShadcn from './features/games/ReportScore.shadcn';
 import GrantsManager from './features/grants/GrantsManager';
 import HomePage from './features/homepage/HomePage';
 import ItemHolderScreenShadcn from './features/keys/ItemHolderScreen.shadcn';
@@ -76,17 +79,19 @@ const PrivateRoute = ({ isShadcn = false }: { isShadcn?: boolean }) => {
   if (!user) return <Navigate to="/auth/login" state={{ path: location.pathname + location.search }} />;
 
   const privateRoute = <DialogsProvider>
-    <NotificationsProvider
-      slotProps={{
-        snackbar: {
-          sx: {
-            bottom: 'calc(8px + env(safe-area-inset-bottom))',
+    <ShadcnDialogsProvider>
+      <NotificationsProvider
+        slotProps={{
+          snackbar: {
+            sx: {
+              bottom: 'calc(8px + env(safe-area-inset-bottom))',
+            },
           },
-        },
-      }}
-    >
-      <Outlet />
-    </NotificationsProvider>
+        }}
+      >
+        <Outlet />
+      </NotificationsProvider>
+    </ShadcnDialogsProvider>
   </DialogsProvider>
 
   if (isShadcn) {
@@ -311,7 +316,7 @@ const createRouter = (user: UserWithGroups | null, isShadcnUi: boolean) =>
                 },
                 {
                   path: 'report',
-                  element: <ReportScore />,
+                  element: isShadcnUi ? <ReportScoreShadcn /> : <ReportScore />,
                 },
                 {
                   path: ':matchId',
@@ -364,7 +369,7 @@ const createRouter = (user: UserWithGroups | null, isShadcnUi: boolean) =>
                 },
                 {
                   path: 'users',
-                  element: <AdminUserListProvider />,
+                  element: isShadcnUi ? <AdminUserList /> : <AdminUserListProvider />,
                 },
                 {
                   path: 'analytics',
