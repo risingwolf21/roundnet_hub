@@ -351,7 +351,7 @@ export function AppSidebar() {
                     </SidebarMenuItem>
                     if (item.permission) {
                       return (
-                        <Has key={item.path} feat={item.permission.feat} perm={item.permission.perm}>
+                        <Has key={item.path} feat={item.permission.feat} perm={item.permission.perm} any={item.permission.any}>
                           {component}
                         </Has>
                       )
