@@ -61,7 +61,7 @@ const HomePageShadcn = () => {
                       const time = format(event.startingDateTime, "HH:mm") + " - " + format(event.endDateTime, "HH:mm")
 
                       return <Card key={event.id} className="shrink-0 w-50 flex flex-col h-full gap-0 snap-center border-t-6 border-t-[color:var(--attendance-color)]"
-                        style={{ "--attendance-color": isAttending ? "var(--success)" : isWaiting ? "var(--warning)" : "var(--error)" } as React.CSSProperties}>
+                        style={{ "--attendance-color": isAttending ? "var(--success)" : isWaiting ? "var(--warning)" : event.user_state === "Declined" ? "var(--error)" : "#000000" } as React.CSSProperties}>
                         <CardHeader onClick={() => {
                           navigate('/training/event/' + event.id)
                         }}>

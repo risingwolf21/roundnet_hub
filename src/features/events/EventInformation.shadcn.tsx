@@ -752,7 +752,6 @@ export const EventInformationSkeleton = () => {
       {/* AppBar Skeleton */}
       <div
         className="shrink-0 bg-background relative z-10"
-        style={{ paddingTop: 'env(safe-area-inset-top)' }}
       >
         <AppBar
           className='!border-b !shadow-sm'
