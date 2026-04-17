@@ -90,6 +90,7 @@ const createRouter = (user: UserWithGroups | null, isShadcnUi: boolean) =>
     {
       path: '/',
       element: <PrivateRoute isShadcn={isShadcnUi} />,
+      errorElement: <ErrorRouteElement isShadcn={isShadcnUi} />,
       children: [
         {
           path: '',
