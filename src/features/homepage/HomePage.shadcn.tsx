@@ -10,23 +10,77 @@ import { AppBar } from '@/components/ui/appbar';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Card, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton'; // <-- NEU: Skeleton Import
 import { Spinner } from '@/components/ui/spinner';
 import { Has } from '@/hooks/useGrants';
 import { answerDeadlineExpired, eventInThePast } from '@/types/supabaseTypes';
 import CardContent from '@mui/material/CardContent';
 import { format } from 'date-fns';
 import { t } from 'i18next';
-import { AlertTriangle, Calendar, Check, Clock, Image, Key, MapPin, Megaphone, Shapes, X } from 'lucide-react';
+import { AlertCircle, AlertTriangle, Calendar, Check, Clock, Image, Key, MapPin, Megaphone, SearchX, Shapes, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { PlaceType } from '../events/types';
+
+const EventLoadingCard = () => <Card className="shrink-0 w-50 flex flex-col h-full gap-0 snap-center border-t-6 border-muted">
+  <CardHeader>
+    <Skeleton className="h-6 w-3/4" />
+  </CardHeader>
+  <CardContent className='gap-3 flex flex-col'>
+    <div className="flex items-center gap-3">
+      <Skeleton className="h-5 w-5 rounded-full shrink-0" />
+      <Skeleton className="h-4 w-1/2" />
+    </div>
+    <div className="flex items-center gap-3">
+      <Skeleton className="h-5 w-5 rounded-full shrink-0" />
+      <Skeleton className="h-4 w-1/3" />
+    </div>
+    <div className="flex items-center gap-3">
+      <Skeleton className="h-5 w-5 rounded-full shrink-0" />
+      <Skeleton className="h-4 w-2/3" />
+    </div>
+  </CardContent>
+  <CardFooter className='flex-row justify-between items-center w-full mt-auto p-2'>
+    <Skeleton className="h-4 w-12" />
+    <div className="flex flex-row gap-2">
+      <Skeleton className="size-9 rounded-md" />
+      <Skeleton className="size-9 rounded-md" />
+    </div>
+  </CardFooter>
+</Card>
+
+const DrinkLoadingCard = () => <Card className="shrink-0 w-50 flex flex-col h-full gap-0 pt-0 snap-center">
+  <CardHeader className='flex flex-row p-2 gap-4 items-center'>
+    <Skeleton className="size-12 rounded-full shrink-0" />
+    <Skeleton className="h-6 w-full" />
+  </CardHeader>
+  <CardFooter className='flex-row gap-2 justify-end w-full mt-auto py-1 px-2'>
+    <Skeleton className="h-9 w-24 rounded-md" />
+  </CardFooter>
+</Card>
+
+const ItemLoadingCard = () => <Card className="shrink-0 w-50 flex flex-col h-full gap-0 snap-center border-t-6 border-muted">
+  <CardHeader className='flex flex-row gap-2 items-center'>
+    <Skeleton className="size-4 rounded-full shrink-0" />
+    <Skeleton className="h-6 w-3/4" />
+  </CardHeader>
+  <CardContent>
+    <div className="flex items-center gap-2">
+      <Skeleton className="size-10 rounded-full shrink-0" />
+      <Skeleton className="h-4 w-24" />
+    </div>
+  </CardContent>
+  <CardFooter className='flex-row gap-2 justify-end w-full mt-auto py-1 px-2'>
+    <Skeleton className="h-9 w-24 rounded-md" />
+  </CardFooter>
+</Card>
 
 const HomePageShadcn = () => {
   const [fetchMode] = useFetchMode();
 
-  const { user, hasPerm } = useGrants();
-  const { data: drinks = [], isLoading: isDrinksLoading, refetch: refetchDrinks } = useDrinks();
-  const { data: events = [], isLoading: isEventsLoading, refetch: refetchEvents } = useEvents(fetchMode, 10);
-  const { data: items = [], isLoading: isItemsLoading, refetch: refetchItems } = useAllItems();
+  const { user } = useGrants();
+  const { data: drinks = [], isLoading: isDrinksLoading, error: drinksError, refetch: refetchDrinks } = useDrinks();
+  const { data: events = [], isLoading: isEventsLoading, error: eventsError, refetch: refetchEvents } = useEvents(fetchMode, 10);
+  const { data: items = [], isLoading: isItemsLoading, error: itemsError, refetch: refetchItems } = useAllItems();
   const navigate = useNavigate();
 
   const updateAttendance = useUpdateAttendanceMutation(fetchMode);
@@ -45,7 +99,19 @@ const HomePageShadcn = () => {
             <div className='flex flex-col gap-2'>
               <div className="text-base font-semibold ml-2">Events</div>
               <div className='flex flex-row gap-4 overflow-x-auto w-full py-2 px-1'>
-                {
+                {isEventsLoading ? (
+                  Array.from({ length: 3 }).map((_, i) => <EventLoadingCard key={i} />)
+                ) : eventsError ? (
+                  <div className="flex w-full flex-col items-center justify-center py-8 text-destructive">
+                    <AlertCircle className="size-8 mb-2" />
+                    <p className="text-sm font-medium">Fehler beim Laden der Events</p>
+                  </div>
+                ) : events.length === 0 ? (
+                  <div className="flex w-full flex-col items-center justify-center py-8 text-muted-foreground">
+                    <SearchX className="size-8 mb-2 opacity-50" />
+                    <p className="text-sm">Keine anstehenden Events</p>
+                  </div>
+                ) : (
                   events.map(event => {
 
                     const isAttending = event.user_state === "Attending" || event.user_state === "AttendingAsTrainer" || event.user_state === "AttendingAsTrial";
@@ -87,7 +153,6 @@ const HomePageShadcn = () => {
                       </CardContent>
                       <CardFooter className='flex-row justify-between items-center w-full mt-auto p-2'>
 
-                        {/* NEU: Anzeige der Zusagen/Absagen (Links) */}
                         <div className="flex items-center gap-3 text-xs font-semibold text-muted-foreground pl-1">
                           {
                             ((event.attending_count ?? 0) > 0) && <div className="flex items-center gap-1" title="Zugesagt">
@@ -142,7 +207,7 @@ const HomePageShadcn = () => {
                       </CardFooter>
                     </Card>
                   })
-                }
+                )}
               </div>
             </div>
           </Has>
@@ -151,7 +216,19 @@ const HomePageShadcn = () => {
             <div className='flex flex-col gap-2'>
               <div className="text-base font-semibold ml-2">Getränke</div>
               <div className='flex flex-row gap-4 overflow-x-auto w-full py-2 px-1'>
-                {
+                {isDrinksLoading ? (
+                  Array.from({ length: 3 }).map((_, i) => <DrinkLoadingCard key={i} />)
+                ) : drinksError ? (
+                  <div className="flex w-full flex-col items-center justify-center py-8 text-destructive">
+                    <AlertCircle className="size-8 mb-2" />
+                    <p className="text-sm font-medium">Fehler beim Laden der Getränke</p>
+                  </div>
+                ) : drinks.filter((x: Drink) => !x.deleted && x.active && x.type === 'Drink').length === 0 ? (
+                  <div className="flex w-full flex-col items-center justify-center py-8 text-muted-foreground">
+                    <SearchX className="size-8 mb-2 opacity-50" />
+                    <p className="text-sm">Keine Getränke verfügbar</p>
+                  </div>
+                ) : (
                   drinks
                     .filter((x: Drink) => !x.deleted && x.active && x.type === 'Drink')
                     .map(drink => {
@@ -192,7 +269,7 @@ const HomePageShadcn = () => {
                         </CardFooter>
                       </Card>
                     })
-                }
+                )}
               </div>
             </div>
           </Has>
@@ -201,7 +278,19 @@ const HomePageShadcn = () => {
             <div className='flex flex-col gap-2'>
               <div className="text-base font-semibold ml-2">Schlüssel</div>
               <div className='flex flex-row gap-4 overflow-x-auto w-full py-2 px-1'>
-                {
+                {isItemsLoading ? (
+                  Array.from({ length: 3 }).map((_, i) => <ItemLoadingCard key={i} />)
+                ) : itemsError ? (
+                  <div className="flex w-full flex-col items-center justify-center py-8 text-destructive">
+                    <AlertCircle className="size-8 mb-2" />
+                    <p className="text-sm font-medium">Fehler beim Laden der Schlüssel</p>
+                  </div>
+                ) : items.length === 0 ? (
+                  <div className="flex w-full flex-col items-center justify-center py-8 text-muted-foreground">
+                    <SearchX className="size-8 mb-2 opacity-50" />
+                    <p className="text-sm">Keine Schlüssel hinterlegt</p>
+                  </div>
+                ) : (
                   items
                     .map(item => {
 
@@ -249,7 +338,7 @@ const HomePageShadcn = () => {
                         </CardFooter>
                       </Card>
                     })
-                }
+                )}
               </div>
             </div>
           </Has>
