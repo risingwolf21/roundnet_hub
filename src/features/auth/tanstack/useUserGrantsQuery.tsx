@@ -77,8 +77,17 @@ export function useUserGrantsQuery(userId: string | undefined | null) {
   }, [userId]);
 
   const toArray = (v?: Permission | Permission[] | Feature | Feature[]) => (v == null ? [] : Array.isArray(v) ? v : [v]);
-  const check = (need: string[], list: string[], mode: Mode) =>
-    need.length === 0 ? true : mode === 'any' ? need.some((k) => list.includes(k)) : need.every((k) => list.includes(k));
+  const ensureArray = (list: any): string[] => Array.isArray(list) ? list : [];
+
+  const check = (need: string[], list: any, mode: Mode) => {
+    const safeList = ensureArray(list);
+
+    if (need.length === 0) return true;
+
+    return mode === 'any'
+      ? need.some((k) => safeList.includes(k))
+      : need.every((k) => safeList.includes(k));
+  };
 
   const has = useMemo(() => {
     const hasPerm = (k: Permission | Permission[], mode: Mode = 'all') => check(toArray(k), q.data?.perm ?? empty.perm, mode);
