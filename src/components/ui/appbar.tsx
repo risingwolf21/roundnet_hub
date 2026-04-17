@@ -1,8 +1,9 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { useIsOffline } from "@/hooks/useIsOffline";
 import { cn } from "@/lib/utils";
 import { getInitials } from "@/utils";
-import { ArrowLeft, Search } from "lucide-react";
+import { ArrowLeft, Search, WifiOff } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import { Avatar, AvatarFallback, AvatarImage } from "./avatar";
@@ -40,6 +41,7 @@ export function AppBar({
   className,
   ...props
 }: AppBarProps) {
+  const isOffline = useIsOffline();
   const [scrolled, setScrolled] = useState(false);
   const navigate = useNavigate();
 
@@ -114,6 +116,14 @@ export function AppBar({
           }
         </div>
       </div>
+      {
+        isOffline && <div className="w-full bg-warning px-4 py-2 flex items-center justify-center gap-2 text-warning-foreground shadow-sm">
+          <WifiOff className="size-4 shrink-0" />
+          <span className="text-xs font-medium">
+            Du bist offline. Es werden gespeicherte Daten angezeigt.
+          </span>
+        </div>
+      }
     </header>
   );
 }

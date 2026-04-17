@@ -5,8 +5,6 @@ import { queryClient } from '@/lib/queryClient';
 import { supabase } from '@/lib/supabase';
 import { useCurrentUser } from '@/tanstack/auth';
 import { TENANT_LOGO } from '@/utils';
-import Box from '@mui/material/Box';
-import LinearProgress from '@mui/material/LinearProgress';
 import { captureException } from '@sentry/react';
 import { Session } from '@supabase/supabase-js';
 import React, { useEffect, useState } from 'react';
@@ -49,23 +47,15 @@ export const AuthGate = () => {
     return () => subscription.unsubscribe();
   }, []);
 
-  const isInitialLoading = !isAuthRestored || (!!session && isFetching);
+  const isInitialLoading = !isAuthRestored || (!!session && !currentUser && isFetching);
 
-  if (isInitialLoading) return <Box
-    sx={{
-      width: '100%',
-      height: '100vh',
-      display: 'flex',
-      justifyContent: 'center',
-      flexDirection: 'column',
-      alignItems: 'center',
-    }}
+  if (isInitialLoading) return <div
+    className="size-full justify-center align-center flex flex-col"
   >
-    <LinearProgress sx={{ position: "absolute", left: 0, right: 0, top: 0 }} variant='indeterminate' />
     {
       <img src={TENANT_LOGO} alt="MUI logo" style={{ height: 125, objectFit: 'contain' }} />
     }
-  </Box>
+  </div>
 
   return (
     <ApplicationContext

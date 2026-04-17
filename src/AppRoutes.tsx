@@ -1,6 +1,7 @@
 import { DialogsProvider, NotificationsProvider } from '@toolpad/core';
 import { useMemo } from 'react';
 import { Navigate, Outlet, RouteObject, RouterProvider, useLocation } from 'react-router';
+import AppInformationShadcn from './components/AppInformation.shadcn';
 import ErrorRouteElement from './components/ErrorRouteElement';
 import AuthLayout from './components/layout/AuthLayout';
 import { MainLayout } from './components/layout/MainLayout';
@@ -48,7 +49,6 @@ const ChallengeInfoScreen = lazyWithRetry(() => import('./features/challenges/Ch
 const RecurringEvents = lazyWithRetry(() => import('./features/events/RecurringEvents'));
 const GameList = lazyWithRetry(() => import('./features/games/GameList'));
 const ReportScore = lazyWithRetry(() => import('./features/games/ReportScore'));
-const SupabaseClient = lazyWithRetry(() => import('./features/supabase/SupabaseClient'));
 const LoginScreen = lazyWithRetry(() => import('./features/auth/LoginScreen'));
 const SignUpScreen = lazyWithRetry(() => import('./features/auth/SignUpScreen'));
 const ForgotPasswordScreen = lazyWithRetry(() => import('./features/auth/ForgotPasswordScreen'));
@@ -56,7 +56,6 @@ const PublicGroupList = lazyWithRetry(() => import('./features/groups/PublicGrou
 const PublicGroupInformation = lazyWithRetry(() => import('./features/groups/PublicGroupInformation.page'));
 const MatchInformation = lazyWithRetry(() => import('./features/games/MatchInformation'));
 const SendNotifications = lazyWithRetry(() => import('./features/notifications/SendNotifications'));
-const LogsList = lazyWithRetry(() => import('./features/admin/LogsList'));
 const AppInformation = lazyWithRetry(() => import('./components/AppInformation'));
 const PlayerzoneProfileDialog = lazyWithRetry(() => import('./features/profile/PlayerzoneProfile'));
 const NotificationsDialog = lazyWithRetry(() => import('./features/profile/NotificationsDialog'));
@@ -156,7 +155,7 @@ const createRouter = (user: UserWithGroups | null, isShadcnUi: boolean) =>
             },
             {
               path: '/help',
-              element: <AppInformation />,
+              element: isShadcnUi ? <AppInformationShadcn /> : <AppInformation />,
             },
             {
               path: '/home',

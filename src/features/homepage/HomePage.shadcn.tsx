@@ -10,14 +10,14 @@ import { AppBar } from '@/components/ui/appbar';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Card, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Skeleton } from '@/components/ui/skeleton'; // <-- NEU: Skeleton Import
+import { Skeleton } from '@/components/ui/skeleton';
 import { Spinner } from '@/components/ui/spinner';
 import { Has } from '@/hooks/useGrants';
 import { answerDeadlineExpired, eventInThePast } from '@/types/supabaseTypes';
 import CardContent from '@mui/material/CardContent';
 import { format } from 'date-fns';
 import { t } from 'i18next';
-import { AlertCircle, AlertTriangle, Calendar, Check, Clock, Image, Key, MapPin, Megaphone, SearchX, Shapes, X } from 'lucide-react';
+import { AlertCircle, AlertTriangle, Calendar, Check, Clock, Image, Key, MapPin, Megaphone, RefreshCcw, SearchX, Shapes, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { PlaceType } from '../events/types';
 
@@ -78,9 +78,9 @@ const HomePageShadcn = () => {
   const [fetchMode] = useFetchMode();
 
   const { user } = useGrants();
-  const { data: drinks = [], isLoading: isDrinksLoading, error: drinksError, refetch: refetchDrinks } = useDrinks();
-  const { data: events = [], isLoading: isEventsLoading, error: eventsError, refetch: refetchEvents } = useEvents(fetchMode, 10);
-  const { data: items = [], isLoading: isItemsLoading, error: itemsError, refetch: refetchItems } = useAllItems();
+  const { data: drinks = [], isLoading: isDrinksLoading, isFetching: isDrinksFetching, error: drinksError, refetch: refetchDrinks } = useDrinks();
+  const { data: events = [], isLoading: isEventsLoading, isFetching: isEventsFetching, error: eventsError, refetch: refetchEvents } = useEvents(fetchMode, 10);
+  const { data: items = [], isLoading: isItemsLoading, isFetching: isItemsFetching, error: itemsError, refetch: refetchItems } = useAllItems();
   const navigate = useNavigate();
 
   const updateAttendance = useUpdateAttendanceMutation(fetchMode);
@@ -97,9 +97,16 @@ const HomePageShadcn = () => {
         <div className='flex flex-col gap-4 p-4'>
           <Has feat={"events"}>
             <div className='flex flex-col gap-2'>
-              <div className="text-base font-semibold ml-2">Events</div>
+              <div className='flex flex-row justify-between items-center'>
+                <div className="text-base font-semibold ml-2">Events</div>
+                <Button size={"icon-lg"} variant={"ghost"} disabled={(isEventsLoading || isEventsFetching)} onClick={() => refetchEvents()}>
+                  {
+                    (isEventsLoading || isEventsFetching) ? <Spinner /> : <RefreshCcw />
+                  }
+                </Button>
+              </div>
               <div className='flex flex-row gap-4 overflow-x-auto w-full py-2 px-1'>
-                {isEventsLoading ? (
+                {(isEventsLoading || isEventsFetching) ? (
                   Array.from({ length: 3 }).map((_, i) => <EventLoadingCard key={i} />)
                 ) : eventsError ? (
                   <div className="flex w-full flex-col items-center justify-center py-8 text-destructive">
@@ -214,9 +221,16 @@ const HomePageShadcn = () => {
 
           <Has feat={"drinks"}>
             <div className='flex flex-col gap-2'>
-              <div className="text-base font-semibold ml-2">Getränke</div>
+              <div className='flex flex-row justify-between items-center'>
+                <div className="text-base font-semibold ml-2">Getränke</div>
+                <Button size={"icon-lg"} variant={"ghost"} disabled={(isDrinksLoading || isDrinksFetching)} onClick={() => refetchDrinks()}>
+                  {
+                    (isDrinksLoading || isDrinksFetching) ? <Spinner /> : <RefreshCcw />
+                  }
+                </Button>
+              </div>
               <div className='flex flex-row gap-4 overflow-x-auto w-full py-2 px-1'>
-                {isDrinksLoading ? (
+                {(isDrinksLoading || isDrinksFetching) ? (
                   Array.from({ length: 3 }).map((_, i) => <DrinkLoadingCard key={i} />)
                 ) : drinksError ? (
                   <div className="flex w-full flex-col items-center justify-center py-8 text-destructive">
@@ -276,9 +290,16 @@ const HomePageShadcn = () => {
 
           <Has feat={"items"}>
             <div className='flex flex-col gap-2'>
-              <div className="text-base font-semibold ml-2">Schlüssel</div>
+              <div className='flex flex-row justify-between items-center'>
+                <div className="text-base font-semibold ml-2">Schlüssel</div>
+                <Button size={"icon-lg"} variant={"ghost"} disabled={(isItemsLoading || isItemsFetching)} onClick={() => refetchItems()}>
+                  {
+                    isItemsFetching ? <Spinner /> : <RefreshCcw />
+                  }
+                </Button>
+              </div>
               <div className='flex flex-row gap-4 overflow-x-auto w-full py-2 px-1'>
-                {isItemsLoading ? (
+                {(isItemsLoading || isItemsFetching) ? (
                   Array.from({ length: 3 }).map((_, i) => <ItemLoadingCard key={i} />)
                 ) : itemsError ? (
                   <div className="flex w-full flex-col items-center justify-center py-8 text-destructive">
