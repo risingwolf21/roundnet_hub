@@ -312,13 +312,11 @@ const DrinkListScreenShadcn = () => {
           }
           {
             addedDrinksCount === 0 && hasMultipleTypes && <Dialog>
-              <DialogTrigger>
-                <Button
-                  size="icon"
-                  className="h-14 w-14 rounded-full shadow-lg hover:shadow-xl bg-primary text-primary-foreground transition-all hover:-translate-y-1 active:translate-y-0 active:shadow-md">
-                  <Funnel className="size-6" />
-                </Button>
-              </DialogTrigger>
+              <DialogTrigger render={<Button
+                size="icon"
+                className="h-14 w-14 rounded-full shadow-lg hover:shadow-xl bg-primary text-primary-foreground transition-all hover:-translate-y-1 active:translate-y-0 active:shadow-md">
+                <Funnel className="size-6" />
+              </Button>} />
               <DialogContent variant={"drawer"}>
                 <DialogHeader className='px-4'>
                   <DialogTitle>{t("common.filter")}</DialogTitle>
