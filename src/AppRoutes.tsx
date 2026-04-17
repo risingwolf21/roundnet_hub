@@ -315,7 +315,7 @@ const createRouter = (user: UserWithGroups | null, isShadcnUi: boolean) =>
                 },
                 {
                   path: 'drinks/payments',
-                  element: <Pages.PaymentsPendingAdmin />,
+                  element: isShadcnUi ? <Pages.PaymentsPendingAdminShadcn /> : <Pages.PaymentsPendingAdmin />,
                 },
                 {
                   path: 'users',
