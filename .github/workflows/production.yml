@@ -24,8 +24,8 @@ jobs:
     name: "Test database"
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: supabase/setup-cli@v1
+      - uses: actions/checkout@v6
+      - uses: supabase/setup-cli@v2
         with:
           version: latest
       - run: supabase db start
@@ -44,10 +44,10 @@ jobs:
       url: ${{ vars.PUBLIC_URL }}
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Set up Node.js 24
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: 24
           cache: 'yarn'
@@ -87,10 +87,10 @@ jobs:
       url: ${{ vars.PUBLIC_URL }}
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Set up Node.js 24
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: 24
           cache: yarn
@@ -120,10 +120,10 @@ jobs:
       url: ${{ vars.PUBLIC_URL }}
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Set up Node.js 24
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: 24
           cache: 'yarn'
@@ -163,10 +163,10 @@ jobs:
       url: ${{ vars.PUBLIC_URL }}
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Set up Node.js 24
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: 24
           cache: yarn
@@ -190,7 +190,7 @@ jobs:
     needs: [deploy-munich]
     environment: "Munich Roundnet"
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Delete build artifacts
         uses: geekyeggo/delete-artifact@v5
@@ -204,7 +204,7 @@ jobs:
     needs: [deploy-karlsruhe]
     environment: "Roundnet Karlsruhe"
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Delete build artifacts
         uses: geekyeggo/delete-artifact@v5
