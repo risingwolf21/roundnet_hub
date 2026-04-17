@@ -447,7 +447,7 @@ export const useUpdateAttendanceMutation = (fetchMode: 'past' | 'upcoming') => {
         }
       }
 
-      return { previousEvents, previousAttendance, event };
+      return { previousEvents, previousAttendance, previousEvent, event };
     },
     onError: (error, variables, context) => {
       captureException(error, {
@@ -460,6 +460,9 @@ export const useUpdateAttendanceMutation = (fetchMode: 'past' | 'upcoming') => {
         },
         tags: { type: 'UpdateEventAttendanc', scope: 'events' },
       });
+      if (context?.previousEvent) {
+        queryClient.setQueryData(eventKeys.event(variables.event.id), context.previousEvent);
+      }
       if (context?.previousEvents) {
         queryClient.setQueryData(eventKeys.list(fetchMode), context.previousEvents);
       }

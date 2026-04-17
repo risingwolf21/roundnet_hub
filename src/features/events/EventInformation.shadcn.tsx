@@ -120,7 +120,9 @@ const EventInformationAttendanceState = ({ event, fetchMode }: Pick<EventInforma
           </AlertDescription>
           <AlertAction>
             <Button variant="outline" onClick={() => changeAttendance({ user, event, newState: 'Declined' })}>
-              <SquareArrowRightExit />
+              {
+                updateAttendance.isPending ? <Spinner /> : <SquareArrowRightExit />
+              }
             </Button>
           </AlertAction>
         </Alert>
@@ -144,7 +146,9 @@ const EventInformationAttendanceState = ({ event, fetchMode }: Pick<EventInforma
           </AlertDescription>
           <AlertAction>
             <Button variant="outline" onClick={() => changeAttendance({ user, event, newState: 'Declined' })}>
-              <SquareArrowRightExit />
+              {
+                updateAttendance.isPending ? <Spinner /> : <SquareArrowRightExit />
+              }
             </Button>
           </AlertAction>
         </Alert>
@@ -162,7 +166,9 @@ const EventInformationAttendanceState = ({ event, fetchMode }: Pick<EventInforma
                 event.user_state === 'Waiting' ||
                 eventInThePast(event)}
             >
-              <Hourglass className="size-4 mr-1" />
+              {
+                updateAttendance.isPending ? <Spinner /> : <Hourglass className="size-4 mr-1" />
+              }
               Warteliste
             </Button>
 
@@ -174,7 +180,10 @@ const EventInformationAttendanceState = ({ event, fetchMode }: Pick<EventInforma
                 disabled={event.isCancelled ||
                   eventInThePast(event)}
               >
-                <CheckCircle2 className="size-4 mr-1" />
+                {
+                  updateAttendance.isPending ? <Spinner /> : <CheckCircle2 className="size-4 mr-1" />
+                }
+
                 Teilnahme anfragen
               </Button>
               : <Button
@@ -186,7 +195,9 @@ const EventInformationAttendanceState = ({ event, fetchMode }: Pick<EventInforma
                   answerDeadlineExpired(event) ||
                   eventInThePast(event)}
               >
-                <CheckCircle2 className="size-4 mr-1" />
+                {
+                  updateAttendance.isPending ? <Spinner /> : <CheckCircle2 className="size-4 mr-1" />
+                }
                 Teilnehmen
               </Button>
         }
@@ -195,7 +206,9 @@ const EventInformationAttendanceState = ({ event, fetchMode }: Pick<EventInforma
           variant={event.user_state === 'Declined' ? 'error' : 'outline'}
           className="flex-1"
         >
-          <XCircle className="size-4 mr-1" />
+          {
+            updateAttendance.isPending ? <Spinner /> : <XCircle className="size-4 mr-1" />
+          }
           Absagen
         </Button>
       </div>
@@ -207,7 +220,9 @@ const EventInformationAttendanceState = ({ event, fetchMode }: Pick<EventInforma
           variant={event.user_state === 'AttendingAsTrainer' ? 'success' : 'outline'}
           className="flex-1"
         >
-          <Megaphone className="size-4 mr-1" />
+          {
+            updateAttendance.isPending ? <Spinner /> : <Megaphone className="size-4 mr-1" />
+          }
           Als Trainer teilnehmen
         </Button>
       </div>
@@ -745,6 +760,7 @@ const EventInformationShadcn = ({ event, selectedEventPlace, fetchMode }: EventI
 };
 
 import { Skeleton } from "@/components/ui/skeleton";
+import { Spinner } from "@/components/ui/spinner";
 
 export const EventInformationSkeleton = () => {
   return (

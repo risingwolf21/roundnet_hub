@@ -251,7 +251,7 @@ function TableRecordsView({ payload: { table }, open, onClose }: DialogProps<Tab
   )
 }
 
-export function DatabaseManager() {
+const DatabaseManager = () => {
   const { user } = useGrants();
   const dialogs = useDialogs();
   const { data: tables, isLoading, isError } = useListTables(['public', 'games', 'notifications'])
@@ -324,3 +324,5 @@ export function DatabaseManager() {
     </div>
   )
 }
+
+export default DatabaseManager;

@@ -193,7 +193,7 @@ const getDefaults = (report: AnalyticsReportDef) => {
   return defaults;
 };
 
-export const AdminAnalytics = () => {
+const AdminAnalytics = () => {
   const dialogs = useDialogs();
 
   const [selectedReport, setSelectedReport] = useState<AnalyticsReportDef>(REPORTS[0]);
@@ -444,3 +444,5 @@ const SelectRpcDialog = ({ payload, open, onClose }: DialogProps<{ reports: Anal
     </Dialog>
   );
 };
+
+export default AdminAnalytics;

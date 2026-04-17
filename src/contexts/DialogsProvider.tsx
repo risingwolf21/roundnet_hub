@@ -47,7 +47,7 @@ interface DialogsContextType {
 
 const DialogsContext = createContext<DialogsContextType | null>(null);
 
-export function DialogsProvider({ children }: { children: React.ReactNode }) {
+const DialogsProvider = ({ children }: { children: React.ReactNode }) => {
   const [dialogs, setDialogs] = useState<ActiveDialog[]>([]);
 
   // Die Kern-Logik: Öffnet eine beliebige Komponente
@@ -163,3 +163,5 @@ const AlertDialogBase = ({ open, onClose, payload }: DialogProps<AlertOptions, v
     </DialogContent>
   </Dialog>
 );
+
+export default DialogsProvider;

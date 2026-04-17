@@ -99,7 +99,7 @@ const logTypes = [
   },
 ]
 
-export function LogsManager() {
+const LogsManager = () => {
   const [activeTab, setActiveTab] = useState<LogsTableName>(LogsTableName.FN_EDGE)
   const [open, setOpen] = useState(false)
   const { user } = useGrants();
@@ -271,3 +271,4 @@ export function LogsManager() {
     </div>
   )
 }
+export default LogsManager;

@@ -1,67 +1,21 @@
 import { DialogsProvider, NotificationsProvider } from '@toolpad/core';
 import { useMemo } from 'react';
 import { Navigate, Outlet, RouteObject, RouterProvider, useLocation } from 'react-router';
-import AppInformationShadcn from './components/AppInformation.shadcn';
 import ErrorRouteElement from './components/ErrorRouteElement';
-import AuthLayout from './components/layout/AuthLayout';
-import { MainLayout } from './components/layout/MainLayout';
-import { DialogsProvider as ShadcnDialogsProvider } from './contexts/DialogsProvider';
 import { useFeature } from './contexts/FeatureToggleContext';
-import { AdminAnalytics } from './features/admin/AdminAnalytics';
-import AdminUserList from './features/admin/AdminUserList.shadcn';
 import { useApplication } from './features/auth/ApplicationContext';
-import AuthLayoutShadcn from './features/auth/AuthLayout.shadcn';
 import { FeatureNotAvailable, PermissionDeniedPage } from './features/auth/ErrorPage';
 import ForgotPasswordShadcn from './features/auth/ForgotPassword.shadcn';
 import { GrantsProvider } from './features/auth/GrantsContext';
 import LoginFormShadcn from './features/auth/LoginForm.shadcn';
 import SignUpFormShadcn from './features/auth/SignUpForm.shadcn';
-import ChallengeListShadcn from './features/challenges/ChallengeList.shadcn';
-import GameListShadcn from './features/games/GameList.shadcn';
-import LeaderboardShadcn from './features/games/Leaderboard.shadcn';
-import MatchInformationShadcn from './features/games/MatchInformation.shadcn';
-import GrantsManager from './features/grants/GrantsManager';
 import HomePage from './features/homepage/HomePage';
-import HomePageShadcn from './features/homepage/HomePage.shadcn';
-import ItemHolderScreenShadcn from './features/keys/ItemHolderScreen.shadcn';
 import UserScreenProvider from './features/profile/UserScreenProvider';
-import { DatabaseManager } from './features/supabase/components/database';
-import { LogsManager } from './features/supabase/components/logs';
-import { lazyWithRetry } from './hooks/lazyWithRetry';
 import { Has } from './hooks/useGrants';
 import { sentryCreateBrowserRouter } from './instrument';
 import { UserWithGroups } from './types/supabaseTypes';
 
-const HistoryScreenProvider = lazyWithRetry(() => import('./features/drinks/HistoryScreen.page'));
-const ItemHolderScreen = lazyWithRetry(() => import('./features/keys/ItemHolderScreen'));
-const PayDrinksScreenProvider = lazyWithRetry(() => import('./features/drinks/PayDrinks.page'));
-const ResetPasswordScreen = lazyWithRetry(() => import('./features/auth/ResetPasswordScreen'));
-const PaymentsPendingAdmin = lazyWithRetry(() => import('./features/admin/PaymentsPendingAdmin'));
-const AdminDrinkListProvider = lazyWithRetry(() => import('./features/admin/AdminDrinkList'));
-const AdminHistoryScreenProvider = lazyWithRetry(() => import('./features/admin/AdminHistoryScreen'));
-const AdminUserListProvider = lazyWithRetry(() => import('./features/admin/AdminUserList'));
-const DrinkListScreenProvider = lazyWithRetry(() => import('./features/drinks/Drinklist.page'));
-const EventInformationProvider = lazyWithRetry(() => import('./features/events/EventInformation.page'));
-const EventScreenProvider = lazyWithRetry(() => import('./features/events/EventList.page'));
-const NotificationScreen = lazyWithRetry(() => import('./features/notifications/NotificationScreen.shadcn'));
-const ChallengeScreen = lazyWithRetry(() => import('./features/challenges/ChallengeList.page'));
-const ChallengeInfoScreen = lazyWithRetry(() => import('./features/challenges/ChallengeInformation.provider'));
-const RecurringEvents = lazyWithRetry(() => import('./features/events/RecurringEvents'));
-const GameList = lazyWithRetry(() => import('./features/games/GameList'));
-const ReportScore = lazyWithRetry(() => import('./features/games/ReportScore'));
-const LoginScreen = lazyWithRetry(() => import('./features/auth/LoginScreen'));
-const SignUpScreen = lazyWithRetry(() => import('./features/auth/SignUpScreen'));
-const ForgotPasswordScreen = lazyWithRetry(() => import('./features/auth/ForgotPasswordScreen'));
-const PublicGroupList = lazyWithRetry(() => import('./features/groups/PublicGroupList.page'));
-const PublicGroupInformation = lazyWithRetry(() => import('./features/groups/PublicGroupInformation.page'));
-const MatchInformation = lazyWithRetry(() => import('./features/games/MatchInformation'));
-const SendNotifications = lazyWithRetry(() => import('./features/notifications/SendNotifications'));
-const AppInformation = lazyWithRetry(() => import('./components/AppInformation'));
-const PlayerzoneProfileDialog = lazyWithRetry(() => import('./features/profile/PlayerzoneProfile'));
-const NotificationsDialog = lazyWithRetry(() => import('./features/profile/NotificationsDialog'));
-const ContactInformation = lazyWithRetry(() => import('./features/profile/ContactInformation'));
-const ResetPassword = lazyWithRetry(() => import('./features/profile/ResetPassword'));
-const Leaderboard = lazyWithRetry(() => import('./features/games/Leaderboard'));
+import * as Pages from "./routes/lazy-components";
 
 export const AppRoutes = () => {
   const { user } = useApplication();
@@ -78,7 +32,7 @@ const PrivateRoute = ({ isShadcn = false }: { isShadcn?: boolean }) => {
   if (!user) return <Navigate to="/auth/login" state={{ path: location.pathname + location.search }} />;
 
   const privateRoute = <DialogsProvider>
-    <ShadcnDialogsProvider>
+    <Pages.DialogsProvider>
       <NotificationsProvider
         slotProps={{
           snackbar: {
@@ -90,14 +44,14 @@ const PrivateRoute = ({ isShadcn = false }: { isShadcn?: boolean }) => {
       >
         <Outlet />
       </NotificationsProvider>
-    </ShadcnDialogsProvider>
+    </Pages.DialogsProvider>
   </DialogsProvider>
 
   if (isShadcn) {
     return <GrantsProvider user={user}>
-      <MainLayout>
+      <Pages.MainLayout>
         {privateRoute}
-      </MainLayout>
+      </Pages.MainLayout>
     </GrantsProvider>
   }
   return <GrantsProvider user={user}>
@@ -109,26 +63,26 @@ const createRouter = (user: UserWithGroups | null, isShadcnUi: boolean) =>
   sentryCreateBrowserRouter([
     {
       path: '/auth',
-      element: isShadcnUi ? <AuthLayoutShadcn /> : <AuthLayout />,
+      element: isShadcnUi ? <Pages.AuthLayoutShadcn /> : <Pages.AuthLayout />,
       children: [
         {
           path: 'login',
-          element: isShadcnUi ? <LoginFormShadcn /> : <LoginScreen />,
+          element: isShadcnUi ? <LoginFormShadcn /> : <Pages.LoginScreen />,
           errorElement: <ErrorRouteElement />,
         },
         {
           path: 'signup',
-          element: isShadcnUi ? <SignUpFormShadcn /> : <SignUpScreen />,
+          element: isShadcnUi ? <SignUpFormShadcn /> : <Pages.SignUpScreen />,
           errorElement: <ErrorRouteElement />,
         },
         {
           path: 'forgot-password',
-          element: isShadcnUi ? <ForgotPasswordShadcn /> : <ForgotPasswordScreen />,
+          element: isShadcnUi ? <ForgotPasswordShadcn /> : <Pages.ForgotPasswordScreen />,
           errorElement: <ErrorRouteElement />,
         },
         {
           path: 'reset-password',
-          element: <ResetPasswordScreen />,
+          element: <Pages.ResetPasswordScreen />,
           errorElement: <ErrorRouteElement />,
         },
       ],
@@ -155,23 +109,19 @@ const createRouter = (user: UserWithGroups | null, isShadcnUi: boolean) =>
             },
             {
               path: '/help',
-              element: isShadcnUi ? <AppInformationShadcn /> : <AppInformation />,
+              element: isShadcnUi ? <Pages.AppInformationShadcn /> : <Pages.AppInformation />,
             },
             {
               path: '/home',
-              element: isShadcnUi ? <HomePageShadcn /> : <HomePage />,
-            },
-            {
-              path: '/reset-password',
-              element: <ResetPasswordScreen />,
+              element: isShadcnUi ? <Pages.HomePageShadcn /> : <HomePage />,
             },
             {
               path: '/keys',
-              element: isShadcnUi ? <ItemHolderScreenShadcn /> : <ItemHolderScreen />,
+              element: isShadcnUi ? <Pages.ItemHolderScreenShadcn /> : <Pages.ItemHolderScreen />,
             },
             {
               path: '/notifications',
-              element: <NotificationScreen isShadcn={isShadcnUi} />,
+              element: <Pages.NotificationScreen isShadcn={isShadcnUi} />,
             },
             {
               path: '/user',
@@ -184,19 +134,19 @@ const createRouter = (user: UserWithGroups | null, isShadcnUi: boolean) =>
                 },
                 {
                   path: 'playerzone',
-                  element: <PlayerzoneProfileDialog />,
+                  element: <Pages.PlayerzoneProfileDialog />,
                 },
                 {
                   path: 'notifications',
-                  element: <NotificationsDialog />,
+                  element: <Pages.NotificationsDialog />,
                 },
                 {
                   path: 'profile',
-                  element: <ContactInformation />,
+                  element: <Pages.ContactInformation />,
                 },
                 {
                   path: 'reset-password',
-                  element: <ResetPassword />,
+                  element: <Pages.ResetPassword />,
                 },
               ],
             },
@@ -215,15 +165,15 @@ const createRouter = (user: UserWithGroups | null, isShadcnUi: boolean) =>
                 },
                 {
                   path: 'list',
-                  element: <DrinkListScreenProvider isShadcn={isShadcnUi} />,
+                  element: <Pages.DrinkListScreenProvider isShadcn={isShadcnUi} />,
                 },
                 {
                   path: 'history',
-                  element: <HistoryScreenProvider isShadcn={isShadcnUi} />,
+                  element: <Pages.HistoryScreenProvider isShadcn={isShadcnUi} />,
                 },
                 {
                   path: 'payments',
-                  element: <PayDrinksScreenProvider isShadcn={isShadcnUi} />,
+                  element: <Pages.PayDrinksScreenProvider isShadcn={isShadcnUi} />,
                 },
               ],
             },
@@ -242,11 +192,11 @@ const createRouter = (user: UserWithGroups | null, isShadcnUi: boolean) =>
                 },
                 {
                   path: 'list',
-                  element: isShadcnUi ? <ChallengeListShadcn /> : <ChallengeScreen />,
+                  element: isShadcnUi ? <Pages.ChallengeListShadcn /> : <Pages.ChallengeScreen />,
                 },
                 {
                   path: ':challengeId',
-                  element: <ChallengeInfoScreen isShadcn={isShadcnUi} />,
+                  element: <Pages.ChallengeInfoScreen isShadcn={isShadcnUi} />,
                 },
               ],
             },
@@ -261,11 +211,11 @@ const createRouter = (user: UserWithGroups | null, isShadcnUi: boolean) =>
                 },
                 {
                   path: 'list',
-                  element: <PublicGroupList isShadcn={isShadcnUi} />,
+                  element: <Pages.PublicGroupList isShadcn={isShadcnUi} />,
                 },
                 {
                   path: ':groupId',
-                  element: <PublicGroupInformation isShadcn={isShadcnUi} />,
+                  element: <Pages.PublicGroupInformation isShadcn={isShadcnUi} />,
                 },
               ],
             },
@@ -284,15 +234,15 @@ const createRouter = (user: UserWithGroups | null, isShadcnUi: boolean) =>
                 },
                 {
                   path: 'list',
-                  element: <EventScreenProvider isShadcn={isShadcnUi} />,
+                  element: <Pages.EventScreenProvider isShadcn={isShadcnUi} />,
                 },
                 {
                   path: 'recurringEvents',
-                  element: <RecurringEvents />,
+                  element: <Pages.RecurringEvents />,
                 },
                 {
                   path: 'event/:selectedEventId',
-                  element: <EventInformationProvider isShadcn={isShadcnUi} />,
+                  element: <Pages.EventInformationProvider isShadcn={isShadcnUi} />,
                 },
               ],
             },
@@ -311,19 +261,19 @@ const createRouter = (user: UserWithGroups | null, isShadcnUi: boolean) =>
                 },
                 {
                   path: 'list',
-                  element: isShadcnUi ? <GameListShadcn /> : <GameList />,
+                  element: isShadcnUi ? <Pages.GameListShadcn /> : <Pages.GameList />,
                 },
                 {
                   path: 'report',
-                  element: <ReportScore />,
+                  element: <Pages.ReportScore />,
                 },
                 {
                   path: ':matchId',
-                  element: isShadcnUi ? <MatchInformationShadcn /> : <MatchInformation />,
+                  element: isShadcnUi ? <Pages.MatchInformationShadcn /> : <Pages.MatchInformation />,
                 },
                 {
                   path: 'leaderboard',
-                  element: isShadcnUi ? <LeaderboardShadcn /> : <Leaderboard />,
+                  element: isShadcnUi ? <Pages.LeaderboardShadcn /> : <Pages.Leaderboard />,
                 }
               ],
             },
@@ -335,7 +285,7 @@ const createRouter = (user: UserWithGroups | null, isShadcnUi: boolean) =>
                   path: 'logs',
                   element: (
                     <Has perm={'supabase.admin'} fallback={<PermissionDeniedPage />}>
-                      <LogsManager />
+                      <Pages.LogsManager />
                     </Has >
                   ),
                 },
@@ -343,7 +293,7 @@ const createRouter = (user: UserWithGroups | null, isShadcnUi: boolean) =>
                   path: 'database',
                   element: (
                     <Has perm={'supabase.admin'} fallback={<PermissionDeniedPage />}>
-                      <DatabaseManager />
+                      <Pages.DatabaseManager />
                     </Has>
                   ),
                 }
@@ -356,37 +306,29 @@ const createRouter = (user: UserWithGroups | null, isShadcnUi: boolean) =>
               children: [
                 {
                   path: 'drinks',
-                  element: <AdminDrinkListProvider />,
+                  element: <Pages.AdminDrinkListProvider />,
                 },
                 {
                   path: 'drinks/history',
-                  element: <AdminHistoryScreenProvider />,
+                  element: <Pages.AdminHistoryScreenProvider />,
                 },
                 {
                   path: 'drinks/payments',
-                  element: <PaymentsPendingAdmin />,
+                  element: <Pages.PaymentsPendingAdmin />,
                 },
                 {
                   path: 'users',
-                  element: isShadcnUi ? <AdminUserList /> : <AdminUserListProvider />,
+                  element: isShadcnUi ? <Pages.AdminUserList /> : <Pages.AdminUserListProvider />,
                 },
                 {
                   path: 'analytics',
-                  element: <AdminAnalytics />
-                },
-                {
-                  path: 'notify_users',
-                  element: (
-                    <Has perm={'admin.notify_users'} fallback={<PermissionDeniedPage />}>
-                      <SendNotifications />
-                    </Has>
-                  ),
+                  element: <Pages.AdminAnalytics />
                 },
                 {
                   path: 'grants',
                   element: (
                     <Has perm={'grants.manage'}>
-                      <GrantsManager />
+                      <Pages.GrantsManager />
                     </Has>
                   ),
                 },
