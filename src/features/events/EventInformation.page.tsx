@@ -38,7 +38,7 @@ import MenuItem from '@mui/material/MenuItem';
 import { useGrants } from '../auth/GrantsContext';
 import { TransformEventDialog } from './dialogs/TransformEventDialog';
 import EventAdminInformation from './EventAdminInformation';
-import EventInformationShadcn, { EventInformationSkeleton } from './EventInformation.shadcn';
+import EventInformationShadcn, { EventInformationError, EventInformationSkeleton } from './EventInformation.shadcn';
 
 const EventInformationProvider = ({ isShadcn = false }: { isShadcn?: boolean }) => {
   const { selectedEventId } = useParams();
@@ -99,6 +99,9 @@ const EventInformationProvider = ({ isShadcn = false }: { isShadcn?: boolean }) 
   }
 
   if (!event) {
+    if (isShadcn) {
+      return <EventInformationError />
+    }
     return null;
   }
 

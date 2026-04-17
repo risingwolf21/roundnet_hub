@@ -6,7 +6,9 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Empty, EmptyDescription, EmptyMedia, EmptyTitle } from "@/components/ui/empty";
 import { Separator } from "@/components/ui/separator";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Toggle } from "@/components/ui/toggle";
 import { Has } from "@/hooks/useGrants";
 import { cn } from "@/lib/utils";
@@ -16,7 +18,7 @@ import { useLocalStorageState } from "@toolpad/core";
 import groupBy from "lodash.groupby";
 import { AlertCircle, CheckCircle2, CircleFadingArrowUp, GitPullRequest, Pencil, Plus, Shapes, User, UserStar, XCircle } from "lucide-react";
 import { useState } from "react";
-import { Navigate, useParams } from "react-router";
+import { useNavigate, useParams } from "react-router";
 import { toast } from "sonner";
 import { useGrants } from "../auth/GrantsContext";
 import { CreateOrUpdateGroupDialogShadcn } from "./dialogs/CreateOrUpdateGroupDialog.shadcn";
@@ -39,6 +41,7 @@ export const PublicGroupInformationShadcn = () => {
   const { groupId } = useParams();
   const { user } = useGrants();
   const dialogs = useCustomDialogs();
+  const navigate = useNavigate();
 
   const [selectedUsers, setSelectedUsers] = useState<User[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
@@ -51,8 +54,8 @@ export const PublicGroupInformationShadcn = () => {
     },
   });
 
-  const { data: group = null, error, isLoading, refetch: refetchGroup } = useGroup(groupId);
-  const { data: group_users = [], isLoading: usersLoading, refetch } = useGroupAllUsers(groupId);
+  const { data: group = null, error: groupError, isLoading: groupLoading, refetch: refetchGroup } = useGroup(groupId);
+  const { data: group_users = [], isLoading: usersLoading, error: usersError, refetch } = useGroupAllUsers(groupId);
 
   const addUsersMutation = useAddUsersMutation(group);
   const removeUsersMutation = useRemoveUsersMutation(group);
@@ -93,26 +96,82 @@ export const PublicGroupInformationShadcn = () => {
     );
   };
 
-  if (!group) {
-    if (!isLoading) {
-      return <Navigate to={'/groups/list'} />;
-    }
+  if (groupLoading) {
     return (
-      <div className="min-h-screen bg-background text-foreground">
+      <div className="min-h-screen bg-background text-foreground flex flex-col">
         <AppBar
           className='!border-b !shadow-sm'
-          title={'Lade Gruppe...'}
+          title={""}
           primaryAction="back"
           user={user}
         />
-        <div className='flex-1 overflow-y-auto'>
+        <div className='flex-1 p-4 space-y-4'>
+          {/* Beschreibung Skeleton */}
+          <div className="space-y-2 max-w-lg">
+            <Skeleton className="h-5 w-24" />
+            <Skeleton className="h-4 w-full" />
+            <Skeleton className="h-4 w-4/5" />
+          </div>
+          <Separator />
+          {/* Filter Skeleton */}
+          <div className="space-y-2">
+            <Skeleton className="h-5 w-12" />
+            <div className="flex flex-wrap gap-2">
+              <Skeleton className="h-10 w-28 rounded-md" />
+              <Skeleton className="h-10 w-24 rounded-md" />
+              <Skeleton className="h-10 w-24 rounded-md" />
+              <Skeleton className="h-10 w-28 rounded-md" />
+            </div>
+          </div>
+          {/* Users List Skeleton */}
+          <div className="space-y-4 mt-6">
+            <Skeleton className="h-5 w-32" />
+            {Array.from({ length: 4 }).map((_, i) => (
+              <div key={i} className="flex items-center justify-between rounded-md border p-2">
+                <div className="flex items-center gap-2">
+                  <Skeleton className="size-10 rounded-full" />
+                  <div className="space-y-1.5">
+                    <Skeleton className="h-4 w-32" />
+                    <Skeleton className="h-3 w-40" />
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (groupError || !group) {
+    return (
+      <div className="min-h-screen bg-background text-foreground flex flex-col">
+        <AppBar
+          className='!border-b !shadow-sm'
+          title="Gruppe"
+          primaryAction="back"
+          user={user}
+        />
+        <div className='flex-1 flex items-center justify-center p-4'>
+          <Empty>
+            <EmptyMedia>
+              <AlertCircle className="size-10 text-destructive" />
+            </EmptyMedia>
+            <EmptyTitle>Gruppe nicht gefunden</EmptyTitle>
+            <EmptyDescription>
+              Die angeforderte Gruppe existiert nicht, wurde gelöscht oder du hast keine Zugriffsberechtigung.
+            </EmptyDescription>
+            <Button onClick={() => navigate('/groups/list')} className="mt-4" variant="outline">
+              Zurück zur Übersicht
+            </Button>
+          </Empty>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
+    <div className="min-h-screen bg-background text-foreground flex flex-col">
       <AppBar
         className='!border-b !shadow-sm'
         showSearch
@@ -134,14 +193,15 @@ export const PublicGroupInformationShadcn = () => {
           </Button>
         }
       />
-      <main className='flex-1 size-full pb-safe-bottom'>
+      <main className='flex-1 size-full pb-safe-bottom overflow-y-auto'>
         <PullToRefresh onRefresh={() => { refetch(); refetchGroup(); }}>
           <div className="flex-1 p-4 space-y-2">
             <div key={"info"} className="gap-2 flex w-full max-w-lg flex-col">
+              <div className="text-lg font-semibold">{group.name}</div>
               <div className="text-sm font-semibold">
                 Beschreibung
               </div>
-              <div className="text-sm text-muted-background">
+              <div className="text-sm text-muted-foreground">
                 {group.description || "Keine Beschreibung vorhanden."}
               </div>
             </div>
@@ -152,28 +212,28 @@ export const PublicGroupInformationShadcn = () => {
                   Filter
                 </div>
                 <div className="flex flex-wrap items-center gap-2">
-                  <Toggle variant="outline" aria-label="Toggle italic"
+                  <Toggle variant="outline" aria-label="Toggle join requests"
                     pressed={filter?.joinRequested}
                     onPressedChange={() => setFilter({ ...(filter ?? DEFAULT_FILTER), joinRequested: !filter?.joinRequested })}>
-                    <GitPullRequest />
+                    <GitPullRequest className="size-4" />
                     Anfragen
                   </Toggle>
-                  <Toggle variant="outline" aria-label="Toggle bold"
+                  <Toggle variant="outline" aria-label="Toggle trials"
                     pressed={filter?.trials}
                     onPressedChange={() => setFilter({ ...(filter ?? DEFAULT_FILTER), trials: !filter?.trials })}>
-                    <Shapes />
+                    <Shapes className="size-4" />
                     Trials
                   </Toggle>
-                  <Toggle variant="outline" aria-label="Toggle bold"
+                  <Toggle variant="outline" aria-label="Toggle admins"
                     pressed={filter?.admin}
                     onPressedChange={() => setFilter({ ...(filter ?? DEFAULT_FILTER), admin: !filter?.admin })}>
-                    <UserStar />
+                    <UserStar className="size-4" />
                     Admins
                   </Toggle>
-                  <Toggle variant="outline" aria-label="Toggle bold"
+                  <Toggle variant="outline" aria-label="Toggle users"
                     pressed={filter?.user}
                     onPressedChange={() => setFilter({ ...(filter ?? DEFAULT_FILTER), user: !filter?.user })}>
-                    <User />
+                    <User className="size-4" />
                     Benutzer
                   </Toggle>
                 </div>
@@ -181,7 +241,7 @@ export const PublicGroupInformationShadcn = () => {
             }
             {
               selectedUsers.length > 0 && group?.user_group_role === 'admin' && <Alert className="my-4" variant={"error"}>
-                <AlertCircle />
+                <AlertCircle className="size-4" />
                 <AlertTitle>Gewählte Benutzer aus der Gruppe entfernen?</AlertTitle>
                 <AlertAction>
                   <Button variant={"outline"} onClick={() => {
@@ -197,11 +257,37 @@ export const PublicGroupInformationShadcn = () => {
                 </AlertAction>
               </Alert>
             }
-            {
+
+            {usersLoading ? (
+              <div className="space-y-4 mt-6">
+                <Skeleton className="h-5 w-32" />
+                {Array.from({ length: 3 }).map((_, i) => (
+                  <div key={i} className="flex items-center justify-between rounded-md border p-2">
+                    <div className="flex items-center gap-2">
+                      <Skeleton className="size-10 rounded-full" />
+                      <div className="space-y-1.5">
+                        <Skeleton className="h-4 w-32" />
+                        <Skeleton className="h-3 w-40" />
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : usersError ? (
+              <div className="mt-8">
+                <Empty>
+                  <EmptyMedia>
+                    <AlertCircle className="size-8 text-destructive" />
+                  </EmptyMedia>
+                  <EmptyTitle>Fehler</EmptyTitle>
+                  <EmptyDescription>Benutzer konnten nicht geladen werden.</EmptyDescription>
+                </Empty>
+              </div>
+            ) : (
               Object.entries(groupBy(group_users, (x) => x.role))
                 .sort(([roleA], [roleB]) => roleWeights[roleA] - roleWeights[roleB])
                 .map(([role, users]) => (
-                  <div key={role} className={cn("gap-2 flex w-full flex-col ", {
+                  <div key={role} className={cn("gap-2 flex w-full flex-col mt-4", {
                     hidden: (role === 'admin' && !filter?.admin) ||
                       (role === 'user' && !filter?.user) ||
                       (role === 'joinRequested' && (group.user_group_role !== "admin" || !filter?.joinRequested)) ||
@@ -217,7 +303,7 @@ export const PublicGroupInformationShadcn = () => {
                       .map((x) => (
                         <div key={x.user.id} className="flex items-center justify-between rounded-md border p-2">
                           <div className="flex items-center gap-2">
-                            <Avatar {...(
+                            <Avatar className="cursor-pointer" {...(
                               (role === "admin" || role === "trial" || role === "user" && group.user_group_role === "admin") && {
                                 onClick: () => {
                                   if (selectedUsers.includes(x.user)) {
@@ -240,46 +326,50 @@ export const PublicGroupInformationShadcn = () => {
                               }
                             </Avatar>
                             <div>
-                              <div>{x.user.name}</div>
+                              <div className="text-sm font-medium">{x.user.name}</div>
                               <div className="text-xs text-muted-foreground">{x.user.email}</div>
                             </div>
                           </div>
-                          {
-                            x.role === 'admin' && (
-                              <Badge variant="outline" className="text-green-500">Admin</Badge>
-                            )
-                          }
-                          {
-                            role === "trial" && <AcceptTrialButton group={group} user={x.user} />
-                          }
-                          {
-                            role === "joinRequested" && <RequestedGroupJoinButton group={group} user={x.user} />
-                          }
+                          <div className="flex items-center gap-2">
+                            {
+                              x.role === 'admin' && (
+                                <Badge variant="outline" className="text-green-500 border-green-500/20 bg-green-500/10">Admin</Badge>
+                              )
+                            }
+                            {
+                              role === "trial" && <AcceptTrialButton group={group} user={x.user} />
+                            }
+                            {
+                              role === "joinRequested" && <RequestedGroupJoinButton group={group} user={x.user} />
+                            }
+                          </div>
                         </div>
                       ))}
                   </div>
                 ))
-            }
+            )}
           </div>
         </PullToRefresh>
-        <div
-          className="fixed right-6 z-50"
-          style={{ bottom: 'calc(1.5rem + env(safe-area-inset-bottom))' }}
-        >
-          <Button
-            size="icon"
-            className="h-14 w-14 rounded-full shadow-lg hover:shadow-xl bg-primary text-primary-foreground transition-all hover:-translate-y-1 active:translate-y-0 active:shadow-md"
-            onClick={() => {
-              dialogs
-                .selectMultipleUsers(group.users.map((x) => x.user.id))
-                .then((result) => {
-                  if (result) handleUsersAdded(result);
-                });
-            }}
+        {group.user_group_role === "admin" && (
+          <div
+            className="fixed right-6 z-50"
+            style={{ bottom: 'calc(1.5rem + env(safe-area-inset-bottom))' }}
           >
-            <Plus className="h-6 w-6" />
-          </Button>
-        </div>
+            <Button
+              size="icon"
+              className="h-14 w-14 rounded-full shadow-lg hover:shadow-xl bg-primary text-primary-foreground transition-all hover:-translate-y-1 active:translate-y-0 active:shadow-md"
+              onClick={() => {
+                dialogs
+                  .selectMultipleUsers(group_users.map((x) => x.user.id))
+                  .then((result) => {
+                    if (result) handleUsersAdded(result);
+                  });
+              }}
+            >
+              <Plus className="h-6 w-6" />
+            </Button>
+          </div>
+        )}
       </main>
     </div>
   );
@@ -288,7 +378,7 @@ export const PublicGroupInformationShadcn = () => {
 const AcceptTrialButton = ({ group, user }: { group: Group; user: User }) => {
   const changeUserRoleMutation = useChangeUserRoleMutation();
   const dialogs = useCustomDialogs();
-  return <Button variant={"ghost"} size={"icon-lg"} onClick={() => {
+  return <Button variant={"ghost"} size={"icon-sm"} onClick={() => {
     dialogs.confirm("Möchtest du den Benutzer wirklich als regulären Benutzer akzeptieren?", {
       okText: "Akzeptieren",
       cancelText: "Abbrechen"
@@ -308,7 +398,7 @@ const AcceptTrialButton = ({ group, user }: { group: Group; user: User }) => {
       }
     })
   }}>
-    <CircleFadingArrowUp />
+    <CircleFadingArrowUp className="size-4" />
   </Button>
 }
 
@@ -318,9 +408,9 @@ const RequestedGroupJoinButton = ({ group, user }: { group: Group; user: User })
   const dialogs = useCustomDialogs();
 
   return <DropdownMenu >
-    <DropdownMenuTrigger render={<Button variant={"outline"}>Bearbeiten</Button>} />
+    <DropdownMenuTrigger render={<Button variant={"outline"} size="sm">Bearbeiten</Button>} />
     <DropdownMenuContent className={"w-full"}>
-      <DropdownMenuItem variant="destructive" className={"text-md"}
+      <DropdownMenuItem variant="destructive" className={"text-sm"}
         onClick={() =>
           dialogs.confirm("Möchtest du die Beitrittsanfrage wirklich ablehnen?", {
             okText: "Ablehnen",
@@ -338,11 +428,11 @@ const RequestedGroupJoinButton = ({ group, user }: { group: Group; user: User })
             }
           })
         }>
-        <XCircle />
+        <XCircle className="size-4 mr-2" />
         Ablehnen
       </DropdownMenuItem>
       <DropdownMenuSeparator />
-      <DropdownMenuItem className={"text-md"}
+      <DropdownMenuItem className={"text-sm"}
         onClick={() => {
           dialogs.confirm("Möchtest du die Beitrittsanfrage wirklich akzeptieren?", {
             okText: "Akzeptieren",
@@ -363,13 +453,13 @@ const RequestedGroupJoinButton = ({ group, user }: { group: Group; user: User })
             }
           })
         }}>
-        <CheckCircle2 />
+        <CheckCircle2 className="size-4 mr-2" />
         Akzeptieren
       </DropdownMenuItem>
       <Has feat={"events.trials"}>
         <>
           <DropdownMenuSeparator />
-          <DropdownMenuItem className={"text-md"}
+          <DropdownMenuItem className={"text-sm"}
             onClick={() => {
               dialogs.confirm("Möchtest du den Benutzer wirklich als Probenutzer akzeptieren?", {
                 okText: "Akzeptieren",
@@ -390,8 +480,8 @@ const RequestedGroupJoinButton = ({ group, user }: { group: Group; user: User })
                 }
               })
             }}>
-            <CheckCircle2 />
-            Probenutzer akzeptieren
+            <CheckCircle2 className="size-4 mr-2" />
+            Probenutzer
           </DropdownMenuItem>
         </>
       </Has>

@@ -20,7 +20,8 @@ import { add, closestTo, differenceInCalendarDays, format, isAfter, isBefore } f
 import { t } from "i18next";
 import { toNumber } from "lodash";
 import {
-  Activity, Calendar, Check, CheckCircle2, Clock,
+  Activity,
+  Calendar, Check, CheckCircle2, CircleAlert, Clock,
   Cloud,
   CloudFog,
   CloudLightning,
@@ -759,8 +760,10 @@ const EventInformationShadcn = ({ event, selectedEventPlace, fetchMode }: EventI
   </div >
 };
 
+import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Spinner } from "@/components/ui/spinner";
+import { useNavigate } from "react-router";
 
 export const EventInformationSkeleton = () => {
   return (
@@ -875,6 +878,44 @@ export const EventInformationSkeleton = () => {
 
           </div>
         </div>
+      </main>
+    </div>
+  );
+};
+
+export const EventInformationError = () => {
+  const { user } = useGrants();
+  const navigate = useNavigate();
+
+  return (
+    <div className="flex flex-col h-full w-full bg-background text-foreground overscroll-none min-h-0">
+      {/* AppBar Skeleton/Error State */}
+      <div className="shrink-0 bg-background relative z-10">
+        <AppBar
+          className='!border-b !shadow-sm'
+          title={"Fehler"}
+          primaryAction="back"
+          user={user}
+        />
+      </div>
+
+      <main className='flex-1 relative flex flex-col min-h-0 overflow-hidden'>
+        <Empty className="border border-dashed">
+          <EmptyHeader>
+            <EmptyMedia variant="icon">
+              <CircleAlert />
+            </EmptyMedia>
+            <EmptyTitle>Event nicht geladen</EmptyTitle>
+            <EmptyDescription>
+              Das Event konnte leider nicht geladen werden. Möglicherweise wurde es gelöscht, du bist offline oder du hast keine Berechtigung, es zu sehen.
+            </EmptyDescription>
+          </EmptyHeader>
+          <EmptyContent>
+            <Button variant="outline" size="sm" onClick={() => navigate(-1)}>
+              Zurück zur Übersicht
+            </Button>
+          </EmptyContent>
+        </Empty>
       </main>
     </div>
   );
