@@ -1,9 +1,5 @@
-import { captureException } from '@sentry/react';
-import { useNotifications } from '@toolpad/core/useNotifications';
 import { useState } from 'react';
-import { AdminUsersRepository } from '../../repository/AdminUsersRepository';
 import { UserWithGroups } from '../../types/supabaseTypes';
-import { UserEdited } from './dialogs/EditUserDialog';
 
 import { PullToRefresh } from '@/components/pull-to-refresh/PullToRefresh';
 import { AppBar } from '@/components/ui/appbar';
@@ -19,34 +15,11 @@ import EditUserDialog from './dialogs/EditUserDialog.shadcn';
 const AdminUserList = () => {
   const { user } = useGrants();
   const dialogs = useDialogs();
-  const [editUserOpen, setEditUserOpen] = useState(false);
-  const [currentUser, setCurrentUser] = useState<UserWithGroups | null>();
   const [searchString, setSearchString] = useState('');
-  const notifications = useNotifications();
 
   const { data: users = [], isLoading, refetch } = useAllUsersAsAdmin();
   const updateUserMutation = useUpdateUserMutation();
 
-  const editUser = (user: UserWithGroups) => {
-    setCurrentUser(user);
-    setEditUserOpen(true);
-  };
-
-  const deleteUser = async (user: User) => {
-    AdminUsersRepository.deactivateUser(user)
-      .then(() => {
-        notifications.show(`Successfully deactivated user ${user.email}`, { severity: 'success' });
-      })
-      .catch((error) => {
-        captureException(error);
-        notifications.show(error, { severity: 'error' });
-      });
-  };
-
-  const onUserEditFinished = async (result: UserEdited) => {
-    updateUserMutation.mutate({ update: result });
-    setEditUserOpen(false);
-  };
 
   return <div className="min-h-screen bg-background text-foreground">
     <AppBar
@@ -54,7 +27,6 @@ const AdminUserList = () => {
       showSearch
       searchValue={searchString}
       onSearchChange={setSearchString}
-      primaryAction="back"
       user={user}
     />
     <main className='flex-1 size-full pb-safe-bottom'>

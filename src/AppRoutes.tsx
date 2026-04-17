@@ -311,7 +311,7 @@ const createRouter = (user: UserWithGroups | null, isShadcnUi: boolean) =>
                 },
                 {
                   path: 'drinks/history',
-                  element: <Pages.AdminHistoryScreenProvider />,
+                  element: isShadcnUi ? <Pages.AdminHistoryScreenShadcn /> : <Pages.AdminHistoryScreenProvider />,
                 },
                 {
                   path: 'drinks/payments',
@@ -329,7 +329,9 @@ const createRouter = (user: UserWithGroups | null, isShadcnUi: boolean) =>
                   path: 'grants',
                   element: (
                     <Has perm={'grants.manage'}>
-                      <Pages.GrantsManager />
+                      {
+                        isShadcnUi ? <Pages.GrantsManagerShadcn /> : <Pages.GrantsManager />
+                      }
                     </Has>
                   ),
                 },

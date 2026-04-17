@@ -53,3 +53,5 @@ export const ItemHolderScreenShadcn = lazyWithRetry(() => import('@/features/key
 export const UserScreenProvider = lazyWithRetry(() => import('@/features/profile/UserScreenProvider'));
 export const DatabaseManager = lazyWithRetry(() => import('@/features/supabase/components/database'));
 export const LogsManager = lazyWithRetry(() => import('@/features/supabase/components/logs'));
+export const GrantsManagerShadcn = lazyWithRetry(() => import('@/features/grants/GrantsManager.shadcn'));
+export const AdminHistoryScreenShadcn = lazyWithRetry(() => import('@/features/admin/AdminHistoryScreen.shadcn'));

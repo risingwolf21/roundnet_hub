@@ -21,7 +21,7 @@ const AppInformationShadcn = () => {
   return <div className="flex flex-col min-h-screen">
     <AppBar
       className='!border-b !shadow-sm'
-      title="Homepage"
+      title="Informationen"
       user={user}
     />
     <main className='flex-1 size-full pb-safe-bottom'>

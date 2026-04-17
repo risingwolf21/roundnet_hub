@@ -1,3 +1,4 @@
+import SearchAndSelectGroupDialogShadcn from '@/components/dialogs/SearchAndSelectGroupDialog.shadcn';
 import SearchAndSelectUserDialogShadcn from '@/components/dialogs/SearchAndSelectUsersDialog.shadcn';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -37,12 +38,17 @@ export interface SearchAndSelectUserOptions {
   option: "single" | "multiple";
 }
 
+export interface SearchAndSelectGroupOptions {
+  groupsToFilter: string[]
+}
+
 interface DialogsContextType {
   open: <P, R>(Component: React.ComponentType<DialogProps<P, R>>, payload?: P) => Promise<R | null>;
   confirm: (title: string, options?: ConfirmOptions) => Promise<boolean>;
   alert: (content: React.ReactNode, options?: AlertOptions) => Promise<void>;
   selectSingleUser: (usersToFilter?: string[]) => Promise<User | null>;
   selectMultipleUser: (usersToFilter?: string[]) => Promise<User[] | null>;
+  selectGroup: (groupsToFilter?: string[]) => Promise<Group | null>;
 }
 
 const DialogsContext = createContext<DialogsContextType | null>(null);
@@ -104,8 +110,14 @@ const DialogsProvider = ({ children }: { children: React.ReactNode }) => {
     return result as User[] | null;
   }, [open]);
 
+  const selectGroup = useCallback(async (groupsToFilter?: string[]) => {
+    const result = await open(SearchAndSelectGroupDialogShadcn, { groupsToFilter: groupsToFilter ?? [] });
+
+    return result as Group | null;
+  }, [open]);
+
   return (
-    <DialogsContext value={{ open, confirm, alert, selectSingleUser, selectMultipleUser }}>
+    <DialogsContext value={{ open, confirm, alert, selectSingleUser, selectMultipleUser, selectGroup }}>
       {children}
       {dialogs.map(({ id, Component, payload, open, resolve }) => (
         <Component
