@@ -42,7 +42,7 @@ export const useCurrentUserGrants = (userId?: string | null) =>
     queryKey: authKeys.currentUserGrants(userId),
     enabled: !!userId,
     queryFn: async () => {
-      if (!userId) return { perm: new Set<string>(), feat: new Set<string>() };
+      if (!userId) return { perm: [], feat: [] };
 
       const { data, error } = await supabase.from('user_grants_view').select('kind,key').eq('user', userId);
 
@@ -53,14 +53,16 @@ export const useCurrentUserGrants = (userId?: string | null) =>
           if (curr.key && curr.kind) {
             switch (curr.kind) {
               case 'perm':
-                return { feat: prev.feat, perm: prev.perm.add(curr.key) };
+                prev.perm.push(curr.key);
+                break;
               case 'feat':
-                return { feat: prev.feat.add(curr.key), perm: prev.perm };
+                prev.feat.push(curr.key);
+                break;
             }
           }
           return prev;
         },
-        { perm: new Set<string>(), feat: new Set<string>() }
+        { perm: [] as string[], feat: [] as string[] }
       );
     },
     refetchOnWindowFocus: false,
