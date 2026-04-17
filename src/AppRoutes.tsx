@@ -21,6 +21,7 @@ import LeaderboardShadcn from './features/games/Leaderboard.shadcn';
 import MatchInformationShadcn from './features/games/MatchInformation.shadcn';
 import GrantsManager from './features/grants/GrantsManager';
 import HomePage from './features/homepage/HomePage';
+import HomePageShadcn from './features/homepage/HomePage.shadcn';
 import ItemHolderScreenShadcn from './features/keys/ItemHolderScreen.shadcn';
 import UserScreenProvider from './features/profile/UserScreenProvider';
 import { DatabaseManager } from './features/supabase/components/database';
@@ -159,7 +160,7 @@ const createRouter = (user: UserWithGroups | null, isShadcnUi: boolean) =>
             },
             {
               path: '/home',
-              element: <HomePage />,
+              element: isShadcnUi ? <HomePageShadcn /> : <HomePage />,
             },
             {
               path: '/reset-password',

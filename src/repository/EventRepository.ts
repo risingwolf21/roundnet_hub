@@ -4,7 +4,7 @@ import { PostgrestSingleResponse } from '@supabase/supabase-js';
 import { add, Duration, startOfDay } from 'date-fns';
 import { EventTable } from 'types/supabase';
 import { Tables, TablesInsert, TablesUpdate } from '../types/supabase-generated.types';
-import { EventWithGroup, FullComment } from '../types/supabaseTypes';
+import { EventsUserView, EventWithGroup, FullComment } from '../types/supabaseTypes';
 
 export const fetchEvents = () =>
   supabase
@@ -172,7 +172,7 @@ export const SupabaseEventRepository = {
     return null;
   },
 
-  async fetchUserEvents(fetchMode: 'past' | 'upcoming'): Promise<EventsUserView[]> {
+  async fetchUserEvents(fetchMode: 'past' | 'upcoming', limit?: number): Promise<EventsUserView[]> {
     let query = supabase.schema('public').from('events_user_view').select('*').throwOnError();
 
     if (fetchMode === 'past') {
@@ -185,6 +185,10 @@ export const SupabaseEventRepository = {
         .gt('startingDateTime', formatDateToDatabase(startOfDay(new Date())))
         .lt('startingDateTime', formatDateToDatabase(add(new Date(), { weeks: 8 })))
         .order('startingDateTime', { ascending: true });
+    }
+
+    if (limit) {
+      query = query.limit(limit);
     }
 
     const result = await query;

@@ -84,7 +84,7 @@ export const HistoryScreenShadcn = ({
                 <div className="text-sm font-semibold ml-2">
                   {key}
                 </div>
-                <div className='p-2'>
+                <div className='p-2 gap-2 flex flex-col'>
                   {value.map(x => <Item key={x.id} variant={"outline"} className='py-1'>
                     <div className='text-base'>{x.count}x</div>
                     <ItemContent>

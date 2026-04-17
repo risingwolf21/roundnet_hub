@@ -28,7 +28,7 @@ export const eventKeys = {
 export const fetchFullEventPledges = (eventId: string) =>
   supabase.from('event_bring_pledges').select('*, user: user(*), item: event_bring_items(*)').eq('event', eventId);
 
-export const useEvents = (filter: 'past' | 'upcoming') => {
+export const useEvents = (filter: 'past' | 'upcoming', limit?: number) => {
   return useQuery<EventsUserView[]>({
     queryKey: eventKeys.list(filter),
     queryFn: () => SupabaseEventRepository.fetchUserEvents(filter),
